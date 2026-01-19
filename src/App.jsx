@@ -802,7 +802,7 @@ function AttendanceReportManager() {
   const [students, setStudents] = useState([]);
   const [attendanceLogs, setAttendanceLogs] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  showToast = useToast();
+  const showToast = useToast();
 
   useEffect(() => {
     const unsubStudents = onSnapshot(getCollection('gemilang_students'), (snap) => setStudents(snap.docs.map(d => ({id: d.id, ...d.data()}))));
@@ -903,7 +903,7 @@ function SettingsView() {
 // 4. DASHBOARD UTAMA
 // ==========================================
 
-function AdminDashboard({ onLogout }) {
+function AdminDashboard({ onLogout, displayMode }) {
   const [activeTab, setActiveTab] = useState('home');
   const [overdueCount, setOverdueCount] = useState(0);
 
@@ -924,29 +924,29 @@ function AdminDashboard({ onLogout }) {
   }, []);
 
   return (
-    <div className="flex h-screen bg-slate-100 font-sans overflow-hidden">
-      <aside className="w-20 md:w-64 bg-slate-900 text-white flex flex-col shadow-2xl z-20 shrink-0">
-        <div className="p-4 md:p-6 border-b border-slate-700 flex items-center gap-3">
+    <div className={`flex h-screen bg-slate-100 font-sans overflow-hidden transition-all ${displayMode === 'hp' ? 'max-w-[400px] mx-auto border-x-8 border-slate-800 shadow-2xl' : 'w-full'}`}>
+      <aside className={`${displayMode === 'hp' ? 'w-16' : 'w-20 md:w-64'} bg-slate-900 text-white flex flex-col shadow-2xl z-20 shrink-0`}>
+        <div className={`p-4 ${displayMode === 'hp' ? '' : 'md:p-6'} border-b border-slate-700 flex items-center gap-3`}>
           <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shrink-0 shadow-lg"><GraduationCap size={24} className="text-white" /></div>
-          <div className="hidden md:block"><h1 className="font-bold text-lg">GEMILANG</h1><p className="text-[10px] text-slate-400 uppercase tracking-widest">Administrator</p></div>
+          <div className={`${displayMode === 'hp' ? 'hidden' : 'hidden md:block'}`}><h1 className="font-bold text-lg">GEMILANG</h1><p className="text-[10px] text-slate-400 uppercase tracking-widest">Admin</p></div>
         </div>
         <nav className="flex-1 py-6 space-y-2 overflow-y-auto">
           <MenuButton id="home" icon={<LayoutDashboard />} label="Beranda" active={activeTab} set={setActiveTab} badgeCount={overdueCount} />
           <MenuButton id="students" icon={<Users />} label="Data Siswa" active={activeTab} set={setActiveTab} />
-          <MenuButton id="attendance_report" icon={<ClipboardCheck />} label="Laporan Absensi" active={activeTab} set={setActiveTab} />
+          <MenuButton id="attendance_report" icon={<ClipboardCheck />} label="Absensi" active={activeTab} set={setActiveTab} />
           <MenuButton id="finance" icon={<DollarSign />} label="Keuangan" active={activeTab} set={setActiveTab} />
           <MenuButton id="teachers" icon={<Briefcase />} label="Data Guru" active={activeTab} set={setActiveTab} />
-          <MenuButton id="classes" icon={<Calendar />} label="Jadwal & Kelas" active={activeTab} set={setActiveTab} />
+          <MenuButton id="classes" icon={<Calendar />} label="Jadwal" active={activeTab} set={setActiveTab} />
           <div className="pt-6 mt-6 border-t border-slate-800">
             <MenuButton id="settings" icon={<Settings />} label="Pengaturan" active={activeTab} set={setActiveTab} />
             <button onClick={onLogout} className="w-full flex items-center gap-3 px-6 py-3 text-red-400 hover:bg-red-500/10 transition-all mt-2">
-              <LogOut size={20} /> <span className="hidden md:inline font-medium text-sm text-left">Keluar</span>
+              <LogOut size={20} /> <span className={`${displayMode === 'hp' ? 'hidden' : 'hidden md:inline'} font-medium text-sm text-left`}>Keluar</span>
             </button>
           </div>
         </nav>
       </aside>
-      <main className="flex-1 overflow-y-auto relative bg-slate-50 w-full">
-        <div className="p-4 md:p-8 w-full"> 
+      <main className="flex-1 overflow-y-auto relative bg-slate-50">
+        <div className="p-4 md:p-8"> 
           {activeTab === 'home' && <HomeDashboard />}
           {activeTab === 'students' && <StudentManager />}
           {activeTab === 'attendance_report' && <AttendanceReportManager />}
@@ -960,7 +960,7 @@ function AdminDashboard({ onLogout }) {
   );
 }
 
-function TeacherDashboard({ teacherName, onLogout }) {
+function TeacherDashboard({ teacherName, onLogout, displayMode }) {
   const [activeView, setActiveView] = useState('home'); 
   const [attendanceCode, setAttendanceCode] = useState('');
   const [time, setTime] = useState(new Date());
@@ -997,13 +997,13 @@ function TeacherDashboard({ teacherName, onLogout }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans">
+    <div className={`min-h-screen bg-slate-100 font-sans transition-all ${displayMode === 'hp' ? 'max-w-[400px] mx-auto border-x-8 border-slate-800 shadow-2xl' : 'w-full'}`}>
       <div className="bg-purple-700 text-white p-6 shadow-lg">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <div><h1 className="text-2xl font-bold uppercase tracking-tight">GEMILANG TEACHER</h1><p className="text-purple-200 text-xs font-bold uppercase tracking-widest">{teacherName}</p></div>
+          <div><h1 className="text-2xl font-bold uppercase tracking-tight">GEMILANG</h1><p className="text-purple-200 text-xs font-bold uppercase tracking-widest">{teacherName}</p></div>
           <div className="flex gap-2">
               <button onClick={() => setActiveView('home')} className={`px-4 py-2 rounded-lg font-bold text-xs transition ${activeView === 'home' ? 'bg-white text-purple-700 shadow' : 'text-white'}`}>BERANDA</button>
-              <button onClick={() => setActiveView('attendance')} className={`px-4 py-2 rounded-lg font-bold text-xs transition ${activeView === 'attendance' ? 'bg-white text-purple-700 shadow' : 'text-white'}`}>ABSEN SISWA</button>
+              <button onClick={() => setActiveView('attendance')} className={`px-4 py-2 rounded-lg font-bold text-xs transition ${activeView === 'attendance' ? 'bg-white text-purple-700 shadow' : 'text-white'}`}>ABSEN</button>
               <button onClick={onLogout} className="p-2 bg-red-600 rounded-lg"><LogOut size={16}/></button>
           </div>
         </div>
@@ -1053,14 +1053,12 @@ function TeacherDashboard({ teacherName, onLogout }) {
 // 5. HALAMAN LOGIN
 // ==========================================
 
-function LoginPage({ onLogin }) {
+function LoginPage({ onLogin, displayMode, setDisplayMode, isFullScreen, toggleFullScreen }) {
   const [view, setView] = useState('admin');
   const [password, setPassword] = useState('');
   const [selectedTeacher, setSelectedTeacher] = useState('');
   const [teachers, setTeachers] = useState([]);
   const [realAdminPass, setRealAdminPass] = useState('admin123');
-  const [isFullScreen, setIsFullScreen] = useState(false);
-  const [displayMode, setDisplayMode] = useState('auto'); // auto, hp, pc
   const showToast = useToast();
 
   useEffect(() => {
@@ -1069,14 +1067,9 @@ function LoginPage({ onLogin }) {
     return () => { unsubT(); unsubP(); };
   }, []);
 
-  const toggleFullScreen = () => {
-    if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(() => {}); setIsFullScreen(true); } 
-    else { if (document.exitFullscreen) { document.exitFullscreen(); setIsFullScreen(false); } }
-  };
-
   return (
     <div className="h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 to-slate-900 font-sans p-4 animate-in fade-in duration-700 overflow-hidden">
-      <div className={`bg-white p-8 rounded-3xl shadow-2xl border-4 border-blue-500/20 relative animate-in zoom-in-95 duration-500 transition-all ${displayMode === 'hp' ? 'w-[360px]' : displayMode === 'pc' ? 'w-[500px]' : 'w-full max-w-md'}`}>
+      <div className={`bg-white p-8 rounded-3xl shadow-2xl border-4 border-blue-500/20 relative animate-in zoom-in-95 duration-500 transition-all ${displayMode === 'hp' ? 'w-[360px]' : displayMode === 'pc' ? 'w-full max-w-4xl' : 'w-full max-w-md'}`}>
         <div className="text-center mb-8 mt-2"><div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg text-white"><GraduationCap size={32} /></div><h1 className="text-2xl font-bold text-slate-800 tracking-tight">Bimbel Gemilang</h1><p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Sistem Manajemen Terpadu</p></div>
         <div className="flex bg-slate-100 p-1 rounded-xl mb-6"><button onClick={() => setView('admin')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${view === 'admin' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}>Admin</button><button onClick={() => setView('guru')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${view === 'guru' ? 'bg-white shadow text-purple-600' : 'text-slate-500'}`}>Guru</button></div>
         <form onSubmit={(e) => { e.preventDefault(); if(view === 'admin') { if(password === realAdminPass) onLogin('admin'); else showToast("Sandi Salah!", 'error'); } else { if(!selectedTeacher) return showToast("Pilih Nama!", 'error'); onLogin('teacher', selectedTeacher); } }} className="space-y-4">
@@ -1093,7 +1086,6 @@ function LoginPage({ onLogin }) {
         </div>
         <button onClick={toggleFullScreen} className="hidden md:flex text-white/30 hover:text-white transition items-center gap-2 text-[10px] font-bold bg-white/5 px-4 py-2 rounded-full border border-white/5">{isFullScreen ? <Minimize size={12}/> : <Maximize size={12}/>} {isFullScreen ? 'KELUAR FULLSCREEN' : 'MASUK FULLSCREEN'}</button>
       </div>
-      
       <p className="mt-4 text-[10px] text-white/10 uppercase tracking-[0.2em]">Gemilang System v2.4</p>
     </div>
   );
@@ -1109,33 +1101,58 @@ export default function App() {
   const [activeTeacherName, setActiveTeacherName] = useState(''); 
   const [loading, setLoading] = useState(true);
   const [initError, setInitError] = useState('');
+  const [displayMode, setDisplayMode] = useState('auto'); // auto, hp, pc
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   useEffect(() => {
     const initAuth = async () => {
-      try { 
-        await signInAnonymously(auth); 
-      } catch (err) { 
-        console.error("Auth Error:", err);
-        setInitError("Koneksi gagal."); 
-      }
+      try { await signInAnonymously(auth); } 
+      catch (err) { console.error("Auth Error:", err); setInitError("Koneksi gagal."); }
     };
     initAuth();
-    const unsubscribe = onAuthStateChanged(auth, (u) => { 
-      setUser(u); 
-      setLoading(false); 
-    });
+    const unsubscribe = onAuthStateChanged(auth, (u) => { setUser(u); setLoading(false); });
     return () => unsubscribe();
   }, []);
+
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) { 
+      document.documentElement.requestFullscreen().catch(() => {}); 
+      setIsFullScreen(true); 
+    } else { 
+      if (document.exitFullscreen) { 
+        document.exitFullscreen(); 
+        setIsFullScreen(false); 
+      } 
+    }
+  };
 
   if (loading) return <div className="h-screen flex items-center justify-center bg-slate-900 text-white font-bold animate-pulse tracking-[0.5em] text-sm uppercase">Menghidupkan Gemilang...</div>;
   if (initError) return <div className="h-screen flex items-center justify-center bg-red-100 text-red-600 font-bold p-4 text-center">{initError}</div>;
 
   return (
     <ToastProvider>
-       {!role ? <LoginPage onLogin={(r, t) => { setRole(r); if(t) setActiveTeacherName(t); }} /> : 
-        role === 'admin' ? <AdminDashboard onLogout={() => setRole(null)} /> : 
-        <TeacherDashboard teacherName={activeTeacherName} onLogout={() => setRole(null)} />
-       }
+       {!role ? (
+         <LoginPage 
+           onLogin={(r, t) => { setRole(r); if(t) setActiveTeacherName(t); }} 
+           displayMode={displayMode}
+           setDisplayMode={setDisplayMode}
+           isFullScreen={isFullScreen}
+           toggleFullScreen={toggleFullScreen}
+         />
+       ) : (
+         role === 'admin' ? (
+           <AdminDashboard 
+             onLogout={() => setRole(null)} 
+             displayMode={displayMode} 
+           />
+         ) : (
+           <TeacherDashboard 
+             teacherName={activeTeacherName} 
+             onLogout={() => setRole(null)} 
+             displayMode={displayMode} 
+           />
+         )
+       )}
     </ToastProvider>
   );
 }
