@@ -213,25 +213,25 @@ function HomeDashboard() {
           <div className="p-4 border-b bg-slate-50 flex items-center gap-2 font-bold text-slate-700"><Users size={18}/> List Penagihan Terdekat (Minggu Ini)</div>
           <div className="p-0 overflow-x-auto">
               <table className="w-full text-sm text-left">
-                  <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b">
+                  <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b font-bold">
                       <tr><th className="p-4">Siswa</th><th className="p-4">Jatuh Tempo</th><th className="p-4">Nominal</th><th className="p-4 text-right">Aksi</th></tr>
                   </thead>
                   <tbody>
-                      {billingWarnings.length === 0 ? <tr><td colSpan="4" className="p-8 text-center text-slate-400 italic">Tidak ada tagihan mendesak.</td></tr> : 
+                      {billingWarnings.length === 0 ? <tr><td colSpan="4" className="p-8 text-center text-slate-500 italic">Tidak ada tagihan mendesak.</td></tr> : 
                         billingWarnings.map((item, i) => (
                           <tr key={i} className={`border-b last:border-0 ${item.isLate ? 'bg-red-50/50' : 'bg-white'}`}>
                               <td className="p-4">
                                   <div className="font-bold text-slate-800">{item.studentName}</div>
-                                  <div className="text-[10px] text-slate-400 uppercase tracking-tighter">Cicilan Ke-{item.id}</div>
+                                  <div className="text-[10px] text-slate-500 uppercase tracking-tighter">Cicilan Ke-{item.id}</div>
                               </td>
                               <td className="p-4">
-                                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${item.isLate ? 'bg-red-600 text-white' : 'bg-orange-100 text-orange-700'}`}>
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${item.isLate ? 'bg-red-600 text-white' : 'bg-orange-100 text-orange-800'}`}>
                                       {item.dueDate} {item.isLate ? '(TERLAMBAT)' : ''}
                                   </span>
                               </td>
-                              <td className="p-4 font-mono font-bold text-slate-700">Rp {formatRupiah(item.amount)}</td>
+                              <td className="p-4 font-mono font-bold text-slate-800">Rp {formatRupiah(item.amount)}</td>
                               <td className="p-4 text-right">
-                                  <button onClick={() => sendWA(item.contact, `Halo Bapak/Ibu Wali dari ${item.studentName}, kami menginformasikan bahwa tagihan SPP sebesar Rp ${formatRupiah(item.amount)} akan segera jatuh tempo pada ${item.dueDate}. Mohon dapat dipersiapkan. Terima kasih.`)} className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 ml-auto hover:bg-green-700">
+                                  <button onClick={() => sendWA(item.contact, `Halo Bapak/Ibu Wali dari ${item.studentName}, kami menginformasikan bahwa tagihan SPP sebesar Rp ${formatRupiah(item.amount)} akan segera jatuh tempo pada ${item.dueDate}. Mohon dapat dipersiapkan. Terima kasih.`)} className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 ml-auto hover:bg-green-700 transition">
                                       <MessageCircle size={14}/> WA Wali
                                   </button>
                               </td>
@@ -246,11 +246,11 @@ function HomeDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 h-[400px] flex flex-col">
           <div className="p-4 border-b bg-blue-50 rounded-t-2xl font-bold text-slate-800 flex gap-2"><Calendar className="text-blue-600"/> Jadwal Hari Ini</div>
-          <div className="p-4 overflow-y-auto space-y-3 flex-1">{todayClasses.length===0?<div className="text-center text-slate-400 mt-10">Tidak ada kelas.</div>:todayClasses.map(c=>(<div key={c.id} className="p-3 border rounded-xl flex justify-between items-center hover:bg-slate-50"><div><div className="font-bold">{c.subject}</div><div className="text-xs text-slate-500">{c.startTime}-{c.endTime} • <span className="font-bold text-orange-600">{c.room}</span></div></div><span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">{c.pic}</span></div>))}</div>
+          <div className="p-4 overflow-y-auto space-y-3 flex-1">{todayClasses.length===0?<div className="text-center text-slate-500 mt-10">Tidak ada kelas.</div>:todayClasses.map(c=>(<div key={c.id} className="p-3 border rounded-xl flex justify-between items-center hover:bg-slate-50 transition"><div><div className="font-bold text-slate-800">{c.subject}</div><div className="text-xs text-slate-600 font-medium">{c.startTime}-{c.endTime} • <span className="font-bold text-orange-700">{c.room}</span></div></div><span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold">{c.pic}</span></div>))}</div>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 h-[400px] flex flex-col">
           <div className="p-4 border-b bg-slate-50 rounded-t-2xl font-bold text-slate-800 flex gap-2"><UserCheck className="text-red-600"/> Log Absensi Guru</div>
-          <div className="p-4 overflow-y-auto space-y-3 flex-1">{absences.length===0?<div className="text-center text-slate-400 mt-10">Semua hadir.</div>:absences.map((ab,i)=>(<div key={i} className="p-3 border rounded-xl flex justify-between items-center"><div><div className="font-bold">{ab.teacherName}</div><div className="text-xs text-red-500 font-bold">{ab.status}</div></div></div>))}</div>
+          <div className="p-4 overflow-y-auto space-y-3 flex-1">{absences.length===0?<div className="text-center text-slate-500 mt-10">Semua hadir.</div>:absences.map((ab,i)=>(<div key={i} className="p-3 border rounded-xl flex justify-between items-center bg-white shadow-sm"><div><div className="font-bold text-slate-800">{ab.teacherName}</div><div className="text-xs text-red-600 font-bold uppercase">{ab.status}</div></div></div>))}</div>
         </div>
       </div>
     </div>
@@ -385,7 +385,7 @@ function StudentManager() {
           <td>${index + 1}</td>
           <td>
             <div style="font-weight: bold;">${s.name}</div>
-            <div style="font-size: 9px; color: #666;">${s.school} (Kls ${s.grade})</div>
+            <div style="font-size: 9px; color: #333;">${s.school} (Kls ${s.grade})</div>
           </td>
           <td>${s.level}</td>
           <td>${s.duration} Bln</td>
@@ -506,56 +506,56 @@ function StudentManager() {
   if (view === 'form') {
     return (
       <div className="max-w-4xl mx-auto animate-in slide-in-from-bottom duration-500">
-        <button onClick={() => setView('list')} className="mb-4 text-slate-500 hover:text-blue-600 flex items-center gap-2">&larr; Kembali</button>
+        <button onClick={() => setView('list')} className="mb-4 text-slate-600 hover:text-blue-600 flex items-center gap-2 font-bold">&larr; Kembali</button>
         <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
           <div className="bg-blue-600 p-6 text-white font-bold text-xl flex items-center gap-2"><PlusCircle/> Pendaftaran Baru</div>
           <form onSubmit={handleSubmit} className="p-8 space-y-8">
-            <section><h3 className="text-lg font-bold border-b pb-2 mb-4 text-slate-700">Identitas Siswa</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><input type="date" name="regDate" value={formData.regDate} onChange={handleInputChange} className="p-3 border rounded-xl" required /><input name="name" value={formData.name} onChange={handleInputChange} placeholder="Nama Lengkap" className="p-3 border rounded-xl" required /><div className="grid grid-cols-2 gap-4"><select name="level" value={formData.level} onChange={handleInputChange} className="p-3 border rounded-xl font-bold"><option value="SD">SD</option><option value="SMP">SMP</option></select><input name="grade" value={formData.grade} onChange={handleInputChange} placeholder="Kelas" className="p-3 border rounded-xl" required /></div><input name="school" value={formData.school} onChange={handleInputChange} placeholder="Sekolah" className="p-3 border rounded-xl" required /></div></section>
+            <section><h3 className="text-lg font-bold border-b pb-2 mb-4 text-slate-800">Identitas Siswa</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><input type="date" name="regDate" value={formData.regDate} onChange={handleInputChange} className="p-3 border rounded-xl font-medium text-slate-800 bg-slate-50" required /><input name="name" value={formData.name} onChange={handleInputChange} placeholder="Nama Lengkap" className="p-3 border rounded-xl font-medium text-slate-800 bg-slate-50" required /><div className="grid grid-cols-2 gap-4"><select name="level" value={formData.level} onChange={handleInputChange} className="p-3 border rounded-xl font-bold text-slate-800 bg-slate-50"><option value="SD">SD</option><option value="SMP">SMP</option></select><input name="grade" value={formData.grade} onChange={handleInputChange} placeholder="Kelas" className="p-3 border rounded-xl font-medium text-slate-800 bg-slate-50" required /></div><input name="school" value={formData.school} onChange={handleInputChange} placeholder="Sekolah" className="p-3 border rounded-xl font-medium text-slate-800 bg-slate-50" required /></div></section>
             <section>
-                <h3 className="text-lg font-bold border-b pb-2 mb-4 text-slate-700">Data Orang Tua & Kontak</h3>
+                <h3 className="text-lg font-bold border-b pb-2 mb-4 text-slate-800">Data Orang Tua & Kontak</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <input name="fatherName" value={formData.fatherName} onChange={handleInputChange} placeholder="Nama Ayah" className="w-full p-3 border rounded-xl" required />
-                        <input name="fatherJob" value={formData.fatherJob} onChange={handleInputChange} placeholder="Pekerjaan Ayah" className="w-full p-3 border rounded-xl" required />
+                        <input name="fatherName" value={formData.fatherName} onChange={handleInputChange} placeholder="Nama Ayah" className="w-full p-3 border rounded-xl font-medium text-slate-800 bg-slate-50" required />
+                        <input name="fatherJob" value={formData.fatherJob} onChange={handleInputChange} placeholder="Pekerjaan Ayah" className="w-full p-3 border rounded-xl font-medium text-slate-800 bg-slate-50" required />
                     </div>
                     <div className="space-y-2">
-                        <input name="motherName" value={formData.motherName} onChange={handleInputChange} placeholder="Nama Ibu" className="w-full p-3 border rounded-xl" required />
-                        <input name="motherJob" value={formData.motherJob} onChange={handleInputChange} placeholder="Pekerjaan Ibu" className="w-full p-3 border rounded-xl" required />
+                        <input name="motherName" value={formData.motherName} onChange={handleInputChange} placeholder="Nama Ibu" className="w-full p-3 border rounded-xl font-medium text-slate-800 bg-slate-50" required />
+                        <input name="motherJob" value={formData.motherJob} onChange={handleInputChange} placeholder="Pekerjaan Ibu" className="w-full p-3 border rounded-xl font-medium text-slate-800 bg-slate-50" required />
                     </div>
-                    <input name="emergencyContact" value={formData.emergencyContact} onChange={handleInputChange} placeholder="No HP/WA Aktif Wali" className="md:col-span-2 p-3 border rounded-xl" required />
-                    <textarea name="address" value={formData.address} onChange={handleInputChange} placeholder="Alamat Lengkap" className="md:col-span-2 p-3 border rounded-xl"></textarea>
+                    <input name="emergencyContact" value={formData.emergencyContact} onChange={handleInputChange} placeholder="No HP/WA Aktif Wali" className="md:col-span-2 p-3 border rounded-xl font-bold text-slate-800 bg-slate-50" required />
+                    <textarea name="address" value={formData.address} onChange={handleInputChange} placeholder="Alamat Lengkap" className="md:col-span-2 p-3 border rounded-xl font-medium text-slate-800 bg-slate-50"></textarea>
                 </div>
             </section>
             <section className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                <h3 className="text-lg font-bold border-b border-slate-300 pb-2 mb-4 text-slate-700">Biaya & Jadwal Pembayaran</h3>
+                <h3 className="text-lg font-bold border-b border-slate-300 pb-2 mb-4 text-slate-800">Biaya & Jadwal Pembayaran</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">
-                        <div><label className="block text-xs font-bold text-slate-500 mb-1">Durasi Paket</label><select name="duration" value={formData.duration} onChange={handleInputChange} className="w-full p-3 border rounded-xl"><option value="1">1 Bulan</option><option value="3">3 Bulan (2x Cicil)</option><option value="6">6 Bulan (3x Cicil)</option></select></div>
+                        <div><label className="block text-xs font-bold text-slate-600 mb-1 uppercase">Durasi Paket</label><select name="duration" value={formData.duration} onChange={handleInputChange} className="w-full p-3 border rounded-xl font-bold text-slate-800 bg-white"><option value="1">1 Bulan</option><option value="3">3 Bulan (2x Cicil)</option><option value="6">6 Bulan (3x Cicil)</option></select></div>
                         <div>
-                            <label className="block text-xs font-bold text-blue-600 mb-1">Biaya Pendaftaran (Rp)</label>
-                            <input type="number" name="regFee" value={formData.regFee} onChange={handleInputChange} className="w-full p-3 border-2 border-blue-100 rounded-xl font-bold text-blue-800" placeholder="Biaya Daftar" />
+                            <label className="block text-xs font-bold text-blue-600 mb-1 uppercase">Biaya Pendaftaran (Rp)</label>
+                            <input type="number" name="regFee" value={formData.regFee} onChange={handleInputChange} className="w-full p-3 border-2 border-blue-200 rounded-xl font-bold text-blue-900 bg-white" placeholder="Biaya Daftar" />
                         </div>
-                        <div><label className="block text-xs font-bold text-slate-500 mb-1">Diskon Paket (%)</label><input type="number" name="discount" value={formData.discount} onChange={handleInputChange} className="w-full p-3 border rounded-xl" /></div>
+                        <div><label className="block text-xs font-bold text-slate-600 mb-1 uppercase">Diskon Paket (%)</label><input type="number" name="discount" value={formData.discount} onChange={handleInputChange} className="w-full p-3 border rounded-xl font-bold text-slate-800" /></div>
                         {calculation.installmentCount > 0 && (
-                            <div className="pt-4 border-t space-y-3">
-                                <label className="block text-xs font-bold text-orange-600 uppercase tracking-widest">Atur Jadwal Cicilan (Custom)</label>
+                            <div className="pt-4 border-t border-slate-300 space-y-3">
+                                <label className="block text-xs font-bold text-orange-700 uppercase tracking-widest">Atur Jadwal Cicilan (Custom)</label>
                                 {customDates.map((date, i) => (
                                     <div key={i} className="flex items-center gap-2">
-                                        <span className="text-[10px] font-bold text-slate-400 w-16">KE-{i+1}:</span>
-                                        <input type="date" value={date} onChange={(e) => handleCustomDateChange(i, e.target.value)} className="flex-1 p-2 border rounded-lg text-sm font-bold text-slate-700" />
+                                        <span className="text-[10px] font-bold text-slate-600 w-16">KE-{i+1}:</span>
+                                        <input type="date" value={date} onChange={(e) => handleCustomDateChange(i, e.target.value)} className="flex-1 p-2 border border-slate-300 rounded-lg text-sm font-bold text-slate-800 bg-white" />
                                     </div>
                                 ))}
                             </div>
                         )}
                     </div>
                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                        <div className="flex justify-between text-sm"><span>Harga Paket:</span> <span className="font-bold">Rp {formatRupiah(calculation.finalPrice)}</span></div>
-                        <div className="flex justify-between text-sm"><span>Biaya Daftar:</span> <span className="font-bold text-blue-600">+ Rp {formatRupiah(formData.regFee)}</span></div>
-                        <div className="flex justify-between text-lg font-bold border-t pt-2"><span>Total Tagihan:</span> <span className="text-indigo-600">Rp {formatRupiah(calculation.totalBill)}</span></div>
+                        <div className="flex justify-between text-sm text-slate-700 font-medium"><span>Harga Paket:</span> <span className="font-bold text-slate-900">Rp {formatRupiah(calculation.finalPrice)}</span></div>
+                        <div className="flex justify-between text-sm text-slate-700 font-medium"><span>Biaya Daftar:</span> <span className="font-bold text-blue-700">+ Rp {formatRupiah(formData.regFee)}</span></div>
+                        <div className="flex justify-between text-lg font-bold border-t border-slate-100 pt-2 text-slate-900"><span>Total Tagihan:</span> <span className="text-indigo-700">Rp {formatRupiah(calculation.totalBill)}</span></div>
                         <div className="pt-4 space-y-3">
-                            <label className="block text-xs font-bold text-slate-500 uppercase">Uang Diterima Sekarang (Rp)</label>
-                            <input type="number" name="receivedAmount" value={formData.receivedAmount} onChange={handleInputChange} className="w-full p-4 border-2 border-green-200 rounded-2xl text-2xl font-bold text-green-700 focus:border-green-600 outline-none" placeholder="0" />
-                            <select name="paymentMethod" value={formData.paymentMethod} onChange={handleInputChange} className="w-full p-3 border rounded-xl bg-slate-50 font-bold"><option value="Cash">💵 Cash / Tunai</option><option value="Transfer">💳 Transfer Bank</option></select>
+                            <label className="block text-xs font-bold text-slate-600 uppercase">Uang Diterima Sekarang (Rp)</label>
+                            <input type="number" name="receivedAmount" value={formData.receivedAmount} onChange={handleInputChange} className="w-full p-4 border-2 border-green-200 rounded-2xl text-2xl font-bold text-green-800 focus:border-green-600 outline-none" placeholder="0" />
+                            <select name="paymentMethod" value={formData.paymentMethod} onChange={handleInputChange} className="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 font-bold text-slate-800"><option value="Cash">💵 Tunai / Cash</option><option value="Transfer">💳 Bank / Transfer</option></select>
                         </div>
                     </div>
                 </div>
@@ -569,53 +569,53 @@ function StudentManager() {
 
   return (
     <div className="space-y-6 w-full animate-in fade-in duration-500">
-      <ConfirmModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} onConfirm={executeDeleteStudent} title="Hapus Siswa?" message="Data tidak bisa dikembalikan." isDanger={true} />
+      <ConfirmModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} onConfirm={executeDeleteStudent} title="Hapus Siswa?" message="Data tidak bisa dikembalikan. Data siswa ini akan dihapus secara permanen dari sistem." isDanger={true} />
       <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-          <div><h3 className="text-2xl font-bold">Database Siswa</h3><p className="text-xs text-slate-400">Total: {students.length} Siswa terdaftar</p></div>
+          <div><h3 className="text-2xl font-bold text-slate-800">Database Siswa</h3><p className="text-xs text-slate-500 font-medium">Total: {students.length} Siswa terdaftar</p></div>
           <div className="flex gap-2">
-            <button title="Download CSV" onClick={downloadCSV} className="p-3 bg-slate-100 rounded-xl hover:bg-slate-200 text-slate-600 transition"><FileSpreadsheet size={20}/></button>
-            <button title="Cetak Seluruh Database (PDF)" onClick={printAllStudentsPDF} className="p-3 bg-indigo-50 rounded-xl hover:bg-indigo-100 text-indigo-600 transition"><FileText size={20}/></button>
+            <button title="Download CSV" onClick={downloadCSV} className="p-3 bg-slate-100 rounded-xl hover:bg-slate-200 text-slate-700 transition"><FileSpreadsheet size={20}/></button>
+            <button title="Cetak Seluruh Database (PDF)" onClick={printAllStudentsPDF} className="p-3 bg-indigo-50 rounded-xl hover:bg-indigo-100 text-indigo-700 transition"><FileText size={20}/></button>
             <button onClick={() => setView('form')} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg hover:bg-blue-700 transition"><PlusCircle size={20}/> Tambah Baru</button>
           </div>
       </div>
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[800px]">
-              <thead className="bg-slate-50 text-xs uppercase font-bold text-slate-500"><tr className="border-b"><th className="p-4">Siswa / Sekolah</th><th className="p-4">Paket</th><th className="p-4">Pendaftaran</th><th className="p-4 text-center">Status Keuangan</th><th className="p-4 text-right">Aksi</th></tr></thead>
+              <thead className="bg-slate-50 text-xs uppercase font-bold text-slate-600"><tr className="border-b border-slate-200"><th className="p-4 text-slate-600">Siswa / Sekolah</th><th className="p-4 text-slate-600">Paket</th><th className="p-4 text-slate-600">Pendaftaran</th><th className="p-4 text-center text-slate-600">Status Keuangan</th><th className="p-4 text-right text-slate-600">Aksi</th></tr></thead>
               <tbody>
                   {students.map(s => (<React.Fragment key={s.id}>
-                    <tr onClick={() => setExpandedStudentId(expandedStudentId === s.id ? null : s.id)} className="border-b hover:bg-slate-50 cursor-pointer transition">
-                        <td className="p-4"><div className="font-bold text-slate-700">{s.name}</div><div className="text-[10px] text-slate-400">{s.school} (Kls {s.grade})</div></td>
-                        <td className="p-4 text-sm font-medium">{s.level} - {s.duration} Bulan</td>
-                        <td className="p-4"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${s.regFeePaid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>DAFTAR: {formatRupiah(s.regFee || 0)}</span></td>
-                        <td className="p-4 text-center">{s.installments?.every(i => i.status === 'paid') ? <span className="bg-green-500 text-white px-2 py-1 rounded-full text-[10px] font-bold">LUNAS</span> : <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-[10px] font-bold">CICILAN</span>}</td>
-                        <td className="p-4 text-right"><button onClick={(e) => { e.stopPropagation(); setStudentToDelete(s); setIsDeleteModalOpen(true); }} className="p-2 text-slate-300 hover:text-red-500"><Trash2 size={18}/></button></td>
+                    <tr onClick={() => setExpandedStudentId(expandedStudentId === s.id ? null : s.id)} className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition">
+                        <td className="p-4"><div className="font-bold text-slate-800">{s.name}</div><div className="text-[10px] text-slate-600 font-bold uppercase">{s.school} (Kls {s.grade})</div></td>
+                        <td className="p-4 text-sm font-bold text-slate-700 uppercase">{s.level} - {s.duration} Bulan</td>
+                        <td className="p-4"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${s.regFeePaid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>DAFTAR: {formatRupiah(s.regFee || 0)}</span></td>
+                        <td className="p-4 text-center">{s.installments?.every(i => i.status === 'paid') ? <span className="bg-green-600 text-white px-2 py-1 rounded-full text-[10px] font-bold uppercase">LUNAS</span> : <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-[10px] font-bold uppercase">CICILAN</span>}</td>
+                        <td className="p-4 text-right"><button onClick={(e) => { e.stopPropagation(); setStudentToDelete(s); setIsDeleteModalOpen(true); }} className="p-2 text-slate-400 hover:text-red-600 transition"><Trash2 size={18}/></button></td>
                     </tr>
                     {expandedStudentId === s.id && (
                         <tr className="bg-slate-50"><td colSpan="5" className="p-4">
-                            <div className="bg-white border rounded-xl p-4 shadow-sm space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <h4 className="font-bold text-blue-800 flex items-center gap-2"><CreditCard size={16}/> Kartu SPP Digital</h4>
-                                    <button onClick={() => printStudentPDF(s)} className="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-slate-700 transition"><Printer size={14}/> Cetak PDF / Kartu Siswa</button>
+                            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
+                                <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <h4 className="font-bold text-blue-900 flex items-center gap-2"><CreditCard size={16}/> Kartu SPP Digital</h4>
+                                    <button onClick={() => printStudentPDF(s)} className="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-slate-900 transition"><Printer size={14}/> Cetak Kartu Siswa</button>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className={`p-4 rounded-xl border flex justify-between items-center ${s.regFeePaid ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                                        <div><div className="text-xs font-bold text-slate-500 uppercase">Biaya Pendaftaran</div><div className="font-bold">Rp {formatRupiah(s.regFee || 0)}</div></div>
-                                        {s.regFeePaid ? <span className="text-green-600 font-bold text-xs">LUNAS</span> : <select onChange={(e) => {
+                                        <div><div className="text-xs font-bold text-slate-600 uppercase">Biaya Pendaftaran</div><div className="font-bold text-slate-900">Rp {formatRupiah(s.regFee || 0)}</div></div>
+                                        {s.regFeePaid ? <span className="text-green-700 font-bold text-xs uppercase tracking-widest">LUNAS</span> : <select onChange={(e) => {
                                             if(e.target.value) {
                                                 updateDoc(getDocRef('gemilang_students', s.id), { regFeePaid: true });
                                                 addDoc(getCollection('gemilang_finance'), { type: 'in', amount: s.regFee, description: `Pendaftaran ${s.name}`, method: e.target.value, createdAt: new Date().toISOString() });
                                                 showToast("Pendaftaran dilunasi!", "success");
                                             }
-                                        }} className="text-xs p-1 border rounded bg-white"><option value="">Bayar Daftar...</option><option value="Cash">Cash</option><option value="Transfer">Bank</option></select>}
+                                        }} className="text-xs p-1 border border-slate-300 rounded bg-white text-slate-800 font-bold"><option value="">Bayar Daftar...</option><option value="Cash">Cash</option><option value="Transfer">Bank</option></select>}
                                     </div>
                                     {s.installments?.map((ins, idx) => (
-                                        <div key={idx} className="p-4 rounded-xl border bg-white flex justify-between items-center">
-                                            <div><div className="text-[10px] font-bold text-slate-400">CICILAN {ins.id} - {ins.dueDate}</div><div className="font-bold">Rp {formatRupiah(ins.amount)}</div></div>
-                                            {ins.status === 'paid' ? <CheckCircle className="text-green-500" size={20}/> : <select onChange={(e) => handlePayInstallment(s, idx, e.target.value)} className="text-xs p-1 border rounded bg-slate-50"><option value="">Bayar...</option><option value="Cash">Cash</option><option value="Transfer">Bank</option></select>}
+                                        <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-white flex justify-between items-center">
+                                            <div><div className="text-[10px] font-bold text-slate-600 uppercase">CICILAN {ins.id} - {ins.dueDate}</div><div className="font-bold text-slate-900">Rp {formatRupiah(ins.amount)}</div></div>
+                                            {ins.status === 'paid' ? <CheckCircle className="text-green-600" size={20}/> : <select onChange={(e) => handlePayInstallment(s, idx, e.target.value)} className="text-xs p-1 border border-slate-300 rounded bg-slate-50 text-slate-800 font-bold"><option value="">Bayar...</option><option value="Cash">Cash</option><option value="Transfer">Bank</option></select>}
                                         </div>
                                     ))}
                                 </div>
-                                <p className="text-[10px] text-slate-400 italic font-medium">*Setelah memilih metode bayar, status warning cicilan di dashboard akan otomatis terhapus.</p>
+                                <p className="text-[10px] text-slate-500 italic font-bold">*Status penagihan di dashboard akan diperbarui otomatis setelah memilih metode bayar.</p>
                             </div>
                         </td></tr>
                     )}
@@ -647,11 +647,11 @@ function TeacherManager() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full animate-in fade-in duration-500">
       <div className="space-y-8">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200"><h3 className="font-bold text-lg mb-4 flex items-center gap-2"><Key className="text-orange-600"/> Setup Kode Absen</h3><div className="p-4 bg-orange-50 rounded-xl mb-4 text-center border border-orange-200 tracking-widest font-mono text-3xl font-bold text-orange-800">{activeCode}</div><div className="flex gap-2"><input value={attendanceCode} onChange={e => setAttendanceCode(e.target.value.toUpperCase())} className="flex-1 p-3 border rounded-xl uppercase text-center font-bold" placeholder="Kode Baru" maxLength={4} /><button onClick={handleSetCode} className="bg-orange-600 text-white px-4 rounded-xl font-bold hover:bg-orange-700">Set</button></div></div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200"><h3 className="font-bold text-lg mb-4 flex items-center gap-2"><GraduationCap className="text-purple-600"/> Tambah Guru</h3><form onSubmit={handleAdd} className="space-y-4"><input value={name} onChange={e => setName(e.target.value)} className="w-full p-3 border rounded-xl outline-none" placeholder="Nama Guru" /><input value={subject} onChange={e => setSubject(e.target.value)} className="w-full p-3 border rounded-xl outline-none" placeholder="Bidang Studi" /><button className="w-full bg-purple-600 text-white py-3 rounded-xl font-bold hover:bg-purple-700 shadow-lg">Simpan</button></form></div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200"><h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-slate-800"><Key className="text-orange-600"/> Setup Kode Absen</h3><div className="p-4 bg-orange-50 rounded-xl mb-4 text-center border border-orange-200 tracking-widest font-mono text-3xl font-bold text-orange-900">{activeCode}</div><div className="flex gap-2"><input value={attendanceCode} onChange={e => setAttendanceCode(e.target.value.toUpperCase())} className="flex-1 p-3 border border-slate-300 rounded-xl uppercase text-center font-bold text-slate-900 bg-slate-50" placeholder="Kode Baru" maxLength={4} /><button onClick={handleSetCode} className="bg-orange-600 text-white px-4 rounded-xl font-bold hover:bg-orange-700 transition">Set</button></div></div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200"><h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-slate-800"><GraduationCap className="text-purple-600"/> Tambah Guru</h3><form onSubmit={handleAdd} className="space-y-4"><input value={name} onChange={e => setName(e.target.value)} className="w-full p-3 border border-slate-300 rounded-xl outline-none font-medium text-slate-800 bg-slate-50" placeholder="Nama Guru" /><input value={subject} onChange={e => setSubject(e.target.value)} className="w-full p-3 border border-slate-300 rounded-xl outline-none font-medium text-slate-800 bg-slate-50" placeholder="Bidang Studi" /><button className="w-full bg-purple-600 text-white py-3 rounded-xl font-bold hover:bg-purple-700 shadow-lg transition">Simpan</button></form></div>
       </div>
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:h-[600px] flex flex-col"><h3 className="font-bold text-lg mb-4">Daftar Pengajar</h3><div className="space-y-3 overflow-y-auto flex-1 pr-2">{teachers.map(t => (<div key={t.id} className="border p-3 rounded-xl flex justify-between items-center bg-white"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold uppercase">{t.name.charAt(0)}</div><div><h4 className="font-bold text-slate-700 text-sm">{t.name}</h4><p className="text-[10px] text-slate-400">{t.subject}</p></div></div><button onClick={() => deleteDoc(getDocRef('gemilang_teachers', t.id))} className="text-slate-300 hover:text-red-500 transition"><Trash2 size={16} /></button></div>))}</div></div>
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:h-[600px] flex flex-col"><h3 className="font-bold text-lg mb-4 flex items-center gap-2"><Clock className="text-blue-600"/> Realtime Log</h3><div className="space-y-3 overflow-y-auto flex-1 pr-2">{logs.map(log => (<div key={log.id} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100"><div><div className="font-bold text-slate-700 text-xs">{log.teacherName}</div><div className="text-[10px] text-slate-400">{log.date}</div></div><div className="text-right font-mono font-bold text-blue-600 text-xs">{log.time}</div></div>))}</div></div>
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:h-[600px] flex flex-col"><h3 className="font-bold text-lg mb-4 text-slate-800 border-b pb-2">Daftar Pengajar</h3><div className="space-y-3 overflow-y-auto flex-1 pr-2 mt-2">{teachers.map(t => (<div key={t.id} className="border border-slate-100 p-3 rounded-xl flex justify-between items-center bg-white shadow-sm transition hover:border-slate-300"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 font-bold uppercase">{t.name.charAt(0)}</div><div><h4 className="font-bold text-slate-800 text-sm">{t.name}</h4><p className="text-[10px] text-slate-600 font-bold uppercase tracking-tight">{t.subject}</p></div></div><button onClick={() => deleteDoc(getDocRef('gemilang_teachers', t.id))} className="text-slate-400 hover:text-red-600 transition"><Trash2 size={16} /></button></div>))}</div></div>
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:h-[600px] flex flex-col"><h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-slate-800 border-b pb-2"><Clock className="text-blue-600"/> Realtime Log</h3><div className="space-y-3 overflow-y-auto flex-1 pr-2 mt-2">{logs.map(log => (<div key={log.id} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200"><div><div className="font-bold text-slate-800 text-xs">{log.teacherName}</div><div className="text-[10px] text-slate-600 font-bold uppercase">{log.date}</div></div><div className="text-right font-mono font-bold text-blue-700 text-xs">{log.time}</div></div>))}</div></div>
     </div>
   );
 }
@@ -723,29 +723,29 @@ function ClassManager() {
              {isManageStudentOpen && (
                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
                      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh]">
-                         <div className="p-6 border-b flex justify-between items-center"><div><h3 className="font-bold text-lg">Kelola Siswa Kelas</h3><p className="text-xs text-slate-500">{selectedClassForStudents?.subject}</p></div><button onClick={() => setIsManageStudentOpen(false)} className="p-2 hover:bg-slate-100 rounded-full"><X size={20}/></button></div>
-                         <div className="p-4 overflow-y-auto flex-1 bg-slate-50"><div className="grid grid-cols-1 md:grid-cols-2 gap-3">{students.map(s => { const isSelected = tempSelectedStudents.includes(s.id); return ( <div key={s.id} onClick={() => { if(isSelected) setTempSelectedStudents(p => p.filter(id => id !== s.id)); else setTempSelectedStudents(p => [...p, s.id]); }} className={`p-3 rounded-xl border flex items-center gap-3 cursor-pointer transition ${isSelected ? 'bg-blue-100 border-blue-400' : 'bg-white border-slate-200 hover:bg-slate-100'}`}><div className={`w-5 h-5 rounded border flex items-center justify-center ${isSelected ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-400'}`}>{isSelected && <CheckCircle size={14}/>}</div><div><div className="font-bold text-sm">{s.name}</div><div className="text-[10px] text-slate-400 tracking-wider">KLS {s.grade}</div></div></div> ) })}</div></div>
-                         <div className="p-4 border-t bg-white flex justify-between items-center"><span className="text-sm font-bold text-slate-600">{tempSelectedStudents.length} Terpilih</span><button onClick={async () => { await updateDoc(getDocRef('gemilang_classes', selectedClassForStudents.id), { enrolledStudents: tempSelectedStudents }); setIsManageStudentOpen(false); showToast("Siswa diperbarui", "success"); }} className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold">Simpan</button></div>
+                         <div className="p-6 border-b flex justify-between items-center"><div><h3 className="font-bold text-lg text-slate-800">Kelola Siswa Kelas</h3><p className="text-xs text-slate-600 font-bold uppercase">{selectedClassForStudents?.subject}</p></div><button onClick={() => setIsManageStudentOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition"><X size={20}/></button></div>
+                         <div className="p-4 overflow-y-auto flex-1 bg-slate-50"><div className="grid grid-cols-1 md:grid-cols-2 gap-3">{students.map(s => { const isSelected = tempSelectedStudents.includes(s.id); return ( <div key={s.id} onClick={() => { if(isSelected) setTempSelectedStudents(p => p.filter(id => id !== s.id)); else setTempSelectedStudents(p => [...p, s.id]); }} className={`p-3 rounded-xl border flex items-center gap-3 cursor-pointer transition ${isSelected ? 'bg-blue-100 border-blue-400' : 'bg-white border-slate-200 hover:bg-slate-100'}`}><div className={`w-5 h-5 rounded border flex items-center justify-center ${isSelected ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-400 bg-white'}`}>{isSelected && <CheckCircle size={14}/>}</div><div><div className="font-bold text-sm text-slate-800">{s.name}</div><div className="text-[10px] text-slate-600 font-bold tracking-wider uppercase">KLS {s.grade}</div></div></div> ) })}</div></div>
+                         <div className="p-4 border-t bg-white flex justify-between items-center"><span className="text-sm font-bold text-slate-800">{tempSelectedStudents.length} Siswa Terpilih</span><button onClick={async () => { await updateDoc(getDocRef('gemilang_classes', selectedClassForStudents.id), { enrolledStudents: tempSelectedStudents }); setIsManageStudentOpen(false); showToast("Siswa diperbarui", "success"); }} className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold transition hover:bg-blue-700">Simpan</button></div>
                      </div>
                  </div>
              )}
-             <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200"><div><h3 className="text-2xl font-bold">Ruangan & Jadwal</h3><p className="text-xs text-slate-400 tracking-widest uppercase">Room Management</p></div><button onClick={() => setView(view === 'list' ? 'form' : 'list')} className={`px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition ${view === 'list' ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700'}`}>{view === 'list' ? <><PlusCircle size={20}/> Tambah Jadwal</> : 'Batal'}</button></div>
+             <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200"><div><h3 className="text-2xl font-bold text-slate-800">Ruangan & Jadwal</h3><p className="text-xs text-slate-500 font-bold tracking-widest uppercase">Room Management</p></div><button onClick={() => setView(view === 'list' ? 'form' : 'list')} className={`px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition ${view === 'list' ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-800'}`}>{view === 'list' ? <><PlusCircle size={20}/> Tambah Jadwal</> : 'Batal'}</button></div>
              {view === 'form' && (
-                 <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-blue-100">
+                 <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-blue-50">
                      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="md:col-span-2 p-4 bg-blue-50 rounded-xl border border-blue-200 flex gap-4"><button type="button" onClick={() => setForm({...form, type: 'Regular'})} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${form.type === 'Regular' ? 'bg-blue-600 text-white shadow' : 'bg-white border'}`}>Regular (Mingguan)</button><button type="button" onClick={() => setForm({...form, type: 'Booking'})} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${form.type === 'Booking' ? 'bg-purple-600 text-white shadow' : 'bg-white border'}`}>Booking (Sekali)</button></div>
-                        <div><label className="block text-xs font-bold text-slate-500 mb-1">{form.type === 'Regular' ? 'HARI' : 'TANGGAL'}</label>{form.type === 'Regular' ? (<select value={form.day} onChange={e => setForm({...form, day: e.target.value})} className="w-full p-3 border rounded-xl bg-slate-50">{DAYS.map(d => <option key={d} value={d}>{d}</option>)}</select>) : (<input type="date" value={form.specificDate} onChange={e => setForm({...form, specificDate: e.target.value})} className="w-full p-3 border rounded-xl" required />)}</div>
-                        <div><label className="block text-xs font-bold text-slate-500 mb-1">RUANGAN</label><select value={form.room} onChange={e => setForm({...form, room: e.target.value})} className="w-full p-3 border rounded-xl font-bold">{ROOMS.map(r => <option key={r} value={r}>{r}</option>)}</select></div>
-                        <div className="flex gap-4"><div className="flex-1"><label className="block text-xs font-bold text-slate-500 mb-1">MULAI</label><input type="time" value={form.startTime} onChange={e => setForm({...form, startTime: e.target.value})} className="w-full p-3 border rounded-xl" required /></div><div className="flex-1"><label className="block text-xs font-bold text-slate-500 mb-1">SELESAI</label><input type="time" value={form.endTime} onChange={e => setForm({...form, endTime: e.target.value})} className="w-full p-3 border rounded-xl" required /></div></div>
-                        <div><label className="block text-xs font-bold text-slate-500 mb-1">MATA PELAJARAN</label><input value={form.subject} onChange={e => setForm({...form, subject: e.target.value})} placeholder="Matematika / English" className="w-full p-3 border rounded-xl" required /></div>
-                        <div className="md:col-span-2"><label className="block text-xs font-bold text-slate-500 mb-1">GURU (PIC)</label><select value={form.pic} onChange={e => setForm({...form, pic: e.target.value})} className="w-full p-3 border rounded-xl" required><option value="">-- Pilih Guru --</option>{teachers.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
-                        <button className="md:col-span-2 w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition">SIMPAN JADWAL</button>
+                        <div className="md:col-span-2 p-4 bg-blue-50 rounded-xl border border-blue-100 flex gap-4"><button type="button" onClick={() => setForm({...form, type: 'Regular'})} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${form.type === 'Regular' ? 'bg-blue-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600'}`}>Regular (Mingguan)</button><button type="button" onClick={() => setForm({...form, type: 'Booking'})} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${form.type === 'Booking' ? 'bg-purple-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600'}`}>Booking (Sekali)</button></div>
+                        <div><label className="block text-xs font-bold text-slate-600 mb-1 uppercase">HARI / TANGGAL</label>{form.type === 'Regular' ? (<select value={form.day} onChange={e => setForm({...form, day: e.target.value})} className="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-slate-800">{DAYS.map(d => <option key={d} value={d}>{d}</option>)}</select>) : (<input type="date" value={form.specificDate} onChange={e => setForm({...form, specificDate: e.target.value})} className="w-full p-3 border border-slate-300 rounded-xl bg-slate-50 font-bold text-slate-800" required />)}</div>
+                        <div><label className="block text-xs font-bold text-slate-600 mb-1 uppercase">RUANGAN</label><select value={form.room} onChange={e => setForm({...form, room: e.target.value})} className="w-full p-3 border border-slate-300 rounded-xl font-bold text-slate-800 bg-slate-50">{ROOMS.map(r => <option key={r} value={r}>{r}</option>)}</select></div>
+                        <div className="flex gap-4"><div className="flex-1"><label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-tight">MULAI</label><input type="time" value={form.startTime} onChange={e => setForm({...form, startTime: e.target.value})} className="w-full p-3 border border-slate-300 rounded-xl font-bold text-slate-800 bg-slate-50" required /></div><div className="flex-1"><label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-tight">SELESAI</label><input type="time" value={form.endTime} onChange={e => setForm({...form, endTime: e.target.value})} className="w-full p-3 border border-slate-300 rounded-xl font-bold text-slate-800 bg-slate-50" required /></div></div>
+                        <div><label className="block text-xs font-bold text-slate-600 mb-1 uppercase">MATA PELAJARAN</label><input value={form.subject} onChange={e => setForm({...form, subject: e.target.value})} placeholder="Matematika / English" className="w-full p-3 border border-slate-300 rounded-xl font-bold text-slate-800 bg-slate-50" required /></div>
+                        <div className="md:col-span-2"><label className="block text-xs font-bold text-slate-600 mb-1 uppercase">GURU (PIC)</label><select value={form.pic} onChange={e => setForm({...form, pic: e.target.value})} className="w-full p-3 border border-slate-300 rounded-xl font-bold text-slate-800 bg-slate-50" required><option value="">-- Pilih Guru --</option>{teachers.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
+                        <button className="md:col-span-2 w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition transform active:scale-95">SIMPAN JADWAL KELAS</button>
                      </form>
                  </div>
              )}
              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="p-4 border-b bg-slate-50 flex justify-between items-center"><h3 className="font-bold text-slate-700 flex items-center gap-2"><Map size={18} className="text-blue-600"/> Ketersediaan Ruangan</h3><div className="bg-white p-2 border rounded-lg shadow-sm flex items-center gap-2 text-xs"><span className="text-slate-400 font-bold">TANGGAL:</span><input type="date" value={viewDate} onChange={(e) => setViewDate(e.target.value)} className="font-bold outline-none" /></div></div>
-                <div className="overflow-x-auto p-4"><div className="grid grid-cols-5 gap-4 min-w-[800px]">{ROOMS.map(room => (<div key={room} className="bg-slate-50 rounded-xl border border-slate-200 flex flex-col h-[500px]"><div className="p-3 bg-slate-800 text-white text-center font-bold text-[10px] rounded-t-xl uppercase tracking-widest">{room}</div><div className="flex-1 p-2 space-y-2 overflow-y-auto">{matrixData.filter(c => c.room === room).sort((a,b) => a.startTime.localeCompare(b.startTime)).map(c => (<div key={c.id} className={`p-3 rounded-lg border shadow-sm group hover:scale-[1.02] transition duration-200 ${c.type === 'Booking' ? 'bg-purple-100 border-purple-300' : 'bg-blue-100 border-blue-300'}`}><div className="flex justify-between items-start mb-1"><span className="text-[10px] font-bold bg-white/50 px-1 rounded">{c.startTime}</span><div className="flex gap-1"><button onClick={() => { setSelectedClassForStudents(c); setTempSelectedStudents(c.enrolledStudents || []); setIsManageStudentOpen(true); }} className="text-blue-500 bg-white p-1 rounded hover:bg-blue-50"><Users size={10}/></button><button onClick={() => { setDeleteId(c.id); setIsDeleteModalOpen(true); }} className="text-red-500 bg-white p-1 rounded hover:bg-red-50"><Trash2 size={10}/></button></div></div><div className="font-bold text-[11px] text-slate-800 leading-tight">{c.subject}</div><div className="text-[10px] text-slate-500 mt-1 flex items-center gap-1"><User size={8}/> {c.pic}</div></div>))}{matrixData.filter(c => c.room === room).length === 0 && (<div className="h-full flex items-center justify-center text-slate-300 text-[10px] italic">Kosong</div>)}</div></div>))}</div></div>
+                <div className="p-4 border-b bg-slate-50 flex justify-between items-center"><h3 className="font-bold text-slate-800 flex items-center gap-2"><Map size={18} className="text-blue-600"/> Ketersediaan Ruangan</h3><div className="bg-white p-2 border border-slate-300 rounded-lg shadow-sm flex items-center gap-2 text-xs"><span className="text-slate-600 font-bold">TANGGAL:</span><input type="date" value={viewDate} onChange={(e) => setViewDate(e.target.value)} className="font-bold outline-none text-slate-800" /></div></div>
+                <div className="overflow-x-auto p-4"><div className="grid grid-cols-5 gap-4 min-w-[800px]">{ROOMS.map(room => (<div key={room} className="bg-slate-50 rounded-xl border border-slate-200 flex flex-col h-[500px]"><div className="p-3 bg-slate-800 text-white text-center font-bold text-[10px] rounded-t-xl uppercase tracking-widest">{room}</div><div className="flex-1 p-2 space-y-2 overflow-y-auto">{matrixData.filter(c => c.room === room).sort((a,b) => a.startTime.localeCompare(b.startTime)).map(c => (<div key={c.id} className={`p-3 rounded-lg border shadow-sm group hover:scale-[1.02] transition duration-200 ${c.type === 'Booking' ? 'bg-purple-100 border-purple-300' : 'bg-blue-100 border-blue-300'}`}><div className="flex justify-between items-start mb-1"><span className="text-[10px] font-bold bg-white/60 px-1 rounded text-slate-900">{c.startTime}</span><div className="flex gap-1"><button onClick={() => { setSelectedClassForStudents(c); setTempSelectedStudents(c.enrolledStudents || []); setIsManageStudentOpen(true); }} className="text-blue-600 bg-white p-1 rounded hover:bg-blue-50 transition border border-blue-100"><Users size={10}/></button><button onClick={() => { setDeleteId(c.id); setIsDeleteModalOpen(true); }} className="text-red-600 bg-white p-1 rounded hover:bg-red-50 transition border border-red-100"><Trash2 size={10}/></button></div></div><div className="font-bold text-[11px] text-slate-900 leading-tight uppercase">{c.subject}</div><div className="text-[10px] text-slate-700 font-bold mt-1 flex items-center gap-1 uppercase"><User size={8}/> {c.pic}</div></div>))}{matrixData.filter(c => c.room === room).length === 0 && (<div className="h-full flex items-center justify-center text-slate-400 text-[10px] italic font-medium uppercase">Ruang Kosong</div>)}</div></div>))}</div></div>
              </div>
         </div>
     );
@@ -787,30 +787,30 @@ function FinanceManager() {
       <ConfirmModal isOpen={isTxDeleteModalOpen} onClose={() => setIsTxDeleteModalOpen(false)} onConfirm={executeDeleteTx} title="Hapus Transaksi?" message="Data mutasi ini akan dihapus permanen dari sistem." isDanger={true} />
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-slate-800 text-white p-6 rounded-2xl shadow-lg border-b-4 border-blue-500"><p className="text-slate-400 text-[10px] uppercase font-bold tracking-widest mb-1">Total Saldo</p><h3 className="text-3xl font-bold">Rp {formatRupiah((cashIn + bankIn) - (cashOut + bankOut))}</h3></div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-blue-100"><div className="flex justify-between items-start mb-2"><p className="text-blue-600 text-[10px] uppercase font-bold tracking-widest">Saldo Brangkas</p><Wallet className="text-blue-500" size={18}/></div><h3 className="text-2xl font-bold text-slate-800">Rp {formatRupiah(cashIn - cashOut)}</h3></div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-purple-100"><div className="flex justify-between items-start mb-2"><p className="text-purple-600 text-[10px] uppercase font-bold tracking-widest">Saldo Bank</p><Landmark className="text-purple-500" size={18}/></div><h3 className="text-2xl font-bold text-slate-800">Rp {formatRupiah(bankIn - bankOut)}</h3></div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100"><p className="text-orange-500 text-[10px] uppercase font-bold tracking-widest mb-1">Piutang</p><h3 className="text-2xl font-bold text-slate-800">Rp {formatRupiah(totalReceivable)}</h3></div>
+        <div className="bg-slate-800 text-white p-6 rounded-2xl shadow-lg border-b-4 border-blue-500"><p className="text-slate-300 text-[10px] uppercase font-bold tracking-widest mb-1">Total Saldo</p><h3 className="text-3xl font-bold">Rp {formatRupiah((cashIn + bankIn) - (cashOut + bankOut))}</h3></div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-blue-100"><div className="flex justify-between items-start mb-2"><p className="text-blue-700 text-[10px] uppercase font-bold tracking-widest">Saldo Brangkas</p><Wallet className="text-blue-500" size={18}/></div><h3 className="text-2xl font-bold text-slate-800">Rp {formatRupiah(cashIn - cashOut)}</h3></div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-purple-100"><div className="flex justify-between items-start mb-2"><p className="text-purple-700 text-[10px] uppercase font-bold tracking-widest">Saldo Bank</p><Landmark className="text-purple-500" size={18}/></div><h3 className="text-2xl font-bold text-slate-800">Rp {formatRupiah(bankIn - bankOut)}</h3></div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100"><p className="text-orange-700 text-[10px] uppercase font-bold tracking-widest mb-1">Piutang</p><h3 className="text-2xl font-bold text-slate-800">Rp {formatRupiah(totalReceivable)}</h3></div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="bg-white p-6 rounded-2xl shadow-sm h-fit border border-slate-200">
-            <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><DollarSign className="text-blue-600"/> Catat Transaksi</h3>
+            <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-slate-800"><DollarSign className="text-blue-600"/> Catat Transaksi</h3>
             <form onSubmit={async (e) => { e.preventDefault(); if(!amount || !desc) return; await addDoc(getCollection('gemilang_finance'), { type, amount: parseInt(amount), description: desc, method, createdAt: new Date().toISOString() }); setAmount(''); setDesc(''); showToast("Tersimpan!", "success"); }} className="space-y-4">
-                <div className="flex gap-2 p-1 bg-slate-100 rounded-xl"><button type="button" onClick={() => setType('in')} className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${type === 'in' ? 'bg-white shadow text-green-600' : 'text-slate-500'}`}>Masuk</button><button type="button" onClick={() => setType('out')} className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${type === 'out' ? 'bg-white shadow text-red-600' : 'text-slate-500'}`}>Keluar</button></div>
-                <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Nominal (Rp)" className="w-full p-3 border rounded-xl outline-none" required /><input type="text" value={desc} onChange={e => setDesc(e.target.value)} placeholder="Keterangan" className="w-full p-3 border rounded-xl outline-none" required />
-                <select value={method} onChange={e => setMethod(e.target.value)} className="w-full p-3 border rounded-xl font-bold text-slate-700 bg-slate-50"><option value="Cash">💵 Tunai / Cash</option><option value="Transfer">💳 Bank / Transfer</option></select>
-                <button className={`w-full py-4 rounded-xl font-bold text-white shadow-lg ${type === 'in' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}>SIMPAN</button>
+                <div className="flex gap-2 p-1 bg-slate-100 rounded-xl"><button type="button" onClick={() => setType('in')} className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${type === 'in' ? 'bg-white shadow-md text-green-700' : 'text-slate-500'}`}>Masuk</button><button type="button" onClick={() => setType('out')} className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${type === 'out' ? 'bg-white shadow-md text-red-700' : 'text-slate-500'}`}>Keluar</button></div>
+                <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Nominal (Rp)" className="w-full p-3 border border-slate-300 rounded-xl outline-none font-bold text-slate-800 bg-slate-50" required /><input type="text" value={desc} onChange={e => setDesc(e.target.value)} placeholder="Keterangan" className="w-full p-3 border border-slate-300 rounded-xl outline-none font-bold text-slate-800 bg-slate-50" required />
+                <select value={method} onChange={e => setMethod(e.target.value)} className="w-full p-3 border border-slate-300 rounded-xl font-bold text-slate-800 bg-white"><option value="Cash">💵 Tunai / Cash</option><option value="Transfer">💳 Bank / Transfer</option></select>
+                <button className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition transform active:scale-95 ${type === 'in' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}>SIMPAN TRANSAKSI</button>
             </form>
         </div>
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 overflow-hidden"><h3 className="font-bold text-lg mb-4">Mutasi Terakhir</h3><div className="space-y-2">{finances.slice(0, 10).map(f => (
-          <div key={f.id} className="group flex justify-between items-center p-3 border-b last:border-0 hover:bg-slate-50 transition">
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 overflow-hidden"><h3 className="font-bold text-lg mb-4 text-slate-800 border-b pb-2">Mutasi Terakhir</h3><div className="space-y-2 mt-2">{finances.slice(0, 10).map(f => (
+          <div key={f.id} className="group flex justify-between items-center p-3 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-full ${f.type === 'in' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>{f.type === 'in' ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}</div>
-              <div><div className="font-bold text-xs text-slate-700">{f.description}</div><div className="text-[9px] text-slate-400 uppercase">{new Date(f.createdAt).toLocaleDateString('id-ID')} • {f.method}</div></div>
+              <div className={`p-2 rounded-full ${f.type === 'in' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{f.type === 'in' ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}</div>
+              <div><div className="font-bold text-xs text-slate-800">{f.description}</div><div className="text-[9px] text-slate-500 font-bold uppercase">{new Date(f.createdAt).toLocaleDateString('id-ID')} • {f.method}</div></div>
             </div>
             <div className="flex items-center gap-4">
-              <span className={`font-mono font-bold text-xs ${f.type === 'in' ? 'text-green-600' : 'text-red-600'}`}>{f.type === 'in' ? '+' : '-'} {formatRupiah(f.amount)}</span>
-              <button onClick={() => { setTxToDelete(f); setIsTxDeleteModalOpen(true); }} className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-red-500 transition">
+              <span className={`font-mono font-bold text-xs ${f.type === 'in' ? 'text-green-700' : 'text-red-700'}`}>{f.type === 'in' ? '+' : '-'} {formatRupiah(f.amount)}</span>
+              <button onClick={() => { setTxToDelete(f); setIsTxDeleteModalOpen(true); }} className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-600 transition">
                 <Trash2 size={12} />
               </button>
             </div>
@@ -841,7 +841,7 @@ function AttendanceReportManager() {
   const printAttendancePDF = (s) => {
     const logs = attendanceLogs.filter(log => log.studentId === s.id).sort((a,b) => b.timestamp.localeCompare(a.timestamp));
     const stats = { Hadir: logs.filter(l => l.status === 'Hadir').length, Ijin: logs.filter(l => l.status === 'Ijin').length, Alpha: logs.filter(l => l.status === 'Alpha').length };
-    const rowsHTML = logs.map((log, i) => `<tr><td style="text-align: center;">${i + 1}</td><td>${log.date}</td><td>${log.className}</td><td>${log.teacherName}</td><td style="font-weight: bold; color: ${log.status === 'Hadir' ? 'green' : log.status === 'Ijin' ? 'orange' : 'red'};">${log.status.toUpperCase()}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center; padding: 20px; color: #999;">Tidak ada riwayat absensi.</td></tr>';
+    const rowsHTML = logs.map((log, i) => `<tr><td style="text-align: center;">${i + 1}</td><td>${log.date}</td><td>${log.className}</td><td>${log.teacherName}</td><td style="font-weight: bold; color: ${log.status === 'Hadir' ? 'green' : log.status === 'Ijin' ? 'orange' : 'red'};">${log.status.toUpperCase()}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center; padding: 20px; color: #333;">Tidak ada riwayat absensi.</td></tr>';
 
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
@@ -855,11 +855,11 @@ function AttendanceReportManager() {
             .subtitle { font-size: 12px; letter-spacing: 2px; color: #666; text-transform: uppercase; }
             .student-info { display: grid; grid-template-cols: 1fr 1fr; gap: 20px; margin-bottom: 30px; background: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e5e7eb; }
             .info-item { font-size: 14px; }
-            .label { color: #6b7280; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
-            .value { font-weight: bold; font-size: 15px; }
+            .label { color: #4b5563; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
+            .value { font-weight: bold; font-size: 15px; color: #111827; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             th { background: #f3f4f6; color: #374151; padding: 12px; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #e5e7eb; border-top: 1px solid #e5e7eb; }
-            td { padding: 12px; font-size: 13px; border-bottom: 1px solid #f3f4f6; }
+            td { padding: 12px; font-size: 13px; border-bottom: 1px solid #f3f4f6; color: #1f2937; }
             .stats { display: flex; gap: 10px; margin-top: 20px; }
             .stat-box { flex: 1; padding: 15px; border-radius: 10px; text-align: center; color: white; font-weight: bold; }
             .hadir { background: #10b981; } .ijin { background: #f59e0b; } .alpha { background: #ef4444; }
@@ -869,7 +869,7 @@ function AttendanceReportManager() {
         <body>
           <div class="header"><div class="title">BIMBEL GEMILANG</div><div class="subtitle">Laporan Kehadiran Siswa Terpadu</div></div>
           <div class="student-info"><div class="info-item"><div class="label">Nama Siswa</div><div class="value">${s.name}</div></div><div class="info-item"><div class="label">Sekolah & Kelas</div><div class="value">${s.school} (Kelas ${s.grade})</div></div><div class="info-item"><div class="label">Level Belajar</div><div class="value">${s.level}</div></div><div class="info-item"><div class="label">Periode Laporan</div><div class="value">${new Date().toLocaleDateString('id-ID', {month:'long', year:'numeric'})}</div></div></div>
-          <div class="stats"><div class="stat-box hadir">Hadir: ${stats.Hadir}</div><div class="stat-box ijin: ${stats.Ijin}</div><div class="stat-box alpha">Alpha: ${stats.Alpha}</div></div>
+          <div class="stats"><div class="stat-box hadir">Hadir: ${stats.Hadir}</div><div class="stat-box ijin">Ijin: ${stats.Ijin}</div><div class="stat-box alpha">Alpha: ${stats.Alpha}</div></div>
           <table><thead><tr><th width="5%">No</th><th width="20%">Tanggal</th><th width="35%">Mata Pelajaran</th><th width="25%">Guru / PIC</th><th width="15%">Status</th></tr></thead><tbody>${rowsHTML}</tbody></table>
           <div class="footer"><div>Dicetak pada: ${new Date().toLocaleString('id-ID')}<br><i>Laporan ini dihasilkan secara otomatis oleh Gemilang System</i></div><div style="text-align: center;">Mengetahui,<br><br><br><br>(____________________)<br>Admin Gemilang</div></div>
           <script>window.onload = function() { window.print(); window.close(); }</script>
@@ -882,26 +882,26 @@ function AttendanceReportManager() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div><h3 className="text-2xl font-bold">Laporan Absensi Siswa</h3><p className="text-xs text-slate-400">Pilih siswa untuk mencetak rekam kehadiran.</p></div>
-        <div className="relative w-full md:w-80"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} /><input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari nama siswa..." className="w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition" /></div>
+        <div><h3 className="text-2xl font-bold text-slate-800">Laporan Absensi Siswa</h3><p className="text-xs text-slate-500 font-bold uppercase">Rekam Kehadiran Gemilang</p></div>
+        <div className="relative w-full md:w-80"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} /><input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari nama siswa..." className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition font-medium text-slate-800" /></div>
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden font-sans">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-50 text-xs font-bold text-slate-500 uppercase"><tr><th className="p-4">Nama Siswa</th><th className="p-4">Kelas</th><th className="p-4 text-center">Total Pertemuan</th><th className="p-4 text-right">Aksi</th></tr></thead>
-            <tbody className="divide-y">
+            <thead className="bg-slate-50 text-xs font-bold text-slate-600 uppercase"><tr><th className="p-4">Nama Siswa</th><th className="p-4">Kelas / Sekolah</th><th className="p-4 text-center">Total Sesi</th><th className="p-4 text-right">Aksi</th></tr></thead>
+            <tbody className="divide-y divide-slate-100">
               {filteredStudents.map(s => {
                 const logsCount = attendanceLogs.filter(l => l.studentId === s.id).length;
                 return (
                   <tr key={s.id} className="hover:bg-slate-50 transition">
-                    <td className="p-4"><div className="font-bold text-slate-700">{s.name}</div><div className="text-[10px] text-slate-400 uppercase tracking-tighter">{s.level}</div></td>
-                    <td className="p-4 text-sm text-slate-600">{s.school} (Kls {s.grade})</td>
-                    <td className="p-4 text-center"><span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold">{logsCount} Sesi</span></td>
+                    <td className="p-4 font-bold text-slate-800"><div className="text-slate-800">{s.name}</div><div className="text-[10px] text-slate-500 uppercase tracking-tighter">{s.level}</div></td>
+                    <td className="p-4 text-sm text-slate-700 font-medium">{s.school} (Kls {s.grade})</td>
+                    <td className="p-4 text-center font-bold"><span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs">{logsCount} Sesi</span></td>
                     <td className="p-4 text-right"><button onClick={() => printAttendancePDF(s)} className="bg-purple-600 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 ml-auto hover:bg-purple-700 transition shadow-md"><Printer size={14}/> Cetak Laporan</button></td>
                   </tr>
                 );
               })}
-              {filteredStudents.length === 0 && <tr><td colSpan="4" className="p-20 text-center text-slate-400 italic">Data tidak ditemukan.</td></tr>}
+              {filteredStudents.length === 0 && <tr><td colSpan="4" className="p-20 text-center text-slate-500 italic font-medium uppercase">Data Siswa Tidak Ditemukan</td></tr>}
             </tbody>
           </table>
         </div>
@@ -916,9 +916,9 @@ function SettingsView() {
   const showToast = useToast();
   return (
     <div className="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-200 animate-in fade-in duration-500">
-       <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><Lock className="text-blue-600"/> Pengaturan Admin</h3>
-       <label className="block text-sm font-bold text-slate-500 mb-2">Ganti Password Admin</label>
-       <div className="flex gap-4"><input type="password" value={newPass} onChange={e => setNewPass(e.target.value)} className="flex-1 p-3 border rounded-xl outline-none" placeholder="Password Baru" /><button onClick={async () => { if(!newPass) return; await setDoc(getDocRef('gemilang_settings', 'admin_auth'), { password: newPass }); showToast("Tersimpan!", 'success'); setNewPass(''); }} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition">Simpan</button></div>
+       <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-800 uppercase tracking-tight"><Lock className="text-blue-600"/> Pengaturan Admin</h3>
+       <label className="block text-sm font-bold text-slate-600 mb-2 uppercase tracking-wide">Ganti Password Admin</label>
+       <div className="flex gap-4"><input type="password" value={newPass} onChange={e => setNewPass(e.target.value)} className="flex-1 p-3 border border-slate-300 rounded-xl outline-none font-bold text-slate-800 bg-slate-50" placeholder="Password Baru..." /><button onClick={async () => { if(!newPass) return; await setDoc(getDocRef('gemilang_settings', 'admin_auth'), { password: newPass }); showToast("Tersimpan!", 'success'); setNewPass(''); }} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition transform active:scale-95">Simpan</button></div>
     </div>
   );
 }
@@ -952,7 +952,7 @@ function AdminDashboard({ onLogout, displayMode }) {
       <aside className={`${displayMode === 'hp' ? 'w-16' : 'w-20 md:w-64'} bg-slate-900 text-white flex flex-col shadow-2xl z-20 shrink-0`}>
         <div className={`p-4 ${displayMode === 'hp' ? '' : 'md:p-6'} border-b border-slate-700 flex items-center gap-3`}>
           <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shrink-0 shadow-lg"><GraduationCap size={24} className="text-white" /></div>
-          <div className={`${displayMode === 'hp' ? 'hidden' : 'hidden md:block'}`}><h1 className="font-bold text-lg">GEMILANG</h1><p className="text-[10px] text-slate-400 uppercase tracking-widest">Admin</p></div>
+          <div className={`${displayMode === 'hp' ? 'hidden' : 'hidden md:block'}`}><h1 className="font-bold text-lg tracking-tight uppercase">GEMILANG</h1><p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Administrator</p></div>
         </div>
         <nav className="flex-1 py-6 space-y-2 overflow-y-auto">
           <MenuButton id="home" icon={<LayoutDashboard />} label="Beranda" active={activeTab} set={setActiveTab} badgeCount={overdueCount} />
@@ -964,7 +964,7 @@ function AdminDashboard({ onLogout, displayMode }) {
           <div className="pt-6 mt-6 border-t border-slate-800">
             <MenuButton id="settings" icon={<Settings />} label="Pengaturan" active={activeTab} set={setActiveTab} />
             <button onClick={onLogout} className="w-full flex items-center gap-3 px-6 py-3 text-red-400 hover:bg-red-500/10 transition-all mt-2">
-              <LogOut size={20} /> <span className={`${displayMode === 'hp' ? 'hidden' : 'hidden md:inline'} font-medium text-sm text-left`}>Keluar</span>
+              <LogOut size={20} /> <span className={`${displayMode === 'hp' ? 'hidden' : 'hidden md:inline'} font-bold text-sm text-left uppercase tracking-tight`}>Keluar Akun</span>
             </button>
           </div>
         </nav>
@@ -1024,46 +1024,46 @@ function TeacherDashboard({ teacherName, onLogout, displayMode }) {
     <div className={`min-h-screen bg-slate-100 font-sans transition-all ${displayMode === 'hp' ? 'max-w-[400px] mx-auto border-x-8 border-slate-800 shadow-2xl' : 'w-full'}`}>
       <div className="bg-purple-700 text-white p-6 shadow-lg">
         <div className="max-w-[1400px] mx-auto flex justify-between items-center">
-          <div><h1 className="text-2xl font-bold uppercase tracking-tight">GEMILANG</h1><p className="text-purple-200 text-xs font-bold uppercase tracking-widest">{teacherName}</p></div>
+          <div><h1 className="text-2xl font-bold uppercase tracking-tight">GEMILANG</h1><p className="text-purple-100 text-xs font-bold uppercase tracking-widest">{teacherName}</p></div>
           <div className="flex gap-2">
-              <button onClick={() => setActiveView('home')} className={`px-4 py-2 rounded-lg font-bold text-xs transition ${activeView === 'home' ? 'bg-white text-purple-700 shadow' : 'text-white'}`}>BERANDA</button>
-              <button onClick={() => setActiveView('attendance')} className={`px-4 py-2 rounded-lg font-bold text-xs transition ${activeView === 'attendance' ? 'bg-white text-purple-700 shadow' : 'text-white'}`}>ABSEN</button>
-              <button onClick={onLogout} className="p-2 bg-red-600 rounded-lg"><LogOut size={16}/></button>
+              <button onClick={() => setActiveView('home')} className={`px-4 py-2 rounded-lg font-bold text-xs transition ${activeView === 'home' ? 'bg-white text-purple-700 shadow-md' : 'text-white'}`}>BERANDA</button>
+              <button onClick={() => setActiveView('attendance')} className={`px-4 py-2 rounded-lg font-bold text-xs transition ${activeView === 'attendance' ? 'bg-white text-purple-700 shadow-md' : 'text-white'}`}>ABSEN</button>
+              <button onClick={onLogout} className="p-2 bg-red-600 rounded-lg hover:bg-red-700 transition"><LogOut size={16}/></button>
           </div>
         </div>
       </div>
       <div className="max-w-[1400px] mx-auto p-6 space-y-6">
         {activeView === 'home' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white rounded-3xl p-10 text-center flex flex-col justify-center border-4 border-purple-100">
+                <div className="bg-white rounded-3xl p-10 text-center flex flex-col justify-center border-4 border-purple-50 shadow-sm">
                     <div className="text-5xl font-mono font-bold text-slate-800 mb-8">{time.toLocaleTimeString('id-ID')}</div>
                     <form onSubmit={handleAbsen} className="max-w-xs mx-auto space-y-4 w-full">
-                        <input type="text" value={attendanceCode} onChange={e => setAttendanceCode(e.target.value.toUpperCase())} className="w-full text-center text-3xl font-bold p-5 border-2 border-purple-200 rounded-3xl uppercase tracking-widest focus:border-purple-600 outline-none" placeholder="KODE" maxLength={4} />
+                        <input type="text" value={attendanceCode} onChange={e => setAttendanceCode(e.target.value.toUpperCase())} className="w-full text-center text-3xl font-bold p-5 border-2 border-purple-100 rounded-3xl uppercase tracking-widest focus:border-purple-600 outline-none text-slate-800 bg-slate-50 shadow-inner" placeholder="KODE" maxLength={4} />
                         <button className="w-full bg-purple-600 text-white py-5 rounded-3xl font-bold shadow-xl hover:bg-purple-700 transition transform active:scale-95">KONFIRMASI HADIR</button>
                     </form>
                 </div>
-                <div className="bg-white rounded-3xl p-6 border-4 border-purple-50 overflow-hidden h-[450px] flex flex-col">
-                    <h3 className="font-bold mb-4 flex items-center gap-2"><Clock size={20} className="text-purple-600"/> Riwayat Masuk Anda</h3>
-                    <div className="overflow-y-auto flex-1 space-y-2 pr-2">{history.map(h => (<div key={h.id} className="p-4 bg-slate-50 rounded-2xl flex justify-between items-center"><span className="text-xs font-bold text-slate-500 uppercase">{h.date}</span><span className="font-mono font-bold text-purple-600">{h.time} (HADIR)</span></div>))}</div>
+                <div className="bg-white rounded-3xl p-6 border-4 border-purple-50 overflow-hidden h-[450px] flex flex-col shadow-sm">
+                    <h3 className="font-bold mb-4 flex items-center gap-2 text-slate-800 border-b border-slate-100 pb-2"><Clock size={20} className="text-purple-600"/> Riwayat Masuk Anda</h3>
+                    <div className="overflow-y-auto flex-1 space-y-2 pr-2 mt-2">{history.map(h => (<div key={h.id} className="p-4 bg-slate-50 rounded-2xl flex justify-between items-center border border-slate-100"><span className="text-xs font-bold text-slate-600 uppercase tracking-tighter">{h.date}</span><span className="font-mono font-bold text-purple-700">{h.time} (HADIR)</span></div>))}</div>
                 </div>
             </div>
         )}
         {activeView === 'attendance' && (
-            <div className="bg-white rounded-3xl p-6 border-4 border-purple-50 animate-in slide-in-from-right duration-300">
+            <div className="bg-white rounded-3xl p-6 border-4 border-purple-50 animate-in slide-in-from-right duration-300 shadow-sm">
                 {!selectedClassForAttendance ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {myClasses.map(c => (<div key={c.id} onClick={() => setSelectedClassForAttendance(c)} className="border-2 border-slate-100 p-5 rounded-3xl hover:border-purple-300 cursor-pointer transition bg-white shadow-sm group">
-                            <h4 className="font-bold text-lg group-hover:text-purple-600">{c.subject}</h4>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{c.room} • {c.startTime}</p>
-                            <div className="mt-4 text-xs font-bold text-purple-600 bg-purple-50 w-fit px-3 py-1 rounded-full">Siswa: {c.enrolledStudents?.length || 0} orang</div>
+                        {myClasses.map(c => (<div key={c.id} onClick={() => setSelectedClassForAttendance(c)} className="border border-slate-200 p-5 rounded-3xl hover:border-purple-300 cursor-pointer transition bg-white shadow-sm group">
+                            <h4 className="font-bold text-lg text-slate-800 group-hover:text-purple-700 uppercase tracking-tight">{c.subject}</h4>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">{c.room} • {c.startTime}</p>
+                            <div className="mt-4 text-xs font-bold text-purple-700 bg-purple-50 w-fit px-3 py-1 rounded-full uppercase">Siswa: {c.enrolledStudents?.length || 0} orang</div>
                         </div>))}
-                        {myClasses.length === 0 && <div className="md:col-span-2 text-center py-20 text-slate-400">Jadwal Anda kosong hari ini.</div>}
+                        {myClasses.length === 0 && <div className="md:col-span-2 text-center py-20 text-slate-500 font-bold uppercase tracking-widest">Jadwal Anda Kosong Hari Ini</div>}
                     </div>
                 ) : (
                     <div className="space-y-6">
-                        <div className="flex justify-between items-center pb-4 border-b"><div><h3 className="font-bold text-2xl">{selectedClassForAttendance.subject}</h3><p className="text-xs text-slate-400 font-bold uppercase tracking-tighter">Absensi Siswa Gemilang</p></div><button onClick={() => setSelectedClassForAttendance(null)} className="p-3 bg-slate-100 rounded-full hover:bg-slate-200 transition"><X size={20}/></button></div>
-                        <div className="space-y-3">{selectedClassForAttendance.enrolledStudents?.map(sid => { const s = students.find(st => st.id === sid); if(!s) return null; return (<div key={sid} className="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50 rounded-3xl gap-4"><div className="font-bold text-slate-700">{s.name}</div><div className="flex gap-2">{['Hadir', 'Ijin', 'Alpha'].map(st => (<button key={st} onClick={() => setAttendanceStatuses(p => ({...p, [sid]: st}))} className={`px-5 py-2 rounded-2xl text-xs font-bold border-2 transition ${attendanceStatuses[sid] === st ? 'bg-purple-600 border-purple-600 text-white shadow-lg' : 'bg-white border-slate-200 text-slate-400'}`}>{st}</button>))}</div></div>); })}</div>
-                        <button onClick={async () => { const todayStr = new Date().toLocaleDateString('id-ID'); const promises = Object.keys(attendanceStatuses).map(sid => addDoc(getCollection('gemilang_class_attendance'), { classId: selectedClassForAttendance.id, className: selectedClassForAttendance.subject, studentId: sid, status: attendanceStatuses[sid], date: todayStr, teacherName, timestamp: new Date().toISOString() })); await Promise.all(promises); showToast("Absensi Tersimpan!", "success"); setSelectedClassForAttendance(null); setAttendanceStatuses({}); }} className="w-full bg-purple-600 text-white py-5 rounded-3xl font-bold shadow-2xl hover:bg-purple-700 transition">SIMPAN SEMUA ABSENSI</button>
+                        <div className="flex justify-between items-center pb-4 border-b border-slate-200"><div><h3 className="font-bold text-2xl text-slate-800 uppercase tracking-tight">{selectedClassForAttendance.subject}</h3><p className="text-xs text-slate-500 font-bold uppercase tracking-tighter">Absensi Siswa Gemilang</p></div><button onClick={() => setSelectedClassForAttendance(null)} className="p-3 bg-slate-100 rounded-full hover:bg-slate-200 transition text-slate-600"><X size={20}/></button></div>
+                        <div className="space-y-3">{selectedClassForAttendance.enrolledStudents?.map(sid => { const s = students.find(st => st.id === sid); if(!s) return null; return (<div key={sid} className="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50 rounded-3xl gap-4 border border-slate-100 shadow-sm"><div className="font-bold text-slate-800 uppercase tracking-tight">{s.name}</div><div className="flex gap-2">{['Hadir', 'Ijin', 'Alpha'].map(st => (<button key={st} onClick={() => setAttendanceStatuses(p => ({...p, [sid]: st}))} className={`px-5 py-2 rounded-2xl text-xs font-bold border-2 transition transform active:scale-95 ${attendanceStatuses[sid] === st ? 'bg-purple-600 border-purple-600 text-white shadow-md' : 'bg-white border-slate-300 text-slate-500 hover:border-purple-200'}`}>{st.toUpperCase()}</button>))}</div></div>); })}</div>
+                        <button onClick={async () => { const todayStr = new Date().toLocaleDateString('id-ID'); const promises = Object.keys(attendanceStatuses).map(sid => addDoc(getCollection('gemilang_class_attendance'), { classId: selectedClassForAttendance.id, className: selectedClassForAttendance.subject, studentId: sid, status: attendanceStatuses[sid], date: todayStr, teacherName, timestamp: new Date().toISOString() })); await Promise.all(promises); showToast("Absensi Tersimpan!", "success"); setSelectedClassForAttendance(null); setAttendanceStatuses({}); }} className="w-full bg-purple-600 text-white py-5 rounded-3xl font-bold shadow-2xl hover:bg-purple-700 transition transform active:scale-95 tracking-widest">SIMPAN SEMUA ABSENSI SISWA</button>
                     </div>
                 )}
             </div>
@@ -1092,14 +1092,14 @@ function LoginPage({ onLogin, displayMode, setDisplayMode, isFullScreen, toggleF
   }, []);
 
   return (
-    <div className="h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 to-slate-900 font-sans p-4 animate-in fade-in duration-700 overflow-hidden">
+    <div className="h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 font-sans p-4 animate-in fade-in duration-700 overflow-hidden">
       <div className={`bg-white p-8 rounded-3xl shadow-2xl border-4 border-blue-500/20 relative animate-in zoom-in-95 duration-500 transition-all ${displayMode === 'hp' ? 'w-[360px]' : displayMode === 'pc' ? 'w-full max-w-4xl' : 'w-full max-w-lg md:max-w-2xl'}`}>
-        <div className="text-center mb-8 mt-2"><div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg text-white"><GraduationCap size={32} /></div><h1 className="text-3xl font-bold text-slate-800 tracking-tight">Bimbel Gemilang</h1><p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Sistem Manajemen Terpadu</p></div>
-        <div className="flex bg-slate-100 p-1 rounded-xl mb-6"><button onClick={() => setView('admin')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${view === 'admin' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}>Admin</button><button onClick={() => setView('guru')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${view === 'guru' ? 'bg-white shadow text-purple-600' : 'text-slate-500'}`}>Guru</button></div>
+        <div className="text-center mb-8 mt-2"><div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg text-white"><GraduationCap size={32} /></div><h1 className="text-3xl font-bold text-slate-900 tracking-tight uppercase">Bimbel Gemilang</h1><p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Sistem Manajemen Terpadu</p></div>
+        <div className="flex bg-slate-100 p-1 rounded-xl mb-6 border border-slate-200"><button onClick={() => setView('admin')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${view === 'admin' ? 'bg-white shadow-md text-blue-700' : 'text-slate-500 hover:text-slate-800'}`}>ADMINISTRATOR</button><button onClick={() => setView('guru')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${view === 'guru' ? 'bg-white shadow-md text-purple-700' : 'text-slate-500 hover:text-slate-800'}`}>GURU PENGAJAR</button></div>
         <form onSubmit={(e) => { e.preventDefault(); if(view === 'admin') { if(password === realAdminPass) onLogin('admin'); else showToast("Sandi Salah!", 'error'); } else { if(!selectedTeacher) return showToast("Pilih Nama!", 'error'); onLogin('teacher', selectedTeacher); } }} className="space-y-4">
-          {view === 'admin' ? (<div><label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-tighter">Sandi Administrator</label><input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-lg" placeholder="Masukkan Password..." /></div>) : 
-            (<div><label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-tighter">Pilih Nama Pengajar</label><select value={selectedTeacher} onChange={e => setSelectedTeacher(e.target.value)} className="w-full p-4 border rounded-xl bg-slate-50 font-bold text-slate-700 outline-none text-lg"><option value="">-- Pilih Nama --</option>{teachers.map((t, i) => <option key={i} value={t}>{t}</option>)}</select></div>)}
-          <button className={`w-full py-4 rounded-xl text-white font-bold shadow-lg transition transform active:scale-95 text-lg ${view === 'admin' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-purple-600 hover:bg-purple-700'}`}>Masuk ke System &rarr;</button>
+          {view === 'admin' ? (<div><label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-tighter">Sandi Administrator</label><input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-lg font-bold text-slate-900 bg-slate-50 shadow-inner" placeholder="Masukkan Sandi..." /></div>) : 
+            (<div><label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-tighter">Pilih Nama Pengajar</label><select value={selectedTeacher} onChange={e => setSelectedTeacher(e.target.value)} className="w-full p-4 border border-slate-300 rounded-xl bg-slate-50 font-bold text-slate-900 outline-none text-lg transition focus:ring-2 focus:ring-purple-500"><option value="">-- Pilih Nama --</option>{teachers.map((t, i) => <option key={i} value={t}>{t.toUpperCase()}</option>)}</select></div>)}
+          <button className={`w-full py-4 rounded-xl text-white font-bold shadow-lg transition transform active:scale-95 text-lg tracking-widest ${view === 'admin' ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30' : 'bg-purple-600 hover:bg-purple-700 shadow-purple-500/30'}`}>MASUK KE SISTEM &rarr;</button>
         </form>
       </div>
 
@@ -1108,9 +1108,9 @@ function LoginPage({ onLogin, displayMode, setDisplayMode, isFullScreen, toggleF
             <button onClick={() => setDisplayMode('hp')} className={`p-2 rounded-lg flex items-center gap-1.5 text-[10px] font-bold transition ${displayMode === 'hp' ? 'bg-white text-blue-900 shadow-lg' : 'bg-white/10 text-white/50 border border-white/10 hover:bg-white/20'}`}><Smartphone size={12}/> MODE HP</button>
             <button onClick={() => setDisplayMode('pc')} className={`p-2 rounded-lg flex items-center gap-1.5 text-[10px] font-bold transition ${displayMode === 'pc' ? 'bg-white text-blue-900 shadow-lg' : 'bg-white/10 text-white/50 border border-white/10 hover:bg-white/20'}`}><Monitor size={12}/> MODE PC</button>
         </div>
-        <button onClick={toggleFullScreen} className="hidden md:flex text-white/30 hover:text-white transition items-center gap-2 text-[10px] font-bold bg-white/5 px-4 py-2 rounded-full border border-white/5">{isFullScreen ? <Minimize size={12}/> : <Maximize size={12}/>} {isFullScreen ? 'KELUAR FULLSCREEN' : 'MASUK FULLSCREEN'}</button>
+        <button onClick={toggleFullScreen} className="hidden md:flex text-white/30 hover:text-white transition items-center gap-2 text-[10px] font-bold bg-white/5 px-4 py-2 rounded-full border border-white/5 tracking-widest">{isFullScreen ? <Minimize size={12}/> : <Maximize size={12}/>} {isFullScreen ? 'KELUAR FULLSCREEN' : 'MASUK FULLSCREEN'}</button>
       </div>
-      <p className="mt-4 text-[10px] text-white/10 uppercase tracking-[0.2em]">Gemilang System v2.4</p>
+      <p className="mt-4 text-[10px] text-white/20 uppercase tracking-[0.4em] font-bold">Gemilang System v2.4 Final</p>
     </div>
   );
 }
@@ -1131,7 +1131,7 @@ export default function App() {
   useEffect(() => {
     const initAuth = async () => {
       try { await signInAnonymously(auth); } 
-      catch (err) { console.error("Auth Error:", err); setInitError("Koneksi gagal."); }
+      catch (err) { console.error("Auth Error:", err); setInitError("Koneksi Firebase gagal. Periksa koneksi internet Anda."); }
     };
     initAuth();
     const unsubscribe = onAuthStateChanged(auth, (u) => { setUser(u); setLoading(false); });
@@ -1151,7 +1151,7 @@ export default function App() {
   };
 
   if (loading) return <div className="h-screen flex items-center justify-center bg-slate-900 text-white font-bold animate-pulse tracking-[0.5em] text-sm uppercase">Menghidupkan Gemilang...</div>;
-  if (initError) return <div className="h-screen flex items-center justify-center bg-red-100 text-red-600 font-bold p-4 text-center">{initError}</div>;
+  if (initError) return <div className="h-screen flex items-center justify-center bg-red-50 text-red-700 font-bold p-6 text-center border-t-8 border-red-600">{initError}</div>;
 
   return (
     <ToastProvider>
