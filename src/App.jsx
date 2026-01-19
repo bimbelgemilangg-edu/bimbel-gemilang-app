@@ -845,7 +845,7 @@ function AttendanceReportManager() {
         <body>
           <div class="header"><div class="title">BIMBEL GEMILANG</div><div class="subtitle">Laporan Kehadiran Siswa Terpadu</div></div>
           <div class="student-info"><div class="info-item"><div class="label">Nama Siswa</div><div class="value">${s.name}</div></div><div class="info-item"><div class="label">Sekolah & Kelas</div><div class="value">${s.school} (Kelas ${s.grade})</div></div><div class="info-item"><div class="label">Level Belajar</div><div class="value">${s.level}</div></div><div class="info-item"><div class="label">Periode Laporan</div><div class="value">${new Date().toLocaleDateString('id-ID', {month:'long', year:'numeric'})}</div></div></div>
-          <div class="stats"><div class="stat-box hadir">Hadir: ${stats.Hadir}</div><div class="stat-box ijin">Ijin: ${stats.Ijin}</div><div class="stat-box alpha">Alpha: ${stats.Alpha}</div></div>
+          <div class="stats"><div class="stat-box hadir">Hadir: ${stats.Hadir}</div><div class="stat-box ijin: ${stats.Ijin}</div><div class="stat-box alpha">Alpha: ${stats.Alpha}</div></div>
           <table><thead><tr><th width="5%">No</th><th width="20%">Tanggal</th><th width="35%">Mata Pelajaran</th><th width="25%">Guru / PIC</th><th width="15%">Status</th></tr></thead><tbody>${rowsHTML}</tbody></table>
           <div class="footer"><div>Dicetak pada: ${new Date().toLocaleString('id-ID')}<br><i>Laporan ini dihasilkan secara otomatis oleh Gemilang System</i></div><div style="text-align: center;">Mengetahui,<br><br><br><br>(____________________)<br>Admin Gemilang</div></div>
           <script>window.onload = function() { window.print(); window.close(); }</script>
@@ -946,7 +946,7 @@ function AdminDashboard({ onLogout, displayMode }) {
         </nav>
       </aside>
       <main className="flex-1 overflow-y-auto relative bg-slate-50">
-        <div className="p-4 md:p-8"> 
+        <div className="p-4 md:p-8 w-full max-w-[1920px] mx-auto"> 
           {activeTab === 'home' && <HomeDashboard />}
           {activeTab === 'students' && <StudentManager />}
           {activeTab === 'attendance_report' && <AttendanceReportManager />}
@@ -999,7 +999,7 @@ function TeacherDashboard({ teacherName, onLogout, displayMode }) {
   return (
     <div className={`min-h-screen bg-slate-100 font-sans transition-all ${displayMode === 'hp' ? 'max-w-[400px] mx-auto border-x-8 border-slate-800 shadow-2xl' : 'w-full'}`}>
       <div className="bg-purple-700 text-white p-6 shadow-lg">
-        <div className="max-w-5xl mx-auto flex justify-between items-center">
+        <div className="max-w-[1400px] mx-auto flex justify-between items-center">
           <div><h1 className="text-2xl font-bold uppercase tracking-tight">GEMILANG</h1><p className="text-purple-200 text-xs font-bold uppercase tracking-widest">{teacherName}</p></div>
           <div className="flex gap-2">
               <button onClick={() => setActiveView('home')} className={`px-4 py-2 rounded-lg font-bold text-xs transition ${activeView === 'home' ? 'bg-white text-purple-700 shadow' : 'text-white'}`}>BERANDA</button>
@@ -1008,7 +1008,7 @@ function TeacherDashboard({ teacherName, onLogout, displayMode }) {
           </div>
         </div>
       </div>
-      <div className="max-w-5xl mx-auto p-6 space-y-6">
+      <div className="max-w-[1400px] mx-auto p-6 space-y-6">
         {activeView === 'home' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white rounded-3xl p-10 text-center flex flex-col justify-center border-4 border-purple-100">
@@ -1027,7 +1027,7 @@ function TeacherDashboard({ teacherName, onLogout, displayMode }) {
         {activeView === 'attendance' && (
             <div className="bg-white rounded-3xl p-6 border-4 border-purple-50 animate-in slide-in-from-right duration-300">
                 {!selectedClassForAttendance ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {myClasses.map(c => (<div key={c.id} onClick={() => setSelectedClassForAttendance(c)} className="border-2 border-slate-100 p-5 rounded-3xl hover:border-purple-300 cursor-pointer transition bg-white shadow-sm group">
                             <h4 className="font-bold text-lg group-hover:text-purple-600">{c.subject}</h4>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{c.room} • {c.startTime}</p>
@@ -1069,13 +1069,13 @@ function LoginPage({ onLogin, displayMode, setDisplayMode, isFullScreen, toggleF
 
   return (
     <div className="h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 to-slate-900 font-sans p-4 animate-in fade-in duration-700 overflow-hidden">
-      <div className={`bg-white p-8 rounded-3xl shadow-2xl border-4 border-blue-500/20 relative animate-in zoom-in-95 duration-500 transition-all ${displayMode === 'hp' ? 'w-[360px]' : displayMode === 'pc' ? 'w-full max-w-4xl' : 'w-full max-w-md'}`}>
-        <div className="text-center mb-8 mt-2"><div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg text-white"><GraduationCap size={32} /></div><h1 className="text-2xl font-bold text-slate-800 tracking-tight">Bimbel Gemilang</h1><p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Sistem Manajemen Terpadu</p></div>
+      <div className={`bg-white p-8 rounded-3xl shadow-2xl border-4 border-blue-500/20 relative animate-in zoom-in-95 duration-500 transition-all ${displayMode === 'hp' ? 'w-[360px]' : displayMode === 'pc' ? 'w-full max-w-4xl' : 'w-full max-w-lg md:max-w-2xl'}`}>
+        <div className="text-center mb-8 mt-2"><div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg text-white"><GraduationCap size={32} /></div><h1 className="text-3xl font-bold text-slate-800 tracking-tight">Bimbel Gemilang</h1><p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Sistem Manajemen Terpadu</p></div>
         <div className="flex bg-slate-100 p-1 rounded-xl mb-6"><button onClick={() => setView('admin')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${view === 'admin' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}>Admin</button><button onClick={() => setView('guru')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${view === 'guru' ? 'bg-white shadow text-purple-600' : 'text-slate-500'}`}>Guru</button></div>
         <form onSubmit={(e) => { e.preventDefault(); if(view === 'admin') { if(password === realAdminPass) onLogin('admin'); else showToast("Sandi Salah!", 'error'); } else { if(!selectedTeacher) return showToast("Pilih Nama!", 'error'); onLogin('teacher', selectedTeacher); } }} className="space-y-4">
-          {view === 'admin' ? (<div><label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-tighter">Sandi Administrator</label><input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Masukkan Password..." /></div>) : 
-            (<div><label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-tighter">Pilih Nama Pengajar</label><select value={selectedTeacher} onChange={e => setSelectedTeacher(e.target.value)} className="w-full p-3 border rounded-xl bg-slate-50 font-bold text-slate-700 outline-none"><option value="">-- Pilih Nama --</option>{teachers.map((t, i) => <option key={i} value={t}>{t}</option>)}</select></div>)}
-          <button className={`w-full py-4 rounded-xl text-white font-bold shadow-lg transition transform active:scale-95 ${view === 'admin' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-purple-600 hover:bg-purple-700'}`}>Masuk ke System &rarr;</button>
+          {view === 'admin' ? (<div><label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-tighter">Sandi Administrator</label><input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-lg" placeholder="Masukkan Password..." /></div>) : 
+            (<div><label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-tighter">Pilih Nama Pengajar</label><select value={selectedTeacher} onChange={e => setSelectedTeacher(e.target.value)} className="w-full p-4 border rounded-xl bg-slate-50 font-bold text-slate-700 outline-none text-lg"><option value="">-- Pilih Nama --</option>{teachers.map((t, i) => <option key={i} value={t}>{t}</option>)}</select></div>)}
+          <button className={`w-full py-4 rounded-xl text-white font-bold shadow-lg transition transform active:scale-95 text-lg ${view === 'admin' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-purple-600 hover:bg-purple-700'}`}>Masuk ke System &rarr;</button>
         </form>
       </div>
 
