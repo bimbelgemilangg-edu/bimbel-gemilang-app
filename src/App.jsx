@@ -759,6 +759,8 @@ function FinanceManager() {
   const [amount, setAmount] = useState('');
   const [desc, setDesc] = useState('');
   const [method, setMethod] = useState('Cash'); 
+  const [isTxDeleteModalOpen, setIsTxDeleteModalOpen] = useState(false);
+  const [txToDelete, setTxToDelete] = useState(null);
   const showToast = useToast();
 
   useEffect(() => {
@@ -766,6 +768,13 @@ function FinanceManager() {
     const unsubS = onSnapshot(getCollection('gemilang_students'), (snap) => setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     return () => { unsubF(); unsubS(); };
   }, []);
+
+  const executeDeleteTx = async () => {
+    if(!txToDelete) return;
+    await deleteDoc(getDocRef('gemilang_finance', txToDelete.id));
+    setIsTxDeleteModalOpen(false);
+    showToast("Transaksi dihapus", "success");
+  };
 
   const cashIn = finances.filter(f => f.type === 'in' && f.method === 'Cash').reduce((a, b) => a + b.amount, 0);
   const cashOut = finances.filter(f => f.type === 'out' && f.method === 'Cash').reduce((a, b) => a + b.amount, 0);
@@ -775,6 +784,8 @@ function FinanceManager() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
+      <ConfirmModal isOpen={isTxDeleteModalOpen} onClose={() => setIsTxDeleteModalOpen(false)} onConfirm={executeDeleteTx} title="Hapus Transaksi?" message="Data mutasi ini akan dihapus permanen dari sistem." isDanger={true} />
+      
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-slate-800 text-white p-6 rounded-2xl shadow-lg border-b-4 border-blue-500"><p className="text-slate-400 text-[10px] uppercase font-bold tracking-widest mb-1">Total Saldo</p><h3 className="text-3xl font-bold">Rp {formatRupiah((cashIn + bankIn) - (cashOut + bankOut))}</h3></div>
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-blue-100"><div className="flex justify-between items-start mb-2"><p className="text-blue-600 text-[10px] uppercase font-bold tracking-widest">Saldo Brangkas</p><Wallet className="text-blue-500" size={18}/></div><h3 className="text-2xl font-bold text-slate-800">Rp {formatRupiah(cashIn - cashOut)}</h3></div>
@@ -791,7 +802,20 @@ function FinanceManager() {
                 <button className={`w-full py-4 rounded-xl font-bold text-white shadow-lg ${type === 'in' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}>SIMPAN</button>
             </form>
         </div>
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 overflow-hidden"><h3 className="font-bold text-lg mb-4">Mutasi Terakhir</h3><div className="space-y-2">{finances.slice(0, 10).map(f => (<div key={f.id} className="flex justify-between items-center p-3 border-b last:border-0 hover:bg-slate-50 transition"><div className="flex items-center gap-3"><div className={`p-2 rounded-full ${f.type === 'in' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>{f.type === 'in' ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}</div><div><div className="font-bold text-xs text-slate-700">{f.description}</div><div className="text-[9px] text-slate-400 uppercase">{new Date(f.createdAt).toLocaleDateString('id-ID')} • {f.method}</div></div></div><span className={`font-mono font-bold text-xs ${f.type === 'in' ? 'text-green-600' : 'text-red-600'}`}>{f.type === 'in' ? '+' : '-'} {formatRupiah(f.amount)}</span></div>))}</div></div>
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 overflow-hidden"><h3 className="font-bold text-lg mb-4">Mutasi Terakhir</h3><div className="space-y-2">{finances.slice(0, 10).map(f => (
+          <div key={f.id} className="group flex justify-between items-center p-3 border-b last:border-0 hover:bg-slate-50 transition">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-full ${f.type === 'in' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>{f.type === 'in' ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}</div>
+              <div><div className="font-bold text-xs text-slate-700">{f.description}</div><div className="text-[9px] text-slate-400 uppercase">{new Date(f.createdAt).toLocaleDateString('id-ID')} • {f.method}</div></div>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className={`font-mono font-bold text-xs ${f.type === 'in' ? 'text-green-600' : 'text-red-600'}`}>{f.type === 'in' ? '+' : '-'} {formatRupiah(f.amount)}</span>
+              <button onClick={() => { setTxToDelete(f); setIsTxDeleteModalOpen(true); }} className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-red-500 transition">
+                <Trash2 size={12} />
+              </button>
+            </div>
+          </div>
+        ))}</div></div>
       </div>
     </div>
   );
