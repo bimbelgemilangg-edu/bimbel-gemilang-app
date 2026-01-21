@@ -8,7 +8,7 @@ import { getAuth, signInAnonymously } from 'firebase/auth';
 import { 
   Bell, User, Lock, LogOut, CheckCircle, Clock, 
   DollarSign, Users, GraduationCap, Calendar, MapPin, 
-  Save, Plus, X, Search 
+  Save, Plus, X, Search, ChevronLeft, ChevronRight, Repeat, CalendarDays 
 } from 'lucide-react';
 
 // --- CONFIG FIREBASE ---
@@ -254,278 +254,289 @@ const AdminStudents = () => {
 };
 
 // =================================================================
-// 4. FILE: src/pages/admin/Schedule.jsx (JADWAL & RUANGAN - NEW!)
+// 4. FILE: src/pages/admin/Schedule.jsx (REVISI: FLEXIBLE & TIPE JADWAL)
 // =================================================================
 const AdminSchedule = () => {
   // Constants
   const ROOMS = ["Merkurius", "Venus", "Bumi", "Mars", "Jupiter"];
   const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
-  const HOURS = Array.from({length: 13}, (_, i) => i + 8); // 8 - 20
-
+  
   // State
   const [selectedRoom, setSelectedRoom] = useState("Merkurius");
   const [schedules, setSchedules] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [students, setStudents] = useState([]);
-  
+  const [currentWeekStart, setCurrentWeekStart] = useState(new Date()); // Navigasi Tanggal
+
   // Modal State
   const [showModal, setShowModal] = useState(false);
+  const [scheduleType, setScheduleType] = useState('routine'); // 'routine' | 'booking'
   const [newSchedule, setNewSchedule] = useState({
-    subject: "",
-    teacherId: "",
-    teacherName: "",
-    day: "Senin",
-    startTime: "08:00",
-    endTime: "10:00",
-    studentIds: [] // Array of student IDs
+    subject: "", teacherId: "", teacherName: "",
+    day: "Senin", date: "", // date utk Booking
+    startTime: "14:00", endTime: "15:30", // Input Time HTML5
+    studentIds: []
   });
 
-  // 1. Fetch Data Real-time
+  // Fetch Data
   useEffect(() => {
-    // Fetch Schedules
-    const qSchedule = query(collection(db, "schedules"));
-    const unsubSchedule = onSnapshot(qSchedule, (snap) => {
-      setSchedules(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-
-    // Fetch Teachers (Users)
-    const qTeachers = query(collection(db, "users"), where("role", "==", "guru"));
-    const unsubTeachers = onSnapshot(qTeachers, (snap) => {
-      setTeachers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-
-    // Fetch Students
-    const qStudents = query(collection(db, "students"), orderBy("name"));
-    const unsubStudents = onSnapshot(qStudents, (snap) => {
-      setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-
+    const unsubSchedule = onSnapshot(query(collection(db, "schedules")), (snap) => setSchedules(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubTeachers = onSnapshot(query(collection(db, "users"), where("role", "==", "guru")), (snap) => setTeachers(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubStudents = onSnapshot(query(collection(db, "students"), orderBy("name")), (snap) => setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     return () => { unsubSchedule(); unsubTeachers(); unsubStudents(); };
   }, []);
 
-  // Helper: Cek apakah ada jadwal di Slot Grid
-  const getScheduleInSlot = (day, hour) => {
-    return schedules.find(s => 
-      s.room === selectedRoom && 
-      s.day === day && 
-      parseInt(s.startTime.split(':')[0]) <= hour &&
-      parseInt(s.endTime.split(':')[0]) > hour
-    );
+  // Helpers untuk Navigasi Tanggal
+  const getStartOfWeek = (date) => {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+    return new Date(d.setDate(diff));
   };
 
-  // Helper: Handle Klik Slot Kosong
-  const handleSlotClick = (day, hour) => {
-    // Cek dulu apakah slot ini sudah terisi
-    if (getScheduleInSlot(day, hour)) return; 
+  const getDatesOfWeek = (startDate) => {
+    const dates = [];
+    let current = new Date(startDate);
+    for(let i=0; i<7; i++) {
+      dates.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+    }
+    return dates;
+  };
 
-    setNewSchedule({
-      ...newSchedule,
-      day: day,
-      startTime: `${hour.toString().padStart(2, '0')}:00`,
-      endTime: `${(hour + 1).toString().padStart(2, '0')}:00`,
-      studentIds: []
-    });
-    setShowModal(true);
+  const currentWeekDates = getDatesOfWeek(getStartOfWeek(currentWeekStart));
+
+  const changeWeek = (offset) => {
+    const newDate = new Date(currentWeekStart);
+    newDate.setDate(newDate.getDate() + (offset * 7));
+    setCurrentWeekStart(newDate);
+  };
+
+  // Helper: Filter Jadwal (Merge Routine + Booking)
+  const getSchedulesForDay = (dayName, dateObj) => {
+    const dateStr = dateObj.toISOString().split('T')[0];
+    
+    // 1. Ambil Routine (Paralel)
+    const routine = schedules.filter(s => 
+      s.room === selectedRoom && 
+      s.type === 'routine' && 
+      s.day === dayName
+    );
+
+    // 2. Ambil Booking (Insidental) sesuai tanggal
+    const bookings = schedules.filter(s => 
+      s.room === selectedRoom && 
+      s.type === 'booking' && 
+      s.date === dateStr
+    );
+
+    // 3. Gabung & Sort by Start Time
+    return [...routine, ...bookings].sort((a, b) => a.startTime.localeCompare(b.startTime));
   };
 
   const handleSaveSchedule = async (e) => {
     e.preventDefault();
     if (!newSchedule.subject || !newSchedule.teacherId) return alert("Lengkapi Mata Pelajaran & Guru!");
     
-    // Cari nama guru berdasarkan ID
     const selectedGuru = teachers.find(t => t.id === newSchedule.teacherId);
 
     try {
       await addDoc(collection(db, "schedules"), {
         ...newSchedule,
-        room: selectedRoom, // Ruangan otomatis sesuai filter aktif
+        room: selectedRoom,
+        type: scheduleType,
         teacherName: selectedGuru ? selectedGuru.name : "Unknown",
         createdAt: serverTimestamp()
       });
       setShowModal(false);
-      // Reset form (partial)
-      setNewSchedule(prev => ({...prev, subject: "", studentIds: []}));
-    } catch (err) {
-      console.error(err);
-      alert("Gagal menyimpan jadwal");
-    }
+      setNewSchedule({ subject: "", teacherId: "", teacherName: "", day: "Senin", date: "", startTime: "14:00", endTime: "15:30", studentIds: [] });
+    } catch (err) { console.error(err); alert("Gagal menyimpan jadwal"); }
   };
 
   const toggleStudent = (studentId) => {
     const currentIds = newSchedule.studentIds;
-    if (currentIds.includes(studentId)) {
-      setNewSchedule({...newSchedule, studentIds: currentIds.filter(id => id !== studentId)});
-    } else {
-      setNewSchedule({...newSchedule, studentIds: [...currentIds, studentId]});
+    setNewSchedule(prev => ({
+      ...prev,
+      studentIds: currentIds.includes(studentId) ? currentIds.filter(id => id !== studentId) : [...currentIds, studentId]
+    }));
+  };
+
+  // Hapus Jadwal
+  const handleDelete = async (id) => {
+    if(confirm("Hapus jadwal ini?")) {
+      await deleteDoc(doc(db, "schedules", id));
     }
   };
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header & Filter */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Calendar className="text-blue-600" /> Jadwal & Ruangan
-          </h2>
-          <p className="text-sm text-gray-500">Klik slot kosong untuk booking kelas.</p>
-        </div>
-        
-        {/* Room Filter (Planet) */}
-        <div className="flex gap-2 bg-gray-100 p-1 rounded-lg overflow-x-auto max-w-full">
-          {ROOMS.map(room => (
-            <button
-              key={room}
-              onClick={() => setSelectedRoom(room)}
-              className={`px-4 py-2 rounded-md text-sm font-bold whitespace-nowrap transition-colors ${
-                selectedRoom === room 
-                ? 'bg-white text-blue-600 shadow-sm' 
-                : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {room}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Visual Grid System */}
-      <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 overflow-auto">
-        <div className="min-w-[1000px] p-4">
-          {/* Header Hari */}
-          <div className="grid grid-cols-8 gap-1 mb-2">
-            <div className="p-2 font-bold text-gray-400 text-center text-sm">JAM</div>
-            {DAYS.map(day => (
-              <div key={day} className="p-2 font-bold text-gray-800 text-center bg-gray-50 rounded uppercase text-sm">
-                {day}
-              </div>
+      {/* Header & Controls */}
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4 space-y-4">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <Calendar className="text-blue-600" /> Manajemen Jadwal
+            </h2>
+            <p className="text-sm text-gray-500">Pilih Ruangan & Atur Jadwal (Rutin/Booking)</p>
+          </div>
+          {/* Room Filter */}
+          <div className="flex gap-2 bg-gray-100 p-1 rounded-lg overflow-x-auto max-w-full">
+            {ROOMS.map(room => (
+              <button key={room} onClick={() => setSelectedRoom(room)} className={`px-4 py-2 rounded-md text-sm font-bold whitespace-nowrap transition-colors ${selectedRoom === room ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                {room}
+              </button>
             ))}
           </div>
-
-          {/* Grid Rows (Hours) */}
-          {HOURS.map(hour => (
-            <div key={hour} className="grid grid-cols-8 gap-1 mb-1">
-              {/* Kolom Jam */}
-              <div className="p-2 text-xs font-mono text-gray-500 text-center flex items-center justify-center">
-                {hour}:00
-              </div>
-              
-              {/* Kolom Hari */}
-              {DAYS.map(day => {
-                const schedule = getScheduleInSlot(day, hour);
-                const isBooked = !!schedule;
-                // Cek apakah ini slot "tengah" dari durasi yg panjang agar tidak menampilkan teks berulang
-                const isStart = isBooked && parseInt(schedule.startTime.split(':')[0]) === hour;
-
-                return (
-                  <div 
-                    key={`${day}-${hour}`}
-                    onClick={() => handleSlotClick(day, hour)}
-                    className={`
-                      h-16 p-1 rounded border text-xs cursor-pointer transition-colors relative overflow-hidden
-                      ${isBooked 
-                        ? 'bg-green-100 border-green-200 hover:bg-green-200' 
-                        : 'bg-white border-gray-100 hover:bg-gray-50'}
-                    `}
-                  >
-                    {isBooked && isStart && (
-                      <div className="text-green-800 font-bold p-1">
-                        <div className="uppercase tracking-tighter truncate">{schedule.subject}</div>
-                        <div className="font-normal truncate text-[10px]">{schedule.teacherName}</div>
-                      </div>
-                    )}
-                    {!isBooked && (
-                      <div className="w-full h-full flex items-center justify-center opacity-0 hover:opacity-100 text-gray-300 font-bold">
-                        +
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
+        </div>
+        
+        {/* Week Navigation */}
+        <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-100">
+          <button onClick={() => changeWeek(-1)} className="p-2 hover:bg-blue-200 rounded-full"><ChevronLeft size={20} className="text-blue-700" /></button>
+          <div className="text-center">
+            <span className="text-xs text-blue-500 font-bold block uppercase tracking-wider">Minggu Aktif</span>
+            <span className="text-lg font-bold text-blue-800">
+              {currentWeekDates[0].toLocaleDateString('id-ID', {day: 'numeric', month: 'short'})} - {currentWeekDates[6].toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}
+            </span>
+          </div>
+          <button onClick={() => changeWeek(1)} className="p-2 hover:bg-blue-200 rounded-full"><ChevronRight size={20} className="text-blue-700" /></button>
         </div>
       </div>
 
-      {/* MODAL BOOKING KELAS */}
+      {/* WEEKLY COLUMN VIEW */}
+      <div className="flex-1 overflow-x-auto bg-gray-50 rounded-xl border border-gray-200">
+        <div className="min-w-[1200px] grid grid-cols-7 h-full divide-x divide-gray-200">
+          {currentWeekDates.map((date, index) => {
+            const dayName = DAYS[index]; // Senin, Selasa...
+            const dailySchedules = getSchedulesForDay(dayName, date);
+            const isToday = new Date().toDateString() === date.toDateString();
+
+            return (
+              <div key={index} className={`flex flex-col h-full ${isToday ? 'bg-white' : 'bg-gray-50'}`}>
+                {/* Column Header */}
+                <div className={`p-3 text-center border-b ${isToday ? 'bg-blue-100 border-blue-200' : 'bg-gray-100 border-gray-200'}`}>
+                  <div className={`font-bold text-sm ${isToday ? 'text-blue-800' : 'text-gray-700'}`}>{dayName}</div>
+                  <div className={`text-xs ${isToday ? 'text-blue-600' : 'text-gray-500'}`}>
+                    {date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                  </div>
+                </div>
+
+                {/* Column Body (Card List) */}
+                <div className="flex-1 p-2 space-y-2 overflow-y-auto min-h-[400px]">
+                  {dailySchedules.map(sch => (
+                    <div key={sch.id} className={`relative group p-3 rounded-lg border shadow-sm text-left transition-all hover:shadow-md ${sch.type === 'booking' ? 'bg-purple-50 border-purple-200' : 'bg-white border-gray-200'}`}>
+                      <div className="flex justify-between items-start mb-1">
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${sch.type === 'booking' ? 'bg-purple-200 text-purple-700' : 'bg-green-100 text-green-700'}`}>
+                          {sch.type === 'booking' ? 'BOOKING' : 'RUTIN'}
+                        </span>
+                        <button onClick={() => handleDelete(sch.id)} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100"><X size={14} /></button>
+                      </div>
+                      <div className="font-bold text-gray-800 text-sm leading-tight mb-1">{sch.subject}</div>
+                      <div className="text-xs text-blue-600 font-medium mb-1 flex items-center gap-1"><Clock size={10} /> {sch.startTime} - {sch.endTime}</div>
+                      <div className="text-xs text-gray-500 truncate"><User size={10} className="inline mr-1"/>{sch.teacherName}</div>
+                      <div className="mt-2 pt-2 border-t border-dashed border-gray-200 text-[10px] text-gray-400">
+                        {sch.studentIds?.length || 0} Siswa
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Add Button per Column */}
+                  <button 
+                    onClick={() => {
+                      setScheduleType('routine'); // Default
+                      setNewSchedule(prev => ({ 
+                        ...prev, 
+                        day: dayName, 
+                        date: date.toISOString().split('T')[0] // Pre-fill date just in case they switch to Booking
+                      }));
+                      setShowModal(true);
+                    }}
+                    className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-400 text-xs font-bold hover:border-blue-400 hover:text-blue-500 transition-colors"
+                  >
+                    + Tambah
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* MODAL FORM */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
-              <h3 className="text-lg font-bold text-gray-800">Booking Kelas: {selectedRoom}</h3>
-              <button onClick={() => setShowModal(false)}><X className="text-gray-500" /></button>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="p-5 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
+              <h3 className="text-lg font-bold text-gray-800">Tambah Jadwal: {selectedRoom}</h3>
+              <button onClick={() => setShowModal(false)}><X className="text-gray-500 hover:text-red-500" /></button>
             </div>
             
-            <form onSubmit={handleSaveSchedule} className="p-6 space-y-6">
-              {/* Baris 1: Mapel & Guru */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSaveSchedule} className="p-6 space-y-5">
+              {/* TIPE JADWAL TOGGLE */}
+              <div className="flex bg-gray-100 p-1 rounded-lg">
+                <button type="button" onClick={() => setScheduleType('routine')} className={`flex-1 py-2 text-sm font-bold rounded-md flex items-center justify-center gap-2 transition-all ${scheduleType === 'routine' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500'}`}>
+                  <Repeat size={16} /> Rutin (Paralel)
+                </button>
+                <button type="button" onClick={() => setScheduleType('booking')} className={`flex-1 py-2 text-sm font-bold rounded-md flex items-center justify-center gap-2 transition-all ${scheduleType === 'booking' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500'}`}>
+                  <CalendarDays size={16} /> Booking (Sewa)
+                </button>
+              </div>
+
+              {/* Conditional Input: Day vs Date */}
+              {scheduleType === 'routine' ? (
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">Mata Pelajaran</label>
-                  <input required type="text" className="w-full p-2 border rounded" 
-                    value={newSchedule.subject} 
-                    onChange={e => setNewSchedule({...newSchedule, subject: e.target.value})} 
-                    placeholder="Contoh: Matematika Dasar"
-                  />
+                  <label className="block text-xs font-bold text-gray-500 mb-1">Hari (Berulang Tiap Minggu)</label>
+                  <select className="w-full p-2 border rounded font-medium" value={newSchedule.day} onChange={e => setNewSchedule({...newSchedule, day: e.target.value})}>
+                    {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1">Tanggal Booking (Sekali Pakai)</label>
+                  <input type="date" required className="w-full p-2 border rounded font-medium" value={newSchedule.date} onChange={e => setNewSchedule({...newSchedule, date: e.target.value})} />
+                </div>
+              )}
+
+              {/* Subject & Teacher */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1">Mata Pelajaran</label>
+                  <input required type="text" className="w-full p-2 border rounded" placeholder="Mapel..." value={newSchedule.subject} onChange={e => setNewSchedule({...newSchedule, subject: e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">Pilih Guru</label>
-                  <select required className="w-full p-2 border rounded bg-white"
-                    value={newSchedule.teacherId}
-                    onChange={e => setNewSchedule({...newSchedule, teacherId: e.target.value})}
-                  >
-                    <option value="">-- Cari Nama Guru --</option>
-                    {teachers.map(t => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
+                  <label className="block text-xs font-bold text-gray-500 mb-1">Guru</label>
+                  <select required className="w-full p-2 border rounded" value={newSchedule.teacherId} onChange={e => setNewSchedule({...newSchedule, teacherId: e.target.value})}>
+                    <option value="">- Pilih -</option>
+                    {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>
               </div>
 
-              {/* Baris 2: Waktu */}
-              <div className="grid grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
+              {/* Flexible Time Input */}
+              <div className="grid grid-cols-2 gap-4 bg-yellow-50 p-3 rounded-lg border border-yellow-100">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1">Hari</label>
-                  <input type="text" disabled value={newSchedule.day} className="w-full p-2 border rounded bg-gray-200 text-gray-600" />
+                  <label className="block text-xs font-bold text-yellow-700 mb-1">Jam Mulai</label>
+                  <input type="time" required className="w-full p-2 border border-yellow-200 rounded" value={newSchedule.startTime} onChange={e => setNewSchedule({...newSchedule, startTime: e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1">Jam Mulai</label>
-                  <input type="time" required value={newSchedule.startTime} onChange={e => setNewSchedule({...newSchedule, startTime: e.target.value})} className="w-full p-2 border rounded" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1">Jam Selesai</label>
-                  <input type="time" required value={newSchedule.endTime} onChange={e => setNewSchedule({...newSchedule, endTime: e.target.value})} className="w-full p-2 border rounded" />
+                  <label className="block text-xs font-bold text-yellow-700 mb-1">Jam Selesai</label>
+                  <input type="time" required className="w-full p-2 border border-yellow-200 rounded" value={newSchedule.endTime} onChange={e => setNewSchedule({...newSchedule, endTime: e.target.value})} />
                 </div>
               </div>
 
-              {/* Baris 3: Checklist Siswa */}
+              {/* Students Checklist */}
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2 flex justify-between">
-                  <span>Pilih Siswa ({newSchedule.studentIds.length} dipilih)</span>
-                  <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">Total Siswa: {students.length}</span>
-                </label>
-                <div className="border rounded-lg h-48 overflow-y-auto p-2 bg-gray-50 grid grid-cols-1 md:grid-cols-2 gap-2">
+                <label className="block text-xs font-bold text-gray-500 mb-2">Siswa ({newSchedule.studentIds.length})</label>
+                <div className="border rounded-lg h-32 overflow-y-auto p-2 bg-gray-50 grid grid-cols-2 gap-2">
                   {students.map(s => (
-                    <div key={s.id} 
-                      onClick={() => toggleStudent(s.id)}
-                      className={`
-                        p-2 rounded flex items-center gap-2 cursor-pointer border transition-colors
-                        ${newSchedule.studentIds.includes(s.id) ? 'bg-blue-100 border-blue-300' : 'bg-white border-gray-200 hover:bg-gray-100'}
-                      `}
-                    >
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center ${newSchedule.studentIds.includes(s.id) ? 'bg-blue-600 border-blue-600' : 'border-gray-400'}`}>
-                        {newSchedule.studentIds.includes(s.id) && <span className="text-white text-[10px]">✓</span>}
-                      </div>
-                      <span className="text-sm text-gray-700 truncate">{s.name} <span className="text-xs text-gray-400">({s.level})</span></span>
+                    <div key={s.id} onClick={() => toggleStudent(s.id)} className={`p-2 rounded flex items-center gap-2 cursor-pointer border text-xs ${newSchedule.studentIds.includes(s.id) ? 'bg-blue-100 border-blue-300' : 'bg-white border-gray-200'}`}>
+                      <div className={`w-3 h-3 rounded-sm border ${newSchedule.studentIds.includes(s.id) ? 'bg-blue-600 border-blue-600' : 'border-gray-400'}`}></div>
+                      <span className="truncate">{s.name}</span>
                     </div>
                   ))}
-                  {students.length === 0 && <p className="text-sm text-gray-400 p-2 col-span-2 text-center">Belum ada data siswa.</p>}
                 </div>
               </div>
 
-              <div className="flex justify-end pt-4 border-t">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-gray-600 mr-2">Batal</button>
-                <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700">SIMPAN JADWAL</button>
-              </div>
+              <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 shadow-lg">SIMPAN JADWAL</button>
             </form>
           </div>
         </div>
@@ -540,7 +551,7 @@ const AdminSchedule = () => {
 const AdminSidebar = ({ activeView, setView }) => {
   const menus = [
     { id: 'dashboard', label: 'Dashboard', icon: <Bell size={20} /> },
-    { id: 'schedule', label: 'Jadwal & Ruangan', icon: <Calendar size={20} /> }, // ADDED THIS
+    { id: 'schedule', label: 'Jadwal & Ruangan', icon: <Calendar size={20} /> },
     { id: 'settings', label: 'Keuangan & Paket', icon: <DollarSign size={20} /> },
     { id: 'teachers', label: 'Guru & Token', icon: <Users size={20} /> },
     { id: 'students', label: 'Data Siswa', icon: <GraduationCap size={20} /> },
@@ -664,7 +675,7 @@ const DashboardAdmin = ({ onLogout }) => {
 
   const renderContent = () => {
     switch(currentView) {
-      case 'schedule': return <AdminSchedule />; // ADDED THIS
+      case 'schedule': return <AdminSchedule />;
       case 'settings': return <AdminSettings />;
       case 'teachers': return <AdminTeachers />;
       case 'students': return <AdminStudents />;
