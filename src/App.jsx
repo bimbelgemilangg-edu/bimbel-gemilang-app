@@ -48,7 +48,8 @@ import {
   LogIn as LogInIcon,
   LogOut as LogOutIcon,
   CalendarCheck,
-  LayoutGrid
+  LayoutGrid,
+  FilePlus
 } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { 
@@ -105,7 +106,6 @@ const getDayNameFromDate = (dateStr) => {
 };
 
 // --- UI COMPONENTS ---
-
 const Notification = ({ message, type, onClose }) => {
   useEffect(() => {
     const timer = setTimeout(onClose, 5000);
@@ -249,7 +249,6 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   
-  // Data States
   const [students, setStudents] = useState([]);
   const [tutors, setTutors] = useState([]);
   const [classes, setClasses] = useState([]);
@@ -261,12 +260,11 @@ export default function App() {
   const [tutorAttendance, setTutorAttendance] = useState(null); 
   const [inputTeacherCode, setInputTeacherCode] = useState('');
 
-  // Class & Schedule Management States
   const [scheduleDateView, setScheduleDateView] = useState(new Date().toISOString().split('T')[0]);
   const [selectedStudentsForClass, setSelectedStudentsForClass] = useState([]);
-  const [classScheduleType, setClassScheduleType] = useState('regular'); // 'regular' or 'special'
+  const [classScheduleType, setClassScheduleType] = useState('regular'); 
 
-  // Registration States
+  // Registration & Edit States
   const [regSelectedPackage, setRegSelectedPackage] = useState('');
   const [regLevel, setRegLevel] = useState(''); 
   const [regFee, setRegFee] = useState(0);
@@ -280,6 +278,7 @@ export default function App() {
   const [selectedPackage, setSelectedPackage] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('SD');
   const [selectedClassForAttendance, setSelectedClassForAttendance] = useState(null);
+  const [selectedStudentToEdit, setSelectedStudentToEdit] = useState(null);
 
   const [notifications, setNotifications] = useState([]);
 
@@ -389,8 +388,7 @@ export default function App() {
     const docId = `${classId}_${todayDate}`;
     
     const currentRecord = attendance[docId] || { students: {} };
-    const currentStatus = currentRecord.students?.[studentId];
-    const newStatus = currentStatus === 'hadir' ? null : 'hadir';
+    const newStatus = currentRecord.students?.[studentId] === 'hadir' ? null : 'hadir';
 
     try {
       await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'attendance', docId), {
@@ -417,22 +415,14 @@ export default function App() {
 
   const handleTeacherClockIn = async (e) => {
     e.preventDefault();
-    if (inputTeacherCode !== masterTeacherCode) {
-      notify("Kode Absensi Salah!", "error");
-      return;
-    }
+    if (inputTeacherCode !== masterTeacherCode) { notify("Kode Absensi Salah!", "error"); return; }
     const todayStr = getTodayDateStr();
     const docId = `${userName.replace(/\s+/g, '_')}_${todayStr}`;
     try {
       await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'teacher_attendance', docId), {
-        tutorName: userName,
-        date: todayStr,
-        checkInTime: new Date().toISOString(),
-        checkOutTime: null,
-        status: 'active'
+        tutorName: userName, date: todayStr, checkInTime: new Date().toISOString(), checkOutTime: null, status: 'active'
       });
-      notify("Berhasil Absen Masuk!");
-      setInputTeacherCode('');
+      notify("Berhasil Absen Masuk!"); setInputTeacherCode('');
     } catch (err) { notify("Gagal absen masuk.", "error"); }
   };
 
@@ -440,11 +430,8 @@ export default function App() {
     const todayStr = getTodayDateStr();
     const docId = `${userName.replace(/\s+/g, '_')}_${todayStr}`;
     try {
-      await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'teacher_attendance', docId), {
-        checkOutTime: new Date().toISOString(),
-        status: 'completed'
-      });
-      notify("Berhasil Absen Pulang/Selesai!");
+      await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'teacher_attendance', docId), { checkOutTime: new Date().toISOString(), status: 'completed' });
+      notify("Berhasil Absen Pulang!");
     } catch (err) { notify("Gagal absen pulang.", "error"); }
   };
 
@@ -452,8 +439,7 @@ export default function App() {
     const newCode = formData.get('code');
     if (!newCode) return;
     await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'global_config'), { teacherCode: newCode }, { merge: true });
-    notify("Kode Absensi Guru Diperbarui!");
-    setIsModalOpen(false);
+    notify("Kode Absensi Guru Diperbarui!"); setIsModalOpen(false);
   };
 
   const handleSendWA = (student, status) => {
@@ -461,32 +447,18 @@ export default function App() {
     window.open(`https://wa.me/${student.studentPhone}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  // --- CONFLICT CHECK LOGIC ---
   const checkScheduleConflict = (newClass) => {
     const newStart = timeToMinutes(newClass.time);
     const newEnd = timeToMinutes(newClass.endTime);
-    const newDay = newClass.type === 'regular' ? newClass.day : getDayNameFromDate(newClass.date);
-
     return classes.some(existing => {
       if (existing.room !== newClass.room) return false;
-      
       let isDayOverlap = false;
-      if (existing.type === 'regular' && newClass.type === 'regular') {
-        if (existing.day === newClass.day) isDayOverlap = true;
-      } else if (existing.type === 'special' && newClass.type === 'special') {
-        if (existing.date === newClass.date) isDayOverlap = true;
-      } else if (existing.type === 'regular' && newClass.type === 'special') {
-        if (existing.day === getDayNameFromDate(newClass.date)) isDayOverlap = true;
-      } else if (existing.type === 'special' && newClass.type === 'regular') {
-        if (getDayNameFromDate(existing.date) === newClass.day) isDayOverlap = true;
-      }
-
+      const existDay = existing.type === 'regular' ? existing.day : getDayNameFromDate(existing.date);
+      const incomingDay = newClass.type === 'regular' ? newClass.day : getDayNameFromDate(newClass.date);
+      if (existDay === incomingDay) isDayOverlap = true;
       if (!isDayOverlap) return false;
-
       const existStart = timeToMinutes(existing.time);
       const existEnd = timeToMinutes(existing.endTime);
-
-      // Check overlap: (StartA < EndB) and (EndA > StartB)
       return (newStart < existEnd && newEnd > existStart);
     });
   };
@@ -495,21 +467,9 @@ export default function App() {
     if (!user) return;
     try {
       if (type === 'classes') {
-        // Validate conflict
-        const isConflict = checkScheduleConflict(data);
-        if (isConflict) {
-          notify(`BENTROK! Ruang ${data.room} sudah terisi pada jam tersebut.`, "error");
-          return;
-        }
-
-        await addDoc(getCollectionPath('classes'), { 
-          ...data, 
-          studentIds: selectedStudentsForClass, 
-          createdAt: new Date().toISOString(), 
-          createdBy: user.uid 
-        });
-        notify("Jadwal Berhasil Dibuat!"); 
-        setSelectedStudentsForClass([]);
+        if (checkScheduleConflict(data)) { notify(`BENTROK! Ruang ${data.room} terisi.`, "error"); return; }
+        await addDoc(getCollectionPath('classes'), { ...data, studentIds: selectedStudentsForClass, createdAt: new Date().toISOString(), createdBy: user.uid });
+        notify("Jadwal Berhasil Dibuat!"); setSelectedStudentsForClass([]);
       } else if (type === 'students') {
         const studentRef = await addDoc(getCollectionPath('students'), { ...data, createdAt: new Date().toISOString(), createdBy: user.uid });
         const studentName = data.name.toUpperCase();
@@ -518,23 +478,47 @@ export default function App() {
         const totalCost = pkgPrice + regFeeInt;
 
         if (regPaymentType === 'lunas') {
-          await addDoc(getCollectionPath('payments'), { student: studentName, type: 'income', amount: totalCost, note: `PENDAFTARAN & PAKET ${regSelectedPackage} (${regLevel}) - LUNAS`, method: 'TUNAI', status: 'completed', month: new Date().toLocaleString('id-ID', { month: 'long' }), createdAt: new Date().toISOString(), createdBy: user.uid });
+          await addDoc(getCollectionPath('payments'), {
+            student: studentName, type: 'income', amount: totalCost, note: `PENDAFTARAN & PAKET ${regSelectedPackage} (${regLevel}) - LUNAS`, method: 'TUNAI', status: 'completed', month: new Date().toLocaleString('id-ID', { month: 'long' }), createdAt: new Date().toISOString(), createdBy: user.uid
+          });
         } else {
+          // Both 'cicilan' and default creates pending records for warning system
           if (regFeeInt > 0) {
              await addDoc(getCollectionPath('payments'), { student: studentName, type: 'income', amount: regFeeInt, note: `BIAYA PENDAFTARAN - ${studentName}`, method: 'TUNAI', status: 'completed', month: new Date().toLocaleString('id-ID', { month: 'long' }), createdAt: new Date().toISOString(), createdBy: user.uid });
           }
           const monthlyBill = Math.ceil(pkgPrice / parseInt(regInstallmentPlan));
           for (let i = 0; i < parseInt(regInstallmentPlan); i++) {
             const dueDate = regInstallmentDates[i] || new Date().toISOString();
-            await addDoc(getCollectionPath('payments'), { student: studentName, type: 'income', amount: monthlyBill, note: `CICILAN KE-${i+1} PAKET ${regSelectedPackage} (${regLevel})`, method: 'PENDING', status: 'pending', month: new Date(dueDate).toLocaleString('id-ID', { month: 'long' }), dueDate: dueDate, createdAt: new Date().toISOString(), createdBy: user.uid });
+            await addDoc(getCollectionPath('payments'), { student: studentName, type: 'income', amount: monthlyBill, note: `TAGIHAN KE-${i+1} PAKET ${regSelectedPackage} (${regLevel})`, method: 'PENDING', status: 'pending', month: new Date(dueDate).toLocaleString('id-ID', { month: 'long' }), dueDate: dueDate, createdAt: new Date().toISOString(), createdBy: user.uid });
           }
         }
-        notify("Siswa & Status Pembayaran Tersimpan!");
+        notify("Siswa Tersimpan!");
       } else if (modalType === 'package_price') {
          await handleUpdatePrice(data.packageName, data.level, data.price);
       } else if (modalType === 'income' || modalType === 'expense') {
          await addDoc(getCollectionPath('payments'), { ...data, type: modalType, status: 'completed', createdAt: new Date().toISOString(), createdBy: user.uid });
          notify("Transaksi Berhasil!");
+      } else if (modalType === 'edit_student') {
+        // Handle Student Update
+        if (selectedStudentToEdit) {
+           await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', selectedStudentToEdit.id), data);
+           notify("Data Siswa Diperbarui!");
+        }
+      } else if (modalType === 'add_bill') {
+        // Add new pending bill for student
+        await addDoc(getCollectionPath('payments'), {
+           student: selectedStudentToEdit.name.toUpperCase(),
+           type: 'income',
+           amount: parseInt(data.amount),
+           note: data.note.toUpperCase(),
+           method: 'PENDING',
+           status: 'pending',
+           month: new Date(data.dueDate).toLocaleString('id-ID', { month: 'long' }),
+           dueDate: data.dueDate,
+           createdAt: new Date().toISOString(),
+           createdBy: user.uid
+        });
+        notify("Tagihan Baru Ditambahkan!");
       } else {
         await addDoc(getCollectionPath(type), { ...data, createdAt: new Date().toISOString(), createdBy: user.uid });
         notify("Data Tersimpan!");
@@ -559,6 +543,12 @@ export default function App() {
     catch (error) { notify("Gagal hapus.", "error"); }
   };
 
+  const handleEditStudent = (student) => {
+    setSelectedStudentToEdit(student);
+    setModalType('edit_student');
+    setIsModalOpen(true);
+  };
+
   const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 
   if (isAuthLoading) return <div className="h-screen w-full flex items-center justify-center bg-gray-950 text-white"><RefreshCw className="animate-spin text-indigo-500" size={48} /></div>;
@@ -573,8 +563,6 @@ export default function App() {
   const sdStudents = students.filter(s => s.level === 'SD');
   const smpStudents = students.filter(s => s.level === 'SMP');
   const filteredStudents = studentLevelFilter === 'all' ? students : (studentLevelFilter === 'SD' ? sdStudents : smpStudents);
-  
-  // Filter for Dashboard Views
   const todayClasses = classes.filter(c => {
     if (c.type === 'regular') return c.day.toUpperCase() === getTodayIndo();
     if (c.type === 'special') return c.date === getTodayDateStr();
@@ -600,7 +588,6 @@ export default function App() {
     return attendance[docId]?.students?.[studentId] || 'absen';
   };
 
-  // Helper for Occupancy Map
   const getRoomOccupancy = (roomName, dateStr) => {
     const dayName = getDayNameFromDate(dateStr);
     return classes.filter(c => {
@@ -652,6 +639,7 @@ export default function App() {
         <div className="p-12">
           {activeTab === 'dashboard' && (
             <div className="space-y-12 animate-in fade-in duration-700">
+               {/* Dashboard Content */}
                <div className="bg-indigo-600 rounded-[3.5rem] p-12 text-white relative overflow-hidden shadow-2xl">
                   <div className="relative z-10"><h3 className="text-4xl font-black italic">Halo, {userName}! 👋</h3><p className="mt-5 font-bold uppercase tracking-widest text-sm opacity-90">{userRole === 'tutor' ? 'Saatnya mengajar! Absensi siswa diaktifkan untuk kelas hari ini.' : 'Sistem SD & SMP Gemilang Terintegrasi Cloud.'}</p></div>
                   <GraduationCap className="absolute -right-16 -bottom-16 text-white/5 w-96 h-96 rotate-12" />
@@ -659,6 +647,7 @@ export default function App() {
                
                {userRole === 'tutor' ? (
                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                    {/* Tutor Dashboard */}
                     <div className="lg:col-span-1 space-y-8">
                       <div className="bg-white p-8 rounded-[2.5rem] shadow-lg border border-gray-100 flex flex-col justify-between h-full">
                         <div>
@@ -709,6 +698,7 @@ export default function App() {
                     </div>
                  </div>
                ) : (
+                 // ADMIN DASHBOARD CONTENT
                  <>
                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                       <StatCard title="Saldo Tunai" value={formatIDR(financeMetrics.cash)} icon={Wallet} color="bg-indigo-500" />
@@ -752,7 +742,6 @@ export default function App() {
             <div className="space-y-8 animate-in slide-in-from-bottom-4">
                {userRole === 'admin' && (
                  <div className="flex flex-col gap-6">
-                   {/* PETA OKUPANSI KELAS */}
                    <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-gray-100">
                       <div className="flex justify-between items-center mb-6">
                         <h3 className="text-lg font-black uppercase italic text-gray-700 flex items-center gap-2"><LayoutGrid size={18}/> Peta Ketersediaan Ruangan</h3>
@@ -811,7 +800,6 @@ export default function App() {
             </div>
           )}
 
-          {/* ... (Other Tabs remain the same) ... */}
           {activeTab === 'tutors' && (
             <div className="space-y-8 animate-in slide-in-from-bottom-4">
                {userRole === 'admin' && (
@@ -851,7 +839,7 @@ export default function App() {
                         <td className="px-12 py-10"><div className="flex items-center space-x-6"><div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl border ${s.level === 'SD' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>{s.name?.[0]}</div><div><p className="font-black text-gray-800 text-lg uppercase italic tracking-tighter leading-none mb-2">{s.name}</p><p className="text-[9px] font-bold text-gray-400 uppercase italic">{s.originSchool}</p></div></div></td>
                         <td className="px-12 py-10"><p className="text-[10px] font-black uppercase inline-block px-3 py-1 rounded-lg mb-2 bg-gray-100">{s.level} - KELAS {s.grade}</p><p className="text-[10px] text-gray-400 font-bold uppercase italic">HP: {s.studentPhone}</p></td>
                         <td className="px-12 py-10"><p className="text-sm font-black text-gray-700 italic">PAKET {s.package}</p><p className="text-[9px] text-emerald-500 font-black uppercase mt-2 italic flex items-center space-x-1.5"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span><span>AKTIF</span></p></td>
-                        <td className="px-12 py-10 text-right"><button onClick={() => handleDelete('students', s.id)} className="p-4 text-gray-300 hover:text-rose-600 transition-all"><Trash2 size={18} /></button></td>
+                        <td className="px-12 py-10 text-right"><button onClick={() => handleEditStudent(s)} className="p-4 text-gray-300 hover:text-indigo-600 transition-all"><Edit2 size={18} /></button><button onClick={() => handleDelete('students', s.id)} className="p-4 text-gray-300 hover:text-rose-600 transition-all"><Trash2 size={18} /></button></td>
                       </tr>
                     ))}
                   </tbody>
@@ -861,6 +849,7 @@ export default function App() {
           )}
           {activeTab === 'payments' && (
             <div className="space-y-8 animate-in slide-in-from-bottom-4">
+              {/* FINANCE NAV */}
               <div className="bg-white p-2 rounded-[2.5rem] shadow-sm border border-gray-100 inline-flex items-center space-x-2">
                 {['summary', 'transactions', 'arrears', 'packages'].map(t => (
                   <button key={t} onClick={() => setFinanceTab(t)} className={`px-8 py-4 rounded-[1.8rem] text-[10px] font-black uppercase tracking-widest transition-all ${financeTab === t ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400'}`}>
@@ -868,7 +857,7 @@ export default function App() {
                   </button>
                 ))}
               </div>
-              {/* ... (Finance Summary, Transactions, Arrears, Packages remain same) ... */}
+              {/* ... (Finance Summary, Transactions, Arrears remain same) ... */}
               {financeTab === 'summary' && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                   <div className="lg:col-span-2 space-y-10">
@@ -1008,14 +997,14 @@ export default function App() {
         <div className="fixed inset-0 bg-gray-950/90 backdrop-blur-xl flex items-center justify-center z-[100] p-6">
           <div className="bg-white rounded-[3.5rem] w-full max-w-4xl max-h-[90vh] shadow-2xl overflow-hidden border border-white/20 animate-in zoom-in duration-300 flex flex-col">
             <div className="px-14 py-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <div><h3 className="font-black text-gray-800 text-3xl tracking-tighter uppercase italic">{modalType === 'attendance_check' ? 'Kontrol Absensi' : modalType === 'set_teacher_code' ? 'Kode Absensi Guru' : modalType === 'package_price' ? 'Update Harga' : 'Input Data'}</h3><p className="text-[10px] text-indigo-500 font-black uppercase mt-3 italic underline">Bimbel Gemilang Edu Pusat</p></div>
-              <button onClick={() => { setIsModalOpen(false); setSelectedStudentsForClass([]); setSelectedClassForAttendance(null); }} className="bg-white p-5 rounded-[2rem] active:scale-90 shadow-xl"><X size={24} /></button>
+              <div><h3 className="font-black text-gray-800 text-3xl tracking-tighter uppercase italic">{modalType === 'attendance_check' ? 'Kontrol Absensi' : modalType === 'set_teacher_code' ? 'Kode Absensi Guru' : modalType === 'package_price' ? 'Update Harga' : modalType === 'edit_student' ? 'Edit Data Siswa' : 'Input Data'}</h3><p className="text-[10px] text-indigo-500 font-black uppercase mt-3 italic underline">Bimbel Gemilang Edu Pusat</p></div>
+              <button onClick={() => { setIsModalOpen(false); setSelectedStudentsForClass([]); setSelectedClassForAttendance(null); setSelectedStudentToEdit(null); }} className="bg-white p-5 rounded-[2rem] active:scale-90 shadow-xl"><X size={24} /></button>
             </div>
             
             <div className="p-14 overflow-y-auto">
               {modalType === 'attendance_check' && selectedClassForAttendance ? (
                 <div className="space-y-8">
-                  {/* Attendance Check UI ... same as before */}
+                  {/* Attendance Check UI */}
                   <div className="p-6 bg-indigo-50 rounded-3xl border border-indigo-100 flex justify-between items-center">
                     <div><p className="text-xs font-black text-indigo-400 uppercase">Jadwal</p><h4 className="text-2xl font-black text-indigo-900 italic uppercase">{selectedClassForAttendance.subject}</h4></div>
                     <div className="text-right"><p className="text-xs font-black text-indigo-400 uppercase">Tentor</p><p className="text-lg font-black text-indigo-900">{selectedClassForAttendance.tutor}</p></div>
@@ -1049,7 +1038,6 @@ export default function App() {
                   if (modalType === 'student') handleAddData('students', data);
                   else if (modalType === 'tutor') handleAddData('tutors', data);
                   else if (modalType === 'class') {
-                    // Include schedule type and optional date
                     handleAddData('classes', { 
                       ...data, 
                       type: classScheduleType, 
@@ -1058,6 +1046,11 @@ export default function App() {
                   }
                   else if (modalType === 'package_price') handleUpdatePrice(data.packageName, data.level, data.price);
                   else if (modalType === 'set_teacher_code') handleSaveMasterCode(formData);
+                  else if (modalType === 'edit_student') handleAddData('payments', data); // This handles adding payments in edit mode too if structured right, or calls separate update logic
+                  else if (modalType === 'add_bill') {
+                     // Special handler for adding bill
+                     handleAddData('payments', { ...data, type: 'add_bill' });
+                  }
                   else handleAddData('payments', { ...data, type: modalType, status: 'completed' }); 
                 }}>
                   {modalType === 'set_teacher_code' ? (
@@ -1141,6 +1134,77 @@ export default function App() {
                       </div>
                       <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-8 rounded-[3rem] shadow-2xl flex items-center justify-center space-x-5 uppercase tracking-[0.4em] text-sm italic active:scale-[0.98] transition-all"><CheckCircle2 size={24} strokeWidth={3} /><span>Simpan Jadwal</span></button>
                     </>
+                  ) : modalType === 'edit_student' ? (
+                     <div className="space-y-8">
+                        <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100">
+                           <h4 className="font-black text-gray-800 uppercase italic mb-4">Edit Data Siswa</h4>
+                           <div className="grid grid-cols-2 gap-4">
+                             <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 italic">Nama</label><input name="name" defaultValue={selectedStudentToEdit.name} className="w-full px-4 py-3 bg-white border-2 rounded-xl text-sm font-bold uppercase" /></div>
+                             <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 italic">Kelas</label><input name="grade" defaultValue={selectedStudentToEdit.grade} className="w-full px-4 py-3 bg-white border-2 rounded-xl text-sm font-bold uppercase" /></div>
+                             <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 italic">HP</label><input name="studentPhone" defaultValue={selectedStudentToEdit.studentPhone} className="w-full px-4 py-3 bg-white border-2 rounded-xl text-sm font-bold" /></div>
+                           </div>
+                           <button type="button" onClick={(e) => { 
+                             const form = e.target.closest('form');
+                             const updatedData = {
+                               name: form.name.value,
+                               grade: form.grade.value,
+                               studentPhone: form.studentPhone.value
+                             };
+                             // Update student logic would go here, simplified for brevity to reuse main handler or separate
+                             updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', selectedStudentToEdit.id), updatedData);
+                             notify("Data Siswa Diupdate!");
+                           }} className="mt-4 w-full py-3 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase">Simpan Perubahan Data</button>
+                        </div>
+
+                        <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100">
+                           <h4 className="font-black text-amber-800 uppercase italic mb-4 flex items-center gap-2"><DollarSign size={18}/> Kelola Tagihan</h4>
+                           
+                           {/* List Pending Bills for this student */}
+                           <div className="space-y-3 mb-6">
+                             <p className="text-[10px] font-bold text-gray-400 uppercase">Tagihan Belum Lunas:</p>
+                             {payments.filter(p => p.student === selectedStudentToEdit.name && p.status === 'pending').map(p => (
+                               <div key={p.id} className="flex justify-between items-center p-3 bg-white border border-amber-200 rounded-xl">
+                                  <div><p className="text-[10px] font-black uppercase text-amber-700">{p.note}</p><p className="text-[9px] font-bold text-gray-400">{formatIDR(p.amount)}</p></div>
+                                  <button type="button" onClick={() => handleSettleArrear(p.id)} className="px-3 py-1 bg-emerald-500 text-white rounded-lg text-[9px] font-bold uppercase">Lunas</button>
+                               </div>
+                             ))}
+                             {payments.filter(p => p.student === selectedStudentToEdit.name && p.status === 'pending').length === 0 && <p className="text-[10px] italic text-gray-400">Tidak ada tagihan pending.</p>}
+                           </div>
+
+                           <div className="pt-4 border-t border-amber-200">
+                             <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Tambah Tagihan Baru (Hutang)</p>
+                             <div className="grid grid-cols-2 gap-3 mb-3">
+                               <input id="newBillAmount" type="number" placeholder="Nominal Rp..." className="px-3 py-2 bg-white border rounded-lg text-xs" />
+                               <input id="newBillNote" type="text" placeholder="Keterangan..." className="px-3 py-2 bg-white border rounded-lg text-xs" />
+                               <input id="newBillDate" type="date" className="col-span-2 px-3 py-2 bg-white border rounded-lg text-xs" />
+                             </div>
+                             <button type="button" onClick={() => {
+                               const amt = document.getElementById('newBillAmount').value;
+                               const note = document.getElementById('newBillNote').value;
+                               const date = document.getElementById('newBillDate').value;
+                               if(amt && note && date) {
+                                 setModalType('add_bill'); // Switch mode slightly to handle logic in main submit or just call addDoc here directly
+                                 // Directly calling addDoc for cleaner flow inside this button
+                                 addDoc(getCollectionPath('payments'), {
+                                    student: selectedStudentToEdit.name,
+                                    type: 'income',
+                                    amount: parseInt(amt),
+                                    note: note.toUpperCase(),
+                                    method: 'PENDING',
+                                    status: 'pending',
+                                    month: new Date(date).toLocaleString('id-ID', { month: 'long' }),
+                                    dueDate: date,
+                                    createdAt: new Date().toISOString(),
+                                    createdBy: user.uid
+                                 });
+                                 notify("Tagihan Baru Ditambahkan!");
+                               } else {
+                                 notify("Lengkapi data tagihan!", "error");
+                               }
+                             }} className="w-full py-3 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase">Simpan Tagihan Baru</button>
+                           </div>
+                        </div>
+                     </div>
                   ) : modalType === 'tutor' ? (
                     <>
                       <div className="space-y-3"><label className="text-[11px] font-black italic">Nama Guru</label><input name="name" required placeholder="NAMA LENGKAP" className="w-full px-8 py-6 bg-gray-100 border-2 rounded-[1.8rem] font-black uppercase" /></div>
@@ -1161,9 +1225,32 @@ export default function App() {
                       <input name="studentPhone" type="hidden" value="-" />
                       <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-8 rounded-[3rem] shadow-2xl flex items-center justify-center space-x-5 uppercase tracking-[0.4em] text-sm italic active:scale-[0.98] transition-all"><CheckCircle2 size={24} strokeWidth={3} /><span>Simpan Data</span></button>
                     </>
+                  ) : modalType === 'package_price' ? (
+                    <div className="space-y-8">
+                       <div className="space-y-3">
+                          <label className="text-[10px] font-black text-gray-400 uppercase italic">Pilih Paket</label>
+                          <select name="packageName" defaultValue={selectedPackage} required className="w-full px-8 py-5 bg-gray-50 border-2 rounded-[1.8rem] font-black uppercase italic"><option>1 BULAN</option><option>3 BULAN</option><option>6 BULAN</option></select>
+                       </div>
+                       <div className="space-y-3">
+                          <label className="text-[10px] font-black text-gray-400 uppercase italic">Jenjang Pendidikan</label>
+                          <select name="level" defaultValue={selectedLevel} required className="w-full px-8 py-5 bg-gray-50 border-2 rounded-[1.8rem] font-black uppercase italic"><option>SD</option><option>SMP</option></select>
+                       </div>
+                       <div className="space-y-3">
+                          <label className="text-[10px] font-black text-gray-400 uppercase italic">Harga Baru (Rp)</label>
+                          <input name="price" type="number" required placeholder="INPUT HARGA..." className="w-full px-8 py-5 bg-gray-50 border-2 rounded-[1.8rem] font-black italic" />
+                       </div>
+                       <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-8 rounded-[3rem] shadow-2xl flex items-center justify-center space-x-5 uppercase tracking-[0.4em] text-sm italic active:scale-[0.98] transition-all"><CheckCircle2 size={24} strokeWidth={3} /><span>Simpan Perubahan</span></button>
+                    </div>
                   ) : (
-                    // Payment / Package forms (simplified re-use)
-                    <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-8 rounded-[3rem] shadow-2xl flex items-center justify-center space-x-5 uppercase tracking-[0.4em] text-sm italic active:scale-[0.98] transition-all"><CheckCircle2 size={24} strokeWidth={3} /><span>Simpan Data</span></button>
+                    // Payment forms (income/expense)
+                    <div className="space-y-8">
+                      <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Keterangan Transaksi</label><input name="note" required placeholder="CONTOH: BAYAR LISTRIK / SPP" className="w-full px-8 py-5 bg-gray-50 border-2 rounded-2xl font-black uppercase italic" /></div>
+                      <div className="grid grid-cols-2 gap-8">
+                        <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Nominal Uang</label><input name="amount" type="number" required placeholder="RP..." className="w-full px-8 py-5 bg-gray-50 border-2 rounded-2xl font-black italic" /></div>
+                        <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Metode</label><select name="method" required className="w-full px-8 py-5 bg-gray-50 border-2 rounded-2xl font-black uppercase italic"><option value="">-- PILIH --</option><option>TUNAI</option><option>TRANSFER BANK</option></select></div>
+                      </div>
+                      <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-8 rounded-[3rem] shadow-2xl flex items-center justify-center space-x-5 uppercase tracking-[0.4em] text-sm italic active:scale-[0.98] transition-all"><CheckCircle2 size={24} strokeWidth={3} /><span>Simpan Data</span></button>
+                    </div>
                   )}
                 </form>
               )}
