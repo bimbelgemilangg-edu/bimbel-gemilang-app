@@ -37,7 +37,9 @@ import {
   AlertTriangle,
   Calculator,
   CalendarDays,
-  Phone
+  Phone,
+  MapPin,
+  Megaphone
 } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { 
@@ -74,6 +76,9 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const getCollectionPath = (name) => collection(db, 'artifacts', appId, 'public', 'data', name);
+
+// --- CONSTANTS ---
+const CLASS_ROOMS = ['MERKURIUS', 'VENUS', 'BUMI', 'MARS', 'JUPITER'];
 
 // --- UI COMPONENTS ---
 
@@ -300,7 +305,6 @@ export default function App() {
   const handleLogin = (role, name) => { setIsLoggedIn(true); setUserRole(role); setUserName(name); notify(`Welcome, ${name}!`); };
   const handleLogout = () => { setIsLoggedIn(false); setUserRole(null); setUserName(''); setActiveTab('dashboard'); };
 
-  // Helper untuk mendapatkan harga paket berdasarkan nama dan jenjang
   const getPackagePriceVal = () => {
     const p = packagePrices.find(p => p.name === regSelectedPackage && p.level === regLevel);
     return parseInt(p?.price || 0);
@@ -312,57 +316,37 @@ export default function App() {
   const handleAddData = async (type, data) => {
     if (!user) return;
     try {
-      // Logic khusus untuk pendaftaran siswa dengan pembayaran
       if (type === 'students') {
         const studentRef = await addDoc(getCollectionPath('students'), { ...data, createdAt: new Date().toISOString(), createdBy: user.uid });
         const studentName = data.name.toUpperCase();
-
         const pkgPrice = getPackagePriceVal();
         const regFeeInt = parseInt(regFee || 0);
         const totalCost = pkgPrice + regFeeInt;
 
         if (regPaymentType === 'lunas') {
-          // LUNAS: Masuk Income
           await addDoc(getCollectionPath('payments'), {
-            student: studentName,
-            type: 'income',
-            amount: totalCost,
+            student: studentName, type: 'income', amount: totalCost,
             note: `PENDAFTARAN & PAKET ${regSelectedPackage} (${regLevel}) - LUNAS`,
-            method: 'TUNAI', 
-            status: 'completed',
+            method: 'TUNAI', status: 'completed',
             month: new Date().toLocaleString('id-ID', { month: 'long' }),
-            createdAt: new Date().toISOString(),
-            createdBy: user.uid
+            createdAt: new Date().toISOString(), createdBy: user.uid
           });
         } else {
-          // CICILAN:
           if (regFeeInt > 0) {
              await addDoc(getCollectionPath('payments'), {
-              student: studentName,
-              type: 'income',
-              amount: regFeeInt,
-              note: `BIAYA PENDAFTARAN - ${studentName}`,
-              method: 'TUNAI',
-              status: 'completed',
-              month: new Date().toLocaleString('id-ID', { month: 'long' }),
-              createdAt: new Date().toISOString(),
-              createdBy: user.uid
+              student: studentName, type: 'income', amount: regFeeInt,
+              note: `BIAYA PENDAFTARAN - ${studentName}`, method: 'TUNAI', status: 'completed',
+              month: new Date().toLocaleString('id-ID', { month: 'long' }), createdAt: new Date().toISOString(), createdBy: user.uid
             });
           }
           const monthlyBill = Math.ceil(pkgPrice / parseInt(regInstallmentPlan));
           for (let i = 0; i < parseInt(regInstallmentPlan); i++) {
             const dueDate = regInstallmentDates[i] || new Date().toISOString();
             await addDoc(getCollectionPath('payments'), {
-              student: studentName,
-              type: 'income',
-              amount: monthlyBill,
+              student: studentName, type: 'income', amount: monthlyBill,
               note: `CICILAN KE-${i+1} PAKET ${regSelectedPackage} (${regLevel})`,
-              method: 'PENDING',
-              status: 'pending', // Memicu Warning
-              month: new Date(dueDate).toLocaleString('id-ID', { month: 'long' }),
-              dueDate: dueDate,
-              createdAt: new Date().toISOString(),
-              createdBy: user.uid
+              method: 'PENDING', status: 'pending', month: new Date(dueDate).toLocaleString('id-ID', { month: 'long' }),
+              dueDate: dueDate, createdAt: new Date().toISOString(), createdBy: user.uid
             });
           }
         }
@@ -389,9 +373,7 @@ export default function App() {
   const handleSettleArrear = async (id) => {
     try {
       await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'payments', id), {
-        status: 'paid',
-        type: 'income', 
-        paidAt: new Date().toISOString()
+        status: 'paid', type: 'income', paidAt: new Date().toISOString()
       });
       notify("Tagihan Lunas!");
     } catch (error) { notify("Gagal update status.", "error"); }
@@ -449,12 +431,7 @@ export default function App() {
           <div><h2 className="text-2xl font-black uppercase italic tracking-tighter">{activeTab === 'dashboard' ? 'Overview' : activeTab.replace('-', ' ')}</h2><p className="text-[10px] text-gray-400 font-black uppercase mt-1">Sistem Bimbel Gemilang Cloud</p></div>
           <div className="flex items-center space-x-10 text-right">
              <div className="hidden sm:block"><p className="text-xl font-black leading-none">{currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p><p className="text-[9px] text-indigo-500 font-black mt-1.5 uppercase">{currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</p></div>
-             {userRole === 'admin' && (
-                <div className="flex space-x-2">
-                  <button onClick={() => { setModalType('tutor'); setIsModalOpen(true); }} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-2xl text-xs font-black shadow-xl flex items-center space-x-2"><Plus size={18} strokeWidth={3} /><span>GURU</span></button>
-                  <button onClick={() => { setModalType('student'); setIsModalOpen(true); }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-4 rounded-2xl text-xs font-black shadow-xl flex items-center space-x-2"><Plus size={18} strokeWidth={3} /><span>SISWA</span></button>
-                </div>
-             )}
+             {userRole === 'admin' && <button onClick={() => { setModalType('student'); setIsModalOpen(true); }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl text-xs font-black shadow-xl flex items-center space-x-2"><Plus size={18} strokeWidth={3} /><span>DAFTAR SISWA</span></button>}
           </div>
         </header>
 
@@ -477,7 +454,7 @@ export default function App() {
                     <div className="space-y-6">
                       {(userRole === 'admin' ? todayClasses : myTodayClasses).map(c => (
                         <div key={c.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-[2.5rem] border group hover:border-indigo-200 transition-all">
-                          <div className="flex items-center space-x-6"><div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex flex-col items-center justify-center font-black"><p className="text-[9px] opacity-70">JAM</p><p className="text-xs">{c.time}</p></div><div><p className="font-black text-gray-800 text-lg uppercase italic leading-none">{c.subject}</p><p className="text-[9px] font-bold text-gray-400 uppercase mt-3">TENTOR: {c.tutor}</p></div></div>
+                          <div className="flex items-center space-x-6"><div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex flex-col items-center justify-center font-black"><p className="text-[9px] opacity-70">JAM</p><p className="text-xs">{c.time}</p></div><div><p className="font-black text-gray-800 text-lg uppercase italic leading-none">{c.subject}</p><div className="text-[9px] font-bold text-gray-400 uppercase mt-2 flex items-center space-x-2"><MapPin size={10} className="text-indigo-500" /><span>{c.room}</span><UserCheck size={10} className="text-indigo-500 ml-2" /><span>{c.tutor}</span></div><p className="text-[8px] font-bold text-indigo-400 uppercase mt-1 italic">Peserta: {c.target}</p></div></div>
                           <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
                         </div>
                       ))}
@@ -500,6 +477,7 @@ export default function App() {
 
           {activeTab === 'tutors' && (
             <div className="space-y-8 animate-in slide-in-from-bottom-4">
+               {userRole === 'admin' && <div className="flex justify-end"><button onClick={() => { setModalType('tutor'); setIsModalOpen(true); }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl text-xs font-black shadow-xl flex items-center space-x-2"><Plus size={18} strokeWidth={3} /><span>TAMBAH GURU</span></button></div>}
                <div className="bg-white rounded-[3.5rem] shadow-sm border border-gray-100 overflow-hidden">
                 <table className="w-full text-left">
                   <thead className="bg-gray-50/50 border-b"><tr><th className="px-12 py-10 text-[10px] font-black text-gray-400 uppercase">Nama Guru</th><th className="px-12 py-10 text-[10px] font-black text-gray-400 uppercase">Mata Pelajaran</th><th className="px-12 py-10 text-[10px] font-black text-gray-400 uppercase">Kontak</th><th className="px-12 py-10 text-[10px] font-black text-gray-400 uppercase text-right">Opsi</th></tr></thead>
@@ -508,7 +486,7 @@ export default function App() {
                       <tr key={t.id} className="group hover:bg-indigo-50/10">
                         <td className="px-12 py-10"><div className="flex items-center space-x-6"><div className="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl border bg-indigo-50 text-indigo-600 border-indigo-100">{t.name?.[0]}</div><div><p className="font-black text-gray-800 text-lg uppercase italic tracking-tighter leading-none mb-2">{t.name}</p><p className="text-[9px] font-bold text-gray-400 uppercase italic">ID: {t.id.slice(0,5)}</p></div></div></td>
                         <td className="px-12 py-10"><p className="text-sm font-black text-gray-700 italic">{t.subject}</p></td>
-                        <td className="px-12 py-10"><p className="text-[10px] font-black text-gray-400 uppercase italic">HP: {t.phone}</p></td>
+                        <td className="px-12 py-10"><p className="text-[10px] font-black text-gray-400 uppercase italic flex items-center space-x-2"><Phone size={12} className="text-indigo-500" /><span>{t.phone}</span></p></td>
                         <td className="px-12 py-10 text-right"><button onClick={() => handleDelete('tutors', t.id)} className="p-4 text-gray-300 hover:text-rose-600 transition-all"><Trash2 size={18} /></button></td>
                       </tr>
                     ))}
@@ -519,6 +497,7 @@ export default function App() {
             </div>
           )}
 
+          {/* ... (Students and Payments tabs remain the same) ... */}
           {activeTab === 'students' && (
             <div className="space-y-8 animate-in slide-in-from-bottom-4">
               <div className="bg-white p-2 rounded-[2rem] shadow-sm border border-gray-100 inline-flex items-center space-x-2">
@@ -553,6 +532,7 @@ export default function App() {
                 ))}
               </div>
 
+              {/* ... (Finance Summary, Transactions, Arrears remain) ... */}
               {financeTab === 'summary' && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                   <div className="lg:col-span-2 space-y-10">
@@ -697,7 +677,43 @@ export default function App() {
             </div>
           )}
 
-          {['classes', 'resources', 'my-students'].includes(activeTab) && (
+          {activeTab === 'classes' && (
+            <div className="space-y-8 animate-in slide-in-from-bottom-4">
+               {userRole === 'admin' && <div className="flex justify-end"><button onClick={() => { setModalType('class'); setIsModalOpen(true); }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl text-xs font-black shadow-xl flex items-center space-x-2"><Plus size={18} strokeWidth={3} /><span>BUAT JADWAL</span></button></div>}
+               
+               <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
+                 {['SENIN','SELASA','RABU','KAMIS','JUMAT','SABTU','MINGGU'].map(day => {
+                   const dayClasses = classes.filter(c => c.day === day);
+                   if (dayClasses.length === 0) return null;
+                   return (
+                     <div key={day} className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm">
+                       <h3 className="text-lg font-black uppercase italic mb-6 text-indigo-700 border-b pb-4">{day}</h3>
+                       <div className="space-y-4">
+                         {dayClasses.map(c => (
+                           <div key={c.id} className="p-5 bg-gray-50 rounded-[2rem] border border-gray-100 flex justify-between items-center group hover:border-indigo-200 transition-all relative overflow-hidden">
+                             <div className="absolute top-0 right-0 p-2 opacity-5"><School size={64} /></div>
+                             <div>
+                               <div className="flex items-center space-x-2 mb-1">
+                                 <span className="bg-indigo-600 text-white px-2 py-0.5 rounded-lg text-[9px] font-black uppercase">{c.room}</span>
+                                 <span className="text-[10px] font-bold text-gray-400">{c.time}</span>
+                               </div>
+                               <p className="font-black text-gray-800 text-sm uppercase">{c.subject}</p>
+                               <p className="text-[9px] font-bold text-indigo-500 uppercase mt-1 italic">Tentor: {c.tutor}</p>
+                               <p className="text-[9px] font-bold text-gray-400 uppercase mt-1 italic">Siswa: {c.target}</p>
+                             </div>
+                             {userRole === 'admin' && <button onClick={() => handleDelete('classes', c.id)} className="p-3 text-gray-300 hover:text-rose-500 transition-all z-10"><Trash2 size={16} /></button>}
+                           </div>
+                         ))}
+                       </div>
+                     </div>
+                   );
+                 })}
+               </div>
+               {classes.length === 0 && <div className="py-40 text-center italic text-gray-200 uppercase font-black tracking-widest opacity-50">Belum ada jadwal kelas</div>}
+            </div>
+          )}
+
+          {['resources', 'my-students'].includes(activeTab) && (
             <div className="bg-white rounded-[3.5rem] shadow-sm border border-gray-100 p-40 flex flex-col items-center justify-center text-center">
                <RefreshCw className="text-indigo-200 animate-spin mb-10" size={64} />
                <h3 className="text-4xl font-black text-gray-800 uppercase tracking-tighter italic">Sync Cloud</h3>
@@ -714,7 +730,7 @@ export default function App() {
         <div className="fixed inset-0 bg-gray-950/90 backdrop-blur-xl flex items-center justify-center z-[100] p-6">
           <div className="bg-white rounded-[3.5rem] w-full max-w-4xl max-h-[90vh] shadow-2xl overflow-hidden border border-white/20 animate-in zoom-in duration-300 flex flex-col">
             <div className="px-14 py-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <div><h3 className="font-black text-gray-800 text-3xl tracking-tighter uppercase italic">{modalType === 'student' ? 'Pendaftaran Siswa' : modalType === 'tutor' ? 'Data Guru' : modalType === 'package_price' ? 'Update Harga' : 'Data Keuangan'}</h3><p className="text-[10px] text-indigo-500 font-black uppercase mt-3 italic underline">Bimbel Gemilang Edu Pusat</p></div>
+              <div><h3 className="font-black text-gray-800 text-3xl tracking-tighter uppercase italic">{modalType === 'student' ? 'Pendaftaran Siswa' : modalType === 'tutor' ? 'Data Guru' : modalType === 'class' ? 'Jadwal Kelas' : 'Data Keuangan'}</h3><p className="text-[10px] text-indigo-500 font-black uppercase mt-3 italic underline">Bimbel Gemilang Edu Pusat</p></div>
               <button onClick={() => setIsModalOpen(false)} className="bg-white p-5 rounded-[2rem] active:scale-90 shadow-xl"><X size={24} /></button>
             </div>
             
@@ -725,11 +741,13 @@ export default function App() {
               
               if (modalType === 'student') handleAddData('students', data);
               else if (modalType === 'tutor') handleAddData('tutors', data);
+              else if (modalType === 'class') handleAddData('classes', data);
               else if (modalType === 'package_price') handleUpdatePrice(data.packageName, data.level, data.price);
               else handleAddData('payments', { ...data, type: modalType, status: 'completed' }); 
             }}>
               {modalType === 'student' ? (
                 <>
+                  {/* ... (Student Form fields remain same) ... */}
                   <div className="space-y-8">
                     <div className="flex items-center space-x-3 border-b border-indigo-100 pb-5"><User className="text-indigo-600" size={24} /><h4 className="font-black uppercase tracking-widest text-sm italic">Identitas Siswa</h4></div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -815,6 +833,42 @@ export default function App() {
                   <div className="space-y-3">
                     <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Nomor HP</label>
                     <input name="phone" type="tel" placeholder="08XXXXXXXXXX" required className="w-full px-8 py-6 bg-gray-100 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-[1.8rem] outline-none transition-all text-sm font-black uppercase tracking-widest" />
+                  </div>
+                </>
+              ) : modalType === 'class' ? (
+                <>
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Mata Pelajaran</label>
+                    <input name="subject" required placeholder="NAMA KELAS/MAPEL" className="w-full px-8 py-6 bg-gray-100 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-[1.8rem] outline-none transition-all text-sm font-black uppercase" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                      <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Hari</label>
+                      <select name="day" className="w-full px-8 py-6 bg-gray-100 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-[1.8rem] outline-none transition-all text-sm font-black appearance-none italic">
+                        <option>SENIN</option><option>SELASA</option><option>RABU</option><option>KAMIS</option><option>JUMAT</option><option>SABTU</option><option>MINGGU</option>
+                      </select>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Jam</label>
+                      <input name="time" type="time" required className="w-full px-8 py-6 bg-gray-100 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-[1.8rem] outline-none transition-all text-sm font-black" />
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Ruangan</label>
+                    <select name="room" required className="w-full px-8 py-6 bg-gray-100 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-[1.8rem] outline-none transition-all text-sm font-black appearance-none italic">
+                      {CLASS_ROOMS.map(r => <option key={r}>{r}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Target Siswa / Jenjang</label>
+                    <input name="target" required placeholder="MISAL: KELAS 5 SD / GRUP A" className="w-full px-8 py-6 bg-gray-100 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-[1.8rem] outline-none transition-all text-sm font-black uppercase" />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Pilih Tentor</label>
+                    <select name="tutor" required className="w-full px-8 py-6 bg-gray-100 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-[1.8rem] outline-none transition-all text-sm font-black appearance-none italic">
+                      <option value="">-- PILIH TENTOR --</option>
+                      {tutors.map((t, idx) => <option key={idx} value={t.name}>{t.name}</option>)}
+                    </select>
                   </div>
                 </>
               ) : modalType === 'package_price' ? (
