@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, doc, onSnapshot, query, orderBy, runTransaction, serverTimestamp, deleteDoc } from 'firebase/firestore';
-import { DollarSign, Plus, Receipt, History, CheckCircle, X, Trash2, ArrowUpRight, ArrowDownLeft, Wallet, CreditCard, PieChart, Download, Printer, TrendingUp, AlertCircle } from 'lucide-react';
+import { DollarSign, Plus, Receipt, History, CheckCircle, X, Trash2, ArrowUpRight, ArrowDownLeft, Wallet, CreditCard, PieChart, Download, Printer, AlertCircle } from 'lucide-react';
 
 // --- HELPER: FORMAT RUPIAH ---
 const formatRupiah = (val) => val ? val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : "0";
@@ -18,8 +18,8 @@ export default function AdminFinance({ db }) {
   const [balance, setBalance] = useState({ cash: 0, bank: 0, total: 0 });
   const [incomeTotal, setIncomeTotal] = useState(0);
   const [expenseTotal, setExpenseTotal] = useState(0);
-  const [totalReceivable, setTotalReceivable] = useState(0); // Total Piutang (Uang nyangkut)
-  const [monthlyStats, setMonthlyStats] = useState([]); // Data untuk Grafik Bulanan
+  const [totalReceivable, setTotalReceivable] = useState(0); 
+  const [monthlyStats, setMonthlyStats] = useState([]); 
 
   // State Modal & Form
   const [showPayModal, setShowPayModal] = useState(false);
@@ -38,23 +38,20 @@ export default function AdminFinance({ db }) {
     const u1 = onSnapshot(query(collection(db, 'invoices'), orderBy('createdAt', 'desc')), s => {
       const allInvoices = s.docs.map(d => ({ id: d.id, ...d.data() }));
       setInvoices(allInvoices);
-      
-      // Hitung Total Piutang (Sisa Hutang Siswa)
       const piutang = allInvoices.reduce((acc, curr) => acc + (curr.remainingAmount || 0), 0);
       setTotalReceivable(piutang);
     });
     
-    // 2. Transaksi & Analisis Cashflow Bulanan
+    // 2. Transaksi & Analisis Cashflow
     const u2 = onSnapshot(query(collection(db, 'payments'), orderBy('date', 'desc')), s => {
       const trans = s.docs.map(d => ({ id: d.id, ...d.data() }));
       setTransactions(trans);
       
       let cash = 0, bank = 0, inc = 0, exp = 0;
-      const statsObj = {}; // Grouping per bulan
+      const statsObj = {}; 
 
       trans.forEach(t => {
         const amt = t.amount || 0;
-        // Hitung Saldo Global
         if (t.type === 'expense') {
           exp += amt;
           if(t.method === 'Tunai') cash -= amt; else bank -= amt;
@@ -63,11 +60,10 @@ export default function AdminFinance({ db }) {
           if(t.method === 'Tunai') cash += amt; else bank += amt;
         }
 
-        // Logic Grafik Bulanan
         if (t.date?.toDate) {
           const d = t.date.toDate();
-          const key = `${d.getFullYear()}-${d.getMonth()}`; // Format: 2026-0 (Januari)
-          const label = d.toLocaleString('id-ID', { month: 'short', year: '2-digit' }); // Jan 26
+          const key = `${d.getFullYear()}-${d.getMonth()}`; 
+          const label = d.toLocaleString('id-ID', { month: 'short', year: '2-digit' }); 
           
           if (!statsObj[key]) statsObj[key] = { label, income: 0, expense: 0, net: 0 };
           
@@ -80,7 +76,6 @@ export default function AdminFinance({ db }) {
         }
       });
 
-      // Convert Object to Array & Sort by Date (Biar grafik urut bulan)
       const sortedStats = Object.keys(statsObj).sort().map(k => statsObj[k]);
       
       setMonthlyStats(sortedStats);
@@ -89,7 +84,6 @@ export default function AdminFinance({ db }) {
       setExpenseTotal(exp);
     });
 
-    // 3. Siswa
     const u3 = onSnapshot(query(collection(db, 'students'), orderBy('name')), s => setStudents(s.docs.map(d => ({ id: d.id, ...d.data() }))));
     
     return () => { u1(); u2(); u3(); };
@@ -170,101 +164,96 @@ export default function AdminFinance({ db }) {
   return (
     <div className="space-y-6">
       
-      {/* === PRINT AREA KHUSUS === */}
-      <div className="hidden print:block font-sans text-black">
+      {/* ==============================================
+          LAYOUT KHUSUS PRINT / PDF (HIDDEN DI LAYAR BIASA)
+          ============================================== */}
+      <div className="hidden print:block w-full text-black">
         <div className="text-center border-b-2 border-black pb-4 mb-6">
-          <h1 className="text-3xl font-black uppercase">LAPORAN KEUANGAN & CASHFLOW</h1>
-          <p className="text-sm text-gray-600">BIMBEL GEMILANG SYSTEM</p>
-          <p className="text-xs text-gray-500">Dicetak: {new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}</p>
+          <h1 className="text-2xl font-black uppercase tracking-wider">LAPORAN KEUANGAN BIMBEL GEMILANG</h1>
+          <p className="text-sm">Ringkasan Cashflow, Piutang, dan Mutasi Transaksi</p>
+          <p className="text-xs mt-1">Dicetak: {new Date().toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'})}</p>
         </div>
 
-        {/* 1. RINGKASAN EKSEKUTIF */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="border border-black p-4 text-center">
-            <div className="text-xs font-bold uppercase mb-1">Total Pemasukan</div>
-            <div className="text-xl font-black">Rp {formatRupiah(incomeTotal)}</div>
+        {/* 1. RINGKASAN DATA (KOTAK-KOTAK) */}
+        <div className="flex justify-between gap-4 mb-8">
+          <div className="flex-1 border border-black p-3 text-center">
+            <div className="text-[10px] font-bold uppercase">Total Masuk</div>
+            <div className="text-lg font-black">Rp {formatRupiah(incomeTotal)}</div>
           </div>
-          <div className="border border-black p-4 text-center">
-            <div className="text-xs font-bold uppercase mb-1">Total Pengeluaran</div>
-            <div className="text-xl font-black">Rp {formatRupiah(expenseTotal)}</div>
+          <div className="flex-1 border border-black p-3 text-center">
+            <div className="text-[10px] font-bold uppercase">Total Keluar</div>
+            <div className="text-lg font-black">Rp {formatRupiah(expenseTotal)}</div>
           </div>
-          <div className="border border-black p-4 text-center bg-gray-100">
-            <div className="text-xs font-bold uppercase mb-1">Saldo Bersih (Net)</div>
-            <div className="text-xl font-black">Rp {formatRupiah(balance.total)}</div>
+          <div className="flex-1 border border-black p-3 text-center bg-gray-100 print:bg-gray-100">
+            <div className="text-[10px] font-bold uppercase">Saldo Bersih</div>
+            <div className="text-lg font-black">Rp {formatRupiah(balance.total)}</div>
           </div>
-        </div>
-
-        {/* 2. LAPORAN PIUTANG (REQUEST BARU) */}
-        <div className="mb-8">
-          <h3 className="font-bold border-b border-black mb-2 pb-1">STATUS PIUTANG USAHA (TAGIHAN BELUM LUNAS)</h3>
-          <div className="flex justify-between items-center bg-gray-50 p-3 border border-gray-300">
-            <span className="font-bold">Total Piutang Tertunggak:</span>
-            <span className="font-black text-lg">Rp {formatRupiah(totalReceivable)}</span>
+          <div className="flex-1 border border-black p-3 text-center">
+            <div className="text-[10px] font-bold uppercase text-red-900">Total Piutang</div>
+            <div className="text-lg font-black">Rp {formatRupiah(totalReceivable)}</div>
           </div>
         </div>
 
-        {/* 3. GRAFIK BATANG SEDERHANA (CSS) */}
-        <div className="mb-8">
-          <h3 className="font-bold border-b border-black mb-4 pb-1">GRAFIK CASHFLOW BULANAN</h3>
-          <div className="flex items-end gap-4 h-48 border-b-2 border-l-2 border-gray-400 p-2">
+        {/* 2. GRAFIK BATANG (CSS CHART) */}
+        <div className="mb-8 break-inside-avoid">
+          <h3 className="font-bold border-b border-black mb-4 text-sm">GRAFIK CASHFLOW BULANAN</h3>
+          <div className="flex items-end gap-4 h-[200px] border-b border-l border-black p-2">
             {monthlyStats.map((stat, idx) => {
-              // Hitung tinggi grafik (Max 100%)
               const maxVal = Math.max(...monthlyStats.map(s => Math.max(s.income, s.expense))) || 1;
               const hInc = Math.round((stat.income / maxVal) * 100);
               const hExp = Math.round((stat.expense / maxVal) * 100);
               return (
-                <div key={idx} className="flex-1 flex flex-col justify-end items-center group">
-                  <div className="flex gap-1 w-full justify-center items-end h-40">
-                    {/* Bar Pemasukan (Hitam/Abu di print) */}
-                    <div className="w-4 bg-gray-800 relative" style={{height: `${hInc}%`}}>
-                      <span className="absolute -top-4 -left-2 text-[8px] font-bold rotate-0">{formatRupiah(stat.income/1000)}k</span>
-                    </div>
-                    {/* Bar Pengeluaran (Putih border di print) */}
-                    <div className="w-4 border border-gray-800 bg-white relative" style={{height: `${hExp}%`}}>
-                      <span className="absolute -top-8 -right-2 text-[8px] font-bold rotate-0">{formatRupiah(stat.expense/1000)}k</span>
-                    </div>
+                <div key={idx} className="flex-1 flex flex-col justify-end items-center">
+                  <div className="flex gap-1 w-full justify-center items-end h-full">
+                    {/* Bar Masuk (Hitam) */}
+                    <div className="w-3 bg-black print:bg-black" style={{height: `${hInc}%`}}></div>
+                    {/* Bar Keluar (Putih Border) */}
+                    <div className="w-3 border border-black bg-white print:bg-white" style={{height: `${hExp}%`}}></div>
                   </div>
-                  <div className="text-[10px] font-bold mt-2">{stat.label}</div>
+                  <div className="text-[8px] font-bold mt-1">{stat.label}</div>
                 </div>
               )
             })}
           </div>
-          <div className="flex justify-center gap-4 mt-2 text-xs">
-            <div className="flex items-center gap-1"><div className="w-3 h-3 bg-gray-800"></div> Pemasukan</div>
-            <div className="flex items-center gap-1"><div className="w-3 h-3 border border-gray-800 bg-white"></div> Pengeluaran</div>
+          <div className="flex justify-center gap-4 mt-2 text-[10px]">
+            <div className="flex items-center gap-1"><div className="w-2 h-2 bg-black"></div> Pemasukan</div>
+            <div className="flex items-center gap-1"><div className="w-2 h-2 border border-black bg-white"></div> Pengeluaran</div>
           </div>
         </div>
 
-        {/* 4. TABEL MUTASI (AKAN DIPOTONG CSS JIKA KEPANJANGAN) */}
+        {/* 3. TABEL MUTASI (FULL WIDTH) */}
         <div>
-          <h3 className="font-bold border-b border-black mb-2 pb-1">RINCIAN MUTASI (Terbaru)</h3>
-          <table className="w-full text-xs text-left border-collapse">
+          <h3 className="font-bold border-b border-black mb-2 text-sm">RINCIAN MUTASI TERAKHIR</h3>
+          <table className="w-full text-[10px] text-left border-collapse">
             <thead>
               <tr className="border-b border-black">
-                <th className="py-1">Tanggal</th>
-                <th className="py-1">Ket</th>
-                <th className="py-1 text-right">Masuk</th>
-                <th className="py-1 text-right">Keluar</th>
+                <th className="py-1 w-20">Tanggal</th>
+                <th className="py-1">Keterangan</th>
+                <th className="py-1 w-20">Kategori</th>
+                <th className="py-1 w-24 text-right">Masuk</th>
+                <th className="py-1 w-24 text-right">Keluar</th>
               </tr>
             </thead>
             <tbody>
-              {transactions.slice(0, 50).map(t => ( // Limit print 50 biar gak berlembar2
-                <tr key={t.id} className="border-b border-gray-200">
-                  <td className="py-1">{t.date?.toDate ? t.date.toDate().toLocaleDateString() : '-'}</td>
-                  <td className="py-1">{t.description}</td>
-                  <td className="py-1 text-right">{t.type==='income' ? formatRupiah(t.amount) : '-'}</td>
-                  <td className="py-1 text-right">{t.type==='expense' ? formatRupiah(t.amount) : '-'}</td>
+              {transactions.slice(0, 100).map(t => (
+                <tr key={t.id} className="border-b border-gray-300">
+                  <td className="py-1 align-top">{t.date?.toDate ? t.date.toDate().toLocaleDateString('id-ID') : '-'}</td>
+                  <td className="py-1 align-top">{t.description}</td>
+                  <td className="py-1 align-top">{t.category}</td>
+                  <td className="py-1 align-top text-right">{t.type==='income' ? formatRupiah(t.amount) : ''}</td>
+                  <td className="py-1 align-top text-right">{t.type==='expense' ? formatRupiah(t.amount) : ''}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <p className="text-[10px] italic mt-2 text-center">** Menampilkan maksimal 50 transaksi terbaru. Gunakan Export Excel untuk data lengkap.</p>
         </div>
       </div>
-      {/* === END PRINT AREA === */}
+      {/* ==============================================
+          END PRINT LAYOUT
+          ============================================== */}
 
 
-      {/* === TAMPILAN DASHBOARD ADMIN (HIDDEN SAAT PRINT) === */}
+      {/* === TAMPILAN DASHBOARD ADMIN (SCREEN ONLY) === */}
       <div className="print:hidden space-y-6">
         {/* HEADER CARD UPDATE */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -275,7 +264,7 @@ export default function AdminFinance({ db }) {
             </div>
           </div>
           
-          {/* CARD BARU: PIUTANG (RECEIVABLE) */}
+          {/* CARD PIUTANG */}
           <div className="bg-orange-50 p-5 rounded-xl border border-orange-200">
             <div className="text-orange-700 text-xs font-bold uppercase mb-1 flex items-center gap-1"><AlertCircle size={14}/> Total Piutang</div>
             <div className="text-xl font-black text-orange-800">Rp {formatRupiah(totalReceivable)}</div>
@@ -319,7 +308,7 @@ export default function AdminFinance({ db }) {
                       <td className="p-3"><div className="font-medium">{t.description}</div><div className="text-[10px] text-gray-400 bg-gray-100 inline-block px-1 rounded mt-1">{t.type==='income'?'Masuk':'Keluar'} • {t.method}</div></td>
                       <td className="p-3"><span className="text-[10px] bg-gray-100 px-2 py-1 rounded border">{t.category}</span></td>
                       <td className={`p-3 text-right font-bold ${t.type==='expense'?'text-red-600':'text-green-600'}`}>{t.type==='expense' ? '-' : '+'} Rp {formatRupiah(t.amount)}</td>
-                      <td className="p-3 text-center"><button onClick={()=>deleteDoc(doc(db, "payments", t.id))} className="text-gray-300 hover:text-red-500"><Trash2 size={14}/></button></td>
+                      <td className="p-3 text-center"><button onClick={()=>handleDeleteTransaction(t)} className="text-gray-300 hover:text-red-500"><Trash2 size={14}/></button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -328,7 +317,7 @@ export default function AdminFinance({ db }) {
           </div>
         )}
 
-        {/* TAB 2 & 3: TAGIHAN & INPUT (SAMA SEPERTI SEBELUMNYA) */}
+        {/* TAB 2 & 3: TAGIHAN & INPUT */}
         {tab === 'invoices' && (
           <div className="bg-white rounded-b-xl border border-t-0 overflow-hidden">
             <div className="p-4 flex justify-between items-center bg-gray-50 border-b">
@@ -354,7 +343,7 @@ export default function AdminFinance({ db }) {
               <form onSubmit={handleInputTransaction} className="space-y-4">
                 <input required className="w-full border p-2 rounded" placeholder="Keterangan Transaksi" value={newTrans.title} onChange={e=>setNewTrans({...newTrans, title:e.target.value})}/>
                 <div className="grid grid-cols-2 gap-4">
-                  <select className="w-full border p-2 rounded bg-white" value={newTrans.category} onChange={e=>setNewTrans({...newTrans, category:e.target.value})}>{inputType==='income'?<><option>Sponsor</option><option>Lainnya</option></>:<><option>Operasional</option><option>Gaji</option><option>Lainnya</option></>}</select>
+                  <select className="w-full border p-2 rounded bg-white" value={newTrans.category} onChange={e=>setNewTrans({...newTrans, category:e.target.value})}>{inputType==='income'?<><option>Sponsor</option><option>Hibah</option><option>Lainnya</option></>:<><option>Operasional</option><option>Gaji Guru</option><option>Listrik/Air</option><option>Sewa</option><option>Lainnya</option></>}</select>
                   <input type="date" className="w-full border p-2 rounded" value={newTrans.date} onChange={e=>setNewTrans({...newTrans, date:e.target.value})}/>
                 </div>
                 <div className="flex gap-2"><select className="border p-2 rounded w-1/3 text-sm" value={newTrans.method} onChange={e=>setNewTrans({...newTrans, method:e.target.value})}><option value="Tunai">Tunai</option><option value="Transfer">Bank</option></select><input required className="border p-2 rounded font-bold text-lg w-2/3" placeholder="Rp 0" value={newTrans.amountStr} onChange={e=>setNewTrans({...newTrans, amountStr:formatRupiah(e.target.value.replace(/\D/g,""))})}/></div>
@@ -365,11 +354,21 @@ export default function AdminFinance({ db }) {
         )}
       </div>
 
-      {/* MODAL & STYLE CSS PRINT */}
+      {/* MODAL */}
       {showPayModal && <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"><div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6"><h3 className="font-bold mb-4">Pembayaran</h3><form onSubmit={handleProcessPayment} className="space-y-4"><input className="w-full text-2xl font-bold border-b-2 border-blue-600 p-2 outline-none" value={payAmountStr} onChange={e => setPayAmountStr(formatRupiah(e.target.value.replace(/\D/g, "")))}/><button className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold">PROSES</button><button type="button" onClick={()=>setShowPayModal(false)} className="w-full text-gray-500 text-xs mt-2">Batal</button></form></div></div>}
       {showManualInv && <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"><div className="bg-white rounded-xl w-full max-w-sm p-6"><h3 className="font-bold mb-4">Tagihan Manual</h3><form onSubmit={handleCreateManualInvoice} className="space-y-3"><select required className="w-full border p-2 rounded" value={newInv.studentId} onChange={e=>setNewInv({...newInv, studentId:e.target.value})}><option value="">Pilih Siswa</option>{students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select><input type="text" className="w-full border p-2 rounded" placeholder="Nominal" value={newInv.totalAmountStr} onChange={e=>setNewInv({...newInv, totalAmountStr: formatRupiah(e.target.value.replace(/\D/g,""))})}/><input type="date" required className="w-full border p-2 rounded" value={newInv.dueDate} onChange={e=>setNewInv({...newInv, dueDate:e.target.value})}/><button className="w-full bg-gray-800 text-white py-2 rounded font-bold">SIMPAN</button><button type="button" onClick={()=>setShowManualInv(false)} className="w-full text-gray-500 text-xs mt-2">Batal</button></form></div></div>}
 
-      <style>{`@media print { body * { visibility: hidden; } .print\\:block, .print\\:block * { visibility: visible; } .print\\:block { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; } .print\\:hidden { display: none !important; } }`}</style>
+      {/* CSS KHUSUS PRINT */}
+      <style>{`
+        @media print {
+          @page { size: A4; margin: 20mm; }
+          body * { visibility: hidden; }
+          .print\\:block, .print\\:block * { visibility: visible; }
+          .print\\:block { position: static; width: 100%; top: 0; left: 0; }
+          .print\\:hidden { display: none !important; }
+          .break-inside-avoid { page-break-inside: avoid; }
+        }
+      `}</style>
     </div>
   );
 }
