@@ -225,6 +225,7 @@ export default function App() {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
+  const [selectedPackage, setSelectedPackage] = useState('');
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
@@ -297,7 +298,6 @@ export default function App() {
   const handleUpdatePrice = async (packageName, price) => {
     if (!user) return;
     try {
-      // Gunakan nama paket sebagai ID dokumen agar mudah diupdate
       const docId = packageName.replace(/\s+/g, '_'); 
       const priceDoc = doc(db, 'artifacts', appId, 'public', 'data', 'settings', docId);
       await setDoc(priceDoc, { name: packageName, price: price, updatedAt: new Date().toISOString() });
@@ -308,10 +308,9 @@ export default function App() {
 
   const handleSettleArrear = async (id) => {
     try {
-      // Ubah status pembayaran dari pending ke lunas
       await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'payments', id), {
         status: 'paid',
-        type: 'income', // Masuk ke kas
+        type: 'income', 
         paidAt: new Date().toISOString()
       });
       notify("Tagihan Lunas!");
@@ -576,7 +575,7 @@ export default function App() {
                         <h4 className="text-xs font-black text-indigo-400 uppercase tracking-[0.4em] mb-6 italic leading-none">Paket Belajar</h4>
                         <p className="text-3xl font-black text-gray-800 uppercase italic mb-8">{pkg}</p>
                         <p className="text-4xl font-black text-indigo-600 tracking-tighter">{priceData ? formatIDR(priceData.price) : 'Rp -'}</p>
-                        <button onClick={() => { setModalType('package_price'); setIsModalOpen(true); }} className="w-full mt-10 py-5 bg-gray-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-gray-100">Update Harga</button>
+                        <button onClick={() => { setSelectedPackage(pkg); setModalType('package_price'); setIsModalOpen(true); }} className="w-full mt-10 py-5 bg-gray-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-gray-100">Update Harga</button>
                       </div>
                     );
                   })}
@@ -644,7 +643,7 @@ export default function App() {
                 <div className="space-y-8">
                    <div className="space-y-3">
                       <label className="text-[10px] font-black text-gray-400 uppercase italic">Pilih Paket</label>
-                      <select name="packageName" required className="w-full px-8 py-5 bg-gray-50 border-2 rounded-[1.8rem] font-black uppercase italic"><option>1 BULAN</option><option>3 BULAN</option><option>6 BULAN</option></select>
+                      <select name="packageName" defaultValue={selectedPackage} required className="w-full px-8 py-5 bg-gray-50 border-2 rounded-[1.8rem] font-black uppercase italic"><option>1 BULAN</option><option>3 BULAN</option><option>6 BULAN</option></select>
                    </div>
                    <div className="space-y-3">
                       <label className="text-[10px] font-black text-gray-400 uppercase italic">Harga Baru (Rp)</label>
