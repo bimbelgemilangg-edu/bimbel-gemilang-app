@@ -1,59 +1,89 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, doc, onSnapshot, query, orderBy, runTransaction, serverTimestamp, deleteDoc } from 'firebase/firestore';
-import { DollarSign, Plus, Receipt, History, CheckCircle, X, Trash2, ArrowUpRight, ArrowDownLeft, Wallet, CreditCard, PieChart, Download, FileSpreadsheet } from 'lucide-react';
+import { DollarSign, Plus, Receipt, History, CheckCircle, X, Trash2, ArrowUpRight, ArrowDownLeft, Wallet, CreditCard, PieChart, Download, Printer, TrendingUp, AlertCircle } from 'lucide-react';
 
 // --- HELPER: FORMAT RUPIAH ---
 const formatRupiah = (val) => val ? val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : "0";
 const parseRupiah = (val) => val ? parseInt(val.replace(/\./g, '') || '0', 10) : 0;
 
 export default function AdminFinance({ db }) {
-  const [tab, setTab] = useState('summary'); // summary | invoices | input
+  const [tab, setTab] = useState('summary'); 
   
-  // Data
+  // Data Database
   const [invoices, setInvoices] = useState([]);
   const [transactions, setTransactions] = useState([]); 
   const [students, setStudents] = useState([]);
   
-  // Saldo
+  // Analisis Keuangan
   const [balance, setBalance] = useState({ cash: 0, bank: 0, total: 0 });
   const [incomeTotal, setIncomeTotal] = useState(0);
   const [expenseTotal, setExpenseTotal] = useState(0);
+  const [totalReceivable, setTotalReceivable] = useState(0); // Total Piutang (Uang nyangkut)
+  const [monthlyStats, setMonthlyStats] = useState([]); // Data untuk Grafik Bulanan
 
-  // Modal State
+  // State Modal & Form
   const [showPayModal, setShowPayModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [payAmountStr, setPayAmountStr] = useState("");
   const [payMethod, setPayMethod] = useState('Tunai'); 
 
-  // Form State
-  const [inputType, setInputType] = useState('expense'); // 'income' (Sponsor) | 'expense' (Belanja)
+  const [inputType, setInputType] = useState('expense'); 
   const [newTrans, setNewTrans] = useState({ title: "", amountStr: "", category: "Lainnya", method: "Tunai", date: "" });
   
-  // Tagihan Manual State
   const [showManualInv, setShowManualInv] = useState(false);
   const [newInv, setNewInv] = useState({ studentId: '', totalAmountStr: "", dueDate: '', details: 'Tagihan Tambahan' });
 
   useEffect(() => {
-    // 1. Tagihan
-    const u1 = onSnapshot(query(collection(db, 'invoices'), orderBy('createdAt', 'desc')), s => setInvoices(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+    // 1. Tagihan & Piutang
+    const u1 = onSnapshot(query(collection(db, 'invoices'), orderBy('createdAt', 'desc')), s => {
+      const allInvoices = s.docs.map(d => ({ id: d.id, ...d.data() }));
+      setInvoices(allInvoices);
+      
+      // Hitung Total Piutang (Sisa Hutang Siswa)
+      const piutang = allInvoices.reduce((acc, curr) => acc + (curr.remainingAmount || 0), 0);
+      setTotalReceivable(piutang);
+    });
     
-    // 2. Transaksi (Payments)
+    // 2. Transaksi & Analisis Cashflow Bulanan
     const u2 = onSnapshot(query(collection(db, 'payments'), orderBy('date', 'desc')), s => {
       const trans = s.docs.map(d => ({ id: d.id, ...d.data() }));
       setTransactions(trans);
       
       let cash = 0, bank = 0, inc = 0, exp = 0;
+      const statsObj = {}; // Grouping per bulan
+
       trans.forEach(t => {
         const amt = t.amount || 0;
+        // Hitung Saldo Global
         if (t.type === 'expense') {
           exp += amt;
           if(t.method === 'Tunai') cash -= amt; else bank -= amt;
         } else {
-          // Income (SPP, Sponsor, dll)
           inc += amt;
           if(t.method === 'Tunai') cash += amt; else bank += amt;
         }
+
+        // Logic Grafik Bulanan
+        if (t.date?.toDate) {
+          const d = t.date.toDate();
+          const key = `${d.getFullYear()}-${d.getMonth()}`; // Format: 2026-0 (Januari)
+          const label = d.toLocaleString('id-ID', { month: 'short', year: '2-digit' }); // Jan 26
+          
+          if (!statsObj[key]) statsObj[key] = { label, income: 0, expense: 0, net: 0 };
+          
+          if (t.type === 'expense') {
+            statsObj[key].expense += amt;
+          } else {
+            statsObj[key].income += amt;
+          }
+          statsObj[key].net = statsObj[key].income - statsObj[key].expense;
+        }
       });
+
+      // Convert Object to Array & Sort by Date (Biar grafik urut bulan)
+      const sortedStats = Object.keys(statsObj).sort().map(k => statsObj[k]);
+      
+      setMonthlyStats(sortedStats);
       setBalance({ cash, bank, total: cash + bank });
       setIncomeTotal(inc);
       setExpenseTotal(exp);
@@ -65,38 +95,32 @@ export default function AdminFinance({ db }) {
     return () => { u1(); u2(); u3(); };
   }, [db]);
 
-  // --- DOWNLOAD EXCEL/CSV ---
-  const downloadReport = () => {
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "No,Tanggal,Keterangan,Kategori,Tipe,Metode,Nominal\n"; // Header
-    
+  // --- DOWNLOAD EXCEL ---
+  const downloadExcel = () => {
+    let csvContent = "\uFEFFNo;Tanggal;Keterangan;Kategori;Tipe;Metode;Nominal Masuk;Nominal Keluar\n";
     transactions.forEach((t, index) => {
-      const date = t.date?.toDate ? t.date.toDate().toLocaleDateString() : '-';
-      const type = t.type === 'expense' ? 'Keluar' : 'Masuk';
-      const row = `${index+1},${date},"${t.description}",${t.category},${type},${t.method},${t.amount}`;
-      csvContent += row + "\n";
+      const date = t.date?.toDate ? t.date.toDate().toLocaleDateString('id-ID') : '-';
+      const safeDesc = t.description ? t.description.replace(/;/g, ",").replace(/\n/g, " ") : "-";
+      const masuk = t.type === 'income' ? t.amount : 0;
+      const keluar = t.type === 'expense' ? t.amount : 0;
+      csvContent += `${index+1};${date};${safeDesc};${t.category};${t.type==='income'?'Masuk':'Keluar'};${t.method};${masuk};${keluar}\n`;
     });
-
-    const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Laporan_Keuangan_Gemilang_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
+    link.href = URL.createObjectURL(new Blob([csvContent], { type: "text/csv;charset=utf-8;" }));
+    link.download = `Laporan_Keuangan_Gemilang.csv`;
     link.click();
   };
 
-  // --- 1. PROSES BAYAR TAGIHAN ---
+  // --- LOGIKA TRANSAKSI ---
   const handleProcessPayment = async (e) => {
     e.preventDefault();
     const amount = parseRupiah(payAmountStr);
     if (amount <= 0 || amount > selectedInvoice.remainingAmount) return alert("Nominal Salah!");
-    
     try {
       await runTransaction(db, async (t) => {
         const ref = doc(db, 'invoices', selectedInvoice.id);
         const rem = selectedInvoice.remainingAmount - amount;
         t.update(ref, { remainingAmount: rem, status: rem <= 0 ? 'paid' : 'partial' });
-        
         t.set(doc(collection(db, 'payments')), { 
           invoiceId: selectedInvoice.id, studentName: selectedInvoice.studentName, 
           amount, method: payMethod, type: 'income', category: 'SPP/Tagihan',
@@ -107,245 +131,245 @@ export default function AdminFinance({ db }) {
     } catch (err) { alert(err.message); }
   };
 
-  // --- 2. INPUT TRANSAKSI (UMUM / EXPENSE) ---
   const handleInputTransaction = async (e) => {
     e.preventDefault();
     const amount = parseRupiah(newTrans.amountStr);
     if (amount <= 0) return alert("Nominal 0?");
-    
-    // Cek Saldo kalau Pengeluaran
     if (inputType === 'expense') {
       if (newTrans.method === 'Tunai' && amount > balance.cash) return alert("Saldo TUNAI Kurang!");
       if (newTrans.method === 'Transfer' && amount > balance.bank) return alert("Saldo BANK Kurang!");
     }
-
     try {
       await addDoc(collection(db, 'payments'), {
-        amount, method: newTrans.method, type: inputType, // 'income' or 'expense'
-        category: newTrans.category, description: newTrans.title,
-        date: newTrans.date ? new Date(newTrans.date) : serverTimestamp(),
-        studentName: '-' 
+        amount, method: newTrans.method, type: inputType, category: newTrans.category, 
+        description: newTrans.title, date: newTrans.date ? new Date(newTrans.date) : serverTimestamp(), studentName: '-' 
       });
       setNewTrans({ title: "", amountStr: "", category: "Lainnya", method: "Tunai", date: "" });
-      alert("Transaksi Tercatat!");
+      alert("Tercatat!");
     } catch (err) { alert(err.message); }
   };
 
-  // --- 3. BUAT TAGIHAN MANUAL (RESTORED) ---
   const handleCreateManualInvoice = async (e) => {
     e.preventDefault();
     const amount = parseRupiah(newInv.totalAmountStr);
     const student = students.find(s => s.id === newInv.studentId);
     if(!student) return alert("Pilih Siswa!");
-
     await addDoc(collection(db, 'invoices'), {
       studentId: newInv.studentId, studentName: student.name,
       totalAmount: amount, remainingAmount: amount, status: 'unpaid',
-      dueDate: newInv.dueDate, details: newInv.details, type: 'manual',
-      createdAt: serverTimestamp()
+      dueDate: newInv.dueDate, details: newInv.details, type: 'manual', createdAt: serverTimestamp()
     });
     setShowManualInv(false); setNewInv({ studentId: '', totalAmountStr: "", dueDate: '', details: 'Tagihan Tambahan' });
     alert("Tagihan Manual Dibuat!");
   };
 
-  // --- 4. HAPUS TRANSAKSI ---
   const handleDeleteTransaction = async (t) => {
     if(confirm("Hapus data ini? Saldo akan dikembalikan.")) await deleteDoc(doc(db, "payments", t.id));
   };
 
   return (
     <div className="space-y-6">
-      {/* HEADER CARD */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white p-5 rounded-xl shadow-lg md:col-span-2">
-          <div className="flex justify-between items-start">
-            <div>
-              <div className="flex items-center gap-2 opacity-80 mb-1"><DollarSign size={16}/><span className="text-xs font-bold uppercase">Saldo Kas</span></div>
-              <div className="text-3xl font-black">Rp {formatRupiah(balance.total)}</div>
-            </div>
-            <div className="text-right text-[10px] space-y-1">
-              <div className="bg-white/20 px-2 py-1 rounded">Tunai: Rp {formatRupiah(balance.cash)}</div>
-              <div className="bg-white/20 px-2 py-1 rounded">Bank: Rp {formatRupiah(balance.bank)}</div>
-            </div>
+      
+      {/* === PRINT AREA KHUSUS === */}
+      <div className="hidden print:block font-sans text-black">
+        <div className="text-center border-b-2 border-black pb-4 mb-6">
+          <h1 className="text-3xl font-black uppercase">LAPORAN KEUANGAN & CASHFLOW</h1>
+          <p className="text-sm text-gray-600">BIMBEL GEMILANG SYSTEM</p>
+          <p className="text-xs text-gray-500">Dicetak: {new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}</p>
+        </div>
+
+        {/* 1. RINGKASAN EKSEKUTIF */}
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="border border-black p-4 text-center">
+            <div className="text-xs font-bold uppercase mb-1">Total Pemasukan</div>
+            <div className="text-xl font-black">Rp {formatRupiah(incomeTotal)}</div>
+          </div>
+          <div className="border border-black p-4 text-center">
+            <div className="text-xs font-bold uppercase mb-1">Total Pengeluaran</div>
+            <div className="text-xl font-black">Rp {formatRupiah(expenseTotal)}</div>
+          </div>
+          <div className="border border-black p-4 text-center bg-gray-100">
+            <div className="text-xs font-bold uppercase mb-1">Saldo Bersih (Net)</div>
+            <div className="text-xl font-black">Rp {formatRupiah(balance.total)}</div>
           </div>
         </div>
-        <div className="bg-green-50 p-5 rounded-xl border border-green-200">
-          <div className="text-green-700 text-xs font-bold uppercase mb-1 flex items-center gap-1"><ArrowDownLeft size={14}/> Total Masuk</div>
-          <div className="text-xl font-black text-green-800">Rp {formatRupiah(incomeTotal)}</div>
+
+        {/* 2. LAPORAN PIUTANG (REQUEST BARU) */}
+        <div className="mb-8">
+          <h3 className="font-bold border-b border-black mb-2 pb-1">STATUS PIUTANG USAHA (TAGIHAN BELUM LUNAS)</h3>
+          <div className="flex justify-between items-center bg-gray-50 p-3 border border-gray-300">
+            <span className="font-bold">Total Piutang Tertunggak:</span>
+            <span className="font-black text-lg">Rp {formatRupiah(totalReceivable)}</span>
+          </div>
         </div>
-        <div className="bg-red-50 p-5 rounded-xl border border-red-200">
-          <div className="text-red-700 text-xs font-bold uppercase mb-1 flex items-center gap-1"><ArrowUpRight size={14}/> Total Keluar</div>
-          <div className="text-xl font-black text-red-800">Rp {formatRupiah(expenseTotal)}</div>
+
+        {/* 3. GRAFIK BATANG SEDERHANA (CSS) */}
+        <div className="mb-8">
+          <h3 className="font-bold border-b border-black mb-4 pb-1">GRAFIK CASHFLOW BULANAN</h3>
+          <div className="flex items-end gap-4 h-48 border-b-2 border-l-2 border-gray-400 p-2">
+            {monthlyStats.map((stat, idx) => {
+              // Hitung tinggi grafik (Max 100%)
+              const maxVal = Math.max(...monthlyStats.map(s => Math.max(s.income, s.expense))) || 1;
+              const hInc = Math.round((stat.income / maxVal) * 100);
+              const hExp = Math.round((stat.expense / maxVal) * 100);
+              return (
+                <div key={idx} className="flex-1 flex flex-col justify-end items-center group">
+                  <div className="flex gap-1 w-full justify-center items-end h-40">
+                    {/* Bar Pemasukan (Hitam/Abu di print) */}
+                    <div className="w-4 bg-gray-800 relative" style={{height: `${hInc}%`}}>
+                      <span className="absolute -top-4 -left-2 text-[8px] font-bold rotate-0">{formatRupiah(stat.income/1000)}k</span>
+                    </div>
+                    {/* Bar Pengeluaran (Putih border di print) */}
+                    <div className="w-4 border border-gray-800 bg-white relative" style={{height: `${hExp}%`}}>
+                      <span className="absolute -top-8 -right-2 text-[8px] font-bold rotate-0">{formatRupiah(stat.expense/1000)}k</span>
+                    </div>
+                  </div>
+                  <div className="text-[10px] font-bold mt-2">{stat.label}</div>
+                </div>
+              )
+            })}
+          </div>
+          <div className="flex justify-center gap-4 mt-2 text-xs">
+            <div className="flex items-center gap-1"><div className="w-3 h-3 bg-gray-800"></div> Pemasukan</div>
+            <div className="flex items-center gap-1"><div className="w-3 h-3 border border-gray-800 bg-white"></div> Pengeluaran</div>
+          </div>
+        </div>
+
+        {/* 4. TABEL MUTASI (AKAN DIPOTONG CSS JIKA KEPANJANGAN) */}
+        <div>
+          <h3 className="font-bold border-b border-black mb-2 pb-1">RINCIAN MUTASI (Terbaru)</h3>
+          <table className="w-full text-xs text-left border-collapse">
+            <thead>
+              <tr className="border-b border-black">
+                <th className="py-1">Tanggal</th>
+                <th className="py-1">Ket</th>
+                <th className="py-1 text-right">Masuk</th>
+                <th className="py-1 text-right">Keluar</th>
+              </tr>
+            </thead>
+            <tbody>
+              {transactions.slice(0, 50).map(t => ( // Limit print 50 biar gak berlembar2
+                <tr key={t.id} className="border-b border-gray-200">
+                  <td className="py-1">{t.date?.toDate ? t.date.toDate().toLocaleDateString() : '-'}</td>
+                  <td className="py-1">{t.description}</td>
+                  <td className="py-1 text-right">{t.type==='income' ? formatRupiah(t.amount) : '-'}</td>
+                  <td className="py-1 text-right">{t.type==='expense' ? formatRupiah(t.amount) : '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="text-[10px] italic mt-2 text-center">** Menampilkan maksimal 50 transaksi terbaru. Gunakan Export Excel untuk data lengkap.</p>
         </div>
       </div>
+      {/* === END PRINT AREA === */}
 
-      {/* TABS */}
-      <div className="flex border-b overflow-x-auto bg-white rounded-t-xl">
-        <button onClick={()=>setTab('summary')} className={`px-6 py-4 font-bold text-sm flex gap-2 ${tab==='summary'?'text-blue-600 border-b-2 border-blue-600 bg-blue-50':'text-gray-500'}`}><PieChart size={16}/> Laporan Mutasi</button>
-        <button onClick={()=>setTab('invoices')} className={`px-6 py-4 font-bold text-sm flex gap-2 ${tab==='invoices'?'text-blue-600 border-b-2 border-blue-600 bg-blue-50':'text-gray-500'}`}><Receipt size={16}/> Data Tagihan</button>
-        <button onClick={()=>setTab('input')} className={`px-6 py-4 font-bold text-sm flex gap-2 ${tab==='input'?'text-blue-600 border-b-2 border-blue-600 bg-blue-50':'text-gray-500'}`}><Wallet size={16}/> Input Transaksi</button>
-      </div>
 
-      {/* TAB 1: MUTASI / LAPORAN */}
-      {tab === 'summary' && (
-        <div className="bg-white rounded-b-xl border border-t-0 overflow-hidden">
-          <div className="p-4 bg-gray-50 border-b flex justify-between items-center">
-            <h3 className="font-bold text-gray-700">Jurnal Keuangan</h3>
-            <button onClick={downloadReport} className="bg-green-600 text-white px-3 py-1.5 rounded text-xs font-bold flex items-center gap-2 hover:bg-green-700">
-              <Download size={14}/> Download Excel
-            </button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-gray-100 text-gray-600 font-bold">
-                <tr><th className="p-3 w-10 text-center">No</th><th className="p-3">Tanggal</th><th className="p-3">Keterangan</th><th className="p-3">Tipe</th><th className="p-3 text-right">Nominal</th><th className="p-3 text-center">Hapus</th></tr>
-              </thead>
-              <tbody className="divide-y">
-                {transactions.map((t, idx) => (
-                  <tr key={t.id} className="hover:bg-gray-50">
-                    <td className="p-3 text-center text-gray-400 text-xs">{idx + 1}</td>
-                    <td className="p-3 text-gray-500 text-xs">{t.date?.toDate ? t.date.toDate().toLocaleDateString() : '-'}</td>
-                    <td className="p-3">
-                      <div className="font-medium">{t.description}</div>
-                      <div className="text-[10px] text-gray-400 bg-gray-100 inline-block px-1 rounded mt-1">{t.category} • {t.method}</div>
-                    </td>
-                    <td className="p-3">
-                      <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded ${t.type==='income'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}`}>
-                        {t.type==='income'?'Masuk':'Keluar'}
-                      </span>
-                    </td>
-                    <td className={`p-3 text-right font-bold ${t.type==='income'?'text-green-600':'text-red-600'}`}>
-                      {t.type==='income' ? '+' : '-'} Rp {formatRupiah(t.amount)}
-                    </td>
-                    <td className="p-3 text-center"><button onClick={()=>handleDeleteTransaction(t)} className="text-gray-300 hover:text-red-500"><Trash2 size={14}/></button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: TAGIHAN (INVOICES) */}
-      {tab === 'invoices' && (
-        <div className="bg-white rounded-b-xl border border-t-0 overflow-hidden">
-          <div className="p-4 flex justify-between items-center bg-gray-50 border-b">
-            <h3 className="font-bold text-gray-700">Daftar Tagihan Siswa</h3>
-            <button onClick={()=>setShowManualInv(true)} className="bg-gray-800 text-white px-3 py-1.5 rounded text-xs font-bold flex gap-2"><Plus size={14}/> Tagihan Manual</button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-gray-100"><tr><th className="p-3">Nama Siswa</th><th className="p-3">Sisa Hutang</th><th className="p-3">Jatuh Tempo</th><th className="p-3 text-center">Aksi</th></tr></thead>
-              <tbody className="divide-y">
-                {invoices.map(inv => (
-                  <tr key={inv.id} className="hover:bg-gray-50">
-                    <td className="p-3"><div className="font-bold">{inv.studentName}</div><div className="text-[10px] text-gray-500">{inv.details}</div></td>
-                    <td className="p-3 font-black text-red-600">Rp {formatRupiah(inv.remainingAmount)}</td>
-                    <td className="p-3 text-xs text-gray-500">{inv.dueDate}</td>
-                    <td className="p-3 text-center">
-                      {inv.remainingAmount > 0 ? 
-                        <button onClick={()=>{setSelectedInvoice(inv); setPayAmountStr(formatRupiah(inv.remainingAmount)); setShowPayModal(true)}} className="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-blue-700">Bayar</button> 
-                        : <span className="text-green-600 font-bold text-xs flex items-center justify-center gap-1"><CheckCircle size={12}/> Lunas</span>
-                      }
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 3: INPUT TRANSAKSI (INCOME/EXPENSE) */}
-      {tab === 'input' && (
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-b-xl border border-t-0 shadow-sm">
-            <div className="flex gap-2 mb-4 bg-gray-100 p-1 rounded-lg">
-              <button onClick={()=>setInputType('income')} className={`flex-1 py-2 text-xs font-bold rounded ${inputType==='income'?'bg-white shadow text-green-600':'text-gray-500'}`}>Pemasukan (Sponsor/Lain)</button>
-              <button onClick={()=>setInputType('expense')} className={`flex-1 py-2 text-xs font-bold rounded ${inputType==='expense'?'bg-white shadow text-red-600':'text-gray-500'}`}>Pengeluaran (Belanja/Gaji)</button>
+      {/* === TAMPILAN DASHBOARD ADMIN (HIDDEN SAAT PRINT) === */}
+      <div className="print:hidden space-y-6">
+        {/* HEADER CARD UPDATE */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white p-5 rounded-xl shadow-lg md:col-span-2">
+            <div className="flex justify-between items-start">
+              <div><div className="flex items-center gap-2 opacity-80 mb-1"><DollarSign size={16}/><span className="text-xs font-bold uppercase">Saldo Kas</span></div><div className="text-3xl font-black">Rp {formatRupiah(balance.total)}</div></div>
+              <div className="text-right text-[10px] space-y-1"><div className="bg-white/20 px-2 py-1 rounded">Tunai: Rp {formatRupiah(balance.cash)}</div><div className="bg-white/20 px-2 py-1 rounded">Bank: Rp {formatRupiah(balance.bank)}</div></div>
             </div>
-
-            <form onSubmit={handleInputTransaction} className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase">Keterangan</label>
-                <input required className="w-full border p-2 rounded mt-1" placeholder={inputType==='income'?"Contoh: Dana Hibah, Jual Buku Bekas":"Contoh: Beli Spidol, Bayar Listrik"} value={newTrans.title} onChange={e=>setNewTrans({...newTrans, title:e.target.value})}/>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase">Kategori</label>
-                  <select className="w-full border p-2 rounded mt-1 bg-white" value={newTrans.category} onChange={e=>setNewTrans({...newTrans, category:e.target.value})}>
-                    {inputType==='income' ? (
-                      <><option>Sponsor</option><option>Hibah</option><option>Penjualan</option><option>Lainnya</option></>
-                    ):(
-                      <><option>Operasional</option><option>Gaji Guru</option><option>Listrik/Air</option><option>Sewa</option><option>Lainnya</option></>
-                    )}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase">Tanggal</label>
-                  <input type="date" className="w-full border p-2 rounded mt-1" value={newTrans.date} onChange={e=>setNewTrans({...newTrans, date:e.target.value})}/>
-                </div>
-              </div>
-              <div className={`p-4 rounded border ${inputType==='income'?'bg-green-50 border-green-100':'bg-red-50 border-red-100'}`}>
-                <label className={`text-xs font-bold uppercase ${inputType==='income'?'text-green-700':'text-red-700'}`}>Nominal & Akun</label>
-                <div className="flex gap-2 mt-1">
-                  <select className="border p-2 rounded font-bold text-sm w-1/3" value={newTrans.method} onChange={e=>setNewTrans({...newTrans, method:e.target.value})}>
-                    <option value="Tunai">Tunai</option><option value="Transfer">Bank</option>
-                  </select>
-                  <input required className="border p-2 rounded font-bold text-lg w-2/3" placeholder="Rp 0" value={newTrans.amountStr} onChange={e=>setNewTrans({...newTrans, amountStr:formatRupiah(e.target.value.replace(/\D/g,""))})}/>
-                </div>
-              </div>
-              <button className={`w-full text-white py-3 rounded-lg font-bold shadow-lg ${inputType==='income'?'bg-green-600 hover:bg-green-700':'bg-red-600 hover:bg-red-700'}`}>
-                SIMPAN TRANSAKSI
-              </button>
-            </form>
           </div>
           
-          <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
-            <h3 className="font-bold text-blue-800 mb-2">Panduan Input Kas</h3>
-            <ul className="text-sm text-blue-600 space-y-2 list-disc pl-4">
-              <li>Menu ini untuk mencatat uang masuk/keluar <b>DI LUAR SPP SISWA</b>.</li>
-              <li>Jika ada siswa bayar SPP, gunakan menu <b>Data Tagihan</b> agar status siswanya terupdate.</li>
-              <li>Pemasukan di sini (Sponsor/Jualan) akan menambah saldo Kas/Bank.</li>
-              <li>Pengeluaran akan mengurangi saldo.</li>
-            </ul>
+          {/* CARD BARU: PIUTANG (RECEIVABLE) */}
+          <div className="bg-orange-50 p-5 rounded-xl border border-orange-200">
+            <div className="text-orange-700 text-xs font-bold uppercase mb-1 flex items-center gap-1"><AlertCircle size={14}/> Total Piutang</div>
+            <div className="text-xl font-black text-orange-800">Rp {formatRupiah(totalReceivable)}</div>
+            <p className="text-[10px] text-orange-600 mt-1">Uang belum dibayar siswa</p>
+          </div>
+
+          <div className="bg-green-50 p-5 rounded-xl border border-green-200">
+            <div className="text-green-700 text-xs font-bold uppercase mb-1 flex items-center gap-1"><ArrowDownLeft size={14}/> Profit/Loss</div>
+            <div className={`text-xl font-black ${incomeTotal - expenseTotal >= 0 ? 'text-green-800' : 'text-red-800'}`}>
+              Rp {formatRupiah(incomeTotal - expenseTotal)}
+            </div>
+            <p className="text-[10px] text-green-600 mt-1">Pemasukan - Pengeluaran</p>
           </div>
         </div>
-      )}
 
-      {/* MODAL BAYAR INVOICE */}
-      {showPayModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
-            <div className="flex justify-between mb-4"><h3 className="font-bold">Terima Pembayaran Siswa</h3><button onClick={()=>setShowPayModal(false)}><X/></button></div>
-            <form onSubmit={handleProcessPayment} className="space-y-4">
-              <div className="bg-blue-50 p-3 rounded text-center">
-                <div className="text-xs text-gray-500">Sisa Tagihan</div>
-                <div className="text-xl font-black text-blue-800">Rp {formatRupiah(selectedInvoice.remainingAmount)}</div>
+        {/* TABS */}
+        <div className="flex border-b overflow-x-auto bg-white rounded-t-xl">
+          <button onClick={()=>setTab('summary')} className={`px-6 py-4 font-bold text-sm flex gap-2 ${tab==='summary'?'text-blue-600 border-b-2 border-blue-600 bg-blue-50':'text-gray-500'}`}><PieChart size={16}/> Laporan Mutasi</button>
+          <button onClick={()=>setTab('invoices')} className={`px-6 py-4 font-bold text-sm flex gap-2 ${tab==='invoices'?'text-blue-600 border-b-2 border-blue-600 bg-blue-50':'text-gray-500'}`}><Receipt size={16}/> Data Tagihan</button>
+          <button onClick={()=>setTab('input')} className={`px-6 py-4 font-bold text-sm flex gap-2 ${tab==='input'?'text-blue-600 border-b-2 border-blue-600 bg-blue-50':'text-gray-500'}`}><Wallet size={16}/> Input Transaksi</button>
+        </div>
+
+        {/* TAB 1: MUTASI */}
+        {tab === 'summary' && (
+          <div className="bg-white rounded-b-xl border border-t-0 overflow-hidden">
+            <div className="p-4 bg-gray-50 border-b flex justify-between items-center">
+              <h3 className="font-bold text-gray-700">Jurnal Keuangan</h3>
+              <div className="flex gap-2">
+                <button onClick={()=>window.print()} className="bg-gray-700 text-white px-3 py-1.5 rounded text-xs font-bold flex items-center gap-2 hover:bg-gray-800"><Printer size={14}/> Cetak PDF</button>
+                <button onClick={downloadExcel} className="bg-green-600 text-white px-3 py-1.5 rounded text-xs font-bold flex items-center gap-2 hover:bg-green-700"><Download size={14}/> Excel</button>
               </div>
-              <div><label className="text-xs font-bold text-gray-500">Masuk ke Akun</label><select className="w-full border p-2 rounded mt-1" value={payMethod} onChange={e=>setPayMethod(e.target.value)}><option value="Tunai">Tunai (Kas)</option><option value="Transfer">Bank</option></select></div>
-              <div><label className="text-xs font-bold text-gray-500">Nominal Diterima</label><input autoFocus className="w-full text-2xl font-bold border-b-2 border-blue-600 p-2 outline-none" value={payAmountStr} onChange={e => setPayAmountStr(formatRupiah(e.target.value.replace(/\D/g, "")))}/></div>
-              <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold">PROSES</button>
-            </form>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-100 text-gray-600 font-bold"><tr><th className="p-3 w-10 text-center">No</th><th className="p-3">Tanggal</th><th className="p-3">Keterangan</th><th className="p-3">Kategori</th><th className="p-3 text-right">Nominal</th><th className="p-3 text-center">Hapus</th></tr></thead>
+                <tbody className="divide-y">
+                  {transactions.map((t, idx) => (
+                    <tr key={t.id} className="hover:bg-gray-50">
+                      <td className="p-3 text-center text-gray-500 text-xs">{idx + 1}</td>
+                      <td className="p-3 text-gray-500 text-xs">{t.date?.toDate ? t.date.toDate().toLocaleDateString('id-ID') : '-'}</td>
+                      <td className="p-3"><div className="font-medium">{t.description}</div><div className="text-[10px] text-gray-400 bg-gray-100 inline-block px-1 rounded mt-1">{t.type==='income'?'Masuk':'Keluar'} • {t.method}</div></td>
+                      <td className="p-3"><span className="text-[10px] bg-gray-100 px-2 py-1 rounded border">{t.category}</span></td>
+                      <td className={`p-3 text-right font-bold ${t.type==='expense'?'text-red-600':'text-green-600'}`}>{t.type==='expense' ? '-' : '+'} Rp {formatRupiah(t.amount)}</td>
+                      <td className="p-3 text-center"><button onClick={()=>deleteDoc(doc(db, "payments", t.id))} className="text-gray-300 hover:text-red-500"><Trash2 size={14}/></button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* MODAL TAGIHAN MANUAL */}
-      {showManualInv && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-sm p-6 shadow-xl">
-            <div className="flex justify-between mb-4"><h3 className="font-bold">Buat Tagihan Manual</h3><button onClick={()=>setShowManualInv(false)}><X/></button></div>
-            <form onSubmit={handleCreateManualInvoice} className="space-y-3">
-              <select required className="w-full border p-2 rounded" value={newInv.studentId} onChange={e=>setNewInv({...newInv, studentId:e.target.value})}><option value="">Pilih Siswa</option>{students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
-              <input type="text" required placeholder="Nominal (Rp)" className="w-full border p-2 rounded font-bold" value={newInv.totalAmountStr} onChange={e=>setNewInv({...newInv, totalAmountStr: formatRupiah(e.target.value.replace(/\D/g,""))})}/>
-              <input type="text" placeholder="Keterangan (Cth: Denda Buku)" className="w-full border p-2 rounded" value={newInv.details} onChange={e=>setNewInv({...newInv, details:e.target.value})}/>
-              <input type="date" required className="w-full border p-2 rounded" value={newInv.dueDate} onChange={e=>setNewInv({...newInv, dueDate:e.target.value})}/>
-              <button className="w-full bg-gray-800 text-white py-2 rounded font-bold">SIMPAN TAGIHAN</button>
-            </form>
+        {/* TAB 2 & 3: TAGIHAN & INPUT (SAMA SEPERTI SEBELUMNYA) */}
+        {tab === 'invoices' && (
+          <div className="bg-white rounded-b-xl border border-t-0 overflow-hidden">
+            <div className="p-4 flex justify-between items-center bg-gray-50 border-b">
+              <h3 className="font-bold text-gray-700">Daftar Tagihan</h3>
+              <button onClick={()=>setShowManualInv(true)} className="bg-gray-800 text-white px-3 py-1.5 rounded text-xs font-bold flex gap-2"><Plus size={14}/> Manual</button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-100"><tr><th className="p-3">Nama Siswa</th><th className="p-3">Sisa Hutang</th><th className="p-3">Jatuh Tempo</th><th className="p-3 text-center">Aksi</th></tr></thead>
+                <tbody className="divide-y">{invoices.map(inv => (<tr key={inv.id} className="hover:bg-gray-50"><td className="p-3"><div className="font-bold">{inv.studentName}</div><div className="text-[10px] text-gray-500">{inv.details}</div></td><td className="p-3 font-black text-red-600">Rp {formatRupiah(inv.remainingAmount)}</td><td className="p-3 text-xs text-gray-500">{inv.dueDate}</td><td className="p-3 text-center">{inv.remainingAmount > 0 ? <button onClick={()=>{setSelectedInvoice(inv); setPayAmountStr(formatRupiah(inv.remainingAmount)); setShowPayModal(true)}} className="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-blue-700">Bayar</button> : <span className="text-green-600 font-bold text-xs"><CheckCircle size={12}/> Lunas</span>}</td></tr>))}</tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {tab === 'input' && (
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-white p-6 rounded-b-xl border border-t-0 shadow-sm">
+              <div className="flex gap-2 mb-4 bg-gray-100 p-1 rounded-lg">
+                <button onClick={()=>setInputType('income')} className={`flex-1 py-2 text-xs font-bold rounded ${inputType==='income'?'bg-white shadow text-green-600':'text-gray-500'}`}>Pemasukan</button>
+                <button onClick={()=>setInputType('expense')} className={`flex-1 py-2 text-xs font-bold rounded ${inputType==='expense'?'bg-white shadow text-red-600':'text-gray-500'}`}>Pengeluaran</button>
+              </div>
+              <form onSubmit={handleInputTransaction} className="space-y-4">
+                <input required className="w-full border p-2 rounded" placeholder="Keterangan Transaksi" value={newTrans.title} onChange={e=>setNewTrans({...newTrans, title:e.target.value})}/>
+                <div className="grid grid-cols-2 gap-4">
+                  <select className="w-full border p-2 rounded bg-white" value={newTrans.category} onChange={e=>setNewTrans({...newTrans, category:e.target.value})}>{inputType==='income'?<><option>Sponsor</option><option>Lainnya</option></>:<><option>Operasional</option><option>Gaji</option><option>Lainnya</option></>}</select>
+                  <input type="date" className="w-full border p-2 rounded" value={newTrans.date} onChange={e=>setNewTrans({...newTrans, date:e.target.value})}/>
+                </div>
+                <div className="flex gap-2"><select className="border p-2 rounded w-1/3 text-sm" value={newTrans.method} onChange={e=>setNewTrans({...newTrans, method:e.target.value})}><option value="Tunai">Tunai</option><option value="Transfer">Bank</option></select><input required className="border p-2 rounded font-bold text-lg w-2/3" placeholder="Rp 0" value={newTrans.amountStr} onChange={e=>setNewTrans({...newTrans, amountStr:formatRupiah(e.target.value.replace(/\D/g,""))})}/></div>
+                <button className={`w-full text-white py-3 rounded-lg font-bold shadow-lg ${inputType==='income'?'bg-green-600':'bg-red-600'}`}>SIMPAN</button>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* MODAL & STYLE CSS PRINT */}
+      {showPayModal && <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"><div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6"><h3 className="font-bold mb-4">Pembayaran</h3><form onSubmit={handleProcessPayment} className="space-y-4"><input className="w-full text-2xl font-bold border-b-2 border-blue-600 p-2 outline-none" value={payAmountStr} onChange={e => setPayAmountStr(formatRupiah(e.target.value.replace(/\D/g, "")))}/><button className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold">PROSES</button><button type="button" onClick={()=>setShowPayModal(false)} className="w-full text-gray-500 text-xs mt-2">Batal</button></form></div></div>}
+      {showManualInv && <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"><div className="bg-white rounded-xl w-full max-w-sm p-6"><h3 className="font-bold mb-4">Tagihan Manual</h3><form onSubmit={handleCreateManualInvoice} className="space-y-3"><select required className="w-full border p-2 rounded" value={newInv.studentId} onChange={e=>setNewInv({...newInv, studentId:e.target.value})}><option value="">Pilih Siswa</option>{students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select><input type="text" className="w-full border p-2 rounded" placeholder="Nominal" value={newInv.totalAmountStr} onChange={e=>setNewInv({...newInv, totalAmountStr: formatRupiah(e.target.value.replace(/\D/g,""))})}/><input type="date" required className="w-full border p-2 rounded" value={newInv.dueDate} onChange={e=>setNewInv({...newInv, dueDate:e.target.value})}/><button className="w-full bg-gray-800 text-white py-2 rounded font-bold">SIMPAN</button><button type="button" onClick={()=>setShowManualInv(false)} className="w-full text-gray-500 text-xs mt-2">Batal</button></form></div></div>}
+
+      <style>{`@media print { body * { visibility: hidden; } .print\\:block, .print\\:block * { visibility: visible; } .print\\:block { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; } .print\\:hidden { display: none !important; } }`}</style>
     </div>
   );
 }
