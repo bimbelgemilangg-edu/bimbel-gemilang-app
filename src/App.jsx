@@ -7,14 +7,18 @@ import {
 import { getAuth, signInAnonymously } from 'firebase/auth';
 import { 
   Bell, Clock, DollarSign, Users, GraduationCap, Calendar, 
-  AlertTriangle, CheckCircle, Key, Settings, MessageCircle, Menu, X
+  AlertTriangle, CheckCircle, Key, Settings, MessageCircle, Menu
 } from 'lucide-react';
 
-// --- IMPORT HALAMAN ---
+// --- IMPORT FILE HALAMAN ADMIN ---
 import AdminSchedule from './pages/admin/Schedule';
 import AdminFinance from './pages/admin/Finance';
 import AdminSettings from './pages/admin/Settings'; 
 import AdminStudents from './pages/admin/Students';
+import AdminTeachers from './pages/admin/Teachers'; // Pastikan file Teachers.jsx ada di folder admin
+
+// --- IMPORT FILE HALAMAN GURU (YANG BARU) ---
+import TeacherDashboard from './pages/teacher/Dashboard';
 
 // --- CONFIG FIREBASE ---
 const firebaseConfig = {
@@ -43,7 +47,7 @@ const generateWALink = (phone, name, amount) => {
 };
 
 // ==========================================
-// 1. COMPONENT: DASHBOARD HOME
+// 1. COMPONENT: DASHBOARD HOME (ADMIN)
 // ==========================================
 const DashboardHome = () => {
   const [todaySchedules, setTodaySchedules] = useState([]);
@@ -80,11 +84,15 @@ const DashboardHome = () => {
       setTodaySchedules(all.filter(s => (s.type === 'routine' && s.day === dayName) || (s.type === 'booking' && s.date === dateStr)).sort((a,b) => a.startTime.localeCompare(b.startTime)));
     });
 
-    // Tagihan H-7
+    // Tagihan Jatuh Tempo (H-7)
     const u2 = onSnapshot(query(collection(db, "invoices"), where("remainingAmount", ">", 0)), (snap) => {
       const sevenDaysLater = new Date(); 
       sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
-      const filtered = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(inv => new Date(inv.dueDate) <= sevenDaysLater);
+      
+      const filtered = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(inv => {
+        const due = new Date(inv.dueDate);
+        return due <= sevenDaysLater;
+      });
       setOverdueInvoices(filtered);
     });
     return () => { u1(); u2(); };
@@ -92,8 +100,7 @@ const DashboardHome = () => {
 
   return (
     <div className="space-y-6">
-      {/* WIDGET BEL */}
-      <div className="w-full bg-gradient-to-r from-orange-500 to-red-600 rounded-xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
         <div><h2 className="text-2xl font-bold flex items-center gap-3"><Bell className={isBellRinging?"animate-bounce":""}/> Bel Sekolah</h2><p className="opacity-90">Bunyikan manual saat pergantian jam.</p></div>
         <button onMouseDown={startBell} onMouseUp={stopBell} onMouseLeave={stopBell} className="w-full md:w-auto bg-white text-red-600 px-8 py-4 rounded-lg font-bold shadow-lg hover:bg-gray-100 active:scale-95 transition-transform">TEKAN BEL</button>
       </div>
@@ -138,79 +145,22 @@ const DashboardHome = () => {
 };
 
 // ==========================================
-// 2. COMPONENT: ADMIN TEACHERS
-// ==========================================
-const AdminTeachers = () => {
-  const [token, setToken] = useState("");
-  const [teachers, setTeachers] = useState([]);
-  const [form, setForm] = useState({name:"", phone:""});
-  useEffect(() => {
-    getDoc(doc(db, "settings", "attendanceToken")).then(s => s.exists() && setToken(s.data().token));
-    const unsub = onSnapshot(query(collection(db, "users"), where("role","==","guru")), s => setTeachers(s.docs.map(d => ({id:d.id, ...d.data()}))));
-    return () => unsub();
-  }, []);
-  const saveToken = async () => { if(!token) return alert("Kosong!"); await setDoc(doc(db, "settings", "attendanceToken"), { token: token.toUpperCase() }); alert("Tersimpan!"); };
-  const addGuru = async (e) => { e.preventDefault(); await addDoc(collection(db,"users"),{...form, role:"guru", createdAt: serverTimestamp()}); setForm({name:"", phone:""}); };
-  return (
-    <div className="space-y-6">
-      <div className="bg-white p-6 rounded-xl border shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="flex gap-3 items-center"><div className="bg-yellow-100 p-3 rounded-full text-yellow-600"><Key/></div><div><h3 className="font-bold text-gray-800">Token Absensi</h3><p className="text-xs text-gray-500">Password untuk guru absen.</p></div></div>
-        <div className="flex gap-2 w-full md:w-auto"><input value={token} onChange={e=>setToken(e.target.value.toUpperCase())} className="border-2 p-2 rounded flex-1 text-center font-bold tracking-widest uppercase" placeholder="TOKEN"/><button onClick={saveToken} className="bg-black text-white px-4 py-2 rounded font-bold">SIMPAN</button></div>
-      </div>
-      <div className="bg-white p-6 rounded-xl border shadow-sm">
-        <h2 className="font-bold mb-4 flex gap-2"><Users className="text-blue-600"/> Data Guru</h2>
-        <form onSubmit={addGuru} className="flex gap-2 mb-4"><input placeholder="Nama Guru" className="border p-2 rounded flex-1" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} required/><input placeholder="HP" className="border p-2 rounded w-32" value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})}/><button className="bg-blue-600 text-white px-4 rounded font-bold">+</button></form>
-        <div className="space-y-2 h-64 overflow-y-auto">{teachers.map(t=><div key={t.id} className="p-3 border rounded flex justify-between bg-gray-50"><span className="font-bold">{t.name}</span><span className="text-gray-500 text-sm">{t.phone}</span></div>)}</div>
-      </div>
-    </div>
-  );
-};
-
-// ==========================================
-// 3. COMPONENT: DASHBOARD GURU
-// ==========================================
-const DashboardGuru = ({ guruName, onLogout }) => {
-  const [tokenInput, setTokenInput] = useState("");
-  const [statusMsg, setStatusMsg] = useState("");
-  const handleAbsen = async (e) => {
-    e.preventDefault();
-    try {
-      const snap = await getDoc(doc(db, "settings", "attendanceToken"));
-      if (!snap.exists()) throw new Error("Sistem belum siap.");
-      if (tokenInput.toUpperCase() === snap.data().token) {
-        await addDoc(collection(db, "attendance_teachers"), { name: guruName, timestamp: serverTimestamp(), status: 'Hadir', date: new Date().toISOString().split('T')[0] });
-        setStatusMsg("✅ ABSENSI BERHASIL! Semangat Mengajar.");
-      } else { setStatusMsg("❌ Token Salah."); }
-    } catch (err) { setStatusMsg("Error: " + err.message); }
-  };
-  return (
-    <div className="min-h-screen bg-green-50 flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl border-t-4 border-green-600">
-        <div className="flex justify-between items-start mb-6"><div><h1 className="text-2xl font-bold text-gray-800">Halo, {guruName}</h1><p className="text-sm text-gray-500">Silakan absen sebelum kelas.</p></div><button onClick={onLogout} className="text-red-500 font-bold text-sm bg-red-50 px-3 py-1 rounded">Keluar</button></div>
-        {statusMsg ? <div className={`p-4 rounded text-center font-bold mb-4 ${statusMsg.includes('✅')?'bg-green-100 text-green-800':'bg-red-100 text-red-800'}`}>{statusMsg}</div> : 
-        <form onSubmit={handleAbsen} className="space-y-4"><div><label className="block text-xs font-bold text-gray-500 uppercase mb-1">Token Absensi</label><input value={tokenInput} onChange={e=>setTokenInput(e.target.value)} className="w-full border-2 border-gray-300 p-3 rounded-xl font-mono text-center text-xl font-bold uppercase tracking-widest focus:border-green-600 outline-none" placeholder="TOKEN"/></div><button className="w-full bg-green-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-green-700">KIRIM ABSENSI</button></form>}
-      </div>
-    </div>
-  );
-};
-
-// ==========================================
-// 4. MAIN LAYOUT ADMIN (RESPONSIVE FIX)
+// 2. MAIN LAYOUT ADMIN
 // ==========================================
 const DashboardAdmin = ({ onLogout }) => {
   const [view, setView] = useState('dashboard');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile Menu State
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row w-full overflow-hidden">
       
-      {/* MOBILE HEADER (HAMBURGER MENU) */}
+      {/* MOBILE HEADER */}
       <div className="md:hidden bg-white p-4 border-b flex justify-between items-center shadow-sm z-20">
         <h1 className="font-black text-xl text-blue-600 italic">GEMILANG<span className="text-gray-800 not-italic">BIZ</span></h1>
         <button onClick={()=>setIsSidebarOpen(!isSidebarOpen)} className="text-gray-600"><Menu/></button>
       </div>
 
-      {/* SIDEBAR (RESPONSIVE) */}
+      {/* SIDEBAR */}
       <div className={`
         fixed inset-y-0 left-0 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
         md:relative md:translate-x-0 transition duration-200 ease-in-out z-30
@@ -222,9 +172,12 @@ const DashboardAdmin = ({ onLogout }) => {
         
         <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
           {[
-            {id:'dashboard',l:'Beranda',i:Bell}, {id:'schedule',l:'Jadwal',i:Calendar}, 
-            {id:'students',l:'Siswa',i:GraduationCap}, {id:'finance',l:'Keuangan',i:DollarSign}, 
-            {id:'teachers',l:'Guru',i:Users}, {id:'settings',l:'Pengaturan',i:Settings}
+            {id:'dashboard',l:'Beranda',i:Bell}, 
+            {id:'schedule',l:'Jadwal',i:Calendar}, 
+            {id:'students',l:'Siswa',i:GraduationCap}, 
+            {id:'finance',l:'Keuangan',i:DollarSign}, 
+            {id:'teachers',l:'Guru',i:Users}, 
+            {id:'settings',l:'Pengaturan',i:Settings}
           ].map(m => (
             <button key={m.id} onClick={()=>{setView(m.id); setIsSidebarOpen(false);}} 
               className={`w-full flex gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors ${view===m.id?'bg-blue-600 text-white shadow-md':'text-gray-500 hover:bg-gray-100 hover:text-gray-900'}`}
@@ -239,10 +192,10 @@ const DashboardAdmin = ({ onLogout }) => {
         </div>
       </div>
 
-      {/* OVERLAY UNTUK MOBILE */}
+      {/* OVERLAY */}
       {isSidebarOpen && <div onClick={()=>setIsSidebarOpen(false)} className="fixed inset-0 bg-black/50 z-20 md:hidden"></div>}
 
-      {/* MAIN CONTENT AREA */}
+      {/* MAIN CONTENT */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden w-full relative">
         <header className="bg-white border-b px-6 py-4 flex justify-between items-center shadow-sm flex-shrink-0">
           <h2 className="font-black uppercase text-gray-400 text-xs tracking-widest md:text-sm">{view} PANEL</h2>
@@ -250,11 +203,11 @@ const DashboardAdmin = ({ onLogout }) => {
         </header>
         
         <main className="flex-1 overflow-auto p-4 md:p-6 bg-gray-50/50 w-full relative">
-          <div className="max-w-7xl mx-auto pb-20"> {/* Container Limit agar tidak terlalu lebar di layar besar */}
+          <div className="max-w-7xl mx-auto pb-20"> 
             {view === 'dashboard' && <DashboardHome />}
             {view === 'schedule' && <AdminSchedule db={db} />}
             {view === 'finance' && <AdminFinance db={db} />}
-            {view === 'teachers' && <AdminTeachers />}
+            {view === 'teachers' && <AdminTeachers db={db} />} {/* Pastikan db dikirim ke Teachers */}
             {view === 'students' && <AdminStudents db={db} />}
             {view === 'settings' && <AdminSettings db={db} />}
           </div>
@@ -265,7 +218,7 @@ const DashboardAdmin = ({ onLogout }) => {
 };
 
 // ==========================================
-// 5. LOGIN PAGE (FULL SCREEN CENTER FIX)
+// 3. LOGIN PAGE
 // ==========================================
 const LoginPage = ({ onLogin }) => {
   const [mode, setMode] = useState('admin');
@@ -290,7 +243,6 @@ const LoginPage = ({ onLogin }) => {
   };
 
   return (
-    // FIX UTAMA DISINI: w-full dan h-screen memastikan full layar
     <div className="min-h-screen w-full bg-gray-900 flex items-center justify-center p-4 font-sans">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transform transition-all">
         <div className="bg-blue-600 p-8 text-center text-white">
@@ -326,7 +278,7 @@ const LoginPage = ({ onLogin }) => {
 };
 
 // ==========================================
-// 6. ROOT APP
+// 4. ROOT APP
 // ==========================================
 export default function App() {
   const [page, setPage] = useState('login');
@@ -343,7 +295,9 @@ export default function App() {
     <div className="antialiased w-full min-h-screen bg-gray-50">
       {page === 'login' && <LoginPage onLogin={login}/>}
       {page === 'admin' && <DashboardAdmin onLogout={()=>setPage('login')}/>}
-      {page === 'guru' && <DashboardGuru guruName={user} onLogout={()=>setPage('login')}/>}
+      
+      {/* INI YANG SUDAH DIPERBAIKI SESUAI REQUEST: */}
+      {page === 'guru' && <TeacherDashboard db={db} user={user} onLogout={()=>setPage('login')}/>}
     </div>
   );
 }
