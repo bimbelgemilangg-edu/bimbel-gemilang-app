@@ -36,7 +36,8 @@ import {
   DollarSign,
   AlertTriangle,
   Calculator,
-  CalendarDays
+  CalendarDays,
+  Phone
 } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { 
@@ -448,7 +449,12 @@ export default function App() {
           <div><h2 className="text-2xl font-black uppercase italic tracking-tighter">{activeTab === 'dashboard' ? 'Overview' : activeTab.replace('-', ' ')}</h2><p className="text-[10px] text-gray-400 font-black uppercase mt-1">Sistem Bimbel Gemilang Cloud</p></div>
           <div className="flex items-center space-x-10 text-right">
              <div className="hidden sm:block"><p className="text-xl font-black leading-none">{currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p><p className="text-[9px] text-indigo-500 font-black mt-1.5 uppercase">{currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</p></div>
-             {userRole === 'admin' && <button onClick={() => { setModalType('student'); setIsModalOpen(true); }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl text-xs font-black shadow-xl flex items-center space-x-2"><Plus size={18} /><span>DAFTAR SISWA</span></button>}
+             {userRole === 'admin' && (
+                <div className="flex space-x-2">
+                  <button onClick={() => { setModalType('tutor'); setIsModalOpen(true); }} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-2xl text-xs font-black shadow-xl flex items-center space-x-2"><Plus size={18} strokeWidth={3} /><span>GURU</span></button>
+                  <button onClick={() => { setModalType('student'); setIsModalOpen(true); }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-4 rounded-2xl text-xs font-black shadow-xl flex items-center space-x-2"><Plus size={18} strokeWidth={3} /><span>SISWA</span></button>
+                </div>
+             )}
           </div>
         </header>
 
@@ -488,6 +494,27 @@ export default function App() {
                       </div>
                     </div>
                   )}
+               </div>
+            </div>
+          )}
+
+          {activeTab === 'tutors' && (
+            <div className="space-y-8 animate-in slide-in-from-bottom-4">
+               <div className="bg-white rounded-[3.5rem] shadow-sm border border-gray-100 overflow-hidden">
+                <table className="w-full text-left">
+                  <thead className="bg-gray-50/50 border-b"><tr><th className="px-12 py-10 text-[10px] font-black text-gray-400 uppercase">Nama Guru</th><th className="px-12 py-10 text-[10px] font-black text-gray-400 uppercase">Mata Pelajaran</th><th className="px-12 py-10 text-[10px] font-black text-gray-400 uppercase">Kontak</th><th className="px-12 py-10 text-[10px] font-black text-gray-400 uppercase text-right">Opsi</th></tr></thead>
+                  <tbody className="divide-y">
+                    {tutors.map(t => (
+                      <tr key={t.id} className="group hover:bg-indigo-50/10">
+                        <td className="px-12 py-10"><div className="flex items-center space-x-6"><div className="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl border bg-indigo-50 text-indigo-600 border-indigo-100">{t.name?.[0]}</div><div><p className="font-black text-gray-800 text-lg uppercase italic tracking-tighter leading-none mb-2">{t.name}</p><p className="text-[9px] font-bold text-gray-400 uppercase italic">ID: {t.id.slice(0,5)}</p></div></div></td>
+                        <td className="px-12 py-10"><p className="text-sm font-black text-gray-700 italic">{t.subject}</p></td>
+                        <td className="px-12 py-10"><p className="text-[10px] font-black text-gray-400 uppercase italic">HP: {t.phone}</p></td>
+                        <td className="px-12 py-10 text-right"><button onClick={() => handleDelete('tutors', t.id)} className="p-4 text-gray-300 hover:text-rose-600 transition-all"><Trash2 size={18} /></button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {tutors.length === 0 && <div className="py-40 text-center italic text-gray-200 uppercase font-black tracking-widest opacity-50">Belum ada data guru</div>}
                </div>
             </div>
           )}
@@ -670,7 +697,7 @@ export default function App() {
             </div>
           )}
 
-          {['tutors', 'classes', 'resources', 'my-students'].includes(activeTab) && (
+          {['classes', 'resources', 'my-students'].includes(activeTab) && (
             <div className="bg-white rounded-[3.5rem] shadow-sm border border-gray-100 p-40 flex flex-col items-center justify-center text-center">
                <RefreshCw className="text-indigo-200 animate-spin mb-10" size={64} />
                <h3 className="text-4xl font-black text-gray-800 uppercase tracking-tighter italic">Sync Cloud</h3>
@@ -687,7 +714,7 @@ export default function App() {
         <div className="fixed inset-0 bg-gray-950/90 backdrop-blur-xl flex items-center justify-center z-[100] p-6">
           <div className="bg-white rounded-[3.5rem] w-full max-w-4xl max-h-[90vh] shadow-2xl overflow-hidden border border-white/20 animate-in zoom-in duration-300 flex flex-col">
             <div className="px-14 py-10 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <div><h3 className="font-black text-gray-800 text-3xl tracking-tighter uppercase italic">{modalType === 'student' ? 'Pendaftaran Siswa' : modalType === 'package_price' ? 'Update Harga' : 'Data Keuangan'}</h3><p className="text-[10px] text-indigo-500 font-black uppercase mt-3 italic underline">Bimbel Gemilang Edu Pusat</p></div>
+              <div><h3 className="font-black text-gray-800 text-3xl tracking-tighter uppercase italic">{modalType === 'student' ? 'Pendaftaran Siswa' : modalType === 'tutor' ? 'Data Guru' : modalType === 'package_price' ? 'Update Harga' : 'Data Keuangan'}</h3><p className="text-[10px] text-indigo-500 font-black uppercase mt-3 italic underline">Bimbel Gemilang Edu Pusat</p></div>
               <button onClick={() => setIsModalOpen(false)} className="bg-white p-5 rounded-[2rem] active:scale-90 shadow-xl"><X size={24} /></button>
             </div>
             
@@ -697,6 +724,7 @@ export default function App() {
               const data = Object.fromEntries(formData.entries());
               
               if (modalType === 'student') handleAddData('students', data);
+              else if (modalType === 'tutor') handleAddData('tutors', data);
               else if (modalType === 'package_price') handleUpdatePrice(data.packageName, data.level, data.price);
               else handleAddData('payments', { ...data, type: modalType, status: 'completed' }); 
             }}>
@@ -772,6 +800,21 @@ export default function App() {
                       <div className="md:col-span-2"><textarea name="address" required rows="2" placeholder="ALAMAT LENGKAP RUMAH" className="w-full px-6 py-4 bg-gray-50 border-2 rounded-2xl outline-none font-black uppercase italic text-sm"></textarea></div>
                       <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">HP Ortu (WA)</label><input name="phone" type="tel" required placeholder="08XXXXXXXXXX" className="w-full px-6 py-4 bg-indigo-50 border-2 rounded-2xl font-black italic" /></div>
                     </div>
+                  </div>
+                </>
+              ) : modalType === 'tutor' ? (
+                <>
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Nama Guru</label>
+                    <input name="name" required placeholder="INPUT NAMA LENGKAP" className="w-full px-8 py-6 bg-gray-100 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-[1.8rem] outline-none transition-all text-sm font-black uppercase tracking-widest" />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Mata Pelajaran</label>
+                    <input name="subject" placeholder="MATEMATIKA / FISIKA / DLL" required className="w-full px-8 py-6 bg-gray-100 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-[1.8rem] outline-none transition-all text-sm font-black uppercase tracking-widest" />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Nomor HP</label>
+                    <input name="phone" type="tel" placeholder="08XXXXXXXXXX" required className="w-full px-8 py-6 bg-gray-100 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-[1.8rem] outline-none transition-all text-sm font-black uppercase tracking-widest" />
                   </div>
                 </>
               ) : modalType === 'package_price' ? (
