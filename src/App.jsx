@@ -229,7 +229,7 @@ export default function App() {
   const [regSelectedPackage, setRegSelectedPackage] = useState('');
   const [regLevel, setRegLevel] = useState(''); // SD atau SMP
   const [regFee, setRegFee] = useState(0);
-  const [regPaymentType, setRegPaymentType] = useState('lunas'); // lunas, cicilan, nanti
+  const [regPaymentType, setRegPaymentType] = useState('lunas'); // lunas, cicilan
   const [regAmountReceived, setRegAmountReceived] = useState(0);
   const [regInstallmentPlan, setRegInstallmentPlan] = useState(3); 
   const [regInstallmentDates, setRegInstallmentDates] = useState([new Date().toISOString().split('T')[0], new Date().toISOString().split('T')[0], new Date().toISOString().split('T')[0]]);
@@ -330,20 +330,6 @@ export default function App() {
             method: 'TUNAI', 
             status: 'completed',
             month: new Date().toLocaleString('id-ID', { month: 'long' }),
-            createdAt: new Date().toISOString(),
-            createdBy: user.uid
-          });
-        } else if (regPaymentType === 'nanti') {
-          // BAYAR NANTI: Masuk Arrears (Warning)
-          await addDoc(getCollectionPath('payments'), {
-            student: studentName,
-            type: 'income', // Pending income logic relies on status check
-            amount: totalCost,
-            note: `TAGIHAN AWAL PAKET ${regSelectedPackage} (${regLevel})`,
-            method: 'PENDING',
-            status: 'pending', // Ini yang memicu Warning Tagihan
-            month: new Date().toLocaleString('id-ID', { month: 'long' }),
-            dueDate: new Date().toISOString(),
             createdAt: new Date().toISOString(),
             createdBy: user.uid
           });
@@ -749,7 +735,7 @@ export default function App() {
                               <div className="flex justify-between items-center pt-4 border-t border-emerald-200"><span className="text-sm font-black text-gray-600 uppercase italic">Total Tagihan</span><span className="text-2xl font-black text-emerald-600">{formatIDR(getTotalBill())}</span></div>
                            </div>
                            <div className="space-y-6">
-                              <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Skema Pembayaran</label><div className="flex space-x-2"><button type="button" onClick={() => setRegPaymentType('lunas')} className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase transition-all ${regPaymentType === 'lunas' ? 'bg-emerald-500 text-white shadow-lg' : 'bg-white text-gray-400 border-2 border-gray-100'}`}>Lunas</button><button type="button" onClick={() => setRegPaymentType('cicilan')} className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase transition-all ${regPaymentType === 'cicilan' ? 'bg-amber-500 text-white shadow-lg' : 'bg-white text-gray-400 border-2 border-gray-100'}`}>Cicilan</button><button type="button" onClick={() => setRegPaymentType('nanti')} className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase transition-all ${regPaymentType === 'nanti' ? 'bg-rose-500 text-white shadow-lg' : 'bg-white text-gray-400 border-2 border-gray-100'}`}>Hutang</button></div></div>
+                              <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Skema Pembayaran</label><div className="flex space-x-2"><button type="button" onClick={() => setRegPaymentType('lunas')} className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase transition-all ${regPaymentType === 'lunas' ? 'bg-emerald-500 text-white shadow-lg' : 'bg-white text-gray-400 border-2 border-gray-100'}`}>Lunas</button><button type="button" onClick={() => setRegPaymentType('cicilan')} className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase transition-all ${regPaymentType === 'cicilan' ? 'bg-amber-500 text-white shadow-lg' : 'bg-white text-gray-400 border-2 border-gray-100'}`}>Cicilan</button></div></div>
                               
                               {regPaymentType === 'lunas' && (
                                 <div className="space-y-4 animate-in fade-in">
@@ -771,12 +757,6 @@ export default function App() {
                                         </div>
                                       ))}
                                    </div>
-                                </div>
-                              )}
-                              
-                              {regPaymentType === 'nanti' && (
-                                <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl animate-in fade-in">
-                                  <p className="text-[10px] font-black text-rose-500 uppercase italic text-center">Total tagihan akan dicatat sebagai piutang siswa.</p>
                                 </div>
                               )}
                            </div>
