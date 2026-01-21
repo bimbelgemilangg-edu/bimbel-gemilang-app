@@ -8,7 +8,7 @@ import { getAuth, signInAnonymously } from 'firebase/auth';
 import { 
   Bell, User, Lock, LogOut, CheckCircle, Clock, 
   DollarSign, Users, GraduationCap, Calendar, MapPin, 
-  Save, Plus, X, Search, ChevronLeft, ChevronRight, Repeat, CalendarDays 
+  Save, Plus, X, Search, ChevronLeft, ChevronRight, Repeat, CalendarDays, AlertTriangle, ArrowRight 
 } from 'lucide-react';
 
 // --- CONFIG FIREBASE ---
@@ -25,6 +25,12 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+// --- HELPER: GET HARI INDONESIA ---
+const getIndonesianDay = () => {
+  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  return days[new Date().getDay()];
+};
+
 // =================================================================
 // 1. FILE: src/pages/admin/Settings.jsx (Keuangan & Paket)
 // =================================================================
@@ -39,9 +45,7 @@ const AdminSettings = () => {
     const fetchPrices = async () => {
       const docRef = doc(db, "settings", "prices");
       const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setPrices(docSnap.data());
-      }
+      if (docSnap.exists()) setPrices(docSnap.data());
     };
     fetchPrices();
   }, []);
@@ -254,289 +258,142 @@ const AdminStudents = () => {
 };
 
 // =================================================================
-// 4. FILE: src/pages/admin/Schedule.jsx (REVISI: FLEXIBLE & TIPE JADWAL)
+// 4. FILE: src/pages/admin/Schedule.jsx (JADWAL PLANETS & FILTER RUANGAN)
 // =================================================================
 const AdminSchedule = () => {
-  // Constants
   const ROOMS = ["Merkurius", "Venus", "Bumi", "Mars", "Jupiter"];
   const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
   
-  // State
   const [selectedRoom, setSelectedRoom] = useState("Merkurius");
   const [schedules, setSchedules] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [students, setStudents] = useState([]);
-  const [currentWeekStart, setCurrentWeekStart] = useState(new Date()); // Navigasi Tanggal
-
-  // Modal State
   const [showModal, setShowModal] = useState(false);
-  const [scheduleType, setScheduleType] = useState('routine'); // 'routine' | 'booking'
+  const [scheduleType, setScheduleType] = useState('routine'); 
   const [newSchedule, setNewSchedule] = useState({
-    subject: "", teacherId: "", teacherName: "",
-    day: "Senin", date: "", // date utk Booking
-    startTime: "14:00", endTime: "15:30", // Input Time HTML5
-    studentIds: []
+    subject: "", teacherId: "", teacherName: "", day: "Senin", date: "", 
+    startTime: "14:00", endTime: "15:30", studentIds: []
   });
 
   // Fetch Data
   useEffect(() => {
-    const unsubSchedule = onSnapshot(query(collection(db, "schedules")), (snap) => setSchedules(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubSchedule = onSnapshot(query(collection(db, "schedules"), orderBy("startTime")), (snap) => setSchedules(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubTeachers = onSnapshot(query(collection(db, "users"), where("role", "==", "guru")), (snap) => setTeachers(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubStudents = onSnapshot(query(collection(db, "students"), orderBy("name")), (snap) => setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     return () => { unsubSchedule(); unsubTeachers(); unsubStudents(); };
   }, []);
 
-  // Helpers untuk Navigasi Tanggal
-  const getStartOfWeek = (date) => {
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-    return new Date(d.setDate(diff));
-  };
-
-  const getDatesOfWeek = (startDate) => {
-    const dates = [];
-    let current = new Date(startDate);
-    for(let i=0; i<7; i++) {
-      dates.push(new Date(current));
-      current.setDate(current.getDate() + 1);
-    }
-    return dates;
-  };
-
-  const currentWeekDates = getDatesOfWeek(getStartOfWeek(currentWeekStart));
-
-  const changeWeek = (offset) => {
-    const newDate = new Date(currentWeekStart);
-    newDate.setDate(newDate.getDate() + (offset * 7));
-    setCurrentWeekStart(newDate);
-  };
-
-  // Helper: Filter Jadwal (Merge Routine + Booking)
-  const getSchedulesForDay = (dayName, dateObj) => {
-    const dateStr = dateObj.toISOString().split('T')[0];
-    
-    // 1. Ambil Routine (Paralel)
-    const routine = schedules.filter(s => 
-      s.room === selectedRoom && 
-      s.type === 'routine' && 
-      s.day === dayName
-    );
-
-    // 2. Ambil Booking (Insidental) sesuai tanggal
-    const bookings = schedules.filter(s => 
-      s.room === selectedRoom && 
-      s.type === 'booking' && 
-      s.date === dateStr
-    );
-
-    // 3. Gabung & Sort by Start Time
-    return [...routine, ...bookings].sort((a, b) => a.startTime.localeCompare(b.startTime));
-  };
+  // Filter Jadwal berdasarkan Ruangan Aktif
+  const filteredSchedules = schedules.filter(s => s.room === selectedRoom);
 
   const handleSaveSchedule = async (e) => {
     e.preventDefault();
-    if (!newSchedule.subject || !newSchedule.teacherId) return alert("Lengkapi Mata Pelajaran & Guru!");
-    
+    if (!newSchedule.subject || !newSchedule.teacherId) return alert("Lengkapi data!");
     const selectedGuru = teachers.find(t => t.id === newSchedule.teacherId);
 
     try {
       await addDoc(collection(db, "schedules"), {
-        ...newSchedule,
-        room: selectedRoom,
-        type: scheduleType,
-        teacherName: selectedGuru ? selectedGuru.name : "Unknown",
-        createdAt: serverTimestamp()
+        ...newSchedule, room: selectedRoom, type: scheduleType,
+        teacherName: selectedGuru ? selectedGuru.name : "Unknown", createdAt: serverTimestamp()
       });
       setShowModal(false);
       setNewSchedule({ subject: "", teacherId: "", teacherName: "", day: "Senin", date: "", startTime: "14:00", endTime: "15:30", studentIds: [] });
     } catch (err) { console.error(err); alert("Gagal menyimpan jadwal"); }
   };
 
+  const handleDelete = async (id) => { if(confirm("Hapus jadwal ini?")) await deleteDoc(doc(db, "schedules", id)); };
+
   const toggleStudent = (studentId) => {
     const currentIds = newSchedule.studentIds;
     setNewSchedule(prev => ({
-      ...prev,
-      studentIds: currentIds.includes(studentId) ? currentIds.filter(id => id !== studentId) : [...currentIds, studentId]
+      ...prev, studentIds: currentIds.includes(studentId) ? currentIds.filter(id => id !== studentId) : [...currentIds, studentId]
     }));
-  };
-
-  // Hapus Jadwal
-  const handleDelete = async (id) => {
-    if(confirm("Hapus jadwal ini?")) {
-      await deleteDoc(doc(db, "schedules", id));
-    }
   };
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header & Controls */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4 space-y-4">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <Calendar className="text-blue-600" /> Manajemen Jadwal
-            </h2>
-            <p className="text-sm text-gray-500">Pilih Ruangan & Atur Jadwal (Rutin/Booking)</p>
-          </div>
-          {/* Room Filter */}
-          <div className="flex gap-2 bg-gray-100 p-1 rounded-lg overflow-x-auto max-w-full">
-            {ROOMS.map(room => (
-              <button key={room} onClick={() => setSelectedRoom(room)} className={`px-4 py-2 rounded-md text-sm font-bold whitespace-nowrap transition-colors ${selectedRoom === room ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-                {room}
-              </button>
-            ))}
-          </div>
+      {/* Header & Filter Ruangan */}
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
+          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Calendar className="text-blue-600" /> Manajemen Jadwal (Planets)</h2>
+          <button onClick={() => setShowModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 flex items-center gap-2 text-sm">+ Tambah Jadwal</button>
         </div>
-        
-        {/* Week Navigation */}
-        <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-100">
-          <button onClick={() => changeWeek(-1)} className="p-2 hover:bg-blue-200 rounded-full"><ChevronLeft size={20} className="text-blue-700" /></button>
-          <div className="text-center">
-            <span className="text-xs text-blue-500 font-bold block uppercase tracking-wider">Minggu Aktif</span>
-            <span className="text-lg font-bold text-blue-800">
-              {currentWeekDates[0].toLocaleDateString('id-ID', {day: 'numeric', month: 'short'})} - {currentWeekDates[6].toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}
-            </span>
-          </div>
-          <button onClick={() => changeWeek(1)} className="p-2 hover:bg-blue-200 rounded-full"><ChevronRight size={20} className="text-blue-700" /></button>
+        <div className="flex gap-2 bg-gray-50 p-1 rounded-lg overflow-x-auto">
+          {ROOMS.map(room => (
+            <button key={room} onClick={() => setSelectedRoom(room)} className={`px-4 py-2 rounded-md text-sm font-bold whitespace-nowrap transition-colors ${selectedRoom === room ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+              {room}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* WEEKLY COLUMN VIEW */}
-      <div className="flex-1 overflow-x-auto bg-gray-50 rounded-xl border border-gray-200">
-        <div className="min-w-[1200px] grid grid-cols-7 h-full divide-x divide-gray-200">
-          {currentWeekDates.map((date, index) => {
-            const dayName = DAYS[index]; // Senin, Selasa...
-            const dailySchedules = getSchedulesForDay(dayName, date);
-            const isToday = new Date().toDateString() === date.toDateString();
-
-            return (
-              <div key={index} className={`flex flex-col h-full ${isToday ? 'bg-white' : 'bg-gray-50'}`}>
-                {/* Column Header */}
-                <div className={`p-3 text-center border-b ${isToday ? 'bg-blue-100 border-blue-200' : 'bg-gray-100 border-gray-200'}`}>
-                  <div className={`font-bold text-sm ${isToday ? 'text-blue-800' : 'text-gray-700'}`}>{dayName}</div>
-                  <div className={`text-xs ${isToday ? 'text-blue-600' : 'text-gray-500'}`}>
-                    {date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-                  </div>
-                </div>
-
-                {/* Column Body (Card List) */}
-                <div className="flex-1 p-2 space-y-2 overflow-y-auto min-h-[400px]">
-                  {dailySchedules.map(sch => (
-                    <div key={sch.id} className={`relative group p-3 rounded-lg border shadow-sm text-left transition-all hover:shadow-md ${sch.type === 'booking' ? 'bg-purple-50 border-purple-200' : 'bg-white border-gray-200'}`}>
-                      <div className="flex justify-between items-start mb-1">
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${sch.type === 'booking' ? 'bg-purple-200 text-purple-700' : 'bg-green-100 text-green-700'}`}>
-                          {sch.type === 'booking' ? 'BOOKING' : 'RUTIN'}
-                        </span>
-                        <button onClick={() => handleDelete(sch.id)} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100"><X size={14} /></button>
-                      </div>
-                      <div className="font-bold text-gray-800 text-sm leading-tight mb-1">{sch.subject}</div>
-                      <div className="text-xs text-blue-600 font-medium mb-1 flex items-center gap-1"><Clock size={10} /> {sch.startTime} - {sch.endTime}</div>
-                      <div className="text-xs text-gray-500 truncate"><User size={10} className="inline mr-1"/>{sch.teacherName}</div>
-                      <div className="mt-2 pt-2 border-t border-dashed border-gray-200 text-[10px] text-gray-400">
-                        {sch.studentIds?.length || 0} Siswa
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {/* Add Button per Column */}
-                  <button 
-                    onClick={() => {
-                      setScheduleType('routine'); // Default
-                      setNewSchedule(prev => ({ 
-                        ...prev, 
-                        day: dayName, 
-                        date: date.toISOString().split('T')[0] // Pre-fill date just in case they switch to Booking
-                      }));
-                      setShowModal(true);
-                    }}
-                    className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-400 text-xs font-bold hover:border-blue-400 hover:text-blue-500 transition-colors"
-                  >
-                    + Tambah
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+      {/* List Jadwal Card Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto pb-6">
+        {filteredSchedules.length > 0 ? filteredSchedules.map(sch => (
+          <div key={sch.id} className={`p-4 rounded-xl border relative group transition-all hover:shadow-md ${sch.type === 'booking' ? 'bg-purple-50 border-purple-200' : 'bg-white border-gray-200'}`}>
+            <div className="flex justify-between items-start mb-2">
+              <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${sch.type === 'booking' ? 'bg-purple-200 text-purple-700' : 'bg-green-100 text-green-700'}`}>
+                {sch.type === 'booking' ? `BOOKING: ${sch.date}` : `RUTIN: ${sch.day}`}
+              </span>
+              <button onClick={() => handleDelete(sch.id)} className="text-gray-300 hover:text-red-500"><X size={16} /></button>
+            </div>
+            <h3 className="font-bold text-gray-800 text-lg leading-tight mb-1">{sch.subject}</h3>
+            <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+              <Clock size={14} className="text-blue-500" /> {sch.startTime} - {sch.endTime}
+            </div>
+            <div className="flex items-center justify-between border-t pt-3">
+              <div className="text-xs text-gray-500 font-medium flex items-center gap-1"><User size={12} /> {sch.teacherName}</div>
+              <div className="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-full">{sch.studentIds?.length || 0} Siswa</div>
+            </div>
+          </div>
+        )) : (
+          <div className="col-span-full text-center py-10 text-gray-400 bg-gray-50 rounded-xl border border-dashed">
+            Belum ada jadwal di ruangan {selectedRoom}.
+          </div>
+        )}
       </div>
 
-      {/* MODAL FORM */}
+      {/* Modal Form */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-5 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
-              <h3 className="text-lg font-bold text-gray-800">Tambah Jadwal: {selectedRoom}</h3>
+              <h3 className="text-lg font-bold text-gray-800">Booking: {selectedRoom}</h3>
               <button onClick={() => setShowModal(false)}><X className="text-gray-500 hover:text-red-500" /></button>
             </div>
-            
             <form onSubmit={handleSaveSchedule} className="p-6 space-y-5">
-              {/* TIPE JADWAL TOGGLE */}
               <div className="flex bg-gray-100 p-1 rounded-lg">
-                <button type="button" onClick={() => setScheduleType('routine')} className={`flex-1 py-2 text-sm font-bold rounded-md flex items-center justify-center gap-2 transition-all ${scheduleType === 'routine' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500'}`}>
-                  <Repeat size={16} /> Rutin (Paralel)
-                </button>
-                <button type="button" onClick={() => setScheduleType('booking')} className={`flex-1 py-2 text-sm font-bold rounded-md flex items-center justify-center gap-2 transition-all ${scheduleType === 'booking' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500'}`}>
-                  <CalendarDays size={16} /> Booking (Sewa)
-                </button>
+                <button type="button" onClick={() => setScheduleType('routine')} className={`flex-1 py-2 text-sm font-bold rounded-md flex items-center justify-center gap-2 transition-all ${scheduleType === 'routine' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500'}`}><Repeat size={16} /> Rutin (Mingguan)</button>
+                <button type="button" onClick={() => setScheduleType('booking')} className={`flex-1 py-2 text-sm font-bold rounded-md flex items-center justify-center gap-2 transition-all ${scheduleType === 'booking' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500'}`}><CalendarDays size={16} /> Booking (Tanggal)</button>
               </div>
-
-              {/* Conditional Input: Day vs Date */}
+              
               {scheduleType === 'routine' ? (
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1">Hari (Berulang Tiap Minggu)</label>
-                  <select className="w-full p-2 border rounded font-medium" value={newSchedule.day} onChange={e => setNewSchedule({...newSchedule, day: e.target.value})}>
-                    {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
-                </div>
+                <div><label className="text-xs font-bold text-gray-500 block mb-1">Hari</label><select className="w-full p-2 border rounded" value={newSchedule.day} onChange={e => setNewSchedule({...newSchedule, day: e.target.value})}>{DAYS.map(d => <option key={d} value={d}>{d}</option>)}</select></div>
               ) : (
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1">Tanggal Booking (Sekali Pakai)</label>
-                  <input type="date" required className="w-full p-2 border rounded font-medium" value={newSchedule.date} onChange={e => setNewSchedule({...newSchedule, date: e.target.value})} />
-                </div>
+                <div><label className="text-xs font-bold text-gray-500 block mb-1">Tanggal</label><input type="date" className="w-full p-2 border rounded" value={newSchedule.date} onChange={e => setNewSchedule({...newSchedule, date: e.target.value})} /></div>
               )}
 
-              {/* Subject & Teacher */}
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1">Mata Pelajaran</label>
-                  <input required type="text" className="w-full p-2 border rounded" placeholder="Mapel..." value={newSchedule.subject} onChange={e => setNewSchedule({...newSchedule, subject: e.target.value})} />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1">Guru</label>
-                  <select required className="w-full p-2 border rounded" value={newSchedule.teacherId} onChange={e => setNewSchedule({...newSchedule, teacherId: e.target.value})}>
-                    <option value="">- Pilih -</option>
-                    {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                  </select>
-                </div>
+                <div><label className="text-xs font-bold text-gray-500 block mb-1">Mapel</label><input type="text" className="w-full p-2 border rounded" value={newSchedule.subject} onChange={e => setNewSchedule({...newSchedule, subject: e.target.value})} /></div>
+                <div><label className="text-xs font-bold text-gray-500 block mb-1">Guru</label><select className="w-full p-2 border rounded" value={newSchedule.teacherId} onChange={e => setNewSchedule({...newSchedule, teacherId: e.target.value})}><option value="">- Pilih -</option>{teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></div>
               </div>
 
-              {/* Flexible Time Input */}
               <div className="grid grid-cols-2 gap-4 bg-yellow-50 p-3 rounded-lg border border-yellow-100">
-                <div>
-                  <label className="block text-xs font-bold text-yellow-700 mb-1">Jam Mulai</label>
-                  <input type="time" required className="w-full p-2 border border-yellow-200 rounded" value={newSchedule.startTime} onChange={e => setNewSchedule({...newSchedule, startTime: e.target.value})} />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-yellow-700 mb-1">Jam Selesai</label>
-                  <input type="time" required className="w-full p-2 border border-yellow-200 rounded" value={newSchedule.endTime} onChange={e => setNewSchedule({...newSchedule, endTime: e.target.value})} />
-                </div>
+                <div><label className="text-xs font-bold text-yellow-700 block mb-1">Mulai</label><input type="time" className="w-full p-2 border border-yellow-200 rounded" value={newSchedule.startTime} onChange={e => setNewSchedule({...newSchedule, startTime: e.target.value})} /></div>
+                <div><label className="text-xs font-bold text-yellow-700 block mb-1">Selesai</label><input type="time" className="w-full p-2 border border-yellow-200 rounded" value={newSchedule.endTime} onChange={e => setNewSchedule({...newSchedule, endTime: e.target.value})} /></div>
               </div>
 
-              {/* Students Checklist */}
               <div>
-                <label className="block text-xs font-bold text-gray-500 mb-2">Siswa ({newSchedule.studentIds.length})</label>
+                <label className="text-xs font-bold text-gray-500 block mb-2">Pilih Siswa ({newSchedule.studentIds.length})</label>
                 <div className="border rounded-lg h-32 overflow-y-auto p-2 bg-gray-50 grid grid-cols-2 gap-2">
                   {students.map(s => (
                     <div key={s.id} onClick={() => toggleStudent(s.id)} className={`p-2 rounded flex items-center gap-2 cursor-pointer border text-xs ${newSchedule.studentIds.includes(s.id) ? 'bg-blue-100 border-blue-300' : 'bg-white border-gray-200'}`}>
-                      <div className={`w-3 h-3 rounded-sm border ${newSchedule.studentIds.includes(s.id) ? 'bg-blue-600 border-blue-600' : 'border-gray-400'}`}></div>
-                      <span className="truncate">{s.name}</span>
+                      <div className={`w-3 h-3 rounded-sm border ${newSchedule.studentIds.includes(s.id) ? 'bg-blue-600 border-blue-600' : 'border-gray-400'}`}></div><span className="truncate">{s.name}</span>
                     </div>
                   ))}
                 </div>
               </div>
-
-              <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 shadow-lg">SIMPAN JADWAL</button>
+              <button className="w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700">SIMPAN</button>
             </form>
           </div>
         </div>
@@ -565,17 +422,8 @@ const AdminSidebar = ({ activeView, setView }) => {
       </div>
       <nav className="p-4 space-y-1">
         {menus.map(menu => (
-          <button
-            key={menu.id}
-            onClick={() => setView(menu.id)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-              activeView === menu.id 
-                ? 'bg-blue-50 text-blue-600' 
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            {menu.icon}
-            {menu.label}
+          <button key={menu.id} onClick={() => setView(menu.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeView === menu.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}>
+            {menu.icon} {menu.label}
           </button>
         ))}
       </nav>
@@ -617,10 +465,7 @@ const LoginPage = ({ onLogin }) => {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden">
-        <div className="bg-blue-600 p-6 text-center">
-          <h1 className="text-2xl font-bold text-white">Bimbel Gemilang</h1>
-          <p className="text-blue-100 text-sm">System Login</p>
-        </div>
+        <div className="bg-blue-600 p-6 text-center"><h1 className="text-2xl font-bold text-white">Bimbel Gemilang</h1><p className="text-blue-100 text-sm">System Login</p></div>
         <div className="flex border-b">
           <button onClick={() => setActiveTab('admin')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'admin' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}>Admin</button>
           <button onClick={() => setActiveTab('guru')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'guru' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500'}`}>Guru</button>
@@ -630,10 +475,7 @@ const LoginPage = ({ onLogin }) => {
             {activeTab === 'admin' ? (
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full px-4 py-2 border rounded" placeholder="Password Admin" />
             ) : (
-              <select value={selectedGuru} onChange={e => setSelectedGuru(e.target.value)} className="w-full px-4 py-2 border rounded">
-                <option value="">-- Pilih Guru --</option>
-                {teachers.map(g => <option key={g.id} value={g.name}>{g.name}</option>)}
-              </select>
+              <select value={selectedGuru} onChange={e => setSelectedGuru(e.target.value)} className="w-full px-4 py-2 border rounded"><option value="">-- Pilih Guru --</option>{teachers.map(g => <option key={g.id} value={g.name}>{g.name}</option>)}</select>
             )}
             {error && <div className="text-red-500 text-sm">{error}</div>}
             <button className="w-full py-2 rounded bg-blue-600 text-white font-bold">Masuk</button>
@@ -644,9 +486,11 @@ const LoginPage = ({ onLogin }) => {
   );
 };
 
-// --- PAGE: DASHBOARD ADMIN ---
+// --- PAGE: DASHBOARD ADMIN (HOME) ---
 const DashboardAdmin = ({ onLogout }) => {
   const [currentView, setCurrentView] = useState('dashboard');
+  const [todaySchedules, setTodaySchedules] = useState([]);
+  const [overdueInvoices, setOverdueInvoices] = useState([]);
   
   // Bel Logic
   const [isBellRinging, setIsBellRinging] = useState(false);
@@ -673,6 +517,32 @@ const DashboardAdmin = ({ onLogout }) => {
     if(audioContextRef.current) audioContextRef.current.close();
   };
 
+  // Fetch Data Dashboard (Schedule & Invoices)
+  useEffect(() => {
+    // 1. Fetch Today Schedules
+    const dayName = getIndonesianDay();
+    const dateStr = new Date().toISOString().split('T')[0];
+    
+    const unsubSchedule = onSnapshot(query(collection(db, "schedules")), (snap) => {
+      const all = snap.docs.map(d => d.data());
+      // Filter JS (Mix Routine & Booking)
+      const today = all.filter(s => 
+        (s.type === 'routine' && s.day === dayName) || 
+        (s.type === 'booking' && s.date === dateStr)
+      ).sort((a,b) => a.startTime.localeCompare(b.startTime));
+      setTodaySchedules(today);
+    });
+
+    // 2. Fetch Overdue Invoices (Mockup Logic but Real Fetch)
+    // Note: Collection 'invoices' mungkin masih kosong, tapi logic sudah siap.
+    const unsubInvoices = onSnapshot(query(collection(db, "invoices"), where("status", "==", "unpaid")), (snap) => {
+      // Logic H-7 (Simulasi filter di client side karena query firestore date complex)
+      setOverdueInvoices(snap.docs.map(d => d.data())); 
+    });
+
+    return () => { unsubSchedule(); unsubInvoices(); };
+  }, []);
+
   const renderContent = () => {
     switch(currentView) {
       case 'schedule': return <AdminSchedule />;
@@ -680,18 +550,78 @@ const DashboardAdmin = ({ onLogout }) => {
       case 'teachers': return <AdminTeachers />;
       case 'students': return <AdminStudents />;
       default:
+        // --- DASHBOARD HOME ---
         return (
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center h-96">
-            <div className="mb-4 bg-orange-100 p-4 rounded-full">
-              <Bell className={`w-8 h-8 text-orange-600 ${isBellRinging ? 'animate-bounce' : ''}`} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            {/* Widget 1: Bel Sekolah (Priority) */}
+            <div className="bg-gradient-to-br from-orange-500 to-red-600 rounded-xl p-6 text-white shadow-lg flex flex-col justify-between relative overflow-hidden">
+              <div className="z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-white/20 p-2 rounded-lg"><Bell size={24} className={isBellRinging ? "animate-bounce" : ""} /></div>
+                  <h3 className="font-bold text-lg">Bel Sekolah Manual</h3>
+                </div>
+                <p className="text-orange-100 text-sm mb-6">Tekan dan tahan tombol di bawah untuk membunyikan bel tanda masuk/pulang.</p>
+                <button
+                  onMouseDown={startBell} onMouseUp={stopBell} onMouseLeave={stopBell} onTouchStart={startBell} onTouchEnd={stopBell}
+                  className={`w-full py-3 rounded-lg font-bold text-red-600 shadow-md transition-all active:scale-95 ${isBellRinging ? 'bg-white' : 'bg-white'}`}
+                >
+                  {isBellRinging ? 'SEDANG MEMBUNYIKAN...' : 'TEKAN BEL'}
+                </button>
+              </div>
+              <Bell size={100} className="absolute -bottom-4 -right-4 text-white/10" />
             </div>
-            <h2 className="text-lg font-bold text-gray-800 mb-2">Bel Sekolah</h2>
-            <button
-              onMouseDown={startBell} onMouseUp={stopBell} onMouseLeave={stopBell} onTouchStart={startBell} onTouchEnd={stopBell}
-              className={`px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition-all ${isBellRinging ? 'bg-red-600 text-white' : 'bg-orange-500 text-white'}`}
-            >
-              {isBellRinging ? 'MEMBUNYIKAN...' : 'TEKAN BEL'}
-            </button>
+
+            {/* Widget 2: Kelas Hari Ini */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 col-span-1 md:col-span-1 lg:col-span-2">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2"><Clock className="text-blue-500" /> Kelas Hari Ini</h3>
+                  <p className="text-xs text-gray-500">{getIndonesianDay()}, {new Date().toLocaleDateString('id-ID')}</p>
+                </div>
+                <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">{todaySchedules.length} Kelas</span>
+              </div>
+              
+              <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                {todaySchedules.length > 0 ? todaySchedules.map((s, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-blue-50 transition-colors">
+                    <div>
+                      <h4 className="font-bold text-gray-800 text-sm">{s.subject}</h4>
+                      <p className="text-xs text-gray-500 flex items-center gap-1"><User size={10}/> {s.teacherName}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="block font-mono text-sm font-bold text-blue-600">{s.startTime}</span>
+                      <span className="text-[10px] text-gray-400 uppercase tracking-wide">{s.room}</span>
+                    </div>
+                  </div>
+                )) : (
+                  <div className="text-center py-8 text-gray-400">Tidak ada kelas aktif hari ini.</div>
+                )}
+              </div>
+            </div>
+
+            {/* Widget 3: Tagihan (Invoices) */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <h3 className="font-bold text-gray-800 text-lg mb-4 flex items-center gap-2"><AlertTriangle className="text-yellow-500" /> Tagihan Jatuh Tempo</h3>
+              <div className="space-y-3">
+                {overdueInvoices.length > 0 ? overdueInvoices.map((inv, idx) => (
+                  <div key={idx} className="p-3 border-l-4 border-yellow-400 bg-yellow-50 rounded-r-lg">
+                    <div className="flex justify-between">
+                      <span className="font-bold text-sm text-gray-800">{inv.studentName}</span>
+                      <span className="text-xs font-bold text-red-500">Rp {inv.amount?.toLocaleString()}</span>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">Jatuh Tempo: {inv.dueDate}</div>
+                  </div>
+                )) : (
+                  <div className="text-center py-8 text-gray-400 flex flex-col items-center">
+                    <CheckCircle className="text-green-300 mb-2" size={32} />
+                    <span className="text-xs">Aman! Tidak ada tagihan H-7.</span>
+                  </div>
+                )}
+              </div>
+              <button className="w-full mt-4 py-2 text-xs font-bold text-blue-600 border border-blue-200 rounded hover:bg-blue-50">Lihat Semua Tagihan</button>
+            </div>
+
           </div>
         );
     }
@@ -702,7 +632,7 @@ const DashboardAdmin = ({ onLogout }) => {
       <AdminSidebar activeView={currentView} setView={setCurrentView} />
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <header className="bg-white shadow-sm border-b px-6 py-4 flex justify-between items-center shrink-0">
-          <h2 className="text-xl font-bold text-gray-800 uppercase">{currentView.replace('_', ' ')}</h2>
+          <h2 className="text-xl font-bold text-gray-800 uppercase">{currentView === 'dashboard' ? 'Dashboard Overview' : currentView.replace('_', ' ')}</h2>
           <button onClick={onLogout} className="text-red-600 font-medium hover:underline">Keluar</button>
         </header>
         <main className="p-6 flex-1 overflow-auto">
