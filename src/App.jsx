@@ -258,12 +258,16 @@ const AdminStudents = () => {
 };
 
 // =================================================================
-// 4. FILE: src/pages/admin/Schedule.jsx (JADWAL PLANETS & FILTER RUANGAN)
+// 4. FILE: src/pages/admin/Schedule.jsx (REVISI: GRID CALENDAR VISUAL)
 // =================================================================
 const AdminSchedule = () => {
   const ROOMS = ["Merkurius", "Venus", "Bumi", "Mars", "Jupiter"];
   const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
-  
+  const START_HOUR = 8;
+  const END_HOUR = 20;
+  const HOURS = Array.from({length: END_HOUR - START_HOUR + 1}, (_, i) => i + START_HOUR); // 8, 9... 20
+  const PIXELS_PER_HOUR = 80; // Tinggi 1 jam = 80px
+
   const [selectedRoom, setSelectedRoom] = useState("Merkurius");
   const [schedules, setSchedules] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -277,14 +281,35 @@ const AdminSchedule = () => {
 
   // Fetch Data
   useEffect(() => {
-    const unsubSchedule = onSnapshot(query(collection(db, "schedules"), orderBy("startTime")), (snap) => setSchedules(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubSchedule = onSnapshot(query(collection(db, "schedules")), (snap) => setSchedules(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubTeachers = onSnapshot(query(collection(db, "users"), where("role", "==", "guru")), (snap) => setTeachers(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubStudents = onSnapshot(query(collection(db, "students"), orderBy("name")), (snap) => setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     return () => { unsubSchedule(); unsubTeachers(); unsubStudents(); };
   }, []);
 
-  // Filter Jadwal berdasarkan Ruangan Aktif
-  const filteredSchedules = schedules.filter(s => s.room === selectedRoom);
+  // --- LOGIC POSISI GRID ---
+  // Menghitung posisi Y (top) dan tinggi (height) berdasarkan jam
+  const getPositionStyle = (startStr, endStr) => {
+    const [startH, startM] = startStr.split(':').map(Number);
+    const [endH, endM] = endStr.split(':').map(Number);
+    
+    // Hitung menit dari jam 08:00
+    const startMinutes = (startH - START_HOUR) * 60 + startM;
+    const endMinutes = (endH - START_HOUR) * 60 + endM;
+    const durationMinutes = endMinutes - startMinutes;
+
+    return {
+      top: `${(startMinutes / 60) * PIXELS_PER_HOUR}px`,
+      height: `${(durationMinutes / 60) * PIXELS_PER_HOUR}px`
+    };
+  };
+
+  // Helper untuk mendapatkan Nama Hari dari Tanggal (utk Booking)
+  const getDayNameFromDate = (dateStr) => {
+    const d = new Date(dateStr);
+    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    return days[d.getDay()];
+  };
 
   const handleSaveSchedule = async (e) => {
     e.preventDefault();
@@ -302,55 +327,101 @@ const AdminSchedule = () => {
   };
 
   const handleDelete = async (id) => { if(confirm("Hapus jadwal ini?")) await deleteDoc(doc(db, "schedules", id)); };
-
   const toggleStudent = (studentId) => {
     const currentIds = newSchedule.studentIds;
-    setNewSchedule(prev => ({
-      ...prev, studentIds: currentIds.includes(studentId) ? currentIds.filter(id => id !== studentId) : [...currentIds, studentId]
-    }));
+    setNewSchedule(prev => ({ ...prev, studentIds: currentIds.includes(studentId) ? currentIds.filter(id => id !== studentId) : [...currentIds, studentId] }));
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       {/* Header & Filter Ruangan */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
-          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Calendar className="text-blue-600" /> Manajemen Jadwal (Planets)</h2>
-          <button onClick={() => setShowModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 flex items-center gap-2 text-sm">+ Tambah Jadwal</button>
+      <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+        <div className="flex items-center gap-4">
+          <div className="bg-blue-100 p-2 rounded-lg text-blue-600"><Calendar size={20} /></div>
+          <div>
+            <h2 className="text-lg font-bold text-gray-800">Manajemen Ruangan</h2>
+            <p className="text-xs text-gray-500">Visualisasi Jadwal Grid</p>
+          </div>
         </div>
-        <div className="flex gap-2 bg-gray-50 p-1 rounded-lg overflow-x-auto">
+        <div className="flex bg-gray-200 p-1 rounded-lg">
           {ROOMS.map(room => (
-            <button key={room} onClick={() => setSelectedRoom(room)} className={`px-4 py-2 rounded-md text-sm font-bold whitespace-nowrap transition-colors ${selectedRoom === room ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+            <button key={room} onClick={() => setSelectedRoom(room)} className={`px-4 py-2 rounded-md text-xs font-bold transition-all ${selectedRoom === room ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
               {room}
             </button>
           ))}
         </div>
+        <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+          <Plus size={16} /> Jadwal
+        </button>
       </div>
 
-      {/* List Jadwal Card Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto pb-6">
-        {filteredSchedules.length > 0 ? filteredSchedules.map(sch => (
-          <div key={sch.id} className={`p-4 rounded-xl border relative group transition-all hover:shadow-md ${sch.type === 'booking' ? 'bg-purple-50 border-purple-200' : 'bg-white border-gray-200'}`}>
-            <div className="flex justify-between items-start mb-2">
-              <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${sch.type === 'booking' ? 'bg-purple-200 text-purple-700' : 'bg-green-100 text-green-700'}`}>
-                {sch.type === 'booking' ? `BOOKING: ${sch.date}` : `RUTIN: ${sch.day}`}
-              </span>
-              <button onClick={() => handleDelete(sch.id)} className="text-gray-300 hover:text-red-500"><X size={16} /></button>
-            </div>
-            <h3 className="font-bold text-gray-800 text-lg leading-tight mb-1">{sch.subject}</h3>
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-              <Clock size={14} className="text-blue-500" /> {sch.startTime} - {sch.endTime}
-            </div>
-            <div className="flex items-center justify-between border-t pt-3">
-              <div className="text-xs text-gray-500 font-medium flex items-center gap-1"><User size={12} /> {sch.teacherName}</div>
-              <div className="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-full">{sch.studentIds?.length || 0} Siswa</div>
-            </div>
+      {/* --- GRID CALENDAR SYSTEM --- */}
+      <div className="flex-1 overflow-auto relative">
+        <div className="min-w-[1000px] relative">
+          
+          {/* Header Hari */}
+          <div className="flex border-b border-gray-200 sticky top-0 bg-white z-20 shadow-sm">
+            <div className="w-16 flex-shrink-0 border-r border-gray-100 p-3 text-xs font-bold text-gray-400 text-center bg-gray-50">JAM</div>
+            {DAYS.map(day => (
+              <div key={day} className="flex-1 p-3 text-center border-r border-gray-100 font-bold text-gray-700 text-sm uppercase bg-gray-50">
+                {day}
+              </div>
+            ))}
           </div>
-        )) : (
-          <div className="col-span-full text-center py-10 text-gray-400 bg-gray-50 rounded-xl border border-dashed">
-            Belum ada jadwal di ruangan {selectedRoom}.
+
+          {/* Grid Body */}
+          <div className="flex relative">
+            {/* Kolom Waktu (Kiri) */}
+            <div className="w-16 flex-shrink-0 border-r border-gray-200 bg-white z-10">
+              {HOURS.map(h => (
+                <div key={h} className="border-b border-gray-100 text-xs text-gray-400 font-medium text-center relative" style={{ height: `${PIXELS_PER_HOUR}px` }}>
+                  <span className="absolute -top-2 left-0 right-0">{h}:00</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Kolom Hari (Grid Utama) */}
+            {DAYS.map(day => (
+              <div key={day} className="flex-1 border-r border-gray-100 relative bg-white">
+                {/* Garis-garis jam tipis di background */}
+                {HOURS.map(h => (
+                  <div key={h} className="border-b border-gray-50 w-full absolute" style={{ top: `${(h - START_HOUR) * PIXELS_PER_HOUR}px`, height: '1px' }}></div>
+                ))}
+
+                {/* Render Jadwal Blok */}
+                {schedules
+                  .filter(s => s.room === selectedRoom) // Filter Ruangan
+                  .filter(s => {
+                    // Logic Filter Hari:
+                    if (s.type === 'routine') return s.day === day;
+                    if (s.type === 'booking') return getDayNameFromDate(s.date) === day;
+                    return false;
+                  })
+                  .map(sch => {
+                    const style = getPositionStyle(sch.startTime, sch.endTime);
+                    return (
+                      <div 
+                        key={sch.id}
+                        className={`absolute left-1 right-1 rounded-md p-2 text-xs shadow-sm border overflow-hidden cursor-pointer hover:shadow-md transition-all z-10 group
+                          ${sch.type === 'booking' ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-green-100 border-green-300 text-green-800'}
+                        `}
+                        style={style}
+                      >
+                        <div className="flex justify-between items-start">
+                          <span className="font-bold truncate leading-tight">{sch.subject}</span>
+                          <button onClick={(e) => { e.stopPropagation(); handleDelete(sch.id); }} className="opacity-0 group-hover:opacity-100 text-red-500 hover:bg-white rounded"><X size={12} /></button>
+                        </div>
+                        <div className="text-[10px] mt-0.5 opacity-80">{sch.startTime} - {sch.endTime}</div>
+                        <div className="text-[10px] mt-1 font-medium flex items-center gap-1 truncate"><User size={10}/> {sch.teacherName}</div>
+                        {sch.type === 'booking' && <div className="absolute bottom-1 right-1 text-[8px] bg-purple-200 px-1 rounded text-purple-800 font-bold">{sch.date.split('-')[2]}</div>}
+                      </div>
+                    );
+                  })
+                }
+              </div>
+            ))}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Modal Form */}
