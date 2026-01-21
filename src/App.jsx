@@ -227,6 +227,7 @@ export default function App() {
   
   // Registration States
   const [regSelectedPackage, setRegSelectedPackage] = useState('');
+  const [regLevel, setRegLevel] = useState(''); // SD atau SMP
   const [regFee, setRegFee] = useState(0);
   const [regPaymentType, setRegPaymentType] = useState('lunas'); // lunas, cicilan, nanti
   const [regAmountReceived, setRegAmountReceived] = useState(0);
@@ -236,6 +237,7 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
   const [selectedPackage, setSelectedPackage] = useState('');
+  const [selectedLevel, setSelectedLevel] = useState('SD'); // Untuk update harga
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
@@ -297,6 +299,15 @@ export default function App() {
   const handleLogin = (role, name) => { setIsLoggedIn(true); setUserRole(role); setUserName(name); notify(`Welcome, ${name}!`); };
   const handleLogout = () => { setIsLoggedIn(false); setUserRole(null); setUserName(''); setActiveTab('dashboard'); };
 
+  // Helper untuk mendapatkan harga paket berdasarkan nama dan jenjang
+  const getPackagePriceVal = () => {
+    const p = packagePrices.find(p => p.name === regSelectedPackage && p.level === regLevel);
+    return parseInt(p?.price || 0);
+  };
+  
+  const getTotalBill = () => getPackagePriceVal() + parseInt(regFee || 0);
+  const getMonthlyBill = () => Math.ceil(getPackagePriceVal() / parseInt(regInstallmentPlan));
+
   const handleAddData = async (type, data) => {
     if (!user) return;
     try {
@@ -305,7 +316,7 @@ export default function App() {
         const studentRef = await addDoc(getCollectionPath('students'), { ...data, createdAt: new Date().toISOString(), createdBy: user.uid });
         const studentName = data.name.toUpperCase();
 
-        const pkgPrice = parseInt(packagePrices.find(p => p.name === regSelectedPackage)?.price || 0);
+        const pkgPrice = getPackagePriceVal();
         const regFeeInt = parseInt(regFee || 0);
         const totalCost = pkgPrice + regFeeInt;
 
@@ -315,7 +326,7 @@ export default function App() {
             student: studentName,
             type: 'income',
             amount: totalCost,
-            note: `PENDAFTARAN & PAKET ${regSelectedPackage} (LUNAS)`,
+            note: `PENDAFTARAN & PAKET ${regSelectedPackage} (${regLevel}) - LUNAS`,
             method: 'TUNAI', 
             status: 'completed',
             month: new Date().toLocaleString('id-ID', { month: 'long' }),
@@ -326,9 +337,9 @@ export default function App() {
           // BAYAR NANTI: Masuk Arrears (Warning)
           await addDoc(getCollectionPath('payments'), {
             student: studentName,
-            type: 'income', // Pending income
+            type: 'income', // Pending income logic relies on status check
             amount: totalCost,
-            note: `TAGIHAN AWAL PAKET ${regSelectedPackage}`,
+            note: `TAGIHAN AWAL PAKET ${regSelectedPackage} (${regLevel})`,
             method: 'PENDING',
             status: 'pending', // Ini yang memicu Warning Tagihan
             month: new Date().toLocaleString('id-ID', { month: 'long' }),
@@ -358,7 +369,7 @@ export default function App() {
               student: studentName,
               type: 'income',
               amount: monthlyBill,
-              note: `CICILAN KE-${i+1} PAKET ${regSelectedPackage}`,
+              note: `CICILAN KE-${i+1} PAKET ${regSelectedPackage} (${regLevel})`,
               method: 'PENDING',
               status: 'pending', // Memicu Warning
               month: new Date(dueDate).toLocaleString('id-ID', { month: 'long' }),
@@ -377,13 +388,13 @@ export default function App() {
     } catch (error) { console.error(error); notify("Gagal simpan.", "error"); }
   };
 
-  const handleUpdatePrice = async (packageName, price) => {
+  const handleUpdatePrice = async (packageName, level, price) => {
     if (!user) return;
     try {
-      const docId = packageName.replace(/\s+/g, '_'); 
+      const docId = `${packageName.replace(/\s+/g, '_')}_${level}`; 
       const priceDoc = doc(db, 'artifacts', appId, 'public', 'data', 'settings', docId);
-      await setDoc(priceDoc, { name: packageName, price: price, updatedAt: new Date().toISOString() });
-      notify(`Harga ${packageName} diperbarui!`);
+      await setDoc(priceDoc, { name: packageName, level: level, price: price, updatedAt: new Date().toISOString() });
+      notify(`Harga ${packageName} (${level}) diperbarui!`);
       setIsModalOpen(false);
     } catch (error) { notify("Gagal update harga.", "error"); }
   };
@@ -431,10 +442,6 @@ export default function App() {
       </button>
     );
   };
-
-  const getPackagePriceVal = () => parseInt(packagePrices.find(p => p.name === regSelectedPackage)?.price || 0);
-  const getTotalBill = () => getPackagePriceVal() + parseInt(regFee || 0);
-  const getMonthlyBill = () => Math.ceil(getPackagePriceVal() / parseInt(regInstallmentPlan));
 
   return (
     <div className="min-h-screen bg-gray-50 flex font-sans text-gray-900 overflow-hidden">
@@ -490,7 +497,7 @@ export default function App() {
                       <h3 className="text-xl font-black uppercase italic text-amber-700 mb-8 border-b pb-6">Warning Tagihan</h3>
                       <div className="space-y-5">
                         {pendingBills.length > 0 ? pendingBills.map(p => (
-                          <div key={p.id} className="flex items-center justify-between p-6 bg-amber-50 rounded-[2rem] border border-amber-100"><div className="flex items-center space-x-5"><div className="w-10 h-10 rounded-xl bg-amber-200 text-amber-700 flex items-center justify-center font-black uppercase">{p.student?.[0]}</div><div><p className="font-black text-amber-900 text-sm uppercase">{p.student}</p><p className="text-[9px] text-amber-600 font-bold uppercase mt-1 italic">{p.month}</p></div></div><div className="text-right"><p className="text-xs font-black text-amber-800">{formatIDR(p.amount)}</p><button className="mt-2 text-[8px] font-black text-amber-500 underline uppercase tracking-widest">Tagih WA</button></div></div>
+                          <div key={p.id} className="flex items-center justify-between p-6 bg-amber-50 rounded-[2rem] border border-amber-100"><div className="flex items-center space-x-5"><div className="w-10 h-10 rounded-xl bg-amber-200 text-amber-700 flex items-center justify-center font-black uppercase">{p.student?.[0]}</div><div><p className="font-black text-amber-900 text-sm uppercase">{p.student}</p><p className="text-[9px] text-amber-600 font-bold uppercase mt-1 italic">{p.note}</p></div></div><div className="text-right"><p className="text-xs font-black text-amber-800">{formatIDR(p.amount)}</p><button className="mt-2 text-[8px] font-black text-amber-500 underline uppercase tracking-widest">Tagih WA</button></div></div>
                         )) : <div className="text-center py-20 opacity-30 italic"><CheckCircle2 className="mx-auto mb-4" size={48} /><p className="font-black uppercase text-xs">Cash Flow Aman</p></div>}
                       </div>
                     </div>
@@ -524,6 +531,7 @@ export default function App() {
 
           {activeTab === 'payments' && (
             <div className="space-y-8 animate-in slide-in-from-bottom-4">
+              {/* FINANCE NAV */}
               <div className="bg-white p-2 rounded-[2.5rem] shadow-sm border border-gray-100 inline-flex items-center space-x-2">
                 {['summary', 'transactions', 'arrears', 'packages'].map(t => (
                   <button key={t} onClick={() => setFinanceTab(t)} className={`px-8 py-4 rounded-[1.8rem] text-[10px] font-black uppercase tracking-widest transition-all ${financeTab === t ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400'}`}>
@@ -649,15 +657,25 @@ export default function App() {
 
               {financeTab === 'packages' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                  {['1 BULAN', '3 BULAN', '6 BULAN'].map((pkg, i) => {
-                    const priceData = packagePrices.find(p => p.name === pkg);
+                  {['1 BULAN', '3 BULAN', '6 BULAN'].map((pkg) => {
+                    const sdPrice = packagePrices.find(p => p.name === pkg && p.level === 'SD');
+                    const smpPrice = packagePrices.find(p => p.name === pkg && p.level === 'SMP');
                     return (
-                      <div key={i} className="bg-white p-12 rounded-[3.5rem] shadow-sm border border-gray-100 relative group hover:shadow-xl transition-all">
+                      <div key={pkg} className="bg-white p-12 rounded-[3.5rem] shadow-sm border border-gray-100 relative group hover:shadow-xl transition-all">
                         <div className="absolute top-10 right-10"><Settings className="text-gray-200 group-hover:text-indigo-400 transition-colors" size={20} /></div>
-                        <h4 className="text-xs font-black text-indigo-400 uppercase tracking-[0.4em] mb-6 italic leading-none">Paket Belajar</h4>
-                        <p className="text-3xl font-black text-gray-800 uppercase italic mb-8">{pkg}</p>
-                        <p className="text-4xl font-black text-indigo-600 tracking-tighter">{priceData ? formatIDR(priceData.price) : 'Rp -'}</p>
-                        <button onClick={() => { setSelectedPackage(pkg); setModalType('package_price'); setIsModalOpen(true); }} className="w-full mt-10 py-5 bg-gray-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-gray-100">Update Harga</button>
+                        <h4 className="text-xs font-black text-indigo-400 uppercase tracking-[0.4em] mb-6 italic leading-none">Paket {pkg}</h4>
+                        
+                        <div className="mb-6">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Harga SD</p>
+                          <p className="text-3xl font-black text-indigo-600 tracking-tighter">{sdPrice ? formatIDR(sdPrice.price) : 'Rp -'}</p>
+                          <button onClick={() => { setSelectedPackage(pkg); setSelectedLevel('SD'); setModalType('package_price'); setIsModalOpen(true); }} className="text-[9px] font-black uppercase underline text-gray-400 hover:text-indigo-500 mt-1">Ubah Harga SD</button>
+                        </div>
+
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Harga SMP</p>
+                          <p className="text-3xl font-black text-blue-600 tracking-tighter">{smpPrice ? formatIDR(smpPrice.price) : 'Rp -'}</p>
+                          <button onClick={() => { setSelectedPackage(pkg); setSelectedLevel('SMP'); setModalType('package_price'); setIsModalOpen(true); }} className="text-[9px] font-black uppercase underline text-gray-400 hover:text-blue-500 mt-1">Ubah Harga SMP</button>
+                        </div>
                       </div>
                     );
                   })}
@@ -693,7 +711,7 @@ export default function App() {
               const data = Object.fromEntries(formData.entries());
               
               if (modalType === 'student') handleAddData('students', data);
-              else if (modalType === 'package_price') handleUpdatePrice(data.packageName, data.price);
+              else if (modalType === 'package_price') handleUpdatePrice(data.packageName, data.level, data.price);
               else handleAddData('payments', { ...data, type: modalType, status: 'completed' }); 
             }}>
               {modalType === 'student' ? (
@@ -705,7 +723,11 @@ export default function App() {
                       <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Jenis Kelamin</label><select name="gender" required className="w-full px-6 py-4 bg-gray-50 border-2 rounded-2xl font-black uppercase italic"><option value="">-- PILIH --</option><option>LAKI-LAKI</option><option>PEREMPUAN</option></select></div>
                       <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Kota & Tgl Lahir</label><input name="birthPlaceDate" required placeholder="KOTA, DD/MM/YYYY" className="w-full px-6 py-4 bg-gray-50 border-2 rounded-2xl outline-none font-black uppercase italic" /></div>
                       <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Asal Sekolah</label><input name="originSchool" required placeholder="NAMA SEKOLAH" className="w-full px-6 py-4 bg-gray-50 border-2 rounded-2xl outline-none font-black uppercase italic" /></div>
-                      <div className="space-y-2"><label className="text-[10px] font-black text-indigo-500 uppercase font-bold underline">Jenjang</label><select name="level" required className="w-full px-6 py-4 bg-indigo-50 border-2 border-indigo-200 rounded-2xl font-black uppercase italic"><option value="">-- PILIH JENJANG --</option><option>SD</option><option>SMP</option></select></div>
+                      <div className="space-y-2"><label className="text-[10px] font-black text-indigo-500 uppercase font-bold underline">Jenjang</label>
+                        <select name="level" required className="w-full px-6 py-4 bg-indigo-50 border-2 border-indigo-200 rounded-2xl font-black uppercase italic" onChange={(e) => setRegLevel(e.target.value)}>
+                          <option value="">-- PILIH JENJANG --</option><option value="SD">SD</option><option value="SMP">SMP</option>
+                        </select>
+                      </div>
                       <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Kelas</label><input name="grade" placeholder="MISAL: 5 SD" required className="w-full px-6 py-4 bg-gray-50 border-2 rounded-2xl outline-none font-black uppercase italic" /></div>
                       <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">No. HP Siswa</label><input name="studentPhone" type="tel" required placeholder="08XXXXXXXXXX" className="w-full px-6 py-4 bg-gray-50 border-2 rounded-2xl font-black italic" /></div>
                       <div className="space-y-2"><label className="text-[10px] font-black text-indigo-600 uppercase font-bold">Paket Belajar</label>
@@ -722,7 +744,7 @@ export default function App() {
                     <div className="p-8 bg-emerald-50/50 border-2 border-dashed border-emerald-200 rounded-[2.5rem]">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                            <div className="space-y-6">
-                              <div className="flex justify-between items-center"><span className="text-xs font-black text-gray-400 uppercase italic">Harga Paket Terpilih</span><span className="text-lg font-black text-indigo-600">{formatIDR(getPackagePriceVal())}</span></div>
+                              <div className="flex justify-between items-center"><span className="text-xs font-black text-gray-400 uppercase italic">Harga Paket ({regLevel || '-'})</span><span className="text-lg font-black text-indigo-600">{formatIDR(getPackagePriceVal())}</span></div>
                               <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Biaya Pendaftaran</label><input type="number" value={regFee} onChange={(e) => setRegFee(e.target.value)} className="w-full px-6 py-4 bg-white border-2 border-emerald-100 rounded-2xl outline-none font-black text-emerald-600" /></div>
                               <div className="flex justify-between items-center pt-4 border-t border-emerald-200"><span className="text-sm font-black text-gray-600 uppercase italic">Total Tagihan</span><span className="text-2xl font-black text-emerald-600">{formatIDR(getTotalBill())}</span></div>
                            </div>
@@ -777,6 +799,10 @@ export default function App() {
                    <div className="space-y-3">
                       <label className="text-[10px] font-black text-gray-400 uppercase italic">Pilih Paket</label>
                       <select name="packageName" defaultValue={selectedPackage} required className="w-full px-8 py-5 bg-gray-50 border-2 rounded-[1.8rem] font-black uppercase italic"><option>1 BULAN</option><option>3 BULAN</option><option>6 BULAN</option></select>
+                   </div>
+                   <div className="space-y-3">
+                      <label className="text-[10px] font-black text-gray-400 uppercase italic">Jenjang Pendidikan</label>
+                      <select name="level" defaultValue={selectedLevel} required className="w-full px-8 py-5 bg-gray-50 border-2 rounded-[1.8rem] font-black uppercase italic"><option>SD</option><option>SMP</option></select>
                    </div>
                    <div className="space-y-3">
                       <label className="text-[10px] font-black text-gray-400 uppercase italic">Harga Baru (Rp)</label>
