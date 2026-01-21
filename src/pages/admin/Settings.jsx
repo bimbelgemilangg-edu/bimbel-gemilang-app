@@ -1,69 +1,74 @@
-// --- FILE: src/pages/admin/Settings.jsx ---
 import React, { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { Save, DollarSign } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Lock, ShieldCheck } from 'lucide-react';
 
 export default function AdminSettings({ db }) {
-  // State disesuaikan: Hapus SMA, Tambah 6 Bulan
-  const [prices, setPrices] = useState({ 
-    pendaftaran: 0,
-    sd_1: 0, sd_3: 0, sd_6: 0,
-    smp_1: 0, smp_3: 0, smp_6: 0
-  });
+  const [prices, setPrices] = useState({ sd_1: 0, sd_3: 0, sd_6: 0, smp_1: 0, smp_3: 0, smp_6: 0, pendaftaran: 0 });
+  const [adminPass, setAdminPass] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    getDoc(doc(db, "settings", "prices")).then(s => {
-      if(s.exists()) setPrices(s.data());
-    });
+    getDoc(doc(db, "settings", "prices")).then(s => s.exists() && setPrices(s.data()));
+    getDoc(doc(db, "settings", "auth")).then(s => s.exists() && setAdminPass(s.data().password));
   }, [db]);
 
-  const save = async () => { 
-    await setDoc(doc(db, "settings", "prices"), prices, { merge: true }); 
-    alert("Harga Paket Tersimpan!"); 
+  const savePrices = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    await setDoc(doc(db, "settings", "prices"), prices);
+    setLoading(false);
+    alert("Harga Berhasil Disimpan!");
   };
 
-  const handleChange = (key, val) => {
-    setPrices({...prices, [key]: parseInt(val) || 0});
+  const savePassword = async (e) => {
+    e.preventDefault();
+    if (adminPass.length < 5) return alert("Sandi minimal 5 karakter!");
+    setLoading(true);
+    await setDoc(doc(db, "settings", "auth"), { password: adminPass });
+    setLoading(false);
+    alert("Sandi Admin Berhasil Diubah!");
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl border shadow-sm">
-      <h2 className="font-bold mb-6 flex items-center gap-2 text-xl text-gray-800">
-        <DollarSign className="text-blue-600"/> Pengaturan Harga Paket
-      </h2>
-      
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Biaya Pendaftaran */}
-        <div className="md:col-span-2 bg-blue-50 p-4 rounded-lg border border-blue-100">
-          <label className="text-xs font-bold uppercase text-blue-800 mb-1 block">Biaya Pendaftaran (Awal Masuk)</label>
-          <div className="flex items-center">
-            <span className="bg-white px-3 py-2 border border-r-0 rounded-l text-gray-500">Rp</span>
-            <input type="number" className="w-full border p-2 rounded-r font-bold text-blue-900" 
-              value={prices.pendaftaran} onChange={e=>handleChange('pendaftaran', e.target.value)}
+    <div className="space-y-10 max-w-[1200px] mx-auto">
+      {/* PENGATURAN HARGA */}
+      <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+        <h2 className="text-xl font-black mb-6 flex items-center gap-3 text-blue-600"><SettingsIcon/> Pengaturan Biaya Paket</h2>
+        <form onSubmit={savePrices} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {Object.keys(prices).map((key) => (
+            <div key={key}>
+              <label className="text-[10px] font-black uppercase text-gray-400 block mb-2">{key.replace("_", " ")} (Rp)</label>
+              <input type="number" className="w-full border-2 border-gray-100 p-3 rounded-xl font-bold focus:border-blue-500 outline-none" value={prices[key]} onChange={e => setPrices({...prices, [key]: parseInt(e.target.value)})}/>
+            </div>
+          ))}
+          <div className="md:col-span-3 pt-4">
+            <button disabled={loading} className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 shadow-lg flex items-center justify-center gap-2">
+              <Save size={20}/> {loading ? 'Menyimpan...' : 'Simpan Perubahan Harga'}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      {/* PENGATURAN KEAMANAN (FITUR BARU) */}
+      <section className="bg-slate-900 p-8 rounded-3xl shadow-2xl text-white">
+        <h2 className="text-xl font-black mb-6 flex items-center gap-3 text-yellow-400"><Lock/> Keamanan Akses Admin</h2>
+        <form onSubmit={savePassword} className="max-w-md space-y-4">
+          <div>
+            <label className="text-[10px] font-bold uppercase opacity-50 block mb-2">Sandi Baru Admin</label>
+            <input 
+              type="text" 
+              className="w-full bg-white/10 border border-white/20 p-4 rounded-xl font-mono text-xl outline-none focus:border-yellow-400 transition-all"
+              value={adminPass}
+              onChange={e => setAdminPass(e.target.value)}
+              placeholder="Masukkan Sandi Baru..."
             />
           </div>
-        </div>
-
-        {/* Loop Harga SD & SMP (1, 3, 6 Bulan) */}
-        {[
-          {k: 'sd_1', l: 'SD - 1 Bulan'}, {k: 'sd_3', l: 'SD - 3 Bulan'}, {k: 'sd_6', l: 'SD - 6 Bulan'},
-          {k: 'smp_1', l: 'SMP - 1 Bulan'}, {k: 'smp_3', l: 'SMP - 3 Bulan'}, {k: 'smp_6', l: 'SMP - 6 Bulan'},
-        ].map(item => (
-          <div key={item.k}>
-            <label className="text-xs font-bold uppercase text-gray-500 mb-1 block">{item.l}</label>
-            <div className="flex items-center">
-              <span className="bg-gray-100 px-3 py-2 border border-r-0 rounded-l text-gray-500">Rp</span>
-              <input type="number" className="w-full border p-2 rounded-r" 
-                value={prices[item.k] || 0} onChange={e=>handleChange(item.k, e.target.value)}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <button onClick={save} className="mt-8 w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-blue-700 flex items-center justify-center gap-2">
-        <Save size={18}/> SIMPAN PERUBAHAN
-      </button>
+          <button disabled={loading} className="w-full bg-yellow-500 text-slate-900 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-yellow-400 flex items-center justify-center gap-2">
+            <ShieldCheck size={20}/> Update Sandi Admin
+          </button>
+          <p className="text-[10px] opacity-40 italic mt-2">*Hati-hati, setelah diubah sandi lama tidak berlaku lagi.</p>
+        </form>
+      </section>
     </div>
   );
 }
