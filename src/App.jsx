@@ -34,7 +34,9 @@ import {
   History,
   FileText,
   DollarSign,
-  AlertTriangle
+  AlertTriangle,
+  Calculator,
+  CalendarDays
 } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { 
@@ -223,6 +225,14 @@ export default function App() {
   const [payments, setPayments] = useState([]);
   const [packagePrices, setPackagePrices] = useState([]);
   
+  // Registration States
+  const [regSelectedPackage, setRegSelectedPackage] = useState('');
+  const [regFee, setRegFee] = useState(0);
+  const [regPaymentType, setRegPaymentType] = useState('lunas'); // lunas, cicilan
+  const [regAmountReceived, setRegAmountReceived] = useState(0);
+  const [regInstallmentPlan, setRegInstallmentPlan] = useState(3); // 1, 2, 3 months
+  const [regInstallmentDates, setRegInstallmentDates] = useState([new Date().toISOString().split('T')[0], new Date().toISOString().split('T')[0], new Date().toISOString().split('T')[0]]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
   const [selectedPackage, setSelectedPackage] = useState('');
@@ -290,9 +300,73 @@ export default function App() {
   const handleAddData = async (type, data) => {
     if (!user) return;
     try {
-      await addDoc(getCollectionPath(type), { ...data, createdAt: new Date().toISOString(), createdBy: user.uid });
-      notify("Data Tersimpan!"); setIsModalOpen(false);
-    } catch (error) { notify("Gagal simpan.", "error"); }
+      // Logic khusus untuk pendaftaran siswa dengan pembayaran
+      if (type === 'students') {
+        // 1. Simpan Data Siswa
+        const studentRef = await addDoc(getCollectionPath('students'), { ...data, createdAt: new Date().toISOString(), createdBy: user.uid });
+        const studentName = data.name.toUpperCase();
+
+        // 2. Proses Pembayaran
+        const pkgPrice = parseInt(packagePrices.find(p => p.name === regSelectedPackage)?.price || 0);
+        const regFeeInt = parseInt(regFee || 0);
+        const totalCost = pkgPrice + regFeeInt;
+
+        if (regPaymentType === 'lunas') {
+          // Buat record pembayaran lunas
+          await addDoc(getCollectionPath('payments'), {
+            student: studentName,
+            type: 'income',
+            amount: totalCost,
+            note: `PENDAFTARAN & PAKET ${regSelectedPackage} (LUNAS)`,
+            method: 'TUNAI', // Default cash for simplicity here, could be added to form
+            status: 'completed',
+            month: new Date().toLocaleString('id-ID', { month: 'long' }),
+            createdAt: new Date().toISOString(),
+            createdBy: user.uid
+          });
+        } else {
+          // CICILAN:
+          // A. Bayar Biaya Pendaftaran dulu (jika ada) - dianggap lunas saat daftar
+          if (regFeeInt > 0) {
+             await addDoc(getCollectionPath('payments'), {
+              student: studentName,
+              type: 'income',
+              amount: regFeeInt,
+              note: `BIAYA PENDAFTARAN - ${studentName}`,
+              method: 'TUNAI',
+              status: 'completed',
+              month: new Date().toLocaleString('id-ID', { month: 'long' }),
+              createdAt: new Date().toISOString(),
+              createdBy: user.uid
+            });
+          }
+
+          // B. Buat Tagihan Cicilan (Pending)
+          const monthlyBill = Math.ceil(pkgPrice / parseInt(regInstallmentPlan));
+          for (let i = 0; i < parseInt(regInstallmentPlan); i++) {
+            const dueDate = regInstallmentDates[i] || new Date().toISOString();
+            await addDoc(getCollectionPath('payments'), {
+              student: studentName,
+              type: 'income', // Akan jadi income saat dibayar
+              amount: monthlyBill,
+              note: `CICILAN KE-${i+1} PAKET ${regSelectedPackage}`,
+              method: 'PENDING',
+              status: 'pending', // Masuk ke piutang
+              month: new Date(dueDate).toLocaleString('id-ID', { month: 'long' }),
+              dueDate: dueDate,
+              createdAt: new Date().toISOString(),
+              createdBy: user.uid
+            });
+          }
+        }
+        notify("Siswa & Pembayaran Tersimpan!");
+      } else {
+        // Data umum lain
+        await addDoc(getCollectionPath(type), { ...data, createdAt: new Date().toISOString(), createdBy: user.uid });
+        notify("Data Tersimpan!");
+      }
+      setIsModalOpen(false);
+    } catch (error) { console.error(error); notify("Gagal simpan.", "error"); }
   };
 
   const handleUpdatePrice = async (packageName, price) => {
@@ -349,6 +423,11 @@ export default function App() {
       </button>
     );
   };
+
+  // Helper untuk hitungan pembayaran di modal
+  const getPackagePriceVal = () => parseInt(packagePrices.find(p => p.name === regSelectedPackage)?.price || 0);
+  const getTotalBill = () => getPackagePriceVal() + parseInt(regFee || 0);
+  const getMonthlyBill = () => Math.ceil(getPackagePriceVal() / parseInt(regInstallmentPlan));
 
   return (
     <div className="min-h-screen bg-gray-50 flex font-sans text-gray-900 overflow-hidden">
@@ -413,6 +492,7 @@ export default function App() {
             </div>
           )}
 
+          {/* ... (Students and Finance Tabs remain largely the same, logic is in Modal below) ... */}
           {activeTab === 'students' && (
             <div className="space-y-8 animate-in slide-in-from-bottom-4">
               <div className="bg-white p-2 rounded-[2rem] shadow-sm border border-gray-100 inline-flex items-center space-x-2">
@@ -554,6 +634,7 @@ export default function App() {
                         <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-2">Tagihan: {p.month}</p>
                         <h4 className="text-lg font-black text-gray-800 uppercase leading-none mb-1">{p.student}</h4>
                         <p className="text-2xl font-black text-amber-600 mt-4 mb-6">{formatIDR(p.amount)}</p>
+                        <p className="text-[9px] text-gray-400 uppercase tracking-widest mb-4">Jatuh Tempo: {new Date(p.dueDate).toLocaleDateString('id-ID')}</p>
                         <button onClick={() => handleSettleArrear(p.id)} className="w-full py-3 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all flex items-center justify-center space-x-2">
                           <CheckCircle2 size={14} /><span>Tandai Lunas</span>
                         </button>
@@ -612,7 +693,7 @@ export default function App() {
               
               if (modalType === 'student') handleAddData('students', data);
               else if (modalType === 'package_price') handleUpdatePrice(data.packageName, data.price);
-              else handleAddData('payments', { ...data, type: modalType, status: 'completed' }); // Transaksi kas langsung completed
+              else handleAddData('payments', { ...data, type: modalType, status: 'completed' }); 
             }}>
               {modalType === 'student' ? (
                 <>
@@ -626,9 +707,52 @@ export default function App() {
                       <div className="space-y-2"><label className="text-[10px] font-black text-indigo-500 uppercase font-bold underline">Jenjang</label><select name="level" required className="w-full px-6 py-4 bg-indigo-50 border-2 border-indigo-200 rounded-2xl font-black uppercase italic"><option value="">-- PILIH JENJANG --</option><option>SD</option><option>SMP</option></select></div>
                       <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Kelas</label><input name="grade" placeholder="MISAL: 5 SD" required className="w-full px-6 py-4 bg-gray-50 border-2 rounded-2xl outline-none font-black uppercase italic" /></div>
                       <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">No. HP Siswa</label><input name="studentPhone" type="tel" required placeholder="08XXXXXXXXXX" className="w-full px-6 py-4 bg-gray-50 border-2 rounded-2xl font-black italic" /></div>
-                      <div className="space-y-2"><label className="text-[10px] font-black text-indigo-600 uppercase font-bold">Paket Belajar</label><select name="package" required className="w-full px-6 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase italic"><option value="">-- PILIH PAKET --</option><option>1 BULAN</option><option>3 BULAN</option><option>6 BULAN</option></select></div>
+                      <div className="space-y-2"><label className="text-[10px] font-black text-indigo-600 uppercase font-bold">Paket Belajar</label>
+                        <select name="package" required className="w-full px-6 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase italic" onChange={(e) => setRegSelectedPackage(e.target.value)} value={regSelectedPackage}>
+                          <option value="">-- PILIH PAKET --</option><option>1 BULAN</option><option>3 BULAN</option><option>6 BULAN</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
+                  
+                  {/* SEKSI SETUP PEMBAYARAN */}
+                  <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <div className="flex items-center space-x-3 border-b border-emerald-100 pb-5"><Calculator className="text-emerald-600" size={24} /><h4 className="font-black uppercase tracking-widest text-sm italic">Setup Pembayaran & Administrasi</h4></div>
+                    <div className="p-8 bg-emerald-50/50 border-2 border-dashed border-emerald-200 rounded-[2.5rem]">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                           <div className="space-y-6">
+                              <div className="flex justify-between items-center"><span className="text-xs font-black text-gray-400 uppercase italic">Harga Paket Terpilih</span><span className="text-lg font-black text-indigo-600">{formatIDR(getPackagePriceVal())}</span></div>
+                              <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Biaya Pendaftaran</label><input type="number" value={regFee} onChange={(e) => setRegFee(e.target.value)} className="w-full px-6 py-4 bg-white border-2 border-emerald-100 rounded-2xl outline-none font-black text-emerald-600" /></div>
+                              <div className="flex justify-between items-center pt-4 border-t border-emerald-200"><span className="text-sm font-black text-gray-600 uppercase italic">Total Tagihan</span><span className="text-2xl font-black text-emerald-600">{formatIDR(getTotalBill())}</span></div>
+                           </div>
+                           <div className="space-y-6">
+                              <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Skema Pembayaran</label><div className="flex space-x-2"><button type="button" onClick={() => setRegPaymentType('lunas')} className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase transition-all ${regPaymentType === 'lunas' ? 'bg-emerald-500 text-white shadow-lg' : 'bg-white text-gray-400 border-2 border-gray-100'}`}>Lunas (Cash)</button><button type="button" onClick={() => setRegPaymentType('cicilan')} className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase transition-all ${regPaymentType === 'cicilan' ? 'bg-amber-500 text-white shadow-lg' : 'bg-white text-gray-400 border-2 border-gray-100'}`}>Cicilan (Termin)</button></div></div>
+                              
+                              {regPaymentType === 'lunas' ? (
+                                <div className="space-y-4 animate-in fade-in">
+                                   <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Uang Diterima</label><input type="number" value={regAmountReceived} onChange={(e) => setRegAmountReceived(e.target.value)} className="w-full px-6 py-4 bg-white border-2 border-gray-100 rounded-2xl outline-none font-black" /></div>
+                                   <div className="flex justify-between items-center p-4 bg-emerald-100 rounded-2xl"><span className="text-[10px] font-black text-emerald-600 uppercase">Kembalian</span><span className="font-black text-emerald-700">{formatIDR(regAmountReceived - getTotalBill())}</span></div>
+                                </div>
+                              ) : (
+                                <div className="space-y-4 animate-in fade-in">
+                                   <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Pilih Tenor</label><select value={regInstallmentPlan} onChange={(e) => setRegInstallmentPlan(e.target.value)} className="w-full px-6 py-4 bg-white border-2 border-amber-100 rounded-2xl outline-none font-black text-sm"><option value="1">1 Bulan</option><option value="2">2 Bulan</option><option value="3">3 Bulan</option></select></div>
+                                   <div className="space-y-3">
+                                      <p className="text-[10px] font-black text-gray-400 uppercase italic">Jadwal & Nominal Cicilan (Otomatis)</p>
+                                      {Array.from({ length: parseInt(regInstallmentPlan) }).map((_, idx) => (
+                                        <div key={idx} className="flex items-center space-x-2">
+                                           <span className="text-[10px] font-bold text-amber-500 w-6">{idx + 1}.</span>
+                                           <input type="date" value={regInstallmentDates[idx]} onChange={(e) => { const newDates = [...regInstallmentDates]; newDates[idx] = e.target.value; setRegInstallmentDates(newDates); }} className="flex-1 px-4 py-2 bg-white border rounded-xl text-xs font-bold" />
+                                           <span className="text-xs font-black text-gray-600">{formatIDR(getMonthlyBill())}</span>
+                                        </div>
+                                      ))}
+                                   </div>
+                                </div>
+                              )}
+                           </div>
+                        </div>
+                    </div>
+                  </div>
+
                   <div className="space-y-8">
                     <div className="flex items-center space-x-3 border-b border-amber-100 pb-5"><ShieldCheck className="text-amber-600" size={24} /><h4 className="font-black uppercase tracking-widest text-sm italic">Wali / Orang Tua</h4></div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
