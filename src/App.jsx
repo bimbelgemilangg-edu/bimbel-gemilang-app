@@ -228,9 +228,9 @@ export default function App() {
   // Registration States
   const [regSelectedPackage, setRegSelectedPackage] = useState('');
   const [regFee, setRegFee] = useState(0);
-  const [regPaymentType, setRegPaymentType] = useState('lunas'); // lunas, cicilan
+  const [regPaymentType, setRegPaymentType] = useState('lunas'); // lunas, cicilan, nanti
   const [regAmountReceived, setRegAmountReceived] = useState(0);
-  const [regInstallmentPlan, setRegInstallmentPlan] = useState(3); // 1, 2, 3 months
+  const [regInstallmentPlan, setRegInstallmentPlan] = useState(3); 
   const [regInstallmentDates, setRegInstallmentDates] = useState([new Date().toISOString().split('T')[0], new Date().toISOString().split('T')[0], new Date().toISOString().split('T')[0]]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -302,31 +302,42 @@ export default function App() {
     try {
       // Logic khusus untuk pendaftaran siswa dengan pembayaran
       if (type === 'students') {
-        // 1. Simpan Data Siswa
         const studentRef = await addDoc(getCollectionPath('students'), { ...data, createdAt: new Date().toISOString(), createdBy: user.uid });
         const studentName = data.name.toUpperCase();
 
-        // 2. Proses Pembayaran
         const pkgPrice = parseInt(packagePrices.find(p => p.name === regSelectedPackage)?.price || 0);
         const regFeeInt = parseInt(regFee || 0);
         const totalCost = pkgPrice + regFeeInt;
 
         if (regPaymentType === 'lunas') {
-          // Buat record pembayaran lunas
+          // LUNAS: Masuk Income
           await addDoc(getCollectionPath('payments'), {
             student: studentName,
             type: 'income',
             amount: totalCost,
             note: `PENDAFTARAN & PAKET ${regSelectedPackage} (LUNAS)`,
-            method: 'TUNAI', // Default cash for simplicity here, could be added to form
+            method: 'TUNAI', 
             status: 'completed',
             month: new Date().toLocaleString('id-ID', { month: 'long' }),
             createdAt: new Date().toISOString(),
             createdBy: user.uid
           });
+        } else if (regPaymentType === 'nanti') {
+          // BAYAR NANTI: Masuk Arrears (Warning)
+          await addDoc(getCollectionPath('payments'), {
+            student: studentName,
+            type: 'income', // Pending income
+            amount: totalCost,
+            note: `TAGIHAN AWAL PAKET ${regSelectedPackage}`,
+            method: 'PENDING',
+            status: 'pending', // Ini yang memicu Warning Tagihan
+            month: new Date().toLocaleString('id-ID', { month: 'long' }),
+            dueDate: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            createdBy: user.uid
+          });
         } else {
           // CICILAN:
-          // A. Bayar Biaya Pendaftaran dulu (jika ada) - dianggap lunas saat daftar
           if (regFeeInt > 0) {
              await addDoc(getCollectionPath('payments'), {
               student: studentName,
@@ -340,18 +351,16 @@ export default function App() {
               createdBy: user.uid
             });
           }
-
-          // B. Buat Tagihan Cicilan (Pending)
           const monthlyBill = Math.ceil(pkgPrice / parseInt(regInstallmentPlan));
           for (let i = 0; i < parseInt(regInstallmentPlan); i++) {
             const dueDate = regInstallmentDates[i] || new Date().toISOString();
             await addDoc(getCollectionPath('payments'), {
               student: studentName,
-              type: 'income', // Akan jadi income saat dibayar
+              type: 'income',
               amount: monthlyBill,
               note: `CICILAN KE-${i+1} PAKET ${regSelectedPackage}`,
               method: 'PENDING',
-              status: 'pending', // Masuk ke piutang
+              status: 'pending', // Memicu Warning
               month: new Date(dueDate).toLocaleString('id-ID', { month: 'long' }),
               dueDate: dueDate,
               createdAt: new Date().toISOString(),
@@ -359,9 +368,8 @@ export default function App() {
             });
           }
         }
-        notify("Siswa & Pembayaran Tersimpan!");
+        notify("Siswa & Status Pembayaran Tersimpan!");
       } else {
-        // Data umum lain
         await addDoc(getCollectionPath(type), { ...data, createdAt: new Date().toISOString(), createdBy: user.uid });
         notify("Data Tersimpan!");
       }
@@ -424,7 +432,6 @@ export default function App() {
     );
   };
 
-  // Helper untuk hitungan pembayaran di modal
   const getPackagePriceVal = () => parseInt(packagePrices.find(p => p.name === regSelectedPackage)?.price || 0);
   const getTotalBill = () => getPackagePriceVal() + parseInt(regFee || 0);
   const getMonthlyBill = () => Math.ceil(getPackagePriceVal() / parseInt(regInstallmentPlan));
@@ -492,7 +499,6 @@ export default function App() {
             </div>
           )}
 
-          {/* ... (Students and Finance Tabs remain largely the same, logic is in Modal below) ... */}
           {activeTab === 'students' && (
             <div className="space-y-8 animate-in slide-in-from-bottom-4">
               <div className="bg-white p-2 rounded-[2rem] shadow-sm border border-gray-100 inline-flex items-center space-x-2">
@@ -518,7 +524,6 @@ export default function App() {
 
           {activeTab === 'payments' && (
             <div className="space-y-8 animate-in slide-in-from-bottom-4">
-              {/* FINANCE NAV */}
               <div className="bg-white p-2 rounded-[2.5rem] shadow-sm border border-gray-100 inline-flex items-center space-x-2">
                 {['summary', 'transactions', 'arrears', 'packages'].map(t => (
                   <button key={t} onClick={() => setFinanceTab(t)} className={`px-8 py-4 rounded-[1.8rem] text-[10px] font-black uppercase tracking-widest transition-all ${financeTab === t ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400'}`}>
@@ -527,7 +532,6 @@ export default function App() {
                 ))}
               </div>
 
-              {/* TAB: SUMMARY (LAPORAN KEUANGAN) */}
               {financeTab === 'summary' && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                   <div className="lg:col-span-2 space-y-10">
@@ -567,7 +571,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* TAB: TRANSACTIONS (MUTASI DETAIL) */}
               {financeTab === 'transactions' && (
                 <div className="bg-white rounded-[3.5rem] shadow-sm border border-gray-100 overflow-hidden">
                   <div className="px-12 py-10 border-b flex justify-between items-center bg-gray-50/30">
@@ -617,7 +620,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* TAB: ARREARS (TUNGGAKAN / PIUTANG) */}
               {financeTab === 'arrears' && (
                 <div className="bg-white rounded-[3.5rem] shadow-sm border border-gray-100 overflow-hidden">
                   <div className="px-12 py-10 border-b bg-amber-50/50 flex justify-between items-center">
@@ -645,7 +647,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* TAB: PACKAGES (HARGA PAKET) */}
               {financeTab === 'packages' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                   {['1 BULAN', '3 BULAN', '6 BULAN'].map((pkg, i) => {
@@ -726,14 +727,16 @@ export default function App() {
                               <div className="flex justify-between items-center pt-4 border-t border-emerald-200"><span className="text-sm font-black text-gray-600 uppercase italic">Total Tagihan</span><span className="text-2xl font-black text-emerald-600">{formatIDR(getTotalBill())}</span></div>
                            </div>
                            <div className="space-y-6">
-                              <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Skema Pembayaran</label><div className="flex space-x-2"><button type="button" onClick={() => setRegPaymentType('lunas')} className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase transition-all ${regPaymentType === 'lunas' ? 'bg-emerald-500 text-white shadow-lg' : 'bg-white text-gray-400 border-2 border-gray-100'}`}>Lunas (Cash)</button><button type="button" onClick={() => setRegPaymentType('cicilan')} className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase transition-all ${regPaymentType === 'cicilan' ? 'bg-amber-500 text-white shadow-lg' : 'bg-white text-gray-400 border-2 border-gray-100'}`}>Cicilan (Termin)</button></div></div>
+                              <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Skema Pembayaran</label><div className="flex space-x-2"><button type="button" onClick={() => setRegPaymentType('lunas')} className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase transition-all ${regPaymentType === 'lunas' ? 'bg-emerald-500 text-white shadow-lg' : 'bg-white text-gray-400 border-2 border-gray-100'}`}>Lunas</button><button type="button" onClick={() => setRegPaymentType('cicilan')} className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase transition-all ${regPaymentType === 'cicilan' ? 'bg-amber-500 text-white shadow-lg' : 'bg-white text-gray-400 border-2 border-gray-100'}`}>Cicilan</button><button type="button" onClick={() => setRegPaymentType('nanti')} className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase transition-all ${regPaymentType === 'nanti' ? 'bg-rose-500 text-white shadow-lg' : 'bg-white text-gray-400 border-2 border-gray-100'}`}>Hutang</button></div></div>
                               
-                              {regPaymentType === 'lunas' ? (
+                              {regPaymentType === 'lunas' && (
                                 <div className="space-y-4 animate-in fade-in">
                                    <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Uang Diterima</label><input type="number" value={regAmountReceived} onChange={(e) => setRegAmountReceived(e.target.value)} className="w-full px-6 py-4 bg-white border-2 border-gray-100 rounded-2xl outline-none font-black" /></div>
                                    <div className="flex justify-between items-center p-4 bg-emerald-100 rounded-2xl"><span className="text-[10px] font-black text-emerald-600 uppercase">Kembalian</span><span className="font-black text-emerald-700">{formatIDR(regAmountReceived - getTotalBill())}</span></div>
                                 </div>
-                              ) : (
+                              )}
+                              
+                              {regPaymentType === 'cicilan' && (
                                 <div className="space-y-4 animate-in fade-in">
                                    <div className="space-y-2"><label className="text-[10px] font-black text-gray-400 uppercase italic">Pilih Tenor</label><select value={regInstallmentPlan} onChange={(e) => setRegInstallmentPlan(e.target.value)} className="w-full px-6 py-4 bg-white border-2 border-amber-100 rounded-2xl outline-none font-black text-sm"><option value="1">1 Bulan</option><option value="2">2 Bulan</option><option value="3">3 Bulan</option></select></div>
                                    <div className="space-y-3">
@@ -746,6 +749,12 @@ export default function App() {
                                         </div>
                                       ))}
                                    </div>
+                                </div>
+                              )}
+                              
+                              {regPaymentType === 'nanti' && (
+                                <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl animate-in fade-in">
+                                  <p className="text-[10px] font-black text-rose-500 uppercase italic text-center">Total tagihan akan dicatat sebagai piutang siswa.</p>
                                 </div>
                               )}
                            </div>
