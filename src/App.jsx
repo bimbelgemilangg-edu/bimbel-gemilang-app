@@ -1,14 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
-import { 
-  getFirestore, collection, doc, getDoc, 
-  onSnapshot, query, where, orderBy 
-} from 'firebase/firestore';
+import { getFirestore, collection, doc, getDoc, onSnapshot, query, where, orderBy } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
-import { 
-  Bell, Clock, DollarSign, Users, GraduationCap, Calendar, 
-  AlertTriangle, Settings, MessageCircle, Menu, LogOut, TrendingUp, BarChart3
-} from 'lucide-react';
+import { Bell, Clock, DollarSign, Users, GraduationCap, Calendar, AlertTriangle, Settings, Menu, LogOut, TrendingUp, BarChart3 } from 'lucide-react';
 
 // --- IMPORT DASHBOARD LAMA ---
 import AdminSchedule from './pages/admin/Schedule';
@@ -16,91 +10,11 @@ import AdminSettings from './pages/admin/Settings';
 import AdminTeachers from './pages/admin/Teachers';
 import TeacherDashboard from './pages/teacher/Dashboard';
 
-// --- IMPORT FINANCE (Pasti Jalan) ---
+// --- IMPORT FINANCE BARU ---
 import AdminFinance from './pages/admin/finance/index'; 
 
-// --- IMPORT SISWA (Langsung ke Folder) ---
-import StudentList from './pages/admin/students/StudentList';
-import StudentForm from './pages/admin/students/StudentForm'; 
-import StudentDetail from './pages/admin/students/StudentDetail';
-
-// --- WRAPPER SISWA (MANAJEMEN SISWA) ---
-function AdminStudentsWrapper({ db }) {
-  const [view, setView] = useState('list'); 
-  const [selectedStudent, setSelectedStudent] = useState(null);
-  
-  // State Data
-  const [students, setStudents] = useState([]);
-  const [invoices, setInvoices] = useState([]); 
-  const [payments, setPayments] = useState([]); 
-  const [classLogs, setClassLogs] = useState([]); 
-
-  useEffect(() => {
-    // 1. Ambil Data Siswa (Urutkan dari terbaru)
-    const qStudent = query(collection(db, "students"), orderBy("createdAt", "desc"));
-    const u1 = onSnapshot(qStudent, (snapshot) => {
-      setStudents(snapshot.docs.map(d => ({id: d.id, ...d.data()})));
-    });
-
-    // 2. Ambil Tagihan
-    const u2 = onSnapshot(collection(db, "invoices"), (snapshot) => {
-      setInvoices(snapshot.docs.map(d => ({id: d.id, ...d.data()})));
-    });
-
-    // 3. Ambil Pembayaran
-    const qPayment = query(collection(db, "payments"), orderBy("date", "desc"));
-    const u3 = onSnapshot(qPayment, (snapshot) => {
-      setPayments(snapshot.docs.map(d => ({id: d.id, ...d.data()})));
-    });
-
-    // 4. Ambil Log Kelas
-    const qLogs = query(collection(db, "class_logs"), orderBy("date", "desc"));
-    const u4 = onSnapshot(qLogs, (snapshot) => {
-      setClassLogs(snapshot.docs.map(d => ({id: d.id, ...d.data()})));
-    });
-
-    return () => { u1(); u2(); u3(); u4(); };
-  }, [db]);
-
-  // Navigasi
-  const handleCreate = () => { setSelectedStudent(null); setView('form'); };
-  const handleEdit = (s) => { setSelectedStudent(s); setView('form'); };
-  const handleDetail = (s) => { setSelectedStudent(s); setView('detail'); };
-  const handleBack = () => { setView('list'); setSelectedStudent(null); };
-
-  return (
-    <div className="w-full">
-      {view === 'list' && (
-        <StudentList 
-          students={students}  // Kirim data siswa
-          classLogs={classLogs} 
-          onSelect={handleDetail} 
-          onCreate={handleCreate} 
-        />
-      )}
-      
-      {view === 'detail' && selectedStudent && (
-        <StudentDetail 
-          student={selectedStudent}
-          studentInvoices={invoices.filter(i => i.studentId === selectedStudent.id)}
-          studentPayments={payments.filter(p => p.studentName === selectedStudent.name)} 
-          studentLogs={classLogs.filter(l => l.studentsLog?.some(s => s.id === selectedStudent.id))}
-          onBack={handleBack}
-          onEdit={() => handleEdit(selectedStudent)}
-        />
-      )}
-      
-      {view === 'form' && (
-        <StudentForm 
-          db={db} 
-          initialData={selectedStudent} 
-          onCancel={handleBack} 
-          onSuccess={handleBack} 
-        />
-      )}
-    </div>
-  );
-}
+// --- IMPORT SISWA BARU (KITA PANGGIL INDEX YANG BARU DIBUAT) ---
+import AdminStudentsIndex from './pages/admin/students/index'; 
 
 // --- CONFIG FIREBASE ---
 const firebaseConfig = {
@@ -116,24 +30,15 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// --- HELPER LAINNYA ---
-const DAYS_INDONESIA = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-const MONTHS_LABEL = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-
+// --- KOMPONEN HELPER (Chart, Bell, Home) SAYA SINGKAT BIAR MUAT ---
+const DAYS = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 const MarketingChart = ({ data, label, color }) => {
-  const max = Math.max(...data, 5);
-  const height = 100;
-  const width = 300;
+  const max = Math.max(...data, 5); const height = 100; const width = 300;
   const points = data.map((val, i) => `${(i * (width / (data.length - 1)))},${height - (val / max * height)}`).join(' ');
-  return (
-    <div className="w-full">
-      <div className="flex justify-between items-end mb-1"><span className="text-[10px] font-black uppercase text-gray-400">{label}</span><span className="text-xs font-black" style={{ color }}>{data[data.length-1]} Siswa</span></div>
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-24 overflow-visible"><polyline fill="none" stroke={color} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" points={points} className="drop-shadow-lg" />{data.map((val, i) => (<circle key={i} cx={(i * (width / (data.length - 1)))} cy={height - (val / max * height)} r="4" fill="white" stroke={color} strokeWidth="2" />))}</svg>
-    </div>
-  );
+  return (<div className="w-full"><div className="flex justify-between items-end mb-1"><span className="text-[10px] font-black uppercase text-gray-400">{label}</span><span className="text-xs font-black" style={{ color }}>{data[data.length-1]} Siswa</span></div><svg viewBox={`0 0 ${width} ${height}`} className="w-full h-24 overflow-visible"><polyline fill="none" stroke={color} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" points={points} className="drop-shadow-lg" />{data.map((val, i) => (<circle key={i} cx={(i * (width / (data.length - 1)))} cy={height - (val / max * height)} r="4" fill="white" stroke={color} strokeWidth="2" />))}</svg></div>);
 };
 
-// --- DASHBOARD HOME ---
 const DashboardHome = () => {
   const [stats, setStats] = useState({ siswa: 0, sd: 0, smp: 0, guruHadir: 0 });
   const [marketingTrend, setMarketingTrend] = useState(new Array(12).fill(0));
@@ -141,19 +46,16 @@ const DashboardHome = () => {
   const [overdueInvoices, setOverdueInvoices] = useState([]);
   const [expiringPackages, setExpiringPackages] = useState([]); 
   const [isBellRinging, setIsBellRinging] = useState(false);
-  const audioContextRef = useRef(null);
-  const oscillatorRef = useRef(null);
+  const audioContextRef = useRef(null); const oscillatorRef = useRef(null);
   const startBell = () => { if (isBellRinging) return; setIsBellRinging(true); const ctx = new (window.AudioContext || window.webkitAudioContext)(); const carrier = ctx.createOscillator(); carrier.frequency.value = 880; carrier.type = 'square'; carrier.connect(ctx.destination); carrier.start(); audioContextRef.current = ctx; oscillatorRef.current = carrier; };
   const stopBell = () => { if(!isBellRinging) return; setIsBellRinging(false); oscillatorRef.current?.stop(); audioContextRef.current?.close(); };
 
   useEffect(() => {
-    const dayName = DAYS_INDONESIA[new Date().getDay()];
-    const dateStr = new Date().toISOString().split('T')[0];
+    const dayName = DAYS[new Date().getDay()]; const dateStr = new Date().toISOString().split('T')[0];
     const unsubStudents = onSnapshot(collection(db, "students"), s => {
       const all = s.docs.map(d => ({id: d.id, ...d.data()}));
-      const sd = all.filter(x => x.schoolLevel === 'SD').length; const smp = all.filter(x => x.schoolLevel === 'SMP').length;
       const trend = new Array(12).fill(0); all.forEach(std => { if(std.createdAt) { const m = std.createdAt.toDate().getMonth(); trend[m]++; } }); setMarketingTrend(trend);
-      setStats(prev => ({ ...prev, siswa: s.size, sd, smp }));
+      setStats({ siswa: s.size, sd: all.filter(x => x.schoolLevel === 'SD').length, smp: all.filter(x => x.schoolLevel === 'SMP').length, guruHadir: stats.guruHadir });
       setExpiringPackages(all.filter(std => { if(!std.createdAt) return false; const diff = Math.ceil(Math.abs(new Date() - std.createdAt.toDate()) / (1000 * 60 * 60 * 24)); return diff >= 25; }));
     });
     const unsubInvoices = onSnapshot(query(collection(db, "invoices"), where("remainingAmount", ">", 0)), snap => { const h7 = new Date(); h7.setDate(h7.getDate() + 7); setOverdueInvoices(snap.docs.map(d => ({id: d.id, ...d.data()})).filter(inv => new Date(inv.dueDate) <= h7)); });
@@ -165,9 +67,9 @@ const DashboardHome = () => {
   return (
     <div className="space-y-8 animate-in fade-in">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6"><div className="bg-white p-6 rounded-3xl border shadow-sm"><Users className="text-blue-500 mb-2"/><div className="text-3xl font-black">{stats.siswa}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Siswa Aktif</div></div><div className="bg-white p-6 rounded-3xl border shadow-sm"><TrendingUp className="text-green-500 mb-2"/><div className="text-3xl font-black">{stats.sd}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Siswa SD</div></div><div className="bg-white p-6 rounded-3xl border shadow-sm"><TrendingUp className="text-purple-500 mb-2"/><div className="text-3xl font-black">{stats.smp}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Siswa SMP</div></div><div className="bg-white p-6 rounded-3xl border shadow-sm"><Calendar className="text-orange-500 mb-2"/><div className="text-3xl font-black">{stats.guruHadir}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Kelas Hari Ini</div></div></div>
-      <div className="bg-white p-8 rounded-[2.5rem] border shadow-sm"><h3 className="text-lg font-black mb-8 flex items-center gap-3 uppercase tracking-widest"><BarChart3 className="text-blue-600"/> Grafik Pertumbuhan Pendaftaran</h3><MarketingChart data={marketingTrend} label="Tren Siswa Baru (Bulan)" color="#2563eb" /><div className="flex justify-between mt-4 px-2">{MONTHS_LABEL.map(m => <span key={m} className="text-[10px] font-bold text-gray-300">{m}</span>)}</div></div>
+      <div className="bg-white p-8 rounded-[2.5rem] border shadow-sm"><h3 className="text-lg font-black mb-8 flex items-center gap-3 uppercase tracking-widest"><BarChart3 className="text-blue-600"/> Grafik Pertumbuhan Pendaftaran</h3><MarketingChart data={marketingTrend} label="Tren Siswa Baru (Bulan)" color="#2563eb" /><div className="flex justify-between mt-4 px-2">{MONTHS.map(m => <span key={m} className="text-[10px] font-bold text-gray-300">{m}</span>)}</div></div>
       <div className="w-full bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6"><div><h2 className="text-3xl font-black flex items-center gap-4"><Bell className={isBellRinging?"animate-bounce text-yellow-400":""}/> BEL SEKOLAH</h2><p className="opacity-50 mt-2">Tahan untuk bunyi, lepas untuk berhenti.</p></div><button onMouseDown={startBell} onMouseUp={stopBell} onMouseLeave={stopBell} className="bg-red-600 hover:bg-red-700 text-white px-16 py-6 rounded-2xl font-black text-2xl shadow-2xl transition-all active:scale-95">BUNYIKAN</button></div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8"><div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><Clock className="text-blue-500"/> JADWAL AKTIF</h3><div className="space-y-3">{todaySchedules.map((s, i) => (<div key={i} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border"><div><div className="font-bold text-xs">{s.subject}</div><div className="text-[10px] text-gray-400">{s.teacherName}</div></div><div className="font-black text-blue-600 text-xs">{s.startTime}</div></div>))}</div></div><div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><AlertTriangle className="text-red-500"/> JATUH TEMPO</h3><div className="space-y-3">{overdueInvoices.map((inv, i) => (<div key={i} className="p-3 border-l-4 border-red-500 bg-red-50 flex justify-between items-center rounded-r-xl"><div className="overflow-hidden"><div className="font-bold text-xs truncate w-32">{inv.studentName}</div><div className="text-[10px] text-red-600">{inv.dueDate}</div></div>{inv.waPhone && <a href={`https://wa.me/${inv.waPhone}`} target="_blank" className="bg-green-600 text-white p-1.5 rounded-full"><MessageCircle size={14}/></a>}</div>))}</div></div><div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><TrendingUp className="text-orange-500"/> RENEWAL PAKET</h3><div className="space-y-3">{expiringPackages.map((std, i) => (<div key={i} className="p-3 border-l-4 border-orange-500 bg-orange-50 rounded-r-xl"><div className="font-black text-xs">{std.name}</div><div className="text-[10px] text-orange-700 italic">Segera siapkan invoice perpanjangan.</div></div>))}</div></div></div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8"><div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><Clock className="text-blue-500"/> JADWAL AKTIF</h3><div className="space-y-3">{todaySchedules.map((s, i) => (<div key={i} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border"><div><div className="font-bold text-xs">{s.subject}</div><div className="text-[10px] text-gray-400">{s.teacherName}</div></div><div className="font-black text-blue-600 text-xs">{s.startTime}</div></div>))}</div></div><div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><AlertTriangle className="text-red-500"/> JATUH TEMPO</h3><div className="space-y-3">{overdueInvoices.map((inv, i) => (<div key={i} className="p-3 border-l-4 border-red-500 bg-red-50 flex justify-between items-center rounded-r-xl"><div className="overflow-hidden"><div className="font-bold text-xs truncate w-32">{inv.studentName}</div><div className="text-[10px] text-red-600">{inv.dueDate}</div></div></div>))}</div></div><div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><TrendingUp className="text-orange-500"/> RENEWAL PAKET</h3><div className="space-y-3">{expiringPackages.map((std, i) => (<div key={i} className="p-3 border-l-4 border-orange-500 bg-orange-50 rounded-r-xl"><div className="font-black text-xs">{std.name}</div><div className="text-[10px] text-orange-700 italic">Segera siapkan invoice perpanjangan.</div></div>))}</div></div></div>
     </div>
   );
 };
@@ -197,7 +99,8 @@ const DashboardAdmin = ({ onLogout }) => {
             {view === 'dashboard' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><DashboardHome /></div>}
             {view === 'schedule' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminSchedule db={db} /></div>}
             {view === 'finance' && <AdminFinance db={db} />}
-            {view === 'students' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminStudentsWrapper db={db} /></div>}
+            {/* KITA PANGGIL INDEX SISWA YANG BARU DI SINI */}
+            {view === 'students' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminStudentsIndex db={db} /></div>}
             {view === 'teachers' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminTeachers db={db} /></div>} 
             {view === 'settings' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminSettings db={db} /></div>}
           </div>

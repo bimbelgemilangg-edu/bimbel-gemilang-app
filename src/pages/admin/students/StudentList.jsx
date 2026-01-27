@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { Search, Plus, FileText, User } from 'lucide-react';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { Search, Plus, User, FileText } from 'lucide-react';
+
+// SAYA HAPUS IMPORT PDF BIAR TIDAK ERROR BLANK
+// import jsPDF from 'jspdf'; 
+// import 'jspdf-autotable';
 
 export default function StudentList({ students = [], classLogs = [], onSelect, onCreate }) {
   const [search, setSearch] = useState('');
   const [filterLevel, setFilterLevel] = useState('ALL');
 
-  // SAFE FILTER (Biar gak layar putih)
+  // SAFEGUARD: Pastikan students adalah array
   const safeStudents = Array.isArray(students) ? students : [];
 
   const filteredStudents = safeStudents.filter(s => {
@@ -15,17 +17,6 @@ export default function StudentList({ students = [], classLogs = [], onSelect, o
     const matchLevel = filterLevel === 'ALL' || s.schoolLevel === filterLevel;
     return matchName && matchLevel;
   });
-
-  const downloadPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Data Siswa Bimbel Gemilang", 14, 15);
-    doc.autoTable({
-      startY: 20,
-      head: [['Nama', 'Kelas', 'Sekolah', 'Wali Murid', 'No. HP']],
-      body: filteredStudents.map(s => [s.name, s.grade, s.school, s.parentName, s.phone]),
-    });
-    doc.save("data-siswa-gemilang.pdf");
-  };
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in">
@@ -36,8 +27,13 @@ export default function StudentList({ students = [], classLogs = [], onSelect, o
           <p className="text-sm font-bold text-slate-400">Total: {filteredStudents.length} Siswa</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={downloadPDF} className="bg-slate-100 text-slate-600 px-6 py-3 rounded-xl font-black text-xs uppercase hover:bg-slate-200 transition-all flex items-center gap-2"><FileText size={16}/> PDF</button>
-          <button onClick={onCreate} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-xs uppercase hover:bg-blue-700 shadow-xl hover:shadow-2xl transition-all flex items-center gap-2"><Plus size={16}/> Tambah Siswa</button>
+          {/* TOMBOL PDF SAYA MATIKAN DULU */}
+          <button disabled className="bg-slate-100 text-slate-400 px-6 py-3 rounded-xl font-black text-xs uppercase cursor-not-allowed flex items-center gap-2">
+            <FileText size={16}/> PDF (Nonaktif)
+          </button>
+          <button onClick={onCreate} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-xs uppercase hover:bg-blue-700 shadow-xl hover:shadow-2xl transition-all flex items-center gap-2">
+            <Plus size={16}/> Tambah Siswa
+          </button>
         </div>
       </div>
 
