@@ -6,11 +6,26 @@ import {
   Banknote, Trash2, CheckCircle, ShieldAlert
 } from 'lucide-react';
 
-// --- HELPER: AMANKAN TANGGAL & RUPIAH ---
+// --- 🛡️ AKAR MASALAH 1: FUNGSI PENGAMAN TANGGAL (ANTI-BLANK) ---
 const renderSafeDate = (d) => {
   if (!d) return "-";
-  if (typeof d === 'object' && d.seconds) return new Date(d.seconds * 1000).toLocaleDateString('id-ID');
-  return d.toString();
+  // Jika ini adalah objek Timestamp Firebase {seconds, nanoseconds}
+  if (typeof d === 'object' && d.seconds) {
+    return new Date(d.seconds * 1000).toLocaleDateString('id-ID');
+  }
+  // Jika ini adalah string biasa
+  if (typeof d === 'string') return d;
+  return "-";
+};
+
+// --- 🛡️ AKAR MASALAH 2: LOGIKA PEMASUKAN (SINKRON STUDENTFORM) ---
+const isIncome = (t) => {
+  const type = String(t.type || '').toLowerCase();
+  const cat = String(t.category || '').toLowerCase();
+  // SINKRON: Jika type 'income' ATAU kategori 'pendaftaran'/'spp', ini WAJIB Pemasukan (Hijau)
+  if (type === 'income' || type === 'pemasukan') return true;
+  if (cat === 'pendaftaran' || cat === 'spp') return true;
+  return false;
 };
 
 const formatIDR = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
@@ -32,47 +47,30 @@ export default function AdminFinance({ db }) {
     return () => { u1(); u2(); };
   }, [db]);
 
-  // --- 🔥 LOGIKA EMAS: PENENTU PEMASUKAN (SINKRON DENGAN STUDENTFORM) ---
-  const isActuallyIncome = (t) => {
-    const type = String(t.type || '').toLowerCase();
-    const category = String(t.category || '').toLowerCase();
-    // Jika type-nya income, ATAU kategorinya pendaftaran/spp (dan bukan pengeluaran)
-    if (type === 'income' || type === 'pemasukan') return true;
-    if ((category === 'pendaftaran' || category === 'spp') && type !== 'expense' && type !== 'pengeluaran') return true;
-    return false;
-  };
-
-  // --- HITUNGAN TOTAL DASHBOARD ---
-  const incomeTotal = transactions.reduce((acc, t) => isActuallyIncome(t) ? acc + (Number(t.amount) || 0) : acc, 0);
-  const expenseTotal = transactions.reduce((acc, t) => !isActuallyIncome(t) ? acc + (Number(t.amount) || 0) : acc, 0);
+  // --- HITUNGAN SALDO (Sesuai Logika isIncome) ---
+  const incomeTotal = transactions.reduce((acc, t) => isIncome(t) ? acc + (Number(t.amount) || 0) : acc, 0);
+  const expenseTotal = transactions.reduce((acc, t) => !isIncome(t) ? acc + (Number(t.amount) || 0) : acc, 0);
   const piutangTotal = invoices.reduce((acc, inv) => acc + (Number(inv.remainingAmount) || 0), 0);
 
-  // Detail Cash & Bank
   const cashBal = transactions.reduce((acc, t) => {
-    const method = String(t.method || '').toLowerCase();
-    if (method === 'tunai' || method === 'cash') {
-      return isActuallyIncome(t) ? acc + Number(t.amount) : acc - Number(t.amount);
-    }
+    const m = String(t.method || '').toLowerCase();
+    if (m === 'tunai' || m === 'cash') return isIncome(t) ? acc + Number(t.amount) : acc - Number(t.amount);
     return acc;
   }, 0);
 
   const bankBal = transactions.reduce((acc, t) => {
-    const method = String(t.method || '').toLowerCase();
-    if (method === 'bank' || method === 'transfer') {
-      return isActuallyIncome(t) ? acc + Number(t.amount) : acc - Number(t.amount);
-    }
+    const m = String(t.method || '').toLowerCase();
+    if (m === 'bank' || m === 'transfer') return isIncome(t) ? acc + Number(t.amount) : acc - Number(t.amount);
     return acc;
   }, 0);
 
-  const totalBalance = cashBal + bankBal;
-
-  // --- HAPUS DENGAN OTORITAS OWNER ---
+  // --- HAPUS DENGAN SANDI OWNER ---
   const handleDelete = async (tId) => {
-    const pwdInput = prompt("🔑 KONFIRMASI OWNER\nMasukkan Sandi Owner untuk menghapus mutasi ini:");
-    if (!pwdInput) return;
-    const ownerSnap = await getDoc(doc(db, "settings", "owner_auth"));
-    const correctPass = ownerSnap.exists() ? ownerSnap.data().password : "2003";
-    if (pwdInput === correctPass) {
+    const pwd = prompt("🔑 KONFIRMASI OWNER\nMasukkan Sandi Owner:");
+    if (!pwd) return;
+    const snap = await getDoc(doc(db, "settings", "owner_auth"));
+    const correct = snap.exists() ? snap.data().password : "2003";
+    if (pwd === correct) {
       await deleteDoc(doc(db, "payments", tId));
       alert("Terhapus!");
     } else { alert("Sandi Salah!"); }
@@ -84,7 +82,7 @@ export default function AdminFinance({ db }) {
       <div className="bg-white p-5 border-b flex flex-col md:flex-row justify-between items-center gap-4 shrink-0 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="bg-blue-600 p-2 rounded-lg text-white shadow-lg"><ShieldAlert size={20}/></div>
-          <h1 className="font-black text-xl tracking-tighter italic text-slate-800 uppercase">Gemilang Finance <span className="text-blue-600">Sync v2</span></h1>
+          <h1 className="font-black text-xl tracking-tighter italic text-slate-800 uppercase">Gemilang Finance <span className="text-blue-600">Fixed</span></h1>
         </div>
         <div className="flex bg-slate-200/50 p-1 rounded-2xl gap-1">
           {[{id:'summary', l:'Dashboard', i:LayoutDashboard}, {id:'input', l:'Catat Kas', i:PlusCircle}, {id:'invoices', l:'Piutang', i:Receipt}].map(t => (
@@ -97,15 +95,15 @@ export default function AdminFinance({ db }) {
 
       <div className="flex-1 overflow-y-auto p-6">
         {activeTab === 'summary' && (
-          <div className="space-y-6 max-w-6xl mx-auto">
-            {/* SALDO CARD */}
+          <div className="space-y-6 max-w-6xl mx-auto animate-in fade-in">
+            {/* SALDO UTAMA */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
                 <button onClick={() => setShowBalance(!showBalance)} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-all">
                   {showBalance ? <EyeOff size={20}/> : <Eye size={20}/>}
                 </button>
-                <p className="text-[10px] font-black opacity-30 uppercase tracking-[0.3em] mb-2">Kas Gemilang</p>
-                <p className="text-3xl font-black">{showBalance ? formatIDR(totalBalance) : "Rp ••••••••"}</p>
+                <p className="text-[10px] font-black opacity-30 uppercase tracking-[0.3em] mb-2">Kas Total</p>
+                <p className="text-3xl font-black">{showBalance ? formatIDR(cashBal + bankBal) : "Rp ••••••••"}</p>
                 <div className="mt-8 pt-6 border-t border-white/5 grid grid-cols-2 gap-4">
                    <div>
                      <p className="text-[9px] font-black opacity-30 uppercase tracking-widest">💵 Tunai / Cash</p>
@@ -121,14 +119,14 @@ export default function AdminFinance({ db }) {
               <div className="grid grid-cols-1 gap-4">
                 <div className="bg-white p-6 rounded-3xl border-l-8 border-green-500 shadow-sm flex justify-between items-center">
                   <div>
-                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Pemasukan Hari Ini</p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Pemasukan (Total)</p>
                     <p className="text-2xl font-black text-green-600">{formatIDR(incomeTotal)}</p>
                   </div>
                   <TrendingUp className="text-green-100" size={40}/>
                 </div>
                 <div className="bg-white p-6 rounded-3xl border-l-8 border-red-500 shadow-sm flex justify-between items-center">
                   <div>
-                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Pengeluaran Hari Ini</p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Pengeluaran (Total)</p>
                     <p className="text-2xl font-black text-red-600">{formatIDR(totalExpense)}</p>
                   </div>
                   <TrendingDown className="text-red-100" size={40}/>
@@ -136,12 +134,12 @@ export default function AdminFinance({ db }) {
               </div>
 
               <div className="bg-orange-600 text-white p-8 rounded-[2.5rem] shadow-lg flex flex-col justify-center text-center">
-                <p className="text-[10px] font-black opacity-50 uppercase tracking-widest mb-1">Piutang (Hutang Siswa)</p>
+                <p className="text-[10px] font-black opacity-50 uppercase tracking-widest mb-1">Total Piutang</p>
                 <p className="text-3xl font-black">{formatIDR(piutangTotal)}</p>
               </div>
             </div>
 
-            {/* MUTASI MUTASI */}
+            {/* MUTASI */}
             <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200">
               <h3 className="font-black text-[10px] uppercase text-slate-400 mb-8 tracking-[0.4em]">Mutasi Keuangan Real-Time</h3>
               <div className="space-y-4">
@@ -152,17 +150,17 @@ export default function AdminFinance({ db }) {
                         {String(t.method).toLowerCase() === 'bank' ? <CreditCard size={20}/> : <Banknote size={20}/>}
                       </div>
                       <div>
-                        <p className="font-black text-slate-800 text-sm uppercase">{t.description}</p>
+                        <p className="font-black text-slate-800 text-sm uppercase tracking-tight">{t.description}</p>
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
                           {renderSafeDate(t.date)} • {t.method} • {t.category}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-8">
-                      <p className={`font-black text-base ${isActuallyIncome(t) ? 'text-green-600' : 'text-red-600'}`}>
-                        {isActuallyIncome(t) ? '+' : '-'} {formatIDR(t.amount)}
+                      <p className={`font-black text-base ${isIncome(t) ? 'text-green-600' : 'text-red-600'}`}>
+                        {isIncome(t) ? '+' : '-'} {formatIDR(t.amount)}
                       </p>
-                      <button onClick={() => handleDelete(t.id)} className="text-slate-200 hover:text-red-600 opacity-0 group-hover:opacity-100 p-2"><Trash2 size={18}/></button>
+                      <button onClick={() => handleDelete(t.id)} className="text-slate-200 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all p-2"><Trash2 size={18}/></button>
                     </div>
                   </div>
                 ))}
@@ -189,20 +187,19 @@ function FinanceFormInput({ db }) {
 
   const save = async (e) => {
     e.preventDefault();
-    if(!amount || !desc) return alert("Wajib Isi!");
     setLoading(true);
     try {
       await addDoc(collection(db, "payments"), {
         type, method, amount: Number(amount), description: desc, category: cat,
         date: new Date().toISOString().split('T')[0], createdAt: serverTimestamp()
       });
-      setAmount(''); setDesc(''); alert("✅ Berhasil Dicatat!");
+      setAmount(''); setDesc(''); alert("✅ Berhasil!");
     } catch (e) { alert("Error!"); }
     setLoading(false);
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-12 rounded-[3.5rem] shadow-2xl border border-slate-100">
+    <div className="max-w-2xl mx-auto bg-white p-12 rounded-[3.5rem] shadow-2xl border border-slate-100 animate-in zoom-in">
       <form onSubmit={save} className="space-y-8">
         <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-2">
           <button type="button" onClick={()=>setType('income')} className={`flex-1 py-4 rounded-xl font-black text-[10px] uppercase ${type==='income'?'bg-green-600 text-white shadow-lg':'text-slate-400'}`}>Pemasukan</button>
@@ -210,11 +207,11 @@ function FinanceFormInput({ db }) {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <button type="button" onClick={()=>setMethod('Tunai')} className={`py-4 rounded-xl font-black text-[10px] uppercase border-2 ${method==='Tunai'?'border-orange-500 bg-orange-500 text-white':'border-slate-100'}`}>💵 Tunai</button>
-          <button type="button" onClick={()=>setMethod('Bank')} className={`py-4 rounded-xl font-black text-[10px] uppercase border-2 ${method==='Bank'?'border-blue-600 bg-blue-600 text-white':'border-slate-100'}`}>🏦 Bank Transfer</button>
+          <button type="button" onClick={()=>setMethod('Bank')} className={`py-4 rounded-xl font-black text-[10px] uppercase border-2 ${method==='Bank'?'border-blue-600 bg-blue-600 text-white':'border-slate-100'}`}>🏦 Bank</button>
         </div>
         <input type="number" value={amount} onChange={e=>setAmount(e.target.value)} className="w-full p-6 bg-slate-50 border-4 border-slate-100 rounded-[2.5rem] font-black text-4xl text-center outline-none" placeholder="0" required />
         <input value={desc} onChange={e=>setDesc(e.target.value)} className="w-full p-4 bg-slate-50 border-2 rounded-2xl font-bold" placeholder="Keterangan..." required />
-        <button disabled={loading} className="w-full py-6 bg-slate-900 text-white rounded-[2.5rem] font-black uppercase tracking-widest shadow-xl hover:bg-blue-600 transition-all">{loading ? 'POSTING...' : 'SIMPAN TRANSAKSI'}</button>
+        <button disabled={loading} className="w-full py-6 bg-slate-900 text-white rounded-[2.5rem] font-black uppercase tracking-widest shadow-xl">{loading ? 'POSTING...' : 'SIMPAN TRANSAKSI'}</button>
       </form>
     </div>
   );
@@ -231,7 +228,7 @@ function FinanceInvoices({ db, invoices = [] }) {
         remainingAmount: remaining, status: remaining <= 0 ? 'paid' : 'unpaid'
       });
       await addDoc(collection(db, "payments"), {
-        type: 'income', amount: pay, description: `Pelunasan: ${inv.studentName}`, category: 'SPP', method: 'Tunai', date: new Date().toISOString().split('T')[0], createdAt: serverTimestamp()
+        type: 'income', amount: pay, description: `Cicilan: ${inv.studentName}`, category: 'SPP', method: 'Tunai', date: new Date().toISOString().split('T')[0], createdAt: serverTimestamp()
       });
       alert("✅ Pembayaran Berhasil!");
     } catch (e) { alert("Error!"); }
@@ -239,21 +236,20 @@ function FinanceInvoices({ db, invoices = [] }) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-4">
-      <h2 className="font-black text-slate-800 text-xl mb-4 uppercase italic">Daftar Piutang Aktif</h2>
       {invoices.filter(i => i.remainingAmount > 0).map((inv, i) => (
         <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 flex justify-between items-center shadow-md">
           <div className="flex-1">
             <p className="font-black text-slate-800 uppercase text-lg">{inv.studentName}</p>
             <p className="text-[10px] text-slate-400 font-bold uppercase">Tempo: {renderSafeDate(inv.dueDate)}</p>
           </div>
-          <div className="text-right px-10">
+          <div className="text-right px-10 border-r mr-10">
             <p className="text-[10px] font-black text-red-400 uppercase">Sisa Tagihan</p>
             <p className="text-2xl font-black text-red-600">{formatIDR(inv.remainingAmount)}</p>
           </div>
           <button onClick={() => {
             const val = prompt(`Bayar cicilan ${inv.studentName}:`, inv.remainingAmount);
             if(val) handlePay(inv, val);
-          }} className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase shadow-xl hover:bg-orange-600 transition-all">BAYAR</button>
+          }} className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase">BAYAR</button>
         </div>
       ))}
     </div>
