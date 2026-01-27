@@ -4,19 +4,20 @@ import { getFirestore, collection, doc, getDoc, onSnapshot, query, where, orderB
 import { getAuth, signInAnonymously } from 'firebase/auth';
 import { Bell, Clock, DollarSign, Users, GraduationCap, Calendar, AlertTriangle, Settings, Menu, LogOut, TrendingUp, BarChart3 } from 'lucide-react';
 
-// --- IMPORT DASHBOARD LAMA ---
 import AdminSchedule from './pages/admin/Schedule';
 import AdminSettings from './pages/admin/Settings'; 
 import AdminTeachers from './pages/admin/Teachers';
 import TeacherDashboard from './pages/teacher/Dashboard';
-
-// --- IMPORT FINANCE BARU ---
 import AdminFinance from './pages/admin/finance/index'; 
-
-// --- IMPORT SISWA BARU (KITA PANGGIL INDEX YANG BARU DIBUAT) ---
 import AdminStudentsIndex from './pages/admin/students/index'; 
 
-// --- CONFIG FIREBASE ---
+// --- 🔥 FUNGSI SAKTI: PARSE TANGGAL APAPUN (OBAT CRASH) ---
+const parseDate = (d) => {
+  if (!d) return new Date();
+  if (d.seconds) return new Date(d.seconds * 1000); // Jika Objek Firebase
+  return new Date(d); // Jika Teks String
+};
+
 const firebaseConfig = {
   apiKey: "AIzaSyCpwCjxcKwVKd0qBnezgRPV2MuZe1avVvQ",
   authDomain: "gemilangsystem.firebaseapp.com",
@@ -30,9 +31,9 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// --- KOMPONEN HELPER (Chart, Bell, Home) SAYA SINGKAT BIAR MUAT ---
 const DAYS = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+
 const MarketingChart = ({ data, label, color }) => {
   const max = Math.max(...data, 5); const height = 100; const width = 300;
   const points = data.map((val, i) => `${(i * (width / (data.length - 1)))},${height - (val / max * height)}`).join(' ');
@@ -47,20 +48,53 @@ const DashboardHome = () => {
   const [expiringPackages, setExpiringPackages] = useState([]); 
   const [isBellRinging, setIsBellRinging] = useState(false);
   const audioContextRef = useRef(null); const oscillatorRef = useRef(null);
-  const startBell = () => { if (isBellRinging) return; setIsBellRinging(true); const ctx = new (window.AudioContext || window.webkitAudioContext)(); const carrier = ctx.createOscillator(); carrier.frequency.value = 880; carrier.type = 'square'; carrier.connect(ctx.destination); carrier.start(); audioContextRef.current = ctx; oscillatorRef.current = carrier; };
+
+  const startBell = () => {
+    if (isBellRinging) return; setIsBellRinging(true);
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const carrier = ctx.createOscillator(); carrier.frequency.value = 880; carrier.type = 'square';
+    carrier.connect(ctx.destination); carrier.start(); audioContextRef.current = ctx; oscillatorRef.current = carrier; 
+  };
   const stopBell = () => { if(!isBellRinging) return; setIsBellRinging(false); oscillatorRef.current?.stop(); audioContextRef.current?.close(); };
 
   useEffect(() => {
-    const dayName = DAYS[new Date().getDay()]; const dateStr = new Date().toISOString().split('T')[0];
+    const dateNow = new Date();
+    const dateStr = dateNow.toISOString().split('T')[0];
+    const dayName = DAYS[dateNow.getDay()];
+    
     const unsubStudents = onSnapshot(collection(db, "students"), s => {
       const all = s.docs.map(d => ({id: d.id, ...d.data()}));
-      const trend = new Array(12).fill(0); all.forEach(std => { if(std.createdAt) { const m = std.createdAt.toDate().getMonth(); trend[m]++; } }); setMarketingTrend(trend);
-      setStats({ siswa: s.size, sd: all.filter(x => x.schoolLevel === 'SD').length, smp: all.filter(x => x.schoolLevel === 'SMP').length, guruHadir: stats.guruHadir });
-      setExpiringPackages(all.filter(std => { if(!std.createdAt) return false; const diff = Math.ceil(Math.abs(new Date() - std.createdAt.toDate()) / (1000 * 60 * 60 * 24)); return diff >= 25; }));
+      const trend = new Array(12).fill(0);
+      all.forEach(std => {
+        if(std.createdAt) {
+          // 🔥 PERBAIKAN: Gunakan parseDate agar tidak crash
+          const m = parseDate(std.createdAt).getMonth();
+          trend[m]++;
+        }
+      });
+      setMarketingTrend(trend);
+      setStats({ 
+        siswa: s.size, 
+        sd: all.filter(x => x.schoolLevel === 'SD').length, 
+        smp: all.filter(x => x.schoolLevel === 'SMP').length, 
+        guruHadir: stats.guruHadir 
+      });
+      setExpiringPackages(all.filter(std => {
+        if(!std.createdAt) return false;
+        const diff = Math.ceil(Math.abs(dateNow - parseDate(std.createdAt)) / (1000 * 60 * 60 * 24));
+        return diff >= 25;
+      }));
     });
-    const unsubInvoices = onSnapshot(query(collection(db, "invoices"), where("remainingAmount", ">", 0)), snap => { const h7 = new Date(); h7.setDate(h7.getDate() + 7); setOverdueInvoices(snap.docs.map(d => ({id: d.id, ...d.data()})).filter(inv => new Date(inv.dueDate) <= h7)); });
+
+    const unsubInvoices = onSnapshot(query(collection(db, "invoices"), where("remainingAmount", ">", 0)), snap => {
+      const h7 = new Date(); h7.setDate(h7.getDate() + 7);
+      // 🔥 PERBAIKAN: parseDate untuk dueDate
+      setOverdueInvoices(snap.docs.map(d => ({id: d.id, ...d.data()})).filter(inv => parseDate(inv.dueDate) <= h7));
+    });
+
     const unsubLogs = onSnapshot(query(collection(db, "class_logs"), where("date", "==", dateStr)), s => { setStats(prev => ({ ...prev, guruHadir: s.size })); });
     const unsubSched = onSnapshot(query(collection(db, "schedules")), snap => { setTodaySchedules(snap.docs.map(d => d.data()).filter(s => (s.type === 'routine' && s.day === dayName) || (s.type === 'booking' && s.date === dateStr)).sort((a,b) => a.startTime.localeCompare(b.startTime))); });
+
     return () => { unsubStudents(); unsubInvoices(); unsubLogs(); unsubSched(); };
   }, []);
 
@@ -69,12 +103,11 @@ const DashboardHome = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6"><div className="bg-white p-6 rounded-3xl border shadow-sm"><Users className="text-blue-500 mb-2"/><div className="text-3xl font-black">{stats.siswa}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Siswa Aktif</div></div><div className="bg-white p-6 rounded-3xl border shadow-sm"><TrendingUp className="text-green-500 mb-2"/><div className="text-3xl font-black">{stats.sd}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Siswa SD</div></div><div className="bg-white p-6 rounded-3xl border shadow-sm"><TrendingUp className="text-purple-500 mb-2"/><div className="text-3xl font-black">{stats.smp}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Siswa SMP</div></div><div className="bg-white p-6 rounded-3xl border shadow-sm"><Calendar className="text-orange-500 mb-2"/><div className="text-3xl font-black">{stats.guruHadir}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Kelas Hari Ini</div></div></div>
       <div className="bg-white p-8 rounded-[2.5rem] border shadow-sm"><h3 className="text-lg font-black mb-8 flex items-center gap-3 uppercase tracking-widest"><BarChart3 className="text-blue-600"/> Grafik Pertumbuhan Pendaftaran</h3><MarketingChart data={marketingTrend} label="Tren Siswa Baru (Bulan)" color="#2563eb" /><div className="flex justify-between mt-4 px-2">{MONTHS.map(m => <span key={m} className="text-[10px] font-bold text-gray-300">{m}</span>)}</div></div>
       <div className="w-full bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6"><div><h2 className="text-3xl font-black flex items-center gap-4"><Bell className={isBellRinging?"animate-bounce text-yellow-400":""}/> BEL SEKOLAH</h2><p className="opacity-50 mt-2">Tahan untuk bunyi, lepas untuk berhenti.</p></div><button onMouseDown={startBell} onMouseUp={stopBell} onMouseLeave={stopBell} className="bg-red-600 hover:bg-red-700 text-white px-16 py-6 rounded-2xl font-black text-2xl shadow-2xl transition-all active:scale-95">BUNYIKAN</button></div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8"><div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><Clock className="text-blue-500"/> JADWAL AKTIF</h3><div className="space-y-3">{todaySchedules.map((s, i) => (<div key={i} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border"><div><div className="font-bold text-xs">{s.subject}</div><div className="text-[10px] text-gray-400">{s.teacherName}</div></div><div className="font-black text-blue-600 text-xs">{s.startTime}</div></div>))}</div></div><div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><AlertTriangle className="text-red-500"/> JATUH TEMPO</h3><div className="space-y-3">{overdueInvoices.map((inv, i) => (<div key={i} className="p-3 border-l-4 border-red-500 bg-red-50 flex justify-between items-center rounded-r-xl"><div className="overflow-hidden"><div className="font-bold text-xs truncate w-32">{inv.studentName}</div><div className="text-[10px] text-red-600">{inv.dueDate}</div></div></div>))}</div></div><div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><TrendingUp className="text-orange-500"/> RENEWAL PAKET</h3><div className="space-y-3">{expiringPackages.map((std, i) => (<div key={i} className="p-3 border-l-4 border-orange-500 bg-orange-50 rounded-r-xl"><div className="font-black text-xs">{std.name}</div><div className="text-[10px] text-orange-700 italic">Segera siapkan invoice perpanjangan.</div></div>))}</div></div></div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8"><div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><Clock className="text-blue-500"/> JADWAL AKTIF</h3><div className="space-y-3">{todaySchedules.map((s, i) => (<div key={i} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border"><div><div className="font-bold text-xs">{s.subject}</div><div className="text-[10px] text-gray-400">{s.teacherName}</div></div><div className="font-black text-blue-600 text-xs">{s.startTime}</div></div>))}</div></div><div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><AlertTriangle className="text-red-500"/> JATUH TEMPO</h3><div className="space-y-3">{overdueInvoices.map((inv, i) => (<div key={i} className="p-3 border-l-4 border-red-500 bg-red-50 flex justify-between items-center rounded-r-xl"><div className="overflow-hidden"><div className="font-bold text-xs truncate w-32">{inv.studentName}</div><div className="text-[10px] text-red-600 tracking-tighter">{parseDate(inv.dueDate).toLocaleDateString('id-ID')}</div></div></div>))}</div></div><div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><TrendingUp className="text-orange-500"/> RENEWAL PAKET</h3><div className="space-y-3">{expiringPackages.map((std, i) => (<div key={i} className="p-3 border-l-4 border-orange-500 bg-orange-50 rounded-r-xl"><div className="font-black text-xs">{std.name}</div><div className="text-[10px] text-orange-700 italic">Segera siapkan invoice perpanjangan.</div></div>))}</div></div></div>
     </div>
   );
 };
 
-// --- MAIN LAYOUT ---
 const DashboardAdmin = ({ onLogout }) => {
   const [view, setView] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
@@ -86,7 +119,8 @@ const DashboardAdmin = ({ onLogout }) => {
         <div className="p-8 border-b hidden md:block text-center"><h1 className="font-black text-blue-600 text-3xl italic tracking-tighter">GEMILANG</h1></div>
         <nav className="p-6 space-y-2 flex-1 overflow-y-auto">
           {[{id:'dashboard',l:'Beranda',i:Bell}, {id:'schedule',l:'Jadwal',i:Calendar}, {id:'students',l:'Siswa',i:GraduationCap}, {id:'finance',l:'Keuangan',i:DollarSign}, {id:'teachers',l:'Guru',i:Users}, {id:'settings',l:'Pengaturan',i:Settings}].map(m => (
-            <button key={m.id} onClick={()=>{setView(m.id); setIsSidebarOpen(false);}} className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all ${view===m.id?'bg-blue-600 text-white shadow-xl translate-x-2':'text-gray-400 hover:bg-gray-50'}`}><m.i size={20}/> {m.l}</button>
+            <button key={m.id} onClick={()=>{setView(m.id); setIsSidebarOpen(false);}} className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all ${view===m.id?'bg-blue-600 text-white shadow-xl translate-x-2':'text-gray-400 hover:bg-gray-50'}`}><m.i size={20}/> {m.l}
+            </button>
           ))}
         </nav>
         <div className="p-6 border-t bg-gray-50"><button onClick={onLogout} className="w-full text-red-600 font-black text-xs py-4 hover:bg-red-50 rounded-2xl border-2 border-red-100 flex items-center justify-center gap-2 transition-all"><LogOut size={16}/> Logout</button></div>
@@ -99,7 +133,6 @@ const DashboardAdmin = ({ onLogout }) => {
             {view === 'dashboard' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><DashboardHome /></div>}
             {view === 'schedule' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminSchedule db={db} /></div>}
             {view === 'finance' && <AdminFinance db={db} />}
-            {/* KITA PANGGIL INDEX SISWA YANG BARU DI SINI */}
             {view === 'students' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminStudentsIndex db={db} /></div>}
             {view === 'teachers' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminTeachers db={db} /></div>} 
             {view === 'settings' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminSettings db={db} /></div>}
@@ -110,7 +143,6 @@ const DashboardAdmin = ({ onLogout }) => {
   );
 };
 
-// --- LOGIN PAGE ---
 const LoginPage = ({ onLogin }) => {
   const [mode, setMode] = useState('admin');
   const [pass, setPass] = useState('');
