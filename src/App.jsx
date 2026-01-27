@@ -10,24 +10,24 @@ import {
   AlertTriangle, Settings, MessageCircle, Menu, LogOut, TrendingUp, BarChart3
 } from 'lucide-react';
 
-// --- IMPORT FILE LAMA (Jadwal, Guru, Setting) ---
+// --- IMPORT FILE HALAMAN LAMA (Jadwal, Guru, Setting) ---
 import AdminSchedule from './pages/admin/Schedule';
 import AdminSettings from './pages/admin/Settings'; 
 import AdminTeachers from './pages/admin/Teachers';
 import TeacherDashboard from './pages/teacher/Dashboard';
 
-// --- 🔴 PERBAIKAN FINANCE (LANGSUNG KE FOLDER) ---
-// Kita paksa ambil index.jsx di dalam folder finance
+// --- 🔴 BYPASS FINANCE (LANGSUNG KE FOLDER) ---
+// Memaksa sistem membaca file index.jsx di dalam folder finance
 import AdminFinance from './pages/admin/finance/index.jsx'; 
 
-// --- 🔴 PERBAIKAN SISWA (LANGSUNG KE FOLDER) ---
-// Kita panggil langsung komponen dari folder students (Bypass Students.jsx)
+// --- 🔴 BYPASS SISWA (LANGSUNG KE FOLDER) ---
+// Memanggil komponen langsung dari folder students
 import StudentList from './pages/admin/students/StudentList';
 import StudentForm from './pages/admin/students/StudentForm'; 
 import StudentDetail from './pages/admin/students/StudentDetail';
 
-// --- WRAPPER SISWA (Pengganti Students.jsx di dalam App.jsx) ---
-// Ini agar Bapak tidak perlu pusing mikirin file Students.jsx yang kosong/error lagi
+// --- WRAPPER SISWA (PENGGANTI STUDENTS.JSX) ---
+// Komponen pembungkus ini menggantikan peran file Students.jsx yang bermasalah
 function AdminStudentsWrapper({ db }) {
   const [view, setView] = useState('list'); 
   const [selectedStudent, setSelectedStudent] = useState(null);
