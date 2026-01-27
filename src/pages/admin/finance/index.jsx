@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { LayoutDashboard, Receipt, PlusCircle, FileText } from 'lucide-react';
 
-// IMPORT FILE ANAK (Pastikan nama file di folder bapak sesuai huruf besar/kecilnya)
+// --- IMPORT ANAK-ANAKNYA (Pastikan Nama File Sesuai) ---
 import FinanceSummary from './FinanceSummary';
-import FinanceInvoices from './FinanceInvoices';
-import FinanceInput from './FinanceInput'; // Cek nama file ini di folder
-import FinanceReport from './FinanceReport';
+import FinanceInvoices from './FinanceInvoices'; // Pastikan file ini ada isinya
+import FinanceInput from './FinanceInput';       // Pastikan huruf 'I' besar
+import FinanceReport from './FinanceReport';     // Pastikan file ini ada isinya
 
 export default function AdminFinance({ db }) {
   const [activeTab, setActiveTab] = useState('summary');
@@ -15,17 +15,22 @@ export default function AdminFinance({ db }) {
   const [students, setStudents] = useState([]);
 
   useEffect(() => {
-    // Ambil Data Realtime
-    const u1 = onSnapshot(query(collection(db, "payments"), orderBy("date", "desc")), s => 
-      setTransactions(s.docs.map(d => ({id: d.id, ...d.data()}))));
-    const u2 = onSnapshot(query(collection(db, "invoices"), orderBy("createdAt", "desc")), s => 
-      setInvoices(s.docs.map(d => ({id: d.id, ...d.data()}))));
-    const u3 = onSnapshot(query(collection(db, "students"), orderBy("name")), s => 
-      setStudents(s.docs.map(d => ({id: d.id, ...d.data()}))));
+    // 1. Ambil Data Transaksi
+    const qTrans = query(collection(db, "payments"), orderBy("date", "desc"));
+    const u1 = onSnapshot(qTrans, s => setTransactions(s.docs.map(d => ({id: d.id, ...d.data()}))));
+    
+    // 2. Ambil Data Tagihan (Invoices)
+    const qInv = query(collection(db, "invoices"), orderBy("createdAt", "desc"));
+    const u2 = onSnapshot(qInv, s => setInvoices(s.docs.map(d => ({id: d.id, ...d.data()}))));
+    
+    // 3. Ambil Data Siswa
+    const qStd = query(collection(db, "students"), orderBy("name"));
+    const u3 = onSnapshot(qStd, s => setStudents(s.docs.map(d => ({id: d.id, ...d.data()}))));
+    
     return () => { u1(); u2(); u3(); };
   }, [db]);
 
-  // Hitung Saldo
+  // Hitung Saldo Total
   const balance = transactions.reduce((acc, t) => {
     const amt = t.amount || 0;
     return t.type === 'income' ? acc + amt : acc - amt;
@@ -33,17 +38,12 @@ export default function AdminFinance({ db }) {
 
   return (
     <div className="w-full h-screen flex flex-col bg-slate-50 overflow-hidden font-sans">
-      {/* --- HEADER BARU DENGAN TAB --- */}
+      {/* HEADER MENU */}
       <div className="bg-white px-8 py-4 border-b border-slate-200 flex justify-between items-center shadow-sm z-20 shrink-0">
         <div className="flex items-center gap-4">
           <div className="bg-blue-600 p-3 rounded-xl text-white shadow-lg"><LayoutDashboard size={24}/></div>
-          <div>
-            <h1 className="text-xl font-black uppercase text-slate-800 tracking-tighter">KEUANGAN BARU</h1>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Saldo: Rp {balance.toLocaleString('id-ID')}</p>
-          </div>
+          <div><h1 className="text-xl font-black uppercase text-slate-800 tracking-tighter">KEUANGAN & KAS</h1><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Saldo Aktif: Rp {balance.toLocaleString('id-ID')}</p></div>
         </div>
-        
-        {/* TOMBOL NAVIGASI TAB */}
         <div className="flex bg-slate-100 p-1.5 rounded-xl gap-1">
           {[
             {id:'summary', l:'Dashboard', i:LayoutDashboard},
@@ -58,12 +58,12 @@ export default function AdminFinance({ db }) {
         </div>
       </div>
 
-      {/* --- ISI KONTEN BERUBAH SESUAI TAB --- */}
+      {/* ISI KONTEN (Memanggil Anak-anak) */}
       <div className="flex-1 overflow-y-auto p-8 relative">
-        {activeTab === 'summary' && <FinanceSummary db={db} transactions={transactions} invoices={invoices} balance={balance} />}
-        {activeTab === 'invoices' && <FinanceInvoices db={db} invoices={invoices} students={students} />}
+        {activeTab === 'summary' && <FinanceSummary transactions={transactions} invoices={invoices} balance={balance} />}
+        {activeTab === 'invoices' && <FinanceInvoices invoices={invoices} students={students} db={db} />}
         {activeTab === 'input' && <FinanceInput db={db} students={students} />}
-        {activeTab === 'report' && <FinanceReport transactions={transactions} invoices={invoices} balance={balance} />}
+        {activeTab === 'report' && <FinanceReport transactions={transactions} balance={balance} />}
       </div>
     </div>
   );
