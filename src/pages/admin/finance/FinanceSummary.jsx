@@ -1,99 +1,104 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownLeft, Trash2 } from 'lucide-react';
-import { doc, deleteDoc } from 'firebase/firestore';
+import React from 'react';
+import { TrendingUp, TrendingDown, Wallet, AlertCircle } from 'lucide-react';
 
-const formatRupiah = (val) => val ? val.toLocaleString('id-ID') : "0";
+export default function FinanceSummary({ transactions = [], invoices = [], balance = 0 }) {
+  
+  // 1. HITUNG PEMASUKAN (Type: 'income')
+  const totalIncome = transactions
+    .filter(t => t.type === 'income')
+    .reduce((acc, t) => acc + (parseInt(t.amount) || 0), 0);
 
-export default function FinanceSummary({ db, transactions, balance }) {
-  const [showSaldo, setShowSaldo] = useState(false); // Default sembunyi
+  // 2. HITUNG PENGELUARAN (Type: 'expense')
+  const totalExpense = transactions
+    .filter(t => t.type === 'expense')
+    .reduce((acc, t) => acc + (parseInt(t.amount) || 0), 0);
 
-  // Hitung Pemasukan/Pengeluaran Bulan Ini
-  const thisMonth = new Date().getMonth();
-  const monthlyStats = transactions.reduce((acc, t) => {
-    const tDate = t.date?.toDate ? t.date.toDate() : new Date();
-    if (tDate.getMonth() === thisMonth) {
-      if (t.type === 'income') acc.inc += t.amount;
-      else acc.exp += t.amount;
-    }
-    return acc;
-  }, { inc: 0, exp: 0 });
+  // 3. HITUNG PIUTANG (Total Tagihan Belum Lunas)
+  const totalPiutang = invoices
+    .reduce((acc, inv) => acc + (parseInt(inv.remainingAmount) || 0), 0);
 
-  const handleDelete = async (id) => {
-    // Fitur hapus ini sebaiknya dikunci password owner di masa depan
-    if (confirm("Hapus transaksi ini? Saldo akan berubah.")) await deleteDoc(doc(db, "payments", id));
-  };
+  // Format Rupiah
+  const formatIDR = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
   return (
-    <div className="space-y-8 animate-in fade-in max-w-7xl mx-auto">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
-      {/* 1. KARTU SALDO UTAMA */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1 bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden flex flex-col justify-between h-64">
-          <div className="flex justify-between items-start z-10">
-            <div className="p-3 bg-white/10 rounded-2xl"><TrendingUp size={24}/></div>
-            <button onClick={()=>setShowSaldo(!showSaldo)} className="p-2 hover:bg-white/10 rounded-full transition-all">
-              {showSaldo ? <EyeOff size={20}/> : <Eye size={20}/>}
-            </button>
-          </div>
-          <div className="z-10">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Saldo Kas</p>
-            <h2 className="text-5xl font-black tracking-tighter">
-              {showSaldo ? `Rp ${formatRupiah(balance)}` : 'Rp ••••••••'}
-            </h2>
-          </div>
-          {/* Hiasan Background */}
-          <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-blue-600 rounded-full blur-[80px] opacity-50"></div>
+      {/* KARTU ATAS: RINGKASAN UTAMA */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        {/* SALDO AKTIF */}
+        <div className="bg-slate-900 text-white p-8 rounded-[2rem] shadow-2xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform"><Wallet size={100}/></div>
+          <div className="text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Saldo Kas</div>
+          <div className="text-3xl font-black">{formatIDR(balance)}</div>
         </div>
 
-        <div className="md:col-span-2 grid grid-cols-2 gap-6">
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-center">
-            <div className="flex items-center gap-3 mb-4 text-green-600">
-              <div className="p-2 bg-green-50 rounded-lg"><ArrowDownLeft size={20}/></div>
-              <span className="text-xs font-black uppercase tracking-widest">Masuk Bulan Ini</span>
-            </div>
-            <p className="text-4xl font-black text-slate-800">Rp {formatRupiah(monthlyStats.inc)}</p>
+        {/* PEMASUKAN */}
+        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-5 text-green-500 group-hover:scale-110 transition-transform"><TrendingUp size={100}/></div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-green-100 text-green-600 p-2 rounded-full"><TrendingUp size={16}/></div>
+            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Pemasukan</div>
           </div>
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-center">
-            <div className="flex items-center gap-3 mb-4 text-red-600">
-              <div className="p-2 bg-red-50 rounded-lg"><ArrowUpRight size={20}/></div>
-              <span className="text-xs font-black uppercase tracking-widest">Keluar Bulan Ini</span>
-            </div>
-            <p className="text-4xl font-black text-slate-800">Rp {formatRupiah(monthlyStats.exp)}</p>
-          </div>
+          <div className="text-2xl font-black text-slate-800">{formatIDR(totalIncome)}</div>
         </div>
+
+        {/* PENGELUARAN */}
+        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-5 text-red-500 group-hover:scale-110 transition-transform"><TrendingDown size={100}/></div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-red-100 text-red-600 p-2 rounded-full"><TrendingDown size={16}/></div>
+            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Pengeluaran</div>
+          </div>
+          <div className="text-2xl font-black text-slate-800">{formatIDR(totalExpense)}</div>
+        </div>
+
+        {/* PIUTANG (UANG YANG BELUM DIBAYAR SISWA) */}
+        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-5 text-orange-500 group-hover:scale-110 transition-transform"><AlertCircle size={100}/></div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-orange-100 text-orange-600 p-2 rounded-full"><AlertCircle size={16}/></div>
+            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Piutang</div>
+          </div>
+          <div className="text-2xl font-black text-slate-800">{formatIDR(totalPiutang)}</div>
+          <div className="text-[10px] text-orange-500 font-bold mt-1">Uang belum masuk</div>
+        </div>
+
       </div>
 
-      {/* 2. TABEL MUTASI TERAKHIR */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-8 border-b border-slate-50 flex justify-between items-center">
-          <h3 className="font-black text-lg uppercase tracking-tight text-slate-800">Mutasi Terakhir</h3>
-          <span className="text-xs font-bold bg-slate-100 px-3 py-1 rounded-lg text-slate-500">10 Transaksi Terbaru</span>
-        </div>
+      {/* TABEL TRANSAKSI TERAKHIR */}
+      <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
+        <h3 className="font-black text-lg mb-6 flex items-center gap-3 uppercase tracking-widest text-slate-800">
+          <Wallet className="text-blue-600"/> Riwayat Transaksi
+        </h3>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="text-xs text-slate-400 uppercase bg-slate-50/50 font-black">
-              <tr>
-                <th className="px-8 py-4">Tanggal</th>
-                <th className="px-8 py-4">Keterangan</th>
-                <th className="px-8 py-4">Kategori</th>
-                <th className="px-8 py-4 text-right">Nominal</th>
-                <th className="px-8 py-4 text-center">Aksi</th>
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b-2 border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                <th className="p-4">Tanggal</th>
+                <th className="p-4">Keterangan</th>
+                <th className="p-4">Kategori</th>
+                <th className="p-4 text-right">Nominal</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
-              {transactions.slice(0, 10).map((t) => (
-                <tr key={t.id} className="hover:bg-blue-50/30 transition-colors">
-                  <td className="px-8 py-4 font-bold text-slate-500">{t.date?.toDate ? t.date.toDate().toLocaleDateString('id-ID') : '-'}</td>
-                  <td className="px-8 py-4 font-bold text-slate-800 uppercase">{t.description}</td>
-                  <td className="px-8 py-4"><span className="bg-slate-100 px-3 py-1 rounded-lg text-[10px] font-black uppercase text-slate-500">{t.category}</span></td>
-                  <td className={`px-8 py-4 text-right font-black ${t.type==='income'?'text-green-600':'text-red-600'}`}>
-                    {t.type==='income' ? '+' : '-'} Rp {formatRupiah(t.amount)}
-                  </td>
-                  <td className="px-8 py-4 text-center">
-                    <button onClick={()=>handleDelete(t.id)} className="text-slate-300 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
-                  </td>
-                </tr>
-              ))}
+            <tbody className="text-sm font-bold text-slate-600">
+              {transactions.length === 0 ? (
+                <tr><td colSpan="4" className="p-8 text-center text-slate-300 italic">Belum ada data transaksi.</td></tr>
+              ) : (
+                transactions.slice(0, 10).map((t, i) => (
+                  <tr key={t.id || i} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                    <td className="p-4 text-xs">{t.date}</td>
+                    <td className="p-4">
+                      <div className="text-slate-800">{t.description}</div>
+                      <div className="text-[10px] text-slate-400">{t.studentName !== '-' ? t.studentName : 'Umum'}</div>
+                    </td>
+                    <td className="p-4"><span className="bg-slate-100 px-3 py-1 rounded-full text-[10px] uppercase tracking-wide">{t.category}</span></td>
+                    <td className={`p-4 text-right font-black ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                      {t.type === 'income' ? '+' : '-'} {formatIDR(t.amount)}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
