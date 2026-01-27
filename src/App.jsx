@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
 import { 
-  getFirestore, collection, addDoc, setDoc, doc, getDoc, 
-  onSnapshot, query, where, serverTimestamp, orderBy 
+  getFirestore, collection, doc, getDoc, 
+  onSnapshot, query, where 
 } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 import { 
   Bell, Clock, DollarSign, Users, GraduationCap, Calendar, 
-  AlertTriangle, CheckCircle, Key, Settings, MessageCircle, Menu, LogOut, TrendingUp, BarChart3
+  AlertTriangle, Settings, MessageCircle, Menu, LogOut, TrendingUp, BarChart3
 } from 'lucide-react';
 
-// --- IMPORT FILE HALAMAN ADMIN ---
+// --- IMPORT HALAMAN ADMIN (MENU BARU FINANCE) ---
 import AdminSchedule from './pages/admin/Schedule';
-import AdminFinance from './pages/admin/Finance';
+import AdminFinance from './pages/admin/finance'; // <-- SUDAH ARAH KE FOLDER BARU
 import AdminSettings from './pages/admin/Settings'; 
-import AdminStudents from './pages/admin/Students';
+import AdminStudents from './pages/admin/Students'; // <-- SUDAH PAKAI FILE BARU JUGA
 import AdminTeachers from './pages/admin/Teachers';
 import TeacherDashboard from './pages/teacher/Dashboard';
 
@@ -34,9 +34,8 @@ const auth = getAuth(app);
 
 const DAYS_INDONESIA = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 const MONTHS_LABEL = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-const formatIDR = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
-// --- HELPER COMPONENT: LINE CHART SVG (Marketing Evaluation) ---
+// --- HELPER COMPONENT: LINE CHART ---
 const MarketingChart = ({ data, label, color }) => {
   const max = Math.max(...data, 5);
   const height = 100;
@@ -60,7 +59,7 @@ const MarketingChart = ({ data, label, color }) => {
 };
 
 // ==========================================
-// 1. COMPONENT: DASHBOARD HOME (MARKETING VERSION)
+// 1. DASHBOARD HOME (Marketing)
 // ==========================================
 const DashboardHome = () => {
   const [stats, setStats] = useState({ siswa: 0, sd: 0, smp: 0, guruHadir: 0 });
@@ -86,12 +85,12 @@ const DashboardHome = () => {
     const dayName = DAYS_INDONESIA[new Date().getDay()];
     const dateStr = new Date().toISOString().split('T')[0];
     
+    // 1. Statistik Siswa
     const unsubStudents = onSnapshot(collection(db, "students"), s => {
-      const all = s.docs.map(d => ({...d.data()}));
+      const all = s.docs.map(d => ({id: d.id, ...d.data()}));
       const sd = all.filter(x => x.schoolLevel === 'SD').length;
       const smp = all.filter(x => x.schoolLevel === 'SMP').length;
       
-      // Hitung Trend Pendaftaran per Bulan (Tahun Berjalan)
       const trend = new Array(12).fill(0);
       all.forEach(std => {
         if(std.createdAt) {
@@ -101,9 +100,9 @@ const DashboardHome = () => {
       });
       
       setMarketingTrend(trend);
-      setStats({ siswa: s.size, sd, smp, guruHadir: stats.guruHadir });
+      setStats(prev => ({ ...prev, siswa: s.size, sd, smp }));
 
-      const nearEnd = s.docs.map(d => ({id: d.id, ...d.data()})).filter(std => {
+      const nearEnd = all.filter(std => {
         if(!std.createdAt) return false;
         const diff = Math.ceil(Math.abs(new Date() - std.createdAt.toDate()) / (1000 * 60 * 60 * 24));
         return diff >= 25;
@@ -111,15 +110,18 @@ const DashboardHome = () => {
       setExpiringPackages(nearEnd);
     });
 
+    // 2. Tagihan Telat
     const unsubInvoices = onSnapshot(query(collection(db, "invoices"), where("remainingAmount", ">", 0)), snap => {
       const h7 = new Date(); h7.setDate(h7.getDate() + 7);
       setOverdueInvoices(snap.docs.map(d => ({id: d.id, ...d.data()})).filter(inv => new Date(inv.dueDate) <= h7));
     });
 
+    // 3. Guru Hadir
     const unsubLogs = onSnapshot(query(collection(db, "class_logs"), where("date", "==", dateStr)), s => {
       setStats(prev => ({ ...prev, guruHadir: s.size }));
     });
 
+    // 4. Jadwal Hari Ini
     const unsubSched = onSnapshot(query(collection(db, "schedules")), snap => {
       setTodaySchedules(snap.docs.map(d => d.data()).filter(s => (s.type === 'routine' && s.day === dayName) || (s.type === 'booking' && s.date === dateStr)).sort((a,b) => a.startTime.localeCompare(b.startTime)));
     });
@@ -128,13 +130,13 @@ const DashboardHome = () => {
   }, []);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in">
       {/* STATS MARKETING & OPERASIONAL */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-3xl border shadow-sm"><Users className="text-blue-500 mb-2"/><div className="text-3xl font-black">{stats.siswa}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Siswa Aktif</div></div>
-        <div className="bg-white p-6 rounded-3xl border shadow-sm"><TrendingUp className="text-green-500 mb-2"/><div className="text-3xl font-black">{stats.sd}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Siswa SD</div></div>
-        <div className="bg-white p-6 rounded-3xl border shadow-sm"><TrendingUp className="text-purple-500 mb-2"/><div className="text-3xl font-black">{stats.smp}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Siswa SMP</div></div>
-        <div className="bg-white p-6 rounded-3xl border shadow-sm"><Calendar className="text-orange-500 mb-2"/><div className="text-3xl font-black">{stats.guruHadir}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Kelas Hari Ini</div></div>
+        <div className="bg-white p-6 rounded-3xl border shadow-sm hover:shadow-md transition-all"><Users className="text-blue-500 mb-2"/><div className="text-3xl font-black">{stats.siswa}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Siswa Aktif</div></div>
+        <div className="bg-white p-6 rounded-3xl border shadow-sm hover:shadow-md transition-all"><TrendingUp className="text-green-500 mb-2"/><div className="text-3xl font-black">{stats.sd}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Siswa SD</div></div>
+        <div className="bg-white p-6 rounded-3xl border shadow-sm hover:shadow-md transition-all"><TrendingUp className="text-purple-500 mb-2"/><div className="text-3xl font-black">{stats.smp}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Siswa SMP</div></div>
+        <div className="bg-white p-6 rounded-3xl border shadow-sm hover:shadow-md transition-all"><Calendar className="text-orange-500 mb-2"/><div className="text-3xl font-black">{stats.guruHadir}</div><div className="text-[10px] font-bold text-gray-400 uppercase">Kelas Hari Ini</div></div>
       </div>
 
       {/* GRAFIK EVALUASI MARKETING */}
@@ -149,12 +151,13 @@ const DashboardHome = () => {
       {/* BEL SEKOLAH */}
       <div className="w-full bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6">
         <div><h2 className="text-3xl font-black flex items-center gap-4"><Bell className={isBellRinging?"animate-bounce text-yellow-400":""}/> BEL SEKOLAH</h2><p className="opacity-50 mt-2">Tahan untuk bunyi, lepas untuk berhenti.</p></div>
-        <button onMouseDown={startBell} onMouseUp={stopBell} onMouseLeave={stopBell} className="bg-red-600 hover:bg-red-700 text-white px-16 py-6 rounded-2xl font-black text-2xl shadow-2xl transition-all">BUNYIKAN</button>
+        <button onMouseDown={startBell} onMouseUp={stopBell} onMouseLeave={stopBell} className="bg-red-600 hover:bg-red-700 text-white px-16 py-6 rounded-2xl font-black text-2xl shadow-2xl transition-all active:scale-95">BUNYIKAN</button>
       </div>
 
+      {/* PANEL INFO BAWAH */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><Clock className="text-blue-500"/> JADWAL AKTIF</h3><div className="space-y-3">{todaySchedules.map((s, i) => (<div key={i} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border"><div><div className="font-bold text-xs">{s.subject}</div><div className="text-[10px] text-gray-400">{s.teacherName}</div></div><div className="font-black text-blue-600 text-xs">{s.startTime}</div></div>))}</div></div>
-        <div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><AlertTriangle className="text-red-500"/> JATUH TEMPO</h3><div className="space-y-3">{overdueInvoices.map((inv, i) => (<div key={i} className="p-3 border-l-4 border-red-500 bg-red-50 flex justify-between items-center rounded-r-xl"><div className="overflow-hidden"><div className="font-bold text-xs truncate">{inv.studentName}</div><div className="text-[10px] text-red-600">{inv.dueDate}</div></div>{inv.waPhone && <a href={`https://wa.me/${inv.waPhone}`} target="_blank" className="bg-green-600 text-white p-1.5 rounded-full"><MessageCircle size={14}/></a>}</div>))}</div></div>
+        <div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><AlertTriangle className="text-red-500"/> JATUH TEMPO</h3><div className="space-y-3">{overdueInvoices.map((inv, i) => (<div key={i} className="p-3 border-l-4 border-red-500 bg-red-50 flex justify-between items-center rounded-r-xl"><div className="overflow-hidden"><div className="font-bold text-xs truncate w-32">{inv.studentName}</div><div className="text-[10px] text-red-600">{inv.dueDate}</div></div>{inv.waPhone && <a href={`https://wa.me/${inv.waPhone}`} target="_blank" className="bg-green-600 text-white p-1.5 rounded-full"><MessageCircle size={14}/></a>}</div>))}</div></div>
         <div className="bg-white p-8 rounded-3xl border shadow-sm"><h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><TrendingUp className="text-orange-500"/> RENEWAL PAKET</h3><div className="space-y-3">{expiringPackages.map((std, i) => (<div key={i} className="p-3 border-l-4 border-orange-500 bg-orange-50 rounded-r-xl"><div className="font-black text-xs">{std.name}</div><div className="text-[10px] text-orange-700 italic">Segera siapkan invoice perpanjangan.</div></div>))}</div></div>
       </div>
     </div>
@@ -169,29 +172,60 @@ const DashboardAdmin = ({ onLogout }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row w-full overflow-x-hidden">
-      <div className="md:hidden bg-white p-5 border-b flex justify-between items-center z-30"><h1 className="font-black text-2xl text-blue-600">GEMILANG</h1><button onClick={()=>setIsSidebarOpen(!isSidebarOpen)} className="p-2"><Menu/></button></div>
-      <div className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform z-40 w-72 bg-white border-r h-full flex flex-col`}>
-        <div className="p-8 border-b hidden md:block text-center"><h1 className="font-black text-blue-600 text-3xl italic tracking-tighter">GEMILANG</h1></div>
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row w-full overflow-x-hidden font-sans">
+      
+      {/* MOBILE HEADER */}
+      <div className="md:hidden bg-white p-5 border-b flex justify-between items-center z-30 shadow-sm">
+        <h1 className="font-black text-2xl text-blue-600 tracking-tighter">GEMILANG</h1>
+        <button onClick={()=>setIsSidebarOpen(!isSidebarOpen)} className="p-2 bg-gray-100 rounded-lg"><Menu/></button>
+      </div>
+
+      {/* SIDEBAR */}
+      <div className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform z-40 w-72 bg-white border-r h-full flex flex-col shadow-xl md:shadow-none`}>
+        <div className="p-8 border-b hidden md:block text-center">
+          <h1 className="font-black text-blue-600 text-3xl italic tracking-tighter">GEMILANG</h1>
+        </div>
         <nav className="p-6 space-y-2 flex-1 overflow-y-auto">
           {[
-            {id:'dashboard',l:'Beranda',i:Bell}, {id:'schedule',l:'Jadwal',i:Calendar}, {id:'students',l:'Siswa',i:GraduationCap}, 
-            {id:'finance',l:'Keuangan',i:DollarSign}, {id:'teachers',l:'Guru',i:Users}, {id:'settings',l:'Pengaturan',i:Settings}
-          ].map(m => (<button key={m.id} onClick={()=>{setView(m.id); setIsSidebarOpen(false);}} className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all ${view===m.id?'bg-blue-600 text-white shadow-xl translate-x-2':'text-gray-400 hover:bg-gray-50'}`}><m.i size={22}/> {m.l}</button>))}
+            {id:'dashboard',l:'Beranda',i:Bell}, 
+            {id:'schedule',l:'Jadwal',i:Calendar}, 
+            {id:'students',l:'Siswa',i:GraduationCap}, 
+            {id:'finance',l:'Keuangan',i:DollarSign}, // <-- INI SEKARANG MENGARAH KE KEUANGAN BARU
+            {id:'teachers',l:'Guru',i:Users}, 
+            {id:'settings',l:'Pengaturan',i:Settings}
+          ].map(m => (
+            <button key={m.id} onClick={()=>{setView(m.id); setIsSidebarOpen(false);}} className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all ${view===m.id?'bg-blue-600 text-white shadow-xl translate-x-2':'text-gray-400 hover:bg-gray-50'}`}>
+              <m.i size={20}/> {m.l}
+            </button>
+          ))}
         </nav>
-        <div className="p-6 border-t bg-gray-50"><button onClick={onLogout} className="w-full text-red-600 font-black text-xs py-4 hover:bg-red-50 rounded-2xl border-2 border-red-100 flex items-center justify-center gap-2"><LogOut size={16}/> Logout</button></div>
+        <div className="p-6 border-t bg-gray-50">
+          <button onClick={onLogout} className="w-full text-red-600 font-black text-xs py-4 hover:bg-red-50 rounded-2xl border-2 border-red-100 flex items-center justify-center gap-2 transition-all">
+            <LogOut size={16}/> Logout
+          </button>
+        </div>
       </div>
+      
+      {/* OVERLAY MOBILE */}
       {isSidebarOpen && <div onClick={()=>setIsSidebarOpen(false)} className="fixed inset-0 bg-black/60 z-30 md:hidden backdrop-blur-sm"></div>}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden w-full relative">
-        <header className="bg-white border-b px-10 py-6 flex justify-between items-center flex-shrink-0 shadow-sm"><h2 className="font-black uppercase text-gray-400 text-sm tracking-widest">{view}</h2><div className="font-black text-xs text-blue-600 bg-blue-50 px-4 py-2 rounded-full">ADMIN</div></header>
-        <main className="flex-1 overflow-auto p-6 md:p-10 bg-white w-full">
-          <div className="max-w-[1600px] mx-auto pb-20"> 
-            {view === 'dashboard' && <DashboardHome />}
-            {view === 'schedule' && <AdminSchedule db={db} />}
+
+      {/* MAIN CONTENT AREA */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden w-full relative bg-gray-50">
+        <header className="bg-white border-b px-10 py-6 flex justify-between items-center flex-shrink-0 shadow-sm z-10">
+          <h2 className="font-black uppercase text-gray-400 text-sm tracking-widest">{view}</h2>
+          <div className="font-black text-[10px] text-blue-600 bg-blue-50 px-4 py-2 rounded-full border border-blue-100">ADMINISTRATOR</div>
+        </header>
+        <main className="flex-1 overflow-auto p-0 md:p-0 bg-gray-50 w-full relative">
+          <div className="h-full w-full"> 
+            {view === 'dashboard' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><DashboardHome /></div>}
+            {view === 'schedule' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminSchedule db={db} /></div>}
+            
+            {/* Halaman Keuangan BARU (Full Height) */}
             {view === 'finance' && <AdminFinance db={db} />}
-            {view === 'teachers' && <AdminTeachers db={db} />} 
-            {view === 'students' && <AdminStudents db={db} />}
-            {view === 'settings' && <AdminSettings db={db} />}
+            
+            {view === 'teachers' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminTeachers db={db} /></div>} 
+            {view === 'students' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminStudents db={db} /></div>}
+            {view === 'settings' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminSettings db={db} /></div>}
           </div>
         </main>
       </div>
@@ -200,7 +234,7 @@ const DashboardAdmin = ({ onLogout }) => {
 };
 
 // ==========================================
-// 3. LOGIN PAGE (FIXED PASSWORD LOGIC)
+// 3. LOGIN PAGE
 // ==========================================
 const LoginPage = ({ onLogin }) => {
   const [mode, setMode] = useState('admin');
@@ -216,7 +250,7 @@ const LoginPage = ({ onLogin }) => {
     e.preventDefault();
     if(mode === 'admin') {
       const authSnap = await getDoc(doc(db, "settings", "auth"));
-      const correctPass = authSnap.exists() ? authSnap.data().password : 'admin123'; // Default jika belum set
+      const correctPass = authSnap.exists() ? authSnap.data().password : 'admin123';
       if(pass === correctPass) onLogin('admin', 'Admin');
       else alert("Sandi Salah!");
     } else {
@@ -226,23 +260,32 @@ const LoginPage = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gray-900 flex items-center justify-center p-6">
-      <div className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl overflow-hidden">
-        <div className="bg-blue-600 p-12 text-center text-white"><h1 className="font-black text-5xl italic tracking-tighter">GEMILANG</h1></div>
-        <div className="flex bg-gray-50">
-          <button onClick={()=>setMode('admin')} className={`flex-1 py-6 text-sm font-black uppercase ${mode==='admin'?'bg-white text-blue-600 border-b-4 border-blue-600':'text-gray-400'}`}>Admin</button>
-          <button onClick={()=>setMode('guru')} className={`flex-1 py-6 text-sm font-black uppercase ${mode==='guru'?'bg-white text-green-600 border-b-4 border-green-600':'text-gray-400'}`}>Guru</button>
+    <div className="min-h-screen w-full bg-slate-900 flex items-center justify-center p-6 font-sans">
+      <div className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+        <div className="bg-blue-600 p-12 text-center text-white">
+          <h1 className="font-black text-5xl italic tracking-tighter">GEMILANG</h1>
+          <p className="text-xs font-bold uppercase tracking-widest mt-2 opacity-80">Tutoring Management System</p>
+        </div>
+        <div className="flex bg-gray-50 border-b">
+          <button onClick={()=>setMode('admin')} className={`flex-1 py-6 text-sm font-black uppercase transition-colors ${mode==='admin'?'bg-white text-blue-600 border-b-4 border-blue-600':'text-gray-400 hover:bg-gray-100'}`}>Admin</button>
+          <button onClick={()=>setMode('guru')} className={`flex-1 py-6 text-sm font-black uppercase transition-colors ${mode==='guru'?'bg-white text-green-600 border-b-4 border-green-600':'text-gray-400 hover:bg-gray-100'}`}>Guru</button>
         </div>
         <form onSubmit={submit} className="p-12 space-y-8 bg-white">
           {mode==='admin' ? (
-            <input type="password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full border-2 border-gray-100 p-5 rounded-2xl outline-none focus:border-blue-600 font-bold text-xl text-center" placeholder="Sandi Admin"/>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 ml-4">Kata Sandi</label>
+              <input type="password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full border-4 border-gray-100 p-5 rounded-[2rem] outline-none focus:border-blue-600 font-bold text-xl text-center placeholder:text-gray-300" placeholder="••••••"/>
+            </div>
           ) : (
-            <select value={guru} onChange={e=>setGuru(e.target.value)} className="w-full border-2 border-gray-100 p-5 rounded-2xl font-bold text-xl text-center outline-none">
-              <option value="">-- Pilih Guru --</option>
-              {teachers.map((t, i)=><option key={i} value={t.name}>{t.name}</option>)}
-            </select>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 ml-4">Pilih Akun</label>
+              <select value={guru} onChange={e=>setGuru(e.target.value)} className="w-full border-4 border-gray-100 p-5 rounded-[2rem] font-bold text-xl text-center outline-none focus:border-green-600 bg-white">
+                <option value="">-- Nama Guru --</option>
+                {teachers.map((t, i)=><option key={i} value={t.name}>{t.name}</option>)}
+              </select>
+            </div>
           )}
-          <button className={`w-full text-white py-6 rounded-2xl font-black text-lg uppercase tracking-widest active:scale-95 transition-all ${mode==='admin'?'bg-gray-900 shadow-xl':'bg-green-600 shadow-xl'}`}>Masuk</button>
+          <button className={`w-full text-white py-6 rounded-[2rem] font-black text-lg uppercase tracking-widest active:scale-95 transition-all shadow-xl ${mode==='admin'?'bg-slate-900 hover:bg-black':'bg-green-600 hover:bg-green-700'}`}>Masuk</button>
         </form>
       </div>
     </div>
@@ -252,10 +295,16 @@ const LoginPage = ({ onLogin }) => {
 export default function App() {
   const [page, setPage] = useState('login');
   const [user, setUser] = useState('');
-  useEffect(() => { signInAnonymously(auth); }, []);
-  return (<div className="antialiased w-full min-h-screen bg-white">
-    {page === 'login' && <LoginPage onLogin={(role, name)=>{setUser(name); setPage(role);}}/>}
-    {page === 'admin' && <DashboardAdmin onLogout={()=>setPage('login')}/>}
-    {page === 'guru' && <TeacherDashboard db={db} user={user} onLogout={()=>setPage('login')}/>}
-  </div>);
+  
+  useEffect(() => { 
+    signInAnonymously(auth).catch(console.error); 
+  }, []);
+
+  return (
+    <div className="antialiased w-full min-h-screen bg-white">
+      {page === 'login' && <LoginPage onLogin={(role, name)=>{setUser(name); setPage(role);}}/>}
+      {page === 'admin' && <DashboardAdmin onLogout={()=>setPage('login')}/>}
+      {page === 'guru' && <TeacherDashboard db={db} user={user} onLogout={()=>setPage('login')}/>}
+    </div>
+  );
 }
