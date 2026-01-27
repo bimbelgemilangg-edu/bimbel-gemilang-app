@@ -10,24 +10,23 @@ import {
   AlertTriangle, Settings, MessageCircle, Menu, LogOut, TrendingUp, BarChart3
 } from 'lucide-react';
 
-// --- IMPORT FILE HALAMAN LAMA (Jadwal, Guru, Setting) ---
+// --- IMPORT DASHBOARD LAMA ---
 import AdminSchedule from './pages/admin/Schedule';
 import AdminSettings from './pages/admin/Settings'; 
 import AdminTeachers from './pages/admin/Teachers';
 import TeacherDashboard from './pages/teacher/Dashboard';
 
-// --- 🔴 BYPASS FINANCE (LANGSUNG KE FOLDER) ---
-// Memaksa sistem membaca file index.jsx di dalam folder finance
-import AdminFinance from './pages/admin/finance/index.jsx'; 
+// --- 🔥 KEUANGAN (LANGSUNG KE FOLDER) ---
+// Sesuai susunan file Bapak: pages/admin/finance/index.jsx
+import AdminFinance from './pages/admin/finance/index'; 
 
-// --- 🔴 BYPASS SISWA (LANGSUNG KE FOLDER) ---
-// Memanggil komponen langsung dari folder students
+// --- 🔥 SISWA (LANGSUNG KE FOLDER) ---
+// Sesuai susunan file Bapak: pages/admin/students/...
 import StudentList from './pages/admin/students/StudentList';
 import StudentForm from './pages/admin/students/StudentForm'; 
 import StudentDetail from './pages/admin/students/StudentDetail';
 
-// --- WRAPPER SISWA (PENGGANTI STUDENTS.JSX) ---
-// Komponen pembungkus ini menggantikan peran file Students.jsx yang bermasalah
+// --- WRAPPER SISWA (Pengganti Students.jsx yang dihapus) ---
 function AdminStudentsWrapper({ db }) {
   const [view, setView] = useState('list'); 
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -38,7 +37,7 @@ function AdminStudentsWrapper({ db }) {
   const [classLogs, setClassLogs] = useState([]); 
 
   useEffect(() => {
-    // Menggunakan require untuk menghindari error import
+    // Require digunakan untuk menghindari isu import di Stackblitz
     const u1 = onSnapshot(query(collection(db, "students"), (require('firebase/firestore').orderBy)("createdAt", "desc")), s => setStudents(s.docs.map(d => ({id: d.id, ...d.data()}))));
     const u2 = onSnapshot(collection(db, "invoices"), s => setInvoices(s.docs.map(d => ({id: d.id, ...d.data()}))));
     const u3 = onSnapshot(query(collection(db, "payments"), (require('firebase/firestore').orderBy)("date", "desc")), s => setPayments(s.docs.map(d => ({id: d.id, ...d.data()}))));
@@ -173,7 +172,7 @@ const DashboardHome = () => {
   );
 };
 
-// --- MAIN LAYOUT ADMIN (SUDAH DIPERBAIKI) ---
+// --- MAIN LAYOUT ADMIN ---
 const DashboardAdmin = ({ onLogout }) => {
   const [view, setView] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
@@ -201,7 +200,7 @@ const DashboardAdmin = ({ onLogout }) => {
             {view === 'dashboard' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><DashboardHome /></div>}
             {view === 'schedule' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminSchedule db={db} /></div>}
             
-            {/* --- INI DIA YANG BAPAK CARI: MEMANGGIL FOLDER BARU --- */}
+            {/* --- PEMANGGILAN YANG BENAR --- */}
             {view === 'finance' && <AdminFinance db={db} />}
             {view === 'students' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminStudentsWrapper db={db} /></div>}
             
