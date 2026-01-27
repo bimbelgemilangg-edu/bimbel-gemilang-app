@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 
-// --- PANGGIL FILE BARU DARI FOLDER STUDENTS ---
+// --- INI KUNCINYA: KITA PANGGIL FILE DARI FOLDER BARU ---
 import StudentList from './students/StudentList';
 import StudentForm from './students/StudentForm'; 
 import StudentDetail from './students/StudentDetail'; 
@@ -17,47 +17,23 @@ export default function AdminStudents({ db }) {
   const [classLogs, setClassLogs] = useState([]); 
 
   useEffect(() => {
-    // 1. Ambil Data Siswa
-    const unsub1 = onSnapshot(query(collection(db, "students"), orderBy("createdAt", "desc")), s => 
-      setStudents(s.docs.map(d => ({id: d.id, ...d.data()})))
-    );
-    // 2. Ambil Tagihan
-    const unsub2 = onSnapshot(collection(db, "invoices"), s => 
-      setInvoices(s.docs.map(d => ({id: d.id, ...d.data()})))
-    );
-    // 3. Ambil Pembayaran
-    const unsub3 = onSnapshot(query(collection(db, "payments"), orderBy("date", "desc")), s => 
-      setPayments(s.docs.map(d => ({id: d.id, ...d.data()})))
-    );
-    // 4. Ambil Absensi
-    const unsub4 = onSnapshot(query(collection(db, "class_logs"), orderBy("date", "desc")), s => 
-      setClassLogs(s.docs.map(d => ({id: d.id, ...d.data()})))
-    );
-
-    return () => { unsub1(); unsub2(); unsub3(); unsub4(); };
+    // Load semua data realtime di sini
+    const u1 = onSnapshot(query(collection(db, "students"), orderBy("createdAt", "desc")), s => setStudents(s.docs.map(d => ({id: d.id, ...d.data()}))));
+    const u2 = onSnapshot(collection(db, "invoices"), s => setInvoices(s.docs.map(d => ({id: d.id, ...d.data()}))));
+    const u3 = onSnapshot(query(collection(db, "payments"), orderBy("date", "desc")), s => setPayments(s.docs.map(d => ({id: d.id, ...d.data()}))));
+    const u4 = onSnapshot(query(collection(db, "class_logs"), orderBy("date", "desc")), s => setClassLogs(s.docs.map(d => ({id: d.id, ...d.data()}))));
+    return () => { u1(); u2(); u3(); u4(); };
   }, [db]);
 
   // --- NAVIGASI ---
+  const handleCreate = () => { setSelectedStudent(null); setView('form'); };
+  const handleEdit = (s) => { setSelectedStudent(s); setView('form'); };
+  const handleDetail = (s) => { setSelectedStudent(s); setView('detail'); };
   const handleBack = () => { setView('list'); setSelectedStudent(null); };
-  
-  const handleCreate = () => { 
-    setSelectedStudent(null); 
-    setView('form'); 
-  };
-
-  const handleDetail = (student) => {
-    setSelectedStudent(student);
-    setView('detail');
-  };
-
-  const handleEdit = (student) => {
-    setSelectedStudent(student);
-    setView('form');
-  };
 
   return (
     <div className="w-full">
-      {/* 1. TAMPILAN LIST (TABEL & PDF BARU) */}
+      {/* 1. TAMPILAN LIST (TABEL & PDF) */}
       {view === 'list' && (
         <StudentList 
           db={db} 
@@ -80,7 +56,7 @@ export default function AdminStudents({ db }) {
         />
       )}
 
-      {/* 3. TAMPILAN FORM (PENDAFTARAN LENGKAP + CICILAN) */}
+      {/* 3. TAMPILAN FORM (DAFTAR & EDIT LENGKAP) */}
       {view === 'form' && (
         <StudentForm 
           db={db} 
