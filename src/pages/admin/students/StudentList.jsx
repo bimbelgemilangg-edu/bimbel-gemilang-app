@@ -1,8 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { Search, Printer, FileText, MapPin, Trash2, Edit, X, User } from 'lucide-react';
-
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+import { Search, Printer, MapPin, Trash2, Edit, X, User } from 'lucide-react';
 
 export default function StudentList({ db, students, classLogs, onSelect, onCreate }) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,19 +18,19 @@ export default function StudentList({ db, students, classLogs, onSelect, onCreat
     });
   }, [students, searchTerm, filterLevel, filterGrade]);
 
-  const handleDelete = async (id) => {
-    if(confirm("Hapus Siswa Permanen?")) await deleteDoc(doc(db, "students", id));
-  };
-
   const handlePrint = (mode, data = null) => {
     setPrintData(data);
     setPrintMode(mode);
     setTimeout(() => { window.print(); }, 800);
   };
 
+  const handleDelete = async (id) => {
+    if(confirm("Hapus Siswa Permanen?")) await deleteDoc(doc(db, "students", id));
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in">
-      {/* --- DASHBOARD UI --- */}
+      {/* HEADER DASHBOARD */}
       <div className="bg-white p-8 rounded-[3rem] shadow-xl border border-slate-100 flex flex-col xl:flex-row justify-between items-center gap-6">
         <div className="flex items-center gap-6 w-full xl:w-auto">
           <div className="bg-blue-600 p-5 rounded-[2rem] text-white shadow-lg"><User size={40}/></div>
@@ -48,11 +46,12 @@ export default function StudentList({ db, students, classLogs, onSelect, onCreat
         </div>
       </div>
 
+      {/* GRID SISWA */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredStudents.map(s => (
           <div key={s.id} onClick={()=>onSelect(s)} className="bg-white p-8 rounded-[3rem] border-4 border-slate-50 hover:border-blue-200 shadow-sm hover:shadow-2xl transition-all cursor-pointer relative overflow-hidden group">
             <div className="flex justify-between items-start mb-6">
-              <div className="bg-slate-100 w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-slate-400 font-black text-2xl uppercase">{s.name.substring(0,2)}</div>
+              <div className="bg-slate-100 w-14 h-14 rounded-2xl flex items-center justify-center text-slate-400 font-black text-xl uppercase">{s.name.substring(0,2)}</div>
               <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase ${s.schoolLevel==='SD'?'bg-orange-100 text-orange-600':'bg-purple-100 text-purple-600'}`}>{s.schoolLevel}</span>
             </div>
             <div className="mb-4">
@@ -60,46 +59,74 @@ export default function StudentList({ db, students, classLogs, onSelect, onCreat
               <p className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2"><MapPin size={12}/> {s.schoolName || '-'}</p>
             </div>
             <div className="flex gap-2 relative z-10">
-              <button onClick={(e)=>{e.stopPropagation(); handlePrint('SINGLE', s)}} className="flex-1 bg-slate-100 py-3 rounded-2xl font-black text-[10px] uppercase hover:bg-slate-800 hover:text-white transition-all">Cetak</button>
+              <button onClick={(e)=>{e.stopPropagation(); handlePrint('SINGLE', s)}} className="flex-1 bg-slate-100 py-3 rounded-2xl font-black text-[10px] uppercase hover:bg-slate-800 hover:text-white transition-all">Cetak Profil</button>
               <button onClick={(e)=>{e.stopPropagation(); handleDelete(s.id)}} className="p-3 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all"><Trash2 size={18}/></button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* --- PRINT TEMPLATE (CSS FIXED FOR A4) --- */}
-      <div className="hidden print:block fixed inset-0 bg-white z-[9999] p-0 m-0 w-full h-full overflow-visible">
+      {/* --- CSS KHUSUS PRINT (SOLUSI NEMPEL) --- */}
+      <style>{`
+        @media print {
+          @page { size: A4; margin: 10mm; }
+          body * { visibility: hidden; }
+          .print-area, .print-area * { visibility: visible; }
+          .print-area { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            background: white; 
+            font-family: Arial, sans-serif;
+            color: black;
+          }
+          /* Tabel agar tidak nempel */
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid black; padding: 8px; text-align: left; font-size: 10px; }
+          th { background-color: #f0f0f0; font-weight: bold; text-transform: uppercase; }
+          h1 { font-size: 24px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; text-align: center; }
+          .header-print { text-align: center; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 20px; }
+          
+          /* Grid Profil agar tidak nempel */
+          .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+          .profile-row { border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 5px; display: flex; justify-content: space-between; font-size: 12px; }
+          .label { font-weight: bold; text-transform: uppercase; color: #555; }
+        }
+      `}</style>
+
+      {/* --- TEMPLATE CETAK (HIDDEN DI LAYAR) --- */}
+      <div className="print-area hidden">
         
-        {/* MODE 1: LAPORAN SEMUA SISWA (TABEL) */}
+        {/* FORMAT 1: LAPORAN SEMUA SISWA */}
         {printMode === 'ALL' && (
-          <div className="p-10 w-full">
-            <div className="text-center border-b-4 border-black pb-4 mb-8">
-              <h1 className="text-2xl font-black uppercase tracking-widest">Laporan Data Siswa</h1>
-              <p className="text-sm font-bold uppercase mt-1">Bimbel Gemilang • {new Date().getFullYear()}</p>
+          <div>
+            <div className="header-print">
+              <h1>Laporan Data Siswa</h1>
+              <p>Bimbel Gemilang • Total: {filteredStudents.length} Siswa</p>
             </div>
-            {/* Tabel dengan width 100% dan page-break handling */}
-            <table className="w-full border-collapse border border-black text-[10px]">
+            <table>
               <thead>
-                <tr className="bg-gray-200">
-                  <th className="border border-black p-2 w-8 text-center">No</th>
-                  <th className="border border-black p-2 text-left">Nama Lengkap</th>
-                  <th className="border border-black p-2 text-left">Sekolah</th>
-                  <th className="border border-black p-2 text-center">Jenjang</th>
-                  <th className="border border-black p-2 text-center">Kelas</th>
-                  <th className="border border-black p-2 text-center">Kontak Ortu</th>
-                  <th className="border border-black p-2 text-left">Alamat</th>
+                <tr>
+                  <th style={{width: '5%'}}>No</th>
+                  <th>Nama Lengkap</th>
+                  <th>Asal Sekolah</th>
+                  <th style={{width: '10%'}}>Jenjang</th>
+                  <th style={{width: '10%'}}>Kelas</th>
+                  <th style={{width: '15%'}}>Kontak Ortu</th>
+                  <th>Alamat</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredStudents.map((s, i) => (
-                  <tr key={s.id} style={{pageBreakInside: 'avoid'}}>
-                    <td className="border border-black p-2 text-center">{i+1}</td>
-                    <td className="border border-black p-2 font-bold uppercase">{s.name}</td>
-                    <td className="border border-black p-2 uppercase">{s.schoolName}</td>
-                    <td className="border border-black p-2 text-center">{s.schoolLevel}</td>
-                    <td className="border border-black p-2 text-center">{s.schoolGrade}</td>
-                    <td className="border border-black p-2 text-center">{s.emergencyWAPhone}</td>
-                    <td className="border border-black p-2 truncate max-w-[150px]">{s.address}</td>
+                  <tr key={s.id}>
+                    <td style={{textAlign: 'center'}}>{i+1}</td>
+                    <td style={{fontWeight: 'bold'}}>{s.name}</td>
+                    <td>{s.schoolName}</td>
+                    <td style={{textAlign: 'center'}}>{s.schoolLevel}</td>
+                    <td style={{textAlign: 'center'}}>{s.schoolGrade}</td>
+                    <td>{s.emergencyWAPhone}</td>
+                    <td>{s.address}</td>
                   </tr>
                 ))}
               </tbody>
@@ -107,54 +134,23 @@ export default function StudentList({ db, students, classLogs, onSelect, onCreat
           </div>
         )}
 
-        {/* MODE 2: LAPORAN INDIVIDU (PROFIL) */}
+        {/* FORMAT 2: PROFIL SATU SISWA */}
         {printMode === 'SINGLE' && printData && (
-          <div className="p-10 w-full max-w-[210mm] mx-auto">
-            <div className="border-4 border-black p-8 rounded-[2rem]">
-              <div className="text-center border-b-4 border-black pb-6 mb-8">
-                <h1 className="text-3xl font-black uppercase tracking-tighter mb-2">{printData.name}</h1>
-                <p className="text-sm font-bold uppercase tracking-widest bg-black text-white inline-block px-4 py-1 rounded">Profil Siswa Gemilang</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-x-12 gap-y-4 text-xs mb-8">
-                <div className="flex justify-between border-b border-gray-300 pb-1"><span className="font-bold text-gray-500 uppercase">Panggilan</span> <span className="font-bold uppercase">{printData.nickname}</span></div>
-                <div className="flex justify-between border-b border-gray-300 pb-1"><span className="font-bold text-gray-500 uppercase">Jenis Kelamin</span> <span className="font-bold uppercase">{printData.gender==='L'?'Laki-laki':'Perempuan'}</span></div>
-                <div className="flex justify-between border-b border-gray-300 pb-1"><span className="font-bold text-gray-500 uppercase">Tempat, Tgl Lahir</span> <span className="font-bold uppercase">{printData.pob}, {printData.dob}</span></div>
-                <div className="flex justify-between border-b border-gray-300 pb-1"><span className="font-bold text-gray-500 uppercase">Alamat</span> <span className="font-bold uppercase text-right w-1/2">{printData.address}</span></div>
-                <div className="flex justify-between border-b border-gray-300 pb-1"><span className="font-bold text-gray-500 uppercase">Asal Sekolah</span> <span className="font-bold uppercase">{printData.schoolName}</span></div>
-                <div className="flex justify-between border-b border-gray-300 pb-1"><span className="font-bold text-gray-500 uppercase">Jenjang / Kelas</span> <span className="font-bold uppercase">{printData.schoolLevel} / {printData.schoolGrade}</span></div>
-              </div>
-
-              <h3 className="font-black uppercase text-sm mb-4 border-l-4 border-black pl-2">Data Orang Tua</h3>
-              <div className="grid grid-cols-2 gap-x-12 gap-y-4 text-xs mb-8">
-                <div className="flex justify-between border-b border-gray-300 pb-1"><span className="font-bold text-gray-500 uppercase">Nama Ayah</span> <span className="font-bold uppercase">{printData.fatherName}</span></div>
-                <div className="flex justify-between border-b border-gray-300 pb-1"><span className="font-bold text-gray-500 uppercase">Pekerjaan Ayah</span> <span className="font-bold uppercase">{printData.fatherJob}</span></div>
-                <div className="flex justify-between border-b border-gray-300 pb-1"><span className="font-bold text-gray-500 uppercase">Nama Ibu</span> <span className="font-bold uppercase">{printData.motherName}</span></div>
-                <div className="flex justify-between border-b border-gray-300 pb-1"><span className="font-bold text-gray-500 uppercase">Pekerjaan Ibu</span> <span className="font-bold uppercase">{printData.motherJob}</span></div>
-                <div className="flex justify-between border-b border-gray-300 pb-1 col-span-2"><span className="font-bold text-gray-500 uppercase">Kontak Darurat (WA)</span> <span className="font-black text-lg">{printData.emergencyWAPhone}</span></div>
-              </div>
-
-              <h3 className="font-black uppercase text-sm mb-4 border-l-4 border-black pl-2">Status Akademik</h3>
-              <div className="flex justify-between items-center bg-gray-100 p-4 rounded-xl border border-black">
-                <div><p className="text-[10px] font-bold uppercase text-gray-500">Tanggal Bergabung</p><p className="font-black">{printData.joinedAt}</p></div>
-                <div><p className="text-[10px] font-bold uppercase text-gray-500">Paket Terdaftar</p><p className="font-black">{printData.packageDuration} Bulan</p></div>
-                <div><p className="text-[10px] font-bold uppercase text-gray-500">Status</p><p className="font-black bg-black text-white px-2 rounded">AKTIF</p></div>
-              </div>
+          <div>
+            <div className="header-print">
+              <h1>{printData.name}</h1>
+              <p>PROFIL SISWA • {printData.schoolName}</p>
             </div>
-          </div>
-        )}
-      </div>
 
-      <style>{`
-        @media print {
-          @page { size: A4; margin: 10mm; }
-          body { background: white; -webkit-print-color-adjust: exact; }
-          .print\\:block { position: absolute; top: 0; left: 0; width: 100%; min-height: 100vh; z-index: 9999; background: white; }
-          .print\\:hidden { display: none !important; }
-          /* Mencegah tabel terpotong jelek */
-          tr { page-break-inside: avoid; }
-        }
-      `}</style>
-    </div>
-  );
-}
+            <div className="profile-grid">
+              <div>
+                <h3 style={{fontSize:'14px', borderBottom:'2px solid black', marginBottom:'10px'}}>Biodata Siswa</h3>
+                <div className="profile-row"><span className="label">Panggilan</span> <span>{printData.nickname}</span></div>
+                <div className="profile-row"><span className="label">TTL</span> <span>{printData.pob}, {printData.dob}</span></div>
+                <div className="profile-row"><span className="label">Gender</span> <span>{printData.gender==='L'?'Laki-laki':'Perempuan'}</span></div>
+                <div className="profile-row"><span className="label">Alamat</span> <span>{printData.address}</span></div>
+              </div>
+              <div>
+                <h3 style={{fontSize:'14px', borderBottom:'2px solid black', marginBottom:'10px'}}>Data Orang Tua</h3>
+                <div className="profile-row"><span className="label">Ayah</span> <span>{printData.fatherName} ({printData.fatherJob})</span></div>
+                <div className="profile-row"><span className="label
