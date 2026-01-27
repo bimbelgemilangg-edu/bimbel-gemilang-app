@@ -16,17 +16,13 @@ import AdminSettings from './pages/admin/Settings';
 import AdminTeachers from './pages/admin/Teachers';
 import TeacherDashboard from './pages/teacher/Dashboard';
 
-// --- 🔥 KEUANGAN (LANGSUNG KE FOLDER) ---
-// Sesuai susunan file Bapak: pages/admin/finance/index.jsx
+// --- IMPORT FITUR BARU ---
 import AdminFinance from './pages/admin/finance/index'; 
-
-// --- 🔥 SISWA (LANGSUNG KE FOLDER) ---
-// Sesuai susunan file Bapak: pages/admin/students/...
 import StudentList from './pages/admin/students/StudentList';
 import StudentForm from './pages/admin/students/StudentForm'; 
 import StudentDetail from './pages/admin/students/StudentDetail';
 
-// --- WRAPPER SISWA (Pengganti Students.jsx yang dihapus) ---
+// --- WRAPPER SISWA ---
 function AdminStudentsWrapper({ db }) {
   const [view, setView] = useState('list'); 
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -37,11 +33,18 @@ function AdminStudentsWrapper({ db }) {
   const [classLogs, setClassLogs] = useState([]); 
 
   useEffect(() => {
-    // Require digunakan untuk menghindari isu import di Stackblitz
-    const u1 = onSnapshot(query(collection(db, "students"), (require('firebase/firestore').orderBy)("createdAt", "desc")), s => setStudents(s.docs.map(d => ({id: d.id, ...d.data()}))));
+    // --- PERBAIKAN DI SINI: MENGGUNAKAN orderBy STANDAR ---
+    const qStudents = query(collection(db, "students"), orderBy("createdAt", "desc"));
+    const u1 = onSnapshot(qStudents, s => setStudents(s.docs.map(d => ({id: d.id, ...d.data()}))));
+
     const u2 = onSnapshot(collection(db, "invoices"), s => setInvoices(s.docs.map(d => ({id: d.id, ...d.data()}))));
-    const u3 = onSnapshot(query(collection(db, "payments"), (require('firebase/firestore').orderBy)("date", "desc")), s => setPayments(s.docs.map(d => ({id: d.id, ...d.data()}))));
-    const u4 = onSnapshot(query(collection(db, "class_logs"), (require('firebase/firestore').orderBy)("date", "desc")), s => setClassLogs(s.docs.map(d => ({id: d.id, ...d.data()}))));
+
+    const qPayments = query(collection(db, "payments"), orderBy("date", "desc"));
+    const u3 = onSnapshot(qPayments, s => setPayments(s.docs.map(d => ({id: d.id, ...d.data()}))));
+
+    const qLogs = query(collection(db, "class_logs"), orderBy("date", "desc"));
+    const u4 = onSnapshot(qLogs, s => setClassLogs(s.docs.map(d => ({id: d.id, ...d.data()}))));
+
     return () => { u1(); u2(); u3(); u4(); };
   }, [db]);
 
@@ -200,7 +203,7 @@ const DashboardAdmin = ({ onLogout }) => {
             {view === 'dashboard' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><DashboardHome /></div>}
             {view === 'schedule' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminSchedule db={db} /></div>}
             
-            {/* --- PEMANGGILAN YANG BENAR --- */}
+            {/* FITUR BARU */}
             {view === 'finance' && <AdminFinance db={db} />}
             {view === 'students' && <div className="p-8 md:p-10 max-w-[1600px] mx-auto"><AdminStudentsWrapper db={db} /></div>}
             

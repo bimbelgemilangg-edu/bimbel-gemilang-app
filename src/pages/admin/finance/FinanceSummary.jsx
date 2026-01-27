@@ -3,30 +3,26 @@ import { TrendingUp, TrendingDown, Wallet, AlertCircle } from 'lucide-react';
 
 export default function FinanceSummary({ transactions = [], invoices = [], balance = 0 }) {
   
-  // 1. HITUNG PEMASUKAN (Type: 'income')
+  // LOGIKA FIX: Pisahkan berdasarkan 'type'
   const totalIncome = transactions
-    .filter(t => t.type === 'income')
+    .filter(t => t.type === 'income') // HANYA Pemasukan
     .reduce((acc, t) => acc + (parseInt(t.amount) || 0), 0);
 
-  // 2. HITUNG PENGELUARAN (Type: 'expense')
   const totalExpense = transactions
-    .filter(t => t.type === 'expense')
+    .filter(t => t.type === 'expense') // HANYA Pengeluaran
     .reduce((acc, t) => acc + (parseInt(t.amount) || 0), 0);
 
-  // 3. HITUNG PIUTANG (Total Tagihan Belum Lunas)
   const totalPiutang = invoices
     .reduce((acc, inv) => acc + (parseInt(inv.remainingAmount) || 0), 0);
 
-  // Format Rupiah
   const formatIDR = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
-      {/* KARTU ATAS: RINGKASAN UTAMA */}
+      {/* --- KARTU RINGKASAN --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        
-        {/* SALDO AKTIF */}
+        {/* SALDO (Hitungan: Pemasukan - Pengeluaran) */}
         <div className="bg-slate-900 text-white p-8 rounded-[2rem] shadow-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform"><Wallet size={100}/></div>
           <div className="text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Saldo Kas</div>
@@ -53,7 +49,7 @@ export default function FinanceSummary({ transactions = [], invoices = [], balan
           <div className="text-2xl font-black text-slate-800">{formatIDR(totalExpense)}</div>
         </div>
 
-        {/* PIUTANG (UANG YANG BELUM DIBAYAR SISWA) */}
+        {/* PIUTANG */}
         <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-8 opacity-5 text-orange-500 group-hover:scale-110 transition-transform"><AlertCircle size={100}/></div>
           <div className="flex items-center gap-3 mb-2">
@@ -63,13 +59,12 @@ export default function FinanceSummary({ transactions = [], invoices = [], balan
           <div className="text-2xl font-black text-slate-800">{formatIDR(totalPiutang)}</div>
           <div className="text-[10px] text-orange-500 font-bold mt-1">Uang belum masuk</div>
         </div>
-
       </div>
 
-      {/* TABEL TRANSAKSI TERAKHIR */}
+      {/* --- TABEL TRANSAKSI --- */}
       <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
         <h3 className="font-black text-lg mb-6 flex items-center gap-3 uppercase tracking-widest text-slate-800">
-          <Wallet className="text-blue-600"/> Riwayat Transaksi
+          <Wallet className="text-blue-600"/> Riwayat Transaksi Terakhir
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -92,7 +87,12 @@ export default function FinanceSummary({ transactions = [], invoices = [], balan
                       <div className="text-slate-800">{t.description}</div>
                       <div className="text-[10px] text-slate-400">{t.studentName !== '-' ? t.studentName : 'Umum'}</div>
                     </td>
-                    <td className="p-4"><span className="bg-slate-100 px-3 py-1 rounded-full text-[10px] uppercase tracking-wide">{t.category}</span></td>
+                    <td className="p-4">
+                      {/* Badge Kategori */}
+                      <span className={`px-3 py-1 rounded-full text-[10px] uppercase tracking-wide ${t.type === 'income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                        {t.category}
+                      </span>
+                    </td>
                     <td className={`p-4 text-right font-black ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
                       {t.type === 'income' ? '+' : '-'} {formatIDR(t.amount)}
                     </td>
