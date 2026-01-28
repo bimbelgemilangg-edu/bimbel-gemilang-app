@@ -2,18 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, updateDoc, doc, deleteDoc, getDoc, writeBatch, getDocs } from 'firebase/firestore';
 import { Wallet, TrendingUp, TrendingDown, LayoutDashboard, PlusCircle, Receipt, Eye, EyeOff, CreditCard, Banknote, Trash2, ShieldAlert, Wrench, Download, Printer, FileText } from 'lucide-react';
 
-// --- HELPER SUPER AMAN (ANTI-CRASH) ---
-const safeDate = (val) => {
+// --- 🛡️ FILTER ANTI-CRASH (JANTUNG PERBAIKAN) ---
+// Fungsi ini memaksa semua data jadi Teks agar tidak BLANK PUTIH
+const safeRender = (val) => {
   try {
-    if (!val) return "-";
-    // Jika data dari Firebase Timestamp {seconds, nanoseconds}
-    if (typeof val === 'object' && val.seconds) {
-      return new Date(val.seconds * 1000).toLocaleDateString('id-ID');
-    }
-    // Jika data sudah string "2026-01-26"
+    if (val === null || val === undefined) return "-";
     if (typeof val === 'string') return val;
-    return "-";
-  } catch (e) { return "-"; }
+    if (typeof val === 'number') return val;
+    // Jika Timestamp Firebase
+    if (val.seconds) return new Date(val.seconds * 1000).toLocaleDateString('id-ID');
+    // Jika Objek lain (Penyebab Utama Error #31)
+    return JSON.stringify(val); 
+  } catch (e) {
+    return "Error Data";
+  }
 };
 
 const formatIDR = (n) => {
@@ -30,18 +32,12 @@ const analyzeTransaction = (t) => {
   
   // Deteksi Pemasukan (Prioritas Tinggi)
   if (
-    type === 'income' || 
-    type === 'pemasukan' || 
-    cat === 'pendaftaran' || 
-    cat === 'spp' || 
-    cat === 'daftar ulang' || 
-    desc.includes('pembayaran') || 
-    desc.includes('pelunasan')
+    type === 'income' || type === 'pemasukan' || 
+    cat === 'pendaftaran' || cat === 'spp' || cat === 'daftar ulang' || 
+    desc.includes('pembayaran') || desc.includes('pelunasan')
   ) {
     return 'income'; // Hijau
   }
-  
-  // Sisanya Pengeluaran
   return 'expense'; // Merah
 };
 
@@ -51,7 +47,7 @@ export default function AdminFinance({ db }) {
   const [invoices, setInvoices] = useState([]);
   const [showBalance, setShowBalance] = useState(true);
 
-  // LOAD DATA
+  // LOAD DATA AMAN
   useEffect(() => {
     if (!db) return;
     try {
@@ -166,9 +162,10 @@ export default function AdminFinance({ db }) {
                           {String(t.method).toLowerCase().includes('bank') ? <CreditCard size={18}/> : <Banknote size={18}/>}
                         </div>
                         <div>
-                          <p className="font-black text-slate-800 text-sm uppercase">{t.description}</p>
+                          {/* 🛡️ PENGGUNAAN safeRender DI SINI */}
+                          <p className="font-black text-slate-800 text-sm uppercase">{safeRender(t.description)}</p>
                           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                            {safeDate(t.date)} • {t.method || 'Cash'} • {t.category}
+                            {safeRender(t.date)} • {safeRender(t.method)} • {safeRender(t.category)}
                           </p>
                         </div>
                       </div>
@@ -225,12 +222,12 @@ function FinanceFormInput({ db }) {
     <div className="max-w-2xl mx-auto bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100 animate-in zoom-in">
       <form onSubmit={save} className="space-y-6">
         <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-2">
-          <button type="button" onClick={()=>setF({...f, type:'income'})} className={`flex-1 py-4 rounded-xl font-black text-xs uppercase ${f.type==='income'?'bg-green-600 text-white':'text-slate-400'}`}>Uang Masuk</button>
-          <button type="button" onClick={()=>setF({...f, type:'expense'})} className={`flex-1 py-4 rounded-xl font-black text-xs uppercase ${f.type==='expense'?'bg-red-600 text-white':'text-slate-400'}`}>Uang Keluar</button>
+          <button type="button" onClick={()=>setF({...f, type:'income'})} className={`flex-1 py-4 rounded-xl font-black text-xs uppercase ${f.type==='income'?'bg-green-600 text-white shadow-lg':'text-slate-400'}`}>Uang Masuk</button>
+          <button type="button" onClick={()=>setF({...f, type:'expense'})} className={`flex-1 py-4 rounded-xl font-black text-xs uppercase ${f.type==='expense'?'bg-red-600 text-white shadow-lg':'text-slate-400'}`}>Uang Keluar</button>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <button type="button" onClick={()=>setF({...f, method:'Cash'})} className={`py-4 rounded-xl font-black text-xs uppercase border-2 ${f.method==='Cash'?'border-orange-500 bg-orange-500 text-white':'border-slate-100 text-slate-400'}`}>Tunai</button>
-          <button type="button" onClick={()=>setF({...f, method:'Bank'})} className={`py-4 rounded-xl font-black text-xs uppercase border-2 ${f.method==='Bank'?'border-blue-600 bg-blue-600 text-white':'border-slate-100 text-slate-400'}`}>Bank</button>
+          <button type="button" onClick={()=>setF({...f, method:'Cash'})} className={`py-4 rounded-xl font-black text-[10px] uppercase border-2 ${f.method==='Cash'?'border-orange-500 bg-orange-500 text-white shadow-md':'border-slate-100 text-slate-400'}`}>💵 Tunai</button>
+          <button type="button" onClick={()=>setF({...f, method:'Bank'})} className={`py-4 rounded-xl font-black text-[10px] uppercase border-2 ${f.method==='Bank'?'border-blue-600 bg-blue-600 text-white shadow-md':'border-slate-100 text-slate-400'}`}>🏦 Bank</button>
         </div>
         <input type="number" value={f.amount} onChange={e=>setF({...f, amount:e.target.value})} className="w-full p-6 bg-slate-50 border-4 border-slate-100 rounded-[2.5rem] font-black text-4xl text-center outline-none" placeholder="0" required />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -261,7 +258,7 @@ function FinanceInvoices({ db, invoices = [] }) {
       <h2 className="font-black text-slate-800 text-xl mb-4 uppercase italic">Piutang Aktif</h2>
       {invoices.filter(i=>i.remainingAmount>0).map((inv, i) => (
         <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 flex justify-between items-center shadow-md">
-          <div className="flex-1"><p className="font-black text-slate-800 uppercase text-lg">{inv.studentName}</p><p className="text-[10px] text-slate-400 font-bold uppercase">Tempo: {safeDate(inv.dueDate)}</p></div>
+          <div className="flex-1"><p className="font-black text-slate-800 uppercase text-lg">{safeRender(inv.studentName)}</p><p className="text-[10px] text-slate-400 font-bold uppercase">Tempo: {safeDate(inv.dueDate)}</p></div>
           <div className="text-right px-10"><p className="text-[10px] font-black text-red-400 uppercase">Sisa</p><p className="text-2xl font-black text-red-600">{formatIDR(inv.remainingAmount)}</p></div>
           <button onClick={()=>{const v=prompt("Bayar:"); if(v) handlePay(inv,v)}} className="bg-slate-900 text-white px-8 py-3 rounded-2xl font-black text-[10px] uppercase">BAYAR</button>
         </div>
