@@ -9,9 +9,11 @@ const safeRender = (val) => {
     if (val === null || val === undefined) return "-";
     if (typeof val === 'string') return val;
     if (typeof val === 'number') return val;
-    // Jika Timestamp Firebase
-    if (val.seconds) return new Date(val.seconds * 1000).toLocaleDateString('id-ID');
-    // Jika Objek lain (Penyebab Utama Error #31)
+    // Jika Timestamp Firebase (Penyebab Utama Error #31)
+    if (typeof val === 'object' && val.seconds) {
+      return new Date(val.seconds * 1000).toLocaleDateString('id-ID');
+    }
+    // Jika Objek lain
     return JSON.stringify(val); 
   } catch (e) {
     return "Error Data";
@@ -197,7 +199,7 @@ export default function AdminFinance({ db }) {
   );
 }
 
-// --- SUB COMPONENTS ---
+// --- SUB COMPONENTS (LANGSUNG DIDALAM SINI AGAR TIDAK HILANG) ---
 
 function FinanceFormInput({ db }) {
   const [f, setF] = useState({ type: 'income', method: 'Cash', amount: '', desc: '', cat: 'Lainnya' });
