@@ -2,16 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { ShieldAlert } from 'lucide-react';
 
-// IMPORT SEMUA FILE ANAK (4 FILE)
+// IMPORT ANAK-ANAKNYA
 import FinanceSummary from './FinanceSummary';
 import FinanceInput from './FinanceInput';
 import FinanceInvoices from './FinanceInvoices';
-import FinanceReport from './FinanceReport'; // <-- TAMBAHAN BARU
+import FinanceReport from './FinanceReport';
 
 export default function AdminFinance({ db }) {
-  // Tambahkan tab 'report'
   const [activeTab, setActiveTab] = useState('summary');
-  
   const [transactions, setTransactions] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [students, setStudents] = useState([]);
@@ -19,31 +17,24 @@ export default function AdminFinance({ db }) {
   useEffect(() => {
     if (!db) return;
 
-    // 1. Ambil Data Transaksi
-    const q1 = query(collection(db, "payments"), orderBy("createdAt", "desc"));
-    const unsub1 = onSnapshot(q1, (snap) => {
-      setTransactions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-
-    // 2. Ambil Data Tagihan
-    const q2 = query(collection(db, "invoices"), orderBy("createdAt", "desc"));
-    const unsub2 = onSnapshot(q2, (snap) => {
-      setInvoices(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-
-    // 3. Ambil Data Siswa (Penting untuk Input)
-    const q3 = query(collection(db, "students"), orderBy("name", "asc"));
-    const unsub3 = onSnapshot(q3, (snap) => {
-      setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
+    // Load Data Realtime
+    const unsub1 = onSnapshot(query(collection(db, "payments"), orderBy("createdAt", "desc")), (s) => 
+      setTransactions(s.docs.map(d => ({id: d.id, ...d.data()})))
+    );
+    const unsub2 = onSnapshot(query(collection(db, "invoices"), orderBy("createdAt", "desc")), (s) => 
+      setInvoices(s.docs.map(d => ({id: d.id, ...d.data()})))
+    );
+    const unsub3 = onSnapshot(query(collection(db, "students"), orderBy("name", "asc")), (s) => 
+      setStudents(s.docs.map(d => ({id: d.id, ...d.data()})))
+    );
 
     return () => { unsub1(); unsub2(); unsub3(); };
   }, [db]);
 
-  // Hitung Total Saldo untuk dikirim ke Summary & Report
-  const balance = transactions.reduce((acc, curr) => {
-    const amt = Number(curr.amount) || 0;
-    return curr.type === 'income' ? acc + amt : acc - amt;
+  // Hitung Saldo
+  const balance = transactions.reduce((acc, t) => {
+    const amt = parseInt(t.amount) || 0;
+    return t.type === 'income' ? acc + amt : acc - amt;
   }, 0);
 
   return (
@@ -54,44 +45,26 @@ export default function AdminFinance({ db }) {
           <div className="bg-blue-600 p-2 rounded-lg text-white"><ShieldAlert size={20}/></div>
           <h1 className="font-black text-xl italic text-slate-800 uppercase tracking-tighter">KEUANGAN</h1>
         </div>
-        
-        {/* MENU TAB NAVIGATION */}
         <div className="flex bg-slate-100 p-1 rounded-2xl gap-1 overflow-x-auto">
           {[
-            {id: 'summary', label: 'Dashboard'},
-            {id: 'input', label: 'Catat'},
-            {id: 'invoices', label: 'Piutang'},
-            {id: 'report', label: 'Laporan'} // <-- MENU BARU
-          ].map(t => (
-            <button 
-              key={t.id} 
-              onClick={()=>setActiveTab(t.id)} 
-              className={`px-4 py-2 rounded-xl font-bold text-xs uppercase whitespace-nowrap transition-all ${activeTab===t.id ? 'bg-white text-blue-600 shadow-md':'text-slate-400'}`}
-            >
-              {t.label}
+            {id:'summary', l:'Dashboard'},
+            {id:'input', l:'Catat'},
+            {id:'invoices', l:'Piutang'},
+            {id:'report', l:'Laporan'}
+          ].map(m => (
+            <button key={m.id} onClick={()=>setActiveTab(m.id)} className={`px-4 py-2 rounded-xl font-bold text-xs uppercase whitespace-nowrap transition-all ${activeTab===m.id?'bg-white text-blue-600 shadow-md':'text-slate-400'}`}>
+              {m.l}
             </button>
           ))}
         </div>
       </div>
 
-      {/* CONTENT AREA */}
+      {/* BODY - PANGGIL FILE ANAK DISINI */}
       <div className="flex-1 p-6 overflow-y-auto">
-        {activeTab === 'summary' && (
-          <FinanceSummary transactions={transactions} invoices={invoices} balance={balance} db={db} />
-        )}
-
-        {activeTab === 'input' && (
-          <FinanceInput db={db} students={students} />
-        )}
-
-        {activeTab === 'invoices' && (
-          <FinanceInvoices db={db} invoices={invoices} />
-        )}
-
-        {/* VIEW BARU: LAPORAN */}
-        {activeTab === 'report' && (
-          <FinanceReport transactions={transactions} balance={balance} />
-        )}
+        {activeTab === 'summary' && <FinanceSummary db={db} transactions={transactions} invoices={invoices} balance={balance} />}
+        {activeTab === 'input' && <FinanceInput db={db} students={students} />}
+        {activeTab === 'invoices' && <FinanceInvoices db={db} invoices={invoices} />}
+        {activeTab === 'report' && <FinanceReport transactions={transactions} balance={balance} />}
       </div>
     </div>
   );
