@@ -24,7 +24,7 @@ import StudentList from './pages/admin/students/StudentList';
 import StudentForm from './pages/admin/students/StudentForm'; 
 import StudentDetail from './pages/admin/students/StudentDetail';
 
-// --- WRAPPER SISWA (PENGGANTI FILE STUDENTS.JSX YANG BANDEL) ---
+// --- WRAPPER SISWA (PENGGANTI FILE STUDENTS.JSX) ---
 function AdminStudentsWrapper({ db }) {
   const [view, setView] = useState('list'); 
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -35,16 +35,21 @@ function AdminStudentsWrapper({ db }) {
   const [classLogs, setClassLogs] = useState([]); 
 
   useEffect(() => {
-    // Load Data Realtime
+    // --- PERBAIKAN: HAPUS 'require' YANG BIKIN ERROR ---
+    
+    // 1. Data Siswa
     const qStudents = query(collection(db, "students"), orderBy("createdAt", "desc"));
     const u1 = onSnapshot(qStudents, s => setStudents(s.docs.map(d => ({id: d.id, ...d.data()}))));
 
+    // 2. Data Invoice
     const qInvoices = collection(db, "invoices");
     const u2 = onSnapshot(qInvoices, s => setInvoices(s.docs.map(d => ({id: d.id, ...d.data()}))));
 
+    // 3. Data Pembayaran
     const qPayments = query(collection(db, "payments"), orderBy("date", "desc"));
     const u3 = onSnapshot(qPayments, s => setPayments(s.docs.map(d => ({id: d.id, ...d.data()}))));
 
+    // 4. Data Log Kelas
     const qLogs = query(collection(db, "class_logs"), orderBy("date", "desc"));
     const u4 = onSnapshot(qLogs, s => setClassLogs(s.docs.map(d => ({id: d.id, ...d.data()}))));
 
@@ -219,7 +224,10 @@ const DashboardAdmin = ({ onLogout }) => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row w-full overflow-x-hidden font-sans">
-      <div className="md:hidden bg-white p-5 border-b flex justify-between items-center z-30 shadow-sm"><h1 className="font-black text-2xl text-blue-600 tracking-tighter">GEMILANG</h1><button onClick={()=>setIsSidebarOpen(!isSidebarOpen)} className="p-2 bg-gray-100 rounded-lg"><Menu/></button></div>
+      <div className="md:hidden bg-white p-5 border-b flex justify-between items-center z-30 shadow-sm">
+        <h1 className="font-black text-2xl text-blue-600 tracking-tighter">GEMILANG</h1>
+        <button onClick={()=>setIsSidebarOpen(!isSidebarOpen)} className="p-2 bg-gray-100 rounded-lg"><Menu/></button>
+      </div>
       <div className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform z-40 w-72 bg-white border-r h-full flex flex-col shadow-xl md:shadow-none`}>
         <div className="p-8 border-b hidden md:block text-center"><h1 className="font-black text-blue-600 text-3xl italic tracking-tighter">GEMILANG</h1></div>
         <nav className="p-6 space-y-2 flex-1 overflow-y-auto">
