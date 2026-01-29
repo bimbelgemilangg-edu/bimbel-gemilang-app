@@ -4,13 +4,12 @@ import { getFirestore, collection, onSnapshot, query, where, getDoc, doc } from 
 import { getAuth, signInAnonymously } from 'firebase/auth';
 import { Bell, Calendar, Users, GraduationCap, Settings, LogOut, Menu } from 'lucide-react';
 
-// --- IMPORT HALAMAN OPERASIONAL ---
+// --- IMPORT HALAMAN (Pastikan jalurnya sesuai folder src) ---
 import AdminSchedule from './pages/admin/Schedule';
 import AdminTeachers from './pages/admin/Teachers';
 import AdminSettings from './pages/admin/Settings';
 import AdminStudentsIndex from './pages/admin/students/index'; 
 
-// --- KONFIGURASI FIREBASE ---
 const firebaseConfig = {
   apiKey: "AIzaSyCpwCjxcKwVKd0qBnezgRPV2MuZe1avVvQ",
   authDomain: "gemilangsystem.firebaseapp.com",
@@ -24,33 +23,24 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// --- DASHBOARD BERANDA ---
 const DashboardHome = () => (
   <div className="p-20 bg-white rounded-[3.5rem] border-4 border-dashed border-slate-200 text-center animate-in fade-in">
     <h2 className="text-4xl font-black text-slate-800 uppercase tracking-tighter">BIMBEL GEMILANG</h2>
-    <p className="text-slate-400 font-bold text-xs mt-2 uppercase tracking-widest">Sistem Manajemen Berhasil Dipulihkan</p>
-    <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="p-6 bg-blue-50 rounded-3xl"><h3 className="font-black text-blue-600">JADWAL</h3><p className="text-[10px] font-bold text-blue-400">AKTIF</p></div>
-      <div className="p-6 bg-green-50 rounded-3xl"><h3 className="font-black text-green-600">SISWA</h3><p className="text-[10px] font-bold text-green-400">AKTIF</p></div>
-      <div className="p-6 bg-purple-50 rounded-3xl"><h3 className="font-black text-purple-600">GURU</h3><p className="text-[10px] font-bold text-purple-400">AKTIF</p></div>
-    </div>
+    <p className="text-slate-400 font-bold text-xs mt-2 uppercase tracking-widest text-center">Sistem Berhasil Terhubung</p>
   </div>
 );
 
-// --- LAYOUT UTAMA ---
 const DashboardAdmin = ({ onLogout }) => {
   const [view, setView] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row font-sans">
-      {/* Mobile Header */}
       <div className="md:hidden bg-white p-5 border-b flex justify-between items-center shadow-sm">
         <h1 className="font-black text-2xl text-blue-600 italic">GEMILANG</h1>
         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 bg-slate-100 rounded-lg"><Menu/></button>
       </div>
 
-      {/* Sidebar - FINANCE SUDAH MATI TOTAL */}
       <nav className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform z-40 w-72 bg-white border-r h-screen flex flex-col p-8`}>
         <h1 className="font-black text-3xl text-blue-600 mb-12 text-center italic tracking-tighter">GEMILANG</h1>
         <div className="space-y-2 flex-1">
@@ -69,7 +59,6 @@ const DashboardAdmin = ({ onLogout }) => {
         <button onClick={onLogout} className="mt-auto w-full text-red-500 font-black text-xs uppercase p-4 flex items-center justify-center gap-2 hover:bg-red-50 rounded-2xl transition-all"><LogOut size={18}/> Logout</button>
       </nav>
 
-      {/* Content Area */}
       <main className="flex-1 p-6 md:p-10 overflow-auto">
         <div className="max-w-6xl mx-auto">
           {view === 'dashboard' && <DashboardHome />}
@@ -83,7 +72,6 @@ const DashboardAdmin = ({ onLogout }) => {
   );
 };
 
-// --- LOGIN PAGE ---
 const LoginPage = ({ onLogin }) => {
   const [pass, setPass] = useState('');
   const submit = async (e) => {
