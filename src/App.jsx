@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, onSnapshot, query, where } from 'firebase/firestore';
+import { getFirestore, collection, onSnapshot } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
-import { Bell, Calendar, Users, GraduationCap, Settings, LogOut } from 'lucide-react';
+import { Bell, Calendar, Users, GraduationCap, LogOut } from 'lucide-react';
 
-// IMPORT HANYA 3 HALAMAN UTAMA
+// IMPORT HANYA YANG MASIH ADA
 import AdminSchedule from './pages/admin/Schedule';
 import AdminTeachers from './pages/admin/Teachers';
 import AdminStudentsIndex from './pages/admin/students/index'; 
@@ -30,35 +30,34 @@ export default function App() {
 
   if (!isLogin) return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
-      <div className="bg-white p-10 rounded-[2rem] text-center shadow-2xl">
-        <h1 className="text-4xl font-black italic mb-6 text-blue-600">GEMILANG</h1>
-        <button onClick={() => setIsLogin(true)} className="bg-slate-900 text-white px-10 py-4 rounded-xl font-bold uppercase tracking-widest">Masuk Sistem</button>
+      <div className="bg-white p-12 rounded-[3rem] text-center shadow-2xl">
+        <h1 className="text-5xl font-black italic mb-8 text-blue-600 tracking-tighter">GEMILANG</h1>
+        <button onClick={() => setIsLogin(true)} className="bg-slate-900 text-white px-12 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-black transition-all">Masuk Sistem</button>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* SIDEBAR BERSIH TOTAL */}
-      <nav className="w-72 bg-white border-r h-screen flex flex-col p-6 space-y-2">
-        <h1 className="font-black text-2xl text-blue-600 mb-10 text-center italic">GEMILANG</h1>
+    <div className="min-h-screen bg-gray-50 flex font-sans">
+      {/* SIDEBAR - FINANCE SUDAH DIHAPUS DARI DAFTAR INI */}
+      <nav className="w-80 bg-white border-r h-screen flex flex-col p-8 space-y-2">
+        <h1 className="font-black text-3xl text-blue-600 mb-12 text-center italic tracking-tighter">GEMILANG</h1>
         {[
           {id:'dashboard', l:'Beranda', i:Bell},
           {id:'schedule', l:'Jadwal', i:Calendar},
           {id:'students', l:'Siswa', i:GraduationCap},
           {id:'teachers', l:'Guru', i:Users}
         ].map(m => (
-          <button key={m.id} onClick={() => setView(m.id)} className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-black text-xs uppercase transition-all ${view === m.id ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}>
-            <m.i size={18}/> {m.l}
+          <button key={m.id} onClick={() => setView(m.id)} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-xs uppercase transition-all ${view === m.id ? 'bg-blue-600 text-white shadow-xl' : 'text-slate-400 hover:bg-slate-50'}`}>
+            <m.i size={20}/> {m.l}
           </button>
         ))}
-        <button onClick={() => setIsLogin(false)} className="mt-auto w-full text-red-500 font-bold p-4 flex items-center gap-2"><LogOut size={18}/> Logout</button>
+        <button onClick={() => setIsLogin(false)} className="mt-auto w-full text-red-500 font-black text-xs uppercase p-4 flex items-center justify-center gap-2 hover:bg-red-50 rounded-2xl transition-all"><LogOut size={18}/> Keluar</button>
       </nav>
 
-      {/* KONTEN */}
       <main className="flex-1 p-10 overflow-auto">
         <div className="max-w-6xl mx-auto">
-          {view === 'dashboard' && <div className="p-20 bg-white rounded-[3rem] border-4 border-dashed border-slate-200 text-center"><h2 className="text-2xl font-black text-slate-300">SELAMAT DATANG DI BIMBEL GEMILANG</h2><p className="text-slate-400 font-bold uppercase text-[10px] mt-2">Sistem Manajemen Operasional</p></div>}
+          {view === 'dashboard' && <div className="p-20 bg-white rounded-[3.5rem] border-4 border-dotted border-slate-200 text-center"><h2 className="text-3xl font-black text-slate-300 uppercase tracking-tighter">Selamat Datang di Gemilang</h2><p className="text-slate-400 font-bold text-[10px] mt-2 uppercase tracking-widest">Sistem Manajemen Pendidikan v2.0</p></div>}
           {view === 'schedule' && <AdminSchedule db={db} />}
           {view === 'students' && <AdminStudentsIndex db={db} />}
           {view === 'teachers' && <AdminTeachers db={db} />}
