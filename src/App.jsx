@@ -1,68 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, onSnapshot } from 'firebase/firestore';
-import { getAuth, signInAnonymously } from 'firebase/auth';
-import { Bell, Calendar, Users, GraduationCap, LogOut } from 'lucide-react';
-
-// IMPORT HANYA YANG MASIH ADA
-import AdminSchedule from './pages/admin/Schedule';
-import AdminTeachers from './pages/admin/Teachers';
-import AdminStudentsIndex from './pages/admin/students/index'; 
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCpwCjxcKwVKd0qBnezgRPV2MuZe1avVvQ",
-  authDomain: "gemilangsystem.firebaseapp.com",
-  projectId: "gemilangsystem",
-  storageBucket: "gemilangsystem.firebasestorage.app",
-  messagingSenderId: "1078433073773",
-  appId: "1:1078433073773:web:cdb13ae553efbc1d1bcd64"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+import React from 'react';
 
 export default function App() {
-  const [view, setView] = useState('dashboard');
-  const [isLogin, setIsLogin] = useState(false);
-
-  useEffect(() => { signInAnonymously(auth); }, []);
-
-  if (!isLogin) return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
-      <div className="bg-white p-12 rounded-[3rem] text-center shadow-2xl">
-        <h1 className="text-5xl font-black italic mb-8 text-blue-600 tracking-tighter">GEMILANG</h1>
-        <button onClick={() => setIsLogin(true)} className="bg-slate-900 text-white px-12 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-black transition-all">Masuk Sistem</button>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-gray-50 flex font-sans">
-      {/* SIDEBAR - FINANCE SUDAH DIHAPUS DARI DAFTAR INI */}
-      <nav className="w-80 bg-white border-r h-screen flex flex-col p-8 space-y-2">
-        <h1 className="font-black text-3xl text-blue-600 mb-12 text-center italic tracking-tighter">GEMILANG</h1>
-        {[
-          {id:'dashboard', l:'Beranda', i:Bell},
-          {id:'schedule', l:'Jadwal', i:Calendar},
-          {id:'students', l:'Siswa', i:GraduationCap},
-          {id:'teachers', l:'Guru', i:Users}
-        ].map(m => (
-          <button key={m.id} onClick={() => setView(m.id)} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-xs uppercase transition-all ${view === m.id ? 'bg-blue-600 text-white shadow-xl' : 'text-slate-400 hover:bg-slate-50'}`}>
-            <m.i size={20}/> {m.l}
-          </button>
-        ))}
-        <button onClick={() => setIsLogin(false)} className="mt-auto w-full text-red-500 font-black text-xs uppercase p-4 flex items-center justify-center gap-2 hover:bg-red-50 rounded-2xl transition-all"><LogOut size={18}/> Keluar</button>
-      </nav>
-
-      <main className="flex-1 p-10 overflow-auto">
-        <div className="max-w-6xl mx-auto">
-          {view === 'dashboard' && <div className="p-20 bg-white rounded-[3.5rem] border-4 border-dotted border-slate-200 text-center"><h2 className="text-3xl font-black text-slate-300 uppercase tracking-tighter">Selamat Datang di Gemilang</h2><p className="text-slate-400 font-bold text-[10px] mt-2 uppercase tracking-widest">Sistem Manajemen Pendidikan v2.0</p></div>}
-          {view === 'schedule' && <AdminSchedule db={db} />}
-          {view === 'students' && <AdminStudentsIndex db={db} />}
-          {view === 'teachers' && <AdminTeachers db={db} />}
-        </div>
-      </main>
+    <div style={{ 
+      height: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column',
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      backgroundColor: '#f8fafc',
+      fontFamily: 'sans-serif'
+    }}>
+      <div style={{
+        padding: '50px',
+        backgroundColor: 'white',
+        borderRadius: '40px',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.1)',
+        textAlign: 'center',
+        border: '8px solid #2563eb'
+      }}>
+        <h1 style={{ 
+          fontSize: '60px', 
+          fontWeight: '900', 
+          color: '#1e293b',
+          margin: 0,
+          letterSpacing: '-2px'
+        }}>
+          WILDAN <span style={{ color: '#2563eb' }}>BIMBEL</span>
+        </h1>
+        <p style={{ 
+          marginTop: '20px', 
+          fontWeight: 'bold', 
+          color: '#64748b',
+          textTransform: 'uppercase',
+          letterSpacing: '2px'
+        }}>
+          Status Sistem: <span style={{ color: '#059669' }}>TERKONEKSI</span>
+        </p>
+      </div>
+      <p style={{ marginTop: '30px', color: '#cbd5e1', fontSize: '12px' }}>
+        Jika Anda melihat layar ini, berarti server Anda AKTIF.
+      </p>
     </div>
   );
 }
