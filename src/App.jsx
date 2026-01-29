@@ -1,17 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore';
+import { getFirestore, collection, onSnapshot, query, where } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
-import { Bell, Clock, Users, GraduationCap, Calendar, Settings, Menu, LogOut, TrendingUp, BarChart3 } from 'lucide-react';
+import { Bell, Calendar, Users, GraduationCap, Settings, LogOut } from 'lucide-react';
 
-// --- IMPORT HALAMAN (HANYA OPERASIONAL) ---
+// IMPORT HANYA 3 HALAMAN UTAMA
 import AdminSchedule from './pages/admin/Schedule';
-import AdminSettings from './pages/admin/Settings'; 
 import AdminTeachers from './pages/admin/Teachers';
-import TeacherDashboard from './pages/teacher/Dashboard';
 import AdminStudentsIndex from './pages/admin/students/index'; 
 
-// --- KONFIGURASI FIREBASE ---
 const firebaseConfig = {
   apiKey: "AIzaSyCpwCjxcKwVKd0qBnezgRPV2MuZe1avVvQ",
   authDomain: "gemilangsystem.firebaseapp.com",
@@ -25,181 +22,48 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// --- DASHBOARD HOME (VERSI STERIL) ---
-const DashboardHome = () => {
-  const [stats, setStats] = useState({ siswa: 0, sd: 0, smp: 0, guruHadir: 0 });
-  const [todaySchedules, setTodaySchedules] = useState([]);
-  const [isBellRinging, setIsBellRinging] = useState(false);
-  const audioContextRef = useRef(null);
-  const oscillatorRef = useRef(null);
-
-  const startBell = () => {
-    if (isBellRinging) return;
-    setIsBellRinging(true);
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const carrier = ctx.createOscillator();
-    carrier.frequency.value = 880;
-    carrier.type = 'square';
-    carrier.connect(ctx.destination);
-    carrier.start();
-    audioContextRef.current = ctx;
-    oscillatorRef.current = carrier;
-  };
-
-  const stopBell = () => {
-    if (!isBellRinging) return;
-    setIsBellRinging(false);
-    oscillatorRef.current?.stop();
-    audioContextRef.current?.close();
-  };
-
-  useEffect(() => {
-    const dateNow = new Date();
-    const dateStr = dateNow.toISOString().split('T')[0];
-    const dayName = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][dateNow.getDay()];
-    
-    // 1. Ambil Stats Siswa (TANPA KEUANGAN)
-    const unsubStudents = onSnapshot(collection(db, "students"), s => {
-      const all = s.docs.map(d => d.data());
-      setStats(prev => ({ 
-        ...prev, 
-        siswa: s.size, 
-        sd: all.filter(x => x.schoolLevel === 'SD').length, 
-        smp: all.filter(x => x.schoolLevel === 'SMP').length 
-      }));
-    });
-
-    // 2. Ambil Kehadiran Guru
-    const unsubLogs = onSnapshot(query(collection(db, "class_logs"), where("date", "==", dateStr)), s => {
-      setStats(prev => ({ ...prev, guruHadir: s.size }));
-    });
-
-    // 3. Ambil Jadwal Hari Ini
-    const unsubSched = onSnapshot(collection(db, "schedules"), snap => {
-      setTodaySchedules(snap.docs.map(d => d.data()).filter(s => 
-        (s.type === 'routine' && s.day === dayName) || (s.type === 'booking' && s.date === dateStr)
-      ));
-    });
-
-    return () => { unsubStudents(); unsubLogs(); unsubSched(); };
-  }, []);
-
-  return (
-    <div className="space-y-8 animate-in fade-in">
-      {/* Kartu Statistik */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-3xl border shadow-sm">
-          <Users className="text-blue-500 mb-2"/><div className="text-3xl font-black">{stats.siswa}</div>
-          <div className="text-[10px] font-bold text-gray-400 uppercase">Siswa Aktif</div>
-        </div>
-        <div className="bg-white p-6 rounded-3xl border shadow-sm">
-          <TrendingUp className="text-green-500 mb-2"/><div className="text-3xl font-black">{stats.sd}</div>
-          <div className="text-[10px] font-bold text-gray-400 uppercase">Siswa SD</div>
-        </div>
-        <div className="bg-white p-6 rounded-3xl border shadow-sm">
-          <TrendingUp className="text-purple-500 mb-2"/><div className="text-3xl font-black">{stats.smp}</div>
-          <div className="text-[10px] font-bold text-gray-400 uppercase">Siswa SMP</div>
-        </div>
-        <div className="bg-white p-6 rounded-3xl border shadow-sm">
-          <Calendar className="text-orange-500 mb-2"/><div className="text-3xl font-black">{stats.guruHadir}</div>
-          <div className="text-[10px] font-bold text-gray-400 uppercase">Kelas Hari Ini</div>
-        </div>
-      </div>
-
-      {/* Bel Sekolah */}
-      <div className="w-full bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6">
-        <div><h2 className="text-3xl font-black flex items-center gap-4"><Bell className={isBellRinging?"animate-bounce text-yellow-400":""}/> BEL SEKOLAH</h2></div>
-        <button onMouseDown={startBell} onMouseUp={stopBell} onMouseLeave={stopBell} className="bg-red-600 hover:bg-red-700 text-white px-16 py-6 rounded-2xl font-black text-2xl shadow-2xl active:scale-95 transition-all">BUNYIKAN</button>
-      </div>
-
-      {/* Jadwal Hari Ini - Widget Tunggal */}
-      <div className="bg-white p-8 rounded-3xl border shadow-sm max-w-2xl">
-        <h3 className="font-bold border-b pb-4 mb-4 flex gap-2"><Clock className="text-blue-500"/> JADWAL HARI INI</h3>
-        <div className="space-y-3">
-          {todaySchedules.map((s, i) => (
-            <div key={i} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border">
-              <div><div className="font-bold text-xs">{s.subject}</div><div className="text-[10px] text-gray-400">{s.teacherName}</div></div>
-              <div className="font-black text-blue-600 text-xs">{s.startTime}</div>
-            </div>
-          ))}
-          {todaySchedules.length === 0 && <p className="text-center text-gray-400 py-4 text-xs italic">Tidak ada jadwal hari ini.</p>}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// --- LAYOUT ADMIN (TANPA MENU KEUANGAN) ---
-const DashboardAdmin = ({ onLogout }) => {
-  const [view, setView] = useState('dashboard');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
-
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row w-full overflow-x-hidden">
-      <div className="md:hidden bg-white p-5 border-b flex justify-between items-center z-30 shadow-sm">
-        <h1 className="font-black text-2xl text-blue-600 tracking-tighter">GEMILANG</h1>
-        <button onClick={()=>setIsSidebarOpen(!isSidebarOpen)} className="p-2 bg-gray-100 rounded-lg"><Menu/></button>
-      </div>
-      
-      <div className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform z-40 w-72 bg-white border-r h-full flex flex-col shadow-xl md:shadow-none`}>
-        <div className="p-8 border-b hidden md:block text-center"><h1 className="font-black text-blue-600 text-3xl italic tracking-tighter">GEMILANG</h1></div>
-        <nav className="p-6 space-y-2 flex-1 overflow-y-auto">
-          {[
-            {id:'dashboard',l:'Beranda',i:Bell}, 
-            {id:'schedule',l:'Jadwal',i:Calendar}, 
-            {id:'students',l:'Siswa',i:GraduationCap}, 
-            {id:'teachers',l:'Guru',i:Users}, 
-            {id:'settings',l:'Pengaturan',i:Settings}
-          ].map(m => (
-            <button key={m.id} onClick={()=>{setView(m.id); setIsSidebarOpen(false);}} className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-black transition-all ${view===m.id?'bg-blue-600 text-white shadow-xl translate-x-2':'text-gray-400 hover:bg-gray-50'}`}>
-              <m.i size={20}/> {m.l}
-            </button>
-          ))}
-        </nav>
-        <div className="p-6 border-t bg-gray-50"><button onClick={onLogout} className="w-full text-red-600 font-black text-xs py-4 hover:bg-red-50 rounded-2xl border-2 border-red-100 flex items-center justify-center gap-2 transition-all"><LogOut size={16}/> Logout</button></div>
-      </div>
-      
-      <div className="flex-1 flex flex-col h-screen overflow-hidden w-full relative bg-gray-50">
-        <header className="bg-white border-b px-10 py-6 flex justify-between items-center flex-shrink-0 shadow-sm z-10"><h2 className="font-black uppercase text-gray-400 text-sm tracking-widest">{view}</h2></header>
-        <main className="flex-1 overflow-auto bg-gray-50 w-full relative">
-          <div className="h-full w-full p-8 md:p-10"> 
-            {view === 'dashboard' && <DashboardHome />}
-            {view === 'schedule' && <AdminSchedule db={db} />}
-            {view === 'students' && <AdminStudentsIndex db={db} />}
-            {view === 'teachers' && <AdminTeachers db={db} />} 
-            {view === 'settings' && <AdminSettings db={db} />}
-          </div>
-        </main>
-      </div>
-    </div>
-  );
-};
-
-// --- LOGIN PAGE ---
-const LoginPage = ({ onLogin }) => {
-  const [mode, setMode] = useState('admin');
-  const [pass, setPass] = useState('');
-  const [guru, setGuru] = useState('');
-  const [teachers, setTeachers] = useState([]);
-  useEffect(() => { onSnapshot(query(collection(db, "users"), where("role","==","guru")), s => setTeachers(s.docs.map(d => d.data()))); }, []);
-  const submit = async (e) => { e.preventDefault(); if(mode === 'admin') { const authSnap = await getDoc(doc(db, "settings", "auth")); const correctPass = authSnap.exists() ? authSnap.data().password : 'admin123'; if(pass === correctPass) onLogin('admin', 'Admin'); else alert("Sandi Salah!"); } else { if(guru) onLogin('guru', guru); else alert("Pilih Guru!"); } };
-  return (
-    <div className="min-h-screen w-full bg-slate-900 flex items-center justify-center p-6 font-sans">
-      <div className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-        <div className="bg-blue-600 p-12 text-center text-white"><h1 className="font-black text-5xl italic tracking-tighter">GEMILANG</h1></div>
-        <div className="flex bg-gray-50 border-b"><button onClick={()=>setMode('admin')} className={`flex-1 py-6 text-sm font-black uppercase transition-colors ${mode==='admin'?'bg-white text-blue-600 border-b-4 border-blue-600':'text-gray-400 hover:bg-gray-100'}`}>Admin</button><button onClick={()=>setMode('guru')} className={`flex-1 py-6 text-sm font-black uppercase transition-colors ${mode==='guru'?'bg-white text-green-600 border-b-4 border-green-600':'text-gray-400 hover:bg-gray-100'}`}>Guru</button></div>
-        <form onSubmit={submit} className="p-12 space-y-8 bg-white">
-          {mode==='admin' ? (<input type="password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full border-4 border-gray-100 p-5 rounded-[2rem] outline-none text-center font-bold" placeholder="Password Admin"/>) : (<select value={guru} onChange={e=>setGuru(e.target.value)} className="w-full border-4 border-gray-100 p-5 rounded-[2rem] outline-none font-bold bg-white"><option value="">Pilih Guru</option>{teachers.map((t, i)=><option key={i} value={t.name}>{t.name}</option>)}</select>)}
-          <button className={`w-full text-white py-6 rounded-[2rem] font-black uppercase tracking-widest active:scale-95 transition-all shadow-xl ${mode==='admin'?'bg-slate-900':'bg-green-600'}`}>Masuk</button>
-        </form>
-      </div>
-    </div>
-  );
-};
-
 export default function App() {
-  const [page, setPage] = useState('login');
-  const [user, setUser] = useState('');
-  useEffect(() => { signInAnonymously(auth).catch(console.error); }, []);
-  return (<div className="antialiased w-full min-h-screen bg-white">{page === 'login' && <LoginPage onLogin={(role, name)=>{setUser(name); setPage(role);}}/>}{page === 'admin' && <DashboardAdmin onLogout={()=>setPage('login')}/>}{page === 'guru' && <TeacherDashboard db={db} user={user} onLogout={()=>setPage('login')}/>}</div>);
+  const [view, setView] = useState('dashboard');
+  const [isLogin, setIsLogin] = useState(false);
+
+  useEffect(() => { signInAnonymously(auth); }, []);
+
+  if (!isLogin) return (
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
+      <div className="bg-white p-10 rounded-[2rem] text-center shadow-2xl">
+        <h1 className="text-4xl font-black italic mb-6 text-blue-600">GEMILANG</h1>
+        <button onClick={() => setIsLogin(true)} className="bg-slate-900 text-white px-10 py-4 rounded-xl font-bold uppercase tracking-widest">Masuk Sistem</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* SIDEBAR BERSIH TOTAL */}
+      <nav className="w-72 bg-white border-r h-screen flex flex-col p-6 space-y-2">
+        <h1 className="font-black text-2xl text-blue-600 mb-10 text-center italic">GEMILANG</h1>
+        {[
+          {id:'dashboard', l:'Beranda', i:Bell},
+          {id:'schedule', l:'Jadwal', i:Calendar},
+          {id:'students', l:'Siswa', i:GraduationCap},
+          {id:'teachers', l:'Guru', i:Users}
+        ].map(m => (
+          <button key={m.id} onClick={() => setView(m.id)} className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-black text-xs uppercase transition-all ${view === m.id ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}>
+            <m.i size={18}/> {m.l}
+          </button>
+        ))}
+        <button onClick={() => setIsLogin(false)} className="mt-auto w-full text-red-500 font-bold p-4 flex items-center gap-2"><LogOut size={18}/> Logout</button>
+      </nav>
+
+      {/* KONTEN */}
+      <main className="flex-1 p-10 overflow-auto">
+        <div className="max-w-6xl mx-auto">
+          {view === 'dashboard' && <div className="p-20 bg-white rounded-[3rem] border-4 border-dashed border-slate-200 text-center"><h2 className="text-2xl font-black text-slate-300">SELAMAT DATANG DI BIMBEL GEMILANG</h2><p className="text-slate-400 font-bold uppercase text-[10px] mt-2">Sistem Manajemen Operasional</p></div>}
+          {view === 'schedule' && <AdminSchedule db={db} />}
+          {view === 'students' && <AdminStudentsIndex db={db} />}
+          {view === 'teachers' && <AdminTeachers db={db} />}
+        </div>
+      </main>
+    </div>
+  );
 }
