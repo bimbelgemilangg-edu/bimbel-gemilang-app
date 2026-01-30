@@ -1,15 +1,14 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-// Import Halaman
 import Login from './pages/Login';
 import Dashboard from './pages/admin/Dashboard';
 import StudentList from './pages/admin/students/StudentList';
 import AddStudent from './pages/admin/students/AddStudent';
 import FinanceDashboard from './pages/admin/finance/FinanceDashboard';
 import TeacherList from './pages/admin/teachers/TeacherList';
-// IMPORT JADWAL (Sesuai lokasi Anda: /src/pages/schedule/)
-import SchedulePage from './pages/schedule/SchedulePage'; 
+
+// SAYA SUDAH MENGHAPUS IMPORT JADWAL YANG RUSAK DISINI
 
 function App() {
   return (
@@ -17,11 +16,18 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/admin" element={<Dashboard />} />
+        
+        {/* Halaman Siswa */}
         <Route path="/admin/students" element={<StudentList />} />
         <Route path="/admin/students/add" element={<AddStudent />} />
+        
+        {/* Halaman Keuangan */}
         <Route path="/admin/finance" element={<FinanceDashboard />} />
+        
+        {/* Halaman Guru */}
         <Route path="/admin/teachers" element={<TeacherList />} />
-        <Route path="/admin/schedule" element={<SchedulePage />} />
+        
+        {/* Halaman Jadwal KITA HAPUS KARENA SUDAH PINDAH KE DASHBOARD */}
       </Routes>
     </BrowserRouter>
   );
