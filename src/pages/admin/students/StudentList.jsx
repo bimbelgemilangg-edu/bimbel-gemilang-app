@@ -1,86 +1,72 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../../../components/Sidebar';
+import { db } from '../../../firebase';
+import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
 
 const StudentList = () => {
-  const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterJenjang, setFilterJenjang] = useState("Semua");
+  const [students, setStudents] = useState([]);
+  // Form State (Sederhana untuk demo)
+  const [newName, setNewName] = useState("");
+  const [newClass, setNewClass] = useState("4 SD");
 
-  const dataSiswa = [
-    { id: 1, nama: "Adit Sopo", kelas: "4 SD", jenjang: "SD", status: "Aktif" },
-    { id: 2, nama: "Jarwo Kuat", kelas: "9 SMP", jenjang: "SMP", status: "Non-Aktif" },
-  ];
+  // --- 1. AMBIL SISWA DARI CLOUD ---
+  const fetchStudents = async () => {
+    const querySnapshot = await getDocs(collection(db, "students")); // Nama tabel: students
+    const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setStudents(data);
+  };
 
-  const filteredData = dataSiswa.filter((siswa) => {
-    return (
-      siswa.nama.toLowerCase().includes(searchTerm.toLowerCase()) && 
-      (filterJenjang === "Semua" || siswa.jenjang === filterJenjang)
-    );
-  });
+  useEffect(() => {
+    fetchStudents();
+  }, []);
+
+  // --- 2. SIMPAN SISWA KE CLOUD ---
+  const handleAddStudent = async () => {
+    if (!newName) return alert("Nama kosong!");
+    await addDoc(collection(db, "students"), { 
+      nama: newName, 
+      kelas: newClass, 
+      status: "Aktif" 
+    });
+    alert("✅ Siswa Tersimpan!");
+    setNewName("");
+    fetchStudents();
+  };
 
   return (
     <div style={{ display: 'flex' }}>
       <Sidebar />
-      <div style={styles.mainContent}>
-        <div style={styles.header}>
-          <h2 style={{margin: 0}}>📂 Manajemen Data Siswa</h2>
-          <button style={styles.btnAdd} onClick={() => navigate('/admin/students/add')}>+ Siswa Baru</button>
+      <div style={styles.content}>
+        <h2>👨‍🎓 Master Data Siswa (Online)</h2>
+
+        {/* FORM CEPAT */}
+        <div style={styles.card}>
+          <h3>+ Input Siswa Baru</h3>
+          <div style={{display:'flex', gap:'10px'}}>
+            <input style={styles.input} value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nama Siswa..." />
+            <select style={styles.select} value={newClass} onChange={e => setNewClass(e.target.value)}>
+              <option>4 SD</option><option>5 SD</option><option>6 SD</option>
+              <option>7 SMP</option><option>8 SMP</option><option>9 SMP</option>
+            </select>
+            <button onClick={handleAddStudent} style={styles.btnSave}>Simpan</button>
+          </div>
         </div>
 
-        <div style={styles.filterBar}>
-          <input 
-            type="text" placeholder="🔍 Cari nama..." style={styles.searchInput}
-            value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <select style={styles.filterSelect} value={filterJenjang} onChange={(e) => setFilterJenjang(e.target.value)}>
-            <option value="Semua">Semua Jenjang</option>
-            <option value="SD">SD</option>
-            <option value="SMP">SMP</option>
-          </select>
-        </div>
-
-        <div style={styles.tableCard}>
-          <table style={styles.table}>
+        {/* LIST SISWA */}
+        <div style={{...styles.card, marginTop: 20}}>
+          <h3>Daftar Siswa</h3>
+          <table style={{width:'100%', borderCollapse:'collapse'}}>
             <thead>
-              <tr style={{background: '#ecf0f1'}}>
-                <th style={styles.th}>Nama Siswa</th>
-                <th style={styles.th}>Kelas</th>
-                <th style={styles.th}>Status</th>
-                <th style={styles.th}>Aksi</th>
+              <tr style={{background:'#eee', textAlign:'left'}}>
+                <th style={{padding:10}}>Nama</th><th>Kelas</th><th>Status</th>
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((siswa) => (
-                <tr key={siswa.id} style={styles.tr}>
-                  <td style={styles.td}><strong>{siswa.nama}</strong></td>
-                  <td style={styles.td}>{siswa.kelas}</td>
-                  <td style={styles.td}>
-                    <span style={siswa.status === 'Aktif' ? styles.badgeActive : styles.badgeInactive}>{siswa.status}</span>
-                  </td>
-                  <td style={styles.td}>
-                    <div style={styles.actionGroup}>
-                      {/* TOMBOL YANG SUDAH HIDUP SEMUA */}
-                      <button 
-                        style={styles.btnAction} title="Edit"
-                        onClick={() => navigate(`/admin/students/edit/${siswa.id}`)}
-                      >
-                        ✏️
-                      </button>
-                      <button 
-                        style={styles.btnAction} title="Keuangan"
-                        onClick={() => navigate(`/admin/students/finance/${siswa.id}`)}
-                      >
-                        💰
-                      </button>
-                      <button 
-                        style={styles.btnAction} title="Absensi"
-                        onClick={() => navigate(`/admin/students/attendance/${siswa.id}`)}
-                      >
-                        📅
-                      </button>
-                    </div>
-                  </td>
+              {students.map(s => (
+                <tr key={s.id} style={{borderBottom:'1px solid #eee'}}>
+                  <td style={{padding:10}}><b>{s.nama}</b></td>
+                  <td>{s.kelas}</td>
+                  <td><span style={{background:'#d4edda', padding:'3px 8px', borderRadius:'10px', fontSize:'12px'}}>Aktif</span></td>
                 </tr>
               ))}
             </tbody>
@@ -92,21 +78,11 @@ const StudentList = () => {
 };
 
 const styles = {
-  mainContent: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f6f8', minHeight: '100vh', fontFamily: 'sans-serif' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
-  btnAdd: { background: '#27ae60', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' },
-  filterBar: { display: 'flex', gap: '10px', marginBottom: '20px', background: 'white', padding: '15px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
-  searchInput: { flex: 1, padding: '10px', borderRadius: '5px', border: '1px solid #ddd' },
-  filterSelect: { padding: '10px', borderRadius: '5px', border: '1px solid #ddd', width: '200px' },
-  tableCard: { background: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
-  table: { width: '100%', borderCollapse: 'collapse' },
-  th: { padding: '15px', textAlign: 'left', borderBottom: '2px solid #ddd', color: '#7f8c8d' },
-  tr: { borderBottom: '1px solid #eee' },
-  td: { padding: '15px' },
-  badgeActive: { background: '#d4edda', color: '#155724', padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' },
-  badgeInactive: { background: '#f8d7da', color: '#721c24', padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' },
-  actionGroup: { display: 'flex', gap: '5px' },
-  btnAction: { padding: '5px 12px', border: '1px solid #ddd', background: 'white', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' },
+  content: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'sans-serif' },
+  card: { background: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
+  input: { padding: '10px', border: '1px solid #ccc', borderRadius: '4px', flex: 2 },
+  select: { padding: '10px', border: '1px solid #ccc', borderRadius: '4px', flex: 1 },
+  btnSave: { padding: '10px 20px', background: '#2980b9', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }
 };
 
 export default StudentList;

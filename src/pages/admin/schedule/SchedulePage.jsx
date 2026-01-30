@@ -1,46 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../../components/Sidebar';
-// IMPORT PENTING
 import { db } from '../../../firebase'; 
 import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
 
 const SchedulePage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [schedules, setSchedules] = useState([]); // INI AKAN MENAMPUNG DATA DARI CLOUD
-
-  const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
   
-  // DATA MASTER (Hardcode dulu biar aman, nanti bisa di-onlinekan juga)
-  const teachers = ["Pak Budi", "Bu Siti", "Pak Joko", "Bu Rina"];
-  const allStudents = [
-    { id: 101, nama: "Adit Sopo", kelas: "4 SD" },
-    { id: 102, nama: "Jarwo Kuat", kelas: "4 SD" },
-    { id: 103, nama: "Denis Kancil", kelas: "5 SD" },
-    { id: 104, nama: "Roro Jonggrang", kelas: "9 SMP" },
-  ];
+  // --- STATE DATA DARI CLOUD ---
+  const [schedules, setSchedules] = useState([]);
+  const [availableTeachers, setAvailableTeachers] = useState([]); // GURU DARI CLOUD
+  const [availableStudents, setAvailableStudents] = useState([]); // SISWA DARI CLOUD
 
-  // --- 1. FUNGSI BACA DATA DARI CLOUD (ANTI HILANG) ---
-  const fetchJadwal = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, "jadwal_bimbel"));
-      const dataList = querySnapshot.docs.map(doc => ({
-        id: doc.id, // ID DARI FIREBASE
-        ...doc.data()
-      }));
-      setSchedules(dataList);
-    } catch (error) {
-      console.error("Gagal ambil data:", error);
-      alert("Koneksi Internet Bermasalah!");
-    }
+  // --- 1. AMBIL SEMUA DATA (SINKRONISASI) ---
+  const fetchData = async () => {
+    // A. Ambil Jadwal
+    const schedSnap = await getDocs(collection(db, "jadwal_bimbel"));
+    setSchedules(schedSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+
+    // B. Ambil Guru (Supaya Dropdown Muncul)
+    const teacherSnap = await getDocs(collection(db, "teachers"));
+    setAvailableTeachers(teacherSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+
+    // C. Ambil Siswa (Supaya Pilihan Siswa Muncul)
+    const studentSnap = await getDocs(collection(db, "students"));
+    setAvailableStudents(studentSnap.docs.map(d => ({ id: d.id, ...d.data() })));
   };
 
-  // JALANKAN SAAT HALAMAN DIBUKA/DIREFRESH
   useEffect(() => {
-    fetchJadwal();
+    fetchData(); // Jalankan saat loading
   }, []);
 
-  // --- FORM STATE ---
+  const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activePlanet, setActivePlanet] = useState("");
   const [generatedCode, setGeneratedCode] = useState("");
@@ -48,7 +39,7 @@ const SchedulePage = () => {
     start: "14:00", end: "15:30", type: "Pararel", title: "", booker: "", selectedStudents: []
   });
 
-  // HELPERS
+  // Helpers
   const changeMonth = (offset) => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + offset, 1));
   const formatDateStr = (date) => date.toISOString().split('T')[0];
   const generateCode = (planet) => {
@@ -64,11 +55,27 @@ const SchedulePage = () => {
     setIsModalOpen(true);
   };
 
-  // --- 2. FUNGSI SIMPAN KE CLOUD ---
+  // Logic Pilih Kelas (Auto Select Siswa)
+  const handleSelectClass = (e) => {
+    const kelas = e.target.value;
+    if (!kelas) return;
+    // Filter siswa berdasarkan kelas dari database
+    const ids = availableStudents.filter(s => s.kelas === kelas).map(s => s.id);
+    setFormData(prev => ({ ...prev, selectedStudents: [...new Set([...prev.selectedStudents, ...ids])] }));
+  };
+
+  // Simpan Jadwal
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!formData.booker) return alert("Guru wajib dipilih!");
-    if (formData.selectedStudents.length === 0) return alert("Pilih minimal 1 siswa!");
+    if (!formData.booker) return alert("Pilih Guru!");
+    
+    // Kita simpan FULL OBJECT Siswa agar guru tidak perlu query ulang
+    const studentsFullData = formData.selectedStudents.map(id => {
+        const s = availableStudents.find(stud => stud.id === id);
+        return s ? { id: s.id, nama: s.nama, kelas: s.kelas } : null;
+    }).filter(Boolean); // Hapus yang null
+
+    if (studentsFullData.length === 0) return alert("Pilih minimal 1 siswa!");
 
     const newSchedule = {
       planet: activePlanet,
@@ -77,47 +84,25 @@ const SchedulePage = () => {
       end: formData.end,
       type: formData.type,
       title: formData.title,
-      booker: formData.booker, // Nama Guru
+      booker: formData.booker,
       code: generatedCode,
-      // Simpan Detail Siswa Langsung agar Guru bisa baca
-      students: formData.selectedStudents.map(id => allStudents.find(s => s.id === id))
+      students: studentsFullData 
     };
 
-    try {
-      // KIRIM KE FIREBASE
-      await addDoc(collection(db, "jadwal_bimbel"), newSchedule);
-      
-      alert("✅ DATA TERSIMPAN DI SERVER!");
-      setIsModalOpen(false);
-      fetchJadwal(); // Tarik data terbaru supaya tampil di layar
-    } catch (error) {
-      console.error("Error saving:", error);
-      alert("Gagal menyimpan. Cek koneksi internet.");
+    await addDoc(collection(db, "jadwal_bimbel"), newSchedule);
+    alert("✅ Jadwal Tersimpan & Terhubung ke Guru!");
+    setIsModalOpen(false);
+    fetchData();
+  };
+
+  const handleDelete = async (id) => {
+    if(window.confirm("Hapus?")) {
+      await deleteDoc(doc(db, "jadwal_bimbel", id));
+      fetchData();
     }
   };
 
-  // --- 3. FUNGSI HAPUS DARI CLOUD ---
-  const handleDelete = async (firebaseId) => {
-    if (window.confirm("Hapus jadwal ini permanen?")) {
-      try {
-        await deleteDoc(doc(db, "jadwal_bimbel", firebaseId));
-        fetchJadwal(); // Refresh tampilan
-      } catch (error) {
-        console.error("Error deleting:", error);
-      }
-    }
-  };
-
-  // LOGIKA PILIH SISWA
-  const toggleStudent = (id) => {
-    if (formData.selectedStudents.includes(id)) {
-      setFormData({...formData, selectedStudents: formData.selectedStudents.filter(sid => sid !== id)});
-    } else {
-      setFormData({...formData, selectedStudents: [...formData.selectedStudents, id]});
-    }
-  };
-
-  // RENDER KALENDER
+  // Render Calendar
   const renderCalendar = () => {
     const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
     const days = [];
@@ -140,7 +125,7 @@ const SchedulePage = () => {
       <Sidebar />
       <div style={styles.mainContent}>
         <div style={styles.header}>
-          <h2 style={{margin:0}}>📅 Jadwal Online (Database Aktif)</h2>
+          <h2 style={{margin:0}}>📅 Jadwal (Sinkronisasi Database)</h2>
           <div style={styles.nav}>
             <button onClick={() => changeMonth(-1)}>◀</button>
             <span style={{fontWeight:'bold'}}>{currentMonth.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}</span>
@@ -149,13 +134,11 @@ const SchedulePage = () => {
         </div>
 
         <div style={styles.layout}>
-          {/* Kalender */}
           <div style={styles.card}>
             <h3>Pilih Tanggal</h3>
             <div style={styles.calendarGrid}>{renderCalendar()}</div>
           </div>
 
-          {/* List Planet */}
           <div style={styles.card}>
             <h3>Jadwal: {selectedDate.toLocaleDateString('id-ID')}</h3>
             <div style={styles.planetList}>
@@ -167,16 +150,12 @@ const SchedulePage = () => {
                       <b>{planet}</b>
                       <button style={styles.btnAdd} onClick={() => openAddModal(planet)}>+ Set</button>
                     </div>
-                    {items.length === 0 && <span style={{fontSize:'12px', color:'#ccc'}}>Kosong</span>}
                     {items.map(item => (
                       <div key={item.id} style={item.type === 'Pararel' ? styles.tagRed : styles.tagGreen}>
-                        <div>
-                          <b>{item.start} - {item.end}</b> <br/>
-                          {item.title} (Guru: {item.booker})
-                        </div>
+                        <div><b>{item.start}-{item.end}</b> <br/> {item.title} ({item.booker})</div>
                         <div style={{textAlign:'right'}}>
-                          <div style={styles.codeBadge}>{item.code}</div>
-                          <button onClick={() => handleDelete(item.id)} style={styles.btnDel}>Hapus</button>
+                           <div style={styles.codeBadge}>{item.code}</div>
+                           <button onClick={() => handleDelete(item.id)} style={styles.btnDel}>Hapus</button>
                         </div>
                       </div>
                     ))}
@@ -187,7 +166,6 @@ const SchedulePage = () => {
           </div>
         </div>
 
-        {/* MODAL */}
         {isModalOpen && (
           <div style={styles.overlay}>
             <div style={styles.modal}>
@@ -197,29 +175,52 @@ const SchedulePage = () => {
                   <input type="time" required value={formData.start} onChange={e => setFormData({...formData, start: e.target.value})} style={styles.input} />
                   <input type="time" required value={formData.end} onChange={e => setFormData({...formData, end: e.target.value})} style={styles.input} />
                 </div>
+                
+                {/* --- BAGIAN PENTING: DROPDOWN GURU --- */}
                 <div style={styles.group}>
-                  <label>Pilih Guru</label>
+                  <label>Pilih Guru (Dari Database)</label>
                   <select required value={formData.booker} onChange={e => setFormData({...formData, booker: e.target.value})} style={styles.select}>
-                    <option value="">-- Pilih --</option>
-                    {teachers.map(t => <option key={t} value={t}>{t}</option>)}
+                    <option value="">-- Pilih Guru --</option>
+                    {availableTeachers.map(t => (
+                      <option key={t.id} value={t.nama}>{t.nama} ({t.mapel})</option>
+                    ))}
                   </select>
                 </div>
+                {/* ------------------------------------- */}
+
                 <input type="text" placeholder="Mapel" required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} style={styles.input} />
-                
+
+                {/* --- BAGIAN PENTING: PILIH SISWA --- */}
                 <div style={styles.studentSection}>
-                  <label>Pilih Siswa:</label>
+                  <label>Pilih Siswa (Dari Database):</label>
+                  <select onChange={handleSelectClass} style={styles.select}>
+                    <option value="">-- Auto Select per Kelas --</option>
+                    <option value="4 SD">Semua Kelas 4 SD</option>
+                    <option value="5 SD">Semua Kelas 5 SD</option>
+                    <option value="6 SD">Semua Kelas 6 SD</option>
+                    <option value="9 SMP">Semua Kelas 9 SMP</option>
+                  </select>
+                  
                   <div style={styles.studentList}>
-                    {allStudents.map(s => (
+                    {availableStudents.length === 0 && <p style={{color:'red', fontSize:12}}>Belum ada data siswa di Database.</p>}
+                    {availableStudents.map(s => (
                       <label key={s.id} style={styles.checkboxLabel}>
-                        <input type="checkbox" checked={formData.selectedStudents.includes(s.id)} onChange={() => toggleStudent(s.id)} />
+                        <input type="checkbox" checked={formData.selectedStudents.includes(s.id)} 
+                            onChange={() => {
+                                if (formData.selectedStudents.includes(s.id)) setFormData({...formData, selectedStudents: formData.selectedStudents.filter(id => id !== s.id)});
+                                else setFormData({...formData, selectedStudents: [...formData.selectedStudents, s.id]});
+                            }} 
+                        /> 
                         {s.nama} ({s.kelas})
                       </label>
                     ))}
                   </div>
+                  <p style={{fontSize:11, textAlign:'right', marginTop:5}}>Terpilih: {formData.selectedStudents.length} siswa</p>
                 </div>
+                {/* ------------------------------------- */}
 
                 <div style={styles.btnRow}>
-                  <button type="submit" style={styles.btnSave}>SIMPAN KE SERVER</button>
+                  <button type="submit" style={styles.btnSave}>SIMPAN ONLINE</button>
                   <button type="button" onClick={() => setIsModalOpen(false)} style={styles.btnCancel}>Batal</button>
                 </div>
               </form>
@@ -231,7 +232,7 @@ const SchedulePage = () => {
   );
 };
 
-// CSS
+// ... Styles sama seperti sebelumnya ...
 const styles = {
   mainContent: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'sans-serif' },
   header: { display: 'flex', justifyContent: 'space-between', marginBottom: '20px', background:'white', padding:'20px', borderRadius:'10px' },
