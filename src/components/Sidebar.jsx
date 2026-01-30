@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 const Sidebar = () => {
   const location = useLocation();
 
-  // Fungsi untuk mengecek menu aktif agar warna berubah
+  // Fungsi cek menu aktif
   const isActive = (path) => location.pathname === path;
 
   return (
@@ -20,7 +20,7 @@ const Sidebar = () => {
            🏠 Dashboard
         </Link>
         
-        {/* 2. Menu Siswa */}
+        {/* 2. Siswa */}
         <Link to="/admin/students" style={isActive('/admin/students') ? styles.linkActive : styles.link}>
            👨‍🎓 Manajemen Siswa
         </Link>
@@ -29,17 +29,17 @@ const Sidebar = () => {
            ➕ Pendaftaran Baru
         </Link>
 
-        {/* 3. Menu Guru */}
+        {/* 3. Guru */}
         <Link to="/admin/teachers" style={isActive('/admin/teachers') ? styles.linkActive : styles.link}>
            👨‍🏫 Manajemen Guru
         </Link>
         
-        {/* 4. Menu Jadwal (BARU DITAMBAHKAN) */}
+        {/* 4. Jadwal (MENU WAJIB MUNCUL) */}
         <Link to="/admin/schedule" style={isActive('/admin/schedule') ? styles.linkActive : styles.link}>
            📅 Jadwal & Kelas
         </Link>
 
-        {/* 5. Menu Keuangan */}
+        {/* 5. Keuangan */}
         <Link to="/admin/finance" style={isActive('/admin/finance') ? styles.linkActive : styles.link}>
            💰 Keuangan & Kasir
         </Link>
@@ -52,7 +52,7 @@ const Sidebar = () => {
   );
 };
 
-// Styling CSS
+// Styling
 const styles = {
   sidebar: { width: '250px', backgroundColor: '#2c3e50', minHeight: '100vh', color: 'white', position: 'fixed', left: 0, top: 0, display: 'flex', flexDirection: 'column', zIndex: 100 },
   logo: { padding: '20px', borderBottom: '1px solid #34495e', textAlign: 'center' },
