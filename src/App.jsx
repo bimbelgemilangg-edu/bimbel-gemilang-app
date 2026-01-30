@@ -1,20 +1,21 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+// UBAH DISINI: Gunakan HashRouter pengganti BrowserRouter
+import { HashRouter, Routes, Route } from 'react-router-dom'; 
+
 import Login from './pages/Login';
 import Dashboard from './pages/admin/Dashboard';
-import StudentList from './pages/admin/students/StudentList'; // Import File Baru
+import StudentList from './pages/admin/students/StudentList';
 
 function App() {
   return (
-    <BrowserRouter>
+    // UBAH DISINI: Bungkus aplikasi dengan HashRouter
+    <HashRouter>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/admin" element={<Dashboard />} />
-        
-        {/* Route Baru untuk Manajemen Siswa */}
         <Route path="/admin/students" element={<StudentList />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
