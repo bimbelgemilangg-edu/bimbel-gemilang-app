@@ -7,7 +7,7 @@ import { collection, addDoc } from "firebase/firestore";
 const AddStudent = () => {
   const navigate = useNavigate();
 
-  // Load Harga dari Lokal (Setting Owner)
+  // 1. LOAD HARGA (Dari Setting Owner)
   const [pricing, setPricing] = useState({
     sd: { paket1: 150000, paket2: 200000, paket3: 250000 },
     smp: { paket1: 200000, paket2: 250000, paket3: 300000 }
@@ -18,21 +18,34 @@ const AddStudent = () => {
     if (savedPrices) setPricing(JSON.parse(savedPrices));
   }, []);
 
-  // STATE FORM
-  const [tanggalDaftar, setTanggalDaftar] = useState(new Date().toISOString().split('T')[0]); // Default Hari Ini
-  const [siswa, setSiswa] = useState({ nama: "", jenjang: "SD", kelas: "4 SD" });
-  const [ortu, setOrtu] = useState({ ayah: "", ibu: "", jobAyah: "", jobIbu: "", alamat: "", hp: "" });
+  // 2. STATE FORM LENGKAP (Sesuai Permintaan)
+  const [tanggalDaftar, setTanggalDaftar] = useState(new Date().toISOString().split('T')[0]);
   
-  // STATE KEUANGAN
+  // Data Siswa
+  const [namaSiswa, setNamaSiswa] = useState("");
+  const [jenjang, setJenjang] = useState("SD");
+  const [kelas, setKelas] = useState("4 SD");
+  const [tempatLahir, setTempatLahir] = useState("");
+  const [tanggalLahir, setTanggalLahir] = useState("");
+
+  // Data Orang Tua (RINCI)
+  const [namaAyah, setNamaAyah] = useState("");
+  const [pekerjaanAyah, setPekerjaanAyah] = useState("");
+  const [namaIbu, setNamaIbu] = useState("");
+  const [pekerjaanIbu, setPekerjaanIbu] = useState("");
+  const [alamat, setAlamat] = useState("");
+  const [noHp, setNoHp] = useState("");
+
+  // Keuangan
   const [paket, setPaket] = useState("paket1");
-  const [biayaDaftar, setBiayaDaftar] = useState(false);
+  const [biayaDaftar, setBiayaDaftar] = useState(false); // +25.000
   const [diskon, setDiskon] = useState(0);
-  const [metodeBayar, setMetodeBayar] = useState("Tunai"); 
+  const [metodeBayar, setMetodeBayar] = useState("Tunai"); // Tunai/Bank/Cicilan
   const [tenor, setTenor] = useState(1);
 
-  // HITUNG-HITUNGAN
+  // 3. KALKULASI
   const getBasePrice = () => {
-    const level = siswa.jenjang.toLowerCase();
+    const level = jenjang.toLowerCase();
     return pricing[level] ? parseInt(pricing[level][paket]) : 0;
   };
 
@@ -43,77 +56,74 @@ const AddStudent = () => {
     return total;
   };
 
-  const hitungCicilan = () => {
-    return Math.ceil(hitungTotal() / tenor);
-  };
+  const hitungCicilan = () => Math.ceil(hitungTotal() / tenor);
 
-  // SUBMIT
+  // 4. SUBMIT DATA
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!siswa.nama || !ortu.hp) return alert("Data tidak lengkap!");
+    if (!namaSiswa || !namaAyah || !noHp) return alert("Data Wajib (Nama, Ayah, HP) harus diisi!");
 
     try {
-      // 1. SIMPAN DATA SISWA
-      const studentRef = await addDoc(collection(db, "students"), {
-        nama: siswa.nama,
-        jenjang: siswa.jenjang,
-        kelas: siswa.kelas,
-        ortu: ortu,
+      // A. SIMPAN DATA SISWA LENGKAP KE DATABASE
+      const studentData = {
+        nama: namaSiswa,
+        jenjang, kelas,
+        tempatLahir, tanggalLahir,
+        ortu: {
+          ayah: namaAyah, pekerjaanAyah,
+          ibu: namaIbu, pekerjaanIbu,
+          alamat, hp: noHp
+        },
         status: "Aktif",
         tanggalMasuk: tanggalDaftar
-      });
+      };
 
-      const totalBiaya = hitungTotal();
-      const studentId = studentRef.id;
+      const docRef = await addDoc(collection(db, "students"), studentData);
+      const studentId = docRef.id;
+      const totalBayar = hitungTotal();
 
-      // 2. LOGIKA KEUANGAN (SMART LOGIC)
+      // B. LOGIKA KEUANGAN (MUTASI vs TAGIHAN)
       if (metodeBayar === "Cicilan") {
-        // --- CICILAN: Masuk ke Tagihan, BUKAN Laporan Pemasukan ---
+        // Masuk ke TAGIHAN (Belum jadi uang real)
         let installments = [];
         const perBulan = hitungCicilan();
-        
         for (let i = 1; i <= tenor; i++) {
           installments.push({
             bulanKe: i,
             nominal: perBulan,
             status: "Belum Lunas",
-            jatuhTempo: `Bulan ke-${i}` 
+            jatuhTempo: `Bulan ke-${i}`
           });
         }
 
         await addDoc(collection(db, "finance_tagihan"), {
-          studentId,
-          namaSiswa: siswa.nama,
-          namaOrtu: ortu.ayah || ortu.ibu,
-          noHp: ortu.hp,
-          totalTagihan: totalBiaya,
-          sisaTagihan: totalBiaya,
+          studentId, namaSiswa, namaOrtu: namaAyah, noHp,
+          totalTagihan: totalBayar,
+          sisaTagihan: totalBayar,
           detailCicilan: installments,
-          jenis: "SPP & Pendaftaran"
+          jenis: "Pendaftaran (Cicilan)"
         });
-
-        alert("✅ Siswa Terdaftar (Cicilan).\nSilakan cek menu Tagihan di Keuangan.");
+        alert("✅ Siswa Terdaftar (Masuk Daftar Cicilan)");
 
       } else {
-        // --- LUNAS: Langsung Masuk Laporan Pemasukan ---
-        await addDoc(collection(db, "finance_transaksi"), {
-          tanggal: tanggalDaftar, // Sesuai tanggal yang dipilih admin
-          ket: `Pendaftaran Baru: ${siswa.nama}`,
-          tipe: "Masuk",
-          metode: metodeBayar, // Tunai atau Bank
-          nominal: totalBiaya,
+        // Masuk ke MUTASI (Uang Real) -> Folder 'finance_mutasi'
+        await addDoc(collection(db, "finance_mutasi"), { 
+          tanggal: tanggalDaftar,
+          ket: `Pendaftaran Baru: ${namaSiswa}`,
+          tipe: "Masuk", // Debit
+          metode: metodeBayar, // Tunai/Bank
+          nominal: totalBayar,
           kategori: "Pendaftaran",
           studentId
         });
-
-        alert(`✅ Siswa Terdaftar & Lunas!\nUang masuk ke saldo ${metodeBayar}.`);
+        alert(`✅ Siswa Terdaftar & Lunas! (Tercatat di Mutasi ${metodeBayar})`);
       }
 
       navigate('/admin/students');
 
     } catch (error) {
       console.error("Error:", error);
-      alert("Gagal menyimpan.");
+      alert("Gagal menyimpan data.");
     }
   };
 
@@ -121,79 +131,92 @@ const AddStudent = () => {
     <div style={{ display: 'flex' }}>
       <Sidebar />
       <div style={styles.content}>
-        <h2>🎓 Pendaftaran Siswa Baru</h2>
-
-        <form onSubmit={handleSubmit} style={styles.formGrid}>
+        <h2>🎓 Formulir Pendaftaran Lengkap</h2>
+        <form onSubmit={handleSubmit} style={styles.grid}>
+          
+          {/* KOLOM KIRI: DATA PERSONAL */}
           <div style={styles.leftCol}>
             
-            {/* TANGGAL DAFTAR (PENTING UNTUK LAPORAN) */}
-            <div style={styles.card}>
-              <label style={{display:'block', marginBottom:5, fontWeight:'bold'}}>Tanggal Pendaftaran</label>
-              <input 
-                type="date" 
-                style={styles.inputDate} 
-                value={tanggalDaftar}
-                onChange={e => setTanggalDaftar(e.target.value)}
-              />
-              <small style={{color:'#777'}}>*Bisa diganti jika input data mundur.</small>
-            </div>
-
+            {/* IDENTITAS */}
             <div style={styles.card}>
               <h3>👤 Identitas Siswa</h3>
-              <div style={styles.group}><label>Nama Lengkap</label><input style={styles.input} value={siswa.nama} onChange={e => setSiswa({...siswa, nama: e.target.value})} required /></div>
-              <div style={{display:'flex', gap:10}}>
-                <select style={styles.select} value={siswa.jenjang} onChange={e => setSiswa({...siswa, jenjang: e.target.value})}><option value="SD">SD</option><option value="SMP">SMP</option></select>
-                <select style={styles.select} value={siswa.kelas} onChange={e => setSiswa({...siswa, kelas: e.target.value})}><option>4 SD</option><option>5 SD</option><option>6 SD</option><option>9 SMP</option></select>
+              <div style={styles.formGroup}>
+                <label>Tanggal Daftar</label>
+                <input type="date" style={styles.inputDate} value={tanggalDaftar} onChange={e => setTanggalDaftar(e.target.value)} />
+              </div>
+              <div style={styles.formGroup}><input style={styles.input} placeholder="Nama Lengkap Siswa" value={namaSiswa} onChange={e => setNamaSiswa(e.target.value)} required /></div>
+              <div style={styles.row}>
+                <input style={styles.input} placeholder="Tempat Lahir" value={tempatLahir} onChange={e => setTempatLahir(e.target.value)} />
+                <input type="date" style={styles.input} value={tanggalLahir} onChange={e => setTanggalLahir(e.target.value)} />
+              </div>
+              <div style={styles.row}>
+                <select style={styles.select} value={jenjang} onChange={e => setJenjang(e.target.value)}><option>SD</option><option>SMP</option></select>
+                <select style={styles.select} value={kelas} onChange={e => setKelas(e.target.value)}><option>4 SD</option><option>5 SD</option><option>6 SD</option><option>9 SMP</option></select>
               </div>
             </div>
 
+            {/* ORANG TUA (FULL) */}
             <div style={styles.card}>
               <h3>👨‍👩‍👧 Data Orang Tua</h3>
-              <input style={styles.input} placeholder="Nama Ayah/Ibu" value={ortu.ayah} onChange={e => setOrtu({...ortu, ayah: e.target.value})} />
-              <input style={styles.input} placeholder="No HP / WA" type="number" value={ortu.hp} onChange={e => setOrtu({...ortu, hp: e.target.value})} style={{...styles.input, marginTop:10}} required />
+              <div style={styles.row}>
+                <input style={styles.input} placeholder="Nama Ayah" value={namaAyah} onChange={e => setNamaAyah(e.target.value)} required />
+                <input style={styles.input} placeholder="Pekerjaan Ayah" value={pekerjaanAyah} onChange={e => setPekerjaanAyah(e.target.value)} />
+              </div>
+              <div style={styles.row}>
+                <input style={styles.input} placeholder="Nama Ibu" value={namaIbu} onChange={e => setNamaIbu(e.target.value)} />
+                <input style={styles.input} placeholder="Pekerjaan Ibu" value={pekerjaanIbu} onChange={e => setPekerjaanIbu(e.target.value)} />
+              </div>
+              <textarea style={styles.textarea} placeholder="Alamat Lengkap..." value={alamat} onChange={e => setAlamat(e.target.value)}></textarea>
+              <input type="number" style={{...styles.input, marginTop:10}} placeholder="No HP / WhatsApp (Wajib)" value={noHp} onChange={e => setNoHp(e.target.value)} required />
             </div>
           </div>
 
+          {/* KOLOM KANAN: KEUANGAN */}
           <div style={styles.rightCol}>
             <div style={styles.cardBlue}>
-              <h3 style={{color:'white', marginTop:0}}>💰 Pembayaran</h3>
+              <h3 style={{color:'white', marginTop:0}}>💰 Administrasi</h3>
               
-              <div style={styles.group}>
-                <label style={{color:'white'}}>Paket Bimbel</label>
+              <div style={styles.formGroup}>
+                <label style={{color:'white'}}>Pilih Paket</label>
                 <select style={styles.select} value={paket} onChange={e => setPaket(e.target.value)}>
                   <option value="paket1">Paket 1 - Rp {getBasePrice().toLocaleString()}</option>
-                  <option value="paket2">Paket 2 - Medium</option>
-                  <option value="paket3">Paket 3 - Premium</option>
+                  <option value="paket2">Paket 2 (Medium)</option>
+                  <option value="paket3">Paket 3 (Premium)</option>
                 </select>
               </div>
 
-              <div style={{color:'white', marginBottom:10}}>
-                <label><input type="checkbox" checked={biayaDaftar} onChange={e => setBiayaDaftar(e.target.checked)} /> Biaya Daftar (+25rb)</label>
+              <div style={{marginBottom:10, color:'white'}}>
+                <label><input type="checkbox" checked={biayaDaftar} onChange={e => setBiayaDaftar(e.target.checked)} /> Biaya Pendaftaran (+25rb)</label>
               </div>
 
-              <div style={styles.group}>
+              <div style={styles.formGroup}>
                 <label style={{color:'white'}}>Diskon (Rp)</label>
-                <input type="number" style={styles.input} value={diskon} onChange={e => setDiskon(e.target.value)} />
+                <input type="number" style={styles.input} value={diskon} onChange={e => setDiskon(e.target.value)} placeholder="0" />
               </div>
 
-              <h1 style={{color:'white', textAlign:'right'}}>Rp {hitungTotal().toLocaleString()}</h1>
+              <div style={{textAlign:'right', color:'white', margin:'20px 0'}}>
+                <small>Total Bayar</small>
+                <h1 style={{margin:0}}>Rp {hitungTotal().toLocaleString()}</h1>
+              </div>
 
-              <div style={styles.group}>
-                <label style={{color:'white'}}>Metode Bayar</label>
+              <div style={styles.formGroup}>
+                <label style={{color:'white'}}>Metode Pembayaran</label>
                 <select style={styles.select} value={metodeBayar} onChange={e => setMetodeBayar(e.target.value)}>
                   <option value="Tunai">Lunas - Tunai (Masuk Brankas)</option>
                   <option value="Bank">Lunas - Transfer Bank</option>
-                  <option value="Cicilan">Cicilan (Belum Masuk Kas)</option>
+                  <option value="Cicilan">Cicilan / Hutang</option>
                 </select>
               </div>
 
               {metodeBayar === "Cicilan" && (
-                <div style={{background:'rgba(0,0,0,0.2)', padding:10, borderRadius:5, color:'white'}}>
-                  <label>Tenor: </label>
-                  <button type="button" onClick={() => setTenor(1)} style={{marginRight:5}}>1x</button>
-                  <button type="button" onClick={() => setTenor(2)} style={{marginRight:5}}>2x</button>
-                  <button type="button" onClick={() => setTenor(3)}>3x</button>
-                  <p>Cicilan: Rp {hitungCicilan().toLocaleString()} /bln</p>
+                <div style={styles.cicilanBox}>
+                  <label>Tenor:</label>
+                  <div style={{display:'flex', gap:5, marginTop:5}}>
+                    {[1,2,3].map(t => (
+                      <button key={t} type="button" onClick={() => setTenor(t)} style={tenor===t ? styles.btnActive : styles.btnInactive}>{t}x</button>
+                    ))}
+                  </div>
+                  <p>Cicilan: <b>Rp {hitungCicilan().toLocaleString()}</b> /bln</p>
                 </div>
               )}
 
@@ -208,14 +231,19 @@ const AddStudent = () => {
 
 const styles = {
   content: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'sans-serif' },
-  formGrid: { display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '20px' },
-  card: { background: 'white', padding: '20px', borderRadius: '10px', marginBottom: '20px', boxShadow:'0 2px 4px rgba(0,0,0,0.05)' },
-  cardBlue: { background: '#2c3e50', padding: '20px', borderRadius: '10px' },
-  group: { marginBottom: 15 },
-  input: { width: '100%', padding: 10, borderRadius: 5, border:'1px solid #ccc', boxSizing:'border-box' },
-  inputDate: { width: '100%', padding: 10, borderRadius: 5, border:'2px solid #3498db', boxSizing:'border-box', fontWeight:'bold' },
-  select: { width: '100%', padding: 10, borderRadius: 5, border:'1px solid #ccc', background:'white', boxSizing:'border-box' },
-  btnSubmit: { width: '100%', padding: 15, background: '#27ae60', color: 'white', border:'none', borderRadius: 5, fontWeight:'bold', cursor:'pointer', marginTop: 20 }
+  grid: { display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '20px' },
+  card: { background: 'white', padding: '20px', borderRadius: '10px', marginBottom: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
+  cardBlue: { background: '#2c3e50', padding: '25px', borderRadius: '10px', color: 'white' },
+  row: { display: 'flex', gap: '10px', marginBottom: '10px' },
+  formGroup: { marginBottom: '15px' },
+  input: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' },
+  inputDate: { width: '100%', padding: '10px', borderRadius: '5px', border: '2px solid #3498db' },
+  select: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', background: 'white' },
+  textarea: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', minHeight: '80px', boxSizing: 'border-box' },
+  cicilanBox: { background: 'rgba(255,255,255,0.1)', padding: '15px', borderRadius: '5px', marginTop: '10px' },
+  btnActive: { background: '#f1c40f', border: 'none', padding: '5px 10px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' },
+  btnInactive: { background: 'transparent', border: '1px solid #ccc', color: 'white', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' },
+  btnSubmit: { width: '100%', padding: '15px', background: '#27ae60', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '20px' }
 };
 
 export default AddStudent;
