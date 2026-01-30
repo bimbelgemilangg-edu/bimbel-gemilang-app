@@ -18,7 +18,7 @@ const AddStudent = () => {
     if (savedPrices) setPricing(JSON.parse(savedPrices));
   }, []);
 
-  // 2. STATE FORM LENGKAP (Sesuai Permintaan)
+  // 2. STATE FORM LENGKAP
   const [tanggalDaftar, setTanggalDaftar] = useState(new Date().toISOString().split('T')[0]);
   
   // Data Siswa
@@ -28,7 +28,7 @@ const AddStudent = () => {
   const [tempatLahir, setTempatLahir] = useState("");
   const [tanggalLahir, setTanggalLahir] = useState("");
 
-  // Data Orang Tua (RINCI)
+  // Data Orang Tua
   const [namaAyah, setNamaAyah] = useState("");
   const [pekerjaanAyah, setPekerjaanAyah] = useState("");
   const [namaIbu, setNamaIbu] = useState("");
@@ -40,8 +40,11 @@ const AddStudent = () => {
   const [paket, setPaket] = useState("paket1");
   const [biayaDaftar, setBiayaDaftar] = useState(false); // +25.000
   const [diskon, setDiskon] = useState(0);
-  const [metodeBayar, setMetodeBayar] = useState("Tunai"); // Tunai/Bank/Cicilan
+  const [metodeBayar, setMetodeBayar] = useState("Tunai"); 
   const [tenor, setTenor] = useState(1);
+  
+  // BARU: State untuk Tanggal Mulai Cicilan
+  const [tanggalMulaiCicilan, setTanggalMulaiCicilan] = useState(new Date().toISOString().split('T')[0]);
 
   // 3. KALKULASI
   const getBasePrice = () => {
@@ -64,7 +67,7 @@ const AddStudent = () => {
     if (!namaSiswa || !namaAyah || !noHp) return alert("Data Wajib (Nama, Ayah, HP) harus diisi!");
 
     try {
-      // A. SIMPAN DATA SISWA LENGKAP KE DATABASE
+      // A. SIMPAN DATA SISWA LENGKAP
       const studentData = {
         nama: namaSiswa,
         jenjang, kelas,
@@ -84,15 +87,25 @@ const AddStudent = () => {
 
       // B. LOGIKA KEUANGAN (MUTASI vs TAGIHAN)
       if (metodeBayar === "Cicilan") {
-        // Masuk ke TAGIHAN (Belum jadi uang real)
+        // Masuk ke TAGIHAN
         let installments = [];
         const perBulan = hitungCicilan();
-        for (let i = 1; i <= tenor; i++) {
+        
+        // Logic Hitung Tanggal Otomatis (Bulan 1, Bulan 2, dst)
+        const startDate = new Date(tanggalMulaiCicilan);
+
+        for (let i = 0; i < tenor; i++) {
+          // Clone tanggal agar tidak merubah referensi asli
+          let dueDate = new Date(startDate);
+          // Tambah bulan sesuai urutan loop (0 = bulan ini, 1 = bulan depan)
+          dueDate.setMonth(startDate.getMonth() + i);
+
           installments.push({
-            bulanKe: i,
+            bulanKe: i + 1,
             nominal: perBulan,
             status: "Belum Lunas",
-            jatuhTempo: `Bulan ke-${i}`
+            // Simpan format YYYY-MM-DD agar bisa diedit nanti
+            jatuhTempo: dueDate.toISOString().split('T')[0] 
           });
         }
 
@@ -103,20 +116,20 @@ const AddStudent = () => {
           detailCicilan: installments,
           jenis: "Pendaftaran (Cicilan)"
         });
-        alert("✅ Siswa Terdaftar (Masuk Daftar Cicilan)");
+        alert("✅ Siswa Terdaftar (Jadwal Cicilan Dibuat)");
 
       } else {
-        // Masuk ke MUTASI (Uang Real) -> Folder 'finance_mutasi'
+        // Masuk ke MUTASI (LUNAS)
         await addDoc(collection(db, "finance_mutasi"), { 
           tanggal: tanggalDaftar,
           ket: `Pendaftaran Baru: ${namaSiswa}`,
-          tipe: "Masuk", // Debit
-          metode: metodeBayar, // Tunai/Bank
+          tipe: "Masuk", 
+          metode: metodeBayar, 
           nominal: totalBayar,
           kategori: "Pendaftaran",
           studentId
         });
-        alert(`✅ Siswa Terdaftar & Lunas! (Tercatat di Mutasi ${metodeBayar})`);
+        alert(`✅ Siswa Terdaftar & Lunas!`);
       }
 
       navigate('/admin/students');
@@ -208,15 +221,32 @@ const AddStudent = () => {
                 </select>
               </div>
 
+              {/* AREA PENGATURAN CICILAN */}
               {metodeBayar === "Cicilan" && (
                 <div style={styles.cicilanBox}>
-                  <label>Tenor:</label>
-                  <div style={{display:'flex', gap:5, marginTop:5}}>
-                    {[1,2,3].map(t => (
+                  <label>Tenor (Kali Bayar):</label>
+                  <div style={{display:'flex', gap:5, marginTop:5, marginBottom: 15}}>
+                    {[1,2,3,4,5,6].map(t => (
                       <button key={t} type="button" onClick={() => setTenor(t)} style={tenor===t ? styles.btnActive : styles.btnInactive}>{t}x</button>
                     ))}
                   </div>
-                  <p>Cicilan: <b>Rp {hitungCicilan().toLocaleString()}</b> /bln</p>
+
+                  {/* INPUT TANGGAL JATUH TEMPO (BARU) */}
+                  <label>Mulai Tagihan Pertama:</label>
+                  <input 
+                    type="date" 
+                    value={tanggalMulaiCicilan} 
+                    onChange={(e) => setTanggalMulaiCicilan(e.target.value)}
+                    style={{...styles.input, marginTop: 5}} 
+                  />
+                  <small style={{display:'block', fontSize:11, marginTop:5, opacity:0.8}}>
+                    *Jatuh tempo bulan berikutnya akan otomatis mengikuti tanggal ini.
+                  </small>
+
+                  <div style={{marginTop: 15, borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: 10}}>
+                    <p style={{margin:0}}>Cicilan per bulan:</p> 
+                    <b style={{fontSize: 18}}>Rp {hitungCicilan().toLocaleString()}</b>
+                  </div>
                 </div>
               )}
 
@@ -240,10 +270,10 @@ const styles = {
   inputDate: { width: '100%', padding: '10px', borderRadius: '5px', border: '2px solid #3498db' },
   select: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', background: 'white' },
   textarea: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', minHeight: '80px', boxSizing: 'border-box' },
-  cicilanBox: { background: 'rgba(255,255,255,0.1)', padding: '15px', borderRadius: '5px', marginTop: '10px' },
-  btnActive: { background: '#f1c40f', border: 'none', padding: '5px 10px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' },
+  cicilanBox: { background: 'rgba(255,255,255,0.1)', padding: '15px', borderRadius: '5px', marginTop: '10px', border: '1px solid rgba(255,255,255,0.2)' },
+  btnActive: { background: '#f1c40f', border: 'none', padding: '5px 10px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', color: '#2c3e50' },
   btnInactive: { background: 'transparent', border: '1px solid #ccc', color: 'white', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' },
-  btnSubmit: { width: '100%', padding: '15px', background: '#27ae60', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '20px' }
+  btnSubmit: { width: '100%', padding: '15px', background: '#27ae60', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.2)' }
 };
 
 export default AddStudent;
