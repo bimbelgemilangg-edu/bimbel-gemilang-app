@@ -1,16 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const navigate = useNavigate();
   const [selectedTeacher, setSelectedTeacher] = useState("");
+  
+  // --- SMART LOGIC: LOAD GURU ---
+  const [teachers, setTeachers] = useState([]);
 
-  const teachers = ["Pak Budi", "Bu Siti", "Pak Joko", "Bu Rina"]; // Nanti dari Database
+  useEffect(() => {
+    const savedTeachers = localStorage.getItem("DB_TEACHERS");
+    if (savedTeachers) {
+      // Ambil hanya namanya saja untuk dropdown
+      setTeachers(JSON.parse(savedTeachers).map(t => t.nama));
+    } else {
+      // Default jika belum ada data
+      setTeachers(["Pak Budi", "Bu Siti"]); 
+    }
+  }, []);
+  // ------------------------------
 
   const handleLoginGuru = () => {
     if (!selectedTeacher) return alert("Pilih nama Anda terlebih dahulu!");
-    
-    // Bawa nama guru ke halaman dashboard
     navigate('/teacher', { state: { teacherName: selectedTeacher } });
   };
 
@@ -20,7 +31,6 @@ const Login = () => {
         <h1 style={styles.title}>Bimbel Gemilang</h1>
         <p style={styles.subtitle}>Portal Akademik & Absensi</p>
 
-        {/* --- FORM LOGIN GURU (DROPDOWN) --- */}
         <div style={styles.formGroup}>
           <label style={styles.label}>Pilih Nama Anda</label>
           <select 
@@ -29,8 +39,8 @@ const Login = () => {
             onChange={(e) => setSelectedTeacher(e.target.value)}
           >
             <option value="">-- Pilih Nama Guru --</option>
-            {teachers.map((t, index) => (
-              <option key={index} value={t}>{t}</option>
+            {teachers.map((name, index) => (
+              <option key={index} value={name}>{name}</option>
             ))}
           </select>
 
@@ -39,7 +49,6 @@ const Login = () => {
           </button>
         </div>
 
-        {/* LOGIN ADMIN */}
         <div style={styles.footer}>
           <div style={styles.divider}></div>
           <p style={styles.adminText}>Administrator?</p>
@@ -57,9 +66,7 @@ const styles = {
   subtitle: { color: '#7f8c8d', marginBottom: '30px', fontSize: '14px' },
   formGroup: { marginBottom: '20px', textAlign: 'left' },
   label: { display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#34495e' },
-  
   select: { width: '100%', padding: '12px', marginBottom: '15px', border: '1px solid #ccc', borderRadius: '5px', fontSize: '16px', backgroundColor: 'white' },
-  
   buttonTentor: { width: '100%', padding: '12px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', transition: '0.3s' },
   footer: { marginTop: '20px' },
   divider: { height: '1px', backgroundColor: '#eee', marginBottom: '15px' },

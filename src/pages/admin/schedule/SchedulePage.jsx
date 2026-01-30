@@ -1,43 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../../../components/Sidebar';
 
 const SchedulePage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   
-  // DATA DUMMY SISWA (DATABASE)
+  // --- SMART LOGIC: LOAD GURU DARI DATABASE ---
+  const [availableTeachers, setAvailableTeachers] = useState([]);
+
+  useEffect(() => {
+    const savedTeachers = localStorage.getItem("DB_TEACHERS");
+    if (savedTeachers) {
+      setAvailableTeachers(JSON.parse(savedTeachers));
+    }
+  }, []);
+  // --------------------------------------------
+
   const allStudents = [
     { id: 101, nama: "Adit Sopo", kelas: "4 SD" },
     { id: 102, nama: "Jarwo Kuat", kelas: "4 SD" },
-    { id: 103, nama: "Denis Kancil", kelas: "4 SD" },
-    { id: 104, nama: "Siti Nurbaya", kelas: "5 SD" },
-    { id: 105, nama: "Malin Kundang", kelas: "5 SD" },
     { id: 106, nama: "Roro Jonggrang", kelas: "9 SMP" },
   ];
 
   const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
 
-  // Jadwal
-  const [schedules, setSchedules] = useState([
-    { 
-      id: 1, planet: "MERKURIUS", dateStr: "2026-01-30", start: "14:00", end: "15:30", type: "Pararel", 
-      title: "Matematika Dasar", booker: "Pak Budi", 
-      code: "MER-8812",
-      students: [101, 102] // ID Siswa yang ikut
-    },
-  ]);
-
+  const [schedules, setSchedules] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activePlanet, setActivePlanet] = useState("");
   const [generatedCode, setGeneratedCode] = useState("");
 
-  // Form State
   const [formData, setFormData] = useState({
-    start: "", end: "", type: "Pararel", title: "", booker: "",
-    selectedStudents: [] // Array ID siswa
+    start: "", end: "", type: "Pararel", title: "", 
+    booker: "", // Ini nanti diisi nama guru dari dropdown
+    selectedStudents: []
   });
 
-  // --- LOGIKA HELPER ---
   const changeMonth = (offset) => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + offset, 1));
   const formatDateStr = (date) => date.toISOString().split('T')[0];
 
@@ -47,32 +44,16 @@ const SchedulePage = () => {
     return `${prefix}-${num}`;
   };
 
-  // --- LOGIKA PILIH SISWA (SMART FILTER) ---
   const handleSelectClass = (e) => {
     const kelas = e.target.value;
-    if (kelas === "") return;
-    
-    // Otomatis centang semua siswa di kelas tersebut
-    const studentsInClass = allStudents.filter(s => s.kelas === kelas).map(s => s.id);
-    
-    // Gabungkan dengan yang sudah dipilih (hindari duplikat)
-    const newSelection = [...new Set([...formData.selectedStudents, ...studentsInClass])];
-    setFormData({ ...formData, selectedStudents: newSelection });
+    if (!kelas) return;
+    const ids = allStudents.filter(s => s.kelas === kelas).map(s => s.id);
+    setFormData(prev => ({ ...prev, selectedStudents: [...new Set([...prev.selectedStudents, ...ids])] }));
   };
 
-  const toggleStudent = (id) => {
-    if (formData.selectedStudents.includes(id)) {
-      setFormData({ ...formData, selectedStudents: formData.selectedStudents.filter(sid => sid !== id) });
-    } else {
-      setFormData({ ...formData, selectedStudents: [...formData.selectedStudents, id] });
-    }
-  };
-
-  // --- MODAL HANDLERS ---
   const openAddModal = (planet) => {
     setActivePlanet(planet);
-    const code = generateCode(planet);
-    setGeneratedCode(code);
+    setGeneratedCode(generateCode(planet));
     setFormData({ start: "14:00", end: "15:30", type: "Pararel", title: "", booker: "", selectedStudents: [] });
     setIsModalOpen(true);
   };
@@ -83,17 +64,11 @@ const SchedulePage = () => {
       id: Date.now(),
       planet: activePlanet,
       dateStr: formatDateStr(selectedDate),
-      start: formData.start,
-      end: formData.end,
-      type: formData.type,
-      title: formData.title,
-      booker: formData.booker,
-      code: generatedCode,
-      students: formData.selectedStudents // Simpan daftar siswa
+      ...formData,
+      code: generatedCode
     };
     setSchedules([...schedules, newSchedule]);
     setIsModalOpen(false);
-    alert(`Jadwal Tersimpan!\nKode Kelas: ${generatedCode}\nJumlah Siswa: ${newSchedule.students.length}`);
   };
 
   const renderCalendar = () => {
@@ -117,9 +92,8 @@ const SchedulePage = () => {
     <div style={{ display: 'flex' }}>
       <Sidebar />
       <div style={styles.mainContent}>
-        
         <div style={styles.header}>
-          <h2 style={{margin:0}}>📅 Jadwal & Plotting Siswa</h2>
+          <h2 style={{margin:0}}>📅 Jadwal (Auto Teacher Sync)</h2>
           <div style={styles.nav}>
             <button onClick={() => changeMonth(-1)}>◀</button>
             <span style={{fontWeight:'bold'}}>{currentMonth.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}</span>
@@ -128,15 +102,11 @@ const SchedulePage = () => {
         </div>
 
         <div style={styles.layout}>
-          {/* Kalender */}
           <div style={styles.card}>
             <h3>Pilih Tanggal</h3>
-            <div style={styles.calendarGrid}>
-              {renderCalendar()}
-            </div>
+            <div style={styles.calendarGrid}>{renderCalendar()}</div>
           </div>
 
-          {/* List Planet */}
           <div style={styles.card}>
             <h3>Jadwal: {selectedDate.toLocaleDateString('id-ID')}</h3>
             <div style={styles.planetList}>
@@ -150,10 +120,7 @@ const SchedulePage = () => {
                     </div>
                     {items.map(item => (
                       <div key={item.id} style={item.type === 'Pararel' ? styles.tagRed : styles.tagGreen}>
-                        <div>
-                          <b>{item.start} - {item.end}</b> ({item.title})<br/>
-                          <small>Guru: {item.booker}</small>
-                        </div>
+                        <div><b>{item.start}-{item.end}</b> ({item.title}) - {item.booker}</div>
                         <div style={styles.codeBadge}>{item.code}</div>
                       </div>
                     ))}
@@ -164,47 +131,51 @@ const SchedulePage = () => {
           </div>
         </div>
 
-        {/* MODAL INPUT JADWAL & SISWA */}
         {isModalOpen && (
           <div style={styles.overlay}>
             <div style={styles.modal}>
               <h3>Set Jadwal: {activePlanet}</h3>
-              <p style={styles.codeDisplay}>Kode Kelas: {generatedCode}</p>
+              <p style={styles.codeDisplay}>Kode: {generatedCode}</p>
               
               <form onSubmit={handleSave}>
                 <div style={styles.row}>
                   <input type="time" required value={formData.start} onChange={e => setFormData({...formData, start: e.target.value})} style={styles.input} />
                   <input type="time" required value={formData.end} onChange={e => setFormData({...formData, end: e.target.value})} style={styles.input} />
                 </div>
+
+                <div style={styles.group}>
+                  <label>Pilih Guru (Otomatis)</label>
+                  {/* --- DROPDOWN GURU OTOMATIS --- */}
+                  <select 
+                    required 
+                    value={formData.booker} 
+                    onChange={e => setFormData({...formData, booker: e.target.value})} 
+                    style={styles.select}
+                  >
+                    <option value="">-- Pilih Guru --</option>
+                    {availableTeachers.map(t => (
+                      <option key={t.id} value={t.nama}>{t.nama} - {t.mapel}</option>
+                    ))}
+                  </select>
+                </div>
+
                 <input type="text" placeholder="Mapel/Kegiatan" required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} style={styles.input} />
-                <input type="text" placeholder="Nama Guru" required value={formData.booker} onChange={e => setFormData({...formData, booker: e.target.value})} style={styles.input} />
                 
-                {/* --- BAGIAN PILIH SISWA --- */}
                 <div style={styles.studentSection}>
-                  <label style={{fontWeight:'bold'}}>👥 Masukkan Siswa:</label>
-                  
-                  {/* Filter Cepat */}
-                  <select onChange={handleSelectClass} style={styles.input}>
-                    <option value="">-- Pilih Satu Kelas (Auto) --</option>
+                  <label>👥 Masukkan Siswa:</label>
+                  <select onChange={handleSelectClass} style={styles.select}>
+                    <option value="">-- Pilih Satu Kelas --</option>
                     <option value="4 SD">Kelas 4 SD</option>
-                    <option value="5 SD">Kelas 5 SD</option>
                     <option value="9 SMP">Kelas 9 SMP</option>
                   </select>
-
-                  {/* List Centang Manual */}
                   <div style={styles.studentList}>
                     {allStudents.map(s => (
                       <label key={s.id} style={styles.checkboxLabel}>
-                        <input 
-                          type="checkbox" 
-                          checked={formData.selectedStudents.includes(s.id)}
-                          onChange={() => toggleStudent(s.id)}
-                        />
-                        {s.nama} <span style={{fontSize:'10px', color:'#777'}}>({s.kelas})</span>
+                        <input type="checkbox" checked={formData.selectedStudents.includes(s.id)} onChange={() => {}} />
+                        {s.nama}
                       </label>
                     ))}
                   </div>
-                  <p style={{fontSize:'12px', textAlign:'right'}}>Total: {formData.selectedStudents.length} Siswa</p>
                 </div>
 
                 <div style={styles.btnRow}>
@@ -215,13 +186,12 @@ const SchedulePage = () => {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
 };
 
-// CSS Styles
+// CSS Styles (Sama seperti sebelumnya)
 const styles = {
   mainContent: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'sans-serif' },
   header: { display: 'flex', justifyContent: 'space-between', marginBottom: '20px', background:'white', padding:'20px', borderRadius:'10px' },
@@ -232,26 +202,23 @@ const styles = {
   day: { padding: '10px', textAlign: 'center', border: '1px solid #eee', cursor: 'pointer' },
   dayActive: { padding: '10px', textAlign: 'center', background: '#3498db', color: 'white', fontWeight:'bold' },
   dot: { display:'inline-block', width:'6px', height:'6px', background:'red', borderRadius:'50%', marginLeft:'2px' },
-  
   planetList: { display: 'flex', flexDirection: 'column', gap: '10px' },
   planetCard: { border: '1px solid #eee', padding: '10px', borderRadius: '8px' },
   planetHeader: { display:'flex', justifyContent:'space-between', marginBottom:'5px' },
   btnAdd: { background: '#27ae60', color:'white', border:'none', borderRadius:'4px', cursor:'pointer' },
-  
   tagRed: { background: '#fadbd8', borderLeft: '4px solid #c0392b', padding: '8px', marginTop:'5px', borderRadius:'4px', display:'flex', justifyContent:'space-between' },
   tagGreen: { background: '#d4edda', borderLeft: '4px solid #27ae60', padding: '8px', marginTop:'5px', borderRadius:'4px', display:'flex', justifyContent:'space-between' },
   codeBadge: { background:'white', padding:'2px 5px', fontWeight:'bold', border:'1px dashed #333', fontSize:'12px', height:'fit-content' },
-
   overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 999 },
   modal: { background: 'white', padding: '25px', borderRadius: '10px', width: '400px', maxHeight:'90vh', overflowY:'auto' },
   row: { display: 'flex', gap: '10px' },
+  group: { marginBottom: '10px' },
   input: { width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box', border:'1px solid #ccc', borderRadius:'4px' },
+  select: { width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box', border:'1px solid #ccc', borderRadius:'4px', background:'white' },
   codeDisplay: { background: '#eee', padding: '10px', textAlign: 'center', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '10px' },
-  
   studentSection: { borderTop: '1px solid #eee', paddingTop: '10px', marginTop: '10px' },
   studentList: { maxHeight: '150px', overflowY: 'auto', border: '1px solid #eee', padding: '5px', marginTop: '5px' },
   checkboxLabel: { display: 'block', padding: '5px', cursor: 'pointer' },
-  
   btnRow: { display: 'flex', gap: '10px', marginTop: '20px' },
   btnSave: { flex: 1, padding: '10px', background: '#2c3e50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' },
   btnCancel: { flex: 1, padding: '10px', background: '#ccc', border: 'none', borderRadius: '5px', cursor: 'pointer' }
