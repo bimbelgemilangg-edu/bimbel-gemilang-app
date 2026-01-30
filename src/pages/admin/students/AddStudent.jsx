@@ -43,7 +43,7 @@ const AddStudent = () => {
   const [metodeBayar, setMetodeBayar] = useState("Tunai"); 
   const [tenor, setTenor] = useState(1);
   
-  // BARU: State untuk Tanggal Mulai Cicilan
+  // State untuk Tanggal Mulai Cicilan
   const [tanggalMulaiCicilan, setTanggalMulaiCicilan] = useState(new Date().toISOString().split('T')[0]);
 
   // 3. KALKULASI
@@ -85,26 +85,22 @@ const AddStudent = () => {
       const studentId = docRef.id;
       const totalBayar = hitungTotal();
 
-      // B. LOGIKA KEUANGAN (MUTASI vs TAGIHAN)
+      // B. LOGIKA KEUANGAN
       if (metodeBayar === "Cicilan") {
-        // Masuk ke TAGIHAN
         let installments = [];
         const perBulan = hitungCicilan();
         
-        // Logic Hitung Tanggal Otomatis (Bulan 1, Bulan 2, dst)
+        // Logic Hitung Tanggal Otomatis
         const startDate = new Date(tanggalMulaiCicilan);
 
         for (let i = 0; i < tenor; i++) {
-          // Clone tanggal agar tidak merubah referensi asli
           let dueDate = new Date(startDate);
-          // Tambah bulan sesuai urutan loop (0 = bulan ini, 1 = bulan depan)
           dueDate.setMonth(startDate.getMonth() + i);
 
           installments.push({
             bulanKe: i + 1,
             nominal: perBulan,
             status: "Belum Lunas",
-            // Simpan format YYYY-MM-DD agar bisa diedit nanti
             jatuhTempo: dueDate.toISOString().split('T')[0] 
           });
         }
@@ -144,7 +140,7 @@ const AddStudent = () => {
     <div style={{ display: 'flex' }}>
       <Sidebar />
       <div style={styles.content}>
-        <h2>🎓 Formulir Pendaftaran Lengkap</h2>
+        <h2 style={{color: '#333'}}>🎓 Formulir Pendaftaran Lengkap</h2>
         <form onSubmit={handleSubmit} style={styles.grid}>
           
           {/* KOLOM KIRI: DATA PERSONAL */}
@@ -152,9 +148,9 @@ const AddStudent = () => {
             
             {/* IDENTITAS */}
             <div style={styles.card}>
-              <h3>👤 Identitas Siswa</h3>
+              <h3 style={styles.cardTitle}>👤 Identitas Siswa</h3>
               <div style={styles.formGroup}>
-                <label>Tanggal Daftar</label>
+                <label style={styles.label}>Tanggal Daftar</label>
                 <input type="date" style={styles.inputDate} value={tanggalDaftar} onChange={e => setTanggalDaftar(e.target.value)} />
               </div>
               <div style={styles.formGroup}><input style={styles.input} placeholder="Nama Lengkap Siswa" value={namaSiswa} onChange={e => setNamaSiswa(e.target.value)} required /></div>
@@ -168,9 +164,9 @@ const AddStudent = () => {
               </div>
             </div>
 
-            {/* ORANG TUA (FULL) */}
+            {/* ORANG TUA */}
             <div style={styles.card}>
-              <h3>👨‍👩‍👧 Data Orang Tua</h3>
+              <h3 style={styles.cardTitle}>👨‍👩‍👧 Data Orang Tua</h3>
               <div style={styles.row}>
                 <input style={styles.input} placeholder="Nama Ayah" value={namaAyah} onChange={e => setNamaAyah(e.target.value)} required />
                 <input style={styles.input} placeholder="Pekerjaan Ayah" value={pekerjaanAyah} onChange={e => setPekerjaanAyah(e.target.value)} />
@@ -191,6 +187,7 @@ const AddStudent = () => {
               
               <div style={styles.formGroup}>
                 <label style={{color:'white'}}>Pilih Paket</label>
+                {/* FIX: Select sekarang punya warna text HITAM */}
                 <select style={styles.select} value={paket} onChange={e => setPaket(e.target.value)}>
                   <option value="paket1">Paket 1 - Rp {getBasePrice().toLocaleString()}</option>
                   <option value="paket2">Paket 2 (Medium)</option>
@@ -204,6 +201,7 @@ const AddStudent = () => {
 
               <div style={styles.formGroup}>
                 <label style={{color:'white'}}>Diskon (Rp)</label>
+                {/* FIX: Input sekarang punya warna text HITAM */}
                 <input type="number" style={styles.input} value={diskon} onChange={e => setDiskon(e.target.value)} placeholder="0" />
               </div>
 
@@ -231,8 +229,8 @@ const AddStudent = () => {
                     ))}
                   </div>
 
-                  {/* INPUT TANGGAL JATUH TEMPO (BARU) */}
                   <label>Mulai Tagihan Pertama:</label>
+                  {/* FIX: Input Date punya warna text HITAM */}
                   <input 
                     type="date" 
                     value={tanggalMulaiCicilan} 
@@ -240,7 +238,7 @@ const AddStudent = () => {
                     style={{...styles.input, marginTop: 5}} 
                   />
                   <small style={{display:'block', fontSize:11, marginTop:5, opacity:0.8}}>
-                    *Jatuh tempo bulan berikutnya akan otomatis mengikuti tanggal ini.
+                    *Jatuh tempo bulan berikutnya otomatis mengikuti.
                   </small>
 
                   <div style={{marginTop: 15, borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: 10}}>
@@ -259,17 +257,42 @@ const AddStudent = () => {
   );
 };
 
+// --- CSS YANG SUDAH DIPERBAIKI (FORCE BLACK TEXT) ---
 const styles = {
-  content: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'sans-serif' },
+  content: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'Segoe UI, sans-serif' },
   grid: { display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '20px' },
+  
   card: { background: 'white', padding: '20px', borderRadius: '10px', marginBottom: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
+  cardTitle: { marginTop: 0, color: '#333' }, // Judul Card Hitam
+  label: { color: '#333', fontWeight: '500' }, // Label Hitam
+  
   cardBlue: { background: '#2c3e50', padding: '25px', borderRadius: '10px', color: 'white' },
+  
   row: { display: 'flex', gap: '10px', marginBottom: '10px' },
   formGroup: { marginBottom: '15px' },
-  input: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' },
-  inputDate: { width: '100%', padding: '10px', borderRadius: '5px', border: '2px solid #3498db' },
-  select: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', background: 'white' },
-  textarea: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', minHeight: '80px', boxSizing: 'border-box' },
+  
+  // FIX UTAMA: Menambahkan color: '#000' dan background: '#fff'
+  input: { 
+    width: '100%', padding: '10px', borderRadius: '5px', 
+    border: '1px solid #ccc', boxSizing: 'border-box',
+    background: '#ffffff', color: '#000000' 
+  },
+  inputDate: { 
+    width: '100%', padding: '10px', borderRadius: '5px', 
+    border: '2px solid #3498db',
+    background: '#ffffff', color: '#000000'
+  },
+  select: { 
+    width: '100%', padding: '10px', borderRadius: '5px', 
+    border: '1px solid #ccc', 
+    background: '#ffffff', color: '#000000' // Pastikan background putih & teks hitam
+  },
+  textarea: { 
+    width: '100%', padding: '10px', borderRadius: '5px', 
+    border: '1px solid #ccc', minHeight: '80px', boxSizing: 'border-box',
+    background: '#ffffff', color: '#000000'
+  },
+  
   cicilanBox: { background: 'rgba(255,255,255,0.1)', padding: '15px', borderRadius: '5px', marginTop: '10px', border: '1px solid rgba(255,255,255,0.2)' },
   btnActive: { background: '#f1c40f', border: 'none', padding: '5px 10px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', color: '#2c3e50' },
   btnInactive: { background: 'transparent', border: '1px solid #ccc', color: 'white', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' },
