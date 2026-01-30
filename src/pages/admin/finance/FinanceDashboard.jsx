@@ -5,6 +5,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 const FinanceDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview'); // overview | mutasi | tagihan | catat
   
+  // --- STATE PRIVASI (SENSOR UANG) ---
+  const [showBalance, setShowBalance] = useState(false); // Default: Tertutup
+
   // --- STATE DATA (DUMMY) ---
   const [saldo, setSaldo] = useState({ tunai: 5000000, bank: 15000000 });
   const [transaksi, setTransaksi] = useState([
@@ -20,7 +23,7 @@ const FinanceDashboard = () => {
   const dataGrafik = [
     { name: 'Minggu 1', Masuk: 4000000, Keluar: 2400000 },
     { name: 'Minggu 2', Masuk: 3000000, Keluar: 1398000 },
-    { name: 'Minggu 3', Masuk: 2000000, Keluar: 9800000 }, // Defisit contoh
+    { name: 'Minggu 3', Masuk: 2000000, Keluar: 9800000 },
     { name: 'Minggu 4', Masuk: 2780000, Keluar: 3908000 },
   ];
 
@@ -29,13 +32,11 @@ const FinanceDashboard = () => {
   // 1. Fungsi Pembayaran Tagihan (Otomatis masuk Saldo)
   const handleBayarTagihan = (siswa, metode) => {
     if (window.confirm(`Terima pembayaran Rp ${siswa.piutang.toLocaleString()} dari ${siswa.nama} via ${metode}?`)) {
-      // 1. Update Saldo
       setSaldo(prev => ({
         ...prev,
         [metode.toLowerCase()]: prev[metode.toLowerCase()] + siswa.piutang
       }));
 
-      // 2. Catat Mutasi Otomatis
       const mutasiBaru = {
         id: Date.now(),
         tanggal: new Date().toISOString().split('T')[0],
@@ -46,7 +47,6 @@ const FinanceDashboard = () => {
       };
       setTransaksi([mutasiBaru, ...transaksi]);
 
-      // 3. Nol-kan Tagihan Siswa
       const updateSiswa = tagihanSiswa.map(item => 
         item.id === siswa.id ? { ...item, piutang: 0 } : item
       );
@@ -56,14 +56,18 @@ const FinanceDashboard = () => {
     }
   };
 
-  // 2. Fungsi Hapus Transaksi (Proteksi Owner)
+  // 2. Fungsi Hapus Transaksi (SMART LOGIC - PROTEKSI OWNER)
   const handleDeleteTransaksi = (id) => {
-    const pin = prompt("⚠️ AKSES TERBATAS: Masukkan PIN Owner untuk menghapus data keuangan:");
-    if (pin === "1234") { // Nanti diganti sistem login owner asli
+    // Ambil PIN dari LocalStorage (Integrasi dengan Menu Settings)
+    const ownerPin = localStorage.getItem("ownerPin") || "2003";
+    
+    const pinInput = prompt("⚠️ SECURITY CHECK: Masukkan PIN Owner untuk menghapus data:");
+    
+    if (pinInput === ownerPin) {
       setTransaksi(transaksi.filter(item => item.id !== id));
-      alert("Data berhasil dihapus.");
+      alert("✅ Data Keuangan berhasil dihapus.");
     } else {
-      alert("PIN Salah! Akses ditolak.");
+      alert("⛔ AKSES DITOLAK: PIN Salah!");
     }
   };
 
@@ -71,6 +75,11 @@ const FinanceDashboard = () => {
   const handleWhatsApp = (siswa) => {
     const pesan = `Halo Ortu ${siswa.nama}, mohon segera melunasi tunggakan sebesar Rp ${siswa.piutang.toLocaleString()}. Terima kasih.`;
     window.open(`https://wa.me/${siswa.ortu}?text=${encodeURIComponent(pesan)}`, '_blank');
+  };
+
+  // Helper untuk Sensor Uang
+  const displayMoney = (amount) => {
+    return showBalance ? `Rp ${amount.toLocaleString()}` : "Rp *********";
   };
 
   return (
@@ -92,18 +101,29 @@ const FinanceDashboard = () => {
         {/* --- KONTEN: OVERVIEW & ANALISIS --- */}
         {activeTab === 'overview' && (
           <div>
+            {/* PRIVACY TOGGLE */}
+            <div style={{marginBottom: '15px', display:'flex', alignItems:'center', gap:'10px'}}>
+              <span style={{fontSize:'14px', color:'#7f8c8d'}}>Mode Privasi:</span>
+              <button 
+                onClick={() => setShowBalance(!showBalance)} 
+                style={showBalance ? styles.btnEyeOpen : styles.btnEyeClosed}
+              >
+                {showBalance ? "👁️ Sembunyikan Saldo" : "🙈 Tampilkan Saldo"}
+              </button>
+            </div>
+
             <div style={styles.cardGrid}>
               <div style={styles.cardInfo}>
                 <p>Total Saldo Tunai</p>
-                <h3 style={{color: '#27ae60'}}>Rp {saldo.tunai.toLocaleString()}</h3>
+                <h3 style={{color: '#27ae60'}}>{displayMoney(saldo.tunai)}</h3>
               </div>
               <div style={styles.cardInfo}>
                 <p>Total Saldo Bank</p>
-                <h3 style={{color: '#2980b9'}}>Rp {saldo.bank.toLocaleString()}</h3>
+                <h3 style={{color: '#2980b9'}}>{displayMoney(saldo.bank)}</h3>
               </div>
               <div style={styles.cardInfo}>
                 <p>Total Aset (Tunai + Bank)</p>
-                <h3>Rp {(saldo.tunai + saldo.bank).toLocaleString()}</h3>
+                <h3>{displayMoney(saldo.tunai + saldo.bank)}</h3>
               </div>
             </div>
 
@@ -153,7 +173,7 @@ const FinanceDashboard = () => {
                     </td>
                     <td style={styles.td}>Rp {item.nominal.toLocaleString()}</td>
                     <td style={styles.td}>
-                      <button style={styles.btnDelete} onClick={() => handleDeleteTransaksi(item.id)}>🗑️</button>
+                      <button style={styles.btnDelete} onClick={() => handleDeleteTransaksi(item.id)}>🗑️ Hapus</button>
                     </td>
                   </tr>
                 ))}
@@ -250,7 +270,7 @@ const styles = {
   badgeOut: { background: '#f8d7da', color: '#721c24', padding: '5px 10px', borderRadius: '15px', fontSize: '12px', fontWeight: 'bold' },
   
   btnDownload: { background: '#27ae60', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer' },
-  btnDelete: { background: '#e74c3c', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' },
+  btnDelete: { background: '#c0392b', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontSize: '12px' },
   
   btnWA: { background: '#25D366', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', marginRight: '5px' },
   btnPay: { background: '#f39c12', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', marginRight: '5px' },
@@ -258,7 +278,11 @@ const styles = {
 
   formGroup: { marginBottom: '15px' },
   input: { width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '5px', marginTop: '5px' },
-  btnSave: { width: '100%', padding: '12px', background: '#2c3e50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }
+  btnSave: { width: '100%', padding: '12px', background: '#2c3e50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' },
+
+  // Tombol Mata
+  btnEyeOpen: { background: '#95a5a6', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' },
+  btnEyeClosed: { background: '#34495e', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }
 };
 
 export default FinanceDashboard;

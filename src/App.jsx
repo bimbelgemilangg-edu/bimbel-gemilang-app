@@ -10,9 +10,9 @@ import StudentFinance from './pages/admin/students/StudentFinance';
 import EditStudent from './pages/admin/students/EditStudent';
 import FinanceDashboard from './pages/admin/finance/FinanceDashboard';
 import TeacherList from './pages/admin/teachers/TeacherList';
-
-// Import Kembali Halaman Jadwal
-import SchedulePage from './pages/admin/schedule/SchedulePage'; 
+import SchedulePage from './pages/admin/schedule/SchedulePage';
+// Import Settings
+import Settings from './pages/admin/Settings'; 
 
 function App() {
   return (
@@ -28,12 +28,13 @@ function App() {
         <Route path="/admin/students/finance/:id" element={<StudentFinance />} />
         <Route path="/admin/students/edit/:id" element={<EditStudent />} />
         
-        {/* Keuangan & Guru */}
+        {/* Fitur Lain */}
         <Route path="/admin/finance" element={<FinanceDashboard />} />
         <Route path="/admin/teachers" element={<TeacherList />} />
-        
-        {/* Halaman Jadwal (MENU TERSENDIRI) */}
         <Route path="/admin/schedule" element={<SchedulePage />} />
+        
+        {/* MENU SETTING (Baru) */}
+        <Route path="/admin/settings" element={<Settings />} />
       </Routes>
     </BrowserRouter>
   );

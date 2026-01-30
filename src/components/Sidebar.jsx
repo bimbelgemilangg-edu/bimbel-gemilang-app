@@ -13,33 +13,31 @@ const Sidebar = () => {
       </div>
 
       <nav style={styles.nav}>
-        {/* 1. Dashboard (BERSIH) */}
         <Link to="/admin" style={isActive('/admin') ? styles.linkActive : styles.link}>
            🏠 Dashboard
         </Link>
-        
-        {/* 2. Menu Jadwal (TERSENDIRI) */}
         <Link to="/admin/schedule" style={isActive('/admin/schedule') ? styles.linkActive : styles.link}>
            📅 Jadwal & Kelas
         </Link>
-
-        {/* 3. Siswa */}
         <Link to="/admin/students" style={isActive('/admin/students') ? styles.linkActive : styles.link}>
            👨‍🎓 Manajemen Siswa
         </Link>
         <Link to="/admin/students/add" style={isActive('/admin/students/add') ? styles.linkActive : styles.link}>
            ➕ Pendaftaran Baru
         </Link>
-
-        {/* 4. Guru */}
         <Link to="/admin/teachers" style={isActive('/admin/teachers') ? styles.linkActive : styles.link}>
            👨‍🏫 Manajemen Guru
         </Link>
-        
-        {/* 5. Keuangan */}
         <Link to="/admin/finance" style={isActive('/admin/finance') ? styles.linkActive : styles.link}>
            💰 Keuangan & Kasir
         </Link>
+        
+        {/* MENU SETTING (Di Bawah) */}
+        <div style={{marginTop: '20px', borderTop: '1px solid #34495e'}}>
+          <Link to="/admin/settings" style={isActive('/admin/settings') ? styles.linkActive : styles.link}>
+             ⚙️ Pengaturan Owner
+          </Link>
+        </div>
       </nav>
 
       <div style={styles.footer}>
