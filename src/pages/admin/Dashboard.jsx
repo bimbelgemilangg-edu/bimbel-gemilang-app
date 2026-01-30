@@ -1,64 +1,44 @@
 import React, { useState, useEffect } from 'react';
+import Sidebar from '../../components/Sidebar'; // Import Sidebar
 
 const Dashboard = () => {
-  // LOGIKA WAKTU
   const [date, setDate] = useState(new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => setDate(new Date()), 60000); // Update tiap menit
+    const timer = setInterval(() => setDate(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
   const formatHari = date.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  const formatJam = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-
-  // DATA CONTOH
-  const jadwal = [
-    { id: 1, ruang: "R.01", kelas: "4 SD", mapel: "Matematika", jam: "14:00 - 15:30" },
-    { id: 2, ruang: "R.02", kelas: "9 SMP", mapel: "B. Inggris", jam: "16:00 - 17:30" },
-  ];
-
-  const tunggakan = [
-    { id: 1, nama: "Budi S.", nominal: "Rp 150.000" },
-    { id: 2, nama: "Siti A.", nominal: "Rp 300.000" },
-  ];
 
   return (
-    <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div>
-          <h2>Selamat Datang, Admin!</h2>
-          <p>{formatHari}</p>
-        </div>
-        <h1>{formatJam}</h1>
-      </div>
+    <div style={{ display: 'flex' }}>
+      {/* 1. PASANG SIDEBAR DISINI */}
+      <Sidebar />
 
-      {/* Konten */}
-      <div style={styles.grid}>
-        {/* Kartu Jadwal */}
-        <div style={styles.card}>
-          <h3>📅 Jadwal Hari Ini</h3>
-          <ul style={styles.list}>
-            {jadwal.map(item => (
-              <li key={item.id} style={styles.item}>
-                <b>{item.jam}</b> - {item.ruang} <br/>
-                {item.mapel} ({item.kelas})
-              </li>
-            ))}
-          </ul>
+      {/* 2. KONTEN UTAMA (Digeser ke kanan) */}
+      <div style={styles.mainContent}>
+        <div style={styles.header}>
+          <div>
+            <h2>Selamat Datang, Admin!</h2>
+            <p>{formatHari}</p>
+          </div>
         </div>
 
-        {/* Kartu Tunggakan */}
-        <div style={styles.cardWarning}>
-          <h3>⚠️ Tunggakan</h3>
-          <ul style={styles.list}>
-            {tunggakan.map(item => (
-              <li key={item.id} style={styles.itemWarning}>
-                {item.nama} - <b>{item.nominal}</b>
-              </li>
-            ))}
-          </ul>
+        {/* Info Cards */}
+        <div style={styles.grid}>
+          <div style={styles.cardInfo}>
+            <h3>120</h3>
+            <p>Total Siswa Aktif</p>
+          </div>
+          <div style={styles.cardInfo}>
+            <h3>Rp 5.2M</h3>
+            <p>Pemasukan Bulan Ini</p>
+          </div>
+          <div style={styles.cardWarning}>
+            <h3>5 Siswa</h3>
+            <p>Menunggak SPP</p>
+          </div>
         </div>
       </div>
     </div>
@@ -66,14 +46,11 @@ const Dashboard = () => {
 };
 
 const styles = {
-  container: { padding: '20px', fontFamily: 'sans-serif', background: '#f4f4f4', minHeight: '100vh' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', padding: '20px', borderRadius: '8px', marginBottom: '20px' },
-  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' },
-  card: { background: 'white', padding: '20px', borderRadius: '8px' },
-  cardWarning: { background: '#fff0f0', padding: '20px', borderRadius: '8px', border: '1px solid #ffcccc' },
-  list: { listStyle: 'none', padding: 0 },
-  item: { borderBottom: '1px solid #eee', padding: '10px 0' },
-  itemWarning: { borderBottom: '1px solid #ffcccc', padding: '10px 0', color: '#d32f2f' }
+  mainContent: { marginLeft: '250px', padding: '30px', width: '100%', backgroundColor: '#f4f6f8', minHeight: '100vh' },
+  header: { display: 'flex', justifyContent: 'space-between', marginBottom: '30px' },
+  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' },
+  cardInfo: { background: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', textAlign: 'center' },
+  cardWarning: { background: '#fff0f0', padding: '20px', borderRadius: '10px', border: '1px solid #ffcccc', textAlign: 'center', color: '#c0392b' }
 };
 
 export default Dashboard;
