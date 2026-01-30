@@ -15,131 +15,116 @@ const TeacherDashboard = () => {
   const [upcomingClasses, setUpcomingClasses] = useState([]);
   const [attendance, setAttendance] = useState({});
 
-  // --- 1. AMBIL DATA DARI CLOUD ---
+  // --- AMBIL DATA DARI CLOUD (ANTI REFRESH HILANG) ---
   useEffect(() => {
-    const fetchCloudSchedule = async () => {
+    const fetchData = async () => {
       try {
-        // Ambil SEMUA jadwal
-        const q = query(collection(db, "jadwal_bimbel")); 
-        const snapshot = await getDocs(q);
-        const allSchedules = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Ambil SEMUA data jadwal
+        const snapshot = await getDocs(collection(db, "jadwal_bimbel"));
+        const allData = snapshot.docs.map(doc => doc.data());
 
         const todayStr = new Date().toISOString().split('T')[0];
 
-        // Filter Milik Guru Ini
-        const myToday = allSchedules.find(s => s.booker === teacherName && s.dateStr === todayStr);
+        // 1. Cari Jadwal Hari Ini untuk Guru Ini
+        const myToday = allData.find(s => s.booker === teacherName && s.dateStr === todayStr);
         setTodayClass(myToday);
 
-        const myNext = allSchedules.filter(s => s.booker === teacherName && s.dateStr > todayStr);
+        // 2. Cari Jadwal Mendatang
+        const myNext = allData.filter(s => s.booker === teacherName && s.dateStr > todayStr);
         setUpcomingClasses(myNext);
-        
-        // Init Absen
+
+        // 3. Setup Absensi
         if (myToday && myToday.students) {
           const init = {};
           myToday.students.forEach(s => init[s.id] = "Hadir");
           setAttendance(init);
         }
 
-      } catch (error) {
-        console.error("Gagal ambil data:", error);
+      } catch (err) {
+        console.error("Error loading data:", err);
       }
     };
 
-    fetchCloudSchedule();
+    fetchData();
   }, [teacherName]);
 
-  // --- LOGIKA UNLOCK (Sementara masih Local, karena Kode Harian belum di-onlinekan) ---
   const handleUnlock = (e) => {
     e.preventDefault();
     const adminCode = localStorage.getItem("DAILY_TEACHER_CODE") || "GEMILANG-2026";
-    
-    // Kita buat agar guru bisa masuk walau pakai kode default dulu untuk testing
-    if (inputCode === adminCode || inputCode === "TEST") {
+    if (inputCode === adminCode) {
       setIsLocked(false);
-      alert(`🔓 KELAS TERBUKA!\nData diambil dari Server Online.`);
     } else {
-      alert("⛔ KODE SALAH!");
+      alert("Kode Salah!");
     }
-  };
-
-  // Simpan Absen (Logic Only)
-  const handleSubmitAbsen = () => {
-    alert("✅ Absensi Berhasil Disimpan ke Cloud (Simulasi)!");
   };
 
   const handleAbsenChange = (id, val) => setAttendance({...attendance, [id]: val});
 
-  // TAMPILAN (Sama persis seperti sebelumnya, hanya logic useEffect yang berubah)
+  const handleSubmitAbsen = () => {
+    alert("Absensi tersimpan (Simulasi Cloud)!");
+  };
+
   return (
     <div style={styles.container}>
-      {/* HEADER */}
       <div style={styles.header}>
-        <div>
-          <h2 style={{margin:0, color:'white'}}>Halo, {teacherName} 👋</h2>
-          <p style={{margin:0, color:'#dbeafe', fontSize:'14px'}}>Online Mode</p>
-        </div>
+        <h2 style={{color:'white', margin:0}}>Halo, {teacherName}</h2>
         <button onClick={() => navigate('/')} style={styles.btnLogout}>Keluar</button>
       </div>
 
       <div style={styles.content}>
         {isLocked ? (
-          <div style={styles.lockWrapper}>
-            <div style={styles.lockBox}>
-              <h3>🔒 Kelas Terkunci</h3>
-              <p>Masukkan Kode Harian dari Admin</p>
-              <form onSubmit={handleUnlock}>
-                <input type="text" value={inputCode} onChange={e => setInputCode(e.target.value)} style={styles.inputCode} placeholder="Kode..." />
-                <button style={styles.btnUnlock}>BUKA</button>
-              </form>
-            </div>
+          <div style={styles.lockBox}>
+            <h3>🔒 Masukkan Kode Harian</h3>
+            <form onSubmit={handleUnlock}>
+              <input style={styles.inputCode} value={inputCode} onChange={e => setInputCode(e.target.value)} />
+              <button style={styles.btnUnlock}>Buka Kelas</button>
+            </form>
           </div>
         ) : (
           <div style={styles.grid}>
-            {/* KIRI */}
-            <div style={styles.activeCard}>
+            {/* KARTU JADWAL HARI INI */}
+            <div style={styles.card}>
               <div style={styles.cardHeader}>
-                <span style={styles.badgeLive}>ONLINE</span>
-                <b style={{color:'white'}}>{todayClass ? todayClass.start : "--:--"}</b>
+                <span style={{color:'white', fontWeight:'bold'}}>HARI INI</span>
               </div>
-              <div style={styles.classInfo}>
+              <div style={{padding:'20px'}}>
                 {todayClass ? (
                   <>
-                    <h1>🪐 {todayClass.planet}</h1>
-                    <h3>{todayClass.title}</h3>
+                    <h1 style={{marginTop:0}}>🪐 {todayClass.planet}</h1>
+                    <h3>{todayClass.title} ({todayClass.start})</h3>
                     
-                    <div style={styles.attendanceBox}>
-                      <h4>📝 Absensi Siswa</h4>
-                      <table style={styles.table}>
-                        <tbody>
-                          {todayClass.students.map(s => (
-                            <tr key={s.id}>
-                              <td>{s.nama}</td>
-                              <td>
-                                <select value={attendance[s.id]} onChange={e => handleAbsenChange(s.id, e.target.value)}>
-                                  <option>Hadir</option><option>Sakit</option>
-                                </select>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      <button onClick={handleSubmitAbsen} style={styles.btnSubmit}>Simpan</button>
-                    </div>
+                    <h4>📝 Absensi Siswa</h4>
+                    <table style={{width:'100%', marginBottom:'20px'}}>
+                      <tbody>
+                        {todayClass.students.map(s => (
+                          <tr key={s.id} style={{borderBottom:'1px solid #eee'}}>
+                            <td style={{padding:'10px'}}>{s.nama}</td>
+                            <td style={{textAlign:'right'}}>
+                              <select value={attendance[s.id]} onChange={e => handleAbsenChange(s.id, e.target.value)}>
+                                <option>Hadir</option><option>Sakit</option><option>Alpha</option>
+                              </select>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <button onClick={handleSubmitAbsen} style={styles.btnSave}>Simpan Absen</button>
                   </>
                 ) : (
-                  <div style={{padding:'40px', textAlign:'center', color:'#999'}}>Tidak ada jadwal hari ini di Cloud.</div>
+                  <p style={{color:'#999', textAlign:'center'}}>Tidak ada jadwal hari ini.</p>
                 )}
               </div>
             </div>
 
-            {/* KANAN */}
-            <div style={styles.sideCard}>
-              <h3>📅 Minggu Depan</h3>
-              {upcomingClasses.map(item => (
-                 <div key={item.id} style={{borderBottom:'1px solid #eee', padding:'10px 0'}}>
-                   <b>{item.title}</b><br/>
-                   <small>{item.dateStr} • {item.planet}</small>
-                 </div>
+            {/* JADWAL MENDATANG */}
+            <div style={styles.cardSide}>
+              <h3>📅 Mendatang</h3>
+              {upcomingClasses.length === 0 && <small>Kosong</small>}
+              {upcomingClasses.map((item, idx) => (
+                <div key={idx} style={{borderBottom:'1px solid #eee', padding:'10px 0'}}>
+                  <b>{item.dateStr}</b><br/>
+                  {item.title} ({item.planet})
+                </div>
               ))}
             </div>
           </div>
@@ -149,25 +134,19 @@ const TeacherDashboard = () => {
   );
 };
 
-// CSS SEDERHANA
 const styles = {
   container: { minHeight: '100vh', background: '#f0f2f5', fontFamily: 'sans-serif' },
   header: { background: '#2980b9', padding: '20px', display: 'flex', justifyContent: 'space-between' },
-  btnLogout: { background: 'rgba(255,255,255,0.2)', color: 'white', border: 'none', padding: '5px 15px', borderRadius: '5px' },
+  btnLogout: { background: 'none', border: '1px solid white', color: 'white', padding: '5px 15px', borderRadius: '5px', cursor: 'pointer' },
   content: { padding: '30px', maxWidth: '1000px', margin: '0 auto' },
-  lockWrapper: { display: 'flex', justifyContent: 'center', marginTop: '50px' },
-  lockBox: { background: 'white', padding: '40px', borderRadius: '10px', textAlign: 'center', boxShadow: '0 5px 10px rgba(0,0,0,0.1)' },
-  inputCode: { padding: '10px', fontSize: '18px', textAlign: 'center', marginBottom: '10px' },
-  btnUnlock: { padding: '10px 20px', background: '#27ae60', color: 'white', border: 'none', cursor: 'pointer' },
+  lockBox: { background: 'white', padding: '40px', borderRadius: '10px', textAlign: 'center', maxWidth: '300px', margin: '50px auto' },
+  inputCode: { fontSize: '20px', padding: '10px', textAlign: 'center', marginBottom: '10px', width: '100%' },
+  btnUnlock: { width: '100%', padding: '10px', background: '#27ae60', color: 'white', border: 'none', cursor: 'pointer' },
   grid: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' },
-  activeCard: { background: 'white', borderRadius: '10px', overflow: 'hidden' },
-  cardHeader: { background: '#34495e', padding: '15px', display: 'flex', justifyContent: 'space-between' },
-  badgeLive: { background: 'red', color: 'white', padding: '2px 8px', borderRadius: '5px', fontSize: '10px' },
-  classInfo: { padding: '20px' },
-  attendanceBox: { marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '10px' },
-  table: { width: '100%', marginBottom: '10px' },
-  btnSubmit: { width: '100%', padding: '10px', background: '#27ae60', color: 'white', border: 'none' },
-  sideCard: { background: 'white', padding: '20px', borderRadius: '10px' }
+  card: { background: 'white', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' },
+  cardHeader: { background: '#34495e', padding: '10px 20px' },
+  btnSave: { width: '100%', padding: '15px', background: '#27ae60', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold' },
+  cardSide: { background: 'white', padding: '20px', borderRadius: '10px' }
 };
 
 export default TeacherDashboard;
