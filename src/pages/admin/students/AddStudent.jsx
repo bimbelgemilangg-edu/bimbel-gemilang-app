@@ -1,133 +1,281 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../../../components/Sidebar'; // Pakai Sidebar
+import Sidebar from '../../../components/Sidebar';
+// FIREBASE
+import { db } from '../../../firebase';
+import { collection, addDoc } from "firebase/firestore";
 
-const StudentList = () => {
+const AddStudent = () => {
   const navigate = useNavigate();
-  
-  // STATE untuk Filter & Search
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterJenjang, setFilterJenjang] = useState("Semua");
 
-  // DATA DUMMY (Nanti dari Firebase)
-  const dataSiswa = [
-    { id: 1, nama: "Adit Sopo", kelas: "4 SD", jenjang: "SD", status: "Aktif" },
-    { id: 2, nama: "Jarwo Kuat", kelas: "9 SMP", jenjang: "SMP", status: "Non-Aktif" },
-    { id: 3, nama: "Denis Kancil", kelas: "6 SD", jenjang: "SD", status: "Aktif" },
-    { id: 4, nama: "Siti Nurhaliza", kelas: "8 SMP", jenjang: "SMP", status: "Aktif" },
-  ];
-
-  // LOGIKA FILTERING (PENTING)
-  const filteredData = dataSiswa.filter((siswa) => {
-    const matchSearch = siswa.nama.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchJenjang = filterJenjang === "Semua" || siswa.jenjang === filterJenjang;
-    return matchSearch && matchJenjang;
+  // --- 1. LOAD HARGA DARI SETTING OWNER (SMART LOGIC) ---
+  const [pricing, setPricing] = useState({
+    sd: { paket1: 150000, paket2: 200000, paket3: 250000 },
+    smp: { paket1: 200000, paket2: 250000, paket3: 300000 }
   });
+
+  useEffect(() => {
+    const savedPrices = localStorage.getItem("pricingData");
+    if (savedPrices) setPricing(JSON.parse(savedPrices));
+  }, []);
+
+  // --- 2. STATE FORM DATA ---
+  const [siswa, setSiswa] = useState({ nama: "", jenjang: "SD", kelas: "4 SD" });
+  const [ortu, setOrtu] = useState({ ayah: "", ibu: "", jobAyah: "", jobIbu: "", alamat: "", hp: "" });
+  
+  // State Keuangan
+  const [paket, setPaket] = useState("paket1"); // paket1, paket2, paket3
+  const [biayaDaftar, setBiayaDaftar] = useState(false); // Checkbox 25rb
+  const [diskon, setDiskon] = useState(0);
+  const [metodeBayar, setMetodeBayar] = useState("Tunai"); // Tunai, Bank, Cicilan
+  const [tenor, setTenor] = useState(1); // 1, 2, 3 bulan (jika cicilan)
+
+  // --- 3. KALKULATOR OTOMATIS ---
+  const getBasePrice = () => {
+    const level = siswa.jenjang.toLowerCase(); // sd atau smp
+    return pricing[level] ? parseInt(pricing[level][paket]) : 0;
+  };
+
+  const hitungTotal = () => {
+    let total = getBasePrice();
+    if (biayaDaftar) total += 25000;
+    total = total - parseInt(diskon || 0);
+    return total;
+  };
+
+  const hitungCicilan = () => {
+    const total = hitungTotal();
+    return Math.ceil(total / tenor);
+  };
+
+  // --- 4. LOGIKA SIMPAN KE FIREBASE (CORE) ---
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!siswa.nama || !ortu.hp) return alert("Nama Siswa dan No HP Wajib diisi!");
+
+    const totalBiaya = hitungTotal();
+    const tanggalDaftar = new Date().toISOString().split('T')[0];
+
+    try {
+      // A. SIMPAN DATA SISWA (Collection: students)
+      const studentRef = await addDoc(collection(db, "students"), {
+        nama: siswa.nama,
+        jenjang: siswa.jenjang,
+        kelas: siswa.kelas,
+        ortu: ortu,
+        status: "Aktif",
+        tanggalMasuk: tanggalDaftar
+      });
+
+      const studentId = studentRef.id;
+
+      // B. LOGIKA KEUANGAN PINTAR
+      if (metodeBayar === "Cicilan") {
+        // --- SKENARIO CICILAN ---
+        // Masuk ke 'finance_tagihan' (Hutang), BUKAN 'finance_transaksi' (Pemasukan)
+        
+        // Buat Array Jadwal Cicilan
+        let installments = [];
+        const perBulan = hitungCicilan();
+        
+        for (let i = 1; i <= tenor; i++) {
+          installments.push({
+            bulanKe: i,
+            nominal: perBulan,
+            status: "Belum Lunas",
+            jatuhTempo: `Bulan ke-${i}` 
+          });
+        }
+
+        await addDoc(collection(db, "finance_tagihan"), {
+          studentId: studentId,
+          namaSiswa: siswa.nama,
+          namaOrtu: ortu.ayah || ortu.ibu,
+          noHp: ortu.hp,
+          totalTagihan: totalBiaya,
+          sisaTagihan: totalBiaya,
+          detailCicilan: installments, // Array jadwal bayar
+          jenis: "SPP & Pendaftaran (Cicilan)"
+        });
+
+        alert(`✅ Siswa Terdaftar dengan CICILAN ${tenor}x!\nTagihan telah dibuat di menu Keuangan.`);
+
+      } else {
+        // --- SKENARIO LUNAS (Tunai/Bank) ---
+        // Langsung catat sebagai PEMASUKAN UANG
+        await addDoc(collection(db, "finance_transaksi"), {
+          tanggal: tanggalDaftar,
+          ket: `Pendaftaran Baru: ${siswa.nama}`,
+          tipe: "Masuk", // Income
+          metode: metodeBayar,
+          nominal: totalBiaya,
+          studentId: studentId
+        });
+
+        alert("✅ Siswa Terdaftar & Pembayaran LUNAS tercatat!");
+      }
+
+      navigate('/admin/students');
+
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Gagal menyimpan data. Cek koneksi.");
+    }
+  };
 
   return (
     <div style={{ display: 'flex' }}>
       <Sidebar />
+      <div style={styles.content}>
+        <h2 style={{ borderBottom: '2px solid #ddd', paddingBottom: '10px' }}>🎓 Pendaftaran Siswa Baru</h2>
 
-      <div style={styles.mainContent}>
-        <div style={styles.header}>
-          <h2 style={{margin: 0}}>📂 Manajemen Data Siswa</h2>
-          <button style={styles.btnAdd} onClick={() => navigate('/admin/students/add')}>
-            + Siswa Baru
-          </button>
-        </div>
-
-        {/* --- PANEL FILTER & PENCARIAN --- */}
-        <div style={styles.filterBar}>
-          <input 
-            type="text" 
-            placeholder="🔍 Cari nama siswa..." 
-            style={styles.searchInput}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <form onSubmit={handleSubmit} style={styles.formGrid}>
           
-          <select 
-            style={styles.filterSelect} 
-            value={filterJenjang}
-            onChange={(e) => setFilterJenjang(e.target.value)}
-          >
-            <option value="Semua">Semua Jenjang</option>
-            <option value="SD">SD (Sekolah Dasar)</option>
-            <option value="SMP">SMP (Menengah)</option>
-          </select>
-        </div>
+          {/* KOLOM KIRI: DATA DIRI & ORTU */}
+          <div style={styles.leftCol}>
+            
+            {/* 1. IDENTITAS SISWA */}
+            <div style={styles.card}>
+              <h3 style={styles.cardTitle}>👤 Identitas Siswa</h3>
+              <div style={styles.formGroup}>
+                <label>Nama Lengkap</label>
+                <input style={styles.input} value={siswa.nama} onChange={e => setSiswa({...siswa, nama: e.target.value})} required />
+              </div>
+              <div style={styles.row}>
+                <div style={{flex:1}}>
+                  <label>Jenjang</label>
+                  <select style={styles.select} value={siswa.jenjang} onChange={e => setSiswa({...siswa, jenjang: e.target.value})}>
+                    <option value="SD">SD</option>
+                    <option value="SMP">SMP</option>
+                  </select>
+                </div>
+                <div style={{flex:1}}>
+                  <label>Kelas</label>
+                  <select style={styles.select} value={siswa.kelas} onChange={e => setSiswa({...siswa, kelas: e.target.value})}>
+                    <option>1 SD</option><option>2 SD</option><option>3 SD</option>
+                    <option>4 SD</option><option>5 SD</option><option>6 SD</option>
+                    <option>7 SMP</option><option>8 SMP</option><option>9 SMP</option>
+                  </select>
+                </div>
+              </div>
+            </div>
 
-        {/* --- TABEL DATA --- */}
-        <div style={styles.tableCard}>
-          <table style={styles.table}>
-            <thead>
-              <tr style={{background: '#ecf0f1'}}>
-                <th style={styles.th}>Nama Siswa</th>
-                <th style={styles.th}>Kelas</th>
-                <th style={styles.th}>Status</th>
-                <th style={styles.th}>Aksi / Menu</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((siswa) => (
-                <tr key={siswa.id} style={styles.tr}>
-                  <td style={styles.td}>
-                    <strong>{siswa.nama}</strong><br/>
-                    <span style={{fontSize:'12px', color:'#7f8c8d'}}>ID: {siswa.id}00{siswa.id}</span>
-                  </td>
-                  <td style={styles.td}>{siswa.kelas}</td>
-                  <td style={styles.td}>
-                    <span style={siswa.status === 'Aktif' ? styles.badgeActive : styles.badgeInactive}>
-                      {siswa.status}
-                    </span>
-                  </td>
-                  <td style={styles.td}>
-                    <div style={styles.actionGroup}>
-                      <button style={styles.btnAction} title="Edit Data">✏️ Edit</button>
-                      <button style={styles.btnAction} title="Keuangan">💰 Bayar</button>
-                      <button style={styles.btnAction} title="Absensi">📅 Absen</button>
-                      
-                      {/* Tombol Toggle Status */}
-                      {siswa.status === 'Aktif' ? (
-                         <button style={styles.btnDanger} title="Non-Aktifkan">⛔ Stop</button>
-                      ) : (
-                         <button style={styles.btnSuccess} title="Aktifkan">✅ Aktif</button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {filteredData.length === 0 && <p style={{textAlign:'center', padding:'20px'}}>Data tidak ditemukan.</p>}
-        </div>
+            {/* 2. DATA ORANG TUA */}
+            <div style={styles.card}>
+              <h3 style={styles.cardTitle}>👨‍👩‍👧 Data Orang Tua / Wali</h3>
+              <div style={styles.row}>
+                <input style={styles.input} placeholder="Nama Ayah" value={ortu.ayah} onChange={e => setOrtu({...ortu, ayah: e.target.value})} />
+                <input style={styles.input} placeholder="Pekerjaan Ayah" value={ortu.jobAyah} onChange={e => setOrtu({...ortu, jobAyah: e.target.value})} />
+              </div>
+              <div style={styles.row}>
+                <input style={styles.input} placeholder="Nama Ibu" value={ortu.ibu} onChange={e => setOrtu({...ortu, ibu: e.target.value})} />
+                <input style={styles.input} placeholder="Pekerjaan Ibu" value={ortu.jobIbu} onChange={e => setOrtu({...ortu, jobIbu: e.target.value})} />
+              </div>
+              <div style={styles.formGroup}>
+                <label>Alamat Lengkap</label>
+                <textarea style={styles.textarea} value={ortu.alamat} onChange={e => setOrtu({...ortu, alamat: e.target.value})}></textarea>
+              </div>
+              <div style={styles.formGroup}>
+                <label>No. HP / WhatsApp (Wajib)</label>
+                <input style={styles.input} type="number" placeholder="08..." value={ortu.hp} onChange={e => setOrtu({...ortu, hp: e.target.value})} required />
+              </div>
+            </div>
+          </div>
+
+          {/* KOLOM KANAN: KEUANGAN & PEMBAYARAN */}
+          <div style={styles.rightCol}>
+            <div style={styles.cardBlue}>
+              <h3 style={{...styles.cardTitle, color:'white'}}>💰 Administrasi & Pembayaran</h3>
+              
+              {/* PILIH PAKET */}
+              <div style={styles.formGroup}>
+                <label style={{color:'white'}}>Pilih Paket (Sesuai Setting Owner)</label>
+                <select style={styles.select} value={paket} onChange={e => setPaket(e.target.value)}>
+                  <option value="paket1">Paket 1 - Rp {getBasePrice().toLocaleString()}</option>
+                  <option value="paket2">Paket 2 (Medium)</option>
+                  <option value="paket3">Paket 3 (Premium)</option>
+                </select>
+              </div>
+
+              {/* BIAYA TAMBAHAN */}
+              <div style={{background:'rgba(255,255,255,0.1)', padding:'10px', borderRadius:'5px', marginBottom:'10px'}}>
+                <label style={{display:'flex', alignItems:'center', cursor:'pointer', color:'white'}}>
+                  <input type="checkbox" checked={biayaDaftar} onChange={e => setBiayaDaftar(e.target.checked)} style={{transform:'scale(1.5)', marginRight:'10px'}} />
+                  Tambah Biaya Pendaftaran (+ Rp 25.000)
+                </label>
+              </div>
+
+              {/* DISKON */}
+              <div style={styles.formGroup}>
+                <label style={{color:'white'}}>Diskon / Potongan (Rp)</label>
+                <input type="number" style={styles.input} placeholder="0" value={diskon} onChange={e => setDiskon(e.target.value)} />
+              </div>
+
+              <hr style={{opacity:0.3}} />
+
+              {/* TOTAL & METODE */}
+              <div style={{textAlign:'right', color:'white', marginBottom:'20px'}}>
+                <small>Total Yang Harus Dibayar:</small>
+                <h1 style={{margin:'5px 0'}}>Rp {hitungTotal().toLocaleString()}</h1>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={{color:'white'}}>Metode Pembayaran</label>
+                <select style={styles.select} value={metodeBayar} onChange={e => setMetodeBayar(e.target.value)}>
+                  <option value="Tunai">Lunas - Tunai (Cash)</option>
+                  <option value="Bank">Lunas - Transfer Bank</option>
+                  <option value="Cicilan">Cicilan (Hutang)</option>
+                </select>
+              </div>
+
+              {/* KHUSUS CICILAN */}
+              {metodeBayar === "Cicilan" && (
+                <div style={{background:'#fff3cd', padding:'15px', borderRadius:'5px', color:'#856404'}}>
+                  <label><b>Tenor Cicilan:</b></label>
+                  <div style={{display:'flex', gap:'10px', marginTop:'5px'}}>
+                    <button type="button" onClick={() => setTenor(1)} style={tenor===1 ? styles.btnTenorActive : styles.btnTenor}>1x</button>
+                    <button type="button" onClick={() => setTenor(2)} style={tenor===2 ? styles.btnTenorActive : styles.btnTenor}>2x</button>
+                    <button type="button" onClick={() => setTenor(3)} style={tenor===3 ? styles.btnTenorActive : styles.btnTenor}>3x</button>
+                  </div>
+                  <p style={{marginTop:'10px', fontSize:'14px'}}>
+                    Estimasi per bulan: <b>Rp {hitungCicilan().toLocaleString()}</b>
+                  </p>
+                  <small style={{display:'block', marginTop:'5px', fontStyle:'italic'}}>*Otomatis tercatat di menu Keuangan sebagai tagihan.</small>
+                </div>
+              )}
+
+              <button type="submit" style={styles.btnSubmit}>
+                💾 SIMPAN & PROSES
+              </button>
+
+            </div>
+          </div>
+
+        </form>
       </div>
     </div>
   );
 };
 
 const styles = {
-  mainContent: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f6f8', minHeight: '100vh' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
-  btnAdd: { background: '#27ae60', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' },
+  content: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily: 'sans-serif' },
+  formGrid: { display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '20px' },
   
-  filterBar: { display: 'flex', gap: '10px', marginBottom: '20px', background: 'white', padding: '15px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
-  searchInput: { flex: 1, padding: '10px', borderRadius: '5px', border: '1px solid #ddd' },
-  filterSelect: { padding: '10px', borderRadius: '5px', border: '1px solid #ddd', width: '200px' },
-
-  tableCard: { background: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
-  table: { width: '100%', borderCollapse: 'collapse' },
-  th: { padding: '15px', textAlign: 'left', borderBottom: '2px solid #ddd', color: '#7f8c8d' },
-  tr: { borderBottom: '1px solid #eee' },
-  td: { padding: '15px' },
+  card: { background: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', marginBottom: '20px' },
+  cardBlue: { background: '#2c3e50', padding: '25px', borderRadius: '10px', boxShadow: '0 5px 15px rgba(0,0,0,0.1)' },
   
-  badgeActive: { background: '#d4edda', color: '#155724', padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' },
-  badgeInactive: { background: '#f8d7da', color: '#721c24', padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' },
-
-  actionGroup: { display: 'flex', gap: '5px' },
-  btnAction: { padding: '5px 10px', border: '1px solid #ddd', background: 'white', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' },
-  btnDanger: { padding: '5px 10px', border: 'none', background: '#e74c3c', color: 'white', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' },
-  btnSuccess: { padding: '5px 10px', border: 'none', background: '#2ecc71', color: 'white', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' },
+  cardTitle: { marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '15px' },
+  
+  formGroup: { marginBottom: '15px' },
+  row: { display: 'flex', gap: '15px', marginBottom: '15px' },
+  input: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' },
+  select: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', background: 'white', boxSizing: 'border-box' },
+  textarea: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', minHeight: '80px', boxSizing: 'border-box' },
+  
+  btnTenor: { flex: 1, padding: '8px', border: '1px solid #856404', background: 'none', cursor: 'pointer', borderRadius: '4px' },
+  btnTenorActive: { flex: 1, padding: '8px', border: 'none', background: '#856404', color: 'white', cursor: 'pointer', borderRadius: '4px', fontWeight: 'bold' },
+  
+  btnSubmit: { width: '100%', padding: '15px', background: '#27ae60', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '20px' }
 };
 
-export default StudentList;
+export default AddStudent;
