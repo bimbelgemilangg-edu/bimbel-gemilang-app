@@ -4,8 +4,6 @@ import Sidebar from '../../../components/Sidebar';
 
 const StudentList = () => {
   const navigate = useNavigate();
-  
-  // STATE Filter
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJenjang, setFilterJenjang] = useState("Semua");
 
@@ -15,44 +13,33 @@ const StudentList = () => {
   ];
 
   const filteredData = dataSiswa.filter((siswa) => {
-    const matchSearch = siswa.nama.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchJenjang = filterJenjang === "Semua" || siswa.jenjang === filterJenjang;
-    return matchSearch && matchJenjang;
+    return (
+      siswa.nama.toLowerCase().includes(searchTerm.toLowerCase()) && 
+      (filterJenjang === "Semua" || siswa.jenjang === filterJenjang)
+    );
   });
 
   return (
     <div style={{ display: 'flex' }}>
       <Sidebar />
-
       <div style={styles.mainContent}>
         <div style={styles.header}>
           <h2 style={{margin: 0}}>📂 Manajemen Data Siswa</h2>
-          <button style={styles.btnAdd} onClick={() => navigate('/admin/students/add')}>
-            + Siswa Baru
-          </button>
+          <button style={styles.btnAdd} onClick={() => navigate('/admin/students/add')}>+ Siswa Baru</button>
         </div>
 
-        {/* Filter */}
         <div style={styles.filterBar}>
           <input 
-            type="text" 
-            placeholder="🔍 Cari nama siswa..." 
-            style={styles.searchInput}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            type="text" placeholder="🔍 Cari nama..." style={styles.searchInput}
+            value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <select 
-            style={styles.filterSelect} 
-            value={filterJenjang}
-            onChange={(e) => setFilterJenjang(e.target.value)}
-          >
+          <select style={styles.filterSelect} value={filterJenjang} onChange={(e) => setFilterJenjang(e.target.value)}>
             <option value="Semua">Semua Jenjang</option>
             <option value="SD">SD</option>
             <option value="SMP">SMP</option>
           </select>
         </div>
 
-        {/* Tabel */}
         <div style={styles.tableCard}>
           <table style={styles.table}>
             <thead>
@@ -60,36 +47,38 @@ const StudentList = () => {
                 <th style={styles.th}>Nama Siswa</th>
                 <th style={styles.th}>Kelas</th>
                 <th style={styles.th}>Status</th>
-                <th style={styles.th}>Aksi / Menu</th>
+                <th style={styles.th}>Aksi</th>
               </tr>
             </thead>
             <tbody>
               {filteredData.map((siswa) => (
                 <tr key={siswa.id} style={styles.tr}>
-                  <td style={styles.td}>
-                    <strong>{siswa.nama}</strong>
-                  </td>
+                  <td style={styles.td}><strong>{siswa.nama}</strong></td>
                   <td style={styles.td}>{siswa.kelas}</td>
                   <td style={styles.td}>
-                    <span style={siswa.status === 'Aktif' ? styles.badgeActive : styles.badgeInactive}>
-                      {siswa.status}
-                    </span>
+                    <span style={siswa.status === 'Aktif' ? styles.badgeActive : styles.badgeInactive}>{siswa.status}</span>
                   </td>
                   <td style={styles.td}>
                     <div style={styles.actionGroup}>
-                      <button style={styles.btnAction} title="Edit Data">✏️</button>
-                      <button style={styles.btnAction} title="Keuangan">💰</button>
-                      
-                      {/* --- TOMBOL ABSEN YANG SUDAH AKTIF --- */}
+                      {/* TOMBOL YANG SUDAH HIDUP SEMUA */}
                       <button 
-                        style={styles.btnAction} 
-                        title="Absensi"
+                        style={styles.btnAction} title="Edit"
+                        onClick={() => navigate(`/admin/students/edit/${siswa.id}`)}
+                      >
+                        ✏️
+                      </button>
+                      <button 
+                        style={styles.btnAction} title="Keuangan"
+                        onClick={() => navigate(`/admin/students/finance/${siswa.id}`)}
+                      >
+                        💰
+                      </button>
+                      <button 
+                        style={styles.btnAction} title="Absensi"
                         onClick={() => navigate(`/admin/students/attendance/${siswa.id}`)}
                       >
-                        📅 Absen
+                        📅
                       </button>
-                      {/* ----------------------------------- */}
-
                     </div>
                   </td>
                 </tr>
@@ -117,7 +106,7 @@ const styles = {
   badgeActive: { background: '#d4edda', color: '#155724', padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' },
   badgeInactive: { background: '#f8d7da', color: '#721c24', padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' },
   actionGroup: { display: 'flex', gap: '5px' },
-  btnAction: { padding: '5px 10px', border: '1px solid #ddd', background: 'white', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' },
+  btnAction: { padding: '5px 12px', border: '1px solid #ddd', background: 'white', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' },
 };
 
 export default StudentList;
