@@ -12,10 +12,10 @@ const SchedulePage = () => {
   const [availableTeachers, setAvailableTeachers] = useState([]); 
   const [availableStudents, setAvailableStudents] = useState([]);
   
-  // STATE BARU: KODE HARIAN (LOGIN GURU)
+  // KODE LOGIN GURU HARI INI
   const [dailyCode, setDailyCode] = useState("Belum Diset");
 
-  // --- 1. AMBIL SEMUA DATA (SINKRONISASI) ---
+  // --- 1. AMBIL SEMUA DATA ---
   const fetchData = async () => {
     // A. Ambil Jadwal
     const schedSnap = await getDocs(collection(db, "jadwal_bimbel"));
@@ -29,7 +29,7 @@ const SchedulePage = () => {
     const studentSnap = await getDocs(collection(db, "students"));
     setAvailableStudents(studentSnap.docs.map(d => ({ id: d.id, ...d.data() })));
 
-    // D. AMBIL KODE LOGIN GURU HARI INI (Supaya Admin Ingat)
+    // D. Ambil Kode Login
     const today = new Date().toISOString().split('T')[0];
     const codeRef = doc(db, "settings", `daily_code_${today}`);
     const codeSnap = await getDoc(codeRef);
@@ -42,21 +42,22 @@ const SchedulePage = () => {
 
   useEffect(() => {
     fetchData(); 
-  }, [selectedDate]); // Refresh jika ganti tanggal (opsional)
+  }, [selectedDate]); 
 
   const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activePlanet, setActivePlanet] = useState("");
   const [generatedCode, setGeneratedCode] = useState("");
+  
+  // STATE FORM (UPDATE: Default Type Reguler)
   const [formData, setFormData] = useState({
-    start: "14:00", end: "15:30", type: "Pararel", title: "", booker: "", selectedStudents: []
+    start: "14:00", end: "15:30", type: "Reguler", title: "", booker: "", selectedStudents: []
   });
 
   // Helpers
   const changeMonth = (offset) => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + offset, 1));
   const formatDateStr = (date) => date.toISOString().split('T')[0];
   
-  // Kode Booking Ruangan (Bukan Kode Login Guru)
   const generateCode = (planet) => {
     const prefix = planet.substring(0, 3).toUpperCase();
     const num = Math.floor(1000 + Math.random() * 9000);
@@ -66,7 +67,7 @@ const SchedulePage = () => {
   const openAddModal = (planet) => {
     setActivePlanet(planet);
     setGeneratedCode(generateCode(planet));
-    setFormData({ start: "14:00", end: "15:30", type: "Pararel", title: "", booker: "", selectedStudents: [] });
+    setFormData({ start: "14:00", end: "15:30", type: "Reguler", title: "", booker: "", selectedStudents: [] });
     setIsModalOpen(true);
   };
 
@@ -93,10 +94,10 @@ const SchedulePage = () => {
       dateStr: formatDateStr(selectedDate),
       start: formData.start,
       end: formData.end,
-      type: formData.type,
+      type: formData.type, // PENTING: Tipe kelas (Reguler/English/Ujian)
       title: formData.title,
-      booker: formData.booker,
-      code: generatedCode, // Ini Kode Booking Ruangan
+      booker: formData.booker, // Nama Guru
+      code: generatedCode, 
       students: studentsFullData 
     };
 
@@ -106,6 +107,7 @@ const SchedulePage = () => {
     fetchData();
   };
 
+  // LOGIKA SWITCH GURU: Cukup Hapus lalu Buat Baru (Simplifikasi)
   const handleDelete = async (id) => {
     if(window.confirm("Hapus jadwal ini?")) {
       await deleteDoc(doc(db, "jadwal_bimbel", id));
@@ -135,7 +137,7 @@ const SchedulePage = () => {
       <Sidebar />
       <div style={styles.mainContent}>
         
-        {/* INFO KODE HARIAN (SUPAYA ADMIN TIDAK LUPA) */}
+        {/* INFO KODE LOGIN GURU */}
         <div style={styles.infoBar}>
             <span>🔑 Kode Login Guru Hari Ini ({new Date().toLocaleDateString('id-ID')}):</span>
             <strong style={{marginLeft:10, fontSize:18, background:'white', color:'#2c3e50', padding:'2px 8px', borderRadius:4}}>
@@ -170,11 +172,14 @@ const SchedulePage = () => {
                       <button style={styles.btnAdd} onClick={() => openAddModal(planet)}>+ Booking</button>
                     </div>
                     {items.map(item => (
-                      <div key={item.id} style={item.type === 'Pararel' ? styles.tagRed : styles.tagGreen}>
-                        <div><b>{item.start}-{item.end}</b> <br/> {item.title} ({item.booker})</div>
+                      <div key={item.id} style={item.type === 'English' ? styles.tagYellow : (item.type === 'Ujian' ? styles.tagRed : styles.tagGreen)}>
+                        <div>
+                            <b>{item.start}-{item.end}</b> ({item.type})<br/> 
+                            {item.title} - 👨‍🏫 {item.booker}
+                        </div>
                         <div style={{textAlign:'right'}}>
                            <div style={styles.codeBadge}>Room: {item.code}</div>
-                           <button onClick={() => handleDelete(item.id)} style={styles.btnDel}>Hapus</button>
+                           <button onClick={() => handleDelete(item.id)} style={styles.btnDel}>Hapus / Ganti</button>
                         </div>
                       </div>
                     ))}
@@ -193,12 +198,28 @@ const SchedulePage = () => {
               
               <form onSubmit={handleSave}>
                 <div style={styles.row}>
-                  <input type="time" required value={formData.start} onChange={e => setFormData({...formData, start: e.target.value})} style={styles.input} />
-                  <input type="time" required value={formData.end} onChange={e => setFormData({...formData, end: e.target.value})} style={styles.input} />
+                  <div style={{flex:1}}>
+                      <label style={{fontSize:12, fontWeight:'bold'}}>Jam Mulai</label>
+                      <input type="time" required value={formData.start} onChange={e => setFormData({...formData, start: e.target.value})} style={styles.input} />
+                  </div>
+                  <div style={{flex:1}}>
+                      <label style={{fontSize:12, fontWeight:'bold'}}>Jam Selesai</label>
+                      <input type="time" required value={formData.end} onChange={e => setFormData({...formData, end: e.target.value})} style={styles.input} />
+                  </div>
                 </div>
                 
+                {/* --- UPDATE: PILIH TIPE KELAS (PENTING UNTUK GAJI) --- */}
                 <div style={styles.group}>
-                  <label>Pilih Guru (Dari Database)</label>
+                  <label style={{fontWeight:'bold'}}>Tipe Kelas</label>
+                  <select required value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} style={styles.select}>
+                    <option value="Reguler">📚 Reguler (SD/SMP/SMA)</option>
+                    <option value="English">🇬🇧 English Course</option>
+                    <option value="Ujian">📝 Ujian / Try Out</option>
+                  </select>
+                </div>
+
+                <div style={styles.group}>
+                  <label style={{fontWeight:'bold'}}>Pilih Guru Pengajar</label>
                   <select required value={formData.booker} onChange={e => setFormData({...formData, booker: e.target.value})} style={styles.select}>
                     <option value="">-- Pilih Guru --</option>
                     {availableTeachers.map(t => (
@@ -207,10 +228,13 @@ const SchedulePage = () => {
                   </select>
                 </div>
 
-                <input type="text" placeholder="Mapel / Kegiatan" required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} style={styles.input} />
+                <div style={styles.group}>
+                    <label style={{fontWeight:'bold'}}>Judul Kegiatan / Mapel</label>
+                    <input type="text" placeholder="Contoh: Matematika Bab 1" required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} style={styles.input} />
+                </div>
 
                 <div style={styles.studentSection}>
-                  <label>Pilih Siswa (Dari Database):</label>
+                  <label>Pilih Siswa:</label>
                   <select onChange={handleSelectClass} style={styles.select}>
                     <option value="">-- Auto Select per Kelas --</option>
                     <option value="4 SD">Semua Kelas 4 SD</option>
@@ -252,9 +276,7 @@ const SchedulePage = () => {
 // STYLES
 const styles = {
   mainContent: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'sans-serif' },
-  // INFO BAR BARU
   infoBar: { background: '#2c3e50', color: 'white', padding: '15px', borderRadius: '10px', marginBottom: '20px', display: 'flex', alignItems: 'center' },
-  
   header: { display: 'flex', justifyContent: 'space-between', marginBottom: '20px', background:'white', padding:'20px', borderRadius:'10px' },
   nav: { display: 'flex', gap: '10px' },
   layout: { display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '20px' },
@@ -267,8 +289,12 @@ const styles = {
   planetCard: { border: '1px solid #eee', padding: '10px', borderRadius: '8px' },
   planetHeader: { display:'flex', justifyContent:'space-between', marginBottom:'5px' },
   btnAdd: { background: '#27ae60', color:'white', border:'none', borderRadius:'4px', cursor:'pointer' },
-  tagRed: { background: '#fadbd8', borderLeft: '4px solid #c0392b', padding: '8px', marginTop:'5px', borderRadius:'4px', display:'flex', justifyContent:'space-between', fontSize:'13px' },
+  
+  // WARNA TAG TIPE KELAS
   tagGreen: { background: '#d4edda', borderLeft: '4px solid #27ae60', padding: '8px', marginTop:'5px', borderRadius:'4px', display:'flex', justifyContent:'space-between', fontSize:'13px' },
+  tagRed: { background: '#fadbd8', borderLeft: '4px solid #c0392b', padding: '8px', marginTop:'5px', borderRadius:'4px', display:'flex', justifyContent:'space-between', fontSize:'13px' },
+  tagYellow: { background: '#fff3cd', borderLeft: '4px solid #f1c40f', padding: '8px', marginTop:'5px', borderRadius:'4px', display:'flex', justifyContent:'space-between', fontSize:'13px' },
+  
   codeBadge: { background:'white', padding:'2px 5px', fontWeight:'bold', border:'1px dashed #333', fontSize:'11px', height:'fit-content' },
   btnDel: { fontSize:'10px', color:'red', background:'none', border:'none', cursor:'pointer', marginTop:'5px', textDecoration:'underline' },
   overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 999 },
