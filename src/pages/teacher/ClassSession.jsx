@@ -38,7 +38,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
       };
       
       if (settingsSnap.exists()) {
-        // Gabungkan default dengan setting dari database (jaga-jaga admin belum update setting baru)
+        // Gabungkan default dengan setting dari database
         rules = { ...rules, ...settingsSnap.data().salaryRules };
       }
 
@@ -49,6 +49,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
       // --- SMART LOGIC V2: EXAM BUNDLING & COMPENSATION ---
 
       // SKENARIO 1: UJIAN (Fixed Rate / Flat)
+      // Cek apakah tipenya 'Ujian' atau judul mengandung kata 'ujian'
       if (schedule.type === "Ujian" || schedule.title.toLowerCase().includes("ujian")) {
           const titleLower = schedule.title.toLowerCase();
           
@@ -66,22 +67,23 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
               nominal = parseInt(rules.ujianJaga || 10000);
               detailTxt += " (Hanya Jaga Ujian)";
           }
-          // Note: Ujian biasanya flat, tidak dikali jam. Tapi kalau mau dikali jam, ubah logika di sini.
+          // Note: Ujian flat rate, tidak dikali jam.
 
       } 
-      // SKENARIO 2: KELAS MENGAJAR (Variable Rate x Jam)
+      // SKENARIO 2: KELAS MENGAJAR / ENGLISH (Variable Rate x Jam)
       else {
           // A. Tentukan Rate Dasar
           let baseRate = 0;
           if (schedule.type === "English") {
              baseRate = parseInt(rules.honorSD) + parseInt(rules.bonusInggris);
           } else {
+             // Deteksi Jenjang dari Judul
              if (schedule.title.toLowerCase().includes("smp") || schedule.title.toLowerCase().includes("9")) {
                 baseRate = parseInt(rules.honorSMP);
              } else if (schedule.title.toLowerCase().includes("sma") || schedule.title.toLowerCase().includes("10")) {
                 baseRate = parseInt(rules.honorSMA);
              } else {
-                baseRate = parseInt(rules.honorSD);
+                baseRate = parseInt(rules.honorSD); // Default SD
              }
           }
 
@@ -89,7 +91,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
           if (jumlahHadir === 0) {
             // SISWA KOSONG = KOMPENSASI 50%
             // Rumus: (Rate x Jam) * 50%
-            // Tidak ada uang transport tambahan (sesuai request)
+            // Tidak ada uang transport tambahan
             const gajiFull = baseRate * diffHours;
             nominal = gajiFull * 0.5; 
             
@@ -98,7 +100,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
           } else {
             // NORMAL (ADA SISWA)
             // Rumus: (Rate x Jam)
-            // Murni honor mengajar, tanpa tambahan transport
+            // Murni honor mengajar sesuai durasi
             nominal = baseRate * diffHours;
           }
       }
