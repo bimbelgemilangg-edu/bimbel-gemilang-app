@@ -7,136 +7,189 @@ const TeacherDashboard = () => {
   const navigate = useNavigate();
   const [guru, setGuru] = useState(null);
   
-  // STATE INPUT
+  // STATE UI (Loading & View Mode)
+  const [loading, setLoading] = useState(true);
+  const [existingLog, setExistingLog] = useState(null); // Ini kunci SMART SYNC
+
+  // STATE FORM INPUT
   const [programType, setProgramType] = useState("Reguler"); // Reguler / English
   const [jenjang, setJenjang] = useState("SD");
   const [mapel, setMapel] = useState("");
   const [activityType, setActivityType] = useState("Mengajar");
-  const [jurnal, setJurnal] = useState(""); // Bukti Mengajar
-  const [durasi, setDurasi] = useState(1);
+  const [jurnal, setJurnal] = useState(""); 
+  const [durasi, setDurasi] = useState(1.5); // Default 1.5 Jam
   const [siswaHadir, setSiswaHadir] = useState(1);
   const [englishLevel, setEnglishLevel] = useState("kids");
-  
-  // STATE RIWAYAT
-  const [history, setHistory] = useState([]);
 
-  // LOAD DATA & SETTINGS
+  // 1. INIT & SMART SYNC (Cek apakah sudah absen di device lain?)
   useEffect(() => {
-    const session = localStorage.getItem("guruSession");
-    if (!session) { navigate('/login-guru'); return; }
-    setGuru(JSON.parse(session));
-    fetchHistory(JSON.parse(session).id);
-  }, []);
+    const checkSessionAndSync = async () => {
+        const session = localStorage.getItem("guruSession");
+        if (!session) { navigate('/login-guru'); return; }
+        
+        const guruData = JSON.parse(session);
+        setGuru(guruData);
 
-  const fetchHistory = async (guruId) => {
-    // Ambil log hari ini saja biar ringan
-    const today = new Date().toISOString().split('T')[0];
-    const q = query(collection(db, "teacher_logs"), where("teacherId", "==", guruId), where("tanggal", "==", today));
-    const snap = await getDocs(q);
-    setHistory(snap.docs.map(d => d.data()));
-  };
+        // SYNC KE SERVER: Cek aktivitas hari ini
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const q = query(
+                collection(db, "teacher_logs"), 
+                where("teacherId", "==", guruData.id), 
+                where("tanggal", "==", today)
+            );
+            const snap = await getDocs(q);
+
+            if (!snap.empty) {
+                // JIKA ADA DATA -> TAMPILKAN MODE "SUDAH ABSEN" (Jangan Form Kosong)
+                setExistingLog(snap.docs[0].data());
+            }
+        } catch (error) {
+            console.error("Gagal Sync:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    checkSessionAndSync();
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("guruSession");
     navigate('/login-guru');
   };
 
-  // --- LOGIKA UTAMA (SMART LOGIC) ---
-  const handleSubmit = async (e) => {
+  // 2. LOGIKA HITUNG GAJI (DI BELAKANG LAYAR)
+  const calculateAndSubmit = async (e) => {
     e.preventDefault();
     if(!guru) return;
 
-    // 1. CEK ANTI DOBEL INPUT (SERVER SIDE)
-    const today = new Date().toISOString().split('T')[0];
-    // Asumsi: Guru tidak mungkin input 2x dalam rentang waktu berdekatan. 
-    // Kita cek apakah sudah ada inputan dengan detail yang sama persis hari ini.
-    const duplicateCheck = history.find(h => 
-        h.program === programType && 
-        (programType === "Reguler" ? h.detail.includes(mapel) : h.detail.includes(englishLevel))
-    );
-
-    if (duplicateCheck) {
-        alert("⚠️ DUPLIKASI TERDETEKSI!\nAnda sudah memasukkan data kelas ini hari ini. Hubungi Admin jika ingin koreksi.");
+    // A. VALIDASI FINAL: Jurnal Wajib Diisi (Anti Curang)
+    if (programType === "Reguler" && activityType === "Mengajar" && jurnal.length < 5) {
+        alert("⚠️ Jurnal Mengajar WAJIB diisi detail (Bab/Halaman) untuk transparansi ke Ortu.");
         return;
     }
 
     try {
-        // 2. AMBIL RUMUS GAJI DARI SERVER
+        // B. AMBIL SETTING HARGA DARI SERVER
         const settingsSnap = await getDoc(doc(db, "settings", "global_config"));
         const rules = settingsSnap.data().salaryRules;
         const prices = settingsSnap.data().prices;
 
-        // 3. HITUNG NOMINAL (DI BELAKANG LAYAR)
         let nominal = 0;
-        
-        // Cek Kehadiran Siswa (Transport Only Logic)
+        let finalDetail = "";
+        let finalDurasi = 0;
+
+        // C. LOGIKA GAJI BENSIN (0 Siswa)
         if (parseInt(siswaHadir) === 0) {
-            nominal = parseInt(rules.transport); // Cuma dapat transport
+            nominal = parseInt(rules.transport);
+            finalDetail = "Transport Only (0 Siswa)";
+            finalDurasi = 0;
         } else {
-            // Hitung Normal
+            // D. LOGIKA NORMAL
             if (programType === "English") {
-                // English Logic (Flat Price tapi kita asumsikan per sesi ada standar honornya, 
-                // atau sementara kita pakai tarif mengajar normal + bonus inggris jika belum ada setting honor spesifik English)
-                // *Catatan: Biasanya honor english lebih tinggi, kita pakai Honor SD + Bonus Inggris sebagai base logic kalau belum ada setting honor english khusus guru*
-                nominal = (parseInt(rules.honorSD) + parseInt(rules.bonusInggris)) * 1.5; // Asumsi 90 menit (1.5 jam)
+                // LOGIKA LOCK ENGLISH: Harga Flat, Durasi Dianggap 1 Sesi
+                // Kita pakai asumsi tarif English = Tarif SD * 1.5 + Bonus (Atau bisa ambil dari prices.english jika itu honor guru)
+                // Disini saya pakai logika aman: Honor Mengajar Standar + Bonus Inggris
+                const baseRate = parseInt(rules.honorSD) + parseInt(rules.bonusInggris);
+                nominal = baseRate * 1.5; // Asumsi 1 Sesi = 90 Menit (1.5 Jam)
+                finalDetail = `English Level ${englishLevel}`;
+                finalDurasi = 1.5; // LOCKED DURATION
             } else {
-                // Reguler Logic
+                // LOGIKA REGULER
                 if (activityType === "Mengajar") {
                     let rate = jenjang === "SD" ? rules.honorSD : rules.honorSMP;
-                    nominal = (parseInt(rate) * durasi) + parseInt(rules.transport);
+                    nominal = (parseInt(rate) * parseFloat(durasi)) + parseInt(rules.transport);
+                    finalDetail = `${jenjang} - ${mapel} (${jurnal})`;
+                    finalDurasi = parseFloat(durasi);
                 } else {
                     // Ujian / Soal
                     nominal = activityType === "Ujian" ? rules.pengawas : rules.buatSoal;
+                    finalDetail = `${activityType} (${jurnal})`;
+                    finalDurasi = parseFloat(durasi);
                 }
             }
         }
 
-        // 4. SIMPAN KE DATABASE
-        await addDoc(collection(db, "teacher_logs"), {
+        // E. DATA YANG DISIMPAN
+        const logData = {
             teacherId: guru.id,
             namaGuru: guru.nama,
-            tanggal: today,
+            tanggal: new Date().toISOString().split('T')[0],
             waktu: new Date().toLocaleTimeString(),
             program: programType,
             kegiatan: activityType,
-            detail: programType === "Reguler" ? `${jenjang} - ${mapel} (${jurnal})` : `English ${englishLevel}`,
+            detail: finalDetail,
             siswaHadir: siswaHadir,
-            nominal: nominal, // TERSIMPAN TAPI TIDAK DITAMPILKAN DI UI GURU
+            durasiJam: finalDurasi,
+            nominal: nominal, // DISIMPAN TAPI TIDAK DITAMPILKAN KE GURU
             status: "Menunggu Validasi"
-        });
+        };
 
-        alert("✅ Absensi Berhasil Disimpan!");
-        fetchHistory(guru.id); // Refresh tabel
-        
-        // Reset Form
-        setJurnal(""); setMapel("");
+        // F. SAVE & UPDATE UI
+        await addDoc(collection(db, "teacher_logs"), logData);
+        setExistingLog(logData); // Update tampilan jadi "Sudah Absen"
+        alert("✅ Absensi Berhasil Disimpan! Data aman di server.");
 
     } catch (error) {
         console.error(error);
-        alert("Gagal menyimpan data.");
+        alert("Gagal menyimpan. Coba lagi.");
     }
   };
 
-  if(!guru) return null;
+  if (loading) return <div style={{padding:20, textAlign:'center'}}>🔄 Sinkronisasi Data...</div>;
 
   return (
     <div style={styles.container}>
-      {/* HEADER */}
       <div style={styles.header}>
         <div>
-            <h2 style={{margin:0, color:'white'}}>Halo, {guru.nama} 👋</h2>
-            <p style={{margin:0, color:'#bdc3c7', fontSize:12}}>Selamat Mengajar!</p>
+            <h2 style={{margin:0, color:'white'}}>Halo, {guru?.nama} 👋</h2>
+            <p style={{margin:0, color:'#bdc3c7', fontSize:12}}>Akses Guru Terverifikasi</p>
         </div>
         <button onClick={handleLogout} style={styles.btnLogout}>Keluar</button>
       </div>
 
       <div style={styles.content}>
         
-        {/* FORM INPUT ABSENSI */}
+        {/* === TAMPILAN 1: JIKA SUDAH ABSEN (SMART SYNC) === */}
+        {existingLog ? (
+            <div style={styles.successCard}>
+                <div style={{textAlign:'center', marginBottom:15}}>
+                    <span style={{fontSize:40}}>✅</span>
+                    <h3 style={{color:'#27ae60', margin:'10px 0'}}>Data Hari Ini Masuk!</h3>
+                    <p style={{color:'#7f8c8d', fontSize:14}}>Anda sudah melakukan absensi di perangkat ini atau perangkat lain.</p>
+                </div>
+                
+                <div style={styles.detailBox}>
+                    <div style={styles.rowDetail}>
+                        <span>Program:</span> <strong>{existingLog.program}</strong>
+                    </div>
+                    <div style={styles.rowDetail}>
+                        <span>Detail:</span> <strong>{existingLog.detail}</strong>
+                    </div>
+                    <div style={styles.rowDetail}>
+                        <span>Siswa Hadir:</span> <strong>{existingLog.siswaHadir} Orang</strong>
+                    </div>
+                    <div style={styles.rowDetail}>
+                        <span>Durasi:</span> <strong>{existingLog.durasiJam} Jam</strong>
+                    </div>
+                    <hr style={{border:'0.5px dashed #ccc'}}/>
+                    <div style={styles.rowDetail}>
+                        <span>Status Gaji:</span> <span style={styles.badgePending}>⏳ {existingLog.status}</span>
+                    </div>
+                    {/* NOMINAL SENGAJA TIDAK DITAMPILKAN (HIDDEN SALARY) */}
+                </div>
+
+                <div style={{marginTop:20, textAlign:'center', fontSize:12, color:'#95a5a6'}}>
+                    *Jika ada kesalahan data, silakan hubungi Admin untuk Koreksi (Edit).
+                </div>
+            </div>
+        ) : (
+        
+        /* === TAMPILAN 2: JIKA BELUM ABSEN (FORMULIR) === */
         <div style={styles.card}>
-            <h3 style={{marginTop:0, borderBottom:'1px solid #eee', paddingBottom:10}}>📝 Input Aktivitas Hari Ini</h3>
+            <h3 style={{marginTop:0, borderBottom:'1px solid #eee', paddingBottom:10, color:'#2c3e50'}}>📝 Input Aktivitas</h3>
             
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={calculateAndSubmit}>
                 
                 {/* PILIH PROGRAM (BRANCHING) */}
                 <div style={{marginBottom:15}}>
@@ -147,7 +200,7 @@ const TeacherDashboard = () => {
                     </div>
                 </div>
 
-                {/* FORM REGULER */}
+                {/* --- FORM REGULER (KOMPLEKS) --- */}
                 {programType === "Reguler" && (
                     <>
                         <div style={styles.row}>
@@ -158,10 +211,10 @@ const TeacherDashboard = () => {
                                 </select>
                             </div>
                             <div style={{flex:1}}>
-                                <label style={styles.label}>Jenis</label>
+                                <label style={styles.label}>Aktivitas</label>
                                 <select style={styles.input} value={activityType} onChange={e=>setActivityType(e.target.value)}>
                                     <option value="Mengajar">Mengajar</option>
-                                    <option value="Ujian">Pengawas Ujian</option>
+                                    <option value="Ujian">Jaga Ujian</option>
                                     <option value="Soal">Buat Soal</option>
                                 </select>
                             </div>
@@ -171,93 +224,90 @@ const TeacherDashboard = () => {
                             <>
                                 <div style={{marginBottom:10}}>
                                     <label style={styles.label}>Mata Pelajaran</label>
-                                    <input style={styles.input} value={mapel} onChange={e=>setMapel(e.target.value)} placeholder="Contoh: Matematika" required />
+                                    <input style={styles.input} value={mapel} onChange={e=>setMapel(e.target.value)} placeholder="Matematika / IPA" required />
                                 </div>
                                 <div style={{marginBottom:10}}>
-                                    <label style={styles.label}>Jurnal Mengajar (Wajib)</label>
-                                    <textarea 
-                                        style={styles.textarea} 
-                                        value={jurnal} 
-                                        onChange={e=>setJurnal(e.target.value)} 
-                                        placeholder="Bab berapa? Halaman berapa? Catatan siswa?" 
-                                        required 
-                                    />
-                                    <small style={{color:'red', fontSize:11}}>*Data ini akan dilaporkan ke Orang Tua.</small>
+                                    <label style={styles.label}>Jurnal (Wajib)</label>
+                                    <input style={styles.input} value={jurnal} onChange={e=>setJurnal(e.target.value)} placeholder="Bab 3, Halaman 40..." required />
+                                    <small style={{color:'#e67e22', fontSize:11}}>*Data ini akan dilihat Orang Tua.</small>
                                 </div>
                                 <div style={{marginBottom:10}}>
                                     <label style={styles.label}>Durasi (Jam)</label>
-                                    <input type="number" style={styles.input} value={durasi} onChange={e=>setDurasi(e.target.value)} />
+                                    <input type="number" step="0.5" style={styles.input} value={durasi} onChange={e=>setDurasi(e.target.value)} />
                                 </div>
                             </>
+                        )}
+                        
+                        {(activityType === "Ujian" || activityType === "Soal") && (
+                             <div style={{marginBottom:10}}>
+                                <label style={styles.label}>Keterangan Paket</label>
+                                <input style={styles.input} value={jurnal} onChange={e=>setJurnal(e.target.value)} placeholder="Contoh: Paket Ujian Tengah Semester" required />
+                            </div>
                         )}
                     </>
                 )}
 
-                {/* FORM ENGLISH */}
+                {/* --- FORM ENGLISH (LOCKED DURATION) --- */}
                 {programType === "English" && (
-                    <div style={{marginBottom:15, background:'#f0f4c3', padding:10, borderRadius:5}}>
+                    <div style={{marginBottom:15, background:'#f9fbe7', padding:15, borderRadius:5, border:'1px solid #cddc39'}}>
                         <label style={styles.label}>Level English</label>
                         <select style={styles.input} value={englishLevel} onChange={e=>setEnglishLevel(e.target.value)}>
                             <option value="kids">Kids</option>
                             <option value="junior">Junior</option>
                             <option value="professional">Professional</option>
                         </select>
-                        <p style={{fontSize:12, color:'#555'}}>*Durasi otomatis tercatat 1 Sesi (90 Menit)</p>
+                        
+                        {/* FITUR LOCK DURASI */}
+                        <div style={{marginTop:10, fontSize:13, color:'#827717', display:'flex', alignItems:'center', gap:5}}>
+                            <span>🔒 Durasi Terkunci:</span> 
+                            <strong>1 Sesi (90 Menit)</strong>
+                        </div>
                     </div>
                 )}
 
-                {/* LOGIKA GAJI BENSIN */}
+                {/* JUMLAH SISWA (GAJI BENSIN LOGIC) */}
                 <div style={{marginBottom:20}}>
                     <label style={styles.label}>Jumlah Siswa Hadir</label>
                     <input type="number" style={styles.input} value={siswaHadir} onChange={e=>setSiswaHadir(e.target.value)} min="0" required />
+                    
                     {parseInt(siswaHadir) === 0 && (
-                        <small style={{color:'orange', fontWeight:'bold'}}>⚠️ Siswa Kosong = Gaji Transport Only</small>
+                        <div style={{background:'#ffebee', color:'#c62828', padding:10, borderRadius:5, marginTop:5, fontSize:12, fontWeight:'bold'}}>
+                            ⚠️ PERHATIAN: 0 Siswa.<br/>
+                            Sistem akan mencatat ini sebagai Transport Only (Gaji Bensin).
+                        </div>
                     )}
                 </div>
 
-                <button type="submit" style={styles.btnSubmit}>SIMPAN ABSENSI</button>
+                <button type="submit" style={styles.btnSubmit}>SIMPAN AKTIVITAS</button>
             </form>
         </div>
-
-        {/* RIWAYAT (HIDDEN SALARY) */}
-        <div style={{marginTop:20}}>
-            <h3 style={{color:'#555'}}>🕒 Riwayat Hari Ini</h3>
-            {history.length === 0 ? <p style={{color:'#999'}}>Belum ada aktivitas hari ini.</p> : (
-                history.map((h, i) => (
-                    <div key={i} style={styles.historyCard}>
-                        <div>
-                            <strong style={{color:'#2c3e50'}}>{h.program} - {h.kegiatan}</strong>
-                            <div style={{fontSize:12, color:'#7f8c8d'}}>{h.detail}</div>
-                            <div style={{fontSize:11, color:'#7f8c8d'}}>Siswa: {h.siswaHadir} | Waktu: {h.waktu}</div>
-                        </div>
-                        <div style={{textAlign:'right'}}>
-                            <div style={{color:'green', fontWeight:'bold', fontSize:12}}>✅ Terekam</div>
-                            <div style={{fontSize:10, color:'#999'}}>Menunggu Admin</div>
-                        </div>
-                    </div>
-                ))
-            )}
-        </div>
+        )}
 
       </div>
     </div>
   );
 };
 
+// CSS STYLES
 const styles = {
   container: { minHeight:'100vh', background:'#f4f7f6', fontFamily:'sans-serif' },
-  header: { background:'#2c3e50', padding:'20px', display:'flex', justifyContent:'space-between', alignItems:'center' },
-  btnLogout: { background:'#c0392b', color:'white', border:'none', padding:'5px 15px', borderRadius:5, cursor:'pointer' },
-  content: { padding:20, maxWidth:'600px', margin:'0 auto' },
-  card: { background:'white', padding:20, borderRadius:10, boxShadow:'0 2px 5px rgba(0,0,0,0.05)' },
+  header: { background:'#2c3e50', padding:'20px', display:'flex', justifyContent:'space-between', alignItems:'center', boxShadow:'0 2px 5px rgba(0,0,0,0.1)' },
+  btnLogout: { background:'#c0392b', color:'white', border:'none', padding:'8px 15px', borderRadius:5, cursor:'pointer', fontSize:12 },
+  content: { padding:20, maxWidth:'500px', margin:'0 auto' },
+  card: { background:'white', padding:25, borderRadius:10, boxShadow:'0 2px 5px rgba(0,0,0,0.05)' },
+  successCard: { background:'white', padding:30, borderRadius:10, boxShadow:'0 4px 10px rgba(0,0,0,0.05)', borderTop:'5px solid #27ae60' },
+  
   label: { display:'block', marginBottom:5, fontWeight:'bold', color:'#333', fontSize:13 },
-  input: { width:'100%', padding:10, borderRadius:5, border:'1px solid #ccc', boxSizing:'border-box', background:'white', color:'black' },
-  textarea: { width:'100%', padding:10, borderRadius:5, border:'1px solid #ccc', minHeight:80, boxSizing:'border-box', background:'white', color:'black' },
-  row: { display:'flex', gap:10, marginBottom:10 },
-  btnActive: { flex:1, padding:10, background:'#3498db', color:'white', border:'none', borderRadius:5, cursor:'pointer', fontWeight:'bold' },
-  btnInactive: { flex:1, padding:10, background:'#ecf0f1', color:'#333', border:'1px solid #bdc3c7', borderRadius:5, cursor:'pointer' },
-  btnSubmit: { width:'100%', padding:15, background:'#27ae60', color:'white', border:'none', borderRadius:5, fontWeight:'bold', cursor:'pointer', fontSize:16 },
-  historyCard: { background:'white', padding:15, borderRadius:8, marginBottom:10, display:'flex', justifyContent:'space-between', alignItems:'center', borderLeft:'4px solid #27ae60', boxShadow:'0 1px 3px rgba(0,0,0,0.1)' }
+  input: { width:'100%', padding:12, borderRadius:5, border:'1px solid #ddd', boxSizing:'border-box', background:'white', color:'#333', fontSize:14 },
+  row: { display:'flex', gap:15, marginBottom:15 },
+  
+  btnActive: { flex:1, padding:10, background:'#3498db', color:'white', border:'none', borderRadius:5, cursor:'pointer', fontWeight:'bold', boxShadow:'0 2px 4px rgba(0,0,0,0.2)' },
+  btnInactive: { flex:1, padding:10, background:'#ecf0f1', color:'#7f8c8d', border:'1px solid #bdc3c7', borderRadius:5, cursor:'pointer' },
+  btnSubmit: { width:'100%', padding:15, background:'#27ae60', color:'white', border:'none', borderRadius:5, fontWeight:'bold', cursor:'pointer', fontSize:16, marginTop:10, boxShadow:'0 4px 6px rgba(0,0,0,0.1)' },
+  
+  detailBox: { background:'#f8f9fa', padding:15, borderRadius:8, border:'1px solid #eee' },
+  rowDetail: { display:'flex', justifyContent:'space-between', marginBottom:8, fontSize:14, color:'#555' },
+  badgePending: { background:'#fff3cd', color:'#856404', padding:'2px 8px', borderRadius:4, fontSize:12, fontWeight:'bold' }
 };
 
 export default TeacherDashboard;

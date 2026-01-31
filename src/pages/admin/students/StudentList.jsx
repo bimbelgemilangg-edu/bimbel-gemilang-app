@@ -1,76 +1,88 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../../components/Sidebar';
 import { db } from '../../../firebase';
-import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 
 const StudentList = () => {
+  const navigate = useNavigate();
   const [students, setStudents] = useState([]);
-  // Form State (Sederhana untuk demo)
-  const [newName, setNewName] = useState("");
-  const [newClass, setNewClass] = useState("4 SD");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // --- 1. AMBIL SISWA DARI CLOUD ---
+  // LOAD DATA SISWA DARI FIREBASE
   const fetchStudents = async () => {
-    const querySnapshot = await getDocs(collection(db, "students")); // Nama tabel: students
-    const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setStudents(data);
+    try {
+      const querySnapshot = await getDocs(collection(db, "students"));
+      const data = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setStudents(data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   useEffect(() => {
     fetchStudents();
   }, []);
 
-  // --- 2. SIMPAN SISWA KE CLOUD ---
-  const handleAddStudent = async () => {
-    if (!newName) return alert("Nama kosong!");
-    await addDoc(collection(db, "students"), { 
-      nama: newName, 
-      kelas: newClass, 
-      status: "Aktif" 
-    });
-    alert("✅ Siswa Tersimpan!");
-    setNewName("");
-    fetchStudents();
+  // DELETE SISWA (Hanya Admin)
+  const handleDelete = async (id) => {
+    if(window.confirm("Yakin hapus siswa ini? Data keuangan & absen akan hilang!")) {
+      await deleteDoc(doc(db, "students", id));
+      fetchStudents();
+    }
   };
+
+  // FILTER PENCARIAN
+  const filteredStudents = students.filter(s => 
+    s.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s.kelas.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div style={{ display: 'flex' }}>
       <Sidebar />
       <div style={styles.content}>
-        <h2>👨‍🎓 Master Data Siswa (Online)</h2>
-
-        {/* FORM CEPAT */}
-        <div style={styles.card}>
-          <h3>+ Input Siswa Baru</h3>
-          <div style={{display:'flex', gap:'10px'}}>
-            <input style={styles.input} value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nama Siswa..." />
-            <select style={styles.select} value={newClass} onChange={e => setNewClass(e.target.value)}>
-              <option>4 SD</option><option>5 SD</option><option>6 SD</option>
-              <option>7 SMP</option><option>8 SMP</option><option>9 SMP</option>
-            </select>
-            <button onClick={handleAddStudent} style={styles.btnSave}>Simpan</button>
-          </div>
+        <div style={styles.header}>
+            <h2 style={{margin:0}}>👨‍🎓 Data Siswa</h2>
+            <button onClick={() => navigate('/admin/students/add')} style={styles.btnAdd}>+ Siswa Baru</button>
         </div>
 
-        {/* LIST SISWA */}
-        <div style={{...styles.card, marginTop: 20}}>
-          <h3>Daftar Siswa</h3>
-          <table style={{width:'100%', borderCollapse:'collapse'}}>
-            <thead>
-              <tr style={{background:'#eee', textAlign:'left'}}>
-                <th style={{padding:10}}>Nama</th><th>Kelas</th><th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map(s => (
-                <tr key={s.id} style={{borderBottom:'1px solid #eee'}}>
-                  <td style={{padding:10}}><b>{s.nama}</b></td>
-                  <td>{s.kelas}</td>
-                  <td><span style={{background:'#d4edda', padding:'3px 8px', borderRadius:'10px', fontSize:'12px'}}>Aktif</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <input 
+            type="text" 
+            placeholder="Cari Nama / Kelas..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={styles.searchBar}
+        />
+
+        <div style={styles.grid}>
+          {filteredStudents.map((siswa) => (
+            <div key={siswa.id} style={styles.card}>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'start'}}>
+                <div>
+                    <h3 style={{margin:0, color:'#2c3e50'}}>{siswa.nama}</h3>
+                    <div style={styles.badge}>{siswa.detailProgram || siswa.kelas}</div>
+                </div>
+                <div style={{textAlign:'right'}}>
+                   <small style={{display:'block', color:'#7f8c8d'}}>{siswa.status || 'Aktif'}</small>
+                </div>
+              </div>
+              
+              <div style={styles.infoRow}>
+                <small>Ortu: {siswa.ortu?.ayah || '-'}</small>
+                <small>HP: {siswa.ortu?.hp || '-'}</small>
+              </div>
+
+              <div style={styles.actionRow}>
+                <button onClick={() => navigate(`/admin/students/attendance/${siswa.id}`)} style={styles.btnAction}>📅 Absensi</button>
+                <button onClick={() => navigate(`/admin/students/finance/${siswa.id}`)} style={styles.btnAction}>💰 Keuangan</button>
+                <button onClick={() => handleDelete(siswa.id)} style={styles.btnDel}>Hapus</button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -78,11 +90,17 @@ const StudentList = () => {
 };
 
 const styles = {
-  content: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'sans-serif' },
-  card: { background: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
-  input: { padding: '10px', border: '1px solid #ccc', borderRadius: '4px', flex: 2 },
-  select: { padding: '10px', border: '1px solid #ccc', borderRadius: '4px', flex: 1 },
-  btnSave: { padding: '10px 20px', background: '#2980b9', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }
+  content: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily: 'Segoe UI, sans-serif' },
+  header: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 },
+  btnAdd: { padding:'10px 20px', background:'#27ae60', color:'white', border:'none', borderRadius:5, cursor:'pointer', fontWeight:'bold' },
+  searchBar: { width:'100%', padding:12, borderRadius:5, border:'1px solid #ddd', marginBottom:20, boxSizing:'border-box' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' },
+  card: { background: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' },
+  badge: { display:'inline-block', background:'#e1f5fe', color:'#0277bd', fontSize:11, padding:'2px 6px', borderRadius:4, marginTop:5 },
+  infoRow: { marginTop:10, marginBottom:15, color:'#555', fontSize:13, borderTop:'1px solid #eee', paddingTop:10 },
+  actionRow: { display:'flex', gap:5 },
+  btnAction: { flex:1, padding:'8px', background:'#3498db', color:'white', border:'none', borderRadius:4, cursor:'pointer', fontSize:12 },
+  btnDel: { padding:'8px', background:'white', color:'red', border:'1px solid red', borderRadius:4, cursor:'pointer', fontSize:12 }
 };
 
 export default StudentList;
