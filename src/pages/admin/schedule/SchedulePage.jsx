@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../../components/Sidebar';
 import { db } from '../../../firebase'; 
-import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc, getDoc } from "firebase/firestore";
 
 const SchedulePage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -9,8 +9,11 @@ const SchedulePage = () => {
   
   // --- STATE DATA DARI CLOUD ---
   const [schedules, setSchedules] = useState([]);
-  const [availableTeachers, setAvailableTeachers] = useState([]); // GURU DARI CLOUD
-  const [availableStudents, setAvailableStudents] = useState([]); // SISWA DARI CLOUD
+  const [availableTeachers, setAvailableTeachers] = useState([]); 
+  const [availableStudents, setAvailableStudents] = useState([]);
+  
+  // STATE BARU: KODE HARIAN (LOGIN GURU)
+  const [dailyCode, setDailyCode] = useState("Belum Diset");
 
   // --- 1. AMBIL SEMUA DATA (SINKRONISASI) ---
   const fetchData = async () => {
@@ -18,18 +21,28 @@ const SchedulePage = () => {
     const schedSnap = await getDocs(collection(db, "jadwal_bimbel"));
     setSchedules(schedSnap.docs.map(d => ({ id: d.id, ...d.data() })));
 
-    // B. Ambil Guru (Supaya Dropdown Muncul)
+    // B. Ambil Guru
     const teacherSnap = await getDocs(collection(db, "teachers"));
     setAvailableTeachers(teacherSnap.docs.map(d => ({ id: d.id, ...d.data() })));
 
-    // C. Ambil Siswa (Supaya Pilihan Siswa Muncul)
+    // C. Ambil Siswa
     const studentSnap = await getDocs(collection(db, "students"));
     setAvailableStudents(studentSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+
+    // D. AMBIL KODE LOGIN GURU HARI INI (Supaya Admin Ingat)
+    const today = new Date().toISOString().split('T')[0];
+    const codeRef = doc(db, "settings", `daily_code_${today}`);
+    const codeSnap = await getDoc(codeRef);
+    if (codeSnap.exists()) {
+        setDailyCode(codeSnap.data().code);
+    } else {
+        setDailyCode("⚠️ Belum Diset di Menu Guru");
+    }
   };
 
   useEffect(() => {
-    fetchData(); // Jalankan saat loading
-  }, []);
+    fetchData(); 
+  }, [selectedDate]); // Refresh jika ganti tanggal (opsional)
 
   const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,6 +55,8 @@ const SchedulePage = () => {
   // Helpers
   const changeMonth = (offset) => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + offset, 1));
   const formatDateStr = (date) => date.toISOString().split('T')[0];
+  
+  // Kode Booking Ruangan (Bukan Kode Login Guru)
   const generateCode = (planet) => {
     const prefix = planet.substring(0, 3).toUpperCase();
     const num = Math.floor(1000 + Math.random() * 9000);
@@ -55,25 +70,21 @@ const SchedulePage = () => {
     setIsModalOpen(true);
   };
 
-  // Logic Pilih Kelas (Auto Select Siswa)
   const handleSelectClass = (e) => {
     const kelas = e.target.value;
     if (!kelas) return;
-    // Filter siswa berdasarkan kelas dari database
     const ids = availableStudents.filter(s => s.kelas === kelas).map(s => s.id);
     setFormData(prev => ({ ...prev, selectedStudents: [...new Set([...prev.selectedStudents, ...ids])] }));
   };
 
-  // Simpan Jadwal
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.booker) return alert("Pilih Guru!");
     
-    // Kita simpan FULL OBJECT Siswa agar guru tidak perlu query ulang
     const studentsFullData = formData.selectedStudents.map(id => {
         const s = availableStudents.find(stud => stud.id === id);
         return s ? { id: s.id, nama: s.nama, kelas: s.kelas } : null;
-    }).filter(Boolean); // Hapus yang null
+    }).filter(Boolean); 
 
     if (studentsFullData.length === 0) return alert("Pilih minimal 1 siswa!");
 
@@ -85,24 +96,23 @@ const SchedulePage = () => {
       type: formData.type,
       title: formData.title,
       booker: formData.booker,
-      code: generatedCode,
+      code: generatedCode, // Ini Kode Booking Ruangan
       students: studentsFullData 
     };
 
     await addDoc(collection(db, "jadwal_bimbel"), newSchedule);
-    alert("✅ Jadwal Tersimpan & Terhubung ke Guru!");
+    alert("✅ Jadwal Tersimpan!");
     setIsModalOpen(false);
     fetchData();
   };
 
   const handleDelete = async (id) => {
-    if(window.confirm("Hapus?")) {
+    if(window.confirm("Hapus jadwal ini?")) {
       await deleteDoc(doc(db, "jadwal_bimbel", id));
       fetchData();
     }
   };
 
-  // Render Calendar
   const renderCalendar = () => {
     const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
     const days = [];
@@ -124,8 +134,17 @@ const SchedulePage = () => {
     <div style={{ display: 'flex' }}>
       <Sidebar />
       <div style={styles.mainContent}>
+        
+        {/* INFO KODE HARIAN (SUPAYA ADMIN TIDAK LUPA) */}
+        <div style={styles.infoBar}>
+            <span>🔑 Kode Login Guru Hari Ini ({new Date().toLocaleDateString('id-ID')}):</span>
+            <strong style={{marginLeft:10, fontSize:18, background:'white', color:'#2c3e50', padding:'2px 8px', borderRadius:4}}>
+                {dailyCode}
+            </strong>
+        </div>
+
         <div style={styles.header}>
-          <h2 style={{margin:0}}>📅 Jadwal (Sinkronisasi Database)</h2>
+          <h2 style={{margin:0}}>📅 Jadwal & Booking Ruangan</h2>
           <div style={styles.nav}>
             <button onClick={() => changeMonth(-1)}>◀</button>
             <span style={{fontWeight:'bold'}}>{currentMonth.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}</span>
@@ -148,13 +167,13 @@ const SchedulePage = () => {
                   <div key={planet} style={styles.planetCard}>
                     <div style={styles.planetHeader}>
                       <b>{planet}</b>
-                      <button style={styles.btnAdd} onClick={() => openAddModal(planet)}>+ Set</button>
+                      <button style={styles.btnAdd} onClick={() => openAddModal(planet)}>+ Booking</button>
                     </div>
                     {items.map(item => (
                       <div key={item.id} style={item.type === 'Pararel' ? styles.tagRed : styles.tagGreen}>
                         <div><b>{item.start}-{item.end}</b> <br/> {item.title} ({item.booker})</div>
                         <div style={{textAlign:'right'}}>
-                           <div style={styles.codeBadge}>{item.code}</div>
+                           <div style={styles.codeBadge}>Room: {item.code}</div>
                            <button onClick={() => handleDelete(item.id)} style={styles.btnDel}>Hapus</button>
                         </div>
                       </div>
@@ -169,14 +188,15 @@ const SchedulePage = () => {
         {isModalOpen && (
           <div style={styles.overlay}>
             <div style={styles.modal}>
-              <h3>{activePlanet}: {generatedCode}</h3>
+              <h3>Booking {activePlanet}</h3>
+              <p style={{fontSize:12, color:'#666'}}>Kode Booking: {generatedCode}</p>
+              
               <form onSubmit={handleSave}>
                 <div style={styles.row}>
                   <input type="time" required value={formData.start} onChange={e => setFormData({...formData, start: e.target.value})} style={styles.input} />
                   <input type="time" required value={formData.end} onChange={e => setFormData({...formData, end: e.target.value})} style={styles.input} />
                 </div>
                 
-                {/* --- BAGIAN PENTING: DROPDOWN GURU --- */}
                 <div style={styles.group}>
                   <label>Pilih Guru (Dari Database)</label>
                   <select required value={formData.booker} onChange={e => setFormData({...formData, booker: e.target.value})} style={styles.select}>
@@ -186,11 +206,9 @@ const SchedulePage = () => {
                     ))}
                   </select>
                 </div>
-                {/* ------------------------------------- */}
 
-                <input type="text" placeholder="Mapel" required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} style={styles.input} />
+                <input type="text" placeholder="Mapel / Kegiatan" required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} style={styles.input} />
 
-                {/* --- BAGIAN PENTING: PILIH SISWA --- */}
                 <div style={styles.studentSection}>
                   <label>Pilih Siswa (Dari Database):</label>
                   <select onChange={handleSelectClass} style={styles.select}>
@@ -217,10 +235,9 @@ const SchedulePage = () => {
                   </div>
                   <p style={{fontSize:11, textAlign:'right', marginTop:5}}>Terpilih: {formData.selectedStudents.length} siswa</p>
                 </div>
-                {/* ------------------------------------- */}
 
                 <div style={styles.btnRow}>
-                  <button type="submit" style={styles.btnSave}>SIMPAN ONLINE</button>
+                  <button type="submit" style={styles.btnSave}>SIMPAN JADWAL</button>
                   <button type="button" onClick={() => setIsModalOpen(false)} style={styles.btnCancel}>Batal</button>
                 </div>
               </form>
@@ -232,9 +249,12 @@ const SchedulePage = () => {
   );
 };
 
-// ... Styles sama seperti sebelumnya ...
+// STYLES
 const styles = {
   mainContent: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'sans-serif' },
+  // INFO BAR BARU
+  infoBar: { background: '#2c3e50', color: 'white', padding: '15px', borderRadius: '10px', marginBottom: '20px', display: 'flex', alignItems: 'center' },
+  
   header: { display: 'flex', justifyContent: 'space-between', marginBottom: '20px', background:'white', padding:'20px', borderRadius:'10px' },
   nav: { display: 'flex', gap: '10px' },
   layout: { display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '20px' },
