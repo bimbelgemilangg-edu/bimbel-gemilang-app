@@ -38,81 +38,84 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
       };
       
       if (settingsSnap.exists()) {
-        // Gabungkan default dengan setting dari database
         rules = { ...rules, ...settingsSnap.data().salaryRules };
       }
 
       let nominal = 0;
-      let detailTxt = `${schedule.type} - ${schedule.title}`;
+      // Ambil Aktivitas NYATA yang dipilih Guru di Popup Dashboard tadi
+      // Jika tidak ada (fallback), ambil default "Mengajar"
+      const realActivity = schedule.actualActivity || "Mengajar"; 
+      
+      let detailTxt = `${schedule.program} - ${schedule.title} (${realActivity})`;
       let statusGaji = "Menunggu Validasi";
 
-      // --- SMART LOGIC V2: EXAM BUNDLING & COMPENSATION ---
+      // --- SMART LOGIC V3 (SINKRON DENGAN POPUP) ---
 
-      // SKENARIO 1: UJIAN (Fixed Rate / Flat)
-      // Cek apakah tipenya 'Ujian' atau judul mengandung kata 'ujian'
-      if (schedule.type === "Ujian" || schedule.title.toLowerCase().includes("ujian")) {
+      // SKENARIO 1: ENGLISH (SELALU FLAT/RATE KHUSUS)
+      if (schedule.program === "English") {
+          const base = parseInt(rules.honorSD) + parseInt(rules.bonusInggris);
+          nominal = base * diffHours; // Atau Flat Paket, tergantung kebijakan
+          detailTxt += " [English Rate]";
+      }
+      
+      // SKENARIO 2: UJIAN (Berdasarkan Pilihan Guru di Popup)
+      else if (realActivity === "Ujian" || realActivity === "Buat Soal") {
+          // Cek judul juga untuk deteksi "Paket"
           const titleLower = schedule.title.toLowerCase();
           
-          // Logika Deteksi Paket Ujian
-          if (titleLower.includes("paket") || (titleLower.includes("soal") && titleLower.includes("jaga"))) {
-              // Paket Lengkap (Buat + Jaga)
-              nominal = parseInt(rules.ujianPaket || 15000);
-              detailTxt += " (Bundling: Soal + Jaga)";
-          } else if (titleLower.includes("soal")) {
-              // Cuma Buat Soal
-              nominal = parseInt(rules.ujianSoal || 10000);
-              detailTxt += " (Hanya Buat Soal)";
-          } else {
-              // Default: Anggap Jaga Ujian saja
-              nominal = parseInt(rules.ujianJaga || 10000);
-              detailTxt += " (Hanya Jaga Ujian)";
+          if (realActivity === "Ujian" && titleLower.includes("paket")) {
+             nominal = parseInt(rules.ujianPaket || 15000);
+             detailTxt += " [Bundling Paket]";
+          } 
+          else if (realActivity === "Buat Soal") {
+             nominal = parseInt(rules.ujianSoal || 10000);
+             detailTxt += " [Hanya Buat Soal]";
+          } 
+          else {
+             nominal = parseInt(rules.ujianJaga || 10000);
+             detailTxt += " [Hanya Jaga]";
           }
-          // Note: Ujian flat rate, tidak dikali jam.
+      }
 
-      } 
-      // SKENARIO 2: KELAS MENGAJAR / ENGLISH (Variable Rate x Jam)
+      // SKENARIO 3: MENGAJAR REGULER (Rate x Jam)
       else {
           // A. Tentukan Rate Dasar
-          let baseRate = 0;
-          if (schedule.type === "English") {
-             baseRate = parseInt(rules.honorSD) + parseInt(rules.bonusInggris);
-          } else {
-             // Deteksi Jenjang dari Judul
-             if (schedule.title.toLowerCase().includes("smp") || schedule.title.toLowerCase().includes("9")) {
-                baseRate = parseInt(rules.honorSMP);
-             } else if (schedule.title.toLowerCase().includes("sma") || schedule.title.toLowerCase().includes("10")) {
-                baseRate = parseInt(rules.honorSMA);
-             } else {
-                baseRate = parseInt(rules.honorSD); // Default SD
-             }
+          let baseRate = parseInt(rules.honorSD); // Default
+          
+          // Deteksi Jenjang dari Judul/Level Jadwal
+          const levelInfo = (schedule.level || "") + " " + (schedule.title || "");
+          if (levelInfo.toLowerCase().includes("smp") || levelInfo.toLowerCase().includes("9")) {
+              baseRate = parseInt(rules.honorSMP);
+          } else if (levelInfo.toLowerCase().includes("sma") || levelInfo.toLowerCase().includes("10")) {
+              baseRate = parseInt(rules.honorSMA);
           }
 
           // B. Cek Kehadiran (Logika Kompensasi)
           if (jumlahHadir === 0) {
             // SISWA KOSONG = KOMPENSASI 50%
-            // Rumus: (Rate x Jam) * 50%
-            // Tidak ada uang transport tambahan
             const gajiFull = baseRate * diffHours;
             nominal = gajiFull * 0.5; 
             
-            detailTxt += " (0 Siswa - Kompensasi 50%)";
+            detailTxt += " [0 Siswa - Kompensasi 50%]";
             statusGaji = "Kompensasi";
           } else {
-            // NORMAL (ADA SISWA)
-            // Rumus: (Rate x Jam)
-            // Murni honor mengajar sesuai durasi
+            // NORMAL (ADA SISWA) -> Full Rate x Jam
             nominal = baseRate * diffHours;
           }
       }
 
       // 4. SIMPAN KE FIREBASE
+      // Cek apakah ini Guru Pengganti?
+      const finalTeacherName = schedule.actualTeacher || teacher.nama;
+
       await addDoc(collection(db, "teacher_logs"), {
         teacherId: teacher.id,
-        namaGuru: teacher.nama,
+        namaGuru: finalTeacherName, // Nama Guru yang Mengerjakan
         tanggal: new Date().toISOString().split('T')[0],
         waktu: new Date().toLocaleTimeString(),
         jadwalId: schedule.id,
-        program: schedule.type,
+        program: schedule.program,
+        kegiatan: realActivity, // Simpan aktivitas aslinya
         detail: detailTxt,
         siswaHadir: jumlahHadir,
         siswaAbsenList: schedule.students.filter(s => !attendanceMap[s.id]),
@@ -140,9 +143,11 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
         <div style={{borderBottom:'1px solid #eee', paddingBottom:15, marginBottom:15}}>
           <h2 style={{margin:0, color:'#2c3e50'}}>Sedang Mengajar 👨‍🏫</h2>
           <p style={{margin:'5px 0', color:'#7f8c8d'}}>{schedule.start} - {schedule.end}</p>
+          
+          {/* LABEL AKTIVITAS */}
           <div style={{background:'#e1f5fe', color:'#0277bd', padding:10, borderRadius:5, marginTop:10, fontSize:13}}>
-            <strong>Info:</strong> Materi: {schedule.title}. <br/>
-            Sistem Gaji: <strong>{schedule.type === 'Ujian' ? 'Flat Rate (Bundling)' : 'Per Jam (Sesuai Durasi)'}</strong>
+            <strong>Mode:</strong> {schedule.actualActivity || "Mengajar"} <br/>
+            <strong>Materi:</strong> {schedule.title}
           </div>
         </div>
 
