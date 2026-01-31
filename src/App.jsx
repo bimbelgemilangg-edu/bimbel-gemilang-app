@@ -14,9 +14,9 @@ import TeacherList from './pages/admin/teachers/TeacherList';
 import SchedulePage from './pages/admin/schedule/SchedulePage';
 import Settings from './pages/admin/Settings';
 
-// --- IMPORT HALAMAN GURU (SUDAH DIPERBAIKI) ---
+// --- IMPORT HALAMAN GURU ---
 import LoginGuru from './pages/LoginGuru';
-// 👇 PERHATIKAN: Saya sudah ganti 'guru' menjadi 'teacher' agar sesuai folder Anda
+// ✅ PERBAIKAN: Mengarah ke folder 'teacher' (bukan guru)
 import TeacherDashboard from './pages/teacher/TeacherDashboard'; 
 
 // --- PROTEKSI RUTE ADMIN ---
@@ -25,19 +25,11 @@ const AdminRoute = ({ children }) => {
   return isAuth ? children : <Navigate to="/" />;
 };
 
-// --- PROTEKSI RUTE GURU (ANTI CRASH) ---
+// --- PROTEKSI RUTE GURU (SECURE MEMORY) ---
+// Kita hapus pengecekan localStorage di sini karena kita pakai Memory State
+// Logika proteksi dipindah langsung ke dalam TeacherDashboard
 const GuruRoute = ({ children }) => {
-  const session = localStorage.getItem('guruSession');
-  
-  if (!session) return <Navigate to="/login-guru" />;
-  
-  try {
-    JSON.parse(session); // Cek data rusak
-    return children;
-  } catch (e) {
-    localStorage.removeItem('guruSession'); // Auto-fix jika rusak
-    return <Navigate to="/login-guru" />;
-  }
+  return children; 
 };
 
 function App() {

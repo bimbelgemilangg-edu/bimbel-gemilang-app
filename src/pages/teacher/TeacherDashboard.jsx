@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { db } from '../../firebase'; // Pastikan ini mengarah ke file firebase.js Anda
+import { useNavigate, useLocation } from 'react-router-dom';
+import { db } from '../../firebase'; 
 import { collection, addDoc, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 
 const TeacherDashboard = () => {
   const navigate = useNavigate();
-  const [guru, setGuru] = useState(null);
+  const location = useLocation(); // MENANGKAP DATA MEMORI
   
-  // STATE UI
+  const [guru, setGuru] = useState(null);
   const [loading, setLoading] = useState(true);
   const [existingLog, setExistingLog] = useState(null);
 
-  // STATE FORM INPUT
+  // STATE FORM
   const [programType, setProgramType] = useState("Reguler");
   const [jenjang, setJenjang] = useState("SD");
   const [mapel, setMapel] = useState("");
@@ -21,82 +21,68 @@ const TeacherDashboard = () => {
   const [siswaHadir, setSiswaHadir] = useState(1);
   const [englishLevel, setEnglishLevel] = useState("kids");
 
-  // --- INIT & SMART SYNC (VERSI AMAN / ANTI-BLANK) ---
+  // 1. CEK SESI (TANPA LOCAL STORAGE)
   useEffect(() => {
-    const initData = async () => {
-        try {
-            // 1. Ambil Sesi dengan Aman
-            const session = localStorage.getItem("guruSession");
-            if (!session) { 
-                throw new Error("No Session"); // Lempar ke catch
-            }
-            
-            const guruData = JSON.parse(session); // Jika ini gagal, akan masuk catch
-            setGuru(guruData);
+    const initSession = async () => {
+        // Ambil data dari State Router (Memory Only)
+        const sessionGuru = location.state?.teacher;
 
-            // 2. Sync ke Firebase
+        // JIKA TIDAK ADA DATA (MISAL DI-REFRESH), TENDANG KELUAR
+        if (!sessionGuru) {
+            alert("⚠️ Sesi berakhir demi keamanan. Silakan login ulang.");
+            navigate('/login-guru');
+            return;
+        }
+
+        setGuru(sessionGuru);
+
+        // SYNC KE FIREBASE (Cek apakah hari ini sudah absen?)
+        try {
             const today = new Date().toISOString().split('T')[0];
             const q = query(
                 collection(db, "teacher_logs"), 
-                where("teacherId", "==", guruData.id), 
+                where("teacherId", "==", sessionGuru.id), 
                 where("tanggal", "==", today)
             );
             const snap = await getDocs(q);
-
             if (!snap.empty) {
                 setExistingLog(snap.docs[0].data());
             }
-            setLoading(false);
-
         } catch (error) {
-            console.error("Sesi Error atau Expired:", error);
-            // JIKA ERROR, JANGAN BLANK. TENDANG BALIK KE LOGIN.
-            localStorage.removeItem("guruSession"); // Bersihkan sampah
-            navigate('/login-guru');
+            console.error("Sync Error:", error);
+        } finally {
+            setLoading(false);
         }
     };
+    initSession();
+  }, [navigate, location]);
 
-    initData();
-  }, [navigate]);
-
+  // LOGIKA LOGOUT
   const handleLogout = () => {
-    localStorage.removeItem("guruSession");
+    // Tidak perlu hapus localStorage, cukup pindah halaman
     navigate('/login-guru');
   };
 
-  // --- LOGIKA HITUNG GAJI ---
+  // LOGIKA SIMPAN KE FIREBASE (TETAP SAMA & AMAN)
   const calculateAndSubmit = async (e) => {
     e.preventDefault();
     if(!guru) return;
 
-    // VALIDASI JURNAL
     if (programType === "Reguler" && activityType === "Mengajar" && jurnal.length < 3) {
-        alert("⚠️ Jurnal Mengajar WAJIB diisi (Bab/Halaman)!");
-        return;
+        alert("⚠️ Jurnal Mengajar WAJIB diisi!"); return;
     }
 
-    setLoading(true); // Tampilkan loading biar user tau sistem bekerja
-
+    setLoading(true);
     try {
         const settingsSnap = await getDoc(doc(db, "settings", "global_config"));
-        
-        // Safety Check: Jika setting belum ada di database
-        if (!settingsSnap.exists()) {
-            alert("⚠️ Admin belum mengatur Harga Gaji di Settings. Hubungi Admin.");
-            setLoading(false);
-            return;
-        }
+        if (!settingsSnap.exists()) { alert("Hubungi Admin: Setting Gaji Belum Ada"); setLoading(false); return; }
 
         const rules = settingsSnap.data().salaryRules;
-        let nominal = 0;
-        let finalDetail = "";
-        let finalDurasi = 0;
+        let nominal = 0, finalDetail = "", finalDurasi = 0;
 
-        // LOGIKA GAJI
         if (parseInt(siswaHadir) === 0) {
             nominal = parseInt(rules.transport);
             finalDetail = "Transport Only (0 Siswa)";
-            finalDurasi = 0;
         } else {
             if (programType === "English") {
                 const baseRate = parseInt(rules.honorSD) + parseInt(rules.bonusInggris);
@@ -117,7 +103,6 @@ const TeacherDashboard = () => {
             }
         }
 
-        // SIMPAN DATA
         const logData = {
             teacherId: guru.id,
             namaGuru: guru.nama,
@@ -134,41 +119,33 @@ const TeacherDashboard = () => {
 
         await addDoc(collection(db, "teacher_logs"), logData);
         setExistingLog(logData);
-        alert("✅ Absensi Berhasil Disimpan!");
+        alert("✅ Absensi Tersimpan di Server!");
 
     } catch (error) {
         console.error(error);
-        alert("Gagal menyimpan: " + error.message);
+        alert("Gagal simpan.");
     } finally {
         setLoading(false);
     }
   };
 
-  if (loading) return (
-    <div style={{display:'flex', justifyContent:'center', alignItems:'center', height:'100vh', flexDirection:'column'}}>
-        <h3>🔄 Memuat Data Guru...</h3>
-        <p>Mohon tunggu sebentar</p>
-    </div>
-  );
+  if (loading) return <div style={{padding:50, textAlign:'center'}}>🔒 Verifikasi Keamanan...</div>;
 
   return (
     <div style={styles.container}>
       <div style={styles.header}>
         <div>
             <h2 style={{margin:0, color:'white'}}>Halo, {guru?.nama} 👋</h2>
-            <p style={{margin:0, color:'#bdc3c7', fontSize:12}}>Akses Guru Terverifikasi</p>
+            <p style={{margin:0, color:'#bdc3c7', fontSize:12}}>Mode Aman (No-Cache)</p>
         </div>
         <button onClick={handleLogout} style={styles.btnLogout}>Keluar</button>
       </div>
 
       <div style={styles.content}>
-        
-        {/* TAMPILAN SUDAH ABSEN */}
         {existingLog ? (
             <div style={styles.successCard}>
                 <div style={{textAlign:'center', marginBottom:15}}>
-                    <span style={{fontSize:40}}>✅</span>
-                    <h3 style={{color:'#27ae60', margin:'10px 0'}}>Absensi Masuk!</h3>
+                    <h3 style={{color:'#27ae60', margin:'10px 0'}}>✅ Absensi Masuk</h3>
                 </div>
                 <div style={styles.detailBox}>
                     <div style={styles.rowDetail}><span>Program:</span> <strong>{existingLog.program}</strong></div>
@@ -178,71 +155,70 @@ const TeacherDashboard = () => {
                 </div>
             </div>
         ) : (
-        
-        /* TAMPILAN FORMULIR */
-        <div style={styles.card}>
-            <h3 style={{marginTop:0, borderBottom:'1px solid #eee', paddingBottom:10, color:'#2c3e50'}}>📝 Input Aktivitas</h3>
-            <form onSubmit={calculateAndSubmit}>
-                <div style={{marginBottom:15}}>
-                    <label style={styles.label}>Program</label>
-                    <div style={{display:'flex', gap:10}}>
-                        <button type="button" onClick={()=>setProgramType("Reguler")} style={programType==="Reguler" ? styles.btnActive : styles.btnInactive}>📚 Reguler</button>
-                        <button type="button" onClick={()=>setProgramType("English")} style={programType==="English" ? styles.btnActive : styles.btnInactive}>🇬🇧 English</button>
-                    </div>
-                </div>
-
-                {programType === "Reguler" && (
-                    <>
-                        <div style={styles.row}>
-                            <div style={{flex:1}}>
-                                <label style={styles.label}>Jenjang</label>
-                                <select style={styles.input} value={jenjang} onChange={e=>setJenjang(e.target.value)}><option>SD</option><option>SMP</option><option>SMA</option></select>
-                            </div>
-                            <div style={{flex:1}}>
-                                <label style={styles.label}>Aktivitas</label>
-                                <select style={styles.input} value={activityType} onChange={e=>setActivityType(e.target.value)}>
-                                    <option value="Mengajar">Mengajar</option>
-                                    <option value="Ujian">Ujian</option>
-                                    <option value="Soal">Buat Soal</option>
-                                </select>
-                            </div>
+            <div style={styles.card}>
+                <h3 style={{marginTop:0, borderBottom:'1px solid #eee', paddingBottom:10, color:'#2c3e50'}}>📝 Input Aktivitas</h3>
+                <form onSubmit={calculateAndSubmit}>
+                    <div style={{marginBottom:15}}>
+                        <label style={styles.label}>Program</label>
+                        <div style={{display:'flex', gap:10}}>
+                            <button type="button" onClick={()=>setProgramType("Reguler")} style={programType==="Reguler" ? styles.btnActive : styles.btnInactive}>📚 Reguler</button>
+                            <button type="button" onClick={()=>setProgramType("English")} style={programType==="English" ? styles.btnActive : styles.btnInactive}>🇬🇧 English</button>
                         </div>
-                        {activityType === "Mengajar" && (
-                            <>
-                                <div style={{marginBottom:10}}><label style={styles.label}>Mapel</label><input style={styles.input} value={mapel} onChange={e=>setMapel(e.target.value)} placeholder="Matematika" required /></div>
-                                <div style={{marginBottom:10}}><label style={styles.label}>Jurnal</label><input style={styles.input} value={jurnal} onChange={e=>setJurnal(e.target.value)} placeholder="Bab/Hal..." required /></div>
-                                <div style={{marginBottom:10}}><label style={styles.label}>Durasi (Jam)</label><input type="number" step="0.5" style={styles.input} value={durasi} onChange={e=>setDurasi(e.target.value)} /></div>
-                            </>
-                        )}
-                         {(activityType === "Ujian" || activityType === "Soal") && (
-                             <div style={{marginBottom:10}}><label style={styles.label}>Ket. Paket</label><input style={styles.input} value={jurnal} onChange={e=>setJurnal(e.target.value)} placeholder="Nama Paket..." required /></div>
-                        )}
-                    </>
-                )}
-
-                {programType === "English" && (
-                    <div style={{marginBottom:15, background:'#f9fbe7', padding:15, borderRadius:5, border:'1px solid #cddc39'}}>
-                        <label style={styles.label}>Level</label>
-                        <select style={styles.input} value={englishLevel} onChange={e=>setEnglishLevel(e.target.value)}><option value="kids">Kids</option><option value="junior">Junior</option><option value="professional">Pro</option></select>
-                        <div style={{marginTop:10, fontSize:13, color:'#827717'}}>🔒 Durasi: <strong>1 Sesi (90 Menit)</strong></div>
                     </div>
-                )}
 
-                <div style={{marginBottom:20}}>
-                    <label style={styles.label}>Siswa Hadir</label>
-                    <input type="number" style={styles.input} value={siswaHadir} onChange={e=>setSiswaHadir(e.target.value)} min="0" required />
-                    {parseInt(siswaHadir) === 0 && <div style={{color:'red', fontSize:12, marginTop:5}}>⚠️ 0 Siswa = Gaji Transport Only</div>}
-                </div>
+                    {programType === "Reguler" && (
+                        <>
+                            <div style={styles.row}>
+                                <div style={{flex:1}}>
+                                    <label style={styles.label}>Jenjang</label>
+                                    <select style={styles.input} value={jenjang} onChange={e=>setJenjang(e.target.value)}><option>SD</option><option>SMP</option><option>SMA</option></select>
+                                </div>
+                                <div style={{flex:1}}>
+                                    <label style={styles.label}>Aktivitas</label>
+                                    <select style={styles.input} value={activityType} onChange={e=>setActivityType(e.target.value)}>
+                                        <option value="Mengajar">Mengajar</option>
+                                        <option value="Ujian">Ujian</option>
+                                        <option value="Soal">Buat Soal</option>
+                                    </select>
+                                </div>
+                            </div>
+                            {activityType === "Mengajar" && (
+                                <>
+                                    <div style={{marginBottom:10}}><label style={styles.label}>Mapel</label><input style={styles.input} value={mapel} onChange={e=>setMapel(e.target.value)} placeholder="Matematika" required /></div>
+                                    <div style={{marginBottom:10}}><label style={styles.label}>Jurnal</label><input style={styles.input} value={jurnal} onChange={e=>setJurnal(e.target.value)} placeholder="Bab/Hal..." required /></div>
+                                    <div style={{marginBottom:10}}><label style={styles.label}>Durasi (Jam)</label><input type="number" step="0.5" style={styles.input} value={durasi} onChange={e=>setDurasi(e.target.value)} /></div>
+                                </>
+                            )}
+                            {(activityType === "Ujian" || activityType === "Soal") && (
+                                <div style={{marginBottom:10}}><label style={styles.label}>Ket. Paket</label><input style={styles.input} value={jurnal} onChange={e=>setJurnal(e.target.value)} placeholder="Nama Paket..." required /></div>
+                            )}
+                        </>
+                    )}
 
-                <button type="submit" style={styles.btnSubmit}>SIMPAN</button>
-            </form>
-        </div>
+                    {programType === "English" && (
+                        <div style={{marginBottom:15, background:'#f9fbe7', padding:15, borderRadius:5, border:'1px solid #cddc39'}}>
+                            <label style={styles.label}>Level</label>
+                            <select style={styles.input} value={englishLevel} onChange={e=>setEnglishLevel(e.target.value)}><option value="kids">Kids</option><option value="junior">Junior</option><option value="professional">Pro</option></select>
+                            <div style={{marginTop:10, fontSize:13, color:'#827717'}}>🔒 Durasi: <strong>1 Sesi (90 Menit)</strong></div>
+                        </div>
+                    )}
+
+                    <div style={{marginBottom:20}}>
+                        <label style={styles.label}>Siswa Hadir</label>
+                        <input type="number" style={styles.input} value={siswaHadir} onChange={e=>setSiswaHadir(e.target.value)} min="0" required />
+                        {parseInt(siswaHadir) === 0 && <div style={{color:'red', fontSize:12, marginTop:5}}>⚠️ 0 Siswa = Gaji Transport Only</div>}
+                    </div>
+
+                    <button type="submit" style={styles.btnSubmit}>SIMPAN</button>
+                </form>
+            </div>
         )}
       </div>
     </div>
   );
 };
 
+// Styles (Sama seperti sebelumnya)
 const styles = {
   container: { minHeight:'100vh', background:'#f4f7f6', fontFamily:'sans-serif' },
   header: { background:'#2c3e50', padding:'20px', display:'flex', justifyContent:'space-between', alignItems:'center' },

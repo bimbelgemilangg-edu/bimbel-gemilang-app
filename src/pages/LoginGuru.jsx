@@ -20,7 +20,7 @@ const LoginGuru = () => {
       const codeSnap = await getDoc(codeRef);
 
       if (!codeSnap.exists() || codeSnap.data().code.toUpperCase() !== dailyCode.toUpperCase()) {
-        alert("⛔ Kode Harian SALAH! Hubungi Admin untuk kode hari ini.");
+        alert("⛔ Kode Harian SALAH! Hubungi Admin.");
         setLoading(false);
         return;
       }
@@ -30,20 +30,22 @@ const LoginGuru = () => {
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        alert("❌ Email tidak terdaftar di Database Guru.");
+        alert("❌ Email tidak terdaftar.");
         setLoading(false);
         return;
       }
 
-      // 3. LOGIN SUKSES
+      // 3. LOGIN SUKSES (SECURE MEMORY MODE)
       const guruData = querySnapshot.docs[0].data();
       const guruId = querySnapshot.docs[0].id;
       
-      // Simpan sesi di HP/Laptop
-      localStorage.setItem("guruSession", JSON.stringify({ id: guruId, ...guruData }));
-      
+      const fullData = { id: guruId, ...guruData };
+
+      // ⚠️ PENTING: Kita TIDAK simpan ke localStorage.
+      // Kita "lempar" datanya langsung ke halaman Dashboard via Memory.
       alert(`✅ Login Berhasil! Selamat Datang, ${guruData.nama}`);
-      navigate('/guru/dashboard');
+      
+      navigate('/guru/dashboard', { state: { teacher: fullData } });
 
     } catch (error) {
       console.error(error);
@@ -58,7 +60,7 @@ const LoginGuru = () => {
       <div style={styles.card}>
         <div style={{textAlign:'center', marginBottom:20}}>
             <h2 style={{color:'#2c3e50', margin:0}}>🚪 Portal Guru</h2>
-            <p style={{color:'#7f8c8d', fontSize:14}}>Bimbel Gemilang</p>
+            <p style={{color:'#7f8c8d', fontSize:14}}>Secure Access (No-Cache)</p>
         </div>
         
         <form onSubmit={handleLogin}>
@@ -74,6 +76,9 @@ const LoginGuru = () => {
             {loading ? "Memverifikasi..." : "MASUK DASHBOARD"}
           </button>
         </form>
+        <p style={{textAlign:'center', fontSize:11, color:'#999', marginTop:15}}>
+           Demi keamanan, reload halaman akan otomatis logout.
+        </p>
       </div>
     </div>
   );
