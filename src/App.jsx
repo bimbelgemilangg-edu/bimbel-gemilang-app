@@ -14,22 +14,31 @@ import TeacherList from './pages/admin/teachers/TeacherList';
 import SchedulePage from './pages/admin/schedule/SchedulePage';
 import Settings from './pages/admin/Settings';
 
-// --- IMPORT HALAMAN GURU (YANG BARU KITA BUAT) ---
+// --- IMPORT HALAMAN GURU ---
+// Pastikan file TeacherDashboard.jsx ada di folder: src/pages/guru/
 import LoginGuru from './pages/LoginGuru';
 import TeacherDashboard from './pages/guru/TeacherDashboard';
 
 // --- PROTEKSI RUTE ADMIN ---
-// Cek apakah Admin sudah login?
 const AdminRoute = ({ children }) => {
-  const isAuth = localStorage.getItem('isLoggedIn'); // Atau logic auth admin Anda
+  const isAuth = localStorage.getItem('isLoggedIn'); 
   return isAuth ? children : <Navigate to="/" />;
 };
 
 // --- PROTEKSI RUTE GURU ---
-// Cek apakah Guru sudah login?
 const GuruRoute = ({ children }) => {
+  // Kita buat lebih aman: Cek apakah ada session guru
   const session = localStorage.getItem('guruSession');
-  return session ? children : <Navigate to="/login-guru" />;
+  if (!session) return <Navigate to="/login-guru" />;
+  
+  try {
+    JSON.parse(session); // Cek apakah datanya rusak?
+    return children;
+  } catch (e) {
+    // Kalau data rusak, tendang ke login (JANGAN BLANK PAGE)
+    localStorage.removeItem('guruSession');
+    return <Navigate to="/login-guru" />;
+  }
 };
 
 function App() {
@@ -37,26 +46,22 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* === AREA PUBLIC & LOGIN === */}
-        <Route path="/" element={<Login />} />              {/* Login Admin */}
-        <Route path="/login-guru" element={<LoginGuru />} /> {/* Login Guru */}
+        <Route path="/" element={<Login />} />              
+        <Route path="/login-guru" element={<LoginGuru />} /> 
 
-        {/* === AREA ADMIN (Full Access) === */}
+        {/* === AREA ADMIN === */}
         <Route path="/admin" element={<Dashboard />} />
-        
-        {/* Siswa */}
         <Route path="/admin/students" element={<StudentList />} />
         <Route path="/admin/students/add" element={<AddStudent />} />
         <Route path="/admin/students/attendance/:id" element={<StudentAttendance />} />
         <Route path="/admin/students/finance/:id" element={<StudentFinance />} />
         <Route path="/admin/students/edit/:id" element={<EditStudent />} />
-        
-        {/* Keuangan & Manajemen */}
         <Route path="/admin/finance" element={<FinanceDashboard />} />
         <Route path="/admin/teachers" element={<TeacherList />} />
         <Route path="/admin/schedule" element={<SchedulePage />} />
         <Route path="/admin/settings" element={<Settings />} />
 
-        {/* === AREA GURU (Restricted Access) === */}
+        {/* === AREA GURU === */}
         <Route 
           path="/guru/dashboard" 
           element={
