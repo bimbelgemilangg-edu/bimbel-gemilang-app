@@ -14,10 +14,10 @@ import TeacherList from './pages/admin/teachers/TeacherList';
 import SchedulePage from './pages/admin/schedule/SchedulePage';
 import Settings from './pages/admin/Settings';
 
-// --- IMPORT HALAMAN GURU ---
-// Pastikan file TeacherDashboard.jsx ada di folder: src/pages/guru/
+// --- IMPORT HALAMAN GURU (SUDAH DIPERBAIKI) ---
 import LoginGuru from './pages/LoginGuru';
-import TeacherDashboard from './pages/guru/TeacherDashboard';
+// 👇 PERHATIKAN: Saya sudah ganti 'guru' menjadi 'teacher' agar sesuai folder Anda
+import TeacherDashboard from './pages/teacher/TeacherDashboard'; 
 
 // --- PROTEKSI RUTE ADMIN ---
 const AdminRoute = ({ children }) => {
@@ -25,18 +25,17 @@ const AdminRoute = ({ children }) => {
   return isAuth ? children : <Navigate to="/" />;
 };
 
-// --- PROTEKSI RUTE GURU ---
+// --- PROTEKSI RUTE GURU (ANTI CRASH) ---
 const GuruRoute = ({ children }) => {
-  // Kita buat lebih aman: Cek apakah ada session guru
   const session = localStorage.getItem('guruSession');
+  
   if (!session) return <Navigate to="/login-guru" />;
   
   try {
-    JSON.parse(session); // Cek apakah datanya rusak?
+    JSON.parse(session); // Cek data rusak
     return children;
   } catch (e) {
-    // Kalau data rusak, tendang ke login (JANGAN BLANK PAGE)
-    localStorage.removeItem('guruSession');
+    localStorage.removeItem('guruSession'); // Auto-fix jika rusak
     return <Navigate to="/login-guru" />;
   }
 };
@@ -51,11 +50,15 @@ function App() {
 
         {/* === AREA ADMIN === */}
         <Route path="/admin" element={<Dashboard />} />
+        
+        {/* Siswa */}
         <Route path="/admin/students" element={<StudentList />} />
         <Route path="/admin/students/add" element={<AddStudent />} />
         <Route path="/admin/students/attendance/:id" element={<StudentAttendance />} />
         <Route path="/admin/students/finance/:id" element={<StudentFinance />} />
         <Route path="/admin/students/edit/:id" element={<EditStudent />} />
+        
+        {/* Keuangan & Manajemen */}
         <Route path="/admin/finance" element={<FinanceDashboard />} />
         <Route path="/admin/teachers" element={<TeacherList />} />
         <Route path="/admin/schedule" element={<SchedulePage />} />
