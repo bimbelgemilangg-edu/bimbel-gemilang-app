@@ -11,11 +11,12 @@ const Settings = () => {
   // DATA GLOBAL DARI SERVER
   const [ownerPin, setOwnerPin] = useState("2003");
   
-  // STRUKTUR DATA HARGA (LENGKAP: SD, SMP, ENGLISH)
+  // 1. STRUKTUR DATA HARGA (LENGKAP: SD, SMP, ENGLISH)
   const [prices, setPrices] = useState({
     sd: { paket1: 150000, paket2: 200000, paket3: 250000 },
     smp: { paket1: 200000, paket2: 250000, paket3: 300000 },
-    english: { kids: 150000, junior: 200000, professional: 300000 } // KHUSUS ENGLISH
+    // TAMBAHAN: English Course
+    english: { kids: 150000, junior: 200000, professional: 300000 } 
   });
 
   const [salaryRules, setSalaryRules] = useState({
@@ -25,7 +26,7 @@ const Settings = () => {
   
   const [security, setSecurity] = useState({ currentPin: "", newPin: "", confirmPin: "" });
 
-  // 1. LOAD DATA DARI FIREBASE (AMAN)
+  // LOAD DATA
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -34,17 +35,15 @@ const Settings = () => {
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          // Gabungkan data server dengan default state agar tidak error jika ada field baru
           if (data.prices) setPrices(prev => ({ ...prev, ...data.prices }));
           if (data.salaryRules) setSalaryRules(data.salaryRules);
           if (data.ownerPin) setOwnerPin(data.ownerPin);
         } else {
-          // Inisialisasi data awal di server jika kosong
+          // Init Default
           await setDoc(docRef, { prices, salaryRules, ownerPin: "2003" });
         }
       } catch (error) {
         console.error("Gagal load setting:", error);
-        alert("Gagal terhubung ke Database Keamanan.");
       } finally {
         setLoading(false);
       }
@@ -52,14 +51,14 @@ const Settings = () => {
     fetchSettings();
   }, []);
 
-  // 2. BUKA KUNCI AKSES
+  // UNLOCK
   const handleUnlock = (e) => {
     e.preventDefault();
     if (inputPin === ownerPin) setIsLocked(false);
-    else { alert("⛔ PIN SALAH! Akses Ditolak."); setInputPin(""); }
+    else { alert("⛔ PIN SALAH!"); setInputPin(""); }
   };
 
-  // 3. SIMPAN KE FIREBASE
+  // SIMPAN
   const handleSaveAll = async () => {
     try {
       await setDoc(doc(db, "settings", "global_config"), {
@@ -74,7 +73,7 @@ const Settings = () => {
     }
   };
 
-  // 4. GANTI PIN (SERVER SIDE)
+  // GANTI PIN
   const handleChangePin = async () => {
     if (security.currentPin !== ownerPin) return alert("❌ PIN Lama salah!");
     if (security.newPin.length < 4) return alert("❌ PIN Baru min 4 digit.");
@@ -85,19 +84,18 @@ const Settings = () => {
         prices, salaryRules, ownerPin: security.newPin
       });
       setOwnerPin(security.newPin);
-      alert("🔐 PIN Berhasil Diganti & Disimpan di Server!");
+      alert("🔐 PIN Berhasil Diganti!");
       setSecurity({ currentPin: "", newPin: "", confirmPin: "" });
     } catch (error) { alert("Gagal update PIN."); }
   };
 
-  if (loading) return <div style={{padding:50, textAlign:'center'}}>Menghubungkan ke Server Keamanan...</div>;
+  if (loading) return <div style={{padding:50, textAlign:'center'}}>Menghubungkan ke Server...</div>;
 
   if (isLocked) {
     return (
       <div style={styles.lockScreen}>
         <div style={styles.lockBox}>
           <h2>🔐 Area Owner</h2>
-          <p>Masukkan PIN untuk Mengakses Database Pusat</p>
           <form onSubmit={handleUnlock}>
             <input type="password" value={inputPin} onChange={(e) => setInputPin(e.target.value)} style={styles.inputPin} autoFocus />
             <button type="submit" style={styles.btnUnlock}>BUKA AKSES</button>
@@ -113,7 +111,7 @@ const Settings = () => {
       <div style={styles.mainContent}>
         <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom: '2px solid #ddd', paddingBottom: 10}}>
            <h2 style={{margin:0}}>⚙️ Pengaturan Pusat (Cloud Sync)</h2>
-           <button onClick={handleSaveAll} style={styles.btnSaveBig}>💾 SIMPAN PERUBAHAN KE SERVER</button>
+           <button onClick={handleSaveAll} style={styles.btnSaveBig}>💾 SIMPAN SEMUA</button>
         </div>
 
         <div style={styles.grid}>
@@ -135,10 +133,10 @@ const Settings = () => {
             </div>
           </div>
 
-          {/* HARGA ENGLISH COURSE (WAJIB ADA) */}
+          {/* HARGA ENGLISH COURSE (FITUR BARU SESUAI REQUEST) */}
           <div style={styles.card}>
             <h3 style={{color: '#8e44ad', borderBottom: '1px solid #eee', paddingBottom: '10px', marginTop: 0}}>🇬🇧 English Course</h3>
-            <p style={{fontSize:12, color:'#666'}}>Setting harga per jenjang.</p>
+            <p style={{fontSize:12, color:'#666'}}>Setting harga per level.</p>
             
             <div style={styles.formGroup}>
               <label>Level Kids</label>
@@ -166,7 +164,7 @@ const Settings = () => {
               <input type="number" value={salaryRules.honorSMP} onChange={(e) => setSalaryRules({...salaryRules, honorSMP: e.target.value})} style={styles.input} />
             </div>
             <div style={styles.formGroup}>
-              <label>Bonus Mapel Inggris (Per Jam)</label>
+              <label>Bonus Inggris (Per Jam)</label>
               <input type="number" value={salaryRules.bonusInggris} onChange={(e) => setSalaryRules({...salaryRules, bonusInggris: e.target.value})} style={styles.input} />
             </div>
             <div style={{display:'flex', gap:10}}>
@@ -190,7 +188,6 @@ const Settings = () => {
   );
 };
 
-// STYLES
 const styles = {
   mainContent: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily: 'Segoe UI, sans-serif' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' },

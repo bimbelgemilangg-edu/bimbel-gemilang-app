@@ -31,14 +31,17 @@ const AddStudent = () => {
   const [programType, setProgramType] = useState("Reguler"); // 'Reguler' atau 'English'
   const [tanggalDaftar, setTanggalDaftar] = useState(new Date().toISOString().split('T')[0]);
   
-  // Data Siswa & Ortu
+  // Data Siswa
   const [namaSiswa, setNamaSiswa] = useState("");
-  const [jenjang, setJenjang] = useState("SD"); // Untuk Reguler
+  // State Khusus Reguler
+  const [jenjang, setJenjang] = useState("SD");
   const [kelas, setKelas] = useState("4 SD");
-  const [englishLevel, setEnglishLevel] = useState("kids"); // Untuk English Course
+  const [paketReguler, setPaketReguler] = useState("paket1");
+  // State Khusus English
+  const [englishLevel, setEnglishLevel] = useState("kids"); 
+
   const [tempatLahir, setTempatLahir] = useState("");
   const [tanggalLahir, setTanggalLahir] = useState("");
-  
   const [namaAyah, setNamaAyah] = useState("");
   const [pekerjaanAyah, setPekerjaanAyah] = useState("");
   const [namaIbu, setNamaIbu] = useState("");
@@ -47,7 +50,6 @@ const AddStudent = () => {
   const [noHp, setNoHp] = useState("");
 
   // Keuangan
-  const [paketReguler, setPaketReguler] = useState("paket1"); // paket1, paket2, paket3
   const [biayaDaftar, setBiayaDaftar] = useState(false);
   const [diskon, setDiskon] = useState(0);
   const [metodeBayar, setMetodeBayar] = useState("Tunai"); 
@@ -57,10 +59,10 @@ const AddStudent = () => {
   // 3. KALKULASI HARGA (SMART LOGIC)
   const getBasePrice = () => {
     if (programType === "English") {
-        // Ambil harga dari object English di Server
+        // Ambil harga English dari server
         return pricing.english ? parseInt(pricing.english[englishLevel] || 0) : 0;
     } else {
-        // Ambil harga dari object SD/SMP di Server
+        // Ambil harga Reguler dari server
         const level = jenjang.toLowerCase(); // 'sd' atau 'smp'
         return pricing[level] ? parseInt(pricing[level][paketReguler] || 0) : 0;
     }
@@ -86,6 +88,7 @@ const AddStudent = () => {
         kategori: programType, // Menyimpan 'Reguler' atau 'English'
         // Detail program disesuaikan otomatis
         detailProgram: programType === "English" ? `English - ${englishLevel}` : `${jenjang} - ${paketReguler}`,
+        kelasSekolah: kelas,
         tempatLahir, tanggalLahir,
         ortu: { ayah: namaAyah, pekerjaanAyah, ibu: namaIbu, pekerjaanIbu, alamat, hp: noHp },
         status: "Aktif",
@@ -167,13 +170,6 @@ const AddStudent = () => {
                             <option value="SMP">SMP</option>
                         </select>
                     </div>
-                    <div style={{width:'100%'}}>
-                        <label style={styles.labelSmall}>Kelas Sekolah</label>
-                        <select style={styles.select} value={kelas} onChange={e => setKelas(e.target.value)}>
-                            <option>4 SD</option><option>5 SD</option><option>6 SD</option>
-                            <option>7 SMP</option><option>8 SMP</option><option>9 SMP</option>
-                        </select>
-                    </div>
                   </div>
               ) : (
                   <div style={styles.formGroup}>
@@ -185,6 +181,16 @@ const AddStudent = () => {
                     </select>
                   </div>
               )}
+
+              {/* KELAS SEKOLAH (TETAP ADA UNTUK DATA) */}
+              <div style={styles.formGroup}>
+                  <label style={styles.labelSmall}>Kelas Sekolah (Saat ini)</label>
+                  <select style={styles.select} value={kelas} onChange={e => setKelas(e.target.value)}>
+                      <option>4 SD</option><option>5 SD</option><option>6 SD</option>
+                      <option>7 SMP</option><option>8 SMP</option><option>9 SMP</option>
+                      <option>Lainnya</option>
+                  </select>
+              </div>
 
               <div style={styles.row}>
                 <input style={styles.input} placeholder="Tempat Lahir" value={tempatLahir} onChange={e => setTempatLahir(e.target.value)} />
