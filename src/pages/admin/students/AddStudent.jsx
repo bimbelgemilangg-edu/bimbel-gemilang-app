@@ -7,10 +7,11 @@ import { collection, addDoc, doc, getDoc } from "firebase/firestore";
 const AddStudent = () => {
   const navigate = useNavigate();
 
-  // 1. LOAD HARGA DARI SERVER FIREBASE (SMART CLOUD)
+  // 1. LOAD HARGA (TERMASUK ENGLISH) DARI SERVER
   const [pricing, setPricing] = useState({
-    sd: { paket1: 150000, paket2: 200000, paket3: 250000 },
-    smp: { paket1: 200000, paket2: 250000, paket3: 300000 }
+    sd: { paket1: 0, paket2: 0, paket3: 0 },
+    smp: { paket1: 0, paket2: 0, paket3: 0 },
+    english: { kids: 0, junior: 0, professional: 0 }
   });
 
   useEffect(() => {
@@ -21,18 +22,20 @@ const AddStudent = () => {
         if (docSnap.exists() && docSnap.data().prices) {
           setPricing(docSnap.data().prices);
         }
-      } catch (error) {
-        console.error("Gagal ambil harga server:", error);
-      }
+      } catch (error) { console.error("Error load harga:", error); }
     };
     fetchPricing();
   }, []);
 
   // 2. STATE FORM
+  const [programType, setProgramType] = useState("Reguler"); // 'Reguler' atau 'English'
   const [tanggalDaftar, setTanggalDaftar] = useState(new Date().toISOString().split('T')[0]);
+  
+  // Data Siswa & Ortu
   const [namaSiswa, setNamaSiswa] = useState("");
-  const [jenjang, setJenjang] = useState("SD");
+  const [jenjang, setJenjang] = useState("SD"); // Untuk Reguler
   const [kelas, setKelas] = useState("4 SD");
+  const [englishLevel, setEnglishLevel] = useState("kids"); // Untuk English Course
   const [tempatLahir, setTempatLahir] = useState("");
   const [tanggalLahir, setTanggalLahir] = useState("");
   
@@ -43,17 +46,24 @@ const AddStudent = () => {
   const [alamat, setAlamat] = useState("");
   const [noHp, setNoHp] = useState("");
 
-  const [paket, setPaket] = useState("paket1");
+  // Keuangan
+  const [paketReguler, setPaketReguler] = useState("paket1"); // paket1, paket2, paket3
   const [biayaDaftar, setBiayaDaftar] = useState(false);
   const [diskon, setDiskon] = useState(0);
   const [metodeBayar, setMetodeBayar] = useState("Tunai"); 
   const [tenor, setTenor] = useState(1);
   const [tanggalMulaiCicilan, setTanggalMulaiCicilan] = useState(new Date().toISOString().split('T')[0]);
 
-  // 3. KALKULASI
+  // 3. KALKULASI HARGA (SMART LOGIC)
   const getBasePrice = () => {
-    const level = jenjang.toLowerCase();
-    return pricing[level] ? parseInt(pricing[level][paket]) : 0;
+    if (programType === "English") {
+        // Ambil harga dari object English di Server
+        return pricing.english ? parseInt(pricing.english[englishLevel] || 0) : 0;
+    } else {
+        // Ambil harga dari object SD/SMP di Server
+        const level = jenjang.toLowerCase(); // 'sd' atau 'smp'
+        return pricing[level] ? parseInt(pricing[level][paketReguler] || 0) : 0;
+    }
   };
 
   const hitungTotal = () => {
@@ -73,7 +83,9 @@ const AddStudent = () => {
     try {
       const studentData = {
         nama: namaSiswa,
-        jenjang, kelas,
+        kategori: programType, // Menyimpan 'Reguler' atau 'English'
+        // Detail program disesuaikan otomatis
+        detailProgram: programType === "English" ? `English - ${englishLevel}` : `${jenjang} - ${paketReguler}`,
         tempatLahir, tanggalLahir,
         ortu: { ayah: namaAyah, pekerjaanAyah, ibu: namaIbu, pekerjaanIbu, alamat, hp: noHp },
         status: "Aktif",
@@ -103,13 +115,13 @@ const AddStudent = () => {
         await addDoc(collection(db, "finance_tagihan"), {
           studentId, namaSiswa, namaOrtu: namaAyah, noHp,
           totalTagihan: totalBayar, sisaTagihan: totalBayar,
-          detailCicilan: installments, jenis: "Pendaftaran (Cicilan)"
+          detailCicilan: installments, jenis: `Pendaftaran ${programType} (Cicilan)`
         });
         alert("✅ Pendaftaran Berhasil (Cicilan)");
 
       } else {
         await addDoc(collection(db, "finance_mutasi"), { 
-          tanggal: tanggalDaftar, ket: `Pendaftaran Baru: ${namaSiswa}`,
+          tanggal: tanggalDaftar, ket: `Pendaftaran ${programType}: ${namaSiswa}`,
           tipe: "Masuk", metode: metodeBayar, nominal: totalBayar,
           kategori: "Pendaftaran", studentId
         });
@@ -117,17 +129,24 @@ const AddStudent = () => {
       }
       navigate('/admin/students');
 
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Gagal menyimpan data.");
-    }
+    } catch (error) { console.error("Error:", error); alert("Gagal menyimpan data."); }
   };
 
   return (
     <div style={{ display: 'flex' }}>
       <Sidebar />
       <div style={styles.content}>
-        <h2 style={{color: '#333'}}>🎓 Formulir Pendaftaran (Sync Server)</h2>
+        <h2 style={{color: '#333'}}>🎓 Pendaftaran Siswa Baru</h2>
+        
+        {/* PILIHAN PROGRAM UTAMA (SMART SELECTOR) */}
+        <div style={styles.programSelector}>
+            <label style={{marginRight:10, fontWeight:'bold', color:'#333'}}>Pilih Program:</label>
+            <select style={styles.selectMain} value={programType} onChange={(e) => setProgramType(e.target.value)}>
+                <option value="Reguler">📚 Bimbel Reguler (SD / SMP)</option>
+                <option value="English">🇬🇧 English Course</option>
+            </select>
+        </div>
+
         <form onSubmit={handleSubmit} style={styles.grid}>
           <div style={styles.leftCol}>
             <div style={styles.card}>
@@ -137,15 +156,42 @@ const AddStudent = () => {
                 <input type="date" style={styles.inputDate} value={tanggalDaftar} onChange={e => setTanggalDaftar(e.target.value)} />
               </div>
               <div style={styles.formGroup}><input style={styles.input} placeholder="Nama Lengkap Siswa" value={namaSiswa} onChange={e => setNamaSiswa(e.target.value)} required /></div>
+              
+              {/* FORM BERUBAH TERGANTUNG PROGRAM YANG DIPILIH */}
+              {programType === "Reguler" ? (
+                  <div style={styles.row}>
+                    <div style={{width:'100%'}}>
+                        <label style={styles.labelSmall}>Jenjang</label>
+                        <select style={styles.select} value={jenjang} onChange={e => setJenjang(e.target.value)}>
+                            <option value="SD">SD</option>
+                            <option value="SMP">SMP</option>
+                        </select>
+                    </div>
+                    <div style={{width:'100%'}}>
+                        <label style={styles.labelSmall}>Kelas Sekolah</label>
+                        <select style={styles.select} value={kelas} onChange={e => setKelas(e.target.value)}>
+                            <option>4 SD</option><option>5 SD</option><option>6 SD</option>
+                            <option>7 SMP</option><option>8 SMP</option><option>9 SMP</option>
+                        </select>
+                    </div>
+                  </div>
+              ) : (
+                  <div style={styles.formGroup}>
+                    <label style={styles.labelSmall}>Level English Course</label>
+                    <select style={styles.select} value={englishLevel} onChange={e => setEnglishLevel(e.target.value)}>
+                        <option value="kids">Kids</option>
+                        <option value="junior">Junior</option>
+                        <option value="professional">Professional</option>
+                    </select>
+                  </div>
+              )}
+
               <div style={styles.row}>
                 <input style={styles.input} placeholder="Tempat Lahir" value={tempatLahir} onChange={e => setTempatLahir(e.target.value)} />
                 <input type="date" style={styles.input} value={tanggalLahir} onChange={e => setTanggalLahir(e.target.value)} />
               </div>
-              <div style={styles.row}>
-                <select style={styles.select} value={jenjang} onChange={e => setJenjang(e.target.value)}><option>SD</option><option>SMP</option></select>
-                <select style={styles.select} value={kelas} onChange={e => setKelas(e.target.value)}><option>4 SD</option><option>5 SD</option><option>6 SD</option><option>9 SMP</option></select>
-              </div>
             </div>
+
             <div style={styles.card}>
               <h3 style={styles.cardTitle}>👨‍👩‍👧 Data Orang Tua</h3>
               <div style={styles.row}>
@@ -160,17 +206,28 @@ const AddStudent = () => {
               <input type="number" style={{...styles.input, marginTop:10}} placeholder="No HP / WhatsApp (Wajib)" value={noHp} onChange={e => setNoHp(e.target.value)} required />
             </div>
           </div>
+
           <div style={styles.rightCol}>
             <div style={styles.cardBlue}>
-              <h3 style={{color:'white', marginTop:0}}>💰 Administrasi</h3>
+              <h3 style={{color:'white', marginTop:0}}>💰 Administrasi ({programType})</h3>
+              
+              {/* PILIHAN PAKET / LEVEL HARGA OTOMATIS */}
               <div style={styles.formGroup}>
-                <label style={{color:'white'}}>Pilih Paket</label>
-                <select style={styles.select} value={paket} onChange={e => setPaket(e.target.value)}>
-                  <option value="paket1">Paket 1 - Rp {getBasePrice().toLocaleString()}</option>
-                  <option value="paket2">Paket 2 (Medium)</option>
-                  <option value="paket3">Paket 3 (Premium)</option>
-                </select>
+                <label style={{color:'white'}}>Pilihan Paket/Level</label>
+                {programType === "Reguler" ? (
+                    <select style={styles.select} value={paketReguler} onChange={e => setPaketReguler(e.target.value)}>
+                      <option value="paket1">Paket 1 - Rp {(pricing[jenjang.toLowerCase()]?.paket1 || 0).toLocaleString()}</option>
+                      <option value="paket2">Paket 2 - Rp {(pricing[jenjang.toLowerCase()]?.paket2 || 0).toLocaleString()}</option>
+                      <option value="paket3">Paket 3 - Rp {(pricing[jenjang.toLowerCase()]?.paket3 || 0).toLocaleString()}</option>
+                    </select>
+                ) : (
+                    <div style={{padding:10, background:'white', borderRadius:5, color:'black', fontWeight:'bold'}}>
+                        Level: {englishLevel.toUpperCase()} <br/>
+                        Harga: Rp {(pricing.english?.[englishLevel] || 0).toLocaleString()}
+                    </div>
+                )}
               </div>
+
               <div style={{marginBottom:10, color:'white'}}>
                 <label><input type="checkbox" checked={biayaDaftar} onChange={e => setBiayaDaftar(e.target.checked)} /> Biaya Pendaftaran (+25rb)</label>
               </div>
@@ -185,9 +242,9 @@ const AddStudent = () => {
               <div style={styles.formGroup}>
                 <label style={{color:'white'}}>Metode Pembayaran</label>
                 <select style={styles.select} value={metodeBayar} onChange={e => setMetodeBayar(e.target.value)}>
-                  <option value="Tunai">Lunas - Tunai (Masuk Brankas)</option>
-                  <option value="Bank">Lunas - Transfer Bank</option>
-                  <option value="Cicilan">Cicilan / Hutang</option>
+                  <option value="Tunai">Lunas - Tunai</option>
+                  <option value="Bank">Lunas - Transfer</option>
+                  <option value="Cicilan">Cicilan</option>
                 </select>
               </div>
               {metodeBayar === "Cicilan" && (
@@ -214,12 +271,16 @@ const AddStudent = () => {
   );
 };
 
+// CSS
 const styles = {
   content: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'Segoe UI, sans-serif' },
   grid: { display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '20px' },
+  programSelector: { background:'white', padding:15, borderRadius:10, marginBottom:20, boxShadow:'0 2px 4px rgba(0,0,0,0.05)', display:'flex', alignItems:'center' },
+  selectMain: { padding:8, borderRadius:5, border:'1px solid #3498db', fontSize:16, fontWeight:'bold', color:'#2980b9' },
   card: { background: 'white', padding: '20px', borderRadius: '10px', marginBottom: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
   cardTitle: { marginTop: 0, color: '#333' },
-  label: { color: '#333', fontWeight: '500' },
+  label: { color: '#333', fontWeight: 'bold' },
+  labelSmall: { fontSize:12, color:'#666', marginBottom:5, display:'block' },
   cardBlue: { background: '#2c3e50', padding: '25px', borderRadius: '10px', color: 'white' },
   row: { display: 'flex', gap: '10px', marginBottom: '10px' },
   formGroup: { marginBottom: '15px' },
