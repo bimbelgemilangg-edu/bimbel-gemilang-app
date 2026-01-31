@@ -14,7 +14,7 @@ const LoginGuru = () => {
     setLoading(true);
 
     try {
-      // 1. CEK KODE HARIAN (Security Layer 1)
+      // 1. CEK KODE HARIAN
       const today = new Date().toISOString().split('T')[0];
       const codeRef = doc(db, "settings", `daily_code_${today}`);
       const codeSnap = await getDoc(codeRef);
@@ -25,7 +25,7 @@ const LoginGuru = () => {
         return;
       }
 
-      // 2. CEK EMAIL GURU (Security Layer 2)
+      // 2. CEK EMAIL GURU
       const q = query(collection(db, "teachers"), where("email", "==", email));
       const querySnapshot = await getDocs(q);
 
@@ -35,16 +35,16 @@ const LoginGuru = () => {
         return;
       }
 
-      // 3. LOGIN SUKSES (SECURE MEMORY MODE)
+      // 3. LOGIN SUKSES
       const guruData = querySnapshot.docs[0].data();
       const guruId = querySnapshot.docs[0].id;
-      
       const fullData = { id: guruId, ...guruData };
 
-      // ⚠️ PENTING: Kita TIDAK simpan ke localStorage.
-      // Kita "lempar" datanya langsung ke halaman Dashboard via Memory.
       alert(`✅ Login Berhasil! Selamat Datang, ${guruData.nama}`);
       
+      // --- PERBAIKAN DI SINI ---
+      // Pastikan tujuannya ke '/guru/dashboard' (sesuai App.jsx)
+      // BUKAN '/teacher'
       navigate('/guru/dashboard', { state: { teacher: fullData } });
 
     } catch (error) {
@@ -60,7 +60,7 @@ const LoginGuru = () => {
       <div style={styles.card}>
         <div style={{textAlign:'center', marginBottom:20}}>
             <h2 style={{color:'#2c3e50', margin:0}}>🚪 Portal Guru</h2>
-            <p style={{color:'#7f8c8d', fontSize:14}}>Secure Access (No-Cache)</p>
+            <p style={{color:'#7f8c8d', fontSize:14}}>Bimbel Gemilang</p>
         </div>
         
         <form onSubmit={handleLogin}>
@@ -70,15 +70,12 @@ const LoginGuru = () => {
           </div>
           <div style={{marginBottom:20}}>
             <label style={styles.label}>Kode Absen Hari Ini</label>
-            <input type="text" value={dailyCode} onChange={e=>setDailyCode(e.target.value)} style={styles.input} required placeholder="Contoh: SENIN-CERIA" />
+            <input type="text" value={dailyCode} onChange={e=>setDailyCode(e.target.value)} style={styles.input} required placeholder="Kode dari Admin" />
           </div>
           <button type="submit" style={styles.btn} disabled={loading}>
             {loading ? "Memverifikasi..." : "MASUK DASHBOARD"}
           </button>
         </form>
-        <p style={{textAlign:'center', fontSize:11, color:'#999', marginTop:15}}>
-           Demi keamanan, reload halaman akan otomatis logout.
-        </p>
       </div>
     </div>
   );

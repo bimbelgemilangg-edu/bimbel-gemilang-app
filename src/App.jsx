@@ -16,7 +16,6 @@ import Settings from './pages/admin/Settings';
 
 // --- IMPORT HALAMAN GURU ---
 import LoginGuru from './pages/LoginGuru';
-// ✅ PERBAIKAN: Mengarah ke folder 'teacher' (bukan guru)
 import TeacherDashboard from './pages/teacher/TeacherDashboard'; 
 
 // --- PROTEKSI RUTE ADMIN ---
@@ -26,8 +25,6 @@ const AdminRoute = ({ children }) => {
 };
 
 // --- PROTEKSI RUTE GURU (SECURE MEMORY) ---
-// Kita hapus pengecekan localStorage di sini karena kita pakai Memory State
-// Logika proteksi dipindah langsung ke dalam TeacherDashboard
 const GuruRoute = ({ children }) => {
   return children; 
 };
@@ -65,6 +62,9 @@ function App() {
             </GuruRoute>
           } 
         />
+
+        {/* PINTU DARURAT: Jika nyasar ke /teacher, belokkan ke /guru/dashboard */}
+        <Route path="/teacher" element={<Navigate to="/guru/dashboard" replace />} />
 
       </Routes>
     </BrowserRouter>
