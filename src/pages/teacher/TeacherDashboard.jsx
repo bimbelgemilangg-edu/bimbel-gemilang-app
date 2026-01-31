@@ -1,240 +1,160 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../../firebase'; 
-import { collection, addDoc, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import ClassSession from './ClassSession'; // Import file yang baru kita buat
 
 const TeacherDashboard = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // MENANGKAP DATA MEMORI
+  const location = useLocation(); 
   
   const [guru, setGuru] = useState(null);
+  const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [existingLog, setExistingLog] = useState(null);
+  
+  // STATE NAVIGASI: Apakah sedang lihat jadwal atau sedang mengajar?
+  // Mode: 'dashboard' (Jadwal) atau 'session' (Mengajar)
+  const [mode, setMode] = useState('dashboard');
+  const [activeSchedule, setActiveSchedule] = useState(null);
 
-  // STATE FORM
-  const [programType, setProgramType] = useState("Reguler");
-  const [jenjang, setJenjang] = useState("SD");
-  const [mapel, setMapel] = useState("");
-  const [activityType, setActivityType] = useState("Mengajar");
-  const [jurnal, setJurnal] = useState(""); 
-  const [durasi, setDurasi] = useState(1.5);
-  const [siswaHadir, setSiswaHadir] = useState(1);
-  const [englishLevel, setEnglishLevel] = useState("kids");
-
-  // 1. CEK SESI (TANPA LOCAL STORAGE)
+  // 1. INIT SESI AMAN
   useEffect(() => {
-    const initSession = async () => {
-        // Ambil data dari State Router (Memory Only)
-        const sessionGuru = location.state?.teacher;
+    const init = async () => {
+      const sessionGuru = location.state?.teacher;
+      if (!sessionGuru) { navigate('/login-guru'); return; }
+      setGuru(sessionGuru);
 
-        // JIKA TIDAK ADA DATA (MISAL DI-REFRESH), TENDANG KELUAR
-        if (!sessionGuru) {
-            alert("⚠️ Sesi berakhir demi keamanan. Silakan login ulang.");
-            navigate('/login-guru');
-            return;
-        }
-
-        setGuru(sessionGuru);
-
-        // SYNC KE FIREBASE (Cek apakah hari ini sudah absen?)
-        try {
-            const today = new Date().toISOString().split('T')[0];
-            const q = query(
-                collection(db, "teacher_logs"), 
-                where("teacherId", "==", sessionGuru.id), 
-                where("tanggal", "==", today)
-            );
-            const snap = await getDocs(q);
-            if (!snap.empty) {
-                setExistingLog(snap.docs[0].data());
-            }
-        } catch (error) {
-            console.error("Sync Error:", error);
-        } finally {
-            setLoading(false);
-        }
+      // AMBIL JADWAL GURU DARI DATABASE (Jadwal Bimbel)
+      // Kita cari jadwal dimana 'booker' (Nama Guru) sama dengan nama guru ini
+      try {
+        const q = query(collection(db, "jadwal_bimbel"), where("booker", "==", sessionGuru.nama));
+        const snap = await getDocs(q);
+        const data = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        
+        // Filter jadwal seminggu kedepan (Opsional, sementara tampilkan semua milik dia)
+        // Sortir berdasarkan tanggal & jam
+        data.sort((a,b) => new Date(a.dateStr + ' ' + a.start) - new Date(b.dateStr + ' ' + b.start));
+        
+        setSchedules(data);
+      } catch (e) {
+        console.error("Gagal ambil jadwal:", e);
+      } finally {
+        setLoading(false);
+      }
     };
-    initSession();
+    init();
   }, [navigate, location]);
 
-  // LOGIKA LOGOUT
-  const handleLogout = () => {
-    // Tidak perlu hapus localStorage, cukup pindah halaman
-    navigate('/login-guru');
+  const handleLogout = () => navigate('/login-guru');
+
+  // LOGIKA TOMBOL MULAI
+  const checkCanStart = (sched) => {
+    const now = new Date();
+    const schedDate = new Date(sched.dateStr + ' ' + sched.start);
+    const schedEnd = new Date(sched.dateStr + ' ' + sched.end);
+    
+    // Tombol aktif jika:
+    // 1. Tanggalnya HARI INI
+    // 2. Jam sekarang sudah masuk waktu mulai (atau telat)
+    // 3. Jam sekarang belum lewat waktu selesai
+    // (Bisa dikasih toleransi misal boleh buka 15 menit sebelum mulai)
+    
+    // Simplifikasi Logic untuk Demo: Cek Tanggal Saja dulu
+    const todayStr = now.toISOString().split('T')[0];
+    if (sched.dateStr !== todayStr) return false; // Bukan hari ini
+
+    // Cek Jam (Opsional: Aktifkan jika ingin strict jam)
+    // const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    // const startMinutes = schedDate.getHours() * 60 + schedDate.getMinutes();
+    // if (currentMinutes < startMinutes - 15) return false; // Belum waktunya (toleransi 15 mnt)
+
+    return true; 
   };
 
-  // LOGIKA SIMPAN KE FIREBASE (TETAP SAMA & AMAN)
-  const calculateAndSubmit = async (e) => {
-    e.preventDefault();
-    if(!guru) return;
-
-    if (programType === "Reguler" && activityType === "Mengajar" && jurnal.length < 3) {
-        alert("⚠️ Jurnal Mengajar WAJIB diisi!"); return;
-    }
-
-    setLoading(true);
-    try {
-        const settingsSnap = await getDoc(doc(db, "settings", "global_config"));
-        if (!settingsSnap.exists()) { alert("Hubungi Admin: Setting Gaji Belum Ada"); setLoading(false); return; }
-
-        const rules = settingsSnap.data().salaryRules;
-        let nominal = 0, finalDetail = "", finalDurasi = 0;
-
-        if (parseInt(siswaHadir) === 0) {
-            nominal = parseInt(rules.transport);
-            finalDetail = "Transport Only (0 Siswa)";
-        } else {
-            if (programType === "English") {
-                const baseRate = parseInt(rules.honorSD) + parseInt(rules.bonusInggris);
-                nominal = baseRate * 1.5; 
-                finalDetail = `English Level ${englishLevel}`;
-                finalDurasi = 1.5; 
-            } else {
-                if (activityType === "Mengajar") {
-                    let rate = jenjang === "SD" ? rules.honorSD : rules.honorSMP;
-                    nominal = (parseInt(rate) * parseFloat(durasi)) + parseInt(rules.transport);
-                    finalDetail = `${jenjang} - ${mapel} (${jurnal})`;
-                    finalDurasi = parseFloat(durasi);
-                } else {
-                    nominal = activityType === "Ujian" ? rules.pengawas : rules.buatSoal;
-                    finalDetail = `${activityType} (${jurnal})`;
-                    finalDurasi = parseFloat(durasi);
-                }
-            }
-        }
-
-        const logData = {
-            teacherId: guru.id,
-            namaGuru: guru.nama,
-            tanggal: new Date().toISOString().split('T')[0],
-            waktu: new Date().toLocaleTimeString(),
-            program: programType,
-            kegiatan: activityType,
-            detail: finalDetail,
-            siswaHadir: siswaHadir,
-            durasiJam: finalDurasi,
-            nominal: nominal,
-            status: "Menunggu Validasi"
-        };
-
-        await addDoc(collection(db, "teacher_logs"), logData);
-        setExistingLog(logData);
-        alert("✅ Absensi Tersimpan di Server!");
-
-    } catch (error) {
-        console.error(error);
-        alert("Gagal simpan.");
-    } finally {
-        setLoading(false);
-    }
+  const handleStartClass = (sched) => {
+    setActiveSchedule(sched);
+    setMode('session'); // PINDAH TAMPILAN KE FILE ClassSession
   };
 
-  if (loading) return <div style={{padding:50, textAlign:'center'}}>🔒 Verifikasi Keamanan...</div>;
+  if (loading) return <div style={{padding:50, textAlign:'center'}}>Memuat Jadwal...</div>;
 
+  // --- TAMPILAN 1: MODE MENGAJAR (Panggil File Sebelah) ---
+  if (mode === 'session' && activeSchedule) {
+    return (
+      <ClassSession 
+        schedule={activeSchedule} 
+        teacher={guru} 
+        onBack={() => {
+            setMode('dashboard');
+            setActiveSchedule(null);
+            // Reload jadwal bisa ditaruh disini kalau perlu update status
+        }} 
+      />
+    );
+  }
+
+  // --- TAMPILAN 2: MODE JADWAL (DEFAULT) ---
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
+    <div style={{minHeight:'100vh', background:'#f4f7f6', fontFamily:'sans-serif'}}>
+      <div style={{background:'#2c3e50', padding:20, color:'white', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
         <div>
-            <h2 style={{margin:0, color:'white'}}>Halo, {guru?.nama} 👋</h2>
-            <p style={{margin:0, color:'#bdc3c7', fontSize:12}}>Mode Aman (No-Cache)</p>
+            <h2 style={{margin:0}}>Halo, {guru?.nama} 👋</h2>
+            <small>Jadwal Mengajar Anda</small>
         </div>
-        <button onClick={handleLogout} style={styles.btnLogout}>Keluar</button>
+        <button onClick={handleLogout} style={{background:'#c0392b', color:'white', border:'none', padding:'8px 15px', borderRadius:5, cursor:'pointer'}}>Logout</button>
       </div>
 
-      <div style={styles.content}>
-        {existingLog ? (
-            <div style={styles.successCard}>
-                <div style={{textAlign:'center', marginBottom:15}}>
-                    <h3 style={{color:'#27ae60', margin:'10px 0'}}>✅ Absensi Masuk</h3>
-                </div>
-                <div style={styles.detailBox}>
-                    <div style={styles.rowDetail}><span>Program:</span> <strong>{existingLog.program}</strong></div>
-                    <div style={styles.rowDetail}><span>Detail:</span> <strong>{existingLog.detail}</strong></div>
-                    <div style={styles.rowDetail}><span>Durasi:</span> <strong>{existingLog.durasiJam} Jam</strong></div>
-                    <div style={styles.rowDetail}><span>Status:</span> <span style={styles.badgePending}>⏳ {existingLog.status}</span></div>
-                </div>
-            </div>
+      <div style={{padding:20, maxWidth:600, margin:'0 auto'}}>
+        {schedules.length === 0 ? (
+            <div style={{textAlign:'center', padding:40, color:'#999'}}>Belum ada jadwal yang diassign Admin ke Anda.</div>
         ) : (
-            <div style={styles.card}>
-                <h3 style={{marginTop:0, borderBottom:'1px solid #eee', paddingBottom:10, color:'#2c3e50'}}>📝 Input Aktivitas</h3>
-                <form onSubmit={calculateAndSubmit}>
-                    <div style={{marginBottom:15}}>
-                        <label style={styles.label}>Program</label>
-                        <div style={{display:'flex', gap:10}}>
-                            <button type="button" onClick={()=>setProgramType("Reguler")} style={programType==="Reguler" ? styles.btnActive : styles.btnInactive}>📚 Reguler</button>
-                            <button type="button" onClick={()=>setProgramType("English")} style={programType==="English" ? styles.btnActive : styles.btnInactive}>🇬🇧 English</button>
+            schedules.map(item => {
+                const isActive = checkCanStart(item);
+                const isDone = false; // Nanti bisa cek di log apakah sudah selesai
+
+                return (
+                    <div key={item.id} style={{
+                        background:'white', 
+                        padding:20, 
+                        borderRadius:10, 
+                        marginBottom:15, 
+                        boxShadow:'0 2px 5px rgba(0,0,0,0.05)',
+                        borderLeft: isActive ? '5px solid #27ae60' : '5px solid #bdc3c7',
+                        opacity: isActive ? 1 : 0.7
+                    }}>
+                        <div style={{display:'flex', justifyContent:'space-between', marginBottom:10}}>
+                            <span style={{fontWeight:'bold', fontSize:18, color:'#2c3e50'}}>{item.start} - {item.end}</span>
+                            <span style={{fontSize:12, background:'#eee', padding:'2px 8px', borderRadius:4}}>{item.dateStr}</span>
                         </div>
+                        
+                        <h3 style={{margin:'0 0 5px 0', color:'#34495e'}}>{item.planet} ({item.type})</h3>
+                        <p style={{margin:0, color:'#7f8c8d'}}>{item.title}</p>
+                        <p style={{fontSize:12, color:'#95a5a6'}}>Siswa: {item.students?.length || 0} orang</p>
+
+                        <button 
+                            disabled={!isActive}
+                            onClick={() => handleStartClass(item)}
+                            style={{
+                                width:'100%', 
+                                marginTop:15, 
+                                padding:12, 
+                                background: isActive ? '#3498db' : '#ecf0f1', 
+                                color: isActive ? 'white' : '#bdc3c7', 
+                                border:'none', 
+                                borderRadius:5, 
+                                fontWeight:'bold', 
+                                cursor: isActive ? 'pointer' : 'not-allowed'
+                            }}
+                        >
+                            {isActive ? "MULAI MENGAJAR ▶" : "Belum Waktunya / Selesai"}
+                        </button>
                     </div>
-
-                    {programType === "Reguler" && (
-                        <>
-                            <div style={styles.row}>
-                                <div style={{flex:1}}>
-                                    <label style={styles.label}>Jenjang</label>
-                                    <select style={styles.input} value={jenjang} onChange={e=>setJenjang(e.target.value)}><option>SD</option><option>SMP</option><option>SMA</option></select>
-                                </div>
-                                <div style={{flex:1}}>
-                                    <label style={styles.label}>Aktivitas</label>
-                                    <select style={styles.input} value={activityType} onChange={e=>setActivityType(e.target.value)}>
-                                        <option value="Mengajar">Mengajar</option>
-                                        <option value="Ujian">Ujian</option>
-                                        <option value="Soal">Buat Soal</option>
-                                    </select>
-                                </div>
-                            </div>
-                            {activityType === "Mengajar" && (
-                                <>
-                                    <div style={{marginBottom:10}}><label style={styles.label}>Mapel</label><input style={styles.input} value={mapel} onChange={e=>setMapel(e.target.value)} placeholder="Matematika" required /></div>
-                                    <div style={{marginBottom:10}}><label style={styles.label}>Jurnal</label><input style={styles.input} value={jurnal} onChange={e=>setJurnal(e.target.value)} placeholder="Bab/Hal..." required /></div>
-                                    <div style={{marginBottom:10}}><label style={styles.label}>Durasi (Jam)</label><input type="number" step="0.5" style={styles.input} value={durasi} onChange={e=>setDurasi(e.target.value)} /></div>
-                                </>
-                            )}
-                            {(activityType === "Ujian" || activityType === "Soal") && (
-                                <div style={{marginBottom:10}}><label style={styles.label}>Ket. Paket</label><input style={styles.input} value={jurnal} onChange={e=>setJurnal(e.target.value)} placeholder="Nama Paket..." required /></div>
-                            )}
-                        </>
-                    )}
-
-                    {programType === "English" && (
-                        <div style={{marginBottom:15, background:'#f9fbe7', padding:15, borderRadius:5, border:'1px solid #cddc39'}}>
-                            <label style={styles.label}>Level</label>
-                            <select style={styles.input} value={englishLevel} onChange={e=>setEnglishLevel(e.target.value)}><option value="kids">Kids</option><option value="junior">Junior</option><option value="professional">Pro</option></select>
-                            <div style={{marginTop:10, fontSize:13, color:'#827717'}}>🔒 Durasi: <strong>1 Sesi (90 Menit)</strong></div>
-                        </div>
-                    )}
-
-                    <div style={{marginBottom:20}}>
-                        <label style={styles.label}>Siswa Hadir</label>
-                        <input type="number" style={styles.input} value={siswaHadir} onChange={e=>setSiswaHadir(e.target.value)} min="0" required />
-                        {parseInt(siswaHadir) === 0 && <div style={{color:'red', fontSize:12, marginTop:5}}>⚠️ 0 Siswa = Gaji Transport Only</div>}
-                    </div>
-
-                    <button type="submit" style={styles.btnSubmit}>SIMPAN</button>
-                </form>
-            </div>
+                );
+            })
         )}
       </div>
     </div>
   );
-};
-
-// Styles (Sama seperti sebelumnya)
-const styles = {
-  container: { minHeight:'100vh', background:'#f4f7f6', fontFamily:'sans-serif' },
-  header: { background:'#2c3e50', padding:'20px', display:'flex', justifyContent:'space-between', alignItems:'center' },
-  btnLogout: { background:'#c0392b', color:'white', border:'none', padding:'8px 15px', borderRadius:5, cursor:'pointer' },
-  content: { padding:20, maxWidth:'500px', margin:'0 auto' },
-  card: { background:'white', padding:25, borderRadius:10, boxShadow:'0 2px 5px rgba(0,0,0,0.05)' },
-  successCard: { background:'white', padding:30, borderRadius:10, borderTop:'5px solid #27ae60' },
-  label: { display:'block', marginBottom:5, fontWeight:'bold', color:'#333', fontSize:13 },
-  input: { width:'100%', padding:10, borderRadius:5, border:'1px solid #ddd', boxSizing:'border-box' },
-  row: { display:'flex', gap:10, marginBottom:10 },
-  btnActive: { flex:1, padding:10, background:'#3498db', color:'white', border:'none', borderRadius:5, fontWeight:'bold' },
-  btnInactive: { flex:1, padding:10, background:'#ecf0f1', color:'#7f8c8d', border:'1px solid #bdc3c7', borderRadius:5 },
-  btnSubmit: { width:'100%', padding:15, background:'#27ae60', color:'white', border:'none', borderRadius:5, fontWeight:'bold', fontSize:16, marginTop:10 },
-  detailBox: { background:'#f8f9fa', padding:15, borderRadius:8, border:'1px solid #eee' },
-  rowDetail: { display:'flex', justifyContent:'space-between', marginBottom:8, fontSize:14 },
-  badgePending: { background:'#fff3cd', color:'#856404', padding:'2px 8px', borderRadius:4, fontSize:12, fontWeight:'bold' }
 };
 
 export default TeacherDashboard;
