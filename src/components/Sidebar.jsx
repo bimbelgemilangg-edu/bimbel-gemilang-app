@@ -7,63 +7,37 @@ const Sidebar = () => {
 
   return (
     <div style={styles.sidebar}>
-      {/* HEADER LOGO */}
       <div style={styles.logo}>
         <h3 style={{margin:0, color:'#ecf0f1'}}>BIMBEL GEMILANG</h3>
         <p style={{fontSize: '12px', opacity: 0.7, margin:0, marginTop:5}}>Administrator Panel</p>
       </div>
 
       <nav style={styles.nav}>
-        <Link to="/admin" style={isActive('/admin') ? styles.linkActive : styles.link}>
-           🏠 Dashboard
-        </Link>
+        <Link to="/admin" style={isActive('/admin') ? styles.linkActive : styles.link}>🏠 Dashboard</Link>
+        <Link to="/admin/schedule" style={isActive('/admin/schedule') ? styles.linkActive : styles.link}>📅 Jadwal & Kelas</Link>
 
-        {/* JADWAL */}
-        <Link to="/admin/schedule" style={isActive('/admin/schedule') ? styles.linkActive : styles.link}>
-           📅 Jadwal & Kelas
-        </Link>
-
-        {/* MANAJEMEN SISWA */}
         <div style={styles.sectionTitle}>SISWA</div>
-        <Link to="/admin/students" style={isActive('/admin/students') ? styles.linkActive : styles.link}>
-           👨‍🎓 Data Siswa
-        </Link>
-        <Link to="/admin/students/add" style={isActive('/admin/students/add') ? styles.linkActive : styles.link}>
-           ➕ Pendaftaran Baru
-        </Link>
-        <Link to="/admin/grades" style={isActive('/admin/grades') ? styles.linkActive : styles.link}>
-           🏆 Laporan & Rapor
-        </Link>
+        <Link to="/admin/students" style={isActive('/admin/students') ? styles.linkActive : styles.link}>👨‍🎓 Data Siswa</Link>
+        <Link to="/admin/students/add" style={isActive('/admin/students/add') ? styles.linkActive : styles.link}>➕ Pendaftaran Baru</Link>
+        {/* MENU BARU */}
+        <Link to="/admin/grades" style={isActive('/admin/grades') ? styles.linkActive : styles.link}>🏆 Laporan & Rapor</Link>
 
-        {/* MANAJEMEN GURU */}
         <div style={styles.sectionTitle}>GURU & HRD</div>
-        <Link to="/admin/teachers" style={isActive('/admin/teachers') ? styles.linkActive : styles.link}>
-           👨‍🏫 Data Guru
-        </Link>
-        <Link to="/admin/teachers/salaries" style={isActive('/admin/teachers/salaries') ? styles.linkActive : styles.link}>
-           💰 Rekap Gaji & Slip
-        </Link>
+        <Link to="/admin/teachers" style={isActive('/admin/teachers') ? styles.linkActive : styles.link}>👨‍🏫 Data Guru</Link>
+        <Link to="/admin/teachers/salaries" style={isActive('/admin/teachers/salaries') ? styles.linkActive : styles.link}>💰 Rekap Gaji & Slip</Link>
 
-        {/* KEUANGAN */}
         <div style={styles.sectionTitle}>KEUANGAN</div>
-        <Link to="/admin/finance" style={isActive('/admin/finance') ? styles.linkActive : styles.link}>
-           📊 Pusat Keuangan
-        </Link>
+        <Link to="/admin/finance" style={isActive('/admin/finance') ? styles.linkActive : styles.link}>📊 Pusat Keuangan</Link>
         
-        {/* PENGATURAN */}
         <div style={{marginTop: 'auto', borderTop: '1px solid #34495e'}}>
-          <Link to="/admin/settings" style={isActive('/admin/settings') ? styles.linkActive : styles.link}>
-             ⚙️ Pengaturan Pusat
-          </Link>
+          <Link to="/admin/settings" style={isActive('/admin/settings') ? styles.linkActive : styles.link}>⚙️ Pengaturan Pusat</Link>
         </div>
       </nav>
 
       <div style={styles.footer}>
         <Link to="/" style={styles.logout} onClick={() => {
             if(window.confirm('Keluar dari Admin?')) localStorage.removeItem('isLoggedIn');
-        }}>
-            🚪 Keluar
-        </Link>
+        }}>🚪 Keluar</Link>
       </div>
     </div>
   );
