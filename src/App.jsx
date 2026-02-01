@@ -17,7 +17,7 @@ import Settings from './pages/admin/Settings';
 // --- IMPORT HALAMAN GURU ---
 import LoginGuru from './pages/LoginGuru';
 import TeacherDashboard from './pages/teacher/TeacherDashboard'; 
-import TeacherHistory from './pages/teacher/TeacherHistory'; // <--- IMPORT BARU
+import TeacherHistory from './pages/teacher/TeacherHistory'; // <--- WAJIB ADA
 
 // --- PROTEKSI RUTE ADMIN ---
 const AdminRoute = ({ children }) => {
@@ -55,7 +55,6 @@ function App() {
         <Route path="/admin/settings" element={<Settings />} />
 
         {/* === AREA GURU === */}
-        {/* Dashboard Utama */}
         <Route 
           path="/guru/dashboard" 
           element={
@@ -65,7 +64,7 @@ function App() {
           } 
         />
         
-        {/* Rute Riwayat & Laporan (BARU) */}
+        {/* RUTE HISTORY - INI YANG TADI MUNGKIN HILANG/BELUM AKTIF */}
         <Route 
           path="/guru/history" 
           element={
