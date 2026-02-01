@@ -11,8 +11,8 @@ const TeacherDashboard = () => {
   const [guru, setGuru] = useState(null);
   
   // STATE JADWAL
-  const [todaySchedules, setTodaySchedules] = useState([]);      // Jadwal HARI INI (Ada Tombol)
-  const [upcomingSchedules, setUpcomingSchedules] = useState([]); // Jadwal MENDATANG (Info Saja)
+  const [todaySchedules, setTodaySchedules] = useState([]);      // Jadwal HARI INI
+  const [upcomingSchedules, setUpcomingSchedules] = useState([]); // Jadwal MENDATANG
   const [otherSchedules, setOtherSchedules] = useState([]);       // Jadwal Guru Lain (Switch)
   
   const [mode, setMode] = useState('dashboard'); 
@@ -33,13 +33,11 @@ const TeacherDashboard = () => {
 
       const todayStr = new Date().toISOString().split('T')[0];
 
-      // 1. AMBIL JADWAL GURU INI (SEMUA, JANGAN CUMA HARI INI)
-      // Kita ambil jadwal dimana booker == nama guru
+      // 1. AMBIL JADWAL GURU INI
       const qMySched = query(collection(db, "jadwal_bimbel"), where("booker", "==", sessionGuru.nama));
       const snapMy = await getDocs(qMySched);
       const allMySched = snapMy.docs.map(d => ({id: d.id, ...d.data()}));
 
-      // Pisahkan Hari Ini vs Mendatang
       const todays = [];
       const upcomings = [];
 
@@ -51,28 +49,25 @@ const TeacherDashboard = () => {
         }
       });
 
-      // Sortir Jam
       todays.sort((a,b) => a.start.localeCompare(b.start));
-      // Sortir Tanggal Mendatang
       upcomings.sort((a,b) => new Date(a.dateStr) - new Date(b.dateStr));
 
       setTodaySchedules(todays);
       setUpcomingSchedules(upcomings);
 
-      // 2. AMBIL JADWAL GURU LAIN (KHUSUS HARI INI SAJA UNTUK SWITCH)
-      // Switch guru biasanya dadakan hari H, jadi cukup load hari ini
+      // 2. AMBIL JADWAL GURU LAIN (SWITCH)
       const qOthers = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr));
       const snapOthers = await getDocs(qOthers);
       const othersData = snapOthers.docs
         .map(d => ({id: d.id, ...d.data()}))
-        .filter(s => s.booker !== sessionGuru.nama); // Buang punya sendiri
+        .filter(s => s.booker !== sessionGuru.nama); 
       
       setOtherSchedules(othersData);
     };
     init();
   }, []);
 
-  // --- LOGIKA START KELAS (SAMA SEPERTI SEBELUMNYA) ---
+  // --- LOGIKA START KELAS ---
   const handleInitStart = (sched) => {
     setPendingSchedule(sched);
     setInputToken("");
@@ -103,24 +98,33 @@ const TeacherDashboard = () => {
     return <ClassSession schedule={activeSchedule} teacher={guru} onBack={() => { setMode('dashboard'); window.location.reload(); }} />;
   }
 
-  // --- HELPER UNTUK FORMAT TANGGAL CANTIK ---
   const formatDateIndo = (dateStr) => {
-    const options = { weekday: 'long', day: 'numeric', month: 'long' }; // Senin, 12 Juli
+    const options = { weekday: 'long', day: 'numeric', month: 'long' };
     return new Date(dateStr).toLocaleDateString('id-ID', options);
   };
 
   return (
     <div style={{minHeight:'100vh', background:'#f4f7f6', fontFamily:'sans-serif', paddingBottom:50}}>
-      {/* HEADER */}
+      {/* HEADER UPDATE: ADA TOMBOL RIWAYAT */}
       <div style={{background:'#2c3e50', padding:'20px 30px', color:'white', display:'flex', justifyContent:'space-between', alignItems:'center', boxShadow:'0 4px 6px rgba(0,0,0,0.1)'}}>
         <div>
             <h2 style={{margin:0, fontSize:22}}>Halo, {guru?.nama} 👋</h2>
             <small style={{opacity:0.8}}>Dashboard Guru Profesional</small>
         </div>
         <div style={{display:'flex', gap:10}}>
+             
+             {/* TOMBOL RIWAYAT (BARU) */}
+             <button 
+                onClick={() => navigate('/guru/history', { state: { teacher: guru } })} 
+                style={{background:'#3498db', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}
+             >
+                📄 Riwayat & Laporan
+             </button>
+
              <button onClick={() => setSubstituteMode(!substituteMode)} style={{background: substituteMode ? '#e67e22' : 'transparent', border:'1px solid #e67e22', color: substituteMode ? 'white' : '#e67e22', padding:'8px 15px', borderRadius:20, cursor:'pointer', fontWeight:'bold', fontSize:13}}>
-                {substituteMode ? "Kembali ke Akun Saya" : "🔄 Mode Guru Pengganti"}
+                {substituteMode ? "Kembali" : "🔄 Mode Pengganti"}
             </button>
+            
             <button onClick={()=>navigate('/login-guru')} style={{background:'#c0392b', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontSize:13}}>
                 Keluar
             </button>
@@ -130,7 +134,7 @@ const TeacherDashboard = () => {
       <div style={{padding:'30px', maxWidth:800, margin:'0 auto'}}>
         
         {substituteMode ? (
-            /* --- TAMPILAN MODE GURU PENGGANTI --- */
+            /* --- MODE GURU PENGGANTI --- */
             <div>
                 <div style={{background:'#fff3e0', borderLeft:'5px solid #e67e22', padding:15, marginBottom:20, borderRadius:5}}>
                     <h3 style={{margin:0, color:'#d35400'}}>⚠️ Mode Guru Pengganti (Switch)</h3>
@@ -153,9 +157,8 @@ const TeacherDashboard = () => {
                 {otherSchedules.length === 0 && <p style={{textAlign:'center', color:'#999'}}>Tidak ada jadwal guru lain hari ini.</p>}
             </div>
         ) : (
-            /* --- TAMPILAN UTAMA (JADWAL SAYA) --- */
+            /* --- TAMPILAN UTAMA --- */
             <>
-                {/* 1. SECTION HARI INI (ACTIONABLE) */}
                 <h3 style={{borderBottom:'2px solid #2c3e50', paddingBottom:10, marginBottom:20, color:'#2c3e50'}}>
                     🚀 Aksi Hari Ini
                 </h3>
@@ -195,7 +198,6 @@ const TeacherDashboard = () => {
                     ))
                 )}
 
-                {/* 2. SECTION MENDATANG (INFORMATIONAL) */}
                 <h3 style={{borderBottom:'2px solid #bdc3c7', paddingBottom:10, marginBottom:20, marginTop:40, color:'#7f8c8d'}}>
                     📅 Agenda Mendatang
                 </h3>
@@ -204,9 +206,7 @@ const TeacherDashboard = () => {
                     <p style={{color:'#999'}}>Belum ada jadwal masa depan.</p>
                 ) : (
                     upcomingSchedules.map((item, index) => {
-                        // Cek apakah tanggal item ini sama dengan item sebelumnya (untuk grouping header)
                         const showHeader = index === 0 || item.dateStr !== upcomingSchedules[index-1].dateStr;
-                        
                         return (
                             <div key={item.id}>
                                 {showHeader && (
@@ -231,7 +231,7 @@ const TeacherDashboard = () => {
         )}
       </div>
 
-      {/* MODAL START CLASS (SAMA SEPERTI SEBELUMNYA) */}
+      {/* MODAL START CLASS */}
       {showStartModal && pendingSchedule && (
         <div style={styles.overlay}>
             <div style={styles.modal}>
@@ -270,7 +270,7 @@ const TeacherDashboard = () => {
   );
 };
 
-// STYLE YANG LEBIH MODERN & BERSIH
+// STYLES
 const styles = {
     cardActive: { background:'white', padding:20, borderRadius:12, boxShadow:'0 4px 15px rgba(0,0,0,0.08)', marginBottom:20, borderLeft:'6px solid #27ae60' },
     cardFuture: { background:'white', padding:'15px 20px', borderRadius:8, boxShadow:'0 2px 5px rgba(0,0,0,0.03)', marginBottom:10, borderLeft:'4px solid #bdc3c7' },
