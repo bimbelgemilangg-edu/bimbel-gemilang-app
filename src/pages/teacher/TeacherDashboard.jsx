@@ -23,11 +23,13 @@ const TeacherDashboard = () => {
   useEffect(() => {
     const init = async () => {
       const sessionGuru = location.state?.teacher;
-      // Jika tidak ada sesi, lempar ke HALAMAN UTAMA ('/') bukan '/login-guru'
+      // FIX: Jika refresh, kembalikan ke Login Utama
       if (!sessionGuru) { navigate('/'); return; }
       setGuru(sessionGuru);
 
       const todayStr = new Date().toISOString().split('T')[0];
+      
+      // 1. Ambil Jadwal Saya
       const qMySched = query(collection(db, "jadwal_bimbel"), where("booker", "==", sessionGuru.nama));
       const snapMy = await getDocs(qMySched);
       const allMySched = snapMy.docs.map(d => ({id: d.id, ...d.data()}));
@@ -46,6 +48,7 @@ const TeacherDashboard = () => {
       setTodaySchedules(todays);
       setUpcomingSchedules(upcomings);
 
+      // 2. Ambil Jadwal Guru Lain (Untuk Mode Pengganti)
       const qOthers = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr));
       const snapOthers = await getDocs(qOthers);
       const othersData = snapOthers.docs.map(d => ({id: d.id, ...d.data()})).filter(s => s.booker !== sessionGuru.nama); 
@@ -85,6 +88,7 @@ const TeacherDashboard = () => {
 
   return (
     <div style={{minHeight:'100vh', background:'#f4f7f6', fontFamily:'sans-serif', paddingBottom:50}}>
+      {/* HEADER DENGAN TOMBOL LENGKAP */}
       <div style={{background:'#2c3e50', padding:'20px 30px', color:'white', display:'flex', justifyContent:'space-between', alignItems:'center', boxShadow:'0 4px 6px rgba(0,0,0,0.1)'}}>
         <div>
             <h2 style={{margin:0, fontSize:22}}>Halo, {guru?.nama} 👋</h2>
@@ -92,19 +96,25 @@ const TeacherDashboard = () => {
         </div>
         <div style={{display:'flex', gap:10}}>
              
-             {/* TOMBOL INPUT NILAI (UNGU) */}
+             {/* --- 1. TOMBOL UNGU: INPUT NILAI (YANG DICARI BOS) --- */}
              <button 
                 onClick={() => navigate('/guru/grades/input', { state: { teacher: guru } })} 
                 style={{background:'#8e44ad', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}
              >
                 📝 Input Nilai
              </button>
+             {/* ---------------------------------------------------- */}
 
+             {/* 2. TOMBOL BIRU: RIWAYAT */}
              <button onClick={() => navigate('/guru/history', { state: { teacher: guru } })} style={{background:'#3498db', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}>📄 Riwayat</button>
+             
+             {/* 3. TOMBOL MERAH: SUSULAN */}
              <button onClick={() => navigate('/guru/manual-input', { state: { teacher: guru } })} style={{background:'#e74c3c', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}>⚠️ Susulan</button>
+             
+             {/* 4. TOMBOL ORANGE: MODE PENGGANTI */}
              <button onClick={() => setSubstituteMode(!substituteMode)} style={{background: substituteMode ? '#e67e22' : 'transparent', border:'1px solid #e67e22', color: substituteMode ? 'white' : '#e67e22', padding:'8px 15px', borderRadius:20, cursor:'pointer', fontWeight:'bold', fontSize:13}}>{substituteMode ? "Kembali" : "🔄 Mode Pengganti"}</button>
              
-             {/* --- PERBAIKAN DI SINI: NAVIGATE KE '/' --- */}
+             {/* 5. TOMBOL KELUAR (FIX: Ke Halaman Utama) */}
              <button onClick={()=>navigate('/')} style={{background:'#c0392b', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontSize:13}}>Keluar</button>
         </div>
       </div>
