@@ -23,7 +23,8 @@ const TeacherDashboard = () => {
   useEffect(() => {
     const init = async () => {
       const sessionGuru = location.state?.teacher;
-      if (!sessionGuru) { navigate('/login-guru'); return; }
+      // Jika tidak ada sesi, lempar ke HALAMAN UTAMA ('/') bukan '/login-guru'
+      if (!sessionGuru) { navigate('/'); return; }
       setGuru(sessionGuru);
 
       const todayStr = new Date().toISOString().split('T')[0];
@@ -91,19 +92,20 @@ const TeacherDashboard = () => {
         </div>
         <div style={{display:'flex', gap:10}}>
              
-             {/* --- INI TOMBOL UNGU YANG DICARI --- */}
+             {/* TOMBOL INPUT NILAI (UNGU) */}
              <button 
                 onClick={() => navigate('/guru/grades/input', { state: { teacher: guru } })} 
                 style={{background:'#8e44ad', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}
              >
                 📝 Input Nilai
              </button>
-             {/* ----------------------------------- */}
 
              <button onClick={() => navigate('/guru/history', { state: { teacher: guru } })} style={{background:'#3498db', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}>📄 Riwayat</button>
              <button onClick={() => navigate('/guru/manual-input', { state: { teacher: guru } })} style={{background:'#e74c3c', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}>⚠️ Susulan</button>
              <button onClick={() => setSubstituteMode(!substituteMode)} style={{background: substituteMode ? '#e67e22' : 'transparent', border:'1px solid #e67e22', color: substituteMode ? 'white' : '#e67e22', padding:'8px 15px', borderRadius:20, cursor:'pointer', fontWeight:'bold', fontSize:13}}>{substituteMode ? "Kembali" : "🔄 Mode Pengganti"}</button>
-             <button onClick={()=>navigate('/login-guru')} style={{background:'#c0392b', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontSize:13}}>Keluar</button>
+             
+             {/* --- PERBAIKAN DI SINI: NAVIGATE KE '/' --- */}
+             <button onClick={()=>navigate('/')} style={{background:'#c0392b', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontSize:13}}>Keluar</button>
         </div>
       </div>
 
