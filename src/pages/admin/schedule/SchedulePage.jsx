@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../../components/Sidebar';
 import { db } from '../../../firebase'; 
-import { collection, addDoc, getDocs, deleteDoc, doc, getDoc, writeBatch } from "firebase/firestore"; // Tambah writeBatch
+import { collection, addDoc, getDocs, deleteDoc, doc, getDoc, writeBatch } from "firebase/firestore";
 
 const SchedulePage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -15,13 +15,17 @@ const SchedulePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activePlanet, setActivePlanet] = useState("");
   
-  // FORM DATA (Update: Tambah opsi 'repeat')
+  // FORM DATA
   const [formData, setFormData] = useState({
     start: "14:00", end: "15:30", 
     program: "Reguler", level: "SD",
     title: "", booker: "", selectedStudents: [],
-    repeat: "Once" // Opsinya: 'Once' (Sekali) atau 'Monthly' (1 Bulan/4x)
+    repeat: "Once"
   });
+
+  // FILTER SISWA DI MODAL
+  const [filterJenjang, setFilterJenjang] = useState("Semua"); // SD, SMP, SMA, Semua
+  const [filterKelas, setFilterKelas] = useState(""); // Filter Teks manual
 
   const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
 
@@ -31,6 +35,7 @@ const SchedulePage = () => {
     
     const tSnap = await getDocs(collection(db, "teachers"));
     setAvailableTeachers(tSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+    
     const sSnap = await getDocs(collection(db, "students"));
     setAvailableStudents(sSnap.docs.map(d => ({ id: d.id, ...d.data() })));
     
@@ -41,55 +46,67 @@ const SchedulePage = () => {
 
   useEffect(() => { fetchData(); }, [selectedDate]);
 
-  // --- FITUR 1: DETEKSI TABRAKAN (ANTI-BENTROK) ---
-  const checkCollision = (targetDateStr, newStart, newEnd) => {
-    // Filter jadwal di Ruangan (Planet) yang sama & Tanggal yang sama
-    const existing = schedules.filter(s => 
-      s.planet === activePlanet && 
-      s.dateStr === targetDateStr
-    );
+  // --- LOGIKA FILTER SISWA PINTAR ---
+  const getFilteredStudents = () => {
+    return availableStudents.filter(s => {
+        // 1. Filter Program (Reguler / English)
+        // Kita asumsikan data siswa punya field 'kategori' atau kita filter kasar
+        // Kalau English, kita cari siswa yang 'detailProgram' nya mengandung English
+        const isEnglishProgram = formData.program === 'English';
+        const studentIsEnglish = (s.detailProgram || "").includes("English");
 
-    // Cek irisan waktu
-    const isClash = existing.some(s => {
-      // Logika Bentrok:
-      // (Start Baru < End Lama) DAN (End Baru > Start Lama)
-      return (newStart < s.end && newEnd > s.start);
+        if (isEnglishProgram && !studentIsEnglish) return false;
+        if (!isEnglishProgram && studentIsEnglish) return false;
+
+        // 2. Filter Jenjang (SD/SMP/SMA)
+        if (filterJenjang !== "Semua") {
+             // Cek field 'kelas' atau 'detailProgram'
+             const jenjangStr = (s.kelasSekolah || "") + (s.detailProgram || "");
+             if (!jenjangStr.toUpperCase().includes(filterJenjang.toUpperCase())) return false;
+        }
+
+        // 3. Filter Teks Manual (Nama / Kelas)
+        if (filterKelas && !s.nama.toLowerCase().includes(filterKelas.toLowerCase())) return false;
+
+        return true;
     });
-
-    return isClash;
   };
 
-  // --- LOGIKA SIMPAN CANGGIH (RECURRING + VALIDASI) ---
+  const handleSelectAll = () => {
+    const filtered = getFilteredStudents();
+    const ids = filtered.map(s => s.id);
+    setFormData({ ...formData, selectedStudents: ids });
+  };
+
+  // --- CEK BENTROK ---
+  const checkCollision = (targetDateStr, newStart, newEnd) => {
+    const existing = schedules.filter(s => s.planet === activePlanet && s.dateStr === targetDateStr);
+    return existing.some(s => (newStart < s.end && newEnd > s.start));
+  };
+
+  // --- SIMPAN ---
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.booker) return alert("Pilih Guru!");
-    if (formData.start >= formData.end) return alert("Jam selesai harus lebih akhir dari jam mulai!");
-
+    
     const studentsFullData = formData.selectedStudents.map(id => {
         const s = availableStudents.find(stud => stud.id === id);
-        return s ? { id: s.id, nama: s.nama, kelas: s.kelas } : null;
+        return s ? { id: s.id, nama: s.nama, kelas: s.kelasSekolah } : null;
     }).filter(Boolean); 
 
-    // TENTUKAN BERAPA KALI LOOPING
-    // Jika 'Once', loop 1x. Jika 'Monthly', loop 4x (4 minggu).
     const loopCount = formData.repeat === 'Monthly' ? 4 : 1;
-    
-    // Batch Write (Agar aman: semua tersimpan atau gagal semua)
     const batch = writeBatch(db); 
-    
-    let currentDate = new Date(selectedDate); // Copy tanggal yang dipilih
+    let currentDate = new Date(selectedDate); 
 
     for (let i = 0; i < loopCount; i++) {
         const dateString = currentDate.toISOString().split('T')[0];
 
-        // 1. CEK BENTROK DULU!
         if (checkCollision(dateString, formData.start, formData.end)) {
-            alert(`⛔ GAGAL! Jadwal Tabrakan di tanggal ${dateString} jam ${formData.start}. Ruangan sudah terisi.`);
-            return; // Stop proses
+            alert(`⛔ GAGAL! Jadwal Tabrakan di ${dateString} ${formData.start}`);
+            return;
         }
 
-        // Siapkan Data
-        const newRef = doc(collection(db, "jadwal_bimbel")); // Generate ID baru
+        const newRef = doc(collection(db, "jadwal_bimbel"));
         batch.set(newRef, {
             planet: activePlanet,
             dateStr: dateString,
@@ -101,32 +118,27 @@ const SchedulePage = () => {
             booker: formData.booker,
             code: `R-${Math.floor(Math.random()*1000)}`, 
             students: studentsFullData,
-            isRecurring: formData.repeat === 'Monthly' // Flag penanda
+            isRecurring: formData.repeat === 'Monthly' 
         });
 
-        // Lompat ke minggu depan (tambah 7 hari)
         currentDate.setDate(currentDate.getDate() + 7);
     }
 
     try {
-        await batch.commit(); // Eksekusi Simpan ke Database
-        alert(`✅ Sukses! ${loopCount} Jadwal berhasil dibuat.`);
+        await batch.commit(); 
+        alert(`✅ Sukses! Jadwal untuk ${formData.booker} tersimpan.`);
         setIsModalOpen(false);
         fetchData();
-    } catch (error) {
-        console.error(error);
-        alert("Gagal menyimpan jadwal.");
-    }
+    } catch (error) { console.error(error); alert("Gagal menyimpan."); }
   };
 
   const handleDelete = async (id) => {
     if(window.confirm("Hapus jadwal ini?")) { await deleteDoc(doc(db, "jadwal_bimbel", id)); fetchData(); }
   };
 
-  // HELPER KALENDER
+  // UI HELPERS
   const changeMonth = (v) => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + v, 1));
   const formatDateStr = (date) => date.toISOString().split('T')[0];
-
   const renderCalendar = () => {
     const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
     const days = [];
@@ -150,7 +162,7 @@ const SchedulePage = () => {
       <div style={styles.mainContent}>
         
         <div style={styles.infoBar}>
-            <span>🔑 Kode Guru Hari Ini ({new Date().toLocaleDateString('id-ID')}): <b>{dailyCode}</b></span>
+            <span>🔑 Kode Guru Hari Ini: <b>{dailyCode}</b></span>
         </div>
 
         <div style={styles.layoutGrid}>
@@ -181,7 +193,6 @@ const SchedulePage = () => {
                                 <h3>🪐 {planet}</h3>
                                 <button onClick={() => { setActivePlanet(planet); setIsModalOpen(true); }} style={styles.btnAdd}>+ Isi Jadwal</button>
                             </div>
-
                             <div style={styles.scheduleList}>
                                 {items.length === 0 ? <div style={styles.emptySlot}>⚪ Kosong</div> : items.map(item => (
                                     <div key={item.id} style={item.program === 'English' ? styles.cardYellow : styles.cardGreen}>
@@ -191,8 +202,8 @@ const SchedulePage = () => {
                                         </div>
                                         <div style={{margin:'5px 0', fontSize:14}}>
                                             <b>{item.title}</b> <br/>
-                                            👨‍🏫 {item.booker} ({item.level})
-                                            {item.isRecurring && <span style={{marginLeft:5}}>🔄</span>}
+                                            👨‍🏫 {item.booker} ({item.level}) <br/>
+                                            👥 {item.students?.length || 0} Siswa
                                         </div>
                                         <div style={{textAlign:'right'}}>
                                             <button onClick={()=>handleDelete(item.id)} style={styles.btnLinkRed}>Hapus</button>
@@ -206,12 +217,11 @@ const SchedulePage = () => {
             </div>
         </div>
 
-        {/* MODAL INPUT */}
+        {/* MODAL INPUT CERDAS */}
         {isModalOpen && (
           <div style={styles.overlay}>
             <div style={styles.modal}>
               <h3>Booking {activePlanet}</h3>
-              <p style={{fontSize:12, color:'red', marginTop:-10}}>*Otomatis cek bentrok jadwal</p>
               
               <form onSubmit={handleSave}>
                 <div style={styles.row}>
@@ -219,55 +229,71 @@ const SchedulePage = () => {
                    <div style={{flex:1}}><label>Selesai</label><input type="time" value={formData.end} onChange={e=>setFormData({...formData, end:e.target.value})} style={styles.input} /></div>
                 </div>
 
-                {/* PILIHAN RECURRING (PARAREL) */}
                 <div style={{background:'#e3f2fd', padding:10, borderRadius:5, marginBottom:10}}>
-                    <label style={{fontWeight:'bold', color:'#1565c0'}}>Frekuensi Jadwal</label>
+                    <label style={{fontWeight:'bold', color:'#1565c0'}}>Frekuensi (Guru Pengganti?)</label>
                     <div style={{display:'flex', gap:15, marginTop:5}}>
-                        <label style={{cursor:'pointer'}}>
-                            <input type="radio" name="repeat" checked={formData.repeat === 'Once'} onChange={()=>setFormData({...formData, repeat:'Once'})} /> 
-                            Hanya Hari Ini (Booking Sementara)
-                        </label>
-                        <label style={{cursor:'pointer'}}>
-                            <input type="radio" name="repeat" checked={formData.repeat === 'Monthly'} onChange={()=>setFormData({...formData, repeat:'Monthly'})} /> 
-                            Ulangi 4 Minggu (Pararel 1 Bulan)
-                        </label>
+                        <label style={{cursor:'pointer'}}><input type="radio" name="repeat" checked={formData.repeat === 'Once'} onChange={()=>setFormData({...formData, repeat:'Once'})} /> Booking Sekali (Hari Ini)</label>
+                        <label style={{cursor:'pointer'}}><input type="radio" name="repeat" checked={formData.repeat === 'Monthly'} onChange={()=>setFormData({...formData, repeat:'Monthly'})} /> Rutin (4 Minggu)</label>
                     </div>
                 </div>
                 
-                <label style={{fontWeight:'bold'}}>Kategori Program</label>
-                <select value={formData.program} onChange={e=>setFormData({...formData, program:e.target.value})} style={styles.select}>
-                    <option value="Reguler">📚 Reguler</option>
-                    <option value="English">🇬🇧 English</option>
-                </select>
-
-                <label style={{fontWeight:'bold'}}>Level</label>
-                <select value={formData.level} onChange={e=>setFormData({...formData, level:e.target.value})} style={styles.select}>
-                    <option value="SD">SD / Kids</option>
-                    <option value="SMP">SMP / Junior</option>
-                    <option value="SMA">SMA / Pro</option>
-                </select>
+                <div style={styles.row}>
+                    <div style={{flex:1}}>
+                        <label>Program</label>
+                        <select value={formData.program} onChange={e=>setFormData({...formData, program:e.target.value})} style={styles.select}>
+                            <option value="Reguler">📚 Reguler</option>
+                            <option value="English">🇬🇧 English</option>
+                        </select>
+                    </div>
+                    <div style={{flex:1}}>
+                        <label>Level</label>
+                        <select value={formData.level} onChange={e=>setFormData({...formData, level:e.target.value})} style={styles.select}>
+                            <option value="SD">SD / Kids</option>
+                            <option value="SMP">SMP / Junior</option>
+                            <option value="SMA">SMA / Pro</option>
+                        </select>
+                    </div>
+                </div>
 
                 <label>Guru Pengajar</label>
                 <select required value={formData.booker} onChange={e => setFormData({...formData, booker: e.target.value})} style={styles.select}>
-                    <option value="">-- Pilih Guru --</option>
+                    <option value="">-- Pilih Guru (Bisa Guru Pengganti) --</option>
                     {availableTeachers.map(t => <option key={t.id} value={t.nama}>{t.nama}</option>)}
                 </select>
 
-                <label>Mapel / Materi</label>
-                <input type="text" placeholder="Contoh: Matematika" value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} style={styles.input} />
+                <label>Materi / Mapel</label>
+                <input type="text" placeholder="Contoh: Matematika Bab 1" value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} style={styles.input} />
 
-                <label>Pilih Siswa</label>
-                <div style={{border:'1px solid #ddd', padding:5, height:80, overflowY:'auto', borderRadius:4}}>
-                    {availableStudents.map(s => (
-                        <div key={s.id} style={{fontSize:13, padding:2}}>
-                            <input type="checkbox" onChange={(e) => {
-                                const ids = formData.selectedStudents;
-                                if(e.target.checked) setFormData({...formData, selectedStudents: [...ids, s.id]});
-                                else setFormData({...formData, selectedStudents: ids.filter(x => x !== s.id)});
-                            }} /> {s.nama} ({s.kelas})
-                        </div>
-                    ))}
+                {/* --- FITUR FILTER SISWA --- */}
+                <div style={{border:'1px solid #ccc', borderRadius:5, padding:10, marginTop:10}}>
+                    <label style={{fontWeight:'bold', color:'#2c3e50'}}>👥 Pilih Siswa</label>
+                    
+                    <div style={{display:'flex', gap:5, marginBottom:5}}>
+                        <select value={filterJenjang} onChange={e=>setFilterJenjang(e.target.value)} style={{padding:5, fontSize:12, borderRadius:4}}>
+                            <option value="Semua">Semua Jenjang</option>
+                            <option value="SD">SD</option>
+                            <option value="SMP">SMP</option>
+                            <option value="SMA">SMA</option>
+                        </select>
+                        <input type="text" placeholder="Cari Nama..." value={filterKelas} onChange={e=>setFilterKelas(e.target.value)} style={{padding:5, fontSize:12, flex:1}} />
+                        <button type="button" onClick={handleSelectAll} style={{padding:5, fontSize:11, background:'#3498db', color:'white', border:'none', borderRadius:4, cursor:'pointer'}}>Pilih Semua</button>
+                    </div>
+
+                    <div style={{border:'1px solid #eee', padding:5, height:100, overflowY:'auto', background:'#fafafa'}}>
+                        {getFilteredStudents().length === 0 ? <small style={{color:'red'}}>Tidak ada siswa yg cocok.</small> : 
+                        getFilteredStudents().map(s => (
+                            <div key={s.id} style={{fontSize:13, padding:3, borderBottom:'1px dashed #eee'}}>
+                                <input type="checkbox" checked={formData.selectedStudents.includes(s.id)} onChange={(e) => {
+                                    const ids = formData.selectedStudents;
+                                    if(e.target.checked) setFormData({...formData, selectedStudents: [...ids, s.id]});
+                                    else setFormData({...formData, selectedStudents: ids.filter(x => x !== s.id)});
+                                }} /> <b>{s.nama}</b> <span style={{color:'#777'}}>({s.kelasSekolah || '-'})</span>
+                            </div>
+                        ))}
+                    </div>
+                    <small style={{color:'blue'}}>Terpilih: {formData.selectedStudents.length} Siswa</small>
                 </div>
+                {/* ------------------------- */}
 
                 <div style={styles.btnRow}>
                   <button type="submit" style={styles.btnSave}>SIMPAN JADWAL</button>
@@ -282,7 +308,7 @@ const SchedulePage = () => {
   );
 };
 
-// CSS STYLING (Sama seperti sebelumnya)
+// STYLES
 const styles = {
   mainContent: { marginLeft: '250px', padding: '20px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'Segoe UI, sans-serif' },
   infoBar: { background: '#2c3e50', color: 'white', padding: '12px 20px', borderRadius: '8px', marginBottom: '20px', boxShadow:'0 2px 4px rgba(0,0,0,0.1)' },
