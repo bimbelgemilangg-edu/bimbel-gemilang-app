@@ -23,13 +23,11 @@ const TeacherDashboard = () => {
   useEffect(() => {
     const init = async () => {
       const sessionGuru = location.state?.teacher;
-      // FIX: Jika refresh, kembalikan ke Login Utama
       if (!sessionGuru) { navigate('/'); return; }
       setGuru(sessionGuru);
 
       const todayStr = new Date().toISOString().split('T')[0];
       
-      // 1. Ambil Jadwal Saya
       const qMySched = query(collection(db, "jadwal_bimbel"), where("booker", "==", sessionGuru.nama));
       const snapMy = await getDocs(qMySched);
       const allMySched = snapMy.docs.map(d => ({id: d.id, ...d.data()}));
@@ -48,7 +46,6 @@ const TeacherDashboard = () => {
       setTodaySchedules(todays);
       setUpcomingSchedules(upcomings);
 
-      // 2. Ambil Jadwal Guru Lain (Untuk Mode Pengganti)
       const qOthers = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr));
       const snapOthers = await getDocs(qOthers);
       const othersData = snapOthers.docs.map(d => ({id: d.id, ...d.data()})).filter(s => s.booker !== sessionGuru.nama); 
@@ -88,38 +85,42 @@ const TeacherDashboard = () => {
 
   return (
     <div style={{minHeight:'100vh', background:'#f4f7f6', fontFamily:'sans-serif', paddingBottom:50}}>
-      {/* HEADER DENGAN TOMBOL LENGKAP */}
-      <div style={{background:'#2c3e50', padding:'20px 30px', color:'white', display:'flex', justifyContent:'space-between', alignItems:'center', boxShadow:'0 4px 6px rgba(0,0,0,0.1)'}}>
-        <div>
-            <h2 style={{margin:0, fontSize:22}}>Halo, {guru?.nama} 👋</h2>
-            <small style={{opacity:0.8}}>Dashboard Guru Profesional</small>
+      {/* HEADER BARU: DIBUAT 2 BARIS AGAR TOMBOL PASTI MUNCUL */}
+      <div style={{background:'#2c3e50', padding:'20px', color:'white', boxShadow:'0 4px 6px rgba(0,0,0,0.1)'}}>
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:15}}>
+            <div>
+                <h2 style={{margin:0, fontSize:22}}>Halo, {guru?.nama} 👋</h2>
+                <small style={{opacity:0.8}}>Dashboard Guru Profesional</small>
+            </div>
+            <button onClick={()=>navigate('/')} style={{background:'#c0392b', border:'none', color:'white', borderRadius:5, padding:'8px 20px', cursor:'pointer', fontSize:13, fontWeight:'bold'}}>
+                KELUAR
+            </button>
         </div>
-        <div style={{display:'flex', gap:10}}>
-             
-             {/* --- 1. TOMBOL UNGU: INPUT NILAI (YANG DICARI BOS) --- */}
+
+        {/* BARIS TOMBOL MENU */}
+        <div style={{display:'flex', gap:10, overflowX:'auto', paddingBottom:5}}>
+             {/* 1. TOMBOL INPUT NILAI (UNGU BESAR) */}
              <button 
                 onClick={() => navigate('/guru/grades/input', { state: { teacher: guru } })} 
-                style={{background:'#8e44ad', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}
+                style={{background:'#8e44ad', border:'2px solid white', color:'white', borderRadius:10, padding:'10px 20px', cursor:'pointer', fontWeight:'bold', fontSize:14, display:'flex', alignItems:'center', gap:5, minWidth:'fit-content'}}
              >
-                📝 Input Nilai
+                📝 INPUT NILAI
              </button>
-             {/* ---------------------------------------------------- */}
 
-             {/* 2. TOMBOL BIRU: RIWAYAT */}
-             <button onClick={() => navigate('/guru/history', { state: { teacher: guru } })} style={{background:'#3498db', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}>📄 Riwayat</button>
+             {/* 2. RIWAYAT */}
+             <button onClick={() => navigate('/guru/history', { state: { teacher: guru } })} style={styles.btnMenu}>📄 Riwayat</button>
              
-             {/* 3. TOMBOL MERAH: SUSULAN */}
-             <button onClick={() => navigate('/guru/manual-input', { state: { teacher: guru } })} style={{background:'#e74c3c', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}>⚠️ Susulan</button>
+             {/* 3. SUSULAN */}
+             <button onClick={() => navigate('/guru/manual-input', { state: { teacher: guru } })} style={styles.btnMenu}>⚠️ Absen Susulan</button>
              
-             {/* 4. TOMBOL ORANGE: MODE PENGGANTI */}
-             <button onClick={() => setSubstituteMode(!substituteMode)} style={{background: substituteMode ? '#e67e22' : 'transparent', border:'1px solid #e67e22', color: substituteMode ? 'white' : '#e67e22', padding:'8px 15px', borderRadius:20, cursor:'pointer', fontWeight:'bold', fontSize:13}}>{substituteMode ? "Kembali" : "🔄 Mode Pengganti"}</button>
-             
-             {/* 5. TOMBOL KELUAR (FIX: Ke Halaman Utama) */}
-             <button onClick={()=>navigate('/')} style={{background:'#c0392b', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontSize:13}}>Keluar</button>
+             {/* 4. MODE PENGGANTI */}
+             <button onClick={() => setSubstituteMode(!substituteMode)} style={{...styles.btnMenu, background: substituteMode ? '#e67e22' : 'rgba(255,255,255,0.2)'}}>
+                {substituteMode ? "Kembali Normal" : "🔄 Mode Pengganti"}
+            </button>
         </div>
       </div>
 
-      <div style={{padding:'30px', maxWidth:800, margin:'0 auto'}}>
+      <div style={{padding:'20px', maxWidth:800, margin:'0 auto'}}>
         {substituteMode ? (
             <div>
                 <div style={{background:'#fff3e0', borderLeft:'5px solid #e67e22', padding:15, marginBottom:20, borderRadius:5}}>
@@ -197,6 +198,7 @@ const TeacherDashboard = () => {
 };
 
 const styles = {
+    btnMenu: { background:'rgba(255,255,255,0.2)', border:'none', color:'white', borderRadius:10, padding:'10px 15px', cursor:'pointer', fontSize:13, minWidth:'fit-content' },
     cardActive: { background:'white', padding:20, borderRadius:12, boxShadow:'0 4px 15px rgba(0,0,0,0.08)', marginBottom:20, borderLeft:'6px solid #27ae60' },
     cardFuture: { background:'white', padding:'15px 20px', borderRadius:8, boxShadow:'0 2px 5px rgba(0,0,0,0.03)', marginBottom:10, borderLeft:'4px solid #bdc3c7' },
     cardSwitch: { background:'white', padding:15, borderRadius:8, marginBottom:10, borderLeft:'4px solid #e67e22', boxShadow:'0 2px 5px rgba(0,0,0,0.05)' },
