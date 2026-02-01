@@ -91,14 +91,14 @@ const TeacherDashboard = () => {
         </div>
         <div style={{display:'flex', gap:10}}>
              
-             {/* --- TOMBOL BARU: INPUT NILAI (UNGU) --- */}
+             {/* --- INI TOMBOL UNGU YANG DICARI --- */}
              <button 
                 onClick={() => navigate('/guru/grades/input', { state: { teacher: guru } })} 
                 style={{background:'#8e44ad', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}
              >
                 📝 Input Nilai
              </button>
-             {/* --------------------------------------- */}
+             {/* ----------------------------------- */}
 
              <button onClick={() => navigate('/guru/history', { state: { teacher: guru } })} style={{background:'#3498db', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}>📄 Riwayat</button>
              <button onClick={() => navigate('/guru/manual-input', { state: { teacher: guru } })} style={{background:'#e74c3c', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}>⚠️ Susulan</button>
