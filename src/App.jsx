@@ -21,6 +21,7 @@ import TeacherSalaries from './pages/admin/teachers/TeacherSalaries';
 import LoginGuru from './pages/LoginGuru';
 import TeacherDashboard from './pages/teacher/TeacherDashboard'; 
 import TeacherHistory from './pages/teacher/TeacherHistory';
+import TeacherManualInput from './pages/teacher/TeacherManualInput'; // <--- INI PENTING
 
 // --- PROTEKSI RUTE ADMIN ---
 const AdminRoute = ({ children }) => {
@@ -55,13 +56,15 @@ function App() {
         <Route path="/admin/finance" element={<FinanceDashboard />} />
         <Route path="/admin/teachers" element={<TeacherList />} />
         
-        {/* RUTE BARU: REKAP GAJI GURU (Di Folder Teachers) */}
+        {/* RUTE REKAP GAJI GURU (Di Folder Teachers) */}
         <Route path="/admin/teachers/salaries" element={<TeacherSalaries />} />
         
         <Route path="/admin/schedule" element={<SchedulePage />} />
         <Route path="/admin/settings" element={<Settings />} />
 
         {/* === AREA GURU === */}
+        
+        {/* 1. Dashboard Utama */}
         <Route 
           path="/guru/dashboard" 
           element={
@@ -71,12 +74,22 @@ function App() {
           } 
         />
         
-        {/* RUTE BARU: RIWAYAT GURU */}
+        {/* 2. Riwayat & Laporan */}
         <Route 
           path="/guru/history" 
           element={
             <GuruRoute>
               <TeacherHistory />
+            </GuruRoute>
+          } 
+        />
+
+        {/* 3. Absen Susulan / Manual Input (FITUR BARU) */}
+        <Route 
+          path="/guru/manual-input" 
+          element={
+            <GuruRoute>
+              <TeacherManualInput />
             </GuruRoute>
           } 
         />

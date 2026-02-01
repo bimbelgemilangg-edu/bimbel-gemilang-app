@@ -105,7 +105,7 @@ const TeacherDashboard = () => {
 
   return (
     <div style={{minHeight:'100vh', background:'#f4f7f6', fontFamily:'sans-serif', paddingBottom:50}}>
-      {/* HEADER UPDATE: ADA TOMBOL RIWAYAT */}
+      {/* HEADER UPDATE: ADA TOMBOL RIWAYAT & SUSULAN */}
       <div style={{background:'#2c3e50', padding:'20px 30px', color:'white', display:'flex', justifyContent:'space-between', alignItems:'center', boxShadow:'0 4px 6px rgba(0,0,0,0.1)'}}>
         <div>
             <h2 style={{margin:0, fontSize:22}}>Halo, {guru?.nama} 👋</h2>
@@ -113,12 +113,20 @@ const TeacherDashboard = () => {
         </div>
         <div style={{display:'flex', gap:10}}>
              
-             {/* TOMBOL RIWAYAT (BARU) */}
+             {/* TOMBOL RIWAYAT */}
              <button 
                 onClick={() => navigate('/guru/history', { state: { teacher: guru } })} 
                 style={{background:'#3498db', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}
              >
-                📄 Riwayat & Laporan
+                📄 Riwayat
+             </button>
+
+             {/* TOMBOL SUSULAN/REVISI (INI YANG BARU) */}
+             <button 
+                onClick={() => navigate('/guru/manual-input', { state: { teacher: guru } })} 
+                style={{background:'#e74c3c', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}
+             >
+                ⚠️ Absen Susulan
              </button>
 
              <button onClick={() => setSubstituteMode(!substituteMode)} style={{background: substituteMode ? '#e67e22' : 'transparent', border:'1px solid #e67e22', color: substituteMode ? 'white' : '#e67e22', padding:'8px 15px', borderRadius:20, cursor:'pointer', fontWeight:'bold', fontSize:13}}>
