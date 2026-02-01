@@ -55,6 +55,30 @@ const AddStudent = () => {
   const [metodeBayar, setMetodeBayar] = useState("Tunai"); 
   const [tenor, setTenor] = useState(1);
   const [tanggalMulaiCicilan, setTanggalMulaiCicilan] = useState(new Date().toISOString().split('T')[0]);
+  
+  // STATE BARU: Menyimpan Array Tanggal Jatuh Tempo
+  const [customDueDates, setCustomDueDates] = useState([]);
+
+  // LOGIKA: Generate Tanggal Otomatis saat Tenor/Start berubah
+  useEffect(() => {
+    if (metodeBayar === 'Cicilan') {
+        const dates = [];
+        const startDate = new Date(tanggalMulaiCicilan);
+        for (let i = 0; i < tenor; i++) {
+            const nextDate = new Date(startDate);
+            nextDate.setMonth(startDate.getMonth() + i);
+            dates.push(nextDate.toISOString().split('T')[0]);
+        }
+        setCustomDueDates(dates);
+    }
+  }, [tenor, tanggalMulaiCicilan, metodeBayar]);
+
+  // Handler ubah tanggal manual per cicilan
+  const handleDateChange = (index, newDate) => {
+      const updatedDates = [...customDueDates];
+      updatedDates[index] = newDate;
+      setCustomDueDates(updatedDates);
+  };
 
   // 3. LOGIKA HARGA
   const getBasePrice = () => {
@@ -91,8 +115,8 @@ const AddStudent = () => {
         ortu: { ayah: namaAyah, pekerjaanAyah, ibu: namaIbu, pekerjaanIbu, alamat, hp: noHp },
         status: "Aktif",
         tanggalMasuk: tanggalDaftar,
-        totalTagihan: hitungTotal(), // Simpan info total tagihan di profil siswa juga
-        totalBayar: metodeBayar === "Tunai" || metodeBayar === "Bank" ? hitungTotal() : 0 // Kalau lunas langsung catat lunas
+        totalTagihan: hitungTotal(), 
+        totalBayar: metodeBayar === "Tunai" || metodeBayar === "Bank" ? hitungTotal() : 0 
       };
 
       const docRef = await addDoc(collection(db, "students"), studentData);
@@ -101,24 +125,20 @@ const AddStudent = () => {
 
       // B. SIMPAN DATA KEUANGAN
       if (metodeBayar === "Cicilan") {
-        // Jika Cicilan: Masuk ke finance_tagihan
         let installments = [];
         const perBulan = hitungCicilan();
-        const startDate = new Date(tanggalMulaiCicilan);
+        
+        // GUNAKAN TANGGAL DARI STATE customDueDates
+        customDueDates.forEach((dateStr, index) => {
+            installments.push({
+                id: Date.now() + index,
+                bulanKe: index + 1,
+                nominal: perBulan,
+                status: "Belum Lunas",
+                jatuhTempo: dateStr // Ini tanggal yang sudah Anda setting manual
+            });
+        });
 
-        for (let i = 0; i < tenor; i++) {
-          let dueDate = new Date(startDate);
-          dueDate.setMonth(startDate.getMonth() + i);
-          installments.push({
-            id: Date.now() + i, // ID unik sederhana
-            bulanKe: i + 1,
-            nominal: perBulan,
-            status: "Belum Lunas",
-            jatuhTempo: dueDate.toISOString().split('T')[0] 
-          });
-        }
-
-        // Buat Dokumen Tagihan Induk
         await addDoc(collection(db, "finance_tagihan"), {
           studentId, namaSiswa, namaOrtu: namaAyah, noHp,
           totalTagihan: totalBayar, 
@@ -126,10 +146,9 @@ const AddStudent = () => {
           detailCicilan: installments, 
           jenis: `Pendaftaran ${programType} (Cicilan)`
         });
-        alert("✅ Pendaftaran Berhasil (Masuk Mode Cicilan)");
+        alert("✅ Pendaftaran Berhasil (Jadwal Cicilan Tersimpan)");
 
       } else {
-        // Jika Lunas: Masuk ke finance_logs (Agar muncul di Dashboard Keuangan)
         await addDoc(collection(db, "finance_logs"), { 
           date: tanggalDaftar, 
           type: "Pemasukan", 
@@ -146,8 +165,6 @@ const AddStudent = () => {
     } catch (error) { console.error("Error:", error); alert("Gagal menyimpan data."); }
   };
 
-  // ... (SISA KODE JSX RETURN SAMA PERSIS SEPERTI YANG ANDA KIRIM, TIDAK SAYA UBAH TAMPILANNYA) ...
-  // Paste bagian return (...) dari kode Anda sebelumnya di sini.
   return (
     <div style={{ display: 'flex' }}>
       <Sidebar />
@@ -262,21 +279,44 @@ const AddStudent = () => {
                   <option value="Cicilan">Cicilan</option>
                 </select>
               </div>
+              
+              {/* === AREA SETTING CICILAN (UPDATE) === */}
               {metodeBayar === "Cicilan" && (
                 <div style={styles.cicilanBox}>
-                  <label>Tenor & Tgl Tagihan:</label>
+                  <label>Pilih Tenor (Kali Bayar):</label>
                   <div style={{display:'flex', gap:5, marginTop:5, marginBottom: 15}}>
                     {[1,2,3,4,5,6].map(t => (
                       <button key={t} type="button" onClick={() => setTenor(t)} style={tenor===t ? styles.btnActive : styles.btnInactive}>{t}x</button>
                     ))}
                   </div>
-                  <input type="date" value={tanggalMulaiCicilan} onChange={(e) => setTanggalMulaiCicilan(e.target.value)} style={{...styles.input, marginTop: 5}} />
+
+                  <label>Tanggal Mulai (Otomatis sebulan sekali):</label>
+                  <input type="date" value={tanggalMulaiCicilan} onChange={(e) => setTanggalMulaiCicilan(e.target.value)} style={{...styles.input, marginTop: 5, marginBottom:15}} />
+                  
+                  {/* DAFTAR JATUH TEMPO YANG BISA DIEDIT */}
+                  <div style={{background:'rgba(0,0,0,0.2)', padding:10, borderRadius:5}}>
+                      <small style={{display:'block', marginBottom:5, color:'#ddd'}}>👇 Sesuaikan tanggal di bawah jika perlu:</small>
+                      {customDueDates.map((date, idx) => (
+                          <div key={idx} style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:5}}>
+                              <span style={{fontSize:13, color:'white'}}>Cicilan ke-{idx+1}</span>
+                              <input 
+                                type="date" 
+                                value={date} 
+                                onChange={(e) => handleDateChange(idx, e.target.value)}
+                                style={{padding:5, borderRadius:4, border:'none', width:130, fontSize:12}}
+                              />
+                          </div>
+                      ))}
+                  </div>
+
                   <div style={{marginTop: 15, borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: 10}}>
                     <p style={{margin:0}}>Cicilan per bulan:</p> 
                     <b style={{fontSize: 18}}>Rp {hitungCicilan().toLocaleString()}</b>
                   </div>
                 </div>
               )}
+              {/* ===================================== */}
+
               <button type="submit" style={styles.btnSubmit}>SIMPAN DATA</button>
             </div>
           </div>
