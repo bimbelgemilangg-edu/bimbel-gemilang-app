@@ -27,7 +27,6 @@ const TeacherDashboard = () => {
       setGuru(sessionGuru);
 
       const todayStr = new Date().toISOString().split('T')[0];
-      
       const qMySched = query(collection(db, "jadwal_bimbel"), where("booker", "==", sessionGuru.nama));
       const snapMy = await getDocs(qMySched);
       const allMySched = snapMy.docs.map(d => ({id: d.id, ...d.data()}));
@@ -85,37 +84,49 @@ const TeacherDashboard = () => {
 
   return (
     <div style={{minHeight:'100vh', background:'#f4f7f6', fontFamily:'sans-serif', paddingBottom:50}}>
-      {/* HEADER BARU: DIBUAT 2 BARIS AGAR TOMBOL PASTI MUNCUL */}
+      {/* HEADER BARU */}
       <div style={{background:'#2c3e50', padding:'20px', color:'white', boxShadow:'0 4px 6px rgba(0,0,0,0.1)'}}>
         <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:15}}>
             <div>
                 <h2 style={{margin:0, fontSize:22}}>Halo, {guru?.nama} 👋</h2>
-                <small style={{opacity:0.8}}>Dashboard Guru Profesional</small>
+                <small style={{opacity:0.8}}>Dashboard Guru</small>
             </div>
             <button onClick={()=>navigate('/')} style={{background:'#c0392b', border:'none', color:'white', borderRadius:5, padding:'8px 20px', cursor:'pointer', fontSize:13, fontWeight:'bold'}}>
                 KELUAR
             </button>
         </div>
 
-        {/* BARIS TOMBOL MENU */}
-        <div style={{display:'flex', gap:10, overflowX:'auto', paddingBottom:5}}>
-             {/* 1. TOMBOL INPUT NILAI (UNGU BESAR) */}
+        {/* --- TOMBOL INPUT NILAI (PASTI MUNCUL) --- */}
+        <div style={{marginBottom:15}}>
              <button 
                 onClick={() => navigate('/guru/grades/input', { state: { teacher: guru } })} 
-                style={{background:'#8e44ad', border:'2px solid white', color:'white', borderRadius:10, padding:'10px 20px', cursor:'pointer', fontWeight:'bold', fontSize:14, display:'flex', alignItems:'center', gap:5, minWidth:'fit-content'}}
+                style={{
+                    width: '100%', 
+                    background:'#8e44ad', 
+                    border:'2px solid #9b59b6', 
+                    color:'white', 
+                    borderRadius:8, 
+                    padding:'12px', 
+                    cursor:'pointer', 
+                    fontWeight:'bold', 
+                    fontSize:15, 
+                    display:'flex', 
+                    justifyContent:'center', 
+                    alignItems:'center', 
+                    gap:10,
+                    boxShadow: '0 4px 0 rgba(0,0,0,0.2)'
+                }}
              >
-                📝 INPUT NILAI
+                📝 INPUT NILAI / RAPOR SISWA
              </button>
+        </div>
+        {/* ----------------------------------------- */}
 
-             {/* 2. RIWAYAT */}
-             <button onClick={() => navigate('/guru/history', { state: { teacher: guru } })} style={styles.btnMenu}>📄 Riwayat</button>
-             
-             {/* 3. SUSULAN */}
-             <button onClick={() => navigate('/guru/manual-input', { state: { teacher: guru } })} style={styles.btnMenu}>⚠️ Absen Susulan</button>
-             
-             {/* 4. MODE PENGGANTI */}
-             <button onClick={() => setSubstituteMode(!substituteMode)} style={{...styles.btnMenu, background: substituteMode ? '#e67e22' : 'rgba(255,255,255,0.2)'}}>
-                {substituteMode ? "Kembali Normal" : "🔄 Mode Pengganti"}
+        <div style={{display:'flex', gap:10, overflowX:'auto', paddingBottom:5}}>
+             <button onClick={() => navigate('/guru/history', { state: { teacher: guru } })} style={styles.btnMenuSmall}>📄 Riwayat</button>
+             <button onClick={() => navigate('/guru/manual-input', { state: { teacher: guru } })} style={styles.btnMenuSmall}>⚠️ Susulan</button>
+             <button onClick={() => setSubstituteMode(!substituteMode)} style={{...styles.btnMenuSmall, background: substituteMode ? '#e67e22' : 'rgba(255,255,255,0.1)'}}>
+                {substituteMode ? "Kembali" : "🔄 Mode Pengganti"}
             </button>
         </div>
       </div>
@@ -198,7 +209,7 @@ const TeacherDashboard = () => {
 };
 
 const styles = {
-    btnMenu: { background:'rgba(255,255,255,0.2)', border:'none', color:'white', borderRadius:10, padding:'10px 15px', cursor:'pointer', fontSize:13, minWidth:'fit-content' },
+    btnMenuSmall: { background:'rgba(255,255,255,0.2)', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontSize:13, minWidth:'fit-content', whiteSpace:'nowrap' },
     cardActive: { background:'white', padding:20, borderRadius:12, boxShadow:'0 4px 15px rgba(0,0,0,0.08)', marginBottom:20, borderLeft:'6px solid #27ae60' },
     cardFuture: { background:'white', padding:'15px 20px', borderRadius:8, boxShadow:'0 2px 5px rgba(0,0,0,0.03)', marginBottom:10, borderLeft:'4px solid #bdc3c7' },
     cardSwitch: { background:'white', padding:15, borderRadius:8, marginBottom:10, borderLeft:'4px solid #e67e22', boxShadow:'0 2px 5px rgba(0,0,0,0.05)' },
