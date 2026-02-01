@@ -11,14 +11,15 @@ const Settings = () => {
   // DATA GLOBAL DARI SERVER
   const [ownerPin, setOwnerPin] = useState("2003");
   
-  // DATA HARGA SISWA
+  // 1. DATA HARGA SISWA (LENGKAP)
   const [prices, setPrices] = useState({
     sd: { paket1: 150000, paket2: 200000, paket3: 250000 },
     smp: { paket1: 200000, paket2: 250000, paket3: 300000 },
+    // English Course
     english: { kids: 150000, junior: 200000, professional: 300000 } 
   });
 
-  // DATA GAJI GURU
+  // 2. DATA GAJI GURU
   const [salaryRules, setSalaryRules] = useState({
     honorSD: 35000, honorSMP: 40000, honorSMA: 50000,
     bonusInggris: 10000, transport: 10000, buatSoal: 50000, 
@@ -27,6 +28,7 @@ const Settings = () => {
   
   const [security, setSecurity] = useState({ currentPin: "", newPin: "", confirmPin: "" });
 
+  // LOAD DATA
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -35,10 +37,12 @@ const Settings = () => {
 
         if (docSnap.exists()) {
           const data = docSnap.data();
+          // Merge data agar field baru tidak error
           if (data.prices) setPrices(prev => ({ ...prev, ...data.prices }));
           if (data.salaryRules) setSalaryRules(prev => ({...prev, ...data.salaryRules}));
           if (data.ownerPin) setOwnerPin(data.ownerPin);
         } else {
+          // Init Default jika kosong
           await setDoc(docRef, { prices, salaryRules, ownerPin: "2003" });
         }
       } catch (error) {
@@ -104,54 +108,124 @@ const Settings = () => {
         </div>
 
         <div style={styles.grid}>
-          {/* HARGA SISWA */}
+          
+          {/* KARTU 1: HARGA BIMBEL SISWA */}
           <div style={styles.card}>
             <h3 style={styles.headerBlue}>📚 Harga Bimbel Siswa</h3>
+            
+            {/* HARGA SD */}
             <div style={styles.subSection}>
-                <b style={{color:'#333'}}>SD</b>
-                <input type="number" placeholder="Paket 1" value={prices.sd.paket1} onChange={(e) => setPrices({...prices, sd: {...prices.sd, paket1: e.target.value}})} style={styles.input} />
-                <input type="number" placeholder="Paket 2" value={prices.sd.paket2} onChange={(e) => setPrices({...prices, sd: {...prices.sd, paket2: e.target.value}})} style={styles.input} />
-                <input type="number" placeholder="Paket 3" value={prices.sd.paket3} onChange={(e) => setPrices({...prices, sd: {...prices.sd, paket3: e.target.value}})} style={styles.input} />
+                <b style={{color:'#333'}}>SD (Reguler)</b>
+                <div style={{marginBottom:5}}>
+                  <small>Paket 1</small>
+                  <input type="number" value={prices.sd.paket1} onChange={(e) => setPrices({...prices, sd: {...prices.sd, paket1: e.target.value}})} style={styles.input} />
+                </div>
+                <div style={{marginBottom:5}}>
+                  <small>Paket 2</small>
+                  <input type="number" value={prices.sd.paket2} onChange={(e) => setPrices({...prices, sd: {...prices.sd, paket2: e.target.value}})} style={styles.input} />
+                </div>
+                <div>
+                  <small>Paket 3</small>
+                  <input type="number" value={prices.sd.paket3} onChange={(e) => setPrices({...prices, sd: {...prices.sd, paket3: e.target.value}})} style={styles.input} />
+                </div>
             </div>
+
+            {/* HARGA SMP */}
             <div style={styles.subSection}>
-                <b style={{color:'#333'}}>SMP</b>
-                <input type="number" placeholder="Paket 1" value={prices.smp.paket1} onChange={(e) => setPrices({...prices, smp: {...prices.smp, paket1: e.target.value}})} style={styles.input} />
-                <input type="number" placeholder="Paket 2" value={prices.smp.paket2} onChange={(e) => setPrices({...prices, smp: {...prices.smp, paket2: e.target.value}})} style={styles.input} />
-                <input type="number" placeholder="Paket 3" value={prices.smp.paket3} onChange={(e) => setPrices({...prices, smp: {...prices.smp, paket3: e.target.value}})} style={styles.input} />
+                <b style={{color:'#333'}}>SMP (Reguler)</b>
+                <div style={{marginBottom:5}}>
+                   <small>Paket 1</small>
+                   <input type="number" value={prices.smp.paket1} onChange={(e) => setPrices({...prices, smp: {...prices.smp, paket1: e.target.value}})} style={styles.input} />
+                </div>
+                <div style={{marginBottom:5}}>
+                   <small>Paket 2</small>
+                   <input type="number" value={prices.smp.paket2} onChange={(e) => setPrices({...prices, smp: {...prices.smp, paket2: e.target.value}})} style={styles.input} />
+                </div>
+                <div>
+                   <small>Paket 3</small>
+                   <input type="number" value={prices.smp.paket3} onChange={(e) => setPrices({...prices, smp: {...prices.smp, paket3: e.target.value}})} style={styles.input} />
+                </div>
+            </div>
+
+            {/* HARGA ENGLISH COURSE (YANG TADI HILANG) */}
+            <div style={{marginTop:15}}>
+                <b style={{color:'#8e44ad'}}>🇬🇧 English Course</b>
+                <div style={{marginTop:5}}>
+                    <small>Level Kids</small>
+                    <input type="number" value={prices.english?.kids || 0} onChange={(e) => setPrices({...prices, english: {...prices.english, kids: e.target.value}})} style={styles.input} />
+                </div>
+                <div style={{marginTop:5}}>
+                    <small>Level Junior</small>
+                    <input type="number" value={prices.english?.junior || 0} onChange={(e) => setPrices({...prices, english: {...prices.english, junior: e.target.value}})} style={styles.input} />
+                </div>
+                <div style={{marginTop:5}}>
+                    <small>Level Professional</small>
+                    <input type="number" value={prices.english?.professional || 0} onChange={(e) => setPrices({...prices, english: {...prices.english, professional: e.target.value}})} style={styles.input} />
+                </div>
             </div>
           </div>
 
-          {/* GAJI GURU */}
+          {/* KARTU 2: GAJI GURU */}
           <div style={styles.card}>
             <h3 style={styles.headerGreen}>💰 Standar Gaji Guru</h3>
-            <div style={styles.formGroup}><label>Honor SD / Jam</label><input type="number" value={salaryRules.honorSD} onChange={(e) => setSalaryRules({...salaryRules, honorSD: e.target.value})} style={styles.input} /></div>
-            <div style={styles.formGroup}><label>Honor SMP / Jam</label><input type="number" value={salaryRules.honorSMP} onChange={(e) => setSalaryRules({...salaryRules, honorSMP: e.target.value})} style={styles.input} /></div>
-            <div style={styles.formGroup}><label>Bonus Inggris</label><input type="number" value={salaryRules.bonusInggris} onChange={(e) => setSalaryRules({...salaryRules, bonusInggris: e.target.value})} style={styles.input} /></div>
             
-            <h4 style={{marginTop:15, marginBottom:5, color:'#555'}}>Tarif Ujian/Lainnya (Flat)</h4>
+            <div style={styles.formGroup}>
+                <label>Honor SD / Jam</label>
+                <input type="number" value={salaryRules.honorSD} onChange={(e) => setSalaryRules({...salaryRules, honorSD: e.target.value})} style={styles.input} />
+            </div>
+            
+            <div style={styles.formGroup}>
+                <label>Honor SMP / Jam</label>
+                <input type="number" value={salaryRules.honorSMP} onChange={(e) => setSalaryRules({...salaryRules, honorSMP: e.target.value})} style={styles.input} />
+            </div>
+            
+            <div style={styles.formGroup}>
+                <label>Bonus Inggris (Tambahan)</label>
+                <input type="number" value={salaryRules.bonusInggris} onChange={(e) => setSalaryRules({...salaryRules, bonusInggris: e.target.value})} style={styles.input} />
+            </div>
+            
+            <h4 style={{marginTop:20, marginBottom:10, color:'#555', borderTop:'1px dashed #ccc', paddingTop:10}}>Tarif Ujian & Lainnya (Flat)</h4>
             <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10}}>
-                <input type="number" placeholder="Paket Ujian" value={salaryRules.ujianPaket} onChange={(e) => setSalaryRules({...salaryRules, ujianPaket: e.target.value})} style={styles.input} />
-                <input type="number" placeholder="Hanya Jaga" value={salaryRules.ujianJaga} onChange={(e) => setSalaryRules({...salaryRules, ujianJaga: e.target.value})} style={styles.input} />
-                <input type="number" placeholder="Buat Soal" value={salaryRules.ujianSoal} onChange={(e) => setSalaryRules({...salaryRules, ujianSoal: e.target.value})} style={styles.input} />
-                <input type="number" placeholder="Transport" value={salaryRules.transport} onChange={(e) => setSalaryRules({...salaryRules, transport: e.target.value})} style={styles.input} />
+                <div>
+                    <small>Paket Ujian</small>
+                    <input type="number" value={salaryRules.ujianPaket} onChange={(e) => setSalaryRules({...salaryRules, ujianPaket: e.target.value})} style={styles.input} />
+                </div>
+                <div>
+                    <small>Hanya Jaga</small>
+                    <input type="number" value={salaryRules.ujianJaga} onChange={(e) => setSalaryRules({...salaryRules, ujianJaga: e.target.value})} style={styles.input} />
+                </div>
+                <div>
+                    <small>Buat Soal</small>
+                    <input type="number" value={salaryRules.ujianSoal} onChange={(e) => setSalaryRules({...salaryRules, ujianSoal: e.target.value})} style={styles.input} />
+                </div>
+                <div>
+                    <small>Transport</small>
+                    <input type="number" value={salaryRules.transport} onChange={(e) => setSalaryRules({...salaryRules, transport: e.target.value})} style={styles.input} />
+                </div>
             </div>
           </div>
 
-          {/* SECURITY */}
+          {/* KARTU 3: SECURITY */}
           <div style={styles.cardDanger}>
             <h3 style={{color: '#c0392b', marginTop: 0}}>🔐 Ganti PIN Owner</h3>
-            <input type="password" placeholder="PIN Lama" value={security.currentPin} onChange={(e) => setSecurity({...security, currentPin: e.target.value})} style={styles.input} />
-            <input type="password" placeholder="PIN Baru" value={security.newPin} onChange={(e) => setSecurity({...security, newPin: e.target.value})} style={styles.input} />
-            <input type="password" placeholder="Konfirmasi PIN" value={security.confirmPin} onChange={(e) => setSecurity({...security, confirmPin: e.target.value})} style={styles.input} />
+            <div style={{marginBottom:10}}>
+                <input type="password" placeholder="PIN Lama" value={security.currentPin} onChange={(e) => setSecurity({...security, currentPin: e.target.value})} style={styles.input} />
+            </div>
+            <div style={{marginBottom:10}}>
+                <input type="password" placeholder="PIN Baru" value={security.newPin} onChange={(e) => setSecurity({...security, newPin: e.target.value})} style={styles.input} />
+            </div>
+            <div style={{marginBottom:10}}>
+                <input type="password" placeholder="Konfirmasi PIN" value={security.confirmPin} onChange={(e) => setSecurity({...security, confirmPin: e.target.value})} style={styles.input} />
+            </div>
             <button onClick={handleChangePin} style={styles.btnDanger}>Update PIN</button>
           </div>
+
         </div>
       </div>
     </div>
   );
 };
 
-// Styles sama seperti sebelumnya
 const styles = {
   mainContent: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily: 'Segoe UI, sans-serif' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' },
@@ -161,7 +235,7 @@ const styles = {
   headerGreen: { color: '#27ae60', borderBottom: '1px solid #eee', paddingBottom: '10px', marginTop: 0 },
   subSection: { marginBottom: 15, paddingBottom: 10, borderBottom: '1px dashed #eee' },
   formGroup: { marginBottom: '10px' },
-  input: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box', marginTop: '5px', background: '#fff', color: '#000' },
+  input: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box', marginTop: '2px', background: '#fff', color: '#000' },
   btnSaveBig: { padding: '10px 20px', background: '#2c3e50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' },
   btnDanger: { width: '100%', padding: '10px', background: '#c0392b', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', marginTop: 10 },
   lockScreen: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: '#2c3e50', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999 },
