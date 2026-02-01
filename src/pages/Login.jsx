@@ -1,77 +1,119 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { db } from '../firebase';
+import { collection, getDocs } from "firebase/firestore";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [selectedTeacher, setSelectedTeacher] = useState("");
   
-  // --- SMART LOGIC: LOAD GURU ---
+  // STATE MODE: Apakah sedang login Guru atau Admin?
+  const [isAdminMode, setIsAdminMode] = useState(false); 
+  
+  // DATA
   const [teachers, setTeachers] = useState([]);
+  
+  // INPUT
+  const [selectedGuru, setSelectedGuru] = useState("");
+  const [adminPin, setAdminPin] = useState("");
 
+  // LOAD NAMA GURU UTK DROPDOWN
   useEffect(() => {
-    const savedTeachers = localStorage.getItem("DB_TEACHERS");
-    if (savedTeachers) {
-      // Ambil hanya namanya saja untuk dropdown
-      setTeachers(JSON.parse(savedTeachers).map(t => t.nama));
-    } else {
-      // Default jika belum ada data
-      setTeachers(["Pak Budi", "Bu Siti"]); 
-    }
+    const fetchTeachers = async () => {
+      try {
+        const snap = await getDocs(collection(db, "teachers"));
+        setTeachers(snap.docs.map(d => ({id: d.id, ...d.data()})));
+      } catch (e) { console.error(e); }
+    };
+    fetchTeachers();
   }, []);
-  // ------------------------------
 
-  const handleLoginGuru = () => {
-    if (!selectedTeacher) return alert("Pilih nama Anda terlebih dahulu!");
-    navigate('/teacher', { state: { teacherName: selectedTeacher } });
+  // --- LOGIKA LOGIN ADMIN ---
+  const handleAdminLogin = (e) => {
+    e.preventDefault();
+    // Password Sederhana (Bisa diganti nanti)
+    // Coba masukkan "admin123" atau "1234"
+    if(adminPin === "admin123" || adminPin === "1234") {
+        localStorage.setItem("isLoggedIn", "true"); // 🔑 BERIKAN TIKET MASUK
+        navigate("/admin"); // 🚀 MELUNCUR KE DASHBOARD
+    } else {
+        alert("⛔ PIN Admin Salah!");
+    }
+  };
+
+  // --- LOGIKA LOGIN GURU ---
+  const handleGuruLogin = () => {
+    if(!selectedGuru) return alert("Pilih nama guru dulu!");
+    const guruData = teachers.find(t => t.nama === selectedGuru);
+    
+    // Guru tidak perlu password, langsung masuk tapi BUKAN ke area admin
+    navigate("/guru/dashboard", { state: { teacher: guruData } });
   };
 
   return (
     <div style={styles.container}>
-      <div style={styles.loginBox}>
-        <h1 style={styles.title}>Bimbel Gemilang</h1>
-        <p style={styles.subtitle}>Portal Akademik & Absensi</p>
-
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Pilih Nama Anda</label>
-          <select 
-            style={styles.select} 
-            value={selectedTeacher}
-            onChange={(e) => setSelectedTeacher(e.target.value)}
-          >
-            <option value="">-- Pilih Nama Guru --</option>
-            {teachers.map((name, index) => (
-              <option key={index} value={name}>{name}</option>
-            ))}
-          </select>
-
-          <button style={styles.buttonTentor} onClick={handleLoginGuru}>
-            Masuk Kelas
-          </button>
+      <div style={styles.card}>
+        <div style={{marginBottom:30}}>
+            <h2 style={{color:'#2c3e50', margin:0, fontSize:28}}>Bimbel Gemilang</h2>
+            <p style={{color:'#7f8c8d', margin:'5px 0 0 0'}}>Portal Akademik & Absensi</p>
         </div>
 
-        <div style={styles.footer}>
-          <div style={styles.divider}></div>
-          <p style={styles.adminText}>Administrator?</p>
-          <Link to="/admin" style={styles.linkAdmin}>Login Admin</Link>
-        </div>
+        {isAdminMode ? (
+            /* === TAMPILAN 2: LOGIN ADMIN (PASSWORD) === */
+            <form onSubmit={handleAdminLogin}>
+                <div style={{textAlign:'left', marginBottom:15}}>
+                    <label style={styles.label}>🔐 Masukkan PIN Admin</label>
+                    <input 
+                        type="password" 
+                        value={adminPin} 
+                        onChange={e=>setAdminPin(e.target.value)} 
+                        style={styles.input} 
+                        placeholder="PIN Rahasia..." 
+                        autoFocus
+                    />
+                </div>
+                <button type="submit" style={styles.btnPrimary}>MASUK DASHBOARD</button>
+                
+                <button type="button" onClick={()=>setIsAdminMode(false)} style={styles.btnLinkGray}>
+                    ← Kembali ke Login Guru
+                </button>
+            </form>
+        ) : (
+            /* === TAMPILAN 1: LOGIN GURU (DROPDOWN) === */
+            <>
+                <div style={{textAlign:'left', marginBottom:15}}>
+                    <label style={styles.label}>👤 Pilih Nama Anda</label>
+                    <select value={selectedGuru} onChange={e=>setSelectedGuru(e.target.value)} style={styles.select}>
+                        <option value="">-- Daftar Nama Guru --</option>
+                        {teachers.map(t => (
+                            <option key={t.id} value={t.nama}>{t.nama}</option>
+                        ))}
+                    </select>
+                </div>
+                <button onClick={handleGuruLogin} style={styles.btnPrimary}>MASUK KELAS</button>
+                
+                <div style={{marginTop:40, borderTop:'1px solid #eee', paddingTop:20}}>
+                    <small style={{color:'#999', display:'block', marginBottom:5}}>Administrator?</small>
+                    {/* TOMBOL INI SKRG CUMA GANTI STATE, TIDAK PINDAH HALAMAN */}
+                    <button onClick={()=>setIsAdminMode(true)} style={styles.btnLinkRed}>
+                        Login Admin
+                    </button>
+                </div>
+            </>
+        )}
       </div>
     </div>
   );
 };
 
 const styles = {
-  container: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f0f2f5', fontFamily: 'sans-serif' },
-  loginBox: { backgroundColor: 'white', padding: '40px', borderRadius: '10px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)', width: '100%', maxWidth: '400px', textAlign: 'center' },
-  title: { color: '#2c3e50', marginBottom: '5px', fontSize: '24px' },
-  subtitle: { color: '#7f8c8d', marginBottom: '30px', fontSize: '14px' },
-  formGroup: { marginBottom: '20px', textAlign: 'left' },
-  label: { display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#34495e' },
-  select: { width: '100%', padding: '12px', marginBottom: '15px', border: '1px solid #ccc', borderRadius: '5px', fontSize: '16px', backgroundColor: 'white' },
-  buttonTentor: { width: '100%', padding: '12px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', transition: '0.3s' },
-  footer: { marginTop: '20px' },
-  divider: { height: '1px', backgroundColor: '#eee', marginBottom: '15px' },
-  adminText: { fontSize: '14px', color: '#7f8c8d', marginBottom: '5px' },
-  linkAdmin: { color: '#e74c3c', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }
+  container: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f0f2f5', fontFamily: 'Segoe UI, sans-serif' },
+  card: { background: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', width: '100%', maxWidth: '350px', textAlign: 'center' },
+  label: { display: 'block', fontWeight: 'bold', marginBottom: '8px', color: '#333', fontSize: '14px' },
+  input: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '16px', boxSizing: 'border-box' },
+  select: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '16px', background: 'white' },
+  btnPrimary: { width: '100%', padding: '12px', background: '#3498db', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px', transition: '0.3s' },
+  btnLinkRed: { background: 'none', border: 'none', color: '#e74c3c', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' },
+  btnLinkGray: { background: 'none', border: 'none', color: '#7f8c8d', cursor: 'pointer', fontSize: '13px', marginTop: 15 }
 };
 
 export default Login;
