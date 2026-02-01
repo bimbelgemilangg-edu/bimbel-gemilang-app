@@ -28,8 +28,14 @@ const Sidebar = () => {
         <Link to="/admin/teachers" style={isActive('/admin/teachers') ? styles.linkActive : styles.link}>
            👨‍🏫 Manajemen Guru
         </Link>
+        
+        {/* MENU BARU: REKAP GAJI GURU */}
+        <Link to="/admin/teachers/salaries" style={isActive('/admin/teachers/salaries') ? styles.linkActive : styles.link}>
+           💰 Rekap Gaji Guru
+        </Link>
+
         <Link to="/admin/finance" style={isActive('/admin/finance') ? styles.linkActive : styles.link}>
-           💰 Keuangan & Kasir
+           📊 Keuangan & Kasir
         </Link>
         
         {/* MENU SETTING (Di Bawah) */}

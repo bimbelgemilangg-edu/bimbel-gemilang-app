@@ -14,10 +14,13 @@ import TeacherList from './pages/admin/teachers/TeacherList';
 import SchedulePage from './pages/admin/schedule/SchedulePage';
 import Settings from './pages/admin/Settings';
 
+// --- IMPORT HALAMAN BARU ADMIN (GAJI) ---
+import TeacherSalaries from './pages/admin/teachers/TeacherSalaries';
+
 // --- IMPORT HALAMAN GURU ---
 import LoginGuru from './pages/LoginGuru';
 import TeacherDashboard from './pages/teacher/TeacherDashboard'; 
-import TeacherHistory from './pages/teacher/TeacherHistory'; // <--- WAJIB ADA
+import TeacherHistory from './pages/teacher/TeacherHistory';
 
 // --- PROTEKSI RUTE ADMIN ---
 const AdminRoute = ({ children }) => {
@@ -51,6 +54,10 @@ function App() {
         {/* Keuangan & Manajemen */}
         <Route path="/admin/finance" element={<FinanceDashboard />} />
         <Route path="/admin/teachers" element={<TeacherList />} />
+        
+        {/* RUTE BARU: REKAP GAJI GURU (Di Folder Teachers) */}
+        <Route path="/admin/teachers/salaries" element={<TeacherSalaries />} />
+        
         <Route path="/admin/schedule" element={<SchedulePage />} />
         <Route path="/admin/settings" element={<Settings />} />
 
@@ -64,7 +71,7 @@ function App() {
           } 
         />
         
-        {/* RUTE HISTORY - INI YANG TADI MUNGKIN HILANG/BELUM AKTIF */}
+        {/* RUTE BARU: RIWAYAT GURU */}
         <Route 
           path="/guru/history" 
           element={
