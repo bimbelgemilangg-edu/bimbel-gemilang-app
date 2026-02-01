@@ -11,9 +11,9 @@ const TeacherDashboard = () => {
   const [guru, setGuru] = useState(null);
   
   // STATE JADWAL
-  const [todaySchedules, setTodaySchedules] = useState([]);      // Jadwal HARI INI
-  const [upcomingSchedules, setUpcomingSchedules] = useState([]); // Jadwal MENDATANG
-  const [otherSchedules, setOtherSchedules] = useState([]);       // Jadwal Guru Lain (Switch)
+  const [todaySchedules, setTodaySchedules] = useState([]);      
+  const [upcomingSchedules, setUpcomingSchedules] = useState([]); 
+  const [otherSchedules, setOtherSchedules] = useState([]);       
   
   const [mode, setMode] = useState('dashboard'); 
   const [activeSchedule, setActiveSchedule] = useState(null);
@@ -105,7 +105,7 @@ const TeacherDashboard = () => {
 
   return (
     <div style={{minHeight:'100vh', background:'#f4f7f6', fontFamily:'sans-serif', paddingBottom:50}}>
-      {/* HEADER UPDATE: ADA TOMBOL RIWAYAT & SUSULAN */}
+      {/* HEADER UPDATE: ADA TOMBOL INPUT NILAI (BARU) */}
       <div style={{background:'#2c3e50', padding:'20px 30px', color:'white', display:'flex', justifyContent:'space-between', alignItems:'center', boxShadow:'0 4px 6px rgba(0,0,0,0.1)'}}>
         <div>
             <h2 style={{margin:0, fontSize:22}}>Halo, {guru?.nama} 👋</h2>
@@ -113,7 +113,14 @@ const TeacherDashboard = () => {
         </div>
         <div style={{display:'flex', gap:10}}>
              
-             {/* TOMBOL RIWAYAT */}
+             {/* TOMBOL INPUT NILAI (BARU) */}
+             <button 
+                onClick={() => navigate('/guru/grades/input', { state: { teacher: guru } })} 
+                style={{background:'#8e44ad', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}
+             >
+                📝 Input Nilai
+             </button>
+
              <button 
                 onClick={() => navigate('/guru/history', { state: { teacher: guru } })} 
                 style={{background:'#3498db', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}
@@ -121,12 +128,11 @@ const TeacherDashboard = () => {
                 📄 Riwayat
              </button>
 
-             {/* TOMBOL SUSULAN/REVISI (INI YANG BARU) */}
              <button 
                 onClick={() => navigate('/guru/manual-input', { state: { teacher: guru } })} 
                 style={{background:'#e74c3c', border:'none', color:'white', borderRadius:20, padding:'8px 15px', cursor:'pointer', fontWeight:'bold', fontSize:13, display:'flex', alignItems:'center', gap:5}}
              >
-                ⚠️ Absen Susulan
+                ⚠️ Susulan
              </button>
 
              <button onClick={() => setSubstituteMode(!substituteMode)} style={{background: substituteMode ? '#e67e22' : 'transparent', border:'1px solid #e67e22', color: substituteMode ? 'white' : '#e67e22', padding:'8px 15px', borderRadius:20, cursor:'pointer', fontWeight:'bold', fontSize:13}}>

@@ -31,6 +31,9 @@ const Sidebar = () => {
         <Link to="/admin/students/add" style={isActive('/admin/students/add') ? styles.linkActive : styles.link}>
            ➕ Pendaftaran Baru
         </Link>
+        <Link to="/admin/grades" style={isActive('/admin/grades') ? styles.linkActive : styles.link}>
+           🏆 Laporan & Rapor
+        </Link>
 
         {/* MANAJEMEN GURU */}
         <div style={styles.sectionTitle}>GURU & HRD</div>
