@@ -7,7 +7,7 @@ import { collection, addDoc, doc, getDoc } from "firebase/firestore";
 const AddStudent = () => {
   const navigate = useNavigate();
 
-  // 1. LOAD HARGA (TERMASUK ENGLISH) DARI SERVER
+  // 1. LOAD HARGA
   const [pricing, setPricing] = useState({
     sd: { paket1: 0, paket2: 0, paket3: 0 },
     smp: { paket1: 0, paket2: 0, paket3: 0 },
@@ -28,16 +28,16 @@ const AddStudent = () => {
   }, []);
 
   // 2. STATE FORM
-  const [programType, setProgramType] = useState("Reguler"); // 'Reguler' atau 'English'
+  const [programType, setProgramType] = useState("Reguler");
   const [tanggalDaftar, setTanggalDaftar] = useState(new Date().toISOString().split('T')[0]);
-  
-  // Data Siswa
   const [namaSiswa, setNamaSiswa] = useState("");
-  // State Khusus Reguler
+  
+  // Reguler
   const [jenjang, setJenjang] = useState("SD");
   const [kelas, setKelas] = useState("4 SD");
   const [paketReguler, setPaketReguler] = useState("paket1");
-  // State Khusus English
+  
+  // English
   const [englishLevel, setEnglishLevel] = useState("kids"); 
 
   const [tempatLahir, setTempatLahir] = useState("");
@@ -56,14 +56,12 @@ const AddStudent = () => {
   const [tenor, setTenor] = useState(1);
   const [tanggalMulaiCicilan, setTanggalMulaiCicilan] = useState(new Date().toISOString().split('T')[0]);
 
-  // 3. KALKULASI HARGA (SMART LOGIC)
+  // 3. LOGIKA HARGA
   const getBasePrice = () => {
     if (programType === "English") {
-        // Ambil harga English dari server
         return pricing.english ? parseInt(pricing.english[englishLevel] || 0) : 0;
     } else {
-        // Ambil harga Reguler dari server
-        const level = jenjang.toLowerCase(); // 'sd' atau 'smp'
+        const level = jenjang.toLowerCase();
         return pricing[level] ? parseInt(pricing[level][paketReguler] || 0) : 0;
     }
   };
@@ -77,29 +75,33 @@ const AddStudent = () => {
 
   const hitungCicilan = () => Math.ceil(hitungTotal() / tenor);
 
-  // 4. SUBMIT
+  // 4. SUBMIT KE FIREBASE
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!namaSiswa || !namaAyah || !noHp) return alert("Data Wajib (Nama, Ayah, HP) harus diisi!");
 
     try {
+      // A. SIMPAN DATA SISWA
       const studentData = {
         nama: namaSiswa,
-        kategori: programType, // Menyimpan 'Reguler' atau 'English'
-        // Detail program disesuaikan otomatis
+        kategori: programType,
         detailProgram: programType === "English" ? `English - ${englishLevel}` : `${jenjang} - ${paketReguler}`,
         kelasSekolah: kelas,
         tempatLahir, tanggalLahir,
         ortu: { ayah: namaAyah, pekerjaanAyah, ibu: namaIbu, pekerjaanIbu, alamat, hp: noHp },
         status: "Aktif",
-        tanggalMasuk: tanggalDaftar
+        tanggalMasuk: tanggalDaftar,
+        totalTagihan: hitungTotal(), // Simpan info total tagihan di profil siswa juga
+        totalBayar: metodeBayar === "Tunai" || metodeBayar === "Bank" ? hitungTotal() : 0 // Kalau lunas langsung catat lunas
       };
 
       const docRef = await addDoc(collection(db, "students"), studentData);
       const studentId = docRef.id;
       const totalBayar = hitungTotal();
 
+      // B. SIMPAN DATA KEUANGAN
       if (metodeBayar === "Cicilan") {
+        // Jika Cicilan: Masuk ke finance_tagihan
         let installments = [];
         const perBulan = hitungCicilan();
         const startDate = new Date(tanggalMulaiCicilan);
@@ -108,6 +110,7 @@ const AddStudent = () => {
           let dueDate = new Date(startDate);
           dueDate.setMonth(startDate.getMonth() + i);
           installments.push({
+            id: Date.now() + i, // ID unik sederhana
             bulanKe: i + 1,
             nominal: perBulan,
             status: "Belum Lunas",
@@ -115,18 +118,26 @@ const AddStudent = () => {
           });
         }
 
+        // Buat Dokumen Tagihan Induk
         await addDoc(collection(db, "finance_tagihan"), {
           studentId, namaSiswa, namaOrtu: namaAyah, noHp,
-          totalTagihan: totalBayar, sisaTagihan: totalBayar,
-          detailCicilan: installments, jenis: `Pendaftaran ${programType} (Cicilan)`
+          totalTagihan: totalBayar, 
+          sisaTagihan: totalBayar,
+          detailCicilan: installments, 
+          jenis: `Pendaftaran ${programType} (Cicilan)`
         });
-        alert("✅ Pendaftaran Berhasil (Cicilan)");
+        alert("✅ Pendaftaran Berhasil (Masuk Mode Cicilan)");
 
       } else {
-        await addDoc(collection(db, "finance_mutasi"), { 
-          tanggal: tanggalDaftar, ket: `Pendaftaran ${programType}: ${namaSiswa}`,
-          tipe: "Masuk", metode: metodeBayar, nominal: totalBayar,
-          kategori: "Pendaftaran", studentId
+        // Jika Lunas: Masuk ke finance_logs (Agar muncul di Dashboard Keuangan)
+        await addDoc(collection(db, "finance_logs"), { 
+          date: tanggalDaftar, 
+          type: "Pemasukan", 
+          category: "Pendaftaran", 
+          amount: totalBayar,
+          method: metodeBayar,
+          note: `Pendaftaran Baru: ${namaSiswa} (${programType})`,
+          studentId: studentId
         });
         alert(`✅ Pendaftaran Berhasil (Lunas)`);
       }
@@ -135,13 +146,14 @@ const AddStudent = () => {
     } catch (error) { console.error("Error:", error); alert("Gagal menyimpan data."); }
   };
 
+  // ... (SISA KODE JSX RETURN SAMA PERSIS SEPERTI YANG ANDA KIRIM, TIDAK SAYA UBAH TAMPILANNYA) ...
+  // Paste bagian return (...) dari kode Anda sebelumnya di sini.
   return (
     <div style={{ display: 'flex' }}>
       <Sidebar />
       <div style={styles.content}>
         <h2 style={{color: '#333'}}>🎓 Pendaftaran Siswa Baru</h2>
         
-        {/* PILIHAN PROGRAM UTAMA (SMART SELECTOR) */}
         <div style={styles.programSelector}>
             <label style={{marginRight:10, fontWeight:'bold', color:'#333'}}>Pilih Program:</label>
             <select style={styles.selectMain} value={programType} onChange={(e) => setProgramType(e.target.value)}>
@@ -160,7 +172,6 @@ const AddStudent = () => {
               </div>
               <div style={styles.formGroup}><input style={styles.input} placeholder="Nama Lengkap Siswa" value={namaSiswa} onChange={e => setNamaSiswa(e.target.value)} required /></div>
               
-              {/* FORM BERUBAH TERGANTUNG PROGRAM YANG DIPILIH */}
               {programType === "Reguler" ? (
                   <div style={styles.row}>
                     <div style={{width:'100%'}}>
@@ -182,7 +193,6 @@ const AddStudent = () => {
                   </div>
               )}
 
-              {/* KELAS SEKOLAH (TETAP ADA UNTUK DATA) */}
               <div style={styles.formGroup}>
                   <label style={styles.labelSmall}>Kelas Sekolah (Saat ini)</label>
                   <select style={styles.select} value={kelas} onChange={e => setKelas(e.target.value)}>
@@ -217,7 +227,6 @@ const AddStudent = () => {
             <div style={styles.cardBlue}>
               <h3 style={{color:'white', marginTop:0}}>💰 Administrasi ({programType})</h3>
               
-              {/* PILIHAN PAKET / LEVEL HARGA OTOMATIS */}
               <div style={styles.formGroup}>
                 <label style={{color:'white'}}>Pilihan Paket/Level</label>
                 {programType === "Reguler" ? (
@@ -277,7 +286,7 @@ const AddStudent = () => {
   );
 };
 
-// CSS
+// CSS (SAMA PERSIS)
 const styles = {
   content: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'Segoe UI, sans-serif' },
   grid: { display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '20px' },
@@ -297,7 +306,8 @@ const styles = {
   cicilanBox: { background: 'rgba(255,255,255,0.1)', padding: '15px', borderRadius: '5px', marginTop: '10px', border: '1px solid rgba(255,255,255,0.2)' },
   btnActive: { background: '#f1c40f', border: 'none', padding: '5px 10px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', color: '#2c3e50' },
   btnInactive: { background: 'transparent', border: '1px solid #ccc', color: 'white', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' },
-  btnSubmit: { width: '100%', padding: '15px', background: '#27ae60', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.2)' }
+  btnSubmit: { width: '100%', padding: '15px', background: '#27ae60', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.2)' },
+  leftCol: {}, rightCol: {}
 };
 
 export default AddStudent;
