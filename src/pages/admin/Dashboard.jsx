@@ -9,7 +9,7 @@ const Dashboard = () => {
   const [todaySchedules, setTodaySchedules] = useState([]);
   const [duePayments, setDuePayments] = useState([]);
   
-  // TO-DO LIST (Disimpan di LocalStorage browser biar ringan)
+  // TO-DO LIST
   const [todos, setTodos] = useState(() => {
     const saved = localStorage.getItem('adminTodos');
     return saved ? JSON.parse(saved) : [
@@ -25,7 +25,7 @@ const Dashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // 2. LOAD DATA REALTIME (JADWAL & TAGIHAN)
+  // 2. LOAD DATA REALTIME
   useEffect(() => {
     const fetchData = async () => {
         try {
@@ -40,17 +40,14 @@ const Dashboard = () => {
             const qJadwal = query(collection(db, "jadwal_bimbel"), where("day", "==", todayName));
             const snapJadwal = await getDocs(qJadwal);
             const jadwalList = snapJadwal.docs.map(d => ({id: d.id, ...d.data()}));
-            // Urutkan berdasarkan jam
             jadwalList.sort((a,b) => a.start.localeCompare(b.start));
             setTodaySchedules(jadwalList);
 
-            // C. CEK TAGIHAN (H-7 JATUH TEMPO)
-            // Logika: Cari siswa yang sisa tagihannya > 0
+            // C. TAGIHAN
             const tagihanList = [];
             snapSiswa.forEach(doc => {
                 const s = doc.data();
                 const sisa = (parseInt(s.totalTagihan)||0) - (parseInt(s.totalBayar)||0);
-                // Simulasi H-7 (Di real case, bandingkan tanggal jatuh tempo)
                 if(sisa > 0) {
                     tagihanList.push({
                         id: doc.id,
@@ -61,7 +58,6 @@ const Dashboard = () => {
                     });
                 }
             });
-            // Ambil 5 teratas
             setDuePayments(tagihanList.slice(0, 5));
 
             setStats({
@@ -76,6 +72,21 @@ const Dashboard = () => {
     };
     fetchData();
   }, []);
+
+  // FUNGSI BEL SEKOLAH (FITUR BARU) 🔔
+  const handleRingBell = () => {
+    // Menggunakan link audio online (Bell Sekolah)
+    // Jika mau pakai file sendiri, simpan mp3 di folder public dan ganti url jadi '/bell.mp3'
+    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    
+    audio.play().catch(error => {
+        console.log("Audio play failed", error);
+        alert("Gagal memutar suara. Pastikan volume aktif.");
+    });
+    
+    // Efek Getar (Khusus HP)
+    if (navigator.vibrate) navigator.vibrate(200);
+  };
 
   // FUNGSI TODO LIST
   const addTodo = (e) => {
@@ -99,7 +110,6 @@ const Dashboard = () => {
     localStorage.setItem('adminTodos', JSON.stringify(newList));
   };
 
-  // FUNGSI KIRIM WA
   const sendWA = (p) => {
     const text = `Halo Wali Murid ${p.nama}, mengingatkan tagihan bimbel ananda tersisa Rp ${p.sisa.toLocaleString()}. Mohon segera diselesaikan sebelum ujian. Terima kasih.`;
     window.open(`https://wa.me/${p.hp}?text=${encodeURIComponent(text)}`, '_blank');
@@ -118,12 +128,20 @@ const Dashboard = () => {
                 {time.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'})}
             </p>
           </div>
-          <div style={styles.clockBox}>
-            🕒 {time.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}
+          
+          <div style={{display:'flex', alignItems:'center', gap:15}}>
+            {/* TOMBOL BEL (BARU) */}
+            <button onClick={handleRingBell} style={styles.btnBell} title="Bunyikan Bel Tanda Masuk/Pulang">
+                🔔 BUNYIKAN BEL
+            </button>
+
+            <div style={styles.clockBox}>
+                🕒 {time.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}
+            </div>
           </div>
         </div>
 
-        {/* 1. KARTU STATISTIK (Ringkas) */}
+        {/* 1. KARTU STATISTIK */}
         <div style={styles.gridStats}>
           <div style={styles.cardStat}>
             <div style={styles.iconBox}>👨‍🎓</div>
@@ -148,10 +166,10 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* 2. KONTEN UTAMA (SPLIT KIRI & KANAN) */}
+        {/* 2. KONTEN UTAMA */}
         <div style={styles.contentGrid}>
             
-            {/* KIRI: JADWAL HARI INI */}
+            {/* KIRI: JADWAL */}
             <div style={{flex: 2}}>
                 <div style={styles.sectionHeader}>
                     <h3 style={{margin:0, color:'#2c3e50'}}>📅 Jadwal Kelas Hari Ini</h3>
@@ -202,7 +220,7 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* TO-DO LIST SIMPLE */}
+                {/* TO-DO LIST */}
                 <div style={styles.cardTodo}>
                     <h4 style={{marginTop:0, color:'#2c3e50'}}>📝 Catatan Admin</h4>
                     <form onSubmit={addTodo} style={{display:'flex', gap:5, marginBottom:10}}>
@@ -243,6 +261,22 @@ const styles = {
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' },
   clockBox: { background:'white', padding:'10px 20px', borderRadius:20, fontWeight:'bold', color:'#3498db', boxShadow:'0 2px 5px rgba(0,0,0,0.05)' },
   
+  // STYLE TOMBOL BEL BARU
+  btnBell: { 
+    background: '#e74c3c', 
+    color: 'white', 
+    border: 'none', 
+    padding: '10px 20px', 
+    borderRadius: '25px', 
+    fontWeight: 'bold', 
+    cursor: 'pointer',
+    boxShadow: '0 4px 6px rgba(231, 76, 60, 0.3)',
+    transition: '0.2s',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '5px'
+  },
+
   // STATS
   gridStats: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '30px' },
   cardStat: { background: 'white', padding: '20px', borderRadius: '12px', display:'flex', alignItems:'center', gap:15, boxShadow:'0 2px 5px rgba(0,0,0,0.03)' },
