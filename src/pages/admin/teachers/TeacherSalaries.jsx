@@ -11,29 +11,23 @@ const TeacherSalaries = () => {
   const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10)); 
   
   const [rekap, setRekap] = useState([]);
-  const [viewDetail, setViewDetail] = useState(null); // Data guru yang sedang dilihat slip-nya
-  const [ownerPin, setOwnerPin] = useState("");
+  const [viewDetail, setViewDetail] = useState(null); 
+  const [salaryRules, setSalaryRules] = useState({}); // Simpan Rules Gaji
 
   // STATE UNTUK EDIT DATA
-  const [editingLog, setEditingLog] = useState(null); // Log mana yang lagi diedit
+  const [editingLog, setEditingLog] = useState(null);
   const [editForm, setEditForm] = useState({ program: '', detail: '', nominal: 0 });
 
-  // 1. AMBIL PIN OWNER
-  useEffect(() => {
-    const fetchPin = async () => {
-        try {
-            const docRef = doc(db, "settings", "global_config");
-            const snap = await getDoc(docRef);
-            if (snap.exists()) setOwnerPin(snap.data().ownerPin || "2003");
-        } catch (e) { console.error(e); }
-    };
-    fetchPin();
-  }, []);
-
-  // 2. FETCH DATA & FILTER
+  // 1. FETCH DATA & RULES
   const fetchData = async () => {
     setLoading(true);
     try {
+      // A. AMBIL RULES GAJI DARI SETTINGS
+      const settingSnap = await getDoc(doc(db, "settings", "global_config"));
+      const rules = settingSnap.exists() ? settingSnap.data().salaryRules : {};
+      setSalaryRules(rules);
+
+      // B. AMBIL LOG MENGAJAR
       const q = query(collection(db, "teacher_logs"));
       const snap = await getDocs(q);
       const allLogs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -42,6 +36,41 @@ const TeacherSalaries = () => {
 
       const guruMap = {};
       filtered.forEach(log => {
+        // --- LOGIKA HITUNG GAJI OTOMATIS (SESUAI SETTING BARU) ---
+        let honor = 0;
+        
+        // 1. Cek Apakah Program English?
+        if (log.program === 'English' || (log.program || "").toLowerCase().includes('english')) {
+            const detailLower = (log.detail || "").toLowerCase();
+            const levelLower = (log.level || "").toLowerCase();
+
+            if (detailLower.includes('junior') || levelLower.includes('junior') || levelLower.includes('smp')) {
+                honor = parseInt(rules.honorEnglishJunior || 0);
+            } else if (detailLower.includes('pro') || levelLower.includes('pro') || levelLower.includes('sma')) {
+                honor = parseInt(rules.honorEnglishPro || 0);
+            } else {
+                honor = parseInt(rules.honorEnglishKids || 0); // Default Kids
+            }
+        } 
+        else {
+            // 2. Program Reguler
+            if (log.level === 'SMP') {
+                honor = parseInt(rules.honorSMP || 0);
+            } else {
+                // SD -> Cek Kelas 6
+                const detailLower = (log.detail || "").toLowerCase();
+                if(detailLower.includes('kelas 6') || detailLower.includes('kls 6')) {
+                    honor = parseInt(rules.honorKelas6 || 0);
+                } else {
+                    honor = parseInt(rules.honorSD || 0);
+                }
+            }
+        }
+
+        // PENTING: Jika di database sudah ada nominal (hasil edit manual), pakai itu.
+        // Jika belum (0), pakai hasil hitungan otomatis di atas.
+        const finalNominal = log.nominal > 0 ? log.nominal : honor;
+
         if (!guruMap[log.teacherId]) {
             guruMap[log.teacherId] = {
                 id: log.teacherId,
@@ -55,9 +84,12 @@ const TeacherSalaries = () => {
         }
         guruMap[log.teacherId].totalSesi += 1;
         guruMap[log.teacherId].totalJam += (log.durasiJam || 0);
-        guruMap[log.teacherId].gajiMengajar += (log.nominal || 0);
+        guruMap[log.teacherId].gajiMengajar += finalNominal;
+        
         if (log.status === 'Menunggu Validasi') guruMap[log.teacherId].statusPending += 1;
-        guruMap[log.teacherId].rincian.push(log);
+        
+        // Simpan log ke rincian (gunakan finalNominal agar tampil di tabel)
+        guruMap[log.teacherId].rincian.push({ ...log, nominal: finalNominal });
       });
 
       // Sort rincian per tanggal
@@ -68,7 +100,7 @@ const TeacherSalaries = () => {
       const result = Object.values(guruMap);
       setRekap(result);
 
-      // SINKRONISASI REALTIME (PENTING AGAR SETELAH EDIT, TAMPILAN TIDAK TERTUTUP)
+      // Sinkronisasi viewDetail jika sedang dibuka
       if (viewDetail) {
           const updatedGuru = result.find(g => g.id === viewDetail.id);
           if (updatedGuru) setViewDetail(updatedGuru);
@@ -83,14 +115,18 @@ const TeacherSalaries = () => {
 
   useEffect(() => { fetchData(); }, [startDate, endDate]);
 
-  // VALIDASI
+  // VALIDASI (TETAP SAMA)
   const handleValidasi = async (guruData) => {
     if(!window.confirm(`Validasi semua laporan ${guruData.nama}?`)) return;
     const batch = writeBatch(db);
     guruData.rincian.forEach(log => {
         if(log.status === 'Menunggu Validasi') {
             const ref = doc(db, "teacher_logs", log.id);
-            batch.update(ref, { status: "Valid / Sudah Direkap" });
+            // Simpan nominal yang sudah dihitung agar permanen
+            batch.update(ref, { 
+                status: "Valid / Sudah Direkap",
+                nominal: log.nominal // Kunci harga saat validasi
+            });
         }
     });
     await batch.commit();
@@ -98,16 +134,16 @@ const TeacherSalaries = () => {
     alert("✅ Data Valid!");
   };
 
-  // HAPUS (REJECT)
+  // HAPUS (UPDATE: Tanpa PIN Owner)
   const handleDeleteLog = async (logId) => {
-    const input = prompt("🔒 SECURITY CHECK\nMasukkan PIN Owner untuk menghapus:");
-    if (input !== ownerPin) return alert("⛔ PIN SALAH!");
+    if(!window.confirm("Yakin hapus jam mengajar ini?")) return;
+    
     await deleteDoc(doc(db, "teacher_logs", logId));
-    alert("🗑️ Data dihapus.");
+    // alert("🗑️ Data dihapus."); // Gausah alert biar cepet
     fetchData(); 
   };
 
-  // --- FITUR BARU: EDIT LOG (Admin Ganti Jenis/Nominal) ---
+  // EDIT LOG
   const handleEditClick = (item) => {
       setEditingLog(item);
       setEditForm({
@@ -125,11 +161,10 @@ const TeacherSalaries = () => {
               detail: editForm.detail,
               nominal: parseInt(editForm.nominal)
           });
-          alert("✅ Data Berhasil Diupdate!");
-          setEditingLog(null); // Tutup modal edit
-          fetchData(); // Refresh data otomatis
+          setEditingLog(null); 
+          fetchData(); 
       } catch (e) {
-          alert("Gagal update: " + e.message);
+          alert("Gagal update");
       }
   };
 
@@ -162,30 +197,25 @@ const TeacherSalaries = () => {
             `}</style>
         )}
 
-        {/* HEADER & FILTER */}
+        {/* HEADER */}
         <div className="no-print" style={{background:'white', padding:20, borderRadius:10, marginBottom:20, boxShadow:'0 2px 5px rgba(0,0,0,0.1)'}}>
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:15}}>
-                <h3 style={{marginTop:0}}>⚙️ Filter Periode Gaji</h3>
+                <h3 style={{marginTop:0}}>⚙️ Rekap Gaji Guru</h3>
                 <button onClick={handlePrint} style={{padding:'10px 20px', background:'#2c3e50', color:'white', border:'none', borderRadius:5, cursor:'pointer', fontWeight:'bold'}}>
-                    🖨️ Cetak Rekap Tabel
+                    🖨️ Cetak
                 </button>
             </div>
             <div style={{display:'flex', gap:20}}>
-                <div>
-                    <label style={{display:'block', fontSize:12, fontWeight:'bold'}}>Dari Tanggal:</label>
-                    <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} style={{padding:8, border:'1px solid #ddd'}} />
-                </div>
-                <div>
-                    <label style={{display:'block', fontSize:12, fontWeight:'bold'}}>Sampai Tanggal:</label>
-                    <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} style={{padding:8, border:'1px solid #ddd'}} />
-                </div>
+                <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} style={{padding:8, border:'1px solid #ddd'}} />
+                <span style={{alignSelf:'center'}}>s/d</span>
+                <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} style={{padding:8, border:'1px solid #ddd'}} />
             </div>
         </div>
 
-        {/* TABEL REKAP UTAMA */}
+        {/* TABEL REKAP */}
         <div className="print-area" style={{background:'white', padding:20, borderRadius:10, boxShadow:'0 2px 5px rgba(0,0,0,0.1)'}}>
              <h3 style={{textAlign:'center', borderBottom:'2px solid #333', paddingBottom:10}}>
-                 LAPORAN REKAP GAJI GURU ({startDate} s/d {endDate})
+                 LAPORAN REKAP GAJI ({startDate} s/d {endDate})
              </h3>
              <table style={{width:'100%', borderCollapse:'collapse', marginTop:20}}>
                 <thead>
@@ -211,10 +241,10 @@ const TeacherSalaries = () => {
                             </td>
                             <td className="no-print" style={{padding:10, textAlign:'center'}}>
                                 <button onClick={() => setViewDetail(g)} style={{marginRight:5, background:'#3498db', color:'white', border:'none', padding:'5px 10px', borderRadius:5, cursor:'pointer'}}>
-                                    📄 Slip / Edit
+                                    📄 Detail
                                 </button>
                                 <button onClick={()=>handleValidasi(g)} disabled={g.statusPending===0} style={{background: g.statusPending>0?'#27ae60':'#ccc', color:'white', border:'none', padding:'5px 10px', borderRadius:5, cursor:'pointer'}}>
-                                    ✓ Validasi
+                                    ✓ Valid
                                 </button>
                             </td>
                         </tr>
@@ -223,18 +253,16 @@ const TeacherSalaries = () => {
              </table>
         </div>
 
-        {/* MODAL SLIP GAJI (DETAIL) */}
+        {/* MODAL SLIP GAJI */}
         {viewDetail && (
             <div className="no-print-overlay" style={{position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.5)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:1000}}>
                 <div style={{background:'white', width:'210mm', height:'90vh', overflowY:'auto', padding:'20px', borderRadius:10, position:'relative'}}>
                     
-                    {/* TOMBOL KONTROL */}
                     <div className="no-print" style={{textAlign:'right', marginBottom:20, borderBottom:'1px solid #ddd', paddingBottom:10}}>
-                         <button onClick={handlePrint} style={{marginRight:10, padding:'8px 15px', background:'#2c3e50', color:'white', border:'none', borderRadius:5, cursor:'pointer'}}>🖨️ CETAK SLIP INI</button>
+                         <button onClick={handlePrint} style={{marginRight:10, padding:'8px 15px', background:'#2c3e50', color:'white', border:'none', borderRadius:5, cursor:'pointer'}}>🖨️ CETAK</button>
                          <button onClick={()=>setViewDetail(null)} style={{padding:'8px 15px', background:'#c0392b', color:'white', border:'none', borderRadius:5, cursor:'pointer'}}>TUTUP X</button>
                     </div>
 
-                    {/* AREA KERTAS SLIP */}
                     <div id="slip-gaji-area" style={{padding:'20px 40px', border:'1px solid #ddd', minHeight:'290mm'}}>
                         <div style={{textAlign:'center', borderBottom:'3px double #000', paddingBottom:20, marginBottom:30}}>
                             <h2 style={{margin:0, fontSize:'24pt', fontWeight:'bold'}}>BIMBEL GEMILANG</h2>
@@ -243,7 +271,7 @@ const TeacherSalaries = () => {
                         
                         <div style={{display:'flex', justifyContent:'space-between', marginBottom:30, fontSize:'12pt'}}>
                             <div>
-                                <strong>Nama Pengajar:</strong> {viewDetail.nama} <br/>
+                                <strong>Nama:</strong> {viewDetail.nama} <br/>
                                 <strong>Periode:</strong> {startDate} s/d {endDate}
                             </div>
                             <div style={{textAlign:'right'}}>
@@ -256,7 +284,7 @@ const TeacherSalaries = () => {
                             <thead>
                                 <tr style={{borderBottom:'2px solid #000'}}>
                                     <th style={{textAlign:'left', padding:'8px 5px'}}>Tanggal</th>
-                                    <th style={{textAlign:'left', padding:'8px 5px'}}>Aktivitas & Keterangan</th>
+                                    <th style={{textAlign:'left', padding:'8px 5px'}}>Keterangan</th>
                                     <th style={{textAlign:'right', padding:'8px 5px'}}>Nominal (Rp)</th>
                                     <th className="no-print" style={{textAlign:'center', padding:'8px 5px', width:80}}>Aksi</th>
                                 </tr>
@@ -275,22 +303,8 @@ const TeacherSalaries = () => {
                                             {item.nominal.toLocaleString('id-ID')}
                                         </td>
                                         <td className="no-print" style={{textAlign:'center', verticalAlign:'top'}}>
-                                            {/* TOMBOL EDIT */}
-                                            <button 
-                                                onClick={()=>handleEditClick(item)} 
-                                                title="Edit Nominal/Jenis"
-                                                style={{background:'#f39c12', color:'white', border:'none', borderRadius:3, fontSize:'10pt', padding:'2px 5px', cursor:'pointer', marginRight:5}}
-                                            >
-                                                ✏️
-                                            </button>
-                                            {/* TOMBOL HAPUS */}
-                                            <button 
-                                                onClick={()=>handleDeleteLog(item.id)} 
-                                                title="Hapus Log"
-                                                style={{background:'red', color:'white', border:'none', borderRadius:3, fontSize:'10pt', padding:'2px 5px', cursor:'pointer'}}
-                                            >
-                                                X
-                                            </button>
+                                            <button onClick={()=>handleEditClick(item)} style={{background:'#f39c12', color:'white', border:'none', borderRadius:3, fontSize:'10pt', padding:'2px 5px', cursor:'pointer', marginRight:5}}>✏️</button>
+                                            <button onClick={()=>handleDeleteLog(item.id)} style={{background:'red', color:'white', border:'none', borderRadius:3, fontSize:'10pt', padding:'2px 5px', cursor:'pointer'}}>X</button>
                                         </td>
                                     </tr>
                                 ))}
@@ -318,19 +332,19 @@ const TeacherSalaries = () => {
                         </div>
                     </div>
 
-                    {/* MODAL EDIT KECIL (POPUP DI ATAS SLIP) */}
+                    {/* MODAL EDIT KECIL */}
                     {editingLog && (
                         <div style={{position:'fixed', top:'50%', left:'50%', transform:'translate(-50%, -50%)', background:'white', padding:20, borderRadius:10, boxShadow:'0 0 20px rgba(0,0,0,0.5)', width:300, zIndex:1100, border:'2px solid #2c3e50'}}>
                             <h3 style={{marginTop:0, color:'#2c3e50', textAlign:'center'}}>✏️ Edit Laporan</h3>
                             
-                            <label style={{display:'block', fontSize:12, fontWeight:'bold', marginTop:10}}>Program/Jenis:</label>
-                            <input type="text" value={editForm.program} onChange={e=>setEditForm({...editForm, program: e.target.value})} style={{width:'100%', padding:8, border:'1px solid #ccc', borderRadius:5, boxSizing:'border-box'}} />
+                            <label style={{display:'block', fontSize:12, fontWeight:'bold', marginTop:10}}>Program:</label>
+                            <input type="text" value={editForm.program} onChange={e=>setEditForm({...editForm, program: e.target.value})} style={{width:'100%', padding:8, border:'1px solid #ccc', borderRadius:5}} />
 
                             <label style={{display:'block', fontSize:12, fontWeight:'bold', marginTop:10}}>Keterangan:</label>
-                            <input type="text" value={editForm.detail} onChange={e=>setEditForm({...editForm, detail: e.target.value})} style={{width:'100%', padding:8, border:'1px solid #ccc', borderRadius:5, boxSizing:'border-box'}} />
+                            <input type="text" value={editForm.detail} onChange={e=>setEditForm({...editForm, detail: e.target.value})} style={{width:'100%', padding:8, border:'1px solid #ccc', borderRadius:5}} />
 
                             <label style={{display:'block', fontSize:12, fontWeight:'bold', marginTop:10}}>Nominal (Rp):</label>
-                            <input type="number" value={editForm.nominal} onChange={e=>setEditForm({...editForm, nominal: e.target.value})} style={{width:'100%', padding:8, border:'1px solid #ccc', borderRadius:5, boxSizing:'border-box'}} />
+                            <input type="number" value={editForm.nominal} onChange={e=>setEditForm({...editForm, nominal: e.target.value})} style={{width:'100%', padding:8, border:'1px solid #ccc', borderRadius:5}} />
 
                             <div style={{display:'flex', gap:10, marginTop:20}}>
                                 <button onClick={()=>setEditingLog(null)} style={{flex:1, padding:10, background:'#ccc', border:'none', borderRadius:5, cursor:'pointer'}}>Batal</button>
@@ -338,11 +352,9 @@ const TeacherSalaries = () => {
                             </div>
                         </div>
                     )}
-
                 </div>
             </div>
         )}
-
       </div>
     </div>
   );

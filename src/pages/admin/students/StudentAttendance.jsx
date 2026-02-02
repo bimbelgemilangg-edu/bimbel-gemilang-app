@@ -1,115 +1,166 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../../../components/Sidebar';
-import { db } from '../../../firebase';
-import { doc, getDoc, collection, query, where, getDocs, addDoc, updateDoc } from "firebase/firestore";
+import Sidebar from '../../components/Sidebar'; // Sesuaikan path ini jika perlu
+import { db } from '../../firebase';
+import { doc, getDoc, collection, query, where, getDocs, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
 
 const StudentAttendance = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // ID Siswa
+  const { id } = useParams(); // ID Siswa dari URL
 
   const [student, setStudent] = useState(null);
   const [attendance, setAttendance] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  // State Form Manual (Jaga-jaga admin mau input manual)
+  // State Form Manual (Input Admin)
   const [newDate, setNewDate] = useState(new Date().toISOString().split('T')[0]);
   const [newStatus, setNewStatus] = useState("Hadir");
-  const [newKet, setNewKet] = useState("-");
+  const [newKet, setNewKet] = useState("");
 
   // 1. LOAD DATA SISWA & ABSENSI
   const fetchData = async () => {
+    setLoading(true);
     try {
       // Ambil Info Siswa
       const docRef = doc(db, "students", id);
       const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) setStudent({ id: docSnap.id, ...docSnap.data() });
+      if (docSnap.exists()) {
+          setStudent({ id: docSnap.id, ...docSnap.data() });
+      } else {
+          alert("Siswa tidak ditemukan!");
+          navigate('/admin/students');
+          return;
+      }
 
-      // Ambil History Absensi (Dari Collection khusus 'student_attendance')
-      // Catatan: Ini diisi manual oleh admin atau trigger otomatis nanti
-      const q = query(collection(db, "student_attendance"), where("studentId", "==", id));
+      // Ambil History Absensi
+      const q = query(collection(db, "attendance"), where("studentId", "==", id)); // Pastikan nama koleksi sesuai ('attendance' atau 'student_attendance')
       const querySnapshot = await getDocs(q);
       const data = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       
-      // Sort tanggal terbaru
-      setAttendance(data.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal)));
+      // Sort tanggal terbaru (Descending)
+      data.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
+      setAttendance(data);
 
-    } catch (error) { console.error(error); }
-  };
-
-  useEffect(() => { fetchData(); }, [id]);
-
-  // 2. FUNGSI EDIT STATUS (Admin Only)
-  const handleEdit = async (itemId) => {
-    const statusBaru = prompt("Ubah Status (Hadir/Sakit/Izin/Alpha):");
-    const ketBaru = prompt("Ubah Keterangan:", "-");
-    
-    if (statusBaru) {
-      try {
-        await updateDoc(doc(db, "student_attendance", itemId), {
-          status: statusBaru,
-          keterangan: ketBaru
-        });
-        alert("✅ Data berhasil diupdate!");
-        fetchData();
-      } catch (error) { alert("Gagal update server."); }
+    } catch (error) { 
+        console.error("Error:", error); 
+    } finally {
+        setLoading(false);
     }
   };
 
-  // 3. FUNGSI TAMBAH MANUAL (Fitur Safety Net)
+  useEffect(() => { 
+      if(id) fetchData(); 
+  }, [id]);
+
+  // 2. EDIT STATUS
+  const handleEdit = async (itemId, currentStatus, currentKet) => {
+    const statusBaru = prompt("Ubah Status (Hadir/Sakit/Izin/Alpha):", currentStatus);
+    if (!statusBaru) return; // Batal
+
+    const ketBaru = prompt("Ubah Keterangan:", currentKet || "-");
+    
+    try {
+      await updateDoc(doc(db, "attendance", itemId), {
+        status: statusBaru,
+        keterangan: ketBaru
+      });
+      alert("✅ Data berhasil diupdate!");
+      fetchData(); // Refresh tabel
+    } catch (error) { 
+        console.error(error);
+        alert("Gagal update server."); 
+    }
+  };
+
+  // 3. HAPUS ABSEN (Fitur Tambahan Penting)
+  const handleDelete = async (itemId) => {
+      if(window.confirm("Yakin ingin menghapus data absensi ini?")) {
+          try {
+              await deleteDoc(doc(db, "attendance", itemId));
+              alert("Data dihapus.");
+              fetchData();
+          } catch (error) {
+              alert("Gagal menghapus.");
+          }
+      }
+  };
+
+  // 4. TAMBAH MANUAL
   const handleAddManual = async (e) => {
     e.preventDefault();
     if(!student) return;
     try {
-        await addDoc(collection(db, "student_attendance"), {
+        // Gunakan ID unik agar tidak duplikat di hari yang sama (Opsional, tapi disarankan)
+        // const customId = `${id}_${newDate}`; 
+        
+        await addDoc(collection(db, "attendance"), {
             studentId: id,
-            namaSiswa: student.nama,
+            namaSiswa: student.nama, // Simpan nama agar mudah dibaca di query lain
             tanggal: newDate,
-            mapel: "Manual Admin",
+            mapel: "Input Manual Admin",
             status: newStatus,
-            keterangan: newKet
+            keterangan: newKet || "-",
+            timestamp: new Date() // Untuk sorting yang lebih akurat
         });
         alert("✅ Absen Manual Tersimpan");
+        setNewKet("");
         fetchData();
     } catch (error) { console.error(error); }
   };
 
-  if (!student) return <div style={{padding:50}}>Loading Data Siswa...</div>;
+  if (loading) return <div style={{padding:50, textAlign:'center'}}>Sedang memuat data siswa...</div>;
+  if (!student) return null;
 
   return (
-    <div style={{ display: 'flex' }}>
+    <div style={{ display: 'flex', background: '#f4f7f6', minHeight: '100vh' }}>
       <Sidebar />
       <div style={styles.mainContent}>
+        
+        {/* HEADER */}
         <div style={styles.header}>
           <button style={styles.btnBack} onClick={() => navigate('/admin/students')}>← Kembali</button>
           <div style={{marginLeft: '20px'}}>
-            <h2 style={{margin:0}}>Rekap Kehadiran Siswa</h2>
+            <h2 style={{margin:0, color:'#2c3e50'}}>Detail Kehadiran</h2>
             <p style={{margin:'5px 0 0 0', color: '#7f8c8d'}}>
-              {student.nama} | {student.detailProgram || student.kelas}
+              {student.nama} <span style={{background:'#ddd', padding:'2px 8px', borderRadius:10, fontSize:12}}>{student.detailProgram || "Reguler"}</span>
             </p>
           </div>
         </div>
 
-        {/* INPUT MANUAL ADMIN (JIKA PERLU) */}
+        {/* BOX SUMMARY */}
+        <div style={styles.summaryContainer}>
+            <div style={{...styles.statBox, background:'#e8f8f5', color:'#27ae60'}}>
+                <h3>{attendance.filter(x => x.status === 'Hadir').length}</h3>
+                <span>Hadir</span>
+            </div>
+            <div style={{...styles.statBox, background:'#fef9e7', color:'#f1c40f'}}>
+                <h3>{attendance.filter(x => x.status === 'Sakit' || x.status === 'Izin').length}</h3>
+                <span>Sakit/Izin</span>
+            </div>
+            <div style={{...styles.statBox, background:'#fdedec', color:'#e74c3c'}}>
+                <h3>{attendance.filter(x => x.status === 'Alpha').length}</h3>
+                <span>Alpha</span>
+            </div>
+        </div>
+
+        {/* INPUT MANUAL ADMIN */}
         <div style={styles.inputBox}>
-            <small style={{fontWeight:'bold', display:'block', marginBottom:5}}>➕ Input Manual (Admin)</small>
-            <form onSubmit={handleAddManual} style={{display:'flex', gap:10}}>
-                <input type="date" value={newDate} onChange={e=>setNewDate(e.target.value)} style={styles.inputSm} />
+            <div style={{fontWeight:'bold', marginBottom:10, color:'#2980b9'}}>➕ Tambah Absensi Manual</div>
+            <form onSubmit={handleAddManual} style={{display:'flex', gap:10, flexWrap:'wrap'}}>
+                <input type="date" value={newDate} onChange={e=>setNewDate(e.target.value)} style={styles.inputSm} required />
                 <select value={newStatus} onChange={e=>setNewStatus(e.target.value)} style={styles.inputSm}>
-                    <option>Hadir</option><option>Sakit</option><option>Izin</option><option>Alpha</option>
+                    <option value="Hadir">Hadir</option>
+                    <option value="Sakit">Sakit</option>
+                    <option value="Izin">Izin</option>
+                    <option value="Alpha">Alpha</option>
                 </select>
-                <input type="text" placeholder="Ket..." value={newKet} onChange={e=>setNewKet(e.target.value)} style={styles.inputSm} />
-                <button type="submit" style={styles.btnSave}>Simpan</button>
+                <input type="text" placeholder="Keterangan (Opsional)" value={newKet} onChange={e=>setNewKet(e.target.value)} style={{...styles.inputSm, flex:1}} />
+                <button type="submit" style={styles.btnSave}>Simpan Data</button>
             </form>
         </div>
 
+        {/* TABEL DATA */}
         <div style={styles.card}>
-          <div style={styles.summary}>
-            <div style={styles.statBox}><h3>{attendance.filter(x => x.status === 'Hadir').length}</h3><p>Hadir</p></div>
-            <div style={styles.statBox}><h3>{attendance.filter(x => x.status === 'Sakit').length}</h3><p>Sakit</p></div>
-            <div style={styles.statBox}><h3>{attendance.filter(x => x.status === 'Izin').length}</h3><p>Izin</p></div>
-            <div style={styles.statBoxWarning}><h3>{attendance.filter(x => x.status === 'Alpha').length}</h3><p>Alpha</p></div>
-          </div>
-
           <table style={styles.table}>
             <thead>
               <tr style={{background: '#f8f9fa'}}>
@@ -117,60 +168,70 @@ const StudentAttendance = () => {
                 <th style={styles.th}>Kegiatan / Mapel</th>
                 <th style={styles.th}>Status</th>
                 <th style={styles.th}>Keterangan</th>
-                <th style={styles.th}>Aksi</th>
+                <th style={{...styles.th, textAlign:'center'}}>Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {attendance.length === 0 && <tr><td colSpan="5" style={{padding:20, textAlign:'center'}}>Belum ada data absensi.</td></tr>}
-              {attendance.map((item) => (
-                <tr key={item.id} style={styles.tr}>
-                  <td style={styles.td}>{item.tanggal}</td>
-                  <td style={styles.td}>{item.mapel}</td>
-                  <td style={styles.td}>
-                    <span style={
-                      item.status === 'Hadir' ? styles.badgeGreen : 
-                      item.status === 'Alpha' ? styles.badgeRed : styles.badgeYellow
-                    }>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td style={styles.td}>{item.keterangan || "-"}</td>
-                  <td style={styles.td}>
-                    <button style={styles.btnEdit} onClick={() => handleEdit(item.id)}>✏️ Edit</button>
-                  </td>
-                </tr>
-              ))}
+              {attendance.length === 0 ? (
+                  <tr><td colSpan="5" style={{padding:30, textAlign:'center', color:'#999'}}>Belum ada riwayat kehadiran.</td></tr>
+              ) : (
+                  attendance.map((item) => (
+                    <tr key={item.id} style={styles.tr}>
+                      <td style={styles.td}>
+                          {new Date(item.tanggal).toLocaleDateString('id-ID')}
+                      </td>
+                      <td style={styles.td}>{item.mapel || item.program || "-"}</td>
+                      <td style={styles.td}>
+                        <span style={
+                          item.status === 'Hadir' ? styles.badgeGreen : 
+                          item.status === 'Alpha' ? styles.badgeRed : styles.badgeYellow
+                        }>
+                          {item.status}
+                        </span>
+                      </td>
+                      <td style={styles.td}>{item.keterangan || "-"}</td>
+                      <td style={{...styles.td, textAlign:'center'}}>
+                        <button style={styles.btnEdit} onClick={() => handleEdit(item.id, item.status, item.keterangan)}>✏️</button>
+                        <button style={styles.btnDelete} onClick={() => handleDelete(item.id)}>🗑️</button>
+                      </td>
+                    </tr>
+                  ))
+              )}
             </tbody>
           </table>
         </div>
+
       </div>
     </div>
   );
 };
 
+// STYLING
 const styles = {
-  mainContent: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily: 'sans-serif' },
-  header: { display: 'flex', alignItems: 'center', marginBottom: '20px' },
-  btnBack: { background: 'white', border: '1px solid #ddd', padding: '10px 15px', borderRadius: '5px', cursor: 'pointer' },
-  card: { background: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
+  mainContent: { marginLeft: '250px', padding: '30px', width: '100%', fontFamily: 'Segoe UI, sans-serif' },
+  header: { display: 'flex', alignItems: 'center', marginBottom: '30px' },
+  btnBack: { background: 'white', border: '1px solid #bdc3c7', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', color:'#2c3e50', fontWeight:'bold' },
   
-  inputBox: { background: '#e1f5fe', padding: 15, borderRadius: 10, marginBottom: 20 },
-  inputSm: { padding: 8, borderRadius: 5, border: '1px solid #ddd' },
-  btnSave: { padding: '8px 15px', background: '#2980b9', color: 'white', border: 'none', borderRadius: 5, cursor: 'pointer' },
+  summaryContainer: { display:'flex', gap:20, marginBottom:20 },
+  statBox: { flex:1, padding:15, borderRadius:8, textAlign:'center', boxShadow:'0 2px 5px rgba(0,0,0,0.05)' },
 
-  summary: { display: 'flex', gap: '20px', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '20px' },
-  statBox: { flex: 1, textAlign: 'center', background: '#e8f6f3', padding: '15px', borderRadius: '8px', color: '#16a085' },
-  statBoxWarning: { flex: 1, textAlign: 'center', background: '#fadbd8', padding: '15px', borderRadius: '8px', color: '#c0392b' },
+  card: { background: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' },
   
+  inputBox: { background: '#d6eaf8', padding: 20, borderRadius: 10, marginBottom: 20, border:'1px solid #a9cce3' },
+  inputSm: { padding: '8px 12px', borderRadius: 5, border: '1px solid #bdc3c7' },
+  btnSave: { padding: '8px 20px', background: '#2980b9', color: 'white', border: 'none', borderRadius: 5, cursor: 'pointer', fontWeight:'bold' },
+
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '12px', borderBottom: '2px solid #ddd' },
-  tr: { borderBottom: '1px solid #eee' },
-  td: { padding: '12px' },
+  th: { textAlign: 'left', padding: '15px', borderBottom: '2px solid #eee', color:'#7f8c8d', fontSize:14 },
+  tr: { borderBottom: '1px solid #f4f6f7' },
+  td: { padding: '15px', fontSize:14, color:'#2c3e50' },
   
-  badgeGreen: { background: '#d4edda', color: '#155724', padding: '4px 8px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold' },
-  badgeYellow: { background: '#fff3cd', color: '#856404', padding: '4px 8px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold' },
-  badgeRed: { background: '#f8d7da', color: '#721c24', padding: '4px 8px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold' },
-  btnEdit: { background: '#f1c40f', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontSize: '12px' }
+  badgeGreen: { background: '#d4edda', color: '#155724', padding: '5px 10px', borderRadius: '15px', fontSize: '12px', fontWeight: 'bold' },
+  badgeYellow: { background: '#fff3cd', color: '#856404', padding: '5px 10px', borderRadius: '15px', fontSize: '12px', fontWeight: 'bold' },
+  badgeRed: { background: '#f8d7da', color: '#721c24', padding: '5px 10px', borderRadius: '15px', fontSize: '12px', fontWeight: 'bold' },
+  
+  btnEdit: { background: '#f39c12', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', marginRight:5 },
+  btnDelete: { background: '#e74c3c', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer' }
 };
 
 export default StudentAttendance;
