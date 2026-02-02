@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../../components/Sidebar';
 import { db } from '../../../firebase'; 
-import { collection, addDoc, getDocs, deleteDoc, doc, getDoc, writeBatch } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc, getDoc, writeBatch, updateDoc } from "firebase/firestore"; // Tambah updateDoc
 
 const SchedulePage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -15,6 +15,9 @@ const SchedulePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activePlanet, setActivePlanet] = useState("");
   
+  // STATE BARU: UNTUK MODE EDIT
+  const [editId, setEditId] = useState(null); 
+
   // FORM DATA
   const [formData, setFormData] = useState({
     start: "14:00", end: "15:30", 
@@ -24,48 +27,44 @@ const SchedulePage = () => {
   });
 
   // FILTER SISWA DI MODAL
-  const [filterJenjang, setFilterJenjang] = useState("Semua"); // SD, SMP, SMA, Semua
-  const [filterKelas, setFilterKelas] = useState(""); // Filter Teks manual
+  const [filterJenjang, setFilterJenjang] = useState("Semua"); 
+  const [filterKelas, setFilterKelas] = useState(""); 
 
   const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
 
   const fetchData = async () => {
-    const schedSnap = await getDocs(collection(db, "jadwal_bimbel"));
-    setSchedules(schedSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-    
-    const tSnap = await getDocs(collection(db, "teachers"));
-    setAvailableTeachers(tSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-    
-    const sSnap = await getDocs(collection(db, "students"));
-    setAvailableStudents(sSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-    
-    const today = new Date().toISOString().split('T')[0];
-    const cSnap = await getDoc(doc(db, "settings", `daily_code_${today}`));
-    setDailyCode(cSnap.exists() ? cSnap.data().code : "⚠️ Belum Diset");
+    try {
+        const schedSnap = await getDocs(collection(db, "jadwal_bimbel"));
+        setSchedules(schedSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        
+        const tSnap = await getDocs(collection(db, "teachers"));
+        setAvailableTeachers(tSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        
+        const sSnap = await getDocs(collection(db, "students"));
+        setAvailableStudents(sSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        
+        const today = new Date().toISOString().split('T')[0];
+        const cSnap = await getDoc(doc(db, "settings", `daily_code_${today}`));
+        setDailyCode(cSnap.exists() ? cSnap.data().code : "⚠️ Belum Diset");
+    } catch (e) { console.error("Error fetching:", e); }
   };
 
-  useEffect(() => { fetchData(); }, [selectedDate]);
+  useEffect(() => { fetchData(); }, [selectedDate]); // Refresh saat tanggal ganti juga
 
-  // --- LOGIKA FILTER SISWA PINTAR ---
+  // --- LOGIKA FILTER SISWA ---
   const getFilteredStudents = () => {
     return availableStudents.filter(s => {
-        // 1. Filter Program (Reguler / English)
-        // Kita asumsikan data siswa punya field 'kategori' atau kita filter kasar
-        // Kalau English, kita cari siswa yang 'detailProgram' nya mengandung English
         const isEnglishProgram = formData.program === 'English';
         const studentIsEnglish = (s.detailProgram || "").includes("English");
 
         if (isEnglishProgram && !studentIsEnglish) return false;
         if (!isEnglishProgram && studentIsEnglish) return false;
 
-        // 2. Filter Jenjang (SD/SMP/SMA)
         if (filterJenjang !== "Semua") {
-             // Cek field 'kelas' atau 'detailProgram'
              const jenjangStr = (s.kelasSekolah || "") + (s.detailProgram || "");
              if (!jenjangStr.toUpperCase().includes(filterJenjang.toUpperCase())) return false;
         }
 
-        // 3. Filter Teks Manual (Nama / Kelas)
         if (filterKelas && !s.nama.toLowerCase().includes(filterKelas.toLowerCase())) return false;
 
         return true;
@@ -79,72 +78,135 @@ const SchedulePage = () => {
   };
 
   // --- CEK BENTROK ---
-  const checkCollision = (targetDateStr, newStart, newEnd) => {
-    const existing = schedules.filter(s => s.planet === activePlanet && s.dateStr === targetDateStr);
+  const checkCollision = (targetDateStr, newStart, newEnd, currentId = null) => {
+    // Filter jadwal lain di planet & tanggal yg sama, KECUALI jadwal yg sedang diedit
+    const existing = schedules.filter(s => 
+        s.planet === activePlanet && 
+        s.dateStr === targetDateStr &&
+        s.id !== currentId // Abaikan diri sendiri saat edit
+    );
     return existing.some(s => (newStart < s.end && newEnd > s.start));
   };
 
-  // --- SIMPAN ---
+  // --- FITUR EDIT (LOAD DATA KE FORM) ---
+  const handleEditClick = (item) => {
+      setEditId(item.id); // Tandai sedang edit ID ini
+      setActivePlanet(item.planet); // Pastikan planet sesuai
+      setFormData({
+          start: item.start,
+          end: item.end,
+          program: item.program || "Reguler",
+          level: item.level || "SD",
+          title: item.title || "",
+          booker: item.booker || "",
+          selectedStudents: item.students ? item.students.map(s => s.id) : [],
+          repeat: "Once" // Saat edit, default ke Once (edit satu aja)
+      });
+      setIsModalOpen(true);
+  };
+
+  // --- SIMPAN (BISA ADD BARU / UPDATE EDIT) ---
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.booker) return alert("Pilih Guru!");
     
+    // Siapkan Data Siswa Lengkap
     const studentsFullData = formData.selectedStudents.map(id => {
         const s = availableStudents.find(stud => stud.id === id);
         return s ? { id: s.id, nama: s.nama, kelas: s.kelasSekolah } : null;
     }).filter(Boolean); 
 
-    const loopCount = formData.repeat === 'Monthly' ? 4 : 1;
-    const batch = writeBatch(db); 
     let currentDate = new Date(selectedDate); 
+    const dateString = currentDate.toISOString().split('T')[0];
 
-    for (let i = 0; i < loopCount; i++) {
-        const dateString = currentDate.toISOString().split('T')[0];
-
-        if (checkCollision(dateString, formData.start, formData.end)) {
-            alert(`⛔ GAGAL! Jadwal Tabrakan di ${dateString} ${formData.start}`);
-            return;
-        }
-
-        const newRef = doc(collection(db, "jadwal_bimbel"));
-        batch.set(newRef, {
-            planet: activePlanet,
-            dateStr: dateString,
-            start: formData.start,
-            end: formData.end,
-            program: formData.program,
-            level: formData.level,
-            title: formData.title,
-            booker: formData.booker,
-            code: `R-${Math.floor(Math.random()*1000)}`, 
-            students: studentsFullData,
-            isRecurring: formData.repeat === 'Monthly' 
-        });
-
-        currentDate.setDate(currentDate.getDate() + 7);
+    // Cek Tabrakan
+    if (checkCollision(dateString, formData.start, formData.end, editId)) {
+        alert(`⛔ GAGAL! Jadwal Tabrakan di Jam ${formData.start} - ${formData.end}`);
+        return;
     }
 
     try {
-        await batch.commit(); 
-        alert(`✅ Sukses! Jadwal untuk ${formData.booker} tersimpan.`);
+        if (editId) {
+            // === LOGIKA UPDATE (EDIT) ===
+            await updateDoc(doc(db, "jadwal_bimbel", editId), {
+                start: formData.start,
+                end: formData.end,
+                program: formData.program,
+                level: formData.level,
+                title: formData.title,
+                booker: formData.booker,
+                students: studentsFullData
+            });
+            alert("✅ Jadwal Berhasil Diupdate!");
+
+        } else {
+            // === LOGIKA TAMBAH BARU (ADD) ===
+            const batch = writeBatch(db);
+            const loopCount = formData.repeat === 'Monthly' ? 4 : 1;
+
+            for (let i = 0; i < loopCount; i++) {
+                const curDateStr = currentDate.toISOString().split('T')[0];
+                
+                // Cek tabrakan di setiap looping tanggal
+                if (checkCollision(curDateStr, formData.start, formData.end)) {
+                    if(!window.confirm(`⚠️ Tanggal ${curDateStr} bentrok! Lewati tanggal ini dan lanjut sisanya?`)) {
+                        return; // Stop jika user pilih cancel
+                    }
+                } else {
+                    const newRef = doc(collection(db, "jadwal_bimbel"));
+                    batch.set(newRef, {
+                        planet: activePlanet,
+                        dateStr: curDateStr,
+                        start: formData.start,
+                        end: formData.end,
+                        program: formData.program,
+                        level: formData.level,
+                        title: formData.title,
+                        booker: formData.booker,
+                        code: `R-${Math.floor(Math.random()*1000)}`, 
+                        students: studentsFullData,
+                        isRecurring: formData.repeat === 'Monthly' 
+                    });
+                }
+                currentDate.setDate(currentDate.getDate() + 7);
+            }
+            await batch.commit(); 
+            alert(`✅ Sukses! Jadwal tersimpan.`);
+        }
+
         setIsModalOpen(false);
-        fetchData();
-    } catch (error) { console.error(error); alert("Gagal menyimpan."); }
+        setEditId(null); // Reset mode edit
+        fetchData(); // Refresh data agar tampilan update
+
+    } catch (error) { 
+        console.error(error); 
+        alert("Gagal menyimpan: " + error.message); 
+    }
   };
 
+  // --- HAPUS JADWAL ---
   const handleDelete = async (id) => {
-    if(window.confirm("Hapus jadwal ini?")) { await deleteDoc(doc(db, "jadwal_bimbel", id)); fetchData(); }
+    if(window.confirm("Yakin hapus jadwal ini?")) { 
+        try {
+            await deleteDoc(doc(db, "jadwal_bimbel", id)); 
+            alert("🗑️ Jadwal dihapus.");
+            fetchData(); // Refresh paksa biar ijonya ilang
+        } catch (e) {
+            alert("Gagal hapus.");
+        }
+    }
   };
 
   // UI HELPERS
   const changeMonth = (v) => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + v, 1));
   const formatDateStr = (date) => date.toISOString().split('T')[0];
+  
   const renderCalendar = () => {
     const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
     const days = [];
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = formatDateStr(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d));
-      const hasEvent = schedules.some(s => s.dateStr === dateStr);
+      const hasEvent = schedules.some(s => s.dateStr === dateStr); // Cek jadwal
       const isSelected = selectedDate.getDate() === d && selectedDate.getMonth() === currentMonth.getMonth();
       days.push(
         <div key={d} onClick={() => setSelectedDate(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d))}
@@ -154,6 +216,15 @@ const SchedulePage = () => {
       );
     }
     return days;
+  };
+
+  const handleCloseModal = () => {
+      setIsModalOpen(false);
+      setEditId(null); // Reset form edit jika di-close
+      setFormData({ // Reset form data
+        start: "14:00", end: "15:30", program: "Reguler", level: "SD",
+        title: "", booker: "", selectedStudents: [], repeat: "Once"
+      });
   };
 
   return (
@@ -191,7 +262,13 @@ const SchedulePage = () => {
                         <div key={planet} style={styles.planetContainer}>
                             <div style={styles.planetHead}>
                                 <h3>🪐 {planet}</h3>
-                                <button onClick={() => { setActivePlanet(planet); setIsModalOpen(true); }} style={styles.btnAdd}>+ Isi Jadwal</button>
+                                {/* Tombol Tambah Baru */}
+                                <button onClick={() => { 
+                                    setActivePlanet(planet); 
+                                    setEditId(null); // Pastikan mode tambah baru
+                                    setFormData({ ...formData, repeat: 'Once', title:'', booker:'', selectedStudents:[] }); // Reset form
+                                    setIsModalOpen(true); 
+                                }} style={styles.btnAdd}>+ Isi Jadwal</button>
                             </div>
                             <div style={styles.scheduleList}>
                                 {items.length === 0 ? <div style={styles.emptySlot}>⚪ Kosong</div> : items.map(item => (
@@ -205,7 +282,11 @@ const SchedulePage = () => {
                                             👨‍🏫 {item.booker} ({item.level}) <br/>
                                             👥 {item.students?.length || 0} Siswa
                                         </div>
-                                        <div style={{textAlign:'right'}}>
+                                        <div style={{textAlign:'right', marginTop:5}}>
+                                            {/* TOMBOL EDIT */}
+                                            <button onClick={()=>handleEditClick(item)} style={styles.btnLinkOrange}>✏️ Edit</button>
+                                            <span style={{color:'#ccc'}}> | </span>
+                                            {/* TOMBOL HAPUS */}
                                             <button onClick={()=>handleDelete(item.id)} style={styles.btnLinkRed}>Hapus</button>
                                         </div>
                                     </div>
@@ -217,11 +298,11 @@ const SchedulePage = () => {
             </div>
         </div>
 
-        {/* MODAL INPUT CERDAS */}
+        {/* MODAL INPUT CERDAS (Bisa Edit / Tambah) */}
         {isModalOpen && (
           <div style={styles.overlay}>
             <div style={styles.modal}>
-              <h3>Booking {activePlanet}</h3>
+              <h3>{editId ? `✏️ Edit Jadwal ${activePlanet}` : `➕ Booking ${activePlanet}`}</h3>
               
               <form onSubmit={handleSave}>
                 <div style={styles.row}>
@@ -229,13 +310,16 @@ const SchedulePage = () => {
                    <div style={{flex:1}}><label>Selesai</label><input type="time" value={formData.end} onChange={e=>setFormData({...formData, end:e.target.value})} style={styles.input} /></div>
                 </div>
 
-                <div style={{background:'#e3f2fd', padding:10, borderRadius:5, marginBottom:10}}>
-                    <label style={{fontWeight:'bold', color:'#1565c0'}}>Frekuensi (Guru Pengganti?)</label>
-                    <div style={{display:'flex', gap:15, marginTop:5}}>
-                        <label style={{cursor:'pointer'}}><input type="radio" name="repeat" checked={formData.repeat === 'Once'} onChange={()=>setFormData({...formData, repeat:'Once'})} /> Booking Sekali (Hari Ini)</label>
-                        <label style={{cursor:'pointer'}}><input type="radio" name="repeat" checked={formData.repeat === 'Monthly'} onChange={()=>setFormData({...formData, repeat:'Monthly'})} /> Rutin (4 Minggu)</label>
+                {/* Opsi Ulang Hanya Muncul Jika BUKAN Edit */}
+                {!editId && (
+                    <div style={{background:'#e3f2fd', padding:10, borderRadius:5, marginBottom:10}}>
+                        <label style={{fontWeight:'bold', color:'#1565c0'}}>Frekuensi</label>
+                        <div style={{display:'flex', gap:15, marginTop:5}}>
+                            <label style={{cursor:'pointer'}}><input type="radio" name="repeat" checked={formData.repeat === 'Once'} onChange={()=>setFormData({...formData, repeat:'Once'})} /> Sekali (Hari Ini)</label>
+                            <label style={{cursor:'pointer'}}><input type="radio" name="repeat" checked={formData.repeat === 'Monthly'} onChange={()=>setFormData({...formData, repeat:'Monthly'})} /> Rutin (4 Minggu)</label>
+                        </div>
                     </div>
-                </div>
+                )}
                 
                 <div style={styles.row}>
                     <div style={{flex:1}}>
@@ -257,7 +341,7 @@ const SchedulePage = () => {
 
                 <label>Guru Pengajar</label>
                 <select required value={formData.booker} onChange={e => setFormData({...formData, booker: e.target.value})} style={styles.select}>
-                    <option value="">-- Pilih Guru (Bisa Guru Pengganti) --</option>
+                    <option value="">-- Pilih Guru --</option>
                     {availableTeachers.map(t => <option key={t.id} value={t.nama}>{t.nama}</option>)}
                 </select>
 
@@ -267,7 +351,6 @@ const SchedulePage = () => {
                 {/* --- FITUR FILTER SISWA --- */}
                 <div style={{border:'1px solid #ccc', borderRadius:5, padding:10, marginTop:10}}>
                     <label style={{fontWeight:'bold', color:'#2c3e50'}}>👥 Pilih Siswa</label>
-                    
                     <div style={{display:'flex', gap:5, marginBottom:5}}>
                         <select value={filterJenjang} onChange={e=>setFilterJenjang(e.target.value)} style={{padding:5, fontSize:12, borderRadius:4}}>
                             <option value="Semua">Semua Jenjang</option>
@@ -278,7 +361,6 @@ const SchedulePage = () => {
                         <input type="text" placeholder="Cari Nama..." value={filterKelas} onChange={e=>setFilterKelas(e.target.value)} style={{padding:5, fontSize:12, flex:1}} />
                         <button type="button" onClick={handleSelectAll} style={{padding:5, fontSize:11, background:'#3498db', color:'white', border:'none', borderRadius:4, cursor:'pointer'}}>Pilih Semua</button>
                     </div>
-
                     <div style={{border:'1px solid #eee', padding:5, height:100, overflowY:'auto', background:'#fafafa'}}>
                         {getFilteredStudents().length === 0 ? <small style={{color:'red'}}>Tidak ada siswa yg cocok.</small> : 
                         getFilteredStudents().map(s => (
@@ -293,11 +375,10 @@ const SchedulePage = () => {
                     </div>
                     <small style={{color:'blue'}}>Terpilih: {formData.selectedStudents.length} Siswa</small>
                 </div>
-                {/* ------------------------- */}
 
                 <div style={styles.btnRow}>
-                  <button type="submit" style={styles.btnSave}>SIMPAN JADWAL</button>
-                  <button type="button" onClick={() => setIsModalOpen(false)} style={styles.btnCancel}>Batal</button>
+                  <button type="submit" style={styles.btnSave}>{editId ? "UPDATE JADWAL" : "SIMPAN JADWAL"}</button>
+                  <button type="button" onClick={handleCloseModal} style={styles.btnCancel}>Batal</button>
                 </div>
               </form>
             </div>
@@ -328,7 +409,8 @@ const styles = {
   emptySlot: { padding:15, textAlign:'center', border:'2px dashed #ddd', borderRadius:8, color:'#999', fontSize:14 },
   cardGreen: { background:'#d4edda', borderLeft:'5px solid #27ae60', padding:10, borderRadius:5 },
   cardYellow: { background:'#fff3cd', borderLeft:'5px solid #f1c40f', padding:10, borderRadius:5 },
-  btnLinkRed: { color:'#c0392b', background:'none', border:'none', cursor:'pointer', fontSize:12, textDecoration:'underline' },
+  btnLinkRed: { color:'#c0392b', background:'none', border:'none', cursor:'pointer', fontSize:12, textDecoration:'underline', fontWeight:'bold' },
+  btnLinkOrange: { color:'#e67e22', background:'none', border:'none', cursor:'pointer', fontSize:12, textDecoration:'underline', fontWeight:'bold' },
   overlay: { position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.5)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:999 },
   modal: { background:'white', padding:25, borderRadius:10, width:450, boxShadow:'0 10px 25px rgba(0,0,0,0.2)', maxHeight:'90vh', overflowY:'auto' },
   input: { width:'100%', padding:10, marginBottom:10, border:'1px solid #ccc', borderRadius:5, boxSizing:'border-box' },
