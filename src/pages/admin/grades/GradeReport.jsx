@@ -12,10 +12,13 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 const GradeReport = () => {
-  const printRef = useRef(); // Referensi area yang akan dicetak
+  const printRef = useRef(); 
   const [isPrinting, setIsPrinting] = useState(false);
 
   const [students, setStudents] = useState([]);
+  const [filteredStudents, setFilteredStudents] = useState([]); // State untuk hasil pencarian
+  const [searchTerm, setSearchTerm] = useState(""); // State teks pencarian
+
   const [selectedStudentId, setSelectedStudentId] = useState("");
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); 
   
@@ -26,7 +29,6 @@ const GradeReport = () => {
   const [radarData, setRadarData] = useState([]);   
   const [gpaCurrent, setGpaCurrent] = useState(0);
   
-  // STATE NARASI DETIL
   const [narrativeTitle, setNarrativeTitle] = useState("");
   const [narrativeBody, setNarrativeBody] = useState("");
   const [bestSubject, setBestSubject] = useState("");
@@ -34,51 +36,49 @@ const GradeReport = () => {
 
   const colors = ["#e74c3c", "#3498db", "#27ae60", "#f1c40f", "#8e44ad", "#e67e22", "#16a085", "#2c3e50"];
 
+  // 1. LOAD SISWA
   useEffect(() => {
     getDocs(collection(db, "students")).then(snap => {
-        setStudents(snap.docs.map(d => ({id: d.id, ...d.data()})));
+        const data = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        setStudents(data);
+        setFilteredStudents(data); // Awalnya tampilkan semua
     });
   }, []);
 
-  // --- FUNGSI CETAK PDF HD (ANTI BLUR) ---
+  // 2. LOGIKA PENCARIAN SISWA (FILTER)
+  useEffect(() => {
+    if (searchTerm === "") {
+        setFilteredStudents(students);
+    } else {
+        const lower = searchTerm.toLowerCase();
+        const results = students.filter(s => 
+            s.nama.toLowerCase().includes(lower) || 
+            s.kelasSekolah?.toLowerCase().includes(lower)
+        );
+        setFilteredStudents(results);
+    }
+  }, [searchTerm, students]);
+
+  // --- FUNGSI CETAK PDF HD ---
   const handleDownloadPDF = async () => {
     if(!selectedStudentId) return;
     setIsPrinting(true);
-    
     const element = printRef.current;
-    
-    // 1. Convert HTML ke Canvas (High Scale = Tajam)
-    const canvas = await html2canvas(element, {
-        scale: 2, // 2x Resolusi (Supaya tidak pecah saat di-zoom)
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-    });
-
+    const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' });
     const imgData = canvas.toDataURL('image/png');
-    
-    // 2. Setup PDF A4
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    
-    // Hitung Rasio agar pas di A4
     const imgWidth = canvas.width;
     const imgHeight = canvas.height;
     const ratio = imgWidth / imgHeight;
     const heightInPdf = pdfWidth / ratio;
-
-    // 3. Masukkan Gambar ke PDF
-    // Jika konten panjang, potong per halaman (Basic logic: fit to one page first)
-    // Untuk rapor 2 halaman, kita bisa addPage.
-    // Tapi untuk simplifikasi yang rapi, kita buat fit width.
     
     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, heightInPdf);
-    
     pdf.save(`RAPOR_${students.find(s=>s.id===selectedStudentId)?.nama}_${selectedMonth}.pdf`);
     setIsPrinting(false);
   };
 
+  // --- LOGIKA UTAMA RENDER DATA ---
   useEffect(() => {
     if(!selectedStudentId) return;
 
@@ -88,7 +88,7 @@ const GradeReport = () => {
         const allGrades = snap.docs.map(d => d.data());
         allGrades.sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal));
 
-        // ... (LOGIC CHART SAMA SEPERTI SEBELUMNYA) ...
+        // Grafik Per Mapel
         const mapelHistoryMap = {}; 
         const subjectSet = new Set();
 
@@ -103,6 +103,7 @@ const GradeReport = () => {
         setSubjectHistory(finalSubjectHistory);
         setUniqueSubjects(Array.from(subjectSet)); 
 
+        // Grafik GPA
         const gpaData = finalSubjectHistory.map(item => {
             let sum = 0, count = 0;
             Object.keys(item).forEach(key => {
@@ -116,55 +117,30 @@ const GradeReport = () => {
         const currentGrades = allGrades.filter(g => g.tanggal.startsWith(selectedMonth));
         setReportData(currentGrades);
 
-        // --- LOGIC NARASI SUPER CERDAS ---
+        // NARASI
         if(currentGrades.length > 0) {
             const avgCurrent = Math.round(currentGrades.reduce((a,b)=>a+b.nilai,0) / currentGrades.length);
             setGpaCurrent(avgCurrent);
 
-            // 1. Cari Mapel Terbaik & Terlemah
             const sortedByScore = [...currentGrades].sort((a,b) => b.nilai - a.nilai);
             const best = sortedByScore[0];
             const weak = sortedByScore[sortedByScore.length - 1];
 
             setBestSubject(best.mapel);
-            setWeakSubject(weak.nilai < 75 ? weak.mapel : null); // Hanya sebut lemah jika di bawah KKM
+            setWeakSubject(weak.nilai < 75 ? weak.mapel : null);
 
-            // 2. Judul Narasi
-            let title = "";
-            if(avgCurrent >= 90) title = "PERFORMA EKSCELLENT (SANGAT MEMUASKAN)";
-            else if(avgCurrent >= 80) title = "PERFORMA SANGAT BAIK";
-            else if(avgCurrent >= 70) title = "PERFORMA CUKUP BAIK";
-            else title = "PERLU PERHATIAN KHUSUS";
+            let title = avgCurrent >= 85 ? "PERFORMA SANGAT BAIK" : avgCurrent >= 75 ? "PERFORMA BAIK" : "PERLU PERHATIAN";
             setNarrativeTitle(title);
 
-            // 3. Isi Narasi (Gabungan Semua Mapel)
-            let body = `Pada periode ${new Date(selectedMonth).toLocaleDateString('id-ID', {month:'long', year:'numeric'})}, ananda menunjukkan pencapaian akademik rata-rata (GPA) sebesar ${avgCurrent}. `;
-            
-            body += `Kekuatan utama ananda terlihat jelas pada mata pelajaran ${best.mapel} dengan skor ${best.nilai}, yang menunjukkan minat dan pemahaman konsep yang sangat tinggi. `;
-            
-            if(weak.nilai < 75) {
-                body += `Namun, perlu adanya pendampingan lebih intensif pada mata pelajaran ${weak.mapel} (Skor: ${weak.nilai}) untuk mengejar ketertinggalan konsep dasar. `;
-            } else {
-                body += `Seluruh mata pelajaran berada di atas standar kompetensi minimum, menunjukkan keseimbangan belajar yang baik. `;
-            }
-
-            // Tambah Aspek Karakter ke Narasi
-            let aspects = { mandiri: 0, inisiatif: 0 };
-            currentGrades.forEach(g => {
-                if(g.qualitative) {
-                    aspects.mandiri += g.qualitative.mandiri || 0;
-                    aspects.inisiatif += g.qualitative.inisiatif || 0;
-                }
-            });
-            const avgMandiri = aspects.mandiri / currentGrades.length;
-            
-            if(avgMandiri >= 4) body += "Secara karakter, ananda sangat mandiri dalam mengerjakan tugas tanpa perlu banyak arahan.";
-            else if(avgMandiri <= 2) body += "Kami merekomendasikan agar di rumah ananda lebih dilatih kemandiriannya dalam menyelesaikan tugas sekolah.";
+            let body = `Pada periode ${new Date(selectedMonth).toLocaleDateString('id-ID', {month:'long', year:'numeric'})}, ananda mencapai GPA ${avgCurrent}. `;
+            body += `Kekuatan utama terlihat pada ${best.mapel} (Skor: ${best.nilai}). `;
+            if(weak.nilai < 75) body += `Perlu pendampingan lebih pada ${weak.mapel} (Skor: ${weak.nilai}).`;
+            else body += `Seluruh mapel di atas standar minimal.`;
 
             setNarrativeBody(body);
         } else {
             setNarrativeTitle("DATA BELUM TERSEDIA");
-            setNarrativeBody("Belum ada penilaian akademik yang masuk untuk bulan ini.");
+            setNarrativeBody("Belum ada penilaian untuk bulan ini.");
             setGpaCurrent(0);
         }
 
@@ -202,16 +178,51 @@ const GradeReport = () => {
         <Sidebar />
         <div style={{marginLeft:250, padding:30, width:'100%', background:'#555', minHeight:'100vh', fontFamily:'Segoe UI, sans-serif', display:'flex', flexDirection:'column', alignItems:'center'}}>
             
-            {/* CONTROLLER */}
-            <div style={{background:'white', padding:15, borderRadius:8, marginBottom:20, display:'flex', gap:15, alignItems:'center', width:'210mm', boxSizing:'border-box'}}>
-                <select value={selectedStudentId} onChange={e=>setSelectedStudentId(e.target.value)} style={{padding:10, borderRadius:5, border:'1px solid #ccc', flex:1}}>
-                    <option value="">-- Pilih Siswa --</option>
-                    {students.map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
-                </select>
-                <input type="month" value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{padding:10, borderRadius:5, border:'1px solid #ccc'}} />
-                <button onClick={handleDownloadPDF} disabled={!selectedStudentId || isPrinting} style={{background: isPrinting?'#95a5a6':'#e74c3c', color:'white', border:'none', padding:'10px 25px', borderRadius:5, cursor:'pointer', fontWeight:'bold', marginLeft:'auto'}}>
-                    {isPrinting ? '⏳ Memproses...' : '📄 DOWNLOAD PDF (HD)'}
-                </button>
+            {/* PANEL KONTROL (SEARCH & PRINT) */}
+            <div style={{background:'white', padding:15, borderRadius:8, marginBottom:20, width:'210mm', boxSizing:'border-box', boxShadow:'0 2px 10px rgba(0,0,0,0.2)'}}>
+                <div style={{display:'flex', gap:10, marginBottom:10}}>
+                    {/* FILTER PENCARIAN */}
+                    <div style={{flex:1}}>
+                        <small style={{color:'#666', fontWeight:'bold'}}>1. Cari Nama Siswa</small>
+                        <input 
+                            type="text" 
+                            placeholder="🔍 Ketik nama..." 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{width:'100%', padding:10, border:'1px solid #3498db', borderRadius:5, marginTop:5}}
+                        />
+                    </div>
+                    {/* DROPDOWN HASIL FILTER */}
+                    <div style={{flex:1}}>
+                        <small style={{color:'#666', fontWeight:'bold'}}>2. Pilih dari Daftar</small>
+                        <select 
+                            value={selectedStudentId} 
+                            onChange={e=>setSelectedStudentId(e.target.value)} 
+                            style={{width:'100%', padding:10, border:'1px solid #ccc', borderRadius:5, marginTop:5, background: filteredStudents.length === 0 ? '#eee' : 'white'}}
+                        >
+                            <option value="">
+                                {filteredStudents.length === 0 ? "⚠️ Nama tidak ditemukan" : "-- Klik untuk Pilih --"}
+                            </option>
+                            {filteredStudents.map(s => (
+                                <option key={s.id} value={s.id}>{s.nama} ({s.kelasSekolah})</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                <div style={{display:'flex', gap:10, alignItems:'end'}}>
+                    <div style={{flex:1}}>
+                        <small style={{color:'#666', fontWeight:'bold'}}>3. Periode Laporan</small>
+                        <input type="month" value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{width:'100%', padding:9, borderRadius:5, border:'1px solid #ccc', display:'block'}} />
+                    </div>
+                    <button 
+                        onClick={handleDownloadPDF} 
+                        disabled={!selectedStudentId || isPrinting} 
+                        style={{flex:1, height:42, background: isPrinting?'#95a5a6':'#e74c3c', color:'white', border:'none', borderRadius:5, cursor:'pointer', fontWeight:'bold', display:'flex', alignItems:'center', justifyContent:'center', gap:5}}
+                    >
+                        {isPrinting ? '⏳ Memproses...' : '📄 DOWNLOAD PDF (HD)'}
+                    </button>
+                </div>
             </div>
 
             {/* === AREA KERTAS A4 (YANG AKAN DICETAK) === */}
