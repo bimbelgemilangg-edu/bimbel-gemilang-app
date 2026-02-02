@@ -8,9 +8,9 @@ const Dashboard = () => {
   const [stats, setStats] = useState({ siswa: 0, guru: 0, tagihan: 0 });
   const [todaySchedules, setTodaySchedules] = useState([]);
   const [duePayments, setDuePayments] = useState([]);
-  const [recentLogs, setRecentLogs] = useState([]); // State untuk Log Guru
+  const [recentLogs, setRecentLogs] = useState([]); 
 
-  // TO-DO LIST (Local Storage)
+  // TO-DO LIST
   const [todos, setTodos] = useState(() => {
     const saved = localStorage.getItem('adminTodos');
     return saved ? JSON.parse(saved) : [
@@ -26,7 +26,7 @@ const Dashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // 2. LOAD DATA (TERMASUK LOG GURU)
+  // 2. LOAD DATA
   useEffect(() => {
     const fetchData = async () => {
         try {
@@ -34,27 +34,33 @@ const Dashboard = () => {
             const snapSiswa = await getDocs(collection(db, "students"));
             const snapGuru = await getDocs(collection(db, "teachers"));
             
-            // B. LOG AKTIVITAS GURU (TERBARU) - Ini solusi agar muncul di dashboard
+            // B. LOG AKTIVITAS GURU
             const qLogs = query(
                 collection(db, "teacher_logs"), 
                 orderBy("tanggal", "desc"),
-                limit(5) // Ambil 5 data terakhir saja agar ringan
+                limit(5)
             );
             const snapLogs = await getDocs(qLogs);
             const logsData = snapLogs.docs.map(d => ({id: d.id, ...d.data()}));
-            // Sortir lagi by waktu untuk akurasi jam di hari yang sama
             logsData.sort((a,b) => new Date(b.tanggal + ' ' + b.waktu) - new Date(a.tanggal + ' ' + a.waktu));
             setRecentLogs(logsData);
 
-            // C. JADWAL HARI INI
-            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            const todayName = days[new Date().getDay()];
+            // --- PERBAIKAN UTAMA DI SINI (JADWAL HARI INI) ---
             
-            const qJadwal = query(collection(db, "jadwal_bimbel"), where("day", "==", todayName));
+            // 1. Ambil format tanggal hari ini: YYYY-MM-DD (Sesuai format di SchedulePage)
+            const todayStr = new Date().toISOString().split('T')[0]; 
+            
+            // 2. Query field 'dateStr' bukan 'day'
+            const qJadwal = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr));
+            
             const snapJadwal = await getDocs(qJadwal);
             const jadwalList = snapJadwal.docs.map(d => ({id: d.id, ...d.data()}));
+            
+            // Sortir jam (pagi ke malam)
             jadwalList.sort((a,b) => a.start.localeCompare(b.start));
             setTodaySchedules(jadwalList);
+
+            // ------------------------------------------------
 
             // D. TAGIHAN
             const tagihanList = [];
@@ -158,7 +164,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* 2. LIVE MONITORING GURU (FITUR YANG DIMINTA) */}
+        {/* 2. LIVE MONITORING GURU */}
         <div style={{...styles.cardContent, marginBottom: 20}}>
             <div style={styles.sectionHeader}>
                 <h3 style={{margin:0, color:'#2c3e50', display:'flex', alignItems:'center', gap:10}}>
