@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { collection, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, getDoc } from "firebase/firestore";
 
-// LIBRARY DOWNLOAD
+// --- LIBRARY DOWNLOAD (SUDAH TERINSTALL) ---
 import jsPDF from 'jspdf';
-import 'jspdf-autotable'; // <--- Wajib install ini
+import autoTable from 'jspdf-autotable'; 
 import * as XLSX from 'xlsx';
 
 const TransactionHistory = () => {
@@ -39,21 +39,21 @@ const TransactionHistory = () => {
   const totalKeluar = filteredData.filter(t => t.type === 'Pengeluaran').reduce((a, b) => a + parseInt(b.amount || 0), 0);
   const arusKasBersih = totalMasuk - totalKeluar;
 
-  // --- FUNGSI DOWNLOAD PDF ---
+  // --- FUNGSI DOWNLOAD PDF (FIXED) ---
   const downloadPDF = () => {
     if (filteredData.length === 0) return alert("⚠️ Data Kosong! Tidak ada yang bisa didownload.");
 
     try {
         const doc = new jsPDF();
 
-        // Header
+        // 1. Header Laporan
         doc.setFontSize(18);
         doc.text("BIMBEL GEMILANG", 105, 15, null, null, "center");
         doc.setFontSize(10);
         doc.text(`Laporan Mutasi Keuangan: ${filterMode === 'bulan' ? filterDate : "SEMUA DATA"}`, 105, 22, null, null, "center");
-        doc.line(10, 25, 200, 25); // Garis pemisah
+        doc.line(10, 25, 200, 25); // Garis
 
-        // Summary Box
+        // 2. Ringkasan Keuangan
         doc.setFontSize(10);
         doc.text(`Total Pemasukan : Rp ${totalMasuk.toLocaleString('id-ID')}`, 14, 35);
         doc.text(`Total Pengeluaran : Rp ${totalKeluar.toLocaleString('id-ID')}`, 14, 41);
@@ -61,41 +61,36 @@ const TransactionHistory = () => {
         doc.text(`Sisa Kas Bersih : Rp ${arusKasBersih.toLocaleString('id-ID')}`, 14, 47);
         doc.setFont(undefined, 'normal');
 
-        // Table Content
-        const tableColumn = ["Tanggal", "Tipe", "Kategori & Ket", "Metode", "Masuk", "Keluar"];
-        const tableRows = [];
+        // 3. Persiapan Data Tabel
+        const tableBody = filteredData.map(t => [
+            t.date,
+            t.type,
+            `${t.category}\n(${t.note || '-'})`, 
+            t.method,
+            t.type === 'Pemasukan' ? parseInt(t.amount || 0).toLocaleString('id-ID') : "-",
+            t.type === 'Pengeluaran' ? parseInt(t.amount || 0).toLocaleString('id-ID') : "-"
+        ]);
 
-        filteredData.forEach(t => {
-            const amount = parseInt(t.amount || 0);
-            tableRows.push([
-                t.date,
-                t.type,
-                `${t.category}\n(${t.note || '-'})`, // Gabung Kategori & Note biar hemat kolom
-                t.method,
-                t.type === 'Pemasukan' ? amount.toLocaleString('id-ID') : "-",
-                t.type === 'Pengeluaran' ? amount.toLocaleString('id-ID') : "-"
-            ]);
-        });
-
-        doc.autoTable({
-            head: [tableColumn],
-            body: tableRows,
+        // 4. Generate Tabel
+        autoTable(doc, {
+            head: [["Tanggal", "Tipe", "Kategori & Ket", "Metode", "Masuk", "Keluar"]],
+            body: tableBody,
             startY: 55,
             theme: 'grid',
-            headStyles: { fillColor: [44, 62, 80] }, // Warna Gelap
+            headStyles: { fillColor: [44, 62, 80] }, 
             styles: { fontSize: 8, cellPadding: 2 },
             columnStyles: {
-                0: { cellWidth: 25 }, // Tanggal
-                1: { cellWidth: 20 }, // Tipe
-                4: { halign: 'right', fontStyle: 'bold', textColor: [39, 174, 96] }, // Masuk (Hijau)
-                5: { halign: 'right', fontStyle: 'bold', textColor: [192, 57, 43] }  // Keluar (Merah)
+                0: { cellWidth: 25 }, 
+                1: { cellWidth: 20 }, 
+                4: { halign: 'right', fontStyle: 'bold', textColor: [39, 174, 96] }, // Hijau
+                5: { halign: 'right', fontStyle: 'bold', textColor: [192, 57, 43] }  // Merah
             }
         });
 
         doc.save(`Laporan_Keuangan_${filterDate}.pdf`);
     } catch (error) {
-        console.error(error);
-        alert("Gagal Download PDF! Pastikan sudah install: npm install jspdf jspdf-autotable");
+        console.error("PDF Error:", error);
+        alert("Gagal Download PDF! Error: " + error.message);
     }
   };
 
@@ -104,31 +99,23 @@ const TransactionHistory = () => {
     if (filteredData.length === 0) return alert("⚠️ Data Kosong! Tidak ada yang bisa didownload.");
 
     try {
+        // 1. Mapping Data
         const dataExcel = filteredData.map((t, index) => ({
             "No": index + 1,
             "Tanggal": t.date,
             "Tipe Transaksi": t.type,
             "Kategori": t.category,
-            "Keterangan": t.note,
+            "Keterangan": t.note || "-",
             "Metode Bayar": t.method,
-            // Pastikan ini Angka (Integer) supaya bisa disum di Excel
-            "Pemasukan (Rp)": t.type === 'Pemasukan' ? parseInt(t.amount || 0) : 0,
-            "Pengeluaran (Rp)": t.type === 'Pengeluaran' ? parseInt(t.amount || 0) : 0,
+            "Pemasukan (IDR)": t.type === 'Pemasukan' ? parseInt(t.amount || 0) : 0,
+            "Pengeluaran (IDR)": t.type === 'Pengeluaran' ? parseInt(t.amount || 0) : 0,
         }));
 
+        // 2. Buat Excel
         const worksheet = XLSX.utils.json_to_sheet(dataExcel);
         
-        // Atur Lebar Kolom Biar Rapi
-        const wscols = [
-            {wch: 5},  // No
-            {wch: 12}, // Tanggal
-            {wch: 15}, // Tipe
-            {wch: 20}, // Kategori
-            {wch: 30}, // Keterangan
-            {wch: 15}, // Metode
-            {wch: 15}, // Masuk
-            {wch: 15}  // Keluar
-        ];
+        // Atur Lebar Kolom
+        const wscols = [{wch:5}, {wch:12}, {wch:15}, {wch:20}, {wch:30}, {wch:15}, {wch:15}, {wch:15}];
         worksheet['!cols'] = wscols;
 
         const workbook = XLSX.utils.book_new();
@@ -136,7 +123,8 @@ const TransactionHistory = () => {
         
         XLSX.writeFile(workbook, `Laporan_Keuangan_${filterDate}.xlsx`);
     } catch (error) {
-        alert("Gagal Download Excel: " + error.message);
+        console.error("Excel Error:", error);
+        alert("Gagal Download Excel! Error: " + error.message);
     }
   };
 
@@ -173,6 +161,8 @@ const TransactionHistory = () => {
     <div>
         <div style={{background:'white', padding:20, borderRadius:10, marginBottom:20, boxShadow:'0 2px 5px rgba(0,0,0,0.05)'}}>
             <h2 style={{marginTop:0, color:'#2c3e50'}}>📊 Mutasi & Riwayat Transaksi</h2>
+            
+            {/* FILTER & DOWNLOAD BAR */}
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:20}}>
                 <div style={{display:'flex', gap:10, alignItems:'center'}}>
                     <select value={filterMode} onChange={e => setFilterMode(e.target.value)} style={{padding:10, borderRadius:5, border:'1px solid #ddd'}}>
@@ -181,12 +171,13 @@ const TransactionHistory = () => {
                     </select>
                     {filterMode === 'bulan' && <input type="month" value={filterDate} onChange={e=>setFilterDate(e.target.value)} style={{padding:8, borderRadius:5, border:'1px solid #ddd'}} />}
                 </div>
+                
                 <div style={{display:'flex', gap:10}}>
-                    <button onClick={downloadPDF} style={{background:'#e74c3c', color:'white', border:'none', padding:'10px 20px', borderRadius:5, cursor:'pointer', fontWeight:'bold', display:'flex', alignItems:'center', gap:5}}>
-                        📄 PDF
+                    <button onClick={downloadPDF} style={{background:'#e74c3c', color:'white', border:'none', padding:'10px 20px', borderRadius:5, cursor:'pointer', fontWeight:'bold', display:'flex', alignItems:'center', gap:5, boxShadow:'0 2px 5px rgba(0,0,0,0.2)'}}>
+                        📄 PDF (Laporan)
                     </button>
-                    <button onClick={downloadExcel} style={{background:'#27ae60', color:'white', border:'none', padding:'10px 20px', borderRadius:5, cursor:'pointer', fontWeight:'bold', display:'flex', alignItems:'center', gap:5}}>
-                        📊 EXCEL
+                    <button onClick={downloadExcel} style={{background:'#27ae60', color:'white', border:'none', padding:'10px 20px', borderRadius:5, cursor:'pointer', fontWeight:'bold', display:'flex', alignItems:'center', gap:5, boxShadow:'0 2px 5px rgba(0,0,0,0.2)'}}>
+                        📊 EXCEL (Data)
                     </button>
                 </div>
             </div>
@@ -246,7 +237,7 @@ const TransactionHistory = () => {
                                     </td>
                                     <td style={{padding:12}}>{t.method}</td>
                                     <td style={{padding:12, textAlign:'right', fontWeight:'bold', color: t.type==='Pemasukan'?'#27ae60':'#c0392b'}}>
-                                        {t.type === 'Pemasukan' ? '+' : '-'} {parseInt(t.amount).toLocaleString()}
+                                        {t.type === 'Pemasukan' ? '+' : '-'} {parseInt(t.amount || 0).toLocaleString()}
                                     </td>
                                     <td style={{padding:12, textAlign:'center'}}>
                                         <button onClick={()=>handleEditClick(t)} style={{marginRight:8, border:'none', background:'transparent', cursor:'pointer', fontSize:16}} title="Edit">✏️</button>
