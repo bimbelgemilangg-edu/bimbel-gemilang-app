@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../../components/Sidebar';
 import { db } from '../../../firebase';
-import { collection, query, getDocs, doc, writeBatch, deleteDoc, getDoc } from "firebase/firestore";
+import { collection, query, getDocs, doc, writeBatch, deleteDoc, getDoc, updateDoc } from "firebase/firestore";
 
 const TeacherSalaries = () => {
   const [loading, setLoading] = useState(true);
@@ -11,8 +11,12 @@ const TeacherSalaries = () => {
   const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10)); 
   
   const [rekap, setRekap] = useState([]);
-  const [viewDetail, setViewDetail] = useState(null); 
+  const [viewDetail, setViewDetail] = useState(null); // Data guru yang sedang dilihat slip-nya
   const [ownerPin, setOwnerPin] = useState("");
+
+  // STATE UNTUK EDIT DATA
+  const [editingLog, setEditingLog] = useState(null); // Log mana yang lagi diedit
+  const [editForm, setEditForm] = useState({ program: '', detail: '', nominal: 0 });
 
   // 1. AMBIL PIN OWNER
   useEffect(() => {
@@ -56,11 +60,20 @@ const TeacherSalaries = () => {
         guruMap[log.teacherId].rincian.push(log);
       });
 
+      // Sort rincian per tanggal
       Object.values(guruMap).forEach(guru => {
           guru.rincian.sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal));
       });
 
-      setRekap(Object.values(guruMap));
+      const result = Object.values(guruMap);
+      setRekap(result);
+
+      // SINKRONISASI REALTIME (PENTING AGAR SETELAH EDIT, TAMPILAN TIDAK TERTUTUP)
+      if (viewDetail) {
+          const updatedGuru = result.find(g => g.id === viewDetail.id);
+          if (updatedGuru) setViewDetail(updatedGuru);
+      }
+
     } catch (error) {
       console.error(error);
     } finally {
@@ -92,7 +105,32 @@ const TeacherSalaries = () => {
     await deleteDoc(doc(db, "teacher_logs", logId));
     alert("🗑️ Data dihapus.");
     fetchData(); 
-    setViewDetail(null); 
+  };
+
+  // --- FITUR BARU: EDIT LOG (Admin Ganti Jenis/Nominal) ---
+  const handleEditClick = (item) => {
+      setEditingLog(item);
+      setEditForm({
+          program: item.program,
+          detail: item.detail,
+          nominal: item.nominal
+      });
+  };
+
+  const handleSaveEdit = async () => {
+      if(!editingLog) return;
+      try {
+          await updateDoc(doc(db, "teacher_logs", editingLog.id), {
+              program: editForm.program,
+              detail: editForm.detail,
+              nominal: parseInt(editForm.nominal)
+          });
+          alert("✅ Data Berhasil Diupdate!");
+          setEditingLog(null); // Tutup modal edit
+          fetchData(); // Refresh data otomatis
+      } catch (e) {
+          alert("Gagal update: " + e.message);
+      }
   };
 
   const handlePrint = () => window.print();
@@ -102,28 +140,21 @@ const TeacherSalaries = () => {
       <Sidebar />
       <div style={{marginLeft:250, padding:30, width:'100%', fontFamily:'sans-serif'}}>
         
-        {/* === CSS SUPER RAPI UNTUK A4 === */}
+        {/* CSS CETAK */}
         {viewDetail ? (
             <style>{`
                 @media print { 
-                    @page { size: A4; margin: 15mm; } /* Margin Kertas A4 Pas */
+                    @page { size: A4; margin: 15mm; }
                     body * { visibility: hidden; }
                     #slip-gaji-area, #slip-gaji-area * { visibility: visible; }
-                    #slip-gaji-area { 
-                        position: absolute; left: 0; top: 0; width: 100%; 
-                        padding: 0; margin: 0; font-size: 12pt; 
-                    }
-                    table { page-break-inside: auto; width: 100%; }
-                    tr { page-break-inside: avoid; page-break-after: auto; } /* Jangan potong baris */
-                    thead { display: table-header-group; } /* Header tabel ulang di halaman baru */
-                    tfoot { display: table-footer-group; }
+                    #slip-gaji-area { position: absolute; left: 0; top: 0; width: 100%; }
                     .no-print { display: none !important; }
                 }
             `}</style>
         ) : (
             <style>{`
                 @media print {
-                    @page { size: A4 landscape; margin: 10mm; } /* Landscape utk Rekap Lebar */
+                    @page { size: A4 landscape; margin: 10mm; }
                     .sidebar, .no-print { display: none !important; }
                     .print-area { width: 100% !important; margin: 0 !important; box-shadow: none !important; }
                     body { background: white !important; font-size: 11pt; }
@@ -151,7 +182,7 @@ const TeacherSalaries = () => {
             </div>
         </div>
 
-        {/* TABEL DATA UTAMA */}
+        {/* TABEL REKAP UTAMA */}
         <div className="print-area" style={{background:'white', padding:20, borderRadius:10, boxShadow:'0 2px 5px rgba(0,0,0,0.1)'}}>
              <h3 style={{textAlign:'center', borderBottom:'2px solid #333', paddingBottom:10}}>
                  LAPORAN REKAP GAJI GURU ({startDate} s/d {endDate})
@@ -192,10 +223,10 @@ const TeacherSalaries = () => {
              </table>
         </div>
 
-        {/* MODAL SLIP GAJI */}
+        {/* MODAL SLIP GAJI (DETAIL) */}
         {viewDetail && (
             <div className="no-print-overlay" style={{position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.5)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:1000}}>
-                <div style={{background:'white', width:'210mm', height:'90vh', overflowY:'auto', padding:'20px', borderRadius:10, position:'relative'}}> {/* Ukuran Kertas A4 */}
+                <div style={{background:'white', width:'210mm', height:'90vh', overflowY:'auto', padding:'20px', borderRadius:10, position:'relative'}}>
                     
                     {/* TOMBOL KONTROL */}
                     <div className="no-print" style={{textAlign:'right', marginBottom:20, borderBottom:'1px solid #ddd', paddingBottom:10}}>
@@ -203,7 +234,7 @@ const TeacherSalaries = () => {
                          <button onClick={()=>setViewDetail(null)} style={{padding:'8px 15px', background:'#c0392b', color:'white', border:'none', borderRadius:5, cursor:'pointer'}}>TUTUP X</button>
                     </div>
 
-                    {/* AREA KERTAS SLIP (A4 STYLE) */}
+                    {/* AREA KERTAS SLIP */}
                     <div id="slip-gaji-area" style={{padding:'20px 40px', border:'1px solid #ddd', minHeight:'290mm'}}>
                         <div style={{textAlign:'center', borderBottom:'3px double #000', paddingBottom:20, marginBottom:30}}>
                             <h2 style={{margin:0, fontSize:'24pt', fontWeight:'bold'}}>BIMBEL GEMILANG</h2>
@@ -227,7 +258,7 @@ const TeacherSalaries = () => {
                                     <th style={{textAlign:'left', padding:'8px 5px'}}>Tanggal</th>
                                     <th style={{textAlign:'left', padding:'8px 5px'}}>Aktivitas & Keterangan</th>
                                     <th style={{textAlign:'right', padding:'8px 5px'}}>Nominal (Rp)</th>
-                                    <th className="no-print" style={{textAlign:'center', padding:'8px 5px'}}>Hapus</th>
+                                    <th className="no-print" style={{textAlign:'center', padding:'8px 5px', width:80}}>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -244,7 +275,22 @@ const TeacherSalaries = () => {
                                             {item.nominal.toLocaleString('id-ID')}
                                         </td>
                                         <td className="no-print" style={{textAlign:'center', verticalAlign:'top'}}>
-                                            <button onClick={()=>handleDeleteLog(item.id)} style={{background:'red', color:'white', border:'none', borderRadius:3, fontSize:'10pt', padding:'2px 5px', cursor:'pointer'}}>X</button>
+                                            {/* TOMBOL EDIT */}
+                                            <button 
+                                                onClick={()=>handleEditClick(item)} 
+                                                title="Edit Nominal/Jenis"
+                                                style={{background:'#f39c12', color:'white', border:'none', borderRadius:3, fontSize:'10pt', padding:'2px 5px', cursor:'pointer', marginRight:5}}
+                                            >
+                                                ✏️
+                                            </button>
+                                            {/* TOMBOL HAPUS */}
+                                            <button 
+                                                onClick={()=>handleDeleteLog(item.id)} 
+                                                title="Hapus Log"
+                                                style={{background:'red', color:'white', border:'none', borderRadius:3, fontSize:'10pt', padding:'2px 5px', cursor:'pointer'}}
+                                            >
+                                                X
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -271,6 +317,27 @@ const TeacherSalaries = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* MODAL EDIT KECIL (POPUP DI ATAS SLIP) */}
+                    {editingLog && (
+                        <div style={{position:'fixed', top:'50%', left:'50%', transform:'translate(-50%, -50%)', background:'white', padding:20, borderRadius:10, boxShadow:'0 0 20px rgba(0,0,0,0.5)', width:300, zIndex:1100, border:'2px solid #2c3e50'}}>
+                            <h3 style={{marginTop:0, color:'#2c3e50', textAlign:'center'}}>✏️ Edit Laporan</h3>
+                            
+                            <label style={{display:'block', fontSize:12, fontWeight:'bold', marginTop:10}}>Program/Jenis:</label>
+                            <input type="text" value={editForm.program} onChange={e=>setEditForm({...editForm, program: e.target.value})} style={{width:'100%', padding:8, border:'1px solid #ccc', borderRadius:5, boxSizing:'border-box'}} />
+
+                            <label style={{display:'block', fontSize:12, fontWeight:'bold', marginTop:10}}>Keterangan:</label>
+                            <input type="text" value={editForm.detail} onChange={e=>setEditForm({...editForm, detail: e.target.value})} style={{width:'100%', padding:8, border:'1px solid #ccc', borderRadius:5, boxSizing:'border-box'}} />
+
+                            <label style={{display:'block', fontSize:12, fontWeight:'bold', marginTop:10}}>Nominal (Rp):</label>
+                            <input type="number" value={editForm.nominal} onChange={e=>setEditForm({...editForm, nominal: e.target.value})} style={{width:'100%', padding:8, border:'1px solid #ccc', borderRadius:5, boxSizing:'border-box'}} />
+
+                            <div style={{display:'flex', gap:10, marginTop:20}}>
+                                <button onClick={()=>setEditingLog(null)} style={{flex:1, padding:10, background:'#ccc', border:'none', borderRadius:5, cursor:'pointer'}}>Batal</button>
+                                <button onClick={handleSaveEdit} style={{flex:1, padding:10, background:'#27ae60', color:'white', border:'none', borderRadius:5, cursor:'pointer', fontWeight:'bold'}}>SIMPAN</button>
+                            </div>
+                        </div>
+                    )}
 
                 </div>
             </div>
