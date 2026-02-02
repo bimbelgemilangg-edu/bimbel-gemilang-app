@@ -16,7 +16,7 @@ const SchedulePage = () => {
   const [activePlanet, setActivePlanet] = useState("");
   const [editId, setEditId] = useState(null); 
 
-  // DEFINISI STATE FORM DEFAULT (Agar konsisten saat reset)
+  // DEFINISI STATE FORM DEFAULT
   const defaultForm = {
     start: "14:00", end: "15:30", 
     program: "Reguler", level: "SD",
@@ -25,13 +25,13 @@ const SchedulePage = () => {
   };
   const [formData, setFormData] = useState(defaultForm);
 
-  // FILTER SISWA
+  // FILTER SISWA (STATE)
   const [filterJenjang, setFilterJenjang] = useState("Semua"); 
   const [filterKelas, setFilterKelas] = useState(""); 
 
   const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
 
-  // HELPER: FORMAT TANGGAL YANG AMAN (Mencegah Mundur Hari)
+  // HELPER TANGGAL AMAN
   const getSafeDateString = (dateObj) => {
     const year = dateObj.getFullYear();
     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -58,16 +58,15 @@ const SchedulePage = () => {
 
   useEffect(() => { fetchData(); }, [selectedDate]);
 
-  // --- FUNGSI BUKA MODAL (DIPERBAIKI UNTUK MENCEGAH DATA TERTUKAR) ---
+  // --- BUKA MODAL (RESET FORM TOTAL) ---
   const handleOpenModal = (planet, isEdit = false, item = null) => {
       setActivePlanet(planet);
       
-      // Reset Filter Pencarian Siswa (Supaya admin tidak bingung)
+      // Reset Filter agar semua siswa muncul dulu
       setFilterJenjang("Semua");
       setFilterKelas("");
 
       if (isEdit && item) {
-          // MODE EDIT: Isi form dengan data lama
           setEditId(item.id);
           setFormData({
               start: item.start,
@@ -76,33 +75,31 @@ const SchedulePage = () => {
               level: item.level || "SD",
               title: item.title || "",
               booker: item.booker || "",
-              // Pastikan mengambil ID siswa dengan benar
               selectedStudents: item.students ? item.students.map(s => s.id) : [],
               repeat: "Once"
           });
       } else {
-          // MODE TAMBAH BARU: Wajib Reset Total!
+          // WAJIB: Reset form agar data siswa lama hilang
           setEditId(null);
-          setFormData({ ...defaultForm }); // Reset ke default bersih
+          setFormData({ ...defaultForm }); 
       }
       setIsModalOpen(true);
   };
 
-  // --- LOGIKA SIMPAN (DIPERBAIKI UNTUK TANGGAL & ZONA WAKTU) ---
+  // --- SIMPAN DATA (FIX TANGGAL & SISWA) ---
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.booker) return alert("Pilih Guru!");
     
-    // Validasi Data Siswa (Pastikan Data Fresh dari Database)
+    // Ambil detail siswa berdasarkan ID yang terpilih
     const studentsFullData = formData.selectedStudents.map(id => {
         const s = availableStudents.find(stud => stud.id === id);
-        // Jika siswa dihapus tapi ID masih nyangkut, filter out (return null)
         return s ? { id: s.id, nama: s.nama, kelas: s.kelasSekolah || "-" } : null;
-    }).filter(Boolean); // Hapus yang null
+    }).filter(Boolean);
 
     try {
         if (editId) {
-            // === UPDATE JADWAL ===
+            // UPDATE
             await updateDoc(doc(db, "jadwal_bimbel", editId), {
                 start: formData.start,
                 end: formData.end,
@@ -114,12 +111,11 @@ const SchedulePage = () => {
             });
             alert("✅ Jadwal Berhasil Diupdate!");
         } else {
-            // === INSERT JADWAL BARU ===
+            // BARU
             const batch = writeBatch(db);
             const loopCount = formData.repeat === 'Monthly' ? 4 : 1;
             
-            // FIX TANGGAL MUNDUR: Clone tanggal & Set jam ke Siang (12:00)
-            // Ini mencegah pergeseran tanggal saat looping karena masalah timezone
+            // Fix Tanggal Mundur: Set jam ke siang
             let tempDate = new Date(selectedDate); 
             tempDate.setHours(12, 0, 0, 0); 
 
@@ -145,11 +141,10 @@ const SchedulePage = () => {
                         title: formData.title,
                         booker: formData.booker,
                         code: `R-${Math.floor(Math.random()*1000)}`, 
-                        students: studentsFullData, 
+                        students: studentsFullData, // Data siswa bersih
                         isRecurring: formData.repeat === 'Monthly' 
                     });
                 }
-                // Tambah 7 hari
                 tempDate.setDate(tempDate.getDate() + 7);
             }
             await batch.commit(); 
@@ -172,7 +167,7 @@ const SchedulePage = () => {
     }
   };
 
-  // RENDER KALENDER
+  // HELPER UI
   const renderCalendar = () => {
     const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
     const days = [];
@@ -295,13 +290,23 @@ const SchedulePage = () => {
                 <label>Materi / Judul:</label>
                 <input type="text" value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} style={styles.input} />
 
-                {/* PILIH SISWA */}
+                {/* PILIH SISWA (DIPERBAIKI: ADA FILTER KELAS) */}
                 <div style={{border:'1px solid #ddd', padding:10, borderRadius:5, marginTop:10}}>
                     <div style={{display:'flex', gap:5, marginBottom:5}}>
-                        <input type="text" placeholder="Cari Siswa..." value={filterKelas} onChange={e=>setFilterKelas(e.target.value)} style={{flex:1, padding:5}} />
+                        {/* FILTER DROPDOWN JENJANG */}
+                        <select value={filterJenjang} onChange={e=>setFilterJenjang(e.target.value)} style={{padding:5, borderRadius:4, border:'1px solid #ccc'}}>
+                            <option value="Semua">Semua Jenjang</option>
+                            <option value="SD">SD</option>
+                            <option value="SMP">SMP</option>
+                            <option value="SMA">SMA</option>
+                        </select>
+                        {/* SEARCH NAMA */}
+                        <input type="text" placeholder="Cari Nama..." value={filterKelas} onChange={e=>setFilterKelas(e.target.value)} style={{flex:1, padding:5, borderRadius:4, border:'1px solid #ccc'}} />
                     </div>
+                    
                     <div style={{height:150, overflowY:'auto', background:'#fdfdfd', border:'1px solid #eee'}}>
-                        {getFilteredStudents().map(s => (
+                        {getFilteredStudents().length === 0 ? <small style={{padding:5, color:'#999'}}>Tidak ditemukan...</small> : 
+                         getFilteredStudents().map(s => (
                             <div key={s.id} style={{padding:5, borderBottom:'1px solid #eee', fontSize:13}}>
                                 <input type="checkbox" 
                                     checked={formData.selectedStudents.includes(s.id)} 
@@ -310,11 +315,13 @@ const SchedulePage = () => {
                                         if(e.target.checked) setFormData({...formData, selectedStudents: [...ids, s.id]});
                                         else setFormData({...formData, selectedStudents: ids.filter(x => x !== s.id)});
                                     }} 
-                                /> {s.nama} <small style={{color:'grey'}}>({s.kelasSekolah})</small>
+                                /> 
+                                <span style={{marginLeft:5}}>{s.nama}</span>
+                                <small style={{color:'grey', marginLeft:5}}>({s.kelasSekolah || '-'})</small>
                             </div>
                         ))}
                     </div>
-                    <small>Terpilih: {formData.selectedStudents.length} Siswa</small>
+                    <small style={{display:'block', marginTop:5, color:'blue'}}>Terpilih: {formData.selectedStudents.length} Siswa</small>
                 </div>
 
                 <div style={{marginTop:20, display:'flex', gap:10}}>
