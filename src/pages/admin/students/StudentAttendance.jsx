@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar'; // Sesuaikan path ini jika perlu
-import { db } from '../../firebase';
+// ✅ PERBAIKAN PENTING: Menggunakan ../../../ (naik 3 level)
+import Sidebar from '../../../components/Sidebar'; 
+import { db } from '../../../firebase'; 
 import { doc, getDoc, collection, query, where, getDocs, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
 
 const StudentAttendance = () => {
@@ -33,7 +34,8 @@ const StudentAttendance = () => {
       }
 
       // Ambil History Absensi
-      const q = query(collection(db, "attendance"), where("studentId", "==", id)); // Pastikan nama koleksi sesuai ('attendance' atau 'student_attendance')
+      // Menggunakan koleksi 'attendance' (Sesuai kode Guru sebelumnya)
+      const q = query(collection(db, "attendance"), where("studentId", "==", id));
       const querySnapshot = await getDocs(q);
       const data = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       
@@ -42,7 +44,7 @@ const StudentAttendance = () => {
       setAttendance(data);
 
     } catch (error) { 
-        console.error("Error:", error); 
+        console.error("Error fetching data:", error); 
     } finally {
         setLoading(false);
     }
@@ -72,7 +74,7 @@ const StudentAttendance = () => {
     }
   };
 
-  // 3. HAPUS ABSEN (Fitur Tambahan Penting)
+  // 3. HAPUS ABSEN
   const handleDelete = async (itemId) => {
       if(window.confirm("Yakin ingin menghapus data absensi ini?")) {
           try {
@@ -90,17 +92,14 @@ const StudentAttendance = () => {
     e.preventDefault();
     if(!student) return;
     try {
-        // Gunakan ID unik agar tidak duplikat di hari yang sama (Opsional, tapi disarankan)
-        // const customId = `${id}_${newDate}`; 
-        
         await addDoc(collection(db, "attendance"), {
             studentId: id,
-            namaSiswa: student.nama, // Simpan nama agar mudah dibaca di query lain
+            namaSiswa: student.nama, 
             tanggal: newDate,
-            mapel: "Input Manual Admin",
+            mapel: "Input Manual Admin", // Penanda ini inputan manual
             status: newStatus,
             keterangan: newKet || "-",
-            timestamp: new Date() // Untuk sorting yang lebih akurat
+            timestamp: new Date() // Tanggal server
         });
         alert("✅ Absen Manual Tersimpan");
         setNewKet("");
