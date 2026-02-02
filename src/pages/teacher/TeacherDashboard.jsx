@@ -84,7 +84,7 @@ const TeacherDashboard = () => {
 
   return (
     <div style={{minHeight:'100vh', background:'#f4f7f6', fontFamily:'sans-serif', paddingBottom:50}}>
-      {/* HEADER BARU */}
+      {/* HEADER */}
       <div style={{background:'#2c3e50', padding:'20px', color:'white', boxShadow:'0 4px 6px rgba(0,0,0,0.1)'}}>
         <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:15}}>
             <div>
@@ -96,31 +96,23 @@ const TeacherDashboard = () => {
             </button>
         </div>
 
-        {/* --- TOMBOL INPUT NILAI (PASTI MUNCUL) --- */}
-        <div style={{marginBottom:15}}>
+        {/* --- TOMBOL UNGU & ORANGE (INPUT & EDIT) --- */}
+        <div style={{marginBottom:15, display:'flex', gap:10}}>
              <button 
                 onClick={() => navigate('/guru/grades/input', { state: { teacher: guru } })} 
-                style={{
-                    width: '100%', 
-                    background:'#8e44ad', 
-                    border:'2px solid #9b59b6', 
-                    color:'white', 
-                    borderRadius:8, 
-                    padding:'12px', 
-                    cursor:'pointer', 
-                    fontWeight:'bold', 
-                    fontSize:15, 
-                    display:'flex', 
-                    justifyContent:'center', 
-                    alignItems:'center', 
-                    gap:10,
-                    boxShadow: '0 4px 0 rgba(0,0,0,0.2)'
-                }}
+                style={{flex:2, background:'#8e44ad', border:'none', color:'white', borderRadius:8, padding:'12px', cursor:'pointer', fontWeight:'bold', display:'flex', justifyContent:'center', alignItems:'center', gap:5, boxShadow: '0 4px 0 rgba(0,0,0,0.2)'}}
              >
-                📝 INPUT NILAI / RAPOR SISWA
+                📝 INPUT NILAI
+             </button>
+             
+             <button 
+                onClick={() => navigate('/guru/grades/manage', { state: { teacher: guru } })} 
+                style={{flex:1, background:'#f39c12', border:'none', color:'white', borderRadius:8, padding:'12px', cursor:'pointer', fontWeight:'bold', display:'flex', justifyContent:'center', alignItems:'center', gap:5, boxShadow: '0 4px 0 rgba(0,0,0,0.2)'}}
+             >
+                🛠️ EDIT
              </button>
         </div>
-        {/* ----------------------------------------- */}
+        {/* ------------------------------------------- */}
 
         <div style={{display:'flex', gap:10, overflowX:'auto', paddingBottom:5}}>
              <button onClick={() => navigate('/guru/history', { state: { teacher: guru } })} style={styles.btnMenuSmall}>📄 Riwayat</button>
