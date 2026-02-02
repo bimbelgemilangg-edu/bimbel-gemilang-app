@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../../components/Sidebar';
 import { db } from '../../../firebase'; 
-import { collection, addDoc, getDocs, deleteDoc, doc, getDoc, writeBatch, updateDoc } from "firebase/firestore"; // Tambah updateDoc
+import { collection, getDocs, deleteDoc, doc, getDoc, writeBatch, updateDoc } from "firebase/firestore";
 
 const SchedulePage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -14,23 +14,30 @@ const SchedulePage = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activePlanet, setActivePlanet] = useState("");
-  
-  // STATE BARU: UNTUK MODE EDIT
   const [editId, setEditId] = useState(null); 
 
-  // FORM DATA
-  const [formData, setFormData] = useState({
+  // DEFINISI STATE FORM DEFAULT (Agar konsisten saat reset)
+  const defaultForm = {
     start: "14:00", end: "15:30", 
     program: "Reguler", level: "SD",
     title: "", booker: "", selectedStudents: [],
     repeat: "Once"
-  });
+  };
+  const [formData, setFormData] = useState(defaultForm);
 
-  // FILTER SISWA DI MODAL
+  // FILTER SISWA
   const [filterJenjang, setFilterJenjang] = useState("Semua"); 
   const [filterKelas, setFilterKelas] = useState(""); 
 
   const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
+
+  // HELPER: FORMAT TANGGAL YANG AMAN (Mencegah Mundur Hari)
+  const getSafeDateString = (dateObj) => {
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   const fetchData = async () => {
     try {
@@ -43,91 +50,59 @@ const SchedulePage = () => {
         const sSnap = await getDocs(collection(db, "students"));
         setAvailableStudents(sSnap.docs.map(d => ({ id: d.id, ...d.data() })));
         
-        const today = new Date().toISOString().split('T')[0];
-        const cSnap = await getDoc(doc(db, "settings", `daily_code_${today}`));
+        const todayStr = getSafeDateString(new Date());
+        const cSnap = await getDoc(doc(db, "settings", `daily_code_${todayStr}`));
         setDailyCode(cSnap.exists() ? cSnap.data().code : "⚠️ Belum Diset");
     } catch (e) { console.error("Error fetching:", e); }
   };
 
-  useEffect(() => { fetchData(); }, [selectedDate]); // Refresh saat tanggal ganti juga
+  useEffect(() => { fetchData(); }, [selectedDate]);
 
-  // --- LOGIKA FILTER SISWA ---
-  const getFilteredStudents = () => {
-    return availableStudents.filter(s => {
-        const isEnglishProgram = formData.program === 'English';
-        const studentIsEnglish = (s.detailProgram || "").includes("English");
+  // --- FUNGSI BUKA MODAL (DIPERBAIKI UNTUK MENCEGAH DATA TERTUKAR) ---
+  const handleOpenModal = (planet, isEdit = false, item = null) => {
+      setActivePlanet(planet);
+      
+      // Reset Filter Pencarian Siswa (Supaya admin tidak bingung)
+      setFilterJenjang("Semua");
+      setFilterKelas("");
 
-        if (isEnglishProgram && !studentIsEnglish) return false;
-        if (!isEnglishProgram && studentIsEnglish) return false;
-
-        if (filterJenjang !== "Semua") {
-             const jenjangStr = (s.kelasSekolah || "") + (s.detailProgram || "");
-             if (!jenjangStr.toUpperCase().includes(filterJenjang.toUpperCase())) return false;
-        }
-
-        if (filterKelas && !s.nama.toLowerCase().includes(filterKelas.toLowerCase())) return false;
-
-        return true;
-    });
-  };
-
-  const handleSelectAll = () => {
-    const filtered = getFilteredStudents();
-    const ids = filtered.map(s => s.id);
-    setFormData({ ...formData, selectedStudents: ids });
-  };
-
-  // --- CEK BENTROK ---
-  const checkCollision = (targetDateStr, newStart, newEnd, currentId = null) => {
-    // Filter jadwal lain di planet & tanggal yg sama, KECUALI jadwal yg sedang diedit
-    const existing = schedules.filter(s => 
-        s.planet === activePlanet && 
-        s.dateStr === targetDateStr &&
-        s.id !== currentId // Abaikan diri sendiri saat edit
-    );
-    return existing.some(s => (newStart < s.end && newEnd > s.start));
-  };
-
-  // --- FITUR EDIT (LOAD DATA KE FORM) ---
-  const handleEditClick = (item) => {
-      setEditId(item.id); // Tandai sedang edit ID ini
-      setActivePlanet(item.planet); // Pastikan planet sesuai
-      setFormData({
-          start: item.start,
-          end: item.end,
-          program: item.program || "Reguler",
-          level: item.level || "SD",
-          title: item.title || "",
-          booker: item.booker || "",
-          selectedStudents: item.students ? item.students.map(s => s.id) : [],
-          repeat: "Once" // Saat edit, default ke Once (edit satu aja)
-      });
+      if (isEdit && item) {
+          // MODE EDIT: Isi form dengan data lama
+          setEditId(item.id);
+          setFormData({
+              start: item.start,
+              end: item.end,
+              program: item.program || "Reguler",
+              level: item.level || "SD",
+              title: item.title || "",
+              booker: item.booker || "",
+              // Pastikan mengambil ID siswa dengan benar
+              selectedStudents: item.students ? item.students.map(s => s.id) : [],
+              repeat: "Once"
+          });
+      } else {
+          // MODE TAMBAH BARU: Wajib Reset Total!
+          setEditId(null);
+          setFormData({ ...defaultForm }); // Reset ke default bersih
+      }
       setIsModalOpen(true);
   };
 
-  // --- SIMPAN (BISA ADD BARU / UPDATE EDIT) ---
+  // --- LOGIKA SIMPAN (DIPERBAIKI UNTUK TANGGAL & ZONA WAKTU) ---
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.booker) return alert("Pilih Guru!");
     
-    // Siapkan Data Siswa Lengkap
+    // Validasi Data Siswa (Pastikan Data Fresh dari Database)
     const studentsFullData = formData.selectedStudents.map(id => {
         const s = availableStudents.find(stud => stud.id === id);
-        return s ? { id: s.id, nama: s.nama, kelas: s.kelasSekolah } : null;
-    }).filter(Boolean); 
-
-    let currentDate = new Date(selectedDate); 
-    const dateString = currentDate.toISOString().split('T')[0];
-
-    // Cek Tabrakan
-    if (checkCollision(dateString, formData.start, formData.end, editId)) {
-        alert(`⛔ GAGAL! Jadwal Tabrakan di Jam ${formData.start} - ${formData.end}`);
-        return;
-    }
+        // Jika siswa dihapus tapi ID masih nyangkut, filter out (return null)
+        return s ? { id: s.id, nama: s.nama, kelas: s.kelasSekolah || "-" } : null;
+    }).filter(Boolean); // Hapus yang null
 
     try {
         if (editId) {
-            // === LOGIKA UPDATE (EDIT) ===
+            // === UPDATE JADWAL ===
             await updateDoc(doc(db, "jadwal_bimbel", editId), {
                 start: formData.start,
                 end: formData.end,
@@ -138,25 +113,31 @@ const SchedulePage = () => {
                 students: studentsFullData
             });
             alert("✅ Jadwal Berhasil Diupdate!");
-
         } else {
-            // === LOGIKA TAMBAH BARU (ADD) ===
+            // === INSERT JADWAL BARU ===
             const batch = writeBatch(db);
             const loopCount = formData.repeat === 'Monthly' ? 4 : 1;
+            
+            // FIX TANGGAL MUNDUR: Clone tanggal & Set jam ke Siang (12:00)
+            // Ini mencegah pergeseran tanggal saat looping karena masalah timezone
+            let tempDate = new Date(selectedDate); 
+            tempDate.setHours(12, 0, 0, 0); 
 
             for (let i = 0; i < loopCount; i++) {
-                const curDateStr = currentDate.toISOString().split('T')[0];
+                const curDateStr = getSafeDateString(tempDate); 
                 
-                // Cek tabrakan di setiap looping tanggal
-                if (checkCollision(curDateStr, formData.start, formData.end)) {
-                    if(!window.confirm(`⚠️ Tanggal ${curDateStr} bentrok! Lewati tanggal ini dan lanjut sisanya?`)) {
-                        return; // Stop jika user pilih cancel
-                    }
-                } else {
+                // Cek Bentrok
+                const isClash = schedules.some(s => 
+                    s.planet === activePlanet && 
+                    s.dateStr === curDateStr && 
+                    (formData.start < s.end && formData.end > s.start)
+                );
+
+                if (!isClash || window.confirm(`Tanggal ${curDateStr} bentrok. Tetap simpan?`)) {
                     const newRef = doc(collection(db, "jadwal_bimbel"));
                     batch.set(newRef, {
                         planet: activePlanet,
-                        dateStr: curDateStr,
+                        dateStr: curDateStr, 
                         start: formData.start,
                         end: formData.end,
                         program: formData.program,
@@ -164,19 +145,20 @@ const SchedulePage = () => {
                         title: formData.title,
                         booker: formData.booker,
                         code: `R-${Math.floor(Math.random()*1000)}`, 
-                        students: studentsFullData,
+                        students: studentsFullData, 
                         isRecurring: formData.repeat === 'Monthly' 
                     });
                 }
-                currentDate.setDate(currentDate.getDate() + 7);
+                // Tambah 7 hari
+                tempDate.setDate(tempDate.getDate() + 7);
             }
             await batch.commit(); 
             alert(`✅ Sukses! Jadwal tersimpan.`);
         }
 
         setIsModalOpen(false);
-        setEditId(null); // Reset mode edit
-        fetchData(); // Refresh data agar tampilan update
+        setEditId(null);
+        fetchData(); 
 
     } catch (error) { 
         console.error(error); 
@@ -184,33 +166,29 @@ const SchedulePage = () => {
     }
   };
 
-  // --- HAPUS JADWAL ---
   const handleDelete = async (id) => {
     if(window.confirm("Yakin hapus jadwal ini?")) { 
-        try {
-            await deleteDoc(doc(db, "jadwal_bimbel", id)); 
-            alert("🗑️ Jadwal dihapus.");
-            fetchData(); // Refresh paksa biar ijonya ilang
-        } catch (e) {
-            alert("Gagal hapus.");
-        }
+        try { await deleteDoc(doc(db, "jadwal_bimbel", id)); fetchData(); } catch (e) { alert("Gagal hapus."); }
     }
   };
 
-  // UI HELPERS
-  const changeMonth = (v) => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + v, 1));
-  const formatDateStr = (date) => date.toISOString().split('T')[0];
-  
+  // RENDER KALENDER
   const renderCalendar = () => {
     const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
     const days = [];
     for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = formatDateStr(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d));
-      const hasEvent = schedules.some(s => s.dateStr === dateStr); // Cek jadwal
-      const isSelected = selectedDate.getDate() === d && selectedDate.getMonth() === currentMonth.getMonth();
+      const dateObj = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d);
+      const dateStr = getSafeDateString(dateObj);
+      const isSelected = getSafeDateString(selectedDate) === dateStr;
+      
       days.push(
-        <div key={d} onClick={() => setSelectedDate(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d))}
-          style={isSelected ? styles.dayActive : (hasEvent ? styles.dayEvent : styles.day)}>
+        <div key={d} onClick={() => setSelectedDate(dateObj)}
+          style={{
+             padding:8, textAlign:'center', cursor:'pointer', borderRadius:4, fontSize:14,
+             background: isSelected ? '#3498db' : 'white',
+             color: isSelected ? 'white' : 'black',
+             border: '1px solid #eee'
+          }}>
           {d}
         </div>
       );
@@ -218,76 +196,59 @@ const SchedulePage = () => {
     return days;
   };
 
-  const handleCloseModal = () => {
-      setIsModalOpen(false);
-      setEditId(null); // Reset form edit jika di-close
-      setFormData({ // Reset form data
-        start: "14:00", end: "15:30", program: "Reguler", level: "SD",
-        title: "", booker: "", selectedStudents: [], repeat: "Once"
-      });
+  const getFilteredStudents = () => {
+    return availableStudents.filter(s => {
+        if (filterKelas && !s.nama.toLowerCase().includes(filterKelas.toLowerCase())) return false;
+        if (filterJenjang !== "Semua") {
+            const info = (s.kelasSekolah || "") + (s.detailProgram || "");
+            if (!info.toUpperCase().includes(filterJenjang.toUpperCase())) return false;
+        }
+        return true;
+    });
   };
 
   return (
     <div style={{ display: 'flex' }}>
       <Sidebar />
       <div style={styles.mainContent}>
-        
-        <div style={styles.infoBar}>
-            <span>🔑 Kode Guru Hari Ini: <b>{dailyCode}</b></span>
+        <div style={styles.dateHeader}>
+            <h2>📅 {selectedDate.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}</h2>
         </div>
 
         <div style={styles.layoutGrid}>
             <div style={styles.leftCol}>
                 <div style={styles.card}>
-                    <div style={styles.calHeader}>
-                        <button onClick={()=>changeMonth(-1)}>◀</button> 
+                    <div style={{display:'flex', justifyContent:'space-between', marginBottom:10}}>
+                        <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))}>◀</button> 
                         <b>{currentMonth.toLocaleDateString('id-ID', {month:'long', year:'numeric'})}</b>
-                        <button onClick={()=>changeMonth(1)}>▶</button>
+                        <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}>▶</button>
                     </div>
-                    <div style={styles.calendarGrid}>{renderCalendar()}</div>
+                    <div style={{display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:5}}>{renderCalendar()}</div>
                 </div>
             </div>
 
             <div style={styles.rightCol}>
-                <div style={styles.dateHeader}>
-                    <h2>📅 {selectedDate.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}</h2>
-                    <span style={{color:'#eee'}}>Manajemen Jadwal & Konflik</span>
-                </div>
-
                 {PLANETS.map(planet => {
-                    const items = schedules.filter(s => s.planet === planet && s.dateStr === formatDateStr(selectedDate));
+                    const dateStr = getSafeDateString(selectedDate);
+                    const items = schedules.filter(s => s.planet === planet && s.dateStr === dateStr);
                     items.sort((a,b) => a.start.localeCompare(b.start));
 
                     return (
                         <div key={planet} style={styles.planetContainer}>
                             <div style={styles.planetHead}>
-                                <h3>🪐 {planet}</h3>
-                                {/* Tombol Tambah Baru */}
-                                <button onClick={() => { 
-                                    setActivePlanet(planet); 
-                                    setEditId(null); // Pastikan mode tambah baru
-                                    setFormData({ ...formData, repeat: 'Once', title:'', booker:'', selectedStudents:[] }); // Reset form
-                                    setIsModalOpen(true); 
-                                }} style={styles.btnAdd}>+ Isi Jadwal</button>
+                                <b>🪐 {planet}</b>
+                                <button onClick={() => handleOpenModal(planet)} style={styles.btnAdd}>+ Isi</button>
                             </div>
-                            <div style={styles.scheduleList}>
-                                {items.length === 0 ? <div style={styles.emptySlot}>⚪ Kosong</div> : items.map(item => (
-                                    <div key={item.id} style={item.program === 'English' ? styles.cardYellow : styles.cardGreen}>
-                                        <div style={{display:'flex', justifyContent:'space-between'}}>
-                                            <span style={{fontWeight:'bold', fontSize:15}}>⏰ {item.start} - {item.end}</span>
-                                            <span style={{fontSize:12, fontWeight:'bold', opacity:0.7}}>{item.program}</span>
-                                        </div>
-                                        <div style={{margin:'5px 0', fontSize:14}}>
-                                            <b>{item.title}</b> <br/>
-                                            👨‍🏫 {item.booker} ({item.level}) <br/>
-                                            👥 {item.students?.length || 0} Siswa
-                                        </div>
-                                        <div style={{textAlign:'right', marginTop:5}}>
-                                            {/* TOMBOL EDIT */}
-                                            <button onClick={()=>handleEditClick(item)} style={styles.btnLinkOrange}>✏️ Edit</button>
-                                            <span style={{color:'#ccc'}}> | </span>
-                                            {/* TOMBOL HAPUS */}
-                                            <button onClick={()=>handleDelete(item.id)} style={styles.btnLinkRed}>Hapus</button>
+                            <div style={{padding:10}}>
+                                {items.length === 0 ? <small style={{color:'#999'}}>Kosong</small> : items.map(item => (
+                                    <div key={item.id} style={{background:'#f9f9f9', padding:10, marginBottom:5, borderRadius:5, borderLeft:'4px solid #2ecc71'}}>
+                                        <div style={{fontWeight:'bold'}}>{item.start} - {item.end}</div>
+                                        <div>{item.title} <small>({item.program})</small></div>
+                                        <div style={{color:'#d35400', fontSize:13}}>👨‍🏫 {item.booker}</div>
+                                        <div style={{fontSize:12, color:'#7f8c8d'}}>👥 {item.students?.length || 0} Siswa</div>
+                                        <div style={{marginTop:5, fontSize:12}}>
+                                            <span onClick={()=>handleOpenModal(planet, true, item)} style={{cursor:'pointer', color:'blue', marginRight:10}}>Edit</span>
+                                            <span onClick={()=>handleDelete(item.id)} style={{cursor:'pointer', color:'red'}}>Hapus</span>
                                         </div>
                                     </div>
                                 ))}
@@ -298,87 +259,67 @@ const SchedulePage = () => {
             </div>
         </div>
 
-        {/* MODAL INPUT CERDAS (Bisa Edit / Tambah) */}
+        {/* MODAL INPUT */}
         {isModalOpen && (
           <div style={styles.overlay}>
             <div style={styles.modal}>
-              <h3>{editId ? `✏️ Edit Jadwal ${activePlanet}` : `➕ Booking ${activePlanet}`}</h3>
-              
+              <h3>{editId ? "✏️ Edit Jadwal" : "➕ Jadwal Baru"}</h3>
               <form onSubmit={handleSave}>
+                {/* JAM */}
                 <div style={styles.row}>
-                   <div style={{flex:1}}><label>Mulai</label><input type="time" value={formData.start} onChange={e=>setFormData({...formData, start:e.target.value})} style={styles.input} /></div>
-                   <div style={{flex:1}}><label>Selesai</label><input type="time" value={formData.end} onChange={e=>setFormData({...formData, end:e.target.value})} style={styles.input} /></div>
+                   <input type="time" value={formData.start} onChange={e=>setFormData({...formData, start:e.target.value})} style={styles.input} />
+                   <span style={{paddingTop:10}}>-</span>
+                   <input type="time" value={formData.end} onChange={e=>setFormData({...formData, end:e.target.value})} style={styles.input} />
                 </div>
-
-                {/* Opsi Ulang Hanya Muncul Jika BUKAN Edit */}
-                {!editId && (
-                    <div style={{background:'#e3f2fd', padding:10, borderRadius:5, marginBottom:10}}>
-                        <label style={{fontWeight:'bold', color:'#1565c0'}}>Frekuensi</label>
-                        <div style={{display:'flex', gap:15, marginTop:5}}>
-                            <label style={{cursor:'pointer'}}><input type="radio" name="repeat" checked={formData.repeat === 'Once'} onChange={()=>setFormData({...formData, repeat:'Once'})} /> Sekali (Hari Ini)</label>
-                            <label style={{cursor:'pointer'}}><input type="radio" name="repeat" checked={formData.repeat === 'Monthly'} onChange={()=>setFormData({...formData, repeat:'Monthly'})} /> Rutin (4 Minggu)</label>
-                        </div>
-                    </div>
-                )}
                 
+                {/* PROGRAM & REPEAT */}
                 <div style={styles.row}>
-                    <div style={{flex:1}}>
-                        <label>Program</label>
-                        <select value={formData.program} onChange={e=>setFormData({...formData, program:e.target.value})} style={styles.select}>
-                            <option value="Reguler">📚 Reguler</option>
-                            <option value="English">🇬🇧 English</option>
+                    <select value={formData.program} onChange={e=>setFormData({...formData, program:e.target.value})} style={styles.select}>
+                        <option value="Reguler">Reguler</option><option value="English">English</option>
+                    </select>
+                    {!editId && (
+                         <select value={formData.repeat} onChange={e=>setFormData({...formData, repeat:e.target.value})} style={styles.select}>
+                            <option value="Once">Sekali (Hari Ini)</option>
+                            <option value="Monthly">1 Bulan (4x)</option>
                         </select>
-                    </div>
-                    <div style={{flex:1}}>
-                        <label>Level</label>
-                        <select value={formData.level} onChange={e=>setFormData({...formData, level:e.target.value})} style={styles.select}>
-                            <option value="SD">SD / Kids</option>
-                            <option value="SMP">SMP / Junior</option>
-                            <option value="SMA">SMA / Pro</option>
-                        </select>
-                    </div>
+                    )}
                 </div>
 
-                <label>Guru Pengajar</label>
+                {/* GURU */}
+                <label>Guru Pengajar:</label>
                 <select required value={formData.booker} onChange={e => setFormData({...formData, booker: e.target.value})} style={styles.select}>
                     <option value="">-- Pilih Guru --</option>
                     {availableTeachers.map(t => <option key={t.id} value={t.nama}>{t.nama}</option>)}
                 </select>
 
-                <label>Materi / Mapel</label>
-                <input type="text" placeholder="Contoh: Matematika Bab 1" value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} style={styles.input} />
+                <label>Materi / Judul:</label>
+                <input type="text" value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} style={styles.input} />
 
-                {/* --- FITUR FILTER SISWA --- */}
-                <div style={{border:'1px solid #ccc', borderRadius:5, padding:10, marginTop:10}}>
-                    <label style={{fontWeight:'bold', color:'#2c3e50'}}>👥 Pilih Siswa</label>
+                {/* PILIH SISWA */}
+                <div style={{border:'1px solid #ddd', padding:10, borderRadius:5, marginTop:10}}>
                     <div style={{display:'flex', gap:5, marginBottom:5}}>
-                        <select value={filterJenjang} onChange={e=>setFilterJenjang(e.target.value)} style={{padding:5, fontSize:12, borderRadius:4}}>
-                            <option value="Semua">Semua Jenjang</option>
-                            <option value="SD">SD</option>
-                            <option value="SMP">SMP</option>
-                            <option value="SMA">SMA</option>
-                        </select>
-                        <input type="text" placeholder="Cari Nama..." value={filterKelas} onChange={e=>setFilterKelas(e.target.value)} style={{padding:5, fontSize:12, flex:1}} />
-                        <button type="button" onClick={handleSelectAll} style={{padding:5, fontSize:11, background:'#3498db', color:'white', border:'none', borderRadius:4, cursor:'pointer'}}>Pilih Semua</button>
+                        <input type="text" placeholder="Cari Siswa..." value={filterKelas} onChange={e=>setFilterKelas(e.target.value)} style={{flex:1, padding:5}} />
                     </div>
-                    <div style={{border:'1px solid #eee', padding:5, height:100, overflowY:'auto', background:'#fafafa'}}>
-                        {getFilteredStudents().length === 0 ? <small style={{color:'red'}}>Tidak ada siswa yg cocok.</small> : 
-                        getFilteredStudents().map(s => (
-                            <div key={s.id} style={{fontSize:13, padding:3, borderBottom:'1px dashed #eee'}}>
-                                <input type="checkbox" checked={formData.selectedStudents.includes(s.id)} onChange={(e) => {
-                                    const ids = formData.selectedStudents;
-                                    if(e.target.checked) setFormData({...formData, selectedStudents: [...ids, s.id]});
-                                    else setFormData({...formData, selectedStudents: ids.filter(x => x !== s.id)});
-                                }} /> <b>{s.nama}</b> <span style={{color:'#777'}}>({s.kelasSekolah || '-'})</span>
+                    <div style={{height:150, overflowY:'auto', background:'#fdfdfd', border:'1px solid #eee'}}>
+                        {getFilteredStudents().map(s => (
+                            <div key={s.id} style={{padding:5, borderBottom:'1px solid #eee', fontSize:13}}>
+                                <input type="checkbox" 
+                                    checked={formData.selectedStudents.includes(s.id)} 
+                                    onChange={(e) => {
+                                        const ids = formData.selectedStudents;
+                                        if(e.target.checked) setFormData({...formData, selectedStudents: [...ids, s.id]});
+                                        else setFormData({...formData, selectedStudents: ids.filter(x => x !== s.id)});
+                                    }} 
+                                /> {s.nama} <small style={{color:'grey'}}>({s.kelasSekolah})</small>
                             </div>
                         ))}
                     </div>
-                    <small style={{color:'blue'}}>Terpilih: {formData.selectedStudents.length} Siswa</small>
+                    <small>Terpilih: {formData.selectedStudents.length} Siswa</small>
                 </div>
 
-                <div style={styles.btnRow}>
-                  <button type="submit" style={styles.btnSave}>{editId ? "UPDATE JADWAL" : "SIMPAN JADWAL"}</button>
-                  <button type="button" onClick={handleCloseModal} style={styles.btnCancel}>Batal</button>
+                <div style={{marginTop:20, display:'flex', gap:10}}>
+                    <button type="submit" style={styles.btnSave}>SIMPAN</button>
+                    <button type="button" onClick={()=>setIsModalOpen(false)} style={styles.btnCancel}>BATAL</button>
                 </div>
               </form>
             </div>
@@ -389,36 +330,23 @@ const SchedulePage = () => {
   );
 };
 
-// STYLES
 const styles = {
-  mainContent: { marginLeft: '250px', padding: '20px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'Segoe UI, sans-serif' },
-  infoBar: { background: '#2c3e50', color: 'white', padding: '12px 20px', borderRadius: '8px', marginBottom: '20px', boxShadow:'0 2px 4px rgba(0,0,0,0.1)' },
-  layoutGrid: { display:'grid', gridTemplateColumns: '300px 1fr', gap: '20px', alignItems:'start' },
+  mainContent: { marginLeft: '250px', padding: '20px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'Segoe UI' },
+  dateHeader: { background: '#2c3e50', color:'white', padding:15, borderRadius:8, marginBottom:20 },
+  layoutGrid: { display:'grid', gridTemplateColumns: '300px 1fr', gap: 20 },
   leftCol: { position:'sticky', top:20 },
-  card: { background:'white', padding:15, borderRadius:10, boxShadow:'0 2px 5px rgba(0,0,0,0.05)' },
-  calHeader: { display:'flex', justifyContent:'space-between', marginBottom:15, alignItems:'center' },
-  calendarGrid: { display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:5 },
-  day: { padding:8, textAlign:'center', border:'1px solid #eee', cursor:'pointer', borderRadius:4, fontSize:14 },
-  dayEvent: { padding:8, textAlign:'center', border:'1px solid #2ecc71', background:'#e8f8f5', cursor:'pointer', borderRadius:4, fontSize:14, fontWeight:'bold', color:'#27ae60' },
-  dayActive: { padding:8, textAlign:'center', background:'#3498db', color:'white', borderRadius:4, fontWeight:'bold', cursor:'pointer', fontSize:14 },
-  dateHeader: { background: '#34495e', color:'white', padding:'15px 25px', borderRadius:'10px', marginBottom:20, boxShadow:'0 4px 6px rgba(0,0,0,0.1)' },
-  planetContainer: { background:'white', marginBottom:20, borderRadius:10, boxShadow:'0 2px 5px rgba(0,0,0,0.05)', overflow:'hidden' },
-  planetHead: { background:'#ecf0f1', padding:'10px 20px', display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid #ddd' },
-  btnAdd: { background:'#27ae60', color:'white', border:'none', padding:'5px 15px', borderRadius:4, cursor:'pointer', fontWeight:'bold' },
-  scheduleList: { padding:15, display:'flex', flexDirection:'column', gap:10 },
-  emptySlot: { padding:15, textAlign:'center', border:'2px dashed #ddd', borderRadius:8, color:'#999', fontSize:14 },
-  cardGreen: { background:'#d4edda', borderLeft:'5px solid #27ae60', padding:10, borderRadius:5 },
-  cardYellow: { background:'#fff3cd', borderLeft:'5px solid #f1c40f', padding:10, borderRadius:5 },
-  btnLinkRed: { color:'#c0392b', background:'none', border:'none', cursor:'pointer', fontSize:12, textDecoration:'underline', fontWeight:'bold' },
-  btnLinkOrange: { color:'#e67e22', background:'none', border:'none', cursor:'pointer', fontSize:12, textDecoration:'underline', fontWeight:'bold' },
+  rightCol: { display:'flex', flexDirection:'column', gap:15 },
+  card: { background:'white', padding:15, borderRadius:8, boxShadow:'0 2px 5px rgba(0,0,0,0.05)' },
+  planetContainer: { background:'white', borderRadius:8, overflow:'hidden', boxShadow:'0 2px 5px rgba(0,0,0,0.05)' },
+  planetHead: { background:'#ecf0f1', padding:'10px 15px', display:'flex', justifyContent:'space-between', alignItems:'center' },
+  btnAdd: { background:'#27ae60', color:'white', border:'none', padding:'3px 10px', borderRadius:4, cursor:'pointer' },
   overlay: { position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.5)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:999 },
-  modal: { background:'white', padding:25, borderRadius:10, width:450, boxShadow:'0 10px 25px rgba(0,0,0,0.2)', maxHeight:'90vh', overflowY:'auto' },
-  input: { width:'100%', padding:10, marginBottom:10, border:'1px solid #ccc', borderRadius:5, boxSizing:'border-box' },
-  select: { width:'100%', padding:10, marginBottom:10, border:'1px solid #ccc', borderRadius:5, background:'white' },
+  modal: { background:'white', padding:20, borderRadius:8, width:400, maxHeight:'90vh', overflowY:'auto' },
+  input: { width:'100%', padding:8, marginBottom:10, border:'1px solid #ccc', borderRadius:4, boxSizing:'border-box' },
+  select: { width:'100%', padding:8, marginBottom:10, border:'1px solid #ccc', borderRadius:4 },
   row: { display:'flex', gap:10 },
-  btnRow: { display:'flex', gap:10, marginTop:15 },
-  btnSave: { flex:1, padding:12, background:'#27ae60', color:'white', border:'none', borderRadius:5, cursor:'pointer', fontWeight:'bold' },
-  btnCancel: { flex:1, padding:12, background:'#bdc3c7', color:'white', border:'none', borderRadius:5, cursor:'pointer' }
+  btnSave: { flex:1, padding:10, background:'#2980b9', color:'white', border:'none', borderRadius:4, cursor:'pointer' },
+  btnCancel: { flex:1, padding:10, background:'#95a5a6', color:'white', border:'none', borderRadius:4, cursor:'pointer' }
 };
 
 export default SchedulePage;
