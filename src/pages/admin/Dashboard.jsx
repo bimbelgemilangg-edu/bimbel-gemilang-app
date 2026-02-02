@@ -20,7 +20,7 @@ const Dashboard = () => {
   });
   const [newTodo, setNewTodo] = useState("");
 
-  // 1. JAM & TANGGAL
+  // 1. JAM & TANGGAL (Update setiap detik)
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
@@ -45,22 +45,28 @@ const Dashboard = () => {
             logsData.sort((a,b) => new Date(b.tanggal + ' ' + b.waktu) - new Date(a.tanggal + ' ' + a.waktu));
             setRecentLogs(logsData);
 
-            // --- PERBAIKAN UTAMA DI SINI (JADWAL HARI INI) ---
-            
-            // 1. Ambil format tanggal hari ini: YYYY-MM-DD (Sesuai format di SchedulePage)
+            // C. JADWAL HARI INI (FILTER YANG BELUM SELESAI SAJA)
             const todayStr = new Date().toISOString().split('T')[0]; 
-            
-            // 2. Query field 'dateStr' bukan 'day'
             const qJadwal = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr));
             
             const snapJadwal = await getDocs(qJadwal);
             const jadwalList = snapJadwal.docs.map(d => ({id: d.id, ...d.data()}));
+
+            // --- LOGIKA FILTER JAM (YANG DIMINTA) ---
+            const now = new Date();
+            const currentHours = String(now.getHours()).padStart(2, '0');
+            const currentMinutes = String(now.getMinutes()).padStart(2, '0');
+            const currentTime = `${currentHours}:${currentMinutes}`; // Format "14:30"
+
+            // Hanya tampilkan jika JAM SELESAI > JAM SEKARANG
+            // Contoh: Kelas selesai 16:00, sekarang 15:00 -> Tampil
+            // Contoh: Kelas selesai 14:00, sekarang 14:01 -> Hilang
+            const activeSchedules = jadwalList.filter(s => s.end > currentTime);
             
             // Sortir jam (pagi ke malam)
-            jadwalList.sort((a,b) => a.start.localeCompare(b.start));
-            setTodaySchedules(jadwalList);
-
-            // ------------------------------------------------
+            activeSchedules.sort((a,b) => a.start.localeCompare(b.start));
+            setTodaySchedules(activeSchedules);
+            // ----------------------------------------
 
             // D. TAGIHAN
             const tagihanList = [];
@@ -89,7 +95,13 @@ const Dashboard = () => {
             console.error("Gagal load dashboard", err);
         }
     };
+
     fetchData();
+    
+    // Refresh data setiap 1 menit agar jadwal yang "expired" otomatis hilang tanpa reload
+    const intervalId = setInterval(fetchData, 60000);
+    return () => clearInterval(intervalId);
+
   }, []);
 
   // FUNGSI BEL SEKOLAH
@@ -216,9 +228,13 @@ const Dashboard = () => {
                 <div style={{...styles.cardContent, minHeight: 400}}>
                     <div style={styles.sectionHeader}>
                         <h3 style={{margin:0, color:'#2c3e50'}}>📅 Jadwal Kelas Hari Ini</h3>
+                        <span style={{fontSize:12, color:'#7f8c8d'}}>Hanya yang Akan/Sedang Berlangsung</span>
                     </div>
                     {todaySchedules.length === 0 ? (
-                        <div style={{textAlign:'center', padding:40, color:'#999'}}>Tidak ada kelas aktif hari ini.</div>
+                        <div style={{textAlign:'center', padding:40, color:'#999'}}>
+                            ✅ Tidak ada kelas aktif saat ini. <br/>
+                            <small>(Semua kelas hari ini sudah selesai)</small>
+                        </div>
                     ) : (
                         todaySchedules.map(sc => (
                             <div key={sc.id} style={styles.scheduleItem}>
