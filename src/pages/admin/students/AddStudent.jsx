@@ -34,7 +34,7 @@ const AddStudent = () => {
   
   // Reguler
   const [jenjang, setJenjang] = useState("SD");
-  const [kelas, setKelas] = useState("4 SD");
+  const [kelas, setKelas] = useState("1 SD"); // Default dari 1 SD
   const [paketReguler, setPaketReguler] = useState("paket1");
   
   // English
@@ -128,14 +128,13 @@ const AddStudent = () => {
         let installments = [];
         const perBulan = hitungCicilan();
         
-        // GUNAKAN TANGGAL DARI STATE customDueDates
         customDueDates.forEach((dateStr, index) => {
             installments.push({
                 id: Date.now() + index,
                 bulanKe: index + 1,
                 nominal: perBulan,
                 status: "Belum Lunas",
-                jatuhTempo: dateStr // Ini tanggal yang sudah Anda setting manual
+                jatuhTempo: dateStr
             });
         });
 
@@ -213,6 +212,8 @@ const AddStudent = () => {
               <div style={styles.formGroup}>
                   <label style={styles.labelSmall}>Kelas Sekolah (Saat ini)</label>
                   <select style={styles.select} value={kelas} onChange={e => setKelas(e.target.value)}>
+                      {/* --- UPDATE: MENAMBAHKAN KELAS 1-3 SD --- */}
+                      <option>1 SD</option><option>2 SD</option><option>3 SD</option>
                       <option>4 SD</option><option>5 SD</option><option>6 SD</option>
                       <option>7 SMP</option><option>8 SMP</option><option>9 SMP</option>
                       <option>Lainnya</option>
@@ -280,7 +281,7 @@ const AddStudent = () => {
                 </select>
               </div>
               
-              {/* === AREA SETTING CICILAN (UPDATE) === */}
+              {/* === AREA SETTING CICILAN === */}
               {metodeBayar === "Cicilan" && (
                 <div style={styles.cicilanBox}>
                   <label>Pilih Tenor (Kali Bayar):</label>
