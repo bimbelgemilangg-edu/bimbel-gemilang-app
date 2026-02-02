@@ -27,87 +27,104 @@ const Dashboard = () => {
   }, []);
 
   // 2. LOAD DATA
+  const fetchData = async () => {
+    try {
+        // A. DATA STATISTIK
+        const snapSiswa = await getDocs(collection(db, "students"));
+        const snapGuru = await getDocs(collection(db, "teachers"));
+        
+        // B. LOG AKTIVITAS GURU (Live Monitoring)
+        const qLogs = query(
+            collection(db, "teacher_logs"), 
+            orderBy("tanggal", "desc"), // Mengambil yang baru saja input
+            limit(5)
+        );
+        const snapLogs = await getDocs(qLogs);
+        const logsData = snapLogs.docs.map(d => ({id: d.id, ...d.data()}));
+        
+        // Sortir ulang berdasarkan gabungan tanggal & waktu agar akurat
+        logsData.sort((a,b) => {
+            const dateA = new Date(`${a.tanggal}T${a.waktu}`);
+            const dateB = new Date(`${b.tanggal}T${b.waktu}`);
+            return dateB - dateA;
+        });
+        setRecentLogs(logsData);
+
+        // C. JADWAL HARI INI (FIX BUG TANGGAL & FILTER JAM)
+        
+        // FIX 1: Gunakan Waktu Lokal, Jangan ISOString (mencegah tanggal mundur)
+        const nowObj = new Date();
+        const year = nowObj.getFullYear();
+        const month = String(nowObj.getMonth() + 1).padStart(2, '0');
+        const day = String(nowObj.getDate()).padStart(2, '0');
+        const todayStr = `${year}-${month}-${day}`; // Format YYYY-MM-DD Lokal
+
+        const qJadwal = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr));
+        const snapJadwal = await getDocs(qJadwal);
+        const jadwalList = snapJadwal.docs.map(d => ({id: d.id, ...d.data()}));
+
+        // FIX 2: Filter Jadwal (Upcoming Only)
+        // Ambil jam sekarang
+        const currentHours = String(nowObj.getHours()).padStart(2, '0');
+        const currentMinutes = String(nowObj.getMinutes()).padStart(2, '0');
+        const currentTime = `${currentHours}:${currentMinutes}`; // Contoh: "14:30"
+
+        // Hanya tampilkan jika Jam Selesai > Jam Sekarang
+        const activeSchedules = jadwalList.filter(s => s.end > currentTime);
+        
+        // Sortir dari pagi ke sore
+        activeSchedules.sort((a,b) => a.start.localeCompare(b.start));
+        setTodaySchedules(activeSchedules);
+
+        // D. TAGIHAN
+        const tagihanList = [];
+        snapSiswa.forEach(doc => {
+            const s = doc.data();
+            const sisa = (parseInt(s.totalTagihan)||0) - (parseInt(s.totalBayar)||0);
+            if(sisa > 0) {
+                tagihanList.push({
+                    id: doc.id,
+                    nama: s.nama,
+                    hp: s.ortu?.hp || "",
+                    sisa: sisa,
+                    program: s.detailProgram
+                });
+            }
+        });
+        setDuePayments(tagihanList.slice(0, 5));
+
+        setStats({
+            siswa: snapSiswa.size,
+            guru: snapGuru.size,
+            tagihan: tagihanList.length
+        });
+
+    } catch (err) {
+        console.error("Gagal load dashboard", err);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-        try {
-            // A. DATA STATISTIK
-            const snapSiswa = await getDocs(collection(db, "students"));
-            const snapGuru = await getDocs(collection(db, "teachers"));
-            
-            // B. LOG AKTIVITAS GURU
-            const qLogs = query(
-                collection(db, "teacher_logs"), 
-                orderBy("tanggal", "desc"),
-                limit(5)
-            );
-            const snapLogs = await getDocs(qLogs);
-            const logsData = snapLogs.docs.map(d => ({id: d.id, ...d.data()}));
-            logsData.sort((a,b) => new Date(b.tanggal + ' ' + b.waktu) - new Date(a.tanggal + ' ' + a.waktu));
-            setRecentLogs(logsData);
-
-            // C. JADWAL HARI INI (FILTER YANG BELUM SELESAI SAJA)
-            const todayStr = new Date().toISOString().split('T')[0]; 
-            const qJadwal = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr));
-            
-            const snapJadwal = await getDocs(qJadwal);
-            const jadwalList = snapJadwal.docs.map(d => ({id: d.id, ...d.data()}));
-
-            // --- LOGIKA FILTER JAM (YANG DIMINTA) ---
-            const now = new Date();
-            const currentHours = String(now.getHours()).padStart(2, '0');
-            const currentMinutes = String(now.getMinutes()).padStart(2, '0');
-            const currentTime = `${currentHours}:${currentMinutes}`; // Format "14:30"
-
-            // Hanya tampilkan jika JAM SELESAI > JAM SEKARANG
-            // Contoh: Kelas selesai 16:00, sekarang 15:00 -> Tampil
-            // Contoh: Kelas selesai 14:00, sekarang 14:01 -> Hilang
-            const activeSchedules = jadwalList.filter(s => s.end > currentTime);
-            
-            // Sortir jam (pagi ke malam)
-            activeSchedules.sort((a,b) => a.start.localeCompare(b.start));
-            setTodaySchedules(activeSchedules);
-            // ----------------------------------------
-
-            // D. TAGIHAN
-            const tagihanList = [];
-            snapSiswa.forEach(doc => {
-                const s = doc.data();
-                const sisa = (parseInt(s.totalTagihan)||0) - (parseInt(s.totalBayar)||0);
-                if(sisa > 0) {
-                    tagihanList.push({
-                        id: doc.id,
-                        nama: s.nama,
-                        hp: s.ortu?.hp || "",
-                        sisa: sisa,
-                        program: s.detailProgram
-                    });
-                }
-            });
-            setDuePayments(tagihanList.slice(0, 5));
-
-            setStats({
-                siswa: snapSiswa.size,
-                guru: snapGuru.size,
-                tagihan: tagihanList.length
-            });
-
-        } catch (err) {
-            console.error("Gagal load dashboard", err);
-        }
-    };
-
     fetchData();
-    
-    // Refresh data setiap 1 menit agar jadwal yang "expired" otomatis hilang tanpa reload
-    const intervalId = setInterval(fetchData, 60000);
+    // Refresh otomatis setiap 1 menit agar kelas yang selesai langsung hilang
+    const intervalId = setInterval(fetchData, 60000); 
     return () => clearInterval(intervalId);
-
   }, []);
 
-  // FUNGSI BEL SEKOLAH
+  // FUNGSI BEL (FIX SOUND BUZZER/WRONG ANSWER)
   const handleRingBell = () => {
-    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-    audio.play().catch(error => alert("Klik interaksi dokumen dulu!"));
+    // URL Sound Effect Buzzer / Wrong Answer
+    const audio = new Audio('https://www.myinstants.com/media/sounds/wrong-answer-sound-effect.mp3');
+    
+    audio.play()
+      .then(() => {
+         console.log("Bel berbunyi");
+      })
+      .catch(error => {
+         console.error("Audio error:", error);
+         alert("⚠️ Browser memblokir suara otomatis. Klik dokumen/layar sekali, lalu coba lagi.");
+      });
+
     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
   };
 
@@ -153,7 +170,9 @@ const Dashboard = () => {
           </div>
           
           <div style={{display:'flex', alignItems:'center', gap:15}}>
-            <button onClick={handleRingBell} style={styles.btnBell} title="Bunyikan Bel">🔔 BEL MASUK</button>
+            <button onClick={handleRingBell} style={styles.btnBell} title="Bunyikan Bel (Suara Salah/Buzzer)">
+                🔔 BEL (BUZZER)
+            </button>
             <div style={styles.clockBox}>
                 🕒 {time.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}
             </div>
@@ -176,15 +195,15 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* 2. LIVE MONITORING GURU */}
+        {/* 2. LIVE MONITORING GURU (AKTIVITAS REALTIME) */}
         <div style={{...styles.cardContent, marginBottom: 20}}>
             <div style={styles.sectionHeader}>
                 <h3 style={{margin:0, color:'#2c3e50', display:'flex', alignItems:'center', gap:10}}>
-                   📡 Live Aktivitas Mengajar <span style={{fontSize:12, fontWeight:'normal', color:'#777'}}>(Realtime Update)</span>
+                   📡 Live Aktivitas Mengajar <span style={{fontSize:12, fontWeight:'normal', color:'#777'}}>(Log Realtime Guru)</span>
                 </h3>
             </div>
             {recentLogs.length === 0 ? (
-                <p style={{color:'#999', fontStyle:'italic'}}>Belum ada aktivitas guru hari ini.</p>
+                <p style={{color:'#999', fontStyle:'italic', padding:10}}>Belum ada aktivitas guru (input/absen) hari ini.</p>
             ) : (
                 <div style={{overflowX:'auto'}}>
                 <table style={{width:'100%', borderCollapse:'collapse', fontSize:13}}>
@@ -223,24 +242,24 @@ const Dashboard = () => {
 
         {/* 3. GRID BAWAH: JADWAL & TAGIHAN */}
         <div style={styles.contentGrid}>
-            {/* KIRI: JADWAL */}
+            {/* KIRI: JADWAL HARI INI (FILTERED UPCOMING) */}
             <div style={{flex: 2}}>
                 <div style={{...styles.cardContent, minHeight: 400}}>
                     <div style={styles.sectionHeader}>
-                        <h3 style={{margin:0, color:'#2c3e50'}}>📅 Jadwal Kelas Hari Ini</h3>
-                        <span style={{fontSize:12, color:'#7f8c8d'}}>Hanya yang Akan/Sedang Berlangsung</span>
+                        <h3 style={{margin:0, color:'#2c3e50'}}>📅 Jadwal Kelas (Upcoming)</h3>
+                        <span style={{fontSize:12, color:'#7f8c8d'}}>Realtime: Hilang jika sudah selesai</span>
                     </div>
                     {todaySchedules.length === 0 ? (
                         <div style={{textAlign:'center', padding:40, color:'#999'}}>
-                            ✅ Tidak ada kelas aktif saat ini. <br/>
-                            <small>(Semua kelas hari ini sudah selesai)</small>
+                            ✅ <b>Tidak ada kelas aktif saat ini.</b> <br/>
+                            <small>(Semua kelas hari ini sudah selesai atau belum dimulai)</small>
                         </div>
                     ) : (
                         todaySchedules.map(sc => (
                             <div key={sc.id} style={styles.scheduleItem}>
                                 <div style={{minWidth:80, fontWeight:'bold', color:'#3498db'}}>{sc.start} - {sc.end}</div>
                                 <div style={{flex:1}}>
-                                    <div style={{fontWeight:'bold', color:'#2c3e50'}}>{sc.title}</div>
+                                    <div style={{fontWeight:'bold', color:'#2c3e50'}}>{sc.title || "Belum ada judul"}</div>
                                     <div style={{fontSize:12, color:'#7f8c8d'}}>{sc.program} • {sc.planet}</div>
                                 </div>
                                 <div style={{textAlign:'right'}}>
