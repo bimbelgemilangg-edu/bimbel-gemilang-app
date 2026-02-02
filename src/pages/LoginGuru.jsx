@@ -1,55 +1,45 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../firebase';
-import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
+import { auth, db } from '../firebase';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 const LoginGuru = () => {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [dailyCode, setDailyCode] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // 1. CEK KODE HARIAN
-      const today = new Date().toISOString().split('T')[0];
-      const codeRef = doc(db, "settings", `daily_code_${today}`);
-      const codeSnap = await getDoc(codeRef);
+      // 1. LOGIN KE FIREBASE AUTH
+      await signInWithEmailAndPassword(auth, email, password);
 
-      if (!codeSnap.exists() || codeSnap.data().code.toUpperCase() !== dailyCode.toUpperCase()) {
-        alert("⛔ Kode Harian SALAH! Hubungi Admin.");
-        setLoading(false);
-        return;
-      }
-
-      // 2. CEK EMAIL GURU
+      // 2. AMBIL DATA GURU DARI DATABASE
       const q = query(collection(db, "teachers"), where("email", "==", email));
       const querySnapshot = await getDocs(q);
 
-      if (querySnapshot.empty) {
-        alert("❌ Email tidak terdaftar.");
-        setLoading(false);
-        return;
+      if (!querySnapshot.empty) {
+        // Data Guru Ketemu
+        const teacherData = { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() };
+        
+        // Simpan sesi (opsional jika pakai context)
+        localStorage.setItem('guruInfo', JSON.stringify(teacherData));
+
+        alert(`Selamat Datang, ${teacherData.nama}!`);
+        
+        // Redirect ke Dashboard Guru membawa data
+        navigate('/guru/dashboard', { state: { teacher: teacherData } });
+      } else {
+        alert("Login berhasil, tapi data profil guru tidak ditemukan di database. Hubungi Admin.");
       }
-
-      // 3. LOGIN SUKSES
-      const guruData = querySnapshot.docs[0].data();
-      const guruId = querySnapshot.docs[0].id;
-      const fullData = { id: guruId, ...guruData };
-
-      alert(`✅ Login Berhasil! Selamat Datang, ${guruData.nama}`);
-      
-      // --- PERBAIKAN DI SINI ---
-      // Pastikan tujuannya ke '/guru/dashboard' (sesuai App.jsx)
-      // BUKAN '/teacher'
-      navigate('/guru/dashboard', { state: { teacher: fullData } });
 
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan jaringan.");
+      alert("Login Gagal! Periksa Email dan Password.");
     } finally {
       setLoading(false);
     }
@@ -58,35 +48,58 @@ const LoginGuru = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <div style={{textAlign:'center', marginBottom:20}}>
-            <h2 style={{color:'#2c3e50', margin:0}}>🚪 Portal Guru</h2>
-            <p style={{color:'#7f8c8d', fontSize:14}}>Bimbel Gemilang</p>
-        </div>
+        <div style={styles.logoCircle}>👨‍🏫</div>
+        <h2 style={{color:'#2c3e50', marginBottom:5}}>Portal Guru</h2>
+        <p style={{color:'#7f8c8d', marginBottom:20, fontSize:14}}>Bimbel Gemilang</p>
         
         <form onSubmit={handleLogin}>
-          <div style={{marginBottom:15}}>
-            <label style={styles.label}>Email Terdaftar</label>
-            <input type="email" value={email} onChange={e=>setEmail(e.target.value)} style={styles.input} required placeholder="nama@email.com" />
+          <div style={{textAlign:'left', marginBottom:15}}>
+            <label style={styles.label}>Email</label>
+            <input 
+              type="email" 
+              placeholder="email@guru.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={styles.input}
+              required
+            />
           </div>
-          <div style={{marginBottom:20}}>
-            <label style={styles.label}>Kode Absen Hari Ini</label>
-            <input type="text" value={dailyCode} onChange={e=>setDailyCode(e.target.value)} style={styles.input} required placeholder="Kode dari Admin" />
+          
+          <div style={{textAlign:'left', marginBottom:20}}>
+            <label style={styles.label}>Password</label>
+            <input 
+              type="password" 
+              placeholder="******"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={styles.input}
+              required
+            />
           </div>
-          <button type="submit" style={styles.btn} disabled={loading}>
-            {loading ? "Memverifikasi..." : "MASUK DASHBOARD"}
+
+          <button type="submit" disabled={loading} style={styles.button}>
+            {loading ? "Memproses..." : "MASUK SEKARANG"}
           </button>
         </form>
+
+        <p style={{marginTop:20, fontSize:12, color:'#999'}}>
+          Belum punya akun? Minta Admin untuk mendaftarkan.
+        </p>
+        <button onClick={() => navigate('/')} style={{background:'none', border:'none', color:'#3498db', cursor:'pointer', fontSize:12, textDecoration:'underline'}}>
+            Kembali ke Menu Utama
+        </button>
       </div>
     </div>
   );
 };
 
 const styles = {
-  container: { height:'100vh', background:'#f0f2f5', display:'flex', justifyContent:'center', alignItems:'center', fontFamily:'sans-serif' },
-  card: { background:'white', padding:30, borderRadius:10, boxShadow:'0 4px 10px rgba(0,0,0,0.1)', width:'100%', maxWidth:'350px' },
-  label: { display:'block', marginBottom:5, fontSize:13, fontWeight:'bold', color:'#333' },
-  input: { width:'100%', padding:12, borderRadius:5, border:'1px solid #ccc', boxSizing:'border-box', fontSize:16 },
-  btn: { width:'100%', padding:12, background:'#2980b9', color:'white', border:'none', borderRadius:5, fontWeight:'bold', cursor:'pointer', fontSize:14 }
+  container: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)', fontFamily:'sans-serif' },
+  card: { background: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', textAlign: 'center', width: '320px' },
+  logoCircle: { width:60, height:60, background:'#eaf2f8', borderRadius:'50%', fontSize:30, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 15px auto' },
+  label: { display:'block', fontSize:12, fontWeight:'bold', color:'#333', marginBottom:5 },
+  input: { width: '100%', padding: '12px', marginBottom: '5px', border: '1px solid #ddd', borderRadius: '5px', boxSizing:'border-box', fontSize:14 },
+  button: { width: '100%', padding: '12px', background: '#2c3e50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', marginTop:10 },
 };
 
 export default LoginGuru;

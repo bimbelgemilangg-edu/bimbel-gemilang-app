@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../../components/Sidebar';
-import { db } from '../../../firebase';
+import { db, firebaseConfig } from '../../../firebase'; // Pastikan import firebaseConfig
 import { collection, getDocs, addDoc, deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
+// Import khusus untuk bikin user baru tanpa logout admin
+import { initializeApp, deleteApp } from "firebase/app";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
 const TeacherList = () => {
   const [teachers, setTeachers] = useState([]);
-  
-  // STATE KODE HARIAN
   const [dailyCode, setDailyCode] = useState("");
   const [savedCode, setSavedCode] = useState("Loading...");
-
-  // STATE TAMBAH GURU
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newGuru, setNewGuru] = useState({ nama: "", email: "", mapel: "" });
+  
+  // State Form Guru (Ditambah Password)
+  const [newGuru, setNewGuru] = useState({ nama: "", email: "", mapel: "", password: "" });
+  const [loading, setLoading] = useState(false);
 
   // LOAD DATA
   const fetchData = async () => {
@@ -35,6 +37,7 @@ const TeacherList = () => {
     fetchData();
   }, []);
 
+  // SET KODE HARIAN
   const handleSetCode = async () => {
     if(!dailyCode) return alert("Kode tidak boleh kosong!");
     const today = new Date().toISOString().split('T')[0];
@@ -48,30 +51,55 @@ const TeacherList = () => {
     }
   };
 
-  // TAMBAH GURU BARU (DENGAN MAPEL)
+  // --- TAMBAH GURU + BUAT AKUN LOGIN (CORE FEATURE) ---
   const handleAddGuru = async (e) => {
     e.preventDefault();
-    if(!newGuru.nama || !newGuru.email) return alert("Nama dan Email wajib diisi!");
+    if(!newGuru.nama || !newGuru.email || !newGuru.password) return alert("Semua data wajib diisi!");
+
+    setLoading(true);
+    let secondaryApp = null;
 
     try {
+        // 1. BUAT AKUN DI FIREBASE AUTH (Tanpa Logout Admin)
+        // Kita inisialisasi app kedua khusus untuk register user baru
+        secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+        const secondaryAuth = getAuth(secondaryApp);
+        
+        const userCredential = await createUserWithEmailAndPassword(secondaryAuth, newGuru.email, newGuru.password);
+        const user = userCredential.user;
+
+        // 2. SIMPAN DATA PROFIL KE DATABASE (Firestore)
         await addDoc(collection(db, "teachers"), {
+            uid: user.uid, // Simpan UID biar terhubung
             nama: newGuru.nama,
             email: newGuru.email, 
-            mapel: newGuru.mapel, // <--- INI PENTING: MENYIMPAN MAPEL KE DATABASE
-            status: "Aktif"
+            mapel: newGuru.mapel, 
+            passwordHint: newGuru.password, // (Opsional) Biar admin ingat passwordnya
+            status: "Aktif",
+            createdAt: new Date().toISOString()
         });
-        alert("✅ Guru Berhasil Ditambahkan!");
+
+        alert(`✅ Guru Berhasil Didaftarkan!\nEmail: ${newGuru.email}\nPass: ${newGuru.password}`);
         setShowAddModal(false);
-        setNewGuru({ nama: "", email: "", mapel: "" }); 
+        setNewGuru({ nama: "", email: "", mapel: "", password: "" }); 
         fetchData(); 
+
     } catch (error) {
         console.error(error);
-        alert("Gagal menambah guru.");
+        if(error.code === 'auth/email-already-in-use') {
+            alert("❌ Email ini sudah terdaftar sebelumnya!");
+        } else {
+            alert("Gagal menambah guru: " + error.message);
+        }
+    } finally {
+        // Hapus app secondary agar tidak membebani memori
+        if(secondaryApp) deleteApp(secondaryApp);
+        setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if(confirm("Hapus data guru ini? Guru tidak akan bisa login lagi.")) {
+    if(window.confirm("Hapus data guru ini? (Catatan: Akun login harus dinonaktifkan manual di Firebase Console jika ingin hapus permanen aksesnya).")) {
         await deleteDoc(doc(db, "teachers", id));
         fetchData();
     }
@@ -105,7 +133,7 @@ const TeacherList = () => {
 
         {/* HEADER */}
         <div style={styles.headerRow}>
-            <h2 style={{color:'#333', margin:0}}>👨‍🏫 Daftar Guru</h2>
+            <h2 style={{color:'#333', margin:0}}>👨‍🏫 Daftar & Akun Guru</h2>
             <button onClick={() => setShowAddModal(true)} style={styles.btnAdd}>+ Tambah Guru Baru</button>
         </div>
         
@@ -118,21 +146,24 @@ const TeacherList = () => {
                         <div>
                             <h3 style={{margin:0, color:'#333'}}>{guru.nama}</h3>
                             <small style={{color:'#666', display:'block'}}>{guru.email}</small>
-                            <small style={{color:'#2980b9', fontWeight:'bold', background:'#eaf2f8', padding:'2px 8px', borderRadius:4, marginTop:5, display:'inline-block'}}>
-                                {guru.mapel || "Belum Ada Mapel"}
-                            </small>
+                            {guru.passwordHint && <small style={{color:'#999', fontSize:10}}>Pass: {guru.passwordHint}</small>}
+                            <div style={{marginTop:5}}>
+                                <small style={{color:'#2980b9', fontWeight:'bold', background:'#eaf2f8', padding:'2px 8px', borderRadius:4}}>
+                                    {guru.mapel || "Umum"}
+                                </small>
+                            </div>
                         </div>
                     </div>
-                    <button onClick={() => handleDelete(guru.id)} style={styles.btnDel}>Hapus Akses</button>
+                    <button onClick={() => handleDelete(guru.id)} style={styles.btnDel}>Hapus Data</button>
                 </div>
             ))}
         </div>
 
-        {/* MODAL INPUT */}
+        {/* MODAL INPUT DENGAN PASSWORD */}
         {showAddModal && (
             <div style={styles.overlay}>
                 <div style={styles.modal}>
-                    <h3 style={{marginTop:0, color:'#333'}}>Tambah Guru Baru</h3>
+                    <h3 style={{marginTop:0, color:'#333'}}>Buat Akun Guru Baru</h3>
                     <form onSubmit={handleAddGuru}>
                         <div style={{marginBottom:15}}>
                             <label style={{display:'block', marginBottom:5}}>Nama Lengkap</label>
@@ -149,19 +180,29 @@ const TeacherList = () => {
                             />
                         </div>
                         
-                        {/* INPUT MAPEL (INI KUNCINYA) */}
+                        {/* INPUT PASSWORD BARU */}
+                        <div style={{marginBottom:15}}>
+                            <label style={{display:'block', marginBottom:5, color:'#c0392b', fontWeight:'bold'}}>Password Login</label>
+                            <input type="text" style={{...styles.input, border:'1px solid #c0392b'}} required 
+                                value={newGuru.password} onChange={e=>setNewGuru({...newGuru, password: e.target.value})} 
+                                placeholder="Buatkan password (min 6 karakter)"
+                            />
+                            <small style={{color:'#7f8c8d'}}>Password ini digunakan guru untuk login.</small>
+                        </div>
+
                         <div style={{marginBottom:20}}>
-                            <label style={{display:'block', marginBottom:5, fontWeight:'bold', color:'#d35400'}}>Mata Pelajaran Utama</label>
+                            <label style={{display:'block', marginBottom:5, fontWeight:'bold', color:'#2980b9'}}>Mata Pelajaran</label>
                             <input type="text" style={styles.input} required
                                 value={newGuru.mapel} onChange={e=>setNewGuru({...newGuru, mapel: e.target.value})} 
-                                placeholder="Contoh: Matematika / Fisika / Bahasa Inggris"
+                                placeholder="Contoh: Matematika"
                             />
-                            <small style={{color:'#7f8c8d'}}>Wajib diisi agar Rapor otomatis.</small>
                         </div>
 
                         <div style={{display:'flex', gap:10}}>
                             <button type="button" onClick={()=>setShowAddModal(false)} style={styles.btnCancel}>Batal</button>
-                            <button type="submit" style={styles.btnSave}>Simpan Guru</button>
+                            <button type="submit" disabled={loading} style={styles.btnSave}>
+                                {loading ? "Mendaftarkan..." : "Simpan & Buat Akun"}
+                            </button>
                         </div>
                     </form>
                 </div>
