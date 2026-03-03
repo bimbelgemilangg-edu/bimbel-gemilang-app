@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Player } from '@lottiefiles/react-lottie-player'; // Pastikan install lottie-react
+import { Player } from '@lottiefiles/react-lottie-player';
 
 const TeacherLayout = ({ children, guru, activeTab }) => {
   const navigate = useNavigate();
@@ -27,12 +27,22 @@ const TeacherLayout = ({ children, guru, activeTab }) => {
           >
             🏠 Beranda
           </button>
+          
+          {/* MENU INPUT NILAI (Kembali Ditampilkan) */}
+          <button 
+            style={{...styles.navBtn, background: activeTab === 'grades' ? '#34495e' : 'transparent'}} 
+            onClick={() => navigate('/guru/grades/input', {state:{teacher:guru}})}
+          >
+            📝 Input Nilai Siswa
+          </button>
+
           <button 
             style={{...styles.navBtn, background: activeTab === 'history' ? '#34495e' : 'transparent'}} 
             onClick={() => navigate('/guru/history', {state:{teacher:guru}})}
           >
             📄 Riwayat Mengajar
           </button>
+
           <button 
             style={{...styles.navBtn, background: activeTab === 'manual' ? '#34495e' : 'transparent'}} 
             onClick={() => navigate('/guru/manual-input', {state:{teacher:guru}})}
@@ -76,7 +86,6 @@ const styles = {
   navBtn: { background: 'transparent', border: 'none', color: '#bdc3c7', padding: '12px 15px', borderRadius: '10px', textAlign: 'left', cursor: 'pointer', transition: '0.2s', fontSize:'14px' },
   divider: { height: '1px', background: '#3e5871', margin: '15px 0' },
   logoutBtn: { background: '#c0392b', color: 'white', border: 'none', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' },
-  
   mainContent: { flex: 1, display: 'flex', flexDirection: 'column' },
   topHeader: { background: 'white', padding: '15px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee' },
   avatar: { width: '35px', height: '35px', background: '#3498db', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white' },
