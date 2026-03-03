@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../../firebase'; 
-import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc, orderBy } from "firebase/firestore";
 import TeacherLayout from './TeacherLayout';
 import ClassSession from './ClassSession';
 import { Player } from '@lottiefiles/react-lottie-player';
@@ -13,7 +13,8 @@ const TeacherDashboard = () => {
   const [guru, setGuru] = useState(location.state?.teacher || null);
   const [loading, setLoading] = useState(true);
   const [todaySchedules, setTodaySchedules] = useState([]);      
-  
+  const [upcomingSchedules, setUpcomingSchedules] = useState([]); // State untuk jadwal mendatang
+
   const [mode, setMode] = useState('dashboard'); 
   const [activeSchedule, setActiveSchedule] = useState(null);
   const [showStartModal, setShowStartModal] = useState(false);
@@ -24,18 +25,37 @@ const TeacherDashboard = () => {
     if (!guru) return;
     setLoading(true);
     try {
-      const todayStr = new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+      
+      // Menghitung tanggal 7 hari ke depan
+      const nextWeek = new Date();
+      nextWeek.setDate(now.getDate() + 7);
+      const nextWeekStr = nextWeek.toISOString().split('T')[0];
+
+      // QUERY: Ambil semua jadwal guru ini dari hari ini sampai 7 hari ke depan
       const qMySched = query(
         collection(db, "jadwal_bimbel"), 
         where("booker", "==", guru.nama), 
-        where("dateStr", "==", todayStr)
+        where("dateStr", ">=", todayStr),
+        where("dateStr", "<=", nextWeekStr)
       );
+
       const snapMy = await getDocs(qMySched);
-      const todays = snapMy.docs.map(d => ({id: d.id, ...d.data()}));
-      todays.sort((a,b) => a.start.localeCompare(b.start));
-      setTodaySchedules(todays);
+      const allScheds = snapMy.docs.map(d => ({id: d.id, ...d.data()}));
+      
+      // Pisahkan jadwal hari ini dan jadwal mendatang
+      const today = allScheds.filter(s => s.dateStr === todayStr);
+      const upcoming = allScheds.filter(s => s.dateStr > todayStr);
+
+      // Urutkan berdasarkan waktu
+      today.sort((a,b) => a.start.localeCompare(b.start));
+      upcoming.sort((a,b) => a.dateStr.localeCompare(b.dateStr) || a.start.localeCompare(b.start));
+
+      setTodaySchedules(today);
+      setUpcomingSchedules(upcoming);
     } catch (error) { 
-      console.error(error); 
+      console.error("Gagal ambil jadwal:", error); 
     } finally { 
       setLoading(false); 
     }
@@ -104,7 +124,7 @@ const TeacherDashboard = () => {
         <div style={{marginTop: 35}}>
           <h3 style={styles.sectionTitle}>📅 Jadwal Mengajar Hari Ini</h3>
           {todaySchedules.length === 0 && !loading ? (
-            <div style={styles.emptyState}>Tidak ada jadwal hari ini.</div>
+            <div style={styles.emptyState}>Tidak ada jadwal untuk hari ini.</div>
           ) : (
             <div style={styles.gridContainer}>
               {todaySchedules.map(item => (
@@ -116,6 +136,27 @@ const TeacherDashboard = () => {
                   <h4 style={styles.classTitle}>{item.title}</h4>
                   <p style={styles.classInfo}>{item.program} | {item.level}</p>
                   <button onClick={() => handleInitStart(item)} style={styles.btnStart}>▶ MULAI KELAS</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* JADWAL UPCOMING (Satu Minggu ke Depan) */}
+        <div style={{marginTop: 40, marginBottom: 50}}>
+          <h3 style={{...styles.sectionTitle, borderLeft: '4px solid #f39c12'}}>🗓️ Jadwal Mendatang (7 Hari)</h3>
+          {upcomingSchedules.length === 0 && !loading ? (
+            <p style={{color:'#999', fontStyle:'italic'}}>Belum ada jadwal untuk beberapa hari ke depan.</p>
+          ) : (
+            <div style={styles.gridContainer}>
+              {upcomingSchedules.map(item => (
+                <div key={item.id} style={{...styles.scheduleCard, opacity: 0.85, border: '1px dashed #ccc'}}>
+                  <div style={styles.cardHeader}>
+                    <span style={{...styles.timeTag, background:'#fef9e7', color:'#f39c12'}}>{item.dateStr}</span>
+                    <span style={styles.roomTag}>{item.start}</span>
+                  </div>
+                  <h4 style={{...styles.classTitle, fontSize: '16px'}}>{item.title}</h4>
+                  <p style={styles.classInfo}>{item.program} - Ruang {item.planet}</p>
                 </div>
               ))}
             </div>
@@ -150,7 +191,7 @@ const styles = {
   bannerText: { flex: 2 },
   animationArea: { flex: 1, display: 'flex', justifyContent: 'flex-end' },
   sectionTitle: { fontSize: '20px', color: '#2c3e50', marginBottom: '20px', borderLeft: '4px solid #4a148c', paddingLeft: 12 },
-  gridContainer: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' },
+  gridContainer: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' },
   scheduleCard: { background: 'white', padding: '20px', borderRadius: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', border: '1px solid #eee' },
   cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   timeTag: { background: '#e8f4fd', color: '#3498db', padding: '5px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' },
