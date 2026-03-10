@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../../components/Sidebar';
 import { db, firebaseConfig } from '../../../firebase'; // Pastikan import firebaseConfig
-import { collection, getDocs, addDoc, deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 // Import khusus untuk bikin user baru tanpa logout admin
 import { initializeApp, deleteApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
@@ -12,11 +12,18 @@ const TeacherList = () => {
   const [savedCode, setSavedCode] = useState("Loading...");
   const [showAddModal, setShowAddModal] = useState(false);
   
-  // State Form Guru (Ditambah Password)
-  const [newGuru, setNewGuru] = useState({ nama: "", email: "", mapel: "", password: "" });
+  // Fitur Edit KPI
+  const [isEdit, setIsEdit] = useState(false);
+  const [editId, setEditId] = useState(null);
+
+  // State Form Guru (KODE ASLI + Field Baru: cabang, fotoUrl, kpiScore)
+  const [newGuru, setNewGuru] = useState({ 
+    nama: "", email: "", mapel: "", password: "",
+    cabang: "", fotoUrl: "", kpiScore: 5.0 // <--- Tambahan
+  });
   const [loading, setLoading] = useState(false);
 
-  // LOAD DATA
+  // LOAD DATA (KODE ASLI)
   const fetchData = async () => {
     const tSnap = await getDocs(collection(db, "teachers"));
     setTeachers(tSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -37,7 +44,7 @@ const TeacherList = () => {
     fetchData();
   }, []);
 
-  // SET KODE HARIAN
+  // SET KODE HARIAN (KODE ASLI)
   const handleSetCode = async () => {
     if(!dailyCode) return alert("Kode tidak boleh kosong!");
     const today = new Date().toISOString().split('T')[0];
@@ -51,55 +58,64 @@ const TeacherList = () => {
     }
   };
 
-  // --- TAMBAH GURU + BUAT AKUN LOGIN (CORE FEATURE) ---
+  // --- TAMBAH GURU + BUAT AKUN LOGIN (KODE ASLI + UPDATE FIELD) ---
   const handleAddGuru = async (e) => {
     e.preventDefault();
-    if(!newGuru.nama || !newGuru.email || !newGuru.password) return alert("Semua data wajib diisi!");
 
     setLoading(true);
-    let secondaryApp = null;
 
     try {
-        // 1. BUAT AKUN DI FIREBASE AUTH (Tanpa Logout Admin)
-        // Kita inisialisasi app kedua khusus untuk register user baru
-        secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
-        const secondaryAuth = getAuth(secondaryApp);
+        if (isEdit) {
+            // Logika Update (Hanya Firestore)
+            await updateDoc(doc(db, "teachers", editId), {
+                nama: newGuru.nama,
+                mapel: newGuru.mapel,
+                cabang: newGuru.cabang,
+                fotoUrl: newGuru.fotoUrl,
+                kpiScore: parseFloat(newGuru.kpiScore)
+            });
+            alert("✅ Data & KPI Berhasil Diupdate!");
+        } else {
+            // Logika Tambah Baru (PAKAI SECONDARY APP ASLI KAMU)
+            if(!newGuru.nama || !newGuru.email || !newGuru.password) return alert("Data wajib diisi!");
+            
+            let secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+            const secondaryAuth = getAuth(secondaryApp);
+            
+            const userCredential = await createUserWithEmailAndPassword(secondaryAuth, newGuru.email, newGuru.password);
+            const user = userCredential.user;
+
+            await addDoc(collection(db, "teachers"), {
+                uid: user.uid,
+                nama: newGuru.nama,
+                email: newGuru.email, 
+                mapel: newGuru.mapel,
+                cabang: newGuru.cabang, // <--- Field baru
+                fotoUrl: newGuru.fotoUrl, // <--- Field baru
+                kpiScore: parseFloat(newGuru.kpiScore), // <--- Field baru
+                passwordHint: newGuru.password,
+                status: "Aktif",
+                createdAt: new Date().toISOString()
+            });
+
+            await deleteApp(secondaryApp);
+            alert(`✅ Guru Berhasil Didaftarkan!`);
+        }
         
-        const userCredential = await createUserWithEmailAndPassword(secondaryAuth, newGuru.email, newGuru.password);
-        const user = userCredential.user;
-
-        // 2. SIMPAN DATA PROFIL KE DATABASE (Firestore)
-        await addDoc(collection(db, "teachers"), {
-            uid: user.uid, // Simpan UID biar terhubung
-            nama: newGuru.nama,
-            email: newGuru.email, 
-            mapel: newGuru.mapel, 
-            passwordHint: newGuru.password, // (Opsional) Biar admin ingat passwordnya
-            status: "Aktif",
-            createdAt: new Date().toISOString()
-        });
-
-        alert(`✅ Guru Berhasil Didaftarkan!\nEmail: ${newGuru.email}\nPass: ${newGuru.password}`);
         setShowAddModal(false);
-        setNewGuru({ nama: "", email: "", mapel: "", password: "" }); 
+        setNewGuru({ nama: "", email: "", mapel: "", password: "", cabang: "", fotoUrl: "", kpiScore: 5.0 }); 
         fetchData(); 
 
     } catch (error) {
         console.error(error);
-        if(error.code === 'auth/email-already-in-use') {
-            alert("❌ Email ini sudah terdaftar sebelumnya!");
-        } else {
-            alert("Gagal menambah guru: " + error.message);
-        }
+        alert("Terjadi kesalahan: " + error.message);
     } finally {
-        // Hapus app secondary agar tidak membebani memori
-        if(secondaryApp) deleteApp(secondaryApp);
         setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if(window.confirm("Hapus data guru ini? (Catatan: Akun login harus dinonaktifkan manual di Firebase Console jika ingin hapus permanen aksesnya).")) {
+    if(window.confirm("Hapus data guru ini?")) {
         await deleteDoc(doc(db, "teachers", id));
         fetchData();
     }
@@ -110,7 +126,7 @@ const TeacherList = () => {
       <Sidebar />
       <div style={styles.content}>
         
-        {/* PANEL KODE HARIAN */}
+        {/* PANEL KODE HARIAN (KODE ASLI) */}
         <div style={styles.codePanel}>
             <div>
                 <h3 style={{margin:0, color:'white'}}>🔑 Kode Absen Hari Ini</h3>
@@ -133,75 +149,105 @@ const TeacherList = () => {
 
         {/* HEADER */}
         <div style={styles.headerRow}>
-            <h2 style={{color:'#333', margin:0}}>👨‍🏫 Daftar & Akun Guru</h2>
-            <button onClick={() => setShowAddModal(true)} style={styles.btnAdd}>+ Tambah Guru Baru</button>
+            <h2 style={{color:'#333', margin:0}}>👨‍🏫 Daftar & KPI Guru</h2>
+            <button onClick={() => { setIsEdit(false); setShowAddModal(true); }} style={styles.btnAdd}>+ Tambah Guru Baru</button>
         </div>
         
-        {/* LIST GURU */}
+        {/* LIST GURU (KODE ASLI + Visual KPI) */}
         <div style={styles.grid}>
             {teachers.map(guru => (
                 <div key={guru.id} style={styles.card}>
                     <div style={{display:'flex', alignItems:'center', gap:15, marginBottom:15}}>
-                        <div style={styles.avatar}>{guru.nama ? guru.nama.charAt(0) : 'G'}</div>
-                        <div>
+                        <img 
+                          src={guru.fotoUrl || "https://via.placeholder.com/50"} 
+                          style={{width:50, height:50, borderRadius:'50%', objectFit:'cover', background:'#3498db'}} 
+                          alt="profil"
+                        />
+                        <div style={{flex:1}}>
                             <h3 style={{margin:0, color:'#333'}}>{guru.nama}</h3>
-                            <small style={{color:'#666', display:'block'}}>{guru.email}</small>
-                            {guru.passwordHint && <small style={{color:'#999', fontSize:10}}>Pass: {guru.passwordHint}</small>}
-                            <div style={{marginTop:5}}>
-                                <small style={{color:'#2980b9', fontWeight:'bold', background:'#eaf2f8', padding:'2px 8px', borderRadius:4}}>
-                                    {guru.mapel || "Umum"}
-                                </small>
+                            <div style={{display:'flex', alignItems:'center', gap:5}}>
+                                <span style={{color:'#f1c40f'}}>⭐</span>
+                                <strong style={{fontSize:14}}>{guru.kpiScore || '5.0'}</strong>
+                                <small style={{color:'#999'}}>| {guru.cabang || 'Pusat'}</small>
                             </div>
                         </div>
                     </div>
-                    <button onClick={() => handleDelete(guru.id)} style={styles.btnDel}>Hapus Data</button>
+                    <div style={{display:'flex', gap:5}}>
+                        <button 
+                            onClick={() => { setIsEdit(true); setEditId(guru.id); setNewGuru(guru); setShowAddModal(true); }} 
+                            style={styles.btnEdit}
+                        >Edit & KPI</button>
+                        <button onClick={() => handleDelete(guru.id)} style={styles.btnDel}>Hapus</button>
+                    </div>
                 </div>
             ))}
         </div>
 
-        {/* MODAL INPUT DENGAN PASSWORD */}
+        {/* MODAL INPUT (KODE ASLI + Field Baru) */}
         {showAddModal && (
             <div style={styles.overlay}>
                 <div style={styles.modal}>
-                    <h3 style={{marginTop:0, color:'#333'}}>Buat Akun Guru Baru</h3>
+                    <h3 style={{marginTop:0, color:'#333'}}>{isEdit ? "Update KPI & Data Guru" : "Buat Akun Guru Baru"}</h3>
                     <form onSubmit={handleAddGuru}>
-                        <div style={{marginBottom:15}}>
-                            <label style={{display:'block', marginBottom:5}}>Nama Lengkap</label>
+                        <div style={{marginBottom:10}}>
+                            <label style={styles.label}>Nama Lengkap</label>
                             <input type="text" style={styles.input} required 
                                 value={newGuru.nama} onChange={e=>setNewGuru({...newGuru, nama: e.target.value})} 
-                                placeholder="Mr. Budi Santoso"
-                            />
-                        </div>
-                        <div style={{marginBottom:15}}>
-                            <label style={{display:'block', marginBottom:5}}>Email Login</label>
-                            <input type="email" style={styles.input} required 
-                                value={newGuru.email} onChange={e=>setNewGuru({...newGuru, email: e.target.value})} 
-                                placeholder="budi@gmail.com"
                             />
                         </div>
                         
-                        {/* INPUT PASSWORD BARU */}
-                        <div style={{marginBottom:15}}>
-                            <label style={{display:'block', marginBottom:5, color:'#c0392b', fontWeight:'bold'}}>Password Login</label>
-                            <input type="text" style={{...styles.input, border:'1px solid #c0392b'}} required 
-                                value={newGuru.password} onChange={e=>setNewGuru({...newGuru, password: e.target.value})} 
-                                placeholder="Buatkan password (min 6 karakter)"
+                        {!isEdit && (
+                            <>
+                            <div style={{marginBottom:10}}>
+                                <label style={styles.label}>Email Login</label>
+                                <input type="email" style={styles.input} required 
+                                    value={newGuru.email} onChange={e=>setNewGuru({...newGuru, email: e.target.value})} 
+                                />
+                            </div>
+                            <div style={{marginBottom:10}}>
+                                <label style={styles.label}>Password Login</label>
+                                <input type="text" style={styles.input} required 
+                                    value={newGuru.password} onChange={e=>setNewGuru({...newGuru, password: e.target.value})} 
+                                />
+                            </div>
+                            </>
+                        )}
+
+                        <div style={{display:'flex', gap:10, marginBottom:10}}>
+                            <div style={{flex:1}}>
+                                <label style={styles.label}>Mata Pelajaran</label>
+                                <input type="text" style={styles.input} required
+                                    value={newGuru.mapel} onChange={e=>setNewGuru({...newGuru, mapel: e.target.value})} 
+                                />
+                            </div>
+                            <div style={{flex:1}}>
+                                <label style={styles.label}>Cabang</label>
+                                <input type="text" style={styles.input}
+                                    value={newGuru.cabang} onChange={e=>setNewGuru({...newGuru, cabang: e.target.value})} 
+                                    placeholder="Contoh: Pusat"
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{marginBottom:10}}>
+                            <label style={styles.label}>Skor KPI (1.0 - 5.0)</label>
+                            <input type="number" step="0.1" max="5" min="1" style={{...styles.input, background:'#fffde7'}} 
+                                value={newGuru.kpiScore} onChange={e=>setNewGuru({...newGuru, kpiScore: e.target.value})} 
                             />
-                            <small style={{color:'#7f8c8d'}}>Password ini digunakan guru untuk login.</small>
                         </div>
 
                         <div style={{marginBottom:20}}>
-                            <label style={{display:'block', marginBottom:5, fontWeight:'bold', color:'#2980b9'}}>Mata Pelajaran</label>
-                            <input type="text" style={styles.input} required
-                                value={newGuru.mapel} onChange={e=>setNewGuru({...newGuru, mapel: e.target.value})} 
-                                placeholder="Contoh: Matematika"
+                            <label style={styles.label}>Link Foto Profil (URL)</label>
+                            <input type="text" style={styles.input}
+                                value={newGuru.fotoUrl} onChange={e=>setNewGuru({...newGuru, fotoUrl: e.target.value})} 
+                                placeholder="https://..."
                             />
                         </div>
 
                         <div style={{display:'flex', gap:10}}>
                             <button type="button" onClick={()=>setShowAddModal(false)} style={styles.btnCancel}>Batal</button>
                             <button type="submit" disabled={loading} style={styles.btnSave}>
-                                {loading ? "Mendaftarkan..." : "Simpan & Buat Akun"}
+                                {loading ? "Menyimpan..." : "Simpan Data"}
                             </button>
                         </div>
                     </form>
@@ -221,12 +267,13 @@ const styles = {
   btnSet: { padding: '10px 20px', background: '#f1c40f', border: 'none', borderRadius: 5, fontWeight:'bold', cursor:'pointer', color:'#2c3e50' },
   headerRow: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 20 },
   btnAdd: { padding: '10px 20px', background: '#27ae60', color: 'white', border: 'none', borderRadius: 5, cursor: 'pointer', fontWeight: 'bold' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' },
-  card: { background: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' },
-  avatar: { width:50, height:50, borderRadius:'50%', background:'#3498db', color:'white', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, fontWeight:'bold' },
-  btnDel: { width:'100%', padding:'8px', background:'white', color:'#e74c3c', border:'1px solid #e74c3c', borderRadius:5, cursor:'pointer', fontSize:12 },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' },
+  card: { background: 'white', padding: '15px', borderRadius: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' },
+  btnEdit: { flex: 1, padding:'8px', background:'#3498db', color:'white', border:'none', borderRadius:5, cursor:'pointer', fontSize:12 },
+  btnDel: { padding:'8px', background:'white', color:'#e74c3c', border:'1px solid #e74c3c', borderRadius:5, cursor:'pointer', fontSize:12 },
   overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
-  modal: { background: 'white', padding: '25px', borderRadius: '10px', width: '400px' },
+  modal: { background: 'white', padding: '25px', borderRadius: '10px', width: '400px', maxHeight:'90vh', overflowY:'auto' },
+  label: { display:'block', marginBottom:5, fontSize:12, fontWeight:'bold' },
   input: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' },
   btnSave: { flex: 1, padding: '10px', background: '#2c3e50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' },
   btnCancel: { flex: 1, padding: '10px', background: '#ccc', color: '#333', border: 'none', borderRadius: '5px', cursor: 'pointer' }
