@@ -2,16 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase'; 
 import { collection, query, where, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import Sidebar from '../../../components/Sidebar';
 
 const TeacherGradeManager = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const guru = location.state?.teacher;
+  const [guru] = useState(location.state?.teacher || JSON.parse(localStorage.getItem('teacherData')));
 
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // State Edit (Termasuk Tanggal)
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ nilai: 0, topik: "", tanggal: "" });
 
@@ -22,20 +21,16 @@ const TeacherGradeManager = () => {
         const q = query(collection(db, "grades"), where("teacherId", "==", guru.id));
         const snap = await getDocs(q);
         const data = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        
-        // Urutkan dari tanggal terbaru
         data.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
         setGrades(data);
-    } catch (err) {
-        alert("Gagal ambil data: " + err.message);
-    }
+    } catch (err) { console.error(err); }
     setLoading(false);
   };
 
   useEffect(() => {
-    if (!guru) { navigate('/'); return; }
+    if (!guru) { navigate('/login-guru'); return; }
     fetchGrades();
-  }, [guru]);
+  }, [guru, navigate]);
 
   const handleDelete = async (id, namaSiswa) => {
     if(window.confirm(`Yakin hapus nilai ${namaSiswa}?`)) {
@@ -46,101 +41,92 @@ const TeacherGradeManager = () => {
 
   const startEdit = (item) => {
     setEditingId(item.id);
-    // Ambil tanggal format YYYY-MM-DD untuk input type="date"
     const dateStr = item.tanggal.split('T')[0];
     setEditForm({ nilai: item.nilai, topik: item.topik, tanggal: dateStr });
   };
 
   const saveEdit = async (id) => {
     try {
-        // Simpan tanggal baru (penting untuk grafik)
         const newDateISO = new Date(editForm.tanggal).toISOString();
-        
         await updateDoc(doc(db, "grades", id), {
             nilai: parseInt(editForm.nilai),
             topik: editForm.topik,
-            tanggal: newDateISO // <--- INI KUNCINYA AGAR GRAFIK BERGERAK
+            tanggal: newDateISO 
         });
         setEditingId(null);
         fetchGrades(); 
-        alert("✅ Data berhasil diupdate!");
-    } catch (err) {
-        alert("Gagal update: " + err.message);
-    }
+        alert("✅ Berhasil diupdate!");
+    } catch (err) { alert("Gagal update: " + err.message); }
   };
 
   return (
-    <div style={{padding:20, maxWidth:900, margin:'0 auto', fontFamily:'sans-serif'}}>
-      <div style={{background:'white', padding:20, borderRadius:10, boxShadow:'0 2px 5px rgba(0,0,0,0.1)', marginBottom:20, display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-        <div>
-            <h2 style={{margin:0, color:'#2c3e50'}}>🛠️ Kelola & Edit Nilai</h2>
-            <p style={{margin:0, color:'#7f8c8d', fontSize:14}}>Guru: {guru?.nama}</p>
+    <div style={{ display: 'flex', background: '#f4f7f6', minHeight: '100vh' }}>
+      <Sidebar />
+      <div style={{ marginLeft: '250px', padding: '30px', width: '100%' }}>
+        <div style={styles.headerBox}>
+            <div>
+                <h2 style={{margin:0}}>🛠️ Kelola & Edit Nilai</h2>
+                <p style={{margin:0, color:'#7f8c8d'}}>Guru: {guru?.nama}</p>
+            </div>
+            <button onClick={() => navigate('/guru/grades/input')} style={styles.btnInput}>➕ Input Baru</button>
         </div>
-        <button onClick={() => navigate('/guru/grades/input', { state: { teacher: guru } })} style={{padding:'10px 20px', background:'#3498db', color:'white', border:'none', borderRadius:5, cursor:'pointer', fontWeight:'bold'}}>
-            ➕ Input Baru
-        </button>
-      </div>
 
-      <div style={{background:'white', padding:20, borderRadius:10, boxShadow:'0 2px 5px rgba(0,0,0,0.1)'}}>
-        {loading ? <p>Loading data...</p> : (
-            <table style={{width:'100%', borderCollapse:'collapse', fontSize:14}}>
-                <thead>
-                    <tr style={{background:'#ecf0f1', color:'#2c3e50', textAlign:'left'}}>
-                        <th style={{padding:10}}>Tanggal (Grafik)</th>
-                        <th style={{padding:10}}>Siswa</th>
-                        <th style={{padding:10}}>Mapel</th>
-                        <th style={{padding:10}}>Topik</th>
-                        <th style={{padding:10}}>Nilai</th>
-                        <th style={{padding:10}}>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {grades.length === 0 ? <tr><td colSpan="6" style={{padding:20, textAlign:'center'}}>Belum ada data nilai.</td></tr> :
-                    grades.map(item => (
-                        <tr key={item.id} style={{borderBottom:'1px solid #eee'}}>
-                            
-                            {/* AREA EDIT */}
-                            {editingId === item.id ? (
-                                <>
-                                    <td style={{padding:10}}>
-                                        <input type="date" value={editForm.tanggal} onChange={e=>setEditForm({...editForm, tanggal:e.target.value})} style={{padding:5, border:'1px solid #3498db', borderRadius:4}} />
-                                    </td>
-                                    <td style={{padding:10, color:'#999'}}>{item.studentName}</td>
-                                    <td style={{padding:10, color:'#999'}}>{item.mapel}</td>
-                                    <td style={{padding:10}}>
-                                        <input type="text" value={editForm.topik} onChange={e=>setEditForm({...editForm, topik:e.target.value})} style={{width:'100%', padding:5}} />
-                                    </td>
-                                    <td style={{padding:10}}>
-                                        <input type="number" value={editForm.nilai} onChange={e=>setEditForm({...editForm, nilai:e.target.value})} style={{width:50, padding:5}} />
-                                    </td>
-                                    <td style={{padding:10}}>
-                                        <button onClick={()=>saveEdit(item.id)} style={{marginRight:5, background:'#27ae60', color:'white', border:'none', padding:'5px 10px', borderRadius:3, cursor:'pointer'}}>💾</button>
-                                        <button onClick={()=>setEditingId(null)} style={{background:'#95a5a6', color:'white', border:'none', padding:'5px 10px', borderRadius:3, cursor:'pointer'}}>❌</button>
-                                    </td>
-                                </>
-                            ) : (
-                                <>
-                                    <td style={{padding:10, fontSize:12, color:'#666'}}>
-                                        {new Date(item.tanggal).toLocaleDateString('id-ID')}
-                                    </td>
-                                    <td style={{padding:10, fontWeight:'bold'}}>{item.studentName}</td>
-                                    <td style={{padding:10}}>{item.mapel}</td>
-                                    <td style={{padding:10}}>{item.topik}</td>
-                                    <td style={{padding:10, fontWeight:'bold', color: item.nilai<70?'red':'green'}}>{item.nilai}</td>
-                                    <td style={{padding:10}}>
-                                        <button onClick={()=>startEdit(item)} style={{marginRight:5, background:'#f39c12', color:'white', border:'none', padding:'5px 10px', borderRadius:3, cursor:'pointer'}}>✏️</button>
-                                        <button onClick={()=>handleDelete(item.id, item.studentName)} style={{background:'#e74c3c', color:'white', border:'none', padding:'5px 10px', borderRadius:3, cursor:'pointer'}}>🗑️</button>
-                                    </td>
-                                </>
-                            )}
+        <div style={styles.tableBox}>
+            {loading ? <p>Loading data...</p> : (
+                <table style={styles.table}>
+                    <thead>
+                        <tr style={styles.thr}>
+                            <th>Tanggal</th><th>Siswa</th><th>Topik</th><th>Nilai</th><th>Aksi</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
-        )}
+                    </thead>
+                    <tbody>
+                        {grades.map(item => (
+                            <tr key={item.id} style={styles.tr}>
+                                {editingId === item.id ? (
+                                    <>
+                                        <td><input type="date" value={editForm.tanggal} onChange={e=>setEditForm({...editForm, tanggal:e.target.value})} /></td>
+                                        <td style={{color:'#999'}}>{item.studentName}</td>
+                                        <td><input type="text" value={editForm.topik} onChange={e=>setEditForm({...editForm, topik:e.target.value})} style={{width:'100%'}} /></td>
+                                        <td><input type="number" value={editForm.nilai} onChange={e=>setEditForm({...editForm, nilai:e.target.value})} style={{width:50}} /></td>
+                                        <td>
+                                            <button onClick={()=>saveEdit(item.id)} style={styles.btnSave}>💾</button>
+                                            <button onClick={()=>setEditingId(null)} style={styles.btnCancel}>❌</button>
+                                        </td>
+                                    </>
+                                ) : (
+                                    <>
+                                        <td style={{fontSize:12}}>{new Date(item.tanggal).toLocaleDateString('id-ID')}</td>
+                                        <td style={{fontWeight:'bold'}}>{item.studentName}</td>
+                                        <td>{item.topik}</td>
+                                        <td style={{fontWeight:'bold', color: item.nilai<70?'#e74c3c':'#27ae60'}}>{item.nilai}</td>
+                                        <td>
+                                            <button onClick={()=>startEdit(item)} style={styles.btnEdit}>✏️</button>
+                                            <button onClick={()=>handleDelete(item.id, item.studentName)} style={styles.btnDel}>🗑️</button>
+                                        </td>
+                                    </>
+                                )}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+        </div>
       </div>
     </div>
   );
+};
+
+const styles = {
+    headerBox: { background:'white', padding:20, borderRadius:10, display:'flex', justifyContent:'space-between', marginBottom:20 },
+    btnInput: { padding:'10px 20px', background:'#3498db', color:'white', border:'none', borderRadius:5, fontWeight:'bold', cursor:'pointer' },
+    tableBox: { background:'white', padding:20, borderRadius:10, overflowX:'auto' },
+    table: { width:'100%', borderCollapse:'collapse', fontSize:14 },
+    thr: { background:'#f8f9fa', textAlign:'left' },
+    tr: { borderBottom:'1px solid #eee' },
+    btnEdit: { background:'#f39c12', color:'white', border:'none', padding:5, borderRadius:3, marginRight:5 },
+    btnDel: { background:'#e74c3c', color:'white', border:'none', padding:5, borderRadius:3 },
+    btnSave: { background:'#27ae60', color:'white', border:'none', padding:5, borderRadius:3, marginRight:5 },
+    btnCancel: { background:'#95a5a6', color:'white', border:'none', padding:5, borderRadius:3 }
 };
 
 export default TeacherGradeManager;
