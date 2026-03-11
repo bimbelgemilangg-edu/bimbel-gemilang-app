@@ -1,13 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { auth } from '../firebase'; // Pastikan path firebase benar
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Mengambil data guru dari state lokasi
-  const guru = location.state?.teacher;
+  // Ambil data guru dari localStorage agar ANTI-BLANK
+  const [guru, setGuru] = useState(() => {
+    const saved = localStorage.getItem('teacherData');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  useEffect(() => {
+    if (!guru) {
+      // Jika di local tidak ada, coba cek di state, kalau tetap tidak ada baru ke login
+      const stateTeacher = location.state?.teacher;
+      if (stateTeacher) {
+        setGuru(stateTeacher);
+        localStorage.setItem('teacherData', JSON.stringify(stateTeacher));
+      } else {
+        navigate('/login-guru');
+      }
+    }
+  }, [guru, navigate, location.state]);
 
   const menuItems = [
     { name: 'Beranda', icon: '🏠', path: '/guru/dashboard' },
@@ -17,19 +32,16 @@ const Sidebar = () => {
     { name: 'Absen Susulan', icon: '➕', path: '/guru/manual-absensi' },
   ];
 
-  const handleNavigation = (itemPath) => {
-    // Navigasi wajib membawa kembali data guru yang sedang aktif
-    navigate(itemPath, { state: { teacher: guru } });
+  const handleNavigation = (path) => {
+    // Navigasi tetap membawa state sebagai cadangan utama
+    navigate(path, { state: { teacher: guru } });
   };
 
-  const handleLogout = async () => {
-    if (window.confirm("Apakah Anda yakin ingin keluar?")) {
-      try {
-        await auth.signOut();
-        navigate('/login-guru');
-      } catch (error) {
-        navigate('/login-guru');
-      }
+  const handleLogout = () => {
+    if (window.confirm("Yakin ingin keluar?")) {
+      localStorage.removeItem('teacherData');
+      localStorage.removeItem('isGuruLoggedIn');
+      navigate('/login-guru');
     }
   };
 
@@ -39,7 +51,6 @@ const Sidebar = () => {
         <h2 style={styles.logoText}>BIMBEL</h2>
         <span style={styles.logoSub}>GEMILANG</span>
       </div>
-
       <div style={styles.menuContainer}>
         {menuItems.map((item) => (
           <div
@@ -57,17 +68,12 @@ const Sidebar = () => {
           </div>
         ))}
       </div>
-
-      {/* Tampilan profil singkat di bawah agar tahu siapa yang login */}
-      <div style={styles.userProfile}>
-        <p style={{margin:0, fontSize:'12px', color:'#bdc3c7'}}>Login sebagai:</p>
-        <p style={{margin:0, fontSize:'14px', fontWeight:'bold', color:'#3498db'}}>{guru?.nama || "Guru"}</p>
+      <div style={styles.profileBox}>
+          <small style={{color:'#bdc3c7'}}>Guru Aktif:</small>
+          <div style={{fontWeight:'bold', color:'#3498db', fontSize:14}}>{guru?.nama || 'Memuat...'}</div>
       </div>
-
       <div style={styles.logoutSection}>
-        <button onClick={handleLogout} style={styles.btnLogout}>
-          🚪 Keluar Akun
-        </button>
+        <button onClick={handleLogout} style={styles.btnLogout}>🚪 Keluar Akun</button>
       </div>
     </div>
   );
@@ -79,12 +85,12 @@ const styles = {
   logoText: { margin: 0, letterSpacing: '2px', fontSize: '24px', color: '#3498db' },
   logoSub: { fontSize: '12px', color: '#bdc3c7' },
   menuContainer: { flex: 1, padding: '20px 0' },
-  menuItem: { display: 'flex', alignItems: 'center', padding: '15px 20px', transition: '0.3s', marginBottom: '5px' },
-  icon: { marginRight: '15px', fontSize: '18px' },
-  menuName: { fontSize: '14px', fontWeight: '500' },
-  userProfile: { padding: '15px 20px', background: 'rgba(0,0,0,0.2)', marginBottom: '10px' },
+  menuItem: { display: 'flex', alignItems: 'center', padding: '15px 20px', transition: '0.3s' },
+  icon: { marginRight: '15px' },
+  menuName: { fontSize: '14px' },
+  profileBox: { padding: '15px 20px', background: 'rgba(0,0,0,0.2)', margin: '10px' },
   logoutSection: { padding: '20px', borderTop: '1px solid rgba(255,255,255,0.1)' },
-  btnLogout: { width: '100%', padding: '12px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }
+  btnLogout: { width: '100%', padding: '10px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight:'bold' }
 };
 
 export default Sidebar;

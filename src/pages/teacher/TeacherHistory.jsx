@@ -6,14 +6,31 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 const TeacherHistory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const guru = location.state?.teacher;
+
+  // FIX KEPENTAL: Ambil dari state, jika kosong ambil dari localStorage
+  const [guru] = useState(() => {
+    const stateGuru = location.state?.teacher;
+    const localGuru = localStorage.getItem('teacherData');
+    
+    if (stateGuru) {
+      // Simpan ke local sebagai cadangan jika datang dari dashboard
+      localStorage.setItem('teacherData', JSON.stringify(stateGuru));
+      return stateGuru;
+    }
+    
+    return localGuru ? JSON.parse(localGuru) : null;
+  });
   
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
 
   useEffect(() => {
-    if (!guru) { navigate('/login-guru'); return; }
+    // FIX BLANK: Jika benar-benar tidak ada data guru di mana pun, baru ke login
+    if (!guru) { 
+      navigate('/login-guru'); 
+      return; 
+    }
 
     const fetchLogs = async () => {
       setLoading(true);
@@ -26,15 +43,20 @@ const TeacherHistory = () => {
         // Sortir tanggal terbaru diatas
         filtered.sort((a, b) => new Date(b.tanggal + ' ' + b.waktu) - new Date(a.tanggal + ' ' + a.waktu));
         setLogs(filtered);
-      } catch (err) { console.error(err); } finally { setLoading(false); }
+      } catch (err) { 
+        console.error("Error fetching logs:", err); 
+      } finally { 
+        setLoading(false); 
+      }
     };
     fetchLogs();
-  }, [guru, selectedMonth]);
+  }, [guru, selectedMonth, navigate]);
 
   const handlePrint = () => window.print();
   const totalJam = logs.reduce((acc, curr) => acc + (parseFloat(curr.durasiJam) || 0), 0);
   const formattedPeriod = new Date(selectedMonth + "-01").toLocaleDateString('id-ID', { year: 'numeric', month: 'long' });
 
+  // Cegah render konten jika guru tidak ada (menghindari error property of null)
   if (!guru) return null;
 
   return (
@@ -45,12 +67,13 @@ const TeacherHistory = () => {
         /* PRINT STYLES */
         @media print {
             @page { margin: 1.5cm; size: A4; }
-            body { background: white; -webkit-print-color-adjust: exact; }
+            body { background: white !important; -webkit-print-color-adjust: exact; }
             .no-print { display: none !important; }
-            .report-card { box-shadow: none !important; padding: 0 !important; }
+            .report-card { box-shadow: none !important; padding: 0 !important; width: 100% !important; margin: 0 !important; }
             .signature-section { display: flex !important; margin-top: 50px; justify-content: space-between; }
+            .main-container { background: white !important; padding: 0; }
         }
-        .signature-section { display: none; } /* Sembunyikan saat mode web biasa */
+        .signature-section { display: none; }
       `}</style>
 
       {/* Header & Navigasi (Hanya Web) */}
@@ -60,7 +83,7 @@ const TeacherHistory = () => {
             <h3 style={{margin:0}}>Riwayat Mengajar</h3>
         </div>
         <div style={{display:'flex', gap:10}}>
-            <input type="month" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} style={{padding:5, borderRadius:4}} />
+            <input type="month" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} style={{padding:5, borderRadius:4, border:'none'}} />
             <button onClick={handlePrint} style={{background:'#27ae60', border:'none', padding:'5px 15px', color:'white', borderRadius:4, cursor:'pointer', fontWeight:'bold'}}>🖨️ Cetak</button>
         </div>
       </div>
@@ -85,37 +108,43 @@ const TeacherHistory = () => {
             <table style={{width:'100%', borderCollapse:'collapse', fontSize:13}}>
                 <thead>
                     <tr style={{background:'#f0f0f0', borderBottom:'2px solid #000'}}>
-                        <th style={{padding:10, textAlign:'left'}}>Tanggal</th>
-                        <th style={{padding:10, textAlign:'left'}}>Materi / Kegiatan</th>
-                        <th style={{padding:10, textAlign:'center'}}>Siswa</th>
-                        <th style={{padding:10, textAlign:'center'}}>Durasi</th>
-                        <th style={{padding:10, textAlign:'center'}}>Status</th>
+                        <th style={{padding:10, textAlign:'left', border:'1px solid #ddd'}}>Tanggal</th>
+                        <th style={{padding:10, textAlign:'left', border:'1px solid #ddd'}}>Materi / Kegiatan</th>
+                        <th style={{padding:10, textAlign:'center', border:'1px solid #ddd'}}>Siswa</th>
+                        <th style={{padding:10, textAlign:'center', border:'1px solid #ddd'}}>Durasi</th>
+                        <th style={{padding:10, textAlign:'center', border:'1px solid #ddd'}}>Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {logs.map(log => (
-                        <tr key={log.id} style={{borderBottom:'1px solid #ddd'}}>
-                            <td style={{padding:10}}>{new Date(log.tanggal).toLocaleDateString('id-ID')} <br/> <small>{log.waktu}</small></td>
-                            <td style={{padding:10}}><strong>{log.program}</strong><br/>{log.detail}</td>
-                            <td style={{padding:10, textAlign:'center'}}>{log.siswaHadir}</td>
-                            <td style={{padding:10, textAlign:'center'}}>{log.durasiJam} Jam</td>
-                            <td style={{padding:10, textAlign:'center'}}>{log.status}</td>
-                        </tr>
-                    ))}
+                    {loading ? (
+                        <tr><td colSpan="5" style={{padding:20, textAlign:'center'}}>Memuat data...</td></tr>
+                    ) : logs.length === 0 ? (
+                        <tr><td colSpan="5" style={{padding:20, textAlign:'center'}}>Tidak ada riwayat pada bulan ini.</td></tr>
+                    ) : (
+                        logs.map(log => (
+                            <tr key={log.id} style={{borderBottom:'1px solid #ddd'}}>
+                                <td style={{padding:10, border:'1px solid #ddd'}}>{new Date(log.tanggal).toLocaleDateString('id-ID')} <br/> <small>{log.waktu}</small></td>
+                                <td style={{padding:10, border:'1px solid #ddd'}}><strong>{log.program}</strong><br/>{log.detail}</td>
+                                <td style={{padding:10, textAlign:'center', border:'1px solid #ddd'}}>{log.siswaHadir}</td>
+                                <td style={{padding:10, textAlign:'center', border:'1px solid #ddd'}}>{log.durasiJam} Jam</td>
+                                <td style={{padding:10, textAlign:'center', border:'1px solid #ddd'}}>{log.status}</td>
+                            </tr>
+                        ))
+                    )}
                 </tbody>
             </table>
 
-            {/* Kolom Tanda Tangan (Khusus Bimbel) */}
-            <div className="signature-section" style={{padding:'0 30px'}}>
+            {/* Kolom Tanda Tangan */}
+            <div className="signature-section" style={{padding:'0 30px', marginTop:50}}>
                 <div style={{textAlign:'center', width:'40%'}}>
                     <p>Mengetahui,<br/><strong>Pimpinan / Koordinator</strong></p>
                     <br/><br/><br/><br/>
-                    <p style={{borderTop:'1px solid #000', paddingTop:5}}>( .................................... )</p>
+                    <p style={{borderTop:'1px solid #000', paddingTop:5, fontWeight:'bold'}}>( .................................... )</p>
                 </div>
                 <div style={{textAlign:'center', width:'40%'}}>
                     <p>Dibuat oleh,<br/><strong>Tentor / Pengajar</strong></p>
                     <br/><br/><br/><br/>
-                    <p style={{borderTop:'1px solid #000', paddingTop:5}}>({guru.nama})</p>
+                    <p style={{borderTop:'1px solid #000', paddingTop:5, fontWeight:'bold'}}>({guru.nama})</p>
                 </div>
             </div>
 
