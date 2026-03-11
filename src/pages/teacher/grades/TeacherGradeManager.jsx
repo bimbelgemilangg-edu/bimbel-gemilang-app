@@ -7,7 +7,9 @@ import Sidebar from '../../../components/Sidebar';
 const TeacherGradeManager = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [guru] = useState(location.state?.teacher || JSON.parse(localStorage.getItem('teacherData')));
+  
+  // HANYA MENGGUNAKAN STATE BAWAAN (TANPA LOCALSTORAGE)
+  const [guru] = useState(location.state?.teacher);
 
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +30,7 @@ const TeacherGradeManager = () => {
   };
 
   useEffect(() => {
+    // Jika tidak ada data guru, langsung lempar ke login
     if (!guru) { navigate('/login-guru'); return; }
     fetchGrades();
   }, [guru, navigate]);
@@ -68,7 +71,8 @@ const TeacherGradeManager = () => {
                 <h2 style={{margin:0}}>🛠️ Kelola & Edit Nilai</h2>
                 <p style={{margin:0, color:'#7f8c8d'}}>Guru: {guru?.nama}</p>
             </div>
-            <button onClick={() => navigate('/guru/grades/input')} style={styles.btnInput}>➕ Input Baru</button>
+            {/* PENTING: Harus menyertakan state saat navigate agar tidak terlempar ke login */}
+            <button onClick={() => navigate('/guru/grades/input', { state: { teacher: guru } })} style={styles.btnInput}>➕ Input Baru</button>
         </div>
 
         <div style={styles.tableBox}>

@@ -8,8 +8,8 @@ const TeacherInputGrade = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Ambil data dari state atau localStorage agar tidak hilang saat refresh
-  const [guru, setGuru] = useState(location.state?.teacher || JSON.parse(localStorage.getItem('teacherData')));
+  // HANYA MENGGUNAKAN STATE BAWAAN (TANPA LOCALSTORAGE)
+  const [guru] = useState(location.state?.teacher);
 
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
@@ -25,7 +25,9 @@ const TeacherInputGrade = () => {
   const [selectedMapel, setSelectedMapel] = useState(guru?.mapel || "Umum");
 
   useEffect(() => {
+    // Jika tidak ada data guru, langsung lempar ke login
     if (!guru) { navigate('/login-guru'); return; }
+
     const fetchData = async () => {
         const snapSiswa = await getDocs(collection(db, "students"));
         const dataSiswa = snapSiswa.docs.map(d => ({id: d.id, ...d.data()}));
