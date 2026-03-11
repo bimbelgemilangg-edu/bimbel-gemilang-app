@@ -1,126 +1,115 @@
 import React, { useState, useEffect } from 'react';
+import { db, auth } from '../../../firebase';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import Sidebar from '../../../components/Sidebar';
-import { db, firebaseConfig } from '../../../firebase'; 
-import { collection, getDocs, addDoc, deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { initializeApp, deleteApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
 const TeacherList = () => {
   const [teachers, setTeachers] = useState([]);
-  const [dailyCode, setDailyCode] = useState("");
-  const [savedCode, setSavedCode] = useState("Loading...");
-  const [showAddModal, setShowAddModal] = useState(false);
-  
-  const [isEdit, setIsEdit] = useState(false);
-  const [editId, setEditId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
-  const [newGuru, setNewGuru] = useState({ 
-    nama: "", email: "", mapel: "", password: "",
-    cabang: "", fotoUrl: "", kpiScore: 5.0 
-  });
-  const [loading, setLoading] = useState(false);
+  // Form State
+  const [nama, setNama] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState(""); // Untuk Guru Baru
+  const [mapel, setMapel] = useState("");
+  const [cabang, setCabang] = useState("Pusat");
+  const [kpiScore, setKpiScore] = useState(5);
+  const [fotoUrl, setFotoUrl] = useState("");
 
-  const fetchData = async () => {
-    const tSnap = await getDocs(collection(db, "teachers"));
-    setTeachers(tSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-
-    const today = new Date().toISOString().split('T')[0];
-    const codeRef = doc(db, "settings", `daily_code_${today}`);
-    const codeSnap = await getDoc(codeRef);
-    
-    if (codeSnap.exists()) {
-        setSavedCode(codeSnap.data().code);
-        setDailyCode(codeSnap.data().code);
-    } else {
-        setSavedCode("(Belum diset)");
-    }
+  const fetchTeachers = async () => {
+    setLoading(true);
+    try {
+      const snap = await getDocs(collection(db, "teachers"));
+      setTeachers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    } catch (e) { console.error(e); }
+    setLoading(false);
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchTeachers(); }, []);
 
-  // --- UPDATE FUNGSI: KOMPRESI GAMBAR AGAR TIDAK ERROR LIMIT 1MB ---
+  // Fungsi Kompresi Foto
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 400; // Ukuran foto profil cukup 400px
-                const scaleSize = MAX_WIDTH / img.width;
-                canvas.width = MAX_WIDTH;
-                canvas.height = img.height * scaleSize;
-
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                // Kompresi ke JPEG kualitas 0.7 (70%) agar ukuran file kecil (<100KB)
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                setNewGuru({ ...newGuru, fotoUrl: dataUrl });
-            };
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 400;
+          const scaleSize = MAX_WIDTH / img.width;
+          canvas.width = MAX_WIDTH;
+          canvas.height = img.height * scaleSize;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          setFotoUrl(canvas.toDataURL('image/jpeg', 0.7));
         };
+      };
     }
   };
 
-  const handleSetCode = async () => {
-    if(!dailyCode) return alert("Kode tidak boleh kosong!");
-    const today = new Date().toISOString().split('T')[0];
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-        await setDoc(doc(db, "settings", `daily_code_${today}`), { code: dailyCode });
-        setSavedCode(dailyCode);
-        alert(`✅ Kode berhasil diset: ${dailyCode}`);
-    } catch (error) { console.error(error); }
+      if (editingId) {
+        // UPDATE GURU
+        const ref = doc(db, "teachers", editingId);
+        await updateDoc(ref, { 
+          nama, mapel, cabang, 
+          kpiScore: parseFloat(kpiScore), 
+          fotoUrl,
+          email // Tetap simpan email agar sinkron
+        });
+        alert("✅ Data Guru Diperbarui!");
+      } else {
+        // TAMBAH GURU BARU + BUAT AKUN LOGIN
+        if (!password) return alert("Password wajib diisi untuk guru baru!");
+        
+        // 1. Buat akun di Firebase Auth
+        await createUserWithEmailAndPassword(auth, email, password);
+        
+        // 2. Simpan ke Database Firestore
+        await addDoc(collection(db, "teachers"), {
+          nama, email, mapel, cabang, 
+          kpiScore: parseFloat(kpiScore), 
+          fotoUrl,
+          createdAt: new Date()
+        });
+        alert("✅ Guru Berhasil Ditambahkan!");
+      }
+      resetForm();
+      fetchTeachers();
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
   };
 
-  const handleAddGuru = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const resetForm = () => {
+    setNama(""); setEmail(""); setPassword(""); setMapel("");
+    setCabang("Pusat"); setKpiScore(5); setFotoUrl("");
+    setEditingId(null); setShowModal(false);
+  };
 
-    try {
-        if (isEdit) {
-            await updateDoc(doc(db, "teachers", editId), {
-                nama: newGuru.nama || "",
-                mapel: newGuru.mapel || "",
-                cabang: newGuru.cabang || "",
-                fotoUrl: newGuru.fotoUrl || "",
-                kpiScore: parseFloat(newGuru.kpiScore) || 0
-            });
-            alert("✅ Update Berhasil!");
-        } else {
-            let secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
-            const secondaryAuth = getAuth(secondaryApp);
-            const userCredential = await createUserWithEmailAndPassword(secondaryAuth, newGuru.email, newGuru.password);
-            
-            await addDoc(collection(db, "teachers"), {
-                uid: userCredential.user.uid,
-                nama: newGuru.nama || "",
-                email: newGuru.email || "", 
-                mapel: newGuru.mapel || "",
-                cabang: newGuru.cabang || "",
-                fotoUrl: newGuru.fotoUrl || "",
-                kpiScore: parseFloat(newGuru.kpiScore) || 5.0,
-                passwordHint: newGuru.password,
-                status: "Aktif",
-                createdAt: new Date().toISOString()
-            });
-            await deleteApp(secondaryApp);
-            alert(`✅ Guru Berhasil Didaftarkan!`);
-        }
-        setShowAddModal(false);
-        setNewGuru({ nama: "", email: "", mapel: "", password: "", cabang: "", fotoUrl: "", kpiScore: 5.0 }); 
-        fetchData(); 
-    } catch (error) {
-        alert("Gagal: " + error.message);
-    } finally { setLoading(false); }
+  const handleEdit = (t) => {
+    setEditingId(t.id);
+    setNama(t.nama);
+    setEmail(t.email);
+    setMapel(t.mapel || "");
+    setCabang(t.cabang || "Pusat");
+    setKpiScore(t.kpiScore || 5);
+    setFotoUrl(t.fotoUrl || "");
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
-    if(window.confirm("Hapus data guru?")) {
-        await deleteDoc(doc(db, "teachers", id));
-        fetchData();
+    if (window.confirm("Hapus guru ini?")) {
+      await deleteDoc(doc(db, "teachers", id));
+      fetchTeachers();
     }
   };
 
@@ -128,88 +117,91 @@ const TeacherList = () => {
     <div style={{ display: 'flex' }}>
       <Sidebar />
       <div style={styles.content}>
-        <div style={styles.codePanel}>
-            <div><h3 style={{margin:0, color:'white'}}>🔑 Kode Absen: {savedCode}</h3></div>
-            <div style={{display:'flex', gap:10}}>
-                <input type="text" value={dailyCode} onChange={(e)=>setDailyCode(e.target.value)} style={styles.inputCode}/>
-                <button onClick={handleSetCode} style={styles.btnSet}>SET KODE</button>
-            </div>
+        <div style={styles.header}>
+          <h2>👨‍🏫 Manajemen Guru & KPI</h2>
+          <button onClick={() => setShowModal(true)} style={styles.btnAdd}>+ Tambah Guru Baru</button>
         </div>
 
-        <div style={styles.headerRow}>
-            <h2>👨‍🏫 Manajemen Guru & KPI</h2>
-            <button onClick={() => { setIsEdit(false); setNewGuru({nama:"", email:"", mapel:"", password:"", cabang:"", fotoUrl:"", kpiScore:5.0}); setShowAddModal(true); }} style={styles.btnAdd}>+ Tambah Guru Baru</button>
-        </div>
-        
-        <div style={styles.grid}>
-            {teachers.map(guru => (
-                <div key={guru.id} style={styles.card}>
-                    <div style={{display:'flex', alignItems:'center', gap:15, marginBottom:15}}>
-                        <img src={guru.fotoUrl || "https://via.placeholder.com/50"} style={styles.avatarImg} alt="p" />
-                        <div style={{flex:1}}>
-                            <h3 style={{margin:0}}>{guru.nama}</h3>
-                            <span style={{color:'#f39c12', fontWeight:'bold'}}>⭐ {guru.kpiScore || '5.0'}</span>
-                        </div>
-                    </div>
-                    <div style={{display:'flex', gap:5}}>
-                        <button onClick={() => { 
-                            setIsEdit(true); 
-                            setEditId(guru.id); 
-                            setNewGuru({
-                                nama: guru.nama || "",
-                                email: guru.email || "",
-                                mapel: guru.mapel || "",
-                                cabang: guru.cabang || "",
-                                fotoUrl: guru.fotoUrl || "",
-                                kpiScore: guru.kpiScore || 5.0,
-                                password: ""
-                            }); 
-                            setShowAddModal(true); 
-                        }} style={styles.btnEdit}>Edit/KPI</button>
-                        <button onClick={() => handleDelete(guru.id)} style={styles.btnDel}>Hapus</button>
-                    </div>
+        {loading ? <p>Memuat...</p> : (
+          <table style={styles.table}>
+            <thead>
+              <tr style={{background:'#f8f9fa'}}>
+                <th>Foto</th>
+                <th>Nama / Email</th>
+                <th>Mata Pelajaran</th>
+                <th>Cabang</th>
+                <th>Skor KPI</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {teachers.map(t => (
+                <tr key={t.id}>
+                  <td><img src={t.fotoUrl || "https://via.placeholder.com/40"} style={styles.thumb} /></td>
+                  <td>
+                    <strong>{t.nama}</strong><br/>
+                    <span style={{fontSize:11, color:'#666'}}>{t.email}</span>
+                  </td>
+                  <td>{t.mapel}</td>
+                  <td>{t.cabang}</td>
+                  <td style={{fontWeight:'bold', color:'#f39c12'}}>⭐ {t.kpiScore}</td>
+                  <td>
+                    <button onClick={() => handleEdit(t)} style={styles.btnEdit}>Edit</button>
+                    <button onClick={() => handleDelete(t.id)} style={styles.btnDelete}>Hapus</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        {/* MODAL INPUT/EDIT */}
+        {showModal && (
+          <div style={styles.overlay}>
+            <div style={styles.modal}>
+              <h3>{editingId ? "Edit Guru" : "Tambah Guru Baru"}</h3>
+              <form onSubmit={handleSubmit}>
+                <label style={styles.label}>Nama Lengkap</label>
+                <input style={styles.input} value={nama} onChange={e=>setNama(e.target.value)} required />
+
+                <label style={styles.label}>Email (Username Login)</label>
+                <input style={styles.input} type="email" value={email} onChange={e=>setEmail(e.target.value)} required disabled={editingId} />
+
+                {!editingId && (
+                  <>
+                    <label style={styles.label}>Password Login</label>
+                    <input style={styles.input} type="password" value={password} onChange={e=>setPassword(e.target.value)} required />
+                  </>
+                )}
+
+                <label style={styles.label}>Mata Pelajaran</label>
+                <input style={styles.input} value={mapel} onChange={e=>setMapel(e.target.value)} />
+
+                <div style={{display:'flex', gap:10}}>
+                  <div style={{flex:1}}>
+                    <label style={styles.label}>Cabang</label>
+                    <select style={styles.input} value={cabang} onChange={e=>setCabang(e.target.value)}>
+                      <option value="Pusat">Pusat</option>
+                      <option value="Cabang 1">Cabang 1</option>
+                      <option value="Cabang 2">Cabang 2</option>
+                    </select>
+                  </div>
+                  <div style={{flex:1}}>
+                    <label style={styles.label}>KPI (Skor 1-5)</label>
+                    <input style={styles.input} type="number" step="0.1" min="1" max="5" value={kpiScore} onChange={e=>setKpiScore(e.target.value)} />
+                  </div>
                 </div>
-            ))}
-        </div>
 
-        {showAddModal && (
-            <div style={styles.overlay}>
-                <div style={styles.modal}>
-                    <h3>{isEdit ? "Edit Guru" : "Tambah Guru"}</h3>
-                    <form onSubmit={handleAddGuru}>
-                        <label style={styles.label}>Nama</label>
-                        <input type="text" style={styles.input} required value={newGuru.nama} onChange={e=>setNewGuru({...newGuru, nama: e.target.value})} />
-                        
-                        {!isEdit && (
-                            <>
-                                <label style={styles.label}>Email & Password</label>
-                                <input type="email" style={styles.input} required value={newGuru.email} onChange={e=>setNewGuru({...newGuru, email: e.target.value})} />
-                                <input type="text" style={styles.input} required value={newGuru.password} onChange={e=>setNewGuru({...newGuru, password: e.target.value})} />
-                            </>
-                        )}
+                <label style={styles.label}>Foto Profil</label>
+                <input type="file" accept="image/*" onChange={handleFileChange} style={{marginBottom:15}} />
 
-                        <div style={{display:'flex', gap:10}}>
-                            <div style={{flex:1}}>
-                                <label style={styles.label}>Cabang</label>
-                                <input type="text" style={styles.input} value={newGuru.cabang} onChange={e=>setNewGuru({...newGuru, cabang: e.target.value})} />
-                            </div>
-                            <div style={{flex:1}}>
-                                <label style={styles.label}>KPI (1-5)</label>
-                                <input type="number" step="0.1" style={styles.input} value={newGuru.kpiScore} onChange={e=>setNewGuru({...newGuru, kpiScore: e.target.value})} />
-                            </div>
-                        </div>
-
-                        <label style={styles.label}>Foto Profil (Upload File)</label>
-                        <input type="file" accept="image/*" onChange={handleFileChange} style={{marginBottom:15}} />
-                        {newGuru.fotoUrl && <img src={newGuru.fotoUrl} alt="Preview" style={{width:50, height:50, display:'block', marginBottom:10}} />}
-
-                        <div style={{display:'flex', gap:10}}>
-                            <button type="button" onClick={()=>setShowAddModal(false)} style={styles.btnCancel}>Batal</button>
-                            <button type="submit" disabled={loading} style={styles.btnSave}>Simpan</button>
-                        </div>
-                    </form>
+                <div style={styles.modalAction}>
+                  <button type="button" onClick={resetForm} style={styles.btnCancel}>Batal</button>
+                  <button type="submit" style={styles.btnSubmit}>Simpan Data</button>
                 </div>
+              </form>
             </div>
+          </div>
         )}
       </div>
     </div>
@@ -217,23 +209,20 @@ const TeacherList = () => {
 };
 
 const styles = {
-  content: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh' },
-  codePanel: { background: 'linear-gradient(to right, #2980b9, #2c3e50)', padding: 15, borderRadius: 10, display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 20 },
-  inputCode: { padding: 8, borderRadius: 5, border: 'none' },
-  btnSet: { padding: '8px 15px', background: '#f1c40f', border: 'none', borderRadius: 5, fontWeight:'bold', cursor:'pointer' },
-  headerRow: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 20 },
+  content: { marginLeft: '250px', padding: '30px', width: '100%' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   btnAdd: { padding: '10px 20px', background: '#27ae60', color: 'white', border: 'none', borderRadius: 5, cursor: 'pointer', fontWeight: 'bold' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' },
-  card: { background: 'white', padding: '15px', borderRadius: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' },
-  avatarImg: { width:50, height:50, borderRadius:'50%', objectFit:'cover', background:'#eee' },
-  btnEdit: { flex:1, padding:'8px', background:'#3498db', color:'white', border:'none', borderRadius:5, cursor:'pointer' },
-  btnDel: { padding:'8px', background:'white', color:'#e74c3c', border:'1px solid #e74c3c', borderRadius:5, cursor:'pointer' },
-  overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
-  modal: { background: 'white', padding: '25px', borderRadius: '10px', width: '400px', maxHeight:'90vh', overflowY:'auto' },
-  label: { display:'block', marginBottom:5, fontSize:12, fontWeight:'bold' },
-  input: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box', marginBottom:10 },
-  btnSave: { flex: 1, padding: '10px', background: '#2c3e50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' },
-  btnCancel: { flex: 1, padding: '10px', background: '#ccc', color: '#333', border: 'none', borderRadius: '5px', cursor: 'pointer' }
+  table: { width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: 10, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' },
+  thumb: { width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' },
+  label: { display: 'block', fontSize: 12, fontWeight: 'bold', marginTop: 10, marginBottom: 5 },
+  input: { width: '100%', padding: '10px', borderRadius: 5, border: '1px solid #ddd', boxSizing: 'border-box' },
+  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
+  modal: { background: 'white', padding: 30, borderRadius: 15, width: '400px', maxHeight: '90vh', overflowY: 'auto' },
+  modalAction: { display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 20 },
+  btnSubmit: { padding: '10px 20px', background: '#2c3e50', color: 'white', border: 'none', borderRadius: 5, cursor: 'pointer' },
+  btnCancel: { padding: '10px 20px', background: '#eee', border: 'none', borderRadius: 5, cursor: 'pointer' },
+  btnEdit: { padding: '5px 10px', background: '#3498db', color: 'white', border: 'none', borderRadius: 3, cursor: 'pointer', marginRight: 5 },
+  btnDelete: { padding: '5px 10px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: 3, cursor: 'pointer' }
 };
 
 export default TeacherList;
