@@ -23,20 +23,18 @@ const LoginGuru = () => {
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
-        // Data Guru Ketemu
         const teacherData = { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() };
         
-        // Simpan sesi (opsional jika pakai context)
+        // SIMPAN SESI LOGIN GURU
+        localStorage.setItem('isGuruLoggedIn', 'true'); // KUNCI UTAMA SIDEBAR
+        localStorage.setItem('teacherData', JSON.stringify(teacherData));
         localStorage.setItem('guruInfo', JSON.stringify(teacherData));
 
         alert(`Selamat Datang, ${teacherData.nama}!`);
-        
-        // Redirect ke Dashboard Guru membawa data
-        navigate('/guru/dashboard', { state: { teacher: teacherData } });
+        navigate('/guru/dashboard');
       } else {
-        alert("Login berhasil, tapi data profil guru tidak ditemukan di database. Hubungi Admin.");
+        alert("Data profil guru tidak ditemukan di database.");
       }
-
     } catch (error) {
       console.error(error);
       alert("Login Gagal! Periksa Email dan Password.");
@@ -55,39 +53,17 @@ const LoginGuru = () => {
         <form onSubmit={handleLogin}>
           <div style={{textAlign:'left', marginBottom:15}}>
             <label style={styles.label}>Email</label>
-            <input 
-              type="email" 
-              placeholder="email@guru.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={styles.input}
-              required
-            />
+            <input type="email" placeholder="email@guru.com" value={email} onChange={(e) => setEmail(e.target.value)} style={styles.input} required />
           </div>
-          
           <div style={{textAlign:'left', marginBottom:20}}>
             <label style={styles.label}>Password</label>
-            <input 
-              type="password" 
-              placeholder="******"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={styles.input}
-              required
-            />
+            <input type="password" placeholder="******" value={password} onChange={(e) => setPassword(e.target.value)} style={styles.input} required />
           </div>
-
           <button type="submit" disabled={loading} style={styles.button}>
             {loading ? "Memproses..." : "MASUK SEKARANG"}
           </button>
         </form>
-
-        <p style={{marginTop:20, fontSize:12, color:'#999'}}>
-          Belum punya akun? Minta Admin untuk mendaftarkan.
-        </p>
-        <button onClick={() => navigate('/')} style={{background:'none', border:'none', color:'#3498db', cursor:'pointer', fontSize:12, textDecoration:'underline'}}>
-            Kembali ke Menu Utama
-        </button>
+        <button onClick={() => navigate('/')} style={styles.btnBack}>Kembali ke Menu Utama</button>
       </div>
     </div>
   );
@@ -100,6 +76,7 @@ const styles = {
   label: { display:'block', fontSize:12, fontWeight:'bold', color:'#333', marginBottom:5 },
   input: { width: '100%', padding: '12px', marginBottom: '5px', border: '1px solid #ddd', borderRadius: '5px', boxSizing:'border-box', fontSize:14 },
   button: { width: '100%', padding: '12px', background: '#2c3e50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', marginTop:10 },
+  btnBack: { background:'none', border:'none', color:'#3498db', cursor:'pointer', fontSize:12, textDecoration:'underline', marginTop:20 }
 };
 
 export default LoginGuru;

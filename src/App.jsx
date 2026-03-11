@@ -25,23 +25,29 @@ import TeacherHistory from './pages/teacher/TeacherHistory';
 import TeacherManualInput from './pages/teacher/TeacherManualInput'; 
 import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade'; 
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager'; 
-import TeacherProfile from './pages/teacher/TeacherProfile'; // <--- Tambahan Baru
+import TeacherProfile from './pages/teacher/TeacherProfile'; 
 
+// PROTEKSI RUTE ADMIN
 const AdminRoute = ({ children }) => {
-  const isAuth = localStorage.getItem('isLoggedIn'); 
+  const isAuth = localStorage.getItem('isLoggedIn') === 'true'; 
   return isAuth ? children : <Navigate to="/" />;
 };
 
-const GuruRoute = ({ children }) => children; 
+// PROTEKSI RUTE GURU (DIPERBARUI)
+const GuruRoute = ({ children }) => {
+  const isGuruAuth = localStorage.getItem('isGuruLoggedIn') === 'true'; 
+  return isGuruAuth ? children : <Navigate to="/login-guru" />;
+};
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* HALAMAN LOGIN */}
         <Route path="/" element={<Login />} />              
         <Route path="/login-guru" element={<LoginGuru />} /> 
 
-        {/* ADMIN */}
+        {/* GRUP RUTE ADMIN */}
         <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
         <Route path="/admin/students" element={<AdminRoute><StudentList /></AdminRoute>} />
         <Route path="/admin/students/add" element={<AdminRoute><AddStudent /></AdminRoute>} />
@@ -55,14 +61,15 @@ function App() {
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
         <Route path="/admin/grades" element={<AdminRoute><GradeReport /></AdminRoute>} />
 
-        {/* GURU */}
+        {/* GRUP RUTE GURU */}
         <Route path="/guru/dashboard" element={<GuruRoute><TeacherDashboard /></GuruRoute>} />
-        <Route path="/guru/profile" element={<GuruRoute><TeacherProfile /></GuruRoute>} /> {/* <--- Tambahan Baru */}
+        <Route path="/guru/profile" element={<GuruRoute><TeacherProfile /></GuruRoute>} />
         <Route path="/guru/grades/input" element={<GuruRoute><TeacherInputGrade /></GuruRoute>} />
         <Route path="/guru/grades/manage" element={<GuruRoute><TeacherGradeManager /></GuruRoute>} />
         <Route path="/guru/history" element={<GuruRoute><TeacherHistory /></GuruRoute>} />
         <Route path="/guru/manual-input" element={<GuruRoute><TeacherManualInput /></GuruRoute>} />
         
+        {/* REDIRECT LAMA */}
         <Route path="/teacher" element={<Navigate to="/guru/dashboard" replace />} />
 
       </Routes>
@@ -70,5 +77,4 @@ function App() {
   );
 }
 
-// BARIS INI WAJIB ADA AGAR TIDAK ERROR VERCEL
 export default App;
