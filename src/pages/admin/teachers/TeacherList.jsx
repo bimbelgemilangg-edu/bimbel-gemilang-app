@@ -38,15 +38,30 @@ const TeacherList = () => {
 
   useEffect(() => { fetchData(); }, []);
 
-  // FUNGSI KONVERSI FILE KE BASE64 (Agar bisa upload dari perangkat)
+  // --- UPDATE FUNGSI: KOMPRESI GAMBAR AGAR TIDAK ERROR LIMIT 1MB ---
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
         const reader = new FileReader();
-        reader.onloadend = () => {
-            setNewGuru({ ...newGuru, fotoUrl: reader.result });
-        };
         reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 400; // Ukuran foto profil cukup 400px
+                const scaleSize = MAX_WIDTH / img.width;
+                canvas.width = MAX_WIDTH;
+                canvas.height = img.height * scaleSize;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                // Kompresi ke JPEG kualitas 0.7 (70%) agar ukuran file kecil (<100KB)
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                setNewGuru({ ...newGuru, fotoUrl: dataUrl });
+            };
+        };
     }
   };
 
@@ -66,7 +81,6 @@ const TeacherList = () => {
 
     try {
         if (isEdit) {
-            // FIX: Gunakan || "" agar tidak mengirim 'undefined' ke Firestore
             await updateDoc(doc(db, "teachers", editId), {
                 nama: newGuru.nama || "",
                 mapel: newGuru.mapel || "",
@@ -76,7 +90,6 @@ const TeacherList = () => {
             });
             alert("✅ Update Berhasil!");
         } else {
-            // LOGIKA TAMBAH (SECONDARY APP ASLI ANDA)
             let secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
             const secondaryAuth = getAuth(secondaryApp);
             const userCredential = await createUserWithEmailAndPassword(secondaryAuth, newGuru.email, newGuru.password);
@@ -142,7 +155,6 @@ const TeacherList = () => {
                         <button onClick={() => { 
                             setIsEdit(true); 
                             setEditId(guru.id); 
-                            // Pastikan state baru terisi data lama atau string kosong (cegah undefined)
                             setNewGuru({
                                 nama: guru.nama || "",
                                 email: guru.email || "",
@@ -187,7 +199,6 @@ const TeacherList = () => {
                             </div>
                         </div>
 
-                        {/* INPUT FILE DARI PERANGKAT */}
                         <label style={styles.label}>Foto Profil (Upload File)</label>
                         <input type="file" accept="image/*" onChange={handleFileChange} style={{marginBottom:15}} />
                         {newGuru.fotoUrl && <img src={newGuru.fotoUrl} alt="Preview" style={{width:50, height:50, display:'block', marginBottom:10}} />}
