@@ -5,7 +5,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import LoginGuru from './pages/LoginGuru';
 import LoginSiswa from './pages/LoginSiswa'; 
-import LoginOrtu from './pages/LoginOrtu';   
 
 // IMPORT ADMIN
 import Dashboard from './pages/admin/Dashboard'; 
@@ -29,15 +28,12 @@ import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade';
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager'; 
 import TeacherProfile from './pages/teacher/TeacherProfile'; 
 
-// IMPORT SISWA (MODULAR)
+// IMPORT SISWA & ORTU (MODULAR - JADI SATU PORTAL)
 import StudentDashboard from './pages/student/StudentDashboard';
-import StudentSchedule from './pages/student/StudentSchedule'; // Baru
-import StudentFinanceSiswa from './pages/student/StudentFinance'; // Baru
-import StudentGrades from './pages/student/StudentGrades'; // Baru
-import StudentAttendanceSiswa from './pages/student/StudentAttendance'; // Baru
-
-// IMPORT ORTU
-import ParentDashboard from './pages/parent/ParentDashboard';
+import StudentSchedule from './pages/student/StudentSchedule';
+import StudentFinanceSiswa from './pages/student/StudentFinance';
+import StudentGrades from './pages/student/StudentGrades';
+import StudentAttendanceSiswa from './pages/student/StudentAttendance';
 
 // PROTEKSI RUTE ADMIN
 const AdminRoute = ({ children }) => {
@@ -51,29 +47,22 @@ const GuruRoute = ({ children }) => {
   return isGuruAuth ? children : <Navigate to="/login-guru" />;
 };
 
-// PROTEKSI RUTE SISWA
+// PROTEKSI RUTE SISWA/ORTU
 const SiswaRoute = ({ children }) => {
   const isSiswaAuth = localStorage.getItem('isSiswaLoggedIn') === 'true'; 
   return isSiswaAuth ? children : <Navigate to="/login-siswa" />;
-};
-
-// PROTEKSI RUTE ORTU
-const OrtuRoute = ({ children }) => {
-  const isOrtuAuth = localStorage.getItem('isOrtuLoggedIn') === 'true'; 
-  return isOrtuAuth ? children : <Navigate to="/login-ortu" />;
 };
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* HALAMAN LOGIN */}
+        {/* LOGIN UTAMA */}
         <Route path="/" element={<Login />} />              
         <Route path="/login-guru" element={<LoginGuru />} /> 
         <Route path="/login-siswa" element={<LoginSiswa />} /> 
-        <Route path="/login-ortu" element={<LoginOrtu />} />   
 
-        {/* GRUP RUTE ADMIN */}
+        {/* ADMIN */}
         <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
         <Route path="/admin/students" element={<AdminRoute><StudentList /></AdminRoute>} />
         <Route path="/admin/students/add" element={<AdminRoute><AddStudent /></AdminRoute>} />
@@ -87,7 +76,7 @@ function App() {
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
         <Route path="/admin/grades" element={<AdminRoute><GradeReport /></AdminRoute>} />
 
-        {/* GRUP RUTE GURU */}
+        {/* GURU */}
         <Route path="/guru/dashboard" element={<GuruRoute><TeacherDashboard /></GuruRoute>} />
         <Route path="/guru/profile" element={<GuruRoute><TeacherProfile /></GuruRoute>} />
         <Route path="/guru/grades/input" element={<GuruRoute><TeacherInputGrade /></GuruRoute>} />
@@ -95,19 +84,14 @@ function App() {
         <Route path="/guru/history" element={<GuruRoute><TeacherHistory /></GuruRoute>} />
         <Route path="/guru/manual-input" element={<GuruRoute><TeacherManualInput /></GuruRoute>} />
         
-        {/* GRUP RUTE SISWA (Dibuat Per File) */}
+        {/* PORTAL SISWA & ORTU (MENGGUNAKAN SATU AKUN) */}
         <Route path="/siswa/dashboard" element={<SiswaRoute><StudentDashboard /></SiswaRoute>} />
         <Route path="/siswa/jadwal" element={<SiswaRoute><StudentSchedule /></SiswaRoute>} />
         <Route path="/siswa/keuangan" element={<SiswaRoute><StudentFinanceSiswa /></SiswaRoute>} />
         <Route path="/siswa/rapor" element={<SiswaRoute><StudentGrades /></SiswaRoute>} />
         <Route path="/siswa/absensi" element={<SiswaRoute><StudentAttendanceSiswa /></SiswaRoute>} />
 
-        {/* GRUP RUTE ORTU */}
-        <Route path="/ortu/dashboard" element={<OrtuRoute><ParentDashboard /></OrtuRoute>} />
-
-        {/* REDIRECT LAMA */}
         <Route path="/teacher" element={<Navigate to="/guru/dashboard" replace />} />
-
       </Routes>
     </BrowserRouter>
   );
