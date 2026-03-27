@@ -1,218 +1,257 @@
 import React, { useState, useEffect } from 'react';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
-import { collection, query, getDocs, doc, writeBatch, getDoc } from "firebase/firestore";
+import { collection, getDocs, doc, writeBatch, deleteDoc, updateDoc, getDoc } from "firebase/firestore";
 
 const TeacherSalaries = () => {
   const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 8) + "01"); 
-  const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10)); 
+  const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 8) + "01");
+  const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10));
   const [rekap, setRekap] = useState([]);
-  const [viewDetail, setViewDetail] = useState(null); 
-  const [salaryRules, setSalaryRules] = useState({});
+  const [allLogs, setAllLogs] = useState([]);
+  const [viewDetail, setViewDetail] = useState(null);
+  const [totalPengeluaran, setTotalPengeluaran] = useState(0);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      // 1. Ambil Aturan Gaji dari Firestore atau Default
-      const settingSnap = await getDoc(doc(db, "settings", "global_config"));
-      const rules = settingSnap.exists() ? settingSnap.data().salaryRules : {
-          honorSD: 35000, honorSMP: 45000, honorEnglishKids: 40000, honorEnglishJunior: 50000, honorEnglishPro: 60000, honorKelas6: 40000
-      };
-      setSalaryRules(rules);
-
-      // 2. Ambil Semua Log dari koleksi teacher_logs
       const snap = await getDocs(collection(db, "teacher_logs"));
-      const allLogs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const logs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setAllLogs(logs);
 
-      // 3. Filter berdasarkan tanggal yang dipilih
-      const filtered = allLogs.filter(log => {
-          if (!log.tanggal) return false;
-          const cleanDate = log.tanggal.split(' ')[0]; 
-          return cleanDate >= startDate && cleanDate <= endDate;
+      // Filter berdasarkan range tanggal
+      const filtered = logs.filter(log => {
+        if (!log.tanggal) return false;
+        const cleanDate = log.tanggal.split(' ')[0];
+        return cleanDate >= startDate && cleanDate <= endDate;
       });
 
-      // 4. Kelompokkan per Guru
       const guruMap = {};
+      let grandTotal = 0;
+
       filtered.forEach(log => {
-        let honor = 0;
-        const prog = (log.program || "").toLowerCase();
-        const level = (log.level || "").toUpperCase();
-
-        // Logika perhitungan honor otomatis jika nominal di log kosong
-        if (prog.includes('english')) {
-            if (level.includes('PRO') || level.includes('SMA')) honor = parseInt(rules.honorEnglishPro);
-            else if (level.includes('JUNIOR') || level.includes('SMP')) honor = parseInt(rules.honorEnglishJunior);
-            else honor = parseInt(rules.honorEnglishKids);
-        } else {
-            if (level === 'SMP') honor = parseInt(rules.honorSMP);
-            else if ((log.detail || "").toLowerCase().includes('6')) honor = parseInt(rules.honorKelas6);
-            else honor = parseInt(rules.honorSD);
-        }
-
-        const finalNominal = log.nominal > 0 ? log.nominal : honor;
+        const nominal = parseInt(log.nominal || 0);
+        grandTotal += nominal;
 
         if (!guruMap[log.teacherId]) {
-            guruMap[log.teacherId] = { 
-                id: log.teacherId, 
-                nama: log.namaGuru || "Tanpa Nama", 
-                totalSesi: 0, 
-                gajiMengajar: 0, 
-                statusPending: 0, 
-                rincian: [] 
-            };
+          guruMap[log.teacherId] = { 
+            id: log.teacherId, 
+            nama: log.namaGuru || "Tanpa Nama", 
+            totalGaji: 0, 
+            totalSesi: 0, 
+            rincian: [] 
+          };
         }
+        guruMap[log.teacherId].totalGaji += nominal;
         guruMap[log.teacherId].totalSesi += 1;
-        guruMap[log.teacherId].gajiMengajar += finalNominal;
-        if (log.status === 'Menunggu Validasi') guruMap[log.teacherId].statusPending += 1;
-        guruMap[log.teacherId].rincian.push({ ...log, nominal: finalNominal });
+        guruMap[log.teacherId].rincian.push(log);
       });
 
+      setTotalPengeluaran(grandTotal);
       setRekap(Object.values(guruMap));
-    } catch (error) { 
-      console.error("Error Gaji:", error); 
-    } finally { 
-      setLoading(false); 
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => { fetchData(); }, [startDate, endDate]);
 
-  const handleValidasi = async (guruData) => {
-    if(!window.confirm(`Setujui/Validasi semua laporan ${guruData.nama}?`)) return;
+  // Update Nominal Per Hari (Admin Edit)
+  const handleUpdateNominal = async (logId, newNominal) => {
     try {
-        const batch = writeBatch(db);
-        guruData.rincian.forEach(log => {
-            if(log.status === 'Menunggu Validasi') {
-                batch.update(doc(db, "teacher_logs", log.id), { 
-                    status: "Valid / Sudah Direkap",
-                    nominal: log.nominal 
-                });
-            }
-        });
-        await batch.commit();
-        alert("✅ Gaji Berhasil Disetujui!");
-        fetchData();
-    } catch (e) { alert("Gagal memproses validasi"); }
+      await updateDoc(doc(db, "teacher_logs", logId), { nominal: parseInt(newNominal) });
+      fetchData(); // Refresh data
+    } catch (e) { alert("Gagal update nominal"); }
+  };
+
+  // Hapus Laporan (Admin Batalkan)
+  const handleDeleteLog = async (logId) => {
+    if (window.confirm("Hapus laporan mengajar ini?")) {
+      await deleteDoc(doc(db, "teacher_logs", logId));
+      fetchData();
+    }
+  };
+
+  // Approve Per Hari
+  const handleApproveLog = async (logId) => {
+    await updateDoc(doc(db, "teacher_logs", logId), { status: "Valid / Approved" });
+    fetchData();
+  };
+
+  // Download PDF / Print per Guru
+  const handleDownload = (guru) => {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head><title>Slip Gaji - ${guru.nama}</title></head>
+        <body style="font-family: sans-serif; padding: 20px;">
+          <h2>Slip Gaji Guru: ${guru.nama}</h2>
+          <p>Periode: ${startDate} s/d ${endDate}</p>
+          <table border="1" style="width:100%; border-collapse: collapse; text-align: left;">
+            <thead>
+              <tr style="background: #eee;">
+                <th style="padding: 8px;">Tanggal</th>
+                <th style="padding: 8px;">Keterangan</th>
+                <th style="padding: 8px;">Nominal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${guru.rincian.map(r => `
+                <tr>
+                  <td style="padding: 8px;">${r.tanggal}</td>
+                  <td style="padding: 8px;">${r.program} - ${r.level}</td>
+                  <td style="padding: 8px;">Rp ${parseInt(r.nominal).toLocaleString()}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+            <tfoot>
+              <tr style="font-weight: bold;">
+                <td colspan="2" style="padding: 8px; text-align: right;">TOTAL TERIMA:</td>
+                <td style="padding: 8px;">Rp ${guru.totalGaji.toLocaleString()}</td>
+              </tr>
+            </tfoot>
+          </table>
+          <p style="margin-top: 30px;">Dicetak pada: ${new Date().toLocaleString()}</p>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
   };
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f7f6' }}>
       <SidebarAdmin />
-      <div style={{ marginLeft: 250, padding: 30, width: 'calc(100% - 250px)', boxSizing: 'border-box' }}>
-        <div style={styles.card}>
-            <h2 style={{margin:0, color:'#2c3e50'}}>💰 Persetujuan Gaji Guru</h2>
-            <div style={styles.filterBar}>
-                <div>
-                    <label style={styles.label}>Dari Tanggal:</label>
-                    <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} style={styles.inputDate} />
-                </div>
-                <div>
-                    <label style={styles.label}>Sampai Tanggal:</label>
-                    <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} style={styles.inputDate} />
-                </div>
-                <button onClick={fetchData} style={styles.btnRefresh}>🔄 Update Data</button>
-            </div>
+      <div style={{ marginLeft: 250, padding: 30, width: 'calc(100% - 250px)' }}>
+        
+        {/* HEADER & SUMMARY */}
+        <div style={styles.headerCard}>
+          <div>
+            <h2 style={{margin:0}}>💰 Rekapitulasi Gaji & Pengeluaran</h2>
+            <p style={{color:'#666'}}>Kelola, Edit, dan Approve honor mengajar guru</p>
+          </div>
+          <div style={styles.totalBox}>
+            <small>TOTAL PENGELUARAN PERIODE INI:</small>
+            <h2 style={{color:'#e67e22', margin:0}}>Rp {totalPengeluaran.toLocaleString()}</h2>
+          </div>
         </div>
 
+        {/* FILTER BAR */}
+        <div style={styles.filterBar}>
+          <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} style={styles.inputDate} />
+          <span style={{alignSelf:'center'}}>s/d</span>
+          <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} style={styles.inputDate} />
+          <button onClick={fetchData} style={styles.btnRefresh}>🔄 Segarkan Data</button>
+        </div>
+
+        {/* TABLE REKAP PER GURU */}
         <div style={styles.cardTable}>
-            <table style={styles.table}>
-                <thead>
-                    <tr style={styles.trHead}>
-                        <th style={styles.th}>Nama Guru</th>
-                        <th style={styles.th}>Total Sesi</th>
-                        <th style={styles.th}>Total Gaji</th>
-                        <th style={styles.th}>Status</th>
-                        <th style={styles.th}>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rekap.length === 0 ? (
-                        <tr><td colSpan="5" style={{padding:40, textAlign:'center', color:'#999'}}>Tidak ada laporan mengajar ditemukan pada periode ini.</td></tr>
-                    ) : rekap.map(g => (
-                        <tr key={g.id} style={styles.trBody}>
-                            <td style={styles.td}><b>{g.nama}</b></td>
-                            <td style={styles.td}>{g.totalSesi} Sesi</td>
-                            <td style={styles.td}><b>Rp {g.gajiMengajar.toLocaleString()}</b></td>
-                            <td style={styles.td}>
-                                {g.statusPending > 0 ? 
-                                <span style={styles.tagWarning}>⚠️ {g.statusPending} Perlu Validasi</span> : 
-                                <span style={styles.tagSuccess}>✅ Sudah Valid</span>}
-                            </td>
-                            <td style={styles.td}>
-                                <button onClick={() => setViewDetail(g)} style={styles.btnDetail}>Rincian</button>
-                                {g.statusPending > 0 && (
-                                    <button onClick={() => handleValidasi(g)} style={styles.btnApprove}>Approve</button>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+          <table style={styles.table}>
+            <thead style={{background:'#2c3e50', color:'white'}}>
+              <tr>
+                <th style={styles.th}>Nama Guru</th>
+                <th style={styles.th}>Sesi</th>
+                <th style={styles.th}>Total Honor</th>
+                <th style={styles.th}>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rekap.map(g => (
+                <tr key={g.id} style={styles.tr}>
+                  <td style={styles.td}><b>{g.nama}</b></td>
+                  <td style={styles.td}>{g.totalSesi} Pertemuan</td>
+                  <td style={styles.td}><b>Rp {g.totalGaji.toLocaleString()}</b></td>
+                  <td style={styles.td}>
+                    <button onClick={() => setViewDetail(g)} style={styles.btnDetail}>Rincian / Edit</button>
+                    <button onClick={() => handleDownload(g)} style={styles.btnPrint}>🖨️ Cetak Gaji</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
-        {/* MODAL DETAIL */}
+        {/* MODAL RINCIAN PER HARI (FITUR EDIT & DELETE) */}
         {viewDetail && (
-            <div style={styles.overlay}>
-                <div style={styles.modal}>
-                    <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20}}>
-                        <h3 style={{margin:0}}>Rincian: {viewDetail.nama}</h3>
-                        <button onClick={()=>setViewDetail(null)} style={styles.btnClose}>&times;</button>
-                    </div>
-                    <div style={{maxHeight:'400px', overflowY:'auto'}}>
-                        <table style={{width:'100%', borderCollapse:'collapse'}}>
-                            <thead style={{background:'#f8f9fa'}}>
-                                <tr>
-                                    <th style={styles.thSmall}>Tgl</th>
-                                    <th style={styles.thSmall}>Program</th>
-                                    <th style={styles.thSmall}>Honor</th>
-                                    <th style={styles.thSmall}>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {viewDetail.rincian.map((r, i) => (
-                                    <tr key={i} style={{borderBottom:'1px solid #eee'}}>
-                                        <td style={styles.tdSmall}>{r.tanggal}</td>
-                                        <td style={styles.tdSmall}>{r.program} ({r.level})</td>
-                                        <td style={styles.tdSmall}>Rp {r.nominal?.toLocaleString()}</td>
-                                        <td style={styles.tdSmall}>{r.status}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div style={{marginTop:20, textAlign:'right', borderTop:'1px solid #eee', paddingTop:15}}>
-                        <h4 style={{margin:0}}>Total: Rp {viewDetail.gajiMengajar.toLocaleString()}</h4>
-                    </div>
-                </div>
+          <div style={styles.overlay}>
+            <div style={styles.modal}>
+              <div style={styles.modalHeader}>
+                <h3>Rincian Mengajar: {viewDetail.nama}</h3>
+                <button onClick={()=>setViewDetail(null)} style={styles.btnClose}>&times;</button>
+              </div>
+              
+              <div style={{maxHeight:'450px', overflowY:'auto'}}>
+                <table style={{width:'100%', borderCollapse:'collapse'}}>
+                  <thead>
+                    <tr style={{background:'#f8f9fa', textAlign:'left'}}>
+                      <th style={styles.thSmall}>Tanggal</th>
+                      <th style={styles.thSmall}>Materi</th>
+                      <th style={styles.thSmall}>Nominal (Edit)</th>
+                      <th style={styles.thSmall}>Status</th>
+                      <th style={styles.thSmall}>Opsi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {viewDetail.rincian.map((log) => (
+                      <tr key={log.id} style={{borderBottom:'1px solid #eee'}}>
+                        <td style={styles.tdSmall}>{log.tanggal}</td>
+                        <td style={styles.tdSmall}>{log.program} - {log.detail}</td>
+                        <td style={styles.tdSmall}>
+                          <input 
+                            type="number" 
+                            defaultValue={log.nominal} 
+                            onBlur={(e) => handleUpdateNominal(log.id, e.target.value)}
+                            style={styles.inputNominal}
+                          />
+                        </td>
+                        <td style={styles.tdSmall}>
+                          <span style={{color: log.status.includes('Valid') ? 'green' : 'orange'}}>
+                            {log.status}
+                          </span>
+                        </td>
+                        <td style={styles.tdSmall}>
+                          {log.status !== "Valid / Approved" && (
+                            <button onClick={()=>handleApproveLog(log.id)} style={styles.btnMiniApprove}>Approve</button>
+                          )}
+                          <button onClick={()=>handleDeleteLog(log.id)} style={styles.btnMiniDelete}>Hapus</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
+          </div>
         )}
+
       </div>
     </div>
   );
 };
 
 const styles = {
-  card: { background:'white', padding:25, borderRadius:15, marginBottom:20, boxShadow:'0 4px 6px rgba(0,0,0,0.05)' },
-  filterBar: { display:'flex', gap:20, marginTop:20, alignItems:'flex-end' },
-  label: { display:'block', fontSize:12, color:'#666', marginBottom:5, fontWeight:'bold' },
-  inputDate: { padding:10, borderRadius:8, border:'1px solid #ddd', outline:'none' },
-  btnRefresh: { padding:'10px 20px', background:'#3498db', color:'white', border:'none', borderRadius:8, cursor:'pointer', fontWeight:'bold' },
-  cardTable: { background:'white', borderRadius:15, overflow:'hidden', boxShadow:'0 4px 6px rgba(0,0,0,0.05)' },
+  headerCard: { background:'white', padding:20, borderRadius:15, display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, boxShadow:'0 2px 10px rgba(0,0,0,0.05)' },
+  totalBox: { textAlign:'right', background:'#fdf2e9', padding:'10px 20px', borderRadius:12, border:'1px solid #e67e22' },
+  filterBar: { display:'flex', gap:10, marginBottom:20 },
+  inputDate: { padding:10, borderRadius:8, border:'1px solid #ddd' },
+  btnRefresh: { background:'#3498db', color:'white', border:'none', padding:'10px 20px', borderRadius:8, cursor:'pointer' },
+  cardTable: { background:'white', borderRadius:15, overflow:'hidden', boxShadow:'0 2px 10px rgba(0,0,0,0.05)' },
   table: { width:'100%', borderCollapse:'collapse' },
-  trHead: { background:'#2c3e50', color:'white', textAlign:'left' },
-  th: { padding:15 },
+  th: { padding:15, textAlign:'left' },
   td: { padding:15, borderBottom:'1px solid #eee' },
-  trBody: { transition:'0.2s', ':hover': { background:'#f9f9f9' } },
-  tagWarning: { background:'#fff3cd', color:'#856404', padding:'4px 8px', borderRadius:5, fontSize:12 },
-  tagSuccess: { background:'#d4edda', color:'#155724', padding:'4px 8px', borderRadius:5, fontSize:12 },
-  btnDetail: { padding:'6px 12px', background:'#3498db', color:'white', border:'none', borderRadius:5, cursor:'pointer', marginRight:5 },
-  btnApprove: { padding:'6px 12px', background:'#27ae60', color:'white', border:'none', borderRadius:5, cursor:'pointer' },
-  overlay: { position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.6)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:1000 },
-  modal: { background:'white', padding:30, borderRadius:20, width:'650px', maxWidth:'90%' },
-  btnClose: { background:'none', border:'none', fontSize:24, cursor:'pointer', color:'#999' },
-  thSmall: { padding:10, fontSize:12, textAlign:'left' },
-  tdSmall: { padding:10, fontSize:12 }
+  btnDetail: { background:'#3498db', color:'white', border:'none', padding:'8px 15px', borderRadius:5, cursor:'pointer', marginRight:5 },
+  btnPrint: { background:'#27ae60', color:'white', border:'none', padding:'8px 15px', borderRadius:5, cursor:'pointer' },
+  overlay: { position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.7)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:2000 },
+  modal: { background:'white', padding:25, borderRadius:15, width:'850px', maxWidth:'95%' },
+  modalHeader: { display:'flex', justifyContent:'space-between', marginBottom:20 },
+  btnClose: { background:'none', border:'none', fontSize:24, cursor:'pointer' },
+  thSmall: { padding:10, fontSize:12 },
+  tdSmall: { padding:10, fontSize:12 },
+  inputNominal: { width:'100px', padding:5, borderRadius:5, border:'1px solid #ddd' },
+  btnMiniApprove: { background:'#2ecc71', color:'white', border:'none', padding:'4px 8px', borderRadius:4, fontSize:10, marginRight:3, cursor:'pointer' },
+  btnMiniDelete: { background:'#e74c3c', color:'white', border:'none', padding:'4px 8px', borderRadius:4, fontSize:10, cursor:'pointer' }
 };
 
 export default TeacherSalaries;
