@@ -1,5 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+// IMPORT LOGO (Sesuaikan path-nya dengan struktur folder-mu)
+import LogoBimbel from '../assets/logo.png'; 
 import { LogOut, X, Home, BarChart2, BookOpen, Wallet } from 'lucide-react';
 
 const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
@@ -12,6 +14,8 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
     { id: 'keuangan', label: 'Administrasi', icon: <Wallet size={18}/> },
   ];
 
+  const isMobile = window.innerWidth <= 768;
+
   const handleLogout = () => {
     if(window.confirm("Apakah kamu yakin ingin keluar?")) {
       localStorage.clear();
@@ -21,8 +25,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
 
   const handleMenuClick = (id) => {
     setActiveMenu(id);
-    // Jika di HP, otomatis tutup sidebar setelah pilih menu
-    if (window.innerWidth <= 768) {
+    if (isMobile) {
       setIsOpen(false);
     }
   };
@@ -30,7 +33,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
   return (
     <>
       {/* BACKGROUND GELAP SAAT SIDEBAR TERBUKA (Hanya di Mobile) */}
-      {isOpen && (
+      {isMobile && isOpen && (
         <div 
           onClick={() => setIsOpen(false)} 
           style={styles.overlay}
@@ -40,14 +43,20 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
       {/* SIDEBAR CONTAINER */}
       <div style={{
         ...styles.sidebar,
-        transform: isOpen ? 'translateX(0)' : (window.innerWidth <= 768 ? 'translateX(-100%)' : 'translateX(0)'),
+        transform: isOpen || !isMobile ? 'translateX(0)' : 'translateX(-100%)',
       }}>
         <div style={styles.header}>
-          <h3 style={{margin: 0, fontSize: '18px'}}>💎 Gemilang App</h3>
+          {/* LOGO DI SIDEBAR (Verisi Kecil) */}
+          <div style={styles.brandWrapper}>
+            <img src={LogoBimbel} alt="Logo Bimbel Gemilang" style={styles.logoSidebar} />
+          </div>
+          
           {/* Tombol Tutup hanya muncul di Mobile */}
-          <button onClick={() => setIsOpen(false)} style={styles.closeMobileBtn}>
-            <X size={20} />
-          </button>
+          {isMobile && (
+            <button onClick={() => setIsOpen(false)} style={styles.closeMobileBtn}>
+              <X size={20} />
+            </button>
+          )}
         </div>
         
         <hr style={styles.divider} />
@@ -89,7 +98,7 @@ const styles = {
     left: 0, 
     top: 0,
     zIndex: 1000,
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     display: 'flex',
     flexDirection: 'column',
     boxShadow: '4px 0 15px rgba(0,0,0,0.1)'
@@ -98,14 +107,23 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '20px'
+    marginBottom: '20px',
+    height: '40px' // Beri height tetap agar logo dan tombol X sejajar
+  },
+  brandWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    height: '100%'
+  },
+  logoSidebar: {
+    maxHeight: '35px', // Versi kecil di sidebar
+    objectFit: 'contain'
   },
   closeMobileBtn: {
     background: 'none',
     border: 'none',
     color: 'white',
-    cursor: 'pointer',
-    display: window.innerWidth <= 768 ? 'block' : 'none'
+    cursor: 'pointer'
   },
   divider: { border: '0', borderTop: '1px solid #334155', marginBottom: '20px' },
   menuItem: { 
