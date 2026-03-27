@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../../../firebase'; // TETAP 3 TINGKAT
+import { db } from '../../../firebase'; 
 import { collection, getDocs, doc, updateDoc, query } from "firebase/firestore";
 import { ShieldAlert, ShieldCheck, Search, User, ArrowRight, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -9,9 +9,22 @@ const ManageFinance = () => {
   const [students, setStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // VALIDASI LOGIN ADMIN (Sesuai App.js kamu)
+  useEffect(() => {
+    const isAuth = localStorage.getItem('isLoggedIn') === 'true';
+    const role = localStorage.getItem('role');
+    if (!isAuth || role !== 'admin') {
+      navigate('/'); // Jika bukan admin, tendang ke login utama
+    }
+  }, [navigate]);
+
   const fetchStudents = async () => {
-    const snap = await getDocs(query(collection(db, "students")));
-    setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    try {
+      const snap = await getDocs(query(collection(db, "students")));
+      setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    } catch (err) {
+      console.error("Error fetch:", err);
+    }
   };
 
   useEffect(() => { fetchStudents(); }, []);
@@ -60,6 +73,7 @@ const ManageFinance = () => {
                   {s.isBlocked ? <ShieldCheck size={14}/> : <ShieldAlert size={14}/>}
                   {s.isBlocked ? "Buka Blokir" : "Blokir Akses"}
                 </button>
+                {/* Arahkan ke rute finance admin yang sudah ada di App.js */}
                 <button onClick={() => navigate(`/admin/students/finance/${s.id}`)} style={admStyles.btnDetail}>
                    <Wallet size={14}/> Kelola Pembayaran
                 </button>
@@ -72,7 +86,7 @@ const ManageFinance = () => {
 };
 
 const admStyles = {
-  container: { padding: '30px', background: '#f8fafc', minHeight: '100vh' },
+  container: { padding: '30px', background: '#f8fafc', minHeight: '100vh', marginLeft: '250px' }, // Tambah margin left jika ada sidebar
   title: { color: '#1e293b', margin: 0, fontWeight: '800' },
   badgeStatus: { background: '#e2e8f0', padding: '5px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' },
   searchBox: { background: 'white', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 18px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '20px' },

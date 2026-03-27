@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../../firebase'; // PERBAIKAN PATH: Naik 2 tingkat ke folder src
+import { db } from '../../firebase'; 
 import { doc, getDoc, query, collection, where, getDocs } from "firebase/firestore";
 import { Wallet, Lock, AlertTriangle, PhoneCall, CheckCircle2, History, Info } from 'lucide-react';
 
@@ -8,18 +8,22 @@ const StudentFinance = () => {
   const [tagihan, setTagihan] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  // Ambil ID dari login (Pastikan saat login ID ini disimpan di localStorage)
+  // Ambil ID siswa dari localStorage. 
+  // Pastikan saat login siswa, kamu menyimpan ID dokumennya di key 'studentId'
   const studentId = localStorage.getItem("studentId");
 
   useEffect(() => {
     const loadFinanceData = async () => {
-      if (!studentId) return;
+      if (!studentId) {
+        setLoading(false);
+        return;
+      }
       try {
-        // 1. Ambil Profil & Status Blokir
         const sSnap = await getDoc(doc(db, "students", studentId));
-        if (sSnap.exists()) setStudent(sSnap.data());
+        if (sSnap.exists()) {
+          setStudent(sSnap.data());
+        }
 
-        // 2. Ambil Detail Cicilan
         const q = query(collection(db, "finance_tagihan"), where("studentId", "==", studentId));
         const qSnap = await getDocs(q);
         if (!qSnap.empty) {
@@ -31,27 +35,28 @@ const StudentFinance = () => {
         setLoading(false);
       }
     };
-    loadData();
+    loadFinanceData();
   }, [studentId]);
 
-  if (loading) return <div style={{padding: 50, textAlign: 'center'}}>Menganalisa Data Keuangan...</div>;
+  if (loading) return <div style={{padding: '50px', textAlign: 'center'}}>Memuat data keuangan...</div>;
 
-  // SISTEM PROTEKSI: Jika Admin mengaktifkan isBlocked
+  if (!studentId) return <div style={{padding: '50px', textAlign: 'center'}}>Sesi tidak valid. Silakan login kembali.</div>;
+
   if (student?.isBlocked) {
     return (
       <div style={styles.lockOverlay}>
         <div style={styles.lockCard}>
           <div style={styles.lockIcon}><Lock size={40} color="#ef4444" /></div>
-          <h2 style={{color: '#1e293b'}}>Akses Terbatas</h2>
+          <h2 style={{color: '#1e293b'}}>Akses Dibatasi</h2>
           <p style={{color: '#64748b', marginBottom: '20px'}}>
             Halo **{student.nama}**, portal kamu dinonaktifkan sementara karena kendala administrasi.
           </p>
           <div style={styles.alertBox}>
             <AlertTriangle size={16} />
-            <span>Harap selesaikan pembayaran untuk membuka akses Materi, Quiz, dan Raport.</span>
+            <span>Harap hubungi admin untuk aktivasi kembali.</span>
           </div>
           <button style={styles.btnWa} onClick={() => window.open('https://wa.me/628123456789')}>
-            <PhoneCall size={18} /> Hubungi Admin Keuangan
+            <PhoneCall size={18} /> Hubungi Admin
           </button>
         </div>
       </div>
@@ -63,8 +68,8 @@ const StudentFinance = () => {
       <div style={styles.headerCard}>
         <div style={styles.iconCircle}><Wallet size={24} color="white" /></div>
         <div>
-          <h2 style={{margin: 0, color: 'white'}}>Keuangan & Administrasi</h2>
-          <p style={{margin: 0, color: '#dbeafe', fontSize: '14px'}}>{student?.nama || 'Siswa'}</p>
+          <h2 style={{margin: 0, color: 'white', fontSize: '18px'}}>Informasi Administrasi</h2>
+          <p style={{margin: 0, color: '#dbeafe', fontSize: '12px'}}>{student?.nama}</p>
         </div>
       </div>
 
@@ -80,7 +85,7 @@ const StudentFinance = () => {
       </div>
 
       <div style={styles.mainCard}>
-        <div style={styles.cardTitle}><History size={18} /> Detail Cicilan Pembayaran</div>
+        <div style={styles.cardTitle}><History size={18} /> Rincian Cicilan</div>
         <div style={{overflowX: 'auto'}}>
           <table style={styles.table}>
             <thead style={{background: '#f8fafc'}}>
@@ -93,13 +98,13 @@ const StudentFinance = () => {
             <tbody>
               {tagihan?.detailCicilan?.map((item, idx) => (
                 <tr key={idx} style={styles.tr}>
-                  <td style={styles.td}>Cicilan ke-{item.bulanKe}</td>
+                  <td style={styles.td}>Cicilan {item.bulanKe}</td>
                   <td style={styles.tdBold}>Rp {item.nominal?.toLocaleString()}</td>
                   <td style={styles.td}>
                     {item.status === 'Lunas' ? (
-                      <span style={styles.badgeLunas}><CheckCircle2 size={12}/> Lunas</span>
+                      <span style={styles.badgeLunas}><CheckCircle2 size={10}/> Lunas</span>
                     ) : (
-                      <span style={styles.badgeBelum}>⏳ Menunggu</span>
+                      <span style={styles.badgeBelum}>Menunggu</span>
                     )}
                   </td>
                 </tr>
@@ -108,39 +113,34 @@ const StudentFinance = () => {
           </table>
         </div>
       </div>
-
-      <div style={styles.footerNote}>
-        <Info size={16} />
-        <span>Data diperbarui secara otomatis setelah Admin memvalidasi pembayaran Anda.</span>
-      </div>
     </div>
   );
 };
 
+// ... (Gunakan styles yang sama dengan sebelumnya)
 const styles = {
-  container: { padding: '20px', maxWidth: '800px', margin: '0 auto', fontFamily: 'Inter, sans-serif' },
+  container: { padding: '20px', maxWidth: '800px', margin: '0 auto', fontFamily: 'sans-serif' },
   lockOverlay: { height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  lockCard: { background: 'white', padding: '40px', borderRadius: '24px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', textAlign: 'center', border: '1px solid #fee2e2' },
-  lockIcon: { background: '#fee2e2', width: '70px', height: '70px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' },
-  alertBox: { background: '#fefce8', padding: '15px', borderRadius: '12px', display: 'flex', gap: '10px', color: '#854d0e', fontSize: '13px', textAlign: 'left', marginBottom: '20px' },
-  btnWa: { background: '#2563eb', color: 'white', border: 'none', width: '100%', padding: '14px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' },
-  headerCard: { background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)', padding: '25px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' },
-  iconCircle: { background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px' },
-  summaryGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' },
+  lockCard: { background: 'white', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', textAlign: 'center' },
+  lockIcon: { background: '#fee2e2', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px' },
+  alertBox: { background: '#fefce8', padding: '12px', borderRadius: '10px', display: 'flex', gap: '8px', color: '#854d0e', fontSize: '12px', textAlign: 'left', marginBottom: '20px' },
+  btnWa: { background: '#2563eb', color: 'white', border: 'none', width: '100%', padding: '12px', borderRadius: '10px', fontWeight: 'bold' },
+  headerCard: { background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)', padding: '20px', borderRadius: '15px', display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' },
+  iconCircle: { background: 'rgba(255,255,255,0.2)', padding: '8px', borderRadius: '10px' },
+  summaryGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' },
   statCard: { background: 'white', padding: '15px', borderRadius: '12px', border: '1px solid #e2e8f0' },
-  statLabel: { fontSize: '11px', color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' },
-  statValueRed: { fontSize: '18px', fontWeight: 'bold', color: '#ef4444' },
-  statValueGreen: { fontSize: '18px', fontWeight: 'bold', color: '#10b981' },
-  mainCard: { background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' },
-  cardTitle: { padding: '15px 20px', borderBottom: '1px solid #f1f5f9', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' },
+  statLabel: { fontSize: '10px', color: '#64748b', fontWeight: 'bold' },
+  statValueRed: { fontSize: '16px', fontWeight: 'bold', color: '#ef4444' },
+  statValueGreen: { fontSize: '16px', fontWeight: 'bold', color: '#10b981' },
+  mainCard: { background: 'white', borderRadius: '15px', border: '1px solid #e2e8f0', overflow: 'hidden' },
+  cardTitle: { padding: '15px', borderBottom: '1px solid #f1f5f9', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { padding: '12px 20px', textAlign: 'left', fontSize: '11px', color: '#64748b' },
+  th: { padding: '10px 15px', textAlign: 'left', fontSize: '10px', color: '#64748b' },
   tr: { borderBottom: '1px solid #f1f5f9' },
-  td: { padding: '12px 20px', fontSize: '14px' },
-  tdBold: { padding: '12px 20px', fontSize: '14px', fontWeight: 'bold' },
-  badgeLunas: { background: '#d1fae5', color: '#065f46', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px' },
-  badgeBelum: { background: '#fef3c7', color: '#92400e', padding: '4px 8px', borderRadius: '6px', fontSize: '11px' },
-  footerNote: { marginTop: '20px', padding: '15px', borderRadius: '10px', background: '#f0f9ff', color: '#0369a1', fontSize: '12px', display: 'flex', gap: '10px', alignItems: 'center' }
+  td: { padding: '10px 15px', fontSize: '13px' },
+  tdBold: { padding: '10px 15px', fontSize: '13px', fontWeight: 'bold' },
+  badgeLunas: { background: '#d1fae5', color: '#065f46', padding: '3px 6px', borderRadius: '4px', fontSize: '10px', display: 'inline-flex', alignItems: 'center', gap: '4px' },
+  badgeBelum: { background: '#fef3c7', color: '#92400e', padding: '3px 6px', borderRadius: '4px', fontSize: '10px' }
 };
 
 export default StudentFinance;
