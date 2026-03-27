@@ -1,8 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-// IMPORT LOGO (Sesuaikan path-nya dengan struktur folder-mu)
-import LogoBimbel from '../assets/logo.png'; 
 import { LogOut, X, Home, BarChart2, BookOpen, Wallet } from 'lucide-react';
+
+// PERBAIKAN: Menggunakan URL langsung agar build Vercel tidak error karena file missing
+const LogoBimbel = "https://i.ibb.co.com/8DD9F640-F257-400E-A335-E9D24CFCB79D/logo.png"; 
 
 const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         transform: isOpen || !isMobile ? 'translateX(0)' : 'translateX(-100%)',
       }}>
         <div style={styles.header}>
-          {/* LOGO DI SIDEBAR (Verisi Kecil) */}
+          {/* LOGO DI SIDEBAR (Versi Kecil) */}
           <div style={styles.brandWrapper}>
             <img src={LogoBimbel} alt="Logo Bimbel Gemilang" style={styles.logoSidebar} />
           </div>
@@ -108,7 +109,7 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: '20px',
-    height: '40px' // Beri height tetap agar logo dan tombol X sejajar
+    height: '40px'
   },
   brandWrapper: {
     display: 'flex',
@@ -116,7 +117,7 @@ const styles = {
     height: '100%'
   },
   logoSidebar: {
-    maxHeight: '35px', // Versi kecil di sidebar
+    maxHeight: '35px',
     objectFit: 'contain'
   },
   closeMobileBtn: {
