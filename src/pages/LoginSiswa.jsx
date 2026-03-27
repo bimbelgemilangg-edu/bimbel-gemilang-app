@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 
 const LoginSiswa = () => {
   const navigate = useNavigate();
@@ -12,35 +12,40 @@ const LoginSiswa = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     
-    // MEMBERSIHKAN INPUT (Menghapus spasi di awal/akhir dan mengubah ke huruf kecil)
-    const cleanUsername = username.trim().toLowerCase();
-    const cleanPassword = password.trim();
+    // 1. Ambil input dan bersihkan dari spasi tak sengaja
+    const inputUsername = username.trim();
+    const inputPassword = password.trim();
 
-    if (!cleanUsername || !cleanPassword) {
+    if (!inputUsername || !inputPassword) {
       return alert("Silakan masukkan Username dan Password!");
     }
     
     setLoading(true);
     try {
-      // 1. MENCARI DOKUMEN SISWA BERDASARKAN FIELD 'username'
-      const q = query(
-        collection(db, "students"), 
-        where("username", "==", cleanUsername)
-      );
-      
-      const snap = await getDocs(q);
+      // 2. Ambil semua data siswa (untuk pencarian abaikan huruf kapital)
+      const querySnapshot = await getDocs(collection(db, "students"));
+      let studentData = null;
+      let studentId = null;
 
-      if (!snap.empty) {
-        const studentDoc = snap.docs[0];
-        const studentData = studentDoc.data();
+      // 3. Lakukan pencarian manual (Case Insensitive)
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        // Pastikan field 'username' ada di Firestore
+        if (data.username && data.username.toLowerCase() === inputUsername.toLowerCase()) {
+          studentData = data;
+          studentId = doc.id;
+        }
+      });
 
-        // 2. VERIFIKASI PASSWORD (Memastikan perbandingan tipe data string)
-        if (String(studentData.password) === cleanPassword) {
+      // 4. Evaluasi Hasil Pencarian
+      if (studentData) {
+        // 5. VERIFIKASI PASSWORD (Konversi ke String untuk keamanan)
+        if (String(studentData.password) === inputPassword) {
             
             // SIMPAN SESSI KE LOCALSTORAGE
             localStorage.setItem("isSiswaLoggedIn", "true");
             localStorage.setItem("role", "siswa");
-            localStorage.setItem("studentId", studentDoc.id);
+            localStorage.setItem("studentId", studentId);
             localStorage.setItem("studentName", studentData.nama);
 
             alert(`Selamat Datang, ${studentData.nama}!`);
@@ -49,8 +54,8 @@ const LoginSiswa = () => {
             alert("⛔ Password salah! Silakan coba lagi.");
         }
       } else {
-        // JIKA USERNAME TIDAK DITEMUKAN
-        alert("⛔ Username tidak ditemukan. Pastikan Admin sudah mengatur Username di menu Edit Student.");
+        // JIKA USERNAME TIDAK DITEMUKAN (Setelah abaikan kapital)
+        alert("⛔ Username tidak ditemukan. Pastikan Admin sudah mengatur Username di menu Edit Student dengan benar.");
       }
     } catch (error) {
       console.error("Login Error:", error);
@@ -64,7 +69,7 @@ const LoginSiswa = () => {
     <div style={styles.container}>
       <div style={styles.card}>
         <div style={styles.header}>
-            <h2 style={{ color: '#2c3e50', margin: 0 }}>Portal Siswa</h2>
+            <h2 style={{ color: '#2c3e50', margin: 0, fontSize: '24px' }}>Portal Siswa</h2>
             <p style={{ color: '#7f8c8d', fontSize: 13, marginTop: 5 }}>Bimbel Gemilang - Akses Rapor & Jadwal</p>
         </div>
         
@@ -73,7 +78,7 @@ const LoginSiswa = () => {
             <label style={styles.label}>📧 Username / Email</label>
             <input 
               type="text" 
-              placeholder="contoh: budi123@gemilang.com"
+              placeholder="contoh: FafianZiantara10@gemilang.com"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               style={styles.input}
@@ -109,59 +114,62 @@ const LoginSiswa = () => {
   );
 };
 
+// --- STYLES (Sedikit disesuaikan agar mirip gambar Anda) ---
 const styles = {
   container: { 
     display: 'flex', 
     justifyContent: 'center', 
     alignItems: 'center', 
     height: '100vh', 
-    background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)', 
-    fontFamily: "'Segoe UI', Roboto, sans-serif" 
+    background: '#f0f2f5', // Warna background abu-abu muda seperti di gambar
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
   },
   card: { 
     background: 'white', 
     padding: '40px', 
     borderRadius: '16px', 
-    boxShadow: '0 15px 35px rgba(0,0,0,0.1)', 
+    boxShadow: '0 10px 25px rgba(0,0,0,0.05)', // Shadow lembut
     width: '100%', 
-    maxWidth: '400px', 
-    textAlign: 'center' 
+    maxWidth: '420px', 
+    textAlign: 'center',
+    boxSizing: 'border-box'
   },
-  header: { marginBottom: '30px' },
-  label: { display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '13px', color: '#34495e' },
+  header: { marginBottom: '35px' },
+  label: { display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px', color: '#2c3e50' },
   input: { 
     width: '100%', 
-    padding: '12px', 
+    padding: '12px 15px', 
     borderRadius: '8px', 
-    border: '2px solid #edf2f7', 
-    fontSize: '15px', 
+    border: '1px solid #ddd', // Border tipis seperti di gambar
+    fontSize: '16px', 
     boxSizing: 'border-box', 
-    transition: 'border-color 0.2s',
     outline: 'none',
-    color: '#000'
+    color: '#000',
+    background: '#fff'
   },
   btnPrimary: { 
     width: '100%', 
     padding: '14px', 
-    background: '#27ae60', 
+    background: '#27ae60', // Warna hijau tombol
     color: 'white', 
     border: 'none', 
     borderRadius: '8px', 
     fontSize: '16px', 
     fontWeight: 'bold', 
     cursor: 'pointer',
+    boxShadow: '0 4px 6px rgba(39, 174, 96, 0.1)',
     transition: 'background 0.3s'
   },
   btnBack: { 
     background: 'none', 
     border: 'none', 
-    color: '#95a5a6', 
-    marginTop: '20px', 
+    color: '#7f8c8d', 
+    marginTop: '25px', 
     cursor: 'pointer', 
     fontSize: '14px',
-    textDecoration: 'underline'
+    textDecoration: 'none'
   },
-  footerNote: { marginTop: '25px', color: '#bdc3c7' }
+  footerNote: { marginTop: '30px', color: '#bdc3c7', fontSize: '12px' }
 };
 
 export default LoginSiswa;
