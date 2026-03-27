@@ -3,6 +3,12 @@ import SidebarSiswa from '../../components/SidebarSiswa';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
 
+// --- IMPORT KOMPONEN MENU (PENTING AGAR TIDAK MUNCUL "SILAKAN PILIH MENU") ---
+import StudentFinanceSiswa from './StudentFinance';
+import StudentGrades from './StudentGrades';
+import StudentSchedule from './StudentSchedule';
+import StudentAttendanceSiswa from './StudentAttendance';
+
 // --- IMPORT LUCIDE ICONS ---
 import { 
   BookOpen, 
@@ -12,7 +18,7 @@ import {
   Trophy, 
   AlertCircle,
   GraduationCap,
-  X // Tambahan untuk tombol tutup modal
+  X 
 } from 'lucide-react';
 
 // --- IMPORT SWIPER ---
@@ -48,18 +54,15 @@ const StudentDashboard = () => {
       if (!studentId) return;
       setLoading(true);
       try {
-        // 1. Fetch Poster/Berita dari Firebase (Urut Terbaru)
         const qPost = query(collection(db, "student_contents"), orderBy("createdAt", "desc"));
         const snapPost = await getDocs(qPost);
         const postData = snapPost.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setPosters(postData.length > 0 ? postData : dummyPosters);
 
-        // 2. Fetch Jadwal Hari Ini
         const qSched = query(collection(db, "jadwal_bimbel"), where("students", "array-contains", studentId), limit(3));
         const snapSched = await getDocs(qSched);
         setSchedules(snapSched.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         
-        // 3. Fetch Tugas/Timeline
         const qTask = query(collection(db, "tasks"), where("studentId", "==", studentId), limit(3));
         const snapTask = await getDocs(qTask);
         setTasks(snapTask.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -213,8 +216,12 @@ const StudentDashboard = () => {
   const renderContent = () => {
     switch (activeMenu) {
       case 'dashboard': return renderDashboardHome();
-      case 'nilai': return <div style={styles.sectionCard}><h3>📊 Nilai Akademik</h3><p>Data nilai akan segera muncul.</p></div>;
-      default: return <p>Silakan pilih menu.</p>;
+      case 'keuangan': return <StudentFinanceSiswa />; // <-- MENAMBAHKAN INI
+      case 'rapor': return <StudentGrades />; // <-- MENAMBAHKAN INI
+      case 'jadwal': return <StudentSchedule />; // <-- MENAMBAHKAN INI
+      case 'absensi': return <StudentAttendanceSiswa />; // <-- MENAMBAHKAN INI
+      case 'nilai': return <StudentGrades />; // Cadangan rute nilai
+      default: return renderDashboardHome();
     }
   };
 
