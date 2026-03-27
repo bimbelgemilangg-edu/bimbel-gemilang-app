@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../../../components/Sidebar';
+// PERBAIKAN: Mengarahkan ke SidebarAdmin agar sinkron dengan sistem baru
+import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { collection, addDoc, doc, getDoc } from "firebase/firestore";
 
@@ -34,7 +35,7 @@ const AddStudent = () => {
   
   // Reguler
   const [jenjang, setJenjang] = useState("SD");
-  const [kelas, setKelas] = useState("1 SD"); // Default dari 1 SD
+  const [kelas, setKelas] = useState("1 SD"); 
   const [paketReguler, setPaketReguler] = useState("paket1");
   
   // English
@@ -56,10 +57,9 @@ const AddStudent = () => {
   const [tenor, setTenor] = useState(1);
   const [tanggalMulaiCicilan, setTanggalMulaiCicilan] = useState(new Date().toISOString().split('T')[0]);
   
-  // STATE BARU: Menyimpan Array Tanggal Jatuh Tempo
   const [customDueDates, setCustomDueDates] = useState([]);
 
-  // LOGIKA: Generate Tanggal Otomatis saat Tenor/Start berubah
+  // LOGIKA: Generate Tanggal Otomatis
   useEffect(() => {
     if (metodeBayar === 'Cicilan') {
         const dates = [];
@@ -73,7 +73,6 @@ const AddStudent = () => {
     }
   }, [tenor, tanggalMulaiCicilan, metodeBayar]);
 
-  // Handler ubah tanggal manual per cicilan
   const handleDateChange = (index, newDate) => {
       const updatedDates = [...customDueDates];
       updatedDates[index] = newDate;
@@ -105,7 +104,6 @@ const AddStudent = () => {
     if (!namaSiswa || !namaAyah || !noHp) return alert("Data Wajib (Nama, Ayah, HP) harus diisi!");
 
     try {
-      // A. SIMPAN DATA SISWA
       const studentData = {
         nama: namaSiswa,
         kategori: programType,
@@ -123,7 +121,6 @@ const AddStudent = () => {
       const studentId = docRef.id;
       const totalBayar = hitungTotal();
 
-      // B. SIMPAN DATA KEUANGAN
       if (metodeBayar === "Cicilan") {
         let installments = [];
         const perBulan = hitungCicilan();
@@ -166,7 +163,8 @@ const AddStudent = () => {
 
   return (
     <div style={{ display: 'flex' }}>
-      <Sidebar />
+      {/* PERBAIKAN: Menggunakan SidebarAdmin */}
+      <SidebarAdmin />
       <div style={styles.content}>
         <h2 style={{color: '#333'}}>🎓 Pendaftaran Siswa Baru</h2>
         
@@ -212,7 +210,6 @@ const AddStudent = () => {
               <div style={styles.formGroup}>
                   <label style={styles.labelSmall}>Kelas Sekolah (Saat ini)</label>
                   <select style={styles.select} value={kelas} onChange={e => setKelas(e.target.value)}>
-                      {/* --- UPDATE: MENAMBAHKAN KELAS 1-3 SD --- */}
                       <option>1 SD</option><option>2 SD</option><option>3 SD</option>
                       <option>4 SD</option><option>5 SD</option><option>6 SD</option>
                       <option>7 SMP</option><option>8 SMP</option><option>9 SMP</option>
@@ -281,7 +278,6 @@ const AddStudent = () => {
                 </select>
               </div>
               
-              {/* === AREA SETTING CICILAN === */}
               {metodeBayar === "Cicilan" && (
                 <div style={styles.cicilanBox}>
                   <label>Pilih Tenor (Kali Bayar):</label>
@@ -291,10 +287,9 @@ const AddStudent = () => {
                     ))}
                   </div>
 
-                  <label>Tanggal Mulai (Otomatis sebulan sekali):</label>
+                  <label>Tanggal Mulai:</label>
                   <input type="date" value={tanggalMulaiCicilan} onChange={(e) => setTanggalMulaiCicilan(e.target.value)} style={{...styles.input, marginTop: 5, marginBottom:15}} />
                   
-                  {/* DAFTAR JATUH TEMPO YANG BISA DIEDIT */}
                   <div style={{background:'rgba(0,0,0,0.2)', padding:10, borderRadius:5}}>
                       <small style={{display:'block', marginBottom:5, color:'#ddd'}}>👇 Sesuaikan tanggal di bawah jika perlu:</small>
                       {customDueDates.map((date, idx) => (
@@ -316,7 +311,6 @@ const AddStudent = () => {
                   </div>
                 </div>
               )}
-              {/* ===================================== */}
 
               <button type="submit" style={styles.btnSubmit}>SIMPAN DATA</button>
             </div>
@@ -327,7 +321,6 @@ const AddStudent = () => {
   );
 };
 
-// CSS (SAMA PERSIS)
 const styles = {
   content: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'Segoe UI, sans-serif' },
   grid: { display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '20px' },

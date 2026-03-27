@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../../../components/Sidebar';
+// PERBAIKAN: Mengarahkan ke SidebarAdmin agar sinkron dengan sistem baru
+import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 
@@ -9,52 +10,44 @@ const EditStudent = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
 
-  // 1. STATE UNTUK HARGA (Biar dropdown paket muncul harganya)
+  // 1. STATE UNTUK HARGA
   const [pricing, setPricing] = useState({});
 
   // 2. STATE FORM LENGKAP
   const [formData, setFormData] = useState({
-    // Identitas
     nama: "",
     kelasSekolah: "",
     tempatLahir: "",
     tanggalLahir: "",
-    
-    // Ortu
     ortu: { ayah: "", pekerjaanAyah: "", ibu: "", pekerjaanIbu: "", alamat: "", hp: "" },
-    
-    // Pendaftaran & Program
-    kategori: "Reguler", // Reguler / English
-    jenjang: "SD",       // SD / SMP
-    paket: "paket1",     // paket1 / kids / dll (Logic internal)
-    totalTagihan: 0      // Bisa diedit manual kalau perlu
+    kategori: "Reguler", 
+    jenjang: "SD",       
+    paket: "paket1",     
+    totalTagihan: 0      
   });
 
   // FETCH HARGA & DATA SISWA
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // A. Ambil Harga Settings
         const settingsRef = doc(db, "settings", "global_config");
         const settingsSnap = await getDoc(settingsRef);
         if (settingsSnap.exists()) setPricing(settingsSnap.data().prices || {});
 
-        // B. Ambil Data Siswa
         const docRef = doc(db, "students", id);
         const docSnap = await getDoc(docRef);
         
         if (docSnap.exists()) {
           const data = docSnap.data();
           
-          // Pecah string "SD - paket1" menjadi jenjang & paket untuk dropdown
           let parsedJenjang = "SD";
           let parsedPaket = "paket1";
           
           if(data.detailProgram) {
              const parts = data.detailProgram.split(" - ");
              if(parts.length > 1) {
-                 parsedJenjang = parts[0]; // SD / SMP / English
-                 parsedPaket = parts[1];   // paket1 / kids
+                 parsedJenjang = parts[0]; 
+                 parsedPaket = parts[1];   
              }
           }
 
@@ -83,10 +76,7 @@ const EditStudent = () => {
     fetchData();
   }, [id, navigate]);
 
-  // LOGIKA UPDATE NOMINAL OTOMATIS (OPSIONAL)
   const updatePriceEstimate = (kategori, jenjang, paket) => {
-      // Fungsi ini hanya untuk membantu admin melihat harga, 
-      // tidak langsung menimpa totalTagihan kecuali admin mau.
       let price = 0;
       if (kategori === 'English') {
           price = pricing.english ? pricing.english[paket] : 0;
@@ -100,7 +90,6 @@ const EditStudent = () => {
   // SIMPAN PERUBAHAN
   const handleSave = async () => {
     try {
-      // Susun ulang detailProgram
       let detailProgramBaru = "";
       if (formData.kategori === "English") {
           detailProgramBaru = `English - ${formData.paket}`;
@@ -110,17 +99,14 @@ const EditStudent = () => {
 
       const docRef = doc(db, "students", id);
       await updateDoc(docRef, {
-        // Update Identitas
         nama: formData.nama,
         kelasSekolah: formData.kelasSekolah,
         tempatLahir: formData.tempatLahir,
         tanggalLahir: formData.tanggalLahir,
         ortu: formData.ortu,
-        
-        // Update Program
         kategori: formData.kategori,
         detailProgram: detailProgramBaru,
-        totalTagihan: parseInt(formData.totalTagihan) // Update tagihan jika ada revisi
+        totalTagihan: parseInt(formData.totalTagihan) 
       });
 
       alert("✅ Data Siswa & Pendaftaran Berhasil Diupdate!");
@@ -135,21 +121,18 @@ const EditStudent = () => {
 
   return (
     <div style={{ display: 'flex' }}>
-      <Sidebar />
+      {/* PERBAIKAN: Menggunakan SidebarAdmin */}
+      <SidebarAdmin />
       <div style={styles.content}>
         <h2 style={{color:'#2c3e50'}}>✏️ Edit Data Siswa & Pendaftaran</h2>
         
         <div style={styles.gridContainer}>
-            
-            {/* KOLOM KIRI: BIODATA */}
             <div style={styles.card}>
               <h3 style={{marginTop:0, borderBottom:'1px solid #eee', paddingBottom:10}}>👤 Biodata Siswa</h3>
-              
               <div style={styles.formGroup}>
                 <label>Nama Lengkap</label>
                 <input style={styles.input} value={formData.nama} onChange={(e) => setFormData({...formData, nama: e.target.value})} />
               </div>
-
               <div style={styles.formGroup}>
                 <label>Kelas Sekolah</label>
                 <select style={styles.select} value={formData.kelasSekolah} onChange={(e) => setFormData({...formData, kelasSekolah: e.target.value})}>
@@ -159,7 +142,6 @@ const EditStudent = () => {
                   <option>Lainnya</option>
                 </select>
               </div>
-
               <div style={{display:'flex', gap:10}}>
                   <div style={{flex:1}}>
                     <label>Tempat Lahir</label>
@@ -170,7 +152,6 @@ const EditStudent = () => {
                     <input type="date" style={styles.input} value={formData.tanggalLahir} onChange={(e) => setFormData({...formData, tanggalLahir: e.target.value})} />
                   </div>
               </div>
-
               <h4 style={{marginTop:20, marginBottom:10, color:'#555'}}>Data Orang Tua</h4>
               <div style={styles.formGroup}>
                 <label>Nama Ayah</label>
@@ -186,10 +167,8 @@ const EditStudent = () => {
               </div>
             </div>
 
-            {/* KOLOM KANAN: PENDAFTARAN & PROGRAM */}
             <div style={styles.cardBlue}>
               <h3 style={{marginTop:0, color:'white', borderBottom:'1px solid rgba(255,255,255,0.2)', paddingBottom:10}}>📚 Edit Program & Paket</h3>
-              
               <div style={styles.formGroup}>
                 <label style={{color:'white'}}>Kategori Program</label>
                 <select style={styles.select} value={formData.kategori} onChange={(e) => setFormData({...formData, kategori: e.target.value})}>
@@ -197,8 +176,6 @@ const EditStudent = () => {
                     <option value="English">English Course</option>
                 </select>
               </div>
-
-              {/* LOGIKA SELECTOR PAKET (SAMA DENGAN ADD STUDENT) */}
               {formData.kategori === 'Reguler' ? (
                   <>
                     <div style={styles.formGroup}>
@@ -233,7 +210,6 @@ const EditStudent = () => {
                         </select>
                   </div>
               )}
-
               <div style={{background:'rgba(0,0,0,0.2)', padding:15, borderRadius:8, marginTop:20}}>
                   <label style={{color:'white', display:'block', marginBottom:5}}>Total Tagihan (Rp)</label>
                   <input 
@@ -244,13 +220,11 @@ const EditStudent = () => {
                   />
                   <small style={{color:'#ddd', fontSize:11}}>*Mengubah angka ini akan mengubah hutang siswa.</small>
               </div>
-
               <div style={{display:'flex', gap:'10px', marginTop:'30px'}}>
                 <button style={styles.btnSave} onClick={handleSave}>SIMPAN UPDATE</button>
                 <button style={styles.btnCancel} onClick={() => navigate('/admin/students')}>BATAL</button>
               </div>
             </div>
-
         </div>
       </div>
     </div>

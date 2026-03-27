@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../../components/Sidebar';
+// PERBAIKAN: Mengarahkan ke SidebarAdmin agar tidak error saat build
+import SidebarAdmin from '../../components/SidebarAdmin'; 
 import { db } from '../../firebase';
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
@@ -80,7 +81,8 @@ const Settings = () => {
 
   return (
     <div style={{ display: 'flex' }}>
-      <Sidebar />
+      {/* PERBAIKAN: Menggunakan SidebarAdmin */}
+      <SidebarAdmin /> 
       <div style={styles.mainContent}>
         <div style={{display:'flex', justifyContent:'space-between', marginBottom:20}}>
            <h2 style={{margin:0}}>⚙️ Pengaturan Gaji & Harga</h2>

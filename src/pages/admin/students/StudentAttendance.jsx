@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../../../components/Sidebar'; 
+// PERBAIKAN: Mengarahkan ke SidebarAdmin agar sinkron dengan sistem baru
+import SidebarAdmin from '../../../components/SidebarAdmin'; 
 import { db } from '../../../firebase'; 
 import { doc, getDoc, collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 
@@ -117,7 +118,8 @@ const StudentAttendance = () => {
 
   return (
     <div style={{ display: 'flex', background: '#f4f7f6', minHeight: '100vh' }}>
-      <Sidebar />
+      {/* PERBAIKAN: Menggunakan SidebarAdmin */}
+      <SidebarAdmin />
       <div style={styles.mainContent}>
         
         {/* HEADER */}
@@ -240,32 +242,26 @@ const StudentAttendance = () => {
   );
 };
 
-// STYLING (SUDAH DIPERHALUS)
+// STYLING
 const styles = {
   mainContent: { marginLeft: '250px', padding: '30px', width: '100%', fontFamily: 'Inter, system-ui, sans-serif' },
   header: { display: 'flex', alignItems: 'center', marginBottom: '30px' },
   btnBack: { background: 'white', border: '1px solid #bdc3c7', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', color:'#2c3e50', fontWeight:'bold' },
-  
   summaryContainer: { display:'flex', gap:20, marginBottom:20 },
   statBox: { flex:1, padding:15, borderRadius:12, textAlign:'center', boxShadow:'0 2px 5px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.05)' },
-  
   card: { background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.08)' },
-  
   inputBox: { background: '#ffffff', padding: 20, borderRadius: 12, marginBottom: 25, border:'1px solid #e0e6ed', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' },
   formGroup: { display:'flex', flexDirection:'column', gap:5 },
   label: { fontSize: 12, fontWeight: 'bold', color: '#7f8c8d' },
   inputSm: { padding: '10px 12px', borderRadius: 6, border: '1px solid #dcdfe6', fontSize: 14 },
   btnSave: { padding: '12px 25px', background: '#2980b9', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight:'bold', alignSelf: 'flex-end' },
-
   table: { width: '100%', borderCollapse: 'collapse' },
   th: { textAlign: 'left', padding: '15px', borderBottom: '2px solid #f4f6f7', color:'#909399', fontSize:13, textTransform: 'uppercase', letterSpacing: '0.5px' },
   tr: { borderBottom: '1px solid #f4f6f7', transition: '0.3s' },
   td: { padding: '15px', fontSize:14, color:'#2c3e50' },
-  
   badgeGreen: { background: '#e1f7e3', color: '#1db446', padding: '5px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold' },
   badgeYellow: { background: '#fff9db', color: '#f08c00', padding: '5px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold' },
   badgeRed: { background: '#fff5f5', color: '#fa5252', padding: '5px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold' },
-  
   btnEdit: { background: '#f39c12', color: 'white', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer', marginRight:8 },
   btnDelete: { background: '#e74c3c', color: 'white', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer' }
 };

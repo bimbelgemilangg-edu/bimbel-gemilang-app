@@ -16,12 +16,11 @@ const ExpenseEntry = () => {
     e.preventDefault();
     if (!form.amount || form.amount <= 0) return alert("Nominal harus diisi!");
 
-    // (Opsional) Disini bisa ditambahkan logika cek saldo dulu jika mau lebih canggih
-    
     setLoading(true);
     try {
+      // PERINGATAN: Logika ini krusial untuk dashboard keuangan (Pengeluaran = Minus)
       await addDoc(collection(db, "finance_logs"), {
-        type: 'Pengeluaran', // INI KUNCINYA (Supaya mengurangi saldo)
+        type: 'Pengeluaran', 
         date: form.date,
         category: form.category,
         amount: parseInt(form.amount),
@@ -31,10 +30,11 @@ const ExpenseEntry = () => {
       });
 
       alert("✅ Pengeluaran Berhasil Dicatat!");
+      // Reset form nominal & note saja, kategori & tanggal tetap sesuai input terakhir
       setForm({ ...form, amount: '', note: '' }); 
     } catch (error) {
-      console.error(error);
-      alert("Gagal menyimpan data.");
+      console.error("Error saving expense:", error);
+      alert("Gagal menyimpan data pengeluaran.");
     } finally {
       setLoading(false);
     }
@@ -48,27 +48,27 @@ const ExpenseEntry = () => {
         <form onSubmit={handleSubmit}>
             <div style={{marginBottom:15}}>
                 <label style={{fontWeight:'bold', display:'block'}}>Tanggal</label>
-                <input type="date" value={form.date} onChange={e=>setForm({...form, date:e.target.value})} style={styles.input} />
+                <input type="date" value={form.date} onChange={e=>setForm({...form, date:e.target.value})} style={styles.input} required />
             </div>
 
             <div style={{marginBottom:15}}>
                 <label style={{fontWeight:'bold', display:'block'}}>Kategori</label>
                 <select value={form.category} onChange={e=>setForm({...form, category:e.target.value})} style={styles.input}>
-                    <option>Gaji Guru/Staf</option>
-                    <option>Listrik & Air</option>
-                    <option>Sewa Tempat</option>
-                    <option>ATK & Perlengkapan</option>
-                    <option>Internet/WiFi</option>
-                    <option>Marketing/Iklan</option>
-                    <option>Konsumsi</option>
-                    <option>Maintenance/Service</option>
-                    <option>Lainnya</option>
+                    <option value="Gaji Guru/Staf">Gaji Guru/Staf</option>
+                    <option value="Listrik & Air">Listrik & Air</option>
+                    <option value="Sewa Tempat">Sewa Tempat</option>
+                    <option value="ATK & Perlengkapan">ATK & Perlengkapan</option>
+                    <option value="Internet/WiFi">Internet/WiFi</option>
+                    <option value="Marketing/Iklan">Marketing/Iklan</option>
+                    <option value="Konsumsi">Konsumsi</option>
+                    <option value="Maintenance/Service">Maintenance/Service</option>
+                    <option value="Lainnya">Lainnya</option>
                 </select>
             </div>
 
             <div style={{marginBottom:15}}>
                 <label style={{fontWeight:'bold', display:'block'}}>Nominal (Rp)</label>
-                <input type="number" placeholder="Contoh: 150000" value={form.amount} onChange={e=>setForm({...form, amount:e.target.value})} style={styles.input} />
+                <input type="number" placeholder="Contoh: 150000" value={form.amount} onChange={e=>setForm({...form, amount:e.target.value})} style={styles.input} required />
             </div>
 
             <div style={{marginBottom:15}}>

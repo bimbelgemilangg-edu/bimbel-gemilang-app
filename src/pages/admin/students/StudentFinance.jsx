@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../../../components/Sidebar';
+// PERBAIKAN: Mengarahkan ke SidebarAdmin agar sinkron dengan sistem baru
+import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { doc, getDoc, collection, query, where, getDocs, updateDoc, addDoc } from "firebase/firestore";
 
@@ -27,9 +28,8 @@ const StudentFinance = () => {
       const querySnapshot = await getDocs(q);
       const billsData = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       
-      // Kita fokus ke dokumen tagihan pertama (asumsi 1 siswa 1 kontrak aktif)
       if (billsData.length > 0) {
-        setTagihan(billsData[0]); // Simpan objek tagihan lengkap (termasuk array detailCicilan)
+        setTagihan(billsData[0]); 
       } else {
         setTagihan(null);
       }
@@ -44,40 +44,35 @@ const StudentFinance = () => {
     if (!window.confirm(`Terima pembayaran cicilan Rp ${nominal.toLocaleString()}?`)) return;
 
     try {
-      // A. Update Status di Array detailCicilan
       const newDetails = [...tagihan.detailCicilan];
       newDetails[indexCicilan].status = "Lunas";
       newDetails[indexCicilan].tanggalBayar = new Date().toISOString().split('T')[0];
 
-      // B. Update Sisa Tagihan Induk
       const newSisa = tagihan.sisaTagihan - nominal;
 
-      // C. Update ke Firebase (finance_tagihan)
       const tagihanRef = doc(db, "finance_tagihan", docId);
       await updateDoc(tagihanRef, {
         detailCicilan: newDetails,
         sisaTagihan: newSisa
       });
 
-      // D. Update Total Bayar di Data Siswa (Agar sinkron dengan Dashboard Keuangan)
       const siswaRef = doc(db, "students", id);
       await updateDoc(siswaRef, {
         totalBayar: (student.totalBayar || 0) + nominal
       });
 
-      // E. CATAT PEMASUKAN DI LOG KEUANGAN (PENTING AGAR MASUK DASHBOARD)
       await addDoc(collection(db, "finance_logs"), {
         date: new Date().toISOString().split('T')[0],
         type: "Pemasukan",
         category: "SPP / Cicilan",
         amount: nominal,
-        method: "Tunai", // Default Tunai, bisa dibuat dinamis kalau mau
+        method: "Tunai", 
         note: `Cicilan ke-${newDetails[indexCicilan].bulanKe} ${student.nama}`,
         studentId: id
       });
 
       alert("✅ Pembayaran Berhasil! Masuk ke Laporan Keuangan.");
-      fetchFinance(); // Refresh tampilan
+      fetchFinance(); 
 
     } catch (e) {
       console.error(e);
@@ -90,7 +85,8 @@ const StudentFinance = () => {
 
   return (
     <div style={{ display: 'flex' }}>
-      <Sidebar />
+      {/* PERBAIKAN: Menggunakan SidebarAdmin */}
+      <SidebarAdmin />
       <div style={styles.content}>
         <button style={styles.btnBack} onClick={() => navigate('/admin/students')}>← Kembali</button>
         

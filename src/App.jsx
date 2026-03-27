@@ -28,29 +28,32 @@ import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade';
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager'; 
 import TeacherProfile from './pages/teacher/TeacherProfile'; 
 
-// IMPORT SISWA & ORTU (MODULAR - JADI SATU PORTAL)
+// IMPORT SISWA & ORTU
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentSchedule from './pages/student/StudentSchedule';
 import StudentFinanceSiswa from './pages/student/StudentFinance';
 import StudentGrades from './pages/student/StudentGrades';
 import StudentAttendanceSiswa from './pages/student/StudentAttendance';
 
-// PROTEKSI RUTE ADMIN
+// --- PROTEKSI RUTE (DIPERKUAT AGAR TIDAK TABRAKAN) ---
+
 const AdminRoute = ({ children }) => {
   const isAuth = localStorage.getItem('isLoggedIn') === 'true'; 
-  return isAuth ? children : <Navigate to="/" />;
+  const role = localStorage.getItem('role');
+  // Pastikan dia login DAN rolenya memang admin
+  return (isAuth && role === 'admin') ? children : <Navigate to="/" />;
 };
 
-// PROTEKSI RUTE GURU
 const GuruRoute = ({ children }) => {
   const isGuruAuth = localStorage.getItem('isGuruLoggedIn') === 'true'; 
-  return isGuruAuth ? children : <Navigate to="/login-guru" />;
+  const role = localStorage.getItem('role');
+  return (isGuruAuth && role === 'guru') ? children : <Navigate to="/login-guru" />;
 };
 
-// PROTEKSI RUTE SISWA/ORTU
 const SiswaRoute = ({ children }) => {
   const isSiswaAuth = localStorage.getItem('isSiswaLoggedIn') === 'true'; 
-  return isSiswaAuth ? children : <Navigate to="/login-siswa" />;
+  const role = localStorage.getItem('role');
+  return (isSiswaAuth && role === 'siswa') ? children : <Navigate to="/login-siswa" />;
 };
 
 function App() {
@@ -62,7 +65,7 @@ function App() {
         <Route path="/login-guru" element={<LoginGuru />} /> 
         <Route path="/login-siswa" element={<LoginSiswa />} /> 
 
-        {/* ADMIN */}
+        {/* ADMIN AREA */}
         <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
         <Route path="/admin/students" element={<AdminRoute><StudentList /></AdminRoute>} />
         <Route path="/admin/students/add" element={<AdminRoute><AddStudent /></AdminRoute>} />
@@ -76,7 +79,7 @@ function App() {
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
         <Route path="/admin/grades" element={<AdminRoute><GradeReport /></AdminRoute>} />
 
-        {/* GURU */}
+        {/* GURU AREA */}
         <Route path="/guru/dashboard" element={<GuruRoute><TeacherDashboard /></GuruRoute>} />
         <Route path="/guru/profile" element={<GuruRoute><TeacherProfile /></GuruRoute>} />
         <Route path="/guru/grades/input" element={<GuruRoute><TeacherInputGrade /></GuruRoute>} />
@@ -84,13 +87,14 @@ function App() {
         <Route path="/guru/history" element={<GuruRoute><TeacherHistory /></GuruRoute>} />
         <Route path="/guru/manual-input" element={<GuruRoute><TeacherManualInput /></GuruRoute>} />
         
-        {/* PORTAL SISWA & ORTU (MENGGUNAKAN SATU AKUN) */}
+        {/* SISWA AREA */}
         <Route path="/siswa/dashboard" element={<SiswaRoute><StudentDashboard /></SiswaRoute>} />
         <Route path="/siswa/jadwal" element={<SiswaRoute><StudentSchedule /></SiswaRoute>} />
         <Route path="/siswa/keuangan" element={<SiswaRoute><StudentFinanceSiswa /></SiswaRoute>} />
         <Route path="/siswa/rapor" element={<SiswaRoute><StudentGrades /></SiswaRoute>} />
         <Route path="/siswa/absensi" element={<SiswaRoute><StudentAttendanceSiswa /></SiswaRoute>} />
 
+        {/* REDIRECTS */}
         <Route path="/teacher" element={<Navigate to="/guru/dashboard" replace />} />
       </Routes>
     </BrowserRouter>

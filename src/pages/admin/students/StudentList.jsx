@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../../../components/Sidebar';
+// PERBAIKAN: Mengarahkan ke SidebarAdmin agar sinkron dengan sistem baru
+import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 
@@ -44,7 +45,8 @@ const StudentList = () => {
 
   return (
     <div style={{ display: 'flex' }}>
-      <Sidebar />
+      {/* PERBAIKAN: Menggunakan SidebarAdmin */}
+      <SidebarAdmin />
       <div style={styles.content}>
         <div style={styles.header}>
             <h2 style={{margin:0}}>👨‍🎓 Data Siswa</h2>

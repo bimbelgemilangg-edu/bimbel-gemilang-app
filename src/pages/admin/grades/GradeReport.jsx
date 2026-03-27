@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Sidebar from '../../../components/Sidebar';
+import SidebarAdmin from '../../../components/SidebarAdmin'; // Update ke SidebarAdmin
 import { db } from '../../../firebase';
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { 
-    LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
+    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
     Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis 
 } from 'recharts';
 
@@ -16,36 +16,28 @@ const GradeReport = () => {
   const [isPrinting, setIsPrinting] = useState(false);
 
   const [students, setStudents] = useState([]);
-  const [filteredStudents, setFilteredStudents] = useState([]); // State untuk hasil pencarian
-  const [searchTerm, setSearchTerm] = useState(""); // State teks pencarian
+  const [filteredStudents, setFilteredStudents] = useState([]); 
+  const [searchTerm, setSearchTerm] = useState(""); 
 
   const [selectedStudentId, setSelectedStudentId] = useState("");
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); 
   
   const [reportData, setReportData] = useState([]); 
   const [gpaHistory, setGpaHistory] = useState([]); 
-  const [subjectHistory, setSubjectHistory] = useState([]); 
-  const [uniqueSubjects, setUniqueSubjects] = useState([]); 
   const [radarData, setRadarData] = useState([]);   
-  const [gpaCurrent, setGpaCurrent] = useState(0);
-  
   const [narrativeTitle, setNarrativeTitle] = useState("");
   const [narrativeBody, setNarrativeBody] = useState("");
-  const [bestSubject, setBestSubject] = useState("");
-  const [weakSubject, setWeakSubject] = useState("");
-
-  const colors = ["#e74c3c", "#3498db", "#27ae60", "#f1c40f", "#8e44ad", "#e67e22", "#16a085", "#2c3e50"];
 
   // 1. LOAD SISWA
   useEffect(() => {
     getDocs(collection(db, "students")).then(snap => {
         const data = snap.docs.map(d => ({id: d.id, ...d.data()}));
         setStudents(data);
-        setFilteredStudents(data); // Awalnya tampilkan semua
+        setFilteredStudents(data);
     });
   }, []);
 
-  // 2. LOGIKA PENCARIAN SISWA (FILTER)
+  // 2. LOGIKA PENCARIAN SISWA
   useEffect(() => {
     if (searchTerm === "") {
         setFilteredStudents(students);
@@ -68,17 +60,14 @@ const GradeReport = () => {
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const imgWidth = canvas.width;
-    const imgHeight = canvas.height;
-    const ratio = imgWidth / imgHeight;
-    const heightInPdf = pdfWidth / ratio;
+    const heightInPdf = (canvas.height * pdfWidth) / canvas.width;
     
     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, heightInPdf);
     pdf.save(`RAPOR_${students.find(s=>s.id===selectedStudentId)?.nama}_${selectedMonth}.pdf`);
     setIsPrinting(false);
   };
 
-  // --- LOGIKA UTAMA RENDER DATA ---
+  // --- LOGIKA UTAMA RENDER DATA (SENSITIF - PERTAHANKAN) ---
   useEffect(() => {
     if(!selectedStudentId) return;
 
@@ -88,85 +77,53 @@ const GradeReport = () => {
         const allGrades = snap.docs.map(d => d.data());
         allGrades.sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal));
 
-        // Grafik Per Mapel
+        // Grafik Per Mapel & GPA
         const mapelHistoryMap = {}; 
-        const subjectSet = new Set();
-
         allGrades.forEach(g => {
             const monthLabel = new Date(g.tanggal).toLocaleDateString('id-ID', {month:'short', year:'2-digit'}); 
-            subjectSet.add(g.mapel);
-            if(!mapelHistoryMap[monthLabel]) mapelHistoryMap[monthLabel] = { name: monthLabel, rawDate: g.tanggal };
+            if(!mapelHistoryMap[monthLabel]) mapelHistoryMap[monthLabel] = { name: monthLabel, rawDate: g.tanggal, sum: 0, count: 0 };
             mapelHistoryMap[monthLabel][g.mapel] = g.nilai;
+            mapelHistoryMap[monthLabel].sum += g.nilai;
+            mapelHistoryMap[monthLabel].count += 1;
         });
 
-        const finalSubjectHistory = Object.values(mapelHistoryMap).sort((a,b) => new Date(a.rawDate) - new Date(b.rawDate));
-        setSubjectHistory(finalSubjectHistory);
-        setUniqueSubjects(Array.from(subjectSet)); 
+        const finalHistory = Object.values(mapelHistoryMap).sort((a,b) => new Date(a.rawDate) - new Date(b.rawDate));
+        setGpaHistory(finalHistory.map(h => ({ name: h.name, GPA: Math.round(h.sum/h.count) })));
 
-        // Grafik GPA
-        const gpaData = finalSubjectHistory.map(item => {
-            let sum = 0, count = 0;
-            Object.keys(item).forEach(key => {
-                if(key !== 'name' && key !== 'rawDate') { sum += item[key]; count++; }
-            });
-            return { name: item.name, GPA: count > 0 ? Math.round(sum/count) : 0 };
-        });
-        setGpaHistory(gpaData);
-
-        // DATA BULAN INI
+        // Data Bulan Ini
         const currentGrades = allGrades.filter(g => g.tanggal.startsWith(selectedMonth));
         setReportData(currentGrades);
 
-        // NARASI
+        // Narasi & Radar (Logika Asli)
         if(currentGrades.length > 0) {
-            const avgCurrent = Math.round(currentGrades.reduce((a,b)=>a+b.nilai,0) / currentGrades.length);
-            setGpaCurrent(avgCurrent);
+            const avg = Math.round(currentGrades.reduce((a,b)=>a+b.nilai,0) / currentGrades.length);
+            const best = [...currentGrades].sort((a,b) => b.nilai - a.nilai)[0];
+            const weak = [...currentGrades].sort((a,b) => a.nilai - b.nilai)[0];
 
-            const sortedByScore = [...currentGrades].sort((a,b) => b.nilai - a.nilai);
-            const best = sortedByScore[0];
-            const weak = sortedByScore[sortedByScore.length - 1];
+            setNarrativeTitle(avg >= 85 ? "PERFORMA SANGAT BAIK" : avg >= 75 ? "PERFORMA BAIK" : "PERLU PERHATIAN");
+            setNarrativeBody(`Pada periode ${selectedMonth}, ananda mencapai rata-rata ${avg}. Kekuatan utama pada ${best.mapel} (Skor: ${best.nilai}). ${weak.nilai < 75 ? `Perlu perhatian pada ${weak.mapel}.` : 'Semua mapel aman.'}`);
 
-            setBestSubject(best.mapel);
-            setWeakSubject(weak.nilai < 75 ? weak.mapel : null);
-
-            let title = avgCurrent >= 85 ? "PERFORMA SANGAT BAIK" : avgCurrent >= 75 ? "PERFORMA BAIK" : "PERLU PERHATIAN";
-            setNarrativeTitle(title);
-
-            let body = `Pada periode ${new Date(selectedMonth).toLocaleDateString('id-ID', {month:'long', year:'numeric'})}, ananda mencapai GPA ${avgCurrent}. `;
-            body += `Kekuatan utama terlihat pada ${best.mapel} (Skor: ${best.nilai}). `;
-            if(weak.nilai < 75) body += `Perlu pendampingan lebih pada ${weak.mapel} (Skor: ${weak.nilai}).`;
-            else body += `Seluruh mapel di atas standar minimal.`;
-
-            setNarrativeBody(body);
+            // Radar
+            let asp = { pem:0, log:0, lit:0, ini:0, man:0, c:0 };
+            currentGrades.forEach(g => {
+                if(g.qualitative) {
+                    asp.pem += g.qualitative.pemahaman || 0; asp.log += g.qualitative.aplikasi || 0;
+                    asp.lit += g.qualitative.literasi || 0; asp.ini += g.qualitative.inisiatif || 0;
+                    asp.man += g.qualitative.mandiri || 0; asp.c++;
+                }
+            });
+            setRadarData(asp.c > 0 ? [
+                { subject: 'Pemahaman', A: (asp.pem/asp.c).toFixed(1) },
+                { subject: 'Logika', A: (asp.log/asp.c).toFixed(1) },
+                { subject: 'Literasi', A: (asp.lit/asp.c).toFixed(1) },
+                { subject: 'Inisiatif', A: (asp.ini/asp.c).toFixed(1) },
+                { subject: 'Mandiri', A: (asp.man/asp.c).toFixed(1) }
+            ] : []);
         } else {
             setNarrativeTitle("DATA BELUM TERSEDIA");
             setNarrativeBody("Belum ada penilaian untuk bulan ini.");
-            setGpaCurrent(0);
+            setRadarData([]);
         }
-
-        // Radar Data
-        let aspekSum = { pemahaman:0, aplikasi:0, literasi:0, inisiatif:0, mandiri:0 };
-        let count = 0;
-        currentGrades.forEach(g => {
-            if(g.qualitative) {
-                aspekSum.pemahaman += g.qualitative.pemahaman || 0;
-                aspekSum.aplikasi += g.qualitative.aplikasi || 0;
-                aspekSum.literasi += g.qualitative.literasi || 0;
-                aspekSum.inisiatif += g.qualitative.inisiatif || 0;
-                aspekSum.mandiri += g.qualitative.mandiri || 0;
-                count++;
-            }
-        });
-        if(count > 0) {
-            setRadarData([
-                { subject: 'Pemahaman', A: (aspekSum.pemahaman/count).toFixed(1), fullMark: 5 },
-                { subject: 'Logika', A: (aspekSum.aplikasi/count).toFixed(1), fullMark: 5 },
-                { subject: 'Literasi', A: (aspekSum.literasi/count).toFixed(1), fullMark: 5 },
-                { subject: 'Inisiatif', A: (aspekSum.inisiatif/count).toFixed(1), fullMark: 5 },
-                { subject: 'Mandiri', A: (aspekSum.mandiri/count).toFixed(1), fullMark: 5 },
-            ]);
-        } else setRadarData([]);
-
     };
     processData();
   }, [selectedStudentId, selectedMonth]);
@@ -174,72 +131,44 @@ const GradeReport = () => {
   const studentInfo = students.find(s => s.id === selectedStudentId);
 
   return (
-    <div style={{display:'flex'}}>
-        <Sidebar />
-        <div style={{marginLeft:250, padding:30, width:'100%', background:'#555', minHeight:'100vh', fontFamily:'Segoe UI, sans-serif', display:'flex', flexDirection:'column', alignItems:'center'}}>
+    <div style={{display:'flex', minHeight:'100vh', background:'#555'}}>
+        {/* SIDEBAR ADMIN DIPERBAIKI DISINI */}
+        <SidebarAdmin />
+        
+        <div style={{marginLeft:250, padding:30, width:'100%', display:'flex', flexDirection:'column', alignItems:'center'}}>
             
-            {/* PANEL KONTROL (SEARCH & PRINT) */}
+            {/* PANEL KONTROL */}
             <div style={{background:'white', padding:15, borderRadius:8, marginBottom:20, width:'210mm', boxSizing:'border-box', boxShadow:'0 2px 10px rgba(0,0,0,0.2)'}}>
                 <div style={{display:'flex', gap:10, marginBottom:10}}>
-                    {/* FILTER PENCARIAN */}
                     <div style={{flex:1}}>
-                        <small style={{color:'#666', fontWeight:'bold'}}>1. Cari Nama Siswa</small>
-                        <input 
-                            type="text" 
-                            placeholder="🔍 Ketik nama..." 
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            style={{width:'100%', padding:10, border:'1px solid #3498db', borderRadius:5, marginTop:5}}
-                        />
+                        <small style={{fontWeight:'bold'}}>1. Cari Siswa</small>
+                        <input type="text" placeholder="🔍 Nama..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{width:'100%', padding:10, border:'1px solid #3498db', borderRadius:5, marginTop:5}} />
                     </div>
-                    {/* DROPDOWN HASIL FILTER */}
                     <div style={{flex:1}}>
-                        <small style={{color:'#666', fontWeight:'bold'}}>2. Pilih dari Daftar</small>
-                        <select 
-                            value={selectedStudentId} 
-                            onChange={e=>setSelectedStudentId(e.target.value)} 
-                            style={{width:'100%', padding:10, border:'1px solid #ccc', borderRadius:5, marginTop:5, background: filteredStudents.length === 0 ? '#eee' : 'white'}}
-                        >
-                            <option value="">
-                                {filteredStudents.length === 0 ? "⚠️ Nama tidak ditemukan" : "-- Klik untuk Pilih --"}
-                            </option>
-                            {filteredStudents.map(s => (
-                                <option key={s.id} value={s.id}>{s.nama} ({s.kelasSekolah})</option>
-                            ))}
+                        <small style={{fontWeight:'bold'}}>2. Pilih Daftar</small>
+                        <select value={selectedStudentId} onChange={e=>setSelectedStudentId(e.target.value)} style={{width:'100%', padding:10, border:'1px solid #ccc', borderRadius:5, marginTop:5}}>
+                            <option value="">-- Pilih Siswa --</option>
+                            {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.nama} ({s.kelasSekolah})</option>)}
                         </select>
                     </div>
                 </div>
-
                 <div style={{display:'flex', gap:10, alignItems:'end'}}>
                     <div style={{flex:1}}>
-                        <small style={{color:'#666', fontWeight:'bold'}}>3. Periode Laporan</small>
-                        <input type="month" value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{width:'100%', padding:9, borderRadius:5, border:'1px solid #ccc', display:'block'}} />
+                        <small style={{fontWeight:'bold'}}>3. Periode</small>
+                        <input type="month" value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{width:'100%', padding:9, borderRadius:5, border:'1px solid #ccc'}} />
                     </div>
-                    <button 
-                        onClick={handleDownloadPDF} 
-                        disabled={!selectedStudentId || isPrinting} 
-                        style={{flex:1, height:42, background: isPrinting?'#95a5a6':'#e74c3c', color:'white', border:'none', borderRadius:5, cursor:'pointer', fontWeight:'bold', display:'flex', alignItems:'center', justifyContent:'center', gap:5}}
-                    >
+                    <button onClick={handleDownloadPDF} disabled={!selectedStudentId || isPrinting} style={{flex:1, height:42, background:'#e74c3c', color:'white', border:'none', borderRadius:5, cursor:'pointer', fontWeight:'bold'}}>
                         {isPrinting ? '⏳ Memproses...' : '📄 DOWNLOAD PDF (HD)'}
                     </button>
                 </div>
             </div>
 
-            {/* === AREA KERTAS A4 (YANG AKAN DICETAK) === */}
+            {/* AREA RAPOR A4 */}
             {selectedStudentId && (
-                <div ref={printRef} style={{
-                    width: '210mm', // Lebar A4 Pas
-                    minHeight: '297mm', // Tinggi A4 Minimal
-                    background: 'white',
-                    padding: '15mm', // Margin Kertas
-                    boxShadow: '0 0 20px rgba(0,0,0,0.5)',
-                    boxSizing: 'border-box'
-                }}>
-                    
-                    {/* KOP LAPORAN */}
+                <div ref={printRef} style={{ width: '210mm', minHeight: '297mm', background: 'white', padding: '15mm', boxSizing: 'border-box' }}>
                     <div style={{display:'flex', alignItems:'center', borderBottom:'4px double #2c3e50', paddingBottom:20, marginBottom:30}}>
                         <div style={{flex:1}}>
-                            <h1 style={{margin:0, color:'#2c3e50', fontSize:24, letterSpacing:2}}>BIMBEL GEMILANG</h1>
+                            <h1 style={{margin:0, color:'#2c3e50', fontSize:24}}>BIMBEL GEMILANG</h1>
                             <p style={{margin:0, color:'#7f8c8d', fontSize:12}}>Pusat Keunggulan Akademik & Karakter Siswa</p>
                         </div>
                         <div style={{textAlign:'right'}}>
@@ -248,7 +177,6 @@ const GradeReport = () => {
                         </div>
                     </div>
 
-                    {/* IDENTITAS SISWA */}
                     <table style={{width:'100%', marginBottom:30, fontSize:14}}>
                         <tbody>
                             <tr>
@@ -257,99 +185,57 @@ const GradeReport = () => {
                                 <td style={{width:100, color:'#7f8c8d'}}>Program</td>
                                 <td style={{fontWeight:'bold'}}>: {studentInfo?.detailProgram}</td>
                             </tr>
-                            <tr>
-                                <td style={{color:'#7f8c8d'}}>ID Siswa</td>
-                                <td>: {studentInfo?.id.substring(0,8).toUpperCase()}</td>
-                                <td style={{color:'#7f8c8d'}}>Kelas</td>
-                                <td>: {studentInfo?.kelasSekolah}</td>
-                            </tr>
                         </tbody>
                     </table>
 
-                    {/* === BAGIAN 1: NARASI DESKRIPTIF UTAMA (Halaman Depan) === */}
                     <div style={{background:'#f4fbf7', border:'1px solid #27ae60', borderRadius:8, padding:20, marginBottom:30}}>
-                        <h3 style={{marginTop:0, color:'#27ae60', borderBottom:'1px dashed #27ae60', paddingBottom:10, fontSize:16}}>
-                            📢 {narrativeTitle}
-                        </h3>
-                        <p style={{textAlign:'justify', lineHeight:1.6, fontSize:14, color:'#2c3e50', marginBottom:0}}>
-                            {narrativeBody}
-                        </p>
+                        <h3 style={{marginTop:0, color:'#27ae60', fontSize:16}}>📢 {narrativeTitle}</h3>
+                        <p style={{textAlign:'justify', fontSize:14}}>{narrativeBody}</p>
                     </div>
 
-                    {/* GRAFIK GPA & KOMPETENSI (Berdampingan) */}
                     <div style={{display:'flex', gap:20, marginBottom:30, height:220}}>
-                        {/* KIRI: GPA */}
                         <div style={{flex:1, border:'1px solid #eee', borderRadius:8, padding:10}}>
-                            <h4 style={{marginTop:0, fontSize:13, textAlign:'center', color:'#555'}}>TREN AKADEMIK (GPA)</h4>
+                            <h4 style={{marginTop:0, fontSize:13, textAlign:'center'}}>TREN AKADEMIK (GPA)</h4>
                             <ResponsiveContainer width="100%" height="85%">
                                 <LineChart data={gpaHistory}>
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="name" fontSize={10}/>
                                     <YAxis domain={[0, 100]} fontSize={10}/>
-                                    <Line type="monotone" dataKey="GPA" stroke="#2c3e50" strokeWidth={3} dot={{r:4}} />
+                                    <Line type="monotone" dataKey="GPA" stroke="#2c3e50" strokeWidth={3} />
                                 </LineChart>
                             </ResponsiveContainer>
                         </div>
-                        {/* KANAN: RADAR */}
                         <div style={{flex:1, border:'1px solid #eee', borderRadius:8, padding:10}}>
-                            <h4 style={{marginTop:0, fontSize:13, textAlign:'center', color:'#555'}}>PETA KOMPETENSI</h4>
+                            <h4 style={{marginTop:0, fontSize:13, textAlign:'center'}}>PETA KOMPETENSI</h4>
                             <ResponsiveContainer width="100%" height="85%">
                                 <RadarChart outerRadius="70%" data={radarData}>
                                     <PolarGrid />
                                     <PolarAngleAxis dataKey="subject" fontSize={9} />
-                                    <PolarRadiusAxis angle={30} domain={[0, 5]} fontSize={8}/>
                                     <Radar name="Siswa" dataKey="A" stroke="#e67e22" fill="#e67e22" fillOpacity={0.6} />
                                 </RadarChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
 
-                    {/* BAGIAN 2: RINCIAN MAPEL (TABEL BERSIH) */}
-                    <h3 style={{borderLeft:'5px solid #3498db', paddingLeft:10, color:'#2c3e50', fontSize:16, marginTop:40}}>
-                        📚 Rincian Nilai Mata Pelajaran
-                    </h3>
+                    <h3 style={{borderLeft:'5px solid #3498db', paddingLeft:10, color:'#2c3e50', fontSize:16}}>📚 Rincian Nilai</h3>
                     <table style={{width:'100%', borderCollapse:'collapse', fontSize:12, marginTop:15}}>
                         <thead>
                             <tr style={{background:'#2c3e50', color:'white'}}>
-                                <th style={{padding:'8px 12px', textAlign:'left', borderRadius:'5px 0 0 0'}}>Mata Pelajaran</th>
-                                <th style={{padding:'8px 12px', textAlign:'left'}}>Topik Pembelajaran</th>
-                                <th style={{padding:'8px 12px', textAlign:'center'}}>Nilai (0-100)</th>
-                                <th style={{padding:'8px 12px', textAlign:'center', borderRadius:'0 5px 0 0'}}>Predikat</th>
+                                <th style={{padding:8, textAlign:'left'}}>Mata Pelajaran</th>
+                                <th style={{padding:8, textAlign:'left'}}>Topik</th>
+                                <th style={{padding:8, textAlign:'center'}}>Nilai</th>
                             </tr>
                         </thead>
                         <tbody>
                             {reportData.map((item, idx) => (
                                 <tr key={idx} style={{borderBottom:'1px solid #eee', background: idx%2===0?'white':'#f9f9f9'}}>
-                                    <td style={{padding:'10px 12px', fontWeight:'bold', color:'#2980b9'}}>{item.mapel}</td>
-                                    <td style={{padding:'10px 12px'}}>{item.topik}</td>
-                                    <td style={{padding:'10px 12px', textAlign:'center', fontWeight:'bold', fontSize:14}}>
-                                        {item.nilai}
-                                    </td>
-                                    <td style={{padding:'10px 12px', textAlign:'center'}}>
-                                        <span style={{
-                                            background: item.nilai >= 80 ? '#27ae60' : item.nilai >= 70 ? '#f1c40f' : '#e74c3c',
-                                            color:'white', padding:'3px 8px', borderRadius:10, fontSize:10
-                                        }}>
-                                            {item.nilai >= 90 ? 'Sempurna' : item.nilai >= 80 ? 'Mahir' : item.nilai >= 70 ? 'Cukup' : 'Remedial'}
-                                        </span>
-                                    </td>
+                                    <td style={{padding:10, fontWeight:'bold'}}>{item.mapel}</td>
+                                    <td style={{padding:10}}>{item.topik}</td>
+                                    <td style={{padding:10, textAlign:'center', fontWeight:'bold'}}>{item.nilai}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-
-                    {/* FOOTER TTD */}
-                    <div style={{display:'flex', justifyContent:'space-between', marginTop:50}}>
-                        <div style={{textAlign:'center', width:200}}>
-                            <p style={{marginBottom:60, fontSize:12}}>Orang Tua / Wali</p>
-                            <div style={{borderBottom:'1px solid #ccc', width:'100%'}}></div>
-                        </div>
-                        <div style={{textAlign:'center', width:200}}>
-                            <p style={{marginBottom:60, fontSize:12}}>Bimbel Gemilang</p>
-                            <div style={{borderBottom:'1px solid #ccc', width:'100%'}}>Admin Akademik</div>
-                        </div>
-                    </div>
-
                 </div>
             )}
         </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import Sidebar from '../../../components/Sidebar';
+// PERBAIKAN: Mengarahkan ke SidebarAdmin agar sinkron dengan sistem baru
+import SidebarAdmin from '../../../components/SidebarAdmin';
 import FinanceDashboard from './FinanceDashboard';
 import IncomeEntry from './IncomeEntry';
 import ExpenseEntry from './ExpenseEntry';
@@ -22,7 +23,8 @@ const FinanceLayout = () => {
 
   return (
     <div style={{ display: 'flex' }}>
-      <Sidebar />
+      {/* PERBAIKAN: Menggunakan SidebarAdmin */}
+      <SidebarAdmin />
       <div style={{ marginLeft: 250, padding: 30, width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily: 'sans-serif' }}>
         
         {/* HEADER MENU NAVIGASI KEUANGAN */}

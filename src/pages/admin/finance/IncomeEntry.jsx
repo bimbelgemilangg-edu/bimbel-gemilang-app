@@ -18,20 +18,22 @@ const IncomeEntry = () => {
     
     setLoading(true);
     try {
+      // PERBAIKAN KRITIS: Mengubah form.form menjadi form.amount agar nominal terbaca
       await addDoc(collection(db, "finance_logs"), {
-        type: 'Pemasukan', // INI KUNCINYA (Supaya nambah saldo)
+        type: 'Pemasukan', // Pemicu penambah saldo di Dashboard
         date: form.date,
         category: form.category,
-        amount: parseInt(form.form),
+        amount: parseInt(form.amount), // FIXED: Sebelumnya form.form
         method: form.method,
         note: form.note,
         createdAt: new Date().toISOString()
       });
 
       alert("✅ Pemasukan Berhasil Dicatat!");
-      setForm({ ...form, amount: '', note: '' }); // Reset form
+      // Reset input nominal dan catatan saja
+      setForm({ ...form, amount: '', note: '' }); 
     } catch (error) {
-      console.error(error);
+      console.error("Error saving income:", error);
       alert("Gagal menyimpan data.");
     } finally {
       setLoading(false);
@@ -46,23 +48,23 @@ const IncomeEntry = () => {
         <form onSubmit={handleSubmit}>
             <div style={{marginBottom:15}}>
                 <label style={{fontWeight:'bold', display:'block'}}>Tanggal</label>
-                <input type="date" value={form.date} onChange={e=>setForm({...form, date:e.target.value})} style={styles.input} />
+                <input type="date" value={form.date} onChange={e=>setForm({...form, date:e.target.value})} style={styles.input} required />
             </div>
 
             <div style={{marginBottom:15}}>
                 <label style={{fontWeight:'bold', display:'block'}}>Kategori</label>
                 <select value={form.category} onChange={e=>setForm({...form, category:e.target.value})} style={styles.input}>
-                    <option>Penjualan Modul/Buku</option>
-                    <option>Penjualan Seragam</option>
-                    <option>Kantin/Snack</option>
-                    <option>Hibah/Donasi</option>
-                    <option>Lainnya</option>
+                    <option value="Penjualan Modul/Buku">Penjualan Modul/Buku</option>
+                    <option value="Penjualan Seragam">Penjualan Seragam</option>
+                    <option value="Kantin/Snack">Kantin/Snack</option>
+                    <option value="Hibah/Donasi">Hibah/Donasi</option>
+                    <option value="Lainnya">Lainnya</option>
                 </select>
             </div>
 
             <div style={{marginBottom:15}}>
                 <label style={{fontWeight:'bold', display:'block'}}>Nominal (Rp)</label>
-                <input type="number" placeholder="Contoh: 50000" value={form.amount} onChange={e=>setForm({...form, amount:e.target.value})} style={styles.input} />
+                <input type="number" placeholder="Contoh: 50000" value={form.amount} onChange={e=>setForm({...form, amount:e.target.value})} style={styles.input} required />
             </div>
 
             <div style={{marginBottom:15}}>

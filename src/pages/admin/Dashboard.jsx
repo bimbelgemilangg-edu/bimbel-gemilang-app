@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../../components/Sidebar';
+// PERBAIKAN: Mengarahkan ke SidebarAdmin agar sinkron dengan sistem baru
+import SidebarAdmin from '../../components/SidebarAdmin';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
 
@@ -64,15 +65,12 @@ const Dashboard = () => {
         const jadwalList = snapJadwal.docs.map(d => ({id: d.id, ...d.data()}));
 
         // FIX 2: Filter Jadwal (Upcoming Only)
-        // Ambil jam sekarang
         const currentHours = String(nowObj.getHours()).padStart(2, '0');
         const currentMinutes = String(nowObj.getMinutes()).padStart(2, '0');
-        const currentTime = `${currentHours}:${currentMinutes}`; // Contoh: "14:30"
+        const currentTime = `${currentHours}:${currentMinutes}`; 
 
-        // Hanya tampilkan jika Jam Selesai > Jam Sekarang
         const activeSchedules = jadwalList.filter(s => s.end > currentTime);
         
-        // Sortir dari pagi ke sore
         activeSchedules.sort((a,b) => a.start.localeCompare(b.start));
         setTodaySchedules(activeSchedules);
 
@@ -106,25 +104,19 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchData();
-    // Refresh otomatis setiap 1 menit agar kelas yang selesai langsung hilang
     const intervalId = setInterval(fetchData, 60000); 
     return () => clearInterval(intervalId);
   }, []);
 
-  // FUNGSI BEL (FIX SOUND BUZZER/WRONG ANSWER)
+  // FUNGSI BEL
   const handleRingBell = () => {
-    // URL Sound Effect Buzzer / Wrong Answer
     const audio = new Audio('https://www.myinstants.com/media/sounds/wrong-answer-sound-effect.mp3');
-    
     audio.play()
-      .then(() => {
-         console.log("Bel berbunyi");
-      })
+      .then(() => { console.log("Bel berbunyi"); })
       .catch(error => {
          console.error("Audio error:", error);
          alert("⚠️ Browser memblokir suara otomatis. Klik dokumen/layar sekali, lalu coba lagi.");
       });
-
     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
   };
 
@@ -157,7 +149,8 @@ const Dashboard = () => {
 
   return (
     <div style={{ display: 'flex', backgroundColor: '#f4f7f6', minHeight: '100vh' }}>
-      <Sidebar />
+      {/* PERBAIKAN: Menggunakan SidebarAdmin */}
+      <SidebarAdmin />
       
       <div style={styles.mainContent}>
         {/* HEADER */}
@@ -195,7 +188,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* 2. LIVE MONITORING GURU (AKTIVITAS REALTIME) */}
+        {/* 2. LIVE MONITORING GURU */}
         <div style={{...styles.cardContent, marginBottom: 20}}>
             <div style={styles.sectionHeader}>
                 <h3 style={{margin:0, color:'#2c3e50', display:'flex', alignItems:'center', gap:10}}>
@@ -240,9 +233,8 @@ const Dashboard = () => {
             )}
         </div>
 
-        {/* 3. GRID BAWAH: JADWAL & TAGIHAN */}
+        {/* 3. GRID BAWAH */}
         <div style={styles.contentGrid}>
-            {/* KIRI: JADWAL HARI INI (FILTERED UPCOMING) */}
             <div style={{flex: 2}}>
                 <div style={{...styles.cardContent, minHeight: 400}}>
                     <div style={styles.sectionHeader}>
@@ -271,9 +263,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* KANAN: TAGIHAN & TO-DO */}
             <div style={{flex: 1, display:'flex', flexDirection:'column', gap:20}}>
-                {/* TAGIHAN WA */}
                 <div style={styles.cardWarning}>
                     <h4 style={{marginTop:0, color:'#c0392b'}}>⚠️ Tagihan Prioritas</h4>
                     <div style={{maxHeight:200, overflowY:'auto'}}>
@@ -290,7 +280,6 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* TO-DO LIST */}
                 <div style={styles.cardTodo}>
                     <h4 style={{marginTop:0, color:'#2c3e50'}}>📝 Catatan Admin</h4>
                     <form onSubmit={addTodo} style={{display:'flex', gap:5, marginBottom:10}}>
@@ -315,28 +304,24 @@ const Dashboard = () => {
   );
 };
 
-// STYLES
+// STYLES (Sama dengan kode asli)
 const styles = {
   mainContent: { marginLeft: '250px', padding: '30px', width: '100%', fontFamily:'Segoe UI, sans-serif' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' },
   clockBox: { background:'white', padding:'10px 20px', borderRadius:20, fontWeight:'bold', color:'#3498db', boxShadow:'0 2px 5px rgba(0,0,0,0.05)' },
   btnBell: { background: '#e74c3c', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '25px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(231, 76, 60, 0.3)', display: 'flex', alignItems: 'center', gap: '5px' },
-  
   gridStats: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '30px' },
   cardStat: { background: 'white', padding: '20px', borderRadius: '12px', display:'flex', alignItems:'center', gap:15, boxShadow:'0 2px 5px rgba(0,0,0,0.03)' },
   iconBox: { width:50, height:50, borderRadius:'50%', background:'#eaf2f8', color:'#3498db', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 },
   statNumber: { margin:0, fontSize:24, color:'#2c3e50' },
   statLabel: { color:'#7f8c8d', fontSize:12 },
-
   contentGrid: { display: 'flex', gap: '20px', flexDirection: 'row', alignItems: 'flex-start' },
   sectionHeader: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:15, paddingBottom:10, borderBottom:'1px solid #f0f0f0' },
   cardContent: { background: 'white', padding: '20px', borderRadius: '12px', boxShadow:'0 2px 5px rgba(0,0,0,0.03)' },
   scheduleItem: { display:'flex', alignItems:'center', padding:'12px 0', borderBottom:'1px solid #f4f6f7' },
-
   cardWarning: { background: '#fff5f5', padding: '20px', borderRadius: '12px', border:'1px solid #fadbd8' },
   billItem: { display:'flex', justifyContent:'space-between', alignItems:'center', background:'white', padding:10, borderRadius:8, marginBottom:8, boxShadow:'0 1px 2px rgba(0,0,0,0.05)' },
   btnWa: { background:'#27ae60', color:'white', border:'none', borderRadius:5, padding:'5px 10px', cursor:'pointer', fontWeight:'bold', fontSize:11 },
-
   cardTodo: { background: 'white', padding: '20px', borderRadius: '12px', boxShadow:'0 2px 5px rgba(0,0,0,0.03)' },
   inputTodo: { flex:1, padding:8, borderRadius:5, border:'1px solid #ddd' },
   btnAdd: { padding:'8px 15px', background:'#2c3e50', color:'white', border:'none', borderRadius:5, cursor:'pointer' },
