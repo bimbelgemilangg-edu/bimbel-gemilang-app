@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { db } from '../../firebase'; 
+import { db } from '../../../firebase'; // <--- PERBAIKAN: Mundur 3 level
 import { collection, getDocs, addDoc, query, where } from "firebase/firestore";
-import SidebarGuru from '../../components/SidebarGuru';
+import SidebarGuru from '../../../components/SidebarGuru'; // <--- PERBAIKAN: Mundur 3 level
 
 const TeacherInputGrade = () => {
   const location = useLocation();
