@@ -5,32 +5,39 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 
 const LoginSiswa = () => {
   const navigate = useNavigate();
-  const [identifier, setIdentifier] = useState(""); 
+  const [username, setUsername] = useState(""); 
+  const [password, setPassword] = useState(""); // TAMBAHAN: State Password
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!identifier) return alert("Masukkan Nama atau ID Siswa!");
+    if (!username || !password) return alert("Masukkan Username dan Password!");
     
     setLoading(true);
     try {
-      const q = query(collection(db, "students"), where("nama", "==", identifier));
+      // Mencari siswa berdasarkan USERNAME
+      const q = query(collection(db, "students"), where("username", "==", username.toLowerCase()));
       const snap = await getDocs(q);
 
       if (!snap.empty) {
         const studentDoc = snap.docs[0];
         const studentData = studentDoc.data();
 
-        // SIMPAN DATA KE STORAGE (DIPERBAIKI)
-        localStorage.setItem("isSiswaLoggedIn", "true");
-        localStorage.setItem("role", "siswa"); // <--- TAMBAHAN PENTING
-        localStorage.setItem("studentId", studentDoc.id);
-        localStorage.setItem("studentName", studentData.nama);
+        // VERIFIKASI PASSWORD
+        if (studentData.password === password) {
+            // SIMPAN DATA KE STORAGE
+            localStorage.setItem("isSiswaLoggedIn", "true");
+            localStorage.setItem("role", "siswa");
+            localStorage.setItem("studentId", studentDoc.id);
+            localStorage.setItem("studentName", studentData.nama);
 
-        alert(`Selamat Datang, ${studentData.nama}!`);
-        navigate("/siswa/dashboard");
+            alert(`Selamat Datang, ${studentData.nama}!`);
+            navigate("/siswa/dashboard");
+        } else {
+            alert("⛔ Password salah! Silakan periksa kembali.");
+        }
       } else {
-        alert("⛔ Data Siswa tidak ditemukan. Pastikan nama sesuai (Perhatikan Huruf Kapital).");
+        alert("⛔ Username tidak ditemukan. Pastikan format benar (contoh: budi123@gemilang.com)");
       }
     } catch (error) {
       console.error(error);
@@ -43,24 +50,37 @@ const LoginSiswa = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={{ color: '#2c3e50', marginBottom: 10 }}>Portal Siswa</h2>
-        <p style={{ color: '#7f8c8d', fontSize: 14, marginBottom: 25 }}>Silakan masukkan Nama Lengkap Anda untuk mengakses Rapor & Jadwal.</p>
+        <h2 style={{ color: '#2c3e50', marginBottom: 5 }}>Portal Siswa</h2>
+        <p style={{ color: '#7f8c8d', fontSize: 13, marginBottom: 25 }}>
+            Gunakan akun yang diberikan admin saat pendaftaran.
+        </p>
         
         <form onSubmit={handleLogin}>
-          <div style={{ textAlign: 'left', marginBottom: 20 }}>
-            <label style={styles.label}>👤 Nama Lengkap Siswa</label>
+          <div style={{ textAlign: 'left', marginBottom: 15 }}>
+            <label style={styles.label}>📧 Username / Email Siswa</label>
             <input 
               type="text" 
-              placeholder="Contoh: Budi Santoso"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
+              placeholder="nama123@gemilang.com"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               style={styles.input}
               autoFocus
             />
           </div>
+
+          <div style={{ textAlign: 'left', marginBottom: 25 }}>
+            <label style={styles.label}>🔑 Password</label>
+            <input 
+              type="password" 
+              placeholder="Masukkan password Anda"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={styles.input}
+            />
+          </div>
           
           <button type="submit" disabled={loading} style={styles.btnPrimary}>
-            {loading ? "MENCARI DATA..." : "MASUK KE PORTAL"}
+            {loading ? "MENGECEK AKUN..." : "MASUK KE PORTAL"}
           </button>
 
           <button type="button" onClick={() => navigate('/')} style={styles.btnBack}>
@@ -73,11 +93,11 @@ const LoginSiswa = () => {
 };
 
 const styles = {
-  container: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f0f2f5', fontFamily: 'sans-serif' },
+  container: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f0f2f5', fontFamily: 'Segoe UI, sans-serif' },
   card: { background: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', width: '100%', maxWidth: '380px', textAlign: 'center' },
-  label: { display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '14px' },
-  input: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '16px', boxSizing: 'border-box' },
-  btnPrimary: { width: '100%', padding: '12px', background: '#27ae60', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' },
+  label: { display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '13px', color: '#34495e' },
+  input: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '15px', boxSizing: 'border-box', background: '#fff', color: '#000' },
+  btnPrimary: { width: '100%', padding: '14px', background: '#27ae60', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(39, 174, 96, 0.2)' },
   btnBack: { background: 'none', border: 'none', color: '#7f8c8d', marginTop: '20px', cursor: 'pointer', fontSize: '14px' }
 };
 
