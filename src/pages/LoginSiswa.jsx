@@ -12,7 +12,6 @@ const LoginSiswa = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     
-    // 1. Ambil input dan bersihkan dari spasi tak sengaja
     const inputUsername = username.trim();
     const inputPassword = password.trim();
 
@@ -22,27 +21,23 @@ const LoginSiswa = () => {
     
     setLoading(true);
     try {
-      // 2. Ambil semua data siswa (untuk pencarian abaikan huruf kapital)
+      // Ambil semua data siswa untuk pencarian abaikan huruf kapital (Case Insensitive)
       const querySnapshot = await getDocs(collection(db, "students"));
       let studentData = null;
       let studentId = null;
 
-      // 3. Lakukan pencarian manual (Case Insensitive)
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        // Pastikan field 'username' ada di Firestore
+        // Cek username dengan mengabaikan huruf besar/kecil
         if (data.username && data.username.toLowerCase() === inputUsername.toLowerCase()) {
           studentData = data;
           studentId = doc.id;
         }
       });
 
-      // 4. Evaluasi Hasil Pencarian
       if (studentData) {
-        // 5. VERIFIKASI PASSWORD (Konversi ke String untuk keamanan)
+        // Verifikasi Password (diubah ke string agar aman)
         if (String(studentData.password) === inputPassword) {
-            
-            // SIMPAN SESSI KE LOCALSTORAGE
             localStorage.setItem("isSiswaLoggedIn", "true");
             localStorage.setItem("role", "siswa");
             localStorage.setItem("studentId", studentId);
@@ -54,8 +49,7 @@ const LoginSiswa = () => {
             alert("⛔ Password salah! Silakan coba lagi.");
         }
       } else {
-        // JIKA USERNAME TIDAK DITEMUKAN (Setelah abaikan kapital)
-        alert("⛔ Username tidak ditemukan. Pastikan Admin sudah mengatur Username di menu Edit Student dengan benar.");
+        alert("⛔ Username tidak ditemukan. Pastikan data sudah benar.");
       }
     } catch (error) {
       console.error("Login Error:", error);
@@ -78,7 +72,7 @@ const LoginSiswa = () => {
             <label style={styles.label}>📧 Username / Email</label>
             <input 
               type="text" 
-              placeholder="contoh: FafianZiantara10@gemilang.com"
+              placeholder="Masukkan Username Anda"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               style={styles.input}
@@ -90,7 +84,7 @@ const LoginSiswa = () => {
             <label style={styles.label}>🔑 Password</label>
             <input 
               type="password" 
-              placeholder="Masukkan password Anda"
+              placeholder="Masukkan Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               style={styles.input}
@@ -114,21 +108,20 @@ const LoginSiswa = () => {
   );
 };
 
-// --- STYLES (Sedikit disesuaikan agar mirip gambar Anda) ---
 const styles = {
   container: { 
     display: 'flex', 
     justifyContent: 'center', 
     alignItems: 'center', 
     height: '100vh', 
-    background: '#f0f2f5', // Warna background abu-abu muda seperti di gambar
+    background: '#f0f2f5', 
     fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
   },
   card: { 
     background: 'white', 
     padding: '40px', 
     borderRadius: '16px', 
-    boxShadow: '0 10px 25px rgba(0,0,0,0.05)', // Shadow lembut
+    boxShadow: '0 10px 25px rgba(0,0,0,0.05)', 
     width: '100%', 
     maxWidth: '420px', 
     textAlign: 'center',
@@ -140,7 +133,7 @@ const styles = {
     width: '100%', 
     padding: '12px 15px', 
     borderRadius: '8px', 
-    border: '1px solid #ddd', // Border tipis seperti di gambar
+    border: '1px solid #ddd', 
     fontSize: '16px', 
     boxSizing: 'border-box', 
     outline: 'none',
@@ -150,7 +143,7 @@ const styles = {
   btnPrimary: { 
     width: '100%', 
     padding: '14px', 
-    background: '#27ae60', // Warna hijau tombol
+    background: '#27ae60', 
     color: 'white', 
     border: 'none', 
     borderRadius: '8px', 
@@ -158,7 +151,6 @@ const styles = {
     fontWeight: 'bold', 
     cursor: 'pointer',
     boxShadow: '0 4px 6px rgba(39, 174, 96, 0.1)',
-    transition: 'background 0.3s'
   },
   btnBack: { 
     background: 'none', 
@@ -167,7 +159,6 @@ const styles = {
     marginTop: '25px', 
     cursor: 'pointer', 
     fontSize: '14px',
-    textDecoration: 'none'
   },
   footerNote: { marginTop: '30px', color: '#bdc3c7', fontSize: '12px' }
 };
