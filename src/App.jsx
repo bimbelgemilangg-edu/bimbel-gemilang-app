@@ -31,6 +31,8 @@ import TeacherManualInput from './pages/teacher/TeacherManualInput';
 import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade'; 
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager'; 
 import TeacherProfile from './pages/teacher/TeacherProfile'; 
+// --- TAMBAHAN IMPORT UNTUK MODUL ---
+import ModulManager from './pages/teacher/modul/ModulManager'; 
 
 // === IMPORT SISWA & ORTU ===
 import StudentDashboard from './pages/student/StudentDashboard';
@@ -38,36 +40,28 @@ import StudentSchedule from './pages/student/StudentSchedule';
 import StudentFinanceSiswa from './pages/student/StudentFinance';
 import StudentGrades from './pages/student/StudentGrades';
 import StudentAttendanceSiswa from './pages/student/StudentAttendance';
+// --- TAMBAHAN IMPORT ELEANING SISWA ---
+import StudentElearning from './pages/student/StudentElearning';
 
 // --- KOMPONEN PROTEKSI RUTE ---
-
-// Proteksi Admin
 const AdminRoute = ({ children }) => {
   const isAuth = localStorage.getItem('isLoggedIn') === 'true';
   const role = localStorage.getItem('role');
-  if (!isAuth || role !== 'admin') {
-    return <Navigate to="/" replace />;
-  }
+  if (!isAuth || role !== 'admin') return <Navigate to="/" replace />;
   return children;
 };
 
-// Proteksi Guru
 const GuruRoute = ({ children }) => {
   const isAuth = localStorage.getItem('isGuruLoggedIn') === 'true';
   const role = localStorage.getItem('role');
-  if (!isAuth || role !== 'guru') {
-    return <Navigate to="/login-guru" replace />;
-  }
+  if (!isAuth || role !== 'guru') return <Navigate to="/login-guru" replace />;
   return children;
 };
 
-// Proteksi Siswa
 const SiswaRoute = ({ children }) => {
   const isAuth = localStorage.getItem('isSiswaLoggedIn') === 'true';
   const role = localStorage.getItem('role');
-  if (!isAuth || role !== 'siswa') {
-    return <Navigate to="/login-siswa" replace />;
-  }
+  if (!isAuth || role !== 'siswa') return <Navigate to="/login-siswa" replace />;
   return children;
 };
 
@@ -82,23 +76,15 @@ function App() {
 
         {/* === AREA ADMIN (Protected) === */}
         <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
-        
-        {/* Siswa & Akademik Admin */}
         <Route path="/admin/students" element={<AdminRoute><StudentList /></AdminRoute>} />
         <Route path="/admin/students/add" element={<AdminRoute><AddStudent /></AdminRoute>} />
         <Route path="/admin/students/edit/:id" element={<AdminRoute><EditStudent /></AdminRoute>} />
         <Route path="/admin/students/attendance/:id" element={<AdminRoute><StudentAttendance /></AdminRoute>} />
         <Route path="/admin/students/finance/:id" element={<AdminRoute><StudentFinance /></AdminRoute>} />
-        
-        {/* Guru & Penggajian Admin */}
         <Route path="/admin/teachers" element={<AdminRoute><TeacherList /></AdminRoute>} />
         <Route path="/admin/teachers/salaries" element={<AdminRoute><TeacherSalaries /></AdminRoute>} />
-        
-        {/* Modul Konten Portal Siswa */}
         <Route path="/admin/portal" element={<AdminRoute><PortalSiswaHome /></AdminRoute>} />
         <Route path="/admin/portal/poster" element={<AdminRoute><ManagePoster /></AdminRoute>} />
-
-        {/* Modul Lain Admin */}
         <Route path="/admin/finance" element={<AdminRoute><FinanceLayout /></AdminRoute>} />
         <Route path="/admin/schedule" element={<AdminRoute><SchedulePage /></AdminRoute>} />
         <Route path="/admin/grades" element={<AdminRoute><GradeReport /></AdminRoute>} />
@@ -106,6 +92,8 @@ function App() {
 
         {/* === AREA GURU (Protected) === */}
         <Route path="/guru/dashboard" element={<GuruRoute><TeacherDashboard /></GuruRoute>} />
+        {/* PENAMBAHAN ROUTE MODUL GURU */}
+        <Route path="/guru/modul" element={<GuruRoute><TeacherDashboard /></GuruRoute>} />
         <Route path="/guru/profile" element={<GuruRoute><TeacherProfile /></GuruRoute>} />
         <Route path="/guru/grades/input" element={<GuruRoute><TeacherInputGrade /></GuruRoute>} />
         <Route path="/guru/grades/manage" element={<GuruRoute><TeacherGradeManager /></GuruRoute>} />
@@ -114,6 +102,8 @@ function App() {
         
         {/* === AREA SISWA (Protected) === */}
         <Route path="/siswa/dashboard" element={<SiswaRoute><StudentDashboard /></SiswaRoute>} />
+        {/* PENAMBAHAN ROUTE MATERI SISWA */}
+        <Route path="/siswa/materi" element={<SiswaRoute><StudentDashboard /></SiswaRoute>} />
         <Route path="/siswa/jadwal" element={<SiswaRoute><StudentSchedule /></SiswaRoute>} />
         <Route path="/siswa/keuangan" element={<SiswaRoute><StudentFinanceSiswa /></SiswaRoute>} />
         <Route path="/siswa/rapor" element={<SiswaRoute><StudentGrades /></SiswaRoute>} />
@@ -121,7 +111,6 @@ function App() {
 
         {/* === REDIRECTS & FALLBACK === */}
         <Route path="/teacher/*" element={<Navigate to="/guru/dashboard" replace />} />
-        
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
