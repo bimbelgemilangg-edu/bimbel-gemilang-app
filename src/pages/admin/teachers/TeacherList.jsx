@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db, auth } from '../../../firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import SidebarAdmin from '../../../components/SidebarAdmin'; // Update ke SidebarAdmin
+import SidebarAdmin from '../../../components/SidebarAdmin';
 
 const TeacherList = () => {
   const [teachers, setTeachers] = useState([]);
@@ -30,7 +30,6 @@ const TeacherList = () => {
 
   useEffect(() => { fetchTeachers(); }, []);
 
-  // FUNGSI KOMPRESI FOTO (SENSITIF - PERTAHANKAN)
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -53,26 +52,29 @@ const TeacherList = () => {
     }
   };
 
-  // LOGIKA SUBMIT (AUTH & FIRESTORE - SENSITIF - PERTAHANKAN)
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (editingId) {
         const ref = doc(db, "teachers", editingId);
-        await updateDoc(ref, { 
+        const updateData = { 
           nama, mapel, cabang, 
           kpiScore: parseFloat(kpiScore), 
           fotoUrl,
           email 
-        });
+        };
+        
+        // Simpan catatan password baru di Firestore jika admin mengubahnya saat edit
+        if (password) {
+            updateData.passwordNote = password; 
+            alert("⚠️ Password diupdate di database. Beritahu guru untuk login dengan password baru.");
+        }
+
+        await updateDoc(ref, updateData);
         alert("✅ Data Guru Diperbarui!");
       } else {
         if (!password) return alert("Password wajib diisi untuk guru baru!");
-        
-        // 1. Create Auth Account
         await createUserWithEmailAndPassword(auth, email, password);
-        
-        // 2. Save to Firestore
         await addDoc(collection(db, "teachers"), {
           nama, email, mapel, cabang, 
           kpiScore: parseFloat(kpiScore), 
@@ -102,6 +104,7 @@ const TeacherList = () => {
     setCabang(t.cabang || "Pusat");
     setKpiScore(t.kpiScore || 5);
     setFotoUrl(t.fotoUrl || "");
+    setPassword(""); // Kosongkan password saat edit agar tidak membingungkan
     setShowModal(true);
   };
 
@@ -114,23 +117,20 @@ const TeacherList = () => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f7f6' }}>
-      {/* SIDEBAR ADMIN */}
       <SidebarAdmin />
-      
       <div style={{ marginLeft: '250px', padding: '30px', width: 'calc(100% - 250px)', boxSizing: 'border-box' }}>
         <div style={styles.header}>
-          <h2 style={{ color: '#2c3e50', margin: 0 }}>👨‍🏫 Manajemen Guru & KPI</h2>
+          <h2 style={{ color: '#2c3e50', margin: 0 }}>👨‍🏫 Manajemen Guru</h2>
           <button onClick={() => setShowModal(true)} style={styles.btnAdd}>+ Tambah Guru Baru</button>
         </div>
 
-        {loading ? <p>Memuat data guru...</p> : (
+        {loading ? <p>Memuat data...</p> : (
           <div style={{ overflowX: 'auto' }}>
             <table style={styles.table}>
               <thead>
                 <tr style={{ background: '#2c3e50', color: 'white' }}>
                   <th style={styles.th}>Foto</th>
                   <th style={styles.th}>Nama / Email</th>
-                  <th style={styles.th}>Mata Pelajaran</th>
                   <th style={styles.th}>Cabang</th>
                   <th style={styles.th}>Skor KPI</th>
                   <th style={styles.th}>Aksi</th>
@@ -139,12 +139,8 @@ const TeacherList = () => {
               <tbody>
                 {teachers.map(t => (
                   <tr key={t.id} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={styles.td}><img src={t.fotoUrl || "https://via.placeholder.com/40"} style={styles.thumb} /></td>
-                    <td style={styles.td}>
-                      <strong>{t.nama}</strong><br/>
-                      <span style={{ fontSize: 11, color: '#666' }}>{t.email}</span>
-                    </td>
-                    <td style={styles.td}>{t.mapel}</td>
+                    <td style={styles.td}><img src={t.fotoUrl || "https://via.placeholder.com/40"} style={styles.thumb} alt="profil" /></td>
+                    <td style={styles.td}><strong>{t.nama}</strong><br/><span style={{ fontSize: 11, color: '#666' }}>{t.email}</span></td>
                     <td style={styles.td}>{t.cabang}</td>
                     <td style={{ ...styles.td, fontWeight: 'bold', color: '#f39c12' }}>⭐ {t.kpiScore}</td>
                     <td style={styles.td}>
@@ -158,24 +154,19 @@ const TeacherList = () => {
           </div>
         )}
 
-        {/* MODAL INPUT/EDIT */}
         {showModal && (
           <div style={styles.overlay}>
             <div style={styles.modal}>
-              <h3 style={{ marginTop: 0, color: '#2c3e50' }}>{editingId ? "Edit Data Guru" : "Registrasi Guru Baru"}</h3>
+              <h3>{editingId ? "Edit Data Guru" : "Registrasi Guru Baru"}</h3>
               <form onSubmit={handleSubmit}>
                 <label style={styles.label}>Nama Lengkap</label>
                 <input style={styles.input} value={nama} onChange={e=>setNama(e.target.value)} required />
 
-                <label style={styles.label}>Email (Username Login)</label>
+                <label style={styles.label}>Email (Login)</label>
                 <input style={styles.input} type="email" value={email} onChange={e=>setEmail(e.target.value)} required disabled={editingId} />
 
-                {!editingId && (
-                  <>
-                    <label style={styles.label}>Password Login</label>
-                    <input style={styles.input} type="password" value={password} onChange={e=>setPassword(e.target.value)} required />
-                  </>
-                )}
+                <label style={styles.label}>{editingId ? "Ganti Password Baru (Isi jika ingin ganti)" : "Password Login"}</label>
+                <input style={styles.input} type="text" value={password} onChange={e=>setPassword(e.target.value)} required={!editingId} />
 
                 <label style={styles.label}>Mata Pelajaran</label>
                 <input style={styles.input} value={mapel} onChange={e=>setMapel(e.target.value)} />
@@ -184,14 +175,12 @@ const TeacherList = () => {
                   <div style={{ flex: 1 }}>
                     <label style={styles.label}>Cabang</label>
                     <select style={styles.input} value={cabang} onChange={e=>setCabang(e.target.value)}>
-                      <option value="Pusat">Pusat</option>
-                      <option value="Cabang 1">Cabang 1</option>
-                      <option value="Cabang 2">Cabang 2</option>
+                      <option value="Pusat">Pusat</option><option value="Cabang 1">Cabang 1</option><option value="Cabang 2">Cabang 2</option>
                     </select>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={styles.label}>KPI (Skor 1-5)</label>
-                    <input style={styles.input} type="number" step="0.1" min="1" max="5" value={kpiScore} onChange={e=>setKpiScore(e.target.value)} />
+                    <label style={styles.label}>KPI (1-5)</label>
+                    <input style={styles.input} type="number" step="0.1" value={kpiScore} onChange={e=>setKpiScore(e.target.value)} />
                   </div>
                 </div>
 
@@ -200,7 +189,7 @@ const TeacherList = () => {
 
                 <div style={styles.modalAction}>
                   <button type="button" onClick={resetForm} style={styles.btnCancel}>Batal</button>
-                  <button type="submit" style={styles.btnSubmit}>{editingId ? "Update Guru" : "Simpan & Buat Akun"}</button>
+                  <button type="submit" style={styles.btnSubmit}>Simpan</button>
                 </div>
               </form>
             </div>
@@ -221,7 +210,7 @@ const styles = {
   label: { display: 'block', fontSize: 12, fontWeight: 'bold', marginTop: 12, marginBottom: 5, color: '#555' },
   input: { width: '100%', padding: '10px', borderRadius: 8, border: '1px solid #ddd', boxSizing: 'border-box', outline: 'none' },
   overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' },
-  modal: { background: 'white', padding: 35, borderRadius: 20, width: '420px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
+  modal: { background: 'white', padding: 35, borderRadius: 20, width: '420px', maxHeight: '90vh', overflowY: 'auto' },
   modalAction: { display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 25 },
   btnSubmit: { padding: '10px 20px', background: '#2c3e50', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 'bold' },
   btnCancel: { padding: '10px 20px', background: '#eee', color: '#666', border: 'none', borderRadius: 8, cursor: 'pointer' },

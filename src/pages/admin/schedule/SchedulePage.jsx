@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import SidebarAdmin from '../../../components/SidebarAdmin'; // Update ke SidebarAdmin
+import SidebarAdmin from '../../../components/SidebarAdmin'; 
 import { db } from '../../../firebase'; 
-import { collection, getDocs, deleteDoc, doc, getDoc, writeBatch, updateDoc } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, getDoc, writeBatch, updateDoc, setDoc } from "firebase/firestore";
 
 const SchedulePage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  
   const [schedules, setSchedules] = useState([]);
   const [availableTeachers, setAvailableTeachers] = useState([]); 
   const [availableStudents, setAvailableStudents] = useState([]);
@@ -23,13 +22,11 @@ const SchedulePage = () => {
     repeat: "Once"
   };
   const [formData, setFormData] = useState(defaultForm);
-
   const [filterJenjang, setFilterJenjang] = useState("Semua"); 
   const [filterKelas, setFilterKelas] = useState(""); 
 
   const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
 
-  // HELPER TANGGAL SMART (Pertahankan Logika)
   const getSmartDateString = (dateObj) => {
     const year = dateObj.getFullYear();
     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -48,10 +45,25 @@ const SchedulePage = () => {
         const sSnap = await getDocs(collection(db, "students"));
         setAvailableStudents(sSnap.docs.map(d => ({ id: d.id, ...d.data() })));
         
-        const todayStr = getSmartDateString(new Date());
+        // AMBIL DAILY CODE
+        const todayStr = getSmartDateString(selectedDate);
         const cSnap = await getDoc(doc(db, "settings", `daily_code_${todayStr}`));
         setDailyCode(cSnap.exists() ? cSnap.data().code : "⚠️ Belum Diset");
     } catch (e) { console.error("Error fetching:", e); }
+  };
+
+  // FUNGSI BARU: GENERATE DAILY CODE JIKA BELUM ADA
+  const handleGenerateCode = async () => {
+    const todayStr = getSmartDateString(selectedDate);
+    const newCode = `GEM-${Math.floor(1000 + Math.random() * 9000)}`;
+    try {
+      await setDoc(doc(db, "settings", `daily_code_${todayStr}`), {
+        code: newCode,
+        date: todayStr
+      });
+      setDailyCode(newCode);
+      alert("✅ Kode Harian Berhasil Dibuat!");
+    } catch (e) { alert("Gagal set kode."); }
   };
 
   useEffect(() => { fetchData(); }, [selectedDate]);
@@ -60,12 +72,10 @@ const SchedulePage = () => {
       setActivePlanet(planet);
       setFilterJenjang("Semua");
       setFilterKelas("");
-
       if (isEdit && item) {
           setEditId(item.id);
           setFormData({
-              start: item.start,
-              end: item.end,
+              start: item.start, end: item.end,
               program: item.program || "Reguler",
               level: item.level || "SD",
               title: item.title || "",
@@ -93,12 +103,9 @@ const SchedulePage = () => {
     try {
         if (editId) {
             await updateDoc(doc(db, "jadwal_bimbel", editId), {
-                start: formData.start,
-                end: formData.end,
-                program: formData.program,
-                level: formData.level,
-                title: formData.title,
-                booker: cleanTeacherName,
+                start: formData.start, end: formData.end,
+                program: formData.program, level: formData.level,
+                title: formData.title, booker: cleanTeacherName,
                 students: studentsFullData
             });
             alert("✅ Jadwal Berhasil Diupdate!");
@@ -114,12 +121,9 @@ const SchedulePage = () => {
                 batch.set(newRef, {
                     planet: activePlanet,
                     dateStr: curDateStr, 
-                    start: formData.start,
-                    end: formData.end,
-                    program: formData.program,
-                    level: formData.level,
-                    title: formData.title,
-                    booker: cleanTeacherName,
+                    start: formData.start, end: formData.end,
+                    program: formData.program, level: formData.level,
+                    title: formData.title, booker: cleanTeacherName,
                     code: `R-${Math.floor(Math.random()*1000)}`, 
                     students: studentsFullData,
                     isRecurring: formData.repeat === 'Monthly' 
@@ -132,9 +136,7 @@ const SchedulePage = () => {
         setIsModalOpen(false);
         setEditId(null);
         fetchData(); 
-    } catch (error) { 
-        alert("Gagal menyimpan: " + error.message); 
-    }
+    } catch (error) { alert("Gagal menyimpan: " + error.message); }
   };
 
   const handleDelete = async (id) => {
@@ -150,7 +152,6 @@ const SchedulePage = () => {
       const dateObj = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d);
       const dateStr = getSmartDateString(dateObj);
       const isSelected = getSmartDateString(selectedDate) === dateStr;
-      
       days.push(
         <div key={d} onClick={() => setSelectedDate(dateObj)}
           style={{
@@ -158,9 +159,7 @@ const SchedulePage = () => {
              background: isSelected ? '#3498db' : 'white',
              color: isSelected ? 'white' : 'black',
              border: '1px solid #f0f0f0'
-          }}>
-          {d}
-        </div>
+          }}>{d}</div>
       );
     }
     return days;
@@ -177,15 +176,19 @@ const SchedulePage = () => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f7f6' }}>
-      {/* SIDEBAR ADMIN DIPERBAIKI DISINI */}
       <SidebarAdmin />
-
       <div style={{ marginLeft: '250px', padding: '25px', width: '100%', boxSizing: 'border-box' }}>
+        
         <div style={styles.dateHeader}>
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                 <h2 style={{margin:0}}>📅 {selectedDate.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}</h2>
-                <div style={{background:'rgba(255,255,255,0.2)', padding:'8px 18px', borderRadius:20, fontSize:14, fontWeight:'bold'}}>
-                    DAILY CODE: {dailyCode}
+                <div style={{display:'flex', alignItems:'center', gap:15}}>
+                    <div style={{background:'rgba(255,255,255,0.2)', padding:'8px 18px', borderRadius:20, fontSize:14, fontWeight:'bold', border:'1px solid white'}}>
+                        DAILY CODE: {dailyCode}
+                    </div>
+                    {dailyCode.includes("⚠️") && (
+                        <button onClick={handleGenerateCode} style={{padding:'8px 15px', borderRadius:20, border:'none', background:'#f39c12', color:'white', cursor:'pointer', fontWeight:'bold'}}>SET KODE</button>
+                    )}
                 </div>
             </div>
         </div>
@@ -207,7 +210,6 @@ const SchedulePage = () => {
                     const dateStr = getSmartDateString(selectedDate);
                     const items = schedules.filter(s => s.planet === planet && s.dateStr === dateStr);
                     items.sort((a,b) => a.start.localeCompare(b.start));
-
                     return (
                         <div key={planet} style={styles.planetContainer}>
                             <div style={styles.planetHead}>
@@ -237,7 +239,7 @@ const SchedulePage = () => {
             </div>
         </div>
 
-        {/* MODAL (Tetap Sesuai Asli) */}
+        {/* MODAL JADWAL */}
         {isModalOpen && (
           <div style={styles.overlay}>
             <div style={styles.modal}>
@@ -312,33 +314,34 @@ const SchedulePage = () => {
   );
 };
 
+// ... STYLES TETAP SAMA SEPERTI KODE ANDA ...
 const styles = {
-  dateHeader: { background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)', color:'white', padding:'20px 25px', borderRadius:15, marginBottom:25, boxShadow:'0 4px 15px rgba(0,0,0,0.1)' },
-  layoutGrid: { display:'grid', gridTemplateColumns: '320px 1fr', gap: 25 },
-  leftCol: { position:'sticky', top:20, height:'fit-content' },
-  rightCol: { display:'flex', flexDirection:'column', gap:20 },
-  card: { background:'white', padding:20, borderRadius:12, boxShadow:'0 2px 10px rgba(0,0,0,0.05)' },
-  btnNav: { background:'#f5f5f5', border:'none', padding:'6px 12px', borderRadius:6, cursor:'pointer' },
-  planetContainer: { background:'white', borderRadius:12, overflow:'hidden', boxShadow:'0 2px 10px rgba(0,0,0,0.05)', border:'1px solid #eee' },
-  planetHead: { background:'#fcfcfc', padding:'14px 20px', display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid #eee' },
-  btnAdd: { background:'#2ecc71', color:'white', border:'none', padding:'8px 16px', borderRadius:8, cursor:'pointer', fontWeight:'bold', fontSize:12 },
-  itemCard: { background:'#fff', padding:16, marginBottom:12, borderRadius:12, border:'1px solid #f0f0f0', borderLeft:'6px solid #3498db' },
-  badge: { background:'#e3f2fd', color:'#1976d2', padding:'3px 10px', borderRadius:6, fontSize:11, fontWeight:'bold' },
-  actions: { marginTop:12, display:'flex', gap:15, fontSize:12, borderTop:'1px solid #f5f5f5', paddingTop:10 },
-  overlay: { position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.5)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:999, backdropFilter:'blur(4px)' },
-  modal: { background:'white', padding:30, borderRadius:20, width:480, maxHeight:'90vh', overflowY:'auto' },
-  label: { display:'block', marginBottom:6, fontSize:13, fontWeight:'bold', color:'#333' },
-  input: { width:'100%', padding:11, marginBottom:16, border:'1px solid #ddd', borderRadius:10, boxSizing:'border-box' },
-  select: { width:'100%', padding:11, marginBottom:16, border:'1px solid #ddd', borderRadius:10, background:'#fff', boxSizing:'border-box' },
-  row: { display:'flex', gap:15 },
-  studentBox: { background:'#f8f9fa', padding:15, borderRadius:12, border:'1px solid #eee' },
-  filterSelect: { padding:8, borderRadius:8, border:'1px solid #ddd' },
-  filterInput: { flex:1, padding:8, borderRadius:8, border:'1px solid #ddd' },
-  studentList: { height:180, overflowY:'auto', background:'#fff', border:'1px solid #ddd', borderRadius:8, marginTop:8 },
-  studentItem: { display:'flex', alignItems:'center', padding:'10px 15px', borderBottom:'1px solid #f9f9f9', cursor:'pointer', fontSize:13 },
-  selectionCount: { marginTop:10, fontSize:12, color:'#2980b9', fontWeight:'bold' },
-  btnSave: { flex:2, padding:14, background:'#2980b9', color:'white', border:'none', borderRadius:10, cursor:'pointer', fontWeight:'bold' },
-  btnCancel: { flex:1, padding:14, background:'#f5f5f5', color:'#666', border:'none', borderRadius:10, cursor:'pointer', fontWeight:'bold' }
-};
+    dateHeader: { background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)', color:'white', padding:'20px 25px', borderRadius:15, marginBottom:25, boxShadow:'0 4px 15px rgba(0,0,0,0.1)' },
+    layoutGrid: { display:'grid', gridTemplateColumns: '320px 1fr', gap: 25 },
+    leftCol: { position:'sticky', top:20, height:'fit-content' },
+    rightCol: { display:'flex', flexDirection:'column', gap:20 },
+    card: { background:'white', padding:20, borderRadius:12, boxShadow:'0 2px 10px rgba(0,0,0,0.05)' },
+    btnNav: { background:'#f5f5f5', border:'none', padding:'6px 12px', borderRadius:6, cursor:'pointer' },
+    planetContainer: { background:'white', borderRadius:12, overflow:'hidden', boxShadow:'0 2px 10px rgba(0,0,0,0.05)', border:'1px solid #eee' },
+    planetHead: { background:'#fcfcfc', padding:'14px 20px', display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid #eee' },
+    btnAdd: { background:'#2ecc71', color:'white', border:'none', padding:'8px 16px', borderRadius:8, cursor:'pointer', fontWeight:'bold', fontSize:12 },
+    itemCard: { background:'#fff', padding:16, marginBottom:12, borderRadius:12, border:'1px solid #f0f0f0', borderLeft:'6px solid #3498db' },
+    badge: { background:'#e3f2fd', color:'#1976d2', padding:'3px 10px', borderRadius:6, fontSize:11, fontWeight:'bold' },
+    actions: { marginTop:12, display:'flex', gap:15, fontSize:12, borderTop:'1px solid #f5f5f5', paddingTop:10 },
+    overlay: { position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.5)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:999, backdropFilter:'blur(4px)' },
+    modal: { background:'white', padding:30, borderRadius:20, width:480, maxHeight:'90vh', overflowY:'auto' },
+    label: { display:'block', marginBottom:6, fontSize:13, fontWeight:'bold', color:'#333' },
+    input: { width:'100%', padding:11, marginBottom:16, border:'1px solid #ddd', borderRadius:10, boxSizing:'border-box' },
+    select: { width:'100%', padding:11, marginBottom:16, border:'1px solid #ddd', borderRadius:10, background:'#fff', boxSizing:'border-box' },
+    row: { display:'flex', gap:15 },
+    studentBox: { background:'#f8f9fa', padding:15, borderRadius:12, border:'1px solid #eee' },
+    filterSelect: { padding:8, borderRadius:8, border:'1px solid #ddd' },
+    filterInput: { flex:1, padding:8, borderRadius:8, border:'1px solid #ddd' },
+    studentList: { height:180, overflowY:'auto', background:'#fff', border:'1px solid #ddd', borderRadius:8, marginTop:8 },
+    studentItem: { display:'flex', alignItems:'center', padding:'10px 15px', borderBottom:'1px solid #f9f9f9', cursor:'pointer', fontSize:13 },
+    selectionCount: { marginTop:10, fontSize:12, color:'#2980b9', fontWeight:'bold' },
+    btnSave: { flex:2, padding:14, background:'#2980b9', color:'white', border:'none', borderRadius:10, cursor:'pointer', fontWeight:'bold' },
+    btnCancel: { flex:1, padding:14, background:'#f5f5f5', color:'#666', border:'none', borderRadius:10, cursor:'pointer', fontWeight:'bold' }
+  };
 
 export default SchedulePage;

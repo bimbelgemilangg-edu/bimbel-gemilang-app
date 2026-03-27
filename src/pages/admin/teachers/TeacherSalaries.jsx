@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import SidebarAdmin from '../../../components/SidebarAdmin'; // Update ke SidebarAdmin
+import SidebarAdmin from '../../../components/SidebarAdmin'; 
 import { db } from '../../../firebase';
 import { collection, query, getDocs, doc, writeBatch, deleteDoc, getDoc, updateDoc } from "firebase/firestore";
 
@@ -21,14 +21,21 @@ const TeacherSalaries = () => {
     setLoading(true);
     try {
       const settingSnap = await getDoc(doc(db, "settings", "global_config"));
-      const rules = settingSnap.exists() ? settingSnap.data().salaryRules : {};
+      const rules = settingSnap.exists() ? settingSnap.data().salaryRules : {
+          honorSD: 35000, honorSMP: 45000, honorEnglishKids: 40000, honorEnglishJunior: 50000, honorEnglishPro: 60000, honorKelas6: 40000
+      };
       setSalaryRules(rules);
 
       const q = query(collection(db, "teacher_logs"));
       const snap = await getDocs(q);
       const allLogs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-      const filtered = allLogs.filter(log => log.tanggal >= startDate && log.tanggal <= endDate);
+      // PERBAIKAN: Normalisasi string tanggal untuk perbandingan
+      const filtered = allLogs.filter(log => {
+          if (!log.tanggal) return false;
+          const cleanDate = log.tanggal.split(' ')[0]; // Ambil YYYY-MM-DD saja
+          return cleanDate >= startDate && cleanDate <= endDate;
+      });
 
       const guruMap = {};
       filtered.forEach(log => {
@@ -152,33 +159,23 @@ const TeacherSalaries = () => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f7f6' }}>
-      {/* SIDEBAR ADMIN */}
       <SidebarAdmin />
-      
       <div style={{ marginLeft: 250, padding: 30, width: 'calc(100% - 250px)', boxSizing: 'border-box' }}>
-        
-        {/* CSS CETAK PERBAIKAN AGAR TIDAK TERPOTONG */}
         <style>{`
             @media print { 
                 @page { size: A4; margin: 10mm; }
                 body { background: white !important; -webkit-print-color-adjust: exact; }
                 .no-print, nav, aside { display: none !important; }
-                #slip-gaji-area { 
-                    position: absolute; left: 0; top: 0; width: 100%; 
-                    visibility: visible !important; border: none !important; padding: 0 !important;
-                }
+                #slip-gaji-area { position: absolute; left: 0; top: 0; width: 100%; visibility: visible !important; border: none !important; padding: 0 !important; }
                 .print-area { width: 100% !important; margin: 0 !important; box-shadow: none !important; visibility: visible !important;}
-                div { margin-left: 0 !important; } /* Reset margin sidebar saat print */
+                div { margin-left: 0 !important; }
             }
         `}</style>
 
-        {/* HEADER */}
         <div className="no-print" style={{background:'white', padding:20, borderRadius:12, marginBottom:20, boxShadow:'0 2px 10px rgba(0,0,0,0.05)'}}>
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:15}}>
-                <h3 style={{marginTop:0, color:'#2c3e50'}}>⚙️ Rekap Gaji Guru</h3>
-                <button onClick={handlePrint} style={{padding:'10px 22px', background:'#2c3e50', color:'white', border:'none', borderRadius:8, cursor:'pointer', fontWeight:'bold'}}>
-                    🖨️ Cetak Rekap
-                </button>
+                <h3 style={{marginTop:0, color:'#2c3e50'}}>💰 Rekap Gaji Guru</h3>
+                <button onClick={handlePrint} style={{padding:'10px 22px', background:'#2c3e50', color:'white', border:'none', borderRadius:8, cursor:'pointer', fontWeight:'bold'}}>🖨️ Cetak Rekap</button>
             </div>
             <div style={{display:'flex', gap:20, alignItems:'center'}}>
                 <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} style={{padding:'8px 12px', border:'1px solid #ddd', borderRadius:6}} />
@@ -187,12 +184,8 @@ const TeacherSalaries = () => {
             </div>
         </div>
 
-        {/* TABEL REKAP */}
         <div className="print-area" style={{background:'white', padding:25, borderRadius:12, boxShadow:'0 2px 10px rgba(0,0,0,0.05)'}}>
-             <h3 style={{textAlign:'center', borderBottom:'2px solid #333', paddingBottom:15, color:'#2c3e50'}}>
-                 LAPORAN REKAP GAJI GURU
-                 <br/><small style={{fontSize:14, color:'#7f8c8d'}}>{startDate} sampai {endDate}</small>
-             </h3>
+             <h3 style={{textAlign:'center', borderBottom:'2px solid #333', paddingBottom:15, color:'#2c3e50'}}>LAPORAN REKAP GAJI GURU<br/><small style={{fontSize:14, color:'#7f8c8d'}}>{startDate} sampai {endDate}</small></h3>
              <table style={{width:'100%', borderCollapse:'collapse', marginTop:20}}>
                 <thead>
                     <tr style={{background:'#f8f9fa', textAlign:'left', borderBottom:'2px solid #eee'}}>
@@ -216,12 +209,8 @@ const TeacherSalaries = () => {
                                 {g.statusPending > 0 ? <span style={{color:'#e67e22', fontWeight:'bold'}}>⚠️ Pending</span> : <span style={{color:'#27ae60', fontWeight:'bold'}}>✅ Valid</span>}
                             </td>
                             <td className="no-print" style={{padding:15, textAlign:'center'}}>
-                                <button onClick={() => setViewDetail(g)} style={{marginRight:8, background:'#3498db', color:'white', border:'none', padding:'6px 12px', borderRadius:6, cursor:'pointer', fontSize:12, fontWeight:'bold'}}>
-                                    📄 Slip
-                                </button>
-                                <button onClick={()=>handleValidasi(g)} disabled={g.statusPending===0} style={{background: g.statusPending>0?'#27ae60':'#ccc', color:'white', border:'none', padding:'6px 12px', borderRadius:6, cursor:'pointer', fontSize:12, fontWeight:'bold'}}>
-                                    ✓ Valid
-                                </button>
+                                <button onClick={() => setViewDetail(g)} style={{marginRight:8, background:'#3498db', color:'white', border:'none', padding:'6px 12px', borderRadius:6, cursor:'pointer', fontSize:12, fontWeight:'bold'}}>📄 Slip</button>
+                                <button onClick={()=>handleValidasi(g)} disabled={g.statusPending===0} style={{background: g.statusPending>0?'#27ae60':'#ccc', color:'white', border:'none', padding:'6px 12px', borderRadius:6, cursor:'pointer', fontSize:12, fontWeight:'bold'}}>✓ Valid</button>
                             </td>
                         </tr>
                     ))}
@@ -233,33 +222,33 @@ const TeacherSalaries = () => {
         {viewDetail && (
             <div className="no-print-overlay" style={{position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.6)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:1000, backdropFilter:'blur(4px)'}}>
                 <div style={{background:'white', width:'210mm', height:'90vh', overflowY:'auto', padding:'25px', borderRadius:15, position:'relative'}}>
-                    
                     <div className="no-print" style={{display:'flex', justifyContent:'flex-end', gap:10, marginBottom:20, borderBottom:'1px solid #eee', paddingBottom:15}}>
                          <button onClick={handlePrint} style={{padding:'10px 20px', background:'#2c3e50', color:'white', border:'none', borderRadius:8, cursor:'pointer', fontWeight:'bold'}}>🖨️ CETAK SLIP</button>
                          <button onClick={()=>setViewDetail(null)} style={{padding:'10px 20px', background:'#e74c3c', color:'white', border:'none', borderRadius:8, cursor:'pointer', fontWeight:'bold'}}>TUTUP</button>
                     </div>
-
                     <div id="slip-gaji-area" style={{padding:'20px 40px', border:'1px solid #eee', minHeight:'280mm', background:'white'}}>
                         <div style={{textAlign:'center', borderBottom:'4px double #000', paddingBottom:15, marginBottom:25}}>
-                            <h2 style={{margin:0, fontSize:'22pt', fontWeight:'bold', letterSpacing:1}}>BIMBEL GEMILANG</h2>
-                            <p style={{margin:'5px 0 0 0', fontSize:'13pt', color:'#333'}}>SLIP HONOR MENGAJAR GURU</p>
+                            <h2 style={{margin:0, fontSize:'22pt', fontWeight:'bold'}}>BIMBEL GEMILANG</h2>
+                            <p style={{margin:'5px 0 0 0', fontSize:'13pt'}}>SLIP HONOR MENGAJAR GURU</p>
                         </div>
-                        
                         <div style={{display:'flex', justifyContent:'space-between', marginBottom:25, fontSize:'11pt'}}>
                             <div>
                                 <table cellPadding="3">
-                                    <tr><td><b>Nama Guru</b></td><td>: {viewDetail.nama}</td></tr>
-                                    <tr><td><b>Periode</b></td><td>: {startDate} s/d {endDate}</td></tr>
+                                    <tbody>
+                                        <tr><td><b>Nama Guru</b></td><td>: {viewDetail.nama}</td></tr>
+                                        <tr><td><b>Periode</b></td><td>: {startDate} s/d {endDate}</td></tr>
+                                    </tbody>
                                 </table>
                             </div>
                             <div style={{textAlign:'right'}}>
                                 <table cellPadding="3" align="right">
-                                    <tr><td><b>Total Sesi</b></td><td>: {viewDetail.totalSesi}</td></tr>
-                                    <tr><td><b>Total Jam</b></td><td>: {viewDetail.totalJam.toFixed(1)} Jam</td></tr>
+                                    <tbody>
+                                        <tr><td><b>Total Sesi</b></td><td>: {viewDetail.totalSesi}</td></tr>
+                                        <tr><td><b>Total Jam</b></td><td>: {viewDetail.totalJam.toFixed(1)} Jam</td></tr>
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
-
                         <table style={{width:'100%', borderCollapse:'collapse', fontSize:'10.5pt', marginBottom:20}}>
                             <thead>
                                 <tr style={{borderBottom:'2px solid #000', borderTop:'2px solid #000'}}>
@@ -272,16 +261,9 @@ const TeacherSalaries = () => {
                             <tbody>
                                 {viewDetail.rincian.map(item => (
                                     <tr key={item.id} style={{borderBottom:'1px solid #eee'}}>
-                                        <td style={{padding:10, verticalAlign:'top', width:'15%'}}>
-                                            {new Date(item.tanggal).toLocaleDateString('id-ID', {day:'2-digit', month:'short'})}
-                                        </td>
-                                        <td style={{padding:10, verticalAlign:'top'}}>
-                                            <b style={{fontSize:'11pt'}}>{item.program}</b> - {item.level} <br/>
-                                            <span style={{color:'#444', fontStyle:'italic'}}>{item.detail}</span>
-                                        </td>
-                                        <td style={{padding:10, textAlign:'right', verticalAlign:'top', fontWeight:'bold'}}>
-                                            {item.nominal.toLocaleString('id-ID')}
-                                        </td>
+                                        <td style={{padding:10, verticalAlign:'top', width:'15%'}}>{new Date(item.tanggal).toLocaleDateString('id-ID', {day:'2-digit', month:'short'})}</td>
+                                        <td style={{padding:10, verticalAlign:'top'}}><b style={{fontSize:'11pt'}}>{item.program}</b> - {item.level} <br/><span style={{color:'#444', fontStyle:'italic'}}>{item.detail}</span></td>
+                                        <td style={{padding:10, textAlign:'right', verticalAlign:'top', fontWeight:'bold'}}>{item.nominal.toLocaleString('id-ID')}</td>
                                         <td className="no-print" style={{textAlign:'center', verticalAlign:'top'}}>
                                             <div style={{display:'flex', gap:4}}>
                                                 <button onClick={()=>handleEditClick(item)} style={{background:'#f39c12', color:'white', border:'none', borderRadius:4, padding:'4px 6px', cursor:'pointer'}}>✏️</button>
@@ -299,28 +281,15 @@ const TeacherSalaries = () => {
                                 </tr>
                             </tfoot>
                         </table>
-
-                        <div style={{marginTop:60, display:'flex', justifyContent:'space-around', fontSize:'11pt', textAlign:'center'}}>
-                            <div style={{width:200}}>
-                                <p>Penerima,</p>
-                                <br/><br/><br/>
-                                <p style={{borderTop:'1px solid #000', paddingTop:8, fontWeight:'bold'}}>{viewDetail.nama}</p>
-                            </div>
-                            <div style={{width:200}}>
-                                <p>Admin Keuangan,</p>
-                                <br/><br/><br/>
-                                <p style={{borderTop:'1px solid #000', paddingTop:8}}>( ............................ )</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
         )}
 
-        {/* MODAL EDIT DATA (SENSITIF - PERTAHANKAN) */}
+        {/* MODAL EDIT DATA */}
         {editingLog && (
             <div style={{position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.5)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:1100}}>
-                <div style={{background:'white', padding:25, borderRadius:15, width:320, boxShadow:'0 10px 30px rgba(0,0,0,0.3)'}}>
+                <div style={{background:'white', padding:25, borderRadius:15, width:320}}>
                     <h4 style={{marginTop:0, textAlign:'center'}}>Edit Detail Honor</h4>
                     <label style={{display:'block', fontSize:12, fontWeight:'bold', marginBottom:5}}>Program:</label>
                     <input type="text" value={editForm.program} onChange={e=>setEditForm({...editForm, program: e.target.value})} style={{width:'100%', padding:10, marginBottom:15, border:'1px solid #ddd', borderRadius:8, boxSizing:'border-box'}} />
