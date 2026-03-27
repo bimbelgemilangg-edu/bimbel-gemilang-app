@@ -26,13 +26,13 @@ const LoginGuru = () => {
         const doc = querySnapshot.docs[0];
         const teacherData = { id: doc.id, ...doc.data() };
         
-        // 3. SIMPAN KE LOCALSTORAGE (Backup Utama agar tidak Blank/Kepental)
+        // 3. SIMPAN KE LOCALSTORAGE (DIPERBAIKI)
         localStorage.setItem('isGuruLoggedIn', 'true');
+        localStorage.setItem('role', 'guru'); // <--- TAMBAHAN PENTING
         localStorage.setItem('teacherData', JSON.stringify(teacherData));
         localStorage.setItem('guruInfo', JSON.stringify(teacherData));
 
         // 4. NAVIGASI KE DASHBOARD
-        // PENTING: Sertakan state agar dashboard langsung mengenali user tanpa loading lama
         alert(`Selamat Datang, ${teacherData.nama}!`);
         navigate('/guru/dashboard', { state: { teacher: teacherData } });
       } else {
@@ -93,72 +93,13 @@ const LoginGuru = () => {
 };
 
 const styles = {
-  container: { 
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    height: '100vh', 
-    background: 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)', 
-    fontFamily: 'sans-serif' 
-  },
-  card: { 
-    background: 'white', 
-    padding: '40px', 
-    borderRadius: '15px', 
-    boxShadow: '0 10px 25px rgba(0,0,0,0.2)', 
-    textAlign: 'center', 
-    width: '320px' 
-  },
-  logoCircle: { 
-    width: 70, 
-    height: 70, 
-    background: '#eaf2f8', 
-    borderRadius: '50%', 
-    fontSize: 35, 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    margin: '0 auto 15px auto' 
-  },
-  label: { 
-    display: 'block', 
-    fontSize: 12, 
-    fontWeight: 'bold', 
-    color: '#333', 
-    marginBottom: 5,
-    paddingLeft: 2
-  },
-  input: { 
-    width: '100%', 
-    padding: '12px', 
-    border: '1px solid #ddd', 
-    borderRadius: '8px', 
-    boxSizing: 'border-box', 
-    fontSize: 14,
-    outline: 'none'
-  },
-  button: { 
-    width: '100%', 
-    padding: '14px', 
-    background: '#2c3e50', 
-    color: 'white', 
-    border: 'none', 
-    borderRadius: '8px', 
-    cursor: 'pointer', 
-    fontSize: '14px', 
-    fontWeight: 'bold', 
-    marginTop: 10,
-    transition: '0.3s'
-  },
-  btnBack: { 
-    background: 'none', 
-    border: 'none', 
-    color: '#3498db', 
-    cursor: 'pointer', 
-    fontSize: 13, 
-    textDecoration: 'underline', 
-    marginTop: 25 
-  }
+  container: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)', fontFamily: 'sans-serif' },
+  card: { background: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', textAlign: 'center', width: '320px' },
+  logoCircle: { width: 70, height: 70, background: '#eaf2f8', borderRadius: '50%', fontSize: 35, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px auto' },
+  label: { display: 'block', fontSize: 12, fontWeight: 'bold', color: '#333', marginBottom: 5, paddingLeft: 2 },
+  input: { width: '100%', padding: '12px', border: '1px solid #ddd', borderRadius: '8px', boxSizing: 'border-box', fontSize: 14, outline: 'none' },
+  button: { width: '100%', padding: '14px', background: '#2c3e50', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', marginTop: 10, transition: '0.3s' },
+  btnBack: { background: 'none', border: 'none', color: '#3498db', cursor: 'pointer', fontSize: 13, textDecoration: 'underline', marginTop: 25 }
 };
 
 export default LoginGuru;

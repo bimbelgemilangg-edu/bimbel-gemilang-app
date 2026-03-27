@@ -5,7 +5,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 
 const LoginSiswa = () => {
   const navigate = useNavigate();
-  const [identifier, setIdentifier] = useState(""); // Bisa Nama atau ID
+  const [identifier, setIdentifier] = useState(""); 
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
@@ -14,7 +14,6 @@ const LoginSiswa = () => {
     
     setLoading(true);
     try {
-      // Mencari di koleksi 'students' berdasarkan nama
       const q = query(collection(db, "students"), where("nama", "==", identifier));
       const snap = await getDocs(q);
 
@@ -22,8 +21,9 @@ const LoginSiswa = () => {
         const studentDoc = snap.docs[0];
         const studentData = studentDoc.data();
 
-        // SIMPAN DATA KE STORAGE (Agar semua halaman student bisa 'konek')
+        // SIMPAN DATA KE STORAGE (DIPERBAIKI)
         localStorage.setItem("isSiswaLoggedIn", "true");
+        localStorage.setItem("role", "siswa"); // <--- TAMBAHAN PENTING
         localStorage.setItem("studentId", studentDoc.id);
         localStorage.setItem("studentName", studentData.nama);
 
