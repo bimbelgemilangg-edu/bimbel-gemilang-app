@@ -1,46 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { db } from '../../firebase'; 
-import { collection, query, where, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
-import SidebarGuru from '../../components/SidebarGuru';
+import { db } from '../../../firebase'; // <--- FIXED: Menggunakan ../../../
+import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
+import SidebarGuru from '../../../components/SidebarGuru'; // <--- FIXED: Menggunakan ../../../
 
 const TeacherGradeManager = () => {
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [guru] = useState(location.state?.teacher || JSON.parse(localStorage.getItem('teacherData')));
   
-  const [guru] = useState(location.state?.teacher);
-
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({ nilai: 0, topik: "", tanggal: "" });
 
   const fetchGrades = async () => {
     if (!guru) return;
     setLoading(true);
     try {
-        const q = query(collection(db, "grades"), where("teacherId", "==", guru.id));
-        const snap = await getDocs(q);
-        const data = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        
-        data.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
-
-        const enrichedData = data.map((item, index) => {
-            const previousGrades = data.filter((g, i) => g.studentId === item.studentId && i > index);
-            
-            let trend = 'new'; 
-            if (previousGrades.length > 0) {
-                const lastScore = previousGrades[0].nilai;
-                if (item.nilai > lastScore) trend = 'up';
-                else if (item.nilai < lastScore) trend = 'down';
-                else trend = 'stable';
-            }
-            return { ...item, trend };
-        });
-
-        setGrades(enrichedData);
-    } catch (err) { console.error(err); }
-    setLoading(false);
+      const q = query(collection(db, "grades"), where("teacherId", "==", guru.id));
+      const snap = await getDocs(q);
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Urutkan berdasarkan tanggal terbaru
+      data.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+      setGrades(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -48,100 +34,77 @@ const TeacherGradeManager = () => {
     fetchGrades();
   }, [guru, navigate]);
 
-  const handleDelete = async (id, namaSiswa) => {
-    if(window.confirm(`Yakin hapus nilai ${namaSiswa}?`)) {
-        await deleteDoc(doc(db, "grades", id));
-        fetchGrades(); 
-    }
-  };
-
-  const startEdit = (item) => {
-    setEditingId(item.id);
-    const dateStr = item.tanggal ? item.tanggal.split('T')[0] : "";
-    setEditForm({ nilai: item.nilai, topik: item.topik, tanggal: dateStr });
-  };
-
-  const saveEdit = async (id) => {
+  const handleDelete = async (id) => {
+    if (!window.confirm("Hapus nilai ini? Tindakan ini tidak bisa dibatalkan.")) return;
     try {
-        const newDateISO = new Date(editForm.tanggal).toISOString();
-        await updateDoc(doc(db, "grades", id), {
-            nilai: parseInt(editForm.nilai),
-            topik: editForm.topik,
-            tanggal: newDateISO 
-        });
-        setEditingId(null);
-        fetchGrades(); 
-        alert("✅ Berhasil diupdate!");
-    } catch (err) { alert("Gagal update: " + err.message); }
+      await deleteDoc(doc(db, "grades", id));
+      alert("Nilai berhasil dihapus");
+      fetchGrades();
+    } catch (err) {
+      alert("Gagal menghapus");
+    }
   };
 
   return (
     <div style={{ display: 'flex', background: '#f4f7f6', minHeight: '100vh' }}>
       <SidebarGuru />
       <div style={{ marginLeft: '250px', padding: '30px', width: 'calc(100% - 250px)' }}>
-        <div style={styles.headerBox}>
-            <div>
-                <h2 style={{margin:0}}>📊 Kelola Nilai & Analisis Tren</h2>
-                <p style={{margin:0, color:'#7f8c8d'}}>Guru: {guru?.nama}</p>
-            </div>
-            <button onClick={() => navigate('/guru/grades/input', { state: { teacher: guru } })} style={styles.btnInput}>➕ Input Baru</button>
-        </div>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <h2 style={{ margin: 0, color: '#2c3e50' }}>📊 Kelola Nilai Siswa</h2>
+            <button 
+              onClick={() => navigate('/guru/grades/input', { state: { teacher: guru } })}
+              style={styles.btnAdd}
+            >
+              + Input Nilai Baru
+            </button>
+          </div>
 
-        <div style={styles.tableBox}>
-            {loading ? <p>Loading data...</p> : (
-                <table style={styles.table}>
-                    <thead>
-                        <tr style={styles.thr}>
-                            <th style={styles.th}>Tanggal</th>
-                            <th style={styles.th}>Siswa</th>
-                            <th style={styles.th}>Topik Materi</th>
-                            <th style={styles.th}>Nilai</th>
-                            <th style={styles.th}>Tren</th>
-                            <th style={styles.th}>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {grades.map(item => (
-                            <tr key={item.id} style={styles.tr}>
-                                {editingId === item.id ? (
-                                    <>
-                                        <td><input type="date" value={editForm.tanggal} onChange={e=>setEditForm({...editForm, tanggal:e.target.value})} style={styles.inputEdit} /></td>
-                                        <td style={{color:'#999'}}>{item.studentName}</td>
-                                        <td><input type="text" value={editForm.topik} onChange={e=>setEditForm({...editForm, topik:e.target.value})} style={{...styles.inputEdit, width:'90%'}} /></td>
-                                        <td><input type="number" value={editForm.nilai} onChange={e=>setEditForm({...editForm, nilai:e.target.value})} style={{...styles.inputEdit, width:60}} /></td>
-                                        <td>-</td>
-                                        <td>
-                                            <button onClick={()=>saveEdit(item.id)} style={styles.btnSave}>💾 Simpan</button>
-                                            <button onClick={()=>setEditingId(null)} style={styles.btnCancel}>❌</button>
-                                        </td>
-                                    </>
-                                ) : (
-                                    <>
-                                        <td style={{fontSize:12, whiteSpace:'nowrap'}}>
-                                            {new Date(item.tanggal).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'})}
-                                        </td>
-                                        <td style={{fontWeight:'bold'}}>{item.studentName}</td>
-                                        <td style={{fontSize:13, color:'#555'}}>{item.topik}</td>
-                                        <td style={{fontWeight:'bold', fontSize:16, color: item.nilai < 70 ? '#e74c3c' : '#27ae60'}}>
-                                            {item.nilai}
-                                        </td>
-                                        <td>
-                                            {item.trend === 'up' && <span style={{color:'#27ae60', fontWeight:'bold'}}>📈 Naik</span>}
-                                            {item.trend === 'down' && <span style={{color:'#e74c3c', fontWeight:'bold'}}>📉 Turun</span>}
-                                            {item.trend === 'stable' && <span style={{color:'#f39c12'}}>➖ Stabil</span>}
-                                            {item.trend === 'new' && <span style={{color:'#3498db', fontSize:11}}>🆕 Data Awal</span>}
-                                        </td>
-                                        <td style={{whiteSpace:'nowrap'}}>
-                                            <button onClick={()=>startEdit(item)} style={styles.btnEdit} title="Edit Nilai">✏️</button>
-                                            <button onClick={()=>handleDelete(item.id, item.studentName)} style={styles.btnDel} title="Hapus">🗑️</button>
-                                        </td>
-                                    </>
-                                )}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+          <div style={styles.tableCard}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #eee' }}>
+                  <th style={styles.th}>Tanggal</th>
+                  <th style={styles.th}>Nama Siswa</th>
+                  <th style={styles.th}>Materi</th>
+                  <th style={styles.th}>Nilai</th>
+                  <th style={styles.th}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan="5" style={{ textAlign: 'center', padding: 20 }}>Memuat data...</td></tr>
+                ) : grades.length === 0 ? (
+                  <tr><td colSpan="5" style={{ textAlign: 'center', padding: 20 }}>Belum ada data nilai.</td></tr>
+                ) : (
+                  grades.map(g => (
+                    <tr key={g.id} style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={styles.td}>{new Date(g.tanggal).toLocaleDateString('id-ID')}</td>
+                      <td style={styles.td}><strong>{g.studentName}</strong></td>
+                      <td style={styles.td}>{g.topik}</td>
+                      <td style={styles.td}>
+                         <span style={{ 
+                           background: g.nilai >= 75 ? '#e8f5e9' : '#ffebee', 
+                           color: g.nilai >= 75 ? '#2e7d32' : '#c62828',
+                           padding: '4px 8px', borderRadius: 4, fontWeight: 'bold'
+                         }}>
+                           {g.nilai}
+                         </span>
+                      </td>
+                      <td style={styles.td}>
+                        <button 
+                          onClick={() => handleDelete(g.id)}
+                          style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', fontSize: 12 }}
+                        >
+                          🗑️ Hapus
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -149,19 +112,10 @@ const TeacherGradeManager = () => {
 };
 
 const styles = {
-    headerBox: { background:'white', padding:20, borderRadius:10, display:'flex', justifyContent:'space-between', marginBottom:20, boxShadow:'0 2px 5px rgba(0,0,0,0.05)' },
-    btnInput: { padding:'10px 20px', background:'#3498db', color:'white', border:'none', borderRadius:5, fontWeight:'bold', cursor:'pointer' },
-    tableBox: { background:'white', padding:20, borderRadius:10, overflowX:'auto', boxShadow:'0 2px 5px rgba(0,0,0,0.05)' },
-    table: { width:'100%', borderCollapse:'collapse', fontSize:14 },
-    th: { padding:'12px 10px', borderBottom:'2px solid #eee' },
-    thr: { background:'#f8f9fa', textAlign:'left' },
-    tr: { borderBottom:'1px solid #eee' },
-    td: { padding:'12px 10px' },
-    inputEdit: { padding:'5px', borderRadius:4, border:'1px solid #ddd' },
-    btnEdit: { background:'#f39c12', color:'white', border:'none', padding:'6px 10px', borderRadius:5, marginRight:5, cursor:'pointer' },
-    btnDel: { background:'#e74c3c', color:'white', border:'none', padding:'6px 10px', borderRadius:5, cursor:'pointer' },
-    btnSave: { background:'#27ae60', color:'white', border:'none', padding:'6px 12px', borderRadius:5, marginRight:5, cursor:'pointer', fontWeight:'bold' },
-    btnCancel: { background:'#95a5a6', color:'white', border:'none', padding:'6px 10px', borderRadius:5, cursor:'pointer' }
+  btnAdd: { background: '#3498db', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 8, fontWeight: 'bold', cursor: 'pointer' },
+  tableCard: { background: 'white', borderRadius: 10, boxShadow: '0 2px 10px rgba(0,0,0,0.05)', overflow: 'hidden' },
+  th: { padding: 15, textAlign: 'left', fontSize: 14, color: '#7f8c8d' },
+  td: { padding: 15, fontSize: 14 }
 };
 
 export default TeacherGradeManager;
