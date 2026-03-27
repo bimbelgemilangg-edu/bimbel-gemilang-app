@@ -12,12 +12,12 @@ const SidebarAdmin = () => {
     }
   };
 
-  // DAFTAR MENU LENGKAP (Telah disinkronkan dengan App.jsx)
   const menuItems = [
     { name: 'Dashboard', path: '/admin', icon: '🏠' },
     { name: 'Kelola Siswa', path: '/admin/students', icon: '👥' },
     { name: 'Kelola Guru', path: '/admin/teachers', icon: '👨‍🏫' }, 
-    { name: 'Gaji Guru', path: '/admin/teachers/salaries', icon: '💰' }, // Menu Gaji Baru
+    { name: 'Portal Siswa', path: '/admin/portal', icon: '📱' }, // MENU BARU
+    { name: 'Gaji Guru', path: '/admin/teachers/salaries', icon: '💰' },
     { name: 'Keuangan', path: '/admin/finance', icon: '💸' },
     { name: 'Jadwal', path: '/admin/schedule', icon: '📅' },
     { name: 'Laporan Rapor', path: '/admin/grades', icon: '📊' },
@@ -33,8 +33,7 @@ const SidebarAdmin = () => {
 
       <nav style={styles.nav}>
         {menuItems.map((item) => {
-          // Logika isActive untuk mendeteksi menu yang sedang dibuka
-          const isActive = location.pathname === item.path;
+          const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
           return (
             <Link
               key={item.path}

@@ -20,6 +20,10 @@ import TeacherSalaries from './pages/admin/teachers/TeacherSalaries';
 import SchedulePage from './pages/admin/schedule/SchedulePage';
 import GradeReport from './pages/admin/grades/GradeReport'; 
 
+// === IMPORT ADMIN PORTAL SISWA ===
+import PortalSiswaHome from './pages/admin/portal-siswa/PortalSiswaHome';
+import ManagePoster from './pages/admin/portal-siswa/ManagePoster';
+
 // === IMPORT GURU ===
 import TeacherDashboard from './pages/teacher/TeacherDashboard'; 
 import TeacherHistory from './pages/teacher/TeacherHistory';
@@ -90,6 +94,10 @@ function App() {
         <Route path="/admin/teachers" element={<AdminRoute><TeacherList /></AdminRoute>} />
         <Route path="/admin/teachers/salaries" element={<AdminRoute><TeacherSalaries /></AdminRoute>} />
         
+        {/* Modul Konten Portal Siswa */}
+        <Route path="/admin/portal" element={<AdminRoute><PortalSiswaHome /></AdminRoute>} />
+        <Route path="/admin/portal/poster" element={<AdminRoute><ManagePoster /></AdminRoute>} />
+
         {/* Modul Lain Admin */}
         <Route path="/admin/finance" element={<AdminRoute><FinanceLayout /></AdminRoute>} />
         <Route path="/admin/schedule" element={<AdminRoute><SchedulePage /></AdminRoute>} />
@@ -114,7 +122,6 @@ function App() {
         {/* === REDIRECTS & FALLBACK === */}
         <Route path="/teacher/*" element={<Navigate to="/guru/dashboard" replace />} />
         
-        {/* Jika tidak ada route yang cocok, kembali ke login awal */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
