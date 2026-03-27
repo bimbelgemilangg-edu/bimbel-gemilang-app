@@ -3,7 +3,7 @@ import SidebarSiswa from '../../components/SidebarSiswa';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
 
-// --- IMPORT LUCIDE ICONS (Sudah ada di package.json kamu) ---
+// --- IMPORT LUCIDE ICONS ---
 import { 
   BookOpen, 
   Calendar, 
@@ -11,7 +11,8 @@ import {
   ChevronRight, 
   Trophy, 
   AlertCircle,
-  GraduationCap
+  GraduationCap,
+  X // Tambahan untuk tombol tutup modal
 } from 'lucide-react';
 
 // --- IMPORT SWIPER ---
@@ -32,12 +33,14 @@ const StudentDashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // State untuk Modal Berita
+  const [selectedNews, setSelectedNews] = useState(null);
 
-  // Data Dummy untuk Poster (Jika Firebase belum diisi Admin)
+  // Data Dummy untuk Poster (Cadangan jika Firebase kosong)
   const dummyPosters = [
-    { id: 1, imageUrl: 'https://images.unsplash.com/photo-1523050335392-93851179428c?q=80&w=1600', title: 'Selamat Datang di Bimbel Gemilang', desc: 'Wujudkan mimpimu bersama pengajar terbaik kami.' },
-    { id: 2, imageUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1600', title: 'Try Out Nasional Ke-5', desc: 'Pantau jadwal dan persiapkan dirimu sebaik mungkin!' },
-    { id: 3, imageUrl: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=1600', title: 'Tips Lulus Ujian', desc: 'Cek materi terbaru di menu materi belajar.' }
+    { id: 1, imageUrl: 'https://images.unsplash.com/photo-1523050335392-93851179428c?q=80&w=1600', title: 'Selamat Datang di Bimbel Gemilang', desc: 'Wujudkan mimpimu bersama pengajar terbaik kami.', content: 'Selamat datang di tahun ajaran baru! Mari tingkatkan semangat belajar untuk meraih prestasi terbaik bersama mentor-mentor ahli kami.' },
+    { id: 2, imageUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1600', title: 'Try Out Nasional Ke-5', desc: 'Pantau jadwal dan persiapkan dirimu sebaik mungkin!', content: 'Try Out akan dilaksanakan serentak. Pastikan koneksi internet stabil dan siapkan alat tulis serta nomor ujian masing-masing.' }
   ];
 
   useEffect(() => {
@@ -45,18 +48,24 @@ const StudentDashboard = () => {
       if (!studentId) return;
       setLoading(true);
       try {
-        // Fetch Jadwal Hari Ini
+        // 1. Fetch Poster/Berita dari Firebase (Urut Terbaru)
+        const qPost = query(collection(db, "student_contents"), orderBy("createdAt", "desc"));
+        const snapPost = await getDocs(qPost);
+        const postData = snapPost.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setPosters(postData.length > 0 ? postData : dummyPosters);
+
+        // 2. Fetch Jadwal Hari Ini
         const qSched = query(collection(db, "jadwal_bimbel"), where("students", "array-contains", studentId), limit(3));
         const snapSched = await getDocs(qSched);
         setSchedules(snapSched.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         
-        // Fetch Tugas/Timeline
+        // 3. Fetch Tugas/Timeline
         const qTask = query(collection(db, "tasks"), where("studentId", "==", studentId), limit(3));
         const snapTask = await getDocs(qTask);
         setTasks(snapTask.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching dashboard data:", err);
       } finally {
         setLoading(false);
       }
@@ -78,22 +87,24 @@ const StudentDashboard = () => {
         </div>
       </div>
 
-      {/* 1. LINI MASA POSTER (16:9 Slider) */}
+      {/* 1. LINI MASA POSTER (Slider Berita) */}
       <div style={styles.carouselContainer}>
         <Swiper
           modules={[Navigation, Pagination, Autoplay, EffectFade]}
           effect={'fade'}
           navigation
           pagination={{ clickable: true }}
-          autoplay={{ delay: 4000 }}
+          autoplay={{ delay: 5000 }}
           style={styles.mySwiper}
         >
-          {dummyPosters.map((post) => (
-            <SwiperSlide key={post.id}>
-              <div style={{...styles.slideCard, backgroundImage: `url(${post.imageUrl})`}}>
+          {posters.map((post) => (
+            <SwiperSlide key={post.id} onClick={() => setSelectedNews(post)}>
+              <div style={{...styles.slideCard, backgroundImage: `url(${post.imageUrl})`, cursor: 'pointer'}}>
                 <div style={styles.slideOverlay}>
                   <h2 style={styles.slideTitle}>{post.title}</h2>
-                  <p style={styles.slideDesc}>{post.desc}</p>
+                  <p style={styles.slideDesc}>
+                    {post.desc || (post.content ? post.content.substring(0, 70) + "..." : "Klik untuk baca selengkapnya")}
+                  </p>
                 </div>
               </div>
             </SwiperSlide>
@@ -103,8 +114,6 @@ const StudentDashboard = () => {
 
       {/* GRID BAWAH */}
       <div style={styles.mainGrid}>
-        
-        {/* KOLOM KIRI */}
         <div style={styles.leftColumn}>
           {/* 2. AKSES TERAKHIR MATERI */}
           <section style={styles.sectionCard}>
@@ -144,7 +153,6 @@ const StudentDashboard = () => {
           </section>
         </div>
 
-        {/* KOLOM KANAN */}
         <div style={styles.rightColumn}>
           {/* 4. JADWAL HARI INI */}
           <section style={styles.scheduleCard}>
@@ -172,8 +180,33 @@ const StudentDashboard = () => {
             </div>
           </section>
         </div>
-
       </div>
+
+      {/* POPUP MODAL UNTUK BACA BERITA */}
+      {selectedNews && (
+        <div style={styles.modalOverlay} onClick={() => setSelectedNews(null)}>
+          <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <div style={{position: 'relative'}}>
+              <img src={selectedNews.imageUrl} style={styles.modalImg} alt="News" />
+              <button style={styles.closeBtn} onClick={() => setSelectedNews(null)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div style={{padding: '25px'}}>
+              <h2 style={{margin: 0, color: '#1e293b'}}>{selectedNews.title}</h2>
+              <div style={{display: 'flex', gap: '10px', marginTop: '10px', color: '#64748b', fontSize: '13px'}}>
+                <span>Bimbel Gemilang</span>
+                <span>•</span>
+                <span>{selectedNews.createdAt?.toDate ? selectedNews.createdAt.toDate().toLocaleDateString('id-ID') : 'Terbaru'}</span>
+              </div>
+              <hr style={{margin: '20px 0', border: '0', borderTop: '1px solid #e2e8f0'}} />
+              <p style={styles.modalBody}>
+                {selectedNews.content || selectedNews.desc || "Tidak ada detail tambahan untuk berita ini."}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -209,7 +242,7 @@ const styles = {
   carouselContainer: { borderRadius: '20px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', aspectRatio: '16/9', width: '100%' },
   mySwiper: { width: '100%', height: '100%' },
   slideCard: { width: '100%', height: '100%', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'flex-end' },
-  slideOverlay: { width: '100%', background: 'linear-gradient(transparent, rgba(0,0,0,0.8))', padding: '40px', color: 'white', boxSizing: 'border-box' },
+  slideOverlay: { width: '100%', background: 'linear-gradient(transparent, rgba(0,0,0,0.85))', padding: '40px', color: 'white', boxSizing: 'border-box' },
   slideTitle: { fontSize: '24px', fontWeight: 'bold', margin: 0 },
   slideDesc: { fontSize: '16px', opacity: 0.9, marginTop: '8px' },
 
@@ -240,7 +273,14 @@ const styles = {
   schTime: { textAlign: 'center', borderRight: '1px solid #f1f5f9', paddingRight: '15px' },
   roomTag: { background: '#f1f5f9', color: '#475569', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: '700', marginTop: '5px', display: 'inline-block' },
   emptyState: { textAlign: 'center', padding: '20px', color: '#94a3b8' },
-  emptySched: { textAlign: 'center', padding: '30px', color: 'rgba(255,255,255,0.6)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }
+  emptySched: { textAlign: 'center', padding: '30px', color: 'rgba(255,255,255,0.6)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' },
+
+  // MODAL STYLES
+  modalOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(15, 23, 42, 0.8)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px', backdropFilter: 'blur(5px)' },
+  modalContent: { background: 'white', width: '100%', maxWidth: '700px', borderRadius: '24px', overflow: 'hidden', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' },
+  modalImg: { width: '100%', aspectRatio: '16/9', objectFit: 'cover' },
+  closeBtn: { position: 'absolute', top: '15px', right: '15px', background: 'rgba(255,255,255,0.9)', border: 'none', width: '35px', height: '35px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', color: '#1e293b', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' },
+  modalBody: { fontSize: '16px', lineHeight: '1.7', color: '#334155', whiteSpace: 'pre-wrap' }
 };
 
 export default StudentDashboard;
