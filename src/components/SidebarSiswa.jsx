@@ -2,8 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, X, Home, BarChart2, BookOpen, Wallet } from 'lucide-react';
 
-// PERBAIKAN: Menggunakan URL langsung agar build Vercel tidak error karena file missing
-const LogoBimbel = "https://i.ibb.co.com/8DD9F640-F257-400E-A335-E9D24CFCB79D/logo.png"; 
+// Memanggil file dari folder public (tanpa import agar build Vercel aman)
+const LogoBimbel = "/logo-gemilang.png"; 
 
 const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
   const navigate = useNavigate();
@@ -33,26 +33,26 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
 
   return (
     <>
-      {/* BACKGROUND GELAP SAAT SIDEBAR TERBUKA (Hanya di Mobile) */}
       {isMobile && isOpen && (
-        <div 
-          onClick={() => setIsOpen(false)} 
-          style={styles.overlay}
-        />
+        <div onClick={() => setIsOpen(false)} style={styles.overlay} />
       )}
 
-      {/* SIDEBAR CONTAINER */}
       <div style={{
         ...styles.sidebar,
         transform: isOpen || !isMobile ? 'translateX(0)' : 'translateX(-100%)',
       }}>
         <div style={styles.header}>
-          {/* LOGO DI SIDEBAR (Versi Kecil) */}
           <div style={styles.brandWrapper}>
-            <img src={LogoBimbel} alt="Logo Bimbel Gemilang" style={styles.logoSidebar} />
+            {/* LOGO: Muncul jika ada, Hilang jika eror (anti-crash) */}
+            <img 
+              src={LogoBimbel} 
+              alt="" 
+              style={styles.logoSidebar} 
+              onError={(e) => { e.target.style.display = 'none'; }} 
+            />
+            <span style={styles.brandText}>Bimbel Gemilang</span>
           </div>
           
-          {/* Tombol Tutup hanya muncul di Mobile */}
           {isMobile && (
             <button onClick={() => setIsOpen(false)} style={styles.closeMobileBtn}>
               <X size={20} />
@@ -90,78 +90,19 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
 
 const styles = {
   sidebar: { 
-    width: '260px', 
-    height: '100vh', 
-    background: '#1e293b', 
-    color: 'white', 
-    padding: '25px 20px', 
-    position: 'fixed', 
-    left: 0, 
-    top: 0,
-    zIndex: 1000,
-    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    display: 'flex',
-    flexDirection: 'column',
-    boxShadow: '4px 0 15px rgba(0,0,0,0.1)'
+    width: '260px', height: '100vh', background: '#1e293b', color: 'white', padding: '25px 20px', 
+    position: 'fixed', left: 0, top: 0, zIndex: 1000,
+    transition: 'transform 0.3s ease', display: 'flex', flexDirection: 'column'
   },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '20px',
-    height: '40px'
-  },
-  brandWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    height: '100%'
-  },
-  logoSidebar: {
-    maxHeight: '35px',
-    objectFit: 'contain'
-  },
-  closeMobileBtn: {
-    background: 'none',
-    border: 'none',
-    color: 'white',
-    cursor: 'pointer'
-  },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+  brandWrapper: { display: 'flex', alignItems: 'center', gap: '8px' },
+  logoSidebar: { maxHeight: '30px', objectFit: 'contain' },
+  brandText: { fontWeight: 'bold', fontSize: '15px' },
+  closeMobileBtn: { background: 'none', border: 'none', color: 'white', cursor: 'pointer' },
   divider: { border: '0', borderTop: '1px solid #334155', marginBottom: '20px' },
-  menuItem: { 
-    padding: '12px 15px', 
-    cursor: 'pointer', 
-    borderRadius: '12px',
-    marginBottom: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    fontSize: '14px',
-    fontWeight: '600',
-    transition: '0.2s'
-  },
-  logoutBtn: { 
-    marginTop: 'auto', 
-    width: '100%', 
-    padding: '12px', 
-    background: '#ef4444', 
-    border: 'none', 
-    color: 'white', 
-    borderRadius: '12px', 
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontWeight: 'bold'
-  },
-  overlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(0,0,0,0.5)',
-    zIndex: 999,
-    backdropFilter: 'blur(2px)'
-  }
+  menuItem: { padding: '12px 15px', cursor: 'pointer', borderRadius: '12px', marginBottom: '8px', display: 'flex', alignItems: 'center', fontSize: '14px', transition: '0.2s' },
+  logoutBtn: { marginTop: 'auto', width: '100%', padding: '12px', background: '#ef4444', border: 'none', color: 'white', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' },
+  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 999, backdropFilter: 'blur(2px)' }
 };
 
 export default SidebarSiswa;
