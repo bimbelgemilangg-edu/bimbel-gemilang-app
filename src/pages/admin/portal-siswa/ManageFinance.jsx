@@ -1,160 +1,88 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
-import { doc, getDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
-import { Wallet, Calendar, CheckCircle, Clock, AlertCircle, ArrowLeft } from 'lucide-react';
+import { collection, getDocs, doc, updateDoc, query } from "firebase/firestore";
+import { ShieldAlert, ShieldCheck, Search, User, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ManageFinance = () => {
   const navigate = useNavigate();
-  // Idealnya ID siswa diambil dari data login (AuthContext), 
-  // Untuk sementara kita asumsikan sistem tahu ID siswa yang sedang login.
-  const studentId = localStorage.getItem("studentId"); 
+  const [students, setStudents] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [student, setStudent] = useState(null);
-  const [tagihan, setTagihan] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchStudentFinance = async () => {
-    if (!studentId) return;
-    setLoading(true);
-    try {
-      // 1. Ambil Profil Siswa
-      const sSnap = await getDoc(doc(db, "students", studentId));
-      if (sSnap.exists()) setStudent(sSnap.data());
-
-      // 2. Ambil Data Tagihan Cicilan
-      const q = query(collection(db, "finance_tagihan"), where("studentId", "==", studentId));
-      const qSnap = await getDocs(q);
-      if (!qSnap.empty) {
-        setTagihan(qSnap.docs[0].data());
-      }
-    } catch (e) {
-      console.error("Error fetching finance:", e);
-    } finally {
-      setLoading(false);
-    }
+  const fetchStudents = async () => {
+    const snap = await getDocs(query(collection(db, "students")));
+    setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
   };
 
-  useEffect(() => {
-    fetchStudentFinance();
-  }, [studentId]);
+  useEffect(() => { fetchStudents(); }, []);
 
-  if (loading) return <div style={styles.loader}>Memuat Informasi Keuangan...</div>;
+  // FUNGSI SAKTI: Blokir / Buka Akses
+  const toggleBlock = async (id, currentStatus) => {
+    const action = currentStatus ? "Buka Akses" : "Blokir Akses";
+    if (!window.confirm(`Yakin ingin ${action} untuk siswa ini?`)) return;
+    
+    try {
+      await updateDoc(doc(db, "students", id), {
+        isBlocked: !currentStatus
+      });
+      fetchStudents(); // Refresh data
+    } catch (err) { alert("Gagal mengubah status akses"); }
+  };
+
+  const filtered = students.filter(s => s.nama?.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div style={styles.container}>
-      {/* Header Info */}
-      <div style={styles.header}>
-        <button onClick={() => navigate(-1)} style={styles.btnBack}>
-          <ArrowLeft size={18} /> Kembali
-        </button>
-        <h2 style={styles.title}>Informasi Administrasi</h2>
-        <p style={styles.subtitle}>Pantau status pembayaran dan cicilan kamu di sini.</p>
+      <h2 style={styles.title}>🛡️ Access & Finance Control</h2>
+      <div style={styles.searchBox}>
+        <Search size={18} color="#94a3b8" />
+        <input placeholder="Cari siswa..." style={styles.input} onChange={(e) => setSearchTerm(e.target.value)} />
       </div>
 
-      {/* Summary Cards */}
-      <div style={styles.summaryGrid}>
-        <div style={{ ...styles.card, borderLeft: '5px solid #e74c3c' }}>
-          <div style={styles.cardFlex}>
-            <div>
-              <small style={styles.label}>Sisa Tunggakan</small>
-              <h3 style={styles.amountRed}>Rp {tagihan?.sisaTagihan?.toLocaleString() || 0}</h3>
+      <div style={styles.list}>
+        {filtered.map(s => (
+          <div key={s.id} style={{...styles.row, borderLeft: s.isBlocked ? '5px solid #ef4444' : '5px solid #10b981'}}>
+            <div style={styles.studentInfo}>
+               <User size={20} color={s.isBlocked ? "#ef4444" : "#64748b"} />
+               <div>
+                 <div style={styles.name}>{s.nama} {s.isBlocked && <span style={styles.blockedTag}>DIBLOKIR</span>}</div>
+                 <div style={styles.sub}>{s.detailProgram}</div>
+               </div>
             </div>
-            <AlertCircle color="#e74c3c" size={32} />
-          </div>
-        </div>
-
-        <div style={{ ...styles.card, borderLeft: '5px solid #2ecc71' }}>
-          <div style={styles.cardFlex}>
-            <div>
-              <small style={styles.label}>Total Terbayar</small>
-              <h3 style={styles.amountGreen}>Rp {student?.totalBayar?.toLocaleString() || 0}</h3>
+            
+            <div style={styles.actions}>
+                <button 
+                  onClick={() => toggleBlock(s.id, s.isBlocked)} 
+                  style={s.isBlocked ? styles.btnUnlock : styles.btnBlock}
+                >
+                  {s.isBlocked ? <ShieldCheck size={14}/> : <ShieldAlert size={14}/>}
+                  {s.isBlocked ? "Buka Blokir" : "Blokir Akses"}
+                </button>
+                <button onClick={() => navigate(`/admin/students/finance/${s.id}`)} style={styles.btnDetail}>
+                  Detail Tagihan <ArrowRight size={14}/>
+                </button>
             </div>
-            <CheckCircle color="#2ecc71" size={32} />
           </div>
-        </div>
-      </div>
-
-      {/* Table Section */}
-      <div style={styles.tableCard}>
-        <div style={styles.tableHeader}>
-          <Wallet size={20} color="#3498db" />
-          <h4 style={{ margin: 0 }}>Riwayat & Rencana Cicilan</h4>
-        </div>
-
-        {!tagihan ? (
-          <div style={styles.empty}>Belum ada data tagihan aktif.</div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>Bulan</th>
-                  <th style={styles.th}>Jatuh Tempo</th>
-                  <th style={styles.th}>Nominal</th>
-                  <th style={styles.th}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tagihan.detailCicilan?.map((item, idx) => (
-                  <tr key={idx} style={styles.tr}>
-                    <td style={styles.td}>Cicilan ke-{item.bulanKe}</td>
-                    <td style={styles.td}>
-                      <div style={styles.flexIcon}><Calendar size={14} /> {item.jatuhTempo}</div>
-                    </td>
-                    <td style={styles.tdBold}>Rp {item.nominal.toLocaleString()}</td>
-                    <td style={styles.td}>
-                      {item.status === 'Lunas' ? (
-                        <span style={styles.badgeLunas}>✅ Lunas ({item.tanggalBayar})</span>
-                      ) : (
-                        <span style={styles.badgeBelum}>⏳ Menunggu Pembayaran</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Info Footer */}
-      <div style={styles.footerNote}>
-        <p><b>Catatan:</b> Jika terdapat perbedaan data, silakan hubungi Admin Bimbel Gemilang dengan membawa bukti bayar fisik/transfer.</p>
+        ))}
       </div>
     </div>
   );
 };
 
 const styles = {
-  container: { padding: '20px', maxWidth: '900px', margin: '0 auto', fontFamily: 'Inter, sans-serif', color: '#2c3e50' },
-  loader: { padding: '100px', textAlign: 'center', fontSize: '16px', color: '#7f8c8d' },
-  header: { marginBottom: '30px' },
-  btnBack: { background: 'none', border: 'none', color: '#3498db', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', padding: 0, marginBottom: '10px', fontWeight: 'bold' },
-  title: { fontSize: '24px', fontWeight: '800', margin: '0 0 5px 0' },
-  subtitle: { color: '#7f8c8d', margin: 0 },
-  
-  summaryGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '30px' },
-  card: { background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' },
-  cardFlex: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  label: { color: '#95a5a6', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '11px', letterSpacing: '1px' },
-  amountRed: { margin: '5px 0 0 0', color: '#e74c3c', fontSize: '22px' },
-  amountGreen: { margin: '5px 0 0 0', color: '#27ae60', fontSize: '22px' },
-
-  tableCard: { background: 'white', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', overflow: 'hidden' },
-  tableHeader: { padding: '20px', borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#fcfcfc' },
-  table: { width: '100%', borderCollapse: 'collapse' },
-  th: { padding: '15px', textAlign: 'left', backgroundColor: '#f8f9fa', color: '#7f8c8d', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase' },
-  tr: { borderBottom: '1px solid #f1f1f1' },
-  td: { padding: '15px', fontSize: '14px' },
-  tdBold: { padding: '15px', fontSize: '14px', fontWeight: 'bold' },
-  flexIcon: { display: 'flex', alignItems: 'center', gap: '8px' },
-  
-  badgeLunas: { background: '#d4edda', color: '#155724', padding: '5px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' },
-  badgeBelum: { background: '#fff3cd', color: '#856404', padding: '5px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' },
-  
-  empty: { padding: '40px', textAlign: 'center', color: '#bdc3c7' },
-  footerNote: { marginTop: '20px', padding: '15px', backgroundColor: '#ebf5fb', borderRadius: '8px', color: '#2980b9', fontSize: '13px', lineHeight: '1.6' }
+  container: { padding: '30px', background: '#f8fafc', minHeight: '100vh' },
+  title: { color: '#1e293b', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' },
+  searchBox: { background: 'white', display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '20px' },
+  input: { border: 'none', outline: 'none', width: '100%' },
+  row: { background: 'white', padding: '15px 20px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' },
+  studentInfo: { display: 'flex', alignItems: 'center', gap: '15px' },
+  name: { fontWeight: 'bold', fontSize: '15px' },
+  sub: { fontSize: '12px', color: '#64748b' },
+  blockedTag: { background: '#fee2e2', color: '#b91c1c', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', marginLeft: '10px' },
+  actions: { display: 'flex', gap: '10px' },
+  btnBlock: { background: '#fee2e2', color: '#b91c1c', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600' },
+  btnUnlock: { background: '#dcfce7', color: '#15803d', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600' },
+  btnDetail: { background: '#f1f5f9', color: '#475569', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }
 };
 
 export default ManageFinance;
