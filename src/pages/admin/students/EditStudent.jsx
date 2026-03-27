@@ -16,6 +16,8 @@ const EditStudent = () => {
   // 2. STATE FORM LENGKAP
   const [formData, setFormData] = useState({
     nama: "",
+    username: "", // Tambahan Akun
+    password: "", // Tambahan Akun
     kelasSekolah: "",
     tempatLahir: "",
     tanggalLahir: "",
@@ -53,11 +55,12 @@ const EditStudent = () => {
 
           setFormData({
             nama: data.nama || "",
+            username: data.username || "", // Ambil Username Existing
+            password: data.password || "", // Ambil Password Existing
             kelasSekolah: data.kelasSekolah || "1 SD",
             tempatLahir: data.tempatLahir || "",
             tanggalLahir: data.tanggalLahir || "",
             ortu: data.ortu || { ayah: "", hp: "", alamat: "" },
-            
             kategori: data.kategori || "Reguler",
             jenjang: data.kategori === 'English' ? 'English' : parsedJenjang,
             paket: parsedPaket,
@@ -100,6 +103,8 @@ const EditStudent = () => {
       const docRef = doc(db, "students", id);
       await updateDoc(docRef, {
         nama: formData.nama,
+        username: formData.username, // Simpan perubahan username
+        password: formData.password, // Simpan perubahan password
         kelasSekolah: formData.kelasSekolah,
         tempatLahir: formData.tempatLahir,
         tanggalLahir: formData.tanggalLahir,
@@ -109,7 +114,7 @@ const EditStudent = () => {
         totalTagihan: parseInt(formData.totalTagihan) 
       });
 
-      alert("✅ Data Siswa & Pendaftaran Berhasil Diupdate!");
+      alert("✅ Data Siswa & Akun Berhasil Diupdate!");
       navigate('/admin/students');
     } catch (e) {
       console.error(e);
@@ -121,18 +126,31 @@ const EditStudent = () => {
 
   return (
     <div style={{ display: 'flex' }}>
-      {/* PERBAIKAN: Menggunakan SidebarAdmin */}
       <SidebarAdmin />
       <div style={styles.content}>
-        <h2 style={{color:'#2c3e50'}}>✏️ Edit Data Siswa & Pendaftaran</h2>
+        <h2 style={{color:'#2c3e50'}}>✏️ Edit Data & Akun Siswa</h2>
         
         <div style={styles.gridContainer}>
             <div style={styles.card}>
-              <h3 style={{marginTop:0, borderBottom:'1px solid #eee', paddingBottom:10}}>👤 Biodata Siswa</h3>
+              <h3 style={{marginTop:0, borderBottom:'1px solid #eee', paddingBottom:10}}>👤 Biodata & Akses Portal</h3>
               <div style={styles.formGroup}>
                 <label>Nama Lengkap</label>
                 <input style={styles.input} value={formData.nama} onChange={(e) => setFormData({...formData, nama: e.target.value})} />
               </div>
+
+              {/* SECTION EDIT AKUN PORTAL */}
+              <div style={{background: '#fff5e6', padding: '15px', borderRadius: '10px', border: '1px solid #f39c12', marginBottom: '20px'}}>
+                <h4 style={{margin: '0 0 10px 0', color: '#d35400'}}>🔑 Manajemen Akun Portal</h4>
+                <div style={styles.formGroup}>
+                    <label style={{fontSize: 12}}>Username (ID Login)</label>
+                    <input style={styles.input} value={formData.username} onChange={(e) => setFormData({...formData, username: e.target.value})} />
+                </div>
+                <div style={styles.formGroup}>
+                    <label style={{fontSize: 12}}>Password Portal</label>
+                    <input style={styles.input} value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} />
+                </div>
+              </div>
+
               <div style={styles.formGroup}>
                 <label>Kelas Sekolah</label>
                 <select style={styles.select} value={formData.kelasSekolah} onChange={(e) => setFormData({...formData, kelasSekolah: e.target.value})}>

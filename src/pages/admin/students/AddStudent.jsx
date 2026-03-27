@@ -33,6 +33,29 @@ const AddStudent = () => {
   const [tanggalDaftar, setTanggalDaftar] = useState(new Date().toISOString().split('T')[0]);
   const [namaSiswa, setNamaSiswa] = useState("");
   
+  // STATE AKSES LOGIN
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  // LOGIKA OTOMATIS: Username & Password
+  useEffect(() => {
+    if (namaSiswa) {
+      const namaBersih = namaSiswa.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+      
+      // Generate Username: nama123@gemilang.com
+      const randomNum = Math.floor(100 + Math.random() * 900);
+      setUsername(`${namaBersih}${randomNum}@gemilang.com`);
+
+      // Generate Password: namatahun
+      if (tanggalLahir) {
+        const tahun = tanggalLahir.split('-')[0];
+        setPassword(`${namaBersih}${tahun}`);
+      } else {
+        setPassword(`${namaBersih}123`);
+      }
+    }
+  }, [namaSiswa]); // Hanya trigger saat nama berubah pertama kali
+
   // Reguler
   const [jenjang, setJenjang] = useState("SD");
   const [kelas, setKelas] = useState("1 SD"); 
@@ -106,6 +129,9 @@ const AddStudent = () => {
     try {
       const studentData = {
         nama: namaSiswa,
+        username: username.toLowerCase(),
+        password: password,
+        role: "siswa", // Menandai sebagai akun siswa
         kategori: programType,
         detailProgram: programType === "English" ? `English - ${englishLevel}` : `${jenjang} - ${paketReguler}`,
         kelasSekolah: kelas,
@@ -142,7 +168,7 @@ const AddStudent = () => {
           detailCicilan: installments, 
           jenis: `Pendaftaran ${programType} (Cicilan)`
         });
-        alert("✅ Pendaftaran Berhasil (Jadwal Cicilan Tersimpan)");
+        alert(`✅ Berhasil! Akun Siswa: ${username}`);
 
       } else {
         await addDoc(collection(db, "finance_logs"), { 
@@ -154,7 +180,7 @@ const AddStudent = () => {
           note: `Pendaftaran Baru: ${namaSiswa} (${programType})`,
           studentId: studentId
         });
-        alert(`✅ Pendaftaran Berhasil (Lunas)`);
+        alert(`✅ Berhasil! Akun Siswa: ${username}`);
       }
       navigate('/admin/students');
 
@@ -163,7 +189,6 @@ const AddStudent = () => {
 
   return (
     <div style={{ display: 'flex' }}>
-      {/* PERBAIKAN: Menggunakan SidebarAdmin */}
       <SidebarAdmin />
       <div style={styles.content}>
         <h2 style={{color: '#333'}}>🎓 Pendaftaran Siswa Baru</h2>
@@ -179,12 +204,27 @@ const AddStudent = () => {
         <form onSubmit={handleSubmit} style={styles.grid}>
           <div style={styles.leftCol}>
             <div style={styles.card}>
-              <h3 style={styles.cardTitle}>👤 Identitas Siswa</h3>
+              <h3 style={styles.cardTitle}>👤 Identitas & Akun Portal</h3>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Tanggal Daftar</label>
                 <input type="date" style={styles.inputDate} value={tanggalDaftar} onChange={e => setTanggalDaftar(e.target.value)} />
               </div>
               <div style={styles.formGroup}><input style={styles.input} placeholder="Nama Lengkap Siswa" value={namaSiswa} onChange={e => setNamaSiswa(e.target.value)} required /></div>
+
+              {/* FITUR AKUN OTOMATIS */}
+              <div style={{background: '#f8f9fa', padding: '15px', borderRadius: '10px', border: '1px dashed #3498db', marginBottom: '15px'}}>
+                  <p style={{margin: '0 0 10px 0', fontSize: 12, fontWeight: 'bold', color: '#2980b9'}}>🔐 AKSES LOGIN (DIBUAT OTOMATIS)</p>
+                  <div style={styles.row}>
+                    <div style={{flex: 1}}>
+                        <label style={styles.labelSmall}>Username</label>
+                        <input style={styles.input} value={username} onChange={e => setUsername(e.target.value)} placeholder="nama@gemilang.com" />
+                    </div>
+                    <div style={{flex: 1}}>
+                        <label style={styles.labelSmall}>Password</label>
+                        <input style={styles.input} value={password} onChange={e => setPassword(e.target.value)} placeholder="namatahun" />
+                    </div>
+                  </div>
+              </div>
               
               {programType === "Reguler" ? (
                   <div style={styles.row}>
@@ -218,8 +258,14 @@ const AddStudent = () => {
               </div>
 
               <div style={styles.row}>
-                <input style={styles.input} placeholder="Tempat Lahir" value={tempatLahir} onChange={e => setTempatLahir(e.target.value)} />
-                <input type="date" style={styles.input} value={tanggalLahir} onChange={e => setTanggalLahir(e.target.value)} />
+                <div style={{flex:1}}>
+                  <label style={styles.labelSmall}>Tempat Lahir</label>
+                  <input style={styles.input} placeholder="Tempat Lahir" value={tempatLahir} onChange={e => setTempatLahir(e.target.value)} />
+                </div>
+                <div style={{flex:1}}>
+                  <label style={styles.labelSmall}>Tanggal Lahir</label>
+                  <input type="date" style={styles.input} value={tanggalLahir} onChange={e => setTanggalLahir(e.target.value)} />
+                </div>
               </div>
             </div>
 
@@ -312,7 +358,7 @@ const AddStudent = () => {
                 </div>
               )}
 
-              <button type="submit" style={styles.btnSubmit}>SIMPAN DATA</button>
+              <button type="submit" style={styles.btnSubmit}>SIMPAN DATA & AKUN</button>
             </div>
           </div>
         </form>
