@@ -1,19 +1,16 @@
 import React, { useState } from 'react';
 import { db } from '../../firebase';
-import { collection, addDoc, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
 const ClassSession = ({ schedule, teacher, onBack }) => {
   const [attendanceMap, setAttendanceMap] = useState({});
   const [loading, setLoading] = useState(false);
-  
   const [step, setStep] = useState(1); 
   const [materiAktual, setMateriAktual] = useState(schedule.title || ""); 
 
-  // --- 1. LOGIKA ABSEN REAL-TIME (FIXED: TIDAK MENGHAPUS DATA) ---
   const toggleStudent = async (student) => {
     const isCurrentlyPresent = !!attendanceMap[student.id];
     const willBePresent = !isCurrentlyPresent;
-
     setAttendanceMap(prev => ({ ...prev, [student.id]: willBePresent }));
 
     const today = new Date().toISOString().split('T')[0];
@@ -21,63 +18,36 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
     const absenRef = doc(db, "attendance", absenId);
 
     try {
-      if (willBePresent) {
-        // JIKA HIJAU: Simpan Hadir
-        await setDoc(absenRef, {
-          studentId: student.id,
-          studentName: student.nama,
-          program: student.program || schedule.program || "Reguler",
-          teacherId: teacher.id,
-          teacherName: teacher.nama,
-          date: today,
-          tanggal: today, // Tambahkan ini agar sinkron dengan Admin
-          timestamp: serverTimestamp(),
-          status: "Hadir",
-          keterangan: "Input via Kelas Guru",
-          mapel: schedule.title || "Umum"
-        });
-      } else {
-        // JIKA MERAH: Ubah status jadi Alpha (JANGAN DIHAPUS agar Admin bisa lihat)
-        await setDoc(absenRef, {
-          studentId: student.id,
-          studentName: student.nama,
-          program: student.program || schedule.program || "Reguler",
-          teacherId: teacher.id,
-          teacherName: teacher.nama,
-          date: today,
-          tanggal: today,
-          timestamp: serverTimestamp(),
-          status: "Alpha",
-          keterangan: "Siswa tidak hadir",
-          mapel: schedule.title || "Umum"
-        });
-      }
+      await setDoc(absenRef, {
+        studentId: student.id,
+        studentName: student.nama,
+        program: student.program || schedule.program || "Reguler",
+        teacherId: teacher.id,
+        teacherName: teacher.nama,
+        date: today,
+        tanggal: today,
+        timestamp: serverTimestamp(),
+        status: willBePresent ? "Hadir" : "Alpha",
+        keterangan: willBePresent ? "Input via Kelas Guru" : "Siswa tidak hadir",
+        mapel: schedule.title || "Umum"
+      });
     } catch (error) {
       console.error("Gagal sinkron absen:", error);
       setAttendanceMap(prev => ({ ...prev, [student.id]: isCurrentlyPresent }));
     }
   };
 
-  const handleLanjutInputMateri = () => {
-    setStep(2);
-  };
-
-  // --- 2. HITUNG GAJI & SIMPAN FINAL (FIXED: OTOMATIS ALPHA UNTUK YANG TERLEWAT) ---
   const handleFinalizeClass = async () => {
     if (!materiAktual) return alert("Mohon isi materi yang diajarkan!");
-    if (!window.confirm("Yakin akhiri kelas? Data siswa yang tidak hadir akan dicatat sebagai Alpha agar Admin bisa memberikan keterangan.")) return;
+    if (!window.confirm("Yakin akhiri kelas? Data siswa yang tidak hadir akan dicatat sebagai Alpha.")) return;
     
     setLoading(true);
     try {
       const today = new Date().toISOString().split('T')[0];
-
-      // --- BAGIAN PENTING: Pastikan semua siswa (termasuk yang tidak diklik) masuk ke database ---
       const batchAbsensi = schedule.students.map(async (siswa) => {
         const isPresent = !!attendanceMap[siswa.id];
         const absenId = `${siswa.id}_${today}`;
         const absenRef = doc(db, "attendance", absenId);
-
-        // Jika belum ada data sama sekali (belum diklik guru), buat sebagai Alpha
         return setDoc(absenRef, {
             studentId: siswa.id,
             studentName: siswa.nama,
@@ -90,15 +60,13 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
             status: isPresent ? "Hadir" : "Alpha",
             keterangan: isPresent ? "Input via Kelas Guru" : "Siswa tidak hadir (Otomatis Alpha)",
             mapel: schedule.title || "Umum"
-        }, { merge: true }); // Merge agar tidak menimpa jika sudah ada
+        }, { merge: true });
       });
       
       await Promise.all(batchAbsensi);
 
-      // --- LOGIKA HITUNG GAJI (Tetap Sama) ---
       const siswaHadirList = schedule.students.filter(s => attendanceMap[s.id]);
       const jumlahHadir = siswaHadirList.length;
-
       const startParts = schedule.start.split(':');
       const endParts = schedule.end.split(':');
       const diffHours = (new Date(0, 0, 0, endParts[0], endParts[1]) - new Date(0, 0, 0, startParts[0], startParts[1])) / 36e5;
@@ -113,15 +81,11 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
       let statusGaji = "Menunggu Validasi";
 
       if (schedule.program === "English") {
-          const base = parseInt(rules.honorSD) + parseInt(rules.bonusInggris);
-          nominal = base * diffHours;
+          nominal = (parseInt(rules.honorSD) + parseInt(rules.bonusInggris)) * diffHours;
           detailTxt += " [English Rate]";
-      } else if (realActivity === "Ujian" || realActivity === "Buat Soal") {
-          nominal = parseInt(rules.ujianJaga || 10000); // Sederhanakan logic nominal
       } else {
           let baseRate = parseInt(rules.honorSD);
           if ((schedule.level + schedule.title).toLowerCase().includes("smp")) baseRate = parseInt(rules.honorSMP);
-          
           if (jumlahHadir === 0) {
             nominal = (baseRate * diffHours) * 0.5; 
             detailTxt += " [Kompensasi 50%]";
@@ -131,7 +95,6 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
           }
       }
 
-      // SIMPAN KE LOG GURU
       await addDoc(collection(db, "teacher_logs"), {
         teacherId: teacher.id,
         namaGuru: schedule.actualTeacher || teacher.nama,
@@ -149,13 +112,9 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
 
       alert(`✅ Kelas Berhasil Disimpan!\nHonor: Rp ${Math.round(nominal).toLocaleString('id-ID')}`);
       onBack();
-
     } catch (error) { 
-        console.error(error); 
         alert("Gagal menyimpan: " + error.message); 
-    } finally { 
-        setLoading(false); 
-    }
+    } finally { setLoading(false); }
   };
 
   return (
@@ -188,7 +147,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
                 );
               })}
             </div>
-            <button onClick={handleLanjutInputMateri} style={styles.btnPrimary}>✅ Selesai Absen & Lanjut</button>
+            <button onClick={() => setStep(2)} style={styles.btnPrimary}>✅ Selesai Absen & Lanjut</button>
             <button onClick={onBack} style={styles.btnSecondary}>Batal</button>
         </div>
       )}
@@ -218,7 +177,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
 
 const styles = {
     btnPrimary: { width: '100%', padding: 15, background: '#2980b9', color: 'white', border: 'none', borderRadius: 5, fontWeight: 'bold', cursor: 'pointer' },
-    btnSecondary: { width: '100%', marginTop: 10, padding: 10, background: '#ecf0f1', color: '#2c3e50', border: 'none', borderRadius: 5, fontWeight: 'bold' }
+    btnSecondary: { width: '100%', marginTop: 10, padding: 10, background: '#ecf0f1', color: '#2c3e50', border: 'none', borderRadius: 5, fontWeight: 'bold', cursor: 'pointer' }
 };
 
 export default ClassSession;

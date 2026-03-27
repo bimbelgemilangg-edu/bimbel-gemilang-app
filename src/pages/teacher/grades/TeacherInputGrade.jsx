@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { db } from '../../../firebase'; 
+import { db } from '../../firebase'; 
 import { collection, getDocs, addDoc, query, where } from "firebase/firestore";
-import Sidebar from '../../../components/Sidebar';
+import SidebarGuru from '../../components/SidebarGuru';
 
 const TeacherInputGrade = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // HANYA MENGGUNAKAN STATE BAWAAN (TANPA LOCALSTORAGE)
   const [guru] = useState(location.state?.teacher);
 
   const [students, setStudents] = useState([]);
@@ -22,10 +21,9 @@ const TeacherInputGrade = () => {
   const [aspects, setAspects] = useState({
     pemahaman: 3, aplikasi: 3, literasi: 3, inisiatif: 3, mandiri: 3    
   });
-  const [selectedMapel, setSelectedMapel] = useState(guru?.mapel || "Umum");
+  const [selectedMapel] = useState(guru?.mapel || "Umum");
 
   useEffect(() => {
-    // Jika tidak ada data guru, langsung lempar ke login
     if (!guru) { navigate('/login-guru'); return; }
 
     const fetchData = async () => {
@@ -95,8 +93,8 @@ const TeacherInputGrade = () => {
 
   return (
     <div style={{ display: 'flex', background: '#f4f7f6', minHeight: '100vh' }}>
-      <Sidebar />
-      <div style={{ marginLeft: '250px', padding: '30px', width: '100%' }}>
+      <SidebarGuru />
+      <div style={{ marginLeft: '250px', padding: '30px', width: 'calc(100% - 250px)' }}>
         <div style={{maxWidth:800, margin:'0 auto'}}>
             <div style={{background:'white', padding:20, borderRadius:10, boxShadow:'0 2px 5px rgba(0,0,0,0.1)', marginBottom:20}}>
                 <h2 style={{margin:0, color:'#2c3e50'}}>📝 Input Nilai & Karakter</h2>

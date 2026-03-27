@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { db } from '../../../firebase'; 
+import { db } from '../../firebase'; 
 import { collection, query, where, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
-import Sidebar from '../../../components/Sidebar';
+import SidebarGuru from '../../components/SidebarGuru';
 
 const TeacherGradeManager = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Tetap menggunakan state bawaan sesuai permintaan
   const [guru] = useState(location.state?.teacher);
 
   const [grades, setGrades] = useState([]);
@@ -24,12 +23,9 @@ const TeacherGradeManager = () => {
         const snap = await getDocs(q);
         const data = snap.docs.map(d => ({id: d.id, ...d.data()}));
         
-        // Sortir tanggal agar data terbaru di atas
         data.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
 
-        // LOGIKA TREN: Membandingkan dengan nilai sebelumnya dari siswa yang sama
         const enrichedData = data.map((item, index) => {
-            // Cari data lama milik siswa yang sama (indeks lebih besar berarti data lebih lama)
             const previousGrades = data.filter((g, i) => g.studentId === item.studentId && i > index);
             
             let trend = 'new'; 
@@ -61,7 +57,6 @@ const TeacherGradeManager = () => {
 
   const startEdit = (item) => {
     setEditingId(item.id);
-    // Pastikan format tanggal untuk input date adalah YYYY-MM-DD
     const dateStr = item.tanggal ? item.tanggal.split('T')[0] : "";
     setEditForm({ nilai: item.nilai, topik: item.topik, tanggal: dateStr });
   };
@@ -82,8 +77,8 @@ const TeacherGradeManager = () => {
 
   return (
     <div style={{ display: 'flex', background: '#f4f7f6', minHeight: '100vh' }}>
-      <Sidebar />
-      <div style={{ marginLeft: '250px', padding: '30px', width: '100%' }}>
+      <SidebarGuru />
+      <div style={{ marginLeft: '250px', padding: '30px', width: 'calc(100% - 250px)' }}>
         <div style={styles.headerBox}>
             <div>
                 <h2 style={{margin:0}}>📊 Kelola Nilai & Analisis Tren</h2>

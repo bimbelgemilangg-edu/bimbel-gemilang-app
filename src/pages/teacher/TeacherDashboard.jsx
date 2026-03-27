@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../../firebase'; 
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
-import Sidebar from '../../components/Sidebar'; // Ganti Layout dengan Sidebar
+import SidebarGuru from '../../components/SidebarGuru'; 
 import ClassSession from './ClassSession';
 import { Player } from '@lottiefiles/react-lottie-player';
 
@@ -29,7 +29,6 @@ const TeacherDashboard = () => {
     return `${y}-${m}-${day}`;
   };
 
-  // AMBIL DATA GURU TERBARU (TERMASUK FOTO)
   const fetchTeacherProfile = useCallback(async () => {
     try {
       const saved = JSON.parse(localStorage.getItem('teacherData'));
@@ -108,10 +107,9 @@ const TeacherDashboard = () => {
 
   return (
     <div style={{ display: 'flex' }}>
-      <Sidebar /> {/* SIDEBAR BARU YANG ADA MENU PROFILNYA */}
+      <SidebarGuru /> 
       
-      <div style={{ marginLeft: '250px', width: '100%', background: '#f8f9fa', minHeight: '100vh' }}>
-        {/* HEADER CUSTOM */}
+      <div style={{ marginLeft: '250px', width: 'calc(100% - 250px)', background: '#f8f9fa', minHeight: '100vh' }}>
         <header style={styles.topHeader}>
           <div>
             <h4 style={{margin:0}}>Halo, {guru?.nama} ✨</h4>
@@ -121,7 +119,6 @@ const TeacherDashboard = () => {
         </header>
 
         <div style={{padding: '30px 40px'}}>
-            {/* BANNER RAMADHAN */}
             <div style={styles.ramadanBanner}>
             <div style={styles.bannerText}>
                 <h2 style={{margin:0, fontSize:26}}>Marhaban ya Ramadhan ✨</h2>
@@ -134,7 +131,6 @@ const TeacherDashboard = () => {
             </div>
             </div>
 
-            {/* JADWAL HARI INI */}
             <div style={{marginTop: 35}}>
                 <h3 style={styles.sectionTitle}>📅 Jadwal Mengajar Hari Ini ({getFmtDate(new Date())})</h3>
                 {todaySchedules.length === 0 ? (
