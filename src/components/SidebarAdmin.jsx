@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-const Sidebar = () => {
+const SidebarAdmin = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -12,12 +12,13 @@ const Sidebar = () => {
     }
   };
 
-  // DAFTAR MENU LENGKAP
+  // DAFTAR MENU LENGKAP (Telah disinkronkan dengan App.jsx)
   const menuItems = [
     { name: 'Dashboard', path: '/admin', icon: '🏠' },
     { name: 'Kelola Siswa', path: '/admin/students', icon: '👥' },
     { name: 'Kelola Guru', path: '/admin/teachers', icon: '👨‍🏫' }, 
-    { name: 'Keuangan', path: '/admin/finance', icon: '💰' },
+    { name: 'Gaji Guru', path: '/admin/teachers/salaries', icon: '💰' }, // Menu Gaji Baru
+    { name: 'Keuangan', path: '/admin/finance', icon: '💸' },
     { name: 'Jadwal', path: '/admin/schedule', icon: '📅' },
     { name: 'Laporan Rapor', path: '/admin/grades', icon: '📊' },
     { name: 'Settings', path: '/admin/settings', icon: '⚙️' },
@@ -32,6 +33,7 @@ const Sidebar = () => {
 
       <nav style={styles.nav}>
         {menuItems.map((item) => {
+          // Logika isActive untuk mendeteksi menu yang sedang dibuka
           const isActive = location.pathname === item.path;
           return (
             <Link
@@ -100,4 +102,4 @@ const styles = {
   }
 };
 
-export default Sidebar;
+export default SidebarAdmin;
