@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "firebase/firestore";
-import { CheckCircle, Clock, AlertCircle, Search, Edit3, Save, Download, Trash2, FileText, HelpCircle } from 'lucide-react';
+import { 
+  CheckCircle, Clock, AlertCircle, Search, Edit3, Save, 
+  Download, Trash2, FileText, HelpCircle, User, BookOpen 
+} from 'lucide-react';
 
 const CekTugasSiswa = () => {
   const [tasks, setTasks] = useState([]);
@@ -48,7 +51,7 @@ const CekTugasSiswa = () => {
   };
 
   const handleDelete = async (id, collectionName) => {
-    if (window.confirm("Hapus data ini?")) {
+    if (window.confirm("Hapus data ini secara permanen dari database?")) {
       try {
         await deleteDoc(doc(db, collectionName, id));
         fetchData();
@@ -57,13 +60,15 @@ const CekTugasSiswa = () => {
   };
 
   const handleUpdateScore = async (id, collectionName) => {
+    if (!newScore || isNaN(newScore)) return alert("Masukkan nilai angka yang valid!");
     try {
       const ref = doc(db, collectionName, id);
       await updateDoc(ref, { 
         score: Number(newScore),
-        status: "Dinilai"
+        status: "Dinilai",
+        gradedAt: new Date().toISOString()
       });
-      alert("Nilai berhasil disimpan!");
+      alert("✅ Nilai berhasil disimpan!");
       setEditingScore(null);
       fetchData();
     } catch (e) { alert("Gagal update nilai"); }
@@ -72,114 +77,173 @@ const CekTugasSiswa = () => {
   const currentData = activeTab === 'tugas' ? tasks : quizzes;
   const filtered = currentData.filter(s => 
     s.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.modulTitle?.toLowerCase().includes(searchTerm.toLowerCase())
+    s.modulTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s.studentClass?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div style={styles.container}>
+      {/* SECTION HEADER */}
       <div style={styles.header}>
         <div>
-          <h2 style={{margin: 0, color: '#1e293b'}}>📋 Pusat Pemeriksaan Tugas & Kuis</h2>
-          <p style={{color: '#64748b', fontSize: '14px', marginTop: 5}}>Pantau ketepatan waktu dan beri nilai hasil belajar siswa.</p>
+          <h2 style={styles.title}><BookOpen size={28} color="#673ab7"/> Pusat Pemeriksaan Tugas & Kuis</h2>
+          <p style={styles.subtitle}>Pantau ketepatan waktu pengumpulan dan beri penilaian hasil belajar siswa secara real-time.</p>
         </div>
         
         <div style={styles.searchBox}>
             <Search size={18} color="#94a3b8" />
             <input 
-                placeholder="Cari siswa atau modul..." 
+                placeholder="Cari siswa, kelas, atau modul..." 
                 style={styles.searchInput}
+                value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
         </div>
       </div>
 
+      {/* STATS SUMMARY */}
+      <div style={styles.statsRow}>
+        <div style={styles.statCard}>
+          <FileText size={20} color="#673ab7"/>
+          <div>
+            <span style={styles.statValue}>{tasks.length}</span>
+            <span style={styles.statLabel}>Total Tugas Masuk</span>
+          </div>
+        </div>
+        <div style={styles.statCard}>
+          <HelpCircle size={20} color="#10b981"/>
+          <div>
+            <span style={styles.statValue}>{quizzes.length}</span>
+            <span style={styles.statLabel}>Total Kuis Selesai</span>
+          </div>
+        </div>
+      </div>
+
+      {/* TAB NAVIGATION */}
       <div style={styles.tabContainer}>
         <button onClick={() => setActiveTab('tugas')} style={activeTab === 'tugas' ? styles.tabActive : styles.tab}>
-          <FileText size={16}/> Tugas Upload ({tasks.length})
+          <FileText size={16}/> Tugas Upload (File)
         </button>
         <button onClick={() => setActiveTab('kuis')} style={activeTab === 'kuis' ? styles.tabActive : styles.tab}>
-          <HelpCircle size={16}/> Hasil Kuis ({quizzes.length})
+          <HelpCircle size={16}/> Hasil Kuis (Interaktif)
         </button>
       </div>
 
-      {loading ? <p style={{textAlign:'center', padding:40}}>Memuat data cerdas...</p> : (
+      {loading ? (
+        <div style={styles.loadingArea}>
+          <div style={styles.spinner}></div>
+          <p>Menganalisis data pengumpulan siswa...</p>
+        </div>
+      ) : (
         <div style={styles.tableWrapper}>
           <table style={styles.table}>
             <thead>
               <tr style={styles.thr}>
-                <th style={styles.th}>Siswa & Kelas</th>
-                <th style={styles.th}>Materi / Bagian</th>
-                <th style={styles.th}>Waktu Pengumpulan</th>
-                <th style={styles.th}>Status Waktu</th>
-                <th style={styles.th}>Jawaban</th>
-                <th style={styles.th}>Nilai</th>
-                <th style={styles.th}>Aksi</th>
+                <th style={styles.th}>Info Siswa</th>
+                <th style={styles.th}>Modul & Bagian</th>
+                <th style={styles.th}>Waktu Submit</th>
+                <th style={styles.th}>Analisis Waktu</th>
+                <th style={styles.th}>File / Respon</th>
+                <th style={styles.th}>Skor / Nilai</th>
+                <th style={styles.th}>Tindakan</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((item) => {
+              {filtered.length > 0 ? filtered.map((item) => {
                 const dateObj = item.submittedAt?.toDate();
-                const timeString = dateObj ? `${dateObj.toLocaleDateString('id-ID')} ${dateObj.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}` : '-';
+                const timeString = dateObj ? `${dateObj.toLocaleDateString('id-ID')} - ${dateObj.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}` : '-';
                 const colName = item.type === 'tugas' ? 'jawaban_tugas' : 'jawaban_kuis';
+
+                // LOGIKA DETEKSI KETERLAMBATAN BERDASARKAN DEADLINE PER BLOK
+                const isLate = item.isLate || false; 
 
                 return (
                   <tr key={item.id} style={styles.tr}>
                     <td style={styles.td}>
-                      <strong style={{color:'#0f172a', display:'block'}}>{item.studentName}</strong>
-                      <span style={{fontSize:12, color:'#64748b'}}>Kelas: {item.studentClass || '-'}</span>
+                      <div style={{display:'flex', alignItems:'center', gap:10}}>
+                        <div style={styles.avatar}><User size={14} color="#64748b"/></div>
+                        <div>
+                          <strong style={styles.studentNameText}>{item.studentName}</strong>
+                          <span style={styles.classBadge}>KELAS: {item.studentClass || 'N/A'}</span>
+                        </div>
+                      </div>
                     </td>
                     <td style={styles.td}>
-                      <span style={{fontWeight:'bold'}}>{item.modulTitle || 'Modul Tanpa Judul'}</span><br/>
-                      <span style={{fontSize:11, color:'#673ab7'}}>{item.blockTitle || 'Kuis'}</span>
+                      <div style={styles.modulInfo}>
+                        <span style={styles.modulTitleText}>{item.modulTitle || 'Modul Tanpa Judul'}</span>
+                        <span style={styles.blockTitleText}>{item.blockTitle || 'Kuis Materi'}</span>
+                      </div>
                     </td>
                     <td style={styles.td}>
                       <div style={styles.timeTag}><Clock size={12}/> {timeString}</div>
                     </td>
                     <td style={styles.td}>
-                      {/* UPDATE: Indikator Keterlambatan Otomatis */}
-                      {item.isLate ? (
-                        <span style={{color: '#ef4444', fontWeight: 'bold', fontSize: 11, background: '#fee2e2', padding: '4px 8px', borderRadius: '5px', display: 'inline-flex', alignItems: 'center', gap: 4}}>
+                      {isLate ? (
+                        <div style={styles.lateStatus}>
                           <AlertCircle size={12}/> TERLAMBAT
-                        </span>
+                        </div>
                       ) : (
-                        <span style={{color: '#10b981', fontWeight: 'bold', fontSize: 11, background: '#dcfce7', padding: '4px 8px', borderRadius: '5px', display: 'inline-flex', alignItems: 'center', gap: 4}}>
+                        <div style={styles.onTimeStatus}>
                           <CheckCircle size={12}/> TEPAT WAKTU
-                        </span>
+                        </div>
                       )}
                     </td>
                     <td style={styles.td}>
                       {item.type === 'tugas' && item.fileUrl ? (
                         <button onClick={() => handleDownloadFile(item.fileUrl, item.studentName, item.modulTitle)} style={styles.btnDownload}>
-                          <Download size={14}/> Unduh
+                          <Download size={14}/> Download File
                         </button>
                       ) : item.type === 'kuis' ? (
-                        <span style={{color:'#64748b', fontSize:12}}>Data Terinput</span>
-                      ) : '-'}
-                    </td>
-                    <td style={styles.td}>
-                      {editingScore === item.id ? (
-                        <input type="number" style={styles.scoreInput} value={newScore} onChange={(e) => setNewScore(e.target.value)} autoFocus />
+                        <div style={styles.kuisInfoTag}>Pilihan Ganda</div>
                       ) : (
-                        <span style={{fontWeight:'bold', fontSize:15, color: item.score ? '#10b981' : '#f43f5e'}}>
-                          {item.score || 'N/A'}
-                        </span>
+                        <span style={{color:'#cbd5e1'}}>Tidak ada file</span>
                       )}
                     </td>
                     <td style={styles.td}>
-                      <div style={{display:'flex', gap:8}}>
+                      <div style={styles.scoreContainer}>
                         {editingScore === item.id ? (
-                          <button onClick={() => handleUpdateScore(item.id, colName)} style={styles.btnSave}><Save size={14}/></button>
+                          <input 
+                            type="number" 
+                            style={styles.scoreInput} 
+                            value={newScore} 
+                            onChange={(e) => setNewScore(e.target.value)} 
+                            onKeyPress={(e) => e.key === 'Enter' && handleUpdateScore(item.id, colName)}
+                            autoFocus 
+                          />
                         ) : (
-                          <button onClick={() => {setEditingScore(item.id); setNewScore(item.score || "")}} style={styles.btnEdit}><Edit3 size={14}/></button>
+                          <span style={{
+                            ...styles.scoreDisplay, 
+                            color: item.score >= 75 ? '#10b981' : (item.score ? '#f43f5e' : '#94a3b8')
+                          }}>
+                            {item.score !== undefined && item.score !== null ? item.score : '--'}
+                          </span>
                         )}
-                        <button onClick={() => handleDelete(item.id, colName)} style={styles.btnDelete}>
-                          <Trash2 size={14}/>
+                        <span style={styles.scoreLabel}>/ 100</span>
+                      </div>
+                    </td>
+                    <td style={styles.td}>
+                      <div style={styles.actionGroup}>
+                        {editingScore === item.id ? (
+                          <button onClick={() => handleUpdateScore(item.id, colName)} style={styles.btnSaveAction} title="Simpan Nilai">
+                            <Save size={16}/>
+                          </button>
+                        ) : (
+                          <button onClick={() => {setEditingScore(item.id); setNewScore(item.score || "")}} style={styles.btnEditAction} title="Beri Nilai">
+                            <Edit3 size={16}/>
+                          </button>
+                        )}
+                        <button onClick={() => handleDelete(item.id, colName)} style={styles.btnDeleteAction} title="Hapus Data">
+                          <Trash2 size={16}/>
                         </button>
                       </div>
                     </td>
                   </tr>
                 );
-              })}
+              }) : (
+                <tr>
+                  <td colSpan="7" style={styles.emptyRow}>Tidak ada data pengumpulan ditemukan.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -190,24 +254,56 @@ const CekTugasSiswa = () => {
 
 const styles = {
   container: { padding: '30px', background: '#f8fafc', minHeight: '100vh', fontFamily: 'Inter, sans-serif' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' },
-  searchBox: { display: 'flex', alignItems: 'center', gap: '10px', background: 'white', padding: '10px 15px', borderRadius: '12px', width: '300px', border: '1px solid #e2e8f0' },
-  searchInput: { border: 'none', outline: 'none', width: '100%', fontSize: '14px' },
-  tabContainer: { display: 'flex', gap: '10px', marginBottom: '20px' },
-  tab: { display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', border: 'none', background: '#e2e8f0', color: '#64748b', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' },
-  tabActive: { display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', border: 'none', background: '#673ab7', color: 'white', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' },
-  tableWrapper: { background: 'white', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' },
+  title: { margin: 0, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '24px', fontWeight: 'bold' },
+  subtitle: { color: '#64748b', fontSize: '14px', marginTop: 5 },
+  searchBox: { display: 'flex', alignItems: 'center', gap: '10px', background: 'white', padding: '12px 18px', borderRadius: '15px', width: '350px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' },
+  searchInput: { border: 'none', outline: 'none', width: '100%', fontSize: '14px', color: '#1e293b' },
+  
+  statsRow: { display: 'flex', gap: '20px', marginBottom: '25px' },
+  statCard: { background: 'white', padding: '15px 25px', borderRadius: '15px', display: 'flex', alignItems: 'center', gap: '15px', border: '1px solid #e2e8f0', flex: 1 },
+  statValue: { display: 'block', fontSize: '22px', fontWeight: 'bold', color: '#1e293b' },
+  statLabel: { fontSize: '12px', color: '#64748b', fontWeight: '500' },
+
+  tabContainer: { display: 'flex', gap: '12px', marginBottom: '20px' },
+  tab: { display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', border: 'none', background: '#e2e8f0', color: '#64748b', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', transition: '0.3s' },
+  tabActive: { display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', border: 'none', background: '#673ab7', color: 'white', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(103, 58, 183, 0.2)' },
+  
+  tableWrapper: { background: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' },
   table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left' },
-  thr: { background: '#f8fafc', color: '#475569', fontSize: '12px', textTransform: 'uppercase' },
-  th: { padding: '15px 20px', fontWeight: 'bold' },
-  tr: { borderBottom: '1px solid #f1f5f9' },
-  td: { padding: '15px 20px', fontSize: '13px', color: '#334155' },
-  timeTag: { display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#f1f5f9', color: '#475569', padding: '6px 10px', borderRadius: '6px', fontSize: '11px' },
-  btnDownload: { background: '#e0f2fe', color: '#0284c7', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 'bold' },
-  scoreInput: { width: '50px', padding: '5px', borderRadius: '5px', border: '2px solid #673ab7', outline: 'none', textAlign: 'center' },
-  btnEdit: { background: '#f1f5f9', color: '#475569', border: 'none', padding: '8px', borderRadius: '8px', cursor: 'pointer' },
-  btnSave: { background: '#10b981', color: 'white', border: 'none', padding: '8px', borderRadius: '8px', cursor: 'pointer' },
-  btnDelete: { background: '#fee2e2', color: '#ef4444', border: 'none', padding: '8px', borderRadius: '8px', cursor: 'pointer' }
+  thr: { background: '#f8fafc', color: '#64748b', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' },
+  th: { padding: '18px 20px', fontWeight: '800' },
+  tr: { borderBottom: '1px solid #f1f5f9', transition: '0.2s' },
+  td: { padding: '18px 20px', verticalAlign: 'middle' },
+
+  avatar: { width: 32, height: 32, background: '#f1f5f9', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  studentNameText: { color: '#0f172a', display: 'block', fontSize: '14px' },
+  classBadge: { fontSize: '10px', color: '#673ab7', background: '#f3e8ff', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', marginTop: 4, display: 'inline-block' },
+
+  modulInfo: { display: 'flex', flexDirection: 'column' },
+  modulTitleText: { fontWeight: '700', color: '#334155', fontSize: '13px' },
+  blockTitleText: { fontSize: '11px', color: '#94a3b8', marginTop: 2 },
+
+  timeTag: { display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f1f5f9', color: '#475569', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: '500' },
+  
+  lateStatus: { color: '#ef4444', fontWeight: '800', fontSize: '10px', background: '#fee2e2', padding: '5px 10px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: 4 },
+  onTimeStatus: { color: '#10b981', fontWeight: '800', fontSize: '10px', background: '#dcfce7', padding: '5px 10px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: 4 },
+  
+  btnDownload: { background: '#673ab7', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 'bold', transition: '0.2s' },
+  kuisInfoTag: { color: '#64748b', fontSize: '11px', fontStyle: 'italic', background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0' },
+  
+  scoreContainer: { display: 'flex', alignItems: 'baseline', gap: 4 },
+  scoreDisplay: { fontWeight: '900', fontSize: '18px' },
+  scoreLabel: { fontSize: '11px', color: '#cbd5e1', fontWeight: 'bold' },
+  scoreInput: { width: '60px', padding: '8px', borderRadius: '10px', border: '2px solid #673ab7', outline: 'none', textAlign: 'center', fontWeight: 'bold', fontSize: '14px' },
+  
+  actionGroup: { display: 'flex', gap: '8px' },
+  btnEditAction: { background: '#f1f5f9', color: '#475569', border: 'none', padding: '10px', borderRadius: '10px', cursor: 'pointer', transition: '0.2s' },
+  btnSaveAction: { background: '#10b981', color: 'white', border: 'none', padding: '10px', borderRadius: '10px', cursor: 'pointer' },
+  btnDeleteAction: { background: '#fff1f2', color: '#f43f5e', border: 'none', padding: '10px', borderRadius: '10px', cursor: 'pointer' },
+  
+  loadingArea: { textAlign: 'center', padding: '100px', color: '#64748b' },
+  emptyRow: { padding: '40px', textAlign: 'center', color: '#94a3b8', fontStyle: 'italic' }
 };
 
 export default CekTugasSiswa;
