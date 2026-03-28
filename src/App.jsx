@@ -6,7 +6,7 @@ import Login from './pages/Login';
 import LoginGuru from './pages/LoginGuru';
 import LoginSiswa from './pages/LoginSiswa'; 
 
-// === IMPORT LAYOUT (Penting untuk Sidebar Tunggal) ===
+// === IMPORT LAYOUT (Solusi Sidebar Tunggal) ===
 import TeacherLayout from './pages/teacher/TeacherLayout';
 
 // === IMPORT ADMIN ===
@@ -35,11 +35,14 @@ import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade';
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager'; 
 import TeacherProfile from './pages/teacher/TeacherProfile'; 
 
-// --- IMPORT MODUL & CEK TUGAS ---
+// --- IMPORT MODUL & CEK TUGAS GURU ---
 import ModulManager from './pages/teacher/modul/ModulManager'; 
 import CekTugasSiswa from './pages/teacher/modul/CekTugasSiswa';
+import ManageMateri from './pages/teacher/modul/ManageMateri';
+import ManageQuiz from './pages/teacher/modul/ManageQuiz';
+import ManageTugas from './pages/teacher/modul/ManageTugas';
 
-// === IMPORT SISWA & ORTU ===
+// === IMPORT SISWA ===
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentSchedule from './pages/student/StudentSchedule';
 import StudentFinanceSiswa from './pages/student/StudentFinance';
@@ -73,7 +76,6 @@ function App() {
   const [guruData, setGuruData] = useState(null);
 
   useEffect(() => {
-    // Mengambil data guru dari local storage untuk dilempar ke TeacherLayout
     const savedGuru = localStorage.getItem('teacherData');
     if (savedGuru) {
       setGuruData(JSON.parse(savedGuru));
@@ -88,7 +90,7 @@ function App() {
         <Route path="/login-guru" element={<LoginGuru />} /> 
         <Route path="/login-siswa" element={<LoginSiswa />} /> 
 
-        {/* === AREA ADMIN (Protected) === */}
+        {/* === AREA ADMIN === */}
         <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
         <Route path="/admin/students" element={<AdminRoute><StudentList /></AdminRoute>} />
         <Route path="/admin/students/add" element={<AdminRoute><AddStudent /></AdminRoute>} />
@@ -104,19 +106,26 @@ function App() {
         <Route path="/admin/grades" element={<AdminRoute><GradeReport /></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
 
-        {/* === AREA GURU (DENGAN LAYOUT SIDEBAR TUNGGAL) === */}
+        {/* === AREA GURU (DIBUNGKUS TEACHER LAYOUT) === */}
         <Route element={<GuruRoute><TeacherLayout guru={guruData} /></GuruRoute>}>
           <Route path="/guru/dashboard" element={<TeacherDashboard />} />
-          <Route path="/guru/modul" element={<ModulManager />} />
-          <Route path="/guru/modul/cek-tugas" element={<CekTugasSiswa />} />
           <Route path="/guru/profile" element={<TeacherProfile />} />
-          <Route path="/guru/grades/input" element={<TeacherInputGrade />} />
-          <Route path="/guru/grades/manage" element={<TeacherGradeManager />} />
           <Route path="/guru/history" element={<TeacherHistory />} />
           <Route path="/guru/manual-input" element={<TeacherManualInput />} />
+          
+          {/* Nilai & Rapor */}
+          <Route path="/guru/grades/input" element={<TeacherInputGrade />} />
+          <Route path="/guru/grades/manage" element={<TeacherGradeManager />} />
+          
+          {/* E-Learning System */}
+          <Route path="/guru/modul" element={<ModulManager />} />
+          <Route path="/guru/modul/cek-tugas" element={<CekTugasSiswa />} />
+          <Route path="/guru/modul/materi" element={<ManageMateri />} />
+          <Route path="/guru/modul/quiz" element={<ManageQuiz />} />
+          <Route path="/guru/modul/tugas" element={<ManageTugas />} />
         </Route>
         
-        {/* === AREA SISWA (Protected) === */}
+        {/* === AREA SISWA === */}
         <Route path="/siswa/dashboard" element={<SiswaRoute><StudentDashboard /></SiswaRoute>} />
         <Route path="/siswa/materi" element={<SiswaRoute><StudentElearning /></SiswaRoute>} />
         <Route path="/siswa/jadwal" element={<SiswaRoute><StudentSchedule /></SiswaRoute>} />
@@ -124,7 +133,7 @@ function App() {
         <Route path="/siswa/rapor" element={<SiswaRoute><StudentGrades /></SiswaRoute>} />
         <Route path="/siswa/absensi" element={<SiswaRoute><StudentAttendanceSiswa /></SiswaRoute>} />
 
-        {/* === REDIRECTS & FALLBACK === */}
+        {/* === REDIRECTS === */}
         <Route path="/teacher/*" element={<Navigate to="/guru/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
