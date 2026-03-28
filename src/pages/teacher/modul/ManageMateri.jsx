@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { collection, addDoc, doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore"; 
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import imageCompression from 'browser-image-compression'; // WAJIB INSTALL: npm install browser-image-compression
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, 
   ArrowLeft, Upload, Calendar, Link as LinkIcon, 
@@ -23,9 +24,9 @@ const ManageMateri = () => {
   const [quizData, setQuizData] = useState([]); 
   const [loading, setLoading] = useState(false);
 
-  // --- STATE TARGETING (DETAIL BARU) ---
-  const [targetKategori, setTargetKategori] = useState("Semua"); // Reguler, Privat, Intensif
-  const [targetKelas, setTargetKelas] = useState("Semua"); // 7, 8, 9, 10, 11, 12
+  // --- STATE TARGETING ---
+  const [targetKategori, setTargetKategori] = useState("Semua"); 
+  const [targetKelas, setTargetKelas] = useState("Semua"); 
   
   const COLLECTION_NAME = "bimbel_modul";
 
@@ -51,19 +52,39 @@ const ManageMateri = () => {
     } catch (err) { console.error("Error fetching:", err); }
   };
 
-  const handleCoverUpload = (e) => {
+  // --- FITUR BARU: KOMPRESI GAMBAR OTOMATIS ---
+  const handleCoverUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (file.size > 1000000) return alert("File terlalu besar (Maks 1MB)");
-      const reader = new FileReader();
-      reader.onloadend = () => setCoverImage(reader.result);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Jika file adalah gambar, kompres otomatis sebelum simpan
+    if (file.type.startsWith('image/')) {
+      const options = {
+        maxSizeMB: 0.5,          // Maksimal 500KB agar tidak error di Firestore
+        maxWidthOrHeight: 1280, // Resolusi tetap tajam
+        useWebWorker: true,
+      };
+
+      try {
+        const compressedFile = await imageCompression(file, options);
+        const reader = new FileReader();
+        reader.onloadend = () => setCoverImage(reader.result);
+        reader.readAsDataURL(compressedFile);
+      } catch (error) {
+        alert("Gagal mengompres gambar: " + error.message);
+      }
+    } else {
+      alert("Hanya file gambar yang diperbolehkan untuk sampul.");
     }
   };
 
   const formatExternalLink = (url) => {
     if (url.includes('canva.com') && url.includes('/edit')) {
       return url.split('?')[0].replace('/edit', '/view?embed');
+    }
+    // Tambahan: Auto-embed Google Drive/Slides
+    if (url.includes('drive.google.com') && url.includes('/view')) {
+        return url.replace('/view', '/preview');
     }
     return url;
   };
@@ -83,7 +104,9 @@ const ManageMateri = () => {
   };
 
   const updateBlock = (id, field, value) => {
-    setBlocks(blocks.map(b => b.id === id ? { ...b, [field]: value } : b));
+    // Gunakan formatter otomatis jika field yang diupdate adalah content
+    const finalValue = field === 'content' ? formatExternalLink(value) : value;
+    setBlocks(blocks.map(b => b.id === id ? { ...b, [field]: finalValue } : b));
   };
 
   const removeBlock = (id) => {
@@ -119,7 +142,6 @@ const ManageMateri = () => {
       targetKelas,
       authorName: localStorage.getItem('userName') || "Admin Guru",
       updatedAt: serverTimestamp(),
-      // Backward Compatibility: Tetap simpan struktur lama agar tidak break di Student view lama
       deadlineTugas: blocks.find(b => b.type === 'assignment')?.endTime || "",
       deadlineQuiz: quizData[0]?.endTime || ""
     };
@@ -191,7 +213,7 @@ const ManageMateri = () => {
           </div>
         </div>
 
-        {/* SECTION 2: TARGETING (PENGATURAN SIAPA YANG LIHAT) */}
+        {/* SECTION 2: TARGETING */}
         <div style={st.sectionHeader}><Layers size={18}/> Pengaturan Target Siswa</div>
         <div style={st.targetGrid}>
            <div style={st.targetBox}>
@@ -241,10 +263,10 @@ const ManageMateri = () => {
             />
 
             <textarea 
-              placeholder={block.type === 'video' ? "Tempel Link Canva (View only) atau Link YouTube di sini..." : "Masukkan isi materi..."}
+              placeholder={block.type === 'video' ? "Tempel Link Canva, YouTube, atau Link Google Slides/PDF..." : "Masukkan isi materi..."}
               style={st.textArea}
               value={block.content}
-              onChange={(e) => updateBlock(block.id, 'content', formatExternalLink(e.target.value))}
+              onChange={(e) => updateBlock(block.id, 'content', e.target.value)}
             />
 
             {block.type === 'assignment' && (
@@ -320,8 +342,6 @@ const ManageMateri = () => {
           <button onClick={() => addBlock('text')} style={st.fab} title="Teks"><FileText size={18}/></button>
           <button onClick={() => addBlock('video')} style={st.fab} title="Media/Link"><LinkIcon size={18}/></button>
           <button onClick={() => addBlock('assignment')} style={st.fab} title="Tugas"><Upload size={18}/></button>
-          <button onClick={addQuizQuestion} style={st.fab} title="Kuis"><HelpCircle size={18}/></button>
-          <div style={st.fabDivider}/>
           <button onClick={handleSave} style={st.btnSaveFab}>SIMPAN MODUL</button>
         </div>
       </div>
@@ -329,55 +349,46 @@ const ManageMateri = () => {
   );
 };
 
-// --- STYLES TETAP DIJAGA & DIPERKUAT ---
+// --- STYLES ---
 const st = {
   container: { padding: '40px 20px', background: '#f8fafc', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center' },
   topBar: { width: '100%', maxWidth: '900px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' },
   breadCrumb: { fontSize: '14px', color: '#64748b', fontWeight: '600' },
   btnBack: { padding: '10px 20px', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 },
   btnPublish: { padding: '12px 30px', borderRadius: '15px', border: 'none', background: '#673ab7', color: 'white', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 10px 20px rgba(103, 58, 183, 0.2)' },
-  
   formCard: { background: 'white', width: '100%', maxWidth: '900px', padding: '50px', borderRadius: '35px', boxShadow: '0 20px 50px rgba(0,0,0,0.04)', marginBottom: '150px' },
   sectionHeader: { display: 'flex', alignItems: 'center', gap: 10, fontSize: '14px', fontWeight: '800', color: '#1e293b', marginBottom: '20px', marginTop: '40px', borderBottom: '1px solid #f1f5f9', paddingBottom: '10px' },
-  
   coverGrid: { display: 'grid', gridTemplateColumns: '220px 1fr', gap: '30px', marginBottom: '40px' },
   coverUploadBox: { height: '160px', borderRadius: '24px', background: '#f1f5f9', border: '2px dashed #cbd5e1', overflow: 'hidden' },
   coverPlaceholder: { width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' },
   coverImage: { width: '100%', height: '100%', objectFit: 'cover' },
   btnRemoveCover: { position: 'absolute', top: 10, right: 10, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 26, height: 26, cursor: 'pointer' },
-  
   identityInputs: { display: 'flex', flexDirection: 'column', justifyContent: 'center' },
   mainInput: { border: 'none', fontSize: '32px', fontWeight: '900', outline: 'none', color: '#0f172a', width: '100%', letterSpacing: '-0.5px' },
   subInput: { border: 'none', fontSize: '16px', outline: 'none', color: '#64748b', marginTop: '10px', width: '100%', fontWeight: '500' },
   globalDateRow: { display:'flex', alignItems:'center', gap:10, marginTop:20, background:'#f8fafc', padding:'8px 15px', borderRadius:'10px', width:'fit-content' },
   cleanDateInput: { border:'none', background:'transparent', fontSize:'12px', outline:'none', fontWeight:'bold', color:'#1e293b' },
-  
   targetGrid: { display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px' },
   targetBox: { display:'flex', flexDirection:'column', gap:8 },
   labelIcon: { fontSize:'11px', fontWeight:'800', color:'#64748b', display:'flex', alignItems:'center', gap:6 },
   selectInput: { padding:'12px', borderRadius:'12px', border:'1px solid #e2e8f0', background:'#fff', outline:'none', fontWeight:'600', fontSize:'14px' },
-  
   divider: { height: '1px', background: '#f1f5f9', margin: '40px 0' },
-  
   blockCard: { background: '#fff', border: '1px solid #f1f5f9', borderRadius: '24px', padding: '25px', marginBottom: '25px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' },
   blockHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
   typeBadge: { fontSize: '9px', fontWeight: '900', color: '#673ab7', background: '#f3e8ff', padding: '5px 12px', borderRadius: '8px', display:'flex', alignItems:'center', gap:5 },
   btnTrash: { background: '#fff1f2', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '8px', borderRadius: '10px' },
   blockTitleInput: { width: '100%', border: 'none', fontSize: '20px', fontWeight: '800', outline: 'none', marginBottom: '15px', color: '#1e293b' },
   textArea: { width: '100%', minHeight: '120px', border: 'none', borderRadius: '16px', padding: '20px', outline: 'none', background: '#f8fafc', fontSize: '15px', lineHeight: 1.6, color: '#334155' },
-  
   deadlineBox: { marginTop: '20px', padding: '20px', background: '#fffbeb', borderRadius: '18px', border: '1px solid #fef3c7' },
   deadlineFlex: { display: 'flex', gap: '20px' },
   subInputGroup: { flex: 1, display: 'flex', flexDirection: 'column', gap: 5 },
   dateInputMini: { padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px' },
-  
   quizCard: { border: '2px solid #f1f5f9', borderRadius: '24px', padding: '30px', marginBottom: '25px' },
   quizBadge: { fontSize: '10px', fontWeight: '900', color: '#10b981', background: '#d1fae5', padding: '5px 12px', borderRadius: '8px', display:'flex', alignItems:'center', gap:5 },
   quizDeadlineRow: { display:'flex', alignItems:'center', gap:8, fontSize:'11px', color:'#64748b', marginBottom:15, background:'#f8fafc', padding:'8px 12px', borderRadius:'10px', width:'fit-content' },
   optGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' },
   optItem: { display: 'flex', alignItems: 'center', gap: 12, padding: '15px', border: '2px solid', borderRadius: '16px', transition: '0.2s' },
   optInput: { flex: 1, border: 'none', outline: 'none', fontSize: '14px', background: 'transparent', fontWeight: '600' },
-  
   fabBar: { position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '12px', background: '#1e293b', padding: '12px 20px', borderRadius: '24px', alignItems: 'center', zIndex: 1000, boxShadow: '0 20px 40px rgba(0,0,0,0.2)' },
   fabLabel: { fontSize: '10px', fontWeight: '900', color: '#94a3b8', marginLeft: '10px' },
   fab: { background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', cursor: 'pointer', padding: '10px', borderRadius: '12px', transition: '0.2s' },

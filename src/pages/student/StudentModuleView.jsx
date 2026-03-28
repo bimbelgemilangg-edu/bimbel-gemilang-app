@@ -5,7 +5,7 @@ import {
   ArrowLeft, Clock, BookOpen, FileText, 
   CheckCircle, UploadCloud, Eye, Link as LinkIcon,
   HelpCircle, ChevronRight, PlayCircle, AlertCircle,
-  FileDigit, Info
+  FileDigit, Info, User
 } from 'lucide-react';
 
 const StudentModuleView = ({ modulId, onBack, studentData }) => {
@@ -151,6 +151,46 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     }
   };
 
+  // --- HELPER UNTUK RENDERING SMART MEDIA ---
+  const renderSmartMedia = (url) => {
+    const isGoogleDrive = url.includes('drive.google.com');
+    const isCanva = url.includes('canva.com');
+    const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
+    
+    if (isCanva || isGoogleDrive || isYouTube) {
+        let embedUrl = url;
+        if (isYouTube) {
+            const videoId = url.split('v=')[1] || url.split('/').pop();
+            embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        }
+        
+        return (
+            <div style={st.iframeWrapper}>
+                <iframe 
+                  src={embedUrl} 
+                  style={st.iframe} 
+                  allowFullScreen 
+                  title="Materi Interaktif"
+                  allow="autoplay"
+                ></iframe>
+            </div>
+        );
+    }
+
+    // Jika link biasa, tampilkan card link yang cantik
+    return (
+        <div style={st.linkBox}>
+          <LinkIcon size={20} color="#673ab7"/>
+          <div style={{flex: 1}}>
+            <p style={{margin:0, fontSize:12, color:'#64748b', fontWeight:'bold'}}>TAUTAN MATERI PENDUKUNG:</p>
+            <a href={url} target="_blank" rel="noreferrer" style={st.btnLinkExternal}>
+              Buka Dokumen / Link Materi ↗
+            </a>
+          </div>
+        </div>
+    );
+  };
+
   if (loading) return <div style={st.loader}><div style={st.spinner}></div> Membuka Modul...</div>;
 
   return (
@@ -199,27 +239,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
 
             {block.type === 'video' && (
               <div style={st.mediaContainer}>
-                {block.content.includes('canva.com') ? (
-                  <div style={st.iframeWrapper}>
-                    <iframe src={block.content} style={st.iframe} allowFullScreen title="Canva Materi"></iframe>
-                  </div>
-                ) : block.content.includes('youtube.com') || block.content.includes('youtu.be') ? (
-                  <div style={st.iframeWrapper}>
-                    <iframe 
-                      src={`https://www.youtube.com/embed/${block.content.split('v=')[1] || block.content.split('/').pop()}`} 
-                      style={st.iframe} 
-                      allowFullScreen
-                    ></iframe>
-                  </div>
-                ) : (
-                  <div style={st.linkBox}>
-                    <LinkIcon size={20} color="#673ab7"/>
-                    <div>
-                      <p style={{margin:0, fontSize:12, color:'#64748b'}}>Tautan Eksternal:</p>
-                      <a href={block.content} target="_blank" rel="noreferrer" style={st.btnLinkExternal}>Buka Materi di Tab Baru ↗</a>
-                    </div>
-                  </div>
-                )}
+                {renderSmartMedia(block.content)}
               </div>
             )}
 
@@ -352,9 +372,9 @@ const st = {
   blockTitle: { fontSize: 26, margin: 0, color: '#0f172a', fontWeight: '800' },
   textBody: { lineHeight: 1.9, color: '#334155', fontSize: 17, whiteSpace: 'pre-wrap' },
   mediaContainer: { marginTop: 25, borderRadius: '20px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 5px 15px rgba(0,0,0,0.02)' },
-  iframeWrapper: { width: '100%', height: '520px', background: '#000' },
+  iframeWrapper: { width: '100%', height: '520px', background: '#f1f5f9' },
   iframe: { width: '100%', height: '100%', border: 'none' },
-  linkBox: { padding: '25px', display: 'flex', alignItems: 'center', gap: 15, background: '#f8fafc' },
+  linkBox: { padding: '25px', display: 'flex', alignItems: 'center', gap: 15, background: '#f8fafc', borderRadius:'15px' },
   btnLinkExternal: { color: '#673ab7', fontWeight: '800', textDecoration: 'none', fontSize: 15 },
   assignmentBox: { marginTop: 25, padding: '30px', borderRadius: '22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 25 },
   assignInfo: { display: 'flex', gap: 18, alignItems: 'flex-start', flex: 1 },
@@ -379,12 +399,5 @@ const st = {
   quizDoneBadge: { textAlign: 'center', padding: '25px', background: '#f0fdf4', color: '#15803d', borderRadius: '20px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, border: '1px solid #bbf7d0' },
   quizErrorBadge: { textAlign: 'center', padding: '25px', background: '#fef2f2', color: '#991b1b', borderRadius: '20px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, border: '1px solid #fee2e2' }
 };
-
-// CSS Animation (Wajib ada di index.css atau style tag)
-const styleTag = document.createElement("style");
-styleTag.innerHTML = `
-  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-`;
-document.head.appendChild(styleTag);
 
 export default StudentModuleView;
