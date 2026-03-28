@@ -8,7 +8,8 @@ import {
   ArrowLeft, Clock, BookOpen, FileText, 
   CheckCircle, UploadCloud, Eye, Link as LinkIcon,
   HelpCircle, ChevronRight, PlayCircle, AlertCircle,
-  FileDigit, Info, User, Trash2, X, Send, File, Zap
+  FileDigit, Info, User, Trash2, X, Send, File, Zap,
+  Calendar
 } from 'lucide-react';
 
 const StudentModuleView = ({ modulId, onBack, studentData }) => {
@@ -19,12 +20,24 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const [quizAnswers, setQuizAnswers] = useState({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   
-  // State untuk Smart Preview & Local Buffer
   const [localFiles, setLocalFiles] = useState({}); 
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isTugasExpired, setIsTugasExpired] = useState(false);
   const [isQuizExpired, setIsQuizExpired] = useState(false);
+
+  // Helper Format Tanggal agar sinkron dengan Dashboard
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "-";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString('id-ID', { 
+      day: '2-digit', 
+      month: 'short', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -40,8 +53,15 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           const data = snap.data();
           setModul(data);
           const now = new Date();
-          if (data.deadlineTugas) setIsTugasExpired(now > new Date(data.deadlineTugas));
-          if (data.deadlineQuiz) setIsQuizExpired(now > new Date(data.deadlineQuiz));
+          
+          // Logika Cek Deadline
+          if (data.deadline) {
+             setIsTugasExpired(now > (data.deadline.toDate ? data.deadline.toDate() : new Date(data.deadline)));
+          }
+          if (data.deadlineQuiz) {
+             setIsQuizExpired(now > (data.deadlineQuiz.toDate ? data.deadlineQuiz.toDate() : new Date(data.deadlineQuiz)));
+          }
+
           checkExistingSubmissions(modulId);
           checkQuizStatus(modulId);
         }
@@ -84,13 +104,11 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     if (!snap.empty) setQuizSubmitted(true);
   };
 
-  // --- FEATURE: SMART COMPRESSION & PREVIEW ---
   const handleFileChange = (e, blockId) => {
     if (isTugasExpired) return alert("❌ Pengumpulan sudah ditutup.");
     const file = e.target.files[0];
     if (!file) return;
 
-    // Support: PDF, DOCX, Images
     const allowedTypes = [
       'application/pdf', 
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -101,7 +119,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       return alert("Format tidak didukung. Gunakan PDF, DOCX, atau Gambar.");
     }
 
-    if (file.size > 2500000) { // 2.5MB Soft Limit
+    if (file.size > 2500000) { 
       return alert("File terlalu besar. Maksimal 2.5MB.");
     }
 
@@ -120,7 +138,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     reader.readAsDataURL(file);
   };
 
-  // --- FEATURE: ANTI-ERROR SUBMISSION ---
   const submitTask = async (blockId, blockTitle) => {
     const fileToUpload = localFiles[blockId];
     if (!fileToUpload) return;
@@ -150,7 +167,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         [blockId]: { docId: docRef.id, fileUrl: fileToUpload.data, fileName: fileToUpload.name } 
       });
 
-      // Clear local preview after success
       const updatedLocal = { ...localFiles };
       delete updatedLocal[blockId];
       setLocalFiles(updatedLocal);
@@ -240,7 +256,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
 
   return (
     <div style={st.container}>
-      {/* HEADER AREA */}
       <div style={st.heroSection}>
         <button onClick={onBack} style={st.backFloating}><ArrowLeft size={18} /> Kembali</button>
         <img src={modul?.coverImage || modul?.coverUrl || "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1000"} style={st.heroImg} alt="Cover" />
@@ -252,9 +267,10 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           <h1 style={st.mainTitle}>{modul?.title}</h1>
           <div style={st.metaInfo}>
              <span style={st.metaItem}><User size={14}/> {modul?.authorName || "Guru Gemilang"}</span>
-             {modul?.deadlineTugas && (
+             <span style={st.metaItem}><Calendar size={14}/> Rilis: {formatDate(modul?.createdAt)}</span>
+             {modul?.deadline && (
                <span style={{...st.deadlineInfo, color: isTugasExpired ? '#ff4d4d' : '#4ade80'}}>
-                 <Clock size={14}/> {isTugasExpired ? "Tugas Berakhir" : `Deadline: ${new Date(modul.deadlineTugas).toLocaleString()}`}
+                 <Clock size={14}/> {isTugasExpired ? "Tugas Berakhir" : `Tenggat: ${formatDate(modul.deadline)}`}
                </span>
              )}
           </div>
@@ -289,7 +305,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                 </div>
 
                 <div style={st.assignActionArea}>
-                  {/* CASE 1: SUDAH SUBMIT */}
                   {submittedTasks[block.id] ? (
                     <div style={{display:'flex', flexDirection:'column', gap:10, alignItems:'flex-end'}}>
                       <div style={st.successUpload}><CheckCircle size={18}/> Berhasil Dikumpul</div>
@@ -307,7 +322,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                   ) : isTugasExpired ? (
                     <div style={st.lockedBadge}><AlertCircle size={18}/> Terkunci</div>
                   ) : localFiles[block.id] ? (
-                    /* CASE 2: PREVIEW MODE (LOCAL) */
                     <div style={st.previewContainer}>
                        <div style={st.previewHeader}>
                           <div style={{display:'flex', alignItems:'center', gap:8}}>
@@ -335,7 +349,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                        </button>
                     </div>
                   ) : (
-                    /* CASE 3: READY TO PICK */
                     <>
                       <input 
                         type="file" id={`file-${block.id}`} style={{display:'none'}} 
@@ -352,7 +365,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           </div>
         ))}
 
-        {/* SECTION KUIS */}
         {modul?.quizData?.length > 0 && (
           <div style={{...st.contentCard, borderTop: `6px solid ${isQuizExpired ? '#ef4444' : '#673ab7'}`}}>
              <div style={st.quizHeader}>
@@ -361,7 +373,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                   <h2 style={{margin:0, fontSize:22}}>Kuis Pemahaman</h2>
                   {modul.deadlineQuiz && (
                     <p style={{margin:0, fontSize:12, color: isQuizExpired ? '#ef4444' : '#64748b'}}>
-                      Deadline: {new Date(modul.deadlineQuiz).toLocaleString()}
+                      Deadline: {formatDate(modul.deadlineQuiz)}
                     </p>
                   )}
                 </div>
@@ -418,7 +430,7 @@ const st = {
   subjectBadge: { background: '#673ab7', padding: '6px 16px', borderRadius: '10px', fontSize: 11, fontWeight: '800' },
   categoryBadge: { background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', padding: '6px 16px', borderRadius: '10px', fontSize: 11 },
   mainTitle: { fontSize: 38, margin: '0 0 15px', fontWeight: '900', lineHeight: 1.2 },
-  metaInfo: { display: 'flex', gap: 25, fontSize: 14, opacity: 0.9, alignItems: 'center' },
+  metaInfo: { display: 'flex', gap: 25, fontSize: 14, opacity: 0.9, alignItems: 'center', flexWrap: 'wrap' },
   metaItem: { display: 'flex', alignItems: 'center', gap: 8 },
   deadlineInfo: { display: 'flex', alignItems: 'center', gap: 8, fontWeight: '800' },
   contentWrapper: { maxWidth: '950px', margin: '-50px auto 0', position: 'relative', zIndex: 5, padding: '0 20px' },

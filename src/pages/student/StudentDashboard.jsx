@@ -19,7 +19,8 @@ import {
   Menu,
   ChevronRight,
   Target,
-  ClipboardList
+  ClipboardList,
+  AlertCircle
 } from 'lucide-react';
 
 // --- IMPORT SWIPER ---
@@ -53,12 +54,24 @@ const StudentDashboard = () => {
 
   const isMobile = windowWidth <= 768;
 
+  // Fungsi Helper Format Tanggal
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "-";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString('id-ID', { 
+      day: '2-digit', 
+      month: 'short', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       if (!studentId) return;
       setLoading(true);
       try {
-        // 1. Ambil Profil Siswa untuk Filter Kategori & Kelas
         const studentSnap = await getDoc(doc(db, "students", studentId));
         let currentKategori = "Semua";
         let currentKelas = "Semua";
@@ -70,17 +83,14 @@ const StudentDashboard = () => {
           currentKelas = sData.kelasSekolah || "Semua";
         }
 
-        // 2. Ambil Poster Pengumuman
         const qPost = query(collection(db, "student_contents"), orderBy("createdAt", "desc"));
         const snapPost = await getDocs(qPost);
         setPosters(snapPost.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 
-        // 3. Ambil Jadwal
         const qSched = query(collection(db, "jadwal_bimbel"), where("students", "array-contains", studentId), limit(3));
         const snapSched = await getDocs(qSched);
         setSchedules(snapSched.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         
-        // 4. Ambil Modul/Tugas TERFILTER sesuai Target Kelas & Kategori
         const qTask = query(
             collection(db, "bimbel_modul"), 
             where("targetKategori", "in", ["Semua", currentKategori]),
@@ -123,10 +133,7 @@ const StudentDashboard = () => {
           effect={'fade'}
           navigation={!isMobile}
           pagination={{ clickable: true }}
-          autoplay={{ 
-            delay: 5000,
-            disableOnInteraction: false 
-          }}
+          autoplay={{ delay: 5000, disableOnInteraction: false }}
           loop={posters.length > 1}
           style={styles.mySwiper}
         >
@@ -160,17 +167,17 @@ const StudentDashboard = () => {
           </section>
 
           <section style={styles.sectionCard}>
-            <h3 style={styles.sectionTitle}><Clock size={20} color="#e67e22" /> Tugas & Materi Baru</h3>
+            <h3 style={styles.sectionTitle}><Clock size={20} color="#e67e22" /> Riwayat Materi Terbaru</h3>
             <div style={styles.timelineList}>
-              {tasks.length > 0 ? tasks.slice(0,3).map((task, i) => (
+              {tasks.length > 0 ? tasks.slice(0, 3).map((task, i) => (
                 <div key={i} style={styles.timelineItem}>
                   <div style={styles.timelineMarker}><div style={styles.dot}></div><div style={styles.line}></div></div>
                   <div style={styles.timelineContent}>
                     <span style={{fontWeight: '600', fontSize: '13px'}}>{task.title}</span>
-                    <span style={styles.deadlineLabel}>Mata Pelajaran: {task.subject}</span>
+                    <span style={styles.deadlineLabel}>Rilis: {formatDate(task.createdAt)}</span>
                   </div>
                 </div>
-              )) : <div style={styles.emptyState}>Belum ada materi baru untuk kelasmu.</div>}
+              )) : <div style={styles.emptyState}>Belum ada materi baru.</div>}
             </div>
           </section>
         </div>
@@ -188,7 +195,7 @@ const StudentDashboard = () => {
             </div>
           </section>
 
-          {/* SECTION UPCOMING TUGAS BARU */}
+          {/* SECTION UPCOMING TUGAS DENGAN TANGGAL TENGGAT */}
           <section style={{...styles.sectionCard, marginTop: '20px'}}>
             <h3 style={styles.sectionTitle}><ClipboardList size={20} color="#9b59b6" /> Upcoming Tugas</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '15px'}}>
@@ -196,18 +203,13 @@ const StudentDashboard = () => {
                 <div key={i} style={styles.upcomingTaskItem}>
                   <div style={{flex: 1}}>
                     <div style={{fontSize: '13px', fontWeight: '700', color: '#2c3e50'}}>{task.title}</div>
-                    <div style={{fontSize: '11px', color: '#95a5a6'}}>{task.subject}</div>
+                    <div style={{fontSize: '11px', color: '#7f8c8d', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px'}}>
+                       <Clock size={12} /> Deadline: <span style={{color: '#e74c3c', fontWeight: '600'}}>{formatDate(task.deadline)}</span>
+                    </div>
                   </div>
-                  <button 
-                    onClick={() => setActiveMenu('materi')} 
-                    style={styles.btnActionSmall}
-                  >
-                    Buka
-                  </button>
+                  <button onClick={() => setActiveMenu('materi')} style={styles.btnActionSmall}>Buka</button>
                 </div>
-              )) : (
-                <div style={styles.emptyState}>Tidak ada tugas mendatang.</div>
-              )}
+              )) : <div style={styles.emptyState}>Tidak ada tugas mendatang.</div>}
             </div>
           </section>
         </div>
@@ -315,9 +317,8 @@ const styles = {
   modalContent: { background: 'white', borderRadius: '15px', overflow: 'hidden' },
   modalImg: { width: '100%', height: '200px', objectFit: 'cover' },
   modalBody: { fontSize: '14px', color: '#475569', lineHeight: '1.6' },
-  // STYLES BARU UNTUK UPCOMING TUGAS
-  upcomingTaskItem: { display: 'flex', alignItems: 'center', padding: '10px', background: '#f1f5f9', borderRadius: '8px', borderLeft: '4px solid #9b59b6' },
-  btnActionSmall: { background: '#9b59b6', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', transition: '0.2s opacity' }
+  upcomingTaskItem: { display: 'flex', alignItems: 'center', padding: '12px', background: '#f8fafc', borderRadius: '10px', borderLeft: '4px solid #9b59b6' },
+  btnActionSmall: { background: '#9b59b6', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer' }
 };
 
 export default StudentDashboard;
