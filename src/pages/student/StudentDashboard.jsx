@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SidebarSiswa from '../../components/SidebarSiswa';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs, orderBy, limit, doc, getDoc } from "firebase/firestore";
+import { QRCodeSVG } from 'qrcode.react'; // Pastikan sudah install qrcode.react
 
 // --- IMPORT KOMPONEN MENU ---
 import StudentFinanceSiswa from './StudentFinance';
@@ -20,7 +21,9 @@ import {
   ChevronRight,
   Target,
   ClipboardList,
-  AlertCircle
+  AlertCircle,
+  QrCode,
+  X
 } from 'lucide-react';
 
 // --- IMPORT SWIPER ---
@@ -45,6 +48,7 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [selectedNews, setSelectedNews] = useState(null);
   const [studentProfile, setStudentProfile] = useState(null);
+  const [showQRModal, setShowQRModal] = useState(false); // State Modal QR
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -54,7 +58,6 @@ const StudentDashboard = () => {
 
   const isMobile = windowWidth <= 768;
 
-  // Fungsi Helper Format Tanggal
   const formatDate = (timestamp) => {
     if (!timestamp) return "-";
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -120,9 +123,14 @@ const StudentDashboard = () => {
           </p>
         </div>
         {!isMobile && (
-          <div style={styles.statusBadge}>
-            <GraduationCap size={18} />
-            <span>Siswa Aktif</span>
+          <div style={{display:'flex', gap: 10}}>
+              <button onClick={() => setShowQRModal(true)} style={styles.btnQRHeader}>
+                <QrCode size={18} /> ID QR SAYA
+              </button>
+              <div style={styles.statusBadge}>
+                <GraduationCap size={18} />
+                <span>Siswa Aktif</span>
+              </div>
           </div>
         )}
       </div>
@@ -195,7 +203,6 @@ const StudentDashboard = () => {
             </div>
           </section>
 
-          {/* SECTION UPCOMING TUGAS DENGAN TANGGAL TENGGAT */}
           <section style={{...styles.sectionCard, marginTop: '20px'}}>
             <h3 style={styles.sectionTitle}><ClipboardList size={20} color="#9b59b6" /> Upcoming Tugas</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '15px'}}>
@@ -225,6 +232,31 @@ const StudentDashboard = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* MODAL QR CODE UNTUK ABSENSI */}
+      {showQRModal && (
+        <div style={styles.modalOverlay} onClick={() => setShowQRModal(false)}>
+          <div style={styles.qrModalContent} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowQRModal(false)} style={styles.btnCloseQR}><X size={20}/></button>
+            <h3 style={{marginTop:0, fontSize:18, color:'#2c3e50'}}>ID Absensi QR Siswa</h3>
+            <p style={{fontSize:12, color:'#7f8c8d', marginBottom:20}}>Tunjukkan kode ini ke kamera guru untuk absen</p>
+            <div style={styles.qrWrapper}>
+              <QRCodeSVG value={studentId} size={200} level="H" includeMargin={true} />
+            </div>
+            <div style={styles.qrInfo}>
+               <div style={{fontSize:16, fontWeight:'bold', color:'#2c3e50'}}>{studentName}</div>
+               <div style={{fontSize:12, color:'#3498db', fontWeight:'600'}}>{studentId}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FLOATING ACTION BUTTON UNTUK QR DI MOBILE */}
+      {isMobile && (
+        <button onClick={() => setShowQRModal(true)} style={styles.fabQR}>
+          <QrCode size={24} />
+        </button>
       )}
     </div>
   );
@@ -283,6 +315,7 @@ const styles = {
   titleMobile: { fontSize: '22px', fontWeight: '800', color: '#1e293b', margin: 0 },
   subtitle: { color: '#64748b', marginTop: '5px', fontSize: '14px' },
   statusBadge: { display: 'flex', alignItems: 'center', gap: '8px', background: '#dcfce7', color: '#166534', padding: '8px 16px', borderRadius: '100px', fontWeight: 'bold' },
+  btnQRHeader: { display:'flex', alignItems:'center', gap:8, background:'#1e293b', color:'white', border:'none', padding:'8px 16px', borderRadius:100, fontWeight:'bold', cursor:'pointer' },
   mobileMenuBtn: { position: 'fixed', top: '15px', left: '15px', zIndex: 900, background: '#1e293b', color: 'white', border: 'none', padding: '10px', borderRadius: '10px' },
   overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 998 },
   carouselContainer: { borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', width: '100%' },
@@ -313,12 +346,19 @@ const styles = {
   schItem: { background: 'rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '10px' },
   schTime: { borderRight: '1px solid rgba(255,255,255,0.2)', paddingRight: '10px' },
   emptyState: { fontSize: '12px', color: '#94a3b8', textAlign: 'center', padding: '10px' },
-  modalOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.7)', zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center' },
+  modalOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.7)', zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center', backdropFilter: 'blur(5px)' },
   modalContent: { background: 'white', borderRadius: '15px', overflow: 'hidden' },
   modalImg: { width: '100%', height: '200px', objectFit: 'cover' },
   modalBody: { fontSize: '14px', color: '#475569', lineHeight: '1.6' },
   upcomingTaskItem: { display: 'flex', alignItems: 'center', padding: '12px', background: '#f8fafc', borderRadius: '10px', borderLeft: '4px solid #9b59b6' },
-  btnActionSmall: { background: '#9b59b6', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer' }
+  btnActionSmall: { background: '#9b59b6', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer' },
+  
+  // QR MODAL STYLES
+  fabQR: { position: 'fixed', bottom: '20px', right: '20px', width: '60px', height: '60px', borderRadius: '50%', background: '#1e293b', color: 'white', border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.3)', zIndex: 900 },
+  qrModalContent: { background: 'white', padding: '40px 20px', borderRadius: '25px', width: '320px', textAlign: 'center', position: 'relative' },
+  btnCloseQR: { position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' },
+  qrWrapper: { padding: '15px', background: 'white', border: '1px solid #f1f5f9', borderRadius: '15px', display: 'inline-block', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' },
+  qrInfo: { marginTop: '20px', borderTop: '1px dashed #e2e8f0', paddingTop: '15px' }
 };
 
 export default StudentDashboard;
