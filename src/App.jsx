@@ -31,8 +31,10 @@ import TeacherManualInput from './pages/teacher/TeacherManualInput';
 import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade'; 
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager'; 
 import TeacherProfile from './pages/teacher/TeacherProfile'; 
-// --- TAMBAHAN IMPORT UNTUK MODUL ---
+
+// --- IMPORT MODUL & CEK TUGAS ---
 import ModulManager from './pages/teacher/modul/ModulManager'; 
+import CekTugasSiswa from './pages/teacher/modul/CekTugasSiswa';
 
 // === IMPORT SISWA & ORTU ===
 import StudentDashboard from './pages/student/StudentDashboard';
@@ -92,8 +94,11 @@ function App() {
 
         {/* === AREA GURU (Protected) === */}
         <Route path="/guru/dashboard" element={<GuruRoute><TeacherDashboard /></GuruRoute>} />
-        {/* PENAMBAHAN ROUTE MODUL GURU */}
-        <Route path="/guru/modul" element={<GuruRoute><TeacherDashboard /></GuruRoute>} />
+        
+        {/* MODUL & CEK TUGAS GURU */}
+        <Route path="/guru/modul" element={<GuruRoute><ModulManager /></GuruRoute>} />
+        <Route path="/guru/modul/cek-tugas" element={<GuruRoute><CekTugasSiswa /></GuruRoute>} />
+        
         <Route path="/guru/profile" element={<GuruRoute><TeacherProfile /></GuruRoute>} />
         <Route path="/guru/grades/input" element={<GuruRoute><TeacherInputGrade /></GuruRoute>} />
         <Route path="/guru/grades/manage" element={<GuruRoute><TeacherGradeManager /></GuruRoute>} />
