@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
-import { collection, getDocs, doc, deleteDoc, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, doc, deleteDoc, query } from "firebase/firestore";
 import { 
   BookOpen, Plus, Search, FileText, HelpCircle, 
   Layers, Trash2, Edit3, Eye 
@@ -13,7 +13,7 @@ const ModulManager = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
-  // KUNCI UTAMA: Menggunakan "bimbel_modul" sesuai database aktif Anda
+  // KUNCI: Harus sesuai dengan nama koleksi di Firebase Anda (bimbel_modul)
   const COLLECTION_NAME = "bimbel_modul";
 
   useEffect(() => {
@@ -23,7 +23,6 @@ const ModulManager = () => {
   const fetchModuls = async () => {
     setLoading(true);
     try {
-      // Mengambil data dari koleksi bimbel_modul
       const q = query(collection(db, COLLECTION_NAME));
       const querySnapshot = await getDocs(q);
       const data = querySnapshot.docs.map(d => ({ 
@@ -33,16 +32,16 @@ const ModulManager = () => {
       setModuls(data);
     } catch (error) {
       console.error("Error fetching moduls:", error);
-      alert("Gagal memuat data dari Firebase. Pastikan koneksi internet stabil.");
     }
     setLoading(false);
   };
 
-  const handleDeleteModul = async (id) => {
-    if (window.confirm("Hapus modul ini secara permanen dari database?")) {
+  const handleDeleteModul = async (e, id) => {
+    e.stopPropagation(); // Mencegah klik menyebar ke card
+    if (window.confirm("Hapus modul ini secara permanen?")) {
       try {
         await deleteDoc(doc(db, COLLECTION_NAME, id));
-        fetchModuls(); // Refresh data setelah hapus
+        fetchModuls();
       } catch (e) {
         alert("Gagal menghapus: " + e.message);
       }
@@ -50,8 +49,7 @@ const ModulManager = () => {
   };
 
   const filteredModuls = moduls.filter(m => 
-    m.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.subject?.toLowerCase().includes(searchTerm.toLowerCase())
+    m.title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -60,7 +58,7 @@ const ModulManager = () => {
       <div style={styles.header}>
         <div>
           <h2 style={styles.title}><BookOpen size={28} color="#673ab7"/> E-Learning Management</h2>
-          <p style={styles.subtitle}>Mengelola materi dan kuis di koleksi <b>"{COLLECTION_NAME}"</b></p>
+          <p style={styles.subtitle}>Kelola materi dan kuis di koleksi <b>"{COLLECTION_NAME}"</b></p>
         </div>
         <div style={styles.headerActions}>
            <div style={styles.searchBox}>
@@ -78,7 +76,7 @@ const ModulManager = () => {
         </div>
       </div>
 
-      {/* STATS RINGKAS */}
+      {/* STATS */}
       <div style={styles.statsRow}>
         <div style={styles.statCard}>
           <Layers size={20} color="#673ab7"/>
@@ -89,16 +87,16 @@ const ModulManager = () => {
         </div>
       </div>
 
-      {/* GRID DATA MODUL */}
+      {/* GRID DATA */}
       {loading ? (
-        <div style={styles.loadingArea}>Menghubungkan ke Cloud Firestore...</div>
+        <div style={styles.loadingArea}>Memuat data dari database...</div>
       ) : (
         <div style={styles.grid}>
           {filteredModuls.map((modul) => (
             <div key={modul.id} style={styles.card}>
               <div style={styles.cardHeader}>
-                <span style={styles.badge}>{modul.subject || 'Umum'}</span>
-                <button onClick={() => handleDeleteModul(modul.id)} style={styles.btnDelIcon}>
+                <span style={styles.badge}>{modul.subject || 'UMUM'}</span>
+                <button onClick={(e) => handleDeleteModul(e, modul.id)} style={styles.btnDelIcon}>
                   <Trash2 size={16}/>
                 </button>
               </div>
@@ -106,22 +104,24 @@ const ModulManager = () => {
               <h3 style={styles.cardTitle}>{modul.title || "Judul Kosong"}</h3>
               
               <div style={styles.cardMeta}>
-                {/* Menghitung isi field content/blocks dan quiz secara dinamis */}
+                {/* Menampilkan jumlah konten berdasarkan struktur field 'content' di Firebase */}
                 <div style={styles.metaItem}>
-                  <FileText size={14}/> {Array.isArray(modul.blocks) ? modul.blocks.length : (modul.content ? 1 : 0)} Materi
+                  <FileText size={14}/> {modul.content ? "1 Materi" : "0 Materi"}
                 </div>
                 <div style={styles.metaItem}>
-                  <HelpCircle size={14}/> {modul.quiz?.length || 0} Soal Kuis
+                  <HelpCircle size={14}/> {modul.quizData ? "Ada Kuis" : "0 Soal Kuis"}
                 </div>
               </div>
 
               <div style={styles.cardActions}>
+                {/* Navigasi ke halaman edit dengan ID modul */}
                 <button 
                   onClick={() => navigate(`/guru/modul/materi?edit=${modul.id}`)} 
                   style={styles.btnEdit}
                 >
                   <Edit3 size={14}/> Edit Konten
                 </button>
+                {/* Link Preview ke halaman siswa */}
                 <button 
                   onClick={() => window.open(`/siswa/materi/${modul.id}`, '_blank')} 
                   style={styles.btnView}
@@ -137,8 +137,7 @@ const ModulManager = () => {
       {/* TAMPILAN JIKA KOSONG */}
       {!loading && filteredModuls.length === 0 && (
         <div style={styles.emptyState}>
-          <p>Tidak ada modul ditemukan di koleksi <b>"{COLLECTION_NAME}"</b>.</p>
-          <button onClick={() => navigate('/guru/modul/materi')} style={styles.btnLink}>Buat Modul Sekarang</button>
+           <p>Belum ada modul. Mulai buat modul materi pertama Anda!</p>
         </div>
       )}
     </div>
@@ -158,20 +157,19 @@ const styles = {
   statCard: { background: 'white', padding: '15px 25px', borderRadius: '15px', display: 'flex', alignItems: 'center', gap: '15px', border: '1px solid #e2e8f0' },
   statValue: { display: 'block', fontSize: '20px', fontWeight: 'bold', color: '#1e293b' },
   statLabel: { fontSize: '12px', color: '#64748b' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' },
   card: { background: 'white', borderRadius: '20px', padding: '20px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' },
   cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' },
-  badge: { background: '#f3e8ff', color: '#673ab7', padding: '5px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' },
+  badge: { background: '#f3e8ff', color: '#673ab7', padding: '5px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold' },
   btnDelIcon: { background: 'transparent', border: 'none', color: '#cbd5e1', cursor: 'pointer' },
   cardTitle: { margin: '0 0 15px 0', fontSize: '18px', color: '#1e293b', fontWeight: 'bold' },
   cardMeta: { display: 'flex', gap: '15px', padding: '15px 0', borderTop: '1px solid #f1f5f9', marginBottom: '15px' },
   metaItem: { display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#64748b' },
   cardActions: { display: 'flex', gap: '10px' },
-  btnEdit: { flex: 1, background: '#f8fafc', color: '#1e293b', border: '1px solid #e2e8f0', padding: '10px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 },
-  btnView: { flex: 1, background: '#1e293b', color: 'white', border: 'none', padding: '10px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 },
+  btnEdit: { flex: 1, background: '#f8fafc', color: '#1e293b', border: '1px solid #e2e8f0', padding: '12px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 },
+  btnView: { flex: 1, background: '#1e293b', color: 'white', border: 'none', padding: '12px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 },
   loadingArea: { textAlign: 'center', padding: '100px', color: '#64748b' },
-  emptyState: { textAlign: 'center', padding: '60px', color: '#94a3b8' },
-  btnLink: { background: 'none', border: 'none', color: '#673ab7', textDecoration: 'underline', cursor: 'pointer', fontWeight: 'bold' }
+  emptyState: { textAlign: 'center', padding: '60px', color: '#94a3b8' }
 };
 
 export default ModulManager;

@@ -3,8 +3,8 @@ import { db } from '../../../firebase';
 import { collection, addDoc, doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore"; 
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
-  Save, Plus, Trash2, Video, FileText, 
-  HelpCircle, Clock, ArrowLeft, CheckCircle
+  Save, Trash2, Video, FileText, 
+  HelpCircle, Clock, ArrowLeft, CheckCircle, Plus
 } from 'lucide-react';
 
 const ManageMateri = () => {
@@ -15,25 +15,21 @@ const ManageMateri = () => {
   // State Utama
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
-  const [description, setDescription] = useState("");
-  const [blocks, setBlocks] = useState([]); // Untuk materi (Teks/Video/Tugas)
-  const [quiz, setQuiz] = useState([]); // Untuk Kuis (Daftar Pertanyaan)
+  const [blocks, setBlocks] = useState([]); 
+  const [quizData, setQuizData] = useState([]); 
   const [loading, setLoading] = useState(false);
-
-  // State Tenggat Waktu
   const [deadlineTugas, setDeadlineTugas] = useState("");
   const [deadlineQuiz, setDeadlineQuiz] = useState("");
 
-  // KUNCI: Sesuai gambar Firebase kamu
   const COLLECTION_NAME = "bimbel_modul";
 
   useEffect(() => {
     if (editId) {
-      fetchExistingModul();
+      fetchModulData();
     }
   }, [editId]);
 
-  const fetchExistingModul = async () => {
+  const fetchModulData = async () => {
     try {
       const docRef = doc(db, COLLECTION_NAME, editId);
       const snap = await getDoc(docRef);
@@ -41,24 +37,24 @@ const ManageMateri = () => {
         const data = snap.data();
         setTitle(data.title || "");
         setSubject(data.subject || "");
-        setDescription(data.description || "");
-        setBlocks(data.blocks || []);
-        setQuiz(data.quiz || []);
+        // Mendukung struktur data lama (content) atau baru (blocks)
+        setBlocks(data.blocks || (data.content ? [{id: Date.now(), type: 'text', content: data.content, title: 'Materi'}] : []));
+        setQuizData(data.quizData || []);
         setDeadlineTugas(data.deadlineTugas || "");
         setDeadlineQuiz(data.deadlineQuiz || "");
       }
     } catch (err) {
-      console.error("Gagal ambil data:", err);
+      console.error("Error fetching document:", err);
     }
   };
 
-  // --- LOGIKA MATERI (BLOCKS) ---
+  // --- MANAJEMEN BLOK (TEKS/VIDEO/TUGAS) ---
   const addBlock = (type) => {
     setBlocks([...blocks, { 
       id: Date.now(), 
       type, 
       content: "", 
-      title: type === 'assignment' ? "TUGAS BARU" : "SUB-MATERI BARU" 
+      title: type === 'assignment' ? "TUGAS BARU" : "SUB-MATERI" 
     }]);
   };
 
@@ -68,9 +64,9 @@ const ManageMateri = () => {
 
   const removeBlock = (id) => setBlocks(blocks.filter(b => b.id !== id));
 
-  // --- LOGIKA KUIS (QUESTIONS) ---
+  // --- MANAJEMEN KUIS ---
   const addQuizQuestion = () => {
-    setQuiz([...quiz, { 
+    setQuizData([...quizData, { 
       id: Date.now(), 
       question: "", 
       options: ["", "", "", ""], 
@@ -79,11 +75,11 @@ const ManageMateri = () => {
   };
 
   const updateQuizQuestion = (id, field, value) => {
-    setQuiz(quiz.map(q => q.id === id ? { ...q, [field]: value } : q));
+    setQuizData(quizData.map(q => q.id === id ? { ...q, [field]: value } : q));
   };
 
   const updateQuizOption = (qId, optIdx, value) => {
-    setQuiz(quiz.map(q => {
+    setQuizData(quizData.map(q => {
       if (q.id === qId) {
         const newOpts = [...q.options];
         newOpts[optIdx] = value;
@@ -93,22 +89,21 @@ const ManageMateri = () => {
     }));
   };
 
-  const removeQuizQuestion = (id) => setQuiz(quiz.filter(q => q.id !== id));
+  const removeQuizQuestion = (id) => setQuizData(quizData.filter(q => q.id !== id));
 
-  // --- SIMPAN DATA ---
+  // --- PROSES SIMPAN ---
   const handleSave = async () => {
     if (!title) return alert("Judul Modul wajib diisi!");
-    
     setLoading(true);
+
     const payload = {
       title,
-      subject: subject || "Umum",
-      description: description || "",
+      subject: subject || "UMUM",
       type: "materi",
-      blocks: blocks,
-      quiz: quiz,
-      deadlineTugas: deadlineTugas || null,
-      deadlineQuiz: deadlineQuiz || null,
+      blocks,
+      quizData,
+      deadlineTugas,
+      deadlineQuiz,
       updatedAt: serverTimestamp()
     };
 
@@ -119,21 +114,19 @@ const ManageMateri = () => {
         payload.createdAt = serverTimestamp();
         await addDoc(collection(db, COLLECTION_NAME), payload);
       }
-      alert("Modul Berhasil Dipublikasi!");
+      alert("Modul Berhasil Disimpan!");
       navigate('/guru/modul');
     } catch (error) {
-      console.error("Error saving document: ", error);
-      alert("Gagal menyimpan: " + error.message);
+      alert("Error: " + error.message);
     }
     setLoading(false);
   };
 
   return (
     <div style={styles.container}>
-      {/* Tombol Atas */}
       <div style={styles.topBar}>
         <button onClick={() => navigate('/guru/modul')} style={styles.btnBack}>
-           <ArrowLeft size={18}/> Kembali
+           <ArrowLeft size={18}/> Batal
         </button>
         <button onClick={handleSave} disabled={loading} style={styles.btnPublish}>
           <Save size={18}/> {loading ? "Menyimpan..." : "PUBLISH MODUL"}
@@ -141,7 +134,6 @@ const ManageMateri = () => {
       </div>
 
       <div style={styles.formCard}>
-        {/* Input Judul Utama */}
         <input 
           placeholder="Judul Modul..." 
           style={styles.mainInput}
@@ -149,7 +141,7 @@ const ManageMateri = () => {
           onChange={(e) => setTitle(e.target.value)}
         />
         <input 
-          placeholder="Mata Pelajaran (Contoh: Matematika)..." 
+          placeholder="Mata Pelajaran..." 
           style={styles.subInput}
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
@@ -157,23 +149,22 @@ const ManageMateri = () => {
         
         <div style={styles.divider} />
 
-        {/* Input Deadline */}
-        <div style={styles.deadlineSection}>
-          <div style={styles.deadlineItem}>
+        <div style={styles.deadlineRow}>
+          <div style={styles.deadlineBox}>
             <label style={styles.label}><Clock size={14}/> Tenggat Tugas</label>
             <input type="datetime-local" style={styles.dateInput} value={deadlineTugas} onChange={(e) => setDeadlineTugas(e.target.value)} />
           </div>
-          <div style={styles.deadlineItem}>
+          <div style={styles.deadlineBox}>
             <label style={styles.label}><Clock size={14}/> Tenggat Kuis</label>
             <input type="datetime-local" style={styles.dateInput} value={deadlineQuiz} onChange={(e) => setDeadlineQuiz(e.target.value)} />
           </div>
         </div>
 
-        {/* Render Materi (Blocks) */}
+        {/* Render Materi/Blocks */}
         {blocks.map((block, idx) => (
           <div key={block.id} style={styles.blockCard}>
             <div style={styles.blockHeader}>
-              <span style={styles.blockBadge}>BAGIAN {idx + 1}: {block.type.toUpperCase()}</span>
+              <span style={styles.badge}>BAGIAN {idx + 1}: {block.type.toUpperCase()}</span>
               <button onClick={() => removeBlock(block.id)} style={styles.btnTrash}><Trash2 size={16}/></button>
             </div>
             <input 
@@ -183,7 +174,7 @@ const ManageMateri = () => {
               onChange={(e) => updateBlock(block.id, 'title', e.target.value)}
             />
             <textarea 
-              placeholder={block.type === 'video' ? "Tempel Link URL Video di sini..." : "Tulis isi materi/instruksi tugas..."}
+              placeholder={block.type === 'video' ? "URL Video..." : "Isi Materi..."}
               style={styles.textArea}
               value={block.content}
               onChange={(e) => updateBlock(block.id, 'content', e.target.value)}
@@ -191,16 +182,15 @@ const ManageMateri = () => {
           </div>
         ))}
 
-        {/* Render Kuis (Fitur Tambah Soal Kembali) */}
-        {quiz.length > 0 && <h3 style={{marginTop: 40, color: '#673ab7'}}>Daftar Pertanyaan Kuis</h3>}
-        {quiz.map((q, idx) => (
+        {/* Render Kuis */}
+        {quizData.map((q, idx) => (
           <div key={q.id} style={styles.quizCard}>
             <div style={styles.blockHeader}>
-              <span style={styles.blockBadge}>SOAL KUIS #{idx + 1}</span>
+              <span style={styles.badge}>SOAL KUIS {idx + 1}</span>
               <button onClick={() => removeQuizQuestion(q.id)} style={styles.btnTrash}><Trash2 size={16}/></button>
             </div>
             <textarea 
-              placeholder="Ketik Pertanyaan..." 
+              placeholder="Pertanyaan..." 
               style={{...styles.textArea, minHeight: '60px', marginBottom: '15px'}}
               value={q.question}
               onChange={(e) => updateQuizQuestion(q.id, 'question', e.target.value)}
@@ -215,19 +205,22 @@ const ManageMateri = () => {
                     value={opt}
                     onChange={(e) => updateQuizOption(q.id, oIdx, e.target.value)}
                   />
-                  {q.correctAnswer === oIdx && <CheckCircle size={14} color="#673ab7"/>}
                 </div>
               ))}
             </div>
           </div>
         ))}
 
-        {/* Floating Action Bar (Bar Hitam di Bawah) */}
-        <div style={styles.fabContainer}>
-          <button onClick={() => addBlock('text')} style={styles.fab} title="Tambah Teks"><FileText size={20}/></button>
-          <button onClick={() => addBlock('video')} style={styles.fab} title="Tambah Video"><Video size={20}/></button>
-          <button onClick={() => addBlock('assignment')} style={styles.fab} title="Tambah Tugas"><Save size={20}/></button>
-          <button onClick={addQuizQuestion} style={styles.fab} title="Tambah Kuis"><HelpCircle size={20}/></button>
+        {/* Floating Bar Hitam */}
+        <div style={styles.fabBar}>
+          <button onClick={() => addBlock('text')} style={styles.fab}><FileText size={20}/></button>
+          <button onClick={() => addBlock('video')} style={styles.fab}><Video size={20}/></button>
+          <button onClick={() => addBlock('assignment')} style={styles.fab}><Save size={20}/></button>
+          <button onClick={addQuizQuestion} style={styles.fab}><HelpCircle size={20}/></button>
+          <div style={{width: '1px', background: '#475569', margin: '0 10px'}}/>
+          <button onClick={handleSave} style={{...styles.fab, background: '#673ab7', borderRadius: '10px', padding: '5px 15px', display: 'flex', alignItems: 'center', gap: 5}}>
+            <Save size={18}/> PUBLISH
+          </button>
         </div>
       </div>
     </div>
@@ -236,29 +229,29 @@ const ManageMateri = () => {
 
 const styles = {
   container: { padding: '40px', background: '#f0f2f5', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center' },
-  topBar: { width: '100%', maxWidth: '800px', display: 'flex', justifyContent: 'space-between', marginBottom: '20px' },
-  btnBack: { border: 'none', background: 'none', color: '#64748b', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 },
-  btnPublish: { padding: '12px 25px', borderRadius: '30px', border: 'none', background: '#673ab7', color: 'white', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' },
-  formCard: { background: 'white', width: '100%', maxWidth: '800px', padding: '40px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', position: 'relative', marginBottom: '100px' },
-  mainInput: { width: '100%', border: 'none', fontSize: '28px', fontWeight: 'bold', outline: 'none', color: '#1e293b' },
-  subInput: { width: '100%', border: 'none', fontSize: '16px', outline: 'none', color: '#64748b', marginTop: '10px' },
-  divider: { height: '1px', background: '#eee', margin: '25px 0' },
-  deadlineSection: { display: 'flex', gap: '20px', marginBottom: '30px', padding: '15px', background: '#f8f9fa', borderRadius: '10px' },
-  deadlineItem: { flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' },
-  label: { fontSize: '12px', fontWeight: 'bold', color: '#673ab7', display: 'flex', alignItems: 'center', gap: '5px' },
-  dateInput: { padding: '8px', borderRadius: '5px', border: '1px solid #ddd', fontSize: '13px', outline: 'none' },
-  blockCard: { border: '1px solid #eee', borderRadius: '15px', padding: '20px', marginBottom: '20px' },
+  topBar: { width: '100%', maxWidth: '850px', display: 'flex', justifyContent: 'space-between', marginBottom: '20px' },
+  btnBack: { padding: '10px 20px', borderRadius: '10px', border: 'none', background: 'white', fontWeight: 'bold', cursor: 'pointer' },
+  btnPublish: { padding: '10px 25px', borderRadius: '30px', border: 'none', background: '#673ab7', color: 'white', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 },
+  formCard: { background: 'white', width: '100%', maxWidth: '850px', padding: '40px', borderRadius: '25px', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', position: 'relative', marginBottom: '100px' },
+  mainInput: { width: '100%', border: 'none', fontSize: '32px', fontWeight: 'bold', outline: 'none', color: '#1e293b' },
+  subInput: { width: '100%', border: 'none', fontSize: '18px', outline: 'none', color: '#64748b', marginTop: '10px' },
+  divider: { height: '1px', background: '#f1f5f9', margin: '30px 0' },
+  deadlineRow: { display: 'flex', gap: '20px', marginBottom: '30px', background: '#f8fafc', padding: '20px', borderRadius: '15px' },
+  deadlineBox: { flex: 1, display: 'flex', flexDirection: 'column', gap: 8 },
+  label: { fontSize: '12px', fontWeight: 'bold', color: '#673ab7', display: 'flex', alignItems: 'center', gap: 5 },
+  dateInput: { padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none' },
+  blockCard: { border: '1px solid #f1f5f9', borderRadius: '15px', padding: '20px', marginBottom: '20px' },
   quizCard: { border: '1px solid #e2e8f0', background: '#fcfcfd', borderRadius: '15px', padding: '20px', marginBottom: '20px' },
-  blockHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '10px' },
-  blockBadge: { fontSize: '10px', fontWeight: 'bold', color: '#673ab7', letterSpacing: '1px' },
+  blockHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '15px' },
+  badge: { fontSize: '10px', fontWeight: 'bold', color: '#673ab7' },
   btnTrash: { background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' },
-  blockTitleInput: { width: '100%', border: 'none', fontSize: '18px', fontWeight: '600', outline: 'none', marginBottom: '15px' },
-  textArea: { width: '100%', minHeight: '100px', border: '1px solid #f1f5f9', borderRadius: '10px', padding: '15px', fontSize: '14px', outline: 'none', background: '#f8fafc', resize: 'vertical' },
-  optGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' },
-  optItem: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px', border: '1px solid #eee', borderRadius: '10px', background: 'white' },
-  optInput: { flex: 1, border: 'none', outline: 'none', fontSize: '13px' },
-  fabContainer: { position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '20px', background: '#1e293b', padding: '12px 30px', borderRadius: '50px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', zIndex: 1000 },
-  fab: { background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '5px' }
+  blockTitleInput: { width: '100%', border: 'none', fontSize: '18px', fontWeight: 'bold', outline: 'none', marginBottom: '15px' },
+  textArea: { width: '100%', minHeight: '120px', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '15px', outline: 'none', background: '#f8fafc' },
+  optGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 },
+  optItem: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px', border: '1px solid #e2e8f0', borderRadius: '10px' },
+  optInput: { flex: 1, border: 'none', outline: 'none', fontSize: '14px' },
+  fabBar: { position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '15px', background: '#1e293b', padding: '12px 25px', borderRadius: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', alignItems: 'center' },
+  fab: { background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '8px' }
 };
 
 export default ManageMateri;

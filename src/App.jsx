@@ -113,7 +113,7 @@ function App() {
           <Route path="/guru/history" element={<TeacherHistory />} />
           <Route path="/guru/manual-input" element={<TeacherManualInput />} />
           
-          {/* Menu Cek Tugas (Sekarang Berdiri Sendiri agar tidak blank) */}
+          {/* Menu Cek Tugas */}
           <Route path="/guru/cek-tugas" element={<CekTugasSiswa />} />
           
           {/* Nilai & Rapor */}
@@ -125,6 +125,10 @@ function App() {
           <Route path="/guru/modul/materi" element={<ManageMateri />} />
           <Route path="/guru/modul/quiz" element={<ManageQuiz />} />
           <Route path="/guru/modul/tugas" element={<ManageTugas />} />
+
+          {/* Fallback Rute Guru yang belum ada agar tidak blank */}
+          <Route path="/guru/schedule" element={<div>Halaman Jadwal (Belum Dibuat)</div>} />
+          <Route path="/guru/attendance" element={<div>Halaman Absensi (Belum Dibuat)</div>} />
         </Route>
         
         {/* === AREA SISWA === */}
