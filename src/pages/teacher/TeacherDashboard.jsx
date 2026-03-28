@@ -26,6 +26,7 @@ const TeacherDashboard = () => {
     if (!guru?.nama) return;
     try {
       const todayStr = new Date().toISOString().split('T')[0];
+      // Ambil jadwal berdasarkan nama guru (booker)
       const q = query(collection(db, "jadwal_bimbel"), where("booker", "==", guru.nama.trim()));
       const snap = await getDocs(q);
       const filtered = snap.docs
@@ -39,9 +40,39 @@ const TeacherDashboard = () => {
   useEffect(() => { fetchTeacherProfile(); }, [fetchTeacherProfile]);
   useEffect(() => { if (guru) fetchTodayData(); }, [guru, fetchTodayData]);
 
+  // FUNGSI VALIDASI KODE HARIAN SEBELUM MASUK SESI
+  const handleVerifyAndStart = async () => {
+    if (!inputToken) return alert("Silahkan masukkan kode absensi!");
+    
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const codeRef = doc(db, "settings", `daily_code_${todayStr}`);
+      const codeSnap = await getDoc(codeRef);
+
+      if (codeSnap.exists()) {
+        const serverCode = codeSnap.data().code;
+        if (inputToken.toUpperCase() === serverCode) {
+          // Jika Kode Cocok
+          setMode('session');
+          setShowStartModal(false);
+          setInputToken(""); // Reset token
+        } else {
+          alert("❌ KODE SALAH! Silahkan cek kembali atau hubungi Admin.");
+        }
+      } else {
+        alert("⚠️ Admin belum mengatur kode absensi untuk hari ini.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Terjadi kesalahan koneksi server.");
+    }
+  };
+
   if (mode === 'session') {
       return <ClassSession schedule={pendingSchedule} teacher={guru} onBack={() => { setMode('dashboard'); fetchTodayData(); }} />;
   }
+
+  if (loading) return <div style={{padding:50, textAlign:'center'}}>Memuat Dashboard Guru...</div>;
 
   return (
     <div style={{ padding: '30px' }}>
@@ -95,15 +126,23 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
-      {/* MODUL KODE HARIAN (Sama seperti sebelumnya) */}
+      {/* MODAL KODE HARIAN */}
       {showStartModal && (
          <div style={styles.overlay}>
             <div style={styles.modal}>
-                <h3>🚀 Masukkan Kode Harian</h3>
-                <input type="text" value={inputToken} onChange={e => setInputToken(e.target.value.toUpperCase())} style={styles.inputCode} placeholder="KODE" />
-                <div style={{display:'flex', gap:10, marginTop:20}}>
+                <h3 style={{marginTop: 0, color: '#2c3e50'}}>🚀 Masukkan Kode Harian</h3>
+                <p style={{fontSize: 13, color: '#7f8c8d', marginBottom: 20}}>Dapatkan kode dari Admin untuk memulai absensi QR kelas ini.</p>
+                <input 
+                    type="text" 
+                    value={inputToken} 
+                    onChange={e => setInputToken(e.target.value.toUpperCase())} 
+                    style={styles.inputCode} 
+                    placeholder="KODE" 
+                    autoFocus
+                />
+                <div style={{display:'flex', gap:10, marginTop:25}}>
                     <button onClick={()=>setShowStartModal(false)} style={styles.btnCancel}>Batal</button>
-                    <button onClick={() => { setMode('session'); setShowStartModal(false); }} style={styles.btnConfirm}>MASUK KELAS</button>
+                    <button onClick={handleVerifyAndStart} style={styles.btnConfirm}>MASUK KELAS</button>
                 </div>
             </div>
          </div>
@@ -128,11 +167,12 @@ const styles = {
   shortcutGrid: { display: 'grid', gridTemplateColumns: '1fr', gap: '15px' },
   shortBtn: { background: 'white', padding: '20px', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '15px', fontWeight: 'bold', cursor: 'pointer', border: '1px solid #f1f5f9', transition: '0.2s' },
   emptyBox: { padding: '40px', textAlign: 'center', background: '#f8fafc', borderRadius: '20px', border: '2px dashed #e2e8f0', color: '#94a3b8' },
-  overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
-  modal: { background: 'white', padding: '30px', borderRadius: '24px', width: '350px', textAlign: 'center' },
-  inputCode: { width: '100%', padding: '15px', fontSize: '24px', textAlign: 'center', borderRadius: '12px', border: '2px solid #3498db', fontWeight: 'bold', outline: 'none' },
+  overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' },
+  modal: { background: 'white', padding: '30px', borderRadius: '24px', width: '350px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' },
+  inputCode: { width: '100%', padding: '15px', fontSize: '24px', textAlign: 'center', borderRadius: '12px', border: '2px solid #3498db', fontWeight: 'bold', outline: 'none', boxSizing: 'border-box' },
   btnConfirm: { flex: 2, padding: '14px', background: '#3498db', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' },
-  btnCancel: { flex: 1, padding: '14px', background: '#f1f5f9', border: 'none', borderRadius: '10px', color: '#64748b', cursor: 'pointer' }
+  btnCancel: { flex: 1, padding: '14px', background: '#f1f5f9', border: 'none', borderRadius: '10px', color: '#64748b', cursor: 'pointer' },
+  sectionTitle: { fontSize: '18px', color: '#2c3e50', marginBottom: '15px' }
 };
 
 export default TeacherDashboard;

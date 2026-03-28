@@ -26,7 +26,6 @@ const SchedulePage = () => {
     repeat: "Once"
   };
   const [formData, setFormData] = useState(defaultForm);
-  const [filterJenjang, setFilterJenjang] = useState("Semua"); 
   const [filterKelas, setFilterKelas] = useState(""); 
 
   const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
@@ -49,7 +48,6 @@ const SchedulePage = () => {
         const sSnap = await getDocs(collection(db, "students"));
         setAvailableStudents(sSnap.docs.map(d => ({ id: d.id, ...d.data() })));
         
-        // AMBIL DAILY CODE BERDASARKAN TANGGAL TERPILIH
         const todayStr = getSmartDateString(selectedDate);
         const cSnap = await getDoc(doc(db, "settings", `daily_code_${todayStr}`));
         if (cSnap.exists()) {
@@ -62,7 +60,6 @@ const SchedulePage = () => {
     } catch (e) { console.error("Error fetching:", e); }
   };
 
-  // FUNGSI SIMPAN/EDIT DAILY CODE (ADMIN CUSTOM)
   const handleSaveDailyCode = async () => {
     if (!tempCode) return alert("Masukkan kode!");
     const todayStr = getSmartDateString(selectedDate);
@@ -109,6 +106,7 @@ const SchedulePage = () => {
 
     try {
         if (editId) {
+            // Update Doc: Pertahankan status dan list absen yang sudah ada jika sedang edit
             await updateDoc(doc(db, "jadwal_bimbel", editId), {
                 start: formData.start, end: formData.end,
                 program: formData.program, level: formData.level,
@@ -129,6 +127,10 @@ const SchedulePage = () => {
                     program: formData.program,
                     title: formData.title, booker: formData.booker,
                     students: studentsFullData,
+                    // MODIFIKASI: Tambahan field untuk sistem absensi guru & portal
+                    status: "scheduled", 
+                    attendance_list: [],
+                    createdAt: new Date()
                 });
                 tempDate.setDate(tempDate.getDate() + 7);
             }
@@ -172,7 +174,6 @@ const SchedulePage = () => {
       <SidebarAdmin />
       <div style={{ marginLeft: '250px', padding: '30px', width: '100%', boxSizing: 'border-box' }}>
         
-        {/* HEADER DENGAN EDIT DAILY CODE */}
         <div style={styles.dateHeader}>
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                 <div>
@@ -259,7 +260,6 @@ const SchedulePage = () => {
             </div>
         </div>
 
-        {/* MODAL FORM TETAP SAMA NAMUN DENGAN UI LEBIH CLEAN */}
         {isModalOpen && (
           <div style={styles.overlay}>
             <div style={styles.modal}>
