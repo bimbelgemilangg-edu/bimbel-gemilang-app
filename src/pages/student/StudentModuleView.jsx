@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
-import { doc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
+import { 
+  doc, getDoc, collection, addDoc, serverTimestamp, 
+  query, where, getDocs, deleteDoc 
+} from "firebase/firestore";
 import { 
   ArrowLeft, Clock, BookOpen, FileText, 
   CheckCircle, UploadCloud, Eye, Link as LinkIcon,
   HelpCircle, ChevronRight, PlayCircle, AlertCircle,
-  FileDigit, Info, User
+  FileDigit, Info, User, Trash2, ExternalLink
 } from 'lucide-react';
 
 const StudentModuleView = ({ modulId, onBack, studentData }) => {
@@ -64,7 +67,10 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     const snap = await getDocs(q);
     const completed = {};
     snap.forEach(doc => {
-      completed[doc.data().blockId] = doc.data().fileUrl;
+      completed[doc.data().blockId] = {
+        docId: doc.id,
+        fileUrl: doc.data().fileUrl
+      };
     });
     setSubmittedTasks(completed);
   };
@@ -87,8 +93,12 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validasi Ukuran File (Max 2MB untuk base64 string storage)
+    // Validasi Ukuran File (Max 2MB)
     if (file.size > 2000000) return alert("Ukuran file terlalu besar. Maksimal 2MB.");
+
+    // Fitur: Konfirmasi sebelum kumpul & Preview
+    const confirmMsg = `Anda akan mengunggah: ${file.name}\nPastikan file sudah benar. Lanjutkan?`;
+    if (!window.confirm(confirmMsg)) return;
 
     setUploading({ ...uploading, [blockId]: true });
 
@@ -109,8 +119,14 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           type: "assignment"
         };
 
-        await addDoc(collection(db, "jawaban_tugas"), payload);
-        setSubmittedTasks({ ...submittedTasks, [blockId]: reader.result });
+        const docRef = await addDoc(collection(db, "jawaban_tugas"), payload);
+        
+        // Simpan ke state local agar UI berubah
+        setSubmittedTasks({ 
+          ...submittedTasks, 
+          [blockId]: { docId: docRef.id, fileUrl: reader.result } 
+        });
+        
         alert("✅ Tugas berhasil dikirim!");
       } catch (err) {
         console.error("Upload Error:", err);
@@ -120,6 +136,28 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  // FITUR BARU: Hapus/Tarik Tugas
+  const handleDeleteTask = async (blockId) => {
+    if (isTugasExpired) return alert("❌ Tidak dapat menghapus, waktu sudah berakhir.");
+    
+    if (!window.confirm("Apakah Anda yakin ingin menarik kembali tugas ini? File akan dihapus dan Anda bisa mengunggah ulang.")) return;
+
+    try {
+      const taskInfo = submittedTasks[blockId];
+      if (taskInfo?.docId) {
+        await deleteDoc(doc(db, "jawaban_tugas", taskInfo.docId));
+        
+        const newSubmitted = { ...submittedTasks };
+        delete newSubmitted[blockId];
+        setSubmittedTasks(newSubmitted);
+        
+        alert("✅ Tugas berhasil ditarik.");
+      }
+    } catch (err) {
+      alert("Gagal menghapus: " + err.message);
+    }
   };
 
   const handleQuizSubmit = async () => {
@@ -177,7 +215,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         );
     }
 
-    // Jika link biasa, tampilkan card link yang cantik
     return (
         <div style={st.linkBox}>
           <LinkIcon size={20} color="#673ab7"/>
@@ -263,8 +300,27 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
 
                 <div style={st.assignActionArea}>
                   {submittedTasks[block.id] ? (
-                    <div style={st.successUpload}>
-                      <CheckCircle size={18}/> <span>Berhasil Dikumpul</span>
+                    <div style={{display:'flex', flexDirection:'column', gap:8, alignItems:'flex-end'}}>
+                      <div style={st.successUpload}>
+                        <CheckCircle size={18}/> <span>Berhasil Dikumpul</span>
+                      </div>
+                      
+                      {/* Tombol Preview & Hapus */}
+                      <div style={{display:'flex', gap:10}}>
+                        <a 
+                          href={submittedTasks[block.id].fileUrl} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          style={st.btnSmallPreview}
+                        >
+                          <Eye size={12}/> Lihat File
+                        </a>
+                        {!isTugasExpired && (
+                           <button onClick={() => handleDeleteTask(block.id)} style={st.btnSmallDelete}>
+                             <Trash2 size={12}/> Tarik Tugas
+                           </button>
+                        )}
+                      </div>
                     </div>
                   ) : isTugasExpired ? (
                     <div style={st.lockedBadge}>
@@ -275,12 +331,14 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                       <input 
                         type="file" id={`file-${block.id}`} 
                         style={{display:'none'}} 
+                        accept="application/pdf,image/*"
                         onChange={(e) => handleTaskUpload(e, block.id, block.title)}
                         disabled={uploading[block.id]}
                       />
                       <label htmlFor={`file-${block.id}`} style={uploading[block.id] ? st.btnLoading : st.btnUpload}>
                         {uploading[block.id] ? "Memproses..." : "Pilih & Unggah File"}
                       </label>
+                      <p style={{fontSize:10, color:'#94a3b8', marginTop:5}}>PDF/Gambar Max 2MB</p>
                     </>
                   )}
                 </div>
@@ -384,6 +442,8 @@ const st = {
   assignActionArea: { minWidth: '180px', textAlign: 'right' },
   btnUpload: { background: '#f59e0b', color: 'white', padding: '14px 28px', borderRadius: '14px', cursor: 'pointer', fontWeight: '800', fontSize: 14, boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)', transition: '0.2s' },
   btnLoading: { background: '#cbd5e1', color: 'white', padding: '14px 28px', borderRadius: '14px', cursor: 'not-allowed', fontSize: 14, fontWeight: '800' },
+  btnSmallDelete: { background: '#fee2e2', color: '#ef4444', border: 'none', padding: '5px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', display:'flex', alignItems:'center', gap:4 },
+  btnSmallPreview: { background: '#f1f5f9', color: '#64748b', border: 'none', padding: '5px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'none', display:'flex', alignItems:'center', gap:4 },
   lockedBadge: { color: '#ef4444', fontWeight: '800', display: 'flex', alignItems: 'center', gap: 8, background: '#fee2e2', padding: '12px 24px', borderRadius: '14px' },
   successUpload: { color: '#059669', fontWeight: '800', display: 'flex', alignItems: 'center', gap: 8, background: '#dcfce7', padding: '12px 24px', borderRadius: '14px' },
   quizHeader: { display: 'flex', alignItems: 'center', gap: 18, marginBottom: 40 },
