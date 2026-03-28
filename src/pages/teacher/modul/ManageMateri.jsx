@@ -6,7 +6,7 @@ import { Type, Video, HelpCircle, Save, FilePlus, Trash2, ArrowLeft, Image as Im
 const ManageMateri = ({ editData, onBack }) => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [coverUrl, setCoverUrl] = useState(""); // Fitur Foto Sampul agar Tampilan Siswa Cerdas
+  const [coverUrl, setCoverUrl] = useState(""); // Bisa berisi URL teks atau Base64
   const [deadline, setDeadline] = useState("");
   const [contentBlocks, setContentBlocks] = useState([]);
   
@@ -14,7 +14,7 @@ const ManageMateri = ({ editData, onBack }) => {
   const [targetType, setTargetType] = useState('all');
   const [selectedGrade, setSelectedGrade] = useState('');
 
-  // --- LOGIKA DETEKSI EDIT ---
+  // --- LOGIKA DETEKSI EDIT (Mempertahankan Fungsi Edit) ---
   useEffect(() => {
     if (editData) {
       setTitle(editData.title || "");
@@ -36,6 +36,18 @@ const ManageMateri = ({ editData, onBack }) => {
     fetchGrades();
   }, []);
 
+  // --- FUNGSI SMART UPLOAD (Mengubah gambar ke teks Base64) ---
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCoverUrl(reader.result); // Mengubah file menjadi string teks panjang
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const addBlock = (type) => {
     const newBlock = {
       id: Date.now(),
@@ -43,7 +55,7 @@ const ManageMateri = ({ editData, onBack }) => {
       title: "",
       content: "",
       openDate: "",
-      dueDate: deadline 
+      dueDate: deadline // Otomatis sinkron dengan deadline utama
     };
     setContentBlocks([...contentBlocks, newBlock]);
   };
@@ -54,7 +66,7 @@ const ManageMateri = ({ editData, onBack }) => {
     const payload = {
       title,
       desc,
-      coverUrl,
+      coverUrl, // Menyimpan teks gambar
       deadline,
       contentBlocks,
       target: {
@@ -66,17 +78,17 @@ const ManageMateri = ({ editData, onBack }) => {
 
     try {
       if (editData?.id) {
-        // JIKA SEDANG EDIT: Update dokumen yang sudah ada
+        // JIKA SEDANG EDIT: Update otomatis merubah data di dashboard siswa
         await updateDoc(doc(db, "bimbel_modul", editData.id), payload);
-        alert("Modul Berhasil Diperbarui!");
+        alert("Modul Berhasil Diperbarui & Sinkron ke Siswa!");
       } else {
-        // JIKA BARU: Tambah dokumen baru
+        // JIKA BARU
         payload.createdAt = serverTimestamp();
         payload.authorName = localStorage.getItem('teacherName') || "Pengajar";
         await addDoc(collection(db, "bimbel_modul"), payload);
         alert("Modul Berhasil Dipublish!");
       }
-      onBack(); // Kembali ke daftar modul
+      onBack(); 
     } catch (e) { alert("Gagal: " + e.message); }
   };
 
@@ -99,17 +111,30 @@ const ManageMateri = ({ editData, onBack }) => {
         />
 
         <div style={styles.metaGrid}>
+          {/* BAGIAN UPLOAD GAMBAR MODIFIKASI */}
           <div>
-            <label style={styles.label}>🖼️ Link Foto Sampul (Agar Tampilan Siswa Menarik):</label>
-            <input 
-              placeholder="Paste link gambar (Unsplash/Google)..." 
-              style={styles.input} 
-              value={coverUrl} 
-              onChange={(e) => setCoverUrl(e.target.value)} 
-            />
+            <label style={styles.label}>🖼️ Sampul Modul (File HP/Komputer):</label>
+            <div style={styles.uploadWrapper}>
+                <input 
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  style={styles.fileInput}
+                  id="file-upload"
+                />
+                <label htmlFor="file-upload" style={styles.customFileUpload}>
+                    {coverUrl ? "✅ Gambar Terpilih" : "Pilih Gambar Dari Perangkat"}
+                </label>
+                {coverUrl && (
+                    <div style={styles.previewContainer}>
+                        <img src={coverUrl} alt="Preview" style={styles.miniPreview} />
+                        <button onClick={() => setCoverUrl("")} style={styles.btnRemoveImg}>Hapus</button>
+                    </div>
+                )}
+            </div>
           </div>
           <div>
-            <label style={styles.label}>📅 Tenggat Waktu:</label>
+            <label style={styles.label}>📅 Tenggat Waktu (Due Date):</label>
             <input 
               type="datetime-local" 
               style={styles.input} 
@@ -136,7 +161,7 @@ const ManageMateri = ({ editData, onBack }) => {
             </div>
         </div>
 
-        {/* LIST BLOK MATERI */}
+        {/* LIST BLOK MATERI (Mempertahankan Fungsi Asli) */}
         <div style={{ marginTop: '30px' }}>
           {contentBlocks.map((block, index) => (
             <div key={block.id} style={styles.blockItem}>
@@ -157,9 +182,26 @@ const ManageMateri = ({ editData, onBack }) => {
               {block.type === 'materi' && <textarea style={styles.textArea} value={block.content} onChange={(e) => {
                 const b = [...contentBlocks]; b[index].content = e.target.value; setContentBlocks(b);
               }}/>}
-              {block.type === 'media' && <input style={styles.input} placeholder="Link Video/PPT..." value={block.content} onChange={(e) => {
-                const b = [...contentBlocks]; b[index].content = e.target.value; setContentBlocks(b);
-              }}/>}
+              {block.type === 'media' && (
+                <input 
+                    style={styles.input} 
+                    placeholder="Link Video/PPT..." 
+                    value={block.content} 
+                    onChange={(e) => {
+                        const b = [...contentBlocks]; b[index].content = e.target.value; setContentBlocks(b);
+                    }}
+                />
+              )}
+              {block.type === 'assignment' && (
+                <textarea 
+                    style={styles.textArea} 
+                    placeholder="Instruksi Tugas..." 
+                    value={block.content} 
+                    onChange={(e) => {
+                        const b = [...contentBlocks]; b[index].content = e.target.value; setContentBlocks(b);
+                    }}
+                />
+              )}
             </div>
           ))}
         </div>
@@ -189,6 +231,15 @@ const styles = {
   metaGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', borderTop: '1px solid #eee', paddingTop: '20px' },
   label: { display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#888', marginBottom: '5px' },
   input: { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px', marginBottom: '10px' },
+  
+  // Gaya baru untuk Upload
+  uploadWrapper: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  fileInput: { display: 'none' },
+  customFileUpload: { background: '#f1f5f9', padding: '10px', borderRadius: '8px', textAlign: 'center', cursor: 'pointer', fontSize: '13px', border: '1px dashed #cbd5e1' },
+  previewContainer: { display: 'flex', alignItems: 'center', gap: '10px' },
+  miniPreview: { width: '50px', height: '50px', borderRadius: '5px', objectFit: 'cover' },
+  btnRemoveImg: { background: '#fee2e2', color: '#ef4444', border: 'none', padding: '4px 8px', borderRadius: '5px', fontSize: '11px', cursor: 'pointer' },
+
   blockItem: { border: '1px solid #e2e8f0', padding: '20px', borderRadius: '12px', marginBottom: '15px', background: '#fff' },
   blockHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '11px', fontWeight: 'bold', color: '#64748b' },
   subInput: { width: '100%', border: 'none', borderBottom: '1px solid #eee', marginBottom: '15px', padding: '8px 0', fontSize: '16px', fontWeight: '600', outline: 'none' },
