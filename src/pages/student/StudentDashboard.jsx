@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import SidebarSiswa from '../../components/SidebarSiswa';
 import { db } from '../../firebase';
-import { collection, query, where, getDocs, orderBy, limit, doc, getDoc } from "firebase/firestore";
-import { QRCodeSVG } from 'qrcode.react'; // Pastikan sudah install qrcode.react
+import { collection, query, where, getDocs, orderBy, limit, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 // --- IMPORT KOMPONEN MENU ---
 import StudentFinanceSiswa from './StudentFinance';
@@ -23,7 +23,8 @@ import {
   ClipboardList,
   AlertCircle,
   QrCode,
-  X
+  X,
+  Camera
 } from 'lucide-react';
 
 // --- IMPORT SWIPER ---
@@ -48,7 +49,9 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [selectedNews, setSelectedNews] = useState(null);
   const [studentProfile, setStudentProfile] = useState(null);
-  const [showQRModal, setShowQRModal] = useState(false); // State Modal QR
+  
+  // State untuk Scanner
+  const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -57,6 +60,51 @@ const StudentDashboard = () => {
   }, []);
 
   const isMobile = windowWidth <= 768;
+
+  // LOGIKA SCANNER
+  useEffect(() => {
+    let scanner = null;
+    if (isScanning) {
+      scanner = new Html5QrcodeScanner("reader", { 
+        fps: 10, 
+        qrbox: { width: 250, height: 250 } 
+      }, false);
+
+      scanner.render(async (decodedText) => {
+        try {
+          const data = JSON.parse(decodedText);
+          if (data.type === "ABSENSI_BIMBEL") {
+            const today = new Date().toISOString().split('T')[0];
+            const absenRef = doc(db, "attendance", `${studentId}_${today}`);
+            
+            await setDoc(absenRef, {
+              studentId: studentId,
+              studentName: studentName,
+              teacherName: data.teacher,
+              date: today,
+              tanggal: today,
+              timestamp: serverTimestamp(),
+              status: "Hadir",
+              mapel: data.mapel,
+              keterangan: "Scan QR Mandiri Siswa"
+            }, { merge: true });
+
+            alert(`✅ Absen Berhasil: ${data.mapel}`);
+            setIsScanning(false);
+          }
+        } catch (err) {
+          // Jika QR bukan JSON atau format salah, asumsikan itu ID mentah (opsional)
+          console.error("Format QR tidak valid", err);
+        }
+      }, (error) => { /* ignore scan errors */ });
+    }
+
+    return () => {
+      if (scanner) {
+        scanner.clear().catch(err => console.error("Failed to clear scanner", err));
+      }
+    };
+  }, [isScanning, studentId, studentName]);
 
   const formatDate = (timestamp) => {
     if (!timestamp) return "-";
@@ -124,8 +172,8 @@ const StudentDashboard = () => {
         </div>
         {!isMobile && (
           <div style={{display:'flex', gap: 10}}>
-              <button onClick={() => setShowQRModal(true)} style={styles.btnQRHeader}>
-                <QrCode size={18} /> ID QR SAYA
+              <button onClick={() => setIsScanning(true)} style={styles.btnScanHeader}>
+                <Camera size={18} /> SCAN ABSEN
               </button>
               <div style={styles.statusBadge}>
                 <GraduationCap size={18} />
@@ -234,28 +282,26 @@ const StudentDashboard = () => {
         </div>
       )}
 
-      {/* MODAL QR CODE UNTUK ABSENSI */}
-      {showQRModal && (
-        <div style={styles.modalOverlay} onClick={() => setShowQRModal(false)}>
+      {/* MODAL SCANNER QR */}
+      {isScanning && (
+        <div style={styles.modalOverlay} onClick={() => setIsScanning(false)}>
           <div style={styles.qrModalContent} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowQRModal(false)} style={styles.btnCloseQR}><X size={20}/></button>
-            <h3 style={{marginTop:0, fontSize:18, color:'#2c3e50'}}>ID Absensi QR Siswa</h3>
-            <p style={{fontSize:12, color:'#7f8c8d', marginBottom:20}}>Tunjukkan kode ini ke kamera guru untuk absen</p>
-            <div style={styles.qrWrapper}>
-              <QRCodeSVG value={studentId} size={200} level="H" includeMargin={true} />
-            </div>
+            <button onClick={() => setIsScanning(false)} style={styles.btnCloseQR}><X size={20}/></button>
+            <h3 style={{marginTop:0, fontSize:18, color:'#2c3e50'}}>Scan QR Absensi</h3>
+            <p style={{fontSize:12, color:'#7f8c8d', marginBottom:20}}>Arahkan kamera ke kode QR yang ditampilkan Guru</p>
+            <div id="reader" style={{ width: '100%', borderRadius: '15px', overflow: 'hidden' }}></div>
             <div style={styles.qrInfo}>
-               <div style={{fontSize:16, fontWeight:'bold', color:'#2c3e50'}}>{studentName}</div>
-               <div style={{fontSize:12, color:'#3498db', fontWeight:'600'}}>{studentId}</div>
+               <div style={{fontSize:14, fontWeight:'bold', color:'#2c3e50'}}>{studentName}</div>
+               <div style={{fontSize:11, color:'#3498db'}}>Posisikan QR tepat di tengah kotak</div>
             </div>
           </div>
         </div>
       )}
 
-      {/* FLOATING ACTION BUTTON UNTUK QR DI MOBILE */}
+      {/* FLOATING ACTION BUTTON UNTUK SCAN DI MOBILE */}
       {isMobile && (
-        <button onClick={() => setShowQRModal(true)} style={styles.fabQR}>
-          <QrCode size={24} />
+        <button onClick={() => setIsScanning(true)} style={styles.fabQR}>
+          <Camera size={24} />
         </button>
       )}
     </div>
@@ -315,7 +361,7 @@ const styles = {
   titleMobile: { fontSize: '22px', fontWeight: '800', color: '#1e293b', margin: 0 },
   subtitle: { color: '#64748b', marginTop: '5px', fontSize: '14px' },
   statusBadge: { display: 'flex', alignItems: 'center', gap: '8px', background: '#dcfce7', color: '#166534', padding: '8px 16px', borderRadius: '100px', fontWeight: 'bold' },
-  btnQRHeader: { display:'flex', alignItems:'center', gap:8, background:'#1e293b', color:'white', border:'none', padding:'8px 16px', borderRadius:100, fontWeight:'bold', cursor:'pointer' },
+  btnScanHeader: { display:'flex', alignItems:'center', gap:8, background:'#3498db', color:'white', border:'none', padding:'8px 16px', borderRadius:100, fontWeight:'bold', cursor:'pointer' },
   mobileMenuBtn: { position: 'fixed', top: '15px', left: '15px', zIndex: 900, background: '#1e293b', color: 'white', border: 'none', padding: '10px', borderRadius: '10px' },
   overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 998 },
   carouselContainer: { borderRadius: '15px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', width: '100%' },
@@ -353,11 +399,10 @@ const styles = {
   upcomingTaskItem: { display: 'flex', alignItems: 'center', padding: '12px', background: '#f8fafc', borderRadius: '10px', borderLeft: '4px solid #9b59b6' },
   btnActionSmall: { background: '#9b59b6', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer' },
   
-  // QR MODAL STYLES
-  fabQR: { position: 'fixed', bottom: '20px', right: '20px', width: '60px', height: '60px', borderRadius: '50%', background: '#1e293b', color: 'white', border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.3)', zIndex: 900 },
-  qrModalContent: { background: 'white', padding: '40px 20px', borderRadius: '25px', width: '320px', textAlign: 'center', position: 'relative' },
+  // SCANNER MODAL STYLES
+  fabQR: { position: 'fixed', bottom: '20px', right: '20px', width: '60px', height: '60px', borderRadius: '50%', background: '#3498db', color: 'white', border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.3)', zIndex: 900 },
+  qrModalContent: { background: 'white', padding: '30px 20px', borderRadius: '25px', width: '90%', maxWidth: '400px', textAlign: 'center', position: 'relative' },
   btnCloseQR: { position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' },
-  qrWrapper: { padding: '15px', background: 'white', border: '1px solid #f1f5f9', borderRadius: '15px', display: 'inline-block', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' },
   qrInfo: { marginTop: '20px', borderTop: '1px dashed #e2e8f0', paddingTop: '15px' }
 };
 
