@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SidebarSiswa from '../../components/SidebarSiswa';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs, orderBy, limit, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Html5Qrcode } from "html5-qrcode"; // Menggunakan Html5Qrcode langsung untuk kontrol lebih baik
 
 // --- IMPORT KOMPONEN MENU ---
 import StudentFinanceSiswa from './StudentFinance';
@@ -61,47 +61,70 @@ const StudentDashboard = () => {
 
   const isMobile = windowWidth <= 768;
 
-  // LOGIKA SCANNER
+  // LOGIKA SCANNER FIXED
   useEffect(() => {
-    let scanner = null;
-    if (isScanning) {
-      scanner = new Html5QrcodeScanner("reader", { 
-        fps: 10, 
-        qrbox: { width: 250, height: 250 } 
-      }, false);
+    let html5QrCode = null;
 
-      scanner.render(async (decodedText) => {
+    const startScanner = async () => {
+      try {
+        html5QrCode = new Html5Qrcode("reader");
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+        await html5QrCode.start(
+          { facingMode: "environment" }, // Paksa kamera belakang
+          config,
+          async (decodedText) => {
+            try {
+              const data = JSON.parse(decodedText);
+              if (data.type === "ABSENSI_BIMBEL") {
+                const today = new Date().toISOString().split('T')[0];
+                const absenRef = doc(db, "attendance", `${studentId}_${today}`);
+                
+                await setDoc(absenRef, {
+                  studentId: studentId,
+                  studentName: studentName,
+                  teacherName: data.teacher,
+                  date: today,
+                  tanggal: today,
+                  timestamp: serverTimestamp(),
+                  status: "Hadir",
+                  mapel: data.mapel,
+                  keterangan: "Scan QR Mandiri Siswa"
+                }, { merge: true });
+
+                alert(`✅ Absen Berhasil: ${data.mapel}`);
+                stopScanner();
+              }
+            } catch (err) {
+              console.error("Format QR tidak valid", err);
+            }
+          },
+          (errorMessage) => { /* scanning... */ }
+        );
+      } catch (err) {
+        console.error("Gagal inisialisasi kamera:", err);
+      }
+    };
+
+    const stopScanner = async () => {
+      if (html5QrCode && html5QrCode.isScanning) {
         try {
-          const data = JSON.parse(decodedText);
-          if (data.type === "ABSENSI_BIMBEL") {
-            const today = new Date().toISOString().split('T')[0];
-            const absenRef = doc(db, "attendance", `${studentId}_${today}`);
-            
-            await setDoc(absenRef, {
-              studentId: studentId,
-              studentName: studentName,
-              teacherName: data.teacher,
-              date: today,
-              tanggal: today,
-              timestamp: serverTimestamp(),
-              status: "Hadir",
-              mapel: data.mapel,
-              keterangan: "Scan QR Mandiri Siswa"
-            }, { merge: true });
-
-            alert(`✅ Absen Berhasil: ${data.mapel}`);
-            setIsScanning(false);
-          }
+          await html5QrCode.stop();
+          html5QrCode.clear();
         } catch (err) {
-          // Jika QR bukan JSON atau format salah, asumsikan itu ID mentah (opsional)
-          console.error("Format QR tidak valid", err);
+          console.error("Gagal menghentikan scanner:", err);
         }
-      }, (error) => { /* ignore scan errors */ });
+      }
+      setIsScanning(false);
+    };
+
+    if (isScanning) {
+      startScanner();
     }
 
     return () => {
-      if (scanner) {
-        scanner.clear().catch(err => console.error("Failed to clear scanner", err));
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().then(() => html5QrCode.clear()).catch(e => console.log(e));
       }
     };
   }, [isScanning, studentId, studentName]);
@@ -289,7 +312,7 @@ const StudentDashboard = () => {
             <button onClick={() => setIsScanning(false)} style={styles.btnCloseQR}><X size={20}/></button>
             <h3 style={{marginTop:0, fontSize:18, color:'#2c3e50'}}>Scan QR Absensi</h3>
             <p style={{fontSize:12, color:'#7f8c8d', marginBottom:20}}>Arahkan kamera ke kode QR yang ditampilkan Guru</p>
-            <div id="reader" style={{ width: '100%', borderRadius: '15px', overflow: 'hidden' }}></div>
+            <div id="reader" style={{ width: '100%', borderRadius: '15px', overflow: 'hidden', background: '#000' }}></div>
             <div style={styles.qrInfo}>
                <div style={{fontSize:14, fontWeight:'bold', color:'#2c3e50'}}>{studentName}</div>
                <div style={{fontSize:11, color:'#3498db'}}>Posisikan QR tepat di tengah kotak</div>
