@@ -34,6 +34,7 @@ import TeacherManualInput from './pages/teacher/TeacherManualInput';
 import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade'; 
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager'; 
 import TeacherProfile from './pages/teacher/TeacherProfile'; 
+import TeacherSchedule from './pages/teacher/TeacherSchedule'; // Tambahan Langkah 3
 
 // --- IMPORT MODUL & CEK TUGAS GURU ---
 import ModulManager from './pages/teacher/modul/ModulManager'; 
@@ -126,8 +127,9 @@ function App() {
           <Route path="/guru/modul/quiz" element={<ManageQuiz />} />
           <Route path="/guru/modul/tugas" element={<ManageTugas />} />
 
-          {/* Fallback Rute Guru yang belum ada agar tidak blank */}
-          <Route path="/guru/schedule" element={<div>Halaman Jadwal (Belum Dibuat)</div>} />
+          {/* Rute Jadwal Guru - UPDATE: Menggunakan Komponen TeacherSchedule */}
+          <Route path="/guru/schedule" element={<TeacherSchedule />} />
+          
           <Route path="/guru/attendance" element={<div>Halaman Absensi (Belum Dibuat)</div>} />
         </Route>
         
