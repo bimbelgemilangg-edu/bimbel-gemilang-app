@@ -8,7 +8,7 @@ import StudentFinanceSiswa from './StudentFinance';
 import StudentGrades from './StudentGrades';
 import StudentSchedule from './StudentSchedule';
 import StudentAttendanceSiswa from './StudentAttendance';
-import StudentElearning from './StudentElearning'; // KOMPONEN BARU UNTUK E-LEARNING
+import StudentElearning from './StudentElearning'; 
 
 // --- IMPORT LUCIDE ICONS ---
 import { 
@@ -69,12 +69,10 @@ const StudentDashboard = () => {
         const snapSched = await getDocs(qSched);
         setSchedules(snapSched.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         
-        // Query Tugas yang rilisnya sudah lewat hari ini (Logic Hacker)
-        const now = new Date().getTime();
+        // Query Tugas dari koleksi bimbel_modul yang baru
         const qTask = query(
             collection(db, "bimbel_modul"), 
-            where("type", "==", "tugas"), 
-            where("isOpen", "==", true),
+            orderBy("createdAt", "desc"),
             limit(3)
         );
         const snapTask = await getDocs(qTask);
@@ -150,7 +148,7 @@ const StudentDashboard = () => {
                   <div style={styles.timelineMarker}><div style={styles.dot}></div><div style={styles.line}></div></div>
                   <div style={styles.timelineContent}>
                     <span style={{fontWeight: '600', fontSize: '13px'}}>{task.title}</span>
-                    <span style={styles.deadlineLabel}>Batas: {task.deadline || "Segera"}</span>
+                    <span style={styles.deadlineLabel}>Batas: {task.deadline ? new Date(task.deadline).toLocaleDateString() : "Segera"}</span>
                   </div>
                 </div>
               )) : <div style={styles.emptyState}>Semua tugas sudah aman!</div>}
@@ -194,7 +192,7 @@ const StudentDashboard = () => {
       case 'rapor': return <StudentGrades />;
       case 'jadwal': return <StudentSchedule />;
       case 'absensi': return <StudentAttendanceSiswa />;
-      case 'materi': return <StudentElearning />; // MENGARAH KE FILE E-LEARNING BARU
+      case 'materi': return <StudentElearning />; 
       default: return renderDashboardHome();
     }
   };
@@ -231,7 +229,7 @@ const StudentDashboard = () => {
   );
 };
 
-// --- STYLES TETAP KONSISTEN ---
+// --- STYLES ---
 const styles = {
   mainContainer: { display: 'flex', minHeight: '100vh', background: '#f8fafc', position: 'relative' },
   contentArea: { transition: 'margin 0.3s ease', boxSizing: 'border-box' },

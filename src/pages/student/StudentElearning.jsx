@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
 import { collection, query, orderBy, getDocs } from "firebase/firestore";
 import { Book, Play, FileCheck, ArrowLeft, Clock, User } from 'lucide-react';
+import StudentModuleView from './StudentModuleView'; // Import Viewer Riil
 
 const StudentElearning = () => {
   const [moduls, setModuls] = useState([]);
@@ -21,49 +22,17 @@ const StudentElearning = () => {
     setLoading(false);
   };
 
+  // LOGIKA TRANSISI KE VIEW RIIL
   if (selected) {
     return (
-      <div style={{ padding: '30px', maxWidth: '800px', margin: '0 auto', background: '#f8fafc', minHeight: '100vh' }}>
-        <button onClick={() => setSelected(null)} style={st.backBtn}><ArrowLeft size={18}/> Kembali</button>
-        
-        <div style={st.viewerHeader}>
-          <h1 style={st.viewTitle}>{selected.title}</h1>
-          <div style={st.viewMeta}>
-            <span><User size={14}/> {selected.author}</span>
-            <span><Clock size={14}/> Rilis: {selected.settings?.releaseDate}</span>
-          </div>
-          <p style={st.viewDesc}>{selected.description}</p>
-        </div>
-
-        {selected.contentBlocks?.map((block, i) => (
-          <div key={i} style={st.blockView}>
-            <h3 style={st.blockTitle}>{block.title}</h3>
-            
-            {block.type === 'materi' && <div style={st.textContent}>{block.content}</div>}
-            
-            {block.type === 'media' && (
-              <div style={st.mediaContent}>
-                <div style={st.mediaIcon}><Play fill="white"/></div>
-                <div style={{flex:1}}>
-                  <p style={{margin:0, fontWeight:'600', fontSize:'14px'}}>Lampiran Media / Video</p>
-                  <a href={block.content} target="_blank" rel="noreferrer" style={st.mediaLink}>Klik untuk Membuka Link Materi ↗</a>
-                </div>
-              </div>
-            )}
-
-            {block.type === 'assignment' && (
-              <div style={st.taskBox}>
-                <FileCheck color="#059669" />
-                <div style={{flex:1}}>
-                  <p style={{margin:0, fontWeight:'bold', color:'#065f46'}}>Tugas: {block.title}</p>
-                  <p style={{margin:'5px 0', fontSize:'13px', color:'#047857'}}>{block.content}</p>
-                  <button style={st.upBtn}>Upload Jawaban</button>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+      <StudentModuleView 
+        modulId={selected.id} 
+        onBack={() => setSelected(null)} 
+        studentData={{
+          id: localStorage.getItem('studentId'),
+          nama: localStorage.getItem('studentName') || "Siswa"
+        }}
+      />
     );
   }
 
@@ -76,10 +45,11 @@ const StudentElearning = () => {
             <div key={m.id} onClick={() => setSelected(m)} style={st.card}>
               <div style={st.iconCircle}><Book color="#673ab7"/></div>
               <h3 style={st.cardTitle}>{m.title}</h3>
-              <p style={st.cardAuthor}>Guru: {m.author}</p>
+              <p style={st.cardAuthor}>Guru: {m.authorName || m.author || 'Guru Gemilang'}</p>
               <div style={st.cardFoot}>Buka Materi ↗</div>
             </div>
           ))}
+          {moduls.length === 0 && <p style={{color: '#94a3b8'}}>Belum ada modul tersedia.</p>}
         </div>
       )}
     </div>
@@ -93,6 +63,7 @@ const st = {
   cardTitle: { margin: '0 0 5px 0', fontSize: '18px' },
   cardAuthor: { color: '#94a3b8', fontSize: '13px', margin: 0 },
   cardFoot: { marginTop: '20px', color: '#673ab7', fontWeight: 'bold', fontSize: '13px' },
+  // Style lama tetap ada di sini jika dibutuhkan untuk render internal
   backBtn: { border: 'none', background: 'white', padding: '10px 15px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 2px 5px rgba(0,0,0,0.05)', marginBottom: 25 },
   viewerHeader: { marginBottom: 40 },
   viewTitle: { fontSize: '32px', color: '#1e293b', marginBottom: 10 },

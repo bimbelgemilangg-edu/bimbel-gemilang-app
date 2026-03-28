@@ -1,45 +1,50 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../../../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { CheckCircle, User } from 'lucide-react';
+import { Download, Check, Clock } from 'lucide-react';
 
-const CekTugasSiswa = () => {
+const CekTugasSiswa = ({ modulId }) => {
   const [submissions, setSubmissions] = useState([]);
 
   useEffect(() => {
     const fetchSubmissions = async () => {
-      // Mengambil data dari koleksi 'jawaban_siswa'
-      const q = query(collection(db, "jawaban_siswa"));
+      const q = query(collection(db, "student_submissions"), where("modulId", "==", modulId));
       const snap = await getDocs(q);
       setSubmissions(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     };
-    fetchSubmissions();
-  }, []);
+    if (modulId) fetchSubmissions();
+  }, [modulId]);
 
   return (
-    <div style={styles.card}>
-      <h3><CheckCircle size={20}/> Berkas Masuk</h3>
-      {submissions.length === 0 ? <p>Belum ada siswa mengumpulkan.</p> : 
-        submissions.map(s => (
-          <div key={s.id} style={styles.list}>
-            <div style={{display:'flex', alignItems:'center', gap: '10px'}}>
-              <User size={16}/> <strong>{s.studentName}</strong> 
-            </div>
-            <p style={{fontSize: '13px', margin: '5px 0'}}>{s.taskTitle}</p>
-            <a href={s.fileLink} target="_blank" style={{color: '#3b82f6', fontSize: '12px'}}>Buka Jawaban →</a>
-          </div>
-        ))
-      }
+    <div style={{ padding: '20px', background: 'white', borderRadius: '12px' }}>
+      <h3>Daftar Pengumpulan Tugas</h3>
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '15px' }}>
+        <thead>
+          <tr style={{ textAlign: 'left', borderBottom: '2px solid #eee' }}>
+            <th style={{ padding: '10px' }}>Nama Siswa</th>
+            <th>Waktu Kumpul</th>
+            <th>File</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {submissions.map((s) => (
+            <tr key={s.id} style={{ borderBottom: '1px solid #eee' }}>
+              <td style={{ padding: '10px' }}>{s.studentName}</td>
+              <td>{s.submittedAt?.toDate().toLocaleString()}</td>
+              <td><a href={s.fileUrl} target="_blank" rel="noreferrer" style={{ color: '#673ab7' }}><Download size={16}/> Lihat File</a></td>
+              <td>
+                {new Date(s.submittedAt?.toDate()) > new Date(s.deadline) ? 
+                  <span style={{ color: 'red' }}><Clock size={12}/> Terlambat</span> : 
+                  <span style={{ color: 'green' }}><Check size={12}/> Tepat Waktu</span>
+                }
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
-};
-
-const styles = {
-  // Gunakan styles yang sama agar konsisten
-  card: { background: 'white', padding: '20px', borderRadius: '15px' },
-  list: { padding: '15px', borderBottom: '1px solid #eee' },
-  btn: { width: '100%', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', color: 'white', border: 'none' },
-  input: { width: '100%', padding: '12px', marginBottom: '10px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box' }
 };
 
 export default CekTugasSiswa;
