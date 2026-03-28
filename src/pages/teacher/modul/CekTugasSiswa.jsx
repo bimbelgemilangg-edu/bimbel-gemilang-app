@@ -116,12 +116,12 @@ const CekTugasSiswa = () => {
           <table style={styles.table}>
             <thead>
               <tr style={styles.thr}>
-                <th>Siswa & Kelas</th>
-                <th>Materi / Bagian</th>
-                <th>Waktu Pengumpulan</th>
-                <th>File Jawaban</th>
-                <th>Nilai</th>
-                <th>Aksi Guru</th>
+                <th style={styles.th}>Siswa & Kelas</th>
+                <th style={styles.th}>Materi / Bagian</th>
+                <th style={styles.th}>Waktu Pengumpulan</th>
+                <th style={styles.th}>File Jawaban</th>
+                <th style={styles.th}>Nilai</th>
+                <th style={styles.th}>Aksi Guru</th>
               </tr>
             </thead>
             <tbody>
@@ -196,6 +196,7 @@ const styles = {
   tableWrapper: { background: 'white', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9' },
   table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left' },
   thr: { background: '#f8fafc', color: '#475569', fontSize: '13px', textTransform: 'uppercase' },
+  th: { padding: '15px 20px', fontWeight: 'bold' },
   tr: { borderBottom: '1px solid #f1f5f9', transition: '0.2s' },
   td: { padding: '15px 20px', fontSize: '14px', color: '#334155', verticalAlign: 'middle' },
   timeTag: { display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#f1f5f9', color: '#475569', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '600' },

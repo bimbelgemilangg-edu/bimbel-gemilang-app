@@ -11,6 +11,7 @@ const SidebarGuru = () => {
   const menu = [
     { name: 'Dashboard', path: '/guru/dashboard', icon: <LayoutDashboard size={20}/> },
     { name: 'E-Learning', path: '/guru/modul', icon: <BookOpen size={20}/> },
+    { name: 'Pemeriksaan Tugas', path: '/guru/cek-tugas', icon: <ClipboardCheck size={20}/> },
     { name: 'Jadwal Mengajar', path: '/guru/schedule', icon: <Calendar size={20}/> },
     { name: 'Absensi Siswa', path: '/guru/attendance', icon: <ClipboardCheck size={20}/> },
     { name: 'Input Nilai / Rapor', path: '/guru/grades/input', icon: <Edit size={20}/> },
@@ -21,7 +22,7 @@ const SidebarGuru = () => {
   return (
     <div style={styles.sidebar}>
       <div style={styles.logoArea}>
-        <div style={{background:'#f1c40f', padding:5, borderRadius:8}}>
+        <div style={{background:'#f1c40f', padding:5, borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center'}}>
            <img src="/logo-gemilang.png.png" alt="Logo" style={{ width: '30px' }} />
         </div>
         <h3 style={{ color: 'white', margin: 0, fontSize: 18 }}>GEMILANG <span style={{color:'#f1c40f'}}>EDU</span></h3>

@@ -6,7 +6,7 @@ import Login from './pages/Login';
 import LoginGuru from './pages/LoginGuru';
 import LoginSiswa from './pages/LoginSiswa'; 
 
-// === IMPORT LAYOUT (Solusi Sidebar Tunggal) ===
+// === IMPORT LAYOUT ===
 import TeacherLayout from './pages/teacher/TeacherLayout';
 
 // === IMPORT ADMIN ===
@@ -113,13 +113,15 @@ function App() {
           <Route path="/guru/history" element={<TeacherHistory />} />
           <Route path="/guru/manual-input" element={<TeacherManualInput />} />
           
+          {/* Menu Cek Tugas (Sekarang Berdiri Sendiri agar tidak blank) */}
+          <Route path="/guru/cek-tugas" element={<CekTugasSiswa />} />
+          
           {/* Nilai & Rapor */}
           <Route path="/guru/grades/input" element={<TeacherInputGrade />} />
           <Route path="/guru/grades/manage" element={<TeacherGradeManager />} />
           
           {/* E-Learning System */}
           <Route path="/guru/modul" element={<ModulManager />} />
-          <Route path="/guru/modul/cek-tugas" element={<CekTugasSiswa />} />
           <Route path="/guru/modul/materi" element={<ManageMateri />} />
           <Route path="/guru/modul/quiz" element={<ManageQuiz />} />
           <Route path="/guru/modul/tugas" element={<ManageTugas />} />
