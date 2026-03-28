@@ -1,8 +1,8 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import SidebarGuru from '../../components/SidebarGuru';
 
-const TeacherLayout = ({ children, guru }) => {
+const TeacherLayout = ({ guru }) => {
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#f8f9fa' }}>
       <SidebarGuru />
@@ -12,10 +12,11 @@ const TeacherLayout = ({ children, guru }) => {
             <h4 style={{margin:0}}>Halo, {guru?.nama || 'Pengajar'} ✨</h4>
             <small style={{color:'#7f8c8d'}}>Bimbel Gemilang - Portal Akademik</small>
           </div>
-          <div style={styles.avatar}>{guru?.nama?.charAt(0)}</div>
+          <div style={styles.avatar}>{guru?.nama?.charAt(0) || 'G'}</div>
         </header>
         <div style={{ padding: '20px' }}>
-          {children}
+          {/* Outlet adalah tempat halaman (Dashboard, Modul, dll) muncul */}
+          <Outlet /> 
         </div>
       </div>
     </div>
