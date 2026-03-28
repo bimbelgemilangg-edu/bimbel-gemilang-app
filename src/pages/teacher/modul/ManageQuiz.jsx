@@ -1,70 +1,160 @@
-import React from 'react';
-import { Trash2, Plus, CheckCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { db } from '../../../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { HelpCircle, Plus, Trash2, CheckCircle, ArrowLeft, Save } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-const ManageQuiz = ({ blockId, questions, onUpdate }) => {
+const ManageQuiz = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [quizInfo, setQuizInfo] = useState({ title: '', subject: '', deadline: '' });
+  const [questions, setQuestions] = useState([
+    { id: Date.now(), q: '', options: ['', '', '', ''], correct: 0 }
+  ]);
+
   const addQuestion = () => {
-    const newQuestions = [...questions, { id: Date.now(), q: '', options: ['', '', '', ''], correct: 0 }];
-    onUpdate(blockId, newQuestions);
+    setQuestions([...questions, { id: Date.now(), q: '', options: ['', '', '', ''], correct: 0 }]);
   };
 
-  const updateQ = (qId, val) => {
-    const newQuestions = questions.map(q => q.id === qId ? { ...q, q: val } : q);
-    onUpdate(blockId, newQuestions);
+  const removeQuestion = (id) => {
+    if (questions.length > 1) {
+      setQuestions(questions.filter(q => q.id !== id));
+    }
+  };
+
+  const updateQ = (id, val) => {
+    setQuestions(questions.map(q => q.id === id ? { ...q, q: val } : q));
   };
 
   const updateOpt = (qId, optIdx, val) => {
-    const newQuestions = questions.map(q => {
+    setQuestions(questions.map(q => {
       if (q.id === qId) {
         const newOpts = [...q.options];
         newOpts[optIdx] = val;
         return { ...q, options: newOpts };
       }
       return q;
-    });
-    onUpdate(blockId, newQuestions);
+    }));
   };
 
-  const setCorrect = (qId, optIdx) => {
-    const newQuestions = questions.map(q => q.id === qId ? { ...q, correct: optIdx } : q);
-    onUpdate(blockId, newQuestions);
+  const handleSaveQuiz = async () => {
+    if (!quizInfo.title || !quizInfo.subject) return alert("Judul dan Mapel wajib diisi!");
+    
+    setLoading(true);
+    try {
+      // SINKRON: Simpan ke koleksi "moduls" agar muncul di ModulManager
+      await addDoc(collection(db, "moduls"), {
+        title: quizInfo.title,
+        subject: quizInfo.subject,
+        description: `Kuis Interaktif: ${quizInfo.title}`,
+        deadlineQuiz: quizInfo.deadline,
+        type: 'quiz',
+        // Masukkan soal ke field quiz sesuai struktur Firestore kamu
+        quiz: questions.map(q => ({
+          question: q.q,
+          options: q.options,
+          correctAnswer: q.correct
+        })),
+        blocks: [], // Kosongkan blocks karena ini tipe kuis murni
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+
+      alert("🚀 Kuis Berhasil Dipublikasikan!");
+      navigate('/guru/modul');
+    } catch (err) {
+      alert("Gagal simpan kuis: " + err.message);
+    }
+    setLoading(false);
   };
 
   return (
-    <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-      {questions.map((item, idx) => (
-        <div key={item.id} style={{ background: 'white', padding: '15px', marginBottom: '15px', borderRadius: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span style={{ fontSize: 12, fontWeight: 'bold', color: '#673ab7' }}>SOAL #{idx + 1}</span>
-            <button onClick={() => onUpdate(blockId, questions.filter(q => q.id !== item.id))} style={{ color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer' }}>
-              <Trash2 size={16}/>
-            </button>
-          </div>
+    <div style={styles.container}>
+      <div style={styles.headerNav}>
+        <button onClick={() => navigate('/guru/modul')} style={styles.btnBack}><ArrowLeft size={18}/> Batal</button>
+        <button onClick={handleSaveQuiz} disabled={loading} style={styles.btnSave}>
+          <Save size={18}/> {loading ? "Menyimpan..." : "Publish Kuis"}
+        </button>
+      </div>
+
+      <div style={styles.setupCard}>
+        <h2 style={{display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 20px 0'}}><HelpCircle color="#673ab7"/> Buat Kuis Baru</h2>
+        <input 
+          style={styles.mainInput} 
+          placeholder="Judul Kuis (Misal: Kuis Harian Biologi)" 
+          onChange={(e) => setQuizInfo({...quizInfo, title: e.target.value})}
+        />
+        <div style={{display: 'flex', gap: 15, marginTop: 15}}>
           <input 
-            style={{ width: '100%', padding: '10px', marginBottom: '15px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }}
-            placeholder="Ketik pertanyaan kuis..."
+            style={styles.subInput} 
+            placeholder="Mata Pelajaran" 
+            onChange={(e) => setQuizInfo({...quizInfo, subject: e.target.value})}
+          />
+          <input 
+            type="datetime-local" 
+            style={styles.subInput} 
+            onChange={(e) => setQuizInfo({...quizInfo, deadline: e.target.value})}
+          />
+        </div>
+      </div>
+
+      {questions.map((item, idx) => (
+        <div key={item.id} style={styles.qCard}>
+          <div style={styles.qHeader}>
+            <span style={styles.qNumber}>PERTANYAAN #{idx + 1}</span>
+            <button onClick={() => removeQuestion(item.id)} style={styles.btnDel}><Trash2 size={16}/></button>
+          </div>
+          <textarea 
+            style={styles.qInput} 
+            placeholder="Ketik soal kuis di sini..." 
             value={item.q}
             onChange={(e) => updateQ(item.id, e.target.value)}
           />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={styles.optGrid}>
             {item.options.map((opt, optIdx) => (
-              <div key={optIdx} style={{ display: 'flex', gap: '8px', alignItems: 'center', background: item.correct === optIdx ? '#f0fdf4' : '#f8fafc', padding: '8px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <input type="radio" checked={item.correct === optIdx} onChange={() => setCorrect(item.id, optIdx)} />
+              <div key={optIdx} style={{...styles.optItem, borderColor: item.correct === optIdx ? '#673ab7' : '#e2e8f0'}}>
                 <input 
-                  style={{ flex: 1, border: 'none', background: 'transparent', fontSize: '13px', outline: 'none' }}
-                  placeholder={`Opsi ${optIdx + 1}`}
+                  type="radio" 
+                  checked={item.correct === optIdx} 
+                  onChange={() => setQuestions(questions.map(q => q.id === item.id ? {...q, correct: optIdx} : q))} 
+                />
+                <input 
+                  style={styles.optInput} 
+                  placeholder={`Opsi ${optIdx + 1}`} 
                   value={opt}
                   onChange={(e) => updateOpt(item.id, optIdx, e.target.value)}
                 />
+                {item.correct === optIdx && <CheckCircle size={14} color="#673ab7"/>}
               </div>
             ))}
           </div>
         </div>
       ))}
-      <button onClick={addQuestion} style={{ width: '100%', padding: '12px', border: '2px dashed #673ab7', color: '#673ab7', background: 'white', cursor: 'pointer', borderRadius: '10px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-        <Plus size={16}/> Tambah Pertanyaan Kuis
+
+      <button onClick={addQuestion} style={styles.btnAdd}>
+        <Plus size={18}/> Tambah Pertanyaan
       </button>
     </div>
   );
+};
+
+const styles = {
+  container: { padding: '40px', background: '#f0f2f5', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  headerNav: { width: '100%', maxWidth: '700px', display: 'flex', justifyContent: 'space-between', marginBottom: '20px' },
+  btnBack: { background: 'white', border: '1px solid #ddd', padding: '10px 20px', borderRadius: '10px', cursor: 'pointer' },
+  btnSave: { background: '#673ab7', color: 'white', border: 'none', padding: '10px 25px', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 },
+  setupCard: { background: 'white', width: '100%', maxWidth: '700px', padding: '30px', borderRadius: '20px', marginBottom: '25px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' },
+  mainInput: { width: '100%', fontSize: '20px', fontWeight: 'bold', border: 'none', borderBottom: '2px solid #eee', outline: 'none', paddingBottom: 10 },
+  subInput: { flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #ddd', outline: 'none' },
+  qCard: { background: 'white', width: '100%', maxWidth: '700px', padding: '25px', borderRadius: '20px', marginBottom: '20px', position: 'relative' },
+  qHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: 15 },
+  qNumber: { fontSize: '12px', fontWeight: 'bold', color: '#673ab7' },
+  btnDel: { background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' },
+  qInput: { width: '100%', minHeight: '80px', padding: '15px', borderRadius: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', outline: 'none', marginBottom: 20 },
+  optGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
+  optItem: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px', border: '1px solid #eee', borderRadius: '10px' },
+  optInput: { flex: 1, border: 'none', outline: 'none', fontSize: '13px' },
+  btnAdd: { width: '100%', maxWidth: '700px', padding: '15px', border: '2px dashed #673ab7', color: '#673ab7', background: 'transparent', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }
 };
 
 export default ManageQuiz;
