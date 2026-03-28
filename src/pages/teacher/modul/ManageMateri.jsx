@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
-import { collection, addDoc, doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore"; 
+import { 
+  collection, addDoc, doc, getDoc, updateDoc, 
+  serverTimestamp, getDocs 
+} from "firebase/firestore"; 
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import imageCompression from 'browser-image-compression'; // WAJIB INSTALL: npm install browser-image-compression
+import imageCompression from 'browser-image-compression'; // npm install browser-image-compression
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, 
   ArrowLeft, Upload, Calendar, Link as LinkIcon, 
   Image as ImageIcon, graduationCap, Users, Layers,
-  ChevronDown, AlertCircle
+  ChevronDown, AlertCircle, Search, UserCheck
 } from 'lucide-react';
 
 const ManageMateri = () => {
@@ -24,11 +27,32 @@ const ManageMateri = () => {
   const [quizData, setQuizData] = useState([]); 
   const [loading, setLoading] = useState(false);
 
-  // --- STATE TARGETING ---
+  // --- STATE TARGETING & DINAMIS ---
   const [targetKategori, setTargetKategori] = useState("Semua"); 
   const [targetKelas, setTargetKelas] = useState("Semua"); 
+  const [targetSiswaId, setTargetSiswaId] = useState("Semua"); 
+  const [studentSearch, setStudentSearch] = useState("");
+  const [studentsList, setStudentsList] = useState([]);
+  const [availableClasses, setAvailableClasses] = useState([]);
   
   const COLLECTION_NAME = "bimbel_modul";
+
+  // FETCH DATA SISWA & KELAS DINAMIS
+  useEffect(() => {
+    const fetchContextData = async () => {
+      try {
+        const snap = await getDocs(collection(db, "students"));
+        const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setStudentsList(data);
+
+        // Ambil list kelas unik
+        const classes = [...new Set(data.map(s => s.kelasSekolah))].filter(Boolean)
+          .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        setAvailableClasses(classes);
+      } catch (err) { console.error("Error context:", err); }
+    };
+    fetchContextData();
+  }, []);
 
   useEffect(() => {
     if (editId) fetchModulData();
@@ -48,85 +72,56 @@ const ManageMateri = () => {
         setQuizData(data.quizData || []);
         setTargetKategori(data.targetKategori || "Semua");
         setTargetKelas(data.targetKelas || "Semua");
+        setTargetSiswaId(data.targetSiswaId || "Semua");
       }
     } catch (err) { console.error("Error fetching:", err); }
   };
 
-  // --- FITUR BARU: KOMPRESI GAMBAR OTOMATIS ---
+  // KOMPRESI GAMBAR
   const handleCoverUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    // Jika file adalah gambar, kompres otomatis sebelum simpan
     if (file.type.startsWith('image/')) {
-      const options = {
-        maxSizeMB: 0.5,          // Maksimal 500KB agar tidak error di Firestore
-        maxWidthOrHeight: 1280, // Resolusi tetap tajam
-        useWebWorker: true,
-      };
-
+      const options = { maxSizeMB: 0.5, maxWidthOrHeight: 1280, useWebWorker: true };
       try {
         const compressedFile = await imageCompression(file, options);
         const reader = new FileReader();
         reader.onloadend = () => setCoverImage(reader.result);
         reader.readAsDataURL(compressedFile);
-      } catch (error) {
-        alert("Gagal mengompres gambar: " + error.message);
-      }
-    } else {
-      alert("Hanya file gambar yang diperbolehkan untuk sampul.");
+      } catch (error) { alert("Gagal kompres: " + error.message); }
     }
   };
 
   const formatExternalLink = (url) => {
-    if (url.includes('canva.com') && url.includes('/edit')) {
-      return url.split('?')[0].replace('/edit', '/view?embed');
-    }
-    // Tambahan: Auto-embed Google Drive/Slides
-    if (url.includes('drive.google.com') && url.includes('/view')) {
-        return url.replace('/view', '/preview');
-    }
+    if (url.includes('canva.com') && url.includes('/edit')) return url.split('?')[0].replace('/edit', '/view?embed');
+    if (url.includes('drive.google.com') && url.includes('/view')) return url.replace('/view', '/preview');
     return url;
   };
 
-  // --- MANAJEMEN BLOK MATERI ---
   const addBlock = (type) => {
     const newBlock = { 
-      id: Date.now(), 
-      type, 
-      content: "", 
+      id: Date.now(), type, content: "", 
       title: type === 'assignment' ? "TUGAS: INSTRUKSI PENGERJAAN" : "SUB-MATERI BARU",
-      hasDeadline: false,
-      startTime: "",
-      endTime: ""
+      hasDeadline: false, startTime: "", endTime: ""
     };
     setBlocks([...blocks, newBlock]);
   };
 
   const updateBlock = (id, field, value) => {
-    // Gunakan formatter otomatis jika field yang diupdate adalah content
     const finalValue = field === 'content' ? formatExternalLink(value) : value;
     setBlocks(blocks.map(b => b.id === id ? { ...b, [field]: finalValue } : b));
   };
 
   const removeBlock = (id) => {
-    if(window.confirm("Hapus bagian ini?")) {
-      setBlocks(blocks.filter(b => b.id !== id));
-    }
+    if(window.confirm("Hapus bagian ini?")) setBlocks(blocks.filter(b => b.id !== id));
   };
 
-  // --- MANAJEMEN KUIS ---
   const addQuizQuestion = () => {
     setQuizData([...quizData, { 
-      id: Date.now(), 
-      question: "", 
-      options: ["", "", "", ""], 
-      correctAnswer: 0,
-      endTime: "" 
+      id: Date.now(), question: "", options: ["", "", "", ""], correctAnswer: 0, endTime: "" 
     }]);
   };
 
-  // --- PROSES PUBLISH ---
   const handleSave = async () => {
     if (!title || !subject) return alert("Judul dan Mata Pelajaran wajib diisi!");
     setLoading(true);
@@ -140,6 +135,7 @@ const ManageMateri = () => {
       quizData,
       targetKategori,
       targetKelas,
+      targetSiswaId,
       authorName: localStorage.getItem('userName') || "Admin Guru",
       updatedAt: serverTimestamp(),
       deadlineTugas: blocks.find(b => b.type === 'assignment')?.endTime || "",
@@ -155,11 +151,16 @@ const ManageMateri = () => {
       }
       alert("🚀 MODUL BERHASIL DIPUBLISH!");
       navigate('/guru/modul');
-    } catch (error) { 
-      alert("Gagal menyimpan: " + error.message); 
-    }
+    } catch (error) { alert("Gagal menyimpan: " + error.message); }
     setLoading(false);
   };
+
+  // FILTER SISWA BERDASARKAN SEARCH & KELAS
+  const filteredStudents = studentsList.filter(s => {
+    const matchesSearch = s.name?.toLowerCase().includes(studentSearch.toLowerCase());
+    const matchesClass = targetKelas === "Semua" || s.kelasSekolah === targetKelas;
+    return matchesSearch && matchesClass;
+  });
 
   return (
     <div style={st.container}>
@@ -193,18 +194,8 @@ const ManageMateri = () => {
           </div>
           
           <div style={st.identityInputs}>
-            <input 
-              placeholder="JUDUL MATERI UTAMA..." 
-              style={st.mainInput}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-            <input 
-              placeholder="Mata Pelajaran (Contoh: Matematika, Fisika...)" 
-              style={st.subInput}
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-            />
+            <input placeholder="JUDUL MATERI UTAMA..." style={st.mainInput} value={title} onChange={(e) => setTitle(e.target.value)} />
+            <input placeholder="Mata Pelajaran..." style={st.subInput} value={subject} onChange={(e) => setSubject(e.target.value)} />
             <div style={st.globalDateRow}>
                <Calendar size={14} color="#64748b"/>
                <span style={{fontSize:12, color:'#64748b'}}>Rilis Modul:</span>
@@ -213,7 +204,7 @@ const ManageMateri = () => {
           </div>
         </div>
 
-        {/* SECTION 2: TARGETING */}
+        {/* SECTION 2: TARGETING & SEARCH SISWA */}
         <div style={st.sectionHeader}><Layers size={18}/> Pengaturan Target Siswa</div>
         <div style={st.targetGrid}>
            <div style={st.targetBox}>
@@ -229,62 +220,64 @@ const ManageMateri = () => {
               <label style={st.labelIcon}><Layers size={14}/> Jenjang Kelas</label>
               <select style={st.selectInput} value={targetKelas} onChange={(e) => setTargetKelas(e.target.value)}>
                  <option value="Semua">Semua Kelas</option>
-                 <option value="7">Kelas 7 SMP</option>
-                 <option value="8">Kelas 8 SMP</option>
-                 <option value="9">Kelas 9 SMP</option>
-                 <option value="10">Kelas 10 SMA</option>
-                 <option value="11">Kelas 11 SMA</option>
-                 <option value="12">Kelas 12 SMA</option>
+                 {availableClasses.map(kls => <option key={kls} value={kls}>{kls}</option>)}
               </select>
            </div>
+        </div>
+
+        {/* SEARCH SISWA SPESIFIK */}
+        <div style={{marginTop: 20, background: '#f8fafc', padding: '20px', borderRadius: '20px'}}>
+           <label style={st.labelIcon}><Search size={14}/> Cari Siswa Spesifik (Opsional)</label>
+           <div style={{display:'flex', gap: 10, marginTop: 10}}>
+              <div style={{flex: 1, position:'relative'}}>
+                 <Search style={{position:'absolute', left: 12, top: 12, color:'#94a3b8'}} size={16}/>
+                 <input 
+                   placeholder="Ketik nama siswa..." 
+                   style={{...st.selectInput, paddingLeft: 40, width:'100%'}} 
+                   value={studentSearch} 
+                   onChange={(e) => setStudentSearch(e.target.value)}
+                 />
+              </div>
+              <select 
+                style={{...st.selectInput, flex: 1}} 
+                value={targetSiswaId} 
+                onChange={(e) => setTargetSiswaId(e.target.value)}
+              >
+                 <option value="Semua">Kirim ke Semua Siswa di Kelas Ini</option>
+                 {filteredStudents.map(s => (
+                   <option key={s.id} value={s.id}>{s.name} ({s.kelasSekolah})</option>
+                 ))}
+              </select>
+           </div>
+           {targetSiswaId !== "Semua" && (
+             <div style={{marginTop: 10, display:'flex', alignItems:'center', gap: 5, color:'#059669', fontSize: 11, fontWeight: 'bold'}}>
+                <UserCheck size={14}/> Modul ini hanya akan tampil di akun {studentsList.find(s => s.id === targetSiswaId)?.name}
+             </div>
+           )}
         </div>
 
         <div style={st.divider} />
 
         {/* SECTION 3: KONTEN MATERI */}
         <div style={st.sectionHeader}><FileText size={18}/> Susunan Materi & Tugas</div>
-        {blocks.map((block, idx) => (
+        {blocks.map((block) => (
           <div key={block.id} style={st.blockCard}>
             <div style={st.blockHeader}>
-              <div style={st.typeBadge}>
-                {block.type === 'text' && <FileText size={12}/>}
-                {block.type === 'video' && <LinkIcon size={12}/>}
-                {block.type === 'assignment' && <Upload size={12}/>}
-                {block.type.toUpperCase()}
-              </div>
+              <div style={st.typeBadge}>{block.type.toUpperCase()}</div>
               <button onClick={() => removeBlock(block.id)} style={st.btnTrash}><Trash2 size={16}/></button>
             </div>
-            
-            <input 
-              placeholder="Nama Bagian (Contoh: Pengenalan Aljabar)" 
-              style={st.blockTitleInput}
-              value={block.title}
-              onChange={(e) => updateBlock(block.id, 'title', e.target.value)}
-            />
-
-            <textarea 
-              placeholder={block.type === 'video' ? "Tempel Link Canva, YouTube, atau Link Google Slides/PDF..." : "Masukkan isi materi..."}
-              style={st.textArea}
-              value={block.content}
-              onChange={(e) => updateBlock(block.id, 'content', e.target.value)}
-            />
-
+            <input placeholder="Nama Bagian..." style={st.blockTitleInput} value={block.title} onChange={(e) => updateBlock(block.id, 'title', e.target.value)} />
+            <textarea placeholder={block.type === 'video' ? "Link Canva/YT/Slides..." : "Isi materi..."} style={st.textArea} value={block.content} onChange={(e) => updateBlock(block.id, 'content', e.target.value)} />
             {block.type === 'assignment' && (
               <div style={st.deadlineBox}>
                 <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:10}}>
                   <input type="checkbox" checked={block.hasDeadline} onChange={(e) => updateBlock(block.id, 'hasDeadline', e.target.checked)} />
-                  <span style={{fontSize:12, fontWeight:'bold', color:'#92400e'}}>Atur Tenggat Pengumpulan</span>
+                  <span style={{fontSize:12, fontWeight:'bold', color:'#92400e'}}>Atur Tenggat</span>
                 </div>
                 {block.hasDeadline && (
                   <div style={st.deadlineFlex}>
-                    <div style={st.subInputGroup}>
-                      <label>Mulai Dibuka:</label>
-                      <input type="datetime-local" style={st.dateInputMini} value={block.startTime} onChange={(e) => updateBlock(block.id, 'startTime', e.target.value)} />
-                    </div>
-                    <div style={st.subInputGroup}>
-                      <label>Batas Akhir:</label>
-                      <input type="datetime-local" style={st.dateInputMini} value={block.endTime} onChange={(e) => updateBlock(block.id, 'endTime', e.target.value)} />
-                    </div>
+                    <div style={st.subInputGroup}><label>Mulai:</label><input type="datetime-local" style={st.dateInputMini} value={block.startTime} onChange={(e) => updateBlock(block.id, 'startTime', e.target.value)} /></div>
+                    <div style={st.subInputGroup}><label>Batas:</label><input type="datetime-local" style={st.dateInputMini} value={block.endTime} onChange={(e) => updateBlock(block.id, 'endTime', e.target.value)} /></div>
                   </div>
                 )}
               </div>
@@ -292,44 +285,23 @@ const ManageMateri = () => {
           </div>
         ))}
 
-        {/* SECTION 4: KUIS INTERAKTIF */}
+        {/* SECTION 4: KUIS */}
         {quizData.map((q, idx) => (
           <div key={q.id} style={st.quizCard}>
             <div style={st.blockHeader}>
-              <span style={st.quizBadge}><HelpCircle size={12}/> SOAL NOMOR {idx + 1}</span>
+              <span style={st.quizBadge}>SOAL NOMOR {idx + 1}</span>
               <button onClick={() => setQuizData(quizData.filter(i => i.id !== q.id))} style={st.btnTrash}><Trash2 size={16}/></button>
             </div>
-            
-            <div style={st.quizDeadlineRow}>
-               <Clock size={12}/> <span>Tenggat Kuis:</span>
-               <input type="datetime-local" style={st.dateInputMini} value={q.endTime} onChange={(e) => setQuizData(quizData.map(item => item.id === q.id ? {...item, endTime: e.target.value} : item))} />
-            </div>
-
-            <textarea 
-              placeholder="Tuliskan pertanyaan kuis..." 
-              style={{...st.textArea, minHeight: '80px', marginBottom: '20px', border:'1px solid #ddd'}}
-              value={q.question}
-              onChange={(e) => setQuizData(quizData.map(item => item.id === q.id ? {...item, question: e.target.value} : item))}
-            />
-
+            <textarea placeholder="Pertanyaan..." style={{...st.textArea, minHeight:'80px', border:'1px solid #ddd'}} value={q.question} onChange={(e) => setQuizData(quizData.map(item => item.id === q.id ? {...item, question: e.target.value} : item))} />
             <div style={st.optGrid}>
               {q.options.map((opt, oIdx) => (
-                <div key={oIdx} style={{
-                  ...st.optItem, 
-                  borderColor: q.correctAnswer === oIdx ? '#673ab7' : '#e2e8f0',
-                  background: q.correctAnswer === oIdx ? '#f5f3ff' : '#fff'
-                }}>
+                <div key={oIdx} style={{...st.optItem, borderColor: q.correctAnswer === oIdx ? '#673ab7' : '#e2e8f0', background: q.correctAnswer === oIdx ? '#f5f3ff' : '#fff'}}>
                   <input type="radio" checked={q.correctAnswer === oIdx} onChange={() => setQuizData(quizData.map(item => item.id === q.id ? {...item, correctAnswer: oIdx} : item))} />
-                  <input 
-                    style={st.optInput} 
-                    placeholder={`Pilihan ${String.fromCharCode(65 + oIdx)}`} 
-                    value={opt}
-                    onChange={(e) => {
-                      const newOpts = [...q.options];
-                      newOpts[oIdx] = e.target.value;
-                      setQuizData(quizData.map(item => item.id === q.id ? {...item, options: newOpts} : item));
-                    }}
-                  />
+                  <input style={st.optInput} placeholder={`Pilihan ${String.fromCharCode(65 + oIdx)}`} value={opt} onChange={(e) => {
+                    const newOpts = [...q.options];
+                    newOpts[oIdx] = e.target.value;
+                    setQuizData(quizData.map(item => item.id === q.id ? {...item, options: newOpts} : item));
+                  }} />
                 </div>
               ))}
             </div>
@@ -342,6 +314,7 @@ const ManageMateri = () => {
           <button onClick={() => addBlock('text')} style={st.fab} title="Teks"><FileText size={18}/></button>
           <button onClick={() => addBlock('video')} style={st.fab} title="Media/Link"><LinkIcon size={18}/></button>
           <button onClick={() => addBlock('assignment')} style={st.fab} title="Tugas"><Upload size={18}/></button>
+          <button onClick={addQuizQuestion} style={st.fab} title="Kuis"><HelpCircle size={18}/></button>
           <button onClick={handleSave} style={st.btnSaveFab}>SIMPAN MODUL</button>
         </div>
       </div>
@@ -349,7 +322,6 @@ const ManageMateri = () => {
   );
 };
 
-// --- STYLES ---
 const st = {
   container: { padding: '40px 20px', background: '#f8fafc', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center' },
   topBar: { width: '100%', maxWidth: '900px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' },
@@ -359,10 +331,10 @@ const st = {
   formCard: { background: 'white', width: '100%', maxWidth: '900px', padding: '50px', borderRadius: '35px', boxShadow: '0 20px 50px rgba(0,0,0,0.04)', marginBottom: '150px' },
   sectionHeader: { display: 'flex', alignItems: 'center', gap: 10, fontSize: '14px', fontWeight: '800', color: '#1e293b', marginBottom: '20px', marginTop: '40px', borderBottom: '1px solid #f1f5f9', paddingBottom: '10px' },
   coverGrid: { display: 'grid', gridTemplateColumns: '220px 1fr', gap: '30px', marginBottom: '40px' },
-  coverUploadBox: { height: '160px', borderRadius: '24px', background: '#f1f5f9', border: '2px dashed #cbd5e1', overflow: 'hidden' },
+  coverUploadBox: { height: '160px', borderRadius: '24px', background: '#f1f5f9', border: '2px dashed #cbd5e1', overflow: 'hidden', position:'relative' },
   coverPlaceholder: { width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' },
   coverImage: { width: '100%', height: '100%', objectFit: 'cover' },
-  btnRemoveCover: { position: 'absolute', top: 10, right: 10, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 26, height: 26, cursor: 'pointer' },
+  btnRemoveCover: { position: 'absolute', top: 10, right: 10, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 26, height: 26, cursor: 'pointer', zIndex: 10 },
   identityInputs: { display: 'flex', flexDirection: 'column', justifyContent: 'center' },
   mainInput: { border: 'none', fontSize: '32px', fontWeight: '900', outline: 'none', color: '#0f172a', width: '100%', letterSpacing: '-0.5px' },
   subInput: { border: 'none', fontSize: '16px', outline: 'none', color: '#64748b', marginTop: '10px', width: '100%', fontWeight: '500' },
@@ -375,7 +347,7 @@ const st = {
   divider: { height: '1px', background: '#f1f5f9', margin: '40px 0' },
   blockCard: { background: '#fff', border: '1px solid #f1f5f9', borderRadius: '24px', padding: '25px', marginBottom: '25px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' },
   blockHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
-  typeBadge: { fontSize: '9px', fontWeight: '900', color: '#673ab7', background: '#f3e8ff', padding: '5px 12px', borderRadius: '8px', display:'flex', alignItems:'center', gap:5 },
+  typeBadge: { fontSize: '9px', fontWeight: '900', color: '#673ab7', background: '#f3e8ff', padding: '5px 12px', borderRadius: '8px' },
   btnTrash: { background: '#fff1f2', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '8px', borderRadius: '10px' },
   blockTitleInput: { width: '100%', border: 'none', fontSize: '20px', fontWeight: '800', outline: 'none', marginBottom: '15px', color: '#1e293b' },
   textArea: { width: '100%', minHeight: '120px', border: 'none', borderRadius: '16px', padding: '20px', outline: 'none', background: '#f8fafc', fontSize: '15px', lineHeight: 1.6, color: '#334155' },
@@ -384,16 +356,14 @@ const st = {
   subInputGroup: { flex: 1, display: 'flex', flexDirection: 'column', gap: 5 },
   dateInputMini: { padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px' },
   quizCard: { border: '2px solid #f1f5f9', borderRadius: '24px', padding: '30px', marginBottom: '25px' },
-  quizBadge: { fontSize: '10px', fontWeight: '900', color: '#10b981', background: '#d1fae5', padding: '5px 12px', borderRadius: '8px', display:'flex', alignItems:'center', gap:5 },
-  quizDeadlineRow: { display:'flex', alignItems:'center', gap:8, fontSize:'11px', color:'#64748b', marginBottom:15, background:'#f8fafc', padding:'8px 12px', borderRadius:'10px', width:'fit-content' },
-  optGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' },
-  optItem: { display: 'flex', alignItems: 'center', gap: 12, padding: '15px', border: '2px solid', borderRadius: '16px', transition: '0.2s' },
+  quizBadge: { fontSize: '10px', fontWeight: '900', color: '#10b981', background: '#d1fae5', padding: '5px 12px', borderRadius: '8px' },
+  optGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: 15 },
+  optItem: { display: 'flex', alignItems: 'center', gap: 12, padding: '15px', border: '2px solid', borderRadius: '16px' },
   optInput: { flex: 1, border: 'none', outline: 'none', fontSize: '14px', background: 'transparent', fontWeight: '600' },
-  fabBar: { position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '12px', background: '#1e293b', padding: '12px 20px', borderRadius: '24px', alignItems: 'center', zIndex: 1000, boxShadow: '0 20px 40px rgba(0,0,0,0.2)' },
-  fabLabel: { fontSize: '10px', fontWeight: '900', color: '#94a3b8', marginLeft: '10px' },
-  fab: { background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', cursor: 'pointer', padding: '10px', borderRadius: '12px', transition: '0.2s' },
-  fabDivider: { width: '1px', height: '30px', background: '#334155', margin: '0 10px' },
-  btnSaveFab: { background: '#673ab7', color: 'white', border: 'none', padding: '10px 25px', borderRadius: '15px', fontWeight: '900', cursor: 'pointer', fontSize: '13px' }
+  fabBar: { position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '12px', background: '#1e293b', padding: '12px 20px', borderRadius: '24px', alignItems: 'center', zIndex: 1000 },
+  fabLabel: { fontSize: '10px', fontWeight: '900', color: '#94a3b8' },
+  fab: { background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', cursor: 'pointer', padding: '10px', borderRadius: '12px' },
+  btnSaveFab: { background: '#673ab7', color: 'white', border: 'none', padding: '10px 25px', borderRadius: '15px', fontWeight: '900', cursor: 'pointer' }
 };
 
 export default ManageMateri;
