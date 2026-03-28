@@ -1,16 +1,12 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-// ==========================================
-// 1. IMPORT UTAMA & AUTH
-// ==========================================
+// === 1. IMPORT UTAMA & AUTH ===
 import Login from './pages/Login';
 import LoginGuru from './pages/LoginGuru';
 import LoginSiswa from './pages/LoginSiswa'; 
 
-// ==========================================
-// 2. IMPORT AREA ADMIN (src/pages/admin)
-// ==========================================
+// === 2. IMPORT AREA ADMIN (src/pages/admin) ===
 import Dashboard from './pages/admin/Dashboard'; 
 import Settings from './pages/admin/Settings';
 
@@ -25,21 +21,25 @@ import StudentFinance from './pages/admin/students/StudentFinance';
 import TeacherList from './pages/admin/teachers/TeacherList';
 import TeacherSalaries from './pages/admin/teachers/TeacherSalaries'; 
 
-// Admin - Finance, Schedule, Grades
+// Admin - Finance System
 import FinanceLayout from './pages/admin/finance/FinanceLayout'; 
+import DebtControl from './pages/admin/finance/DebtControl';
+import ExpenseEntry from './pages/admin/finance/ExpenseEntry';
+import IncomeEntry from './pages/admin/finance/IncomeEntry';
+import TransactionHistory from './pages/admin/finance/TransactionHistory';
+
+// Admin - Schedule & Grades
 import SchedulePage from './pages/admin/schedule/SchedulePage';
 import GradeReport from './pages/admin/grades/GradeReport'; 
 
-// Admin - Portal Siswa (E-Learning Management)
+// Admin - Portal Siswa Management
 import PortalSiswaHome from './pages/admin/portal-siswa/PortalSiswaHome';
 import ManagePoster from './pages/admin/portal-siswa/ManagePoster';
 import ManageMateriAdmin from './pages/admin/portal-siswa/ManageMateri';
 import ManageFinanceAdmin from './pages/admin/portal-siswa/ManageFinance';
 import ManagePengumuman from './pages/admin/portal-siswa/ManagePengumuman';
 
-// ==========================================
-// 3. IMPORT AREA GURU (src/pages/teacher)
-// ==========================================
+// === 3. IMPORT AREA GURU (src/pages/teacher) ===
 import TeacherDashboard from './pages/teacher/TeacherDashboard'; 
 import TeacherHistory from './pages/teacher/TeacherHistory';
 import TeacherManualInput from './pages/teacher/TeacherManualInput'; 
@@ -50,15 +50,14 @@ import ClassSession from './pages/teacher/ClassSession';
 import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade'; 
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager'; 
 
-// Guru - Modul & E-Learning System
+// Guru - E-Learning (Modul System)
 import ModulManager from './pages/teacher/modul/ModulManager'; 
 import CekTugasSiswa from './pages/teacher/modul/CekTugasSiswa';
-// (ManageMateri Guru di-import jika dibutuhkan langsung sebagai rute)
-import ManageMateriGuru from './pages/teacher/modul/ManageMateri'; 
+import ManageMateri from './pages/teacher/modul/ManageMateri';
+import ManageQuiz from './pages/teacher/modul/ManageQuiz';
+import ManageTugas from './pages/teacher/modul/ManageTugas';
 
-// ==========================================
-// 4. IMPORT AREA SISWA (src/pages/student)
-// ==========================================
+// === 4. IMPORT AREA SISWA (src/pages/student) ===
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentSchedule from './pages/student/StudentSchedule';
 import StudentFinanceSiswa from './pages/student/StudentFinance';
@@ -67,9 +66,7 @@ import StudentAttendanceSiswa from './pages/student/StudentAttendance';
 import StudentElearning from './pages/student/StudentElearning';
 import StudentModuleView from './pages/student/StudentModuleView';
 
-// ==========================================
-// 5. KOMPONEN PROTEKSI RUTE (GUARD)
-// ==========================================
+// === 5. KOMPONEN PROTEKSI RUTE (GUARD) ===
 const AdminRoute = ({ children }) => {
   const isAuth = localStorage.getItem('isLoggedIn') === 'true';
   const role = localStorage.getItem('role');
@@ -91,9 +88,7 @@ const SiswaRoute = ({ children }) => {
   return children;
 };
 
-// ==========================================
-// MAIN APP COMPONENT
-// ==========================================
+// === 6. MAIN APP COMPONENT ===
 function App() {
   return (
     <BrowserRouter>
@@ -137,10 +132,12 @@ function App() {
         <Route path="/guru/grades/input" element={<GuruRoute><TeacherInputGrade /></GuruRoute>} />
         <Route path="/guru/grades/manage" element={<GuruRoute><TeacherGradeManager /></GuruRoute>} />
         
-        {/* Guru - E-Learning (Modul System) */}
+        {/* Guru - E-Learning (Full System) */}
         <Route path="/guru/modul" element={<GuruRoute><ModulManager /></GuruRoute>} />
         <Route path="/guru/modul/cek-tugas" element={<GuruRoute><CekTugasSiswa /></GuruRoute>} />
-        <Route path="/guru/modul/editor" element={<GuruRoute><ManageMateriGuru /></GuruRoute>} />
+        <Route path="/guru/modul/materi" element={<GuruRoute><ManageMateri /></GuruRoute>} />
+        <Route path="/guru/modul/quiz" element={<GuruRoute><ManageQuiz /></GuruRoute>} />
+        <Route path="/guru/modul/tugas" element={<GuruRoute><ManageTugas /></GuruRoute>} />
 
         {/* === AREA SISWA (PROTECTED) === */}
         <Route path="/siswa/dashboard" element={<SiswaRoute><StudentDashboard /></SiswaRoute>} />
