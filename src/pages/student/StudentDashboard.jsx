@@ -18,7 +18,8 @@ import {
   GraduationCap,
   Menu,
   ChevronRight,
-  Target
+  Target,
+  ClipboardList
 } from 'lucide-react';
 
 // --- IMPORT SWIPER ---
@@ -85,7 +86,7 @@ const StudentDashboard = () => {
             where("targetKategori", "in", ["Semua", currentKategori]),
             where("targetKelas", "in", ["Semua", currentKelas]),
             orderBy("createdAt", "desc"),
-            limit(3)
+            limit(5)
         );
         const snapTask = await getDocs(qTask);
         setTasks(snapTask.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -122,7 +123,11 @@ const StudentDashboard = () => {
           effect={'fade'}
           navigation={!isMobile}
           pagination={{ clickable: true }}
-          autoplay={{ delay: 5000 }}
+          autoplay={{ 
+            delay: 5000,
+            disableOnInteraction: false 
+          }}
+          loop={posters.length > 1}
           style={styles.mySwiper}
         >
           {posters.map((post) => (
@@ -157,7 +162,7 @@ const StudentDashboard = () => {
           <section style={styles.sectionCard}>
             <h3 style={styles.sectionTitle}><Clock size={20} color="#e67e22" /> Tugas & Materi Baru</h3>
             <div style={styles.timelineList}>
-              {tasks.length > 0 ? tasks.map((task, i) => (
+              {tasks.length > 0 ? tasks.slice(0,3).map((task, i) => (
                 <div key={i} style={styles.timelineItem}>
                   <div style={styles.timelineMarker}><div style={styles.dot}></div><div style={styles.line}></div></div>
                   <div style={styles.timelineContent}>
@@ -180,6 +185,29 @@ const StudentDashboard = () => {
                   <div style={styles.schInfo}><b style={{fontSize: '13px'}}>{sch.title}</b></div>
                 </div>
               )) : <div style={{padding:'10px', fontSize:'12px', opacity:0.7}}>Tidak ada jadwal hari ini.</div>}
+            </div>
+          </section>
+
+          {/* SECTION UPCOMING TUGAS BARU */}
+          <section style={{...styles.sectionCard, marginTop: '20px'}}>
+            <h3 style={styles.sectionTitle}><ClipboardList size={20} color="#9b59b6" /> Upcoming Tugas</h3>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '15px'}}>
+              {tasks.length > 0 ? tasks.map((task, i) => (
+                <div key={i} style={styles.upcomingTaskItem}>
+                  <div style={{flex: 1}}>
+                    <div style={{fontSize: '13px', fontWeight: '700', color: '#2c3e50'}}>{task.title}</div>
+                    <div style={{fontSize: '11px', color: '#95a5a6'}}>{task.subject}</div>
+                  </div>
+                  <button 
+                    onClick={() => setActiveMenu('materi')} 
+                    style={styles.btnActionSmall}
+                  >
+                    Buka
+                  </button>
+                </div>
+              )) : (
+                <div style={styles.emptyState}>Tidak ada tugas mendatang.</div>
+              )}
             </div>
           </section>
         </div>
@@ -286,7 +314,10 @@ const styles = {
   modalOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.7)', zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center' },
   modalContent: { background: 'white', borderRadius: '15px', overflow: 'hidden' },
   modalImg: { width: '100%', height: '200px', objectFit: 'cover' },
-  modalBody: { fontSize: '14px', color: '#475569', lineHeight: '1.6' }
+  modalBody: { fontSize: '14px', color: '#475569', lineHeight: '1.6' },
+  // STYLES BARU UNTUK UPCOMING TUGAS
+  upcomingTaskItem: { display: 'flex', alignItems: 'center', padding: '10px', background: '#f1f5f9', borderRadius: '8px', borderLeft: '4px solid #9b59b6' },
+  btnActionSmall: { background: '#9b59b6', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', transition: '0.2s opacity' }
 };
 
 export default StudentDashboard;
