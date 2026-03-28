@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
 import { collection, query, orderBy, getDocs } from "firebase/firestore";
 import { Book, Play, FileCheck, ArrowLeft, Clock, User } from 'lucide-react';
-import StudentModuleView from './StudentModuleView'; // Import Viewer Riil
+import StudentModuleView from './StudentModuleView'; 
 
 const StudentElearning = () => {
   const [moduls, setModuls] = useState([]);
@@ -13,12 +13,35 @@ const StudentElearning = () => {
     fetchModuls();
   }, []);
 
+  // LOGIKA FILTER PRO: Menyesuaikan target dari Guru/Admin
   const fetchModuls = async () => {
     try {
+      const studentId = localStorage.getItem('studentId');
+      const studentGrade = localStorage.getItem('studentGrade'); // Diambil saat login (misal: "Kelas 7")
+
       const q = query(collection(db, "bimbel_modul"), orderBy("createdAt", "desc"));
       const snap = await getDocs(q);
-      setModuls(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    } catch (e) { console.error(e); }
+      
+      const allModuls = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // Filter agar siswa hanya melihat materi yang ditujukan untuk mereka
+      const filtered = allModuls.filter(m => {
+        // Jika modul tidak punya target atau targetnya 'all', semua bisa lihat
+        if (!m.target || m.target.type === 'all') return true;
+        
+        // Jika targetnya per jenjang kelas (misal: Guru pilih "Kelas 9")
+        if (m.target.type === 'grade' && m.target.grade === studentGrade) return true;
+        
+        // Jika targetnya individu (Guru pilih nama siswa secara spesifik)
+        if (m.target.type === 'individual' && m.target.studentIds?.includes(studentId)) return true;
+        
+        return false;
+      });
+
+      setModuls(filtered);
+    } catch (e) { 
+      console.error("Gagal memuat modul:", e); 
+    }
     setLoading(false);
   };
 
@@ -45,17 +68,23 @@ const StudentElearning = () => {
             <div key={m.id} onClick={() => setSelected(m)} style={st.card}>
               <div style={st.iconCircle}><Book color="#673ab7"/></div>
               <h3 style={st.cardTitle}>{m.title}</h3>
+              {/* Menampilkan Nama Guru/Author */}
               <p style={st.cardAuthor}>Guru: {m.authorName || m.author || 'Guru Gemilang'}</p>
               <div style={st.cardFoot}>Buka Materi ↗</div>
             </div>
           ))}
-          {moduls.length === 0 && <p style={{color: '#94a3b8'}}>Belum ada modul tersedia.</p>}
+          {moduls.length === 0 && (
+            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '50px' }}>
+               <p style={{color: '#94a3b8'}}>Belum ada modul yang tersedia untuk kelas kamu.</p>
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 };
 
+// --- STYLE TETAP DIJAGA SESUAI KODE AWAL KAMU ---
 const st = {
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' },
   card: { background: 'white', padding: '25px', borderRadius: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', cursor: 'pointer', transition: '0.3s' },
@@ -63,7 +92,7 @@ const st = {
   cardTitle: { margin: '0 0 5px 0', fontSize: '18px' },
   cardAuthor: { color: '#94a3b8', fontSize: '13px', margin: 0 },
   cardFoot: { marginTop: '20px', color: '#673ab7', fontWeight: 'bold', fontSize: '13px' },
-  // Style lama tetap ada di sini jika dibutuhkan untuk render internal
+  // Bagian di bawah ini dijaga agar tidak hilang untuk kebutuhan viewer jika diperlukan
   backBtn: { border: 'none', background: 'white', padding: '10px 15px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 2px 5px rgba(0,0,0,0.05)', marginBottom: 25 },
   viewerHeader: { marginBottom: 40 },
   viewTitle: { fontSize: '32px', color: '#1e293b', marginBottom: 10 },

@@ -21,14 +21,13 @@ const LoginSiswa = () => {
     
     setLoading(true);
     try {
-      // Ambil semua data siswa untuk pencarian abaikan huruf kapital (Case Insensitive)
+      // Ambil semua data siswa untuk pencarian abaikan huruf kapital
       const querySnapshot = await getDocs(collection(db, "students"));
       let studentData = null;
       let studentId = null;
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        // Cek username dengan mengabaikan huruf besar/kecil
         if (data.username && data.username.toLowerCase() === inputUsername.toLowerCase()) {
           studentData = data;
           studentId = doc.id;
@@ -36,12 +35,15 @@ const LoginSiswa = () => {
       });
 
       if (studentData) {
-        // Verifikasi Password (diubah ke string agar aman)
+        // Verifikasi Password
         if (String(studentData.password) === inputPassword) {
+            // --- PENYESUAIAN LOGIN AGAR KONEK KE FILTER MATERI ---
             localStorage.setItem("isSiswaLoggedIn", "true");
             localStorage.setItem("role", "siswa");
             localStorage.setItem("studentId", studentId);
             localStorage.setItem("studentName", studentData.nama);
+            // Simpan kelasSekolah (Misal: "Kelas 7") agar StudentElearning bisa memfilter materi
+            localStorage.setItem("studentGrade", studentData.kelasSekolah || "");
 
             alert(`Selamat Datang, ${studentData.nama}!`);
             navigate("/siswa/dashboard");
@@ -95,9 +97,7 @@ const LoginSiswa = () => {
             {loading ? "MEMPROSES..." : "MASUK KE PORTAL"}
           </button>
 
-          <button type="button" onClick={() => navigate('/')} style={styles.btnBack}>
-            ← Kembali ke Beranda
-          </button>
+          {/* Fitur Kembali ke Beranda telah dihapus sesuai instruksi */}
         </form>
 
         <div style={styles.footerNote}>
@@ -151,14 +151,6 @@ const styles = {
     fontWeight: 'bold', 
     cursor: 'pointer',
     boxShadow: '0 4px 6px rgba(39, 174, 96, 0.1)',
-  },
-  btnBack: { 
-    background: 'none', 
-    border: 'none', 
-    color: '#7f8c8d', 
-    marginTop: '25px', 
-    cursor: 'pointer', 
-    fontSize: '14px',
   },
   footerNote: { marginTop: '30px', color: '#bdc3c7', fontSize: '12px' }
 };

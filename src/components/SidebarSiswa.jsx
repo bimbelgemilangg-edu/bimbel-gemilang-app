@@ -17,9 +17,20 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
 
   const isMobile = window.innerWidth <= 768;
 
+  // --- FUNGSI LOGOUT FINAL ---
   const handleLogout = () => {
-    if(window.confirm("Apakah kamu yakin ingin keluar?")) {
-      localStorage.clear();
+    if(window.confirm("Apakah kamu yakin ingin keluar dari portal siswa?")) {
+      // Bersihkan semua session agar filter materi & identitas tidak tertinggal
+      localStorage.removeItem("isSiswaLoggedIn");
+      localStorage.removeItem("role");
+      localStorage.removeItem("studentId");
+      localStorage.removeItem("studentName");
+      localStorage.removeItem("studentGrade");
+      
+      // Opsional: Jika ingin benar-benar bersih total
+      // localStorage.clear();
+
+      // Diarahkan ke URL login siswa yang kamu tentukan
       navigate('/login-siswa');
     }
   };
@@ -43,7 +54,6 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
       }}>
         <div style={styles.header}>
           <div style={styles.brandWrapper}>
-            {/* LOGO: Muncul jika ada, Hilang jika eror (anti-crash) */}
             <img 
               src={LogoBimbel} 
               alt="" 
@@ -101,7 +111,21 @@ const styles = {
   closeMobileBtn: { background: 'none', border: 'none', color: 'white', cursor: 'pointer' },
   divider: { border: '0', borderTop: '1px solid #334155', marginBottom: '20px' },
   menuItem: { padding: '12px 15px', cursor: 'pointer', borderRadius: '12px', marginBottom: '8px', display: 'flex', alignItems: 'center', fontSize: '14px', transition: '0.2s' },
-  logoutBtn: { marginTop: 'auto', width: '100%', padding: '12px', background: '#ef4444', border: 'none', color: 'white', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' },
+  logoutBtn: { 
+    marginTop: 'auto', 
+    width: '100%', 
+    padding: '12px', 
+    background: '#ef4444', 
+    border: 'none', 
+    color: 'white', 
+    borderRadius: '12px', 
+    cursor: 'pointer', 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    fontWeight: 'bold',
+    transition: '0.3s'
+  },
   overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 999, backdropFilter: 'blur(2px)' }
 };
 
