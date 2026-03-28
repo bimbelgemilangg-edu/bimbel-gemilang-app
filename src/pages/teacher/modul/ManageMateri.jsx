@@ -5,12 +5,12 @@ import {
   serverTimestamp, getDocs 
 } from "firebase/firestore"; 
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import imageCompression from 'browser-image-compression'; // npm install browser-image-compression
+import imageCompression from 'browser-image-compression'; 
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, 
   ArrowLeft, Upload, Calendar, Link as LinkIcon, 
-  Image as ImageIcon, graduationCap, Users, Layers,
-  ChevronDown, AlertCircle, Search, UserCheck
+  Image as ImageIcon, Users, Layers,
+  Search, UserCheck
 } from 'lucide-react';
 
 const ManageMateri = () => {
@@ -37,7 +37,7 @@ const ManageMateri = () => {
   
   const COLLECTION_NAME = "bimbel_modul";
 
-  // FETCH DATA SISWA & KELAS DINAMIS
+  // FETCH DATA SISWA & KELAS DINAMIS (SINKRON DENGAN KOLEKSI STUDENTS)
   useEffect(() => {
     const fetchContextData = async () => {
       try {
@@ -45,7 +45,7 @@ const ManageMateri = () => {
         const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         setStudentsList(data);
 
-        // Ambil list kelas unik
+        // Ambil list kelas unik dari database
         const classes = [...new Set(data.map(s => s.kelasSekolah))].filter(Boolean)
           .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
         setAvailableClasses(classes);
@@ -77,12 +77,12 @@ const ManageMateri = () => {
     } catch (err) { console.error("Error fetching:", err); }
   };
 
-  // KOMPRESI GAMBAR
+  // KOMPRESI GAMBAR (FIXED: Ukuran optimal untuk menghindari alert 'File Terlalu Besar')
   const handleCoverUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     if (file.type.startsWith('image/')) {
-      const options = { maxSizeMB: 0.5, maxWidthOrHeight: 1280, useWebWorker: true };
+      const options = { maxSizeMB: 0.4, maxWidthOrHeight: 1024, useWebWorker: true };
       try {
         const compressedFile = await imageCompression(file, options);
         const reader = new FileReader();
@@ -155,9 +155,9 @@ const ManageMateri = () => {
     setLoading(false);
   };
 
-  // FILTER SISWA BERDASARKAN SEARCH & KELAS
+  // FILTER SISWA (FIXED: Menggunakan field .nama sesuai database)
   const filteredStudents = studentsList.filter(s => {
-    const matchesSearch = s.name?.toLowerCase().includes(studentSearch.toLowerCase());
+    const matchesSearch = (s.nama || "").toLowerCase().includes(studentSearch.toLowerCase());
     const matchesClass = targetKelas === "Semua" || s.kelasSekolah === targetKelas;
     return matchesSearch && matchesClass;
   });
@@ -188,7 +188,7 @@ const ManageMateri = () => {
               <label style={st.coverPlaceholder}>
                 <input type="file" accept="image/*" hidden onChange={handleCoverUpload} />
                 <Upload size={24} color="#673ab7" />
-                <span style={{fontSize: 11, fontWeight:'bold', color:'#673ab7', marginTop:8}}>KLIK UNTUK UNGGAH SAMPUL</span>
+                <span style={{fontSize: 11, fontWeight:'bold', color:'#673ab7', marginTop:8, textAlign:'center'}}>KLIK UNTUK UNGGAH SAMPUL</span>
               </label>
             )}
           </div>
@@ -212,8 +212,7 @@ const ManageMateri = () => {
               <select style={st.selectInput} value={targetKategori} onChange={(e) => setTargetKategori(e.target.value)}>
                  <option value="Semua">Semua Program</option>
                  <option value="Reguler">Reguler (Bimbel)</option>
-                 <option value="Privat">Privat</option>
-                 <option value="Intensif">Intensif UTBK</option>
+                 <option value="English">English Course</option>
               </select>
            </div>
            <div style={st.targetBox}>
@@ -245,13 +244,13 @@ const ManageMateri = () => {
               >
                  <option value="Semua">Kirim ke Semua Siswa di Kelas Ini</option>
                  {filteredStudents.map(s => (
-                   <option key={s.id} value={s.id}>{s.name} ({s.kelasSekolah})</option>
+                   <option key={s.id} value={s.id}>{s.nama} ({s.kelasSekolah})</option>
                  ))}
               </select>
            </div>
            {targetSiswaId !== "Semua" && (
              <div style={{marginTop: 10, display:'flex', alignItems:'center', gap: 5, color:'#059669', fontSize: 11, fontWeight: 'bold'}}>
-                <UserCheck size={14}/> Modul ini hanya akan tampil di akun {studentsList.find(s => s.id === targetSiswaId)?.name}
+                <UserCheck size={14}/> Modul ini hanya akan tampil di akun {studentsList.find(s => s.id === targetSiswaId)?.nama}
              </div>
            )}
         </div>
@@ -286,6 +285,7 @@ const ManageMateri = () => {
         ))}
 
         {/* SECTION 4: KUIS */}
+        {quizData.length > 0 && <div style={st.sectionHeader}><HelpCircle size={18}/> Bank Soal Kuis</div>}
         {quizData.map((q, idx) => (
           <div key={q.id} style={st.quizCard}>
             <div style={st.blockHeader}>
