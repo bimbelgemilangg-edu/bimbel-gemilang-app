@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SidebarSiswa from '../../components/SidebarSiswa';
 import { db } from '../../firebase';
-import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+import { collection, query, where, getDocs, orderBy, limit, doc, getDoc } from "firebase/firestore";
 
 // --- IMPORT KOMPONEN MENU ---
 import StudentFinanceSiswa from './StudentFinance';
@@ -17,7 +17,8 @@ import {
   Clock, 
   GraduationCap,
   Menu,
-  ChevronRight
+  ChevronRight,
+  Target
 } from 'lucide-react';
 
 // --- IMPORT SWIPER ---
@@ -41,6 +42,7 @@ const StudentDashboard = () => {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedNews, setSelectedNews] = useState(null);
+  const [studentProfile, setStudentProfile] = useState(null);
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -50,28 +52,38 @@ const StudentDashboard = () => {
 
   const isMobile = windowWidth <= 768;
 
-  const dummyPosters = [
-    { id: 1, imageUrl: 'https://images.unsplash.com/photo-1523050335392-93851179428c?q=80&w=1600', title: 'Selamat Datang di Bimbel Gemilang', desc: 'Wujudkan mimpimu bersama pengajar terbaik kami.', content: 'Selamat datang di tahun ajaran baru! Mari tingkatkan semangat belajar untuk meraih prestasi terbaik bersama mentor-mentor ahli kami.' },
-    { id: 2, imageUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1600', title: 'Try Out Nasional Ke-5', desc: 'Pantau jadwal dan persiapkan dirimu sebaik mungkin!', content: 'Try Out akan dilaksanakan serentak. Pastikan koneksi internet stabil dan siapkan alat tulis serta nomor ujian masing-masing.' }
-  ];
-
   useEffect(() => {
     const fetchData = async () => {
       if (!studentId) return;
       setLoading(true);
       try {
+        // 1. Ambil Profil Siswa untuk Filter Kategori & Kelas
+        const studentSnap = await getDoc(doc(db, "students", studentId));
+        let currentKategori = "Semua";
+        let currentKelas = "Semua";
+
+        if (studentSnap.exists()) {
+          const sData = studentSnap.data();
+          setStudentProfile(sData);
+          currentKategori = sData.kategori || "Semua";
+          currentKelas = sData.kelasSekolah || "Semua";
+        }
+
+        // 2. Ambil Poster Pengumuman
         const qPost = query(collection(db, "student_contents"), orderBy("createdAt", "desc"));
         const snapPost = await getDocs(qPost);
-        const postData = snapPost.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setPosters(postData.length > 0 ? postData : dummyPosters);
+        setPosters(snapPost.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 
+        // 3. Ambil Jadwal
         const qSched = query(collection(db, "jadwal_bimbel"), where("students", "array-contains", studentId), limit(3));
         const snapSched = await getDocs(qSched);
         setSchedules(snapSched.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         
-        // Query Tugas dari koleksi bimbel_modul yang baru
+        // 4. Ambil Modul/Tugas TERFILTER sesuai Target Kelas & Kategori
         const qTask = query(
             collection(db, "bimbel_modul"), 
+            where("targetKategori", "in", ["Semua", currentKategori]),
+            where("targetKelas", "in", ["Semua", currentKelas]),
             orderBy("createdAt", "desc"),
             limit(3)
         );
@@ -92,7 +104,9 @@ const StudentDashboard = () => {
       <div style={isMobile ? styles.welcomeHeaderMobile : styles.welcomeHeader}>
         <div>
           <h1 style={isMobile ? styles.titleMobile : styles.title}>Halo, {studentName}! 👋</h1>
-          <p style={styles.subtitle}>Sistem E-Learning siap membantumu hari ini.</p>
+          <p style={styles.subtitle}>
+            {studentProfile ? `${studentProfile.kategori} - Kelas ${studentProfile.kelasSekolah}` : "Memuat data kelas..."}
+          </p>
         </div>
         {!isMobile && (
           <div style={styles.statusBadge}>
@@ -102,7 +116,7 @@ const StudentDashboard = () => {
         )}
       </div>
 
-      <div style={{...styles.carouselContainer, aspectRatio: isMobile ? '4/3' : '16/9'}}>
+      <div style={{...styles.carouselContainer, aspectRatio: isMobile ? '4/3' : '21/9'}}>
         <Swiper
           modules={[Navigation, Pagination, Autoplay, EffectFade]}
           effect={'fade'}
@@ -131,27 +145,27 @@ const StudentDashboard = () => {
               <h3 style={styles.sectionTitle}><BookOpen size={20} color="#3498db" /> Akses Cepat Modul</h3>
             </div>
             <div style={styles.lastMaterialItem}>
-              <div style={styles.iconBox}><BookOpen color="#3498db" /></div>
+              <div style={styles.iconBox}><Target color="#3498db" size={20} /></div>
               <div style={{flex: 1}}>
-                <b style={{fontSize: '14px'}}>Materi & Tugas</b>
-                <p style={{fontSize: '11px', color: '#7f8c8d'}}>Lihat rilis materi minggu ini</p>
+                <b style={{fontSize: '14px'}}>Materi Khusus {studentProfile?.kelasSekolah || "Anda"}</b>
+                <p style={{fontSize: '11px', color: '#7f8c8d'}}>Lihat rilis materi terbaru hari ini</p>
               </div>
               <button onClick={() => setActiveMenu('materi')} style={styles.btnContinue}>Buka</button>
             </div>
           </section>
 
           <section style={styles.sectionCard}>
-            <h3 style={styles.sectionTitle}><Clock size={20} color="#e67e22" /> Deadline Terdekat</h3>
+            <h3 style={styles.sectionTitle}><Clock size={20} color="#e67e22" /> Tugas & Materi Baru</h3>
             <div style={styles.timelineList}>
               {tasks.length > 0 ? tasks.map((task, i) => (
                 <div key={i} style={styles.timelineItem}>
                   <div style={styles.timelineMarker}><div style={styles.dot}></div><div style={styles.line}></div></div>
                   <div style={styles.timelineContent}>
                     <span style={{fontWeight: '600', fontSize: '13px'}}>{task.title}</span>
-                    <span style={styles.deadlineLabel}>Batas: {task.deadline ? new Date(task.deadline).toLocaleDateString() : "Segera"}</span>
+                    <span style={styles.deadlineLabel}>Mata Pelajaran: {task.subject}</span>
                   </div>
                 </div>
-              )) : <div style={styles.emptyState}>Semua tugas sudah aman!</div>}
+              )) : <div style={styles.emptyState}>Belum ada materi baru untuk kelasmu.</div>}
             </div>
           </section>
         </div>
@@ -229,7 +243,6 @@ const StudentDashboard = () => {
   );
 };
 
-// --- STYLES ---
 const styles = {
   mainContainer: { display: 'flex', minHeight: '100vh', background: '#f8fafc', position: 'relative' },
   contentArea: { transition: 'margin 0.3s ease', boxSizing: 'border-box' },
@@ -264,7 +277,7 @@ const styles = {
   dot: { width: '8px', height: '8px', borderRadius: '50%', background: '#f97316' },
   line: { width: '2px', flexGrow: 1, background: '#e2e8f0' },
   timelineContent: { paddingBottom: '15px' },
-  deadlineLabel: { fontSize: '11px', color: '#ef4444', display: 'block' },
+  deadlineLabel: { fontSize: '11px', color: '#64748b', display: 'block' },
   scheduleCard: { background: '#1e293b', padding: '20px', borderRadius: '15px', color: 'white' },
   scheduleList: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px' },
   schItem: { background: 'rgba(255,255,255,0.1)', padding: '12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '10px' },
