@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { collection, getDocs, addDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
-import { Type, Video, HelpCircle, Save, FilePlus, Trash2, ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { Type, Video, HelpCircle, Save, FilePlus, Trash2, ArrowLeft, Plus } from 'lucide-react';
 
 const ManageMateri = ({ editData, onBack }) => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [coverUrl, setCoverUrl] = useState(""); // Bisa berisi URL teks atau Base64
+  const [coverUrl, setCoverUrl] = useState(""); 
   const [deadline, setDeadline] = useState("");
   const [contentBlocks, setContentBlocks] = useState([]);
   
@@ -14,7 +14,7 @@ const ManageMateri = ({ editData, onBack }) => {
   const [targetType, setTargetType] = useState('all');
   const [selectedGrade, setSelectedGrade] = useState('');
 
-  // --- LOGIKA DETEKSI EDIT (Mempertahankan Fungsi Edit) ---
+  // --- SINKRONISASI DATA SAAT EDIT ---
   useEffect(() => {
     if (editData) {
       setTitle(editData.title || "");
@@ -36,57 +36,84 @@ const ManageMateri = ({ editData, onBack }) => {
     fetchGrades();
   }, []);
 
-  // --- FUNGSI SMART UPLOAD (Mengubah gambar ke teks Base64) ---
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setCoverUrl(reader.result); // Mengubah file menjadi string teks panjang
-      };
+      reader.onloadend = () => setCoverUrl(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
+  // --- FUNGSI TAMBAH BLOK (Materi, Media, Tugas, Kuis) ---
   const addBlock = (type) => {
     const newBlock = {
       id: Date.now(),
       type: type,
       title: "",
       content: "",
-      openDate: "",
-      dueDate: deadline // Otomatis sinkron dengan deadline utama
+      dueDate: deadline,
+      questions: type === 'quiz' ? [] : undefined // Khusus kuis, siapkan array pertanyaan
     };
     setContentBlocks([...contentBlocks, newBlock]);
   };
 
+  // --- FUNGSI KHUSUS KUIS (Diambil dari ManageQuiz kamu) ---
+  const addQuestionToBlock = (blockId) => {
+    setContentBlocks(contentBlocks.map(b => {
+      if (b.id === blockId) {
+        return { ...b, questions: [...b.questions, { id: Date.now(), q: '', options: ['', '', '', ''], correct: 0 }] };
+      }
+      return b;
+    }));
+  };
+
+  const updateQuestion = (blockId, qId, field, value, optIdx = null) => {
+    setContentBlocks(contentBlocks.map(b => {
+      if (b.id === blockId) {
+        const updatedQuestions = b.questions.map(q => {
+          if (q.id === qId) {
+            if (field === 'q') return { ...q, q: value };
+            if (field === 'correct') return { ...q, correct: value };
+            if (field === 'options') {
+              const newOpts = [...q.options];
+              newOpts[optIdx] = value;
+              return { ...q, options: newOpts };
+            }
+          }
+          return q;
+        });
+        return { ...b, questions: updatedQuestions };
+      }
+      return b;
+    }));
+  };
+
+  const deleteQuestion = (blockId, qId) => {
+    setContentBlocks(contentBlocks.map(b => {
+      if (b.id === blockId) return { ...b, questions: b.questions.filter(q => q.id !== qId) };
+      return b;
+    }));
+  };
+
   const handlePublish = async () => {
-    if (!title || contentBlocks.length === 0) return alert("Isi judul dan minimal satu materi!");
+    if (!title || contentBlocks.length === 0) return alert("Isi judul dan minimal satu materi/tugas!");
     
     const payload = {
-      title,
-      desc,
-      coverUrl, // Menyimpan teks gambar
-      deadline,
-      contentBlocks,
-      target: {
-        type: targetType,
-        grade: targetType === 'grade' ? selectedGrade : null,
-      },
+      title, desc, coverUrl, deadline, contentBlocks,
+      target: { type: targetType, grade: targetType === 'grade' ? selectedGrade : null },
       updatedAt: serverTimestamp(),
     };
 
     try {
       if (editData?.id) {
-        // JIKA SEDANG EDIT: Update otomatis merubah data di dashboard siswa
         await updateDoc(doc(db, "bimbel_modul", editData.id), payload);
-        alert("Modul Berhasil Diperbarui & Sinkron ke Siswa!");
+        alert("Modul & Semua Isinya Berhasil Diperbarui!");
       } else {
-        // JIKA BARU
         payload.createdAt = serverTimestamp();
         payload.authorName = localStorage.getItem('teacherName') || "Pengajar";
         await addDoc(collection(db, "bimbel_modul"), payload);
-        alert("Modul Berhasil Dipublish!");
+        alert("Modul Berhasil Dipublish ke Siswa!");
       }
       onBack(); 
     } catch (e) { alert("Gagal: " + e.message); }
@@ -97,71 +124,32 @@ const ManageMateri = ({ editData, onBack }) => {
       <button onClick={onBack} style={styles.btnBack}><ArrowLeft size={18}/> Kembali ke Daftar</button>
       
       <div style={styles.card}>
-        <input 
-          placeholder="Judul Modul..." 
-          style={styles.titleInput} 
-          value={title} 
-          onChange={(e) => setTitle(e.target.value)} 
-        />
-        <textarea 
-          placeholder="Deskripsi singkat materi..." 
-          style={styles.descInput} 
-          value={desc} 
-          onChange={(e) => setDesc(e.target.value)} 
-        />
+        <input placeholder="Judul Pembelajaran..." style={styles.titleInput} value={title} onChange={(e) => setTitle(e.target.value)} />
+        <textarea placeholder="Deskripsi singkat..." style={styles.descInput} value={desc} onChange={(e) => setDesc(e.target.value)} />
 
         <div style={styles.metaGrid}>
-          {/* BAGIAN UPLOAD GAMBAR MODIFIKASI */}
           <div>
             <label style={styles.label}>🖼️ Sampul Modul (File HP/Komputer):</label>
             <div style={styles.uploadWrapper}>
-                <input 
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  style={styles.fileInput}
-                  id="file-upload"
-                />
+                <input type="file" accept="image/*" onChange={handleImageUpload} style={{display:'none'}} id="file-upload" />
                 <label htmlFor="file-upload" style={styles.customFileUpload}>
-                    {coverUrl ? "✅ Gambar Terpilih" : "Pilih Gambar Dari Perangkat"}
+                    {coverUrl ? "✅ Gambar Terpilih" : "Pilih Gambar"}
                 </label>
                 {coverUrl && (
-                    <div style={styles.previewContainer}>
-                        <img src={coverUrl} alt="Preview" style={styles.miniPreview} />
-                        <button onClick={() => setCoverUrl("")} style={styles.btnRemoveImg}>Hapus</button>
+                    <div style={{display:'flex', gap:10, alignItems:'center'}}>
+                        <img src={coverUrl} alt="Preview" style={{width:50, height:50, borderRadius:5, objectFit:'cover'}} />
+                        <button onClick={() => setCoverUrl("")} style={{background:'#fee2e2', color:'red', border:'none', padding:5, borderRadius:5}}>Hapus</button>
                     </div>
                 )}
             </div>
           </div>
           <div>
-            <label style={styles.label}>📅 Tenggat Waktu (Due Date):</label>
-            <input 
-              type="datetime-local" 
-              style={styles.input} 
-              value={deadline} 
-              onChange={(e) => setDeadline(e.target.value)} 
-            />
+            <label style={styles.label}>📅 Tenggat Waktu Utama:</label>
+            <input type="datetime-local" style={styles.input} value={deadline} onChange={(e) => setDeadline(e.target.value)} />
           </div>
         </div>
 
-        <div style={{marginTop: 15}}>
-            <label style={styles.label}>👥 Target Siswa:</label>
-            <div style={styles.tagContainer}>
-              <button 
-                onClick={() => setTargetType('all')} 
-                style={targetType === 'all' ? styles.tagActive : styles.tag}
-              >Semua Kelas</button>
-              {availableGrades.map(grade => (
-                <button 
-                  key={grade} 
-                  onClick={() => {setTargetType('grade'); setSelectedGrade(grade);}} 
-                  style={(targetType === 'grade' && selectedGrade === grade) ? styles.tagActive : styles.tag}
-                >{grade}</button>
-              ))}
-            </div>
-        </div>
-
-        {/* LIST BLOK MATERI (Mempertahankan Fungsi Asli) */}
+        {/* LIST BLOK MATERI, MEDIA, TUGAS, KUIS */}
         <div style={{ marginTop: '30px' }}>
           {contentBlocks.map((block, index) => (
             <div key={block.id} style={styles.blockItem}>
@@ -169,38 +157,47 @@ const ManageMateri = ({ editData, onBack }) => {
                 <span>BAGIAN {index + 1}: {block.type.toUpperCase()}</span>
                 <button onClick={() => setContentBlocks(contentBlocks.filter(b => b.id !== block.id))} style={styles.btnDel}><Trash2 size={16}/></button>
               </div>
-              <input 
-                placeholder="Sub Judul..." 
-                style={styles.subInput} 
-                value={block.title} 
-                onChange={(e) => {
-                  const newBlocks = [...contentBlocks];
-                  newBlocks[index].title = e.target.value;
-                  setContentBlocks(newBlocks);
-                }}
-              />
-              {block.type === 'materi' && <textarea style={styles.textArea} value={block.content} onChange={(e) => {
+              <input placeholder="Sub Judul Bagian..." style={styles.subInput} value={block.title} onChange={(e) => {
+                  const b = [...contentBlocks]; b[index].title = e.target.value; setContentBlocks(b);
+              }} />
+
+              {/* RENDER TEKS */}
+              {block.type === 'materi' && <textarea style={styles.textArea} placeholder="Ketik materi disini..." value={block.content} onChange={(e) => {
                 const b = [...contentBlocks]; b[index].content = e.target.value; setContentBlocks(b);
               }}/>}
-              {block.type === 'media' && (
-                <input 
-                    style={styles.input} 
-                    placeholder="Link Video/PPT..." 
-                    value={block.content} 
-                    onChange={(e) => {
-                        const b = [...contentBlocks]; b[index].content = e.target.value; setContentBlocks(b);
-                    }}
-                />
-              )}
-              {block.type === 'assignment' && (
-                <textarea 
-                    style={styles.textArea} 
-                    placeholder="Instruksi Tugas..." 
-                    value={block.content} 
-                    onChange={(e) => {
-                        const b = [...contentBlocks]; b[index].content = e.target.value; setContentBlocks(b);
-                    }}
-                />
+
+              {/* RENDER MEDIA */}
+              {block.type === 'media' && <input style={styles.input} placeholder="Link Video YouTube / Google Slide PPT..." value={block.content} onChange={(e) => {
+                const b = [...contentBlocks]; b[index].content = e.target.value; setContentBlocks(b);
+              }}/>}
+
+              {/* RENDER TUGAS */}
+              {block.type === 'assignment' && <textarea style={styles.textArea} placeholder="Ketik Instruksi Tugas... (Siswa akan upload file disini)" value={block.content} onChange={(e) => {
+                const b = [...contentBlocks]; b[index].content = e.target.value; setContentBlocks(b);
+              }}/>}
+
+              {/* RENDER KUIS (MENGGANTIKAN FILE MANAGEQUIZ LAMA) */}
+              {block.type === 'quiz' && (
+                <div style={{background: '#f8f9fa', padding: '15px', borderRadius: '8px', marginTop: 10}}>
+                  {block.questions.map((q, qIdx) => (
+                    <div key={q.id} style={{ background: 'white', padding: '15px', marginBottom: '10px', borderRadius: '8px', border: '1px solid #ddd' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <strong>Pertanyaan {qIdx + 1}</strong>
+                        <button onClick={() => deleteQuestion(block.id, q.id)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}><Trash2 size={16}/></button>
+                      </div>
+                      <input style={styles.input} placeholder="Tulis Pertanyaan..." value={q.q} onChange={(e) => updateQuestion(block.id, q.id, 'q', e.target.value)} />
+                      {q.options.map((opt, optIdx) => (
+                        <div key={optIdx} style={{ display: 'flex', gap: '10px', marginBottom: '5px', alignItems:'center' }}>
+                          <input type="radio" checked={q.correct === optIdx} onChange={() => updateQuestion(block.id, q.id, 'correct', optIdx)} />
+                          <input style={{ flex: 1, padding: '8px', borderRadius: 4, border: '1px solid #ccc', fontSize: 13 }} placeholder={`Pilihan ${optIdx + 1}`} value={opt} onChange={(e) => updateQuestion(block.id, q.id, 'options', e.target.value, optIdx)} />
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                  <button onClick={() => addQuestionToBlock(block.id)} style={{ width: '100%', padding: '10px', border: '1px dashed #673ab7', color: '#673ab7', background: 'none', cursor: 'pointer', fontWeight:'bold' }}>
+                    <Plus size={14}/> Tambah Soal Kuis
+                  </button>
+                </div>
               )}
             </div>
           ))}
@@ -209,10 +206,10 @@ const ManageMateri = ({ editData, onBack }) => {
 
       <div style={styles.footer}>
         <div style={styles.btnGroup}>
-          <button onClick={() => addBlock('materi')} style={styles.btnTool} title="Teks"><Type size={18}/></button>
+          <button onClick={() => addBlock('materi')} style={styles.btnTool} title="Teks Materi"><Type size={18}/></button>
           <button onClick={() => addBlock('media')} style={styles.btnTool} title="Media/PPT"><Video size={18}/></button>
-          <button onClick={() => addBlock('assignment')} style={styles.btnTool} title="Tugas"><FilePlus size={18}/></button>
-          <button onClick={() => addBlock('quiz')} style={styles.btnTool} title="Kuis"><HelpCircle size={18}/></button>
+          <button onClick={() => addBlock('assignment')} style={styles.btnTool} title="Tugas Upload"><FilePlus size={18}/></button>
+          <button onClick={() => addBlock('quiz')} style={styles.btnTool} title="Kuis Ganda"><HelpCircle size={18}/></button>
         </div>
         <button onClick={handlePublish} style={styles.btnPublish}>
           <Save size={18}/> {editData ? "SIMPAN PERUBAHAN" : "PUBLISH MODUL"}
@@ -231,23 +228,13 @@ const styles = {
   metaGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', borderTop: '1px solid #eee', paddingTop: '20px' },
   label: { display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#888', marginBottom: '5px' },
   input: { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px', marginBottom: '10px' },
-  
-  // Gaya baru untuk Upload
   uploadWrapper: { display: 'flex', flexDirection: 'column', gap: '10px' },
-  fileInput: { display: 'none' },
   customFileUpload: { background: '#f1f5f9', padding: '10px', borderRadius: '8px', textAlign: 'center', cursor: 'pointer', fontSize: '13px', border: '1px dashed #cbd5e1' },
-  previewContainer: { display: 'flex', alignItems: 'center', gap: '10px' },
-  miniPreview: { width: '50px', height: '50px', borderRadius: '5px', objectFit: 'cover' },
-  btnRemoveImg: { background: '#fee2e2', color: '#ef4444', border: 'none', padding: '4px 8px', borderRadius: '5px', fontSize: '11px', cursor: 'pointer' },
-
   blockItem: { border: '1px solid #e2e8f0', padding: '20px', borderRadius: '12px', marginBottom: '15px', background: '#fff' },
   blockHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '11px', fontWeight: 'bold', color: '#64748b' },
   subInput: { width: '100%', border: 'none', borderBottom: '1px solid #eee', marginBottom: '15px', padding: '8px 0', fontSize: '16px', fontWeight: '600', outline: 'none' },
   textArea: { width: '100%', minHeight: '100px', border: '1px solid #eee', padding: '10px', borderRadius: '8px', outline: 'none', fontSize: '14px' },
   btnDel: { background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' },
-  tagContainer: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' },
-  tag: { padding: '6px 15px', borderRadius: '20px', border: '1px solid #ddd', background: 'white', cursor: 'pointer', fontSize: '12px' },
-  tagActive: { padding: '6px 15px', borderRadius: '20px', background: '#673ab7', color: 'white', border: '1px solid #673ab7', cursor: 'pointer', fontSize: '12px' },
   footer: { position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: 'white', padding: '10px 20px', borderRadius: '50px', display: 'flex', gap: '30px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', alignItems: 'center', zIndex: 100 },
   btnGroup: { display: 'flex', gap: '15px' },
   btnTool: { border: 'none', background: '#f0f0f0', width: '45px', height: '45px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
