@@ -3,7 +3,7 @@ import { db } from '../../../firebase';
 import { collection, getDocs, doc, deleteDoc, query } from "firebase/firestore";
 import { 
   BookOpen, Plus, Search, FileText, HelpCircle, 
-  Layers, Trash2, Edit3, Eye 
+  Layers, Trash2, Edit3, Eye, Clock 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -106,11 +106,17 @@ const ModulManager = () => {
               <div style={styles.cardMeta}>
                 {/* Menampilkan jumlah konten berdasarkan struktur field 'content' di Firebase */}
                 <div style={styles.metaItem}>
-                  <FileText size={14}/> {modul.content ? "1 Materi" : "0 Materi"}
+                  <FileText size={14}/> {modul.blocks ? `${modul.blocks.length} Bagian` : (modul.content ? "1 Materi" : "0 Materi")}
                 </div>
                 <div style={styles.metaItem}>
-                  <HelpCircle size={14}/> {modul.quizData ? "Ada Kuis" : "0 Soal Kuis"}
+                  <HelpCircle size={14}/> {modul.quizData ? `${modul.quizData.length} Soal` : "0 Soal Kuis"}
                 </div>
+                {/* UPDATE: Indikator Deadline jika ada */}
+                {(modul.deadlineTugas || modul.deadlineQuiz) && (
+                  <div style={{...styles.metaItem, color: '#f59e0b', fontWeight: 'bold'}}>
+                    <Clock size={14}/> Ada Tenggat
+                  </div>
+                )}
               </div>
 
               <div style={styles.cardActions}>
@@ -163,7 +169,7 @@ const styles = {
   badge: { background: '#f3e8ff', color: '#673ab7', padding: '5px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold' },
   btnDelIcon: { background: 'transparent', border: 'none', color: '#cbd5e1', cursor: 'pointer' },
   cardTitle: { margin: '0 0 15px 0', fontSize: '18px', color: '#1e293b', fontWeight: 'bold' },
-  cardMeta: { display: 'flex', gap: '15px', padding: '15px 0', borderTop: '1px solid #f1f5f9', marginBottom: '15px' },
+  cardMeta: { display: 'flex', gap: '15px', padding: '15px 0', borderTop: '1px solid #f1f5f9', marginBottom: '15px', flexWrap: 'wrap' },
   metaItem: { display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#64748b' },
   cardActions: { display: 'flex', gap: '10px' },
   btnEdit: { flex: 1, background: '#f8fafc', color: '#1e293b', border: '1px solid #e2e8f0', padding: '12px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 },

@@ -4,7 +4,7 @@ import { doc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs
 import { 
   ArrowLeft, Clock, BookOpen, FileText, 
   CheckCircle, UploadCloud, Eye, Link as LinkIcon,
-  HelpCircle, ChevronRight, PlayCircle
+  HelpCircle, ChevronRight, PlayCircle, AlertCircle
 } from 'lucide-react';
 
 const StudentModuleView = ({ modulId, onBack, studentData }) => {
@@ -14,6 +14,10 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const [submittedTasks, setSubmittedTasks] = useState({}); 
   const [quizAnswers, setQuizAnswers] = useState({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
+  
+  // State untuk status deadline
+  const [isTugasExpired, setIsTugasExpired] = useState(false);
+  const [isQuizExpired, setIsQuizExpired] = useState(false);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -21,7 +25,14 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         const docRef = doc(db, "bimbel_modul", modulId);
         const snap = await getDoc(docRef);
         if (snap.exists()) {
-          setModul(snap.data());
+          const data = snap.data();
+          setModul(data);
+          
+          // Cek Deadline secara real-time
+          const now = new Date();
+          if (data.deadlineTugas) setIsTugasExpired(now > new Date(data.deadlineTugas));
+          if (data.deadlineQuiz) setIsQuizExpired(now > new Date(data.deadlineQuiz));
+          
           checkExistingSubmissions(modulId);
         }
       } catch (err) {
@@ -48,6 +59,8 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   };
 
   const handleTaskUpload = async (e, blockId, blockTitle) => {
+    if (isTugasExpired) return alert("❌ Maaf, waktu pengumpulan tugas sudah berakhir.");
+    
     const file = e.target.files[0];
     if (!file) return;
 
@@ -66,7 +79,8 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           studentClass: studentData?.kelasSekolah,
           fileUrl: reader.result, 
           submittedAt: serverTimestamp(),
-          status: "Pending"
+          status: "Pending",
+          isLate: isTugasExpired // Tandai jika terlambat
         };
 
         await addDoc(collection(db, "jawaban_tugas"), payload);
@@ -82,6 +96,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   };
 
   const handleQuizSubmit = async () => {
+    if (isQuizExpired) return alert("❌ Maaf, kuis sudah ditutup.");
     if (Object.keys(quizAnswers).length < (modul?.quizData?.length || 0)) {
       return alert("Mohon selesaikan semua pertanyaan kuis!");
     }
@@ -93,7 +108,8 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         studentName: studentData?.nama,
         answers: quizAnswers,
         submittedAt: serverTimestamp(),
-        type: "quiz"
+        type: "quiz",
+        isLate: isQuizExpired
       };
       await addDoc(collection(db, "jawaban_kuis"), payload);
       setQuizSubmitted(true);
@@ -107,7 +123,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
 
   return (
     <div style={st.container}>
-      {/* HERO SECTION */}
       <div style={st.heroSection}>
         <button onClick={onBack} style={st.backFloating}><ArrowLeft size={18} /> Kembali</button>
         <img 
@@ -122,13 +137,16 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           </div>
           <h1 style={st.mainTitle}>{modul?.title}</h1>
           <div style={st.metaInfo}>
-             {modul?.deadlineTugas && <span style={st.deadlineInfo}><Clock size={14}/> Deadline Tugas: {new Date(modul.deadlineTugas).toLocaleString()}</span>}
+             {modul?.deadlineTugas && (
+               <span style={{...st.deadlineInfo, color: isTugasExpired ? '#ff4d4d' : 'white'}}>
+                 <Clock size={14}/> {isTugasExpired ? "Tugas Berakhir" : `Deadline Tugas: ${new Date(modul.deadlineTugas).toLocaleString()}`}
+               </span>
+             )}
           </div>
         </div>
       </div>
 
       <div style={st.contentWrapper}>
-        {/* RENDER BLOCKS (MATERI & TUGAS) */}
         {modul?.blocks?.map((block, idx) => (
           <div key={block.id} style={st.contentCard}>
             <div style={st.blockHeader}>
@@ -138,10 +156,8 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
               <h3 style={st.blockTitle}>{block.title}</h3>
             </div>
 
-            {/* --- RENDER: TEKS --- */}
             {block.type === 'text' && <div style={st.textBody}>{block.content}</div>}
 
-            {/* --- RENDER: MEDIA (CANVA / VIDEO / LINK) --- */}
             {block.type === 'video' && (
               <div style={st.mediaContainer}>
                 {block.content.includes('canva.com') ? (
@@ -165,13 +181,14 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
               </div>
             )}
 
-            {/* --- RENDER: ASSIGNMENT (UPLOAD CATATAN) --- */}
             {block.type === 'assignment' && (
-              <div style={st.assignmentBox}>
+              <div style={{...st.assignmentBox, border: isTugasExpired ? '1px solid #ffcccc' : '1px solid #fef3c7', background: isTugasExpired ? '#fff5f5' : '#fffbeb'}}>
                 <div style={st.assignInfo}>
-                   <div style={st.iconCircle}><UploadCloud size={20} color="#f39c12"/></div>
+                   <div style={st.iconCircle}><UploadCloud size={20} color={isTugasExpired ? "#ff4d4d" : "#f39c12"}/></div>
                    <div>
-                      <p style={st.assignTitle}>Instruksi Tugas</p>
+                      <p style={{...st.assignTitle, color: isTugasExpired ? '#cc0000' : '#92400e'}}>
+                        Instruksi Tugas {isTugasExpired && "(Waktu Habis)"}
+                      </p>
                       <p style={st.assignText}>{block.content}</p>
                    </div>
                 </div>
@@ -179,6 +196,10 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                 {submittedTasks[block.id] ? (
                   <div style={st.successUpload}>
                     <CheckCircle size={18}/> <span>Sudah Dikumpul</span>
+                  </div>
+                ) : isTugasExpired ? (
+                  <div style={{color: '#ff4d4d', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 5}}>
+                    <AlertCircle size={18}/> Terkunci
                   </div>
                 ) : (
                   <div style={st.uploadAction}>
@@ -197,12 +218,11 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           </div>
         ))}
 
-        {/* RENDER KUIS INTERAKTIF */}
         {modul?.quizData?.length > 0 && (
-          <div style={{...st.contentCard, borderTop: '5px solid #673ab7'}}>
+          <div style={{...st.contentCard, borderTop: isQuizExpired ? '5px solid #ff4d4d' : '5px solid #673ab7'}}>
              <div style={st.quizHeader}>
-                <HelpCircle size={24} color="#673ab7"/>
-                <h2 style={{margin:0, fontSize:22}}>Evaluasi Mandiri (Kuis)</h2>
+                <HelpCircle size={24} color={isQuizExpired ? "#ff4d4d" : "#673ab7"}/>
+                <h2 style={{margin:0, fontSize:22}}>Kuis {isQuizExpired && "(Ditutup)"}</h2>
              </div>
              
              {modul.quizData.map((q, qIdx) => (
@@ -212,12 +232,14 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                      {q.options.map((opt, oIdx) => (
                        <button 
                          key={oIdx}
-                         disabled={quizSubmitted}
+                         disabled={quizSubmitted || isQuizExpired}
                          onClick={() => setQuizAnswers({...quizAnswers, [q.id]: oIdx})}
                          style={{
                            ...st.optButton,
-                           backgroundColor: quizAnswers[q.id] === oIdx ? '#673ab7' : 'white',
-                           color: quizAnswers[q.id] === oIdx ? 'white' : '#1e293b'
+                           backgroundColor: quizAnswers[q.id] === oIdx ? (isQuizExpired ? '#ff4d4d' : '#673ab7') : 'white',
+                           color: quizAnswers[q.id] === oIdx ? 'white' : '#1e293b',
+                           opacity: isQuizExpired && quizAnswers[q.id] !== oIdx ? 0.6 : 1,
+                           cursor: isQuizExpired ? 'not-allowed' : 'pointer'
                          }}
                        >
                          {opt}
@@ -227,8 +249,12 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                </div>
              ))}
 
-             {!quizSubmitted ? (
+             {!quizSubmitted && !isQuizExpired ? (
                <button onClick={handleQuizSubmit} style={st.btnSubmitQuiz}>Kirim Jawaban Kuis</button>
+             ) : isQuizExpired ? (
+               <div style={{...st.quizDoneBadge, background: '#fff5f5', color: '#cc0000'}}>
+                 <AlertCircle size={20}/> Waktu pengerjaan kuis telah berakhir.
+               </div>
              ) : (
                <div style={st.quizDoneBadge}><CheckCircle size={20}/> Anda telah menyelesaikan kuis ini</div>
              )}
@@ -250,7 +276,8 @@ const st = {
   subjectBadge: { background: '#673ab7', padding: '5px 15px', borderRadius: '8px', fontSize: 12, fontWeight: 'bold', textTransform: 'uppercase' },
   releaseBadge: { background: 'rgba(255,255,255,0.2)', padding: '5px 15px', borderRadius: '8px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 },
   mainTitle: { fontSize: 32, margin: '0 0 10px', fontWeight: '800' },
-  metaInfo: { display: 'flex', gap: 20, fontSize: 13, opacity: 0.8 },
+  metaInfo: { display: 'flex', gap: 20, fontSize: 13 },
+  deadlineInfo: { display: 'flex', alignItems: 'center', gap: 6, fontWeight: 'bold' },
   contentWrapper: { maxWidth: '900px', margin: '-40px auto 0', position: 'relative', zIndex: 5, padding: '0 20px' },
   contentCard: { background: 'white', padding: '35px', borderRadius: '24px', marginBottom: 25, boxShadow: '0 10px 25px rgba(0,0,0,0.03)' },
   blockHeader: { marginBottom: 20 },
@@ -262,18 +289,19 @@ const st = {
   iframe: { width: '100%', height: '100%', border: 'none' },
   linkBox: { padding: '20px', display: 'flex', alignItems: 'center', gap: 12, background: '#f8fafc' },
   btnLinkExternal: { color: '#673ab7', fontWeight: 'bold', textDecoration: 'none' },
-  assignmentBox: { marginTop: 20, background: '#fffbeb', border: '1px solid #fef3c7', padding: '25px', borderRadius: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 20 },
+  assignmentBox: { marginTop: 20, padding: '25px', borderRadius: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 20 },
   assignInfo: { display: 'flex', gap: 15, alignItems: 'flex-start' },
-  iconCircle: { background: '#fef3c7', padding: '10px', borderRadius: '12px' },
-  assignTitle: { margin: 0, fontWeight: 'bold', color: '#92400e' },
-  assignText: { margin: '4px 0 0', fontSize: 14, color: '#b45309' },
+  iconCircle: { background: 'white', padding: '10px', borderRadius: '12px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' },
+  assignTitle: { margin: 0, fontWeight: 'bold' },
+  assignText: { margin: '4px 0 0', fontSize: 14, color: '#64748b' },
   btnUpload: { background: '#f59e0b', color: 'white', padding: '12px 25px', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: 14 },
+  btnLoading: { background: '#ccc', color: 'white', padding: '12px 25px', borderRadius: '12px', cursor: 'not-allowed' },
   successUpload: { color: '#059669', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8, background: '#ecfdf5', padding: '10px 20px', borderRadius: '12px' },
   quizHeader: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 30 },
   quizItem: { marginBottom: 30, paddingBottom: 20, borderBottom: '1px dashed #e2e8f0' },
   questionText: { fontSize: 17, fontWeight: '600', color: '#1e293b', marginBottom: 15 },
   optionsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
-  optButton: { padding: '15px', borderRadius: '12px', border: '1px solid #e2e8f0', textAlign: 'left', cursor: 'pointer', transition: '0.2s', fontSize: 14, fontWeight: '500' },
+  optButton: { padding: '15px', borderRadius: '12px', border: '1px solid #e2e8f0', textAlign: 'left', transition: '0.2s', fontSize: 14, fontWeight: '500' },
   btnSubmitQuiz: { width: '100%', padding: '16px', borderRadius: '15px', border: 'none', background: '#673ab7', color: 'white', fontWeight: 'bold', fontSize: 16, cursor: 'pointer', marginTop: 10 },
   quizDoneBadge: { textAlign: 'center', padding: '20px', background: '#f0fdf4', color: '#15803d', borderRadius: '15px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }
 };

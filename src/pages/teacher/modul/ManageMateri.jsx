@@ -3,9 +3,8 @@ import { db } from '../../../firebase';
 import { collection, addDoc, doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore"; 
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
-  Save, Trash2, Video, FileText, 
-  HelpCircle, Clock, ArrowLeft, Upload, 
-  Calendar, Sparkles, Image as ImageIcon, Link as LinkIcon
+  Save, Trash2, FileText, HelpCircle, Clock, 
+  ArrowLeft, Upload, Calendar, Link as LinkIcon
 } from 'lucide-react';
 
 const ManageMateri = () => {
@@ -20,6 +19,8 @@ const ManageMateri = () => {
   const [blocks, setBlocks] = useState([]); 
   const [quizData, setQuizData] = useState([]); 
   const [loading, setLoading] = useState(false);
+  
+  // State Tenggat Waktu
   const [deadlineTugas, setDeadlineTugas] = useState("");
   const [deadlineQuiz, setDeadlineQuiz] = useState("");
 
@@ -42,7 +43,7 @@ const ManageMateri = () => {
         setTitle(data.title || "");
         setSubject(data.subject || "");
         setReleaseDate(data.releaseDate || "");
-        setBlocks(data.blocks || (data.content ? [{id: Date.now(), type: 'text', content: data.content, title: 'Materi'}] : []));
+        setBlocks(data.blocks || []);
         setQuizData(data.quizData || []);
         setDeadlineTugas(data.deadlineTugas || "");
         setDeadlineQuiz(data.deadlineQuiz || "");
@@ -50,7 +51,7 @@ const ManageMateri = () => {
     } catch (err) { console.error("Error fetching:", err); }
   };
 
-  // Logic merubah link Canva Edit ke Embed agar bisa muncul Preview
+  // Formatter Link Canva agar bisa di-embed
   const formatExternalLink = (url) => {
     if (url.includes('canva.com') && url.includes('/edit')) {
       return url.split('?')[0].replace('/edit', '/view?embed');
@@ -69,7 +70,6 @@ const ManageMateri = () => {
   };
 
   const updateBlock = (id, field, value) => {
-    // Jika input adalah link, otomatis jalankan formatter
     const finalValue = field === 'content' ? formatExternalLink(value) : value;
     setBlocks(blocks.map(b => b.id === id ? { ...b, [field]: finalValue } : b));
   };
@@ -94,9 +94,9 @@ const ManageMateri = () => {
       title,
       subject: subject || "UMUM",
       releaseDate,
-      type: "materi",
       blocks,
       quizData,
+      // Data Deadline disinkronkan untuk diproses di sisi Siswa
       deadlineTugas: hasAssignment ? deadlineTugas : null,
       deadlineQuiz: hasQuiz ? deadlineQuiz : null,
       updatedAt: serverTimestamp()
@@ -109,7 +109,7 @@ const ManageMateri = () => {
         payload.createdAt = serverTimestamp();
         await addDoc(collection(db, COLLECTION_NAME), payload);
       }
-      alert("Modul Berhasil Disimpan!");
+      alert("✅ Modul & Tenggat Berhasil Disimpan!");
       navigate('/guru/modul');
     } catch (error) { alert("Error: " + error.message); }
     setLoading(false);
@@ -143,33 +143,33 @@ const ManageMateri = () => {
         
         <div style={styles.divider} />
 
-        {/* Kotak Pengaturan Tanggal (Biru & Ungu) */}
+        {/* --- PENGATURAN TANGGAL & TENGGAT --- */}
         <div style={styles.headerDates}>
           <div style={styles.dateBox}>
-            <label style={{...styles.label, color: '#3b82f6'}}><Calendar size={14}/> Tanggal Rilis Modul</label>
+            <label style={{...styles.label, color: '#3b82f6'}}><Calendar size={14}/> Rilis Modul</label>
             <input type="datetime-local" style={styles.dateInput} value={releaseDate} onChange={(e) => setReleaseDate(e.target.value)} />
           </div>
           
           {hasAssignment && (
             <div style={styles.dateBox}>
-              <label style={styles.label}><Clock size={14}/> Tenggat Upload Catatan</label>
+              <label style={{...styles.label, color: '#f59e0b'}}><Clock size={14}/> Tenggat Tugas (Catatan)</label>
               <input type="datetime-local" style={styles.dateInput} value={deadlineTugas} onChange={(e) => setDeadlineTugas(e.target.value)} />
             </div>
           )}
 
           {hasQuiz && (
             <div style={styles.dateBox}>
-              <label style={styles.label}><Clock size={14}/> Tenggat Kuis</label>
+              <label style={{...styles.label, color: '#ef4444'}}><Clock size={14}/> Tenggat Kuis</label>
               <input type="datetime-local" style={styles.dateInput} value={deadlineQuiz} onChange={(e) => setDeadlineQuiz(e.target.value)} />
             </div>
           )}
         </div>
 
-        {/* Render Materi/Blocks */}
+        {/* Render Materi Blocks */}
         {blocks.map((block, idx) => (
           <div key={block.id} style={styles.blockCard}>
             <div style={styles.blockHeader}>
-              <span style={styles.badge}>{block.type === 'assignment' ? 'UPLOAD TUGAS' : `BAGIAN ${idx + 1}`}</span>
+              <span style={styles.badge}>{block.type === 'assignment' ? 'PENUGASAN' : `BAGIAN ${idx + 1}`}</span>
               <button onClick={() => removeBlock(block.id)} style={styles.btnTrash}><Trash2 size={16}/></button>
             </div>
             
@@ -180,43 +180,43 @@ const ManageMateri = () => {
               onChange={(e) => updateBlock(block.id, 'title', e.target.value)}
             />
             <textarea 
-              placeholder={block.type === 'video' ? "Tempel Link Canva/YouTube/PDF..." : "Tulis materi atau detail tugas..."}
+              placeholder={block.type === 'video' ? "Tempel Link Canva/YouTube..." : "Tulis materi atau detail tugas..."}
               style={styles.textArea}
               value={block.content}
               onChange={(e) => updateBlock(block.id, 'content', e.target.value)}
             />
 
-            {/* Live Preview untuk Canva / Video agar Guru tahu link berhasil */}
+            {/* Live Preview Canva */}
             {block.content.includes('canva.com') && (
               <div style={styles.previewContainer}>
                 <p style={styles.previewText}>Preview Canva Terdeteksi:</p>
-                <iframe src={block.content} style={styles.previewIframe} allowFullScreen></iframe>
+                <iframe src={block.content} style={styles.previewIframe} allowFullScreen title="Preview"></iframe>
               </div>
             )}
           </div>
         ))}
 
         {/* Render Kuis */}
-        {quizData.length > 0 && <h4 style={{color:'#673ab7', marginBottom: '15px', marginTop: '30px'}}>Interaktif Kuis</h4>}
+        {quizData.length > 0 && <h4 style={{color:'#673ab7', marginBottom: '15px', marginTop: '30px'}}>Kuis Interaktif</h4>}
         {quizData.map((q, idx) => (
           <div key={q.id} style={styles.quizCard}>
             <div style={styles.blockHeader}>
-              <span style={styles.badge}>SOAL {idx + 1}</span>
+              <span style={styles.badge}>PERTANYAAN {idx + 1}</span>
               <button onClick={() => setQuizData(quizData.filter(item => item.id !== q.id))} style={styles.btnTrash}><Trash2 size={16}/></button>
             </div>
             <textarea 
-              placeholder="Pertanyaan..." 
+              placeholder="Tulis soal kuis di sini..." 
               style={{...styles.textArea, minHeight: '60px', marginBottom: '15px'}}
               value={q.question}
               onChange={(e) => setQuizData(quizData.map(item => item.id === q.id ? {...item, question: e.target.value} : item))}
             />
             <div style={styles.optGrid}>
               {q.options.map((opt, oIdx) => (
-                <div key={oIdx} style={{...styles.optItem, borderColor: q.correctAnswer === oIdx ? '#673ab7' : '#e2e8f0'}}>
+                <div key={oIdx} style={{...styles.optItem, borderColor: q.correctAnswer === oIdx ? '#673ab7' : '#e2e8f0', background: q.correctAnswer === oIdx ? '#f5f3ff' : 'white'}}>
                   <input type="radio" checked={q.correctAnswer === oIdx} onChange={() => setQuizData(quizData.map(item => item.id === q.id ? {...item, correctAnswer: oIdx} : item))} />
                   <input 
                     style={styles.optInput} 
-                    placeholder={`Opsi ${oIdx + 1}`} 
+                    placeholder={`Pilihan ${oIdx + 1}`} 
                     value={opt}
                     onChange={(e) => {
                       const newOpts = [...q.options];
@@ -230,14 +230,14 @@ const ManageMateri = () => {
           </div>
         ))}
 
-        {/* Floating Bar Navigasi */}
+        {/* Floating Navigasi Tambah Konten */}
         <div style={styles.fabBar}>
-          <button onClick={() => addBlock('text')} style={styles.fab} title="Tambah Teks"><FileText size={20}/></button>
+          <button onClick={() => addBlock('text')} style={styles.fab} title="Teks Materi"><FileText size={20}/></button>
           <button onClick={() => addBlock('video')} style={styles.fab} title="Link Canva/Video"><LinkIcon size={20}/></button>
-          <button onClick={() => addBlock('assignment')} style={styles.fab} title="Upload Tugas"><Upload size={20}/></button>
+          <button onClick={() => addBlock('assignment')} style={styles.fab} title="Kotak Tugas"><Upload size={20}/></button>
           <button onClick={addQuizQuestion} style={styles.fab} title="Tambah Kuis"><HelpCircle size={20}/></button>
           <div style={{width: '1px', height: '25px', background: '#475569', margin: '0 10px'}}/>
-          <button onClick={handleSave} style={styles.btnSaveFab}>SAVE</button>
+          <button onClick={handleSave} style={styles.btnSaveFab}>SIMPAN</button>
         </div>
       </div>
     </div>
@@ -253,10 +253,10 @@ const styles = {
   mainInput: { width: '100%', border: 'none', fontSize: '32px', fontWeight: 'bold', outline: 'none', color: '#1e293b' },
   subInput: { width: '100%', border: 'none', fontSize: '18px', outline: 'none', color: '#64748b', marginTop: '10px' },
   divider: { height: '1px', background: '#f1f5f9', margin: '30px 0' },
-  headerDates: { display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '30px', background: '#f8fafc', padding: '20px', borderRadius: '15px' },
+  headerDates: { display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '30px', background: '#f8fafc', padding: '20px', borderRadius: '15px', border: '1px solid #e2e8f0' },
   dateBox: { flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: 8 },
-  label: { fontSize: '12px', fontWeight: 'bold', color: '#673ab7', display: 'flex', alignItems: 'center', gap: 5 },
-  dateInput: { padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '13px' },
+  label: { fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 5 },
+  dateInput: { padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '13px', background: 'white' },
   blockCard: { border: '1px solid #f1f5f9', borderRadius: '15px', padding: '20px', marginBottom: '20px', position: 'relative' },
   quizCard: { border: '1px solid #e2e8f0', background: '#fcfcfd', borderRadius: '15px', padding: '20px', marginBottom: '20px' },
   blockHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '15px' },
@@ -266,10 +266,10 @@ const styles = {
   textArea: { width: '100%', minHeight: '120px', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '15px', outline: 'none', background: '#f8fafc', fontSize: '14px', lineHeight: '1.6' },
   previewContainer: { marginTop: '15px', borderTop: '1px solid #f1f5f9', paddingTop: '15px' },
   previewText: { fontSize: '11px', color: '#64748b', marginBottom: '8px' },
-  previewIframe: { width: '100%', height: '400px', border: 'none', borderRadius: '10px' },
+  previewIframe: { width: '100%', height: '450px', border: 'none', borderRadius: '10px', background: '#eee' },
   optGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 },
   optItem: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px', border: '1px solid #e2e8f0', borderRadius: '10px' },
-  optInput: { flex: 1, border: 'none', outline: 'none', fontSize: '14px' },
+  optInput: { flex: 1, border: 'none', outline: 'none', fontSize: '14px', background: 'transparent' },
   fabBar: { position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '15px', background: '#1e293b', padding: '12px 25px', borderRadius: '25px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', alignItems: 'center', zIndex: 999 },
   fab: { background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '8px', transition: '0.2s' },
   btnSaveFab: { background: '#673ab7', color: 'white', border: 'none', padding: '8px 20px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }
