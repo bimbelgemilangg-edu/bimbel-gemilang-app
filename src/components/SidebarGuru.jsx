@@ -1,71 +1,58 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { 
+  LayoutDashboard, User, BookOpen, Edit, 
+  History, FileSpreadsheet, LogOut 
+} from 'lucide-react';
 
 const SidebarGuru = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const guru = JSON.parse(localStorage.getItem('teacherData'));
 
-  // KITA TAMBAHKAN MENU MODUL DI SINI
-  const menuItems = [
-    { name: 'Beranda Guru', icon: '🏠', path: '/guru/dashboard' },
-    { name: 'Kelola Modul (E-Learn)', icon: '📚', path: '/guru/modul' }, // MENU BARU
-    { name: 'Input Nilai', icon: '📝', path: '/guru/grades/input' },
-    { name: 'Absen Susulan', icon: '➕', path: '/guru/manual-absensi' },
+  const menu = [
+    { name: 'Dashboard', path: '/guru/dashboard', icon: <LayoutDashboard size={20}/> },
+    { name: 'E-Learning', path: '/guru/modul', icon: <BookOpen size={20}/> }, // INI KONEKSINYA
+    { name: 'Profil', path: '/guru/profile', icon: <User size={20}/> },
+    { name: 'Input Nilai', path: '/guru/grades/input', icon: <Edit size={20}/> },
+    { name: 'Riwayat', path: '/guru/history', icon: <History size={20}/> },
   ];
-
-  const handleLogout = () => {
-    if (window.confirm("Guru ingin keluar?")) {
-      localStorage.removeItem('teacherData');
-      navigate('/login-guru');
-    }
-  };
 
   return (
     <div style={styles.sidebar}>
       <div style={styles.logoArea}>
-        <h2 style={{...styles.logoText, color: '#3498db'}}>GURU</h2>
-        <span style={styles.logoSub}>PORTAL PENGAJAR</span>
+        <img src="/logo-gemilang.png.png" alt="Logo" style={{ width: '40px' }} />
+        <h3 style={{ color: 'white', margin: 0 }}>GEMILANG <span style={{color:'#f1c40f'}}>EDU</span></h3>
       </div>
       
-      <div style={styles.profileBox}>
-        <small>Pengajar Aktif:</small>
-        <div style={{fontWeight:'bold'}}>{guru?.nama || 'Guru Gemilang'}</div>
-      </div>
-
-      <div style={styles.menuContainer}>
-        {menuItems.map((item) => (
-          <div key={item.path} onClick={() => navigate(item.path)}
+      <nav style={styles.nav}>
+        {menu.map((item) => (
+          <Link 
+            key={item.path} 
+            to={item.path} 
             style={{
-              ...styles.menuItem, 
-              backgroundColor: location.pathname === item.path ? '#34495e' : 'transparent',
-              borderLeft: location.pathname === item.path ? '4px solid #3498db' : '4px solid transparent'
-            }}>
-            <span style={{fontSize: '20px'}}>{item.icon}</span> 
-            <span style={{marginLeft:15, fontWeight: location.pathname === item.path ? 'bold' : 'normal'}}>
-              {item.name}
-            </span>
-          </div>
+              ...styles.navItem,
+              background: location.pathname === item.path ? '#34495e' : 'transparent',
+              borderLeft: location.pathname === item.path ? '4px solid #f1c40f' : '4px solid transparent'
+            }}
+          >
+            {item.icon}
+            <span>{item.name}</span>
+          </Link>
         ))}
-      </div>
+      </nav>
 
-      <div style={styles.logoutSection}>
-        <button onClick={handleLogout} style={styles.btnLogout}>🚪 Keluar</button>
-      </div>
+      <button onClick={() => { localStorage.clear(); window.location.href = '/login-guru'; }} style={styles.logoutBtn}>
+        <LogOut size={20} /> Keluar
+      </button>
     </div>
   );
 };
 
 const styles = {
-  sidebar: { width: '260px', height: '100vh', background: '#1a252f', color: 'white', position: 'fixed', left: 0, top: 0, display: 'flex', flexDirection: 'column' },
-  logoArea: { padding: '30px 20px', textAlign: 'center', borderBottom: '1px solid #2c3e50' },
-  logoText: { margin: 0, fontSize: '24px', letterSpacing: '2px' },
-  logoSub: { fontSize: '10px', opacity: 0.6 },
-  profileBox: { padding: '15px 20px', background: 'rgba(52, 152, 219, 0.15)', margin: '15px', borderRadius: '10px', border: '1px solid rgba(52,152,219,0.3)' },
-  menuContainer: { flex: 1, padding: '10px 0' },
-  menuItem: { padding: '15px 25px', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: '0.2s', color: '#ecf0f1' },
-  logoutSection: { padding: '20px', borderTop: '1px solid #2c3e50' },
-  btnLogout: { width: '100%', padding: '12px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }
+  sidebar: { width: '260px', background: '#2c3e50', color: 'white', height: '100vh', display: 'flex', flexDirection: 'column', position: 'fixed' },
+  logoArea: { padding: '30px 20px', display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid #34495e' },
+  nav: { flex: 1, padding: '20px 0' },
+  navItem: { display: 'flex', alignItems: 'center', gap: '15px', padding: '15px 20px', color: 'white', textDecoration: 'none', fontSize: '14px', transition: '0.3s' },
+  logoutBtn: { padding: '20px', background: '#e74c3c', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold' }
 };
 
 export default SidebarGuru;

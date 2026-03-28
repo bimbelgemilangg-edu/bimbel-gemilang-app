@@ -2,168 +2,146 @@ import React, { useState } from 'react';
 import { db } from '../../../firebase';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { 
-  Plus, 
-  Trash2, 
-  Type, 
-  FileUp, 
-  Video, 
-  HelpCircle, 
-  Save,
-  Users,
-  Calendar
+  Plus, Trash2, Video, FileText, HelpCircle, Save, 
+  ArrowLeft, Type, Link as LinkIcon, Image as ImageIcon, Settings, Users, Calendar
 } from 'lucide-react';
 
-const ManageMateri = () => {
-  const [title, setTitle] = useState("");
-  const [targetClass, setTargetClass] = useState("");
-  const [releaseDate, setReleaseDate] = useState("");
-  
-  // State untuk menyimpan bagian-bagian form secara dinamis
-  const [sections, setSections] = useState([
-    { id: Date.now(), type: 'text', label: 'Materi Teks', content: '' }
-  ]);
+const ManageMateri = ({ onBack }) => {
+  const [header, setHeader] = useState({ title: '', desc: '' });
+  const [blocks, setBlocks] = useState([]);
+  const [config, setConfig] = useState({ target: 'Semua Kelas', releaseDate: '', dueDate: '' });
 
-  const addSection = (type) => {
-    const newSection = {
-      id: Date.now(),
-      type: type,
-      label: type === 'text' ? 'Materi Teks' : type === 'file' ? 'Upload Tugas' : type === 'video' ? 'Link Video' : 'Kuis Link',
-      content: '',
-      description: '' // Tambahan untuk instruksi tugas
-    };
-    setSections([...sections, newSection]);
+  const addBlock = (type) => {
+    setBlocks([...blocks, { 
+      id: Date.now().toString(), 
+      type, 
+      content: '', 
+      title: '', 
+      description: '', 
+      isRequired: false 
+    }]);
   };
 
-  const removeSection = (id) => {
-    setSections(sections.filter(s => s.id !== id));
+  const updateBlock = (id, field, val) => {
+    setBlocks(blocks.map(b => b.id === id ? { ...b, [field]: val } : b));
   };
 
-  const updateSection = (id, field, value) => {
-    setSections(sections.map(s => s.id === id ? { ...s, [field]: value } : s));
-  };
-
-  const handleSaveModul = async () => {
-    if (!title || !targetClass || !releaseDate) return alert("Lengkapi info dasar modul!");
-    
+  const handlePublish = async () => {
+    if (!header.title) return alert("Mohon isi Judul Modul utama!");
     try {
       await addDoc(collection(db, "bimbel_modul"), {
-        title,
-        targetClass,
-        releaseDate,
-        releaseTimestamp: new Date(releaseDate).getTime(),
-        sections, // Menyimpan semua array section ke Firebase
+        ...header,
+        contentBlocks: blocks,
+        settings: config,
         createdAt: serverTimestamp(),
-        isOpen: true,
-        author: JSON.parse(localStorage.getItem('teacherData'))?.nama || "Guru"
+        author: JSON.parse(localStorage.getItem('teacherData'))?.nama || "Guru Gemilang"
       });
-      alert("Modul Pembelajaran Berhasil Diterbitkan! ✨");
-      setTitle(""); setSections([{ id: Date.now(), type: 'text', label: 'Materi Teks', content: '' }]);
-    } catch (err) {
-      console.error(err);
-      alert("Gagal menyimpan modul.");
+      alert("Modul Berhasil Dipublikasikan ke Siswa! ✨");
+      onBack();
+    } catch (e) { 
+      console.error(e);
+      alert("Gagal mempublikasikan modul.");
     }
   };
 
   return (
-    <div style={styles.builderContainer}>
-      {/* HEADER INFO */}
-      <div style={styles.card}>
-        <h3 style={styles.sectionTitle}><Type size={20} /> Informasi Pembelajaran</h3>
-        <div style={styles.row}>
-          <input 
-            placeholder="Judul Pembelajaran (Contoh: Aljabar Minggu 1)" 
-            value={title} onChange={(e) => setTitle(e.target.value)}
-            style={styles.inputMain} 
-          />
-        </div>
-        <div style={styles.row}>
-          <div style={{flex:1}}>
-            <label style={styles.label}><Users size={14}/> Untuk Kelas:</label>
-            <select value={targetClass} onChange={(e)=>setTargetClass(e.target.value)} style={styles.input}>
-                <option value="">Pilih Kelas</option>
-                <option value="7">Kelas 7</option>
-                <option value="8">Kelas 8</option>
-                <option value="9">Kelas 9</option>
-            </select>
-          </div>
-          <div style={{flex:1}}>
-            <label style={styles.label}><Calendar size={14}/> Tanggal Rilis:</label>
-            <input type="date" value={releaseDate} onChange={(e)=>setReleaseDate(e.target.value)} style={styles.input} />
-          </div>
+    <div style={{ maxWidth: '850px', margin: '0 auto', padding: '20px 20px 100px 20px' }}>
+      <button onClick={onBack} style={s.backBtn}>
+        <ArrowLeft size={18}/> Kembali ke Daftar
+      </button>
+
+      {/* HEADER: JUDUL & DESKRIPSI */}
+      <div style={s.headerCard}>
+        <input 
+          style={s.titleInput} 
+          placeholder="Judul Pembelajaran (Contoh: Matematika Dasar - Aljabar)"
+          onChange={e => setHeader({...header, title: e.target.value})}
+        />
+        <textarea 
+          style={s.descInput} 
+          placeholder="Tambahkan deskripsi modul atau instruksi umum di sini..."
+          onChange={e => setHeader({...header, desc: e.target.value})}
+        />
+        
+        <div style={s.configRow}>
+           <div style={s.configItem}>
+              <label><Users size={14}/> Target Kelas</label>
+              <select onChange={e => setConfig({...config, target: e.target.value})} style={s.select}>
+                 <option>Semua Kelas</option>
+                 <option>Kelas 7</option>
+                 <option>Kelas 8</option>
+                 <option>Kelas 9</option>
+              </select>
+           </div>
+           <div style={s.configItem}>
+              <label><Calendar size={14}/> Tanggal Rilis</label>
+              <input type="date" onChange={e => setConfig({...config, releaseDate: e.target.value})} style={s.select} />
+           </div>
         </div>
       </div>
 
-      {/* DYNAMIC SECTIONS (G-FORM STYLE) */}
-      {sections.map((section, index) => (
-        <div key={section.id} style={styles.sectionCard}>
-          <div style={styles.sectionHeader}>
-            <span style={styles.sectionBadge}>{index + 1}. {section.label}</span>
-            <button onClick={() => removeSection(section.id)} style={styles.btnDelete}><Trash2 size={16}/></button>
+      {/* RENDER MODULAR BLOCKS */}
+      {blocks.map((block, index) => (
+        <div key={block.id} style={s.blockCard}>
+          <div style={s.blockHeader}>
+            <span style={s.blockBadge}>BAGIAN {index + 1}: {block.type.toUpperCase()}</span>
+            <button onClick={() => setBlocks(blocks.filter(b => b.id !== block.id))} style={s.delBlock}><Trash2 size={16}/></button>
           </div>
+          
+          <input 
+            placeholder={block.type === 'materi' ? "Sub-Judul Materi" : "Nama Tugas / Judul Video"}
+            style={s.blockTitleInput}
+            onChange={e => updateBlock(block.id, 'title', e.target.value)}
+          />
 
-          {section.type === 'text' && (
-            <textarea 
-              placeholder="Tuliskan isi materi di sini..." 
-              value={section.content}
-              onChange={(e) => updateSection(section.id, 'content', e.target.value)}
-              style={styles.textarea}
-            />
-          )}
-
-          {(section.type === 'file' || section.type === 'video' || section.type === 'quiz') && (
-            <div style={{display:'flex', flexDirection:'column', gap:'10px'}}>
-              <input 
-                placeholder={section.type === 'video' ? "Masukkan Link YouTube" : "Masukkan Link URL (Drive/Form)"} 
-                value={section.content}
-                onChange={(e) => updateSection(section.id, 'content', e.target.value)}
-                style={styles.input}
-              />
-              <textarea 
-                placeholder="Tambahkan keterangan atau instruksi..." 
-                value={section.description}
-                onChange={(e) => updateSection(section.id, 'description', e.target.value)}
-                style={{...styles.textarea, height: '60px'}}
-              />
+          <textarea 
+            placeholder={block.type === 'media' ? "Tempel Link URL (YouTube/Drive/PDF)" : "Tulis isi materi atau instruksi di sini..."}
+            style={s.blockTextArea}
+            onChange={e => updateBlock(block.id, 'content', e.target.value)}
+          />
+          
+          {block.type === 'assignment' && (
+            <div style={s.assignmentOpt}>
+              <label><input type="checkbox" onChange={e => updateBlock(block.id, 'isRequired', e.target.checked)}/> Wajib diupload oleh siswa</label>
             </div>
           )}
         </div>
       ))}
 
-      {/* ADD SECTION BUTTONS */}
-      <div style={styles.toolbox}>
-        <p style={{fontSize:'12px', fontWeight:'bold', color:'#64748b', marginBottom:'10px'}}>TAMBAH BAGIAN:</p>
-        <div style={styles.btnGroup}>
-          <button onClick={() => addSection('text')} style={styles.toolBtn}><Type size={16}/> Teks</button>
-          <button onClick={() => addSection('file')} style={styles.toolBtn}><FileUp size={16}/> Tugas</button>
-          <button onClick={() => addSection('video')} style={styles.toolBtn}><Video size={16}/> Video</button>
-          <button onClick={() => addSection('quiz')} style={styles.toolBtn}><HelpCircle size={16}/> Kuis</button>
-        </div>
+      {/* FLOATING ACTION TOOLBAR */}
+      <div style={s.floatingToolbar}>
+        <p style={s.toolLabel}>TAMBAH BAGIAN</p>
+        <button onClick={() => addBlock('materi')} style={s.toolBtn} title="Teks Materi"><Type/></button>
+        <button onClick={() => addBlock('media')} style={s.toolBtn} title="Video/Link"><Video/></button>
+        <button onClick={() => addBlock('assignment')} style={s.toolBtn} title="Slot Tugas"><FileText/></button>
+        <button onClick={() => addBlock('quiz')} style={s.toolBtn} title="Kuis"><HelpCircle/></button>
       </div>
 
-      <button onClick={handleSaveModul} style={styles.btnSave}>
-        <Save size={20} /> PUBLIKASIKAN PEMBELAJARAN
+      <button onClick={handlePublish} style={s.publishBtn}>
+        <Save size={20}/> TERBITKAN PEMBELAJARAN
       </button>
     </div>
   );
 };
 
-const styles = {
-  builderContainer: { display: 'flex', flexDirection: 'column', gap: '20px' },
-  card: { background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0' },
-  sectionCard: { background: 'white', padding: '20px', borderRadius: '12px', borderLeft: '5px solid #3b82f6', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
-  sectionHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '15px' },
-  sectionBadge: { fontSize: '12px', fontWeight: 'bold', color: '#3b82f6', background: '#eff6ff', padding: '4px 12px', borderRadius: '20px' },
-  sectionTitle: { fontSize: '16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' },
-  row: { display: 'flex', gap: '15px', marginBottom: '15px' },
-  inputMain: { width: '100%', padding: '12px', fontSize: '18px', fontWeight: 'bold', border: 'none', borderBottom: '2px solid #e2e8f0', outline: 'none' },
-  input: { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' },
-  label: { display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 'bold', color: '#64748b', marginBottom: '5px' },
-  textarea: { width: '100%', height: '120px', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', resize: 'vertical' },
-  toolbox: { background: '#f1f5f9', padding: '15px', borderRadius: '12px', textAlign: 'center' },
-  btnGroup: { display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' },
-  toolBtn: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 15px', border: '1px solid #cbd5e1', borderRadius: '8px', background: 'white', cursor: 'pointer', fontSize: '13px' },
-  btnDelete: { background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' },
-  btnSave: { padding: '15px', background: '#059669', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }
+const s = {
+  backBtn: { display: 'flex', alignItems: 'center', gap: 5, border: 'none', background: 'none', cursor: 'pointer', color: '#64748b', marginBottom: 20, fontWeight: '500' },
+  headerCard: { background: 'white', padding: '35px', borderRadius: '15px', borderTop: '10px solid #673ab7', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', marginBottom: '30px' },
+  titleInput: { width: '100%', fontSize: '30px', fontWeight: 'bold', border: 'none', borderBottom: '2px solid #f1f5f9', marginBottom: '15px', outline: 'none', color: '#1e293b' },
+  descInput: { width: '100%', border: 'none', outline: 'none', fontSize: '16px', color: '#64748b', resize: 'none', minHeight: '60px' },
+  configRow: { display: 'flex', gap: '20px', marginTop: '20px', borderTop: '1px solid #f1f5f9', paddingTop: '20px' },
+  configItem: { flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' },
+  select: { padding: '8px', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none' },
+  blockCard: { background: 'white', padding: '25px', borderRadius: '12px', marginBottom: '20px', borderLeft: '6px solid #3b82f6', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', position: 'relative' },
+  blockHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '15px' },
+  blockBadge: { fontSize: '11px', fontWeight: 'bold', color: '#3b82f6', background: '#eff6ff', padding: '4px 10px', borderRadius: '5px' },
+  blockTitleInput: { width: '100%', padding: '12px', marginBottom: '12px', borderRadius: '8px', border: '1px solid #f1f5f9', fontWeight: '600', outline: 'none', background: '#f8fafc' },
+  blockTextArea: { width: '100%', minHeight: '120px', padding: '12px', borderRadius: '8px', border: '1px solid #f1f5f9', outline: 'none', resize: 'vertical' },
+  delBlock: { background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer' },
+  floatingToolbar: { position: 'fixed', right: '40px', top: '50%', transform: 'translateY(-50%)', background: 'white', padding: '15px', borderRadius: '40px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', gap: '15px', alignItems: 'center', border: '1px solid #f1f5f9' },
+  toolBtn: { border: 'none', background: 'none', cursor: 'pointer', color: '#64748b', padding: '5px', transition: '0.2s' },
+  toolLabel: { fontSize: '9px', fontWeight: 'bold', writingMode: 'vertical-rl', color: '#94a3b8', margin: '0 0 10px 0' },
+  publishBtn: { width: '100%', padding: '18px', background: '#10b981', color: 'white', border: 'none', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', fontSize: '16px', boxShadow: '0 10px 15px rgba(16, 185, 129, 0.2)' }
 };
 
 export default ManageMateri;
