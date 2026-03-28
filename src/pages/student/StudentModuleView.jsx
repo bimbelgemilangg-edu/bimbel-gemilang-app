@@ -1,29 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
-import { doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/timestamp';
+// PERBAIKAN: Import serverTimestamp dari firestore, bukan dari firebase/timestamp
+import { doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore'; 
 import { ArrowLeft, Play, FileText, HelpCircle, Send, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 
 const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const [modul, setModul] = useState(null);
-  const [answers, setAnswers] = useState({}); // Untuk Kuis
+  const [answers, setAnswers] = useState({}); 
   const [quizResult, setQuizResult] = useState(null);
   const [isLate, setIsLate] = useState(false);
 
   useEffect(() => {
     const fetchModul = async () => {
-      const docRef = doc(db, "bimbel_modul", modulId);
-      const snap = await getDoc(docRef);
-      if (snap.exists()) {
-        const data = snap.data();
-        setModul(data);
-        // Cek Tenggat Waktu
-        if (new Date() > new Date(data.deadline)) setIsLate(true);
+      try {
+        const docRef = doc(db, "bimbel_modul", modulId);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          setModul(data);
+          
+          // Logika Cek Tenggat Waktu
+          if (data.deadline) {
+            const now = new Date();
+            const deadlineDate = new Date(data.deadline);
+            if (now > deadlineDate) setIsLate(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching modul:", error);
       }
     };
-    fetchModul();
+    if (modulId) fetchModul();
   }, [modulId]);
 
-  // LOGIKA HITUNG KUIS (RIIL)
   const handleQuizSubmit = async (blockId, questions) => {
     let score = 0;
     questions.forEach((q, idx) => {
@@ -33,72 +42,72 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     const finalScore = Math.round((score / questions.length) * 100);
     setQuizResult(finalScore);
 
-    // Simpan ke Firebase Riil
-    await addDoc(collection(db, "quiz_results"), {
-      modulId,
-      modulTitle: modul.title,
-      studentId: studentData.id,
-      studentName: studentData.nama,
-      score: finalScore,
-      submittedAt: serverTimestamp()
-    });
-    alert(`Kuis selesai! Skor kamu: ${finalScore}`);
+    try {
+      await addDoc(collection(db, "quiz_results"), {
+        modulId,
+        modulTitle: modul.title,
+        studentId: studentData.id,
+        studentName: studentData.nama,
+        score: finalScore,
+        submittedAt: serverTimestamp() // Ini sekarang bekerja dengan benar
+      });
+      alert(`Kuis selesai! Skor kamu: ${finalScore}`);
+    } catch (e) {
+      console.error("Gagal simpan skor:", e);
+    }
   };
 
-  if (!modul) return <div style={{padding: 20}}>Memuat Materi...</div>;
+  if (!modul) return <div style={{padding: 20, textAlign: 'center'}}>Memuat Materi...</div>;
 
   return (
     <div style={styles.container}>
       <button onClick={onBack} style={styles.backBtn}><ArrowLeft size={18}/> Kembali ke Daftar</button>
 
-      {/* HEADER MATERI */}
       <div style={styles.header}>
-        <h1 style={{margin: 0}}>{modul.title}</h1>
-        <p style={{color: '#666', marginTop: 10}}>{modul.desc}</p>
+        <h1 style={{margin: 0, fontSize: '24px', color: '#1e293b'}}>{modul.title}</h1>
+        <p style={{color: '#64748b', marginTop: 10, fontSize: '14px'}}>{modul.desc || modul.description}</p>
         <div style={isLate ? styles.lateBadge : styles.deadlineBadge}>
           <Clock size={14}/> {isLate ? "Tenggat Berakhir: " : "Batas Pengumpulan: "} 
-          {new Date(modul.deadline).toLocaleString()}
+          {modul.deadline ? new Date(modul.deadline).toLocaleString() : "-"}
         </div>
       </div>
 
-      {/* RENDER BLOK SECARA BERURUTAN */}
-      {modul.contentBlocks.map((block, index) => (
-        <div key={block.id} style={styles.blockCard}>
+      {modul.contentBlocks?.map((block, index) => (
+        <div key={block.id || index} style={styles.blockCard}>
           <div style={styles.blockType}>
             {block.type === 'materi' && <FileText size={16} color="#4285f4"/>}
             {block.type === 'media' && <Play size={16} color="#ea4335"/>}
             {block.type === 'quiz' && <HelpCircle size={16} color="#fbbc05"/>}
-            <span style={{marginLeft: 8, fontWeight: 'bold', fontSize: 12}}>{block.type.toUpperCase()}</span>
+            <span style={{marginLeft: 8, fontWeight: 'bold', fontSize: '12px', color: '#64748b'}}>
+              {block.type?.toUpperCase()}
+            </span>
           </div>
 
-          <h3 style={{margin: '10px 0'}}>{block.title}</h3>
+          <h3 style={{margin: '15px 0', fontSize: '18px', color: '#334155'}}>{block.title}</h3>
 
-          {/* KONTEN MATERI TEKS */}
           {block.type === 'materi' && <div style={styles.textBody}>{block.content}</div>}
 
-          {/* KONTEN VIDEO/LINK */}
           {block.type === 'media' && (
             <div style={styles.mediaBox}>
                <a href={block.content} target="_blank" rel="noreferrer" style={styles.link}>
-                 Klik untuk Buka Link Materi / Video External ↗
+                 Klik untuk Buka Link Materi / Video ↗
                </a>
             </div>
           )}
 
-          {/* KONTEN KUIS (MODULAR) */}
           {block.type === 'quiz' && (
             <div style={styles.quizBox}>
-              {block.quizData.map((q, qIdx) => (
-                <div key={qIdx} style={{marginBottom: 20, borderBottom: '1px solid #eee', paddingBottom: 15}}>
-                  <p style={{fontWeight: '500'}}>{qIdx + 1}. {q.q}</p>
-                  {q.options.map((opt, oIdx) => (
+              {block.quizData?.map((q, qIdx) => (
+                <div key={qIdx} style={{marginBottom: 20, borderBottom: '1px solid #f1f5f9', paddingBottom: 15}}>
+                  <p style={{fontWeight: '600', color: '#334155'}}>{qIdx + 1}. {q.q}</p>
+                  {q.options?.map((opt, oIdx) => (
                     <label key={oIdx} style={styles.optionLabel}>
                       <input 
                         type="radio" 
                         name={`quiz_${block.id}_${qIdx}`}
                         onChange={() => setAnswers({...answers, [`${block.id}_${qIdx}`]: oIdx})}
                         disabled={quizResult !== null}
-                      /> {opt}
+                      /> <span style={{marginLeft: 8}}>{opt}</span>
                     </label>
                   ))}
                 </div>
@@ -113,16 +122,18 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
             </div>
           )}
 
-          {/* KONTEN UPLOAD TUGAS */}
           {block.type === 'assignment' && (
             <div style={styles.taskBox}>
-              <p>{block.content || "Silakan unggah file tugas Anda di sini (PDF/Gambar)."}</p>
+              <p style={{fontSize: '14px', color: '#475569'}}>{block.content || "Silakan unggah file tugas Anda di sini."}</p>
               {isLate ? (
-                <div style={{color: 'red', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5}}>
-                  <AlertTriangle size={14}/> Maaf, waktu pengumpulan sudah habis.
+                <div style={{color: '#ef4444', fontSize: '13px', display: 'flex', alignItems: 'center', gap: 5, marginTop: 10}}>
+                  <AlertTriangle size={14}/> Maaf, pengumpulan ditutup (Melewati tenggat).
                 </div>
               ) : (
-                <input type="file" style={{marginTop: 10}} />
+                <div style={{marginTop: 15}}>
+                   <input type="file" style={{fontSize: '13px'}} />
+                   <button style={styles.upBtn}>Kirim Tugas</button>
+                </div>
               )}
             </div>
           )}
@@ -133,21 +144,22 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
 };
 
 const styles = {
-  container: { maxWidth: '800px', margin: '0 auto', padding: '30px' },
-  backBtn: { background: 'none', border: 'none', color: '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, marginBottom: 20 },
-  header: { background: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', marginBottom: 25 },
-  deadlineBadge: { marginTop: 15, padding: '8px 12px', background: '#e8f0fe', color: '#1967d2', borderRadius: '6px', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: 8 },
-  lateBadge: { marginTop: 15, padding: '8px 12px', background: '#fce8e6', color: '#d93025', borderRadius: '6px', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: 8 },
-  blockCard: { background: 'white', padding: '25px', borderRadius: '12px', marginBottom: 20, boxShadow: '0 2px 5px rgba(0,0,0,0.05)' },
+  container: { maxWidth: '800px', margin: '0 auto', padding: '20px' },
+  backBtn: { background: 'white', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, padding: '8px 15px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' },
+  header: { background: 'white', padding: '25px', borderRadius: '15px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', marginBottom: 25 },
+  deadlineBadge: { marginTop: 15, padding: '8px 12px', background: '#f0f9ff', color: '#0369a1', borderRadius: '6px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: 8 },
+  lateBadge: { marginTop: 15, padding: '8px 12px', background: '#fef2f2', color: '#991b1b', borderRadius: '6px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: 8 },
+  blockCard: { background: 'white', padding: '25px', borderRadius: '15px', marginBottom: 20, boxShadow: '0 2px 5px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' },
   blockType: { display: 'flex', alignItems: 'center' },
-  textBody: { lineHeight: '1.6', color: '#333', whiteSpace: 'pre-wrap' },
-  mediaBox: { padding: '20px', background: '#f8f9fa', borderRadius: '8px', textAlign: 'center' },
-  link: { color: '#1a73e8', fontWeight: 'bold', textDecoration: 'none' },
+  textBody: { lineHeight: '1.7', color: '#475569', whiteSpace: 'pre-wrap', fontSize: '15px' },
+  mediaBox: { padding: '20px', background: '#f8fafc', borderRadius: '10px', textAlign: 'center', border: '1px dashed #cbd5e1' },
+  link: { color: '#2563eb', fontWeight: 'bold', textDecoration: 'none', fontSize: '14px' },
   quizBox: { marginTop: 15 },
-  optionLabel: { display: 'block', padding: '10px', background: '#f8f9fa', marginBottom: '8px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px' },
-  submitBtn: { background: '#673ab7', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 },
-  scoreBoard: { padding: '15px', background: '#e6fffa', color: '#2c7a7b', borderRadius: '8px', textAlign: 'center', fontWeight: 'bold', border: '1px solid #b2f5ea' },
-  taskBox: { padding: '20px', border: '2px dashed #ddd', borderRadius: '8px', marginTop: 10 }
+  optionLabel: { display: 'flex', alignItems: 'center', padding: '12px', background: '#f8fafc', marginBottom: '8px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', border: '1px solid #f1f5f9' },
+  submitBtn: { background: '#673ab7', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, fontWeight: 'bold', marginTop: 10 },
+  scoreBoard: { padding: '20px', background: '#f0fdf4', color: '#166534', borderRadius: '10px', textAlign: 'center', fontWeight: 'bold', border: '1px solid #bbf7d0', fontSize: '18px' },
+  taskBox: { padding: '20px', background: '#f8fafc', border: '2px dashed #e2e8f0', borderRadius: '12px', marginTop: 10 },
+  upBtn: { marginLeft: '10px', padding: '8px 15px', background: '#059669', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }
 };
 
 export default StudentModuleView;
