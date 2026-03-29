@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
+// === IMPORT GLOBAL RESPONSIVE ENGINE ===
+import './GlobalTeacher.css'; 
+
 // === IMPORT UTAMA ===
 import Login from './pages/Login';
 import LoginGuru from './pages/LoginGuru';
@@ -108,6 +111,7 @@ function App() {
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
 
         {/* === AREA GURU (DIBUNGKUS TEACHER LAYOUT) === */}
+        {/* Fitur Persistence: GuruData dilempar ke Layout untuk digunakan di header */}
         <Route element={<GuruRoute><TeacherLayout guru={guruData} /></GuruRoute>}>
           <Route path="/guru/dashboard" element={<TeacherDashboard />} />
           <Route path="/guru/profile" element={<TeacherProfile />} />
@@ -116,7 +120,7 @@ function App() {
           {/* Menu Cek Tugas */}
           <Route path="/guru/cek-tugas" element={<CekTugasSiswa />} />
           
-          {/* Nilai & Rapor - Path disesuaikan dengan SidebarGuru.jsx */}
+          {/* Nilai & Rapor */}
           <Route path="/guru/grades/input" element={<TeacherInputGrade />} />
           <Route path="/guru/grades/manage" element={<TeacherGradeManager />} />
           
@@ -129,7 +133,7 @@ function App() {
           {/* Rute Jadwal Guru */}
           <Route path="/guru/schedule" element={<TeacherSchedule />} />
           
-          {/* Rute Absensi Guru (Menggunakan Manual Input/Klaim Susulan) */}
+          {/* Rute Absensi Guru */}
           <Route path="/guru/attendance" element={<TeacherManualInput />} />
           <Route path="/guru/manual-input" element={<TeacherManualInput />} />
         </Route>

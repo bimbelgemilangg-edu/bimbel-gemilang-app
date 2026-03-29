@@ -1,0 +1,57 @@
+/* --- GLOBAL TEACHER RESPONSIVE ENGINE --- */
+
+/* Memastikan konten utama tidak tertutup sidebar di Laptop */
+.main-content-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8fafc;
+  }
+  
+  /* DESKTOP/LAPTOP (Layar Lebar) */
+  @media (min-width: 1025px) {
+    .main-content-wrapper {
+      margin-left: 260px; /* Lebar sidebar */
+      width: calc(100% - 260px); /* Otomatis Melebar Sisa Layar */
+    }
+    
+    .responsive-grid {
+      display: flex !important;
+      gap: 25px;
+      width: 100%;
+    }
+  }
+  
+  /* MOBILE/TABLET (Layar Kecil) */
+  @media (max-width: 1024px) {
+    .main-content-wrapper {
+      margin-left: 0 !important;
+      width: 100% !important;
+      padding-top: 60px; /* Ruang agar tidak tertutup tombol menu */
+    }
+  
+    /* Paksa semua elemen flex yang menyamping menjadi vertikal di HP */
+    .responsive-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    /* Sembunyikan elemen dekoratif di HP agar tidak sempit */
+    .hide-on-mobile {
+      display: none !important;
+    }
+  }
+  
+  /* Global Card Styling agar seragam */
+  .teacher-card {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    border: 1px solid #f1f5f9;
+    width: 100%;
+    box-sizing: border-box;
+  }

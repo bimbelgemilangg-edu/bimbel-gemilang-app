@@ -4,28 +4,25 @@ import SidebarGuru from '../../components/SidebarGuru';
 
 const TeacherLayout = ({ guru }) => {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f9fa' }}>
-      {/* Sidebar tetap dipertahankan */}
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
+      {/* Sidebar otomatis handle dirinya sendiri (muncul/sembunyi) */}
       <SidebarGuru />
       
-      {/* Container Utama dengan class 'main-content' dari index.css */}
-      <div className="main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-        
-        {/* Header dengan penyesuaian padding untuk mobile */}
+      {/* SEMUA MENU (Dashboard, Nilai, dll) masuk ke sini */}
+      <main className="main-content">
         <header style={styles.topHeader}>
           <div style={styles.headerInfo}>
-            <h4 style={{ margin: 0, fontSize: '16px' }}>Halo, {guru?.nama || 'Pengajar'} ✨</h4>
-            <small style={{ color: '#7f8c8d', fontSize: '11px' }}>Bimbel Gemilang - Portal Akademik</small>
+            <h4 style={{ margin: 0 }}>Halo, {guru?.nama || 'Pengajar'} ✨</h4>
+            <small style={{ color: '#7f8c8d' }}>Bimbel Gemilang - Portal Akademik</small>
           </div>
           <div style={styles.avatar}>{guru?.nama?.charAt(0) || 'G'}</div>
         </header>
 
-        {/* Area Konten Dinamis */}
-        <div style={styles.contentArea}>
-          {/* Outlet adalah tempat halaman (Dashboard, Modul, dll) muncul */}
+        {/* Padding konten utama */}
+        <div style={{ padding: '20px', width: '100%', boxSizing: 'border-box' }}>
           <Outlet /> 
         </div>
-      </div>
+      </main>
     </div>
   );
 };
@@ -40,29 +37,12 @@ const styles = {
     borderBottom: '1px solid #eee',
     position: 'sticky',
     top: 0,
-    zIndex: 900
+    zIndex: 99
   },
   headerInfo: {
-    /* Memberi ruang agar teks tidak tertabrak tombol hamburger di mobile */
-    paddingLeft: window.innerWidth <= 1024 ? '45px' : '0px'
+    paddingLeft: window.innerWidth <= 1024 ? '50px' : '0px'
   },
-  avatar: { 
-    width: '35px', 
-    height: '35px', 
-    background: '#3498db', 
-    borderRadius: '50%', 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    fontWeight: 'bold', 
-    color: 'white',
-    fontSize: '14px'
-  },
-  contentArea: { 
-    padding: '20px',
-    width: '100%',
-    boxSizing: 'border-box'
-  }
+  avatar: { width: '35px', height: '35px', background: '#3498db', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white' }
 };
 
 export default TeacherLayout;

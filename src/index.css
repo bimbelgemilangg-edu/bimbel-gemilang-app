@@ -9,46 +9,48 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #f8fafc; /* Slate-50 */
+  background-color: #f8fafc;
   overflow-x: hidden;
 }
 
-/* Memperhalus scrolling di seluruh aplikasi */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
+/* --- GLOBAL AUTO-RESPONSIVE ENGINE --- */
 
-/* --- TAMBAHAN UNTUK RESPONSIVE LAYOUT --- */
-
-/* Kontainer Utama yang menyesuaikan Sidebar */
+/* 1. Kontainer Utama: Otomatis sisa layar di Laptop, Full di HP */
 .main-content {
   width: 100%;
   min-height: 100vh;
-  transition: margin-left 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Desktop: Beri jarak 260px (lebar sidebar) agar konten tidak tertutup */
 @media (min-width: 1025px) {
   .main-content {
-    margin-left: 260px;
-    width: calc(100% - 260px);
+    margin-left: 260px; /* Lebar Sidebar */
+    width: calc(100% - 260px); /* Melebar penuhi sisa layar */
   }
 }
 
-/* Mobile/Tablet: Konten memenuhi layar, beri padding top agar tidak tertutup tombol Hamburger */
 @media (max-width: 1024px) {
   .main-content {
     margin-left: 0;
-    padding-top: 60px; 
+    width: 100%;
+    padding-top: 60px; /* Ruang untuk tombol Hamburger */
   }
 }
+
+/* 2. Auto-Grid: Memaksa semua dashboard/halaman yang pakai flex agar tidak menyempit */
+.responsive-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 100%;
+}
+
+.responsive-grid > div {
+  flex: 1 1 300px; /* Minimal 300px, selebihnya melebar otomatis */
+}
+
+/* 3. Scrollbar Fix */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
