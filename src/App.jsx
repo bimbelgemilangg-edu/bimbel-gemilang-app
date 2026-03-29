@@ -34,7 +34,7 @@ import TeacherManualInput from './pages/teacher/TeacherManualInput';
 import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade'; 
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager'; 
 import TeacherProfile from './pages/teacher/TeacherProfile'; 
-import TeacherSchedule from './pages/teacher/TeacherSchedule'; // Tambahan Langkah 3
+import TeacherSchedule from './pages/teacher/TeacherSchedule'; 
 
 // --- IMPORT MODUL & CEK TUGAS GURU ---
 import ModulManager from './pages/teacher/modul/ModulManager'; 
@@ -112,12 +112,11 @@ function App() {
           <Route path="/guru/dashboard" element={<TeacherDashboard />} />
           <Route path="/guru/profile" element={<TeacherProfile />} />
           <Route path="/guru/history" element={<TeacherHistory />} />
-          <Route path="/guru/manual-input" element={<TeacherManualInput />} />
           
           {/* Menu Cek Tugas */}
           <Route path="/guru/cek-tugas" element={<CekTugasSiswa />} />
           
-          {/* Nilai & Rapor */}
+          {/* Nilai & Rapor - Path disesuaikan dengan SidebarGuru.jsx */}
           <Route path="/guru/grades/input" element={<TeacherInputGrade />} />
           <Route path="/guru/grades/manage" element={<TeacherGradeManager />} />
           
@@ -127,10 +126,12 @@ function App() {
           <Route path="/guru/modul/quiz" element={<ManageQuiz />} />
           <Route path="/guru/modul/tugas" element={<ManageTugas />} />
 
-          {/* Rute Jadwal Guru - UPDATE: Menggunakan Komponen TeacherSchedule */}
+          {/* Rute Jadwal Guru */}
           <Route path="/guru/schedule" element={<TeacherSchedule />} />
           
-          <Route path="/guru/attendance" element={<div>Halaman Absensi (Belum Dibuat)</div>} />
+          {/* Rute Absensi Guru (Menggunakan Manual Input/Klaim Susulan) */}
+          <Route path="/guru/attendance" element={<TeacherManualInput />} />
+          <Route path="/guru/manual-input" element={<TeacherManualInput />} />
         </Route>
         
         {/* === AREA SISWA === */}
