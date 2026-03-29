@@ -27,3 +27,28 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* --- TAMBAHAN UNTUK RESPONSIVE LAYOUT --- */
+
+/* Kontainer Utama yang menyesuaikan Sidebar */
+.main-content {
+  width: 100%;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+/* Desktop: Beri jarak 260px (lebar sidebar) agar konten tidak tertutup */
+@media (min-width: 1025px) {
+  .main-content {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+  }
+}
+
+/* Mobile/Tablet: Konten memenuhi layar, beri padding top agar tidak tertutup tombol Hamburger */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 0;
+    padding-top: 60px; 
+  }
+}

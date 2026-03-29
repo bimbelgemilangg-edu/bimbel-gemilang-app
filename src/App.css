@@ -1,13 +1,24 @@
-/* PENTING: Biarkan file ini kosong atau minimalis.
-  
-  Style bawaan Vite (seperti #root { max-width: 1280px; margin: 0 auto; }) 
-  SUDAH DIHAPUS agar Dashboard bisa tampil Full Screen (Layar Penuh).
-
+/* PENTING: Dashboard tampil Full Screen (Layar Penuh).
   Semua desain aplikasi ini sudah diatur otomatis oleh Tailwind CSS.
 */
 
 #root {
   width: 100%;
+  min-height: 100vh;
   margin: 0;
   padding: 0;
+  display: block;
+}
+
+/* Memastikan elemen pembungkus di dalam App tidak memiliki max-width */
+.app-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Utility untuk memastikan gambar logo tetap proporsional */
+img {
+  max-width: 100%;
+  height: auto;
 }
