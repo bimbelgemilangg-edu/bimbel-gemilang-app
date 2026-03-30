@@ -9,8 +9,8 @@ import imageCompression from 'browser-image-compression';
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, 
   ArrowLeft, Upload, Calendar, Link as LinkIcon, 
-  Image as ImageIcon, Users, Layers,
-  Search, UserCheck, Eye
+  ImageIcon, Users, Layers,
+  Search, UserCheck, Eye, Sparkles
 } from 'lucide-react';
 
 const ManageMateri = () => {
@@ -37,7 +37,6 @@ const ManageMateri = () => {
   
   const COLLECTION_NAME = "bimbel_modul";
 
-  // FETCH DATA SISWA & KELAS DINAMIS
   useEffect(() => {
     const fetchContextData = async () => {
       try {
@@ -76,7 +75,6 @@ const ManageMateri = () => {
     } catch (err) { console.error("Error fetching:", err); }
   };
 
-  // KOMPRESI GAMBAR
   const handleCoverUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -91,7 +89,6 @@ const ManageMateri = () => {
     }
   };
 
-  // FORMAT LINK UNTUK SMART VIEW (CANVA, YOUTUBE, DRIVE)
   const formatExternalLink = (url) => {
     if (url.includes('canva.com') && url.includes('/edit')) return url.split('?')[0].replace('/edit', '/view?embed');
     if (url.includes('drive.google.com') && url.includes('/view')) return url.replace('/view', '/preview');
@@ -116,7 +113,6 @@ const ManageMateri = () => {
     if(window.confirm("Hapus bagian ini?")) setBlocks(blocks.filter(b => b.id !== id));
   };
 
-  // KUIS DENGAN TENGGAT WAKTU PER SOAL/GRUP
   const addQuizQuestion = () => {
     setQuizData([...quizData, { 
       id: Date.now(), question: "", options: ["", "", "", ""], correctAnswer: 0, 
@@ -164,180 +160,185 @@ const ManageMateri = () => {
   });
 
   return (
-    <div style={st.container}>
-      <div style={st.topBar}>
-        <div style={st.breadCrumb}>Modul / {editId ? "Edit Materi" : "Buat Materi Baru"}</div>
-        <div style={{display:'flex', gap: 12}}>
-          <button onClick={() => navigate('/guru/modul')} style={st.btnBack}><ArrowLeft size={16}/> Kembali</button>
-          <button onClick={handleSave} disabled={loading} style={st.btnPublish}>
-            <Save size={18}/> {loading ? "Proses..." : "PUBLISH SEKARANG"}
-          </button>
-        </div>
-      </div>
-
-      <div style={st.formCard}>
-        {/* SAMPUL & IDENTITAS */}
-        <div style={st.sectionHeader}><ImageIcon size={18}/> Sampul & Identitas Modul</div>
-        <div style={st.coverGrid}>
-          <div style={st.coverUploadBox}>
-            {coverImage ? (
-              <div style={st.coverPreviewWrapper}>
-                <img src={coverImage} alt="Preview" style={st.coverImage} />
-                <button onClick={() => setCoverImage(null)} style={st.btnRemoveCover}><Trash2 size={14}/></button>
-              </div>
-            ) : (
-              <label style={st.coverPlaceholder}>
-                <input type="file" accept="image/*" hidden onChange={handleCoverUpload} />
-                <Upload size={24} color="#673ab7" />
-                <span style={{fontSize: 10, fontWeight:'bold', color:'#673ab7', marginTop:8, textAlign:'center'}}>KLIK UNTUK UNGGAH SAMPUL</span>
-              </label>
-            )}
+    <div className="main-content-wrapper">
+      <div className="teacher-container-padding" style={{paddingBottom: '150px'}}>
+        
+        {/* HEADER BAR */}
+        <div style={st.topBar}>
+          <div style={st.breadCrumb}>Modul / <span style={{color:'#673ab7'}}>{editId ? "Edit Materi" : "Buat Baru"}</span></div>
+          <div style={{display:'flex', gap: 12}}>
+            <button onClick={() => navigate('/guru/modul')} style={st.btnBack}><ArrowLeft size={16}/> Kembali</button>
+            <button onClick={handleSave} disabled={loading} className="teacher-btn-primary" style={st.btnPublish}>
+              <Save size={18}/> {loading ? "Menyimpan..." : "PUBLISH MODUL"}
+            </button>
           </div>
-          <div style={st.identityInputs}>
-            <input placeholder="JUDUL MATERI UTAMA..." style={st.mainInput} value={title} onChange={(e) => setTitle(e.target.value)} />
-            <input placeholder="Mata Pelajaran..." style={st.subInput} value={subject} onChange={(e) => setSubject(e.target.value)} />
-            <div style={st.globalDateRow}>
-               <Calendar size={14} color="#64748b"/>
-               <span style={{fontSize:12, color:'#64748b'}}>Rilis Modul:</span>
-               <input type="datetime-local" style={st.cleanDateInput} value={releaseDate} onChange={(e) => setReleaseDate(e.target.value)} />
+        </div>
+
+        <div className="teacher-card" style={st.formCard}>
+          {/* SAMPUL & IDENTITAS */}
+          <div style={st.sectionHeader}><Sparkles size={18} color="#673ab7"/> Sampul & Identitas Modul</div>
+          <div style={st.coverGrid}>
+            <div style={st.coverUploadBox}>
+              {coverImage ? (
+                <div style={st.coverPreviewWrapper}>
+                  <img src={coverImage} alt="Preview" style={st.coverImage} />
+                  <button onClick={() => setCoverImage(null)} style={st.btnRemoveCover}><Trash2 size={14}/></button>
+                </div>
+              ) : (
+                <label style={st.coverPlaceholder}>
+                  <input type="file" accept="image/*" hidden onChange={handleCoverUpload} />
+                  <div style={st.uploadCircle}><Upload size={24} color="#673ab7" /></div>
+                  <span style={st.uploadText}>UNGGAH SAMPUL</span>
+                </label>
+              )}
+            </div>
+            <div style={st.identityInputs}>
+              <input placeholder="JUDUL MATERI UTAMA..." style={st.mainInput} value={title} onChange={(e) => setTitle(e.target.value)} />
+              <input placeholder="Contoh: Matematika, Bahasa Inggris..." style={st.subInput} value={subject} onChange={(e) => setSubject(e.target.value)} />
+              <div style={st.globalDateRow}>
+                 <Calendar size={14} color="#673ab7"/>
+                 <span style={{fontSize:11, fontWeight:'800', color:'#64748b', textTransform:'uppercase'}}>Jadwal Rilis:</span>
+                 <input type="datetime-local" style={st.cleanDateInput} value={releaseDate} onChange={(e) => setReleaseDate(e.target.value)} />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* TARGETING */}
-        <div style={st.sectionHeader}><Layers size={18}/> Pengaturan Target Siswa</div>
-        <div style={st.targetGrid}>
-           <div style={st.targetBox}>
-              <label style={st.labelIcon}><Users size={14}/> Kategori Program</label>
-              <select style={st.selectInput} value={targetKategori} onChange={(e) => setTargetKategori(e.target.value)}>
-                 <option value="Semua">Semua Program</option>
-                 <option value="Reguler">Reguler (Bimbel)</option>
-                 <option value="English">English Course</option>
-              </select>
-           </div>
-           <div style={st.targetBox}>
-              <label style={st.labelIcon}><Layers size={14}/> Jenjang Kelas</label>
-              <select style={st.selectInput} value={targetKelas} onChange={(e) => setTargetKelas(e.target.value)}>
-                 <option value="Semua">Semua Kelas</option>
-                 {availableClasses.map(kls => <option key={kls} value={kls}>{kls}</option>)}
-              </select>
-           </div>
-        </div>
-
-        <div style={st.searchBoxSiswa}>
-           <label style={st.labelIcon}><Search size={14}/> Cari Siswa Spesifik (Opsional)</label>
-           <div style={{display:'flex', gap: 10, marginTop: 10}}>
-              <div style={{flex: 1, position:'relative'}}>
-                 <Search style={{position:'absolute', left: 12, top: 12, color:'#94a3b8'}} size={16}/>
-                 <input 
-                   placeholder="Ketik nama siswa..." 
-                   style={{...st.selectInput, paddingLeft: 40, width:'100%'}} 
-                   value={studentSearch} 
-                   onChange={(e) => setStudentSearch(e.target.value)}
-                 />
-              </div>
-              <select style={{...st.selectInput, flex: 1}} value={targetSiswaId} onChange={(e) => setTargetSiswaId(e.target.value)}>
-                 <option value="Semua">Kirim ke Semua Siswa</option>
-                 {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.nama} ({s.kelasSekolah})</option>)}
-              </select>
-           </div>
-           {targetSiswaId !== "Semua" && (
-             <div style={{marginTop: 10, display:'flex', alignItems:'center', gap: 5, color:'#059669', fontSize: 11, fontWeight: 'bold'}}>
-                <UserCheck size={14}/> Modul ini hanya akan tampil di akun {studentsList.find(s => s.id === targetSiswaId)?.nama}
+          {/* TARGETING */}
+          <div style={st.sectionHeader}><Users size={18} color="#673ab7"/> Pengaturan Target Siswa</div>
+          <div style={st.targetGrid}>
+             <div style={st.targetBox}>
+                <label style={st.labelIcon}>Kategori Program</label>
+                <select className="teacher-input" style={st.selectInput} value={targetKategori} onChange={(e) => setTargetKategori(e.target.value)}>
+                   <option value="Semua">Semua Program</option>
+                   <option value="Reguler">Reguler (Bimbel)</option>
+                   <option value="English">English Course</option>
+                </select>
              </div>
-           )}
-        </div>
-
-        <div style={st.divider} />
-
-        {/* MATERI & SMART VIEW */}
-        <div style={st.sectionHeader}><FileText size={18}/> Susunan Materi & Tugas</div>
-        {blocks.map((block) => (
-          <div key={block.id} style={st.blockCard}>
-            <div style={st.blockHeader}>
-              <div style={st.typeBadge}>{block.type.toUpperCase()}</div>
-              <button onClick={() => removeBlock(block.id)} style={st.btnTrash}><Trash2 size={16}/></button>
-            </div>
-            <input placeholder="Nama Bagian..." style={st.blockTitleInput} value={block.title} onChange={(e) => updateBlock(block.id, 'title', e.target.value)} />
-            <textarea 
-              placeholder={block.type === 'video' ? "Tempel Link Canva/YT/Slides di sini..." : "Tulis isi materi..."} 
-              style={st.textArea} 
-              value={block.content} 
-              onChange={(e) => updateBlock(block.id, 'content', e.target.value)} 
-            />
-
-            {/* SMART VIEW INTEGRATION */}
-            {block.content && (block.content.includes('canva.com') || block.content.includes('youtube.com') || block.content.includes('drive.google.com')) && (
-              <div style={st.smartPreview}>
-                <div style={st.previewLabel}><Eye size={12}/> Smart View Preview</div>
-                <iframe src={block.content} style={st.iframePreview} title="Preview Content" allowFullScreen />
-              </div>
-            )}
-
-            {block.type === 'assignment' && (
-              <div style={st.deadlineBox}>
-                <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:10}}>
-                  <input type="checkbox" checked={block.hasDeadline} onChange={(e) => updateBlock(block.id, 'hasDeadline', e.target.checked)} />
-                  <span style={{fontSize:12, fontWeight:'bold', color:'#92400e'}}>Atur Tenggat Tugas</span>
-                </div>
-                {block.hasDeadline && (
-                  <div style={st.deadlineFlex}>
-                    <div style={st.subInputGroup}><label>Mulai:</label><input type="datetime-local" style={st.dateInputMini} value={block.startTime} onChange={(e) => updateBlock(block.id, 'startTime', e.target.value)} /></div>
-                    <div style={st.subInputGroup}><label>Batas:</label><input type="datetime-local" style={st.dateInputMini} value={block.endTime} onChange={(e) => updateBlock(block.id, 'endTime', e.target.value)} /></div>
-                  </div>
-                )}
-              </div>
-            )}
+             <div style={st.targetBox}>
+                <label style={st.labelIcon}>Jenjang Kelas</label>
+                <select className="teacher-input" style={st.selectInput} value={targetKelas} onChange={(e) => setTargetKelas(e.target.value)}>
+                   <option value="Semua">Semua Kelas</option>
+                   {availableClasses.map(kls => <option key={kls} value={kls}>{kls}</option>)}
+                </select>
+             </div>
           </div>
-        ))}
 
-        {/* KUIS & DEADLINE KUIS */}
-        {quizData.length > 0 && <div style={st.sectionHeader}><HelpCircle size={18}/> Bank Soal Kuis</div>}
-        {quizData.map((q, idx) => (
-          <div key={q.id} style={st.quizCard}>
-            <div style={st.blockHeader}>
-              <span style={st.quizBadge}>SOAL NOMOR {idx + 1}</span>
-              <button onClick={() => setQuizData(quizData.filter(i => i.id !== q.id))} style={st.btnTrash}><Trash2 size={16}/></button>
-            </div>
-            <textarea placeholder="Pertanyaan..." style={{...st.textArea, minHeight:'80px', border:'1px solid #ddd'}} value={q.question} onChange={(e) => setQuizData(quizData.map(item => item.id === q.id ? {...item, question: e.target.value} : item))} />
-            <div style={st.optGrid}>
-              {q.options.map((opt, oIdx) => (
-                <div key={oIdx} style={{...st.optItem, borderColor: q.correctAnswer === oIdx ? '#673ab7' : '#e2e8f0', background: q.correctAnswer === oIdx ? '#f5f3ff' : '#fff'}}>
-                  <input type="radio" checked={q.correctAnswer === oIdx} onChange={() => setQuizData(quizData.map(item => item.id === q.id ? {...item, correctAnswer: oIdx} : item))} />
-                  <input style={st.optInput} placeholder={`Pilihan ${String.fromCharCode(65 + oIdx)}`} value={opt} onChange={(e) => {
-                    const newOpts = [...q.options];
-                    newOpts[oIdx] = e.target.value;
-                    setQuizData(quizData.map(item => item.id === q.id ? {...item, options: newOpts} : item));
-                  }} />
+          <div style={st.searchBoxSiswa}>
+             <label style={st.labelIcon}>Cari Siswa Spesifik (Opsional)</label>
+             <div style={st.siswaSelectRow}>
+                <div style={{flex: 1, position:'relative'}}>
+                   <Search style={st.searchIconInside} size={16}/>
+                   <input 
+                     placeholder="Ketik nama siswa untuk memfilter list..." 
+                     className="teacher-input"
+                     style={{paddingLeft: 40, width:'100%'}} 
+                     value={studentSearch} 
+                     onChange={(e) => setStudentSearch(e.target.value)}
+                   />
                 </div>
-              ))}
-            </div>
-
-            {/* QUIZ DEADLINE (PER GRUP/SOAL PERTAMA) */}
-            {idx === 0 && (
-              <div style={{...st.deadlineBox, marginTop: 20, background: '#f0fdf4', borderColor: '#bbf7d0'}}>
-                <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:10}}>
-                  <input type="checkbox" checked={q.hasDeadline} onChange={(e) => setQuizData(quizData.map(item => item.id === q.id ? {...item, hasDeadline: e.target.checked} : item))} />
-                  <span style={{fontSize:12, fontWeight:'bold', color:'#166534'}}>Atur Tenggat Waktu Kuis</span>
-                </div>
-                {q.hasDeadline && (
-                  <div style={st.deadlineFlex}>
-                    <div style={st.subInputGroup}><label>Batas Pengerjaan:</label><input type="datetime-local" style={st.dateInputMini} value={q.endTime} onChange={(e) => setQuizData(quizData.map(item => item.id === q.id ? {...item, endTime: e.target.value} : item))} /></div>
-                  </div>
-                )}
-              </div>
-            )}
+                <select className="teacher-input" style={{flex: 1}} value={targetSiswaId} onChange={(e) => setTargetSiswaId(e.target.value)}>
+                   <option value="Semua">Kirim ke Semua Siswa</option>
+                   {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.nama} ({s.kelasSekolah})</option>)}
+                </select>
+             </div>
+             {targetSiswaId !== "Semua" && (
+               <div style={st.targetAlert}>
+                  <UserCheck size={14}/> Modul terkunci hanya untuk siswa: {studentsList.find(s => s.id === targetSiswaId)?.nama}
+               </div>
+             )}
           </div>
-        ))}
 
-        {/* FLOATING ACTION BAR */}
-        <div style={st.fabBar}>
-          <div style={st.fabLabel}>TAMBAH:</div>
-          <button onClick={() => addBlock('text')} style={st.fab} title="Teks"><FileText size={18}/></button>
-          <button onClick={() => addBlock('video')} style={st.fab} title="Media/Link"><LinkIcon size={18}/></button>
-          <button onClick={() => addBlock('assignment')} style={st.fab} title="Tugas"><Upload size={18}/></button>
-          <button onClick={addQuizQuestion} style={st.fab} title="Kuis"><HelpCircle size={18}/></button>
-          <button onClick={handleSave} style={st.btnSaveFab}>SIMPAN MODUL</button>
+          <div style={st.divider} />
+
+          {/* MATERI */}
+          <div style={st.sectionHeader}><FileText size={18} color="#673ab7"/> Susunan Materi & Tugas</div>
+          {blocks.map((block) => (
+            <div key={block.id} style={st.blockCard}>
+              <div style={st.blockHeader}>
+                <div style={st.typeBadge}>{block.type.toUpperCase()}</div>
+                <button onClick={() => removeBlock(block.id)} style={st.btnTrash}><Trash2 size={16}/></button>
+              </div>
+              <input placeholder="Judul Bagian Materi..." style={st.blockTitleInput} value={block.title} onChange={(e) => updateBlock(block.id, 'title', e.target.value)} />
+              <textarea 
+                placeholder={block.type === 'video' ? "Tempel Link Canva / YouTube / Drive di sini..." : "Tulis isi materi lengkap..."} 
+                className="teacher-input"
+                style={st.textArea} 
+                value={block.content} 
+                onChange={(e) => updateBlock(block.id, 'content', e.target.value)} 
+              />
+
+              {block.content && (block.content.includes('canva.com') || block.content.includes('youtube.com') || block.content.includes('drive.google.com')) && (
+                <div style={st.smartPreview}>
+                  <div style={st.previewLabel}><Eye size={12}/> Live Smart View Preview</div>
+                  <iframe src={block.content} style={st.iframePreview} title="Preview" allowFullScreen />
+                </div>
+              )}
+
+              {block.type === 'assignment' && (
+                <div style={st.deadlineBox}>
+                  <div style={st.deadlineCheckRow}>
+                    <input type="checkbox" checked={block.hasDeadline} onChange={(e) => updateBlock(block.id, 'hasDeadline', e.target.checked)} />
+                    <span>Aktifkan Batas Pengumpulan Tugas</span>
+                  </div>
+                  {block.hasDeadline && (
+                    <div style={st.deadlineFlex}>
+                      <div style={st.subInputGroup}><label>Mulai:</label><input type="datetime-local" className="teacher-input" style={st.dateInputMini} value={block.startTime} onChange={(e) => updateBlock(block.id, 'startTime', e.target.value)} /></div>
+                      <div style={st.subInputGroup}><label>Deadline:</label><input type="datetime-local" className="teacher-input" style={st.dateInputMini} value={block.endTime} onChange={(e) => updateBlock(block.id, 'endTime', e.target.value)} /></div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* KUIS */}
+          {quizData.length > 0 && <div style={st.sectionHeader}><HelpCircle size={18} color="#10b981"/> Bank Soal Kuis Interaktif</div>}
+          {quizData.map((q, idx) => (
+            <div key={q.id} style={st.quizCard}>
+              <div style={st.blockHeader}>
+                <span style={st.quizBadge}>SOAL #{idx + 1}</span>
+                <button onClick={() => setQuizData(quizData.filter(i => i.id !== q.id))} style={st.btnTrash}><Trash2 size={16}/></button>
+              </div>
+              <textarea placeholder="Tulis pertanyaan kuis..." className="teacher-input" style={{minHeight:'80px'}} value={q.question} onChange={(e) => setQuizData(quizData.map(item => item.id === q.id ? {...item, question: e.target.value} : item))} />
+              <div style={st.optGrid}>
+                {q.options.map((opt, oIdx) => (
+                  <div key={oIdx} style={{...st.optItem, borderColor: q.correctAnswer === oIdx ? '#10b981' : '#e2e8f0', background: q.correctAnswer === oIdx ? '#f0fdf4' : '#fff'}}>
+                    <input type="radio" checked={q.correctAnswer === oIdx} onChange={() => setQuizData(quizData.map(item => item.id === q.id ? {...item, correctAnswer: oIdx} : item))} />
+                    <input style={st.optInput} placeholder={`Pilihan ${String.fromCharCode(65 + oIdx)}`} value={opt} onChange={(e) => {
+                      const newOpts = [...q.options];
+                      newOpts[oIdx] = e.target.value;
+                      setQuizData(quizData.map(item => item.id === q.id ? {...item, options: newOpts} : item));
+                    }} />
+                  </div>
+                ))}
+              </div>
+
+              {idx === 0 && (
+                <div style={st.quizDeadlineBox}>
+                  <div style={st.deadlineCheckRow}>
+                    <input type="checkbox" checked={q.hasDeadline} onChange={(e) => setQuizData(quizData.map(item => item.id === q.id ? {...item, hasDeadline: e.target.checked} : item))} />
+                    <span style={{color:'#166534'}}>Atur Batas Waktu Kuis (Global)</span>
+                  </div>
+                  {q.hasDeadline && (
+                    <div style={st.deadlineFlex}>
+                      <div style={st.subInputGroup}><label>Batas Akhir:</label><input type="datetime-local" className="teacher-input" style={st.dateInputMini} value={q.endTime} onChange={(e) => setQuizData(quizData.map(item => item.id === q.id ? {...item, endTime: e.target.value} : item))} /></div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* FLOATING ACTION BAR */}
+          <div style={st.fabBar}>
+            <span style={st.fabLabel}>TAMBAH KOMPONEN:</span>
+            <button onClick={() => addBlock('text')} style={st.fab} title="Tambah Teks"><FileText size={18}/></button>
+            <button onClick={() => addBlock('video')} style={st.fab} title="Tambah Media/Link"><LinkIcon size={18}/></button>
+            <button onClick={() => addBlock('assignment')} style={st.fab} title="Tambah Tugas"><Upload size={18}/></button>
+            <button onClick={addQuizQuestion} style={st.fab} title="Tambah Kuis"><HelpCircle size={18}/></button>
+            <div style={st.fabDivider} />
+            <button onClick={handleSave} style={st.btnSaveFab}>{loading ? "..." : "SIMPAN MODUL"}</button>
+          </div>
         </div>
       </div>
     </div>
@@ -345,51 +346,66 @@ const ManageMateri = () => {
 };
 
 const st = {
-  container: { padding: '40px 20px', background: '#f8fafc', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center' },
-  topBar: { width: '100%', maxWidth: '900px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' },
-  breadCrumb: { fontSize: '14px', color: '#64748b', fontWeight: '600' },
-  btnBack: { padding: '10px 20px', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 },
-  btnPublish: { padding: '12px 30px', borderRadius: '15px', border: 'none', background: '#673ab7', color: 'white', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 10px 20px rgba(103, 58, 183, 0.2)' },
-  formCard: { background: 'white', width: '100%', maxWidth: '900px', padding: '50px', borderRadius: '35px', boxShadow: '0 20px 50px rgba(0,0,0,0.04)', marginBottom: '150px' },
-  sectionHeader: { display: 'flex', alignItems: 'center', gap: 10, fontSize: '14px', fontWeight: '800', color: '#1e293b', marginBottom: '20px', marginTop: '40px', borderBottom: '1px solid #f1f5f9', paddingBottom: '10px' },
-  coverGrid: { display: 'grid', gridTemplateColumns: '220px 1fr', gap: '30px', marginBottom: '40px' },
-  coverUploadBox: { height: '160px', borderRadius: '24px', background: '#f1f5f9', border: '2px dashed #cbd5e1', overflow: 'hidden', position:'relative' },
+  topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap:'wrap', gap:'15px' },
+  breadCrumb: { fontSize: '13px', color: '#94a3b8', fontWeight: '700', textTransform:'uppercase', letterSpacing:'1px' },
+  btnBack: { padding: '10px 20px', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, color:'#64748b' },
+  btnPublish: { padding: '12px 25px', borderRadius: '14px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 8px 20px rgba(103, 58, 183, 0.3)' },
+  
+  formCard: { padding: '40px', borderRadius: '30px' },
+  sectionHeader: { display: 'flex', alignItems: 'center', gap: 10, fontSize: '14px', fontWeight: '900', color: '#1e293b', marginBottom: '25px', marginTop: '40px', borderBottom: '2px solid #f1f5f9', paddingBottom: '12px', textTransform:'uppercase' },
+  
+  coverGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '30px', marginBottom: '40px' },
+  coverUploadBox: { height: '180px', borderRadius: '24px', background: '#f8fafc', border: '2px dashed #cbd5e1', overflow: 'hidden', position:'relative' },
   coverPlaceholder: { width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' },
+  uploadCircle: { background:'#fff', padding:12, borderRadius:'50%', boxShadow:'0 4px 10px rgba(0,0,0,0.05)', marginBottom:10 },
+  uploadText: { fontSize: 10, fontWeight:'900', color:'#673ab7' },
   coverImage: { width: '100%', height: '100%', objectFit: 'cover' },
-  btnRemoveCover: { position: 'absolute', top: 10, right: 10, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 26, height: 26, cursor: 'pointer', zIndex: 10 },
-  identityInputs: { display: 'flex', flexDirection: 'column', justifyContent: 'center' },
-  mainInput: { border: 'none', fontSize: '30px', fontWeight: '900', outline: 'none', color: '#0f172a', width: '100%' },
-  subInput: { border: 'none', fontSize: '16px', outline: 'none', color: '#64748b', marginTop: '10px', width: '100%' },
-  globalDateRow: { display:'flex', alignItems:'center', gap:10, marginTop:20, background:'#f8fafc', padding:'8px 15px', borderRadius:'10px', width:'fit-content' },
-  cleanDateInput: { border:'none', background:'transparent', fontSize:'12px', outline:'none', fontWeight:'bold' },
-  targetGrid: { display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px' },
+  btnRemoveCover: { position: 'absolute', top: 12, right: 12, background: '#ef4444', color: 'white', border: 'none', borderRadius: '10px', padding: '6px', cursor: 'pointer', zIndex: 10 },
+  
+  identityInputs: { display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '10px' },
+  mainInput: { border: 'none', fontSize: 'clamp(1.5rem, 4vw, 2.2rem)', fontWeight: '900', outline: 'none', color: '#0f172a', width: '100%', background:'transparent' },
+  subInput: { border: 'none', fontSize: '16px', outline: 'none', color: '#64748b', fontWeight:'600', width: '100%', background:'transparent' },
+  globalDateRow: { display:'flex', alignItems:'center', gap:10, marginTop:15, background:'#f1f5f9', padding:'8px 15px', borderRadius:'12px', width:'fit-content' },
+  cleanDateInput: { border:'none', background:'transparent', fontSize:'12px', outline:'none', fontWeight:'bold', color:'#1e293b' },
+  
+  targetGrid: { display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:'20px' },
   targetBox: { display:'flex', flexDirection:'column', gap:8 },
-  labelIcon: { fontSize:'11px', fontWeight:'800', color:'#64748b', display:'flex', alignItems:'center', gap:6 },
-  selectInput: { padding:'12px', borderRadius:'12px', border:'1px solid #e2e8f0', background:'#fff', outline:'none', fontWeight:'600', fontSize:'14px' },
-  searchBoxSiswa: { marginTop: 20, background: '#f8fafc', padding: '20px', borderRadius: '20px' },
-  divider: { height: '1px', background: '#f1f5f9', margin: '40px 0' },
-  blockCard: { background: '#fff', border: '1px solid #f1f5f9', borderRadius: '24px', padding: '25px', marginBottom: '25px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' },
+  labelIcon: { fontSize:'10px', fontWeight:'900', color:'#94a3b8', textTransform:'uppercase', marginLeft: 5 },
+  searchBoxSiswa: { marginTop: 25, background: '#f8fafc', padding: '25px', borderRadius: '24px', border:'1px solid #f1f5f9' },
+  siswaSelectRow: { display:'flex', gap: 15, marginTop: 12, flexWrap:'wrap' },
+  searchIconInside: { position:'absolute', left: 15, top: '50%', transform:'translateY(-50%)', color:'#94a3b8' },
+  targetAlert: { marginTop: 15, display:'flex', alignItems:'center', gap: 8, color:'#059669', fontSize: 12, fontWeight: '800', background:'#dcfce7', padding:'10px 15px', borderRadius:'12px' },
+  
+  divider: { height: '2px', background: '#f1f5f9', margin: '50px 0' },
+  blockCard: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '24px', padding: '25px', marginBottom: '25px' },
   blockHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
-  typeBadge: { fontSize: '9px', fontWeight: '900', color: '#673ab7', background: '#f3e8ff', padding: '5px 12px', borderRadius: '8px' },
-  btnTrash: { background: '#fff1f2', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '8px', borderRadius: '10px' },
-  blockTitleInput: { width: '100%', border: 'none', fontSize: '18px', fontWeight: '800', outline: 'none', marginBottom: '15px', color: '#1e293b' },
-  textArea: { width: '100%', minHeight: '120px', border: 'none', borderRadius: '16px', padding: '20px', outline: 'none', background: '#f8fafc', fontSize: '15px', lineHeight: 1.6, color: '#334155' },
-  smartPreview: { marginTop: '15px', borderRadius: '15px', overflow: 'hidden', border: '1px solid #e2e8f0' },
-  previewLabel: { background: '#f1f5f9', padding: '5px 15px', fontSize: '10px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 5 },
-  iframePreview: { width: '100%', height: '350px', border: 'none' },
-  deadlineBox: { marginTop: '20px', padding: '20px', background: '#fffbeb', borderRadius: '18px', border: '1px solid #fef3c7' },
-  deadlineFlex: { display: 'flex', gap: '20px' },
-  subInputGroup: { flex: 1, display: 'flex', flexDirection: 'column', gap: 5 },
-  dateInputMini: { padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px' },
+  typeBadge: { fontSize: '10px', fontWeight: '900', color: '#673ab7', background: '#f3e8ff', padding: '6px 14px', borderRadius: '10px' },
+  btnTrash: { background: '#fff1f2', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '10px', borderRadius: '12px' },
+  blockTitleInput: { width: '100%', border: 'none', fontSize: '18px', fontWeight: '900', outline: 'none', marginBottom: '15px', color: '#1e293b', paddingLeft: 5 },
+  textArea: { width: '100%', minHeight: '130px', borderRadius: '18px', padding: '20px', fontSize: '15px', lineHeight: 1.6 },
+  
+  smartPreview: { marginTop: '20px', borderRadius: '20px', overflow: 'hidden', border: '1px solid #e2e8f0', background:'#000' },
+  previewLabel: { background: '#1e293b', padding: '8px 20px', fontSize: '10px', fontWeight: '800', color:'#fff', display: 'flex', alignItems: 'center', gap: 8 },
+  iframePreview: { width: '100%', height: '400px', border: 'none' },
+  
+  deadlineBox: { marginTop: '20px', padding: '20px', background: '#fffbeb', borderRadius: '20px', border: '1px solid #fef3c7' },
+  deadlineCheckRow: { display:'flex', alignItems:'center', gap:10, marginBottom:15, fontSize:13, fontWeight:'800', color:'#92400e' },
+  deadlineFlex: { display: 'flex', gap: '15px', flexWrap:'wrap' },
+  subInputGroup: { flex: 1, display: 'flex', flexDirection: 'column', gap: 6 },
+  dateInputMini: { padding: '10px', fontSize: '12px', fontWeight:'700' },
+  
   quizCard: { border: '2px solid #f1f5f9', borderRadius: '24px', padding: '30px', marginBottom: '25px' },
-  quizBadge: { fontSize: '10px', fontWeight: '900', color: '#10b981', background: '#d1fae5', padding: '5px 12px', borderRadius: '8px' },
-  optGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: 15 },
-  optItem: { display: 'flex', alignItems: 'center', gap: 12, padding: '15px', border: '2px solid', borderRadius: '16px' },
-  optInput: { flex: 1, border: 'none', outline: 'none', fontSize: '14px', background: 'transparent', fontWeight: '600' },
-  fabBar: { position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '12px', background: '#1e293b', padding: '12px 20px', borderRadius: '24px', alignItems: 'center', zIndex: 1000 },
-  fabLabel: { fontSize: '10px', fontWeight: '900', color: '#94a3b8' },
-  fab: { background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', cursor: 'pointer', padding: '10px', borderRadius: '12px' },
-  btnSaveFab: { background: '#673ab7', color: 'white', border: 'none', padding: '10px 25px', borderRadius: '15px', fontWeight: '900', cursor: 'pointer' }
+  quizBadge: { fontSize: '10px', fontWeight: '900', color: '#10b981', background: '#d1fae5', padding: '6px 14px', borderRadius: '10px' },
+  optGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginTop: 20 },
+  optItem: { display: 'flex', alignItems: 'center', gap: 12, padding: '15px', border: '2px solid', borderRadius: '18px', transition:'0.2s' },
+  optInput: { flex: 1, border: 'none', outline: 'none', fontSize: '14px', background: 'transparent', fontWeight: '700', color:'#1e293b' },
+  quizDeadlineBox: { marginTop: 25, padding: '20px', background: '#f0fdf4', borderRadius: '20px', border: '1px solid #bbf7d0' },
+  
+  fabBar: { position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '10px', background: '#1e293b', padding: '12px 20px', borderRadius: '24px', alignItems: 'center', zIndex: 9999, boxShadow:'0 15px 40px rgba(0,0,0,0.2)' },
+  fabLabel: { fontSize: '9px', fontWeight: '900', color: '#94a3b8', marginRight: 5 },
+  fab: { background: 'rgba(255,255,255,0.08)', border: 'none', color: 'white', cursor: 'pointer', padding: '12px', borderRadius: '15px', transition:'0.2s' },
+  fabDivider: { width:'1px', height:'25px', background:'rgba(255,255,255,0.1)', margin:'0 5px' },
+  btnSaveFab: { background: '#673ab7', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '16px', fontWeight: '900', cursor: 'pointer', fontSize:'13px' }
 };
 
 export default ManageMateri;
