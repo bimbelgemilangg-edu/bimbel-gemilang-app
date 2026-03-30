@@ -5,65 +5,53 @@
 
 :root {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  --sidebar-width: 260px; /* Variabel agar mudah diubah satu tempat */
+  --sidebar-width: 260px; /* Standar lebar sidebar */
 }
 
-body {
+body, html {
   margin: 0;
   padding: 0;
   background-color: #f8fafc;
-  overflow-x: hidden; /* Mutlak: Menghilangkan scroll horizontal */
+  overflow-x: hidden !important; /* Mutlak: Menghilangkan scroll horizontal */
   -webkit-font-smoothing: antialiased;
 }
 
-/* --- GLOBAL AUTO-RESPONSIVE ENGINE (REFINED) --- */
+/* --- ZERO-TOUCH MASTER OVERRIDE (HACKER MODE) --- */
+/* Membajak semua elemen yang dirender React dengan inline-style margin-left manual */
 
-/* Gunakan class .main-content-wrapper agar konsisten dengan file JSX */
-.main-content-wrapper {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* DESKTOP/MAC/LAPTOP */
+/* DESKTOP / MAC / LAPTOP */
 @media (min-width: 1025px) {
-  .main-content-wrapper {
-    margin-left: var(--sidebar-width);
-    width: calc(100% - var(--sidebar-width));
-    min-width: 0; /* Fix penting: Mencegah konten lebar merusak layout */
+  .main-content-wrapper,
+  div[style*="margin-left: 250px"],
+  div[style*="margin-left: 260px"],
+  div[style*="marginLeft: 250px"],
+  .main-container {
+    margin-left: var(--sidebar-width) !important;
+    width: calc(100vw - var(--sidebar-width)) !important;
+    max-width: calc(100vw - var(--sidebar-width)) !important;
+    min-height: 100vh !important;
+    box-sizing: border-box !important;
+    display: block !important;
   }
 }
 
-/* MOBILE/TABLET */
+/* MOBILE / TABLET */
 @media (max-width: 1024px) {
-  .main-content-wrapper {
+  .main-content-wrapper,
+  div[style*="margin-left: 250px"],
+  div[style*="margin-left: 260px"],
+  div[style*="marginLeft: 250px"],
+  .main-container {
     margin-left: 0 !important;
-    width: 100% !important;
-    padding-top: 70px; /* Ruang untuk header mobile */
+    width: 100vw !important;
+    max-width: 100vw !important;
+    padding-top: 70px !important; /* Ruang aman untuk header HP */
+    box-sizing: border-box !important;
   }
 }
 
-/* AUTO-GRID SYSTEM */
-.responsive-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-  width: 100%;
-}
-
-/* CUSTOM SCROLLBAR (STYLISH) */
-::-webkit-scrollbar { 
-  width: 6px; 
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb { 
-  background: #cbd5e1; 
-  border-radius: 10px; 
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
+/* CUSTOM SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
