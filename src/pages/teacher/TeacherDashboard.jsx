@@ -15,6 +15,14 @@ const TeacherDashboard = () => {
   const [showStartModal, setShowStartModal] = useState(false);
   const [inputToken, setInputToken] = useState("");
   const [pendingSchedule, setPendingSchedule] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  // Handle Resize untuk Lottie
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchTeacherProfile = useCallback(async () => {
     const saved = JSON.parse(localStorage.getItem('teacherData'));
@@ -59,75 +67,85 @@ const TeacherDashboard = () => {
       return <ClassSession schedule={pendingSchedule} teacher={guru} onBack={() => { setMode('dashboard'); fetchTodayData(); }} />;
   }
 
-  if (loading) return <div style={{padding:50, textAlign:'center'}}>Memuat Dashboard...</div>;
+  if (loading) return (
+    <div className="main-content-wrapper" style={{display:'flex', justifyContent:'center', alignItems:'center'}}>
+        <div className="spinner-global"></div>
+        <p style={{marginLeft: 15, fontWeight: 'bold', color: '#64748b'}}>Memuat Dashboard...</p>
+    </div>
+  );
 
   return (
-    <div style={styles.container}>
-      {/* BANNER: Menyesuaikan lebar kontainer */}
-      <div style={styles.banner}>
-        <div style={{flex: 1}}>
-          <h1 style={styles.title}>Assalamu'alaikum, {guru?.nama?.split(' ')[0]}! 👋</h1>
-          <p style={styles.subtitle}>Selamat mengajar di Bimbel Gemilang hari ini.</p>
-          <div style={styles.statsRow}>
-            <div style={styles.miniStat}><Clock size={16}/> {todaySchedules.length} Kelas</div>
-            <div style={styles.miniStat}><Users size={16}/> {guru?.level}</div>
-          </div>
-        </div>
-        <div style={styles.lottieHideMobile}>
-           <Player autoplay loop src="https://assets10.lottiefiles.com/packages/lf20_m60f0nny.json" style={{ height: '140px' }} />
-        </div>
-      </div>
-
-      {/* GRID UTAMA: flex-wrap agar tidak menyempit */}
-      <div style={styles.mainGrid}>
-        
-        {/* KOLOM JADWAL: Lebar 100% di HP, ~65% di Laptop */}
-        <div style={styles.leftColumn}>
-          <div style={styles.sectionHeader}>
-            <h3 style={{margin:0}}>📅 Jadwal Hari Ini</h3>
-            <button onClick={() => navigate('/guru/schedule')} style={styles.btnText}>Lihat Semua <ArrowRight size={14}/></button>
-          </div>
-
-          {todaySchedules.length === 0 ? (
-            <div style={styles.emptyBox}>Tidak ada jadwal mengajar hari ini.</div>
-          ) : (
-            todaySchedules.map(item => (
-              <div key={item.id} style={styles.listCard}>
-                <div style={styles.cardInfo}>
-                  <div style={styles.timeBadge}>{item.start}</div>
-                  <div>
-                    <h4 style={{margin:0, fontSize: 16}}>{item.title}</h4>
-                    <p style={{margin:0, fontSize:12, color:'#7f8c8d'}}>{item.program} • Ruang {item.planet}</p>
-                  </div>
+    <div className="main-content-wrapper">
+      <div className="teacher-container-padding">
+        {/* BANNER UTAMA */}
+        <div style={styles.banner}>
+            <div style={{flex: 1}}>
+                <h1 style={styles.title}>Assalamu'alaikum, {guru?.nama?.split(' ')[0]}! 👋</h1>
+                <p style={styles.subtitle}>Selamat mengajar di Bimbel Gemilang hari ini.</p>
+                <div style={styles.statsRow}>
+                    <div style={styles.miniStat}><Clock size={16}/> {todaySchedules.length} Kelas</div>
+                    <div style={styles.miniStat}><Users size={16}/> {guru?.level}</div>
                 </div>
-                <button onClick={() => { setPendingSchedule(item); setShowStartModal(true); }} style={styles.btnAction}>Mulai</button>
-              </div>
-            ))
-          )}
+            </div>
+            {!isMobile && (
+                <div style={styles.lottieBox}>
+                    <Player autoplay loop src="https://assets10.lottiefiles.com/packages/lf20_m60f0nny.json" style={{ height: '140px' }} />
+                </div>
+            )}
         </div>
 
-        {/* KOLOM AKSES CEPAT: Lebar 100% di HP, ~30% di Laptop */}
-        <div style={styles.rightColumn}>
-          <h3 style={{fontSize: 18, marginBottom: 15}}>⚡ Akses Cepat</h3>
-          <div style={styles.shortcutGrid}>
-            <div onClick={() => navigate('/guru/modul')} style={styles.shortBtn}>
-              <div style={styles.iconBox}><BookOpen color="#3498db"/></div>
-              <span>E-Learning</span>
-            </div>
-            <div onClick={() => navigate('/guru/grades/input')} style={styles.shortBtn}>
-              <div style={{...styles.iconBox, background:'#fff9e6'}}><Star color="#f1c40f"/></div>
-              <span>Input Nilai</span>
-            </div>
-          </div>
-        </div>
+        {/* GRID KONTEN RESPONSIF */}
+        <div className="responsive-grid" style={{alignItems: 'flex-start'}}>
+            
+            {/* JADWAL HARI INI */}
+            <div className="teacher-card">
+                <div style={styles.sectionHeader}>
+                    <h3 style={{margin:0, fontWeight: '800', color: '#1e293b'}}>📅 Jadwal Hari Ini</h3>
+                    <button onClick={() => navigate('/guru/schedule')} style={styles.btnText}>Lihat Semua <ArrowRight size={14}/></button>
+                </div>
 
+                {todaySchedules.length === 0 ? (
+                    <div style={styles.emptyBox}>Tidak ada jadwal mengajar hari ini.</div>
+                ) : (
+                    todaySchedules.map(item => (
+                    <div key={item.id} style={styles.listCard}>
+                        <div style={styles.cardInfo}>
+                            <div style={styles.timeBadge}>{item.start}</div>
+                            <div>
+                                <h4 style={{margin:0, fontSize: 15, fontWeight: '700'}}>{item.title}</h4>
+                                <p style={{margin:0, fontSize:12, color:'#64748b'}}>{item.program} • Ruang {item.planet}</p>
+                            </div>
+                        </div>
+                        <button onClick={() => { setPendingSchedule(item); setShowStartModal(true); }} style={styles.btnAction}>Mulai</button>
+                    </div>
+                    ))
+                )}
+            </div>
+
+            {/* AKSES CEPAT */}
+            <div className="teacher-card" style={{background: '#f1f5f9', border: 'none'}}>
+                <h3 style={{fontSize: 18, marginBottom: 20, fontWeight: '800', color: '#1e293b'}}>⚡ Akses Cepat</h3>
+                <div style={styles.shortcutGrid}>
+                    <div onClick={() => navigate('/guru/modul')} style={styles.shortBtn} className="teacher-card-hover">
+                        <div style={styles.iconBox}><BookOpen color="#3498db"/></div>
+                        <span style={{fontSize: 13}}>E-Learning</span>
+                    </div>
+                    <div onClick={() => navigate('/guru/grades/input')} style={styles.shortBtn} className="teacher-card-hover">
+                        <div style={{...styles.iconBox, background:'#fff9e6'}}><Star color="#f1c40f"/></div>
+                        <span style={{fontSize: 13}}>Input Nilai</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
       </div>
 
       {/* MODAL KODE */}
       {showStartModal && (
          <div style={styles.overlay}>
-            <div style={styles.modal}>
-                <h3 style={{marginTop: 0}}>🚀 Masukkan Kode Harian</h3>
+            <div style={styles.modal} className="teacher-card">
+                <h3 style={{marginTop: 0, fontWeight: '800'}}>🚀 Masukkan Kode Harian</h3>
+                <p style={{fontSize: 12, color: '#64748b', marginBottom: 15}}>Gunakan kode absensi hari ini untuk memulai kelas.</p>
                 <input 
                     type="text" 
                     value={inputToken} 
@@ -135,7 +153,7 @@ const TeacherDashboard = () => {
                     style={styles.inputCode} 
                     placeholder="KODE" 
                 />
-                <div style={{display:'flex', gap:10, marginTop:20}}>
+                <div style={{display:'flex', gap:10, marginTop:25}}>
                     <button onClick={()=>setShowStartModal(false)} style={styles.btnCancel}>Batal</button>
                     <button onClick={handleVerifyAndStart} style={styles.btnConfirm}>MASUK</button>
                 </div>
@@ -147,60 +165,45 @@ const TeacherDashboard = () => {
 };
 
 const styles = {
-  container: { padding: '20px', width: '100%', boxSizing: 'border-box' },
   banner: { 
-    background: 'linear-gradient(135deg, #1a252f 0%, #2c3e50 100%)', 
-    padding: '30px', borderRadius: '20px', color: 'white', 
+    background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', 
+    padding: '35px', borderRadius: '24px', color: 'white', 
     display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-    marginBottom: '30px', width: '100%', boxSizing: 'border-box' 
+    marginBottom: '30px', width: '100%', boxSizing: 'border-box',
+    boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'
   },
-  title: { margin: 0, fontSize: 'clamp(1.2rem, 3vw, 1.8rem)' },
-  subtitle: { opacity: 0.8, fontSize: 'clamp(0.9rem, 2vw, 1rem)' },
-  statsRow: { display: 'flex', gap: '10px', marginTop: '15px', flexWrap: 'wrap' },
-  miniStat: { background: 'rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px' },
+  title: { margin: 0, fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: '800' },
+  subtitle: { opacity: 0.8, fontSize: 'clamp(0.9rem, 2vw, 1.1rem)', marginTop: 5 },
+  statsRow: { display: 'flex', gap: '10px', marginTop: '20px', flexWrap: 'wrap' },
+  miniStat: { background: 'rgba(255,255,255,0.15)', padding: '8px 16px', borderRadius: '12px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' },
   
-  mainGrid: { 
-    display: 'flex', 
-    flexWrap: 'wrap', // Kunci agar otomatis pindah baris jika layar sempit
-    gap: '25px', 
-    width: '100%' 
-  },
-  leftColumn: { 
-    flex: '1 1 600px', // Mencoba mengambil 600px, tapi bisa melebar (grow)
-    minWidth: '300px' 
-  },
-  rightColumn: { 
-    flex: '1 1 300px', // Mengambil sisa ruang samping
-    minWidth: '300px' 
-  },
-  
-  sectionHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '15px' },
-  btnText: { background: 'none', border: 'none', color: '#3498db', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 },
+  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+  btnText: { background: 'none', border: 'none', color: '#6366f1', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 13 },
   
   listCard: { 
-    background: 'white', padding: '15px 20px', borderRadius: '15px', 
+    background: '#f8fafc', padding: '15px', borderRadius: '16px', 
     display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-    marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' 
+    marginBottom: '12px', border: '1px solid #f1f5f9' 
   },
   cardInfo: { display: 'flex', alignItems: 'center', gap: '15px' },
-  timeBadge: { background: '#f8fafc', padding: '8px 12px', borderRadius: '10px', fontWeight: 'bold', fontSize: '13px' },
-  btnAction: { padding: '8px 18px', background: '#27ae60', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' },
+  timeBadge: { background: 'white', color: '#1e293b', padding: '8px 12px', borderRadius: '10px', fontWeight: '800', fontSize: '12px', border: '1px solid #e2e8f0' },
+  btnAction: { padding: '10px 20px', background: '#10b981', color: 'white', border: 'none', borderRadius: '10px', fontWeight: '800', cursor: 'pointer', fontSize: 13 },
   
-  shortcutGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px' },
+  shortcutGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' },
   shortBtn: { 
-    background: 'white', padding: '20px', borderRadius: '15px', 
-    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', 
-    fontWeight: 'bold', cursor: 'pointer', border: '1px solid #f1f5f9', transition: '0.2s' 
+    background: 'white', padding: '25px 15px', borderRadius: '18px', 
+    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', 
+    fontWeight: '800', cursor: 'pointer', border: '1px solid #e2e8f0'
   },
-  iconBox: { width: '40px', height: '40px', background: '#ebf5fb', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  iconBox: { width: '45px', height: '45px', background: '#eff6ff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   
-  emptyBox: { padding: '40px', textAlign: 'center', background: '#fff', borderRadius: '15px', border: '2px dashed #e2e8f0', color: '#94a3b8' },
-  lottieHideMobile: { display: window.innerWidth < 768 ? 'none' : 'block' },
-  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000, backdropFilter: 'blur(4px)' },
-  modal: { background: 'white', padding: '30px', borderRadius: '20px', width: '90%', maxWidth: '350px', textAlign: 'center' },
-  inputCode: { width: '100%', padding: '15px', fontSize: '20px', textAlign: 'center', borderRadius: '10px', border: '2px solid #3498db', outline: 'none', boxSizing: 'border-box' },
-  btnConfirm: { flex: 2, padding: '12px', background: '#3498db', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold' },
-  btnCancel: { flex: 1, padding: '12px', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '8px' }
+  emptyBox: { padding: '50px 20px', textAlign: 'center', background: '#f8fafc', borderRadius: '20px', border: '2px dashed #e2e8f0', color: '#94a3b8', fontWeight: '600' },
+  lottieBox: { background: 'rgba(255,255,255,0.05)', borderRadius: '20px', padding: 5 },
+  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999, backdropFilter: 'blur(8px)' },
+  modal: { width: '90%', maxWidth: '380px', textAlign: 'center', padding: '35px' },
+  inputCode: { width: '100%', padding: '18px', fontSize: '24px', textAlign: 'center', borderRadius: '15px', border: '2px solid #e2e8f0', outline: 'none', boxSizing: 'border-box', fontWeight: '900', color: '#1e293b', background: '#f8fafc' },
+  btnConfirm: { flex: 2, padding: '14px', background: '#6366f1', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '800', cursor: 'pointer' },
+  btnCancel: { flex: 1, padding: '14px', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '12px', fontWeight: '700', cursor: 'pointer' }
 };
 
 export default TeacherDashboard;
