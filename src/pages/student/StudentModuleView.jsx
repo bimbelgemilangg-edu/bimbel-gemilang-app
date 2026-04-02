@@ -26,7 +26,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const [isTugasExpired, setIsTugasExpired] = useState(false);
   const [isQuizExpired, setIsQuizExpired] = useState(false);
 
-  // Helper Format Tanggal agar sinkron dengan Dashboard
+  // Helper Format Tanggal
   const formatDate = (timestamp) => {
     if (!timestamp) return "-";
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -224,8 +224,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   };
 
   /**
-   * REVISI FITUR PREVIEW MATERI
-   * Menghasilkan Iframe otomatis untuk link eksternal agar siswa bisa langsung melihat konten.
+   * REVISI FITUR PREVIEW MATERI (FIX CANVA SHORTLINK)
    */
   const renderSmartMedia = (url) => {
     if (!url) return null;
@@ -233,19 +232,24 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     let embedUrl = url;
     let showIframe = false;
 
-    // 1. Logika YouTube
-    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    // 1. Logika Canva (Termasuk Shortlink canva.link)
+    if (url.includes('canva.com') || url.includes('canva.link')) {
+      if (url.includes('canva.com/design')) {
+        const baseUrl = url.split('?')[0];
+        embedUrl = baseUrl.endsWith('/view') ? `${baseUrl}?embed` : `${baseUrl}/view?embed`;
+      } else {
+        // Untuk canva.link tetap masukkan apa adanya, browser akan menangani redirect
+        embedUrl = url;
+      }
+      showIframe = true;
+    } 
+    // 2. Logika YouTube
+    else if (url.includes('youtube.com') || url.includes('youtu.be')) {
       const videoId = url.split('v=')[1]?.split('&')[0] || url.split('/').pop();
       embedUrl = `https://www.youtube.com/embed/${videoId}`;
       showIframe = true;
     } 
-    // 2. Logika Canva
-    else if (url.includes('canva.com')) {
-      // Mengubah link share menjadi link view/embed
-      embedUrl = url.endsWith('/view') ? url.replace('/view', '/view?embed') : `${url}/view?embed`;
-      showIframe = true;
-    } 
-    // 3. Logika Google Slides / Docs / Sheets
+    // 3. Logika Google Slides / Docs
     else if (url.includes('docs.google.com')) {
       if (url.includes('/presentation')) {
         embedUrl = url.replace(/\/edit.*$/, '/embed');
@@ -254,7 +258,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       }
       showIframe = true;
     }
-    // 4. Logika PDF Langsung atau Link File Lainnya
+    // 4. Logika PDF
     else if (url.toLowerCase().endsWith('.pdf')) {
       embedUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
       showIframe = true;
@@ -269,11 +273,14 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
               style={st.iframe} 
               allowFullScreen 
               title="Preview Materi" 
+              loading="lazy"
               allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
             ></iframe>
           </div>
           <div style={st.mediaFooter}>
-            <span style={{fontSize: 12, color: '#64748b'}}><Info size={12}/> Preview Otomatis Aktif</span>
+            <span style={{fontSize: 12, color: '#64748b', display:'flex', alignItems:'center', gap:4}}>
+              <Zap size={12} color="#f59e0b"/> Preview Materi Aktif
+            </span>
             <a href={url} target="_blank" rel="noreferrer" style={st.btnSmallLink}>
               <Maximize2 size={12}/> Buka Layar Penuh
             </a>
@@ -282,12 +289,11 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       );
     }
 
-    // Default Link Box
     return (
         <div style={st.linkBox}>
           <div style={st.linkIconCircle}><LinkIcon size={20} color="#673ab7"/></div>
           <div style={{flex: 1}}>
-            <p style={{margin:0, fontSize:11, color:'#94a3b8', fontWeight:'bold', textTransform:'uppercase', letterSpacing:1}}>Tautan Sumber Materi</p>
+            <p style={{margin:0, fontSize:11, color:'#94a3b8', fontWeight:'bold', textTransform:'uppercase'}}>Tautan Materi</p>
             <p style={{margin:'2px 0 8px', fontSize:14, color:'#1e293b', fontWeight:'600', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'300px'}}>{url}</p>
             <a href={url} target="_blank" rel="noreferrer" style={st.btnLinkExternal}>Kunjungi Materi ↗</a>
           </div>
