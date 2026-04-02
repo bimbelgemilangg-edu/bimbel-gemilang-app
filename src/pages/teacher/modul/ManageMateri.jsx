@@ -351,7 +351,7 @@ const st = {
   btnBack: { padding: '10px 20px', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, color:'#64748b' },
   btnPublish: { padding: '12px 25px', borderRadius: '14px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 8px 20px rgba(103, 58, 183, 0.3)' },
   
-  formCard: { padding: '40px', borderRadius: '30px' },
+  formCard: { padding: '40px', borderRadius: '30px', background: '#fff', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' },
   sectionHeader: { display: 'flex', alignItems: 'center', gap: 10, fontSize: '14px', fontWeight: '900', color: '#1e293b', marginBottom: '25px', marginTop: '40px', borderBottom: '2px solid #f1f5f9', paddingBottom: '12px', textTransform:'uppercase' },
   
   coverGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '30px', marginBottom: '40px' },
@@ -360,6 +360,7 @@ const st = {
   uploadCircle: { background:'#fff', padding:12, borderRadius:'50%', boxShadow:'0 4px 10px rgba(0,0,0,0.05)', marginBottom:10 },
   uploadText: { fontSize: 10, fontWeight:'900', color:'#673ab7' },
   coverImage: { width: '100%', height: '100%', objectFit: 'cover' },
+  coverPreviewWrapper: { width: '100%', height: '100%', position: 'relative' },
   btnRemoveCover: { position: 'absolute', top: 12, right: 12, background: '#ef4444', color: 'white', border: 'none', borderRadius: '10px', padding: '6px', cursor: 'pointer', zIndex: 10 },
   
   identityInputs: { display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '10px' },
@@ -371,6 +372,7 @@ const st = {
   targetGrid: { display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:'20px' },
   targetBox: { display:'flex', flexDirection:'column', gap:8 },
   labelIcon: { fontSize:'10px', fontWeight:'900', color:'#94a3b8', textTransform:'uppercase', marginLeft: 5 },
+  selectInput: { width: '100%' },
   searchBoxSiswa: { marginTop: 25, background: '#f8fafc', padding: '25px', borderRadius: '24px', border:'1px solid #f1f5f9' },
   siswaSelectRow: { display:'flex', gap: 15, marginTop: 12, flexWrap:'wrap' },
   searchIconInside: { position:'absolute', left: 15, top: '50%', transform:'translateY(-50%)', color:'#94a3b8' },
@@ -394,7 +396,7 @@ const st = {
   subInputGroup: { flex: 1, display: 'flex', flexDirection: 'column', gap: 6 },
   dateInputMini: { padding: '10px', fontSize: '12px', fontWeight:'700' },
   
-  quizCard: { border: '2px solid #f1f5f9', borderRadius: '24px', padding: '30px', marginBottom: '25px' },
+  quizCard: { border: '2px solid #f1f5f9', borderRadius: '24px', padding: '30px', marginBottom: '25px', background: '#fff' },
   quizBadge: { fontSize: '10px', fontWeight: '900', color: '#10b981', background: '#d1fae5', padding: '6px 14px', borderRadius: '10px' },
   optGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginTop: 20 },
   optItem: { display: 'flex', alignItems: 'center', gap: 12, padding: '15px', border: '2px solid', borderRadius: '18px', transition:'0.2s' },
