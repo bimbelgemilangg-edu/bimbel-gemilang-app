@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase'; 
 import { 
@@ -7,7 +7,7 @@ import {
 import { Player } from '@lottiefiles/react-lottie-player';
 import { 
   Clock, Users, BookOpen, Star, ArrowRight, 
-  Eye, Megaphone, Info, Calendar, Layout, MapPin
+  Eye, Megaphone, Info, Calendar, Layout, MapPin, X, ChevronRight, ChevronLeft
 } from 'lucide-react';
 import ClassSession from './ClassSession';
 
@@ -22,14 +22,27 @@ const TeacherDashboard = () => {
   const [pendingSchedule, setPendingSchedule] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  // --- STATE PENGUMUMAN (Read-Only dari Admin) ---
+  // --- STATE PENGUMUMAN & SLIDER ---
   const [announcements, setAnnouncements] = useState([]);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [selectedNews, setSelectedNews] = useState(null); // Modal Detail Berita
+  const sliderRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // AUTO-SLIDE LOGIC
+  useEffect(() => {
+    if (announcements.length > 1) {
+      const interval = setInterval(() => {
+        setActiveSlide((prev) => (prev + 1) % announcements.length);
+      }, 5000); // Slide tiap 5 detik
+      return () => clearInterval(interval);
+    }
+  }, [announcements]);
 
   const fetchTeacherProfile = useCallback(async () => {
     const saved = JSON.parse(localStorage.getItem('teacherData'));
@@ -42,7 +55,6 @@ const TeacherDashboard = () => {
     try {
       const todayStr = new Date().toISOString().split('T')[0];
       
-      // 1. Fetch Jadwal Mengajar Guru
       const qJadwal = query(collection(db, "jadwal_bimbel"), where("booker", "==", guru.nama.trim()));
       const snapJadwal = await getDocs(qJadwal);
       const filtered = snapJadwal.docs
@@ -51,12 +63,10 @@ const TeacherDashboard = () => {
         .sort((a,b) => a.start.localeCompare(b.start));
       setTodaySchedules(filtered);
 
-      // 2. Fetch Pengumuman (Filter Target: 'Guru' atau 'Semua')
       const qAnnounce = query(collection(db, "student_contents"), orderBy("createdAt", "desc"));
       const snapAnnounce = await getDocs(qAnnounce);
       const allData = snapAnnounce.docs.map(d => ({ id: d.id, ...d.data() }));
       
-      // Sinkronisasi dengan Pilihan Admin: Tampilkan hanya yang ditujukan untuk Guru/Semua
       const teacherFeeds = allData.filter(p => 
         p.targetPortal === "Guru" || p.targetPortal === "Semua"
       );
@@ -95,23 +105,54 @@ const TeacherDashboard = () => {
   );
 
   return (
-    <div className="main-content-wrapper">
+    <div className="main-content-wrapper" style={{backgroundColor: '#f8fafc'}}>
       <div className="teacher-container-padding">
         
-        {/* BANNER UTAMA */}
+        {/* --- 1. HERO AUTO-SLIDER (TOP SECTION) --- */}
+        {announcements.length > 0 && (
+          <div style={styles.heroSlider}>
+            <div style={{...styles.sliderTrack, transform: `translateX(-${activeSlide * 100}%)`}}>
+              {announcements.map((p, idx) => (
+                <div key={idx} style={styles.slideItem} onClick={() => setSelectedNews(p)}>
+                  <img 
+                    src={p.imageUrl} 
+                    style={{...styles.heroImg, objectPosition: p.imgPosition || 'center'}} 
+                    alt="banner" 
+                  />
+                  <div style={styles.heroOverlay}>
+                    <div style={styles.heroContent}>
+                        <span style={styles.heroBadge}><Megaphone size={12}/> Info Akademik</span>
+                        <h2 style={styles.heroTitle}>{p.title}</h2>
+                        <button style={styles.heroBtn}>Baca Selengkapnya <ChevronRight size={16}/></button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Dots Indicator */}
+            <div style={styles.sliderDots}>
+              {announcements.map((_, idx) => (
+                <div key={idx} style={{...styles.dot, backgroundColor: activeSlide === idx ? '#fff' : 'rgba(255,255,255,0.4)'}} onClick={() => setActiveSlide(idx)} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* --- 2. BANNER PROFIL GURU --- */}
         <div style={styles.banner}>
             <div style={{flex: 1}}>
                 <div style={styles.badgeTop}>Dashboard Instruktur</div>
                 <h1 style={styles.title}>Assalamu'alaikum, {guru?.nama?.split(' ')[0]}!</h1>
-                <p style={styles.subtitle}>Pantau jadwal dan informasi akademik terbaru di sini.</p>
+                <p style={styles.subtitle}>Selamat datang kembali di panel manajemen Bimbel Gemilang.</p>
                 <div style={styles.statsRow}>
                     <div style={styles.miniStat}><Calendar size={14}/> {new Date().toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long'})}</div>
-                    <div style={styles.miniStat}><Clock size={14}/> {todaySchedules.length} Sesi Hari Ini</div>
+                    <div style={styles.miniStat}><Clock size={14}/> {todaySchedules.length} Sesi Aktif</div>
                 </div>
             </div>
             {!isMobile && (
                 <div style={styles.lottieBox}>
-                    <Player autoplay loop src="https://assets10.lottiefiles.com/packages/lf20_m60f0nny.json" style={{ height: '160px' }} />
+                    <Player autoplay loop src="https://assets10.lottiefiles.com/packages/lf20_m60f0nny.json" style={{ height: '140px' }} />
                 </div>
             )}
         </div>
@@ -123,13 +164,13 @@ const TeacherDashboard = () => {
                 <div className="teacher-card" style={styles.mainCard}>
                     <div style={styles.sectionHeader}>
                         <h3 style={styles.cardTitle}><Layout size={20} color="#6366f1"/> Agenda Mengajar</h3>
-                        <button onClick={() => navigate('/guru/schedule')} style={styles.btnText}>Selengkapnya <ArrowRight size={14}/></button>
+                        <button onClick={() => navigate('/guru/schedule')} style={styles.btnText}>Lihat Kalender <ArrowRight size={14}/></button>
                     </div>
 
                     {todaySchedules.length === 0 ? (
                         <div style={styles.emptyBox}>
                             <Info size={30} style={{marginBottom: 10, opacity: 0.5}}/>
-                            <p>Tidak ada jadwal mengajar untuk Anda hari ini.</p>
+                            <p>Tidak ada jadwal mengajar untuk hari ini.</p>
                         </div>
                     ) : (
                         <div style={styles.listContainer}>
@@ -147,7 +188,7 @@ const TeacherDashboard = () => {
                                             <MapPin size={12} style={{marginRight: 4}}/> <span>Ruang: {item.planet}</span>
                                         </div>
                                     </div>
-                                    <button onClick={() => { setPendingSchedule(item); setShowStartModal(true); }} style={styles.btnAction}>MULAI</button>
+                                    <button onClick={() => { setPendingSchedule(item); setShowStartModal(true); }} style={styles.btnAction}>MULAI SESI</button>
                                 </div>
                             ))}
                         </div>
@@ -169,46 +210,47 @@ const TeacherDashboard = () => {
                 </div>
             </div>
 
-            {/* KOLOM KANAN: PAPAN INFORMASI ADMIN (POSTER) */}
+            {/* KOLOM KANAN: LIST PENGUMUMAN BAWAH */}
             <div style={{flex: 1}}>
                 <div className="teacher-card" style={styles.announceCard}>
                     <div style={{display:'flex', alignItems:'center', gap: 10, marginBottom: 20}}>
                         <Megaphone size={22} color="#e11d48"/>
-                        <h3 style={{margin:0, fontWeight: '900', color: '#1e293b'}}>Papan Informasi</h3>
+                        <h3 style={{margin:0, fontWeight: '900', color: '#1e293b'}}>Informasi Terbaru</h3>
                     </div>
 
                     <div style={styles.announceList}>
-                        {announcements.length === 0 ? (
-                            <div style={{textAlign:'center', padding:'40px 0', opacity: 0.5}}>
-                                <p style={{fontSize: 13}}>Belum ada pengumuman resmi.</p>
-                            </div>
-                        ) : (
-                            announcements.map(p => (
-                                <div key={p.id} style={styles.posterItem}>
-                                    <div style={styles.imgWrapper}>
-                                        <img 
-                                            src={p.imageUrl} 
-                                            style={{...styles.posterImg, objectPosition: p.imgPosition || 'center'}} 
-                                            alt="announcement" 
-                                        />
-                                        <div style={styles.imgOverlay}>
-                                            <button onClick={() => window.open(p.originalUrl || p.imageUrl, '_blank')} style={styles.btnExpand}><Eye size={16}/></button>
-                                        </div>
-                                    </div>
-                                    <div style={styles.posterDetail}>
-                                        <div style={styles.posterMeta}>Official Announcement</div>
-                                        <h4 style={styles.posterTitle}>{p.title}</h4>
-                                        <p style={styles.posterDesc}>{p.content}</p>
-                                    </div>
+                        {announcements.slice(0, 4).map(p => (
+                            <div key={p.id} style={styles.miniPoster} onClick={() => setSelectedNews(p)}>
+                                <img src={p.imageUrl} style={styles.miniThumb} alt="thumb" />
+                                <div style={{flex: 1}}>
+                                    <b style={styles.miniTitle}>{p.title}</b>
+                                    <div style={styles.miniDate}>{new Date(p.createdAt?.toDate()).toLocaleDateString('id-ID')}</div>
                                 </div>
-                            ))
-                        )}
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
-
         </div>
       </div>
+
+      {/* --- MODAL DETAIL BERITA --- */}
+      {selectedNews && (
+          <div style={styles.overlay} onClick={() => setSelectedNews(null)}>
+              <div style={styles.newsModal} onClick={e => e.stopPropagation()}>
+                  <button style={styles.closeBtn} onClick={() => setSelectedNews(null)}><X size={20}/></button>
+                  <img src={selectedNews.imageUrl} style={styles.modalImg} alt="news" />
+                  <div style={styles.modalBody}>
+                      <span style={styles.officialBadge}>Official Admin BIMBEL</span>
+                      <h2 style={styles.modalTitle}>{selectedNews.title}</h2>
+                      <p style={styles.modalText}>{selectedNews.content}</p>
+                      {selectedNews.originalUrl && selectedNews.originalUrl !== "Internal Upload" && (
+                          <button onClick={() => window.open(selectedNews.originalUrl)} style={styles.btnOpenSource}>Lihat Media Asli <ArrowRight size={14}/></button>
+                      )}
+                  </div>
+              </div>
+          </div>
+      )}
 
       {/* MODAL KODE ABSENSI */}
       {showStartModal && (
@@ -236,13 +278,21 @@ const TeacherDashboard = () => {
 };
 
 const styles = {
-  banner: { 
-    background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', 
-    padding: '35px', borderRadius: '24px', color: 'white', 
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-    marginBottom: '30px', width: '100%', boxSizing: 'border-box',
-    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)'
-  },
+  // HERO SLIDER STYLES
+  heroSlider: { width: '100%', height: '350px', borderRadius: '30px', overflow: 'hidden', position: 'relative', marginBottom: '30px', backgroundColor: '#000' },
+  sliderTrack: { display: 'flex', width: '100%', height: '100%', transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)', cursor: 'pointer' },
+  slideItem: { minWidth: '100%', height: '100%', position: 'relative' },
+  heroImg: { width: '100%', height: '100%', objectFit: 'cover', opacity: '0.7' },
+  heroOverlay: { position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 10%, transparent 70%)', display: 'flex', alignItems: 'flex-end', padding: '40px' },
+  heroContent: { color: '#fff', maxWidth: '600px' },
+  heroBadge: { background: '#e11d48', padding: '5px 12px', borderRadius: '50px', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: 6, width: 'fit-content', marginBottom: '15px' },
+  heroTitle: { fontSize: 'clamp(20px, 4vw, 32px)', fontWeight: '900', margin: '0 0 20px 0', lineHeight: 1.2 },
+  heroBtn: { background: 'white', color: '#000', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: '800', fontSize: '13px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' },
+  sliderDots: { position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px' },
+  dot: { width: '8px', height: '8px', borderRadius: '50%', transition: '0.3s', cursor: 'pointer' },
+
+  // BASIC STYLES
+  banner: { background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', padding: '35px', borderRadius: '24px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' },
   badgeTop: { background: 'rgba(99, 102, 241, 0.2)', color: '#818cf8', padding: '4px 12px', borderRadius: '50px', fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '10px', display: 'inline-block', border: '1px solid rgba(99, 102, 241, 0.3)' },
   title: { margin: 0, fontSize: 'clamp(1.5rem, 4vw, 2.2rem)', fontWeight: '900', letterSpacing: '-0.5px' },
   subtitle: { opacity: 0.8, fontSize: '14px', marginTop: 5 },
@@ -250,7 +300,7 @@ const styles = {
   miniStat: { background: 'rgba(255,255,255,0.1)', padding: '8px 16px', borderRadius: '12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700' },
   lottieBox: { background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: 10 },
 
-  mainCard: { padding: '25px', borderRadius: '24px' },
+  mainCard: { padding: '25px', borderRadius: '24px', background: '#fff' },
   cardTitle: { margin: 0, fontSize: 18, fontWeight: '900', display: 'flex', alignItems: 'center', gap: 10, color: '#1e293b' },
   sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' },
   btnText: { background: 'none', border: 'none', color: '#6366f1', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12 },
@@ -264,30 +314,35 @@ const styles = {
   classTitle: { margin: 0, fontSize: 15, fontWeight: '800', color: '#1e293b' },
   classMeta: { fontSize: 12, color: '#64748b', marginTop: 4, display: 'flex', alignItems: 'center' },
   dotSeparator: { margin: '0 8px' },
-  btnAction: { background: '#10b981', color: 'white', border: 'none', padding: '10px 18px', borderRadius: '12px', fontWeight: '900', fontSize: 12, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)' },
+  btnAction: { background: '#10b981', color: 'white', border: 'none', padding: '10px 18px', borderRadius: '12px', fontWeight: '900', fontSize: 12, cursor: 'pointer' },
 
   shortcutContainer: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '20px' },
   shortBtn: { background: 'white', padding: '20px', borderRadius: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', cursor: 'pointer', border: '1px solid #f1f5f9' },
   iconCircle: { width: '45px', height: '45px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
 
   announceCard: { padding: '25px', borderRadius: '24px', background: '#fff' },
-  announceList: { display: 'flex', flexDirection: 'column', gap: '20px' },
-  posterItem: { borderRadius: '20px', overflow: 'hidden', background: '#f8fafc', border: '1px solid #f1f5f9' },
-  imgWrapper: { position: 'relative', width: '100%', height: '160px', overflow: 'hidden' },
-  posterImg: { width: '100%', height: '100%', objectFit: 'cover' },
-  imgOverlay: { position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', opacity: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', transition: '0.3s' },
-  btnExpand: { background: 'white', border: 'none', padding: '10px', borderRadius: '50%', cursor: 'pointer', color: '#1e293b' },
-  posterDetail: { padding: '15px' },
-  posterMeta: { fontSize: 10, fontWeight: '800', color: '#e11d48', textTransform: 'uppercase', marginBottom: 5 },
-  posterTitle: { margin: '0 0 8px 0', fontSize: 15, fontWeight: '900', color: '#1e293b' },
-  posterDesc: { margin: 0, fontSize: 12, color: '#64748b', lineHeight: '1.5' },
+  announceList: { display: 'flex', flexDirection: 'column', gap: '15px' },
+  miniPoster: { display: 'flex', gap: '12px', alignItems: 'center', cursor: 'pointer', padding: '10px', borderRadius: '15px', border: '1px solid #f1f5f9' },
+  miniThumb: { width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' },
+  miniTitle: { fontSize: '13px', fontWeight: '800', color: '#1e293b', display: 'block', lineHeight: 1.3 },
+  miniDate: { fontSize: '11px', color: '#94a3b8', marginTop: 4 },
 
-  emptyBox: { padding: '50px 20px', textAlign: 'center', color: '#94a3b8', fontSize: 14, fontWeight: '600' },
-  overlay: { position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999, backdropFilter: 'blur(10px)' },
+  // MODAL BERITA STYLES
+  newsModal: { width: '90%', maxWidth: '600px', backgroundColor: '#fff', borderRadius: '24px', overflow: 'hidden', position: 'relative' },
+  closeBtn: { position: 'absolute', top: 15, right: 15, background: 'rgba(255,255,255,0.8)', border: 'none', padding: '8px', borderRadius: '50%', cursor: 'pointer', zIndex: 10 },
+  modalImg: { width: '100%', maxHeight: '300px', objectFit: 'cover' },
+  modalBody: { padding: '30px' },
+  officialBadge: { fontSize: '10px', color: '#6366f1', fontWeight: '900', letterSpacing: '1px' },
+  modalTitle: { margin: '10px 0 20px 0', fontSize: '24px', fontWeight: '900', color: '#1e293b', lineHeight: 1.2 },
+  modalText: { fontSize: '15px', color: '#475569', lineHeight: 1.7, whiteSpace: 'pre-wrap' },
+  btnOpenSource: { marginTop: '25px', background: '#f1f5f9', border: 'none', padding: '12px 20px', borderRadius: '12px', fontWeight: '800', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, color: '#6366f1' },
+
+  overlay: { position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.9)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999, backdropFilter: 'blur(10px)', padding: '20px' },
   modal: { width: '90%', maxWidth: '360px', textAlign: 'center', padding: '35px' },
-  inputCode: { width: '100%', padding: '18px', fontSize: '28px', textAlign: 'center', borderRadius: '15px', border: '2px solid #e2e8f0', outline: 'none', fontWeight: '900', letterSpacing: '4px', color: '#1e293b', background: '#f8fafc' },
-  btnConfirm: { flex: 2, padding: '14px', background: '#6366f1', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '900', cursor: 'pointer' },
-  btnCancel: { flex: 1, padding: '14px', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '12px', fontWeight: '700', cursor: 'pointer' }
+  inputCode: { width: '100%', padding: '18px', fontSize: '28px', textAlign: 'center', borderRadius: '15px', border: '2px solid #e2e8f0', outline: 'none', fontWeight: '900' },
+  btnConfirm: { flex: 2, padding: '14px', background: '#6366f1', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '900' },
+  btnCancel: { flex: 1, padding: '14px', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '12px', fontWeight: '700' },
+  emptyBox: { padding: '50px 20px', textAlign: 'center', color: '#94a3b8', fontSize: 14, fontWeight: '600' }
 };
 
 export default TeacherDashboard;
