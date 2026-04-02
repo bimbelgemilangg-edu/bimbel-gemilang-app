@@ -9,7 +9,7 @@ import {
   CheckCircle, UploadCloud, Eye, Link as LinkIcon,
   HelpCircle, ChevronRight, PlayCircle, AlertCircle,
   FileDigit, Info, User, Trash2, X, Send, File, Zap,
-  Calendar
+  Calendar, Maximize2
 } from 'lucide-react';
 
 const StudentModuleView = ({ modulId, onBack, studentData }) => {
@@ -54,7 +54,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           setModul(data);
           const now = new Date();
           
-          // Logika Cek Deadline
           if (data.deadline) {
              setIsTugasExpired(now > (data.deadline.toDate ? data.deadline.toDate() : new Date(data.deadline)));
           }
@@ -224,29 +223,73 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     }
   };
 
+  /**
+   * REVISI FITUR PREVIEW MATERI
+   * Menghasilkan Iframe otomatis untuk link eksternal agar siswa bisa langsung melihat konten.
+   */
   const renderSmartMedia = (url) => {
-    const isGoogleDrive = url.includes('drive.google.com');
-    const isCanva = url.includes('canva.com');
-    const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
-    
-    if (isCanva || isGoogleDrive || isYouTube) {
-        let embedUrl = url;
-        if (isYouTube) {
-            const videoId = url.split('v=')[1] || url.split('/').pop();
-            embedUrl = `https://www.youtube.com/embed/${videoId}`;
-        }
-        return (
-            <div style={st.iframeWrapper}>
-                <iframe src={embedUrl} style={st.iframe} allowFullScreen title="Materi" allow="autoplay"></iframe>
-            </div>
-        );
+    if (!url) return null;
+
+    let embedUrl = url;
+    let showIframe = false;
+
+    // 1. Logika YouTube
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      const videoId = url.split('v=')[1]?.split('&')[0] || url.split('/').pop();
+      embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      showIframe = true;
+    } 
+    // 2. Logika Canva
+    else if (url.includes('canva.com')) {
+      // Mengubah link share menjadi link view/embed
+      embedUrl = url.endsWith('/view') ? url.replace('/view', '/view?embed') : `${url}/view?embed`;
+      showIframe = true;
+    } 
+    // 3. Logika Google Slides / Docs / Sheets
+    else if (url.includes('docs.google.com')) {
+      if (url.includes('/presentation')) {
+        embedUrl = url.replace(/\/edit.*$/, '/embed');
+      } else if (url.includes('/document')) {
+        embedUrl = url.replace(/\/edit.*$/, '/pub?embedded=true');
+      }
+      showIframe = true;
     }
+    // 4. Logika PDF Langsung atau Link File Lainnya
+    else if (url.toLowerCase().endsWith('.pdf')) {
+      embedUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+      showIframe = true;
+    }
+
+    if (showIframe) {
+      return (
+        <div style={st.mediaGroup}>
+          <div style={st.iframeWrapper}>
+            <iframe 
+              src={embedUrl} 
+              style={st.iframe} 
+              allowFullScreen 
+              title="Preview Materi" 
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+            ></iframe>
+          </div>
+          <div style={st.mediaFooter}>
+            <span style={{fontSize: 12, color: '#64748b'}}><Info size={12}/> Preview Otomatis Aktif</span>
+            <a href={url} target="_blank" rel="noreferrer" style={st.btnSmallLink}>
+              <Maximize2 size={12}/> Buka Layar Penuh
+            </a>
+          </div>
+        </div>
+      );
+    }
+
+    // Default Link Box
     return (
         <div style={st.linkBox}>
-          <LinkIcon size={20} color="#673ab7"/>
+          <div style={st.linkIconCircle}><LinkIcon size={20} color="#673ab7"/></div>
           <div style={{flex: 1}}>
-            <p style={{margin:0, fontSize:12, color:'#64748b', fontWeight:'bold'}}>TAUTAN MATERI:</p>
-            <a href={url} target="_blank" rel="noreferrer" style={st.btnLinkExternal}>Buka Link Materi ↗</a>
+            <p style={{margin:0, fontSize:11, color:'#94a3b8', fontWeight:'bold', textTransform:'uppercase', letterSpacing:1}}>Tautan Sumber Materi</p>
+            <p style={{margin:'2px 0 8px', fontSize:14, color:'#1e293b', fontWeight:'600', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'300px'}}>{url}</p>
+            <a href={url} target="_blank" rel="noreferrer" style={st.btnLinkExternal}>Kunjungi Materi ↗</a>
           </div>
         </div>
     );
@@ -283,7 +326,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
             <div style={st.blockHeader}>
               <div style={st.blockLabel}>
                 {block.type === 'assignment' ? (
-                  <span style={{display:'flex', alignItems:'center', gap:4}}><FileText size={12}/> TUGAS</span>
+                  <span style={{display:'flex', alignItems:'center', gap:4}}><FileText size={12}/> TUGAS MANDIRI</span>
                 ) : (
                   <span>BAGIAN {idx + 1}</span>
                 )}
@@ -292,7 +335,11 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
             </div>
 
             {block.type === 'text' && <div style={st.textBody}>{block.content}</div>}
-            {block.type === 'video' && <div style={st.mediaContainer}>{renderSmartMedia(block.content)}</div>}
+            {(block.type === 'video' || block.type === 'link') && (
+               <div style={st.mediaContainer}>
+                 {renderSmartMedia(block.content)}
+               </div>
+            )}
 
             {block.type === 'assignment' && (
               <div style={{...st.assignmentBox, background: isTugasExpired ? '#fef2f2' : '#fffbeb'}}>
@@ -439,11 +486,15 @@ const st = {
   blockLabel: { fontSize: 11, fontWeight: '900', color: '#673ab7', marginBottom: 8 },
   blockTitle: { fontSize: 26, margin: 0, color: '#0f172a', fontWeight: '800' },
   textBody: { lineHeight: 1.9, color: '#334155', fontSize: 17, whiteSpace: 'pre-wrap' },
-  mediaContainer: { marginTop: 25, borderRadius: '20px', overflow: 'hidden', border: '1px solid #e2e8f0' },
-  iframeWrapper: { width: '100%', height: '520px', background: '#f1f5f9' },
+  mediaContainer: { marginTop: 25, borderRadius: '20px', overflow: 'hidden', border: '1px solid #e2e8f0', background:'#f8fafc' },
+  mediaGroup: { display: 'flex', flexDirection: 'column' },
+  mediaFooter: { padding: '12px 20px', background: 'white', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  btnSmallLink: { fontSize: 12, fontWeight: '700', color: '#673ab7', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 },
+  iframeWrapper: { width: '100%', height: '520px', background: '#000' },
   iframe: { width: '100%', height: '100%', border: 'none' },
   linkBox: { padding: '25px', display: 'flex', alignItems: 'center', gap: 15, background: '#f8fafc', borderRadius:'15px' },
-  btnLinkExternal: { color: '#673ab7', fontWeight: '800', textDecoration: 'none' },
+  linkIconCircle: { padding: 12, background: 'white', borderRadius: 12, boxShadow: '0 4px 6px rgba(0,0,0,0.05)' },
+  btnLinkExternal: { color: 'white', background:'#673ab7', padding:'8px 20px', borderRadius:'10px', fontSize:13, fontWeight: '800', textDecoration: 'none', display:'inline-block' },
   assignmentBox: { marginTop: 25, padding: '30px', borderRadius: '22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 25 },
   assignInfo: { display: 'flex', gap: 18, alignItems: 'flex-start', flex: 1 },
   iconCircle: { padding: '12px', background: 'white', borderRadius: '15px', boxShadow: '0 5px 10px rgba(0,0,0,0.05)' },
