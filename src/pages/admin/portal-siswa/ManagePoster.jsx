@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, orderBy, query } from "firebase/firestore";
-import { Trash2, Plus, ArrowLeft, Eye, Upload, Instagram, Box, MoveVertical, Globe, UserCheck, Users } from 'lucide-react';
+import { 
+  Trash2, Plus, ArrowLeft, Eye, Upload, Instagram, Box, 
+  MoveVertical, Globe, UserCheck, ShieldCheck, Zap
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ManagePoster = () => {
@@ -13,11 +16,11 @@ const ManagePoster = () => {
   const [imagePreview, setImagePreview] = useState(null); 
   const [base64Image, setBase64Image] = useState(""); 
   const [uploadMethod, setUploadMethod] = useState("link"); 
-  const [imgPosition, setImgPosition] = useState("center"); 
-  const [targetPortal, setTargetPortal] = useState("Siswa"); // Fitur Baru: Target Distribusi
+  const [imgPosition, setImgPosition] = useState("center");
+  const [targetPortal, setTargetPortal] = useState("Semua"); // FITUR BARU: Targeting
   const [loading, setLoading] = useState(false);
 
-  // --- 1. SMART URL BYPASS ENGINE (STAY PERSISTENT) ---
+  // --- 1. SMART URL BYPASS ENGINE ---
   const processSmartUrl = (url) => {
     if (!url || typeof url !== 'string') return "";
     try {
@@ -30,9 +33,7 @@ const ManagePoster = () => {
         return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
       }
       return url;
-    } catch (err) {
-      return url; 
-    }
+    } catch (err) { return url; }
   };
 
   const fetchPosters = async () => {
@@ -40,14 +41,12 @@ const ManagePoster = () => {
       const q = query(collection(db, "student_contents"), orderBy("createdAt", "desc"));
       const snap = await getDocs(q);
       setPosters(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    } catch (err) {
-      console.error("Gagal ambil data:", err);
-    }
+    } catch (err) { console.error("Gagal ambil data:", err); }
   };
 
   useEffect(() => { fetchPosters(); }, []);
 
-  // --- 2. ENGINE KOMPRESI TINGKAT DEWA (STAY PERSISTENT) ---
+  // --- 2. HACKER-LEVEL COMPRESSION ENGINE (Anti-Lag & Storage Safe) ---
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -59,13 +58,20 @@ const ManagePoster = () => {
       img.src = event.target.result;
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 1000; 
+        const MAX_WIDTH = 1200; // Optimal Resolution
         const scaleSize = MAX_WIDTH / img.width;
         canvas.width = MAX_WIDTH;
         canvas.height = img.height * scaleSize;
+        
         const ctx = canvas.getContext('2d');
+        // Image Smoothing Quality High
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        
+        // Kompresi 0.6 (Sweet spot antara size vs quality)
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+        
         setImagePreview(compressedBase64);
         setBase64Image(compressedBase64);
       }
@@ -76,90 +82,98 @@ const ManagePoster = () => {
     e.preventDefault();
     const finalImageUrl = uploadMethod === "upload" ? base64Image : processSmartUrl(externalUrl);
 
-    if(!finalImageUrl || !newTitle) return alert("Sistem: Judul dan Gambar belum lengkap!");
+    if(!finalImageUrl || !newTitle) return alert("Sistem: Judul dan Gambar wajib diisi!");
     
     setLoading(true);
     try {
       await addDoc(collection(db, "student_contents"), {
         imageUrl: finalImageUrl,
-        originalUrl: externalUrl || finalImageUrl,
+        originalUrl: externalUrl || "Internal Upload",
         title: newTitle,
         content: newContent,
         method: uploadMethod,
         imgPosition: imgPosition,
-        targetPortal: targetPortal, // DATA BARU: Tujuan Pengumuman
-        createdAt: serverTimestamp()
+        targetPortal: targetPortal, // DATA BARU: Lokasi Publikasi
+        createdAt: serverTimestamp(),
+        engineVersion: "2.5-Hacker-Edition"
       });
-      // Reset State
+
+      // Reset
       setNewTitle(""); setNewContent(""); setExternalUrl(""); 
       setImagePreview(null); setBase64Image(""); setImgPosition("center");
-      setTargetPortal("Siswa");
       fetchPosters();
-      alert(`✅ Sistem: Berhasil dipublikasikan ke Portal ${targetPortal}!`);
+      alert(`✅ PUBLIKASI BERHASIL: Ditampilkan di Portal ${targetPortal}`);
     } catch (err) {
       console.error(err);
-      alert("❌ Terjadi Error saat menyimpan ke server.");
+      alert("❌ Critical Error: Gagal mengunggah ke database.");
     }
     setLoading(false);
   };
 
   const handleImageError = (e) => {
-    if (externalUrl.includes('instagram')) {
-      e.target.src = 'https://placehold.co/800x450/e1306c/white?text=📸+POSTINGAN+INSTAGRAM\n\nKlik+Icon+Mata+Untuk+Melihat';
-    } else {
-      e.target.src = 'https://placehold.co/800x450/2c3e50/white?text=Media+Tidak+Dapat+Dimuat';
-    }
+    e.target.src = 'https://placehold.co/800x450/1e293b/white?text=Media+Terproteksi+atau+Link+Salah';
   };
 
   return (
-    <div style={{ padding: '30px', backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
-      <button onClick={() => navigate('/admin/portal')} style={styles.btnBack}><ArrowLeft size={16}/> Kembali ke Hub</button>
+    <div style={{ padding: '30px', backgroundColor: '#f1f5f9', minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
+      <button onClick={() => navigate('/admin/portal')} style={styles.btnBack}><ArrowLeft size={16}/> Control Panel</button>
       
-      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
-        <h2 style={{ color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Box size={28} color="#3b82f6" /> Smart Media Engine v2.1
+      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px'}}>
+        <h2 style={{ color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '900' }}>
+          <ShieldCheck size={32} color="#2563eb" /> Smart Media Engine <span style={{color: '#94a3b8', fontWeight: '400'}}>v2.5</span>
         </h2>
-        <span style={styles.hackerBadge}>🔥 Anti-Lag & Auto-Compressor Aktif</span>
+        <div style={{display: 'flex', gap: '10px'}}>
+            <span style={styles.hackerBadge}><Zap size={12}/> Auto-Compressor ON</span>
+            <span style={{...styles.hackerBadge, background: '#e0e7ff', color: '#4338ca', border: '1px solid #c7d2fe'}}>Total: {posters.length} Media</span>
+        </div>
       </div>
       
       <div style={styles.inputCard}>
         <div style={styles.tabHeader}>
-            <button onClick={() => {setUploadMethod('link'); setImagePreview(null);}} style={{...styles.tabBtn, borderBottom: uploadMethod === 'link' ? '3px solid #3b82f6' : 'none', color: uploadMethod === 'link' ? '#3b82f6' : '#64748b'}}>
-                <Instagram size={16}/> Smart Link Injector
+            <button onClick={() => {setUploadMethod('link'); setImagePreview(null);}} style={{...styles.tabBtn, borderBottom: uploadMethod === 'link' ? '4px solid #2563eb' : 'none', color: uploadMethod === 'link' ? '#2563eb' : '#64748b'}}>
+                <Instagram size={18}/> Smart Link Injector
             </button>
-            <button onClick={() => {setUploadMethod('upload'); setImagePreview(null);}} style={{...styles.tabBtn, borderBottom: uploadMethod === 'upload' ? '3px solid #3b82f6' : 'none', color: uploadMethod === 'upload' ? '#3b82f6' : '#64748b'}}>
-                <Upload size={16}/> Upload Super Cepat
+            <button onClick={() => {setUploadMethod('upload'); setImagePreview(null);}} style={{...styles.tabBtn, borderBottom: uploadMethod === 'upload' ? '4px solid #2563eb' : 'none', color: uploadMethod === 'upload' ? '#2563eb' : '#64748b'}}>
+                <Upload size={18}/> Direct Hardware Upload
             </button>
         </div>
 
         <div style={styles.formGrid}>
           <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
-            <input placeholder="Judul Pengumuman" value={newTitle} onChange={e=>setNewTitle(e.target.value)} style={styles.input}/>
-            
-            {/* FITUR BARU: TARGET PORTAL SELECTOR */}
-            <div style={styles.targetWrapper}>
-                <span style={{fontSize: '12px', fontWeight: '800', color: '#64748b', display: 'block', marginBottom: '8px'}}>TAMPILKAN DI DASHBOARD:</span>
-                <div style={styles.targetGrid}>
-                    <button type="button" onClick={() => setTargetPortal("Siswa")} style={{...styles.targetBtn, backgroundColor: targetPortal === "Siswa" ? "#3b82f6" : "#fff", color: targetPortal === "Siswa" ? "#fff" : "#64748b", borderColor: targetPortal === "Siswa" ? "#3b82f6" : "#e2e8f0"}}>
-                        <Users size={14}/> Siswa
-                    </button>
-                    <button type="button" onClick={() => setTargetPortal("Guru")} style={{...styles.targetBtn, backgroundColor: targetPortal === "Guru" ? "#10b981" : "#fff", color: targetPortal === "Guru" ? "#fff" : "#64748b", borderColor: targetPortal === "Guru" ? "#10b981" : "#e2e8f0"}}>
-                        <UserCheck size={14}/> Guru
-                    </button>
-                    <button type="button" onClick={() => setTargetPortal("Semua")} style={{...styles.targetBtn, backgroundColor: targetPortal === "Semua" ? "#6366f1" : "#fff", color: targetPortal === "Semua" ? "#fff" : "#64748b", borderColor: targetPortal === "Semua" ? "#6366f1" : "#e2e8f0"}}>
-                        <Globe size={14}/> Semua
-                    </button>
-                </div>
+            <div style={styles.inputGroup}>
+                <label style={styles.labelHeader}>Detail Publikasi</label>
+                <input placeholder="Ketik Judul Menarik Di Sini..." value={newTitle} onChange={e=>setNewTitle(e.target.value)} style={styles.input}/>
+                <textarea placeholder="Tuliskan isi berita atau deskripsi lengkap..." value={newContent} onChange={e=>setNewContent(e.target.value)} style={styles.textArea}/>
             </div>
 
-            <textarea placeholder="Isi berita / keterangan press release..." value={newContent} onChange={e=>setNewContent(e.target.value)} style={styles.textArea}/>
+            <div style={styles.inputGroup}>
+                <label style={styles.labelHeader}>Targeting & Layout</label>
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px'}}>
+                    <div style={styles.selectWrapper}>
+                        <Globe size={14} style={styles.selectIcon}/>
+                        <select value={targetPortal} onChange={e => setTargetPortal(e.target.value)} style={styles.fullSelect}>
+                            <option value="Semua">Tampilkan di Semua</option>
+                            <option value="Siswa">Portal Siswa Saja</option>
+                            <option value="Guru">Portal Guru Saja</option>
+                        </select>
+                    </div>
+                    <div style={styles.selectWrapper}>
+                        <MoveVertical size={14} style={styles.selectIcon}/>
+                        <select value={imgPosition} onChange={e => setImgPosition(e.target.value)} style={styles.fullSelect}>
+                            <option value="center">Focus: Tengah</option>
+                            <option value="top">Focus: Atas</option>
+                            <option value="bottom">Focus: Bawah</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
           </div>
 
           <div style={styles.mediaBox}>
             {uploadMethod === "link" ? (
               <div style={{width: '100%'}}>
                 <input 
-                    placeholder="Paste link Instagram / YouTube di sini..." 
+                    placeholder="Input Link Instagram / YouTube..." 
                     value={externalUrl}
                     onChange={(e) => {
                         setExternalUrl(e.target.value);
@@ -167,17 +181,15 @@ const ManagePoster = () => {
                     }}
                     style={styles.input}
                 />
-                {externalUrl && (
+                {imagePreview ? (
                     <div style={styles.previewWrapper}>
-                        <img src={processSmartUrl(externalUrl)} style={{...styles.miniPreview, objectPosition: imgPosition}} alt="Preview" onError={handleImageError}/>
-                        <div style={styles.gridControl}>
-                            <MoveVertical size={14} /> Posisi: 
-                            <select value={imgPosition} onChange={e => setImgPosition(e.target.value)} style={styles.selectBtn}>
-                                <option value="top">Atas</option>
-                                <option value="center">Tengah</option>
-                                <option value="bottom">Bawah</option>
-                            </select>
-                        </div>
+                        <img src={imagePreview} style={{...styles.miniPreview, objectPosition: imgPosition}} alt="Preview" onError={handleImageError}/>
+                        <div style={styles.activeLabel}>Live Preview</div>
+                    </div>
+                ) : (
+                    <div style={styles.placeholderMedia}>
+                        <Instagram size={40} color="#cbd5e1"/>
+                        <p style={{fontSize: 12, color: '#94a3b8', marginTop: 10}}>Sistem akan otomatis mengambil thumbnail media</p>
                     </div>
                 )}
               </div>
@@ -186,21 +198,16 @@ const ManagePoster = () => {
                 {imagePreview ? (
                   <div style={styles.previewWrapper}>
                     <img src={imagePreview} style={{...styles.miniPreview, objectPosition: imgPosition}} alt="Preview" />
-                    <button onClick={() => {setImagePreview(null); setBase64Image("");}} style={styles.btnRemoveImg}>Hapus</button>
-                    <div style={styles.gridControl}>
-                        <MoveVertical size={14} /> Posisi: 
-                        <select value={imgPosition} onChange={e => setImgPosition(e.target.value)} style={styles.selectBtn}>
-                            <option value="top">Atas</option>
-                            <option value="center">Tengah</option>
-                            <option value="bottom">Bawah</option>
-                        </select>
-                    </div>
+                    <button onClick={() => {setImagePreview(null); setBase64Image("");}} style={styles.btnRemoveImg}>Ganti Foto</button>
+                    <div style={styles.activeLabel}>Auto-Compressed Image</div>
                   </div>
                 ) : (
                   <label style={styles.uploadLabel}>
-                    <Upload size={35} color="#cbd5e1" style={{marginBottom: '10px'}} />
-                    <b style={{color: '#475569', fontSize: '14px'}}>Pilih Foto dari Perangkat</b>
-                    <span style={{fontSize: '11px', color: '#94a3b8', marginTop: '5px'}}>Sistem otomatis mengompres foto jadi ringan!</span>
+                    <div style={styles.uploadCircle}>
+                        <Upload size={30} color="#2563eb" />
+                    </div>
+                    <b style={{color: '#1e293b', fontSize: '15px'}}>Pilih Media Lokal</b>
+                    <span style={{fontSize: '11px', color: '#64748b', marginTop: '8px', maxWidth: '200px'}}>Resolusi akan dioptimasi otomatis agar hemat penyimpanan Cloud Firestore</span>
                     <input type="file" accept="image/*" onChange={handleImageChange} style={{display: 'none'}} />
                   </label>
                 )}
@@ -209,21 +216,31 @@ const ManagePoster = () => {
           </div>
         </div>
 
-        <button onClick={handleSave} disabled={loading} style={styles.btnSave}>
-          {loading ? "Menyimpan ke Database..." : `🚀 Luncurkan ke Dashboard ${targetPortal}`}
+        <button onClick={handleSave} disabled={loading} style={{...styles.btnSave, opacity: loading ? 0.7 : 1}}>
+          {loading ? "PROSES ENKRIPSI & UPLOAD..." : "PUBLIKASIKAN KE PORTAL TERPILIH"}
         </button>
       </div>
+
+      <h3 style={{fontWeight: '900', color: '#1e293b', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: 10}}>
+        <Box size={20}/> Live Media Management
+      </h3>
 
       <div style={styles.grid}>
         {posters.map(p => (
           <div key={p.id} style={styles.posterItem}>
-            <div style={styles.targetBadge}>Portal: {p.targetPortal || "Siswa"}</div>
-            <img src={p.imageUrl} style={{...styles.imgPreview, objectPosition: p.imgPosition || 'center'}} alt="poster" onError={handleImageError} />
-            <div style={{padding: '15px'}}>
+            <div style={styles.posterImgContainer}>
+                <img src={p.imageUrl} style={{...styles.imgPreview, objectPosition: p.imgPosition || 'center'}} alt="poster" onError={handleImageError} />
+                <div style={styles.targetBadge}>
+                    {p.targetPortal === 'Guru' ? <UserCheck size={10}/> : <Globe size={10}/>}
+                    {p.targetPortal || 'Semua'}
+                </div>
+            </div>
+            <div style={{padding: '18px'}}>
                 <b style={styles.pTitle}>{p.title}</b>
+                <p style={{fontSize: 11, color: '#94a3b8', marginBottom: 15, height: 32, overflow: 'hidden'}}>{p.content || "Tanpa deskripsi..."}</p>
                 <div style={styles.actionArea}>
-                    <button onClick={() => window.open(p.originalUrl || p.imageUrl, '_blank')} style={styles.btnView}><Eye size={14}/> Lihat Asli</button>
-                    <button onClick={() => deleteDoc(doc(db, "student_contents", p.id)).then(fetchPosters)} style={styles.btnDel}><Trash2 size={16}/></button>
+                    <button onClick={() => window.open(p.originalUrl || p.imageUrl, '_blank')} style={styles.btnView}><Eye size={14}/> Preview</button>
+                    <button onClick={() => { if(window.confirm("Hapus media ini?")) deleteDoc(doc(db, "student_contents", p.id)).then(fetchPosters)}} style={styles.btnDel}><Trash2 size={16}/></button>
                 </div>
             </div>
           </div>
@@ -234,39 +251,42 @@ const ManagePoster = () => {
 };
 
 const styles = {
-    btnBack: { background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 'bold' },
-    hackerBadge: { background: '#dcfce7', color: '#166534', padding: '5px 12px', borderRadius: '50px', fontSize: '12px', fontWeight: 'bold', border: '1px solid #bbf7d0' },
-    inputCard: { background: 'white', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '30px', border: '1px solid #e2e8f0' },
-    tabHeader: { display: 'flex', gap: '20px', marginBottom: '20px', borderBottom: '2px solid #f1f5f9' },
-    tabBtn: { background: 'none', border: 'none', padding: '12px 0', cursor: 'pointer', fontWeight: '700', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', transition: '0.2s' },
-    formGrid: { display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '25px', marginBottom: '20px' },
-    input: { padding: '14px', borderRadius: '10px', border: '1px solid #cbd5e1', outline: 'none', fontSize: '14px', width: '100%', boxSizing: 'border-box', backgroundColor: '#f8fafc' },
-    textArea: { padding: '14px', borderRadius: '10px', border: '1px solid #cbd5e1', minHeight: '100px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', backgroundColor: '#f8fafc', resize: 'vertical' },
+    btnBack: { background: 'white', border: '1px solid #e2e8f0', color: '#1e293b', padding: '8px 16px', borderRadius: '10px', cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: 13, boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
+    hackerBadge: { background: '#dcfce7', color: '#166534', padding: '6px 14px', borderRadius: '10px', fontSize: '11px', fontWeight: '900', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: 5 },
+    inputCard: { background: 'white', padding: '30px', borderRadius: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.05)', marginBottom: '40px', border: '1px solid #e2e8f0' },
+    tabHeader: { display: 'flex', gap: '25px', marginBottom: '25px', borderBottom: '2px solid #f1f5f9' },
+    tabBtn: { background: 'none', border: 'none', padding: '15px 5px', cursor: 'pointer', fontWeight: '800', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '10px', transition: '0.3s' },
+    labelHeader: { fontSize: '12px', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', display: 'block' },
+    inputGroup: { display: 'flex', flexDirection: 'column' },
+    formGrid: { display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '30px', marginBottom: '25px' },
+    input: { padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '15px', width: '100%', boxSizing: 'border-box', backgroundColor: '#f8fafc', fontWeight: '600' },
+    textArea: { padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0', minHeight: '120px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', backgroundColor: '#f8fafc', resize: 'none', fontSize: '14px', marginTop: '10px' },
     
-    targetWrapper: { padding: '10px 0' },
-    targetGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' },
-    targetBtn: { padding: '10px', borderRadius: '10px', border: '1px solid', fontSize: '12px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', transition: '0.2s' },
-    
-    mediaBox: { border: '2px dashed #cbd5e1', borderRadius: '12px', padding: '15px', backgroundColor: '#f8fafc', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px', position: 'relative' },
-    uploadLabel: { cursor: 'pointer', padding: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' },
-    
-    previewWrapper: { position: 'relative', width: '100%', marginTop: '15px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', backgroundColor: 'white' },
-    miniPreview: { width: '100%', height: '180px', objectFit: 'cover', display: 'block' },
-    btnRemoveImg: { position: 'absolute', top: 10, right: 10, background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' },
-    
-    gridControl: { display: 'flex', alignItems: 'center', gap: '5px', padding: '8px 12px', background: 'rgba(255,255,255,0.9)', position: 'absolute', bottom: 10, left: 10, borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', color: '#334155', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' },
-    selectBtn: { border: 'none', background: 'transparent', fontWeight: 'bold', color: '#3b82f6', outline: 'none', cursor: 'pointer' },
+    selectWrapper: { position: 'relative', display: 'flex', alignItems: 'center' },
+    selectIcon: { position: 'absolute', left: '12px', color: '#2563eb' },
+    fullSelect: { width: '100%', padding: '12px 12px 12px 35px', borderRadius: '10px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc', fontWeight: '800', fontSize: '12px', color: '#1e293b', appearance: 'none', cursor: 'pointer' },
 
-    btnSave: { background: '#2563eb', color: 'white', border: 'none', padding: '16px', borderRadius: '10px', cursor: 'pointer', fontWeight: '800', fontSize: '15px', width: '100%', transition: '0.2s', boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.3)' },
+    mediaBox: { border: '2px dashed #cbd5e1', borderRadius: '20px', padding: '20px', backgroundColor: '#f8fafc', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '260px', position: 'relative' },
+    placeholderMedia: { textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' },
+    uploadLabel: { cursor: 'pointer', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' },
+    uploadCircle: { width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '15px' },
     
-    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '25px' },
-    posterItem: { position: 'relative', background: 'white', borderRadius: '14px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' },
-    targetBadge: { position: 'absolute', top: 10, left: 10, background: 'rgba(30, 41, 59, 0.8)', color: '#fff', padding: '4px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', zIndex: 1, backdropFilter: 'blur(4px)' },
-    imgPreview: { width: '100%', aspectRatio: '16/9', objectFit: 'cover' },
-    pTitle: { fontSize: '15px', color: '#1e293b', display: 'block', marginBottom: '10px', lineHeight: '1.4' },
-    actionArea: { display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #f1f5f9', paddingTop: '15px', marginTop: 'auto' },
-    btnView: { background: '#f1f5f9', border: 'none', color: '#3b82f6', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '600' },
-    btnDel: { background: '#fee2e2', border: 'none', color: '#ef4444', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center' }
+    previewWrapper: { position: 'relative', width: '100%', borderRadius: '15px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' },
+    miniPreview: { width: '100%', height: '220px', objectFit: 'cover', display: 'block' },
+    activeLabel: { position: 'absolute', bottom: 10, right: 10, background: '#2563eb', color: 'white', fontSize: '10px', fontWeight: '900', padding: '4px 10px', borderRadius: '50px' },
+    btnRemoveImg: { position: 'absolute', top: 10, right: 10, background: 'rgba(255, 255, 255, 0.9)', color: '#ef4444', border: 'none', padding: '8px 15px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: '900', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' },
+
+    btnSave: { background: '#2563eb', color: 'white', border: 'none', padding: '20px', borderRadius: '15px', cursor: 'pointer', fontWeight: '900', fontSize: '16px', width: '100%', transition: '0.3s', boxShadow: '0 10px 15px -3px rgba(37, 99, 235, 0.4)', letterSpacing: '1px' },
+    
+    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '25px' },
+    posterItem: { background: 'white', borderRadius: '20px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', transition: '0.3s' },
+    posterImgContainer: { position: 'relative', width: '100%', aspectRatio: '16/9' },
+    imgPreview: { width: '100%', height: '100%', objectFit: 'cover' },
+    targetBadge: { position: 'absolute', top: 12, left: 12, background: 'rgba(15, 23, 42, 0.8)', color: 'white', padding: '5px 12px', borderRadius: '50px', fontSize: '10px', fontWeight: '800', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', gap: 6 },
+    pTitle: { fontSize: '16px', color: '#0f172a', display: 'block', marginBottom: '8px', fontWeight: '800' },
+    actionArea: { display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #f1f5f9', paddingTop: '15px' },
+    btnView: { background: '#f8fafc', border: '1px solid #e2e8f0', color: '#2563eb', padding: '8px 15px', borderRadius: '10px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800' },
+    btnDel: { background: '#fff1f2', border: 'none', color: '#e11d48', padding: '8px 12px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center' }
 };
 
 export default ManagePoster;
