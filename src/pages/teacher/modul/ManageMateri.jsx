@@ -387,7 +387,7 @@ const st = {
   smartPreview: { marginTop: '15px', borderRadius: '15px', overflow: 'hidden', border: '1px solid #e2e8f0' },
   previewLabel: { background: '#1e293b', padding: '6px 15px', fontSize: '9px', fontWeight: '800', color:'#fff' },
   iframePreview: (m) => ({ width: '100%', height: m ? '250px' : '400px', border: 'none' }),
-  imgPreview: (m) => ({ width: '100%', maxHeight: m ? '300px' : '500px', objectFit: 'contain' },),
+  imgPreview: (m) => ({ width: '100%', maxHeight: m ? '300px' : '500px', objectFit: 'contain' }),
   deadlineBox: { marginTop: '15px', padding: '15px', background: '#fffbeb', borderRadius: '15px' },
   deadlineCheckRow: { display:'flex', alignItems:'center', gap:8, fontSize: '12px', fontWeight: '800' },
   deadlineFlex: (m) => ({ display: 'flex', gap: '10px', marginTop: '10px', flexDirection: m ? 'column' : 'row' }),
