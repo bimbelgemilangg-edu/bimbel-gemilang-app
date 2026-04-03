@@ -9,7 +9,7 @@ import imageCompression from 'browser-image-compression';
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, 
   ArrowLeft, Upload, Calendar, Link as LinkIcon, 
-  Users, Search, UserCheck, Eye, Sparkles, FileUp
+  Users, Search, UserCheck, Eye, Sparkles, FileUp, ExternalLink
 } from 'lucide-react';
 
 const ManageMateri = () => {
@@ -17,10 +17,7 @@ const ManageMateri = () => {
   const editId = searchParams.get('edit');
   const navigate = useNavigate();
 
-  // --- RESPONSIVE STATE ---
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  // --- STATE UTAMA ---
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [releaseDate, setReleaseDate] = useState(""); 
@@ -29,7 +26,6 @@ const ManageMateri = () => {
   const [quizData, setQuizData] = useState([]); 
   const [loading, setLoading] = useState(false);
 
-  // --- STATE TARGETING ---
   const [targetKategori, setTargetKategori] = useState("Semua"); 
   const [targetKelas, setTargetKelas] = useState("Semua"); 
   const [targetSiswaId, setTargetSiswaId] = useState("Semua"); 
@@ -82,13 +78,20 @@ const ManageMateri = () => {
     } catch (err) { console.error("Error fetching:", err); }
   };
 
+  // FUNGSI NAVIGASI KE EDITOR KUIS TERPISAH
+  const goToQuizEditor = () => {
+    if (!editId) {
+      alert("Simpan Modul terlebih dahulu sebelum mengelola kuis secara mendalam.");
+      return;
+    }
+    navigate(`/guru/manage-quiz?modulId=${editId}`);
+  };
+
   const handleFileUpload = async (e, blockId = null) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const isImage = file.type.startsWith('image/');
     const options = { maxSizeMB: 0.5, maxWidthOrHeight: 1280, useWebWorker: true };
-
     try {
       let finalData;
       if (isImage) {
@@ -105,7 +108,6 @@ const ManageMateri = () => {
           reader.readAsDataURL(file);
         });
       }
-
       if (blockId) {
         updateBlock(blockId, 'content', finalData);
         updateBlock(blockId, 'fileName', file.name);
@@ -178,7 +180,6 @@ const ManageMateri = () => {
     if (!content || typeof content !== 'string') return null;
     const isBase64 = content.startsWith('data:');
     const isPDF = content.includes('application/pdf');
-    
     if (isBase64) {
       return isPDF ? (
         <embed src={content} type="application/pdf" style={st.iframePreview(isMobile)} />
@@ -186,7 +187,6 @@ const ManageMateri = () => {
         <img src={content} alt="Preview" style={st.imgPreview(isMobile)} />
       );
     }
-    
     if (content.includes('canva.com') || content.includes('youtube.com') || content.includes('drive.google.com')) {
       return <iframe src={content} style={st.iframePreview(isMobile)} title="Preview" allowFullScreen />;
     }
@@ -310,11 +310,23 @@ const ManageMateri = () => {
             </div>
           ))}
 
+          {/* BAGIAN KUIS DENGAN FITUR EDITOR TERPISAH */}
+          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:30}}>
+             <div style={st.sectionHeader}><HelpCircle size={18} color="#10b981"/> Latihan Kuis</div>
+             {editId && (
+               <button onClick={goToQuizEditor} style={st.btnOpenEditor}>
+                 <ExternalLink size={14}/> Mode Editor Full
+               </button>
+             )}
+          </div>
+
           {quizData.map((q, idx) => (
             <div key={q.id} style={st.quizCard}>
               <div style={st.blockHeader}>
                 <span style={st.quizBadge}>KUIS #{idx + 1}</span>
-                <button onClick={() => setQuizData(quizData.filter(i => i.id !== q.id))} style={st.btnTrash}><Trash2 size={16}/></button>
+                <div style={{display:'flex', gap:8}}>
+                   <button onClick={() => setQuizData(quizData.filter(i => i.id !== q.id))} style={st.btnTrash}><Trash2 size={16}/></button>
+                </div>
               </div>
               <textarea placeholder="Pertanyaan..." className="teacher-input" style={{minHeight:'60px'}} value={q.question} onChange={(e) => setQuizData(quizData.map(i => i.id === q.id ? {...i, question: e.target.value} : i))} />
               <div style={st.optGrid(isMobile)}>
@@ -354,6 +366,7 @@ const ManageMateri = () => {
 };
 
 const st = {
+  // STYLE ASLI DIBAWAH TETAP DIPERTAHANKAN
   topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
   breadCrumb: { fontSize: '12px', fontWeight: '800', color: '#94a3b8' },
   btnBack: (m) => ({ padding: m ? '8px' : '10px 20px', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', fontWeight: 'bold' }),
@@ -402,7 +415,8 @@ const st = {
   fabLabel: { fontSize: '9px', fontWeight: '900', color: '#94a3b8', marginRight: 5 },
   fab: { background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '10px', borderRadius: '12px' },
   fabDivider: { width:'1px', height:'20px', background:'rgba(255,255,255,0.1)' },
-  btnSaveFab: (m) => ({ background: '#673ab7', color: 'white', border: 'none', padding: m ? '10px 15px' : '10px 20px', borderRadius: '12px', fontWeight: '900', fontSize:'12px' })
+  btnSaveFab: (m) => ({ background: '#673ab7', color: 'white', border: 'none', padding: m ? '10px 15px' : '10px 20px', borderRadius: '12px', fontWeight: '900', fontSize:'12px' }),
+  btnOpenEditor: { background: '#f0fdf4', color: '#10b981', border: '1px solid #10b981', padding: '6px 12px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold', display:'flex', alignItems:'center', gap:5, cursor:'pointer' }
 };
 
 export default ManageMateri;
