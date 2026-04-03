@@ -82,7 +82,11 @@ function App() {
   useEffect(() => {
     const savedGuru = localStorage.getItem('teacherData');
     if (savedGuru) {
-      setGuruData(JSON.parse(savedGuru));
+      try {
+        setGuruData(JSON.parse(savedGuru));
+      } catch (e) {
+        console.error("Gagal parse teacherData", e);
+      }
     }
   }, []);
 
@@ -111,7 +115,6 @@ function App() {
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
 
         {/* === AREA GURU (DIBUNGKUS TEACHER LAYOUT) === */}
-        {/* Fitur Persistence: GuruData dilempar ke Layout untuk digunakan di header */}
         <Route element={<GuruRoute><TeacherLayout guru={guruData} /></GuruRoute>}>
           <Route path="/guru/dashboard" element={<TeacherDashboard />} />
           <Route path="/guru/profile" element={<TeacherProfile />} />
@@ -127,7 +130,10 @@ function App() {
           {/* E-Learning System */}
           <Route path="/guru/modul" element={<ModulManager />} />
           <Route path="/guru/modul/materi" element={<ManageMateri />} />
-          <Route path="/guru/modul/quiz" element={<ManageQuiz />} />
+          
+          {/* Editor Kuis Pro (Diakses via ManageMateri) */}
+          <Route path="/guru/manage-quiz" element={<ManageQuiz />} />
+          
           <Route path="/guru/modul/tugas" element={<ManageTugas />} />
 
           {/* Rute Jadwal Guru */}

@@ -9,7 +9,7 @@ import imageCompression from 'browser-image-compression';
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, 
   ArrowLeft, Upload, Calendar, Link as LinkIcon, 
-  Users, Search, UserCheck, Eye, Sparkles, FileUp, ExternalLink
+  Users, Search, Eye, Sparkles, FileUp, Layout
 } from 'lucide-react';
 
 const ManageMateri = () => {
@@ -78,15 +78,6 @@ const ManageMateri = () => {
     } catch (err) { console.error("Error fetching:", err); }
   };
 
-  // FUNGSI NAVIGASI KE EDITOR KUIS TERPISAH
-  const goToQuizEditor = () => {
-    if (!editId) {
-      alert("Simpan Modul terlebih dahulu sebelum mengelola kuis secara mendalam.");
-      return;
-    }
-    navigate(`/guru/manage-quiz?modulId=${editId}`);
-  };
-
   const handleFileUpload = async (e, blockId = null) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -142,13 +133,6 @@ const ManageMateri = () => {
     if(window.confirm("Hapus bagian ini?")) setBlocks(blocks.filter(b => b.id !== id));
   };
 
-  const addQuizQuestion = () => {
-    setQuizData([...quizData, { 
-      id: Date.now(), question: "", options: ["", "", "", ""], correctAnswer: 0, 
-      hasDeadline: false, startTime: "", endTime: "" 
-    }]);
-  };
-
   const handleSave = async () => {
     if (!title || !subject) return alert("Judul dan Mata Pelajaran wajib diisi!");
     setLoading(true);
@@ -162,10 +146,15 @@ const ManageMateri = () => {
       deadlineQuiz: quizData[0]?.endTime || ""
     };
     try {
-      if (editId) await updateDoc(doc(db, COLLECTION_NAME, editId), payload);
-      else { payload.createdAt = serverTimestamp(); await addDoc(collection(db, COLLECTION_NAME), payload); }
-      alert("🚀 MODUL BERHASIL DIPUBLISH!");
-      navigate('/guru/modul');
+      if (editId) {
+        await updateDoc(doc(db, COLLECTION_NAME, editId), payload);
+        alert("🚀 MODUL BERHASIL DIPERBARUI!");
+      } else {
+        payload.createdAt = serverTimestamp();
+        const newDoc = await addDoc(collection(db, COLLECTION_NAME), payload);
+        alert("🚀 MODUL BARU BERHASIL DIPUBLISH!");
+        navigate(`/guru/modul/materi?edit=${newDoc.id}`); // Tetap di halaman edit setelah simpan baru
+      }
     } catch (error) { alert("Gagal menyimpan: " + error.message); }
     setLoading(false);
   };
@@ -198,11 +187,11 @@ const ManageMateri = () => {
       <div className="teacher-container-padding" style={{ padding: isMobile ? '15px' : '30px', paddingBottom: '150px' }}>
         
         <div style={st.topBar}>
-          <div style={st.breadCrumb}>Modul / <span style={{color:'#673ab7'}}>{editId ? "Edit" : "Baru"}</span></div>
+          <div style={st.breadCrumb}>Modul / <span style={{color:'#673ab7'}}>{editId ? "Edit Materi Mingguan" : "Baru"}</span></div>
           <div style={{display:'flex', gap: 8}}>
             <button onClick={() => navigate('/guru/modul')} style={st.btnBack(isMobile)}><ArrowLeft size={14}/> {!isMobile && "Kembali"}</button>
             <button onClick={handleSave} disabled={loading} className="teacher-btn-primary" style={st.btnPublish(isMobile)}>
-              <Save size={16}/> {loading ? "..." : isMobile ? "PUBLISH" : "PUBLISH MODUL"}
+              <Save size={16}/> {loading ? "..." : isMobile ? "SIMPAN" : "SIMPAN MODUL"}
             </button>
           </div>
         </div>
@@ -225,7 +214,7 @@ const ManageMateri = () => {
               )}
             </div>
             <div style={st.identityInputs}>
-              <input placeholder="JUDUL MATERI..." style={st.mainInput(isMobile)} value={title} onChange={(e) => setTitle(e.target.value)} />
+              <input placeholder="JUDUL MATERI MINGGUAN..." style={st.mainInput(isMobile)} value={title} onChange={(e) => setTitle(e.target.value)} />
               <input placeholder="Mata Pelajaran..." style={st.subInput} value={subject} onChange={(e) => setSubject(e.target.value)} />
               <div style={st.globalDateRow}>
                  <Calendar size={12} color="#673ab7"/>
@@ -247,22 +236,9 @@ const ManageMateri = () => {
              </select>
           </div>
 
-          <div style={st.searchBoxSiswa}>
-             <div style={st.siswaSelectRow(isMobile)}>
-                <div style={{flex: 1, position:'relative'}}>
-                   <Search style={st.searchIconInside} size={16}/>
-                   <input placeholder="Cari nama..." className="teacher-input" style={{paddingLeft: 40, width:'100%'}} value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} />
-                </div>
-                <select className="teacher-input" style={{flex: 1}} value={targetSiswaId} onChange={(e) => setTargetSiswaId(e.target.value)}>
-                   <option value="Semua">Semua Siswa</option>
-                   {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
-                </select>
-             </div>
-          </div>
-
           <div style={st.divider} />
 
-          <div style={st.sectionHeader}><FileText size={18} color="#673ab7"/> Konten Modul</div>
+          <div style={st.sectionHeader}><FileText size={18} color="#673ab7"/> Konten Modul (PPT/Materi/Tugas)</div>
           {blocks.map((block) => (
             <div key={block.id} style={st.blockCard}>
               <div style={st.blockHeader}>
@@ -275,12 +251,12 @@ const ManageMateri = () => {
                 <div style={st.fileUploadArea}>
                   <input type="file" id={`f-${block.id}`} hidden onChange={(e) => handleFileUpload(e, block.id)} />
                   <label htmlFor={`f-${block.id}`} style={st.fileLabel}>
-                    <FileUp size={20} /> {block.fileName || "Pilih PDF atau Gambar"}
+                    <FileUp size={20} /> {block.fileName || "Upload PPT atau PDF Materi"}
                   </label>
                 </div>
               ) : (
                 <textarea 
-                  placeholder={block.type === 'video' ? "Link Canva/YT/Drive..." : "Isi materi..."} 
+                  placeholder={block.type === 'video' ? "Link Canva/YT/Drive..." : "Isi deskripsi materi..."} 
                   className="teacher-input" style={st.textArea} value={block.content} 
                   onChange={(e) => updateBlock(block.id, 'content', e.target.value)} 
                 />
@@ -288,7 +264,7 @@ const ManageMateri = () => {
 
               {block.content && (
                 <div style={st.smartPreview}>
-                  <div style={st.previewLabel}><Eye size={12}/> Preview</div>
+                  <div style={st.previewLabel}><Eye size={12}/> Preview Konten</div>
                   {renderSmartPreview(block.content)}
                 </div>
               )}
@@ -310,54 +286,48 @@ const ManageMateri = () => {
             </div>
           ))}
 
-          {/* BAGIAN KUIS DENGAN FITUR EDITOR TERPISAH */}
-          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:30}}>
-             <div style={st.sectionHeader}><HelpCircle size={18} color="#10b981"/> Latihan Kuis</div>
-             {editId && (
-               <button onClick={goToQuizEditor} style={st.btnOpenEditor}>
-                 <ExternalLink size={14}/> Mode Editor Full
-               </button>
-             )}
+          {/* --- BAGIAN KUIS BARU: TERHUBUNG KE MANAGE QUIZ --- */}
+          <div style={st.quizSection}>
+            <div style={st.sectionHeader}>
+              <HelpCircle size={18} color="#673ab7"/> 
+              <span style={{fontWeight:'800', color:'#1e293b'}}>Evaluasi Kuis Mingguan</span>
+            </div>
+
+            <div style={st.quizStatusCard(isMobile)}>
+              <div style={{flex: 1}}>
+                <h4 style={{margin: '0 0 5px 0', fontSize: '14px', fontWeight: '900'}}>
+                  {quizData && quizData.length > 0 
+                    ? `Tersedia ${quizData.length} Soal Kuis` 
+                    : "Belum Ada Soal Kuis"}
+                </h4>
+                <p style={{margin: 0, fontSize: '12px', color: '#64748b', fontWeight: '500'}}>
+                  {quizData && quizData.length > 0 
+                    ? "Kelola pertanyaan melalui editor khusus agar input lebih lancar." 
+                    : "Tambahkan kuis evaluasi khusus untuk materi minggu ini."}
+                </p>
+              </div>
+
+              <button 
+                type="button"
+                onClick={() => {
+                  if (!editId) return alert("Simpan Materi (Publish) terlebih dahulu agar bisa membuat kuis!");
+                  navigate(`/guru/manage-quiz?modulId=${editId}`);
+                }} 
+                style={st.btnManageQuiz}
+              >
+                <Layout size={16}/> {quizData && quizData.length > 0 ? "Edit Soal Kuis" : "Mulai Buat Kuis"}
+              </button>
+            </div>
           </div>
 
-          {quizData.map((q, idx) => (
-            <div key={q.id} style={st.quizCard}>
-              <div style={st.blockHeader}>
-                <span style={st.quizBadge}>KUIS #{idx + 1}</span>
-                <div style={{display:'flex', gap:8}}>
-                   <button onClick={() => setQuizData(quizData.filter(i => i.id !== q.id))} style={st.btnTrash}><Trash2 size={16}/></button>
-                </div>
-              </div>
-              <textarea placeholder="Pertanyaan..." className="teacher-input" style={{minHeight:'60px'}} value={q.question} onChange={(e) => setQuizData(quizData.map(i => i.id === q.id ? {...i, question: e.target.value} : i))} />
-              <div style={st.optGrid(isMobile)}>
-                {q.options.map((opt, oIdx) => (
-                  <div key={oIdx} style={st.optItem(q.correctAnswer === oIdx)}>
-                    <input type="radio" checked={q.correctAnswer === oIdx} onChange={() => setQuizData(quizData.map(i => i.id === q.id ? {...i, correctAnswer: oIdx} : i))} />
-                    <input style={st.optInput} value={opt} onChange={(e) => {
-                      const n = [...q.options]; n[oIdx] = e.target.value;
-                      setQuizData(quizData.map(i => i.id === q.id ? {...i, options: n} : i));
-                    }} />
-                  </div>
-                ))}
-              </div>
-              {idx === 0 && (
-                <div style={st.quizDeadlineBox}>
-                  <div style={st.deadlineCheckRow}><input type="checkbox" checked={q.hasDeadline} onChange={(e) => setQuizData(quizData.map(i => i.id === q.id ? {...i, hasDeadline: e.target.checked} : i))} /> <span>Batas Waktu Kuis</span></div>
-                  {q.hasDeadline && <input type="datetime-local" className="teacher-input" style={st.dateInputMini} value={q.endTime} onChange={(e) => setQuizData(quizData.map(i => i.id === q.id ? {...i, endTime: e.target.value} : i))} />}
-                </div>
-              )}
-            </div>
-          ))}
-
           <div style={st.fabBar(isMobile)}>
-            {!isMobile && <span style={st.fabLabel}>TAMBAH:</span>}
-            <button onClick={() => addBlock('text')} style={st.fab}><FileText size={16}/></button>
-            <button onClick={() => addBlock('file')} style={st.fab}><FileUp size={16}/></button>
-            <button onClick={() => addBlock('video')} style={st.fab}><LinkIcon size={16}/></button>
-            <button onClick={() => addBlock('assignment')} style={st.fab}><Clock size={16}/></button>
-            <button onClick={addQuizQuestion} style={st.fab}><HelpCircle size={16}/></button>
+            {!isMobile && <span style={st.fabLabel}>TAMBAH KONTEN:</span>}
+            <button onClick={() => addBlock('text')} style={st.fab} title="Teks"><FileText size={16}/></button>
+            <button onClick={() => addBlock('file')} style={st.fab} title="PPT/PDF"><FileUp size={16}/></button>
+            <button onClick={() => addBlock('video')} style={st.fab} title="Link Video/Canva"><LinkIcon size={16}/></button>
+            <button onClick={() => addBlock('assignment')} style={st.fab} title="Tugas"><Clock size={16}/></button>
             <div style={st.fabDivider} />
-            <button onClick={handleSave} style={st.btnSaveFab(isMobile)}>{loading ? "..." : "SIMPAN"}</button>
+            <button onClick={handleSave} style={st.btnSaveFab(isMobile)}>{loading ? "..." : "SIMPAN MODUL"}</button>
           </div>
         </div>
       </div>
@@ -366,11 +336,10 @@ const ManageMateri = () => {
 };
 
 const st = {
-  // STYLE ASLI DIBAWAH TETAP DIPERTAHANKAN
   topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
   breadCrumb: { fontSize: '12px', fontWeight: '800', color: '#94a3b8' },
   btnBack: (m) => ({ padding: m ? '8px' : '10px 20px', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', fontWeight: 'bold' }),
-  btnPublish: (m) => ({ padding: m ? '8px 15px' : '12px 25px', borderRadius: '12px', fontWeight: '900' }),
+  btnPublish: (m) => ({ padding: m ? '8px 15px' : '12px 25px', borderRadius: '12px', fontWeight: '900', background:'#673ab7', color:'#fff', border:'none' }),
   formCard: (m) => ({ padding: m ? '20px' : '40px', borderRadius: '24px', background: '#fff' }),
   sectionHeader: { display: 'flex', alignItems: 'center', gap: 10, fontSize: '13px', fontWeight: '900', marginBottom: '20px', marginTop: '30px', borderBottom: '2px solid #f1f5f9', paddingBottom: '10px' },
   coverGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : '200px 1fr', gap: '20px', marginBottom: '30px' }),
@@ -385,16 +354,13 @@ const st = {
   globalDateRow: { display:'flex', alignItems:'center', gap:8, marginTop:10, background:'#f1f5f9', padding:'6px 12px', borderRadius:'10px', width:'fit-content' },
   cleanDateInput: { border:'none', background:'transparent', fontSize:'11px', outline:'none', fontWeight:'bold' },
   targetGrid: (m) => ({ display:'grid', gridTemplateColumns: m ? '1fr' : '1fr 1fr', gap:'15px' }),
-  searchBoxSiswa: { marginTop: 15 },
-  siswaSelectRow: (m) => ({ display:'flex', gap: 10, flexDirection: m ? 'column' : 'row' }),
-  searchIconInside: { position:'absolute', left: 12, top: '50%', transform:'translateY(-50%)', color:'#94a3b8' },
   divider: { height: '2px', background: '#f1f5f9', margin: '30px 0' },
   blockCard: { border: '1px solid #e2e8f0', borderRadius: '20px', padding: '20px', marginBottom: '20px' },
   blockHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' },
   typeBadge: { fontSize: '9px', fontWeight: '900', color: '#673ab7', background: '#f3e8ff', padding: '4px 10px', borderRadius: '8px' },
   btnTrash: { background: '#fff1f2', border: 'none', color: '#ef4444', padding: '8px', borderRadius: '10px' },
   blockTitleInput: { width: '100%', border: 'none', fontSize: '16px', fontWeight: '900', outline: 'none', marginBottom: '12px' },
-  textArea: { width: '100%', minHeight: '100px', borderRadius: '15px', padding: '15px', fontSize: '14px' },
+  textArea: { width: '100%', minHeight: '100px', borderRadius: '15px', padding: '15px', fontSize: '14px', border:'1px solid #f1f5f9' },
   fileUploadArea: { padding: '20px', border: '2px dashed #e2e8f0', borderRadius: '15px', textAlign: 'center' },
   fileLabel: { cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontWeight: '800', fontSize: '13px' },
   smartPreview: { marginTop: '15px', borderRadius: '15px', overflow: 'hidden', border: '1px solid #e2e8f0' },
@@ -404,19 +370,39 @@ const st = {
   deadlineBox: { marginTop: '15px', padding: '15px', background: '#fffbeb', borderRadius: '15px' },
   deadlineCheckRow: { display:'flex', alignItems:'center', gap:8, fontSize: '12px', fontWeight: '800' },
   deadlineFlex: (m) => ({ display: 'flex', gap: '10px', marginTop: '10px', flexDirection: m ? 'column' : 'row' }),
-  dateInputMini: { fontSize: '11px', padding: '8px' },
-  quizCard: { border: '1px solid #f1f5f9', borderRadius: '20px', padding: '20px', marginBottom: '15px' },
-  quizBadge: { fontSize: '9px', fontWeight: '900', color: '#10b981', background: '#d1fae5', padding: '4px 10px', borderRadius: '8px' },
-  optGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : '1fr 1fr', gap: '10px', marginTop: 15 }),
-  optItem: (active) => ({ display: 'flex', alignItems: 'center', gap: 10, padding: '12px', border: '1px solid', borderColor: active ? '#10b981' : '#e2e8f0', borderRadius: '14px', background: active ? '#f0fdf4' : '#fff' }),
-  optInput: { flex: 1, border: 'none', outline: 'none', fontSize: '13px', background: 'transparent', fontWeight: '700' },
-  quizDeadlineBox: { marginTop: '15px', padding: '15px', background: '#f0fdf4', borderRadius: '15px' },
+  dateInputMini: { fontSize: '11px', padding: '8px', border:'1px solid #ddd', borderRadius:'8px' },
+  quizSection: { marginTop: '30px', borderTop: '2px dashed #f1f5f9', paddingTop: '20px' },
+  quizStatusCard: (m) => ({ 
+    display: 'flex', 
+    flexDirection: m ? 'column' : 'row',
+    alignItems: m ? 'flex-start' : 'center', 
+    justifyContent: 'space-between', 
+    background: '#f8fafc', 
+    padding: '20px', 
+    borderRadius: '16px', 
+    border: '1px solid #e2e8f0',
+    marginTop: '10px',
+    gap: m ? '15px' : '0'
+  }),
+  btnManageQuiz: { 
+    background: '#673ab7', 
+    color: 'white', 
+    border: 'none', 
+    padding: '12px 20px', 
+    borderRadius: '10px', 
+    fontWeight: '800', 
+    fontSize: '12px', 
+    cursor: 'pointer', 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 8,
+    boxShadow: '0 4px 10px rgba(103, 58, 183, 0.2)'
+  },
   fabBar: (m) => ({ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', background: '#1e293b', padding: '10px', borderRadius: '20px', alignItems: 'center', zIndex: 9999, width: m ? '95%' : 'auto', justifyContent: 'center' }),
   fabLabel: { fontSize: '9px', fontWeight: '900', color: '#94a3b8', marginRight: 5 },
   fab: { background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '10px', borderRadius: '12px' },
   fabDivider: { width:'1px', height:'20px', background:'rgba(255,255,255,0.1)' },
-  btnSaveFab: (m) => ({ background: '#673ab7', color: 'white', border: 'none', padding: m ? '10px 15px' : '10px 20px', borderRadius: '12px', fontWeight: '900', fontSize:'12px' }),
-  btnOpenEditor: { background: '#f0fdf4', color: '#10b981', border: '1px solid #10b981', padding: '6px 12px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold', display:'flex', alignItems:'center', gap:5, cursor:'pointer' }
+  btnSaveFab: (m) => ({ background: '#673ab7', color: 'white', border: 'none', padding: m ? '10px 15px' : '10px 20px', borderRadius: '12px', fontWeight: '900', fontSize:'12px' })
 };
 
 export default ManageMateri;
