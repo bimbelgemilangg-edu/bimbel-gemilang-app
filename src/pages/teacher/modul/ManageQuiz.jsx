@@ -61,11 +61,11 @@ const ManageQuiz = () => {
   };
 
   const updateQ = (id, val) => {
-    setQuestions(questions.map(q => q.id === id ? { ...q, q: val } : q));
+    setQuestions(prev => prev.map(q => q.id === id ? { ...q, q: val } : q));
   };
 
   const updateOpt = (qId, optIdx, val) => {
-    setQuestions(questions.map(q => {
+    setQuestions(prev => prev.map(q => {
       if (q.id === qId) {
         const newOpts = [...q.options];
         newOpts[optIdx] = val;
@@ -173,15 +173,19 @@ const ManageQuiz = () => {
           />
           <div style={styles.optGrid}>
             {item.options.map((opt, optIdx) => {
-              const inputId = `q-${item.id}-opt-${optIdx}`;
+              const uniqueInputId = `radio-${item.id}-${optIdx}`;
               return (
-                <div key={optIdx} style={{...styles.optItem, borderColor: item.correct === optIdx ? '#10b981' : '#e2e8f0', background: item.correct === optIdx ? '#f0fdf4' : '#fff'}}>
+                <div key={optIdx} style={{
+                  ...styles.optItem, 
+                  borderColor: item.correct === optIdx ? '#10b981' : '#e2e8f0', 
+                  background: item.correct === optIdx ? '#f0fdf4' : '#fff'
+                }}>
                   <input 
                     type="radio" 
-                    id={inputId}
+                    id={uniqueInputId}
                     name={`correct-${item.id}`}
                     checked={item.correct === optIdx} 
-                    onChange={() => setQuestions(questions.map(q => q.id === item.id ? {...q, correct: optIdx} : q))} 
+                    onChange={() => setQuestions(prev => prev.map(q => q.id === item.id ? {...q, correct: optIdx} : q))} 
                   />
                   <input 
                     style={styles.optInput} 
@@ -189,8 +193,8 @@ const ManageQuiz = () => {
                     value={opt}
                     onChange={(e) => updateOpt(item.id, optIdx, e.target.value)}
                   />
-                  <label htmlFor={inputId} style={{cursor:'pointer'}}>
-                    {item.correct === optIdx ? <CheckCircle size={16} color="#10b981"/> : <div style={styles.circleCheck}/>}
+                  <label htmlFor={uniqueInputId} style={{cursor:'pointer', display:'flex', alignItems:'center'}}>
+                    {item.correct === optIdx ? <CheckCircle size={18} color="#10b981"/> : <div style={styles.circleCheck}/>}
                   </label>
                 </div>
               );
@@ -225,8 +229,8 @@ const styles = {
   optGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '12px' },
   optItem: { display: 'flex', alignItems: 'center', gap: 12, padding: '14px', border: '2px solid #e2e8f0', borderRadius: '16px', transition:'0.2s' },
   optInput: { flex: 1, border: 'none', outline: 'none', fontSize: '13px', fontWeight: '700', background: 'transparent' },
-  circleCheck: { width: 16, height: 16, borderRadius: '50%', border: '2px solid #cbd5e1' },
-  btnAdd: { width: '100%', maxWidth: '750px', padding: '18px', border: '2px dashed #cbd5e1', color: '#64748b', background: 'white', borderRadius: '20px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, transition:'0.2s', ':hover': { borderColor: '#673ab7', color: '#673ab7' } }
+  circleCheck: { width: 18, height: 18, borderRadius: '50%', border: '2px solid #cbd5e1' },
+  btnAdd: { width: '100%', maxWidth: '750px', padding: '18px', border: '2px dashed #cbd5e1', color: '#64748b', background: 'white', borderRadius: '20px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, transition:'0.2s' }
 };
 
 export default ManageQuiz;
