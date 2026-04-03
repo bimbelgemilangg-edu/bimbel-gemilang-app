@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
+import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore"; 
 import { 
-  doc, getDoc, updateDoc, serverTimestamp 
-} from "firebase/firestore"; 
-import { 
-  HelpCircle, Plus, Trash2, CheckCircle, 
-  ArrowLeft, Save, AlertCircle, Layout 
+  Plus, Trash2, CheckCircle, ArrowLeft, Save, 
+  Layout, FileText, Sparkles, X 
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -16,15 +14,11 @@ const ManageQuiz = () => {
   
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(!!modulId);
+  const [showImport, setShowImport] = useState(false);
+  const [bulkText, setBulkText] = useState("");
   const [quizInfo, setQuizInfo] = useState({ title: '', subject: '', deadline: '' });
-  const [questions, setQuestions] = useState([
-    { id: Date.now(), q: '', options: ['', '', '', ''], correct: 0 }
-  ]);
+  const [questions, setQuestions] = useState([]);
 
-  const COLLECTION_NAME = "bimbel_modul";
-
-  // Handle Responsive
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
@@ -35,203 +29,180 @@ const ManageQuiz = () => {
     if (modulId) {
       const fetchCurrentData = async () => {
         try {
-          const snap = await getDoc(doc(db, COLLECTION_NAME, modulId));
+          const snap = await getDoc(doc(db, "bimbel_modul", modulId));
           if (snap.exists()) {
             const data = snap.data();
-            setQuizInfo({
-              title: data.title || "Kuis Tanpa Judul",
-              subject: data.subject || "Umum",
-              deadline: data.deadlineQuiz || ""
-            });
-            
-            if (data.quizData && data.quizData.length > 0) {
+            setQuizInfo({ title: data.title || "", subject: data.subject || "", deadline: data.deadlineQuiz || "" });
+            if (data.quizData?.length > 0) {
               setQuestions(data.quizData.map((q, idx) => ({
-                id: q.id || Date.now() + idx,
-                q: q.question || '',
-                options: q.options || ['', '', '', ''],
-                correct: q.correctAnswer || 0
+                id: q.id || Date.now() + idx, q: q.question, options: q.options, correct: q.correctAnswer
               })));
+            } else {
+              setQuestions([{ id: Date.now(), q: '', options: ['', '', '', ''], correct: 0 }]);
             }
           }
-        } catch (err) {
-          console.error("Gagal load data:", err);
-        } finally {
-          setFetching(false);
-        }
+        } catch (err) { console.error(err); }
       };
       fetchCurrentData();
     }
   }, [modulId]);
 
-  const addQuestion = () => {
-    setQuestions([...questions, { id: Date.now(), q: '', options: ['', '', '', ''], correct: 0 }]);
-  };
+  // LOGIKA SMART GENERATE (MEMISAHKAN SOAL & JAWABAN)
+  const handleSmartGenerate = () => {
+    if (!bulkText.trim()) return;
+    
+    // Regex untuk mendeteksi angka soal (1. atau 1) ) dan opsi (A. atau a.)
+    const rawBlocks = bulkText.split(/\n(?=\d+[\.\)])/); 
+    const parsedQuestions = rawBlocks.map((block, index) => {
+      const lines = block.trim().split('\n');
+      const questionText = lines[0].replace(/^\d+[\.\)]\s*/, '');
+      
+      // Ambil opsi A, B, C, D
+      const optionLines = lines.slice(1).filter(l => /^[A-E][\.\)]/i.test(l.trim()));
+      const options = optionLines.map(opt => opt.replace(/^[A-E][\.\)]\s*/i, '').trim());
+      
+      // Pastikan selalu ada 4 slot opsi
+      while (options.length < 4) options.push("");
 
-  const removeQuestion = (id) => {
-    if (questions.length > 1) {
-      setQuestions(questions.filter(q => q.id !== id));
-    }
-  };
+      return {
+        id: Date.now() + index,
+        q: questionText,
+        options: options.slice(0, 4),
+        correct: 0 // Default jawaban pertama, guru tinggal ganti klik
+      };
+    });
 
-  const updateQ = (id, val) => {
-    setQuestions(prev => prev.map(q => q.id === id ? { ...q, q: val } : q));
-  };
-
-  const updateOpt = (qId, optIdx, val) => {
-    setQuestions(prev => prev.map(q => {
-      if (q.id === qId) {
-        const newOpts = [...q.options];
-        newOpts[optIdx] = val;
-        return { ...q, options: newOpts };
-      }
-      return q;
-    }));
+    setQuestions([...questions, ...parsedQuestions].filter(q => q.q !== ""));
+    setBulkText("");
+    setShowImport(false);
   };
 
   const handleSaveQuiz = async () => {
-    if (!modulId) return alert("Error: ID Materi tidak ditemukan!");
     setLoading(true);
     try {
-      const docRef = doc(db, COLLECTION_NAME, modulId);
-      await updateDoc(docRef, {
-        quizData: questions.map(q => ({
-          id: q.id,
-          question: q.q,
-          options: q.options,
-          correctAnswer: q.correct
-        })),
+      await updateDoc(doc(db, "bimbel_modul", modulId), {
+        quizData: questions.map(q => ({ id: q.id, question: q.q, options: q.options, correctAnswer: q.correct })),
         deadlineQuiz: quizInfo.deadline,
         updatedAt: serverTimestamp()
       });
-      alert("🚀 Kuis Berhasil Disinkronkan!");
+      alert("✅ KUIS BERHASIL DISIMPAN!");
       navigate(-1);
-    } catch (err) {
-      alert("Gagal sinkron: " + err.message);
-    }
+    } catch (err) { alert(err.message); }
     setLoading(false);
   };
 
-  if (fetching) return <div style={styles.loadingFull}>Sinkronisasi Data Kuis...</div>;
-
   return (
-    <div style={styles.container(isMobile)}>
-      {/* Tombol Navigasi Atas */}
-      <div style={styles.headerNav}>
-        <button onClick={() => navigate(-1)} style={styles.btnBack}><ArrowLeft size={18}/> Batal</button>
-        <button onClick={handleSaveQuiz} disabled={loading} style={styles.btnSave}>
-          <Save size={18}/> {loading ? "..." : "Simpan Kuis"}
-        </button>
-      </div>
+    <div style={st.container(isMobile)}>
+      {/* MODAL IMPORT */}
+      {showImport && (
+        <div style={st.modalOverlay}>
+          <div style={st.modalContent(isMobile)}>
+            <div style={st.modalHeader}>
+              <h3 style={{margin:0}}><Sparkles size={20} color="#673ab7"/> Smart Bulk Import</h3>
+              <button onClick={() => setShowImport(false)} style={st.btnClose}><X/></button>
+            </div>
+            <p style={{fontSize:12, color:'#64748b'}}>Paste soal dengan format: <b>1. Pertanyaan (Enter) A. Opsi A (Enter) B. Opsi B...</b></p>
+            <textarea 
+              style={st.bulkArea} 
+              placeholder="Contoh:&#10;1. Siapa penemu lampu?&#10;A. Edison&#10;B. Tesla&#10;C. Newton&#10;D. Einstein"
+              value={bulkText}
+              onChange={(e) => setBulkText(e.target.value)}
+            />
+            <button onClick={handleSmartGenerate} style={st.btnGenerate}>GENERATE SEKARANG</button>
+          </div>
+        </div>
+      )}
 
-      <div style={styles.infoCard}>
-        <div style={styles.badgeInfo}><Layout size={14}/> TERKONEKSI KE MATERI</div>
-        <h2 style={styles.infoTitle}>{quizInfo.title}</h2>
-        <p style={styles.infoSub}>{quizInfo.subject.toUpperCase()}</p>
-        
-        <div style={styles.deadlineBox}>
-           <label style={styles.label}>Batas Waktu Pengerjaan:</label>
-           <input 
-             type="datetime-local" 
-             style={styles.dateInput} 
-             value={quizInfo.deadline}
-             onChange={(e) => setQuizInfo({...quizInfo, deadline: e.target.value})}
-           />
+      <div style={st.headerNav}>
+        <button onClick={() => navigate(-1)} style={st.btnBack}><ArrowLeft size={18}/> Kembali</button>
+        <div style={{display:'flex', gap:10}}>
+           <button onClick={() => setShowImport(true)} style={st.btnImport}><FileText size={18}/> Bulk Import</button>
+           <button onClick={handleSaveQuiz} disabled={loading} style={st.btnSave}>
+            <Save size={18}/> {loading ? "..." : "Simpan"}
+          </button>
         </div>
       </div>
 
+      <div style={st.infoCard}>
+        <div style={st.badgeInfo}><Layout size={14}/> MATERI: {quizInfo.title}</div>
+        <input type="datetime-local" style={st.dateInput} value={quizInfo.deadline} onChange={(e) => setQuizInfo({...quizInfo, deadline: e.target.value})} />
+      </div>
+
       {questions.map((item, idx) => (
-        <div key={item.id} style={styles.qCard}>
-          <div style={styles.qHeader}>
-            <span style={styles.qNumber}>SOAL #{idx + 1}</span>
-            <button onClick={() => removeQuestion(item.id)} style={styles.btnDel}><Trash2 size={16}/></button>
+        <div key={item.id} style={st.qCard}>
+          <div style={st.qHeader}>
+            <span style={st.qNumber}>PERTANYAAN #{idx + 1}</span>
+            <button onClick={() => setQuestions(questions.filter(q => q.id !== item.id))} style={st.btnDel}><Trash2 size={16}/></button>
           </div>
           <textarea 
-            style={styles.qInput} 
-            placeholder="Tulis soal kuis di sini..." 
-            value={item.q}
-            onChange={(e) => updateQ(item.id, e.target.value)}
+            style={st.qInput} 
+            value={item.q} 
+            onChange={(e) => setQuestions(questions.map(q => q.id === item.id ? {...q, q: e.target.value} : q))} 
           />
-          <div style={styles.optGrid(isMobile)}>
-            {item.options.map((opt, optIdx) => {
-              const inputId = `radio-${item.id}-${optIdx}`;
-              return (
-                <div key={optIdx} style={{
-                  ...styles.optItem, 
-                  borderColor: item.correct === optIdx ? '#10b981' : '#e2e8f0',
-                  background: item.correct === optIdx ? '#f0fdf4' : '#fff'
-                }}>
-                  <input 
-                    type="radio" 
-                    id={inputId}
-                    name={`correct-${item.id}`}
-                    checked={item.correct === optIdx} 
-                    onChange={() => setQuestions(prev => prev.map(q => q.id === item.id ? {...q, correct: optIdx} : q))} 
-                  />
-                  <input 
-                    style={styles.optInput} 
-                    placeholder={`Pilihan ${optIdx + 1}`} 
-                    value={opt}
-                    onChange={(e) => updateOpt(item.id, optIdx, e.target.value)}
-                  />
-                  <label htmlFor={inputId} style={{cursor:'pointer'}}>
-                    {item.correct === optIdx ? <CheckCircle size={18} color="#10b981"/> : <div style={styles.circleCheck}/>}
-                  </label>
+          <div style={st.optGrid(isMobile)}>
+            {item.options.map((opt, optIdx) => (
+              <div 
+                key={optIdx} 
+                onClick={() => setQuestions(questions.map(q => q.id === item.id ? {...q, correct: optIdx} : q))}
+                style={st.optItem(item.correct === optIdx)}
+              >
+                <div style={st.radioCircle(item.correct === optIdx)}>
+                  {item.correct === optIdx && <div style={st.radioInner}/>}
                 </div>
-              );
-            })}
+                <input 
+                  style={st.optInput} 
+                  value={opt} 
+                  placeholder={`Jawaban ${optIdx + 1}`}
+                  onChange={(e) => {
+                    const newOpts = [...item.options];
+                    newOpts[optIdx] = e.target.value;
+                    setQuestions(questions.map(q => q.id === item.id ? {...q, options: newOpts} : q));
+                  }} 
+                />
+                {item.correct === optIdx && <CheckCircle size={16} color="#10b981"/>}
+              </div>
+            ))}
           </div>
         </div>
       ))}
 
-      <button onClick={addQuestion} style={styles.btnAdd}>
-        <Plus size={18}/> Tambah Pertanyaan
+      <button onClick={() => setQuestions([...questions, { id: Date.now(), q: '', options: ['', '', '', ''], correct: 0 }])} style={st.btnAdd}>
+        <Plus size={18}/> Tambah Soal Manual
       </button>
-
-      {!modulId && (
-        <div style={styles.errorBanner}>
-          <AlertCircle size={20}/> 
-          Editor ini harus diakses melalui Kelola Materi.
-        </div>
-      )}
     </div>
   );
 };
 
-const styles = {
-  // FIXED: Ditambahkan marginLeft agar tidak tertutup sidebar
-  container: (m) => ({ 
-    padding: '40px 20px', 
-    background: '#f8fafc', 
-    minHeight: '100vh', 
-    display: 'flex', 
-    flexDirection: 'column', 
-    alignItems: 'center',
-    marginLeft: m ? '0' : '260px', // Sesuaikan lebar sidebar Anda
-    paddingBottom: '120px', // Ruang agar tidak tertutup elemen bawah
-    transition: 'margin 0.3s ease'
-  }),
-  loadingFull: { height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', color: '#64748b' },
-  headerNav: { width: '100%', maxWidth: '800px', display: 'flex', justifyContent: 'space-between', marginBottom: '20px', zIndex: 10 },
-  btnBack: { background: 'white', border: '1px solid #e2e8f0', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', display:'flex', alignItems:'center', gap:8, fontWeight:'700', fontSize:'13px' },
-  btnSave: { background: '#673ab7', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '12px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 4px 12px rgba(103, 58, 183, 0.3)' },
-  infoCard: { background: 'white', width: '100%', maxWidth: '800px', padding: '25px', borderRadius: '24px', marginBottom: '25px', border: '1px solid #e2e8f0', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' },
-  badgeInfo: { background: '#f1f5f9', color: '#64748b', padding: '5px 12px', borderRadius: '8px', fontSize: '10px', fontWeight: '800', width: 'fit-content', marginBottom: 10, display:'flex', alignItems:'center', gap:5 },
-  infoTitle: { margin: 0, fontSize: '20px', fontWeight: '900', color: '#1e293b' },
-  infoSub: { margin: '5px 0 20px 0', color: '#64748b', fontSize: '13px', fontWeight: '600' },
-  deadlineBox: { borderTop: '1px solid #f1f5f9', paddingTop: 15 },
-  label: { display: 'block', fontSize: '11px', fontWeight: '800', color: '#475569', marginBottom: 8 },
-  dateInput: { width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', outline: 'none', fontWeight: '700' },
-  qCard: { background: 'white', width: '100%', maxWidth: '800px', padding: '25px', borderRadius: '24px', marginBottom: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' },
+const st = {
+  container: (m) => ({ padding: '30px 20px', paddingBottom: '150px', background: '#f8fafc', minHeight: '100vh', marginLeft: m ? 0 : '260px', display: 'flex', flexDirection: 'column', alignItems: 'center' }),
+  headerNav: { width: '100%', maxWidth: '800px', display: 'flex', justifyContent: 'space-between', marginBottom: '20px' },
+  btnBack: { background: 'white', border: '1px solid #e2e8f0', padding: '10px 15px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' },
+  btnSave: { background: '#673ab7', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '12px', fontWeight: '900', cursor: 'pointer' },
+  btnImport: { background: '#eef2ff', color: '#4f46e5', border: '1px solid #c7d2fe', padding: '10px 15px', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 },
+  infoCard: { background: 'white', width: '100%', maxWidth: '800px', padding: '20px', borderRadius: '20px', marginBottom: '20px', border: '1px solid #e2e8f0' },
+  badgeInfo: { fontSize: '10px', fontWeight: '900', color: '#673ab7', marginBottom: 10, display: 'flex', gap: 5 },
+  dateInput: { width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0', fontWeight: 'bold' },
+  qCard: { background: 'white', width: '100%', maxWidth: '800px', padding: '25px', borderRadius: '24px', marginBottom: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' },
   qHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: 15 },
-  qNumber: { fontSize: '11px', fontWeight: '900', color: '#673ab7', background: '#f3e8ff', padding: '4px 12px', borderRadius: '8px' },
-  btnDel: { background: '#fff1f2', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '8px', borderRadius: '10px' },
-  qInput: { width: '100%', minHeight: '90px', padding: '18px', borderRadius: '16px', background: '#f8fafc', border: '1px solid #f1f5f9', outline: 'none', marginBottom: 20, fontSize: '14px', fontWeight: '600', lineHeight: '1.5' },
+  qNumber: { fontSize: '10px', fontWeight: '900', color: '#673ab7', background: '#f3e8ff', padding: '4px 10px', borderRadius: '8px' },
+  btnDel: { background: '#fff1f2', color: '#ef4444', border: 'none', padding: '8px', borderRadius: '10px', cursor: 'pointer' },
+  qInput: { width: '100%', minHeight: '80px', padding: '15px', borderRadius: '15px', border: '1px solid #f1f5f9', background: '#f8fafc', fontSize: '14px', fontWeight: '600', marginBottom: 15, outline: 'none' },
   optGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : '1fr 1fr', gap: '12px' }),
-  optItem: { display: 'flex', alignItems: 'center', gap: 12, padding: '14px', border: '2px solid', borderRadius: '16px', transition: '0.2s' },
-  optInput: { flex: 1, border: 'none', outline: 'none', fontSize: '13px', fontWeight: '700', background: 'transparent' },
-  circleCheck: { width: 18, height: 18, borderRadius: '50%', border: '2px solid #cbd5e1' },
-  btnAdd: { width: '100%', maxWidth: '800px', padding: '18px', border: '2px dashed #cbd5e1', color: '#64748b', background: 'white', borderRadius: '20px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: '20px' },
-  errorBanner: { marginTop: 20, color: '#ef4444', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }
+  optItem: (act) => ({ 
+    display: 'flex', alignItems: 'center', gap: 10, padding: '14px', borderRadius: '16px', border: '2px solid', 
+    borderColor: act ? '#10b981' : '#f1f5f9', background: act ? '#f0fdf4' : '#fff', cursor: 'pointer', transition: '0.2s' 
+  }),
+  radioCircle: (act) => ({ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${act ? '#10b981' : '#cbd5e1'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }),
+  radioInner: { width: 10, height: 10, borderRadius: '50%', background: '#10b981' },
+  optInput: { flex: 1, border: 'none', outline: 'none', background: 'transparent', fontWeight: '700', fontSize: '13px' },
+  btnAdd: { width: '100%', maxWidth: '800px', padding: '18px', border: '2px dashed #cbd5e1', background: 'white', borderRadius: '20px', fontWeight: '800', color: '#64748b', cursor: 'pointer' },
+  // Modal Styles
+  modalOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px' },
+  modalContent: (m) => ({ background: 'white', width: '100%', maxWidth: '600px', padding: '25px', borderRadius: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }),
+  modalHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: 15 },
+  btnClose: { background: 'none', border: 'none', cursor: 'pointer' },
+  bulkArea: { width: '100%', height: '250px', padding: '15px', borderRadius: '15px', border: '1px solid #e2e8f0', fontSize: '13px', fontFamily: 'monospace', marginBottom: 15, outline: 'none' },
+  btnGenerate: { width: '100%', padding: '15px', background: '#673ab7', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900', cursor: 'pointer' }
 };
 
 export default ManageQuiz;
