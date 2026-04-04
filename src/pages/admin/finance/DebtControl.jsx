@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
-import { collection, getDocs, doc, updateDoc, addDoc } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, addDoc, query, orderBy } from "firebase/firestore";
+import { ShieldAlert, ShieldCheck, Calendar, Clock, Wallet, CheckCircle, AlertCircle } from 'lucide-react';
 
 const DebtControl = () => {
   const [students, setStudents] = useState([]);
@@ -11,26 +12,48 @@ const DebtControl = () => {
   const [payAmount, setPayAmount] = useState("");
   const [payMethod, setPayMethod] = useState("Tunai");
 
-  // 1. CARI SISWA YANG PUNYA HUTANG
   const fetchDebts = async () => {
     setLoading(true);
     try {
         const snap = await getDocs(collection(db, "students"));
         const debts = [];
+        const today = new Date();
         
-        snap.forEach(doc => {
-            const d = doc.data();
+        snap.forEach(docSnap => {
+            const d = docSnap.data();
             const total = parseInt(d.totalTagihan || 0);
             const paid = parseInt(d.totalBayar || 0);
-            const sisa = total - paid;
+            const sisaHutang = total - paid;
+
+            // LOGIKA HITUNG SISA BULAN PAKET
+            // Asumsi field: tanggalMulai (String YYYY-MM-DD) dan durasiBulan (Number)
+            let sisaBulan = 0;
+            let statusPaket = "Habis";
             
-            if(sisa > 0) {
-                debts.push({ id: doc.id, ...d, sisa, paid });
+            if (d.tanggalMulai && d.durasiBulan) {
+                const startDate = new Date(d.tanggalMulai);
+                const endDate = new Date(startDate.setMonth(startDate.getMonth() + parseInt(d.durasiBulan)));
+                
+                const diffTime = endDate - today;
+                sisaBulan = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30)); // Konversi ke bulan
+                if (diffTime > 0) statusPaket = `${sisaBulan} Bulan Lagi`;
+            }
+
+            // Filter: Tampilkan yang belum lunas ATAU yang paketnya hampir habis
+            if (sisaHutang > 0 || sisaBulan <= 1) {
+                debts.push({ 
+                    id: docSnap.id, 
+                    ...d, 
+                    sisaHutang, 
+                    paid, 
+                    sisaBulan: sisaBulan > 0 ? sisaBulan : 0,
+                    statusPaket 
+                });
             }
         });
         setStudents(debts);
     } catch (error) {
-        console.error("Error fetching debts:", error);
+        console.error("Error:", error);
     } finally {
         setLoading(false);
     }
@@ -38,80 +61,90 @@ const DebtControl = () => {
 
   useEffect(() => { fetchDebts(); }, []);
 
-  // 2. PROSES BAYAR CICILAN
   const handlePay = async (e) => {
     e.preventDefault();
     if(!selectedStudent) return;
     const nominal = parseInt(payAmount);
     
-    if(nominal > selectedStudent.sisa) return alert("Nominal melebihi sisa hutang!");
+    if(nominal > selectedStudent.sisaHutang) {
+        alert("Peringatan: Nominal melebihi sisa hutang (Akan dianggap deposit/kelebihan bayar)");
+    }
 
     try {
-        // A. UPDATE DATA SISWA (Tambah Total Bayar)
         const studentRef = doc(db, "students", selectedStudent.id);
         await updateDoc(studentRef, {
             totalBayar: (selectedStudent.paid || 0) + nominal
         });
 
-        // B. CATAT DI FINANCE LOGS (Agar Masuk Dashboard Keuangan)
-        // PERBAIKAN: Memastikan format date standar YYYY-MM-DD agar terbaca Dashboard
-        const today = new Date().toISOString().split('T')[0];
-        
+        const todayStr = new Date().toISOString().split('T')[0];
         await addDoc(collection(db, "finance_logs"), {
             type: "Pemasukan",
             category: "SPP / Cicilan Piutang",
             amount: nominal,
             method: payMethod, 
-            note: `Cicilan Pelunasan: ${selectedStudent.nama}`,
-            date: today,
+            note: `Pelunasan: ${selectedStudent.nama}`,
+            date: todayStr,
             createdAt: new Date().toISOString()
         });
 
-        alert("✅ Pembayaran Berhasil! Data Keuangan & Siswa Terupdate.");
+        alert("✅ Pembayaran Berhasil Disinkronkan!");
         setSelectedStudent(null);
         setPayAmount("");
-        fetchDebts(); // Refresh data
+        fetchDebts();
     } catch (err) {
-        console.error(err);
-        alert("Gagal memproses pembayaran");
+        alert("Gagal memproses data");
     }
   };
 
-  if (loading) return <div style={{padding:20}}>Memuat data piutang...</div>;
+  if (loading) return <div style={{padding:30, textAlign:'center'}}>Menghitung Piutang & Masa Aktif...</div>;
 
   return (
-    <div>
-        <h3 style={{color:'#e67e22', marginTop:0}}>⚠️ Monitoring Piutang Siswa</h3>
-        <p style={{fontSize:13, color:'#666'}}>Daftar siswa yang belum lunas. Klik tombol bayar untuk mencatat cicilan masuk.</p>
+    <div style={{fontFamily: 'Inter, sans-serif'}}>
+        <div style={st.headerBanner}>
+            <h3 style={{margin:0, color:'#e67e22'}}>📊 Monitoring Piutang & Masa Aktif</h3>
+            <p style={{fontSize:13, color:'#7f8c8d', margin:'5px 0 0 0'}}>Pantau tunggakan biaya dan durasi paket belajar siswa secara real-time.</p>
+        </div>
         
-        <div style={{overflowX:'auto'}}>
-            <table style={{width:'100%', borderCollapse:'collapse', background:'white', marginTop:15, borderRadius:8, overflow:'hidden', boxShadow:'0 2px 5px rgba(0,0,0,0.05)'}}>
+        <div style={st.tableWrapper}>
+            <table style={st.table}>
                 <thead>
-                    <tr style={{background:'#e67e22', color:'white', textAlign:'left'}}>
-                        <th style={{padding:15}}>Nama Siswa</th>
-                        <th style={{padding:15}}>Ortu / WA</th>
-                        <th style={{padding:15, textAlign:'right'}}>Total Tagihan</th>
-                        <th style={{padding:15, textAlign:'right'}}>Sudah Bayar</th>
-                        <th style={{padding:15, textAlign:'right'}}>SISA (Tunggakan)</th>
-                        <th style={{padding:15, textAlign:'center'}}>Aksi</th>
+                    <tr style={st.thRow}>
+                        <th style={st.th}>Siswa & Status</th>
+                        <th style={st.th}>Masa Paket</th>
+                        <th style={st.th}>Total Tagihan</th>
+                        <th style={st.th}>Sudah Bayar</th>
+                        <th style={st.th}>Sisa Hutang</th>
+                        <th style={st.th}>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {students.length === 0 ? <tr><td colSpan="6" style={{padding:20, textAlign:'center'}}>Tidak ada siswa menunggak.</td></tr> : 
-                    students.map(s => (
-                        <tr key={s.id} style={{borderBottom:'1px solid #eee'}}>
-                            <td style={{padding:15}}><b>{s.nama}</b><br/><small>{s.kelasSekolah}</small></td>
-                            <td style={{padding:15}}>{s.ortu?.ayah || s.ortu?.ibu || '-'}<br/>{s.ortu?.hp}</td>
-                            <td style={{padding:15, textAlign:'right'}}>Rp {s.totalTagihan?.toLocaleString()}</td>
-                            <td style={{padding:15, textAlign:'right'}}>Rp {s.paid?.toLocaleString()}</td>
-                            <td style={{padding:15, textAlign:'right', fontWeight:'bold', color:'#c0392b'}}>Rp {s.sisa.toLocaleString()}</td>
-                            <td style={{padding:15, textAlign:'center'}}>
-                                <button 
-                                    onClick={() => setSelectedStudent(s)}
-                                    style={{background:'#27ae60', color:'white', border:'none', padding:'8px 15px', borderRadius:5, cursor:'pointer', fontWeight:'bold'}}
-                                >
-                                    💸 Bayar
-                                </button>
+                    {students.map(s => (
+                        <tr key={s.id} style={st.tr}>
+                            <td style={st.td}>
+                                <div style={{display:'flex', alignItems:'center', gap:10}}>
+                                    {s.isBlocked ? <ShieldAlert size={18} color="#ef4444"/> : <ShieldCheck size={18} color="#10b981"/>}
+                                    <div>
+                                        <div style={{fontWeight:'bold', color:'#2c3e50'}}>{s.nama}</div>
+                                        <div style={{fontSize:11, color: s.isBlocked ? '#ef4444' : '#10b981', fontWeight:'600'}}>
+                                            {s.isBlocked ? "AKSES DIBLOKIR" : "AKSES AKTIF"}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style={st.td}>
+                                <div style={{display:'flex', alignItems:'center', gap:5, fontSize:13}}>
+                                    <Clock size={14} color="#64748b"/>
+                                    <span style={{fontWeight:'600', color: s.sisaBulan <= 1 ? '#e67e22' : '#2c3e50'}}>
+                                        {s.statusPaket}
+                                    </span>
+                                </div>
+                                <small style={{color:'#94a3b8'}}>Dari {s.durasiBulan || 0} bln</small>
+                            </td>
+                            <td style={st.td}>Rp {s.totalTagihan?.toLocaleString()}</td>
+                            <td style={st.td}><span style={{color:'#10b981'}}>Rp {s.paid?.toLocaleString()}</span></td>
+                            <td style={{...st.td, fontWeight:'bold', color:'#c0392b'}}>Rp {s.sisaHutang.toLocaleString()}</td>
+                            <td style={st.td}>
+                                <button onClick={() => setSelectedStudent(s)} style={st.btnPay}>💸 Bayar</button>
                             </td>
                         </tr>
                     ))}
@@ -119,30 +152,32 @@ const DebtControl = () => {
             </table>
         </div>
 
-        {/* MODAL POPUP BAYAR */}
         {selectedStudent && (
-            <div style={{position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.5)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:1000}}>
-                <div style={{background:'white', padding:30, borderRadius:10, width:400, boxShadow:'0 5px 15px rgba(0,0,0,0.2)'}}>
-                    <h3 style={{marginTop:0}}>Pembayaran Cicilan: {selectedStudent.nama}</h3>
-                    <p>Sisa Tunggakan: <b>Rp {selectedStudent.sisa.toLocaleString()}</b></p>
+            <div style={st.modalOverlay}>
+                <div style={st.modalContent}>
+                    <h3 style={{marginTop:0, borderBottom:'1px solid #eee', paddingBottom:15}}>Penerimaan Dana: {selectedStudent.nama}</h3>
+                    <div style={st.infoBox}>
+                        <div>Sisa Piutang: <b>Rp {selectedStudent.sisaHutang.toLocaleString()}</b></div>
+                        <div>Masa Paket: <b>{selectedStudent.statusPaket}</b></div>
+                    </div>
                     
                     <form onSubmit={handlePay}>
                         <div style={{marginBottom:15}}>
-                            <label style={{display:'block', fontWeight:'bold'}}>Nominal Bayar (Rp)</label>
-                            <input type="number" required value={payAmount} onChange={e=>setPayAmount(e.target.value)} style={{width:'100%', padding:10, marginTop:5, border:'1px solid #ccc', borderRadius:5, boxSizing:'border-box'}} autoFocus />
+                            <label style={st.label}>Jumlah Bayar (Rp)</label>
+                            <input type="number" required value={payAmount} onChange={e=>setPayAmount(e.target.value)} style={st.input} placeholder="Contoh: 500000" autoFocus />
                         </div>
                         
-                        <div style={{marginBottom:15}}>
-                            <label style={{display:'block', fontWeight:'bold'}}>Masuk Ke Saldo Mana?</label>
-                            <select value={payMethod} onChange={e=>setPayMethod(e.target.value)} style={{width:'100%', padding:10, marginTop:5, border:'1px solid #ccc', borderRadius:5}}>
-                                <option value="Tunai">💵 Tunai (Kasir/Brankas)</option>
-                                <option value="Bank">💳 Transfer Bank (Rekening)</option>
+                        <div style={{marginBottom:20}}>
+                            <label style={st.label}>Metode Pembayaran</label>
+                            <select value={payMethod} onChange={e=>setPayMethod(e.target.value)} style={st.input}>
+                                <option value="Tunai">💵 Kasir (Tunai)</option>
+                                <option value="Bank">💳 Transfer Bank</option>
                             </select>
                         </div>
 
-                        <div style={{display:'flex', gap:10, marginTop:20}}>
-                            <button type="submit" style={{flex:1, background:'#27ae60', color:'white', border:'none', padding:12, borderRadius:5, cursor:'pointer', fontWeight:'bold'}}>PROSES BAYAR</button>
-                            <button type="button" onClick={()=>setSelectedStudent(null)} style={{flex:1, background:'#ccc', border:'none', padding:12, borderRadius:5, cursor:'pointer'}}>BATAL</button>
+                        <div style={{display:'flex', gap:10}}>
+                            <button type="submit" style={st.btnSubmit}>SIMPAN PEMBAYARAN</button>
+                            <button type="button" onClick={()=>setSelectedStudent(null)} style={st.btnCancel}>BATAL</button>
                         </div>
                     </form>
                 </div>
@@ -150,6 +185,24 @@ const DebtControl = () => {
         )}
     </div>
   );
+};
+
+const st = {
+  headerBanner: { padding: '20px', background: '#fff', borderRadius: '12px', marginBottom: '20px', border: '1px solid #e2e8f0' },
+  tableWrapper: { background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', overflow: 'hidden' },
+  table: { width: '100%', borderCollapse: 'collapse' },
+  thRow: { background: '#f8fafc', textAlign: 'left' },
+  th: { padding: '15px', fontSize: '13px', color: '#64748b', fontWeight: '600', borderBottom: '1px solid #e2e8f0' },
+  tr: { borderBottom: '1px solid #f1f5f9', transition: '0.2s' },
+  td: { padding: '15px', fontSize: '14px' },
+  btnPay: { background: '#10b981', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' },
+  modalOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(30, 41, 59, 0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' },
+  modalContent: { background: 'white', padding: '30px', borderRadius: '16px', width: '400px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' },
+  infoBox: { background: '#f0f9ff', padding: '15px', borderRadius: '10px', marginBottom: '20px', fontSize: '13px', color: '#0369a1', display: 'flex', flexDirection: 'column', gap: '5px' },
+  label: { display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '13px', color: '#475569' },
+  input: { width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', boxSizing: 'border-box' },
+  btnSubmit: { flex: 2, background: '#10b981', color: 'white', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' },
+  btnCancel: { flex: 1, background: '#f1f5f9', color: '#64748b', border: 'none', padding: '12px', borderRadius: '8px', cursor: 'pointer' }
 };
 
 export default DebtControl;
