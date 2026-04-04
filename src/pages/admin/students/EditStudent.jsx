@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-// PERBAIKAN: Mengarahkan ke SidebarAdmin agar sinkron dengan sistem baru
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { doc, getDoc, updateDoc } from "firebase/firestore";
@@ -16,8 +15,8 @@ const EditStudent = () => {
   // 2. STATE FORM LENGKAP
   const [formData, setFormData] = useState({
     nama: "",
-    username: "", // Tambahan Akun
-    password: "", // Tambahan Akun
+    username: "",
+    password: "",
     kelasSekolah: "",
     tempatLahir: "",
     tanggalLahir: "",
@@ -25,7 +24,10 @@ const EditStudent = () => {
     kategori: "Reguler", 
     jenjang: "SD",       
     paket: "paket1",     
-    totalTagihan: 0      
+    totalTagihan: 0,
+    // FIELD BARU UNTUK MASA AKTIF
+    tanggalMulai: "",
+    durasiBulan: 3
   });
 
   // FETCH HARGA & DATA SISWA
@@ -55,8 +57,8 @@ const EditStudent = () => {
 
           setFormData({
             nama: data.nama || "",
-            username: data.username || "", // Ambil Username Existing
-            password: data.password || "", // Ambil Password Existing
+            username: data.username || "",
+            password: data.password || "",
             kelasSekolah: data.kelasSekolah || "1 SD",
             tempatLahir: data.tempatLahir || "",
             tanggalLahir: data.tanggalLahir || "",
@@ -64,7 +66,10 @@ const EditStudent = () => {
             kategori: data.kategori || "Reguler",
             jenjang: data.kategori === 'English' ? 'English' : parsedJenjang,
             paket: parsedPaket,
-            totalTagihan: data.totalTagihan || 0
+            totalTagihan: data.totalTagihan || 0,
+            // AMBIL DATA MASA AKTIF EXISTING
+            tanggalMulai: data.tanggalMulai || new Date().toISOString().split('T')[0],
+            durasiBulan: data.durasiBulan || 3
           });
         } else {
           alert("Siswa tidak ditemukan!");
@@ -103,15 +108,18 @@ const EditStudent = () => {
       const docRef = doc(db, "students", id);
       await updateDoc(docRef, {
         nama: formData.nama,
-        username: formData.username, // Simpan perubahan username
-        password: formData.password, // Simpan perubahan password
+        username: formData.username,
+        password: formData.password,
         kelasSekolah: formData.kelasSekolah,
         tempatLahir: formData.tempatLahir,
         tanggalLahir: formData.tanggalLahir,
         ortu: formData.ortu,
         kategori: formData.kategori,
         detailProgram: detailProgramBaru,
-        totalTagihan: parseInt(formData.totalTagihan) 
+        totalTagihan: parseInt(formData.totalTagihan),
+        // SIMPAN DATA MASA AKTIF TERBARU
+        tanggalMulai: formData.tanggalMulai,
+        durasiBulan: parseInt(formData.durasiBulan)
       });
 
       alert("✅ Data Siswa & Akun Berhasil Diupdate!");
@@ -136,6 +144,26 @@ const EditStudent = () => {
               <div style={styles.formGroup}>
                 <label>Nama Lengkap</label>
                 <input style={styles.input} value={formData.nama} onChange={(e) => setFormData({...formData, nama: e.target.value})} />
+              </div>
+
+              {/* SECTION EDIT MASA AKTIF PAKET */}
+              <div style={{background: '#f0f7ff', padding: '15px', borderRadius: '10px', border: '1px solid #3498db', marginBottom: '20px'}}>
+                <h4 style={{margin: '0 0 10px 0', color: '#2980b9'}}>📅 Masa Aktif Paket Belajar</h4>
+                <div style={{display:'flex', gap: 10}}>
+                    <div style={{flex: 1}}>
+                        <label style={{fontSize: 12}}>Tanggal Mulai</label>
+                        <input type="date" style={styles.input} value={formData.tanggalMulai} onChange={(e) => setFormData({...formData, tanggalMulai: e.target.value})} />
+                    </div>
+                    <div style={{flex: 1}}>
+                        <label style={{fontSize: 12}}>Durasi (Bulan)</label>
+                        <select style={styles.select} value={formData.durasiBulan} onChange={(e) => setFormData({...formData, durasiBulan: e.target.value})}>
+                            <option value={1}>1 Bulan</option>
+                            <option value={3}>3 Bulan</option>
+                            <option value={6}>6 Bulan</option>
+                            <option value={12}>12 Bulan</option>
+                        </select>
+                    </div>
+                </div>
               </div>
 
               {/* SECTION EDIT AKUN PORTAL */}
@@ -232,7 +260,7 @@ const EditStudent = () => {
                   <label style={{color:'white', display:'block', marginBottom:5}}>Total Tagihan (Rp)</label>
                   <input 
                     type="number" 
-                    style={{...styles.input, fontWeight:'bold', fontSize:18}} 
+                    style={{...styles.input, fontWeight:'bold', fontSize:18, background:'#fff', color:'#000'}} 
                     value={formData.totalTagihan} 
                     onChange={(e) => setFormData({...formData, totalTagihan: e.target.value})} 
                   />

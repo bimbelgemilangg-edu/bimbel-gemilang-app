@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// PERBAIKAN: Mengarahkan ke SidebarAdmin agar sinkron dengan sistem baru
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { collection, addDoc, doc, getDoc } from "firebase/firestore";
@@ -28,11 +27,15 @@ const AddStudent = () => {
     fetchPricing();
   }, []);
 
-  // 2. STATE FORM
+  // 2. STATE FORM UTAMA
   const [programType, setProgramType] = useState("Reguler");
   const [tanggalDaftar, setTanggalDaftar] = useState(new Date().toISOString().split('T')[0]);
   const [namaSiswa, setNamaSiswa] = useState("");
   
+  // STATE MASA AKTIF PAKET (FIELD BARU)
+  const [tanggalMulai, setTanggalMulai] = useState(new Date().toISOString().split('T')[0]);
+  const [durasiBulan, setDurasiBulan] = useState(3); // Default 3 bulan
+
   // STATE AKSES LOGIN
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -41,12 +44,9 @@ const AddStudent = () => {
   useEffect(() => {
     if (namaSiswa) {
       const namaBersih = namaSiswa.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-      
-      // Generate Username: nama123@gemilang.com
       const randomNum = Math.floor(100 + Math.random() * 900);
       setUsername(`${namaBersih}${randomNum}@gemilang.com`);
 
-      // Generate Password: namatahun
       if (tanggalLahir) {
         const tahun = tanggalLahir.split('-')[0];
         setPassword(`${namaBersih}${tahun}`);
@@ -54,14 +54,12 @@ const AddStudent = () => {
         setPassword(`${namaBersih}123`);
       }
     }
-  }, [namaSiswa]); // Hanya trigger saat nama berubah pertama kali
+  }, [namaSiswa]);
 
-  // Reguler
+  // Data Sekolah & Kursus
   const [jenjang, setJenjang] = useState("SD");
   const [kelas, setKelas] = useState("1 SD"); 
   const [paketReguler, setPaketReguler] = useState("paket1");
-  
-  // English
   const [englishLevel, setEnglishLevel] = useState("kids"); 
 
   const [tempatLahir, setTempatLahir] = useState("");
@@ -79,10 +77,9 @@ const AddStudent = () => {
   const [metodeBayar, setMetodeBayar] = useState("Tunai"); 
   const [tenor, setTenor] = useState(1);
   const [tanggalMulaiCicilan, setTanggalMulaiCicilan] = useState(new Date().toISOString().split('T')[0]);
-  
   const [customDueDates, setCustomDueDates] = useState([]);
 
-  // LOGIKA: Generate Tanggal Otomatis
+  // LOGIKA: Generate Tanggal Cicilan
   useEffect(() => {
     if (metodeBayar === 'Cicilan') {
         const dates = [];
@@ -102,7 +99,6 @@ const AddStudent = () => {
       setCustomDueDates(updatedDates);
   };
 
-  // 3. LOGIKA HARGA
   const getBasePrice = () => {
     if (programType === "English") {
         return pricing.english ? parseInt(pricing.english[englishLevel] || 0) : 0;
@@ -121,7 +117,7 @@ const AddStudent = () => {
 
   const hitungCicilan = () => Math.ceil(hitungTotal() / tenor);
 
-  // 4. SUBMIT KE FIREBASE
+  // SUBMIT DATA
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!namaSiswa || !namaAyah || !noHp) return alert("Data Wajib (Nama, Ayah, HP) harus diisi!");
@@ -131,21 +127,26 @@ const AddStudent = () => {
         nama: namaSiswa,
         username: username.toLowerCase(),
         password: password,
-        role: "siswa", // Menandai sebagai akun siswa
+        role: "siswa",
         kategori: programType,
         detailProgram: programType === "English" ? `English - ${englishLevel}` : `${jenjang} - ${paketReguler}`,
         kelasSekolah: kelas,
-        tempatLahir, tanggalLahir,
+        tempatLahir, 
+        tanggalLahir,
         ortu: { ayah: namaAyah, pekerjaanAyah, ibu: namaIbu, pekerjaanIbu, alamat, hp: noHp },
         status: "Aktif",
+        isBlocked: false,
         tanggalMasuk: tanggalDaftar,
+        // FIELD BARU UNTUK MONITORING MASA AKTIF
+        tanggalMulai: tanggalMulai,
+        durasiBulan: parseInt(durasiBulan),
         totalTagihan: hitungTotal(), 
         totalBayar: metodeBayar === "Tunai" || metodeBayar === "Bank" ? hitungTotal() : 0 
       };
 
       const docRef = await addDoc(collection(db, "students"), studentData);
       const studentId = docRef.id;
-      const totalBayar = hitungTotal();
+      const totalBayarFinal = hitungTotal();
 
       if (metodeBayar === "Cicilan") {
         let installments = [];
@@ -163,28 +164,30 @@ const AddStudent = () => {
 
         await addDoc(collection(db, "finance_tagihan"), {
           studentId, namaSiswa, namaOrtu: namaAyah, noHp,
-          totalTagihan: totalBayar, 
-          sisaTagihan: totalBayar,
+          totalTagihan: totalBayarFinal, 
+          sisaTagihan: totalBayarFinal,
           detailCicilan: installments, 
           jenis: `Pendaftaran ${programType} (Cicilan)`
         });
-        alert(`✅ Berhasil! Akun Siswa: ${username}`);
-
       } else {
         await addDoc(collection(db, "finance_logs"), { 
           date: tanggalDaftar, 
           type: "Pemasukan", 
           category: "Pendaftaran", 
-          amount: totalBayar,
+          amount: totalBayarFinal,
           method: metodeBayar,
           note: `Pendaftaran Baru: ${namaSiswa} (${programType})`,
           studentId: studentId
         });
-        alert(`✅ Berhasil! Akun Siswa: ${username}`);
       }
+
+      alert(`✅ Berhasil! Akun Siswa: ${username}`);
       navigate('/admin/students');
 
-    } catch (error) { console.error("Error:", error); alert("Gagal menyimpan data."); }
+    } catch (error) { 
+      console.error("Error:", error); 
+      alert("Gagal menyimpan data."); 
+    }
   };
 
   return (
@@ -209,19 +212,39 @@ const AddStudent = () => {
                 <label style={styles.label}>Tanggal Daftar</label>
                 <input type="date" style={styles.inputDate} value={tanggalDaftar} onChange={e => setTanggalDaftar(e.target.value)} />
               </div>
-              <div style={styles.formGroup}><input style={styles.input} placeholder="Nama Lengkap Siswa" value={namaSiswa} onChange={e => setNamaSiswa(e.target.value)} required /></div>
+              <div style={styles.formGroup}>
+                <input style={styles.input} placeholder="Nama Lengkap Siswa" value={namaSiswa} onChange={e => setNamaSiswa(e.target.value)} required />
+              </div>
 
-              {/* FITUR AKUN OTOMATIS */}
-              <div style={{background: '#f8f9fa', padding: '15px', borderRadius: '10px', border: '1px dashed #3498db', marginBottom: '15px'}}>
-                  <p style={{margin: '0 0 10px 0', fontSize: 12, fontWeight: 'bold', color: '#2980b9'}}>🔐 AKSES LOGIN (DIBUAT OTOMATIS)</p>
+              <div style={{background: '#f0f7ff', padding: '15px', borderRadius: '10px', border: '1px solid #3498db', marginBottom: '15px'}}>
+                  <p style={{margin: '0 0 10px 0', fontSize: 12, fontWeight: 'bold', color: '#2980b9'}}>📅 SETTING MASA AKTIF PAKET</p>
+                  <div style={styles.row}>
+                    <div style={{flex: 1}}>
+                        <label style={styles.labelSmall}>Mulai Belajar</label>
+                        <input type="date" style={styles.input} value={tanggalMulai} onChange={e => setTanggalMulai(e.target.value)} />
+                    </div>
+                    <div style={{flex: 1}}>
+                        <label style={styles.labelSmall}>Durasi (Bulan)</label>
+                        <select style={styles.select} value={durasiBulan} onChange={e => setDurasiBulan(e.target.value)}>
+                            <option value={1}>1 Bulan</option>
+                            <option value={3}>3 Bulan (1 Term)</option>
+                            <option value={6}>6 Bulan (1 Semester)</option>
+                            <option value={12}>12 Bulan (1 Tahun)</option>
+                        </select>
+                    </div>
+                  </div>
+              </div>
+
+              <div style={{background: '#f8f9fa', padding: '15px', borderRadius: '10px', border: '1px dashed #adb5bd', marginBottom: '15px'}}>
+                  <p style={{margin: '0 0 10px 0', fontSize: 12, fontWeight: 'bold', color: '#495057'}}>🔐 AKSES LOGIN (OTOMATIS)</p>
                   <div style={styles.row}>
                     <div style={{flex: 1}}>
                         <label style={styles.labelSmall}>Username</label>
-                        <input style={styles.input} value={username} onChange={e => setUsername(e.target.value)} placeholder="nama@gemilang.com" />
+                        <input style={styles.input} value={username} readOnly />
                     </div>
                     <div style={{flex: 1}}>
                         <label style={styles.labelSmall}>Password</label>
-                        <input style={styles.input} value={password} onChange={e => setPassword(e.target.value)} placeholder="namatahun" />
+                        <input style={styles.input} value={password} readOnly />
                     </div>
                   </div>
               </div>
@@ -260,7 +283,7 @@ const AddStudent = () => {
               <div style={styles.row}>
                 <div style={{flex:1}}>
                   <label style={styles.labelSmall}>Tempat Lahir</label>
-                  <input style={styles.input} placeholder="Tempat Lahir" value={tempatLahir} onChange={e => setTempatLahir(e.target.value)} />
+                  <input style={styles.input} placeholder="Kota" value={tempatLahir} onChange={e => setTempatLahir(e.target.value)} />
                 </div>
                 <div style={{flex:1}}>
                   <label style={styles.labelSmall}>Tanggal Lahir</label>
@@ -280,16 +303,16 @@ const AddStudent = () => {
                 <input style={styles.input} placeholder="Pekerjaan Ibu" value={pekerjaanIbu} onChange={e => setPekerjaanIbu(e.target.value)} />
               </div>
               <textarea style={styles.textarea} placeholder="Alamat Lengkap..." value={alamat} onChange={e => setAlamat(e.target.value)}></textarea>
-              <input type="number" style={{...styles.input, marginTop:10}} placeholder="No HP / WhatsApp (Wajib)" value={noHp} onChange={e => setNoHp(e.target.value)} required />
+              <input type="number" style={{...styles.input, marginTop:10}} placeholder="No HP / WhatsApp (Aktif)" value={noHp} onChange={e => setNoHp(e.target.value)} required />
             </div>
           </div>
 
           <div style={styles.rightCol}>
             <div style={styles.cardBlue}>
-              <h3 style={{color:'white', marginTop:0}}>💰 Administrasi ({programType})</h3>
+              <h3 style={{color:'white', marginTop:0}}>💰 Administrasi Keuangan</h3>
               
               <div style={styles.formGroup}>
-                <label style={{color:'white'}}>Pilihan Paket/Level</label>
+                <label style={{color:'white'}}>Pilihan Paket</label>
                 {programType === "Reguler" ? (
                     <select style={styles.select} value={paketReguler} onChange={e => setPaketReguler(e.target.value)}>
                       <option value="paket1">Paket 1 - Rp {(pricing[jenjang.toLowerCase()]?.paket1 || 0).toLocaleString()}</option>
@@ -298,8 +321,7 @@ const AddStudent = () => {
                     </select>
                 ) : (
                     <div style={{padding:10, background:'white', borderRadius:5, color:'black', fontWeight:'bold'}}>
-                        Level: {englishLevel.toUpperCase()} <br/>
-                        Harga: Rp {(pricing.english?.[englishLevel] || 0).toLocaleString()}
+                        Harga Level {englishLevel.toUpperCase()}: Rp {(pricing.english?.[englishLevel] || 0).toLocaleString()}
                     </div>
                 )}
               </div>
@@ -308,11 +330,11 @@ const AddStudent = () => {
                 <label><input type="checkbox" checked={biayaDaftar} onChange={e => setBiayaDaftar(e.target.checked)} /> Biaya Pendaftaran (+25rb)</label>
               </div>
               <div style={styles.formGroup}>
-                <label style={{color:'white'}}>Diskon (Rp)</label>
+                <label style={{color:'white'}}>Diskon Khusus (Rp)</label>
                 <input type="number" style={styles.input} value={diskon} onChange={e => setDiskon(e.target.value)} placeholder="0" />
               </div>
               <div style={{textAlign:'right', color:'white', margin:'20px 0'}}>
-                <small>Total Bayar</small>
+                <small>Total Kewajiban Bayar</small>
                 <h1 style={{margin:0}}>Rp {hitungTotal().toLocaleString()}</h1>
               </div>
               <div style={styles.formGroup}>
@@ -320,27 +342,27 @@ const AddStudent = () => {
                 <select style={styles.select} value={metodeBayar} onChange={e => setMetodeBayar(e.target.value)}>
                   <option value="Tunai">Lunas - Tunai</option>
                   <option value="Bank">Lunas - Transfer</option>
-                  <option value="Cicilan">Cicilan</option>
+                  <option value="Cicilan">Cicilan Tahap</option>
                 </select>
               </div>
               
               {metodeBayar === "Cicilan" && (
                 <div style={styles.cicilanBox}>
-                  <label>Pilih Tenor (Kali Bayar):</label>
+                  <label>Tenor Cicilan:</label>
                   <div style={{display:'flex', gap:5, marginTop:5, marginBottom: 15}}>
                     {[1,2,3,4,5,6].map(t => (
                       <button key={t} type="button" onClick={() => setTenor(t)} style={tenor===t ? styles.btnActive : styles.btnInactive}>{t}x</button>
                     ))}
                   </div>
 
-                  <label>Tanggal Mulai:</label>
+                  <label>Tanggal Jatuh Tempo Cicilan 1:</label>
                   <input type="date" value={tanggalMulaiCicilan} onChange={(e) => setTanggalMulaiCicilan(e.target.value)} style={{...styles.input, marginTop: 5, marginBottom:15}} />
                   
                   <div style={{background:'rgba(0,0,0,0.2)', padding:10, borderRadius:5}}>
-                      <small style={{display:'block', marginBottom:5, color:'#ddd'}}>👇 Sesuaikan tanggal di bawah jika perlu:</small>
+                      <small style={{display:'block', marginBottom:5, color:'#ddd'}}>Jadwal Jatuh Tempo:</small>
                       {customDueDates.map((date, idx) => (
                           <div key={idx} style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:5}}>
-                              <span style={{fontSize:13, color:'white'}}>Cicilan ke-{idx+1}</span>
+                              <span style={{fontSize:13, color:'white'}}>Ke-{idx+1}</span>
                               <input 
                                 type="date" 
                                 value={date} 
@@ -352,13 +374,13 @@ const AddStudent = () => {
                   </div>
 
                   <div style={{marginTop: 15, borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: 10}}>
-                    <p style={{margin:0}}>Cicilan per bulan:</p> 
+                    <p style={{margin:0}}>Nominal per cicilan:</p> 
                     <b style={{fontSize: 18}}>Rp {hitungCicilan().toLocaleString()}</b>
                   </div>
                 </div>
               )}
 
-              <button type="submit" style={styles.btnSubmit}>SIMPAN DATA & AKUN</button>
+              <button type="submit" style={styles.btnSubmit}>SIMPAN SISWA & AKUN</button>
             </div>
           </div>
         </form>
