@@ -18,43 +18,51 @@ const StudentElearning = () => {
   const fetchModuls = async () => {
     try {
       const studentId = localStorage.getItem('studentId');
+      if (!studentId) return;
       
-      // Ambil data profil siswa dari Firestore untuk akurasi filter kategori & kelas
       const studentRef = doc(db, "students", studentId);
       const studentSnap = await getDoc(studentRef);
+      
       let myKategori = "";
       let myKelas = "";
 
       if (studentSnap.exists()) {
         const sData = studentSnap.data();
         setStudentProfile(sData);
-        myKategori = sData.kategori;
-        myKelas = sData.kelasSekolah;
+        myKategori = sData.kategori || "";
+        myKelas = sData.kelasSekolah || "";
       }
 
       const q = query(collection(db, "bimbel_modul"), orderBy("createdAt", "desc"));
       const snap = await getDocs(q);
-      
       const allModuls = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-      // LOGIKA FILTER PRO: Menjaga Logika Lama & Menambah Logika Baru (Kategori/Kelas)
+      // --- LOGIKA FILTER KETAT (STRICT FILTERING) ---
       const filtered = allModuls.filter(m => {
-        // 1. FILTER BARU: Berdasarkan targetKategori dan targetKelas (Update Terbaru)
-        if (m.targetKategori && m.targetKelas) {
+        // 1. Cek Parameter Baru (targetKategori & targetKelas)
+        const hasNewTarget = m.targetKategori && m.targetKelas;
+        
+        if (hasNewTarget) {
           const matchKategori = m.targetKategori === "Semua" || m.targetKategori === myKategori;
           const matchKelas = m.targetKelas === "Semua" || m.targetKelas === myKelas;
+          
+          // Jika menggunakan target baru, WAJIB cocok kategori DAN kelas
           if (matchKategori && matchKelas) return true;
+          
+          // Jika sudah ada target baru tapi tidak cocok, langsung reject (jangan lanjut ke logika lama)
+          return false;
         }
 
-        // 2. LOGIKA LAMA (MAINTAINED): Jika menggunakan struktur target objek lama
-        if (!m.target || m.target.type === 'all') return true;
-        
-        // Logika target per grade (Lama)
-        if (m.target.type === 'grade' && m.target.grade === myKelas) return true;
-        
-        // Logika target individu (Lama)
-        if (m.target.type === 'individual' && m.target.studentIds?.includes(studentId)) return true;
-        
+        // 2. Fallback ke Logika Lama (Jika m.target objek ada)
+        if (m.target) {
+          if (m.target.type === 'all') return true;
+          if (m.target.type === 'grade' && m.target.grade === myKelas) return true;
+          if (m.target.type === 'individual' && m.target.studentIds?.includes(studentId)) return true;
+          return false;
+        }
+
+        // 3. Jika tidak ada target sama sekali (Data Rusak/Lama Sekali)
+        // Default: Sembunyikan demi keamanan data
         return false;
       });
 
@@ -70,14 +78,13 @@ const StudentElearning = () => {
     m.subject?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // LOGIKA TRANSISI KE VIEW RIIL
   if (selected) {
     return (
       <StudentModuleView 
         modulId={selected.id} 
         onBack={() => setSelected(null)} 
         studentData={{
-          uid: localStorage.getItem('studentId'), // Menggunakan UID agar sinkron dengan auth
+          uid: localStorage.getItem('studentId'),
           id: localStorage.getItem('studentId'),
           nama: localStorage.getItem('studentName') || "Siswa",
           kelasSekolah: studentProfile?.kelasSekolah
@@ -152,7 +159,7 @@ const StudentElearning = () => {
                <div style={{ marginBottom: '20px' }}><Book size={48} color="#e2e8f0"/></div>
                <h3 style={{ color: '#1e293b', margin: '0 0 10px 0' }}>Materi Tidak Ditemukan</h3>
                <p style={{ color: '#94a3b8', maxWidth: '400px', margin: '0 auto' }}>
-                  Belum ada modul yang sesuai dengan pencarian atau jenjang kelas kamu saat ini.
+                  Belum ada modul yang sesuai untuk jenjang kelas kamu saat ini.
                </p>
             </div>
           )}
@@ -185,13 +192,6 @@ const st = {
   cardFoot: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#94a3b8', fontSize: '13px', fontWeight: '600' },
   btnOpen: { color: '#673ab7', display: 'flex', alignItems: 'center', gap: '4px' },
   spinner: { width: '40px', height: '40px', border: '4px solid #f3e8ff', borderTop: '4px solid #673ab7', borderRadius: '50%', margin: '0 auto 15px', animation: 'spin 1s linear infinite' },
-  
-  // Styles lama dipertahankan untuk backward compatibility view
-  iconCircle: { width: '50px', height: '50px', borderRadius: '15px', background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '15px' },
-  backBtn: { border: 'none', background: 'white', padding: '10px 15px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 2px 5px rgba(0,0,0,0.05)', marginBottom: 25 },
-  blockView: { background: 'white', padding: '30px', borderRadius: '15px', marginBottom: '25px', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' },
-  textContent: { lineHeight: 1.7, color: '#334155', whiteSpace: 'pre-wrap' },
-  taskBox: { display: 'flex', gap: 15, background: '#ecfdf5', padding: 20, borderRadius: 12, border: '1px solid #a7f3d0' }
 };
 
 export default StudentElearning;
