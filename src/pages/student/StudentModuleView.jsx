@@ -5,11 +5,9 @@ import {
   query, where, getDocs, deleteDoc 
 } from "firebase/firestore";
 import { 
-  ArrowLeft, Clock, BookOpen, FileText, 
-  CheckCircle, UploadCloud, Eye, Link as LinkIcon,
-  HelpCircle, ChevronRight, PlayCircle, AlertCircle,
-  FileDigit, Info, User, Trash2, X, Send, File, Zap,
-  Calendar, Maximize2
+  ArrowLeft, Clock, FileText, CheckCircle, UploadCloud, Eye, Link as LinkIcon,
+  HelpCircle, AlertCircle, FileDigit, User, Trash2, X, Send, Zap,
+  Calendar, Maximize2, Download
 } from 'lucide-react';
 
 const StudentModuleView = ({ modulId, onBack, studentData }) => {
@@ -19,25 +17,18 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const [submittedTasks, setSubmittedTasks] = useState({}); 
   const [quizAnswers, setQuizAnswers] = useState({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
-  
   const [localFiles, setLocalFiles] = useState({}); 
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isTugasExpired, setIsTugasExpired] = useState(false);
   const [isQuizExpired, setIsQuizExpired] = useState(false);
 
-  // Helper Format Tanggal
-  const formatDate = (timestamp) => {
-    if (!timestamp) return "-";
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleDateString('id-ID', { 
-      day: '2-digit', 
-      month: 'short', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -74,12 +65,9 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   }, [modulId]);
 
   const checkExistingSubmissions = async (mId) => {
-    if (!studentData?.uid) return;
-    const q = query(
-      collection(db, "jawaban_tugas"),
-      where("modulId", "==", mId),
-      where("studentId", "==", studentData.uid)
-    );
+    if (!studentData?.uid && !studentData?.id) return;
+    const studentId = studentData.uid || studentData.id;
+    const q = query(collection(db, "jawaban_tugas"), where("modulId", "==", mId), where("studentId", "==", studentId));
     const snap = await getDocs(q);
     const completed = {};
     snap.forEach(doc => {
@@ -93,14 +81,17 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   };
 
   const checkQuizStatus = async (mId) => {
-    if (!studentData?.uid) return;
-    const q = query(
-      collection(db, "jawaban_kuis"),
-      where("modulId", "==", mId),
-      where("studentId", "==", studentData.uid)
-    );
+    if (!studentData?.uid && !studentData?.id) return;
+    const studentId = studentData.uid || studentData.id;
+    const q = query(collection(db, "jawaban_kuis"), where("modulId", "==", mId), where("studentId", "==", studentId));
     const snap = await getDocs(q);
     if (!snap.empty) setQuizSubmitted(true);
+  };
+
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "-";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
   const handleFileChange = (e, blockId) => {
@@ -108,30 +99,15 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const allowedTypes = [
-      'application/pdf', 
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'image/jpeg', 'image/png', 'image/webp'
-    ];
-
-    if (!allowedTypes.includes(file.type)) {
-      return alert("Format tidak didukung. Gunakan PDF, DOCX, atau Gambar.");
-    }
-
-    if (file.size > 2500000) { 
-      return alert("File terlalu besar. Maksimal 2.5MB.");
-    }
+    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) return alert("Format tidak didukung. Gunakan PDF, DOCX, atau Gambar.");
+    if (file.size > 2500000) return alert("File terlalu besar. Maksimal 2.5MB.");
 
     const reader = new FileReader();
     reader.onloadend = () => {
       setLocalFiles({
         ...localFiles,
-        [blockId]: {
-          name: file.name,
-          data: reader.result,
-          type: file.type,
-          size: (file.size / 1024).toFixed(1) + " KB"
-        }
+        [blockId]: { name: file.name, data: reader.result, type: file.type, size: (file.size / 1024).toFixed(1) + " KB" }
       });
     };
     reader.readAsDataURL(file);
@@ -140,39 +116,22 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const submitTask = async (blockId, blockTitle) => {
     const fileToUpload = localFiles[blockId];
     if (!fileToUpload) return;
-
     setUploading({ ...uploading, [blockId]: true });
     try {
       const payload = {
-        modulId,
-        modulTitle: modul.title,
-        blockId,
-        blockTitle,
+        modulId, modulTitle: modul.title, blockId, blockTitle,
         studentId: studentData?.uid || studentData?.id,
-        studentName: studentData?.nama,
-        studentClass: studentData?.kelasSekolah || "Umum",
-        fileUrl: fileToUpload.data, 
-        fileName: fileToUpload.name,
-        submittedAt: serverTimestamp(),
-        status: "Pending",
-        type: "assignment",
-        deviceInfo: navigator.userAgent
+        studentName: studentData?.nama, studentClass: studentData?.kelasSekolah || "Umum",
+        fileUrl: fileToUpload.data, fileName: fileToUpload.name,
+        submittedAt: serverTimestamp(), status: "Pending", type: "assignment", deviceInfo: navigator.userAgent
       };
-
       const docRef = await addDoc(collection(db, "jawaban_tugas"), payload);
-      
-      setSubmittedTasks({ 
-        ...submittedTasks, 
-        [blockId]: { docId: docRef.id, fileUrl: fileToUpload.data, fileName: fileToUpload.name } 
-      });
-
+      setSubmittedTasks({ ...submittedTasks, [blockId]: { docId: docRef.id, fileUrl: fileToUpload.data, fileName: fileToUpload.name } });
       const updatedLocal = { ...localFiles };
       delete updatedLocal[blockId];
       setLocalFiles(updatedLocal);
-
       alert("🚀 Tugas berhasil dikirim secara aman!");
     } catch (err) {
-      console.error("Submission Error:", err);
       alert("Terjadi gangguan jaringan. Silakan coba lagi.");
     } finally {
       setUploading({ ...uploading, [blockId]: false });
@@ -182,7 +141,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const handleDeleteTask = async (blockId) => {
     if (isTugasExpired) return alert("❌ Tidak dapat menarik tugas yang sudah melewati deadline.");
     if (!window.confirm("Yakin ingin menarik kembali tugas ini?")) return;
-
     try {
       const taskInfo = submittedTasks[blockId];
       if (taskInfo?.docId) {
@@ -191,129 +149,123 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         delete newSubmitted[blockId];
         setSubmittedTasks(newSubmitted);
       }
-    } catch (err) {
-      alert("Gagal menarik data.");
-    }
+    } catch (err) { alert("Gagal menarik data."); }
   };
 
   const handleQuizSubmit = async () => {
     if (isQuizExpired) return alert("❌ Kuis sudah ditutup.");
     const totalQuest = modul?.quizData?.length || 0;
-    if (Object.keys(quizAnswers).length < totalQuest) {
-      return alert(`Lengkapi semua ${totalQuest} jawaban.`);
-    }
+    if (Object.keys(quizAnswers).length < totalQuest) return alert(`Lengkapi semua ${totalQuest} jawaban.`);
     if (!window.confirm("Kirim kuis sekarang?")) return;
-
     try {
       const payload = {
-        modulId,
-        modulTitle: modul.title,
+        modulId, modulTitle: modul.title,
         studentId: studentData?.uid || studentData?.id,
-        studentName: studentData?.nama,
-        studentClass: studentData?.kelasSekolah || "Umum",
-        answers: quizAnswers,
-        submittedAt: serverTimestamp(),
-        type: "quiz"
+        studentName: studentData?.nama, studentClass: studentData?.kelasSekolah || "Umum",
+        answers: quizAnswers, submittedAt: serverTimestamp(), type: "quiz"
       };
       await addDoc(collection(db, "jawaban_kuis"), payload);
       setQuizSubmitted(true);
       alert("🎉 Kuis berhasil diselesaikan!");
-    } catch (err) {
-      alert("Gagal mengirim kuis.");
-    }
+    } catch (err) { alert("Gagal mengirim kuis."); }
   };
 
-  /**
-   * REVISI FITUR PREVIEW MATERI (FIX CANVA SHORTLINK)
-   */
-  const renderSmartMedia = (url) => {
-    if (!url) return null;
+  const renderSmartMedia = (block) => {
+    const { content, mimeType, fileName } = block;
+    if (!content) return null;
 
-    let embedUrl = url;
+    // 1. Render Base64 PDF
+    if (mimeType === 'application/pdf' || content.startsWith('data:application/pdf')) {
+      return (
+        <div style={st.mediaGroup}>
+          <div style={st.pdfDownloadBox}>
+            <FileText size={40} color="#673ab7" />
+            <div style={{flex: 1}}>
+              <h4 style={{margin: '0 0 5px 0', fontSize: 16, color: '#1e293b'}}>Dokumen Materi</h4>
+              <p style={{margin: 0, fontSize: 12, color: '#64748b'}}>{fileName || "Modul_Pembelajaran.pdf"}</p>
+            </div>
+            <a href={content} download={fileName || "Materi.pdf"} style={st.btnDownloadBase64}>
+              <Download size={16}/> Unduh PDF
+            </a>
+          </div>
+          <iframe src={content} style={st.iframe(isMobile)} title="PDF Viewer" loading="lazy"></iframe>
+        </div>
+      );
+    }
+
+    // 2. Render Base64 Image
+    if (content.startsWith('data:image/')) {
+      return (
+        <div style={st.mediaGroup}>
+          <img src={content} style={st.base64Img} alt="Materi Visual" />
+          <div style={st.mediaFooter}>
+            <span style={{fontSize: 12, color: '#64748b'}}>{fileName || "Gambar Materi"}</span>
+            <a href={content} download={fileName || "Gambar.png"} style={st.btnSmallLink}><Download size={12}/> Unduh</a>
+          </div>
+        </div>
+      );
+    }
+
+    // 3. Render External URLs (Canva, YT, Drive)
+    let embedUrl = content;
     let showIframe = false;
 
-    // 1. Logika Canva (Termasuk Shortlink canva.link)
-    if (url.includes('canva.com') || url.includes('canva.link')) {
-      if (url.includes('canva.com/design')) {
-        const baseUrl = url.split('?')[0];
+    if (content.includes('canva.com') || content.includes('canva.link')) {
+      if (content.includes('canva.com/design')) {
+        const baseUrl = content.split('?')[0];
         embedUrl = baseUrl.endsWith('/view') ? `${baseUrl}?embed` : `${baseUrl}/view?embed`;
-      } else {
-        // Untuk canva.link tetap masukkan apa adanya, browser akan menangani redirect
-        embedUrl = url;
       }
       showIframe = true;
-    } 
-    // 2. Logika YouTube
-    else if (url.includes('youtube.com') || url.includes('youtu.be')) {
-      const videoId = url.split('v=')[1]?.split('&')[0] || url.split('/').pop();
+    } else if (content.includes('youtube.com') || content.includes('youtu.be')) {
+      const videoId = content.split('v=')[1]?.split('&')[0] || content.split('/').pop();
       embedUrl = `https://www.youtube.com/embed/${videoId}`;
       showIframe = true;
-    } 
-    // 3. Logika Google Slides / Docs
-    else if (url.includes('docs.google.com')) {
-      if (url.includes('/presentation')) {
-        embedUrl = url.replace(/\/edit.*$/, '/embed');
-      } else if (url.includes('/document')) {
-        embedUrl = url.replace(/\/edit.*$/, '/pub?embedded=true');
-      }
-      showIframe = true;
-    }
-    // 4. Logika PDF
-    else if (url.toLowerCase().endsWith('.pdf')) {
-      embedUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+    } else if (content.includes('docs.google.com')) {
+      if (content.includes('/presentation')) embedUrl = content.replace(/\/edit.*$/, '/embed');
+      else if (content.includes('/document')) embedUrl = content.replace(/\/edit.*$/, '/pub?embedded=true');
       showIframe = true;
     }
 
     if (showIframe) {
       return (
         <div style={st.mediaGroup}>
-          <div style={st.iframeWrapper}>
-            <iframe 
-              src={embedUrl} 
-              style={st.iframe} 
-              allowFullScreen 
-              title="Preview Materi" 
-              loading="lazy"
-              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-            ></iframe>
+          <div style={{ width: '100%', background: '#000' }}>
+            <iframe src={embedUrl} style={st.iframe(isMobile)} allowFullScreen title="Preview Materi" loading="lazy"></iframe>
           </div>
           <div style={st.mediaFooter}>
-            <span style={{fontSize: 12, color: '#64748b', display:'flex', alignItems:'center', gap:4}}>
-              <Zap size={12} color="#f59e0b"/> Preview Materi Aktif
-            </span>
-            <a href={url} target="_blank" rel="noreferrer" style={st.btnSmallLink}>
-              <Maximize2 size={12}/> Buka Layar Penuh
-            </a>
+            <span style={{fontSize: 12, color: '#64748b', display:'flex', alignItems:'center', gap:4}}><Zap size={12} color="#f59e0b"/> Preview Aktif</span>
+            <a href={content} target="_blank" rel="noreferrer" style={st.btnSmallLink}><Maximize2 size={12}/> Layar Penuh</a>
           </div>
         </div>
       );
     }
 
+    // 4. Fallback Tautan Standar
     return (
-        <div style={st.linkBox}>
+        <div style={st.linkBox(isMobile)}>
           <div style={st.linkIconCircle}><LinkIcon size={20} color="#673ab7"/></div>
-          <div style={{flex: 1}}>
-            <p style={{margin:0, fontSize:11, color:'#94a3b8', fontWeight:'bold', textTransform:'uppercase'}}>Tautan Materi</p>
-            <p style={{margin:'2px 0 8px', fontSize:14, color:'#1e293b', fontWeight:'600', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'300px'}}>{url}</p>
-            <a href={url} target="_blank" rel="noreferrer" style={st.btnLinkExternal}>Kunjungi Materi ↗</a>
+          <div style={{flex: 1, overflow: 'hidden'}}>
+            <p style={{margin:0, fontSize:11, color:'#94a3b8', fontWeight:'bold'}}>TAUTAN MATERI</p>
+            <p style={{margin:'2px 0 8px', fontSize:14, color:'#1e293b', fontWeight:'600', textOverflow:'ellipsis', whiteSpace:'nowrap', overflow:'hidden'}}>{content}</p>
+            <a href={content} target="_blank" rel="noreferrer" style={st.btnLinkExternal(isMobile)}>Buka Link ↗</a>
           </div>
         </div>
     );
   };
 
-  if (loading) return <div style={st.loader}><div style={st.spinner}></div> Membuka Modul...</div>;
+  if (loading) return <div style={st.loader}><div style={st.spinner}></div> Membuka Sistem...</div>;
 
   return (
     <div style={st.container}>
-      <div style={st.heroSection}>
-        <button onClick={onBack} style={st.backFloating}><ArrowLeft size={18} /> Kembali</button>
+      <div style={st.heroSection(isMobile)}>
+        <button onClick={onBack} style={st.backFloating(isMobile)}><ArrowLeft size={16} /> {!isMobile && "Kembali"}</button>
         <img src={modul?.coverImage || modul?.coverUrl || "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1000"} style={st.heroImg} alt="Cover" />
-        <div style={st.heroOverlay}>
+        <div style={st.heroOverlay(isMobile)}>
           <div style={st.badgeRow}>
             <span style={st.subjectBadge}>{modul?.subject || "Materi Umum"}</span>
             <span style={st.categoryBadge}>{modul?.targetKategori || "Semua"}</span>
           </div>
-          <h1 style={st.mainTitle}>{modul?.title}</h1>
+          <h1 style={st.mainTitle(isMobile)}>{modul?.title}</h1>
           <div style={st.metaInfo}>
              <span style={st.metaItem}><User size={14}/> {modul?.authorName || "Guru Gemilang"}</span>
              <span style={st.metaItem}><Calendar size={14}/> Rilis: {formatDate(modul?.createdAt)}</span>
@@ -326,9 +278,9 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         </div>
       </div>
 
-      <div style={st.contentWrapper}>
+      <div style={st.contentWrapper(isMobile)}>
         {modul?.blocks?.map((block, idx) => (
-          <div key={block.id} style={st.contentCard}>
+          <div key={block.id} style={st.contentCard(isMobile)}>
             <div style={st.blockHeader}>
               <div style={st.blockLabel}>
                 {block.type === 'assignment' ? (
@@ -337,19 +289,20 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                   <span>BAGIAN {idx + 1}</span>
                 )}
               </div>
-              <h3 style={st.blockTitle}>{block.title}</h3>
+              <h3 style={st.blockTitle(isMobile)}>{block.title}</h3>
             </div>
 
-            {block.type === 'text' && <div style={st.textBody}>{block.content}</div>}
-            {(block.type === 'video' || block.type === 'link') && (
+            {block.type === 'text' && <div style={st.textBody(isMobile)}>{block.content}</div>}
+            
+            {(block.type === 'video' || block.type === 'link' || block.type === 'file') && (
                <div style={st.mediaContainer}>
-                 {renderSmartMedia(block.content)}
+                 {renderSmartMedia(block)}
                </div>
             )}
 
             {block.type === 'assignment' && (
-              <div style={{...st.assignmentBox, background: isTugasExpired ? '#fef2f2' : '#fffbeb'}}>
-                <div style={st.assignInfo}>
+              <div style={{...st.assignmentBox(isMobile), background: isTugasExpired ? '#fef2f2' : '#fffbeb'}}>
+                <div style={st.assignInfo(isMobile)}>
                    <div style={st.iconCircle}><UploadCloud size={20} color={isTugasExpired ? "#ef4444" : "#f59e0b"}/></div>
                    <div>
                       <p style={st.assignTitle}>Instruksi Tugas</p>
@@ -357,59 +310,49 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                    </div>
                 </div>
 
-                <div style={st.assignActionArea}>
+                <div style={st.assignActionArea(isMobile)}>
                   {submittedTasks[block.id] ? (
-                    <div style={{display:'flex', flexDirection:'column', gap:10, alignItems:'flex-end'}}>
-                      <div style={st.successUpload}><CheckCircle size={18}/> Berhasil Dikumpul</div>
-                      <div style={{display:'flex', gap:10}}>
-                        <a href={submittedTasks[block.id].fileUrl} target="_blank" rel="noreferrer" style={st.btnSmallPreview}>
-                          <Eye size={12}/> Lihat File
+                    <div style={{display:'flex', flexDirection:'column', gap:10, alignItems: isMobile ? 'flex-start' : 'flex-end', width:'100%'}}>
+                      <div style={st.successUpload(isMobile)}><CheckCircle size={18}/> Berhasil Dikumpul</div>
+                      <div style={{display:'flex', gap:10, width:'100%'}}>
+                        <a href={submittedTasks[block.id].fileUrl} target="_blank" rel="noreferrer" style={st.btnSmallPreview(isMobile)}>
+                          <Eye size={14}/> Lihat File
                         </a>
                         {!isTugasExpired && (
-                           <button onClick={() => handleDeleteTask(block.id)} style={st.btnSmallDelete}>
-                             <Trash2 size={12}/> Tarik
+                           <button onClick={() => handleDeleteTask(block.id)} style={st.btnSmallDelete(isMobile)}>
+                             <Trash2 size={14}/> Tarik Data
                            </button>
                         )}
                       </div>
                     </div>
                   ) : isTugasExpired ? (
-                    <div style={st.lockedBadge}><AlertCircle size={18}/> Terkunci</div>
+                    <div style={st.lockedBadge(isMobile)}><AlertCircle size={18}/> Batas Waktu Terlewat</div>
                   ) : localFiles[block.id] ? (
-                    <div style={st.previewContainer}>
+                    <div style={st.previewContainer(isMobile)}>
                        <div style={st.previewHeader}>
-                          <div style={{display:'flex', alignItems:'center', gap:8}}>
+                          <div style={{display:'flex', alignItems:'center', gap:8, overflow:'hidden'}}>
                             <FileDigit size={18} color="#673ab7"/>
-                            <div style={{textAlign:'left'}}>
+                            <div style={{textAlign:'left', overflow:'hidden'}}>
                               <p style={st.previewName}>{localFiles[block.id].name}</p>
                               <p style={{fontSize:10, color:'#94a3b8', margin:0}}>{localFiles[block.id].size}</p>
                             </div>
                           </div>
-                          <button onClick={() => {
-                            const updated = {...localFiles}; delete updated[block.id]; setLocalFiles(updated);
-                          }} style={st.btnClosePreview}><X size={14}/></button>
+                          <button onClick={() => { const updated = {...localFiles}; delete updated[block.id]; setLocalFiles(updated); }} style={st.btnClosePreview}><X size={14}/></button>
                        </div>
                        
                        {localFiles[block.id].type.includes('image') && (
                          <img src={localFiles[block.id].data} style={st.previewImg} alt="Preview" />
                        )}
 
-                       <button 
-                         onClick={() => submitTask(block.id, block.title)} 
-                         disabled={uploading[block.id]}
-                         style={st.btnSubmitFinal}
-                       >
+                       <button onClick={() => submitTask(block.id, block.title)} disabled={uploading[block.id]} style={st.btnSubmitFinal}>
                          {uploading[block.id] ? "Mengirim..." : <><Send size={14}/> Kirim Jawaban</>}
                        </button>
                     </div>
                   ) : (
                     <>
-                      <input 
-                        type="file" id={`file-${block.id}`} style={{display:'none'}} 
-                        onChange={(e) => handleFileChange(e, block.id)} 
-                        accept=".pdf,.docx,image/*"
-                      />
-                      <label htmlFor={`file-${block.id}`} style={st.btnUpload}>Pilih & Preview File</label>
-                      <p style={{fontSize:10, color:'#94a3b8', marginTop:8}}>Format: PDF, Docs, Gambar (Max 2.5MB)</p>
+                      <input type="file" id={`file-${block.id}`} style={{display:'none'}} onChange={(e) => handleFileChange(e, block.id)} accept=".pdf,.docx,image/*" />
+                      <label htmlFor={`file-${block.id}`} style={st.btnUpload(isMobile)}>Pilih File Tugas</label>
+                      <p style={{fontSize:10, color:'#94a3b8', marginTop:8, textAlign: isMobile ? 'left' : 'right'}}>Maks 2.5MB (PDF/DOCX/IMG)</p>
                     </>
                   )}
                 </div>
@@ -419,11 +362,11 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         ))}
 
         {modul?.quizData?.length > 0 && (
-          <div style={{...st.contentCard, borderTop: `6px solid ${isQuizExpired ? '#ef4444' : '#673ab7'}`}}>
-             <div style={st.quizHeader}>
+          <div style={{...st.contentCard(isMobile), borderTop: `6px solid ${isQuizExpired ? '#ef4444' : '#673ab7'}`}}>
+             <div style={st.quizHeader(isMobile)}>
                 <div style={st.quizIconBox}><HelpCircle size={24} color="white"/></div>
                 <div>
-                  <h2 style={{margin:0, fontSize:22}}>Kuis Pemahaman</h2>
+                  <h2 style={{margin:0, fontSize: isMobile ? 18 : 22}}>Kuis Evaluasi</h2>
                   {modul.deadlineQuiz && (
                     <p style={{margin:0, fontSize:12, color: isQuizExpired ? '#ef4444' : '#64748b'}}>
                       Deadline: {formatDate(modul.deadlineQuiz)}
@@ -434,16 +377,14 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
              
              {modul.quizData.map((q, qIdx) => (
                <div key={q.id} style={st.quizItem}>
-                  <p style={st.questionText}><span style={st.qNumber}>{qIdx + 1}</span> {q.question}</p>
+                  <p style={st.questionText(isMobile)}><span style={st.qNumber}>{qIdx + 1}</span> {q.question}</p>
                   <div style={st.optionsGrid}>
                      {q.options.map((opt, oIdx) => (
                        <button 
-                         key={oIdx}
-                         disabled={quizSubmitted || isQuizExpired}
-                         onClick={() => setQuizAnswers({...quizAnswers, [q.id]: oIdx})}
+                         key={oIdx} disabled={quizSubmitted || isQuizExpired} onClick={() => setQuizAnswers({...quizAnswers, [q.id]: oIdx})}
                          style={{
-                           ...st.optButton,
-                           backgroundColor: quizAnswers[q.id] === oIdx ? '#673ab7' : 'white',
+                           ...st.optButton(isMobile),
+                           backgroundColor: quizAnswers[q.id] === oIdx ? '#673ab7' : '#f8fafc',
                            color: quizAnswers[q.id] === oIdx ? 'white' : '#1e293b',
                            borderColor: quizAnswers[q.id] === oIdx ? '#673ab7' : '#e2e8f0',
                          }}
@@ -460,7 +401,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                  <button onClick={handleQuizSubmit} style={st.btnSubmitQuiz}>Kirim Jawaban Kuis</button>
                ) : (
                  <div style={st.quizDoneBadge}>
-                   <CheckCircle size={20}/> Kuis Selesai
+                   <CheckCircle size={20}/> {quizSubmitted ? "Kuis Selesai" : "Batas Waktu Habis"}
                  </div>
                )}
              </div>
@@ -471,63 +412,66 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   );
 };
 
+// --- RESPONSIVE STYLES ENGINE ---
 const st = {
   container: { background: '#f8fafc', minHeight: '100vh', paddingBottom: 100 },
   loader: { height: '100vh', display: 'flex', flexDirection:'column', justifyContent: 'center', alignItems: 'center', gap:15, fontWeight: 'bold', color: '#673ab7' },
   spinner: { width: 40, height: 40, border: '4px solid #f3e8ff', borderTop: '4px solid #673ab7', borderRadius: '50%', animation: 'spin 1s linear infinite' },
-  heroSection: { height: '380px', position: 'relative', width: '100%', overflow: 'hidden' },
+  heroSection: (m) => ({ height: m ? '300px' : '380px', position: 'relative', width: '100%', overflow: 'hidden' }),
   heroImg: { width: '100%', height: '100%', objectFit: 'cover' },
-  heroOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, rgba(15, 23, 42, 0.95))', padding: '60px 8%', color: 'white' },
-  backFloating: { position: 'absolute', top: 25, left: 25, zIndex: 10, background: 'white', border: 'none', padding: '12px 24px', borderRadius: '30px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, fontWeight: '800', boxShadow: '0 10px 25px rgba(0,0,0,0.15)', color:'#1e293b' },
-  badgeRow: { display: 'flex', gap: 10, marginBottom: 15 },
-  subjectBadge: { background: '#673ab7', padding: '6px 16px', borderRadius: '10px', fontSize: 11, fontWeight: '800' },
-  categoryBadge: { background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', padding: '6px 16px', borderRadius: '10px', fontSize: 11 },
-  mainTitle: { fontSize: 38, margin: '0 0 15px', fontWeight: '900', lineHeight: 1.2 },
-  metaInfo: { display: 'flex', gap: 25, fontSize: 14, opacity: 0.9, alignItems: 'center', flexWrap: 'wrap' },
-  metaItem: { display: 'flex', alignItems: 'center', gap: 8 },
-  deadlineInfo: { display: 'flex', alignItems: 'center', gap: 8, fontWeight: '800' },
-  contentWrapper: { maxWidth: '950px', margin: '-50px auto 0', position: 'relative', zIndex: 5, padding: '0 20px' },
-  contentCard: { background: 'white', padding: '40px', borderRadius: '28px', marginBottom: 30, boxShadow: '0 15px 35px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9' },
-  blockHeader: { marginBottom: 25, borderLeft: '4px solid #673ab7', paddingLeft: 20 },
-  blockLabel: { fontSize: 11, fontWeight: '900', color: '#673ab7', marginBottom: 8 },
-  blockTitle: { fontSize: 26, margin: 0, color: '#0f172a', fontWeight: '800' },
-  textBody: { lineHeight: 1.9, color: '#334155', fontSize: 17, whiteSpace: 'pre-wrap' },
-  mediaContainer: { marginTop: 25, borderRadius: '20px', overflow: 'hidden', border: '1px solid #e2e8f0', background:'#f8fafc' },
+  heroOverlay: (m) => ({ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, rgba(15, 23, 42, 0.95))', padding: m ? '30px 20px' : '60px 8%', color: 'white' }),
+  backFloating: (m) => ({ position: 'absolute', top: m ? 15 : 25, left: m ? 15 : 25, zIndex: 10, background: 'white', border: 'none', padding: m ? '10px 15px' : '12px 24px', borderRadius: '30px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontWeight: '800', boxShadow: '0 10px 25px rgba(0,0,0,0.15)', color:'#1e293b' }),
+  badgeRow: { display: 'flex', gap: 10, marginBottom: 10, flexWrap:'wrap' },
+  subjectBadge: { background: '#673ab7', padding: '6px 16px', borderRadius: '10px', fontSize: 10, fontWeight: '900', textTransform:'uppercase' },
+  categoryBadge: { background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', padding: '6px 16px', borderRadius: '10px', fontSize: 10, fontWeight:'bold' },
+  mainTitle: (m) => ({ fontSize: m ? 24 : 38, margin: '0 0 10px', fontWeight: '900', lineHeight: 1.2 }),
+  metaInfo: { display: 'flex', gap: 15, fontSize: 12, opacity: 0.9, alignItems: 'center', flexWrap: 'wrap' },
+  metaItem: { display: 'flex', alignItems: 'center', gap: 6 },
+  deadlineInfo: { display: 'flex', alignItems: 'center', gap: 6, fontWeight: '900', background:'rgba(0,0,0,0.5)', padding:'4px 10px', borderRadius:8 },
+  contentWrapper: (m) => ({ maxWidth: '950px', margin: m ? '-20px auto 0' : '-50px auto 0', position: 'relative', zIndex: 5, padding: m ? '0 15px' : '0 20px' }),
+  contentCard: (m) => ({ background: 'white', padding: m ? '20px' : '40px', borderRadius: m ? '20px' : '28px', marginBottom: 25, boxShadow: '0 10px 30px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9' }),
+  blockHeader: { marginBottom: 20, borderLeft: '4px solid #673ab7', paddingLeft: 15 },
+  blockLabel: { fontSize: 10, fontWeight: '900', color: '#673ab7', marginBottom: 5 },
+  blockTitle: (m) => ({ fontSize: m ? 20 : 26, margin: 0, color: '#0f172a', fontWeight: '800' }),
+  textBody: (m) => ({ lineHeight: 1.8, color: '#334155', fontSize: m ? 15 : 16, whiteSpace: 'pre-wrap' }),
+  mediaContainer: { marginTop: 20, borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', background:'#f8fafc' },
   mediaGroup: { display: 'flex', flexDirection: 'column' },
-  mediaFooter: { padding: '12px 20px', background: 'white', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  btnSmallLink: { fontSize: 12, fontWeight: '700', color: '#673ab7', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 },
-  iframeWrapper: { width: '100%', height: '520px', background: '#000' },
-  iframe: { width: '100%', height: '100%', border: 'none' },
-  linkBox: { padding: '25px', display: 'flex', alignItems: 'center', gap: 15, background: '#f8fafc', borderRadius:'15px' },
+  pdfDownloadBox: { display:'flex', alignItems:'center', gap:15, padding:20, background:'#f8fafc', borderBottom:'1px solid #e2e8f0' },
+  btnDownloadBase64: { background:'#673ab7', color:'white', padding:'8px 15px', borderRadius:10, textDecoration:'none', fontSize:12, fontWeight:'bold', display:'flex', alignItems:'center', gap:6 },
+  base64Img: { width:'100%', maxHeight:'500px', objectFit:'contain', background:'#0f172a' },
+  mediaFooter: { padding: '12px 15px', background: 'white', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  btnSmallLink: { fontSize: 12, fontWeight: '800', color: '#673ab7', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 },
+  iframe: (m) => ({ width: '100%', height: m ? '250px' : '520px', border: 'none' }),
+  linkBox: (m) => ({ padding: m ? '15px' : '25px', display: 'flex', alignItems: 'center', gap: 15, background: '#f8fafc', borderRadius:'15px' }),
   linkIconCircle: { padding: 12, background: 'white', borderRadius: 12, boxShadow: '0 4px 6px rgba(0,0,0,0.05)' },
-  btnLinkExternal: { color: 'white', background:'#673ab7', padding:'8px 20px', borderRadius:'10px', fontSize:13, fontWeight: '800', textDecoration: 'none', display:'inline-block' },
-  assignmentBox: { marginTop: 25, padding: '30px', borderRadius: '22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 25 },
-  assignInfo: { display: 'flex', gap: 18, alignItems: 'flex-start', flex: 1 },
-  iconCircle: { padding: '12px', background: 'white', borderRadius: '15px', boxShadow: '0 5px 10px rgba(0,0,0,0.05)' },
-  assignTitle: { margin: 0, fontWeight: '800', fontSize: 16 },
-  assignText: { margin: '6px 0 0', fontSize: 14, color: '#64748b', lineHeight: 1.5 },
-  assignActionArea: { minWidth: '240px', textAlign: 'right' },
-  btnUpload: { background: '#f59e0b', color: 'white', padding: '14px 28px', borderRadius: '14px', cursor: 'pointer', fontWeight: '800', fontSize: 14, display:'inline-block' },
-  previewContainer: { background: 'white', padding: '18px', borderRadius: '20px', border: '1px solid #e2e8f0', boxShadow: '0 10px 20px rgba(0,0,0,0.05)', width: '240px' },
+  btnLinkExternal: (m) => ({ color: 'white', background:'#673ab7', padding:'8px 15px', borderRadius:'10px', fontSize:12, fontWeight: '800', textDecoration: 'none', display:'inline-block', width: m ? '100%' : 'auto', textAlign:'center' }),
+  assignmentBox: (m) => ({ marginTop: 25, padding: m ? '20px' : '30px', borderRadius: '20px', display: 'flex', flexDirection: m ? 'column' : 'row', justifyContent: 'space-between', alignItems: m ? 'flex-start' : 'center', gap: 20 }),
+  assignInfo: (m) => ({ display: 'flex', gap: 15, alignItems: 'flex-start', width: '100%' }),
+  iconCircle: { padding: '10px', background: 'white', borderRadius: '12px', boxShadow: '0 5px 10px rgba(0,0,0,0.05)' },
+  assignTitle: { margin: 0, fontWeight: '900', fontSize: 15 },
+  assignText: { margin: '6px 0 0', fontSize: 13, color: '#64748b', lineHeight: 1.5 },
+  assignActionArea: (m) => ({ width: m ? '100%' : '240px', textAlign: m ? 'left' : 'right' }),
+  btnUpload: (m) => ({ background: '#f59e0b', color: 'white', padding: '14px 20px', borderRadius: '14px', cursor: 'pointer', fontWeight: '800', fontSize: 13, display:'block', width:'100%', textAlign:'center' }),
+  previewContainer: (m) => ({ background: 'white', padding: '15px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 20px rgba(0,0,0,0.05)', width: '100%' }),
   previewHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
-  previewName: { fontSize: 12, fontWeight: '700', color: '#1e293b', margin: 0, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' },
+  previewName: { fontSize: 11, fontWeight: '800', color: '#1e293b', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' },
   btnClosePreview: { border: 'none', background: '#fee2e2', color: '#ef4444', padding: '4px', borderRadius: '6px', cursor: 'pointer' },
   previewImg: { width: '100%', height: '100px', objectFit: 'cover', borderRadius: '10px', marginBottom: 12 },
   btnSubmitFinal: { width: '100%', background: '#673ab7', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', cursor: 'pointer', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  successUpload: { color: '#059669', fontWeight: '800', display: 'flex', alignItems: 'center', gap: 8, background: '#dcfce7', padding: '12px 24px', borderRadius: '14px' },
-  btnSmallDelete: { background: '#fee2e2', color: '#ef4444', border: 'none', padding: '8px 15px', borderRadius: '10px', fontSize: '12px', fontWeight: '800', cursor: 'pointer' },
-  btnSmallPreview: { background: '#f1f5f9', color: '#64748b', border: 'none', padding: '8px 15px', borderRadius: '10px', fontSize: '12px', fontWeight: '800', textDecoration: 'none', display:'inline-block' },
-  lockedBadge: { color: '#ef4444', fontWeight: '800', background: '#fee2e2', padding: '12px 24px', borderRadius: '14px' },
-  quizHeader: { display: 'flex', alignItems: 'center', gap: 18, marginBottom: 40 },
-  quizIconBox: { background: '#673ab7', padding: '12px', borderRadius: '16px' },
-  quizItem: { marginBottom: 40 },
-  questionText: { fontSize: 18, fontWeight: '700', color: '#1e293b', marginBottom: 20, display: 'flex', gap: 12 },
-  qNumber: { background: '#f1f5f9', color: '#673ab7', minWidth: '30px', height: '30px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  optionsGrid: { display: 'grid', gridTemplateColumns: '1fr', gap: 12 },
-  optButton: { padding: '18px 24px', borderRadius: '16px', border: '2px solid', textAlign: 'left', transition: '0.2s', fontSize: 15, fontWeight: '600' },
+  successUpload: (m) => ({ color: '#059669', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: m ? 'center' : 'flex-end', gap: 8, background: '#dcfce7', padding: '12px', borderRadius: '12px', width:'100%' }),
+  btnSmallDelete: (m) => ({ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '10px', borderRadius: '10px', fontSize: '12px', fontWeight: '800', cursor: 'pointer', flex:1, display:'flex', justifyContent:'center', alignItems:'center', gap:6 }),
+  btnSmallPreview: (m) => ({ background: '#f1f5f9', color: '#64748b', border: 'none', padding: '10px', borderRadius: '10px', fontSize: '12px', fontWeight: '800', textDecoration: 'none', flex:1, display:'flex', justifyContent:'center', alignItems:'center', gap:6 }),
+  lockedBadge: (m) => ({ color: '#ef4444', fontWeight: '800', background: '#fee2e2', padding: '12px', borderRadius: '12px', textAlign:'center', width:'100%' }),
+  quizHeader: (m) => ({ display: 'flex', alignItems: 'center', gap: 15, marginBottom: m ? 25 : 35 }),
+  quizIconBox: { background: '#673ab7', padding: '10px', borderRadius: '14px' },
+  quizItem: { marginBottom: 30 },
+  questionText: (m) => ({ fontSize: m ? 16 : 18, fontWeight: '800', color: '#1e293b', marginBottom: 15, display: 'flex', gap: 12 }),
+  qNumber: { background: '#f1f5f9', color: '#673ab7', minWidth: '30px', height: '30px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize:14 },
+  optionsGrid: { display: 'grid', gridTemplateColumns: '1fr', gap: 10 },
+  optButton: (m) => ({ padding: m ? '14px 18px' : '16px 20px', borderRadius: '14px', border: '2px solid', textAlign: 'left', transition: '0.2s', fontSize: m ? 14 : 15, fontWeight: '700' }),
   quizFooter: { marginTop: 20 },
-  btnSubmitQuiz: { width: '100%', padding: '20px', borderRadius: '18px', border: 'none', background: '#673ab7', color: 'white', fontWeight: '900', fontSize: 17, cursor: 'pointer' },
-  quizDoneBadge: { textAlign: 'center', padding: '25px', background: '#f0fdf4', color: '#15803d', borderRadius: '20px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, border: '1px solid #bbf7d0' }
+  btnSubmitQuiz: { width: '100%', padding: '18px', borderRadius: '16px', border: 'none', background: '#673ab7', color: 'white', fontWeight: '900', fontSize: 16, cursor: 'pointer' },
+  quizDoneBadge: { textAlign: 'center', padding: '20px', background: '#f0fdf4', color: '#15803d', borderRadius: '16px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, border: '1px solid #bbf7d0' }
 };
 
 export default StudentModuleView;
