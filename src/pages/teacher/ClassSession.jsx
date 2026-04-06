@@ -8,10 +8,12 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
   const [attendanceMap, setAttendanceMap] = useState({});
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); 
-  const [materiAktual, setMateriAktual] = useState(schedule.title || ""); 
+  const [materiAktual, setMateriAktual] = useState(schedule?.title || ""); 
 
   // REAL-TIME LISTENER: Menangkap absen yang masuk dari scan HP siswa
   useEffect(() => {
+    if (!schedule?.id) return;
+
     const today = new Date().toISOString().split('T')[0];
     const q = query(
       collection(db, "attendance"), 
@@ -23,21 +25,27 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
       const newMap = { ...attendanceMap };
       snapshot.docs.forEach(doc => {
         const data = doc.data();
-        if (schedule.students.some(s => s.id === data.studentId)) {
+        // Pastikan schedule.students ada sebelum melakukan some
+        if (schedule.students && schedule.students.some(s => s.id === data.studentId)) {
           newMap[data.studentId] = (data.status === "Hadir");
         }
       });
       setAttendanceMap(newMap);
+    }, (error) => {
+      console.error("Listener Error:", error);
     });
 
     return () => unsubscribe();
-  }, [schedule.students, schedule.title]);
+  }, [schedule]);
 
   // Fungsi Toggle Manual
   const toggleStudent = async (student) => {
     const isCurrentlyPresent = !!attendanceMap[student.id];
     const willBePresent = !isCurrentlyPresent;
+    
+    // Optimistic Update UI
     setAttendanceMap(prev => ({ ...prev, [student.id]: willBePresent }));
+    
     const today = new Date().toISOString().split('T')[0];
     const absenId = `${student.id}_${today}`;
     const absenRef = doc(db, "attendance", absenId);
@@ -57,6 +65,8 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
         mapel: schedule.title || "Umum"
       }, { merge: true });
     } catch (error) {
+      console.error("Update Absen Error:", error);
+      // Revert UI jika gagal
       setAttendanceMap(prev => ({ ...prev, [student.id]: isCurrentlyPresent }));
     }
   };
@@ -68,7 +78,9 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
     setLoading(true);
     try {
       const today = new Date().toISOString().split('T')[0];
-      const batchAbsensi = schedule.students.map(async (siswa) => {
+      
+      // Proses Batch Absensi untuk semua siswa di jadwal
+      const batchPromises = (schedule.students || []).map(async (siswa) => {
         const isPresent = !!attendanceMap[siswa.id];
         const absenId = `${siswa.id}_${today}`;
         const absenRef = doc(db, "attendance", absenId);
@@ -87,8 +99,10 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
         }, { merge: true });
       });
       
-      await Promise.all(batchAbsensi);
-      const siswaHadirList = schedule.students.filter(s => attendanceMap[s.id]);
+      await Promise.all(batchPromises);
+
+      // Hitung Gaji/Honor
+      const siswaHadirList = (schedule.students || []).filter(s => attendanceMap[s.id]);
       const jumlahHadir = siswaHadirList.length;
       
       const startParts = schedule.start.split(':');
@@ -99,7 +113,9 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
 
       const settingsSnap = await getDoc(doc(db, "settings", "global_config"));
       let rules = { honorSD: 35000, honorSMP: 40000, honorSMA: 50000, bonusInggris: 10000 };
-      if (settingsSnap.exists()) rules = { ...rules, ...settingsSnap.data().salaryRules };
+      if (settingsSnap.exists() && settingsSnap.data().salaryRules) {
+          rules = { ...rules, ...settingsSnap.data().salaryRules };
+      }
 
       let nominal = 0;
       let detailTxt = `${schedule.program} - ${materiAktual}`; 
@@ -110,7 +126,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
           detailTxt += " [English Rate]";
       } else {
           let baseRate = parseInt(rules.honorSD);
-          const titleLower = (schedule.level + (schedule.title || "")).toLowerCase();
+          const titleLower = ((schedule.level || "") + (schedule.title || "")).toLowerCase();
           if (titleLower.includes("smp")) baseRate = parseInt(rules.honorSMP);
           else if (titleLower.includes("sma")) baseRate = parseInt(rules.honorSMA);
 
@@ -123,6 +139,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
           }
       }
 
+      // Simpan Log Mengajar Guru
       await addDoc(collection(db, "teacher_logs"), {
         teacherId: teacher.id,
         namaGuru: teacher.nama,
@@ -142,7 +159,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
       alert(`✅ Kelas Berhasil Disimpan!\nHonor: Rp ${Math.round(nominal).toLocaleString('id-ID')}`);
       onBack();
     } catch (error) { 
-        alert("Gagal menyimpan: " + error.message); 
+        alert("Gagal menyimpan sesi: " + error.message); 
     } finally { setLoading(false); }
   };
 
@@ -178,16 +195,16 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
                         style={{ width: '100%', height: 'auto', maxWidth: '180px' }}
                     />
                 </div>
-                <p style={{fontSize:11, color:'#7f8c8d', marginTop:10}}>Siswa silakan scan via aplikasi</p>
+                <p style={{fontSize:11, color:'#7f8c8d', marginTop:10}}>Siswa silakan scan melalui aplikasi siswa</p>
             </div>
 
             {/* BAGIAN LIST SISWA */}
             <div style={styles.card}>
                 <h4 style={{...styles.cardTitle, color:'#3498db'}}>
-                  Siswa ({Object.values(attendanceMap).filter(v=>v).length}/{schedule.students.length})
+                  Siswa ({Object.values(attendanceMap).filter(v=>v).length}/{(schedule.students || []).length})
                 </h4>
                 <div style={styles.studentScrollArea}>
-                  {schedule.students.map(siswa => {
+                  {(schedule.students || []).map(siswa => {
                     const isPresent = attendanceMap[siswa.id];
                     return (
                       <div key={siswa.id} onClick={() => toggleStudent(siswa)}
@@ -213,7 +230,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
             <h4 style={{marginTop:0, color:'#e67e22'}}>📝 Laporan Materi</h4>
             <textarea 
                 rows={5} value={materiAktual} onChange={(e) => setMateriAktual(e.target.value)}
-                placeholder="Tuliskan materi yang diajarkan..."
+                placeholder="Tuliskan materi yang diajarkan hari ini..."
                 style={styles.textarea}
             />
             <div style={styles.footerBtns}>
@@ -234,34 +251,16 @@ const styles = {
   headerCard: { background: 'white', padding: '20px', borderRadius: '15px', border: '1px solid #eee', marginBottom: '20px' },
   headerFlex: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 },
   badge: { background: '#ebf5fb', color: '#3498db', padding: '5px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold' },
-  
-  // GRID RESPONSIVE
-  gridContainer: { 
-    display: 'flex', 
-    flexWrap: 'wrap', // Kunci otomatis membedakan layar
-    gap: '20px', 
-    width: '100%' 
-  },
-  card: { 
-    background: 'white', 
-    padding: '20px', 
-    borderRadius: '15px', 
-    border: '1px solid #eee', 
-    flex: '1 1 350px', // Jika sisa ruang < 350px, dia akan turun (HP)
-    boxSizing: 'border-box',
-    display: 'flex',
-    flexDirection: 'column'
-  },
+  gridContainer: { display: 'flex', flexWrap: 'wrap', gap: '20px', width: '100%' },
+  card: { background: 'white', padding: '20px', borderRadius: '15px', border: '1px solid #eee', flex: '1 1 350px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' },
   cardTitle: { margin: '0 0 15px', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 },
   qrWrapper: { textAlign: 'center', padding: 15, border: '1px dashed #ddd', borderRadius: 10, alignSelf: 'center' },
-  
   studentScrollArea: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10, marginBottom: 20, maxHeight: '400px', overflowY: 'auto' },
   studentItem: { padding: '12px', borderRadius: '10px', cursor: 'pointer', textAlign: 'center', transition: '0.2s' },
-  
   textarea: { width: '100%', padding: '15px', borderRadius: '10px', border: '1px solid #ddd', boxSizing: 'border-box', fontSize: 14, marginBottom: 20, outline: 'none' },
   footerBtns: { display: 'flex', gap: 10 },
   btnMain: { flex: 1, padding: '14px', background: '#3498db', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' },
   btnSecondary: { padding: '14px 25px', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }
 };
 
-export default ClassSession;x
+export default ClassSession;
