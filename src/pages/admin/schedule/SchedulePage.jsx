@@ -10,7 +10,6 @@ const SchedulePage = () => {
   const [availableTeachers, setAvailableTeachers] = useState([]); 
   const [availableStudents, setAvailableStudents] = useState([]);
   
-  // State untuk Daily Code
   const [dailyCode, setDailyCode] = useState("");
   const [isEditingCode, setIsEditingCode] = useState(false);
   const [tempCode, setTempCode] = useState("");
@@ -21,7 +20,7 @@ const SchedulePage = () => {
 
   const defaultForm = {
     start: "14:00", end: "15:30", 
-    program: "Reguler", level: "SD",
+    program: "Reguler", subLevel: "SD (Kelas 1-5)",
     title: "", booker: "", selectedStudents: [],
     repeat: "Once"
   };
@@ -29,6 +28,12 @@ const SchedulePage = () => {
   const [filterKelas, setFilterKelas] = useState(""); 
 
   const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
+
+  // Opsi Sub-Level Berdasarkan Program
+  const subLevelOptions = {
+    "Reguler": ["SD (Kelas 1-5)", "SD (Kelas 6)", "SMP"],
+    "English": ["English Kids", "English Junior", "English Professional"]
+  };
 
   const getSmartDateString = (dateObj) => {
     const year = dateObj.getFullYear();
@@ -84,7 +89,7 @@ const SchedulePage = () => {
           setFormData({
               start: item.start, end: item.end,
               program: item.program || "Reguler",
-              level: item.level || "SD",
+              subLevel: item.subLevel || (item.program === "English" ? "English Kids" : "SD (Kelas 1-5)"),
               title: item.title || "",
               booker: item.booker || "", 
               selectedStudents: item.students ? item.students.map(s => s.id) : [],
@@ -105,14 +110,15 @@ const SchedulePage = () => {
     }).filter(Boolean);
 
     try {
+        const payload = {
+            start: formData.start, end: formData.end,
+            program: formData.program, subLevel: formData.subLevel,
+            title: formData.title, booker: formData.booker,
+            students: studentsFullData
+        };
+
         if (editId) {
-            // Update Doc: Pertahankan status dan list absen yang sudah ada jika sedang edit
-            await updateDoc(doc(db, "jadwal_bimbel", editId), {
-                start: formData.start, end: formData.end,
-                program: formData.program, level: formData.level,
-                title: formData.title, booker: formData.booker,
-                students: studentsFullData
-            });
+            await updateDoc(doc(db, "jadwal_bimbel", editId), payload);
         } else {
             const batch = writeBatch(db);
             const loopCount = formData.repeat === 'Monthly' ? 4 : 1;
@@ -121,13 +127,9 @@ const SchedulePage = () => {
                 const curDateStr = getSmartDateString(tempDate);
                 const newRef = doc(collection(db, "jadwal_bimbel"));
                 batch.set(newRef, {
+                    ...payload,
                     planet: activePlanet,
                     dateStr: curDateStr, 
-                    start: formData.start, end: formData.end,
-                    program: formData.program,
-                    title: formData.title, booker: formData.booker,
-                    students: studentsFullData,
-                    // MODIFIKASI: Tambahan field untuk sistem absensi guru & portal
                     status: "scheduled", 
                     attendance_list: [],
                     createdAt: new Date()
@@ -172,32 +174,26 @@ const SchedulePage = () => {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f7f6' }}>
       <SidebarAdmin />
-      <div style={{ marginLeft: '250px', padding: '30px', width: '100%', boxSizing: 'border-box' }}>
+      <div style={styles.mainWrapper}>
         
         <div style={styles.dateHeader}>
-            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+            <div style={styles.headerFlex}>
                 <div>
                     <h2 style={{margin:0}}>📅 {selectedDate.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}</h2>
                     <p style={{margin:0, opacity:0.8, fontSize:14}}>Manajemen Ruang & Waktu Belajar</p>
                 </div>
                 
                 <div style={styles.codeContainer}>
-                    <span style={{fontSize:12, fontWeight:'bold', display:'block', marginBottom:4}}>ABSENSI CODE:</span>
+                    <span style={{fontSize:10, fontWeight:'bold', display:'block', marginBottom:4}}>DAILY CODE:</span>
                     {isEditingCode ? (
                         <div style={{display:'flex', gap:5}}>
-                            <input 
-                                value={tempCode} 
-                                onChange={e => setTempCode(e.target.value)} 
-                                style={styles.inputCodeEdit} 
-                                placeholder="Contoh: GEM01"
-                            />
+                            <input value={tempCode} onChange={e => setTempCode(e.target.value)} style={styles.inputCodeEdit} />
                             <button onClick={handleSaveDailyCode} style={styles.btnSaveCode}>OK</button>
-                            <button onClick={()=>setIsEditingCode(false)} style={styles.btnCancelCode}>X</button>
                         </div>
                     ) : (
                         <div style={{display:'flex', alignItems:'center', gap:10}}>
-                            <span style={{fontSize:20, fontWeight:'900', letterSpacing:1}}>{dailyCode}</span>
-                            <button onClick={()=>setIsEditingCode(true)} style={styles.btnEditCode}>✏️ Edit Kode</button>
+                            <span style={styles.codeText}>{dailyCode}</span>
+                            <button onClick={()=>setIsEditingCode(true)} style={styles.btnEditCode}>✏️</button>
                         </div>
                     )}
                 </div>
@@ -207,12 +203,12 @@ const SchedulePage = () => {
         <div style={styles.layoutGrid}>
             <div style={styles.leftCol}>
                 <div style={styles.card}>
-                    <div style={{display:'flex', justifyContent:'space-between', marginBottom:15, alignItems:'center'}}>
+                    <div style={styles.calendarNav}>
                         <button style={styles.btnNav} onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))}>◀</button> 
-                        <b style={{fontSize:15}}>{currentMonth.toLocaleDateString('id-ID', {month:'long', year:'numeric'})}</b>
+                        <b style={{fontSize:14}}>{currentMonth.toLocaleDateString('id-ID', {month:'long', year:'numeric'})}</b>
                         <button style={styles.btnNav} onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}>▶</button>
                     </div>
-                    <div style={{display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:6}}>{renderCalendar()}</div>
+                    <div style={styles.calendarGrid}>{renderCalendar()}</div>
                 </div>
             </div>
 
@@ -225,30 +221,29 @@ const SchedulePage = () => {
                         <div key={planet} style={styles.planetContainer}>
                             <div style={styles.planetHead}>
                                 <div style={{display:'flex', alignItems:'center', gap:10}}>
-                                    <span style={{fontSize:20}}>🪐</span>
-                                    <b style={{fontSize:16, color:'#2c3e50'}}>RUANG {planet}</b>
+                                    <span style={{fontSize:18}}>🪐</span>
+                                    <b style={{fontSize:15, color:'#2c3e50'}}>{planet}</b>
                                 </div>
-                                <button onClick={() => handleOpenModal(planet)} style={styles.btnAdd}>+ Tambah Sesi</button>
+                                <button onClick={() => handleOpenModal(planet)} style={styles.btnAdd}>+ Sesi</button>
                             </div>
-                            <div style={{padding:15, display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:15}}>
+                            <div style={styles.itemGrid}>
                                 {items.length === 0 ? (
-                                    <div style={{color:'#bdc3c7', fontSize:13, padding:10, border:'1px dashed #ccc', borderRadius:10, textAlign:'center'}}>Kosong</div>
+                                    <div style={styles.emptyText}>Tidak ada jadwal</div>
                                 ) : items.map(item => (
                                     <div key={item.id} style={styles.itemCard}>
-                                        <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:10}}>
+                                        <div style={styles.itemTop}>
                                             <div style={styles.timeTag}>{item.start} - {item.end}</div>
                                             <span style={{...styles.badge, background: item.program === 'English' ? '#e8f8f5' : '#ebf5fb', color: item.program === 'English' ? '#16a085' : '#2980b9'}}>
-                                                {item.program}
+                                                {item.subLevel || item.program}
                                             </span>
                                         </div>
-                                        <div style={{fontWeight:'bold', color:'#2c3e50', marginBottom:5}}>{item.title || "Materi Umum"}</div>
-                                        <div style={{fontSize:13, color:'#e67e22', fontWeight:'600'}}>👨‍🏫 Guru: {item.booker}</div>
-                                        <div style={{fontSize:12, color:'#7f8c8d', marginTop:8, display:'flex', alignItems:'center', gap:5}}>
+                                        <div style={styles.itemTitle}>{item.title || "Materi Umum"}</div>
+                                        <div style={styles.itemTeacher}>👨‍🏫 {item.booker}</div>
+                                        <div style={styles.itemFooter}>
                                             <span>👥 {item.students?.length || 0} Siswa</span>
-                                            <span style={{color:'#ddd'}}>|</span>
                                             <div style={styles.miniActions}>
-                                                <button onClick={()=>handleOpenModal(planet, true, item)} style={{color:'#3498db', border:'none', background:'none', cursor:'pointer', padding:0}}>Edit</button>
-                                                <button onClick={()=>handleDelete(item.id)} style={{color:'#e74c3c', border:'none', background:'none', cursor:'pointer', padding:0}}>Hapus</button>
+                                                <button onClick={()=>handleOpenModal(planet, true, item)} style={{color:'#3498db'}}>Edit</button>
+                                                <button onClick={()=>handleDelete(item.id)} style={{color:'#e74c3c'}}>Hapus</button>
                                             </div>
                                         </div>
                                     </div>
@@ -263,65 +258,97 @@ const SchedulePage = () => {
         {isModalOpen && (
           <div style={styles.overlay}>
             <div style={styles.modal}>
-              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20}}>
-                <h3 style={{margin:0}}>{editId ? "✏️ Perbarui Jadwal" : "➕ Jadwal Baru"}</h3>
-                <span style={{fontSize:12, background:'#f0f0f0', padding:'4px 10px', borderRadius:20}}>Ruang {activePlanet}</span>
+              <div style={styles.modalHeader}>
+                <h3 style={{margin:0}}>{editId ? "✏️ Edit Jadwal" : "➕ Jadwal Baru"}</h3>
+                <button onClick={()=>setIsModalOpen(false)} style={styles.btnX}>&times;</button>
               </div>
               <form onSubmit={handleSave}>
                 <div style={styles.row}>
                    <div style={{flex:1}}>
-                       <label style={styles.label}>Jam Mulai:</label>
+                       <label style={styles.label}>Mulai:</label>
                        <input type="time" value={formData.start} onChange={e=>setFormData({...formData, start:e.target.value})} style={styles.input} required />
                    </div>
                    <div style={{flex:1}}>
-                       <label style={styles.label}>Jam Selesai:</label>
+                       <label style={styles.label}>Selesai:</label>
                        <input type="time" value={formData.end} onChange={e=>setFormData({...formData, end:e.target.value})} style={styles.input} required />
                    </div>
                 </div>
+                
                 <div style={styles.row}>
                     <div style={{flex:1}}>
                         <label style={styles.label}>Program:</label>
-                        <select value={formData.program} onChange={e=>setFormData({...formData, program:e.target.value})} style={styles.select}>
-                            <option value="Reguler">Reguler</option><option value="English">English</option>
+                        <select 
+                            value={formData.program} 
+                            onChange={e=>{
+                                const prog = e.target.value;
+                                setFormData({...formData, program: prog, subLevel: subLevelOptions[prog][0]});
+                            }} 
+                            style={styles.select}
+                        >
+                            <option value="Reguler">Reguler</option>
+                            <option value="English">English</option>
                         </select>
                     </div>
-                    {!editId && (
-                         <div style={{flex:1}}>
-                            <label style={styles.label}>Perulangan:</label>
-                            <select value={formData.repeat} onChange={e=>setFormData({...formData, repeat:e.target.value})} style={styles.select}>
-                                <option value="Once">Hari Ini Saja</option>
-                                <option value="Monthly">Rutin 1 Bulan (4x)</option>
-                            </select>
-                         </div>
-                    )}
+                    <div style={{flex:1}}>
+                        <label style={styles.label}>Tingkat/Level:</label>
+                        <select 
+                            value={formData.subLevel} 
+                            onChange={e=>setFormData({...formData, subLevel: e.target.value})} 
+                            style={styles.select}
+                        >
+                            {subLevelOptions[formData.program].map(opt => (
+                                <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
+
+                {!editId && (
+                    <div style={{marginBottom:15}}>
+                        <label style={styles.label}>Perulangan:</label>
+                        <select value={formData.repeat} onChange={e=>setFormData({...formData, repeat:e.target.value})} style={styles.select}>
+                            <option value="Once">Satu Kali Saja</option>
+                            <option value="Monthly">Rutin Mingguan (4 Minggu)</option>
+                        </select>
+                    </div>
+                )}
+
                 <label style={styles.label}>Guru Pengajar:</label>
                 <select required value={formData.booker} onChange={e => setFormData({...formData, booker: e.target.value})} style={styles.select}>
                     <option value="">-- Pilih Guru --</option>
                     {availableTeachers.map(t => <option key={t.id} value={t.nama}>{t.nama}</option>)}
                 </select>
-                <label style={styles.label}>Judul/Materi:</label>
-                <input type="text" placeholder="Contoh: Matematika - Aljabar" value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} style={styles.input} />
+
+                <label style={styles.label}>Materi / Judul:</label>
+                <input type="text" placeholder="Contoh: Matematika - Logaritma" value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} style={styles.input} />
                 
                 <div style={styles.studentBox}>
-                    <div style={{display:'flex', gap:5, marginBottom:10}}>
-                        <input type="text" placeholder="Cari Siswa..." value={filterKelas} onChange={e=>setFilterKelas(e.target.value)} style={styles.filterInput} />
+                    <div style={styles.studentBoxHeader}>
+                        <label style={{...styles.label, marginBottom:0}}>Pilih Siswa:</label>
+                        <input type="text" placeholder="Cari nama..." value={filterKelas} onChange={e=>setFilterKelas(e.target.value)} style={styles.miniSearch} />
                     </div>
                     <div style={styles.studentList}>
-                        {availableStudents.filter(s => s.nama.toLowerCase().includes(filterKelas.toLowerCase())).map(s => (
-                            <label key={s.id} style={styles.studentItem}>
-                                <input type="checkbox" checked={formData.selectedStudents.includes(s.id)} onChange={(e) => {
-                                    const ids = formData.selectedStudents;
-                                    if(e.target.checked) setFormData({...formData, selectedStudents: [...ids, s.id]});
-                                    else setFormData({...formData, selectedStudents: ids.filter(x => x !== s.id)});
-                                }} /> 
-                                <span style={{marginLeft:8}}>{s.nama} <small>({s.kelasSekolah})</small></span>
-                            </label>
-                        ))}
+                        {availableStudents
+                          .filter(s => s.nama.toLowerCase().includes(filterKelas.toLowerCase()))
+                          .map(s => {
+                            const isSelected = formData.selectedStudents.includes(s.id);
+                            return (
+                                <label key={s.id} style={{...styles.studentItem, background: isSelected ? '#ebf5fb' : 'transparent'}}>
+                                    <input type="checkbox" checked={isSelected} onChange={(e) => {
+                                        const ids = formData.selectedStudents;
+                                        if(e.target.checked) setFormData({...formData, selectedStudents: [...ids, s.id]});
+                                        else setFormData({...formData, selectedStudents: ids.filter(x => x !== s.id)});
+                                    }} /> 
+                                    <span style={{marginLeft:10, fontWeight: isSelected ? 'bold' : 'normal'}}>
+                                        {s.nama} <small style={{color:'#7f8c8d'}}>({s.kelasSekolah || '-'})</small>
+                                    </span>
+                                </label>
+                            );
+                        })}
                     </div>
                 </div>
 
-                <div style={{marginTop:25, display:'flex', gap:10}}>
+                <div style={styles.modalActions}>
                     <button type="submit" style={styles.btnSave}>SIMPAN JADWAL</button>
                     <button type="button" onClick={()=>setIsModalOpen(false)} style={styles.btnCancel}>BATAL</button>
                 </div>
@@ -335,36 +362,50 @@ const SchedulePage = () => {
 };
 
 const styles = {
-    dateHeader: { background: '#2c3e50', color:'white', padding:'25px', borderRadius:20, marginBottom:25, boxShadow:'0 8px 20px rgba(0,0,0,0.1)' },
-    codeContainer: { background:'rgba(255,255,255,0.1)', padding:'10px 20px', borderRadius:15, border:'1px solid rgba(255,255,255,0.2)', textAlign:'center' },
-    inputCodeEdit: { padding:8, borderRadius:8, border:'none', width:100, fontWeight:'bold', textAlign:'center' },
-    btnSaveCode: { background:'#2ecc71', color:'white', border:'none', borderRadius:8, padding:'0 10px', cursor:'pointer' },
-    btnCancelCode: { background:'#e74c3c', color:'white', border:'none', borderRadius:8, padding:'0 10px', cursor:'pointer' },
-    btnEditCode: { background:'rgba(255,255,255,0.2)', border:'none', color:'white', fontSize:11, padding:'4px 8px', borderRadius:5, cursor:'pointer', marginLeft:10 },
-    layoutGrid: { display:'grid', gridTemplateColumns: '300px 1fr', gap: 25 },
+    mainWrapper: { marginLeft: '250px', padding: '30px', width: 'calc(100% - 250px)', boxSizing: 'border-box' },
+    dateHeader: { background: '#2c3e50', color:'white', padding:'20px 25px', borderRadius:20, marginBottom:25 },
+    headerFlex: { display:'flex', justifyContent:'space-between', alignItems:'center' },
+    codeContainer: { background:'rgba(255,255,255,0.1)', padding:'8px 15px', borderRadius:12, textAlign:'center', minWidth:120 },
+    codeText: { fontSize:18, fontWeight:'bold', letterSpacing:1 },
+    inputCodeEdit: { padding:5, borderRadius:5, border:'none', width:60, textAlign:'center', fontWeight:'bold' },
+    btnSaveCode: { background:'#2ecc71', border:'none', color:'white', borderRadius:5, marginLeft:5, cursor:'pointer', padding:'2px 8px' },
+    btnEditCode: { background:'none', border:'none', cursor:'pointer', fontSize:12 },
+    layoutGrid: { display:'grid', gridTemplateColumns: '260px 1fr', gap: 25 },
     leftCol: { position:'sticky', top:20, height:'fit-content' },
-    rightCol: { display:'flex', flexDirection:'column', gap:25 },
-    card: { background:'white', padding:20, borderRadius:20, boxShadow:'0 4px 12px rgba(0,0,0,0.05)' },
-    btnNav: { background:'#f8f9fa', border:'none', padding:'8px 15px', borderRadius:10, cursor:'pointer' },
-    planetContainer: { background:'white', borderRadius:20, overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.05)' },
-    planetHead: { background:'#f8f9fa', padding:'15px 25px', display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid #eee' },
-    btnAdd: { background:'#3498db', color:'white', border:'none', padding:'8px 16px', borderRadius:10, cursor:'pointer', fontWeight:'bold', fontSize:12 },
-    itemCard: { background:'#fff', padding:15, borderRadius:15, border:'1px solid #f0f0f0', transition:'0.3s' },
-    timeTag: { background:'#f1f2f6', color:'#2c3e50', padding:'4px 10px', borderRadius:8, fontSize:12, fontWeight:'bold' },
-    badge: { padding:'3px 10px', borderRadius:8, fontSize:11, fontWeight:'bold' },
-    miniActions: { display:'flex', gap:10, marginLeft:5 },
-    overlay: { position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.6)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:1000, backdropFilter:'blur(5px)' },
-    modal: { background:'white', padding:30, borderRadius:25, width:500, maxHeight:'90vh', overflowY:'auto' },
-    label: { display:'block', marginBottom:8, fontSize:13, fontWeight:'bold', color:'#34495e' },
-    input: { width:'100%', padding:12, marginBottom:15, border:'1px solid #ecf0f1', borderRadius:12, boxSizing:'border-box', background:'#fbfcfc' },
-    select: { width:'100%', padding:12, marginBottom:15, border:'1px solid #ecf0f1', borderRadius:12, background:'#fbfcfc', boxSizing:'border-box' },
+    card: { background:'white', padding:15, borderRadius:20, boxShadow:'0 2px 10px rgba(0,0,0,0.05)' },
+    calendarNav: { display:'flex', justifyContent:'space-between', marginBottom:15, alignItems:'center' },
+    btnNav: { background:'#f8f9fa', border:'none', padding:'5px 10px', borderRadius:8, cursor:'pointer' },
+    calendarGrid: { display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:4 },
+    rightCol: { display:'flex', flexDirection:'column', gap:20 },
+    planetContainer: { background:'white', borderRadius:20, overflow:'hidden', boxShadow:'0 2px 10px rgba(0,0,0,0.05)' },
+    planetHead: { background:'#f8f9fa', padding:'12px 20px', display:'flex', justifyContent:'space-between', alignItems:'center' },
+    btnAdd: { background:'#3498db', color:'white', border:'none', padding:'6px 12px', borderRadius:8, cursor:'pointer', fontSize:12, fontWeight:'bold' },
+    itemGrid: { padding:15, display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(250px, 1fr))', gap:15 },
+    itemCard: { background:'#fff', padding:12, borderRadius:15, border:'1px solid #f0f0f0' },
+    itemTop: { display:'flex', justifyContent:'space-between', marginBottom:10 },
+    timeTag: { background:'#f1f2f6', padding:'3px 8px', borderRadius:6, fontSize:11, fontWeight:'bold' },
+    badge: { padding:'2px 8px', borderRadius:6, fontSize:10, fontWeight:'bold' },
+    itemTitle: { fontWeight:'bold', fontSize:14, color:'#2c3e50', marginBottom:4 },
+    itemTeacher: { fontSize:12, color:'#e67e22', fontWeight:'600' },
+    itemFooter: { fontSize:11, color:'#7f8c8d', marginTop:10, display:'flex', justifyContent:'space-between' },
+    miniActions: { display:'flex', gap:8 },
+    overlay: { position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.5)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:2000, backdropFilter:'blur(4px)' },
+    modal: { background:'white', padding:25, borderRadius:25, width:'100%', maxWidth:500, maxHeight:'90vh', overflowY:'auto', boxShadow:'0 20px 40px rgba(0,0,0,0.2)' },
+    modalHeader: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 },
+    btnX: { background:'none', border:'none', fontSize:24, cursor:'pointer', color:'#95a5a6' },
+    label: { display:'block', marginBottom:6, fontSize:12, fontWeight:'bold', color:'#34495e' },
+    input: { width:'100%', padding:10, marginBottom:15, border:'1px solid #ddd', borderRadius:10, boxSizing:'border-box' },
+    select: { width:'100%', padding:10, marginBottom:15, border:'1px solid #ddd', borderRadius:10, boxSizing:'border-box', background:'#fff' },
     row: { display:'flex', gap:15 },
-    studentBox: { background:'#f8f9fa', padding:15, borderRadius:15, marginTop:10 },
-    filterInput: { width:'100%', padding:10, borderRadius:10, border:'1px solid #ddd', marginBottom:10 },
-    studentList: { height:150, overflowY:'auto', background:'#fff', borderRadius:10, border:'1px solid #eee' },
-    studentItem: { display:'flex', alignItems:'center', padding:'8px 12px', borderBottom:'1px solid #f9f9f9', fontSize:13, cursor:'pointer' },
-    btnSave: { flex:2, padding:15, background:'#3498db', color:'white', border:'none', borderRadius:12, cursor:'pointer', fontWeight:'bold' },
-    btnCancel: { flex:1, padding:15, background:'#f1f2f6', color:'#7f8c8d', border:'none', borderRadius:12, cursor:'pointer', fontWeight:'bold' }
+    studentBox: { background:'#f8f9fa', padding:15, borderRadius:15, border:'1px solid #eee' },
+    studentBoxHeader: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 },
+    miniSearch: { padding:'5px 10px', borderRadius:8, border:'1px solid #ddd', fontSize:12 },
+    studentList: { height:180, overflowY:'auto', background:'#fff', borderRadius:10, border:'1px solid #eee' },
+    studentItem: { display:'flex', alignItems:'center', padding:'10px', borderBottom:'1px solid #f9f9f9', fontSize:13, cursor:'pointer', transition:'0.2s' },
+    modalActions: { marginTop:20, display:'flex', gap:10 },
+    btnSave: { flex:2, padding:12, background:'#3498db', color:'white', border:'none', borderRadius:10, cursor:'pointer', fontWeight:'bold' },
+    btnCancel: { flex:1, padding:12, background:'#ecf0f1', color:'#7f8c8d', border:'none', borderRadius:10, cursor:'pointer', fontWeight:'bold' },
+    emptyText: { color:'#bdc3c7', fontSize:12, textAlign:'center', padding:20, width:'100%' }
 };
 
 export default SchedulePage;

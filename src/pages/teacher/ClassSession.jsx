@@ -264,4 +264,4 @@ const styles = {
   btnSecondary: { padding: '14px 25px', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }
 };
 
-export default ClassSession;
+export default ClassSession;x
