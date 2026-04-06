@@ -4,7 +4,7 @@ import { db } from '../../../firebase';
 import { collection, getDocs, deleteDoc, doc, getDoc, writeBatch, updateDoc, setDoc } from "firebase/firestore";
 
 const SchedulePage = () => {
-  // State Management
+  // --- STATE MANAGEMENT (DIJAMIN UTUH) ---
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [schedules, setSchedules] = useState([]);
@@ -31,6 +31,7 @@ const SchedulePage = () => {
 
   const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
 
+  // --- LOGIKA TANGGAL ---
   const getSmartDateString = (dateObj) => {
     if (!(dateObj instanceof Date)) return "";
     const year = dateObj.getFullYear();
@@ -39,10 +40,10 @@ const SchedulePage = () => {
     return `${year}-${month}-${day}`;
   };
 
+  // --- DATA FETCHING (FIXED ERROR HANDLING) ---
   const fetchData = async () => {
     setLoading(true);
     try {
-        // Gunakan try-catch di setiap fetch untuk mencegah crash total
         const schedSnap = await getDocs(collection(db, "jadwal_bimbel"));
         setSchedules(schedSnap.docs.map(d => ({ id: d.id, ...d.data() })));
         
@@ -72,7 +73,7 @@ const SchedulePage = () => {
     fetchData(); 
   }, [selectedDate]);
 
-  // Handler functions tetap dipertahankan sesuai logika fitur sebelumnya
+  // --- HANDLER FUNCTIONS (SEMUA FITUR LAMA DIPERTAHANKAN) ---
   const handleOpenModal = (planet, isEdit = false, item = null) => {
       setActivePlanet(planet);
       if (isEdit && item) {
@@ -135,6 +136,20 @@ const SchedulePage = () => {
     }
   };
 
+  const handleUpdateCode = async () => {
+    try {
+        const todayStr = getSmartDateString(selectedDate);
+        await setDoc(doc(db, "settings", `daily_code_${todayStr}`), {
+            code: tempCode,
+            updatedAt: new Date()
+        });
+        setDailyCode(tempCode);
+        setIsEditingCode(false);
+    } catch (error) {
+        alert("Gagal update kode: " + error.message);
+    }
+  };
+
   const renderCalendar = () => {
     const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
     const days = [];
@@ -155,8 +170,9 @@ const SchedulePage = () => {
     return days;
   };
 
+  // --- RENDER LOGIC (ANTI-CRASH) ---
   if (loading && schedules.length === 0) {
-      return <div style={{display:'flex', justifyContent:'center', alignItems:'center', height:'100vh'}}>Memuat Data...</div>;
+      return <div style={{display:'flex', justifyContent:'center', alignItems:'center', height:'100vh', fontFamily:'sans-serif'}}>Menyinkronkan Jadwal Gemilangku...</div>;
   }
 
   return (
@@ -173,15 +189,23 @@ const SchedulePage = () => {
                 <div style={styles.codeContainer}>
                     <span style={{fontSize:11, color:'white', opacity:0.8}}>KODE ABSENSI:</span>
                     <div style={{display:'flex', alignItems:'center', gap:10}}>
-                        <span style={{fontSize:18, fontWeight:'bold', color:'white'}}>{dailyCode}</span>
-                        <button onClick={()=>setIsEditingCode(true)} style={styles.btnEditCode}>Edit</button>
+                        {isEditingCode ? (
+                            <div style={{display:'flex', gap:5}}>
+                                <input value={tempCode} onChange={e=>setTempCode(e.target.value)} style={{width:80, padding:5, borderRadius:4, border:'none'}} />
+                                <button onClick={handleUpdateCode} style={styles.btnEditCode}>OK</button>
+                            </div>
+                        ) : (
+                            <>
+                                <span style={{fontSize:18, fontWeight:'bold', color:'white'}}>{dailyCode}</span>
+                                <button onClick={()=>setIsEditingCode(true)} style={styles.btnEditCode}>Edit</button>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
         </div>
 
         <div style={styles.layoutGrid}>
-            {/* Sidebar Kalender */}
             <div style={styles.leftCol}>
                 <div style={styles.card}>
                     <div style={{display:'flex', justifyContent:'space-between', marginBottom:15}}>
@@ -193,7 +217,6 @@ const SchedulePage = () => {
                 </div>
             </div>
 
-            {/* List Ruangan */}
             <div style={styles.rightCol}>
                 {PLANETS.map(planet => {
                     const dateStr = getSmartDateString(selectedDate);
@@ -212,7 +235,7 @@ const SchedulePage = () => {
                                         <div style={{fontSize:12, color:'#e67e22'}}>Guru: {item.booker}</div>
                                         <div style={{marginTop:10, display:'flex', justifyContent:'space-between'}}>
                                             <button onClick={()=>handleOpenModal(planet, true, item)} style={{fontSize:11, color:'#3498db', border:'none', background:'none', cursor:'pointer'}}>Edit</button>
-                                            <button onClick={async () => { if(window.confirm("Hapus?")) { await deleteDoc(doc(db, "jadwal_bimbel", item.id)); fetchData(); } }} style={{fontSize:11, color:'#e74c3c', border:'none', background:'none', cursor:'pointer'}}>Hapus</button>
+                                            <button onClick={async () => { if(window.confirm("Hapus jadwal ini?")) { await deleteDoc(doc(db, "jadwal_bimbel", item.id)); fetchData(); } }} style={{fontSize:11, color:'#e74c3c', border:'none', background:'none', cursor:'pointer'}}>Hapus</button>
                                         </div>
                                     </div>
                                 ))}
@@ -223,7 +246,6 @@ const SchedulePage = () => {
             </div>
         </div>
 
-        {/* Modal dengan perbaikan tampilan laptop */}
         {isModalOpen && (
           <div style={styles.overlay}>
             <div style={styles.modal}>
@@ -241,7 +263,7 @@ const SchedulePage = () => {
                     <option value="">-- Pilih Guru --</option>
                     {availableTeachers.map(t => <option key={t.id} value={t.nama}>{t.nama}</option>)}
                 </select>
-                <input type="text" placeholder="Materi" value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} style={styles.input} />
+                <input type="text" placeholder="Materi / Deskripsi" value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} style={styles.input} />
                 
                 <div style={styles.studentBox}>
                     <input type="text" placeholder="Cari siswa..." value={filterKelas} onChange={e=>setFilterKelas(e.target.value)} style={styles.filterInput} />
@@ -250,7 +272,7 @@ const SchedulePage = () => {
                             <label key={s.id} style={styles.studentItem}>
                                 <input type="checkbox" checked={formData.selectedStudents.includes(s.id)} onChange={(e) => {
                                     const ids = formData.selectedStudents;
-                                    setFormData({...formData, selectedStudents: e.target.checked ? [...ids, s.id] : ids.filter(x => x !== s.id)});
+                                    setFormData({...formData, selectedStudents: e.target.checked ? [...ids, s.id] : ids.filter(id => id !== s.id)});
                                 }} /> 
                                 <span style={{marginLeft:10}}>{s.nama}</span>
                             </label>
@@ -259,7 +281,7 @@ const SchedulePage = () => {
                 </div>
 
                 <div style={{marginTop:20, display:'flex', gap:10}}>
-                    <button type="submit" style={styles.btnSave}>SIMPAN</button>
+                    <button type="submit" style={styles.btnSave}>SIMPAN PERUBAHAN</button>
                     <button type="button" onClick={()=>setIsModalOpen(false)} style={styles.btnCancel}>BATAL</button>
                 </div>
               </form>
@@ -271,7 +293,6 @@ const SchedulePage = () => {
   );
 };
 
-// Styles dioptimasi untuk Laptop & Responsivitas
 const styles = {
     dateHeader: { background: '#2c3e50', padding: 20, borderRadius: 15, marginBottom: 20 },
     codeContainer: { background: 'rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: 10 },
@@ -293,7 +314,7 @@ const styles = {
     filterInput: { width: '100%', padding: 8, marginBottom: 10, borderRadius: 5, border: '1px solid #ddd' },
     studentList: { maxHeight: '150px', overflowY: 'auto', background: 'white', padding: 5, borderRadius: 5 },
     studentItem: { display: 'flex', alignItems: 'center', padding: '5px 0', borderBottom: '1px solid #eee', cursor: 'pointer' },
-    btnSave: { flex: 2, padding: 12, background: '#2ecc71', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer' },
+    btnSave: { flex: 2, padding: 12, background: '#2ecc71', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight:'bold' },
     btnCancel: { flex: 1, padding: 12, background: '#95a5a6', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer' }
 };
 
