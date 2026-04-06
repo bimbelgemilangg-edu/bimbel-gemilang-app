@@ -171,58 +171,69 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   };
 
   const renderSmartMedia = (block) => {
-    const { content, mimeType, fileName } = block;
-    if (!content) return null;
+    // FIX: Ambil nilai URL dari kemungkinan properti yang disimpan Firebase (content, fileUrl, url, atau file)
+    const contentUrl = block.content || block.fileUrl || block.url || block.file;
+    if (!contentUrl) return null;
 
-    // 1. Render Base64 PDF
-    if (mimeType === 'application/pdf' || content.startsWith('data:application/pdf')) {
+    const fName = block.fileName || "Dokumen_Materi";
+    const fType = block.mimeType || "";
+
+    // 1. Render Base64 / Storage URL PDF
+    const isPdf = fType === 'application/pdf' || contentUrl.startsWith('data:application/pdf') || contentUrl.toLowerCase().includes('.pdf') || (contentUrl.includes('firebasestorage') && contentUrl.includes('%2F') && !contentUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i));
+
+    if (isPdf) {
+      const embedSrc = contentUrl.startsWith('data:')
+        ? contentUrl
+        : `https://docs.google.com/viewer?url=${encodeURIComponent(contentUrl)}&embedded=true`;
+
       return (
         <div style={st.mediaGroup}>
           <div style={st.pdfDownloadBox}>
             <FileText size={40} color="#673ab7" />
-            <div style={{flex: 1}}>
+            <div style={{flex: 1, overflow: 'hidden'}}>
               <h4 style={{margin: '0 0 5px 0', fontSize: 16, color: '#1e293b'}}>Dokumen Materi</h4>
-              <p style={{margin: 0, fontSize: 12, color: '#64748b'}}>{fileName || "Modul_Pembelajaran.pdf"}</p>
+              <p style={{margin: 0, fontSize: 12, color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{fName}</p>
             </div>
-            <a href={content} download={fileName || "Materi.pdf"} style={st.btnDownloadBase64}>
-              <Download size={16}/> Unduh PDF
+            <a href={contentUrl} target="_blank" rel="noreferrer" download={fName} style={st.btnDownloadBase64}>
+              <Download size={16}/> Buka/Unduh
             </a>
           </div>
-          <iframe src={content} style={st.iframe(isMobile)} title="PDF Viewer" loading="lazy"></iframe>
+          <iframe src={embedSrc} style={st.iframe(isMobile)} title="PDF Viewer" loading="lazy"></iframe>
         </div>
       );
     }
 
-    // 2. Render Base64 Image
-    if (content.startsWith('data:image/')) {
+    // 2. Render Base64 / Storage URL Image
+    const isImage = contentUrl.startsWith('data:image/') || contentUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i) || fType.startsWith('image/');
+    if (isImage) {
       return (
         <div style={st.mediaGroup}>
-          <img src={content} style={st.base64Img} alt="Materi Visual" />
+          <img src={contentUrl} style={st.base64Img} alt="Materi Visual" />
           <div style={st.mediaFooter}>
-            <span style={{fontSize: 12, color: '#64748b'}}>{fileName || "Gambar Materi"}</span>
-            <a href={content} download={fileName || "Gambar.png"} style={st.btnSmallLink}><Download size={12}/> Unduh</a>
+            <span style={{fontSize: 12, color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%'}}>{fName}</span>
+            <a href={contentUrl} target="_blank" rel="noreferrer" download={fName} style={st.btnSmallLink}><Download size={12}/> Unduh</a>
           </div>
         </div>
       );
     }
 
     // 3. Render External URLs (Canva, YT, Drive)
-    let embedUrl = content;
+    let embedUrl = contentUrl;
     let showIframe = false;
 
-    if (content.includes('canva.com') || content.includes('canva.link')) {
-      if (content.includes('canva.com/design')) {
-        const baseUrl = content.split('?')[0];
+    if (contentUrl.includes('canva.com') || contentUrl.includes('canva.link')) {
+      if (contentUrl.includes('canva.com/design')) {
+        const baseUrl = contentUrl.split('?')[0];
         embedUrl = baseUrl.endsWith('/view') ? `${baseUrl}?embed` : `${baseUrl}/view?embed`;
       }
       showIframe = true;
-    } else if (content.includes('youtube.com') || content.includes('youtu.be')) {
-      const videoId = content.split('v=')[1]?.split('&')[0] || content.split('/').pop();
+    } else if (contentUrl.includes('youtube.com') || contentUrl.includes('youtu.be')) {
+      const videoId = contentUrl.split('v=')[1]?.split('&')[0] || contentUrl.split('/').pop();
       embedUrl = `https://www.youtube.com/embed/${videoId}`;
       showIframe = true;
-    } else if (content.includes('docs.google.com')) {
-      if (content.includes('/presentation')) embedUrl = content.replace(/\/edit.*$/, '/embed');
-      else if (content.includes('/document')) embedUrl = content.replace(/\/edit.*$/, '/pub?embedded=true');
+    } else if (contentUrl.includes('docs.google.com')) {
+      if (contentUrl.includes('/presentation')) embedUrl = contentUrl.replace(/\/edit.*$/, '/embed');
+      else if (contentUrl.includes('/document')) embedUrl = contentUrl.replace(/\/edit.*$/, '/pub?embedded=true');
       showIframe = true;
     }
 
@@ -234,7 +245,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           </div>
           <div style={st.mediaFooter}>
             <span style={{fontSize: 12, color: '#64748b', display:'flex', alignItems:'center', gap:4}}><Zap size={12} color="#f59e0b"/> Preview Aktif</span>
-            <a href={content} target="_blank" rel="noreferrer" style={st.btnSmallLink}><Maximize2 size={12}/> Layar Penuh</a>
+            <a href={contentUrl} target="_blank" rel="noreferrer" style={st.btnSmallLink}><Maximize2 size={12}/> Layar Penuh</a>
           </div>
         </div>
       );
@@ -246,8 +257,8 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           <div style={st.linkIconCircle}><LinkIcon size={20} color="#673ab7"/></div>
           <div style={{flex: 1, overflow: 'hidden'}}>
             <p style={{margin:0, fontSize:11, color:'#94a3b8', fontWeight:'bold'}}>TAUTAN MATERI</p>
-            <p style={{margin:'2px 0 8px', fontSize:14, color:'#1e293b', fontWeight:'600', textOverflow:'ellipsis', whiteSpace:'nowrap', overflow:'hidden'}}>{content}</p>
-            <a href={content} target="_blank" rel="noreferrer" style={st.btnLinkExternal(isMobile)}>Buka Link ↗</a>
+            <p style={{margin:'2px 0 8px', fontSize:14, color:'#1e293b', fontWeight:'600', textOverflow:'ellipsis', whiteSpace:'nowrap', overflow:'hidden'}}>{contentUrl}</p>
+            <a href={contentUrl} target="_blank" rel="noreferrer" style={st.btnLinkExternal(isMobile)}>Buka Link ↗</a>
           </div>
         </div>
     );
@@ -412,7 +423,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   );
 };
 
-// --- RESPONSIVE STYLES ENGINE ---
 const st = {
   container: { background: '#f8fafc', minHeight: '100vh', paddingBottom: 100 },
   loader: { height: '100vh', display: 'flex', flexDirection:'column', justifyContent: 'center', alignItems: 'center', gap:15, fontWeight: 'bold', color: '#673ab7' },
@@ -437,7 +447,7 @@ const st = {
   mediaContainer: { marginTop: 20, borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', background:'#f8fafc' },
   mediaGroup: { display: 'flex', flexDirection: 'column' },
   pdfDownloadBox: { display:'flex', alignItems:'center', gap:15, padding:20, background:'#f8fafc', borderBottom:'1px solid #e2e8f0' },
-  btnDownloadBase64: { background:'#673ab7', color:'white', padding:'8px 15px', borderRadius:10, textDecoration:'none', fontSize:12, fontWeight:'bold', display:'flex', alignItems:'center', gap:6 },
+  btnDownloadBase64: { background:'#673ab7', color:'white', padding:'8px 15px', borderRadius:10, textDecoration:'none', fontSize:12, fontWeight:'bold', display:'flex', alignItems:'center', gap:6, flexShrink: 0 },
   base64Img: { width:'100%', maxHeight:'500px', objectFit:'contain', background:'#0f172a' },
   mediaFooter: { padding: '12px 15px', background: 'white', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   btnSmallLink: { fontSize: 12, fontWeight: '800', color: '#673ab7', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 },
