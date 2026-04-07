@@ -131,6 +131,7 @@ const TeacherSalaries = () => {
             <thead>
               <tr style="background: #eee;">
                 <th style="padding: 8px;">Tanggal</th>
+                <th style="padding: 8px;">Jenjang/Program</th>
                 <th style="padding: 8px;">Informasi Sesi</th>
                 <th style="padding: 8px;">Nominal</th>
               </tr>
@@ -139,8 +140,11 @@ const TeacherSalaries = () => {
               ${guru.rincian.sort((a,b) => (b.tanggal || '').localeCompare(a.tanggal || '')).map(r => `
                 <tr>
                   <td style="padding: 8px;">${r.tanggal} ${r.waktu ? `<br/><small>${r.waktu}</small>` : ''}</td>
+                  <td style="padding: 8px; text-align: center;">
+                    <b>${r.level || '-'}</b><br/>
+                    <small>${r.program}</small>
+                  </td>
                   <td style="padding: 8px;">
-                    <b>${r.program}</b><br/>
                     <small>
                       ${r.durasiJam ? `Durasi: ${r.durasiJam} Jam | ` : ''}
                       ${r.siswaHadir !== undefined ? `Kehadiran: ${r.siswaHadir} Siswa<br/>` : ''}
@@ -153,7 +157,7 @@ const TeacherSalaries = () => {
             </tbody>
             <tfoot>
               <tr style="font-weight: bold;">
-                <td colspan="2" style="padding: 8px; text-align: right;">TOTAL TERIMA:</td>
+                <td colspan="3" style="padding: 8px; text-align: right;">TOTAL TERIMA:</td>
                 <td style="padding: 8px; text-align: right;">Rp ${guru.totalGaji.toLocaleString()}</td>
               </tr>
             </tfoot>
@@ -228,6 +232,7 @@ const TeacherSalaries = () => {
                   <thead style={{background:'#f8f9fa', position:'sticky', top:0, zIndex:1}}>
                     <tr>
                       <th style={styles.thSmall}>Tanggal/Waktu</th>
+                      <th style={styles.thSmall}>Jenjang</th>
                       <th style={styles.thSmall}>Informasi Sesi</th>
                       <th style={styles.thSmall}>Nominal (Rp)</th>
                       <th style={styles.thSmall}>Status / Tindakan</th>
@@ -242,6 +247,9 @@ const TeacherSalaries = () => {
                           <td style={styles.tdSmall}>
                             <b>{log.tanggal}</b><br/>
                             <span style={{fontSize: 11, color: '#7f8c8d'}}>{log.waktu || '-'}</span>
+                          </td>
+                          <td style={styles.tdSmall}>
+                            <div style={styles.badgeLevel}>{log.level || 'N/A'}</div>
                           </td>
                           <td style={styles.tdSmall}>
                             <span style={{color: log.program === 'BONUS/TAMBAHAN' ? '#e67e22' : '#2980b9', fontWeight:'bold'}}>
@@ -281,7 +289,7 @@ const TeacherSalaries = () => {
                         
                         {activeBonusId === log.id && (
                           <tr style={{background:'#fff9e6'}}>
-                            <td colSpan="4" style={{padding:15, borderBottom:'2px solid #f39c12'}}>
+                            <td colSpan="5" style={{padding:15, borderBottom:'2px solid #f39c12'}}>
                                 <div style={{display:'flex', gap:10, alignItems:'center'}}>
                                     <b style={{fontSize:11}}>TAMBAH BONUS UNTUK TGL INI:</b>
                                     <input placeholder="Keterangan..." onChange={e=>setBonusData({...bonusData, keterangan:e.target.value})} style={styles.miniInput}/>
@@ -298,8 +306,8 @@ const TeacherSalaries = () => {
                   </tbody>
                 </table>
               </div>
-              <div style={{marginTop:20, textAlign:'right'}}>
-                  <h3 style={{margin:0}}>Total Sesi Ini: Rp {viewDetail.totalGaji.toLocaleString()}</h3>
+              <div style={{marginTop:20, textAlign:'right', borderTop:'2px solid #eee', paddingTop:15}}>
+                  <h3 style={{margin:0, color:'#2c3e50'}}>Total Keseluruhan Periode: <span style={{color:'#27ae60'}}>Rp {viewDetail.totalGaji.toLocaleString()}</span></h3>
               </div>
             </div>
           </div>
@@ -321,11 +329,12 @@ const styles = {
   btnDetail: { background:'#3498db', color:'white', border:'none', padding:'8px 15px', borderRadius:8, cursor:'pointer', fontWeight:'bold', marginRight:5 },
   btnDownload: { background:'#27ae60', color:'white', border:'none', padding:'8px 15px', borderRadius:8, cursor:'pointer', fontWeight:'bold' },
   overlay: { position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.7)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:2000 },
-  modal: { background:'white', padding:25, borderRadius:20, width:'1000px', maxWidth:'95%' },
+  modal: { background:'white', padding:25, borderRadius:20, width:'1100px', maxWidth:'95%' },
   modalHeader: { display:'flex', justifyContent:'space-between', marginBottom:20 },
   btnClose: { background:'none', border:'none', fontSize:24, cursor:'pointer' },
   thSmall: { padding:12, fontSize:12, textAlign:'left', color:'#7f8c8d' },
   tdSmall: { padding:12, fontSize:13 },
+  badgeLevel: { background:'#f1f5f9', color:'#475569', padding:'2px 8px', borderRadius:5, fontSize:11, fontWeight:'bold', textAlign:'center', border:'1px solid #e2e8f0', display:'inline-block' },
   inputNominal: { width:'110px', padding:8, borderRadius:6, border:'2px solid', fontWeight:'bold', textAlign:'right' },
   badgeSuccess: { color:'#27ae60', fontWeight:'bold', fontSize:11, background:'#eafaf1', padding:'5px 12px', borderRadius:20, border:'1px solid #2ecc71' },
   btnApprove: { background:'#2ecc71', color:'white', border:'none', padding:'6px 12px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:'bold' },
