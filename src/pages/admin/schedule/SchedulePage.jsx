@@ -4,7 +4,6 @@ import { db } from '../../../firebase';
 import { collection, getDocs, deleteDoc, doc, getDoc, writeBatch, updateDoc, setDoc } from "firebase/firestore";
 
 const SchedulePage = () => {
-  // --- STATE MANAGEMENT (DIJAMIN UTUH) ---
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [schedules, setSchedules] = useState([]);
@@ -20,6 +19,9 @@ const SchedulePage = () => {
   const [activePlanet, setActivePlanet] = useState("");
   const [editId, setEditId] = useState(null); 
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [viewMode, setViewMode] = useState('daily'); 
+
   const defaultForm = {
     start: "14:00", end: "15:30", 
     program: "Reguler", level: "SD",
@@ -30,8 +32,14 @@ const SchedulePage = () => {
   const [filterKelas, setFilterKelas] = useState(""); 
 
   const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
+  const DAYS_ID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
-  // --- LOGIKA TANGGAL ---
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const getSmartDateString = (dateObj) => {
     if (!(dateObj instanceof Date)) return "";
     const year = dateObj.getFullYear();
@@ -40,7 +48,20 @@ const SchedulePage = () => {
     return `${year}-${month}-${day}`;
   };
 
-  // --- DATA FETCHING (FIXED ERROR HANDLING) ---
+  const getWeekDates = (currDate) => {
+    const dates = [];
+    const current = new Date(currDate);
+    const first = current.getDate() - current.getDay() + 1; 
+    const startOfWeek = new Date(current.setDate(first));
+    
+    for (let i = 0; i < 7; i++) {
+        const nextDate = new Date(startOfWeek);
+        nextDate.setDate(startOfWeek.getDate() + i);
+        dates.push(getSmartDateString(nextDate));
+    }
+    return dates;
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -69,11 +90,8 @@ const SchedulePage = () => {
     }
   };
 
-  useEffect(() => { 
-    fetchData(); 
-  }, [selectedDate]);
+  useEffect(() => { fetchData(); }, [selectedDate]);
 
-  // --- HANDLER FUNCTIONS (SEMUA FITUR LAMA DIPERTAHANKAN) ---
   const handleOpenModal = (planet, isEdit = false, item = null) => {
       setActivePlanet(planet);
       if (isEdit && item) {
@@ -131,9 +149,7 @@ const SchedulePage = () => {
         }
         setIsModalOpen(false);
         fetchData();
-    } catch (error) { 
-        alert("Gagal menyimpan: " + error.message); 
-    }
+    } catch (error) { alert("Gagal menyimpan: " + error.message); }
   };
 
   const handleUpdateCode = async () => {
@@ -145,9 +161,7 @@ const SchedulePage = () => {
         });
         setDailyCode(tempCode);
         setIsEditingCode(false);
-    } catch (error) {
-        alert("Gagal update kode: " + error.message);
-    }
+    } catch (error) { alert("Gagal update kode: " + error.message); }
   };
 
   const renderCalendar = () => {
@@ -160,44 +174,119 @@ const SchedulePage = () => {
       days.push(
         <div key={d} onClick={() => setSelectedDate(dateObj)}
           style={{
-             padding:8, textAlign:'center', cursor:'pointer', borderRadius:8, fontSize:12,
-             background: isSelected ? '#3498db' : 'white',
-             color: isSelected ? 'white' : 'black',
-             border: isSelected ? 'none' : '1px solid #eee'
+             padding:10, textAlign:'center', cursor:'pointer', borderRadius:8, fontSize:isMobile ? 14 : 12,
+             background: isSelected ? '#3498db' : 'white', color: isSelected ? 'white' : '#333',
+             border: isSelected ? 'none' : '1px solid #eee', fontWeight: isSelected ? 'bold' : 'normal'
           }}>{d}</div>
       );
     }
     return days;
   };
 
-  // --- RENDER LOGIC (ANTI-CRASH) ---
+  const renderWeeklyView = () => {
+    const weekDates = getWeekDates(selectedDate);
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+        {weekDates.map(dateStr => {
+            const dateObj = new Date(dateStr);
+            const dayName = DAYS_ID[dateObj.getDay()];
+            const items = schedules.filter(s => s.dateStr === dateStr);
+            
+            return (
+                <div key={dateStr} style={{ background: 'white', borderRadius: 12, padding: 15, border: '1px solid #ddd', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}>
+                    <h4 style={{ margin: '0 0 10px 0', color: '#2c3e50', borderBottom: '2px solid #3498db', paddingBottom: 5, display:'inline-block' }}>
+                        {dayName}, {dateStr}
+                    </h4>
+                    {items.length === 0 ? (
+                        <div style={{ fontSize: 13, color: '#999', fontStyle: 'italic' }}>Tidak ada jadwal</div>
+                    ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
+                            {items.map(item => (
+                                <div key={item.id} style={{ background: '#f8f9fa', padding: 12, borderRadius: 8, borderLeft: `4px solid ${item.program === 'English' ? '#e74c3c' : '#2ecc71'}` }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                                        <span style={{ fontWeight: 'bold', fontSize: 13, color: '#333' }}>{item.start} - {item.end}</span>
+                                        <span style={{ fontSize: 11, background: '#e1e8ed', padding: '2px 8px', borderRadius: 10, color: '#555', fontWeight: 'bold' }}>🪐 {item.planet}</span>
+                                    </div>
+                                    <div style={{ fontSize: 14, fontWeight: '600', color: '#2c3e50' }}>{item.title || "Materi Umum"}</div>
+                                    <div style={{ fontSize: 12, color: '#e67e22', marginTop: 4 }}>👨‍🏫 Guru: {item.booker}</div>
+                                    <div style={{ fontSize: 11, color: '#7f8c8d', marginTop: 4 }}>👥 Siswa: {item.students ? item.students.length : 0} Orang</div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        })}
+      </div>
+    );
+  };
+
+  const renderDailyView = () => {
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+            {PLANETS.map(planet => {
+                const dateStr = getSmartDateString(selectedDate);
+                const items = schedules.filter(s => s.planet === planet && s.dateStr === dateStr);
+                return (
+                    <div key={planet} style={{ background: 'white', borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #eee' }}>
+                        <div style={{ background: '#f8f9fa', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee' }}>
+                            <b style={{ color: '#2c3e50', fontSize: isMobile ? 14 : 16 }}>🪐 RUANG {planet}</b>
+                            <button onClick={() => handleOpenModal(planet)} style={{ background: '#3498db', color: 'white', border: 'none', padding: '6px 15px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 'bold' }}>+ Tambah Sesi</button>
+                        </div>
+                        <div style={{ padding: 20, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 15 }}>
+                            {items.length === 0 ? <small style={{ color: '#aaa', fontStyle: 'italic' }}>Tidak ada jadwal di ruangan ini</small> : items.map(item => (
+                                <div key={item.id} style={{ background: '#fff', padding: 15, borderRadius: 10, border: '1px solid #e1e8ed', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f0f0f0', paddingBottom: 8, marginBottom: 8 }}>
+                                        <span style={{ fontSize: 13, fontWeight: '900', color: '#2c3e50', background: '#ecf0f1', padding: '3px 8px', borderRadius: 6 }}>⏰ {item.start} - {item.end}</span>
+                                        <span style={{ fontSize: 10, fontWeight: 'bold', color: item.program === 'English' ? '#e74c3c' : '#2ecc71', textTransform: 'uppercase' }}>{item.program}</span>
+                                    </div>
+                                    <div style={{ fontSize: 15, fontWeight: 'bold', margin: '8px 0', color: '#34495e' }}>{item.title || "Materi Umum"}</div>
+                                    <div style={{ display: 'flex', gap: 5, flexDirection: 'column' }}>
+                                        <div style={{ fontSize: 13, color: '#e67e22', display: 'flex', alignItems: 'center', gap: 5 }}>👨‍🏫 <b>{item.booker}</b></div>
+                                        <div style={{ fontSize: 12, color: '#7f8c8d', display: 'flex', alignItems: 'center', gap: 5 }}>👥 {item.students ? item.students.length : 0} Siswa Terdaftar</div>
+                                    </div>
+                                    <div style={{ marginTop: 15, display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed #eee', paddingTop: 10 }}>
+                                        <button onClick={()=>handleOpenModal(planet, true, item)} style={{ flex: 1, fontSize: 12, color: '#3498db', border: 'none', background: '#ebf5fb', padding: '8px', borderRadius: '6px 0 0 6px', cursor: 'pointer', fontWeight: 'bold' }}>EDIT</button>
+                                        <div style={{ width: 1, background: '#eee' }}></div>
+                                        <button onClick={async () => { if(window.confirm("Hapus jadwal ini permanen?")) { await deleteDoc(doc(db, "jadwal_bimbel", item.id)); fetchData(); } }} style={{ flex: 1, fontSize: 12, color: '#e74c3c', border: 'none', background: '#fdedec', padding: '8px', borderRadius: '0 6px 6px 0', cursor: 'pointer', fontWeight: 'bold' }}>HAPUS</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+  };
+
   if (loading && schedules.length === 0) {
-      return <div style={{display:'flex', justifyContent:'center', alignItems:'center', height:'100vh', fontFamily:'sans-serif'}}>Menyinkronkan Jadwal Gemilangku...</div>;
+      return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontWeight: 'bold', color: '#2c3e50' }}>Menyinkronkan Jadwal...</div>;
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f7f6' }}>
+    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100vh', background: '#f4f7f6' }}>
       <SidebarAdmin />
-      <div style={{ marginLeft: '250px', padding: '30px', width: 'calc(100% - 250px)', boxSizing: 'border-box' }}>
+      <div style={{ marginLeft: isMobile ? '0' : '250px', padding: isMobile ? '15px' : '30px', width: isMobile ? '100%' : 'calc(100% - 250px)', boxSizing: 'border-box' }}>
         
-        {/* Header Section */}
-        <div style={styles.dateHeader}>
-            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:15}}>
+        <div style={{ background: '#2c3e50', padding: isMobile ? 15 : 20, borderRadius: 15, marginBottom: 20, boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: 15 }}>
                 <div>
-                    <h2 style={{margin:0, color:'white'}}>📅 {selectedDate.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}</h2>
+                    <h2 style={{ margin: 0, color: 'white', fontSize: isMobile ? 18 : 24 }}>📅 {selectedDate.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h2>
+                    <p style={{ margin: '5px 0 0', color: '#bdc3c7', fontSize: 13 }}>Manajemen Jadwal & Booking Harian</p>
                 </div>
-                <div style={styles.codeContainer}>
-                    <span style={{fontSize:11, color:'white', opacity:0.8}}>KODE ABSENSI:</span>
-                    <div style={{display:'flex', alignItems:'center', gap:10}}>
+                <div style={{ background: 'rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: 10, width: isMobile ? '100%' : 'auto', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20 }}>
+                    <span style={{ fontSize: 12, color: 'white', opacity: 0.8, fontWeight: 'bold' }}>KODE ABSENSI:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         {isEditingCode ? (
-                            <div style={{display:'flex', gap:5}}>
-                                <input value={tempCode} onChange={e=>setTempCode(e.target.value)} style={{width:80, padding:5, borderRadius:4, border:'none'}} />
-                                <button onClick={handleUpdateCode} style={styles.btnEditCode}>OK</button>
+                            <div style={{ display: 'flex', gap: 5 }}>
+                                <input value={tempCode} onChange={e=>setTempCode(e.target.value)} style={{ width: 80, padding: '6px', borderRadius: 4, border: 'none', textAlign: 'center', fontWeight: 'bold' }} autoFocus />
+                                <button onClick={handleUpdateCode} style={{ background: '#2ecc71', color: 'white', border: 'none', padding: '6px 12px', borderRadius: 5, cursor: 'pointer', fontWeight: 'bold' }}>OK</button>
                             </div>
                         ) : (
                             <>
-                                <span style={{fontSize:18, fontWeight:'bold', color:'white'}}>{dailyCode}</span>
-                                <button onClick={()=>setIsEditingCode(true)} style={styles.btnEditCode}>Edit</button>
+                                <span style={{ fontSize: 20, fontWeight: '900', color: '#f1c40f', letterSpacing: 2 }}>{dailyCode}</span>
+                                <button onClick={()=>setIsEditingCode(true)} style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: 5, cursor: 'pointer', fontSize: 12 }}>Edit</button>
                             </>
                         )}
                     </div>
@@ -205,84 +294,101 @@ const SchedulePage = () => {
             </div>
         </div>
 
-        <div style={styles.layoutGrid}>
-            <div style={styles.leftCol}>
-                <div style={styles.card}>
-                    <div style={{display:'flex', justifyContent:'space-between', marginBottom:15}}>
-                        <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))}>◀</button>
-                        <b style={{fontSize:14}}>{currentMonth.toLocaleDateString('id-ID', {month:'long', year:'numeric'})}</b>
-                        <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}>▶</button>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+            <button onClick={() => setViewMode('daily')} style={{ flex: 1, padding: '12px', borderRadius: 10, border: 'none', fontWeight: 'bold', cursor: 'pointer', background: viewMode === 'daily' ? '#3498db' : '#e0e6ed', color: viewMode === 'daily' ? 'white' : '#7f8c8d', transition: '0.2s' }}>📝 Jadwal Hari Ini</button>
+            <button onClick={() => setViewMode('weekly')} style={{ flex: 1, padding: '12px', borderRadius: 10, border: 'none', fontWeight: 'bold', cursor: 'pointer', background: viewMode === 'weekly' ? '#3498db' : '#e0e6ed', color: viewMode === 'weekly' ? 'white' : '#7f8c8d', transition: '0.2s' }}>🗓️ Rekap Sepekan</button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 20 }}>
+            
+            <div style={{ width: isMobile ? '100%' : '300px', flexShrink: 0 }}>
+                <div style={{ background: 'white', padding: 20, borderRadius: 15, boxShadow: '0 2px 10px rgba(0,0,0,0.05)', position: isMobile ? 'static' : 'sticky', top: 20 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, borderBottom: '1px solid #eee', paddingBottom: 10 }}>
+                        <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#7f8c8d' }}>◀</button>
+                        <b style={{ fontSize: 15, color: '#2c3e50' }}>{currentMonth.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}</b>
+                        <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#7f8c8d' }}>▶</button>
                     </div>
-                    <div style={{display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:5}}>{renderCalendar()}</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 5 }}>{renderCalendar()}</div>
                 </div>
             </div>
 
-            <div style={styles.rightCol}>
-                {PLANETS.map(planet => {
-                    const dateStr = getSmartDateString(selectedDate);
-                    const items = schedules.filter(s => s.planet === planet && s.dateStr === dateStr);
-                    return (
-                        <div key={planet} style={styles.planetContainer}>
-                            <div style={styles.planetHead}>
-                                <b>🪐 RUANG {planet}</b>
-                                <button onClick={() => handleOpenModal(planet)} style={styles.btnAdd}>+ Tambah</button>
-                            </div>
-                            <div style={{padding:15, display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(250px, 1fr))', gap:15}}>
-                                {items.length === 0 ? <small style={{color:'#ccc'}}>Tidak ada jadwal</small> : items.map(item => (
-                                    <div key={item.id} style={styles.itemCard}>
-                                        <div style={{fontSize:12, fontWeight:'bold'}}>{item.start} - {item.end}</div>
-                                        <div style={{fontSize:14, margin:'5px 0'}}>{item.title || "Materi Umum"}</div>
-                                        <div style={{fontSize:12, color:'#e67e22'}}>Guru: {item.booker}</div>
-                                        <div style={{marginTop:10, display:'flex', justifyContent:'space-between'}}>
-                                            <button onClick={()=>handleOpenModal(planet, true, item)} style={{fontSize:11, color:'#3498db', border:'none', background:'none', cursor:'pointer'}}>Edit</button>
-                                            <button onClick={async () => { if(window.confirm("Hapus jadwal ini?")) { await deleteDoc(doc(db, "jadwal_bimbel", item.id)); fetchData(); } }} style={{fontSize:11, color:'#e74c3c', border:'none', background:'none', cursor:'pointer'}}>Hapus</button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    );
-                })}
+            <div style={{ flex: 1, minWidth: 0 }}>
+                {viewMode === 'daily' ? renderDailyView() : renderWeeklyView()}
             </div>
+
         </div>
 
         {isModalOpen && (
-          <div style={styles.overlay}>
-            <div style={styles.modal}>
-              <h3 style={{marginTop:0}}>{editId ? "Edit Sesi" : "Sesi Baru"} - Ruang {activePlanet}</h3>
-              <form onSubmit={handleSave}>
-                <div style={styles.row}>
-                    <input type="time" value={formData.start} onChange={e=>setFormData({...formData, start:e.target.value})} style={styles.input} required />
-                    <input type="time" value={formData.end} onChange={e=>setFormData({...formData, end:e.target.value})} style={styles.input} required />
-                </div>
-                <select value={formData.program} onChange={e=>setFormData({...formData, program:e.target.value})} style={styles.select}>
-                    <option value="Reguler">Reguler</option>
-                    <option value="English">English</option>
-                </select>
-                <select required value={formData.booker} onChange={e => setFormData({...formData, booker: e.target.value})} style={styles.select}>
-                    <option value="">-- Pilih Guru --</option>
-                    {availableTeachers.map(t => <option key={t.id} value={t.nama}>{t.nama}</option>)}
-                </select>
-                <input type="text" placeholder="Materi / Deskripsi" value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} style={styles.input} />
-                
-                <div style={styles.studentBox}>
-                    <input type="text" placeholder="Cari siswa..." value={filterKelas} onChange={e=>setFilterKelas(e.target.value)} style={styles.filterInput} />
-                    <div style={styles.studentList}>
-                        {availableStudents.filter(s => s.nama.toLowerCase().includes(filterKelas.toLowerCase())).map(s => (
-                            <label key={s.id} style={styles.studentItem}>
-                                <input type="checkbox" checked={formData.selectedStudents.includes(s.id)} onChange={(e) => {
-                                    const ids = formData.selectedStudents;
-                                    setFormData({...formData, selectedStudents: e.target.checked ? [...ids, s.id] : ids.filter(id => id !== s.id)});
-                                }} /> 
-                                <span style={{marginLeft:10}}>{s.nama}</span>
-                            </label>
-                        ))}
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: isMobile ? 'flex-end' : 'center', zIndex: 9999 }}>
+            <div style={{ background: 'white', padding: 25, borderRadius: isMobile ? '20px 20px 0 0' : '20px', width: '100%', maxWidth: '500px', maxHeight: isMobile ? '85vh' : '90vh', overflowY: 'auto', boxSizing: 'border-box', boxShadow: '0 -5px 20px rgba(0,0,0,0.1)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, borderBottom: '1px solid #eee', paddingBottom: 10 }}>
+                  <h3 style={{ margin: 0, color: '#2c3e50' }}>{editId ? "✏️ Edit Sesi" : "✨ Sesi Baru"} - Ruang {activePlanet}</h3>
+                  <button onClick={()=>setIsModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#e74c3c', lineHeight: 1 }}>&times;</button>
+              </div>
+              
+              <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+                <div style={{ display: 'flex', gap: 15 }}>
+                    <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d', marginBottom: 5, display: 'block' }}>Jam Mulai</label>
+                        <input type="time" value={formData.start} onChange={e=>setFormData({...formData, start:e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd', boxSizing: 'border-box', fontSize: 14 }} required />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d', marginBottom: 5, display: 'block' }}>Jam Selesai</label>
+                        <input type="time" value={formData.end} onChange={e=>setFormData({...formData, end:e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd', boxSizing: 'border-box', fontSize: 14 }} required />
                     </div>
                 </div>
 
-                <div style={{marginTop:20, display:'flex', gap:10}}>
-                    <button type="submit" style={styles.btnSave}>SIMPAN PERUBAHAN</button>
-                    <button type="button" onClick={()=>setIsModalOpen(false)} style={styles.btnCancel}>BATAL</button>
+                <div>
+                    <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d', marginBottom: 5, display: 'block' }}>Program / Tipe</label>
+                    <select value={formData.program} onChange={e=>setFormData({...formData, program:e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd', fontSize: 14, background: '#fff' }}>
+                        <option value="Reguler">📚 Reguler</option>
+                        <option value="English">🗣️ English</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d', marginBottom: 5, display: 'block' }}>Guru Pengajar</label>
+                    <select required value={formData.booker} onChange={e => setFormData({...formData, booker: e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd', fontSize: 14, background: '#fff' }}>
+                        <option value="">-- Pilih Guru --</option>
+                        {availableTeachers.map(t => <option key={t.id} value={t.nama}>{t.nama}</option>)}
+                    </select>
+                </div>
+
+                <div>
+                    <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d', marginBottom: 5, display: 'block' }}>Materi / Deskripsi Sesi</label>
+                    <input type="text" placeholder="Contoh: Matematika Pecahan Kelas 4" value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd', boxSizing: 'border-box', fontSize: 14 }} />
+                </div>
+                
+                <div style={{ background: '#f8f9fa', padding: 15, borderRadius: 10, border: '1px solid #eee' }}>
+                    <label style={{ fontSize: 12, fontWeight: 'bold', color: '#2c3e50', marginBottom: 10, display: 'block' }}>👥 Assign Siswa ({formData.selectedStudents.length} Dipilih)</label>
+                    <input type="text" placeholder="🔍 Cari nama siswa..." value={filterKelas} onChange={e=>setFilterKelas(e.target.value)} style={{ width: '100%', padding: 10, marginBottom: 10, borderRadius: 6, border: '1px solid #ddd', boxSizing: 'border-box', fontSize: 13 }} />
+                    <div style={{ maxHeight: '160px', overflowY: 'auto', background: 'white', padding: 5, borderRadius: 6, border: '1px solid #eee' }}>
+                        {availableStudents.filter(s => s.nama.toLowerCase().includes(filterKelas.toLowerCase())).map(s => (
+                            <label key={s.id} style={{ display: 'flex', alignItems: 'center', padding: '8px 10px', borderBottom: '1px solid #f9f9f9', cursor: 'pointer', transition: 'background 0.2s', ':hover': { background: '#f1f5f9' } }}>
+                                <input type="checkbox" checked={formData.selectedStudents.includes(s.id)} onChange={(e) => {
+                                    const ids = formData.selectedStudents;
+                                    setFormData({...formData, selectedStudents: e.target.checked ? [...ids, s.id] : ids.filter(id => id !== s.id)});
+                                }} style={{ transform: 'scale(1.2)', marginRight: 12, cursor: 'pointer' }} /> 
+                                <span style={{ fontSize: 13, color: '#333' }}>{s.nama} <span style={{ color: '#aaa', fontSize: 11 }}>({s.kelasSekolah || "-"})</span></span>
+                            </label>
+                        ))}
+                        {availableStudents.length === 0 && <div style={{ padding: 10, textAlign: 'center', fontSize: 12, color: '#999' }}>Data siswa kosong.</div>}
+                    </div>
+                </div>
+
+                {!editId && (
+                    <div>
+                        <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d', marginBottom: 5, display: 'block' }}>Pengulangan</label>
+                        <select value={formData.repeat} onChange={e=>setFormData({...formData, repeat:e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd', fontSize: 14, background: '#fff' }}>
+                            <option value="Once">1x Pertemuan Saja</option>
+                            <option value="Monthly">Otomatis 4 Pekan (1 Bulan)</option>
+                        </select>
+                    </div>
+                )}
+
+                <div style={{ marginTop: 10, display: 'flex', gap: 10, position: 'sticky', bottom: 0, background: 'white', paddingTop: 10 }}>
+                    <button type="button" onClick={()=>setIsModalOpen(false)} style={{ flex: 1, padding: 14, background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 'bold' }}>BATAL</button>
+                    <button type="submit" style={{ flex: 2, padding: 14, background: '#2c3e50', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 'bold' }}>💾 SIMPAN JADWAL</button>
                 </div>
               </form>
             </div>
@@ -291,31 +397,6 @@ const SchedulePage = () => {
       </div>
     </div>
   );
-};
-
-const styles = {
-    dateHeader: { background: '#2c3e50', padding: 20, borderRadius: 15, marginBottom: 20 },
-    codeContainer: { background: 'rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: 10 },
-    btnEditCode: { background: '#3498db', color: 'white', border: 'none', padding: '4px 8px', borderRadius: 5, cursor: 'pointer', fontSize: 11 },
-    layoutGrid: { display: 'grid', gridTemplateColumns: '250px 1fr', gap: 20 },
-    leftCol: { position: 'sticky', top: 20 },
-    rightCol: { display: 'flex', flexDirection: 'column', gap: 20 },
-    card: { background: 'white', padding: 15, borderRadius: 15, boxShadow: '0 2px 10px rgba(0,0,0,0.05)' },
-    planetContainer: { background: 'white', borderRadius: 15, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' },
-    planetHead: { background: '#f8f9fa', padding: '10px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee' },
-    btnAdd: { background: '#3498db', color: 'white', border: 'none', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12 },
-    itemCard: { background: '#fdfdfd', padding: 12, borderRadius: 10, border: '1px solid #f0f0f0' },
-    overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 3000 },
-    modal: { background: 'white', padding: 25, borderRadius: 20, width: '90%', maxWidth: '450px', maxHeight: '90vh', overflowY: 'auto' },
-    input: { width: '100%', padding: 10, marginBottom: 10, borderRadius: 8, border: '1px solid #ddd', boxSizing: 'border-box' },
-    select: { width: '100%', padding: 10, marginBottom: 10, borderRadius: 8, border: '1px solid #ddd' },
-    row: { display: 'flex', gap: 10 },
-    studentBox: { background: '#f8f9fa', padding: 10, borderRadius: 10 },
-    filterInput: { width: '100%', padding: 8, marginBottom: 10, borderRadius: 5, border: '1px solid #ddd' },
-    studentList: { maxHeight: '150px', overflowY: 'auto', background: 'white', padding: 5, borderRadius: 5 },
-    studentItem: { display: 'flex', alignItems: 'center', padding: '5px 0', borderBottom: '1px solid #eee', cursor: 'pointer' },
-    btnSave: { flex: 2, padding: 12, background: '#2ecc71', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight:'bold' },
-    btnCancel: { flex: 1, padding: 12, background: '#95a5a6', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer' }
 };
 
 export default SchedulePage;
