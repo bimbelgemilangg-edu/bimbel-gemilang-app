@@ -22,6 +22,10 @@ const SchedulePage = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [viewMode, setViewMode] = useState('daily'); 
 
+  // State untuk Filter Siswa di Modal
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterKelas, setFilterKelas] = useState("Semua");
+
   const defaultForm = {
     start: "14:00", end: "15:30", 
     program: "Reguler", level: "SD",
@@ -29,10 +33,10 @@ const SchedulePage = () => {
     repeat: "Once"
   };
   const [formData, setFormData] = useState(defaultForm);
-  const [filterKelas, setFilterKelas] = useState(""); 
 
   const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
   const DAYS_ID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+  const LIST_KELAS = ["Semua", "1 SD", "2 SD", "3 SD", "4 SD", "5 SD", "6 SD", "7 SMP", "8 SMP", "9 SMP", "10 SMA", "11 SMA", "12 SMA", "Alumni", "Umum"];
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -94,6 +98,8 @@ const SchedulePage = () => {
 
   const handleOpenModal = (planet, isEdit = false, item = null) => {
       setActivePlanet(planet);
+      setSearchTerm("");
+      setFilterKelas("Semua");
       if (isEdit && item) {
           setEditId(item.id);
           setFormData({
@@ -183,44 +189,6 @@ const SchedulePage = () => {
     return days;
   };
 
-  const renderWeeklyView = () => {
-    const weekDates = getWeekDates(selectedDate);
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
-        {weekDates.map(dateStr => {
-            const dateObj = new Date(dateStr);
-            const dayName = DAYS_ID[dateObj.getDay()];
-            const items = schedules.filter(s => s.dateStr === dateStr);
-            
-            return (
-                <div key={dateStr} style={{ background: 'white', borderRadius: 12, padding: 15, border: '1px solid #ddd', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}>
-                    <h4 style={{ margin: '0 0 10px 0', color: '#2c3e50', borderBottom: '2px solid #3498db', paddingBottom: 5, display:'inline-block' }}>
-                        {dayName}, {dateStr}
-                    </h4>
-                    {items.length === 0 ? (
-                        <div style={{ fontSize: 13, color: '#999', fontStyle: 'italic' }}>Tidak ada jadwal</div>
-                    ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
-                            {items.map(item => (
-                                <div key={item.id} style={{ background: '#f8f9fa', padding: 12, borderRadius: 8, borderLeft: `4px solid ${item.program === 'English' ? '#e74c3c' : '#2ecc71'}` }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                                        <span style={{ fontWeight: 'bold', fontSize: 13, color: '#333' }}>{item.start} - {item.end}</span>
-                                        <span style={{ fontSize: 11, background: '#e1e8ed', padding: '2px 8px', borderRadius: 10, color: '#555', fontWeight: 'bold' }}>🪐 {item.planet}</span>
-                                    </div>
-                                    <div style={{ fontSize: 14, fontWeight: '600', color: '#2c3e50' }}>{item.title || "Materi Umum"}</div>
-                                    <div style={{ fontSize: 12, color: '#e67e22', marginTop: 4 }}>👨‍🏫 Guru: {item.booker}</div>
-                                    <div style={{ fontSize: 11, color: '#7f8c8d', marginTop: 4 }}>👥 Siswa: {item.students ? item.students.length : 0} Orang</div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            );
-        })}
-      </div>
-    );
-  };
-
   const renderDailyView = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
@@ -260,33 +228,62 @@ const SchedulePage = () => {
     );
   };
 
-  if (loading && schedules.length === 0) {
-      return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontWeight: 'bold', color: '#2c3e50' }}>Menyinkronkan Jadwal...</div>;
-  }
+  const renderWeeklyView = () => {
+    const weekDates = getWeekDates(selectedDate);
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+        {weekDates.map(dateStr => {
+            const dateObj = new Date(dateStr);
+            const dayName = DAYS_ID[dateObj.getDay()];
+            const items = schedules.filter(s => s.dateStr === dateStr);
+            return (
+                <div key={dateStr} style={{ background: 'white', borderRadius: 12, padding: 15, border: '1px solid #ddd' }}>
+                    <h4 style={{ margin: '0 0 10px 0', color: '#2c3e50', borderBottom: '2px solid #3498db', paddingBottom: 5, display:'inline-block' }}>{dayName}, {dateStr}</h4>
+                    {items.length === 0 ? <div style={{ fontSize: 13, color: '#999' }}>Tidak ada jadwal</div> : (
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
+                            {items.map(item => (
+                                <div key={item.id} style={{ background: '#f8f9fa', padding: 12, borderRadius: 8, borderLeft: `4px solid ${item.program === 'English' ? '#e74c3c' : '#2ecc71'}` }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ fontWeight: 'bold', fontSize: 13 }}>{item.start} - {item.end}</span>
+                                        <span style={{ fontSize: 11, background: '#e1e8ed', padding: '2px 8px', borderRadius: 10 }}>🪐 {item.planet}</span>
+                                    </div>
+                                    <div style={{ fontSize: 14, fontWeight: '600' }}>{item.title || "Materi Umum"}</div>
+                                    <div style={{ fontSize: 12, color: '#e67e22' }}>👨‍🏫 {item.booker}</div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        })}
+      </div>
+    );
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100vh', background: '#f4f7f6' }}>
       <SidebarAdmin />
       <div style={{ marginLeft: isMobile ? '0' : '250px', padding: isMobile ? '15px' : '30px', width: isMobile ? '100%' : 'calc(100% - 250px)', boxSizing: 'border-box' }}>
         
-        <div style={{ background: '#2c3e50', padding: isMobile ? 15 : 20, borderRadius: 15, marginBottom: 20, boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
-            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: 15 }}>
+        {/* Header Section */}
+        <div style={{ background: '#2c3e50', padding: 20, borderRadius: 15, marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 15 }}>
                 <div>
-                    <h2 style={{ margin: 0, color: 'white', fontSize: isMobile ? 18 : 24 }}>📅 {selectedDate.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h2>
+                    <h2 style={{ margin: 0, color: 'white' }}>📅 {selectedDate.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h2>
                     <p style={{ margin: '5px 0 0', color: '#bdc3c7', fontSize: 13 }}>Manajemen Jadwal & Booking Harian</p>
                 </div>
-                <div style={{ background: 'rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: 10, width: isMobile ? '100%' : 'auto', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20 }}>
-                    <span style={{ fontSize: 12, color: 'white', opacity: 0.8, fontWeight: 'bold' }}>KODE ABSENSI:</span>
+                <div style={{ background: 'rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 20 }}>
+                    <span style={{ fontSize: 12, color: 'white', fontWeight: 'bold' }}>KODE ABSENSI:</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         {isEditingCode ? (
                             <div style={{ display: 'flex', gap: 5 }}>
-                                <input value={tempCode} onChange={e=>setTempCode(e.target.value)} style={{ width: 80, padding: '6px', borderRadius: 4, border: 'none', textAlign: 'center', fontWeight: 'bold' }} autoFocus />
-                                <button onClick={handleUpdateCode} style={{ background: '#2ecc71', color: 'white', border: 'none', padding: '6px 12px', borderRadius: 5, cursor: 'pointer', fontWeight: 'bold' }}>OK</button>
+                                <input value={tempCode} onChange={e=>setTempCode(e.target.value)} style={{ width: 80, padding: '6px', borderRadius: 4, textAlign: 'center' }} />
+                                <button onClick={handleUpdateCode} style={{ background: '#2ecc71', color: 'white', border: 'none', padding: '6px 12px', borderRadius: 5 }}>OK</button>
                             </div>
                         ) : (
                             <>
-                                <span style={{ fontSize: 20, fontWeight: '900', color: '#f1c40f', letterSpacing: 2 }}>{dailyCode}</span>
-                                <button onClick={()=>setIsEditingCode(true)} style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: 5, cursor: 'pointer', fontSize: 12 }}>Edit</button>
+                                <span style={{ fontSize: 20, fontWeight: '900', color: '#f1c40f' }}>{dailyCode}</span>
+                                <button onClick={()=>setIsEditingCode(true)} style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: 5, fontSize: 12 }}>Edit</button>
                             </>
                         )}
                     </div>
@@ -294,101 +291,129 @@ const SchedulePage = () => {
             </div>
         </div>
 
+        {/* View Switcher */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-            <button onClick={() => setViewMode('daily')} style={{ flex: 1, padding: '12px', borderRadius: 10, border: 'none', fontWeight: 'bold', cursor: 'pointer', background: viewMode === 'daily' ? '#3498db' : '#e0e6ed', color: viewMode === 'daily' ? 'white' : '#7f8c8d', transition: '0.2s' }}>📝 Jadwal Hari Ini</button>
-            <button onClick={() => setViewMode('weekly')} style={{ flex: 1, padding: '12px', borderRadius: 10, border: 'none', fontWeight: 'bold', cursor: 'pointer', background: viewMode === 'weekly' ? '#3498db' : '#e0e6ed', color: viewMode === 'weekly' ? 'white' : '#7f8c8d', transition: '0.2s' }}>🗓️ Rekap Sepekan</button>
+            <button onClick={() => setViewMode('daily')} style={{ flex: 1, padding: '12px', borderRadius: 10, border: 'none', fontWeight: 'bold', background: viewMode === 'daily' ? '#3498db' : '#e0e6ed', color: viewMode === 'daily' ? 'white' : '#7f8c8d' }}>📝 Jadwal Hari Ini</button>
+            <button onClick={() => setViewMode('weekly')} style={{ flex: 1, padding: '12px', borderRadius: 10, border: 'none', fontWeight: 'bold', background: viewMode === 'weekly' ? '#3498db' : '#e0e6ed', color: viewMode === 'weekly' ? 'white' : '#7f8c8d' }}>🗓️ Rekap Sepekan</button>
         </div>
 
         <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 20 }}>
-            
+            {/* Sidebar Calendar */}
             <div style={{ width: isMobile ? '100%' : '300px', flexShrink: 0 }}>
-                <div style={{ background: 'white', padding: 20, borderRadius: 15, boxShadow: '0 2px 10px rgba(0,0,0,0.05)', position: isMobile ? 'static' : 'sticky', top: 20 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, borderBottom: '1px solid #eee', paddingBottom: 10 }}>
-                        <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#7f8c8d' }}>◀</button>
-                        <b style={{ fontSize: 15, color: '#2c3e50' }}>{currentMonth.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}</b>
-                        <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#7f8c8d' }}>▶</button>
+                <div style={{ background: 'white', padding: 20, borderRadius: 15, boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+                        <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} style={{ background: 'none', border: 'none' }}>◀</button>
+                        <b style={{ fontSize: 15 }}>{currentMonth.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}</b>
+                        <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} style={{ background: 'none', border: 'none' }}>▶</button>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 5 }}>{renderCalendar()}</div>
                 </div>
             </div>
 
+            {/* Main Content Area */}
             <div style={{ flex: 1, minWidth: 0 }}>
                 {viewMode === 'daily' ? renderDailyView() : renderWeeklyView()}
             </div>
-
         </div>
 
+        {/* --- MODAL TAMBAH/EDIT SESI --- */}
         {isModalOpen && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: isMobile ? 'flex-end' : 'center', zIndex: 9999 }}>
-            <div style={{ background: 'white', padding: 25, borderRadius: isMobile ? '20px 20px 0 0' : '20px', width: '100%', maxWidth: '500px', maxHeight: isMobile ? '85vh' : '90vh', overflowY: 'auto', boxSizing: 'border-box', boxShadow: '0 -5px 20px rgba(0,0,0,0.1)' }}>
+            <div style={{ background: 'white', padding: 25, borderRadius: isMobile ? '20px 20px 0 0' : '20px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, borderBottom: '1px solid #eee', paddingBottom: 10 }}>
-                  <h3 style={{ margin: 0, color: '#2c3e50' }}>{editId ? "✏️ Edit Sesi" : "✨ Sesi Baru"} - Ruang {activePlanet}</h3>
-                  <button onClick={()=>setIsModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#e74c3c', lineHeight: 1 }}>&times;</button>
+                  <h3 style={{ margin: 0 }}>{editId ? "✏️ Edit Sesi" : "✨ Sesi Baru"} - Ruang {activePlanet}</h3>
+                  <button onClick={()=>setIsModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#e74c3c' }}>&times;</button>
               </div>
               
               <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+                {/* Waktu Sesi */}
                 <div style={{ display: 'flex', gap: 15 }}>
                     <div style={{ flex: 1 }}>
-                        <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d', marginBottom: 5, display: 'block' }}>Jam Mulai</label>
-                        <input type="time" value={formData.start} onChange={e=>setFormData({...formData, start:e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd', boxSizing: 'border-box', fontSize: 14 }} required />
+                        <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d' }}>Jam Mulai</label>
+                        <input type="time" value={formData.start} onChange={e=>setFormData({...formData, start:e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd' }} required />
                     </div>
                     <div style={{ flex: 1 }}>
-                        <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d', marginBottom: 5, display: 'block' }}>Jam Selesai</label>
-                        <input type="time" value={formData.end} onChange={e=>setFormData({...formData, end:e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd', boxSizing: 'border-box', fontSize: 14 }} required />
+                        <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d' }}>Jam Selesai</label>
+                        <input type="time" value={formData.end} onChange={e=>setFormData({...formData, end:e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd' }} required />
+                    </div>
+                </div>
+
+                {/* Program & Guru */}
+                <div style={{ display: 'flex', gap: 15 }}>
+                    <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d' }}>Program</label>
+                        <select value={formData.program} onChange={e=>setFormData({...formData, program:e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd' }}>
+                            <option value="Reguler">📚 Reguler</option>
+                            <option value="English">🗣️ English</option>
+                        </select>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d' }}>Guru</label>
+                        <select required value={formData.booker} onChange={e => setFormData({...formData, booker: e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd' }}>
+                            <option value="">-- Pilih Guru --</option>
+                            {availableTeachers.map(t => <option key={t.id} value={t.nama}>{t.nama}</option>)}
+                        </select>
                     </div>
                 </div>
 
                 <div>
-                    <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d', marginBottom: 5, display: 'block' }}>Program / Tipe</label>
-                    <select value={formData.program} onChange={e=>setFormData({...formData, program:e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd', fontSize: 14, background: '#fff' }}>
-                        <option value="Reguler">📚 Reguler</option>
-                        <option value="English">🗣️ English</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d', marginBottom: 5, display: 'block' }}>Guru Pengajar</label>
-                    <select required value={formData.booker} onChange={e => setFormData({...formData, booker: e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd', fontSize: 14, background: '#fff' }}>
-                        <option value="">-- Pilih Guru --</option>
-                        {availableTeachers.map(t => <option key={t.id} value={t.nama}>{t.nama}</option>)}
-                    </select>
-                </div>
-
-                <div>
-                    <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d', marginBottom: 5, display: 'block' }}>Materi / Deskripsi Sesi</label>
-                    <input type="text" placeholder="Contoh: Matematika Pecahan Kelas 4" value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd', boxSizing: 'border-box', fontSize: 14 }} />
+                    <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d' }}>Materi / Deskripsi</label>
+                    <input type="text" placeholder="Contoh: Matematika Pecahan Kelas 4" value={formData.title} onChange={e=>setFormData({...formData, title:e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd' }} />
                 </div>
                 
-                <div style={{ background: '#f8f9fa', padding: 15, borderRadius: 10, border: '1px solid #eee' }}>
+                {/* --- BAGIAN ASSIGN SISWA (REVISED) --- */}
+                <div style={{ background: '#f8f9fa', padding: 15, borderRadius: 12, border: '1px solid #eee' }}>
                     <label style={{ fontSize: 12, fontWeight: 'bold', color: '#2c3e50', marginBottom: 10, display: 'block' }}>👥 Assign Siswa ({formData.selectedStudents.length} Dipilih)</label>
-                    <input type="text" placeholder="🔍 Cari nama siswa..." value={filterKelas} onChange={e=>setFilterKelas(e.target.value)} style={{ width: '100%', padding: 10, marginBottom: 10, borderRadius: 6, border: '1px solid #ddd', boxSizing: 'border-box', fontSize: 13 }} />
-                    <div style={{ maxHeight: '160px', overflowY: 'auto', background: 'white', padding: 5, borderRadius: 6, border: '1px solid #eee' }}>
-                        {availableStudents.filter(s => s.nama.toLowerCase().includes(filterKelas.toLowerCase())).map(s => (
-                            <label key={s.id} style={{ display: 'flex', alignItems: 'center', padding: '8px 10px', borderBottom: '1px solid #f9f9f9', cursor: 'pointer', transition: 'background 0.2s', ':hover': { background: '#f1f5f9' } }}>
-                                <input type="checkbox" checked={formData.selectedStudents.includes(s.id)} onChange={(e) => {
-                                    const ids = formData.selectedStudents;
-                                    setFormData({...formData, selectedStudents: e.target.checked ? [...ids, s.id] : ids.filter(id => id !== s.id)});
-                                }} style={{ transform: 'scale(1.2)', marginRight: 12, cursor: 'pointer' }} /> 
-                                <span style={{ fontSize: 13, color: '#333' }}>{s.nama} <span style={{ color: '#aaa', fontSize: 11 }}>({s.kelasSekolah || "-"})</span></span>
+                    
+                    {/* Filter Section */}
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                        <select value={filterKelas} onChange={e=>setFilterKelas(e.target.value)} style={{ flex: 1, padding: '8px', borderRadius: 8, border: '1px solid #ddd', fontSize: 12 }}>
+                            {LIST_KELAS.map(k => <option key={k} value={k}>{k}</option>)}
+                        </select>
+                        <input type="text" placeholder="Cari nama..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} style={{ flex: 2, padding: '8px', borderRadius: 8, border: '1px solid #ddd', fontSize: 12 }} />
+                    </div>
+
+                    {/* Vertical List Siswa (Anti-Seret) */}
+                    <div style={{ maxHeight: '200px', overflowY: 'auto', background: 'white', padding: '5px', borderRadius: 8, border: '1px solid #eee' }}>
+                        {availableStudents
+                          .filter(s => {
+                            const matchNama = s.nama.toLowerCase().includes(searchTerm.toLowerCase());
+                            const matchKelas = filterKelas === "Semua" || s.kelasSekolah === filterKelas;
+                            return matchNama && matchKelas;
+                          })
+                          .map(s => (
+                            <label key={s.id} style={{ display: 'flex', alignItems: 'center', padding: '10px', borderBottom: '1px solid #f8f9fa', cursor: 'pointer', gap: 12 }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={formData.selectedStudents.includes(s.id)} 
+                                    onChange={(e) => {
+                                        const ids = formData.selectedStudents;
+                                        setFormData({...formData, selectedStudents: e.target.checked ? [...ids, s.id] : ids.filter(id => id !== s.id)});
+                                    }} 
+                                    style={{ width: 18, height: 18, cursor: 'pointer' }} 
+                                /> 
+                                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                                    <span style={{ fontSize: 13, fontWeight: '500' }}>{s.nama}</span>
+                                    <span style={{ fontSize: 10, color: '#4f46e5', background: '#eef2ff', padding: '2px 8px', borderRadius: 10, fontWeight: 'bold' }}>{s.kelasSekolah || "-"}</span>
+                                </div>
                             </label>
                         ))}
-                        {availableStudents.length === 0 && <div style={{ padding: 10, textAlign: 'center', fontSize: 12, color: '#999' }}>Data siswa kosong.</div>}
                     </div>
                 </div>
 
                 {!editId && (
                     <div>
-                        <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d', marginBottom: 5, display: 'block' }}>Pengulangan</label>
-                        <select value={formData.repeat} onChange={e=>setFormData({...formData, repeat:e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd', fontSize: 14, background: '#fff' }}>
+                        <label style={{ fontSize: 12, fontWeight: 'bold', color: '#7f8c8d' }}>Pengulangan</label>
+                        <select value={formData.repeat} onChange={e=>setFormData({...formData, repeat:e.target.value})} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ddd' }}>
                             <option value="Once">1x Pertemuan Saja</option>
                             <option value="Monthly">Otomatis 4 Pekan (1 Bulan)</option>
                         </select>
                     </div>
                 )}
 
-                <div style={{ marginTop: 10, display: 'flex', gap: 10, position: 'sticky', bottom: 0, background: 'white', paddingTop: 10 }}>
-                    <button type="button" onClick={()=>setIsModalOpen(false)} style={{ flex: 1, padding: 14, background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 'bold' }}>BATAL</button>
-                    <button type="submit" style={{ flex: 2, padding: 14, background: '#2c3e50', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 'bold' }}>💾 SIMPAN JADWAL</button>
+                <div style={{ marginTop: 10, display: 'flex', gap: 10 }}>
+                    <button type="button" onClick={()=>setIsModalOpen(false)} style={{ flex: 1, padding: 14, background: '#f1f5f9', border: 'none', borderRadius: 10, fontWeight: 'bold' }}>BATAL</button>
+                    <button type="submit" style={{ flex: 2, padding: 14, background: '#2c3e50', color: 'white', border: 'none', borderRadius: 10, fontWeight: 'bold' }}>💾 SIMPAN JADWAL</button>
                 </div>
               </form>
             </div>
