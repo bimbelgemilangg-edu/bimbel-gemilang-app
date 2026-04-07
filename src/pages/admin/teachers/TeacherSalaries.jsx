@@ -22,7 +22,6 @@ const TeacherSalaries = () => {
 
       const filtered = logs.filter(log => {
         if (!log || !log.tanggal) return false;
-        // Safety check untuk format tanggal
         const parts = log.tanggal.split(' ');
         if (parts.length === 0) return false;
         const cleanDate = parts[0];
@@ -56,6 +55,7 @@ const TeacherSalaries = () => {
       if (viewDetail) {
         const updated = Object.values(guruMap).find(g => g.id === viewDetail.id);
         if (updated) setViewDetail(updated);
+        else setViewDetail(null);
       }
     } catch (error) { 
       console.error("Fetch Error:", error); 
@@ -100,6 +100,22 @@ const TeacherSalaries = () => {
     } catch (e) { alert("Gagal approve"); }
   };
 
+  const handleUnapproveLog = async (logId) => {
+    if (!window.confirm("Batalkan validasi untuk merevisi data ini?")) return;
+    try {
+      await updateDoc(doc(db, "teacher_logs", logId), { status: "Menunggu Validasi" });
+      fetchData();
+    } catch (e) { alert("Gagal membatalkan validasi"); }
+  };
+
+  const handleDeleteLog = async (logId) => {
+    if (!window.confirm("Yakin ingin menghapus baris riwayat ini secara permanen?")) return;
+    try {
+      await deleteDoc(doc(db, "teacher_logs", logId));
+      fetchData();
+    } catch (e) { alert("Gagal menghapus"); }
+  };
+
   const handleDownload = (guru) => {
     const printWindow = window.open('', '_blank');
     if(!printWindow) return alert("Pop-up diblokir browser!");
@@ -115,15 +131,22 @@ const TeacherSalaries = () => {
             <thead>
               <tr style="background: #eee;">
                 <th style="padding: 8px;">Tanggal</th>
-                <th style="padding: 8px;">Program/Kegiatan</th>
+                <th style="padding: 8px;">Informasi Sesi</th>
                 <th style="padding: 8px;">Nominal</th>
               </tr>
             </thead>
             <tbody>
-              ${guru.rincian.map(r => `
+              ${guru.rincian.sort((a,b) => (b.tanggal || '').localeCompare(a.tanggal || '')).map(r => `
                 <tr>
-                  <td style="padding: 8px;">${r.tanggal}</td>
-                  <td style="padding: 8px;">${r.program} - ${r.detail}</td>
+                  <td style="padding: 8px;">${r.tanggal} ${r.waktu ? `<br/><small>${r.waktu}</small>` : ''}</td>
+                  <td style="padding: 8px;">
+                    <b>${r.program}</b><br/>
+                    <small>
+                      ${r.durasiJam ? `Durasi: ${r.durasiJam} Jam | ` : ''}
+                      ${r.siswaHadir !== undefined ? `Kehadiran: ${r.siswaHadir} Siswa<br/>` : ''}
+                      ${r.detail}
+                    </small>
+                  </td>
                   <td style="padding: 8px; text-align: right;">Rp ${parseInt(r.nominal || 0).toLocaleString()}</td>
                 </tr>
               `).join('')}
@@ -150,7 +173,7 @@ const TeacherSalaries = () => {
         <div style={styles.headerCard}>
           <div>
             <h2 style={{margin:0}}>💰 Rekap Gaji & Validasi Harian</h2>
-            <p style={{color:'#666', marginTop:5}}>Gunakan range tanggal untuk memfilter data pengeluaran.</p>
+            <p style={{color:'#666', marginTop:5}}>Kelola honor berdasarkan jenjang dan durasi mengajar.</p>
           </div>
           <div style={styles.totalBox}>
             <small style={{fontWeight:'bold'}}>TOTAL PENGELUARAN:</small>
@@ -196,7 +219,7 @@ const TeacherSalaries = () => {
           <div style={styles.overlay}>
             <div style={styles.modal}>
               <div style={styles.modalHeader}>
-                <h3 style={{margin:0}}>Laporan Harian: {viewDetail.nama}</h3>
+                <h3 style={{margin:0}}>Laporan Sesi: {viewDetail.nama}</h3>
                 <button onClick={()=>setViewDetail(null)} style={styles.btnClose}>&times;</button>
               </div>
 
@@ -204,8 +227,8 @@ const TeacherSalaries = () => {
                 <table style={{width:'100%', borderCollapse:'collapse'}}>
                   <thead style={{background:'#f8f9fa', position:'sticky', top:0, zIndex:1}}>
                     <tr>
-                      <th style={styles.thSmall}>Tanggal</th>
-                      <th style={styles.thSmall}>Kegiatan</th>
+                      <th style={styles.thSmall}>Tanggal/Waktu</th>
+                      <th style={styles.thSmall}>Informasi Sesi</th>
                       <th style={styles.thSmall}>Nominal (Rp)</th>
                       <th style={styles.thSmall}>Status / Tindakan</th>
                     </tr>
@@ -216,12 +239,19 @@ const TeacherSalaries = () => {
                       return (
                         <Fragment key={log.id}>
                         <tr style={{borderBottom:'1px solid #eee', background: isValid ? '#fafffa' : 'white'}}>
-                          <td style={styles.tdSmall}>{log.tanggal}</td>
+                          <td style={styles.tdSmall}>
+                            <b>{log.tanggal}</b><br/>
+                            <span style={{fontSize: 11, color: '#7f8c8d'}}>{log.waktu || '-'}</span>
+                          </td>
                           <td style={styles.tdSmall}>
                             <span style={{color: log.program === 'BONUS/TAMBAHAN' ? '#e67e22' : '#2980b9', fontWeight:'bold'}}>
-                                {log.program}
-                            </span><br/>
-                            <small>{log.detail}</small>
+                                {log.program || 'Kegiatan'}
+                            </span>
+                            <div style={{fontSize: 11, color: '#34495e', margin: '4px 0', display: 'flex', gap: 10}}>
+                              {log.durasiJam !== undefined && <span>⏳ {log.durasiJam} Jam</span>}
+                              {log.siswaHadir !== undefined && <span>👥 {log.siswaHadir} Hadir</span>}
+                            </div>
+                            <small style={{display: 'block', color: '#7f8c8d'}}>{log.detail}</small>
                           </td>
                           <td style={styles.tdSmall}>
                             <input 
@@ -230,16 +260,20 @@ const TeacherSalaries = () => {
                               defaultValue={log.nominal} 
                               onBlur={(e) => handleUpdateNominal(log.id, e.target.value)}
                               style={{...styles.inputNominal, borderColor: isValid ? '#2ecc71' : '#3498db'}}
+                              title={isValid ? "Batalkan validasi untuk mengedit" : "Edit nominal langsung"}
                             />
                           </td>
                           <td style={styles.tdSmall}>
                             {isValid ? (
-                              <div style={styles.badgeSuccess}>✅ Valid & Terekap</div>
+                              <div style={{display:'flex', flexDirection:'column', gap:5, alignItems:'flex-start'}}>
+                                <div style={styles.badgeSuccess}>✅ Valid & Terekap</div>
+                                <button onClick={()=>handleUnapproveLog(log.id)} style={styles.btnRevise}>Batal & Revisi</button>
+                              </div>
                             ) : (
-                              <div style={{display:'flex', gap:5}}>
+                              <div style={{display:'flex', gap:5, flexWrap:'wrap'}}>
                                 <button onClick={()=>handleApproveLog(log.id)} style={styles.btnApprove}>Approve</button>
                                 <button onClick={()=>setActiveBonusId(log.id)} style={styles.btnBonus}>+ Bonus</button>
-                                <button onClick={()=> { if(window.confirm("Hapus baris ini?")) deleteDoc(doc(db,"teacher_logs",log.id)).then(()=>fetchData()) }} style={styles.btnDelete}>Hapus</button>
+                                <button onClick={()=>handleDeleteLog(log.id)} style={styles.btnDelete}>Hapus</button>
                               </div>
                             )}
                           </td>
@@ -265,7 +299,7 @@ const TeacherSalaries = () => {
                 </table>
               </div>
               <div style={{marginTop:20, textAlign:'right'}}>
-                  <h3 style={{margin:0}}>Total: Rp {viewDetail.totalGaji.toLocaleString()}</h3>
+                  <h3 style={{margin:0}}>Total Sesi Ini: Rp {viewDetail.totalGaji.toLocaleString()}</h3>
               </div>
             </div>
           </div>
@@ -287,16 +321,17 @@ const styles = {
   btnDetail: { background:'#3498db', color:'white', border:'none', padding:'8px 15px', borderRadius:8, cursor:'pointer', fontWeight:'bold', marginRight:5 },
   btnDownload: { background:'#27ae60', color:'white', border:'none', padding:'8px 15px', borderRadius:8, cursor:'pointer', fontWeight:'bold' },
   overlay: { position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.7)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:2000 },
-  modal: { background:'white', padding:25, borderRadius:20, width:'950px', maxWidth:'95%' },
+  modal: { background:'white', padding:25, borderRadius:20, width:'1000px', maxWidth:'95%' },
   modalHeader: { display:'flex', justifyContent:'space-between', marginBottom:20 },
   btnClose: { background:'none', border:'none', fontSize:24, cursor:'pointer' },
   thSmall: { padding:12, fontSize:12, textAlign:'left', color:'#7f8c8d' },
   tdSmall: { padding:12, fontSize:13 },
-  inputNominal: { width:'100px', padding:6, borderRadius:6, border:'2px solid', fontWeight:'bold', textAlign:'right' },
+  inputNominal: { width:'110px', padding:8, borderRadius:6, border:'2px solid', fontWeight:'bold', textAlign:'right' },
   badgeSuccess: { color:'#27ae60', fontWeight:'bold', fontSize:11, background:'#eafaf1', padding:'5px 12px', borderRadius:20, border:'1px solid #2ecc71' },
   btnApprove: { background:'#2ecc71', color:'white', border:'none', padding:'6px 12px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:'bold' },
   btnBonus: { background:'#f39c12', color:'white', border:'none', padding:'6px 12px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:'bold' },
-  btnDelete: { background:'#e74c3c', color:'white', border:'none', padding:'6px 12px', borderRadius:6, cursor:'pointer', fontSize:11 },
+  btnDelete: { background:'#e74c3c', color:'white', border:'none', padding:'6px 12px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:'bold' },
+  btnRevise: { background:'#f1f5f9', color:'#e74c3c', border:'1px solid #e2e8f0', padding:'4px 10px', borderRadius:6, cursor:'pointer', fontSize:10, fontWeight:'bold', marginTop:4 },
   miniInput: { padding:8, borderRadius:6, border:'1px solid #ddd', fontSize:12, width:'140px' },
   btnSaveBonus: { background:'#2c3e50', color:'white', border:'none', padding:'8px 15px', borderRadius:6, cursor:'pointer', fontSize:12, fontWeight:'bold' },
 };
