@@ -6,6 +6,14 @@ import { collection, addDoc, doc, getDoc } from "firebase/firestore";
 
 const AddStudent = () => {
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+  // Responsive Handler
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // 1. LOAD HARGA
   const [pricing, setPricing] = useState({
@@ -32,9 +40,9 @@ const AddStudent = () => {
   const [tanggalDaftar, setTanggalDaftar] = useState(new Date().toISOString().split('T')[0]);
   const [namaSiswa, setNamaSiswa] = useState("");
   
-  // STATE MASA AKTIF PAKET (FIELD BARU)
+  // STATE MASA AKTIF PAKET
   const [tanggalMulai, setTanggalMulai] = useState(new Date().toISOString().split('T')[0]);
-  const [durasiBulan, setDurasiBulan] = useState(3); // Default 3 bulan
+  const [durasiBulan, setDurasiBulan] = useState(3);
 
   // STATE AKSES LOGIN
   const [username, setUsername] = useState("");
@@ -54,7 +62,7 @@ const AddStudent = () => {
         setPassword(`${namaBersih}123`);
       }
     }
-  }, [namaSiswa]);
+  }, [namaSiswa, tanggalLahir]);
 
   // Data Sekolah & Kursus
   const [jenjang, setJenjang] = useState("SD");
@@ -137,7 +145,6 @@ const AddStudent = () => {
         status: "Aktif",
         isBlocked: false,
         tanggalMasuk: tanggalDaftar,
-        // FIELD BARU UNTUK MONITORING MASA AKTIF
         tanggalMulai: tanggalMulai,
         durasiBulan: parseInt(durasiBulan),
         totalTagihan: hitungTotal(), 
@@ -149,18 +156,13 @@ const AddStudent = () => {
       const totalBayarFinal = hitungTotal();
 
       if (metodeBayar === "Cicilan") {
-        let installments = [];
-        const perBulan = hitungCicilan();
-        
-        customDueDates.forEach((dateStr, index) => {
-            installments.push({
-                id: Date.now() + index,
-                bulanKe: index + 1,
-                nominal: perBulan,
-                status: "Belum Lunas",
-                jatuhTempo: dateStr
-            });
-        });
+        let installments = customDueDates.map((dateStr, index) => ({
+            id: Date.now() + index,
+            bulanKe: index + 1,
+            nominal: hitungCicilan(),
+            status: "Belum Lunas",
+            jatuhTempo: dateStr
+        }));
 
         await addDoc(collection(db, "finance_tagihan"), {
           studentId, namaSiswa, namaOrtu: namaAyah, noHp,
@@ -191,10 +193,15 @@ const AddStudent = () => {
   };
 
   return (
-    <div style={{ display: 'flex' }}>
+    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100vh', background: '#f4f7f6' }}>
       <SidebarAdmin />
-      <div style={styles.content}>
-        <h2 style={{color: '#333'}}>🎓 Pendaftaran Siswa Baru</h2>
+      <div style={{ 
+        marginLeft: isMobile ? '0' : '250px', 
+        padding: isMobile ? '15px' : '30px', 
+        width: isMobile ? '100%' : 'calc(100% - 250px)', 
+        boxSizing: 'border-box' 
+      }}>
+        <h2 style={{color: '#2c3e50', marginBottom: 20}}>🎓 Pendaftaran Siswa Baru</h2>
         
         <div style={styles.programSelector}>
             <label style={{marginRight:10, fontWeight:'bold', color:'#333'}}>Pilih Program:</label>
@@ -204,15 +211,20 @@ const AddStudent = () => {
             </select>
         </div>
 
-        <form onSubmit={handleSubmit} style={styles.grid}>
+        <form onSubmit={handleSubmit} style={{
+          display: 'grid', 
+          gridTemplateColumns: isMobile ? '1fr' : '1.5fr 1fr', 
+          gap: '20px'
+        }}>
           <div style={styles.leftCol}>
             <div style={styles.card}>
               <h3 style={styles.cardTitle}>👤 Identitas & Akun Portal</h3>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Tanggal Daftar</label>
+                <label style={styles.labelSmall}>Tanggal Daftar</label>
                 <input type="date" style={styles.inputDate} value={tanggalDaftar} onChange={e => setTanggalDaftar(e.target.value)} />
               </div>
               <div style={styles.formGroup}>
+                <label style={styles.labelSmall}>Nama Lengkap Siswa</label>
                 <input style={styles.input} placeholder="Nama Lengkap Siswa" value={namaSiswa} onChange={e => setNamaSiswa(e.target.value)} required />
               </div>
 
@@ -249,35 +261,31 @@ const AddStudent = () => {
                   </div>
               </div>
               
-              {programType === "Reguler" ? (
-                  <div style={styles.row}>
-                    <div style={{width:'100%'}}>
-                        <label style={styles.labelSmall}>Jenjang</label>
-                        <select style={styles.select} value={jenjang} onChange={e => setJenjang(e.target.value)}>
-                            <option value="SD">SD</option>
-                            <option value="SMP">SMP</option>
-                        </select>
-                    </div>
-                  </div>
-              ) : (
-                  <div style={styles.formGroup}>
-                    <label style={styles.labelSmall}>Level English Course</label>
+              <div style={styles.row}>
+                <div style={{flex:1}}>
+                  <label style={styles.labelSmall}>Jenjang/Level</label>
+                  {programType === "Reguler" ? (
+                    <select style={styles.select} value={jenjang} onChange={e => setJenjang(e.target.value)}>
+                        <option value="SD">SD</option>
+                        <option value="SMP">SMP</option>
+                    </select>
+                  ) : (
                     <select style={styles.select} value={englishLevel} onChange={e => setEnglishLevel(e.target.value)}>
                         <option value="kids">Kids</option>
                         <option value="junior">Junior</option>
                         <option value="professional">Professional</option>
                     </select>
-                  </div>
-              )}
-
-              <div style={styles.formGroup}>
-                  <label style={styles.labelSmall}>Kelas Sekolah (Saat ini)</label>
+                  )}
+                </div>
+                <div style={{flex:1}}>
+                  <label style={styles.labelSmall}>Kelas Sekolah</label>
                   <select style={styles.select} value={kelas} onChange={e => setKelas(e.target.value)}>
                       <option>1 SD</option><option>2 SD</option><option>3 SD</option>
                       <option>4 SD</option><option>5 SD</option><option>6 SD</option>
                       <option>7 SMP</option><option>8 SMP</option><option>9 SMP</option>
                       <option>Lainnya</option>
                   </select>
+                </div>
               </div>
 
               <div style={styles.row}>
@@ -286,8 +294,15 @@ const AddStudent = () => {
                   <input style={styles.input} placeholder="Kota" value={tempatLahir} onChange={e => setTempatLahir(e.target.value)} />
                 </div>
                 <div style={{flex:1}}>
-                  <label style={styles.labelSmall}>Tanggal Lahir</label>
-                  <input type="date" style={styles.input} value={tanggalLahir} onChange={e => setTanggalLahir(e.target.value)} />
+                  <label style={styles.labelSmall}>Tanggal Lahir (Pilih Tahun Terlebih Dahulu)</label>
+                  <input 
+                    type="date" 
+                    style={styles.input} 
+                    value={tanggalLahir} 
+                    onChange={e => setTanggalLahir(e.target.value)}
+                    max="2030-12-31"
+                    min="1990-01-01"
+                  />
                 </div>
               </div>
             </div>
@@ -295,24 +310,38 @@ const AddStudent = () => {
             <div style={styles.card}>
               <h3 style={styles.cardTitle}>👨‍👩‍👧 Data Orang Tua</h3>
               <div style={styles.row}>
-                <input style={styles.input} placeholder="Nama Ayah" value={namaAyah} onChange={e => setNamaAyah(e.target.value)} required />
-                <input style={styles.input} placeholder="Pekerjaan Ayah" value={pekerjaanAyah} onChange={e => setPekerjaanAyah(e.target.value)} />
+                <div style={{flex:1}}>
+                  <label style={styles.labelSmall}>Nama Ayah</label>
+                  <input style={styles.input} placeholder="Nama Ayah" value={namaAyah} onChange={e => setNamaAyah(e.target.value)} required />
+                </div>
+                <div style={{flex:1}}>
+                  <label style={styles.labelSmall}>Pekerjaan Ayah</label>
+                  <input style={styles.input} placeholder="Pekerjaan Ayah" value={pekerjaanAyah} onChange={e => setPekerjaanAyah(e.target.value)} />
+                </div>
               </div>
               <div style={styles.row}>
-                <input style={styles.input} placeholder="Nama Ibu" value={namaIbu} onChange={e => setNamaIbu(e.target.value)} />
-                <input style={styles.input} placeholder="Pekerjaan Ibu" value={pekerjaanIbu} onChange={e => setPekerjaanIbu(e.target.value)} />
+                <div style={{flex:1}}>
+                  <label style={styles.labelSmall}>Nama Ibu</label>
+                  <input style={styles.input} placeholder="Nama Ibu" value={namaIbu} onChange={e => setNamaIbu(e.target.value)} />
+                </div>
+                <div style={{flex:1}}>
+                  <label style={styles.labelSmall}>Pekerjaan Ibu</label>
+                  <input style={styles.input} placeholder="Pekerjaan Ibu" value={pekerjaanIbu} onChange={e => setPekerjaanIbu(e.target.value)} />
+                </div>
               </div>
+              <label style={styles.labelSmall}>Alamat Lengkap</label>
               <textarea style={styles.textarea} placeholder="Alamat Lengkap..." value={alamat} onChange={e => setAlamat(e.target.value)}></textarea>
-              <input type="number" style={{...styles.input, marginTop:10}} placeholder="No HP / WhatsApp (Aktif)" value={noHp} onChange={e => setNoHp(e.target.value)} required />
+              <label style={{...styles.labelSmall, marginTop: 10}}>No HP / WhatsApp (Aktif)</label>
+              <input type="number" style={styles.input} placeholder="628xxx" value={noHp} onChange={e => setNoHp(e.target.value)} required />
             </div>
           </div>
 
           <div style={styles.rightCol}>
             <div style={styles.cardBlue}>
-              <h3 style={{color:'white', marginTop:0}}>💰 Administrasi Keuangan</h3>
+              <h3 style={{color:'white', marginTop:0}}>💰 Keuangan</h3>
               
               <div style={styles.formGroup}>
-                <label style={{color:'white'}}>Pilihan Paket</label>
+                <label style={{color:'white', fontSize: 12}}>Pilihan Paket</label>
                 {programType === "Reguler" ? (
                     <select style={styles.select} value={paketReguler} onChange={e => setPaketReguler(e.target.value)}>
                       <option value="paket1">Paket 1 - Rp {(pricing[jenjang.toLowerCase()]?.paket1 || 0).toLocaleString()}</option>
@@ -327,18 +356,18 @@ const AddStudent = () => {
               </div>
 
               <div style={{marginBottom:10, color:'white'}}>
-                <label><input type="checkbox" checked={biayaDaftar} onChange={e => setBiayaDaftar(e.target.checked)} /> Biaya Pendaftaran (+25rb)</label>
+                <label style={{cursor: 'pointer'}}><input type="checkbox" checked={biayaDaftar} onChange={e => setBiayaDaftar(e.target.checked)} /> Biaya Pendaftaran (+25rb)</label>
               </div>
               <div style={styles.formGroup}>
-                <label style={{color:'white'}}>Diskon Khusus (Rp)</label>
+                <label style={{color:'white', fontSize: 12}}>Diskon Khusus (Rp)</label>
                 <input type="number" style={styles.input} value={diskon} onChange={e => setDiskon(e.target.value)} placeholder="0" />
               </div>
               <div style={{textAlign:'right', color:'white', margin:'20px 0'}}>
                 <small>Total Kewajiban Bayar</small>
-                <h1 style={{margin:0}}>Rp {hitungTotal().toLocaleString()}</h1>
+                <h1 style={{margin:0, fontSize: isMobile ? '28px' : '36px'}}>Rp {hitungTotal().toLocaleString()}</h1>
               </div>
               <div style={styles.formGroup}>
-                <label style={{color:'white'}}>Metode Pembayaran</label>
+                <label style={{color:'white', fontSize: 12}}>Metode Pembayaran</label>
                 <select style={styles.select} value={metodeBayar} onChange={e => setMetodeBayar(e.target.value)}>
                   <option value="Tunai">Lunas - Tunai</option>
                   <option value="Bank">Lunas - Transfer</option>
@@ -348,33 +377,33 @@ const AddStudent = () => {
               
               {metodeBayar === "Cicilan" && (
                 <div style={styles.cicilanBox}>
-                  <label>Tenor Cicilan:</label>
-                  <div style={{display:'flex', gap:5, marginTop:5, marginBottom: 15}}>
+                  <label style={{fontSize: 12}}>Tenor Cicilan:</label>
+                  <div style={{display:'flex', gap:5, marginTop:5, marginBottom: 15, flexWrap: 'wrap'}}>
                     {[1,2,3,4,5,6].map(t => (
                       <button key={t} type="button" onClick={() => setTenor(t)} style={tenor===t ? styles.btnActive : styles.btnInactive}>{t}x</button>
                     ))}
                   </div>
 
-                  <label>Tanggal Jatuh Tempo Cicilan 1:</label>
+                  <label style={{fontSize: 12}}>Jatuh Tempo Cicilan 1:</label>
                   <input type="date" value={tanggalMulaiCicilan} onChange={(e) => setTanggalMulaiCicilan(e.target.value)} style={{...styles.input, marginTop: 5, marginBottom:15}} />
                   
                   <div style={{background:'rgba(0,0,0,0.2)', padding:10, borderRadius:5}}>
-                      <small style={{display:'block', marginBottom:5, color:'#ddd'}}>Jadwal Jatuh Tempo:</small>
+                      <small style={{display:'block', marginBottom:5, color:'#ddd'}}>Edit Tanggal Jatuh Tempo:</small>
                       {customDueDates.map((date, idx) => (
                           <div key={idx} style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:5}}>
-                              <span style={{fontSize:13, color:'white'}}>Ke-{idx+1}</span>
+                              <span style={{fontSize:11, color:'white'}}>Ke-{idx+1}</span>
                               <input 
                                 type="date" 
                                 value={date} 
                                 onChange={(e) => handleDateChange(idx, e.target.value)}
-                                style={{padding:5, borderRadius:4, border:'none', width:130, fontSize:12}}
+                                style={styles.inputMini}
                               />
                           </div>
                       ))}
                   </div>
 
                   <div style={{marginTop: 15, borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: 10}}>
-                    <p style={{margin:0}}>Nominal per cicilan:</p> 
+                    <p style={{margin:0, fontSize: 12}}>Nominal per cicilan:</p> 
                     <b style={{fontSize: 18}}>Rp {hitungCicilan().toLocaleString()}</b>
                   </div>
                 </div>
@@ -390,24 +419,22 @@ const AddStudent = () => {
 };
 
 const styles = {
-  content: { marginLeft: '250px', padding: '30px', width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily:'Segoe UI, sans-serif' },
-  grid: { display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '20px' },
-  programSelector: { background:'white', padding:15, borderRadius:10, marginBottom:20, boxShadow:'0 2px 4px rgba(0,0,0,0.05)', display:'flex', alignItems:'center' },
-  selectMain: { padding:8, borderRadius:5, border:'1px solid #3498db', fontSize:16, fontWeight:'bold', color:'#2980b9' },
+  programSelector: { background:'white', padding:15, borderRadius:10, marginBottom:20, boxShadow:'0 2px 4px rgba(0,0,0,0.05)', display:'flex', alignItems:'center', flexWrap: 'wrap' },
+  selectMain: { padding:8, borderRadius:5, border:'1px solid #3498db', fontSize:14, fontWeight:'bold', color:'#2980b9' },
   card: { background: 'white', padding: '20px', borderRadius: '10px', marginBottom: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
-  cardTitle: { marginTop: 0, color: '#333' },
-  label: { color: '#333', fontWeight: 'bold' },
-  labelSmall: { fontSize:12, color:'#666', marginBottom:5, display:'block' },
-  cardBlue: { background: '#2c3e50', padding: '25px', borderRadius: '10px', color: 'white' },
+  cardTitle: { marginTop: 0, color: '#2c3e50', borderBottom: '1px solid #eee', paddingBottom: 10, marginBottom: 15, fontSize: '18px' },
+  labelSmall: { fontSize:11, color:'#7f8c8d', marginBottom:5, display:'block', fontWeight: 'bold' },
+  cardBlue: { background: '#2c3e50', padding: '25px', borderRadius: '10px', color: 'white', position: 'sticky', top: '20px' },
   row: { display: 'flex', gap: '10px', marginBottom: '10px' },
   formGroup: { marginBottom: '15px' },
-  input: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box', background: '#ffffff', color: '#000000' },
-  inputDate: { width: '100%', padding: '10px', borderRadius: '5px', border: '2px solid #3498db', background: '#ffffff', color: '#000000' },
-  select: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', background: '#ffffff', color: '#000000' },
-  textarea: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', minHeight: '80px', boxSizing: 'border-box', background: '#ffffff', color: '#000000' },
+  input: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ddd', boxSizing: 'border-box', background: '#ffffff', color: '#000', fontSize: '14px' },
+  inputMini: { padding: '5px', borderRadius: '4px', border: 'none', width: '130px', fontSize: '12px' },
+  inputDate: { width: '100%', padding: '10px', borderRadius: '5px', border: '2px solid #3498db', background: '#ffffff', fontSize: '14px' },
+  select: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ddd', background: '#ffffff', color: '#000', cursor: 'pointer' },
+  textarea: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ddd', minHeight: '80px', boxSizing: 'border-box', background: '#ffffff', color: '#000' },
   cicilanBox: { background: 'rgba(255,255,255,0.1)', padding: '15px', borderRadius: '5px', marginTop: '10px', border: '1px solid rgba(255,255,255,0.2)' },
-  btnActive: { background: '#f1c40f', border: 'none', padding: '5px 10px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', color: '#2c3e50' },
-  btnInactive: { background: 'transparent', border: '1px solid #ccc', color: 'white', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' },
+  btnActive: { background: '#f1c40f', border: 'none', padding: '8px 12px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', color: '#2c3e50' },
+  btnInactive: { background: 'transparent', border: '1px solid #ccc', color: 'white', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' },
   btnSubmit: { width: '100%', padding: '15px', background: '#27ae60', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.2)' },
   leftCol: {}, rightCol: {}
 };
