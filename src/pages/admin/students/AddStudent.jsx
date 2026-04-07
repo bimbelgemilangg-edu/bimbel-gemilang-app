@@ -39,6 +39,7 @@ const AddStudent = () => {
   const [programType, setProgramType] = useState("Reguler");
   const [tanggalDaftar, setTanggalDaftar] = useState(new Date().toISOString().split('T')[0]);
   const [namaSiswa, setNamaSiswa] = useState("");
+  const [tanggalLahir, setTanggalLahir] = useState(""); // Dipindah ke atas agar terbaca oleh useEffect
   
   // STATE MASA AKTIF PAKET
   const [tanggalMulai, setTanggalMulai] = useState(new Date().toISOString().split('T')[0]);
@@ -55,7 +56,8 @@ const AddStudent = () => {
       const randomNum = Math.floor(100 + Math.random() * 900);
       setUsername(`${namaBersih}${randomNum}@gemilang.com`);
 
-      if (tanggalLahir) {
+      // FIX: Cek apakah tanggalLahir ada nilainya
+      if (tanggalLahir && tanggalLahir.includes('-')) {
         const tahun = tanggalLahir.split('-')[0];
         setPassword(`${namaBersih}${tahun}`);
       } else {
@@ -71,7 +73,6 @@ const AddStudent = () => {
   const [englishLevel, setEnglishLevel] = useState("kids"); 
 
   const [tempatLahir, setTempatLahir] = useState("");
-  const [tanggalLahir, setTanggalLahir] = useState("");
   const [namaAyah, setNamaAyah] = useState("");
   const [pekerjaanAyah, setPekerjaanAyah] = useState("");
   const [namaIbu, setNamaIbu] = useState("");
@@ -125,7 +126,6 @@ const AddStudent = () => {
 
   const hitungCicilan = () => Math.ceil(hitungTotal() / tenor);
 
-  // SUBMIT DATA
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!namaSiswa || !namaAyah || !noHp) return alert("Data Wajib (Nama, Ayah, HP) harus diisi!");
@@ -228,26 +228,23 @@ const AddStudent = () => {
                 <input style={styles.input} placeholder="Nama Lengkap Siswa" value={namaSiswa} onChange={e => setNamaSiswa(e.target.value)} required />
               </div>
 
-              <div style={{background: '#f0f7ff', padding: '15px', borderRadius: '10px', border: '1px solid #3498db', marginBottom: '15px'}}>
-                  <p style={{margin: '0 0 10px 0', fontSize: 12, fontWeight: 'bold', color: '#2980b9'}}>📅 SETTING MASA AKTIF PAKET</p>
-                  <div style={styles.row}>
-                    <div style={{flex: 1}}>
-                        <label style={styles.labelSmall}>Mulai Belajar</label>
-                        <input type="date" style={styles.input} value={tanggalMulai} onChange={e => setTanggalMulai(e.target.value)} />
-                    </div>
-                    <div style={{flex: 1}}>
-                        <label style={styles.labelSmall}>Durasi (Bulan)</label>
-                        <select style={styles.select} value={durasiBulan} onChange={e => setDurasiBulan(e.target.value)}>
-                            <option value={1}>1 Bulan</option>
-                            <option value={3}>3 Bulan (1 Term)</option>
-                            <option value={6}>6 Bulan (1 Semester)</option>
-                            <option value={12}>12 Bulan (1 Tahun)</option>
-                        </select>
-                    </div>
-                  </div>
+              <div style={styles.row}>
+                <div style={{flex: 1}}>
+                    <label style={styles.labelSmall}>Mulai Belajar</label>
+                    <input type="date" style={styles.input} value={tanggalMulai} onChange={e => setTanggalMulai(e.target.value)} />
+                </div>
+                <div style={{flex: 1}}>
+                    <label style={styles.labelSmall}>Durasi (Bulan)</label>
+                    <select style={styles.select} value={durasiBulan} onChange={e => setDurasiBulan(e.target.value)}>
+                        <option value={1}>1 Bulan</option>
+                        <option value={3}>3 Bulan (1 Term)</option>
+                        <option value={6}>6 Bulan (1 Semester)</option>
+                        <option value={12}>12 Bulan (1 Tahun)</option>
+                    </select>
+                </div>
               </div>
 
-              <div style={{background: '#f8f9fa', padding: '15px', borderRadius: '10px', border: '1px dashed #adb5bd', marginBottom: '15px'}}>
+              <div style={{background: '#f8f9fa', padding: '15px', borderRadius: '10px', border: '1px dashed #adb5bd', margin: '15px 0'}}>
                   <p style={{margin: '0 0 10px 0', fontSize: 12, fontWeight: 'bold', color: '#495057'}}>🔐 AKSES LOGIN (OTOMATIS)</p>
                   <div style={styles.row}>
                     <div style={{flex: 1}}>
@@ -294,14 +291,12 @@ const AddStudent = () => {
                   <input style={styles.input} placeholder="Kota" value={tempatLahir} onChange={e => setTempatLahir(e.target.value)} />
                 </div>
                 <div style={{flex:1}}>
-                  <label style={styles.labelSmall}>Tanggal Lahir (Pilih Tahun Terlebih Dahulu)</label>
+                  <label style={styles.labelSmall}>Tanggal Lahir</label>
                   <input 
                     type="date" 
                     style={styles.input} 
                     value={tanggalLahir} 
                     onChange={e => setTanggalLahir(e.target.value)}
-                    max="2030-12-31"
-                    min="1990-01-01"
                   />
                 </div>
               </div>
@@ -339,7 +334,6 @@ const AddStudent = () => {
           <div style={styles.rightCol}>
             <div style={styles.cardBlue}>
               <h3 style={{color:'white', marginTop:0}}>💰 Keuangan</h3>
-              
               <div style={styles.formGroup}>
                 <label style={{color:'white', fontSize: 12}}>Pilihan Paket</label>
                 {programType === "Reguler" ? (
@@ -383,32 +377,20 @@ const AddStudent = () => {
                       <button key={t} type="button" onClick={() => setTenor(t)} style={tenor===t ? styles.btnActive : styles.btnInactive}>{t}x</button>
                     ))}
                   </div>
-
                   <label style={{fontSize: 12}}>Jatuh Tempo Cicilan 1:</label>
                   <input type="date" value={tanggalMulaiCicilan} onChange={(e) => setTanggalMulaiCicilan(e.target.value)} style={{...styles.input, marginTop: 5, marginBottom:15}} />
                   
                   <div style={{background:'rgba(0,0,0,0.2)', padding:10, borderRadius:5}}>
-                      <small style={{display:'block', marginBottom:5, color:'#ddd'}}>Edit Tanggal Jatuh Tempo:</small>
+                      <small style={{display:'block', marginBottom:5, color:'#ddd'}}>Edit Jatuh Tempo:</small>
                       {customDueDates.map((date, idx) => (
                           <div key={idx} style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:5}}>
                               <span style={{fontSize:11, color:'white'}}>Ke-{idx+1}</span>
-                              <input 
-                                type="date" 
-                                value={date} 
-                                onChange={(e) => handleDateChange(idx, e.target.value)}
-                                style={styles.inputMini}
-                              />
+                              <input type="date" value={date} onChange={(e) => handleDateChange(idx, e.target.value)} style={styles.inputMini} />
                           </div>
                       ))}
                   </div>
-
-                  <div style={{marginTop: 15, borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: 10}}>
-                    <p style={{margin:0, fontSize: 12}}>Nominal per cicilan:</p> 
-                    <b style={{fontSize: 18}}>Rp {hitungCicilan().toLocaleString()}</b>
-                  </div>
                 </div>
               )}
-
               <button type="submit" style={styles.btnSubmit}>SIMPAN SISWA & AKUN</button>
             </div>
           </div>
