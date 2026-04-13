@@ -7,59 +7,44 @@ import "jspdf-autotable";
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { 
-  AlertCircle, CheckCircle2, ClipboardList, UserCheck, 
-  ShieldAlert, Download, Clock, FileText, Table 
+  Save, Clock, UserCheck, ShieldAlert, CreditCard, 
+  MessageSquare, FileText, List, Bold, Italic, Download, Table, XCircle
 } from 'lucide-react';
 
 const AdminDailyLog = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [loading, setLoading] = useState(false);
-  const [teachers, setTeachers] = useState([]);
   const [history, setHistory] = useState([]);
 
-  // Form State
   const [formData, setFormData] = useState({
-    date: new Date().toLocaleDateString('id-ID'),
+    tanggal: new Date().toISOString().split('T')[0],
     adminName: "",
-    jamMasuk: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-    kbm: {
-      siswaHadir: 0,
-      levelKelas: "Kelas 10",
-      tentorId: "",
-      mapel: "",
+    jamMasuk: "", // Manual Input sesuai permintaan
+    jamPulang: "", // Manual Input sesuai permintaan
+    // --- 1. AUDIT SISWA DETAIL ---
+    siswa: {
+      jumlahHadir: 0,
+      namaTidakHadir: "",
+      alasanAbsen: ""
     },
-    risk: {
-      kategori: "Operasional",
-      urgensi: "🟢 Info",
-      deskripsi: "",
-      isResolved: false
+    // --- 2. KEUANGAN & KOMPLAIN ---
+    operasional: {
+      pembayaranMasuk: "", // Detail siapa yang bayar & nominal
+      detailKomplain: "",
+      masalahFasilitas: ""
     },
-    checklist: {
-      chatBalas: false,
-      areaBersih: false,
-      acMati: false,
-      lcdMati: false,
-      pintuKunci: false,
-      kasTercatat: false
-    }
+    // --- 3. NARASI LOG AKTIVITAS (CANVAS) ---
+    canvasNarasi: "", 
+    riskLevel: "🟢 Aman",
+    checklist: { areaBersih: false, acMati: false, pintuKunci: false, kasTersimpan: false }
   });
 
-  const isChecklistComplete = Object.values(formData.checklist).every(val => val === true);
-
   useEffect(() => {
-    fetchTeachers();
     fetchHistory();
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  const fetchTeachers = async () => {
-    try {
-      const snap = await getDocs(collection(db, "teachers"));
-      setTeachers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    } catch (e) { console.error(e); }
-  };
 
   const fetchHistory = async () => {
     const q = query(collection(db, "admin_daily_logs"), orderBy("createdAt", "desc"));
@@ -67,211 +52,210 @@ const AdminDailyLog = () => {
     setHistory(snap.docs.map(d => ({ id: d.id, ...d.data() })));
   };
 
+  // Helper untuk Rich Text di Textarea (Canvas)
+  const applyFormat = (tag) => {
+    const textarea = document.getElementById('canvasNarasi');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selectedText = text.substring(start, end);
+    let replacement = "";
+
+    if (tag === 'B') replacement = `**${selectedText}**`;
+    else if (tag === 'I') replacement = `*${selectedText}*`;
+    else if (tag === 'L') replacement = `\n- ${selectedText}`;
+
+    const newText = text.substring(0, start) + replacement + text.substring(end);
+    setFormData({ ...formData, canvasNarasi: newText });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if(!isChecklistComplete) return alert("❌ PROTOKOL GAGAL: Checklist closing wajib lengkap!");
-    
+    if (!formData.adminName || !formData.jamMasuk || !formData.jamPulang) {
+      return alert("Jam Masuk, Jam Pulang, dan Nama Admin wajib diisi manual!");
+    }
     setLoading(true);
     try {
-      const jamTutup = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-      const selectedTeacher = teachers.find(t => t.id === formData.kbm.tentorId);
-      
       await addDoc(collection(db, "admin_daily_logs"), {
         ...formData,
-        jamTutup,
-        tentorNama: selectedTeacher?.nama || "N/A",
         createdAt: serverTimestamp()
       });
-      alert("✅ Laporan Terkunci & Tersimpan.");
+      alert("Laporan Audit Harian Berhasil Dikunci!");
       fetchHistory();
-    } catch (error) { alert(error.message); } 
+    } catch (error) { alert("Error: " + error.message); } 
     finally { setLoading(false); }
   };
 
-  // --- EXPORT PDF ---
+  // --- EXPORT PDF DETAIL ---
   const exportPDF = (log) => {
     const doc = new jsPDF();
     doc.setFontSize(16);
-    doc.text("DAILY AUDIT REPORT - GEMILANG SYSTEM", 14, 20);
+    doc.text("OFFICIAL DAILY AUDIT REPORT", 14, 15);
     doc.setFontSize(10);
-    doc.text(`Tanggal: ${log.date} | Admin: ${log.adminName}`, 14, 28);
-    doc.text(`Waktu: ${log.jamMasuk} s/d ${log.jamTutup}`, 14, 33);
-    
+    doc.text(`Tanggal: ${log.tanggal} | Admin: ${log.adminName}`, 14, 22);
+    doc.text(`Shift: ${log.jamMasuk} s/d ${log.jamPulang}`, 14, 27);
+
     doc.autoTable({
-      startY: 40,
-      head: [['Field Audit', 'Data']],
+      startY: 35,
+      head: [['Kategori Audit', 'Keterangan Detail']],
       body: [
-        ['Tentor Bertugas', log.tentorNama],
-        ['Siswa Hadir', log.kbm.siswaHadir],
-        ['Mata Pelajaran', log.kbm.mapel],
-        ['Kategori Risiko', log.risk.kategori],
-        ['Level Urgensi', log.risk.urgensi],
-        ['Status Masalah', log.risk.isResolved ? 'Selesai' : 'Pending'],
-        ['Protokol Closing', 'Verified']
+        ['Siswa Hadir', `${log.siswa.jumlahHadir} Orang`],
+        ['Siswa Absen', log.siswa.namaTidakHadir || 'Nihil'],
+        ['Alasan Absen', log.siswa.alasanAbsen || '-'],
+        ['Log Pembayaran', log.operasional.pembayaranMasuk || 'Tidak ada transaksi'],
+        ['Log Komplain', log.operasional.detailKomplain || 'Aman'],
+        ['Status Risiko', log.riskLevel],
       ],
-      theme: 'grid',
-      headStyles: { fillColor: [52, 73, 94] }
+      theme: 'striped',
+      headStyles: { fillColor: [44, 62, 80] }
     });
-    doc.save(`Laporan_${log.date}.pdf`);
-  };
 
-  // --- EXPORT EXCEL ---
-  const exportExcel = async () => {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('DailyLogs');
+    const finalY = doc.lastAutoTable.finalY || 100;
+    doc.text("NARASI AKTIVITAS & CATATAN ADMIN:", 14, finalY + 10);
+    const splitText = doc.splitTextToSize(log.canvasNarasi, 180);
+    doc.text(splitText, 14, finalY + 18);
     
-    worksheet.columns = [
-      { header: 'Tanggal', key: 'date', width: 15 },
-      { header: 'Admin', key: 'adminName', width: 20 },
-      { header: 'Jam Masuk', key: 'jamMasuk', width: 12 },
-      { header: 'Jam Tutup', key: 'jamTutup', width: 12 },
-      { header: 'Tentor', key: 'tentorNama', width: 20 },
-      { header: 'Risk Urgency', key: 'urgensi', width: 15 },
-      { header: 'Risk Deskripsi', key: 'deskripsi', width: 30 },
-    ];
-
-    history.forEach(item => {
-      worksheet.addRow({
-        date: item.date,
-        adminName: item.adminName,
-        jamMasuk: item.jamMasuk,
-        jamTutup: item.jamTutup,
-        tentorNama: item.tentorNama,
-        urgensi: item.risk.urgensi,
-        deskripsi: item.risk.deskripsi
-      });
-    });
-
-    const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), `Rekap_Log_Admin.xlsx`);
+    doc.save(`Audit_${log.tanggal}_${log.adminName}.pdf`);
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
       <SidebarAdmin />
-      <div style={{ 
-        marginLeft: isMobile ? '0' : '260px', 
-        padding: isMobile ? '15px' : '30px', 
-        width: '100%',
-        boxSizing: 'border-box'
-      }}>
+      <div style={{ marginLeft: isMobile ? '0' : '260px', padding: '25px', width: '100%', boxSizing: 'border-box' }}>
         
-        {/* HEADER SECTION */}
         <div style={styles.header}>
           <div>
-            <h2 style={{ color: '#1e293b', margin: 0 }}>Daily Integrity Log</h2>
-            <p style={{ color: '#64748b', fontSize: 13, display: 'flex', alignItems: 'center', gap: 5 }}>
-              <Clock size={14}/> {formData.date} | Shift Start: {formData.jamMasuk}
-            </p>
+            <h2 style={{ margin: 0, color: '#1e293b' }}>Audit Operasional & Risiko</h2>
+            <p style={{ color: '#64748b', fontSize: 13 }}>Input data secara presisi untuk laporan bulanan Owner.</p>
           </div>
-          <button onClick={exportExcel} style={styles.btnExcel} title="Download Rekap Excel">
-            <Table size={18} /> {!isMobile && "Export Rekap"}
-          </button>
+          <input type="date" style={styles.dateInput} value={formData.tanggal} onChange={e => setFormData({...formData, tanggal: e.target.value})} />
         </div>
 
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: isMobile ? '1fr' : '1.8fr 1.2fr', 
-          gap: '20px',
-          alignItems: 'start'
-        }}>
+        <form onSubmit={handleSubmit} style={styles.mainGrid}>
           
-          <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-            {/* 1. KBM SECTION */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {/* SECTION 1: ADMIN & TIME */}
             <div style={styles.card}>
-              <h3 style={styles.sectionTitle}><UserCheck size={18} /> KBM Audit</h3>
-              <div style={styles.gridResponsive}>
-                <div style={{width: '100%'}}>
-                  <label style={styles.label}>Admin Nama</label>
-                  <input style={styles.input} type="text" onChange={e => setFormData({...formData, adminName: e.target.value})} required />
-                </div>
-                <div style={{width: '100%'}}>
-                  <label style={styles.label}>Tentor Bertugas</label>
-                  <select style={styles.input} required onChange={e => setFormData({...formData, kbm: {...formData.kbm, tentorId: e.target.value}})}>
-                    <option value="">-- Pilih Guru --</option>
-                    {teachers.map(t => <option key={t.id} value={t.id}>{t.nama}</option>)}
-                  </select>
+              <h3 style={styles.sectionTitle}><Clock size={18} /> Informasi Shift (Manual)</h3>
+              <div style={styles.grid2}>
+                <input style={styles.input} placeholder="Nama Admin" onChange={e => setFormData({...formData, adminName: e.target.value})} required />
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <input style={styles.input} placeholder="Jam Masuk" onChange={e => setFormData({...formData, jamMasuk: e.target.value})} required />
+                  <input style={styles.input} placeholder="Jam Pulang" onChange={e => setFormData({...formData, jamPulang: e.target.value})} required />
                 </div>
               </div>
             </div>
 
-            {/* 2. RISK SECTION */}
+            {/* SECTION 2: SISWA DETAIL */}
             <div style={styles.card}>
-              <h3 style={styles.sectionTitle}><ShieldAlert size={18} /> Risk Management</h3>
+              <h3 style={styles.sectionTitle}><UserCheck size={18} /> Audit Kehadiran Siswa</h3>
+              <div style={styles.grid2}>
+                <div>
+                  <label style={styles.label}>Jumlah Siswa Hadir</label>
+                  <input type="number" style={styles.input} onChange={e => setFormData({...formData, siswa: {...formData.siswa, jumlahHadir: e.target.value}})} />
+                </div>
+                <div>
+                  <label style={styles.label}>Nama Siswa Tidak Hadir</label>
+                  <input style={styles.input} placeholder="Sebutkan nama-nama" onChange={e => setFormData({...formData, siswa: {...formData.siswa, namaTidakHadir: e.target.value}})} />
+                </div>
+              </div>
+              <label style={styles.label}>Alasan Tidak Hadir (Sakit/Izin/Tanpa Ket)</label>
+              <input style={styles.input} onChange={e => setFormData({...formData, siswa: {...formData.siswa, alasanAbsen: e.target.value}})} />
+            </div>
+
+            {/* SECTION 3: KEUANGAN & KOMPLAIN */}
+            <div style={styles.card}>
+              <h3 style={styles.sectionTitle}><CreditCard size={18} /> Transaksi & Komplain</h3>
+              <label style={styles.label}>Log Pembayaran Masuk (Nama Siswa - Nominal - Metod Bayar)</label>
+              <textarea style={styles.textareaSmall} placeholder="Contoh: Budi - SPP Maret - 500rb - Transfer BCA" onChange={e => setFormData({...formData, operasional: {...formData.operasional, pembayaranMasuk: e.target.value}})} />
+              
+              <label style={styles.label}>Log Komplain / Masalah Fasilitas</label>
+              <textarea style={styles.textareaSmall} placeholder="Contoh: Orang tua Ani komplain jadwal bentrok / AC Kelas 2 bunyi" onChange={e => setFormData({...formData, operasional: {...formData.operasional, detailKomplain: e.target.value}})} />
+            </div>
+
+            {/* SECTION 4: RICH CANVAS NARASI */}
+            <div style={styles.card}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+                <h3 style={{ ...styles.sectionTitle, marginBottom: 0 }}><FileText size={18} /> Narasi Aktivitas Harian</h3>
+                <div style={styles.toolbar}>
+                  <button type="button" onClick={() => applyFormat('B')} style={styles.toolBtn}><Bold size={14}/></button>
+                  <button type="button" onClick={() => applyFormat('I')} style={styles.toolBtn}><Italic size={14}/></button>
+                  <button type="button" onClick={() => applyFormat('L')} style={styles.toolBtn}><List size={14}/></button>
+                </div>
+              </div>
               <textarea 
-                style={styles.textarea} 
-                placeholder="Laporkan kendala harian jika ada..." 
-                onChange={e => setFormData({...formData, risk: {...formData.risk, deskripsi: e.target.value}})} 
+                id="canvasNarasi"
+                style={styles.canvas} 
+                value={formData.canvasNarasi}
+                placeholder="Tuliskan detail apa saja yang dilakukan hari ini (Narasi panjang)..." 
+                onChange={e => setFormData({...formData, canvasNarasi: e.target.value})} 
               />
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-                {['🟢 Info', '🟡 Perlu Follow Up', '🔴 Urgent'].map(lvl => (
-                  <label key={lvl} style={styles.radioLabel}>
-                    <input type="radio" name="urg" value={lvl} onChange={e => setFormData({...formData, risk: {...formData.risk, urgensi: e.target.value}})} /> {lvl}
-                  </label>
-                ))}
-              </div>
             </div>
+          </div>
 
-            {/* 3. CLOSING CHECKLIST */}
-            <div style={{...styles.card, borderLeft: '6px solid #ef4444'}}>
-              <h3 style={styles.sectionTitle}><CheckCircle2 size={18} /> Zero-Error Protocol</h3>
-              <div style={styles.checklistGrid}>
+          {/* SIDEBAR SUBMIT & HISTORY */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={styles.card}>
+              <h3 style={styles.sectionTitle}><ShieldAlert size={18} /> Risk & Closing</h3>
+              <select style={styles.input} onChange={e => setFormData({...formData, riskLevel: e.target.value})}>
+                <option>🟢 Aman</option>
+                <option>🟡 Ada Masalah (Follow Up)</option>
+                <option>🔴 Urgent (Lapor Owner)</option>
+              </select>
+              
+              <div style={{ marginTop: 15 }}>
                 {Object.keys(formData.checklist).map(key => (
                   <label key={key} style={styles.checkItem}>
                     <input type="checkbox" onChange={e => setFormData({...formData, checklist: {...formData.checklist, [key]: e.target.checked}})} />
-                    <span style={{fontSize: 11}}>{key.toUpperCase()}</span>
+                    <span style={{ fontSize: 11 }}>{key.replace(/([A-Z])/g, ' $1').toUpperCase()} OK</span>
                   </label>
                 ))}
               </div>
-              <button 
-                type="submit" 
-                style={{...styles.btnSubmit, background: isChecklistComplete ? '#2c3e50' : '#cbd5e1'}}
-                disabled={!isChecklistComplete || loading}
-              >
-                {loading ? 'Processing...' : 'Kunci Laporan & Logout'}
+
+              <button type="submit" style={styles.btnSubmit} disabled={loading}>
+                {loading ? 'Mengunci...' : 'Simpan & Kunci Laporan'}
               </button>
             </div>
-          </form>
 
-          {/* HISTORY LOGS */}
-          <div style={styles.card}>
-            <h3 style={styles.sectionTitle}><ClipboardList size={18} /> Audit History</h3>
-            <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-              {history.map(log => (
-                <div key={log.id} style={styles.historyRow}>
-                  <div style={{flex: 1, minWidth: 0}}>
-                    <div style={{fontWeight: 'bold', fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
-                      {log.date}
+            <div style={styles.card}>
+              <h3 style={styles.sectionTitle}><Download size={18} /> History Audit</h3>
+              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                {history.map(log => (
+                  <div key={log.id} style={styles.historyRow}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 'bold', fontSize: 13 }}>{log.tanggal}</div>
+                      <div style={{ fontSize: 11, color: '#64748b' }}>{log.adminName} ({log.jamMasuk}-{log.jamPulang})</div>
                     </div>
-                    <div style={{fontSize: 11, color: '#64748b'}}>{log.adminName} ({log.jamMasuk}-{log.jamTutup})</div>
+                    <button type="button" onClick={() => exportPDF(log)} style={styles.btnPdf}><FileText size={14}/></button>
                   </div>
-                  <button onClick={() => exportPDF(log)} style={styles.btnMiniPdf}><FileText size={14}/></button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
-        </div>
+        </form>
       </div>
     </div>
   );
 };
 
 const styles = {
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 },
-  card: { background: 'white', padding: 20, borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: 15, boxSizing: 'border-box' },
-  sectionTitle: { fontSize: 15, margin: '0 0 15px 0', display: 'flex', alignItems: 'center', gap: 8, color: '#334155' },
-  gridResponsive: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 10 },
-  label: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#64748b', marginBottom: 4 },
-  input: { width: '100%', padding: '10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, boxSizing: 'border-box' },
-  textarea: { width: '100%', height: 70, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, marginBottom: 10, boxSizing: 'border-box' },
-  checklistGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 8 },
-  checkItem: { display: 'flex', alignItems: 'center', gap: 6, background: '#f8fafc', padding: 10, borderRadius: 8, cursor: 'pointer' },
-  btnSubmit: { width: '100%', padding: 14, borderRadius: 10, border: 'none', color: 'white', fontWeight: 'bold', cursor: 'pointer', marginTop: 15 },
-  btnExcel: { display: 'flex', alignItems: 'center', gap: 8, padding: '10px 15px', background: '#107c41', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, cursor: 'pointer' },
-  historyRow: { display: 'flex', alignItems: 'center', gap: 10, padding: '12px 0', borderBottom: '1px solid #f1f5f9' },
-  btnMiniPdf: { padding: 8, background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: 6, cursor: 'pointer' },
-  radioLabel: { fontSize: 12, background: '#fff', border: '1px solid #e2e8f0', padding: '5px 10px', borderRadius: 6, cursor: 'pointer' }
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
+  mainGrid: { display: 'grid', gridTemplateColumns: window.innerWidth < 1024 ? '1fr' : '2fr 1fr', gap: 25 },
+  card: { background: 'white', padding: 25, borderRadius: 20, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' },
+  sectionTitle: { fontSize: 15, margin: '0 0 20px 0', display: 'flex', alignItems: 'center', gap: 10, color: '#0f172a' },
+  grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15 },
+  label: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#64748b', marginBottom: 5, marginTop: 15 },
+  input: { width: '100%', padding: '12px', borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, boxSizing: 'border-box' },
+  textareaSmall: { width: '100%', height: 60, padding: 12, borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, boxSizing: 'border-box' },
+  canvas: { width: '100%', height: 250, padding: 15, borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 14, lineHeight: '1.6', boxSizing: 'border-box', background: '#fdfdfd' },
+  toolbar: { display: 'flex', gap: 5, background: '#f1f5f9', padding: 5, borderRadius: 8 },
+  toolBtn: { padding: '5px 10px', background: 'white', border: '1px solid #cbd5e1', borderRadius: 4, cursor: 'pointer' },
+  checkItem: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, cursor: 'pointer' },
+  btnSubmit: { width: '100%', padding: 15, background: '#0f172a', color: 'white', border: 'none', borderRadius: 12, fontWeight: 'bold', cursor: 'pointer', marginTop: 20 },
+  historyRow: { display: 'flex', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f1f5f9' },
+  btnPdf: { background: '#fee2e2', color: '#ef4444', border: 'none', padding: 8, borderRadius: 8, cursor: 'pointer' },
+  dateInput: { padding: '8px 15px', borderRadius: 10, border: '1px solid #cbd5e1' }
 };
 
 export default AdminDailyLog;
