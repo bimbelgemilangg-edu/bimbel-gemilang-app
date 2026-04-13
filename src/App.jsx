@@ -9,6 +9,9 @@ import Login from './pages/Login';
 import LoginGuru from './pages/LoginGuru';
 import LoginSiswa from './pages/LoginSiswa'; 
 
+// === IMPORT HALAMAN PUBLIK BARU ===
+import PublicBlog from './pages/PublicBlog'; 
+
 // === IMPORT LAYOUT ===
 import TeacherLayout from './pages/teacher/TeacherLayout';
 
@@ -25,7 +28,8 @@ import TeacherList from './pages/admin/teachers/TeacherList';
 import TeacherSalaries from './pages/admin/teachers/TeacherSalaries'; 
 import SchedulePage from './pages/admin/schedule/SchedulePage';
 import GradeReport from './pages/admin/grades/GradeReport'; 
-import AdminDailyLog from './pages/admin/AdminDailyLog'; // IMPORT BARU
+import AdminDailyLog from './pages/admin/AdminDailyLog'; 
+import ManageBlog from './pages/admin/blog/ManageBlog'; // IMPORT BARU
 
 // === IMPORT ADMIN PORTAL SISWA ===
 import PortalSiswaHome from './pages/admin/portal-siswa/PortalSiswaHome';
@@ -94,10 +98,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* === JALUR LOGIN === */}
+        {/* === JALUR LOGIN & PUBLIK === */}
         <Route path="/" element={<Login />} />              
         <Route path="/login-guru" element={<LoginGuru />} /> 
         <Route path="/login-siswa" element={<LoginSiswa />} /> 
+        <Route path="/aktivitas" element={<PublicBlog />} /> {/* AKSES PUBLIK TANPA LOGIN */}
 
         {/* === AREA ADMIN === */}
         <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
@@ -113,7 +118,8 @@ function App() {
         <Route path="/admin/finance" element={<AdminRoute><FinanceLayout /></AdminRoute>} />
         <Route path="/admin/schedule" element={<AdminRoute><SchedulePage /></AdminRoute>} />
         <Route path="/admin/grades" element={<AdminRoute><GradeReport /></AdminRoute>} />
-        <Route path="/admin/daily-log" element={<AdminRoute><AdminDailyLog /></AdminRoute>} /> {/* RUTE BARU */}
+        <Route path="/admin/daily-log" element={<AdminRoute><AdminDailyLog /></AdminRoute>} />
+        <Route path="/admin/manage-blog" element={<AdminRoute><ManageBlog /></AdminRoute>} /> {/* KELOLA BLOG */}
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
 
         {/* === AREA GURU (DIBUNGKUS TEACHER LAYOUT) === */}

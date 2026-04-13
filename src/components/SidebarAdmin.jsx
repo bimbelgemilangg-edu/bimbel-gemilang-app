@@ -17,11 +17,12 @@ const SidebarAdmin = () => {
     { name: 'Kelola Siswa', path: '/admin/students', icon: '👥' },
     { name: 'Kelola Guru', path: '/admin/teachers', icon: '👨‍🏫' }, 
     { name: 'Portal Siswa', path: '/admin/portal', icon: '📱' },
+    { name: 'Blog & Galeri', path: '/admin/manage-blog', icon: '📱' }, // MENU BARU UNTUK KONTEN WEB
     { name: 'Gaji Guru', path: '/admin/teachers/salaries', icon: '💰' },
     { name: 'Keuangan', path: '/admin/finance', icon: '💸' },
     { name: 'Jadwal', path: '/admin/schedule', icon: '📅' },
     { name: 'Laporan Rapor', path: '/admin/grades', icon: '📊' },
-    { name: 'Log Harian Admin', path: '/admin/daily-log', icon: '📝' }, // MENU BARU UNTUK LAPORAN
+    { name: 'Log Harian Admin', path: '/admin/daily-log', icon: '📝' },
     { name: 'Settings', path: '/admin/settings', icon: '⚙️' },
   ];
 
