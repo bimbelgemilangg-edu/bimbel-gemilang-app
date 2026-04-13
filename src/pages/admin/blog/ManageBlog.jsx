@@ -6,13 +6,29 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
+// PERBAIKAN LOGIKA UPLOAD: Menjamin URL dikembalikan setelah upload 100% selesai
 const uploadFile = (file, folder, onProgress) => new Promise((resolve, reject) => {
+  if (!file) return reject("No file");
   const r = ref(storage, `${folder}/${Date.now()}_${file.name}`);
   const task = uploadBytesResumable(r, file);
+  
   task.on('state_changed',
-    s => onProgress?.(Math.round(s.bytesTransferred / s.totalBytes * 100)),
-    reject,
-    () => getDownloadURL(task.snapshot.ref).then(resolve).catch(reject)
+    s => {
+      const p = Math.round((s.bytesTransferred / s.totalBytes) * 100);
+      onProgress?.(p);
+    },
+    err => {
+      console.error("Upload Error:", err);
+      reject(err);
+    },
+    async () => {
+      try {
+        const url = await getDownloadURL(task.snapshot.ref);
+        resolve(url);
+      } catch (err) {
+        reject(err);
+      }
+    }
   );
 });
 
@@ -23,7 +39,7 @@ const btnG = { padding: '10px 22px', background: 'linear-gradient(135deg,#f39c12
 const btnR = { padding: '6px 14px', background: 'rgba(231,76,60,0.15)', border: '1px solid rgba(231,76,60,0.4)', borderRadius: 8, color: '#e74c3c', fontSize: 12, cursor: 'pointer' };
 const Row = ({ label, children }) => (<div style={{ marginBottom: 14 }}><label style={{ display: 'block', fontSize: 12, color: C.muted, marginBottom: 6, letterSpacing: 0.5 }}>{label}</label>{children}</div>);
 const OK = ({ show }) => show ? <div style={{ marginTop: 10, padding: '10px 14px', background: 'rgba(37,211,102,0.15)', border: '1px solid rgba(37,211,102,0.3)', borderRadius: 8, color: '#25D366', fontSize: 13 }}>✓ Tersimpan!</div> : null;
-const Bar = ({ val }) => val > 0 && val < 100 ? <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden', marginTop: 8 }}><div style={{ height: '100%', width: `${val}%`, background: 'linear-gradient(90deg,#f39c12,#e67e22)', borderRadius: 3, transition: 'width 0.3s' }} /></div> : null;
+const Bar = ({ val }) => val > 0 && val <= 100 ? <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden', marginTop: 8 }}><div style={{ height: '100%', width: `${val}%`, background: 'linear-gradient(90deg,#f39c12,#e67e22)', borderRadius: 3, transition: 'width 0.3s' }} /></div> : null;
 const SH = ({ icon, title }) => <div style={{ fontFamily: "'Orbitron',sans-serif", color: C.gold, fontSize: 13, marginBottom: 18, display: 'flex', alignItems: 'center', gap: 8 }}>{icon} {title}</div>;
 const LI = ({ children }) => <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>{children}</div>;
 const Grid2 = ({ children }) => <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>{children}</div>;
@@ -68,7 +84,14 @@ const TabPengajar = ({ teachers }) => {
   const [file, setFile] = useState(null); const [prog, setProg] = useState(0); const [loading, setLoading] = useState(false); const [ok, setOk] = useState(false);
   const add = async () => {
     if (!f.nama || !file) return; setLoading(true);
-    try { const url = await uploadFile(file, 'teachers', setProg); await addDoc(collection(db, 'web_teachers_gallery'), { ...f, photoUrl: url, createdAt: serverTimestamp() }); setF({ nama: '', spesialisasi: '', wa: '', bio: '' }); setFile(null); setProg(0); setOk(true); setTimeout(() => setOk(false), 2500); } catch (e) { console.error(e); }
+    try { 
+      const url = await uploadFile(file, 'teachers', setProg); 
+      await addDoc(collection(db, 'web_teachers_gallery'), { ...f, photoUrl: url, createdAt: serverTimestamp() }); 
+      setF({ nama: '', spesialisasi: '', wa: '', bio: '' }); setFile(null); setProg(0); setOk(true); setTimeout(() => setOk(false), 2500); 
+    } catch (e) { 
+      console.error(e); 
+      alert("Gagal mengorbitkan data!");
+    }
     setLoading(false);
   };
   return <>
@@ -78,7 +101,7 @@ const TabPengajar = ({ teachers }) => {
       <Row label="WhatsApp (628xxx)"><input style={inp} value={f.wa} onChange={e => setF({ ...f, wa: e.target.value })} placeholder="6281234567890" /></Row>
       <Row label="Bio Singkat"><textarea style={{ ...inp, minHeight: 70, resize: 'vertical' }} value={f.bio} onChange={e => setF({ ...f, bio: e.target.value })} placeholder="Pengalaman mengajar..." /></Row>
       <Row label="Foto *"><input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} style={{ ...inp, padding: '9px 14px' }} /></Row>
-      <Bar val={prog} /><button style={btnG} onClick={add} disabled={loading}>{loading ? `Upload ${prog}%...` : '+ Tambah Pengajar'}</button><OK show={ok} />
+      <Bar val={prog} /><button style={btnG} onClick={add} disabled={loading}>{loading ? `Processing... ${prog}%` : '+ Tambah Pengajar'}</button><OK show={ok} />
     </div>
     <div style={cardS}>
       <SH icon="📋" title={`Pengajar (${teachers.length})`} />
@@ -100,9 +123,12 @@ const TabBerita = ({ berita }) => {
   const [file, setFile] = useState(null); const [prog, setProg] = useState(0); const [loading, setLoading] = useState(false); const [ok, setOk] = useState(false);
   const add = async () => {
     if (!f.judul || !f.isi) return; setLoading(true);
-    let imageUrl = ''; if (file) imageUrl = await uploadFile(file, 'berita', setProg);
-    await addDoc(collection(db, 'web_berita'), { ...f, imageUrl, createdAt: serverTimestamp() });
-    setF({ judul: '', isi: '', kategori: 'BERITA' }); setFile(null); setProg(0); setOk(true); setTimeout(() => setOk(false), 2500); setLoading(false);
+    try {
+      let imageUrl = ''; if (file) imageUrl = await uploadFile(file, 'berita', setProg);
+      await addDoc(collection(db, 'web_berita'), { ...f, imageUrl, createdAt: serverTimestamp() });
+      setF({ judul: '', isi: '', kategori: 'BERITA' }); setFile(null); setProg(0); setOk(true); setTimeout(() => setOk(false), 2500);
+    } catch (e) { console.error(e); }
+    setLoading(false);
   };
   return <>
     <div style={cardS}>
@@ -111,7 +137,7 @@ const TabBerita = ({ berita }) => {
       <Row label="Kategori"><select style={inp} value={f.kategori} onChange={e => setF({ ...f, kategori: e.target.value })}>{['BERITA', 'PENGUMUMAN', 'PRESTASI', 'KEGIATAN', 'PRESS', 'INFO'].map(k => <option key={k}>{k}</option>)}</select></Row>
       <Row label="Isi Berita *"><textarea style={{ ...inp, minHeight: 130, resize: 'vertical' }} value={f.isi} onChange={e => setF({ ...f, isi: e.target.value })} placeholder="Isi berita lengkap..." /></Row>
       <Row label="Foto (opsional)"><input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} style={{ ...inp, padding: '9px 14px' }} /></Row>
-      <Bar val={prog} /><button style={btnG} onClick={add} disabled={loading}>{loading ? `Upload ${prog}%...` : '🚀 Publikasikan'}</button><OK show={ok} />
+      <Bar val={prog} /><button style={btnG} onClick={add} disabled={loading}>{loading ? `Processing... ${prog}%` : '🚀 Publikasikan'}</button><OK show={ok} />
     </div>
     <div style={cardS}>
       <SH icon="📋" title={`Berita (${berita.length})`} />
@@ -130,9 +156,12 @@ const TabTestimoni = ({ testimoni }) => {
   const [file, setFile] = useState(null); const [prog, setProg] = useState(0); const [loading, setLoading] = useState(false); const [ok, setOk] = useState(false);
   const add = async () => {
     if (!f.nama || !f.isi) return; setLoading(true);
-    let photoUrl = ''; if (file) photoUrl = await uploadFile(file, 'testimoni', setProg);
-    await addDoc(collection(db, 'web_testimoni'), { ...f, photoUrl, createdAt: serverTimestamp() });
-    setF({ nama: '', kelas: '', isi: '', bintang: 5 }); setFile(null); setProg(0); setOk(true); setTimeout(() => setOk(false), 2500); setLoading(false);
+    try {
+      let photoUrl = ''; if (file) photoUrl = await uploadFile(file, 'testimoni', setProg);
+      await addDoc(collection(db, 'web_testimoni'), { ...f, photoUrl, createdAt: serverTimestamp() });
+      setF({ nama: '', kelas: '', isi: '', bintang: 5 }); setFile(null); setProg(0); setOk(true); setTimeout(() => setOk(false), 2500);
+    } catch (e) { console.error(e); }
+    setLoading(false);
   };
   return <>
     <div style={cardS}>
@@ -141,7 +170,7 @@ const TabTestimoni = ({ testimoni }) => {
       <Row label="Isi Testimoni *"><textarea style={{ ...inp, minHeight: 90, resize: 'vertical' }} value={f.isi} onChange={e => setF({ ...f, isi: e.target.value })} placeholder="Kesan dan pesan..." /></Row>
       <Row label="Rating"><div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>{[1,2,3,4,5].map(n => <button key={n} onClick={() => setF({ ...f, bintang: n })} style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', filter: n <= f.bintang ? 'none' : 'grayscale(1) opacity(0.3)' }}>⭐</button>)}<span style={{ color: C.muted, fontSize: 13 }}>{f.bintang}/5</span></div></Row>
       <Row label="Foto (opsional)"><input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} style={{ ...inp, padding: '9px 14px' }} /></Row>
-      <Bar val={prog} /><button style={btnG} onClick={add} disabled={loading}>{loading ? `Upload ${prog}%...` : '+ Tambah Testimoni'}</button><OK show={ok} />
+      <Bar val={prog} /><button style={btnG} onClick={add} disabled={loading}>{loading ? `Processing... ${prog}%` : '+ Tambah Testimoni'}</button><OK show={ok} />
     </div>
     <div style={cardS}>
       <SH icon="📋" title={`Testimoni (${testimoni.length})`} />
@@ -161,9 +190,12 @@ const TabPenghargaan = ({ penghargaan }) => {
   const [file, setFile] = useState(null); const [prog, setProg] = useState(0); const [loading, setLoading] = useState(false); const [ok, setOk] = useState(false);
   const add = async () => {
     if (!f.judul) return; setLoading(true);
-    let imageUrl = ''; if (file) imageUrl = await uploadFile(file, 'penghargaan', setProg);
-    await addDoc(collection(db, 'web_penghargaan'), { ...f, imageUrl, createdAt: serverTimestamp() });
-    setF({ judul: '', tahun: '', deskripsi: '' }); setFile(null); setProg(0); setOk(true); setTimeout(() => setOk(false), 2500); setLoading(false);
+    try {
+      let imageUrl = ''; if (file) imageUrl = await uploadFile(file, 'penghargaan', setProg);
+      await addDoc(collection(db, 'web_penghargaan'), { ...f, imageUrl, createdAt: serverTimestamp() });
+      setF({ judul: '', tahun: '', deskripsi: '' }); setFile(null); setProg(0); setOk(true); setTimeout(() => setOk(false), 2500);
+    } catch (e) { console.error(e); }
+    setLoading(false);
   };
   return <>
     <div style={cardS}>
@@ -171,7 +203,7 @@ const TabPenghargaan = ({ penghargaan }) => {
       <Grid2><Row label="Nama Penghargaan *"><input style={inp} value={f.judul} onChange={e => setF({ ...f, judul: e.target.value })} placeholder="Bimbel Terbaik..." /></Row><Row label="Tahun"><input style={inp} value={f.tahun} onChange={e => setF({ ...f, tahun: e.target.value })} placeholder="2024" /></Row></Grid2>
       <Row label="Deskripsi"><input style={inp} value={f.deskripsi} onChange={e => setF({ ...f, deskripsi: e.target.value })} placeholder="Keterangan singkat" /></Row>
       <Row label="Foto Piala / Sertifikat"><input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} style={{ ...inp, padding: '9px 14px' }} /></Row>
-      <Bar val={prog} /><button style={btnG} onClick={add} disabled={loading}>{loading ? `Upload ${prog}%...` : '+ Tambah Penghargaan'}</button><OK show={ok} />
+      <Bar val={prog} /><button style={btnG} onClick={add} disabled={loading}>{loading ? `Processing... ${prog}%` : '+ Tambah Penghargaan'}</button><OK show={ok} />
     </div>
     <div style={cardS}>
       <SH icon="📋" title={`Penghargaan (${penghargaan.length})`} />
@@ -179,6 +211,43 @@ const TabPenghargaan = ({ penghargaan }) => {
         {p.imageUrl ? <img src={p.imageUrl} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: 44, height: 44, borderRadius: 8, background: 'rgba(243,156,18,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>🏆</div>}
         <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 600 }}>{p.judul}</div><div style={{ fontSize: 12, color: C.muted }}>{p.tahun} · {p.deskripsi}</div></div>
         <button style={btnR} onClick={() => window.confirm('Hapus?') && deleteDoc(doc(db, 'web_penghargaan', p.id))}>Hapus</button>
+      </LI>)}
+    </div>
+  </>;
+};
+
+/* KONTAK */
+const TabKontak = ({ contacts }) => {
+  const [f, setF] = useState({ nama: '', jabatan: '', wa: '' });
+  const [file, setFile] = useState(null); const [prog, setProg] = useState(0); const [loading, setLoading] = useState(false); const [ok, setOk] = useState(false);
+  const add = async () => {
+    if (!f.nama || !f.wa || !file) { alert('Nama, WA, dan foto wajib diisi'); return; }
+    setLoading(true);
+    try {
+      const url = await uploadFile(file, 'contacts', setProg);
+      await addDoc(collection(db, 'web_contacts'), { ...f, photoUrl: url });
+      setF({ nama: '', jabatan: '', wa: '' }); setFile(null); setProg(0); setOk(true); setTimeout(() => setOk(false), 2500);
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  };
+  return <>
+    <div style={cardS}>
+      <SH icon="💬" title="Tambah Kontak Admin" />
+      <div style={{ background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+        💡 Minimal 1 kontak harus ada agar tombol WhatsApp di website aktif dan bisa ditekan.
+      </div>
+      <Grid2><Row label="Nama *"><input style={inp} value={f.nama} onChange={e => setF({ ...f, nama: e.target.value })} placeholder="Nama admin" /></Row><Row label="Jabatan"><input style={inp} value={f.jabatan} onChange={e => setF({ ...f, jabatan: e.target.value })} placeholder="Admin / Pengajar" /></Row></Grid2>
+      <Row label="No. WhatsApp * (628xxx)"><input style={inp} value={f.wa} onChange={e => setF({ ...f, wa: e.target.value })} placeholder="6281234567890" /></Row>
+      <Row label="Foto *"><input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} style={{ ...inp, padding: '9px 14px' }} /></Row>
+      <Bar val={prog} /><button style={btnG} onClick={add} disabled={loading}>{loading ? `Processing... ${prog}%` : '+ Tambah Kontak'}</button><OK show={ok} />
+    </div>
+    <div style={cardS}>
+      <SH icon="📋" title={`Kontak (${contacts.length})`} />
+      {!contacts.length && <p style={{ color: '#e74c3c', fontSize: 13 }}>⚠️ Belum ada kontak! Tambahkan sekarang agar WA aktif.</p>}
+      {contacts.map(c => <LI key={c.id}>
+        <img src={c.photoUrl} alt={c.nama} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(37,211,102,0.4)', flexShrink: 0 }} />
+        <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 700 }}>{c.nama}</div><div style={{ fontSize: 12, color: C.muted }}>{c.jabatan} · {c.wa}</div></div>
+        <button style={btnR} onClick={() => window.confirm('Hapus?') && deleteDoc(doc(db, 'web_contacts', c.id))}>Hapus</button>
       </LI>)}
     </div>
   </>;
@@ -212,39 +281,6 @@ const TabKeunggulan = ({ keunggulan }) => {
   </>;
 };
 
-/* KONTAK */
-const TabKontak = ({ contacts }) => {
-  const [f, setF] = useState({ nama: '', jabatan: '', wa: '' });
-  const [file, setFile] = useState(null); const [prog, setProg] = useState(0); const [loading, setLoading] = useState(false); const [ok, setOk] = useState(false);
-  const add = async () => {
-    if (!f.nama || !f.wa || !file) { alert('Nama, WA, dan foto wajib diisi'); return; }
-    setLoading(true); const url = await uploadFile(file, 'contacts', setProg);
-    await addDoc(collection(db, 'web_contacts'), { ...f, photoUrl: url });
-    setF({ nama: '', jabatan: '', wa: '' }); setFile(null); setProg(0); setOk(true); setTimeout(() => setOk(false), 2500); setLoading(false);
-  };
-  return <>
-    <div style={cardS}>
-      <SH icon="💬" title="Tambah Kontak Admin" />
-      <div style={{ background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
-        💡 Minimal 1 kontak harus ada agar tombol WhatsApp di website aktif dan bisa ditekan.
-      </div>
-      <Grid2><Row label="Nama *"><input style={inp} value={f.nama} onChange={e => setF({ ...f, nama: e.target.value })} placeholder="Nama admin" /></Row><Row label="Jabatan"><input style={inp} value={f.jabatan} onChange={e => setF({ ...f, jabatan: e.target.value })} placeholder="Admin / Pengajar" /></Row></Grid2>
-      <Row label="No. WhatsApp * (628xxx)"><input style={inp} value={f.wa} onChange={e => setF({ ...f, wa: e.target.value })} placeholder="6281234567890" /></Row>
-      <Row label="Foto *"><input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} style={{ ...inp, padding: '9px 14px' }} /></Row>
-      <Bar val={prog} /><button style={btnG} onClick={add} disabled={loading}>{loading ? `Upload ${prog}%...` : '+ Tambah Kontak'}</button><OK show={ok} />
-    </div>
-    <div style={cardS}>
-      <SH icon="📋" title={`Kontak (${contacts.length})`} />
-      {!contacts.length && <p style={{ color: '#e74c3c', fontSize: 13 }}>⚠️ Belum ada kontak! Tambahkan sekarang agar WA aktif.</p>}
-      {contacts.map(c => <LI key={c.id}>
-        <img src={c.photoUrl} alt={c.nama} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(37,211,102,0.4)', flexShrink: 0 }} />
-        <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 700 }}>{c.nama}</div><div style={{ fontSize: 12, color: C.muted }}>{c.jabatan} · {c.wa}</div></div>
-        <button style={btnR} onClick={() => window.confirm('Hapus?') && deleteDoc(doc(db, 'web_contacts', c.id))}>Hapus</button>
-      </LI>)}
-    </div>
-  </>;
-};
-
 /* STATISTIK */
 const TabStatistik = ({ settings, setSettings }) => {
   const [ok, setOk] = useState(false);
@@ -252,7 +288,6 @@ const TabStatistik = ({ settings, setSettings }) => {
   const fields = [['stat1Num','Angka 1','100+'],['stat1Label','Label 1','Siswa Aktif'],['stat2Num','Angka 2','3+'],['stat2Label','Label 2','Tahun Berpengalaman'],['stat3Num','Angka 3','SD–SMA'],['stat3Label','Label 3','Jenjang Tersedia'],['stat4Num','Angka 4','95%'],['stat4Label','Label 4','Nilai Naik']];
   return <div style={cardS}>
     <SH icon="📊" title="Edit Statistik Halaman Utama" />
-    <div style={{ background: 'rgba(243,156,18,0.08)', border: '1px solid rgba(243,156,18,0.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>Angka-angka ini tampil di bagian bawah hero. Isi dengan data nyata bimbel kamu.</div>
     <Grid2>{fields.map(([key, label, ph]) => <Row key={key} label={label}><input style={inp} value={settings[key] || ''} onChange={e => setSettings({ ...settings, [key]: e.target.value })} placeholder={ph} /></Row>)}</Grid2>
     <button style={btnG} onClick={save}>💾 Simpan Statistik</button><OK show={ok} />
   </div>;
@@ -265,14 +300,14 @@ const TabSettings = ({ settings, setSettings }) => {
   return <>
     <div style={cardS}>
       <SH icon="🚀" title="Teks Halaman Utama (Hero)" />
-      <Grid2><Row label="Nama Bimbel (judul besar)"><input style={inp} value={settings.heroTitle || ''} onChange={e => setSettings({ ...settings, heroTitle: e.target.value })} placeholder="GEMILANG" /></Row><Row label="Tagline / Sub Judul"><input style={inp} value={settings.heroSub || ''} onChange={e => setSettings({ ...settings, heroSub: e.target.value })} placeholder="Eksplorasi Ilmu di Galaksi..." /></Row></Grid2>
-      <Row label="Visi & Misi"><textarea style={{ ...inp, minHeight: 100, resize: 'vertical' }} value={settings.visiMisi || ''} onChange={e => setSettings({ ...settings, visiMisi: e.target.value })} placeholder="Menjadi pusat pembelajaran terbaik..." /></Row>
-      <Row label="Alamat Lengkap"><input style={inp} value={settings.alamat || ''} onChange={e => setSettings({ ...settings, alamat: e.target.value })} placeholder="Jl. Contoh No.1, Desa, Kecamatan" /></Row>
+      <Grid2><Row label="Nama Bimbel"><input style={inp} value={settings.heroTitle || ''} onChange={e => setSettings({ ...settings, heroTitle: e.target.value })} placeholder="GEMILANG" /></Row><Row label="Tagline"><input style={inp} value={settings.heroSub || ''} onChange={e => setSettings({ ...settings, heroSub: e.target.value })} placeholder="Eksplorasi Ilmu..." /></Row></Grid2>
+      <Row label="Visi & Misi"><textarea style={{ ...inp, minHeight: 100, resize: 'vertical' }} value={settings.visiMisi || ''} onChange={e => setSettings({ ...settings, visiMisi: e.target.value })} placeholder="Menjadi pusat pembelajaran..." /></Row>
+      <Row label="Alamat Lengkap"><input style={inp} value={settings.alamat || ''} onChange={e => setSettings({ ...settings, alamat: e.target.value })} placeholder="Jl. Contoh No.1" /></Row>
     </div>
     <div style={cardS}>
       <SH icon="📱" title="Media Sosial & Maps" />
       <Grid2><Row label="Link TikTok"><input style={inp} value={settings.tiktokUrl || ''} onChange={e => setSettings({ ...settings, tiktokUrl: e.target.value })} placeholder="https://tiktok.com/@..." /></Row><Row label="Link Instagram"><input style={inp} value={settings.igUrl || ''} onChange={e => setSettings({ ...settings, igUrl: e.target.value })} placeholder="https://instagram.com/..." /></Row></Grid2>
-      <Row label="Link Google Maps"><input style={inp} value={settings.mapsUrl || ''} onChange={e => setSettings({ ...settings, mapsUrl: e.target.value })} placeholder="https://maps.google.com/..." /></Row>
+      <Row label="Link Google Maps"><input style={inp} value={settings.mapsUrl || ''} onChange={e => setSettings({ ...settings, mapsUrl: e.target.value })} placeholder="URL Maps" /></Row>
     </div>
     <button style={btnG} onClick={save}>💾 Simpan Semua Pengaturan</button><OK show={ok} />
   </>;
@@ -318,7 +353,6 @@ export default function ManageBlog() {
       {/* SIDEBAR */}
       <div style={{ width:240, background:'rgba(255,255,255,0.03)', borderRight:`1px solid ${C.border}`, position:'fixed', top:0, left:0, height:'100vh', display:'flex', flexDirection:'column', zIndex:50, overflowY:'auto', flexShrink:0 }}>
         <div style={{ padding:'20px 18px 16px', borderBottom:`1px solid ${C.border}` }}>
-          <img src="/logo-gemilang.png.png" alt="Logo" style={{ height:38, marginBottom:6, filter:'drop-shadow(0 0 8px rgba(243,156,18,0.5))' }} onError={e=>{e.target.style.display='none'}} />
           <div style={{ fontFamily:"'Orbitron',sans-serif", fontSize:9, color:'rgba(243,156,18,0.7)', letterSpacing:2 }}>MISSION CONTROL</div>
         </div>
         <nav style={{ padding:'12px 10px', flex:1 }}>
@@ -330,7 +364,6 @@ export default function ManageBlog() {
             </button>
           ))}
         </nav>
-        <div style={{ padding:'12px 18px', borderTop:`1px solid ${C.border}`, fontSize:10, color:'rgba(255,255,255,0.25)', fontFamily:'sans-serif' }}>Web Gemilang · Admin</div>
       </div>
       {/* MAIN CONTENT */}
       <div style={{ marginLeft:240, flex:1, padding:'24px 28px 60px', overflowY:'auto' }}>
@@ -338,15 +371,6 @@ export default function ManageBlog() {
           <div>
             <h1 style={{ fontFamily:"'Orbitron',sans-serif", fontSize:'clamp(15px,2.5vw,20px)', color:'#f39c12', margin:0 }}>{tabs.find(t=>t.key===tab)?.icon} {tabs.find(t=>t.key===tab)?.label}</h1>
             <p style={{ color:C.muted, fontSize:12, margin:'4px 0 0', fontFamily:'sans-serif' }}>Mission Control · Bimbel Gemilang</p>
-          </div>
-          <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-            {[['🎬',blogs.length,'Konten'],['👨‍🚀',teachers.length,'Pengajar'],['📰',berita.length,'Berita'],['⭐',testimoni.length,'Testimoni']].map(([icon,count,label])=>(
-              <div key={label} style={{ background:'rgba(255,255,255,0.04)', border:`1px solid ${C.border}`, borderRadius:10, padding:'8px 14px', textAlign:'center', minWidth:60 }}>
-                <div style={{ fontSize:16 }}>{icon}</div>
-                <div style={{ fontFamily:"'Orbitron',sans-serif", fontSize:15, color:'#f39c12', fontWeight:700 }}>{count}</div>
-                <div style={{ fontSize:10, color:C.muted }}>{label}</div>
-              </div>
-            ))}
           </div>
         </div>
         {tab==='aktivitas' && <TabAktivitas blogs={blogs}/>}
