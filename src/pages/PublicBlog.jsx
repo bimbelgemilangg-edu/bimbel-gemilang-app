@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { db } from '../../firebase';
+import { db } from '../firebase';
 import { collection, onSnapshot, query, orderBy, doc, getDoc } from "firebase/firestore";
 
 /* ─── STAR FIELD ─────────────────────────────────────── */
