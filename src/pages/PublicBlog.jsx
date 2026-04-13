@@ -1,162 +1,119 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
-import { Rocket, Star, Monitor, Smartphone, PlayCircle, ExternalLink } from 'lucide-react';
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { Rocket, MapPin, MessageCircle, Users, BookOpen, Star, ChevronRight } from 'lucide-react';
 
 const PublicBlog = () => {
-  const [content, setContent] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState('hero');
+  const [blogContent, setBlogContent] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [packages, setPackages] = useState([]);
+  const [webSettings, setWebSettings] = useState({
+    visiMisi: "Menjadi pusat eksplorasi ilmu pengetahuan terbaik.",
+    mapsUrl: "",
+    heroTitle: "Bimbel Gemilang"
+  });
 
   useEffect(() => {
-    const q = query(collection(db, "web_blog"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setContent(data);
-      setLoading(false);
+    // Real-time listener untuk semua data (Multitasking)
+    const unsubBlog = onSnapshot(query(collection(db, "web_blog"), orderBy("createdAt", "desc")), (snap) => {
+      setBlogContent(snap.docs.map(d => ({id: d.id, ...d.data()})));
     });
-    return () => unsubscribe();
-  }, []);
+    const unsubTeachers = onSnapshot(collection(db, "web_teachers_gallery"), (snap) => {
+      setTeachers(snap.docs.map(d => ({id: d.id, ...d.data()})));
+    });
+    const unsubContacts = onSnapshot(collection(db, "web_contacts"), (snap) => {
+      setContacts(snap.docs.map(d => ({id: d.id, ...d.data()})));
+    });
 
-  // Helper untuk mengekstrak ID TikTok dari URL
-  const getTikTokEmbed = (url) => {
-    const match = url.match(/video\/(\d+)/);
-    return match ? match[1] : null;
-  };
+    return () => { unsubBlog(); unsubTeachers(); unsubContacts(); };
+  }, []);
 
   return (
     <div style={styles.container}>
-      {/* BACKGROUND STARS DECORATION */}
-      <div style={styles.stars}></div>
+      {/* 1. HERO SECTION (Tampilan Depan) */}
+      <section style={styles.sectionHero}>
+        <div style={styles.floatingAstronaut}>👨‍🚀</div>
+        <h1 style={styles.glitchText}>{webSettings.heroTitle}</h1>
+        <p>Eksplorasi Ilmu di Galaksi Gemilang</p>
+        <button style={styles.btnDaftar} onClick={() => window.location.href='#daftar'}>
+          DAFTAR SEKARANG <ChevronRight size={18} />
+        </button>
+      </section>
 
-      {/* HERO SECTION */}
-      <header style={styles.hero}>
-        <Rocket size={48} color="#f39c12" style={styles.rocketIcon} />
-        <h1 style={styles.title}>SELAMAT DATANG DI <span style={{ color: '#f39c12' }}>GEMILANG</span></h1>
-        <p style={styles.subtitle}>Eksplorasi Tanpa Batas, Menembus Cakrawala Ilmu Pengetahuan</p>
-        <div style={styles.badgeContainer}>
-            <span style={styles.badge}><Star size={12} /> Galeri Aktivitas Luar Angkasa</span>
+      {/* 2. VIDEO AKTIVITAS (Auto-Slider) */}
+      <section style={styles.section}>
+        <h2 style={styles.sectionTitle}><Rocket size={20}/> Aktivitas Astronot Gemilang</h2>
+        <div style={styles.horizontalScroll}>
+          {blogContent.map(item => (
+            <div key={item.id} style={styles.mediaCard}>
+               {/* Logika Embed TikTok/IG seperti sebelumnya */}
+               <iframe src={`https://www.tiktok.com/embed/v2/${item.url.split('/video/')[1]}`} style={styles.iframe} />
+            </div>
+          ))}
         </div>
-      </header>
+      </section>
 
-      {/* CONTENT GRID */}
-      <main style={styles.main}>
-        {loading ? (
-          <div style={styles.loader}>Menghubungkan ke Stasiun Luar Angkasa...</div>
-        ) : (
-          <div style={styles.grid}>
-            {content.map((item) => (
-              <div key={item.id} style={styles.card}>
-                <div style={styles.mediaContainer}>
-                  {item.type === 'tiktok' ? (
-                    <div style={styles.videoWrapper} onClick={() => window.open(item.url, '_blank')}>
-                        <div style={styles.overlay}>
-                            <PlayCircle size={40} color="white" />
-                            <p>Tonton di TikTok</p>
-                        </div>
-                        <iframe
-                            src={`https://www.tiktok.com/embed/v2/${getTikTokEmbed(item.url)}`}
-                            style={styles.iframe}
-                            title="TikTok Preview"
-                        />
-                    </div>
-                  ) : item.type === 'instagram' ? (
-                    <div style={styles.placeholderMedia} onClick={() => window.open(item.url, '_blank')}>
-                        <ExternalLink size={30} />
-                        <p>Lihat di Instagram</p>
-                    </div>
-                  ) : (
-                    <img src={item.url} alt={item.caption} style={styles.image} />
-                  )}
-                </div>
-                <div style={styles.cardInfo}>
-                  <p style={styles.caption}>{item.caption}</p>
-                  <small style={styles.date}>Misi Selesai: {item.createdAt?.toDate().toLocaleDateString()}</small>
-                </div>
+      {/* 3. TENAGA PENDIDIK (Tim Kami) */}
+      <section style={styles.section}>
+        <h2 style={styles.sectionTitle}><Users size={20}/> Commander & Crew (Pengajar)</h2>
+        <div style={styles.horizontalScroll}>
+          {teachers.map(t => (
+            <div key={t.id} style={styles.teacherCard}>
+              <img src={t.photoUrl} style={styles.teacherImg} alt={t.nama} />
+              <h4>{t.nama}</h4>
+              <p>{t.spesialisasi}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 4. HUBUNGI KAMI (Contact Person) */}
+      <section style={styles.section}>
+        <h2 style={styles.sectionTitle}><MessageCircle size={20}/> Hubungi Stasiun Bumi</h2>
+        <div style={styles.contactGrid}>
+          {contacts.map(c => (
+            <div key={c.id} style={styles.contactCard} onClick={() => window.open(`https://wa.me/${c.wa}`)}>
+              <img src={c.photoUrl} style={styles.contactAvatar} />
+              <div>
+                <strong>{c.nama}</strong>
+                <p>Klik untuk Chat</p>
               </div>
-            ))}
-          </div>
-        )}
-      </main>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      {/* FOOTER */}
+      {/* 5. ALAMAT (Maps) */}
       <footer style={styles.footer}>
-        <p>© 2026 Bimbel Gemilang - Menyiapkan Astronot Masa Depan</p>
+        <div style={styles.mapsCard}>
+           <h3 style={{display:'flex', alignItems:'center', gap:10}}><MapPin/> Lokasi Orbit Kami</h3>
+           <button onClick={() => window.open(webSettings.mapsUrl)} style={styles.btnMaps}>Buka Google Maps</button>
+        </div>
       </footer>
     </div>
   );
 };
 
+// CSS-in-JS untuk kemudahan copy-paste
 const styles = {
-  container: {
-    backgroundColor: '#0b0e14', // Space Dark
-    minHeight: '100vh',
-    color: '#ecf0f1',
-    fontFamily: "'Segoe UI', Roboto, sans-serif",
-    padding: '20px',
-    position: 'relative',
-    overflowX: 'hidden'
-  },
-  stars: {
-    position: 'fixed',
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundImage: 'radial-gradient(white, rgba(255,255,255,0.2) 2px, transparent 40px)',
-    backgroundSize: '100px 100px',
-    opacity: 0.1,
-    zIndex: 0
-  },
-  hero: {
-    textAlign: 'center',
-    padding: '60px 20px',
-    position: 'relative',
-    zIndex: 1
-  },
-  title: { fontSize: '2.5rem', marginBottom: '10px', fontWeight: '800', letterSpacing: '2px' },
-  subtitle: { fontSize: '1.1rem', color: '#bdc3c7', maxWidth: '600px', margin: '0 auto 20px' },
-  badgeContainer: { display: 'flex', justifyContent: 'center', gap: '10px' },
-  badge: { 
-    backgroundColor: 'rgba(243, 156, 18, 0.2)', 
-    color: '#f39c12', 
-    padding: '5px 15px', 
-    borderRadius: '20px', 
-    fontSize: '12px',
-    border: '1px solid #f39c12',
-    display: 'flex', alignItems: 'center', gap: '5px'
-  },
-  main: { position: 'relative', zIndex: 1, maxWidth: '1200px', margin: '0 auto' },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', // OTOMATIS RESPONSIVE
-    gap: '25px',
-    padding: '20px 0'
-  },
-  card: {
-    backgroundColor: '#161b22',
-    borderRadius: '15px',
-    overflow: 'hidden',
-    border: '1px solid #30363d',
-    transition: 'transform 0.3s ease',
-    cursor: 'pointer'
-  },
-  mediaContainer: { width: '100%', height: '400px', backgroundColor: '#000', position: 'relative' },
-  image: { width: '100%', height: '100%', objectFit: 'cover' },
-  videoWrapper: { width: '100%', height: '100%', position: 'relative' },
-  iframe: { width: '100%', height: '100%', border: 'none', pointerEvents: 'none' },
-  overlay: {
-    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 2,
-    display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-    opacity: 0.8
-  },
-  placeholderMedia: {
-    width: '100%', height: '100%', display: 'flex', flexDirection: 'column',
-    justifyContent: 'center', alignItems: 'center', gap: '10px', color: '#f39c12'
-  },
-  cardInfo: { padding: '15px' },
-  caption: { fontSize: '14px', marginBottom: '10px', lineHeight: '1.4' },
-  date: { fontSize: '10px', color: '#8b949e' },
-  loader: { textAlign: 'center', padding: '50px', color: '#f39c12' },
-  footer: { textAlign: 'center', padding: '40px', color: '#484f58', fontSize: '12px' },
-  rocketIcon: { marginBottom: '20px', filter: 'drop-shadow(0 0 10px #f39c12)' }
+  container: { background: '#05070a', color: 'white', minHeight: '100vh', overflowX: 'hidden' },
+  sectionHero: { height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', background: 'radial-gradient(circle, #1a2a6c, #b21f1f, #fdbb2d)', position: 'relative' },
+  floatingAstronaut: { fontSize: '80px', animation: 'float 3s infinite ease-in-out', marginBottom: 20 },
+  glitchText: { fontSize: '3rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '5px' },
+  btnDaftar: { padding: '15px 40px', background: '#f39c12', color: 'white', border: 'none', borderRadius: '50px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, marginTop: 30 },
+  section: { padding: '60px 20px' },
+  sectionTitle: { fontSize: '1.5rem', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: 15, color: '#f39c12' },
+  horizontalScroll: { display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '20px', scrollbarWidth: 'none' },
+  mediaCard: { minWidth: '300px', height: '500px', background: '#161b22', borderRadius: '20px', overflow: 'hidden' },
+  teacherCard: { minWidth: '180px', textAlign: 'center', background: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '20px' },
+  teacherImg: { width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', marginBottom: 15, border: '3px solid #f39c12' },
+  contactGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px' },
+  contactCard: { display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', background: '#1c1f26', borderRadius: '15px', cursor: 'pointer' },
+  contactAvatar: { width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' },
+  footer: { padding: '40px 20px', background: '#0b0e14' },
+  btnMaps: { width: '100%', padding: '12px', background: 'transparent', border: '1px solid #f39c12', color: '#f39c12', borderRadius: '10px', cursor: 'pointer', marginTop: 15 }
 };
 
 export default PublicBlog;

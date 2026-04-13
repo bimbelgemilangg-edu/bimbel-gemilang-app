@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth"; // 1. Wajib import Auth
+import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage"; // IMPORT BARU UNTUK UPLOAD FOTO
 
 // Konfigurasi asli Anda
 const firebaseConfig = {
@@ -17,7 +18,8 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize Services
 const db = getFirestore(app);
-const auth = getAuth(app); // 2. Nyalakan mesin Login
+const auth = getAuth(app);
+const storage = getStorage(app); // NYALAKAN MESIN PENYIMPANAN FOTO
 
-// 3. Export semuanya agar bisa dipakai di file lain
-export { db, auth, firebaseConfig };
+// Export semuanya agar bisa dipakai di file lain (ManageBlog, dll)
+export { db, auth, storage, firebaseConfig };
