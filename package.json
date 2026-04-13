@@ -16,7 +16,7 @@
     "firebase": "^12.8.0",
     "html2canvas": "^1.4.1",
     "html5-qrcode": "^2.3.8",
-    "jspdf": "^4.0.0",
+    "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "katex": "^0.16.44",
     "lucide-react": "^0.562.0",

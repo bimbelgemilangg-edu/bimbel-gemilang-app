@@ -25,6 +25,7 @@ import TeacherList from './pages/admin/teachers/TeacherList';
 import TeacherSalaries from './pages/admin/teachers/TeacherSalaries'; 
 import SchedulePage from './pages/admin/schedule/SchedulePage';
 import GradeReport from './pages/admin/grades/GradeReport'; 
+import AdminDailyLog from './pages/admin/AdminDailyLog'; // IMPORT BARU
 
 // === IMPORT ADMIN PORTAL SISWA ===
 import PortalSiswaHome from './pages/admin/portal-siswa/PortalSiswaHome';
@@ -112,6 +113,7 @@ function App() {
         <Route path="/admin/finance" element={<AdminRoute><FinanceLayout /></AdminRoute>} />
         <Route path="/admin/schedule" element={<AdminRoute><SchedulePage /></AdminRoute>} />
         <Route path="/admin/grades" element={<AdminRoute><GradeReport /></AdminRoute>} />
+        <Route path="/admin/daily-log" element={<AdminRoute><AdminDailyLog /></AdminRoute>} /> {/* RUTE BARU */}
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
 
         {/* === AREA GURU (DIBUNGKUS TEACHER LAYOUT) === */}

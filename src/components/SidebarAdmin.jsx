@@ -16,11 +16,12 @@ const SidebarAdmin = () => {
     { name: 'Dashboard', path: '/admin', icon: '🏠' },
     { name: 'Kelola Siswa', path: '/admin/students', icon: '👥' },
     { name: 'Kelola Guru', path: '/admin/teachers', icon: '👨‍🏫' }, 
-    { name: 'Portal Siswa', path: '/admin/portal', icon: '📱' }, // MENU BARU
+    { name: 'Portal Siswa', path: '/admin/portal', icon: '📱' },
     { name: 'Gaji Guru', path: '/admin/teachers/salaries', icon: '💰' },
     { name: 'Keuangan', path: '/admin/finance', icon: '💸' },
     { name: 'Jadwal', path: '/admin/schedule', icon: '📅' },
     { name: 'Laporan Rapor', path: '/admin/grades', icon: '📊' },
+    { name: 'Log Harian Admin', path: '/admin/daily-log', icon: '📝' }, // MENU BARU UNTUK LAPORAN
     { name: 'Settings', path: '/admin/settings', icon: '⚙️' },
   ];
 
@@ -33,7 +34,7 @@ const SidebarAdmin = () => {
 
       <nav style={styles.nav}>
         {menuItems.map((item) => {
-          const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+          const isActive = location.pathname === item.path || (item.path !== '/admin' && location.pathname.startsWith(item.path + '/'));
           return (
             <Link
               key={item.path}
