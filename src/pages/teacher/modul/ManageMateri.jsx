@@ -6,6 +6,7 @@ import {
 } from "firebase/firestore"; 
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import imageCompression from 'browser-image-compression'; 
+import { uploadToImgBB } from '../../../services/uploadService';
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, 
   ArrowLeft, Upload, Calendar, Link as LinkIcon, 
@@ -83,33 +84,47 @@ const ManageMateri = () => {
 
     const isImage = file.type.startsWith('image/');
     const isPdf = file.type === 'application/pdf';
+    const maxSize = 32 * 1024 * 1024; // 32MB untuk ImgBB
 
-    // Cek Ukuran (Firestore Limit 1MB per document, jadi file base64 harus kecil)
-    if (file.size > 1.5 * 1024 * 1024 && isPdf) {
-      return alert("File PDF terlalu besar (Maks 1.5MB). Gunakan link Google Drive jika file besar.");
+    if (file.size > maxSize) {
+      return alert("❌ File terlalu besar! Maksimal 32MB.");
     }
 
     try {
       let finalData;
+      
       if (isImage) {
-        const options = { maxSizeMB: 0.3, maxWidthOrHeight: 1024, useWebWorker: true };
+        const options = { maxSizeMB: 0.5, maxWidthOrHeight: 1024, useWebWorker: true };
         const compressed = await imageCompression(file, options);
         finalData = await convertBase64(compressed);
       } else {
         finalData = await convertBase64(file);
       }
 
-      if (blockId) {
-        setBlocks(blocks.map(b => b.id === blockId ? { 
-          ...b, 
-          content: finalData, 
-          fileName: file.name,
-          mimeType: file.type // Crucial: Siswa butuh ini untuk render
-        } : b));
+      const result = await uploadToImgBB(finalData);
+      
+      if (result.success) {
+        const fileUrl = result.url;
+        
+        if (blockId) {
+          setBlocks(blocks.map(b => b.id === blockId ? { 
+            ...b, 
+            content: fileUrl, 
+            fileName: file.name,
+            mimeType: file.type,
+            fileUrl: fileUrl
+          } : b));
+        } else {
+          setCoverImage(fileUrl);
+        }
+        alert("✅ File berhasil diupload ke ImgBB!");
       } else {
-        setCoverImage(finalData);
+        throw new Error(result.error || "Upload gagal");
       }
-    } catch (err) { alert("Gagal memproses file: " + err.message); }
+      
+    } catch (err) { 
+      alert("❌ Gagal upload: " + err.message); 
+    }
   };
 
   const convertBase64 = (file) => {
@@ -180,7 +195,20 @@ const ManageMateri = () => {
     const { content, mimeType } = block;
     if (!content) return null;
 
-    if (mimeType === 'application/pdf' || content.startsWith('data:application/pdf')) {
+    if (mimeType === 'application/pdf' || content?.startsWith('data:application/pdf') || content?.toLowerCase().includes('.pdf') || content?.includes('i.ibb.co')) {
+          // Preview untuk PDF dari ImgBB
+    if (content?.includes('i.ibb.co') && (block.fileName?.includes('.pdf') || mimeType === 'application/pdf')) {
+      return (
+        <div style={st.pdfPreviewPlaceholder}>
+          <FileText size={40} color="#673ab7" />
+          <p style={{fontSize:12, fontWeight:'800', marginTop:10}}>📄 DOKUMEN PDF</p>
+          <small>{block.fileName}</small>
+          <a href={content} target="_blank" rel="noreferrer" style={{marginTop:10, color:'#673ab7', fontWeight:'bold'}}>
+            Klik untuk Membuka PDF
+          </a>
+        </div>
+      );
+    }
       return (
         <div style={st.pdfPreviewPlaceholder}>
           <FileText size={40} color="#673ab7" />
