@@ -116,23 +116,63 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const submitTask = async (blockId, blockTitle) => {
     const fileToUpload = localFiles[blockId];
     if (!fileToUpload) return;
+    
     setUploading({ ...uploading, [blockId]: true });
+    
     try {
-      const payload = {
-        modulId, modulTitle: modul.title, blockId, blockTitle,
-        studentId: studentData?.uid || studentData?.id,
-        studentName: studentData?.nama, studentClass: studentData?.kelasSekolah || "Umum",
-        fileUrl: fileToUpload.data, fileName: fileToUpload.name,
-        submittedAt: serverTimestamp(), status: "Pending", type: "assignment", deviceInfo: navigator.userAgent
-      };
-      const docRef = await addDoc(collection(db, "jawaban_tugas"), payload);
-      setSubmittedTasks({ ...submittedTasks, [blockId]: { docId: docRef.id, fileUrl: fileToUpload.data, fileName: fileToUpload.name } });
-      const updatedLocal = { ...localFiles };
-      delete updatedLocal[blockId];
-      setLocalFiles(updatedLocal);
-      alert("🚀 Tugas berhasil dikirim secara aman!");
+      // Import upload service
+      const { uploadToDrive } = await import('../../services/uploadService');
+      
+      // Upload ke Google Drive
+      const result = await uploadToDrive(
+        fileToUpload.data,
+        fileToUpload.name,
+        fileToUpload.type,
+        studentData?.nama || 'Siswa',
+        modul.title
+      );
+      
+      if (result.success) {
+        // Simpan ke Firestore
+        const payload = {
+          modulId, 
+          modulTitle: modul.title, 
+          blockId, 
+          blockTitle,
+          studentId: studentData?.uid || studentData?.id,
+          studentName: studentData?.nama, 
+          studentClass: studentData?.kelasSekolah || 'Umum',
+          fileUrl: result.downloadURL,
+          fileName: fileToUpload.name,
+          driveFileId: result.fileId || null,
+          submittedAt: serverTimestamp(), 
+          status: 'Pending', 
+          type: 'assignment'
+        };
+        
+        const docRef = await addDoc(collection(db, 'jawaban_tugas'), payload);
+        
+        setSubmittedTasks({ 
+          ...submittedTasks, 
+          [blockId]: { 
+            docId: docRef.id, 
+            fileUrl: result.downloadURL, 
+            fileName: fileToUpload.name 
+          } 
+        });
+        
+        const updatedLocal = { ...localFiles };
+        delete updatedLocal[blockId];
+        setLocalFiles(updatedLocal);
+        
+        alert('✅ Tugas berhasil diupload ke Google Drive!');
+      } else {
+        throw new Error(result.error || 'Upload gagal');
+      }
+      
     } catch (err) {
-      alert("Terjadi gangguan jaringan. Silakan coba lagi.");
+      console.error('Upload error:', err);
+      alert('❌ Gagal upload: ' + err.message);
     } finally {
       setUploading({ ...uploading, [blockId]: false });
     }
