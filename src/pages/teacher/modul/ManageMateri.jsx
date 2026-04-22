@@ -84,6 +84,10 @@ const ManageMateri = () => {
 
     const isImage = file.type.startsWith('image/');
     const isPdf = file.type === 'application/pdf';
+      // Validasi format file
+  if (!isImage && !isPdf) {
+    return alert("❌ Format tidak didukung! Hanya PDF dan Gambar (JPG/PNG/WEBP) yang bisa diupload.\n\nUntuk file Word/DOC/PPT, silakan konversi ke PDF terlebih dahulu.");
+  }
     const maxSize = 32 * 1024 * 1024; // 32MB untuk ImgBB
 
     if (file.size > maxSize) {

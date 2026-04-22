@@ -99,8 +99,10 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) return alert("Format tidak didukung. Gunakan PDF, DOCX, atau Gambar.");
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      return alert("❌ Format tidak didukung!\n\nUntuk tugas, silakan upload:\n- PDF\n- Gambar (JPG/PNG)\n\nFile Word/DOC tidak didukung. Silakan konversi ke PDF terlebih dahulu.");
+    }
     if (file.size > 2500000) return alert("File terlalu besar. Maksimal 2.5MB.");
 
     const reader = new FileReader();
@@ -255,10 +257,8 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
 
     const isPdf = fType === 'application/pdf' || contentUrl.startsWith('data:application/pdf') || contentUrl.toLowerCase().includes('.pdf') || (contentUrl.includes('firebasestorage') && contentUrl.includes('%2F') && !contentUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i));
 
-    if (isPdf) {
-      const embedSrc = contentUrl.startsWith('data:')
-        ? contentUrl
-        : `https://docs.google.com/viewer?url=${encodeURIComponent(contentUrl)}&embedded=true`;
+    if (isPdf || contentUrl?.toLowerCase().includes('.pdf') || contentUrl?.includes('i.ibb.co')) {
+      const embedSrc = `https://docs.google.com/viewer?url=${encodeURIComponent(contentUrl)}&embedded=true`;
 
       return (
         <div style={st.mediaGroup}>
