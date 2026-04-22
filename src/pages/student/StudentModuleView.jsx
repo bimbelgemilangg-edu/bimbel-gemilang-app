@@ -294,7 +294,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         </div>
     );
   };
-
+  
   if (loading) return <div style={st.loader}><div style={st.spinner}></div> Membuka Sistem...</div>;
 
   return (
@@ -507,6 +507,42 @@ const st = {
   quizIconBox: { background: '#673ab7', padding: '10px', borderRadius: '14px' },
   quizItem: { marginBottom: 30 },
   questionText: (m) => ({ fontSize: m ? 16 : 18, fontWeight: '800', color: '#1e293b', marginBottom: 15, display: 'flex', gap: 12 }),
-  qNumber: { background: '#f1f5f9', color: '#673ab7', minWidth: '30px', height: '30px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize:14 },
   optionsGrid: { display: 'grid', gridTemplateColumns: '1fr', gap: 10 },
-  optButton: (m) => ({ padding: m ? '14px 18px' : '16px
+  optButton: (m) => ({ 
+    padding: m ? '14px 18px' : '16px 20px', 
+    borderRadius: '14px', 
+    border: '2px solid', 
+    textAlign: 'left', 
+    transition: '0.2s', 
+    fontSize: m ? 14 : 15, 
+    fontWeight: '700',
+    cursor: 'pointer'
+  }),
+  quizFooter: { marginTop: 20 },
+  btnSubmitQuiz: { 
+    width: '100%', 
+    padding: '18px', 
+    borderRadius: '16px', 
+    border: 'none', 
+    background: '#673ab7', 
+    color: 'white', 
+    fontWeight: '900', 
+    fontSize: 16, 
+    cursor: 'pointer' 
+  },
+  quizDoneBadge: { 
+    textAlign: 'center', 
+    padding: '20px', 
+    background: '#f0fdf4', 
+    color: '#15803d', 
+    borderRadius: '16px', 
+    fontWeight: '800', 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    gap: 10, 
+    border: '1px solid #bbf7d0' 
+  }
+};
+
+export default StudentModuleView;
