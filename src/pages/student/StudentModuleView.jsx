@@ -152,7 +152,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     } catch (err) { alert("Gagal menarik data."); }
   };
 
-  // ✅✅✅ FUNGSI INI YANG SAYA PERBAIKI ✅✅✅
   const handleQuizSubmit = async () => {
     if (isQuizExpired) return alert("❌ Kuis sudah ditutup.");
     
@@ -161,7 +160,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     
     if (totalQuestions === 0) return alert("Tidak ada soal dalam kuis ini.");
     
-    // Cek semua soal terjawab
     const unanswered = quizData.filter(q => quizAnswers[q.id] === undefined);
     if (unanswered.length > 0) {
       return alert(`❌ Kamu belum menjawab ${unanswered.length} soal. Lengkapi semua jawaban!`);
@@ -170,19 +168,15 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     if (!window.confirm("Kirim kuis sekarang? Jawaban tidak bisa diubah setelah dikirim.")) return;
     
     try {
-      // HITUNG JAWABAN BENAR
       let correctCount = 0;
       quizData.forEach((q) => {
         const studentAnswer = quizAnswers[q.id];
         const correctAnswer = q.correctAnswer;
-        
-        // Bandingkan jawaban siswa dengan kunci jawaban
         if (studentAnswer === correctAnswer) {
           correctCount++;
         }
       });
       
-      // HITUNG SKOR OTOMATIS
       const calculatedScore = Math.round((correctCount / totalQuestions) * 100);
       
       const payload = {
@@ -192,12 +186,9 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         studentName: studentData?.nama, 
         studentClass: studentData?.kelasSekolah || "Umum",
         answers: quizAnswers,
-        
-        // ✅ FIELD PENTING UNTUK GURU
         correctAnswers: correctCount,
         totalQuestions: totalQuestions,
         score: calculatedScore,
-        
         submittedAt: serverTimestamp(), 
         status: "Dinilai",
         gradedAt: serverTimestamp(),
@@ -216,14 +207,12 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   };
 
   const renderSmartMedia = (block) => {
-    // FIX: Ambil nilai URL dari kemungkinan properti yang disimpan Firebase (content, fileUrl, url, atau file)
     const contentUrl = block.content || block.fileUrl || block.url || block.file;
     if (!contentUrl) return null;
 
     const fName = block.fileName || "Dokumen_Materi";
     const fType = block.mimeType || "";
 
-    // 1. Render Base64 / Storage URL PDF
     const isPdf = fType === 'application/pdf' || contentUrl.startsWith('data:application/pdf') || contentUrl.toLowerCase().includes('.pdf') || (contentUrl.includes('firebasestorage') && contentUrl.includes('%2F') && !contentUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i));
 
     if (isPdf) {
@@ -248,7 +237,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       );
     }
 
-    // 2. Render Base64 / Storage URL Image
     const isImage = contentUrl.startsWith('data:image/') || contentUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i) || fType.startsWith('image/');
     if (isImage) {
       return (
@@ -262,7 +250,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       );
     }
 
-    // 3. Render External URLs (Canva, YT, Drive)
     let embedUrl = contentUrl;
     let showIframe = false;
 
@@ -296,7 +283,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       );
     }
 
-    // 4. Fallback Tautan Standar
     return (
         <div style={st.linkBox(isMobile)}>
           <div style={st.linkIconCircle}><LinkIcon size={20} color="#673ab7"/></div>
@@ -516,4 +502,11 @@ const st = {
   successUpload: (m) => ({ color: '#059669', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: m ? 'center' : 'flex-end', gap: 8, background: '#dcfce7', padding: '12px', borderRadius: '12px', width:'100%' }),
   btnSmallDelete: (m) => ({ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '10px', borderRadius: '10px', fontSize: '12px', fontWeight: '800', cursor: 'pointer', flex:1, display:'flex', justifyContent:'center', alignItems:'center', gap:6 }),
   btnSmallPreview: (m) => ({ background: '#f1f5f9', color: '#64748b', border: 'none', padding: '10px', borderRadius: '10px', fontSize: '12px', fontWeight: '800', textDecoration: 'none', flex:1, display:'flex', justifyContent:'center', alignItems:'center', gap:6 }),
-  lockedBadge: (m) => ({ color: '#ef4444', fontWeight: '800', background: '#fee2e2', padding: '12px', borderRadius
+  lockedBadge: (m) => ({ color: '#ef4444', fontWeight: '800', background: '#fee2e2', padding: '12px', borderRadius: '12px', textAlign:'center', width:'100%' }),
+  quizHeader: (m) => ({ display: 'flex', alignItems: 'center', gap: 15, marginBottom: m ? 25 : 35 }),
+  quizIconBox: { background: '#673ab7', padding: '10px', borderRadius: '14px' },
+  quizItem: { marginBottom: 30 },
+  questionText: (m) => ({ fontSize: m ? 16 : 18, fontWeight: '800', color: '#1e293b', marginBottom: 15, display: 'flex', gap: 12 }),
+  qNumber: { background: '#f1f5f9', color: '#673ab7', minWidth: '30px', height: '30px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize:14 },
+  optionsGrid: { display: 'grid', gridTemplateColumns: '1fr', gap: 10 },
+  optButton: (m) => ({ padding: m ? '14px 18px' : '16px 20px', borderRadius: '14px
