@@ -29,13 +29,41 @@ const CekTugasSiswa = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
+      // TUGAS
       const qTasks = query(collection(db, "jawaban_tugas"), orderBy("submittedAt", "desc"));
       const snapTasks = await getDocs(qTasks);
       setTasks(snapTasks.docs.map(d => ({ id: d.id, ...d.data(), type: 'tugas' })));
 
+      // QUIZ - AUTO HITUNG SKOR
       const qQuiz = query(collection(db, "jawaban_kuis"), orderBy("submittedAt", "desc"));
       const snapQuiz = await getDocs(qQuiz);
-      setQuizzes(snapQuiz.docs.map(d => ({ id: d.id, ...d.data(), type: 'kuis' })));
+      const quizData = snapQuiz.docs.map(async (d) => {
+        const data = d.data();
+        const item = { id: d.id, ...data, type: 'kuis' };
+        
+        // AUTO HITUNG SKOR jika ada correctAnswers & totalQuestions
+        if (data.correctAnswers && data.totalQuestions && (data.score === undefined || data.score === null)) {
+          const autoScore = Math.round((data.correctAnswers / data.totalQuestions) * 100);
+          try {
+            await updateDoc(doc(db, "jawaban_kuis", d.id), { 
+              score: autoScore,
+              status: "Dinilai",
+              gradedAt: serverTimestamp()
+            });
+            item.score = autoScore;
+            item.status = "Dinilai";
+          } catch (e) {
+            console.error("Auto score failed:", e);
+          }
+        }
+        
+        return item;
+      });
+      
+      // Tunggu semua promise selesai
+      const resolvedQuizzes = await Promise.all(quizData);
+      setQuizzes(resolvedQuizzes);
+      
     } catch (e) {
       console.error("Sinkronisasi Gagal:", e);
     }
@@ -159,7 +187,16 @@ const CekTugasSiswa = () => {
                                                     <Download size={14}/> Lihat File
                                                 </button>
                                             ) : (
-                                                <span style={styles.kuisInfoTag}>{item.correctAnswers || 0} Benar</span>
+                                                <div style={{display: 'flex', flexDirection: 'column', gap: 4}}>
+                                                    <span style={styles.kuisInfoTag}>
+                                                        {item.correctAnswers || 0}/{item.totalQuestions || '?'} Benar
+                                                    </span>
+                                                    {item.correctAnswers && item.totalQuestions && (
+                                                        <span style={styles.scorePreview}>
+                                                            {Math.round((item.correctAnswers / item.totalQuestions) * 100)}%
+                                                        </span>
+                                                    )}
+                                                </div>
                                             )}
                                         </td>
                                         <td style={styles.td}>
@@ -167,10 +204,17 @@ const CekTugasSiswa = () => {
                                                 {editingScore === item.id ? (
                                                     <input 
                                                         type="number" 
+                                                        min="0" 
+                                                        max="100"
                                                         style={styles.scoreInput} 
                                                         value={newScore} 
                                                         onChange={(e) => setNewScore(e.target.value)}
                                                         onBlur={() => setEditingScore(null)}
+                                                        onKeyDown={(e) => {
+                                                          if (e.key === 'Enter') {
+                                                            handleUpdateScore(item.id, item.type === 'tugas' ? 'jawaban_tugas' : 'jawaban_kuis');
+                                                          }
+                                                        }}
                                                         autoFocus 
                                                     />
                                                 ) : (
@@ -184,11 +228,26 @@ const CekTugasSiswa = () => {
                                         <td style={styles.td}>
                                             <div style={styles.actionGroup}>
                                                 {editingScore === item.id ? (
-                                                    <button onClick={() => handleUpdateScore(item.id, item.type === 'tugas' ? 'jawaban_tugas' : 'jawaban_kuis')} style={styles.btnSaveAction}><Save size={16}/></button>
+                                                    <button 
+                                                      onClick={() => handleUpdateScore(item.id, item.type === 'tugas' ? 'jawaban_tugas' : 'jawaban_kuis')} 
+                                                      style={styles.btnSaveAction}
+                                                    >
+                                                      <Save size={16}/>
+                                                    </button>
                                                 ) : (
-                                                    <button onClick={() => {setEditingScore(item.id); setNewScore(item.score || "")}} style={styles.btnEditAction}><Edit3 size={16}/></button>
+                                                    <button 
+                                                      onClick={() => {setEditingScore(item.id); setNewScore(item.score?.toString() || "");}} 
+                                                      style={styles.btnEditAction}
+                                                    >
+                                                      <Edit3 size={16}/>
+                                                    </button>
                                                 )}
-                                                <button onClick={() => handleDelete(item.id, item.type === 'tugas' ? 'jawaban_tugas' : 'jawaban_kuis')} style={styles.btnDeleteAction}><Trash2 size={16}/></button>
+                                                <button 
+                                                  onClick={() => handleDelete(item.id, item.type === 'tugas' ? 'jawaban_tugas' : 'jawaban_kuis')} 
+                                                  style={styles.btnDeleteAction}
+                                                >
+                                                  <Trash2 size={16}/>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -206,6 +265,7 @@ const CekTugasSiswa = () => {
   );
 };
 
+// STYLES (SAMA PERSIS)
 const styles = {
   mainWrapper: (isMobile) => ({
     minHeight: '100vh',
@@ -246,13 +306,15 @@ const styles = {
   onTimeStatus: { color: '#10b981', background: '#dcfce7', padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: 4 },
   btnDownload: { background: '#673ab7', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 5 },
   kuisInfoTag: { fontSize: '10px', fontWeight: '800', color: '#475569', background: '#f1f5f9', padding: '4px 8px', borderRadius: '6px' },
+  scorePreview: { fontSize: '9px', fontWeight: '900', color: '#10b981', background: '#dcfce7', padding: '2px 6px', borderRadius: '4px', alignSelf: 'flex-start' },
   scoreDisplay: { fontSize: '16px', fontWeight: '900' },
   scoreLabel: { fontSize: '10px', color: '#cbd5e1', marginLeft: 2 },
-  scoreInput: { width: '50px', border: '2px solid #673ab7', borderRadius: '5px', textAlign: 'center', fontWeight: 'bold' },
+  scoreContainer: { display: 'flex', alignItems: 'center', gap: 4 },
+  scoreInput: { width: '60px', border: '2px solid #673ab7', borderRadius: '5px', textAlign: 'center', fontWeight: 'bold', fontSize: '16px', padding: '4px' },
   actionGroup: { display: 'flex', gap: 5 },
-  btnEditAction: { padding: '8px', borderRadius: '8px', border: 'none', background: '#f1f5f9', cursor: 'pointer' },
-  btnSaveAction: { padding: '8px', borderRadius: '8px', border: 'none', background: '#10b981', color: 'white', cursor: 'pointer' },
-  btnDeleteAction: { padding: '8px', borderRadius: '8px', border: 'none', background: '#fff1f2', color: '#ef4444', cursor: 'pointer' },
+  btnEditAction: { padding: '8px', borderRadius: '8px', border: 'none', background: '#f1f5f9', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  btnSaveAction: { padding: '8px', borderRadius: '8px', border: 'none', background: '#10b981', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  btnDeleteAction: { padding: '8px', borderRadius: '8px', border: 'none', background: '#fff1f2', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   loadingArea: { padding: '100px', textAlign: 'center', fontWeight: 'bold', color: '#64748b' },
   emptyRow: { padding: '40px', textAlign: 'center', color: '#94a3b8', fontStyle: 'italic' }
 };

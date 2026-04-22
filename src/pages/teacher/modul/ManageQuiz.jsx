@@ -41,6 +41,10 @@ const ManageQuiz = () => {
               subject: data.subject || "", 
               deadline: data.deadlineQuiz || "" 
             });
+            
+            // ✅ FIXED: Tampilkan totalQuestions
+            console.log("Total Questions from DB:", data.totalQuestions);
+            
             if (data.quizData && data.quizData.length > 0) {
               setQuestions(data.quizData.map((q, idx) => ({
                 id: q.id || Date.now() + idx + Math.random(), 
@@ -75,17 +79,16 @@ const ManageQuiz = () => {
 
   const handleSmartGenerate = () => {
     if (!bulkText.trim()) return;
-    // Regex lebih kuat untuk menangkap angka soal dan pilihan A-D/E
-    const rawBlocks = bulkText.split(/\n(?=\d+[\.\)\s])/);
+    const rawBlocks = bulkText.split(/\n(?=\d+[\.\$\s])/);
     
     const parsedQuestions = rawBlocks.map((block, index) => {
       const lines = block.trim().split('\n').filter(l => l.trim() !== "");
       if (lines.length === 0) return null;
 
-      const questionText = lines[0].replace(/^\d+[\.\)\s]*/, '').trim();
-      const optionLines = lines.slice(1).filter(l => /^[A-E][\.\)\s]/i.test(l.trim()));
+      const questionText = lines[0].replace(/^\d+[\.\$\s]*/, '').trim();
+      const optionLines = lines.slice(1).filter(l => /^[A-E][\.\$\s]/i.test(l.trim()));
       
-      const options = optionLines.map(opt => opt.replace(/^[A-E][\.\)\s]*/i, '').trim());
+      const options = optionLines.map(opt => opt.replace(/^[A-E][\.\$\s]*/i, '').trim());
       const finalOptions = [...options];
       while (finalOptions.length < 4) finalOptions.push("");
 
@@ -104,23 +107,34 @@ const ManageQuiz = () => {
     }
   };
 
+  // ✅ FIXED: Tambah totalQuestions & validasi
   const handleSaveQuiz = async () => {
     if (!modulId) return alert("Modul ID tidak ditemukan!");
+    
+    // Validasi soal
+    const validQuestions = questions.filter(q => q.q.trim() !== '');
+    if (validQuestions.length === 0) {
+      return alert("Minimal 1 soal harus diisi!");
+    }
+    
     setLoading(true);
     try {
       await updateDoc(doc(db, "bimbel_modul", modulId), {
-        quizData: questions.map(q => ({ 
+        quizData: validQuestions.map(q => ({ 
           id: q.id, 
-          question: q.q, 
+          question: q.q.trim(), 
           options: q.options, 
           correctAnswer: q.correct 
         })),
+        totalQuestions: validQuestions.length, // ✅ CRUCIAL: SIMPAN TOTAL SOAL
         deadlineQuiz: quizInfo.deadline,
         updatedAt: serverTimestamp()
       });
-      alert("✅ DATA TERSIMPAN: " + questions.length + " Soal berhasil diperbarui.");
+      
+      alert(`✅ DATA TERSIMPAN!\n${validQuestions.length} Soal Kuis + TotalQuestions`);
       navigate(-1);
     } catch (err) { 
+      console.error("Save Error:", err);
       alert("Gagal menyimpan: " + err.message); 
     }
     setLoading(false);
@@ -154,7 +168,7 @@ const ManageQuiz = () => {
         <div style={{display:'flex', gap:10}}>
            <button onClick={() => setShowImport(true)} style={st.btnImport}><Calculator size={18}/> Bulk Import</button>
            <button onClick={handleSaveQuiz} disabled={loading} style={st.btnSave}>
-            <Save size={18}/> {loading ? "..." : "Simpan Kuis"}
+            <Save size={18}/> {loading ? "Menyimpan..." : `Simpan Kuis (${questions.filter(q => q.q.trim()).length} soal)`}
           </button>
         </div>
       </div>
@@ -164,6 +178,10 @@ const ManageQuiz = () => {
         <div style={{marginTop:10}}>
           <label style={{fontSize:11, fontWeight:800, color:'#64748b', display:'block', marginBottom:5}}>BATAS WAKTU (DEADLINE):</label>
           <input type="datetime-local" style={st.dateInput} value={quizInfo.deadline} onChange={(e) => setQuizInfo({...quizInfo, deadline: e.target.value})} />
+        </div>
+        {/* ✅ INFO TOTAL SOAL */}
+        <div style={{marginTop:15, padding:'10px', background:'#f0fdf4', borderRadius:'8px', fontSize:'12px', color:'#166534'}}>
+          📊 Total Soal Aktif: <strong>{questions.filter(q => q.q.trim()).length}</strong>
         </div>
       </div>
 
