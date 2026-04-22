@@ -509,4 +509,4 @@ const st = {
   questionText: (m) => ({ fontSize: m ? 16 : 18, fontWeight: '800', color: '#1e293b', marginBottom: 15, display: 'flex', gap: 12 }),
   qNumber: { background: '#f1f5f9', color: '#673ab7', minWidth: '30px', height: '30px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize:14 },
   optionsGrid: { display: 'grid', gridTemplateColumns: '1fr', gap: 10 },
-  optButton: (m) => ({ padding: m ? '14px 18px' : '16px 20px', borderRadius: '14px
+  optButton: (m) => ({ padding: m ? '14px 18px' : '16px
