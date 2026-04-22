@@ -1,13 +1,14 @@
 import { db } from '../firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
+const storage = getStorage();
 const FOLDER_ID = '1nNIbO6RFQGws-baXm-TW8jXDdsSPv_Wn';
 const SERVICE_ACCOUNT_EMAIL = 'gemilang-drive-uploader@gemilangsystem.iam.gserviceaccount.com';
 
 // Fungsi untuk mendapatkan access token dari service account
 const getAccessToken = async () => {
   try {
-    // Load private key dari file JSON yang di-import
     const privateKey = import.meta.env.VITE_GOOGLE_PRIVATE_KEY;
     const clientEmail = SERVICE_ACCOUNT_EMAIL;
     
@@ -16,7 +17,6 @@ const getAccessToken = async () => {
       return null;
     }
 
-    // Create JWT token
     const header = {
       alg: 'RS256',
       typ: 'JWT'
@@ -31,15 +31,11 @@ const getAccessToken = async () => {
       iat: now
     };
 
-    // Encode JWT (simplified - untuk production gunakan library)
     const base64Encode = (obj) => {
       return btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     };
 
     const jwt = `${base64Encode(header)}.${base64Encode(claim)}.SIGNATURE_NEEDED`;
-    
-    // Note: Untuk production, perlu library crypto untuk sign JWT
-    // Untuk sekarang kita gunakan API Key method
     
     return null;
   } catch (err) {
@@ -51,17 +47,14 @@ const getAccessToken = async () => {
 // Fungsi upload file ke Google Drive menggunakan API Key (metode sederhana)
 export const uploadToDrive = async (fileData, fileName, fileType, studentName = '', modulTitle = '') => {
   try {
-    // Untuk file kecil (<10MB), kita bisa pakai Base64 dulu sebagai fallback
-    // Nanti kita upgrade ke Google Drive API full
-    
     const maxSize = 5 * 1024 * 1024; // 5MB limit untuk fallback
     
     if (fileData.length > maxSize) {
       throw new Error('File terlalu besar untuk metode upload saat ini. Maksimal 5MB.');
     }
 
-    // Upload via Firebase Storage sebagai fallback (sudah di-setup)
-    const storageRef = ref(storage, `tugas/${studentName}/${Date.now()}_${fileName}`);
+    // Upload via Firebase Storage sebagai fallback
+    const storageRef = ref(storage, `tugas/${studentName || 'siswa'}/${Date.now()}_${fileName}`);
     const response = await fetch(fileData);
     const blob = await response.blob();
     
@@ -77,7 +70,7 @@ export const uploadToDrive = async (fileData, fileName, fileType, studentName = 
       uploadedAt: new Date().toISOString(),
       studentName,
       modulTitle,
-      driveFileId: null, // Nanti diisi kalau sudah pakai Drive API full
+      driveFileId: null,
       uploadedVia: 'firebase-storage'
     };
 
