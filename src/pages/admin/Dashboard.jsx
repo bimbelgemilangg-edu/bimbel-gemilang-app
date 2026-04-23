@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-// PERBAIKAN: Mengarahkan ke SidebarAdmin agar sinkron dengan sistem baru
 import SidebarAdmin from '../../components/SidebarAdmin';
 import { db } from '../../firebase';
-import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+import { collection, query, where, getDocs, orderBy, limit, onSnapshot } from "firebase/firestore";
 
 const Dashboard = () => {
   const [time, setTime] = useState(new Date());
   const [stats, setStats] = useState({ siswa: 0, guru: 0, tagihan: 0 });
   const [todaySchedules, setTodaySchedules] = useState([]);
   const [duePayments, setDuePayments] = useState([]);
-  const [recentLogs, setRecentLogs] = useState([]); 
+  const [recentLogs, setRecentLogs] = useState([]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
-  // TO-DO LIST
+  // 🔥 STATE BARU: Rekap Absensi Real-Time
+  const [attendanceSummary, setAttendanceSummary] = useState({});
+  const [selectedClass, setSelectedClass] = useState(null);
+
   const [todos, setTodos] = useState(() => {
     const saved = localStorage.getItem('adminTodos');
     return saved ? JSON.parse(saved) : [
@@ -21,29 +24,30 @@ const Dashboard = () => {
   });
   const [newTodo, setNewTodo] = useState("");
 
-  // 1. JAM & TANGGAL (Update setiap detik)
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // 2. LOAD DATA
+  // 🔥 FUNGSI FETCH DATA (DIPANGGIL SEKALI & SETIAP 60 DETIK)
   const fetchData = async () => {
     try {
-        // A. DATA STATISTIK
         const snapSiswa = await getDocs(collection(db, "students"));
         const snapGuru = await getDocs(collection(db, "teachers"));
         
-        // B. LOG AKTIVITAS GURU (Live Monitoring)
         const qLogs = query(
             collection(db, "teacher_logs"), 
-            orderBy("tanggal", "desc"), // Mengambil yang baru saja input
-            limit(5)
+            orderBy("tanggal", "desc"),
+            limit(10)
         );
         const snapLogs = await getDocs(qLogs);
         const logsData = snapLogs.docs.map(d => ({id: d.id, ...d.data()}));
-        
-        // Sortir ulang berdasarkan gabungan tanggal & waktu agar akurat
         logsData.sort((a,b) => {
             const dateA = new Date(`${a.tanggal}T${a.waktu}`);
             const dateB = new Date(`${b.tanggal}T${b.waktu}`);
@@ -51,30 +55,71 @@ const Dashboard = () => {
         });
         setRecentLogs(logsData);
 
-        // C. JADWAL HARI INI (FIX BUG TANGGAL & FILTER JAM)
-        
-        // FIX 1: Gunakan Waktu Lokal, Jangan ISOString (mencegah tanggal mundur)
         const nowObj = new Date();
         const year = nowObj.getFullYear();
         const month = String(nowObj.getMonth() + 1).padStart(2, '0');
         const day = String(nowObj.getDate()).padStart(2, '0');
-        const todayStr = `${year}-${month}-${day}`; // Format YYYY-MM-DD Lokal
+        const todayStr = `${year}-${month}-${day}`;
 
         const qJadwal = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr));
         const snapJadwal = await getDocs(qJadwal);
         const jadwalList = snapJadwal.docs.map(d => ({id: d.id, ...d.data()}));
 
-        // FIX 2: Filter Jadwal (Upcoming Only)
         const currentHours = String(nowObj.getHours()).padStart(2, '0');
         const currentMinutes = String(nowObj.getMinutes()).padStart(2, '0');
-        const currentTime = `${currentHours}:${currentMinutes}`; 
+        const currentTime = `${currentHours}:${currentMinutes}`;
 
         const activeSchedules = jadwalList.filter(s => s.end > currentTime);
-        
         activeSchedules.sort((a,b) => a.start.localeCompare(b.start));
         setTodaySchedules(activeSchedules);
 
-        // D. TAGIHAN
+        // 🔥 AMBIL DATA ABSENSI HARI INI
+        const qAttendance = query(
+          collection(db, "attendance"),
+          where("date", "==", todayStr)
+        );
+        const snapAttendance = await getDocs(qAttendance);
+        const attendanceData = snapAttendance.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        // Kelompokkan per jadwal/kelas
+        const summary = {};
+        jadwalList.forEach(jadwal => {
+          const key = jadwal.title || jadwal.id;
+          if (!summary[key]) {
+            summary[key] = {
+              title: jadwal.title || "Kelas Umum",
+              room: jadwal.planet || "Ruang Umum",
+              teacher: jadwal.booker || "Guru",
+              start: jadwal.start,
+              end: jadwal.end,
+              students: jadwal.students || [],
+              hadir: [],
+              tidakHadir: [],
+              totalStudents: (jadwal.students || []).length,
+              totalHadir: 0,
+              totalTidakHadir: 0
+            };
+          }
+        });
+
+        attendanceData.forEach(record => {
+          const jadwalKey = record.mapel || "Kelas Umum";
+          const matchingJadwal = jadwalList.find(j => j.title === record.mapel);
+          const key = matchingJadwal ? matchingJadwal.title : jadwalKey;
+          
+          if (summary[key]) {
+            if (record.status === "Hadir") {
+              summary[key].hadir.push(record.studentName);
+              summary[key].totalHadir++;
+            } else {
+              summary[key].tidakHadir.push({ nama: record.studentName, status: record.status, keterangan: record.keterangan || "-" });
+              summary[key].totalTidakHadir++;
+            }
+          }
+        });
+
+        setAttendanceSummary(summary);
+
         const tagihanList = [];
         snapSiswa.forEach(doc => {
             const s = doc.data();
@@ -102,25 +147,30 @@ const Dashboard = () => {
     }
   };
 
+  // 🔥 REAL-TIME LISTENER UNTUK ABSENSI
   useEffect(() => {
     fetchData();
-    const intervalId = setInterval(fetchData, 60000); 
-    return () => clearInterval(intervalId);
+    const intervalId = setInterval(fetchData, 60000);
+    
+    // Real-time listener absensi
+    const today = new Date().toISOString().split('T')[0];
+    const q = query(collection(db, "attendance"), where("date", "==", today));
+    const unsubscribe = onSnapshot(q, () => {
+      fetchData(); // Refresh data setiap ada perubahan absensi
+    });
+    
+    return () => {
+      clearInterval(intervalId);
+      unsubscribe();
+    };
   }, []);
 
-  // FUNGSI BEL
   const handleRingBell = () => {
     const audio = new Audio('https://www.myinstants.com/media/sounds/wrong-answer-sound-effect.mp3');
-    audio.play()
-      .then(() => { console.log("Bel berbunyi"); })
-      .catch(error => {
-         console.error("Audio error:", error);
-         alert("⚠️ Browser memblokir suara otomatis. Klik dokumen/layar sekali, lalu coba lagi.");
-      });
+    audio.play().catch(() => alert("⚠️ Browser memblokir suara. Klik layar sekali lalu coba lagi."));
     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
   };
 
-  // LOGIC TODO LIST
   const addTodo = (e) => {
     e.preventDefault();
     if(!newTodo) return;
@@ -146,34 +196,86 @@ const Dashboard = () => {
     const text = `Halo Wali Murid ${p.nama}, mengingatkan tagihan bimbel tersisa Rp ${p.sisa.toLocaleString()}. Mohon segera diselesaikan. Terima kasih.`;
     window.open(`https://wa.me/${p.hp}?text=${encodeURIComponent(text)}`, '_blank');
   };
-
   return (
-    <div style={{ display: 'flex', backgroundColor: '#f4f7f6', minHeight: '100vh' }}>
-      {/* PERBAIKAN: Menggunakan SidebarAdmin */}
+    <div style={styles.wrapper}>
       <SidebarAdmin />
-      
-      <div style={styles.mainContent}>
+      <div style={styles.mainContent(isMobile)}>
+        
         {/* HEADER */}
-        <div style={styles.header}>
+        <div style={styles.header(isMobile)}>
           <div>
-            <h2 style={{margin:0, color:'#2c3e50', fontSize:24}}>Dashboard Admin</h2>
-            <p style={{margin:'5px 0 0 0', color:'#7f8c8d', fontSize:14}}>
+            <h2 style={styles.pageTitle(isMobile)}>Dashboard Admin</h2>
+            <p style={styles.pageDate(isMobile)}>
                 {time.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'})}
             </p>
           </div>
-          
-          <div style={{display:'flex', alignItems:'center', gap:15}}>
-            <button onClick={handleRingBell} style={styles.btnBell} title="Bunyikan Bel (Suara Salah/Buzzer)">
-                🔔 BEL (BUZZER)
-            </button>
-            <div style={styles.clockBox}>
-                🕒 {time.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}
-            </div>
+          <div style={styles.headerRight(isMobile)}>
+            <button onClick={handleRingBell} style={styles.btnBell(isMobile)}>🔔 BEL (BUZZER)</button>
+            <div style={styles.clockBox(isMobile)}>🕒 {time.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}</div>
           </div>
         </div>
 
+        {/* 🔥 REKAP ABSENSI HARI INI - FITUR BARU */}
+        <div style={styles.sectionTitle}>
+          <span style={{fontSize: 20}}>📋</span> Rekap Kehadiran Hari Ini <span style={styles.liveDot}></span> LIVE
+        </div>
+        <div style={styles.attendanceGrid(isMobile)}>
+          {Object.keys(attendanceSummary).length === 0 ? (
+            <div style={styles.emptyState}>Belum ada data absensi hari ini.</div>
+          ) : (
+            Object.values(attendanceSummary).map((kelas, idx) => (
+              <div key={idx} style={styles.attendanceCard(isMobile)} onClick={() => setSelectedClass(selectedClass === idx ? null : idx)}>
+                <div style={styles.classHeader}>
+                  <h4 style={styles.className}>{kelas.title}</h4>
+                  <span style={styles.roomBadge}>{kelas.room}</span>
+                </div>
+                <div style={styles.classInfo}>
+                  <div>👨‍🏫 {kelas.teacher}</div>
+                  <div>⏰ {kelas.start} - {kelas.end}</div>
+                </div>
+                <div style={styles.attendanceBar}>
+                  <div style={{...styles.barHadir, width: `${kelas.totalStudents > 0 ? (kelas.totalHadir / kelas.totalStudents) * 100 : 0}%`}}>
+                    {kelas.totalHadir > 0 && `✅ ${kelas.totalHadir}`}
+                  </div>
+                  <div style={{...styles.barTidakHadir, width: `${kelas.totalStudents > 0 ? (kelas.totalTidakHadir / kelas.totalStudents) * 100 : 0}%`}}>
+                    {kelas.totalTidakHadir > 0 && `❌ ${kelas.totalTidakHadir}`}
+                  </div>
+                </div>
+                <div style={styles.attendanceNumbers}>
+                  <span>Hadir: {kelas.totalHadir}/{kelas.totalStudents}</span>
+                  <span>Tidak Hadir: {kelas.totalTidakHadir}</span>
+                </div>
+
+                {/* Detail saat diklik */}
+                {selectedClass === idx && (
+                  <div style={styles.detailDropdown}>
+                    <div style={styles.detailSection}>
+                      <strong>✅ Hadir ({kelas.hadir.length}):</strong>
+                      <p>{kelas.hadir.length > 0 ? kelas.hadir.join(', ') : 'Belum ada'}</p>
+                    </div>
+                    <div style={styles.detailSection}>
+                      <strong>❌ Tidak Hadir ({kelas.tidakHadir.length}):</strong>
+                      {kelas.tidakHadir.length > 0 ? (
+                        kelas.tidakHadir.map((s, i) => (
+                          <div key={i} style={styles.absentItem}>
+                            <span>{s.nama}</span>
+                            <span style={styles.absentStatus(s.status)}>{s.status}</span>
+                            <span style={styles.absentKet}>{s.keterangan}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p>Semua hadir 🎉</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+
         {/* 1. KARTU STATISTIK */}
-        <div style={styles.gridStats}>
+        <div style={styles.gridStats(isMobile)}>
           <div style={styles.cardStat}>
             <div style={styles.iconBox}>👨‍🎓</div>
             <div><h3 style={styles.statNumber}>{stats.siswa}</h3><small style={styles.statLabel}>Total Siswa</small></div>
@@ -189,17 +291,17 @@ const Dashboard = () => {
         </div>
 
         {/* 2. LIVE MONITORING GURU */}
-        <div style={{...styles.cardContent, marginBottom: 20}}>
+        <div style={styles.cardContent}>
             <div style={styles.sectionHeader}>
                 <h3 style={{margin:0, color:'#2c3e50', display:'flex', alignItems:'center', gap:10}}>
-                   📡 Live Aktivitas Mengajar <span style={{fontSize:12, fontWeight:'normal', color:'#777'}}>(Log Realtime Guru)</span>
+                   📡 Live Aktivitas Mengajar
                 </h3>
             </div>
             {recentLogs.length === 0 ? (
-                <p style={{color:'#999', fontStyle:'italic', padding:10}}>Belum ada aktivitas guru (input/absen) hari ini.</p>
+                <p style={{color:'#999', fontStyle:'italic', padding:10}}>Belum ada aktivitas guru hari ini.</p>
             ) : (
                 <div style={{overflowX:'auto'}}>
-                <table style={{width:'100%', borderCollapse:'collapse', fontSize:13}}>
+                <table style={styles.table}>
                     <thead>
                         <tr style={{background:'#f8f9fa', textAlign:'left', color:'#666'}}>
                             <th style={{padding:10}}>Waktu</th>
@@ -212,7 +314,7 @@ const Dashboard = () => {
                     <tbody>
                         {recentLogs.map(log => (
                             <tr key={log.id} style={{borderBottom:'1px solid #eee'}}>
-                                <td style={{padding:10}}>{log.tanggal} <br/><span style={{color:'#888'}}>{log.waktu}</span></td>
+                                <td style={{padding:10}}>{log.tanggal}<br/><span style={{color:'#888'}}>{log.waktu}</span></td>
                                 <td style={{padding:10, fontWeight:'bold'}}>{log.namaGuru || "Guru"}</td>
                                 <td style={{padding:10}}>{log.program}</td>
                                 <td style={{padding:10}}>{log.detail}</td>
@@ -221,9 +323,7 @@ const Dashboard = () => {
                                         padding:'3px 8px', borderRadius:10, fontSize:11,
                                         background: log.status === 'Selesai' ? '#d4edda' : '#fff3cd',
                                         color: log.status === 'Selesai' ? '#155724' : '#856404'
-                                    }}>
-                                        {log.status}
-                                    </span>
+                                    }}>{log.status}</span>
                                 </td>
                             </tr>
                         ))}
@@ -234,68 +334,58 @@ const Dashboard = () => {
         </div>
 
         {/* 3. GRID BAWAH */}
-        <div style={styles.contentGrid}>
+        <div style={styles.contentGrid(isMobile)}>
             <div style={{flex: 2}}>
-                <div style={{...styles.cardContent, minHeight: 400}}>
+                <div style={{...styles.cardContent, minHeight: 300}}>
                     <div style={styles.sectionHeader}>
                         <h3 style={{margin:0, color:'#2c3e50'}}>📅 Jadwal Kelas (Upcoming)</h3>
-                        <span style={{fontSize:12, color:'#7f8c8d'}}>Realtime: Hilang jika sudah selesai</span>
                     </div>
                     {todaySchedules.length === 0 ? (
                         <div style={{textAlign:'center', padding:40, color:'#999'}}>
-                            ✅ <b>Tidak ada kelas aktif saat ini.</b> <br/>
-                            <small>(Semua kelas hari ini sudah selesai atau belum dimulai)</small>
+                            ✅ <b>Tidak ada kelas aktif saat ini.</b>
                         </div>
                     ) : (
                         todaySchedules.map(sc => (
                             <div key={sc.id} style={styles.scheduleItem}>
                                 <div style={{minWidth:80, fontWeight:'bold', color:'#3498db'}}>{sc.start} - {sc.end}</div>
                                 <div style={{flex:1}}>
-                                    <div style={{fontWeight:'bold', color:'#2c3e50'}}>{sc.title || "Belum ada judul"}</div>
+                                    <div style={{fontWeight:'bold', color:'#2c3e50'}}>{sc.title || "Kelas"}</div>
                                     <div style={{fontSize:12, color:'#7f8c8d'}}>{sc.program} • {sc.planet}</div>
                                 </div>
-                                <div style={{textAlign:'right'}}>
-                                    <span style={{fontSize:12, background:'#f4f4f4', padding:'4px 8px', borderRadius:5}}>{sc.booker}</span>
-                                </div>
+                                <div><span style={{fontSize:12, background:'#f4f4f4', padding:'4px 8px', borderRadius:5}}>{sc.booker}</span></div>
                             </div>
                         ))
                     )}
                 </div>
             </div>
-
             <div style={{flex: 1, display:'flex', flexDirection:'column', gap:20}}>
                 <div style={styles.cardWarning}>
                     <h4 style={{marginTop:0, color:'#c0392b'}}>⚠️ Tagihan Prioritas</h4>
-                    <div style={{maxHeight:200, overflowY:'auto'}}>
-                        {duePayments.map((p, i) => (
-                            <div key={i} style={styles.billItem}>
-                                <div>
-                                    <div style={{fontWeight:'bold', fontSize:13}}>{p.nama}</div>
-                                    <div style={{fontSize:11, color:'#e74c3c'}}>Rp {p.sisa.toLocaleString()}</div>
-                                </div>
-                                <button onClick={() => sendWA(p)} style={styles.btnWa}>💬 WA</button>
+                    {duePayments.map((p, i) => (
+                        <div key={i} style={styles.billItem}>
+                            <div>
+                                <div style={{fontWeight:'bold', fontSize:13}}>{p.nama}</div>
+                                <div style={{fontSize:11, color:'#e74c3c'}}>Rp {p.sisa.toLocaleString()}</div>
                             </div>
-                        ))}
-                        {duePayments.length === 0 && <small>Aman.</small>}
-                    </div>
+                            <button onClick={() => sendWA(p)} style={styles.btnWa}>💬 WA</button>
+                        </div>
+                    ))}
+                    {duePayments.length === 0 && <small>Aman.</small>}
                 </div>
-
                 <div style={styles.cardTodo}>
                     <h4 style={{marginTop:0, color:'#2c3e50'}}>📝 Catatan Admin</h4>
                     <form onSubmit={addTodo} style={{display:'flex', gap:5, marginBottom:10}}>
                         <input type="text" placeholder="Tulis tugas..." value={newTodo} onChange={e=>setNewTodo(e.target.value)} style={styles.inputTodo}/>
                         <button type="submit" style={styles.btnAdd}>+</button>
                     </form>
-                    <div style={{maxHeight:150, overflowY:'auto'}}>
-                        {todos.map(t => (
-                            <div key={t.id} style={styles.todoItem}>
-                                <div onClick={()=>toggleTodo(t.id)} style={{flex:1, cursor:'pointer', textDecoration: t.done ? 'line-through' : 'none', color: t.done ? '#999' : '#333'}}>
-                                    {t.done ? '✅' : '⬜'} {t.text}
-                                </div>
-                                <button onClick={()=>deleteTodo(t.id)} style={{border:'none', background:'transparent', color:'#ccc'}}>x</button>
+                    {todos.map(t => (
+                        <div key={t.id} style={styles.todoItem}>
+                            <div onClick={()=>toggleTodo(t.id)} style={{flex:1, cursor:'pointer', textDecoration: t.done ? 'line-through' : 'none', color: t.done ? '#999' : '#333'}}>
+                                {t.done ? '✅' : '⬜'} {t.text}
                             </div>
-                        ))}
-                    </div>
+                            <button onClick={()=>deleteTodo(t.id)} style={{border:'none', background:'transparent', color:'#ccc'}}>x</button>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>
@@ -304,28 +394,56 @@ const Dashboard = () => {
   );
 };
 
-// STYLES (Sama dengan kode asli)
+// STYLES (RESPONSIVE)
 const styles = {
-  mainContent: { marginLeft: '250px', padding: '30px', width: '100%', fontFamily:'Segoe UI, sans-serif' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' },
-  clockBox: { background:'white', padding:'10px 20px', borderRadius:20, fontWeight:'bold', color:'#3498db', boxShadow:'0 2px 5px rgba(0,0,0,0.05)' },
-  btnBell: { background: '#e74c3c', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '25px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(231, 76, 60, 0.3)', display: 'flex', alignItems: 'center', gap: '5px' },
-  gridStats: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '30px' },
-  cardStat: { background: 'white', padding: '20px', borderRadius: '12px', display:'flex', alignItems:'center', gap:15, boxShadow:'0 2px 5px rgba(0,0,0,0.03)' },
-  iconBox: { width:50, height:50, borderRadius:'50%', background:'#eaf2f8', color:'#3498db', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 },
-  statNumber: { margin:0, fontSize:24, color:'#2c3e50' },
-  statLabel: { color:'#7f8c8d', fontSize:12 },
-  contentGrid: { display: 'flex', gap: '20px', flexDirection: 'row', alignItems: 'flex-start' },
-  sectionHeader: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:15, paddingBottom:10, borderBottom:'1px solid #f0f0f0' },
-  cardContent: { background: 'white', padding: '20px', borderRadius: '12px', boxShadow:'0 2px 5px rgba(0,0,0,0.03)' },
-  scheduleItem: { display:'flex', alignItems:'center', padding:'12px 0', borderBottom:'1px solid #f4f6f7' },
-  cardWarning: { background: '#fff5f5', padding: '20px', borderRadius: '12px', border:'1px solid #fadbd8' },
-  billItem: { display:'flex', justifyContent:'space-between', alignItems:'center', background:'white', padding:10, borderRadius:8, marginBottom:8, boxShadow:'0 1px 2px rgba(0,0,0,0.05)' },
-  btnWa: { background:'#27ae60', color:'white', border:'none', borderRadius:5, padding:'5px 10px', cursor:'pointer', fontWeight:'bold', fontSize:11 },
-  cardTodo: { background: 'white', padding: '20px', borderRadius: '12px', boxShadow:'0 2px 5px rgba(0,0,0,0.03)' },
-  inputTodo: { flex:1, padding:8, borderRadius:5, border:'1px solid #ddd' },
-  btnAdd: { padding:'8px 15px', background:'#2c3e50', color:'white', border:'none', borderRadius:5, cursor:'pointer' },
-  todoItem: { display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px dashed #eee', fontSize:13 }
+  wrapper: { display: 'flex', backgroundColor: '#f4f7f6', minHeight: '100vh' },
+  mainContent: (m) => ({ marginLeft: m ? '0' : '250px', padding: m ? '15px' : '30px', width: '100%', fontFamily: 'Inter, system-ui, sans-serif', transition: '0.3s' }),
+  header: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: m ? '15px' : '30px', flexDirection: m ? 'column' : 'row', gap: m ? 10 : 0 }),
+  headerRight: (m) => ({ display: 'flex', alignItems: 'center', gap: m ? 8 : 15, flexDirection: m ? 'column' : 'row' }),
+  pageTitle: (m) => ({ margin: 0, color: '#2c3e50', fontSize: m ? 18 : 24 }),
+  pageDate: (m) => ({ margin: '5px 0 0 0', color: '#7f8c8d', fontSize: m ? 12 : 14 }),
+  clockBox: (m) => ({ background: 'white', padding: m ? '6px 12px' : '10px 20px', borderRadius: 20, fontWeight: 'bold', color: '#3498db', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', fontSize: m ? 11 : 14 }),
+  btnBell: (m) => ({ background: '#e74c3c', color: 'white', border: 'none', padding: m ? '6px 12px' : '10px 20px', borderRadius: '25px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(231, 76, 60, 0.3)', fontSize: m ? 11 : 13 }),
+  
+  // REKAP ABSENSI STYLES
+  sectionTitle: { display: 'flex', alignItems: 'center', gap: 10, fontSize: 18, fontWeight: 'bold', color: '#2c3e50', marginBottom: 15, marginTop: 10 },
+  liveDot: { width: 10, height: 10, borderRadius: '50%', background: '#27ae60', animation: 'pulse 2s infinite', display: 'inline-block', marginLeft: 5 },
+  attendanceGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))', gap: 15, marginBottom: 25 }),
+  attendanceBar: { display: 'flex', height: 24, borderRadius: 12, overflow: 'hidden', marginTop: 10, background: '#f1f5f9' },
+  barHadir: { background: '#27ae60', color: 'white', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', transition: 'width 0.5s' },
+  barTidakHadir: { background: '#e74c3c', color: 'white', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', transition: 'width 0.5s' },
+  attendanceNumbers: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b', marginTop: 5 },
+  attendanceCard: (m) => ({ background: 'white', padding: m ? 15 : 20, borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', cursor: 'pointer', transition: '0.2s', border: '1px solid #f1f5f9' }),
+  classHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  className: { margin: 0, fontSize: 15, color: '#1e293b' },
+  roomBadge: { background: '#e0e7ff', color: '#3730a3', padding: '3px 8px', borderRadius: 12, fontSize: 10, fontWeight: 'bold' },
+  classInfo: { fontSize: 12, color: '#64748b', display: 'flex', gap: 15 },
+  detailDropdown: { marginTop: 12, borderTop: '1px solid #f1f5f9', paddingTop: 12 },
+  detailSection: { marginBottom: 10 },
+  absentItem: { display: 'flex', gap: 10, alignItems: 'center', padding: '4px 0', fontSize: 12 },
+  absentStatus: (s) => ({ padding: '2px 6px', borderRadius: 8, fontSize: 10, fontWeight: 'bold', background: s === 'Alpha' ? '#fee2e2' : s === 'Sakit' ? '#fff3cd' : '#e0e7ff', color: s === 'Alpha' ? '#ef4444' : s === 'Sakit' ? '#f59e0b' : '#3730a3' }),
+  absentKet: { fontSize: 10, color: '#94a3b8' },
+  emptyState: { gridColumn: '1/-1', textAlign: 'center', padding: 40, background: 'white', borderRadius: 14, color: '#94a3b8', fontSize: 14 },
+
+  // STATS
+  gridStats: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : 'repeat(3, 1fr)', gap: m ? 10 : 20, marginBottom: m ? 15 : 30 }),
+  cardStat: { background: 'white', padding: 20, borderRadius: 12, display: 'flex', alignItems: 'center', gap: 15, boxShadow: '0 2px 5px rgba(0,0,0,0.03)' },
+  iconBox: { width: 50, height: 50, borderRadius: '50%', background: '#eaf2f8', color: '#3498db', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 },
+  statNumber: { margin: 0, fontSize: 24, color: '#2c3e50' },
+  statLabel: { color: '#7f8c8d', fontSize: 12 },
+
+  cardContent: { background: 'white', padding: 20, borderRadius: 12, boxShadow: '0 2px 5px rgba(0,0,0,0.03)', marginBottom: 20 },
+  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, paddingBottom: 10, borderBottom: '1px solid #f0f0f0' },
+  table: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
+  contentGrid: (m) => ({ display: 'flex', gap: 20, flexDirection: m ? 'column' : 'row', alignItems: 'flex-start' }),
+  scheduleItem: { display: 'flex', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f4f6f7', gap: 10 },
+  cardWarning: { background: '#fff5f5', padding: 20, borderRadius: 12, border: '1px solid #fadbd8' },
+  billItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', padding: 10, borderRadius: 8, marginBottom: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' },
+  btnWa: { background: '#27ae60', color: 'white', border: 'none', borderRadius: 5, padding: '5px 10px', cursor: 'pointer', fontWeight: 'bold', fontSize: 11 },
+  cardTodo: { background: 'white', padding: 20, borderRadius: 12, boxShadow: '0 2px 5px rgba(0,0,0,0.03)' },
+  inputTodo: { flex: 1, padding: 8, borderRadius: 5, border: '1px solid #ddd' },
+  btnAdd: { padding: '8px 15px', background: '#2c3e50', color: 'white', border: 'none', borderRadius: 5, cursor: 'pointer' },
+  todoItem: { display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px dashed #eee', fontSize: 13 }
 };
 
 export default Dashboard;
