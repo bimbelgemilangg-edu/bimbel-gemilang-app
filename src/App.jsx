@@ -83,19 +83,6 @@ const SiswaRoute = ({ children }) => {
 };
 
 function App() {
-  const [guruData, setGuruData] = useState(null);
-
-  useEffect(() => {
-    const savedGuru = localStorage.getItem('teacherData');
-    if (savedGuru) {
-      try {
-        setGuruData(JSON.parse(savedGuru));
-      } catch (e) {
-        console.error("Gagal parse teacherData", e);
-      }
-    }
-  }, []);
-
   return (
     <BrowserRouter>
       <Routes>
@@ -104,8 +91,9 @@ function App() {
         <Route path="/login-guru" element={<LoginGuru />} /> 
         <Route path="/login-siswa" element={<LoginSiswa />} /> 
         <Route path="/aktivitas" element={<PublicBlog />} />
-                {/* === AREA ADMIN === */}
-                <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
+
+        {/* === AREA ADMIN === */}
+        <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
         <Route path="/admin/students" element={<AdminRoute><StudentList /></AdminRoute>} />
         <Route path="/admin/students/add" element={<AdminRoute><AddStudent /></AdminRoute>} />
         <Route path="/admin/students/edit/:id" element={<AdminRoute><EditStudent /></AdminRoute>} />
@@ -115,7 +103,6 @@ function App() {
         <Route path="/admin/teachers/salaries" element={<AdminRoute><TeacherSalaries /></AdminRoute>} />
         <Route path="/admin/portal" element={<AdminRoute><PortalSiswaHome /></AdminRoute>} />
         <Route path="/admin/portal/poster" element={<AdminRoute><ManagePoster /></AdminRoute>} />
-        {/* ✅ ROUTE BARU UNTUK ADMIN MANAGE MATERI */}
         <Route path="/admin/portal/manage-materi" element={<AdminRoute><ManageMateri /></AdminRoute>} />
         <Route path="/admin/finance" element={<AdminRoute><FinanceLayout /></AdminRoute>} />
         <Route path="/admin/schedule" element={<AdminRoute><SchedulePage /></AdminRoute>} />
@@ -124,22 +111,20 @@ function App() {
         <Route path="/admin/manage-blog" element={<AdminRoute><ManageBlog /></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
 
-        {/* === AREA GURU (DIBUNGKUS TEACHER LAYOUT) === */}
-        <Route element={<GuruRoute><TeacherLayout guru={guruData} /></GuruRoute>}>
-          <Route path="/guru/dashboard" element={<TeacherDashboard />} />
-          <Route path="/guru/profile" element={<TeacherProfile />} />
-          <Route path="/guru/history" element={<TeacherHistory />} />
-          <Route path="/guru/cek-tugas" element={<CekTugasSiswa />} />
-          <Route path="/guru/grades/input" element={<TeacherInputGrade />} />
-          <Route path="/guru/grades/manage" element={<TeacherGradeManager />} />
-          <Route path="/guru/modul" element={<ModulManager />} />
-          <Route path="/guru/modul/materi" element={<ManageMateriGuru />} />
-          <Route path="/guru/manage-quiz" element={<ManageQuiz />} />
-          <Route path="/guru/modul/tugas" element={<ManageTugas />} />
-          <Route path="/guru/schedule" element={<TeacherSchedule />} />
-          <Route path="/guru/attendance" element={<TeacherManualInput />} />
-          <Route path="/guru/manual-input" element={<TeacherManualInput />} />
-        </Route>
+        {/* === AREA GURU === */}
+        <Route path="/guru/dashboard" element={<GuruRoute><TeacherLayout><TeacherDashboard /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/profile" element={<GuruRoute><TeacherLayout><TeacherProfile /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/history" element={<GuruRoute><TeacherLayout><TeacherHistory /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/cek-tugas" element={<GuruRoute><TeacherLayout><CekTugasSiswa /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/grades/input" element={<GuruRoute><TeacherLayout><TeacherInputGrade /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/grades/manage" element={<GuruRoute><TeacherLayout><TeacherGradeManager /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/modul" element={<GuruRoute><TeacherLayout><ModulManager /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/modul/materi" element={<GuruRoute><TeacherLayout><ManageMateriGuru /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/manage-quiz" element={<GuruRoute><TeacherLayout><ManageQuiz /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/modul/tugas" element={<GuruRoute><TeacherLayout><ManageTugas /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/schedule" element={<GuruRoute><TeacherLayout><TeacherSchedule /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/attendance" element={<GuruRoute><TeacherLayout><TeacherManualInput /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/manual-input" element={<GuruRoute><TeacherLayout><TeacherManualInput /></TeacherLayout></GuruRoute>} />
         
         {/* === AREA SISWA === */}
         <Route path="/siswa/dashboard" element={<SiswaRoute><StudentDashboard /></SiswaRoute>} />
