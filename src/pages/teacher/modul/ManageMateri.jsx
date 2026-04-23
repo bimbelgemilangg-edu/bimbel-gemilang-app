@@ -6,7 +6,6 @@ import {
 } from "firebase/firestore"; 
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import imageCompression from 'browser-image-compression'; 
-import { uploadToImgBB } from '../../../services/uploadService';
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, 
   ArrowLeft, Upload, Calendar, Link as LinkIcon, 
@@ -82,46 +81,33 @@ const ManageMateri = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const isImage = file.type.startsWith('image/');
-    const isPdf = file.type === 'application/pdf';
-      // Validasi format file
-  if (!isImage && !isPdf) {
-    return alert("❌ Format tidak didukung! Hanya PDF dan Gambar (JPG/PNG/WEBP) yang bisa diupload.\n\nUntuk file Word/DOC/PPT, silakan konversi ke PDF terlebih dahulu.");
-  }
-    const maxSize = 32 * 1024 * 1024; // 32MB untuk ImgBB
-
+    const maxSize = 50 * 1024 * 1024; // 50MB
     if (file.size > maxSize) {
-      return alert("❌ File terlalu besar! Maksimal 32MB.");
+      return alert("❌ File terlalu besar! Maksimal 50MB.");
     }
 
     try {
-      let finalData;
+      // Konversi ke Base64 dulu
+      const base64 = await convertBase64(file);
       
-      if (isImage) {
-        const options = { maxSizeMB: 0.5, maxWidthOrHeight: 1024, useWebWorker: true };
-        const compressed = await imageCompression(file, options);
-        finalData = await convertBase64(compressed);
-      } else {
-        finalData = await convertBase64(file);
-      }
-
-      const result = await uploadToImgBB(finalData);
+      // Upload ke Supabase
+      const { uploadToDrive } = await import('../../../services/uploadService');
+      const result = await uploadToDrive(base64, file.name, file.type);
       
       if (result.success) {
-        const fileUrl = result.url;
-        
         if (blockId) {
           setBlocks(blocks.map(b => b.id === blockId ? { 
             ...b, 
-            content: fileUrl, 
+            content: result.downloadURL, 
             fileName: file.name,
             mimeType: file.type,
-            fileUrl: fileUrl
+            fileUrl: result.downloadURL,
+            filePath: result.filePath
           } : b));
         } else {
-          setCoverImage(fileUrl);
+          setCoverImage(result.downloadURL);
         }
-        alert("✅ File berhasil diupload ke ImgBB!");
+        alert("✅ File berhasil diupload ke Supabase Storage!");
       } else {
         throw new Error(result.error || "Upload gagal");
       }
@@ -194,50 +180,54 @@ const ManageMateri = () => {
     } catch (error) { alert("Gagal menyimpan: " + error.message); }
     setLoading(false);
   };
-
   const renderSmartPreview = (block) => {
-    const { content, mimeType } = block;
+    const { content, mimeType, fileName } = block;
     if (!content) return null;
 
-    if (mimeType === 'application/pdf' || content?.startsWith('data:application/pdf') || content?.toLowerCase().includes('.pdf') || content?.includes('i.ibb.co')) {
-          // Preview untuk PDF dari ImgBB
-    if (content?.includes('i.ibb.co') && (block.fileName?.includes('.pdf') || mimeType === 'application/pdf')) {
+    if (mimeType === 'application/pdf' || content?.toLowerCase().includes('.pdf') || content?.includes('supabase')) {
+      const embedSrc = `https://docs.google.com/viewer?url=${encodeURIComponent(content)}&embedded=true`;
       return (
-        <div style={st.pdfPreviewPlaceholder}>
-          <FileText size={40} color="#673ab7" />
-          <p style={{fontSize:12, fontWeight:'800', marginTop:10}}>📄 DOKUMEN PDF</p>
-          <small>{block.fileName}</small>
-          <a href={content} target="_blank" rel="noreferrer" style={{marginTop:10, color:'#673ab7', fontWeight:'bold'}}>
-            Klik untuk Membuka PDF
+        <div style={st.smartPreview}>
+          <div style={st.previewLabel}><Eye size={12}/> PRATINJAU PDF</div>
+          <iframe src={embedSrc} style={st.iframePreview(isMobile)} title="PDF Preview" allowFullScreen />
+          <a href={content} target="_blank" rel="noreferrer" style={{display:'block', padding:10, textAlign:'center', background:'#f8fafc', color:'#673ab7', fontWeight:'bold', textDecoration:'none'}}>
+            📄 Buka PDF di Tab Baru
           </a>
         </div>
       );
     }
+
+    if (content.startsWith('data:image/') || content?.includes('supabase')) {
       return (
-        <div style={st.pdfPreviewPlaceholder}>
-          <FileText size={40} color="#673ab7" />
-          <p style={{fontSize:12, fontWeight:'800', marginTop:10}}>DOKUMEN PDF SIAP DIUNDUH SISWA</p>
-          <small>{block.fileName}</small>
+        <div style={st.smartPreview}>
+          <div style={st.previewLabel}><Eye size={12}/> PRATINJAU GAMBAR</div>
+          <img src={content} alt="Preview" style={st.imgPreview(isMobile)} />
         </div>
       );
     }
 
-    if (content.startsWith('data:image/')) {
-      return <img src={content} alt="Preview" style={st.imgPreview(isMobile)} />;
-    }
-
     if (content.includes('canva.com') || content.includes('youtube.com') || content.includes('drive.google.com')) {
-      return <iframe src={content} style={st.iframePreview(isMobile)} title="Preview" allowFullScreen />;
+      return (
+        <div style={st.smartPreview}>
+          <div style={st.previewLabel}><Eye size={12}/> PRATINJAU LINK</div>
+          <iframe src={content} style={st.iframePreview(isMobile)} title="Preview" allowFullScreen />
+        </div>
+      );
     }
 
-    return <div style={{padding:20, fontSize:12, color:'#666'}}>Pratinjau tidak tersedia untuk format ini.</div>;
+    return (
+      <div style={st.pdfPreviewPlaceholder}>
+        <FileText size={40} color="#673ab7" />
+        <p style={{fontSize:12, fontWeight:'800', marginTop:10}}>DOKUMEN PDF SIAP DIUNDUH SISWA</p>
+        <small>{fileName}</small>
+      </div>
+    );
   };
 
   return (
     <div className="main-content-wrapper" style={{ marginLeft: isMobile ? 0 : '260px', transition: '0.3s', background:'#f4f7fe' }}>
       <div className="teacher-container-padding" style={{ padding: isMobile ? '15px' : '30px', paddingBottom: '150px' }}>
         
-        {/* HEADER AREA */}
         <div style={st.topBar}>
           <div>
             <div style={st.breadCrumb}>MODUL SISTEM / <span style={{color:'#673ab7'}}>{editId ? "PENGATURAN MATERI" : "BUAT BARU"}</span></div>
@@ -253,7 +243,6 @@ const ManageMateri = () => {
 
         <div className="teacher-card" style={st.formCard(isMobile)}>
           
-          {/* IDENTITAS SECTION */}
           <div style={st.sectionHeader}><Sparkles size={18} color="#673ab7"/> IDENTITAS & SAMPUL</div>
           <div style={st.coverGrid(isMobile)}>
             <div style={st.coverUploadBox}>
@@ -280,7 +269,6 @@ const ManageMateri = () => {
             </div>
           </div>
 
-          {/* TARGET SECTION */}
           <div style={st.sectionHeader}><Users size={18} color="#673ab7"/> PENGATURAN TARGET SISWA</div>
           <div style={st.targetGrid(isMobile)}>
              <div style={st.inputWrapper}>
@@ -302,7 +290,6 @@ const ManageMateri = () => {
 
           <div style={st.divider} />
 
-          {/* CONTENT SECTION */}
           <div style={st.sectionHeader}><FileText size={18} color="#673ab7"/> KONTEN PEMBELAJARAN</div>
           
           {blocks.length === 0 && (
@@ -328,7 +315,7 @@ const ManageMateri = () => {
                     <FileUp size={24} color="#673ab7" /> 
                     <div style={{textAlign:'left'}}>
                         <div style={{fontWeight:900, fontSize:14}}>{block.fileName || "Klik untuk Upload PDF/Gambar"}</div>
-                        <div style={{fontSize:11, color:'#64748b'}}>Maksimal ukuran file: 1.5MB</div>
+                        <div style={{fontSize:11, color:'#64748b'}}>Maksimal ukuran file: 50MB</div>
                     </div>
                   </label>
                 </div>
@@ -340,12 +327,7 @@ const ManageMateri = () => {
                 />
               )}
 
-              {block.content && (
-                <div style={st.smartPreview}>
-                  <div style={st.previewLabel}><Eye size={12}/> PRATINJAU TAMPILAN SISWA</div>
-                  {renderSmartPreview(block)}
-                </div>
-              )}
+              {block.content && renderSmartPreview(block)}
 
               {block.type === 'assignment' && (
                 <div style={st.deadlineBox}>
@@ -370,7 +352,6 @@ const ManageMateri = () => {
             </div>
           ))}
 
-          {/* KUIS SECTION */}
           <div style={st.quizSection}>
             <div style={st.sectionHeader}><HelpCircle size={18} color="#673ab7"/> EVALUASI KUIS</div>
             <div style={st.quizStatusCard(isMobile)}>
@@ -389,7 +370,6 @@ const ManageMateri = () => {
             </div>
           </div>
 
-          {/* NEW DYNAMIC FLOATING ACTION BAR */}
           <div style={st.fabBar(isMobile)}>
             <div style={st.fabGroup}>
                 <button onClick={() => addBlock('text')} style={st.toolBtn}><Type size={18}/><span>Teks</span></button>
