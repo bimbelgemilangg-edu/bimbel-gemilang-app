@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { createClient } from '@supabase/supabase-js';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import { 
   BookOpen, Link as LinkIcon, Send, Users, FileText, HardDrive, AlertCircle, 
   Trash2, Bell, Eye, Download, RefreshCw, CheckCircle, XCircle, BarChart3, Search
@@ -15,7 +15,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const BUCKET_NAME = 'materi-bimbel';
 
 const ManageMateri = () => {
-  const navigate = useNavigate(); // Untuk redirect
+  const navigate = useNavigate();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   
@@ -34,20 +34,46 @@ const ManageMateri = () => {
   const [storageFiles, setStorageFiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // 1. Pengecekan Role Admin
+  // 🔥 PERBAIKAN UTAMA: Pengecekan Role Admin yang lebih longgar
   useEffect(() => {
-    const userRole = localStorage.getItem('userRole');
-    if (userRole === 'admin') {
-      setIsAuthorized(true);
-      fetchOverviewData();
-      fetchMateriList();
-      fetchPendingTasks();
-      fetchStorageFiles();
-    } else {
-      alert('Akses ditolak! Hanya Admin yang bisa mengakses halaman ini.');
-      navigate('/login');
-    }
-    setCheckingAuth(false);
+    const checkAuth = () => {
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      const userRole = localStorage.getItem('userRole');
+      const role = localStorage.getItem('role');
+      const teacherData = localStorage.getItem('teacherData');
+      
+      // DEBUG: Log semua key di localStorage
+      console.log('🔍 [ManageMateri] Auth Check:', { isLoggedIn, userRole, role, teacherData });
+      
+      // Jika tidak ada data login sama sekali
+      if (!isLoggedIn && !userRole && !role && !teacherData) {
+        console.warn('❌ Tidak ada sesi login. Redirect ke home.');
+        navigate('/');
+        return;
+      }
+      
+      // Cek berbagai kemungkinan role admin
+      const isAdmin = 
+        userRole === 'admin' || 
+        role === 'admin' || 
+        (teacherData && JSON.parse(teacherData)?.role === 'admin');
+      
+      if (isAdmin) {
+        console.log('✅ Admin terverifikasi!');
+        setIsAuthorized(true);
+        fetchOverviewData();
+        fetchMateriList();
+        fetchPendingTasks();
+        fetchStorageFiles();
+      } else {
+        console.warn('❌ Bukan Admin. Redirect ke dashboard.');
+        alert('Akses ditolak! Hanya Admin yang bisa mengakses halaman ini.');
+        navigate('/admin');
+      }
+      setCheckingAuth(false);
+    };
+    
+    checkAuth();
   }, [navigate]);
 
   const fetchOverviewData = async () => {
@@ -117,9 +143,7 @@ const ManageMateri = () => {
     fetchPendingTasks();
   };
 
-  // Jika sedang mengecek auth, tampilkan loading
-  if (checkingAuth) return <div style={{padding: 50, textAlign: 'center'}}>Memeriksa Akses...</div>;
-  // Jika tidak authorized, jangan tampilkan apa-apa (karena sudah di-redirect)
+  if (checkingAuth) return <div style={{padding: 50, textAlign: 'center'}}>🔐 Memeriksa Akses Admin...</div>;
   if (!isAuthorized) return null;
   return (
     <div style={styles.container}>
