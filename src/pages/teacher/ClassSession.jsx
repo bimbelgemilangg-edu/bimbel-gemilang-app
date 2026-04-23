@@ -10,8 +10,6 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
   const [step, setStep] = useState(1); 
   const [materiAktual, setMateriAktual] = useState(schedule?.title || "");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  // 🔥 STATE UNTUK ATURAN HONOR DARI SETTINGS
   const [salaryRules, setSalaryRules] = useState(null);
 
   useEffect(() => {
@@ -20,7 +18,6 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 🔥 AMBIL ATURAN HONOR DARI SETTINGS
   useEffect(() => {
     const fetchSalaryRules = async () => {
       try {
@@ -29,25 +26,16 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
         if (docSnap.exists() && docSnap.data().salaryRules) {
           setSalaryRules(docSnap.data().salaryRules);
         } else {
-          // Default kalau belum ada di settings
           setSalaryRules({
-            honorSD: 35000,
-            honorSMP: 40000,
-            honorSMA: 50000,
-            bonusInggris: 10000,
-            honorKompensasi: 20000,
-            honorMinimal: 20000
+            honorSD: 35000, honorSMP: 40000, honorSMA: 50000,
+            bonusInggris: 10000, kompensasiPersen: 50, honorMinimal: 20000
           });
         }
       } catch (err) {
         console.error("Gagal fetch salary rules:", err);
         setSalaryRules({
-          honorSD: 35000,
-          honorSMP: 40000,
-          honorSMA: 50000,
-          bonusInggris: 10000,
-          honorKompensasi: 20000,
-          honorMinimal: 20000
+          honorSD: 35000, honorSMP: 40000, honorSMA: 50000,
+          bonusInggris: 10000, kompensasiPersen: 50, honorMinimal: 20000
         });
       }
     };
@@ -57,11 +45,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
   useEffect(() => {
     if (!schedule?.id) return;
     const today = new Date().toISOString().split('T')[0];
-    const q = query(
-      collection(db, "attendance"), 
-      where("date", "==", today),
-      where("mapel", "==", schedule.title || "Umum")
-    );
+    const q = query(collection(db, "attendance"), where("date", "==", today), where("mapel", "==", schedule.title || "Umum"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const newMap = { ...attendanceMap };
       snapshot.docs.forEach(doc => {
@@ -71,9 +55,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
         }
       });
       setAttendanceMap(newMap);
-    }, (error) => {
-      console.error("Listener Error:", error);
-    });
+    }, (error) => { console.error("Listener Error:", error); });
     return () => unsubscribe();
   }, [schedule]);
 
@@ -86,20 +68,15 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
     const absenRef = doc(db, "attendance", absenId);
     try {
       await setDoc(absenRef, {
-        studentId: student.id,
-        studentName: student.nama,
+        studentId: student.id, studentName: student.nama,
         program: student.program || schedule.program || "Reguler",
         kelasSekolah: student.kelas || student.kelasSekolah || "-",
-        teacherId: teacher.id,
-        teacherName: teacher.nama,
-        date: today,
-        tanggal: today,
-        timestamp: serverTimestamp(),
+        teacherId: teacher.id, teacherName: teacher.nama,
+        date: today, tanggal: today, timestamp: serverTimestamp(),
         status: willBePresent ? "Hadir" : "Alpha",
         keterangan: willBePresent ? "Input Manual Guru" : "Siswa tidak hadir",
         mapel: schedule.title || "Umum",
-        scheduleId: schedule.id || "",
-        planet: schedule.planet || "Ruang Umum"
+        scheduleId: schedule.id || "", planet: schedule.planet || "Ruang Umum"
       }, { merge: true });
     } catch (error) {
       console.error("Update Absen Error:", error);
@@ -107,7 +84,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
     }
   };
 
-  // 🔥 FUNGSI HITUNG HONOR DINAMIS
+  // 🔥 FUNGSI HITUNG HONOR (KOMPENSASI PER JENJANG)
   const hitungHonor = () => {
     if (!salaryRules) return { nominal: 0, detailTxt: "", statusGaji: "Menunggu Validasi" };
 
@@ -127,9 +104,8 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
     let detailTxt = `${program} - ${level} - ${materiAktual}`;
     let statusGaji = "Menunggu Validasi";
 
-    // 🔥 TENTUKAN RATE BERDASARKAN LEVEL & PROGRAM (DINAMIS DARI SETTINGS)
+    // 🔥 Tentukan rate berdasarkan level & program
     if (program === "English") {
-      // English: honorSD + bonusInggris
       ratePerJam = (salaryRules.honorSD || 35000) + (salaryRules.bonusInggris || 10000);
       detailTxt += " [English Rate]";
     } else if (level === "SMA") {
@@ -137,34 +113,30 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
     } else if (level === "SMP") {
       ratePerJam = salaryRules.honorSMP || 40000;
     } else {
-      // Default SD
       ratePerJam = salaryRules.honorSD || 35000;
     }
 
     let nominal = 0;
+    const kompensasiPersen = salaryRules.kompensasiPersen || 50;
 
+    // 🔥 KOMPENSASI: 50% dari ratePerJam masing-masing jenjang
     if (jumlahHadir === 0) {
-      // 🔥 Kompensasi jika tidak ada yang hadir
-      const rateKompensasi = salaryRules.honorKompensasi || (ratePerJam * 0.5);
+      const rateKompensasi = ratePerJam * (kompensasiPersen / 100);
       nominal = rateKompensasi * diffHours;
-      detailTxt += " [Kompensasi 0 Hadir]";
+      detailTxt += ` [Kompensasi ${kompensasiPersen}% - 0 Hadir]`;
       statusGaji = "Kompensasi";
     } else {
       nominal = ratePerJam * diffHours;
     }
 
-    // 🔥 Honor minimal
+    // Honor minimal
     const minimal = salaryRules.honorMinimal || 20000;
     if (nominal < minimal) {
       nominal = minimal;
       detailTxt += " [Honor Minimal]";
     }
 
-    return {
-      nominal: Math.round(nominal),
-      detailTxt,
-      statusGaji
-    };
+    return { nominal: Math.round(nominal), detailTxt, statusGaji };
   };
 
   const handleFinalizeClass = async () => {
@@ -178,25 +150,19 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
         const absenId = `${siswa.id}_${today}_${schedule.id}`;
         const absenRef = doc(db, "attendance", absenId);
         return setDoc(absenRef, {
-            studentId: siswa.id,
-            studentName: siswa.nama,
+            studentId: siswa.id, studentName: siswa.nama,
             program: siswa.program || schedule.program || "Reguler",
             kelasSekolah: siswa.kelas || siswa.kelasSekolah || "-",
-            teacherId: teacher.id,
-            teacherName: teacher.nama,
-            date: today,
-            tanggal: today,
-            timestamp: serverTimestamp(),
+            teacherId: teacher.id, teacherName: teacher.nama,
+            date: today, tanggal: today, timestamp: serverTimestamp(),
             status: isPresent ? "Hadir" : "Alpha",
             keterangan: isPresent ? "Sesi Selesai" : "Siswa tidak hadir (Otomatis Alpha)",
             mapel: schedule.title || "Umum",
-            scheduleId: schedule.id || "",
-            planet: schedule.planet || "Ruang Umum"
+            scheduleId: schedule.id || "", planet: schedule.planet || "Ruang Umum"
         }, { merge: true });
       });
       await Promise.all(batchPromises);
 
-      // 🔥 HITUNG HONOR DENGAN FUNGSI DINAMIS
       const honorData = hitungHonor();
       const siswaHadirList = (schedule.students || []).filter(s => attendanceMap[s.id]);
       const jumlahHadir = siswaHadirList.length;
@@ -207,22 +173,14 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
       const endTime = new Date(0, 0, 0, endParts[0], endParts[1]);
       const diffHours = (endTime - startTime) / 36e5;
 
-      // Simpan Log Mengajar Guru
       await addDoc(collection(db, "teacher_logs"), {
-        teacherId: teacher.id,
-        namaGuru: teacher.nama,
-        tanggal: today,
-        waktu: new Date().toLocaleTimeString(),
-        jadwalId: schedule.id,
-        program: schedule.program,
-        level: schedule.level || "SD",
-        kegiatan: "Mengajar",
-        detail: honorData.detailTxt,
-        siswaHadir: jumlahHadir,
-        durasiJam: diffHours,
-        nominal: honorData.nominal,
-        status: honorData.statusGaji,
-        createdAt: serverTimestamp()
+        teacherId: teacher.id, namaGuru: teacher.nama,
+        tanggal: today, waktu: new Date().toLocaleTimeString(),
+        jadwalId: schedule.id, program: schedule.program,
+        level: schedule.level || "SD", kegiatan: "Mengajar",
+        detail: honorData.detailTxt, siswaHadir: jumlahHadir,
+        durasiJam: diffHours, nominal: honorData.nominal,
+        status: honorData.statusGaji, createdAt: serverTimestamp()
       });
 
       const hadirCount = siswaHadirList.length;
@@ -235,15 +193,13 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
         `👥 Kehadiran: ${hadirCount}/${totalCount} siswa hadir`
       );
       onBack();
-    } catch (error) {
-        alert("Gagal menyimpan sesi: " + error.message);
-    } finally { setLoading(false); }
+    } catch (error) { alert("Gagal menyimpan sesi: " + error.message); } 
+    finally { setLoading(false); }
   };
 
   return (
     <div style={styles.container(isMobile)}>
       <button onClick={onBack} style={styles.btnBack(isMobile)}><ArrowLeft size={16}/> Kembali</button>
-      
       <div style={styles.headerCard(isMobile)}>
         <div style={styles.headerFlex}>
            <div>
@@ -253,42 +209,22 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
            <span style={styles.badge(isMobile)}>{schedule.planet || "Ruang Umum"}</span>
         </div>
       </div>
-
       {step === 1 && (
         <div style={styles.gridContainer(isMobile)}>
             <div style={styles.card(isMobile)}>
                 <h4 style={styles.cardTitle}><QrCode size={18} /> Scan Absensi</h4>
                 <div style={styles.qrWrapper}>
-                    <QRCodeSVG 
-                        value={JSON.stringify({
-                            type: "ABSENSI_BIMBEL",
-                            scheduleId: schedule.id,
-                            mapel: schedule.title || "Umum",
-                            teacher: teacher.nama,
-                            date: new Date().toISOString().split('T')[0]
-                        })} 
-                        size={isMobile ? 140 : 180}
-                        style={{ width: '100%', height: 'auto', maxWidth: isMobile ? '140px' : '180px' }}
-                    />
+                    <QRCodeSVG value={JSON.stringify({ type: "ABSENSI_BIMBEL", scheduleId: schedule.id, mapel: schedule.title || "Umum", teacher: teacher.nama, date: new Date().toISOString().split('T')[0] })} size={isMobile ? 140 : 180} style={{ width: '100%', height: 'auto', maxWidth: isMobile ? '140px' : '180px' }} />
                 </div>
-                <p style={styles.qrHint(isMobile)}>Siswa silakan scan melalui aplikasi siswa</p>
+                <p style={styles.qrHint(isMobile)}>Siswa silakan scan</p>
             </div>
-
             <div style={styles.card(isMobile)}>
-                <h4 style={{...styles.cardTitle, color:'#3498db'}}>
-                  Siswa ({Object.values(attendanceMap).filter(v=>v).length}/{(schedule.students || []).length})
-                </h4>
+                <h4 style={{...styles.cardTitle, color:'#3498db'}}>Siswa ({Object.values(attendanceMap).filter(v=>v).length}/{(schedule.students || []).length})</h4>
                 <div style={styles.studentScrollArea}>
                   {(schedule.students || []).map(siswa => {
                     const isPresent = attendanceMap[siswa.id];
                     return (
-                      <div key={siswa.id} onClick={() => toggleStudent(siswa)}
-                        style={{
-                          ...styles.studentItem(isMobile),
-                          background: isPresent ? '#27ae60' : '#f8fafc',
-                          color: isPresent ? 'white' : '#64748b',
-                          border: isPresent ? 'none' : '1px solid #e2e8f0'
-                        }}>
+                      <div key={siswa.id} onClick={() => toggleStudent(siswa)} style={{ ...styles.studentItem(isMobile), background: isPresent ? '#27ae60' : '#f8fafc', color: isPresent ? 'white' : '#64748b', border: isPresent ? 'none' : '1px solid #e2e8f0' }}>
                         <div style={styles.studentName(isMobile)}>{siswa.nama}</div>
                         <div style={styles.studentStatus}>{isPresent ? "HADIR" : "BELUM HADIR"}</div>
                       </div>
@@ -299,22 +235,13 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
             </div>
         </div>
       )}
-
       {step === 2 && (
         <div style={styles.card(isMobile)}>
             <h4 style={styles.step2Title(isMobile)}>📝 Laporan Materi</h4>
-            <textarea 
-                rows={isMobile ? 4 : 5} 
-                value={materiAktual} 
-                onChange={(e) => setMateriAktual(e.target.value)}
-                placeholder="Tuliskan materi yang diajarkan hari ini..."
-                style={styles.textarea(isMobile)}
-            />
+            <textarea rows={isMobile ? 4 : 5} value={materiAktual} onChange={(e) => setMateriAktual(e.target.value)} placeholder="Tuliskan materi yang diajarkan hari ini..." style={styles.textarea(isMobile)} />
             <div style={styles.footerBtns(isMobile)}>
                 <button onClick={() => setStep(1)} style={styles.btnSecondary(isMobile)}>⬅ Kembali</button>
-                <button onClick={handleFinalizeClass} disabled={loading} style={styles.btnSave(isMobile, loading)}>
-                    {loading ? "Menyimpan..." : "💾 Simpan Sesi"}
-                </button>
+                <button onClick={handleFinalizeClass} disabled={loading} style={styles.btnSave(isMobile, loading)}>{loading ? "Menyimpan..." : "💾 Simpan Sesi"}</button>
             </div>
         </div>
       )}
