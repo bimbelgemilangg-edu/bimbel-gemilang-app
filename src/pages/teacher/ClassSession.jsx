@@ -25,7 +25,6 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
       const newMap = { ...attendanceMap };
       snapshot.docs.forEach(doc => {
         const data = doc.data();
-        // Pastikan schedule.students ada sebelum melakukan some
         if (schedule.students && schedule.students.some(s => s.id === data.studentId)) {
           newMap[data.studentId] = (data.status === "Hadir");
         }
@@ -101,7 +100,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
       
       await Promise.all(batchPromises);
 
-      // Hitung Gaji/Honor
+      // Hitung Gaji/Honor (tetap disimpan ke log, tapi tidak ditampilkan)
       const siswaHadirList = (schedule.students || []).filter(s => attendanceMap[s.id]);
       const jumlahHadir = siswaHadirList.length;
       
@@ -139,7 +138,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
           }
       }
 
-      // Simpan Log Mengajar Guru
+      // Simpan Log Mengajar Guru (honor tetap disimpan, hanya tidak ditampilkan)
       await addDoc(collection(db, "teacher_logs"), {
         teacherId: teacher.id,
         namaGuru: teacher.nama,
@@ -156,7 +155,17 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
         createdAt: serverTimestamp()
       });
 
-      alert(`✅ Kelas Berhasil Disimpan!\nHonor: Rp ${Math.round(nominal).toLocaleString('id-ID')}`);
+      // ✅ ALERT TANPA NOMINAL HONOR
+      const hadirCount = siswaHadirList.length;
+      const totalCount = (schedule.students || []).length;
+      alert(
+        `✅ Kelas Berhasil Disimpan!\n\n` +
+        `📚 Materi: ${materiAktual}\n` +
+        `⏰ Jam: ${schedule.start} - ${schedule.end}\n` +
+        `🏫 Ruang: ${schedule.planet || "Ruang Umum"}\n` +
+        `👥 Kehadiran: ${hadirCount}/${totalCount} siswa hadir\n\n` +
+        `Data honor disimpan di log mengajar.`
+      );
       onBack();
     } catch (error) { 
         alert("Gagal menyimpan sesi: " + error.message); 
