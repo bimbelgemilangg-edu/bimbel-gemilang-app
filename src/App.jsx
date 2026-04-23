@@ -25,6 +25,8 @@ import ManageMateri from './pages/admin/portal-siswa/ManageMateri';
 import PortalSiswaHome from './pages/admin/portal-siswa/PortalSiswaHome';
 import ManagePoster from './pages/admin/portal-siswa/ManagePoster';
 
+import SidebarGuru from './components/SidebarGuru';
+
 import TeacherDashboard from './pages/teacher/TeacherDashboard'; 
 import TeacherHistory from './pages/teacher/TeacherHistory';
 import TeacherManualInput from './pages/teacher/TeacherManualInput'; 
@@ -66,6 +68,35 @@ const SiswaRoute = ({ children }) => {
   return children;
 };
 
+// 🔥 TeacherLayout INLINE (tidak import dari file terpisah)
+const TeacherLayout = ({ children }) => {
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 1024);
+
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
+      <SidebarGuru />
+      <main className="main-content" style={{ flex: 1 }}>
+        <header style={{ background: 'white', padding: '15px 25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', position: 'sticky', top: 0, zIndex: 99 }}>
+          <div style={{ paddingLeft: isMobile ? '50px' : '0px' }}>
+            <h4 style={{ margin: 0 }}>Bimbel Gemilang</h4>
+            <small style={{ color: '#7f8c8d' }}>Portal Akademik</small>
+          </div>
+          <div style={{ width: 35, height: 35, background: '#3498db', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white' }}>G</div>
+        </header>
+        <div style={{ padding: 20, width: '100%', boxSizing: 'border-box' }}>
+          {children}
+        </div>
+      </main>
+    </div>
+  );
+};
+
 function App() {
   return (
     <BrowserRouter>
@@ -94,20 +125,20 @@ function App() {
         <Route path="/admin/manage-blog" element={<AdminRoute><ManageBlog /></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
 
-        {/* GURU - LANGSUNG TANPA TeacherLayout */}
-        <Route path="/guru/dashboard" element={<GuruRoute><TeacherDashboard /></GuruRoute>} />
-        <Route path="/guru/profile" element={<GuruRoute><TeacherProfile /></GuruRoute>} />
-        <Route path="/guru/history" element={<GuruRoute><TeacherHistory /></GuruRoute>} />
-        <Route path="/guru/cek-tugas" element={<GuruRoute><CekTugasSiswa /></GuruRoute>} />
-        <Route path="/guru/grades/input" element={<GuruRoute><TeacherInputGrade /></GuruRoute>} />
-        <Route path="/guru/grades/manage" element={<GuruRoute><TeacherGradeManager /></GuruRoute>} />
-        <Route path="/guru/modul" element={<GuruRoute><ModulManager /></GuruRoute>} />
-        <Route path="/guru/modul/materi" element={<GuruRoute><ManageMateriGuru /></GuruRoute>} />
-        <Route path="/guru/manage-quiz" element={<GuruRoute><ManageQuiz /></GuruRoute>} />
-        <Route path="/guru/modul/tugas" element={<GuruRoute><ManageTugas /></GuruRoute>} />
-        <Route path="/guru/schedule" element={<GuruRoute><TeacherSchedule /></GuruRoute>} />
-        <Route path="/guru/attendance" element={<GuruRoute><TeacherManualInput /></GuruRoute>} />
-        <Route path="/guru/manual-input" element={<GuruRoute><TeacherManualInput /></GuruRoute>} />
+        {/* GURU - DENGAN TeacherLayout + Sidebar */}
+        <Route path="/guru/dashboard" element={<GuruRoute><TeacherLayout><TeacherDashboard /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/profile" element={<GuruRoute><TeacherLayout><TeacherProfile /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/history" element={<GuruRoute><TeacherLayout><TeacherHistory /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/cek-tugas" element={<GuruRoute><TeacherLayout><CekTugasSiswa /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/grades/input" element={<GuruRoute><TeacherLayout><TeacherInputGrade /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/grades/manage" element={<GuruRoute><TeacherLayout><TeacherGradeManager /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/modul" element={<GuruRoute><TeacherLayout><ModulManager /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/modul/materi" element={<GuruRoute><TeacherLayout><ManageMateriGuru /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/manage-quiz" element={<GuruRoute><TeacherLayout><ManageQuiz /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/modul/tugas" element={<GuruRoute><TeacherLayout><ManageTugas /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/schedule" element={<GuruRoute><TeacherLayout><TeacherSchedule /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/attendance" element={<GuruRoute><TeacherLayout><TeacherManualInput /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/manual-input" element={<GuruRoute><TeacherLayout><TeacherManualInput /></TeacherLayout></GuruRoute>} />
 
         {/* SISWA */}
         <Route path="/siswa/dashboard" element={<SiswaRoute><StudentDashboard /></SiswaRoute>} />
