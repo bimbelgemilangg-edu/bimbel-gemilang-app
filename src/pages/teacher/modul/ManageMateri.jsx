@@ -87,10 +87,7 @@ const ManageMateri = () => {
     }
 
     try {
-      // Konversi ke Base64 dulu
       const base64 = await convertBase64(file);
-      
-      // Upload ke Supabase
       const { uploadToDrive } = await import('../../../services/uploadService');
       const result = await uploadToDrive(base64, file.name, file.type);
       
@@ -184,6 +181,7 @@ const ManageMateri = () => {
     const { content, mimeType, fileName } = block;
     if (!content) return null;
 
+    // PDF Preview (Supabase & lainnya)
     if (mimeType === 'application/pdf' || content?.toLowerCase().includes('.pdf') || content?.includes('supabase')) {
       const embedSrc = `https://docs.google.com/viewer?url=${encodeURIComponent(content)}&embedded=true`;
       return (
@@ -197,6 +195,7 @@ const ManageMateri = () => {
       );
     }
 
+    // Image Preview
     if (content.startsWith('data:image/') || content?.includes('supabase')) {
       return (
         <div style={st.smartPreview}>
@@ -206,6 +205,7 @@ const ManageMateri = () => {
       );
     }
 
+    // Link/Video Preview
     if (content.includes('canva.com') || content.includes('youtube.com') || content.includes('drive.google.com')) {
       return (
         <div style={st.smartPreview}>
@@ -215,6 +215,7 @@ const ManageMateri = () => {
       );
     }
 
+    // Fallback
     return (
       <div style={st.pdfPreviewPlaceholder}>
         <FileText size={40} color="#673ab7" />
