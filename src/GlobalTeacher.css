@@ -21,7 +21,6 @@
 @media (max-width: 1024px) {
     .teacher-page-container {
         padding: 15px;
-        margin-left: 0 !important;
     }
 }
 
@@ -31,7 +30,15 @@
     }
 }
 
-/* Kartu standar */
+/* Grid Otomatis Penuh */
+.responsive-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    width: 100%;
+}
+
+/* Teacher Card Protection */
 .teacher-card {
     background: #ffffff;
     border-radius: 16px;
@@ -49,13 +56,14 @@
     border-color: var(--primary-color) !important;
 }
 
-/* Form responsif */
+/* Form Responsif */
 input, select, textarea {
+    width: 100%;
     max-width: 100%;
     font-size: 16px !important;
 }
 
-/* Tabel scroll di mobile */
+/* Tabel Responsif HP */
 .table-responsive {
     width: 100%;
     overflow-x: auto;
@@ -66,7 +74,7 @@ input, select, textarea {
     .hide-on-mobile { display: none !important; }
 }
 
-/* Spinner */
+/* Spinner Animasi */
 .spinner-global {
     width: 35px;
     height: 35px;
@@ -78,4 +86,15 @@ input, select, textarea {
 
 @keyframes spin-global {
     100% { transform: rotate(360deg); }
+}
+
+/* Print Optimization */
+@media print {
+    .no-print { display: none !important; }
+    body, html, .main-content-wrapper, div[style*="margin-left"] {
+        margin: 0 !important;
+        width: 100% !important;
+        padding: 0 !important;
+        background: white !important;
+    }
 }
