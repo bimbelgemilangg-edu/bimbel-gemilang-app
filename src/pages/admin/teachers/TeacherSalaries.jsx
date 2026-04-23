@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { collection, getDocs, doc, addDoc, deleteDoc, updateDoc } from "firebase/firestore";
-import { ArrowLeft, RefreshCw, Download, Eye, X, ChevronRight, Home, DollarSign, Users, Clock, FileText } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Download, Eye, X, ChevronRight, Home, DollarSign, FileText } from 'lucide-react';
 
 const TeacherSalaries = () => {
   const navigate = useNavigate();
@@ -37,8 +37,7 @@ const TeacherSalaries = () => {
       const logs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       const filtered = logs.filter(log => {
         if (!log || !log.tanggal) return false;
-        const parts = log.tanggal.split(' ');
-        const cleanDate = parts[0];
+        const cleanDate = log.tanggal.split(' ')[0];
         return cleanDate >= startDate && cleanDate <= endDate;
       });
 
@@ -126,8 +125,7 @@ const TeacherSalaries = () => {
       <html><head><title>Slip Gaji - ${guru.nama}</title></head>
       <body style="font-family: sans-serif; padding: 20px;">
         <h2 style="text-align:center;">REKAP GAJI GURU</h2><hr/>
-        <p><b>Nama:</b> ${guru.nama}</p>
-        <p><b>Periode:</b> ${startDate} s/d ${endDate}</p>
+        <p><b>Nama:</b> ${guru.nama}</p><p><b>Periode:</b> ${startDate} s/d ${endDate}</p>
         <table border="1" style="width:100%; border-collapse: collapse; margin-top: 10px;">
           <thead><tr style="background: #eee;"><th style="padding: 8px;">Tanggal</th><th style="padding: 8px;">Program</th><th style="padding: 8px;">Detail</th><th style="padding: 8px;">Nominal</th></tr></thead>
           <tbody>${guru.rincian.sort((a,b) => (b.tanggal || '').localeCompare(a.tanggal || '')).map(r => `
@@ -146,24 +144,19 @@ const TeacherSalaries = () => {
       <SidebarAdmin />
       <div style={styles.mainContent(isMobile)}>
         
-        {/* TOAST */}
         {alertMsg && <div style={styles.toast}>{alertMsg}</div>}
 
-        {/* BREADCRUMB + BACK */}
         <div style={styles.breadcrumb(isMobile)}>
           <button onClick={() => navigate('/admin/teachers')} style={styles.backButton}>
             <ArrowLeft size={16} /> Kembali ke Kelola Guru
           </button>
           <div style={styles.breadcrumbTrail}>
-            <Home size={12} color="#94a3b8" />
-            <ChevronRight size={12} color="#94a3b8" />
-            <span style={{color: '#94a3b8'}}>Kelola Guru</span>
-            <ChevronRight size={12} color="#94a3b8" />
+            <Home size={12} color="#94a3b8" /><ChevronRight size={12} color="#94a3b8" />
+            <span style={{color: '#94a3b8'}}>Kelola Guru</span><ChevronRight size={12} color="#94a3b8" />
             <span style={{color: '#3b82f6', fontWeight: 'bold'}}>Gaji Guru</span>
           </div>
         </div>
 
-        {/* HEADER */}
         <div style={styles.headerCard(isMobile)}>
           <div>
             <h2 style={styles.pageTitle(isMobile)}><DollarSign size={22} /> Rekap Gaji & Validasi Harian</h2>
@@ -175,36 +168,24 @@ const TeacherSalaries = () => {
           </div>
         </div>
 
-        {/* PERIODE FILTER */}
         <div style={styles.filterRow(isMobile)}>
           <span style={styles.filterLabel}>Periode:</span>
           <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} style={styles.dateInput(isMobile)} />
           <span style={styles.filterLabel}>s/d</span>
           <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} style={styles.dateInput(isMobile)} />
-          <button onClick={fetchData} style={styles.btnRefresh(isMobile)}>
-            <RefreshCw size={14} /> Segarkan
-          </button>
+          <button onClick={fetchData} style={styles.btnRefresh(isMobile)}><RefreshCw size={14} /> Segarkan</button>
         </div>
 
-        {/* TABEL UTAMA */}
         <div style={styles.cardTable}>
           {loading ? (
             <div style={styles.emptyState}>Memuat data gaji...</div>
           ) : rekap.length === 0 ? (
-            <div style={styles.emptyState}>
-              <FileText size={40} color="#94a3b8" />
-              <p>Belum ada data gaji untuk periode ini.</p>
-            </div>
+            <div style={styles.emptyState}><FileText size={40} color="#94a3b8" /><p>Belum ada data gaji untuk periode ini.</p></div>
           ) : (
             <div style={{overflowX: 'auto'}}>
               <table style={styles.table}>
                 <thead style={{background:'#2c3e50', color:'white'}}>
-                  <tr>
-                    <th style={styles.th}>Nama Guru</th>
-                    <th style={styles.th}>Total Sesi</th>
-                    <th style={styles.th}>Total Gaji</th>
-                    <th style={styles.th}>Aksi</th>
-                  </tr>
+                  <tr><th style={styles.th}>Nama Guru</th><th style={styles.th}>Total Sesi</th><th style={styles.th}>Total Gaji</th><th style={styles.th}>Aksi</th></tr>
                 </thead>
                 <tbody>
                   {rekap.map(g => (
@@ -226,7 +207,6 @@ const TeacherSalaries = () => {
           )}
         </div>
 
-        {/* MODAL RINCIAN */}
         {viewDetail && (
           <div style={styles.overlay} onClick={() => setViewDetail(null)}>
             <div style={styles.modal(isMobile)} onClick={e => e.stopPropagation()}>
@@ -234,17 +214,10 @@ const TeacherSalaries = () => {
                 <h3 style={{margin:0, fontSize: isMobile ? 16 : 18}}>📋 Laporan Sesi: {viewDetail.nama}</h3>
                 <button onClick={()=>setViewDetail(null)} style={styles.btnClose}><X size={20} /></button>
               </div>
-
               <div style={{maxHeight: isMobile ? '50vh' : '500px', overflowY: 'auto'}}>
                 <table style={{width:'100%', borderCollapse:'collapse', fontSize: isMobile ? 11 : 13}}>
                   <thead style={{background:'#f8f9fa', position:'sticky', top:0, zIndex:1}}>
-                    <tr>
-                      <th style={styles.thSmall}>Tanggal</th>
-                      <th style={styles.thSmall}>Program</th>
-                      <th style={styles.thSmall}>Detail</th>
-                      <th style={styles.thSmall}>Nominal</th>
-                      <th style={styles.thSmall}>Status</th>
-                    </tr>
+                    <tr><th style={styles.thSmall}>Tanggal</th><th style={styles.thSmall}>Program</th><th style={styles.thSmall}>Detail</th><th style={styles.thSmall}>Nominal</th><th style={styles.thSmall}>Status</th></tr>
                   </thead>
                   <tbody>
                     {viewDetail.rincian.sort((a,b) => (b.tanggal || '').localeCompare(a.tanggal || '')).map((log) => {
@@ -252,22 +225,10 @@ const TeacherSalaries = () => {
                       return (
                         <Fragment key={log.id}>
                         <tr style={{borderBottom:'1px solid #eee', background: isValid ? '#fafffa' : 'white'}}>
-                          <td style={styles.tdSmall}>
-                            <b>{log.tanggal}</b><br/>
-                            <span style={{fontSize: 10, color: '#7f8c8d'}}>{log.waktu || '-'}</span>
-                          </td>
-                          <td style={styles.tdSmall}>
-                            <span style={{color: log.program === 'BONUS/TAMBAHAN' ? '#e67e22' : '#2980b9', fontWeight:'bold', fontSize: isMobile ? 10 : 12}}>
-                              {log.program || 'Kegiatan'}
-                            </span>
-                          </td>
-                          <td style={styles.tdSmall}>
-                            <small style={{color: '#7f8c8d'}}>{log.detail}</small>
-                          </td>
-                          <td style={styles.tdSmall}>
-                            <input type="number" disabled={isValid} defaultValue={log.nominal} onBlur={(e) => handleUpdateNominal(log.id, e.target.value)}
-                              style={{...styles.inputNominal(isMobile), borderColor: isValid ? '#2ecc71' : '#3498db'}} />
-                          </td>
+                          <td style={styles.tdSmall}><b>{log.tanggal}</b><br/><span style={{fontSize: 10, color: '#7f8c8d'}}>{log.waktu || '-'}</span></td>
+                          <td style={styles.tdSmall}><span style={{color: log.program === 'BONUS/TAMBAHAN' ? '#e67e22' : '#2980b9', fontWeight:'bold', fontSize: isMobile ? 10 : 12}}>{log.program || 'Kegiatan'}</span></td>
+                          <td style={styles.tdSmall}><small style={{color: '#7f8c8d'}}>{log.detail}</small></td>
+                          <td style={styles.tdSmall}><input type="number" disabled={isValid} defaultValue={log.nominal} onBlur={(e) => handleUpdateNominal(log.id, e.target.value)} style={{...styles.inputNominal(isMobile), borderColor: isValid ? '#2ecc71' : '#3498db'}} /></td>
                           <td style={styles.tdSmall}>
                             {isValid ? (
                               <div style={{display:'flex', flexDirection:'column', gap:4}}>
@@ -303,9 +264,7 @@ const TeacherSalaries = () => {
                 </table>
               </div>
               <div style={{marginTop:15, textAlign:'right', borderTop:'2px solid #eee', paddingTop:15}}>
-                <h3 style={{margin:0, color:'#2c3e50', fontSize: isMobile ? 14 : 18}}>
-                  Total: <span style={{color:'#27ae60'}}>Rp {viewDetail.totalGaji.toLocaleString()}</span>
-                </h3>
+                <h3 style={{margin:0, color:'#2c3e50', fontSize: isMobile ? 14 : 18}}>Total: <span style={{color:'#27ae60'}}>Rp {viewDetail.totalGaji.toLocaleString()}</span></h3>
               </div>
             </div>
           </div>
@@ -318,28 +277,18 @@ const TeacherSalaries = () => {
 const styles = {
   wrapper: { display: 'flex', minHeight: '100vh', background: '#f8fafc' },
   mainContent: (m) => ({ marginLeft: m ? '0' : '250px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' }),
-  
-  // TOAST
   toast: { position: 'fixed', top: 20, right: 20, zIndex: 9999, background: '#1e293b', color: 'white', padding: '12px 20px', borderRadius: 12, fontWeight: 'bold', fontSize: 14, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
-  
-  // BREADCRUMB
   breadcrumb: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexDirection: m ? 'column' : 'row', gap: m ? 8 : 0 }),
   backButton: { background: 'white', border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, color: '#64748b' },
   breadcrumbTrail: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 },
-  
-  // HEADER
   headerCard: (m) => ({ background:'white', padding: m ? 15 : 20, borderRadius:15, display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, boxShadow:'0 2px 10px rgba(0,0,0,0.05)', flexDirection: m ? 'column' : 'row', gap: m ? 10 : 0 }),
   pageTitle: (m) => ({ margin:0, fontSize: m ? 16 : 20, display:'flex', alignItems:'center', gap:8 }),
   subtitle: (m) => ({ color:'#666', marginTop:5, fontSize: m ? 11 : 13 }),
   totalBox: (m) => ({ textAlign: m ? 'center' : 'right', background:'#e8f8f5', padding: m ? '10px 15px' : '10px 20px', borderRadius:12, border:'1px solid #27ae60' }),
-  
-  // FILTER
   filterRow: (m) => ({ marginBottom:20, display:'flex', gap:8, alignItems:'center', flexWrap:'wrap' }),
   filterLabel: { fontSize:13, fontWeight:'bold' },
   dateInput: (m) => ({ padding: m ? 6 : 8, borderRadius:8, border:'1px solid #ddd', fontSize: m ? 11 : 13 }),
   btnRefresh: (m) => ({ background:'#95a5a6', color:'white', border:'none', padding: m ? '6px 10px' : '8px 15px', borderRadius:8, cursor:'pointer', display:'flex', alignItems:'center', gap:4, fontSize: m ? 11 : 12, fontWeight:'bold' }),
-  
-  // TABLE
   cardTable: { background:'white', borderRadius:15, overflow:'hidden', boxShadow:'0 2px 10px rgba(0,0,0,0.05)' },
   table: { width:'100%', borderCollapse:'collapse', minWidth:'600px' },
   th: { padding:15, textAlign:'left', fontSize:12 },
@@ -348,9 +297,7 @@ const styles = {
   btnDetail: { background:'#3498db', color:'white', border:'none', padding:'8px 12px', borderRadius:8, cursor:'pointer', fontWeight:'bold', fontSize:12, display:'flex', alignItems:'center', gap:4 },
   btnDownload: { background:'#27ae60', color:'white', border:'none', padding:'8px 12px', borderRadius:8, cursor:'pointer', fontWeight:'bold', fontSize:12, display:'flex', alignItems:'center', gap:4 },
   emptyState: { textAlign:'center', padding:50, color:'#94a3b8' },
-  
-  // MODAL
-  overlay: { position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.7)', display:'flex', justifyContent:'center', alignItems: isMobile ? 'flex-end' : 'center', zIndex:2000 },
+  overlay: { position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.7)', display:'flex', justifyContent:'center', alignItems:'flex-end', zIndex:2000 },
   modal: (m) => ({ background:'white', padding: m ? 15 : 25, borderRadius: m ? '20px 20px 0 0' : 20, width: m ? '100%' : '95%', maxWidth: '1100px', maxHeight: '90vh', overflow: 'hidden', display:'flex', flexDirection:'column' }),
   modalHeader: { display:'flex', justifyContent:'space-between', marginBottom:15 },
   btnClose: { background:'none', border:'none', fontSize:24, cursor:'pointer', color:'#e74c3c' },
