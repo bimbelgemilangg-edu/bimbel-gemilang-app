@@ -29,7 +29,8 @@ import TeacherSalaries from './pages/admin/teachers/TeacherSalaries';
 import SchedulePage from './pages/admin/schedule/SchedulePage';
 import GradeReport from './pages/admin/grades/GradeReport'; 
 import AdminDailyLog from './pages/admin/AdminDailyLog'; 
-import ManageBlog from './pages/admin/blog/ManageBlog'; // IMPORT BARU
+import ManageBlog from './pages/admin/blog/ManageBlog';
+import ManageMateri from './pages/admin/ManageMateri'; // ✅ IMPORT BARU
 
 // === IMPORT ADMIN PORTAL SISWA ===
 import PortalSiswaHome from './pages/admin/portal-siswa/PortalSiswaHome';
@@ -47,7 +48,7 @@ import TeacherSchedule from './pages/teacher/TeacherSchedule';
 // --- IMPORT MODUL & CEK TUGAS GURU ---
 import ModulManager from './pages/teacher/modul/ModulManager'; 
 import CekTugasSiswa from './pages/teacher/modul/CekTugasSiswa';
-import ManageMateri from './pages/teacher/modul/ManageMateri';
+import ManageMateriGuru from './pages/teacher/modul/ManageMateri';
 import ManageQuiz from './pages/teacher/modul/ManageQuiz';
 import ManageTugas from './pages/teacher/modul/ManageTugas';
 
@@ -102,10 +103,9 @@ function App() {
         <Route path="/" element={<Login />} />              
         <Route path="/login-guru" element={<LoginGuru />} /> 
         <Route path="/login-siswa" element={<LoginSiswa />} /> 
-        <Route path="/aktivitas" element={<PublicBlog />} /> {/* AKSES PUBLIK TANPA LOGIN */}
-
-        {/* === AREA ADMIN === */}
-        <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
+        <Route path="/aktivitas" element={<PublicBlog />} />
+                {/* === AREA ADMIN === */}
+                <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
         <Route path="/admin/students" element={<AdminRoute><StudentList /></AdminRoute>} />
         <Route path="/admin/students/add" element={<AdminRoute><AddStudent /></AdminRoute>} />
         <Route path="/admin/students/edit/:id" element={<AdminRoute><EditStudent /></AdminRoute>} />
@@ -115,11 +115,13 @@ function App() {
         <Route path="/admin/teachers/salaries" element={<AdminRoute><TeacherSalaries /></AdminRoute>} />
         <Route path="/admin/portal" element={<AdminRoute><PortalSiswaHome /></AdminRoute>} />
         <Route path="/admin/portal/poster" element={<AdminRoute><ManagePoster /></AdminRoute>} />
+        {/* ✅ ROUTE BARU UNTUK ADMIN MANAGE MATERI */}
+        <Route path="/admin/portal/manage-materi" element={<AdminRoute><ManageMateri /></AdminRoute>} />
         <Route path="/admin/finance" element={<AdminRoute><FinanceLayout /></AdminRoute>} />
         <Route path="/admin/schedule" element={<AdminRoute><SchedulePage /></AdminRoute>} />
         <Route path="/admin/grades" element={<AdminRoute><GradeReport /></AdminRoute>} />
         <Route path="/admin/daily-log" element={<AdminRoute><AdminDailyLog /></AdminRoute>} />
-        <Route path="/admin/manage-blog" element={<AdminRoute><ManageBlog /></AdminRoute>} /> {/* KELOLA BLOG */}
+        <Route path="/admin/manage-blog" element={<AdminRoute><ManageBlog /></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
 
         {/* === AREA GURU (DIBUNGKUS TEACHER LAYOUT) === */}
@@ -127,27 +129,14 @@ function App() {
           <Route path="/guru/dashboard" element={<TeacherDashboard />} />
           <Route path="/guru/profile" element={<TeacherProfile />} />
           <Route path="/guru/history" element={<TeacherHistory />} />
-          
-          {/* Menu Cek Tugas */}
           <Route path="/guru/cek-tugas" element={<CekTugasSiswa />} />
-          
-          {/* Nilai & Rapor */}
           <Route path="/guru/grades/input" element={<TeacherInputGrade />} />
           <Route path="/guru/grades/manage" element={<TeacherGradeManager />} />
-          
-          {/* E-Learning System */}
           <Route path="/guru/modul" element={<ModulManager />} />
-          <Route path="/guru/modul/materi" element={<ManageMateri />} />
-          
-          {/* Editor Kuis Pro (Diakses via ManageMateri) */}
+          <Route path="/guru/modul/materi" element={<ManageMateriGuru />} />
           <Route path="/guru/manage-quiz" element={<ManageQuiz />} />
-          
           <Route path="/guru/modul/tugas" element={<ManageTugas />} />
-
-          {/* Rute Jadwal Guru */}
           <Route path="/guru/schedule" element={<TeacherSchedule />} />
-          
-          {/* Rute Absensi Guru */}
           <Route path="/guru/attendance" element={<TeacherManualInput />} />
           <Route path="/guru/manual-input" element={<TeacherManualInput />} />
         </Route>
