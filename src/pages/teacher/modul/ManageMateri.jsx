@@ -576,7 +576,7 @@ const ManageMateri = () => {
 };
 
 const styles = {
-  container: (m) => ({ padding: m ? '15px' : '30px', paddingBottom: 150, background: '#f8fafc', minHeight: '100vh', maxWidth: 900, margin: '0 auto' }),
+  container: (m) => ({ padding: m ? '15px' : '30px', paddingBottom: 150, background: '#f8fafc', minHeight: '100vh', maxWidth: 900, margin: '0 auto', marginLeft: m ? 0 : '260px', transition: 'margin-left 0.3s ease' }),
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   btnBack: (m) => ({ background: 'white', border: '1px solid #e2e8f0', padding: m ? '8px 12px' : '10px 15px', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: m ? 12 : 14, display: 'flex', alignItems: 'center', gap: 6 }),
   headerTitle: (m) => ({ margin: 0, fontSize: m ? 18 : 22, fontWeight: 800, color: '#1e293b' }),

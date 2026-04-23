@@ -189,7 +189,7 @@ const ModulManager = () => {
 };
 
 const styles = {
-  container: (m) => ({ padding: m ? '15px' : '30px', maxWidth: 1200, margin: '0 auto' }),
+  container: (m) => ({ padding: m ? '15px' : '30px', maxWidth: 1200, marginLeft: m ? 0 : '260px', transition: 'margin-left 0.3s ease', margin: m ? '0 auto' : '0 auto' }),
   header: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25, flexWrap: 'wrap', gap: 15 }),
   titleGroup: { display: 'flex', alignItems: 'center', gap: 15 },
   iconCircle: { background: '#6366f1', padding: 12, borderRadius: 16, boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)' },
