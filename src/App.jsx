@@ -30,7 +30,7 @@ import SchedulePage from './pages/admin/schedule/SchedulePage';
 import GradeReport from './pages/admin/grades/GradeReport'; 
 import AdminDailyLog from './pages/admin/AdminDailyLog'; 
 import ManageBlog from './pages/admin/blog/ManageBlog';
-import ManageMateri from './pages/admin/ManageMateri'; // ✅ IMPORT BARU
+import ManageMateri from './pages/admin/portal-siswa/ManageMateri';
 
 // === IMPORT ADMIN PORTAL SISWA ===
 import PortalSiswaHome from './pages/admin/portal-siswa/PortalSiswaHome';
