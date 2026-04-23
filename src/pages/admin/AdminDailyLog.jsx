@@ -1,94 +1,110 @@
-return (
-  <div style={styles.wrapper}>
-    <SidebarAdmin />
-    <div style={styles.mainContent(isMobile)}>
-      
-      {/* HEADER */}
-      <div style={styles.header(isMobile)}>
-        <h2 style={styles.pageTitle(isMobile)}><ShieldAlert size={20} /> Daily Audit Intelligence</h2>
-        <div style={styles.headerButtons(isMobile)}>
-          <button onClick={fetchAttendanceSummary} style={styles.btnRefresh(isMobile)}>
-            <RefreshCw size={14} /> Refresh
-          </button>
-          <input type="date" style={styles.dateInput(isMobile)} value={formData.tanggal} onChange={e => setFormData({...formData, tanggal: e.target.value})} />
-        </div>
-      </div>
+import React, { useState, useEffect } from 'react';
+import SidebarAdmin from '../../components/SidebarAdmin';
+import { db } from '../../firebase';
+import { collection, getDocs, addDoc, query, orderBy, serverTimestamp } from "firebase/firestore";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+import { 
+  Save, Clock, UserCheck, ShieldAlert, CreditCard, 
+  MessageSquare, FileText, List, Bold, Italic, Download, Table, AlertTriangle
+} from 'lucide-react';
 
-      {/* 🔥 REKAP ABSENSI HARI INI */}
-      <div style={styles.sectionCard}>
-        <div style={styles.sectionHeader(isMobile)} onClick={() => setShowAttendanceDetail(!showAttendanceDetail)}>
-          <h3 style={styles.sectionTitle(isMobile)}><Users size={18} /> Rekap Kehadiran Hari Ini</h3>
-          <span style={styles.liveDot}></span>
-          <span style={styles.toggleText}>{showAttendanceDetail ? '▲ Sembunyikan' : '▼ Lihat Detail'}</span>
-        </div>
+const AdminDailyLog = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [loading, setLoading] = useState(false);
+  const [teachers, setTeachers] = useState([]);
+  const [history, setHistory] = useState([]);
+
+  const [formData, setFormData] = useState({
+    tanggal: new Date().toISOString().split('T')[0],
+    adminName: "",
+    jamMasuk: "", 
+    jamPulang: "", 
+    siswa: {
+      jumlahHadir: 0,
+      namaTidakHadir: "",
+      alasanAbsen: ""
+    },
+    tentor: {
+      id: "",
+      nama: "",
+      status: "Hadir"
+    },
+    operasional: {
+      pembayaranMasuk: "", 
+      detailKomplain: "",
+    },
+    canvasNarasi: "", 
+    riskLevel: "🟢 Aman",
+    customRisk: "", // Untuk menambah risiko sendiri
+    checklist: { areaBersih: false, acMati: false, pintuKunci: false, kasTersimpan: false }
+  });
+
+  useEffect(() => {
+    fetchTeachers();
+    fetchHistory();
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const fetchTeachers = async () => {
+    try {
+      const snap = await getDocs(collection(db, "teachers"));
+      setTeachers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    } catch (e) { console.error("Gagal ambil data guru", e); }
+  };
+
+  const fetchHistory = async () => {
+    const q = query(collection(db, "admin_daily_logs"), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    setHistory(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+  };
+
+  const applyFormat = (tag) => {
+    const textarea = document.getElementById('canvasNarasi');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selectedText = text.substring(start, end);
+    let replacement = tag === 'B' ? `**${selectedText}**` : tag === 'I' ? `*${selectedText}*` : `\n- ${selectedText}`;
+    setFormData({ ...formData, canvasNarasi: text.substring(0, start) + replacement + text.substring(end) });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const selectedT = teachers.find(t => t.id === formData.tentor.id);
+      await addDoc(collection(db, "admin_daily_logs"), {
+        ...formData,
+        tentor: { ...formData.tentor, nama: selectedT?.nama || "Manual/Luar" },
+        createdAt: serverTimestamp()
+      });
+      alert("Audit Terkunci & Tersimpan!");
+      fetchHistory();
+    } catch (error) { alert(error.message); } 
+    finally { setLoading(false); }
+  };
+
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
+      <SidebarAdmin />
+      <div style={{ marginLeft: isMobile ? '0' : '260px', padding: isMobile ? '15px' : '30px', width: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
         
-        <div style={styles.attendanceGrid(isMobile)}>
-          {Object.keys(attendanceSummary).length === 0 ? (
-            <div style={styles.emptyState}>Belum ada data absensi hari ini.</div>
-          ) : (
-            Object.values(attendanceSummary).map((kelas, idx) => (
-              <div key={idx} style={styles.attendanceCard(isMobile)} onClick={() => setSelectedClass(selectedClass === idx ? null : idx)}>
-                <div style={styles.classHeader}>
-                  <h4 style={styles.className(isMobile)}>{kelas.title}</h4>
-                  <span style={styles.roomBadge(isMobile)}>{kelas.room}</span>
-                </div>
-                <div style={styles.classInfo(isMobile)}>
-                  <span>👨‍🏫 {kelas.teacher}</span>
-                  <span>⏰ {kelas.start} - {kelas.end}</span>
-                </div>
-                
-                {/* Progress Bar */}
-                <div style={styles.attendanceBar}>
-                  <div style={{...styles.barHadir, width: `${kelas.totalStudents > 0 ? (kelas.totalHadir / kelas.totalStudents) * 100 : 0}%`}}>
-                    {kelas.totalHadir > 0 && `✅ ${kelas.totalHadir}`}
-                  </div>
-                  <div style={{...styles.barTidakHadir, width: `${kelas.totalStudents > 0 ? (kelas.totalTidakHadir / kelas.totalStudents) * 100 : 0}%`}}>
-                    {kelas.totalTidakHadir > 0 && `❌ ${kelas.totalTidakHadir}`}
-                  </div>
-                </div>
-                <div style={styles.attendanceNumbers}>
-                  <span>Hadir: {kelas.totalHadir}/{kelas.totalStudents}</span>
-                  <span>Tidak Hadir: {kelas.totalTidakHadir}</span>
-                </div>
-
-                {/* Detail Dropdown */}
-                {selectedClass === idx && (
-                  <div style={styles.detailDropdown}>
-                    <div style={styles.detailSection}>
-                      <strong>✅ Hadir ({kelas.hadir.length}):</strong>
-                      <p>{kelas.hadir.length > 0 ? kelas.hadir.join(', ') : 'Belum ada'}</p>
-                    </div>
-                    <div style={styles.detailSection}>
-                      <strong>❌ Tidak Hadir ({kelas.tidakHadir.length}):</strong>
-                      {kelas.tidakHadir.length > 0 ? (
-                        kelas.tidakHadir.map((s, i) => (
-                          <div key={i} style={styles.absentItem}>
-                            <span>{s.nama}</span>
-                            <span style={styles.absentStatus(s.status)}>{s.status}</span>
-                            <span style={styles.absentKet}>{s.keterangan}</span>
-                          </div>
-                        ))
-                      ) : (
-                        <p>Semua hadir 🎉</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))
-          )}
+        <div style={styles.header}>
+          <h2 style={{ margin: 0, color: '#1e293b' }}>Daily Audit Intelligence</h2>
+          <input type="date" style={styles.dateInput} value={formData.tanggal} onChange={e => setFormData({...formData, tanggal: e.target.value})} />
         </div>
-      </div>
 
-      {/* FORM AUDIT */}
-      <form onSubmit={handleSubmit}>
-        <div style={styles.formGrid(isMobile)}>
+        <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1.2fr', gap: '25px' }}>
           
-          {/* KOLOM KIRI */}
-          <div style={styles.formColumn}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* 1. INFORMASI DASAR & GURU */}
             <div style={styles.card}>
-              <h3 style={styles.cardTitle}><Clock size={18} /> Shift & Guru Bertugas</h3>
+              <h3 style={styles.sectionTitle}><Clock size={18} /> Shift & Guru Bertugas</h3>
               <div style={styles.grid2}>
                 <input style={styles.input} placeholder="Nama Admin" onChange={e => setFormData({...formData, adminName: e.target.value})} required />
                 <div style={{ display: 'flex', gap: 8 }}>
@@ -107,7 +123,7 @@ return (
 
             {/* 2. AUDIT SISWA */}
             <div style={styles.card}>
-              <h3 style={styles.cardTitle}><UserCheck size={18} /> Audit Kehadiran Siswa</h3>
+              <h3 style={styles.sectionTitle}><UserCheck size={18} /> Audit Kehadiran Siswa</h3>
               <div style={styles.grid2}>
                 <div>
                   <label style={styles.label}>Jumlah Siswa Hadir</label>
@@ -118,13 +134,13 @@ return (
                   <input style={styles.input} placeholder="Sebutkan nama-nama" onChange={e => setFormData({...formData, siswa: {...formData.siswa, namaTidakHadir: e.target.value}})} />
                 </div>
               </div>
-              <label style={styles.label}>Alasan Tidak Hadir</label>
+              <label style={styles.label}>Alasan Tidak Hadir (Analisis Churn/Masalah)</label>
               <textarea style={styles.textareaSmall} placeholder="Jelaskan alasan siswa tidak hadir..." onChange={e => setFormData({...formData, siswa: {...formData.siswa, alasanAbsen: e.target.value}})} />
             </div>
 
             {/* 3. TRANSAKSI & NARASI */}
             <div style={styles.card}>
-              <h3 style={styles.cardTitle}><CreditCard size={18} /> Log Transaksi & Narasi</h3>
+              <h3 style={styles.sectionTitle}><CreditCard size={18} /> Log Transaksi & Narasi</h3>
               <textarea style={styles.textareaSmall} placeholder="Log Pembayaran (Nama - Nominal - Via)" onChange={e => setFormData({...formData, operasional: {...formData.operasional, pembayaranMasuk: e.target.value}})} />
               
               <div style={{ marginTop: 20 }}>
@@ -141,10 +157,10 @@ return (
             </div>
           </div>
 
-          {/* KOLOM KANAN */}
-          <div style={styles.formColumn}>
+          {/* SIDEBAR: RISK MANAGEMENT & SUBMIT */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <div style={styles.card}>
-              <h3 style={styles.cardTitle}><AlertTriangle size={18} /> Risk Management</h3>
+              <h3 style={styles.sectionTitle}><AlertTriangle size={18} /> Risk Management</h3>
               <select style={styles.input} value={formData.riskLevel} onChange={e => setFormData({...formData, riskLevel: e.target.value})}>
                 <option>🟢 Aman</option>
                 <option>🟡 Ada Masalah (Follow Up)</option>
@@ -158,92 +174,55 @@ return (
                 {Object.keys(formData.checklist).map(key => (
                   <label key={key} style={styles.checkItem}>
                     <input type="checkbox" onChange={e => setFormData({...formData, checklist: {...formData.checklist, [key]: e.target.checked}})} />
-                    <span>{key.replace(/([A-Z])/g, ' $1').toUpperCase()} OK</span>
+                    <span>{key.toUpperCase()} OK</span>
                   </label>
                 ))}
               </div>
 
               <button type="submit" style={styles.btnSubmit} disabled={loading}>
-                <Save size={16} /> {loading ? 'Processing...' : 'Simpan & Kunci Laporan'}
+                {loading ? 'Processing...' : 'Simpan & Kunci Laporan'}
               </button>
             </div>
 
-            {/* Audit Trail */}
             <div style={styles.card}>
-              <h3 style={styles.cardTitle}><Table size={18} /> Audit Trail</h3>
+              <h3 style={styles.sectionTitle}><Table size={18} /> Audit Trail</h3>
               <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                 {history.map(log => (
                   <div key={log.id} style={styles.historyRow}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 'bold', fontSize: 13 }}>{log.tanggal}</div>
+                      <div style={{ fontWeight: 'bold', fontSize: 13, truncate: 'true' }}>{log.tanggal}</div>
                       <div style={{ fontSize: 11, color: '#64748b' }}>{log.adminName} ({log.jamMasuk}-{log.jamPulang})</div>
                     </div>
-                    <button type="button" onClick={() => handleExportPDF(log)} style={styles.btnPdf}>
-                      <FileText size={14} /> PDF
-                    </button>
+                    <button type="button" onClick={() => alert("PDF Generating...")} style={styles.btnPdf}><FileText size={14}/></button>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-        </div>
-      </form>
+
+        </form>
+      </div>
     </div>
-  </div>
-);
+  );
 };
 
 const styles = {
-wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
-mainContent: (m) => ({ marginLeft: m ? '0' : '260px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', overflowX: 'hidden', transition: '0.3s' }),
-
-// HEADER
-header: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: m ? 15 : 25, flexWrap: 'wrap', gap: 10 }),
-pageTitle: (m) => ({ margin: 0, color: '#1e293b', fontSize: m ? 18 : 22, display: 'flex', alignItems: 'center', gap: 8 }),
-headerButtons: (m) => ({ display: 'flex', alignItems: 'center', gap: m ? 8 : 10, flexWrap: 'wrap' }),
-btnRefresh: (m) => ({ background: 'white', border: '1px solid #e2e8f0', padding: m ? '6px 10px' : '8px 15px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: m ? 11 : 12, fontWeight: 600 }),
-dateInput: (m) => ({ padding: m ? '6px 10px' : '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: m ? 12 : 13 }),
-
-// REKAP ABSENSI
-sectionCard: { background: 'white', padding: 20, borderRadius: 16, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: 25, width: '100%', boxSizing: 'border-box' },
-sectionHeader: (m) => ({ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: 15, flexWrap: 'wrap' }),
-sectionTitle: (m) => ({ margin: 0, fontSize: m ? 14 : 16, color: '#0f172a', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }),
-liveDot: { width: 10, height: 10, borderRadius: '50%', background: '#27ae60', animation: 'pulse 2s infinite', display: 'inline-block' },
-toggleText: { fontSize: 11, color: '#64748b', marginLeft: 'auto' },
-attendanceGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }),
-attendanceBar: { display: 'flex', height: 22, borderRadius: 11, overflow: 'hidden', marginTop: 8, background: '#f1f5f9' },
-barHadir: { background: '#27ae60', color: 'white', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', transition: 'width 0.5s', minWidth: 'fit-content', padding: '0 4px' },
-barTidakHadir: { background: '#e74c3c', color: 'white', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', transition: 'width 0.5s', minWidth: 'fit-content', padding: '0 4px' },
-attendanceNumbers: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#64748b', marginTop: 4 },
-attendanceCard: (m) => ({ background: '#f8fafc', padding: m ? 12 : 15, borderRadius: 12, cursor: 'pointer', transition: '0.2s', border: '1px solid #f1f5f9' }),
-classHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-className: (m) => ({ margin: 0, fontSize: m ? 13 : 14, color: '#1e293b' }),
-roomBadge: (m) => ({ background: '#e0e7ff', color: '#3730a3', padding: '2px 6px', borderRadius: 10, fontSize: m ? 9 : 10, fontWeight: 'bold' }),
-classInfo: (m) => ({ fontSize: m ? 10 : 11, color: '#64748b', display: 'flex', gap: m ? 8 : 12, flexWrap: 'wrap' }),
-detailDropdown: { marginTop: 10, borderTop: '1px solid #f1f5f9', paddingTop: 10 },
-detailSection: { marginBottom: 8 },
-absentItem: { display: 'flex', gap: 8, alignItems: 'center', padding: '3px 0', fontSize: 11, flexWrap: 'wrap' },
-absentStatus: (s) => ({ padding: '1px 6px', borderRadius: 6, fontSize: 9, fontWeight: 'bold', background: s === 'Alpha' ? '#fee2e2' : s === 'Sakit' ? '#fff3cd' : '#e0e7ff', color: s === 'Alpha' ? '#ef4444' : s === 'Sakit' ? '#f59e0b' : '#3730a3' }),
-absentKet: { fontSize: 9, color: '#94a3b8' },
-emptyState: { gridColumn: '1/-1', textAlign: 'center', padding: 30, color: '#94a3b8', fontSize: 13 },
-
-// FORM
-formGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : '2fr 1.2fr', gap: m ? '15px' : '25px' }),
-formColumn: { display: 'flex', flexDirection: 'column', gap: 20 },
-card: { background: 'white', padding: 20, borderRadius: 16, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', width: '100%', boxSizing: 'border-box' },
-cardTitle: { fontSize: 14, margin: '0 0 15px 0', display: 'flex', alignItems: 'center', gap: 10, color: '#0f172a', fontWeight: 'bold' },
-grid2: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 },
-label: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#64748b', marginBottom: 5, marginTop: 10 },
-input: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, boxSizing: 'border-box' },
-textareaSmall: { width: '100%', height: 70, padding: 10, borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, boxSizing: 'border-box', marginTop: 5, resize: 'vertical' },
-canvas: { width: '100%', height: 180, padding: 12, borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, boxSizing: 'border-box', background: '#fcfcfc', lineHeight: '1.5', resize: 'vertical' },
-toolbarRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 8, flexWrap: 'wrap', gap: 5 },
-toolbar: { display: 'flex', gap: 4, background: '#f1f5f9', padding: 4, borderRadius: 8 },
-toolBtn: { padding: '4px 8px', background: 'white', border: '1px solid #cbd5e1', borderRadius: 4, cursor: 'pointer' },
-checkItem: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, cursor: 'pointer', fontSize: 12 },
-btnSubmit: { width: '100%', padding: 14, background: '#0f172a', color: 'white', border: 'none', borderRadius: 12, fontWeight: 'bold', cursor: 'pointer', marginTop: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 },
-historyRow: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid #f1f5f9' },
-btnPdf: { background: '#fee2e2', color: '#ef4444', border: 'none', padding: 6, borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11 },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25, flexWrap: 'wrap', gap: 10 },
+  card: { background: 'white', padding: '20px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', width: '100%', boxSizing: 'border-box' },
+  sectionTitle: { fontSize: 14, margin: '0 0 15px 0', display: 'flex', alignItems: 'center', gap: 10, color: '#0f172a', fontWeight: 'bold' },
+  grid2: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 },
+  label: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#64748b', marginBottom: 5, marginTop: 10 },
+  input: { width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: 13, boxSizing: 'border-box' },
+  textareaSmall: { width: '100%', height: 70, padding: 10, borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, boxSizing: 'border-box', marginTop: 5 },
+  canvas: { width: '100%', height: 200, padding: 12, borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, boxSizing: 'border-box', background: '#fcfcfc', lineHeight: '1.5' },
+  toolbarRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 8 },
+  toolbar: { display: 'flex', gap: 4, background: '#f1f5f9', padding: '4px', borderRadius: '8px' },
+  toolBtn: { padding: '4px 8px', background: 'white', border: '1px solid #cbd5e1', borderRadius: '4px', cursor: 'pointer' },
+  checkItem: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, cursor: 'pointer', fontSize: 12 },
+  btnSubmit: { width: '100%', padding: '14px', background: '#0f172a', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', marginTop: 15 },
+  historyRow: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid #f1f5f9' },
+  btnPdf: { background: '#fee2e2', color: '#ef4444', border: 'none', padding: 6, borderRadius: 6, cursor: 'pointer' },
+  dateInput: { padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: 13 }
 };
 
 export default AdminDailyLog;
