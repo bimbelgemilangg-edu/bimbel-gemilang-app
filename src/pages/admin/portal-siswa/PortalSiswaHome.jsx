@@ -8,7 +8,7 @@ const PortalSiswaHome = () => {
   const menus = [
     { id: 1, title: 'Poster Slider', icon: <Image size={30} />, path: '/admin/portal/poster', color: '#3498db', desc: 'Atur gambar banner 16:9 di dashboard siswa.' },
     { id: 2, title: 'Timeline & Tugas', icon: <Bell size={30} />, path: '/admin/portal/timeline', color: '#e67e22', desc: 'Input tugas atau pengumuman penting.' },
-    { id: 3, title: 'Pantau Materi', icon: <BookOpen size={30} />, path: '/admin/portal/materi', color: '#27ae60', desc: 'Lihat progres materi & upload PPT.' },
+    { id: 3, title: 'Pantau Materi', icon: <BookOpen size={30} />, path: '/admin/portal/manage-materi', color: '#27ae60', desc: 'Lihat progres materi & upload PPT.' },
     { id: 4, title: 'Keuangan & SPP', icon: <Wallet size={30} />, path: '/admin/portal/finance', color: '#e74c3c', desc: 'Cek status pembayaran siswa.' },
     { id: 5, title: 'E-Rapor', icon: <GraduationCap size={30} />, path: '/admin/portal/rapor', color: '#9b59b6', desc: 'Input nilai hasil belajar siswa.' },
   ];
