@@ -102,7 +102,7 @@ const ManageMateri = () => {
     if (file.size > 50 * 1024 * 1024) return alert("❌ File terlalu besar! Maksimal 50MB.");
     try {
       const base64 = await convertBase64(file);
-      const { uploadToDrive } = await import('../../../services/uploadService');
+      const { uploadToDrive } = await import('../../services/uploadService');
       const result = await uploadToDrive(base64, file.name, file.type);
       if (result.success) {
         if (blockId) {
