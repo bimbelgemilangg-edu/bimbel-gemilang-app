@@ -11,7 +11,6 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
   const [materiAktual, setMateriAktual] = useState(schedule?.title || "");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  // Deteksi ukuran layar
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
@@ -46,13 +45,14 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
     const willBePresent = !isCurrentlyPresent;
     setAttendanceMap(prev => ({ ...prev, [student.id]: willBePresent }));
     const today = new Date().toISOString().split('T')[0];
-    const absenId = `${student.id}_${today}`;
+    const absenId = `${student.id}_${today}_${schedule.id}`;
     const absenRef = doc(db, "attendance", absenId);
     try {
       await setDoc(absenRef, {
         studentId: student.id,
         studentName: student.nama,
         program: student.program || schedule.program || "Reguler",
+        kelasSekolah: student.kelas || student.kelasSekolah || "-",
         teacherId: teacher.id,
         teacherName: teacher.nama,
         date: today,
@@ -60,7 +60,9 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
         timestamp: serverTimestamp(),
         status: willBePresent ? "Hadir" : "Alpha",
         keterangan: willBePresent ? "Input Manual Guru" : "Siswa tidak hadir",
-        mapel: schedule.title || "Umum"
+        mapel: schedule.title || "Umum",
+        scheduleId: schedule.id || "",
+        planet: schedule.planet || "Ruang Umum"
       }, { merge: true });
     } catch (error) {
       console.error("Update Absen Error:", error);
@@ -76,12 +78,13 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
       const today = new Date().toISOString().split('T')[0];
       const batchPromises = (schedule.students || []).map(async (siswa) => {
         const isPresent = !!attendanceMap[siswa.id];
-        const absenId = `${siswa.id}_${today}`;
+        const absenId = `${siswa.id}_${today}_${schedule.id}`;
         const absenRef = doc(db, "attendance", absenId);
         return setDoc(absenRef, {
             studentId: siswa.id,
             studentName: siswa.nama,
             program: siswa.program || schedule.program || "Reguler",
+            kelasSekolah: siswa.kelas || siswa.kelasSekolah || "-",
             teacherId: teacher.id,
             teacherName: teacher.nama,
             date: today,
@@ -89,7 +92,9 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
             timestamp: serverTimestamp(),
             status: isPresent ? "Hadir" : "Alpha",
             keterangan: isPresent ? "Sesi Selesai" : "Siswa tidak hadir (Otomatis Alpha)",
-            mapel: schedule.title || "Umum"
+            mapel: schedule.title || "Umum",
+            scheduleId: schedule.id || "",
+            planet: schedule.planet || "Ruang Umum"
         }, { merge: true });
       });
       await Promise.all(batchPromises);
@@ -242,170 +247,28 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
 };
 
 const styles = {
-  container: (m) => ({ 
-    padding: m ? '10px' : '15px', 
-    width: '100%', 
-    boxSizing: 'border-box',
-    maxWidth: m ? '100%' : '1200px',
-    margin: '0 auto'
-  }),
-  btnBack: (m) => ({ 
-    background: 'none', 
-    border: 'none', 
-    color: '#7f8c8d', 
-    cursor: 'pointer', 
-    marginBottom: m ? 10 : 15, 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 5, 
-    fontSize: m ? 12 : 14 
-  }),
-  headerCard: (m) => ({ 
-    background: 'white', 
-    padding: m ? '15px' : '20px', 
-    borderRadius: m ? '12px' : '15px', 
-    border: '1px solid #eee', 
-    marginBottom: m ? '12px' : '20px' 
-  }),
-  headerFlex: { 
-    display: 'flex', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    flexWrap: 'wrap', 
-    gap: 10 
-  },
-  headerTitle: (m) => ({ 
-    margin: 0, 
-    fontSize: m ? '15px' : '18px', 
-    color: '#2c3e50' 
-  }),
-  headerTime: (m) => ({ 
-    margin: 0, 
-    color: '#7f8c8d', 
-    fontSize: m ? '11px' : '13px' 
-  }),
-  badge: (m) => ({ 
-    background: '#ebf5fb', 
-    color: '#3498db', 
-    padding: m ? '4px 10px' : '5px 12px', 
-    borderRadius: '20px', 
-    fontSize: m ? '10px' : '11px', 
-    fontWeight: 'bold' 
-  }),
-  gridContainer: (m) => ({ 
-    display: 'flex', 
-    flexWrap: 'wrap', 
-    gap: m ? '12px' : '20px', 
-    width: '100%',
-    flexDirection: m ? 'column' : 'row'
-  }),
-  card: (m) => ({ 
-    background: 'white', 
-    padding: m ? '15px' : '20px', 
-    borderRadius: m ? '12px' : '15px', 
-    border: '1px solid #eee', 
-    flex: m ? '1 1 100%' : '1 1 350px', 
-    boxSizing: 'border-box', 
-    display: 'flex', 
-    flexDirection: 'column' 
-  }),
-  cardTitle: { 
-    margin: '0 0 15px', 
-    fontSize: 15, 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 8 
-  },
-  qrWrapper: { 
-    textAlign: 'center', 
-    padding: 15, 
-    border: '1px dashed #ddd', 
-    borderRadius: 10, 
-    alignSelf: 'center' 
-  },
-  qrHint: (m) => ({ 
-    fontSize: m ? 10 : 11, 
-    color: '#7f8c8d', 
-    marginTop: 10, 
-    textAlign: 'center' 
-  }),
-  studentScrollArea: { 
-    display: 'grid', 
-    gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', 
-    gap: 10, 
-    marginBottom: 20, 
-    maxHeight: '400px', 
-    overflowY: 'auto' 
-  },
-  studentItem: (m) => ({ 
-    padding: m ? '10px' : '12px', 
-    borderRadius: '10px', 
-    cursor: 'pointer', 
-    textAlign: 'center', 
-    transition: '0.2s' 
-  }),
-  studentName: (m) => ({ 
-    fontWeight: 'bold', 
-    fontSize: m ? '11px' : '13px' 
-  }),
-  studentStatus: { 
-    fontSize: '10px', 
-    opacity: 0.8 
-  },
-  step2Title: (m) => ({ 
-    marginTop: 0, 
-    color: '#e67e22', 
-    fontSize: m ? '14px' : '16px' 
-  }),
-  textarea: (m) => ({ 
-    width: '100%', 
-    padding: '15px', 
-    borderRadius: '10px', 
-    border: '1px solid #ddd', 
-    boxSizing: 'border-box', 
-    fontSize: m ? 13 : 14, 
-    marginBottom: 20, 
-    outline: 'none',
-    resize: 'vertical'
-  }),
-  footerBtns: (m) => ({ 
-    display: 'flex', 
-    gap: 10, 
-    flexDirection: m ? 'column' : 'row' 
-  }),
-  btnMain: (m) => ({ 
-    flex: 1, 
-    padding: m ? '12px' : '14px', 
-    background: '#3498db', 
-    color: 'white', 
-    border: 'none', 
-    borderRadius: '10px', 
-    fontWeight: 'bold', 
-    cursor: 'pointer',
-    fontSize: m ? '12px' : '14px'
-  }),
-  btnSecondary: (m) => ({ 
-    padding: m ? '12px' : '14px 25px', 
-    background: '#f1f5f9', 
-    color: '#64748b', 
-    border: 'none', 
-    borderRadius: '10px', 
-    fontWeight: 'bold', 
-    cursor: 'pointer',
-    fontSize: m ? '12px' : '14px',
-    textAlign: 'center'
-  }),
-  btnSave: (m, loading) => ({ 
-    flex: 1, 
-    padding: m ? '12px' : '14px', 
-    background: loading ? '#bdc3c7' : '#2c3e50', 
-    color: 'white', 
-    border: 'none', 
-    borderRadius: '10px', 
-    fontWeight: 'bold', 
-    cursor: 'pointer',
-    fontSize: m ? '12px' : '14px'
-  })
+  container: (m) => ({ padding: m ? '10px' : '15px', width: '100%', boxSizing: 'border-box', maxWidth: m ? '100%' : '1200px', margin: '0 auto' }),
+  btnBack: (m) => ({ background: 'none', border: 'none', color: '#7f8c8d', cursor: 'pointer', marginBottom: m ? 10 : 15, display: 'flex', alignItems: 'center', gap: 5, fontSize: m ? 12 : 14 }),
+  headerCard: (m) => ({ background: 'white', padding: m ? '15px' : '20px', borderRadius: m ? '12px' : '15px', border: '1px solid #eee', marginBottom: m ? '12px' : '20px' }),
+  headerFlex: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 },
+  headerTitle: (m) => ({ margin: 0, fontSize: m ? '15px' : '18px', color: '#2c3e50' }),
+  headerTime: (m) => ({ margin: 0, color: '#7f8c8d', fontSize: m ? '11px' : '13px' }),
+  badge: (m) => ({ background: '#ebf5fb', color: '#3498db', padding: m ? '4px 10px' : '5px 12px', borderRadius: '20px', fontSize: m ? '10px' : '11px', fontWeight: 'bold' }),
+  gridContainer: (m) => ({ display: 'flex', flexWrap: 'wrap', gap: m ? '12px' : '20px', width: '100%', flexDirection: m ? 'column' : 'row' }),
+  card: (m) => ({ background: 'white', padding: m ? '15px' : '20px', borderRadius: m ? '12px' : '15px', border: '1px solid #eee', flex: m ? '1 1 100%' : '1 1 350px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }),
+  cardTitle: { margin: '0 0 15px', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 },
+  qrWrapper: { textAlign: 'center', padding: 15, border: '1px dashed #ddd', borderRadius: 10, alignSelf: 'center' },
+  qrHint: (m) => ({ fontSize: m ? 10 : 11, color: '#7f8c8d', marginTop: 10, textAlign: 'center' }),
+  studentScrollArea: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10, marginBottom: 20, maxHeight: '400px', overflowY: 'auto' },
+  studentItem: (m) => ({ padding: m ? '10px' : '12px', borderRadius: '10px', cursor: 'pointer', textAlign: 'center', transition: '0.2s' }),
+  studentName: (m) => ({ fontWeight: 'bold', fontSize: m ? '11px' : '13px' }),
+  studentStatus: { fontSize: '10px', opacity: 0.8 },
+  step2Title: (m) => ({ marginTop: 0, color: '#e67e22', fontSize: m ? '14px' : '16px' }),
+  textarea: (m) => ({ width: '100%', padding: '15px', borderRadius: '10px', border: '1px solid #ddd', boxSizing: 'border-box', fontSize: m ? 13 : 14, marginBottom: 20, outline: 'none', resize: 'vertical' }),
+  footerBtns: (m) => ({ display: 'flex', gap: 10, flexDirection: m ? 'column' : 'row' }),
+  btnMain: (m) => ({ flex: 1, padding: m ? '12px' : '14px', background: '#3498db', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: m ? '12px' : '14px' }),
+  btnSecondary: (m) => ({ padding: m ? '12px' : '14px 25px', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: m ? '12px' : '14px', textAlign: 'center' }),
+  btnSave: (m, loading) => ({ flex: 1, padding: m ? '12px' : '14px', background: loading ? '#bdc3c7' : '#2c3e50', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: m ? '12px' : '14px' })
 };
 
 export default ClassSession;
