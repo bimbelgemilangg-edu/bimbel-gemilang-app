@@ -103,7 +103,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     if (!allowedTypes.includes(file.type)) {
       return alert("❌ Format tidak didukung!\n\nUntuk tugas, silakan upload:\n- PDF\n- Gambar (JPG/PNG)\n\nFile Word/DOC tidak didukung. Silakan konversi ke PDF terlebih dahulu.");
     }
-    if (file.size > 2500000) return alert("File terlalu besar. Maksimal 2.5MB.");
+    if (file.size > 50 * 1024 * 1024) return alert("File terlalu besar. Maksimal 50MB.");
 
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -114,7 +114,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     };
     reader.readAsDataURL(file);
   };
-
   const submitTask = async (blockId, blockTitle) => {
     const fileToUpload = localFiles[blockId];
     if (!fileToUpload) return;
@@ -122,20 +121,15 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     setUploading({ ...uploading, [blockId]: true });
     
     try {
-      // Import upload service
       const { uploadToDrive } = await import('../../services/uploadService');
       
-      // Upload ke Google Drive
       const result = await uploadToDrive(
         fileToUpload.data,
         fileToUpload.name,
-        fileToUpload.type,
-        studentData?.nama || 'Siswa',
-        modul.title
+        fileToUpload.type
       );
       
       if (result.success) {
-        // Simpan ke Firestore
         const payload = {
           modulId, 
           modulTitle: modul.title, 
@@ -146,7 +140,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           studentClass: studentData?.kelasSekolah || 'Umum',
           fileUrl: result.downloadURL,
           fileName: fileToUpload.name,
-          driveFileId: result.fileId || null,
+          filePath: result.filePath,
           submittedAt: serverTimestamp(), 
           status: 'Pending', 
           type: 'assignment'
@@ -167,7 +161,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         delete updatedLocal[blockId];
         setLocalFiles(updatedLocal);
         
-        alert('✅ Tugas berhasil diupload ke Google Drive!');
+        alert('✅ Tugas berhasil diupload ke Supabase Storage!');
       } else {
         throw new Error(result.error || 'Upload gagal');
       }
@@ -336,7 +330,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   };
   
   if (loading) return <div style={st.loader}><div style={st.spinner}></div> Membuka Sistem...</div>;
-
   return (
     <div style={st.container}>
       <div style={st.heroSection(isMobile)}>
@@ -434,7 +427,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                     <>
                       <input type="file" id={`file-${block.id}`} style={{display:'none'}} onChange={(e) => handleFileChange(e, block.id)} accept=".pdf,.docx,image/*" />
                       <label htmlFor={`file-${block.id}`} style={st.btnUpload(isMobile)}>Pilih File Tugas</label>
-                      <p style={{fontSize:10, color:'#94a3b8', marginTop:8, textAlign: isMobile ? 'left' : 'right'}}>Maks 2.5MB (PDF/DOCX/IMG)</p>
+                      <p style={{fontSize:10, color:'#94a3b8', marginTop:8, textAlign: isMobile ? 'left' : 'right'}}>Maks 50MB (PDF/Gambar)</p>
                     </>
                   )}
                 </div>
@@ -547,6 +540,7 @@ const st = {
   quizIconBox: { background: '#673ab7', padding: '10px', borderRadius: '14px' },
   quizItem: { marginBottom: 30 },
   questionText: (m) => ({ fontSize: m ? 16 : 18, fontWeight: '800', color: '#1e293b', marginBottom: 15, display: 'flex', gap: 12 }),
+  qNumber: { background: '#f1f5f9', color: '#673ab7', minWidth: '30px', height: '30px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize:14 },
   optionsGrid: { display: 'grid', gridTemplateColumns: '1fr', gap: 10 },
   optButton: (m) => ({ 
     padding: m ? '14px 18px' : '16px 20px', 
