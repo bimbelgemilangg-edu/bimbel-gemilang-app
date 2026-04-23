@@ -11,10 +11,47 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
   const [materiAktual, setMateriAktual] = useState(schedule?.title || "");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
+  // 🔥 STATE UNTUK ATURAN HONOR DARI SETTINGS
+  const [salaryRules, setSalaryRules] = useState(null);
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // 🔥 AMBIL ATURAN HONOR DARI SETTINGS
+  useEffect(() => {
+    const fetchSalaryRules = async () => {
+      try {
+        const docRef = doc(db, "settings", "global_config");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && docSnap.data().salaryRules) {
+          setSalaryRules(docSnap.data().salaryRules);
+        } else {
+          // Default kalau belum ada di settings
+          setSalaryRules({
+            honorSD: 35000,
+            honorSMP: 40000,
+            honorSMA: 50000,
+            bonusInggris: 10000,
+            honorKompensasi: 20000,
+            honorMinimal: 20000
+          });
+        }
+      } catch (err) {
+        console.error("Gagal fetch salary rules:", err);
+        setSalaryRules({
+          honorSD: 35000,
+          honorSMP: 40000,
+          honorSMA: 50000,
+          bonusInggris: 10000,
+          honorKompensasi: 20000,
+          honorMinimal: 20000
+        });
+      }
+    };
+    fetchSalaryRules();
   }, []);
 
   useEffect(() => {
@@ -70,6 +107,66 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
     }
   };
 
+  // 🔥 FUNGSI HITUNG HONOR DINAMIS
+  const hitungHonor = () => {
+    if (!salaryRules) return { nominal: 0, detailTxt: "", statusGaji: "Menunggu Validasi" };
+
+    const siswaHadirList = (schedule.students || []).filter(s => attendanceMap[s.id]);
+    const jumlahHadir = siswaHadirList.length;
+
+    const startParts = schedule.start.split(':');
+    const endParts = schedule.end.split(':');
+    const startTime = new Date(0, 0, 0, startParts[0], startParts[1]);
+    const endTime = new Date(0, 0, 0, endParts[0], endParts[1]);
+    const diffHours = (endTime - startTime) / 36e5;
+
+    const level = schedule.level || "SD";
+    const program = schedule.program || "Reguler";
+    
+    let ratePerJam = 0;
+    let detailTxt = `${program} - ${level} - ${materiAktual}`;
+    let statusGaji = "Menunggu Validasi";
+
+    // 🔥 TENTUKAN RATE BERDASARKAN LEVEL & PROGRAM (DINAMIS DARI SETTINGS)
+    if (program === "English") {
+      // English: honorSD + bonusInggris
+      ratePerJam = (salaryRules.honorSD || 35000) + (salaryRules.bonusInggris || 10000);
+      detailTxt += " [English Rate]";
+    } else if (level === "SMA") {
+      ratePerJam = salaryRules.honorSMA || 50000;
+    } else if (level === "SMP") {
+      ratePerJam = salaryRules.honorSMP || 40000;
+    } else {
+      // Default SD
+      ratePerJam = salaryRules.honorSD || 35000;
+    }
+
+    let nominal = 0;
+
+    if (jumlahHadir === 0) {
+      // 🔥 Kompensasi jika tidak ada yang hadir
+      const rateKompensasi = salaryRules.honorKompensasi || (ratePerJam * 0.5);
+      nominal = rateKompensasi * diffHours;
+      detailTxt += " [Kompensasi 0 Hadir]";
+      statusGaji = "Kompensasi";
+    } else {
+      nominal = ratePerJam * diffHours;
+    }
+
+    // 🔥 Honor minimal
+    const minimal = salaryRules.honorMinimal || 20000;
+    if (nominal < minimal) {
+      nominal = minimal;
+      detailTxt += " [Honor Minimal]";
+    }
+
+    return {
+      nominal: Math.round(nominal),
+      detailTxt,
+      statusGaji
+    };
+  };
+
   const handleFinalizeClass = async () => {
     if (!materiAktual) return alert("Mohon isi materi yang diajarkan!");
     if (!window.confirm("Yakin akhiri kelas? Data siswa yang tidak hadir akan dicatat sebagai Alpha.")) return;
@@ -99,40 +196,18 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
       });
       await Promise.all(batchPromises);
 
+      // 🔥 HITUNG HONOR DENGAN FUNGSI DINAMIS
+      const honorData = hitungHonor();
       const siswaHadirList = (schedule.students || []).filter(s => attendanceMap[s.id]);
       const jumlahHadir = siswaHadirList.length;
+
       const startParts = schedule.start.split(':');
       const endParts = schedule.end.split(':');
       const startTime = new Date(0, 0, 0, startParts[0], startParts[1]);
       const endTime = new Date(0, 0, 0, endParts[0], endParts[1]);
       const diffHours = (endTime - startTime) / 36e5;
 
-      const settingsSnap = await getDoc(doc(db, "settings", "global_config"));
-      let rules = { honorSD: 35000, honorSMP: 40000, honorSMA: 50000, bonusInggris: 10000 };
-      if (settingsSnap.exists() && settingsSnap.data().salaryRules) {
-          rules = { ...rules, ...settingsSnap.data().salaryRules };
-      }
-
-      let nominal = 0;
-      let detailTxt = `${schedule.program} - ${materiAktual}`;
-      let statusGaji = "Menunggu Validasi";
-      if (schedule.program === "English") {
-          nominal = (parseInt(rules.honorSD) + parseInt(rules.bonusInggris)) * diffHours;
-          detailTxt += " [English Rate]";
-      } else {
-          let baseRate = parseInt(rules.honorSD);
-          const titleLower = ((schedule.level || "") + (schedule.title || "")).toLowerCase();
-          if (titleLower.includes("smp")) baseRate = parseInt(rules.honorSMP);
-          else if (titleLower.includes("sma")) baseRate = parseInt(rules.honorSMA);
-          if (jumlahHadir === 0) {
-            nominal = (baseRate * diffHours) * 0.5;
-            detailTxt += " [Kompensasi 50%]";
-            statusGaji = "Kompensasi";
-          } else {
-            nominal = baseRate * diffHours;
-          }
-      }
-
+      // Simpan Log Mengajar Guru
       await addDoc(collection(db, "teacher_logs"), {
         teacherId: teacher.id,
         namaGuru: teacher.nama,
@@ -140,12 +215,13 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
         waktu: new Date().toLocaleTimeString(),
         jadwalId: schedule.id,
         program: schedule.program,
+        level: schedule.level || "SD",
         kegiatan: "Mengajar",
-        detail: detailTxt,
+        detail: honorData.detailTxt,
         siswaHadir: jumlahHadir,
         durasiJam: diffHours,
-        nominal: Math.round(nominal),
-        status: statusGaji,
+        nominal: honorData.nominal,
+        status: honorData.statusGaji,
         createdAt: serverTimestamp()
       });
 
