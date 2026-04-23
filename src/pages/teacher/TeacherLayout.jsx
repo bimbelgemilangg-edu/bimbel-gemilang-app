@@ -19,7 +19,7 @@ const TeacherLayout = ({ guru }) => {
         </header>
 
         {/* Padding konten utama */}
-        <div style={{ padding: '20px', width: '100%', boxSizing: 'border-box' }}>
+        <div style={{ padding: '20px', width: '100%', boxSizing: 'border-box', marginLeft: window.innerWidth <= 1024 ? 0 : '0px' }}>
           <Outlet /> 
         </div>
       </main>

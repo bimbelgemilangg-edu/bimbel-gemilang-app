@@ -63,7 +63,7 @@ const ModulManager = () => {
   const subjects = ["Semua", ...new Set(moduls.map(m => m.subject).filter(Boolean))];
 
   return (
-    <div style={styles.wrapper}>
+    <div className="teacher-page-container">
       {/* HEADER */}
       <div style={styles.header(isMobile)}>
         <div>
@@ -132,7 +132,7 @@ const ModulManager = () => {
 };
 
 const styles = {
-  wrapper: { padding: 0 },
+  wrapper: { padding: 0, marginLeft: isMobile ? 0 : '260px', transition: '0.3s' },
   header: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexDirection: m ? 'column' : 'row', gap: 10 }),
   title: (m) => ({ margin: 0, fontSize: m ? 18 : 22, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }),
   subtitle: { color: '#64748b', fontSize: 13 },

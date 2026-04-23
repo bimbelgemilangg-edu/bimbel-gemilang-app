@@ -148,7 +148,7 @@ const ManageMateri = () => {
   const progressPercent = ((currentStep - 1) / 2) * 100;
 
   return (
-    <div style={st.container(isMobile)}>
+    <div className="teacher-page-container" style={{ maxWidth: 900, paddingBottom: 120 }}>
       <div style={st.header}>
         <button onClick={() => navigate('/guru/modul')} style={st.btnBack(isMobile)}><ArrowLeft size={16} /> {!isMobile && 'Kembali'}</button>
         <h2 style={st.headerTitle(isMobile)}>{editId ? '✏️ Edit Modul' : '📚 Buat Modul Baru'}</h2>

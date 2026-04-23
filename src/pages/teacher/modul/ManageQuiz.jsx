@@ -141,7 +141,7 @@ const ManageQuiz = () => {
   };
 
   return (
-    <div style={st.container(isMobile)}>
+    <div className="teacher-page-container" style={{ maxWidth: 800, paddingBottom: 150 }}>
       {showImport && (
         <div style={st.modalOverlay}>
           <div style={st.modalContent(isMobile)}>

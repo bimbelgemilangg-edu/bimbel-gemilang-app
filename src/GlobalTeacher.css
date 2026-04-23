@@ -1,5 +1,3 @@
-/* --- GLOBAL TEACHER RESPONSIVE ENGINE (ULTRA-DYNAMIC) --- */
-
 * {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
@@ -7,32 +5,33 @@
 
 :root {
     --primary-color: #673ab7;
+    --sidebar-width: 260px;
     --transition-speed: 0.3s;
 }
 
-/* Container Spacing Engine */
-.teacher-container-padding {
+/* Container untuk semua halaman Guru */
+.teacher-page-container {
     padding: 30px;
-    max-width: 1600px;
+    max-width: 1400px;
     margin: 0 auto;
     width: 100%;
+    min-height: 80vh;
 }
 
 @media (max-width: 1024px) {
-    .teacher-container-padding {
+    .teacher-page-container {
         padding: 15px;
+        margin-left: 0 !important;
     }
 }
 
-/* Grid Otomatis Penuh */
-.responsive-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 25px;
-    width: 100%;
+@media (max-width: 768px) {
+    .teacher-page-container {
+        padding: 12px;
+    }
 }
 
-/* Teacher Card Protection */
+/* Kartu standar */
 .teacher-card {
     background: #ffffff;
     border-radius: 16px;
@@ -40,7 +39,7 @@
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     border: 1px solid #f1f5f9;
     width: 100%;
-    overflow: hidden; /* Mutlak: Mencegah isi kartu meluber */
+    overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -50,14 +49,13 @@
     border-color: var(--primary-color) !important;
 }
 
-/* Form Responsif */
+/* Form responsif */
 input, select, textarea {
-    width: 100%;
     max-width: 100%;
-    font-size: 16px !important; /* Mencegah auto-zoom iOS */
+    font-size: 16px !important;
 }
 
-/* Tabel Responsif HP */
+/* Tabel scroll di mobile */
 .table-responsive {
     width: 100%;
     overflow-x: auto;
@@ -68,7 +66,7 @@ input, select, textarea {
     .hide-on-mobile { display: none !important; }
 }
 
-/* Spinner Animasi */
+/* Spinner */
 .spinner-global {
     width: 35px;
     height: 35px;
@@ -80,15 +78,4 @@ input, select, textarea {
 
 @keyframes spin-global {
     100% { transform: rotate(360deg); }
-}
-
-/* Print Optimization */
-@media print {
-    .no-print { display: none !important; }
-    body, html, .main-content-wrapper, div[style*="margin-left"] {
-        margin: 0 !important;
-        width: 100% !important;
-        padding: 0 !important;
-        background: white !important;
-    }
 }
