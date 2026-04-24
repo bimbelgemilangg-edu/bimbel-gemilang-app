@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import './GlobalTeacher.css'; 
 
 import Login from './pages/Login';
 import LoginGuru from './pages/LoginGuru';
@@ -68,7 +67,7 @@ const SiswaRoute = ({ children }) => {
   return children;
 };
 
-// 🔥 TeacherLayout INLINE (tidak import dari file terpisah)
+// 🔥 TeacherLayout dengan margin auto untuk sidebar
 const TeacherLayout = ({ children }) => {
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 1024);
 
@@ -81,15 +80,41 @@ const TeacherLayout = ({ children }) => {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
       <SidebarGuru />
-      <main className="main-content" style={{ flex: 1 }}>
-        <header style={{ background: 'white', padding: '15px 25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', position: 'sticky', top: 0, zIndex: 99 }}>
+      <main style={{
+        flex: 1,
+        marginLeft: isMobile ? 0 : '260px',
+        transition: 'margin-left 0.3s ease',
+        width: isMobile ? '100%' : 'calc(100% - 260px)'
+      }}>
+        <header style={{
+          background: 'white',
+          padding: '15px 25px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          borderBottom: '1px solid #eee',
+          position: 'sticky',
+          top: 0,
+          zIndex: 99
+        }}>
           <div style={{ paddingLeft: isMobile ? '50px' : '0px' }}>
             <h4 style={{ margin: 0 }}>Bimbel Gemilang</h4>
             <small style={{ color: '#7f8c8d' }}>Portal Akademik</small>
           </div>
-          <div style={{ width: 35, height: 35, background: '#3498db', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white' }}>G</div>
+          <div style={{
+            width: 35, height: 35,
+            background: '#3498db',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 'bold',
+            color: 'white'
+          }}>
+            G
+          </div>
         </header>
-        <div style={{ padding: 20, width: '100%', boxSizing: 'border-box' }}>
+        <div style={{ padding: 20, width: '100%', boxSizing: 'border-box', minHeight: 'calc(100vh - 65px)' }}>
           {children}
         </div>
       </main>
@@ -125,7 +150,7 @@ function App() {
         <Route path="/admin/manage-blog" element={<AdminRoute><ManageBlog /></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
 
-        {/* GURU - DENGAN TeacherLayout + Sidebar */}
+        {/* GURU */}
         <Route path="/guru/dashboard" element={<GuruRoute><TeacherLayout><TeacherDashboard /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/profile" element={<GuruRoute><TeacherLayout><TeacherProfile /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/history" element={<GuruRoute><TeacherLayout><TeacherHistory /></TeacherLayout></GuruRoute>} />
