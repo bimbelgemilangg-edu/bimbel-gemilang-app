@@ -67,7 +67,7 @@ const SiswaRoute = ({ children }) => {
   return children;
 };
 
-// 🔥 TeacherLayout dengan margin auto untuk sidebar
+// 🔥 TeacherLayout FIXED - Seperti ModulManager
 const TeacherLayout = ({ children }) => {
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 1024);
 
@@ -78,13 +78,15 @@ const TeacherLayout = ({ children }) => {
   }, []);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100%', background: '#f8fafc' }}>
       <SidebarGuru />
       <main style={{
         flex: 1,
         marginLeft: isMobile ? 0 : '260px',
         transition: 'margin-left 0.3s ease',
-        width: isMobile ? '100%' : 'calc(100% - 260px)'
+        width: isMobile ? '100%' : 'calc(100% - 260px)',
+        maxWidth: '100vw',
+        overflowX: 'hidden'
       }}>
         <header style={{
           background: 'white',
@@ -98,8 +100,8 @@ const TeacherLayout = ({ children }) => {
           zIndex: 99
         }}>
           <div style={{ paddingLeft: isMobile ? '50px' : '0px' }}>
-            <h4 style={{ margin: 0 }}>Bimbel Gemilang</h4>
-            <small style={{ color: '#7f8c8d' }}>Portal Akademik</small>
+            <h4 style={{ margin: 0, fontSize: 14, color: '#1e293b' }}>Bimbel Gemilang</h4>
+            <small style={{ color: '#7f8c8d', fontSize: 11 }}>Portal Akademik</small>
           </div>
           <div style={{
             width: 35, height: 35,
@@ -109,12 +111,20 @@ const TeacherLayout = ({ children }) => {
             alignItems: 'center',
             justifyContent: 'center',
             fontWeight: 'bold',
-            color: 'white'
+            color: 'white',
+            fontSize: 13
           }}>
             G
           </div>
         </header>
-        <div style={{ padding: 20, width: '100%', boxSizing: 'border-box', minHeight: 'calc(100vh - 65px)' }}>
+        <div style={{
+          padding: isMobile ? 12 : 20,
+          width: '100%',
+          boxSizing: 'border-box',
+          minHeight: 'calc(100vh - 65px)',
+          maxWidth: 1400,
+          margin: '0 auto'
+        }}>
           {children}
         </div>
       </main>
