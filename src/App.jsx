@@ -25,6 +25,7 @@ import ManageBlog from './pages/admin/blog/ManageBlog';
 import ManageMateriPortal from './pages/admin/portal-siswa/ManageMateri';
 import PortalSiswaHome from './pages/admin/portal-siswa/PortalSiswaHome';
 import ManagePoster from './pages/admin/portal-siswa/ManagePoster';
+import ManageSurvey from './pages/admin/portal-siswa/ManageSurvey';
 
 // === GURU ===
 import SidebarGuru from './components/SidebarGuru';
@@ -39,7 +40,6 @@ import ModulManager from './pages/teacher/modul/ModulManager';
 import CekTugasSiswa from './pages/teacher/modul/CekTugasSiswa';
 import ManageMateriGuru from './pages/teacher/modul/ManageMateri';
 import ManageQuiz from './pages/teacher/modul/ManageQuiz';
-// ManageTugas sudah include di ManageMateri.jsx sebagai section assignment
 
 // === SISWA ===
 import StudentDashboard from './pages/student/StudentDashboard';
@@ -71,7 +71,7 @@ const SiswaRoute = ({ children }) => {
   return children;
 };
 
-// === TEACHER LAYOUT (DENGAN SIDEBAR) ===
+// === TEACHER LAYOUT ===
 const TeacherLayout = ({ children }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
@@ -129,6 +129,7 @@ function App() {
         <Route path="/admin/portal" element={<AdminRoute><PortalSiswaHome /></AdminRoute>} />
         <Route path="/admin/portal/poster" element={<AdminRoute><ManagePoster /></AdminRoute>} />
         <Route path="/admin/portal/manage-materi" element={<AdminRoute><ManageMateriPortal /></AdminRoute>} />
+        <Route path="/admin/portal/survey" element={<AdminRoute><ManageSurvey /></AdminRoute>} />
         <Route path="/admin/finance" element={<AdminRoute><FinanceLayout /></AdminRoute>} />
         <Route path="/admin/schedule" element={<AdminRoute><SchedulePage /></AdminRoute>} />
         <Route path="/admin/grades" element={<AdminRoute><GradeReport /></AdminRoute>} />

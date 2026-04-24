@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Image, Bell, BookOpen, Wallet, GraduationCap } from 'lucide-react';
+import { LayoutDashboard, Image, Bell, BookOpen, Wallet, GraduationCap, ClipboardList } from 'lucide-react';
 
 const PortalSiswaHome = () => {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ const PortalSiswaHome = () => {
     { id: 3, title: 'Pantau Materi', icon: <BookOpen size={30} />, path: '/admin/portal/manage-materi', color: '#27ae60', desc: 'Lihat progres materi & upload PPT.' },
     { id: 4, title: 'Keuangan & SPP', icon: <Wallet size={30} />, path: '/admin/portal/finance', color: '#e74c3c', desc: 'Cek status pembayaran siswa.' },
     { id: 5, title: 'E-Rapor', icon: <GraduationCap size={30} />, path: '/admin/portal/rapor', color: '#9b59b6', desc: 'Input nilai hasil belajar siswa.' },
+    { id: 6, title: 'Survei & Kuesioner', icon: <ClipboardList size={30} />, path: '/admin/portal/survey', color: '#06b6d4', desc: 'Buat survei wajib/opsional untuk siswa & guru.' },
   ];
 
   return (
@@ -20,11 +21,7 @@ const PortalSiswaHome = () => {
 
       <div style={styles.grid}>
         {menus.map((menu) => (
-          <div 
-            key={menu.id} 
-            style={styles.card} 
-            onClick={() => navigate(menu.path)}
-          >
+          <div key={menu.id} style={styles.card} onClick={() => navigate(menu.path)}>
             <div style={{ ...styles.iconCircle, backgroundColor: menu.color }}>
               {menu.icon}
             </div>
