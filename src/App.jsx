@@ -67,7 +67,6 @@ const SiswaRoute = ({ children }) => {
   return children;
 };
 
-// 🔥 TeacherLayout FIXED - Seperti ModulManager
 const TeacherLayout = ({ children }) => {
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 1024);
 
@@ -90,7 +89,7 @@ const TeacherLayout = ({ children }) => {
       }}>
         <header style={{
           background: 'white',
-          padding: '15px 25px',
+          padding: '12px 20px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -100,11 +99,11 @@ const TeacherLayout = ({ children }) => {
           zIndex: 99
         }}>
           <div style={{ paddingLeft: isMobile ? '50px' : '0px' }}>
-            <h4 style={{ margin: 0, fontSize: 14, color: '#1e293b' }}>Bimbel Gemilang</h4>
-            <small style={{ color: '#7f8c8d', fontSize: 11 }}>Portal Akademik</small>
+            <h4 style={{ margin: 0, fontSize: 13, color: '#1e293b' }}>Bimbel Gemilang</h4>
+            <small style={{ color: '#7f8c8d', fontSize: 10 }}>Portal Akademik</small>
           </div>
           <div style={{
-            width: 35, height: 35,
+            width: 32, height: 32,
             background: '#3498db',
             borderRadius: '50%',
             display: 'flex',
@@ -112,18 +111,14 @@ const TeacherLayout = ({ children }) => {
             justifyContent: 'center',
             fontWeight: 'bold',
             color: 'white',
-            fontSize: 13
-          }}>
-            G
-          </div>
+            fontSize: 12
+          }}>G</div>
         </header>
         <div style={{
-          padding: isMobile ? 12 : 20,
+          padding: isMobile ? 10 : 20,
           width: '100%',
           boxSizing: 'border-box',
-          minHeight: 'calc(100vh - 65px)',
-          maxWidth: 1400,
-          margin: '0 auto'
+          minHeight: 'calc(100vh - 60px)'
         }}>
           {children}
         </div>
