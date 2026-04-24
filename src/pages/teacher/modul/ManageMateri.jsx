@@ -349,7 +349,7 @@ const ManageMateri = () => {
                     <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '30px 20px', border: '2px dashed #e2e8f0', borderRadius: 10, cursor: 'pointer', background: '#f8fafc', color: '#64748b', fontSize: 13 }}>
                       <FileUp size={30} color="#94a3b8" />
                       <span>Upload PDF/Gambar (Max 50MB)</span>
-                      <input type="file" accept=".pdf,image/*" hidden onChange={(e) => handleFileUpload(e, activeSec.id)} />
+                      <input type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,image/*" hidden onChange={(e) => handleFileUpload(e, activeSec.id)} />
                     </label>
                   )}
                 </div>
