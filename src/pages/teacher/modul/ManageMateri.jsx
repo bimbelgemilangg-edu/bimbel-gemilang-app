@@ -29,9 +29,11 @@ const ManageMateri = () => {
   const [availableClasses, setAvailableClasses] = useState([]);
   const [showSettings, setShowSettings] = useState(false);
   const [authorName] = useState(localStorage.getItem('teacherName') || localStorage.getItem('userName') || "Guru");
+  
+  // 🔥 MATA PELAJARAN DARI DATA GURU
+  const [subjects, setSubjects] = useState(["Umum"]);
 
   const COLLECTION_NAME = "bimbel_modul";
-  const SUBJECTS = ["Matematika", "Bahasa Indonesia", "Bahasa Inggris", "IPA", "IPS", "PPKn", "Umum"];
   const STATUS_OPTIONS = [
     { value: 'aktif', label: '🟢 Aktif', color: '#10b981' },
     { value: 'terjadwal', label: '🟡 Terjadwal', color: '#f59e0b' },
@@ -46,10 +48,18 @@ const ManageMateri = () => {
 
   useEffect(() => {
     const fetchContext = async () => {
-      const snap = await getDocs(collection(db, "students"));
-      const data = snap.docs.map(d => d.data());
+      // 🔥 Ambil kelas dari data siswa
+      const snapSiswa = await getDocs(collection(db, "students"));
+      const data = snapSiswa.docs.map(d => d.data());
       const classes = [...new Set(data.map(s => s.kelasSekolah))].filter(Boolean).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
       setAvailableClasses(classes);
+      
+      // 🔥 Ambil mata pelajaran dari data guru
+      const snapGuru = await getDocs(collection(db, "teachers"));
+      const guruData = snapGuru.docs.map(d => d.data());
+      const mapelList = [...new Set(guruData.map(t => t.mapel).filter(Boolean))];
+      if (mapelList.length === 0) mapelList.push("Umum");
+      setSubjects(mapelList.sort());
     };
     fetchContext();
   }, []);
@@ -204,7 +214,7 @@ const ManageMateri = () => {
             <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Judul modul..." style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', marginBottom: 6, boxSizing: 'border-box' }} />
             <select value={subject} onChange={e => setSubject(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', marginBottom: 6, boxSizing: 'border-box', background: 'white' }}>
               <option value="">Mata Pelajaran</option>
-              {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
+              {subjects.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <label style={{ display: 'block', height: 70, borderRadius: 6, overflow: 'hidden', cursor: 'pointer', border: '2px dashed #e2e8f0', marginTop: 4 }}>
               {coverImage ? <img src={coverImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 11 }}><ImageIcon size={16} /> Cover</div>}
