@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
-import SidebarGuru from '../../components/SidebarGuru'; 
 
 const TeacherProfile = () => {
   const [guru, setGuru] = useState(null);
   const [wa, setWa] = useState("");
   const [fotoUrl, setFotoUrl] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchProfile = async () => {
     try {
@@ -37,7 +43,7 @@ const TeacherProfile = () => {
         img.src = event.target.result;
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 400; 
+          const MAX_WIDTH = 400;
           const scaleSize = MAX_WIDTH / img.width;
           canvas.width = MAX_WIDTH;
           canvas.height = img.height * scaleSize;
@@ -58,32 +64,57 @@ const TeacherProfile = () => {
     } catch (error) { alert("Gagal: " + error.message); }
   };
 
-  if (loading) return <div style={{padding:100, textAlign:'center'}}>Memuat...</div>;
+  if (loading) return <div style={{ textAlign: 'center', padding: 60 }}>Memuat...</div>;
 
   return (
-    <div style={{ display: 'flex' }}>
-      <SidebarGuru />
-      <div style={{ marginLeft: '250px', padding: '40px', width: 'calc(100% - 250px)', background: '#f4f7f6', minHeight: '100vh' }}>
-        <div style={{ background:'white', padding:35, borderRadius:20, boxShadow:'0 10px 30px rgba(0,0,0,0.08)', maxWidth:'450px', margin:'0 auto' }}>
-            <div style={{textAlign: 'center', marginBottom: 20}}>
-                <img src={fotoUrl || "https://via.placeholder.com/120"} style={{ width:120, height:120, borderRadius:'50%', objectFit:'cover', border: '4px solid #fff' }} alt="Profil" />
-                <h2 style={{margin: '10px 0 5px 0'}}>{guru?.nama}</h2>
-                <p style={{color: '#7f8c8d'}}>{guru?.mapel}</p>
-            </div>
-
-            <div style={{ background:'linear-gradient(135deg, #fff9c4 0%, #fff176 100%)', padding:20, borderRadius:15, textAlign:'center' }}>
-                <p style={{margin:0, fontSize:12, fontWeight:'bold'}}>SKOR KPI SAYA</p>
-                <div style={{fontSize:45, fontWeight:'bold'}}>{parseFloat(guru?.kpiScore || 0).toFixed(1)}</div>
-            </div>
-
-            <form onSubmit={handleUpdate} style={{marginTop:25}}>
-                <label style={{fontSize:12, fontWeight:'bold'}}>WhatsApp</label>
-                <input style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd', marginBottom: 15 }} value={wa} onChange={e=>setWa(e.target.value)} />
-                <label style={{fontSize:12, fontWeight:'bold'}}>Ganti Foto</label>
-                <input type="file" accept="image/*" onChange={handleFileChange} style={{marginBottom:20, display:'block'}} />
-                <button type="submit" style={{ width:'100%', padding: '12px', background: '#2c3e50', color: 'white', border: 'none', borderRadius: '10px', fontWeight:'bold', cursor:'pointer' }}>Update Profil</button>
-            </form>
+    <div style={{ maxWidth: 500, margin: '0 auto', padding: isMobile ? 10 : 20 }}>
+      <div style={{ background: 'white', padding: isMobile ? 20 : 30, borderRadius: 18, boxShadow: '0 4px 15px rgba(0,0,0,0.06)', border: '1px solid #f1f5f9' }}>
+        
+        {/* FOTO PROFIL */}
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <img 
+            src={fotoUrl || "https://via.placeholder.com/120"} 
+            style={{ width: 100, height: 100, borderRadius: '50%', objectFit: 'cover', border: '3px solid #e2e8f0' }} 
+            alt="Profil" 
+          />
+          <h2 style={{ margin: '10px 0 4px 0', fontSize: 20, color: '#1e293b' }}>{guru?.nama}</h2>
+          <p style={{ color: '#64748b', fontSize: 13, margin: 0 }}>{guru?.mapel || '-'}</p>
         </div>
+
+        {/* KPI */}
+        <div style={{ background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', padding: 18, borderRadius: 14, textAlign: 'center', marginBottom: 25 }}>
+          <p style={{ margin: 0, fontSize: 11, fontWeight: '700', color: '#b45309' }}>SKOR KPI SAYA</p>
+          <div style={{ fontSize: 38, fontWeight: '900', color: '#1e293b' }}>{parseFloat(guru?.kpiScore || 0).toFixed(1)}</div>
+        </div>
+
+        {/* FORM */}
+        <form onSubmit={handleUpdate}>
+          <div style={{ marginBottom: 15 }}>
+            <label style={{ fontSize: 12, fontWeight: '700', color: '#64748b', display: 'block', marginBottom: 5 }}>Nomor WhatsApp</label>
+            <input 
+              style={{ width: '100%', padding: 10, borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 14, boxSizing: 'border-box', outline: 'none' }} 
+              value={wa} 
+              onChange={e => setWa(e.target.value)} 
+              placeholder="08xxx"
+            />
+          </div>
+
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ fontSize: 12, fontWeight: '700', color: '#64748b', display: 'block', marginBottom: 5 }}>Ganti Foto Profil</label>
+            <input type="file" accept="image/*" onChange={handleFileChange} style={{ fontSize: 12 }} />
+          </div>
+
+          <button 
+            type="submit" 
+            style={{ 
+              width: '100%', padding: 12, background: '#1e293b', color: 'white', 
+              border: 'none', borderRadius: 10, fontWeight: '700', cursor: 'pointer', 
+              fontSize: 14 
+            }}
+          >
+            💾 Update Profil
+          </button>
+        </form>
       </div>
     </div>
   );
