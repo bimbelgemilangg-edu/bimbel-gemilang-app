@@ -1,13 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore"; 
-import { 
-  Plus, Trash2, CheckCircle, ArrowLeft, Save, 
-  Layout, FileText, Sparkles, X, Wand2, Calculator
-} from 'lucide-react';
+import { Plus, Trash2, CheckCircle, ArrowLeft, Save, Layout, FileText, Sparkles, X, Wand2, Calculator } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-
-// Library Matematika
 import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
 
@@ -31,7 +26,7 @@ const ManageQuiz = () => {
 
   useEffect(() => {
     if (modulId) {
-      const fetchCurrentData = async () => {
+      const fetchData = async () => {
         try {
           const snap = await getDoc(doc(db, "bimbel_modul", modulId));
           if (snap.exists()) {
@@ -41,10 +36,6 @@ const ManageQuiz = () => {
               subject: data.subject || "", 
               deadline: data.deadlineQuiz || "" 
             });
-            
-            // ✅ FIXED: Tampilkan totalQuestions
-            console.log("Total Questions from DB:", data.totalQuestions);
-            
             if (data.quizData && data.quizData.length > 0) {
               setQuestions(data.quizData.map((q, idx) => ({
                 id: q.id || Date.now() + idx + Math.random(), 
@@ -56,9 +47,9 @@ const ManageQuiz = () => {
               setQuestions([{ id: Date.now(), q: '', options: ['', '', '', ''], correct: 0 }]);
             }
           }
-        } catch (err) { console.error("Firestore Fetch Error:", err); }
+        } catch (err) { console.error(err); }
       };
-      fetchCurrentData();
+      fetchData();
     }
   }, [modulId]);
 
@@ -67,11 +58,8 @@ const ManageQuiz = () => {
     const parts = text.split(/(\$.*?\$)/g);
     return parts.map((part, i) => {
       if (part.startsWith('$') && part.endsWith('$')) {
-        try {
-          return <InlineMath key={i} math={part.substring(1, part.length - 1)} />;
-        } catch (e) {
-          return <span key={i} style={{color:'red'}}>{part}</span>;
-        }
+        try { return <InlineMath key={i} math={part.substring(1, part.length - 1)} />; } 
+        catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
       }
       return <span key={i}>{part}</span>;
     });
@@ -80,201 +68,143 @@ const ManageQuiz = () => {
   const handleSmartGenerate = () => {
     if (!bulkText.trim()) return;
     const rawBlocks = bulkText.split(/\n(?=\d+[\.\$\s])/);
-    
-    const parsedQuestions = rawBlocks.map((block, index) => {
+    const parsed = rawBlocks.map((block, index) => {
       const lines = block.trim().split('\n').filter(l => l.trim() !== "");
       if (lines.length === 0) return null;
-
-      const questionText = lines[0].replace(/^\d+[\.\$\s]*/, '').trim();
-      const optionLines = lines.slice(1).filter(l => /^[A-E][\.\$\s]/i.test(l.trim()));
-      
-      const options = optionLines.map(opt => opt.replace(/^[A-E][\.\$\s]*/i, '').trim());
-      const finalOptions = [...options];
-      while (finalOptions.length < 4) finalOptions.push("");
-
-      return {
-        id: Date.now() + index + Math.random(),
-        q: questionText,
-        options: finalOptions.slice(0, 4),
-        correct: 0
-      };
+      const qt = lines[0].replace(/^\d+[\.\$\s]*/, '').trim();
+      const opts = lines.slice(1).filter(l => /^[A-E][\.\$\s]/i.test(l.trim())).map(o => o.replace(/^[A-E][\.\$\s]*/i, '').trim());
+      while (opts.length < 4) opts.push("");
+      return { id: Date.now() + index + Math.random(), q: qt, options: opts.slice(0, 4), correct: 0 };
     }).filter(Boolean);
-
-    if (parsedQuestions.length > 0) {
-      setQuestions(prev => (prev.length === 1 && prev[0].q === "") ? parsedQuestions : [...prev, ...parsedQuestions]);
+    if (parsed.length > 0) {
+      setQuestions(prev => (prev.length === 1 && prev[0].q === "") ? parsed : [...prev, ...parsed]);
       setBulkText("");
       setShowImport(false);
     }
   };
 
-  // ✅ FIXED: Tambah totalQuestions & validasi
   const handleSaveQuiz = async () => {
     if (!modulId) return alert("Modul ID tidak ditemukan!");
-    
-    // Validasi soal
-    const validQuestions = questions.filter(q => q.q.trim() !== '');
-    if (validQuestions.length === 0) {
-      return alert("Minimal 1 soal harus diisi!");
-    }
-    
+    const valid = questions.filter(q => q.q.trim() !== '');
+    if (valid.length === 0) return alert("Minimal 1 soal harus diisi!");
     setLoading(true);
     try {
       await updateDoc(doc(db, "bimbel_modul", modulId), {
-        quizData: validQuestions.map(q => ({ 
-          id: q.id, 
-          question: q.q.trim(), 
-          options: q.options, 
-          correctAnswer: q.correct 
-        })),
-        totalQuestions: validQuestions.length, // ✅ CRUCIAL: SIMPAN TOTAL SOAL
+        quizData: valid.map(q => ({ id: q.id, question: q.q.trim(), options: q.options, correctAnswer: q.correct })),
+        totalQuestions: valid.length,
         deadlineQuiz: quizInfo.deadline,
         updatedAt: serverTimestamp()
       });
-      
-      alert(`✅ DATA TERSIMPAN!\n${validQuestions.length} Soal Kuis + TotalQuestions`);
+      alert(`✅ ${valid.length} soal tersimpan!`);
       navigate(-1);
-    } catch (err) { 
-      console.error("Save Error:", err);
-      alert("Gagal menyimpan: " + err.message); 
-    }
+    } catch (err) { alert("Gagal: " + err.message); }
     setLoading(false);
   };
 
   return (
-    <div className="teacher-page-container" style={{ maxWidth: 800, paddingBottom: 150 }}>
-      {showImport && (
-        <div style={st.modalOverlay}>
-          <div style={st.modalContent(isMobile)}>
-            <div style={st.modalHeader}>
-              <h3 style={{margin:0, display:'flex', alignItems:'center', gap:10}}><Wand2 size={20} color="#673ab7"/> Bulk Math Importer</h3>
-              <button onClick={() => setShowImport(false)} style={st.btnClose}><X/></button>
-            </div>
-            <div style={st.mathHint}>
-              Format: <b>1. Soal $x^2$ (Enter) A. Opsi 1 (Enter) B. Opsi 2...</b>
-            </div>
-            <textarea 
-              style={st.bulkArea} 
-              placeholder="Contoh:&#10;1. Berapa hasil $\sqrt{64}$?&#10;A. 6&#10;B. 8&#10;C. 10&#10;D. 12"
-              value={bulkText}
-              onChange={(e) => setBulkText(e.target.value)}
-            />
-            <button onClick={handleSmartGenerate} style={st.btnGenerate}>PROSES & IMPORT</button>
-          </div>
-        </div>
-      )}
-
-      <div style={st.headerNav}>
-        <button onClick={() => navigate(-1)} style={st.btnBack}><ArrowLeft size={18}/> Batal</button>
-        <div style={{display:'flex', gap:10}}>
-           <button onClick={() => setShowImport(true)} style={st.btnImport}><Calculator size={18}/> Bulk Import</button>
-           <button onClick={handleSaveQuiz} disabled={loading} style={st.btnSave}>
-            <Save size={18}/> {loading ? "Menyimpan..." : `Simpan Kuis (${questions.filter(q => q.q.trim()).length} soal)`}
+    <div style={{ maxWidth: 800, margin: '0 auto', paddingBottom: 100 }}>
+      {/* HEADER */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'white', border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <ArrowLeft size={14}/> Kembali
+        </button>
+        <h2 style={{ margin: 0, fontSize: isMobile ? 16 : 20, fontWeight: 800, color: '#1e293b' }}>
+          ❓ {modulId ? 'Edit Kuis' : 'Buat Kuis'}
+        </h2>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button onClick={() => setShowImport(true)} style={{ background: 'white', color: '#673ab7', border: '1px solid #673ab7', padding: '8px 12px', borderRadius: 8, fontWeight: 600, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Calculator size={14}/> Bulk Import
+          </button>
+          <button onClick={handleSaveQuiz} disabled={loading} style={{ background: '#673ab7', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Save size={14}/> {loading ? '...' : `Simpan (${questions.filter(q => q.q.trim()).length})`}
           </button>
         </div>
       </div>
 
-      <div style={st.infoCard}>
-        <div style={st.badgeInfo}><Layout size={14}/> MODUL ID: {modulId}</div>
-        <div style={{marginTop:10}}>
-          <label style={{fontSize:11, fontWeight:800, color:'#64748b', display:'block', marginBottom:5}}>BATAS WAKTU (DEADLINE):</label>
-          <input type="datetime-local" style={st.dateInput} value={quizInfo.deadline} onChange={(e) => setQuizInfo({...quizInfo, deadline: e.target.value})} />
-        </div>
-        {/* ✅ INFO TOTAL SOAL */}
-        <div style={{marginTop:15, padding:'10px', background:'#f0fdf4', borderRadius:'8px', fontSize:'12px', color:'#166534'}}>
+      {/* INFO */}
+      <div style={{ background: 'white', padding: 15, borderRadius: 10, border: '1px solid #e2e8f0', marginBottom: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#673ab7', marginBottom: 10 }}><Layout size={12} /> Modul: {quizInfo.title || modulId || 'Mandiri'}</div>
+        <label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 4 }}>Deadline Kuis</label>
+        <input type="datetime-local" value={quizInfo.deadline} onChange={e => setQuizInfo({...quizInfo, deadline: e.target.value})} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+        <div style={{ marginTop: 10, padding: 8, background: '#f0fdf4', borderRadius: 6, fontSize: 10, color: '#166534', fontWeight: 600 }}>
           📊 Total Soal Aktif: <strong>{questions.filter(q => q.q.trim()).length}</strong>
         </div>
       </div>
 
-      <div style={{width:'100%', maxWidth:'800px'}}>
-        {questions.map((item, idx) => (
-          <div key={item.id} style={st.qCard}>
-            <div style={st.qHeader}>
-              <span style={st.qNumber}>SOAL NOMOR {idx + 1}</span>
-              <button onClick={() => setQuestions(questions.filter(q => q.id !== item.id))} style={st.btnDel}><Trash2 size={16}/></button>
+      {/* MODAL BULK IMPORT */}
+      {showImport && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20, backdropFilter: 'blur(4px)' }}>
+          <div style={{ background: 'white', width: '100%', maxWidth: 550, padding: 25, borderRadius: 16, boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Wand2 size={18} color="#673ab7"/> Bulk Math Importer</h3>
+              <button onClick={() => setShowImport(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X/></button>
             </div>
-            
-            <textarea 
-              style={st.qInput} 
-              placeholder="Tulis soal di sini... (Gunakan $ untuk rumus)"
-              value={item.q} 
-              onChange={(e) => setQuestions(questions.map(q => q.id === item.id ? {...q, q: e.target.value} : q))} 
+            <div style={{ background: '#eef2ff', padding: 10, borderRadius: 8, fontSize: 10, color: '#4338ca', marginBottom: 12 }}>
+              Format: <b>1. Soal $x^2$ (Enter) A. Opsi 1 (Enter) B. Opsi 2...</b>
+            </div>
+            <textarea style={{ width: '100%', height: 220, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, fontFamily: 'monospace', marginBottom: 12, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
+              placeholder={"1. Berapa hasil $\\sqrt{64}$?\nA. 6\nB. 8\nC. 10\nD. 12"}
+              value={bulkText} onChange={e => setBulkText(e.target.value)}
             />
-
-            <div style={st.mathPreview}>
-               <span style={{fontSize:9, fontWeight:900, color:'#94a3b8', display:'block', marginBottom:5}}>VISUAL PREVIEW:</span>
-               {renderMath(item.q)}
-            </div>
-
-            <div style={st.optGrid(isMobile)}>
-              {item.options.map((opt, optIdx) => (
-                <div 
-                  key={optIdx} 
-                  onClick={() => setQuestions(questions.map(q => q.id === item.id ? {...q, correct: optIdx} : q))}
-                  style={st.optItem(item.correct === optIdx)}
-                >
-                  <div style={st.radioCircle(item.correct === optIdx)}>
-                    {item.correct === optIdx && <div style={st.radioInner}/>}
-                  </div>
-                  <div style={{flex:1}}>
-                    <input 
-                      style={st.optInput} 
-                      value={opt} 
-                      placeholder={`Opsi ${String.fromCharCode(65 + optIdx)}`}
-                      onChange={(e) => {
-                        const newOpts = [...item.options];
-                        newOpts[optIdx] = e.target.value;
-                        setQuestions(questions.map(q => q.id === item.id ? {...q, options: newOpts} : q));
-                      }} 
-                      onClick={(e) => e.stopPropagation()} 
-                    />
-                    <div style={{fontSize:12, marginTop:4, color:'#475569'}}>{renderMath(opt)}</div>
-                  </div>
-                  {item.correct === optIdx && <CheckCircle size={16} color="#10b981"/>}
-                </div>
-              ))}
-            </div>
+            <button onClick={handleSmartGenerate} style={{ width: '100%', padding: 12, background: '#673ab7', color: 'white', border: 'none', borderRadius: 10, fontWeight: 800, fontSize: 13, cursor: 'pointer' }}>PROSES & IMPORT</button>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
-      <button onClick={() => setQuestions([...questions, { id: Date.now(), q: '', options: ['', '', '', ''], correct: 0 }])} style={st.btnAdd}>
-        <Plus size={18}/> Tambah Soal Baru
+      {/* SOAL */}
+      {questions.map((item, idx) => (
+        <div key={item.id} style={{ background: 'white', padding: 20, borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 15, boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, color: '#673ab7', background: '#f3e8ff', padding: '4px 10px', borderRadius: 6 }}>SOAL {idx + 1}</span>
+            <button onClick={() => setQuestions(questions.filter(q => q.id !== item.id))} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '4px 8px', borderRadius: 6, cursor: 'pointer' }}><Trash2 size={14}/></button>
+          </div>
+          
+          <textarea style={{ width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 14, fontWeight: 600, outline: 'none', resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }}
+            placeholder="Tulis soal... (Gunakan $ untuk rumus)"
+            value={item.q} onChange={e => setQuestions(questions.map(q => q.id === item.id ? {...q, q: e.target.value} : q))}
+          />
+
+          {item.q && (
+            <div style={{ padding: 10, background: '#f8fafc', borderRadius: 8, marginBottom: 12, border: '1px solid #e2e8f0' }}>
+              <span style={{ fontSize: 8, fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: 4 }}>PREVIEW:</span>
+              {renderMath(item.q)}
+            </div>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 8 }}>
+            {item.options.map((opt, oIdx) => (
+              <div key={oIdx} onClick={() => setQuestions(questions.map(q => q.id === item.id ? {...q, correct: oIdx} : q))} style={{
+                display: 'flex', alignItems: 'center', gap: 8, padding: 10, borderRadius: 8, cursor: 'pointer',
+                border: `2px solid ${item.correct === oIdx ? '#10b981' : '#e2e8f0'}`,
+                background: item.correct === oIdx ? '#f0fdf4' : 'white'
+              }}>
+                <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${item.correct === oIdx ? '#10b981' : '#cbd5e1'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {item.correct === oIdx && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981' }}></div>}
+                </div>
+                <input value={opt} placeholder={`Opsi ${String.fromCharCode(65 + oIdx)}`} onChange={e => {
+                  const newOpts = [...item.options];
+                  newOpts[oIdx] = e.target.value;
+                  setQuestions(questions.map(q => q.id === item.id ? {...q, options: newOpts} : q));
+                }} onClick={e => e.stopPropagation()} style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: 600, fontSize: 13, outline: 'none' }} />
+                {item.correct === oIdx && <CheckCircle size={14} color="#10b981"/>}
+              </div>
+            ))}
+          </div>
+          {item.options.some(o => o) && (
+            <div style={{ marginTop: 8, padding: 8, background: '#f8fafc', borderRadius: 6, fontSize: 11, color: '#64748b' }}>
+              {item.options.map((opt, oIdx) => opt && <div key={oIdx}>{String.fromCharCode(65 + oIdx)}. {renderMath(opt)}</div>)}
+            </div>
+          )}
+        </div>
+      ))}
+
+      <button onClick={() => setQuestions([...questions, { id: Date.now(), q: '', options: ['', '', '', ''], correct: 0 }])} style={{
+        width: '100%', padding: 14, border: '2px dashed #cbd5e1', background: 'white', borderRadius: 10, fontWeight: 700, color: '#64748b', cursor: 'pointer', fontSize: 13
+      }}>
+        <Plus size={16}/> Tambah Soal Baru
       </button>
     </div>
   );
-};
-
-const st = {
-  container: (m) => ({ padding: '30px 20px', paddingBottom: '150px', background: '#f8fafc', minHeight: '100vh', marginLeft: m ? 0 : '260px', display: 'flex', flexDirection: 'column', alignItems: 'center' }),
-  headerNav: { width: '100%', maxWidth: '800px', display: 'flex', justifyContent: 'space-between', marginBottom: '20px' },
-  btnBack: { background: 'white', border: '1px solid #e2e8f0', padding: '10px 15px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' },
-  btnSave: { background: '#673ab7', color: 'white', border: 'none', padding: '10px 25px', borderRadius: '12px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 },
-  btnImport: { background: '#fff', color: '#673ab7', border: '1px solid #673ab7', padding: '10px 15px', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8, cursor:'pointer' },
-  infoCard: { background: 'white', width: '100%', maxWidth: '800px', padding: '20px', borderRadius: '20px', marginBottom: '20px', border: '1px solid #e2e8f0' },
-  badgeInfo: { fontSize: '10px', fontWeight: '900', color: '#673ab7', display: 'flex', gap: 5, alignItems:'center' },
-  dateInput: { width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #e2e8f0', outline:'none', fontSize:'14px' },
-  qCard: { background: 'white', width: '100%', padding: '25px', borderRadius: '24px', marginBottom: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' },
-  qHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: 15 },
-  qNumber: { fontSize: '10px', fontWeight: '900', color: '#673ab7', background: '#f3e8ff', padding: '4px 12px', borderRadius: '8px' },
-  btnDel: { background: '#fff1f2', color: '#ef4444', border: 'none', padding: '8px', borderRadius: '10px', cursor: 'pointer' },
-  qInput: { width: '100%', minHeight: '80px', padding: '15px', borderRadius: '15px', border: '1px solid #f1f5f9', background: '#f8fafc', fontSize: '15px', fontWeight: '600', outline: 'none', marginBottom: 10 },
-  mathPreview: { padding: '15px', background: '#f1f5f9', borderRadius: '12px', marginBottom: 15, border: '1px solid #e2e8f0' },
-  optGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : '1fr 1fr', gap: '12px' }),
-  optItem: (act) => ({ 
-    display: 'flex', alignItems: 'center', gap: 10, padding: '14px', borderRadius: '16px', border: '2px solid', 
-    borderColor: act ? '#10b981' : '#f1f5f9', background: act ? '#f0fdf4' : '#fff', cursor: 'pointer', transition: '0.2s'
-  }),
-  radioCircle: (act) => ({ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${act ? '#10b981' : '#cbd5e1'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink:0 }),
-  radioInner: { width: 10, height: 10, borderRadius: '50%', background: '#10b981' },
-  optInput: { width:'100%', border: 'none', outline: 'none', background: 'transparent', fontWeight: '700', fontSize: '13px' },
-  btnAdd: { width: '100%', maxWidth: '800px', padding: '18px', border: '2px dashed #cbd5e1', background: 'white', borderRadius: '20px', fontWeight: '800', color: '#64748b', cursor: 'pointer' },
-  modalOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px', backdropFilter: 'blur(4px)' },
-  modalContent: (m) => ({ background: 'white', width: '100%', maxWidth: '600px', padding: '30px', borderRadius: '28px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }),
-  modalHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: 15 },
-  mathHint: { background: '#eef2ff', padding: '12px', borderRadius: '12px', fontSize: '11px', color: '#4338ca', marginBottom: 15, lineHeight:'1.5' },
-  btnClose: { background: 'none', border: 'none', cursor: 'pointer' },
-  bulkArea: { width: '100%', height: '250px', padding: '15px', borderRadius: '15px', border: '1px solid #e2e8f0', fontSize: '13px', fontFamily: 'monospace', marginBottom: 15, outline: 'none' },
-  btnGenerate: { width: '100%', padding: '15px', background: '#673ab7', color: 'white', border: 'none', borderRadius: '15px', fontWeight: '900', cursor: 'pointer' }
 };
 
 export default ManageQuiz;
