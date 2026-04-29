@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SidebarSiswa from '../../components/SidebarSiswa';
 import { db } from '../../firebase';
-import { collection, query, where, getDocs, orderBy, limit, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, where, getDocs, orderBy, doc, getDoc, setDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { Html5Qrcode } from "html5-qrcode";
 import StudentFinanceSiswa from './StudentFinance';
 import StudentGrades from './StudentGrades';
@@ -30,21 +30,17 @@ const StudentDashboard = () => {
   const [studentProfile, setStudentProfile] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
 
-  // 🔥 SURVEI WAJIB
+  // SURVEI WAJIB
   const [mandatorySurvey, setMandatorySurvey] = useState(null);
   const [surveyAnswers, setSurveyAnswers] = useState({});
   const [showSurveyModal, setShowSurveyModal] = useState(false);
 
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  useEffect(() => { const h = () => setWindowWidth(window.innerWidth); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   const isMobile = windowWidth <= 768;
 
   useEffect(() => {
     let html5QrCode = null;
-    const startScanner = async () => {
+    const start = async () => {
       try {
         html5QrCode = new Html5Qrcode("reader");
         await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } },
@@ -59,42 +55,24 @@ const StudentDashboard = () => {
                   scheduleId: data.scheduleId || '', keterangan: "Scan QR Mandiri Siswa"
                 }, { merge: true });
                 alert(`✅ Absen Berhasil: ${data.mapel}`);
-                stopScanner();
+                stop();
               }
             } catch (err) {}
           }, () => {});
       } catch (err) {}
     };
-    const stopScanner = async () => {
-      if (html5QrCode && html5QrCode.isScanning) {
-        try { await html5QrCode.stop(); html5QrCode.clear(); } catch (err) {}
-      }
+    const stop = async () => {
+      if (html5QrCode && html5QrCode.isScanning) { try { await html5QrCode.stop(); html5QrCode.clear(); } catch (err) {} }
       setIsScanning(false);
     };
-    if (isScanning) startScanner();
-    return () => { if (html5QrCode) stopScanner(); };
+    if (isScanning) start();
+    return () => { if (html5QrCode) stop(); };
   }, [isScanning, studentId, studentName]);
 
-  const formatDate = (ts) => {
-    if (!ts) return "-";
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
-    return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-  };
-  const formatDateOnly = (ts) => {
-    if (!ts) return "-";
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
-    return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-  };
-  const isDeadlineSoon = (dl) => {
-    if (!dl) return false;
-    const d = dl.toDate ? dl.toDate() : new Date(dl);
-    const diff = (d - new Date()) / (1000 * 60 * 60);
-    return diff > 0 && diff < 48;
-  };
-  const isDeadlinePassed = (dl) => {
-    if (!dl) return false;
-    return (dl.toDate ? dl.toDate() : new Date(dl)) < new Date();
-  };
+  const formatDate = (ts) => { if (!ts) return "-"; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }); };
+  const formatDateOnly = (ts) => { if (!ts) return "-"; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' }); };
+  const isDeadlineSoon = (dl) => { if (!dl) return false; const d = dl.toDate ? dl.toDate() : new Date(dl); const diff = (d - new Date()) / (1000 * 60 * 60); return diff > 0 && diff < 48; };
+  const isDeadlinePassed = (dl) => { if (!dl) return false; return (dl.toDate ? dl.toDate() : new Date(dl)) < new Date(); };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -109,35 +87,52 @@ const StudentDashboard = () => {
           currentKategori = sData.kategori || "Semua";
           currentKelas = sData.kelasSekolah || "Semua";
         }
+
+        // POSTER
         const qPost = query(collection(db, "student_contents"), orderBy("createdAt", "desc"));
         setPosters((await getDocs(qPost)).docs.map(d => ({ id: d.id, ...d.data() })));
+
+        // JADWAL
         const todayStr = new Date().toISOString().split('T')[0];
         const qSched = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr));
         const scheds = (await getDocs(qSched)).docs.map(d => ({ id: d.id, ...d.data() }))
           .filter(sch => sch.students?.some(s => s.id === studentId || s === studentId))
           .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
         setTodaySchedules(scheds.slice(0, 5));
+
+        // TUGAS
         const qModul = query(collection(db, "bimbel_modul"), where("targetKategori", "in", ["Semua", currentKategori]), orderBy("createdAt", "desc"), limit(10));
         const allModuls = (await getDocs(qModul)).docs.map(d => ({ id: d.id, ...d.data() }));
         setTasks(allModuls.filter(m => m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment')).slice(0, 5));
 
-        // 🔥 CEK SURVEI WAJIB
-        const qSurvey = query(collection(db, "surveys"), where("status", "==", "aktif"), where("isRequired", "==", true));
-        const surveys = (await getDocs(qSurvey)).docs.map(d => ({ id: d.id, ...d.data() }));
-        const mandatory = surveys.find(s => {
+        // 🔥 SURVEI WAJIB (QUERY TANPA COMPOSITE INDEX)
+        // Ambil semua survei aktif, lalu filter manual di JavaScript
+        const qSurvey = query(collection(db, "surveys"), where("status", "==", "aktif"));
+        const allSurveys = (await getDocs(qSurvey)).docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        // Filter manual: wajib + target cocok
+        const mandatory = allSurveys.find(s => {
+          if (!s.isRequired) return false;
           if (s.targetType === 'semua_siswa' || s.targetType === 'semua') return true;
           if (s.targetType === 'jenjang' && (s.targetKelas === 'Semua' || s.targetKelas === currentKelas)) return true;
           return false;
         });
+
         if (mandatory) {
+          // Cek apakah siswa sudah mengisi
           const qResp = query(collection(db, "survey_responses"), where("surveyId", "==", mandatory.id), where("userId", "==", studentId));
           const respSnap = await getDocs(qResp);
           if (respSnap.empty) {
+            console.log('🔴 SURVEI WAJIB DITEMUKAN:', mandatory.title);
             setMandatorySurvey(mandatory);
             setShowSurveyModal(true);
+          } else {
+            console.log('✅ Siswa sudah mengisi survei:', mandatory.title);
           }
+        } else {
+          console.log('ℹ️ Tidak ada survei wajib yang cocok untuk siswa ini');
         }
-      } catch (err) { console.error(err); } 
+      } catch (err) { console.error('❌ Error fetch data:', err); } 
       finally { setLoading(false); }
     };
     fetchData();
@@ -154,14 +149,11 @@ const StudentDashboard = () => {
     if (unanswered.length > 0) return alert(`❌ ${unanswered.length} pertanyaan belum dijawab.`);
     try {
       await addDoc(collection(db, "survey_responses"), {
-        surveyId: mandatorySurvey.id,
-        userId: studentId,
-        userName: studentName,
+        surveyId: mandatorySurvey.id, userId: studentId, userName: studentName,
         answers: mandatorySurvey.questions.map((_, i) => ({ questionIndex: i, answer: surveyAnswers[i] })),
         submittedAt: serverTimestamp()
       });
-      setShowSurveyModal(false);
-      setMandatorySurvey(null);
+      setShowSurveyModal(false); setMandatorySurvey(null);
       alert("✅ Survei berhasil dikirim!");
     } catch (err) { alert("❌ Gagal: " + err.message); }
   };
@@ -173,71 +165,39 @@ const StudentDashboard = () => {
           <h1 style={isMobile ? st.titleMobile : st.title}>Halo, {studentName}! 👋</h1>
           <p style={st.subtitle}>{studentProfile ? `${studentProfile.kategori} - Kelas ${studentProfile.kelasSekolah}` : "Memuat..."}</p>
         </div>
-        {!isMobile && (
-          <div style={{display:'flex', gap:10}}>
-            <button onClick={() => setIsScanning(true)} style={st.btnScan}><Camera size={18} /> SCAN ABSEN</button>
-            <div style={st.statusBadge}><GraduationCap size={18} /><span>Siswa Aktif</span></div>
-          </div>
-        )}
+        {!isMobile && <div style={{display:'flex', gap:10}}><button onClick={() => setIsScanning(true)} style={st.btnScan}><Camera size={18} /> SCAN ABSEN</button><div style={st.statusBadge}><GraduationCap size={18} /><span>Siswa Aktif</span></div></div>}
       </div>
       <div style={{...st.carousel, aspectRatio: isMobile ? '4/3' : '21/9'}}>
-        <Swiper modules={[Navigation, Pagination, Autoplay, EffectFade]} effect={'fade'} navigation={!isMobile} pagination={{ clickable: true }} autoplay={{ delay: 5000, disableOnInteraction: false }} loop={posters.length > 1} style={{width:'100%',height:'100%'}}>
-          {posters.map(post => (
-            <SwiperSlide key={post.id} onClick={() => setSelectedNews(post)}>
-              <div style={{...st.slideCard, backgroundImage: `url(${post.imageUrl})`, cursor:'pointer'}}>
-                <div style={st.slideOverlay}><h2 style={isMobile?st.slideTitleMobile:st.slideTitle}>{post.title}</h2>{!isMobile&&<p style={st.slideDesc}>{post.desc||"Klik untuk baca"}</p>}</div>
-              </div>
-            </SwiperSlide>
-          ))}
+        <Swiper modules={[Navigation, Pagination, Autoplay, EffectFade]} effect={'fade'} navigation={!isMobile} pagination={{ clickable: true }} autoplay={{ delay: 5000 }} loop={posters.length > 1} style={{width:'100%',height:'100%'}}>
+          {posters.map(post => <SwiperSlide key={post.id} onClick={() => setSelectedNews(post)}><div style={{...st.slideCard, backgroundImage: `url(${post.imageUrl})`, cursor:'pointer'}}><div style={st.slideOverlay}><h2 style={isMobile?st.slideTitleMobile:st.slideTitle}>{post.title}</h2></div></div></SwiperSlide>)}
         </Swiper>
       </div>
       <div style={isMobile?st.mainGridMobile:st.mainGrid}>
         <div style={st.leftCol}>
           <section style={st.card}><h3 style={st.sectionTitle}><Calendar size={20} color="#3498db"/> Jadwal Hari Ini</h3>
-            {todaySchedules.length===0?<div style={st.empty}>📭 Tidak ada jadwal.</div>:todaySchedules.map((sch,i)=>(
-              <div key={i} style={st.schItem}><div style={st.schTime}><b>{sch.start}</b><br/><span style={{fontSize:10}}>{sch.end}</span></div><div style={{...st.schLine,background:sch.program==='English'?'#e74c3c':'#3498db'}}></div><div style={st.schInfo}><b>{sch.title||"Kelas"}</b><div style={{fontSize:11,color:'#64748b'}}><MapPin size={10}/> {sch.planet||"Ruang"} • <User size={10}/> {sch.booker||"Guru"}</div></div></div>
-            ))}
+            {todaySchedules.length===0?<div style={st.empty}>📭 Tidak ada jadwal.</div>:todaySchedules.map((sch,i)=>(<div key={i} style={st.schItem}><div style={st.schTime}><b>{sch.start}</b></div><div style={st.schInfo}><b>{sch.title||"Kelas"}</b><div style={{fontSize:11,color:'#64748b'}}><MapPin size={10}/> {sch.planet}</div></div></div>))}
           </section>
-          <section style={st.card}>
-            <div style={st.cardHeader}><h3 style={st.sectionTitle}><ClipboardList size={20} color="#9b59b6"/> Tugas & Kuis</h3><button onClick={()=>setActiveMenu('materi')} style={st.btnViewAll}>Lihat Semua <ChevronRight size={14}/></button></div>
-            {tasks.length===0?<div style={st.empty}>📭 Tidak ada tugas.</div>:tasks.map((task,i)=>{
-              const dl=getAssignmentDeadline(task);
-              const soon=isDeadlineSoon(dl);
-              const passed=isDeadlinePassed(dl);
-              return (<div key={i} style={{...st.taskItem,borderLeftColor:passed?'#ef4444':soon?'#f59e0b':'#9b59b6'}}><div style={{flex:1}}><div style={{fontSize:14,fontWeight:700,color:'#1e293b'}}>{task.title}</div>{dl&&<div style={{fontSize:11,marginTop:4,display:'flex',alignItems:'center',gap:6}}><Clock size={12} color={passed?'#ef4444':'#64748b'}/><span style={{color:passed?'#ef4444':'#64748b',fontWeight:soon?700:400}}>{passed?'⛔ Terlambat: ':soon?'⚠️ Segera: ':'📅 Deadline: '}{formatDateOnly(dl)}</span>{soon&&<span style={st.badgeUrgent}>SEGERA</span>}</div>}</div><button onClick={()=>setActiveMenu('materi')} style={st.btnTaskBuka}>Buka</button></div>);
-            })}
+          <section style={st.card}><h3 style={st.sectionTitle}><ClipboardList size={20} color="#9b59b6"/> Tugas & Kuis</h3>
+            {tasks.length===0?<div style={st.empty}>📭 Tidak ada tugas.</div>:tasks.map((task,i)=>{const dl=getAssignmentDeadline(task);const soon=isDeadlineSoon(dl);const passed=isDeadlinePassed(dl);return(<div key={i} style={{...st.taskItem,borderLeftColor:passed?'#ef4444':soon?'#f59e0b':'#9b59b6'}}><div style={{flex:1}}><div style={{fontSize:14,fontWeight:700}}>{task.title}</div>{dl&&<div style={{fontSize:11,marginTop:4}}><Clock size={12}/> {passed?'⛔ ':soon?'⚠️ ':'📅 '}{formatDateOnly(dl)}</div>}</div><button onClick={()=>setActiveMenu('materi')} style={st.btnTaskBuka}>Buka</button></div>);})}
           </section>
         </div>
         <div style={st.rightCol}>
-          <section style={st.card}>
-            <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:15}}><div style={st.avatar}>{studentName?.charAt(0)||'S'}</div><div><b>{studentName}</b><p style={{fontSize:11,color:'#64748b',margin:0}}>{studentProfile?.kelasSekolah||'-'}</p></div></div>
-            <button onClick={()=>setActiveMenu('materi')} style={st.btnAccess}><BookOpen size={16}/> Buka Materi Belajar</button>
-          </section>
-          <section style={st.card}><h3 style={st.sectionTitle}><Clock size={20} color="#e67e22"/> Materi Terbaru</h3>
-            {tasks.slice(0,3).map((task,i)=>(<div key={i} style={st.historyItem}><div style={st.dot}></div><div><div style={{fontWeight:600,fontSize:13}}>{task.title}</div><div style={{fontSize:11,color:'#94a3b8'}}>{formatDateOnly(task.createdAt)}</div></div></div>))}
-          </section>
+          <section style={st.card}><div style={{display:'flex',alignItems:'center',gap:12,marginBottom:15}}><div style={st.avatar}>{studentName?.charAt(0)||'S'}</div><div><b>{studentName}</b></div></div><button onClick={()=>setActiveMenu('materi')} style={st.btnAccess}><BookOpen size={16}/> Buka Materi Belajar</button></section>
         </div>
       </div>
 
-      {/* MODAL BERITA */}
-      {selectedNews&&(<div style={st.modalOverlay} onClick={()=>setSelectedNews(null)}><div style={{...st.modalContent,width:isMobile?'90%':'600px'}} onClick={e=>e.stopPropagation()}><button onClick={()=>setSelectedNews(null)} style={st.btnCloseModal}><X size={20}/></button><img src={selectedNews.imageUrl} style={st.modalImg} alt=""/><div style={{padding:20}}><h2 style={{margin:0,fontSize:isMobile?18:22}}>{selectedNews.title}</h2><p style={{fontSize:14,color:'#475569',marginTop:10,lineHeight:1.6}}>{selectedNews.content||selectedNews.desc}</p></div></div></div>)}
-
-      {/* MODAL SCANNER */}
-      {isScanning&&(<div style={st.modalOverlay} onClick={()=>setIsScanning(false)}><div style={st.qrModal} onClick={e=>e.stopPropagation()}><button onClick={()=>setIsScanning(false)} style={st.btnCloseModal}><X size={20}/></button><h3 style={{marginTop:0,fontSize:18,color:'#2c3e50'}}>Scan QR Absensi</h3><p style={{fontSize:12,color:'#7f8c8d',marginBottom:20}}>Arahkan kamera ke kode QR Guru</p><div id="reader" style={{width:'100%',borderRadius:15,overflow:'hidden',background:'#000'}}></div><p style={{fontSize:11,color:'#3498db',marginTop:15}}>{studentName}</p></div></div>)}
-
-      {/* FAB MOBILE */}
+      {/* MODALS */}
+      {selectedNews&&(<div style={st.modalOverlay} onClick={()=>setSelectedNews(null)}><div style={{...st.modalContent,width:isMobile?'90%':'600px'}} onClick={e=>e.stopPropagation()}><button onClick={()=>setSelectedNews(null)} style={st.btnCloseModal}><X size={20}/></button><img src={selectedNews.imageUrl} style={st.modalImg} alt=""/><div style={{padding:20}}><h2>{selectedNews.title}</h2><p>{selectedNews.content||selectedNews.desc}</p></div></div></div>)}
+      {isScanning&&(<div style={st.modalOverlay} onClick={()=>setIsScanning(false)}><div style={st.qrModal} onClick={e=>e.stopPropagation()}><button onClick={()=>setIsScanning(false)} style={st.btnCloseModal}><X size={20}/></button><h3>Scan QR Absensi</h3><div id="reader" style={{width:'100%',borderRadius:15,overflow:'hidden',background:'#000'}}></div></div></div>)}
       {isMobile&&<button onClick={()=>setIsScanning(true)} style={st.fabQR}><Camera size={22}/></button>}
 
-      {/* 🔥 MODAL SURVEI WAJIB */}
+      {/* 🔥 MODAL SURVEI */}
       {showSurveyModal && mandatorySurvey && (
         <div style={{ position:'fixed',inset:0,background:'rgba(0,0,0,0.7)',zIndex:3000,display:'flex',justifyContent:'center',alignItems:'center',padding:20 }}>
           <div style={{ background:'white',borderRadius:16,padding:25,width:'100%',maxWidth:500,maxHeight:'80vh',overflowY:'auto' }}>
             <div style={{ display:'flex',alignItems:'center',gap:8,marginBottom:20 }}>
               <span style={{ fontSize:24 }}>📋</span>
-              <div>
-                <h2 style={{ margin:0,fontSize:18,fontWeight:800 }}>{mandatorySurvey.title}</h2>
-                <p style={{ margin:0,fontSize:11,color:'#ef4444',fontWeight:700 }}>🔴 WAJIB DIISI - Sebelum mengakses modul</p>
-              </div>
+              <div><h2 style={{ margin:0,fontSize:18,fontWeight:800 }}>{mandatorySurvey.title}</h2><p style={{ margin:0,fontSize:11,color:'#ef4444',fontWeight:700 }}>🔴 WAJIB DIISI</p></div>
             </div>
             {mandatorySurvey.questions.map((q, qIdx) => (
               <div key={qIdx} style={{ marginBottom:15 }}>
@@ -271,20 +231,13 @@ const StudentDashboard = () => {
     }
   };
 
-  if (loading) return (
-    <div style={st.mainContainer}>
-      <SidebarSiswa activeMenu={activeMenu} setActiveMenu={setActiveMenu} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-      <div style={st.loadingScreen}><div style={st.spinner}></div><p>Menyiapkan dashboard...</p></div>
-    </div>
-  );
+  if (loading) return <div style={st.mainContainer}><SidebarSiswa activeMenu={activeMenu} setActiveMenu={setActiveMenu} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} /><div style={st.loadingScreen}><div style={st.spinner}></div><p>Menyiapkan dashboard...</p></div></div>;
 
   return (
     <div style={st.mainContainer}>
       <SidebarSiswa activeMenu={activeMenu} setActiveMenu={(menu)=>{setActiveMenu(menu);if(isMobile)setIsSidebarOpen(false);}} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       {isMobile&&<button onClick={()=>setIsSidebarOpen(true)} style={st.mobileMenuBtn}><Menu size={24}/></button>}
-      <div style={{...st.contentArea,marginLeft:isMobile?'0':'260px',width:isMobile?'100%':'calc(100% - 260px)',padding:isMobile?'15px':'30px',paddingTop:isMobile?'70px':'30px'}}>
-        {renderContent()}
-      </div>
+      <div style={{...st.contentArea,marginLeft:isMobile?'0':'260px',width:isMobile?'100%':'calc(100% - 260px)',padding:isMobile?'15px':'30px',paddingTop:isMobile?'70px':'30px'}}>{renderContent()}</div>
       {isMobile&&isSidebarOpen&&<div onClick={()=>setIsSidebarOpen(false)} style={st.overlay}/>}
     </div>
   );
@@ -310,26 +263,19 @@ const st = {
   slideOverlay:{width:'100%',background:'linear-gradient(transparent,rgba(0,0,0,0.8))',padding:20,color:'white'},
   slideTitle:{fontSize:24,fontWeight:'bold',margin:0},
   slideTitleMobile:{fontSize:16,fontWeight:'bold',margin:0},
-  slideDesc:{fontSize:14,opacity:0.8,marginTop:5},
   mainGrid:{display:'grid',gridTemplateColumns:'1.2fr 0.8fr',gap:25},
   mainGridMobile:{display:'flex',flexDirection:'column',gap:20},
   leftCol:{display:'flex',flexDirection:'column',gap:20},
   rightCol:{display:'flex',flexDirection:'column',gap:20},
   card:{background:'white',padding:20,borderRadius:15,border:'1px solid #e2e8f0'},
-  cardHeader:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:15},
   sectionTitle:{fontSize:16,fontWeight:700,color:'#1e293b',margin:'0 0 15px 0',display:'flex',alignItems:'center',gap:8},
-  btnViewAll:{background:'none',border:'none',color:'#3b82f6',fontWeight:600,fontSize:12,cursor:'pointer',display:'flex',alignItems:'center',gap:4},
   schItem:{display:'flex',alignItems:'stretch',gap:12,padding:'12px 0',borderBottom:'1px solid #f1f5f9'},
   schTime:{minWidth:55,fontSize:13,textAlign:'center'},
-  schLine:{width:3,borderRadius:3},
   schInfo:{flex:1},
   taskItem:{display:'flex',alignItems:'center',padding:12,background:'#f8fafc',borderRadius:10,borderLeft:'4px solid',marginBottom:8},
-  badgeUrgent:{background:'#fef3c7',color:'#b45309',padding:'2px 6px',borderRadius:6,fontSize:9,fontWeight:'bold'},
   btnTaskBuka:{background:'#9b59b6',color:'white',border:'none',padding:'6px 12px',borderRadius:6,fontSize:11,fontWeight:600,cursor:'pointer',flexShrink:0},
   avatar:{width:45,height:45,borderRadius:'50%',background:'#3b82f6',color:'white',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold',fontSize:18,flexShrink:0},
   btnAccess:{width:'100%',padding:12,background:'#3b82f6',color:'white',border:'none',borderRadius:10,cursor:'pointer',fontWeight:600,display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginTop:10},
-  historyItem:{display:'flex',alignItems:'flex-start',gap:10,paddingBottom:12},
-  dot:{width:8,height:8,borderRadius:'50%',background:'#f97316',marginTop:5,flexShrink:0},
   empty:{fontSize:12,color:'#94a3b8',textAlign:'center',padding:15},
   modalOverlay:{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.7)',zIndex:2000,display:'flex',justifyContent:'center',alignItems:'center',backdropFilter:'blur(5px)'},
   modalContent:{background:'white',borderRadius:15,overflow:'hidden',position:'relative'},
