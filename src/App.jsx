@@ -49,6 +49,11 @@ import StudentGrades from './pages/student/StudentGrades';
 import StudentAttendanceSiswa from './pages/student/StudentAttendance';
 import StudentElearning from './pages/student/StudentElearning';
 
+// === SMART RAPORT (BARU) ===
+import GenerateRaport from './pages/teacher/raport/GenerateRaport';
+import StudentLeaderboard from './pages/student/raport/StudentLeaderboard';
+import StudentSmartReport from './pages/student/raport/StudentSmartReport';
+
 // === ROUTE GUARDS ===
 const AdminRoute = ({ children }) => {
   const isAuth = localStorage.getItem('isLoggedIn') === 'true';
@@ -150,6 +155,9 @@ function App() {
         <Route path="/guru/schedule" element={<GuruRoute><TeacherLayout><TeacherSchedule /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/attendance" element={<GuruRoute><TeacherLayout><TeacherManualInput /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/manual-input" element={<GuruRoute><TeacherLayout><TeacherManualInput /></TeacherLayout></GuruRoute>} />
+        
+        {/* 🔥 SMART RAPORT - GURU (BARU) */}
+        <Route path="/guru/generate-raport" element={<GuruRoute><TeacherLayout><GenerateRaport /></TeacherLayout></GuruRoute>} />
 
         {/* SISWA */}
         <Route path="/siswa/dashboard" element={<SiswaRoute><StudentDashboard /></SiswaRoute>} />
@@ -158,6 +166,10 @@ function App() {
         <Route path="/siswa/keuangan" element={<SiswaRoute><StudentFinanceSiswa /></SiswaRoute>} />
         <Route path="/siswa/rapor" element={<SiswaRoute><StudentGrades /></SiswaRoute>} />
         <Route path="/siswa/absensi" element={<SiswaRoute><StudentAttendanceSiswa /></SiswaRoute>} />
+        
+        {/* 🔥 SMART RAPORT - SISWA (BARU) */}
+        <Route path="/siswa/leaderboard" element={<SiswaRoute><StudentLeaderboard /></SiswaRoute>} />
+        <Route path="/siswa/smart-rapor" element={<SiswaRoute><StudentSmartReport /></SiswaRoute>} />
 
         {/* REDIRECT */}
         <Route path="/teacher/*" element={<Navigate to="/guru/dashboard" replace />} />

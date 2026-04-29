@@ -1,0 +1,208 @@
+// src/pages/teacher/raport/GenerateRaport.jsx
+import React, { useState, useEffect } from 'react';
+import { syncAllScoresToRaport, exportToRaportScores } from '../../../services/raportService';
+import { db } from '../../../firebase';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { RefreshCw, CheckCircle, XCircle, AlertTriangle, Database, FileText, Send } from 'lucide-react';
+
+const GenerateRaport = () => {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [pendingExports, setPendingExports] = useState([]);
+  const [selectedPeriode, setSelectedPeriode] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
+  
+  const teacherData = JSON.parse(localStorage.getItem('teacherData') || '{}');
+  
+  useEffect(() => {
+    fetchPendingExports();
+  }, []);
+  
+  const fetchPendingExports = async () => {
+    // Ambil tugas yang sudah dinilai tapi belum diekspor
+    const tugasSnap = await getDocs(query(collection(db, "jawaban_tugas")));
+    const belumEkspor = tugasSnap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(t => t.score !== undefined && t.score !== null && !t.exportedToRaport)
+      .slice(0, 10);
+    setPendingExports(belumEkspor);
+  };
+  
+  const handleExportSingle = async (item) => {
+    setLoading(true);
+    const result = await exportToRaportScores({
+      studentId: item.studentId,
+      studentName: item.studentName,
+      mapel: item.modulTitle?.split(' ')[0] || "Umum",
+      topik: item.modulTitle,
+      nilai: item.score,
+      komponen: item.type === 'tugas' ? 'catatan' : 'kuis',
+      teacherId: teacherData.id,
+      teacherName: teacherData.nama
+    });
+    
+    if (result.success) {
+      alert(`✅ Nilai ${item.studentName} berhasil diekspor!`);
+      fetchPendingExports();
+    } else {
+      alert(`❌ Gagal: ${result.error}`);
+    }
+    setLoading(false);
+  };
+  
+  const handleSyncAll = async () => {
+    if (!window.confirm(`Generate raport untuk periode ${selectedPeriode}?\n\nPastikan semua nilai komponen sudah lengkap!`)) return;
+    
+    setLoading(true);
+    setResult(null);
+    
+    try {
+      const syncResult = await syncAllScoresToRaport(selectedPeriode);
+      setResult(syncResult);
+      
+      if (syncResult.incomplete.length > 0) {
+        alert(`⚠️ ${syncResult.incomplete.length} siswa memiliki nilai tidak lengkap. Silakan lengkapi dulu!`);
+      } else {
+        alert(`✅ Raport periode ${selectedPeriode} berhasil digenerate untuk ${syncResult.processed} siswa!`);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("❌ Gagal generate raport: " + error.message);
+      setResult({ error: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  return (
+    <div style={{ maxWidth: 900, margin: '0 auto' }}>
+      {/* Header */}
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#1e293b' }}>📊 Generate Raport Bulanan</h2>
+        <p style={{ margin: '4px 0 0', fontSize: 12, color: '#64748b' }}>
+          Sinkronkan semua nilai kuis, catatan, ujian, dan keaktifan
+        </p>
+      </div>
+      
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        
+        {/* PENDING EXPORTS */}
+        {pendingExports.length > 0 && (
+          <div style={{ background: 'white', borderRadius: 16, padding: 20, border: '1px solid #e2e8f0' }}>
+            <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Send size={16} color="#f59e0b" /> Nilai Siap Ekspor ({pendingExports.length})
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {pendingExports.map(item => (
+                <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 10, background: '#f8fafc', borderRadius: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700 }}>{item.studentName}</div>
+                    <div style={{ fontSize: 10, color: '#64748b' }}>{item.modulTitle} • {item.type === 'tugas' ? 'Tugas' : 'Kuis'} • Nilai: {item.score}</div>
+                  </div>
+                  <button 
+                    onClick={() => handleExportSingle(item)}
+                    disabled={loading}
+                    style={{ background: '#f59e0b', color: 'white', border: 'none', padding: '6px 12px', borderRadius: 6, fontSize: 11, cursor: 'pointer' }}
+                  >
+                    📊 Ekspor
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* FORM GENERATE */}
+        <div style={{ background: 'white', borderRadius: 16, padding: 20, border: '1px solid #e2e8f0' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Database size={16} color="#3b82f6" /> Generate Semua Raport
+          </h3>
+          
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#1e293b', display: 'block', marginBottom: 6 }}>Periode Raport</label>
+            <input 
+              type="month" 
+              value={selectedPeriode}
+              onChange={(e) => setSelectedPeriode(e.target.value)}
+              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13 }}
+            />
+          </div>
+          
+          <button 
+            onClick={handleSyncAll} 
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '12px',
+              background: loading ? '#cbd5e1' : '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: 10,
+              fontWeight: 700,
+              fontSize: 13,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8
+            }}
+          >
+            <RefreshCw size={16} className={loading ? 'spin' : ''} />
+            {loading ? 'Memproses...' : '🚀 Generate Raport Sekarang'}
+          </button>
+        </div>
+        
+        {/* HASIL */}
+        {result && (
+          <div style={{ background: 'white', borderRadius: 16, padding: 20, border: '1px solid #e2e8f0' }}>
+            <h4 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700 }}>📊 Hasil Sinkronisasi</h4>
+            
+            {result.error ? (
+              <div style={{ background: '#fee2e2', padding: 16, borderRadius: 12, color: '#ef4444', fontSize: 13 }}>
+                ❌ Error: {result.error}
+              </div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+                  <div style={{ flex: 1, background: '#dcfce7', padding: 12, borderRadius: 10, textAlign: 'center' }}>
+                    <CheckCircle size={20} color="#10b981" style={{ marginBottom: 4 }} />
+                    <div style={{ fontSize: 20, fontWeight: 800, color: '#166534' }}>{result.processed}</div>
+                    <div style={{ fontSize: 10, color: '#166534' }}>Siswa Tuntas</div>
+                  </div>
+                  <div style={{ flex: 1, background: '#fef3c7', padding: 12, borderRadius: 10, textAlign: 'center' }}>
+                    <AlertTriangle size={20} color="#f59e0b" style={{ marginBottom: 4 }} />
+                    <div style={{ fontSize: 20, fontWeight: 800, color: '#b45309' }}>{result.incomplete?.length || 0}</div>
+                    <div style={{ fontSize: 10, color: '#b45309' }}>Tidak Lengkap</div>
+                  </div>
+                </div>
+                
+                {result.incomplete?.length > 0 && (
+                  <div style={{ background: '#fffbeb', padding: 12, borderRadius: 10 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: '#b45309', margin: '0 0 8px' }}>⚠️ Siswa dengan nilai tidak lengkap:</p>
+                    {result.incomplete.slice(0, 5).map(s => (
+                      <div key={s.id} style={{ fontSize: 10, color: '#92400e', marginBottom: 4 }}>
+                        • {s.name} ({s.kelas}): {s.missing.kuis && 'Kuis '} {s.missing.catatan && 'Catatan '} {s.missing.ujian && 'Ujian '} {s.missing.keaktifan && 'Keaktifan'}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+      
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        .spin { animation: spin 1s linear infinite; }
+      `}</style>
+    </div>
+  );
+};
+
+export default GenerateRaport;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Database } from 'lucide-react';
 
 const SidebarAdmin = () => {
   const location = useLocation();
@@ -39,13 +39,14 @@ const SidebarAdmin = () => {
     { name: 'Keuangan', path: '/admin/finance', icon: '💸' },
     { name: 'Jadwal', path: '/admin/schedule', icon: '📅' },
     { name: 'Laporan Rapor', path: '/admin/grades', icon: '📊' },
+    { name: 'Bulk Generate Raport', path: '/admin/bulk-raport', icon: '🗄️' }, // BARU
     { name: 'Log Harian Admin', path: '/admin/daily-log', icon: '📝' },
     { name: 'Settings', path: '/admin/settings', icon: '⚙️' },
   ];
 
   return (
     <>
-      {/* Tombol Hamburger - Muncul di mobile */}
+      {/* Tombol Hamburger */}
       {isMobile && (
         <button 
           onClick={() => setIsOpen(!isOpen)} 
@@ -71,7 +72,7 @@ const SidebarAdmin = () => {
         </button>
       )}
 
-      {/* Overlay - Klik di luar sidebar untuk menutup */}
+      {/* Overlay */}
       {isOpen && isMobile && (
         <div 
           onClick={() => setIsOpen(false)} 

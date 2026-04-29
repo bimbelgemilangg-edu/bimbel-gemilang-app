@@ -1,44 +1,42 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, X, Home, BarChart2, BookOpen, Wallet } from 'lucide-react';
+import { LogOut, X, Home, BarChart2, BookOpen, Wallet, Trophy, TrendingUp } from 'lucide-react';
 
-// Memanggil file dari folder public (tanpa import agar build Vercel aman)
+// Memanggil file dari folder public
 const LogoBimbel = "/logo-gemilang.png"; 
 
 const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
   const navigate = useNavigate();
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <Home size={18}/> },
-    { id: 'rapor', label: 'Nilai & Progres', icon: <BarChart2 size={18}/> },
-    { id: 'materi', label: 'Materi Belajar', icon: <BookOpen size={18}/> },
-    { id: 'keuangan', label: 'Administrasi', icon: <Wallet size={18}/> },
+    { id: 'dashboard', label: 'Dashboard', icon: <Home size={18}/>, path: '/siswa/dashboard' },
+    { id: 'rapor', label: 'Nilai & Progres', icon: <BarChart2 size={18}/>, path: '/siswa/rapor' },
+    { id: 'smart-rapor', label: 'Smart Raport', icon: <TrendingUp size={18}/>, path: '/siswa/smart-rapor' }, // BARU
+    { id: 'leaderboard', label: 'Papan Peringkat', icon: <Trophy size={18}/>, path: '/siswa/leaderboard' }, // BARU
+    { id: 'materi', label: 'Materi Belajar', icon: <BookOpen size={18}/>, path: '/siswa/materi' },
+    { id: 'keuangan', label: 'Administrasi', icon: <Wallet size={18}/>, path: '/siswa/keuangan' },
   ];
 
   const isMobile = window.innerWidth <= 768;
 
-  // --- FUNGSI LOGOUT FINAL ---
+  const handleMenuClick = (item) => {
+    setActiveMenu(item.id);
+    if (item.path) {
+      navigate(item.path);
+    }
+    if (isMobile) {
+      setIsOpen(false);
+    }
+  };
+
   const handleLogout = () => {
     if(window.confirm("Apakah kamu yakin ingin keluar dari portal siswa?")) {
-      // Bersihkan semua session agar filter materi & identitas tidak tertinggal
       localStorage.removeItem("isSiswaLoggedIn");
       localStorage.removeItem("role");
       localStorage.removeItem("studentId");
       localStorage.removeItem("studentName");
       localStorage.removeItem("studentGrade");
-      
-      // Opsional: Jika ingin benar-benar bersih total
-      // localStorage.clear();
-
-      // Diarahkan ke URL login siswa yang kamu tentukan
       navigate('/login-siswa');
-    }
-  };
-
-  const handleMenuClick = (id) => {
-    setActiveMenu(id); // ✅ Props dari parent
-    if (isMobile) {
-      setIsOpen(false);
     }
   };
 
@@ -76,7 +74,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
           {menuItems.map((item) => (
             <li 
               key={item.id}
-              onClick={() => handleMenuClick(item.id)}
+              onClick={() => handleMenuClick(item)}
               style={{ 
                 ...styles.menuItem,
                 background: activeMenu === item.id ? '#3b82f6' : 'transparent',

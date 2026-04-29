@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, User, BookOpen, Edit, 
-  History, Calendar, ClipboardCheck, LogOut, Menu, X 
+  History, Calendar, ClipboardCheck, LogOut, Menu, X,
+  Database
 } from 'lucide-react';
 
 const SidebarGuru = () => {
@@ -27,6 +28,7 @@ const SidebarGuru = () => {
     { name: 'Jadwal Mengajar', path: '/guru/schedule', icon: <Calendar size={20}/> },
     { name: 'Absensi Siswa', path: '/guru/attendance', icon: <ClipboardCheck size={20}/> },
     { name: 'Input Nilai / Rapor', path: '/guru/grades/input', icon: <Edit size={20}/> },
+    { name: 'Generate Raport', path: '/guru/generate-raport', icon: <Database size={20}/> }, // BARU
     { name: 'Riwayat Sesi', path: '/guru/history', icon: <History size={20}/> },
     { name: 'Profil Saya', path: '/guru/profile', icon: <User size={20}/> },
   ];
