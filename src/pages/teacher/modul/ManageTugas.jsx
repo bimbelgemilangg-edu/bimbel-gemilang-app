@@ -15,30 +15,35 @@ const ManageTugas = () => {
     
     setLoading(true);
     try {
-      // SINKRONISASI: Menggunakan koleksi "moduls" agar terbaca di ModulManager
-      await addDoc(collection(db, "moduls"), {
-        title: tugas.title,
-        subject: "Tugas Mandiri", // Default subject untuk tugas
+      // 🔥 PERBAIKAN: Simpan ke "bimbel_modul" (BUKAN "moduls")
+      await addDoc(collection(db, "bimbel_modul"), {
+        title: tugas.title.toUpperCase(),
+        subject: "Tugas",
         description: tugas.desc,
-        deadlineTugas: tugas.deadline,
-        type: 'assignment', // Flag bahwa ini adalah tipe tugas
-        // Struktur blocks disamakan dengan ManageMateri agar preview tidak pecah
+        deadlineTugas: tugas.deadline || null,
+        type: 'assignment', // Flag untuk identifikasi tugas
+        targetKategori: "Semua", // Bisa diubah sesuai kebutuhan
+        targetKelas: "Semua",
+        status: 'aktif',
+        // Struktur blocks agar terbaca di dashboard siswa
         blocks: [{ 
           id: Date.now(), 
           type: 'assignment', 
           title: "Instruksi Tugas", 
-          content: tugas.desc 
+          content: tugas.desc,
+          endTime: tugas.deadline || null
         }],
-        quiz: [], // Kosongkan kuis agar tidak undefined
+        quizData: [],
+        authorName: localStorage.getItem('teacherName') || localStorage.getItem('userName') || "Guru",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
 
-      alert("📝 Tugas berhasil dipublikasikan ke Modul!");
-      navigate('/guru/modul'); // Kembali ke manager
+      alert("✅ Tugas berhasil dipublikasikan!");
+      navigate('/guru/modul');
     } catch (err) {
       console.error("Error creating tugas:", err);
-      alert("Gagal mengirim tugas: " + err.message);
+      alert("❌ Gagal mengirim tugas: " + err.message);
     }
     setLoading(false);
   };
@@ -55,6 +60,7 @@ const ManageTugas = () => {
         <div style={styles.header}>
           <div style={styles.iconCircle}><Edit3 size={24} color="#673ab7"/></div>
           <h2 style={styles.title}>Buat Tugas Baru</h2>
+          <p style={styles.subtitle}>Tugas akan muncul di dashboard siswa</p>
         </div>
 
         <div style={styles.form}>
@@ -77,7 +83,7 @@ const ManageTugas = () => {
           </div>
 
           <div style={styles.inputGroup}>
-            <label style={styles.label}><Clock size={14}/> Batas Waktu Pengumpulan</label>
+            <label style={styles.label}><Clock size={14}/> Batas Waktu Pengumpulan (Opsional)</label>
             <input 
               type="datetime-local" 
               style={styles.input} 
@@ -90,7 +96,7 @@ const ManageTugas = () => {
             disabled={loading}
             style={loading ? styles.btnDisabled : styles.btnSubmit}
           >
-            {loading ? "Memproses..." : "Publikasikan Tugas Sekarang"}
+            {loading ? "Memproses..." : "Publikasikan Tugas"}
           </button>
         </div>
       </div>
@@ -106,6 +112,7 @@ const styles = {
   header: { textAlign: 'center', marginBottom: '30px' },
   iconCircle: { background: '#f3e8ff', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px' },
   title: { fontSize: '22px', color: '#1e293b', fontWeight: '800' },
+  subtitle: { fontSize: '12px', color: '#64748b', marginTop: '5px' },
   form: { display: 'flex', flexDirection: 'column', gap: '20px' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
   label: { fontSize: '13px', fontWeight: 'bold', color: '#475569', display: 'flex', alignItems: 'center', gap: '5px' },
