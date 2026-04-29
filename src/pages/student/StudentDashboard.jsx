@@ -247,7 +247,7 @@ const StudentDashboard = () => {
           setTasks(moduls.filter(m => 
             m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment')
           ).slice(0, 5));
-          console.log('📚 Tugas:', moduls.filter(m => m.blocks?.some(b => b.type === 'assignment')).length);
+          console.log('📚 Tugas ditemukan:', moduls.filter(m => m.blocks?.some(b => b.type === 'assignment')).length);
         } catch (taskErr) {
           console.warn('Fetch tasks error:', taskErr.message);
           setTasks([]);
@@ -359,7 +359,7 @@ const StudentDashboard = () => {
         )}
       </div>
 
-      {/* CAROUSEL POSTER - TANPA React.Suspense */}
+      {/* CAROUSEL POSTER */}
       {posters.length > 0 && (
         <div style={{ ...st.carouselContainer, aspectRatio: isMobile ? '4/3' : '21/9' }}>
           <Swiper 
@@ -539,7 +539,7 @@ const StudentDashboard = () => {
             )}
           </section>
 
-          {/* TUGAS & KUIS */}
+          {/* TUGAS & KUIS - DENGAN PERBAIKAN LANGSUNG KE TUGAS */}
           <section style={st.sectionCard}>
             <div style={st.cardHeader}>
               <h3 style={st.sectionTitle}>
@@ -575,7 +575,16 @@ const StudentDashboard = () => {
                         </div>
                       )}
                     </div>
-                    <button onClick={() => setActiveMenu('materi')} style={st.btnTaskBuka}>
+                    {/* 🔥 PERBAIKAN: Tombol Buka LANGSUNG ke tugas yang dipilih */}
+                    <button 
+                      onClick={() => {
+                        // Simpan ID modul yang dipilih ke localStorage
+                        localStorage.setItem('selectedModuleId', task.id);
+                        // Pindah ke halaman elearning
+                        setActiveMenu('materi');
+                      }} 
+                      style={st.btnTaskBuka}
+                    >
                       Buka
                     </button>
                   </div>
