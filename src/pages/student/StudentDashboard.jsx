@@ -1,8 +1,9 @@
 // src/pages/student/StudentDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import SidebarSiswa from '../../components/SidebarSiswa';
-import { db } from '../../firebase';
+import { db, auth } from '../../firebase';
 import { collection, query, getDocs, orderBy, doc, getDoc, setDoc, addDoc, serverTimestamp, where, limit } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 import { Html5Qrcode } from "html5-qrcode";
 import StudentFinanceSiswa from './StudentFinance';
 import StudentGrades from './StudentGrades';
@@ -12,12 +13,14 @@ import StudentElearning from './StudentElearning';
 
 import { 
   BookOpen, Calendar, Clock, GraduationCap, Menu, ChevronRight, 
-  Target, ClipboardList, AlertCircle, QrCode, X, Camera, User, 
-  MapPin, Send, CheckCircle, Megaphone, TrendingUp 
+  ClipboardList, X, Camera, User, MapPin, Send, CheckCircle, Megaphone, TrendingUp 
 } from 'lucide-react';
 
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
+// Import Swiper dinamis (code splitting) - hanya dimuat jika ada poster
+const Swiper = React.lazy(() => import('swiper/react').then(module => ({ default: module.Swiper })));
+const SwiperSlide = React.lazy(() => import('swiper/react').then(module => ({ default: module.SwiperSlide })));
+
+// Import CSS Swiper dinamis
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -27,8 +30,8 @@ const StudentDashboard = () => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const studentName = localStorage.getItem('studentName') || "Siswa";
-  const studentId = localStorage.getItem('studentId');
+  const [studentName, setStudentName] = useState("Siswa");
+  const [studentId, setStudentId] = useState(null);
   const [posters, setPosters] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [todaySchedules, setTodaySchedules] = useState([]);
@@ -36,6 +39,7 @@ const StudentDashboard = () => {
   const [selectedNews, setSelectedNews] = useState(null);
   const [studentProfile, setStudentProfile] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
 
   const [activeSurveys, setActiveSurveys] = useState([]);
   const [filledSurveys, setFilledSurveys] = useState({});
@@ -51,6 +55,30 @@ const StudentDashboard = () => {
   }, []);
   
   const isMobile = windowWidth <= 768;
+
+  // 🔥 PERBAIKAN UTAMA: TUNGGU AUTH STATE SIAP
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Set data dari localStorage atau user object
+        const storedName = localStorage.getItem('studentName');
+        const storedId = localStorage.getItem('studentId');
+        
+        setStudentName(storedName || user.email || "Siswa");
+        setStudentId(storedId || user.uid);
+        setAuthReady(true);
+        
+        console.log('✅ Auth siap, user ID:', user.uid);
+      } else {
+        // Redirect ke login jika perlu
+        console.log('❌ Tidak ada user login');
+        setAuthReady(false);
+        setLoading(false);
+      }
+    });
+    
+    return () => unsubscribe();
+  }, []);
 
   // QR SCANNER
   useEffect(() => {
@@ -107,39 +135,26 @@ const StudentDashboard = () => {
     return (dl.toDate ? dl.toDate() : new Date(dl)) < new Date(); 
   };
 
-  // FETCH SURVEI - pakai Firestore query langsung, bukan filter manual
+  // FETCH SURVEI
   const fetchSurveys = async (studentKelas, studentIdParam) => {
     try {
-      // Query langsung ke Firestore dengan filter status aktif
       const snap = await getDocs(
         query(collection(db, "surveys"), where("status", "==", "aktif"))
       );
       
       const allActive = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      console.log('Survei aktif dari Firestore:', allActive.length, allActive.map(s => ({ id: s.id, title: s.title, targetType: s.targetType })));
+      console.log('✅ Survei aktif:', allActive.length);
       
-      // Filter berdasarkan target
       const cocok = allActive.filter(s => {
         const target = (s.targetType || '').toLowerCase().trim();
-        
-        // Untuk semua siswa
-        if (target === 'semua_siswa') return true;
-        // Untuk semua user (siswa + guru)
-        if (target === 'semua') return true;
-        // Per jenjang/kelas
+        if (target === 'semua_siswa' || target === 'semua') return true;
         if (target === 'jenjang' || target === 'per_jenjang') {
           const targetKelas = s.targetKelas || 'Semua';
           return targetKelas === 'Semua' || targetKelas === studentKelas;
         }
-        // Khusus guru → skip
-        if (target === 'semua_guru') return false;
-        
         return false;
       });
       
-      console.log('Survei cocok untuk siswa:', cocok.length);
-      
-      // Cek sudah diisi atau belum
       const filled = {};
       for (const survey of cocok) {
         try {
@@ -161,14 +176,13 @@ const StudentDashboard = () => {
     }
   };
 
+  // FETCH ALL DATA - HANYA JIKA AUTH SUDAH SIAP
   useEffect(() => {
+    if (!authReady || !studentId) return;
+    
     const fetchAll = async () => {
-      if (!studentId) {
-        setLoading(false);
-        return;
-      }
-      
       setLoading(true);
+      console.log('🚀 Mulai fetch data untuk studentId:', studentId);
       
       try {
         // FETCH STUDENT PROFILE
@@ -180,16 +194,15 @@ const StudentDashboard = () => {
           setStudentProfile(d); 
           curKat = d.kategori || "Semua"; 
           curKel = d.kelasSekolah || "Semua";
-          console.log('Profil siswa:', { curKat, curKel });
+          console.log('📋 Profil siswa:', { curKat, curKel });
         }
 
-        // FETCH POSTERS
+        // FETCH POSTERS (tanpa Swiper dulu)
         try {
           const postersSnap = await getDocs(query(collection(db, "student_contents"), orderBy("createdAt", "desc")));
           setPosters(postersSnap.docs.map(d => ({ id: d.id, ...d.data() })));
         } catch (e) {
           console.warn('Fetch posters error:', e);
-          setPosters([]);
         }
 
         // FETCH TODAY SCHEDULES
@@ -202,10 +215,9 @@ const StudentDashboard = () => {
           setTodaySchedules(scheds.slice(0, 5));
         } catch (e) {
           console.warn('Fetch schedules error:', e);
-          setTodaySchedules([]);
         }
 
-        // FETCH TASKS - pisah try-catch agar error index tidak crash semua fetch
+        // FETCH TASKS
         try {
           const moduls = (await getDocs(query(
             collection(db, "bimbel_modul"), 
@@ -216,16 +228,17 @@ const StudentDashboard = () => {
           setTasks(moduls.filter(m => 
             m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment')
           ).slice(0, 5));
+          console.log('📚 Tugas ditemukan:', moduls.filter(m => m.blocks?.some(b => b.type === 'assignment')).length);
         } catch (taskErr) {
-          console.warn('Fetch tasks error (kemungkinan butuh composite index di Firestore):', taskErr.message);
+          console.warn('Fetch tasks error:', taskErr.message);
           setTasks([]);
         }
 
-        // FETCH SURVEYS - selalu jalan meski fetch lain error
+        // FETCH SURVEYS
         const { surveys: fetchedSurveys, filled: filledStatus } = await fetchSurveys(curKel, studentId);
         setActiveSurveys(fetchedSurveys);
         setFilledSurveys(filledStatus);
-        console.log('Set activeSurveys:', fetchedSurveys.length);
+        console.log('📋 Survei ditemukan:', fetchedSurveys.length);
 
       } catch (err) { 
         console.error('Error fetch dashboard:', err); 
@@ -235,7 +248,7 @@ const StudentDashboard = () => {
     };
     
     fetchAll();
-  }, [studentId]);
+  }, [authReady, studentId]);
 
   const getAssignmentDeadline = (modul) => {
     const ab = modul.blocks?.find(b => b.type === 'assignment' && b.endTime);
@@ -284,6 +297,25 @@ const StudentDashboard = () => {
     }
   };
 
+  // Loading state yang lebih baik
+  if (loading || !authReady) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ 
+            width: 50, height: 50, 
+            border: '4px solid #e2e8f0', 
+            borderTop: '4px solid #3b82f6', 
+            borderRadius: '50%', 
+            animation: 'spin 0.8s linear infinite',
+            margin: '0 auto 16px'
+          }} />
+          <p style={{ color: '#64748b', fontSize: 14 }}>Memuat dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   const renderDashboardHome = () => (
     <div style={st.contentWrapper}>
       {/* HEADER WELCOME */}
@@ -307,48 +339,50 @@ const StudentDashboard = () => {
         )}
       </div>
 
-      {/* CAROUSEL POSTER */}
+      {/* CAROUSEL POSTER - HANYA RENDER JIKA ADA POSTER */}
       {posters.length > 0 && (
         <div style={{ ...st.carouselContainer, aspectRatio: isMobile ? '4/3' : '21/9' }}>
-          <Swiper 
-            modules={[Navigation, Pagination, Autoplay, EffectFade]} 
-            effect={'fade'} 
-            navigation={!isMobile} 
-            pagination={{ clickable: true }} 
-            autoplay={{ delay: 5000 }} 
-            loop={posters.length > 1} 
-            style={st.mySwiper}
-          >
-            {posters.map((post) => (
-              <SwiperSlide key={post.id} onClick={() => setSelectedNews(post)}>
-                <div style={{ 
-                  ...st.slideCard, 
-                  backgroundImage: `url(${post.imageUrl})`, 
-                  cursor: 'pointer' 
-                }}>
-                  <div style={st.slideOverlay}>
-                    <span style={{ 
-                      background: '#e11d48', 
-                      padding: '4px 10px', 
-                      borderRadius: 12, 
-                      fontSize: 9, 
-                      fontWeight: 800, 
-                      display: 'inline-flex', 
-                      alignItems: 'center', 
-                      gap: 4, 
-                      marginBottom: 8 
-                    }}>
-                      <Megaphone size={10} /> Info
-                    </span>
-                    <h2 style={isMobile ? st.slideTitleMobile : st.slideTitle}>
-                      {post.title}
-                    </h2>
-                    {!isMobile && <p style={st.slideDesc}>{post.desc || "Klik untuk baca"}</p>}
+          <React.Suspense fallback={<div style={{ padding: 40, textAlign: 'center' }}>Memuat slider...</div>}>
+            <Swiper 
+              modules={[Navigation, Pagination, Autoplay, EffectFade]} 
+              effect={'fade'} 
+              navigation={!isMobile} 
+              pagination={{ clickable: true }} 
+              autoplay={{ delay: 5000 }} 
+              loop={posters.length > 1} 
+              style={st.mySwiper}
+            >
+              {posters.map((post) => (
+                <SwiperSlide key={post.id} onClick={() => setSelectedNews(post)}>
+                  <div style={{ 
+                    ...st.slideCard, 
+                    backgroundImage: `url(${post.imageUrl})`, 
+                    cursor: 'pointer' 
+                  }}>
+                    <div style={st.slideOverlay}>
+                      <span style={{ 
+                        background: '#e11d48', 
+                        padding: '4px 10px', 
+                        borderRadius: 12, 
+                        fontSize: 9, 
+                        fontWeight: 800, 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: 4, 
+                        marginBottom: 8 
+                      }}>
+                        <Megaphone size={10} /> Info
+                      </span>
+                      <h2 style={isMobile ? st.slideTitleMobile : st.slideTitle}>
+                        {post.title}
+                      </h2>
+                      {!isMobile && <p style={st.slideDesc}>{post.desc || "Klik untuk baca"}</p>}
+                    </div>
                   </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </React.Suspense>
         </div>
       )}
 
@@ -460,7 +494,6 @@ const StudentDashboard = () => {
       {/* MAIN GRID */}
       <div style={isMobile ? st.mainGridMobile : st.mainGrid}>
         <div style={st.leftColumn}>
-          {/* JADWAL HARI INI */}
           <section style={st.sectionCard}>
             <h3 style={st.sectionTitle}>
               <Calendar size={20} color="#3498db" /> Jadwal Hari Ini
@@ -487,7 +520,6 @@ const StudentDashboard = () => {
             )}
           </section>
 
-          {/* TUGAS & KUIS */}
           <section style={st.sectionCard}>
             <div style={st.cardHeader}>
               <h3 style={st.sectionTitle}>
@@ -498,7 +530,11 @@ const StudentDashboard = () => {
               </button>
             </div>
             {tasks.length === 0 ? (
-              <div style={st.emptyState}>📭 Belum ada tugas.</div>
+              <div style={st.emptyState}>
+                📭 Belum ada tugas.
+                <br />
+                <span style={{ fontSize: 10, color: '#94a3b8' }}>Tugas akan muncul setelah guru membuatnya.</span>
+              </div>
             ) : (
               tasks.map((task, i) => {
                 const dl = getAssignmentDeadline(task);
@@ -529,7 +565,6 @@ const StudentDashboard = () => {
           </section>
         </div>
 
-        {/* RIGHT COLUMN */}
         <div style={st.rightColumn}>
           <section style={st.sectionCard}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 15 }}>
@@ -549,7 +584,6 @@ const StudentDashboard = () => {
             </button>
           </section>
 
-          {/* RINGKASAN */}
           <section style={st.sectionCard}>
             <h3 style={{ ...st.sectionTitle, marginBottom: 10 }}>
               <TrendingUp size={20} color="#10b981" /> Ringkasan
@@ -591,21 +625,6 @@ const StudentDashboard = () => {
       default: return renderDashboardHome();
     }
   };
-
-  if (loading) return (
-    <div style={st.mainContainer}>
-      <SidebarSiswa 
-        activeMenu={activeMenu} 
-        setActiveMenu={setActiveMenu} 
-        isOpen={isSidebarOpen} 
-        setIsOpen={setIsSidebarOpen} 
-      />
-      <div style={st.loadingScreen}>
-        <div style={st.spinner}></div>
-        <p>Memuat dashboard...</p>
-      </div>
-    </div>
-  );
 
   return (
     <div style={st.mainContainer}>
