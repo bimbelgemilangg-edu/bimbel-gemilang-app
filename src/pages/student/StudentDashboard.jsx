@@ -10,18 +10,14 @@ import StudentSchedule from './StudentSchedule';
 import StudentAttendanceSiswa from './StudentAttendance';
 import StudentElearning from './StudentElearning';
 
-// IMPORT LUCIDE REACT - DIPISAHKAN DAN TIDAK ADA DUPLIKASI
 import { 
   BookOpen, Calendar, Clock, GraduationCap, Menu, ChevronRight, 
   Target, ClipboardList, AlertCircle, QrCode, X, Camera, User, 
   MapPin, Send, CheckCircle, Megaphone, TrendingUp 
 } from 'lucide-react';
 
-// IMPORT SWIPER - TIDAK BENTROK DENGAN LUCIDE
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
-
-// IMPORT SWIPER CSS
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -41,7 +37,6 @@ const StudentDashboard = () => {
   const [studentProfile, setStudentProfile] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
 
-  // SURVEI STATE
   const [activeSurveys, setActiveSurveys] = useState([]);
   const [filledSurveys, setFilledSurveys] = useState({});
   const [showSurveyModal, setShowSurveyModal] = useState(false);
@@ -112,57 +107,45 @@ const StudentDashboard = () => {
     return (dl.toDate ? dl.toDate() : new Date(dl)) < new Date(); 
   };
 
-  // FUNGSI FETCH SURVEI YANG BENAR
+  // FETCH SURVEI - pakai Firestore query langsung, bukan filter manual
   const fetchSurveys = async (studentKelas, studentIdParam) => {
     try {
-      console.log('🔍 MULAI FETCH SURVEI...');
+      // Query langsung ke Firestore dengan filter status aktif
+      const snap = await getDocs(
+        query(collection(db, "surveys"), where("status", "==", "aktif"))
+      );
       
-      // Ambil SEMUA survei
-      const allDocs = await getDocs(collection(db, "surveys"));
-      console.log('Total survei di database:', allDocs.size);
+      const allActive = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      console.log('Survei aktif dari Firestore:', allActive.length, allActive.map(s => ({ id: s.id, title: s.title, targetType: s.targetType })));
       
-      const allSurveys = [];
-      allDocs.forEach(doc => {
-        const data = doc.data();
-        allSurveys.push({ id: doc.id, ...data });
-      });
-      
-      // Filter survei AKTIF
-      const aktifSurveys = allSurveys.filter(s => {
-        const isActive = 
-          s.status === 'aktif' || 
-          s.status === 'active' || 
-          s.status === 'published' ||
-          s.isActive === true;
-        return isActive;
-      });
-      
-      console.log('Survei AKTIF:', aktifSurveys.length);
-      
-      // Filter target yang cocok
-      const cocok = aktifSurveys.filter(s => {
-        const target = s.targetType || '';
-        const targetLower = target.toLowerCase();
+      // Filter berdasarkan target
+      const cocok = allActive.filter(s => {
+        const target = (s.targetType || '').toLowerCase().trim();
         
-        if (targetLower === 'semua_siswa' || targetLower === 'semua' || targetLower === 'students' || targetLower === 'all') {
-          return true;
-        }
-        if (targetLower === 'jenjang' || targetLower === 'per_jenjang') {
+        // Untuk semua siswa
+        if (target === 'semua_siswa') return true;
+        // Untuk semua user (siswa + guru)
+        if (target === 'semua') return true;
+        // Per jenjang/kelas
+        if (target === 'jenjang' || target === 'per_jenjang') {
           const targetKelas = s.targetKelas || 'Semua';
-          if (targetKelas === 'Semua' || targetKelas === studentKelas) return true;
+          return targetKelas === 'Semua' || targetKelas === studentKelas;
         }
+        // Khusus guru → skip
+        if (target === 'semua_guru') return false;
+        
         return false;
       });
       
-      console.log('Survei COCOK:', cocok.length);
+      console.log('Survei cocok untuk siswa:', cocok.length);
       
-      // Cek sudah diisi
+      // Cek sudah diisi atau belum
       const filled = {};
       for (const survey of cocok) {
         try {
           const respSnap = await getDocs(query(
-            collection(db, "survey_responses"), 
-            where("surveyId", "==", survey.id), 
+            collection(db, "survey_responses"),
+            where("surveyId", "==", survey.id),
             where("userId", "==", studentIdParam)
           ));
           filled[survey.id] = !respSnap.empty;
@@ -172,7 +155,6 @@ const StudentDashboard = () => {
       }
       
       return { surveys: cocok, filled };
-      
     } catch (error) {
       console.error('Error fetch survei:', error);
       return { surveys: [], filled: {} };
@@ -198,33 +180,52 @@ const StudentDashboard = () => {
           setStudentProfile(d); 
           curKat = d.kategori || "Semua"; 
           curKel = d.kelasSekolah || "Semua";
+          console.log('Profil siswa:', { curKat, curKel });
         }
 
         // FETCH POSTERS
-        const postersSnap = await getDocs(query(collection(db, "student_contents"), orderBy("createdAt", "desc")));
-        setPosters(postersSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        try {
+          const postersSnap = await getDocs(query(collection(db, "student_contents"), orderBy("createdAt", "desc")));
+          setPosters(postersSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        } catch (e) {
+          console.warn('Fetch posters error:', e);
+          setPosters([]);
+        }
 
         // FETCH TODAY SCHEDULES
-        const todayStr = new Date().toISOString().split('T')[0];
-        const scheds = (await getDocs(query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr))))
-          .docs.map(d => ({ id: d.id, ...d.data() }))
-          .filter(sch => sch.students?.some(s => s.id === studentId || s === studentId))
-          .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
-        setTodaySchedules(scheds.slice(0, 5));
+        try {
+          const todayStr = new Date().toISOString().split('T')[0];
+          const scheds = (await getDocs(query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr))))
+            .docs.map(d => ({ id: d.id, ...d.data() }))
+            .filter(sch => sch.students?.some(s => s.id === studentId || s === studentId))
+            .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
+          setTodaySchedules(scheds.slice(0, 5));
+        } catch (e) {
+          console.warn('Fetch schedules error:', e);
+          setTodaySchedules([]);
+        }
 
-        // FETCH TASKS
-        const moduls = (await getDocs(query(
-          collection(db, "bimbel_modul"), 
-          where("targetKategori", "in", ["Semua", curKat]), 
-          orderBy("createdAt", "desc"), 
-          limit(10)
-        ))).docs.map(d => ({ id: d.id, ...d.data() }));
-        setTasks(moduls.filter(m => m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment')).slice(0, 5));
+        // FETCH TASKS - pisah try-catch agar error index tidak crash semua fetch
+        try {
+          const moduls = (await getDocs(query(
+            collection(db, "bimbel_modul"), 
+            where("targetKategori", "in", ["Semua", curKat]), 
+            orderBy("createdAt", "desc"), 
+            limit(10)
+          ))).docs.map(d => ({ id: d.id, ...d.data() }));
+          setTasks(moduls.filter(m => 
+            m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment')
+          ).slice(0, 5));
+        } catch (taskErr) {
+          console.warn('Fetch tasks error (kemungkinan butuh composite index di Firestore):', taskErr.message);
+          setTasks([]);
+        }
 
-        // FETCH SURVEYS
+        // FETCH SURVEYS - selalu jalan meski fetch lain error
         const { surveys: fetchedSurveys, filled: filledStatus } = await fetchSurveys(curKel, studentId);
         setActiveSurveys(fetchedSurveys);
         setFilledSurveys(filledStatus);
+        console.log('Set activeSurveys:', fetchedSurveys.length);
 
       } catch (err) { 
         console.error('Error fetch dashboard:', err); 
@@ -845,7 +846,6 @@ const st = {
   fabQR: { position: 'fixed', bottom: 20, right: 20, width: 60, height: 60, borderRadius: '50%', background: '#3498db', color: 'white', border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.3)', zIndex: 900, cursor: 'pointer' },
 };
 
-// CSS animation
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
