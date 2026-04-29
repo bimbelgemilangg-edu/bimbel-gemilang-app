@@ -3,10 +3,9 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
 
-// Tampilkan loading skeleton saat aplikasi memuat
+// Loading indicator saat aplikasi memuat
 const rootElement = document.getElementById('root');
 
-// Tambahkan loading indicator sebelum render
 if (rootElement) {
   rootElement.innerHTML = `
     <div style="
@@ -14,7 +13,8 @@ if (rootElement) {
       justify-content: center;
       align-items: center;
       height: 100vh;
-      font-family: system-ui, -apple-system, sans-serif;
+      background: #f8fafc;
+      font-family: system-ui, sans-serif;
     ">
       <div style="text-align: center;">
         <div style="
@@ -26,7 +26,7 @@ if (rootElement) {
           animation: spin 0.8s linear infinite;
           margin: 0 auto 16px;
         "></div>
-        <p style="color: #64748b;">Memuat Aplikasi...</p>
+        <p style="color: #64748b;">Memuat Bimbel Gemilang...</p>
       </div>
     </div>
     <style>
