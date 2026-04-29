@@ -44,8 +44,8 @@ const StudentElearning = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Ambil data siswa dari localStorage
   useEffect(() => {
-    // Ambil data siswa dari localStorage
     const sId = localStorage.getItem('studentId');
     const sName = localStorage.getItem('studentName');
     setStudentId(sId);
@@ -54,32 +54,27 @@ const StudentElearning = () => {
     if (sId) {
       fetchStudentProfile(sId);
     }
-    fetchModules();
-
-    // 🔥 PERBAIKAN: CEK APAKAH ADA MODUL YANG DIPILIH DARI DASHBOARD
-    const selectedModuleId = localStorage.getItem('selectedModuleId');
-    if (selectedModuleId) {
-      console.log('📚 Membuka modul dari dashboard:', selectedModuleId);
-      // Tunggu sebentar agar modules sudah ter-load
-      setTimeout(() => {
-        const targetModule = modules.find(m => m.id === selectedModuleId);
-        if (targetModule) {
-          setSelectedModule(targetModule);
-        } else {
-          // Jika modules belum load, coba lagi
-          const checkModule = setInterval(() => {
-            const found = modules.find(m => m.id === selectedModuleId);
-            if (found) {
-              setSelectedModule(found);
-              clearInterval(checkModule);
-            }
-          }, 500);
-          setTimeout(() => clearInterval(checkModule), 5000);
-        }
-        localStorage.removeItem('selectedModuleId');
-      }, 500);
-    }
   }, []);
+
+  // Fetch modules setiap kali studentKategori atau studentKelas berubah
+  useEffect(() => {
+    if (studentKategori && studentKelas) {
+      fetchModules();
+    }
+  }, [studentKategori, studentKelas]);
+
+  // Auto-open module dari dashboard
+  useEffect(() => {
+    const selectedModuleId = localStorage.getItem('selectedModuleId');
+    if (selectedModuleId && modules.length > 0) {
+      console.log('📚 Membuka modul dari dashboard:', selectedModuleId);
+      const targetModule = modules.find(m => m.id === selectedModuleId);
+      if (targetModule) {
+        setSelectedModule(targetModule);
+      }
+      localStorage.removeItem('selectedModuleId');
+    }
+  }, [modules]);
 
   useEffect(() => {
     // Filter modules berdasarkan search dan tipe
@@ -108,39 +103,79 @@ const StudentElearning = () => {
         const data = docSnap.data();
         setStudentKelas(data.kelasSekolah || "");
         setStudentKategori(data.kategori || "Reguler");
+        console.log('📋 Profil siswa:', { kategori: data.kategori, kelas: data.kelasSekolah });
       }
     } catch (error) {
       console.error("Error fetch student profile:", error);
     }
   };
 
+  // 🔥 FETCH MODULES DENGAN FILTER JENJANG & KELAS
   const fetchModules = async () => {
     setLoading(true);
+    console.log('🚀 Fetch modules untuk siswa:', { studentKategori, studentKelas });
+    
     try {
-      // Ambil semua modul yang aktif dan sesuai dengan target siswa
+      // Coba pakai query dengan index (jika sudah ada)
       const q = query(
         collection(db, "bimbel_modul"),
         where("status", "==", "aktif"),
         orderBy("updatedAt", "desc")
       );
       const snapshot = await getDocs(q);
-      const allModules = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      let allModules = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
-      // Filter berdasarkan target siswa (sementara diambil semua)
+      // 🔥 FILTER MANUAL berdasarkan jenjang dan kelas siswa
+      allModules = allModules.filter(module => {
+        const targetKategori = module.targetKategori || "Semua";
+        const targetKelas = module.targetKelas || "Semua";
+        
+        const kategoriMatch = targetKategori === "Semua" || targetKategori === studentKategori;
+        const kelasMatch = targetKelas === "Semua" || targetKelas === studentKelas;
+        
+        return kategoriMatch && kelasMatch;
+      });
+      
+      console.log(`📚 Total modul setelah filter (kategori+kelas): ${allModules.length}`);
       setModules(allModules);
       setFilteredModules(allModules);
       
-      // Load submissions yang sudah ada
       if (studentId) {
         await fetchSubmissions(studentId);
       }
     } catch (error) {
-      console.error("Error fetch modules:", error);
-      // Fallback tanpa orderBy
+      console.warn("Query with index failed, using fallback:", error.message);
+      
+      // FALLBACK: Ambil semua dan filter manual
       const snapshot = await getDocs(collection(db, "bimbel_modul"));
-      const allModules = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      let allModules = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      // Filter status aktif + jenjang + kelas
+      allModules = allModules.filter(module => {
+        const isActive = module.status === "aktif";
+        const targetKategori = module.targetKategori || "Semua";
+        const targetKelas = module.targetKelas || "Semua";
+        
+        const kategoriMatch = targetKategori === "Semua" || targetKategori === studentKategori;
+        const kelasMatch = targetKelas === "Semua" || targetKelas === studentKelas;
+        
+        return isActive && kategoriMatch && kelasMatch;
+      });
+      
+      // Urutkan manual berdasarkan updatedAt
+      allModules.sort((a, b) => {
+        const dateA = a.updatedAt?.toDate ? a.updatedAt.toDate() : new Date(0);
+        const dateB = b.updatedAt?.toDate ? b.updatedAt.toDate() : new Date(0);
+        return dateB - dateA;
+      });
+      
+      console.log(`📚 (Fallback) Total modul setelah filter: ${allModules.length}`);
       setModules(allModules);
       setFilteredModules(allModules);
+      
+      if (studentId) {
+        await fetchSubmissions(studentId);
+      }
     }
     setLoading(false);
   };
@@ -204,7 +239,6 @@ const StudentElearning = () => {
       let fileName = null;
       
       if (assignmentFile) {
-        // Konversi file ke base64 (sementara, nanti bisa pakai Supabase)
         const reader = new FileReader();
         fileUrl = await new Promise((resolve) => {
           reader.onload = () => resolve(reader.result);
@@ -233,7 +267,6 @@ const StudentElearning = () => {
       setAssignmentAnswer("");
       setAssignmentFile(null);
       
-      // Refresh submissions
       await fetchSubmissions(studentId);
       
     } catch (error) {
@@ -245,9 +278,9 @@ const StudentElearning = () => {
 
   const getSubmissionStatus = (moduleId) => {
     const sub = submissions[moduleId];
-    if (!sub) return { status: 'not_submitted', label: 'Belum dikerjakan', color: '#ef4444', icon: <XCircle size={14} /> };
-    if (sub.graded) return { status: 'graded', label: 'Sudah dinilai', color: '#10b981', icon: <CheckCircle size={14} /> };
-    return { status: 'submitted', label: 'Sudah dikirim', color: '#f59e0b', icon: <Clock size={14} /> };
+    if (!sub) return { status: 'not_submitted', label: 'Belum dikerjakan', color: '#ef4444', bg: '#fee2e2', icon: <XCircle size={14} /> };
+    if (sub.graded) return { status: 'graded', label: 'Sudah dinilai', color: '#10b981', bg: '#dcfce7', icon: <CheckCircle size={14} /> };
+    return { status: 'submitted', label: 'Sudah dikirim', color: '#f59e0b', bg: '#fef3c7', icon: <Clock size={14} /> };
   };
 
   // Render detail modul
@@ -260,7 +293,6 @@ const StudentElearning = () => {
     
     return (
       <div style={styles.moduleDetail}>
-        {/* HEADER DETAIL */}
         <div style={styles.detailHeader}>
           <button onClick={handleBack} style={styles.btnBack}>
             <ChevronLeft size={20} /> Kembali
@@ -280,21 +312,18 @@ const StudentElearning = () => {
           </div>
         </div>
         
-        {/* COVER IMAGE jika ada */}
         {selectedModule.coverImage && (
           <div style={styles.coverImage}>
             <img src={selectedModule.coverImage} alt={selectedModule.title} style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 12 }} />
           </div>
         )}
         
-        {/* DESKRIPSI */}
         {selectedModule.description && (
           <div style={styles.descriptionBox}>
             <p>{selectedModule.description}</p>
           </div>
         )}
         
-        {/* MATERI PEMBELAJARAN */}
         {materials.length > 0 && (
           <div style={styles.sectionBox}>
             <h3 style={styles.sectionTitle}>
@@ -344,7 +373,6 @@ const StudentElearning = () => {
           </div>
         )}
         
-        {/* TUGAS */}
         {assignments.length > 0 && (
           <div style={styles.sectionBox}>
             <h3 style={styles.sectionTitle}>
@@ -391,7 +419,6 @@ const StudentElearning = () => {
           </div>
         )}
         
-        {/* QUIZ */}
         {hasQuiz && (
           <div style={styles.sectionBox}>
             <h3 style={styles.sectionTitle}>
@@ -406,7 +433,6 @@ const StudentElearning = () => {
               </div>
               <button 
                 onClick={() => {
-                  // Arahkan ke halaman kuis
                   window.location.href = `/siswa/kuis/${selectedModule.id}`;
                 }}
                 style={styles.btnQuiz}
@@ -423,15 +449,15 @@ const StudentElearning = () => {
   // Render daftar modul
   const renderModuleList = () => (
     <div style={styles.moduleList}>
-      {/* HEADER */}
       <div style={styles.listHeader}>
         <h2 style={styles.listTitle}>
           <BookOpen size={24} color="#3b82f6" /> E-Learning
         </h2>
-        <p style={styles.listSubtitle}>Materi belajar, tugas, dan kuis</p>
+        <p style={styles.listSubtitle}>
+          Materi belajar, tugas, dan kuis untuk {studentKategori} - Kelas {studentKelas}
+        </p>
       </div>
       
-      {/* SEARCH & FILTER */}
       <div style={styles.filterBar}>
         <div style={styles.searchBox}>
           <Search size={18} color="#94a3b8" />
@@ -465,7 +491,6 @@ const StudentElearning = () => {
         </div>
       </div>
       
-      {/* STATISTIK */}
       <div style={styles.statsBar}>
         <div style={styles.statCard}>
           <Layers size={18} color="#3b82f6" />
@@ -481,7 +506,6 @@ const StudentElearning = () => {
         </div>
       </div>
       
-      {/* GRID MODUL */}
       {loading ? (
         <div style={styles.loadingBox}>
           <div style={styles.spinner}></div>
@@ -490,7 +514,7 @@ const StudentElearning = () => {
       ) : filteredModules.length === 0 ? (
         <div style={styles.emptyBox}>
           <BookOpen size={48} color="#cbd5e1" />
-          <p>Belum ada materi yang tersedia</p>
+          <p>Belum ada materi yang tersedia untuk {studentKategori} - Kelas {studentKelas}</p>
         </div>
       ) : (
         <div style={styles.modulesGrid}>
@@ -658,605 +682,94 @@ const styles = {
     minHeight: '100vh',
     background: '#f8fafc'
   },
-  // MODULE LIST STYLES
-  moduleList: {
-    width: '100%'
-  },
-  listHeader: {
-    marginBottom: '24px'
-  },
-  listTitle: {
-    fontSize: '24px',
-    fontWeight: '800',
-    color: '#1e293b',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    margin: '0 0 4px 0'
-  },
-  listSubtitle: {
-    fontSize: '13px',
-    color: '#64748b',
-    margin: 0
-  },
-  filterBar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: '16px',
-    marginBottom: '20px',
-    flexWrap: 'wrap'
-  },
-  searchBox: {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    background: 'white',
-    padding: '10px 16px',
-    borderRadius: '12px',
-    border: '1px solid #e2e8f0',
-    minWidth: '200px'
-  },
-  searchInput: {
-    flex: 1,
-    border: 'none',
-    outline: 'none',
-    fontSize: '13px',
-    background: 'transparent'
-  },
-  filterButtons: {
-    display: 'flex',
-    gap: '8px'
-  },
-  filterBtn: {
-    padding: '8px 14px',
-    borderRadius: '8px',
-    border: 'none',
-    cursor: 'pointer',
-    fontWeight: '600',
-    fontSize: '12px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px'
-  },
-  statsBar: {
-    display: 'flex',
-    gap: '12px',
-    marginBottom: '24px',
-    flexWrap: 'wrap'
-  },
-  statCard: {
-    background: 'white',
-    padding: '10px 16px',
-    borderRadius: '10px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '12px',
-    fontWeight: '600',
-    color: '#1e293b',
-    border: '1px solid #e2e8f0'
-  },
-  modulesGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '16px'
-  },
-  moduleCard: {
-    background: 'white',
-    borderRadius: '16px',
-    padding: '16px',
-    border: '1px solid #e2e8f0',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    ':hover': {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 8px 20px rgba(0,0,0,0.08)'
-    }
-  },
-  moduleCardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '12px'
-  },
-  moduleCardIcon: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '12px',
-    background: '#eef2ff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  moduleBadge: {
-    padding: '4px 8px',
-    borderRadius: '6px',
-    fontSize: '10px',
-    fontWeight: '600',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px'
-  },
-  moduleCardTitle: {
-    fontSize: '15px',
-    fontWeight: '700',
-    color: '#1e293b',
-    margin: '0 0 4px 0'
-  },
-  moduleCardSubject: {
-    fontSize: '11px',
-    color: '#64748b',
-    margin: '0 0 8px 0'
-  },
-  moduleCardMeta: {
-    display: 'flex',
-    gap: '8px',
-    marginBottom: '12px'
-  },
-  metaTag: {
-    fontSize: '9px',
-    padding: '2px 6px',
-    borderRadius: '4px',
-    background: '#f1f5f9',
-    color: '#64748b'
-  },
-  moduleCardBtn: {
-    width: '100%',
-    padding: '8px',
-    background: '#f8fafc',
-    border: '1px solid #e2e8f0',
-    borderRadius: '8px',
-    fontSize: '11px',
-    fontWeight: '600',
-    color: '#3b82f6',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '4px'
-  },
-  // MODULE DETAIL STYLES
-  moduleDetail: {
-    width: '100%'
-  },
-  detailHeader: {
-    marginBottom: '24px'
-  },
-  btnBack: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    background: 'white',
-    border: '1px solid #e2e8f0',
-    padding: '8px 16px',
-    borderRadius: '10px',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '600',
-    marginBottom: '16px'
-  },
-  detailTitle: {
-    marginBottom: '8px'
-  },
-  detailTitleText: {
-    fontSize: '22px',
-    fontWeight: '800',
-    color: '#1e293b',
-    margin: '0 0 8px 0'
-  },
-  detailMeta: {
-    display: 'flex',
-    gap: '16px',
-    flexWrap: 'wrap'
-  },
-  detailMetaItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    fontSize: '12px',
-    color: '#64748b'
-  },
-  coverImage: {
-    marginBottom: '20px'
-  },
-  descriptionBox: {
-    background: '#f1f5f9',
-    padding: '16px',
-    borderRadius: '12px',
-    marginBottom: '24px',
-    color: '#475569',
-    fontSize: '14px',
-    lineHeight: '1.6'
-  },
-  sectionBox: {
-    background: 'white',
-    borderRadius: '16px',
-    padding: '20px',
-    marginBottom: '20px',
-    border: '1px solid #e2e8f0'
-  },
-  sectionTitle: {
-    fontSize: '16px',
-    fontWeight: '700',
-    color: '#1e293b',
-    margin: '0 0 16px 0',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px'
-  },
-  materialsList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px'
-  },
-  materialCard: {
-    display: 'flex',
-    gap: '14px',
-    padding: '12px',
-    background: '#f8fafc',
-    borderRadius: '12px'
-  },
-  materialIcon: {
-    flexShrink: 0
-  },
-  materialContent: {
-    flex: 1
-  },
-  materialTitle: {
-    fontSize: '14px',
-    fontWeight: '700',
-    color: '#1e293b',
-    margin: '0 0 8px 0'
-  },
-  materialText: {
-    fontSize: '13px',
-    color: '#475569',
-    lineHeight: '1.6'
-  },
-  filePreview: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    flexWrap: 'wrap'
-  },
-  fileName: {
-    fontSize: '12px',
-    color: '#3b82f6',
-    background: '#eef2ff',
-    padding: '4px 10px',
-    borderRadius: '6px'
-  },
-  btnPreview: {
-    background: '#eef2ff',
-    border: 'none',
-    padding: '4px 10px',
-    borderRadius: '6px',
-    fontSize: '11px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px'
-  },
-  btnDownload: {
-    background: '#f1f5f9',
-    border: 'none',
-    padding: '4px 10px',
-    borderRadius: '6px',
-    fontSize: '11px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    textDecoration: 'none',
-    color: '#475569'
-  },
-  linkExternal: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    color: '#3b82f6',
-    textDecoration: 'none',
-    fontSize: '12px'
-  },
-  assignmentCard: {
-    padding: '16px',
-    background: '#fffbeb',
-    borderRadius: '12px',
-    border: '1px solid #fde68a'
-  },
-  assignmentHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '10px',
-    flexWrap: 'wrap',
-    gap: '8px'
-  },
-  assignmentTitle: {
-    fontSize: '14px',
-    fontWeight: '700',
-    color: '#b45309',
-    margin: 0
-  },
-  badge: {
-    padding: '4px 8px',
-    borderRadius: '6px',
-    fontSize: '10px',
-    fontWeight: '600',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px'
-  },
-  assignmentContent: {
-    fontSize: '13px',
-    color: '#475569',
-    lineHeight: '1.6',
-    marginBottom: '12px'
-  },
-  assignmentDeadline: {
-    fontSize: '11px',
-    color: '#f59e0b',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    marginBottom: '12px'
-  },
-  btnSubmit: {
-    background: '#f59e0b',
-    color: 'white',
-    border: 'none',
-    padding: '10px 16px',
-    borderRadius: '8px',
-    fontSize: '12px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px'
-  },
-  submittedInfo: {
-    fontSize: '11px',
-    color: '#10b981',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    marginTop: '8px'
-  },
-  quizCard: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: '16px'
-  },
-  quizInfo: {
-    display: 'flex',
-    gap: '16px',
-    flexWrap: 'wrap'
-  },
-  quizInfoItem: {
-    fontSize: '12px',
-    color: '#64748b'
-  },
-  btnQuiz: {
-    background: '#8b5cf6',
-    color: 'white',
-    border: 'none',
-    padding: '10px 20px',
-    borderRadius: '8px',
-    fontSize: '12px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px'
-  },
-  loadingBox: {
-    textAlign: 'center',
-    padding: '60px',
-    color: '#64748b'
-  },
-  emptyBox: {
-    textAlign: 'center',
-    padding: '60px',
-    color: '#94a3b8'
-  },
-  spinner: {
-    width: '40px',
-    height: '40px',
-    border: '4px solid #e2e8f0',
-    borderTop: '4px solid #3b82f6',
-    borderRadius: '50%',
-    animation: 'spin 0.8s linear infinite',
-    margin: '0 auto 16px'
-  },
-  // MODAL STYLES
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(0,0,0,0.7)',
-    zIndex: 9999,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '20px'
-  },
-  modalContent: {
-    background: 'white',
-    borderRadius: '20px',
-    width: '100%',
-    maxWidth: '600px',
-    maxHeight: '85vh',
-    overflowY: 'auto'
-  },
-  previewModalContent: {
-    background: 'white',
-    borderRadius: '20px',
-    width: '90%',
-    maxWidth: '900px',
-    maxHeight: '85vh',
-    overflowY: 'auto'
-  },
-  modalHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '16px 20px',
-    borderBottom: '1px solid #e2e8f0'
-  },
-  modalTitle: {
-    fontSize: '16px',
-    fontWeight: '700',
-    margin: 0
-  },
-  modalClose: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: '4px'
-  },
-  modalBody: {
-    padding: '20px'
-  },
-  modalFooter: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '12px',
-    padding: '16px 20px',
-    borderTop: '1px solid #e2e8f0'
-  },
-  assignmentQuestionBox: {
-    marginBottom: '20px'
-  },
-  modalLabel: {
-    display: 'block',
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#1e293b',
-    marginBottom: '8px'
-  },
-  assignmentQuestion: {
-    background: '#f8fafc',
-    padding: '12px',
-    borderRadius: '8px',
-    fontSize: '13px',
-    lineHeight: '1.6'
-  },
-  assignmentAnswerBox: {
-    marginBottom: '20px'
-  },
-  assignmentTextarea: {
-    width: '100%',
-    padding: '12px',
-    borderRadius: '8px',
-    border: '1px solid #e2e8f0',
-    fontSize: '13px',
-    fontFamily: 'inherit',
-    resize: 'vertical',
-    outline: 'none'
-  },
-  assignmentFileBox: {
-    marginBottom: '20px'
-  },
-  fileUploadArea: {
-    marginBottom: '8px'
-  },
-  fileUploadLabel: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 16px',
-    background: '#f1f5f9',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontSize: '12px',
-    color: '#64748b'
-  },
-  removeFileBtn: {
-    marginTop: '8px',
-    background: '#fee2e2',
-    border: 'none',
-    padding: '4px 10px',
-    borderRadius: '6px',
-    fontSize: '11px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    color: '#ef4444'
-  },
-  fileHint: {
-    fontSize: '10px',
-    color: '#94a3b8',
-    margin: '4px 0 0'
-  },
-  btnCancel: {
-    background: '#f1f5f9',
-    border: 'none',
-    padding: '10px 20px',
-    borderRadius: '8px',
-    fontSize: '12px',
-    fontWeight: '600',
-    cursor: 'pointer'
-  },
-  btnSubmitModal: {
-    background: '#10b981',
-    color: 'white',
-    border: 'none',
-    padding: '10px 20px',
-    borderRadius: '8px',
-    fontSize: '12px',
-    fontWeight: '600',
-    cursor: 'pointer'
-  },
-  previewBody: {
-    padding: '20px',
-    minHeight: '400px'
-  },
-  previewIframe: {
-    width: '100%',
-    height: '500px',
-    border: 'none',
-    borderRadius: '8px'
-  },
-  previewImage: {
-    maxWidth: '100%',
-    maxHeight: '500px',
-    objectFit: 'contain',
-    display: 'block',
-    margin: '0 auto'
-  },
-  previewFallback: {
-    textAlign: 'center',
-    padding: '60px'
-  },
-  btnDownloadLarge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    background: '#3b82f6',
-    color: 'white',
-    textDecoration: 'none',
-    padding: '10px 20px',
-    borderRadius: '8px',
-    marginTop: '16px'
-  }
+  moduleList: { width: '100%' },
+  listHeader: { marginBottom: '24px' },
+  listTitle: { fontSize: '24px', fontWeight: '800', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 4px 0' },
+  listSubtitle: { fontSize: '13px', color: '#64748b', margin: 0 },
+  filterBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' },
+  searchBox: { flex: 1, display: 'flex', alignItems: 'center', gap: '8px', background: 'white', padding: '10px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', minWidth: '200px' },
+  searchInput: { flex: 1, border: 'none', outline: 'none', fontSize: '13px', background: 'transparent' },
+  filterButtons: { display: 'flex', gap: '8px' },
+  filterBtn: { padding: '8px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' },
+  statsBar: { display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' },
+  statCard: { background: 'white', padding: '10px 16px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '600', color: '#1e293b', border: '1px solid #e2e8f0' },
+  modulesGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' },
+  moduleCard: { background: 'white', borderRadius: '16px', padding: '16px', border: '1px solid #e2e8f0', cursor: 'pointer', transition: 'all 0.2s ease' },
+  moduleCardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' },
+  moduleCardIcon: { width: '40px', height: '40px', borderRadius: '12px', background: '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  moduleBadge: { padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' },
+  moduleCardTitle: { fontSize: '15px', fontWeight: '700', color: '#1e293b', margin: '0 0 4px 0' },
+  moduleCardSubject: { fontSize: '11px', color: '#64748b', margin: '0 0 8px 0' },
+  moduleCardMeta: { display: 'flex', gap: '8px', marginBottom: '12px' },
+  metaTag: { fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: '#f1f5f9', color: '#64748b' },
+  moduleCardBtn: { width: '100%', padding: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '11px', fontWeight: '600', color: '#3b82f6', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' },
+  moduleDetail: { width: '100%' },
+  detailHeader: { marginBottom: '24px' },
+  btnBack: { display: 'flex', alignItems: 'center', gap: '6px', background: 'white', border: '1px solid #e2e8f0', padding: '8px 16px', borderRadius: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', marginBottom: '16px' },
+  detailTitle: { marginBottom: '8px' },
+  detailTitleText: { fontSize: '22px', fontWeight: '800', color: '#1e293b', margin: '0 0 8px 0' },
+  detailMeta: { display: 'flex', gap: '16px', flexWrap: 'wrap' },
+  detailMetaItem: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#64748b' },
+  coverImage: { marginBottom: '20px' },
+  descriptionBox: { background: '#f1f5f9', padding: '16px', borderRadius: '12px', marginBottom: '24px', color: '#475569', fontSize: '14px', lineHeight: '1.6' },
+  sectionBox: { background: 'white', borderRadius: '16px', padding: '20px', marginBottom: '20px', border: '1px solid #e2e8f0' },
+  sectionTitle: { fontSize: '16px', fontWeight: '700', color: '#1e293b', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' },
+  materialsList: { display: 'flex', flexDirection: 'column', gap: '16px' },
+  materialCard: { display: 'flex', gap: '14px', padding: '12px', background: '#f8fafc', borderRadius: '12px' },
+  materialIcon: { flexShrink: 0 },
+  materialContent: { flex: 1 },
+  materialTitle: { fontSize: '14px', fontWeight: '700', color: '#1e293b', margin: '0 0 8px 0' },
+  materialText: { fontSize: '13px', color: '#475569', lineHeight: '1.6' },
+  filePreview: { display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' },
+  fileName: { fontSize: '12px', color: '#3b82f6', background: '#eef2ff', padding: '4px 10px', borderRadius: '6px' },
+  btnPreview: { background: '#eef2ff', border: 'none', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' },
+  btnDownload: { background: '#f1f5f9', border: 'none', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', color: '#475569' },
+  linkExternal: { display: 'flex', alignItems: 'center', gap: '6px', color: '#3b82f6', textDecoration: 'none', fontSize: '12px' },
+  assignmentCard: { padding: '16px', background: '#fffbeb', borderRadius: '12px', border: '1px solid #fde68a' },
+  assignmentHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' },
+  assignmentTitle: { fontSize: '14px', fontWeight: '700', color: '#b45309', margin: 0 },
+  badge: { padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' },
+  assignmentContent: { fontSize: '13px', color: '#475569', lineHeight: '1.6', marginBottom: '12px' },
+  assignmentDeadline: { fontSize: '11px', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '12px' },
+  btnSubmit: { background: '#f59e0b', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' },
+  submittedInfo: { fontSize: '11px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px' },
+  quizCard: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' },
+  quizInfo: { display: 'flex', gap: '16px', flexWrap: 'wrap' },
+  quizInfoItem: { fontSize: '12px', color: '#64748b' },
+  btnQuiz: { background: '#8b5cf6', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' },
+  loadingBox: { textAlign: 'center', padding: '60px', color: '#64748b' },
+  emptyBox: { textAlign: 'center', padding: '60px', color: '#94a3b8' },
+  spinner: { width: '40px', height: '40px', border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' },
+  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' },
+  modalContent: { background: 'white', borderRadius: '20px', width: '100%', maxWidth: '600px', maxHeight: '85vh', overflowY: 'auto' },
+  previewModalContent: { background: 'white', borderRadius: '20px', width: '90%', maxWidth: '900px', maxHeight: '85vh', overflowY: 'auto' },
+  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid #e2e8f0' },
+  modalTitle: { fontSize: '16px', fontWeight: '700', margin: 0 },
+  modalClose: { background: 'none', border: 'none', cursor: 'pointer', padding: '4px' },
+  modalBody: { padding: '20px' },
+  modalFooter: { display: 'flex', justifyContent: 'flex-end', gap: '12px', padding: '16px 20px', borderTop: '1px solid #e2e8f0' },
+  assignmentQuestionBox: { marginBottom: '20px' },
+  modalLabel: { display: 'block', fontSize: '13px', fontWeight: '600', color: '#1e293b', marginBottom: '8px' },
+  assignmentQuestion: { background: '#f8fafc', padding: '12px', borderRadius: '8px', fontSize: '13px', lineHeight: '1.6' },
+  assignmentAnswerBox: { marginBottom: '20px' },
+  assignmentTextarea: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical', outline: 'none' },
+  assignmentFileBox: { marginBottom: '20px' },
+  fileUploadArea: { marginBottom: '8px' },
+  fileUploadLabel: { display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: '#f1f5f9', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', color: '#64748b' },
+  removeFileBtn: { marginTop: '8px', background: '#fee2e2', border: 'none', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: '#ef4444' },
+  fileHint: { fontSize: '10px', color: '#94a3b8', margin: '4px 0 0' },
+  btnCancel: { background: '#f1f5f9', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' },
+  btnSubmitModal: { background: '#10b981', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' },
+  previewBody: { padding: '20px', minHeight: '400px' },
+  previewIframe: { width: '100%', height: '500px', border: 'none', borderRadius: '8px' },
+  previewImage: { maxWidth: '100%', maxHeight: '500px', objectFit: 'contain', display: 'block', margin: '0 auto' },
+  previewFallback: { textAlign: 'center', padding: '60px' },
+  btnDownloadLarge: { display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#3b82f6', color: 'white', textDecoration: 'none', padding: '10px 20px', borderRadius: '8px', marginTop: '16px' }
 };
 
-// Tambahkan CSS animation
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
-  style.textContent = `
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  `;
+  style.textContent = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
   document.head.appendChild(style);
 }
 
