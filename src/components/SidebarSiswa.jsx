@@ -36,7 +36,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
   };
 
   const handleMenuClick = (id) => {
-    setActiveMenu(id);
+    setActiveMenu(id); // ✅ Props dari parent
     if (isMobile) {
       setIsOpen(false);
     }
