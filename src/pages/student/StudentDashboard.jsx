@@ -30,7 +30,7 @@ const StudentDashboard = () => {
   const [studentProfile, setStudentProfile] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
 
-  // 🔥 SURVEI
+  // 🔥 SURVEI - QUERY TANPA COMPOSITE INDEX
   const [activeSurveys, setActiveSurveys] = useState([]);
   const [filledSurveys, setFilledSurveys] = useState({});
   const [showSurveyModal, setShowSurveyModal] = useState(false);
@@ -98,22 +98,42 @@ const StudentDashboard = () => {
         const moduls = (await getDocs(query(collection(db, "bimbel_modul"), where("targetKategori", "in", ["Semua", curKat]), orderBy("createdAt", "desc"), limit(10)))).docs.map(d => ({ id: d.id, ...d.data() }));
         setTasks(moduls.filter(m => m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment')).slice(0, 5));
 
-        // 🔥 SURVEI — PERSIS DARI TeacherDashboard (TERBUKTI MUNCUL)
-        const qSurvey = query(collection(db, "surveys"), where("status", "==", "aktif"), where("isRequired", "==", true));
-        const surveys = (await getDocs(qSurvey)).docs.map(d => ({ id: d.id, ...d.data() }));
-        const cocok = surveys.filter(s => {
+        // 🔥 SURVEI - QUERY TANPA COMPOSITE INDEX
+        // Ambil SEMUA survei (tanpa filter isRequired), lalu filter manual di JavaScript
+        const qAllSurveys = query(collection(db, "surveys"), where("status", "==", "aktif"));
+        const allSurveys = (await getDocs(qAllSurveys)).docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        console.log('📋 SEMUA SURVEI AKTIF:', allSurveys.length);
+        allSurveys.forEach(s => console.log(`  - ${s.title} | target: ${s.targetType} | wajib: ${s.isRequired}`));
+
+        // Filter manual: target cocok dengan siswa
+        const cocok = allSurveys.filter(s => {
           if (s.targetType === 'semua_siswa' || s.targetType === 'semua') return true;
           if (s.targetType === 'jenjang' && (s.targetKelas === 'Semua' || s.targetKelas === curKel)) return true;
           return false;
         });
+        console.log('🎯 SURVEI COCOK:', cocok.length);
+        cocok.forEach(s => console.log(`  - ${s.title}`));
+
+        // Cek yang sudah diisi
         const filled = {};
         for (const s of cocok) {
-          const resp = await getDocs(query(collection(db, "survey_responses"), where("surveyId", "==", s.id), where("userId", "==", studentId)));
-          if (!resp.empty) filled[s.id] = true;
+          try {
+            const respSnap = await getDocs(query(collection(db, "survey_responses"), where("surveyId", "==", s.id), where("userId", "==", studentId)));
+            if (!respSnap.empty) filled[s.id] = true;
+          } catch (e) {
+            console.warn('⚠️ Cek respon gagal untuk:', s.title, e.message);
+          }
         }
         setActiveSurveys(cocok);
         setFilledSurveys(filled);
-      } catch (err) { console.error(err); } finally { setLoading(false); }
+        console.log('✅ SURVEI BELUM DIISI:', cocok.filter(s => !filled[s.id]).length);
+
+      } catch (err) { 
+        console.error('❌ ERROR FETCH DASHBOARD:', err); 
+      } finally { 
+        setLoading(false); 
+      }
     };
     fetchAll();
   }, [studentId]);
@@ -124,6 +144,7 @@ const StudentDashboard = () => {
   };
 
   const openSurvey = (s) => { setCurrentSurvey(s); setSurveyAnswers({}); setShowSurveyModal(true); };
+  
   const submitSurvey = async () => {
     if (!currentSurvey) return;
     try {
@@ -135,7 +156,7 @@ const StudentDashboard = () => {
       setFilledSurveys({ ...filledSurveys, [currentSurvey.id]: true });
       setShowSurveyModal(false); setCurrentSurvey(null);
       alert("✅ Survei dikirim!");
-    } catch (err) { alert("❌ Gagal"); }
+    } catch (err) { alert("❌ Gagal: " + err.message); }
   };
 
   const renderDashboardHome = () => (
@@ -156,14 +177,14 @@ const StudentDashboard = () => {
 
       {/* CAROUSEL POSTER */}
       <div style={{ ...st.carouselContainer, aspectRatio: isMobile ? '4/3' : '21/9' }}>
-        <Swiper modules={[Navigation, Pagination, Autoplay, EffectFade]} effect={'fade'} navigation={!isMobile} pagination={{ clickable: true }} autoplay={{ delay: 5000, disableOnInteraction: false }} loop={posters.length > 1} style={st.mySwiper}>
+        <Swiper modules={[Navigation, Pagination, Autoplay, EffectFade]} effect={'fade'} navigation={!isMobile} pagination={{ clickable: true }} autoplay={{ delay: 5000 }} loop={posters.length > 1} style={st.mySwiper}>
           {posters.map((post) => (
             <SwiperSlide key={post.id} onClick={() => setSelectedNews(post)}>
               <div style={{ ...st.slideCard, backgroundImage: `url(${post.imageUrl})`, cursor: 'pointer' }}>
                 <div style={st.slideOverlay}>
-                  <span style={{ background: '#e11d48', padding: '4px 10px', borderRadius: 12, fontSize: 9, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 8 }}><Megaphone size={10} /> Info Akademik</span>
+                  <span style={{ background: '#e11d48', padding: '4px 10px', borderRadius: 12, fontSize: 9, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 8 }}><Megaphone size={10} /> Info</span>
                   <h2 style={isMobile ? st.slideTitleMobile : st.slideTitle}>{post.title}</h2>
-                  {!isMobile && <p style={st.slideDesc}>{post.desc || "Klik untuk baca selengkapnya"}</p>}
+                  {!isMobile && <p style={st.slideDesc}>{post.desc || "Klik untuk baca"}</p>}
                 </div>
               </div>
             </SwiperSlide>
@@ -174,7 +195,7 @@ const StudentDashboard = () => {
       {/* 🔥 SURVEI CARD */}
       {activeSurveys.length > 0 && (
         <div style={{ background: 'white', padding: 20, borderRadius: 15, border: '1px solid #e2e8f0', borderTop: '4px solid #3b82f6' }}>
-          <h3 style={{ margin: '0 0 15px', fontSize: 16, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><ClipboardList size={20} color="#3b82f6" /> Survei Aktif</h3>
+          <h3 style={{ margin: '0 0 15px', fontSize: 16, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><ClipboardList size={20} color="#3b82f6" /> Survei</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {activeSurveys.map(survey => {
               const done = filledSurveys[survey.id];
@@ -188,7 +209,7 @@ const StudentDashboard = () => {
                     </div>
                     <div style={{ fontSize: 11, color: '#64748b' }}>{survey.questions?.length || 0} pertanyaan • {survey.deadline ? `Deadline: ${new Date(survey.deadline).toLocaleDateString('id-ID')}` : 'Tanpa batas'}</div>
                   </div>
-                  {done ? <span style={{ color: '#10b981', fontWeight: 700, fontSize: 12 }}>✅ Terisi</span> : <button onClick={() => openSurvey(survey)} style={{ background: survey.isRequired ? '#ef4444' : '#f59e0b', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}><Send size={14} /> Isi Survei</button>}
+                  {done ? <span style={{ color: '#10b981', fontWeight: 700, fontSize: 12 }}>✅ Terisi</span> : <button onClick={() => openSurvey(survey)} style={{ background: survey.isRequired ? '#ef4444' : '#f59e0b', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}><Send size={14} /> Isi</button>}
                 </div>
               );
             })}
@@ -199,66 +220,21 @@ const StudentDashboard = () => {
       {/* GRID UTAMA */}
       <div style={isMobile ? st.mainGridMobile : st.mainGrid}>
         <div style={st.leftColumn}>
-          {/* JADWAL */}
           <section style={st.sectionCard}>
             <h3 style={st.sectionTitle}><Calendar size={20} color="#3498db" /> Jadwal Hari Ini</h3>
-            {todaySchedules.length === 0 ? <div style={st.emptyState}>📭 Tidak ada jadwal hari ini.</div> : todaySchedules.map((sch, i) => (
-              <div key={i} style={st.schItem}>
-                <div style={st.schTime}><b>{sch.start}</b><br /><span style={{ fontSize: 10 }}>{sch.end}</span></div>
-                <div style={{ ...st.schLine, background: sch.program === 'English' ? '#e74c3c' : '#3498db' }}></div>
-                <div style={st.schInfo}><b>{sch.title || "Kelas"}</b><div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}><MapPin size={10} /> {sch.planet || "Ruang"} • <User size={10} /> {sch.booker || "Guru"}</div></div>
-              </div>
+            {todaySchedules.length === 0 ? <div style={st.emptyState}>📭 Tidak ada jadwal.</div> : todaySchedules.map((sch, i) => (
+              <div key={i} style={st.schItem}><div style={st.schTime}><b>{sch.start}</b><br /><span style={{ fontSize: 10 }}>{sch.end}</span></div><div style={st.schInfo}><b>{sch.title || "Kelas"}</b><div style={{ fontSize: 11, color: '#64748b' }}><MapPin size={10} /> {sch.planet} • <User size={10} /> {sch.booker}</div></div></div>
             ))}
           </section>
-
-          {/* TUGAS */}
           <section style={st.sectionCard}>
-            <div style={st.cardHeader}>
-              <h3 style={st.sectionTitle}><ClipboardList size={20} color="#9b59b6" /> Tugas & Kuis</h3>
-              <button onClick={() => setActiveMenu('materi')} style={st.btnViewAll}>Lihat Semua <ChevronRight size={14} /></button>
-            </div>
-            {tasks.length === 0 ? <div style={st.emptyState}>📭 Tidak ada tugas.</div> : tasks.map((task, i) => {
-              const deadline = getAssignmentDeadline(task);
-              const isSoon = isDeadlineSoon(deadline);
-              const isPassed = isDeadlinePassed(deadline);
-              return (
-                <div key={i} style={{ ...st.taskItem, borderLeftColor: isPassed ? '#ef4444' : isSoon ? '#f59e0b' : '#9b59b6' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>{task.title}</div>
-                    {deadline && (
-                      <div style={{ fontSize: 11, marginTop: 4, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                        <Clock size={12} color={isPassed ? '#ef4444' : '#64748b'} />
-                        <span style={{ color: isPassed ? '#ef4444' : '#64748b', fontWeight: isSoon ? 700 : 400 }}>{isPassed ? '⛔ Terlambat: ' : isSoon ? '⚠️ Segera: ' : '📅 Deadline: '}{formatDateOnly(deadline)}</span>
-                        {isSoon && <span style={st.badgeUrgent}>SEGERA</span>}
-                      </div>
-                    )}
-                  </div>
-                  <button onClick={() => setActiveMenu('materi')} style={st.btnTaskBuka}>Buka</button>
-                </div>
-              );
-            })}
+            <div style={st.cardHeader}><h3 style={st.sectionTitle}><ClipboardList size={20} color="#9b59b6" /> Tugas & Kuis</h3><button onClick={() => setActiveMenu('materi')} style={st.btnViewAll}>Lihat Semua <ChevronRight size={14} /></button></div>
+            {tasks.length === 0 ? <div style={st.emptyState}>📭 Tidak ada tugas.</div> : tasks.map((task, i) => { const dl = getAssignmentDeadline(task); const soon = isDeadlineSoon(dl); const passed = isDeadlinePassed(dl); return (<div key={i} style={{ ...st.taskItem, borderLeftColor: passed ? '#ef4444' : soon ? '#f59e0b' : '#9b59b6' }}><div style={{ flex: 1 }}><div style={{ fontSize: 14, fontWeight: 700 }}>{task.title}</div>{dl && <div style={{ fontSize: 11, marginTop: 4 }}><Clock size={12} /> {passed ? '⛔ ' : soon ? '⚠️ ' : '📅 '}{formatDateOnly(dl)}</div>}</div><button onClick={() => setActiveMenu('materi')} style={st.btnTaskBuka}>Buka</button></div>); })}
           </section>
         </div>
-
         <div style={st.rightColumn}>
-          {/* PROFIL */}
           <section style={st.sectionCard}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 15 }}>
-              <div style={st.avatar}>{studentName?.charAt(0) || 'S'}</div>
-              <div><b>{studentName}</b><p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>{studentProfile?.kelasSekolah || '-'}</p></div>
-            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 15 }}><div style={st.avatar}>{studentName?.charAt(0) || 'S'}</div><div><b>{studentName}</b><p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>{studentProfile?.kelasSekolah || '-'}</p></div></div>
             <button onClick={() => setActiveMenu('materi')} style={st.btnAccess}><BookOpen size={16} /> Buka Materi Belajar</button>
-          </section>
-
-          {/* RIWAYAT MATERI */}
-          <section style={st.sectionCard}>
-            <h3 style={st.sectionTitle}><Clock size={20} color="#e67e22" /> Materi Terbaru</h3>
-            {tasks.slice(0, 3).map((task, i) => (
-              <div key={i} style={st.historyItem}>
-                <div style={st.dot}></div>
-                <div><div style={{ fontWeight: 600, fontSize: 13 }}>{task.title}</div><div style={{ fontSize: 11, color: '#94a3b8' }}>{formatDateOnly(task.createdAt)}</div></div>
-              </div>
-            ))}
           </section>
         </div>
       </div>
@@ -280,7 +256,7 @@ const StudentDashboard = () => {
   if (loading) return (
     <div style={st.mainContainer}>
       <SidebarSiswa activeMenu={activeMenu} setActiveMenu={setActiveMenu} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-      <div style={st.loadingScreen}><div style={st.spinner}></div><p>Menyiapkan dashboard...</p></div>
+      <div style={st.loadingScreen}><div style={st.spinner}></div><p>Memuat dashboard...</p></div>
     </div>
   );
 
@@ -294,51 +270,29 @@ const StudentDashboard = () => {
       {isMobile && isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} style={st.overlay} />}
 
       {/* MODAL BERITA */}
-      {selectedNews && (
-        <div style={st.modalOverlay} onClick={() => setSelectedNews(null)}>
-          <div style={{ ...st.modalContent, width: isMobile ? '90%' : '600px' }} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setSelectedNews(null)} style={st.btnCloseModal}><X size={20} /></button>
-            <img src={selectedNews.imageUrl} style={st.modalImg} alt="News" />
-            <div style={{ padding: 20 }}><h2 style={{ margin: 0, fontSize: isMobile ? 18 : 22 }}>{selectedNews.title}</h2><p style={{ fontSize: 14, color: '#475569', marginTop: 10, lineHeight: 1.6 }}>{selectedNews.content || selectedNews.desc}</p></div>
-          </div>
-        </div>
-      )}
+      {selectedNews && (<div style={st.modalOverlay} onClick={() => setSelectedNews(null)}><div style={{ ...st.modalContent, width: isMobile ? '90%' : '600px' }} onClick={e => e.stopPropagation()}><button onClick={() => setSelectedNews(null)} style={st.btnCloseModal}><X size={20} /></button><img src={selectedNews.imageUrl} style={st.modalImg} alt="" /><div style={{ padding: 20 }}><h2>{selectedNews.title}</h2><p>{selectedNews.content || selectedNews.desc}</p></div></div></div>)}
 
       {/* MODAL SCANNER */}
-      {isScanning && (
-        <div style={st.modalOverlay} onClick={() => setIsScanning(false)}>
-          <div style={st.qrModalContent} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setIsScanning(false)} style={st.btnCloseModal}><X size={20} /></button>
-            <h3 style={{ marginTop: 0, fontSize: 18, color: '#2c3e50' }}>Scan QR Absensi</h3>
-            <p style={{ fontSize: 12, color: '#7f8c8d', marginBottom: 20 }}>Arahkan kamera ke kode QR Guru</p>
-            <div id="reader" style={{ width: '100%', borderRadius: 15, overflow: 'hidden', background: '#000' }}></div>
-            <p style={{ fontSize: 11, color: '#3498db', marginTop: 15 }}>{studentName}</p>
-          </div>
-        </div>
-      )}
+      {isScanning && (<div style={st.modalOverlay} onClick={() => setIsScanning(false)}><div style={st.qrModalContent} onClick={e => e.stopPropagation()}><button onClick={() => setIsScanning(false)} style={st.btnCloseModal}><X size={20} /></button><h3>Scan QR</h3><div id="reader" style={{ width: '100%', borderRadius: 15, overflow: 'hidden' }}></div></div></div>)}
 
       {/* 🔥 MODAL SURVEI */}
       {showSurveyModal && currentSurvey && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
           <div style={{ background: 'white', borderRadius: 20, padding: 30, width: '100%', maxWidth: 550, maxHeight: '85vh', overflowY: 'auto' }}>
-            <button onClick={() => setShowSurveyModal(false)} style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', cursor: 'pointer', fontSize: 20 }}><X size={20} /></button>
-            <div style={{ textAlign: 'center', marginBottom: 25 }}>
-              <span style={{ fontSize: 40 }}>📋</span>
-              <h2 style={{ margin: '10px 0 5px', fontSize: 20, fontWeight: 800 }}>{currentSurvey.title}</h2>
-              {currentSurvey.isRequired ? <p style={{ color: '#ef4444', fontWeight: 700, fontSize: 13, margin: 0 }}>🔴 WAJIB DIISI</p> : <p style={{ color: '#64748b', fontSize: 12 }}>{currentSurvey.questions?.length || 0} pertanyaan</p>}
-            </div>
-            {currentSurvey.questions.map((q, qIdx) => (
-              <div key={qIdx} style={{ marginBottom: 18 }}>
-                <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>{qIdx + 1}. {q.question}</p>
-                {q.options.filter(o => o).map((opt, oIdx) => (
-                  <label key={oIdx} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', marginBottom: 6, borderRadius: 10, cursor: 'pointer', background: surveyAnswers[qIdx] === opt ? '#eef2ff' : '#f8fafc', border: `2px solid ${surveyAnswers[qIdx] === opt ? '#3b82f6' : '#e2e8f0'}` }}>
-                    <input type="radio" name={`sq-${qIdx}`} checked={surveyAnswers[qIdx] === opt} onChange={() => setSurveyAnswers({ ...surveyAnswers, [qIdx]: opt })} style={{ width: 18, height: 18 }} />
+            <button onClick={() => setShowSurveyModal(false)} style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button>
+            <div style={{ textAlign: 'center', marginBottom: 20 }}><span style={{ fontSize: 40 }}>📋</span><h2 style={{ margin: '10px 0 5px', fontSize: 20 }}>{currentSurvey.title}</h2></div>
+            {currentSurvey.questions.map((q, i) => (
+              <div key={i} style={{ marginBottom: 15 }}>
+                <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>{i + 1}. {q.question}</p>
+                {q.options.filter(o => o).map((opt, oi) => (
+                  <label key={oi} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', marginBottom: 6, borderRadius: 10, cursor: 'pointer', background: surveyAnswers[i] === opt ? '#eef2ff' : '#f8fafc', border: `2px solid ${surveyAnswers[i] === opt ? '#3b82f6' : '#e2e8f0'}` }}>
+                    <input type="radio" name={`sq-${i}`} checked={surveyAnswers[i] === opt} onChange={() => setSurveyAnswers({ ...surveyAnswers, [i]: opt })} style={{ width: 18, height: 18 }} />
                     <span style={{ fontSize: 13 }}>{opt}</span>
                   </label>
                 ))}
               </div>
             ))}
-            <button onClick={submitSurvey} style={{ width: '100%', padding: 14, background: '#3b82f6', color: 'white', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 20 }}><Send size={18} /> Kirim Jawaban</button>
+            <button onClick={submitSurvey} style={{ width: '100%', padding: 14, background: '#3b82f6', color: 'white', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: 'pointer', marginTop: 10 }}><Send size={18} /> Kirim Jawaban</button>
           </div>
         </div>
       )}
@@ -381,15 +335,11 @@ const st = {
   btnViewAll: { background: 'none', border: 'none', color: '#3b82f6', fontWeight: 600, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 },
   schItem: { display: 'flex', alignItems: 'stretch', gap: 12, padding: '12px 0', borderBottom: '1px solid #f1f5f9' },
   schTime: { minWidth: 55, fontSize: 13, textAlign: 'center' },
-  schLine: { width: 3, borderRadius: 3 },
   schInfo: { flex: 1 },
   taskItem: { display: 'flex', alignItems: 'center', padding: 12, background: '#f8fafc', borderRadius: 10, borderLeft: '4px solid', marginBottom: 8 },
-  badgeUrgent: { background: '#fef3c7', color: '#b45309', padding: '2px 6px', borderRadius: 6, fontSize: 9, fontWeight: 'bold' },
   btnTaskBuka: { background: '#9b59b6', color: 'white', border: 'none', padding: '6px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
   avatar: { width: 45, height: 45, borderRadius: '50%', background: '#3b82f6', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: 18, flexShrink: 0 },
   btnAccess: { width: '100%', padding: 12, background: '#3b82f6', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10 },
-  historyItem: { display: 'flex', alignItems: 'flex-start', gap: 10, paddingBottom: 12 },
-  dot: { width: 8, height: 8, borderRadius: '50%', background: '#f97316', marginTop: 5, flexShrink: 0 },
   emptyState: { fontSize: 12, color: '#94a3b8', textAlign: 'center', padding: 15 },
   modalOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.7)', zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center', backdropFilter: 'blur(5px)' },
   modalContent: { background: 'white', borderRadius: 15, overflow: 'hidden', position: 'relative' },
