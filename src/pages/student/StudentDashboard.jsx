@@ -1,4 +1,4 @@
-// src/pages/student/StudentDashboard.js
+// src/pages/student/StudentDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import SidebarSiswa from '../../components/SidebarSiswa';
 import { db } from '../../firebase';
@@ -8,10 +8,20 @@ import StudentFinanceSiswa from './StudentFinance';
 import StudentGrades from './StudentGrades';
 import StudentSchedule from './StudentSchedule';
 import StudentAttendanceSiswa from './StudentAttendance';
-import StudentElearning from './StudentElearning'; 
-import { BookOpen, Calendar, Clock, GraduationCap, Menu, ChevronRight, Target, ClipboardList, AlertCircle, QrCode, X, Camera, User, MapPin, Send, CheckCircle, Megaphone, FileText, DollarSign, Award, ChevronLeft, LogOut, HelpCircle, Settings, Bell, Star, TrendingUp, BookMarked, Users, CheckSquare, MessageSquare, Phone, Mail, Globe, Facebook, Twitter, Instagram, Linkedin, Youtube, Github, Figma, Slack, Zoom, Google, Apple, Windows, Linux, Android, Ios, Chrome, Firefox, Safari, Edge, Opera, Brave, Tor, Vpn, Plus, Minus, Trash2, Edit, Save, Copy, Download, Upload, Search, Filter, SortAsc, SortDesc, RefreshCw, AlertTriangle, Info, HelpCircle as Help, Eye, EyeOff, Lock, Unlock, Key, Shield, UserCheck, UserX, UserPlus, UserMinus, Users as UsersIcon, UserCircle, UserCog, UserCheck as UserVerified, UserX as UserBan, UserPlus as UserAdd, UserMinus as UserRemove, Activity, BarChart, PieChart, LineChart, AreaChart, ScatterChart, RadarChart, BubbleChart, Treemap, Heatmap, BoxPlot, Histogram, Funnel, Sankey, Sunburst, WordCloud, Gauge, Progress, Steps, Timeline, Tree, Network, Graph, Map as MapIcon, Globe as GlobeIcon, Compass, Navigation, Pin, Marker, Location, City, Building, Home as HomeIcon, Briefcase, Workflow, Layers, Grid, List, Layout as LayoutIcon, Maximize, Minimize, ZoomIn, ZoomOut, RotateCw, RotateCcw, Move, Resize, Crop, FlipHorizontal, FlipVertical, AlignLeft, AlignCenter, AlignRight, AlignJustify, AlignTop, AlignMiddle, AlignBottom, Bold, Italic, Underline, Strikethrough, Code, Link, Unlink, Image, Video, Music, Mic, Volume2, Volume1, VolumeX, Play, Pause, SkipBack, SkipForward, Repeat, Shuffle, Radio, Headphones, Tv, Monitor, Smartphone, Tablet, Laptop, Desktop, Watch, Camera as CameraIcon, Video as VideoIcon, Image as ImageIcon, File, FileText as FileTextIcon, FileImage, FileVideo, FileAudio, FileCode, FilePdf, FileWord, FileExcel, FilePowerpoint, FileArchive, FileSpreadsheet, FilePresentation, FileDatabase, FileSettings, FileUser, FileCheck, FileX, FileMinus, FilePlus, Folder, FolderOpen, FolderPlus, FolderMinus, FolderSync, FolderSearch, Download as DownloadIcon, Upload as UploadIcon, Cloud, CloudRain, CloudSnow, CloudLightning, Sun, Moon, Star as StarIcon, Heart, ThumbsUp, ThumbsDown, Share, Bookmark, Flag, Award as AwardIcon, Trophy, Medal, Crown, Sparkles, Fire, Droplet, Wind, Thermometer, Umbrella, Compass as CompassIcon, Clock as ClockIcon, Calendar as CalendarIcon, Bell as BellIcon, AlertCircle as AlertOctagon, AlertTriangle as AlertTriangleIcon, CheckCircle as CheckCircleIcon, XCircle, HelpCircle as HelpCircleIcon, Info as InfoIcon, PlusCircle, MinusCircle, PlusSquare, MinusSquare, Menu as MenuIcon, MoreHorizontal, MoreVertical, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronUp, ChevronDown, ArrowLeft, ArrowRight, ArrowUp, ArrowDown, ArrowUpRight, ArrowDownRight, ArrowUpLeft, ArrowDownLeft, ArrowLeftCircle, ArrowRightCircle, ArrowUpCircle, ArrowDownCircle, RefreshCw as RefreshIcon, RotateCw as RotateIcon, RotateCcw as RotateCcwIcon, Undo, Redo, Trash, Trash2 as TrashIcon, Edit as EditIcon, Save as SaveIcon, Copy as CopyIcon, Cut, Clipboard, ClipboardList as ClipboardListIcon, ClipboardCheck, ClipboardX, Filter as FilterIcon, Search as SearchIcon, ZoomIn as ZoomInIcon, ZoomOut as ZoomOutIcon, Settings as SettingsIcon, Wrench, Tool, Sliders, ToggleLeft, ToggleRight, CheckSquare as CheckSquareIcon, Square, Circle as CircleIcon, CheckCircle as CheckIcon, XCircle as XIcon, Radio as RadioIcon, Minus as MinusIcon, Plus as PlusIcon, Hash, AtSign, DollarSign as DollarIcon, Euro, Pound, Yen, Bitcoin, Cpu, HardDrive, Disc, Server, Database, Cloud as CloudIcon, Wifi, Bluetooth, Battery, BatteryCharging, Power, Plug, Usb, Terminal, Command, Shield as ShieldIcon, Lock as LockIcon, Unlock as UnlockIcon, Key as KeyIcon, Eye as EyeIcon, EyeOff as EyeOffIcon, User as UserIcon, Users as UsersIcon2, UserPlus as UserPlusIcon, UserMinus as UserMinusIcon, UserCheck as UserCheckIcon, UserX as UserXIcon, UserCog as UserCogIcon, UserCircle as UserCircleIcon } from 'lucide-react';
+import StudentElearning from './StudentElearning';
+
+// IMPORT LUCIDE REACT - DIPISAHKAN DAN TIDAK ADA DUPLIKASI
+import { 
+  BookOpen, Calendar, Clock, GraduationCap, Menu, ChevronRight, 
+  Target, ClipboardList, AlertCircle, QrCode, X, Camera, User, 
+  MapPin, Send, CheckCircle, Megaphone, TrendingUp 
+} from 'lucide-react';
+
+// IMPORT SWIPER - TIDAK BENTROK DENGAN LUCIDE
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
+
+// IMPORT SWIPER CSS
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -31,7 +41,7 @@ const StudentDashboard = () => {
   const [studentProfile, setStudentProfile] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
 
-  // 🔥 SURVEI STATE - DIPERBAIKI
+  // SURVEI STATE
   const [activeSurveys, setActiveSurveys] = useState([]);
   const [filledSurveys, setFilledSurveys] = useState({});
   const [showSurveyModal, setShowSurveyModal] = useState(false);
@@ -62,16 +72,9 @@ const StudentDashboard = () => {
               if (d.type === "ABSENSI_BIMBEL") {
                 const today = new Date().toISOString().split('T')[0];
                 await setDoc(doc(db, "attendance", `${studentId}_${today}_${d.scheduleId || ''}`), {
-                  studentId, 
-                  studentName, 
-                  teacherName: d.teacher, 
-                  date: today, 
-                  tanggal: today,
-                  timestamp: serverTimestamp(), 
-                  status: "Hadir", 
-                  mapel: d.mapel,
-                  scheduleId: d.scheduleId || '', 
-                  keterangan: "Scan QR"
+                  studentId, studentName, teacherName: d.teacher, date: today, tanggal: today,
+                  timestamp: serverTimestamp(), status: "Hadir", mapel: d.mapel,
+                  scheduleId: d.scheduleId || '', keterangan: "Scan QR"
                 }, { merge: true });
                 alert(`✅ Absen: ${d.mapel}`);
                 stop();
@@ -84,10 +87,7 @@ const StudentDashboard = () => {
     };
     const stop = async () => {
       if (qr && qr.isScanning) { 
-        try { 
-          await qr.stop(); 
-          qr.clear(); 
-        } catch (e) {} 
+        try { await qr.stop(); qr.clear(); } catch (e) {} 
       }
       setIsScanning(false);
     };
@@ -95,12 +95,6 @@ const StudentDashboard = () => {
     return () => { if (qr) stop(); };
   }, [isScanning, studentId, studentName]);
 
-  const formatDate = (ts) => { 
-    if (!ts) return "-"; 
-    const d = ts.toDate ? ts.toDate() : new Date(ts); 
-    return d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }); 
-  };
-  
   const formatDateOnly = (ts) => { 
     if (!ts) return "-"; 
     const d = ts.toDate ? ts.toDate() : new Date(ts); 
@@ -118,86 +112,51 @@ const StudentDashboard = () => {
     return (dl.toDate ? dl.toDate() : new Date(dl)) < new Date(); 
   };
 
-  // 🔥🔥🔥 PERBAIKAN UTAMA: FETCH SURVEI YANG BENAR
+  // FUNGSI FETCH SURVEI YANG BENAR
   const fetchSurveys = async (studentKelas, studentIdParam) => {
     try {
-      console.log('🔍 🔥 MULAI FETCH SURVEI UNTUK SISWA...');
-      console.log('Student Kelas:', studentKelas);
-      console.log('Student ID:', studentIdParam);
+      console.log('🔍 MULAI FETCH SURVEI...');
       
-      // AMBIL SEMUA DOKUMEN SURVEI (tanpa filter apapun dulu)
+      // Ambil SEMUA survei
       const allDocs = await getDocs(collection(db, "surveys"));
-      console.log('📊 Total survei di database:', allDocs.size);
+      console.log('Total survei di database:', allDocs.size);
       
       const allSurveys = [];
       allDocs.forEach(doc => {
         const data = doc.data();
-        console.log(`  📋 ${doc.id}: "${data.title}" | status: ${data.status} | isActive: ${data.isActive} | targetType: ${data.targetType} | required: ${data.isRequired}`);
         allSurveys.push({ id: doc.id, ...data });
       });
       
-      // FILTER 1: Hanya survei yang AKTIF (berbagai format)
+      // Filter survei AKTIF
       const aktifSurveys = allSurveys.filter(s => {
-        // Cek status dalam berbagai kemungkinan format
         const isActive = 
           s.status === 'aktif' || 
           s.status === 'active' || 
           s.status === 'published' ||
-          s.isActive === true ||
-          s.isActive === 'true';
-        
-        if (!isActive) {
-          console.log(`  ⏸️ Skip (tidak aktif): ${s.title}`);
-        }
+          s.isActive === true;
         return isActive;
       });
       
-      console.log('✅ Survei AKTIF ditemukan:', aktifSurveys.length);
-      aktifSurveys.forEach(s => console.log(`    - ${s.title} (target: ${s.targetType})`));
+      console.log('Survei AKTIF:', aktifSurveys.length);
       
-      // FILTER 2: Hanya survei yang TARGETnya cocok dengan siswa
+      // Filter target yang cocok
       const cocok = aktifSurveys.filter(s => {
         const target = s.targetType || '';
         const targetLower = target.toLowerCase();
         
-        // CASE 1: Target semua siswa / semua / all
         if (targetLower === 'semua_siswa' || targetLower === 'semua' || targetLower === 'students' || targetLower === 'all') {
-          console.log(`  ✅ ${s.title}: target SEMUA SISWA -> COCOK`);
           return true;
         }
-        
-        // CASE 2: Target berdasarkan jenjang/kelas
-        if (targetLower === 'jenjang' || targetLower === 'per_jenjang' || targetLower === 'by_class') {
-          const targetKelas = s.targetKelas || s.kelasTarget || 'Semua';
-          if (targetKelas === 'Semua' || targetKelas === studentKelas) {
-            console.log(`  ✅ ${s.title}: target JENJANG ${targetKelas} -> COCOK dengan kelas ${studentKelas}`);
-            return true;
-          } else {
-            console.log(`  ❌ ${s.title}: target JENJANG ${targetKelas} -> TIDAK COCOK dengan kelas ${studentKelas}`);
-          }
-          return false;
+        if (targetLower === 'jenjang' || targetLower === 'per_jenjang') {
+          const targetKelas = s.targetKelas || 'Semua';
+          if (targetKelas === 'Semua' || targetKelas === studentKelas) return true;
         }
-        
-        // CASE 3: Target spesifik siswa (jika ada field targetIds)
-        if (targetLower === 'spesifik' || targetLower === 'specific' || targetLower === 'selected') {
-          const targetIds = s.targetIds || [];
-          if (targetIds.includes(studentIdParam)) {
-            console.log(`  ✅ ${s.title}: target SPESIFIK -> COCOK (ID ditemukan)`);
-            return true;
-          } else {
-            console.log(`  ❌ ${s.title}: target SPESIFIK -> TIDAK COCOK (ID tidak ada di daftar)`);
-          }
-          return false;
-        }
-        
-        console.log(`  ❌ ${s.title}: target ${target} -> TIDAK DIKENALI`);
         return false;
       });
       
-      console.log('🎯 SURVEI COCOK UNTUK SISWA INI:', cocok.length);
-      cocok.forEach(s => console.log(`    - ${s.title} (wajib: ${s.isRequired ? 'YA' : 'TIDAK'})`));
+      console.log('Survei COCOK:', cocok.length);
       
-      // CEK SURVEI YANG SUDAH DIISI
+      // Cek sudah diisi
       const filled = {};
       for (const survey of cocok) {
         try {
@@ -207,13 +166,7 @@ const StudentDashboard = () => {
             where("userId", "==", studentIdParam)
           ));
           filled[survey.id] = !respSnap.empty;
-          if (!respSnap.empty) {
-            console.log(`  ✅ ${survey.title}: SUDAH DIISI`);
-          } else {
-            console.log(`  ⏳ ${survey.title}: BELUM DIISI`);
-          }
         } catch (e) {
-          console.warn(`  ⚠️ Gagal cek ${survey.title}:`, e.message);
           filled[survey.id] = false;
         }
       }
@@ -221,7 +174,7 @@ const StudentDashboard = () => {
       return { surveys: cocok, filled };
       
     } catch (error) {
-      console.error('❌ ERROR FETCH SURVEI:', error);
+      console.error('Error fetch survei:', error);
       return { surveys: [], filled: {} };
     }
   };
@@ -229,17 +182,14 @@ const StudentDashboard = () => {
   useEffect(() => {
     const fetchAll = async () => {
       if (!studentId) {
-        console.log('⚠️ No studentId found');
         setLoading(false);
         return;
       }
       
       setLoading(true);
-      console.log('🚀 START FETCHING DASHBOARD DATA...');
       
       try {
         // FETCH STUDENT PROFILE
-        console.log('📖 Fetching student profile...');
         const sSnap = await getDoc(doc(db, "students", studentId));
         let curKat = "Semua", curKel = "Semua";
         
@@ -248,29 +198,21 @@ const StudentDashboard = () => {
           setStudentProfile(d); 
           curKat = d.kategori || "Semua"; 
           curKel = d.kelasSekolah || "Semua";
-          console.log('📋 Student Profile:', { kategori: curKat, kelas: curKel });
-        } else {
-          console.log('⚠️ Student profile not found');
         }
 
         // FETCH POSTERS
-        console.log('🖼️ Fetching posters...');
         const postersSnap = await getDocs(query(collection(db, "student_contents"), orderBy("createdAt", "desc")));
         setPosters(postersSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-        console.log(`📸 Posters loaded: ${postersSnap.size}`);
 
         // FETCH TODAY SCHEDULES
-        console.log('📅 Fetching today schedules...');
         const todayStr = new Date().toISOString().split('T')[0];
         const scheds = (await getDocs(query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr))))
           .docs.map(d => ({ id: d.id, ...d.data() }))
           .filter(sch => sch.students?.some(s => s.id === studentId || s === studentId))
           .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
         setTodaySchedules(scheds.slice(0, 5));
-        console.log(`📅 Schedules loaded: ${scheds.length}`);
 
         // FETCH TASKS
-        console.log('📝 Fetching tasks...');
         const moduls = (await getDocs(query(
           collection(db, "bimbel_modul"), 
           where("targetKategori", "in", ["Semua", curKat]), 
@@ -278,30 +220,16 @@ const StudentDashboard = () => {
           limit(10)
         ))).docs.map(d => ({ id: d.id, ...d.data() }));
         setTasks(moduls.filter(m => m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment')).slice(0, 5));
-        console.log(`📝 Tasks loaded: ${moduls.length}`);
 
-        // 🔥🔥🔥 FETCH SURVEYS (YANG DIPERBAIKI)
-        console.log('📋 🔥 FETCHING SURVEYS...');
+        // FETCH SURVEYS
         const { surveys: fetchedSurveys, filled: filledStatus } = await fetchSurveys(curKel, studentId);
-        
         setActiveSurveys(fetchedSurveys);
         setFilledSurveys(filledStatus);
-        
-        // TAMPILKAN SURVEI YANG BELUM DIISI (PENTING!)
-        const belumDiisi = fetchedSurveys.filter(s => !filledStatus[s.id]);
-        console.log('📋 SURVEI YANG BELUM DIISI:', belumDiisi.length);
-        if (belumDiisi.length > 0) {
-          console.log('⚠️ PERHATIAN: Ada survei yang harus diisi!');
-          belumDiisi.forEach(s => console.log(`  - ${s.title} (${s.isRequired ? 'WAJIB' : 'OPSIONAL'})`));
-        } else {
-          console.log('✅ Semua survei sudah diisi!');
-        }
 
       } catch (err) { 
-        console.error('❌ ERROR FETCH DASHBOARD:', err); 
+        console.error('Error fetch dashboard:', err); 
       } finally { 
         setLoading(false);
-        console.log('🏁 DASHBOARD LOADING COMPLETE');
       }
     };
     
@@ -314,7 +242,6 @@ const StudentDashboard = () => {
   };
 
   const openSurvey = (s) => { 
-    console.log('📋 Opening survey:', s.title);
     setCurrentSurvey(s); 
     setSurveyAnswers({}); 
     setShowSurveyModal(true); 
@@ -323,8 +250,7 @@ const StudentDashboard = () => {
   const submitSurvey = async () => {
     if (!currentSurvey) return;
     
-    // Validasi semua pertanyaan terjawab
-    const unanswered = currentSurvey.questions.filter((_, i) => surveyAnswers[i] === undefined || surveyAnswers[i] === '');
+    const unanswered = currentSurvey.questions.filter((_, i) => !surveyAnswers[i]);
     if (unanswered.length > 0) {
       alert(`❌ ${unanswered.length} pertanyaan belum dijawab!`);
       return;
@@ -339,7 +265,6 @@ const StudentDashboard = () => {
         userName: studentName,
         answers: currentSurvey.questions.map((q, i) => ({ 
           questionIndex: i, 
-          question: q.question,
           answer: surveyAnswers[i] || '' 
         })),
         submittedAt: serverTimestamp()
@@ -350,16 +275,8 @@ const StudentDashboard = () => {
       setCurrentSurvey(null);
       alert("✅ Terima kasih! Jawaban survei telah tersimpan.");
       
-      // Refresh survei list
-      const { surveys: updatedSurveys, filled: updatedFilled } = await fetchSurveys(
-        studentProfile?.kelasSekolah || "Semua", 
-        studentId
-      );
-      setActiveSurveys(updatedSurveys);
-      setFilledSurveys(updatedFilled);
-      
     } catch (err) { 
-      console.error('❌ Error submitting survey:', err);
+      console.error('Error submit survey:', err);
       alert("❌ Gagal mengirim survei: " + err.message); 
     } finally {
       setSurveyLoading(false);
@@ -425,7 +342,7 @@ const StudentDashboard = () => {
                     <h2 style={isMobile ? st.slideTitleMobile : st.slideTitle}>
                       {post.title}
                     </h2>
-                    {!isMobile && <p style={st.slideDesc}>{post.desc || "Klik untuk baca selengkapnya"}</p>}
+                    {!isMobile && <p style={st.slideDesc}>{post.desc || "Klik untuk baca"}</p>}
                   </div>
                 </div>
               </SwiperSlide>
@@ -434,15 +351,14 @@ const StudentDashboard = () => {
         </div>
       )}
 
-      {/* 🔥 SECTION SURVEI - DIPERBAIKI */}
+      {/* SECTION SURVEI */}
       {activeSurveys.length > 0 && (
         <div style={{ 
           background: 'white', 
           padding: 20, 
           borderRadius: 15, 
           border: '1px solid #e2e8f0', 
-          borderTop: '4px solid #3b82f6',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+          borderTop: '4px solid #3b82f6'
         }}>
           <h3 style={{ 
             margin: '0 0 15px', 
@@ -460,8 +376,7 @@ const StudentDashboard = () => {
                 color: 'white', 
                 padding: '2px 8px', 
                 borderRadius: 20, 
-                fontSize: 10,
-                marginLeft: 8
+                fontSize: 10
               }}>
                 {activeSurveys.filter(s => !filledSurveys[s.id]).length} pending
               </span>
@@ -483,8 +398,7 @@ const StudentDashboard = () => {
                     borderRadius: 12, 
                     border: `1px solid ${done ? '#bbf7d0' : survey.isRequired ? '#fecaca' : '#fde68a'}`,
                     flexWrap: 'wrap', 
-                    gap: 10,
-                    transition: 'all 0.2s ease'
+                    gap: 10
                   }}
                 >
                   <div style={{ flex: 1 }}>
@@ -507,34 +421,14 @@ const StudentDashboard = () => {
                           WAJIB
                         </span>
                       )}
-                      {done && (
-                        <span style={{ 
-                          background: '#dcfce7', 
-                          color: '#166534', 
-                          padding: '2px 8px', 
-                          borderRadius: 6, 
-                          fontSize: 9, 
-                          fontWeight: 800 
-                        }}>
-                          SELESAI
-                        </span>
-                      )}
                     </div>
                     <div style={{ fontSize: 11, color: '#64748b' }}>
-                      {survey.questions?.length || 0} pertanyaan 
-                      {survey.deadline && ` • Deadline: ${new Date(survey.deadline).toLocaleDateString('id-ID')}`}
+                      {survey.questions?.length || 0} pertanyaan
                     </div>
-                    {survey.description && (
-                      <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>
-                        {survey.description.length > 100 ? survey.description.substring(0, 100) + '...' : survey.description}
-                      </div>
-                    )}
                   </div>
                   
                   {done ? (
-                    <span style={{ color: '#10b981', fontWeight: 700, fontSize: 12 }}>
-                      ✅ Terisi
-                    </span>
+                    <span style={{ color: '#10b981', fontWeight: 700, fontSize: 12 }}>✅ Terisi</span>
                   ) : (
                     <button 
                       onClick={() => openSurvey(survey)} 
@@ -549,38 +443,21 @@ const StudentDashboard = () => {
                         cursor: 'pointer', 
                         display: 'flex', 
                         alignItems: 'center', 
-                        gap: 6,
-                        transition: 'all 0.2s ease'
+                        gap: 6
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                      onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                     >
-                      <Send size={14} /> Isi Survei
+                      <Send size={14} /> Isi
                     </button>
                   )}
                 </div>
               );
             })}
           </div>
-          
-          {activeSurveys.filter(s => !filledSurveys[s.id]).length === 0 && (
-            <div style={{ 
-              textAlign: 'center', 
-              padding: '20px', 
-              color: '#10b981',
-              fontSize: 13,
-              fontWeight: 500
-            }}>
-              <CheckCircle size={20} style={{ marginBottom: 8 }} />
-              <p>Semua survei sudah Anda isi. Terima kasih! 🎉</p>
-            </div>
-          )}
         </div>
       )}
 
       {/* MAIN GRID */}
       <div style={isMobile ? st.mainGridMobile : st.mainGrid}>
-        {/* LEFT COLUMN */}
         <div style={st.leftColumn}>
           {/* JADWAL HARI INI */}
           <section style={st.sectionCard}>
@@ -588,9 +465,7 @@ const StudentDashboard = () => {
               <Calendar size={20} color="#3498db" /> Jadwal Hari Ini
             </h3>
             {todaySchedules.length === 0 ? (
-              <div style={st.emptyState}>
-                📭 Tidak ada jadwal untuk hari ini.
-              </div>
+              <div style={st.emptyState}>📭 Tidak ada jadwal.</div>
             ) : (
               todaySchedules.map((sch, i) => (
                 <div key={i} style={st.schItem}>
@@ -673,7 +548,7 @@ const StudentDashboard = () => {
             </button>
           </section>
 
-          {/* STATISTIK CEPAT */}
+          {/* RINGKASAN */}
           <section style={st.sectionCard}>
             <h3 style={{ ...st.sectionTitle, marginBottom: 10 }}>
               <TrendingUp size={20} color="#10b981" /> Ringkasan
@@ -683,19 +558,19 @@ const StudentDashboard = () => {
                 <div style={{ fontSize: 20, fontWeight: 800, color: '#3b82f6' }}>
                   {todaySchedules.length}
                 </div>
-                <div style={{ fontSize: 10, color: '#64748b' }}>Jadwal Hari Ini</div>
+                <div style={{ fontSize: 10, color: '#64748b' }}>Jadwal</div>
               </div>
               <div style={{ textAlign: 'center', flex: 1 }}>
                 <div style={{ fontSize: 20, fontWeight: 800, color: '#9b59b6' }}>
                   {tasks.length}
                 </div>
-                <div style={{ fontSize: 10, color: '#64748b' }}>Tugas Aktif</div>
+                <div style={{ fontSize: 10, color: '#64748b' }}>Tugas</div>
               </div>
               <div style={{ textAlign: 'center', flex: 1 }}>
                 <div style={{ fontSize: 20, fontWeight: 800, color: '#ef4444' }}>
                   {activeSurveys.filter(s => !filledSurveys[s.id]).length}
                 </div>
-                <div style={{ fontSize: 10, color: '#64748b' }}>Survei Pending</div>
+                <div style={{ fontSize: 10, color: '#64748b' }}>Survei</div>
               </div>
             </div>
           </section>
@@ -779,7 +654,7 @@ const StudentDashboard = () => {
         </div>
       )}
 
-      {/* MODAL SCANNER QR */}
+      {/* MODAL SCANNER */}
       {isScanning && (
         <div style={st.modalOverlay} onClick={() => setIsScanning(false)}>
           <div style={st.qrModalContent} onClick={e => e.stopPropagation()}>
@@ -795,7 +670,7 @@ const StudentDashboard = () => {
         </div>
       )}
 
-      {/* 🔥 MODAL SURVEI - DIPERBAIKI */}
+      {/* MODAL SURVEI */}
       {showSurveyModal && currentSurvey && (
         <div style={{ 
           position: 'fixed', 
@@ -829,11 +704,7 @@ const StudentDashboard = () => {
                 borderRadius: '50%',
                 width: 32,
                 height: 32,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 10
+                cursor: 'pointer'
               }}
             >
               <X size={18} />
@@ -842,11 +713,6 @@ const StudentDashboard = () => {
             <div style={{ textAlign: 'center', marginBottom: 20, clear: 'both' }}>
               <span style={{ fontSize: 40 }}>📋</span>
               <h2 style={{ margin: '10px 0 5px', fontSize: 20 }}>{currentSurvey.title}</h2>
-              {currentSurvey.description && (
-                <p style={{ fontSize: 12, color: '#64748b', marginTop: 5 }}>
-                  {currentSurvey.description}
-                </p>
-              )}
               {currentSurvey.isRequired && (
                 <span style={{ 
                   display: 'inline-block', 
@@ -855,91 +721,45 @@ const StudentDashboard = () => {
                   padding: '4px 12px', 
                   borderRadius: 20, 
                   fontSize: 11, 
-                  fontWeight: 700,
-                  marginTop: 8
+                  fontWeight: 700
                 }}>
-                  ⚠️ Survei ini wajib diisi
+                  ⚠️ Wajib diisi
                 </span>
               )}
             </div>
             
-            {currentSurvey.questions.map((q, i) => (
+            {currentSurvey.questions?.map((q, i) => (
               <div key={i} style={{ marginBottom: 20 }}>
                 <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>
                   {i + 1}. {q.question}
-                  {q.required && <span style={{ color: '#ef4444', marginLeft: 4 }}>*</span>}
                 </p>
                 
-                {q.type === 'pilihan' || q.type === 'multiple_choice' || !q.type ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {(q.options || ['Pilihan 1', 'Pilihan 2', 'Pilihan 3']).filter(o => o && o.trim()).map((opt, oi) => (
-                      <label 
-                        key={oi} 
-                        style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: 10, 
-                          padding: '10px 14px', 
-                          marginBottom: 4, 
-                          borderRadius: 10, 
-                          cursor: 'pointer', 
-                          background: surveyAnswers[i] === opt ? '#eef2ff' : '#f8fafc', 
-                          border: `2px solid ${surveyAnswers[i] === opt ? '#3b82f6' : '#e2e8f0'}`,
-                          transition: 'all 0.2s ease'
-                        }}
-                      >
-                        <input 
-                          type="radio" 
-                          name={`sq-${i}`} 
-                          checked={surveyAnswers[i] === opt} 
-                          onChange={() => setSurveyAnswers({ ...surveyAnswers, [i]: opt })} 
-                          style={{ width: 18, height: 18 }} 
-                        />
-                        <span style={{ fontSize: 13 }}>{opt}</span>
-                      </label>
-                    ))}
-                  </div>
-                ) : q.type === 'text' || q.type === 'essay' ? (
-                  <textarea
-                    value={surveyAnswers[i] || ''}
-                    onChange={(e) => setSurveyAnswers({ ...surveyAnswers, [i]: e.target.value })}
-                    placeholder="Tulis jawaban Anda di sini..."
-                    style={{ 
-                      width: '100%', 
-                      padding: 12, 
-                      borderRadius: 10, 
-                      border: '2px solid #e2e8f0',
-                      fontSize: 13,
-                      fontFamily: 'inherit',
-                      resize: 'vertical'
-                    }}
-                    rows={4}
-                  />
-                ) : q.type === 'rating' ? (
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {[1, 2, 3, 4, 5].map(rating => (
-                      <button
-                        key={rating}
-                        type="button"
-                        onClick={() => setSurveyAnswers({ ...surveyAnswers, [i]: rating })}
-                        style={{
-                          width: 48,
-                          height: 48,
-                          borderRadius: 12,
-                          background: surveyAnswers[i] === rating ? '#3b82f6' : '#f1f5f9',
-                          color: surveyAnswers[i] === rating ? 'white' : '#475569',
-                          border: 'none',
-                          fontWeight: 800,
-                          fontSize: 16,
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease'
-                        }}
-                      >
-                        {rating}
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {(q.options || []).filter(o => o && o.trim()).map((opt, oi) => (
+                    <label 
+                      key={oi} 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 10, 
+                        padding: '10px 14px', 
+                        borderRadius: 10, 
+                        cursor: 'pointer', 
+                        background: surveyAnswers[i] === opt ? '#eef2ff' : '#f8fafc', 
+                        border: `2px solid ${surveyAnswers[i] === opt ? '#3b82f6' : '#e2e8f0'}`
+                      }}
+                    >
+                      <input 
+                        type="radio" 
+                        name={`sq-${i}`} 
+                        checked={surveyAnswers[i] === opt} 
+                        onChange={() => setSurveyAnswers({ ...surveyAnswers, [i]: opt })} 
+                        style={{ width: 18, height: 18 }} 
+                      />
+                      <span style={{ fontSize: 13 }}>{opt}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             ))}
             
@@ -957,30 +777,10 @@ const StudentDashboard = () => {
                 fontSize: 15, 
                 cursor: surveyLoading ? 'not-allowed' : 'pointer', 
                 marginTop: 10,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
                 opacity: surveyLoading ? 0.7 : 1
               }}
             >
-              {surveyLoading ? (
-                <>
-                  <div style={{ 
-                    width: 16, 
-                    height: 16, 
-                    border: '2px solid white', 
-                    borderTop: '2px solid transparent', 
-                    borderRadius: '50%', 
-                    animation: 'spin 0.6s linear infinite' 
-                  }} />
-                  Mengirim...
-                </>
-              ) : (
-                <>
-                  <Send size={18} /> Kirim Jawaban
-                </>
-              )}
+              {surveyLoading ? 'Mengirim...' : 'Kirim Jawaban'}
             </button>
           </div>
         </div>
@@ -1002,13 +802,8 @@ const st = {
   contentWrapper: { display: 'flex', flexDirection: 'column', gap: 20 },
   loadingScreen: { flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginLeft: 260 },
   spinner: { 
-    width: 40, 
-    height: 40, 
-    border: '4px solid #e2e8f0', 
-    borderTop: '4px solid #3b82f6', 
-    borderRadius: '50%', 
-    animation: 'spin 0.8s linear infinite', 
-    marginBottom: 10 
+    width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', 
+    borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: 10 
   },
   welcomeHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   welcomeHeaderMobile: { textAlign: 'left', marginBottom: 10 },
@@ -1017,7 +812,7 @@ const st = {
   subtitle: { color: '#64748b', marginTop: 5, fontSize: 14 },
   statusBadge: { display: 'flex', alignItems: 'center', gap: 8, background: '#dcfce7', color: '#166534', padding: '8px 16px', borderRadius: 100, fontWeight: 'bold' },
   btnScanHeader: { display: 'flex', alignItems: 'center', gap: 8, background: '#3498db', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 100, fontWeight: 'bold', cursor: 'pointer' },
-  mobileMenuBtn: { position: 'fixed', top: 15, left: 15, zIndex: 900, background: '#1e293b', color: 'white', border: 'none', padding: 10, borderRadius: 10 },
+  mobileMenuBtn: { position: 'fixed', top: 15, left: 15, zIndex: 900, background: '#1e293b', color: 'white', border: 'none', padding: 10, borderRadius: 10, cursor: 'pointer' },
   overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 998 },
   carouselContainer: { borderRadius: 15, overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', width: '100%' },
   mySwiper: { width: '100%', height: '100%' },
@@ -1050,15 +845,10 @@ const st = {
   fabQR: { position: 'fixed', bottom: 20, right: 20, width: 60, height: 60, borderRadius: '50%', background: '#3498db', color: 'white', border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.3)', zIndex: 900, cursor: 'pointer' },
 };
 
-// Tambahkan CSS animation ke document
+// CSS animation
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
-  style.textContent = `
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  `;
+  style.textContent = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
   document.head.appendChild(style);
 }
 
