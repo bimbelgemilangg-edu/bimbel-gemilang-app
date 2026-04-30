@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase'; 
-import { collection, getDocs, addDoc, query, where, Timestamp } from "firebase/firestore";
+import { collection, getDocs, addDoc, query, where, Timestamp, doc, getDoc } from "firebase/firestore";
 import SidebarGuru from '../../../components/SidebarGuru';
+import { CheckCircle, XCircle, AlertCircle, Search, Filter, User, BookOpen, Star, TrendingUp, Award, Calendar, Clock, Save, ArrowLeft, Users } from 'lucide-react';
 
 const TeacherInputGrade = () => {
   const location = useLocation();
@@ -10,8 +11,9 @@ const TeacherInputGrade = () => {
   
   // State Responsif
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isTablet, setIsTablet] = useState(window.innerWidth <= 1024 && window.innerWidth > 768);
 
-  // Ambil data guru dari state navigasi atau localStorage
+  // Ambil data guru
   const [guru] = useState(() => {
     const stateGuru = location.state?.teacher;
     const localGuru = localStorage.getItem('teacherData');
@@ -25,6 +27,7 @@ const TeacherInputGrade = () => {
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   // State Input Nilai
   const [score, setScore] = useState(""); 
@@ -38,10 +41,17 @@ const TeacherInputGrade = () => {
   });
   
   const [selectedMapel] = useState(guru?.mapel || "Umum");
+  const [availableTopics, setAvailableTopics] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Effect Listener Window Size
+  // Data statistik
+  const [stats, setStats] = useState({ total: 0, sudah: 0, belum: 0 });
+
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      setIsTablet(window.innerWidth <= 1024 && window.innerWidth > 768);
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -52,40 +62,62 @@ const TeacherInputGrade = () => {
         navigate('/login-guru'); 
         return; 
     }
-
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const snapSiswa = await getDocs(collection(db, "students"));
-            const dataSiswa = snapSiswa.docs.map(d => ({id: d.id, ...d.data()}));
-            
-            const currentMonth = new Date().toISOString().slice(0, 7); 
-            const qGrades = query(
-                collection(db, "grades"), 
-                where("teacherId", "==", guru.id),
-                where("mapel", "==", selectedMapel)
-            );
-            const snapGrades = await getDocs(qGrades);
-            const existingGrades = snapGrades.docs.map(d => d.data());
-
-            const mergedData = dataSiswa.map(siswa => {
-                const hasGrade = existingGrades.find(g => 
-                    g.studentId === siswa.id && 
-                    g.tanggal && g.tanggal.startsWith(currentMonth)
-                );
-                return { ...siswa, statusNilai: hasGrade ? 'Sudah' : 'Belum' };
-            });
-
-            setStudents(mergedData);
-            setFilteredStudents(mergedData);
-        } catch (err) {
-            console.error("Error fetchData:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
     fetchData();
+    fetchTopics();
   }, [guru, selectedMapel, navigate]);
+
+  const fetchTopics = async () => {
+    try {
+      const gradesSnap = await getDocs(query(
+        collection(db, "grades"),
+        where("teacherId", "==", guru.id),
+        where("mapel", "==", selectedMapel)
+      ));
+      const topics = [...new Set(gradesSnap.docs.map(d => d.data().topik).filter(Boolean))];
+      setAvailableTopics(topics);
+    } catch (error) {
+      console.error("Error fetching topics:", error);
+    }
+  };
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+        const snapSiswa = await getDocs(collection(db, "students"));
+        const dataSiswa = snapSiswa.docs.map(d => ({id: d.id, ...d.data()}));
+        
+        const currentMonth = new Date().toISOString().slice(0, 7); 
+        const qGrades = query(
+            collection(db, "grades"), 
+            where("teacherId", "==", guru.id),
+            where("mapel", "==", selectedMapel)
+        );
+        const snapGrades = await getDocs(qGrades);
+        const existingGrades = snapGrades.docs.map(d => d.data());
+
+        const mergedData = dataSiswa.map(siswa => {
+            const hasGrade = existingGrades.find(g => 
+                g.studentId === siswa.id && 
+                g.tanggal && g.tanggal.startsWith(currentMonth)
+            );
+            return { ...siswa, statusNilai: hasGrade ? 'Sudah' : 'Belum' };
+        });
+
+        setStudents(mergedData);
+        setFilteredStudents(mergedData);
+        
+        // Hitung statistik
+        setStats({
+            total: mergedData.length,
+            sudah: mergedData.filter(s => s.statusNilai === 'Sudah').length,
+            belum: mergedData.filter(s => s.statusNilai === 'Belum').length
+        });
+    } catch (err) {
+        console.error("Error fetchData:", err);
+    } finally {
+        setLoading(false);
+    }
+  };
 
   useEffect(() => {
     let result = students;
@@ -104,7 +136,9 @@ const TeacherInputGrade = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if(!score || !topic) { alert("Mohon lengkapi nilai dan topik!"); return; }
+    if(score < 0 || score > 100) { alert("Nilai harus antara 0-100!"); return; }
     
+    setSubmitting(true);
     try {
         await addDoc(collection(db, "grades"), {
             studentId: selectedStudent.id,
@@ -117,185 +151,365 @@ const TeacherInputGrade = () => {
             qualitative: aspects,   
             tanggal: new Date().toISOString(),
             createdAt: Timestamp.now(),
-            tipe: 'Bulanan'
+            tipe: 'Bulanan',
+            semester: getCurrentSemester()
         });
         
         alert(`✅ Nilai ${selectedStudent.nama} berhasil disimpan!`);
         setSelectedStudent(null);
         setScore("");
         setTopic("");
-        window.location.reload(); 
+        fetchData();
+        fetchTopics();
     } catch (err) { 
-        alert("Gagal menyimpan: " + err.message); 
+        alert("❌ Gagal menyimpan: " + err.message); 
+    } finally {
+        setSubmitting(false);
     }
   };
 
+  const getCurrentSemester = () => {
+    const month = new Date().getMonth();
+    return month < 6 ? 'Genap' : 'Ganjil';
+  };
+
+  const getScoreAdvice = (score) => {
+    if (score >= 85) return { text: 'Luar biasa! Pertahankan prestasi ini!', color: '#10b981', icon: '🏆' };
+    if (score >= 75) return { text: 'Bagus! Tingkatkan terus konsistensi belajarnya.', color: '#3b82f6', icon: '👍' };
+    if (score >= 60) return { text: 'Cukup. Perlu bimbingan lebih intensif.', color: '#f59e0b', icon: '⚠️' };
+    return { text: 'Perlu perhatian khusus. Segera evaluasi!', color: '#ef4444', icon: '🔴' };
+  };
+
   const RenderRating = ({ label, value, field, desc }) => (
-    <div style={{marginBottom:15, background:'#f9f9f9', padding:'12px', borderRadius:8, border:'1px solid #eee'}}>
+    <div style={{marginBottom:12, background:'#f8fafc', padding:'12px', borderRadius:10, border:'1px solid #e2e8f0'}}>
         <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
             <div style={{flex:1}}>
-                <label style={{fontWeight:'bold', fontSize:13, color:'#2c3e50'}}>{label}</label>
-                <p style={{fontSize:11, color:'#7f8c8d', margin:'2px 0 0 0'}}>{desc}</p>
+                <label style={{fontWeight:'bold', fontSize:12, color:'#2c3e50'}}>{label}</label>
+                <p style={{fontSize:10, color:'#7f8c8d', margin:'2px 0 0 0'}}>{desc}</p>
             </div>
-            <span style={{fontWeight:'bold', color:'#3498db', fontSize:16, marginLeft:10}}>{value}/5</span>
+            <span style={{fontWeight:'bold', color:'#3498db', fontSize:14, marginLeft:10}}>{value}/5</span>
         </div>
         <input 
             type="range" min="1" max="5" step="1" 
             value={value}
             onChange={(e) => setAspects({...aspects, [field]: parseInt(e.target.value)})}
-            style={{width:'100%', accentColor:'#3498db', marginTop:10, cursor:'pointer'}} 
+            style={{width:'100%', accentColor:'#3498db', marginTop:8, cursor:'pointer'}} 
         />
+        <div style={{display:'flex', justifyContent:'space-between', marginTop:4, fontSize:9, color:'#94a3b8'}}>
+            <span>Kurang</span>
+            <span>Cukup</span>
+            <span>Baik</span>
+            <span>Sangat Baik</span>
+            <span>Luar Biasa</span>
+        </div>
     </div>
   );
 
   return (
-    <div style={{ display: 'flex', background: '#f4f7f6', minHeight: '100vh', flexDirection: isMobile ? 'column' : 'row' }}>
+    <div style={{ display: 'flex', background: '#f1f5f9', minHeight: '100vh' }}>
       <SidebarGuru />
       <div style={{ 
           marginLeft: isMobile ? '0' : '260px', 
-          padding: isMobile ? '15px' : '30px', 
+          padding: isMobile ? '15px' : '24px', 
           width: isMobile ? '100%' : 'calc(100% - 260px)',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          transition: 'all 0.3s ease'
       }}>
-        <div style={{maxWidth:900, margin:'0 auto'}}>
+        <div style={{maxWidth: 1000, margin: '0 auto'}}>
             
-            {/* Header & Filter Card */}
-            <div style={{background:'white', padding: isMobile ? '15px' : '25px', borderRadius:15, boxShadow:'0 4px 15px rgba(0,0,0,0.05)', marginBottom:25}}>
-                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap: 'wrap', gap: 10}}>
-                    <h2 style={{margin:0, color:'#2c3e50', fontSize: isMobile ? 18 : 24}}>📝 Input Nilai & Karakter</h2>
-                    <div style={{background:'#f1c40f', padding:'5px 15px', borderRadius:20, fontSize:10, fontWeight:'bold'}}>
-                        Rapor Bulanan
-                    </div>
-                </div>
-                
-                <div style={{background:'#eaf2f8', padding:12, borderRadius:10, marginTop:15, borderLeft:'5px solid #3498db', display:'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent:'space-between', gap: 5}}>
-                    <p style={{margin:0, fontSize:13, color:'#2980b9'}}>Guru: <b>{guru?.nama}</b></p>
-                    <p style={{margin:0, fontSize:13, color:'#2c3e50'}}>Mapel: <b style={{color:'#e67e22'}}>{selectedMapel}</b></p>
-                </div>
-
-                {!selectedStudent && (
-                    <div style={{marginTop:20, display:'flex', gap:10, flexWrap:'wrap'}}>
-                        <input 
-                            type="text" 
-                            placeholder="🔍 Cari nama siswa..." 
-                            value={searchTerm} 
-                            onChange={e=>setSearchTerm(e.target.value)} 
-                            style={{...styles.inputSearch, flex: isMobile ? '1 1 100%' : 2}} 
-                        />
-                        <select value={filterClass} onChange={e=>setFilterClass(e.target.value)} style={{...styles.select, flex: isMobile ? '1 1 48%' : 1}}>
-                            <option value="Semua">Semua Jenjang</option>
-                            <option value="SD">SD</option>
-                            <option value="SMP">SMP</option>
-                            <option value="SMA">SMA</option>
-                        </select>
-                        <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} style={{...styles.select, flex: isMobile ? '1 1 48%' : 1}}>
-                            <option value="Semua">Semua Status</option>
-                            <option value="Belum">⚠️ Belum</option>
-                            <option value="Sudah">✅ Sudah</option>
-                        </select>
-                    </div>
-                )}
+            {/* HEADER */}
+            <div style={{marginBottom: 24}}>
+                <h1 style={{margin: 0, fontSize: isMobile ? '20px' : '24px', fontWeight: 'bold', color: '#1e293b'}}>
+                                    Input Nilai & Karakter
+                </h1>
+                <p style={{margin: '4px 0 0', fontSize: '13px', color: '#64748b'}}>
+                    Input nilai akademik dan penilaian karakter siswa per bulan
+                </p>
             </div>
 
-            {loading ? (
-                <div style={{textAlign:'center', padding:50, color:'#7f8c8d'}}>Memuat data siswa...</div>
-            ) : selectedStudent ? (
-                <div style={styles.cardForm}>
-                    <button onClick={()=>setSelectedStudent(null)} style={styles.btnBack}>← Kembali ke Daftar</button>
-                    <div style={{borderBottom:'1px solid #eee', margin:'15px 0', paddingBottom:10}}>
-                        <h3 style={{margin:0, color:'#2c3e50', fontSize: 18}}>Penilaian: {selectedStudent.nama}</h3>
-                        <p style={{margin:0, fontSize:11, color:'#7f8c8d'}}>{selectedStudent.kelasSekolah} | {selectedStudent.detailProgram}</p>
+            {/* INFO GURU & STATISTIK */}
+            <div style={{
+                background: 'white',
+                borderRadius: '16px',
+                padding: '16px',
+                marginBottom: '20px',
+                border: '1px solid #e2e8f0'
+            }}>
+                <div style={{
+                    display: 'flex',
+                    flexDirection: isMobile ? 'column' : 'row',
+                    justifyContent: 'space-between',
+                    alignItems: isMobile ? 'flex-start' : 'center',
+                    gap: '12px'
+                }}>
+                    <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                            <div style={{ width: '32px', height: '32px', background: '#eef2ff', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <User size={16} color="#3b82f6" />
+                            </div>
+                            <span style={{ fontWeight: 'bold', fontSize: '14px', color: '#1e293b' }}>{guru?.nama}</span>
+                            <span style={{ background: '#fef3c7', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold', color: '#d97706' }}>{selectedMapel}</span>
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>Periode: {new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#3b82f6' }}>{stats.total}</div>
+                            <div style={{ fontSize: '9px', color: '#64748b' }}>Total Siswa</div>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#10b981' }}>{stats.sudah}</div>
+                            <div style={{ fontSize: '9px', color: '#64748b' }}>Sudah Dinilai</div>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#ef4444' }}>{stats.belum}</div>
+                            <div style={{ fontSize: '9px', color: '#64748b' }}>Belum Dinilai</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {!selectedStudent ? (
+                <>
+                    {/* FILTER & SEARCH */}
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '16px',
+                        padding: '16px',
+                        marginBottom: '20px',
+                        border: '1px solid #e2e8f0'
+                    }}>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: isMobile ? 'column' : 'row',
+                            gap: '12px'
+                        }}>
+                            <div style={{ flex: 2 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f8fafc', padding: '10px 12px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                                    <Search size={16} color="#94a3b8" />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Cari nama siswa..." 
+                                        value={searchTerm} 
+                                        onChange={e => setSearchTerm(e.target.value)} 
+                                        style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: '13px' }}
+                                    />
+                                </div>
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <select 
+                                    value={filterClass} 
+                                    onChange={e => setFilterClass(e.target.value)} 
+                                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '13px', background: 'white' }}
+                                >
+                                    <option value="Semua">📚 Semua Jenjang</option>
+                                    <option value="SD">SD</option>
+                                    <option value="SMP">SMP</option>
+                                    <option value="SMA">SMA</option>
+                                </select>
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <select 
+                                    value={filterStatus} 
+                                    onChange={e => setFilterStatus(e.target.value)} 
+                                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '13px', background: 'white' }}
+                                >
+                                    <option value="Semua">📋 Semua Status</option>
+                                    <option value="Belum">⚠️ Belum Dinilai</option>
+                                    <option value="Sudah">✅ Sudah Dinilai</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* DAFTAR SISWA */}
+                    {loading ? (
+                        <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px' }}>
+                            <div style={{ width: '40px', height: '40px', border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }}></div>
+                            <p style={{ color: '#64748b' }}>Memuat data siswa...</p>
+                        </div>
+                    ) : filteredStudents.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px' }}>
+                            <Users size={48} color="#cbd5e1" />
+                            <p style={{ marginTop: '12px', color: '#94a3b8' }}>Tidak ada siswa yang ditemukan</p>
+                        </div>
+                    ) : (
+                        <div style={{
+                            display: 'grid', 
+                            gridTemplateColumns: `repeat(auto-fill, minmax(${isMobile ? '150px' : '180px'}, 1fr))`, 
+                            gap: '12px'
+                        }}>
+                            {filteredStudents.map(s => (
+                                <div 
+                                    key={s.id} 
+                                    onClick={() => setSelectedStudent(s)} 
+                                    style={{
+                                        background: 'white',
+                                        borderRadius: '12px',
+                                        padding: '14px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        border: `2px solid ${s.statusNilai === 'Sudah' ? '#10b981' : '#e2e8f0'}`,
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <User size={18} color="#3b82f6" />
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#1e293b' }}>{s.nama}</div>
+                                            <div style={{ fontSize: '10px', color: '#64748b' }}>{s.kelasSekolah || '-'}</div>
+                                        </div>
+                                    </div>
+                                    <div style={{
+                                        fontSize: '10px',
+                                        fontWeight: 'bold',
+                                        color: s.statusNilai === 'Sudah' ? '#10b981' : '#ef4444',
+                                        background: s.statusNilai === 'Sudah' ? '#dcfce7' : '#fee2e2',
+                                        padding: '4px 8px',
+                                        borderRadius: '6px',
+                                        textAlign: 'center'
+                                    }}>
+                                        {s.statusNilai === 'Sudah' ? '✅ TERISI' : '⚠️ BELUM'}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </>
+            ) : (
+                /* FORM INPUT NILAI */
+                <div style={{
+                    background: 'white',
+                    borderRadius: '20px',
+                    padding: isMobile ? '20px' : '24px',
+                    border: '1px solid #e2e8f0'
+                }}>
+                    <button 
+                        onClick={() => setSelectedStudent(null)} 
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            background: 'none',
+                            border: 'none',
+                            color: '#3b82f6',
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            marginBottom: '16px'
+                        }}
+                    >
+                        <ArrowLeft size={16} /> Kembali ke Daftar
+                    </button>
+
+                    <div style={{
+                        background: '#f8fafc',
+                        padding: '16px',
+                        borderRadius: '12px',
+                        marginBottom: '20px'
+                    }}>
+                        <h3 style={{ margin: '0 0 4px', fontSize: '18px', fontWeight: 'bold', color: '#1e293b' }}>{selectedStudent.nama}</h3>
+                        <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+                            {selectedStudent.kelasSekolah} | {selectedStudent.program || selectedStudent.detailProgram || 'Reguler'}
+                        </p>
                     </div>
 
                     <form onSubmit={handleSubmit}>
-                        <h4 style={styles.sectionH}>A. Capaian Akademik</h4>
-                        <div style={{display:'flex', flexDirection: isMobile ? 'column' : 'row', gap:15, marginBottom:20}}>
-                            <div style={{flex:2}}>
-                                <label style={styles.labelIn}>Topik / Materi Pembahasan</label>
-                                <input type="text" required placeholder="Contoh: Aljabar" value={topic} onChange={e=>setTopic(e.target.value)} style={styles.inputField} />
+                        {/* Akademik */}
+                        <div style={{ marginBottom: '20px' }}>
+                            <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 'bold', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <BookOpen size={16} color="#3b82f6" /> A. Capaian Akademik
+                            </h4>
+                            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px' }}>
+                                <div style={{ flex: 2 }}>
+                                    <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#64748b', display: 'block', marginBottom: '4px' }}>Topik / Materi</label>
+                                    <input 
+                                        type="text" 
+                                        list="topics"
+                                        required 
+                                        placeholder="Contoh: Aljabar, Persamaan Linear..." 
+                                        value={topic} 
+                                        onChange={e => setTopic(e.target.value)}
+                                        style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px', outline: 'none' }}
+                                    />
+                                    <datalist id="topics">
+                                        {availableTopics.map(t => <option key={t} value={t} />)}
+                                    </datalist>
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#64748b', display: 'block', marginBottom: '4px' }}>Nilai Angka (0-100)</label>
+                                    <input 
+                                        type="number" 
+                                        required 
+                                        min="0" 
+                                        max="100"
+                                        placeholder="85" 
+                                        value={score} 
+                                        onChange={e => setScore(e.target.value)} 
+                                        style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '2px solid #3b82f6', fontSize: '18px', fontWeight: 'bold', textAlign: 'center', outline: 'none' }}
+                                    />
+                                </div>
                             </div>
-                            <div style={{flex:1}}>
-                                <label style={styles.labelIn}>Nilai Angka</label>
-                                <input type="number" required placeholder="0-100" value={score} onChange={e=>setScore(e.target.value)} style={{...styles.inputField, border:'2px solid #3498db', textAlign:'center', fontWeight:'bold', fontSize:18}} />
+                            {score && (
+                                <div style={{ marginTop: '8px', padding: '8px 12px', borderRadius: '8px', background: getScoreAdvice(score).color + '10', border: `1px solid ${getScoreAdvice(score).color}` }}>
+                                    <span style={{ fontSize: '12px' }}>{getScoreAdvice(score).icon} {getScoreAdvice(score).text}</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Karakter */}
+                        <div style={{ marginBottom: '24px' }}>
+                            <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 'bold', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <Star size={16} color="#f59e0b" /> B. Karakter & Sikap
+                            </h4>
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px' }}>
+                                <RenderRating label="Pemahaman Konsep" desc="Penguasaan teori dasar" value={aspects.pemahaman} field="pemahaman" />
+                                <RenderRating label="Logika & Aplikasi" desc="Kemampuan variasi soal" value={aspects.aplikasi} field="aplikasi" />
+                                <RenderRating label="Literasi / Fokus" desc="Ketelitian membaca soal" value={aspects.literasi} field="literasi" />
+                                <RenderRating label="Inisiatif" desc="Keaktifan bertanya" value={aspects.inisiatif} field="inisiatif" />
+                                <RenderRating label="Kemandirian" desc="Mengerjakan tanpa bantuan" value={aspects.mandiri} field="mandiri" />
                             </div>
                         </div>
 
-                        <h4 style={{...styles.sectionH, background:'#fff3e0', color:'#d35400'}}>B. Karakter & Sikap</h4>
-                        <div style={{display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:10}}>
-                            <RenderRating label="Pemahaman Konsep" desc="Penguasaan teori." value={aspects.pemahaman} field="pemahaman" />
-                            <RenderRating label="Logika & Aplikasi" desc="Kemampuan variasi soal." value={aspects.aplikasi} field="aplikasi" />
-                            <RenderRating label="Literasi / Fokus" desc="Ketelitian membaca soal." value={aspects.literasi} field="literasi" />
-                            <RenderRating label="Inisiatif" desc="Keaktifan bertanya." value={aspects.inisiatif} field="inisiatif" />
-                            <RenderRating label="Kemandirian" desc="Mengerjakan tanpa bantuan." value={aspects.mandiri} field="mandiri" />
-                        </div>
-
-                        <button type="submit" style={styles.btnSubmit}>💾 SIMPAN KE RAPOR</button>
-                    </form>
-                </div>
-            ) : (
-                <div style={{
-                    display:'grid', 
-                    gridTemplateColumns: `repeat(auto-fill, minmax(${isMobile ? '140px' : '200px'}, 1fr))`, 
-                    gap: isMobile ? 10 : 20 
-                }}>
-                    {filteredStudents.length > 0 ? filteredStudents.map(s => (
-                        <div 
-                            key={s.id} 
-                            onClick={()=>setSelectedStudent(s)} 
+                        <button 
+                            type="submit" 
+                            disabled={submitting}
                             style={{
-                                ...styles.studentCard, 
-                                borderTop: s.statusNilai==='Sudah' ? '4px solid #27ae60' : '4px solid #e74c3c'
+                                width: '100%',
+                                padding: '14px',
+                                background: submitting ? '#94a3b8' : '#10b981',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '12px',
+                                fontWeight: 'bold',
+                                fontSize: '14px',
+                                cursor: submitting ? 'not-allowed' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                transition: 'all 0.3s ease'
                             }}
                         >
-                            <div style={{fontWeight:'bold', color:'#2c3e50', marginBottom:5, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{s.nama}</div>
-                            <div style={{fontSize:10, color:'#7f8c8d'}}>{s.kelasSekolah || 'N/A'}</div>
-                            <div style={{fontSize:9, color:'#95a5a6', marginBottom:10}}>{s.program || s.detailProgram}</div>
-                            
-                            <div style={{
-                                marginTop:'auto',
-                                fontSize:9, 
-                                fontWeight:'bold',
-                                color: s.statusNilai==='Sudah'?'#27ae60':'#e74c3c',
-                                background: s.statusNilai==='Sudah'?'#eafaf1':'#fdedec',
-                                padding:'4px 2px',
-                                borderRadius:4,
-                                textAlign:'center'
-                            }}>
-                                {s.statusNilai === 'Sudah' ? '✅ TERISI' : '⚠️ BELUM'}
-                            </div>
-                        </div>
-                    )) : (
-                        <div style={{gridColumn:'1/-1', textAlign:'center', padding:40, color:'#95a5a6'}}>
-                            Siswa tidak ditemukan.
-                        </div>
-                    )}
+                            <Save size={18} />
+                            {submitting ? 'Menyimpan...' : '💾 SIMPAN KE RAPOR'}
+                        </button>
+                    </form>
                 </div>
             )}
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
-};
-
-const styles = {
-    inputSearch: { padding:'10px 15px', borderRadius:10, border:'1px solid #dfe6e9', outline:'none', fontSize:14, boxSizing: 'border-box' },
-    select: { padding:'10px', borderRadius:10, border:'1px solid #dfe6e9', fontSize:13, cursor:'pointer', outline:'none', background:'white' },
-    cardForm: { background:'white', padding:'20px', borderRadius:20, boxShadow:'0 10px 25px rgba(0,0,0,0.05)' },
-    btnBack: { background:'none', border:'none', color:'#3498db', cursor:'pointer', fontSize:13, fontWeight:'bold', padding:0 },
-    sectionH: { background:'#f8f9fa', padding:'10px 15px', borderRadius:8, fontSize:13, marginBottom:15, fontWeight:'bold', color:'#2c3e50' },
-    labelIn: { display:'block', fontSize:11, fontWeight:'bold', marginBottom:5, color:'#34495e' },
-    inputField: { width:'100%', padding:'12px', borderRadius:8, border:'1px solid #dfe6e9', boxSizing:'border-box', outline:'none', fontSize: 14 },
-    btnSubmit: { width:'100%', padding:'15px', background:'#27ae60', color:'white', border:'none', borderRadius:12, fontWeight:'bold', cursor:'pointer', fontSize:15, marginTop:20, transition:'0.3s' },
-    studentCard: { 
-        background:'white', 
-        padding:15, 
-        borderRadius:15, 
-        cursor:'pointer', 
-        boxShadow:'0 4px 10px rgba(0,0,0,0.03)', 
-        display:'flex', 
-        flexDirection:'column',
-        transition:'0.2s transform'
-    }
 };
 
 export default TeacherInputGrade;
