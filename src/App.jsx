@@ -22,7 +22,7 @@ import StudentFinance from './pages/admin/students/StudentFinance';
 // ADMIN - TEACHERS
 import TeacherList from './pages/admin/teachers/TeacherList';
 import TeacherSalaries from './pages/admin/teachers/TeacherSalaries';
-import TeacherSchedule from './pages/admin/teachers/TeacherSchedule';
+import TeacherSchedule from './pages/admin/teachers/TeacherSchedule'; // ✅ HANYA SATU
 
 // ADMIN - FINANCE
 import FinanceLayout from './pages/admin/finance/FinanceLayout';
@@ -56,7 +56,7 @@ import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherHistory from './pages/teacher/TeacherHistory';
 import TeacherManualInput from './pages/teacher/TeacherManualInput'; 
 import TeacherProfile from './pages/teacher/TeacherProfile'; 
-import TeacherSchedule from './pages/teacher/TeacherSchedule'; 
+// import TeacherSchedule dari sini SUDAH DIHAPUS (karena sudah ada dari admin)
 import ClassSession from './pages/teacher/ClassSession';
 import TeacherLayout from './pages/teacher/TeacherLayout';
 
