@@ -3,6 +3,42 @@ import { db } from '../../firebase';
 import { doc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs, deleteDoc } from "firebase/firestore";
 import { ArrowLeft, Clock, FileText, CheckCircle, UploadCloud, Eye, Link as LinkIcon, HelpCircle, AlertCircle, FileDigit, User, Trash2, X, Send, Zap, Calendar, Maximize2, Download, BookOpen } from 'lucide-react';
 
+// 🔥 FUNGSI KOMPRESI GAMBAR (iPhone/HP friendly)
+const compressImage = async (file) => {
+  if (!file.type.startsWith('image/')) return file;
+  if (file.size < 500 * 1024) return file;
+
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH) { height = (height * MAX_WIDTH) / width; width = MAX_WIDTH; }
+        if (height > MAX_HEIGHT) { width = (width * MAX_HEIGHT) / height; height = MAX_HEIGHT; }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob((blob) => {
+          const compressedFile = new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() });
+          console.log(`📸 Kompresi: ${(file.size/1024).toFixed(1)}KB → ${(compressedFile.size/1024).toFixed(1)}KB`);
+          resolve(compressedFile);
+        }, 'image/jpeg', 0.7);
+      };
+    };
+  });
+};
+
 const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const [modul, setModul] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -84,13 +120,21 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     return { text: `⚠️ ${hours}j lagi`, color: '#f59e0b' };
   };
 
-  const handleFileChange = (e, blockId) => {
+  // 🔥 UPLOAD DENGAN KOMPRESI OTOMATIS
+  const handleFileChange = async (e, blockId) => {
     if (isTugasExpired) return alert("❌ Deadline terlewat.");
-    const file = e.target.files[0];
+    let file = e.target.files[0];
     if (!file) return;
+
+    // Kompresi gambar dulu
+    if (file.type.startsWith('image/')) {
+      file = await compressImage(file);
+    }
+
     const allowed = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'image/webp'];
     if (!allowed.includes(file.type)) return alert("❌ Format: PDF, DOCX, atau Gambar.");
     if (file.size > 50 * 1024 * 1024) return alert("Maks 50MB.");
+
     const reader = new FileReader();
     reader.onloadend = () => setLocalFiles({...localFiles, [blockId]: { name: file.name, data: reader.result, type: file.type, size: (file.size/1024).toFixed(1)+" KB" }});
     reader.readAsDataURL(file);
