@@ -15,6 +15,9 @@ import {
 import { InlineMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 
+// 🔥 IMPORT UNTUK UPLOAD KE SUPABASE (TAMBAHAN, TIDAK MENGHAPUS APAPUN)
+import { uploadToDrive } from '../../services/uploadService';
+
 const StudentElearning = () => {
   const navigate = useNavigate();
   const [modules, setModules] = useState([]);
@@ -164,32 +167,77 @@ const StudentElearning = () => {
     });
   };
 
+  // 🔥🔥🔥 FUNGSI HANDLE SUBMIT YANG DIPERBAIKI (TAMBAH UPLOAD KE SUPABASE) 🔥🔥🔥
+  // SEMUA FITUR LAIN TETAP SAMA, HANYA PROSES UPLOAD FILE YANG DIUBAH
   const handleSubmitAssignment = async () => {
     if (!selectedAssignment) return;
     if (!assignmentAnswer && !assignmentFile) return alert("❌ Harap isi jawaban atau upload file!");
+    
     setSubmitting(true);
     try {
-      let fileUrl = null, fileName = null;
+      let fileUrl = null, fileName = null, filePath = null;
+      
       if (assignmentFile) {
+        // Validasi ukuran file (maksimal 10MB)
+        if (assignmentFile.size > 10 * 1024 * 1024) {
+          throw new Error("Ukuran file terlalu besar. Maksimal 10MB.");
+        }
+        
+        // Konversi file ke Base64 untuk dikirim ke uploadService
         const reader = new FileReader();
-        fileUrl = await new Promise((resolve) => { reader.onload = () => resolve(reader.result); reader.readAsDataURL(assignmentFile); });
+        const base64 = await new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(assignmentFile);
+        });
+        
+        console.log(`📤 Upload file: ${assignmentFile.name} (${(assignmentFile.size / 1024 / 1024).toFixed(2)}MB)`);
+        
+        // 🔥 UPLOAD KE SUPABASE STORAGE (PERUBAHAN UTAMA)
+        const result = await uploadToDrive(base64, assignmentFile.name, assignmentFile.type);
+        
+        if (!result.success) {
+          throw new Error(result.error);
+        }
+        
+        fileUrl = result.downloadURL;
+        filePath = result.filePath;
         fileName = assignmentFile.name;
+        
+        console.log(`✅ Upload berhasil: ${fileUrl}`);
       }
+      
+      // 🔥 SIMPAN KE FIRESTORE (SAMA PERSIS DENGAN YANG LAMA, HANYA fileUrl SEKARANG DARI SUPABASE)
       await addDoc(collection(db, "jawaban_tugas"), {
-        modulId: selectedModule.id, modulTitle: selectedModule.title, studentId, studentName,
-        studentKelas, question: selectedAssignment.content, answer: assignmentAnswer,
-        fileUrl, fileName, status: "submitted", submittedAt: serverTimestamp(), updatedAt: serverTimestamp()
+        modulId: selectedModule.id,
+        modulTitle: selectedModule.title,
+        studentId,
+        studentName,
+        studentKelas,
+        question: selectedAssignment.content,
+        answer: assignmentAnswer,
+        fileUrl,      // ← SEKARANG URL DARI SUPABASE (BUKAN BASE64)
+        filePath,     // ← TAMBAHAN (PATH DI SUPABASE)
+        fileName,
+        status: "submitted",
+        submittedAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
       });
+      
       alert("✅ Tugas berhasil dikirim!");
       setSelectedAssignment(null);
       setAssignmentAnswer("");
       setAssignmentFile(null);
       await fetchSubmissions(studentId);
+      
     } catch (error) {
+      console.error("Upload error:", error);
       alert("❌ Gagal mengirim tugas: " + error.message);
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
+  // 🔥🔥🔥 END PERBAIKAN 🔥🔥🔥
 
   const getSubmissionStatus = (moduleId) => {
     const sub = submissions[moduleId];
@@ -198,7 +246,7 @@ const StudentElearning = () => {
     return { status: 'submitted', label: 'Terkirim', color: '#f59e0b', bg: '#fef3c7', icon: <Clock size={12} /> };
   };
 
-  // RENDER MODERN CARD (LIKE NETFLIX)
+  // RENDER MODERN CARD (LIKE NETFLIX) - TIDAK BERUBAH
   const renderModernCard = (module) => {
     const isQuizMandiri = module.type === 'kuis_mandiri';
     const hasAssignment = module.blocks?.some(b => b.type === 'assignment');
@@ -286,7 +334,7 @@ const StudentElearning = () => {
     );
   };
 
-  // RENDER LIST VIEW (ALTERNATIF)
+  // RENDER LIST VIEW (ALTERNATIF) - TIDAK BERUBAH
   const renderListView = (module) => {
     const isQuizMandiri = module.type === 'kuis_mandiri';
     const submissionStatus = getSubmissionStatus(module.id);
@@ -321,7 +369,7 @@ const StudentElearning = () => {
     );
   };
 
-  // RENDER DETAIL MODUL (SAMA SEPERTI SEBELUMNYA)
+  // RENDER DETAIL MODUL - TIDAK BERUBAH
   const renderModuleDetail = () => {
     if (!selectedModule) return null;
     const assignments = selectedModule.blocks?.filter(b => b.type === 'assignment') || [];
@@ -427,7 +475,7 @@ const StudentElearning = () => {
     );
   };
 
-  // RENDER DAFTAR MODUL
+  // RENDER DAFTAR MODUL - TIDAK BERUBAH
   const renderModuleList = () => (
     <div style={styles.moduleList}>
       <div style={styles.listHeader}>
@@ -482,7 +530,7 @@ const StudentElearning = () => {
     </div>
   );
 
-  // MODAL SUBMIT TUGAS
+  // MODAL SUBMIT TUGAS - TIDAK BERUBAH
   const renderSubmitModal = () => {
     if (!selectedAssignment) return null;
     return (
