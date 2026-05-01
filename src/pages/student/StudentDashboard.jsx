@@ -236,18 +236,50 @@ const StudentDashboard = () => {
           setTodaySchedules([]);
         }
 
-        // FETCH TASKS
+        // FETCH TASKS - DENGAN FILTER KATEGORI DAN KELAS
         try {
-          const moduls = (await getDocs(query(
+          // Ambil semua modul (tanpa limit dulu agar bisa difilter kelas)
+          const modulSnap = await getDocs(query(
             collection(db, "bimbel_modul"), 
-            where("targetKategori", "in", ["Semua", curKat]), 
-            orderBy("createdAt", "desc"), 
-            limit(10)
-          ))).docs.map(d => ({ id: d.id, ...d.data() }));
-          setTasks(moduls.filter(m => 
+            where("targetKategori", "in", ["Semua", curKat])
+          ));
+          let allModuls = modulSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          
+          // 🔥 FILTER MANUAL BERDASARKAN KELAS
+          allModuls = allModuls.filter(module => {
+            const targetKelas = module.targetKelas || "Semua";
+            return targetKelas === "Semua" || targetKelas === curKel;
+          });
+          
+          // Ambil kuis mandiri
+          const kuisMandiriSnap = await getDocs(query(
+            collection(db, "bimbel_modul"), 
+            where("type", "==", "kuis_mandiri")
+          ));
+          let kuisMandiri = kuisMandiriSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          
+          // 🔥 FILTER KUIS MANDIRI JUGA BERDASARKAN KELAS
+          kuisMandiri = kuisMandiri.filter(module => {
+            const targetKelas = module.targetKelas || "Semua";
+            return targetKelas === "Semua" || targetKelas === curKel;
+          });
+          
+          // Gabungkan dan urutkan berdasarkan createdAt
+          const combined = [...allModuls, ...kuisMandiri];
+          combined.sort((a, b) => {
+            const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+            const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+            return dateB - dateA;
+          });
+          
+          // Filter yang memiliki tugas/kuis
+          const tasksWithContent = combined.filter(m => 
             m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment')
-          ).slice(0, 5));
-          console.log('📚 Tugas ditemukan:', moduls.filter(m => m.blocks?.some(b => b.type === 'assignment')).length);
+          );
+          
+          setTasks(tasksWithContent.slice(0, 5));
+          console.log('📚 Tugas ditemukan (setelah filter kelas):', tasksWithContent.length);
+          
         } catch (taskErr) {
           console.warn('Fetch tasks error:', taskErr.message);
           setTasks([]);
