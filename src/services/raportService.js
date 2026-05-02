@@ -144,8 +144,25 @@ export const generateNarasi = (namaSiswa, mapel, nilaiSekarang, nilaiSebelumnya)
  * Ekspor nilai dari tugas/kuis ke raport_scores
  */
 export const exportToRaportScores = async (data) => {
-  const { studentId, studentName, mapel, topik, nilai, komponen, teacherId, teacherName } = data;
+  const { studentId, studentName, mapel, topik, nilai, komponen, teacherId, teacherName, qualitative } = data;
   const periode = new Date().toISOString().slice(0, 7);
+  
+  // ➕ VALIDASI: Pastikan tidak ada field undefined
+  if (!studentId) {
+    console.error("❌ exportToRaportScores: studentId is required");
+    return { success: false, error: "studentId tidak boleh kosong" };
+  }
+  if (!komponen) {
+    console.error("❌ exportToRaportScores: komponen is required");
+    return { success: false, error: "komponen tidak boleh kosong" };
+  }
+  
+  const safeMapel = mapel || "Umum";
+  const safeTopik = topik || "Tanpa Topik";
+  const safeNilai = nilai || 0;
+  const safeStudentName = studentName || "Unknown";
+  const safeTeacherId = teacherId || "";
+  const safeTeacherName = teacherName || "";
   
   try {
     // Cek apakah sudah ada nilai untuk komponen ini periode ini
@@ -154,25 +171,38 @@ export const exportToRaportScores = async (data) => {
       where("studentId", "==", studentId),
       where("komponen", "==", komponen),
       where("periode", "==", periode),
-      where("mapel", "==", mapel)
+      where("mapel", "==", safeMapel)
     );
     const existing = await getDocs(existingQuery);
     
+    // Data yang akan disimpan
+    const scoreData = {
+      studentId,
+      studentName: safeStudentName,
+      mapel: safeMapel,
+      topik: safeTopik,
+      nilai: safeNilai,
+      komponen,
+      periode,
+      teacherId: safeTeacherId,
+      teacherName: safeTeacherName,
+      updatedAt: serverTimestamp()
+    };
+    
+    // ➕ Tambah qualitative jika ada (5 poin karakter)
+    if (qualitative) {
+      scoreData.qualitative = qualitative;
+    }
+    
     if (!existing.empty) {
       // Update nilai yang sudah ada
-      await updateDoc(doc(db, RAPORT_COLLECTIONS.SCORES, existing.docs[0].id), {
-        nilai: nilai,
-        topik: topik,
-        updatedAt: serverTimestamp()
-      });
+      await updateDoc(doc(db, RAPORT_COLLECTIONS.SCORES, existing.docs[0].id), scoreData);
       return { success: true, action: 'updated' };
     } else {
       // Buat baru
       await addDoc(collection(db, RAPORT_COLLECTIONS.SCORES), {
-        studentId, studentName, mapel, topik, nilai, komponen,
-        periode, teacherId, teacherName,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        ...scoreData,
+        createdAt: serverTimestamp()
       });
       return { success: true, action: 'created' };
     }
