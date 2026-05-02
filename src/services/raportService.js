@@ -7,11 +7,66 @@ import {
 import { DEFAULT_WEIGHTS, RAPORT_COLLECTIONS } from '../firebase/raportCollection';
 
 /**
- * Hitung nilai akhir berdasarkan bobot
+ * Hitung bobot dinamis berdasarkan komponen yang tersedia
+ * Jika ada komponen kosong, bobotnya didistribusikan proporsional ke komponen yang ada
+ * @param {Object} scores - { kuis: [], catatan: [], ujian: [], keaktifan: [] }
+ * @returns {Object} - { weights: { kuis, catatan, ujian, keaktifan }, komponenDipake: [] }
+ */
+export const calculateDynamicWeights = (scores) => {
+  const defaultWeights = { ...DEFAULT_WEIGHTS };
+  const komponenDipake = [];
+  let totalBobot = 0;
+  
+  // Cek komponen mana yang punya data
+  if (scores.kuis?.length > 0) {
+    komponenDipake.push('kuis');
+    totalBobot += defaultWeights.kuis;
+  }
+  if (scores.catatan?.length > 0) {
+    komponenDipake.push('catatan');
+    totalBobot += defaultWeights.catatan;
+  }
+  if (scores.ujian?.length > 0) {
+    komponenDipake.push('ujian');
+    totalBobot += defaultWeights.ujian;
+  }
+  if (scores.keaktifan?.length > 0) {
+    komponenDipake.push('keaktifan');
+    totalBobot += defaultWeights.keaktifan;
+  }
+  
+  // Jika tidak ada komponen sama sekali, kembalikan default
+  if (komponenDipake.length === 0 || totalBobot === 0) {
+    return { 
+      weights: { ...defaultWeights }, 
+      komponenDipake: ['kuis', 'catatan', 'ujian', 'keaktifan'],
+      totalBobot: 1.0
+    };
+  }
+  
+  // Distribusikan bobot proporsional
+  const adjustedWeights = {
+    kuis: scores.kuis?.length > 0 ? defaultWeights.kuis / totalBobot : 0,
+    catatan: scores.catatan?.length > 0 ? defaultWeights.catatan / totalBobot : 0,
+    ujian: scores.ujian?.length > 0 ? defaultWeights.ujian / totalBobot : 0,
+    keaktifan: scores.keaktifan?.length > 0 ? defaultWeights.keaktifan / totalBobot : 0
+  };
+  
+  return { 
+    weights: adjustedWeights, 
+    komponenDipake,
+    totalBobot 
+  };
+};
+
+/**
+ * Hitung nilai akhir berdasarkan bobot DINAMIS
+ * Komponen yang kosong diabaikan, bobot disesuaikan proporsional
+ * @param {Object} scores - { kuis: [], catatan: [], ujian: [], keaktifan: [] }
+ * @returns {Object} - { nilaiAkhir, komponenDipake, detailNilai }
  */
 export const calculateFinalScore = (scores) => {
-  const weights = DEFAULT_WEIGHTS;
-  
+  // Hitung rata-rata per komponen
   const kuisAvg = scores.kuis?.length > 0 
     ? scores.kuis.reduce((a,b) => a+b, 0) / scores.kuis.length 
     : 0;
@@ -25,12 +80,43 @@ export const calculateFinalScore = (scores) => {
     ? scores.keaktifan.reduce((a,b) => a+b, 0) / scores.keaktifan.length 
     : 0;
   
-  const final = (kuisAvg * weights.kuis) + 
-                (catatanAvg * weights.catatan) + 
-                (ujianAvg * weights.ujian) + 
-                (keaktifanAvg * weights.keaktifan);
+  // Dapatkan bobot dinamis
+  const { weights, komponenDipake, totalBobot } = calculateDynamicWeights(scores);
   
-  return Math.round(final);
+  // Jika tidak ada data sama sekali
+  if (komponenDipake.length === 0) {
+    return { 
+      nilaiAkhir: 0, 
+      komponenDipake: [], 
+      detailNilai: { kuis: 0, catatan: 0, ujian: 0, keaktifan: 0 },
+      pesan: "Belum ada data nilai untuk dihitung"
+    };
+  }
+  
+  // Hitung nilai akhir dengan bobot dinamis
+  const nilaiAkhir = Math.round(
+    (kuisAvg * weights.kuis) + 
+    (catatanAvg * weights.catatan) + 
+    (ujianAvg * weights.ujian) + 
+    (keaktifanAvg * weights.keaktifan)
+  );
+  
+  return { 
+    nilaiAkhir, 
+    komponenDipake, 
+    detailNilai: {
+      kuis: Math.round(kuisAvg * 10) / 10,
+      catatan: Math.round(catatanAvg * 10) / 10,
+      ujian: Math.round(ujianAvg * 10) / 10,
+      keaktifan: Math.round(keaktifanAvg * 10) / 10
+    },
+    bobotPakai: {
+      kuis: Math.round(weights.kuis * 100),
+      catatan: Math.round(weights.catatan * 100),
+      ujian: Math.round(weights.ujian * 100),
+      keaktifan: Math.round(weights.keaktifan * 100)
+    }
+  };
 };
 
 /**
@@ -98,6 +184,7 @@ export const exportToRaportScores = async (data) => {
 
 /**
  * Sinkronkan semua nilai siswa ke raport_final (ONE-CLICK SYNC)
+ * UPDATE: Pakai calculateFinalScore versi baru (bobot dinamis)
  */
 export const syncAllScoresToRaport = async (periode, teacherId = null) => {
   console.log(`🚀 Mulai sinkronisasi raport untuk periode ${periode}...`);
@@ -126,17 +213,18 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
       }
     });
     
-    // Cek kelengkapan
-    const isComplete = scores.kuis.length > 0 && 
-                       scores.catatan.length > 0 && 
-                       scores.ujian.length > 0 && 
-                       scores.keaktifan.length > 0;
+    // 3. Cek kelengkapan — sekarang lebih fleksibel: minimal 2 komponen
+    const totalKomponen = (scores.kuis.length > 0 ? 1 : 0) +
+                          (scores.catatan.length > 0 ? 1 : 0) +
+                          (scores.ujian.length > 0 ? 1 : 0) +
+                          (scores.keaktifan.length > 0 ? 1 : 0);
     
-    if (!isComplete) {
+    if (totalKomponen < 2) {
       incompleteStudents.push({
         id: student.id,
         name: student.nama,
         kelas: student.kelasSekolah,
+        totalKomponen,
         missing: {
           kuis: scores.kuis.length === 0,
           catatan: scores.catatan.length === 0,
@@ -147,10 +235,10 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
       continue;
     }
     
-    // 3. Hitung nilai akhir
-    const nilaiAkhir = calculateFinalScore(scores);
+    // 4. Hitung nilai akhir dengan bobot dinamis
+    const { nilaiAkhir, komponenDipake, detailNilai, bobotPakai } = calculateFinalScore(scores);
     
-    // 4. Ambil nilai bulan lalu
+    // 5. Ambil nilai bulan lalu
     const lastMonth = getPreviousMonth(periode);
     const lastMonthSnap = await getDocs(query(
       collection(db, RAPORT_COLLECTIONS.FINAL),
@@ -159,10 +247,10 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
     ));
     const nilaiSebelumnya = lastMonthSnap.empty ? null : lastMonthSnap.docs[0].data().nilai_akhir;
     
-    // 5. Generate narasi
+    // 6. Generate narasi
     const narasi = generateNarasi(student.nama, "Umum", nilaiAkhir, nilaiSebelumnya);
     
-    // 6. Simpan ke raport_final
+    // 7. Simpan ke raport_final
     const finalData = {
       studentId: student.id,
       studentName: student.nama,
@@ -170,12 +258,14 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
       studentProgram: student.kategori || student.program,
       mapel: "Umum",
       periode: periode,
-      nilai_kuis: scores.kuis.reduce((a,b) => a+b, 0) / scores.kuis.length,
-      nilai_catatan: scores.catatan.reduce((a,b) => a+b, 0) / scores.catatan.length,
-      nilai_ujian: scores.ujian.reduce((a,b) => a+b, 0) / scores.ujian.length,
-      nilai_keaktifan: scores.keaktifan.reduce((a,b) => a+b, 0) / scores.keaktifan.length,
+      nilai_kuis: detailNilai.kuis,
+      nilai_catatan: detailNilai.catatan,
+      nilai_ujian: detailNilai.ujian,
+      nilai_keaktifan: detailNilai.keaktifan,
       nilai_akhir: nilaiAkhir,
       narasi: narasi,
+      komponen_dipakai: komponenDipake,
+      bobot_pakai: bobotPakai,
       updatedAt: serverTimestamp()
     };
     
@@ -194,10 +284,15 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
       await updateDoc(doc(db, RAPORT_COLLECTIONS.FINAL, existingSnap.docs[0].id), finalData);
     }
     
-    results.push({ studentId: student.id, name: student.nama, nilai: nilaiAkhir });
+    results.push({ 
+      studentId: student.id, 
+      name: student.nama, 
+      nilai: nilaiAkhir,
+      komponenDipake 
+    });
   }
   
-  // 7. Update leaderboard
+  // 8. Update leaderboard
   await updateLeaderboard(periode);
   
   return {
@@ -290,7 +385,7 @@ function getPreviousMonth(periode) {
 }
 
 // ============================================================
-// ➕ FUNGSI TAMBAHAN BARU (TIDAK MENGUBAH KODE DI ATAS)
+// ➕ FUNGSI TAMBAHAN NARASI KARAKTER
 // ============================================================
 
 /**
