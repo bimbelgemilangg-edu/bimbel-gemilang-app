@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import SidebarAdmin from '../../../components/SidebarAdmin'; // Update ke SidebarAdmin
+import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { 
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
     Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis 
 } from 'recharts';
+import { RAPORT_COLLECTIONS } from '../../../firebase/raportCollection';
+import { generateCharacterNarasi, generateDetailCharacterNarasi } from '../../../services/raportService';
 
 // LIBRARY CETAK PDF HD
 import jsPDF from 'jspdf';
@@ -22,11 +24,15 @@ const GradeReport = () => {
   const [selectedStudentId, setSelectedStudentId] = useState("");
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); 
   
-  const [reportData, setReportData] = useState([]); 
-  const [gpaHistory, setGpaHistory] = useState([]); 
-  const [radarData, setRadarData] = useState([]);   
+  const [reportData, setReportData] = useState([]);        // Data raport_final untuk bulan terpilih
+  const [reportComponents, setReportComponents] = useState(null); // Detail komponen nilai
+  const [gpaHistory, setGpaHistory] = useState([]);         // Tren GPA dari raport_final
+  const [radarData, setRadarData] = useState([]);           // Radar dari raport_scores (qualitative)
+  const [characterQualitative, setCharacterQualitative] = useState(null); // Data qualitative mentah
   const [narrativeTitle, setNarrativeTitle] = useState("");
   const [narrativeBody, setNarrativeBody] = useState("");
+  const [characterNarasi, setCharacterNarasi] = useState(""); // Narasi karakter
+  const [detailCharacterNarasi, setDetailCharacterNarasi] = useState([]); // Detail per aspek
 
   // 1. LOAD SISWA
   useEffect(() => {
@@ -67,62 +73,89 @@ const GradeReport = () => {
     setIsPrinting(false);
   };
 
-  // --- LOGIKA UTAMA RENDER DATA (SENSITIF - PERTAHANKAN) ---
+  // --- LOGIKA UTAMA: AMBIL DATA DARI raport_final + raport_scores ---
   useEffect(() => {
     if(!selectedStudentId) return;
 
     const processData = async () => {
-        const q = query(collection(db, "grades"), where("studentId", "==", selectedStudentId));
-        const snap = await getDocs(q);
-        const allGrades = snap.docs.map(d => d.data());
-        allGrades.sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal));
+        // ========== A. AMBIL DARI raport_final ==========
+        const finalQuery = query(
+          collection(db, RAPORT_COLLECTIONS.FINAL),
+          where("studentId", "==", selectedStudentId)
+        );
+        const finalSnap = await getDocs(finalQuery);
+        const allFinal = finalSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        allFinal.sort((a, b) => new Date(b.periode + '-01') - new Date(a.periode + '-01'));
 
-        // Grafik Per Mapel & GPA
-        const mapelHistoryMap = {}; 
-        allGrades.forEach(g => {
-            const monthLabel = new Date(g.tanggal).toLocaleDateString('id-ID', {month:'short', year:'2-digit'}); 
-            if(!mapelHistoryMap[monthLabel]) mapelHistoryMap[monthLabel] = { name: monthLabel, rawDate: g.tanggal, sum: 0, count: 0 };
-            mapelHistoryMap[monthLabel][g.mapel] = g.nilai;
-            mapelHistoryMap[monthLabel].sum += g.nilai;
-            mapelHistoryMap[monthLabel].count += 1;
-        });
+        // Grafik Tren GPA dari raport_final
+        const historyData = allFinal.map(item => ({
+          name: item.periode.replace('-', '/'),
+          GPA: item.nilai_akhir,
+          periode: item.periode
+        }));
+        setGpaHistory(historyData.reverse());
 
-        const finalHistory = Object.values(mapelHistoryMap).sort((a,b) => new Date(a.rawDate) - new Date(b.rawDate));
-        setGpaHistory(finalHistory.map(h => ({ name: h.name, GPA: Math.round(h.sum/h.count) })));
-
-        // Data Bulan Ini
-        const currentGrades = allGrades.filter(g => g.tanggal.startsWith(selectedMonth));
-        setReportData(currentGrades);
-
-        // Narasi & Radar (Logika Asli)
-        if(currentGrades.length > 0) {
-            const avg = Math.round(currentGrades.reduce((a,b)=>a+b.nilai,0) / currentGrades.length);
-            const best = [...currentGrades].sort((a,b) => b.nilai - a.nilai)[0];
-            const weak = [...currentGrades].sort((a,b) => a.nilai - b.nilai)[0];
-
-            setNarrativeTitle(avg >= 85 ? "PERFORMA SANGAT BAIK" : avg >= 75 ? "PERFORMA BAIK" : "PERLU PERHATIAN");
-            setNarrativeBody(`Pada periode ${selectedMonth}, ananda mencapai rata-rata ${avg}. Kekuatan utama pada ${best.mapel} (Skor: ${best.nilai}). ${weak.nilai < 75 ? `Perlu perhatian pada ${weak.mapel}.` : 'Semua mapel aman.'}`);
-
-            // Radar
-            let asp = { pem:0, log:0, lit:0, ini:0, man:0, c:0 };
-            currentGrades.forEach(g => {
-                if(g.qualitative) {
-                    asp.pem += g.qualitative.pemahaman || 0; asp.log += g.qualitative.aplikasi || 0;
-                    asp.lit += g.qualitative.literasi || 0; asp.ini += g.qualitative.inisiatif || 0;
-                    asp.man += g.qualitative.mandiri || 0; asp.c++;
-                }
-            });
-            setRadarData(asp.c > 0 ? [
-                { subject: 'Pemahaman', A: (asp.pem/asp.c).toFixed(1) },
-                { subject: 'Logika', A: (asp.log/asp.c).toFixed(1) },
-                { subject: 'Literasi', A: (asp.lit/asp.c).toFixed(1) },
-                { subject: 'Inisiatif', A: (asp.ini/asp.c).toFixed(1) },
-                { subject: 'Mandiri', A: (asp.man/asp.c).toFixed(1) }
-            ] : []);
+        // Data bulan terpilih dari raport_final
+        const currentFinal = allFinal.find(item => item.periode === selectedMonth);
+        
+        if (currentFinal) {
+          setReportData([currentFinal]); // Bungkus dalam array untuk tabel
+          setReportComponents({
+            kuis: currentFinal.nilai_kuis,
+            catatan: currentFinal.nilai_catatan,
+            ujian: currentFinal.nilai_ujian,
+            keaktifan: currentFinal.nilai_keaktifan
+          });
+          
+          // Narasi nilai (dari raport_final)
+          setNarrativeTitle(currentFinal.nilai_akhir >= 85 ? "PERFORMA SANGAT BAIK" : 
+                           currentFinal.nilai_akhir >= 75 ? "PERFORMA BAIK" : "PERLU PERHATIAN");
+          setNarrativeBody(currentFinal.narasi || `Nilai akhir: ${currentFinal.nilai_akhir}`);
         } else {
-            setNarrativeTitle("DATA BELUM TERSEDIA");
-            setNarrativeBody("Belum ada penilaian untuk bulan ini.");
-            setRadarData([]);
+          setReportData([]);
+          setReportComponents(null);
+          setNarrativeTitle("DATA BELUM TERSEDIA");
+          setNarrativeBody(`Belum ada data raport untuk periode ${selectedMonth}. Silakan generate raport terlebih dahulu.`);
+          setRadarData([]);
+          setCharacterQualitative(null);
+          setCharacterNarasi("");
+          setDetailCharacterNarasi([]);
+          return;
+        }
+
+        // ========== B. AMBIL DARI raport_scores (untuk qualitative/karakter) ==========
+        const scoresQuery = query(
+          collection(db, RAPORT_COLLECTIONS.SCORES),
+          where("studentId", "==", selectedStudentId),
+          where("periode", "==", selectedMonth)
+        );
+        const scoresSnap = await getDocs(scoresQuery);
+        const allScores = scoresSnap.docs.map(d => d.data());
+
+        // Cari data qualitative di raport_scores
+        const qualitativeData = allScores.find(s => s.qualitative);
+        
+        if (qualitativeData && qualitativeData.qualitative) {
+          const qual = qualitativeData.qualitative;
+          setCharacterQualitative(qual);
+          
+          // Generate narasi karakter
+          setCharacterNarasi(generateCharacterNarasi(qual));
+          setDetailCharacterNarasi(generateDetailCharacterNarasi(qual));
+          
+          // Data Radar Chart
+          setRadarData([
+            { subject: 'Pemahaman', A: qual.pemahaman || 0, fullMark: 5 },
+            { subject: 'Logika', A: qual.aplikasi || 0, fullMark: 5 },
+            { subject: 'Literasi', A: qual.literasi || 0, fullMark: 5 },
+            { subject: 'Inisiatif', A: qual.inisiatif || 0, fullMark: 5 },
+            { subject: 'Mandiri', A: qual.mandiri || 0, fullMark: 5 }
+          ]);
+        } else {
+          setCharacterQualitative(null);
+          setCharacterNarasi("Belum ada penilaian karakter untuk periode ini.");
+          setDetailCharacterNarasi([]);
+          setRadarData([]);
         }
     };
     processData();
@@ -132,7 +165,7 @@ const GradeReport = () => {
 
   return (
     <div style={{display:'flex', minHeight:'100vh', background:'#555'}}>
-        {/* SIDEBAR ADMIN DIPERBAIKI DISINI */}
+        {/* SIDEBAR ADMIN */}
         <SidebarAdmin />
         
         <div style={{marginLeft:250, padding:30, width:'100%', display:'flex', flexDirection:'column', alignItems:'center'}}>
@@ -166,6 +199,7 @@ const GradeReport = () => {
             {/* AREA RAPOR A4 */}
             {selectedStudentId && (
                 <div ref={printRef} style={{ width: '210mm', minHeight: '297mm', background: 'white', padding: '15mm', boxSizing: 'border-box' }}>
+                    {/* HEADER RAPOR */}
                     <div style={{display:'flex', alignItems:'center', borderBottom:'4px double #2c3e50', paddingBottom:20, marginBottom:30}}>
                         <div style={{flex:1}}>
                             <h1 style={{margin:0, color:'#2c3e50', fontSize:24}}>BIMBEL GEMILANG</h1>
@@ -177,6 +211,7 @@ const GradeReport = () => {
                         </div>
                     </div>
 
+                    {/* INFO SISWA */}
                     <table style={{width:'100%', marginBottom:30, fontSize:14}}>
                         <tbody>
                             <tr>
@@ -185,57 +220,142 @@ const GradeReport = () => {
                                 <td style={{width:100, color:'#7f8c8d'}}>Program</td>
                                 <td style={{fontWeight:'bold'}}>: {studentInfo?.detailProgram}</td>
                             </tr>
+                            <tr>
+                                <td style={{width:100, color:'#7f8c8d'}}>Kelas</td>
+                                <td style={{fontWeight:'bold'}}>: {studentInfo?.kelasSekolah}</td>
+                                <td style={{width:100, color:'#7f8c8d'}}>Nilai Akhir</td>
+                                <td style={{fontWeight:'bold', color: '#e67e22', fontSize: 18}}>
+                                  : {reportComponents ? Math.round((reportComponents.kuis + reportComponents.catatan + reportComponents.ujian + reportComponents.keaktifan) / 4) : '-'}
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
 
-                    <div style={{background:'#f4fbf7', border:'1px solid #27ae60', borderRadius:8, padding:20, marginBottom:30}}>
+                    {/* NARASI NILAI */}
+                    <div style={{background:'#f4fbf7', border:'1px solid #27ae60', borderRadius:8, padding:20, marginBottom:20}}>
                         <h3 style={{marginTop:0, color:'#27ae60', fontSize:16}}>📢 {narrativeTitle}</h3>
                         <p style={{textAlign:'justify', fontSize:14}}>{narrativeBody}</p>
                     </div>
 
+                    {/* ============================================================ */}
+                    {/* ➕ NARASI KARAKTER (TAMBAHAN BARU) */}
+                    {/* ============================================================ */}
+                    {characterQualitative && (
+                      <div style={{background:'#fef9f0', border:'1px solid #f59e0b', borderRadius:8, padding:20, marginBottom:20}}>
+                        <h3 style={{marginTop:0, color:'#b45309', fontSize:16}}>🧠 Analisis Karakter</h3>
+                        <p style={{textAlign:'justify', fontSize:13, marginBottom:14}}>{characterNarasi}</p>
+                        
+                        {/* Detail per aspek */}
+                        {detailCharacterNarasi.length > 0 && (
+                          <table style={{width:'100%', borderCollapse:'collapse', fontSize:11}}>
+                            <thead>
+                              <tr style={{background:'#f59e0b', color:'white'}}>
+                                <th style={{padding:6, textAlign:'left'}}>Aspek</th>
+                                <th style={{padding:6, textAlign:'center'}}>Nilai</th>
+                                <th style={{padding:6, textAlign:'left'}}>Narasi</th>
+                                <th style={{padding:6, textAlign:'left'}}>Saran</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {detailCharacterNarasi.map((aspek, idx) => (
+                                <tr key={idx} style={{borderBottom:'1px solid #fde68a', background: idx%2===0?'white':'#fffbeb'}}>
+                                  <td style={{padding:8, fontWeight:'bold'}}>{aspek.label}</td>
+                                  <td style={{padding:8, textAlign:'center'}}>
+                                    <span style={{
+                                      background: aspek.nilai >= 4 ? '#dcfce7' : aspek.nilai >= 3 ? '#fef3c7' : '#fee2e2',
+                                      color: aspek.nilai >= 4 ? '#166534' : aspek.nilai >= 3 ? '#b45309' : '#991b1b',
+                                      padding: '3px 10px',
+                                      borderRadius: '12px',
+                                      fontWeight: 'bold',
+                                      fontSize: '11px'
+                                    }}>{aspek.nilai}/5</span>
+                                  </td>
+                                  <td style={{padding:8, fontSize:10}}>{aspek.narasi}</td>
+                                  <td style={{padding:8, fontSize:10, fontStyle:'italic', color:'#64748b'}}>💡 {aspek.saran}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </div>
+                    )}
+                    {!characterQualitative && (
+                      <div style={{background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:8, padding:16, marginBottom:20}}>
+                        <p style={{textAlign:'center', fontSize:12, color:'#94a3b8', margin:0}}>📝 Belum ada penilaian karakter untuk periode ini. Guru belum menginput aspek pemahaman, aplikasi, literasi, inisiatif, dan kemandirian.</p>
+                      </div>
+                    )}
+                    {/* ============================================================ */}
+
+                    {/* CHART: TREN & RADAR */}
                     <div style={{display:'flex', gap:20, marginBottom:30, height:220}}>
                         <div style={{flex:1, border:'1px solid #eee', borderRadius:8, padding:10}}>
                             <h4 style={{marginTop:0, fontSize:13, textAlign:'center'}}>TREN AKADEMIK (GPA)</h4>
-                            <ResponsiveContainer width="100%" height="85%">
-                                <LineChart data={gpaHistory}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="name" fontSize={10}/>
-                                    <YAxis domain={[0, 100]} fontSize={10}/>
-                                    <Line type="monotone" dataKey="GPA" stroke="#2c3e50" strokeWidth={3} />
-                                </LineChart>
-                            </ResponsiveContainer>
+                            {gpaHistory.length > 0 ? (
+                              <ResponsiveContainer width="100%" height="85%">
+                                  <LineChart data={gpaHistory}>
+                                      <CartesianGrid strokeDasharray="3 3" />
+                                      <XAxis dataKey="name" fontSize={10}/>
+                                      <YAxis domain={[0, 100]} fontSize={10}/>
+                                      <Line type="monotone" dataKey="GPA" stroke="#2c3e50" strokeWidth={3} />
+                                  </LineChart>
+                              </ResponsiveContainer>
+                            ) : (
+                              <p style={{textAlign:'center', color:'#94a3b8', fontSize:11, padding:30}}>Belum cukup data untuk grafik tren</p>
+                            )}
                         </div>
                         <div style={{flex:1, border:'1px solid #eee', borderRadius:8, padding:10}}>
                             <h4 style={{marginTop:0, fontSize:13, textAlign:'center'}}>PETA KOMPETENSI</h4>
-                            <ResponsiveContainer width="100%" height="85%">
-                                <RadarChart outerRadius="70%" data={radarData}>
-                                    <PolarGrid />
-                                    <PolarAngleAxis dataKey="subject" fontSize={9} />
-                                    <Radar name="Siswa" dataKey="A" stroke="#e67e22" fill="#e67e22" fillOpacity={0.6} />
-                                </RadarChart>
-                            </ResponsiveContainer>
+                            {radarData.length > 0 ? (
+                              <ResponsiveContainer width="100%" height="85%">
+                                  <RadarChart outerRadius="70%" data={radarData}>
+                                      <PolarGrid />
+                                      <PolarAngleAxis dataKey="subject" fontSize={9} />
+                                      <Radar name="Siswa" dataKey="A" stroke="#e67e22" fill="#e67e22" fillOpacity={0.6} />
+                                  </RadarChart>
+                              </ResponsiveContainer>
+                            ) : (
+                              <p style={{textAlign:'center', color:'#94a3b8', fontSize:11, padding:30}}>Belum ada data karakter</p>
+                            )}
                         </div>
                     </div>
 
+                    {/* RINCIAN NILAI PER KOMPONEN */}
                     <h3 style={{borderLeft:'5px solid #3498db', paddingLeft:10, color:'#2c3e50', fontSize:16}}>📚 Rincian Nilai</h3>
-                    <table style={{width:'100%', borderCollapse:'collapse', fontSize:12, marginTop:15}}>
-                        <thead>
-                            <tr style={{background:'#2c3e50', color:'white'}}>
-                                <th style={{padding:8, textAlign:'left'}}>Mata Pelajaran</th>
-                                <th style={{padding:8, textAlign:'left'}}>Topik</th>
-                                <th style={{padding:8, textAlign:'center'}}>Nilai</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {reportData.map((item, idx) => (
-                                <tr key={idx} style={{borderBottom:'1px solid #eee', background: idx%2===0?'white':'#f9f9f9'}}>
-                                    <td style={{padding:10, fontWeight:'bold'}}>{item.mapel}</td>
-                                    <td style={{padding:10}}>{item.topik}</td>
-                                    <td style={{padding:10, textAlign:'center', fontWeight:'bold'}}>{item.nilai}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    {reportComponents ? (
+                      <table style={{width:'100%', borderCollapse:'collapse', fontSize:12, marginTop:15}}>
+                          <thead>
+                              <tr style={{background:'#2c3e50', color:'white'}}>
+                                  <th style={{padding:8, textAlign:'left'}}>Komponen</th>
+                                  <th style={{padding:8, textAlign:'center'}}>Bobot</th>
+                                  <th style={{padding:8, textAlign:'center'}}>Nilai</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <tr style={{borderBottom:'1px solid #eee'}}>
+                                  <td style={{padding:10, fontWeight:'bold'}}>📝 Kuis</td>
+                                  <td style={{padding:10, textAlign:'center'}}>25%</td>
+                                  <td style={{padding:10, textAlign:'center', fontWeight:'bold'}}>{reportComponents.kuis}</td>
+                              </tr>
+                              <tr style={{borderBottom:'1px solid #eee', background:'#f9f9f9'}}>
+                                  <td style={{padding:10, fontWeight:'bold'}}>📓 Tugas / Catatan</td>
+                                  <td style={{padding:10, textAlign:'center'}}>25%</td>
+                                  <td style={{padding:10, textAlign:'center', fontWeight:'bold'}}>{reportComponents.catatan}</td>
+                              </tr>
+                              <tr style={{borderBottom:'1px solid #eee'}}>
+                                  <td style={{padding:10, fontWeight:'bold'}}>📖 Ujian</td>
+                                  <td style={{padding:10, textAlign:'center'}}>35%</td>
+                                  <td style={{padding:10, textAlign:'center', fontWeight:'bold'}}>{reportComponents.ujian}</td>
+                              </tr>
+                              <tr style={{borderBottom:'1px solid #eee', background:'#f9f9f9'}}>
+                                  <td style={{padding:10, fontWeight:'bold'}}>⭐ Keaktifan</td>
+                                  <td style={{padding:10, textAlign:'center'}}>15%</td>
+                                  <td style={{padding:10, textAlign:'center', fontWeight:'bold'}}>{reportComponents.keaktifan}</td>
+                              </tr>
+                          </tbody>
+                      </table>
+                    ) : (
+                      <p style={{textAlign:'center', color:'#94a3b8', padding:20}}>Belum ada data komponen nilai.</p>
+                    )}
                 </div>
             )}
         </div>

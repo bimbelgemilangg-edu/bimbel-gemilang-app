@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { Download, Award, BookOpen, Info, Target, TrendingUp } from 'lucide-react';
+import { generateCharacterNarasi, generateDetailCharacterNarasi } from '../../services/raportService';
 
 const StudentGrades = () => {
   const [grades, setGrades] = useState([]);
@@ -126,6 +127,42 @@ const StudentGrades = () => {
                    `Perlu bimbingan intensif pada topik ini. Segera jadwalkan konsultasi dengan pengajar.`}
                 </p>
               </div>
+
+              {/* ============================================================ */}
+              {/* ➕ NARASI KARAKTER DESKRIPTIF (TAMBAHAN BARU) */}
+              {/* ============================================================ */}
+              {item.qualitative && (
+                <div style={styles.characterNarasiBox}>
+                  <div style={styles.characterNarasiHeader}>
+                    🧠 Analisis Karakter
+                  </div>
+                  <p style={styles.characterNarasiText}>
+                    {generateCharacterNarasi(item.qualitative)}
+                  </p>
+                  
+                  {/* Detail per aspek */}
+                  <div style={styles.characterDetailGrid}>
+                    {generateDetailCharacterNarasi(item.qualitative).map((aspek, i) => (
+                      <div key={i} style={styles.characterDetailItem}>
+                        <div style={styles.characterDetailTop}>
+                          <span style={styles.characterDetailLabel}>{aspek.label}</span>
+                          <span style={{
+                            ...styles.characterDetailScore,
+                            background: aspek.nilai >= 4 ? '#dcfce7' : aspek.nilai >= 3 ? '#fef3c7' : '#fee2e2',
+                            color: aspek.nilai >= 4 ? '#166534' : aspek.nilai >= 3 ? '#b45309' : '#991b1b'
+                          }}>
+                            {aspek.nilai}/5
+                          </span>
+                        </div>
+                        <p style={styles.characterDetailNarasi}>{aspek.narasi}</p>
+                        <p style={styles.characterDetailSaran}>💡 {aspek.saran}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* ============================================================ */}
+
             </div>
           ))}
         </div>
@@ -151,9 +188,76 @@ const styles = {
   progressFill: { height: '100%', background: 'linear-gradient(90deg, #3b82f6, #60a5fa)', borderRadius: '10px' },
   charGrid: { display: 'flex', gap: '20px', marginBottom: '20px', flexWrap: 'wrap' },
   charItem: { fontSize: '12px', color: '#475569', display: 'flex', alignItems: 'center', gap: '6px', background: '#f8fafc', padding: '6px 12px', borderRadius: '6px' },
-  descBox: { background: '#f8fafc', padding: '15px', borderRadius: '12px', display: 'flex', gap: '10px' },
+  descBox: { background: '#f8fafc', padding: '15px', borderRadius: '12px', display: 'flex', gap: '10px', marginBottom: '16px' },
   descText: { fontSize: '13px', color: '#475569', margin: 0, lineHeight: '1.5' },
-  emptyBox: { textAlign: 'center', padding: '40px', background: 'white', borderRadius: '20px', color: '#94a3b8', border: '1px dashed #e2e8f0' }
+  emptyBox: { textAlign: 'center', padding: '40px', background: 'white', borderRadius: '20px', color: '#94a3b8', border: '1px dashed #e2e8f0' },
+  // ➕ Style tambahan untuk narasi karakter
+  characterNarasiBox: {
+    background: 'linear-gradient(135deg, #f0f9ff 0%, #faf5ff 100%)',
+    padding: '18px',
+    borderRadius: '14px',
+    border: '1px solid #e2e8f0',
+    marginTop: '4px'
+  },
+  characterNarasiHeader: {
+    fontSize: '14px',
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: '10px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px'
+  },
+  characterNarasiText: {
+    fontSize: '13px',
+    color: '#475569',
+    lineHeight: '1.6',
+    margin: '0 0 16px 0',
+    padding: '12px',
+    background: 'white',
+    borderRadius: '10px',
+    border: '1px solid #e2e8f0'
+  },
+  characterDetailGrid: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px'
+  },
+  characterDetailItem: {
+    background: 'white',
+    padding: '14px',
+    borderRadius: '10px',
+    border: '1px solid #e2e8f0'
+  },
+  characterDetailTop: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '6px'
+  },
+  characterDetailLabel: {
+    fontSize: '12px',
+    fontWeight: '700',
+    color: '#1e293b'
+  },
+  characterDetailScore: {
+    fontSize: '11px',
+    fontWeight: '800',
+    padding: '3px 10px',
+    borderRadius: '20px'
+  },
+  characterDetailNarasi: {
+    fontSize: '12px',
+    color: '#475569',
+    margin: '0 0 4px 0',
+    lineHeight: '1.4'
+  },
+  characterDetailSaran: {
+    fontSize: '11px',
+    color: '#64748b',
+    margin: 0,
+    fontStyle: 'italic'
+  }
 };
 
 export default StudentGrades;
