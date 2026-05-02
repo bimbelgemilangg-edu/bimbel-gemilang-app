@@ -11,11 +11,18 @@ const AdminBulkRaport = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [selectedPeriode, setSelectedPeriode] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
   const [stats, setStats] = useState({ totalStudents: 0, hasData: 0, noData: 0 });
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     fetchStats();
@@ -63,7 +70,7 @@ const AdminBulkRaport = () => {
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? '0 8px' : '0' }}>
       {/* TOMBOL KEMBALI */}
       <button 
         onClick={() => navigate('/admin/grades')} 
@@ -73,75 +80,76 @@ const AdminBulkRaport = () => {
           gap: '6px',
           background: 'white',
           border: '1px solid #e2e8f0',
-          padding: '8px 16px',
+          padding: isMobile ? '8px 12px' : '8px 16px',
           borderRadius: '8px',
           cursor: 'pointer',
-          fontSize: '12px',
+          fontSize: isMobile ? '11px' : '12px',
           fontWeight: '600',
           color: '#64748b',
-          marginBottom: '20px'
+          marginBottom: isMobile ? '16px' : '20px'
         }}
       >
-        <ArrowLeft size={14} /> Kembali ke Grade Report
+        <ArrowLeft size={isMobile ? 12 : 14} /> Kembali ke Grade Report
       </button>
 
       {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Database size={24} color="#3b82f6" /> Bulk Generate Raport
+      <div style={{ marginBottom: isMobile ? 16 : 24 }}>
+        <h2 style={{ margin: 0, fontSize: isMobile ? 17 : 20, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Database size={isMobile ? 20 : 24} color="#3b82f6" /> Bulk Generate Raport
         </h2>
-        <p style={{ margin: '4px 0 0', fontSize: 12, color: '#64748b' }}>
+        <p style={{ margin: '4px 0 0', fontSize: isMobile ? 10 : 12, color: '#64748b' }}>
           Generate raport untuk SEMUA siswa sekaligus (minimal 2 komponen, bobot proporsional)
         </p>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 12 : 20 }}>
         {/* Statistik */}
-        <div style={{ background: 'white', borderRadius: 16, padding: 20, border: '1px solid #e2e8f0' }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Users size={16} color="#3b82f6" /> Statistik Siswa
+        <div style={{ background: 'white', borderRadius: isMobile ? 12 : 16, padding: isMobile ? 14 : 20, border: '1px solid #e2e8f0' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: isMobile ? 12 : 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Users size={isMobile ? 14 : 16} color="#3b82f6" /> Statistik Siswa
           </h3>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, background: '#f8fafc', padding: 16, borderRadius: 12, textAlign: 'center' }}>
-              <div style={{ fontSize: 28, fontWeight: 800, color: '#1e293b' }}>{stats.totalStudents}</div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>Total Siswa</div>
+          <div style={{ display: 'flex', gap: isMobile ? 8 : 12, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: isMobile ? 70 : 100, background: '#f8fafc', padding: isMobile ? 10 : 16, borderRadius: 12, textAlign: 'center' }}>
+              <div style={{ fontSize: isMobile ? 20 : 28, fontWeight: 800, color: '#1e293b' }}>{stats.totalStudents}</div>
+              <div style={{ fontSize: isMobile ? 9 : 11, color: '#64748b' }}>Total Siswa</div>
             </div>
-            <div style={{ flex: 1, background: '#dcfce7', padding: 16, borderRadius: 12, textAlign: 'center' }}>
-              <div style={{ fontSize: 28, fontWeight: 800, color: '#166534' }}>{stats.hasData}</div>
-              <div style={{ fontSize: 11, color: '#166534' }}>Sudah Punya Raport</div>
+            <div style={{ flex: 1, minWidth: isMobile ? 70 : 100, background: '#dcfce7', padding: isMobile ? 10 : 16, borderRadius: 12, textAlign: 'center' }}>
+              <div style={{ fontSize: isMobile ? 20 : 28, fontWeight: 800, color: '#166534' }}>{stats.hasData}</div>
+              <div style={{ fontSize: isMobile ? 9 : 11, color: '#166534' }}>Sudah Punya</div>
             </div>
-            <div style={{ flex: 1, background: '#fef3c7', padding: 16, borderRadius: 12, textAlign: 'center' }}>
-              <div style={{ fontSize: 28, fontWeight: 800, color: '#b45309' }}>{stats.noData}</div>
-              <div style={{ fontSize: 11, color: '#b45309' }}>Belum Punya Raport</div>
+            <div style={{ flex: 1, minWidth: isMobile ? 70 : 100, background: '#fef3c7', padding: isMobile ? 10 : 16, borderRadius: 12, textAlign: 'center' }}>
+              <div style={{ fontSize: isMobile ? 20 : 28, fontWeight: 800, color: '#b45309' }}>{stats.noData}</div>
+              <div style={{ fontSize: isMobile ? 9 : 11, color: '#b45309' }}>Belum Punya</div>
             </div>
           </div>
         </div>
 
         {/* Form Generate */}
-        <div style={{ background: 'white', borderRadius: 16, padding: 20, border: '1px solid #e2e8f0' }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <FileText size={16} color="#3b82f6" /> Pengaturan Generate
+        <div style={{ background: 'white', borderRadius: isMobile ? 12 : 16, padding: isMobile ? 14 : 20, border: '1px solid #e2e8f0' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: isMobile ? 12 : 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <FileText size={isMobile ? 14 : 16} color="#3b82f6" /> Pengaturan Generate
           </h3>
           
           <div style={{ 
             background: '#f0f9ff', 
-            padding: 12, 
+            padding: isMobile ? 8 : 12, 
             borderRadius: 8, 
             marginBottom: 16,
             border: '1px solid #bae6fd',
-            fontSize: 11,
-            color: '#0369a1'
+            fontSize: isMobile ? 10 : 11,
+            color: '#0369a1',
+            lineHeight: 1.5
           }}>
             ⚠️ <b>Ketentuan:</b> Minimal <b>2 komponen</b> harus tersedia (kuis, catatan, ujian, keaktifan). Bobot dihitung <b>otomatis proporsional</b>. Siswa dengan data kurang akan dilewati.
           </div>
           
           <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#1e293b', display: 'block', marginBottom: 6 }}>Periode Raport</label>
+            <label style={{ fontSize: isMobile ? 10 : 12, fontWeight: 700, color: '#1e293b', display: 'block', marginBottom: 6 }}>Periode Raport</label>
             <input 
               type="month" 
               value={selectedPeriode}
               onChange={(e) => setSelectedPeriode(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13 }}
+              style={{ width: '100%', padding: isMobile ? '8px 10px' : '10px 12px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: isMobile ? 11 : 13, boxSizing: 'border-box' }}
             />
           </div>
           
@@ -150,13 +158,13 @@ const AdminBulkRaport = () => {
             disabled={loading}
             style={{
               width: '100%',
-              padding: '14px',
+              padding: isMobile ? '12px' : '14px',
               background: loading ? '#cbd5e1' : '#3b82f6',
               color: 'white',
               border: 'none',
               borderRadius: 10,
               fontWeight: 700,
-              fontSize: 14,
+              fontSize: isMobile ? 13 : 14,
               cursor: loading ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -164,50 +172,50 @@ const AdminBulkRaport = () => {
               gap: 8
             }}
           >
-            <RefreshCw size={18} className={loading ? 'spin' : ''} />
-            {loading ? 'Memproses Semua Siswa...' : '🚀 Generate Raport SEMUA SISWA'}
+            <RefreshCw size={isMobile ? 16 : 18} className={loading ? 'spin' : ''} />
+            {loading ? 'Memproses...' : '🚀 Generate Raport SEMUA SISWA'}
           </button>
         </div>
 
         {/* Hasil */}
         {result && (
-          <div style={{ background: 'white', borderRadius: 16, padding: 20, border: '1px solid #e2e8f0' }}>
-            <h4 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700 }}>📊 Hasil Sinkronisasi</h4>
+          <div style={{ background: 'white', borderRadius: isMobile ? 12 : 16, padding: isMobile ? 14 : 20, border: '1px solid #e2e8f0' }}>
+            <h4 style={{ margin: '0 0 16px', fontSize: isMobile ? 12 : 14, fontWeight: 700 }}>📊 Hasil Sinkronisasi</h4>
             
             {result.error ? (
-              <div style={{ background: '#fee2e2', padding: 16, borderRadius: 12, color: '#ef4444', fontSize: 13 }}>
+              <div style={{ background: '#fee2e2', padding: isMobile ? 12 : 16, borderRadius: 12, color: '#ef4444', fontSize: isMobile ? 11 : 13 }}>
                 ❌ Error: {result.error}
               </div>
             ) : (
               <>
-                <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-                  <div style={{ flex: 1, background: '#dcfce7', padding: 12, borderRadius: 10, textAlign: 'center' }}>
-                    <CheckCircle size={20} color="#10b981" style={{ marginBottom: 4 }} />
-                    <div style={{ fontSize: 20, fontWeight: 800, color: '#166534' }}>{result.processed}</div>
-                    <div style={{ fontSize: 10, color: '#166534' }}>Siswa Tuntas</div>
+                <div style={{ display: 'flex', gap: isMobile ? 8 : 12, marginBottom: 16, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+                  <div style={{ flex: 1, minWidth: isMobile ? 80 : 100, background: '#dcfce7', padding: isMobile ? 10 : 12, borderRadius: 10, textAlign: 'center' }}>
+                    <CheckCircle size={isMobile ? 16 : 20} color="#10b981" style={{ marginBottom: 4 }} />
+                    <div style={{ fontSize: isMobile ? 16 : 20, fontWeight: 800, color: '#166534' }}>{result.processed}</div>
+                    <div style={{ fontSize: isMobile ? 8 : 10, color: '#166534' }}>Siswa Tuntas</div>
                   </div>
-                  <div style={{ flex: 1, background: '#fef3c7', padding: 12, borderRadius: 10, textAlign: 'center' }}>
-                    <AlertTriangle size={20} color="#f59e0b" style={{ marginBottom: 4 }} />
-                    <div style={{ fontSize: 20, fontWeight: 800, color: '#b45309' }}>{result.incomplete?.length || 0}</div>
-                    <div style={{ fontSize: 10, color: '#b45309' }}>Data Kurang</div>
+                  <div style={{ flex: 1, minWidth: isMobile ? 80 : 100, background: '#fef3c7', padding: isMobile ? 10 : 12, borderRadius: 10, textAlign: 'center' }}>
+                    <AlertTriangle size={isMobile ? 16 : 20} color="#f59e0b" style={{ marginBottom: 4 }} />
+                    <div style={{ fontSize: isMobile ? 16 : 20, fontWeight: 800, color: '#b45309' }}>{result.incomplete?.length || 0}</div>
+                    <div style={{ fontSize: isMobile ? 8 : 10, color: '#b45309' }}>Data Kurang</div>
                   </div>
                 </div>
                 
                 {result.incomplete?.length > 0 && (
-                  <div style={{ background: '#fffbeb', padding: 12, borderRadius: 10, maxHeight: 200, overflowY: 'auto' }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: '#b45309', margin: '0 0 8px' }}>⚠️ Siswa dengan data kurang (minimal 2 komponen):</p>
+                  <div style={{ background: '#fffbeb', padding: isMobile ? 10 : 12, borderRadius: 10, maxHeight: isMobile ? 150 : 200, overflowY: 'auto' }}>
+                    <p style={{ fontSize: isMobile ? 10 : 11, fontWeight: 700, color: '#b45309', margin: '0 0 8px' }}>⚠️ Siswa dengan data kurang:</p>
                     {result.incomplete.slice(0, 10).map(s => (
-                      <div key={s.id} style={{ fontSize: 10, color: '#92400e', marginBottom: 4, display: 'flex', justifyContent: 'space-between' }}>
+                      <div key={s.id} style={{ fontSize: isMobile ? 9 : 10, color: '#92400e', marginBottom: 4, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 4 }}>
                         <span>{s.name}</span>
-                        <span style={{ fontSize: 9 }}>
-                          Ada: {s.totalKomponen || 0}/4 komponen {' '}
+                        <span style={{ fontSize: isMobile ? 8 : 9 }}>
+                          Ada: {s.totalKomponen || 0}/4 {' '}
                           {s.missing.kuis && '❌Kuis '} {s.missing.catatan && '❌Catatan '} 
                           {s.missing.ujian && '❌Ujian '} {s.missing.keaktifan && '❌Keaktifan'}
                         </span>
                       </div>
                     ))}
                     {result.incomplete.length > 10 && (
-                      <div style={{ fontSize: 10, color: '#92400e', marginTop: 4 }}>...dan {result.incomplete.length - 10} lainnya</div>
+                      <div style={{ fontSize: isMobile ? 9 : 10, color: '#92400e', marginTop: 4 }}>...dan {result.incomplete.length - 10} lainnya</div>
                     )}
                   </div>
                 )}
