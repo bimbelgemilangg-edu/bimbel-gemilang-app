@@ -1,27 +1,36 @@
 // src/pages/student/raport/StudentSmartReport.jsx
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { RAPORT_COLLECTIONS } from '../../../firebase/raportCollection';
 import { getRelativeLeaderboard, generateCharacterNarasi, generateDetailCharacterNarasi } from '../../../services/raportService';
 import RelativeLeaderboard from '../../../components/raport/RelativeLeaderboard';
 import WeightedScoreCalculator from '../../../components/raport/WeightedScoreCalculator';
-import { FileText, TrendingUp, Award, Calendar, Target, ChevronDown, ChevronUp, Brain, Star } from 'lucide-react';
+import { FileText, TrendingUp, Award, Calendar, Target, ChevronDown, ChevronUp, Brain, Star, ArrowLeft } from 'lucide-react';
 
 const StudentSmartReport = () => {
+  const navigate = useNavigate();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPeriode, setSelectedPeriode] = useState(null);
   const [currentReport, setCurrentReport] = useState(null);
   const [leaderboard, setLeaderboard] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
-  const [characterData, setCharacterData] = useState(null); // Data qualitative
-  const [characterNarasi, setCharacterNarasi] = useState(''); // Narasi karakter
-  const [detailCharacterNarasi, setDetailCharacterNarasi] = useState([]); // Detail per aspek
+  const [characterData, setCharacterData] = useState(null);
+  const [characterNarasi, setCharacterNarasi] = useState('');
+  const [detailCharacterNarasi, setDetailCharacterNarasi] = useState([]);
   const [showCharacterDetail, setShowCharacterDetail] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   
   const studentId = localStorage.getItem('studentId');
   const studentName = localStorage.getItem('studentName');
+  
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   useEffect(() => {
     fetchReports();
@@ -43,11 +52,9 @@ const StudentSmartReport = () => {
         setSelectedPeriode(data[0].periode);
         setCurrentReport(data[0]);
         
-        // Ambil leaderboard untuk periode ini
         const lb = await getRelativeLeaderboard(data[0].periode, studentId);
         setLeaderboard(lb);
         
-        // Ambil data karakter dari raport_scores
         await fetchCharacterData(data[0].periode);
       }
     } catch (error) {
@@ -67,7 +74,6 @@ const StudentSmartReport = () => {
       const scoresSnap = await getDocs(scoresQuery);
       const allScores = scoresSnap.docs.map(d => d.data());
       
-      // Cari data qualitative
       const qualData = allScores.find(s => s.qualitative);
       if (qualData && qualData.qualitative) {
         setCharacterData(qualData.qualitative);
@@ -119,19 +125,47 @@ const StudentSmartReport = () => {
   
   if (reports.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
-        <FileText size={48} color="#cbd5e1" />
-        <h3 style={{ margin: '12px 0 4px', fontSize: 16, color: '#64748b' }}>Belum Ada Raport</h3>
-        <p style={{ fontSize: 12, color: '#94a3b8' }}>Belum ada data raport untuk ditampilkan</p>
+      <div style={{ maxWidth: 800, margin: '0 auto', padding: isMobile ? '12px' : '0' }}>
+        {/* ➕ Tombol Kembali */}
+        <button 
+          onClick={() => navigate('/siswa/dashboard')}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6, background: 'white',
+            border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: 8,
+            cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#64748b',
+            marginBottom: 20
+          }}
+        >
+          <ArrowLeft size={14} /> Kembali ke Dashboard
+        </button>
+        
+        <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
+          <FileText size={48} color="#cbd5e1" />
+          <h3 style={{ margin: '12px 0 4px', fontSize: 16, color: '#64748b' }}>Belum Ada Raport</h3>
+          <p style={{ fontSize: 12, color: '#94a3b8' }}>Belum ada data raport untuk ditampilkan</p>
+        </div>
       </div>
     );
   }
   
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto' }}>
+    <div style={{ maxWidth: 800, margin: '0 auto', padding: isMobile ? '12px' : '0' }}>
+      {/* ➕ Tombol Kembali */}
+      <button 
+        onClick={() => navigate('/siswa/dashboard')}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6, background: 'white',
+          border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: 8,
+          cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#64748b',
+          marginBottom: 20
+        }}
+      >
+        <ArrowLeft size={14} /> Kembali ke Dashboard
+      </button>
+      
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#1e293b' }}>📊 Smart Raport</h2>
+        <h2 style={{ margin: 0, fontSize: isMobile ? 18 : 20, fontWeight: 800, color: '#1e293b' }}>📊 Smart Raport</h2>
         <p style={{ margin: '4px 0 0', fontSize: 12, color: '#64748b' }}>Laporan cerdas dengan analisis dan rekomendasi</p>
       </div>
       
@@ -143,7 +177,7 @@ const StudentSmartReport = () => {
         <select 
           value={selectedPeriode}
           onChange={(e) => handlePeriodeChange(e.target.value)}
-          style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #e2e8f0', marginTop: 6 }}
+          style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #e2e8f0', marginTop: 6, fontSize: 13 }}
         >
           {reports.map(r => (
             <option key={r.periode} value={r.periode}>{r.periode.replace('-', ' / ')}</option>
@@ -154,9 +188,9 @@ const StudentSmartReport = () => {
       {currentReport && (
         <>
           {/* Kartu Nilai Utama */}
-          <div style={{ background: 'white', borderRadius: 20, padding: 24, marginBottom: 20, border: '1px solid #e2e8f0', textAlign: 'center' }}>
-            <Award size={32} color={getScoreColor(currentReport.nilai_akhir)} />
-            <div style={{ fontSize: 48, fontWeight: 800, color: getScoreColor(currentReport.nilai_akhir), marginTop: 8 }}>
+          <div style={{ background: 'white', borderRadius: 20, padding: isMobile ? 16 : 24, marginBottom: 20, border: '1px solid #e2e8f0', textAlign: 'center' }}>
+            <Award size={isMobile ? 28 : 32} color={getScoreColor(currentReport.nilai_akhir)} />
+            <div style={{ fontSize: isMobile ? 40 : 48, fontWeight: 800, color: getScoreColor(currentReport.nilai_akhir), marginTop: 8 }}>
               {currentReport.nilai_akhir}
             </div>
             <div style={{ fontSize: 12, color: '#64748b' }}>Nilai Akhir</div>
@@ -198,7 +232,7 @@ const StudentSmartReport = () => {
           )}
           
           {/* Detail Nilai per Komponen */}
-          <div style={{ background: 'white', borderRadius: 16, padding: 20, border: '1px solid #e2e8f0', marginBottom: 20 }}>
+          <div style={{ background: 'white', borderRadius: 16, padding: isMobile ? 14 : 20, border: '1px solid #e2e8f0', marginBottom: 20 }}>
             <div 
               onClick={() => setShowDetail(!showDetail)}
               style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
@@ -208,7 +242,12 @@ const StudentSmartReport = () => {
             </div>
             
             {showDetail && (
-              <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ 
+                marginTop: 16, 
+                display: 'grid', 
+                gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', 
+                gap: 12 
+              }}>
                 <div style={{ padding: 12, background: '#f8fafc', borderRadius: 10 }}>
                   <div style={{ fontSize: 10, color: '#64748b' }}>📝 Kuis</div>
                   <div style={{ fontSize: 20, fontWeight: 700, color: getScoreColor(currentReport.nilai_kuis) }}>{currentReport.nilai_kuis}</div>
@@ -229,11 +268,9 @@ const StudentSmartReport = () => {
             )}
           </div>
           
-          {/* ============================================================ */}
-          {/* ➕ SECTION: KARAKTER & SIKAP (TAMBAHAN BARU) */}
-          {/* ============================================================ */}
+          {/* ➕ SECTION: KARAKTER & SIKAP */}
           {characterData && (
-            <div style={{ background: 'white', borderRadius: 16, padding: 20, border: '1px solid #e2e8f0', marginBottom: 20 }}>
+            <div style={{ background: 'white', borderRadius: 16, padding: isMobile ? 14 : 20, border: '1px solid #e2e8f0', marginBottom: 20 }}>
               <div 
                 onClick={() => setShowCharacterDetail(!showCharacterDetail)}
                 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
@@ -244,7 +281,6 @@ const StudentSmartReport = () => {
                 {showCharacterDetail ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
               </div>
               
-              {/* Narasi ringkas (selalu tampil) */}
               <div style={{ 
                 background: 'linear-gradient(135deg, #faf5ff 0%, #f0f9ff 100%)',
                 padding: 14,
@@ -255,7 +291,6 @@ const StudentSmartReport = () => {
                 <p style={{ margin: 0, fontSize: 13, color: '#4c1d95', lineHeight: 1.6 }}>{characterNarasi}</p>
               </div>
               
-              {/* Detail per aspek (toggle) */}
               {showCharacterDetail && detailCharacterNarasi.length > 0 && (
                 <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {detailCharacterNarasi.map((aspek, idx) => (
@@ -266,9 +301,9 @@ const StudentSmartReport = () => {
                       padding: 14,
                       background: '#f8fafc',
                       borderRadius: 12,
-                      border: '1px solid #e2e8f0'
+                      border: '1px solid #e2e8f0',
+                      flexDirection: isMobile ? 'column' : 'row'
                     }}>
-                      {/* Bintang indikator */}
                       <div style={{
                         minWidth: 48,
                         height: 48,
@@ -308,10 +343,9 @@ const StudentSmartReport = () => {
               <p style={{ fontSize: 10, color: '#cbd5e1', margin: 0 }}>Guru belum menginput aspek pemahaman, aplikasi, literasi, inisiatif, dan kemandirian.</p>
             </div>
           )}
-          {/* ============================================================ */}
           
           {/* Target & Rekomendasi */}
-          <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: 16, padding: 20, color: 'white' }}>
+          <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: 16, padding: isMobile ? 16 : 20, color: 'white' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
               <Target size={20} />
               <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>Target Bulan Depan</h3>
