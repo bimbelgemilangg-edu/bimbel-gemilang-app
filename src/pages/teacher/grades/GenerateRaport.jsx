@@ -25,11 +25,18 @@ const GenerateRaport = () => {
   
   const fetchPendingExports = async () => {
     const tugasSnap = await getDocs(query(collection(db, "jawaban_tugas")));
-    const belumEkspor = tugasSnap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
+    const belumEksporTugas = tugasSnap.docs
+      .map(d => ({ id: d.id, ...d.data(), source: 'tugas' }))
       .filter(t => t.score !== undefined && t.score !== null && !t.exportedToRaport)
       .slice(0, 10);
-    setPendingExports(belumEkspor);
+    
+    const kuisSnap = await getDocs(query(collection(db, "jawaban_kuis")));
+    const belumEksporKuis = kuisSnap.docs
+      .map(d => ({ id: d.id, ...d.data(), source: 'kuis' }))
+      .filter(q => q.score !== undefined && q.score !== null && !q.exportedToRaport)
+      .slice(0, 10);
+    
+    setPendingExports([...belumEksporTugas, ...belumEksporKuis]);
   };
   
   const handleExportSingle = async (item) => {
@@ -37,18 +44,18 @@ const GenerateRaport = () => {
     try {
       const { exportToRaportScores } = await import('../../../services/raportService');
       const result = await exportToRaportScores({
-        studentId: item.studentId,
-        studentName: item.studentName,
+        studentId: item.studentId || item.userId,
+        studentName: item.studentName || item.userName,
         mapel: item.modulTitle?.split(' ')[0] || "Umum",
-        topik: item.modulTitle,
+        topik: item.modulTitle || item.quizTitle,
         nilai: item.score,
-        komponen: item.type === 'tugas' ? 'catatan' : 'kuis',
+        komponen: item.source === 'kuis' ? 'kuis' : 'catatan',
         teacherId: teacherData.id,
         teacherName: teacherData.nama
       });
       
       if (result.success) {
-        alert(`✅ Nilai ${item.studentName} berhasil diekspor!`);
+        alert(`✅ Nilai ${item.studentName || item.userName} berhasil diekspor!`);
         fetchPendingExports();
       } else {
         alert(`❌ Gagal: ${result.error}`);
@@ -60,7 +67,7 @@ const GenerateRaport = () => {
   };
   
   const handleSyncAll = async () => {
-    if (!window.confirm(`Generate raport untuk periode ${selectedPeriode}?\n\nPastikan semua nilai komponen sudah lengkap!`)) return;
+    if (!window.confirm(`Generate raport untuk periode ${selectedPeriode}?\n\nMinimal 2 komponen nilai (kuis, catatan, ujian, keaktifan) harus tersedia.\nBobot dihitung otomatis proporsional.`)) return;
     
     setLoading(true);
     setResult(null);
@@ -70,7 +77,7 @@ const GenerateRaport = () => {
       setResult(syncResult);
       
       if (syncResult.incomplete && syncResult.incomplete.length > 0) {
-        alert(`⚠️ ${syncResult.incomplete.length} siswa memiliki nilai tidak lengkap. Silakan lengkapi dulu!`);
+        alert(`⚠️ ${syncResult.incomplete.length} siswa memiliki data kurang dari 2 komponen. Silakan lengkapi dulu!`);
       } else {
         alert(`✅ Raport periode ${selectedPeriode} berhasil digenerate untuk ${syncResult.processed} siswa!`);
       }
@@ -112,7 +119,7 @@ const GenerateRaport = () => {
           <Database size={24} color="#3b82f6" /> Generate Raport Bulanan
         </h2>
         <p style={{ margin: '4px 0 0', fontSize: 12, color: '#64748b' }}>
-          Sinkronkan semua nilai kuis, catatan, ujian, dan keaktifan ke raport
+          Sinkronkan semua nilai kuis, catatan, ujian, dan keaktifan ke raport (minimal 2 komponen)
         </p>
       </div>
 
@@ -128,8 +135,20 @@ const GenerateRaport = () => {
               {pendingExports.map(item => (
                 <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 10, background: '#f8fafc', borderRadius: 10 }}>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700 }}>{item.studentName}</div>
-                    <div style={{ fontSize: 10, color: '#64748b' }}>{item.modulTitle} • {item.type === 'tugas' ? 'Tugas' : 'Kuis'} • Nilai: {item.score}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700 }}>
+                      {item.studentName || item.userName}
+                      <span style={{ 
+                        fontSize: 9, 
+                        marginLeft: 6, 
+                        background: item.source === 'kuis' ? '#ede9fe' : '#dcfce7', 
+                        color: item.source === 'kuis' ? '#7c3aed' : '#166534',
+                        padding: '2px 6px', 
+                        borderRadius: 6 
+                      }}>
+                        {item.source === 'kuis' ? 'Kuis' : 'Tugas'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 10, color: '#64748b' }}>{item.modulTitle || item.quizTitle} • Nilai: {item.score}</div>
                   </div>
                   <button 
                     onClick={() => handleExportSingle(item)}
@@ -149,6 +168,18 @@ const GenerateRaport = () => {
           <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
             <FileText size={16} color="#3b82f6" /> Pengaturan Generate
           </h3>
+          
+          <div style={{ 
+            background: '#f0f9ff', 
+            padding: 12, 
+            borderRadius: 8, 
+            marginBottom: 16,
+            border: '1px solid #bae6fd',
+            fontSize: 11,
+            color: '#0369a1'
+          }}>
+            ⚠️ <b>Ketentuan:</b> Minimal <b>2 komponen</b> harus tersedia (kuis, catatan, ujian, keaktifan). Bobot dihitung <b>otomatis proporsional</b>. Siswa dengan data kurang akan dilewati.
+          </div>
           
           <div style={{ marginBottom: 16 }}>
             <label style={{ fontSize: 12, fontWeight: 700, color: '#1e293b', display: 'block', marginBottom: 6 }}>Periode Raport</label>
@@ -204,19 +235,20 @@ const GenerateRaport = () => {
                   <div style={{ flex: 1, background: '#fef3c7', padding: 12, borderRadius: 10, textAlign: 'center' }}>
                     <AlertTriangle size={20} color="#f59e0b" style={{ marginBottom: 4 }} />
                     <div style={{ fontSize: 20, fontWeight: 800, color: '#b45309' }}>{result.incomplete?.length || 0}</div>
-                    <div style={{ fontSize: 10, color: '#b45309' }}>Tidak Lengkap</div>
+                    <div style={{ fontSize: 10, color: '#b45309' }}>Data Kurang</div>
                   </div>
                 </div>
                 
                 {result.incomplete?.length > 0 && (
                   <div style={{ background: '#fffbeb', padding: 12, borderRadius: 10, maxHeight: 200, overflowY: 'auto' }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: '#b45309', margin: '0 0 8px' }}>⚠️ Siswa dengan nilai tidak lengkap:</p>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: '#b45309', margin: '0 0 8px' }}>⚠️ Siswa dengan data kurang (minimal 2 komponen):</p>
                     {result.incomplete.slice(0, 10).map(s => (
                       <div key={s.id} style={{ fontSize: 10, color: '#92400e', marginBottom: 4, display: 'flex', justifyContent: 'space-between' }}>
                         <span>{s.name}</span>
                         <span style={{ fontSize: 9 }}>
-                          {s.missing.kuis && 'Kuis '} {s.missing.catatan && 'Catatan '} 
-                          {s.missing.ujian && 'Ujian '} {s.missing.keaktifan && 'Keaktifan'}
+                          Ada: {s.totalKomponen || 0}/4 komponen {' '}
+                          {s.missing.kuis && '❌Kuis '} {s.missing.catatan && '❌Catatan '} 
+                          {s.missing.ujian && '❌Ujian '} {s.missing.keaktifan && '❌Keaktifan'}
                         </span>
                       </div>
                     ))}

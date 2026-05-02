@@ -38,7 +38,7 @@ const AdminBulkRaport = () => {
   };
 
   const handleBulkSync = async () => {
-    if (!window.confirm(`Generate raport untuk SEMUA SISWA periode ${selectedPeriode}?\n\nPastikan semua nilai komponen sudah lengkap!`)) return;
+    if (!window.confirm(`Generate raport untuk SEMUA SISWA periode ${selectedPeriode}?\n\nMinimal 2 komponen nilai (kuis, catatan, ujian, keaktifan) harus tersedia.\nBobot dihitung otomatis proporsional.\nSiswa dengan data kurang akan dilewati.`)) return;
     
     setLoading(true);
     setResult(null);
@@ -48,7 +48,7 @@ const AdminBulkRaport = () => {
       setResult(syncResult);
       
       if (syncResult.incomplete && syncResult.incomplete.length > 0) {
-        alert(`⚠️ ${syncResult.incomplete.length} siswa memiliki nilai tidak lengkap. Silakan lengkapi dulu!`);
+        alert(`⚠️ ${syncResult.incomplete.length} siswa memiliki data kurang dari 2 komponen. Silakan lengkapi dulu!`);
       } else {
         alert(`✅ Raport periode ${selectedPeriode} berhasil digenerate untuk ${syncResult.processed} siswa!`);
       }
@@ -91,7 +91,7 @@ const AdminBulkRaport = () => {
           <Database size={24} color="#3b82f6" /> Bulk Generate Raport
         </h2>
         <p style={{ margin: '4px 0 0', fontSize: 12, color: '#64748b' }}>
-          Generate raport untuk SEMUA siswa sekaligus (One Click untuk seluruh kelas)
+          Generate raport untuk SEMUA siswa sekaligus (minimal 2 komponen, bobot proporsional)
         </p>
       </div>
 
@@ -122,6 +122,18 @@ const AdminBulkRaport = () => {
           <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
             <FileText size={16} color="#3b82f6" /> Pengaturan Generate
           </h3>
+          
+          <div style={{ 
+            background: '#f0f9ff', 
+            padding: 12, 
+            borderRadius: 8, 
+            marginBottom: 16,
+            border: '1px solid #bae6fd',
+            fontSize: 11,
+            color: '#0369a1'
+          }}>
+            ⚠️ <b>Ketentuan:</b> Minimal <b>2 komponen</b> harus tersedia (kuis, catatan, ujian, keaktifan). Bobot dihitung <b>otomatis proporsional</b>. Siswa dengan data kurang akan dilewati.
+          </div>
           
           <div style={{ marginBottom: 16 }}>
             <label style={{ fontSize: 12, fontWeight: 700, color: '#1e293b', display: 'block', marginBottom: 6 }}>Periode Raport</label>
@@ -177,19 +189,20 @@ const AdminBulkRaport = () => {
                   <div style={{ flex: 1, background: '#fef3c7', padding: 12, borderRadius: 10, textAlign: 'center' }}>
                     <AlertTriangle size={20} color="#f59e0b" style={{ marginBottom: 4 }} />
                     <div style={{ fontSize: 20, fontWeight: 800, color: '#b45309' }}>{result.incomplete?.length || 0}</div>
-                    <div style={{ fontSize: 10, color: '#b45309' }}>Tidak Lengkap</div>
+                    <div style={{ fontSize: 10, color: '#b45309' }}>Data Kurang</div>
                   </div>
                 </div>
                 
                 {result.incomplete?.length > 0 && (
                   <div style={{ background: '#fffbeb', padding: 12, borderRadius: 10, maxHeight: 200, overflowY: 'auto' }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: '#b45309', margin: '0 0 8px' }}>⚠️ Siswa dengan nilai tidak lengkap:</p>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: '#b45309', margin: '0 0 8px' }}>⚠️ Siswa dengan data kurang (minimal 2 komponen):</p>
                     {result.incomplete.slice(0, 10).map(s => (
                       <div key={s.id} style={{ fontSize: 10, color: '#92400e', marginBottom: 4, display: 'flex', justifyContent: 'space-between' }}>
                         <span>{s.name}</span>
                         <span style={{ fontSize: 9 }}>
-                          {s.missing.kuis && 'Kuis '} {s.missing.catatan && 'Catatan '} 
-                          {s.missing.ujian && 'Ujian '} {s.missing.keaktifan && 'Keaktifan'}
+                          Ada: {s.totalKomponen || 0}/4 komponen {' '}
+                          {s.missing.kuis && '❌Kuis '} {s.missing.catatan && '❌Catatan '} 
+                          {s.missing.ujian && '❌Ujian '} {s.missing.keaktifan && '❌Keaktifan'}
                         </span>
                       </div>
                     ))}
