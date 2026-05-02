@@ -184,7 +184,7 @@ const TeacherInputGrade = () => {
     
     setSubmitting(true);
     try {
-      // Simpan ke raport_scores
+      // Simpan ke raport_scores — SEKARANG DENGAN QUALITATIVE (5 poin karakter)
       const result = await exportToRaportScores({
         studentId: selectedStudent.id,
         studentName: selectedStudent.nama,
@@ -193,7 +193,8 @@ const TeacherInputGrade = () => {
         nilai: parseInt(score),
         komponen: komponen,
         teacherId: guru.id,
-        teacherName: guru.nama
+        teacherName: guru.nama,
+        qualitative: aspects  // ➕ SIMPAN 5 POIN KARAKTER
       });
       
       if (result.success) {
@@ -202,6 +203,7 @@ const TeacherInputGrade = () => {
         setScore("");
         setTopic("");
         setKomponen("keaktifan");
+        setAspects({ pemahaman: 3, aplikasi: 3, literasi: 3, inisiatif: 3, mandiri: 3 });
         fetchData();
         fetchTopics();
       } else {
@@ -229,6 +231,15 @@ const TeacherInputGrade = () => {
       });
       
       if (result.success) {
+        // ➕ Update exportedToRaport = true di jawaban_tugas
+        try {
+          await updateDoc(doc(db, "jawaban_tugas", item.id), {
+            exportedToRaport: true
+          });
+        } catch (updateErr) {
+          console.error("Gagal update exportedToRaport:", updateErr);
+        }
+        
         alert(`✅ Nilai tugas ${item.studentName} berhasil diekspor!`);
         fetchPendingData();
         fetchData();
@@ -257,6 +268,15 @@ const TeacherInputGrade = () => {
       });
       
       if (result.success) {
+        // ➕ Update exportedToRaport = true di jawaban_kuis
+        try {
+          await updateDoc(doc(db, "jawaban_kuis", item.id), {
+            exportedToRaport: true
+          });
+        } catch (updateErr) {
+          console.error("Gagal update exportedToRaport:", updateErr);
+        }
+        
         alert(`✅ Nilai kuis ${item.userName} berhasil diekspor!`);
         fetchPendingData();
         fetchData();
@@ -279,10 +299,10 @@ const TeacherInputGrade = () => {
 
   const getKomponenLabel = (komp) => {
     const labels = {
-      kuis: '📝 Kuis (25% bobot)',
-      catatan: '📓 Tugas Catatan (25% bobot)',
-      ujian: '📖 Ujian Materi (35% bobot)',
-      keaktifan: '⭐ Keaktifan (15% bobot)'
+      kuis: '📝 Kuis (30% bobot)',
+      catatan: '📓 Tugas Catatan (30% bobot)',
+      ujian: '📖 Ujian Materi (20% bobot)',
+      keaktifan: '⭐ Keaktifan (20% bobot)'
     };
     return labels[komp] || '📋 Nilai Umum';
   };
@@ -589,10 +609,10 @@ const TeacherInputGrade = () => {
                     onChange={e => setKomponen(e.target.value)}
                     style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px', background: 'white' }}
                   >
-                    <option value="keaktifan">⭐ Keaktifan (15% bobot)</option>
-                    <option value="catatan">📓 Tugas Catatan (25% bobot)</option>
-                    <option value="kuis">📝 Kuis (25% bobot)</option>
-                    <option value="ujian">📖 Ujian Materi (35% bobot)</option>
+                    <option value="keaktifan">⭐ Keaktifan (20% bobot)</option>
+                    <option value="catatan">📓 Tugas Catatan (30% bobot)</option>
+                    <option value="kuis">📝 Kuis (30% bobot)</option>
+                    <option value="ujian">📖 Ujian Materi (20% bobot)</option>
                   </select>
                   <p style={{ fontSize: '9px', color: '#64748b', marginTop: '4px' }}>
                     {getKomponenLabel(komponen)} • Pastikan memilih komponen yang sesuai
@@ -646,6 +666,9 @@ const TeacherInputGrade = () => {
                   <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 'bold', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Star size={16} color="#f59e0b" /> B. Karakter & Sikap
                   </h4>
+                  <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '12px' }}>
+                    Penilaian ini akan muncul di raport siswa sebagai narasi deskriptif. Isi dengan jujur berdasarkan observasi.
+                  </p>
                   <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px' }}>
                     <RenderRating label="Pemahaman Konsep" desc="Penguasaan teori dasar" value={aspects.pemahaman} field="pemahaman" />
                     <RenderRating label="Logika & Aplikasi" desc="Kemampuan variasi soal" value={aspects.aplikasi} field="aplikasi" />
