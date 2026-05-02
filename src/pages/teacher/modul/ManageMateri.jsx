@@ -6,11 +6,85 @@ import {
   Save, Trash2, FileText, HelpCircle, Clock, ArrowLeft, FileUp, Type, Video, X, 
   Image as ImageIcon, BookOpen, Send, Layers, ChevronDown, ChevronUp, Settings, 
   Eye, Copy, CheckCircle, Calendar, Users, Target, AlertCircle, RefreshCw, 
-  Maximize2, Minimize2, Smartphone, Tablet, Laptop, Info, CheckSquare,
+  Maximize2, Minimize2, Smartphone, Tablet, Laptop, Info, ExternalLink,
   Bold, Italic, Underline, List, Link as LinkIcon, AlignLeft, AlignCenter, AlignRight
 } from 'lucide-react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+
+// Editor sederhana tanpa library eksternal (textarea dengan toolbar sederhana)
+const SimpleEditor = ({ value, onChange, placeholder }) => {
+  const [showToolbar, setShowToolbar] = useState(false);
+  
+  const applyFormat = (format) => {
+    const textarea = document.getElementById('editor-textarea');
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = value.substring(start, end);
+    let newText = value;
+    
+    switch(format) {
+      case 'bold':
+        newText = value.substring(0, start) + `**${selectedText}**` + value.substring(end);
+        break;
+      case 'italic':
+        newText = value.substring(0, start) + `*${selectedText}*` + value.substring(end);
+        break;
+      case 'underline':
+        newText = value.substring(0, start) + `<u>${selectedText}</u>` + value.substring(end);
+        break;
+      case 'list':
+        newText = value.substring(0, start) + `\n- ${selectedText}` + value.substring(end);
+        break;
+      case 'link':
+        const url = prompt('Masukkan URL:', 'https://');
+        if (url) {
+          newText = value.substring(0, start) + `[${selectedText}](${url})` + value.substring(end);
+        }
+        break;
+      default:
+        break;
+    }
+    
+    onChange(newText);
+  };
+  
+  return (
+    <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+      <div style={{ 
+        display: 'flex', gap: 4, padding: 6, background: '#f8fafc', borderBottom: '1px solid #e2e8f0',
+        flexWrap: 'wrap'
+      }}>
+        <button type="button" onClick={() => applyFormat('bold')} style={toolbarBtn} title="Bold">B</button>
+        <button type="button" onClick={() => applyFormat('italic')} style={toolbarBtn} title="Italic">I</button>
+        <button type="button" onClick={() => applyFormat('underline')} style={toolbarBtn} title="Underline">U</button>
+        <span style={{ width: 1, background: '#e2e8f0', margin: '0 4px' }}></span>
+        <button type="button" onClick={() => applyFormat('list')} style={toolbarBtn} title="List">• List</button>
+        <button type="button" onClick={() => applyFormat('link')} style={toolbarBtn} title="Link">🔗 Link</button>
+      </div>
+      <textarea
+        id="editor-textarea"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        style={{ 
+          width: '100%', minHeight: 250, padding: 12, 
+          border: 'none', outline: 'none', fontSize: 13, 
+          resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.6
+        }}
+      />
+      <div style={{ padding: 6, background: '#f8fafc', borderTop: '1px solid #e2e8f0', fontSize: 10, color: '#94a3b8' }}>
+        💡 Format: **teks** untuk bold, *teks* untuk italic, [teks](url) untuk link
+      </div>
+    </div>
+  );
+};
+
+const toolbarBtn = {
+  background: 'none', border: 'none', padding: '4px 8px', 
+  borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600,
+  color: '#64748b', ':hover': { background: '#e2e8f0' }
+};
 
 const ManageMateri = () => {
   const [searchParams] = useSearchParams();
@@ -20,7 +94,7 @@ const ManageMateri = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [saving, setSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [previewDevice, setPreviewDevice] = useState('desktop'); // 'mobile', 'tablet', 'desktop'
+  const [previewDevice, setPreviewDevice] = useState('desktop');
   const [showTips, setShowTips] = useState(true);
   const [autoSaveStatus, setAutoSaveStatus] = useState('');
   
@@ -59,7 +133,7 @@ const ManageMateri = () => {
     { value: 'arsip', label: '📦 Arsip', color: '#64748b', desc: 'Modul tidak aktif, hanya arsip' }
   ];
 
-  // Auto-save draft setiap 30 detik
+  // Auto-save draft
   useEffect(() => {
     if (!editId && title) {
       const timer = setTimeout(() => {
@@ -215,7 +289,6 @@ const ManageMateri = () => {
   const handleSave = async () => {
     if (!title) return alert("❌ Judul modul wajib diisi!");
     
-    // Peringatan jika target terlalu luas
     if (targetKelas === "Semua" && targetKategori === "Semua") {
       if (!window.confirm("⚠️ PERINGATAN: Modul ini akan muncul untuk SEMUA siswa (semua kelas dan program).\n\nLanjutkan?")) return;
     } else if (targetKelas === "Semua") {
@@ -261,74 +334,40 @@ const ManageMateri = () => {
 
   const activeSec = sections.find(s => s.id === activeSection);
 
-  // Render preview siswa
   const renderStudentPreview = () => {
     const previewWidth = previewDevice === 'mobile' ? 375 : previewDevice === 'tablet' ? 768 : '100%';
-    const previewClass = previewDevice === 'mobile' ? 'mobile-preview' : previewDevice === 'tablet' ? 'tablet-preview' : '';
     
     return (
-      <div style={{ 
-        border: '1px solid #e2e8f0', 
-        borderRadius: 12, 
-        overflow: 'hidden',
-        marginTop: 16,
-        background: '#f8fafc'
-      }}>
-        <div style={{ 
-          background: '#1e293b', 
-          padding: '8px 12px', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          borderBottom: '1px solid #334155'
-        }}>
+      <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', marginTop: 16, background: '#f8fafc' }}>
+        <div style={{ background: '#1e293b', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #334155' }}>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => setPreviewDevice('mobile')} style={{ 
-              padding: '4px 8px', borderRadius: 6, background: previewDevice === 'mobile' ? '#3b82f6' : 'transparent',
-              color: 'white', border: 'none', cursor: 'pointer', fontSize: 10
-            }}><Smartphone size={14} /></button>
-            <button onClick={() => setPreviewDevice('tablet')} style={{ 
-              padding: '4px 8px', borderRadius: 6, background: previewDevice === 'tablet' ? '#3b82f6' : 'transparent',
-              color: 'white', border: 'none', cursor: 'pointer', fontSize: 10
-            }}><Tablet size={14} /></button>
-            <button onClick={() => setPreviewDevice('desktop')} style={{ 
-              padding: '4px 8px', borderRadius: 6, background: previewDevice === 'desktop' ? '#3b82f6' : 'transparent',
-              color: 'white', border: 'none', cursor: 'pointer', fontSize: 10
-            }}><Laptop size={14} /></button>
+            <button onClick={() => setPreviewDevice('mobile')} style={{ padding: '4px 8px', borderRadius: 6, background: previewDevice === 'mobile' ? '#3b82f6' : 'transparent', color: 'white', border: 'none', cursor: 'pointer', fontSize: 10 }}><Smartphone size={14} /></button>
+            <button onClick={() => setPreviewDevice('tablet')} style={{ padding: '4px 8px', borderRadius: 6, background: previewDevice === 'tablet' ? '#3b82f6' : 'transparent', color: 'white', border: 'none', cursor: 'pointer', fontSize: 10 }}><Tablet size={14} /></button>
+            <button onClick={() => setPreviewDevice('desktop')} style={{ padding: '4px 8px', borderRadius: 6, background: previewDevice === 'desktop' ? '#3b82f6' : 'transparent', color: 'white', border: 'none', cursor: 'pointer', fontSize: 10 }}><Laptop size={14} /></button>
           </div>
           <span style={{ fontSize: 10, color: '#94a3b8' }}>Preview Tampilan Siswa</span>
           <button onClick={() => setShowPreview(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>✕</button>
         </div>
-        <div style={{ 
-          maxWidth: previewWidth, 
-          margin: '0 auto', 
-          background: 'white', 
-          minHeight: 400,
-          padding: 16,
-          transition: 'all 0.3s ease'
-        }}>
-          {/* Header Preview */}
+        <div style={{ maxWidth: previewWidth, margin: '0 auto', background: 'white', minHeight: 400, padding: 16, transition: 'all 0.3s ease' }}>
           <div style={{ textAlign: 'center', marginBottom: 20 }}>
             {coverImage && <img src={coverImage} alt="" style={{ width: '100%', maxHeight: 150, objectFit: 'cover', borderRadius: 8, marginBottom: 12 }} />}
             <h2 style={{ fontSize: 20, fontWeight: 'bold', color: '#1e293b', margin: 0 }}>{title || 'Judul Modul'}</h2>
             <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{subject || 'Mata Pelajaran'} • {targetKelas !== 'Semua' ? targetKelas : 'Semua Kelas'}</p>
           </div>
           
-          {/* Deskripsi */}
           {description && (
             <div style={{ background: '#f1f5f9', padding: 12, borderRadius: 8, marginBottom: 20 }}>
               <p style={{ fontSize: 13, color: '#475569', margin: 0 }}>{description}</p>
             </div>
           )}
           
-          {/* Konten Preview */}
           {sections.map((sec, idx) => (
             <div key={sec.id} style={{ marginBottom: 20, borderBottom: '1px solid #e2e8f0', paddingBottom: 16 }}>
               <h3 style={{ fontSize: 16, fontWeight: 'bold', color: '#1e293b', marginBottom: 8 }}>
                 {sec.title || `Bagian ${idx + 1}`}
               </h3>
               {sec.type === 'text' && (
-                <div dangerouslySetInnerHTML={{ __html: sec.content || 'Kosong' }} style={{ fontSize: 14, lineHeight: 1.6 }} />
+                <div style={{ fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{sec.content}</div>
               )}
               {sec.type === 'file' && sec.content && (
                 <div style={{ background: '#f8fafc', padding: 12, borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -339,12 +378,7 @@ const ManageMateri = () => {
               )}
               {sec.type === 'video' && sec.content && (
                 getYouTubeId(sec.content) ? (
-                  <iframe 
-                    width="100%" height="200" 
-                    src={`https://www.youtube.com/embed/${getYouTubeId(sec.content)}`}
-                    frameBorder="0" allowFullScreen
-                    style={{ borderRadius: 8 }}
-                  />
+                  <iframe width="100%" height="200" src={`https://www.youtube.com/embed/${getYouTubeId(sec.content)}`} frameBorder="0" allowFullScreen style={{ borderRadius: 8 }} />
                 ) : (
                   <a href={sec.content} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6' }}>🔗 {sec.content}</a>
                 )
@@ -358,7 +392,6 @@ const ManageMateri = () => {
             </div>
           ))}
           
-          {/* Kuis Preview */}
           {quizData?.length > 0 && (
             <div style={{ background: '#f0fdf4', padding: 12, borderRadius: 8, border: '1px solid #bbf7d0' }}>
               <p style={{ fontSize: 13, fontWeight: 'bold', color: '#166534' }}>❓ Kuis ({quizData.length} soal)</p>
@@ -374,31 +407,16 @@ const ManageMateri = () => {
     );
   };
 
-  const activeSecContent = () => {
+  const renderEditorContent = () => {
     if (!activeSec) return null;
     
     if (activeSec.type === 'text') {
       return (
-        <div>
-          <ReactQuill 
-            value={activeSec.content} 
-            onChange={value => updateSection(activeSec.id, 'content', value)}
-            placeholder="Tulis materi di sini... (Gunakan toolbar untuk format teks)"
-            style={{ height: 300, marginBottom: 50 }}
-            modules={{
-              toolbar: [
-                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                ['bold', 'italic', 'underline', 'strike'],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
-                ['link', 'image', 'video'],
-                ['clean']
-              ]
-            }}
-          />
-          <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>
-            💡 Tips: Gunakan toolbar di atas untuk format teks. Bisa tambah gambar dan video.
-          </p>
-        </div>
+        <SimpleEditor 
+          value={activeSec.content} 
+          onChange={value => updateSection(activeSec.id, 'content', value)}
+          placeholder="Tulis materi di sini... Gunakan toolbar untuk format teks (**, *, [link])"
+        />
       );
     }
     
@@ -434,14 +452,7 @@ const ManageMateri = () => {
           {youtubeId && (
             <div style={{ marginTop: 12 }}>
               <p style={{ fontSize: 11, color: '#10b981', marginBottom: 6 }}>✅ Preview video:</p>
-              <iframe 
-                width="100%" 
-                height="250" 
-                src={`https://www.youtube.com/embed/${youtubeId}`}
-                frameBorder="0" 
-                allowFullScreen
-                style={{ borderRadius: 8 }}
-              />
+              <iframe width="100%" height="250" src={`https://www.youtube.com/embed/${youtubeId}`} frameBorder="0" allowFullScreen style={{ borderRadius: 8 }} />
             </div>
           )}
         </>
@@ -451,32 +462,17 @@ const ManageMateri = () => {
     if (activeSec.type === 'assignment') {
       return (
         <div>
-          <ReactQuill 
+          <textarea 
             value={activeSec.content} 
-            onChange={value => updateSection(activeSec.id, 'content', value)}
+            onChange={e => updateSection(activeSec.id, 'content', e.target.value)} 
             placeholder="Tulis instruksi tugas di sini..."
-            style={{ height: 200, marginBottom: 20 }}
-            modules={{
-              toolbar: [
-                ['bold', 'italic', 'underline'],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                ['link', 'clean']
-              ]
-            }}
+            style={{ width: '100%', minHeight: 120, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, resize: 'vertical' }}
           />
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 20, padding: 12, background: '#fffbeb', borderRadius: 8 }}>
             <Clock size={18} color="#f59e0b" />
             <span style={{ fontSize: 13, fontWeight: 600, color: '#b45309' }}>Deadline Tugas:</span>
-            <input 
-              type="datetime-local" 
-              value={activeSec.endTime} 
-              onChange={e => updateSection(activeSec.id, 'endTime', e.target.value)} 
-              style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #fde68a', fontSize: 12, outline: 'none' }} 
-            />
+            <input type="datetime-local" value={activeSec.endTime} onChange={e => updateSection(activeSec.id, 'endTime', e.target.value)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #fde68a', fontSize: 12, outline: 'none' }} />
           </div>
-          <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>
-            💡 Tips: Kosongkan deadline jika tidak ada batas waktu.
-          </p>
         </div>
       );
     }
@@ -487,14 +483,12 @@ const ManageMateri = () => {
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', paddingBottom: 100 }}>
       
-      {/* AUTO SAVE STATUS */}
       {autoSaveStatus && (
         <div style={{ position: 'fixed', bottom: 80, right: 20, background: '#10b981', color: 'white', padding: '6px 12px', borderRadius: 20, fontSize: 11, zIndex: 100 }}>
           💾 {autoSaveStatus}
         </div>
       )}
       
-      {/* TIPS PANDUAN */}
       {showTips && (
         <div style={{ background: '#eef2ff', borderRadius: 12, padding: 12, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -505,7 +499,6 @@ const ManageMateri = () => {
         </div>
       )}
       
-      {/* HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
         <button onClick={() => navigate('/guru/modul')} style={s.btnBack(isMobile)}>
           <ArrowLeft size={14} /> {!isMobile && 'Kembali'}
@@ -515,10 +508,8 @@ const ManageMateri = () => {
         </h2>
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={() => setShowPreview(!showPreview)} style={{
-            background: showPreview ? '#3b82f6' : '#f1f5f9',
-            color: showPreview ? 'white' : '#64748b',
-            border: 'none', padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
-            fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 4
+            background: showPreview ? '#3b82f6' : '#f1f5f9', color: showPreview ? 'white' : '#64748b',
+            border: 'none', padding: '8px 12px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 4
           }}>
             <Eye size={14} /> {showPreview ? 'Edit Mode' : 'Preview Siswa'}
           </button>
@@ -538,10 +529,8 @@ const ManageMateri = () => {
       ) : (
         <div style={{ display: 'flex', gap: 20, flexDirection: isMobile ? 'column' : 'row' }}>
           
-          {/* SIDEBAR KIRI */}
           <div style={{ width: isMobile ? '100%' : '300px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
             
-            {/* IDENTITAS */}
             <div style={s.card}>
               <h4 style={s.cardTitle}><BookOpen size={14} /> Identitas Modul</h4>
               <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Judul modul..." style={s.input} />
@@ -549,19 +538,13 @@ const ManageMateri = () => {
                 <option value="">Mata Pelajaran</option>
                 {subjects.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              <textarea 
-                value={description} 
-                onChange={e => setDescription(e.target.value)} 
-                placeholder="Deskripsi singkat modul (akan tampil di dashboard siswa)..."
-                style={{...s.input, minHeight: 60, resize: 'vertical'}}
-              />
+              <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Deskripsi singkat modul (akan tampil di dashboard siswa)..." style={{...s.input, minHeight: 60, resize: 'vertical'}} />
               <label style={{ display: 'block', height: 80, borderRadius: 6, overflow: 'hidden', cursor: 'pointer', border: '2px dashed #e2e8f0', marginTop: 4 }}>
                 {coverImage ? <img src={coverImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 11, flexDirection: 'column', gap: 4 }}><ImageIcon size={18} />Cover</div>}
                 <input type="file" accept="image/*" hidden onChange={(e) => handleFileUpload(e)} />
               </label>
             </div>
 
-            {/* PENGATURAN TARGET */}
             <div style={s.card}>
               <h4 style={s.cardTitle}><Target size={14} /> Target Publikasi</h4>
               <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
@@ -582,7 +565,6 @@ const ManageMateri = () => {
               )}
             </div>
 
-            {/* PENGATURAN LAINNYA */}
             <div style={s.card}>
               <h4 style={s.cardTitle}><Settings size={14} /> Pengaturan Lainnya</h4>
               <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
@@ -594,17 +576,12 @@ const ManageMateri = () => {
                   <button key={opt.value} onClick={() => setStatusModul(opt.value)} style={{
                     padding: '3px 8px', borderRadius: 4, fontSize: 9, fontWeight: 600, cursor: 'pointer',
                     border: statusModul === opt.value ? `2px solid ${opt.color}` : '1px solid #e2e8f0',
-                    background: statusModul === opt.value ? `${opt.color}15` : 'white', 
-                    color: statusModul === opt.value ? opt.color : '#64748b'
+                    background: statusModul === opt.value ? `${opt.color}15` : 'white', color: statusModul === opt.value ? opt.color : '#64748b'
                   }} title={opt.desc}>{opt.label}</button>
                 ))}
               </div>
-              <div style={{ fontSize: 10, color: '#64748b', marginTop: 4 }}>
-                📅 Mulai: {tanggalMulai} | Selesai: {tanggalSelesai || '-'}
-              </div>
             </div>
 
-            {/* DAFTAR KONTEN */}
             <div style={s.card}>
               <h4 style={s.cardTitle}><Layers size={14} /> Konten ({sections.length})</h4>
               {sections.length === 0 && <p style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', padding: 15 }}>Belum ada konten.</p>}
@@ -626,10 +603,9 @@ const ManageMateri = () => {
               ))}
             </div>
 
-            {/* TAMBAH SECTION */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
               {[
-                { type: 'text', icon: <Type size={13} />, label: 'Teks', desc: 'Teks + gambar' },
+                { type: 'text', icon: <Type size={13} />, label: 'Teks', desc: 'Teks + format' },
                 { type: 'file', icon: <FileUp size={13} />, label: 'File', desc: 'PDF/DOC/PPT' },
                 { type: 'video', icon: <Video size={13} />, label: 'Video', desc: 'YouTube & link' },
                 { type: 'assignment', icon: <Send size={13} />, label: 'Tugas', desc: 'Instruksi tugas' }
@@ -640,7 +616,6 @@ const ManageMateri = () => {
               ))}
             </div>
 
-            {/* QUIZ */}
             <div style={s.card}>
               <h4 style={s.cardTitle}><HelpCircle size={14} /> Kuis</h4>
               {quizData?.length > 0 ? (
@@ -654,7 +629,6 @@ const ManageMateri = () => {
             </div>
           </div>
 
-          {/* AREA EDITOR KANAN */}
           <div style={{ flex: 1, minWidth: 0 }}>
             {!activeSec ? (
               <div style={s.emptyEditor}>
@@ -679,21 +653,15 @@ const ManageMateri = () => {
                   </div>
                 </div>
 
-                <input 
-                  value={activeSec.title} 
-                  onChange={e => updateSection(activeSec.id, 'title', e.target.value)} 
-                  placeholder="Judul section..." 
-                  style={s.titleInput} 
-                />
+                <input value={activeSec.title} onChange={e => updateSection(activeSec.id, 'title', e.target.value)} placeholder="Judul section..." style={s.titleInput} />
 
-                {activeSecContent()}
+                {renderEditorContent()}
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* BOTTOM BAR */}
       <div style={{ position: 'fixed', bottom: 0, left: isMobile ? 0 : 260, right: 0, background: 'white', borderTop: '1px solid #e2e8f0', padding: '10px 20px', display: 'flex', justifyContent: 'flex-end', gap: 10, zIndex: 50 }}>
         <button onClick={() => navigate('/guru/modul')} style={{ padding: '10px 20px', background: '#f1f5f9', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Batal</button>
         {editId && (
@@ -726,8 +694,5 @@ const s = {
   titleInput: { width: '100%', border: 'none', fontSize: 16, fontWeight: 700, outline: 'none', marginBottom: 12, padding: '6px 0', color: '#1e293b' },
   uploadBox: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '30px 20px', border: '2px dashed #e2e8f0', borderRadius: 10, cursor: 'pointer', background: '#f8fafc', color: '#64748b', fontSize: 13 },
 };
-
-// Tambahkan import ExternalLink
-import { ExternalLink } from 'lucide-react';
 
 export default ManageMateri;
