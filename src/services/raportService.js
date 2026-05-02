@@ -1,4 +1,3 @@
-// src/services/raportService.js
 import { db } from '../firebase';
 import { 
   collection, query, where, getDocs, addDoc, updateDoc, 
@@ -58,7 +57,7 @@ export const generateNarasi = (namaSiswa, mapel, nilaiSekarang, nilaiSebelumnya)
  * Ekspor nilai dari tugas/kuis ke raport_scores
  */
 export const exportToRaportScores = async (data) => {
-  const { studentId, studentName, mapel, topik, nilai, komponen, teacherId, teacherName } = data;
+  const { studentId, studentName, mapel, topik, nilai, komponen, teacherId, teacherName, qualitative } = data;
   const periode = new Date().toISOString().slice(0, 7);
   
   try {
@@ -74,20 +73,30 @@ export const exportToRaportScores = async (data) => {
     
     if (!existing.empty) {
       // Update nilai yang sudah ada
-      await updateDoc(doc(db, RAPORT_COLLECTIONS.SCORES, existing.docs[0].id), {
+      const updateData = {
         nilai: nilai,
         topik: topik,
         updatedAt: serverTimestamp()
-      });
+      };
+      // Jika ada qualitative, ikut diupdate
+      if (qualitative) {
+        updateData.qualitative = qualitative;
+      }
+      await updateDoc(doc(db, RAPORT_COLLECTIONS.SCORES, existing.docs[0].id), updateData);
       return { success: true, action: 'updated' };
     } else {
       // Buat baru
-      await addDoc(collection(db, RAPORT_COLLECTIONS.SCORES), {
+      const newData = {
         studentId, studentName, mapel, topik, nilai, komponen,
         periode, teacherId, teacherName,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
-      });
+      };
+      // Jika ada qualitative, ikut disimpan
+      if (qualitative) {
+        newData.qualitative = qualitative;
+      }
+      await addDoc(collection(db, RAPORT_COLLECTIONS.SCORES), newData);
       return { success: true, action: 'created' };
     }
   } catch (error) {
@@ -112,6 +121,7 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
   for (const student of students) {
     // 2. Ambil semua nilai mentah siswa untuk periode ini
     const scores = { kuis: [], catatan: [], ujian: [], keaktifan: [] };
+    const qualitativeData = [];
     
     const scoresSnap = await getDocs(query(
       collection(db, RAPORT_COLLECTIONS.SCORES),
@@ -124,9 +134,13 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
       if (scores[data.komponen]) {
         scores[data.komponen].push(data.nilai);
       }
+      // Kumpulkan data qualitative untuk karakter
+      if (data.qualitative) {
+        qualitativeData.push(data.qualitative);
+      }
     });
     
-    // Cek kelengkapan
+    // Cek kelengkapan nilai akademik
     const isComplete = scores.kuis.length > 0 && 
                        scores.catatan.length > 0 && 
                        scores.ujian.length > 0 && 
@@ -147,10 +161,13 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
       continue;
     }
     
-    // 3. Hitung nilai akhir
+    // 3. Hitung nilai akhir akademik
     const nilaiAkhir = calculateFinalScore(scores);
     
-    // 4. Ambil nilai bulan lalu
+    // 4. Hitung rata-rata karakter
+    const characterAvg = calculateCharacterAverage(qualitativeData);
+    
+    // 5. Ambil nilai bulan lalu
     const lastMonth = getPreviousMonth(periode);
     const lastMonthSnap = await getDocs(query(
       collection(db, RAPORT_COLLECTIONS.FINAL),
@@ -159,10 +176,10 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
     ));
     const nilaiSebelumnya = lastMonthSnap.empty ? null : lastMonthSnap.docs[0].data().nilai_akhir;
     
-    // 5. Generate narasi
+    // 6. Generate narasi
     const narasi = generateNarasi(student.nama, "Umum", nilaiAkhir, nilaiSebelumnya);
     
-    // 6. Simpan ke raport_final
+    // 7. Simpan ke raport_final
     const finalData = {
       studentId: student.id,
       studentName: student.nama,
@@ -176,6 +193,15 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
       nilai_keaktifan: scores.keaktifan.reduce((a,b) => a+b, 0) / scores.keaktifan.length,
       nilai_akhir: nilaiAkhir,
       narasi: narasi,
+      karakter: {
+        pemahaman: characterAvg.pemahaman,
+        aplikasi: characterAvg.aplikasi,
+        literasi: characterAvg.literasi,
+        inisiatif: characterAvg.inisiatif,
+        mandiri: characterAvg.mandiri,
+        rata_rata: characterAvg.rataRata,
+        narasi: characterAvg.narasi
+      },
       updatedAt: serverTimestamp()
     };
     
@@ -197,7 +223,7 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
     results.push({ studentId: student.id, name: student.nama, nilai: nilaiAkhir });
   }
   
-  // 7. Update leaderboard
+  // 8. Update leaderboard
   await updateLeaderboard(periode);
   
   return {
@@ -276,6 +302,98 @@ export const getRelativeLeaderboard = async (periode, studentId) => {
     nearbyStudents: allData.slice(start, end),
     topStudent: allData[0]
   };
+};
+
+/**
+ * Hitung rata-rata nilai karakter dari qualitative data
+ * @param {Array} qualitativeData - Array dari object qualitative (pemahaman, aplikasi, dll)
+ * @returns {Object} - Rata-rata per aspek dan nilai akhir karakter
+ */
+export const calculateCharacterAverage = (qualitativeData) => {
+  if (!qualitativeData || qualitativeData.length === 0) {
+    return {
+      pemahaman: 0,
+      aplikasi: 0,
+      literasi: 0,
+      inisiatif: 0,
+      mandiri: 0,
+      rataRata: 0,
+      narasi: "Belum ada penilaian karakter"
+    };
+  }
+
+  const totals = {
+    pemahaman: 0,
+    aplikasi: 0,
+    literasi: 0,
+    inisiatif: 0,
+    mandiri: 0
+  };
+
+  qualitativeData.forEach(q => {
+    if (q) {
+      totals.pemahaman += q.pemahaman || 0;
+      totals.aplikasi += q.aplikasi || 0;
+      totals.literasi += q.literasi || 0;
+      totals.inisiatif += q.inisiatif || 0;
+      totals.mandiri += q.mandiri || 0;
+    }
+  });
+
+  const count = qualitativeData.length;
+  const avgPemahaman = totals.pemahaman / count;
+  const avgAplikasi = totals.aplikasi / count;
+  const avgLiterasi = totals.literasi / count;
+  const avgInisiatif = totals.inisiatif / count;
+  const avgMandiri = totals.mandiri / count;
+  const rataRata = (avgPemahaman + avgAplikasi + avgLiterasi + avgInisiatif + avgMandiri) / 5;
+
+  // Generate narasi karakter berdasarkan rata-rata
+  let narasi = "";
+  if (rataRata >= 4.5) {
+    narasi = "🌟 Sangat baik! Siswa menunjukkan karakter yang luar biasa dalam pembelajaran, sangat mandiri, dan aktif.";
+  } else if (rataRata >= 3.5) {
+    narasi = "👍 Baik. Siswa memiliki karakter positif, cukup mandiri, dan perlu dipertahankan.";
+  } else if (rataRata >= 2.5) {
+    narasi = "📘 Cukup. Siswa masih perlu peningkatan dalam beberapa aspek karakter dan kedisiplinan.";
+  } else if (rataRata >= 1.5) {
+    narasi = "⚠️ Kurang. Siswa memerlukan bimbingan lebih intensif dan motivasi tambahan.";
+  } else {
+    narasi = "🔴 Perhatian khusus. Siswa perlu pendampingan intensif dan evaluasi menyeluruh.";
+  }
+
+  return {
+    pemahaman: Math.round(avgPemahaman * 10) / 10,
+    aplikasi: Math.round(avgAplikasi * 10) / 10,
+    literasi: Math.round(avgLiterasi * 10) / 10,
+    inisiatif: Math.round(avgInisiatif * 10) / 10,
+    mandiri: Math.round(avgMandiri * 10) / 10,
+    rataRata: Math.round(rataRata * 10) / 10,
+    narasi: narasi
+  };
+};
+
+/**
+ * Generate narasi deskriptif per aspek karakter
+ */
+export const generateDetailCharacterNarasi = (qualitative) => {
+  if (!qualitative) return [];
+
+  const getNarasi = (nilai, aspek) => {
+    if (nilai >= 4.5) return `✅ ${aspek}: Sangat baik, pertahankan!`;
+    if (nilai >= 3.5) return `📘 ${aspek}: Baik, sudah bagus.`;
+    if (nilai >= 2.5) return `⚠️ ${aspek}: Cukup, perlu ditingkatkan.`;
+    if (nilai >= 1.5) return `🔴 ${aspek}: Kurang, perlu bimbingan.`;
+    return `❌ ${aspek}: Sangat kurang, segera evaluasi.`;
+  };
+
+  return [
+    getNarasi(qualitative.pemahaman, "Pemahaman Konsep"),
+    getNarasi(qualitative.aplikasi, "Logika & Aplikasi"),
+    getNarasi(qualitative.literasi, "Literasi & Fokus"),
+    getNarasi(qualitative.inisiatif, "Inisiatif & Keaktifan"),
+    getNarasi(qualitative.mandiri, "Kemandirian")
+  ];
 };
 
 function getPreviousMonth(periode) {
