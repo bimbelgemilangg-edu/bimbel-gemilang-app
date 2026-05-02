@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { collection, addDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy } from "firebase/firestore";
-import { Plus, Trash2, CheckCircle, ArrowLeft, Save, Layout, FileText, X, Calculator, Target, BookOpen, Users, Send } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, ArrowLeft, Save, Layout, FileText, X, Calculator, Target, BookOpen, Users, Send, Settings, Clock as ClockIcon, HelpCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
@@ -9,19 +9,27 @@ import { InlineMath } from 'react-katex';
 const ManageQuiz = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const modulId = searchParams.get('modulId'); // Jika dari modul
+  const modulId = searchParams.get('modulId');
   
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [loading, setLoading] = useState(false);
+  const [advancedMode, setAdvancedMode] = useState(false); // 🔥 MODE LANJUTAN
   
   // Data Quiz
   const [quizTitle, setQuizTitle] = useState("");
   const [quizSubject, setQuizSubject] = useState("");
   const [deadline, setDeadline] = useState("");
-  const [questions, setQuestions] = useState([{ id: Date.now(), q: '', options: ['', '', '', ''], correct: 0 }]);
+  const [questions, setQuestions] = useState([{ id: Date.now(), q: '', options: ['', '', '', ''], correct: 0, explanation: '' }]);
+  
+  // FITUR LANJUTAN (UJIAN)
+  const [timeLimit, setTimeLimit] = useState(0);
+  const [randomOrder, setRandomOrder] = useState(false);
+  const [maxAttempts, setMaxAttempts] = useState(1);
+  const [showExplanation, setShowExplanation] = useState(true);
+  const [difficulty, setDifficulty] = useState('Sedang');
   
   // Target Publish
-  const [publishTarget, setPublishTarget] = useState('modul'); // 'mandiri' | 'modul' | 'jenjang'
+  const [publishTarget, setPublishTarget] = useState('modul');
   const [selectedModul, setSelectedModul] = useState("");
   const [selectedKelas, setSelectedKelas] = useState("Semua");
   const [selectedProgram, setSelectedProgram] = useState("Semua");
@@ -41,20 +49,16 @@ const ManageQuiz = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 🔥 AMBIL DATA REFERENSI
   useEffect(() => {
     const fetchRefs = async () => {
-      // Modul list
       const snapModul = await getDocs(query(collection(db, "bimbel_modul"), orderBy("updatedAt", "desc")));
       setModulList(snapModul.docs.map(d => ({ id: d.id, ...d.data() })));
       
-      // Kelas dari siswa
       const snapSiswa = await getDocs(collection(db, "students"));
       const siswaData = snapSiswa.docs.map(d => d.data());
       const kelas = [...new Set(siswaData.map(s => s.kelasSekolah))].filter(Boolean).sort((a,b) => a.localeCompare(b, undefined, {numeric:true}));
       setAvailableClasses(kelas);
       
-      // Mapel dari guru
       const snapGuru = await getDocs(collection(db, "teachers"));
       const guruData = snapGuru.docs.map(d => d.data());
       const mapel = [...new Set(guruData.map(t => t.mapel).filter(Boolean))];
@@ -64,7 +68,6 @@ const ManageQuiz = () => {
     fetchRefs();
   }, []);
 
-  // 🔥 AMBIL DATA QUIZ JIKA EDIT
   useEffect(() => {
     if (modulId) {
       setPublishTarget('modul');
@@ -76,12 +79,18 @@ const ManageQuiz = () => {
           setQuizTitle(data.title || "");
           setQuizSubject(data.subject || "");
           setDeadline(data.deadlineQuiz || "");
+          setTimeLimit(data.timeLimit || 0);
+          setRandomOrder(data.randomOrder || false);
+          setMaxAttempts(data.maxAttempts || 1);
+          setShowExplanation(data.showExplanation !== false);
+          setDifficulty(data.difficulty || 'Sedang');
           if (data.quizData?.length > 0) {
             setQuestions(data.quizData.map((q, idx) => ({
               id: q.id || Date.now() + idx,
               q: q.question,
               options: q.options,
-              correct: q.correctAnswer || 0
+              correct: q.correctAnswer || 0,
+              explanation: q.explanation || ''
             })));
           }
         }
@@ -111,7 +120,7 @@ const ManageQuiz = () => {
       const qt = lines[0].replace(/^\d+[\.\$\s]*/, '').trim();
       const opts = lines.slice(1).filter(l => /^[A-E][\.\$\s]/i.test(l.trim())).map(o => o.replace(/^[A-E][\.\$\s]*/i, '').trim());
       while (opts.length < 4) opts.push("");
-      return { id: Date.now() + idx, q: qt, options: opts.slice(0,4), correct: 0 };
+      return { id: Date.now() + idx, q: qt, options: opts.slice(0,4), correct: 0, explanation: '' };
     }).filter(Boolean);
     if (parsed.length > 0) {
       setQuestions(prev => (prev.length === 1 && prev[0].q === "") ? parsed : [...prev, ...parsed]);
@@ -128,19 +137,32 @@ const ManageQuiz = () => {
     setLoading(true);
     try {
       const quizPayload = {
-        quizData: valid.map(q => ({ id: q.id, question: q.q.trim(), options: q.options, correctAnswer: q.correct })),
+        quizData: valid.map(q => ({ 
+          id: q.id, 
+          question: q.q.trim(), 
+          options: q.options, 
+          correctAnswer: q.correct,
+          explanation: advancedMode ? (q.explanation || '') : ''
+        })),
         totalQuestions: valid.length,
         deadlineQuiz: deadline || null,
         updatedAt: serverTimestamp()
       };
 
+      // Tambahkan fitur lanjutan hanya jika mode advanced aktif
+      if (advancedMode) {
+        quizPayload.timeLimit = timeLimit;
+        quizPayload.randomOrder = randomOrder;
+        quizPayload.maxAttempts = maxAttempts;
+        quizPayload.showExplanation = showExplanation;
+        quizPayload.difficulty = difficulty;
+      }
+
       if (publishTarget === 'modul') {
-        // 🔥 SIMPAN KE MODUL YANG DIPILIH
         if (!selectedModul) return alert("❌ Pilih modul tujuan!");
         await updateDoc(doc(db, "bimbel_modul", selectedModul), quizPayload);
         alert(`✅ Kuis disimpan ke modul!`);
       } else {
-        // 🔥 SIMPAN SEBAGAI KUIS MANDIRI
         await addDoc(collection(db, "bimbel_modul"), {
           title: quizTitle.toUpperCase(),
           subject: quizSubject || "Kuis",
@@ -152,6 +174,11 @@ const ManageQuiz = () => {
           targetKelas: publishTarget === 'jenjang' ? selectedKelas : "Semua",
           status: 'aktif',
           authorName: localStorage.getItem('teacherName') || localStorage.getItem('userName') || "Guru",
+          timeLimit: advancedMode ? timeLimit : null,
+          randomOrder: advancedMode ? randomOrder : null,
+          maxAttempts: advancedMode ? maxAttempts : null,
+          showExplanation: advancedMode ? showExplanation : null,
+          difficulty: advancedMode ? difficulty : null,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
@@ -160,6 +187,12 @@ const ManageQuiz = () => {
       navigate(-1);
     } catch (err) { alert("❌ Gagal: " + err.message); }
     setLoading(false);
+  };
+
+  const addExplanation = (qId) => {
+    setQuestions(questions.map(q => 
+      q.id === qId ? { ...q, explanation: q.explanation || 'Klik untuk menambahkan pembahasan...' } : q
+    ));
   };
 
   return (
@@ -195,6 +228,73 @@ const ManageQuiz = () => {
             <input type="datetime-local" value={deadline} onChange={e => setDeadline(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', boxSizing: 'border-box' }} />
           </div>
 
+          {/* TOGGLE MODE UJIAN */}
+          <div style={{ background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <h4 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#64748b' }}><Settings size={14} /> Mode Kuis</h4>
+              <button 
+                onClick={() => setAdvancedMode(!advancedMode)}
+                style={{
+                  padding: '4px 12px', borderRadius: 20, fontSize: 10, fontWeight: 700,
+                  background: advancedMode ? '#673ab7' : '#f1f5f9',
+                  color: advancedMode ? 'white' : '#64748b',
+                  border: 'none', cursor: 'pointer'
+                }}
+              >
+                {advancedMode ? '🔒 Mode Ujian' : '📝 Mode Sederhana'}
+              </button>
+            </div>
+            <p style={{ fontSize: 10, color: '#64748b', margin: 0 }}>
+              {advancedMode 
+                ? 'Mode Ujian: +Timer, Random Soal, Batas Pengulangan, Pembahasan' 
+                : 'Mode Sederhana: Kuis biasa tanpa pengaturan lanjutan'}
+            </p>
+          </div>
+
+          {/* PENGATURAN LANJUTAN (hanya tampil jika advancedMode true) */}
+          {advancedMode && (
+            <div style={{ background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
+              <h4 style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, color: '#64748b' }}>⚙️ Pengaturan Ujian</h4>
+              
+              <div style={{ marginBottom: 10 }}>
+                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>⏱️ Batas Waktu</label>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input type="number" min="0" max="180" value={timeLimit} onChange={e => setTimeLimit(parseInt(e.target.value))} 
+                    style={{ width: 70, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }} />
+                  <span style={{ fontSize: 11, color: '#64748b' }}>menit (0 = tidak terbatas)</span>
+                </div>
+              </div>
+              
+              <div style={{ marginBottom: 10 }}>
+                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>🎲 Pengaturan Soal</label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, marginBottom: 6 }}>
+                  <input type="checkbox" checked={randomOrder} onChange={e => setRandomOrder(e.target.checked)} /> Acak urutan soal
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
+                  <input type="checkbox" checked={showExplanation} onChange={e => setShowExplanation(e.target.checked)} /> Tampilkan pembahasan setelah selesai
+                </label>
+              </div>
+              
+              <div style={{ marginBottom: 10 }}>
+                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>🔄 Batas Pengulangan</label>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input type="number" min="0" max="10" value={maxAttempts} onChange={e => setMaxAttempts(parseInt(e.target.value))} 
+                    style={{ width: 70, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }} />
+                  <span style={{ fontSize: 11, color: '#64748b' }}>kali (0 = tidak terbatas)</span>
+                </div>
+              </div>
+              
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>📊 Tingkat Kesulitan</label>
+                <select value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, background: 'white' }}>
+                  <option value="Mudah">🟢 Mudah</option>
+                  <option value="Sedang">🟡 Sedang</option>
+                  <option value="Sulit">🔴 Sulit</option>
+                </select>
+              </div>
+            </div>
+          )}
+
           {/* TARGET PUBLISH */}
           <div style={{ background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
             <h4 style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, color: '#64748b' }}><Target size={14} /> Target Publish</h4>
@@ -225,7 +325,6 @@ const ManageQuiz = () => {
               </button>
             </div>
 
-            {/* DROPDOWN SESUAI TARGET */}
             {publishTarget === 'modul' && (
               <select value={selectedModul} onChange={e => setSelectedModul(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #10b981', fontSize: 11, outline: 'none', marginTop: 8, background: 'white', boxSizing: 'border-box' }}>
                 <option value="">Pilih Modul...</option>
@@ -291,10 +390,27 @@ const ManageQuiz = () => {
                   </div>
                 ))}
               </div>
+
+              {/* PEMBAHASAN (hanya jika mode advanced aktif) */}
+              {advancedMode && (
+                <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                    <HelpCircle size={12} color="#673ab7" />
+                    <span style={{ fontSize: 10, fontWeight: 700, color: '#673ab7' }}>Pembahasan / Penjelasan</span>
+                  </div>
+                  <textarea 
+                    value={item.explanation || ''} 
+                    onChange={e => setQuestions(questions.map(q => q.id === item.id ? {...q, explanation: e.target.value} : q))}
+                    placeholder="Tulis pembahasan soal ini (akan ditampilkan setelah siswa menjawab)..."
+                    style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
+                    rows={2}
+                  />
+                </div>
+              )}
             </div>
           ))}
 
-          <button onClick={() => setQuestions([...questions, { id: Date.now(), q: '', options: ['', '', '', ''], correct: 0 }])} style={{
+          <button onClick={() => setQuestions([...questions, { id: Date.now(), q: '', options: ['', '', '', ''], correct: 0, explanation: '' }])} style={{
             width: '100%', padding: 12, border: '2px dashed #cbd5e1', background: 'white', borderRadius: 10, fontWeight: 700, color: '#64748b', cursor: 'pointer', fontSize: 12
           }}>
             <Plus size={14}/> Tambah Soal
