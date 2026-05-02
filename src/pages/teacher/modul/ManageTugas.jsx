@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { Edit3, Clock, ArrowLeft, BookOpen, Target, Users, CheckCircle, AlertCircle } from 'lucide-react';
+import { collection, addDoc, serverTimestamp, getDocs } from 'firebase/firestore';
+import { Edit3, Clock, ArrowLeft, BookOpen, Target, Users, CheckCircle, AlertCircle, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ManageTugas = () => {
@@ -9,34 +9,60 @@ const ManageTugas = () => {
     title: '', 
     desc: '', 
     deadline: '',
-    targetKategori: 'Semua',
-    targetKelas: 'Semua'
+    targetKategori: 'Reguler',
+    targetKelas: '1 SD'
   });
   const [loading, setLoading] = useState(false);
   const [availableClasses, setAvailableClasses] = useState([]);
-  const [showConfig, setShowConfig] = useState(false);
+  const [availablePrograms] = useState(['Reguler', 'English']);
+  const [showConfig, setShowConfig] = useState(true);
+  const [warningShown, setWarningShown] = useState(false);
   const navigate = useNavigate();
 
   // Ambil daftar kelas dari database
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchClasses = async () => {
       try {
         const snapSiswa = await getDocs(collection(db, "students"));
         const siswaData = snapSiswa.docs.map(d => d.data());
         const kelas = [...new Set(siswaData.map(s => s.kelasSekolah).filter(Boolean))];
         kelas.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-        setAvailableClasses(kelas);
+        setAvailableClasses(['Semua', ...kelas]);
       } catch (error) {
         console.error("Error fetching classes:", error);
+        setAvailableClasses(['Semua', '1 SD', '2 SD', '3 SD', '4 SD', '5 SD', '6 SD', '7 SMP', '8 SMP', '9 SMP']);
       }
     };
     fetchClasses();
   }, []);
 
+  // Peringatan jika target masih "Semua"
+  useEffect(() => {
+    if ((tugas.targetKelas === 'Semua' || tugas.targetKategori === 'Semua') && !warningShown && tugas.title) {
+      setWarningShown(true);
+      setTimeout(() => setWarningShown(false), 5000);
+    }
+  }, [tugas.targetKelas, tugas.targetKategori, tugas.title, warningShown]);
+
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!tugas.title) return alert("❌ Judul tugas wajib diisi!");
     if (!tugas.desc) return alert("❌ Instruksi tugas wajib diisi!");
+    
+    // Peringatan jika target masih "Semua"
+    if (tugas.targetKelas === 'Semua' && tugas.targetKategori === 'Semua') {
+      if (!window.confirm("⚠️ Peringatan: Tugas ini akan muncul untuk SEMUA siswa (semua kelas dan program).\n\nLanjutkan?")) {
+        return;
+      }
+    } else if (tugas.targetKelas === 'Semua') {
+      if (!window.confirm(`⚠️ Peringatan: Tugas ini akan muncul untuk SEMUA kelas pada program ${tugas.targetKategori}.\n\nLanjutkan?`)) {
+        return;
+      }
+    } else if (tugas.targetKategori === 'Semua') {
+      if (!window.confirm(`⚠️ Peringatan: Tugas ini akan muncul untuk SEMUA program pada kelas ${tugas.targetKelas}.\n\nLanjutkan?`)) {
+        return;
+      }
+    }
     
     setLoading(true);
     try {
@@ -86,8 +112,19 @@ const ManageTugas = () => {
             <Edit3 size={28} color="#673ab7" />
           </div>
           <h2 style={styles.title}>Buat Tugas Baru</h2>
-          <p style={styles.subtitle}>Tugas akan muncul di dashboard siswa dan di halaman E-Learning</p>
+          <p style={styles.subtitle}>Tugas akan muncul di dashboard siswa dan halaman E-Learning</p>
         </div>
+
+        {/* Peringatan jika target masih "Semua" */}
+        {warningShown && (tugas.targetKelas === 'Semua' || tugas.targetKategori === 'Semua') && (
+          <div style={styles.warningBox}>
+            <AlertCircle size={16} color="#f59e0b" />
+            <span style={styles.warningText}>
+              ⚠️ Perhatikan: Tugas ini akan muncul untuk {tugas.targetKelas === 'Semua' ? 'SEMUA KELAS' : `kelas ${tugas.targetKelas}`} 
+              pada program {tugas.targetKategori === 'Semua' ? 'SEMUA PROGRAM' : tugas.targetKategori}.
+            </span>
+          </div>
+        )}
 
         <form onSubmit={handleCreate} style={styles.form}>
           {/* JUDUL TUGAS */}
@@ -139,23 +176,28 @@ const ManageTugas = () => {
             <Target size={14} /> {showConfig ? 'Sembunyikan' : 'Tampilkan'} Pengaturan Target
           </button>
 
-          {/* TARGET PUBLISH (OPSIONAL) */}
+          {/* TARGET PUBLISH */}
           {showConfig && (
             <div style={styles.configPanel}>
-              <p style={styles.configTitle}>🎯 Target Publikasi Tugas</p>
+              <div style={styles.configHeader}>
+                <Shield size={14} color="#3b82f6" />
+                <span style={styles.configHeaderText}>🎯 Target Publikasi Tugas</span>
+              </div>
+              
               <div style={styles.configRow}>
                 <div style={styles.configGroup}>
                   <label style={styles.labelSmall}>
-                    <Users size={12} /> Program
+                    <Users size={12} /> Program / Kategori
                   </label>
                   <select 
                     value={tugas.targetKategori}
                     onChange={e => setTugas({...tugas, targetKategori: e.target.value})}
                     style={styles.select}
+                    className={tugas.targetKategori === 'Semua' ? 'warning-select' : ''}
                   >
-                    <option value="Semua">📚 Semua Program</option>
                     <option value="Reguler">📚 Reguler</option>
                     <option value="English">🗣️ English</option>
+                    <option value="Semua">🌐 Semua Program</option>
                   </select>
                 </div>
                 <div style={styles.configGroup}>
@@ -166,19 +208,27 @@ const ManageTugas = () => {
                     value={tugas.targetKelas}
                     onChange={e => setTugas({...tugas, targetKelas: e.target.value})}
                     style={styles.select}
+                    className={tugas.targetKelas === 'Semua' ? 'warning-select' : ''}
                   >
-                    <option value="Semua">📋 Semua Kelas</option>
                     {availableClasses.map(k => (
-                      <option key={k} value={k}>{k}</option>
+                      <option key={k} value={k}>{k === 'Semua' ? '📋 Semua Kelas' : k}</option>
                     ))}
                   </select>
                 </div>
               </div>
+              
               <div style={styles.infoBox}>
-                <AlertCircle size={12} color="#3b82f6" />
+                <AlertCircle size={12} color={tugas.targetKelas === 'Semua' || tugas.targetKategori === 'Semua' ? '#f59e0b' : '#10b981'} />
                 <span style={styles.infoText}>
-                  Tugas akan muncul untuk siswa dengan program dan kelas yang dipilih.
-                  Jika memilih "Semua", tugas akan muncul untuk semua siswa.
+                  {tugas.targetKelas === 'Semua' && tugas.targetKategori === 'Semua' ? (
+                    <strong style={{ color: '#f59e0b' }}>⚠️ Peringatan: Tugas ini akan muncul untuk SEMUA siswa!</strong>
+                  ) : tugas.targetKelas === 'Semua' ? (
+                    <span>Tugas akan muncul untuk <strong>SEMUA KELAS</strong> pada program <strong>{tugas.targetKategori}</strong>.</span>
+                  ) : tugas.targetKategori === 'Semua' ? (
+                    <span>Tugas akan muncul untuk <strong>SEMUA PROGRAM</strong> pada kelas <strong>{tugas.targetKelas}</strong>.</span>
+                  ) : (
+                    <span>Tugas akan muncul untuk program <strong>{tugas.targetKategori}</strong> - Kelas <strong>{tugas.targetKelas}</strong>.</span>
+                  )}
                 </span>
               </div>
             </div>
@@ -215,6 +265,10 @@ const ManageTugas = () => {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+        .warning-select {
+          border-color: #f59e0b !important;
+          background-color: #fffbeb !important;
         }
       `}</style>
     </div>
@@ -280,6 +334,21 @@ const styles = {
     color: '#64748b', 
     margin: 0 
   },
+  warningBox: {
+    background: '#fffbeb',
+    border: '1px solid #fde68a',
+    borderRadius: '10px',
+    padding: '10px 14px',
+    marginBottom: '20px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px'
+  },
+  warningText: {
+    fontSize: '11px',
+    color: '#b45309',
+    flex: 1
+  },
   form: { 
     display: 'flex', 
     flexDirection: 'column', 
@@ -339,11 +408,16 @@ const styles = {
     borderRadius: '12px',
     border: '1px solid #e2e8f0'
   },
-  configTitle: {
+  configHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    marginBottom: '12px'
+  },
+  configHeaderText: {
     fontSize: '12px',
     fontWeight: '700',
-    color: '#1e293b',
-    margin: '0 0 12px 0'
+    color: '#1e293b'
   },
   configRow: {
     display: 'flex',
