@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { db } from '../../../firebase';
 import { collection, getDocs, doc, deleteDoc, query, orderBy, limit, startAfter } from "firebase/firestore";
-import { BookOpen, Plus, Search, FileText, HelpCircle, Trash2, Edit3, Eye, AlertCircle, Users, Calendar, Target, Layers, Send, Filter, X, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BookOpen, Plus, Search, FileText, HelpCircle, Trash2, Edit3, Eye, AlertCircle, Users, Calendar, Target, Layers, Send, Filter, X, Clock, ChevronLeft, ChevronRight, Sparkles, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ModulManager = () => {
   const [items, setItems] = useState([]);
+  const [quizItems, setQuizItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('modul'); // 'modul' or 'kuis'
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState('semua'); // 'semua', 'modul', 'tugas', 'kuis'
   const [filterKelas, setFilterKelas] = useState("Semua");
   const [filterMapel, setFilterMapel] = useState("Semua");
   const [filterStatus, setFilterStatus] = useState("Semua");
@@ -31,8 +32,8 @@ const ModulManager = () => {
   }, []);
 
   useEffect(() => { 
-    fetchItems(); 
     fetchFilterOptions();
+    fetchItems(); 
   }, []);
 
   const fetchFilterOptions = async () => {
@@ -49,7 +50,7 @@ const ModulManager = () => {
       const mapelSet = new Set();
       modulSnap.forEach(doc => {
         const mapel = doc.data().subject;
-        if (mapel && mapel !== "Tugas") mapelSet.add(mapel);
+        if (mapel) mapelSet.add(mapel);
       });
       setAvailableSubjects(['Semua', ...Array.from(mapelSet).sort()]);
     } catch (error) {
@@ -75,10 +76,16 @@ const ModulManager = () => {
       const snapshot = await getDocs(q);
       const newItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       
+      // Pisahkan modul dan kuis
+      const moduls = newItems.filter(item => item.type !== 'kuis_mandiri');
+      const kuis = newItems.filter(item => item.type === 'kuis_mandiri');
+      
       if (isLoadMore) {
-        setItems(prev => [...prev, ...newItems]);
+        setItems(prev => [...prev, ...moduls]);
+        setQuizItems(prev => [...prev, ...kuis]);
       } else {
-        setItems(newItems);
+        setItems(moduls);
+        setQuizItems(kuis);
       }
       
       setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
@@ -87,7 +94,8 @@ const ModulManager = () => {
       console.error("Error fetching items:", error);
       const snapshot = await getDocs(collection(db, COLLECTION_NAME));
       const allItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      setItems(allItems);
+      setItems(allItems.filter(i => i.type !== 'kuis_mandiri'));
+      setQuizItems(allItems.filter(i => i.type === 'kuis_mandiri'));
       setHasMore(false);
     }
     setLoading(false);
@@ -98,7 +106,7 @@ const ModulManager = () => {
     e.stopPropagation();
     if (window.confirm("⚠️ Hapus permanen? Data tidak dapat dikembalikan.")) {
       await deleteDoc(doc(db, COLLECTION_NAME, id));
-      setItems(items.filter(i => i.id !== id));
+      fetchItems();
     }
   };
 
@@ -112,16 +120,14 @@ const ModulManager = () => {
   };
 
   const getTypeInfo = (item) => {
-    if (item.type === 'kuis_mandiri') return { label: 'Kuis', icon: <HelpCircle size={12} />, color: '#f59e0b', bg: '#fef3c7' };
+    if (item.type === 'kuis_mandiri') return { label: 'Kuis Mandiri', icon: <HelpCircle size={12} />, color: '#f59e0b', bg: '#fef3c7' };
     if (item.type === 'assignment') return { label: 'Tugas', icon: <Send size={12} />, color: '#ef4444', bg: '#fee2e2' };
-    if (item.blocks?.length > 0) return { label: 'Modul', icon: <BookOpen size={12} />, color: '#3b82f6', bg: '#dbeafe' };
-    return { label: 'Materi', icon: <FileText size={12} />, color: '#64748b', bg: '#f1f5f9' };
+    return { label: 'Modul', icon: <BookOpen size={12} />, color: '#3b82f6', bg: '#dbeafe' };
   };
 
-  const getFilteredItems = () => {
-    let filtered = items;
+  const getCurrentItems = () => {
+    let filtered = activeTab === 'modul' ? items : quizItems;
     
-    // Search
     if (searchTerm) {
       filtered = filtered.filter(item => 
         (item.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -129,16 +135,6 @@ const ModulManager = () => {
       );
     }
     
-    // Tab filter
-    if (activeTab === 'modul') {
-      filtered = filtered.filter(item => !item.type || (item.blocks?.length > 0 && item.type !== 'kuis_mandiri' && item.type !== 'assignment'));
-    } else if (activeTab === 'tugas') {
-      filtered = filtered.filter(item => item.type === 'assignment');
-    } else if (activeTab === 'kuis') {
-      filtered = filtered.filter(item => item.type === 'kuis_mandiri');
-    }
-    
-    // Kelas
     if (filterKelas !== "Semua") {
       filtered = filtered.filter(item => {
         const targetKelas = item.targetKelas || "Semua";
@@ -146,12 +142,10 @@ const ModulManager = () => {
       });
     }
     
-    // Mapel
     if (filterMapel !== "Semua") {
       filtered = filtered.filter(item => (item.subject || "Umum") === filterMapel);
     }
     
-    // Status
     if (filterStatus !== "Semua") {
       filtered = filtered.filter(item => item.status === filterStatus || (!item.status && filterStatus === "aktif"));
     }
@@ -159,7 +153,7 @@ const ModulManager = () => {
     return filtered;
   };
 
-  const filteredItems = getFilteredItems();
+  const filteredItems = getCurrentItems();
   const hasActiveFilters = filterKelas !== "Semua" || filterMapel !== "Semua" || filterStatus !== "Semua";
 
   const clearFilters = () => {
@@ -169,35 +163,27 @@ const ModulManager = () => {
     setSearchTerm("");
   };
 
-  const loadMore = () => {
-    if (hasMore && !loadingMore && filteredItems.length === items.length) {
-      fetchItems(true);
-    }
+  const stats = {
+    modul: items.length,
+    kuis: quizItems.length
   };
 
-  // Skeleton loading component
+  // Skeleton loading
   const SkeletonCard = () => (
     <div style={{ background: 'white', borderRadius: 14, border: '1px solid #f1f5f9', padding: 14, overflow: 'hidden' }}>
-      <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
-        <div style={{ width: 50, height: 18, background: '#f1f5f9', borderRadius: 4 }}></div>
-        <div style={{ width: 60, height: 18, background: '#f1f5f9', borderRadius: 4 }}></div>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+        <div style={{ width: 50, height: 20, background: '#f1f5f9', borderRadius: 4 }}></div>
+        <div style={{ width: 60, height: 20, background: '#f1f5f9', borderRadius: 4 }}></div>
       </div>
-      <div style={{ width: '70%', height: 18, background: '#f1f5f9', borderRadius: 4, marginBottom: 6 }}></div>
-      <div style={{ width: '50%', height: 14, background: '#f1f5f9', borderRadius: 4, marginBottom: 10 }}></div>
-      <div style={{ display: 'flex', gap: 5 }}>
-        <div style={{ flex: 1, height: 28, background: '#f1f5f9', borderRadius: 6 }}></div>
-        <div style={{ flex: 1, height: 28, background: '#f1f5f9', borderRadius: 6 }}></div>
-        <div style={{ width: 28, height: 28, background: '#f1f5f9', borderRadius: 6 }}></div>
+      <div style={{ width: '70%', height: 18, background: '#f1f5f9', borderRadius: 4, marginBottom: 8 }}></div>
+      <div style={{ width: '50%', height: 14, background: '#f1f5f9', borderRadius: 4, marginBottom: 12 }}></div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ flex: 1, height: 30, background: '#f1f5f9', borderRadius: 6 }}></div>
+        <div style={{ flex: 1, height: 30, background: '#f1f5f9', borderRadius: 6 }}></div>
+        <div style={{ width: 30, height: 30, background: '#f1f5f9', borderRadius: 6 }}></div>
       </div>
     </div>
   );
-
-  const stats = {
-    total: items.length,
-    modul: items.filter(i => !i.type || (i.blocks?.length > 0 && i.type !== 'kuis_mandiri' && i.type !== 'assignment')).length,
-    tugas: items.filter(i => i.type === 'assignment').length,
-    kuis: items.filter(i => i.type === 'kuis_mandiri').length,
-  };
 
   return (
     <div style={{ width: '100%', maxWidth: 1400, margin: '0 auto' }}>
@@ -208,142 +194,130 @@ const ModulManager = () => {
           <div style={{ background: '#6366f1', padding: 10, borderRadius: 14 }}><BookOpen size={22} color="white"/></div>
           <div>
             <h2 style={{ margin: 0, fontSize: isMobile ? 18 : 22, fontWeight: 800, color: '#1e293b' }}>E-Learning Console</h2>
-            <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: 12 }}>Kelola Modul Pembelajaran</p>
+            <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: 12 }}>Kelola Modul & Kuis Pembelajaran</p>
           </div>
         </div>
-        <button onClick={() => navigate('/guru/modul/materi')} style={{
-          background: '#6366f1', color: 'white', border: 'none', padding: isMobile ? '10px 16px' : '12px 20px', borderRadius: 10,
-          cursor: 'pointer', fontWeight: 700, fontSize: isMobile ? 12 : 13, display: 'flex', alignItems: 'center', gap: 6
-        }}>
-          <Plus size={16} /> Buat Modul Baru
-        </button>
       </div>
 
-      {/* STATS TABS */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap', borderBottom: '1px solid #e2e8f0', paddingBottom: 12 }}>
-        <button 
-          onClick={() => setActiveTab('semua')}
-          style={{ 
-            padding: '8px 16px', borderRadius: 20, border: 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer',
-            background: activeTab === 'semua' ? '#6366f1' : '#f1f5f9',
-            color: activeTab === 'semua' ? 'white' : '#64748b'
-          }}
-        >
-          Semua ({stats.total})
-        </button>
+      {/* TABS */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 20, borderBottom: '1px solid #e2e8f0', paddingBottom: 12 }}>
         <button 
           onClick={() => setActiveTab('modul')}
           style={{ 
-            padding: '8px 16px', borderRadius: 20, border: 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer',
-            background: activeTab === 'modul' ? '#3b82f6' : '#f1f5f9',
+            padding: '10px 20px', borderRadius: 12, border: 'none', fontWeight: 700, fontSize: 14, cursor: 'pointer',
+            background: activeTab === 'modul' ? '#3b82f6' : 'transparent',
             color: activeTab === 'modul' ? 'white' : '#64748b',
-            display: 'flex', alignItems: 'center', gap: 4
+            display: 'flex', alignItems: 'center', gap: 8
           }}
         >
-          <BookOpen size={14} /> Modul ({stats.modul})
-        </button>
-        <button 
-          onClick={() => setActiveTab('tugas')}
-          style={{ 
-            padding: '8px 16px', borderRadius: 20, border: 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer',
-            background: activeTab === 'tugas' ? '#ef4444' : '#f1f5f9',
-            color: activeTab === 'tugas' ? 'white' : '#64748b',
-            display: 'flex', alignItems: 'center', gap: 4
-          }}
-        >
-          <Send size={14} /> Tugas ({stats.tugas})
+          <BookOpen size={18} /> Modul ({stats.modul})
         </button>
         <button 
           onClick={() => setActiveTab('kuis')}
           style={{ 
-            padding: '8px 16px', borderRadius: 20, border: 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer',
-            background: activeTab === 'kuis' ? '#f59e0b' : '#f1f5f9',
+            padding: '10px 20px', borderRadius: 12, border: 'none', fontWeight: 700, fontSize: 14, cursor: 'pointer',
+            background: activeTab === 'kuis' ? '#f59e0b' : 'transparent',
             color: activeTab === 'kuis' ? 'white' : '#64748b',
-            display: 'flex', alignItems: 'center', gap: 4
+            display: 'flex', alignItems: 'center', gap: 8
           }}
         >
-          <HelpCircle size={14} /> Kuis ({stats.kuis})
+          <HelpCircle size={18} /> Kuis ({stats.kuis})
         </button>
       </div>
 
-      {/* SEARCH & FILTER BAR */}
+      {/* ACTION BUTTONS & FILTER */}
       <div style={{ background: 'white', borderRadius: 12, padding: '12px 16px', marginBottom: 18, border: '1px solid #e2e8f0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f8fafc', padding: '8px 14px', borderRadius: 10, border: '1px solid #e2e8f0', flex: 2, minWidth: 200 }}>
-            <Search size={16} color="#94a3b8" />
-            <input 
-              placeholder="Cari judul atau mapel..." 
-              value={searchTerm} 
-              onChange={e => setSearchTerm(e.target.value)} 
-              style={{ border: 'none', outline: 'none', width: '100%', fontSize: 13, background: 'transparent' }} 
-            />
-            {searchTerm && (
-              <button onClick={() => setSearchTerm('')} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
-            )}
+          <div style={{ display: 'flex', gap: 8, flex: 2, minWidth: 200 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f8fafc', padding: '8px 14px', borderRadius: 10, border: '1px solid #e2e8f0', flex: 1 }}>
+              <Search size={16} color="#94a3b8" />
+              <input 
+                placeholder="Cari judul atau mapel..." 
+                value={searchTerm} 
+                onChange={e => setSearchTerm(e.target.value)} 
+                style={{ border: 'none', outline: 'none', width: '100%', fontSize: 13, background: 'transparent' }} 
+              />
+              {searchTerm && (<button onClick={() => setSearchTerm('')} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>)}
+            </div>
+            <button onClick={() => setShowFilters(!showFilters)} style={{
+              background: hasActiveFilters ? '#3b82f6' : '#f1f5f9',
+              color: hasActiveFilters ? 'white' : '#64748b',
+              border: 'none', padding: '8px 14px', borderRadius: 10, cursor: 'pointer', fontSize: 12, fontWeight: 600,
+              display: 'flex', alignItems: 'center', gap: 4
+            }}>
+              <Filter size={14} /> Filter {hasActiveFilters && <span style={{ background: 'white', color: '#3b82f6', borderRadius: 10, padding: '0 6px', marginLeft: 4 }}>●</span>}
+            </button>
           </div>
           
-          <button onClick={() => setShowFilters(!showFilters)} style={{
-            background: hasActiveFilters ? '#3b82f6' : '#f1f5f9',
-            color: hasActiveFilters ? 'white' : '#64748b',
-            border: 'none', padding: '8px 14px', borderRadius: 10, cursor: 'pointer', fontSize: 12, fontWeight: 600,
-            display: 'flex', alignItems: 'center', gap: 4
-          }}>
-            <Filter size={14} /> Filter {hasActiveFilters && <span style={{ background: 'white', color: '#3b82f6', borderRadius: 10, padding: '0 6px', marginLeft: 4 }}>●</span>}
-          </button>
-          
-          {hasActiveFilters && (
-            <button onClick={clearFilters} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <X size={12} /> Reset
-            </button>
-          )}
+          {/* 🔥 TOMBOL BUAT MODUL / KUIS */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {activeTab === 'modul' ? (
+              <button onClick={() => navigate('/guru/modul/materi')} style={{
+                background: '#3b82f6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 10,
+                cursor: 'pointer', fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6
+              }}>
+                <Plus size={16} /> Buat Modul Baru
+              </button>
+            ) : (
+              <button onClick={() => navigate('/guru/manage-quiz')} style={{
+                background: '#f59e0b', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 10,
+                cursor: 'pointer', fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6
+              }}>
+                <HelpCircle size={16} /> Buat Kuis Baru
+              </button>
+            )}
+          </div>
         </div>
 
+        {/* FILTER PANEL */}
         {showFilters && (
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', paddingTop: 12, marginTop: 12, borderTop: '1px solid #e2e8f0' }}>
             <select value={filterKelas} onChange={e => setFilterKelas(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, background: 'white' }}>
               <option value="Semua">🎓 Semua Kelas</option>
-              {availableClasses.filter(k => k !== 'Semua').map(k => (
-                <option key={k} value={k}>{k}</option>
-              ))}
+              {availableClasses.filter(k => k !== 'Semua').map(k => <option key={k} value={k}>{k}</option>)}
             </select>
-
             <select value={filterMapel} onChange={e => setFilterMapel(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, background: 'white' }}>
               <option value="Semua">📖 Semua Mapel</option>
-              {availableSubjects.filter(s => s !== 'Semua').map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
+              {availableSubjects.filter(s => s !== 'Semua').map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-
             <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, background: 'white' }}>
               <option value="Semua">📋 Semua Status</option>
               <option value="aktif">🟢 Aktif</option>
               <option value="terjadwal">🟡 Terjadwal</option>
               <option value="arsip">📦 Arsip</option>
             </select>
+            {hasActiveFilters && (
+              <button onClick={clearFilters} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 12 }}>
+                Reset Filter ✕
+              </button>
+            )}
           </div>
         )}
       </div>
 
-      {/* INFO FILTER */}
+      {/* INFO FILTER AKTIF */}
       {hasActiveFilters && (
         <div style={{ fontSize: 11, color: '#3b82f6', marginBottom: 12, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           <span>🔍 Menampilkan {filteredItems.length} item</span>
-          {filterKelas !== "Semua" && <span style={{ background: '#eef2ff', padding: '2px 8px', borderRadius: 12 }}>🎓 {filterKelas}</span>}
-          {filterMapel !== "Semua" && <span style={{ background: '#eef2ff', padding: '2px 8px', borderRadius: 12 }}>📖 {filterMapel}</span>}
-          {filterStatus !== "Semua" && <span style={{ background: '#eef2ff', padding: '2px 8px', borderRadius: 12 }}>📋 {filterStatus === 'aktif' ? 'Aktif' : filterStatus === 'terjadwal' ? 'Terjadwal' : 'Arsip'}</span>}
         </div>
       )}
 
-      {/* GRID */}
+      {/* CONTENT GRID */}
       {loading && items.length === 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
           {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : filteredItems.length === 0 ? (
         <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 14, border: '2px dashed #e2e8f0', color: '#94a3b8' }}>
-          <AlertCircle size={48} color="#cbd5e1" />
-          <h3 style={{ margin: '10px 0 4px', color: '#64748b' }}>Tidak Ada Konten</h3>
-          <p style={{ fontSize: 12 }}>{searchTerm ? 'Coba ubah kata kunci.' : 'Buat modul pembelajaran baru.'}</p>
+          {activeTab === 'modul' ? <BookOpen size={48} color="#cbd5e1" /> : <HelpCircle size={48} color="#cbd5e1" />}
+          <h3 style={{ margin: '10px 0 4px', color: '#64748b' }}>
+            {searchTerm ? 'Tidak ada hasil pencarian' : (activeTab === 'modul' ? 'Belum ada modul' : 'Belum ada kuis mandiri')}
+          </h3>
+          <p style={{ fontSize: 12, marginTop: 8 }}>
+            {activeTab === 'modul' 
+              ? 'Klik "Buat Modul Baru" untuk memulai' 
+              : 'Klik "Buat Kuis Baru" untuk membuat kuis mandiri'}
+          </p>
         </div>
       ) : (
         <>
@@ -354,50 +328,63 @@ const ModulManager = () => {
               const targetKelas = item.targetKelas || "Semua";
               const isForAllClasses = targetKelas === "Semua";
               
+              const handleEdit = () => {
+                if (activeTab === 'kuis') {
+                  navigate(`/guru/manage-quiz?modulId=${item.id}`);
+                } else {
+                  if (item.type === 'assignment') {
+                    navigate(`/guru/manage-tugas?edit=${item.id}`);
+                  } else {
+                    navigate(`/guru/modul/materi?edit=${item.id}`);
+                  }
+                }
+              };
+              
               return (
                 <div 
                   key={item.id} 
+                  onClick={handleEdit}
                   style={{ 
                     background: 'white', borderRadius: 14, border: '1px solid #f1f5f9', overflow: 'hidden', 
                     boxShadow: '0 2px 6px rgba(0,0,0,0.03)', borderTop: `4px solid ${typeInfo.color}`,
                     transition: 'all 0.2s ease', cursor: 'pointer'
                   }}
-                  onClick={() => {
-                    if (typeInfo.label === 'Kuis') navigate(`/guru/manage-quiz?modulId=${item.id}`);
-                    else if (typeInfo.label === 'Tugas') navigate(`/guru/manage-tugas?edit=${item.id}`);
-                    else navigate(`/guru/modul/materi?edit=${item.id}`);
-                  }}
                 >
                   <div style={{ padding: 14 }}>
                     {/* BADGES */}
                     <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 8px', borderRadius: 12, fontSize: 9, fontWeight: 700, background: sb.bg, color: sb.color }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 12, fontSize: 9, fontWeight: 700, background: sb.bg, color: sb.color }}>
                         {sb.label}
                       </span>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 8px', borderRadius: 12, fontSize: 9, fontWeight: 700, background: typeInfo.bg, color: typeInfo.color }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 12, fontSize: 9, fontWeight: 700, background: typeInfo.bg, color: typeInfo.color }}>
                         {typeInfo.icon} {typeInfo.label}
                       </span>
                       {item.subject && (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 8px', borderRadius: 12, fontSize: 9, fontWeight: 600, background: '#f1f5f9', color: '#64748b' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 12, fontSize: 9, fontWeight: 600, background: '#f1f5f9', color: '#64748b' }}>
                           {item.subject}
                         </span>
                       )}
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 8px', borderRadius: 12, fontSize: 9, fontWeight: 600, background: isForAllClasses ? '#fef3c7' : '#e0e7ff', color: isForAllClasses ? '#b45309' : '#3730a3' }}>
-                        {isForAllClasses ? '🌐 Semua' : `🎓 ${targetKelas}`}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 12, fontSize: 9, fontWeight: 600, background: isForAllClasses ? '#fef3c7' : '#e0e7ff', color: isForAllClasses ? '#b45309' : '#3730a3' }}>
+                        {isForAllClasses ? '🌐 Semua Kelas' : `🎓 ${targetKelas}`}
                       </span>
                     </div>
                     
                     {/* TITLE */}
-                    <h3 style={{ margin: '0 0 6px', fontSize: 14, color: '#1e293b', fontWeight: 700, lineHeight: 1.3 }}>{item.title || "Untitled"}</h3>
+                    <h3 style={{ margin: '0 0 6px', fontSize: 15, color: '#1e293b', fontWeight: 700, lineHeight: 1.3 }}>{item.title || "Untitled"}</h3>
                     
                     {/* META INFO */}
                     <div style={{ display: 'flex', gap: 12, fontSize: 10, color: '#94a3b8', marginBottom: 12, flexWrap: 'wrap' }}>
-                      {typeInfo.label === 'Kuis' ? (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><HelpCircle size={10}/> {item.quizData?.length || 0} soal</span>
-                      ) : typeInfo.label === 'Tugas' ? (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Clock size={10}/> {item.deadlineTugas ? new Date(item.deadlineTugas).toLocaleDateString('id-ID') : 'Tanpa deadline'}</span>
+                      {activeTab === 'kuis' ? (
+                        <>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><HelpCircle size={10}/> {item.quizData?.length || 0} soal</span>
+                          {item.deadlineQuiz && <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Clock size={10}/> Deadline: {new Date(item.deadlineQuiz).toLocaleDateString('id-ID')}</span>}
+                          {item.difficulty && <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>📊 {item.difficulty}</span>}
+                        </>
                       ) : (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><FileText size={10}/> {(item.blocks || []).length} konten</span>
+                        <>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><FileText size={10}/> {(item.blocks || []).length} konten</span>
+                          {item.deadlineTugas && <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Clock size={10}/> Deadline: {new Date(item.deadlineTugas).toLocaleDateString('id-ID')}</span>}
+                        </>
                       )}
                       <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Users size={10}/> {item.targetKategori || 'Reguler'}</span>
                       {item.mingguKe && <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>📅 Mg {item.mingguKe}</span>}
@@ -406,11 +393,7 @@ const ModulManager = () => {
                     {/* ACTIONS */}
                     <div style={{ display: 'flex', gap: 6 }}>
                       <button 
-                        onClick={(e) => { e.stopPropagation(); 
-                          if (typeInfo.label === 'Kuis') navigate(`/guru/manage-quiz?modulId=${item.id}`);
-                          else if (typeInfo.label === 'Tugas') navigate(`/guru/manage-tugas?edit=${item.id}`);
-                          else navigate(`/guru/modul/materi?edit=${item.id}`);
-                        }} 
+                        onClick={(e) => { e.stopPropagation(); handleEdit(); }} 
                         style={{ flex: 1, background: '#f8fafc', color: '#1e293b', border: '1px solid #e2e8f0', padding: '7px 0', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
                       >
                         <Edit3 size={12} /> Edit
@@ -434,16 +417,13 @@ const ModulManager = () => {
             })}
           </div>
           
-          {/* LOAD MORE BUTTON */}
-          {hasMore && filteredItems.length === items.length && items.length > 0 && (
+          {/* LOAD MORE */}
+          {hasMore && filteredItems.length === (activeTab === 'modul' ? items.length : quizItems.length) && filteredItems.length > 0 && (
             <div style={{ textAlign: 'center', marginTop: 24 }}>
               <button 
-                onClick={loadMore} 
+                onClick={fetchItems} 
                 disabled={loadingMore}
-                style={{
-                  background: '#f1f5f9', border: 'none', padding: '10px 24px', borderRadius: 20, cursor: 'pointer',
-                  fontSize: 12, fontWeight: 600, color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: 6
-                }}
+                style={{ background: '#f1f5f9', border: 'none', padding: '10px 24px', borderRadius: 20, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#64748b' }}
               >
                 {loadingMore ? 'Memuat...' : 'Muat Lebih Banyak'}
               </button>
