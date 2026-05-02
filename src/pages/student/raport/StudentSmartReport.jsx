@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { RAPORT_COLLECTIONS } from '../../../firebase/raportCollection';
-import { getRelativeLeaderboard } from '../../../services/raportService';
+import { getRelativeLeaderboard, generateCharacterNarasi, generateDetailCharacterNarasi } from '../../../services/raportService';
 import RelativeLeaderboard from '../../../components/raport/RelativeLeaderboard';
 import WeightedScoreCalculator from '../../../components/raport/WeightedScoreCalculator';
-import { FileText, TrendingUp, Award, Calendar, Target, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileText, TrendingUp, Award, Calendar, Target, ChevronDown, ChevronUp, Brain, Star } from 'lucide-react';
 
 const StudentSmartReport = () => {
   const [reports, setReports] = useState([]);
@@ -15,6 +15,10 @@ const StudentSmartReport = () => {
   const [currentReport, setCurrentReport] = useState(null);
   const [leaderboard, setLeaderboard] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [characterData, setCharacterData] = useState(null); // Data qualitative
+  const [characterNarasi, setCharacterNarasi] = useState(''); // Narasi karakter
+  const [detailCharacterNarasi, setDetailCharacterNarasi] = useState([]); // Detail per aspek
+  const [showCharacterDetail, setShowCharacterDetail] = useState(false);
   
   const studentId = localStorage.getItem('studentId');
   const studentName = localStorage.getItem('studentName');
@@ -42,11 +46,40 @@ const StudentSmartReport = () => {
         // Ambil leaderboard untuk periode ini
         const lb = await getRelativeLeaderboard(data[0].periode, studentId);
         setLeaderboard(lb);
+        
+        // Ambil data karakter dari raport_scores
+        await fetchCharacterData(data[0].periode);
       }
     } catch (error) {
       console.error("Error fetch reports:", error);
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const fetchCharacterData = async (periode) => {
+    try {
+      const scoresQuery = query(
+        collection(db, RAPORT_COLLECTIONS.SCORES),
+        where("studentId", "==", studentId),
+        where("periode", "==", periode)
+      );
+      const scoresSnap = await getDocs(scoresQuery);
+      const allScores = scoresSnap.docs.map(d => d.data());
+      
+      // Cari data qualitative
+      const qualData = allScores.find(s => s.qualitative);
+      if (qualData && qualData.qualitative) {
+        setCharacterData(qualData.qualitative);
+        setCharacterNarasi(generateCharacterNarasi(qualData.qualitative));
+        setDetailCharacterNarasi(generateDetailCharacterNarasi(qualData.qualitative));
+      } else {
+        setCharacterData(null);
+        setCharacterNarasi('');
+        setDetailCharacterNarasi([]);
+      }
+    } catch (error) {
+      console.error("Error fetch character data:", error);
     }
   };
   
@@ -56,12 +89,20 @@ const StudentSmartReport = () => {
     setCurrentReport(found);
     const lb = await getRelativeLeaderboard(periode, studentId);
     setLeaderboard(lb);
+    await fetchCharacterData(periode);
   };
   
   const getScoreColor = (score) => {
     if (score >= 85) return '#10b981';
     if (score >= 70) return '#3b82f6';
     if (score >= 60) return '#f59e0b';
+    return '#ef4444';
+  };
+  
+  const getStarColor = (nilai) => {
+    if (nilai >= 4) return '#10b981';
+    if (nilai >= 3) return '#f59e0b';
+    if (nilai >= 2) return '#f97316';
     return '#ef4444';
   };
   
@@ -120,6 +161,25 @@ const StudentSmartReport = () => {
             </div>
             <div style={{ fontSize: 12, color: '#64748b' }}>Nilai Akhir</div>
             
+            {/* Info komponen yang dipakai */}
+            {currentReport.komponen_dipakai && (
+              <div style={{ marginTop: 8, display: 'flex', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
+                {currentReport.komponen_dipakai.map(komp => (
+                  <span key={komp} style={{
+                    fontSize: 9,
+                    background: '#eef2ff',
+                    color: '#3b82f6',
+                    padding: '2px 8px',
+                    borderRadius: 10
+                  }}>
+                    {komp === 'kuis' ? '📝 Kuis' : 
+                     komp === 'catatan' ? '📓 Tugas' : 
+                     komp === 'ujian' ? '📖 Ujian' : '⭐ Keaktifan'}
+                  </span>
+                ))}
+              </div>
+            )}
+            
             {/* Narasi */}
             <div style={{ background: '#f8fafc', padding: 12, borderRadius: 12, marginTop: 16 }}>
               <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5 }}>{currentReport.narasi}</p>
@@ -168,6 +228,87 @@ const StudentSmartReport = () => {
               </div>
             )}
           </div>
+          
+          {/* ============================================================ */}
+          {/* ➕ SECTION: KARAKTER & SIKAP (TAMBAHAN BARU) */}
+          {/* ============================================================ */}
+          {characterData && (
+            <div style={{ background: 'white', borderRadius: 16, padding: 20, border: '1px solid #e2e8f0', marginBottom: 20 }}>
+              <div 
+                onClick={() => setShowCharacterDetail(!showCharacterDetail)}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+              >
+                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Brain size={16} color="#8b5cf6" /> 🧠 Karakter & Sikap
+                </h3>
+                {showCharacterDetail ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </div>
+              
+              {/* Narasi ringkas (selalu tampil) */}
+              <div style={{ 
+                background: 'linear-gradient(135deg, #faf5ff 0%, #f0f9ff 100%)',
+                padding: 14,
+                borderRadius: 12,
+                marginTop: 12,
+                border: '1px solid #e9d5ff'
+              }}>
+                <p style={{ margin: 0, fontSize: 13, color: '#4c1d95', lineHeight: 1.6 }}>{characterNarasi}</p>
+              </div>
+              
+              {/* Detail per aspek (toggle) */}
+              {showCharacterDetail && detailCharacterNarasi.length > 0 && (
+                <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {detailCharacterNarasi.map((aspek, idx) => (
+                    <div key={idx} style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 12,
+                      padding: 14,
+                      background: '#f8fafc',
+                      borderRadius: 12,
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      {/* Bintang indikator */}
+                      <div style={{
+                        minWidth: 48,
+                        height: 48,
+                        borderRadius: 12,
+                        background: aspek.nilai >= 4 ? '#dcfce7' : aspek.nilai >= 3 ? '#fef3c7' : '#fee2e2',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <Star size={16} color={getStarColor(aspek.nilai)} fill={getStarColor(aspek.nilai)} />
+                        <span style={{ fontSize: 11, fontWeight: 800, color: getStarColor(aspek.nilai) }}>{aspek.nilai}/5</span>
+                      </div>
+                      
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>
+                          {aspek.label}
+                        </div>
+                        <p style={{ fontSize: 11, color: '#475569', margin: '0 0 6px 0', lineHeight: 1.4 }}>
+                          {aspek.narasi}
+                        </p>
+                        <p style={{ fontSize: 10, color: '#64748b', margin: 0, fontStyle: 'italic' }}>
+                          💡 {aspek.saran}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {!characterData && (
+            <div style={{ background: 'white', borderRadius: 16, padding: 20, border: '1px solid #e2e8f0', marginBottom: 20, textAlign: 'center' }}>
+              <Brain size={32} color="#cbd5e1" />
+              <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 8 }}>Belum ada penilaian karakter untuk periode ini.</p>
+              <p style={{ fontSize: 10, color: '#cbd5e1', margin: 0 }}>Guru belum menginput aspek pemahaman, aplikasi, literasi, inisiatif, dan kemandirian.</p>
+            </div>
+          )}
+          {/* ============================================================ */}
           
           {/* Target & Rekomendasi */}
           <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: 16, padding: 20, color: 'white' }}>
