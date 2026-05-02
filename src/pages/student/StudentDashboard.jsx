@@ -5,29 +5,34 @@ import { db, auth } from '../../firebase';
 import { collection, query, getDocs, orderBy, doc, getDoc, setDoc, addDoc, serverTimestamp, where, limit } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { Html5Qrcode } from "html5-qrcode";
+import { useNavigate } from 'react-router-dom'; // ➕ Import navigate
 import StudentFinanceSiswa from './StudentFinance';
 import StudentGrades from './StudentGrades';
 import StudentSchedule from './StudentSchedule';
 import StudentAttendanceSiswa from './StudentAttendance';
 import StudentElearning from './StudentElearning';
+import { getRelativeLeaderboard } from '../../services/raportService'; // ➕ Import leaderboard
+import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection'; // ➕ Import collection
 
 import { 
   BookOpen, Calendar, Clock, GraduationCap, Menu, ChevronRight, 
   ClipboardList, X, Camera, User, MapPin, Send, CheckCircle, 
-  Megaphone, TrendingUp 
+  Megaphone, TrendingUp, Trophy, ArrowRight
 } from 'lucide-react';
 
-// SWIPER IMPORT - VERSI STABIL
+// SWIPER IMPORT
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
-
-// Import modules dengan cara yang benar
 import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
 
+const CACHE_KEY = 'dashboard_cache';
+const CACHE_EXPIRY = 5 * 60 * 1000; // 5 menit
+
 const StudentDashboard = () => {
+  const navigate = useNavigate(); // ➕ Navigate
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -49,6 +54,9 @@ const StudentDashboard = () => {
   const [surveyAnswers, setSurveyAnswers] = useState({});
   const [surveyLoading, setSurveyLoading] = useState(false);
 
+  // ➕ State ringkasan raport
+  const [raportSummary, setRaportSummary] = useState(null);
+
   useEffect(() => { 
     const h = () => setWindowWidth(window.innerWidth); 
     window.addEventListener('resize', h); 
@@ -57,7 +65,7 @@ const StudentDashboard = () => {
   
   const isMobile = windowWidth <= 768;
 
-  // AUTH STATE - TUNGGU LOGIN SIAP
+  // AUTH STATE
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -66,16 +74,37 @@ const StudentDashboard = () => {
         setStudentName(storedName || user.email || "Siswa");
         setStudentId(storedId || user.uid);
         setAuthReady(true);
-        console.log('✅ Auth siap, user ID:', user.uid);
       } else {
-        console.log('⏳ Menunggu login...');
         setLoading(false);
       }
     });
     return () => unsubscribe();
   }, []);
 
-  // QR SCANNER
+  // CACHE: Coba load dari localStorage dulu
+  const loadCache = () => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Date.now() - parsed.timestamp < CACHE_EXPIRY) {
+          return parsed.data;
+        }
+      }
+    } catch (e) {}
+    return null;
+  };
+
+  const saveCache = (data) => {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        timestamp: Date.now(),
+        data
+      }));
+    } catch (e) {}
+  };
+
+  // QR SCANNER (tidak diubah)
   useEffect(() => {
     let qr = null;
     const start = async () => {
@@ -90,37 +119,21 @@ const StudentDashboard = () => {
               if (d.type === "ABSENSI_BIMBEL") {
                 const today = new Date().toISOString().split('T')[0];
                 await setDoc(doc(db, "attendance", `${studentId}_${today}_${d.scheduleId || ''}`), {
-                  studentId, 
-                  studentName, 
-                  teacherName: d.teacher, 
-                  date: today, 
-                  tanggal: today,
-                  timestamp: serverTimestamp(), 
-                  status: "Hadir", 
-                  mapel: d.mapel,
-                  scheduleId: d.scheduleId || '', 
-                  keterangan: "Scan QR"
+                  studentId, studentName, teacherName: d.teacher, date: today, 
+                  tanggal: today, timestamp: serverTimestamp(), status: "Hadir", 
+                  mapel: d.mapel, scheduleId: d.scheduleId || '', keterangan: "Scan QR"
                 }, { merge: true });
                 alert(`✅ Absen: ${d.mapel}`);
                 stop();
               }
-            } catch (e) {
-              console.warn('QR parse error:', e);
-            }
+            } catch (e) { console.warn('QR parse error:', e); }
           }, 
           (err) => console.warn('QR scan error:', err)
         );
-      } catch (e) {
-        console.warn('QR start error:', e);
-      }
+      } catch (e) { console.warn('QR start error:', e); }
     };
     const stop = async () => {
-      if (qr && qr.isScanning) { 
-        try { 
-          await qr.stop(); 
-          qr.clear(); 
-        } catch (e) {} 
-      }
+      if (qr && qr.isScanning) { try { await qr.stop(); qr.clear(); } catch (e) {} }
       setIsScanning(false);
     };
     if (isScanning && studentId) start();
@@ -129,37 +142,26 @@ const StudentDashboard = () => {
 
   const formatDateOnly = (ts) => { 
     if (!ts) return "-"; 
-    try {
-      const d = ts.toDate ? ts.toDate() : new Date(ts); 
-      return d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' }); 
-    } catch { return "-"; }
+    try { const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' }); } 
+    catch { return "-"; }
   };
   
   const isDeadlineSoon = (dl) => { 
     if (!dl) return false; 
-    try {
-      const d = dl.toDate ? dl.toDate() : new Date(dl); 
-      return (d - new Date()) / 36e5 > 0 && (d - new Date()) / 36e5 < 48; 
-    } catch { return false; }
+    try { const d = dl.toDate ? dl.toDate() : new Date(dl); return (d - new Date()) / 36e5 > 0 && (d - new Date()) / 36e5 < 48; } 
+    catch { return false; }
   };
   
   const isDeadlinePassed = (dl) => { 
     if (!dl) return false; 
-    try {
-      return (dl.toDate ? dl.toDate() : new Date(dl)) < new Date(); 
-    } catch { return false; }
+    try { return (dl.toDate ? dl.toDate() : new Date(dl)) < new Date(); } 
+    catch { return false; }
   };
 
-  // FETCH SURVEI
   const fetchSurveys = async (studentKelas, studentIdParam) => {
     try {
-      const snap = await getDocs(
-        query(collection(db, "surveys"), where("status", "==", "aktif"))
-      );
-      
+      const snap = await getDocs(query(collection(db, "surveys"), where("status", "==", "aktif")));
       const allActive = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      console.log('✅ Survei aktif:', allActive.length);
-      
       const cocok = allActive.filter(s => {
         const target = (s.targetType || '').toLowerCase().trim();
         if (target === 'semua_siswa' || target === 'semua') return true;
@@ -169,127 +171,145 @@ const StudentDashboard = () => {
         }
         return false;
       });
-      
       const filled = {};
       for (const survey of cocok) {
         try {
-          const respSnap = await getDocs(query(
-            collection(db, "survey_responses"),
-            where("surveyId", "==", survey.id),
-            where("userId", "==", studentIdParam)
-          ));
+          const respSnap = await getDocs(query(collection(db, "survey_responses"), where("surveyId", "==", survey.id), where("userId", "==", studentIdParam)));
           filled[survey.id] = !respSnap.empty;
-        } catch (e) {
-          filled[survey.id] = false;
-        }
+        } catch (e) { filled[survey.id] = false; }
+      }
+      return { surveys: cocok, filled };
+    } catch (error) { return { surveys: [], filled: {} }; }
+  };
+
+  // ➕ Fetch ringkasan raport
+  const fetchRaportSummary = async (studentIdParam) => {
+    try {
+      const now = new Date();
+      const periode = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      
+      // Ambil dari raport_final
+      const finalSnap = await getDocs(query(
+        collection(db, RAPORT_COLLECTIONS.FINAL),
+        where("studentId", "==", studentIdParam),
+        where("periode", "==", periode)
+      ));
+      
+      if (!finalSnap.empty) {
+        const data = finalSnap.docs[0].data();
+        return {
+          nilaiAkhir: data.nilai_akhir,
+          komponenDipake: data.komponen_dipakai || [],
+          periode
+        };
       }
       
-      return { surveys: cocok, filled };
-    } catch (error) {
-      console.error('Error fetch survei:', error);
-      return { surveys: [], filled: {} };
+      // Jika belum ada, coba ambil leaderboard
+      const lb = await getRelativeLeaderboard(periode, studentIdParam);
+      return {
+        nilaiAkhir: null,
+        rank: lb?.studentRank || null,
+        totalStudents: lb?.totalStudents || 0,
+        periode
+      };
+    } catch (e) {
+      return null;
     }
   };
 
-  // FETCH ALL DATA
+  // FETCH ALL DATA - DENGAN CACHE
   useEffect(() => {
     if (!authReady || !studentId) return;
     
     const fetchAll = async () => {
-      setLoading(true);
-      console.log('🚀 Fetch data untuk studentId:', studentId);
+      // ➕ Coba load cache
+      const cache = loadCache();
+      if (cache) {
+        setPosters(cache.posters || []);
+        setTodaySchedules(cache.todaySchedules || []);
+        setTasks(cache.tasks || []);
+        setStudentProfile(cache.studentProfile || null);
+        setActiveSurveys(cache.activeSurveys || []);
+        setFilledSurveys(cache.filledSurveys || {});
+        setRaportSummary(cache.raportSummary || null);
+        setLoading(false);
+        console.log('⚡ Dashboard dari cache');
+      }
+      
+      // Tetap fetch dari Firestore untuk data terbaru
+      console.log('🔄 Fetch data terbaru...');
       
       try {
-        // FETCH STUDENT PROFILE
         const sSnap = await getDoc(doc(db, "students", studentId));
         let curKat = "Semua", curKel = "Semua";
-        
         if (sSnap.exists()) { 
           const d = sSnap.data(); 
-          setStudentProfile(d); 
           curKat = d.kategori || "Semua"; 
           curKel = d.kelasSekolah || "Semua";
-          console.log('📋 Profil siswa:', { curKat, curKel });
         }
 
-        // FETCH POSTERS
+        // Posters
+        let fetchedPosters = [];
         try {
           const postersSnap = await getDocs(query(collection(db, "student_contents"), orderBy("createdAt", "desc")));
-          setPosters(postersSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-          console.log('🖼️ Posters:', postersSnap.size);
-        } catch (e) {
-          console.warn('Fetch posters error:', e);
-          setPosters([]);
-        }
+          fetchedPosters = postersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        } catch (e) {}
 
-        // FETCH TODAY SCHEDULES
+        // Schedules
+        let fetchedSchedules = [];
         try {
           const todayStr = new Date().toISOString().split('T')[0];
-          const scheds = (await getDocs(query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr))))
+          fetchedSchedules = (await getDocs(query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr))))
             .docs.map(d => ({ id: d.id, ...d.data() }))
             .filter(sch => sch.students?.some(s => s.id === studentId || s === studentId))
             .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
-          setTodaySchedules(scheds.slice(0, 5));
-          console.log('📅 Jadwal:', scheds.length);
-        } catch (e) {
-          console.warn('Fetch schedules error:', e);
-          setTodaySchedules([]);
-        }
+        } catch (e) {}
 
-        // FETCH TASKS - DENGAN FILTER KATEGORI DAN KELAS
+        // Tasks
+        let fetchedTasks = [];
         try {
-          // Ambil semua modul (tanpa limit dulu agar bisa difilter kelas)
-          const modulSnap = await getDocs(query(
-            collection(db, "bimbel_modul"), 
-            where("targetKategori", "in", ["Semua", curKat])
-          ));
+          const modulSnap = await getDocs(query(collection(db, "bimbel_modul"), where("targetKategori", "in", ["Semua", curKat])));
           let allModuls = modulSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          allModuls = allModuls.filter(m => (m.targetKelas || "Semua") === "Semua" || m.targetKelas === curKel);
           
-          // 🔥 FILTER MANUAL BERDASARKAN KELAS
-          allModuls = allModuls.filter(module => {
-            const targetKelas = module.targetKelas || "Semua";
-            return targetKelas === "Semua" || targetKelas === curKel;
-          });
+          const kuisSnap = await getDocs(query(collection(db, "bimbel_modul"), where("type", "==", "kuis_mandiri")));
+          let kuisMandiri = kuisSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          kuisMandiri = kuisMandiri.filter(m => (m.targetKelas || "Semua") === "Semua" || m.targetKelas === curKel);
           
-          // Ambil kuis mandiri
-          const kuisMandiriSnap = await getDocs(query(
-            collection(db, "bimbel_modul"), 
-            where("type", "==", "kuis_mandiri")
-          ));
-          let kuisMandiri = kuisMandiriSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-          
-          // 🔥 FILTER KUIS MANDIRI JUGA BERDASARKAN KELAS
-          kuisMandiri = kuisMandiri.filter(module => {
-            const targetKelas = module.targetKelas || "Semua";
-            return targetKelas === "Semua" || targetKelas === curKel;
-          });
-          
-          // Gabungkan dan urutkan berdasarkan createdAt
           const combined = [...allModuls, ...kuisMandiri];
           combined.sort((a, b) => {
             const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
             const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
             return dateB - dateA;
           });
-          
-          // Filter yang memiliki tugas/kuis
-          const tasksWithContent = combined.filter(m => 
-            m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment')
-          );
-          
-          setTasks(tasksWithContent.slice(0, 5));
-          console.log('📚 Tugas ditemukan (setelah filter kelas):', tasksWithContent.length);
-          
-        } catch (taskErr) {
-          console.warn('Fetch tasks error:', taskErr.message);
-          setTasks([]);
-        }
+          fetchedTasks = combined.filter(m => m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment')).slice(0, 5);
+        } catch (e) {}
 
-        // FETCH SURVEYS
+        // Surveys
         const { surveys: fetchedSurveys, filled: filledStatus } = await fetchSurveys(curKel, studentId);
+
+        // ➕ Raport summary
+        const raportSummaryData = await fetchRaportSummary(studentId);
+
+        // Update state
+        setPosters(fetchedPosters);
+        setTodaySchedules(fetchedSchedules);
+        setTasks(fetchedTasks);
+        setStudentProfile(sSnap.exists() ? sSnap.data() : null);
         setActiveSurveys(fetchedSurveys);
         setFilledSurveys(filledStatus);
-        console.log('📋 Survei ditemukan:', fetchedSurveys.length);
+        setRaportSummary(raportSummaryData);
+
+        // ➕ Simpan cache
+        saveCache({
+          posters: fetchedPosters,
+          todaySchedules: fetchedSchedules,
+          tasks: fetchedTasks,
+          studentProfile: sSnap.exists() ? sSnap.data() : null,
+          activeSurveys: fetchedSurveys,
+          filledSurveys: filledStatus,
+          raportSummary: raportSummaryData
+        });
 
       } catch (err) { 
         console.error('Error fetch dashboard:', err); 
@@ -306,46 +326,24 @@ const StudentDashboard = () => {
     return ab?.endTime || modul.deadlineTugas || modul.deadlineQuiz || null;
   };
 
-  const openSurvey = (s) => { 
-    setCurrentSurvey(s); 
-    setSurveyAnswers({}); 
-    setShowSurveyModal(true); 
-  };
+  const openSurvey = (s) => { setCurrentSurvey(s); setSurveyAnswers({}); setShowSurveyModal(true); };
   
   const submitSurvey = async () => {
     if (!currentSurvey) return;
-    
     const unanswered = currentSurvey.questions?.filter((_, i) => !surveyAnswers[i]) || [];
-    if (unanswered.length > 0) {
-      alert(`❌ ${unanswered.length} pertanyaan belum dijawab!`);
-      return;
-    }
-    
+    if (unanswered.length > 0) { alert(`❌ ${unanswered.length} pertanyaan belum dijawab!`); return; }
     setSurveyLoading(true);
-    
     try {
       await addDoc(collection(db, "survey_responses"), {
-        surveyId: currentSurvey.id, 
-        userId: studentId, 
-        userName: studentName,
-        answers: currentSurvey.questions.map((q, i) => ({ 
-          questionIndex: i, 
-          answer: surveyAnswers[i] || '' 
-        })),
+        surveyId: currentSurvey.id, userId: studentId, userName: studentName,
+        answers: currentSurvey.questions.map((q, i) => ({ questionIndex: i, answer: surveyAnswers[i] || '' })),
         submittedAt: serverTimestamp()
       });
-      
       setFilledSurveys({ ...filledSurveys, [currentSurvey.id]: true });
-      setShowSurveyModal(false); 
-      setCurrentSurvey(null);
+      setShowSurveyModal(false); setCurrentSurvey(null);
       alert("✅ Terima kasih! Jawaban survei telah tersimpan.");
-      
-    } catch (err) { 
-      console.error('Error submit survey:', err);
-      alert("❌ Gagal mengirim survei: " + err.message); 
-    } finally {
-      setSurveyLoading(false);
-    }
+    } catch (err) { alert("❌ Gagal mengirim survei: " + err.message); } 
+    finally { setSurveyLoading(false); }
   };
 
   // LOADING STATE
@@ -353,14 +351,7 @@ const StudentDashboard = () => {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ 
-            width: 50, height: 50, 
-            border: '4px solid #e2e8f0', 
-            borderTop: '4px solid #3b82f6', 
-            borderRadius: '50%', 
-            animation: 'spin 0.8s linear infinite',
-            margin: '0 auto 16px'
-          }} />
+          <div style={{ width: 50, height: 50, border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
           <p style={{ color: '#64748b', fontSize: 14 }}>Memuat dashboard...</p>
         </div>
       </div>
@@ -394,39 +385,15 @@ const StudentDashboard = () => {
       {/* CAROUSEL POSTER */}
       {posters.length > 0 && (
         <div style={{ ...st.carouselContainer, aspectRatio: isMobile ? '4/3' : '21/9' }}>
-          <Swiper 
-            modules={[Navigation, Pagination, Autoplay, EffectFade]} 
-            effect={'fade'} 
-            navigation={!isMobile} 
-            pagination={{ clickable: true }} 
-            autoplay={{ delay: 5000 }} 
-            loop={posters.length > 1} 
-            style={st.mySwiper}
-          >
+          <Swiper modules={[Navigation, Pagination, Autoplay, EffectFade]} effect={'fade'} navigation={!isMobile} pagination={{ clickable: true }} autoplay={{ delay: 5000 }} loop={posters.length > 1} style={st.mySwiper}>
             {posters.map((post) => (
               <SwiperSlide key={post.id} onClick={() => setSelectedNews(post)}>
-                <div style={{ 
-                  ...st.slideCard, 
-                  backgroundImage: `url(${post.imageUrl})`, 
-                  cursor: 'pointer' 
-                }}>
+                <div style={{ ...st.slideCard, backgroundImage: `url(${post.imageUrl})`, cursor: 'pointer' }}>
                   <div style={st.slideOverlay}>
-                    <span style={{ 
-                      background: '#e11d48', 
-                      padding: '4px 10px', 
-                      borderRadius: 12, 
-                      fontSize: 9, 
-                      fontWeight: 800, 
-                      display: 'inline-flex', 
-                      alignItems: 'center', 
-                      gap: 4, 
-                      marginBottom: 8 
-                    }}>
+                    <span style={{ background: '#e11d48', padding: '4px 10px', borderRadius: 12, fontSize: 9, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 8 }}>
                       <Megaphone size={10} /> Info
                     </span>
-                    <h2 style={isMobile ? st.slideTitleMobile : st.slideTitle}>
-                      {post.title}
-                    </h2>
+                    <h2 style={isMobile ? st.slideTitleMobile : st.slideTitle}>{post.title}</h2>
                     {!isMobile && <p style={st.slideDesc}>{post.desc || "Klik untuk baca"}</p>}
                   </div>
                 </div>
@@ -436,101 +403,95 @@ const StudentDashboard = () => {
         </div>
       )}
 
+      {/* ➕ RINGKASAN RAPORT */}
+      {raportSummary && (
+        <div 
+          onClick={() => navigate('/siswa/smart-rapor')}
+          style={{ 
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+            borderRadius: 16, 
+            padding: 20, 
+            color: 'white', 
+            cursor: 'pointer',
+            transition: 'transform 0.2s',
+            border: '1px solid rgba(255,255,255,0.2)'
+          }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.01)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Trophy size={28} color="#fbbf24" />
+              <div>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>📊 Ringkasan Raport</h3>
+                <p style={{ margin: '4px 0 0', fontSize: 11, opacity: 0.85 }}>
+                  Periode {raportSummary.periode?.replace('-', ' / ')}
+                </p>
+              </div>
+            </div>
+            <ArrowRight size={20} />
+          </div>
+          
+          <div style={{ display: 'flex', gap: 20, marginTop: 16, flexWrap: 'wrap' }}>
+            {raportSummary.nilaiAkhir !== null ? (
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 32, fontWeight: 900 }}>{raportSummary.nilaiAkhir}</div>
+                <div style={{ fontSize: 10, opacity: 0.8 }}>Nilai Akhir</div>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, opacity: 0.9 }}>Belum tersedia</div>
+                <div style={{ fontSize: 10, opacity: 0.7 }}>Generate dulu ya</div>
+              </div>
+            )}
+            
+            {raportSummary.rank && (
+              <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: 20 }}>
+                <div style={{ fontSize: 32, fontWeight: 900 }}>#{raportSummary.rank}</div>
+                <div style={{ fontSize: 10, opacity: 0.8 }}>Peringkat dari {raportSummary.totalStudents}</div>
+              </div>
+            )}
+            
+            {raportSummary.komponenDipake && (
+              <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: 20 }}>
+                <div style={{ fontSize: 32, fontWeight: 900 }}>{raportSummary.komponenDipake.length}/4</div>
+                <div style={{ fontSize: 10, opacity: 0.8 }}>Komponen Dinilai</div>
+              </div>
+            )}
+          </div>
+          
+          <div style={{ marginTop: 12, fontSize: 10, opacity: 0.7, textAlign: 'right' }}>
+            Klik untuk lihat detail →
+          </div>
+        </div>
+      )}
+
       {/* SECTION SURVEI */}
       {activeSurveys.length > 0 && (
-        <div style={{ 
-          background: 'white', 
-          padding: 20, 
-          borderRadius: 15, 
-          border: '1px solid #e2e8f0', 
-          borderTop: '4px solid #3b82f6'
-        }}>
-          <h3 style={{ 
-            margin: '0 0 15px', 
-            fontSize: 16, 
-            fontWeight: 800, 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 8 
-          }}>
-            <ClipboardList size={20} color="#3b82f6" /> 
-            Survei yang Perlu Diisi
+        <div style={{ background: 'white', padding: 20, borderRadius: 15, border: '1px solid #e2e8f0', borderTop: '4px solid #3b82f6' }}>
+          <h3 style={{ margin: '0 0 15px', fontSize: 16, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <ClipboardList size={20} color="#3b82f6" /> Survei yang Perlu Diisi
             {activeSurveys.filter(s => !filledSurveys[s.id]).length > 0 && (
-              <span style={{ 
-                background: '#ef4444', 
-                color: 'white', 
-                padding: '2px 8px', 
-                borderRadius: 20, 
-                fontSize: 10
-              }}>
+              <span style={{ background: '#ef4444', color: 'white', padding: '2px 8px', borderRadius: 20, fontSize: 10 }}>
                 {activeSurveys.filter(s => !filledSurveys[s.id]).length} pending
               </span>
             )}
           </h3>
-          
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {activeSurveys.map(survey => {
               const done = filledSurveys[survey.id];
               return (
-                <div 
-                  key={survey.id} 
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between', 
-                    padding: 14, 
-                    background: done ? '#f0fdf4' : survey.isRequired ? '#fef2f2' : '#fffbeb', 
-                    borderRadius: 12, 
-                    border: `1px solid ${done ? '#bbf7d0' : survey.isRequired ? '#fecaca' : '#fde68a'}`,
-                    flexWrap: 'wrap', 
-                    gap: 10
-                  }}
-                >
+                <div key={survey.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 14, background: done ? '#f0fdf4' : survey.isRequired ? '#fef2f2' : '#fffbeb', borderRadius: 12, border: `1px solid ${done ? '#bbf7d0' : survey.isRequired ? '#fecaca' : '#fde68a'}`, flexWrap: 'wrap', gap: 10 }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-                      {done ? (
-                        <CheckCircle size={16} color="#10b981" />
-                      ) : (
-                        <Send size={16} color={survey.isRequired ? '#ef4444' : '#f59e0b'} />
-                      )}
+                      {done ? <CheckCircle size={16} color="#10b981" /> : <Send size={16} color={survey.isRequired ? '#ef4444' : '#f59e0b'} />}
                       <strong style={{ fontSize: 14 }}>{survey.title}</strong>
-                      {survey.isRequired && !done && (
-                        <span style={{ 
-                          background: '#fee2e2', 
-                          color: '#ef4444', 
-                          padding: '2px 8px', 
-                          borderRadius: 6, 
-                          fontSize: 9, 
-                          fontWeight: 800 
-                        }}>
-                          WAJIB
-                        </span>
-                      )}
+                      {survey.isRequired && !done && <span style={{ background: '#fee2e2', color: '#ef4444', padding: '2px 8px', borderRadius: 6, fontSize: 9, fontWeight: 800 }}>WAJIB</span>}
                     </div>
-                    <div style={{ fontSize: 11, color: '#64748b' }}>
-                      {survey.questions?.length || 0} pertanyaan
-                    </div>
+                    <div style={{ fontSize: 11, color: '#64748b' }}>{survey.questions?.length || 0} pertanyaan</div>
                   </div>
-                  
-                  {done ? (
-                    <span style={{ color: '#10b981', fontWeight: 700, fontSize: 12 }}>✅ Terisi</span>
-                  ) : (
-                    <button 
-                      onClick={() => openSurvey(survey)} 
-                      style={{ 
-                        background: survey.isRequired ? '#ef4444' : '#f59e0b', 
-                        color: 'white', 
-                        border: 'none', 
-                        padding: '8px 16px', 
-                        borderRadius: 8, 
-                        fontWeight: 700, 
-                        fontSize: 12, 
-                        cursor: 'pointer', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: 6
-                      }}
-                    >
+                  {done ? <span style={{ color: '#10b981', fontWeight: 700, fontSize: 12 }}>✅ Terisi</span> : (
+                    <button onClick={() => openSurvey(survey)} style={{ background: survey.isRequired ? '#ef4444' : '#f59e0b', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
                       <Send size={14} /> Isi
                     </button>
                   )}
@@ -546,79 +507,38 @@ const StudentDashboard = () => {
         <div style={st.leftColumn}>
           {/* JADWAL HARI INI */}
           <section style={st.sectionCard}>
-            <h3 style={st.sectionTitle}>
-              <Calendar size={20} color="#3498db" /> Jadwal Hari Ini
-            </h3>
-            {todaySchedules.length === 0 ? (
-              <div style={st.emptyState}>📭 Tidak ada jadwal.</div>
-            ) : (
+            <h3 style={st.sectionTitle}><Calendar size={20} color="#3498db" /> Jadwal Hari Ini</h3>
+            {todaySchedules.length === 0 ? <div style={st.emptyState}>📭 Tidak ada jadwal.</div> : (
               todaySchedules.map((sch, i) => (
                 <div key={i} style={st.schItem}>
-                  <div style={st.schTime}>
-                    <b>{sch.start}</b>
-                    <br />
-                    <span style={{ fontSize: 10 }}>{sch.end}</span>
-                  </div>
+                  <div style={st.schTime}><b>{sch.start}</b><br /><span style={{ fontSize: 10 }}>{sch.end}</span></div>
                   <div style={st.schInfo}>
                     <b>{sch.title || "Kelas"}</b>
-                    <div style={{ fontSize: 11, color: '#64748b' }}>
-                      <MapPin size={10} /> {sch.planet || 'Ruangan'} • 
-                      <User size={10} /> {sch.booker || 'Guru'}
-                    </div>
+                    <div style={{ fontSize: 11, color: '#64748b' }}><MapPin size={10} /> {sch.planet || 'Ruangan'} • <User size={10} /> {sch.booker || 'Guru'}</div>
                   </div>
                 </div>
               ))
             )}
           </section>
 
-          {/* TUGAS & KUIS - DENGAN PERBAIKAN LANGSUNG KE TUGAS */}
+          {/* TUGAS & KUIS */}
           <section style={st.sectionCard}>
             <div style={st.cardHeader}>
-              <h3 style={st.sectionTitle}>
-                <ClipboardList size={20} color="#9b59b6" /> Tugas & Kuis
-              </h3>
-              <button onClick={() => setActiveMenu('materi')} style={st.btnViewAll}>
-                Lihat Semua <ChevronRight size={14} />
-              </button>
+              <h3 style={st.sectionTitle}><ClipboardList size={20} color="#9b59b6" /> Tugas & Kuis</h3>
+              <button onClick={() => setActiveMenu('materi')} style={st.btnViewAll}>Lihat Semua <ChevronRight size={14} /></button>
             </div>
-            {tasks.length === 0 ? (
-              <div style={st.emptyState}>
-                📭 Belum ada tugas.
-                <br />
-                <span style={{ fontSize: 10, color: '#94a3b8' }}>Tugas akan muncul setelah guru membuatnya.</span>
-              </div>
-            ) : (
+            {tasks.length === 0 ? <div style={st.emptyState}>📭 Belum ada tugas.<br /><span style={{ fontSize: 10, color: '#94a3b8' }}>Tugas akan muncul setelah guru membuatnya.</span></div> : (
               tasks.map((task, i) => {
                 const dl = getAssignmentDeadline(task);
                 const soon = isDeadlineSoon(dl);
                 const passed = isDeadlinePassed(dl);
                 return (
-                  <div key={i} style={{ 
-                    ...st.taskItem, 
-                    borderLeftColor: passed ? '#ef4444' : soon ? '#f59e0b' : '#9b59b6' 
-                  }}>
+                  <div key={i} style={{ ...st.taskItem, borderLeftColor: passed ? '#ef4444' : soon ? '#f59e0b' : '#9b59b6' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 14, fontWeight: 700 }}>{task.title}</div>
-                      {dl && (
-                        <div style={{ fontSize: 11, marginTop: 4 }}>
-                          <Clock size={12} /> 
-                          {passed ? '⛔ Terlewat ' : soon ? '⚠️ Segera ' : '📅 '}
-                          {formatDateOnly(dl)}
-                        </div>
-                      )}
+                      {dl && <div style={{ fontSize: 11, marginTop: 4 }}><Clock size={12} /> {passed ? '⛔ Terlewat ' : soon ? '⚠️ Segera ' : '📅 '}{formatDateOnly(dl)}</div>}
                     </div>
-                    {/* 🔥 PERBAIKAN: Tombol Buka LANGSUNG ke tugas yang dipilih */}
-                    <button 
-                      onClick={() => {
-                        // Simpan ID modul yang dipilih ke localStorage
-                        localStorage.setItem('selectedModuleId', task.id);
-                        // Pindah ke halaman elearning
-                        setActiveMenu('materi');
-                      }} 
-                      style={st.btnTaskBuka}
-                    >
-                      Buka
-                    </button>
+                    <button onClick={() => { localStorage.setItem('selectedModuleId', task.id); setActiveMenu('materi'); }} style={st.btnTaskBuka}>Buka</button>
                   </div>
                 );
               })
@@ -629,45 +549,18 @@ const StudentDashboard = () => {
         <div style={st.rightColumn}>
           <section style={st.sectionCard}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 15 }}>
-              <div style={st.avatar}>
-                {studentName?.charAt(0) || 'S'}
-              </div>
-              <div>
-                <b>{studentName}</b>
-                <p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>
-                  {studentProfile?.kelasSekolah || '-'} • 
-                  {studentProfile?.kategori || 'Reguler'}
-                </p>
-              </div>
+              <div style={st.avatar}>{studentName?.charAt(0) || 'S'}</div>
+              <div><b>{studentName}</b><p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>{studentProfile?.kelasSekolah || '-'} • {studentProfile?.kategori || 'Reguler'}</p></div>
             </div>
-            <button onClick={() => setActiveMenu('materi')} style={st.btnAccess}>
-              <BookOpen size={16} /> Buka Materi Belajar
-            </button>
+            <button onClick={() => setActiveMenu('materi')} style={st.btnAccess}><BookOpen size={16} /> Buka Materi Belajar</button>
           </section>
 
           <section style={st.sectionCard}>
-            <h3 style={{ ...st.sectionTitle, marginBottom: 10 }}>
-              <TrendingUp size={20} color="#10b981" /> Ringkasan
-            </h3>
+            <h3 style={{ ...st.sectionTitle, marginBottom: 10 }}><TrendingUp size={20} color="#10b981" /> Ringkasan</h3>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-              <div style={{ textAlign: 'center', flex: 1 }}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: '#3b82f6' }}>
-                  {todaySchedules.length}
-                </div>
-                <div style={{ fontSize: 10, color: '#64748b' }}>Jadwal</div>
-              </div>
-              <div style={{ textAlign: 'center', flex: 1 }}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: '#9b59b6' }}>
-                  {tasks.length}
-                </div>
-                <div style={{ fontSize: 10, color: '#64748b' }}>Tugas</div>
-              </div>
-              <div style={{ textAlign: 'center', flex: 1 }}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: '#ef4444' }}>
-                  {activeSurveys.filter(s => !filledSurveys[s.id]).length}
-                </div>
-                <div style={{ fontSize: 10, color: '#64748b' }}>Survei</div>
-              </div>
+              <div style={{ textAlign: 'center', flex: 1 }}><div style={{ fontSize: 20, fontWeight: 800, color: '#3b82f6' }}>{todaySchedules.length}</div><div style={{ fontSize: 10, color: '#64748b' }}>Jadwal</div></div>
+              <div style={{ textAlign: 'center', flex: 1 }}><div style={{ fontSize: 20, fontWeight: 800, color: '#9b59b6' }}>{tasks.length}</div><div style={{ fontSize: 10, color: '#64748b' }}>Tugas</div></div>
+              <div style={{ textAlign: 'center', flex: 1 }}><div style={{ fontSize: 20, fontWeight: 800, color: '#ef4444' }}>{activeSurveys.filter(s => !filledSurveys[s.id]).length}</div><div style={{ fontSize: 10, color: '#64748b' }}>Survei</div></div>
             </div>
           </section>
         </div>
@@ -689,48 +582,20 @@ const StudentDashboard = () => {
 
   return (
     <div style={st.mainContainer}>
-      <SidebarSiswa 
-        activeMenu={activeMenu} 
-        setActiveMenu={(menu) => { 
-          setActiveMenu(menu); 
-          if (isMobile) setIsSidebarOpen(false); 
-        }} 
-        isOpen={isSidebarOpen} 
-        setIsOpen={setIsSidebarOpen} 
-      />
-      
-      {isMobile && (
-        <button onClick={() => setIsSidebarOpen(true)} style={st.mobileMenuBtn}>
-          <Menu size={24} />
-        </button>
-      )}
-      
-      <div style={{ 
-        ...st.contentArea, 
-        marginLeft: isMobile ? '0' : '260px', 
-        width: isMobile ? '100%' : 'calc(100% - 260px)', 
-        padding: isMobile ? '15px' : '30px', 
-        paddingTop: isMobile ? '70px' : '30px' 
-      }}>
+      <SidebarSiswa activeMenu={activeMenu} setActiveMenu={(menu) => { setActiveMenu(menu); if (isMobile) setIsSidebarOpen(false); }} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      {isMobile && <button onClick={() => setIsSidebarOpen(true)} style={st.mobileMenuBtn}><Menu size={24} /></button>}
+      <div style={{ ...st.contentArea, marginLeft: isMobile ? '0' : '260px', width: isMobile ? '100%' : 'calc(100% - 260px)', padding: isMobile ? '15px' : '30px', paddingTop: isMobile ? '70px' : '30px' }}>
         {renderContent()}
       </div>
-      
-      {isMobile && isSidebarOpen && (
-        <div onClick={() => setIsSidebarOpen(false)} style={st.overlay} />
-      )}
+      {isMobile && isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} style={st.overlay} />}
 
       {/* MODAL BERITA */}
       {selectedNews && (
         <div style={st.modalOverlay} onClick={() => setSelectedNews(null)}>
           <div style={{ ...st.modalContent, width: isMobile ? '90%' : '600px' }} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setSelectedNews(null)} style={st.btnCloseModal}>
-              <X size={20} />
-            </button>
+            <button onClick={() => setSelectedNews(null)} style={st.btnCloseModal}><X size={20} /></button>
             <img src={selectedNews.imageUrl} style={st.modalImg} alt="" />
-            <div style={{ padding: 20 }}>
-              <h2>{selectedNews.title}</h2>
-              <p>{selectedNews.content || selectedNews.desc}</p>
-            </div>
+            <div style={{ padding: 20 }}><h2>{selectedNews.title}</h2><p>{selectedNews.content || selectedNews.desc}</p></div>
           </div>
         </div>
       )}
@@ -739,128 +604,38 @@ const StudentDashboard = () => {
       {isScanning && (
         <div style={st.modalOverlay} onClick={() => setIsScanning(false)}>
           <div style={st.qrModalContent} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setIsScanning(false)} style={st.btnCloseModal}>
-              <X size={20} />
-            </button>
+            <button onClick={() => setIsScanning(false)} style={st.btnCloseModal}><X size={20} /></button>
             <h3>Scan QR Code Absensi</h3>
             <div id="reader" style={{ width: '100%', borderRadius: 15, overflow: 'hidden' }}></div>
-            <p style={{ fontSize: 11, color: '#64748b', marginTop: 12 }}>
-              Arahkan kamera ke QR Code yang ditampilkan guru
-            </p>
+            <p style={{ fontSize: 11, color: '#64748b', marginTop: 12 }}>Arahkan kamera ke QR Code yang ditampilkan guru</p>
           </div>
         </div>
       )}
 
       {/* MODAL SURVEI */}
       {showSurveyModal && currentSurvey && (
-        <div style={{ 
-          position: 'fixed', 
-          inset: 0, 
-          background: 'rgba(0,0,0,0.8)', 
-          zIndex: 3000, 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          padding: 20 
-        }}>
-          <div style={{ 
-            background: 'white', 
-            borderRadius: 20, 
-            padding: 30, 
-            width: '100%', 
-            maxWidth: 550, 
-            maxHeight: '85vh', 
-            overflowY: 'auto',
-            position: 'relative'
-          }}>
-            <button 
-              onClick={() => setShowSurveyModal(false)} 
-              style={{ 
-                position: 'sticky', 
-                top: 0, 
-                right: 0, 
-                float: 'right',
-                background: '#f1f5f9', 
-                border: 'none', 
-                borderRadius: '50%',
-                width: 32,
-                height: 32,
-                cursor: 'pointer'
-              }}
-            >
-              <X size={18} />
-            </button>
-            
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <div style={{ background: 'white', borderRadius: 20, padding: 30, width: '100%', maxWidth: 550, maxHeight: '85vh', overflowY: 'auto', position: 'relative' }}>
+            <button onClick={() => setShowSurveyModal(false)} style={{ position: 'sticky', top: 0, right: 0, float: 'right', background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer' }}><X size={18} /></button>
             <div style={{ textAlign: 'center', marginBottom: 20, clear: 'both' }}>
               <span style={{ fontSize: 40 }}>📋</span>
               <h2 style={{ margin: '10px 0 5px', fontSize: 20 }}>{currentSurvey.title}</h2>
-              {currentSurvey.isRequired && (
-                <span style={{ 
-                  display: 'inline-block', 
-                  background: '#fee2e2', 
-                  color: '#ef4444', 
-                  padding: '4px 12px', 
-                  borderRadius: 20, 
-                  fontSize: 11, 
-                  fontWeight: 700
-                }}>
-                  ⚠️ Wajib diisi
-                </span>
-              )}
+              {currentSurvey.isRequired && <span style={{ display: 'inline-block', background: '#fee2e2', color: '#ef4444', padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>⚠️ Wajib diisi</span>}
             </div>
-            
             {currentSurvey.questions?.map((q, i) => (
               <div key={i} style={{ marginBottom: 20 }}>
-                <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>
-                  {i + 1}. {q.question}
-                </p>
-                
+                <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>{i + 1}. {q.question}</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {(q.options || []).filter(o => o && o.trim()).map((opt, oi) => (
-                    <label 
-                      key={oi} 
-                      style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: 10, 
-                        padding: '10px 14px', 
-                        borderRadius: 10, 
-                        cursor: 'pointer', 
-                        background: surveyAnswers[i] === opt ? '#eef2ff' : '#f8fafc', 
-                        border: `2px solid ${surveyAnswers[i] === opt ? '#3b82f6' : '#e2e8f0'}`
-                      }}
-                    >
-                      <input 
-                        type="radio" 
-                        name={`sq-${i}`} 
-                        checked={surveyAnswers[i] === opt} 
-                        onChange={() => setSurveyAnswers({ ...surveyAnswers, [i]: opt })} 
-                        style={{ width: 18, height: 18 }} 
-                      />
+                    <label key={oi} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, cursor: 'pointer', background: surveyAnswers[i] === opt ? '#eef2ff' : '#f8fafc', border: `2px solid ${surveyAnswers[i] === opt ? '#3b82f6' : '#e2e8f0'}` }}>
+                      <input type="radio" name={`sq-${i}`} checked={surveyAnswers[i] === opt} onChange={() => setSurveyAnswers({ ...surveyAnswers, [i]: opt })} style={{ width: 18, height: 18 }} />
                       <span style={{ fontSize: 13 }}>{opt}</span>
                     </label>
                   ))}
                 </div>
               </div>
             ))}
-            
-            <button 
-              onClick={submitSurvey} 
-              disabled={surveyLoading}
-              style={{ 
-                width: '100%', 
-                padding: 14, 
-                background: '#3b82f6', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: 12, 
-                fontWeight: 800, 
-                fontSize: 15, 
-                cursor: surveyLoading ? 'not-allowed' : 'pointer', 
-                marginTop: 10,
-                opacity: surveyLoading ? 0.7 : 1
-              }}
-            >
+            <button onClick={submitSurvey} disabled={surveyLoading} style={{ width: '100%', padding: 14, background: '#3b82f6', color: 'white', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: surveyLoading ? 'not-allowed' : 'pointer', marginTop: 10, opacity: surveyLoading ? 0.7 : 1 }}>
               {surveyLoading ? 'Mengirim...' : 'Kirim Jawaban'}
             </button>
           </div>
@@ -868,11 +643,7 @@ const StudentDashboard = () => {
       )}
 
       {/* FAB MOBILE */}
-      {isMobile && (
-        <button onClick={() => setIsScanning(true)} style={st.fabQR}>
-          <Camera size={22} />
-        </button>
-      )}
+      {isMobile && <button onClick={() => setIsScanning(true)} style={st.fabQR}><Camera size={22} /></button>}
     </div>
   );
 };
@@ -882,10 +653,7 @@ const st = {
   contentArea: { transition: 'margin 0.3s ease', boxSizing: 'border-box' },
   contentWrapper: { display: 'flex', flexDirection: 'column', gap: 20 },
   loadingScreen: { flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginLeft: 260 },
-  spinner: { 
-    width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', 
-    borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: 10 
-  },
+  spinner: { width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: 10 },
   welcomeHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   welcomeHeaderMobile: { textAlign: 'left', marginBottom: 10 },
   title: { fontSize: 28, fontWeight: 800, color: '#1e293b', margin: 0 },
