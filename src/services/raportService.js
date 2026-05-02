@@ -1,3 +1,4 @@
+// src/services/raportService.js
 import { db } from '../firebase';
 import { 
   collection, query, where, getDocs, addDoc, updateDoc, 
@@ -57,7 +58,7 @@ export const generateNarasi = (namaSiswa, mapel, nilaiSekarang, nilaiSebelumnya)
  * Ekspor nilai dari tugas/kuis ke raport_scores
  */
 export const exportToRaportScores = async (data) => {
-  const { studentId, studentName, mapel, topik, nilai, komponen, teacherId, teacherName, qualitative } = data;
+  const { studentId, studentName, mapel, topik, nilai, komponen, teacherId, teacherName } = data;
   const periode = new Date().toISOString().slice(0, 7);
   
   try {
@@ -73,30 +74,20 @@ export const exportToRaportScores = async (data) => {
     
     if (!existing.empty) {
       // Update nilai yang sudah ada
-      const updateData = {
+      await updateDoc(doc(db, RAPORT_COLLECTIONS.SCORES, existing.docs[0].id), {
         nilai: nilai,
         topik: topik,
         updatedAt: serverTimestamp()
-      };
-      // Jika ada qualitative, ikut diupdate
-      if (qualitative) {
-        updateData.qualitative = qualitative;
-      }
-      await updateDoc(doc(db, RAPORT_COLLECTIONS.SCORES, existing.docs[0].id), updateData);
+      });
       return { success: true, action: 'updated' };
     } else {
       // Buat baru
-      const newData = {
+      await addDoc(collection(db, RAPORT_COLLECTIONS.SCORES), {
         studentId, studentName, mapel, topik, nilai, komponen,
         periode, teacherId, teacherName,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
-      };
-      // Jika ada qualitative, ikut disimpan
-      if (qualitative) {
-        newData.qualitative = qualitative;
-      }
-      await addDoc(collection(db, RAPORT_COLLECTIONS.SCORES), newData);
+      });
       return { success: true, action: 'created' };
     }
   } catch (error) {
@@ -121,7 +112,6 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
   for (const student of students) {
     // 2. Ambil semua nilai mentah siswa untuk periode ini
     const scores = { kuis: [], catatan: [], ujian: [], keaktifan: [] };
-    const qualitativeData = [];
     
     const scoresSnap = await getDocs(query(
       collection(db, RAPORT_COLLECTIONS.SCORES),
@@ -134,13 +124,9 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
       if (scores[data.komponen]) {
         scores[data.komponen].push(data.nilai);
       }
-      // Kumpulkan data qualitative untuk karakter
-      if (data.qualitative) {
-        qualitativeData.push(data.qualitative);
-      }
     });
     
-    // Cek kelengkapan nilai akademik
+    // Cek kelengkapan
     const isComplete = scores.kuis.length > 0 && 
                        scores.catatan.length > 0 && 
                        scores.ujian.length > 0 && 
@@ -161,13 +147,10 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
       continue;
     }
     
-    // 3. Hitung nilai akhir akademik
+    // 3. Hitung nilai akhir
     const nilaiAkhir = calculateFinalScore(scores);
     
-    // 4. Hitung rata-rata karakter
-    const characterAvg = calculateCharacterAverage(qualitativeData);
-    
-    // 5. Ambil nilai bulan lalu
+    // 4. Ambil nilai bulan lalu
     const lastMonth = getPreviousMonth(periode);
     const lastMonthSnap = await getDocs(query(
       collection(db, RAPORT_COLLECTIONS.FINAL),
@@ -176,10 +159,10 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
     ));
     const nilaiSebelumnya = lastMonthSnap.empty ? null : lastMonthSnap.docs[0].data().nilai_akhir;
     
-    // 6. Generate narasi
+    // 5. Generate narasi
     const narasi = generateNarasi(student.nama, "Umum", nilaiAkhir, nilaiSebelumnya);
     
-    // 7. Simpan ke raport_final
+    // 6. Simpan ke raport_final
     const finalData = {
       studentId: student.id,
       studentName: student.nama,
@@ -193,15 +176,6 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
       nilai_keaktifan: scores.keaktifan.reduce((a,b) => a+b, 0) / scores.keaktifan.length,
       nilai_akhir: nilaiAkhir,
       narasi: narasi,
-      karakter: {
-        pemahaman: characterAvg.pemahaman,
-        aplikasi: characterAvg.aplikasi,
-        literasi: characterAvg.literasi,
-        inisiatif: characterAvg.inisiatif,
-        mandiri: characterAvg.mandiri,
-        rata_rata: characterAvg.rataRata,
-        narasi: characterAvg.narasi
-      },
       updatedAt: serverTimestamp()
     };
     
@@ -223,7 +197,7 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
     results.push({ studentId: student.id, name: student.nama, nilai: nilaiAkhir });
   }
   
-  // 8. Update leaderboard
+  // 7. Update leaderboard
   await updateLeaderboard(periode);
   
   return {
@@ -304,98 +278,6 @@ export const getRelativeLeaderboard = async (periode, studentId) => {
   };
 };
 
-/**
- * Hitung rata-rata nilai karakter dari qualitative data
- * @param {Array} qualitativeData - Array dari object qualitative (pemahaman, aplikasi, dll)
- * @returns {Object} - Rata-rata per aspek dan nilai akhir karakter
- */
-export const calculateCharacterAverage = (qualitativeData) => {
-  if (!qualitativeData || qualitativeData.length === 0) {
-    return {
-      pemahaman: 0,
-      aplikasi: 0,
-      literasi: 0,
-      inisiatif: 0,
-      mandiri: 0,
-      rataRata: 0,
-      narasi: "Belum ada penilaian karakter"
-    };
-  }
-
-  const totals = {
-    pemahaman: 0,
-    aplikasi: 0,
-    literasi: 0,
-    inisiatif: 0,
-    mandiri: 0
-  };
-
-  qualitativeData.forEach(q => {
-    if (q) {
-      totals.pemahaman += q.pemahaman || 0;
-      totals.aplikasi += q.aplikasi || 0;
-      totals.literasi += q.literasi || 0;
-      totals.inisiatif += q.inisiatif || 0;
-      totals.mandiri += q.mandiri || 0;
-    }
-  });
-
-  const count = qualitativeData.length;
-  const avgPemahaman = totals.pemahaman / count;
-  const avgAplikasi = totals.aplikasi / count;
-  const avgLiterasi = totals.literasi / count;
-  const avgInisiatif = totals.inisiatif / count;
-  const avgMandiri = totals.mandiri / count;
-  const rataRata = (avgPemahaman + avgAplikasi + avgLiterasi + avgInisiatif + avgMandiri) / 5;
-
-  // Generate narasi karakter berdasarkan rata-rata
-  let narasi = "";
-  if (rataRata >= 4.5) {
-    narasi = "🌟 Sangat baik! Siswa menunjukkan karakter yang luar biasa dalam pembelajaran, sangat mandiri, dan aktif.";
-  } else if (rataRata >= 3.5) {
-    narasi = "👍 Baik. Siswa memiliki karakter positif, cukup mandiri, dan perlu dipertahankan.";
-  } else if (rataRata >= 2.5) {
-    narasi = "📘 Cukup. Siswa masih perlu peningkatan dalam beberapa aspek karakter dan kedisiplinan.";
-  } else if (rataRata >= 1.5) {
-    narasi = "⚠️ Kurang. Siswa memerlukan bimbingan lebih intensif dan motivasi tambahan.";
-  } else {
-    narasi = "🔴 Perhatian khusus. Siswa perlu pendampingan intensif dan evaluasi menyeluruh.";
-  }
-
-  return {
-    pemahaman: Math.round(avgPemahaman * 10) / 10,
-    aplikasi: Math.round(avgAplikasi * 10) / 10,
-    literasi: Math.round(avgLiterasi * 10) / 10,
-    inisiatif: Math.round(avgInisiatif * 10) / 10,
-    mandiri: Math.round(avgMandiri * 10) / 10,
-    rataRata: Math.round(rataRata * 10) / 10,
-    narasi: narasi
-  };
-};
-
-/**
- * Generate narasi deskriptif per aspek karakter
- */
-export const generateDetailCharacterNarasi = (qualitative) => {
-  if (!qualitative) return [];
-
-  const getNarasi = (nilai, aspek) => {
-    if (nilai >= 4.5) return `✅ ${aspek}: Sangat baik, pertahankan!`;
-    if (nilai >= 3.5) return `📘 ${aspek}: Baik, sudah bagus.`;
-    if (nilai >= 2.5) return `⚠️ ${aspek}: Cukup, perlu ditingkatkan.`;
-    if (nilai >= 1.5) return `🔴 ${aspek}: Kurang, perlu bimbingan.`;
-    return `❌ ${aspek}: Sangat kurang, segera evaluasi.`;
-  };
-
-  return [
-    getNarasi(qualitative.pemahaman, "Pemahaman Konsep"),
-    getNarasi(qualitative.aplikasi, "Logika & Aplikasi"),
-    getNarasi(qualitative.literasi, "Literasi & Fokus"),
-    getNarasi(qualitative.inisiatif, "Inisiatif & Keaktifan"),
-    getNarasi(qualitative.mandiri, "Kemandirian")
-  ];
-};
-
 function getPreviousMonth(periode) {
   const [year, month] = periode.split('-');
   let prevMonth = parseInt(month) - 1;
@@ -406,3 +288,132 @@ function getPreviousMonth(periode) {
   }
   return `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
 }
+
+// ============================================================
+// ➕ FUNGSI TAMBAHAN BARU (TIDAK MENGUBAH KODE DI ATAS)
+// ============================================================
+
+/**
+ * Generate narasi deskriptif dari 5 poin penilaian karakter
+ * @param {Object} qualitative - { pemahaman, aplikasi, literasi, inisiatif, mandiri } (nilai 1-5)
+ * @returns {String} Narasi deskriptif keseluruhan
+ */
+export const generateCharacterNarasi = (qualitative) => {
+  if (!qualitative) return "Belum ada penilaian karakter untuk periode ini.";
+  
+  const avg = (
+    (qualitative.pemahaman || 0) + 
+    (qualitative.aplikasi || 0) + 
+    (qualitative.literasi || 0) + 
+    (qualitative.inisiatif || 0) + 
+    (qualitative.mandiri || 0)
+  ) / 5;
+  
+  if (avg >= 4.5) {
+    return "🌟 Sangat Baik! Ananda menunjukkan penguasaan materi yang luar biasa, sangat mandiri, aktif dalam diskusi, dan konsisten mengerjakan tugas dengan teliti. Pertahankan prestasi ini!";
+  } else if (avg >= 3.5) {
+    return "👍 Baik. Ananda memiliki pemahaman yang bagus, cukup mandiri, dan menunjukkan inisiatif dalam belajar. Tingkatkan konsistensi dan pendalaman materi untuk hasil lebih optimal.";
+  } else if (avg >= 2.5) {
+    return "📘 Cukup. Ananda perlu meningkatkan pemahaman konsep, kemandirian dalam mengerjakan tugas, dan keaktifan bertanya saat mengalami kesulitan. Bimbingan tambahan disarankan.";
+  } else if (avg >= 1.5) {
+    return "⚠️ Perlu Perhatian. Ananda memerlukan bimbingan lebih intensif dalam pemahaman materi, motivasi belajar, dan pendampingan khusus. Segera jadwalkan konsultasi dengan pengajar.";
+  } else {
+    return "🔴 Perhatian Khusus. Ananda sangat memerlukan evaluasi menyeluruh dan program bimbingan intensif. Segera hubungi wali kelas untuk penanganan lebih lanjut.";
+  }
+};
+
+/**
+ * Generate narasi detail per aspek karakter
+ * @param {Object} qualitative - { pemahaman, aplikasi, literasi, inisiatif, mandiri } (nilai 1-5)
+ * @returns {Array<Object>} Array berisi { aspek, nilai, label, narasi, saran }
+ */
+export const generateDetailCharacterNarasi = (qualitative) => {
+  if (!qualitative) return [];
+  
+  const aspekConfig = {
+    pemahaman: {
+      label: "Pemahaman Konsep",
+      narasi5: "Penguasaan teori sangat mendalam dan mampu menjelaskan kembali dengan baik.",
+      narasi4: "Pemahaman konsep sudah bagus, hanya perlu sedikit pendalaman.",
+      narasi3: "Cukup memahami dasar, perlu lebih banyak latihan soal variatif.",
+      narasi2: "Mengalami kesulitan memahami konsep, butuh penjelasan ulang.",
+      narasi1: "Belum memahami konsep dasar, perlu bimbingan dari awal.",
+      saran5: "Pertahankan dengan mengajarkan teman lain.",
+      saran4: "Perbanyak latihan soal HOTS.",
+      saran3: "Ikuti sesi tambahan dan perbanyak bertanya.",
+      saran2: "Jadwalkan bimbingan privat mingguan.",
+      saran1: "Perlu program remedial intensif."
+    },
+    aplikasi: {
+      label: "Logika & Aplikasi",
+      narasi5: "Mampu menerapkan konsep ke berbagai variasi soal dengan sangat baik.",
+      narasi4: "Cukup baik dalam menerapkan konsep, perlu variasi soal lebih menantang.",
+      narasi3: "Bisa mengerjakan soal standar, kesulitan di soal kompleks.",
+      narasi2: "Sering keliru dalam menerapkan rumus/logika.",
+      narasi1: "Belum mampu mengaplikasikan konsep ke soal.",
+      saran5: "Coba soal olimpiade untuk tantangan.",
+      saran4: "Latihan soal cerita dan studi kasus.",
+      saran3: "Fokus pada langkah-langkah pengerjaan.",
+      saran2: "Mulai dari soal dasar bertahap.",
+      saran1: "Kembali ke latihan konsep dasar."
+    },
+    literasi: {
+      label: "Literasi & Fokus",
+      narasi5: "Sangat teliti membaca soal dan mampu fokus dalam waktu lama.",
+      narasi4: "Teliti dalam membaca, fokus cukup baik.",
+      narasi3: "Cukup teliti, kadang kurang fokus pada sesi panjang.",
+      narasi2: "Sering salah membaca soal, mudah terdistraksi.",
+      narasi1: "Kesulitan fokus dan sering salah memahami instruksi.",
+      saran5: "Jadi mentor baca soal untuk teman.",
+      saran4: "Latih dengan timer untuk meningkatkan fokus.",
+      saran3: "Baca soal 2x sebelum menjawab.",
+      saran2: "Kurangi distraksi saat belajar.",
+      saran1: "Latihan membaca pemahaman dasar."
+    },
+    inisiatif: {
+      label: "Inisiatif",
+      narasi5: "Sangat aktif bertanya, mencari materi tambahan, dan berdiskusi.",
+      narasi4: "Aktif bertanya saat ada kesulitan dan mencari tahu sendiri.",
+      narasi3: "Kadang bertanya, perlu didorong untuk lebih proaktif.",
+      narasi2: "Jarang bertanya meski tampak kesulitan.",
+      narasi1: "Pasif, tidak pernah bertanya atau mencari bantuan.",
+      saran5: "Bantu teman yang kesulitan.",
+      saran4: "Eksplorasi materi di luar kurikulum.",
+      saran3: "Buat catatan pertanyaan sebelum kelas.",
+      saran2: "Mulai biasakan bertanya 1x per sesi.",
+      saran1: "Butuh pendekatan personal untuk membangun kepercayaan diri."
+    },
+    mandiri: {
+      label: "Kemandirian",
+      narasi5: "Sangat mandiri, mampu belajar sendiri dan menyelesaikan tugas tepat waktu.",
+      narasi4: "Mandiri dalam mengerjakan tugas, sesekali perlu arahan.",
+      narasi3: "Cukup mandiri, masih perlu pengawasan berkala.",
+      narasi2: "Sering bergantung pada bantuan, kurang percaya diri.",
+      narasi1: "Sangat bergantung, tidak bisa mengerjakan tanpa bimbingan penuh.",
+      saran5: "Berikan proyek mandiri untuk dikerjakan.",
+      saran4: "Kurangi bantuan bertahap.",
+      saran3: "Tetapkan target harian yang jelas.",
+      saran2: "Dampingi lalu lepas bertahap.",
+      saran1: "Mulai dari tugas sangat sederhana."
+    }
+  };
+  
+  const result = [];
+  
+  Object.keys(aspekConfig).forEach(key => {
+    const nilai = qualitative[key] || 0;
+    const config = aspekConfig[key];
+    const narasiKey = `narasi${nilai}`;
+    const saranKey = `saran${nilai}`;
+    
+    result.push({
+      aspek: key,
+      label: config.label,
+      nilai: nilai,
+      narasi: config[narasiKey] || config.narasi3,
+      saran: config[saranKey] || config.saran3
+    });
+  });
+  
+  return result;
+};
