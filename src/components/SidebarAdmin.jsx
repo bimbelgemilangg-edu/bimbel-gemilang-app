@@ -39,6 +39,7 @@ const SidebarAdmin = () => {
     { name: 'Keuangan', path: '/admin/finance', icon: '💸' },
     { name: 'Jadwal', path: '/admin/schedule', icon: '📅' },
     { name: 'Laporan Rapor', path: '/admin/grades', icon: '📊' },
+    { name: 'Generate Raport', path: '/admin/bulk-raport', icon: '🚀' }, // ➕ TAMBAHAN
     { name: 'Log Harian Admin', path: '/admin/daily-log', icon: '📝' },
     { name: 'Settings', path: '/admin/settings', icon: '⚙️' },
   ];

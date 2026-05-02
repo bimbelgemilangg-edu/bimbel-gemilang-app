@@ -20,6 +20,7 @@ import TeacherList from './pages/admin/teachers/TeacherList';
 import TeacherSalaries from './pages/admin/teachers/TeacherSalaries'; 
 import SchedulePage from './pages/admin/schedule/SchedulePage';
 import GradeReport from './pages/admin/grades/GradeReport'; 
+import AdminBulkRaport from './pages/admin/grades/AdminBulkRaport'; // ➕ TAMBAHAN
 import AdminDailyLog from './pages/admin/AdminDailyLog'; 
 import ManageBlog from './pages/admin/blog/ManageBlog';
 import ManageMateriPortal from './pages/admin/portal-siswa/ManageMateri';
@@ -41,7 +42,7 @@ import CekTugasSiswa from './pages/teacher/modul/CekTugasSiswa';
 import ManageMateriGuru from './pages/teacher/modul/ManageMateri';
 import ManageQuiz from './pages/teacher/modul/ManageQuiz';
 
-// === SMART RAPORT (BARU) - TAMBAHAN ===
+// === SMART RAPORT ===
 import GenerateRaport from './pages/teacher/grades/GenerateRaport';
 import StudentLeaderboard from './pages/student/raport/StudentLeaderboard';
 import StudentSmartReport from './pages/student/raport/StudentSmartReport';
@@ -138,6 +139,7 @@ function App() {
         <Route path="/admin/finance" element={<AdminRoute><FinanceLayout /></AdminRoute>} />
         <Route path="/admin/schedule" element={<AdminRoute><SchedulePage /></AdminRoute>} />
         <Route path="/admin/grades" element={<AdminRoute><GradeReport /></AdminRoute>} />
+        <Route path="/admin/bulk-raport" element={<AdminRoute><AdminBulkRaport /></AdminRoute>} /> {/* ➕ TAMBAHAN */}
         <Route path="/admin/daily-log" element={<AdminRoute><AdminDailyLog /></AdminRoute>} />
         <Route path="/admin/manage-blog" element={<AdminRoute><ManageBlog /></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
@@ -156,7 +158,7 @@ function App() {
         <Route path="/guru/attendance" element={<GuruRoute><TeacherLayout><TeacherManualInput /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/manual-input" element={<GuruRoute><TeacherLayout><TeacherManualInput /></TeacherLayout></GuruRoute>} />
 
-        {/* 🔥 SMART RAPORT - GURU (TAMBAHAN, TIDAK MENGGANTI YANG LAMA) */}
+        {/* 🔥 SMART RAPORT - GURU */}
         <Route path="/guru/generate-raport" element={<GuruRoute><TeacherLayout><GenerateRaport /></TeacherLayout></GuruRoute>} />
 
         {/* SISWA */}
@@ -167,7 +169,7 @@ function App() {
         <Route path="/siswa/rapor" element={<SiswaRoute><StudentGrades /></SiswaRoute>} />
         <Route path="/siswa/absensi" element={<SiswaRoute><StudentAttendanceSiswa /></SiswaRoute>} />
 
-        {/* 🔥 SMART RAPORT - SISWA (TAMBAHAN, TIDAK MENGGANTI YANG LAMA) */}
+        {/* 🔥 SMART RAPORT - SISWA */}
         <Route path="/siswa/leaderboard" element={<SiswaRoute><StudentLeaderboard /></SiswaRoute>} />
         <Route path="/siswa/smart-rapor" element={<SiswaRoute><StudentSmartReport /></SiswaRoute>} />
 
