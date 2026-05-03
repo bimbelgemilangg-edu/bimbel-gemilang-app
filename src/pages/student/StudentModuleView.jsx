@@ -52,6 +52,9 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const [isTugasExpired, setIsTugasExpired] = useState(false);
   const [isQuizExpired, setIsQuizExpired] = useState(false);
   const [activeTab, setActiveTab] = useState('materi');
+  
+  // ➕ State untuk preview gambar fullscreen
+  const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -126,7 +129,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     let file = e.target.files[0];
     if (!file) return;
 
-    // Kompresi gambar dulu
     if (file.type.startsWith('image/')) {
       file = await compressImage(file);
     }
@@ -209,7 +211,14 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     }
 
     if (contentUrl.startsWith('data:image/') || contentUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i) || fType.startsWith('image/')) {
-      return <img src={contentUrl} style={{width:'100%',maxHeight:500,objectFit:'contain',borderRadius:12,border:'1px solid #e2e8f0'}} alt="" />;
+      return (
+        <img 
+          src={contentUrl} 
+          style={{width:'100%',maxHeight:500,objectFit:'contain',borderRadius:12,border:'1px solid #e2e8f0',cursor:'pointer'}} 
+          alt="" 
+          onClick={() => setPreviewImage(contentUrl)} 
+        />
+      );
     }
 
     let embedUrl = contentUrl;
@@ -346,7 +355,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           );
         })}
 
-        {/* TAB KUIS */}
+        {/* TAB KUIS - DENGAN GAMBAR SOAL & OPSI */}
         {activeTab === 'kuis' && modul?.quizData?.length > 0 && (
           <div style={{ background:'white',padding:isMobile?18:25,borderRadius:isMobile?14:18,marginBottom:12,boxShadow:'0 2px 8px rgba(0,0,0,0.03)',border:'1px solid #f1f5f9',borderTop:'4px solid '+(isQuizExpired?'#ef4444':'#673ab7') }}>
             <div style={{ display:'flex',alignItems:'center',gap:12,marginBottom:20 }}>
@@ -362,20 +371,56 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
             </div>
             {modul.quizData.map((q, qIdx) => (
               <div key={q.id} style={{ marginBottom:18 }}>
-                <p style={{ fontSize:isMobile?14:16,fontWeight:800,color:'#1e293b',display:'flex',gap:10 }}>
-                  <span style={{ background:'#f1f5f9',color:'#673ab7',minWidth:28,height:28,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,flexShrink:0 }}>{qIdx+1}</span>
-                  {q.question}
+                <p style={{ fontSize:isMobile?14:16,fontWeight:800,color:'#1e293b',display:'flex',gap:10,flexDirection:'column' }}>
+                  <span style={{ display:'flex',alignItems:'center',gap:10 }}>
+                    <span style={{ background:'#f1f5f9',color:'#673ab7',minWidth:28,height:28,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,flexShrink:0 }}>{qIdx+1}</span>
+                    {q.question}
+                  </span>
+                  
+                  {/* ➕ GAMBAR SOAL */}
+                  {q.questionImage && (
+                    <img 
+                      src={q.questionImage} 
+                      alt="Gambar Soal" 
+                      style={{ 
+                        maxWidth:'100%', maxHeight:isMobile?200:300, objectFit:'contain', 
+                        borderRadius:10, border:'1px solid #e2e8f0', marginTop:8,
+                        cursor:'pointer'
+                      }}
+                      onClick={() => setPreviewImage(q.questionImage)}
+                    />
+                  )}
                 </p>
                 <div style={{ display:'grid',gap:6,marginTop:8 }}>
-                  {q.options.map((opt, oIdx) => (
-                    <button key={oIdx} disabled={quizSubmitted || isQuizExpired} onClick={() => setQuizAnswers({...quizAnswers, [q.id]: oIdx})}
-                      style={{
-                        padding: isMobile?'10px 14px':'12px 16px',borderRadius:10,border:'2px solid',textAlign:'left',fontSize:isMobile?13:14,fontWeight:700,cursor:'pointer',
-                        background: quizAnswers[q.id]===oIdx?'#673ab7':'#f8fafc',color: quizAnswers[q.id]===oIdx?'white':'#1e293b',borderColor: quizAnswers[q.id]===oIdx?'#673ab7':'#e2e8f0'
-                      }}>
-                      <span style={{ opacity:0.6,marginRight:6 }}>{String.fromCharCode(65+oIdx)}.</span> {opt}
-                    </button>
-                  ))}
+                  {q.options.map((opt, oIdx) => {
+                    // ➕ Cek apakah opsi ini punya gambar
+                    const optionImage = q.optionImages?.[oIdx];
+                    return (
+                      <button key={oIdx} disabled={quizSubmitted || isQuizExpired} onClick={() => setQuizAnswers({...quizAnswers, [q.id]: oIdx})}
+                        style={{
+                          padding: isMobile?'10px 14px':'12px 16px',borderRadius:10,border:'2px solid',textAlign:'left',fontSize:isMobile?13:14,fontWeight:700,cursor:'pointer',
+                          background: quizAnswers[q.id]===oIdx?'#673ab7':'#f8fafc',color: quizAnswers[q.id]===oIdx?'white':'#1e293b',borderColor: quizAnswers[q.id]===oIdx?'#673ab7':'#e2e8f0',
+                          display:'flex',flexDirection:'column',gap:6
+                        }}>
+                        <span style={{display:'flex',alignItems:'center',gap:6}}>
+                          <span style={{ opacity:0.6,minWidth:20 }}>{String.fromCharCode(65+oIdx)}.</span> {opt}
+                        </span>
+                        
+                        {/* ➕ GAMBAR OPSI */}
+                        {optionImage && (
+                          <img 
+                            src={optionImage} 
+                            alt={`Opsi ${String.fromCharCode(65+oIdx)}`}
+                            style={{ 
+                              maxWidth:'100%', maxHeight:isMobile?120:180, objectFit:'contain', 
+                              borderRadius:8, border:'1px solid rgba(255,255,255,0.3)',
+                              marginLeft:26, marginTop:4
+                            }}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -393,6 +438,29 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           </div>
         )}
       </div>
+
+      {/* ➕ MODAL PREVIEW GAMBAR FULLSCREEN */}
+      {previewImage && (
+        <div 
+          onClick={() => setPreviewImage(null)}
+          style={{ 
+            position:'fixed',inset:0,background:'rgba(0,0,0,0.9)',zIndex:9999,
+            display:'flex',alignItems:'center',justifyContent:'center',padding:20,
+            cursor:'pointer'
+          }}
+        >
+          <button 
+            onClick={(e) => { e.stopPropagation(); setPreviewImage(null); }}
+            style={{ position:'absolute',top:20,right:20,background:'rgba(255,255,255,0.2)',color:'white',border:'none',borderRadius:'50%',width:40,height:40,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20 }}
+          ><X size={24}/></button>
+          <img 
+            src={previewImage} 
+            alt="Preview" 
+            style={{ maxWidth:'95%',maxHeight:'90vh',objectFit:'contain',borderRadius:12 }}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 };

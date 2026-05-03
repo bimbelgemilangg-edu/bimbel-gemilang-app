@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../../../firebase';
 import { collection, addDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy } from "firebase/firestore";
-import { Plus, Trash2, CheckCircle, ArrowLeft, Save, Layout, FileText, X, Calculator, Target, BookOpen, Users, Send, Settings, Clock as ClockIcon, HelpCircle } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, ArrowLeft, Save, Layout, FileText, X, Calculator, Target, BookOpen, Users, Send, Settings, Clock as ClockIcon, HelpCircle, Image, Upload } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { uploadFile } from '../../../services/uploadService'; // ➕ Import upload service
 import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
 
@@ -13,13 +14,23 @@ const ManageQuiz = () => {
   
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [loading, setLoading] = useState(false);
-  const [advancedMode, setAdvancedMode] = useState(false); // 🔥 MODE LANJUTAN
+  const [uploading, setUploading] = useState(false); // ➕ State uploading
+  const [uploadTarget, setUploadTarget] = useState(null); // ➕ Track mana yang sedang upload
+  const [advancedMode, setAdvancedMode] = useState(false);
   
   // Data Quiz
   const [quizTitle, setQuizTitle] = useState("");
   const [quizSubject, setQuizSubject] = useState("");
   const [deadline, setDeadline] = useState("");
-  const [questions, setQuestions] = useState([{ id: Date.now(), q: '', options: ['', '', '', ''], correct: 0, explanation: '' }]);
+  const [questions, setQuestions] = useState([{ 
+    id: Date.now(), 
+    q: '', 
+    qImage: '', // ➕ Gambar soal
+    options: ['', '', '', ''], 
+    optionImages: ['', '', '', ''], // ➕ Gambar per opsi
+    correct: 0, 
+    explanation: '' 
+  }]);
   
   // FITUR LANJUTAN (UJIAN)
   const [timeLimit, setTimeLimit] = useState(0);
@@ -42,6 +53,9 @@ const ManageQuiz = () => {
   // Bulk import
   const [showImport, setShowImport] = useState(false);
   const [bulkText, setBulkText] = useState("");
+
+  // ➕ Ref untuk file input
+  const fileInputRefs = useRef({});
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -87,8 +101,10 @@ const ManageQuiz = () => {
           if (data.quizData?.length > 0) {
             setQuestions(data.quizData.map((q, idx) => ({
               id: q.id || Date.now() + idx,
-              q: q.question,
-              options: q.options,
+              q: q.question || '',
+              qImage: q.questionImage || '', // ➕ Load gambar soal
+              options: q.options || ['', '', '', ''],
+              optionImages: q.optionImages || ['', '', '', ''], // ➕ Load gambar opsi
               correct: q.correctAnswer || 0,
               explanation: q.explanation || ''
             })));
@@ -98,6 +114,56 @@ const ManageQuiz = () => {
       fetchQuiz();
     }
   }, [modulId]);
+
+  // ➕ Fungsi upload gambar
+  const handleImageUpload = async (file, questionId, targetType, optionIndex = null) => {
+    if (!file) return;
+    
+    setUploading(true);
+    setUploadTarget(`${questionId}-${targetType}-${optionIndex || ''}`);
+    
+    try {
+      const path = `quiz-images/${Date.now()}_${file.name}`;
+      const url = await uploadFile(file, path, 'quiz-images');
+      
+      if (url) {
+        setQuestions(prev => prev.map(q => {
+          if (q.id === questionId) {
+            if (targetType === 'question') {
+              return { ...q, qImage: url };
+            } else if (targetType === 'option' && optionIndex !== null) {
+              const newOptionImages = [...q.optionImages];
+              newOptionImages[optionIndex] = url;
+              return { ...q, optionImages: newOptionImages };
+            }
+          }
+          return q;
+        }));
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("❌ Gagal upload gambar: " + error.message);
+    } finally {
+      setUploading(false);
+      setUploadTarget(null);
+    }
+  };
+
+  // ➕ Fungsi hapus gambar
+  const handleRemoveImage = (questionId, targetType, optionIndex = null) => {
+    setQuestions(prev => prev.map(q => {
+      if (q.id === questionId) {
+        if (targetType === 'question') {
+          return { ...q, qImage: '' };
+        } else if (targetType === 'option' && optionIndex !== null) {
+          const newOptionImages = [...q.optionImages];
+          newOptionImages[optionIndex] = '';
+          return { ...q, optionImages: newOptionImages };
+        }
+      }
+      return q;
+    }));
+  };
 
   const renderMath = (text) => {
     if (!text) return null;
@@ -120,7 +186,7 @@ const ManageQuiz = () => {
       const qt = lines[0].replace(/^\d+[\.\$\s]*/, '').trim();
       const opts = lines.slice(1).filter(l => /^[A-E][\.\$\s]/i.test(l.trim())).map(o => o.replace(/^[A-E][\.\$\s]*/i, '').trim());
       while (opts.length < 4) opts.push("");
-      return { id: Date.now() + idx, q: qt, options: opts.slice(0,4), correct: 0, explanation: '' };
+      return { id: Date.now() + idx, q: qt, qImage: '', options: opts.slice(0,4), optionImages: ['', '', '', ''], correct: 0, explanation: '' };
     }).filter(Boolean);
     if (parsed.length > 0) {
       setQuestions(prev => (prev.length === 1 && prev[0].q === "") ? parsed : [...prev, ...parsed]);
@@ -130,8 +196,8 @@ const ManageQuiz = () => {
   };
 
   const handleSaveQuiz = async () => {
-    const valid = questions.filter(q => q.q.trim());
-    if (valid.length === 0) return alert("❌ Minimal 1 soal!");
+    const valid = questions.filter(q => q.q.trim() || q.qImage); // ➕ Bisa gambar saja
+    if (valid.length === 0) return alert("❌ Minimal 1 soal (teks atau gambar)!");
     if (!quizTitle) return alert("❌ Judul kuis wajib diisi!");
     
     setLoading(true);
@@ -140,7 +206,9 @@ const ManageQuiz = () => {
         quizData: valid.map(q => ({ 
           id: q.id, 
           question: q.q.trim(), 
-          options: q.options, 
+          questionImage: q.qImage || '', // ➕ Simpan gambar soal
+          options: q.options,
+          optionImages: q.optionImages || ['', '', '', ''], // ➕ Simpan gambar opsi
           correctAnswer: q.correct,
           explanation: advancedMode ? (q.explanation || '') : ''
         })),
@@ -149,7 +217,6 @@ const ManageQuiz = () => {
         updatedAt: serverTimestamp()
       };
 
-      // Tambahkan fitur lanjutan hanya jika mode advanced aktif
       if (advancedMode) {
         quizPayload.timeLimit = timeLimit;
         quizPayload.randomOrder = randomOrder;
@@ -189,12 +256,6 @@ const ManageQuiz = () => {
     setLoading(false);
   };
 
-  const addExplanation = (qId) => {
-    setQuestions(questions.map(q => 
-      q.id === qId ? { ...q, explanation: q.explanation || 'Klik untuk menambahkan pembahasan...' } : q
-    ));
-  };
-
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', paddingBottom: 100 }}>
       
@@ -213,7 +274,7 @@ const ManageQuiz = () => {
 
       <div style={{ display: 'flex', gap: 20, flexDirection: isMobile ? 'column' : 'row' }}>
         
-        {/* SIDEBAR KIRI */}
+        {/* SIDEBAR KIRI - TIDAK BERUBAH */}
         <div style={{ width: isMobile ? '100%' : '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
           
           {/* IDENTITAS QUIZ */}
@@ -232,64 +293,38 @@ const ManageQuiz = () => {
           <div style={{ background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <h4 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#64748b' }}><Settings size={14} /> Mode Kuis</h4>
-              <button 
-                onClick={() => setAdvancedMode(!advancedMode)}
-                style={{
-                  padding: '4px 12px', borderRadius: 20, fontSize: 10, fontWeight: 700,
-                  background: advancedMode ? '#673ab7' : '#f1f5f9',
-                  color: advancedMode ? 'white' : '#64748b',
-                  border: 'none', cursor: 'pointer'
-                }}
-              >
-                {advancedMode ? '🔒 Mode Ujian' : '📝 Mode Sederhana'}
-              </button>
+              <button onClick={() => setAdvancedMode(!advancedMode)} style={{ padding: '4px 12px', borderRadius: 20, fontSize: 10, fontWeight: 700, background: advancedMode ? '#673ab7' : '#f1f5f9', color: advancedMode ? 'white' : '#64748b', border: 'none', cursor: 'pointer' }}>{advancedMode ? '🔒 Mode Ujian' : '📝 Mode Sederhana'}</button>
             </div>
-            <p style={{ fontSize: 10, color: '#64748b', margin: 0 }}>
-              {advancedMode 
-                ? 'Mode Ujian: +Timer, Random Soal, Batas Pengulangan, Pembahasan' 
-                : 'Mode Sederhana: Kuis biasa tanpa pengaturan lanjutan'}
-            </p>
+            <p style={{ fontSize: 10, color: '#64748b', margin: 0 }}>{advancedMode ? 'Mode Ujian: +Timer, Random Soal, Batas Pengulangan, Pembahasan' : 'Mode Sederhana: Kuis biasa tanpa pengaturan lanjutan'}</p>
           </div>
 
-          {/* PENGATURAN LANJUTAN (hanya tampil jika advancedMode true) */}
+          {/* PENGATURAN LANJUTAN */}
           {advancedMode && (
             <div style={{ background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
               <h4 style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, color: '#64748b' }}>⚙️ Pengaturan Ujian</h4>
-              
               <div style={{ marginBottom: 10 }}>
                 <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>⏱️ Batas Waktu</label>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <input type="number" min="0" max="180" value={timeLimit} onChange={e => setTimeLimit(parseInt(e.target.value))} 
-                    style={{ width: 70, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }} />
+                  <input type="number" min="0" max="180" value={timeLimit} onChange={e => setTimeLimit(parseInt(e.target.value))} style={{ width: 70, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }} />
                   <span style={{ fontSize: 11, color: '#64748b' }}>menit (0 = tidak terbatas)</span>
                 </div>
               </div>
-              
               <div style={{ marginBottom: 10 }}>
                 <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>🎲 Pengaturan Soal</label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, marginBottom: 6 }}>
-                  <input type="checkbox" checked={randomOrder} onChange={e => setRandomOrder(e.target.checked)} /> Acak urutan soal
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
-                  <input type="checkbox" checked={showExplanation} onChange={e => setShowExplanation(e.target.checked)} /> Tampilkan pembahasan setelah selesai
-                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, marginBottom: 6 }}><input type="checkbox" checked={randomOrder} onChange={e => setRandomOrder(e.target.checked)} /> Acak urutan soal</label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}><input type="checkbox" checked={showExplanation} onChange={e => setShowExplanation(e.target.checked)} /> Tampilkan pembahasan setelah selesai</label>
               </div>
-              
               <div style={{ marginBottom: 10 }}>
                 <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>🔄 Batas Pengulangan</label>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <input type="number" min="0" max="10" value={maxAttempts} onChange={e => setMaxAttempts(parseInt(e.target.value))} 
-                    style={{ width: 70, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }} />
+                  <input type="number" min="0" max="10" value={maxAttempts} onChange={e => setMaxAttempts(parseInt(e.target.value))} style={{ width: 70, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }} />
                   <span style={{ fontSize: 11, color: '#64748b' }}>kali (0 = tidak terbatas)</span>
                 </div>
               </div>
-              
               <div>
                 <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>📊 Tingkat Kesulitan</label>
                 <select value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, background: 'white' }}>
-                  <option value="Mudah">🟢 Mudah</option>
-                  <option value="Sedang">🟡 Sedang</option>
-                  <option value="Sulit">🔴 Sulit</option>
+                  <option value="Mudah">🟢 Mudah</option><option value="Sedang">🟡 Sedang</option><option value="Sulit">🔴 Sulit</option>
                 </select>
               </div>
             </div>
@@ -298,67 +333,35 @@ const ManageQuiz = () => {
           {/* TARGET PUBLISH */}
           <div style={{ background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
             <h4 style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, color: '#64748b' }}><Target size={14} /> Target Publish</h4>
-            
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <button onClick={() => setPublishTarget('mandiri')} style={{
-                padding: '8px 12px', borderRadius: 6, border: publishTarget === 'mandiri' ? '2px solid #3b82f6' : '1px solid #e2e8f0',
-                background: publishTarget === 'mandiri' ? '#eef2ff' : 'white', cursor: 'pointer', textAlign: 'left',
-                display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600
-              }}>
-                <Send size={14} color={publishTarget === 'mandiri' ? '#3b82f6' : '#94a3b8'} /> Kuis Mandiri (Langsung ke Siswa)
-              </button>
-
-              <button onClick={() => setPublishTarget('modul')} style={{
-                padding: '8px 12px', borderRadius: 6, border: publishTarget === 'modul' ? '2px solid #10b981' : '1px solid #e2e8f0',
-                background: publishTarget === 'modul' ? '#f0fdf4' : 'white', cursor: 'pointer', textAlign: 'left',
-                display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600
-              }}>
-                <BookOpen size={14} color={publishTarget === 'modul' ? '#10b981' : '#94a3b8'} /> Tautkan ke Modul
-              </button>
-
-              <button onClick={() => setPublishTarget('jenjang')} style={{
-                padding: '8px 12px', borderRadius: 6, border: publishTarget === 'jenjang' ? '2px solid #f59e0b' : '1px solid #e2e8f0',
-                background: publishTarget === 'jenjang' ? '#fffbeb' : 'white', cursor: 'pointer', textAlign: 'left',
-                display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600
-              }}>
-                <Users size={14} color={publishTarget === 'jenjang' ? '#f59e0b' : '#94a3b8'} /> Tautkan ke Jenjang
-              </button>
+              <button onClick={() => setPublishTarget('mandiri')} style={{ padding: '8px 12px', borderRadius: 6, border: publishTarget === 'mandiri' ? '2px solid #3b82f6' : '1px solid #e2e8f0', background: publishTarget === 'mandiri' ? '#eef2ff' : 'white', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600 }}><Send size={14} color={publishTarget === 'mandiri' ? '#3b82f6' : '#94a3b8'} /> Kuis Mandiri</button>
+              <button onClick={() => setPublishTarget('modul')} style={{ padding: '8px 12px', borderRadius: 6, border: publishTarget === 'modul' ? '2px solid #10b981' : '1px solid #e2e8f0', background: publishTarget === 'modul' ? '#f0fdf4' : 'white', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600 }}><BookOpen size={14} color={publishTarget === 'modul' ? '#10b981' : '#94a3b8'} /> Tautkan ke Modul</button>
+              <button onClick={() => setPublishTarget('jenjang')} style={{ padding: '8px 12px', borderRadius: 6, border: publishTarget === 'jenjang' ? '2px solid #f59e0b' : '1px solid #e2e8f0', background: publishTarget === 'jenjang' ? '#fffbeb' : 'white', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600 }}><Users size={14} color={publishTarget === 'jenjang' ? '#f59e0b' : '#94a3b8'} /> Tautkan ke Jenjang</button>
             </div>
-
             {publishTarget === 'modul' && (
               <select value={selectedModul} onChange={e => setSelectedModul(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #10b981', fontSize: 11, outline: 'none', marginTop: 8, background: 'white', boxSizing: 'border-box' }}>
                 <option value="">Pilih Modul...</option>
                 {modulList.filter(m => !m.type || m.type !== 'kuis_mandiri').map(m => <option key={m.id} value={m.id}>{m.title || m.id}</option>)}
               </select>
             )}
-
             {publishTarget === 'jenjang' && (
               <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <select value={selectedProgram} onChange={e => setSelectedProgram(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #f59e0b', fontSize: 11, background: 'white', boxSizing: 'border-box' }}>
-                  <option value="Semua">Semua Program</option>
-                  <option value="Reguler">📚 Reguler</option>
-                  <option value="English">🗣️ English</option>
-                </select>
-                <select value={selectedKelas} onChange={e => setSelectedKelas(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #f59e0b', fontSize: 11, background: 'white', boxSizing: 'border-box' }}>
-                  <option value="Semua">Semua Kelas</option>
-                  {availableClasses.map(k => <option key={k} value={k}>{k}</option>)}
-                </select>
+                <select value={selectedProgram} onChange={e => setSelectedProgram(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #f59e0b', fontSize: 11, background: 'white', boxSizing: 'border-box' }}><option value="Semua">Semua Program</option><option value="Reguler">📚 Reguler</option><option value="English">🗣️ English</option></select>
+                <select value={selectedKelas} onChange={e => setSelectedKelas(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #f59e0b', fontSize: 11, background: 'white', boxSizing: 'border-box' }}><option value="Semua">Semua Kelas</option>{availableClasses.map(k => <option key={k} value={k}>{k}</option>)}</select>
               </div>
             )}
           </div>
 
-          {/* INFO SOAL */}
           <div style={{ background: '#f0fdf4', padding: 10, borderRadius: 8, border: '1px solid #bbf7d0', fontSize: 11, fontWeight: 600, color: '#166534' }}>
-            📊 {questions.filter(q => q.q.trim()).length} soal aktif
+            📊 {questions.filter(q => q.q.trim() || q.qImage).length} soal aktif
           </div>
 
-          {/* BULK IMPORT BUTTON */}
           <button onClick={() => setShowImport(true)} style={{ width: '100%', padding: 10, background: 'white', border: '1px solid #673ab7', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 11, color: '#673ab7', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
             <Calculator size={14} /> Bulk Import Soal
           </button>
         </div>
 
-        {/* AREA SOAL */}
+        {/* AREA SOAL - DENGAN UPLOAD GAMBAR */}
         <div style={{ flex: 1, minWidth: 0 }}>
           {questions.map((item, idx) => (
             <div key={item.id} style={{ background: 'white', padding: isMobile ? 15 : 20, borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 12 }}>
@@ -367,6 +370,39 @@ const ManageQuiz = () => {
                 <button onClick={() => setQuestions(questions.filter(q => q.id !== item.id))} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '4px 8px', borderRadius: 6, cursor: 'pointer' }}><Trash2 size={14}/></button>
               </div>
               
+              {/* ➕ UPLOAD GAMBAR SOAL */}
+              <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <label style={{ 
+                  display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', 
+                  background: '#f3e8ff', border: '1px solid #673ab7', borderRadius: 6, 
+                  cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#673ab7',
+                  opacity: uploading ? 0.6 : 1
+                }}>
+                  <Image size={14} /> Upload Gambar Soal
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    hidden 
+                    onChange={(e) => {
+                      if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'question');
+                    }}
+                    disabled={uploading}
+                  />
+                </label>
+                {item.qImage && (
+                  <div style={{ position: 'relative', display: 'inline-block' }}>
+                    <img src={item.qImage} alt="Soal" style={{ maxHeight: 80, borderRadius: 8, border: '1px solid #e2e8f0' }} />
+                    <button 
+                      onClick={() => handleRemoveImage(item.id, 'question')}
+                      style={{ position: 'absolute', top: -6, right: -6, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}
+                    ><X size={10}/></button>
+                  </div>
+                )}
+                {uploading && uploadTarget === `${item.id}-question-` && (
+                  <span style={{ fontSize: 10, color: '#673ab7' }}>⏳ Uploading...</span>
+                )}
+              </div>
+
               <textarea value={item.q} onChange={e => setQuestions(questions.map(q => q.id === item.id ? {...q, q: e.target.value} : q))}
                 placeholder="Tulis soal... ($ untuk rumus matematika)"
                 style={{ width: '100%', minHeight: 55, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, fontWeight: 600, outline: 'none', resize: 'vertical', boxSizing: 'border-box', marginBottom: 6 }} />
@@ -375,42 +411,73 @@ const ManageQuiz = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 6 }}>
                 {item.options.map((opt, oIdx) => (
-                  <div key={oIdx} onClick={() => setQuestions(questions.map(q => q.id === item.id ? {...q, correct: oIdx} : q))} style={{
-                    display: 'flex', alignItems: 'center', gap: 6, padding: 8, borderRadius: 8, cursor: 'pointer',
-                    border: `2px solid ${item.correct === oIdx ? '#10b981' : '#e2e8f0'}`, background: item.correct === oIdx ? '#f0fdf4' : 'white'
-                  }}>
-                    <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${item.correct === oIdx ? '#10b981' : '#cbd5e1'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      {item.correct === oIdx && <div style={{ width: 9, height: 9, borderRadius: '50%', background: '#10b981' }}></div>}
+                  <div key={oIdx} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div onClick={() => setQuestions(questions.map(q => q.id === item.id ? {...q, correct: oIdx} : q))} style={{
+                      display: 'flex', alignItems: 'center', gap: 6, padding: 8, borderRadius: 8, cursor: 'pointer',
+                      border: `2px solid ${item.correct === oIdx ? '#10b981' : '#e2e8f0'}`, background: item.correct === oIdx ? '#f0fdf4' : 'white'
+                    }}>
+                      <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${item.correct === oIdx ? '#10b981' : '#cbd5e1'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {item.correct === oIdx && <div style={{ width: 9, height: 9, borderRadius: '50%', background: '#10b981' }}></div>}
+                      </div>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <input value={opt} placeholder={`Opsi ${String.fromCharCode(65+oIdx)}`} onChange={e => {
+                          const newOpts = [...item.options]; newOpts[oIdx] = e.target.value;
+                          setQuestions(questions.map(q => q.id === item.id ? {...q, options: newOpts} : q));
+                        }} onClick={e => e.stopPropagation()} style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: 500, fontSize: 12, outline: 'none' }} />
+                        
+                        {/* ➕ GAMBAR OPSI */}
+                        {item.optionImages?.[oIdx] && (
+                          <div style={{ position: 'relative', display: 'inline-block' }}>
+                            <img src={item.optionImages[oIdx]} alt={`Opsi ${oIdx+1}`} style={{ maxHeight: 60, borderRadius: 6, border: '1px solid #e2e8f0' }} />
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleRemoveImage(item.id, 'option', oIdx); }}
+                              style={{ position: 'absolute', top: -6, right: -6, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 18, height: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9 }}
+                            ><X size={9}/></button>
+                          </div>
+                        )}
+                      </div>
+                      {item.correct === oIdx && <CheckCircle size={12} color="#10b981"/>}
                     </div>
-                    <input value={opt} placeholder={`Opsi ${String.fromCharCode(65+oIdx)}`} onChange={e => {
-                      const newOpts = [...item.options]; newOpts[oIdx] = e.target.value;
-                      setQuestions(questions.map(q => q.id === item.id ? {...q, options: newOpts} : q));
-                    }} onClick={e => e.stopPropagation()} style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: 500, fontSize: 12, outline: 'none' }} />
-                    {item.correct === oIdx && <CheckCircle size={12} color="#10b981"/>}
+                    
+                    {/* ➕ TOMBOL UPLOAD GAMBAR OPSI */}
+                    <label style={{ 
+                      display: 'flex', alignItems: 'center', gap: 3, padding: '3px 8px', 
+                      background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 4, 
+                      cursor: 'pointer', fontSize: 9, color: '#64748b', marginLeft: 28,
+                      opacity: uploading ? 0.6 : 1
+                    }}>
+                      <Upload size={10} /> Gambar Opsi {String.fromCharCode(65+oIdx)}
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        hidden 
+                        onChange={(e) => {
+                          if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'option', oIdx);
+                        }}
+                        disabled={uploading}
+                      />
+                    </label>
+                    {uploading && uploadTarget === `${item.id}-option-${oIdx}` && (
+                      <span style={{ fontSize: 9, color: '#673ab7', marginLeft: 28 }}>⏳ Uploading...</span>
+                    )}
                   </div>
                 ))}
               </div>
 
-              {/* PEMBAHASAN (hanya jika mode advanced aktif) */}
+              {/* PEMBAHASAN */}
               {advancedMode && (
                 <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #e2e8f0' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                     <HelpCircle size={12} color="#673ab7" />
                     <span style={{ fontSize: 10, fontWeight: 700, color: '#673ab7' }}>Pembahasan / Penjelasan</span>
                   </div>
-                  <textarea 
-                    value={item.explanation || ''} 
-                    onChange={e => setQuestions(questions.map(q => q.id === item.id ? {...q, explanation: e.target.value} : q))}
-                    placeholder="Tulis pembahasan soal ini (akan ditampilkan setelah siswa menjawab)..."
-                    style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
-                    rows={2}
-                  />
+                  <textarea value={item.explanation || ''} onChange={e => setQuestions(questions.map(q => q.id === item.id ? {...q, explanation: e.target.value} : q))} placeholder="Tulis pembahasan soal ini..." style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', resize: 'vertical', fontFamily: 'inherit' }} rows={2} />
                 </div>
               )}
             </div>
           ))}
 
-          <button onClick={() => setQuestions([...questions, { id: Date.now(), q: '', options: ['', '', '', ''], correct: 0, explanation: '' }])} style={{
+          <button onClick={() => setQuestions([...questions, { id: Date.now(), q: '', qImage: '', options: ['', '', '', ''], optionImages: ['', '', '', ''], correct: 0, explanation: '' }])} style={{
             width: '100%', padding: 12, border: '2px dashed #cbd5e1', background: 'white', borderRadius: 10, fontWeight: 700, color: '#64748b', cursor: 'pointer', fontSize: 12
           }}>
             <Plus size={14}/> Tambah Soal
@@ -422,16 +489,9 @@ const ManageQuiz = () => {
       {showImport && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
           <div style={{ background: 'white', width: '100%', maxWidth: 550, padding: 25, borderRadius: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-              <h3 style={{ margin: 0, fontSize: 16 }}>📥 Bulk Import Soal</h3>
-              <button onClick={() => setShowImport(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X/></button>
-            </div>
-            <div style={{ background: '#eef2ff', padding: 10, borderRadius: 8, fontSize: 10, color: '#4338ca', marginBottom: 12 }}>
-              <b>Format:</b> 1. Soal $x^2$ (Enter) A. Opsi (Enter) B. Opsi...
-            </div>
-            <textarea value={bulkText} onChange={e => setBulkText(e.target.value)}
-              placeholder={"1. Berapa $\\sqrt{64}$?\nA. 6\nB. 8\nC. 10\nD. 12"}
-              style={{ width: '100%', height: 220, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, fontFamily: 'monospace', marginBottom: 12, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}><h3 style={{ margin: 0, fontSize: 16 }}>📥 Bulk Import Soal</h3><button onClick={() => setShowImport(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X/></button></div>
+            <div style={{ background: '#eef2ff', padding: 10, borderRadius: 8, fontSize: 10, color: '#4338ca', marginBottom: 12 }}><b>Format:</b> 1. Soal $x^2$ (Enter) A. Opsi (Enter) B. Opsi...<br/>Gambar bisa ditambahkan setelah import.</div>
+            <textarea value={bulkText} onChange={e => setBulkText(e.target.value)} placeholder={"1. Berapa $\\sqrt{64}$?\nA. 6\nB. 8\nC. 10\nD. 12"} style={{ width: '100%', height: 220, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, fontFamily: 'monospace', marginBottom: 12, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
             <button onClick={handleBulkImport} style={{ width: '100%', padding: 12, background: '#673ab7', color: 'white', border: 'none', borderRadius: 10, fontWeight: 800, cursor: 'pointer' }}>PROSES</button>
           </div>
         </div>
