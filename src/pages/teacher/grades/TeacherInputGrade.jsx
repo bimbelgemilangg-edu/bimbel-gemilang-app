@@ -293,7 +293,7 @@ const TeacherInputGrade = () => {
     <div style={{ display: 'flex', background: '#f1f5f9', minHeight: '100vh' }}>
       <SidebarGuru />
       <div style={{ marginLeft: isMobile ? '0' : '260px', padding: isMobile ? '15px' : '24px', width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box', transition: 'all 0.3s ease' }}>
-        <div style={{maxWidth: 1100, margin: '0 auto'}}>
+      <div style={{maxWidth: '100%', margin: '0 auto'}}>
           
           {/* HEADER */}
           <div style={{marginBottom: 24}}>
@@ -373,7 +373,7 @@ const TeacherInputGrade = () => {
               ) : filteredStudents.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px' }}><Users size={48} color="#cbd5e1" /><p style={{ marginTop: '12px', color: '#94a3b8' }}>Tidak ada siswa yang ditemukan</p></div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${isMobile ? '150px' : '200px'}, 1fr))`, gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${isMobile ? '150px' : '180px'}, 1fr))`, gap: '12px' }}>
                   {filteredStudents.map(s => {
                     const statusStyle = getStatusColor(s.statusNilai);
                     return (
