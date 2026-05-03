@@ -16,18 +16,15 @@ const TeacherInputGrade = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Responsive
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isTablet, setIsTablet] = useState(window.innerWidth <= 1024 && window.innerWidth > 768);
 
-  // Data Guru
   const [guru] = useState(() => {
     const stateGuru = location.state?.teacher;
     const localGuru = localStorage.getItem('teacherData');
     return stateGuru || (localGuru ? JSON.parse(localGuru) : null);
   });
 
-  // State
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,7 +35,6 @@ const TeacherInputGrade = () => {
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('manual');
 
-  // State Input Nilai
   const [score, setScore] = useState(""); 
   const [topic, setTopic] = useState("");
   const [komponen, setKomponen] = useState("keaktifan");
@@ -49,19 +45,16 @@ const TeacherInputGrade = () => {
   const [selectedMapel] = useState(guru?.mapel || "Umum");
   const [availableTopics, setAvailableTopics] = useState([]);
   
-  // Data dari tugas & kuis (bulk)
   const [pendingTasks, setPendingTasks] = useState([]);
   const [pendingQuizzes, setPendingQuizzes] = useState([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
   
-  // Statistik
   const [stats, setStats] = useState({ total: 0, sudah: 0, sebagian: 0, belum: 0 });
   const [currentPeriode, setCurrentPeriode] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
 
-  // ➕ State baru untuk detail siswa
   const [showStudentDetail, setShowStudentDetail] = useState(false);
   const [studentScores, setStudentScores] = useState(null);
   const [lastMonthScores, setLastMonthScores] = useState(null);
@@ -110,16 +103,17 @@ const TeacherInputGrade = () => {
     try {
       const tugasSnap = await getDocs(query(collection(db, "jawaban_tugas"), where("score", "!=", null)));
       const semuaTugas = tugasSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setPendingTasks(semuaTugas.filter(t => !t.exportedToRaport).slice(0, 20));
+      const belumEksporTugas = semuaTugas.filter(t => !t.exportedToRaport && t.studentId && t.studentName);
+      setPendingTasks(belumEksporTugas.slice(0, 20));
 
       const quizSnap = await getDocs(query(collection(db, "jawaban_kuis"), where("score", "!=", null)));
       const semuaQuiz = quizSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setPendingQuizzes(semuaQuiz.filter(q => !q.exportedToRaport).slice(0, 20));
+      const belumEksporQuiz = semuaQuiz.filter(q => !q.exportedToRaport && q.userId && q.userName);
+      setPendingQuizzes(belumEksporQuiz.slice(0, 20));
     } catch (error) { console.error("Error fetching pending data:", error); }
     finally { setLoadingTasks(false); }
   };
 
-  // ➕ Fetch detail per siswa: nilai bulan ini + bulan lalu + tugas & kuis mereka
   const fetchStudentDetail = async (studentId) => {
     setLoadingStudentData(true);
     try {
@@ -133,7 +127,6 @@ const TeacherInputGrade = () => {
       const lastSnap = await getDocs(query(collection(db, RAPORT_COLLECTIONS.FINAL), where("studentId", "==", studentId), where("periode", "==", lastMonth)));
       setLastMonthScores(!lastSnap.empty ? lastSnap.docs[0].data() : null);
 
-      // Tugas siswa ini
       const tugasSnap = await getDocs(query(collection(db, "jawaban_tugas"), where("studentId", "==", studentId)));
       const semuaTugas = tugasSnap.docs.map(d => ({ id: d.id, ...d.data(), source: 'tugas' }));
       semuaTugas.sort((a, b) => {
@@ -143,7 +136,6 @@ const TeacherInputGrade = () => {
       });
       setStudentTasks(semuaTugas);
 
-      // Kuis siswa ini
       const kuisSnap = await getDocs(query(collection(db, "jawaban_kuis"), where("userId", "==", studentId)));
       const semuaKuis = kuisSnap.docs.map(d => ({ id: d.id, ...d.data(), source: 'kuis' }));
       semuaKuis.sort((a, b) => {
@@ -272,7 +264,7 @@ const TeacherInputGrade = () => {
   };
 
   const getScoreColor = (score) => { if (score >= 85) return '#10b981'; if (score >= 70) return '#3b82f6'; if (score >= 60) return '#f59e0b'; return '#ef4444'; };
-  const getScoreAdvice = (score) => { if (score >= 85) return { text: 'Luar biasa! Pertahankan prestasi ini!', color: '#10b981', icon: '🏆' }; if (score >= 75) return { text: 'Bagus! Tingkatkan terus konsistensi belajarnya.', color: '#3b82f6', icon: '👍' }; if (score >= 60) return { text: 'Cukup. Perlu bimbingan lebih intensif.', color: '#f59e0b', icon: '⚠️' }; return { text: 'Perlu perhatian khusus. Segera evaluasi!', color: '#ef4444', icon: '🔴' }; };
+  const getScoreAdvice = (score) => { if (score >= 85) return { text: 'Luar biasa!', color: '#10b981', icon: '🏆' }; if (score >= 75) return { text: 'Bagus!', color: '#3b82f6', icon: '👍' }; if (score >= 60) return { text: 'Cukup.', color: '#f59e0b', icon: '⚠️' }; return { text: 'Perlu perhatian.', color: '#ef4444', icon: '🔴' }; };
   const getKomponenLabel = (komp) => { const labels = { kuis: '📝 Kuis (30% bobot)', catatan: '📓 Tugas Catatan (30% bobot)', ujian: '📖 Ujian Materi (20% bobot)', keaktifan: '⭐ Keaktifan (20% bobot)' }; return labels[komp] || '📋 Nilai Umum'; };
   const getStatusColor = (status) => { if (status === 'Sudah') return { bg: '#dcfce7', color: '#166534', border: '#10b981' }; if (status === 'Sebagian') return { bg: '#fef3c7', color: '#b45309', border: '#f59e0b' }; return { bg: '#fee2e2', color: '#991b1b', border: '#ef4444' }; };
   const komponenList = ['kuis', 'catatan', 'ujian', 'keaktifan'];
@@ -292,105 +284,94 @@ const TeacherInputGrade = () => {
   return (
     <div style={{ display: 'flex', background: '#f1f5f9', minHeight: '100vh' }}>
       <SidebarGuru />
-      <div style={{ marginLeft: isMobile ? '0' : '260px', padding: isMobile ? '15px' : '24px', width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box', transition: 'all 0.3s ease' }}>
-      <div style={{maxWidth: '100%', margin: '0 auto'}}>
+      <div style={{ marginLeft: isMobile ? '0' : '260px', padding: isMobile ? '10px' : '20px', width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box', transition: 'all 0.3s ease' }}>
+        <div style={{width: '100%'}}>
           
           {/* HEADER */}
-          <div style={{marginBottom: 24}}>
-            <h1 style={{margin: 0, fontSize: isMobile ? '20px' : '24px', fontWeight: 'bold', color: '#1e293b'}}>📊 Smart Input Nilai</h1>
-            <p style={{margin: '4px 0 0', fontSize: '13px', color: '#64748b'}}>Input nilai akademik, karakter, dan impor tugas/kuis per siswa</p>
+          <div style={{marginBottom: 20}}>
+            <h1 style={{margin: 0, fontSize: isMobile ? 18 : 22, fontWeight: 'bold', color: '#1e293b'}}>📊 Smart Input Nilai</h1>
+            <p style={{margin: '4px 0 0', fontSize: 12, color: '#64748b'}}>Input nilai akademik, karakter, dan impor tugas/kuis per siswa</p>
           </div>
 
-          {/* ➕ INFO SKEMA BOBOT */}
-          <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 12, padding: 16, marginBottom: 20, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+          {/* INFO SKEMA BOBOT */}
+          <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 12, padding: 14, marginBottom: 16, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
             <Info size={18} color="#0369a1" style={{marginTop: 2}} />
             <div style={{flex: 1, fontSize: 12, color: '#0369a1', lineHeight: 1.6}}>
-              <b>ℹ️ Skema Penilaian:</b> Kuis 30% • Tugas/Catatan 30% • Ujian 20% • Keaktifan 20%<br/>
-              <span style={{fontSize: 10}}>Minimal <b>2 komponen</b> untuk generate. Bobot <b>otomatis proporsional</b> jika ada komponen kosong. Klik nama siswa → lihat tugas & kuis mereka → impor langsung.</span>
+              <b>ℹ️ Skema:</b> Kuis 30% • Tugas 30% • Ujian 20% • Keaktifan 20% | Minimal <b>2 komponen</b>. Klik <b>Detail</b> → lihat tugas & kuis → impor langsung.
             </div>
           </div>
 
           {/* INFO GURU */}
-          <div style={{ background: 'white', borderRadius: '16px', padding: '16px', marginBottom: '20px', border: '1px solid #e2e8f0' }}>
-            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: '12px' }}>
+          <div style={{ background: 'white', borderRadius: 12, padding: 14, marginBottom: 16, border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: 10 }}>
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <div style={{ width: '32px', height: '32px', background: '#eef2ff', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><User size={16} color="#3b82f6" /></div>
-                  <span style={{ fontWeight: 'bold', fontSize: '14px', color: '#1e293b' }}>{guru?.nama}</span>
-                  <span style={{ background: '#fef3c7', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold', color: '#d97706' }}>{selectedMapel}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <div style={{ width: 32, height: 32, background: '#eef2ff', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><User size={16} color="#3b82f6" /></div>
+                  <span style={{ fontWeight: 'bold', fontSize: 13, color: '#1e293b' }}>{guru?.nama}</span>
+                  <span style={{ background: '#fef3c7', padding: '2px 8px', borderRadius: 12, fontSize: 10, fontWeight: 'bold', color: '#d97706' }}>{selectedMapel}</span>
                 </div>
-                <div style={{ fontSize: '11px', color: '#64748b' }}>Periode: {currentPeriode.replace('-', ' / ')}</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>Periode: {currentPeriode.replace('-', ' / ')}</div>
               </div>
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                <div style={{ textAlign: 'center', background: '#f8fafc', padding: '8px 12px', borderRadius: 8 }}><div style={{ fontSize: '18px', fontWeight: 'bold', color: '#3b82f6' }}>{stats.total}</div><div style={{ fontSize: '9px', color: '#64748b' }}>Total</div></div>
-                <div style={{ textAlign: 'center', background: '#dcfce7', padding: '8px 12px', borderRadius: 8 }}><div style={{ fontSize: '18px', fontWeight: 'bold', color: '#166534' }}>{stats.sudah}</div><div style={{ fontSize: '9px', color: '#166534' }}>≥2 komp</div></div>
-                <div style={{ textAlign: 'center', background: '#fef3c7', padding: '8px 12px', borderRadius: 8 }}><div style={{ fontSize: '18px', fontWeight: 'bold', color: '#b45309' }}>{stats.sebagian || 0}</div><div style={{ fontSize: '9px', color: '#b45309' }}>1 komp</div></div>
-                <div style={{ textAlign: 'center', background: '#fee2e2', padding: '8px 12px', borderRadius: 8 }}><div style={{ fontSize: '18px', fontWeight: 'bold', color: '#991b1b' }}>{stats.belum}</div><div style={{ fontSize: '9px', color: '#991b1b' }}>0 komp</div></div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <div style={{ textAlign: 'center', background: '#f8fafc', padding: '6px 10px', borderRadius: 8 }}><div style={{ fontSize: 16, fontWeight: 'bold', color: '#3b82f6' }}>{stats.total}</div><div style={{ fontSize: 8, color: '#64748b' }}>Total</div></div>
+                <div style={{ textAlign: 'center', background: '#dcfce7', padding: '6px 10px', borderRadius: 8 }}><div style={{ fontSize: 16, fontWeight: 'bold', color: '#166534' }}>{stats.sudah}</div><div style={{ fontSize: 8, color: '#166534' }}>≥2 komp</div></div>
+                <div style={{ textAlign: 'center', background: '#fef3c7', padding: '6px 10px', borderRadius: 8 }}><div style={{ fontSize: 16, fontWeight: 'bold', color: '#b45309' }}>{stats.sebagian || 0}</div><div style={{ fontSize: 8, color: '#b45309' }}>1 komp</div></div>
+                <div style={{ textAlign: 'center', background: '#fee2e2', padding: '6px 10px', borderRadius: 8 }}><div style={{ fontSize: 16, fontWeight: 'bold', color: '#991b1b' }}>{stats.belum}</div><div style={{ fontSize: 8, color: '#991b1b' }}>0 komp</div></div>
               </div>
             </div>
           </div>
 
-          {/* TABS */}
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
-          <button onClick={() => { setActiveTab('manual'); setSelectedStudent(null); setShowStudentDetail(false); }} style={{ padding: '10px 20px', borderRadius: '12px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer', background: activeTab === 'manual' ? '#3b82f6' : 'white', color: activeTab === 'manual' ? 'white' : '#64748b', border: activeTab === 'manual' ? 'none' : '1px solid #e2e8f0', boxShadow: activeTab === 'manual' ? 'none' : '0 1px 3px rgba(0,0,0,0.05)' }}>✍️ Input Manual</button>
-
-<button onClick={() => { setActiveTab('fromTasks'); fetchPendingData(); }} style={{ padding: '10px 20px', borderRadius: '12px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer', background: activeTab === 'fromTasks' ? '#10b981' : 'white', color: activeTab === 'fromTasks' ? 'white' : '#64748b', border: activeTab === 'fromTasks' ? 'none' : '1px solid #e2e8f0', boxShadow: activeTab === 'fromTasks' ? 'none' : '0 1px 3px rgba(0,0,0,0.05)' }}>📥 Impor dari Tugas ({pendingTasks.length})</button>
-
-<button onClick={() => { setActiveTab('fromQuizzes'); fetchPendingData(); }} style={{ padding: '10px 20px', borderRadius: '12px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer', background: activeTab === 'fromQuizzes' ? '#8b5cf6' : 'white', color: activeTab === 'fromQuizzes' ? 'white' : '#64748b', border: activeTab === 'fromQuizzes' ? 'none' : '1px solid #e2e8f0', boxShadow: activeTab === 'fromQuizzes' ? 'none' : '0 1px 3px rgba(0,0,0,0.05)' }}>❓ Impor dari Kuis ({pendingQuizzes.length})</button>
-            <button onClick={() => { setActiveTab('fromTasks'); fetchPendingData(); }} style={{ padding: '10px 20px', borderRadius: '12px', border: 'none', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer', background: activeTab === 'fromTasks' ? '#10b981' : 'white', color: activeTab === 'fromTasks' ? 'white' : '#64748b', boxShadow: activeTab === 'fromTasks' ? 'none' : '0 1px 3px rgba(0,0,0,0.05)', border: activeTab === 'fromTasks' ? 'none' : '1px solid #e2e8f0' }}>📥 Impor dari Tugas ({pendingTasks.length})</button>
-            <button onClick={() => { setActiveTab('fromQuizzes'); fetchPendingData(); }} style={{ padding: '10px 20px', borderRadius: '12px', border: 'none', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer', background: activeTab === 'fromQuizzes' ? '#8b5cf6' : 'white', color: activeTab === 'fromQuizzes' ? 'white' : '#64748b', boxShadow: activeTab === 'fromQuizzes' ? 'none' : '0 1px 3px rgba(0,0,0,0.05)', border: activeTab === 'fromQuizzes' ? 'none' : '1px solid #e2e8f0' }}>❓ Impor dari Kuis ({pendingQuizzes.length})</button>
+          {/* TABS - HANYA 3 */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+            <button onClick={() => { setActiveTab('manual'); setSelectedStudent(null); setShowStudentDetail(false); }} style={{ padding: '10px 20px', borderRadius: 12, fontWeight: 'bold', fontSize: 13, cursor: 'pointer', background: activeTab === 'manual' ? '#3b82f6' : 'white', color: activeTab === 'manual' ? 'white' : '#64748b', border: activeTab === 'manual' ? 'none' : '1px solid #e2e8f0', boxShadow: activeTab === 'manual' ? 'none' : '0 1px 3px rgba(0,0,0,0.05)' }}>✍️ Input Manual</button>
+            <button onClick={() => { setActiveTab('fromTasks'); fetchPendingData(); }} style={{ padding: '10px 20px', borderRadius: 12, fontWeight: 'bold', fontSize: 13, cursor: 'pointer', background: activeTab === 'fromTasks' ? '#10b981' : 'white', color: activeTab === 'fromTasks' ? 'white' : '#64748b', border: activeTab === 'fromTasks' ? 'none' : '1px solid #e2e8f0', boxShadow: activeTab === 'fromTasks' ? 'none' : '0 1px 3px rgba(0,0,0,0.05)' }}>📥 Impor Tugas ({pendingTasks.length})</button>
+            <button onClick={() => { setActiveTab('fromQuizzes'); fetchPendingData(); }} style={{ padding: '10px 20px', borderRadius: 12, fontWeight: 'bold', fontSize: 13, cursor: 'pointer', background: activeTab === 'fromQuizzes' ? '#8b5cf6' : 'white', color: activeTab === 'fromQuizzes' ? 'white' : '#64748b', border: activeTab === 'fromQuizzes' ? 'none' : '1px solid #e2e8f0', boxShadow: activeTab === 'fromQuizzes' ? 'none' : '0 1px 3px rgba(0,0,0,0.05)' }}>❓ Impor Kuis ({pendingQuizzes.length})</button>
           </div>
 
           {/* ============================================================ */}
-          {/* KONTEN: DAFTAR SISWA */}
+          {/* DAFTAR SISWA */}
           {/* ============================================================ */}
           {activeTab === 'manual' && !selectedStudent && (
             <>
-              <div style={{ background: 'white', borderRadius: '16px', padding: '16px', marginBottom: '20px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '12px' }}>
-                  <div style={{ flex: 2 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f8fafc', padding: '10px 12px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                      <Search size={16} color="#94a3b8" />
-                      <input type="text" placeholder="Cari nama siswa..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: '13px' }} />
-                    </div>
+              <div style={{ background: 'white', borderRadius: 12, padding: 14, marginBottom: 16, border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 10, width: '100%' }}>
+                  <div style={{ flex: 3, display: 'flex', alignItems: 'center', gap: 8, background: '#f8fafc', padding: '8px 12px', borderRadius: 10, border: '1px solid #e2e8f0' }}>
+                    <Search size={16} color="#94a3b8" />
+                    <input type="text" placeholder="Cari nama siswa..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 13 }} />
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <select value={filterClass} onChange={e => setFilterClass(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '13px', background: 'white' }}>
-                      <option value="Semua">📚 Semua Jenjang</option><option value="SD">SD</option><option value="SMP">SMP</option><option value="SMA">SMA</option>
-                    </select>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '13px', background: 'white' }}>
-                      <option value="Semua">📋 Semua Status</option><option value="Belum">🔴 Belum (0)</option><option value="Sebagian">🟡 Sebagian (1)</option><option value="Sudah">🟢 Lengkap (≥2)</option>
-                    </select>
-                  </div>
-                  <button onClick={() => { fetchData(); }} style={{ padding: '10px 15px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '10px', cursor: 'pointer' }}><RefreshCw size={14} /></button>
+                  <select value={filterClass} onChange={e => setFilterClass(e.target.value)} style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, background: 'white', minWidth: 120 }}>
+                    <option value="Semua">📚 Semua Jenjang</option><option value="SD">SD</option><option value="SMP">SMP</option><option value="SMA">SMA</option>
+                  </select>
+                  <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, background: 'white', minWidth: 120 }}>
+                    <option value="Semua">📋 Semua Status</option><option value="Belum">🔴 Belum</option><option value="Sebagian">🟡 Sebagian</option><option value="Sudah">🟢 Lengkap</option>
+                  </select>
+                  <button onClick={() => { fetchData(); }} style={{ padding: '8px 12px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, cursor: 'pointer' }}><RefreshCw size={14} /></button>
                 </div>
               </div>
 
               {loading ? (
-                <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px' }}><div style={{ width: '40px', height: '40px', border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }}></div><p style={{ color: '#64748b' }}>Memuat data siswa...</p></div>
+                <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 12 }}><div style={{ width: 36, height: 36, border: '3px solid #e2e8f0', borderTop: '3px solid #3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }}></div><p style={{ color: '#64748b', fontSize: 13 }}>Memuat...</p></div>
               ) : filteredStudents.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px', background: 'white', borderRadius: '16px' }}><Users size={48} color="#cbd5e1" /><p style={{ marginTop: '12px', color: '#94a3b8' }}>Tidak ada siswa yang ditemukan</p></div>
+                <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 12 }}><Users size={40} color="#cbd5e1" /><p style={{ marginTop: 10, color: '#94a3b8', fontSize: 13 }}>Tidak ada siswa</p></div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${isMobile ? '150px' : '180px'}, 1fr))`, gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${isMobile ? '140px' : '170px'}, 1fr))`, gap: 10 }}>
                   {filteredStudents.map(s => {
                     const statusStyle = getStatusColor(s.statusNilai);
                     return (
-                      <div key={s.id} style={{ background: 'white', borderRadius: '12px', padding: '14px', border: `2px solid ${statusStyle.border}`, boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                      <div key={s.id} style={{ background: 'white', borderRadius: 12, padding: 12, border: `2px solid ${statusStyle.border}`, boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                           <div onClick={() => { setSelectedStudent(s); fetchStudentDetail(s.id); }} style={{ flex: 1, cursor: 'pointer' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><User size={18} color="#3b82f6" /></div>
-                              <div style={{ flex: 1 }}><div style={{ fontWeight: 'bold', fontSize: '13px', color: '#1e293b' }}>{s.nama}</div><div style={{ fontSize: '10px', color: '#64748b' }}>{s.kelasSekolah || '-'}</div></div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><User size={15} color="#3b82f6" /></div>
+                              <div style={{ flex: 1 }}><div style={{ fontWeight: 'bold', fontSize: 12, color: '#1e293b' }}>{s.nama}</div><div style={{ fontSize: 9, color: '#64748b' }}>{s.kelasSekolah || '-'}</div></div>
                             </div>
                           </div>
-                          <button onClick={(e) => { e.stopPropagation(); setSelectedStudent(s); fetchStudentDetail(s.id); }} style={{ background: '#eef2ff', border: 'none', color: '#3b82f6', padding: '4px 8px', borderRadius: 6, fontSize: 10, cursor: 'pointer', whiteSpace: 'nowrap' }}><Eye size={12} /> Detail</button>
+                          <button onClick={(e) => { e.stopPropagation(); setSelectedStudent(s); fetchStudentDetail(s.id); }} style={{ background: '#eef2ff', border: 'none', color: '#3b82f6', padding: '3px 7px', borderRadius: 6, fontSize: 9, cursor: 'pointer', whiteSpace: 'nowrap' }}><Eye size={11} /> Detail</button>
                         </div>
-                        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 8 }}>
-                          {komponenList.map(komp => { const terisi = s.komponenTerisi?.includes(komp); return (<span key={komp} style={{ fontSize: 8, padding: '2px 6px', borderRadius: 6, background: terisi ? '#dcfce7' : '#fee2e2', color: terisi ? '#166534' : '#991b1b', fontWeight: 'bold' }}>{komp === 'kuis' ? '📝' : komp === 'catatan' ? '📓' : komp === 'ujian' ? '📖' : '⭐'}{terisi ? '✓' : '✗'}</span>); })}
+                        <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginTop: 6 }}>
+                          {komponenList.map(komp => { const terisi = s.komponenTerisi?.includes(komp); return (<span key={komp} style={{ fontSize: 7, padding: '2px 5px', borderRadius: 4, background: terisi ? '#dcfce7' : '#fee2e2', color: terisi ? '#166534' : '#991b1b', fontWeight: 'bold' }}>{komp === 'kuis' ? '📝' : komp === 'catatan' ? '📓' : komp === 'ujian' ? '📖' : '⭐'}{terisi ? '✓' : '✗'}</span>); })}
                         </div>
-                        <div style={{ fontSize: '10px', fontWeight: 'bold', marginTop: 8, color: statusStyle.color, background: statusStyle.bg, padding: '4px 8px', borderRadius: '6px', textAlign: 'center' }}>{s.statusNilai === 'Sudah' ? `✅ LENGKAP (${s.totalTerisi}/4)` : s.statusNilai === 'Sebagian' ? `🟡 SEBAGIAN (${s.totalTerisi}/4)` : '🔴 BELUM'}</div>
+                        <div style={{ fontSize: 9, fontWeight: 'bold', marginTop: 6, color: statusStyle.color, background: statusStyle.bg, padding: '3px 6px', borderRadius: 4, textAlign: 'center' }}>{s.statusNilai === 'Sudah' ? `✅ LENGKAP (${s.totalTerisi}/4)` : s.statusNilai === 'Sebagian' ? `🟡 SEBAGIAN (${s.totalTerisi}/4)` : '🔴 BELUM'}</div>
                       </div>
                     );
                   })}
@@ -400,79 +381,69 @@ const TeacherInputGrade = () => {
           )}
 
           {/* ============================================================ */}
-          {/* DETAIL SISWA + FORM INPUT + TUGAS/KUIS PER SISWA */}
+          {/* DETAIL SISWA + FORM */}
           {/* ============================================================ */}
           {activeTab === 'manual' && selectedStudent && (
-            <div style={{ background: 'white', borderRadius: '20px', padding: isMobile ? '20px' : '24px', border: '1px solid #e2e8f0' }}>
-              <button onClick={() => { setSelectedStudent(null); setShowStudentDetail(false); }} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', fontSize: '13px', fontWeight: '600', marginBottom: '16px' }}><ArrowLeft size={16} /> Kembali ke Daftar</button>
+            <div style={{ background: 'white', borderRadius: 16, padding: isMobile ? 16 : 20, border: '1px solid #e2e8f0' }}>
+              <button onClick={() => { setSelectedStudent(null); setShowStudentDetail(false); }} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', fontSize: 13, fontWeight: 600, marginBottom: 14 }}><ArrowLeft size={16} /> Kembali ke Daftar</button>
 
-              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', marginBottom: '20px' }}>
-                <h3 style={{ margin: '0 0 4px', fontSize: '18px', fontWeight: 'bold', color: '#1e293b' }}>{selectedStudent.nama}</h3>
-                <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>{selectedStudent.kelasSekolah} | {selectedStudent.program || selectedStudent.detailProgram || 'Reguler'}</p>
+              <div style={{ background: '#f8fafc', padding: 14, borderRadius: 10, marginBottom: 16 }}>
+                <h3 style={{ margin: '0 0 4px', fontSize: 17, fontWeight: 'bold', color: '#1e293b' }}>{selectedStudent.nama}</h3>
+                <p style={{ margin: 0, fontSize: 12, color: '#64748b' }}>{selectedStudent.kelasSekolah} | {selectedStudent.program || selectedStudent.detailProgram || 'Reguler'}</p>
               </div>
 
-              {/* ➕ RIWAYAT NILAI BULAN INI & BULAN LALU */}
               {showStudentDetail && (
                 <>
-                  <h4 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#1e293b' }}>📋 Status Penilaian {currentPeriode.replace('-', ' / ')}</h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+                  <h4 style={{ fontSize: 13, fontWeight: 'bold', marginBottom: 10, color: '#1e293b' }}>📋 Status {currentPeriode.replace('-', ' / ')}</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 14 }}>
                     {komponenList.map(komp => {
                       const dataKomp = studentScores?.[komp] || [];
                       const terisi = dataKomp.length > 0;
                       const avgNilai = terisi ? Math.round(dataKomp.reduce((a,b) => a + b.nilai, 0) / dataKomp.length) : null;
                       return (
-                        <div key={komp} style={{ padding: '12px', borderRadius: '10px', textAlign: 'center', background: terisi ? '#dcfce7' : '#fee2e2', border: `1px solid ${terisi ? '#10b981' : '#ef4444'}` }}>
-                          <div style={{ fontSize: 20, marginBottom: 4 }}>{komp === 'kuis' ? '📝' : komp === 'catatan' ? '📓' : komp === 'ujian' ? '📖' : '⭐'}</div>
-                          <div style={{ fontSize: 10, fontWeight: 700, color: terisi ? '#166534' : '#991b1b' }}>{komp === 'kuis' ? 'Kuis' : komp === 'catatan' ? 'Catatan' : komp === 'ujian' ? 'Ujian' : 'Keaktifan'}</div>
-                          {terisi ? <div style={{ fontSize: 18, fontWeight: 800, color: '#166534' }}>{avgNilai}</div> : <div style={{ fontSize: 10, color: '#991b1b', fontWeight: 600 }}>BELUM</div>}
-                          <div style={{ fontSize: 8, color: '#64748b' }}>{terisi ? `${dataKomp.length} data` : 'Butuh input'}</div>
+                        <div key={komp} style={{ padding: 10, borderRadius: 8, textAlign: 'center', background: terisi ? '#dcfce7' : '#fee2e2', border: `1px solid ${terisi ? '#10b981' : '#ef4444'}` }}>
+                          <div style={{ fontSize: 18, marginBottom: 2 }}>{komp === 'kuis' ? '📝' : komp === 'catatan' ? '📓' : komp === 'ujian' ? '📖' : '⭐'}</div>
+                          <div style={{ fontSize: 9, fontWeight: 700, color: terisi ? '#166534' : '#991b1b' }}>{komp === 'kuis' ? 'Kuis' : komp === 'catatan' ? 'Catatan' : komp === 'ujian' ? 'Ujian' : 'Keaktifan'}</div>
+                          {terisi ? <div style={{ fontSize: 16, fontWeight: 800, color: '#166534' }}>{avgNilai}</div> : <div style={{ fontSize: 9, color: '#991b1b', fontWeight: 600 }}>BELUM</div>}
+                          <div style={{ fontSize: 7, color: '#64748b' }}>{terisi ? `${dataKomp.length} data` : 'Butuh input'}</div>
                         </div>
                       );
                     })}
                   </div>
 
                   {lastMonthScores && (
-                    <div style={{ background: '#f0f9ff', padding: '12px', borderRadius: '10px', border: '1px solid #bae6fd', marginBottom: '16px' }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: '#0369a1', marginBottom: 6 }}>📅 Nilai Bulan Lalu ({getPreviousMonth(currentPeriode).replace('-', '/')})</div>
-                      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 11, color: '#0369a1' }}>Nilai Akhir: <b>{lastMonthScores.nilai_akhir}</b></span>
-                        <span style={{ fontSize: 11, color: '#0369a1' }}>Kuis: <b>{lastMonthScores.nilai_kuis}</b></span>
-                        <span style={{ fontSize: 11, color: '#0369a1' }}>Catatan: <b>{lastMonthScores.nilai_catatan}</b></span>
-                        <span style={{ fontSize: 11, color: '#0369a1' }}>Ujian: <b>{lastMonthScores.nilai_ujian}</b></span>
-                        <span style={{ fontSize: 11, color: '#0369a1' }}>Keaktifan: <b>{lastMonthScores.nilai_keaktifan}</b></span>
-                      </div>
+                    <div style={{ background: '#f0f9ff', padding: 10, borderRadius: 8, border: '1px solid #bae6fd', marginBottom: 14 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: '#0369a1', marginBottom: 4 }}>📅 Bulan Lalu: Nilai Akhir <b>{lastMonthScores.nilai_akhir}</b></div>
                     </div>
                   )}
 
-                  {/* ➕ SECTION: TUGAS & KUIS MILIK SISWA INI */}
-                  <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 12, padding: 16, marginBottom: 20 }}>
-                    <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 4, color: '#4c1d95', display: 'flex', alignItems: 'center', gap: 6 }}><Download size={16} /> 📥 Tugas & Kuis Milik {selectedStudent.nama}</h4>
-                    <p style={{ fontSize: 10, color: '#7c3aed', marginBottom: 14 }}>Data real-time dari pengerjaan siswa. Klik "Impor" untuk memasukkan ke komponen raport.</p>
+                  <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 10, padding: 14, marginBottom: 16 }}>
+                    <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 4, color: '#4c1d95', display: 'flex', alignItems: 'center', gap: 6 }}><Download size={16} /> 📥 Tugas & Kuis {selectedStudent.nama}</h4>
                     {loadingStudentData ? (
-                      <div style={{ textAlign: 'center', padding: 20 }}><div style={{ width: 24, height: 24, border: '3px solid #e9d5ff', borderTop: '3px solid #7c3aed', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 8px' }}></div><p style={{ fontSize: 11, color: '#7c3aed' }}>Memuat data...</p></div>
+                      <div style={{ textAlign: 'center', padding: 16 }}><div style={{ width: 20, height: 20, border: '2px solid #e9d5ff', borderTop: '2px solid #7c3aed', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 8px' }}></div></div>
                     ) : (
                       <>
-                        <div style={{ marginBottom: 16 }}>
-                          <h5 style={{ fontSize: 12, fontWeight: 700, color: '#1e293b', marginBottom: 8 }}>📓 Tugas ({studentTasks.length})</h5>
-                          {studentTasks.length === 0 ? <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center', padding: 10 }}>Belum ada tugas dikumpulkan</p> : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 200, overflowY: 'auto' }}>
+                        <div style={{ marginBottom: 12 }}>
+                          <h5 style={{ fontSize: 11, fontWeight: 700, marginBottom: 6 }}>📓 Tugas ({studentTasks.length})</h5>
+                          {studentTasks.length === 0 ? <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center' }}>Belum ada</p> : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 180, overflowY: 'auto' }}>
                               {studentTasks.map(task => (
-                                <div key={task.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 10, background: 'white', borderRadius: 8, border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: 6 }}>
-                                  <div style={{ flex: 1, minWidth: 120 }}><div style={{ fontSize: 11, fontWeight: 700 }}>{task.modulTitle || 'Tugas'}</div><div style={{ fontSize: 9, color: '#64748b' }}>{formatDate(task.submittedAt)} • Nilai: <b style={{ color: getScoreColor(task.score) }}>{task.score ?? '?'}</b></div></div>
-                                  {task.exportedToRaport ? <span style={{ background: '#dcfce7', color: '#166534', padding: '4px 10px', borderRadius: 20, fontSize: 9, fontWeight: 700 }}>✅ Terimpor</span> : task.score !== null && task.score !== undefined ? <button onClick={() => handleImportSingleForStudent({...task, source: 'tugas', studentId: task.studentId || selectedStudent.id, studentName: task.studentName || selectedStudent.nama})} disabled={submitting} style={{ background: '#10b981', color: 'white', border: 'none', padding: '5px 12px', borderRadius: 6, fontSize: 10, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>📥 Impor</button> : <span style={{ background: '#fef3c7', color: '#b45309', padding: '4px 8px', borderRadius: 20, fontSize: 9, fontWeight: 700 }}>⏳ Belum dinilai</span>}
+                                <div key={task.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, background: 'white', borderRadius: 6, border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: 4 }}>
+                                  <div style={{ flex: 1, minWidth: 100 }}><div style={{ fontSize: 10, fontWeight: 700 }}>{task.modulTitle || 'Tugas'}</div><div style={{ fontSize: 8, color: '#64748b' }}>{formatDate(task.submittedAt)} • Nilai: <b>{task.score ?? '?'}</b></div></div>
+                                  {task.exportedToRaport ? <span style={{ background: '#dcfce7', color: '#166534', padding: '3px 8px', borderRadius: 12, fontSize: 8, fontWeight: 700 }}>✅</span> : task.score ? <button onClick={() => handleImportSingleForStudent({...task, source: 'tugas', studentId: task.studentId || selectedStudent.id, studentName: task.studentName || selectedStudent.nama})} disabled={submitting} style={{ background: '#10b981', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 6, fontSize: 9, fontWeight: 700, cursor: 'pointer' }}>📥 Impor</button> : <span style={{ fontSize: 8, color: '#f59e0b' }}>⏳</span>}
                                 </div>
                               ))}
                             </div>
                           )}
                         </div>
                         <div>
-                          <h5 style={{ fontSize: 12, fontWeight: 700, color: '#1e293b', marginBottom: 8 }}>📝 Kuis ({studentQuizzes.length})</h5>
-                          {studentQuizzes.length === 0 ? <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center', padding: 10 }}>Belum ada kuis dikerjakan</p> : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 200, overflowY: 'auto' }}>
+                          <h5 style={{ fontSize: 11, fontWeight: 700, marginBottom: 6 }}>📝 Kuis ({studentQuizzes.length})</h5>
+                          {studentQuizzes.length === 0 ? <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center' }}>Belum ada</p> : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 180, overflowY: 'auto' }}>
                               {studentQuizzes.map(quiz => (
-                                <div key={quiz.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 10, background: 'white', borderRadius: 8, border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: 6 }}>
-                                  <div style={{ flex: 1, minWidth: 120 }}><div style={{ fontSize: 11, fontWeight: 700 }}>{quiz.modulTitle || quiz.quizTitle || 'Kuis'}</div><div style={{ fontSize: 9, color: '#64748b' }}>{formatDate(quiz.submittedAt)} • Nilai: <b style={{ color: getScoreColor(quiz.score) }}>{quiz.score ?? '?'}</b> ({quiz.correctAnswers || 0}/{quiz.totalQuestions || '?'})</div></div>
-                                  {quiz.exportedToRaport ? <span style={{ background: '#dcfce7', color: '#166534', padding: '4px 10px', borderRadius: 20, fontSize: 9, fontWeight: 700 }}>✅ Terimpor</span> : quiz.score !== null && quiz.score !== undefined ? <button onClick={() => handleImportSingleForStudent({...quiz, source: 'kuis', studentId: selectedStudent.id, studentName: selectedStudent.nama, userId: selectedStudent.id, userName: selectedStudent.nama})} disabled={submitting} style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '5px 12px', borderRadius: 6, fontSize: 10, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>📥 Impor</button> : <span style={{ background: '#fef3c7', color: '#b45309', padding: '4px 8px', borderRadius: 20, fontSize: 9, fontWeight: 700 }}>⏳ Auto-score</span>}
+                                <div key={quiz.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, background: 'white', borderRadius: 6, border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: 4 }}>
+                                  <div style={{ flex: 1, minWidth: 100 }}><div style={{ fontSize: 10, fontWeight: 700 }}>{quiz.modulTitle || quiz.quizTitle || 'Kuis'}</div><div style={{ fontSize: 8, color: '#64748b' }}>{formatDate(quiz.submittedAt)} • Nilai: <b>{quiz.score ?? '?'}</b></div></div>
+                                  {quiz.exportedToRaport ? <span style={{ background: '#dcfce7', color: '#166534', padding: '3px 8px', borderRadius: 12, fontSize: 8, fontWeight: 700 }}>✅</span> : quiz.score ? <button onClick={() => handleImportSingleForStudent({...quiz, source: 'kuis', studentId: selectedStudent.id, studentName: selectedStudent.nama, userId: selectedStudent.id, userName: selectedStudent.nama})} disabled={submitting} style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 6, fontSize: 9, fontWeight: 700, cursor: 'pointer' }}>📥 Impor</button> : <span style={{ fontSize: 8, color: '#f59e0b' }}>⏳</span>}
                                 </div>
                               ))}
                             </div>
@@ -482,39 +453,37 @@ const TeacherInputGrade = () => {
                     )}
                   </div>
 
-                  <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '16px 0' }} />
+                  <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '14px 0' }} />
                 </>
               )}
 
               {/* FORM INPUT MANUAL */}
               <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#64748b', display: 'block', marginBottom: '6px' }}>🎯 Komponen Nilai</label>
-                  <select value={komponen} onChange={e => setKomponen(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px', background: 'white' }}>
-                    <option value="keaktifan">⭐ Keaktifan (20% bobot)</option><option value="catatan">📓 Tugas Catatan (30% bobot)</option><option value="kuis">📝 Kuis (30% bobot)</option><option value="ujian">📖 Ujian Materi (20% bobot)</option>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: 11, fontWeight: 'bold', color: '#64748b', display: 'block', marginBottom: 6 }}>🎯 Komponen Nilai</label>
+                  <select value={komponen} onChange={e => setKomponen(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, background: 'white' }}>
+                    <option value="keaktifan">⭐ Keaktifan (20%)</option><option value="catatan">📓 Tugas (30%)</option><option value="kuis">📝 Kuis (30%)</option><option value="ujian">📖 Ujian (20%)</option>
                   </select>
-                  <p style={{ fontSize: '9px', color: '#64748b', marginTop: '4px' }}>{getKomponenLabel(komponen)} • Pastikan memilih komponen yang sesuai</p>
                 </div>
-                <div style={{ marginBottom: '20px' }}>
-                  <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 'bold', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}><BookOpen size={16} color="#3b82f6" /> A. Capaian Akademik</h4>
-                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px' }}>
-                    <div style={{ flex: 2 }}><label style={{ fontSize: '11px', fontWeight: 'bold', color: '#64748b', display: 'block', marginBottom: '4px' }}>Topik / Materi</label><input type="text" list="topics" required placeholder="Contoh: Aljabar..." value={topic} onChange={e => setTopic(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px', outline: 'none' }} /><datalist id="topics">{availableTopics.map(t => <option key={t} value={t} />)}</datalist></div>
-                    <div style={{ flex: 1 }}><label style={{ fontSize: '11px', fontWeight: 'bold', color: '#64748b', display: 'block', marginBottom: '4px' }}>Nilai (0-100)</label><input type="number" required min="0" max="100" placeholder="85" value={score} onChange={e => setScore(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '2px solid #3b82f6', fontSize: '16px', fontWeight: 'bold', textAlign: 'center', outline: 'none' }} /></div>
+                <div style={{ marginBottom: 16 }}>
+                  <h4 style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 'bold', color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6 }}><BookOpen size={15} color="#3b82f6" /> A. Capaian Akademik</h4>
+                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12 }}>
+                    <div style={{ flex: 2 }}><label style={{ fontSize: 10, fontWeight: 'bold', color: '#64748b', display: 'block', marginBottom: 4 }}>Topik</label><input type="text" list="topics" required placeholder="Materi..." value={topic} onChange={e => setTopic(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none' }} /><datalist id="topics">{availableTopics.map(t => <option key={t} value={t} />)}</datalist></div>
+                    <div style={{ flex: 1 }}><label style={{ fontSize: 10, fontWeight: 'bold', color: '#64748b', display: 'block', marginBottom: 4 }}>Nilai (0-100)</label><input type="number" required min="0" max="100" placeholder="85" value={score} onChange={e => setScore(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '2px solid #3b82f6', fontSize: 16, fontWeight: 'bold', textAlign: 'center', outline: 'none' }} /></div>
                   </div>
-                  {score && <div style={{ marginTop: '8px', padding: '8px 12px', borderRadius: '8px', background: getScoreAdvice(score).color + '10', border: `1px solid ${getScoreAdvice(score).color}` }}><span style={{ fontSize: '12px' }}>{getScoreAdvice(score).icon} {getScoreAdvice(score).text}</span></div>}
+                  {score && <div style={{ marginTop: 8, padding: '8px 12px', borderRadius: 8, background: getScoreAdvice(score).color + '10', border: `1px solid ${getScoreAdvice(score).color}` }}><span style={{ fontSize: 12 }}>{getScoreAdvice(score).icon} {getScoreAdvice(score).text}</span></div>}
                 </div>
-                <div style={{ marginBottom: '24px' }}>
-                  <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 'bold', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} color="#f59e0b" /> B. Karakter & Sikap</h4>
-                  <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '12px' }}>Penilaian ini akan muncul di raport siswa sebagai narasi deskriptif. Isi dengan jujur berdasarkan observasi.</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px' }}>
-                    <RenderRating label="Pemahaman Konsep" desc="Penguasaan teori dasar" value={aspects.pemahaman} field="pemahaman" />
-                    <RenderRating label="Logika & Aplikasi" desc="Kemampuan variasi soal" value={aspects.aplikasi} field="aplikasi" />
-                    <RenderRating label="Literasi / Fokus" desc="Ketelitian membaca soal" value={aspects.literasi} field="literasi" />
-                    <RenderRating label="Inisiatif" desc="Keaktifan bertanya" value={aspects.inisiatif} field="inisiatif" />
-                    <RenderRating label="Kemandirian" desc="Mengerjakan tanpa bantuan" value={aspects.mandiri} field="mandiri" />
+                <div style={{ marginBottom: 20 }}>
+                  <h4 style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 'bold', color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6 }}><Star size={15} color="#f59e0b" /> B. Karakter & Sikap</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 8 }}>
+                    <RenderRating label="Pemahaman Konsep" desc="Penguasaan teori" value={aspects.pemahaman} field="pemahaman" />
+                    <RenderRating label="Logika & Aplikasi" desc="Variasi soal" value={aspects.aplikasi} field="aplikasi" />
+                    <RenderRating label="Literasi / Fokus" desc="Ketelitian" value={aspects.literasi} field="literasi" />
+                    <RenderRating label="Inisiatif" desc="Bertanya" value={aspects.inisiatif} field="inisiatif" />
+                    <RenderRating label="Kemandirian" desc="Tanpa bantuan" value={aspects.mandiri} field="mandiri" />
                   </div>
                 </div>
-                <button type="submit" disabled={submitting} style={{ width: '100%', padding: '14px', background: submitting ? '#94a3b8' : '#10b981', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', cursor: submitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.3s ease' }}><Save size={18} />{submitting ? 'Menyimpan...' : '💾 SIMPAN KE RAPORT'}</button>
+                <button type="submit" disabled={submitting} style={{ width: '100%', padding: 13, background: submitting ? '#94a3b8' : '#10b981', color: 'white', border: 'none', borderRadius: 12, fontWeight: 'bold', fontSize: 14, cursor: submitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><Save size={18} />{submitting ? 'Menyimpan...' : '💾 SIMPAN'}</button>
               </form>
             </div>
           )}
@@ -523,14 +492,14 @@ const TeacherInputGrade = () => {
           {/* TAB IMPOR TUGAS (BULK) */}
           {/* ============================================================ */}
           {activeTab === 'fromTasks' && (
-            <div style={{ background: 'white', borderRadius: '16px', padding: '20px', border: '1px solid #e2e8f0' }}>
-              <h3 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><FileText size={18} color="#10b981" /> Nilai Tugas yang Siap Diimpor</h3>
-              {loadingTasks ? <div style={{ textAlign: 'center', padding: '40px' }}><div style={{ width: '30px', height: '30px', border: '3px solid #e2e8f0', borderTop: '3px solid #10b981', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }}></div><p>Memuat data tugas...</p></div>
-              : pendingTasks.length === 0 ? <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}><CheckCircle size={40} /><p style={{ marginTop: '12px' }}>Semua nilai tugas sudah diimpor ke raport</p></div>
-              : <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>{pendingTasks.map(task => (
-                <div key={task.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: '10px' }}>
-                  <div><div style={{ fontWeight: 'bold', fontSize: '13px' }}>{task.studentName}</div><div style={{ fontSize: '10px', color: '#64748b' }}>{task.modulTitle} • Nilai: {task.score}</div></div>
-                  <button onClick={() => handleExportFromTask(task)} disabled={submitting} style={{ background: '#10b981', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>📥 Impor ke Raport</button>
+            <div style={{ background: 'white', borderRadius: 16, padding: 20, border: '1px solid #e2e8f0' }}>
+              <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }}><FileText size={18} color="#10b981" /> Nilai Tugas Siap Diimpor</h3>
+              {loadingTasks ? <div style={{ textAlign: 'center', padding: 40 }}><div style={{ width: 30, height: 30, border: '3px solid #e2e8f0', borderTop: '3px solid #10b981', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }}></div></div>
+              : pendingTasks.length === 0 ? <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}><CheckCircle size={40} /><p style={{ marginTop: 12 }}>Semua sudah diimpor</p></div>
+              : <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{pendingTasks.map(task => (
+                <div key={task.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#f8fafc', borderRadius: 10, border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: 8 }}>
+                  <div><div style={{ fontWeight: 'bold', fontSize: 13 }}>{task.studentName}</div><div style={{ fontSize: 10, color: '#64748b' }}>{task.modulTitle} • {task.score}</div></div>
+                  <button onClick={() => handleExportFromTask(task)} disabled={submitting} style={{ background: '#10b981', color: 'white', border: 'none', padding: '6px 14px', borderRadius: 8, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }}>📥 Impor</button>
                 </div>
               ))}</div>}
             </div>
@@ -540,14 +509,14 @@ const TeacherInputGrade = () => {
           {/* TAB IMPOR KUIS (BULK) */}
           {/* ============================================================ */}
           {activeTab === 'fromQuizzes' && (
-            <div style={{ background: 'white', borderRadius: '16px', padding: '20px', border: '1px solid #e2e8f0' }}>
-              <h3 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><HelpCircle size={18} color="#8b5cf6" /> Nilai Kuis yang Siap Diimpor</h3>
-              {loadingTasks ? <div style={{ textAlign: 'center', padding: '40px' }}><div style={{ width: '30px', height: '30px', border: '3px solid #e2e8f0', borderTop: '3px solid #8b5cf6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }}></div><p>Memuat data kuis...</p></div>
-              : pendingQuizzes.length === 0 ? <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}><CheckCircle size={40} /><p style={{ marginTop: '12px' }}>Semua nilai kuis sudah diimpor ke raport</p></div>
-              : <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>{pendingQuizzes.map(quiz => (
-                <div key={quiz.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: '10px' }}>
-                  <div><div style={{ fontWeight: 'bold', fontSize: '13px' }}>{quiz.userName}</div><div style={{ fontSize: '10px', color: '#64748b' }}>{quiz.modulTitle || quiz.quizTitle} • Nilai: {quiz.score}</div></div>
-                  <button onClick={() => handleExportFromQuiz(quiz)} disabled={submitting} style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>📥 Impor ke Raport</button>
+            <div style={{ background: 'white', borderRadius: 16, padding: 20, border: '1px solid #e2e8f0' }}>
+              <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }}><HelpCircle size={18} color="#8b5cf6" /> Nilai Kuis Siap Diimpor</h3>
+              {loadingTasks ? <div style={{ textAlign: 'center', padding: 40 }}><div style={{ width: 30, height: 30, border: '3px solid #e2e8f0', borderTop: '3px solid #8b5cf6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }}></div></div>
+              : pendingQuizzes.length === 0 ? <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}><CheckCircle size={40} /><p style={{ marginTop: 12 }}>Semua sudah diimpor</p></div>
+              : <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{pendingQuizzes.map(quiz => (
+                <div key={quiz.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#f8fafc', borderRadius: 10, border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: 8 }}>
+                  <div><div style={{ fontWeight: 'bold', fontSize: 13 }}>{quiz.userName}</div><div style={{ fontSize: 10, color: '#64748b' }}>{quiz.modulTitle || quiz.quizTitle} • {quiz.score}</div></div>
+                  <button onClick={() => handleExportFromQuiz(quiz)} disabled={submitting} style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '6px 14px', borderRadius: 8, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }}>📥 Impor</button>
                 </div>
               ))}</div>}
             </div>
