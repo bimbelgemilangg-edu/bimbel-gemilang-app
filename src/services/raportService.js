@@ -17,7 +17,6 @@ export const calculateDynamicWeights = (scores) => {
   const komponenDipake = [];
   let totalBobot = 0;
   
-  // Cek komponen mana yang punya data
   if (scores.kuis?.length > 0) {
     komponenDipake.push('kuis');
     totalBobot += defaultWeights.kuis;
@@ -35,7 +34,6 @@ export const calculateDynamicWeights = (scores) => {
     totalBobot += defaultWeights.keaktifan;
   }
   
-  // Jika tidak ada komponen sama sekali, kembalikan default
   if (komponenDipake.length === 0 || totalBobot === 0) {
     return { 
       weights: { ...defaultWeights }, 
@@ -44,7 +42,6 @@ export const calculateDynamicWeights = (scores) => {
     };
   }
   
-  // Distribusikan bobot proporsional
   const adjustedWeights = {
     kuis: scores.kuis?.length > 0 ? defaultWeights.kuis / totalBobot : 0,
     catatan: scores.catatan?.length > 0 ? defaultWeights.catatan / totalBobot : 0,
@@ -66,7 +63,6 @@ export const calculateDynamicWeights = (scores) => {
  * @returns {Object} - { nilaiAkhir, komponenDipake, detailNilai }
  */
 export const calculateFinalScore = (scores) => {
-  // Hitung rata-rata per komponen
   const kuisAvg = scores.kuis?.length > 0 
     ? scores.kuis.reduce((a,b) => a+b, 0) / scores.kuis.length 
     : 0;
@@ -80,10 +76,8 @@ export const calculateFinalScore = (scores) => {
     ? scores.keaktifan.reduce((a,b) => a+b, 0) / scores.keaktifan.length 
     : 0;
   
-  // Dapatkan bobot dinamis
   const { weights, komponenDipake, totalBobot } = calculateDynamicWeights(scores);
   
-  // Jika tidak ada data sama sekali
   if (komponenDipake.length === 0) {
     return { 
       nilaiAkhir: 0, 
@@ -93,7 +87,6 @@ export const calculateFinalScore = (scores) => {
     };
   }
   
-  // Hitung nilai akhir dengan bobot dinamis
   const nilaiAkhir = Math.round(
     (kuisAvg * weights.kuis) + 
     (catatanAvg * weights.catatan) + 
@@ -147,7 +140,6 @@ export const exportToRaportScores = async (data) => {
   const { studentId, studentName, mapel, topik, nilai, komponen, teacherId, teacherName, qualitative } = data;
   const periode = new Date().toISOString().slice(0, 7);
   
-  // ➕ VALIDASI: Pastikan tidak ada field undefined
   if (!studentId) {
     console.error("❌ exportToRaportScores: studentId is required");
     return { success: false, error: "studentId tidak boleh kosong" };
@@ -165,7 +157,6 @@ export const exportToRaportScores = async (data) => {
   const safeTeacherName = teacherName || "";
   
   try {
-    // Cek apakah sudah ada nilai untuk komponen ini periode ini
     const existingQuery = query(
       collection(db, RAPORT_COLLECTIONS.SCORES),
       where("studentId", "==", studentId),
@@ -175,7 +166,6 @@ export const exportToRaportScores = async (data) => {
     );
     const existing = await getDocs(existingQuery);
     
-    // Data yang akan disimpan
     const scoreData = {
       studentId,
       studentName: safeStudentName,
@@ -189,17 +179,14 @@ export const exportToRaportScores = async (data) => {
       updatedAt: serverTimestamp()
     };
     
-    // ➕ Tambah qualitative jika ada (5 poin karakter)
     if (qualitative) {
       scoreData.qualitative = qualitative;
     }
     
     if (!existing.empty) {
-      // Update nilai yang sudah ada
       await updateDoc(doc(db, RAPORT_COLLECTIONS.SCORES, existing.docs[0].id), scoreData);
       return { success: true, action: 'updated' };
     } else {
-      // Buat baru
       await addDoc(collection(db, RAPORT_COLLECTIONS.SCORES), {
         ...scoreData,
         createdAt: serverTimestamp()
@@ -215,11 +202,11 @@ export const exportToRaportScores = async (data) => {
 /**
  * Sinkronkan semua nilai siswa ke raport_final (ONE-CLICK SYNC)
  * UPDATE: Pakai calculateFinalScore versi baru (bobot dinamis)
+ * ➕ Parameter mapel untuk filter per mata pelajaran
  */
-export const syncAllScoresToRaport = async (periode, teacherId = null) => {
-  console.log(`🚀 Mulai sinkronisasi raport untuk periode ${periode}...`);
+export const syncAllScoresToRaport = async (periode, mapel = null) => {
+  console.log(`🚀 Mulai sinkronisasi raport untuk periode ${periode}${mapel ? `, mapel: ${mapel}` : ''}...`);
   
-  // 1. Ambil semua siswa
   const studentsSnap = await getDocs(collection(db, "students"));
   const students = studentsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
   
@@ -227,14 +214,25 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
   let incompleteStudents = [];
   
   for (const student of students) {
-    // 2. Ambil semua nilai mentah siswa untuk periode ini
     const scores = { kuis: [], catatan: [], ujian: [], keaktifan: [] };
     
-    const scoresSnap = await getDocs(query(
+    let scoresQuery = query(
       collection(db, RAPORT_COLLECTIONS.SCORES),
       where("studentId", "==", student.id),
       where("periode", "==", periode)
-    ));
+    );
+    
+    // ➕ Filter by mapel jika ada
+    if (mapel) {
+      scoresQuery = query(
+        collection(db, RAPORT_COLLECTIONS.SCORES),
+        where("studentId", "==", student.id),
+        where("periode", "==", periode),
+        where("mapel", "==", mapel)
+      );
+    }
+    
+    const scoresSnap = await getDocs(scoresQuery);
     
     scoresSnap.forEach(doc => {
       const data = doc.data();
@@ -243,7 +241,6 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
       }
     });
     
-    // 3. Cek kelengkapan — sekarang lebih fleksibel: minimal 2 komponen
     const totalKomponen = (scores.kuis.length > 0 ? 1 : 0) +
                           (scores.catatan.length > 0 ? 1 : 0) +
                           (scores.ujian.length > 0 ? 1 : 0) +
@@ -265,28 +262,36 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
       continue;
     }
     
-    // 4. Hitung nilai akhir dengan bobot dinamis
     const { nilaiAkhir, komponenDipake, detailNilai, bobotPakai } = calculateFinalScore(scores);
     
-    // 5. Ambil nilai bulan lalu
     const lastMonth = getPreviousMonth(periode);
-    const lastMonthSnap = await getDocs(query(
+    let lastMonthQuery = query(
       collection(db, RAPORT_COLLECTIONS.FINAL),
       where("studentId", "==", student.id),
       where("periode", "==", lastMonth)
-    ));
+    );
+    
+    // ➕ Filter by mapel untuk nilai bulan lalu
+    if (mapel) {
+      lastMonthQuery = query(
+        collection(db, RAPORT_COLLECTIONS.FINAL),
+        where("studentId", "==", student.id),
+        where("periode", "==", lastMonth),
+        where("mapel", "==", mapel)
+      );
+    }
+    
+    const lastMonthSnap = await getDocs(lastMonthQuery);
     const nilaiSebelumnya = lastMonthSnap.empty ? null : lastMonthSnap.docs[0].data().nilai_akhir;
     
-    // 6. Generate narasi
-    const narasi = generateNarasi(student.nama, "Umum", nilaiAkhir, nilaiSebelumnya);
+    const narasi = generateNarasi(student.nama, mapel || "Umum", nilaiAkhir, nilaiSebelumnya);
     
-    // 7. Simpan ke raport_final
     const finalData = {
       studentId: student.id,
       studentName: student.nama,
       studentKelas: student.kelasSekolah,
       studentProgram: student.kategori || student.program,
-      mapel: "Umum",
+      mapel: mapel || "Umum", // ➕ SIMPAN MAPEL
       periode: periode,
       nilai_kuis: detailNilai.kuis,
       nilai_catatan: detailNilai.catatan,
@@ -299,11 +304,22 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
       updatedAt: serverTimestamp()
     };
     
-    const existingSnap = await getDocs(query(
+    let existingQuery = query(
       collection(db, RAPORT_COLLECTIONS.FINAL),
       where("studentId", "==", student.id),
       where("periode", "==", periode)
-    ));
+    );
+    
+    if (mapel) {
+      existingQuery = query(
+        collection(db, RAPORT_COLLECTIONS.FINAL),
+        where("studentId", "==", student.id),
+        where("periode", "==", periode),
+        where("mapel", "==", mapel)
+      );
+    }
+    
+    const existingSnap = await getDocs(existingQuery);
     
     if (existingSnap.empty) {
       await addDoc(collection(db, RAPORT_COLLECTIONS.FINAL), {
@@ -322,27 +338,41 @@ export const syncAllScoresToRaport = async (periode, teacherId = null) => {
     });
   }
   
-  // 8. Update leaderboard
-  await updateLeaderboard(periode);
+  // ➕ Update leaderboard dengan filter mapel
+  await updateLeaderboard(periode, mapel);
   
   return {
     success: true,
     totalStudents: students.length,
     processed: results.length,
     incomplete: incompleteStudents,
-    results: results
+    results: results,
+    mapel: mapel || "Semua"
   };
 };
 
 /**
  * Update leaderboard relatif
+ * ➕ Parameter mapel untuk filter per mata pelajaran
  */
-export const updateLeaderboard = async (periode) => {
-  const finalSnap = await getDocs(query(
+export const updateLeaderboard = async (periode, mapel = null) => {
+  let finalQuery = query(
     collection(db, RAPORT_COLLECTIONS.FINAL),
     where("periode", "==", periode),
     orderBy("nilai_akhir", "desc")
-  ));
+  );
+  
+  // ➕ Filter by mapel
+  if (mapel) {
+    finalQuery = query(
+      collection(db, RAPORT_COLLECTIONS.FINAL),
+      where("periode", "==", periode),
+      where("mapel", "==", mapel),
+      orderBy("nilai_akhir", "desc")
+    );
+  }
+  
+  const finalSnap = await getDocs(finalQuery);
   
   const allScores = finalSnap.docs.map((doc, index) => ({
     id: doc.id,
@@ -350,16 +380,18 @@ export const updateLeaderboard = async (periode) => {
     rank: index + 1
   }));
   
-  // Simpan ke leaderboard collection
-  const leaderboardRef = doc(db, RAPORT_COLLECTIONS.LEADERBOARD, periode);
+  // ➕ Leaderboard key pakai periode+mapel
+  const leaderboardKey = mapel ? `${periode}_${mapel}` : periode;
+  
   const leaderboardSnap = await getDocs(query(
     collection(db, RAPORT_COLLECTIONS.LEADERBOARD),
-    where("periode", "==", periode)
+    where("periode", "==", leaderboardKey)
   ));
   
   if (leaderboardSnap.empty) {
     await addDoc(collection(db, RAPORT_COLLECTIONS.LEADERBOARD), {
-      periode: periode,
+      periode: leaderboardKey,
+      mapel: mapel || "Semua",
       data: allScores,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
@@ -377,11 +409,14 @@ export const updateLeaderboard = async (periode) => {
 /**
  * Ambil leaderboard relatif untuk siswa tertentu
  * Hanya tampilkan peringkat di sekitar siswa
+ * ➕ Parameter mapel
  */
-export const getRelativeLeaderboard = async (periode, studentId) => {
+export const getRelativeLeaderboard = async (periode, studentId, mapel = null) => {
+  const leaderboardKey = mapel ? `${periode}_${mapel}` : periode;
+  
   const leaderboardSnap = await getDocs(query(
     collection(db, RAPORT_COLLECTIONS.LEADERBOARD),
-    where("periode", "==", periode)
+    where("periode", "==", leaderboardKey)
   ));
   
   if (leaderboardSnap.empty) return null;
@@ -399,7 +434,8 @@ export const getRelativeLeaderboard = async (periode, studentId) => {
     studentRank: studentIndex + 1,
     studentScore: allData[studentIndex].nilai_akhir,
     nearbyStudents: allData.slice(start, end),
-    topStudent: allData[0]
+    topStudent: allData[0],
+    mapel: mapel || "Semua"
   };
 };
 
@@ -415,14 +451,9 @@ function getPreviousMonth(periode) {
 }
 
 // ============================================================
-// ➕ FUNGSI TAMBAHAN NARASI KARAKTER
+// NARASI KARAKTER
 // ============================================================
 
-/**
- * Generate narasi deskriptif dari 5 poin penilaian karakter
- * @param {Object} qualitative - { pemahaman, aplikasi, literasi, inisiatif, mandiri } (nilai 1-5)
- * @returns {String} Narasi deskriptif keseluruhan
- */
 export const generateCharacterNarasi = (qualitative) => {
   if (!qualitative) return "Belum ada penilaian karakter untuk periode ini.";
   
@@ -447,11 +478,6 @@ export const generateCharacterNarasi = (qualitative) => {
   }
 };
 
-/**
- * Generate narasi detail per aspek karakter
- * @param {Object} qualitative - { pemahaman, aplikasi, literasi, inisiatif, mandiri } (nilai 1-5)
- * @returns {Array<Object>} Array berisi { aspek, nilai, label, narasi, saran }
- */
 export const generateDetailCharacterNarasi = (qualitative) => {
   if (!qualitative) return [];
   
