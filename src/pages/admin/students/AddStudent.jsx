@@ -8,7 +8,6 @@ const AddStudent = () => {
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
-  // Responsive Handler
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     window.addEventListener('resize', handleResize);
@@ -39,24 +38,19 @@ const AddStudent = () => {
   const [programType, setProgramType] = useState("Reguler");
   const [tanggalDaftar, setTanggalDaftar] = useState(new Date().toISOString().split('T')[0]);
   const [namaSiswa, setNamaSiswa] = useState("");
-  const [tanggalLahir, setTanggalLahir] = useState(""); // Dipindah ke atas agar terbaca oleh useEffect
+  const [tanggalLahir, setTanggalLahir] = useState("");
   
-  // STATE MASA AKTIF PAKET
   const [tanggalMulai, setTanggalMulai] = useState(new Date().toISOString().split('T')[0]);
   const [durasiBulan, setDurasiBulan] = useState(3);
 
-  // STATE AKSES LOGIN
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  // LOGIKA OTOMATIS: Username & Password
   useEffect(() => {
     if (namaSiswa) {
       const namaBersih = namaSiswa.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
       const randomNum = Math.floor(100 + Math.random() * 900);
       setUsername(`${namaBersih}${randomNum}@gemilang.com`);
-
-      // FIX: Cek apakah tanggalLahir ada nilainya
       if (tanggalLahir && tanggalLahir.includes('-')) {
         const tahun = tanggalLahir.split('-')[0];
         setPassword(`${namaBersih}${tahun}`);
@@ -66,11 +60,20 @@ const AddStudent = () => {
     }
   }, [namaSiswa, tanggalLahir]);
 
-  // Data Sekolah & Kursus
+  // ➕ JENJANG (auto-set dari kelas yang dipilih)
   const [jenjang, setJenjang] = useState("SD");
   const [kelas, setKelas] = useState("1 SD"); 
   const [paketReguler, setPaketReguler] = useState("paket1");
   const [englishLevel, setEnglishLevel] = useState("kids"); 
+
+  // ➕ Auto-set jenjang saat kelas berubah
+  useEffect(() => {
+    if (programType === "Reguler") {
+      if (kelas.includes("SD")) setJenjang("SD");
+      else if (kelas.includes("SMP")) setJenjang("SMP");
+      else if (kelas.includes("SMA")) setJenjang("SMA");
+    }
+  }, [kelas, programType]);
 
   const [tempatLahir, setTempatLahir] = useState("");
   const [namaAyah, setNamaAyah] = useState("");
@@ -80,7 +83,6 @@ const AddStudent = () => {
   const [alamat, setAlamat] = useState("");
   const [noHp, setNoHp] = useState("");
 
-  // Keuangan
   const [biayaDaftar, setBiayaDaftar] = useState(false);
   const [diskon, setDiskon] = useState(0);
   const [metodeBayar, setMetodeBayar] = useState("Tunai"); 
@@ -88,7 +90,6 @@ const AddStudent = () => {
   const [tanggalMulaiCicilan, setTanggalMulaiCicilan] = useState(new Date().toISOString().split('T')[0]);
   const [customDueDates, setCustomDueDates] = useState([]);
 
-  // LOGIKA: Generate Tanggal Cicilan
   useEffect(() => {
     if (metodeBayar === 'Cicilan') {
         const dates = [];
@@ -139,6 +140,7 @@ const AddStudent = () => {
         kategori: programType,
         detailProgram: programType === "English" ? `English - ${englishLevel}` : `${jenjang} - ${paketReguler}`,
         kelasSekolah: kelas,
+        jenjang: programType === "English" ? "English" : jenjang, // ➕ FIELD JENJANG
         tempatLahir, 
         tanggalLahir,
         ortu: { ayah: namaAyah, pekerjaanAyah, ibu: namaIbu, pekerjaanIbu, alamat, hp: noHp },
@@ -183,7 +185,7 @@ const AddStudent = () => {
         });
       }
 
-      alert(`✅ Berhasil! Akun Siswa: ${username}`);
+      alert(`✅ Berhasil! Akun Siswa: ${username}\nJenjang: ${studentData.jenjang}\nKelas: ${kelas}`);
       navigate('/admin/students');
 
     } catch (error) { 
@@ -263,8 +265,8 @@ const AddStudent = () => {
                   <label style={styles.labelSmall}>Jenjang/Level</label>
                   {programType === "Reguler" ? (
                     <select style={styles.select} value={jenjang} onChange={e => setJenjang(e.target.value)}>
-                        <option value="SD">SD</option>
-                        <option value="SMP">SMP</option>
+                        <option value="SD">SD (Kelas 1-6)</option>
+                        <option value="SMP">SMP (Kelas 7-9)</option>
                     </select>
                   ) : (
                     <select style={styles.select} value={englishLevel} onChange={e => setEnglishLevel(e.target.value)}>
@@ -277,12 +279,25 @@ const AddStudent = () => {
                 <div style={{flex:1}}>
                   <label style={styles.labelSmall}>Kelas Sekolah</label>
                   <select style={styles.select} value={kelas} onChange={e => setKelas(e.target.value)}>
-                      <option>1 SD</option><option>2 SD</option><option>3 SD</option>
-                      <option>4 SD</option><option>5 SD</option><option>6 SD</option>
-                      <option>7 SMP</option><option>8 SMP</option><option>9 SMP</option>
+                      {jenjang === "SD" && (
+                        <>
+                          <option>1 SD</option><option>2 SD</option><option>3 SD</option>
+                          <option>4 SD</option><option>5 SD</option><option>6 SD</option>
+                        </>
+                      )}
+                      {jenjang === "SMP" && (
+                        <>
+                          <option>7 SMP</option><option>8 SMP</option><option>9 SMP</option>
+                        </>
+                      )}
                       <option>Lainnya</option>
                   </select>
                 </div>
+              </div>
+
+              {/* ➕ INFO JENJANG */}
+              <div style={{marginTop:4, fontSize:9, color:'#4f46e5', background:'#eef2ff', padding:'4px 10px', borderRadius:6, display:'inline-block'}}>
+                📌 Jenjang tersimpan: <b>{jenjang}</b> — digunakan untuk filter jadwal & nilai
               </div>
 
               <div style={styles.row}>
@@ -292,12 +307,7 @@ const AddStudent = () => {
                 </div>
                 <div style={{flex:1}}>
                   <label style={styles.labelSmall}>Tanggal Lahir</label>
-                  <input 
-                    type="date" 
-                    style={styles.input} 
-                    value={tanggalLahir} 
-                    onChange={e => setTanggalLahir(e.target.value)}
-                  />
+                  <input type="date" style={styles.input} value={tanggalLahir} onChange={e => setTanggalLahir(e.target.value)} />
                 </div>
               </div>
             </div>

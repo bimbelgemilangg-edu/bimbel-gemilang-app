@@ -28,8 +28,12 @@ const SchedulePage = () => {
   const defaultForm = {
     start: "14:00", end: "15:30", 
     program: "Reguler", 
-    level: "SD", // 🔥 JENJANG (PENTING UNTUK HONOR)
-    title: "", booker: "", selectedStudents: [],
+    level: "SD",
+    title: "", 
+    mapel: "", // ➕ FIELD MAPEL
+    booker: "", 
+    teacherId: "", // ➕ FIELD TEACHER ID
+    selectedStudents: [],
     repeat: "Once"
   };
   const [formData, setFormData] = useState(defaultForm);
@@ -37,7 +41,7 @@ const SchedulePage = () => {
   const PLANETS = ["MERKURIUS", "VENUS", "BUMI", "MARS", "JUPITER"];
   const DAYS_ID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
   const LIST_KELAS = ["Semua", "1 SD", "2 SD", "3 SD", "4 SD", "5 SD", "6 SD", "7 SMP", "8 SMP", "9 SMP", "10 SMA", "11 SMA", "12 SMA", "Alumni", "Umum"];
-  const LEVELS = ["SD", "SMP", "SMA", "Umum"]; // 🔥 OPSI JENJANG
+  const LEVELS = ["SD", "SMP", "SMA", "Umum"];
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -93,6 +97,17 @@ const SchedulePage = () => {
 
   useEffect(() => { fetchData(); }, [selectedDate]);
 
+  // ➕ Saat pilih guru, auto-set mapel
+  const handleTeacherChange = (teacherName) => {
+    const teacher = availableTeachers.find(t => t.nama === teacherName);
+    setFormData({
+      ...formData, 
+      booker: teacherName,
+      teacherId: teacher?.id || "", // ➕ Simpan teacherId
+      mapel: teacher?.mapel || ""   // ➕ Auto-set mapel dari guru
+    });
+  };
+
   const handleOpenModal = (planet, isEdit = false, item = null) => {
       setActivePlanet(planet);
       setSearchTerm("");
@@ -103,9 +118,11 @@ const SchedulePage = () => {
               start: item.start || "14:00", 
               end: item.end || "15:30",
               program: item.program || "Reguler",
-              level: item.level || "SD", // 🔥 AMBIL LEVEL
+              level: item.level || "SD",
               title: item.title || "",
+              mapel: item.mapel || "", // ➕ Load mapel
               booker: item.booker || "", 
+              teacherId: item.teacherId || "", // ➕ Load teacherId
               selectedStudents: item.students ? item.students.map(s => s.id) : [],
               repeat: "Once"
           });
@@ -118,10 +135,11 @@ const SchedulePage = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!formData.booker) return alert("❌ Pilih guru terlebih dahulu!");
+    
     try {
         const studentsFullData = formData.selectedStudents.map(id => {
             const s = availableStudents.find(stud => stud.id === id);
-            // 🔥 SIMPAN DATA LENGKAP: id, nama, kelas, program
             return s ? { 
               id: s.id, 
               nama: s.nama, 
@@ -131,13 +149,17 @@ const SchedulePage = () => {
             } : null;
         }).filter(Boolean);
 
+        const scheduleData = {
+            ...formData,
+            level: formData.level,
+            mapel: formData.mapel, // ➕ SIMPAN MAPEL
+            teacherId: formData.teacherId, // ➕ SIMPAN TEACHER ID
+            students: studentsFullData,
+            updatedAt: new Date()
+        };
+
         if (editId) {
-            await updateDoc(doc(db, "jadwal_bimbel", editId), {
-                ...formData,
-                level: formData.level, // 🔥 SIMPAN LEVEL
-                students: studentsFullData,
-                updatedAt: new Date()
-            });
+            await updateDoc(doc(db, "jadwal_bimbel", editId), scheduleData);
         } else {
             const batch = writeBatch(db);
             let tempDate = new Date(selectedDate);
@@ -146,11 +168,9 @@ const SchedulePage = () => {
             for (let i = 0; i < loopCount; i++) {
                 const newRef = doc(collection(db, "jadwal_bimbel"));
                 batch.set(newRef, {
-                    ...formData,
-                    level: formData.level, // 🔥 SIMPAN LEVEL
+                    ...scheduleData,
                     planet: activePlanet,
                     dateStr: getSmartDateString(tempDate),
-                    students: studentsFullData,
                     status: "scheduled",
                     attendance_list: [],
                     createdAt: new Date()
@@ -194,6 +214,7 @@ const SchedulePage = () => {
     }
     return days;
   };
+
   const renderDailyView = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
@@ -214,6 +235,8 @@ const SchedulePage = () => {
                                         <span style={{...styles.programBadge, color: item.program === 'English' ? '#e74c3c' : '#2ecc71'}}>{item.program}</span>
                                     </div>
                                     <div style={styles.scheduleTitle}>{item.title || "Materi Umum"}</div>
+                                    {/* ➕ TAMPILKAN MAPEL */}
+                                    {item.mapel && <div style={{fontSize:11, color:'#4f46e5', fontWeight:600, marginBottom:4}}>📘 {item.mapel}</div>}
                                     <div style={styles.scheduleInfo}>
                                         <div>👨‍🏫 <b>{item.booker}</b></div>
                                         <div>📚 {item.level || "SD"} | 👥 {item.students ? item.students.length : 0} Siswa</div>
@@ -252,6 +275,7 @@ const SchedulePage = () => {
                                         <span style={{ fontSize: 11, background: '#e1e8ed', padding: '2px 8px', borderRadius: 10 }}>🪐 {item.planet}</span>
                                     </div>
                                     <div style={{ fontSize: 14, fontWeight: '600' }}>{item.title || "Materi Umum"}</div>
+                                    {item.mapel && <div style={{fontSize:11, color:'#4f46e5', fontWeight:600}}>📘 {item.mapel}</div>}
                                     <div style={{ fontSize: 12, color: '#e67e22' }}>👨‍🏫 {item.booker} | 📚 {item.level || "SD"}</div>
                                 </div>
                             ))}
@@ -335,7 +359,6 @@ const SchedulePage = () => {
                     </div>
                 </div>
 
-                {/* 🔥 JENJANG (BARU) */}
                 <div style={{ display: 'flex', gap: 15 }}>
                     <div style={{ flex: 1 }}>
                         <label style={styles.labelSm}>Program</label>
@@ -352,12 +375,19 @@ const SchedulePage = () => {
                     </div>
                 </div>
 
+                {/* ➕ PILIH GURU → AUTO MAPEL */}
                 <div>
                     <label style={styles.labelSm}>Guru</label>
-                    <select required value={formData.booker} onChange={e => setFormData({...formData, booker: e.target.value})} style={styles.inputSm}>
+                    <select required value={formData.booker} onChange={e => handleTeacherChange(e.target.value)} style={styles.inputSm}>
                         <option value="">-- Pilih Guru --</option>
-                        {availableTeachers.map(t => <option key={t.id} value={t.nama}>{t.nama}</option>)}
+                        {availableTeachers.map(t => <option key={t.id} value={t.nama}>{t.nama} {t.mapel ? `(${t.mapel})` : ''}</option>)}
                     </select>
+                    {/* ➕ TAMPILKAN MAPEL AUTO */}
+                    {formData.mapel && (
+                      <div style={{marginTop:4, fontSize:10, color:'#4f46e5', fontWeight:600}}>
+                        📘 Mapel: {formData.mapel}
+                      </div>
+                    )}
                 </div>
 
                 <div>
@@ -367,6 +397,11 @@ const SchedulePage = () => {
                 
                 <div style={{ background: '#f8f9fa', padding: 15, borderRadius: 12, border: '1px solid #eee' }}>
                     <label style={styles.labelSm}>👥 Assign Siswa ({formData.selectedStudents.length} Dipilih)</label>
+                    {/* ➕ INFO: Hanya siswa yang sesuai jenjang */}
+                    <p style={{fontSize:9, color:'#94a3b8', marginTop:2}}>
+                      Menampilkan siswa {formData.level !== 'Umum' ? `jenjang ${formData.level}` : 'semua jenjang'}
+                      {formData.mapel ? ` yang mengikuti mapel ${formData.mapel}` : ''}
+                    </p>
                     <div style={{ display: 'flex', gap: 8, marginBottom: 10, marginTop: 8 }}>
                         <select value={filterKelas} onChange={e=>setFilterKelas(e.target.value)} style={{ flex: 1, padding: '8px', borderRadius: 8, border: '1px solid #ddd', fontSize: 12 }}>
                             {LIST_KELAS.map(k => <option key={k} value={k}>{k}</option>)}
@@ -376,6 +411,16 @@ const SchedulePage = () => {
                     <div style={{ maxHeight: '200px', overflowY: 'auto', background: 'white', padding: '5px', borderRadius: 8, border: '1px solid #eee' }}>
                         {availableStudents
                           .filter(s => {
+                            // ➕ Filter by jenjang
+                            if (formData.level !== 'Umum') {
+                              const siswaJenjang = s.kelasSekolah?.includes(formData.level) || 
+                                                   s.jenjang === formData.level;
+                              if (!siswaJenjang) return false;
+                            }
+                            // ➕ Filter by mapel (jika siswa punya field mapel)
+                            if (formData.mapel && s.mapel?.length > 0) {
+                              if (!s.mapel.includes(formData.mapel)) return false;
+                            }
                             const matchNama = s.nama.toLowerCase().includes(searchTerm.toLowerCase());
                             const matchKelas = filterKelas === "Semua" || s.kelasSekolah === filterKelas;
                             return matchNama && matchKelas;
@@ -387,11 +432,34 @@ const SchedulePage = () => {
                                     setFormData({...formData, selectedStudents: e.target.checked ? [...ids, s.id] : ids.filter(id => id !== s.id)});
                                 }} style={{ width: 18, height: 18, cursor: 'pointer' }} /> 
                                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                                    <span style={{ fontSize: 13, fontWeight: '500' }}>{s.nama}</span>
+                                    <div>
+                                      <span style={{ fontSize: 13, fontWeight: '500' }}>{s.nama}</span>
+                                      {/* ➕ Tampilkan mapel siswa */}
+                                      {s.mapel?.length > 0 && (
+                                        <div style={{fontSize:8, color:'#4f46e5'}}>
+                                          {s.mapel.slice(0,3).join(', ')}
+                                          {s.mapel.length > 3 ? '...' : ''}
+                                        </div>
+                                      )}
+                                    </div>
                                     <span style={{ fontSize: 10, color: '#4f46e5', background: '#eef2ff', padding: '2px 8px', borderRadius: 10, fontWeight: 'bold' }}>{s.kelasSekolah || "-"}</span>
                                 </div>
                             </label>
                         ))}
+                        {availableStudents.filter(s => {
+                          if (formData.level !== 'Umum') {
+                            const siswaJenjang = s.kelasSekolah?.includes(formData.level) || s.jenjang === formData.level;
+                            if (!siswaJenjang) return false;
+                          }
+                          if (formData.mapel && s.mapel?.length > 0) {
+                            if (!s.mapel.includes(formData.mapel)) return false;
+                          }
+                          return true;
+                        }).length === 0 && (
+                          <div style={{textAlign:'center', padding:20, color:'#94a3b8', fontSize:12}}>
+                            Tidak ada siswa ditemukan untuk filter ini
+                          </div>
+                        )}
                     </div>
                 </div>
 
@@ -430,7 +498,7 @@ const styles = {
   btnEdit: { flex: 1, fontSize: 12, color: '#3498db', border: 'none', background: '#ebf5fb', padding: '8px', borderRadius: '6px 0 0 6px', cursor: 'pointer', fontWeight: 'bold' },
   btnDelete: { flex: 1, fontSize: 12, color: '#e74c3c', border: 'none', background: '#fdedec', padding: '8px', borderRadius: '0 6px 6px 0', cursor: 'pointer', fontWeight: 'bold' },
   modalOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 9999 },
-  modalContent: (m) => ({ background: 'white', padding: 25, borderRadius: m ? '20px 20px 0 0' : '20px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }),
+  modalContent: (m) => ({ background: 'white', padding: 25, borderRadius: m ? '20px 20px 0 0' : '20px', width: '100%', maxWidth: '550px', maxHeight: '90vh', overflowY: 'auto' }),
   modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, borderBottom: '1px solid #eee', paddingBottom: 10 },
   modalClose: { background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#e74c3c' },
   labelSm: { fontSize: 12, fontWeight: 'bold', color: '#7f8c8d', marginBottom: 5, display: 'block' },
