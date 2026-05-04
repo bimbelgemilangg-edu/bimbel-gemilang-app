@@ -62,6 +62,9 @@ const TeacherInputGrade = () => {
   const [studentQuizzes, setStudentQuizzes] = useState([]);
   const [loadingStudentData, setLoadingStudentData] = useState(false);
 
+  // ➕ State: daftar ID siswa dari jadwal guru ini
+  const [assignedStudentIds, setAssignedStudentIds] = useState([]);
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -77,10 +80,44 @@ const TeacherInputGrade = () => {
       navigate('/login-guru'); 
       return; 
     }
-    fetchData();
-    fetchTopics();
-    fetchPendingData();
-  }, [guru, selectedMapel, navigate, currentPeriode]);
+    fetchAssignedStudents(); // ➕ Ambil dulu daftar siswa dari jadwal
+  }, [guru, navigate]);
+
+  // ➕ Ambil daftar siswa yang pernah dijadwalkan dengan guru ini
+  const fetchAssignedStudents = async () => {
+    try {
+      const jadwalSnap = await getDocs(query(
+        collection(db, "jadwal_bimbel"),
+        where("teacherId", "==", guru.id)
+      ));
+      
+      // Kumpulkan semua studentId unik dari semua jadwal
+      const allStudentIds = new Set();
+      jadwalSnap.docs.forEach(d => {
+        const data = d.data();
+        if (data.students && Array.isArray(data.students)) {
+          data.students.forEach(s => {
+            if (s.id) allStudentIds.add(s.id);
+          });
+        }
+      });
+      
+      const studentIdArray = [...allStudentIds];
+      setAssignedStudentIds(studentIdArray);
+      console.log(`📋 Guru ${guru.nama}: ${studentIdArray.length} siswa dari jadwal`);
+      
+      // Setelah dapat daftar siswa, baru fetch data
+      fetchData(studentIdArray);
+      fetchTopics();
+      fetchPendingData();
+    } catch (e) {
+      console.error("Error fetch assigned students:", e);
+      // Fallback: tampilkan semua siswa
+      fetchData([]);
+      fetchTopics();
+      fetchPendingData();
+    }
+  };
 
   const getPreviousMonth = (periode) => {
     const [year, month] = periode.split('-');
@@ -117,14 +154,24 @@ const TeacherInputGrade = () => {
   const fetchStudentDetail = async (studentId) => {
     setLoadingStudentData(true);
     try {
-      const scoresSnap = await getDocs(query(collection(db, RAPORT_COLLECTIONS.SCORES), where("studentId", "==", studentId), where("periode", "==", currentPeriode)));
+      const scoresSnap = await getDocs(query(
+        collection(db, RAPORT_COLLECTIONS.SCORES), 
+        where("studentId", "==", studentId), 
+        where("periode", "==", currentPeriode),
+        where("mapel", "==", selectedMapel)
+      ));
       const currentScores = scoresSnap.docs.map(d => d.data());
       const grouped = { kuis: [], catatan: [], ujian: [], keaktifan: [] };
       currentScores.forEach(s => { if (grouped[s.komponen]) grouped[s.komponen].push(s); });
       setStudentScores(grouped);
 
       const lastMonth = getPreviousMonth(currentPeriode);
-      const lastSnap = await getDocs(query(collection(db, RAPORT_COLLECTIONS.FINAL), where("studentId", "==", studentId), where("periode", "==", lastMonth)));
+      const lastSnap = await getDocs(query(
+        collection(db, RAPORT_COLLECTIONS.FINAL), 
+        where("studentId", "==", studentId), 
+        where("periode", "==", lastMonth),
+        where("mapel", "==", selectedMapel)
+      ));
       setLastMonthScores(!lastSnap.empty ? lastSnap.docs[0].data() : null);
 
       const tugasSnap = await getDocs(query(collection(db, "jawaban_tugas"), where("studentId", "==", studentId)));
@@ -150,13 +197,23 @@ const TeacherInputGrade = () => {
     finally { setLoadingStudentData(false); }
   };
 
-  const fetchData = async () => {
+  // ➕ fetchData sekarang terima parameter assignedIds
+  const fetchData = async (assignedIds = []) => {
     setLoading(true);
     try {
       const snapSiswa = await getDocs(collection(db, "students"));
-      const dataSiswa = snapSiswa.docs.map(d => ({ id: d.id, ...d.data() }));
+      let dataSiswa = snapSiswa.docs.map(d => ({ id: d.id, ...d.data() }));
       
-      const qScores = query(collection(db, RAPORT_COLLECTIONS.SCORES), where("periode", "==", currentPeriode));
+      // ➕ Filter: hanya siswa yang pernah dijadwalkan dengan guru ini
+      if (assignedIds.length > 0) {
+        dataSiswa = dataSiswa.filter(s => assignedIds.includes(s.id));
+      }
+      
+      const qScores = query(
+        collection(db, RAPORT_COLLECTIONS.SCORES), 
+        where("periode", "==", currentPeriode),
+        where("mapel", "==", selectedMapel)
+      );
       const snapScores = await getDocs(qScores);
       const allScores = snapScores.docs.map(d => d.data());
 
@@ -203,11 +260,12 @@ const TeacherInputGrade = () => {
       });
       
       if (result.success) {
-        alert(`✅ Nilai ${selectedStudent.nama} (${komponen}) berhasil disimpan ke raport!`);
+        alert(`✅ Nilai ${selectedStudent.nama} (${komponen}) berhasil disimpan ke raport ${selectedMapel}!`);
         setScore(""); setTopic(""); setKomponen("keaktifan");
         setAspects({ pemahaman: 3, aplikasi: 3, literasi: 3, inisiatif: 3, mandiri: 3 });
         fetchStudentDetail(selectedStudent.id);
-        fetchData(); fetchTopics();
+        fetchData(assignedStudentIds);
+        fetchTopics();
       } else { alert("❌ Gagal menyimpan: " + result.error); }
     } catch (err) { alert("❌ Gagal menyimpan: " + err.message); }
     finally { setSubmitting(false); }
@@ -229,9 +287,9 @@ const TeacherInputGrade = () => {
       if (result.success) {
         const colName = item.source === 'kuis' ? 'jawaban_kuis' : 'jawaban_tugas';
         try { await updateDoc(doc(db, colName, item.id), { exportedToRaport: true }); } catch (e) {}
-        alert(`✅ ${item.source === 'kuis' ? 'Kuis' : 'Tugas'} berhasil diimpor!`);
+        alert(`✅ ${item.source === 'kuis' ? 'Kuis' : 'Tugas'} berhasil diimpor ke ${selectedMapel}!`);
         fetchStudentDetail(selectedStudent.id);
-        fetchData();
+        fetchData(assignedStudentIds);
       } else { alert("❌ Gagal: " + result.error); }
     } catch (err) { alert("❌ Gagal: " + err.message); }
     finally { setSubmitting(false); }
@@ -243,8 +301,8 @@ const TeacherInputGrade = () => {
       const result = await exportToRaportScores({ studentId: item.studentId, studentName: item.studentName, mapel: selectedMapel, topik: item.modulTitle, nilai: item.score, komponen: 'catatan', teacherId: guru.id, teacherName: guru.nama });
       if (result.success) {
         try { await updateDoc(doc(db, "jawaban_tugas", item.id), { exportedToRaport: true }); } catch (updateErr) {}
-        alert(`✅ Nilai tugas ${item.studentName} berhasil diekspor!`);
-        fetchPendingData(); fetchData();
+        alert(`✅ Nilai tugas ${item.studentName} berhasil diekspor ke ${selectedMapel}!`);
+        fetchPendingData(); fetchData(assignedStudentIds);
       } else { alert("❌ Gagal: " + result.error); }
     } catch (err) { alert("❌ Gagal: " + err.message); }
     finally { setSubmitting(false); }
@@ -256,8 +314,8 @@ const TeacherInputGrade = () => {
       const result = await exportToRaportScores({ studentId: item.userId, studentName: item.userName, mapel: selectedMapel, topik: item.modulTitle || item.quizTitle, nilai: item.score, komponen: 'kuis', teacherId: guru.id, teacherName: guru.nama });
       if (result.success) {
         try { await updateDoc(doc(db, "jawaban_kuis", item.id), { exportedToRaport: true }); } catch (updateErr) {}
-        alert(`✅ Nilai kuis ${item.userName} berhasil diekspor!`);
-        fetchPendingData(); fetchData();
+        alert(`✅ Nilai kuis ${item.userName} berhasil diekspor ke ${selectedMapel}!`);
+        fetchPendingData(); fetchData(assignedStudentIds);
       } else { alert("❌ Gagal: " + result.error); }
     } catch (err) { alert("❌ Gagal: " + err.message); }
     finally { setSubmitting(false); }
@@ -290,14 +348,29 @@ const TeacherInputGrade = () => {
           {/* HEADER */}
           <div style={{marginBottom: 20}}>
             <h1 style={{margin: 0, fontSize: isMobile ? 18 : 22, fontWeight: 'bold', color: '#1e293b'}}>📊 Smart Input Nilai</h1>
-            <p style={{margin: '4px 0 0', fontSize: 12, color: '#64748b'}}>Input nilai akademik, karakter, dan impor tugas/kuis per siswa</p>
+            <p style={{margin: '4px 0 0', fontSize: 12, color: '#64748b'}}>
+              Input nilai akademik, karakter, dan impor tugas/kuis • Menampilkan {assignedStudentIds.length} siswa dari jadwal Anda
+            </p>
+          </div>
+
+          {/* ➕ PANDUAN GURU */}
+          <div style={{ background: '#fef3c7', border: '1px solid #fde68a', borderRadius: 12, padding: 14, marginBottom: 16, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <Info size={18} color="#b45309" style={{marginTop: 2, flexShrink: 0}} />
+            <div style={{flex: 1, fontSize: 11, color: '#b45309', lineHeight: 1.8}}>
+              <b>📋 Cara Input Nilai:</b><br/>
+              1️⃣ Hanya siswa yang <b>pernah dijadwalkan</b> dengan Anda yang muncul di sini<br/>
+              2️⃣ Klik <b>Detail</b> → lihat status komponen (✅/❌) + tugas & kuis siswa<br/>
+              3️⃣ Klik <b>Impor</b> untuk memasukkan nilai otomatis dari tugas/kuis<br/>
+              4️⃣ Atau isi manual: pilih komponen → isi nilai 0-100 → atur karakter (1-5)<br/>
+              5️⃣ Minimal <b>2 komponen</b> terisi → buka <b>Generate Raport</b>
+            </div>
           </div>
 
           {/* INFO SKEMA BOBOT */}
           <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 12, padding: 14, marginBottom: 16, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
             <Info size={18} color="#0369a1" style={{marginTop: 2}} />
             <div style={{flex: 1, fontSize: 12, color: '#0369a1', lineHeight: 1.6}}>
-              <b>ℹ️ Skema:</b> Kuis 30% • Tugas 30% • Ujian 20% • Keaktifan 20% | Minimal <b>2 komponen</b>. Klik <b>Detail</b> → lihat tugas & kuis → impor langsung.
+              <b>ℹ️ Skema:</b> Kuis 30% • Tugas 30% • Ujian 20% • Keaktifan 20% | Minimal <b>2 komponen</b>. Bobot <b>otomatis proporsional</b> jika ada komponen kosong.
             </div>
           </div>
 
@@ -310,7 +383,10 @@ const TeacherInputGrade = () => {
                   <span style={{ fontWeight: 'bold', fontSize: 13, color: '#1e293b' }}>{guru?.nama}</span>
                   <span style={{ background: '#fef3c7', padding: '2px 8px', borderRadius: 12, fontSize: 10, fontWeight: 'bold', color: '#d97706' }}>{selectedMapel}</span>
                 </div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>Periode: {currentPeriode.replace('-', ' / ')}</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>
+                  Periode: {currentPeriode.replace('-', ' / ')} • 
+                  ➕ <b>{assignedStudentIds.length}</b> siswa dari jadwal
+                </div>
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <div style={{ textAlign: 'center', background: '#f8fafc', padding: '6px 10px', borderRadius: 8 }}><div style={{ fontSize: 16, fontWeight: 'bold', color: '#3b82f6' }}>{stats.total}</div><div style={{ fontSize: 8, color: '#64748b' }}>Total</div></div>
@@ -321,7 +397,7 @@ const TeacherInputGrade = () => {
             </div>
           </div>
 
-          {/* TABS - HANYA 3 */}
+          {/* TABS */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
             <button onClick={() => { setActiveTab('manual'); setSelectedStudent(null); setShowStudentDetail(false); }} style={{ padding: '10px 20px', borderRadius: 12, fontWeight: 'bold', fontSize: 13, cursor: 'pointer', background: activeTab === 'manual' ? '#3b82f6' : 'white', color: activeTab === 'manual' ? 'white' : '#64748b', border: activeTab === 'manual' ? 'none' : '1px solid #e2e8f0', boxShadow: activeTab === 'manual' ? 'none' : '0 1px 3px rgba(0,0,0,0.05)' }}>✍️ Input Manual</button>
             <button onClick={() => { setActiveTab('fromTasks'); fetchPendingData(); }} style={{ padding: '10px 20px', borderRadius: 12, fontWeight: 'bold', fontSize: 13, cursor: 'pointer', background: activeTab === 'fromTasks' ? '#10b981' : 'white', color: activeTab === 'fromTasks' ? 'white' : '#64748b', border: activeTab === 'fromTasks' ? 'none' : '1px solid #e2e8f0', boxShadow: activeTab === 'fromTasks' ? 'none' : '0 1px 3px rgba(0,0,0,0.05)' }}>📥 Impor Tugas ({pendingTasks.length})</button>
@@ -333,6 +409,17 @@ const TeacherInputGrade = () => {
           {/* ============================================================ */}
           {activeTab === 'manual' && !selectedStudent && (
             <>
+              {/* ➕ INFO JUMLAH SISWA */}
+              {assignedStudentIds.length === 0 && !loading && (
+                <div style={{ background: '#fef3c7', border: '1px solid #fde68a', borderRadius: 12, padding: 20, marginBottom: 16, textAlign: 'center' }}>
+                  <Users size={40} color="#b45309" style={{marginBottom: 8}} />
+                  <p style={{fontWeight: 700, color: '#b45309', margin: 0}}>Belum ada siswa di jadwal Anda</p>
+                  <p style={{fontSize: 12, color: '#92400e', margin: '4px 0 0'}}>
+                    Siswa akan muncul di sini setelah Admin menambahkan Anda ke jadwal mengajar.
+                  </p>
+                </div>
+              )}
+
               <div style={{ background: 'white', borderRadius: 12, padding: 14, marginBottom: 16, border: '1px solid #e2e8f0' }}>
                 <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 10, width: '100%' }}>
                   <div style={{ flex: 3, display: 'flex', alignItems: 'center', gap: 8, background: '#f8fafc', padding: '8px 12px', borderRadius: 10, border: '1px solid #e2e8f0' }}>
@@ -340,19 +427,19 @@ const TeacherInputGrade = () => {
                     <input type="text" placeholder="Cari nama siswa..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 13 }} />
                   </div>
                   <select value={filterClass} onChange={e => setFilterClass(e.target.value)} style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, background: 'white', minWidth: 120 }}>
-                    <option value="Semua">📚 Semua Jenjang</option><option value="SD">SD</option><option value="SMP">SMP</option><option value="SMA">SMA</option>
+                    <option value="Semua">📚 Semua Jenjang</option><option value="SD">SD</option><option value="SMP">SMP</option>
                   </select>
                   <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, background: 'white', minWidth: 120 }}>
                     <option value="Semua">📋 Semua Status</option><option value="Belum">🔴 Belum</option><option value="Sebagian">🟡 Sebagian</option><option value="Sudah">🟢 Lengkap</option>
                   </select>
-                  <button onClick={() => { fetchData(); }} style={{ padding: '8px 12px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, cursor: 'pointer' }}><RefreshCw size={14} /></button>
+                  <button onClick={() => { fetchData(assignedStudentIds); }} style={{ padding: '8px 12px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, cursor: 'pointer' }}><RefreshCw size={14} /></button>
                 </div>
               </div>
 
               {loading ? (
-                <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 12 }}><div style={{ width: 36, height: 36, border: '3px solid #e2e8f0', borderTop: '3px solid #3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }}></div><p style={{ color: '#64748b', fontSize: 13 }}>Memuat...</p></div>
+                <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 12 }}><div style={{ width: 36, height: 36, border: '3px solid #e2e8f0', borderTop: '3px solid #3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }}></div><p style={{ color: '#64748b', fontSize: 13 }}>Memuat data siswa...</p></div>
               ) : filteredStudents.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 12 }}><Users size={40} color="#cbd5e1" /><p style={{ marginTop: 10, color: '#94a3b8', fontSize: 13 }}>Tidak ada siswa</p></div>
+                <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 12 }}><Users size={40} color="#cbd5e1" /><p style={{ marginTop: 10, color: '#94a3b8', fontSize: 13 }}>Tidak ada siswa ditemukan</p></div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${isMobile ? '140px' : '170px'}, 1fr))`, gap: 10 }}>
                   {filteredStudents.map(s => {
@@ -381,7 +468,7 @@ const TeacherInputGrade = () => {
           )}
 
           {/* ============================================================ */}
-          {/* DETAIL SISWA + FORM */}
+          {/* DETAIL SISWA + FORM (TIDAK BERUBAH) */}
           {/* ============================================================ */}
           {activeTab === 'manual' && selectedStudent && (
             <div style={{ background: 'white', borderRadius: 16, padding: isMobile ? 16 : 20, border: '1px solid #e2e8f0' }}>
@@ -394,7 +481,7 @@ const TeacherInputGrade = () => {
 
               {showStudentDetail && (
                 <>
-                  <h4 style={{ fontSize: 13, fontWeight: 'bold', marginBottom: 10, color: '#1e293b' }}>📋 Status {currentPeriode.replace('-', ' / ')}</h4>
+                  <h4 style={{ fontSize: 13, fontWeight: 'bold', marginBottom: 10, color: '#1e293b' }}>📋 Status {currentPeriode.replace('-', ' / ')} — Mapel: {selectedMapel}</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 14 }}>
                     {komponenList.map(komp => {
                       const dataKomp = studentScores?.[komp] || [];
@@ -413,7 +500,7 @@ const TeacherInputGrade = () => {
 
                   {lastMonthScores && (
                     <div style={{ background: '#f0f9ff', padding: 10, borderRadius: 8, border: '1px solid #bae6fd', marginBottom: 14 }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: '#0369a1', marginBottom: 4 }}>📅 Bulan Lalu: Nilai Akhir <b>{lastMonthScores.nilai_akhir}</b></div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: '#0369a1', marginBottom: 4 }}>📅 Bulan Lalu ({selectedMapel}): Nilai Akhir <b>{lastMonthScores.nilai_akhir}</b></div>
                     </div>
                   )}
 
@@ -488,9 +575,7 @@ const TeacherInputGrade = () => {
             </div>
           )}
 
-          {/* ============================================================ */}
           {/* TAB IMPOR TUGAS (BULK) */}
-          {/* ============================================================ */}
           {activeTab === 'fromTasks' && (
             <div style={{ background: 'white', borderRadius: 16, padding: 20, border: '1px solid #e2e8f0' }}>
               <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }}><FileText size={18} color="#10b981" /> Nilai Tugas Siap Diimpor</h3>
@@ -505,9 +590,7 @@ const TeacherInputGrade = () => {
             </div>
           )}
 
-          {/* ============================================================ */}
           {/* TAB IMPOR KUIS (BULK) */}
-          {/* ============================================================ */}
           {activeTab === 'fromQuizzes' && (
             <div style={{ background: 'white', borderRadius: 16, padding: 20, border: '1px solid #e2e8f0' }}>
               <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }}><HelpCircle size={18} color="#8b5cf6" /> Nilai Kuis Siap Diimpor</h3>

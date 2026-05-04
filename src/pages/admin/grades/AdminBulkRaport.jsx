@@ -45,13 +45,14 @@ const AdminBulkRaport = () => {
   };
 
   const handleBulkSync = async () => {
-    if (!window.confirm(`Generate raport untuk SEMUA SISWA periode ${selectedPeriode}?\n\nMinimal 2 komponen nilai (kuis, catatan, ujian, keaktifan) harus tersedia.\nBobot dihitung otomatis proporsional.\nSiswa dengan data kurang akan dilewati.`)) return;
+    if (!window.confirm(`Generate raport untuk SEMUA SISWA periode ${selectedPeriode}?\n\n⚠️ ADMIN MODE: Generate untuk SEMUA MAPEL.\nMinimal 2 komponen nilai harus tersedia.\nBobot dihitung otomatis proporsional.\nSiswa dengan data kurang akan dilewati.`)) return;
     
     setLoading(true);
     setResult(null);
     
     try {
-      const syncResult = await syncAllScoresToRaport(selectedPeriode);
+      // ➕ null = ADMIN generate semua mapel
+      const syncResult = await syncAllScoresToRaport(selectedPeriode, null);
       setResult(syncResult);
       
       if (syncResult.incomplete && syncResult.incomplete.length > 0) {
@@ -75,18 +76,10 @@ const AdminBulkRaport = () => {
       <button 
         onClick={() => navigate('/admin/grades')} 
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          background: 'white',
-          border: '1px solid #e2e8f0',
-          padding: isMobile ? '8px 12px' : '8px 16px',
-          borderRadius: '8px',
-          cursor: 'pointer',
-          fontSize: isMobile ? '11px' : '12px',
-          fontWeight: '600',
-          color: '#64748b',
-          marginBottom: isMobile ? '16px' : '20px'
+          display: 'flex', alignItems: 'center', gap: '6px', background: 'white',
+          border: '1px solid #e2e8f0', padding: isMobile ? '8px 12px' : '8px 16px',
+          borderRadius: '8px', cursor: 'pointer', fontSize: isMobile ? '11px' : '12px',
+          fontWeight: '600', color: '#64748b', marginBottom: isMobile ? '16px' : '20px'
         }}
       >
         <ArrowLeft size={isMobile ? 12 : 14} /> Kembali ke Grade Report
@@ -98,7 +91,7 @@ const AdminBulkRaport = () => {
           <Database size={isMobile ? 20 : 24} color="#3b82f6" /> Bulk Generate Raport
         </h2>
         <p style={{ margin: '4px 0 0', fontSize: isMobile ? 10 : 12, color: '#64748b' }}>
-          Generate raport untuk SEMUA siswa sekaligus (minimal 2 komponen, bobot proporsional)
+          Generate raport untuk SEMUA siswa & SEMUA mapel (Admin Only)
         </p>
       </div>
 
@@ -130,6 +123,20 @@ const AdminBulkRaport = () => {
             <FileText size={isMobile ? 14 : 16} color="#3b82f6" /> Pengaturan Generate
           </h3>
           
+          {/* ➕ BOX ADMIN MODE */}
+          <div style={{ 
+            background: '#fef3c7', 
+            padding: isMobile ? 8 : 12, 
+            borderRadius: 8, 
+            marginBottom: 16,
+            border: '1px solid #fde68a',
+            fontSize: isMobile ? 10 : 11,
+            color: '#b45309',
+            lineHeight: 1.5
+          }}>
+            ⚠️ <b>Admin Mode:</b> Generate untuk <b>SEMUA mapel & SEMUA siswa</b>. Guru hanya bisa generate mapelnya sendiri.
+          </div>
+
           <div style={{ 
             background: '#f0f9ff', 
             padding: isMobile ? 8 : 12, 
@@ -173,7 +180,7 @@ const AdminBulkRaport = () => {
             }}
           >
             <RefreshCw size={isMobile ? 16 : 18} className={loading ? 'spin' : ''} />
-            {loading ? 'Memproses...' : '🚀 Generate Raport SEMUA SISWA'}
+            {loading ? 'Memproses Semua...' : '🚀 Generate Raport SEMUA SISWA'}
           </button>
         </div>
 
