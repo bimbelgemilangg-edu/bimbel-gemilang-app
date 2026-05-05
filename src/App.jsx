@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 
 // === LOGIN & PUBLIK ===
 import Login from './pages/Login';
@@ -20,7 +20,7 @@ import TeacherList from './pages/admin/teachers/TeacherList';
 import TeacherSalaries from './pages/admin/teachers/TeacherSalaries'; 
 import SchedulePage from './pages/admin/schedule/SchedulePage';
 import GradeReport from './pages/admin/grades/GradeReport'; 
-import AdminBulkRaport from './pages/admin/grades/AdminBulkRaport'; // ➕ TAMBAHAN
+import AdminBulkRaport from './pages/admin/grades/AdminBulkRaport';
 import AdminDailyLog from './pages/admin/AdminDailyLog'; 
 import ManageBlog from './pages/admin/blog/ManageBlog';
 import ManageMateriPortal from './pages/admin/portal-siswa/ManageMateri';
@@ -72,8 +72,7 @@ const GuruRoute = ({ children }) => {
 
 const SiswaRoute = ({ children }) => {
   const isAuth = localStorage.getItem('isSiswaLoggedIn') === 'true';
-  const role = localStorage.getItem('role');
-  if (!isAuth || role !== 'siswa') return <Navigate to="/login-siswa" replace />;
+  if (!isAuth) return <Navigate to="/login-siswa" replace />;
   return children;
 };
 
@@ -112,6 +111,26 @@ const TeacherLayout = ({ children }) => {
   );
 };
 
+// ➕ WRAPPER UNTUK KUIS SISWA (route /siswa/kuis/:id)
+import StudentModuleView from './pages/student/StudentModuleView';
+const KuisSiswaWrapper = () => {
+  const { id } = useParams();
+  const studentData = {
+    uid: localStorage.getItem('studentId'),
+    id: localStorage.getItem('studentId'),
+    nama: localStorage.getItem('studentName'),
+    kelasSekolah: localStorage.getItem('studentGrade') || ''
+  };
+  
+  return (
+    <StudentModuleView 
+      modulId={id} 
+      onBack={() => window.history.back()} 
+      studentData={studentData} 
+    />
+  );
+};
+
 // === APP ===
 function App() {
   return (
@@ -139,7 +158,7 @@ function App() {
         <Route path="/admin/finance" element={<AdminRoute><FinanceLayout /></AdminRoute>} />
         <Route path="/admin/schedule" element={<AdminRoute><SchedulePage /></AdminRoute>} />
         <Route path="/admin/grades" element={<AdminRoute><GradeReport /></AdminRoute>} />
-        <Route path="/admin/bulk-raport" element={<AdminRoute><AdminBulkRaport /></AdminRoute>} /> {/* ➕ TAMBAHAN */}
+        <Route path="/admin/bulk-raport" element={<AdminRoute><AdminBulkRaport /></AdminRoute>} />
         <Route path="/admin/daily-log" element={<AdminRoute><AdminDailyLog /></AdminRoute>} />
         <Route path="/admin/manage-blog" element={<AdminRoute><ManageBlog /></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
@@ -157,8 +176,6 @@ function App() {
         <Route path="/guru/schedule" element={<GuruRoute><TeacherLayout><TeacherSchedule /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/attendance" element={<GuruRoute><TeacherLayout><TeacherManualInput /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/manual-input" element={<GuruRoute><TeacherLayout><TeacherManualInput /></TeacherLayout></GuruRoute>} />
-
-        {/* 🔥 SMART RAPORT - GURU */}
         <Route path="/guru/generate-raport" element={<GuruRoute><TeacherLayout><GenerateRaport /></TeacherLayout></GuruRoute>} />
 
         {/* SISWA */}
@@ -168,10 +185,11 @@ function App() {
         <Route path="/siswa/keuangan" element={<SiswaRoute><StudentFinanceSiswa /></SiswaRoute>} />
         <Route path="/siswa/rapor" element={<SiswaRoute><StudentGrades /></SiswaRoute>} />
         <Route path="/siswa/absensi" element={<SiswaRoute><StudentAttendanceSiswa /></SiswaRoute>} />
-
-        {/* 🔥 SMART RAPORT - SISWA */}
         <Route path="/siswa/leaderboard" element={<SiswaRoute><StudentLeaderboard /></SiswaRoute>} />
         <Route path="/siswa/smart-rapor" element={<SiswaRoute><StudentSmartReport /></SiswaRoute>} />
+        
+        {/* ➕ ROUTE KUIS SISWA */}
+        <Route path="/siswa/kuis/:id" element={<SiswaRoute><KuisSiswaWrapper /></SiswaRoute>} />
 
         {/* REDIRECT */}
         <Route path="/teacher/*" element={<Navigate to="/guru/dashboard" replace />} />
