@@ -5,14 +5,13 @@ import { db, auth } from '../../firebase';
 import { collection, query, getDocs, orderBy, doc, getDoc, setDoc, addDoc, serverTimestamp, where, limit } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { Html5Qrcode } from "html5-qrcode";
-import { useNavigate } from 'react-router-dom'; // ➕ Import navigate
+import { useNavigate } from 'react-router-dom';
 import StudentFinanceSiswa from './StudentFinance';
 import StudentGrades from './StudentGrades';
 import StudentSchedule from './StudentSchedule';
 import StudentAttendanceSiswa from './StudentAttendance';
 import StudentElearning from './StudentElearning';
-import { getRelativeLeaderboard } from '../../services/raportService'; // ➕ Import leaderboard
-import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection'; // ➕ Import collection
+import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
 
 import { 
   BookOpen, Calendar, Clock, GraduationCap, Menu, ChevronRight, 
@@ -29,10 +28,10 @@ import 'swiper/css/effect-fade';
 import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
 
 const CACHE_KEY = 'dashboard_cache';
-const CACHE_EXPIRY = 5 * 60 * 1000; // 5 menit
+const CACHE_EXPIRY = 30 * 60 * 1000; // 🔄 30 menit (sebelumnya 5 menit)
 
 const StudentDashboard = () => {
-  const navigate = useNavigate(); // ➕ Navigate
+  const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -54,7 +53,6 @@ const StudentDashboard = () => {
   const [surveyAnswers, setSurveyAnswers] = useState({});
   const [surveyLoading, setSurveyLoading] = useState(false);
 
-  // ➕ State ringkasan raport
   const [raportSummary, setRaportSummary] = useState(null);
 
   useEffect(() => { 
@@ -81,7 +79,7 @@ const StudentDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-  // CACHE: Coba load dari localStorage dulu
+  // CACHE
   const loadCache = () => {
     try {
       const cached = localStorage.getItem(CACHE_KEY);
@@ -104,7 +102,7 @@ const StudentDashboard = () => {
     } catch (e) {}
   };
 
-  // QR SCANNER (tidak diubah)
+  // QR SCANNER
   useEffect(() => {
     let qr = null;
     const start = async () => {
@@ -182,17 +180,18 @@ const StudentDashboard = () => {
     } catch (error) { return { surveys: [], filled: {} }; }
   };
 
-  // ➕ Fetch ringkasan raport
+  // 🔄 PERBAIKAN: fetchRaportSummary super cepat, tidak blocking
   const fetchRaportSummary = async (studentIdParam) => {
     try {
       const now = new Date();
       const periode = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
       
-      // Ambil dari raport_final
+      // Ambil dari raport_final (cepat, pakai limit 1)
       const finalSnap = await getDocs(query(
         collection(db, RAPORT_COLLECTIONS.FINAL),
         where("studentId", "==", studentIdParam),
-        where("periode", "==", periode)
+        where("periode", "==", periode),
+        limit(1)
       ));
       
       if (!finalSnap.empty) {
@@ -204,14 +203,8 @@ const StudentDashboard = () => {
         };
       }
       
-      // Jika belum ada, coba ambil leaderboard
-      const lb = await getRelativeLeaderboard(periode, studentIdParam);
-      return {
-        nilaiAkhir: null,
-        rank: lb?.studentRank || null,
-        totalStudents: lb?.totalStudents || 0,
-        periode
-      };
+      // Kalau tidak ada, return null (jangan panggil leaderboard)
+      return null;
     } catch (e) {
       return null;
     }
@@ -222,7 +215,6 @@ const StudentDashboard = () => {
     if (!authReady || !studentId) return;
     
     const fetchAll = async () => {
-      // ➕ Coba load cache
       const cache = loadCache();
       if (cache) {
         setPosters(cache.posters || []);
@@ -233,11 +225,7 @@ const StudentDashboard = () => {
         setFilledSurveys(cache.filledSurveys || {});
         setRaportSummary(cache.raportSummary || null);
         setLoading(false);
-        console.log('⚡ Dashboard dari cache');
       }
-      
-      // Tetap fetch dari Firestore untuk data terbaru
-      console.log('🔄 Fetch data terbaru...');
       
       try {
         const sSnap = await getDoc(doc(db, "students", studentId));
@@ -248,14 +236,12 @@ const StudentDashboard = () => {
           curKel = d.kelasSekolah || "Semua";
         }
 
-        // Posters
         let fetchedPosters = [];
         try {
           const postersSnap = await getDocs(query(collection(db, "student_contents"), orderBy("createdAt", "desc")));
           fetchedPosters = postersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         } catch (e) {}
 
-        // Schedules
         let fetchedSchedules = [];
         try {
           const todayStr = new Date().toISOString().split('T')[0];
@@ -265,7 +251,6 @@ const StudentDashboard = () => {
             .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
         } catch (e) {}
 
-        // Tasks
         let fetchedTasks = [];
         try {
           const modulSnap = await getDocs(query(collection(db, "bimbel_modul"), where("targetKategori", "in", ["Semua", curKat])));
@@ -285,22 +270,20 @@ const StudentDashboard = () => {
           fetchedTasks = combined.filter(m => m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment')).slice(0, 5);
         } catch (e) {}
 
-        // Surveys
         const { surveys: fetchedSurveys, filled: filledStatus } = await fetchSurveys(curKel, studentId);
 
-        // ➕ Raport summary
-        const raportSummaryData = await fetchRaportSummary(studentId);
+        // 🔄 Raport summary fetch di background, tidak blocking
+        fetchRaportSummary(studentId).then(data => {
+          if (data) setRaportSummary(data);
+        });
 
-        // Update state
         setPosters(fetchedPosters);
         setTodaySchedules(fetchedSchedules);
         setTasks(fetchedTasks);
         setStudentProfile(sSnap.exists() ? sSnap.data() : null);
         setActiveSurveys(fetchedSurveys);
         setFilledSurveys(filledStatus);
-        setRaportSummary(raportSummaryData);
 
-        // ➕ Simpan cache
         saveCache({
           posters: fetchedPosters,
           todaySchedules: fetchedSchedules,
@@ -308,7 +291,7 @@ const StudentDashboard = () => {
           studentProfile: sSnap.exists() ? sSnap.data() : null,
           activeSurveys: fetchedSurveys,
           filledSurveys: filledStatus,
-          raportSummary: raportSummaryData
+          raportSummary: null // Cache raport di-refresh nanti
         });
 
       } catch (err) { 
@@ -346,7 +329,6 @@ const StudentDashboard = () => {
     finally { setSurveyLoading(false); }
   };
 
-  // LOADING STATE
   if (loading || !authReady) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc' }}>
@@ -358,10 +340,8 @@ const StudentDashboard = () => {
     );
   }
 
-  // RENDER DASHBOARD HOME
   const renderDashboardHome = () => (
     <div style={st.contentWrapper}>
-      {/* HEADER WELCOME */}
       <div style={isMobile ? st.welcomeHeaderMobile : st.welcomeHeader}>
         <div>
           <h1 style={isMobile ? st.titleMobile : st.title}>Halo, {studentName}! 👋</h1>
@@ -382,7 +362,6 @@ const StudentDashboard = () => {
         )}
       </div>
 
-      {/* CAROUSEL POSTER */}
       {posters.length > 0 && (
         <div style={{ ...st.carouselContainer, aspectRatio: isMobile ? '4/3' : '21/9' }}>
           <Swiper modules={[Navigation, Pagination, Autoplay, EffectFade]} effect={'fade'} navigation={!isMobile} pagination={{ clickable: true }} autoplay={{ delay: 5000 }} loop={posters.length > 1} style={st.mySwiper}>
@@ -403,35 +382,25 @@ const StudentDashboard = () => {
         </div>
       )}
 
-      {/* ➕ RINGKASAN RAPORT */}
       {raportSummary && (
         <div 
           onClick={() => navigate('/siswa/smart-rapor')}
           style={{ 
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-            borderRadius: 16, 
-            padding: 20, 
-            color: 'white', 
-            cursor: 'pointer',
-            transition: 'transform 0.2s',
-            border: '1px solid rgba(255,255,255,0.2)'
+            borderRadius: 16, padding: 20, color: 'white', cursor: 'pointer',
+            transition: 'transform 0.2s', border: '1px solid rgba(255,255,255,0.2)'
           }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.01)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Trophy size={28} color="#fbbf24" />
               <div>
                 <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>📊 Ringkasan Raport</h3>
-                <p style={{ margin: '4px 0 0', fontSize: 11, opacity: 0.85 }}>
-                  Periode {raportSummary.periode?.replace('-', ' / ')}
-                </p>
+                <p style={{ margin: '4px 0 0', fontSize: 11, opacity: 0.85 }}>Periode {raportSummary.periode?.replace('-', ' / ')}</p>
               </div>
             </div>
             <ArrowRight size={20} />
           </div>
-          
           <div style={{ display: 'flex', gap: 20, marginTop: 16, flexWrap: 'wrap' }}>
             {raportSummary.nilaiAkhir !== null ? (
               <div style={{ textAlign: 'center' }}>
@@ -440,18 +409,16 @@ const StudentDashboard = () => {
               </div>
             ) : (
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 13, fontWeight: 600, opacity: 0.9 }}>Belum tersedia</div>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>Belum tersedia</div>
                 <div style={{ fontSize: 10, opacity: 0.7 }}>Generate dulu ya</div>
               </div>
             )}
-            
             {raportSummary.rank && (
               <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: 20 }}>
                 <div style={{ fontSize: 32, fontWeight: 900 }}>#{raportSummary.rank}</div>
                 <div style={{ fontSize: 10, opacity: 0.8 }}>Peringkat dari {raportSummary.totalStudents}</div>
               </div>
             )}
-            
             {raportSummary.komponenDipake && (
               <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: 20 }}>
                 <div style={{ fontSize: 32, fontWeight: 900 }}>{raportSummary.komponenDipake.length}/4</div>
@@ -459,14 +426,10 @@ const StudentDashboard = () => {
               </div>
             )}
           </div>
-          
-          <div style={{ marginTop: 12, fontSize: 10, opacity: 0.7, textAlign: 'right' }}>
-            Klik untuk lihat detail →
-          </div>
+          <div style={{ marginTop: 12, fontSize: 10, opacity: 0.7, textAlign: 'right' }}>Klik untuk lihat detail →</div>
         </div>
       )}
 
-      {/* SECTION SURVEI */}
       {activeSurveys.length > 0 && (
         <div style={{ background: 'white', padding: 20, borderRadius: 15, border: '1px solid #e2e8f0', borderTop: '4px solid #3b82f6' }}>
           <h3 style={{ margin: '0 0 15px', fontSize: 16, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -482,19 +445,8 @@ const StudentDashboard = () => {
               const done = filledSurveys[survey.id];
               return (
                 <div key={survey.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 14, background: done ? '#f0fdf4' : survey.isRequired ? '#fef2f2' : '#fffbeb', borderRadius: 12, border: `1px solid ${done ? '#bbf7d0' : survey.isRequired ? '#fecaca' : '#fde68a'}`, flexWrap: 'wrap', gap: 10 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-                      {done ? <CheckCircle size={16} color="#10b981" /> : <Send size={16} color={survey.isRequired ? '#ef4444' : '#f59e0b'} />}
-                      <strong style={{ fontSize: 14 }}>{survey.title}</strong>
-                      {survey.isRequired && !done && <span style={{ background: '#fee2e2', color: '#ef4444', padding: '2px 8px', borderRadius: 6, fontSize: 9, fontWeight: 800 }}>WAJIB</span>}
-                    </div>
-                    <div style={{ fontSize: 11, color: '#64748b' }}>{survey.questions?.length || 0} pertanyaan</div>
-                  </div>
-                  {done ? <span style={{ color: '#10b981', fontWeight: 700, fontSize: 12 }}>✅ Terisi</span> : (
-                    <button onClick={() => openSurvey(survey)} style={{ background: survey.isRequired ? '#ef4444' : '#f59e0b', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Send size={14} /> Isi
-                    </button>
-                  )}
+                  <div style={{ flex: 1 }}><div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>{done ? <CheckCircle size={16} color="#10b981" /> : <Send size={16} color={survey.isRequired ? '#ef4444' : '#f59e0b'} />}<strong style={{ fontSize: 14 }}>{survey.title}</strong>{survey.isRequired && !done && <span style={{ background: '#fee2e2', color: '#ef4444', padding: '2px 8px', borderRadius: 6, fontSize: 9, fontWeight: 800 }}>WAJIB</span>}</div><div style={{ fontSize: 11, color: '#64748b' }}>{survey.questions?.length || 0} pertanyaan</div></div>
+                  {done ? <span style={{ color: '#10b981', fontWeight: 700, fontSize: 12 }}>✅ Terisi</span> : <button onClick={() => openSurvey(survey)} style={{ background: survey.isRequired ? '#ef4444' : '#f59e0b', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}><Send size={14} /> Isi</button>}
                 </div>
               );
             })}
@@ -502,66 +454,40 @@ const StudentDashboard = () => {
         </div>
       )}
 
-      {/* MAIN GRID */}
       <div style={isMobile ? st.mainGridMobile : st.mainGrid}>
         <div style={st.leftColumn}>
-          {/* JADWAL HARI INI */}
           <section style={st.sectionCard}>
             <h3 style={st.sectionTitle}><Calendar size={20} color="#3498db" /> Jadwal Hari Ini</h3>
-            {todaySchedules.length === 0 ? <div style={st.emptyState}>📭 Tidak ada jadwal.</div> : (
-              todaySchedules.map((sch, i) => (
-                <div key={i} style={st.schItem}>
-                  <div style={st.schTime}><b>{sch.start}</b><br /><span style={{ fontSize: 10 }}>{sch.end}</span></div>
-                  <div style={st.schInfo}>
-                    <b>{sch.title || "Kelas"}</b>
-                    <div style={{ fontSize: 11, color: '#64748b' }}><MapPin size={10} /> {sch.planet || 'Ruangan'} • <User size={10} /> {sch.booker || 'Guru'}</div>
-                  </div>
-                </div>
-              ))
-            )}
+            {todaySchedules.length === 0 ? <div style={st.emptyState}>📭 Tidak ada jadwal.</div> : todaySchedules.map((sch, i) => (
+              <div key={i} style={st.schItem}><div style={st.schTime}><b>{sch.start}</b><br /><span style={{ fontSize: 10 }}>{sch.end}</span></div><div style={st.schInfo}><b>{sch.title || "Kelas"}</b><div style={{ fontSize: 11, color: '#64748b' }}><MapPin size={10} /> {sch.planet || 'Ruangan'} • <User size={10} /> {sch.booker || 'Guru'}</div></div></div>
+            ))}
           </section>
 
-          {/* TUGAS & KUIS */}
           <section style={st.sectionCard}>
-            <div style={st.cardHeader}>
-              <h3 style={st.sectionTitle}><ClipboardList size={20} color="#9b59b6" /> Tugas & Kuis</h3>
-              <button onClick={() => setActiveMenu('materi')} style={st.btnViewAll}>Lihat Semua <ChevronRight size={14} /></button>
-            </div>
-            {tasks.length === 0 ? <div style={st.emptyState}>📭 Belum ada tugas.<br /><span style={{ fontSize: 10, color: '#94a3b8' }}>Tugas akan muncul setelah guru membuatnya.</span></div> : (
-              tasks.map((task, i) => {
-                const dl = getAssignmentDeadline(task);
-                const soon = isDeadlineSoon(dl);
-                const passed = isDeadlinePassed(dl);
-                return (
-                  <div key={i} style={{ ...st.taskItem, borderLeftColor: passed ? '#ef4444' : soon ? '#f59e0b' : '#9b59b6' }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700 }}>{task.title}</div>
-                      {dl && <div style={{ fontSize: 11, marginTop: 4 }}><Clock size={12} /> {passed ? '⛔ Terlewat ' : soon ? '⚠️ Segera ' : '📅 '}{formatDateOnly(dl)}</div>}
-                    </div>
-                    <button onClick={() => { localStorage.setItem('selectedModuleId', task.id); setActiveMenu('materi'); }} style={st.btnTaskBuka}>Buka</button>
-                  </div>
-                );
-              })
-            )}
+            <div style={st.cardHeader}><h3 style={st.sectionTitle}><ClipboardList size={20} color="#9b59b6" /> Tugas & Kuis</h3><button onClick={() => setActiveMenu('materi')} style={st.btnViewAll}>Lihat Semua <ChevronRight size={14} /></button></div>
+            {tasks.length === 0 ? <div style={st.emptyState}>📭 Belum ada tugas.<br /><span style={{ fontSize: 10, color: '#94a3b8' }}>Tugas akan muncul setelah guru membuatnya.</span></div> : tasks.map((task, i) => {
+              const dl = getAssignmentDeadline(task);
+              const soon = isDeadlineSoon(dl);
+              const passed = isDeadlinePassed(dl);
+              return (
+                <div key={i} style={{ ...st.taskItem, borderLeftColor: passed ? '#ef4444' : soon ? '#f59e0b' : '#9b59b6' }}>
+                  <div style={{ flex: 1 }}><div style={{ fontSize: 14, fontWeight: 700 }}>{task.title}</div>{dl && <div style={{ fontSize: 11, marginTop: 4 }}><Clock size={12} /> {passed ? '⛔ Terlewat ' : soon ? '⚠️ Segera ' : '📅 '}{formatDateOnly(dl)}</div>}</div>
+                  <button onClick={() => { localStorage.setItem('selectedModuleId', task.id); setActiveMenu('materi'); }} style={st.btnTaskBuka}>Buka</button>
+                </div>
+              );
+            })}
           </section>
         </div>
 
         <div style={st.rightColumn}>
           <section style={st.sectionCard}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 15 }}>
-              <div style={st.avatar}>{studentName?.charAt(0) || 'S'}</div>
-              <div><b>{studentName}</b><p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>{studentProfile?.kelasSekolah || '-'} • {studentProfile?.kategori || 'Reguler'}</p></div>
-            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 15 }}><div style={st.avatar}>{studentName?.charAt(0) || 'S'}</div><div><b>{studentName}</b><p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>{studentProfile?.kelasSekolah || '-'} • {studentProfile?.kategori || 'Reguler'}</p></div></div>
             <button onClick={() => setActiveMenu('materi')} style={st.btnAccess}><BookOpen size={16} /> Buka Materi Belajar</button>
           </section>
 
           <section style={st.sectionCard}>
             <h3 style={{ ...st.sectionTitle, marginBottom: 10 }}><TrendingUp size={20} color="#10b981" /> Ringkasan</h3>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-              <div style={{ textAlign: 'center', flex: 1 }}><div style={{ fontSize: 20, fontWeight: 800, color: '#3b82f6' }}>{todaySchedules.length}</div><div style={{ fontSize: 10, color: '#64748b' }}>Jadwal</div></div>
-              <div style={{ textAlign: 'center', flex: 1 }}><div style={{ fontSize: 20, fontWeight: 800, color: '#9b59b6' }}>{tasks.length}</div><div style={{ fontSize: 10, color: '#64748b' }}>Tugas</div></div>
-              <div style={{ textAlign: 'center', flex: 1 }}><div style={{ fontSize: 20, fontWeight: 800, color: '#ef4444' }}>{activeSurveys.filter(s => !filledSurveys[s.id]).length}</div><div style={{ fontSize: 10, color: '#64748b' }}>Survei</div></div>
-            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}><div style={{ textAlign: 'center', flex: 1 }}><div style={{ fontSize: 20, fontWeight: 800, color: '#3b82f6' }}>{todaySchedules.length}</div><div style={{ fontSize: 10, color: '#64748b' }}>Jadwal</div></div><div style={{ textAlign: 'center', flex: 1 }}><div style={{ fontSize: 20, fontWeight: 800, color: '#9b59b6' }}>{tasks.length}</div><div style={{ fontSize: 10, color: '#64748b' }}>Tugas</div></div><div style={{ textAlign: 'center', flex: 1 }}><div style={{ fontSize: 20, fontWeight: 800, color: '#ef4444' }}>{activeSurveys.filter(s => !filledSurveys[s.id]).length}</div><div style={{ fontSize: 10, color: '#64748b' }}>Survei</div></div></div>
           </section>
         </div>
       </div>
@@ -584,65 +510,36 @@ const StudentDashboard = () => {
     <div style={st.mainContainer}>
       <SidebarSiswa activeMenu={activeMenu} setActiveMenu={(menu) => { setActiveMenu(menu); if (isMobile) setIsSidebarOpen(false); }} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       {isMobile && <button onClick={() => setIsSidebarOpen(true)} style={st.mobileMenuBtn}><Menu size={24} /></button>}
-      <div style={{ ...st.contentArea, marginLeft: isMobile ? '0' : '260px', width: isMobile ? '100%' : 'calc(100% - 260px)', padding: isMobile ? '15px' : '30px', paddingTop: isMobile ? '70px' : '30px' }}>
-        {renderContent()}
-      </div>
+      <div style={{ ...st.contentArea, marginLeft: isMobile ? '0' : '260px', width: isMobile ? '100%' : 'calc(100% - 260px)', padding: isMobile ? '15px' : '30px', paddingTop: isMobile ? '70px' : '30px' }}>{renderContent()}</div>
       {isMobile && isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} style={st.overlay} />}
 
-      {/* MODAL BERITA */}
       {selectedNews && (
         <div style={st.modalOverlay} onClick={() => setSelectedNews(null)}>
-          <div style={{ ...st.modalContent, width: isMobile ? '90%' : '600px' }} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setSelectedNews(null)} style={st.btnCloseModal}><X size={20} /></button>
-            <img src={selectedNews.imageUrl} style={st.modalImg} alt="" />
-            <div style={{ padding: 20 }}><h2>{selectedNews.title}</h2><p>{selectedNews.content || selectedNews.desc}</p></div>
-          </div>
+          <div style={{ ...st.modalContent, width: isMobile ? '90%' : '600px' }} onClick={e => e.stopPropagation()}><button onClick={() => setSelectedNews(null)} style={st.btnCloseModal}><X size={20} /></button><img src={selectedNews.imageUrl} style={st.modalImg} alt="" /><div style={{ padding: 20 }}><h2>{selectedNews.title}</h2><p>{selectedNews.content || selectedNews.desc}</p></div></div>
         </div>
       )}
 
-      {/* MODAL SCANNER */}
       {isScanning && (
         <div style={st.modalOverlay} onClick={() => setIsScanning(false)}>
-          <div style={st.qrModalContent} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setIsScanning(false)} style={st.btnCloseModal}><X size={20} /></button>
-            <h3>Scan QR Code Absensi</h3>
-            <div id="reader" style={{ width: '100%', borderRadius: 15, overflow: 'hidden' }}></div>
-            <p style={{ fontSize: 11, color: '#64748b', marginTop: 12 }}>Arahkan kamera ke QR Code yang ditampilkan guru</p>
-          </div>
+          <div style={st.qrModalContent} onClick={e => e.stopPropagation()}><button onClick={() => setIsScanning(false)} style={st.btnCloseModal}><X size={20} /></button><h3>Scan QR Code Absensi</h3><div id="reader" style={{ width: '100%', borderRadius: 15, overflow: 'hidden' }}></div><p style={{ fontSize: 11, color: '#64748b', marginTop: 12 }}>Arahkan kamera ke QR Code yang ditampilkan guru</p></div>
         </div>
       )}
 
-      {/* MODAL SURVEI */}
       {showSurveyModal && currentSurvey && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
           <div style={{ background: 'white', borderRadius: 20, padding: 30, width: '100%', maxWidth: 550, maxHeight: '85vh', overflowY: 'auto', position: 'relative' }}>
             <button onClick={() => setShowSurveyModal(false)} style={{ position: 'sticky', top: 0, right: 0, float: 'right', background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer' }}><X size={18} /></button>
-            <div style={{ textAlign: 'center', marginBottom: 20, clear: 'both' }}>
-              <span style={{ fontSize: 40 }}>📋</span>
-              <h2 style={{ margin: '10px 0 5px', fontSize: 20 }}>{currentSurvey.title}</h2>
-              {currentSurvey.isRequired && <span style={{ display: 'inline-block', background: '#fee2e2', color: '#ef4444', padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>⚠️ Wajib diisi</span>}
-            </div>
+            <div style={{ textAlign: 'center', marginBottom: 20, clear: 'both' }}><span style={{ fontSize: 40 }}>📋</span><h2 style={{ margin: '10px 0 5px', fontSize: 20 }}>{currentSurvey.title}</h2>{currentSurvey.isRequired && <span style={{ display: 'inline-block', background: '#fee2e2', color: '#ef4444', padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>⚠️ Wajib diisi</span>}</div>
             {currentSurvey.questions?.map((q, i) => (
-              <div key={i} style={{ marginBottom: 20 }}>
-                <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>{i + 1}. {q.question}</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {(q.options || []).filter(o => o && o.trim()).map((opt, oi) => (
-                    <label key={oi} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, cursor: 'pointer', background: surveyAnswers[i] === opt ? '#eef2ff' : '#f8fafc', border: `2px solid ${surveyAnswers[i] === opt ? '#3b82f6' : '#e2e8f0'}` }}>
-                      <input type="radio" name={`sq-${i}`} checked={surveyAnswers[i] === opt} onChange={() => setSurveyAnswers({ ...surveyAnswers, [i]: opt })} style={{ width: 18, height: 18 }} />
-                      <span style={{ fontSize: 13 }}>{opt}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              <div key={i} style={{ marginBottom: 20 }}><p style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>{i + 1}. {q.question}</p><div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{(q.options || []).filter(o => o && o.trim()).map((opt, oi) => (
+                <label key={oi} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, cursor: 'pointer', background: surveyAnswers[i] === opt ? '#eef2ff' : '#f8fafc', border: `2px solid ${surveyAnswers[i] === opt ? '#3b82f6' : '#e2e8f0'}` }}><input type="radio" name={`sq-${i}`} checked={surveyAnswers[i] === opt} onChange={() => setSurveyAnswers({ ...surveyAnswers, [i]: opt })} style={{ width: 18, height: 18 }} /><span style={{ fontSize: 13 }}>{opt}</span></label>
+              ))}</div></div>
             ))}
-            <button onClick={submitSurvey} disabled={surveyLoading} style={{ width: '100%', padding: 14, background: '#3b82f6', color: 'white', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: surveyLoading ? 'not-allowed' : 'pointer', marginTop: 10, opacity: surveyLoading ? 0.7 : 1 }}>
-              {surveyLoading ? 'Mengirim...' : 'Kirim Jawaban'}
-            </button>
+            <button onClick={submitSurvey} disabled={surveyLoading} style={{ width: '100%', padding: 14, background: '#3b82f6', color: 'white', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: surveyLoading ? 'not-allowed' : 'pointer', marginTop: 10, opacity: surveyLoading ? 0.7 : 1 }}>{surveyLoading ? 'Mengirim...' : 'Kirim Jawaban'}</button>
           </div>
         </div>
       )}
 
-      {/* FAB MOBILE */}
       {isMobile && <button onClick={() => setIsScanning(true)} style={st.fabQR}><Camera size={22} /></button>}
     </div>
   );
@@ -652,8 +549,6 @@ const st = {
   mainContainer: { display: 'flex', minHeight: '100vh', background: '#f8fafc', position: 'relative' },
   contentArea: { transition: 'margin 0.3s ease', boxSizing: 'border-box' },
   contentWrapper: { display: 'flex', flexDirection: 'column', gap: 20 },
-  loadingScreen: { flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginLeft: 260 },
-  spinner: { width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: 10 },
   welcomeHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   welcomeHeaderMobile: { textAlign: 'left', marginBottom: 10 },
   title: { fontSize: 28, fontWeight: 800, color: '#1e293b', margin: 0 },
