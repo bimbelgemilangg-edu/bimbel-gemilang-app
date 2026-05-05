@@ -1,4 +1,3 @@
-// src/pages/student/StudentDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import SidebarSiswa from '../../components/SidebarSiswa';
 import { db, auth } from '../../firebase';
@@ -6,53 +5,29 @@ import { collection, query, getDocs, orderBy, doc, getDoc, setDoc, addDoc, serve
 import { onAuthStateChanged } from "firebase/auth";
 import { Html5Qrcode } from "html5-qrcode";
 import { useNavigate } from 'react-router-dom';
-import StudentFinanceSiswa from './StudentFinance';
-import StudentGrades from './StudentGrades';
-import StudentSchedule from './StudentSchedule';
-import StudentAttendanceSiswa from './StudentAttendance';
-import StudentElearning from './StudentElearning';
 import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
 
 import { 
   BookOpen, Calendar, Clock, GraduationCap, Menu, ChevronRight, 
   ClipboardList, X, Camera, User, MapPin, Send, CheckCircle, 
-  Megaphone, TrendingUp, Trophy, ArrowRight
+  Megaphone, TrendingUp, Trophy, ArrowRight, AlertCircle
 } from 'lucide-react';
-
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/effect-fade';
-import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
-
-const CACHE_KEY = 'dashboard_cache_v2';
-const CACHE_EXPIRY = 5 * 60 * 1000;
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [studentName, setStudentName] = useState("Siswa");
+  const [studentName, setStudentName] = useState("");
   const [studentId, setStudentId] = useState(null);
-  const [posters, setPosters] = useState([]);
-  const [tasks, setTasks] = useState([]);
-  const [todaySchedules, setTodaySchedules] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedNews, setSelectedNews] = useState(null);
   const [studentProfile, setStudentProfile] = useState(null);
+  const [todaySchedules, setTodaySchedules] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [raportSummary, setRaportSummary] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
   const [authReady, setAuthReady] = useState(false);
-
-  const [activeSurveys, setActiveSurveys] = useState([]);
-  const [filledSurveys, setFilledSurveys] = useState({});
-  const [showSurveyModal, setShowSurveyModal] = useState(false);
-  const [currentSurvey, setCurrentSurvey] = useState(null);
-  const [surveyAnswers, setSurveyAnswers] = useState({});
-  const [surveyLoading, setSurveyLoading] = useState(false);
-
-  const [raportSummary, setRaportSummary] = useState(null);
+  const [authError, setAuthError] = useState(false);
 
   useEffect(() => { 
     const h = () => setWindowWidth(window.innerWidth); 
@@ -62,45 +37,91 @@ const StudentDashboard = () => {
   
   const isMobile = windowWidth <= 768;
 
-  // AUTH STATE
+  // ➕ AUTH CHECK LEBIH AMAN
   useEffect(() => {
+    const storedId = localStorage.getItem('studentId');
+    const storedName = localStorage.getItem('studentName');
+    const isLoggedIn = localStorage.getItem('isSiswaLoggedIn') === 'true';
+    
+    if (isLoggedIn && storedId) {
+      setStudentId(storedId);
+      setStudentName(storedName || "Siswa");
+      setAuthReady(true);
+      return;
+    }
+    
+    // Fallback ke onAuthStateChanged
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        const storedName = localStorage.getItem('studentName');
-        const storedId = localStorage.getItem('studentId');
         setStudentName(storedName || user.email || "Siswa");
         setStudentId(storedId || user.uid);
+        localStorage.setItem('isSiswaLoggedIn', 'true');
+        localStorage.setItem('studentId', storedId || user.uid);
         setAuthReady(true);
       } else {
+        setAuthError(true);
         setLoading(false);
       }
     });
     return () => unsubscribe();
   }, []);
 
-  // CACHE HELPERS
-  const loadCache = () => {
-    try {
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Date.now() - parsed.timestamp < CACHE_EXPIRY) {
-          return parsed.data;
+  // ➕ FETCH DATA RINGAN
+  useEffect(() => {
+    if (!authReady || !studentId) return;
+    
+    const fetchLight = async () => {
+      try {
+        // Fetch paralel: profil + jadwal + raport (ringan)
+        const todayStr = new Date().toISOString().split('T')[0];
+        const periode = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+        
+        const [sSnap, schedSnap, raportSnap] = await Promise.all([
+          getDoc(doc(db, "students", studentId)).catch(() => null),
+          getDocs(query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr))).catch(() => ({ docs: [] })),
+          getDocs(query(collection(db, RAPORT_COLLECTIONS.FINAL), where("studentId", "==", studentId), where("periode", "==", periode), limit(1))).catch(() => ({ docs: [] }))
+        ]);
+        
+        if (sSnap?.exists()) setStudentProfile(sSnap.data());
+        
+        const fetchedSchedules = schedSnap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(sch => sch.students?.some(s => s.id === studentId || s === studentId))
+          .sort((a, b) => (a.start || '').localeCompare(b.start || ''))
+          .slice(0, 5);
+        setTodaySchedules(fetchedSchedules);
+        
+        if (!raportSnap.empty) {
+          const data = raportSnap.docs[0].data();
+          setRaportSummary({
+            nilaiAkhir: data.nilai_akhir,
+            komponenDipake: data.komponen_dipakai || [],
+            periode
+          });
         }
-      }
-    } catch (e) {}
-    return null;
-  };
+        
+        // Tugas ringan — ambil 3 terbaru
+        try {
+          const modulSnap = await getDocs(query(collection(db, "bimbel_modul"), orderBy("updatedAt", "desc"), limit(3)));
+          const fetchedTasks = modulSnap.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .filter(m => m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment'))
+            .slice(0, 3);
+          setTasks(fetchedTasks);
+        } catch (e) { setTasks([]); }
+        
+      } catch (err) { console.error('Error:', err); } 
+      finally { setLoading(false); }
+    };
+    
+    fetchLight();
+  }, [authReady, studentId]);
 
-  const saveCache = (data) => {
-    try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
-    } catch (e) {}
-  };
-
-  // QR SCANNER (tidak diubah)
+  // QR SCANNER
   useEffect(() => {
     let qr = null;
+    if (!isScanning || !studentId) return;
+    
     const start = async () => {
       try {
         qr = new Html5Qrcode("reader");
@@ -120,530 +141,164 @@ const StudentDashboard = () => {
                 alert(`✅ Absen: ${d.mapel}`);
                 stop();
               }
-            } catch (e) { console.warn('QR parse error:', e); }
+            } catch (e) {}
           }, 
-          (err) => console.warn('QR scan error:', err)
+          (err) => {}
         );
-      } catch (e) { console.warn('QR start error:', e); }
+      } catch (e) {}
     };
     const stop = async () => {
       if (qr && qr.isScanning) { try { await qr.stop(); qr.clear(); } catch (e) {} }
       setIsScanning(false);
     };
-    if (isScanning && studentId) start();
+    start();
     return () => { if (qr) stop(); };
-  }, [isScanning, studentId, studentName]);
+  }, [isScanning, studentId]);
 
-  const formatDateOnly = (ts) => { 
-    if (!ts) return "-"; 
-    try { const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' }); } 
-    catch { return "-"; }
-  };
-  
-  const isDeadlineSoon = (dl) => { 
-    if (!dl) return false; 
-    try { const d = dl.toDate ? dl.toDate() : new Date(dl); return (d - new Date()) / 36e5 > 0 && (d - new Date()) / 36e5 < 48; } 
-    catch { return false; }
-  };
-  
-  const isDeadlinePassed = (dl) => { 
-    if (!dl) return false; 
-    try { return (dl.toDate ? dl.toDate() : new Date(dl)) < new Date(); } 
-    catch { return false; }
-  };
-
-  const fetchSurveys = async (studentKelas, studentIdParam) => {
-    try {
-      const snap = await getDocs(query(collection(db, "surveys"), where("status", "==", "aktif")));
-      const allActive = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      const cocok = allActive.filter(s => {
-        const target = (s.targetType || '').toLowerCase().trim();
-        if (target === 'semua_siswa' || target === 'semua') return true;
-        if (target === 'jenjang' || target === 'per_jenjang') {
-          return (s.targetKelas || 'Semua') === 'Semua' || s.targetKelas === studentKelas;
-        }
-        return false;
-      });
-      const filled = {};
-      for (const survey of cocok) {
-        try {
-          const respSnap = await getDocs(query(collection(db, "survey_responses"), where("surveyId", "==", survey.id), where("userId", "==", studentIdParam)));
-          filled[survey.id] = !respSnap.empty;
-        } catch (e) { filled[survey.id] = false; }
-      }
-      return { surveys: cocok, filled };
-    } catch (error) { return { surveys: [], filled: {} }; }
-  };
-
-  // ➕ OPTIMASI: Fetch ringkasan raport dengan cache
-  const fetchRaportSummary = async (studentIdParam) => {
-    try {
-      const now = new Date();
-      const periode = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      
-      // Cek cache dulu
-      const cacheKey = `raport_summary_${studentIdParam}_${periode}`;
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Date.now() - parsed.timestamp < 10 * 60 * 1000) {
-          return parsed.data;
-        }
-      }
-      
-      const finalSnap = await getDocs(query(
-        collection(db, RAPORT_COLLECTIONS.FINAL),
-        where("studentId", "==", studentIdParam),
-        where("periode", "==", periode),
-        limit(1)
-      ));
-      
-      if (!finalSnap.empty) {
-        const data = finalSnap.docs[0].data();
-        const result = {
-          nilaiAkhir: data.nilai_akhir,
-          komponenDipake: data.komponen_dipakai || [],
-          periode
-        };
-        localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data: result }));
-        return result;
-      }
-      
-      return null;
-    } catch (e) { return null; }
-  };
-
-  // ➕ OPTIMASI: Fetch paralel
-  useEffect(() => {
-    if (!authReady || !studentId) return;
-    
-    const fetchAll = async () => {
-      const cache = loadCache();
-      if (cache) {
-        setPosters(cache.posters || []);
-        setTodaySchedules(cache.todaySchedules || []);
-        setTasks(cache.tasks || []);
-        setStudentProfile(cache.studentProfile || null);
-        setActiveSurveys(cache.activeSurveys || []);
-        setFilledSurveys(cache.filledSurveys || {});
-        setRaportSummary(cache.raportSummary || null);
-        setLoading(false);
-      }
-      
-      try {
-        const sSnap = await getDoc(doc(db, "students", studentId));
-        let curKat = "Semua", curKel = "Semua";
-        if (sSnap.exists()) { const d = sSnap.data(); curKat = d.kategori || "Semua"; curKel = d.kelasSekolah || "Semua"; }
-
-        // ➕ Fetch paralel
-        const [postersSnap, modulSnap, kuisSnap] = await Promise.all([
-          getDocs(query(collection(db, "student_contents"), orderBy("createdAt", "desc"))).catch(() => ({ docs: [] })),
-          getDocs(query(collection(db, "bimbel_modul"), where("targetKategori", "in", ["Semua", curKat]))).catch(() => ({ docs: [] })),
-          getDocs(query(collection(db, "bimbel_modul"), where("type", "==", "kuis_mandiri"))).catch(() => ({ docs: [] }))
-        ]);
-
-        const todayStr = new Date().toISOString().split('T')[0];
-        const schedSnap = await getDocs(query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr)))
-          .catch(() => ({ docs: [] }));
-
-        const fetchedPosters = postersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        
-        const fetchedSchedules = schedSnap.docs.map(d => ({ id: d.id, ...d.data() }))
-          .filter(sch => sch.students?.some(s => s.id === studentId || s === studentId))
-          .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
-
-        let allModuls = modulSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        allModuls = allModuls.filter(m => (m.targetKelas || "Semua") === "Semua" || m.targetKelas === curKel);
-        
-        let kuisMandiri = kuisSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        kuisMandiri = kuisMandiri.filter(m => (m.targetKelas || "Semua") === "Semua" || m.targetKelas === curKel);
-        
-        const combined = [...allModuls, ...kuisMandiri];
-        combined.sort((a, b) => {
-          const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
-          const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
-          return dateB - dateA;
-        });
-        const fetchedTasks = combined.filter(m => m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment')).slice(0, 5);
-
-        const { surveys: fetchedSurveys, filled: filledStatus } = await fetchSurveys(curKel, studentId);
-        const raportSummaryData = await fetchRaportSummary(studentId);
-
-        setPosters(fetchedPosters);
-        setTodaySchedules(fetchedSchedules);
-        setTasks(fetchedTasks);
-        setStudentProfile(sSnap.exists() ? sSnap.data() : null);
-        setActiveSurveys(fetchedSurveys);
-        setFilledSurveys(filledStatus);
-        setRaportSummary(raportSummaryData);
-
-        saveCache({
-          posters: fetchedPosters,
-          todaySchedules: fetchedSchedules,
-          tasks: fetchedTasks,
-          studentProfile: sSnap.exists() ? sSnap.data() : null,
-          activeSurveys: fetchedSurveys,
-          filledSurveys: filledStatus,
-          raportSummary: raportSummaryData
-        });
-
-      } catch (err) { console.error('Error fetch dashboard:', err); } 
-      finally { setLoading(false); }
-    };
-    
-    fetchAll();
-  }, [authReady, studentId]);
-
-  const getAssignmentDeadline = (modul) => {
-    const ab = modul.blocks?.find(b => b.type === 'assignment' && b.endTime);
-    return ab?.endTime || modul.deadlineTugas || modul.deadlineQuiz || null;
-  };
-
-  const openSurvey = (s) => { setCurrentSurvey(s); setSurveyAnswers({}); setShowSurveyModal(true); };
-  
-  const submitSurvey = async () => {
-    if (!currentSurvey) return;
-    const unanswered = currentSurvey.questions?.filter((_, i) => !surveyAnswers[i]) || [];
-    if (unanswered.length > 0) { alert(`❌ ${unanswered.length} pertanyaan belum dijawab!`); return; }
-    setSurveyLoading(true);
-    try {
-      await addDoc(collection(db, "survey_responses"), {
-        surveyId: currentSurvey.id, userId: studentId, userName: studentName,
-        answers: currentSurvey.questions.map((q, i) => ({ questionIndex: i, answer: surveyAnswers[i] || '' })),
-        submittedAt: serverTimestamp()
-      });
-      setFilledSurveys({ ...filledSurveys, [currentSurvey.id]: true });
-      setShowSurveyModal(false); setCurrentSurvey(null);
-      alert("✅ Terima kasih! Jawaban survei telah tersimpan.");
-    } catch (err) { alert("❌ Gagal mengirim survei: " + err.message); } 
-    finally { setSurveyLoading(false); }
-  };
-
-  // LOADING SKELETON
-  if (loading || !authReady) {
+  // Auth error
+  if (authError) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ width: 50, height: 50, border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
-          <p style={{ color: '#64748b', fontSize: 14 }}>Memuat dashboard...</p>
+      <div style={{ display:'flex', justifyContent:'center', alignItems:'center', height:'100vh', background:'#f8fafc', flexDirection:'column', gap:16 }}>
+        <AlertCircle size={48} color="#ef4444" />
+        <h3 style={{color:'#1e293b'}}>Sesi Berakhir</h3>
+        <p style={{color:'#64748b', fontSize:14}}>Silakan login kembali</p>
+        <button onClick={() => { localStorage.clear(); navigate('/login-siswa'); }} style={{ padding:'10px 20px', background:'#3b82f6', color:'white', border:'none', borderRadius:8, fontWeight:700, cursor:'pointer' }}>
+          Login
+        </button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div style={{ display:'flex', justifyContent:'center', alignItems:'center', height:'100vh', background:'#f8fafc' }}>
+        <div style={{ textAlign:'center' }}>
+          <div style={{ width:40, height:40, border:'3px solid #e2e8f0', borderTop:'3px solid #3b82f6', borderRadius:'50%', animation:'spin 0.8s linear infinite', margin:'0 auto 12px' }} />
+          <p style={{ color:'#64748b', fontSize:13 }}>Memuat...</p>
         </div>
       </div>
     );
   }
 
-  const renderDashboardHome = () => (
-    <div style={st.contentWrapper}>
-      {/* HEADER WELCOME */}
-      <div style={isMobile ? st.welcomeHeaderMobile : st.welcomeHeader}>
-        <div>
-          <h1 style={isMobile ? st.titleMobile : st.title}>Halo, {studentName}! 👋</h1>
-          <p style={st.subtitle}>
-            {studentProfile ? `${studentProfile.kategori || 'Reguler'} - Kelas ${studentProfile.kelasSekolah || '-'}` : "Memuat profil..."}
-          </p>
-        </div>
-        {!isMobile && (
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={() => setIsScanning(true)} style={st.btnScanHeader}>
+  return (
+    <div style={{ display:'flex', minHeight:'100vh', background:'#f8fafc' }}>
+      <SidebarSiswa activeMenu={activeMenu} setActiveMenu={setActiveMenu} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      {isMobile && <button onClick={() => setIsSidebarOpen(true)} style={{ position:'fixed', top:15, left:15, zIndex:900, background:'#1e293b', color:'white', border:'none', padding:10, borderRadius:10, cursor:'pointer' }}><Menu size={24} /></button>}
+      
+      <div style={{ marginLeft: isMobile ? 0 : 260, padding: isMobile ? '15px' : '30px', width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing:'border-box', paddingTop: isMobile ? 60 : 30 }}>
+        
+        {/* HEADER */}
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexDirection: isMobile ? 'column' : 'row', gap:10 }}>
+          <div>
+            <h1 style={{ margin:0, fontSize: isMobile ? 20 : 26, fontWeight:800, color:'#1e293b' }}>Halo, {studentName}! 👋</h1>
+            <p style={{ color:'#64748b', marginTop:4, fontSize:13 }}>
+              {studentProfile ? `${studentProfile.kategori || 'Reguler'} - Kelas ${studentProfile.kelasSekolah || '-'}` : ''}
+            </p>
+          </div>
+          {!isMobile && (
+            <button onClick={() => setIsScanning(true)} style={{ display:'flex', alignItems:'center', gap:8, background:'#3b82f6', color:'white', border:'none', padding:'10px 18px', borderRadius:100, fontWeight:'bold', cursor:'pointer' }}>
               <Camera size={18} /> SCAN ABSEN
             </button>
-            <div style={st.statusBadge}>
-              <GraduationCap size={18} />
-              <span>Siswa Aktif</span>
+          )}
+        </div>
+
+        {/* ➕ RINGKASAN RAPORT */}
+        {raportSummary && (
+          <div onClick={() => navigate('/siswa/smart-rapor')} style={{ background:'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius:16, padding:20, color:'white', cursor:'pointer', marginBottom:16, transition:'transform 0.2s' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <Trophy size={28} color="#fbbf24" />
+                <div>
+                  <h3 style={{ margin:0, fontSize:16, fontWeight:800 }}>📊 Ringkasan Raport</h3>
+                  <p style={{ margin:'4px 0 0', fontSize:11, opacity:0.85 }}>Periode {raportSummary.periode?.replace('-', ' / ')}</p>
+                </div>
+              </div>
+              <ArrowRight size={20} />
+            </div>
+            <div style={{ display:'flex', gap:20, marginTop:16, flexWrap:'wrap' }}>
+              <div style={{ textAlign:'center' }}>
+                <div style={{ fontSize:32, fontWeight:900 }}>{raportSummary.nilaiAkhir ?? '?'}</div>
+                <div style={{ fontSize:10, opacity:0.8 }}>Nilai Akhir</div>
+              </div>
+              {raportSummary.komponenDipake && (
+                <div style={{ textAlign:'center', borderLeft:'1px solid rgba(255,255,255,0.3)', paddingLeft:20 }}>
+                  <div style={{ fontSize:32, fontWeight:900 }}>{raportSummary.komponenDipake.length}/4</div>
+                  <div style={{ fontSize:10, opacity:0.8 }}>Komponen Dinilai</div>
+                </div>
+              )}
             </div>
           </div>
         )}
-      </div>
 
-      {/* CAROUSEL POSTER */}
-      {posters.length > 0 && (
-        <div style={{ ...st.carouselContainer, aspectRatio: isMobile ? '4/3' : '21/9' }}>
-          <Swiper modules={[Navigation, Pagination, Autoplay, EffectFade]} effect={'fade'} navigation={!isMobile} pagination={{ clickable: true }} autoplay={{ delay: 5000 }} loop={posters.length > 1} style={st.mySwiper}>
-            {posters.map((post) => (
-              <SwiperSlide key={post.id} onClick={() => setSelectedNews(post)}>
-                <div style={{ ...st.slideCard, backgroundImage: `url(${post.imageUrl})`, cursor: 'pointer' }}>
-                  <div style={st.slideOverlay}>
-                    <span style={{ background: '#e11d48', padding: '4px 10px', borderRadius: 12, fontSize: 9, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 8 }}>
-                      <Megaphone size={10} /> Info
-                    </span>
-                    <h2 style={isMobile ? st.slideTitleMobile : st.slideTitle}>{post.title}</h2>
-                    {!isMobile && <p style={st.slideDesc}>{post.desc || "Klik untuk baca"}</p>}
-                  </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
-      )}
-
-      {/* ➕ RINGKASAN RAPORT */}
-      {raportSummary && (
-        <div onClick={() => navigate('/siswa/smart-rapor')} style={{ 
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-          borderRadius: 16, padding: 20, color: 'white', cursor: 'pointer',
-          transition: 'transform 0.2s', border: '1px solid rgba(255,255,255,0.2)'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Trophy size={28} color="#fbbf24" />
-              <div>
-                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>📊 Ringkasan Raport</h3>
-                <p style={{ margin: '4px 0 0', fontSize: 11, opacity: 0.85 }}>Periode {raportSummary.periode?.replace('-', ' / ')}</p>
-              </div>
-            </div>
-            <ArrowRight size={20} />
-          </div>
-          <div style={{ display: 'flex', gap: 20, marginTop: 16, flexWrap: 'wrap' }}>
-            {raportSummary.nilaiAkhir !== null ? (
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 32, fontWeight: 900 }}>{raportSummary.nilaiAkhir}</div>
-                <div style={{ fontSize: 10, opacity: 0.8 }}>Nilai Akhir</div>
-              </div>
-            ) : (
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 13, fontWeight: 600, opacity: 0.9 }}>Belum tersedia</div>
-                <div style={{ fontSize: 10, opacity: 0.7 }}>Generate dulu ya</div>
-              </div>
-            )}
-            {raportSummary.komponenDipake && (
-              <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: 20 }}>
-                <div style={{ fontSize: 32, fontWeight: 900 }}>{raportSummary.komponenDipake.length}/4</div>
-                <div style={{ fontSize: 10, opacity: 0.8 }}>Komponen Dinilai</div>
-              </div>
-            )}
-          </div>
-          <div style={{ marginTop: 12, fontSize: 10, opacity: 0.7, textAlign: 'right' }}>Klik untuk lihat detail →</div>
-        </div>
-      )}
-
-      {/* SECTION SURVEI */}
-      {activeSurveys.length > 0 && (
-        <div style={{ background: 'white', padding: 20, borderRadius: 15, border: '1px solid #e2e8f0', borderTop: '4px solid #3b82f6' }}>
-          <h3 style={{ margin: '0 0 15px', fontSize: 16, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <ClipboardList size={20} color="#3b82f6" /> Survei yang Perlu Diisi
-            {activeSurveys.filter(s => !filledSurveys[s.id]).length > 0 && (
-              <span style={{ background: '#ef4444', color: 'white', padding: '2px 8px', borderRadius: 20, fontSize: 10 }}>
-                {activeSurveys.filter(s => !filledSurveys[s.id]).length} pending
-              </span>
-            )}
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {activeSurveys.map(survey => {
-              const done = filledSurveys[survey.id];
-              return (
-                <div key={survey.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 14, background: done ? '#f0fdf4' : survey.isRequired ? '#fef2f2' : '#fffbeb', borderRadius: 12, border: `1px solid ${done ? '#bbf7d0' : survey.isRequired ? '#fecaca' : '#fde68a'}`, flexWrap: 'wrap', gap: 10 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-                      {done ? <CheckCircle size={16} color="#10b981" /> : <Send size={16} color={survey.isRequired ? '#ef4444' : '#f59e0b'} />}
-                      <strong style={{ fontSize: 14 }}>{survey.title}</strong>
-                      {survey.isRequired && !done && <span style={{ background: '#fee2e2', color: '#ef4444', padding: '2px 8px', borderRadius: 6, fontSize: 9, fontWeight: 800 }}>WAJIB</span>}
-                    </div>
-                    <div style={{ fontSize: 11, color: '#64748b' }}>{survey.questions?.length || 0} pertanyaan</div>
-                  </div>
-                  {done ? <span style={{ color: '#10b981', fontWeight: 700, fontSize: 12 }}>✅ Terisi</span> : (
-                    <button onClick={() => openSurvey(survey)} style={{ background: survey.isRequired ? '#ef4444' : '#f59e0b', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Send size={14} /> Isi
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* MAIN GRID */}
-      <div style={isMobile ? st.mainGridMobile : st.mainGrid}>
-        <div style={st.leftColumn}>
+        {/* GRID UTAMA */}
+        <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:16 }}>
+          
           {/* JADWAL HARI INI */}
-          <section style={st.sectionCard}>
-            <h3 style={st.sectionTitle}><Calendar size={20} color="#3498db" /> Jadwal Hari Ini</h3>
-            {todaySchedules.length === 0 ? <div style={st.emptyState}>📭 Tidak ada jadwal.</div> : (
-              todaySchedules.map((sch, i) => (
-                <div key={i} style={st.schItem}>
-                  <div style={st.schTime}><b>{sch.start}</b><br /><span style={{ fontSize: 10 }}>{sch.end}</span></div>
-                  <div style={st.schInfo}><b>{sch.title || "Kelas"}</b><div style={{ fontSize: 11, color: '#64748b' }}><MapPin size={10} /> {sch.planet || 'Ruangan'} • <User size={10} /> {sch.booker || 'Guru'}</div></div>
-                </div>
-              ))
-            )}
-          </section>
-
-          {/* TUGAS & KUIS */}
-          <section style={st.sectionCard}>
-            <div style={st.cardHeader}>
-              <h3 style={st.sectionTitle}><ClipboardList size={20} color="#9b59b6" /> Tugas & Kuis</h3>
-              <button onClick={() => setActiveMenu('materi')} style={st.btnViewAll}>Lihat Semua <ChevronRight size={14} /></button>
-            </div>
-            {tasks.length === 0 ? <div style={st.emptyState}>📭 Belum ada tugas.<br /><span style={{ fontSize: 10, color: '#94a3b8' }}>Tugas akan muncul setelah guru membuatnya.</span></div> : (
-              tasks.map((task, i) => {
-                const dl = getAssignmentDeadline(task);
-                const soon = isDeadlineSoon(dl);
-                const passed = isDeadlinePassed(dl);
-                return (
-                  <div key={i} style={{ ...st.taskItem, borderLeftColor: passed ? '#ef4444' : soon ? '#f59e0b' : '#9b59b6' }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700 }}>{task.title}</div>
-                      {dl && <div style={{ fontSize: 11, marginTop: 4 }}><Clock size={12} /> {passed ? '⛔ Terlewat ' : soon ? '⚠️ Segera ' : '📅 '}{formatDateOnly(dl)}</div>}
-                    </div>
-                    <button onClick={() => { localStorage.setItem('selectedModuleId', task.id); setActiveMenu('materi'); }} style={st.btnTaskBuka}>Buka</button>
-                  </div>
-                );
-              })
-            )}
-          </section>
-        </div>
-
-        <div style={st.rightColumn}>
-          <section style={st.sectionCard}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 15 }}>
-              <div style={st.avatar}>{studentName?.charAt(0) || 'S'}</div>
-              <div><b>{studentName}</b><p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>{studentProfile?.kelasSekolah || '-'} • {studentProfile?.kategori || 'Reguler'}</p></div>
-            </div>
-            <button onClick={() => setActiveMenu('materi')} style={st.btnAccess}><BookOpen size={16} /> Buka Materi Belajar</button>
-          </section>
-
-          <section style={st.sectionCard}>
-            <h3 style={{ ...st.sectionTitle, marginBottom: 10 }}><TrendingUp size={20} color="#10b981" /> Ringkasan</h3>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-              <div style={{ textAlign: 'center', flex: 1 }}><div style={{ fontSize: 20, fontWeight: 800, color: '#3b82f6' }}>{todaySchedules.length}</div><div style={{ fontSize: 10, color: '#64748b' }}>Jadwal</div></div>
-              <div style={{ textAlign: 'center', flex: 1 }}><div style={{ fontSize: 20, fontWeight: 800, color: '#9b59b6' }}>{tasks.length}</div><div style={{ fontSize: 10, color: '#64748b' }}>Tugas</div></div>
-              <div style={{ textAlign: 'center', flex: 1 }}><div style={{ fontSize: 20, fontWeight: 800, color: '#ef4444' }}>{activeSurveys.filter(s => !filledSurveys[s.id]).length}</div><div style={{ fontSize: 10, color: '#64748b' }}>Survei</div></div>
-            </div>
-          </section>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderContent = () => {
-    switch (activeMenu) {
-      case 'dashboard': return renderDashboardHome();
-      case 'keuangan': return <StudentFinanceSiswa />;
-      case 'rapor': return <StudentGrades />;
-      case 'jadwal': return <StudentSchedule />;
-      case 'absensi': return <StudentAttendanceSiswa />;
-      case 'materi': return <StudentElearning />;
-      default: return renderDashboardHome();
-    }
-  };
-
-  return (
-    <div style={st.mainContainer}>
-      <SidebarSiswa activeMenu={activeMenu} setActiveMenu={(menu) => { setActiveMenu(menu); if (isMobile) setIsSidebarOpen(false); }} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-      {isMobile && <button onClick={() => setIsSidebarOpen(true)} style={st.mobileMenuBtn}><Menu size={24} /></button>}
-      <div style={{ ...st.contentArea, marginLeft: isMobile ? '0' : '260px', width: isMobile ? '100%' : 'calc(100% - 260px)', padding: isMobile ? '15px' : '30px', paddingTop: isMobile ? '70px' : '30px' }}>
-        {renderContent()}
-      </div>
-      {isMobile && isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} style={st.overlay} />}
-
-      {/* MODAL BERITA */}
-      {selectedNews && (
-        <div style={st.modalOverlay} onClick={() => setSelectedNews(null)}>
-          <div style={{ ...st.modalContent, width: isMobile ? '90%' : '600px' }} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setSelectedNews(null)} style={st.btnCloseModal}><X size={20} /></button>
-            <img src={selectedNews.imageUrl} style={st.modalImg} alt="" />
-            <div style={{ padding: 20 }}><h2>{selectedNews.title}</h2><p>{selectedNews.content || selectedNews.desc}</p></div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL SCANNER */}
-      {isScanning && (
-        <div style={st.modalOverlay} onClick={() => setIsScanning(false)}>
-          <div style={st.qrModalContent} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setIsScanning(false)} style={st.btnCloseModal}><X size={20} /></button>
-            <h3>Scan QR Code Absensi</h3>
-            <div id="reader" style={{ width: '100%', borderRadius: 15, overflow: 'hidden' }}></div>
-            <p style={{ fontSize: 11, color: '#64748b', marginTop: 12 }}>Arahkan kamera ke QR Code yang ditampilkan guru</p>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL SURVEI */}
-      {showSurveyModal && currentSurvey && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <div style={{ background: 'white', borderRadius: 20, padding: 30, width: '100%', maxWidth: 550, maxHeight: '85vh', overflowY: 'auto', position: 'relative' }}>
-            <button onClick={() => setShowSurveyModal(false)} style={{ position: 'sticky', top: 0, right: 0, float: 'right', background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer' }}><X size={18} /></button>
-            <div style={{ textAlign: 'center', marginBottom: 20, clear: 'both' }}>
-              <span style={{ fontSize: 40 }}>📋</span>
-              <h2 style={{ margin: '10px 0 5px', fontSize: 20 }}>{currentSurvey.title}</h2>
-              {currentSurvey.isRequired && <span style={{ display: 'inline-block', background: '#fee2e2', color: '#ef4444', padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>⚠️ Wajib diisi</span>}
-            </div>
-            {currentSurvey.questions?.map((q, i) => (
-              <div key={i} style={{ marginBottom: 20 }}>
-                <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>{i + 1}. {q.question}</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {(q.options || []).filter(o => o && o.trim()).map((opt, oi) => (
-                    <label key={oi} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, cursor: 'pointer', background: surveyAnswers[i] === opt ? '#eef2ff' : '#f8fafc', border: `2px solid ${surveyAnswers[i] === opt ? '#3b82f6' : '#e2e8f0'}` }}>
-                      <input type="radio" name={`sq-${i}`} checked={surveyAnswers[i] === opt} onChange={() => setSurveyAnswers({ ...surveyAnswers, [i]: opt })} style={{ width: 18, height: 18 }} />
-                      <span style={{ fontSize: 13 }}>{opt}</span>
-                    </label>
-                  ))}
+          <div style={{ background:'white', padding:18, borderRadius:14, border:'1px solid #e2e8f0' }}>
+            <h3 style={{ margin:'0 0 14px', fontSize:15, fontWeight:700, display:'flex', alignItems:'center', gap:8 }}><Calendar size={18} color="#3b82f6" /> Jadwal Hari Ini</h3>
+            {todaySchedules.length === 0 ? (
+              <div style={{ textAlign:'center', padding:20, color:'#94a3b8', fontSize:12 }}>📭 Tidak ada jadwal</div>
+            ) : todaySchedules.map((sch, i) => (
+              <div key={i} style={{ display:'flex', gap:10, padding:'10px 0', borderBottom:'1px solid #f1f5f9' }}>
+                <div style={{ minWidth:50, textAlign:'center', fontWeight:700, fontSize:12 }}>{sch.start}</div>
+                <div>
+                  <div style={{ fontWeight:700, fontSize:13 }}>{sch.title || "Kelas"}</div>
+                  <div style={{ fontSize:10, color:'#64748b' }}><MapPin size={9} /> {sch.planet || '-'} • <User size={9} /> {sch.booker || '-'}</div>
                 </div>
               </div>
             ))}
-            <button onClick={submitSurvey} disabled={surveyLoading} style={{ width: '100%', padding: 14, background: '#3b82f6', color: 'white', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 15, cursor: surveyLoading ? 'not-allowed' : 'pointer', marginTop: 10, opacity: surveyLoading ? 0.7 : 1 }}>
-              {surveyLoading ? 'Mengirim...' : 'Kirim Jawaban'}
+          </div>
+
+          {/* TUGAS TERBARU */}
+          <div style={{ background:'white', padding:18, borderRadius:14, border:'1px solid #e2e8f0' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:14 }}>
+              <h3 style={{ margin:0, fontSize:15, fontWeight:700, display:'flex', alignItems:'center', gap:8 }}><ClipboardList size={18} color="#9b59b6" /> Tugas & Kuis</h3>
+              <button onClick={() => { localStorage.setItem('selectedModuleId', tasks[0]?.id || ''); setActiveMenu('materi'); }} style={{ background:'none', border:'none', color:'#3b82f6', fontWeight:600, fontSize:11, cursor:'pointer' }}>Lihat Semua →</button>
+            </div>
+            {tasks.length === 0 ? (
+              <div style={{ textAlign:'center', padding:20, color:'#94a3b8', fontSize:12 }}>📭 Belum ada tugas</div>
+            ) : tasks.map((task, i) => (
+              <div key={i} style={{ padding:10, background:'#f8fafc', borderRadius:8, marginBottom:6, borderLeft:'3px solid #9b59b6', cursor:'pointer' }} onClick={() => { localStorage.setItem('selectedModuleId', task.id); setActiveMenu('materi'); }}>
+                <div style={{ fontWeight:700, fontSize:13 }}>{task.title}</div>
+                <div style={{ fontSize:10, color:'#64748b' }}>
+                  {task.quizData?.length > 0 ? `📝 ${task.quizData.length} soal` : '📓 Tugas'} • {task.subject || 'Umum'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* PROFIL */}
+        <div style={{ background:'white', padding:18, borderRadius:14, border:'1px solid #e2e8f0', marginTop:16 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+            <div style={{ width:45, height:45, borderRadius:'50%', background:'#3b82f6', color:'white', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:'bold', fontSize:18 }}>{studentName?.charAt(0) || 'S'}</div>
+            <div>
+              <div style={{ fontWeight:'bold', fontSize:14 }}>{studentName}</div>
+              <div style={{ fontSize:11, color:'#64748b' }}>{studentProfile?.kelasSekolah || '-'} • {studentProfile?.kategori || 'Reguler'}</div>
+            </div>
+            <button onClick={() => navigate('/siswa/materi')} style={{ marginLeft:'auto', padding:'8px 14px', background:'#3b82f6', color:'white', border:'none', borderRadius:8, fontWeight:600, fontSize:11, cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}>
+              <BookOpen size={14} /> Materi Belajar
             </button>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* FAB MOBILE */}
-      {isMobile && <button onClick={() => setIsScanning(true)} style={st.fabQR}><Camera size={22} /></button>}
+      {isMobile && isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:998 }} />}
+
+      {/* QR SCANNER MODAL */}
+      {isScanning && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.8)', zIndex:2000, display:'flex', justifyContent:'center', alignItems:'center', padding:16 }}>
+          <div style={{ background:'white', padding:20, borderRadius:20, width:'90%', maxWidth:400, textAlign:'center' }}>
+            <button onClick={() => setIsScanning(false)} style={{ position:'absolute', top:10, right:10, background:'rgba(0,0,0,0.5)', color:'white', border:'none', borderRadius:'50%', width:30, height:30, cursor:'pointer' }}><X size={16}/></button>
+            <h3>Scan QR Code</h3>
+            <div id="reader" style={{ width:'100%', borderRadius:12, overflow:'hidden' }}></div>
+          </div>
+        </div>
+      )}
+      
+      {isMobile && <button onClick={() => setIsScanning(true)} style={{ position:'fixed', bottom:20, right:20, width:56, height:56, borderRadius:'50%', background:'#3b82f6', color:'white', border:'none', boxShadow:'0 5px 15px rgba(0,0,0,0.3)', zIndex:900, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><Camera size={22} /></button>}
     </div>
   );
 };
-
-const st = {
-  mainContainer: { display: 'flex', minHeight: '100vh', background: '#f8fafc', position: 'relative' },
-  contentArea: { transition: 'margin 0.3s ease', boxSizing: 'border-box' },
-  contentWrapper: { display: 'flex', flexDirection: 'column', gap: 20 },
-  loadingScreen: { flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginLeft: 260 },
-  spinner: { width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: 10 },
-  welcomeHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  welcomeHeaderMobile: { textAlign: 'left', marginBottom: 10 },
-  title: { fontSize: 28, fontWeight: 800, color: '#1e293b', margin: 0 },
-  titleMobile: { fontSize: 22, fontWeight: 800, color: '#1e293b', margin: 0 },
-  subtitle: { color: '#64748b', marginTop: 5, fontSize: 14 },
-  statusBadge: { display: 'flex', alignItems: 'center', gap: 8, background: '#dcfce7', color: '#166534', padding: '8px 16px', borderRadius: 100, fontWeight: 'bold' },
-  btnScanHeader: { display: 'flex', alignItems: 'center', gap: 8, background: '#3498db', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 100, fontWeight: 'bold', cursor: 'pointer' },
-  mobileMenuBtn: { position: 'fixed', top: 15, left: 15, zIndex: 900, background: '#1e293b', color: 'white', border: 'none', padding: 10, borderRadius: 10, cursor: 'pointer' },
-  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 998 },
-  carouselContainer: { borderRadius: 15, overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', width: '100%' },
-  mySwiper: { width: '100%', height: '100%' },
-  slideCard: { width: '100%', height: '100%', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'flex-end' },
-  slideOverlay: { width: '100%', background: 'linear-gradient(transparent, rgba(0,0,0,0.8))', padding: 20, color: 'white' },
-  slideTitle: { fontSize: 24, fontWeight: 'bold', margin: 0 },
-  slideTitleMobile: { fontSize: 16, fontWeight: 'bold', margin: 0 },
-  slideDesc: { fontSize: 14, opacity: 0.8, marginTop: 5 },
-  mainGrid: { display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 25 },
-  mainGridMobile: { display: 'flex', flexDirection: 'column', gap: 20 },
-  leftColumn: { display: 'flex', flexDirection: 'column', gap: 20 },
-  rightColumn: { display: 'flex', flexDirection: 'column', gap: 20 },
-  sectionCard: { background: 'white', padding: 20, borderRadius: 15, border: '1px solid #e2e8f0' },
-  cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
-  sectionTitle: { fontSize: 16, fontWeight: 700, color: '#1e293b', margin: '0 0 15px 0', display: 'flex', alignItems: 'center', gap: 8 },
-  btnViewAll: { background: 'none', border: 'none', color: '#3b82f6', fontWeight: 600, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 },
-  schItem: { display: 'flex', alignItems: 'stretch', gap: 12, padding: '12px 0', borderBottom: '1px solid #f1f5f9' },
-  schTime: { minWidth: 55, fontSize: 13, textAlign: 'center' },
-  schInfo: { flex: 1 },
-  taskItem: { display: 'flex', alignItems: 'center', padding: 12, background: '#f8fafc', borderRadius: 10, borderLeft: '4px solid', marginBottom: 8 },
-  btnTaskBuka: { background: '#9b59b6', color: 'white', border: 'none', padding: '6px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
-  avatar: { width: 45, height: 45, borderRadius: '50%', background: '#3b82f6', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: 18, flexShrink: 0 },
-  btnAccess: { width: '100%', padding: 12, background: '#3b82f6', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10 },
-  emptyState: { fontSize: 12, color: '#94a3b8', textAlign: 'center', padding: 15 },
-  modalOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.7)', zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center', backdropFilter: 'blur(5px)' },
-  modalContent: { background: 'white', borderRadius: 15, overflow: 'hidden', position: 'relative' },
-  modalImg: { width: '100%', maxHeight: 250, objectFit: 'cover' },
-  btnCloseModal: { position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: 30, height: 30, cursor: 'pointer', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  qrModalContent: { background: 'white', padding: '30px 20px', borderRadius: 25, width: '90%', maxWidth: 400, textAlign: 'center', position: 'relative' },
-  fabQR: { position: 'fixed', bottom: 20, right: 20, width: 60, height: 60, borderRadius: '50%', background: '#3498db', color: 'white', border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.3)', zIndex: 900, cursor: 'pointer' },
-};
-
-if (typeof document !== 'undefined') {
-  const style = document.createElement('style');
-  style.textContent = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
-  document.head.appendChild(style);
-}
 
 export default StudentDashboard;
