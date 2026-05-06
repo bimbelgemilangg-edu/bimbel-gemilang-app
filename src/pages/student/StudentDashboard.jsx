@@ -15,8 +15,7 @@ import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
 
 import { 
   BookOpen, Calendar, Clock, GraduationCap, Menu, ChevronRight, 
-  ClipboardList, X, Camera, User, MapPin, Send, CheckCircle, 
-  TrendingUp, Trophy, ArrowRight
+  X, Camera, User, MapPin, TrendingUp, Trophy, ArrowRight
 } from 'lucide-react';
 
 const CACHE_KEY = 'dashboard_cache';
@@ -35,14 +34,6 @@ const StudentDashboard = () => {
   const [studentProfile, setStudentProfile] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [authReady, setAuthReady] = useState(false);
-
-  const [activeSurveys, setActiveSurveys] = useState([]);
-  const [filledSurveys, setFilledSurveys] = useState({});
-  const [showSurveyModal, setShowSurveyModal] = useState(false);
-  const [currentSurvey, setCurrentSurvey] = useState(null);
-  const [surveyAnswers, setSurveyAnswers] = useState({});
-  const [surveyLoading, setSurveyLoading] = useState(false);
-
   const [raportSummary, setRaportSummary] = useState(null);
 
   useEffect(() => { 
@@ -132,35 +123,6 @@ const StudentDashboard = () => {
     catch { return false; }
   };
 
-  // 🔄 SURVEI: 2 query parallel (cepat)
-  const fetchSurveys = async (studentKelas, studentIdParam) => {
-    try {
-      const [surveiSnap, respSnap] = await Promise.all([
-        getDocs(query(collection(db, "surveys"), where("status", "==", "aktif"))),
-        getDocs(query(collection(db, "survey_responses"), where("userId", "==", studentIdParam)))
-      ]);
-      
-      const allActive = surveiSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      const myResponses = respSnap.docs.map(d => d.data());
-      
-      const cocok = allActive.filter(s => {
-        const target = (s.targetType || '').toLowerCase().trim();
-        if (target === 'semua_siswa' || target === 'semua') return true;
-        if (target === 'jenjang' || target === 'per_jenjang') {
-          return (s.targetKelas || 'Semua') === 'Semua' || s.targetKelas === studentKelas;
-        }
-        return false;
-      });
-      
-      const filled = {};
-      cocok.forEach(survey => {
-        filled[survey.id] = myResponses.some(r => r.surveyId === survey.id);
-      });
-      
-      return { surveys: cocok, filled };
-    } catch (error) { return { surveys: [], filled: {} }; }
-  };
-
   const fetchRaportSummary = async (studentIdParam) => {
     try {
       const now = new Date();
@@ -188,8 +150,6 @@ const StudentDashboard = () => {
         setTodaySchedules(cache.todaySchedules || []);
         setTasks(cache.tasks || []);
         setStudentProfile(cache.studentProfile || null);
-        setActiveSurveys(cache.activeSurveys || []);
-        setFilledSurveys(cache.filledSurveys || {});
         setRaportSummary(cache.raportSummary || null);
         setLoading(false);
       }
@@ -221,17 +181,13 @@ const StudentDashboard = () => {
           fetchedTasks = combined.filter(m => m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment')).slice(0, 5);
         } catch (e) {}
 
-        const { surveys: fetchedSurveys, filled: filledStatus } = await fetchSurveys(curKel, studentId);
-
         fetchRaportSummary(studentId).then(data => { if (data) setRaportSummary(data); });
 
         setTodaySchedules(fetchedSchedules);
         setTasks(fetchedTasks);
         setStudentProfile(sSnap.exists() ? sSnap.data() : null);
-        setActiveSurveys(fetchedSurveys);
-        setFilledSurveys(filledStatus);
 
-        saveCache({ todaySchedules: fetchedSchedules, tasks: fetchedTasks, studentProfile: sSnap.exists() ? sSnap.data() : null, activeSurveys: fetchedSurveys, filledSurveys: filledStatus, raportSummary: null });
+        saveCache({ todaySchedules: fetchedSchedules, tasks: fetchedTasks, studentProfile: sSnap.exists() ? sSnap.data() : null, raportSummary: null });
       } catch (err) { console.error('Error fetch dashboard:', err); } 
       finally { setLoading(false); }
     };
@@ -242,26 +198,6 @@ const StudentDashboard = () => {
   const getAssignmentDeadline = (modul) => {
     const ab = modul.blocks?.find(b => b.type === 'assignment' && b.endTime);
     return ab?.endTime || modul.deadlineTugas || modul.deadlineQuiz || null;
-  };
-
-  const openSurvey = (s) => { setCurrentSurvey(s); setSurveyAnswers({}); setShowSurveyModal(true); };
-  
-  const submitSurvey = async () => {
-    if (!currentSurvey) return;
-    const unanswered = currentSurvey.questions?.filter((_, i) => !surveyAnswers[i]) || [];
-    if (unanswered.length > 0) { alert(`❌ ${unanswered.length} pertanyaan belum dijawab!`); return; }
-    setSurveyLoading(true);
-    try {
-      await addDoc(collection(db, "survey_responses"), {
-        surveyId: currentSurvey.id, userId: studentId, userName: studentName,
-        answers: currentSurvey.questions.map((q, i) => ({ questionIndex: i, answer: surveyAnswers[i] || '' })),
-        submittedAt: serverTimestamp()
-      });
-      setFilledSurveys({ ...filledSurveys, [currentSurvey.id]: true });
-      setShowSurveyModal(false); setCurrentSurvey(null);
-      alert("✅ Terima kasih!");
-    } catch (err) { alert("❌ Gagal: " + err.message); } 
-    finally { setSurveyLoading(false); }
   };
 
   if (loading || !authReady) {
@@ -303,27 +239,11 @@ const StudentDashboard = () => {
         </div>
       )}
 
-      {/* SURVEI */}
-      {activeSurveys.length > 0 && (
-        <div style={{ background: 'white', padding: 20, borderRadius: 15, border: '1px solid #e2e8f0', borderTop: '4px solid #3b82f6' }}>
-          <h3 style={{ margin: '0 0 15px', fontSize: 16, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><ClipboardList size={20} color="#3b82f6" /> Survei {activeSurveys.filter(s => !filledSurveys[s.id]).length > 0 && <span style={{ background: '#ef4444', color: 'white', padding: '2px 8px', borderRadius: 20, fontSize: 10 }}>{activeSurveys.filter(s => !filledSurveys[s.id]).length}</span>}</h3>
-          {activeSurveys.map(survey => {
-            const done = filledSurveys[survey.id];
-            return (
-              <div key={survey.id} style={{ display: 'flex', justifyContent: 'space-between', padding: 12, background: done ? '#f0fdf4' : '#fffbeb', borderRadius: 10, marginBottom: 8 }}>
-                <div><strong>{survey.title}</strong>{survey.isRequired && !done && <span style={{ background: '#fee2e2', color: '#ef4444', padding: '2px 6px', borderRadius: 4, fontSize: 9, marginLeft: 8 }}>WAJIB</span>}</div>
-                {done ? <span style={{ color: '#10b981', fontWeight: 700, fontSize: 12 }}>✅</span> : <button onClick={() => openSurvey(survey)} style={{ background: '#f59e0b', color: 'white', border: 'none', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>Isi</button>}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
       {/* MAIN GRID */}
       <div style={isMobile ? st.mainGridMobile : st.mainGrid}>
         <div style={st.leftColumn}>
           <section style={st.sectionCard}><h3 style={st.sectionTitle}><Calendar size={20} color="#3498db" /> Jadwal Hari Ini</h3>{todaySchedules.length === 0 ? <div style={st.emptyState}>📭 Tidak ada jadwal.</div> : todaySchedules.map((sch, i) => <div key={i} style={st.schItem}><div style={st.schTime}><b>{sch.start}</b><br /><span style={{ fontSize: 10 }}>{sch.end}</span></div><div style={st.schInfo}><b>{sch.title || "Kelas"}</b><div style={{ fontSize: 11, color: '#64748b' }}><MapPin size={10} /> {sch.planet || 'Ruangan'} • <User size={10} /> {sch.booker || 'Guru'}</div></div></div>)}</section>
-          <section style={st.sectionCard}><div style={st.cardHeader}><h3 style={st.sectionTitle}><ClipboardList size={20} color="#9b59b6" /> Tugas & Kuis</h3><button onClick={() => setActiveMenu('materi')} style={st.btnViewAll}>Lihat Semua <ChevronRight size={14} /></button></div>{tasks.length === 0 ? <div style={st.emptyState}>📭 Belum ada tugas.</div> : tasks.map((task, i) => { const dl = getAssignmentDeadline(task); return <div key={i} style={{ ...st.taskItem, borderLeftColor: isDeadlinePassed(dl) ? '#ef4444' : isDeadlineSoon(dl) ? '#f59e0b' : '#9b59b6' }}><div style={{ flex: 1 }}><div style={{ fontSize: 14, fontWeight: 700 }}>{task.title}</div>{dl && <div style={{ fontSize: 11, marginTop: 4 }}><Clock size={12} /> {formatDateOnly(dl)}</div>}</div><button onClick={() => { localStorage.setItem('selectedModuleId', task.id); setActiveMenu('materi'); }} style={st.btnTaskBuka}>Buka</button></div>; })}</section>
+          <section style={st.sectionCard}><div style={st.cardHeader}><h3 style={st.sectionTitle}><BookOpen size={20} color="#9b59b6" /> Tugas & Kuis</h3><button onClick={() => setActiveMenu('materi')} style={st.btnViewAll}>Lihat Semua <ChevronRight size={14} /></button></div>{tasks.length === 0 ? <div style={st.emptyState}>📭 Belum ada tugas.</div> : tasks.map((task, i) => { const dl = getAssignmentDeadline(task); return <div key={i} style={{ ...st.taskItem, borderLeftColor: isDeadlinePassed(dl) ? '#ef4444' : isDeadlineSoon(dl) ? '#f59e0b' : '#9b59b6' }}><div style={{ flex: 1 }}><div style={{ fontSize: 14, fontWeight: 700 }}>{task.title}</div>{dl && <div style={{ fontSize: 11, marginTop: 4 }}><Clock size={12} /> {formatDateOnly(dl)}</div>}</div><button onClick={() => { localStorage.setItem('selectedModuleId', task.id); setActiveMenu('materi'); }} style={st.btnTaskBuka}>Buka</button></div>; })}</section>
         </div>
         <div style={st.rightColumn}>
           <section style={st.sectionCard}><div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 15 }}><div style={st.avatar}>{studentName?.charAt(0) || 'S'}</div><div><b>{studentName}</b><p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>{studentProfile?.kelasSekolah || '-'} • {studentProfile?.kategori || 'Reguler'}</p></div></div><button onClick={() => setActiveMenu('materi')} style={st.btnAccess}><BookOpen size={16} /> Buka Materi Belajar</button></section>
@@ -353,25 +273,6 @@ const StudentDashboard = () => {
       {isMobile && isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} style={st.overlay} />}
 
       {isScanning && (<div style={st.modalOverlay} onClick={() => setIsScanning(false)}><div style={st.qrModalContent} onClick={e => e.stopPropagation()}><button onClick={() => setIsScanning(false)} style={st.btnCloseModal}><X size={20} /></button><h3>Scan QR</h3><div id="reader" style={{ width: '100%', borderRadius: 15 }}></div></div></div>)}
-
-      {showSurveyModal && currentSurvey && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <div style={{ background: 'white', borderRadius: 20, padding: 24, width: '100%', maxWidth: 500, maxHeight: '85vh', overflowY: 'auto' }}>
-            <button onClick={() => setShowSurveyModal(false)} style={{ float: 'right', background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer' }}><X size={18} /></button>
-            <h2 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 800 }}>{currentSurvey.title}</h2>
-            {currentSurvey.questions?.map((q, i) => (
-              <div key={i} style={{ marginTop: 16 }}><p style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>{i+1}. {q.question}</p>
-                {(q.options || []).filter(o => o).map((opt, oi) => (
-                  <label key={oi} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, cursor: 'pointer', background: surveyAnswers[i] === opt ? '#eef2ff' : '#f8fafc', border: `2px solid ${surveyAnswers[i] === opt ? '#3b82f6' : '#e2e8f0'}`, marginBottom: 4, fontSize: 12 }}>
-                    <input type="radio" name={`sq-${i}`} checked={surveyAnswers[i] === opt} onChange={() => setSurveyAnswers({...surveyAnswers, [i]: opt})} />{opt}
-                  </label>
-                ))}
-              </div>
-            ))}
-            <button onClick={submitSurvey} disabled={surveyLoading} style={{ width: '100%', marginTop: 16, padding: 12, background: '#3b82f6', color: 'white', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>{surveyLoading ? 'Mengirim...' : 'Kirim'}</button>
-          </div>
-        </div>
-      )}
 
       {isMobile && <button onClick={() => setIsScanning(true)} style={st.fabQR}><Camera size={22} /></button>}
     </div>
