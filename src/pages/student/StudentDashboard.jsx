@@ -16,15 +16,8 @@ import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
 import { 
   BookOpen, Calendar, Clock, GraduationCap, Menu, ChevronRight, 
   ClipboardList, X, Camera, User, MapPin, Send, CheckCircle, 
-  Megaphone, TrendingUp, Trophy, ArrowRight
+  TrendingUp, Trophy, ArrowRight
 } from 'lucide-react';
-
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/effect-fade';
-import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
 
 const CACHE_KEY = 'dashboard_cache';
 const CACHE_EXPIRY = 30 * 60 * 1000;
@@ -36,20 +29,20 @@ const StudentDashboard = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [studentName, setStudentName] = useState("Siswa");
   const [studentId, setStudentId] = useState(null);
-  const [posters, setPosters] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [todaySchedules, setTodaySchedules] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedNews, setSelectedNews] = useState(null);
   const [studentProfile, setStudentProfile] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [authReady, setAuthReady] = useState(false);
+
   const [activeSurveys, setActiveSurveys] = useState([]);
   const [filledSurveys, setFilledSurveys] = useState({});
   const [showSurveyModal, setShowSurveyModal] = useState(false);
   const [currentSurvey, setCurrentSurvey] = useState(null);
   const [surveyAnswers, setSurveyAnswers] = useState({});
   const [surveyLoading, setSurveyLoading] = useState(false);
+
   const [raportSummary, setRaportSummary] = useState(null);
 
   useEffect(() => { 
@@ -88,7 +81,7 @@ const StudentDashboard = () => {
     try { localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data })); } catch (e) {}
   };
 
-  // QR SCANNER (tidak diubah)
+  // QR SCANNER
   useEffect(() => {
     let qr = null;
     const start = async () => {
@@ -139,7 +132,7 @@ const StudentDashboard = () => {
     catch { return false; }
   };
 
-  // 🔄 SURVEI: 1 query ambil semua response, difilter di client
+  // 🔄 SURVEI: 2 query parallel (cepat)
   const fetchSurveys = async (studentKelas, studentIdParam) => {
     try {
       const [surveiSnap, respSnap] = await Promise.all([
@@ -192,7 +185,6 @@ const StudentDashboard = () => {
     const fetchAll = async () => {
       const cache = loadCache();
       if (cache) {
-        setPosters(cache.posters || []);
         setTodaySchedules(cache.todaySchedules || []);
         setTasks(cache.tasks || []);
         setStudentProfile(cache.studentProfile || null);
@@ -206,15 +198,6 @@ const StudentDashboard = () => {
         const sSnap = await getDoc(doc(db, "students", studentId));
         let curKat = "Semua", curKel = "Semua";
         if (sSnap.exists()) { const d = sSnap.data(); curKat = d.kategori || "Semua"; curKel = d.kelasSekolah || "Semua"; }
-
-        // ➕ POSTERS: Filter by target
-        let fetchedPosters = [];
-        try {
-          const postersSnap = await getDocs(query(collection(db, "student_contents"), orderBy("createdAt", "desc")));
-          fetchedPosters = postersSnap.docs
-            .map(d => ({ id: d.id, ...d.data() }))
-            .filter(p => !p.targetPortal || p.targetPortal === 'Semua' || p.targetPortal === 'Siswa');
-        } catch (e) {}
 
         let fetchedSchedules = [];
         try {
@@ -238,20 +221,17 @@ const StudentDashboard = () => {
           fetchedTasks = combined.filter(m => m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment')).slice(0, 5);
         } catch (e) {}
 
-        // 🔄 SURVEI: 2 query parallel (cepat)
         const { surveys: fetchedSurveys, filled: filledStatus } = await fetchSurveys(curKel, studentId);
 
-        // Raport background
         fetchRaportSummary(studentId).then(data => { if (data) setRaportSummary(data); });
 
-        setPosters(fetchedPosters);
         setTodaySchedules(fetchedSchedules);
         setTasks(fetchedTasks);
         setStudentProfile(sSnap.exists() ? sSnap.data() : null);
         setActiveSurveys(fetchedSurveys);
         setFilledSurveys(filledStatus);
 
-        saveCache({ posters: fetchedPosters, todaySchedules: fetchedSchedules, tasks: fetchedTasks, studentProfile: sSnap.exists() ? sSnap.data() : null, activeSurveys: fetchedSurveys, filledSurveys: filledStatus, raportSummary: null });
+        saveCache({ todaySchedules: fetchedSchedules, tasks: fetchedTasks, studentProfile: sSnap.exists() ? sSnap.data() : null, activeSurveys: fetchedSurveys, filledSurveys: filledStatus, raportSummary: null });
       } catch (err) { console.error('Error fetch dashboard:', err); } 
       finally { setLoading(false); }
     };
@@ -309,25 +289,6 @@ const StudentDashboard = () => {
           </div>
         )}
       </div>
-
-      {/* SLIDE BERITA */}
-      {posters.length > 0 && (
-        <div style={{ ...st.carouselContainer, aspectRatio: isMobile ? '4/3' : '21/9' }}>
-          <Swiper modules={[Navigation, Pagination, Autoplay, EffectFade]} effect={'fade'} navigation={!isMobile} pagination={{ clickable: true }} autoplay={{ delay: 5000 }} loop={posters.length > 1} style={st.mySwiper}>
-            {posters.map((post) => (
-              <SwiperSlide key={post.id} onClick={() => setSelectedNews(post)}>
-                <div style={{ ...st.slideCard, backgroundImage: `url(${post.imageUrl})`, cursor: 'pointer' }}>
-                  <div style={st.slideOverlay}>
-                    <span style={{ background: '#e11d48', padding: '4px 10px', borderRadius: 12, fontSize: 9, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 8 }}><Megaphone size={10} /> Info</span>
-                    <h2 style={isMobile ? st.slideTitleMobile : st.slideTitle}>{post.title}</h2>
-                    {!isMobile && <p style={st.slideDesc}>{post.content?.substring(0, 100) || "Klik untuk baca"}</p>}
-                  </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
-      )}
 
       {/* RINGKASAN RAPORT */}
       {raportSummary && (
@@ -391,20 +352,6 @@ const StudentDashboard = () => {
       <div style={{ ...st.contentArea, marginLeft: isMobile ? '0' : '260px', width: isMobile ? '100%' : 'calc(100% - 260px)', padding: isMobile ? '15px' : '30px', paddingTop: isMobile ? '70px' : '30px' }}>{renderContent()}</div>
       {isMobile && isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} style={st.overlay} />}
 
-      {/* MODAL BERITA */}
-      {selectedNews && (
-        <div style={st.modalOverlay} onClick={() => setSelectedNews(null)}>
-          <div style={{ ...st.modalContent, width: isMobile ? '92%' : '550px', maxHeight: '85vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setSelectedNews(null)} style={{ position: 'sticky', top: 10, right: 10, float: 'right', zIndex: 1, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer' }}><X size={18} /></button>
-            <img src={selectedNews.imageUrl} style={{ width: '100%', maxHeight: 250, objectFit: 'cover', borderRadius: '12px 12px 0 0' }} alt="" />
-            <div style={{ padding: 20 }}>
-              <h2 style={{ margin: '0 0 8px', fontSize: 20, fontWeight: 800 }}>{selectedNews.title}</h2>
-              <p style={{ fontSize: 14, color: '#475569', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{selectedNews.content || selectedNews.desc || "Tidak ada deskripsi."}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {isScanning && (<div style={st.modalOverlay} onClick={() => setIsScanning(false)}><div style={st.qrModalContent} onClick={e => e.stopPropagation()}><button onClick={() => setIsScanning(false)} style={st.btnCloseModal}><X size={20} /></button><h3>Scan QR</h3><div id="reader" style={{ width: '100%', borderRadius: 15 }}></div></div></div>)}
 
       {showSurveyModal && currentSurvey && (
@@ -444,13 +391,6 @@ const st = {
   btnScanHeader: { display: 'flex', alignItems: 'center', gap: 8, background: '#3498db', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 100, fontWeight: 'bold', cursor: 'pointer' },
   mobileMenuBtn: { position: 'fixed', top: 15, left: 15, zIndex: 900, background: '#1e293b', color: 'white', border: 'none', padding: 10, borderRadius: 10, cursor: 'pointer' },
   overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 998 },
-  carouselContainer: { borderRadius: 15, overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', width: '100%' },
-  mySwiper: { width: '100%', height: '100%' },
-  slideCard: { width: '100%', height: '100%', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'flex-end' },
-  slideOverlay: { width: '100%', background: 'linear-gradient(transparent, rgba(0,0,0,0.8))', padding: 20, color: 'white' },
-  slideTitle: { fontSize: 24, fontWeight: 'bold', margin: 0 },
-  slideTitleMobile: { fontSize: 16, fontWeight: 'bold', margin: 0 },
-  slideDesc: { fontSize: 14, opacity: 0.8, marginTop: 5 },
   mainGrid: { display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 25 },
   mainGridMobile: { display: 'flex', flexDirection: 'column', gap: 20 },
   leftColumn: { display: 'flex', flexDirection: 'column', gap: 20 },
@@ -468,7 +408,6 @@ const st = {
   btnAccess: { width: '100%', padding: 12, background: '#3b82f6', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10 },
   emptyState: { fontSize: 12, color: '#94a3b8', textAlign: 'center', padding: 15 },
   modalOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.7)', zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center', backdropFilter: 'blur(5px)' },
-  modalContent: { background: 'white', borderRadius: 15, overflow: 'hidden', position: 'relative' },
   btnCloseModal: { position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: 30, height: 30, cursor: 'pointer', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' },
   qrModalContent: { background: 'white', padding: '30px 20px', borderRadius: 25, width: '90%', maxWidth: 400, textAlign: 'center', position: 'relative' },
   fabQR: { position: 'fixed', bottom: 20, right: 20, width: 60, height: 60, borderRadius: '50%', background: '#3498db', color: 'white', border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.3)', zIndex: 900, cursor: 'pointer' },
