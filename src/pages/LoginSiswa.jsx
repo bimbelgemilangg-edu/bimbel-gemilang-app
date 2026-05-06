@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { collection, getDocs } from "firebase/firestore";
@@ -8,6 +8,68 @@ const LoginSiswa = () => {
   const [username, setUsername] = useState(""); 
   const [password, setPassword] = useState(""); 
   const [loading, setLoading] = useState(false);
+  
+  // ➕ STATE UNTUK PWA INSTALL
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [showInstallBtn, setShowInstallBtn] = useState(false);
+
+  // ➕ DETEKSI PWA INSTALL EVENT
+  useEffect(() => {
+    // Cek apakah sudah terinstall
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalled(true);
+    }
+
+    // Tangkap event beforeinstallprompt
+    const handler = (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+      setShowInstallBtn(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+    
+    // Cek appinstalled
+    window.addEventListener('appinstalled', () => {
+      setIsInstalled(true);
+      setShowInstallBtn(false);
+    });
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+    };
+  }, []);
+
+  // ➕ FUNGSI INSTALL APLIKASI
+  const handleInstall = async () => {
+    if (!installPrompt) {
+      // Fallback untuk iOS / browser yang tidak support beforeinstallprompt
+      alert(
+        '📱 Cara install:\n\n' +
+        'Android (Chrome):\n' +
+        'Klik ⋮ → "Tambahkan ke Layar Utama"\n\n' +
+        'iPhone (Safari):\n' +
+        'Klik 🗳️ (Share) → "Add to Home Screen"\n\n' +
+        'Laptop (Chrome/Edge):\n' +
+        'Klik ikon ⊕ di address bar'
+      );
+      return;
+    }
+    
+    try {
+      await installPrompt.prompt();
+      const result = await installPrompt.userChoice;
+      if (result.outcome === 'accepted') {
+        console.log('✅ Aplikasi terinstall');
+        setIsInstalled(true);
+      }
+      setInstallPrompt(null);
+      setShowInstallBtn(false);
+    } catch (err) {
+      console.log('Install dibatalkan:', err);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -21,7 +83,6 @@ const LoginSiswa = () => {
     
     setLoading(true);
     try {
-      // Ambil semua data siswa untuk pencarian abaikan huruf kapital
       const querySnapshot = await getDocs(collection(db, "students"));
       let studentData = null;
       let studentId = null;
@@ -35,14 +96,11 @@ const LoginSiswa = () => {
       });
 
       if (studentData) {
-        // Verifikasi Password
         if (String(studentData.password) === inputPassword) {
-            // --- PENYESUAIAN LOGIN AGAR KONEK KE FILTER MATERI ---
             localStorage.setItem("isSiswaLoggedIn", "true");
             localStorage.setItem("role", "siswa");
             localStorage.setItem("studentId", studentId);
             localStorage.setItem("studentName", studentData.nama);
-            // Simpan kelasSekolah (Misal: "Kelas 7") agar StudentElearning bisa memfilter materi
             localStorage.setItem("studentGrade", studentData.kelasSekolah || "");
 
             alert(`Selamat Datang, ${studentData.nama}!`);
@@ -96,9 +154,48 @@ const LoginSiswa = () => {
           <button type="submit" disabled={loading} style={styles.btnPrimary}>
             {loading ? "MEMPROSES..." : "MASUK KE PORTAL"}
           </button>
-
-          {/* Fitur Kembali ke Beranda telah dihapus sesuai instruksi */}
         </form>
+
+        {/* ➕ TOMBOL INSTAL APLIKASI */}
+        {!isInstalled && showInstallBtn && (
+          <div style={{ marginTop: 20 }}>
+            <button 
+              type="button"
+              onClick={handleInstall}
+              style={styles.btnInstall}
+            >
+              📱 Install Aplikasi di HP
+            </button>
+            <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 6 }}>
+              Simpan ke layar utama biar buka lebih cepat
+            </p>
+          </div>
+        )}
+
+        {/* ➕ INFO UNTUK IOS (Safari tidak support beforeinstallprompt) */}
+        {!isInstalled && !showInstallBtn && (
+          <div style={{ marginTop: 20 }}>
+            <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8 }}>
+              📱 Buka aplikasi lebih cepat:
+            </p>
+            <button 
+              type="button"
+              onClick={handleInstall}
+              style={styles.btnInstallOutline}
+            >
+              📲 Cara Install di HP
+            </button>
+          </div>
+        )}
+
+        {/* ➕ SUDAH TERINSTALL */}
+        {isInstalled && (
+          <div style={{ marginTop: 20, background: '#dcfce7', padding: 10, borderRadius: 8 }}>
+            <p style={{ fontSize: 11, color: '#166534', margin: 0, fontWeight: 600 }}>
+              ✅ Aplikasi sudah terinstall di HP kamu
+            </p>
+          </div>
+        )}
 
         <div style={styles.footerNote}>
             <small>Lupa password? Hubungi Admin Cabang.</small>
@@ -151,6 +248,33 @@ const styles = {
     fontWeight: 'bold', 
     cursor: 'pointer',
     boxShadow: '0 4px 6px rgba(39, 174, 96, 0.1)',
+  },
+  // ➕ STYLE TOMBOL INSTAL
+  btnInstall: {
+    width: '100%',
+    padding: '12px',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8
+  },
+  btnInstallOutline: {
+    width: '100%',
+    padding: '12px',
+    background: 'white',
+    color: '#4f46e5',
+    border: '2px solid #c7d2fe',
+    borderRadius: '8px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer'
   },
   footerNote: { marginTop: '30px', color: '#bdc3c7', fontSize: '12px' }
 };
