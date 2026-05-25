@@ -42,7 +42,7 @@ import CekTugasSiswa from './pages/teacher/modul/CekTugasSiswa';
 import ManageMateriGuru from './pages/teacher/modul/ManageMateri';
 import ManageQuiz from './pages/teacher/modul/ManageQuiz';
 
-// === SMART RAPORT ===
+// === SMART RAPORT (v2 - 5 Dimensi) ===
 import GenerateRaport from './pages/teacher/grades/GenerateRaport';
 import StudentLeaderboard from './pages/student/raport/StudentLeaderboard';
 import StudentSmartReport from './pages/student/raport/StudentSmartReport';
@@ -136,13 +136,17 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* ============================================================ */}
         {/* PUBLIC */}
+        {/* ============================================================ */}
         <Route path="/" element={<Login />} />
         <Route path="/login-guru" element={<LoginGuru />} />
         <Route path="/login-siswa" element={<LoginSiswa />} />
         <Route path="/aktivitas" element={<PublicBlog />} />
 
+        {/* ============================================================ */}
         {/* ADMIN */}
+        {/* ============================================================ */}
         <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
         <Route path="/admin/students" element={<AdminRoute><StudentList /></AdminRoute>} />
         <Route path="/admin/students/add" element={<AdminRoute><AddStudent /></AdminRoute>} />
@@ -163,35 +167,50 @@ function App() {
         <Route path="/admin/manage-blog" element={<AdminRoute><ManageBlog /></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
 
+        {/* ============================================================ */}
         {/* GURU */}
+        {/* ============================================================ */}
         <Route path="/guru/dashboard" element={<GuruRoute><TeacherLayout><TeacherDashboard /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/profile" element={<GuruRoute><TeacherLayout><TeacherProfile /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/history" element={<GuruRoute><TeacherLayout><TeacherHistory /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/cek-tugas" element={<GuruRoute><TeacherLayout><CekTugasSiswa /></TeacherLayout></GuruRoute>} />
+        
+        {/* ➕ ROUTE INPUT NILAI (v2 - 5 Dimensi) */}
         <Route path="/guru/grades/input" element={<GuruRoute><TeacherLayout><TeacherInputGrade /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/grades/manage" element={<GuruRoute><TeacherLayout><TeacherGradeManager /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/grades/generate" element={<GuruRoute><TeacherLayout><GenerateRaport /></TeacherLayout></GuruRoute>} />
+        
         <Route path="/guru/modul" element={<GuruRoute><TeacherLayout><ModulManager /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/modul/materi" element={<GuruRoute><TeacherLayout><ManageMateriGuru /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/manage-quiz" element={<GuruRoute><TeacherLayout><ManageQuiz /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/schedule" element={<GuruRoute><TeacherLayout><TeacherSchedule /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/attendance" element={<GuruRoute><TeacherLayout><TeacherManualInput /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/manual-input" element={<GuruRoute><TeacherLayout><TeacherManualInput /></TeacherLayout></GuruRoute>} />
+        
+        {/* ➕ ALIAS UNTUK GENERATE RAPORT */}
         <Route path="/guru/generate-raport" element={<GuruRoute><TeacherLayout><GenerateRaport /></TeacherLayout></GuruRoute>} />
 
+        {/* ============================================================ */}
         {/* SISWA */}
+        {/* ============================================================ */}
         <Route path="/siswa/dashboard" element={<SiswaRoute><StudentDashboard /></SiswaRoute>} />
         <Route path="/siswa/materi" element={<SiswaRoute><StudentElearning /></SiswaRoute>} />
         <Route path="/siswa/jadwal" element={<SiswaRoute><StudentSchedule /></SiswaRoute>} />
         <Route path="/siswa/keuangan" element={<SiswaRoute><StudentFinanceSiswa /></SiswaRoute>} />
+        
+        {/* ➕ ROUTE RAPORT SISWA (v2) */}
         <Route path="/siswa/rapor" element={<SiswaRoute><StudentGrades /></SiswaRoute>} />
-        <Route path="/siswa/absensi" element={<SiswaRoute><StudentAttendanceSiswa /></SiswaRoute>} />
-        <Route path="/siswa/leaderboard" element={<SiswaRoute><StudentLeaderboard /></SiswaRoute>} />
         <Route path="/siswa/smart-rapor" element={<SiswaRoute><StudentSmartReport /></SiswaRoute>} />
+        <Route path="/siswa/leaderboard" element={<SiswaRoute><StudentLeaderboard /></SiswaRoute>} />
+        
+        <Route path="/siswa/absensi" element={<SiswaRoute><StudentAttendanceSiswa /></SiswaRoute>} />
         
         {/* ➕ ROUTE KUIS SISWA */}
         <Route path="/siswa/kuis/:id" element={<SiswaRoute><KuisSiswaWrapper /></SiswaRoute>} />
 
+        {/* ============================================================ */}
         {/* REDIRECT */}
+        {/* ============================================================ */}
         <Route path="/teacher/*" element={<Navigate to="/guru/dashboard" replace />} />
         <Route path="/guru/modul/tugas" element={<Navigate to="/guru/modul/materi" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
