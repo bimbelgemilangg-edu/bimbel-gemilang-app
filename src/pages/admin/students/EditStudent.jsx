@@ -115,6 +115,7 @@ const EditStudent = () => {
         tanggalLahir: formData.tanggalLahir,
         ortu: formData.ortu,
         kategori: formData.kategori,
+        jenjang: formData.kategori === 'English' ? 'English' : formData.jenjang,
         detailProgram: detailProgramBaru,
         totalTagihan: parseInt(formData.totalTagihan),
         // SIMPAN DATA MASA AKTIF TERBARU
