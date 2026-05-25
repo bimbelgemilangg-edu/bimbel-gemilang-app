@@ -1,4 +1,3 @@
-// src/pages/teacher/grades/TeacherInputGrade.jsx
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase'; 
@@ -62,9 +61,6 @@ const TeacherInputGrade = () => {
   const [studentQuizzes, setStudentQuizzes] = useState([]);
   const [loadingStudentData, setLoadingStudentData] = useState(false);
 
-  // ➕ State: daftar ID siswa dari jadwal guru ini
-  const [assignedStudentIds, setAssignedStudentIds] = useState([]);
-
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -80,42 +76,57 @@ const TeacherInputGrade = () => {
       navigate('/login-guru'); 
       return; 
     }
-    fetchAssignedStudents(); // ➕ Ambil dulu daftar siswa dari jadwal
+    fetchAllStudents(); // ✅ LANGSUNG AMBIL SEMUA SISWA
+    fetchTopics();
+    fetchPendingData();
   }, [guru, navigate]);
 
-  // ➕ Ambil daftar siswa yang pernah dijadwalkan dengan guru ini
-  const fetchAssignedStudents = async () => {
+  // ✅ AMBIL SEMUA SISWA DARI KOLEKSI students (TANPA FILTER JADWAL)
+  const fetchAllStudents = async () => {
+    setLoading(true);
     try {
-      const jadwalSnap = await getDocs(query(
-        collection(db, "jadwal_bimbel"),
-        where("teacherId", "==", guru.id)
-      ));
+      const snapSiswa = await getDocs(collection(db, "students"));
+      let dataSiswa = snapSiswa.docs.map(d => ({ id: d.id, ...d.data() }));
       
-      // Kumpulkan semua studentId unik dari semua jadwal
-      const allStudentIds = new Set();
-      jadwalSnap.docs.forEach(d => {
-        const data = d.data();
-        if (data.students && Array.isArray(data.students)) {
-          data.students.forEach(s => {
-            if (s.id) allStudentIds.add(s.id);
-          });
-        }
+      console.log('👥 DEBUG: Total semua siswa:', dataSiswa.length);
+      console.log('👥 DEBUG: Daftar siswa:', dataSiswa.map(s => ({ nama: s.nama, kelas: s.kelasSekolah, jenjang: s.jenjang })));
+      
+      const qScores = query(
+        collection(db, RAPORT_COLLECTIONS.SCORES), 
+        where("periode", "==", currentPeriode),
+        where("mapel", "==", selectedMapel)
+      );
+      const snapScores = await getDocs(qScores);
+      const allScores = snapScores.docs.map(d => d.data());
+
+      const mergedData = dataSiswa.map(siswa => {
+        const siswaScores = allScores.filter(s => s.studentId === siswa.id);
+        const komponenTerisi = [...new Set(siswaScores.map(s => s.komponen))];
+        const totalTerisi = komponenTerisi.length;
+        return { 
+          ...siswa, 
+          totalTerisi, 
+          komponenTerisi, 
+          statusNilai: totalTerisi >= 2 ? 'Sudah' : totalTerisi > 0 ? 'Sebagian' : 'Belum' 
+        };
+      });
+
+      mergedData.sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+      setStudents(mergedData);
+      setFilteredStudents(mergedData);
+      
+      setStats({
+        total: mergedData.length,
+        sudah: mergedData.filter(s => s.totalTerisi >= 2).length,
+        sebagian: mergedData.filter(s => s.totalTerisi === 1).length,
+        belum: mergedData.filter(s => s.totalTerisi === 0).length
       });
       
-      const studentIdArray = [...allStudentIds];
-      setAssignedStudentIds(studentIdArray);
-      console.log(`📋 Guru ${guru.nama}: ${studentIdArray.length} siswa dari jadwal`);
-      
-      // Setelah dapat daftar siswa, baru fetch data
-      fetchData(studentIdArray);
-      fetchTopics();
-      fetchPendingData();
-    } catch (e) {
-      console.error("Error fetch assigned students:", e);
-      // Fallback: tampilkan semua siswa
-      fetchData([]);
-      fetchTopics();
-      fetchPendingData();
+      console.log('✅ DEBUG: Final students count:', mergedData.length);
+    } catch (err) { 
+      console.error("Error fetchAllStudents:", err); 
+    } finally { 
+      setLoading(false); 
     }
   };
 
@@ -197,47 +208,6 @@ const TeacherInputGrade = () => {
     finally { setLoadingStudentData(false); }
   };
 
-  // ➕ fetchData sekarang terima parameter assignedIds
-  const fetchData = async (assignedIds = []) => {
-    setLoading(true);
-    try {
-      const snapSiswa = await getDocs(collection(db, "students"));
-      let dataSiswa = snapSiswa.docs.map(d => ({ id: d.id, ...d.data() }));
-      
-      // ➕ Filter: hanya siswa yang pernah dijadwalkan dengan guru ini
-      if (assignedIds.length > 0) {
-        dataSiswa = dataSiswa.filter(s => assignedIds.includes(s.id));
-      }
-      
-      const qScores = query(
-        collection(db, RAPORT_COLLECTIONS.SCORES), 
-        where("periode", "==", currentPeriode),
-        where("mapel", "==", selectedMapel)
-      );
-      const snapScores = await getDocs(qScores);
-      const allScores = snapScores.docs.map(d => d.data());
-
-      const mergedData = dataSiswa.map(siswa => {
-        const siswaScores = allScores.filter(s => s.studentId === siswa.id);
-        const komponenTerisi = [...new Set(siswaScores.map(s => s.komponen))];
-        const totalTerisi = komponenTerisi.length;
-        return { ...siswa, totalTerisi, komponenTerisi, statusNilai: totalTerisi >= 2 ? 'Sudah' : totalTerisi > 0 ? 'Sebagian' : 'Belum' };
-      });
-
-      mergedData.sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
-      setStudents(mergedData);
-      setFilteredStudents(mergedData);
-      
-      setStats({
-        total: mergedData.length,
-        sudah: mergedData.filter(s => s.totalTerisi >= 2).length,
-        sebagian: mergedData.filter(s => s.totalTerisi === 1).length,
-        belum: mergedData.filter(s => s.totalTerisi === 0).length
-      });
-    } catch (err) { console.error("Error fetchData:", err); }
-    finally { setLoading(false); }
-  };
-
   useEffect(() => {
     let result = students;
     if (searchTerm) result = result.filter(s => s.nama?.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -264,7 +234,7 @@ const TeacherInputGrade = () => {
         setScore(""); setTopic(""); setKomponen("keaktifan");
         setAspects({ pemahaman: 3, aplikasi: 3, literasi: 3, inisiatif: 3, mandiri: 3 });
         fetchStudentDetail(selectedStudent.id);
-        fetchData(assignedStudentIds);
+        fetchAllStudents(); // ✅ Refresh data
         fetchTopics();
       } else { alert("❌ Gagal menyimpan: " + result.error); }
     } catch (err) { alert("❌ Gagal menyimpan: " + err.message); }
@@ -289,7 +259,7 @@ const TeacherInputGrade = () => {
         try { await updateDoc(doc(db, colName, item.id), { exportedToRaport: true }); } catch (e) {}
         alert(`✅ ${item.source === 'kuis' ? 'Kuis' : 'Tugas'} berhasil diimpor ke ${selectedMapel}!`);
         fetchStudentDetail(selectedStudent.id);
-        fetchData(assignedStudentIds);
+        fetchAllStudents(); // ✅ Refresh data
       } else { alert("❌ Gagal: " + result.error); }
     } catch (err) { alert("❌ Gagal: " + err.message); }
     finally { setSubmitting(false); }
@@ -302,7 +272,7 @@ const TeacherInputGrade = () => {
       if (result.success) {
         try { await updateDoc(doc(db, "jawaban_tugas", item.id), { exportedToRaport: true }); } catch (updateErr) {}
         alert(`✅ Nilai tugas ${item.studentName} berhasil diekspor ke ${selectedMapel}!`);
-        fetchPendingData(); fetchData(assignedStudentIds);
+        fetchPendingData(); fetchAllStudents(); // ✅ Refresh data
       } else { alert("❌ Gagal: " + result.error); }
     } catch (err) { alert("❌ Gagal: " + err.message); }
     finally { setSubmitting(false); }
@@ -315,7 +285,7 @@ const TeacherInputGrade = () => {
       if (result.success) {
         try { await updateDoc(doc(db, "jawaban_kuis", item.id), { exportedToRaport: true }); } catch (updateErr) {}
         alert(`✅ Nilai kuis ${item.userName} berhasil diekspor ke ${selectedMapel}!`);
-        fetchPendingData(); fetchData(assignedStudentIds);
+        fetchPendingData(); fetchAllStudents(); // ✅ Refresh data
       } else { alert("❌ Gagal: " + result.error); }
     } catch (err) { alert("❌ Gagal: " + err.message); }
     finally { setSubmitting(false); }
@@ -349,7 +319,7 @@ const TeacherInputGrade = () => {
           <div style={{marginBottom: 20}}>
             <h1 style={{margin: 0, fontSize: isMobile ? 18 : 22, fontWeight: 'bold', color: '#1e293b'}}>📊 Smart Input Nilai</h1>
             <p style={{margin: '4px 0 0', fontSize: 12, color: '#64748b'}}>
-              Input nilai akademik, karakter, dan impor tugas/kuis • Menampilkan {assignedStudentIds.length} siswa dari jadwal Anda
+              Input nilai akademik, karakter, dan impor tugas/kuis • Menampilkan semua siswa
             </p>
           </div>
 
@@ -358,7 +328,7 @@ const TeacherInputGrade = () => {
             <Info size={18} color="#b45309" style={{marginTop: 2, flexShrink: 0}} />
             <div style={{flex: 1, fontSize: 11, color: '#b45309', lineHeight: 1.8}}>
               <b>📋 Cara Input Nilai:</b><br/>
-              1️⃣ Hanya siswa yang <b>pernah dijadwalkan</b> dengan Anda yang muncul di sini<br/>
+              1️⃣ Semua siswa ditampilkan di sini<br/>
               2️⃣ Klik <b>Detail</b> → lihat status komponen (✅/❌) + tugas & kuis siswa<br/>
               3️⃣ Klik <b>Impor</b> untuk memasukkan nilai otomatis dari tugas/kuis<br/>
               4️⃣ Atau isi manual: pilih komponen → isi nilai 0-100 → atur karakter (1-5)<br/>
@@ -384,8 +354,7 @@ const TeacherInputGrade = () => {
                   <span style={{ background: '#fef3c7', padding: '2px 8px', borderRadius: 12, fontSize: 10, fontWeight: 'bold', color: '#d97706' }}>{selectedMapel}</span>
                 </div>
                 <div style={{ fontSize: 11, color: '#64748b' }}>
-                  Periode: {currentPeriode.replace('-', ' / ')} • 
-                  ➕ <b>{assignedStudentIds.length}</b> siswa dari jadwal
+                  Periode: {currentPeriode.replace('-', ' / ')}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -409,17 +378,6 @@ const TeacherInputGrade = () => {
           {/* ============================================================ */}
           {activeTab === 'manual' && !selectedStudent && (
             <>
-              {/* ➕ INFO JUMLAH SISWA */}
-              {assignedStudentIds.length === 0 && !loading && (
-                <div style={{ background: '#fef3c7', border: '1px solid #fde68a', borderRadius: 12, padding: 20, marginBottom: 16, textAlign: 'center' }}>
-                  <Users size={40} color="#b45309" style={{marginBottom: 8}} />
-                  <p style={{fontWeight: 700, color: '#b45309', margin: 0}}>Belum ada siswa di jadwal Anda</p>
-                  <p style={{fontSize: 12, color: '#92400e', margin: '4px 0 0'}}>
-                    Siswa akan muncul di sini setelah Admin menambahkan Anda ke jadwal mengajar.
-                  </p>
-                </div>
-              )}
-
               <div style={{ background: 'white', borderRadius: 12, padding: 14, marginBottom: 16, border: '1px solid #e2e8f0' }}>
                 <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 10, width: '100%' }}>
                   <div style={{ flex: 3, display: 'flex', alignItems: 'center', gap: 8, background: '#f8fafc', padding: '8px 12px', borderRadius: 10, border: '1px solid #e2e8f0' }}>
@@ -432,7 +390,7 @@ const TeacherInputGrade = () => {
                   <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, background: 'white', minWidth: 120 }}>
                     <option value="Semua">📋 Semua Status</option><option value="Belum">🔴 Belum</option><option value="Sebagian">🟡 Sebagian</option><option value="Sudah">🟢 Lengkap</option>
                   </select>
-                  <button onClick={() => { fetchData(assignedStudentIds); }} style={{ padding: '8px 12px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, cursor: 'pointer' }}><RefreshCw size={14} /></button>
+                  <button onClick={() => { fetchAllStudents(); }} style={{ padding: '8px 12px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 10, cursor: 'pointer' }}><RefreshCw size={14} /></button>
                 </div>
               </div>
 
@@ -468,7 +426,7 @@ const TeacherInputGrade = () => {
           )}
 
           {/* ============================================================ */}
-          {/* DETAIL SISWA + FORM (TIDAK BERUBAH) */}
+          {/* DETAIL SISWA + FORM */}
           {/* ============================================================ */}
           {activeTab === 'manual' && selectedStudent && (
             <div style={{ background: 'white', borderRadius: 16, padding: isMobile ? 16 : 20, border: '1px solid #e2e8f0' }}>
