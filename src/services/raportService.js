@@ -4,140 +4,349 @@ import {
   collection, query, where, getDocs, addDoc, updateDoc, 
   doc, serverTimestamp, Timestamp, orderBy 
 } from 'firebase/firestore';
-import { DEFAULT_WEIGHTS, RAPORT_COLLECTIONS } from '../firebase/raportCollection';
+import { RAPORT_COLLECTIONS } from '../firebase/raportCollection';
+
+// ============================================================
+// KONFIGURASI 5 DIMENSI PENILAIAN
+// ============================================================
+
+export const DIMENSI_CONFIG = {
+  pemahaman: {
+    label: "Pemahaman Konsep",
+    deskripsi: "Mengukur sejauh mana siswa memahami teori, rumus, atau fakta kunci dalam suatu materi pelajaran, bukan sekadar menghafal.",
+    indikator: "Siswa mampu menjelaskan ulang materi dengan bahasanya sendiri dan memberikan contoh konkret."
+  },
+  analisis: {
+    label: "Analisis & Pemecahan Masalah",
+    deskripsi: "Mengukur kemampuan siswa memecah soal yang kompleks (soal cerita, studi kasus, atau soal HOTS) menjadi bagian-bagian kecil untuk diselesaikan.",
+    indikator: "Siswa mampu mengidentifikasi apa yang diketahui, ditanyakan, dan memilih strategi/rumus yang tepat."
+  },
+  ketelitian: {
+    label: "Ketelitian & Prosedur Pengerjaan",
+    deskripsi: "Mengukur kedisiplinan siswa dalam mengikuti langkah-langkah pengerjaan soal secara runtut dan meminimalkan kesalahan sepele (careless mistakes).",
+    indikator: "Siswa menuliskan proses pengerjaan dengan rapi, menghitung dengan benar, atau menulis tata bahasa/ejaan secara tepat."
+  },
+  waktu: {
+    label: "Kecepatan & Manajemen Waktu",
+    deskripsi: "Mengukur efisiensi siswa dalam menyelesaikan tugas atau soal ujian di bawah tekanan durasi waktu tertentu.",
+    indikator: "Siswa mampu menyelesaikan seluruh soal sesuai batas waktu tanpa mengorbankan kualitas jawaban."
+  },
+  dayaTangkap: {
+    label: "Daya Tangkap & Kemandirian Belajar",
+    deskripsi: "Mengukur seberapa cepat siswa memahami materi baru setelah dijelaskan oleh tentor, serta inisiatifnya dalam mencoba soal latihan secara mandiri.",
+    indikator: "Siswa aktif bertanya pada bagian yang sulit dan mampu mengerjakan soal sejenis berikutnya tanpa panduan penuh."
+  }
+};
+
+export const DIMENSI_KEYS = ['pemahaman', 'analisis', 'ketelitian', 'waktu', 'dayaTangkap'];
+
+// ============================================================
+// BOBOT KOMPONEN (DEFAULT)
+// ============================================================
+
+export const KOMPONEN_BOBOT = {
+  kuis: 0.30,    // 30%
+  tugas: 0.30,   // 30%
+  ujian: 0.40    // 40%
+};
+
+// ============================================================
+// FUNGSI UTAMA: HITUNG NILAI AKHIR
+// ============================================================
 
 /**
- * Hitung bobot dinamis berdasarkan komponen yang tersedia
- * Jika ada komponen kosong, bobotnya didistribusikan proporsional ke komponen yang ada
- * @param {Object} scores - { kuis: [], catatan: [], ujian: [], keaktifan: [] }
- * @returns {Object} - { weights: { kuis, catatan, ujian, keaktifan }, komponenDipake: [] }
+ * Hitung rata-rata 5 dimensi dari satu komponen
+ * @param {Array} dimensiScores - [{ pemahaman, analisis, ketelitian, waktu, dayaTangkap }]
+ * @returns {Object} - rata-rata per dimensi dan total
  */
-export const calculateDynamicWeights = (scores) => {
-  const defaultWeights = { ...DEFAULT_WEIGHTS };
-  const komponenDipake = [];
-  let totalBobot = 0;
-  
-  if (scores.kuis?.length > 0) {
-    komponenDipake.push('kuis');
-    totalBobot += defaultWeights.kuis;
-  }
-  if (scores.catatan?.length > 0) {
-    komponenDipake.push('catatan');
-    totalBobot += defaultWeights.catatan;
-  }
-  if (scores.ujian?.length > 0) {
-    komponenDipake.push('ujian');
-    totalBobot += defaultWeights.ujian;
-  }
-  if (scores.keaktifan?.length > 0) {
-    komponenDipake.push('keaktifan');
-    totalBobot += defaultWeights.keaktifan;
-  }
-  
-  if (komponenDipake.length === 0 || totalBobot === 0) {
-    return { 
-      weights: { ...defaultWeights }, 
-      komponenDipake: ['kuis', 'catatan', 'ujian', 'keaktifan'],
-      totalBobot: 1.0
+export const calculateDimensiAverage = (dimensiScores) => {
+  if (!dimensiScores || dimensiScores.length === 0) {
+    return {
+      pemahaman: 0, analisis: 0, ketelitian: 0, waktu: 0, dayaTangkap: 0,
+      total: 0
     };
   }
   
-  const adjustedWeights = {
-    kuis: scores.kuis?.length > 0 ? defaultWeights.kuis / totalBobot : 0,
-    catatan: scores.catatan?.length > 0 ? defaultWeights.catatan / totalBobot : 0,
-    ujian: scores.ujian?.length > 0 ? defaultWeights.ujian / totalBobot : 0,
-    keaktifan: scores.keaktifan?.length > 0 ? defaultWeights.keaktifan / totalBobot : 0
+  const count = dimensiScores.length;
+  const totals = {
+    pemahaman: 0, analisis: 0, ketelitian: 0, waktu: 0, dayaTangkap: 0
   };
   
-  return { 
-    weights: adjustedWeights, 
-    komponenDipake,
-    totalBobot 
-  };
+  dimensiScores.forEach(d => {
+    DIMENSI_KEYS.forEach(key => {
+      totals[key] += (d[key] || 0);
+    });
+  });
+  
+  const averages = {};
+  DIMENSI_KEYS.forEach(key => {
+    averages[key] = Math.round((totals[key] / count) * 10) / 10;
+  });
+  
+  const total = Math.round(
+    DIMENSI_KEYS.reduce((sum, key) => sum + averages[key], 0) / 5 * 10
+  ) / 10;
+  
+  return { ...averages, total };
 };
 
 /**
- * Hitung nilai akhir berdasarkan bobot DINAMIS
- * Komponen yang kosong diabaikan, bobot disesuaikan proporsional
- * @param {Object} scores - { kuis: [], catatan: [], ujian: [], keaktifan: [] }
- * @returns {Object} - { nilaiAkhir, komponenDipake, detailNilai }
+ * Hitung nilai akhir berdasarkan aturan:
+ * 1. Ada Ujian → pakai nilai ujian
+ * 2. Belum ujian tapi ada Quiz+Tugas → (Quiz+Tugas)/2
+ * 3. Lengkap (Quiz+Tugas+Ujian) → Quiz 30% + Tugas 30% + Ujian 40%
+ * @param {Object} scores - { kuis: [], tugas: [], ujian: [] }
+ * @returns {Object}
  */
 export const calculateFinalScore = (scores) => {
-  const kuisAvg = scores.kuis?.length > 0 
-    ? scores.kuis.reduce((a,b) => a+b, 0) / scores.kuis.length 
-    : 0;
-  const catatanAvg = scores.catatan?.length > 0 
-    ? scores.catatan.reduce((a,b) => a+b, 0) / scores.catatan.length 
-    : 0;
-  const ujianAvg = scores.ujian?.length > 0 
-    ? scores.ujian.reduce((a,b) => a+b, 0) / scores.ujian.length 
-    : 0;
-  const keaktifanAvg = scores.keaktifan?.length > 0 
-    ? scores.keaktifan.reduce((a,b) => a+b, 0) / scores.keaktifan.length 
-    : 0;
+  const kuisAvg = calculateDimensiAverage(scores.kuis);
+  const tugasAvg = calculateDimensiAverage(scores.tugas);
+  const ujianAvg = calculateDimensiAverage(scores.ujian);
   
-  const { weights, komponenDipake, totalBobot } = calculateDynamicWeights(scores);
+  const hasKuis = scores.kuis?.length > 0;
+  const hasTugas = scores.tugas?.length > 0;
+  const hasUjian = scores.ujian?.length > 0;
   
-  if (komponenDipake.length === 0) {
-    return { 
-      nilaiAkhir: 0, 
-      komponenDipake: [], 
-      detailNilai: { kuis: 0, catatan: 0, ujian: 0, keaktifan: 0 },
-      pesan: "Belum ada data nilai untuk dihitung"
-    };
+  let nilaiAkhir = 0;
+  let mode = '';
+  let detailDimensi = {};
+  let komponenDipake = [];
+  
+  if (hasUjian) {
+    // PRIORITAS: Ada ujian → pakai nilai ujian
+    nilaiAkhir = ujianAvg.total;
+    detailDimensi = { ...ujianAvg };
+    mode = 'Ujian';
+    komponenDipake = ['ujian'];
+  } else if (hasKuis && hasTugas) {
+    // Ada kuis + tugas → rata-rata
+    nilaiAkhir = Math.round(((kuisAvg.total + tugasAvg.total) / 2) * 10) / 10;
+    DIMENSI_KEYS.forEach(key => {
+      detailDimensi[key] = Math.round(((kuisAvg[key] + tugasAvg[key]) / 2) * 10) / 10;
+    });
+    mode = 'Quiz + Tugas';
+    komponenDipake = ['kuis', 'tugas'];
+  } else if (hasKuis) {
+    // Hanya kuis
+    nilaiAkhir = kuisAvg.total;
+    detailDimensi = { ...kuisAvg };
+    mode = 'Quiz';
+    komponenDipake = ['kuis'];
+  } else if (hasTugas) {
+    // Hanya tugas
+    nilaiAkhir = tugasAvg.total;
+    detailDimensi = { ...tugasAvg };
+    mode = 'Tugas';
+    komponenDipake = ['tugas'];
+  } else {
+    mode = 'Belum Ada Nilai';
+    DIMENSI_KEYS.forEach(key => { detailDimensi[key] = 0; });
   }
   
-  const nilaiAkhir = Math.round(
-    (kuisAvg * weights.kuis) + 
-    (catatanAvg * weights.catatan) + 
-    (ujianAvg * weights.ujian) + 
-    (keaktifanAvg * weights.keaktifan)
-  );
+  // Jika lengkap (ketiganya ada), pakai bobot
+  if (hasKuis && hasTugas && hasUjian) {
+    nilaiAkhir = Math.round(
+      (kuisAvg.total * KOMPONEN_BOBOT.kuis) +
+      (tugasAvg.total * KOMPONEN_BOBOT.tugas) +
+      (ujianAvg.total * KOMPONEN_BOBOT.ujian)
+    );
+    DIMENSI_KEYS.forEach(key => {
+      detailDimensi[key] = Math.round(
+        (kuisAvg[key] * KOMPONEN_BOBOT.kuis +
+         tugasAvg[key] * KOMPONEN_BOBOT.tugas +
+         ujianAvg[key] * KOMPONEN_BOBOT.ujian) * 10
+      ) / 10;
+    });
+    mode = 'Lengkap (Quiz+Tugas+Ujian)';
+    komponenDipake = ['kuis', 'tugas', 'ujian'];
+  }
   
-  return { 
-    nilaiAkhir, 
-    komponenDipake, 
-    detailNilai: {
-      kuis: Math.round(kuisAvg * 10) / 10,
-      catatan: Math.round(catatanAvg * 10) / 10,
-      ujian: Math.round(ujianAvg * 10) / 10,
-      keaktifan: Math.round(keaktifanAvg * 10) / 10
-    },
-    bobotPakai: {
-      kuis: Math.round(weights.kuis * 100),
-      catatan: Math.round(weights.catatan * 100),
-      ujian: Math.round(weights.ujian * 100),
-      keaktifan: Math.round(weights.keaktifan * 100)
+  return {
+    nilaiAkhir,
+    mode,
+    komponenDipake,
+    detailDimensi,
+    detailKomponen: {
+      kuis: kuisAvg,
+      tugas: tugasAvg,
+      ujian: ujianAvg
     }
   };
 };
 
+// ============================================================
+// NARASI OTOMATIS
+// ============================================================
+
 /**
- * Generate narasi otomatis berdasarkan nilai
+ * Generate narasi utama dari rata-rata 5 dimensi
  */
-export const generateNarasi = (namaSiswa, mapel, nilaiSekarang, nilaiSebelumnya) => {
-  const selisih = nilaiSekarang - (nilaiSebelumnya || 0);
+export const generateNarasi = (namaSiswa, mapel, nilaiAkhir, detailDimensi) => {
+  const avgDimensi = detailDimensi 
+    ? DIMENSI_KEYS.reduce((sum, key) => sum + (detailDimensi[key] || 0), 0) / 5
+    : nilaiAkhir;
   
-  if (selisih >= 10) {
-    return `🎉 Selamat, ${namaSiswa}! Nilai ${mapel} naik ${selisih} poin. Pertahankan semangat belajarmu!`;
-  } else if (selisih >= 5) {
-    return `👍 Bagus, ${namaSiswa}! Nilai ${mapel} naik ${selisih} poin. Terus tingkatkan lagi ya!`;
-  } else if (selisih >= 1) {
-    return `📈 ${namaSiswa}, nilai ${mapel} naik sedikit. Konsisten belajar ya!`;
-  } else if (selisih === 0) {
-    return `🤝 ${namaSiswa}, nilai ${mapel} stabil. Coba tantang dirimu untuk naik lebih tinggi!`;
-  } else if (selisih >= -5) {
-    return `⚠️ ${namaSiswa}, nilai ${mapel} turun sedikit. Yuk, semangat lagi belajarnya!`;
+  if (avgDimensi >= 85) {
+    return `🌟 ${namaSiswa} menunjukkan penguasaan luar biasa pada mata pelajaran ${mapel}. Semua aspek penilaian (pemahaman konsep, analisis, ketelitian, manajemen waktu, dan daya tangkap) berada di level sangat baik. Pertahankan prestasi ini dan terus kembangkan potensimu!`;
+  } else if (avgDimensi >= 70) {
+    return `👍 ${namaSiswa} memiliki pemahaman yang baik pada ${mapel}. Beberapa aspek sudah dikuasai dengan baik, namun masih ada ruang untuk meningkatkan ketelitian dan kecepatan. Terus berlatih dan jangan ragu bertanya!`;
+  } else if (avgDimensi >= 50) {
+    return `📘 ${namaSiswa} cukup memahami materi ${mapel}, namun perlu meningkatkan beberapa aspek seperti analisis soal dan manajemen waktu. Disarankan untuk lebih aktif bertanya dan berlatih soal-soal variatif.`;
+  } else if (avgDimensi >= 30) {
+    return `⚠️ ${namaSiswa} memerlukan perhatian lebih pada ${mapel}. Beberapa konsep dasar masih perlu diperkuat. Sangat disarankan untuk mengikuti bimbingan tambahan dan berkonsultasi dengan tentor secara rutin.`;
   } else {
-    return `🔴 ${namaSiswa}, nilai ${mapel} turun drastis. Segera evaluasi dan konsultasi dengan guru ya!`;
+    return `🔴 ${namaSiswa} sangat memerlukan bimbingan intensif pada ${mapel}. Diperlukan evaluasi menyeluruh dan program remedial untuk membantu menguasai materi dasar sebelum melanjutkan ke materi berikutnya.`;
   }
 };
 
 /**
- * Ekspor nilai dari tugas/kuis ke raport_scores
+ * Generate narasi per dimensi
+ */
+export const generateDimensiNarasi = (detailDimensi) => {
+  if (!detailDimensi) return [];
+  
+  const result = [];
+  
+  DIMENSI_KEYS.forEach(key => {
+    const nilai = detailDimensi[key] || 0;
+    const config = DIMENSI_CONFIG[key];
+    
+    let narasiSingkat = '';
+    let saran = '';
+    
+    if (nilai >= 85) {
+      narasiSingkat = `${config.label}: Sangat Baik. Siswa menunjukkan penguasaan optimal pada aspek ini.`;
+      saran = 'Pertahankan dan tingkatkan ke level selanjutnya.';
+    } else if (nilai >= 70) {
+      narasiSingkat = `${config.label}: Baik. Siswa sudah menguasai aspek ini dengan cukup baik.`;
+      saran = 'Tingkatkan dengan latihan soal yang lebih bervariasi.';
+    } else if (nilai >= 50) {
+      narasiSingkat = `${config.label}: Cukup. Siswa perlu meningkatkan aspek ini lebih lanjut.`;
+      saran = 'Fokus pada latihan bertahap dan minta umpan balik dari tentor.';
+    } else if (nilai >= 30) {
+      narasiSingkat = `${config.label}: Perlu Perhatian. Siswa mengalami kesulitan pada aspek ini.`;
+      saran = 'Disarankan bimbingan tambahan dan latihan intensif.';
+    } else {
+      narasiSingkat = `${config.label}: Sangat Perlu Bimbingan. Aspek ini memerlukan penanganan khusus.`;
+      saran = 'Diperlukan program remedial dan pendampingan personal.';
+    }
+    
+    result.push({
+      aspek: key,
+      label: config.label,
+      nilai,
+      deskripsi: config.deskripsi,
+      indikator: config.indikator,
+      narasiSingkat,
+      saran
+    });
+  });
+  
+  return result;
+};
+
+/**
+ * Generate narasi karakter (kompatibel dengan sistem lama)
+ */
+export const generateCharacterNarasi = (qualitative) => {
+  if (!qualitative) return "Belum ada penilaian karakter untuk periode ini.";
+  
+  const avg = DIMENSI_KEYS.reduce((sum, key) => sum + (qualitative[key] || 0), 0) / 5;
+  
+  if (avg >= 85) {
+    return "🌟 Sangat Baik! Ananda menunjukkan penguasaan materi yang luar biasa di semua aspek penilaian. Pertahankan prestasi ini!";
+  } else if (avg >= 70) {
+    return "👍 Baik. Ananda memiliki pemahaman yang bagus. Tingkatkan konsistensi dan pendalaman materi untuk hasil lebih optimal.";
+  } else if (avg >= 50) {
+    return "📘 Cukup. Ananda perlu meningkatkan pemahaman dan kemandirian belajar. Bimbingan tambahan disarankan.";
+  } else if (avg >= 30) {
+    return "⚠️ Perlu Perhatian. Ananda memerlukan bimbingan lebih intensif. Segera jadwalkan konsultasi dengan pengajar.";
+  } else {
+    return "🔴 Perhatian Khusus. Ananda sangat memerlukan evaluasi menyeluruh dan program bimbingan intensif.";
+  }
+};
+
+// ============================================================
+// CATATAN GURU MANUAL
+// ============================================================
+
+/**
+ * Simpan catatan guru untuk siswa tertentu
+ */
+export const saveCatatanGuru = async (data) => {
+  const { studentId, studentName, mapel, periode, catatan, teacherId, teacherName } = data;
+  
+  try {
+    const existingQuery = query(
+      collection(db, RAPORT_COLLECTIONS.CATATAN_GURU || 'raport_catatan_guru'),
+      where("studentId", "==", studentId),
+      where("mapel", "==", mapel),
+      where("periode", "==", periode)
+    );
+    const existing = await getDocs(existingQuery);
+    
+    const catatanData = {
+      studentId,
+      studentName,
+      mapel,
+      periode,
+      catatan,
+      teacherId,
+      teacherName,
+      updatedAt: serverTimestamp()
+    };
+    
+    if (!existing.empty) {
+      await updateDoc(doc(db, RAPORT_COLLECTIONS.CATATAN_GURU || 'raport_catatan_guru', existing.docs[0].id), catatanData);
+      return { success: true, action: 'updated' };
+    } else {
+      await addDoc(collection(db, RAPORT_COLLECTIONS.CATATAN_GURU || 'raport_catatan_guru'), {
+        ...catatanData,
+        createdAt: serverTimestamp()
+      });
+      return { success: true, action: 'created' };
+    }
+  } catch (error) {
+    console.error("Error save catatan guru:", error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Ambil catatan guru
+ */
+export const getCatatanGuru = async (studentId, mapel, periode) => {
+  try {
+    const q = query(
+      collection(db, RAPORT_COLLECTIONS.CATATAN_GURU || 'raport_catatan_guru'),
+      where("studentId", "==", studentId),
+      where("mapel", "==", mapel),
+      where("periode", "==", periode)
+    );
+    const snap = await getDocs(q);
+    
+    if (snap.empty) return null;
+    return { id: snap.docs[0].id, ...snap.docs[0].data() };
+  } catch (error) {
+    console.error("Error get catatan guru:", error);
+    return null;
+  }
+};
+
+// ============================================================
+// EKSPOR NILAI KE RAPORT SCORES
+// ============================================================
+
+/**
+ * Ekspor nilai dari tugas/kuis/ujian ke raport_scores
+ * @param {Object} data - { studentId, studentName, mapel, topik, nilai, komponen, dimensi, teacherId, teacherName, catatan }
  */
 export const exportToRaportScores = async (data) => {
-  const { studentId, studentName, mapel, topik, nilai, komponen, teacherId, teacherName, qualitative } = data;
+  const { 
+    studentId, studentName, mapel, topik, nilai, komponen, 
+    dimensi, teacherId, teacherName, catatan 
+  } = data;
+  
   const periode = new Date().toISOString().slice(0, 7);
   
   if (!studentId) {
@@ -179,8 +388,14 @@ export const exportToRaportScores = async (data) => {
       updatedAt: serverTimestamp()
     };
     
-    if (qualitative) {
-      scoreData.qualitative = qualitative;
+    // Simpan 5 dimensi
+    if (dimensi) {
+      scoreData.dimensi = dimensi;
+    }
+    
+    // Simpan catatan guru
+    if (catatan) {
+      scoreData.catatan = catatan;
     }
     
     if (!existing.empty) {
@@ -199,10 +414,12 @@ export const exportToRaportScores = async (data) => {
   }
 };
 
+// ============================================================
+// SINKRONISASI SEMUA NILAI KE RAPORT FINAL
+// ============================================================
+
 /**
- * Sinkronkan semua nilai siswa ke raport_final (ONE-CLICK SYNC)
- * UPDATE: Pakai calculateFinalScore versi baru (bobot dinamis)
- * ➕ Parameter mapel untuk filter per mata pelajaran
+ * Sinkronkan semua nilai siswa ke raport_final
  */
 export const syncAllScoresToRaport = async (periode, mapel = null) => {
   console.log(`🚀 Mulai sinkronisasi raport untuk periode ${periode}${mapel ? `, mapel: ${mapel}` : ''}...`);
@@ -214,7 +431,7 @@ export const syncAllScoresToRaport = async (periode, mapel = null) => {
   let incompleteStudents = [];
   
   for (const student of students) {
-    const scores = { kuis: [], catatan: [], ujian: [], keaktifan: [] };
+    const scores = { kuis: [], tugas: [], ujian: [] };
     
     let scoresQuery = query(
       collection(db, RAPORT_COLLECTIONS.SCORES),
@@ -222,7 +439,6 @@ export const syncAllScoresToRaport = async (periode, mapel = null) => {
       where("periode", "==", periode)
     );
     
-    // ➕ Filter by mapel jika ada
     if (mapel) {
       scoresQuery = query(
         collection(db, RAPORT_COLLECTIONS.SCORES),
@@ -236,71 +452,61 @@ export const syncAllScoresToRaport = async (periode, mapel = null) => {
     
     scoresSnap.forEach(doc => {
       const data = doc.data();
-      if (scores[data.komponen]) {
-        scores[data.komponen].push(data.nilai);
+      if (data.komponen && scores[data.komponen] !== undefined) {
+        // Ambil data dimensi dari dokumen
+        scores[data.komponen].push(data.dimensi || {
+          pemahaman: data.nilai || 0,
+          analisis: data.nilai || 0,
+          ketelitian: data.nilai || 0,
+          waktu: data.nilai || 0,
+          dayaTangkap: data.nilai || 0
+        });
       }
     });
     
     const totalKomponen = (scores.kuis.length > 0 ? 1 : 0) +
-                          (scores.catatan.length > 0 ? 1 : 0) +
-                          (scores.ujian.length > 0 ? 1 : 0) +
-                          (scores.keaktifan.length > 0 ? 1 : 0);
+                          (scores.tugas.length > 0 ? 1 : 0) +
+                          (scores.ujian.length > 0 ? 1 : 0);
     
-    if (totalKomponen < 2) {
+    if (totalKomponen < 1) {
       incompleteStudents.push({
         id: student.id,
         name: student.nama,
         kelas: student.kelasSekolah,
-        totalKomponen,
+        totalKomponen: 0,
         missing: {
           kuis: scores.kuis.length === 0,
-          catatan: scores.catatan.length === 0,
-          ujian: scores.ujian.length === 0,
-          keaktifan: scores.keaktifan.length === 0
+          tugas: scores.tugas.length === 0,
+          ujian: scores.ujian.length === 0
         }
       });
       continue;
     }
     
-    const { nilaiAkhir, komponenDipake, detailNilai, bobotPakai } = calculateFinalScore(scores);
+    const { nilaiAkhir, mode, komponenDipake, detailDimensi, detailKomponen } = calculateFinalScore(scores);
     
-    const lastMonth = getPreviousMonth(periode);
-    let lastMonthQuery = query(
-      collection(db, RAPORT_COLLECTIONS.FINAL),
-      where("studentId", "==", student.id),
-      where("periode", "==", lastMonth)
-    );
+    // Ambil catatan guru
+    const catatanGuru = await getCatatanGuru(student.id, mapel || "Umum", periode);
     
-    // ➕ Filter by mapel untuk nilai bulan lalu
-    if (mapel) {
-      lastMonthQuery = query(
-        collection(db, RAPORT_COLLECTIONS.FINAL),
-        where("studentId", "==", student.id),
-        where("periode", "==", lastMonth),
-        where("mapel", "==", mapel)
-      );
-    }
-    
-    const lastMonthSnap = await getDocs(lastMonthQuery);
-    const nilaiSebelumnya = lastMonthSnap.empty ? null : lastMonthSnap.docs[0].data().nilai_akhir;
-    
-    const narasi = generateNarasi(student.nama, mapel || "Umum", nilaiAkhir, nilaiSebelumnya);
+    // Generate narasi
+    const narasi = generateNarasi(student.nama, mapel || "Umum", nilaiAkhir, detailDimensi);
+    const dimensiNarasi = generateDimensiNarasi(detailDimensi);
     
     const finalData = {
       studentId: student.id,
       studentName: student.nama,
       studentKelas: student.kelasSekolah,
       studentProgram: student.kategori || student.program,
-      mapel: mapel || "Umum", // ➕ SIMPAN MAPEL
+      mapel: mapel || "Umum",
       periode: periode,
-      nilai_kuis: detailNilai.kuis,
-      nilai_catatan: detailNilai.catatan,
-      nilai_ujian: detailNilai.ujian,
-      nilai_keaktifan: detailNilai.keaktifan,
       nilai_akhir: nilaiAkhir,
-      narasi: narasi,
+      mode_perhitungan: mode,
       komponen_dipakai: komponenDipake,
-      bobot_pakai: bobotPakai,
+      detail_dimensi: detailDimensi,
+      detail_komponen: detailKomponen,
+      narasi: narasi,
+      dimensi_narasi: dimensiNarasi,
+      catatan_guru: catatanGuru?.catatan || null,
       updatedAt: serverTimestamp()
     };
     
@@ -334,11 +540,12 @@ export const syncAllScoresToRaport = async (periode, mapel = null) => {
       studentId: student.id, 
       name: student.nama, 
       nilai: nilaiAkhir,
+      mode,
       komponenDipake 
     });
   }
   
-  // ➕ Update leaderboard dengan filter mapel
+  // Update leaderboard
   await updateLeaderboard(periode, mapel);
   
   return {
@@ -351,9 +558,12 @@ export const syncAllScoresToRaport = async (periode, mapel = null) => {
   };
 };
 
+// ============================================================
+// LEADERBOARD
+// ============================================================
+
 /**
- * Update leaderboard relatif
- * ➕ Parameter mapel untuk filter per mata pelajaran
+ * Update leaderboard
  */
 export const updateLeaderboard = async (periode, mapel = null) => {
   let finalQuery = query(
@@ -362,7 +572,6 @@ export const updateLeaderboard = async (periode, mapel = null) => {
     orderBy("nilai_akhir", "desc")
   );
   
-  // ➕ Filter by mapel
   if (mapel) {
     finalQuery = query(
       collection(db, RAPORT_COLLECTIONS.FINAL),
@@ -380,7 +589,6 @@ export const updateLeaderboard = async (periode, mapel = null) => {
     rank: index + 1
   }));
   
-  // ➕ Leaderboard key pakai periode+mapel
   const leaderboardKey = mapel ? `${periode}_${mapel}` : periode;
   
   const leaderboardSnap = await getDocs(query(
@@ -408,8 +616,6 @@ export const updateLeaderboard = async (periode, mapel = null) => {
 
 /**
  * Ambil leaderboard relatif untuk siswa tertentu
- * Hanya tampilkan peringkat di sekitar siswa
- * ➕ Parameter mapel
  */
 export const getRelativeLeaderboard = async (periode, studentId, mapel = null) => {
   const leaderboardKey = mapel ? `${periode}_${mapel}` : periode;
@@ -439,6 +645,51 @@ export const getRelativeLeaderboard = async (periode, studentId, mapel = null) =
   };
 };
 
+/**
+ * Ambil ranking gabungan (semua mapel)
+ */
+export const getRankingGabungan = async (periode) => {
+  const finalSnap = await getDocs(query(
+    collection(db, RAPORT_COLLECTIONS.FINAL),
+    where("periode", "==", periode)
+  ));
+  
+  const allFinals = finalSnap.docs.map(d => d.data());
+  
+  // Group by student
+  const studentMap = {};
+  allFinals.forEach(f => {
+    if (!studentMap[f.studentId]) {
+      studentMap[f.studentId] = {
+        studentId: f.studentId,
+        studentName: f.studentName,
+        studentKelas: f.studentKelas,
+        mapelScores: {},
+        totalNilai: 0,
+        mapelCount: 0
+      };
+    }
+    studentMap[f.studentId].mapelScores[f.mapel] = f.nilai_akhir;
+  });
+  
+  // Hitung rata-rata
+  const rankings = Object.values(studentMap).map(s => {
+    const nilaiArr = Object.values(s.mapelScores);
+    s.totalNilai = Math.round((nilaiArr.reduce((a, b) => a + b, 0) / nilaiArr.length) * 10) / 10;
+    s.mapelCount = nilaiArr.length;
+    return s;
+  });
+  
+  rankings.sort((a, b) => b.totalNilai - a.totalNilai);
+  rankings.forEach((r, i) => r.rank = i + 1);
+  
+  return rankings;
+};
+
+// ============================================================
+// HELPER
+// ============================================================
+
 function getPreviousMonth(periode) {
   const [year, month] = periode.split('-');
   let prevMonth = parseInt(month) - 1;
@@ -449,122 +700,3 @@ function getPreviousMonth(periode) {
   }
   return `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
 }
-
-// ============================================================
-// NARASI KARAKTER
-// ============================================================
-
-export const generateCharacterNarasi = (qualitative) => {
-  if (!qualitative) return "Belum ada penilaian karakter untuk periode ini.";
-  
-  const avg = (
-    (qualitative.pemahaman || 0) + 
-    (qualitative.aplikasi || 0) + 
-    (qualitative.literasi || 0) + 
-    (qualitative.inisiatif || 0) + 
-    (qualitative.mandiri || 0)
-  ) / 5;
-  
-  if (avg >= 4.5) {
-    return "🌟 Sangat Baik! Ananda menunjukkan penguasaan materi yang luar biasa, sangat mandiri, aktif dalam diskusi, dan konsisten mengerjakan tugas dengan teliti. Pertahankan prestasi ini!";
-  } else if (avg >= 3.5) {
-    return "👍 Baik. Ananda memiliki pemahaman yang bagus, cukup mandiri, dan menunjukkan inisiatif dalam belajar. Tingkatkan konsistensi dan pendalaman materi untuk hasil lebih optimal.";
-  } else if (avg >= 2.5) {
-    return "📘 Cukup. Ananda perlu meningkatkan pemahaman konsep, kemandirian dalam mengerjakan tugas, dan keaktifan bertanya saat mengalami kesulitan. Bimbingan tambahan disarankan.";
-  } else if (avg >= 1.5) {
-    return "⚠️ Perlu Perhatian. Ananda memerlukan bimbingan lebih intensif dalam pemahaman materi, motivasi belajar, dan pendampingan khusus. Segera jadwalkan konsultasi dengan pengajar.";
-  } else {
-    return "🔴 Perhatian Khusus. Ananda sangat memerlukan evaluasi menyeluruh dan program bimbingan intensif. Segera hubungi wali kelas untuk penanganan lebih lanjut.";
-  }
-};
-
-export const generateDetailCharacterNarasi = (qualitative) => {
-  if (!qualitative) return [];
-  
-  const aspekConfig = {
-    pemahaman: {
-      label: "Pemahaman Konsep",
-      narasi5: "Penguasaan teori sangat mendalam dan mampu menjelaskan kembali dengan baik.",
-      narasi4: "Pemahaman konsep sudah bagus, hanya perlu sedikit pendalaman.",
-      narasi3: "Cukup memahami dasar, perlu lebih banyak latihan soal variatif.",
-      narasi2: "Mengalami kesulitan memahami konsep, butuh penjelasan ulang.",
-      narasi1: "Belum memahami konsep dasar, perlu bimbingan dari awal.",
-      saran5: "Pertahankan dengan mengajarkan teman lain.",
-      saran4: "Perbanyak latihan soal HOTS.",
-      saran3: "Ikuti sesi tambahan dan perbanyak bertanya.",
-      saran2: "Jadwalkan bimbingan privat mingguan.",
-      saran1: "Perlu program remedial intensif."
-    },
-    aplikasi: {
-      label: "Logika & Aplikasi",
-      narasi5: "Mampu menerapkan konsep ke berbagai variasi soal dengan sangat baik.",
-      narasi4: "Cukup baik dalam menerapkan konsep, perlu variasi soal lebih menantang.",
-      narasi3: "Bisa mengerjakan soal standar, kesulitan di soal kompleks.",
-      narasi2: "Sering keliru dalam menerapkan rumus/logika.",
-      narasi1: "Belum mampu mengaplikasikan konsep ke soal.",
-      saran5: "Coba soal olimpiade untuk tantangan.",
-      saran4: "Latihan soal cerita dan studi kasus.",
-      saran3: "Fokus pada langkah-langkah pengerjaan.",
-      saran2: "Mulai dari soal dasar bertahap.",
-      saran1: "Kembali ke latihan konsep dasar."
-    },
-    literasi: {
-      label: "Literasi & Fokus",
-      narasi5: "Sangat teliti membaca soal dan mampu fokus dalam waktu lama.",
-      narasi4: "Teliti dalam membaca, fokus cukup baik.",
-      narasi3: "Cukup teliti, kadang kurang fokus pada sesi panjang.",
-      narasi2: "Sering salah membaca soal, mudah terdistraksi.",
-      narasi1: "Kesulitan fokus dan sering salah memahami instruksi.",
-      saran5: "Jadi mentor baca soal untuk teman.",
-      saran4: "Latih dengan timer untuk meningkatkan fokus.",
-      saran3: "Baca soal 2x sebelum menjawab.",
-      saran2: "Kurangi distraksi saat belajar.",
-      saran1: "Latihan membaca pemahaman dasar."
-    },
-    inisiatif: {
-      label: "Inisiatif",
-      narasi5: "Sangat aktif bertanya, mencari materi tambahan, dan berdiskusi.",
-      narasi4: "Aktif bertanya saat ada kesulitan dan mencari tahu sendiri.",
-      narasi3: "Kadang bertanya, perlu didorong untuk lebih proaktif.",
-      narasi2: "Jarang bertanya meski tampak kesulitan.",
-      narasi1: "Pasif, tidak pernah bertanya atau mencari bantuan.",
-      saran5: "Bantu teman yang kesulitan.",
-      saran4: "Eksplorasi materi di luar kurikulum.",
-      saran3: "Buat catatan pertanyaan sebelum kelas.",
-      saran2: "Mulai biasakan bertanya 1x per sesi.",
-      saran1: "Butuh pendekatan personal untuk membangun kepercayaan diri."
-    },
-    mandiri: {
-      label: "Kemandirian",
-      narasi5: "Sangat mandiri, mampu belajar sendiri dan menyelesaikan tugas tepat waktu.",
-      narasi4: "Mandiri dalam mengerjakan tugas, sesekali perlu arahan.",
-      narasi3: "Cukup mandiri, masih perlu pengawasan berkala.",
-      narasi2: "Sering bergantung pada bantuan, kurang percaya diri.",
-      narasi1: "Sangat bergantung, tidak bisa mengerjakan tanpa bimbingan penuh.",
-      saran5: "Berikan proyek mandiri untuk dikerjakan.",
-      saran4: "Kurangi bantuan bertahap.",
-      saran3: "Tetapkan target harian yang jelas.",
-      saran2: "Dampingi lalu lepas bertahap.",
-      saran1: "Mulai dari tugas sangat sederhana."
-    }
-  };
-  
-  const result = [];
-  
-  Object.keys(aspekConfig).forEach(key => {
-    const nilai = qualitative[key] || 0;
-    const config = aspekConfig[key];
-    const narasiKey = `narasi${nilai}`;
-    const saranKey = `saran${nilai}`;
-    
-    result.push({
-      aspek: key,
-      label: config.label,
-      nilai: nilai,
-      narasi: config[narasiKey] || config.narasi3,
-      saran: config[saranKey] || config.saran3
-    });
-  });
-  
-  return result;
-};
