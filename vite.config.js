@@ -2,13 +2,17 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// https://vite.dev/config/
+// https://vite.dev
 export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate', // Aplikasi otomatis update di HP saat Anda push kode baru!
+      registerType: 'autoUpdate', // Otomatis update di HP siswa/guru saat Anda push kode baru
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      workbox: {
+        // Solusi Eror: Menaikkan batas kapasitas cache PWA menjadi 5 MB agar file vendor 3.83 MB Anda lolos
+        maximumFileSizeToCacheInBytes: 5000000 
+      },
       manifest: {
         name: 'Gemilang Super App',
         short_name: 'Gemilang App',
