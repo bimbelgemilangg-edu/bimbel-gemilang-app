@@ -1,59 +1,81 @@
 import React, { useState } from 'react';
-// PERBAIKAN: Mengarahkan ke SidebarAdmin agar sinkron dengan sistem baru
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import FinanceDashboard from './FinanceDashboard';
-import IncomeEntry from './IncomeEntry';
-import ExpenseEntry from './ExpenseEntry';
-import DebtControl from './DebtControl';
+import TransactionForm from './TransactionForm';
 import TransactionHistory from './TransactionHistory';
+import { LayoutDashboard, PlusCircle, List } from 'lucide-react';
 
 const FinanceLayout = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard': return <FinanceDashboard />;
-      case 'income': return <IncomeEntry />;
-      case 'expense': return <ExpenseEntry />;
-      case 'debt': return <DebtControl />;
-      case 'history': return <TransactionHistory />;
-      default: return <FinanceDashboard />;
-    }
-  };
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const tabs = [
+    { key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} /> },
+    { key: 'add', label: 'Input Transaksi', icon: <PlusCircle size={16} /> },
+    { key: 'history', label: 'Riwayat', icon: <List size={16} /> }
+  ];
 
   return (
-    <div style={{ display: 'flex' }}>
-      {/* PERBAIKAN: Menggunakan SidebarAdmin */}
+    <div style={styles.wrapper}>
       <SidebarAdmin />
-      <div style={{ marginLeft: 250, padding: 30, width: '100%', background: '#f4f7f6', minHeight: '100vh', fontFamily: 'sans-serif' }}>
-        
-        {/* HEADER MENU NAVIGASI KEUANGAN */}
-        <div style={{background:'white', padding:15, borderRadius:10, marginBottom:20, boxShadow:'0 2px 5px rgba(0,0,0,0.05)', display:'flex', gap:10, flexWrap:'wrap'}}>
-            <button onClick={()=>setActiveTab('dashboard')} style={btnStyle(activeTab==='dashboard')}>📊 Dashboard & Saldo</button>
-            <button onClick={()=>setActiveTab('income')} style={btnStyle(activeTab==='income', '#27ae60')}>➕ Pemasukan Lain</button>
-            <button onClick={()=>setActiveTab('expense')} style={btnStyle(activeTab==='expense', '#c0392b')}>➖ Input Pengeluaran</button>
-            <button onClick={()=>setActiveTab('debt')} style={btnStyle(activeTab==='debt', '#e67e22')}>⚠️ Kontrol Piutang</button>
-            <button onClick={()=>setActiveTab('history')} style={btnStyle(activeTab==='history', '#2c3e50')}>📜 Buku Mutasi</button>
+      <div style={styles.mainContent(isMobile)}>
+        {/* Tab Navigation */}
+        <div style={styles.tabBar(isMobile)}>
+          {tabs.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              style={styles.tabBtn(tab.key === activeTab, isMobile)}
+            >
+              {tab.icon}
+              {!isMobile && <span>{tab.label}</span>}
+            </button>
+          ))}
         </div>
 
-        {/* KONTEN BERUBAH SESUAI TAB */}
-        {renderContent()}
-
+        {/* Content */}
+        <div style={{marginTop: 20}}>
+          {activeTab === 'dashboard' && <FinanceDashboard />}
+          {activeTab === 'add' && <TransactionForm />}
+          {activeTab === 'history' && <TransactionHistory />}
+        </div>
       </div>
     </div>
   );
 };
 
-const btnStyle = (active, color='#2c3e50') => ({
-    padding: '10px 20px',
-    background: active ? color : 'white',
-    color: active ? 'white' : '#555',
-    border: active ? 'none' : '1px solid #ddd',
-    borderRadius: '5px',
+const styles = {
+  wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
+  mainContent: (m) => ({ 
+    marginLeft: m ? '0' : '250px', 
+    padding: m ? '15px' : '30px', 
+    width: '100%', 
+    boxSizing: 'border-box',
+    transition: '0.3s'
+  }),
+  tabBar: (m) => ({ 
+    display: 'flex', gap: 8, 
+    background: 'white', padding: 6, 
+    borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+    border: '1px solid #f1f5f9'
+  }),
+  tabBtn: (active, m) => ({ 
+    flex: 1, padding: m ? '10px 8px' : '12px 20px', 
+    borderRadius: 10, border: 'none',
+    background: active ? '#1e293b' : 'transparent',
+    color: active ? 'white' : '#64748b',
+    fontWeight: active ? 'bold' : '500',
+    fontSize: m ? 11 : 13,
     cursor: 'pointer',
-    fontWeight: 'bold',
-    transition: '0.3s',
-    boxShadow: active ? '0 2px 5px rgba(0,0,0,0.2)' : 'none'
-});
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+    transition: '0.2s'
+  })
+};
 
 export default FinanceLayout;
