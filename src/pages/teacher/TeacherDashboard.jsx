@@ -1,7 +1,11 @@
-// src/pages/guru/Dashboard.jsx
+// src/pages/teacher/TeacherDashboard.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { db } from '../../firebase';
+import { 
+  collection, query, where, getDocs, doc, getDoc, addDoc, 
+  orderBy, serverTimestamp 
+} from "firebase/firestore";
 import { 
   Clock, Users, BookOpen, Star, ArrowRight, Eye, Megaphone, 
   Info, Calendar, Layout, MapPin, X, ChevronRight, Send, 
@@ -13,9 +17,7 @@ import ClassSession from './ClassSession';
 const TeacherDashboard = () => {
   const navigate = useNavigate();
   
-  // ============================================================
   // STATES
-  // ============================================================
   const [guru, setGuru] = useState(null);
   const [loading, setLoading] = useState(true);
   const [todaySchedules, setTodaySchedules] = useState([]);
@@ -34,14 +36,7 @@ const TeacherDashboard = () => {
     attendanceRate: 0,
   });
 
-  // Survey states
-  const [mandatorySurvey, setMandatorySurvey] = useState(null);
-  const [surveyAnswers, setSurveyAnswers] = useState({});
-  const [showSurveyModal, setShowSurveyModal] = useState(false);
-
-  // ============================================================
   // EFFECTS
-  // ============================================================
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -55,9 +50,7 @@ const TeacherDashboard = () => {
     }
   }, [announcements]);
 
-  // ============================================================
-  // FETCH FUNCTIONS (SUPABASE)
-  // ============================================================
+  // FETCH FUNCTIONS (FIREBASE)
   const fetchTeacherProfile = useCallback(async () => {
     try {
       const saved = JSON.parse(localStorage.getItem('teacherData'));
@@ -82,97 +75,72 @@ const TeacherDashboard = () => {
       const todayStr = new Date().toISOString().split('T')[0];
       
       // 🔥 Ambil jadwal hari ini
-      const { data: schedules, error: schedError } = await supabase
-        .from('jadwal_bimbel')
-        .select('*')
-        .eq('booker', teacher.nama.trim())
-        .eq('dateStr', todayStr)
-        .order('start', { ascending: true });
-
-      if (schedError) throw schedError;
-      
-      setTodaySchedules(schedules || []);
+      const qJadwal = query(
+        collection(db, "jadwal_bimbel"),
+        where("booker", "==", teacher.nama.trim()),
+        where("dateStr", "==", todayStr)
+      );
+      const snapJadwal = await getDocs(qJadwal);
+      const schedules = snapJadwal.docs.map(d => ({ id: d.id, ...d.data() }));
+      schedules.sort((a, b) => (a.start || '').localeCompare(b.start || ''));
+      setTodaySchedules(schedules);
 
       // 🔥 Ambil jadwal minggu ini
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
       const weekAgoStr = weekAgo.toISOString().split('T')[0];
 
-      const { data: weekSchedules, error: weekError } = await supabase
-        .from('jadwal_bimbel')
-        .select('*')
-        .eq('booker', teacher.nama.trim())
-        .gte('dateStr', weekAgoStr)
-        .lte('dateStr', todayStr);
-
-      if (weekError) throw weekError;
+      const qWeek = query(
+        collection(db, "jadwal_bimbel"),
+        where("booker", "==", teacher.nama.trim())
+      );
+      const snapWeek = await getDocs(qWeek);
+      const weekSchedules = snapWeek.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(s => s.dateStr >= weekAgoStr && s.dateStr <= todayStr);
 
       // 🔥 Hitung total siswa unik
       const allStudents = new Set();
-      (schedules || []).forEach(s => {
+      schedules.forEach(s => {
         if (s.students) {
           s.students.forEach(st => allStudents.add(st.id || st.studentId || st));
         }
       });
 
       // 🔥 Ambil attendance rate (dari teacher_logs)
-      const { data: logs, error: logsError } = await supabase
-        .from('teacher_logs')
-        .select('siswa_hadir, siswa_total')
-        .eq('teacher_id', teacher.id)
-        .gte('tanggal', weekAgoStr);
+      const qLogs = query(
+        collection(db, "teacher_logs"),
+        where("teacher_id", "==", teacher.id)
+      );
+      const snapLogs = await getDocs(qLogs);
+      const logs = snapLogs.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(l => l.tanggal >= weekAgoStr);
 
       let attendanceRate = 0;
-      if (logs && logs.length > 0) {
+      if (logs.length > 0) {
         const totalHadir = logs.reduce((acc, l) => acc + (l.siswa_hadir || 0), 0);
         const totalSiswa = logs.reduce((acc, l) => acc + (l.siswa_total || l.siswa_hadir || 0), 0);
         attendanceRate = totalSiswa > 0 ? Math.round((totalHadir / totalSiswa) * 100) : 0;
       }
 
       setStats({
-        todaySessions: schedules?.length || 0,
-        weekSessions: weekSchedules?.length || 0,
+        todaySessions: schedules.length,
+        weekSessions: weekSchedules.length,
         totalStudents: allStudents.size || 0,
         attendanceRate,
       });
 
       // 🔥 Ambil announcements
-      const { data: annData, error: annError } = await supabase
-        .from('student_contents')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (!annError && annData) {
-        setAnnouncements(
-          annData.filter(p => p.target_portal === 'Guru' || p.target_portal === 'Semua')
-        );
-      }
-
-      // 🔥 CEK SURVEI WAJIB
-      const { data: surveys, error: surveyError } = await supabase
-        .from('surveys')
-        .select('*')
-        .eq('status', 'aktif')
-        .eq('is_required', true);
-
-      if (!surveyError && surveys) {
-        const mandatory = surveys.find(s => 
-          s.target_type === 'semua_guru' || s.target_type === 'semua'
-        );
-        
-        if (mandatory) {
-          const { data: responses, error: respError } = await supabase
-            .from('survey_responses')
-            .select('*')
-            .eq('survey_id', mandatory.id)
-            .eq('user_id', teacher.id);
-
-          if (!respError && (!responses || responses.length === 0)) {
-            setMandatorySurvey(mandatory);
-            setShowSurveyModal(true);
-          }
-        }
-      }
+      const qAnnounce = query(
+        collection(db, "student_contents"),
+        orderBy("createdAt", "desc")
+      );
+      const snapAnnounce = await getDocs(qAnnounce);
+      const annData = snapAnnounce.docs.map(d => ({ id: d.id, ...d.data() }));
+      setAnnouncements(
+        annData.filter(p => p.targetPortal === "Guru" || p.targetPortal === "Semua")
+      );
 
     } catch (e) {
       console.error('Error fetching data:', e);
@@ -181,9 +149,7 @@ const TeacherDashboard = () => {
     }
   }, []);
 
-  // ============================================================
   // MAIN EFFECT
-  // ============================================================
   useEffect(() => {
     const init = async () => {
       const teacher = await fetchTeacherProfile();
@@ -194,23 +160,14 @@ const TeacherDashboard = () => {
     init();
   }, [fetchTeacherProfile, fetchData]);
 
-  // ============================================================
   // HANDLERS
-  // ============================================================
   const handleVerifyAndStart = async () => {
     if (!inputToken) return alert("Masukkan kode absensi!");
     try {
       const todayStr = new Date().toISOString().split('T')[0];
+      const codeDoc = await getDoc(doc(db, "settings", `daily_code_${todayStr}`));
       
-      const { data: codeData, error: codeError } = await supabase
-        .from('settings')
-        .select('code')
-        .eq('id', `daily_code_${todayStr}`)
-        .single();
-
-      if (codeError) throw codeError;
-
-      if (codeData && inputToken.toUpperCase() === codeData.code) {
+      if (codeDoc.exists() && inputToken.toUpperCase() === codeDoc.data().code) {
         setMode('session');
         setShowStartModal(false);
         setInputToken("");
@@ -222,38 +179,6 @@ const TeacherDashboard = () => {
     }
   };
 
-  const submitSurvey = async () => {
-    if (!mandatorySurvey) return;
-    
-    const unanswered = mandatorySurvey.questions.filter((_, i) => surveyAnswers[i] === undefined);
-    if (unanswered.length > 0) {
-      return alert(`❌ ${unanswered.length} pertanyaan belum dijawab.`);
-    }
-    
-    try {
-      const { error } = await supabase
-        .from('survey_responses')
-        .insert({
-          survey_id: mandatorySurvey.id,
-          user_id: guru.id,
-          user_name: guru.nama,
-          answers: mandatorySurvey.questions.map((_, i) => ({ 
-            question_index: i, 
-            answer: surveyAnswers[i] 
-          })),
-          submitted_at: new Date().toISOString()
-        });
-
-      if (error) throw error;
-      
-      setShowSurveyModal(false);
-      setMandatorySurvey(null);
-      alert("✅ Survei berhasil dikirim!");
-    } catch (err) {
-      alert("❌ Gagal: " + err.message);
-    }
-  };
-
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Selamat Pagi 🌅';
@@ -262,9 +187,7 @@ const TeacherDashboard = () => {
     return 'Selamat Malam 🌙';
   };
 
-  // ============================================================
   // RENDER: SESSION MODE
-  // ============================================================
   if (mode === 'session') {
     return (
       <ClassSession 
@@ -278,9 +201,7 @@ const TeacherDashboard = () => {
     );
   }
 
-  // ============================================================
   // RENDER: LOADING
-  // ============================================================
   if (loading) {
     return (
       <div style={styles.loadingContainer}>
@@ -290,13 +211,11 @@ const TeacherDashboard = () => {
     );
   }
 
-  // ============================================================
-  // RENDER: MAIN DASHBOARD
-  // ============================================================
+  // RENDER: MAIN
   return (
     <div style={styles.container}>
       
-      {/* ============ HEADER DENGAN LOGO ============ */}
+      {/* HEADER DENGAN LOGO */}
       <div style={styles.header}>
         <div style={styles.headerLeft}>
           <LogoGemilang size="small" variant="default" />
@@ -309,48 +228,7 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
-      {/* ============ HERO SLIDER ============ */}
-      {announcements.length > 0 && (
-        <div style={styles.sliderContainer(isMobile)}>
-          <div style={styles.sliderTrack(activeSlide, announcements.length)}>
-            {announcements.map((p, idx) => (
-              <div 
-                key={idx} 
-                style={styles.sliderSlide} 
-                onClick={() => setSelectedNews(p)}
-              >
-                <img 
-                  src={p.image_url || p.imageUrl} 
-                  style={styles.sliderImage} 
-                  alt={p.title} 
-                />
-                <div style={styles.sliderOverlay(isMobile)}>
-                  <div style={styles.sliderContent}>
-                    <span style={styles.sliderBadge}>
-                      <Megaphone size={10} /> Info Akademik
-                    </span>
-                    <h2 style={styles.sliderTitle(isMobile)}>{p.title}</h2>
-                    <button style={styles.sliderBtn}>Baca <ChevronRight size={12} /></button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          {announcements.length > 1 && (
-            <div style={styles.sliderDots}>
-              {announcements.map((_, idx) => (
-                <div 
-                  key={idx} 
-                  onClick={() => setActiveSlide(idx)} 
-                  style={styles.sliderDot(activeSlide === idx)} 
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ============ BANNER GREETING ============ */}
+      {/* BANNER */}
       <div style={styles.banner}>
         <div>
           <h1 style={styles.bannerTitle}>
@@ -371,7 +249,7 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
-      {/* ============ STATS CARDS ============ */}
+      {/* STATS CARDS */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
           <div style={styles.statIcon('primary')}>
@@ -414,7 +292,7 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
-      {/* ============ TODAY'S SCHEDULES + QUICK ACTIONS ============ */}
+      {/* TWO COLUMN */}
       <div style={styles.twoColGrid(isMobile)}>
         {/* Left: Schedules */}
         <div style={styles.section}>
@@ -465,7 +343,7 @@ const TeacherDashboard = () => {
           )}
         </div>
 
-        {/* Right: Quick Actions + Info */}
+        {/* Right: Quick Actions */}
         <div style={styles.rightCol}>
           <div style={styles.quickActionsGrid}>
             <div onClick={() => navigate('/guru/input')} style={styles.quickAction}>
@@ -502,11 +380,11 @@ const TeacherDashboard = () => {
             </div>
             {announcements.slice(0, 3).map(p => (
               <div key={p.id} style={styles.infoItem} onClick={() => setSelectedNews(p)}>
-                <img src={p.image_url || p.imageUrl} style={styles.infoImage} alt="" />
+                <img src={p.imageUrl} style={styles.infoImage} alt="" />
                 <div style={styles.infoContent}>
                   <b style={styles.infoItemTitle}>{p.title}</b>
                   <div style={styles.infoDate}>
-                    {p.created_at ? new Date(p.created_at).toLocaleDateString('id-ID') : ''}
+                    {p.createdAt?.toDate ? new Date(p.createdAt.toDate()).toLocaleDateString('id-ID') : ''}
                   </div>
                 </div>
               </div>
@@ -515,7 +393,7 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
-      {/* ============ FOOTER ============ */}
+      {/* FOOTER */}
       <div style={styles.footer}>
         <div style={styles.footerContent}>
           <LogoGemilang size="small" variant="default" showText={true} />
@@ -534,14 +412,14 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
-      {/* ============ MODAL BERITA ============ */}
+      {/* MODAL BERITA */}
       {selectedNews && (
         <div style={styles.modalOverlay} onClick={() => setSelectedNews(null)}>
           <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
             <button onClick={() => setSelectedNews(null)} style={styles.modalClose}>
               <X size={18} />
             </button>
-            <img src={selectedNews.image_url || selectedNews.imageUrl} style={styles.modalImage} alt="" />
+            <img src={selectedNews.imageUrl} style={styles.modalImage} alt="" />
             <div style={styles.modalBody}>
               <span style={styles.modalTag}>Official Admin</span>
               <h2 style={styles.modalTitle}>{selectedNews.title}</h2>
@@ -551,7 +429,7 @@ const TeacherDashboard = () => {
         </div>
       )}
 
-      {/* ============ MODAL KODE ABSENSI ============ */}
+      {/* MODAL KODE ABSENSI */}
       {showStartModal && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalCode} onClick={e => e.stopPropagation()}>
@@ -577,70 +455,18 @@ const TeacherDashboard = () => {
         </div>
       )}
 
-      {/* ============ MODAL SURVEI ============ */}
-      {showSurveyModal && mandatorySurvey && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalSurvey} onClick={e => e.stopPropagation()}>
-            <div style={styles.surveyHeader}>
-              <span style={styles.surveyIcon}>📋</span>
-              <div>
-                <h2 style={styles.surveyTitle}>{mandatorySurvey.title}</h2>
-                <p style={styles.surveyRequired}>🔴 WAJIB DIISI</p>
-              </div>
-            </div>
-            {mandatorySurvey.questions.map((q, qIdx) => (
-              <div key={qIdx} style={styles.surveyQuestion}>
-                <p style={styles.surveyQuestionText}>{qIdx+1}. {q.question}</p>
-                {q.options.filter(o => o).map((opt, oIdx) => (
-                  <label key={oIdx} style={styles.surveyOption(surveyAnswers[qIdx] === opt)}>
-                    <input 
-                      type="radio" 
-                      name={`q-${qIdx}`} 
-                      checked={surveyAnswers[qIdx] === opt} 
-                      onChange={() => setSurveyAnswers({...surveyAnswers, [qIdx]: opt})} 
-                      style={styles.surveyRadio} 
-                    />
-                    {opt}
-                  </label>
-                ))}
-              </div>
-            ))}
-            <button onClick={submitSurvey} style={styles.surveySubmit}>
-              <Send size={14} /> Kirim Jawaban
-            </button>
-          </div>
-        </div>
-      )}
-
       <style>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
-        }
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        .slide-up {
-          animation: slideUp 0.3s ease;
-        }
-        .fade-in {
-          animation: fadeIn 0.3s ease;
         }
       `}</style>
     </div>
   );
 };
 
-// ============================================================
-// STYLES
-// ============================================================
+// STYLES (sama seperti sebelumnya, tapi disederhanakan)
 const styles = {
-  // Container
   container: {
     maxWidth: '1100px',
     margin: '0 auto',
@@ -648,8 +474,6 @@ const styles = {
     width: '100%',
     boxSizing: 'border-box',
   },
-
-  // Loading
   loadingContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -666,8 +490,6 @@ const styles = {
     borderRadius: '50%',
     animation: 'spin 0.8s linear infinite',
   },
-
-  // Header
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -694,93 +516,6 @@ const styles = {
     fontSize: 13,
     flexShrink: 0,
   },
-
-  // Slider
-  sliderContainer: (m) => ({
-    width: '100%',
-    height: m ? 180 : 240,
-    borderRadius: 14,
-    overflow: 'hidden',
-    position: 'relative',
-    marginBottom: 16,
-    backgroundColor: '#000',
-  }),
-  sliderTrack: (active, total) => ({
-    display: 'flex',
-    width: `${total * 100}%`,
-    height: '100%',
-    transition: 'transform 0.8s ease',
-    transform: `translateX(-${(active * 100) / total}%)`,
-  }),
-  sliderSlide: {
-    minWidth: `${100 / (announcements?.length || 1)}%`,
-    height: '100%',
-    position: 'relative',
-    cursor: 'pointer',
-  },
-  sliderImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    opacity: 0.7,
-  },
-  sliderOverlay: (m) => ({
-    position: 'absolute',
-    inset: 0,
-    background: 'linear-gradient(to top, rgba(0,0,0,0.9) 10%, transparent 70%)',
-    display: 'flex',
-    alignItems: 'flex-end',
-    padding: m ? 14 : 20,
-  }),
-  sliderContent: { color: '#fff', maxWidth: 500 },
-  sliderBadge: {
-    background: '#e11d48',
-    padding: '2px 8px',
-    borderRadius: 10,
-    fontSize: 8,
-    fontWeight: 800,
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 6,
-  },
-  sliderTitle: (m) => ({
-    fontSize: m ? 14 : 20,
-    fontWeight: 900,
-    margin: '0 0 6px',
-    lineHeight: 1.2,
-  }),
-  sliderBtn: {
-    background: 'white',
-    color: '#000',
-    border: 'none',
-    padding: '5px 12px',
-    borderRadius: 8,
-    fontWeight: 800,
-    fontSize: 10,
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-  },
-  sliderDots: {
-    position: 'absolute',
-    bottom: 8,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    display: 'flex',
-    gap: 4,
-  },
-  sliderDot: (active) => ({
-    width: 5,
-    height: 5,
-    borderRadius: '50%',
-    background: active ? '#fff' : 'rgba(255,255,255,0.4)',
-    cursor: 'pointer',
-    transition: '0.3s',
-  }),
-
-  // Banner
   banner: {
     background: 'linear-gradient(135deg, #1A237E 0%, #283593 100%)',
     padding: '18px 22px',
@@ -814,8 +549,6 @@ const styles = {
     borderRadius: '50%',
     padding: 6,
   },
-
-  // Stats
   statsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
@@ -843,8 +576,6 @@ const styles = {
   }),
   statValue: { fontSize: 18, fontWeight: 900, color: '#1e293b', lineHeight: 1.2 },
   statLabel: { fontSize: 10, color: '#94a3b8', fontWeight: 500 },
-
-  // Two Column
   twoColGrid: (m) => ({
     display: 'grid',
     gridTemplateColumns: m ? '1fr' : '1.5fr 1fr',
@@ -852,8 +583,6 @@ const styles = {
     marginBottom: 20,
   }),
   rightCol: { display: 'flex', flexDirection: 'column', gap: 14 },
-
-  // Section
   section: { background: 'white', padding: 16, borderRadius: 14, border: '1px solid #f1f5f9' },
   sectionHeader: {
     display: 'flex',
@@ -873,8 +602,6 @@ const styles = {
     alignItems: 'center',
     gap: 2,
   },
-
-  // Schedule
   scheduleList: { display: 'flex', flexDirection: 'column', gap: 8 },
   scheduleCard: {
     background: '#f8fafc',
@@ -919,8 +646,6 @@ const styles = {
     whiteSpace: 'nowrap',
     flexShrink: 0,
   },
-
-  // Empty
   emptyState: {
     textAlign: 'center',
     padding: '24px 12px',
@@ -928,8 +653,6 @@ const styles = {
   },
   emptyText: { fontSize: 13, fontWeight: 600, margin: '8px 0 2px', color: '#64748b' },
   emptySub: { fontSize: 11, margin: 0 },
-
-  // Quick Actions
   quickActionsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(2, 1fr)',
@@ -954,8 +677,6 @@ const styles = {
     margin: '0 auto 6px',
   },
   quickLabel: { fontSize: 11, fontWeight: 600, color: '#1e293b' },
-
-  // Info Card
   infoCard: {
     background: 'white',
     padding: 14,
@@ -977,8 +698,6 @@ const styles = {
   infoContent: { flex: 1 },
   infoItemTitle: { fontSize: 11 },
   infoDate: { fontSize: 8, color: '#94a3b8', marginTop: 2 },
-
-  // Footer
   footer: {
     marginTop: 30,
     paddingTop: 20,
@@ -1023,8 +742,6 @@ const styles = {
     fontWeight: 700,
     color: '#64748b',
   },
-
-  // Modal
   modalOverlay: {
     position: 'fixed',
     inset: 0,
@@ -1062,8 +779,6 @@ const styles = {
   modalTag: { fontSize: 8, color: '#652D90', fontWeight: 800, textTransform: 'uppercase' },
   modalTitle: { margin: '4px 0 8px', fontSize: 16, fontWeight: 900 },
   modalText: { fontSize: 13, color: '#475569', lineHeight: 1.5, whiteSpace: 'pre-wrap' },
-
-  // Modal Code
   modalCode: {
     background: 'white',
     padding: 24,
@@ -1106,52 +821,6 @@ const styles = {
     fontWeight: 800,
     fontSize: 12,
     cursor: 'pointer',
-  },
-
-  // Survey Modal
-  modalSurvey: {
-    background: 'white',
-    borderRadius: 14,
-    padding: 20,
-    width: '90%',
-    maxWidth: 480,
-    maxHeight: '80vh',
-    overflowY: 'auto',
-  },
-  surveyHeader: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 },
-  surveyIcon: { fontSize: 22 },
-  surveyTitle: { margin: 0, fontSize: 16, fontWeight: 800 },
-  surveyRequired: { margin: 0, fontSize: 10, color: '#ef4444', fontWeight: 700 },
-  surveyQuestion: { marginBottom: 12 },
-  surveyQuestionText: { fontWeight: 700, fontSize: 12, marginBottom: 4 },
-  surveyOption: (active) => ({
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '6px 10px',
-    marginBottom: 3,
-    borderRadius: 6,
-    cursor: 'pointer',
-    background: active ? '#eef2ff' : '#f8fafc',
-    border: `1px solid ${active ? '#3b82f6' : '#e2e8f0'}`,
-    fontSize: 11,
-  }),
-  surveyRadio: { width: 14, height: 14 },
-  surveySubmit: {
-    width: '100%',
-    padding: 10,
-    background: '#3b82f6',
-    color: 'white',
-    border: 'none',
-    borderRadius: 8,
-    fontWeight: 700,
-    fontSize: 12,
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    marginTop: 8,
   },
 };
 
