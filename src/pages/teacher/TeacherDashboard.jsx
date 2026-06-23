@@ -3,13 +3,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { 
-  collection, query, where, getDocs, doc, getDoc, addDoc, 
+  collection, query, where, getDocs, doc, getDoc, 
   orderBy, serverTimestamp 
 } from "firebase/firestore";
 import { 
-  Clock, Users, BookOpen, Star, ArrowRight, Eye, Megaphone, 
-  Info, Calendar, Layout, MapPin, X, ChevronRight, Send, 
-  TrendingUp, Award, UserCheck 
+  Clock, Users, BookOpen, Star, ArrowRight, 
+  Calendar, Layout, MapPin, X, ChevronRight, 
+  TrendingUp, Award, UserCheck, Megaphone
 } from 'lucide-react';
 import LogoGemilang from '../../components/LogoGemilang';
 import ClassSession from './ClassSession';
@@ -17,7 +17,9 @@ import ClassSession from './ClassSession';
 const TeacherDashboard = () => {
   const navigate = useNavigate();
   
+  // ============================================================
   // STATES
+  // ============================================================
   const [guru, setGuru] = useState(null);
   const [loading, setLoading] = useState(true);
   const [todaySchedules, setTodaySchedules] = useState([]);
@@ -36,7 +38,9 @@ const TeacherDashboard = () => {
     attendanceRate: 0,
   });
 
+  // ============================================================
   // EFFECTS
+  // ============================================================
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -50,7 +54,9 @@ const TeacherDashboard = () => {
     }
   }, [announcements]);
 
-  // FETCH FUNCTIONS (FIREBASE)
+  // ============================================================
+  // FETCH FUNCTIONS - FIREBASE
+  // ============================================================
   const fetchTeacherProfile = useCallback(async () => {
     try {
       const saved = JSON.parse(localStorage.getItem('teacherData'));
@@ -61,7 +67,7 @@ const TeacherDashboard = () => {
       setGuru(saved);
       return saved;
     } catch (e) {
-      console.error('Error fetching profile:', e);
+      console.error('Error:', e);
       navigate('/login-guru');
       return null;
     }
@@ -107,7 +113,7 @@ const TeacherDashboard = () => {
         }
       });
 
-      // 🔥 Ambil attendance rate (dari teacher_logs)
+      // 🔥 Ambil attendance rate
       const qLogs = query(
         collection(db, "teacher_logs"),
         where("teacher_id", "==", teacher.id)
@@ -143,13 +149,15 @@ const TeacherDashboard = () => {
       );
 
     } catch (e) {
-      console.error('Error fetching data:', e);
+      console.error('Error:', e);
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // ============================================================
   // MAIN EFFECT
+  // ============================================================
   useEffect(() => {
     const init = async () => {
       const teacher = await fetchTeacherProfile();
@@ -160,7 +168,9 @@ const TeacherDashboard = () => {
     init();
   }, [fetchTeacherProfile, fetchData]);
 
+  // ============================================================
   // HANDLERS
+  // ============================================================
   const handleVerifyAndStart = async () => {
     if (!inputToken) return alert("Masukkan kode absensi!");
     try {
@@ -187,7 +197,9 @@ const TeacherDashboard = () => {
     return 'Selamat Malam 🌙';
   };
 
-  // RENDER: SESSION MODE
+  // ============================================================
+  // RENDER
+  // ============================================================
   if (mode === 'session') {
     return (
       <ClassSession 
@@ -201,7 +213,6 @@ const TeacherDashboard = () => {
     );
   }
 
-  // RENDER: LOADING
   if (loading) {
     return (
       <div style={styles.loadingContainer}>
@@ -211,7 +222,6 @@ const TeacherDashboard = () => {
     );
   }
 
-  // RENDER: MAIN
   return (
     <div style={styles.container}>
       
@@ -442,6 +452,7 @@ const TeacherDashboard = () => {
               style={styles.modalCodeInput} 
               placeholder="KODE" 
               maxLength={6} 
+              autoFocus
             />
             <div style={styles.modalCodeActions}>
               <button onClick={() => setShowStartModal(false)} style={styles.modalCodeCancel}>
@@ -465,7 +476,9 @@ const TeacherDashboard = () => {
   );
 };
 
-// STYLES (sama seperti sebelumnya, tapi disederhanakan)
+// ============================================================
+// STYLES
+// ============================================================
 const styles = {
   container: {
     maxWidth: '1100px',
