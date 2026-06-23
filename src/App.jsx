@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 
@@ -178,6 +179,17 @@ const KuisSiswaWrapper = () => {
 // APP
 // ============================================================
 function App() {
+  // ============================================================
+  // 🔥 PWA DETECTION - Otomatis arahkan ke login siswa
+  // ============================================================
+  useEffect(() => {
+    // Jika dibuka lewat PWA di HP siswa dan posisinya di halaman utama (/),
+    // otomatis arahkan ke halaman login siswa agar lebih praktis.
+    if (window.matchMedia('(display-mode: standalone)').matches && window.location.pathname === '/') {
+      window.location.href = '/login-siswa';
+    }
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>

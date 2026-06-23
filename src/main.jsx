@@ -1,9 +1,20 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'
+// src/main.jsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App.jsx';
+import './index.css';
+import { registerSW } from 'virtual:pwa-register';
 
-// Loading indicator saat aplikasi memuat
+// ============================================================
+// 🔥 DAFTARKAN SERVICE WORKER PWA DI LEVEL PALING DASAR
+// ============================================================
+if ('serviceWorker' in navigator) {
+  registerSW({ immediate: true });
+}
+
+// ============================================================
+// LOADING INDICATOR
+// ============================================================
 const rootElement = document.getElementById('root');
 
 if (rootElement) {
