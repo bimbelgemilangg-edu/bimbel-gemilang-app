@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SidebarAdmin from '../../components/SidebarAdmin';
 import { db } from '../../firebase';
-import { collection, getDocs, addDoc, query, orderBy, where, serverTimestamp, onSnapshot } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, doc, query, orderBy, where, serverTimestamp, onSnapshot } from "firebase/firestore";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import ExcelJS from 'exceljs';
@@ -9,7 +9,8 @@ import { saveAs } from 'file-saver';
 import { 
   Save, Clock, UserCheck, ShieldAlert, CreditCard, 
   FileText, List, Bold, Italic, Download, Table, AlertTriangle,
-  Users, RefreshCw, FileSpreadsheet, Calendar, Filter
+  Users, RefreshCw, FileSpreadsheet, Calendar, Filter,
+  ChevronLeft, ChevronRight, X, CheckCircle, Clock3, FileEdit
 } from 'lucide-react';
 
 const AdminDailyLog = () => {
@@ -20,13 +21,26 @@ const AdminDailyLog = () => {
   const [attendanceSummary, setAttendanceSummary] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
 
-  // === STATE BARU UNTUK FITUR DOWNLOAD RENTANG TANGGAL ===
+  // === STATE DOWNLOAD RENTANG TANGGAL ===
   const [showDateRangeModal, setShowDateRangeModal] = useState(false);
-  const [dateRange, setDateRange] = useState({
-    startDate: '',
-    endDate: ''
-  });
+  const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
   const [isDownloadingRange, setIsDownloadingRange] = useState(false);
+
+  // === STATE VISUAL CALENDAR ===
+  const [calendarDate, setCalendarDate] = useState(new Date());
+  const [calendarData, setCalendarData] = useState({}); // { 'YYYY-MM-DD': { status: 'active'|'izin', data: {...} } }
+  const [selectedDayDetail, setSelectedDayDetail] = useState(null);
+  const [showDayDetail, setShowDayDetail] = useState(false);
+
+  // === STATE IZIN ===
+  const [showIzinModal, setShowIzinModal] = useState(false);
+  const [izinForm, setIzinForm] = useState({
+    tanggal: '',
+    adminName: '',
+    alasan: '',
+    status: 'Izin'
+  });
+  const [isSubmittingIzin, setIsSubmittingIzin] = useState(false);
 
   const [formData, setFormData] = useState({
     tanggal: new Date().toISOString().split('T')[0],
@@ -46,15 +60,24 @@ const AdminDailyLog = () => {
     fetchTeachers();
     fetchHistory();
     fetchAttendanceSummary();
+    fetchCalendarData();
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Fetch calendar data when month changes
+  useEffect(() => {
+    fetchCalendarData();
+  }, [calendarDate]);
+
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     const q = query(collection(db, "attendance"), where("date", "==", today));
-    const unsubscribe = onSnapshot(q, () => fetchAttendanceSummary());
+    const unsubscribe = onSnapshot(q, () => {
+      fetchAttendanceSummary();
+      fetchCalendarData();
+    });
     return () => unsubscribe();
   }, []);
 
@@ -69,6 +92,61 @@ const AdminDailyLog = () => {
     const q = query(collection(db, "admin_daily_logs"), orderBy("createdAt", "desc"));
     const snap = await getDocs(q);
     setHistory(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+  };
+
+  // === FETCH DATA KALENDER ===
+  const fetchCalendarData = async () => {
+    try {
+      const year = calendarDate.getFullYear();
+      const month = calendarDate.getMonth();
+      const startOfMonth = new Date(year, month, 1);
+      const endOfMonth = new Date(year, month + 1, 0);
+      
+      const startStr = startOfMonth.toISOString().split('T')[0];
+      const endStr = endOfMonth.toISOString().split('T')[0];
+
+      // Fetch admin logs
+      const qLogs = query(
+        collection(db, "admin_daily_logs"),
+        where("tanggal", ">=", startStr),
+        where("tanggal", "<=", endStr),
+        orderBy("tanggal", "asc")
+      );
+      const snapLogs = await getDocs(qLogs);
+      
+      // Fetch izin
+      const qIzin = query(
+        collection(db, "admin_izin"),
+        where("tanggal", ">=", startStr),
+        where("tanggal", "<=", endStr),
+        orderBy("tanggal", "asc")
+      );
+      const snapIzin = await getDocs(qIzin);
+
+      const dataMap = {};
+      
+      snapLogs.docs.forEach(d => {
+        const logData = d.data();
+        dataMap[logData.tanggal] = {
+          status: 'active',
+          type: 'log',
+          data: { id: d.id, ...logData }
+        };
+      });
+
+      snapIzin.docs.forEach(d => {
+        const izinData = d.data();
+        dataMap[izinData.tanggal] = {
+          status: 'izin',
+          type: 'izin',
+          data: { id: d.id, ...izinData }
+        };
+      });
+
+      setCalendarData(dataMap);
+    } catch (err) {
+      console.error("Gagal fetch data kalender:", err);
+    }
   };
 
   const fetchAttendanceSummary = async () => {
@@ -128,7 +206,78 @@ const AdminDailyLog = () => {
     } catch (err) { console.error("Gagal fetch absensi:", err); }
   };
 
-  // === FUNGSI BARU: DOWNLOAD EXCEL BERDASARKAN RENTANG TANGGAL ===
+  // === FUNGSI KALENDER ===
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
+    return { daysInMonth, firstDayOfMonth };
+  };
+
+  const changeMonth = (delta) => {
+    setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + delta, 1));
+  };
+
+  const goToToday = () => {
+    setCalendarDate(new Date());
+  };
+
+  const handleDayClick = (day) => {
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dayData = calendarData[dateStr];
+    
+    if (dayData) {
+      setSelectedDayDetail({ date: dateStr, ...dayData });
+      setShowDayDetail(true);
+    }
+  };
+
+  const monthNames = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ];
+
+  const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+
+  // === FUNGSI IZIN ===
+  const openIzinModal = () => {
+    setIzinForm({
+      tanggal: new Date().toISOString().split('T')[0],
+      adminName: '',
+      alasan: '',
+      status: 'Izin'
+    });
+    setShowIzinModal(true);
+  };
+
+  const handleSubmitIzin = async () => {
+    if (!izinForm.tanggal || !izinForm.adminName || !izinForm.alasan) {
+      alert('⚠️ Mohon lengkapi semua field!');
+      return;
+    }
+
+    setIsSubmittingIzin(true);
+    try {
+      await addDoc(collection(db, "admin_izin"), {
+        ...izinForm,
+        createdAt: serverTimestamp()
+      });
+      
+      alert('✅ Izin berhasil dicatat!');
+      setShowIzinModal(false);
+      fetchCalendarData();
+    } catch (err) {
+      console.error("Gagal submit izin:", err);
+      alert('❌ Gagal mencatat izin: ' + err.message);
+    } finally {
+      setIsSubmittingIzin(false);
+    }
+  };
+
+  // === FUNGSI DOWNLOAD RENTANG TANGGAL ===
   const handleDownloadByDateRange = async () => {
     if (!dateRange.startDate || !dateRange.endDate) {
       alert('⚠️ Silakan pilih tanggal mulai dan tanggal akhir terlebih dahulu!');
@@ -142,7 +291,6 @@ const AdminDailyLog = () => {
 
     setIsDownloadingRange(true);
     try {
-      // Query data berdasarkan rentang tanggal
       const q = query(
         collection(db, "admin_daily_logs"),
         where("tanggal", ">=", dateRange.startDate),
@@ -160,12 +308,11 @@ const AdminDailyLog = () => {
 
       const logs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       
-      // Buat workbook Excel
       const workbook = new ExcelJS.Workbook();
       workbook.creator = 'Bimbel Gemilang';
       workbook.created = new Date();
       
-      // === Sheet 1: Ringkasan Laporan ===
+      // Sheet 1: Ringkasan Laporan
       const summarySheet = workbook.addWorksheet('Ringkasan Laporan', {
         views: [{ state: 'frozen', ySplit: 1 }]
       });
@@ -182,17 +329,13 @@ const AdminDailyLog = () => {
         { header: 'Custom Risk', key: 'customRisk', width: 30 }
       ];
       
-      // Styling header
       summarySheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
       summarySheet.getRow(1).fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: '0F172A' }
+        type: 'pattern', pattern: 'solid', fgColor: { argb: '0F172A' }
       };
       summarySheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
       summarySheet.getRow(1).height = 25;
       
-      // Isi data ringkasan
       logs.forEach((log, index) => {
         const row = summarySheet.addRow({
           no: index + 1,
@@ -206,44 +349,25 @@ const AdminDailyLog = () => {
           customRisk: log.customRisk || '-'
         });
         
-        // Warna berdasarkan risk level
         if (log.riskLevel?.includes('🔴')) {
-          row.getCell('riskLevel').fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FEE2E2' }
-          };
+          row.getCell('riskLevel').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FEE2E2' } };
           row.getCell('riskLevel').font = { color: { argb: 'EF4444' }, bold: true };
         } else if (log.riskLevel?.includes('🟡')) {
-          row.getCell('riskLevel').fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFF3CD' }
-          };
+          row.getCell('riskLevel').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3CD' } };
           row.getCell('riskLevel').font = { color: { argb: 'F59E0B' }, bold: true };
         } else {
-          row.getCell('riskLevel').fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'DCFCE7' }
-          };
+          row.getCell('riskLevel').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'DCFCE7' } };
           row.getCell('riskLevel').font = { color: { argb: '27AE60' }, bold: true };
         }
       });
       
-      // Border untuk semua sel
       summarySheet.eachRow((row) => {
         row.eachCell((cell) => {
-          cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
-          };
+          cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
         });
       });
       
-      // === Sheet 2: Detail Lengkap ===
+      // Sheet 2: Detail Lengkap
       const detailSheet = workbook.addWorksheet('Detail Lengkap', {
         views: [{ state: 'frozen', ySplit: 1 }]
       });
@@ -264,13 +388,8 @@ const AdminDailyLog = () => {
         { header: 'Narasi Lengkap', key: 'narasi', width: 60 }
       ];
       
-      // Styling header detail
       detailSheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
-      detailSheet.getRow(1).fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: '1E3A5F' }
-      };
+      detailSheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1E3A5F' } };
       detailSheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
       detailSheet.getRow(1).height = 25;
       
@@ -292,25 +411,16 @@ const AdminDailyLog = () => {
         });
       });
       
-      // Border dan wrap text untuk detail
       detailSheet.eachRow((row) => {
         row.eachCell((cell) => {
-          cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
-          };
-          if (cell.col === 13) { // Kolom narasi
-            cell.alignment = { wrapText: true, vertical: 'top' };
-          }
+          cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+          if (cell.col === 13) cell.alignment = { wrapText: true, vertical: 'top' };
         });
-        row.height = 30; // Tinggi row untuk mengakomodasi narasi
+        row.height = 30;
       });
       
-      // === Sheet 3: Statistik ===
+      // Sheet 3: Statistik
       const statsSheet = workbook.addWorksheet('Statistik');
-      
       const totalLogs = logs.length;
       const totalSiswaHadir = logs.reduce((sum, log) => sum + (parseInt(log.siswa?.jumlahHadir) || 0), 0);
       const highRisk = logs.filter(log => log.riskLevel?.includes('🔴')).length;
@@ -326,7 +436,7 @@ const AdminDailyLog = () => {
         { metric: 'Periode Laporan', value: `${dateRange.startDate} s/d ${dateRange.endDate}` },
         { metric: 'Total Hari Laporan', value: totalLogs },
         { metric: 'Total Kehadiran Siswa', value: totalSiswaHadir },
-        { metric: 'Rata-rata Siswa/Hari', value: (totalSiswaHadir / totalLogs).toFixed(1) },
+        { metric: 'Rata-rata Siswa/Hari', value: totalLogs > 0 ? (totalSiswaHadir / totalLogs).toFixed(1) : '0' },
         { metric: 'Risk Level 🔴 (Urgent)', value: highRisk },
         { metric: 'Risk Level 🟡 (Warning)', value: mediumRisk },
         { metric: 'Risk Level 🟢 (Aman)', value: lowRisk }
@@ -334,12 +444,10 @@ const AdminDailyLog = () => {
       
       statsSheet.getColumn('metric').font = { bold: true };
       
-      // Generate file name dengan format tanggal
       const formattedStart = dateRange.startDate.replace(/-/g, '');
       const formattedEnd = dateRange.endDate.replace(/-/g, '');
       const fileName = `Laporan_Audit_${formattedStart}_sampai_${formattedEnd}.xlsx`;
       
-      // Download file
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       saveAs(blob, fileName);
@@ -378,6 +486,7 @@ const AdminDailyLog = () => {
       });
       alert("✅ Audit Terkunci & Tersimpan!");
       fetchHistory();
+      fetchCalendarData();
     } catch (error) { alert(error.message); } 
     finally { setLoading(false); }
   };
@@ -441,6 +550,74 @@ const AdminDailyLog = () => {
     }
   };
 
+  // === RENDER KALENDER ===
+  const renderCalendar = () => {
+    const { daysInMonth, firstDayOfMonth } = getDaysInMonth(calendarDate);
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+
+    const weeks = [];
+    let days = [];
+    let dayCount = 1;
+
+    // Empty cells before first day
+    for (let i = 0; i < firstDayOfMonth; i++) {
+      days.push(<div key={`empty-${i}`} style={styles.calendarDayEmpty}></div>);
+    }
+
+    while (dayCount <= daysInMonth) {
+      const currentDay = dayCount;
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`;
+      const dayData = calendarData[dateStr];
+      const isToday = dateStr === todayStr;
+
+      let dayStyle = { ...styles.calendarDay };
+      let dotStyle = { ...styles.dayDot };
+
+      if (dayData?.status === 'active') {
+        dayStyle = { ...dayStyle, ...styles.calendarDayActive };
+        dotStyle = { ...dotStyle, ...styles.dayDotActive };
+      } else if (dayData?.status === 'izin') {
+        dayStyle = { ...dayStyle, ...styles.calendarDayIzin };
+        dotStyle = { ...dotStyle, ...styles.dayDotIzin };
+      }
+
+      if (isToday) {
+        dayStyle = { ...dayStyle, ...styles.calendarDayToday };
+      }
+
+      days.push(
+        <div
+          key={currentDay}
+          style={dayStyle}
+          onClick={() => handleDayClick(currentDay)}
+          title={dayData ? (dayData.status === 'izin' ? 'Izin' : 'Aktif') : 'Tidak ada aktivitas'}
+        >
+          <span style={styles.dayNumber(isToday)}>{currentDay}</span>
+          {dayData && <div style={dotStyle}></div>}
+        </div>
+      );
+
+      dayCount++;
+
+      if (days.length === 7 || dayCount > daysInMonth) {
+        while (days.length < 7) {
+          days.push(<div key={`empty-end-${days.length}`} style={styles.calendarDayEmpty}></div>);
+        }
+        weeks.push(
+          <div key={`week-${weeks.length}`} style={styles.calendarWeek}>
+            {days}
+          </div>
+        );
+        days = [];
+      }
+    }
+
+    return weeks;
+  };
+
   return (
     <div style={styles.wrapper}>
       <SidebarAdmin />
@@ -449,7 +626,6 @@ const AdminDailyLog = () => {
         <div style={styles.header(isMobile)}>
           <h2 style={styles.pageTitle(isMobile)}><ShieldAlert size={20} /> Daily Audit Intelligence</h2>
           <div style={styles.headerButtons(isMobile)}>
-            {/* === TOMBOL BARU: DOWNLOAD RENTANG TANGGAL === */}
             <button 
               onClick={() => {
                 setDateRange({ startDate: '', endDate: '' });
@@ -465,131 +641,251 @@ const AdminDailyLog = () => {
           </div>
         </div>
 
-        {/* === MODAL BARU: PILIH RENTANG TANGGAL === */}
-        {showDateRangeModal && (
-          <div style={styles.modalOverlay}>
-            <div style={styles.modalContent(isMobile)}>
+        {/* === VISUAL CALENDAR === */}
+        <div style={styles.sectionCard}>
+          <div style={styles.calendarHeader}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <h3 style={styles.sectionTitle(isMobile)}><Calendar size={18} /> Kalender Aktivitas Admin</h3>
+              <span style={styles.liveDot}></span>
+            </div>
+            <div style={styles.calendarNav}>
+              <button onClick={goToToday} style={styles.calendarTodayBtn}>Hari Ini</button>
+              <button onClick={() => changeMonth(-1)} style={styles.calendarNavBtn}><ChevronLeft size={16} /></button>
+              <span style={styles.calendarMonthLabel}>
+                {monthNames[calendarDate.getMonth()]} {calendarDate.getFullYear()}
+              </span>
+              <button onClick={() => changeMonth(1)} style={styles.calendarNavBtn}><ChevronRight size={16} /></button>
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div style={styles.calendarLegend}>
+            <div style={styles.legendItem}>
+              <div style={{ ...styles.legendDot, background: '#27ae60' }}></div>
+              <span style={styles.legendText}>Aktif (Audit Tercatat)</span>
+            </div>
+            <div style={styles.legendItem}>
+              <div style={{ ...styles.legendDot, background: '#f59e0b' }}></div>
+              <span style={styles.legendText}>Izin</span>
+            </div>
+            <div style={styles.legendItem}>
+              <div style={{ ...styles.legendDot, background: '#e2e8f0', border: '1px solid #cbd5e1' }}></div>
+              <span style={styles.legendText}>Tidak Ada Aktivitas</span>
+            </div>
+            <button onClick={openIzinModal} style={styles.btnIzin}>
+              <FileEdit size={14} /> Catat Izin
+            </button>
+          </div>
+
+          {/* Day Names */}
+          <div style={styles.calendarDayNames}>
+            {dayNames.map(day => (
+              <div key={day} style={styles.dayName}>{day}</div>
+            ))}
+          </div>
+
+          {/* Calendar Grid */}
+          <div style={styles.calendarGrid}>
+            {renderCalendar()}
+          </div>
+        </div>
+
+        {/* === MODAL DETAIL HARI === */}
+        {showDayDetail && selectedDayDetail && (
+          <div style={styles.modalOverlay} onClick={() => setShowDayDetail(false)}>
+            <div style={styles.modalContent(isMobile)} onClick={e => e.stopPropagation()}>
               <div style={styles.modalHeader}>
                 <h3 style={styles.modalTitle}>
-                  <Filter size={20} /> Download Laporan Rentang Tanggal
+                  {selectedDayDetail.status === 'izin' ? '🟡' : '🟢'} {selectedDayDetail.date}
                 </h3>
-                <button 
-                  onClick={() => setShowDateRangeModal(false)} 
-                  style={styles.modalClose}
-                >
-                  ✕
+                <button onClick={() => setShowDayDetail(false)} style={styles.modalClose}>
+                  <X size={18} />
                 </button>
               </div>
-              
               <div style={styles.modalBody}>
-                <p style={styles.modalDescription}>
-                  Pilih rentang tanggal untuk mendownload semua laporan audit dalam bentuk Excel.
-                  File akan berisi 3 sheet: Ringkasan, Detail Lengkap, dan Statistik.
-                </p>
-                
-                <div style={styles.dateRangeInputs}>
-                  <div style={styles.dateField}>
-                    <label style={styles.dateLabel}>
-                      <Calendar size={14} /> Tanggal Mulai
-                    </label>
-                    <input 
-                      type="date" 
-                      style={styles.modalDateInput}
-                      value={dateRange.startDate}
-                      onChange={(e) => setDateRange({...dateRange, startDate: e.target.value})}
-                      max={dateRange.endDate || undefined}
-                    />
+                {selectedDayDetail.status === 'izin' ? (
+                  <div style={styles.detailCard}>
+                    <div style={styles.detailBadgeIzin}>
+                      <Clock3 size={16} /> IZIN
+                    </div>
+                    <div style={styles.detailRow}>
+                      <span style={styles.detailLabel}>Admin:</span>
+                      <span style={styles.detailValue}>{selectedDayDetail.data.adminName || '-'}</span>
+                    </div>
+                    <div style={styles.detailRow}>
+                      <span style={styles.detailLabel}>Alasan:</span>
+                      <span style={styles.detailValue}>{selectedDayDetail.data.alasan || '-'}</span>
+                    </div>
+                    <div style={styles.detailRow}>
+                      <span style={styles.detailLabel}>Status:</span>
+                      <span style={{...styles.detailValue, color: '#f59e0b', fontWeight: 'bold'}}>{selectedDayDetail.data.status || 'Izin'}</span>
+                    </div>
                   </div>
-                  
-                  <div style={styles.dateField}>
-                    <label style={styles.dateLabel}>
-                      <Calendar size={14} /> Tanggal Akhir
-                    </label>
-                    <input 
-                      type="date" 
-                      style={styles.modalDateInput}
-                      value={dateRange.endDate}
-                      onChange={(e) => setDateRange({...dateRange, endDate: e.target.value})}
-                      min={dateRange.startDate || undefined}
-                    />
+                ) : (
+                  <div style={styles.detailCard}>
+                    <div style={styles.detailBadgeActive}>
+                      <CheckCircle size={16} /> AKTIF
+                    </div>
+                    <div style={styles.detailRow}>
+                      <span style={styles.detailLabel}>Admin:</span>
+                      <span style={styles.detailValue}>{selectedDayDetail.data.adminName || '-'}</span>
+                    </div>
+                    <div style={styles.detailRow}>
+                      <span style={styles.detailLabel}>Jam:</span>
+                      <span style={styles.detailValue}>{selectedDayDetail.data.jamMasuk || '-'} - {selectedDayDetail.data.jamPulang || '-'}</span>
+                    </div>
+                    <div style={styles.detailRow}>
+                      <span style={styles.detailLabel}>Guru:</span>
+                      <span style={styles.detailValue}>{selectedDayDetail.data.tentor?.nama || '-'}</span>
+                    </div>
+                    <div style={styles.detailRow}>
+                      <span style={styles.detailLabel}>Risk:</span>
+                      <span style={styles.detailValue}>{selectedDayDetail.data.riskLevel || '-'}</span>
+                    </div>
+                    {selectedDayDetail.data.canvasNarasi && (
+                      <div style={{ marginTop: 10 }}>
+                        <span style={styles.detailLabel}>Narasi:</span>
+                        <p style={styles.detailNarasi}>{selectedDayDetail.data.canvasNarasi}</p>
+                      </div>
+                    )}
                   </div>
-                </div>
-
-                {/* Quick select buttons */}
-                <div style={styles.quickSelectRow}>
-                  <span style={styles.quickSelectLabel}>Cepat:</span>
-                  <button 
-                    type="button"
-                    style={styles.quickSelectBtn}
-                    onClick={() => {
-                      const end = new Date();
-                      const start = new Date();
-                      start.setDate(start.getDate() - 7);
-                      setDateRange({
-                        startDate: start.toISOString().split('T')[0],
-                        endDate: end.toISOString().split('T')[0]
-                      });
-                    }}
-                  >
-                    7 Hari Terakhir
-                  </button>
-                  <button 
-                    type="button"
-                    style={styles.quickSelectBtn}
-                    onClick={() => {
-                      const end = new Date();
-                      const start = new Date();
-                      start.setDate(1);
-                      setDateRange({
-                        startDate: start.toISOString().split('T')[0],
-                        endDate: end.toISOString().split('T')[0]
-                      });
-                    }}
-                  >
-                    Bulan Ini
-                  </button>
-                  <button 
-                    type="button"
-                    style={styles.quickSelectBtn}
-                    onClick={() => {
-                      const end = new Date();
-                      const start = new Date();
-                      start.setMonth(start.getMonth() - 1);
-                      setDateRange({
-                        startDate: start.toISOString().split('T')[0],
-                        endDate: end.toISOString().split('T')[0]
-                      });
-                    }}
-                  >
-                    30 Hari Terakhir
-                  </button>
-                </div>
+                )}
               </div>
-              
               <div style={styles.modalFooter}>
-                <button 
-                  onClick={() => setShowDateRangeModal(false)} 
-                  style={styles.modalBtnCancel}
-                >
-                  Batal
-                </button>
-                <button 
-                  onClick={handleDownloadByDateRange} 
-                  style={styles.modalBtnDownload}
-                  disabled={isDownloadingRange || !dateRange.startDate || !dateRange.endDate}
-                >
-                  {isDownloadingRange ? (
-                    <>⏳ Mendownload...</>
-                  ) : (
-                    <><Download size={16} /> Download Excel</>
-                  )}
+                <button onClick={() => setShowDayDetail(false)} style={styles.modalBtnCancel}>
+                  Tutup
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* REKAP ABSENSI - Kode tidak berubah */}
+        {/* === MODAL IZIN === */}
+        {showIzinModal && (
+          <div style={styles.modalOverlay} onClick={() => setShowIzinModal(false)}>
+            <div style={styles.modalContent(isMobile)} onClick={e => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <h3 style={styles.modalTitle}>
+                  <FileEdit size={20} /> Catat Izin Admin
+                </h3>
+                <button onClick={() => setShowIzinModal(false)} style={styles.modalClose}>
+                  <X size={18} />
+                </button>
+              </div>
+              <div style={styles.modalBody}>
+                <div style={styles.izinField}>
+                  <label style={styles.dateLabel}>
+                    <Calendar size={14} /> Tanggal Izin
+                  </label>
+                  <input
+                    type="date"
+                    style={styles.modalDateInput}
+                    value={izinForm.tanggal}
+                    onChange={e => setIzinForm({...izinForm, tanggal: e.target.value})}
+                  />
+                </div>
+                <div style={styles.izinField}>
+                  <label style={styles.dateLabel}>
+                    <UserCheck size={14} /> Nama Admin
+                  </label>
+                  <input
+                    type="text"
+                    style={styles.izinInput}
+                    placeholder="Masukkan nama admin..."
+                    value={izinForm.adminName}
+                    onChange={e => setIzinForm({...izinForm, adminName: e.target.value})}
+                  />
+                </div>
+                <div style={styles.izinField}>
+                  <label style={styles.dateLabel}>
+                    <FileText size={14} /> Alasan Izin
+                  </label>
+                  <textarea
+                    style={styles.izinTextarea}
+                    placeholder="Jelaskan alasan izin..."
+                    value={izinForm.alasan}
+                    onChange={e => setIzinForm({...izinForm, alasan: e.target.value})}
+                    rows={3}
+                  />
+                </div>
+              </div>
+              <div style={styles.modalFooter}>
+                <button onClick={() => setShowIzinModal(false)} style={styles.modalBtnCancel}>
+                  Batal
+                </button>
+                <button
+                  onClick={handleSubmitIzin}
+                  style={styles.modalBtnDownload}
+                  disabled={isSubmittingIzin}
+                >
+                  {isSubmittingIzin ? '⏳ Menyimpan...' : <><Save size={16} /> Simpan Izin</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* === MODAL DOWNLOAD RANGE === */}
+        {showDateRangeModal && (
+          <div style={styles.modalOverlay} onClick={() => setShowDateRangeModal(false)}>
+            <div style={styles.modalContent(isMobile)} onClick={e => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <h3 style={styles.modalTitle}><Filter size={20} /> Download Laporan Rentang Tanggal</h3>
+                <button onClick={() => setShowDateRangeModal(false)} style={styles.modalClose}><X size={18} /></button>
+              </div>
+              <div style={styles.modalBody}>
+                <p style={styles.modalDescription}>
+                  Pilih rentang tanggal untuk mendownload semua laporan audit dalam bentuk Excel.
+                  File akan berisi 3 sheet: Ringkasan, Detail Lengkap, dan Statistik.
+                </p>
+                <div style={styles.dateRangeInputs}>
+                  <div style={styles.dateField}>
+                    <label style={styles.dateLabel}><Calendar size={14} /> Tanggal Mulai</label>
+                    <input type="date" style={styles.modalDateInput} value={dateRange.startDate}
+                      onChange={(e) => setDateRange({...dateRange, startDate: e.target.value})}
+                      max={dateRange.endDate || undefined} />
+                  </div>
+                  <div style={styles.dateField}>
+                    <label style={styles.dateLabel}><Calendar size={14} /> Tanggal Akhir</label>
+                    <input type="date" style={styles.modalDateInput} value={dateRange.endDate}
+                      onChange={(e) => setDateRange({...dateRange, endDate: e.target.value})}
+                      min={dateRange.startDate || undefined} />
+                  </div>
+                </div>
+                <div style={styles.quickSelectRow}>
+                  <span style={styles.quickSelectLabel}>Cepat:</span>
+                  <button type="button" style={styles.quickSelectBtn} onClick={() => {
+                    const end = new Date();
+                    const start = new Date();
+                    start.setDate(start.getDate() - 7);
+                    setDateRange({ startDate: start.toISOString().split('T')[0], endDate: end.toISOString().split('T')[0] });
+                  }}>7 Hari Terakhir</button>
+                  <button type="button" style={styles.quickSelectBtn} onClick={() => {
+                    const end = new Date();
+                    const start = new Date();
+                    start.setDate(1);
+                    setDateRange({ startDate: start.toISOString().split('T')[0], endDate: end.toISOString().split('T')[0] });
+                  }}>Bulan Ini</button>
+                  <button type="button" style={styles.quickSelectBtn} onClick={() => {
+                    const end = new Date();
+                    const start = new Date();
+                    start.setMonth(start.getMonth() - 1);
+                    setDateRange({ startDate: start.toISOString().split('T')[0], endDate: end.toISOString().split('T')[0] });
+                  }}>30 Hari Terakhir</button>
+                </div>
+              </div>
+              <div style={styles.modalFooter}>
+                <button onClick={() => setShowDateRangeModal(false)} style={styles.modalBtnCancel}>Batal</button>
+                <button onClick={handleDownloadByDateRange} style={styles.modalBtnDownload}
+                  disabled={isDownloadingRange || !dateRange.startDate || !dateRange.endDate}>
+                  {isDownloadingRange ? <>⏳ Mendownload...</> : <><Download size={16} /> Download Excel</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* REKAP ABSENSI */}
         <div style={styles.sectionCard}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 15, cursor: 'pointer' }} onClick={() => setSelectedClass(null)}>
             <h3 style={styles.sectionTitle(isMobile)}><Users size={18} /> Rekap Kehadiran Hari Ini</h3>
@@ -637,7 +933,7 @@ const AdminDailyLog = () => {
           </div>
         </div>
 
-        {/* FORM AUDIT - Kode tidak berubah */}
+        {/* FORM AUDIT */}
         <form onSubmit={handleSubmit}>
           <div style={styles.formGrid(isMobile)}>
             <div style={styles.formColumn}>
@@ -729,7 +1025,6 @@ const AdminDailyLog = () => {
   );
 };
 
-// === STYLES (DITAMBAH STYLES BARU UNTUK MODAL) ===
 const styles = {
   wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
   mainContent: (m) => ({ marginLeft: m ? '0' : '260px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', overflowX: 'hidden', transition: '0.3s' }),
@@ -737,26 +1032,56 @@ const styles = {
   pageTitle: (m) => ({ margin: 0, color: '#1e293b', fontSize: m ? 18 : 22, display: 'flex', alignItems: 'center', gap: 8 }),
   headerButtons: (m) => ({ display: 'flex', alignItems: 'center', gap: m ? 8 : 10, flexWrap: 'wrap' }),
   btnRefresh: (m) => ({ background: 'white', border: '1px solid #e2e8f0', padding: m ? '6px 10px' : '8px 15px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: m ? 11 : 12, fontWeight: 600 }),
-  
-  // === STYLE BARU: TOMBOL DOWNLOAD RANGE ===
   btnDownloadRange: (m) => ({ 
-    background: 'linear-gradient(135deg, #0f172a, #1e3a5f)', 
-    color: 'white', 
-    border: 'none', 
-    padding: m ? '6px 10px' : '8px 15px', 
-    borderRadius: 8, 
-    cursor: 'pointer', 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 5, 
-    fontSize: m ? 11 : 12, 
-    fontWeight: 600,
-    boxShadow: '0 2px 4px rgba(15,23,42,0.2)',
-    transition: '0.2s',
-    whiteSpace: 'nowrap'
+    background: 'linear-gradient(135deg, #0f172a, #1e3a5f)', color: 'white', border: 'none', padding: m ? '6px 10px' : '8px 15px', 
+    borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: m ? 11 : 12, fontWeight: 600,
+    boxShadow: '0 2px 4px rgba(15,23,42,0.2)', transition: '0.2s', whiteSpace: 'nowrap'
   }),
-  
   dateInput: (m) => ({ padding: m ? '6px 10px' : '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: m ? 12 : 13 }),
+  
+  // === CALENDAR STYLES ===
+  calendarHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, flexWrap: 'wrap', gap: 10 },
+  calendarNav: { display: 'flex', alignItems: 'center', gap: 8 },
+  calendarTodayBtn: { padding: '6px 12px', fontSize: 11, borderRadius: 8, border: '1px solid #0f172a', background: 'white', color: '#0f172a', cursor: 'pointer', fontWeight: 600 },
+  calendarNavBtn: { padding: '6px 8px', borderRadius: 8, border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center' },
+  calendarMonthLabel: { fontSize: 14, fontWeight: 'bold', color: '#0f172a', minWidth: 150, textAlign: 'center' },
+  calendarLegend: { display: 'flex', alignItems: 'center', gap: 15, marginBottom: 15, flexWrap: 'wrap', padding: '10px 15px', background: '#f8fafc', borderRadius: 10 },
+  legendItem: { display: 'flex', alignItems: 'center', gap: 6 },
+  legendDot: { width: 12, height: 12, borderRadius: '50%' },
+  legendText: { fontSize: 11, color: '#475569' },
+  btnIzin: { marginLeft: 'auto', padding: '8px 14px', fontSize: 11, borderRadius: 8, border: 'none', background: '#f59e0b', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontWeight: 600, boxShadow: '0 2px 4px rgba(245,158,11,0.3)' },
+  calendarDayNames: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 4 },
+  dayName: { textAlign: 'center', fontSize: 11, fontWeight: 'bold', color: '#64748b', padding: '8px 0' },
+  calendarGrid: { display: 'flex', flexDirection: 'column', gap: 4 },
+  calendarWeek: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 },
+  calendarDay: { 
+    aspectRatio: '1', borderRadius: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', 
+    justifyContent: 'center', cursor: 'pointer', transition: '0.2s', position: 'relative',
+    background: 'white', border: '1px solid #f1f5f9', padding: '6px 4px', minHeight: '50px'
+  },
+  calendarDayEmpty: { aspectRatio: '1', borderRadius: 10, background: 'transparent' },
+  calendarDayActive: { background: '#dcfce7', border: '1px solid #bbf7d0' },
+  calendarDayIzin: { background: '#fff3cd', border: '1px solid #ffe69c' },
+  calendarDayToday: { border: '2px solid #0f172a', boxShadow: '0 0 0 2px rgba(15,23,42,0.1)' },
+  dayNumber: (isToday) => ({ fontSize: 13, fontWeight: isToday ? 'bold' : '500', color: isToday ? '#0f172a' : '#334155' }),
+  dayDot: { width: 6, height: 6, borderRadius: '50%', marginTop: 3 },
+  dayDotActive: { background: '#27ae60' },
+  dayDotIzin: { background: '#f59e0b' },
+  
+  // === IZIN STYLES ===
+  izinField: { marginBottom: 16 },
+  izinInput: { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, boxSizing: 'border-box', background: '#f8fafc' },
+  izinTextarea: { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 13, boxSizing: 'border-box', background: '#f8fafc', resize: 'vertical' },
+  
+  // === DETAIL HARI STYLES ===
+  detailCard: { background: '#f8fafc', padding: 16, borderRadius: 12 },
+  detailBadgeActive: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 20, background: '#dcfce7', color: '#15803d', fontWeight: 'bold', fontSize: 12, marginBottom: 12 },
+  detailBadgeIzin: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 20, background: '#fff3cd', color: '#b45309', fontWeight: 'bold', fontSize: 12, marginBottom: 12 },
+  detailRow: { display: 'flex', gap: 10, padding: '6px 0', borderBottom: '1px solid #f1f5f9', alignItems: 'flex-start' },
+  detailLabel: { fontSize: 11, fontWeight: 'bold', color: '#64748b', minWidth: 60 },
+  detailValue: { fontSize: 12, color: '#0f172a' },
+  detailNarasi: { fontSize: 12, color: '#334155', margin: 0, marginTop: 4, lineHeight: 1.5 },
+  
   sectionTitle: (m) => ({ margin: 0, fontSize: m ? 14 : 16, color: '#0f172a', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }),
   sectionCard: { background: 'white', padding: 20, borderRadius: 16, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: 25, width: '100%', boxSizing: 'border-box' },
   liveDot: { width: 10, height: 10, borderRadius: '50%', background: '#27ae60', animation: 'pulse 2s infinite', display: 'inline-block' },
@@ -794,159 +1119,24 @@ const styles = {
   btnPdf: { background: '#fee2e2', color: '#ef4444', border: 'none', padding: 6, borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, marginRight: 5 },
   btnExcel: { background: '#e0f2fe', color: '#0284c7', border: 'none', padding: 6, borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11 },
   
-  // === STYLES BARU UNTUK MODAL ===
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 9999,
-    padding: '20px',
-    backdropFilter: 'blur(4px)'
-  },
-  modalContent: (m) => ({
-    background: 'white',
-    borderRadius: 20,
-    width: m ? '95%' : '500px',
-    maxWidth: '550px',
-    maxHeight: '90vh',
-    overflow: 'auto',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-    animation: 'slideUp 0.3s ease-out'
-  }),
-  modalHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '20px 24px',
-    borderBottom: '1px solid #f1f5f9'
-  },
-  modalTitle: {
-    margin: 0,
-    fontSize: 18,
-    color: '#0f172a',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    fontWeight: 'bold'
-  },
-  modalClose: {
-    background: '#f1f5f9',
-    border: 'none',
-    width: 32,
-    height: 32,
-    borderRadius: '50%',
-    cursor: 'pointer',
-    fontSize: 16,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#64748b',
-    fontWeight: 'bold',
-    transition: '0.2s'
-  },
-  modalBody: {
-    padding: '24px'
-  },
-  modalDescription: {
-    fontSize: 13,
-    color: '#64748b',
-    marginBottom: 20,
-    lineHeight: 1.5
-  },
-  dateRangeInputs: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 16,
-    marginBottom: 20
-  },
-  dateField: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 6
-  },
-  dateLabel: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#475569'
-  },
-  modalDateInput: {
-    width: '100%',
-    padding: '12px 14px',
-    borderRadius: 10,
-    border: '1px solid #e2e8f0',
-    fontSize: 14,
-    boxSizing: 'border-box',
-    background: '#f8fafc'
-  },
-  quickSelectRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
-    paddingTop: 16,
-    borderTop: '1px solid #f1f5f9'
-  },
-  quickSelectLabel: {
-    fontSize: 11,
-    color: '#94a3b8',
-    fontWeight: 'bold',
-    marginRight: 4
-  },
-  quickSelectBtn: {
-    padding: '6px 12px',
-    fontSize: 11,
-    borderRadius: 20,
-    border: '1px solid #e2e8f0',
-    background: '#f8fafc',
-    cursor: 'pointer',
-    color: '#475569',
-    fontWeight: 500,
-    transition: '0.2s',
-    whiteSpace: 'nowrap'
-  },
-  modalFooter: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: 10,
-    padding: '16px 24px',
-    borderTop: '1px solid #f1f5f9',
-    background: '#f8fafc'
-  },
-  modalBtnCancel: {
-    padding: '10px 20px',
-    borderRadius: 10,
-    border: '1px solid #e2e8f0',
-    background: 'white',
-    cursor: 'pointer',
-    fontSize: 13,
-    fontWeight: 600,
-    color: '#64748b'
-  },
-  modalBtnDownload: {
-    padding: '10px 20px',
-    borderRadius: 10,
-    border: 'none',
-    background: 'linear-gradient(135deg, #0f172a, #1e3a5f)',
-    color: 'white',
-    cursor: 'pointer',
-    fontSize: 13,
-    fontWeight: 600,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    boxShadow: '0 4px 12px rgba(15,23,42,0.3)',
-    transition: '0.2s',
-    whiteSpace: 'nowrap'
-  }
+  // === MODAL STYLES ===
+  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px', backdropFilter: 'blur(4px)' },
+  modalContent: (m) => ({ background: 'white', borderRadius: 20, width: m ? '95%' : '500px', maxWidth: '550px', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', animation: 'slideUp 0.3s ease-out' }),
+  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid #f1f5f9' },
+  modalTitle: { margin: 0, fontSize: 18, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 10, fontWeight: 'bold' },
+  modalClose: { background: '#f1f5f9', border: 'none', width: 32, height: 32, borderRadius: '50%', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontWeight: 'bold', transition: '0.2s' },
+  modalBody: { padding: '24px' },
+  modalDescription: { fontSize: 13, color: '#64748b', marginBottom: 20, lineHeight: 1.5 },
+  dateRangeInputs: { display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 20 },
+  dateField: { display: 'flex', flexDirection: 'column', gap: 6 },
+  dateLabel: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#475569' },
+  modalDateInput: { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 14, boxSizing: 'border-box', background: '#f8fafc' },
+  quickSelectRow: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', paddingTop: 16, borderTop: '1px solid #f1f5f9' },
+  quickSelectLabel: { fontSize: 11, color: '#94a3b8', fontWeight: 'bold', marginRight: 4 },
+  quickSelectBtn: { padding: '6px 12px', fontSize: 11, borderRadius: 20, border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', color: '#475569', fontWeight: 500, transition: '0.2s', whiteSpace: 'nowrap' },
+  modalFooter: { display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '16px 24px', borderTop: '1px solid #f1f5f9', background: '#f8fafc' },
+  modalBtnCancel: { padding: '10px 20px', borderRadius: 10, border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#64748b' },
+  modalBtnDownload: { padding: '10px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #0f172a, #1e3a5f)', color: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 4px 12px rgba(15,23,42,0.3)', transition: '0.2s', whiteSpace: 'nowrap' }
 };
 
 export default AdminDailyLog;
