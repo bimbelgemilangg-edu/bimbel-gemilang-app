@@ -9,7 +9,7 @@ import { saveAs } from 'file-saver';
 import { 
   Save, Clock, UserCheck, ShieldAlert, CreditCard, 
   FileText, List, Bold, Italic, Download, Table, AlertTriangle,
-  Users, RefreshCw, FileSpreadsheet
+  Users, RefreshCw, FileSpreadsheet, Calendar, Filter
 } from 'lucide-react';
 
 const AdminDailyLog = () => {
@@ -19,6 +19,14 @@ const AdminDailyLog = () => {
   const [history, setHistory] = useState([]);
   const [attendanceSummary, setAttendanceSummary] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
+
+  // === STATE BARU UNTUK FITUR DOWNLOAD RENTANG TANGGAL ===
+  const [showDateRangeModal, setShowDateRangeModal] = useState(false);
+  const [dateRange, setDateRange] = useState({
+    startDate: '',
+    endDate: ''
+  });
+  const [isDownloadingRange, setIsDownloadingRange] = useState(false);
 
   const [formData, setFormData] = useState({
     tanggal: new Date().toISOString().split('T')[0],
@@ -120,6 +128,233 @@ const AdminDailyLog = () => {
     } catch (err) { console.error("Gagal fetch absensi:", err); }
   };
 
+  // === FUNGSI BARU: DOWNLOAD EXCEL BERDASARKAN RENTANG TANGGAL ===
+  const handleDownloadByDateRange = async () => {
+    if (!dateRange.startDate || !dateRange.endDate) {
+      alert('⚠️ Silakan pilih tanggal mulai dan tanggal akhir terlebih dahulu!');
+      return;
+    }
+
+    if (new Date(dateRange.startDate) > new Date(dateRange.endDate)) {
+      alert('⚠️ Tanggal mulai tidak boleh lebih besar dari tanggal akhir!');
+      return;
+    }
+
+    setIsDownloadingRange(true);
+    try {
+      // Query data berdasarkan rentang tanggal
+      const q = query(
+        collection(db, "admin_daily_logs"),
+        where("tanggal", ">=", dateRange.startDate),
+        where("tanggal", "<=", dateRange.endDate),
+        orderBy("tanggal", "asc")
+      );
+      
+      const snap = await getDocs(q);
+      
+      if (snap.empty) {
+        alert('ℹ️ Tidak ada data laporan pada rentang tanggal yang dipilih.');
+        setIsDownloadingRange(false);
+        return;
+      }
+
+      const logs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      
+      // Buat workbook Excel
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = 'Bimbel Gemilang';
+      workbook.created = new Date();
+      
+      // === Sheet 1: Ringkasan Laporan ===
+      const summarySheet = workbook.addWorksheet('Ringkasan Laporan', {
+        views: [{ state: 'frozen', ySplit: 1 }]
+      });
+      
+      summarySheet.columns = [
+        { header: 'No', key: 'no', width: 5 },
+        { header: 'Tanggal', key: 'tanggal', width: 12 },
+        { header: 'Admin', key: 'adminName', width: 20 },
+        { header: 'Jam Masuk', key: 'jamMasuk', width: 12 },
+        { header: 'Jam Pulang', key: 'jamPulang', width: 12 },
+        { header: 'Guru Bertugas', key: 'guru', width: 25 },
+        { header: 'Siswa Hadir', key: 'siswaHadir', width: 12 },
+        { header: 'Risk Level', key: 'riskLevel', width: 25 },
+        { header: 'Custom Risk', key: 'customRisk', width: 30 }
+      ];
+      
+      // Styling header
+      summarySheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
+      summarySheet.getRow(1).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: '0F172A' }
+      };
+      summarySheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+      summarySheet.getRow(1).height = 25;
+      
+      // Isi data ringkasan
+      logs.forEach((log, index) => {
+        const row = summarySheet.addRow({
+          no: index + 1,
+          tanggal: log.tanggal || '-',
+          adminName: log.adminName || '-',
+          jamMasuk: log.jamMasuk || '-',
+          jamPulang: log.jamPulang || '-',
+          guru: log.tentor?.nama || '-',
+          siswaHadir: log.siswa?.jumlahHadir || 0,
+          riskLevel: log.riskLevel || '-',
+          customRisk: log.customRisk || '-'
+        });
+        
+        // Warna berdasarkan risk level
+        if (log.riskLevel?.includes('🔴')) {
+          row.getCell('riskLevel').fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FEE2E2' }
+          };
+          row.getCell('riskLevel').font = { color: { argb: 'EF4444' }, bold: true };
+        } else if (log.riskLevel?.includes('🟡')) {
+          row.getCell('riskLevel').fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFF3CD' }
+          };
+          row.getCell('riskLevel').font = { color: { argb: 'F59E0B' }, bold: true };
+        } else {
+          row.getCell('riskLevel').fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'DCFCE7' }
+          };
+          row.getCell('riskLevel').font = { color: { argb: '27AE60' }, bold: true };
+        }
+      });
+      
+      // Border untuk semua sel
+      summarySheet.eachRow((row) => {
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+        });
+      });
+      
+      // === Sheet 2: Detail Lengkap ===
+      const detailSheet = workbook.addWorksheet('Detail Lengkap', {
+        views: [{ state: 'frozen', ySplit: 1 }]
+      });
+      
+      detailSheet.columns = [
+        { header: 'No', key: 'no', width: 5 },
+        { header: 'Tanggal', key: 'tanggal', width: 12 },
+        { header: 'Admin', key: 'adminName', width: 20 },
+        { header: 'Jam Masuk', key: 'jamMasuk', width: 10 },
+        { header: 'Jam Pulang', key: 'jamPulang', width: 10 },
+        { header: 'Guru', key: 'guru', width: 25 },
+        { header: 'Siswa Hadir', key: 'siswaHadir', width: 12 },
+        { header: 'Siswa Tidak Hadir', key: 'siswaTidakHadir', width: 30 },
+        { header: 'Alasan Absen', key: 'alasanAbsen', width: 30 },
+        { header: 'Pembayaran Masuk', key: 'pembayaran', width: 30 },
+        { header: 'Risk Level', key: 'riskLevel', width: 25 },
+        { header: 'Custom Risk', key: 'customRisk', width: 35 },
+        { header: 'Narasi Lengkap', key: 'narasi', width: 60 }
+      ];
+      
+      // Styling header detail
+      detailSheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
+      detailSheet.getRow(1).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: '1E3A5F' }
+      };
+      detailSheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      detailSheet.getRow(1).height = 25;
+      
+      logs.forEach((log, index) => {
+        detailSheet.addRow({
+          no: index + 1,
+          tanggal: log.tanggal || '-',
+          adminName: log.adminName || '-',
+          jamMasuk: log.jamMasuk || '-',
+          jamPulang: log.jamPulang || '-',
+          guru: log.tentor?.nama || '-',
+          siswaHadir: log.siswa?.jumlahHadir || 0,
+          siswaTidakHadir: log.siswa?.namaTidakHadir || '-',
+          alasanAbsen: log.siswa?.alasanAbsen || '-',
+          pembayaran: log.operasional?.pembayaranMasuk || '-',
+          riskLevel: log.riskLevel || '-',
+          customRisk: log.customRisk || '-',
+          narasi: log.canvasNarasi || '-'
+        });
+      });
+      
+      // Border dan wrap text untuk detail
+      detailSheet.eachRow((row) => {
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+          if (cell.col === 13) { // Kolom narasi
+            cell.alignment = { wrapText: true, vertical: 'top' };
+          }
+        });
+        row.height = 30; // Tinggi row untuk mengakomodasi narasi
+      });
+      
+      // === Sheet 3: Statistik ===
+      const statsSheet = workbook.addWorksheet('Statistik');
+      
+      const totalLogs = logs.length;
+      const totalSiswaHadir = logs.reduce((sum, log) => sum + (parseInt(log.siswa?.jumlahHadir) || 0), 0);
+      const highRisk = logs.filter(log => log.riskLevel?.includes('🔴')).length;
+      const mediumRisk = logs.filter(log => log.riskLevel?.includes('🟡')).length;
+      const lowRisk = logs.filter(log => log.riskLevel?.includes('🟢')).length;
+      
+      statsSheet.columns = [
+        { header: 'Metrik', key: 'metric', width: 30 },
+        { header: 'Nilai', key: 'value', width: 20 }
+      ];
+      
+      statsSheet.addRows([
+        { metric: 'Periode Laporan', value: `${dateRange.startDate} s/d ${dateRange.endDate}` },
+        { metric: 'Total Hari Laporan', value: totalLogs },
+        { metric: 'Total Kehadiran Siswa', value: totalSiswaHadir },
+        { metric: 'Rata-rata Siswa/Hari', value: (totalSiswaHadir / totalLogs).toFixed(1) },
+        { metric: 'Risk Level 🔴 (Urgent)', value: highRisk },
+        { metric: 'Risk Level 🟡 (Warning)', value: mediumRisk },
+        { metric: 'Risk Level 🟢 (Aman)', value: lowRisk }
+      ]);
+      
+      statsSheet.getColumn('metric').font = { bold: true };
+      
+      // Generate file name dengan format tanggal
+      const formattedStart = dateRange.startDate.replace(/-/g, '');
+      const formattedEnd = dateRange.endDate.replace(/-/g, '');
+      const fileName = `Laporan_Audit_${formattedStart}_sampai_${formattedEnd}.xlsx`;
+      
+      // Download file
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, fileName);
+      
+      setShowDateRangeModal(false);
+      alert(`✅ Berhasil mendownload ${totalLogs} laporan!`);
+      
+    } catch (err) {
+      console.error("Download Excel Error:", err);
+      alert('❌ Gagal mendownload laporan: ' + err.message);
+    } finally {
+      setIsDownloadingRange(false);
+    }
+  };
+
   const applyFormat = (tag) => {
     const textarea = document.getElementById('canvasNarasi');
     if (!textarea) return;
@@ -214,12 +449,147 @@ const AdminDailyLog = () => {
         <div style={styles.header(isMobile)}>
           <h2 style={styles.pageTitle(isMobile)}><ShieldAlert size={20} /> Daily Audit Intelligence</h2>
           <div style={styles.headerButtons(isMobile)}>
+            {/* === TOMBOL BARU: DOWNLOAD RENTANG TANGGAL === */}
+            <button 
+              onClick={() => {
+                setDateRange({ startDate: '', endDate: '' });
+                setShowDateRangeModal(true);
+              }} 
+              style={styles.btnDownloadRange(isMobile)}
+              title="Download laporan berdasarkan rentang tanggal"
+            >
+              <Calendar size={14} /> Download Range
+            </button>
             <button onClick={fetchAttendanceSummary} style={styles.btnRefresh(isMobile)}><RefreshCw size={14} /> Refresh</button>
             <input type="date" style={styles.dateInput(isMobile)} value={formData.tanggal} onChange={e => setFormData({...formData, tanggal: e.target.value})} />
           </div>
         </div>
 
-        {/* REKAP ABSENSI */}
+        {/* === MODAL BARU: PILIH RENTANG TANGGAL === */}
+        {showDateRangeModal && (
+          <div style={styles.modalOverlay}>
+            <div style={styles.modalContent(isMobile)}>
+              <div style={styles.modalHeader}>
+                <h3 style={styles.modalTitle}>
+                  <Filter size={20} /> Download Laporan Rentang Tanggal
+                </h3>
+                <button 
+                  onClick={() => setShowDateRangeModal(false)} 
+                  style={styles.modalClose}
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div style={styles.modalBody}>
+                <p style={styles.modalDescription}>
+                  Pilih rentang tanggal untuk mendownload semua laporan audit dalam bentuk Excel.
+                  File akan berisi 3 sheet: Ringkasan, Detail Lengkap, dan Statistik.
+                </p>
+                
+                <div style={styles.dateRangeInputs}>
+                  <div style={styles.dateField}>
+                    <label style={styles.dateLabel}>
+                      <Calendar size={14} /> Tanggal Mulai
+                    </label>
+                    <input 
+                      type="date" 
+                      style={styles.modalDateInput}
+                      value={dateRange.startDate}
+                      onChange={(e) => setDateRange({...dateRange, startDate: e.target.value})}
+                      max={dateRange.endDate || undefined}
+                    />
+                  </div>
+                  
+                  <div style={styles.dateField}>
+                    <label style={styles.dateLabel}>
+                      <Calendar size={14} /> Tanggal Akhir
+                    </label>
+                    <input 
+                      type="date" 
+                      style={styles.modalDateInput}
+                      value={dateRange.endDate}
+                      onChange={(e) => setDateRange({...dateRange, endDate: e.target.value})}
+                      min={dateRange.startDate || undefined}
+                    />
+                  </div>
+                </div>
+
+                {/* Quick select buttons */}
+                <div style={styles.quickSelectRow}>
+                  <span style={styles.quickSelectLabel}>Cepat:</span>
+                  <button 
+                    type="button"
+                    style={styles.quickSelectBtn}
+                    onClick={() => {
+                      const end = new Date();
+                      const start = new Date();
+                      start.setDate(start.getDate() - 7);
+                      setDateRange({
+                        startDate: start.toISOString().split('T')[0],
+                        endDate: end.toISOString().split('T')[0]
+                      });
+                    }}
+                  >
+                    7 Hari Terakhir
+                  </button>
+                  <button 
+                    type="button"
+                    style={styles.quickSelectBtn}
+                    onClick={() => {
+                      const end = new Date();
+                      const start = new Date();
+                      start.setDate(1);
+                      setDateRange({
+                        startDate: start.toISOString().split('T')[0],
+                        endDate: end.toISOString().split('T')[0]
+                      });
+                    }}
+                  >
+                    Bulan Ini
+                  </button>
+                  <button 
+                    type="button"
+                    style={styles.quickSelectBtn}
+                    onClick={() => {
+                      const end = new Date();
+                      const start = new Date();
+                      start.setMonth(start.getMonth() - 1);
+                      setDateRange({
+                        startDate: start.toISOString().split('T')[0],
+                        endDate: end.toISOString().split('T')[0]
+                      });
+                    }}
+                  >
+                    30 Hari Terakhir
+                  </button>
+                </div>
+              </div>
+              
+              <div style={styles.modalFooter}>
+                <button 
+                  onClick={() => setShowDateRangeModal(false)} 
+                  style={styles.modalBtnCancel}
+                >
+                  Batal
+                </button>
+                <button 
+                  onClick={handleDownloadByDateRange} 
+                  style={styles.modalBtnDownload}
+                  disabled={isDownloadingRange || !dateRange.startDate || !dateRange.endDate}
+                >
+                  {isDownloadingRange ? (
+                    <>⏳ Mendownload...</>
+                  ) : (
+                    <><Download size={16} /> Download Excel</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* REKAP ABSENSI - Kode tidak berubah */}
         <div style={styles.sectionCard}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 15, cursor: 'pointer' }} onClick={() => setSelectedClass(null)}>
             <h3 style={styles.sectionTitle(isMobile)}><Users size={18} /> Rekap Kehadiran Hari Ini</h3>
@@ -267,7 +637,7 @@ const AdminDailyLog = () => {
           </div>
         </div>
 
-        {/* FORM AUDIT */}
+        {/* FORM AUDIT - Kode tidak berubah */}
         <form onSubmit={handleSubmit}>
           <div style={styles.formGrid(isMobile)}>
             <div style={styles.formColumn}>
@@ -359,6 +729,7 @@ const AdminDailyLog = () => {
   );
 };
 
+// === STYLES (DITAMBAH STYLES BARU UNTUK MODAL) ===
 const styles = {
   wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
   mainContent: (m) => ({ marginLeft: m ? '0' : '260px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', overflowX: 'hidden', transition: '0.3s' }),
@@ -366,6 +737,25 @@ const styles = {
   pageTitle: (m) => ({ margin: 0, color: '#1e293b', fontSize: m ? 18 : 22, display: 'flex', alignItems: 'center', gap: 8 }),
   headerButtons: (m) => ({ display: 'flex', alignItems: 'center', gap: m ? 8 : 10, flexWrap: 'wrap' }),
   btnRefresh: (m) => ({ background: 'white', border: '1px solid #e2e8f0', padding: m ? '6px 10px' : '8px 15px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: m ? 11 : 12, fontWeight: 600 }),
+  
+  // === STYLE BARU: TOMBOL DOWNLOAD RANGE ===
+  btnDownloadRange: (m) => ({ 
+    background: 'linear-gradient(135deg, #0f172a, #1e3a5f)', 
+    color: 'white', 
+    border: 'none', 
+    padding: m ? '6px 10px' : '8px 15px', 
+    borderRadius: 8, 
+    cursor: 'pointer', 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 5, 
+    fontSize: m ? 11 : 12, 
+    fontWeight: 600,
+    boxShadow: '0 2px 4px rgba(15,23,42,0.2)',
+    transition: '0.2s',
+    whiteSpace: 'nowrap'
+  }),
+  
   dateInput: (m) => ({ padding: m ? '6px 10px' : '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: m ? 12 : 13 }),
   sectionTitle: (m) => ({ margin: 0, fontSize: m ? 14 : 16, color: '#0f172a', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }),
   sectionCard: { background: 'white', padding: 20, borderRadius: 16, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: 25, width: '100%', boxSizing: 'border-box' },
@@ -403,6 +793,160 @@ const styles = {
   historyRow: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid #f1f5f9' },
   btnPdf: { background: '#fee2e2', color: '#ef4444', border: 'none', padding: 6, borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, marginRight: 5 },
   btnExcel: { background: '#e0f2fe', color: '#0284c7', border: 'none', padding: 6, borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11 },
+  
+  // === STYLES BARU UNTUK MODAL ===
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 9999,
+    padding: '20px',
+    backdropFilter: 'blur(4px)'
+  },
+  modalContent: (m) => ({
+    background: 'white',
+    borderRadius: 20,
+    width: m ? '95%' : '500px',
+    maxWidth: '550px',
+    maxHeight: '90vh',
+    overflow: 'auto',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    animation: 'slideUp 0.3s ease-out'
+  }),
+  modalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '20px 24px',
+    borderBottom: '1px solid #f1f5f9'
+  },
+  modalTitle: {
+    margin: 0,
+    fontSize: 18,
+    color: '#0f172a',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    fontWeight: 'bold'
+  },
+  modalClose: {
+    background: '#f1f5f9',
+    border: 'none',
+    width: 32,
+    height: 32,
+    borderRadius: '50%',
+    cursor: 'pointer',
+    fontSize: 16,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#64748b',
+    fontWeight: 'bold',
+    transition: '0.2s'
+  },
+  modalBody: {
+    padding: '24px'
+  },
+  modalDescription: {
+    fontSize: 13,
+    color: '#64748b',
+    marginBottom: 20,
+    lineHeight: 1.5
+  },
+  dateRangeInputs: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+    marginBottom: 20
+  },
+  dateField: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6
+  },
+  dateLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#475569'
+  },
+  modalDateInput: {
+    width: '100%',
+    padding: '12px 14px',
+    borderRadius: 10,
+    border: '1px solid #e2e8f0',
+    fontSize: 14,
+    boxSizing: 'border-box',
+    background: '#f8fafc'
+  },
+  quickSelectRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+    paddingTop: 16,
+    borderTop: '1px solid #f1f5f9'
+  },
+  quickSelectLabel: {
+    fontSize: 11,
+    color: '#94a3b8',
+    fontWeight: 'bold',
+    marginRight: 4
+  },
+  quickSelectBtn: {
+    padding: '6px 12px',
+    fontSize: 11,
+    borderRadius: 20,
+    border: '1px solid #e2e8f0',
+    background: '#f8fafc',
+    cursor: 'pointer',
+    color: '#475569',
+    fontWeight: 500,
+    transition: '0.2s',
+    whiteSpace: 'nowrap'
+  },
+  modalFooter: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: 10,
+    padding: '16px 24px',
+    borderTop: '1px solid #f1f5f9',
+    background: '#f8fafc'
+  },
+  modalBtnCancel: {
+    padding: '10px 20px',
+    borderRadius: 10,
+    border: '1px solid #e2e8f0',
+    background: 'white',
+    cursor: 'pointer',
+    fontSize: 13,
+    fontWeight: 600,
+    color: '#64748b'
+  },
+  modalBtnDownload: {
+    padding: '10px 20px',
+    borderRadius: 10,
+    border: 'none',
+    background: 'linear-gradient(135deg, #0f172a, #1e3a5f)',
+    color: 'white',
+    cursor: 'pointer',
+    fontSize: 13,
+    fontWeight: 600,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    boxShadow: '0 4px 12px rgba(15,23,42,0.3)',
+    transition: '0.2s',
+    whiteSpace: 'nowrap'
+  }
 };
 
 export default AdminDailyLog;
