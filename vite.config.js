@@ -10,13 +10,14 @@ export default defineConfig({
       registerType: 'autoUpdate', // Otomatis update di HP siswa/guru saat Anda push kode baru
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       workbox: {
-        // Solusi Eror: Menaikkan batas kapasitas cache PWA menjadi 5 MB agar file vendor 3.83 MB Anda lolos
+        // Menaikkan batas kapasitas cache PWA menjadi 5 MB agar file vendor besar Anda lolos build
         maximumFileSizeToCacheInBytes: 5000000 
       },
       manifest: {
         name: 'Gemilang Super App',
         short_name: 'Gemilang App',
         description: 'Aplikasi Pembelajaran Bimbel Gemilang',
+        start_url: '/login-siswa', // Memastikan PWA selalu langsung terbuka di halaman login siswa
         theme_color: '#2563eb', // Warna tema bar aplikasi (Biru)
         background_color: '#ffffff',
         display: 'standalone', // Menghilangkan kotak URL browser agar full screen seperti APK asli
