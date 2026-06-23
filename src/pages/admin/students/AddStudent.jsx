@@ -4,8 +4,8 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { collection, addDoc, getDocs, query, orderBy, limit, doc, getDoc, serverTimestamp } from "firebase/firestore";
 import { 
-  ArrowLeft, Save, User, BookOpen, Calendar, Clock, CreditCard, 
-  CheckCircle, ChevronRight, ChevronLeft, IdCard, Phone, MapPin,
+  ArrowLeft, Save, User, BookOpen, Calendar, CreditCard, 
+  CheckCircle, ChevronRight, ChevronLeft, IdCard, Phone,
   Sparkles
 } from 'lucide-react';
 
@@ -69,24 +69,65 @@ const AddStudent = () => {
       
       return `STD-${year}${String(nextNumber).padStart(4, '0')}`;
     } catch (e) {
-      // Fallback
       return `STD-${Date.now().toString().slice(-8)}`;
     }
   };
 
+  // === TANGGAL LAHIR DROPDOWNS ===
+  const [tglLahir, setTglLahir] = useState({ hari: '', bulan: '', tahun: '' });
+
+  // Generate tahun (rentang 1995-2028, default ke 2010 untuk anak sekolah)
+  const tahunOptions = [];
+  const currentYear = new Date().getFullYear();
+  for (let y = currentYear; y >= 1995; y--) {
+    tahunOptions.push(y);
+  }
+
+  // Generate tanggal (1-31)
+  const hariOptions = Array.from({ length: 31 }, (_, i) => i + 1);
+
+  // Generate bulan
+  const bulanOptions = [
+    { value: '01', label: 'Januari' },
+    { value: '02', label: 'Februari' },
+    { value: '03', label: 'Maret' },
+    { value: '04', label: 'April' },
+    { value: '05', label: 'Mei' },
+    { value: '06', label: 'Juni' },
+    { value: '07', label: 'Juli' },
+    { value: '08', label: 'Agustus' },
+    { value: '09', label: 'September' },
+    { value: '10', label: 'Oktober' },
+    { value: '11', label: 'November' },
+    { value: '12', label: 'Desember' }
+  ];
+
+  // Gabungkan jadi string YYYY-MM-DD saat tgl/bulan/tahun berubah
+  const getTanggalLahirStr = () => {
+    if (tglLahir.tahun && tglLahir.bulan && tglLahir.hari) {
+      const h = String(tglLahir.hari).padStart(2, '0');
+      return `${tglLahir.tahun}-${tglLahir.bulan}-${h}`;
+    }
+    return '';
+  };
+
+  // Default tahun = perkiraan umur 10-15 tahun (kelas 4 SMP sampai 10 SMA)
+  useEffect(() => {
+    if (!tglLahir.tahun) {
+      setTglLahir(prev => ({ ...prev, tahun: (currentYear - 12).toString() }));
+    }
+  }, []);
+
   // === FORM DATA ===
   const [formData, setFormData] = useState({
-    // Step 1: Biodata
     nama: '',
     tempatLahir: '',
-    tanggalLahir: '',
     alamat: '',
     noHp: '',
     namaAyah: '',
     namaIbu: '',
     kelasSekolah: '1 SD',
     
-    // Step 2: Program & Masa Aktif
     programType: 'Reguler',
     jenjang: 'SD',
     paket: 'paket1',
@@ -94,7 +135,6 @@ const AddStudent = () => {
     tanggalMulai: new Date().toISOString().split('T')[0],
     durasiBulan: 3,
     
-    // Step 3: Pembayaran (dipisah)
     metodeBayar: 'Tunai',
     biayaDaftar: true,
     diskon: 0,
@@ -114,9 +154,8 @@ const AddStudent = () => {
   const getPassword = () => {
     if (!formData.nama) return '';
     const namaBersih = formData.nama.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (formData.tanggalLahir) {
-      const tahun = formData.tanggalLahir.split('-')[0];
-      return `${namaBersih}${tahun}`;
+    if (tglLahir.tahun) {
+      return `${namaBersih}${tglLahir.tahun}`;
     }
     return `${namaBersih}123`;
   };
@@ -182,13 +221,14 @@ const AddStudent = () => {
       return;
     }
 
+    const tanggalLahirStr = getTanggalLahirStr();
+
     setLoading(true);
     try {
       const studentId = await generateStudentId();
       const totalTagihan = hitungTotal();
       const tanggalSelesai = getTanggalSelesai();
 
-      // 1. SIMPAN DATA SISWA
       const studentData = {
         studentId: studentId,
         nama: formData.nama,
@@ -203,7 +243,7 @@ const AddStudent = () => {
         paket: formData.programType === 'English' ? formData.englishLevel : formData.paket,
         kelasSekolah: formData.kelasSekolah,
         tempatLahir: formData.tempatLahir,
-        tanggalLahir: formData.tanggalLahir,
+        tanggalLahir: tanggalLahirStr,
         ortu: {
           ayah: formData.namaAyah,
           ibu: formData.namaIbu,
@@ -222,7 +262,6 @@ const AddStudent = () => {
 
       const docRef = await addDoc(collection(db, "students"), studentData);
 
-      // 2. SIMPAN PEMBAYARAN (JIKA BUKAN CICILAN)
       if (formData.metodeBayar === 'Tunai' || formData.metodeBayar === 'Transfer') {
         await addDoc(collection(db, "finance_logs"), {
           studentId: studentId,
@@ -236,7 +275,6 @@ const AddStudent = () => {
           createdAt: serverTimestamp()
         });
 
-        // Update totalBayar di students
         const { updateDoc, doc: docRef2 } = await import("firebase/firestore");
         await updateDoc(docRef2(db, "students", docRef.id), {
           totalBayar: totalTagihan
@@ -295,6 +333,51 @@ const AddStudent = () => {
         />
       </div>
 
+      {/* === TANGGAL LAHIR DROPDOWNS === */}
+      <div style={styles.inputGroup}>
+        <label style={styles.label}>
+          <Calendar size={12} style={{marginRight: 4}} /> 
+          Tanggal Lahir
+        </label>
+        <div style={styles.tglLahirRow}>
+          <select 
+            style={{...styles.select, flex: 1}}
+            value={tglLahir.hari}
+            onChange={e => setTglLahir(prev => ({...prev, hari: e.target.value}))}
+          >
+            <option value="">Tgl</option>
+            {hariOptions.map(h => (
+              <option key={h} value={h}>{h}</option>
+            ))}
+          </select>
+          <select 
+            style={{...styles.select, flex: 2}}
+            value={tglLahir.bulan}
+            onChange={e => setTglLahir(prev => ({...prev, bulan: e.target.value}))}
+          >
+            <option value="">Bulan</option>
+            {bulanOptions.map(b => (
+              <option key={b.value} value={b.value}>{b.label}</option>
+            ))}
+          </select>
+          <select 
+            style={{...styles.select, flex: 1.5}}
+            value={tglLahir.tahun}
+            onChange={e => setTglLahir(prev => ({...prev, tahun: e.target.value}))}
+          >
+            <option value="">Tahun</option>
+            {tahunOptions.map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+        {getTanggalLahirStr() && (
+          <div style={styles.tglPreview}>
+            📅 {getTanggalLahirStr()}
+          </div>
+        )}
+      </div>
+
       <div style={styles.row2}>
         <div style={styles.inputGroup}>
           <label style={styles.label}>Tempat Lahir</label>
@@ -306,28 +389,18 @@ const AddStudent = () => {
           />
         </div>
         <div style={styles.inputGroup}>
-          <label style={styles.label}>Tanggal Lahir</label>
-          <input 
-            type="date" 
-            style={styles.input} 
-            value={formData.tanggalLahir} 
-            onChange={e => updateField('tanggalLahir', e.target.value)} 
-          />
+          <label style={styles.label}>Kelas Sekolah</label>
+          <select style={styles.input} value={formData.kelasSekolah} onChange={e => updateField('kelasSekolah', e.target.value)}>
+            <option value="1 SD">1 SD</option><option value="2 SD">2 SD</option>
+            <option value="3 SD">3 SD</option><option value="4 SD">4 SD</option>
+            <option value="5 SD">5 SD</option><option value="6 SD">6 SD</option>
+            <option value="7 SMP">7 SMP</option><option value="8 SMP">8 SMP</option>
+            <option value="9 SMP">9 SMP</option>
+            <option value="10 SMA">10 SMA</option><option value="11 SMA">11 SMA</option>
+            <option value="12 SMA">12 SMA</option>
+            <option value="Alumni">Alumni</option>
+          </select>
         </div>
-      </div>
-
-      <div style={styles.inputGroup}>
-        <label style={styles.label}>Kelas Sekolah</label>
-        <select style={styles.input} value={formData.kelasSekolah} onChange={e => updateField('kelasSekolah', e.target.value)}>
-          <option value="1 SD">1 SD</option><option value="2 SD">2 SD</option>
-          <option value="3 SD">3 SD</option><option value="4 SD">4 SD</option>
-          <option value="5 SD">5 SD</option><option value="6 SD">6 SD</option>
-          <option value="7 SMP">7 SMP</option><option value="8 SMP">8 SMP</option>
-          <option value="9 SMP">9 SMP</option>
-          <option value="10 SMA">10 SMA</option><option value="11 SMA">11 SMA</option>
-          <option value="12 SMA">12 SMA</option>
-          <option value="Alumni">Alumni</option>
-        </select>
       </div>
 
       <div style={styles.sectionHeader}>
@@ -388,7 +461,6 @@ const AddStudent = () => {
         <h3 style={styles.sectionTitle}>Program & Paket Belajar</h3>
       </div>
 
-      {/* Program Type */}
       <div style={styles.inputGroup}>
         <label style={styles.label}>Jenis Program</label>
         <div style={styles.tabRow}>
@@ -410,26 +482,24 @@ const AddStudent = () => {
       </div>
 
       {formData.programType === 'Reguler' ? (
-        <>
-          <div style={styles.row2}>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>Jenjang</label>
-              <select style={styles.input} value={formData.jenjang} onChange={e => updateField('jenjang', e.target.value)}>
-                <option value="SD">SD (Kelas 1-6)</option>
-                <option value="SMP">SMP (Kelas 7-9)</option>
-                <option value="SMA">SMA (Kelas 10-12)</option>
-              </select>
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>Paket</label>
-              <select style={styles.input} value={formData.paket} onChange={e => updateField('paket', e.target.value)}>
-                <option value="paket1">Paket 1 - Rp {(pricing[formData.jenjang.toLowerCase()]?.paket1 || 0).toLocaleString()}</option>
-                <option value="paket2">Paket 2 - Rp {(pricing[formData.jenjang.toLowerCase()]?.paket2 || 0).toLocaleString()}</option>
-                <option value="paket3">Paket 3 - Rp {(pricing[formData.jenjang.toLowerCase()]?.paket3 || 0).toLocaleString()}</option>
-              </select>
-            </div>
+        <div style={styles.row2}>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Jenjang</label>
+            <select style={styles.input} value={formData.jenjang} onChange={e => updateField('jenjang', e.target.value)}>
+              <option value="SD">SD (Kelas 1-6)</option>
+              <option value="SMP">SMP (Kelas 7-9)</option>
+              <option value="SMA">SMA (Kelas 10-12)</option>
+            </select>
           </div>
-        </>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Paket</label>
+            <select style={styles.input} value={formData.paket} onChange={e => updateField('paket', e.target.value)}>
+              <option value="paket1">Paket 1 - Rp {(pricing[formData.jenjang.toLowerCase()]?.paket1 || 0).toLocaleString()}</option>
+              <option value="paket2">Paket 2 - Rp {(pricing[formData.jenjang.toLowerCase()]?.paket2 || 0).toLocaleString()}</option>
+              <option value="paket3">Paket 3 - Rp {(pricing[formData.jenjang.toLowerCase()]?.paket3 || 0).toLocaleString()}</option>
+            </select>
+          </div>
+        </div>
       ) : (
         <div style={styles.inputGroup}>
           <label style={styles.label}>Level</label>
@@ -467,7 +537,6 @@ const AddStudent = () => {
         </div>
       </div>
 
-      {/* Info Masa Aktif */}
       <div style={styles.infoBox}>
         <div style={styles.infoRow}>
           <span>📅 Mulai:</span>
@@ -483,7 +552,6 @@ const AddStudent = () => {
         </div>
       </div>
 
-      {/* Preview Akun */}
       <div style={styles.accountPreview}>
         <div style={styles.accountHeader}>
           <IdCard size={16} />
@@ -508,7 +576,6 @@ const AddStudent = () => {
         <h3 style={styles.sectionTitle}>Pembayaran</h3>
       </div>
 
-      {/* Ringkasan Biaya */}
       <div style={styles.paymentCard}>
         <div style={styles.paymentRow}>
           <span>Biaya Paket</span>
@@ -543,7 +610,6 @@ const AddStudent = () => {
         </div>
       </div>
 
-      {/* Metode Bayar */}
       <div style={styles.inputGroup}>
         <label style={styles.label}>Metode Pembayaran</label>
         <div style={styles.tabRow3}>
@@ -571,7 +637,6 @@ const AddStudent = () => {
         </div>
       </div>
 
-      {/* Opsi Cicilan */}
       {formData.metodeBayar === 'Cicilan' && (
         <div style={styles.cicilanBox}>
           <label style={styles.label}>Tenor Cicilan</label>
@@ -622,10 +687,8 @@ const AddStudent = () => {
       <SidebarAdmin />
       <div style={styles.mainContent(isMobile)}>
         
-        {/* TOAST */}
         {alertMsg && <div style={styles.toast}>{alertMsg}</div>}
 
-        {/* HEADER */}
         <div style={styles.header(isMobile)}>
           <button onClick={() => navigate('/admin/students')} style={styles.backBtn}>
             <ArrowLeft size={16} /> Kembali
@@ -635,7 +698,6 @@ const AddStudent = () => {
           </h2>
         </div>
 
-        {/* STEP INDICATOR */}
         <div style={styles.stepIndicator(isMobile)}>
           {stepLabels.map((label, idx) => (
             <div key={idx} style={styles.stepItem}>
@@ -648,13 +710,11 @@ const AddStudent = () => {
           ))}
         </div>
 
-        {/* STEP CONTENT */}
         <div style={styles.card}>
           {step === 1 && renderStep1()}
           {step === 2 && renderStep2()}
           {step === 3 && renderStep3()}
 
-          {/* NAVIGATION BUTTONS */}
           <div style={styles.navButtons}>
             {step > 1 && (
               <button onClick={() => setStep(step - 1)} style={styles.btnPrev}>
@@ -688,10 +748,6 @@ const AddStudent = () => {
           from { opacity: 0; transform: translateY(-10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
       `}</style>
     </div>
   );
@@ -707,8 +763,6 @@ const styles = {
     boxSizing: 'border-box',
     transition: '0.3s'
   }),
-
-  // Toast
   toast: { 
     position: 'fixed', top: 20, right: 20, zIndex: 9999, 
     background: '#1e293b', color: 'white', padding: '14px 24px', 
@@ -716,8 +770,6 @@ const styles = {
     boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
     animation: 'toastIn 0.3s ease'
   },
-
-  // Header
   header: (m) => ({ 
     display: 'flex', alignItems: 'center', gap: 15, 
     marginBottom: 20, flexWrap: 'wrap' 
@@ -731,11 +783,9 @@ const styles = {
     margin: 0, color: '#1e293b', fontSize: m ? 18 : 22, 
     display: 'flex', alignItems: 'center', gap: 8 
   }),
-
-  // Step Indicator
   stepIndicator: (m) => ({ 
     display: 'flex', justifyContent: 'center', 
-    marginBottom: 20, gap: m ? 0 : 0 
+    marginBottom: 20, gap: 0 
   }),
   stepItem: { display: 'flex', alignItems: 'center', flex: 1, maxWidth: 200 },
   stepCircle: (active, done) => ({ 
@@ -752,28 +802,27 @@ const styles = {
     marginLeft: 6, marginRight: 6, whiteSpace: 'nowrap'
   }),
   stepLine: { flex: 1, height: 2, background: '#e2e8f0', minWidth: 20 },
-
-  // Card
   card: { 
     background: 'white', borderRadius: 16, padding: 24, 
     boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' 
   },
   stepContent: { minHeight: 300 },
-
-  // Section
   sectionHeader: { 
     display: 'flex', alignItems: 'center', gap: 8, 
     marginBottom: 16, paddingBottom: 10, borderBottom: '2px solid #f1f5f9' 
   },
   sectionTitle: { margin: 0, fontSize: 15, color: '#1e293b', fontWeight: 'bold' },
-
-  // Input
   inputGroup: { marginBottom: 14, flex: 1 },
   label: { display: 'block', fontSize: 12, fontWeight: 'bold', color: '#64748b', marginBottom: 5 },
   input: { 
     width: '100%', padding: '10px 12px', borderRadius: 8, 
     border: '1px solid #e2e8f0', fontSize: 13, boxSizing: 'border-box',
     background: '#f8fafc', transition: '0.2s'
+  },
+  select: {
+    padding: '10px 8px', borderRadius: 8,
+    border: '1px solid #e2e8f0', fontSize: 13, boxSizing: 'border-box',
+    background: '#f8fafc', cursor: 'pointer'
   },
   textarea: { 
     width: '100%', padding: '10px 12px', borderRadius: 8, 
@@ -782,7 +831,14 @@ const styles = {
   },
   row2: { display: 'flex', gap: 12, flexWrap: 'wrap' },
 
-  // Tabs
+  // === TANGGAL LAHIR DROPDOWNS ===
+  tglLahirRow: { display: 'flex', gap: 6, alignItems: 'center' },
+  tglPreview: { 
+    marginTop: 6, fontSize: 11, color: '#3b82f6', 
+    background: '#eff6ff', padding: '4px 10px', borderRadius: 6,
+    display: 'inline-block'
+  },
+
   tabRow: { display: 'flex', gap: 8 },
   tabBtn: (active, color = '#3b82f6') => ({ 
     flex: 1, padding: '10px 16px', borderRadius: 10, 
@@ -792,8 +848,6 @@ const styles = {
     fontWeight: active ? 'bold' : '500',
     fontSize: 13, cursor: 'pointer', transition: '0.2s'
   }),
-
-  // Info Box
   infoBox: { 
     background: '#f0f9ff', padding: 14, borderRadius: 10, 
     border: '1px solid #bae6fd', marginTop: 10 
@@ -802,8 +856,6 @@ const styles = {
     display: 'flex', justifyContent: 'space-between', 
     padding: '4px 0', fontSize: 12 
   },
-
-  // Account Preview
   accountPreview: { 
     marginTop: 16, background: '#fefce8', padding: 14, 
     borderRadius: 10, border: '1px solid #fef08a' 
@@ -818,8 +870,6 @@ const styles = {
     background: 'white', padding: '2px 8px', borderRadius: 4, 
     fontSize: 12, fontWeight: 'bold', color: '#0f172a' 
   },
-
-  // Payment
   paymentCard: { 
     background: '#f0fdf4', padding: 16, borderRadius: 12, 
     border: '1px solid #bbf7d0', marginBottom: 16 
@@ -838,8 +888,6 @@ const styles = {
     width: 80, padding: '6px 10px', borderRadius: 6, 
     border: '1px solid #e2e8f0', fontSize: 13, textAlign: 'right' 
   },
-
-  // Method
   tabRow3: { display: 'flex', gap: 8 },
   methodBtn: (active) => ({ 
     flex: 1, padding: '10px', borderRadius: 10, 
@@ -849,8 +897,6 @@ const styles = {
     fontWeight: active ? 'bold' : '500',
     fontSize: 12, cursor: 'pointer', transition: '0.2s' 
   }),
-
-  // Cicilan
   cicilanBox: { 
     background: '#f8fafc', padding: 16, borderRadius: 10, 
     border: '1px solid #e2e8f0', marginTop: 10 
@@ -872,8 +918,6 @@ const styles = {
     display: 'flex', justifyContent: 'space-between', 
     padding: '3px 0', borderBottom: '1px solid #f1f5f9' 
   },
-
-  // Navigation
   navButtons: { 
     display: 'flex', justifyContent: 'space-between', 
     marginTop: 24, paddingTop: 16, borderTop: '1px solid #f1f5f9',
