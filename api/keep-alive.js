@@ -1,13 +1,6 @@
 // api/keep-alive.js
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY // pake service role biar aman
-);
-
 export default async function handler(req, res) {
-  // CORS biar bisa dipanggil dari mana aja
+  // Biar bisa diakses dari mana aja
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
 
@@ -16,37 +9,44 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. PING SIMPLE - query tabel kecil
-    const { data: ping, error: pingError } = await supabase
-      .from('students')
-      .select('id')
-      .limit(1);
+    // PING Supabase pake fetch langsung
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    if (pingError) throw pingError;
+    if (!supabaseUrl || !supabaseKey) {
+      return res.status(200).json({
+        success: false,
+        message: 'Supabase credentials not set',
+        timestamp: new Date().toISOString()
+      });
+    }
 
-    // 2. UPDATE LAST_PING (optional - bikin tabel sendiri)
-    const { error: updateError } = await supabase
-      .from('system_health')
-      .upsert({
-        id: 1,
-        last_ping: new Date().toISOString(),
-        status: 'active'
-      }, { onConflict: 'id' });
+    const response = await fetch(`${supabaseUrl}/rest/v1/students?select=id&limit=1`, {
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`
+      }
+    });
 
-    if (updateError) console.warn('Update health gagal:', updateError);
+    if (!response.ok) {
+      throw new Error(`Supabase error: ${response.status}`);
+    }
+
+    const data = await response.json();
 
     return res.status(200).json({
       success: true,
       message: 'Supabase is alive!',
       timestamp: new Date().toISOString(),
-      ping: ping[0]?.id || 'no data'
+      ping: data[0]?.id || 'no data'
     });
 
   } catch (error) {
     console.error('Keep-alive error:', error);
-    return res.status(500).json({
+    return res.status(200).json({
       success: false,
-      error: error.message
+      error: error.message,
+      timestamp: new Date().toISOString()
     });
   }
 }
