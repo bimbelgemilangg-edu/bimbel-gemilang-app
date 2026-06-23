@@ -16,8 +16,8 @@ const LoginSiswa = () => {
   const [theme, setTheme] = useState('dark');
   const [rocketHover, setRocketHover] = useState(false);
   const [rocketClicked, setRocketClicked] = useState(false);
+  const [surveyAnswers, setSurveyAnswers] = useState({});
   
-  // PWA Install
   const [installPrompt, setInstallPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [showInstallBtn, setShowInstallBtn] = useState(false);
@@ -98,7 +98,7 @@ const LoginSiswa = () => {
   };
 
   // ============================================================
-  // LOGIN (TETAP SAMA)
+  // LOGIN
   // ============================================================
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -148,6 +148,24 @@ const LoginSiswa = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ============================================================
+  // HANDLE SURVEY INPUT
+  // ============================================================
+  const handleSurveyChange = (index, value) => {
+    setSurveyAnswers(prev => ({ ...prev, [index]: value }));
+  };
+
+  const handleSurveySubmit = () => {
+    const allAnswered = selectedSurvey?.questions?.every((_, i) => surveyAnswers[i]?.trim());
+    if (!allAnswered) {
+      alert("Silakan isi semua pertanyaan survei terlebih dahulu!");
+      return;
+    }
+    alert("✅ Terima kasih telah mengisi survei!");
+    setSelectedSurvey(null);
+    setSurveyAnswers({});
   };
 
   // ============================================================
@@ -201,11 +219,11 @@ const LoginSiswa = () => {
         </div>
       )}
 
-      {/* MODAL SURVEI */}
+      {/* MODAL SURVEI - FIXED INPUT BISA DIKETIK */}
       {selectedSurvey && (
-        <div style={styles.modalOverlay} onClick={() => setSelectedSurvey(null)}>
+        <div style={styles.modalOverlay} onClick={() => { setSelectedSurvey(null); setSurveyAnswers({}); }}>
           <div style={{...styles.modalContent, maxWidth: '480px', maxHeight: '85vh', overflowY: 'auto'}} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setSelectedSurvey(null)} style={styles.modalClose}>✕</button>
+            <button onClick={() => { setSelectedSurvey(null); setSurveyAnswers({}); }} style={styles.modalClose}>✕</button>
             <div style={styles.modalBody}>
               <h3 style={styles.modalTitle}>📋 {selectedSurvey.title}</h3>
               <p style={{color: isDark ? 'rgba(255,255,255,0.4)' : '#64748b', fontSize: 11, marginBottom: 12}}>
@@ -218,10 +236,12 @@ const LoginSiswa = () => {
                   </div>
                   <input 
                     type="text" 
+                    value={surveyAnswers[i] || ""}
+                    onChange={(e) => handleSurveyChange(i, e.target.value)}
                     placeholder="Isi jawaban survei di sini..." 
                     style={{ 
                       ...styles.input, 
-                      padding: '8px 12px', 
+                      padding: '10px 14px', 
                       fontSize: '13px', 
                       backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : '#fff', 
                       color: isDark ? '#fff' : '#000',
@@ -231,10 +251,7 @@ const LoginSiswa = () => {
                 </div>
               ))}
               <button 
-                onClick={() => { 
-                  alert('Terima kasih telah mengisi survei!'); 
-                  setSelectedSurvey(null); 
-                }} 
+                onClick={handleSurveySubmit}
                 style={{...styles.submitBtn, padding: '10px', fontSize: '13px', marginTop: '10px'}}
               >
                 Kirim Jawaban
@@ -344,7 +361,7 @@ const LoginSiswa = () => {
           </button>
         </form>
 
-        {/* POSTER / BERITA - HORIZONTAL SCROLL */}
+        {/* POSTER - HORIZONTAL SCROLL */}
         {posters.length > 0 && (
           <div style={{ marginTop: 20, paddingTop: 15, borderTop: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e2e8f0' }}>
             <h4 style={{ color: isDark ? '#fff' : '#1e293b', fontSize: 12, margin: '0 0 10px 0' }}>
@@ -356,8 +373,7 @@ const LoginSiswa = () => {
               overflowX: 'auto', 
               WebkitOverflowScrolling: 'touch', 
               paddingBottom: '8px',
-              scrollbarWidth: 'thin',
-              msOverflowStyle: 'auto'
+              scrollbarWidth: 'thin'
             }}>
               {posters.map(p => (
                 <div 
@@ -381,7 +397,7 @@ const LoginSiswa = () => {
           </div>
         )}
 
-        {/* SURVEI AKTIF - HORIZONTAL SCROLL */}
+        {/* SURVEI - HORIZONTAL SCROLL */}
         {surveys.length > 0 && (
           <div style={{ marginTop: 10 }}>
             <h4 style={{ color: isDark ? '#fff' : '#1e293b', fontSize: 12, margin: '0 0 10px 0' }}>
@@ -393,8 +409,7 @@ const LoginSiswa = () => {
               overflowX: 'auto', 
               WebkitOverflowScrolling: 'touch', 
               paddingBottom: '8px',
-              scrollbarWidth: 'thin',
-              msOverflowStyle: 'auto'
+              scrollbarWidth: 'thin'
             }}>
               {surveys.map(s => (
                 <div 
@@ -419,52 +434,25 @@ const LoginSiswa = () => {
           </div>
         )}
 
-        {/* Footer */}
         <div style={{ textAlign: 'center', marginTop: 16, fontSize: 10, color: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' }}>
           Bimbel Gemilang · Glagahagung · v2.0
         </div>
       </div>
 
       <style>{`
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.2; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.2); }
-        }
-        @keyframes orbit {
-          from { transform: rotate(0deg) translateX(100px) rotate(0deg); }
-          to { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 0.8; }
-        }
-        @keyframes cloudFloat {
-          0%, 100% { transform: translateX(0px); }
-          50% { transform: translateX(60px); }
-        }
-        @keyframes sunPulse {
-          0%, 100% { box-shadow: 0 0 40px rgba(255,200,50,0.3); }
-          50% { box-shadow: 0 0 80px rgba(255,200,50,0.6); }
-        }
-        ::-webkit-scrollbar {
-          height: 3px;
-        }
-        ::-webkit-scrollbar-track {
-          background: rgba(255,255,255,0.02);
-          border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-          background: rgba(243,156,18,0.3);
-          border-radius: 10px;
-        }
+        @keyframes twinkle { 0%,100% { opacity: 0.2; } 50% { opacity: 1; } }
+        @keyframes orbit { from { transform: rotate(0deg) translateX(100px); } to { transform: rotate(360deg) translateX(100px); } }
+        @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 0.8; } }
+        @keyframes cloudFloat { 0%,100% { transform: translateX(0px); } 50% { transform: translateX(60px); } }
+        @keyframes sunPulse { 0%,100% { box-shadow: 0 0 40px rgba(255,200,50,0.3); } 50% { box-shadow: 0 0 80px rgba(255,200,50,0.6); } }
+        ::-webkit-scrollbar { height: 3px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        ::-webkit-scrollbar-thumb { background: rgba(243,156,18,0.3); border-radius: 10px; }
       `}</style>
     </div>
   );
 };
 
-// ============================================================
-// STYLES
-// ============================================================
 const styles = {
   container: {
     minHeight: '100vh',
@@ -499,228 +487,71 @@ const styles = {
     boxSizing: 'border-box',
     transition: 'all 0.3s ease'
   },
-  title: {
-    fontSize: '20px',
-    fontWeight: '700',
-    letterSpacing: '-0.5px'
-  },
+  title: { fontSize: '20px', fontWeight: '700', letterSpacing: '-0.5px' },
   installBtn: {
-    width: '100%',
-    padding: '10px',
+    width: '100%', padding: '10px',
     background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '12px',
-    fontWeight: 'bold',
-    fontSize: '13px',
-    cursor: 'pointer',
-    marginBottom: '15px',
-    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-    transition: 'transform 0.2s'
+    color: 'white', border: 'none', borderRadius: '12px',
+    fontWeight: 'bold', fontSize: '13px', cursor: 'pointer',
+    marginBottom: '15px', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
   },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '14px'
-  },
-  inputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px'
-  },
-  label: {
-    fontSize: '12px',
-    fontWeight: '600'
-  },
+  form: { display: 'flex', flexDirection: 'column', gap: '14px' },
+  inputGroup: { display: 'flex', flexDirection: 'column', gap: '4px' },
+  label: { fontSize: '12px', fontWeight: '600' },
   input: {
-    padding: '12px 16px',
-    borderRadius: '12px',
-    border: '1px solid',
-    fontSize: '14px',
-    outline: 'none',
-    transition: 'all 0.2s ease',
-    width: '100%',
-    boxSizing: 'border-box'
+    padding: '12px 16px', borderRadius: '12px', border: '1px solid',
+    fontSize: '14px', outline: 'none', transition: 'all 0.2s ease',
+    width: '100%', boxSizing: 'border-box'
   },
   submitBtn: {
     padding: '14px',
     background: 'linear-gradient(90deg, #2563eb 0%, #3b82f6 100%)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '14px',
-    fontWeight: '700',
-    fontSize: '15px',
-    cursor: 'pointer',
-    boxShadow: '0 8px 16px rgba(37, 99, 235, 0.25)',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+    color: 'white', border: 'none', borderRadius: '14px',
+    fontWeight: '700', fontSize: '15px', cursor: 'pointer',
+    boxShadow: '0 8px 16px rgba(37, 99, 235, 0.25)'
   },
   themeToggle: {
-    background: 'none',
-    border: 'none',
-    fontSize: '12px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    outline: 'none'
+    background: 'none', border: 'none', fontSize: '12px',
+    fontWeight: 600, cursor: 'pointer', outline: 'none'
   },
   badge: {
-    padding: '6px 14px',
-    borderRadius: '20px',
-    fontSize: '11px',
-    fontWeight: '600',
-    whiteSpace: 'nowrap',
-    cursor: 'pointer',
-    display: 'inline-block',
-    transition: 'opacity 0.2s',
-    ':hover': {
-      opacity: 0.7
-    }
+    padding: '6px 14px', borderRadius: '20px', fontSize: '11px',
+    fontWeight: '600', whiteSpace: 'nowrap', cursor: 'pointer',
+    display: 'inline-block', transition: 'opacity 0.2s'
   },
   modalOverlay: {
-    position: 'fixed',
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.75)',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 9999,
-    padding: '20px'
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 9999, padding: '20px'
   },
   modalContent: {
-    background: '#111827',
-    borderRadius: '20px',
-    width: '100%',
-    maxWidth: '550px',
-    position: 'relative',
-    overflow: 'hidden',
+    background: '#111827', borderRadius: '20px', width: '100%',
+    maxWidth: '550px', position: 'relative', overflow: 'hidden',
     boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
     border: '1px solid rgba(255,255,255,0.1)'
   },
   modalClose: {
-    position: 'absolute',
-    top: '12px', right: '12px',
-    background: 'rgba(0,0,0,0.5)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '50%',
-    width: '28px', height: '28px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '12px',
-    zIndex: 10
+    position: 'absolute', top: '12px', right: '12px',
+    background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none',
+    borderRadius: '50%', width: '28px', height: '28px',
+    cursor: 'pointer', fontSize: '12px', zIndex: 10
   },
-  modalImage: {
-    width: '100%',
-    maxHeight: '260px',
-    objectFit: 'cover'
-  },
-  modalBody: {
-    padding: '20px'
-  },
-  modalTitle: {
-    color: 'white',
-    fontSize: '18px',
-    margin: '0 0 8px 0',
-    fontWeight: '700'
-  },
-  modalText: {
-    color: '#9ca3af',
-    fontSize: '13px',
-    lineHeight: '1.6',
-    margin: 0,
-    whiteSpace: 'pre-wrap'
-  },
-  // Bintang & Planet (Malam)
-  star1: { 
-    position: 'absolute', 
-    width: '2px', height: '2px', 
-    background: 'white', 
-    top: '15%', left: '20%', 
-    borderRadius: '50%',
-    animation: 'twinkle 3s ease-in-out infinite'
-  },
-  star2: { 
-    position: 'absolute', 
-    width: '3px', height: '3px', 
-    background: 'white', 
-    top: '40%', left: '75%', 
-    borderRadius: '50%', 
-    opacity: 0.7,
-    animation: 'twinkle 4s ease-in-out infinite 0.5s'
-  },
-  star3: {
-    position: 'absolute',
-    width: '2px', height: '2px',
-    background: 'white',
-    top: '70%', left: '10%',
-    borderRadius: '50%',
-    animation: 'twinkle 2.5s ease-in-out infinite 1s'
-  },
-  star4: {
-    position: 'absolute',
-    width: '3px', height: '3px',
-    background: 'white',
-    top: '25%', left: '55%',
-    borderRadius: '50%',
-    animation: 'twinkle 3.5s ease-in-out infinite 0.3s'
-  },
-  planet1: { 
-    position: 'absolute', 
-    width: '40px', height: '40px', 
-    borderRadius: '50%', 
-    background: 'radial-gradient(circle at 30% 30%, #f39c12, #d35400)', 
-    top: '10%', right: '15%', 
-    opacity: 0.15,
-    animation: 'orbit 30s linear infinite'
-  },
-  planet2: {
-    position: 'absolute',
-    width: '60px', height: '60px',
-    borderRadius: '50%',
-    background: 'radial-gradient(circle at 30% 30%, #8b5cf6, #4c1d95)',
-    bottom: '15%', left: '5%',
-    opacity: 0.1,
-    animation: 'orbit 40s linear infinite reverse'
-  },
-  nebula: { 
-    position: 'absolute', 
-    width: '200px', height: '200px', 
-    borderRadius: '50%', 
-    background: 'radial-gradient(circle, rgba(139,92,246,0.04), transparent 70%)',
-    top: '-40px', left: '-40px', 
-    animation: 'pulse 8s ease-in-out infinite'
-  },
-  // Awan & Matahari (Siang)
-  cloud1: { 
-    position: 'absolute', 
-    width: '120px', height: '40px', 
-    background: 'rgba(255,255,255,0.5)', 
-    borderRadius: '20px', 
-    top: '20%', left: '10%', 
-    filter: 'blur(2px)',
-    animation: 'cloudFloat 25s ease-in-out infinite'
-  },
-  cloud2: {
-    position: 'absolute',
-    width: '160px', height: '50px',
-    background: 'rgba(255,255,255,0.3)',
-    borderRadius: '25px',
-    bottom: '25%', right: '10%',
-    filter: 'blur(2px)',
-    animation: 'cloudFloat 30s ease-in-out infinite reverse'
-  },
-  sun: { 
-    position: 'absolute', 
-    width: '60px', height: '60px', 
-    borderRadius: '50%', 
-    background: 'radial-gradient(circle at 30% 30%, #ffd700, #ff8c00)', 
-    top: '10%', right: '10%', 
-    opacity: 0.3,
-    animation: 'sunPulse 4s ease-in-out infinite'
-  }
+  modalImage: { width: '100%', maxHeight: '260px', objectFit: 'cover' },
+  modalBody: { padding: '20px' },
+  modalTitle: { color: 'white', fontSize: '18px', margin: '0 0 8px 0', fontWeight: '700' },
+  modalText: { color: '#9ca3af', fontSize: '13px', lineHeight: '1.6', margin: 0, whiteSpace: 'pre-wrap' },
+  
+  star1: { position: 'absolute', width: '2px', height: '2px', background: 'white', top: '15%', left: '20%', borderRadius: '50%', animation: 'twinkle 3s ease-in-out infinite' },
+  star2: { position: 'absolute', width: '3px', height: '3px', background: 'white', top: '40%', left: '75%', borderRadius: '50%', opacity: 0.7, animation: 'twinkle 4s ease-in-out infinite 0.5s' },
+  star3: { position: 'absolute', width: '2px', height: '2px', background: 'white', top: '70%', left: '10%', borderRadius: '50%', animation: 'twinkle 2.5s ease-in-out infinite 1s' },
+  star4: { position: 'absolute', width: '3px', height: '3px', background: 'white', top: '25%', left: '55%', borderRadius: '50%', animation: 'twinkle 3.5s ease-in-out infinite 0.3s' },
+  planet1: { position: 'absolute', width: '40px', height: '40px', borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #f39c12, #d35400)', top: '10%', right: '15%', opacity: 0.15, animation: 'orbit 30s linear infinite' },
+  planet2: { position: 'absolute', width: '60px', height: '60px', borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #8b5cf6, #4c1d95)', bottom: '15%', left: '5%', opacity: 0.1, animation: 'orbit 40s linear infinite reverse' },
+  nebula: { position: 'absolute', width: '200px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.04), transparent 70%)', top: '-40px', left: '-40px', animation: 'pulse 8s ease-in-out infinite' },
+  cloud1: { position: 'absolute', width: '120px', height: '40px', background: 'rgba(255,255,255,0.5)', borderRadius: '20px', top: '20%', left: '10%', filter: 'blur(2px)', animation: 'cloudFloat 25s ease-in-out infinite' },
+  cloud2: { position: 'absolute', width: '160px', height: '50px', background: 'rgba(255,255,255,0.3)', borderRadius: '25px', bottom: '25%', right: '10%', filter: 'blur(2px)', animation: 'cloudFloat 30s ease-in-out infinite reverse' },
+  sun: { position: 'absolute', width: '60px', height: '60px', borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #ffd700, #ff8c00)', top: '10%', right: '10%', opacity: 0.3, animation: 'sunPulse 4s ease-in-out infinite' }
 };
 
 export default LoginSiswa;
