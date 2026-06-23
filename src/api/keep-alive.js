@@ -1,32 +1,52 @@
+// api/keep-alive.js
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY // pake service role biar aman
+);
+
 export default async function handler(req, res) {
-    const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
-    const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY;
-  
-    const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-  
-    if (!SUPABASE_URL || !SUPABASE_KEY) {
-      return res.status(500).json({ status: 'error', message: 'Missing credentials' });
-    }
-  
-    try {
-      const response = await fetch(`${SUPABASE_URL}/storage/v1/bucket`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'apikey': SUPABASE_KEY,
-          'Content-Type': 'application/json'
-        }
-      });
-  
-      if (response.ok) {
-        console.log(`[${now}] ✅ Supabase keep-alive OK`);
-        return res.status(200).json({ status: 'ok', timestamp: now });
-      }
-  
-      console.log(`[${now}] ⚠️ Keep-alive sent`);
-      return res.status(200).json({ status: 'ok', timestamp: now });
-    } catch (error) {
-      console.error(`[${now}] ❌ ${error.message}`);
-      return res.status(500).json({ status: 'error', message: error.message });
-    }
+  // CORS biar bisa dipanggil dari mana aja
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
+
+  try {
+    // 1. PING SIMPLE - query tabel kecil
+    const { data: ping, error: pingError } = await supabase
+      .from('students')
+      .select('id')
+      .limit(1);
+
+    if (pingError) throw pingError;
+
+    // 2. UPDATE LAST_PING (optional - bikin tabel sendiri)
+    const { error: updateError } = await supabase
+      .from('system_health')
+      .upsert({
+        id: 1,
+        last_ping: new Date().toISOString(),
+        status: 'active'
+      }, { onConflict: 'id' });
+
+    if (updateError) console.warn('Update health gagal:', updateError);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Supabase is alive!',
+      timestamp: new Date().toISOString(),
+      ping: ping[0]?.id || 'no data'
+    });
+
+  } catch (error) {
+    console.error('Keep-alive error:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+}
