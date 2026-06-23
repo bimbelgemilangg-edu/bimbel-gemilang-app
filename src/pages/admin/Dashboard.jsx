@@ -1,25 +1,34 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../components/SidebarAdmin';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { 
+  Users, GraduationCap, CreditCard, Calendar, Clock, 
+  BookOpen, TrendingUp, AlertCircle, CheckCircle, UserX,
+  ArrowRight, Bell, RefreshCw, DollarSign, FileText, Plus,
+  Eye, ChevronRight, Home, LayoutDashboard
+} from 'lucide-react';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [time, setTime] = useState(new Date());
-  const [stats, setStats] = useState({ siswa: 0, guru: 0, tagihan: 0 });
-  const [todaySchedules, setTodaySchedules] = useState([]);
-  const [duePayments, setDuePayments] = useState([]);
-  const [recentLogs, setRecentLogs] = useState([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [loading, setLoading] = useState(true);
+
+  // Stats
+  const [stats, setStats] = useState({ 
+    siswa: 0, guru: 0, aktif: 0, piutang: 0, piutangJumlah: 0,
+    pemasukanBulanIni: 0, pengeluaranBulanIni: 0, saldo: 0
+  });
+  
+  // Data
   const [attendanceSummary, setAttendanceSummary] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
-  const [todos, setTodos] = useState(() => {
-    const saved = localStorage.getItem('adminTodos');
-    return saved ? JSON.parse(saved) : [
-        { id: 1, text: "Cek stok spidol", done: false },
-        { id: 2, text: "Konfirmasi guru pengganti", done: true }
-    ];
-  });
-  const [newTodo, setNewTodo] = useState("");
+  const [todaySchedules, setTodaySchedules] = useState([]);
+  const [duePayments, setDuePayments] = useState([]);
+  const [newStudents, setNewStudents] = useState([]);
+  const [teacherAttendanceStatus, setTeacherAttendanceStatus] = useState([]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -28,264 +37,451 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
+    const timer = setInterval(() => setTime(new Date()), 30000);
     return () => clearInterval(timer);
   }, []);
 
-  const fetchData = async () => {
+  const fetchAllData = async () => {
+    setLoading(true);
     try {
-        const snapSiswa = await getDocs(collection(db, "students"));
-        const snapGuru = await getDocs(collection(db, "teachers"));
+      const today = new Date().toISOString().split('T')[0];
+      const thisMonth = new Date().toISOString().slice(0, 7);
+
+      // Fetch students
+      const snapSiswa = await getDocs(collection(db, "students"));
+      const siswaList = snapSiswa.docs.map(d => ({ id: d.id, ...d.data() }));
+      
+      // Fetch teachers
+      const snapGuru = await getDocs(collection(db, "teachers"));
+      const guruList = snapGuru.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // Fetch schedules today
+      const qJadwal = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", today));
+      const snapJadwal = await getDocs(qJadwal);
+      const jadwalList = snapJadwal.docs.map(d => ({ id: d.id, ...d.data() }));
+      setTodaySchedules(jadwalList);
+
+      // Fetch attendance today
+      const qAttendance = query(collection(db, "attendance"), where("date", "==", today));
+      const snapAttendance = await getDocs(qAttendance);
+      const attendanceData = snapAttendance.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // Build attendance summary
+      const summaryArray = [];
+      jadwalList.forEach(jadwal => {
+        const jadwalAttendance = attendanceData.filter(record =>
+          record.scheduleId === jadwal.id || record.mapel === jadwal.title);
+        const jadwalStudents = jadwal.students || [];
+        const hadirList = [], tidakHadirList = [];
         
-        const qLogs = query(collection(db, "teacher_logs"), orderBy("tanggal", "desc"), limit(10));
-        const snapLogs = await getDocs(qLogs);
-        const logsData = snapLogs.docs.map(d => ({id: d.id, ...d.data()}));
-        logsData.sort((a,b) => {
-            const dateA = new Date(`${a.tanggal}T${a.waktu}`);
-            const dateB = new Date(`${b.tanggal}T${b.waktu}`);
-            return dateB - dateA;
+        jadwalAttendance.forEach(record => {
+          if (record.status === "Hadir" || record.status === "hadir") {
+            hadirList.push(record.studentName || record.namaSiswa);
+          } else {
+            tidakHadirList.push({
+              nama: record.studentName || record.namaSiswa,
+              status: record.status || "Alpha",
+              keterangan: record.keterangan || "-"
+            });
+          }
         });
-        setRecentLogs(logsData);
-
-        const nowObj = new Date();
-        const year = nowObj.getFullYear();
-        const month = String(nowObj.getMonth() + 1).padStart(2, '0');
-        const day = String(nowObj.getDate()).padStart(2, '0');
-        const todayStr = `${year}-${month}-${day}`;
-
-        const qJadwal = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr));
-        const snapJadwal = await getDocs(qJadwal);
-        const jadwalList = snapJadwal.docs.map(d => ({ id: d.id, ...d.data() }));
-
-        const currentHours = String(nowObj.getHours()).padStart(2, '0');
-        const currentMinutes = String(nowObj.getMinutes()).padStart(2, '0');
-        const currentTime = `${currentHours}:${currentMinutes}`;
-        const activeSchedules = jadwalList.filter(s => s.end > currentTime);
-        activeSchedules.sort((a,b) => a.start.localeCompare(b.start));
-        setTodaySchedules(activeSchedules);
-
-        // 🔥 PERBAIKAN: Ambil absensi & kelompokkan berdasarkan scheduleId
-        const qAttendance = query(collection(db, "attendance"), where("date", "==", todayStr));
-        const snapAttendance = await getDocs(qAttendance);
-        const attendanceData = snapAttendance.docs.map(d => ({ id: d.id, ...d.data() }));
-
-        const summaryArray = [];
-        jadwalList.forEach(jadwal => {
-          const jadwalAttendance = attendanceData.filter(record => 
-            record.scheduleId === jadwal.id || record.mapel === jadwal.title
-          );
-          
-          const jadwalStudents = jadwal.students || [];
-          const hadirList = [];
-          const tidakHadirList = [];
-          
-          jadwalAttendance.forEach(record => {
-            if (record.status === "Hadir" || record.status === "hadir") {
-              hadirList.push(record.studentName || record.namaSiswa);
-            } else {
-              tidakHadirList.push({
-                nama: record.studentName || record.namaSiswa,
-                status: record.status || "Alpha",
-                keterangan: record.keterangan || "-"
-              });
-            }
-          });
-          
-          jadwalStudents.forEach(siswa => {
-            const namaSiswa = siswa.nama || siswa;
-            const sudahDiHadir = hadirList.includes(namaSiswa);
-            const sudahDiTidakHadir = tidakHadirList.some(t => t.nama === namaSiswa);
-            if (!sudahDiHadir && !sudahDiTidakHadir) {
-              tidakHadirList.push({ nama: namaSiswa, status: "Alpha", keterangan: "Belum absen" });
-            }
-          });
-          
-          summaryArray.push({
-            jadwalId: jadwal.id,
-            title: jadwal.title || "Kelas Umum",
-            room: jadwal.planet || "Ruang Umum",
-            teacher: jadwal.booker || "Guru",
-            program: jadwal.program || "Reguler",
-            start: jadwal.start,
-            end: jadwal.end,
-            totalStudents: jadwalStudents.length,
-            totalHadir: hadirList.length,
-            totalTidakHadir: tidakHadirList.length,
-            hadir: hadirList,
-            tidakHadir: tidakHadirList
-          });
+        
+        jadwalStudents.forEach(siswa => {
+          const namaSiswa = siswa.nama || siswa;
+          if (!hadirList.includes(namaSiswa) && !tidakHadirList.some(t => t.nama === namaSiswa)) {
+            tidakHadirList.push({ nama: namaSiswa, status: "Alpha", keterangan: "Belum absen" });
+          }
         });
-        setAttendanceSummary(summaryArray);
-
-        const tagihanList = [];
-        snapSiswa.forEach(doc => {
-            const s = doc.data();
-            const sisa = (parseInt(s.totalTagihan)||0) - (parseInt(s.totalBayar)||0);
-            if(sisa > 0) tagihanList.push({ id: doc.id, nama: s.nama, hp: s.ortu?.hp || "", sisa: sisa, program: s.detailProgram });
+        
+        summaryArray.push({
+          jadwalId: jadwal.id, title: jadwal.title || "Kelas Umum",
+          room: jadwal.planet || "Ruang Umum", teacher: jadwal.booker || "Guru",
+          program: jadwal.program || "Reguler", start: jadwal.start, end: jadwal.end,
+          totalStudents: jadwalStudents.length, totalHadir: hadirList.length,
+          totalTidakHadir: tidakHadirList.length, hadir: hadirList, tidakHadir: tidakHadirList
         });
-        setDuePayments(tagihanList.slice(0, 5));
-        setStats({ siswa: snapSiswa.size, guru: snapGuru.size, tagihan: tagihanList.length });
-    } catch (err) { console.error("Gagal load dashboard", err); }
+      });
+      setAttendanceSummary(summaryArray);
+
+      // Teacher attendance status
+      const qTeacherLogs = query(collection(db, "teacher_logs"),
+        where("tanggal", ">=", today), where("tanggal", "<=", today + "T23:59:59"));
+      const snapTeacherLogs = await getDocs(qTeacherLogs);
+      const teacherLogsToday = snapTeacherLogs.docs.map(d => ({ id: d.id, ...d.data() }));
+      
+      const statusList = [];
+      jadwalList.forEach(jadwal => {
+        if (!jadwal.booker || !jadwal.teacherId) return;
+        const sudahAbsen = teacherLogsToday.some(log =>
+          log.teacherId === jadwal.teacherId || log.namaGuru === jadwal.booker);
+        const existing = statusList.find(s => s.teacherId === jadwal.teacherId);
+        if (!existing) {
+          statusList.push({ teacherId: jadwal.teacherId, nama: jadwal.booker, sudahAbsen, jadwalCount: 1 });
+        } else {
+          existing.jadwalCount++;
+          if (sudahAbsen) existing.sudahAbsen = true;
+        }
+      });
+      setTeacherAttendanceStatus(statusList);
+
+      // Finance stats
+      let totalPiutang = 0, piutangJumlah = 0, totalAktif = 0;
+      const tagihanList = [], siswaBaruList = [];
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      
+      siswaList.forEach(s => {
+        const total = parseInt(s.totalTagihan || 0);
+        const bayar = parseInt(s.totalBayar || 0);
+        const sisa = total - bayar;
+        
+        if (sisa > 0) {
+          totalPiutang += sisa;
+          piutangJumlah++;
+          tagihanList.push({ id: s.id, nama: s.nama, studentId: s.studentId, hp: s.ortu?.hp || "", sisa });
+        }
+        if (!s.isBlocked) totalAktif++;
+        
+        // Siswa baru 7 hari
+        const createdAt = s.createdAt?.toDate?.() || new Date(s.tanggalMasuk || today);
+        if (createdAt >= sevenDaysAgo && bayar === 0) {
+          siswaBaruList.push({ id: s.id, nama: s.nama, studentId: s.studentId, totalTagihan: total });
+        }
+      });
+
+      setDuePayments(tagihanList.sort((a, b) => b.sisa - a.sisa).slice(0, 8));
+      setNewStudents(siswaBaruList);
+
+      // Finance logs bulan ini
+      let pemasukanBulanIni = 0, pengeluaranBulanIni = 0, saldoTotal = 0;
+      const qFinanceLogs = query(collection(db, "finance_logs"));
+      const snapFinance = await getDocs(qFinanceLogs);
+      snapFinance.forEach(d => {
+        const data = d.data();
+        const amt = parseInt(data.amount || 0);
+        if ((data.date || '').startsWith(thisMonth)) {
+          if (data.type === 'Pemasukan') pemasukanBulanIni += amt;
+          else pengeluaranBulanIni += amt;
+        }
+        if (data.type === 'Pemasukan') saldoTotal += amt;
+        else saldoTotal -= amt;
+      });
+
+      setStats({
+        siswa: siswaList.length,
+        guru: guruList.length,
+        aktif: totalAktif,
+        piutang: totalPiutang,
+        piutangJumlah,
+        pemasukanBulanIni,
+        pengeluaranBulanIni,
+        saldo: saldoTotal
+      });
+
+    } catch (err) { console.error("Dashboard error:", err); }
+    finally { setLoading(false); }
   };
 
   useEffect(() => {
-    fetchData();
-    const intervalId = setInterval(fetchData, 60000);
+    fetchAllData();
+    const intervalId = setInterval(fetchAllData, 60000);
     const today = new Date().toISOString().split('T')[0];
     const q = query(collection(db, "attendance"), where("date", "==", today));
-    const unsubscribe = onSnapshot(q, () => fetchData());
+    const unsubscribe = onSnapshot(q, () => fetchAllData());
     return () => { clearInterval(intervalId); unsubscribe(); };
   }, []);
 
-  const handleRingBell = () => {
-    const audio = new Audio('https://www.myinstants.com/media/sounds/wrong-answer-sound-effect.mp3');
-    audio.play().catch(() => alert("⚠️ Browser memblokir suara. Klik layar sekali lalu coba lagi."));
-    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-  };
+  const totalHadir = attendanceSummary.reduce((s, k) => s + k.totalHadir, 0);
+  const totalTidakHadir = attendanceSummary.reduce((s, k) => s + k.totalTidakHadir, 0);
+  const totalTerdaftar = attendanceSummary.reduce((s, k) => s + k.totalStudents, 0);
+  const persentaseHadir = totalTerdaftar > 0 ? Math.round((totalHadir / totalTerdaftar) * 100) : 0;
 
-  const addTodo = (e) => { e.preventDefault(); if(!newTodo) return; const newList = [...todos, { id: Date.now(), text: newTodo, done: false }]; setTodos(newList); localStorage.setItem('adminTodos', JSON.stringify(newList)); setNewTodo(""); };
-  const toggleTodo = (id) => { const newList = todos.map(t => t.id === id ? { ...t, done: !t.done } : t); setTodos(newList); localStorage.setItem('adminTodos', JSON.stringify(newList)); };
-  const deleteTodo = (id) => { const newList = todos.filter(t => t.id !== id); setTodos(newList); localStorage.setItem('adminTodos', JSON.stringify(newList)); };
-  const sendWA = (p) => { const text = `Halo Wali Murid ${p.nama}, mengingatkan tagihan bimbel tersisa Rp ${p.sisa.toLocaleString()}. Mohon segera diselesaikan. Terima kasih.`; window.open(`https://wa.me/${p.hp}?text=${encodeURIComponent(text)}`, '_blank'); };
+  if (loading) {
+    return (
+      <div style={styles.wrapper}>
+        <SidebarAdmin />
+        <div style={styles.mainContent(isMobile)}>
+          <div style={styles.loadingBox}><div style={styles.spinner}></div><p>Memuat dashboard...</p></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={styles.wrapper}>
       <SidebarAdmin />
       <div style={styles.mainContent(isMobile)}>
+        
+        {/* HEADER */}
         <div style={styles.header(isMobile)}>
           <div>
-            <h2 style={styles.pageTitle(isMobile)}>Dashboard Admin</h2>
-            <p style={styles.pageDate(isMobile)}>{time.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'})}</p>
+            <h2 style={styles.pageTitle(isMobile)}><LayoutDashboard size={22} /> Dashboard</h2>
+            <p style={styles.pageDate(isMobile)}>
+              {time.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              <span style={{ marginLeft: 10, color: '#3b82f6', fontWeight: 'bold' }}>
+                🕒 {time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </p>
           </div>
-          <div style={styles.headerRight(isMobile)}>
-            <button onClick={handleRingBell} style={styles.btnBell(isMobile)}>🔔 BEL</button>
-            <div style={styles.clockBox(isMobile)}>🕒 {time.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}</div>
+          <div style={styles.headerActions(isMobile)}>
+            <button onClick={fetchAllData} style={styles.btnRefresh(isMobile)}>
+              <RefreshCw size={14} /> {!isMobile && 'Refresh'}
+            </button>
+            <button onClick={() => navigate('/admin/students/add')} style={styles.btnQuickAdd(isMobile)}>
+              <Plus size={14} /> {!isMobile && 'Siswa Baru'}
+            </button>
           </div>
         </div>
 
-        <div style={styles.sectionTitle}>
-          <span>📋</span> Rekap Kehadiran Hari Ini <span style={styles.liveDot}></span> LIVE
+        {/* === QUICK STATS === */}
+        <div style={styles.statsGrid(isMobile)}>
+          <div style={styles.statCard} onClick={() => navigate('/admin/students')}>
+            <div style={styles.statIcon('#eef2ff', '#3b82f6')}><Users size={22} /></div>
+            <div style={styles.statInfo}>
+              <h3>{stats.siswa}</h3>
+              <span>Total Siswa</span>
+              <small>{stats.aktif} aktif</small>
+            </div>
+            <ChevronRight size={14} color="#94a3b8" />
+          </div>
+          <div style={styles.statCard} onClick={() => navigate('/admin/teachers')}>
+            <div style={styles.statIcon('#f0fdf4', '#10b981')}><GraduationCap size={22} /></div>
+            <div style={styles.statInfo}>
+              <h3>{stats.guru}</h3>
+              <span>Guru</span>
+            </div>
+            <ChevronRight size={14} color="#94a3b8" />
+          </div>
+          <div style={styles.statCard} onClick={() => navigate('/admin/finance')}>
+            <div style={styles.statIcon('#fff7ed', '#f97316')}><CreditCard size={22} /></div>
+            <div style={styles.statInfo}>
+              <h3>Rp {(stats.piutang / 1000).toFixed(0)}K</h3>
+              <span>Piutang</span>
+              <small>{stats.piutangJumlah} siswa</small>
+            </div>
+            <ChevronRight size={14} color="#94a3b8" />
+          </div>
+          <div style={styles.statCard} onClick={() => navigate('/admin/schedule')}>
+            <div style={styles.statIcon('#fef3c7', '#b45309')}><Calendar size={22} /></div>
+            <div style={styles.statInfo}>
+              <h3>{todaySchedules.length}</h3>
+              <span>Jadwal Hari Ini</span>
+            </div>
+            <ChevronRight size={14} color="#94a3b8" />
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statIcon('#f0fdf4', '#10b981')}><TrendingUp size={22} /></div>
+            <div style={styles.statInfo}>
+              <h3 style={{color: '#10b981'}}>Rp {(stats.pemasukanBulanIni / 1000).toFixed(0)}K</h3>
+              <span>Masuk Bulan Ini</span>
+            </div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statIcon('#fef2f2', '#ef4444')}><DollarSign size={22} /></div>
+            <div style={styles.statInfo}>
+              <h3 style={{color: '#ef4444'}}>Rp {(stats.pengeluaranBulanIni / 1000).toFixed(0)}K</h3>
+              <span>Keluar Bulan Ini</span>
+            </div>
+          </div>
         </div>
-        <div style={styles.attendanceGrid(isMobile)}>
+
+        {/* === ALERT SISWA BARU BELUM BAYAR === */}
+        {newStudents.length > 0 && (
+          <div style={styles.alertBox}>
+            <div style={styles.alertHeader}>
+              <Bell size={16} color="#f97316" />
+              <strong>Siswa Baru Belum Dicatat Keuangannya</strong>
+              <span style={styles.alertCount}>{newStudents.length}</span>
+            </div>
+            <div style={styles.alertList}>
+              {newStudents.slice(0, 3).map(s => (
+                <div key={s.id} style={styles.alertItem}>
+                  <span style={{flex: 1}}>
+                    <strong>{s.nama}</strong>
+                    <small style={{color: '#94a3b8', marginLeft: 6}}>{s.studentId}</small>
+                  </span>
+                  <span style={{color: '#ef4444', fontWeight: 'bold', fontSize: 12}}>Rp {s.totalTagihan?.toLocaleString()}</span>
+                  <button onClick={() => navigate(`/admin/students/finance/${s.id}`)} style={styles.alertBtn}>
+                    Catat <ArrowRight size={10} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* === REKAP KEHADIRAN HARI INI === */}
+        <div style={styles.sectionCard}>
+          <div style={styles.sectionHeader}>
+            <h3 style={styles.sectionTitle}><CheckCircle size={18} color="#10b981" /> Rekap Kehadiran Hari Ini</h3>
+            <div style={styles.quickStats}>
+              <span style={styles.quickStat('#10b981')}>✅ {totalHadir} Hadir</span>
+              <span style={styles.quickStat('#ef4444')}>❌ {totalTidakHadir} Tidak</span>
+              <span style={styles.quickStat('#3b82f6')}>📊 {persentaseHadir}%</span>
+            </div>
+          </div>
+          
           {attendanceSummary.length === 0 ? (
             <div style={styles.emptyState}>Belum ada data absensi hari ini.</div>
           ) : (
-            attendanceSummary.map((kelas, idx) => (
-              <div key={kelas.jadwalId || idx} style={styles.attendanceCard(isMobile)} onClick={() => setSelectedClass(selectedClass === idx ? null : idx)}>
-                <div style={styles.classHeader}>
-                  <h4 style={styles.className(isMobile)}>{kelas.title}</h4>
-                  <span style={styles.roomBadge(isMobile)}>{kelas.room}</span>
-                </div>
-                <div style={styles.classInfo(isMobile)}>
-                  <span>👨‍🏫 {kelas.teacher}</span>
-                  <span>⏰ {kelas.start} - {kelas.end}</span>
-                  <span style={styles.programBadge}>{kelas.program}</span>
-                </div>
-                <div style={styles.attendanceBar}>
-                  <div style={{...styles.barHadir, width: `${kelas.totalStudents > 0 ? (kelas.totalHadir / kelas.totalStudents) * 100 : 0}%`}}>
-                    {kelas.totalHadir > 0 && `✅ ${kelas.totalHadir}`}
+            <div style={styles.attendanceGrid(isMobile)}>
+              {attendanceSummary.map((kelas, idx) => (
+                <div key={kelas.jadwalId || idx} style={styles.attendanceCard(isMobile)} onClick={() => setSelectedClass(selectedClass === idx ? null : idx)}>
+                  <div style={styles.classHeader}>
+                    <h4 style={styles.className}>{kelas.title}</h4>
+                    <span style={styles.roomBadge}>{kelas.room}</span>
                   </div>
-                  <div style={{...styles.barTidakHadir, width: `${kelas.totalStudents > 0 ? (kelas.totalTidakHadir / kelas.totalStudents) * 100 : 0}%`}}>
-                    {kelas.totalTidakHadir > 0 && `❌ ${kelas.totalTidakHadir}`}
+                  <div style={styles.classInfo}>
+                    <span>👨‍🏫 {kelas.teacher}</span>
+                    <span>⏰ {kelas.start} - {kelas.end}</span>
                   </div>
-                </div>
-                <div style={styles.attendanceNumbers}>
-                  <span>Hadir: {kelas.totalHadir}/{kelas.totalStudents}</span>
-                  <span>Tidak Hadir: {kelas.totalTidakHadir}</span>
-                </div>
-                {selectedClass === idx && (
-                  <div style={styles.detailDropdown}>
-                    <div style={styles.detailSection}><strong>✅ Hadir ({kelas.hadir.length}):</strong><p>{kelas.hadir.length > 0 ? kelas.hadir.join(', ') : 'Belum ada'}</p></div>
-                    <div style={styles.detailSection}><strong>❌ Tidak Hadir ({kelas.tidakHadir.length}):</strong>
-                      {kelas.tidakHadir.length > 0 ? kelas.tidakHadir.map((s, i) => (
-                        <div key={i} style={styles.absentItem}><span>{s.nama}</span><span style={styles.absentStatus(s.status)}>{s.status}</span><span style={styles.absentKet}>{s.keterangan}</span></div>
-                      )) : <p>Semua hadir 🎉</p>}
+                  <div style={styles.attendanceBar}>
+                    <div style={{...styles.barHadir, width: `${kelas.totalStudents > 0 ? (kelas.totalHadir / kelas.totalStudents) * 100 : 0}%`}}>
+                      {kelas.totalHadir > 0 && `${kelas.totalHadir}`}
+                    </div>
+                    <div style={{...styles.barTidakHadir, width: `${kelas.totalStudents > 0 ? (kelas.totalTidakHadir / kelas.totalStudents) * 100 : 0}%`}}>
+                      {kelas.totalTidakHadir > 0 && `${kelas.totalTidakHadir}`}
                     </div>
                   </div>
-                )}
-              </div>
-            ))
+                  {selectedClass === idx && (
+                    <div style={styles.detailDropdown}>
+                      <div style={styles.detailSection}><strong>✅ Hadir:</strong><p>{kelas.hadir.length > 0 ? kelas.hadir.join(', ') : 'Belum ada'}</p></div>
+                      <div style={styles.detailSection}><strong>❌ Tidak Hadir:</strong>
+                        {kelas.tidakHadir.length > 0 ? kelas.tidakHadir.map((s, i) => (
+                          <div key={i} style={styles.absentItem}><span>{s.nama}</span><span style={styles.absentStatus(s.status)}>{s.status}</span><span style={styles.absentKet}>{s.keterangan}</span></div>
+                        )) : <p>Semua hadir 🎉</p>}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
-        <div style={styles.gridStats(isMobile)}>
-          <div style={styles.cardStat}><div style={styles.iconBox}>👨‍🎓</div><div><h3 style={styles.statNumber}>{stats.siswa}</h3><small style={styles.statLabel}>Total Siswa</small></div></div>
-          <div style={styles.cardStat}><div style={{...styles.iconBox, background:'#e8f6f3', color:'#1abc9c'}}>👨‍🏫</div><div><h3 style={styles.statNumber}>{stats.guru}</h3><small style={styles.statLabel}>Guru Aktif</small></div></div>
-          <div style={styles.cardStat}><div style={{...styles.iconBox, background:'#fef5e7', color:'#f39c12'}}>⚠️</div><div><h3 style={{...styles.statNumber, color:'#e67e22'}}>{stats.tagihan}</h3><small style={styles.statLabel}>Tunggakan</small></div></div>
-        </div>
-
-        <div style={styles.cardContent}>
-            <div style={styles.sectionHeader}><h3 style={{margin:0, color:'#2c3e50'}}>📡 Live Aktivitas Mengajar</h3></div>
-            {recentLogs.length === 0 ? <p style={{color:'#999', fontStyle:'italic', padding:10}}>Belum ada aktivitas guru hari ini.</p> : (
-                <div style={{overflowX:'auto'}}><table style={styles.table}><thead><tr style={{background:'#f8f9fa', textAlign:'left', color:'#666'}}><th style={{padding:10}}>Waktu</th><th style={{padding:10}}>Guru</th><th style={{padding:10}}>Program</th><th style={{padding:10}}>Materi</th><th style={{padding:10}}>Status</th></tr></thead><tbody>{recentLogs.map(log => (
-                    <tr key={log.id} style={{borderBottom:'1px solid #eee'}}><td style={{padding:10}}>{log.tanggal}<br/><span style={{color:'#888'}}>{log.waktu}</span></td><td style={{padding:10, fontWeight:'bold'}}>{log.namaGuru || "Guru"}</td><td style={{padding:10}}>{log.program}</td><td style={{padding:10}}>{log.detail}</td><td style={{padding:10}}><span style={{padding:'3px 8px', borderRadius:10, fontSize:11, background: log.status === 'Selesai' ? '#d4edda' : '#fff3cd', color: log.status === 'Selesai' ? '#155724' : '#856404'}}>{log.status}</span></td></tr>
-                ))}</tbody></table></div>
-            )}
-        </div>
-
-        <div style={styles.contentGrid(isMobile)}>
-            <div style={{flex: 2}}>
-                <div style={{...styles.cardContent, minHeight: 300}}>
-                    <div style={styles.sectionHeader}><h3 style={{margin:0, color:'#2c3e50'}}>📅 Jadwal Kelas (Upcoming)</h3></div>
-                    {todaySchedules.length === 0 ? <div style={{textAlign:'center', padding:40, color:'#999'}}>✅ Tidak ada kelas aktif saat ini.</div> : todaySchedules.map(sc => (
-                        <div key={sc.id} style={styles.scheduleItem}><div style={{minWidth:80, fontWeight:'bold', color:'#3498db'}}>{sc.start} - {sc.end}</div><div style={{flex:1}}><div style={{fontWeight:'bold', color:'#2c3e50'}}>{sc.title || "Kelas"}</div><div style={{fontSize:12, color:'#7f8c8d'}}>{sc.program} • {sc.planet}</div></div><div><span style={{fontSize:12, background:'#f4f4f4', padding:'4px 8px', borderRadius:5}}>{sc.booker}</span></div></div>
-                    ))}
+        {/* === TEACHER STATUS + TAGIHAN === */}
+        <div style={styles.bottomGrid(isMobile)}>
+          {/* Teacher Status */}
+          <div style={styles.sectionCard}>
+            <h3 style={styles.sectionTitle}><GraduationCap size={18} color="#8b5cf6" /> Status Guru Hari Ini</h3>
+            {teacherAttendanceStatus.length === 0 ? (
+              <div style={styles.emptyStateSmall}>Tidak ada jadwal guru hari ini.</div>
+            ) : (
+              teacherAttendanceStatus.map((g, i) => (
+                <div key={i} style={styles.teacherItem}>
+                  <div style={styles.teacherAvatar}>{g.nama?.charAt(0) || 'G'}</div>
+                  <div style={{flex: 1}}>
+                    <strong>{g.nama}</strong>
+                    <small style={{color: '#94a3b8'}}>{g.jadwalCount} sesi</small>
+                  </div>
+                  <span style={styles.teacherBadge(g.sudahAbsen)}>
+                    {g.sudahAbsen ? '✅ Absen' : '⚠️ Belum'}
+                  </span>
                 </div>
-            </div>
-            <div style={{flex: 1, display:'flex', flexDirection:'column', gap:20}}>
-                <div style={styles.cardWarning}><h4 style={{marginTop:0, color:'#c0392b'}}>⚠️ Tagihan Prioritas</h4>{duePayments.map((p, i) => (<div key={i} style={styles.billItem}><div><div style={{fontWeight:'bold', fontSize:13}}>{p.nama}</div><div style={{fontSize:11, color:'#e74c3c'}}>Rp {p.sisa.toLocaleString()}</div></div><button onClick={() => sendWA(p)} style={styles.btnWa}>💬 WA</button></div>))}{duePayments.length === 0 && <small>Aman.</small>}</div>
-                <div style={styles.cardTodo}><h4 style={{marginTop:0, color:'#2c3e50'}}>📝 Catatan Admin</h4><form onSubmit={addTodo} style={{display:'flex', gap:5, marginBottom:10}}><input type="text" placeholder="Tulis tugas..." value={newTodo} onChange={e=>setNewTodo(e.target.value)} style={styles.inputTodo}/><button type="submit" style={styles.btnAdd}>+</button></form>{todos.map(t => (<div key={t.id} style={styles.todoItem}><div onClick={()=>toggleTodo(t.id)} style={{flex:1, cursor:'pointer', textDecoration: t.done ? 'line-through' : 'none', color: t.done ? '#999' : '#333'}}>{t.done ? '✅' : '⬜'} {t.text}</div><button onClick={()=>deleteTodo(t.id)} style={{border:'none', background:'transparent', color:'#ccc'}}>x</button></div>))}</div>
-            </div>
+              ))
+            )}
+          </div>
+
+          {/* Tagihan Prioritas */}
+          <div style={styles.sectionCard}>
+            <h3 style={styles.sectionTitle}>
+              <AlertCircle size={18} color="#ef4444" /> Tagihan Prioritas
+              {duePayments.length > 0 && <span style={styles.badgeRed}>{duePayments.length}</span>}
+            </h3>
+            {duePayments.length === 0 ? (
+              <div style={styles.emptyStateSmall}>✅ Semua tagihan lunas!</div>
+            ) : (
+              <div style={styles.billList}>
+                {duePayments.slice(0, 5).map((p, i) => (
+                  <div key={i} style={styles.billItem}>
+                    <div style={{flex: 1}}>
+                      <strong>{p.nama}</strong>
+                      <span style={{color: '#ef4444', fontWeight: 'bold', marginLeft: 8}}>Rp {p.sisa.toLocaleString()}</span>
+                    </div>
+                    <button onClick={() => navigate(`/admin/students/finance/${p.id}`)} style={styles.billBtn}>
+                      <Eye size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button onClick={() => navigate('/admin/finance')} style={styles.btnSeeAll}>
+              Lihat Semua <ArrowRight size={12} />
+            </button>
+          </div>
         </div>
       </div>
+      <style>{`@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
     </div>
   );
 };
 
 const styles = {
-  wrapper: { display: 'flex', backgroundColor: '#f4f7f6', minHeight: '100vh' },
-  mainContent: (m) => ({ marginLeft: m ? '0' : '250px', padding: m ? '15px' : '30px', width: '100%', fontFamily: 'Inter, system-ui, sans-serif', transition: '0.3s' }),
-  header: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: m ? '15px' : '30px', flexDirection: m ? 'column' : 'row', gap: m ? 10 : 0 }),
-  headerRight: (m) => ({ display: 'flex', alignItems: 'center', gap: m ? 8 : 15, flexDirection: m ? 'column' : 'row' }),
-  pageTitle: (m) => ({ margin: 0, color: '#2c3e50', fontSize: m ? 18 : 24 }),
-  pageDate: (m) => ({ margin: '5px 0 0 0', color: '#7f8c8d', fontSize: m ? 12 : 14 }),
-  clockBox: (m) => ({ background: 'white', padding: m ? '6px 12px' : '10px 20px', borderRadius: 20, fontWeight: 'bold', color: '#3498db', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', fontSize: m ? 11 : 14 }),
-  btnBell: (m) => ({ background: '#e74c3c', color: 'white', border: 'none', padding: m ? '6px 12px' : '10px 20px', borderRadius: '25px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(231, 76, 60, 0.3)', fontSize: m ? 11 : 13 }),
-  sectionTitle: { display: 'flex', alignItems: 'center', gap: 10, fontSize: 18, fontWeight: 'bold', color: '#2c3e50', marginBottom: 15, marginTop: 10 },
-  liveDot: { width: 10, height: 10, borderRadius: '50%', background: '#27ae60', animation: 'pulse 2s infinite', display: 'inline-block', marginLeft: 5 },
-  attendanceGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))', gap: 15, marginBottom: 25 }),
-  attendanceBar: { display: 'flex', height: 24, borderRadius: 12, overflow: 'hidden', marginTop: 10, background: '#f1f5f9' },
-  barHadir: { background: '#27ae60', color: 'white', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', transition: 'width 0.5s' },
-  barTidakHadir: { background: '#e74c3c', color: 'white', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', transition: 'width 0.5s' },
-  attendanceNumbers: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b', marginTop: 5 },
-  attendanceCard: (m) => ({ background: 'white', padding: m ? 15 : 20, borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', cursor: 'pointer', transition: '0.2s', border: '1px solid #f1f5f9' }),
-  classHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  className: (m) => ({ margin: 0, fontSize: m ? 14 : 15, color: '#1e293b', fontWeight: 'bold' }),
-  roomBadge: (m) => ({ background: '#e0e7ff', color: '#3730a3', padding: '3px 8px', borderRadius: 12, fontSize: m ? 9 : 10, fontWeight: 'bold' }),
-  classInfo: (m) => ({ fontSize: m ? 11 : 12, color: '#64748b', display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 4 }),
-  programBadge: { background: '#fef3c7', color: '#b45309', padding: '2px 6px', borderRadius: 8, fontSize: 10, fontWeight: 'bold' },
-  detailDropdown: { marginTop: 12, borderTop: '1px solid #f1f5f9', paddingTop: 12 },
-  detailSection: { marginBottom: 10 },
-  absentItem: { display: 'flex', gap: 10, alignItems: 'center', padding: '4px 0', fontSize: 12, flexWrap: 'wrap' },
-  absentStatus: (s) => ({ padding: '2px 6px', borderRadius: 8, fontSize: 10, fontWeight: 'bold', background: s === 'Alpha' || s === 'alpha' ? '#fee2e2' : s === 'Sakit' || s === 'sakit' ? '#fff3cd' : '#e0e7ff', color: s === 'Alpha' || s === 'alpha' ? '#ef4444' : s === 'Sakit' || s === 'sakit' ? '#f59e0b' : '#3730a3' }),
-  absentKet: { fontSize: 10, color: '#94a3b8', marginLeft: 4 },
-  emptyState: { gridColumn: '1/-1', textAlign: 'center', padding: 40, background: 'white', borderRadius: 14, color: '#94a3b8', fontSize: 14 },
-  gridStats: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : 'repeat(3, 1fr)', gap: m ? 10 : 20, marginBottom: m ? 15 : 30 }),
-  cardStat: { background: 'white', padding: 20, borderRadius: 12, display: 'flex', alignItems: 'center', gap: 15, boxShadow: '0 2px 5px rgba(0,0,0,0.03)' },
-  iconBox: { width: 50, height: 50, borderRadius: '50%', background: '#eaf2f8', color: '#3498db', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 },
-  statNumber: { margin: 0, fontSize: 24, color: '#2c3e50' },
-  statLabel: { color: '#7f8c8d', fontSize: 12 },
-  cardContent: { background: 'white', padding: 20, borderRadius: 12, boxShadow: '0 2px 5px rgba(0,0,0,0.03)', marginBottom: 20 },
-  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, paddingBottom: 10, borderBottom: '1px solid #f0f0f0' },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
-  contentGrid: (m) => ({ display: 'flex', gap: 20, flexDirection: m ? 'column' : 'row', alignItems: 'flex-start' }),
-  scheduleItem: { display: 'flex', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f4f6f7', gap: 10 },
-  cardWarning: { background: '#fff5f5', padding: 20, borderRadius: 12, border: '1px solid #fadbd8' },
-  billItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', padding: 10, borderRadius: 8, marginBottom: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' },
-  btnWa: { background: '#27ae60', color: 'white', border: 'none', borderRadius: 5, padding: '5px 10px', cursor: 'pointer', fontWeight: 'bold', fontSize: 11 },
-  cardTodo: { background: 'white', padding: 20, borderRadius: 12, boxShadow: '0 2px 5px rgba(0,0,0,0.03)' },
-  inputTodo: { flex: 1, padding: 8, borderRadius: 5, border: '1px solid #ddd' },
-  btnAdd: { padding: '8px 15px', background: '#2c3e50', color: 'white', border: 'none', borderRadius: 5, cursor: 'pointer' },
-  todoItem: { display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px dashed #eee', fontSize: 13 }
+  wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
+  mainContent: (m) => ({ marginLeft: m ? '0' : '260px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' }),
+  loadingBox: { textAlign: 'center', padding: 80, color: '#94a3b8' },
+  spinner: { width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 15px' },
+
+  // Header
+  header: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }),
+  pageTitle: (m) => ({ margin: 0, color: '#1e293b', fontSize: m ? 18 : 22, display: 'flex', alignItems: 'center', gap: 8 }),
+  pageDate: (m) => ({ margin: '4px 0 0', color: '#64748b', fontSize: m ? 11 : 13 }),
+  headerActions: (m) => ({ display: 'flex', gap: 8 }),
+  btnRefresh: (m) => ({ background: 'white', border: '1px solid #e2e8f0', padding: m ? '8px 12px' : '10px 16px', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, color: '#64748b' }),
+  btnQuickAdd: (m) => ({ background: '#3b82f6', color: 'white', border: 'none', padding: m ? '8px 12px' : '10px 16px', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, boxShadow: '0 4px 12px rgba(59,130,246,0.3)' }),
+
+  // Stats Grid
+  statsGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 24 }),
+  statCard: { background: 'white', padding: 16, borderRadius: 14, display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', transition: '0.2s' },
+  statIcon: (bg, color) => ({ width: 44, height: 44, borderRadius: 12, background: bg, color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }),
+  statInfo: { flex: 1, minWidth: 0 },
+  
+  // Alert Box
+  alertBox: { background: '#fff7ed', border: '2px solid #f97316', padding: 16, borderRadius: 14, marginBottom: 24 },
+  alertHeader: { display: 'flex', alignItems: 'center', gap: 8, color: '#c2410c', marginBottom: 10, fontSize: 13 },
+  alertCount: { background: '#f97316', color: 'white', padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 'bold', marginLeft: 'auto' },
+  alertList: { display: 'flex', flexDirection: 'column', gap: 6 },
+  alertItem: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'white', borderRadius: 10, flexWrap: 'wrap' },
+  alertBtn: { padding: '5px 10px', background: '#f97316', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 'bold', fontSize: 10, display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' },
+
+  // Section
+  sectionCard: { background: 'white', padding: 20, borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', marginBottom: 20, width: '100%', boxSizing: 'border-box' },
+  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, flexWrap: 'wrap', gap: 8 },
+  sectionTitle: { margin: 0, fontSize: 15, color: '#1e293b', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 },
+  quickStats: { display: 'flex', gap: 10, flexWrap: 'wrap' },
+  quickStat: (color) => ({ background: `${color}15`, color, padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: 'bold' }),
+
+  // Attendance
+  attendanceGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }),
+  attendanceCard: (m) => ({ background: '#f8fafc', padding: 14, borderRadius: 12, cursor: 'pointer', border: '1px solid #f1f5f9' }),
+  classHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  className: { margin: 0, fontSize: 13, color: '#1e293b', fontWeight: 'bold' },
+  roomBadge: { background: '#e0e7ff', color: '#3730a3', padding: '2px 8px', borderRadius: 10, fontSize: 9, fontWeight: 'bold' },
+  classInfo: { fontSize: 11, color: '#64748b', display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 4 },
+  attendanceBar: { display: 'flex', height: 20, borderRadius: 10, overflow: 'hidden', marginTop: 8, background: '#f1f5f9' },
+  barHadir: { background: '#10b981', color: 'white', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', transition: 'width 0.5s', minWidth: 30, padding: '0 4px' },
+  barTidakHadir: { background: '#ef4444', color: 'white', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', transition: 'width 0.5s', minWidth: 30, padding: '0 4px' },
+  detailDropdown: { marginTop: 10, borderTop: '1px solid #f1f5f9', paddingTop: 10 },
+  detailSection: { marginBottom: 8 },
+  absentItem: { display: 'flex', gap: 6, alignItems: 'center', padding: '2px 0', fontSize: 11, flexWrap: 'wrap' },
+  absentStatus: (s) => ({ padding: '1px 6px', borderRadius: 6, fontSize: 8, fontWeight: 'bold', background: s === 'Alpha' || s === 'alpha' ? '#fee2e2' : s === 'Sakit' || s === 'sakit' ? '#fef3c7' : '#e0e7ff', color: s === 'Alpha' || s === 'alpha' ? '#ef4444' : s === 'Sakit' || s === 'sakit' ? '#b45309' : '#3730a3' }),
+  absentKet: { fontSize: 9, color: '#94a3b8' },
+  emptyState: { textAlign: 'center', padding: 40, color: '#94a3b8', fontSize: 13 },
+  emptyStateSmall: { textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12 },
+
+  // Bottom Grid
+  bottomGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : '1fr 1fr', gap: 20 }),
+
+  // Teacher Status
+  teacherItem: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid #f1f5f9' },
+  teacherAvatar: { width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #8b5cf6, #6366f1)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 'bold', flexShrink: 0 },
+  teacherBadge: (ok) => ({ padding: '3px 8px', borderRadius: 8, fontSize: 10, fontWeight: 'bold', background: ok ? '#dcfce7' : '#fee2e2', color: ok ? '#166534' : '#ef4444' }),
+
+  // Bills
+  billList: { display: 'flex', flexDirection: 'column', gap: 6 },
+  billItem: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: '#fef2f2', borderRadius: 10, border: '1px solid #fee2e2', gap: 8 },
+  billBtn: { padding: '6px 10px', background: '#ef4444', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' },
+  badgeRed: { background: '#ef4444', color: 'white', padding: '2px 8px', borderRadius: 12, fontSize: 10, fontWeight: 'bold' },
+  btnSeeAll: { width: '100%', marginTop: 12, padding: '10px', background: '#f1f5f9', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 'bold', fontSize: 12, color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }
 };
 
 export default Dashboard;
