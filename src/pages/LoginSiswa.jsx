@@ -26,9 +26,8 @@ const LoginSiswa = () => {
         const q = query(collection(db, "student_contents"), orderBy("createdAt", "desc"));
         const snap = await getDocs(q);
         const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        // Filter hanya yang targetnya "Siswa" atau "Semua"
         const filtered = data.filter(p => p.targetPortal === "Siswa" || p.targetPortal === "Semua" || !p.targetPortal);
-        setPosters(filtered.slice(0, 5));
+        setPosters(filtered);
       } catch (err) {
         console.error("Gagal ambil poster:", err);
       }
@@ -85,7 +84,7 @@ const LoginSiswa = () => {
   };
 
   // ============================================================
-  // LOGIN
+  // LOGIN (TETAP SAMA, TIDAK DIUBAH)
   // ============================================================
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -138,7 +137,7 @@ const LoginSiswa = () => {
   // ============================================================
   return (
     <div style={styles.container}>
-      {/* Background dengan bintang & planet */}
+      {/* Background Galaksi */}
       <div style={styles.background}>
         <div style={styles.star1}></div>
         <div style={styles.star2}></div>
@@ -147,16 +146,19 @@ const LoginSiswa = () => {
         <div style={styles.star5}></div>
         <div style={styles.star6}></div>
         <div style={styles.star7}></div>
+        <div style={styles.star8}></div>
         <div style={styles.planet1}></div>
         <div style={styles.planet2}></div>
+        <div style={styles.planet3}></div>
+        <div style={styles.nebula}></div>
       </div>
 
-      {/* Modal Poster */}
+      {/* Modal Poster FULL */}
       {selectedPoster && (
         <div style={styles.modalOverlay} onClick={() => setSelectedPoster(null)}>
           <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
             <button onClick={() => setSelectedPoster(null)} style={styles.modalClose}>✕</button>
-            <img src={selectedPoster.imageUrl} alt={selectedPoster.title} style={styles.modalImage} />
+            <img src={selectedPoster.imageUrl} alt={selectedPoster.title} style={styles.modalImage} onError={(e) => { e.target.src = 'https://placehold.co/600x300/1a1a3e/white?text=Gambar+Tidak+Tersedia'; }} />
             <div style={styles.modalBody}>
               <h3 style={styles.modalTitle}>{selectedPoster.title}</h3>
               <p style={styles.modalText}>{selectedPoster.content || "Tidak ada deskripsi."}</p>
@@ -165,20 +167,22 @@ const LoginSiswa = () => {
         </div>
       )}
 
-      {/* Main Card */}
-      <div style={styles.cardWrapper}>
+      {/* Main Content */}
+      <div style={styles.mainWrapper}>
+        
+        {/* LEFT: Login Card */}
         <div style={styles.glassCard}>
           {/* Logo */}
           <div style={styles.logoArea}>
             <img 
-              src="/logo-gemilang.png.png" 
-              alt="Logo Gemilang" 
+              src="/pwa-192x192.png" 
+              alt="Logo Bimbel Gemilang" 
               style={styles.logo}
-              onError={(e) => { e.target.style.display = 'none'; }}
             />
           </div>
 
-          <h1 style={styles.title}>Portal Siswa</h1>
+          <h1 style={styles.title}>🚀 Portal Siswa</h1>
+          <p style={styles.slogan}>Mari Eksplorasi Ilmu di Galaksi Pengetahuan</p>
           <p style={styles.subtitle}>Bimbel Gemilang · Glagahagung</p>
 
           {/* Form Login */}
@@ -207,7 +211,7 @@ const LoginSiswa = () => {
             </div>
             
             <button type="submit" disabled={loading} style={styles.btnLogin}>
-              {loading ? "⏳ Memproses..." : "🚀 Masuk ke Portal"}
+              {loading ? "⏳ Memproses..." : "🌌 Masuk ke Galaksi"}
             </button>
           </form>
 
@@ -237,57 +241,80 @@ const LoginSiswa = () => {
           </div>
         </div>
 
-        {/* Poster/berita di samping */}
-        {posters.length > 0 && (
-          <div style={styles.posterPanel}>
-            <div style={styles.posterHeader}>
-              <span style={styles.posterIcon}>📢</span>
-              <span style={styles.posterTitle}>Pengumuman & Berita</span>
-            </div>
-            <div style={styles.posterList}>
-              {posters.map((p, i) => (
+        {/* RIGHT: Poster Panel (FULL SCROLLABLE) */}
+        <div style={styles.posterPanel}>
+          <div style={styles.posterHeader}>
+            <span style={styles.posterIcon}>📡</span>
+            <span style={styles.posterTitle}>Sinyal Berita & Pengumuman</span>
+            <span style={styles.posterCount}>{posters.length}</span>
+          </div>
+          
+          <div style={styles.posterList}>
+            {posters.length === 0 ? (
+              <div style={styles.emptyPoster}>
+                <span style={styles.emptyIcon}>🛸</span>
+                <p style={styles.emptyText}>Belum ada pengumuman</p>
+                <p style={styles.emptySub}>Pantau terus ya!</p>
+              </div>
+            ) : (
+              posters.map((p) => (
                 <div 
                   key={p.id} 
                   style={styles.posterItem}
                   onClick={() => setSelectedPoster(p)}
                 >
-                  <img src={p.imageUrl} alt={p.title} style={styles.posterThumb} />
+                  <img 
+                    src={p.imageUrl} 
+                    alt={p.title} 
+                    style={styles.posterThumb} 
+                    onError={(e) => { e.target.src = 'https://placehold.co/80x80/1a1a3e/white?text=📷'; }}
+                  />
                   <div style={styles.posterInfo}>
                     <div style={styles.posterName}>{p.title}</div>
                     <div style={styles.posterDate}>
-                      {p.createdAt?.toDate?.()?.toLocaleDateString('id-ID') || 'Baru'}
+                      {p.createdAt?.toDate?.()?.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) || 'Baru'}
                     </div>
+                    {p.content && (
+                      <div style={styles.posterPreview}>
+                        {p.content.substring(0, 60)}...
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))}
-              {posters.length >= 5 && (
-                <div style={styles.posterMore}>+{posters.length - 5} lagi</div>
-              )}
-            </div>
+              ))
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       <style>{`
         @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(3deg); }
         }
         @keyframes twinkle {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 1; }
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.2); }
         }
         @keyframes orbit {
-          from { transform: rotate(0deg) translateX(120px) rotate(0deg); }
-          to { transform: rotate(360deg) translateX(120px) rotate(-360deg); }
+          from { transform: rotate(0deg) translateX(140px) rotate(0deg); }
+          to { transform: rotate(360deg) translateX(140px) rotate(-360deg); }
+        }
+        @keyframes orbitReverse {
+          from { transform: rotate(0deg) translateX(100px) rotate(0deg); }
+          to { transform: rotate(-360deg) translateX(100px) rotate(360deg); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 0.8; }
+        }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(40px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         @keyframes shimmer {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
-        }
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
         }
         .glass-card {
           animation: fadeUp 0.8s ease both;
@@ -296,6 +323,20 @@ const LoginSiswa = () => {
         .poster-panel {
           animation: fadeUp 0.8s ease both;
           animation-delay: 0.4s;
+        }
+        ::-webkit-scrollbar {
+          width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+          background: rgba(255,255,255,0.03);
+          border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: rgba(243,156,18,0.3);
+          border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: rgba(243,156,18,0.5);
         }
       `}</style>
     </div>
@@ -311,119 +352,81 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '20px',
-    background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1a3e 30%, #0d1b2a 60%, #1b0a2e 100%)',
+    padding: '24px',
+    background: 'linear-gradient(135deg, #05070f 0%, #0d1b2a 30%, #1a0a2e 60%, #0a0e1a 100%)',
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
     position: 'relative',
     overflow: 'hidden',
   },
 
-  // Background
+  // Background Galaksi
   background: {
     position: 'fixed',
     inset: 0,
     zIndex: 0,
     pointerEvents: 'none',
+    overflow: 'hidden',
   },
-  star1: {
-    position: 'absolute',
-    width: '3px',
-    height: '3px',
-    background: 'white',
-    borderRadius: '50%',
-    top: '10%',
-    left: '15%',
-    animation: 'twinkle 3s ease-in-out infinite',
-  },
-  star2: {
-    position: 'absolute',
-    width: '4px',
-    height: '4px',
-    background: 'white',
-    borderRadius: '50%',
-    top: '20%',
-    right: '25%',
-    animation: 'twinkle 4s ease-in-out infinite 0.5s',
-  },
-  star3: {
-    position: 'absolute',
-    width: '2px',
-    height: '2px',
-    background: 'white',
-    borderRadius: '50%',
-    bottom: '30%',
-    left: '30%',
-    animation: 'twinkle 2.5s ease-in-out infinite 1s',
-  },
-  star4: {
-    position: 'absolute',
-    width: '5px',
-    height: '5px',
-    background: 'white',
-    borderRadius: '50%',
-    top: '60%',
-    right: '10%',
-    animation: 'twinkle 3.5s ease-in-out infinite 0.3s',
-  },
-  star5: {
-    position: 'absolute',
-    width: '3px',
-    height: '3px',
-    background: 'white',
-    borderRadius: '50%',
-    bottom: '15%',
-    right: '40%',
-    animation: 'twinkle 2.8s ease-in-out infinite 0.8s',
-  },
-  star6: {
-    position: 'absolute',
-    width: '4px',
-    height: '4px',
-    background: 'white',
-    borderRadius: '50%',
-    top: '40%',
-    left: '5%',
-    animation: 'twinkle 3.2s ease-in-out infinite 1.2s',
-  },
-  star7: {
-    position: 'absolute',
-    width: '2px',
-    height: '2px',
-    background: 'white',
-    borderRadius: '50%',
-    bottom: '45%',
-    left: '55%',
-    animation: 'twinkle 2.2s ease-in-out infinite 0.6s',
-  },
+  star1: { position: 'absolute', width: '3px', height: '3px', background: 'white', borderRadius: '50%', top: '8%', left: '12%', animation: 'twinkle 3s ease-in-out infinite' },
+  star2: { position: 'absolute', width: '4px', height: '4px', background: 'white', borderRadius: '50%', top: '18%', right: '20%', animation: 'twinkle 4s ease-in-out infinite 0.5s' },
+  star3: { position: 'absolute', width: '2px', height: '2px', background: 'white', borderRadius: '50%', bottom: '25%', left: '25%', animation: 'twinkle 2.5s ease-in-out infinite 1s' },
+  star4: { position: 'absolute', width: '5px', height: '5px', background: 'white', borderRadius: '50%', top: '55%', right: '8%', animation: 'twinkle 3.5s ease-in-out infinite 0.3s' },
+  star5: { position: 'absolute', width: '3px', height: '3px', background: 'white', borderRadius: '50%', bottom: '12%', right: '35%', animation: 'twinkle 2.8s ease-in-out infinite 0.8s' },
+  star6: { position: 'absolute', width: '4px', height: '4px', background: 'white', borderRadius: '50%', top: '35%', left: '4%', animation: 'twinkle 3.2s ease-in-out infinite 1.2s' },
+  star7: { position: 'absolute', width: '2px', height: '2px', background: 'white', borderRadius: '50%', bottom: '40%', left: '50%', animation: 'twinkle 2.2s ease-in-out infinite 0.6s' },
+  star8: { position: 'absolute', width: '3px', height: '3px', background: 'white', borderRadius: '50%', top: '75%', right: '55%', animation: 'twinkle 3.8s ease-in-out infinite 1.5s' },
   planet1: {
     position: 'absolute',
-    width: '80px',
-    height: '80px',
+    width: '100px',
+    height: '100px',
     borderRadius: '50%',
     background: 'radial-gradient(circle at 30% 30%, #f39c12, #d35400)',
-    top: '15%',
-    right: '8%',
-    opacity: 0.15,
-    boxShadow: '0 0 60px rgba(243,156,18,0.1)',
-    animation: 'orbit 25s linear infinite',
+    top: '10%',
+    right: '5%',
+    opacity: 0.12,
+    boxShadow: '0 0 80px rgba(243,156,18,0.08)',
+    animation: 'orbit 30s linear infinite',
   },
   planet2: {
     position: 'absolute',
-    width: '120px',
-    height: '120px',
+    width: '140px',
+    height: '140px',
     borderRadius: '50%',
     background: 'radial-gradient(circle at 30% 30%, #8b5cf6, #4c1d95)',
-    bottom: '10%',
-    left: '3%',
-    opacity: 0.1,
-    boxShadow: '0 0 80px rgba(139,92,246,0.08)',
-    animation: 'orbit 35s linear infinite reverse',
+    bottom: '5%',
+    left: '2%',
+    opacity: 0.08,
+    boxShadow: '0 0 100px rgba(139,92,246,0.06)',
+    animation: 'orbitReverse 40s linear infinite',
+  },
+  planet3: {
+    position: 'absolute',
+    width: '60px',
+    height: '60px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle at 30% 30%, #2ed573, #1a8a4a)',
+    top: '50%',
+    right: '15%',
+    opacity: 0.06,
+    boxShadow: '0 0 50px rgba(46,213,115,0.04)',
+    animation: 'orbit 20s linear infinite',
+  },
+  nebula: {
+    position: 'absolute',
+    width: '400px',
+    height: '400px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(139,92,246,0.04), transparent 70%)',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    animation: 'pulse 8s ease-in-out infinite',
   },
 
-  // Card wrapper (flex row)
-  cardWrapper: {
+  // Main Wrapper
+  mainWrapper: {
     display: 'flex',
-    gap: '24px',
+    gap: '28px',
     alignItems: 'stretch',
     maxWidth: '1100px',
     width: '100%',
@@ -433,164 +436,182 @@ const styles = {
     justifyContent: 'center',
   },
 
-  // Glass Card
+  // Glass Card Login
   glassCard: {
     flex: '1',
-    minWidth: '320px',
-    maxWidth: '440px',
-    padding: '40px 36px',
+    minWidth: '300px',
+    maxWidth: '420px',
+    padding: '36px 32px 28px',
     borderRadius: '24px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+    background: 'rgba(255, 255, 255, 0.04)',
+    backdropFilter: 'blur(24px)',
+    WebkitBackdropFilter: 'blur(24px)',
+    border: '1px solid rgba(255, 255, 255, 0.06)',
+    boxShadow: '0 30px 60px -20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
     textAlign: 'center',
     transition: 'all 0.3s ease',
   },
 
   logoArea: {
-    marginBottom: '16px',
+    marginBottom: '12px',
   },
   logo: {
-    height: '70px',
-    filter: 'drop-shadow(0 0 30px rgba(243,156,18,0.3))',
-    mixBlendMode: 'screen',
+    width: '72px',
+    height: '72px',
+    borderRadius: '50%',
+    border: '2px solid rgba(243,156,18,0.25)',
+    boxShadow: '0 0 40px rgba(243,156,18,0.15), inset 0 0 20px rgba(243,156,18,0.05)',
+    objectFit: 'cover',
   },
 
   title: {
-    fontSize: '28px',
+    fontSize: '26px',
     fontWeight: 800,
     color: 'white',
-    margin: '0 0 4px',
+    margin: '0 0 2px',
     letterSpacing: '-0.5px',
     textShadow: '0 2px 20px rgba(0,0,0,0.3)',
   },
+  slogan: {
+    fontSize: '14px',
+    fontWeight: 600,
+    color: '#f39c12',
+    margin: '0 0 2px',
+    textShadow: '0 0 30px rgba(243,156,18,0.15)',
+    letterSpacing: '0.3px',
+  },
   subtitle: {
-    fontSize: '13px',
-    color: 'rgba(255,255,255,0.5)',
-    margin: '0 0 28px',
+    fontSize: '12px',
+    color: 'rgba(255,255,255,0.35)',
+    margin: '0 0 24px',
     letterSpacing: '0.5px',
   },
 
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '16px',
+    gap: '14px',
   },
   inputGroup: {
     textAlign: 'left',
   },
   label: {
     display: 'block',
-    fontSize: '12px',
+    fontSize: '11px',
     fontWeight: 600,
-    color: 'rgba(255,255,255,0.6)',
-    marginBottom: '6px',
+    color: 'rgba(255,255,255,0.5)',
+    marginBottom: '5px',
     letterSpacing: '0.5px',
+    textTransform: 'uppercase',
   },
   input: {
     width: '100%',
-    padding: '14px 16px',
+    padding: '13px 16px',
     borderRadius: '12px',
-    border: '1px solid rgba(255,255,255,0.08)',
-    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.06)',
+    background: 'rgba(255,255,255,0.03)',
     color: 'white',
-    fontSize: '15px',
+    fontSize: '14px',
     outline: 'none',
     transition: 'all 0.3s ease',
     boxSizing: 'border-box',
+    ':focus': {
+      borderColor: 'rgba(243,156,18,0.3)',
+      boxShadow: '0 0 20px rgba(243,156,18,0.05)',
+      background: 'rgba(255,255,255,0.05)',
+    },
     '::placeholder': {
-      color: 'rgba(255,255,255,0.3)',
+      color: 'rgba(255,255,255,0.2)',
     },
   },
 
   btnLogin: {
     width: '100%',
-    padding: '16px',
+    padding: '15px',
     borderRadius: '12px',
     border: 'none',
     background: 'linear-gradient(135deg, #f39c12, #e67e22)',
     color: '#0a0a1a',
     fontWeight: 800,
-    fontSize: '16px',
+    fontSize: '15px',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
-    boxShadow: '0 8px 30px rgba(243,156,18,0.3)',
-    marginTop: '8px',
+    boxShadow: '0 8px 30px rgba(243,156,18,0.25)',
+    marginTop: '4px',
     ':hover': {
       transform: 'translateY(-2px)',
-      boxShadow: '0 12px 40px rgba(243,156,18,0.4)',
+      boxShadow: '0 12px 40px rgba(243,156,18,0.35)',
     },
     ':disabled': {
       opacity: 0.6,
       cursor: 'not-allowed',
+      transform: 'none',
     },
   },
 
   installArea: {
-    marginTop: '20px',
+    marginTop: '16px',
   },
   btnInstall: {
     width: '100%',
-    padding: '12px',
+    padding: '11px',
     borderRadius: '12px',
-    border: '1px solid rgba(255,255,255,0.15)',
-    background: 'rgba(255,255,255,0.05)',
-    color: 'white',
+    border: '1px solid rgba(255,255,255,0.08)',
+    background: 'rgba(255,255,255,0.03)',
+    color: 'rgba(255,255,255,0.8)',
     fontWeight: 600,
-    fontSize: '13px',
+    fontSize: '12px',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     ':hover': {
-      background: 'rgba(255,255,255,0.1)',
+      background: 'rgba(255,255,255,0.06)',
     },
   },
   btnInstallOutline: {
     width: '100%',
-    padding: '12px',
+    padding: '11px',
     borderRadius: '12px',
-    border: '1px solid rgba(255,255,255,0.08)',
-    background: 'rgba(255,255,255,0.02)',
-    color: 'rgba(255,255,255,0.7)',
+    border: '1px solid rgba(255,255,255,0.05)',
+    background: 'rgba(255,255,255,0.01)',
+    color: 'rgba(255,255,255,0.5)',
     fontWeight: 500,
     fontSize: '12px',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     ':hover': {
-      background: 'rgba(255,255,255,0.05)',
+      background: 'rgba(255,255,255,0.03)',
     },
   },
   installedBadge: {
-    marginTop: '16px',
-    padding: '10px',
+    marginTop: '14px',
+    padding: '8px 12px',
     borderRadius: '10px',
-    background: 'rgba(46,213,115,0.15)',
-    border: '1px solid rgba(46,213,115,0.2)',
+    background: 'rgba(46,213,115,0.1)',
+    border: '1px solid rgba(46,213,115,0.15)',
     color: '#2ed573',
-    fontSize: '12px',
+    fontSize: '11px',
     fontWeight: 600,
   },
 
   footer: {
-    marginTop: '24px',
-    color: 'rgba(255,255,255,0.25)',
-    fontSize: '12px',
+    marginTop: '20px',
+    color: 'rgba(255,255,255,0.15)',
+    fontSize: '11px',
   },
 
-  // Poster Panel
+  // Poster Panel (FULL SCROLLABLE)
   posterPanel: {
     flex: '1',
     minWidth: '280px',
     maxWidth: '380px',
-    padding: '24px 20px',
+    padding: '20px 18px',
     borderRadius: '24px',
     background: 'rgba(255, 255, 255, 0.03)',
-    backdropFilter: 'blur(16px)',
-    WebkitBackdropFilter: 'blur(16px)',
-    border: '1px solid rgba(255, 255, 255, 0.05)',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-    maxHeight: '500px',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    border: '1px solid rgba(255, 255, 255, 0.04)',
+    boxShadow: '0 30px 60px -20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
+    maxHeight: '520px',
     display: 'flex',
     flexDirection: 'column',
   },
@@ -598,55 +619,61 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    paddingBottom: '16px',
-    borderBottom: '1px solid rgba(255,255,255,0.05)',
-    marginBottom: '16px',
+    paddingBottom: '14px',
+    borderBottom: '1px solid rgba(255,255,255,0.04)',
+    marginBottom: '14px',
+    flexShrink: 0,
   },
   posterIcon: {
-    fontSize: '20px',
+    fontSize: '18px',
   },
   posterTitle: {
     color: 'white',
     fontWeight: 700,
-    fontSize: '15px',
+    fontSize: '14px',
     letterSpacing: '0.3px',
+    flex: 1,
   },
+  posterCount: {
+    fontSize: '10px',
+    color: 'rgba(255,255,255,0.2)',
+    background: 'rgba(255,255,255,0.04)',
+    padding: '2px 10px',
+    borderRadius: '20px',
+    fontWeight: 600,
+  },
+
   posterList: {
     flex: 1,
     overflowY: 'auto',
     display: 'flex',
     flexDirection: 'column',
-    gap: '10px',
-    '::-webkit-scrollbar': {
-      width: '3px',
-    },
-    '::-webkit-scrollbar-thumb': {
-      background: 'rgba(255,255,255,0.15)',
-      borderRadius: '10px',
-    },
+    gap: '8px',
+    paddingRight: '4px',
   },
+
   posterItem: {
     display: 'flex',
     gap: '12px',
     padding: '10px 12px',
     borderRadius: '12px',
-    background: 'rgba(255,255,255,0.03)',
+    background: 'rgba(255,255,255,0.02)',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     border: '1px solid transparent',
     ':hover': {
-      background: 'rgba(255,255,255,0.06)',
-      borderColor: 'rgba(255,255,255,0.08)',
+      background: 'rgba(255,255,255,0.05)',
+      borderColor: 'rgba(255,255,255,0.06)',
       transform: 'translateX(4px)',
     },
   },
   posterThumb: {
-    width: '64px',
-    height: '64px',
+    width: '60px',
+    height: '60px',
     borderRadius: '10px',
     objectFit: 'cover',
     flexShrink: 0,
-    border: '1px solid rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.04)',
   },
   posterInfo: {
     flex: 1,
@@ -664,15 +691,37 @@ const styles = {
     whiteSpace: 'nowrap',
   },
   posterDate: {
-    color: 'rgba(255,255,255,0.3)',
-    fontSize: '10px',
+    color: 'rgba(255,255,255,0.25)',
+    fontSize: '9px',
     marginTop: '2px',
   },
-  posterMore: {
+  posterPreview: {
+    color: 'rgba(255,255,255,0.3)',
+    fontSize: '10px',
+    marginTop: '3px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+
+  emptyPoster: {
     textAlign: 'center',
-    color: 'rgba(255,255,255,0.2)',
+    padding: '40px 20px',
+  },
+  emptyIcon: {
+    fontSize: '40px',
+    display: 'block',
+    marginBottom: '12px',
+  },
+  emptyText: {
+    color: 'rgba(255,255,255,0.3)',
+    fontSize: '13px',
+    margin: 0,
+  },
+  emptySub: {
+    color: 'rgba(255,255,255,0.15)',
     fontSize: '11px',
-    padding: '8px',
+    margin: '4px 0 0',
   },
 
   // Modal
@@ -680,47 +729,51 @@ const styles = {
     position: 'fixed',
     inset: 0,
     zIndex: 1000,
-    background: 'rgba(0,0,0,0.8)',
-    backdropFilter: 'blur(12px)',
+    background: 'rgba(0,0,0,0.85)',
+    backdropFilter: 'blur(16px)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '20px',
+    padding: '24px',
   },
   modalContent: {
-    background: 'rgba(20,20,40,0.95)',
+    background: 'rgba(15,20,40,0.95)',
     borderRadius: '20px',
-    maxWidth: '520px',
+    maxWidth: '540px',
     width: '100%',
-    maxHeight: '80vh',
+    maxHeight: '85vh',
     overflow: 'hidden',
-    border: '1px solid rgba(255,255,255,0.08)',
+    border: '1px solid rgba(255,255,255,0.06)',
     position: 'relative',
+    boxShadow: '0 40px 80px rgba(0,0,0,0.6)',
   },
   modalClose: {
     position: 'absolute',
     top: '12px',
     right: '12px',
-    width: '36px',
-    height: '36px',
+    width: '34px',
+    height: '34px',
     borderRadius: '50%',
-    border: '1px solid rgba(255,255,255,0.1)',
+    border: '1px solid rgba(255,255,255,0.06)',
     background: 'rgba(0,0,0,0.5)',
     color: 'white',
-    fontSize: '18px',
+    fontSize: '16px',
     cursor: 'pointer',
     zIndex: 2,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    ':hover': {
+      background: 'rgba(0,0,0,0.7)',
+    },
   },
   modalImage: {
     width: '100%',
-    maxHeight: '260px',
+    maxHeight: '280px',
     objectFit: 'cover',
   },
   modalBody: {
-    padding: '24px',
+    padding: '24px 28px 28px',
   },
   modalTitle: {
     color: 'white',
@@ -731,8 +784,9 @@ const styles = {
   modalText: {
     color: 'rgba(255,255,255,0.6)',
     fontSize: '14px',
-    lineHeight: 1.7,
+    lineHeight: 1.8,
     margin: 0,
+    whiteSpace: 'pre-wrap',
   },
 };
 
