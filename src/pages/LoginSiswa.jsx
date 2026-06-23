@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 
 const LoginSiswa = () => {
   const navigate = useNavigate();
@@ -10,15 +10,32 @@ const LoginSiswa = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [posters, setPosters] = useState([]);
-  const [surveys, setSurveys] = useState([]);
   const [selectedPoster, setSelectedPoster] = useState(null);
-  const [selectedSurvey, setSelectedSurvey] = useState(null);
-  const [surveyAnswers, setSurveyAnswers] = useState({});
   const [theme, setTheme] = useState('dark');
   const [rocketHover, setRocketHover] = useState(false);
   const [rocketClicked, setRocketClicked] = useState(false);
   
-  // PWA Install
+  // ============================================================
+  // GAME STATE
+  // ============================================================
+  const [gameWords, setGameWords] = useState([
+    { word: 'BINTANG', hint: '🌌 Cahaya di langit malam' },
+    { word: 'PLANET', hint: '🪐 Pengeliling matahari' },
+    { word: 'ROKET', hint: '🚀 Kendaraan ke luar angkasa' },
+    { word: 'GALAKSI', hint: '🌠 Kumpulan miliaran bintang' },
+    { word: 'ASTRONOT', hint: '👨‍🚀 Penjelajah luar angkasa' }
+  ]);
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [shuffledLetters, setShuffledLetters] = useState([]);
+  const [selectedLetters, setSelectedLetters] = useState([]);
+  const [gameMessage, setGameMessage] = useState('');
+  const [gameScore, setGameScore] = useState(0);
+  const [gameComplete, setGameComplete] = useState(false);
+  const [showGame, setShowGame] = useState(false);
+
+  // ============================================================
+  // PWA INSTALL
+  // ============================================================
   const [installPrompt, setInstallPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [showInstallBtn, setShowInstallBtn] = useState(false);
@@ -26,24 +43,20 @@ const LoginSiswa = () => {
   const isDark = theme === 'dark';
 
   // ============================================================
-  // AMBIL DATA DARI FIRESTORE
+  // AMBIL POSTER DARI FIRESTORE
   // ============================================================
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPosters = async () => {
       try {
-        const qPoster = query(collection(db, "student_contents"), orderBy("createdAt", "desc"));
-        const snapPoster = await getDocs(qPoster);
-        const posterData = snapPoster.docs.map(d => ({ id: d.id, ...d.data() }));
-        setPosters(posterData.filter(p => p.targetPortal === "Siswa" || p.targetPortal === "Semua" || !p.targetPortal));
-
-        const qSurvey = query(collection(db, "surveys"), where("status", "==", "aktif"));
-        const snapSurvey = await getDocs(qSurvey);
-        setSurveys(snapSurvey.docs.map(d => ({ id: d.id, ...d.data() })));
+        const q = query(collection(db, "student_contents"), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setPosters(data.filter(p => p.targetPortal === "Siswa" || p.targetPortal === "Semua" || !p.targetPortal));
       } catch (err) {
-        console.error("Gagal ambil data:", err);
+        console.error("Gagal ambil poster:", err);
       }
     };
-    fetchData();
+    fetchPosters();
   }, []);
 
   // ============================================================
@@ -99,7 +112,7 @@ const LoginSiswa = () => {
   };
 
   // ============================================================
-  // LOGIN (TETAP SAMA)
+  // LOGIN
   // ============================================================
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -152,21 +165,68 @@ const LoginSiswa = () => {
   };
 
   // ============================================================
-  // HANDLE SURVEY
+  // GAME FUNCTIONS
   // ============================================================
-  const handleSurveyChange = (index, value) => {
-    setSurveyAnswers(prev => ({ ...prev, [index]: value }));
+  const startGame = () => {
+    setShowGame(true);
+    setGameScore(0);
+    setCurrentWordIndex(0);
+    setGameComplete(false);
+    setGameMessage('');
+    shuffleWord(0);
   };
 
-  const handleSurveySubmit = () => {
-    const allAnswered = selectedSurvey?.questions?.every((_, i) => surveyAnswers[i]?.trim());
-    if (!allAnswered) {
-      alert("Silakan isi semua pertanyaan survei terlebih dahulu!");
-      return;
+  const shuffleWord = (index) => {
+    const word = gameWords[index].word;
+    const letters = word.split('');
+    for (let i = letters.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [letters[i], letters[j]] = [letters[j], letters[i]];
     }
-    alert("✅ Terima kasih telah mengisi survei!");
-    setSelectedSurvey(null);
-    setSurveyAnswers({});
+    setShuffledLetters(letters);
+    setSelectedLetters([]);
+    setGameMessage('');
+  };
+
+  const handleLetterClick = (letter, index) => {
+    if (gameComplete) return;
+    const newSelected = [...selectedLetters, letter];
+    setSelectedLetters(newSelected);
+    
+    const newShuffled = [...shuffledLetters];
+    newShuffled.splice(index, 1);
+    setShuffledLetters(newShuffled);
+
+    // Cek jawaban
+    const currentWord = gameWords[currentWordIndex].word;
+    if (newSelected.length === currentWord.length) {
+      if (newSelected.join('') === currentWord) {
+        setGameMessage('✅ Benar! 🎉');
+        setGameScore(prev => prev + 10);
+        setTimeout(() => {
+          if (currentWordIndex < gameWords.length - 1) {
+            setCurrentWordIndex(prev => prev + 1);
+            shuffleWord(currentWordIndex + 1);
+          } else {
+            setGameComplete(true);
+            setGameMessage('🏆 Selamat! Kamu menyelesaikan semua kata!');
+          }
+        }, 800);
+      } else {
+        setGameMessage('❌ Coba lagi!');
+        setTimeout(() => {
+          shuffleWord(currentWordIndex);
+        }, 600);
+      }
+    }
+  };
+
+  const resetGame = () => {
+    setShowGame(false);
+    setGameScore(0);
+    setCurrentWordIndex(0);
+    setGameComplete(false);
+    setGameMessage('');
   };
 
   // ============================================================
@@ -180,7 +240,7 @@ const LoginSiswa = () => {
         : 'linear-gradient(135deg, #f0f4f8 0%, #d4e4f7 40%, #e8f0fe 100%)' 
     }}>
       
-      {/* BACKGROUND GALAKSI / AWAN */}
+      {/* BACKGROUND */}
       <div style={styles.background}>
         {isDark ? (
           <>
@@ -205,7 +265,7 @@ const LoginSiswa = () => {
         )}
       </div>
 
-      {/* MODAL POSTER - FULL BACA */}
+      {/* MODAL POSTER */}
       {selectedPoster && (
         <div style={styles.modalOverlay} onClick={() => setSelectedPoster(null)}>
           <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
@@ -219,67 +279,6 @@ const LoginSiswa = () => {
             <div style={styles.modalBody}>
               <h3 style={styles.modalTitle}>{selectedPoster.title}</h3>
               <p style={styles.modalText}>{selectedPoster.content || "Tidak ada deskripsi."}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL SURVEI */}
-      {selectedSurvey && (
-        <div style={styles.modalOverlay} onClick={() => { setSelectedSurvey(null); setSurveyAnswers({}); }}>
-          <div style={{...styles.modalContent, maxWidth: '480px', maxHeight: '85vh', overflowY: 'auto'}} onClick={e => e.stopPropagation()}>
-            <button onClick={() => { setSelectedSurvey(null); setSurveyAnswers({}); }} style={styles.modalClose}>✕</button>
-            <div style={styles.modalBody}>
-              <h3 style={styles.modalTitle}>📋 {selectedSurvey.title}</h3>
-              <p style={{color: isDark ? 'rgba(255,255,255,0.4)' : '#64748b', fontSize: 11, marginBottom: 12}}>
-                {selectedSurvey.targetType} · {selectedSurvey.isRequired ? '🔴 Wajib' : '🔵 Opsional'}
-              </p>
-              {selectedSurvey.questions?.map((q, i) => (
-                <div key={i} style={{marginBottom: 12, padding: 12, background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', borderRadius: 10}}>
-                  <div style={{color: isDark ? 'white' : '#1e293b', fontSize: 13, fontWeight: 600, marginBottom: 6}}>
-                    {i+1}. {q.question}
-                  </div>
-                  {q.type === 'teks' ? (
-                    <textarea
-                      value={surveyAnswers[i] || ""}
-                      onChange={(e) => handleSurveyChange(i, e.target.value)}
-                      placeholder="Tulis jawaban di sini..."
-                      style={{ 
-                        ...styles.input, 
-                        padding: '10px 14px', 
-                        fontSize: '13px', 
-                        minHeight: '60px',
-                        backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : '#fff', 
-                        color: isDark ? '#fff' : '#000',
-                        border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #cbd5e1',
-                        resize: 'vertical',
-                        fontFamily: 'inherit'
-                      }}
-                    />
-                  ) : (
-                    <input 
-                      type="text" 
-                      value={surveyAnswers[i] || ""}
-                      onChange={(e) => handleSurveyChange(i, e.target.value)}
-                      placeholder="Pilih jawaban..." 
-                      style={{ 
-                        ...styles.input, 
-                        padding: '10px 14px', 
-                        fontSize: '13px', 
-                        backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : '#fff', 
-                        color: isDark ? '#fff' : '#000',
-                        border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #cbd5e1'
-                      }}
-                    />
-                  )}
-                </div>
-              ))}
-              <button 
-                onClick={handleSurveySubmit}
-                style={{...styles.submitBtn, padding: '10px', fontSize: '13px', marginTop: '10px'}}
-              >
-                Kirim Jawaban
-              </button>
             </div>
           </div>
         </div>
@@ -310,7 +309,7 @@ const LoginSiswa = () => {
         </button>
 
         {/* LOGO */}
-        <div style={{ textAlign: 'center', marginBottom: 12 }}>
+        <div style={{ textAlign: 'center', marginBottom: 10 }}>
           <img 
             src="/pwa-192x192.png" 
             alt="Logo" 
@@ -320,7 +319,7 @@ const LoginSiswa = () => {
             Bimbel Gemilang
           </h2>
           
-          {/* ROKET EKSPLORASI */}
+          {/* ROKET */}
           <div 
             style={styles.rocketWrapper}
             onMouseEnter={() => setRocketHover(true)}
@@ -337,8 +336,7 @@ const LoginSiswa = () => {
             <span style={{
               ...styles.rocketText,
               color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-              opacity: rocketHover || rocketClicked ? 1 : 0.4,
-              transition: 'all 0.3s ease'
+              opacity: rocketHover || rocketClicked ? 1 : 0.4
             }}>
               {rocketClicked ? '✨ Eksplorasi Dimulai!' : 'Klik untuk Eksplorasi'}
             </span>
@@ -398,20 +396,35 @@ const LoginSiswa = () => {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            onMouseEnter={() => setRocketHover(true)}
-            onMouseLeave={() => setRocketHover(false)}
-            style={{
-              ...styles.submitBtn,
-              transform: rocketClicked ? 'translateY(-20px) scale(0.95)' : rocketHover ? 'scale(1.02)' : 'scale(1)',
-              opacity: loading ? 0.7 : 1,
-              background: isDark ? 'linear-gradient(135deg, #f39c12, #e67e22)' : 'linear-gradient(135deg, #1a237e, #283593)'
-            }}
-          >
-            {loading ? "⏳ Menghubungkan..." : "🚀 Masuk Kelas"}
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                ...styles.submitBtn,
+                flex: 2,
+                transform: rocketClicked ? 'translateY(-10px) scale(0.95)' : rocketHover ? 'scale(1.02)' : 'scale(1)',
+                opacity: loading ? 0.7 : 1,
+                background: isDark ? 'linear-gradient(135deg, #f39c12, #e67e22)' : 'linear-gradient(135deg, #1a237e, #283593)'
+              }}
+            >
+              {loading ? "⏳..." : "🚀 Masuk"}
+            </button>
+            
+            <button
+              type="button"
+              onClick={startGame}
+              style={{
+                ...styles.submitBtn,
+                flex: 1,
+                background: isDark ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)' : 'linear-gradient(135deg, #6d28d9, #4c1d95)',
+                fontSize: '13px',
+                padding: '14px 10px'
+              }}
+            >
+              🎮 Game
+            </button>
+          </div>
         </form>
 
         {/* INSTALLED BADGE */}
@@ -419,86 +432,179 @@ const LoginSiswa = () => {
           <div style={styles.installedBadge}>✅ Aplikasi sudah terinstall</div>
         )}
 
-        {/* POSTER - HORIZONTAL SCROLL DENGAN GAMBAR */}
-        {posters.length > 0 && (
-          <div style={{ marginTop: 16, paddingTop: 12, borderTop: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 14 }}>📢</span>
-              <h4 style={{ color: isDark ? '#fff' : '#1e293b', fontSize: 12, margin: 0, fontWeight: 700 }}>
-                Pengumuman & Poster Terbaru
+        {/* ============================================================ */}
+        {/* GAME SECTION */}
+        {/* ============================================================ */}
+        {showGame && (
+          <div style={{ 
+            marginTop: 16, 
+            padding: 16, 
+            borderRadius: 16,
+            background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+            border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <h4 style={{ color: isDark ? '#fff' : '#1e293b', margin: 0, fontSize: 13, fontWeight: 700 }}>
+                🎯 Susun Kata Astronot
               </h4>
-              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: 10 }}>
-                {posters.length}
-              </span>
-            </div>
-            
-            <div style={{ 
-              display: 'flex', 
-              gap: 12, 
-              overflowX: 'auto', 
-              WebkitOverflowScrolling: 'touch', 
-              paddingBottom: 10,
-              scrollbarWidth: 'thin',
-              msOverflowStyle: 'auto'
-            }}>
-              {posters.map(p => (
-                <div 
-                  key={p.id} 
-                  onClick={() => setSelectedPoster(p)} 
-                  style={{ 
-                    flexShrink: 0,
-                    width: '160px',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' }}>
+                  ⭐ {gameScore}
+                </span>
+                <button 
+                  onClick={resetGame}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#ef4444',
                     cursor: 'pointer',
-                    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-                    border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)',
-                    transition: 'all 0.3s ease'
+                    fontSize: 11
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                 >
-                  <img 
-                    src={p.imageUrl} 
-                    alt={p.title} 
-                    style={{ width: '100%', height: '90px', objectFit: 'cover' }}
-                    onError={(e) => { e.target.src = 'https://placehold.co/160x90/1a1a3e/white?text=📷'; }}
-                  />
-                  <div style={{ padding: '8px 10px' }}>
-                    <div style={{ 
-                      fontSize: '11px', 
-                      fontWeight: 600, 
-                      color: isDark ? 'white' : '#1a1a2e',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      {p.title}
-                    </div>
-                    <div style={{ 
-                      fontSize: '9px', 
-                      color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
-                      marginTop: 2
-                    }}>
-                      {p.createdAt?.toDate?.()?.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) || 'Baru'}
-                    </div>
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {gameComplete ? (
+              <div style={{ textAlign: 'center', padding: 20 }}>
+                <div style={{ fontSize: 48, marginBottom: 8 }}>🏆</div>
+                <h4 style={{ color: isDark ? '#fff' : '#1e293b', margin: 0 }}>Selamat! Kamu Hebat!</h4>
+                <p style={{ fontSize: 12, color: isDark ? '#94a3b8' : '#64748b' }}>
+                  Skor akhir: {gameScore} poin
+                </p>
+                <button 
+                  onClick={startGame}
+                  style={{
+                    marginTop: 12,
+                    padding: '8px 20px',
+                    background: isDark ? '#f39c12' : '#1a237e',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 8,
+                    fontWeight: 700,
+                    fontSize: 12,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Main Lagi
+                </button>
+              </div>
+            ) : (
+              <>
+                <div style={{ textAlign: 'center', marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, color: isDark ? '#94a3b8' : '#64748b', marginBottom: 4 }}>
+                    {gameWords[currentWordIndex].hint}
+                  </div>
+                  <div style={{ 
+                    fontSize: 13, 
+                    fontWeight: 700, 
+                    color: isDark ? '#f39c12' : '#1a237e',
+                    letterSpacing: 4
+                  }}>
+                    {selectedLetters.map((l, i) => (
+                      <span key={i} style={{ 
+                        display: 'inline-block',
+                        padding: '4px 8px',
+                        margin: '0 2px',
+                        background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                        borderRadius: 4,
+                        minWidth: 24,
+                        textAlign: 'center'
+                      }}>
+                        {l}
+                      </span>
+                    ))}
+                    {Array.from({ length: gameWords[currentWordIndex].word.length - selectedLetters.length }).map((_, i) => (
+                      <span key={`empty-${i}`} style={{ 
+                        display: 'inline-block',
+                        padding: '4px 8px',
+                        margin: '0 2px',
+                        borderBottom: '2px solid ' + (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'),
+                        minWidth: 24,
+                        textAlign: 'center',
+                        color: 'transparent'
+                      }}>
+                        _
+                      </span>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+                  {shuffledLetters.map((letter, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleLetterClick(letter, index)}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 10,
+                        border: isDark ? '2px solid rgba(255,255,255,0.1)' : '2px solid rgba(0,0,0,0.1)',
+                        background: isDark ? 'rgba(255,255,255,0.06)' : 'white',
+                        color: isDark ? 'white' : '#1e293b',
+                        fontSize: 20,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.04)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.08)';
+                        e.currentTarget.style.background = isDark ? 'rgba(243,156,18,0.2)' : 'rgba(26,35,126,0.05)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                        e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.06)' : 'white';
+                      }}
+                    >
+                      {letter}
+                    </button>
+                  ))}
+                </div>
+
+                {gameMessage && (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    marginTop: 10, 
+                    fontSize: 13, 
+                    fontWeight: 700,
+                    color: gameMessage.includes('✅') ? '#10b981' : gameMessage.includes('🏆') ? '#f59e0b' : '#ef4444'
+                  }}>
+                    {gameMessage}
+                  </div>
+                )}
+
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  marginTop: 8,
+                  fontSize: 10,
+                  color: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'
+                }}>
+                  <span>Kata {currentWordIndex + 1}/{gameWords.length}</span>
+                  <span>💡 {gameWords[currentWordIndex].hint}</span>
+                </div>
+              </>
+            )}
           </div>
         )}
 
-        {/* SURVEI - HORIZONTAL SCROLL */}
-        {surveys.length > 0 && (
-          <div style={{ marginTop: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 14 }}>📋</span>
-              <h4 style={{ color: isDark ? '#fff' : '#1e293b', fontSize: 12, margin: 0, fontWeight: 700 }}>
-                Survei Siswa Aktif
+        {/* ============================================================ */}
+        {/* POSTER SECTION */}
+        {/* ============================================================ */}
+        {posters.length > 0 && (
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <span style={{ fontSize: 14 }}>📢</span>
+              <h4 style={{ color: isDark ? '#fff' : '#1e293b', fontSize: 11, margin: 0, fontWeight: 700 }}>
+                Pengumuman & Poster
               </h4>
-              <span style={{ fontSize: 10, color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '2px 8px', borderRadius: 10 }}>
-                {surveys.length}
+              <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', padding: '1px 6px', borderRadius: 8 }}>
+                {posters.length}
               </span>
             </div>
             
@@ -508,30 +614,43 @@ const LoginSiswa = () => {
               overflowX: 'auto', 
               WebkitOverflowScrolling: 'touch', 
               paddingBottom: 8,
-              scrollbarWidth: 'thin'
+              scrollbarWidth: 'thin',
+              msOverflowStyle: 'auto'
             }}>
-              {surveys.map(s => (
+              {posters.map(p => (
                 <div 
-                  key={s.id} 
-                  onClick={() => setSelectedSurvey(s)} 
+                  key={p.id} 
+                  onClick={() => setSelectedPoster(p)} 
                   style={{ 
                     flexShrink: 0,
-                    padding: '10px 16px',
+                    width: '140px',
                     borderRadius: '10px',
+                    overflow: 'hidden',
                     cursor: 'pointer',
-                    background: 'rgba(16, 185, 129, 0.08)',
-                    border: '1px solid rgba(16, 185, 129, 0.2)',
-                    maxWidth: '200px',
+                    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                    border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)',
                     transition: 'all 0.3s ease'
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(16,185,129,0.15)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(16,185,129,0.08)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.12)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                 >
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#10b981' }}>
-                    📝 {s.title}
-                  </div>
-                  <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>
-                    {s.questions?.length || 0} pertanyaan
+                  <img 
+                    src={p.imageUrl} 
+                    alt={p.title} 
+                    style={{ width: '100%', height: '75px', objectFit: 'cover' }}
+                    onError={(e) => { e.target.src = 'https://placehold.co/140x75/1a1a3e/white?text=📷'; }}
+                  />
+                  <div style={{ padding: '6px 8px' }}>
+                    <div style={{ 
+                      fontSize: '10px', 
+                      fontWeight: 600, 
+                      color: isDark ? 'white' : '#1a1a2e',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {p.title}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -540,7 +659,7 @@ const LoginSiswa = () => {
         )}
 
         {/* FOOTER */}
-        <div style={{ textAlign: 'center', marginTop: 14, fontSize: 9, color: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)' }}>
+        <div style={{ textAlign: 'center', marginTop: 12, fontSize: 8, color: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)' }}>
           Bimbel Gemilang · Glagahagung · v3.0
         </div>
       </div>
@@ -589,7 +708,6 @@ const LoginSiswa = () => {
           background: rgba(243,156,18,0.5);
         }
         .glass-card { animation: fadeUp 0.8s ease both; animation-delay: 0.2s; }
-        .poster-scroll { animation: fadeUp 0.8s ease both; animation-delay: 0.4s; }
       `}</style>
     </div>
   );
@@ -625,19 +743,19 @@ const styles = {
     width: '100%',
     maxWidth: '440px',
     borderRadius: '24px',
-    padding: '24px 24px 20px',
+    padding: '20px 22px 18px',
     boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
     border: '1px solid',
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
     boxSizing: 'border-box',
     transition: 'all 0.3s ease',
-    maxHeight: '95vh',
+    maxHeight: '96vh',
     overflowY: 'auto'
   },
   title: { fontSize: '20px', fontWeight: '700', letterSpacing: '-0.5px' },
-  slogan: { fontSize: '13px', fontWeight: 600, margin: '0 0 2px', letterSpacing: '0.3px' },
-  subtitle: { fontSize: '11px', margin: '0 0 14px', letterSpacing: '0.5px' },
+  slogan: { fontSize: '12px', fontWeight: 600, margin: '0 0 2px', letterSpacing: '0.3px' },
+  subtitle: { fontSize: '10px', margin: '0 0 12px', letterSpacing: '0.5px' },
   
   rocketWrapper: {
     display: 'flex',
@@ -649,44 +767,34 @@ const styles = {
     borderRadius: '12px',
     transition: 'all 0.3s ease'
   },
-  rocket: {
-    fontSize: '32px',
-    display: 'inline-block',
-    transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
-  },
-  rocketText: {
-    fontSize: '8px',
-    fontWeight: 600,
-    transition: 'all 0.3s ease',
-    marginTop: '1px',
-    letterSpacing: '0.5px'
-  },
+  rocket: { fontSize: '28px', display: 'inline-block', transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' },
+  rocketText: { fontSize: '8px', fontWeight: 600, transition: 'all 0.3s ease', marginTop: '1px', letterSpacing: '0.5px' },
   
   installBtn: {
-    width: '100%', padding: '10px',
+    width: '100%', padding: '8px',
     background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)',
-    color: 'white', border: 'none', borderRadius: '12px',
-    fontWeight: 'bold', fontSize: '13px', cursor: 'pointer',
-    marginBottom: '14px', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)',
+    color: 'white', border: 'none', borderRadius: '10px',
+    fontWeight: 'bold', fontSize: '12px', cursor: 'pointer',
+    marginBottom: '12px', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.25)',
     transition: 'transform 0.2s'
   },
   installedBadge: {
-    marginTop: '10px',
-    padding: '6px 12px',
-    borderRadius: '10px',
+    marginTop: '8px',
+    padding: '4px 10px',
+    borderRadius: '8px',
     background: 'rgba(46,213,115,0.1)',
     border: '1px solid rgba(46,213,115,0.15)',
     color: '#2ed573',
-    fontSize: '11px',
+    fontSize: '10px',
     fontWeight: 600,
     textAlign: 'center'
   },
-  form: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  inputGroup: { display: 'flex', flexDirection: 'column', gap: '4px' },
-  label: { fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' },
+  form: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  inputGroup: { display: 'flex', flexDirection: 'column', gap: '3px' },
+  label: { fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' },
   input: {
-    padding: '12px 16px', borderRadius: '12px', border: '1px solid',
-    fontSize: '14px', outline: 'none', transition: 'all 0.3s ease',
+    padding: '10px 14px', borderRadius: '10px', border: '1px solid',
+    fontSize: '13px', outline: 'none', transition: 'all 0.3s ease',
     width: '100%', boxSizing: 'border-box',
     ':focus': {
       borderColor: 'rgba(243,156,18,0.3)',
@@ -694,30 +802,23 @@ const styles = {
     }
   },
   submitBtn: {
-    padding: '14px',
+    padding: '12px',
     color: '#0a0a1a',
-    border: 'none', borderRadius: '14px',
-    fontWeight: 800, fontSize: '15px', cursor: 'pointer',
-    boxShadow: '0 8px 30px rgba(243,156,18,0.2)',
+    border: 'none', borderRadius: '12px',
+    fontWeight: 800, fontSize: '14px', cursor: 'pointer',
+    boxShadow: '0 8px 30px rgba(243,156,18,0.15)',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    marginTop: '4px',
     ':hover': {
       transform: 'translateY(-2px)',
-      boxShadow: '0 12px 40px rgba(243,156,18,0.3)'
+      boxShadow: '0 12px 40px rgba(243,156,18,0.25)'
     },
-    ':disabled': {
-      opacity: 0.6,
-      cursor: 'not-allowed',
-      transform: 'none'
-    }
+    ':disabled': { opacity: 0.6, cursor: 'not-allowed', transform: 'none' }
   },
   themeToggle: {
-    background: 'none', border: 'none', fontSize: '12px',
+    background: 'none', border: 'none', fontSize: '11px',
     fontWeight: 600, cursor: 'pointer', outline: 'none',
     transition: 'all 0.3s ease',
-    ':hover': {
-      transform: 'scale(1.05)'
-    }
+    ':hover': { transform: 'scale(1.05)' }
   },
   
   // MODAL
@@ -732,7 +833,7 @@ const styles = {
   modalContent: {
     background: 'rgba(15,20,40,0.95)',
     borderRadius: '20px', width: '100%',
-    maxWidth: '540px', position: 'relative',
+    maxWidth: '520px', position: 'relative',
     overflow: 'hidden',
     boxShadow: '0 40px 80px rgba(0,0,0,0.6)',
     border: '1px solid rgba(255,255,255,0.06)',
@@ -740,37 +841,18 @@ const styles = {
     overflowY: 'auto'
   },
   modalClose: {
-    position: 'absolute', top: '12px', right: '12px',
+    position: 'absolute', top: '10px', right: '10px',
     background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none',
-    borderRadius: '50%', width: '32px', height: '32px',
-    cursor: 'pointer', fontSize: '16px', zIndex: 10,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    transition: 'all 0.2s ease',
-    ':hover': {
-      background: 'rgba(0,0,0,0.7)'
-    }
+    borderRadius: '50%', width: '28px', height: '28px',
+    cursor: 'pointer', fontSize: '14px', zIndex: 10,
+    display: 'flex', alignItems: 'center', justifyContent: 'center'
   },
-  modalImage: {
-    width: '100%',
-    maxHeight: '280px',
-    objectFit: 'cover'
-  },
-  modalBody: { padding: '20px 24px 24px' },
-  modalTitle: {
-    color: 'white',
-    fontSize: '18px',
-    fontWeight: 700,
-    margin: '0 0 8px 0'
-  },
-  modalText: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: '14px',
-    lineHeight: 1.8,
-    margin: 0,
-    whiteSpace: 'pre-wrap'
-  },
+  modalImage: { width: '100%', maxHeight: '240px', objectFit: 'cover' },
+  modalBody: { padding: '16px 20px 20px' },
+  modalTitle: { color: 'white', fontSize: '17px', fontWeight: 700, margin: '0 0 6px 0' },
+  modalText: { color: 'rgba(255,255,255,0.6)', fontSize: '13px', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' },
 
-  // BACKGROUND - MALAM (BINTANG & PLANET)
+  // BACKGROUND
   star1: { position: 'absolute', width: '2px', height: '2px', background: 'white', top: '15%', left: '20%', borderRadius: '50%', animation: 'twinkle 3s ease-in-out infinite' },
   star2: { position: 'absolute', width: '3px', height: '3px', background: 'white', top: '40%', left: '75%', borderRadius: '50%', opacity: 0.7, animation: 'twinkle 4s ease-in-out infinite 0.5s' },
   star3: { position: 'absolute', width: '2px', height: '2px', background: 'white', top: '70%', left: '10%', borderRadius: '50%', animation: 'twinkle 2.5s ease-in-out infinite 1s' },
@@ -778,11 +860,9 @@ const styles = {
   star5: { position: 'absolute', width: '2px', height: '2px', background: 'white', top: '60%', right: '20%', borderRadius: '50%', animation: 'twinkle 2.8s ease-in-out infinite 0.8s' },
   star6: { position: 'absolute', width: '4px', height: '4px', background: 'white', top: '10%', left: '40%', borderRadius: '50%', animation: 'twinkle 3.2s ease-in-out infinite 1.2s' },
   planet1: { position: 'absolute', width: '50px', height: '50px', borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #f39c12, #d35400)', top: '8%', right: '12%', opacity: 0.12, boxShadow: '0 0 60px rgba(243,156,18,0.06)', animation: 'orbit 30s linear infinite' },
-  planet2: { position: 'absolute', width: '80px', height: '80px', borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #8b5cf6, #4c1d95)', bottom: '8%', left: '3%', opacity: 0.08, boxShadow: '0 0 80px rgba(139,92,246,0.04)', animation: 'orbitReverse 40s linear infinite' },
-  planet3: { position: 'absolute', width: '35px', height: '35px', borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #2ed573, #1a8a4a)', top: '50%', right: '8%', opacity: 0.06, animation: 'orbit 20s linear infinite' },
+  planet2: { position: 'absolute', width: '70px', height: '70px', borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #8b5cf6, #4c1d95)', bottom: '8%', left: '3%', opacity: 0.08, animation: 'orbitReverse 40s linear infinite' },
+  planet3: { position: 'absolute', width: '30px', height: '30px', borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #2ed573, #1a8a4a)', top: '50%', right: '8%', opacity: 0.06, animation: 'orbit 20s linear infinite' },
   nebula: { position: 'absolute', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.03), transparent 70%)', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', animation: 'pulse 8s ease-in-out infinite' },
-
-  // BACKGROUND - SIANG (AWAN & MATAHARI)
   cloud1: { position: 'absolute', width: '180px', height: '50px', background: 'rgba(255,255,255,0.5)', borderRadius: '30px', top: '15%', left: '8%', filter: 'blur(2px)', animation: 'cloudFloat 25s ease-in-out infinite' },
   cloud2: { position: 'absolute', width: '220px', height: '60px', background: 'rgba(255,255,255,0.35)', borderRadius: '40px', bottom: '20%', right: '5%', filter: 'blur(2px)', animation: 'cloudFloat 30s ease-in-out infinite reverse' },
   cloud3: { position: 'absolute', width: '150px', height: '40px', background: 'rgba(255,255,255,0.3)', borderRadius: '25px', top: '45%', left: '2%', filter: 'blur(2px)', animation: 'cloudFloat 20s ease-in-out infinite 5s' },
