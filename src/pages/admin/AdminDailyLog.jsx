@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SidebarAdmin from '../../components/SidebarAdmin';
 import { db } from '../../firebase';
-import { collection, getDocs, addDoc, updateDoc, doc, query, orderBy, where, serverTimestamp, onSnapshot } from "firebase/firestore";
+import { collection, getDocs, addDoc, query, orderBy, where, serverTimestamp, onSnapshot } from "firebase/firestore";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import ExcelJS from 'exceljs';
@@ -10,8 +10,49 @@ import {
   Save, Clock, UserCheck, ShieldAlert, CreditCard, 
   FileText, List, Bold, Italic, Download, Table, AlertTriangle,
   Users, RefreshCw, FileSpreadsheet, Calendar, Filter,
-  ChevronLeft, ChevronRight, X, CheckCircle, Clock3, FileEdit
+  ChevronLeft, ChevronRight, X, CheckCircle, Clock3, FileEdit, Flag
 } from 'lucide-react';
+
+// === DATA HARI LIBUR NASIONAL INDONESIA 2025-2026 ===
+// Sumber: SKB 3 Menteri (Statis + Cache untuk performa)
+const INDONESIAN_HOLIDAYS = {
+  // 2025
+  '2025-01-01': { name: 'Tahun Baru 2025 Masehi', type: 'nasional' },
+  '2025-01-27': { name: 'Isra Mikraj Nabi Muhammad SAW', type: 'nasional' },
+  '2025-01-29': { name: 'Tahun Baru Imlek 2576 Kongzili', type: 'nasional' },
+  '2025-03-29': { name: 'Hari Suci Nyepi (Tahun Baru Saka 1947)', type: 'nasional' },
+  '2025-03-31': { name: 'Idul Fitri 1446 Hijriah', type: 'nasional' },
+  '2025-04-01': { name: 'Idul Fitri 1446 Hijriah', type: 'nasional' },
+  '2025-04-18': { name: 'Wafat Yesus Kristus', type: 'nasional' },
+  '2025-05-01': { name: 'Hari Buruh Internasional', type: 'nasional' },
+  '2025-05-12': { name: 'Hari Raya Waisak 2569 BE', type: 'nasional' },
+  '2025-05-29': { name: 'Kenaikan Yesus Kristus', type: 'nasional' },
+  '2025-06-01': { name: 'Hari Lahir Pancasila', type: 'nasional' },
+  '2025-06-07': { name: 'Idul Adha 1446 Hijriah', type: 'nasional' },
+  '2025-06-27': { name: 'Tahun Baru Islam 1447 Hijriah', type: 'nasional' },
+  '2025-08-17': { name: 'Hari Kemerdekaan RI', type: 'nasional' },
+  '2025-09-05': { name: 'Maulid Nabi Muhammad SAW', type: 'nasional' },
+  '2025-12-25': { name: 'Hari Raya Natal', type: 'nasional' },
+  
+  // 2026
+  '2026-01-01': { name: 'Tahun Baru 2026 Masehi', type: 'nasional' },
+  '2026-02-17': { name: 'Tahun Baru Imlek 2577 Kongzili', type: 'nasional' },
+  '2026-03-19': { name: 'Hari Suci Nyepi (Tahun Baru Saka 1948)', type: 'nasional' },
+  '2026-03-20': { name: 'Idul Fitri 1447 Hijriah (Perkiraan)', type: 'nasional' },
+  '2026-03-21': { name: 'Idul Fitri 1447 Hijriah (Perkiraan)', type: 'nasional' },
+  '2026-04-03': { name: 'Wafat Yesus Kristus', type: 'nasional' },
+  '2026-05-01': { name: 'Hari Buruh Internasional', type: 'nasional' },
+  '2026-05-14': { name: 'Kenaikan Yesus Kristus', type: 'nasional' },
+  '2026-05-31': { name: 'Hari Raya Waisak 2570 BE', type: 'nasional' },
+  '2026-06-01': { name: 'Hari Lahir Pancasila', type: 'nasional' },
+  '2026-08-17': { name: 'Hari Kemerdekaan RI', type: 'nasional' },
+  '2026-12-25': { name: 'Hari Raya Natal', type: 'nasional' },
+};
+
+// Fungsi untuk mengecek apakah tanggal adalah hari libur
+const isHoliday = (dateStr) => {
+  return INDONESIAN_HOLIDAYS[dateStr] || null;
+};
 
 const AdminDailyLog = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -28,9 +69,12 @@ const AdminDailyLog = () => {
 
   // === STATE VISUAL CALENDAR ===
   const [calendarDate, setCalendarDate] = useState(new Date());
-  const [calendarData, setCalendarData] = useState({}); // { 'YYYY-MM-DD': { status: 'active'|'izin', data: {...} } }
+  const [calendarData, setCalendarData] = useState({});
   const [selectedDayDetail, setSelectedDayDetail] = useState(null);
   const [showDayDetail, setShowDayDetail] = useState(false);
+
+  // === STATE HOLIDAYS (untuk fetch API opsional) ===
+  const [holidaysLoaded, setHolidaysLoaded] = useState(false);
 
   // === STATE IZIN ===
   const [showIzinModal, setShowIzinModal] = useState(false);
@@ -61,12 +105,13 @@ const AdminDailyLog = () => {
     fetchHistory();
     fetchAttendanceSummary();
     fetchCalendarData();
+    // Fetch holidays dari API sebagai tambahan (fallback ke data statis)
+    fetchHolidaysFromAPI();
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Fetch calendar data when month changes
   useEffect(() => {
     fetchCalendarData();
   }, [calendarDate]);
@@ -81,6 +126,36 @@ const AdminDailyLog = () => {
     return () => unsubscribe();
   }, []);
 
+  // === FETCH HOLIDAYS DARI API (OPSIONAL - FALLBACK KE DATA STATIS) ===
+  const fetchHolidaysFromAPI = async () => {
+    try {
+      // Coba fetch dari API publik Indonesia
+      const response = await fetch('https://api-harilibur.vercel.app/api', {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Merge dengan data statis (API sebagai primary)
+        data.forEach(holiday => {
+          const dateStr = holiday.holiday_date || holiday.tanggal;
+          if (dateStr && holiday.is_national_holiday) {
+            INDONESIAN_HOLIDAYS[dateStr] = {
+              name: holiday.holiday_name || holiday.keterangan,
+              type: 'nasional'
+            };
+          }
+        });
+      }
+    } catch (err) {
+      // Silent fail - gunakan data statis
+      console.log('Menggunakan data libur nasional statis');
+    } finally {
+      setHolidaysLoaded(true);
+    }
+  };
+
   const fetchTeachers = async () => {
     try {
       const snap = await getDocs(collection(db, "teachers"));
@@ -94,7 +169,6 @@ const AdminDailyLog = () => {
     setHistory(snap.docs.map(d => ({ id: d.id, ...d.data() })));
   };
 
-  // === FETCH DATA KALENDER ===
   const fetchCalendarData = async () => {
     try {
       const year = calendarDate.getFullYear();
@@ -105,7 +179,6 @@ const AdminDailyLog = () => {
       const startStr = startOfMonth.toISOString().split('T')[0];
       const endStr = endOfMonth.toISOString().split('T')[0];
 
-      // Fetch admin logs
       const qLogs = query(
         collection(db, "admin_daily_logs"),
         where("tanggal", ">=", startStr),
@@ -114,7 +187,6 @@ const AdminDailyLog = () => {
       );
       const snapLogs = await getDocs(qLogs);
       
-      // Fetch izin
       const qIzin = query(
         collection(db, "admin_izin"),
         where("tanggal", ">=", startStr),
@@ -142,6 +214,19 @@ const AdminDailyLog = () => {
           data: { id: d.id, ...izinData }
         };
       });
+
+      // Tambahkan data libur nasional ke calendarData
+      for (let day = 1; day <= new Date(year, month + 1, 0).getDate(); day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const holiday = INDONESIAN_HOLIDAYS[dateStr];
+        if (holiday && !dataMap[dateStr]) {
+          dataMap[dateStr] = {
+            status: 'holiday',
+            type: 'holiday',
+            data: { name: holiday.name, type: holiday.type }
+          };
+        }
+      }
 
       setCalendarData(dataMap);
     } catch (err) {
@@ -206,7 +291,6 @@ const AdminDailyLog = () => {
     } catch (err) { console.error("Gagal fetch absensi:", err); }
   };
 
-  // === FUNGSI KALENDER ===
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -242,7 +326,6 @@ const AdminDailyLog = () => {
 
   const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 
-  // === FUNGSI IZIN ===
   const openIzinModal = () => {
     setIzinForm({
       tanggal: new Date().toISOString().split('T')[0],
@@ -277,7 +360,6 @@ const AdminDailyLog = () => {
     }
   };
 
-  // === FUNGSI DOWNLOAD RENTANG TANGGAL ===
   const handleDownloadByDateRange = async () => {
     if (!dateRange.startDate || !dateRange.endDate) {
       alert('⚠️ Silakan pilih tanggal mulai dan tanggal akhir terlebih dahulu!');
@@ -312,7 +394,6 @@ const AdminDailyLog = () => {
       workbook.creator = 'Bimbel Gemilang';
       workbook.created = new Date();
       
-      // Sheet 1: Ringkasan Laporan
       const summarySheet = workbook.addWorksheet('Ringkasan Laporan', {
         views: [{ state: 'frozen', ySplit: 1 }]
       });
@@ -367,7 +448,6 @@ const AdminDailyLog = () => {
         });
       });
       
-      // Sheet 2: Detail Lengkap
       const detailSheet = workbook.addWorksheet('Detail Lengkap', {
         views: [{ state: 'frozen', ySplit: 1 }]
       });
@@ -419,7 +499,6 @@ const AdminDailyLog = () => {
         row.height = 30;
       });
       
-      // Sheet 3: Statistik
       const statsSheet = workbook.addWorksheet('Statistik');
       const totalLogs = logs.length;
       const totalSiswaHadir = logs.reduce((sum, log) => sum + (parseInt(log.siswa?.jumlahHadir) || 0), 0);
@@ -562,7 +641,6 @@ const AdminDailyLog = () => {
     let days = [];
     let dayCount = 1;
 
-    // Empty cells before first day
     for (let i = 0; i < firstDayOfMonth; i++) {
       days.push(<div key={`empty-${i}`} style={styles.calendarDayEmpty}></div>);
     }
@@ -571,12 +649,19 @@ const AdminDailyLog = () => {
       const currentDay = dayCount;
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`;
       const dayData = calendarData[dateStr];
+      const holiday = INDONESIAN_HOLIDAYS[dateStr];
       const isToday = dateStr === todayStr;
+      const isSunday = new Date(year, month, currentDay).getDay() === 0;
 
       let dayStyle = { ...styles.calendarDay };
       let dotStyle = { ...styles.dayDot };
+      let holidayLabel = null;
 
-      if (dayData?.status === 'active') {
+      // Prioritas: Holiday > Active > Izin > Default
+      if (holiday || isSunday) {
+        dayStyle = { ...dayStyle, ...styles.calendarDayHoliday };
+        holidayLabel = holiday?.name || 'Minggu';
+      } else if (dayData?.status === 'active') {
         dayStyle = { ...dayStyle, ...styles.calendarDayActive };
         dotStyle = { ...dotStyle, ...styles.dayDotActive };
       } else if (dayData?.status === 'izin') {
@@ -593,10 +678,21 @@ const AdminDailyLog = () => {
           key={currentDay}
           style={dayStyle}
           onClick={() => handleDayClick(currentDay)}
-          title={dayData ? (dayData.status === 'izin' ? 'Izin' : 'Aktif') : 'Tidak ada aktivitas'}
+          title={holidayLabel || (dayData ? (dayData.status === 'izin' ? 'Izin' : 'Aktif') : (isSunday ? 'Hari Minggu' : 'Tidak ada aktivitas'))}
         >
-          <span style={styles.dayNumber(isToday)}>{currentDay}</span>
-          {dayData && <div style={dotStyle}></div>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <span style={styles.dayNumber(isToday, holiday || isSunday)}>{currentDay}</span>
+            {holiday && <Flag size={8} style={{ color: '#ef4444' }} />}
+          </div>
+          {holiday && (
+            <span style={styles.holidayLabel}>
+              {holiday.name.length > 10 ? holiday.name.substring(0, 10) + '...' : holiday.name}
+            </span>
+          )}
+          {!holiday && dayData && !isSunday && <div style={dotStyle}></div>}
+          {!holiday && !dayData && isSunday && (
+            <span style={styles.sundayLabel}>Minggu</span>
+          )}
         </div>
       );
 
@@ -658,19 +754,23 @@ const AdminDailyLog = () => {
             </div>
           </div>
 
-          {/* Legend */}
+          {/* Legend - Updated dengan Hari Libur */}
           <div style={styles.calendarLegend}>
             <div style={styles.legendItem}>
               <div style={{ ...styles.legendDot, background: '#27ae60' }}></div>
-              <span style={styles.legendText}>Aktif (Audit Tercatat)</span>
+              <span style={styles.legendText}>Aktif</span>
             </div>
             <div style={styles.legendItem}>
               <div style={{ ...styles.legendDot, background: '#f59e0b' }}></div>
               <span style={styles.legendText}>Izin</span>
             </div>
             <div style={styles.legendItem}>
+              <div style={{ ...styles.legendDot, background: '#fee2e2', border: '2px solid #ef4444' }}></div>
+              <span style={styles.legendText}>Libur/Merah</span>
+            </div>
+            <div style={styles.legendItem}>
               <div style={{ ...styles.legendDot, background: '#e2e8f0', border: '1px solid #cbd5e1' }}></div>
-              <span style={styles.legendText}>Tidak Ada Aktivitas</span>
+              <span style={styles.legendText}>Kosong</span>
             </div>
             <button onClick={openIzinModal} style={styles.btnIzin}>
               <FileEdit size={14} /> Catat Izin
@@ -680,13 +780,47 @@ const AdminDailyLog = () => {
           {/* Day Names */}
           <div style={styles.calendarDayNames}>
             {dayNames.map(day => (
-              <div key={day} style={styles.dayName}>{day}</div>
+              <div key={day} style={{
+                ...styles.dayName,
+                ...(day === 'Min' ? { color: '#ef4444' } : {})
+              }}>{day}</div>
             ))}
           </div>
 
           {/* Calendar Grid */}
           <div style={styles.calendarGrid}>
             {renderCalendar()}
+          </div>
+
+          {/* Upcoming Holidays */}
+          <div style={styles.upcomingHolidays}>
+            <h4 style={styles.upcomingTitle}>
+              <Flag size={14} /> Hari Libur Nasional Bulan Ini
+            </h4>
+            <div style={styles.holidayList}>
+              {Object.entries(INDONESIAN_HOLIDAYS)
+                .filter(([date]) => {
+                  const holidayDate = new Date(date);
+                  return holidayDate.getMonth() === calendarDate.getMonth() && 
+                         holidayDate.getFullYear() === calendarDate.getFullYear();
+                })
+                .map(([date, holiday]) => (
+                  <div key={date} style={styles.holidayItem}>
+                    <span style={styles.holidayDate}>
+                      {new Date(date).getDate()} {monthNames[new Date(date).getMonth()]}
+                    </span>
+                    <span style={styles.holidayName}>{holiday.name}</span>
+                  </div>
+                ))
+              }
+              {Object.entries(INDONESIAN_HOLIDAYS).filter(([date]) => {
+                const holidayDate = new Date(date);
+                return holidayDate.getMonth() === calendarDate.getMonth() && 
+                       holidayDate.getFullYear() === calendarDate.getFullYear();
+              }).length === 0 && (
+                <span style={{ fontSize: 11, color: '#94a3b8' }}>Tidak ada libur nasional bulan ini</span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -696,14 +830,33 @@ const AdminDailyLog = () => {
             <div style={styles.modalContent(isMobile)} onClick={e => e.stopPropagation()}>
               <div style={styles.modalHeader}>
                 <h3 style={styles.modalTitle}>
-                  {selectedDayDetail.status === 'izin' ? '🟡' : '🟢'} {selectedDayDetail.date}
+                  {selectedDayDetail.status === 'holiday' ? '🔴' : selectedDayDetail.status === 'izin' ? '🟡' : '🟢'} {selectedDayDetail.date}
                 </h3>
                 <button onClick={() => setShowDayDetail(false)} style={styles.modalClose}>
                   <X size={18} />
                 </button>
               </div>
               <div style={styles.modalBody}>
-                {selectedDayDetail.status === 'izin' ? (
+                {selectedDayDetail.status === 'holiday' ? (
+                  <div style={styles.detailCard}>
+                    <div style={styles.detailBadgeHoliday}>
+                      <Flag size={16} /> HARI LIBUR NASIONAL
+                    </div>
+                    <div style={styles.detailRow}>
+                      <span style={styles.detailLabel}>Nama:</span>
+                      <span style={{...styles.detailValue, fontWeight: 'bold', color: '#ef4444'}}>{selectedDayDetail.data.name || '-'}</span>
+                    </div>
+                    <div style={styles.detailRow}>
+                      <span style={styles.detailLabel}>Jenis:</span>
+                      <span style={styles.detailValue}>{selectedDayDetail.data.type === 'nasional' ? 'Libur Nasional' : selectedDayDetail.data.type || '-'}</span>
+                    </div>
+                    <div style={{ marginTop: 12, padding: 10, background: '#fef2f2', borderRadius: 8 }}>
+                      <p style={{ margin: 0, fontSize: 12, color: '#991b1b' }}>
+                        ⚠️ Hari ini adalah hari libur nasional. Tidak ada aktivitas bimbel yang dijadwalkan.
+                      </p>
+                    </div>
+                  </div>
+                ) : selectedDayDetail.status === 'izin' ? (
                   <div style={styles.detailCard}>
                     <div style={styles.detailBadgeIzin}>
                       <Clock3 size={16} /> IZIN
@@ -1057,16 +1210,31 @@ const styles = {
   calendarDay: { 
     aspectRatio: '1', borderRadius: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', 
     justifyContent: 'center', cursor: 'pointer', transition: '0.2s', position: 'relative',
-    background: 'white', border: '1px solid #f1f5f9', padding: '6px 4px', minHeight: '50px'
+    background: 'white', border: '1px solid #f1f5f9', padding: '6px 4px', minHeight: '50px',
+    overflow: 'hidden'
   },
   calendarDayEmpty: { aspectRatio: '1', borderRadius: 10, background: 'transparent' },
   calendarDayActive: { background: '#dcfce7', border: '1px solid #bbf7d0' },
   calendarDayIzin: { background: '#fff3cd', border: '1px solid #ffe69c' },
+  calendarDayHoliday: { background: '#fee2e2', border: '1px solid #fecaca' },
   calendarDayToday: { border: '2px solid #0f172a', boxShadow: '0 0 0 2px rgba(15,23,42,0.1)' },
-  dayNumber: (isToday) => ({ fontSize: 13, fontWeight: isToday ? 'bold' : '500', color: isToday ? '#0f172a' : '#334155' }),
+  dayNumber: (isToday, isRed) => ({ 
+    fontSize: 13, fontWeight: isToday ? 'bold' : '500', 
+    color: isRed ? '#ef4444' : isToday ? '#0f172a' : '#334155' 
+  }),
   dayDot: { width: 6, height: 6, borderRadius: '50%', marginTop: 3 },
   dayDotActive: { background: '#27ae60' },
   dayDotIzin: { background: '#f59e0b' },
+  holidayLabel: { fontSize: 7, color: '#ef4444', textAlign: 'center', lineHeight: 1.1, marginTop: 1, fontWeight: 'bold', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  sundayLabel: { fontSize: 7, color: '#ef4444', textAlign: 'center', marginTop: 2, opacity: 0.7 },
+  
+  // === UPCOMING HOLIDAYS ===
+  upcomingHolidays: { marginTop: 20, paddingTop: 15, borderTop: '1px solid #f1f5f9' },
+  upcomingTitle: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 'bold', color: '#0f172a', margin: '0 0 10px 0' },
+  holidayList: { display: 'flex', flexDirection: 'column', gap: 6 },
+  holidayItem: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: '#fef2f2', borderRadius: 8, border: '1px solid #fee2e2' },
+  holidayDate: { fontSize: 12, fontWeight: 'bold', color: '#ef4444', minWidth: 50 },
+  holidayName: { fontSize: 11, color: '#991b1b' },
   
   // === IZIN STYLES ===
   izinField: { marginBottom: 16 },
@@ -1077,6 +1245,7 @@ const styles = {
   detailCard: { background: '#f8fafc', padding: 16, borderRadius: 12 },
   detailBadgeActive: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 20, background: '#dcfce7', color: '#15803d', fontWeight: 'bold', fontSize: 12, marginBottom: 12 },
   detailBadgeIzin: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 20, background: '#fff3cd', color: '#b45309', fontWeight: 'bold', fontSize: 12, marginBottom: 12 },
+  detailBadgeHoliday: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 20, background: '#fee2e2', color: '#991b1b', fontWeight: 'bold', fontSize: 12, marginBottom: 12 },
   detailRow: { display: 'flex', gap: 10, padding: '6px 0', borderBottom: '1px solid #f1f5f9', alignItems: 'flex-start' },
   detailLabel: { fontSize: 11, fontWeight: 'bold', color: '#64748b', minWidth: 60 },
   detailValue: { fontSize: 12, color: '#0f172a' },
