@@ -17,7 +17,7 @@ const ManagePoster = () => {
   const [base64Image, setBase64Image] = useState(""); 
   const [uploadMethod, setUploadMethod] = useState("link"); 
   const [imgPosition, setImgPosition] = useState("center");
-  const [targetPortal, setTargetPortal] = useState("Semua"); // FITUR BARU: Targeting
+  const [targetPortal, setTargetPortal] = useState("Semua");
   const [loading, setLoading] = useState(false);
 
   // --- 1. SMART URL BYPASS ENGINE ---
@@ -46,7 +46,7 @@ const ManagePoster = () => {
 
   useEffect(() => { fetchPosters(); }, []);
 
-  // --- 2. HACKER-LEVEL COMPRESSION ENGINE (Anti-Lag & Storage Safe) ---
+  // --- 2. COMPRESSION ENGINE (FIXED: onload BEFORE src) ---
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -55,26 +55,28 @@ const ManagePoster = () => {
     reader.readAsDataURL(file);
     reader.onload = (event) => {
       const img = new Image();
-      img.src = event.target.result;
+      
+      // 🔥 FIX: Deklarasikan onload SEBELUM src diisi
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 1200; // Optimal Resolution
+        const MAX_WIDTH = 1200;
         const scaleSize = MAX_WIDTH / img.width;
         canvas.width = MAX_WIDTH;
         canvas.height = img.height * scaleSize;
         
         const ctx = canvas.getContext('2d');
-        // Image Smoothing Quality High
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         
-        // Kompresi 0.6 (Sweet spot antara size vs quality)
         const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
         
         setImagePreview(compressedBase64);
         setBase64Image(compressedBase64);
-      }
+      };
+      
+      // 🔥 FIX: Isi src SETELAH onload didefinisikan
+      img.src = event.target.result;
     };
   };
 
@@ -93,12 +95,11 @@ const ManagePoster = () => {
         content: newContent,
         method: uploadMethod,
         imgPosition: imgPosition,
-        targetPortal: targetPortal, // DATA BARU: Lokasi Publikasi
+        targetPortal: targetPortal,
         createdAt: serverTimestamp(),
         engineVersion: "2.5-Hacker-Edition"
       });
 
-      // Reset
       setNewTitle(""); setNewContent(""); setExternalUrl(""); 
       setImagePreview(null); setBase64Image(""); setImgPosition("center");
       fetchPosters();
@@ -108,6 +109,17 @@ const ManagePoster = () => {
       alert("❌ Critical Error: Gagal mengunggah ke database.");
     }
     setLoading(false);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus media ini?")) return;
+    try {
+      await deleteDoc(doc(db, "student_contents", id));
+      fetchPosters();
+      alert("✅ Media berhasil dihapus.");
+    } catch (err) {
+      alert("❌ Gagal menghapus: " + err.message);
+    }
   };
 
   const handleImageError = (e) => {
@@ -138,11 +150,11 @@ const ManagePoster = () => {
             </button>
         </div>
 
-        <div style={styles.formGrid}>
+        <form onSubmit={handleSave} style={styles.formGrid}>
           <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
             <div style={styles.inputGroup}>
                 <label style={styles.labelHeader}>Detail Publikasi</label>
-                <input placeholder="Ketik Judul Menarik Di Sini..." value={newTitle} onChange={e=>setNewTitle(e.target.value)} style={styles.input}/>
+                <input placeholder="Ketik Judul Menarik Di Sini..." value={newTitle} onChange={e=>setNewTitle(e.target.value)} style={styles.input} required />
                 <textarea placeholder="Tuliskan isi berita atau deskripsi lengkap..." value={newContent} onChange={e=>setNewContent(e.target.value)} style={styles.textArea}/>
             </div>
 
@@ -167,6 +179,10 @@ const ManagePoster = () => {
                     </div>
                 </div>
             </div>
+            
+            <button type="submit" disabled={loading} style={{...styles.btnSave, opacity: loading ? 0.7 : 1}}>
+              {loading ? "PROSES ENKRIPSI & UPLOAD..." : "PUBLIKASIKAN KE PORTAL TERPILIH"}
+            </button>
           </div>
 
           <div style={styles.mediaBox}>
@@ -214,11 +230,7 @@ const ManagePoster = () => {
               </div>
             )}
           </div>
-        </div>
-
-        <button onClick={handleSave} disabled={loading} style={{...styles.btnSave, opacity: loading ? 0.7 : 1}}>
-          {loading ? "PROSES ENKRIPSI & UPLOAD..." : "PUBLIKASIKAN KE PORTAL TERPILIH"}
-        </button>
+        </form>
       </div>
 
       <h3 style={{fontWeight: '900', color: '#1e293b', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: 10}}>
@@ -240,7 +252,7 @@ const ManagePoster = () => {
                 <p style={{fontSize: 11, color: '#94a3b8', marginBottom: 15, height: 32, overflow: 'hidden'}}>{p.content || "Tanpa deskripsi..."}</p>
                 <div style={styles.actionArea}>
                     <button onClick={() => window.open(p.originalUrl || p.imageUrl, '_blank')} style={styles.btnView}><Eye size={14}/> Preview</button>
-                    <button onClick={() => { if(window.confirm("Hapus media ini?")) deleteDoc(doc(db, "student_contents", p.id)).then(fetchPosters)}} style={styles.btnDel}><Trash2 size={16}/></button>
+                    <button onClick={() => handleDelete(p.id)} style={styles.btnDel}><Trash2 size={16}/></button>
                 </div>
             </div>
           </div>
