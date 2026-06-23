@@ -18,7 +18,6 @@ import EditStudent from './pages/admin/students/EditStudent';
 import FinanceLayout from './pages/admin/finance/FinanceLayout';
 import TeacherList from './pages/admin/teachers/TeacherList';
 import TeacherSalaries from './pages/admin/teachers/TeacherSalaries';
-import TeacherSchedule from './pages/admin/teachers/TeacherSchedule'; // ➕ DITAMBAHKAN
 import SchedulePage from './pages/admin/schedule/SchedulePage';
 import GradeReport from './pages/admin/grades/GradeReport';
 import AdminBulkRaport from './pages/admin/grades/AdminBulkRaport';
@@ -37,15 +36,15 @@ import TeacherManualInput from './pages/teacher/TeacherManualInput';
 import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade';
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager';
 import TeacherProfile from './pages/teacher/TeacherProfile';
-import TeacherSchedulePage from './pages/teacher/TeacherSchedule'; // ➕ RENAME biar gak bentrok
+import TeacherSchedulePage from './pages/teacher/TeacherSchedule';
 import ModulManager from './pages/teacher/modul/ModulManager';
 import CekTugasSiswa from './pages/teacher/modul/CekTugasSiswa';
 import ManageMateriGuru from './pages/teacher/modul/ManageMateri';
 import ManageQuiz from './pages/teacher/modul/ManageQuiz';
-import ManageTugas from './pages/teacher/modul/ManageTugas'; // ➕ DITAMBAHKAN
-import ClassSession from './pages/teacher/ClassSession'; // ➕ DITAMBAHKAN
+import ManageTugas from './pages/teacher/modul/ManageTugas';
+import ClassSession from './pages/teacher/ClassSession';
 
-// === SMART RAPORT (v2 - 5 Dimensi) ===
+// === SMART RAPORT ===
 import GenerateRaport from './pages/teacher/grades/GenerateRaport';
 import StudentLeaderboard from './pages/student/raport/StudentLeaderboard';
 import StudentSmartReport from './pages/student/raport/StudentSmartReport';
@@ -120,7 +119,7 @@ const TeacherLayout = ({ children }) => {
 };
 
 // ============================================================
-// SISWA LAYOUT (untuk konsistensi)
+// SISWA LAYOUT
 // ============================================================
 const SiswaLayout = ({ children }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
@@ -133,9 +132,7 @@ const SiswaLayout = ({ children }) => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100%', background: '#f8fafc' }}>
-      <main style={{
-        flex: 1, width: '100%', maxWidth: '100vw', overflowX: 'hidden'
-      }}>
+      <main style={{ flex: 1, width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
         <header style={{
           background: 'white', padding: '12px 20px', display: 'flex', justifyContent: 'space-between',
           alignItems: 'center', borderBottom: '1px solid #eee', position: 'sticky', top: 0, zIndex: 99
@@ -193,7 +190,7 @@ function App() {
         <Route path="/aktivitas" element={<PublicBlog />} />
 
         {/* ============================================================ */}
-        {/* ADMIN ROUTES */}
+        {/* ADMIN */}
         {/* ============================================================ */}
         <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
         
@@ -207,7 +204,6 @@ function App() {
         {/* Teachers */}
         <Route path="/admin/teachers" element={<AdminRoute><TeacherList /></AdminRoute>} />
         <Route path="/admin/teachers/salaries" element={<AdminRoute><TeacherSalaries /></AdminRoute>} />
-        <Route path="/admin/teachers/schedule" element={<AdminRoute><TeacherSchedule /></AdminRoute>} />
         
         {/* Portal Siswa */}
         <Route path="/admin/portal" element={<AdminRoute><PortalSiswaHome /></AdminRoute>} />
@@ -235,7 +231,7 @@ function App() {
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
 
         {/* ============================================================ */}
-        {/* GURU ROUTES */}
+        {/* GURU */}
         {/* ============================================================ */}
         <Route path="/guru/dashboard" element={<GuruRoute><TeacherLayout><TeacherDashboard /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/profile" element={<GuruRoute><TeacherLayout><TeacherProfile /></TeacherLayout></GuruRoute>} />
@@ -259,7 +255,7 @@ function App() {
         <Route path="/guru/attendance" element={<GuruRoute><TeacherLayout><TeacherManualInput /></TeacherLayout></GuruRoute>} />
 
         {/* ============================================================ */}
-        {/* SISWA ROUTES */}
+        {/* SISWA */}
         {/* ============================================================ */}
         <Route path="/siswa/dashboard" element={<SiswaRoute><SiswaLayout><StudentDashboard /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/materi" element={<SiswaRoute><SiswaLayout><StudentElearning /></SiswaLayout></SiswaRoute>} />
@@ -277,6 +273,7 @@ function App() {
         <Route path="/admin/finance/income" element={<Navigate to="/admin/finance" replace />} />
         <Route path="/admin/finance/expense" element={<Navigate to="/admin/finance" replace />} />
         <Route path="/admin/finance/debt" element={<Navigate to="/admin/finance" replace />} />
+        <Route path="/admin/teachers/schedule" element={<Navigate to="/admin/schedule" replace />} />
         <Route path="/teacher/*" element={<Navigate to="/guru/dashboard" replace />} />
         <Route path="/guru/manage-quiz" element={<Navigate to="/guru/modul/quiz" replace />} />
         <Route path="/guru/manual-input" element={<Navigate to="/guru/attendance" replace />} />
