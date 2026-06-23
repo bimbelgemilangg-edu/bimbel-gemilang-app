@@ -27,7 +27,7 @@ const TeacherList = () => {
   const [alertMsg, setAlertMsg] = useState(null);
   const [deleting, setDeleting] = useState(null);
 
-  // ➕ State untuk lihat password
+  // State untuk lihat password
   const [showPasswordId, setShowPasswordId] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
 
@@ -73,7 +73,7 @@ const TeacherList = () => {
 
   useEffect(() => { fetchTeachers(); }, []);
 
-  // ➕ Fungsi copy ke clipboard
+  // Fungsi copy ke clipboard
   const copyToClipboard = (text, id) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedId(id);
@@ -99,7 +99,7 @@ const TeacherList = () => {
         nohp: addForm.nohp,
         alamat: addForm.alamat,
         email: addForm.email,
-        passwordHint: addForm.password, // ➕ Simpan password hint
+        passwordHint: addForm.password,
         status: addForm.status,
         authUid: authUid,
         createdAt: new Date().toISOString(),
@@ -209,11 +209,10 @@ const TeacherList = () => {
         status: editForm.status,
         email: editForm.email,
         fotoUrl: editForm.fotoUrl,
-        passwordHint: editForm.password || undefined, // ➕ Update password hint
+        passwordHint: editForm.password || undefined,
         updatedAt: new Date().toISOString()
       };
       
-      // Hapus field undefined
       Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
       
       await updateDoc(doc(db, "teachers", editModal), updateData);
@@ -265,6 +264,7 @@ const TeacherList = () => {
           </div>
         )}
 
+        {/* BREADCRUMB */}
         <div style={styles.breadcrumb(isMobile)}>
           <div style={styles.breadcrumbTrail}>
             <Home size={12} color="#94a3b8" />
@@ -272,6 +272,10 @@ const TeacherList = () => {
             <span style={{color: '#3b82f6', fontWeight: 'bold'}}>Kelola Guru</span>
           </div>
           <div style={styles.breadcrumbActions(isMobile)}>
+            {/* TOMBOL JADWAL - MENGARAH KE SCHEDULE ADMIN */}
+            <button onClick={() => navigate('/admin/schedule')} style={styles.btnSchedule(isMobile)}>
+              <Calendar size={14} /> Jadwal
+            </button>
             <button onClick={() => navigate('/admin/teachers/salaries')} style={styles.btnSalary(isMobile)}>
               <DollarSign size={14} /> Gaji
             </button>
@@ -281,6 +285,7 @@ const TeacherList = () => {
           </div>
         </div>
 
+        {/* HEADER */}
         <div style={styles.header(isMobile)}>
           <div>
             <h2 style={styles.pageTitle(isMobile)}><Users size={22} /> Daftar Guru</h2>
@@ -288,12 +293,14 @@ const TeacherList = () => {
           </div>
         </div>
 
+        {/* STATS */}
         <div style={styles.statsRow(isMobile)}>
           <div style={styles.statMini}><Users size={16} color="#3b82f6" /><div><h3>{teachers.length}</h3><span>Total</span></div></div>
           <div style={styles.statMini}><BookOpen size={16} color="#8b5cf6" /><div><h3>{mapelList.length}</h3><span>Mapel</span></div></div>
           <div style={styles.statMini}><Briefcase size={16} color="#10b981" /><div><h3>{teachers.filter(t => t.status === 'Aktif').length}</h3><span>Aktif</span></div></div>
         </div>
 
+        {/* FILTER */}
         <div style={styles.filterBar(isMobile)}>
           <div style={styles.searchBox}>
             <Search size={16} color="#94a3b8" />
@@ -303,6 +310,7 @@ const TeacherList = () => {
           <button onClick={fetchTeachers} style={styles.btnRefresh(isMobile)}><RefreshCw size={14} /> {!isMobile && 'Refresh'}</button>
         </div>
 
+        {/* TABLE */}
         <div style={styles.card}>
           {filtered.length === 0 ? (
             <div style={styles.emptyState}>
@@ -459,21 +467,34 @@ const styles = {
   toast: { position: 'fixed', top: 20, right: 20, zIndex: 9999, padding: '12px 20px', borderRadius: 12, fontWeight: 'bold', fontSize: 14, boxShadow: '0 10px 30px rgba(0,0,0,0.2)', color: 'white' },
   loadingState: { textAlign: 'center', padding: 80 },
   spinner: { width: 40, height: 40, border: '4px solid #f3e8ff', borderTop: '4px solid #673ab7', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 15px' },
+  
+  // Breadcrumb
   breadcrumb: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexDirection: m ? 'column' : 'row', gap: m ? 8 : 0 }),
   breadcrumbTrail: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 },
   breadcrumbActions: (m) => ({ display: 'flex', gap: 8, flexWrap: 'wrap' }),
+  
+  // Buttons
+  btnSchedule: (m) => ({ background: '#e0e7ff', color: '#3730a3', border: '1px solid #c7d2fe', padding: m ? '6px 10px' : '8px 12px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: m ? 11 : 12, display: 'flex', alignItems: 'center', gap: 4 }),
   btnSalary: (m) => ({ background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: m ? '6px 10px' : '8px 12px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: m ? 11 : 12, display: 'flex', alignItems: 'center', gap: 4 }),
   btnAdd: (m) => ({ background: '#3b82f6', color: 'white', border: 'none', padding: m ? '6px 10px' : '8px 12px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: m ? 11 : 12, display: 'flex', alignItems: 'center', gap: 4 }),
+  
+  // Header
   header: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexDirection: m ? 'column' : 'row', gap: m ? 10 : 0 }),
   pageTitle: (m) => ({ margin: 0, color: '#1e293b', fontSize: m ? 18 : 22, display: 'flex', alignItems: 'center', gap: 8 }),
   subtitle: { color: '#64748b', marginTop: 4, fontSize: 13 },
+  
+  // Stats
   statsRow: (m) => ({ display: 'flex', gap: m ? 8 : 15, marginBottom: 20 }),
   statMini: { flex: 1, background: 'white', padding: 12, borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' },
+  
+  // Filter
   filterBar: (m) => ({ display: 'flex', gap: 10, marginBottom: 20, flexDirection: m ? 'column' : 'row' }),
   searchBox: { flex: 2, display: 'flex', alignItems: 'center', gap: 8, background: 'white', padding: '10px 15px', borderRadius: 10, border: '1px solid #e2e8f0' },
   searchInput: { border: 'none', outline: 'none', width: '100%', fontSize: 14, background: 'transparent' },
   clearBtn: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 16 },
   btnRefresh: (m) => ({ background: 'white', border: '1px solid #e2e8f0', padding: '10px 15px', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#64748b' }),
+  
+  // Table
   card: { background: 'white', borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', overflow: 'hidden' },
   emptyState: { textAlign: 'center', padding: 60, color: '#94a3b8' },
   table: { width: '100%', borderCollapse: 'collapse', minWidth: 750 },
@@ -487,6 +508,8 @@ const styles = {
   statusBadge: (s) => ({ padding: '3px 8px', borderRadius: 10, fontSize: 10, fontWeight: 'bold', background: s === 'Aktif' ? '#dcfce7' : s === 'Cuti' ? '#fef3c7' : '#fee2e2', color: s === 'Aktif' ? '#166534' : s === 'Cuti' ? '#b45309' : '#ef4444' }),
   actionGroup: { display: 'flex', gap: 4, flexWrap: 'wrap' },
   btnAction: { background: '#f1f5f9', color: '#475569', border: 'none', padding: '6px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  
+  // Modal
   overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000, backdropFilter: 'blur(2px)' },
   modal: (m) => ({ background: 'white', padding: m ? 20 : 30, borderRadius: 20, width: m ? '95%' : '550px', maxHeight: '90vh', overflowY: 'auto' }),
   modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, borderBottom: '1px solid #f1f5f9', paddingBottom: 15 },

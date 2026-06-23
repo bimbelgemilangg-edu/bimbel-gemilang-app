@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { collection, getDocs, doc, addDoc, deleteDoc, updateDoc } from "firebase/firestore";
-import { ArrowLeft, RefreshCw, Download, Eye, X, ChevronRight, Home, DollarSign, FileText } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Download, Eye, X, ChevronRight, Home, DollarSign, FileText, Calendar } from 'lucide-react';
 
 const TeacherSalaries = () => {
   const navigate = useNavigate();
@@ -122,21 +122,26 @@ const TeacherSalaries = () => {
     const printWindow = window.open('', '_blank');
     if(!printWindow) return showAlert("⚠️ Pop-up diblokir browser!");
     printWindow.document.write(`
-      <html><head><title>Slip Gaji - ${guru.nama}</title></head>
-      <body style="font-family: sans-serif; padding: 20px;">
-        <h2 style="text-align:center;">REKAP GAJI GURU</h2><hr/>
-        <p><b>Nama:</b> ${guru.nama}</p><p><b>Periode:</b> ${startDate} s/d ${endDate}</p>
-        <table border="1" style="width:100%; border-collapse: collapse; margin-top: 10px;">
-          <thead><tr style="background: #eee;"><th style="padding: 8px;">Tanggal</th><th style="padding: 8px;">Program</th><th style="padding: 8px;">Detail</th><th style="padding: 8px;">Nominal</th></tr></thead>
+      <html><head><title>Slip Gaji - ${guru.nama}</title>
+      <style>body{font-family:Arial,sans-serif;padding:20px}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:8px;border:1px solid #ddd}th{background:#f5f5f5}.total{font-weight:bold;font-size:16px;margin-top:15px}</style></head>
+      <body>
+        <h2 style="text-align:center">SLIP GAJI GURU</h2>
+        <hr/>
+        <p><b>Nama:</b> ${guru.nama}</p>
+        <p><b>Periode:</b> ${startDate} s/d ${endDate}</p>
+        <table>
+          <thead><tr><th>Tanggal</th><th>Program</th><th>Detail</th><th>Nominal</th></tr></thead>
           <tbody>${guru.rincian.sort((a,b) => (b.tanggal || '').localeCompare(a.tanggal || '')).map(r => `
-            <tr><td style="padding: 8px;">${r.tanggal} ${r.waktu ? `<br/><small>${r.waktu}</small>` : ''}</td><td style="padding: 8px;">${r.program}</td><td style="padding: 8px;"><small>${r.detail}</small></td><td style="padding: 8px; text-align: right;">Rp ${parseInt(r.nominal || 0).toLocaleString()}</td></tr>
+            <tr><td>${r.tanggal} ${r.waktu ? `<br/><small>${r.waktu}</small>` : ''}</td><td>${r.program}</td><td><small>${r.detail}</small></td><td style="text-align:right">Rp ${parseInt(r.nominal || 0).toLocaleString()}</td></tr>
           `).join('')}</tbody>
-          <tfoot><tr style="font-weight: bold;"><td colspan="3" style="padding: 8px; text-align: right;">TOTAL:</td><td style="padding: 8px; text-align: right;">Rp ${guru.totalGaji.toLocaleString()}</td></tr></tfoot>
+          <tfoot><tr style="font-weight:bold;background:#e8f5e9"><td colspan="3" style="text-align:right">TOTAL:</td><td style="text-align:right">Rp ${guru.totalGaji.toLocaleString()}</td></tr></tfoot>
         </table>
+        <p style="text-align:right;margin-top:20px">Tanda Tangan,</p>
+        <p style="text-align:right;margin-top:40px">_______________</p>
       </body></html>
     `);
     printWindow.document.close();
-    printWindow.print();
+    setTimeout(() => printWindow.print(), 500);
   };
 
   return (
@@ -146,8 +151,9 @@ const TeacherSalaries = () => {
         
         {alertMsg && <div style={styles.toast}>{alertMsg}</div>}
 
+        {/* Breadcrumb */}
         <div style={styles.breadcrumb(isMobile)}>
-          <button onClick={() => navigate('/admin/teachers')} style={styles.backButton}>
+          <button onClick={() => navigate('/admin/teachers')} style={styles.backBtn}>
             <ArrowLeft size={16} /> Kembali ke Kelola Guru
           </button>
           <div style={styles.breadcrumbTrail}>
@@ -157,6 +163,7 @@ const TeacherSalaries = () => {
           </div>
         </div>
 
+        {/* Header */}
         <div style={styles.headerCard(isMobile)}>
           <div>
             <h2 style={styles.pageTitle(isMobile)}><DollarSign size={22} /> Rekap Gaji & Validasi Harian</h2>
@@ -168,31 +175,44 @@ const TeacherSalaries = () => {
           </div>
         </div>
 
+        {/* Filter */}
         <div style={styles.filterRow(isMobile)}>
-          <span style={styles.filterLabel}>Periode:</span>
-          <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} style={styles.dateInput(isMobile)} />
-          <span style={styles.filterLabel}>s/d</span>
-          <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} style={styles.dateInput(isMobile)} />
+          <div style={styles.filterGroup}>
+            <label style={styles.filterLabel}><Calendar size={12} /> Dari</label>
+            <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} style={styles.dateInput(isMobile)} />
+          </div>
+          <div style={styles.filterGroup}>
+            <label style={styles.filterLabel}>Sampai</label>
+            <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)} style={styles.dateInput(isMobile)} />
+          </div>
           <button onClick={fetchData} style={styles.btnRefresh(isMobile)}><RefreshCw size={14} /> Segarkan</button>
         </div>
 
-        <div style={styles.cardTable}>
-          {loading ? (
-            <div style={styles.emptyState}>Memuat data gaji...</div>
-          ) : rekap.length === 0 ? (
+        {/* Loading */}
+        {loading ? (
+          <div style={styles.cardTable}>
+            <div style={styles.loadingBox}>
+              <div style={styles.spinner}></div>
+              <p>Memuat data gaji...</p>
+            </div>
+          </div>
+        ) : rekap.length === 0 ? (
+          <div style={styles.cardTable}>
             <div style={styles.emptyState}><FileText size={40} color="#94a3b8" /><p>Belum ada data gaji untuk periode ini.</p></div>
-          ) : (
+          </div>
+        ) : (
+          <div style={styles.cardTable}>
             <div style={{overflowX: 'auto'}}>
               <table style={styles.table}>
-                <thead style={{background:'#2c3e50', color:'white'}}>
+                <thead style={{background:'#1e293b', color:'white'}}>
                   <tr><th style={styles.th}>Nama Guru</th><th style={styles.th}>Total Sesi</th><th style={styles.th}>Total Gaji</th><th style={styles.th}>Aksi</th></tr>
                 </thead>
                 <tbody>
                   {rekap.map(g => (
-                    <tr key={g.id}>
+                    <tr key={g.id} style={styles.tr}>
                       <td style={styles.td}><b>{g.nama}</b></td>
                       <td style={styles.td}>{g.totalSesi} Sesi</td>
-                      <td style={styles.td}><b>Rp {g.totalGaji.toLocaleString()}</b></td>
+                      <td style={styles.td}><b style={{color: '#10b981'}}>Rp {g.totalGaji.toLocaleString()}</b></td>
                       <td style={styles.td}>
                         <div style={styles.actionButtons(isMobile)}>
                           <button onClick={() => setViewDetail(g)} style={styles.btnDetail}><Eye size={14} /> Rincian</button>
@@ -204,19 +224,20 @@ const TeacherSalaries = () => {
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
+        {/* Modal Detail */}
         {viewDetail && (
           <div style={styles.overlay} onClick={() => setViewDetail(null)}>
             <div style={styles.modal(isMobile)} onClick={e => e.stopPropagation()}>
               <div style={styles.modalHeader}>
-                <h3 style={{margin:0, fontSize: isMobile ? 16 : 18}}>📋 Laporan Sesi: {viewDetail.nama}</h3>
+                <h3 style={{margin:0, fontSize: isMobile ? 16 : 18}}>📋 Rincian Sesi: {viewDetail.nama}</h3>
                 <button onClick={()=>setViewDetail(null)} style={styles.btnClose}><X size={20} /></button>
               </div>
               <div style={{maxHeight: isMobile ? '50vh' : '500px', overflowY: 'auto'}}>
                 <table style={{width:'100%', borderCollapse:'collapse', fontSize: isMobile ? 11 : 13}}>
-                  <thead style={{background:'#f8f9fa', position:'sticky', top:0, zIndex:1}}>
+                  <thead style={{background:'#f8fafc', position:'sticky', top:0, zIndex:1}}>
                     <tr><th style={styles.thSmall}>Tanggal</th><th style={styles.thSmall}>Program</th><th style={styles.thSmall}>Detail</th><th style={styles.thSmall}>Nominal</th><th style={styles.thSmall}>Status</th></tr>
                   </thead>
                   <tbody>
@@ -224,11 +245,11 @@ const TeacherSalaries = () => {
                       const isValid = log.status === "Valid / Sudah Terekap";
                       return (
                         <Fragment key={log.id}>
-                        <tr style={{borderBottom:'1px solid #eee', background: isValid ? '#fafffa' : 'white'}}>
-                          <td style={styles.tdSmall}><b>{log.tanggal}</b><br/><span style={{fontSize: 10, color: '#7f8c8d'}}>{log.waktu || '-'}</span></td>
-                          <td style={styles.tdSmall}><span style={{color: log.program === 'BONUS/TAMBAHAN' ? '#e67e22' : '#2980b9', fontWeight:'bold', fontSize: isMobile ? 10 : 12}}>{log.program || 'Kegiatan'}</span></td>
-                          <td style={styles.tdSmall}><small style={{color: '#7f8c8d'}}>{log.detail}</small></td>
-                          <td style={styles.tdSmall}><input type="number" disabled={isValid} defaultValue={log.nominal} onBlur={(e) => handleUpdateNominal(log.id, e.target.value)} style={{...styles.inputNominal(isMobile), borderColor: isValid ? '#2ecc71' : '#3498db'}} /></td>
+                        <tr style={{borderBottom:'1px solid #f1f5f9', background: isValid ? '#f0fdf4' : 'white'}}>
+                          <td style={styles.tdSmall}><b>{log.tanggal}</b><br/><span style={{fontSize: 10, color: '#94a3b8'}}>{log.waktu || '-'}</span></td>
+                          <td style={styles.tdSmall}><span style={{color: log.program === 'BONUS/TAMBAHAN' ? '#f59e0b' : '#3b82f6', fontWeight:'bold', fontSize: isMobile ? 10 : 12}}>{log.program || 'Kegiatan'}</span></td>
+                          <td style={styles.tdSmall}><small style={{color: '#64748b'}}>{log.detail}</small></td>
+                          <td style={styles.tdSmall}><input type="number" disabled={isValid} defaultValue={log.nominal} onBlur={(e) => handleUpdateNominal(log.id, e.target.value)} style={{...styles.inputNominal(isMobile), borderColor: isValid ? '#10b981' : '#3b82f6'}} /></td>
                           <td style={styles.tdSmall}>
                             {isValid ? (
                               <div style={{display:'flex', flexDirection:'column', gap:4}}>
@@ -245,14 +266,14 @@ const TeacherSalaries = () => {
                           </td>
                         </tr>
                         {activeBonusId === log.id && (
-                          <tr style={{background:'#fff9e6'}}>
+                          <tr style={{background:'#fffbeb'}}>
                             <td colSpan="5" style={{padding:10}}>
                                 <div style={{display:'flex', gap:8, alignItems:'center', flexWrap:'wrap'}}>
                                     <b style={{fontSize:11}}>TAMBAH BONUS:</b>
                                     <input placeholder="Keterangan..." onChange={e=>setBonusData({...bonusData, keterangan:e.target.value})} style={styles.miniInput} />
                                     <input type="number" placeholder="Nominal" onChange={e=>setBonusData({...bonusData, nominal:e.target.value})} style={styles.miniInput} />
                                     <button onClick={()=>handleAddBonusAtDate(log)} style={styles.btnSaveBonus}>Simpan</button>
-                                    <button onClick={()=>setActiveBonusId(null)} style={{border:'none', background:'none', cursor:'pointer', color:'red', fontSize:11}}>Batal</button>
+                                    <button onClick={()=>setActiveBonusId(null)} style={{border:'none', background:'none', cursor:'pointer', color:'#ef4444', fontSize:11}}>Batal</button>
                                 </div>
                             </td>
                           </tr>
@@ -263,13 +284,14 @@ const TeacherSalaries = () => {
                   </tbody>
                 </table>
               </div>
-              <div style={{marginTop:15, textAlign:'right', borderTop:'2px solid #eee', paddingTop:15}}>
-                <h3 style={{margin:0, color:'#2c3e50', fontSize: isMobile ? 14 : 18}}>Total: <span style={{color:'#27ae60'}}>Rp {viewDetail.totalGaji.toLocaleString()}</span></h3>
+              <div style={{marginTop:15, textAlign:'right', borderTop:'2px solid #e2e8f0', paddingTop:15}}>
+                <h3 style={{margin:0, color:'#1e293b', fontSize: isMobile ? 14 : 18}}>Total: <span style={{color:'#10b981'}}>Rp {viewDetail.totalGaji.toLocaleString()}</span></h3>
               </div>
             </div>
           </div>
         )}
       </div>
+      <style>{`@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
     </div>
   );
 };
@@ -279,38 +301,42 @@ const styles = {
   mainContent: (m) => ({ marginLeft: m ? '0' : '250px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' }),
   toast: { position: 'fixed', top: 20, right: 20, zIndex: 9999, background: '#1e293b', color: 'white', padding: '12px 20px', borderRadius: 12, fontWeight: 'bold', fontSize: 14, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
   breadcrumb: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexDirection: m ? 'column' : 'row', gap: m ? 8 : 0 }),
-  backButton: { background: 'white', border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, color: '#64748b' },
+  backBtn: { background: 'white', border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, color: '#64748b' },
   breadcrumbTrail: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 },
-  headerCard: (m) => ({ background:'white', padding: m ? 15 : 20, borderRadius:15, display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, boxShadow:'0 2px 10px rgba(0,0,0,0.05)', flexDirection: m ? 'column' : 'row', gap: m ? 10 : 0 }),
+  headerCard: (m) => ({ background:'white', padding: m ? 15 : 20, borderRadius:15, display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, boxShadow:'0 2px 8px rgba(0,0,0,0.04)', flexDirection: m ? 'column' : 'row', gap: m ? 10 : 0 }),
   pageTitle: (m) => ({ margin:0, fontSize: m ? 16 : 20, display:'flex', alignItems:'center', gap:8 }),
-  subtitle: (m) => ({ color:'#666', marginTop:5, fontSize: m ? 11 : 13 }),
-  totalBox: (m) => ({ textAlign: m ? 'center' : 'right', background:'#e8f8f5', padding: m ? '10px 15px' : '10px 20px', borderRadius:12, border:'1px solid #27ae60' }),
-  filterRow: (m) => ({ marginBottom:20, display:'flex', gap:8, alignItems:'center', flexWrap:'wrap' }),
-  filterLabel: { fontSize:13, fontWeight:'bold' },
-  dateInput: (m) => ({ padding: m ? 6 : 8, borderRadius:8, border:'1px solid #ddd', fontSize: m ? 11 : 13 }),
-  btnRefresh: (m) => ({ background:'#95a5a6', color:'white', border:'none', padding: m ? '6px 10px' : '8px 15px', borderRadius:8, cursor:'pointer', display:'flex', alignItems:'center', gap:4, fontSize: m ? 11 : 12, fontWeight:'bold' }),
-  cardTable: { background:'white', borderRadius:15, overflow:'hidden', boxShadow:'0 2px 10px rgba(0,0,0,0.05)' },
-  table: { width:'100%', borderCollapse:'collapse', minWidth:'600px' },
-  th: { padding:15, textAlign:'left', fontSize:12 },
-  td: { padding:15, borderBottom:'1px solid #eee', fontSize:13 },
+  subtitle: (m) => ({ color:'#94a3b8', marginTop:5, fontSize: m ? 11 : 13 }),
+  totalBox: (m) => ({ textAlign: m ? 'center' : 'right', background:'#f0fdf4', padding: m ? '10px 15px' : '10px 20px', borderRadius:12, border:'1px solid #bbf7d0' }),
+  filterRow: (m) => ({ marginBottom:20, display:'flex', gap:10, alignItems:'flex-end', flexWrap:'wrap' }),
+  filterGroup: { display:'flex', flexDirection:'column', gap:4 },
+  filterLabel: { fontSize:11, fontWeight:'bold', color:'#64748b', display:'flex', alignItems:'center', gap:4 },
+  dateInput: (m) => ({ padding: m ? 8 : 10, borderRadius:8, border:'1px solid #e2e8f0', fontSize: m ? 11 : 13 }),
+  btnRefresh: (m) => ({ background:'#1e293b', color:'white', border:'none', padding: m ? '8px 12px' : '10px 16px', borderRadius:8, cursor:'pointer', display:'flex', alignItems:'center', gap:4, fontSize: m ? 11 : 12, fontWeight:'bold' }),
+  cardTable: { background:'white', borderRadius:14, overflow:'hidden', boxShadow:'0 2px 8px rgba(0,0,0,0.04)' },
+  loadingBox: { textAlign:'center', padding:50, color:'#94a3b8' },
+  spinner: { width: 36, height: 36, border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 15px' },
+  table: { width:'100%', borderCollapse:'collapse', minWidth:'500px' },
+  th: { padding:14, textAlign:'left', fontSize:12 },
+  tr: { borderBottom:'1px solid #f1f5f9' },
+  td: { padding:14, fontSize:13, borderBottom:'1px solid #f1f5f9' },
   actionButtons: (m) => ({ display:'flex', gap:5, flexDirection: m ? 'column' : 'row' }),
-  btnDetail: { background:'#3498db', color:'white', border:'none', padding:'8px 12px', borderRadius:8, cursor:'pointer', fontWeight:'bold', fontSize:12, display:'flex', alignItems:'center', gap:4 },
-  btnDownload: { background:'#27ae60', color:'white', border:'none', padding:'8px 12px', borderRadius:8, cursor:'pointer', fontWeight:'bold', fontSize:12, display:'flex', alignItems:'center', gap:4 },
+  btnDetail: { background:'#3b82f6', color:'white', border:'none', padding:'8px 12px', borderRadius:8, cursor:'pointer', fontWeight:'bold', fontSize:12, display:'flex', alignItems:'center', gap:4 },
+  btnDownload: { background:'#10b981', color:'white', border:'none', padding:'8px 12px', borderRadius:8, cursor:'pointer', fontWeight:'bold', fontSize:12, display:'flex', alignItems:'center', gap:4 },
   emptyState: { textAlign:'center', padding:50, color:'#94a3b8' },
-  overlay: { position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.7)', display:'flex', justifyContent:'center', alignItems:'flex-end', zIndex:2000 },
+  overlay: { position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.6)', display:'flex', justifyContent:'center', alignItems:'flex-end', zIndex:2000, backdropFilter:'blur(2px)' },
   modal: (m) => ({ background:'white', padding: m ? 15 : 25, borderRadius: m ? '20px 20px 0 0' : 20, width: m ? '100%' : '95%', maxWidth: '1100px', maxHeight: '90vh', overflow: 'hidden', display:'flex', flexDirection:'column' }),
   modalHeader: { display:'flex', justifyContent:'space-between', marginBottom:15 },
-  btnClose: { background:'none', border:'none', fontSize:24, cursor:'pointer', color:'#e74c3c' },
-  thSmall: { padding:10, fontSize:11, textAlign:'left', color:'#7f8c8d', borderBottom:'2px solid #eee' },
+  btnClose: { background:'none', border:'none', fontSize:24, cursor:'pointer', color:'#ef4444' },
+  thSmall: { padding:10, fontSize:11, textAlign:'left', color:'#64748b', borderBottom:'2px solid #e2e8f0' },
   tdSmall: { padding:10, fontSize:12, borderBottom:'1px solid #f1f5f9' },
   inputNominal: (m) => ({ width: m ? 80 : 100, padding:6, borderRadius:6, border:'2px solid', fontWeight:'bold', textAlign:'right', fontSize: m ? 11 : 12 }),
-  badgeSuccess: { color:'#27ae60', fontWeight:'bold', fontSize:10, background:'#eafaf1', padding:'3px 8px', borderRadius:20 },
-  btnApprove: { background:'#2ecc71', color:'white', border:'none', padding:'5px 10px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:'bold' },
-  btnBonus: { background:'#f39c12', color:'white', border:'none', padding:'5px 10px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:'bold' },
-  btnDelete: { background:'#e74c3c', color:'white', border:'none', padding:'5px 10px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:'bold' },
-  btnRevise: { background:'#f1f5f9', color:'#e74c3c', border:'1px solid #e2e8f0', padding:'3px 8px', borderRadius:6, cursor:'pointer', fontSize:10, fontWeight:'bold' },
-  miniInput: { padding:6, borderRadius:6, border:'1px solid #ddd', fontSize:11, width:'120px' },
-  btnSaveBonus: { background:'#2c3e50', color:'white', border:'none', padding:'6px 12px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:'bold' },
+  badgeSuccess: { color:'#10b981', fontWeight:'bold', fontSize:10, background:'#f0fdf4', padding:'3px 8px', borderRadius:20 },
+  btnApprove: { background:'#10b981', color:'white', border:'none', padding:'5px 10px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:'bold' },
+  btnBonus: { background:'#f59e0b', color:'white', border:'none', padding:'5px 10px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:'bold' },
+  btnDelete: { background:'#ef4444', color:'white', border:'none', padding:'5px 10px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:'bold' },
+  btnRevise: { background:'#f1f5f9', color:'#ef4444', border:'1px solid #e2e8f0', padding:'3px 8px', borderRadius:6, cursor:'pointer', fontSize:10, fontWeight:'bold' },
+  miniInput: { padding:6, borderRadius:6, border:'1px solid #e2e8f0', fontSize:11, width:'120px' },
+  btnSaveBonus: { background:'#1e293b', color:'white', border:'none', padding:'6px 12px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:'bold' },
 };
 
 export default TeacherSalaries;
