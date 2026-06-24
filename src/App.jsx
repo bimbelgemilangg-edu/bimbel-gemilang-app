@@ -8,6 +8,10 @@ import LoginGuru from './pages/LoginGuru';
 import LoginSiswa from './pages/LoginSiswa';
 import PublicBlog from './pages/PublicBlog';
 
+// === PENDAFTARAN ONLINE ===
+import PendaftaranOnline from './pages/PendaftaranOnline';
+import ManageOnlineRegistration from './pages/admin/portal-siswa/ManageOnlineRegistration';
+
 // === ADMIN ===
 import Dashboard from './pages/admin/Dashboard';
 import Settings from './pages/admin/Settings';
@@ -200,6 +204,11 @@ function App() {
         <Route path="/login-guru" element={<LoginGuru />} />
         <Route path="/login-siswa" element={<LoginSiswa />} />
         <Route path="/aktivitas" element={<PublicBlog />} />
+        
+        {/* ============================================================ */}
+        {/* PENDAFTARAN ONLINE (PUBLIK) */}
+        {/* ============================================================ */}
+        <Route path="/pendaftaran" element={<PendaftaranOnline />} />
 
         {/* ============================================================ */}
         {/* ADMIN */}
@@ -222,6 +231,14 @@ function App() {
         <Route path="/admin/portal/poster" element={<AdminRoute><ManagePoster /></AdminRoute>} />
         <Route path="/admin/portal/materi" element={<AdminRoute><ManageMateriPortal /></AdminRoute>} />
         <Route path="/admin/portal/survey" element={<AdminRoute><ManageSurvey /></AdminRoute>} />
+        
+        {/* ============================================================ */}
+        {/* PENDAFTARAN ONLINE (ADMIN) */}
+        {/* ============================================================ */}
+        <Route 
+          path="/admin/portal-siswa/online-registration" 
+          element={<AdminRoute><ManageOnlineRegistration /></AdminRoute>} 
+        />
         
         {/* Finance */}
         <Route path="/admin/finance" element={<AdminRoute><FinanceLayout /></AdminRoute>} />
