@@ -4,57 +4,55 @@ import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 // ============================================================
-// 🔥 GANTI LINK MIDTRANS DI SINI (CUKUP 1 KALI)
+// 🔥 LINK MIDTRANS UNIVERSAL
 // ============================================================
-const MIDTRANS_BASE_URL = "https://midtrans.com"; 
-// ⬆️ Ganti dengan link Sandbox Midtrans Anda:
-// Contoh: https://app.midtrans.com/payment-link/xxx-xxx-xxx
+const MIDTRANS_BASE_LINK = "https://app.sandbox.midtrans.com/payment-links/67c22c45-6baa-421b-a7b2-a12289639be9-UJZJAOFg";
 
 // ============================================================
-// DATA MASTER PAKET BIMBEL
+// DATA MASTER PAKET LENGKAP
 // ============================================================
 const LIST_PAKET_MASTER = {
   SD: [
-    { id: "sd_fokus_1", nama: "SD Fokus 1 Bulan", harga: 95000, link: MIDTRANS_BASE_URL },
-    { id: "sd_fokus_3", nama: "SD Fokus 3 Bulan", harga: 275000, link: MIDTRANS_BASE_URL },
-    { id: "sd_fokus_6", nama: "SD Fokus 6 Bulan", harga: 540000, link: MIDTRANS_BASE_URL },
-    { id: "sd_fokus_12", nama: "SD Fokus 12 Bulan", harga: 1050000, link: MIDTRANS_BASE_URL },
-    { id: "sd_duo_1", nama: "SD Duo 1 Bulan", harga: 175000, link: MIDTRANS_BASE_URL },
-    { id: "sd_duo_3", nama: "SD Duo 3 Bulan", harga: 499000, link: MIDTRANS_BASE_URL },
-    { id: "sd_duo_6", nama: "SD Duo 6 Bulan", harga: 975000, link: MIDTRANS_BASE_URL },
-    { id: "sd_duo_12", nama: "SD Duo 12 Bulan", harga: 1900000, link: MIDTRANS_BASE_URL },
-    { id: "sd_lengkap_1", nama: "SD Lengkap 1 Bulan", harga: 250000, link: MIDTRANS_BASE_URL },
-    { id: "sd_lengkap_3", nama: "SD Lengkap 3 Bulan", harga: 699000, link: MIDTRANS_BASE_URL },
-    { id: "sd_lengkap_6", nama: "SD Lengkap 6 Bulan", harga: 1399000, link: MIDTRANS_BASE_URL },
-    { id: "sd_lengkap_12", nama: "SD Lengkap 12 Bulan", harga: 2799000, link: MIDTRANS_BASE_URL },
-    { id: "sd_tka_1", nama: "SD TKA 1 Bulan", harga: 300000, link: MIDTRANS_BASE_URL },
-    { id: "sd_tka_3", nama: "SD TKA 3 Bulan", harga: 849000, link: MIDTRANS_BASE_URL },
-    { id: "sd_tka_6", nama: "SD TKA 6 Bulan", harga: 1699000, link: MIDTRANS_BASE_URL },
-    { id: "sd_tka_12", nama: "SD TKA 12 Bulan", harga: 3299000, link: MIDTRANS_BASE_URL }
+    { id: "sd_fokus_1", nama: "SD Fokus 1 Bulan", harga: 95000, desc: "1 Mapel pilihan, tentor spesialis" },
+    { id: "sd_fokus_3", nama: "SD Fokus 3 Bulan", harga: 275000, desc: "1 Mapel selama 3 bulan (Lebih Hemat)" },
+    { id: "sd_fokus_6", nama: "SD Fokus 6 Bulan", harga: 540000, desc: "1 Mapel selama 6 bulan konsisten" },
+    { id: "sd_fokus_12", nama: "SD Fokus 12 Bulan", harga: 1050000, desc: "1 Mapel selama 1 tahun ajaran penuh" },
+    { id: "sd_duo_1", nama: "SD Duo 1 Bulan", harga: 175000, desc: "2 Mapel pilihan siswa kelas 3-6" },
+    { id: "sd_duo_3", nama: "SD Duo 3 Bulan", harga: 499000, desc: "2 Mapel selama 3 bulan lebih ekonomis" },
+    { id: "sd_duo_6", nama: "SD Duo 6 Bulan", harga: 975000, desc: "2 Mapel selama 6 bulan pendampingan" },
+    { id: "sd_duo_12", nama: "SD Duo 12 Bulan", harga: 1900000, desc: "2 Mapel selama 1 tahun ajaran penuh" },
+    { id: "sd_lengkap_1", nama: "SD Lengkap 1 Bulan", harga: 250000, desc: "Matematika, B.Indo, B.Inggris, IPAS" },
+    { id: "sd_lengkap_3", nama: "SD Lengkap 3 Bulan", harga: 699000, desc: "Reguler SD lengkap selama 3 bulan" },
+    { id: "sd_lengkap_6", nama: "SD Lengkap 6 Bulan", harga: 1399000, desc: "Reguler SD lengkap selama 6 bulan" },
+    { id: "sd_lengkap_12", nama: "SD Lengkap 12 Bulan", harga: 2799000, desc: "Reguler SD lengkap selama 1 tahun penuh" },
+    { id: "sd_tka_1", nama: "SD TKA 1 Bulan", harga: 300000, desc: "Persiapan intensif kelulusan kelas 6" },
+    { id: "sd_tka_3", nama: "SD TKA 3 Bulan", harga: 849000, desc: "Persiapan TKA kelas 6 selama 3 bulan" },
+    { id: "sd_tka_6", nama: "SD TKA 6 Bulan", harga: 1699000, desc: "Persiapan TKA kelas 6 selama 6 bulan" },
+    { id: "sd_tka_12", nama: "SD TKA 12 Bulan", harga: 3299000, desc: "Persiapan TKA kelas 6 selama 1 tahun penuh" }
   ],
   SMP: [
-    { id: "smp_starter_1", nama: "SMP Starter 1 Bulan", harga: 230000, link: MIDTRANS_BASE_URL },
-    { id: "smp_starter_3", nama: "SMP Starter 3 Bulan", harga: 649000, link: MIDTRANS_BASE_URL },
-    { id: "smp_starter_6", nama: "SMP Starter 6 Bulan", harga: 1299000, link: MIDTRANS_BASE_URL },
-    { id: "smp_starter_12", nama: "SMP Starter 12 Bulan", harga: 2559000, link: MIDTRANS_BASE_URL },
-    { id: "smp_lengkap_1", nama: "SMP Lengkap 1 Bulan", harga: 300000, link: MIDTRANS_BASE_URL },
-    { id: "smp_lengkap_3", nama: "SMP Lengkap 3 Bulan", harga: 849000, link: MIDTRANS_BASE_URL },
-    { id: "smp_lengkap_6", nama: "SMP Lengkap 6 Bulan", harga: 1699000, link: MIDTRANS_BASE_URL },
-    { id: "smp_lengkap_12", nama: "SMP Lengkap 12 Bulan", harga: 3299000, link: MIDTRANS_BASE_URL },
-    { id: "smp_tka_1", nama: "SMP TKA Intensif 1 Bulan", harga: 350000, link: MIDTRANS_BASE_URL },
-    { id: "smp_tka_3", nama: "SMP TKA Intensif 3 Bulan", harga: 999000, link: MIDTRANS_BASE_URL },
-    { id: "smp_tka_6", nama: "SMP TKA Intensif 6 Bulan", harga: 1950000, link: MIDTRANS_BASE_URL }
+    { id: "smp_starter_1", nama: "SMP Starter 1 Bulan", harga: 230000, desc: "2 Mapel pilihan untuk jenjang SMP" },
+    { id: "smp_starter_3", nama: "SMP Starter 3 Bulan", harga: 649000, desc: "2 Mapel SMP selama 3 bulan hemat" },
+    { id: "smp_starter_6", nama: "SMP Starter 6 Bulan", harga: 1299000, desc: "2 Mapel SMP selama 6 bulan konsisten" },
+    { id: "smp_starter_12", nama: "SMP Starter 12 Bulan", harga: 2559000, desc: "2 Mapel SMP selama 1 tahun ajaran" },
+    { id: "smp_lengkap_1", nama: "SMP Lengkap 1 Bulan", harga: 300000, desc: "Matematika, IPA, IPS, B.Indo, B.Inggris" },
+    { id: "smp_lengkap_3", nama: "SMP Lengkap 3 Bulan", harga: 849000, desc: "Reguler SMP lengkap selama 3 bulan" },
+    { id: "smp_lengkap_6", nama: "SMP Lengkap 6 Bulan", harga: 1699000, desc: "Reguler SMP lengkap selama 6 bulan" },
+    { id: "smp_lengkap_12", nama: "SMP Lengkap 12 Bulan", harga: 3299000, desc: "Reguler SMP lengkap selama 1 tahun penuh" },
+    { id: "smp_tka_1", nama: "SMP TKA Intensif 1 Bulan", harga: 350000, desc: "Persiapan intensif kelulusan kelas 9" },
+    { id: "smp_tka_3", nama: "SMP TKA Intensif 3 Bulan", harga: 999000, desc: "Persiapan TKA kelas 9 selama 3-bulan" },
+    { id: "smp_tka_6", nama: "SMP TKA Intensif 6 Bulan", harga: 1950000, desc: "Persiapan TKA kelas 9 selama 6-bulan" }
   ],
   SMA: [
-    { id: "sma_basic_1", nama: "SMA Basic 1 Bulan", harga: 349000, link: MIDTRANS_BASE_URL },
-    { id: "sma_intensif_1", nama: "SMA Intensif 1 Bulan", harga: 449000, link: MIDTRANS_BASE_URL },
-    { id: "sma_lengkap_1", nama: "SMA Lengkap 1 Bulan", harga: 499000, link: MIDTRANS_BASE_URL }
+    { id: "sma_basic_1", nama: "SMA Basic 1 Bulan", harga: 349000, desc: "2 Mapel pilihan pendampingan SMA" },
+    { id: "sma_intensif_1", nama: "SMA Intensif 1 Bulan", harga: 449000, desc: "4 Mapel pilihan pendampingan SMA" },
+    { id: "sma_lengkap_1", nama: "SMA Lengkap 1 Bulan", harga: 499000, desc: "Program Lengkap SMA Jurusan IPA/IPS" }
   ]
 };
 
 const PendaftaranOnline = () => {
   // ============================================================
-  // STATE FORM
+  // STATE
   // ============================================================
   const [form, setForm] = useState({
     namaLengkap: '',
@@ -65,16 +63,17 @@ const PendaftaranOnline = () => {
     paketBimbelId: '',
     paketBimbelNama: '',
     paketBimbelHarga: 0,
-    paketBimbelLink: ''
+    paketBimbelDesc: ''
   });
 
+  const [selectedPaketId, setSelectedPaketId] = useState('');
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
   const [registrationData, setRegistrationData] = useState(null);
 
   // ============================================================
-  // GET PAKET LIST BERDASARKAN JENJANG
+  // GET PAKET LIST
   // ============================================================
   const getPaketList = (jenjang) => {
     return LIST_PAKET_MASTER[jenjang] || [];
@@ -93,27 +92,27 @@ const PendaftaranOnline = () => {
         paketBimbelId: '',
         paketBimbelNama: '',
         paketBimbelHarga: 0,
-        paketBimbelLink: ''
+        paketBimbelDesc: ''
       });
-      return;
-    }
-
-    if (name === 'paketBimbelId') {
-      const paketList = getPaketList(form.kelasSekolah);
-      const selectedPaket = paketList.find(p => p.id === value);
-      if (selectedPaket) {
-        setForm({
-          ...form,
-          paketBimbelId: selectedPaket.id,
-          paketBimbelNama: selectedPaket.nama,
-          paketBimbelHarga: selectedPaket.harga,
-          paketBimbelLink: selectedPaket.link
-        });
-      }
+      setSelectedPaketId('');
       return;
     }
 
     setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  // ============================================================
+  // HANDLE PAKET SELECT
+  // ============================================================
+  const handlePaketSelect = (paket) => {
+    setSelectedPaketId(paket.id);
+    setForm({
+      ...form,
+      paketBimbelId: paket.id,
+      paketBimbelNama: paket.nama,
+      paketBimbelHarga: paket.harga,
+      paketBimbelDesc: paket.desc
+    });
   };
 
   // ============================================================
@@ -156,7 +155,7 @@ const PendaftaranOnline = () => {
         paketBimbelId: form.paketBimbelId,
         paketBimbelNama: form.paketBimbelNama,
         paketBimbelHarga: form.paketBimbelHarga,
-        paketBimbelLink: form.paketBimbelLink,
+        paketBimbelDesc: form.paketBimbelDesc,
         paymentStatus: 'pending',
         createdAt: serverTimestamp()
       });
@@ -176,18 +175,17 @@ const PendaftaranOnline = () => {
   };
 
   // ============================================================
-  // HANDLE PAYMENT
+  // HANDLE PAYMENT (Dynamic URL Injection)
   // ============================================================
   const handlePayment = () => {
-    if (registrationData?.paketBimbelLink) {
-      window.open(registrationData.paketBimbelLink, '_blank');
-    } else {
-      alert('Link pembayaran tidak tersedia. Hubungi admin.');
-    }
+    if (!registrationData) return;
+    
+    const dynamicLink = `${MIDTRANS_BASE_LINK}?amt=${registrationData.paketBimbelHarga}&name=${encodeURIComponent(registrationData.namaLengkap)}&phone=${registrationData.whatsappAktif}`;
+    window.open(dynamicLink, '_blank');
   };
 
   // ============================================================
-  // RENDER SUCCESS PAGE
+  // RENDER SUCCESS
   // ============================================================
   if (isSuccess) {
     return (
@@ -210,7 +208,7 @@ const PendaftaranOnline = () => {
 
           <div style={styles.dataSummary}>
             <div style={styles.summaryRow}>
-              <span style={styles.summaryLabel}>📋 ID Pendaftaran</span>
+              <span style={styles.summaryLabel}>📋 ID</span>
               <span style={styles.summaryValue}>{registrationData?.id?.slice(0, 12)}...</span>
             </div>
             <div style={styles.summaryRow}>
@@ -231,7 +229,7 @@ const PendaftaranOnline = () => {
             </div>
             <div style={styles.summaryRow}>
               <span style={styles.summaryLabel}>💰 Harga</span>
-              <span style={{...styles.summaryValue, color: '#1a237e', fontWeight: 700}}>
+              <span style={{...styles.summaryValue, color: '#fbbf24', fontWeight: 700}}>
                 Rp {registrationData?.paketBimbelHarga?.toLocaleString('id-ID')}
               </span>
             </div>
@@ -250,7 +248,6 @@ const PendaftaranOnline = () => {
 
           <p style={styles.paymentNote}>
             ⚠️ Setelah pembayaran selesai, akun siswa akan aktif dalam 1x24 jam.
-            Hubungi Admin jika ada kendala.
           </p>
 
           <button 
@@ -271,6 +268,19 @@ const PendaftaranOnline = () => {
 
   return (
     <div style={styles.container}>
+      {/* Background Bintang & Nebula */}
+      <div style={styles.background}>
+        <div style={styles.star1}></div>
+        <div style={styles.star2}></div>
+        <div style={styles.star3}></div>
+        <div style={styles.star4}></div>
+        <div style={styles.star5}></div>
+        <div style={styles.star6}></div>
+        <div style={styles.star7}></div>
+        <div style={styles.nebula1}></div>
+        <div style={styles.nebula2}></div>
+      </div>
+
       <div style={styles.glassCard}>
         <div style={styles.logoArea}>
           <img 
@@ -278,7 +288,7 @@ const PendaftaranOnline = () => {
             alt="Logo Bimbel Gemilang" 
             style={styles.logo}
           />
-          <h1 style={styles.title}>Pendaftaran Online</h1>
+          <h1 style={styles.title}>🚀 Pendaftaran Online</h1>
           <p style={styles.subtitle}>Bimbel Gemilang · Glagahagung</p>
         </div>
 
@@ -357,25 +367,49 @@ const PendaftaranOnline = () => {
             />
           </div>
 
-          <div style={styles.inputGroup}>
+          {/* ============================================================ */}
+          {/* PRICE FACECARD - KARTU PAKET INTERAKTIF */}
+          {/* ============================================================ */}
+          <div style={styles.paketSection}>
             <label style={styles.label}>📚 Pilih Paket Bimbel *</label>
-            <select
-              name="paketBimbelId"
-              value={form.paketBimbelId}
-              onChange={handleChange}
-              style={styles.select}
-              required
-            >
-              <option value="">-- Pilih Paket untuk {form.kelasSekolah} --</option>
-              {paketList.map((paket) => (
-                <option key={paket.id} value={paket.id}>
-                  {paket.nama} - Rp {paket.harga.toLocaleString('id-ID')}
-                </option>
-              ))}
-            </select>
-            {form.paketBimbelId && (
-              <small style={{...styles.hint, color: '#1a237e', fontWeight: 600}}>
-                ✅ Paket: {form.paketBimbelNama} (Rp {form.paketBimbelHarga.toLocaleString('id-ID')})
+            <p style={styles.paketHint}>Klik kartu untuk memilih paket</p>
+            
+            <div style={styles.paketGrid}>
+              {paketList.map((paket) => {
+                const isSelected = selectedPaketId === paket.id;
+                return (
+                  <div
+                    key={paket.id}
+                    onClick={() => handlePaketSelect(paket)}
+                    style={{
+                      ...styles.paketCard,
+                      border: isSelected 
+                        ? '2px solid #8b5cf6' 
+                        : '1px solid rgba(255,255,255,0.08)',
+                      boxShadow: isSelected 
+                        ? '0 0 30px rgba(139,92,246,0.3), inset 0 0 30px rgba(139,92,246,0.05)' 
+                        : 'none',
+                      background: isSelected 
+                        ? 'rgba(139,92,246,0.08)' 
+                        : 'rgba(255,255,255,0.03)',
+                      transform: isSelected ? 'scale(1.02)' : 'scale(1)'
+                    }}
+                  >
+                    <div style={styles.paketName}>{paket.nama}</div>
+                    <div style={styles.paketDesc}>{paket.desc}</div>
+                    <div style={styles.paketPrice}>
+                      Rp {paket.harga.toLocaleString('id-ID')}
+                    </div>
+                    {isSelected && (
+                      <div style={styles.paketSelectedBadge}>✅ Dipilih</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {selectedPaketId && (
+              <small style={{...styles.hint, color: '#8b5cf6', fontWeight: 600}}>
+                ✅ Paket terpilih: {form.paketBimbelNama} (Rp {form.paketBimbelHarga.toLocaleString('id-ID')})
               </small>
             )}
           </div>
@@ -397,12 +431,40 @@ const PendaftaranOnline = () => {
           <small>Dengan mendaftar, Anda menyetujui syarat & ketentuan Bimbel Gemilang.</small>
         </div>
       </div>
+
+      <style>{`
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.2); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.7; }
+        }
+        .glass-card {
+          animation: fadeUp 0.8s ease both;
+        }
+        ::-webkit-scrollbar {
+          width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+          background: rgba(255,255,255,0.02);
+        }
+        ::-webkit-scrollbar-thumb {
+          background: rgba(139,92,246,0.3);
+          border-radius: 10px;
+        }
+      `}</style>
     </div>
   );
 };
 
 // ============================================================
-// STYLES
+// STYLES - MODERN SPACE GALAXY
 // ============================================================
 const styles = {
   container: {
@@ -411,54 +473,167 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '20px',
-    background: 'linear-gradient(135deg, #f0f4f8 0%, #d4e4f7 40%, #e8f0fe 100%)',
+    background: 'linear-gradient(135deg, #05070f 0%, #0d1b2a 40%, #1a0a2e 80%, #02040a 100%)',
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    position: 'relative',
+    overflow: 'hidden'
   },
+
+  // Background Galaxy
+  background: {
+    position: 'fixed',
+    inset: 0,
+    pointerEvents: 'none',
+    zIndex: 0,
+    overflow: 'hidden'
+  },
+  star1: {
+    position: 'absolute',
+    width: '2px',
+    height: '2px',
+    background: 'white',
+    top: '10%',
+    left: '15%',
+    borderRadius: '50%',
+    animation: 'twinkle 3s ease-in-out infinite'
+  },
+  star2: {
+    position: 'absolute',
+    width: '3px',
+    height: '3px',
+    background: 'white',
+    top: '25%',
+    right: '20%',
+    borderRadius: '50%',
+    animation: 'twinkle 4s ease-in-out infinite 0.5s'
+  },
+  star3: {
+    position: 'absolute',
+    width: '2px',
+    height: '2px',
+    background: 'white',
+    bottom: '30%',
+    left: '10%',
+    borderRadius: '50%',
+    animation: 'twinkle 2.5s ease-in-out infinite 1s'
+  },
+  star4: {
+    position: 'absolute',
+    width: '4px',
+    height: '4px',
+    background: 'white',
+    top: '50%',
+    right: '8%',
+    borderRadius: '50%',
+    animation: 'twinkle 3.5s ease-in-out infinite 0.3s'
+  },
+  star5: {
+    position: 'absolute',
+    width: '2px',
+    height: '2px',
+    background: 'white',
+    bottom: '15%',
+    right: '30%',
+    borderRadius: '50%',
+    animation: 'twinkle 2.8s ease-in-out infinite 0.8s'
+  },
+  star6: {
+    position: 'absolute',
+    width: '3px',
+    height: '3px',
+    background: 'white',
+    top: '70%',
+    left: '5%',
+    borderRadius: '50%',
+    animation: 'twinkle 3.2s ease-in-out infinite 1.2s'
+  },
+  star7: {
+    position: 'absolute',
+    width: '2px',
+    height: '2px',
+    background: 'white',
+    top: '40%',
+    left: '45%',
+    borderRadius: '50%',
+    animation: 'twinkle 2.2s ease-in-out infinite 0.6s'
+  },
+  nebula1: {
+    position: 'absolute',
+    width: '400px',
+    height: '400px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(139,92,246,0.06), transparent 70%)',
+    top: '-10%',
+    right: '-10%',
+    animation: 'pulse 8s ease-in-out infinite'
+  },
+  nebula2: {
+    position: 'absolute',
+    width: '500px',
+    height: '500px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(243,156,18,0.04), transparent 70%)',
+    bottom: '-20%',
+    left: '-15%',
+    animation: 'pulse 10s ease-in-out infinite reverse'
+  },
+
+  // Glass Card
   glassCard: {
+    position: 'relative',
+    zIndex: 1,
     width: '100%',
-    maxWidth: '520px',
+    maxWidth: '560px',
     padding: '32px 28px 24px',
     borderRadius: '24px',
-    background: 'rgba(255, 255, 255, 0.85)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.08)',
-    boxSizing: 'border-box'
+    background: 'rgba(255, 255, 255, 0.04)',
+    backdropFilter: 'blur(24px)',
+    WebkitBackdropFilter: 'blur(24px)',
+    border: '1px solid rgba(255, 255, 255, 0.06)',
+    boxShadow: '0 30px 80px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
+    boxSizing: 'border-box',
+    maxHeight: '96vh',
+    overflowY: 'auto'
   },
+
   logoArea: {
     textAlign: 'center',
-    marginBottom: '20px'
+    marginBottom: '16px'
   },
   logo: {
     width: '64px',
     height: '64px',
     borderRadius: '50%',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-    border: '2px solid rgba(26,35,126,0.1)'
+    boxShadow: '0 0 40px rgba(139,92,246,0.15)',
+    border: '2px solid rgba(139,92,246,0.2)',
+    objectFit: 'cover'
   },
   title: {
     fontSize: '24px',
     fontWeight: 800,
-    color: '#1a1a2e',
+    color: '#ffffff',
     margin: '12px 0 4px',
-    letterSpacing: '-0.5px'
+    letterSpacing: '-0.5px',
+    textShadow: '0 0 30px rgba(139,92,246,0.1)'
   },
   subtitle: {
     fontSize: '13px',
-    color: '#64748b',
+    color: 'rgba(255,255,255,0.3)',
     margin: 0
   },
+
   errorBox: {
     padding: '12px 16px',
     borderRadius: '10px',
-    background: '#fee2e2',
-    color: '#dc2626',
+    background: 'rgba(239,68,68,0.1)',
+    border: '1px solid rgba(239,68,68,0.2)',
+    color: '#f87171',
     fontSize: '13px',
     fontWeight: 600,
     marginBottom: '16px'
   },
+
   form: {
     display: 'flex',
     flexDirection: 'column',
@@ -472,80 +647,150 @@ const styles = {
   label: {
     fontSize: '12px',
     fontWeight: 600,
-    color: '#334155',
-    letterSpacing: '0.3px'
+    color: 'rgba(255,255,255,0.6)',
+    letterSpacing: '0.3px',
+    textTransform: 'uppercase'
   },
   input: {
     padding: '12px 14px',
     borderRadius: '10px',
-    border: '1px solid #e2e8f0',
+    border: '1px solid rgba(255,255,255,0.06)',
     fontSize: '14px',
     outline: 'none',
-    transition: 'all 0.2s ease',
-    background: 'white',
-    color: '#1a1a2e',
+    transition: 'all 0.3s ease',
+    background: 'rgba(255,255,255,0.03)',
+    color: '#ffffff',
     ':focus': {
-      borderColor: '#1a237e',
-      boxShadow: '0 0 0 3px rgba(26,35,126,0.08)'
+      borderColor: 'rgba(139,92,246,0.4)',
+      boxShadow: '0 0 20px rgba(139,92,246,0.05)',
+      background: 'rgba(255,255,255,0.05)'
+    },
+    '::placeholder': {
+      color: 'rgba(255,255,255,0.2)'
     }
   },
   select: {
     padding: '12px 14px',
     borderRadius: '10px',
-    border: '1px solid #e2e8f0',
+    border: '1px solid rgba(255,255,255,0.06)',
     fontSize: '14px',
     outline: 'none',
-    background: 'white',
-    color: '#1a1a2e',
+    background: 'rgba(255,255,255,0.03)',
+    color: '#ffffff',
     cursor: 'pointer',
     ':focus': {
-      borderColor: '#1a237e',
-      boxShadow: '0 0 0 3px rgba(26,35,126,0.08)'
+      borderColor: 'rgba(139,92,246,0.4)',
+      boxShadow: '0 0 20px rgba(139,92,246,0.05)'
     }
   },
   textarea: {
     padding: '12px 14px',
     borderRadius: '10px',
-    border: '1px solid #e2e8f0',
+    border: '1px solid rgba(255,255,255,0.06)',
     fontSize: '14px',
     outline: 'none',
     resize: 'vertical',
     minHeight: '70px',
     fontFamily: 'inherit',
-    background: 'white',
-    color: '#1a1a2e',
+    background: 'rgba(255,255,255,0.03)',
+    color: '#ffffff',
     ':focus': {
-      borderColor: '#1a237e',
-      boxShadow: '0 0 0 3px rgba(26,35,126,0.08)'
+      borderColor: 'rgba(139,92,246,0.4)',
+      boxShadow: '0 0 20px rgba(139,92,246,0.05)'
+    },
+    '::placeholder': {
+      color: 'rgba(255,255,255,0.2)'
     }
   },
   hint: {
     fontSize: '10px',
-    color: '#94a3b8',
+    color: 'rgba(255,255,255,0.25)',
     marginTop: '2px'
   },
+
+  // Price Facecard Section
+  paketSection: {
+    marginTop: '4px'
+  },
+  paketHint: {
+    fontSize: '11px',
+    color: 'rgba(255,255,255,0.25)',
+    margin: '0 0 10px 0'
+  },
+  paketGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '10px',
+    maxHeight: '320px',
+    overflowY: 'auto',
+    paddingRight: '4px'
+  },
+  paketCard: {
+    padding: '14px 12px',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    border: '1px solid rgba(255,255,255,0.06)',
+    background: 'rgba(255,255,255,0.02)',
+    ':hover': {
+      transform: 'translateY(-2px)',
+      borderColor: 'rgba(139,92,246,0.2)',
+      background: 'rgba(255,255,255,0.05)'
+    }
+  },
+  paketName: {
+    fontSize: '12px',
+    fontWeight: 700,
+    color: '#ffffff',
+    marginBottom: '4px'
+  },
+  paketDesc: {
+    fontSize: '10px',
+    color: 'rgba(255,255,255,0.4)',
+    lineHeight: 1.4,
+    marginBottom: '6px',
+    minHeight: '28px'
+  },
+  paketPrice: {
+    fontSize: '14px',
+    fontWeight: 800,
+    color: '#fbbf24',
+    textShadow: '0 0 20px rgba(251,191,36,0.1)'
+  },
+  paketSelectedBadge: {
+    fontSize: '9px',
+    fontWeight: 700,
+    color: '#8b5cf6',
+    marginTop: '4px',
+    display: 'inline-block',
+    padding: '2px 8px',
+    borderRadius: '4px',
+    background: 'rgba(139,92,246,0.15)'
+  },
+
   submitBtn: {
     padding: '14px',
     borderRadius: '12px',
     border: 'none',
-    background: 'linear-gradient(135deg, #1a237e, #283593)',
+    background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
     color: 'white',
     fontWeight: 700,
     fontSize: '15px',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
-    boxShadow: '0 8px 30px rgba(26,35,126,0.2)',
+    boxShadow: '0 8px 30px rgba(139,92,246,0.2)',
     marginTop: '4px',
     ':hover': {
       transform: 'translateY(-2px)',
-      boxShadow: '0 12px 40px rgba(26,35,126,0.3)'
+      boxShadow: '0 12px 40px rgba(139,92,246,0.3)'
     }
   },
+
   footer: {
     textAlign: 'center',
     marginTop: '18px',
-    color: '#94a3b8',
-    fontSize: '11px'
+    color: 'rgba(255,255,255,0.12)',
+    fontSize: '10px'
   },
 
   // SUCCESS STYLES
@@ -557,40 +802,40 @@ const styles = {
   successTitle: {
     fontSize: '22px',
     fontWeight: 800,
-    color: '#1a1a2e',
+    color: '#ffffff',
     textAlign: 'center',
     margin: '0 0 8px'
   },
   successMessage: {
     fontSize: '14px',
-    color: '#475569',
+    color: 'rgba(255,255,255,0.6)',
     textAlign: 'center',
     lineHeight: 1.6,
     margin: '0 0 20px'
   },
   dataSummary: {
-    background: '#f8fafc',
+    background: 'rgba(255,255,255,0.03)',
     borderRadius: '12px',
     padding: '16px',
     marginBottom: '20px',
-    border: '1px solid #e2e8f0'
+    border: '1px solid rgba(255,255,255,0.04)'
   },
   summaryRow: {
     display: 'flex',
     justifyContent: 'space-between',
     padding: '6px 0',
-    borderBottom: '1px solid #f1f5f9',
+    borderBottom: '1px solid rgba(255,255,255,0.04)',
     fontSize: '13px',
     ':last-child': {
       borderBottom: 'none'
     }
   },
   summaryLabel: {
-    color: '#94a3b8',
+    color: 'rgba(255,255,255,0.3)',
     fontWeight: 500
   },
   summaryValue: {
-    color: '#1a1a2e',
+    color: 'rgba(255,255,255,0.8)',
     fontWeight: 600,
     textAlign: 'right'
   },
@@ -616,7 +861,7 @@ const styles = {
   },
   paymentNote: {
     fontSize: '11px',
-    color: '#94a3b8',
+    color: 'rgba(255,255,255,0.2)',
     textAlign: 'center',
     margin: '12px 0 0'
   },
@@ -625,16 +870,16 @@ const styles = {
     width: '100%',
     padding: '12px',
     borderRadius: '10px',
-    border: '1px solid #e2e8f0',
-    background: 'white',
-    color: '#64748b',
+    border: '1px solid rgba(255,255,255,0.06)',
+    background: 'rgba(255,255,255,0.02)',
+    color: 'rgba(255,255,255,0.3)',
     fontWeight: 600,
     fontSize: '13px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     marginTop: '12px',
     ':hover': {
-      background: '#f8fafc'
+      background: 'rgba(255,255,255,0.04)'
     }
   }
 };
