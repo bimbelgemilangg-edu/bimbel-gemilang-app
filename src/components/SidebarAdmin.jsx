@@ -1,9 +1,10 @@
+// src/components/SidebarAdmin.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Menu, X, LayoutDashboard, Users, GraduationCap, Calendar,
   CreditCard, FileText, Settings, LogOut, Bell, BookOpen,
-  ClipboardList, Globe, TrendingUp
+  ClipboardList, Globe, TrendingUp, UserPlus
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
@@ -15,6 +16,7 @@ const SidebarAdmin = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [badgePiutang, setBadgePiutang] = useState(0);
   const [badgeSiswaBaru, setBadgeSiswaBaru] = useState(0);
+  const [badgePendaftaran, setBadgePendaftaran] = useState(0);
 
   useEffect(() => {
     const handleResize = () => {
@@ -30,6 +32,7 @@ const SidebarAdmin = () => {
   useEffect(() => {
     const fetchBadges = async () => {
       try {
+        // Siswa piutang & baru
         const snap = await getDocs(collection(db, "students"));
         let piutang = 0, baru = 0;
         const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -45,6 +48,16 @@ const SidebarAdmin = () => {
         
         setBadgePiutang(piutang);
         setBadgeSiswaBaru(baru);
+
+        // 🔥 Pendaftaran Online pending
+        const pendaftaranSnap = await getDocs(collection(db, "online_registrations"));
+        let pending = 0;
+        pendaftaranSnap.forEach(doc => {
+          const data = doc.data();
+          if (data.paymentStatus === 'pending') pending++;
+        });
+        setBadgePendaftaran(pending);
+
       } catch (e) { /* silent */ }
     };
     fetchBadges();
@@ -99,6 +112,18 @@ const SidebarAdmin = () => {
       items: [
         { name: 'Blog & Galeri', path: '/admin/blog', icon: <BookOpen size={18} /> },
         { name: 'Pengaturan', path: '/admin/settings', icon: <Settings size={18} /> },
+      ]
+    },
+    {
+      label: '📋 PENDAFTARAN',
+      items: [
+        { 
+          name: 'Pendaftaran Online', 
+          path: '/admin/portal-siswa/online-registration', 
+          icon: <UserPlus size={18} />,
+          badge: badgePendaftaran > 0 ? badgePendaftaran : null,
+          badgeColor: '#f59e0b'
+        },
       ]
     }
   ];
