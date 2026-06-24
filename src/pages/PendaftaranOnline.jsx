@@ -4,44 +4,51 @@ import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 // ============================================================
-// DATA MASTER PAKET BIMBEL BERDASARKAN JENJANG
+// 🔥 GANTI LINK MIDTRANS DI SINI (CUKUP 1 KALI)
+// ============================================================
+const MIDTRANS_BASE_URL = "https://midtrans.com"; 
+// ⬆️ Ganti dengan link Sandbox Midtrans Anda:
+// Contoh: https://app.midtrans.com/payment-link/xxx-xxx-xxx
+
+// ============================================================
+// DATA MASTER PAKET BIMBEL
 // ============================================================
 const LIST_PAKET_MASTER = {
   SD: [
-    { id: "sd_fokus_1", nama: "SD Fokus 1 Bulan", harga: 95000, link: "https://midtrans.com" },
-    { id: "sd_fokus_3", nama: "SD Fokus 3 Bulan", harga: 275000, link: "https://midtrans.com" },
-    { id: "sd_fokus_6", nama: "SD Fokus 6 Bulan", harga: 540000, link: "https://midtrans.com" },
-    { id: "sd_fokus_12", nama: "SD Fokus 12 Bulan", harga: 1050000, link: "https://midtrans.com2" },
-    { id: "sd_duo_1", nama: "SD Duo 1 Bulan", harga: 175000, link: "https://midtrans.com" },
-    { id: "sd_duo_3", nama: "SD Duo 3 Bulan", harga: 499000, link: "https://midtrans.com" },
-    { id: "sd_duo_6", nama: "SD Duo 6 Bulan", harga: 975000, link: "https://midtrans.com" },
-    { id: "sd_duo_12", nama: "SD Duo 12 Bulan", harga: 1900000, link: "https://midtrans.com2" },
-    { id: "sd_lengkap_1", nama: "SD Lengkap 1 Bulan", harga: 250000, link: "https://midtrans.com" },
-    { id: "sd_lengkap_3", nama: "SD Lengkap 3 Bulan", harga: 699000, link: "https://midtrans.com" },
-    { id: "sd_lengkap_6", nama: "SD Lengkap 6 Bulan", harga: 1399000, link: "https://midtrans.com" },
-    { id: "sd_lengkap_12", nama: "SD Lengkap 12 Bulan", harga: 2799000, link: "https://midtrans.com2" },
-    { id: "sd_tka_1", nama: "SD TKA 1 Bulan", harga: 300000, link: "https://midtrans.com" },
-    { id: "sd_tka_3", nama: "SD TKA 3 Bulan", harga: 849000, link: "https://midtrans.com" },
-    { id: "sd_tka_6", nama: "SD TKA 6 Bulan", harga: 1699000, link: "https://midtrans.com" },
-    { id: "sd_tka_12", nama: "SD TKA 12 Bulan", harga: 3299000, link: "https://midtrans.com2" }
+    { id: "sd_fokus_1", nama: "SD Fokus 1 Bulan", harga: 95000, link: MIDTRANS_BASE_URL },
+    { id: "sd_fokus_3", nama: "SD Fokus 3 Bulan", harga: 275000, link: MIDTRANS_BASE_URL },
+    { id: "sd_fokus_6", nama: "SD Fokus 6 Bulan", harga: 540000, link: MIDTRANS_BASE_URL },
+    { id: "sd_fokus_12", nama: "SD Fokus 12 Bulan", harga: 1050000, link: MIDTRANS_BASE_URL },
+    { id: "sd_duo_1", nama: "SD Duo 1 Bulan", harga: 175000, link: MIDTRANS_BASE_URL },
+    { id: "sd_duo_3", nama: "SD Duo 3 Bulan", harga: 499000, link: MIDTRANS_BASE_URL },
+    { id: "sd_duo_6", nama: "SD Duo 6 Bulan", harga: 975000, link: MIDTRANS_BASE_URL },
+    { id: "sd_duo_12", nama: "SD Duo 12 Bulan", harga: 1900000, link: MIDTRANS_BASE_URL },
+    { id: "sd_lengkap_1", nama: "SD Lengkap 1 Bulan", harga: 250000, link: MIDTRANS_BASE_URL },
+    { id: "sd_lengkap_3", nama: "SD Lengkap 3 Bulan", harga: 699000, link: MIDTRANS_BASE_URL },
+    { id: "sd_lengkap_6", nama: "SD Lengkap 6 Bulan", harga: 1399000, link: MIDTRANS_BASE_URL },
+    { id: "sd_lengkap_12", nama: "SD Lengkap 12 Bulan", harga: 2799000, link: MIDTRANS_BASE_URL },
+    { id: "sd_tka_1", nama: "SD TKA 1 Bulan", harga: 300000, link: MIDTRANS_BASE_URL },
+    { id: "sd_tka_3", nama: "SD TKA 3 Bulan", harga: 849000, link: MIDTRANS_BASE_URL },
+    { id: "sd_tka_6", nama: "SD TKA 6 Bulan", harga: 1699000, link: MIDTRANS_BASE_URL },
+    { id: "sd_tka_12", nama: "SD TKA 12 Bulan", harga: 3299000, link: MIDTRANS_BASE_URL }
   ],
   SMP: [
-    { id: "smp_starter_1", nama: "SMP Starter 1 Bulan", harga: 230000, link: "https://midtrans.com" },
-    { id: "smp_starter_3", nama: "SMP Starter 3 Bulan", harga: 649000, link: "https://midtrans.com" },
-    { id: "smp_starter_6", nama: "SMP Starter 6 Bulan", harga: 1299000, link: "https://midtrans.com" },
-    { id: "smp_starter_12", nama: "SMP Starter 12 Bulan", harga: 2559000, link: "https://midtrans.com2" },
-    { id: "smp_lengkap_1", nama: "SMP Lengkap 1 Bulan", harga: 300000, link: "https://midtrans.com" },
-    { id: "smp_lengkap_3", nama: "SMP Lengkap 3 Bulan", harga: 849000, link: "https://midtrans.com" },
-    { id: "smp_lengkap_6", nama: "SMP Lengkap 6 Bulan", harga: 1699000, link: "https://midtrans.com" },
-    { id: "smp_lengkap_12", nama: "SMP Lengkap 12 Bulan", harga: 3299000, link: "https://midtrans.com2" },
-    { id: "smp_tka_1", nama: "SMP TKA Intensif 1 Bulan", harga: 350000, link: "https://midtrans.com" },
-    { id: "smp_tka_3", nama: "SMP TKA Intensif 3 Bulan", harga: 999000, link: "https://midtrans.com" },
-    { id: "smp_tka_6", nama: "SMP TKA Intensif 6 Bulan", harga: 1950000, link: "https://midtrans.com" }
+    { id: "smp_starter_1", nama: "SMP Starter 1 Bulan", harga: 230000, link: MIDTRANS_BASE_URL },
+    { id: "smp_starter_3", nama: "SMP Starter 3 Bulan", harga: 649000, link: MIDTRANS_BASE_URL },
+    { id: "smp_starter_6", nama: "SMP Starter 6 Bulan", harga: 1299000, link: MIDTRANS_BASE_URL },
+    { id: "smp_starter_12", nama: "SMP Starter 12 Bulan", harga: 2559000, link: MIDTRANS_BASE_URL },
+    { id: "smp_lengkap_1", nama: "SMP Lengkap 1 Bulan", harga: 300000, link: MIDTRANS_BASE_URL },
+    { id: "smp_lengkap_3", nama: "SMP Lengkap 3 Bulan", harga: 849000, link: MIDTRANS_BASE_URL },
+    { id: "smp_lengkap_6", nama: "SMP Lengkap 6 Bulan", harga: 1699000, link: MIDTRANS_BASE_URL },
+    { id: "smp_lengkap_12", nama: "SMP Lengkap 12 Bulan", harga: 3299000, link: MIDTRANS_BASE_URL },
+    { id: "smp_tka_1", nama: "SMP TKA Intensif 1 Bulan", harga: 350000, link: MIDTRANS_BASE_URL },
+    { id: "smp_tka_3", nama: "SMP TKA Intensif 3 Bulan", harga: 999000, link: MIDTRANS_BASE_URL },
+    { id: "smp_tka_6", nama: "SMP TKA Intensif 6 Bulan", harga: 1950000, link: MIDTRANS_BASE_URL }
   ],
   SMA: [
-    { id: "sma_basic_1", nama: "SMA Basic 1 Bulan", harga: 349000, link: "https://midtrans.com" },
-    { id: "sma_intensif_1", nama: "SMA Intensif 1 Bulan", harga: 449000, link: "https://midtrans.com" },
-    { id: "sma_lengkap_1", nama: "SMA Lengkap 1 Bulan", harga: 499000, link: "https://midtrans.com" }
+    { id: "sma_basic_1", nama: "SMA Basic 1 Bulan", harga: 349000, link: MIDTRANS_BASE_URL },
+    { id: "sma_intensif_1", nama: "SMA Intensif 1 Bulan", harga: 449000, link: MIDTRANS_BASE_URL },
+    { id: "sma_lengkap_1", nama: "SMA Lengkap 1 Bulan", harga: 499000, link: MIDTRANS_BASE_URL }
   ]
 };
 
@@ -55,7 +62,7 @@ const PendaftaranOnline = () => {
     kelasSekolah: 'SD',
     namaOrangTua: '',
     alamatRumah: '',
-    paketBimbelId: '', // ID paket yang dipilih
+    paketBimbelId: '',
     paketBimbelNama: '',
     paketBimbelHarga: 0,
     paketBimbelLink: ''
@@ -79,7 +86,6 @@ const PendaftaranOnline = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    // Jika yang berubah adalah kelasSekolah, reset paket yang dipilih
     if (name === 'kelasSekolah') {
       setForm({
         ...form,
@@ -92,7 +98,6 @@ const PendaftaranOnline = () => {
       return;
     }
 
-    // Jika yang berubah adalah paketBimbelId (select paket)
     if (name === 'paketBimbelId') {
       const paketList = getPaketList(form.kelasSekolah);
       const selectedPaket = paketList.find(p => p.id === value);
@@ -108,7 +113,6 @@ const PendaftaranOnline = () => {
       return;
     }
 
-    // Input biasa
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
@@ -189,7 +193,6 @@ const PendaftaranOnline = () => {
     return (
       <div style={styles.container}>
         <div style={styles.glassCard}>
-          {/* Logo */}
           <div style={styles.logoArea}>
             <img 
               src="/pwa-192x192.png" 
@@ -269,7 +272,6 @@ const PendaftaranOnline = () => {
   return (
     <div style={styles.container}>
       <div style={styles.glassCard}>
-        {/* Logo */}
         <div style={styles.logoArea}>
           <img 
             src="/pwa-192x192.png" 
@@ -280,14 +282,12 @@ const PendaftaranOnline = () => {
           <p style={styles.subtitle}>Bimbel Gemilang · Glagahagung</p>
         </div>
 
-        {/* Error */}
         {error && (
           <div style={styles.errorBox}>
             ⚠️ {error}
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.inputGroup}>
             <label style={styles.label}>👤 Nama Lengkap Siswa *</label>
