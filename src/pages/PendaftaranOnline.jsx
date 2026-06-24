@@ -2,12 +2,48 @@
 import React, { useState } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import LogoGemilang from '../components/LogoGemilang';
 
 // ============================================================
-// VARIABLE MIDTRANS PAYMENT LINK (GANTI NANTI)
+// DATA MASTER PAKET BIMBEL BERDASARKAN JENJANG
 // ============================================================
-const MIDTRANS_PAYMENT_LINK = "https://midtrans.com";
+const LIST_PAKET_MASTER = {
+  SD: [
+    { id: "sd_fokus_1", nama: "SD Fokus 1 Bulan", harga: 95000, link: "https://midtrans.com" },
+    { id: "sd_fokus_3", nama: "SD Fokus 3 Bulan", harga: 275000, link: "https://midtrans.com" },
+    { id: "sd_fokus_6", nama: "SD Fokus 6 Bulan", harga: 540000, link: "https://midtrans.com" },
+    { id: "sd_fokus_12", nama: "SD Fokus 12 Bulan", harga: 1050000, link: "https://midtrans.com2" },
+    { id: "sd_duo_1", nama: "SD Duo 1 Bulan", harga: 175000, link: "https://midtrans.com" },
+    { id: "sd_duo_3", nama: "SD Duo 3 Bulan", harga: 499000, link: "https://midtrans.com" },
+    { id: "sd_duo_6", nama: "SD Duo 6 Bulan", harga: 975000, link: "https://midtrans.com" },
+    { id: "sd_duo_12", nama: "SD Duo 12 Bulan", harga: 1900000, link: "https://midtrans.com2" },
+    { id: "sd_lengkap_1", nama: "SD Lengkap 1 Bulan", harga: 250000, link: "https://midtrans.com" },
+    { id: "sd_lengkap_3", nama: "SD Lengkap 3 Bulan", harga: 699000, link: "https://midtrans.com" },
+    { id: "sd_lengkap_6", nama: "SD Lengkap 6 Bulan", harga: 1399000, link: "https://midtrans.com" },
+    { id: "sd_lengkap_12", nama: "SD Lengkap 12 Bulan", harga: 2799000, link: "https://midtrans.com2" },
+    { id: "sd_tka_1", nama: "SD TKA 1 Bulan", harga: 300000, link: "https://midtrans.com" },
+    { id: "sd_tka_3", nama: "SD TKA 3 Bulan", harga: 849000, link: "https://midtrans.com" },
+    { id: "sd_tka_6", nama: "SD TKA 6 Bulan", harga: 1699000, link: "https://midtrans.com" },
+    { id: "sd_tka_12", nama: "SD TKA 12 Bulan", harga: 3299000, link: "https://midtrans.com2" }
+  ],
+  SMP: [
+    { id: "smp_starter_1", nama: "SMP Starter 1 Bulan", harga: 230000, link: "https://midtrans.com" },
+    { id: "smp_starter_3", nama: "SMP Starter 3 Bulan", harga: 649000, link: "https://midtrans.com" },
+    { id: "smp_starter_6", nama: "SMP Starter 6 Bulan", harga: 1299000, link: "https://midtrans.com" },
+    { id: "smp_starter_12", nama: "SMP Starter 12 Bulan", harga: 2559000, link: "https://midtrans.com2" },
+    { id: "smp_lengkap_1", nama: "SMP Lengkap 1 Bulan", harga: 300000, link: "https://midtrans.com" },
+    { id: "smp_lengkap_3", nama: "SMP Lengkap 3 Bulan", harga: 849000, link: "https://midtrans.com" },
+    { id: "smp_lengkap_6", nama: "SMP Lengkap 6 Bulan", harga: 1699000, link: "https://midtrans.com" },
+    { id: "smp_lengkap_12", nama: "SMP Lengkap 12 Bulan", harga: 3299000, link: "https://midtrans.com2" },
+    { id: "smp_tka_1", nama: "SMP TKA Intensif 1 Bulan", harga: 350000, link: "https://midtrans.com" },
+    { id: "smp_tka_3", nama: "SMP TKA Intensif 3 Bulan", harga: 999000, link: "https://midtrans.com" },
+    { id: "smp_tka_6", nama: "SMP TKA Intensif 6 Bulan", harga: 1950000, link: "https://midtrans.com" }
+  ],
+  SMA: [
+    { id: "sma_basic_1", nama: "SMA Basic 1 Bulan", harga: 349000, link: "https://midtrans.com" },
+    { id: "sma_intensif_1", nama: "SMA Intensif 1 Bulan", harga: 449000, link: "https://midtrans.com" },
+    { id: "sma_lengkap_1", nama: "SMA Lengkap 1 Bulan", harga: 499000, link: "https://midtrans.com" }
+  ]
+};
 
 const PendaftaranOnline = () => {
   // ============================================================
@@ -19,7 +55,10 @@ const PendaftaranOnline = () => {
     kelasSekolah: 'SD',
     namaOrangTua: '',
     alamatRumah: '',
-    paketBimbel: 'Paket Reguler - Rp 150.000'
+    paketBimbelId: '', // ID paket yang dipilih
+    paketBimbelNama: '',
+    paketBimbelHarga: 0,
+    paketBimbelLink: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -28,10 +67,48 @@ const PendaftaranOnline = () => {
   const [registrationData, setRegistrationData] = useState(null);
 
   // ============================================================
+  // GET PAKET LIST BERDASARKAN JENJANG
+  // ============================================================
+  const getPaketList = (jenjang) => {
+    return LIST_PAKET_MASTER[jenjang] || [];
+  };
+
+  // ============================================================
   // HANDLE INPUT CHANGE
   // ============================================================
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Jika yang berubah adalah kelasSekolah, reset paket yang dipilih
+    if (name === 'kelasSekolah') {
+      setForm({
+        ...form,
+        kelasSekolah: value,
+        paketBimbelId: '',
+        paketBimbelNama: '',
+        paketBimbelHarga: 0,
+        paketBimbelLink: ''
+      });
+      return;
+    }
+
+    // Jika yang berubah adalah paketBimbelId (select paket)
+    if (name === 'paketBimbelId') {
+      const paketList = getPaketList(form.kelasSekolah);
+      const selectedPaket = paketList.find(p => p.id === value);
+      if (selectedPaket) {
+        setForm({
+          ...form,
+          paketBimbelId: selectedPaket.id,
+          paketBimbelNama: selectedPaket.nama,
+          paketBimbelHarga: selectedPaket.harga,
+          paketBimbelLink: selectedPaket.link
+        });
+      }
+      return;
+    }
+
+    // Input biasa
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
@@ -45,6 +122,7 @@ const PendaftaranOnline = () => {
     if (form.whatsappAktif.trim().length < 10) return 'Nomor WhatsApp minimal 10 digit!';
     if (!form.namaOrangTua.trim()) return 'Nama orang tua wajib diisi!';
     if (!form.alamatRumah.trim()) return 'Alamat rumah wajib diisi!';
+    if (!form.paketBimbelId) return 'Silakan pilih paket bimbel!';
     return null;
   };
 
@@ -66,7 +144,15 @@ const PendaftaranOnline = () => {
 
     try {
       const docRef = await addDoc(collection(db, "online_registrations"), {
-        ...form,
+        namaLengkap: form.namaLengkap,
+        whatsappAktif: form.whatsappAktif,
+        kelasSekolah: form.kelasSekolah,
+        namaOrangTua: form.namaOrangTua,
+        alamatRumah: form.alamatRumah,
+        paketBimbelId: form.paketBimbelId,
+        paketBimbelNama: form.paketBimbelNama,
+        paketBimbelHarga: form.paketBimbelHarga,
+        paketBimbelLink: form.paketBimbelLink,
         paymentStatus: 'pending',
         createdAt: serverTimestamp()
       });
@@ -82,6 +168,17 @@ const PendaftaranOnline = () => {
       console.error('Error:', err);
       setError('Gagal menyimpan data. Silakan coba lagi.');
       setLoading(false);
+    }
+  };
+
+  // ============================================================
+  // HANDLE PAYMENT
+  // ============================================================
+  const handlePayment = () => {
+    if (registrationData?.paketBimbelLink) {
+      window.open(registrationData.paketBimbelLink, '_blank');
+    } else {
+      alert('Link pembayaran tidak tersedia. Hubungi admin.');
     }
   };
 
@@ -122,23 +219,31 @@ const PendaftaranOnline = () => {
               <span style={styles.summaryValue}>{registrationData?.whatsappAktif}</span>
             </div>
             <div style={styles.summaryRow}>
-              <span style={styles.summaryLabel}>📚 Paket</span>
-              <span style={styles.summaryValue}>{registrationData?.paketBimbel}</span>
+              <span style={styles.summaryLabel}>🏫 Kelas</span>
+              <span style={styles.summaryValue}>{registrationData?.kelasSekolah}</span>
             </div>
             <div style={styles.summaryRow}>
-              <span style={styles.summaryLabel}>💰 Status</span>
+              <span style={styles.summaryLabel}>📚 Paket</span>
+              <span style={styles.summaryValue}>{registrationData?.paketBimbelNama}</span>
+            </div>
+            <div style={styles.summaryRow}>
+              <span style={styles.summaryLabel}>💰 Harga</span>
+              <span style={{...styles.summaryValue, color: '#1a237e', fontWeight: 700}}>
+                Rp {registrationData?.paketBimbelHarga?.toLocaleString('id-ID')}
+              </span>
+            </div>
+            <div style={styles.summaryRow}>
+              <span style={styles.summaryLabel}>💳 Status</span>
               <span style={{...styles.summaryValue, color: '#f59e0b', fontWeight: 700}}>Menunggu Pembayaran</span>
             </div>
           </div>
 
-          <a 
-            href={MIDTRANS_PAYMENT_LINK} 
-            target="_blank" 
-            rel="noopener noreferrer"
+          <button 
+            onClick={handlePayment}
             style={styles.paymentBtn}
           >
             💳 Buka Pembayaran Virtual Account (Midtrans)
-          </a>
+          </button>
 
           <p style={styles.paymentNote}>
             ⚠️ Setelah pembayaran selesai, akun siswa akan aktif dalam 1x24 jam.
@@ -159,6 +264,8 @@ const PendaftaranOnline = () => {
   // ============================================================
   // RENDER FORM
   // ============================================================
+  const paketList = getPaketList(form.kelasSekolah);
+
   return (
     <div style={styles.container}>
       <div style={styles.glassCard}>
@@ -251,17 +358,26 @@ const PendaftaranOnline = () => {
           </div>
 
           <div style={styles.inputGroup}>
-            <label style={styles.label}>📚 Paket Bimbel *</label>
+            <label style={styles.label}>📚 Pilih Paket Bimbel *</label>
             <select
-              name="paketBimbel"
-              value={form.paketBimbel}
+              name="paketBimbelId"
+              value={form.paketBimbelId}
               onChange={handleChange}
               style={styles.select}
               required
             >
-              <option value="Paket Reguler - Rp 150.000">Paket Reguler - Rp 150.000</option>
-              <option value="Paket Intensif - Rp 300.000">Paket Intensif - Rp 300.000</option>
+              <option value="">-- Pilih Paket untuk {form.kelasSekolah} --</option>
+              {paketList.map((paket) => (
+                <option key={paket.id} value={paket.id}>
+                  {paket.nama} - Rp {paket.harga.toLocaleString('id-ID')}
+                </option>
+              ))}
             </select>
+            {form.paketBimbelId && (
+              <small style={{...styles.hint, color: '#1a237e', fontWeight: 600}}>
+                ✅ Paket: {form.paketBimbelNama} (Rp {form.paketBimbelHarga.toLocaleString('id-ID')})
+              </small>
+            )}
           </div>
 
           <button
@@ -489,6 +605,8 @@ const styles = {
     fontSize: '15px',
     textAlign: 'center',
     textDecoration: 'none',
+    border: 'none',
+    cursor: 'pointer',
     boxShadow: '0 8px 30px rgba(245,158,11,0.25)',
     transition: 'all 0.3s ease',
     ':hover': {
