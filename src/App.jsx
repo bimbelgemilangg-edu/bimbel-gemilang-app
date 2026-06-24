@@ -33,6 +33,9 @@ import PortalSiswaHome from './pages/admin/portal-siswa/PortalSiswaHome';
 import ManagePoster from './pages/admin/portal-siswa/ManagePoster';
 import ManageSurvey from './pages/admin/portal-siswa/ManageSurvey';
 
+// 🔥 IMPORT BARU: Manajemen Harga Paket
+import ManagePaketHarga from './pages/admin/portal-siswa/ManagePaketHarga';
+
 // === GURU ===
 import SidebarGuru from './components/SidebarGuru';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
@@ -231,6 +234,9 @@ function App() {
         <Route path="/admin/portal/poster" element={<AdminRoute><ManagePoster /></AdminRoute>} />
         <Route path="/admin/portal/materi" element={<AdminRoute><ManageMateriPortal /></AdminRoute>} />
         <Route path="/admin/portal/survey" element={<AdminRoute><ManageSurvey /></AdminRoute>} />
+        
+        {/* 🔥 ROUTE BARU: Manajemen Harga Paket */}
+        <Route path="/admin/portal/harga" element={<AdminRoute><ManagePaketHarga /></AdminRoute>} />
         
         {/* ============================================================ */}
         {/* PENDAFTARAN ONLINE (ADMIN) */}
