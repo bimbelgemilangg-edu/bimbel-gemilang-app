@@ -8,9 +8,12 @@ import LoginGuru from './pages/LoginGuru';
 import LoginSiswa from './pages/LoginSiswa';
 import PublicBlog from './pages/PublicBlog';
 
-// === PENDAFTARAN ONLINE ===
+// === PENDAFTARAN ONLINE (PUBLIK) ===
 import PendaftaranOnline from './pages/PendaftaranOnline';
-import ManageOnlineRegistration from './pages/admin/portal-siswa/ManageOnlineRegistration';
+
+// === ADMIN - PENDAFTARAN ===
+import ManageOnlineRegistration from './pages/admin/pendaftaran/ManageOnlineRegistration';
+import ManagePaketHarga from './pages/admin/pendaftaran/ManagePaketHarga';
 
 // === ADMIN ===
 import Dashboard from './pages/admin/Dashboard';
@@ -32,9 +35,6 @@ import ManageMateriPortal from './pages/admin/portal-siswa/ManageMateri';
 import PortalSiswaHome from './pages/admin/portal-siswa/PortalSiswaHome';
 import ManagePoster from './pages/admin/portal-siswa/ManagePoster';
 import ManageSurvey from './pages/admin/portal-siswa/ManageSurvey';
-
-// 🔥 IMPORT BARU: Manajemen Harga Paket
-import ManagePaketHarga from './pages/admin/portal-siswa/ManagePaketHarga';
 
 // === GURU ===
 import SidebarGuru from './components/SidebarGuru';
@@ -190,8 +190,6 @@ function App() {
   // 🔥 PWA DETECTION - Otomatis arahkan ke login siswa
   // ============================================================
   useEffect(() => {
-    // Jika dibuka lewat PWA di HP siswa dan posisinya di halaman utama (/),
-    // otomatis arahkan ke halaman login siswa agar lebih praktis.
     if (window.matchMedia('(display-mode: standalone)').matches && window.location.pathname === '/') {
       window.location.href = '/login-siswa';
     }
@@ -235,15 +233,16 @@ function App() {
         <Route path="/admin/portal/materi" element={<AdminRoute><ManageMateriPortal /></AdminRoute>} />
         <Route path="/admin/portal/survey" element={<AdminRoute><ManageSurvey /></AdminRoute>} />
         
-        {/* 🔥 ROUTE BARU: Manajemen Harga Paket */}
-        <Route path="/admin/portal/harga" element={<AdminRoute><ManagePaketHarga /></AdminRoute>} />
-        
         {/* ============================================================ */}
-        {/* PENDAFTARAN ONLINE (ADMIN) */}
+        {/* PENDAFTARAN (ADMIN) */}
         {/* ============================================================ */}
         <Route 
-          path="/admin/portal-siswa/online-registration" 
+          path="/admin/pendaftaran" 
           element={<AdminRoute><ManageOnlineRegistration /></AdminRoute>} 
+        />
+        <Route 
+          path="/admin/pendaftaran/harga" 
+          element={<AdminRoute><ManagePaketHarga /></AdminRoute>} 
         />
         
         {/* Finance */}

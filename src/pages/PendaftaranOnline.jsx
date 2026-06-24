@@ -47,7 +47,6 @@ const PendaftaranOnline = () => {
         if (docSnap.exists()) {
           setPaketMaster(docSnap.data());
         } else {
-          // Fallback jika belum ada data
           setPaketMaster({ SD: [], SMP: [], SMA: [] });
           setError('⚠️ Data paket belum tersedia. Hubungi admin.');
         }
@@ -151,13 +150,12 @@ const PendaftaranOnline = () => {
 
       const orderId = docRef.id;
 
-      // 2. SIMPAN DATA UNTUK TAMPILAN SUKSES
       setRegistrationData({
         id: orderId,
         ...form
       });
 
-      // 3. BUAT PAYMENT KE MIDTRANS VIA SERVERLESS API
+      // 2. BUAT PAYMENT KE MIDTRANS
       try {
         const paymentResponse = await fetch('/api/create-payment', {
           method: 'POST',
@@ -178,13 +176,11 @@ const PendaftaranOnline = () => {
           setPaymentLink(paymentData.redirect_url);
         } else {
           console.error('Payment creation failed:', paymentData);
-          // Fallback: pake link manual
           const fallbackLink = `${MIDTRANS_BASE_LINK}?amt=${form.paketBimbelHarga}&name=${encodeURIComponent(form.namaLengkap)}&phone=${form.whatsappAktif}`;
           setPaymentLink(fallbackLink);
         }
       } catch (paymentErr) {
         console.error('Payment API error:', paymentErr);
-        // Fallback: pake link manual
         const fallbackLink = `${MIDTRANS_BASE_LINK}?amt=${form.paketBimbelHarga}&name=${encodeURIComponent(form.namaLengkap)}&phone=${form.whatsappAktif}`;
         setPaymentLink(fallbackLink);
       }
@@ -214,7 +210,7 @@ const PendaftaranOnline = () => {
   };
 
   // ============================================================
-  // RENDER SUCCESS
+  // RENDER SUCCESS (TANPA TOMBOL BACK TO HOME)
   // ============================================================
   if (isSuccess) {
     return (
@@ -279,12 +275,7 @@ const PendaftaranOnline = () => {
             ⚠️ Setelah pembayaran selesai, akun siswa akan aktif dalam 1x24 jam.
           </p>
 
-          <button 
-            onClick={() => window.location.href = '/'}
-            style={styles.backBtn}
-          >
-            🏠 Kembali ke Beranda
-          </button>
+          {/* 🔥 TOMBOL BACK TO HOME DIHAPUS */}
         </div>
       </div>
     );
@@ -402,9 +393,7 @@ const PendaftaranOnline = () => {
             />
           </div>
 
-          {/* ============================================================ */}
-          {/* PRICE FACECARD - KARTU PAKET INTERAKTIF DARI FIRESTORE */}
-          {/* ============================================================ */}
+          {/* PRICE FACECARD */}
           <div style={styles.paketSection}>
             <label style={styles.label}>📚 Pilih Paket Bimbel *</label>
             <p style={styles.paketHint}>Klik kartu untuk memilih paket</p>
@@ -502,7 +491,7 @@ const PendaftaranOnline = () => {
 };
 
 // ============================================================
-// STYLES - MODERN SPACE GALAXY
+// STYLES
 // ============================================================
 const styles = {
   container: {
@@ -518,7 +507,6 @@ const styles = {
     overflow: 'hidden'
   },
 
-  // Background Galaxy
   background: {
     position: 'fixed',
     inset: 0,
@@ -536,7 +524,6 @@ const styles = {
   nebula1: { position: 'absolute', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.06), transparent 70%)', top: '-10%', right: '-10%', animation: 'pulse 8s ease-in-out infinite' },
   nebula2: { position: 'absolute', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(243,156,18,0.04), transparent 70%)', bottom: '-20%', left: '-15%', animation: 'pulse 10s ease-in-out infinite reverse' },
 
-  // Glass Card
   glassCard: {
     position: 'relative',
     zIndex: 1,
@@ -629,7 +616,6 @@ const styles = {
   },
   hint: { fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginTop: '2px' },
 
-  // Price Facecard
   paketSection: { marginTop: '4px' },
   paketHint: { fontSize: '11px', color: 'rgba(255,255,255,0.25)', margin: '0 0 10px 0' },
   paketGrid: {
@@ -678,7 +664,6 @@ const styles = {
 
   footer: { textAlign: 'center', marginTop: '18px', color: 'rgba(255,255,255,0.12)', fontSize: '10px' },
 
-  // SUCCESS
   successIcon: { fontSize: '48px', textAlign: 'center', marginBottom: '8px' },
   successTitle: { fontSize: '22px', fontWeight: 800, color: '#ffffff', textAlign: 'center', margin: '0 0 8px' },
   successMessage: { fontSize: '14px', color: 'rgba(255,255,255,0.6)', textAlign: 'center', lineHeight: 1.6, margin: '0 0 20px' },
@@ -719,22 +704,7 @@ const styles = {
       boxShadow: '0 12px 40px rgba(245,158,11,0.35)'
     }
   },
-  paymentNote: { fontSize: '11px', color: 'rgba(255,255,255,0.2)', textAlign: 'center', margin: '12px 0 0' },
-  backBtn: {
-    display: 'block',
-    width: '100%',
-    padding: '12px',
-    borderRadius: '10px',
-    border: '1px solid rgba(255,255,255,0.06)',
-    background: 'rgba(255,255,255,0.02)',
-    color: 'rgba(255,255,255,0.3)',
-    fontWeight: 600,
-    fontSize: '13px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    marginTop: '12px',
-    ':hover': { background: 'rgba(255,255,255,0.04)' }
-  }
+  paymentNote: { fontSize: '11px', color: 'rgba(255,255,255,0.2)', textAlign: 'center', margin: '12px 0 0' }
 };
 
 export default PendaftaranOnline;

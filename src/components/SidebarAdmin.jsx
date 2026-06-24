@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Menu, X, LayoutDashboard, Users, GraduationCap, Calendar,
   CreditCard, FileText, Settings, LogOut, Bell, BookOpen,
-  ClipboardList, Globe, TrendingUp, UserPlus
+  ClipboardList, Globe, TrendingUp, UserPlus, DollarSign
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
@@ -81,7 +81,9 @@ const SidebarAdmin = () => {
     return location.pathname.startsWith(path);
   };
 
-  // Menu dikelompokkan berdasarkan prioritas
+  // ============================================================
+  // MENU GROUPS
+  // ============================================================
   const menuGroups = [
     {
       label: 'UTAMA',
@@ -108,26 +110,34 @@ const SidebarAdmin = () => {
       ]
     },
     {
+      label: '📋 PENDAFTARAN',
+      items: [
+        { 
+          name: 'Pendaftaran Online', 
+          path: '/admin/pendaftaran', 
+          icon: <UserPlus size={18} />,
+          badge: badgePendaftaran > 0 ? badgePendaftaran : null,
+          badgeColor: '#f59e0b'
+        },
+        { 
+          name: 'Manajemen Harga', 
+          path: '/admin/pendaftaran/harga', 
+          icon: <DollarSign size={18} /> 
+        },
+      ]
+    },
+    {
       label: 'LAINNYA',
       items: [
         { name: 'Blog & Galeri', path: '/admin/blog', icon: <BookOpen size={18} /> },
         { name: 'Pengaturan', path: '/admin/settings', icon: <Settings size={18} /> },
       ]
-    },
-    {
-      label: '📋 PENDAFTARAN',
-      items: [
-        { 
-          name: 'Pendaftaran Online', 
-          path: '/admin/portal-siswa/online-registration', 
-          icon: <UserPlus size={18} />,
-          badge: badgePendaftaran > 0 ? badgePendaftaran : null,
-          badgeColor: '#f59e0b'
-        },
-      ]
     }
   ];
 
+  // ============================================================
+  // RENDER
+  // ============================================================
   return (
     <>
       {/* Hamburger Button - Mobile */}
@@ -149,7 +159,11 @@ const SidebarAdmin = () => {
       <aside style={styles.sidebar(isOpen, isMobile)}>
         {/* Logo */}
         <div style={styles.logoSection}>
-          <div style={styles.logoIcon}>🎓</div>
+          <img 
+            src="/pwa-192x192.png" 
+            alt="Logo" 
+            style={styles.logoImg}
+          />
           <div>
             <h3 style={styles.logoTitle}>BIMBEL GEMILANG</h3>
             <p style={styles.logoSub}>Admin Panel v2.0</p>
@@ -201,8 +215,10 @@ const SidebarAdmin = () => {
   );
 };
 
+// ============================================================
+// STYLES
+// ============================================================
 const styles = {
-  // Hamburger
   hamburger: (open) => ({
     position: 'fixed',
     top: 12,
@@ -220,14 +236,10 @@ const styles = {
     transition: 'left 0.3s ease',
     boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
   }),
-
-  // Overlay
   overlay: {
     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
     background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(2px)', zIndex: 999
   },
-
-  // Sidebar
   sidebar: (open, mobile) => ({
     width: 260,
     backgroundColor: '#0f172a',
@@ -243,22 +255,24 @@ const styles = {
     boxShadow: '4px 0 20px rgba(0,0,0,0.3)',
     overflow: 'hidden'
   }),
-
-  // Logo
   logoSection: {
-    padding: '20px',
+    padding: '18px 20px',
     display: 'flex',
     alignItems: 'center',
     gap: 12,
     borderBottom: '1px solid rgba(255,255,255,0.08)'
   },
-  logoIcon: { fontSize: 28 },
+  logoImg: {
+    width: 40,
+    height: 40,
+    borderRadius: '50%',
+    border: '2px solid rgba(251,191,36,0.3)',
+    objectFit: 'cover'
+  },
   logoTitle: { margin: 0, color: '#fbbf24', fontSize: 14, fontWeight: 'bold', letterSpacing: 1 },
   logoSub: { margin: 0, color: '#64748b', fontSize: 10 },
-
-  // Nav
-  nav: { flex: 1, overflowY: 'auto', padding: '12px 0' },
-  menuGroup: { marginBottom: 4 },
+  nav: { flex: 1, overflowY: 'auto', padding: '8px 0' },
+  menuGroup: { marginBottom: 2 },
   groupLabel: {
     display: 'block',
     padding: '16px 20px 6px',
@@ -268,19 +282,20 @@ const styles = {
     textTransform: 'uppercase',
     letterSpacing: 1.5
   },
-
-  // Nav Link
   navLink: (active) => ({
     display: 'flex',
     alignItems: 'center',
-    padding: '11px 20px',
-    margin: '2px 8px',
-    borderRadius: 10,
+    padding: '10px 20px',
+    margin: '1px 8px',
+    borderRadius: 8,
     textDecoration: 'none',
-    background: active ? 'rgba(251,191,36,0.1)' : 'transparent',
+    background: active ? 'rgba(251,191,36,0.08)' : 'transparent',
     transition: '0.2s',
     position: 'relative',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    ':hover': {
+      background: active ? 'rgba(251,191,36,0.12)' : 'rgba(255,255,255,0.04)'
+    }
   }),
   navIcon: (active) => ({
     marginRight: 12,
@@ -300,8 +315,6 @@ const styles = {
     position: 'absolute',
     right: 14
   },
-
-  // Badge
   badge: (color) => ({
     background: color,
     color: 'white',
@@ -312,8 +325,6 @@ const styles = {
     minWidth: 20,
     textAlign: 'center'
   }),
-
-  // Footer
   footer: {
     padding: '16px',
     borderTop: '1px solid rgba(255,255,255,0.08)',
@@ -342,7 +353,7 @@ const styles = {
     background: 'rgba(239,68,68,0.15)',
     color: '#f87171',
     border: '1px solid rgba(239,68,68,0.3)',
-    borderRadius: 10,
+    borderRadius: 8,
     cursor: 'pointer',
     fontWeight: '600',
     fontSize: 12,
