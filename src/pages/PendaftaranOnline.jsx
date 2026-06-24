@@ -31,7 +31,6 @@ const PendaftaranOnline = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
   const [registrationData, setRegistrationData] = useState(null);
-  const [paymentLink, setPaymentLink] = useState('');
 
   // ============================================================
   // FETCH PAKET DARI FIRESTORE
@@ -147,7 +146,7 @@ const PendaftaranOnline = () => {
         createdAt: serverTimestamp()
       });
 
-      const orderId = docRef.id; // 🔥 ID FIRESTORE DINAMIS!
+      const orderId = docRef.id;
 
       setRegistrationData({
         id: orderId,
@@ -163,28 +162,32 @@ const PendaftaranOnline = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          orderId: orderId,                    // 🔥 ID FIRESTORE DINAMIS
-          grossAmount: form.paketBimbelHarga,  // 🔥 HARGA TERKUNCI
-          customerName: form.namaLengkap,      // 🔥 NAMA SISWA
-          customerPhone: form.whatsappAktif,   // 🔥 WA SISWA
-          paketNama: form.paketBimbelNama,     // 🔥 NAMA PAKET
-          paketId: form.paketBimbelId          // 🔥 ID PAKET
+          orderId: orderId,
+          grossAmount: form.paketBimbelHarga,
+          customerName: form.namaLengkap,
+          customerPhone: form.whatsappAktif,
+          paketNama: form.paketBimbelNama,
+          paketId: form.paketBimbelId
         })
       });
 
       const paymentData = await paymentResponse.json();
 
+      // ============================================================
+      // 🔥 PERBAIKAN: LANGSUNG ARAHKAN KE HALAMAN PEMBAYARAN
+      // ============================================================
       if (paymentData.success && paymentData.redirect_url) {
-        setPaymentLink(paymentData.redirect_url);
+        // Langsung buka halaman pembayaran Midtrans Snap
+        window.location.href = paymentData.redirect_url;
+        // Tidak perlu setLoading(false) karena halaman akan redirect
+        return;
       } else {
-        console.error('Payment creation failed:', paymentData);
-        setError('Gagal membuat transaksi pembayaran. Silakan coba lagi.');
+        // Jika gagal, tampilkan pesan eror
+        console.error('Detail kegagalan Midtrans:', paymentData);
+        setError(paymentData.error || 'Gagal membuat transaksi pembayaran. Silakan coba lagi.');
         setLoading(false);
         return;
       }
-
-      setIsSuccess(true);
-      setLoading(false);
 
     } catch (err) {
       console.error('Error:', err);
@@ -192,87 +195,6 @@ const PendaftaranOnline = () => {
       setLoading(false);
     }
   };
-
-  // ============================================================
-  // HANDLE PAYMENT
-  // ============================================================
-  const handlePayment = () => {
-    if (paymentLink) {
-      window.open(paymentLink, '_blank');
-    } else {
-      alert('Link pembayaran tidak tersedia. Silakan hubungi admin.');
-    }
-  };
-
-  // ============================================================
-  // RENDER SUCCESS
-  // ============================================================
-  if (isSuccess) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.glassCard}>
-          <div style={styles.logoArea}>
-            <img 
-              src="/pwa-192x192.png" 
-              alt="Logo Bimbel Gemilang" 
-              style={styles.logo}
-            />
-          </div>
-
-          <div style={styles.successIcon}>✅</div>
-          <h1 style={styles.successTitle}>Pendaftaran Berhasil!</h1>
-          <p style={styles.successMessage}>
-            Pendaftaran <strong>{registrationData?.namaLengkap}</strong> telah berhasil direkam.
-            Silakan selesaikan pembayaran Virtual Account Anda melalui tombol di bawah ini.
-          </p>
-
-          <div style={styles.dataSummary}>
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryLabel}>📋 ID</span>
-              <span style={styles.summaryValue}>{registrationData?.id?.slice(0, 12)}...</span>
-            </div>
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryLabel}>👤 Nama</span>
-              <span style={styles.summaryValue}>{registrationData?.namaLengkap}</span>
-            </div>
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryLabel}>📞 WhatsApp</span>
-              <span style={styles.summaryValue}>{registrationData?.whatsappAktif}</span>
-            </div>
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryLabel}>🏫 Kelas</span>
-              <span style={styles.summaryValue}>{registrationData?.kelasSekolah}</span>
-            </div>
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryLabel}>📚 Paket</span>
-              <span style={styles.summaryValue}>{registrationData?.paketBimbelNama}</span>
-            </div>
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryLabel}>💰 Harga</span>
-              <span style={{...styles.summaryValue, color: '#fbbf24', fontWeight: 700}}>
-                Rp {registrationData?.paketBimbelHarga?.toLocaleString('id-ID')}
-              </span>
-            </div>
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryLabel}>💳 Status</span>
-              <span style={{...styles.summaryValue, color: '#f59e0b', fontWeight: 700}}>Menunggu Pembayaran</span>
-            </div>
-          </div>
-
-          <button 
-            onClick={handlePayment}
-            style={styles.paymentBtn}
-          >
-            💳 Buka Pembayaran Virtual Account (Midtrans)
-          </button>
-
-          <p style={styles.paymentNote}>
-            ⚠️ Setelah pembayaran selesai, akun siswa akan aktif dalam 1x24 jam.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   // ============================================================
   // RENDER FORM
@@ -655,49 +577,7 @@ const styles = {
     }
   },
 
-  footer: { textAlign: 'center', marginTop: '18px', color: 'rgba(255,255,255,0.12)', fontSize: '10px' },
-
-  successIcon: { fontSize: '48px', textAlign: 'center', marginBottom: '8px' },
-  successTitle: { fontSize: '22px', fontWeight: 800, color: '#ffffff', textAlign: 'center', margin: '0 0 8px' },
-  successMessage: { fontSize: '14px', color: 'rgba(255,255,255,0.6)', textAlign: 'center', lineHeight: 1.6, margin: '0 0 20px' },
-  dataSummary: {
-    background: 'rgba(255,255,255,0.03)',
-    borderRadius: '12px',
-    padding: '16px',
-    marginBottom: '20px',
-    border: '1px solid rgba(255,255,255,0.04)'
-  },
-  summaryRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '6px 0',
-    borderBottom: '1px solid rgba(255,255,255,0.04)',
-    fontSize: '13px',
-    ':last-child': { borderBottom: 'none' }
-  },
-  summaryLabel: { color: 'rgba(255,255,255,0.3)', fontWeight: 500 },
-  summaryValue: { color: 'rgba(255,255,255,0.8)', fontWeight: 600, textAlign: 'right' },
-  paymentBtn: {
-    display: 'block',
-    width: '100%',
-    padding: '16px',
-    borderRadius: '12px',
-    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-    color: 'white',
-    fontWeight: 700,
-    fontSize: '15px',
-    textAlign: 'center',
-    textDecoration: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    boxShadow: '0 8px 30px rgba(245,158,11,0.25)',
-    transition: 'all 0.3s ease',
-    ':hover': {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 12px 40px rgba(245,158,11,0.35)'
-    }
-  },
-  paymentNote: { fontSize: '11px', color: 'rgba(255,255,255,0.2)', textAlign: 'center', margin: '12px 0 0' }
+  footer: { textAlign: 'center', marginTop: '18px', color: 'rgba(255,255,255,0.12)', fontSize: '10px' }
 };
 
 export default PendaftaranOnline;
