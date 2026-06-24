@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     }
   
     try {
-      const { orderId, grossAmount, customerName, customerPhone } = req.body;
+      const { orderId, grossAmount, customerName, customerPhone, paketNama, paketId } = req.body;
   
       // Validasi input
       if (!orderId || !grossAmount) {
@@ -23,11 +23,13 @@ export default async function handler(req, res) {
       // Buat Basic Auth Header
       const authString = Buffer.from(serverKey + ':').toString('base64');
   
-      // Siapkan payload untuk Midtrans
+      // ============================================================
+      // 🔥 PAYLOAD UNTUK SNAP API (BUKAN PAYMENT LINK STATIS)
+      // ============================================================
       const payload = {
         transaction_details: {
-          order_id: orderId,
-          gross_amount: grossAmount
+          order_id: orderId, // 🔥 ID FIRESTORE DINAMIS!
+          gross_amount: Number(grossAmount) // 🔥 HARGA TERKUNCI!
         },
         customer_details: {
           first_name: customerName || 'Siswa',
@@ -36,21 +38,24 @@ export default async function handler(req, res) {
         },
         item_details: [
           {
-            id: 'paket_bimbel',
-            price: grossAmount,
+            id: paketId || 'paket_bimbel',
+            price: Number(grossAmount),
             quantity: 1,
-            name: 'Paket Bimbel Gemilang'
+            name: paketNama || 'Paket Bimbel Gemilang'
           }
         ],
+        // 🔥 CALLBACK URL (OPSIONAL)
         callbacks: {
           finish: 'https://bimbel-gemilang-app.vercel.app/pendaftaran/success',
           error: 'https://bimbel-gemilang-app.vercel.app/pendaftaran/error'
         }
       };
   
-      console.log('📤 Mengirim ke Midtrans:', JSON.stringify(payload, null, 2));
+      console.log('📤 Mengirim ke Midtrans Snap API:', JSON.stringify(payload, null, 2));
   
-      // Kirim request ke Midtrans Snap API
+      // ============================================================
+      // 🔥 ENDPOINT SNAP API (BUKAN PAYMENT LINK)
+      // ============================================================
       const response = await fetch('https://app.sandbox.midtrans.com/snap/v1/transactions', {
         method: 'POST',
         headers: {
@@ -63,16 +68,18 @@ export default async function handler(req, res) {
       const data = await response.json();
   
       if (!response.ok) {
-        console.error('❌ Midtrans error:', data);
+        console.error('❌ Midtrans Snap API error:', data);
         return res.status(response.status).json({ 
           error: data.error_messages || 'Gagal membuat transaksi',
           midtransResponse: data
         });
       }
   
-      console.log('✅ Midtrans success:', data);
+      console.log('✅ Midtrans Snap API success:', data);
   
-      // Kirim redirect_url ke frontend
+      // ============================================================
+      // 🔥 KIRIM REDIRECT_URL + TOKEN KE FRONTEND
+      // ============================================================
       return res.status(200).json({
         success: true,
         redirect_url: data.redirect_url,

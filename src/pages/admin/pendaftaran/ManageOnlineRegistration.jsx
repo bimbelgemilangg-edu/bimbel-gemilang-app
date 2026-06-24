@@ -1,4 +1,4 @@
-// src/pages/admin/portal-siswa/ManageOnlineRegistration.jsx
+// src/pages/admin/pendaftaran/ManageOnlineRegistration.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
@@ -10,7 +10,7 @@ import {
 import { 
   Users, RefreshCw, CheckCircle, X, Trash2, UserPlus,
   Calendar, Phone, BookOpen, CreditCard, ArrowLeft,
-  Home, ChevronRight
+  Home, ChevronRight, DollarSign, Eye
 } from 'lucide-react';
 
 const ManageOnlineRegistration = () => {
@@ -93,7 +93,9 @@ const ManageOnlineRegistration = () => {
         wa: registration.whatsappAktif,
         alamat: registration.alamatRumah,
         orangTua: registration.namaOrangTua,
-        paket: registration.paketBimbel,
+        paket: registration.paketBimbelNama,
+        paketId: registration.paketBimbelId,
+        paketHarga: registration.paketBimbelHarga,
         createdAt: serverTimestamp()
       });
 
@@ -172,7 +174,7 @@ const ManageOnlineRegistration = () => {
           gap: 10 
         }}>
           <button 
-            onClick={() => navigate('/admin/portal-siswa')} 
+            onClick={() => navigate('/admin/portal')} 
             style={s.btnBack}
           >
             <ArrowLeft size={14} /> Portal
@@ -180,9 +182,9 @@ const ManageOnlineRegistration = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
             <Home size={12} color="#94a3b8" />
             <ChevronRight size={12} color="#94a3b8" />
-            <span style={{ color: '#94a3b8' }}>Portal</span>
+            <span style={{ color: '#94a3b8' }}>Admin</span>
             <ChevronRight size={12} color="#94a3b8" />
-            <span style={{ fontWeight: 'bold', color: '#3b82f6' }}>Pendaftaran Online</span>
+            <span style={{ fontWeight: 'bold', color: '#f59e0b' }}>Pendaftaran Online</span>
           </div>
         </div>
 
@@ -204,11 +206,11 @@ const ManageOnlineRegistration = () => {
             alignItems: 'center',
             gap: 8
           }}>
-            <Users size={22} /> Pendaftaran Online
+            <UserPlus size={22} color="#f59e0b" /> Pendaftaran Online
           </h2>
           <span style={{
-            background: '#e0e7ff',
-            color: '#4338ca',
+            background: '#fef3c7',
+            color: '#d97706',
             padding: '6px 14px',
             borderRadius: 20,
             fontSize: '13px',
@@ -225,7 +227,7 @@ const ManageOnlineRegistration = () => {
               width: 30, 
               height: 30, 
               border: '3px solid #e2e8f0', 
-              borderTop: '3px solid #3b82f6', 
+              borderTop: '3px solid #f59e0b', 
               borderRadius: '50%', 
               animation: 'spin 1s linear infinite', 
               margin: '0 auto 12px' 
@@ -241,7 +243,7 @@ const ManageOnlineRegistration = () => {
             border: '2px dashed #e2e8f0', 
             color: '#94a3b8' 
           }}>
-            <Users size={48} />
+            <UserPlus size={48} />
             <p style={{ marginTop: 12 }}>Belum ada pendaftaran online.</p>
           </div>
         ) : (
@@ -257,7 +259,7 @@ const ManageOnlineRegistration = () => {
                 width: '100%', 
                 borderCollapse: 'collapse', 
                 fontSize: isMobile ? 11 : 13,
-                minWidth: isMobile ? '600px' : 'auto'
+                minWidth: isMobile ? '700px' : 'auto'
               }}>
                 <thead>
                   <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
@@ -266,6 +268,7 @@ const ManageOnlineRegistration = () => {
                     <th style={s.th}>WhatsApp</th>
                     <th style={s.th}>Kelas</th>
                     <th style={s.th}>Paket</th>
+                    <th style={s.th}>Harga</th>
                     <th style={s.th}>Status</th>
                     <th style={{...s.th, textAlign: 'center'}}>Aksi</th>
                   </tr>
@@ -321,8 +324,11 @@ const ManageOnlineRegistration = () => {
                             fontWeight: 500,
                             color: '#475569'
                           }}>
-                            {reg.paketBimbel || '-'}
+                            {reg.paketBimbelNama || '-'}
                           </span>
+                        </td>
+                        <td style={{...s.td, fontWeight: 700, color: '#1a237e'}}>
+                          Rp {reg.paketBimbelHarga?.toLocaleString('id-ID') || '0'}
                         </td>
                         <td style={s.td}>
                           <span style={{

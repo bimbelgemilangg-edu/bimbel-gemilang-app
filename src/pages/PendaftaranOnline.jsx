@@ -4,10 +4,9 @@ import { db } from '../firebase';
 import { collection, addDoc, doc, getDoc, serverTimestamp } from "firebase/firestore";
 
 // ============================================================
-// MIDTRANS CONFIG
+// FALLBACK (HANYA DIPAKAI JIKA API GAGAL)
 // ============================================================
-// 🔥 GANTI DENGAN LINK MIDTRANS ANDA
-const MIDTRANS_BASE_LINK = "https://app.sandbox.midtrans.com/payment-links/67c22c45-6baa-421b-a7b2-a12289639be9-UJZJAOFg";
+const MIDTRANS_FALLBACK = "https://app.sandbox.midtrans.com";
 
 const PendaftaranOnline = () => {
   // ============================================================
@@ -117,7 +116,7 @@ const PendaftaranOnline = () => {
   };
 
   // ============================================================
-  // SUBMIT KE FIRESTORE + CREATE PAYMENT
+  // SUBMIT KE FIRESTORE + CREATE PAYMENT VIA SNAP API
   // ============================================================
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -148,41 +147,40 @@ const PendaftaranOnline = () => {
         createdAt: serverTimestamp()
       });
 
-      const orderId = docRef.id;
+      const orderId = docRef.id; // 🔥 ID FIRESTORE DINAMIS!
 
       setRegistrationData({
         id: orderId,
         ...form
       });
 
-      // 2. BUAT PAYMENT KE MIDTRANS
-      try {
-        const paymentResponse = await fetch('/api/create-payment', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            orderId: orderId,
-            grossAmount: form.paketBimbelHarga,
-            customerName: form.namaLengkap,
-            customerPhone: form.whatsappAktif
-          })
-        });
+      // ============================================================
+      // 🔥 2. KIRIM KE SNAP API DENGAN DATA LENGKAP
+      // ============================================================
+      const paymentResponse = await fetch('/api/create-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderId: orderId,                    // 🔥 ID FIRESTORE DINAMIS
+          grossAmount: form.paketBimbelHarga,  // 🔥 HARGA TERKUNCI
+          customerName: form.namaLengkap,      // 🔥 NAMA SISWA
+          customerPhone: form.whatsappAktif,   // 🔥 WA SISWA
+          paketNama: form.paketBimbelNama,     // 🔥 NAMA PAKET
+          paketId: form.paketBimbelId          // 🔥 ID PAKET
+        })
+      });
 
-        const paymentData = await paymentResponse.json();
+      const paymentData = await paymentResponse.json();
 
-        if (paymentData.success && paymentData.redirect_url) {
-          setPaymentLink(paymentData.redirect_url);
-        } else {
-          console.error('Payment creation failed:', paymentData);
-          const fallbackLink = `${MIDTRANS_BASE_LINK}?amt=${form.paketBimbelHarga}&name=${encodeURIComponent(form.namaLengkap)}&phone=${form.whatsappAktif}`;
-          setPaymentLink(fallbackLink);
-        }
-      } catch (paymentErr) {
-        console.error('Payment API error:', paymentErr);
-        const fallbackLink = `${MIDTRANS_BASE_LINK}?amt=${form.paketBimbelHarga}&name=${encodeURIComponent(form.namaLengkap)}&phone=${form.whatsappAktif}`;
-        setPaymentLink(fallbackLink);
+      if (paymentData.success && paymentData.redirect_url) {
+        setPaymentLink(paymentData.redirect_url);
+      } else {
+        console.error('Payment creation failed:', paymentData);
+        setError('Gagal membuat transaksi pembayaran. Silakan coba lagi.');
+        setLoading(false);
+        return;
       }
 
       setIsSuccess(true);
@@ -201,16 +199,13 @@ const PendaftaranOnline = () => {
   const handlePayment = () => {
     if (paymentLink) {
       window.open(paymentLink, '_blank');
-    } else if (registrationData?.paketBimbelLink) {
-      window.open(registrationData.paketBimbelLink, '_blank');
     } else {
-      const fallback = `${MIDTRANS_BASE_LINK}?amt=${registrationData?.paketBimbelHarga || 0}&name=${encodeURIComponent(registrationData?.namaLengkap || '')}&phone=${registrationData?.whatsappAktif || ''}`;
-      window.open(fallback, '_blank');
+      alert('Link pembayaran tidak tersedia. Silakan hubungi admin.');
     }
   };
 
   // ============================================================
-  // RENDER SUCCESS (TANPA TOMBOL BACK TO HOME)
+  // RENDER SUCCESS
   // ============================================================
   if (isSuccess) {
     return (
@@ -274,8 +269,6 @@ const PendaftaranOnline = () => {
           <p style={styles.paymentNote}>
             ⚠️ Setelah pembayaran selesai, akun siswa akan aktif dalam 1x24 jam.
           </p>
-
-          {/* 🔥 TOMBOL BACK TO HOME DIHAPUS */}
         </div>
       </div>
     );
