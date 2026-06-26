@@ -139,8 +139,7 @@ const SimpleEditor = ({ value, onChange, placeholder }) => {
   const toolbarBtn = {
     background: 'none', border: 'none', padding: '4px 10px', 
     borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600,
-    color: '#64748b', transition: '0.2s',
-    '&:hover': { background: '#e2e8f0' }
+    color: '#64748b', transition: '0.2s'
   };
 
   return (
@@ -448,7 +447,6 @@ const ManageMateri = () => {
         setUploadProgress(prev => Math.min(prev + 8, 90));
       }, 200);
 
-      // 🔥 LANGSUNG UPLOAD KE SUPABASE (TANPA BASE64)
       const result = await uploadElearningFile(file, type);
 
       clearInterval(interval);
@@ -697,7 +695,6 @@ const ManageMateri = () => {
           <button onClick={() => setShowPreview(false)} style={previewContainerStyles.closeBtn}>✕</button>
         </div>
         <div style={{ ...previewContainerStyles.body, maxWidth: previewWidth }}>
-          {/* Preview content */}
           <div style={previewContainerStyles.content}>
             {isNotYetActive && (
               <div style={previewContainerStyles.scheduledBanner}>
@@ -1121,16 +1118,45 @@ const ManageMateri = () => {
                     )}
                     {showStudentPicker && (
                       <div style={styles.studentPicker}>
-                        <div style={styles.studentPickerHeader}><span style={{ fontSize: 11, fontWeight: 'bold' }}>📋 {filteredStudents.length} siswa</span><button onClick={() => setShowStudentPicker(false)} style={styles.closePicker}>✕</button></div>
+                        <div style={styles.studentPickerHeader}>
+                          <span style={{ fontSize: 11, fontWeight: 'bold' }}>📋 {filteredStudents.length} siswa</span>
+                          <button onClick={() => setShowStudentPicker(false)} style={styles.closePicker}>✕</button>
+                        </div>
                         <div style={styles.studentPickerList}>
-                          {filteredStudents.length === 0 ? <div style={{ textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 11 }}>{studentSearch ? 'Tidak ditemukan' : 'Tidak ada siswa'}</div> :
+                          {filteredStudents.length === 0 ? (
+                            <div style={{ textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 11 }}>
+                              {studentSearch ? 'Tidak ditemukan' : 'Tidak ada siswa'}
+                            </div>
+                          ) : (
                             filteredStudents.map(s => {
                               const isSelected = selectedStudents.some(sel => sel.studentId === s.studentId);
                               return (
-                                <div key={s.studentId} onClick={() => toggleStudentSelection(s)} style={{ ...styles.studentPickerItem, background: isSelected ? '#eef2ff' : 'transparent', borderLeft: isSelected ? '3px solid #3b82f6' : '3px solid transparent' }}>
-                                  <div style={styles.studentPickerAvatar}>{getStudentInitials(s.nama)}</div>
-                                  <div style={{ flex: 1 }}><div style={{ fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>{s.nama}<span style={styles.studentIdChip}>#{s.studentId}</span></div><div style={{ fontSize: 9, color: '#94a3b8' }}>{s.kelasSekolah || '-'}</div></div>
-                                  {isSelected ? <CheckCircle size={16} color="#10b981" /> : <div style={{ width: 16, height: 16, border: '2px solid #d1d5db', borderRadius: '50%' }} />}
+                                <div 
+                                  key={s.studentId} 
+                                  onClick={() => toggleStudentSelection(s)} 
+                                  style={{ 
+                                    ...styles.studentPickerItem, 
+                                    background: isSelected ? '#eef2ff' : 'transparent', 
+                                    borderLeft: isSelected ? '3px solid #3b82f6' : '3px solid transparent' 
+                                  }}
+                                >
+                                  <div style={styles.studentPickerAvatar}>
+                                    {getStudentInitials(s.nama)}
+                                  </div>
+                                  <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                      {s.nama}
+                                      <span style={styles.studentIdChip}>#{s.studentId}</span>
+                                    </div>
+                                    <div style={{ fontSize: 9, color: '#94a3b8' }}>
+                                      {s.kelasSekolah || '-'}
+                                    </div>
+                                  </div>
+                                  {isSelected ? (
+                                    <CheckCircle size={16} color="#10b981" />
+                                  ) : (
+                                    <div style={{ width: 16, height: 16, border: '2px solid #d1d5db', borderRadius: '50%' }} />
+                                  )}
                                 </div>
                               );
                             })
