@@ -247,10 +247,13 @@ const ModulManager = () => {
     };
   };
 
-  const getFilteredItems = useMemo(() => {
+  // ============================================================
+  // 🔥 FILTERED ITEMS - USE MEMO (WAJIB!)
+  // ============================================================
+  const filteredItems = useMemo(() => {
     let filtered = items;
     
-    // 🔥 Filter berdasarkan guru (jika tidak pakai query)
+    // Filter berdasarkan guru (jika tidak pakai query)
     if (filterGuru === 'saya' && guruId) {
       filtered = filtered.filter(item => 
         item.guruId === guruId || item.createdBy === guruData?.nama
