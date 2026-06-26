@@ -6,7 +6,7 @@ import {
   getDocs, deleteDoc, query, where, orderBy, limit, runTransaction
 } from "firebase/firestore";
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { uploadElearningFile, deleteFile } from '../../../services/uploadService';
+import { uploadElearningFile, deleteFile, supabase } from '../../../services/uploadService';
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, ArrowLeft, 
   FileUp, Type, Video, X, Image as ImageIcon, BookOpen, 
@@ -17,7 +17,7 @@ import {
   Zap, Sparkles, Filter, User, GraduationCap, Shield, 
   Database, ChevronRight, Home, RefreshCw, AlertTriangle,
   Copy, Link, Play, FileArchive, FileCode, FileJson,
-  FileSpreadsheet, FileImage, FilePdf, FileVideo,
+  FileSpreadsheet, FileImage, File, FileVideo,
   Globe, Upload, Cloud, Server, Cpu, Gauge,
   TrendingUp, Activity, BarChart3, PieChart
 } from 'lucide-react';
@@ -64,7 +64,7 @@ const FilePreview = ({ url, fileName, fileType }) => {
   if (fileType === 'application/pdf' || url.match(/\.pdf$/i)) {
     return (
       <div style={previewStyles.pdfWrapper}>
-        <div style={previewStyles.pdfIcon}><FilePdf size={40} color="#ef4444" /></div>
+        <div style={previewStyles.pdfIcon}><File size={40} color="#ef4444" /></div>
         <a href={url} target="_blank" rel="noopener noreferrer" style={previewStyles.pdfLink}>
           📄 Buka PDF
         </a>
@@ -493,7 +493,7 @@ const ManageMateri = () => {
     if (url) {
       setSections(sections.map(s => 
         s.id === sectionId 
-          ? { ...s, content: url, fileName: file.name, mimeType: file.type, fileSize: file.size } 
+          ? { ...s, content: url, fileName: file.name, mimeType: file.type, fileSize: file.size, filePath: url.split('/').slice(-2).join('/') } 
           : s
       ));
     }
@@ -518,6 +518,7 @@ const ManageMateri = () => {
       fileName: '', 
       mimeType: '', 
       fileSize: 0,
+      filePath: '',
       endTime: '' 
     };
     setSections([...sections, newSection]);
@@ -530,19 +531,31 @@ const ManageMateri = () => {
     setSections(sections.map(s => s.id === id ? { ...s, [field]: value } : s));
   };
   
-  const removeSection = (id) => {
-    if (window.confirm("Hapus section ini?")) {
-      const section = sections.find(s => s.id === id);
-      if (section?.content && section.type === 'file') {
-        const filePath = section.content.split('/').slice(-2).join('/');
-        if (filePath) deleteFile(filePath).catch(console.error);
+  // ============================================================
+  // DELETE SECTION + HAPUS FILE DARI SUPABASE
+  // ============================================================
+  const removeSection = async (id) => {
+    if (!window.confirm("Hapus section ini? File terkait juga akan dihapus dari penyimpanan.")) return;
+    
+    const section = sections.find(s => s.id === id);
+    if (section?.filePath) {
+      try {
+        const result = await deleteFile(section.filePath);
+        if (result.success) {
+          console.log('✅ File berhasil dihapus dari Supabase');
+        } else {
+          console.warn('⚠️ Gagal hapus file:', result.error);
+        }
+      } catch (err) {
+        console.error('Error deleting file:', err);
       }
-      setSections(sections.filter(s => s.id !== id));
-      if (activeSection === id) {
-        setActiveSection(sections.length > 1 ? sections[0]?.id : null);
-      }
-      setStats(prev => ({ ...prev, totalKonten: sections.length - 1 }));
     }
+    
+    setSections(sections.filter(s => s.id !== id));
+    if (activeSection === id) {
+      setActiveSection(sections.length > 1 ? sections[0]?.id : null);
+    }
+    setStats(prev => ({ ...prev, totalKonten: sections.length - 1 }));
   };
 
   const moveSection = (id, direction) => {
@@ -596,6 +609,52 @@ const ManageMateri = () => {
   const getStudentInitials = (name) => {
     if (!name) return '?';
     return name.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('');
+  };
+
+  // ============================================================
+  // DELETE MODUL + HAPUS SEMUA FILE DARI SUPABASE
+  // ============================================================
+  const handleDeleteModul = async () => {
+    if (!modulId) return;
+    if (!window.confirm(`⚠️ Hapus modul "${title}"?\n\nSemua data dan file terkait akan dihapus permanen!`)) return;
+    
+    try {
+      // 1. Hapus semua file di Supabase dari setiap section
+      const filePaths = sections
+        .filter(s => s.filePath)
+        .map(s => s.filePath);
+      
+      if (filePaths.length > 0) {
+        const { data, error } = await supabase
+          .storage
+          .from('materi-bimbel')
+          .remove(filePaths);
+        
+        if (error) {
+          console.warn('⚠️ Gagal hapus beberapa file:', error);
+        } else {
+          console.log(`✅ ${filePaths.length} file berhasil dihapus dari Supabase`);
+        }
+      }
+      
+      // 2. Hapus cover image dari Supabase
+      if (coverImage) {
+        const coverPath = coverImage.split('/').slice(-2).join('/');
+        if (coverPath) {
+          await supabase.storage.from('materi-bimbel').remove([coverPath]);
+        }
+      }
+      
+      // 3. Hapus data dari Firestore
+      await deleteDoc(doc(db, COLLECTION_NAME, modulId));
+      
+      alert('✅ Modul dan semua file terkait berhasil dihapus!');
+      navigate('/guru/modul');
+      
+    } catch (error) {
+      console.error('Error deleting modul:', error);
+      alert('❌ Gagal menghapus modul: ' + error.message);
+    }
   };
 
   // ============================================================
@@ -1032,6 +1091,11 @@ const ManageMateri = () => {
           <button onClick={handleSave} disabled={saving} style={{ ...styles.btnSave, opacity: saving ? 0.6 : 1 }}>
             <Save size={14} /> {saving ? 'Menyimpan...' : editId ? 'Update' : 'Terbitkan'}
           </button>
+          {modulId && (
+            <button onClick={handleDeleteModul} style={{ ...styles.btnSave, background: '#ef4444', boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}>
+              <Trash2 size={14} /> Hapus Modul
+            </button>
+          )}
         </div>
       </div>
 
