@@ -1,14 +1,17 @@
+// src/pages/admin/schedule/SchedulePage.jsx
 import React, { useState, useEffect } from 'react';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { 
-  collection, getDocs, deleteDoc, doc, writeBatch, updateDoc, setDoc, getDoc, addDoc 
+  collection, getDocs, deleteDoc, doc, writeBatch, updateDoc, 
+  setDoc, getDoc, addDoc, query, where, orderBy 
 } from "firebase/firestore";
 import { 
   Search, Plus, Edit3, Trash2, X, Save, Calendar, Clock, MapPin, 
   BookOpen, Users, GraduationCap, Filter, RefreshCw, ChevronLeft, 
   ChevronRight, Home, ChevronRight as ChevronRightIcon, Flag, Eye, EyeOff,
-  Copy, CheckCircle, AlertCircle
+  Copy, CheckCircle, AlertCircle, Hash, Tag, Link as LinkIcon,
+  User, UserPlus, Shield, BadgeCheck, Sparkles, Database, Layers
 } from 'lucide-react';
 
 // ============================================================
@@ -32,15 +35,6 @@ const INDONESIAN_HOLIDAYS = {
   '2025-09-05': { name: 'Maulid Nabi Muhammad SAW' },
   '2025-12-25': { name: 'Hari Raya Natal' },
   '2026-01-01': { name: 'Tahun Baru 2026 Masehi' },
-  '2026-02-17': { name: 'Tahun Baru Imlek 2577 Kongzili' },
-  '2026-03-19': { name: 'Hari Suci Nyepi (Tahun Baru Saka 1948)' },
-  '2026-04-03': { name: 'Wafat Yesus Kristus' },
-  '2026-05-01': { name: 'Hari Buruh Internasional' },
-  '2026-05-14': { name: 'Kenaikan Yesus Kristus' },
-  '2026-05-31': { name: 'Hari Raya Waisak 2570 BE' },
-  '2026-06-01': { name: 'Hari Lahir Pancasila' },
-  '2026-08-17': { name: 'Hari Kemerdekaan RI' },
-  '2026-12-25': { name: 'Hari Raya Natal' },
 };
 
 // ============================================================
@@ -64,11 +58,12 @@ const SchedulePage = () => {
   const [schedules, setSchedules] = useState([]);
   const [availableTeachers, setAvailableTeachers] = useState([]);
   const [availableStudents, setAvailableStudents] = useState([]);
+  const [availableMapel, setAvailableMapel] = useState([]);
   
   // Calendar
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState('daily'); // 'daily' | 'weekly' | 'monthly'
+  const [viewMode, setViewMode] = useState('daily');
   
   // Daily Code
   const [dailyCode, setDailyCode] = useState("");
@@ -82,14 +77,16 @@ const SchedulePage = () => {
   
   // Form
   const defaultForm = {
-    start: "14:00", end: "15:30",
+    start: "14:00", 
+    end: "15:30",
     program: "Reguler",
     level: "SD",
     title: "",
-    mapel: "",
-    booker: "",
-    teacherId: "",
-    selectedStudents: [],
+    mapelId: "",          // ← KODE UNIK MAPEL
+    mapelName: "",
+    teacherId: "",        // ← KODE UNIK GURU (GURU-XXX)
+    teacherName: "",
+    selectedStudents: [], // ← Array of studentId
     repeat: "Once"
   };
   const [formData, setFormData] = useState(defaultForm);
@@ -149,19 +146,39 @@ const SchedulePage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch schedules
+      // 1. Fetch schedules
       const schedSnap = await getDocs(collection(db, "jadwal_bimbel"));
       setSchedules(schedSnap.docs.map(d => ({ id: d.id, ...d.data() })));
 
-      // Fetch teachers
+      // 2. Fetch teachers (dengan guruId)
       const tSnap = await getDocs(collection(db, "teachers"));
-      setAvailableTeachers(tSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const teachers = tSnap.docs.map(d => ({ 
+        id: d.id, 
+        ...d.data(),
+        // Pastikan ada guruId
+        guruId: d.data().guruId || `GURU-${String(d.id).slice(0, 4)}`
+      }));
+      setAvailableTeachers(teachers);
 
-      // Fetch students
+      // 3. Fetch students (dengan studentId)
       const sSnap = await getDocs(collection(db, "students"));
-      setAvailableStudents(sSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const students = sSnap.docs.map(d => ({ 
+        id: d.id, 
+        ...d.data(),
+        studentId: d.data().studentId || d.id
+      }));
+      setAvailableStudents(students);
 
-      // Fetch daily code
+      // 4. Fetch mapel (dengan kodeMapel)
+      const mSnap = await getDocs(collection(db, "mapel"));
+      const mapelData = mSnap.docs.map(d => ({ 
+        id: d.id, 
+        ...d.data(),
+        kodeMapel: d.data().kodeMapel || `MAPEL-${String(d.id).slice(0, 4)}`
+      }));
+      setAvailableMapel(mapelData);
+
+      // 5. Fetch daily code
       const todayStr = getSmartDateString(selectedDate);
       const cSnap = await getDoc(doc(db, "settings", `daily_code_${todayStr}`));
       if (cSnap.exists()) {
@@ -184,14 +201,40 @@ const SchedulePage = () => {
   // ============================================================
   // HANDLERS
   // ============================================================
-  const handleTeacherChange = (teacherName) => {
-    const teacher = availableTeachers.find(t => t.nama === teacherName);
-    setFormData({
-      ...formData,
-      booker: teacherName,
-      teacherId: teacher?.id || "",
-      mapel: teacher?.mapel || ""
-    });
+  
+  // Pilih guru → otomatis isi mapelId & mapelName
+  const handleTeacherSelect = (teacherId) => {
+    const teacher = availableTeachers.find(t => t.id === teacherId || t.guruId === teacherId);
+    if (teacher) {
+      setFormData({
+        ...formData,
+        teacherId: teacher.guruId || teacher.id,
+        teacherName: teacher.nama,
+        // Auto fill mapel dari guru
+        mapelId: teacher.kodeMapel || '',
+        mapelName: teacher.mapel || ''
+      });
+    } else {
+      setFormData({
+        ...formData,
+        teacherId: '',
+        teacherName: '',
+        mapelId: '',
+        mapelName: ''
+      });
+    }
+  };
+
+  // Pilih mapel dari daftar (override otomatis dari guru)
+  const handleMapelSelect = (mapelId) => {
+    const mapel = availableMapel.find(m => m.id === mapelId || m.kodeMapel === mapelId);
+    if (mapel) {
+      setFormData({
+        ...formData,
+        mapelId: mapel.kodeMapel || mapel.id,
+        mapelName: mapel.namaMapel
+      });
+    }
   };
 
   const handleOpenModal = (planet, isEdit = false, item = null) => {
@@ -207,10 +250,11 @@ const SchedulePage = () => {
         program: item.program || "Reguler",
         level: item.level || "SD",
         title: item.title || "",
-        mapel: item.mapel || "",
-        booker: item.booker || "",
+        mapelId: item.mapelId || item.kodeMapel || "",
+        mapelName: item.mapelName || item.mapel || "",
         teacherId: item.teacherId || "",
-        selectedStudents: item.students ? item.students.map(s => s.id || s) : [],
+        teacherName: item.teacherName || item.booker || "",
+        selectedStudents: item.students ? item.students.map(s => s.studentId || s.id) : [],
         repeat: "Once"
       });
     } else {
@@ -222,12 +266,15 @@ const SchedulePage = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!formData.booker) return showAlert("❌ Pilih guru terlebih dahulu!");
+    if (!formData.teacherId) return showAlert("❌ Pilih guru terlebih dahulu!");
+    if (!formData.mapelId) return showAlert("❌ Pilih mata pelajaran!");
 
     try {
-      // Build student data dengan ID dan nama
+      // Build student data dengan ID lengkap
       const studentsFullData = formData.selectedStudents.map(sid => {
-        const s = availableStudents.find(stud => stud.id === sid || stud.studentId === sid);
+        const s = availableStudents.find(stud => 
+          stud.id === sid || stud.studentId === sid
+        );
         return s ? {
           id: s.id,
           studentId: s.studentId || s.id,
@@ -235,7 +282,7 @@ const SchedulePage = () => {
           kelas: s.kelasSekolah || "-",
           program: s.detailProgram || formData.program || "Reguler",
           kelasSekolah: s.kelasSekolah || "-"
-        } : (typeof sid === 'string' ? { id: sid, studentId: sid, nama: sid, kelas: '-', program: formData.program } : sid);
+        } : null;
       }).filter(Boolean);
 
       const scheduleData = {
@@ -243,12 +290,16 @@ const SchedulePage = () => {
         program: formData.program,
         level: formData.level,
         title: formData.title,
-        mapel: formData.mapel,
-        booker: formData.booker,
-        teacherId: formData.teacherId,
+        // === KODE UNIK ===
+        mapelId: formData.mapelId,        // MAPEL-XXX
+        mapelName: formData.mapelName,
+        teacherId: formData.teacherId,     // GURU-XXX
+        teacherName: formData.teacherName,
+        // ===
         start: formData.start,
         end: formData.end,
         students: studentsFullData,
+        studentIds: studentsFullData.map(s => s.studentId), // Array of studentId untuk query cepat
         dateStr: getSmartDateString(selectedDate),
         status: "scheduled",
         updatedAt: new Date().toISOString()
@@ -318,10 +369,6 @@ const SchedulePage = () => {
       if (formData.level !== 'Umum') {
         const siswaJenjang = s.kelasSekolah?.includes(formData.level) || s.jenjang === formData.level;
         if (!siswaJenjang) return false;
-      }
-      // Filter mapel
-      if (formData.mapel && s.mapel?.length > 0) {
-        if (!s.mapel.includes(formData.mapel)) return false;
       }
       // Search
       const matchNama = (s.nama || '').toLowerCase().includes(studentSearch.toLowerCase());
@@ -397,7 +444,6 @@ const SchedulePage = () => {
                   <div style={styles.emptyPlanet}>Kosong</div>
                 ) : (
                   items.map(item => {
-                    const teacher = availableTeachers.find(t => t.nama === item.booker);
                     return (
                       <div key={item.id} style={styles.scheduleItem}>
                         <div style={styles.scheduleTop}>
@@ -405,23 +451,40 @@ const SchedulePage = () => {
                           <span style={styles.programBadge(item.program)}>{item.program}</span>
                         </div>
                         <div style={styles.scheduleTitle}>{item.title || "Materi Umum"}</div>
-                        {item.mapel && <div style={styles.scheduleMapel}>📘 {item.mapel}</div>}
+                        
+                        {/* TAMPILKAN KODE UNIK */}
+                        <div style={styles.scheduleCodes}>
+                          {item.teacherId && (
+                            <span style={styles.codeBadgeTeacher}>
+                              <Hash size={10} /> {item.teacherId}
+                            </span>
+                          )}
+                          {item.mapelId && (
+                            <span style={styles.codeBadgeMapel}>
+                              <Tag size={10} /> {item.mapelId}
+                            </span>
+                          )}
+                        </div>
+                        
                         <div style={styles.scheduleInfo}>
-                          <span>👨‍🏫 <b>{item.booker}</b></span>
+                          <span>👨‍🏫 <b>{item.teacherName || item.booker}</b></span>
                           <span>📚 {item.level || "SD"}</span>
                           <span>👥 {item.students?.length || 0} siswa</span>
                         </div>
+                        
                         {/* Tampilkan 3 siswa pertama */}
                         {item.students && item.students.length > 0 && (
                           <div style={styles.studentPreview}>
                             {item.students.slice(0, 3).map((s, i) => (
                               <span key={i} style={styles.studentChip} title={`${s.nama} (${s.studentId || s.id})`}>
                                 {s.nama?.split(' ')[0]}
+                                <span style={styles.studentIdChip}>#{s.studentId?.slice(-4) || s.id?.slice(-4)}</span>
                               </span>
                             ))}
                             {item.students.length > 3 && <span style={styles.studentMore}>+{item.students.length - 3}</span>}
                           </div>
                         )}
+                        
                         <div style={styles.scheduleActions}>
                           <button onClick={() => handleOpenModal(planet, true, item)} style={styles.btnEditSm}>
                             <Edit3 size={12} /> Edit
@@ -474,8 +537,11 @@ const SchedulePage = () => {
                     <div key={item.id} style={styles.weeklyItem}>
                       <span style={styles.weeklyTime}>{item.start}</span>
                       <span style={styles.weeklyPlanet}>🪐 {item.planet}</span>
-                      <span style={styles.weeklyTitle}>{item.title || item.mapel || 'Materi'}</span>
-                      <span style={styles.weeklyTeacher}>👨‍🏫 {item.booker}</span>
+                      <span style={styles.weeklyTitle}>{item.title || item.mapelName || 'Materi'}</span>
+                      <span style={styles.weeklyTeacher}>👨‍🏫 {item.teacherName || item.booker}</span>
+                      {item.teacherId && (
+                        <span style={styles.weeklyIdBadge}>{item.teacherId}</span>
+                      )}
                     </div>
                   ))
                 )}
@@ -492,7 +558,6 @@ const SchedulePage = () => {
   // ============================================================
   const renderDetailModal = () => {
     if (!detailSchedule) return null;
-    const teacher = availableTeachers.find(t => t.nama === detailSchedule.booker);
     
     return (
       <div style={styles.overlay} onClick={() => setDetailSchedule(null)}>
@@ -506,13 +571,34 @@ const SchedulePage = () => {
             <div style={styles.detailRow}><span>⏰ Waktu</span><strong>{detailSchedule.start} - {detailSchedule.end}</strong></div>
             <div style={styles.detailRow}><span>📅 Tanggal</span><strong>{detailSchedule.dateStr}</strong></div>
             <div style={styles.detailRow}><span>📚 Program</span><strong>{detailSchedule.program} / {detailSchedule.level}</strong></div>
-            <div style={styles.detailRow}><span>📘 Mapel</span><strong>{detailSchedule.mapel || '-'}</strong></div>
-            <div style={styles.detailRow}><span>📝 Materi</span><strong>{detailSchedule.title || '-'}</strong></div>
+            
+            {/* KODE UNIK */}
             <div style={styles.detailRow}>
               <span>👨‍🏫 Guru</span>
-              <strong>{detailSchedule.booker} {teacher?.mapel ? `(${teacher.mapel})` : ''}</strong>
+              <strong>
+                {detailSchedule.teacherName || detailSchedule.booker}
+                {detailSchedule.teacherId && (
+                  <span style={{...styles.codeBadgeTeacher, marginLeft: 8, fontSize: 10}}>
+                    <Hash size={10} /> {detailSchedule.teacherId}
+                  </span>
+                )}
+              </strong>
             </div>
+            <div style={styles.detailRow}>
+              <span>📘 Mapel</span>
+              <strong>
+                {detailSchedule.mapelName || detailSchedule.mapel || '-'}
+                {detailSchedule.mapelId && (
+                  <span style={{...styles.codeBadgeMapel, marginLeft: 8, fontSize: 10}}>
+                    <Tag size={10} /> {detailSchedule.mapelId}
+                  </span>
+                )}
+              </strong>
+            </div>
+            
+            <div style={styles.detailRow}><span>📝 Materi</span><strong>{detailSchedule.title || '-'}</strong></div>
             <div style={styles.detailDivider} />
+            
             <h4 style={{marginBottom: 8, fontSize: 13}}>👥 Daftar Siswa ({detailSchedule.students?.length || 0})</h4>
             {detailSchedule.students && detailSchedule.students.length > 0 ? (
               <div style={styles.detailStudentList}>
@@ -520,7 +606,7 @@ const SchedulePage = () => {
                   <div key={i} style={styles.detailStudentItem}>
                     <span style={styles.detailStudentNum}>{i + 1}.</span>
                     <span style={styles.detailStudentName}>{s.nama || s}</span>
-                    <span style={styles.detailStudentId}>{(s.studentId || s.id || '').substring(0, 14)}</span>
+                    <span style={styles.detailStudentId}>#{s.studentId || s.id || '-'}</span>
                     <span style={styles.detailStudentKelas}>{s.kelas || s.kelasSekolah || '-'}</span>
                   </div>
                 ))}
@@ -567,11 +653,10 @@ const SchedulePage = () => {
             </p>
           </div>
           <div style={styles.headerRight}>
-            {/* Kode Absensi */}
             <div style={styles.codeBox}>
               <span style={styles.codeLabel}>KODE ABSEN:</span>
               {isEditingCode ? (
-                <div style={{display:'flex', gap: 4}}>
+                <div style={{display: 'flex', gap: 4}}>
                   <input value={tempCode} onChange={e => setTempCode(e.target.value)} style={styles.codeInput} autoFocus />
                   <button onClick={handleUpdateCode} style={styles.codeSaveBtn}>OK</button>
                 </div>
@@ -613,7 +698,6 @@ const SchedulePage = () => {
                 <div style={styles.legendItem}><div style={{...styles.legendDot, background: '#ef4444'}}></div><span>Libur/Minggu</span></div>
                 <div style={styles.legendItem}><div style={{...styles.legendDot, background: '#10b981', border: '2px solid #10b981'}}></div><span>Hari Ini</span></div>
               </div>
-              {/* Upcoming Holidays */}
               {Object.entries(INDONESIAN_HOLIDAYS).filter(([d]) => {
                 const hd = new Date(d);
                 return hd.getMonth() === currentMonth.getMonth() && hd.getFullYear() === currentMonth.getFullYear();
@@ -676,18 +760,60 @@ const SchedulePage = () => {
                   </div>
                 </div>
 
-                {/* Guru → Auto Mapel */}
+                {/* Pilih Guru → Auto Mapel */}
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>👨‍🏫 Guru</label>
-                  <select required value={formData.booker} onChange={e => handleTeacherChange(e.target.value)} style={styles.formSelect}>
+                  <label style={styles.formLabel}>
+                    👨‍🏫 Guru 
+                    <span style={{fontSize: 10, color: '#94a3b8', marginLeft: 6}}>(ID & Mapel otomatis)</span>
+                  </label>
+                  <select 
+                    required 
+                    value={formData.teacherId} 
+                    onChange={e => handleTeacherSelect(e.target.value)} 
+                    style={styles.formSelect}
+                  >
                     <option value="">-- Pilih Guru --</option>
                     {availableTeachers.map(t => (
-                      <option key={t.id} value={t.nama}>{t.nama} {t.mapel ? `(${t.mapel})` : ''}</option>
+                      <option key={t.id} value={t.guruId || t.id}>
+                        {t.nama} {t.guruId ? `(${t.guruId})` : ''} {t.mapel ? `- ${t.mapel}` : ''}
+                      </option>
                     ))}
                   </select>
-                  {formData.mapel && (
-                    <div style={{marginTop: 4, fontSize: 11, color: '#3b82f6', fontWeight: 600}}>
-                      📘 Mapel: {formData.mapel}
+                  {formData.teacherId && (
+                    <div style={styles.infoBox}>
+                      <Hash size={14} color="#3b82f6" />
+                      <span style={{fontSize: 11, color: '#475569'}}>
+                        ID Guru: <strong>{formData.teacherId}</strong>
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Pilih Mapel (bisa override) */}
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    📘 Mapel 
+                    <span style={{fontSize: 10, color: '#94a3b8', marginLeft: 6}}>(kode unik)</span>
+                  </label>
+                  <select 
+                    required 
+                    value={formData.mapelId} 
+                    onChange={e => handleMapelSelect(e.target.value)} 
+                    style={styles.formSelect}
+                  >
+                    <option value="">-- Pilih Mapel --</option>
+                    {availableMapel.map(m => (
+                      <option key={m.id} value={m.kodeMapel || m.id}>
+                        {m.namaMapel} ({m.kodeMapel})
+                      </option>
+                    ))}
+                  </select>
+                  {formData.mapelId && (
+                    <div style={styles.infoBox}>
+                      <Tag size={14} color="#8b5cf6" />
+                      <span style={{fontSize: 11, color: '#475569'}}>
+                        Kode Mapel: <strong>{formData.mapelId}</strong>
+                      </span>
                     </div>
                   )}
                 </div>
@@ -704,7 +830,7 @@ const SchedulePage = () => {
                     👥 Assign Siswa ({formData.selectedStudents.length} dipilih)
                   </label>
                   <p style={{fontSize: 9, color: '#94a3b8', marginTop: 2}}>
-                    Menampilkan siswa jenjang {formData.level} {formData.mapel ? `• mapel ${formData.mapel}` : ''}
+                    Menampilkan siswa jenjang {formData.level}
                   </p>
 
                   {/* Filter Siswa */}
@@ -726,13 +852,14 @@ const SchedulePage = () => {
                         <label key={s.id} style={styles.studentCheckItem}>
                           <input
                             type="checkbox"
-                            checked={formData.selectedStudents.includes(s.id) || formData.selectedStudents.includes(s.studentId)}
+                            checked={formData.selectedStudents.includes(s.studentId || s.id)}
                             onChange={(e) => {
-                              const ids = formData.selectedStudents;
-                              const sid = s.id || s.studentId;
+                              const sid = s.studentId || s.id;
                               setFormData({
                                 ...formData,
-                                selectedStudents: e.target.checked ? [...ids, sid] : ids.filter(id => id !== sid)
+                                selectedStudents: e.target.checked 
+                                  ? [...formData.selectedStudents, sid] 
+                                  : formData.selectedStudents.filter(id => id !== sid)
                               });
                             }}
                             style={{width: 16, height: 16, cursor: 'pointer', accentColor: '#3b82f6'}}
@@ -742,7 +869,7 @@ const SchedulePage = () => {
                               <span style={{fontSize: 12, fontWeight: '500'}}>{s.nama}</span>
                               {s.studentId && (
                                 <span style={{fontSize: 9, color: '#94a3b8', marginLeft: 6, fontFamily: 'monospace'}}>
-                                  {s.studentId.substring(0, 12)}
+                                  #{s.studentId}
                                 </span>
                               )}
                             </div>
@@ -785,22 +912,52 @@ const SchedulePage = () => {
 };
 
 // ============================================================
-// STYLES
+// STYLES - SEMUA DALAM OBJEK JAVASCRIPT (NO @media)
 // ============================================================
 const styles = {
   wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
-  mainContent: (m) => ({ marginLeft: m ? '0' : '250px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' }),
-  toast: { position: 'fixed', top: 20, right: 20, zIndex: 9999, background: '#1e293b', color: 'white', padding: '12px 20px', borderRadius: 12, fontWeight: 'bold', fontSize: 14, boxShadow: '0 10px 30px rgba(0,0,0,0.2)', animation: 'toastIn 0.3s ease' },
+  mainContent: (m) => ({ 
+    marginLeft: m ? '0' : '250px', 
+    padding: m ? '15px' : '30px', 
+    width: '100%', 
+    boxSizing: 'border-box', 
+    transition: '0.3s' 
+  }),
+  
+  toast: { 
+    position: 'fixed', top: 20, right: 20, zIndex: 9999, 
+    background: '#1e293b', color: 'white', 
+    padding: '12px 20px', borderRadius: 12, 
+    fontWeight: 'bold', fontSize: 14, 
+    boxShadow: '0 10px 30px rgba(0,0,0,0.2)', 
+    animation: 'toastIn 0.3s ease' 
+  },
+  
   loadingBox: { textAlign: 'center', padding: 80, color: '#94a3b8' },
-  spinner: { width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 15px' },
+  spinner: { 
+    width: 40, height: 40, 
+    border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', 
+    borderRadius: '50%', animation: 'spin 1s linear infinite', 
+    margin: '0 auto 15px' 
+  },
 
   // Header
-  headerCard: { background: 'linear-gradient(135deg, #1e293b, #334155)', padding: 20, borderRadius: 16, marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 15, color: 'white' },
+  headerCard: { 
+    background: 'linear-gradient(135deg, #1e293b, #334155)', 
+    padding: 20, borderRadius: 16, marginBottom: 20, 
+    display: 'flex', justifyContent: 'space-between', 
+    alignItems: 'center', flexWrap: 'wrap', gap: 15, 
+    color: 'white' 
+  },
   headerLeft: {},
   pageTitle: { margin: 0, fontSize: 20, display: 'flex', alignItems: 'center', gap: 8, color: 'white' },
   headerDate: { margin: '4px 0 0', fontSize: 12, opacity: 0.7 },
   headerRight: {},
-  codeBox: { background: 'rgba(255,255,255,0.1)', padding: '10px 16px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10 },
+  
+  codeBox: { 
+    background: 'rgba(255,255,255,0.1)', padding: '10px 16px', 
+    borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10 
+  },
   codeLabel: { fontSize: 10, fontWeight: 'bold', opacity: 0.8 },
   codeValue: { fontSize: 18, fontWeight: '900', color: '#fbbf24', fontFamily: 'monospace' },
   codeEditBtn: { background: 'rgba(255,255,255,0.2)', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 10 },
@@ -809,7 +966,12 @@ const styles = {
 
   // View Toggle
   viewToggle: { display: 'flex', gap: 8, marginBottom: 20 },
-  viewBtn: (active) => ({ flex: 1, padding: '10px', borderRadius: 10, border: 'none', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', background: active ? '#3b82f6' : '#e2e8f0', color: active ? 'white' : '#64748b', transition: '0.2s' }),
+  viewBtn: (active) => ({ 
+    flex: 1, padding: '10px', borderRadius: 10, border: 'none', 
+    fontWeight: 'bold', fontSize: 13, cursor: 'pointer', 
+    background: active ? '#3b82f6' : '#e2e8f0', 
+    color: active ? 'white' : '#64748b', transition: '0.2s' 
+  }),
 
   // Content Row
   contentRow: (m) => ({ display: 'flex', gap: 20, flexDirection: m ? 'column' : 'row' }),
@@ -849,7 +1011,7 @@ const styles = {
   planetName: { margin: 0, fontSize: 14, fontWeight: 'bold', color: '#1e293b', flex: 1 },
   planetCount: { fontSize: 10, color: '#94a3b8', background: '#f1f5f9', padding: '2px 8px', borderRadius: 10 },
   btnAddSmall: { background: '#3b82f6', color: 'white', border: 'none', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontWeight: 'bold', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 },
-  planetBody: { padding: 16, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 10 },
+  planetBody: { padding: 16, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 },
   emptyPlanet: { gridColumn: '1/-1', textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12, fontStyle: 'italic' },
 
   // Schedule Item
@@ -858,10 +1020,34 @@ const styles = {
   timeBadge: { fontSize: 12, fontWeight: '900', color: '#1e293b', background: '#e2e8f0', padding: '2px 8px', borderRadius: 6 },
   programBadge: (p) => ({ fontSize: 10, fontWeight: 'bold', color: p === 'English' ? '#ef4444' : '#10b981' }),
   scheduleTitle: { fontSize: 14, fontWeight: 'bold', marginBottom: 4, color: '#1e293b' },
-  scheduleMapel: { fontSize: 11, color: '#3b82f6', fontWeight: 600, marginBottom: 4 },
+  
+  // Kode Badges
+  scheduleCodes: { display: 'flex', gap: 6, marginBottom: 4, flexWrap: 'wrap' },
+  codeBadgeTeacher: { 
+    display: 'inline-flex', alignItems: 'center', gap: 3,
+    fontSize: 9, color: '#3b82f6', background: '#eef2ff',
+    padding: '1px 6px', borderRadius: 10, fontWeight: 600
+  },
+  codeBadgeMapel: {
+    display: 'inline-flex', alignItems: 'center', gap: 3,
+    fontSize: 9, color: '#8b5cf6', background: '#ede9fe',
+    padding: '1px 6px', borderRadius: 10, fontWeight: 600
+  },
+  
   scheduleInfo: { display: 'flex', gap: 8, fontSize: 11, color: '#64748b', flexWrap: 'wrap', marginBottom: 6 },
   studentPreview: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 },
-  studentChip: { background: '#e0e7ff', color: '#3730a3', padding: '2px 8px', borderRadius: 10, fontSize: 10, fontWeight: 'bold' },
+  studentChip: { 
+    background: '#e0e7ff', color: '#3730a3', 
+    padding: '2px 8px', borderRadius: 10, 
+    fontSize: 10, fontWeight: 'bold',
+    display: 'flex', alignItems: 'center', gap: 4
+  },
+  studentIdChip: { 
+    fontSize: 8, color: '#94a3b8', 
+    background: 'rgba(255,255,255,0.5)', 
+    padding: '0 4px', borderRadius: 4,
+    fontFamily: 'monospace'
+  },
   studentMore: { fontSize: 10, color: '#94a3b8' },
   scheduleActions: { display: 'flex', gap: 6, borderTop: '1px solid #e2e8f0', paddingTop: 8 },
   btnEditSm: { flex: 1, padding: '6px', borderRadius: 6, background: '#fef3c7', color: '#b45309', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 },
@@ -881,6 +1067,7 @@ const styles = {
   weeklyPlanet: { fontSize: 10, color: '#64748b' },
   weeklyTitle: { fontSize: 11, fontWeight: '500' },
   weeklyTeacher: { fontSize: 10, color: '#94a3b8' },
+  weeklyIdBadge: { fontSize: 8, color: '#3b82f6', background: '#eef2ff', padding: '1px 4px', borderRadius: 4, fontFamily: 'monospace' },
 
   // Modal
   overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000, backdropFilter: 'blur(2px)' },
@@ -894,6 +1081,7 @@ const styles = {
   formLabel: { fontSize: 11, fontWeight: 'bold', color: '#64748b' },
   formInput: { padding: '10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, width: '100%', boxSizing: 'border-box', background: '#f8fafc' },
   formSelect: { padding: '10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, width: '100%', boxSizing: 'border-box', background: 'white' },
+  infoBox: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 6, background: '#f8fafc', border: '1px solid #e2e8f0' },
   studentSelectList: { maxHeight: '200px', overflowY: 'auto', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', padding: '6px' },
   studentCheckItem: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', fontSize: 12 },
   studentKelasChip: { fontSize: 10, background: '#eef2ff', color: '#3b82f6', padding: '2px 6px', borderRadius: 8, fontWeight: 'bold' },
