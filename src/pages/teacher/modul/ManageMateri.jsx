@@ -6,7 +6,7 @@ import {
   getDocs, deleteDoc, query, where, orderBy, limit, runTransaction
 } from "firebase/firestore";
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { uploadElearningFile, deleteFile, supabase } from '../../../services/uploadService';
+import { uploadElearningFile, supabase } from '../../../services/uploadService';
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, ArrowLeft, 
   FileUp, Type, Video, X, Image as ImageIcon, BookOpen, 
