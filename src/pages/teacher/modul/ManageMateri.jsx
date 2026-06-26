@@ -1,26 +1,23 @@
 // src/pages/teacher/modul/ManageMateri.jsx
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { 
   collection, addDoc, doc, getDoc, updateDoc, serverTimestamp, 
-  getDocs, query, where, deleteDoc, arrayUnion, arrayRemove,
-  setDoc, increment 
+  getDocs, deleteDoc 
 } from "firebase/firestore";
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { uploadElearningFile, deleteElearningFile } from '../../../services/uploadService';
+import { uploadToDrive } from '../../../services/uploadService';
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, ArrowLeft, FileUp, Type, Video, X, 
   Image as ImageIcon, BookOpen, Send, Layers, ChevronDown, ChevronUp, Settings, 
   Eye, Copy, CheckCircle, Calendar, Users, Target, AlertCircle, RefreshCw, 
-  Maximize2, Minimize2, Smartphone, Tablet, Laptop, Info, ExternalLink,
-  Bold, Italic, Underline, List, Link as LinkIcon, AlignLeft, AlignCenter, AlignRight,
-  CalendarDays, Timer, Award, Archive, UserPlus, UserCheck as UserCheckIcon,
-  Search, Filter, Mail, Send as SendIcon, User, GraduationCap, FileCheck,
-  Cloud, CloudUpload, Loader2, Check, AlertTriangle
+  Smartphone, Tablet, Laptop, Info, ExternalLink,
+  Bold, Italic, Underline, List, CalendarDays, Award, Archive, 
+  UserPlus, UserCheck as UserCheckIcon, Search, Loader2, Check
 } from 'lucide-react';
 
 // ============================================
-// COMPONENT SIMPLE EDITOR
+// SIMPLE EDITOR COMPONENT
 // ============================================
 const SimpleEditor = ({ value, onChange, placeholder }) => {
   const applyFormat = (format) => {
@@ -59,11 +56,17 @@ const SimpleEditor = ({ value, onChange, placeholder }) => {
     setTimeout(() => textarea.focus(), 10);
   };
   
+  const toolbarBtn = {
+    background: 'none', border: 'none', padding: '4px 10px', 
+    borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600,
+    color: '#64748b', transition: '0.2s'
+  };
+
   return (
     <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
       <div style={{ 
-        display: 'flex', gap: 4, padding: 8, background: '#f8fafc', borderBottom: '1px solid #e2e8f0',
-        flexWrap: 'wrap'
+        display: 'flex', gap: 4, padding: 8, background: '#f8fafc', 
+        borderBottom: '1px solid #e2e8f0', flexWrap: 'wrap'
       }}>
         <button type="button" onClick={() => applyFormat('bold')} style={toolbarBtn} title="Bold (**teks**)"><b>B</b></button>
         <button type="button" onClick={() => applyFormat('italic')} style={toolbarBtn} title="Italic (*teks*)"><i>I</i></button>
@@ -92,12 +95,6 @@ const SimpleEditor = ({ value, onChange, placeholder }) => {
   );
 };
 
-const toolbarBtn = {
-  background: 'none', border: 'none', padding: '4px 10px', 
-  borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600,
-  color: '#64748b', transition: '0.2s'
-};
-
 // ============================================
 // MAIN COMPONENT
 // ============================================
@@ -106,8 +103,10 @@ const ManageMateri = () => {
   const editId = searchParams.get('edit');
   const navigate = useNavigate();
 
-  // ===== STATES =====
+  // ===== RESPONSIVE STATE =====
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // ===== STATES =====
   const [saving, setSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewDevice, setPreviewDevice] = useState('desktop');
@@ -115,25 +114,18 @@ const ManageMateri = () => {
   const [autoSaveStatus, setAutoSaveStatus] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
-  const [storageInfo, setStorageInfo] = useState({ 
-    usedMB: 0, 
-    remainingMB: 1024, 
-    percentageUsed: 0,
-    textString: 'Memuat kuota...'
-  });
-
-  // === IDENTITAS ===
+  
+  // IDENTITAS
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [coverImage, setCoverImage] = useState(null);
-  const [coverFile, setCoverFile] = useState(null);
   const [description, setDescription] = useState("");
   
-  // === KONTEN ===
+  // KONTEN
   const [sections, setSections] = useState([]);
   const [activeSection, setActiveSection] = useState(null);
   
-  // === PENGATURAN ===
+  // PENGATURAN
   const [targetKategori, setTargetKategori] = useState("Reguler");
   const [targetKelas, setTargetKelas] = useState("1 SD");
   const [mingguKe, setMingguKe] = useState(1);
@@ -147,18 +139,17 @@ const ManageMateri = () => {
   });
   const [tanggalSelesai, setTanggalSelesai] = useState("");
   
-  // === TARGET SISWA SPESIFIK ===
+  // TARGET SISWA SPESIFIK
   const [sendToSpecificStudents, setSendToSpecificStudents] = useState(false);
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [studentSearch, setStudentSearch] = useState('');
   const [allStudents, setAllStudents] = useState([]);
   const [showStudentPicker, setShowStudentPicker] = useState(false);
   
-  // === QUIZ ===
+  // QUIZ
   const [quizData, setQuizData] = useState([]);
-  const [deadlineQuiz, setDeadlineQuiz] = useState("");
   
-  // === DATA REFERENSI ===
+  // DATA REFERENSI
   const [availableClasses, setAvailableClasses] = useState([]);
   const [subjects, setSubjects] = useState(["Umum"]);
   const [authorName] = useState(localStorage.getItem('teacherName') || localStorage.getItem('userName') || "Guru");
@@ -177,7 +168,7 @@ const ManageMateri = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Ambil data siswa untuk picker
+  // Ambil data siswa
   useEffect(() => {
     const fetchStudents = async () => {
       try {
@@ -195,20 +186,6 @@ const ManageMateri = () => {
       }
     };
     fetchStudents();
-  }, []);
-
-  // Ambil info storage dari Supabase
-  useEffect(() => {
-    const fetchStorageInfo = async () => {
-      try {
-        const { getStorageUsage } = await import('../../../services/uploadService');
-        const info = await getStorageUsage();
-        setStorageInfo(info);
-      } catch (error) {
-        console.error("Error fetching storage info:", error);
-      }
-    };
-    fetchStorageInfo();
   }, []);
 
   // Auto-save draft
@@ -303,7 +280,6 @@ const ManageMateri = () => {
         setDescription(data.description || "");
         setSections(data.blocks || []);
         setQuizData(data.quizData || []);
-        setDeadlineQuiz(data.deadlineQuiz || "");
         setTargetKategori(data.targetKategori || "Reguler");
         setTargetKelas(data.targetKelas || "1 SD");
         setMingguKe(data.mingguKe || 1);
@@ -319,10 +295,16 @@ const ManageMateri = () => {
     }
   };
 
+  const convertBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+  });
+
   const handleFileUpload = async (file, type = 'cover') => {
     if (!file) return null;
     
-    // Validasi ukuran
     if (file.size > 50 * 1024 * 1024) {
       alert("❌ Maksimal 50MB!");
       return null;
@@ -332,12 +314,12 @@ const ManageMateri = () => {
     setUploadProgress(0);
 
     try {
-      // Simulasi progress
       const interval = setInterval(() => {
         setUploadProgress(prev => Math.min(prev + 10, 90));
       }, 200);
 
-      const result = await uploadElearningFile(file, type);
+      const base64 = await convertBase64(file);
+      const result = await uploadToDrive(base64, file.name, file.type);
 
       clearInterval(interval);
       setUploadProgress(100);
@@ -369,7 +351,6 @@ const ManageMateri = () => {
       return;
     }
 
-    setCoverFile(file);
     const url = await handleFileUpload(file, 'cover');
     if (url) {
       setCoverImage(url);
@@ -417,14 +398,6 @@ const ManageMateri = () => {
   
   const removeSection = (id) => {
     if (window.confirm("Hapus section ini?")) {
-      // Hapus file dari Supabase jika ada
-      const section = sections.find(s => s.id === id);
-      if (section?.content && section?.type === 'file') {
-        const filePath = section.content.split('/').slice(-2).join('/');
-        if (filePath) {
-          deleteElearningFile(filePath).catch(console.error);
-        }
-      }
       setSections(sections.filter(s => s.id !== id));
       if (activeSection === id) {
         setActiveSection(sections.length > 1 ? sections[0]?.id : null);
@@ -461,19 +434,6 @@ const ManageMateri = () => {
     });
   };
 
-  const selectAllStudents = () => {
-    const filtered = allStudents.filter(s => 
-      (s.nama || '').toLowerCase().includes(studentSearch.toLowerCase()) ||
-      (s.studentId || '').toLowerCase().includes(studentSearch.toLowerCase())
-    );
-    const allSelected = filtered.filter(s => !selectedStudents.some(sel => sel.id === s.id));
-    setSelectedStudents(prev => [...prev, ...allSelected.map(s => ({ 
-      id: s.id, 
-      nama: s.nama, 
-      studentId: s.studentId 
-    }))]);
-  };
-
   const getStudentInitials = (name) => {
     if (!name) return '?';
     return name.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('');
@@ -485,11 +445,6 @@ const ManageMateri = () => {
     
     if (statusModul === 'terjadwal' && !tanggalMulai) {
       return alert("❌ Silakan isi tanggal mulai untuk modul terjadwal!");
-    }
-    
-    // Validasi target
-    if (targetKelas === "Semua" && targetKategori === "Semua") {
-      if (!window.confirm("⚠️ PERINGATAN: Modul ini akan muncul untuk SEMUA siswa (semua kelas dan program).\n\nLanjutkan?")) return;
     }
     
     if (sendToSpecificStudents && selectedStudents.length === 0) {
@@ -504,7 +459,6 @@ const ManageMateri = () => {
       description,
       blocks: sections,
       quizData, 
-      deadlineQuiz: deadlineQuiz || null, 
       targetKategori, 
       targetKelas,
       mingguKe: parseInt(mingguKe) || 1, 
@@ -522,7 +476,6 @@ const ManageMateri = () => {
     }
     
     try {
-      let docId = editId;
       if (editId) {
         await updateDoc(doc(db, COLLECTION_NAME, editId), payload);
         alert("✅ Modul berhasil diperbarui!");
@@ -530,35 +483,11 @@ const ManageMateri = () => {
         payload.createdAt = serverTimestamp();
         payload.createdBy = authorName;
         const newDoc = await addDoc(collection(db, COLLECTION_NAME), payload);
-        docId = newDoc.id;
         localStorage.removeItem('draft_modul');
         alert(`✅ Modul "${title}" berhasil diterbitkan!`);
-        navigate(`/guru/modul/materi?edit=${docId}`);
+        navigate(`/guru/modul/materi?edit=${newDoc.id}`);
         return;
       }
-      
-      // Kirim notifikasi ke siswa yang dipilih
-      if (sendToSpecificStudents && selectedStudents.length > 0) {
-        try {
-          const notificationsRef = collection(db, "notifications");
-          for (const student of selectedStudents) {
-            await addDoc(notificationsRef, {
-              userId: student.id,
-              userType: 'student',
-              title: `📚 Modul Baru: ${title}`,
-              message: `Guru ${authorName} telah menerbitkan modul "${title}" untuk Anda.`,
-              modulId: docId,
-              type: 'modul_baru',
-              read: false,
-              createdAt: serverTimestamp()
-            });
-          }
-          console.log(`📨 Notifikasi dikirim ke ${selectedStudents.length} siswa`);
-        } catch (notifError) {
-          console.error("Error sending notifications:", notifError);
-        }
-      }
-      
     } catch (err) { 
       alert("❌ Gagal: " + err.message); 
     }
@@ -647,7 +576,6 @@ const ManageMateri = () => {
           {quizData?.length > 0 && (
             <div style={{ background: '#f0fdf4', padding: 12, borderRadius: 8, border: '1px solid #bbf7d0' }}>
               <p style={{ fontSize: 13, fontWeight: 'bold', color: '#166534' }}>❓ Kuis ({quizData.length} soal)</p>
-              <p style={{ fontSize: 11, color: '#166534' }}>Deadline: {deadlineQuiz ? new Date(deadlineQuiz).toLocaleDateString('id-ID') : 'Tidak ada deadline'}</p>
             </div>
           )}
           
@@ -660,15 +588,15 @@ const ManageMateri = () => {
   };
 
   const renderEditorContent = () => {
-    if (!activeSec) return null;
-    const section = sections.find(s => s.id === activeSec);
+    if (!activeSection) return null;
+    const section = sections.find(s => s.id === activeSection);
     if (!section) return null;
     
     if (section.type === 'text') {
       return (
         <SimpleEditor 
           value={section.content} 
-          onChange={value => updateSection(activeSec, 'content', value)}
+          onChange={value => updateSection(activeSection, 'content', value)}
           placeholder="Tulis materi di sini... Gunakan toolbar untuk format teks (**, *, [link])"
         />
       );
@@ -681,7 +609,7 @@ const ManageMateri = () => {
           <p style={{ fontWeight: 600, fontSize: 13 }}>{section.fileName || 'File'}</p>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 8 }}>
             <a href={section.content} target="_blank" rel="noreferrer" style={{ color: '#3b82f6', fontWeight: 600, fontSize: 12 }}>🔍 Buka</a>
-            <button onClick={() => updateSection(activeSec, 'content', '')} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>🗑️ Hapus</button>
+            <button onClick={() => updateSection(activeSection, 'content', '')} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>🗑️ Hapus</button>
           </div>
         </div>
       ) : (
@@ -697,7 +625,7 @@ const ManageMateri = () => {
               </div>
             ) : (
               <>
-                <CloudUpload size={30} color="#94a3b8" />
+                <FileUp size={30} color="#94a3b8" />
                 <span>Upload PDF/DOCX/PPT/Gambar (Max 50MB)</span>
               </>
             )}
@@ -705,13 +633,10 @@ const ManageMateri = () => {
               type="file" 
               accept=".pdf,.doc,.docx,.ppt,.pptx,image/*" 
               hidden 
-              onChange={(e) => handleSectionFileUpload(e, activeSec)} 
+              onChange={(e) => handleSectionFileUpload(e, activeSection)} 
               disabled={uploading}
             />
           </label>
-          <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 8, textAlign: 'center' }}>
-            💾 Penyimpanan: {storageInfo.usedMB.toFixed(1)}MB / 1024MB digunakan
-          </div>
         </div>
       );
     }
@@ -722,7 +647,7 @@ const ManageMateri = () => {
         <>
           <input 
             value={section.content} 
-            onChange={e => updateSection(activeSec, 'content', e.target.value)} 
+            onChange={e => updateSection(activeSection, 'content', e.target.value)} 
             placeholder="Tempel link YouTube, Canva, Google Drive..." 
             style={styles.input} 
           />
@@ -742,7 +667,7 @@ const ManageMateri = () => {
         <div>
           <textarea 
             value={section.content} 
-            onChange={e => updateSection(activeSec, 'content', e.target.value)} 
+            onChange={e => updateSection(activeSection, 'content', e.target.value)} 
             placeholder="Tulis instruksi tugas di sini..."
             style={{ width: '100%', minHeight: 120, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, resize: 'vertical' }}
           />
@@ -752,7 +677,7 @@ const ManageMateri = () => {
             <input 
               type="datetime-local" 
               value={section.endTime} 
-              onChange={e => updateSection(activeSec, 'endTime', e.target.value)} 
+              onChange={e => updateSection(activeSection, 'endTime', e.target.value)} 
               style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #fde68a', fontSize: 12, outline: 'none' }} 
             />
           </div>
@@ -764,20 +689,312 @@ const ManageMateri = () => {
     return null;
   };
 
-  // ===== RENDER =====
+  // ============================================
+  // STYLES - Semua style dalam objek JavaScript
+  // ============================================
+  const styles = {
+    container: { 
+      maxWidth: 1200, margin: '0 auto', paddingBottom: 100,
+      paddingLeft: isMobile ? 12 : 16, 
+      paddingRight: isMobile ? 12 : 16
+    },
+    
+    autoSaveToast: {
+      position: 'fixed', bottom: 80, right: 20, 
+      background: '#10b981', color: 'white', 
+      padding: '6px 16px', borderRadius: 20, fontSize: 11, 
+      zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+    },
+    
+    tipsBanner: {
+      background: '#eef2ff', borderRadius: 12, padding: 12, 
+      marginBottom: 20, display: 'flex', alignItems: 'center', 
+      justifyContent: 'space-between', flexWrap: 'wrap', gap: 10
+    },
+    tipsClose: { background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', fontSize: 11 },
+    
+    header: {
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+      marginBottom: 20, flexWrap: 'wrap', gap: 10
+    },
+    btnBack: {
+      background: 'white', border: '1px solid #e2e8f0', 
+      padding: isMobile ? '6px 10px' : '8px 14px', 
+      borderRadius: 8, cursor: 'pointer', 
+      fontWeight: 600, fontSize: isMobile ? 12 : 13, 
+      display: 'flex', alignItems: 'center', gap: 4
+    },
+    pageTitle: { 
+      margin: 0, 
+      fontSize: isMobile ? 16 : 20, 
+      fontWeight: 800, color: '#1e293b' 
+    },
+    headerActions: { display: 'flex', gap: 6, flexWrap: 'wrap' },
+    btnPreview: {
+      border: 'none', padding: isMobile ? '6px 10px' : '8px 14px', 
+      borderRadius: 8, cursor: 'pointer', fontWeight: 600, 
+      fontSize: isMobile ? 11 : 12, display: 'flex', alignItems: 'center', gap: 4
+    },
+    btnLiveView: {
+      background: 'white', border: '1px solid #e2e8f0', 
+      padding: isMobile ? '6px 10px' : '8px 14px', 
+      borderRadius: 8, cursor: 'pointer', 
+      fontWeight: 600, fontSize: isMobile ? 11 : 12, 
+      display: 'flex', alignItems: 'center', gap: 4
+    },
+    btnSave: {
+      background: '#10b981', color: 'white', border: 'none', 
+      padding: isMobile ? '6px 14px' : '8px 20px', 
+      borderRadius: 8, cursor: 'pointer', 
+      fontWeight: 700, fontSize: isMobile ? 12 : 13, 
+      display: 'flex', alignItems: 'center', gap: 6
+    },
+    
+    mainGrid: { 
+      display: 'flex', 
+      gap: 20, 
+      flexDirection: isMobile ? 'column' : 'row' 
+    },
+    
+    sidebar: { 
+      width: isMobile ? '100%' : '320px', 
+      flexShrink: 0, 
+      display: 'flex', 
+      flexDirection: 'column', 
+      gap: 10 
+    },
+    
+    card: { background: 'white', padding: 14, borderRadius: 12, border: '1px solid #e2e8f0' },
+    cardTitle: { margin: '0 0 12px', fontSize: 12, fontWeight: 700, color: '#64748b', display: 'flex', alignItems: 'center', gap: 6 },
+    
+    input: { 
+      width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', 
+      fontSize: 12, outline: 'none', marginBottom: 8, boxSizing: 'border-box',
+      background: '#f8fafc'
+    },
+    inputSmall: { 
+      flex: 1, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', 
+      fontSize: 10, outline: 'none', boxSizing: 'border-box',
+      background: '#f8fafc'
+    },
+    select: { 
+      flex: 1, padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', 
+      fontSize: 11, background: 'white', outline: 'none', cursor: 'pointer'
+    },
+    
+    coverUpload: {
+      display: 'block', height: 80, borderRadius: 6, overflow: 'hidden', 
+      cursor: 'pointer', border: '2px dashed #e2e8f0', marginTop: 4,
+      background: '#f8fafc'
+    },
+    
+    warningBanner: {
+      background: '#fef3c7', padding: 8, borderRadius: 6, 
+      fontSize: 10, color: '#b45309', display: 'flex', alignItems: 'center', gap: 6
+    },
+    
+    scheduleBox: {
+      background: '#fffbeb', padding: 12, borderRadius: 8, 
+      marginTop: 8, border: '1px solid #fde68a'
+    },
+    scheduleTitle: {
+      fontSize: 11, fontWeight: 700, color: '#b45309', 
+      marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6
+    },
+    scheduleLabel: {
+      fontSize: 10, fontWeight: 600, color: '#92400e', 
+      display: 'block', marginBottom: 4
+    },
+    scheduleInput: {
+      width: '100%', padding: '8px 10px', borderRadius: 6, 
+      border: '1px solid #fde68a', fontSize: 11, background: 'white'
+    },
+    
+    statusMessageGreen: {
+      background: '#dcfce7', padding: 8, borderRadius: 6, 
+      fontSize: 10, color: '#166534', marginTop: 8, 
+      display: 'flex', alignItems: 'center', gap: 6
+    },
+    statusMessageGray: {
+      background: '#f1f5f9', padding: 8, borderRadius: 6, 
+      fontSize: 10, color: '#64748b', marginTop: 8, 
+      display: 'flex', alignItems: 'center', gap: 6
+    },
+    
+    emptyContent: {
+      background: '#f8fafc', padding: 20, borderRadius: 8, 
+      textAlign: 'center', border: '1px dashed #e2e8f0'
+    },
+    sectionItem: {
+      display: 'flex', alignItems: 'center', gap: 6, 
+      padding: '8px 10px', borderRadius: 8, cursor: 'pointer', 
+      marginBottom: 4, border: '1px solid #e2e8f0'
+    },
+    sectionLabel: {
+      flex: 1, fontSize: 11, fontWeight: 600, color: '#1e293b', 
+      display: 'flex', alignItems: 'center', gap: 6, minWidth: 0
+    },
+    btnArrow: {
+      background: 'none', border: 'none', cursor: 'pointer', 
+      padding: 2, borderRadius: 4, display: 'flex', 
+      alignItems: 'center', justifyContent: 'center', opacity: 0.6
+    },
+    btnX: {
+      background: 'none', border: 'none', color: '#ef4444', 
+      cursor: 'pointer', padding: 4, borderRadius: 4, 
+      display: 'flex', alignItems: 'center', justifyContent: 'center'
+    },
+    
+    addSectionGrid: {
+      display: 'grid', 
+      gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)', 
+      gap: 6
+    },
+    addSectionBtn: {
+      padding: isMobile ? '6px' : '8px', 
+      background: 'white', border: '1px solid #e2e8f0', 
+      borderRadius: 8, cursor: 'pointer', fontWeight: 600, 
+      fontSize: isMobile ? 10 : 11, 
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
+    },
+    
+    quizInfo: {
+      display: 'flex', alignItems: 'center', gap: 8, 
+      fontSize: 11, background: '#f0fdf4', padding: 8, borderRadius: 6
+    },
+    btnEditQuiz: {
+      marginLeft: 'auto', background: '#10b981', color: 'white', 
+      border: 'none', padding: '4px 10px', borderRadius: 4, 
+      cursor: 'pointer', fontWeight: 600, fontSize: 10
+    },
+    btnCreateQuiz: {
+      width: '100%', padding: 8, background: '#3b82f6', color: 'white', 
+      border: 'none', borderRadius: 6, cursor: 'pointer', 
+      fontWeight: 600, fontSize: 11, display: 'flex', 
+      alignItems: 'center', justifyContent: 'center', gap: 6
+    },
+    
+    btnSelectAll: {
+      padding: '6px 10px', background: '#e0e7ff', border: 'none', 
+      borderRadius: 6, cursor: 'pointer', color: '#3730a3'
+    },
+    studentTag: {
+      display: 'inline-flex', alignItems: 'center', gap: 4, 
+      background: '#eef2ff', padding: '3px 8px', borderRadius: 12, 
+      fontSize: 10, fontWeight: 600, color: '#3730a3'
+    },
+    removeTag: {
+      background: 'none', border: 'none', color: '#3730a3', 
+      cursor: 'pointer', padding: 0, display: 'flex', 
+      alignItems: 'center', justifyContent: 'center'
+    },
+    studentPicker: {
+      position: 'relative', marginTop: 8, 
+      border: '1px solid #e2e8f0', borderRadius: 8, 
+      background: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', 
+      zIndex: 10
+    },
+    studentPickerHeader: {
+      display: 'flex', justifyContent: 'space-between', 
+      alignItems: 'center', padding: '8px 12px', 
+      borderBottom: '1px solid #e2e8f0'
+    },
+    closePicker: {
+      background: 'none', border: 'none', cursor: 'pointer', 
+      color: '#94a3b8', fontSize: 14
+    },
+    studentPickerList: {
+      maxHeight: 200, overflowY: 'auto', padding: 4
+    },
+    studentPickerItem: {
+      display: 'flex', alignItems: 'center', gap: 8, 
+      padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
+      transition: '0.2s'
+    },
+    studentPickerAvatar: {
+      width: 28, height: 28, borderRadius: '50%', 
+      background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+      color: 'white', display: 'flex', alignItems: 'center', 
+      justifyContent: 'center', fontSize: 10, fontWeight: 'bold', flexShrink: 0
+    },
+    
+    editorArea: { flex: 1, minWidth: 0 },
+    emptyEditor: {
+      textAlign: 'center', padding: isMobile ? 30 : 60, 
+      background: 'white', borderRadius: 12, 
+      border: '2px dashed #e2e8f0', color: '#94a3b8'
+    },
+    editorCard: { background: 'white', padding: isMobile ? 14 : 20, borderRadius: 12, border: '1px solid #e2e8f0' },
+    editorHeader: {
+      display: 'flex', justifyContent: 'space-between', 
+      alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8
+    },
+    editorTypeBadge: {
+      fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 6
+    },
+    btnEditorPreview: {
+      background: '#f1f5f9', border: 'none', padding: '5px 10px', 
+      borderRadius: 6, cursor: 'pointer', fontSize: 11, 
+      display: 'flex', alignItems: 'center', gap: 4
+    },
+    btnEditorDelete: {
+      background: '#fee2e2', color: '#ef4444', border: 'none', 
+      padding: '5px 10px', borderRadius: 6, cursor: 'pointer', 
+      fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3
+    },
+    sectionTitleInput: {
+      width: '100%', border: 'none', fontSize: 16, fontWeight: 700, 
+      outline: 'none', marginBottom: 16, padding: '4px 0', 
+      color: '#1e293b', borderBottom: '2px solid #e2e8f0'
+    },
+    uploadBox: {
+      display: 'flex', flexDirection: 'column', alignItems: 'center', 
+      gap: 10, padding: '30px 20px', border: '2px dashed #e2e8f0', 
+      borderRadius: 10, cursor: 'pointer', background: '#f8fafc', 
+      color: '#64748b', fontSize: 13
+    },
+    
+    floatingFooter: {
+      position: 'fixed', bottom: 0, 
+      left: isMobile ? 0 : 260, 
+      right: 0,
+      background: 'white', borderTop: '1px solid #e2e8f0',
+      padding: isMobile ? '8px 12px' : '10px 20px', 
+      display: 'flex', 
+      justifyContent: 'flex-end', gap: 10, zIndex: 50,
+      flexWrap: 'wrap'
+    },
+    btnFooterCancel: {
+      padding: isMobile ? '8px 14px' : '10px 20px', 
+      background: '#f1f5f9', 
+      border: 'none', borderRadius: 8, fontWeight: 600, 
+      fontSize: isMobile ? 12 : 13, cursor: 'pointer'
+    },
+    btnFooterLive: {
+      padding: isMobile ? '8px 14px' : '10px 20px', 
+      background: 'white', 
+      border: '1px solid #e2e8f0', borderRadius: 8, 
+      fontWeight: 600, fontSize: isMobile ? 12 : 13, 
+      cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4
+    },
+    btnFooterSave: {
+      padding: isMobile ? '8px 18px' : '10px 25px', 
+      background: '#10b981', color: 'white', 
+      border: 'none', borderRadius: 8, fontWeight: 700, 
+      fontSize: isMobile ? 12 : 13, cursor: 'pointer', 
+      display: 'flex', alignItems: 'center', gap: 6
+    }
+  };
+
+  // ============================================
+  // RENDER
+  // ============================================
   return (
     <div style={styles.container}>
       <style>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-        .pulse-animation {
-          animation: pulse 1.5s ease-in-out infinite;
         }
       `}</style>
       
@@ -814,7 +1031,7 @@ const ManageMateri = () => {
           </button>
           {editId && (
             <button onClick={() => window.open(`/siswa/materi/${editId}`, '_blank')} style={styles.btnLiveView}>
-              <ExternalLink size={14} /> Live View
+              <ExternalLink size={14} /> {!isMobile && 'Live View'}
             </button>
           )}
           <button onClick={handleSave} disabled={saving} style={{
@@ -831,7 +1048,7 @@ const ManageMateri = () => {
       ) : (
         <div style={styles.mainGrid}>
           
-          {/* ===== SIDEBAR KIRI ===== */}
+          {/* SIDEBAR KIRI */}
           <div style={styles.sidebar}>
             
             {/* Identitas Modul */}
@@ -889,7 +1106,7 @@ const ManageMateri = () => {
                 </div>
               )}
               
-              {/* ===== FITUR BARU: Kirim ke Siswa Tertentu ===== */}
+              {/* Kirim ke Siswa Tertentu */}
               <div style={{ marginTop: 12, borderTop: '1px solid #e2e8f0', paddingTop: 12 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                   <input 
@@ -913,13 +1130,6 @@ const ManageMateri = () => {
                           onFocus={() => setShowStudentPicker(true)}
                         />
                       </div>
-                      <button 
-                        onClick={selectAllStudents}
-                        style={styles.btnSelectAll}
-                        title="Pilih semua yang terfilter"
-                      >
-                        <Users size={14} />
-                      </button>
                     </div>
                     
                     {selectedStudents.length > 0 && (
@@ -1125,30 +1335,11 @@ const ManageMateri = () => {
                 </button>
               )}
             </div>
-
-            {/* Storage Info */}
-            <div style={{...styles.card, background: '#f8fafc'}}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 10, color: '#64748b' }}>💾 Penyimpanan</span>
-                <span style={{ fontSize: 10, fontWeight: 600 }}>
-                  {storageInfo.usedMB.toFixed(1)}MB / 1024MB
-                </span>
-              </div>
-              <div style={{ width: '100%', height: 4, background: '#e2e8f0', borderRadius: 2, marginTop: 4 }}>
-                <div style={{ 
-                  width: `${Math.min(storageInfo.percentageUsed, 100)}%`, 
-                  height: '100%', 
-                  background: storageInfo.percentageUsed > 80 ? '#ef4444' : '#3b82f6', 
-                  borderRadius: 2,
-                  transition: 'width 0.5s'
-                }} />
-              </div>
-            </div>
           </div>
 
-          {/* ===== AREA EDITOR KANAN ===== */}
+          {/* AREA EDITOR KANAN */}
           <div style={styles.editorArea}>
-            {!activeSec ? (
+            {!activeSection ? (
               <div style={styles.emptyEditor}>
                 <Layers size={48} color="#cbd5e1" />
                 <h3 style={{ fontSize: 16, marginTop: 12 }}>Pilih atau Tambah Konten</h3>
@@ -1159,26 +1350,26 @@ const ManageMateri = () => {
                 <div style={styles.editorHeader}>
                   <span style={{
                     ...styles.editorTypeBadge,
-                    background: activeSec?.type === 'assignment' ? '#fef3c7' : '#e0e7ff',
-                    color: activeSec?.type === 'assignment' ? '#b45309' : '#3730a3'
+                    background: sections.find(s => s.id === activeSection)?.type === 'assignment' ? '#fef3c7' : '#e0e7ff',
+                    color: sections.find(s => s.id === activeSection)?.type === 'assignment' ? '#b45309' : '#3730a3'
                   }}>
-                    {activeSec?.type === 'text' ? '📄 TEKS' : 
-                     activeSec?.type === 'file' ? '📁 FILE' : 
-                     activeSec?.type === 'video' ? '🎥 VIDEO' : '📝 TUGAS'}
+                    {sections.find(s => s.id === activeSection)?.type === 'text' ? '📄 TEKS' : 
+                     sections.find(s => s.id === activeSection)?.type === 'file' ? '📁 FILE' : 
+                     sections.find(s => s.id === activeSection)?.type === 'video' ? '🎥 VIDEO' : '📝 TUGAS'}
                   </span>
                   <div style={{ display: 'flex', gap: 6 }}>
                     <button onClick={() => setShowPreview(true)} style={styles.btnEditorPreview}>
                       <Eye size={12} /> Preview
                     </button>
-                    <button onClick={() => removeSection(activeSec)} style={styles.btnEditorDelete}>
+                    <button onClick={() => removeSection(activeSection)} style={styles.btnEditorDelete}>
                       <Trash2 size={12} /> Hapus
                     </button>
                   </div>
                 </div>
 
                 <input 
-                  value={activeSec?.title || ''} 
-                  onChange={e => updateSection(activeSec, 'title', e.target.value)} 
+                  value={sections.find(s => s.id === activeSection)?.title || ''} 
+                  onChange={e => updateSection(activeSection, 'title', e.target.value)} 
                   placeholder="Judul section (contoh: Bab 1, Pengertian, dll)" 
                   style={styles.sectionTitleInput} 
                 />
@@ -1190,14 +1381,14 @@ const ManageMateri = () => {
         </div>
       )}
 
-      {/* ===== FLOATING FOOTER ===== */}
+      {/* FLOATING FOOTER */}
       <div style={styles.floatingFooter}>
         <button onClick={() => navigate('/guru/modul')} style={styles.btnFooterCancel}>
           Batal
         </button>
         {editId && (
           <button onClick={() => window.open(`/siswa/materi/${editId}`, '_blank')} style={styles.btnFooterLive}>
-            <ExternalLink size={14} /> Live Preview
+            <ExternalLink size={14} /> {!isMobile && 'Live Preview'}
           </button>
         )}
         <button onClick={handleSave} disabled={saving} style={{
@@ -1210,277 +1401,5 @@ const ManageMateri = () => {
     </div>
   );
 };
-
-// ============================================
-// STYLES
-// ============================================
-const styles = {
-  container: { maxWidth: 1200, margin: '0 auto', paddingBottom: 100 },
-  
-  autoSaveToast: {
-    position: 'fixed', bottom: 80, right: 20, 
-    background: '#10b981', color: 'white', 
-    padding: '6px 16px', borderRadius: 20, fontSize: 11, 
-    zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-  },
-  
-  tipsBanner: {
-    background: '#eef2ff', borderRadius: 12, padding: 12, 
-    marginBottom: 20, display: 'flex', alignItems: 'center', 
-    justifyContent: 'space-between', flexWrap: 'wrap', gap: 10
-  },
-  tipsClose: { background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', fontSize: 11 },
-  
-  header: {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-    marginBottom: 20, flexWrap: 'wrap', gap: 10
-  },
-  btnBack: {
-    background: 'white', border: '1px solid #e2e8f0', 
-    padding: '8px 14px', borderRadius: 8, cursor: 'pointer', 
-    fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 4
-  },
-  pageTitle: { margin: 0, fontSize: 20, fontWeight: 800, color: '#1e293b' },
-  headerActions: { display: 'flex', gap: 6, flexWrap: 'wrap' },
-  btnPreview: {
-    border: 'none', padding: '8px 14px', borderRadius: 8, 
-    cursor: 'pointer', fontWeight: 600, fontSize: 12, 
-    display: 'flex', alignItems: 'center', gap: 4
-  },
-  btnLiveView: {
-    background: 'white', border: '1px solid #e2e8f0', 
-    padding: '8px 14px', borderRadius: 8, cursor: 'pointer', 
-    fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 4
-  },
-  btnSave: {
-    background: '#10b981', color: 'white', border: 'none', 
-    padding: '8px 20px', borderRadius: 8, cursor: 'pointer', 
-    fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6
-  },
-  
-  mainGrid: { display: 'flex', gap: 20, flexDirection: 'row' },
-  
-  sidebar: { width: '320px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 },
-  
-  card: { background: 'white', padding: 14, borderRadius: 12, border: '1px solid #e2e8f0' },
-  cardTitle: { margin: '0 0 12px', fontSize: 12, fontWeight: 700, color: '#64748b', display: 'flex', alignItems: 'center', gap: 6 },
-  
-  input: { 
-    width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', 
-    fontSize: 12, outline: 'none', marginBottom: 8, boxSizing: 'border-box',
-    background: '#f8fafc'
-  },
-  inputSmall: { 
-    flex: 1, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', 
-    fontSize: 10, outline: 'none', boxSizing: 'border-box',
-    background: '#f8fafc'
-  },
-  select: { 
-    flex: 1, padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', 
-    fontSize: 11, background: 'white', outline: 'none', cursor: 'pointer'
-  },
-  
-  coverUpload: {
-    display: 'block', height: 80, borderRadius: 6, overflow: 'hidden', 
-    cursor: 'pointer', border: '2px dashed #e2e8f0', marginTop: 4,
-    background: '#f8fafc'
-  },
-  
-  warningBanner: {
-    background: '#fef3c7', padding: 8, borderRadius: 6, 
-    fontSize: 10, color: '#b45309', display: 'flex', alignItems: 'center', gap: 6
-  },
-  
-  scheduleBox: {
-    background: '#fffbeb', padding: 12, borderRadius: 8, 
-    marginTop: 8, border: '1px solid #fde68a'
-  },
-  scheduleTitle: {
-    fontSize: 11, fontWeight: 700, color: '#b45309', 
-    marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6
-  },
-  scheduleLabel: {
-    fontSize: 10, fontWeight: 600, color: '#92400e', 
-    display: 'block', marginBottom: 4
-  },
-  scheduleInput: {
-    width: '100%', padding: '8px 10px', borderRadius: 6, 
-    border: '1px solid #fde68a', fontSize: 11, background: 'white'
-  },
-  
-  statusMessageGreen: {
-    background: '#dcfce7', padding: 8, borderRadius: 6, 
-    fontSize: 10, color: '#166534', marginTop: 8, 
-    display: 'flex', alignItems: 'center', gap: 6
-  },
-  statusMessageGray: {
-    background: '#f1f5f9', padding: 8, borderRadius: 6, 
-    fontSize: 10, color: '#64748b', marginTop: 8, 
-    display: 'flex', alignItems: 'center', gap: 6
-  },
-  
-  emptyContent: {
-    background: '#f8fafc', padding: 20, borderRadius: 8, 
-    textAlign: 'center', border: '1px dashed #e2e8f0'
-  },
-  sectionItem: {
-    display: 'flex', alignItems: 'center', gap: 6, 
-    padding: '8px 10px', borderRadius: 8, cursor: 'pointer', 
-    marginBottom: 4, border: '1px solid #e2e8f0'
-  },
-  sectionLabel: {
-    flex: 1, fontSize: 11, fontWeight: 600, color: '#1e293b', 
-    display: 'flex', alignItems: 'center', gap: 6, minWidth: 0
-  },
-  btnArrow: {
-    background: 'none', border: 'none', cursor: 'pointer', 
-    padding: 2, borderRadius: 4, display: 'flex', 
-    alignItems: 'center', justifyContent: 'center', opacity: 0.6
-  },
-  btnX: {
-    background: 'none', border: 'none', color: '#ef4444', 
-    cursor: 'pointer', padding: 4, borderRadius: 4, 
-    display: 'flex', alignItems: 'center', justifyContent: 'center'
-  },
-  
-  addSectionGrid: {
-    display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6
-  },
-  addSectionBtn: {
-    padding: '8px', background: 'white', border: '1px solid #e2e8f0', 
-    borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 11, 
-    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
-  },
-  
-  quizInfo: {
-    display: 'flex', alignItems: 'center', gap: 8, 
-    fontSize: 11, background: '#f0fdf4', padding: 8, borderRadius: 6
-  },
-  btnEditQuiz: {
-    marginLeft: 'auto', background: '#10b981', color: 'white', 
-    border: 'none', padding: '4px 10px', borderRadius: 4, 
-    cursor: 'pointer', fontWeight: 600, fontSize: 10
-  },
-  btnCreateQuiz: {
-    width: '100%', padding: 8, background: '#3b82f6', color: 'white', 
-    border: 'none', borderRadius: 6, cursor: 'pointer', 
-    fontWeight: 600, fontSize: 11, display: 'flex', 
-    alignItems: 'center', justifyContent: 'center', gap: 6
-  },
-  
-  // ===== Student Picker =====
-  btnSelectAll: {
-    padding: '6px 10px', background: '#e0e7ff', border: 'none', 
-    borderRadius: 6, cursor: 'pointer', color: '#3730a3'
-  },
-  studentTag: {
-    display: 'inline-flex', alignItems: 'center', gap: 4, 
-    background: '#eef2ff', padding: '3px 8px', borderRadius: 12, 
-    fontSize: 10, fontWeight: 600, color: '#3730a3'
-  },
-  removeTag: {
-    background: 'none', border: 'none', color: '#3730a3', 
-    cursor: 'pointer', padding: 0, display: 'flex', 
-    alignItems: 'center', justifyContent: 'center'
-  },
-  studentPicker: {
-    position: 'relative', marginTop: 8, 
-    border: '1px solid #e2e8f0', borderRadius: 8, 
-    background: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', 
-    zIndex: 10
-  },
-  studentPickerHeader: {
-    display: 'flex', justifyContent: 'space-between', 
-    alignItems: 'center', padding: '8px 12px', 
-    borderBottom: '1px solid #e2e8f0'
-  },
-  closePicker: {
-    background: 'none', border: 'none', cursor: 'pointer', 
-    color: '#94a3b8', fontSize: 14
-  },
-  studentPickerList: {
-    maxHeight: 200, overflowY: 'auto', padding: 4
-  },
-  studentPickerItem: {
-    display: 'flex', alignItems: 'center', gap: 8, 
-    padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
-    transition: '0.2s'
-  },
-  studentPickerAvatar: {
-    width: 28, height: 28, borderRadius: '50%', 
-    background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-    color: 'white', display: 'flex', alignItems: 'center', 
-    justifyContent: 'center', fontSize: 10, fontWeight: 'bold', flexShrink: 0
-  },
-  
-  // ===== Editor Area =====
-  editorArea: { flex: 1, minWidth: 0 },
-  emptyEditor: {
-    textAlign: 'center', padding: 60, background: 'white', 
-    borderRadius: 12, border: '2px dashed #e2e8f0', color: '#94a3b8'
-  },
-  editorCard: { background: 'white', padding: 20, borderRadius: 12, border: '1px solid #e2e8f0' },
-  editorHeader: {
-    display: 'flex', justifyContent: 'space-between', 
-    alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8
-  },
-  editorTypeBadge: {
-    fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 6
-  },
-  btnEditorPreview: {
-    background: '#f1f5f9', border: 'none', padding: '5px 10px', 
-    borderRadius: 6, cursor: 'pointer', fontSize: 11, 
-    display: 'flex', alignItems: 'center', gap: 4
-  },
-  btnEditorDelete: {
-    background: '#fee2e2', color: '#ef4444', border: 'none', 
-    padding: '5px 10px', borderRadius: 6, cursor: 'pointer', 
-    fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3
-  },
-  sectionTitleInput: {
-    width: '100%', border: 'none', fontSize: 16, fontWeight: 700, 
-    outline: 'none', marginBottom: 16, padding: '4px 0', 
-    color: '#1e293b', borderBottom: '2px solid #e2e8f0'
-  },
-  uploadBox: {
-    display: 'flex', flexDirection: 'column', alignItems: 'center', 
-    gap: 10, padding: '30px 20px', border: '2px dashed #e2e8f0', 
-    borderRadius: 10, cursor: 'pointer', background: '#f8fafc', 
-    color: '#64748b', fontSize: 13
-  },
-  
-  // ===== Floating Footer =====
-  floatingFooter: {
-    position: 'fixed', bottom: 0, left: 260, right: 0,
-    background: 'white', borderTop: '1px solid #e2e8f0',
-    padding: '10px 20px', display: 'flex', 
-    justifyContent: 'flex-end', gap: 10, zIndex: 50
-  },
-  btnFooterCancel: {
-    padding: '10px 20px', background: '#f1f5f9', 
-    border: 'none', borderRadius: 8, fontWeight: 600, 
-    fontSize: 13, cursor: 'pointer'
-  },
-  btnFooterLive: {
-    padding: '10px 20px', background: 'white', 
-    border: '1px solid #e2e8f0', borderRadius: 8, 
-    fontWeight: 600, fontSize: 13, cursor: 'pointer', 
-    display: 'flex', alignItems: 'center', gap: 4
-  },
-  btnFooterSave: {
-    padding: '10px 25px', background: '#10b981', color: 'white', 
-    border: 'none', borderRadius: 8, fontWeight: 700, 
-    fontSize: 13, cursor: 'pointer', display: 'flex', 
-    alignItems: 'center', gap: 6
-  }
-};
-
-// Override untuk mobile
-@media (max-width: 768px) {
-  styles.mainGrid = { ...styles.mainGrid, flexDirection: 'column' };
-  styles.sidebar = { ...styles.sidebar, width: '100%' };
-  styles.floatingFooter = { ...styles.floatingFooter, left: 0 };
-  styles.addSectionGrid = { ...styles.addSectionGrid, gridTemplateColumns: 'repeat(2, 1fr)' };
-}
 
 export default ManageMateri;
