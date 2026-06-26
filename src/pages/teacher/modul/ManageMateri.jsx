@@ -1,24 +1,27 @@
 // src/pages/teacher/modul/ManageMateri.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { db } from '../../../firebase';
 import { 
   collection, addDoc, doc, getDoc, updateDoc, serverTimestamp, 
-  getDocs, deleteDoc 
+  getDocs, deleteDoc, query, where, orderBy, limit 
 } from "firebase/firestore";
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadToDrive } from '../../../services/uploadService';
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, ArrowLeft, FileUp, Type, Video, X, 
   Image as ImageIcon, BookOpen, Send, Layers, ChevronDown, ChevronUp, Settings, 
-  Eye, Copy, CheckCircle, Calendar, Users, Target, AlertCircle, RefreshCw, 
+  Eye, CheckCircle, Calendar, Users, Target, AlertCircle, 
   Smartphone, Tablet, Laptop, Info, ExternalLink,
-  Bold, Italic, Underline, List, CalendarDays, Award, Archive, 
-  UserPlus, UserCheck as UserCheckIcon, Search, Loader2, Check
+  CalendarDays, Archive, UserPlus, UserCheck as UserCheckIcon, 
+  Search, Loader2, Hash, Tag, Zap, Sparkles, Filter, 
+  User, GraduationCap, BadgeCheck, Shield, Database, 
+  ChevronRight, Home, RefreshCw, AlertTriangle
 } from 'lucide-react';
+import LogoGemilang from '../../../components/LogoGemilang';
 
-// ============================================
+// ============================================================
 // SIMPLE EDITOR COMPONENT
-// ============================================
+// ============================================================
 const SimpleEditor = ({ value, onChange, placeholder }) => {
   const applyFormat = (format) => {
     const textarea = document.getElementById('editor-textarea');
@@ -68,12 +71,12 @@ const SimpleEditor = ({ value, onChange, placeholder }) => {
         display: 'flex', gap: 4, padding: 8, background: '#f8fafc', 
         borderBottom: '1px solid #e2e8f0', flexWrap: 'wrap'
       }}>
-        <button type="button" onClick={() => applyFormat('bold')} style={toolbarBtn} title="Bold (**teks**)"><b>B</b></button>
-        <button type="button" onClick={() => applyFormat('italic')} style={toolbarBtn} title="Italic (*teks*)"><i>I</i></button>
-        <button type="button" onClick={() => applyFormat('underline')} style={toolbarBtn} title="Underline"><u>U</u></button>
+        <button type="button" onClick={() => applyFormat('bold')} style={toolbarBtn}><b>B</b></button>
+        <button type="button" onClick={() => applyFormat('italic')} style={toolbarBtn}><i>I</i></button>
+        <button type="button" onClick={() => applyFormat('underline')} style={toolbarBtn}><u>U</u></button>
         <span style={{ width: 1, background: '#e2e8f0', margin: '0 4px' }}></span>
-        <button type="button" onClick={() => applyFormat('list')} style={toolbarBtn} title="List (bullet point)">• List</button>
-        <button type="button" onClick={() => applyFormat('link')} style={toolbarBtn} title="Link (tambah URL)">🔗 Link</button>
+        <button type="button" onClick={() => applyFormat('list')} style={toolbarBtn}>• List</button>
+        <button type="button" onClick={() => applyFormat('link')} style={toolbarBtn}>🔗 Link</button>
       </div>
       <textarea
         id="editor-textarea"
@@ -87,26 +90,25 @@ const SimpleEditor = ({ value, onChange, placeholder }) => {
         }}
       />
       <div style={{ padding: 8, background: '#f8fafc', borderTop: '1px solid #e2e8f0', fontSize: 10, color: '#94a3b8', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-        <span>💡 Format: **teks** untuk bold</span>
-        <span>*teks* untuk italic</span>
-        <span>[teks](url) untuk link</span>
+        <span>💡 **teks** bold • *teks* italic • [teks](url) link</span>
       </div>
     </div>
   );
 };
 
-// ============================================
+// ============================================================
 // MAIN COMPONENT
-// ============================================
+// ============================================================
 const ManageMateri = () => {
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
   const navigate = useNavigate();
 
-  // ===== RESPONSIVE STATE =====
+  // ===== RESPONSIVE =====
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  // ===== STATES =====
+  // ===== LOADING & STATUS =====
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewDevice, setPreviewDevice] = useState('desktop');
@@ -115,19 +117,24 @@ const ManageMateri = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   
-  // IDENTITAS
+  // ===== DATA GURU =====
+  const [guruData, setGuruData] = useState(null);
+  const [guruId, setGuruId] = useState('');
+  const [kodeMapel, setKodeMapel] = useState('');
+  
+  // ===== IDENTITAS MODUL =====
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [coverImage, setCoverImage] = useState(null);
   const [description, setDescription] = useState("");
   
-  // KONTEN
+  // ===== KONTEN =====
   const [sections, setSections] = useState([]);
   const [activeSection, setActiveSection] = useState(null);
   
-  // PENGATURAN
+  // ===== PENGATURAN =====
   const [targetKategori, setTargetKategori] = useState("Reguler");
-  const [targetKelas, setTargetKelas] = useState("1 SD");
+  const [targetKelas, setTargetKelas] = useState("Semua");
   const [mingguKe, setMingguKe] = useState(1);
   const [tahunAjaran, setTahunAjaran] = useState("2025/2026");
   const [statusModul, setStatusModul] = useState("aktif");
@@ -139,20 +146,28 @@ const ManageMateri = () => {
   });
   const [tanggalSelesai, setTanggalSelesai] = useState("");
   
-  // TARGET SISWA SPESIFIK
-  const [sendToSpecificStudents, setSendToSpecificStudents] = useState(false);
+  // ===== SISWA (FILTER BERDASARKAN JADWAL) =====
+  const [allStudents, setAllStudents] = useState([]);
+  const [filteredStudents, setFilteredStudents] = useState([]);
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [studentSearch, setStudentSearch] = useState('');
-  const [allStudents, setAllStudents] = useState([]);
   const [showStudentPicker, setShowStudentPicker] = useState(false);
+  const [sendToSpecificStudents, setSendToSpecificStudents] = useState(false);
   
-  // QUIZ
+  // ===== STATS =====
+  const [stats, setStats] = useState({
+    totalSiswa: 0,
+    totalJadwal: 0,
+    totalMapel: 0
+  });
+  
+  // ===== QUIZ =====
   const [quizData, setQuizData] = useState([]);
   
-  // DATA REFERENSI
+  // ===== DATA REFERENSI =====
   const [availableClasses, setAvailableClasses] = useState([]);
-  const [subjects, setSubjects] = useState(["Umum"]);
-  const [authorName] = useState(localStorage.getItem('teacherName') || localStorage.getItem('userName') || "Guru");
+  const [subjects, setSubjects] = useState([]);
+  const [authorName, setAuthorName] = useState("");
 
   const COLLECTION_NAME = "bimbel_modul";
   const STATUS_OPTIONS = [
@@ -161,113 +176,167 @@ const ManageMateri = () => {
     { value: 'arsip', label: '📦 Arsip', color: '#64748b', desc: 'Modul tidak aktif, hanya arsip', icon: <Archive size={12} /> }
   ];
 
-  // ===== EFFECTS =====
+  // ============================================================
+  // EFFECTS - RESIZE
+  // ============================================================
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Ambil data siswa
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const snap = await getDocs(collection(db, "students"));
-        const data = snap.docs.map(d => ({ 
-          id: d.id, 
-          ...d.data(),
-          studentId: d.data().studentId || d.id,
-          nama: d.data().nama || 'Tidak bernama'
-        }));
-        data.sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
-        setAllStudents(data);
-      } catch (error) {
-        console.error("Error fetching students:", error);
-      }
-    };
-    fetchStudents();
-  }, []);
-
-  // Auto-save draft
-  useEffect(() => {
-    if (!editId && title) {
-      const timer = setTimeout(() => {
-        const draft = {
-          title, subject, coverImage, description, sections, 
-          targetKategori, targetKelas, mingguKe, tahunAjaran, statusModul,
-          tanggalMulai, tanggalSelesai, sendToSpecificStudents, selectedStudents,
-          savedAt: new Date().toISOString()
-        };
-        localStorage.setItem('draft_modul', JSON.stringify(draft));
-        setAutoSaveStatus('💾 Draft tersimpan');
-        setTimeout(() => setAutoSaveStatus(''), 2000);
-      }, 30000);
-      return () => clearTimeout(timer);
-    }
-  }, [title, subject, coverImage, description, sections, targetKategori, targetKelas, 
-      mingguKe, tahunAjaran, statusModul, tanggalMulai, tanggalSelesai, 
-      sendToSpecificStudents, selectedStudents, editId]);
-
-  // Load draft
-  useEffect(() => {
-    if (!editId) {
-      const draft = localStorage.getItem('draft_modul');
-      if (draft) {
-        try {
-          const data = JSON.parse(draft);
-          if (window.confirm('📝 Ada draft modul yang belum disimpan. Apakah ingin melanjutkan?')) {
-            setTitle(data.title || '');
-            setSubject(data.subject || '');
-            setCoverImage(data.coverImage || null);
-            setDescription(data.description || '');
-            setSections(data.sections || []);
-            setTargetKategori(data.targetKategori || 'Reguler');
-            setTargetKelas(data.targetKelas || '1 SD');
-            setMingguKe(data.mingguKe || 1);
-            setTahunAjaran(data.tahunAjaran || '2025/2026');
-            setStatusModul(data.statusModul || 'aktif');
-            setTanggalMulai(data.tanggalMulai || (() => {
-              const date = new Date();
-              date.setDate(date.getDate() + 2);
-              date.setHours(0, 0, 0, 0);
-              return date.toISOString().slice(0, 16);
-            })());
-            setTanggalSelesai(data.tanggalSelesai || '');
-            setSendToSpecificStudents(data.sendToSpecificStudents || false);
-            setSelectedStudents(data.selectedStudents || []);
+  // ============================================================
+  // FETCH DATA GURU & SISWA BERDASARKAN JADWAL
+  // ============================================================
+  const fetchTeacherData = useCallback(async () => {
+    try {
+      // Ambil data guru dari localStorage
+      const saved = JSON.parse(localStorage.getItem('teacherData') || '{}');
+      const teacherName = saved.nama || '';
+      const teacherId = saved.guruId || saved.id || '';
+      
+      setAuthorName(teacherName);
+      setGuruId(teacherId);
+      
+      // Cari data lengkap guru dari Firestore
+      if (teacherName) {
+        const qGuru = query(collection(db, "teachers"), where("nama", "==", teacherName));
+        const snapGuru = await getDocs(qGuru);
+        if (!snapGuru.empty) {
+          const guru = snapGuru.docs[0].data();
+          setGuruData(guru);
+          setKodeMapel(guru.kodeMapel || '');
+          setSubject(guru.mapel || '');
+          
+          // Ambil mapel dari guru
+          if (guru.mapel) {
+            setSubjects([guru.mapel]);
           }
-        } catch (e) {
-          console.error("Error loading draft:", e);
         }
       }
+      
+      return { teacherName, teacherId };
+    } catch (e) {
+      console.error("Error fetching teacher:", e);
+      return { teacherName: '', teacherId: '' };
     }
-  }, [editId]);
-
-  useEffect(() => {
-    const fetchContext = async () => {
-      try {
-        const snapSiswa = await getDocs(collection(db, "students"));
-        const data = snapSiswa.docs.map(d => d.data());
-        const classes = [...new Set(data.map(s => s.kelasSekolah))].filter(Boolean).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-        setAvailableClasses(['Semua', ...classes]);
-        
-        const snapGuru = await getDocs(collection(db, "teachers"));
-        const guruData = snapGuru.docs.map(d => d.data());
-        const mapelList = [...new Set(guruData.map(t => t.mapel).filter(Boolean))];
-        if (mapelList.length === 0) mapelList.push("Umum");
-        setSubjects(['Umum', ...mapelList.sort()]);
-      } catch (error) {
-        console.error("Error fetching context:", error);
-      }
-    };
-    fetchContext();
   }, []);
 
+  const fetchStudentsFromSchedules = useCallback(async (teacherName) => {
+    if (!teacherName) return [];
+    
+    try {
+      // 🔥 AMBIL SEMUA JADWAL GURU INI
+      const qJadwal = query(
+        collection(db, "jadwal_bimbel"),
+        where("teacherName", "==", teacherName),
+        orderBy("dateStr", "desc"),
+        limit(100)
+      );
+      const snapJadwal = await getDocs(qJadwal);
+      const schedules = snapJadwal.docs.map(d => ({ id: d.id, ...d.data() }));
+      
+      // 🔥 KUMPULKAN SEMUA STUDENT ID DARI JADWAL
+      const studentIdSet = new Set();
+      const studentDataMap = new Map();
+      
+      schedules.forEach(schedule => {
+        if (schedule.students && Array.isArray(schedule.students)) {
+          schedule.students.forEach(s => {
+            const studentId = s.studentId || s.id;
+            if (studentId) {
+              studentIdSet.add(studentId);
+              if (!studentDataMap.has(studentId)) {
+                studentDataMap.set(studentId, {
+                  id: s.id,
+                  studentId: studentId,
+                  nama: s.nama || 'Siswa',
+                  kelasSekolah: s.kelas || s.kelasSekolah || '-',
+                  program: s.program || 'Reguler'
+                });
+              }
+            }
+          });
+        }
+      });
+      
+      // 🔥 AMBIL DATA SISWA LENGKAP DARI FIRESTORE
+      const siswaList = [];
+      if (studentIdSet.size > 0) {
+        const qSiswa = query(collection(db, "students"));
+        const snapSiswa = await getDocs(qSiswa);
+        const allSiswa = snapSiswa.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        // Filter hanya siswa yang ada di jadwal
+        allSiswa.forEach(s => {
+          const sid = s.studentId || s.id;
+          if (studentIdSet.has(sid)) {
+            siswaList.push({
+              id: s.id,
+              studentId: sid,
+              nama: s.nama || 'Siswa',
+              kelasSekolah: s.kelasSekolah || '-',
+              program: s.kategori || 'Reguler',
+              isActive: s.status === 'Aktif' && !s.isBlocked
+            });
+          }
+        });
+        
+        // Sort by nama
+        siswaList.sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+      }
+      
+      // 🔥 UPDATE STATS
+      setStats({
+        totalSiswa: siswaList.length,
+        totalJadwal: schedules.length,
+        totalMapel: new Set(schedules.map(s => s.mapelId || s.mapel)).size
+      });
+      
+      return siswaList;
+    } catch (e) {
+      console.error("Error fetching schedules:", e);
+      return [];
+    }
+  }, []);
+
+  // ============================================================
+  // MAIN DATA FETCH
+  // ============================================================
   useEffect(() => {
-    if (editId) fetchModulData();
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const { teacherName, teacherId } = await fetchTeacherData();
+        
+        // Ambil siswa dari jadwal
+        const siswaFromJadwal = await fetchStudentsFromSchedules(teacherName);
+        setAllStudents(siswaFromJadwal);
+        setFilteredStudents(siswaFromJadwal);
+        
+        // Jika ada editId, ambil data modul
+        if (editId) {
+          await fetchModulData();
+        }
+        
+        // Ambil kelas yang tersedia
+        const snapSiswa = await getDocs(collection(db, "students"));
+        const classes = [...new Set(snapSiswa.docs.map(d => d.data().kelasSekolah).filter(Boolean))];
+        setAvailableClasses(['Semua', ...classes.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))]);
+        
+      } catch (e) {
+        console.error("Error loading data:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
   }, [editId]);
 
-  // ===== FUNCTIONS =====
+  // ============================================================
+  // FETCH MODUL DATA (EDIT MODE)
+  // ============================================================
   const fetchModulData = async () => {
     try {
       const docRef = doc(db, COLLECTION_NAME, editId);
@@ -281,7 +350,7 @@ const ManageMateri = () => {
         setSections(data.blocks || []);
         setQuizData(data.quizData || []);
         setTargetKategori(data.targetKategori || "Reguler");
-        setTargetKelas(data.targetKelas || "1 SD");
+        setTargetKelas(data.targetKelas || "Semua");
         setMingguKe(data.mingguKe || 1);
         setTahunAjaran(data.tahunAjaran || "2025/2026");
         setStatusModul(data.status || "aktif");
@@ -295,6 +364,26 @@ const ManageMateri = () => {
     }
   };
 
+  // ============================================================
+  // FILTER SISWA BERDASARKAN SEARCH
+  // ============================================================
+  useEffect(() => {
+    if (!studentSearch.trim()) {
+      setFilteredStudents(allStudents);
+      return;
+    }
+    
+    const search = studentSearch.toLowerCase();
+    const filtered = allStudents.filter(s => 
+      (s.nama || '').toLowerCase().includes(search) ||
+      (s.studentId || '').toLowerCase().includes(search)
+    );
+    setFilteredStudents(filtered);
+  }, [studentSearch, allStudents]);
+
+  // ============================================================
+  // FUNGSI UPLOAD FILE
+  // ============================================================
   const convertBase64 = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -304,7 +393,6 @@ const ManageMateri = () => {
 
   const handleFileUpload = async (file, type = 'cover') => {
     if (!file) return null;
-    
     if (file.size > 50 * 1024 * 1024) {
       alert("❌ Maksimal 50MB!");
       return null;
@@ -345,22 +433,17 @@ const ManageMateri = () => {
   const handleCoverUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
     if (!file.type.startsWith('image/')) {
       alert('❌ File harus berupa gambar!');
       return;
     }
-
     const url = await handleFileUpload(file, 'cover');
-    if (url) {
-      setCoverImage(url);
-    }
+    if (url) setCoverImage(url);
   };
 
   const handleSectionFileUpload = async (e, sectionId) => {
     const file = e.target.files[0];
     if (!file) return;
-    
     const url = await handleFileUpload(file, 'materi');
     if (url) {
       setSections(sections.map(s => 
@@ -371,6 +454,9 @@ const ManageMateri = () => {
     }
   };
 
+  // ============================================================
+  // FUNGSI KONTEN
+  // ============================================================
   const addSection = (type) => {
     const titles = { 
       text: '📄 Materi Teks', 
@@ -423,15 +509,35 @@ const ManageMateri = () => {
     return match ? match[1] : null;
   };
 
+  // ============================================================
+  // FUNGSI SISWA
+  // ============================================================
   const toggleStudentSelection = (student) => {
     setSelectedStudents(prev => {
-      const exists = prev.some(s => s.id === student.id);
+      const exists = prev.some(s => s.studentId === student.studentId);
       if (exists) {
-        return prev.filter(s => s.id !== student.id);
+        return prev.filter(s => s.studentId !== student.studentId);
       } else {
-        return [...prev, { id: student.id, nama: student.nama, studentId: student.studentId }];
+        return [...prev, { 
+          id: student.id, 
+          studentId: student.studentId, 
+          nama: student.nama,
+          kelasSekolah: student.kelasSekolah
+        }];
       }
     });
+  };
+
+  const selectAllFiltered = () => {
+    const allIds = filteredStudents.map(s => s.studentId);
+    const alreadySelected = selectedStudents.map(s => s.studentId);
+    const newStudents = filteredStudents.filter(s => !alreadySelected.includes(s.studentId));
+    setSelectedStudents(prev => [...prev, ...newStudents.map(s => ({
+      id: s.id,
+      studentId: s.studentId,
+      nama: s.nama,
+      kelasSekolah: s.kelasSekolah
+    }))]);
   };
 
   const getStudentInitials = (name) => {
@@ -439,6 +545,14 @@ const ManageMateri = () => {
     return name.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('');
   };
 
+  const getStudentStatus = (student) => {
+    if (!student.isActive) return { label: 'Nonaktif', color: '#ef4444', bg: '#fee2e2' };
+    return { label: 'Aktif', color: '#10b981', bg: '#dcfce7' };
+  };
+
+  // ============================================================
+  // SIMPAN MODUL
+  // ============================================================
   const handleSave = async () => {
     if (!title) return alert("❌ Judul modul wajib diisi!");
     if (!subject || subject === "") return alert("❌ Mata pelajaran wajib dipilih!");
@@ -452,9 +566,15 @@ const ManageMateri = () => {
     }
     
     setSaving(true);
+    
+    // 🔥 DATA DENGAN ID UNIK
     const payload = {
       title: title.toUpperCase(), 
-      subject: subject.toUpperCase(), 
+      subject: subject.toUpperCase(),
+      // === KODE UNIK ===
+      guruId: guruId,
+      kodeMapel: kodeMapel,
+      // ===
       coverImage, 
       description,
       blocks: sections,
@@ -466,6 +586,8 @@ const ManageMateri = () => {
       status: statusModul,
       sendToSpecificStudents: sendToSpecificStudents,
       selectedStudents: sendToSpecificStudents ? selectedStudents : [],
+      // Simpan studentIds untuk query cepat
+      studentIds: sendToSpecificStudents ? selectedStudents.map(s => s.studentId) : [],
       updatedAt: serverTimestamp(),
       updatedBy: authorName,
     };
@@ -494,7 +616,9 @@ const ManageMateri = () => {
     setSaving(false);
   };
 
-  // ===== RENDER FUNCTIONS =====
+  // ============================================================
+  // RENDER FUNCTIONS
+  // ============================================================
   const renderStudentPreview = () => {
     const previewWidth = previewDevice === 'mobile' ? 375 : previewDevice === 'tablet' ? 768 : '100%';
     const isScheduled = statusModul === 'terjadwal' && tanggalMulai;
@@ -534,6 +658,7 @@ const ManageMateri = () => {
             {coverImage && <img src={coverImage} alt="" style={{ width: '100%', maxHeight: 150, objectFit: 'cover', borderRadius: 8, marginBottom: 12 }} />}
             <h2 style={{ fontSize: 20, fontWeight: 'bold', color: '#1e293b', margin: 0 }}>{title || 'Judul Modul'}</h2>
             <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{subject || 'Mata Pelajaran'} • {targetKelas !== 'Semua' ? targetKelas : 'Semua Kelas'}</p>
+            {guruId && <p style={{ fontSize: 10, color: '#94a3b8' }}>👨‍🏫 {guruId}</p>}
           </div>
           
           {description && (
@@ -689,23 +814,29 @@ const ManageMateri = () => {
     return null;
   };
 
-  // ============================================
-  // STYLES - Semua style dalam objek JavaScript
-  // ============================================
+  // ============================================================
+  // STYLES
+  // ============================================================
   const styles = {
     container: { 
       maxWidth: 1200, margin: '0 auto', paddingBottom: 100,
       paddingLeft: isMobile ? 12 : 16, 
       paddingRight: isMobile ? 12 : 16
     },
-    
+    loadingContainer: {
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      minHeight: '60vh', gap: 16,
+    },
+    spinner: {
+      width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #652D90',
+      borderRadius: '50%', animation: 'spin 1s linear infinite',
+    },
     autoSaveToast: {
       position: 'fixed', bottom: 80, right: 20, 
       background: '#10b981', color: 'white', 
       padding: '6px 16px', borderRadius: 20, fontSize: 11, 
       zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
     },
-    
     tipsBanner: {
       background: '#eef2ff', borderRadius: 12, padding: 12, 
       marginBottom: 20, display: 'flex', alignItems: 'center', 
@@ -725,9 +856,7 @@ const ManageMateri = () => {
       display: 'flex', alignItems: 'center', gap: 4
     },
     pageTitle: { 
-      margin: 0, 
-      fontSize: isMobile ? 16 : 20, 
-      fontWeight: 800, color: '#1e293b' 
+      margin: 0, fontSize: isMobile ? 16 : 20, fontWeight: 800, color: '#1e293b' 
     },
     headerActions: { display: 'flex', gap: 6, flexWrap: 'wrap' },
     btnPreview: {
@@ -751,17 +880,12 @@ const ManageMateri = () => {
     },
     
     mainGrid: { 
-      display: 'flex', 
-      gap: 20, 
-      flexDirection: isMobile ? 'column' : 'row' 
+      display: 'flex', gap: 20, flexDirection: isMobile ? 'column' : 'row' 
     },
     
     sidebar: { 
-      width: isMobile ? '100%' : '320px', 
-      flexShrink: 0, 
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: 10 
+      width: isMobile ? '100%' : '340px', 
+      flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 
     },
     
     card: { background: 'white', padding: 14, borderRadius: 12, border: '1px solid #e2e8f0' },
@@ -846,15 +970,11 @@ const ManageMateri = () => {
     },
     
     addSectionGrid: {
-      display: 'grid', 
-      gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)', 
-      gap: 6
+      display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)', gap: 6
     },
     addSectionBtn: {
-      padding: isMobile ? '6px' : '8px', 
-      background: 'white', border: '1px solid #e2e8f0', 
-      borderRadius: 8, cursor: 'pointer', fontWeight: 600, 
-      fontSize: isMobile ? 10 : 11, 
+      padding: isMobile ? '6px' : '8px', background: 'white', border: '1px solid #e2e8f0', 
+      borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: isMobile ? 10 : 11, 
       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
     },
     
@@ -875,8 +995,8 @@ const ManageMateri = () => {
     },
     
     btnSelectAll: {
-      padding: '6px 10px', background: '#e0e7ff', border: 'none', 
-      borderRadius: 6, cursor: 'pointer', color: '#3730a3'
+      padding: '4px 8px', background: '#e0e7ff', border: 'none', 
+      borderRadius: 6, cursor: 'pointer', color: '#3730a3', fontSize: 10, fontWeight: 600
     },
     studentTag: {
       display: 'inline-flex', alignItems: 'center', gap: 4, 
@@ -892,7 +1012,7 @@ const ManageMateri = () => {
       position: 'relative', marginTop: 8, 
       border: '1px solid #e2e8f0', borderRadius: 8, 
       background: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', 
-      zIndex: 10
+      zIndex: 10, maxHeight: 300, overflow: 'hidden'
     },
     studentPickerHeader: {
       display: 'flex', justifyContent: 'space-between', 
@@ -904,7 +1024,7 @@ const ManageMateri = () => {
       color: '#94a3b8', fontSize: 14
     },
     studentPickerList: {
-      maxHeight: 200, overflowY: 'auto', padding: 4
+      maxHeight: 250, overflowY: 'auto', padding: 4
     },
     studentPickerItem: {
       display: 'flex', alignItems: 'center', gap: 8, 
@@ -916,6 +1036,14 @@ const ManageMateri = () => {
       background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
       color: 'white', display: 'flex', alignItems: 'center', 
       justifyContent: 'center', fontSize: 10, fontWeight: 'bold', flexShrink: 0
+    },
+    studentBadge: {
+      fontSize: 8, padding: '1px 6px', borderRadius: 8,
+      fontWeight: 600, background: '#f1f5f9', color: '#64748b'
+    },
+    studentIdChip: {
+      fontSize: 8, color: '#94a3b8', fontFamily: 'monospace',
+      background: '#f1f5f9', padding: '1px 4px', borderRadius: 4
     },
     
     editorArea: { flex: 1, minWidth: 0 },
@@ -955,27 +1083,20 @@ const ManageMateri = () => {
     },
     
     floatingFooter: {
-      position: 'fixed', bottom: 0, 
-      left: isMobile ? 0 : 260, 
-      right: 0,
+      position: 'fixed', bottom: 0, left: isMobile ? 0 : 260, right: 0,
       background: 'white', borderTop: '1px solid #e2e8f0',
       padding: isMobile ? '8px 12px' : '10px 20px', 
-      display: 'flex', 
-      justifyContent: 'flex-end', gap: 10, zIndex: 50,
+      display: 'flex', justifyContent: 'flex-end', gap: 10, zIndex: 50,
       flexWrap: 'wrap'
     },
     btnFooterCancel: {
-      padding: isMobile ? '8px 14px' : '10px 20px', 
-      background: '#f1f5f9', 
-      border: 'none', borderRadius: 8, fontWeight: 600, 
-      fontSize: isMobile ? 12 : 13, cursor: 'pointer'
+      padding: isMobile ? '8px 14px' : '10px 20px', background: '#f1f5f9', 
+      border: 'none', borderRadius: 8, fontWeight: 600, fontSize: isMobile ? 12 : 13, cursor: 'pointer'
     },
     btnFooterLive: {
-      padding: isMobile ? '8px 14px' : '10px 20px', 
-      background: 'white', 
-      border: '1px solid #e2e8f0', borderRadius: 8, 
-      fontWeight: 600, fontSize: isMobile ? 12 : 13, 
-      cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4
+      padding: isMobile ? '8px 14px' : '10px 20px', background: 'white', 
+      border: '1px solid #e2e8f0', borderRadius: 8, fontWeight: 600, 
+      fontSize: isMobile ? 12 : 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4
     },
     btnFooterSave: {
       padding: isMobile ? '8px 18px' : '10px 25px', 
@@ -983,12 +1104,46 @@ const ManageMateri = () => {
       border: 'none', borderRadius: 8, fontWeight: 700, 
       fontSize: isMobile ? 12 : 13, cursor: 'pointer', 
       display: 'flex', alignItems: 'center', gap: 6
+    },
+    // Stats row
+    statsRow: {
+      display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)',
+      gap: 8, marginBottom: 12
+    },
+    statMini: {
+      background: 'white', padding: '8px 12px', borderRadius: 10,
+      border: '1px solid #f1f5f9', textAlign: 'center'
+    },
+    statMiniValue: { fontSize: isMobile ? 16 : 18, fontWeight: 900, color: '#1e293b' },
+    statMiniLabel: { fontSize: 9, color: '#94a3b8' },
+    
+    // ID Badge
+    idBadge: {
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      padding: '2px 8px', borderRadius: 6, fontSize: 9,
+      background: '#eef2ff', color: '#3b82f6', fontWeight: 600
+    },
+    mapelBadge: {
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      padding: '2px 8px', borderRadius: 6, fontSize: 9,
+      background: '#ede9fe', color: '#8b5cf6', fontWeight: 600
     }
   };
 
-  // ============================================
+  // ============================================================
   // RENDER
-  // ============================================
+  // ============================================================
+  if (loading) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.loadingContainer}>
+          <div style={styles.spinner}></div>
+          <p style={{ color: '#94a3b8', fontSize: 13 }}>Memuat data guru & jadwal...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={styles.container}>
       <style>{`
@@ -996,19 +1151,24 @@ const ManageMateri = () => {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
       `}</style>
       
       {autoSaveStatus && (
-        <div style={styles.autoSaveToast}>
-          {autoSaveStatus}
-        </div>
+        <div style={styles.autoSaveToast}>{autoSaveStatus}</div>
       )}
       
       {showTips && (
         <div style={styles.tipsBanner}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <Info size={18} color="#3b82f6" />
-            <span style={{ fontSize: 12, color: '#1e40af' }}>💡 Tips: Gunakan preview untuk melihat tampilan siswa, pastikan target kelas sesuai!</span>
+            <span style={{ fontSize: 12, color: '#1e40af' }}>
+              💡 Hanya siswa yang dijadwalkan dengan Anda yang muncul di daftar.
+              {allStudents.length === 0 && ' Belum ada jadwal, hubungi admin.'}
+            </span>
           </div>
           <button onClick={() => setShowTips(false)} style={styles.tipsClose}>Tutup</button>
         </div>
@@ -1027,11 +1187,11 @@ const ManageMateri = () => {
             background: showPreview ? '#3b82f6' : '#f1f5f9',
             color: showPreview ? 'white' : '#64748b'
           }}>
-            <Eye size={14} /> {showPreview ? 'Edit Mode' : 'Preview Siswa'}
+            <Eye size={14} /> {showPreview ? 'Edit Mode' : 'Preview'}
           </button>
           {editId && (
             <button onClick={() => window.open(`/siswa/materi/${editId}`, '_blank')} style={styles.btnLiveView}>
-              <ExternalLink size={14} /> {!isMobile && 'Live View'}
+              <ExternalLink size={14} /> {!isMobile && 'Live'}
             </button>
           )}
           <button onClick={handleSave} disabled={saving} style={{
@@ -1043,37 +1203,70 @@ const ManageMateri = () => {
         </div>
       </div>
 
+      {/* STATS */}
+      <div style={styles.statsRow}>
+        <div style={styles.statMini}>
+          <div style={styles.statMiniValue}>{stats.totalSiswa}</div>
+          <div style={styles.statMiniLabel}>👥 Siswa</div>
+        </div>
+        <div style={styles.statMini}>
+          <div style={styles.statMiniValue}>{stats.totalJadwal}</div>
+          <div style={styles.statMiniLabel}>📅 Jadwal</div>
+        </div>
+        <div style={styles.statMini}>
+          <div style={styles.statMiniValue}>{stats.totalMapel}</div>
+          <div style={styles.statMiniLabel}>📘 Mapel</div>
+        </div>
+        <div style={styles.statMini}>
+          <div style={styles.statMiniValue}>
+            {guruId ? <span style={styles.idBadge}><Hash size={10} /> {guruId}</span> : '-'}
+          </div>
+          <div style={styles.statMiniLabel}>🆔 ID Guru</div>
+        </div>
+      </div>
+
       {showPreview ? (
         renderStudentPreview()
       ) : (
         <div style={styles.mainGrid}>
           
-          {/* SIDEBAR KIRI */}
+          {/* ===== SIDEBAR ===== */}
           <div style={styles.sidebar}>
             
             {/* Identitas Modul */}
             <div style={styles.card}>
               <h4 style={styles.cardTitle}><BookOpen size={14} /> Identitas Modul</h4>
+              
               <input 
                 value={title} 
                 onChange={e => setTitle(e.target.value)} 
                 placeholder="Judul modul..." 
                 style={styles.input} 
               />
-              <select 
-                value={subject} 
-                onChange={e => setSubject(e.target.value)} 
-                style={{...styles.input, background:'white'}}
-              >
-                <option value="">Pilih Mata Pelajaran</option>
-                {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
+              
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 }}>
+                <select 
+                  value={subject} 
+                  onChange={e => setSubject(e.target.value)} 
+                  style={{...styles.select, flex: 1}}
+                >
+                  <option value="">Pilih Mata Pelajaran</option>
+                  {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+                {kodeMapel && (
+                  <span style={styles.mapelBadge}>
+                    <Tag size={10} /> {kodeMapel}
+                  </span>
+                )}
+              </div>
+              
               <textarea 
                 value={description} 
                 onChange={e => setDescription(e.target.value)} 
-                placeholder="Deskripsi singkat modul (akan tampil di dashboard siswa)..." 
+                placeholder="Deskripsi singkat modul..." 
                 style={{...styles.input, minHeight: 60, resize: 'vertical'}} 
               />
+              
               <label style={styles.coverUpload}>
                 {coverImage ? (
                   <img src={coverImage} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -1094,15 +1287,18 @@ const ManageMateri = () => {
                 <select value={targetKategori} onChange={e => setTargetKategori(e.target.value)} style={styles.select}>
                   <option value="Reguler">📚 Reguler</option>
                   <option value="English">🗣️ English</option>
-                  <option value="Semua">🌐 Semua Program</option>
+                  <option value="Semua">🌐 Semua</option>
                 </select>
                 <select value={targetKelas} onChange={e => setTargetKelas(e.target.value)} style={styles.select}>
                   {availableClasses.map(k => <option key={k} value={k}>{k}</option>)}
                 </select>
               </div>
+              
               {(targetKelas === "Semua" || targetKategori === "Semua") && (
                 <div style={styles.warningBanner}>
-                  <AlertCircle size={12} /> Modul akan muncul untuk {(targetKelas === "Semua" ? 'SEMUA KELAS ' : '')} {(targetKategori === "Semua" ? 'SEMUA PROGRAM' : '')}
+                  <AlertCircle size={12} /> 
+                  Modul untuk {(targetKelas === "Semua" ? 'SEMUA KELAS ' : '')} 
+                  {(targetKategori === "Semua" ? 'SEMUA PROGRAM' : '')}
                 </div>
               )}
               
@@ -1130,14 +1326,28 @@ const ManageMateri = () => {
                           onFocus={() => setShowStudentPicker(true)}
                         />
                       </div>
+                      <button 
+                        onClick={selectAllFiltered} 
+                        style={styles.btnSelectAll}
+                        title="Pilih semua siswa yang terfilter"
+                      >
+                        Pilih Semua
+                      </button>
                     </div>
+                    
+                    {allStudents.length === 0 && (
+                      <div style={{ background: '#fef3c7', padding: 8, borderRadius: 6, fontSize: 10, color: '#b45309', marginTop: 6 }}>
+                        ⚠️ Tidak ada siswa dijadwalkan dengan Anda. Hubungi admin untuk penjadwalan.
+                      </div>
+                    )}
                     
                     {selectedStudents.length > 0 && (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
                         {selectedStudents.map(s => (
-                          <span key={s.id} style={styles.studentTag}>
+                          <span key={s.studentId} style={styles.studentTag}>
                             {getStudentInitials(s.nama)}
                             <span style={{ fontSize: 10 }}>{s.nama}</span>
+                            <span style={{ fontSize: 8, color: '#94a3b8', fontFamily: 'monospace' }}>#{s.studentId?.slice(-4)}</span>
                             <button 
                               onClick={() => toggleStudentSelection(s)}
                               style={styles.removeTag}
@@ -1152,33 +1362,44 @@ const ManageMateri = () => {
                     {showStudentPicker && (
                       <div style={styles.studentPicker}>
                         <div style={styles.studentPickerHeader}>
-                          <span style={{ fontSize: 11, fontWeight: 'bold' }}>📋 Pilih Siswa</span>
+                          <span style={{ fontSize: 11, fontWeight: 'bold' }}>
+                            📋 {filteredStudents.length} siswa dari jadwal
+                          </span>
                           <button onClick={() => setShowStudentPicker(false)} style={styles.closePicker}>✕</button>
                         </div>
                         <div style={styles.studentPickerList}>
-                          {allStudents
-                            .filter(s => 
-                              (s.nama || '').toLowerCase().includes(studentSearch.toLowerCase()) ||
-                              (s.studentId || '').toLowerCase().includes(studentSearch.toLowerCase())
-                            )
-                            .slice(0, 20)
-                            .map(s => {
-                              const isSelected = selectedStudents.some(sel => sel.id === s.id);
+                          {filteredStudents.length === 0 ? (
+                            <div style={{ textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 11 }}>
+                              {studentSearch ? 'Tidak ditemukan' : 'Tidak ada siswa dijadwalkan'}
+                            </div>
+                          ) : (
+                            filteredStudents.map(s => {
+                              const isSelected = selectedStudents.some(sel => sel.studentId === s.studentId);
+                              const status = getStudentStatus(s);
                               return (
                                 <div 
-                                  key={s.id} 
+                                  key={s.studentId} 
                                   onClick={() => toggleStudentSelection(s)}
                                   style={{
                                     ...styles.studentPickerItem,
-                                    background: isSelected ? '#eef2ff' : 'transparent'
+                                    background: isSelected ? '#eef2ff' : 'transparent',
+                                    borderLeft: isSelected ? '3px solid #3b82f6' : '3px solid transparent'
                                   }}
                                 >
                                   <div style={styles.studentPickerAvatar}>
                                     {getStudentInitials(s.nama)}
                                   </div>
                                   <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: 12, fontWeight: 600 }}>{s.nama}</div>
-                                    <div style={{ fontSize: 10, color: '#94a3b8' }}>{s.studentId} • {s.kelasSekolah || '-'}</div>
+                                    <div style={{ fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                      {s.nama}
+                                      <span style={styles.studentIdChip}>#{s.studentId}</span>
+                                    </div>
+                                    <div style={{ fontSize: 9, color: '#94a3b8', display: 'flex', gap: 8 }}>
+                                      <span>{s.kelasSekolah || '-'}</span>
+                                      <span style={{...styles.studentBadge, background: status.bg, color: status.color}}>
+                                        {status.label}
+                                      </span>
+                                    </div>
                                   </div>
                                   {isSelected ? (
                                     <CheckCircle size={16} color="#10b981" />
@@ -1187,18 +1408,14 @@ const ManageMateri = () => {
                                   )}
                                 </div>
                               );
-                            })}
-                          {allStudents.length === 0 && (
-                            <div style={{ textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12 }}>
-                              Tidak ada siswa terdaftar
-                            </div>
+                            })
                           )}
                         </div>
                       </div>
                     )}
                     
                     <div style={{ fontSize: 10, color: '#64748b', marginTop: 6 }}>
-                      {selectedStudents.length} siswa dipilih
+                      {selectedStudents.length} dari {allStudents.length} siswa dipilih
                     </div>
                   </div>
                 )}
@@ -1207,11 +1424,11 @@ const ManageMateri = () => {
 
             {/* Pengaturan & Jadwal */}
             <div style={styles.card}>
-              <h4 style={styles.cardTitle}><Settings size={14} /> Pengaturan & Jadwal</h4>
+              <h4 style={styles.cardTitle}><Settings size={14} /> Pengaturan</h4>
               
               <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-                <input type="number" min="1" max="52" value={mingguKe} onChange={e => setMingguKe(e.target.value)} placeholder="Minggu ke-" style={styles.inputSmall} />
-                <input type="text" value={tahunAjaran} onChange={e => setTahunAjaran(e.target.value)} placeholder="Tahun Ajaran" style={styles.inputSmall} />
+                <input type="number" min="1" max="52" value={mingguKe} onChange={e => setMingguKe(e.target.value)} placeholder="Minggu" style={styles.inputSmall} />
+                <input type="text" value={tahunAjaran} onChange={e => setTahunAjaran(e.target.value)} placeholder="Tahun" style={styles.inputSmall} />
               </div>
               
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
@@ -1221,10 +1438,10 @@ const ManageMateri = () => {
                     onClick={() => setStatusModul(opt.value)} 
                     style={{
                       flex: 1,
-                      padding: '6px 8px', borderRadius: 6, fontSize: 10, fontWeight: 600, cursor: 'pointer',
+                      padding: '6px 8px', borderRadius: 6, fontSize: 9, fontWeight: 600, cursor: 'pointer',
                       background: statusModul === opt.value ? opt.color : '#f1f5f9',
                       color: statusModul === opt.value ? 'white' : '#64748b',
-                      border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4
+                      border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3
                     }}
                     title={opt.desc}
                   >
@@ -1235,14 +1452,14 @@ const ManageMateri = () => {
               
               {statusModul === 'terjadwal' && (
                 <div style={styles.scheduleBox}>
-                  <p style={styles.scheduleTitle}><CalendarDays size={14} /> Jadwal Rilis Modul</p>
+                  <p style={styles.scheduleTitle}><CalendarDays size={14} /> Jadwal Rilis</p>
                   <div style={{ display: 'flex', gap: 10, flexDirection: isMobile ? 'column' : 'row' }}>
                     <div style={{ flex: 1 }}>
-                      <label style={styles.scheduleLabel}>Tanggal & Jam Mulai *</label>
+                      <label style={styles.scheduleLabel}>Mulai *</label>
                       <input type="datetime-local" value={tanggalMulai} onChange={e => setTanggalMulai(e.target.value)} style={styles.scheduleInput} />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <label style={styles.scheduleLabel}>Tanggal Selesai (Opsional)</label>
+                      <label style={styles.scheduleLabel}>Selesai</label>
                       <input type="datetime-local" value={tanggalSelesai} onChange={e => setTanggalSelesai(e.target.value)} style={styles.scheduleInput} />
                     </div>
                   </div>
@@ -1251,22 +1468,22 @@ const ManageMateri = () => {
               
               {statusModul === 'aktif' && (
                 <div style={styles.statusMessageGreen}>
-                  <CheckCircle size={12} /> Modul akan langsung aktif dan dapat diakses siswa.
+                  <CheckCircle size={12} /> Langsung aktif
                 </div>
               )}
               {statusModul === 'arsip' && (
                 <div style={styles.statusMessageGray}>
-                  📦 Modul tidak akan tampil di dashboard siswa.
+                  📦 Tidak tampil di dashboard siswa
                 </div>
               )}
             </div>
 
             {/* Struktur Konten */}
             <div style={styles.card}>
-              <h4 style={styles.cardTitle}><Layers size={14} /> Struktur Konten ({sections.length})</h4>
+              <h4 style={styles.cardTitle}><Layers size={14} /> Konten ({sections.length})</h4>
               {sections.length === 0 && (
                 <div style={styles.emptyContent}>
-                  <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Belum ada konten.</p>
+                  <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Belum ada konten</p>
                 </div>
               )}
               {sections.map((sec, idx) => (
@@ -1288,19 +1505,19 @@ const ManageMateri = () => {
               ))}
             </div>
 
-            {/* Tombol Tambah Konten */}
+            {/* Tambah Konten */}
             <div style={styles.addSectionGrid}>
               {[
-                { type: 'text', icon: <Type size={13} />, label: 'Teks', desc: 'Materi tulisan + format', color: '#3b82f6' },
-                { type: 'file', icon: <FileUp size={13} />, label: 'File', desc: 'Upload PDF/DOC/PPT', color: '#10b981' },
-                { type: 'video', icon: <Video size={13} />, label: 'Video', desc: 'YouTube & link', color: '#ef4444' },
-                { type: 'assignment', icon: <Send size={13} />, label: 'Tugas', desc: 'Instruksi & deadline', color: '#f59e0b' }
+                { type: 'text', icon: <Type size={13} />, label: 'Teks', color: '#3b82f6' },
+                { type: 'file', icon: <FileUp size={13} />, label: 'File', color: '#10b981' },
+                { type: 'video', icon: <Video size={13} />, label: 'Video', color: '#ef4444' },
+                { type: 'assignment', icon: <Send size={13} />, label: 'Tugas', color: '#f59e0b' }
               ].map(btn => (
                 <button key={btn.type} onClick={() => addSection(btn.type)} style={{
                   ...styles.addSectionBtn,
                   borderColor: `${btn.color}20`,
                   color: btn.color
-                }} title={btn.desc}>
+                }}>
                   {btn.icon} {btn.label}
                 </button>
               ))}
@@ -1308,7 +1525,7 @@ const ManageMateri = () => {
 
             {/* Kuis */}
             <div style={styles.card}>
-              <h4 style={styles.cardTitle}><HelpCircle size={14} /> Kuis / Evaluasi</h4>
+              <h4 style={styles.cardTitle}><HelpCircle size={14} /> Kuis</h4>
               {quizData?.length > 0 ? (
                 <div style={styles.quizInfo}>
                   <CheckCircle size={14} color="#10b981" />
@@ -1337,13 +1554,13 @@ const ManageMateri = () => {
             </div>
           </div>
 
-          {/* AREA EDITOR KANAN */}
+          {/* ===== EDITOR ===== */}
           <div style={styles.editorArea}>
             {!activeSection ? (
               <div style={styles.emptyEditor}>
                 <Layers size={48} color="#cbd5e1" />
                 <h3 style={{ fontSize: 16, marginTop: 12 }}>Pilih atau Tambah Konten</h3>
-                <p style={{ fontSize: 12, marginTop: 4 }}>Klik salah satu konten di sidebar kiri, atau tambah konten baru.</p>
+                <p style={{ fontSize: 12, marginTop: 4 }}>Klik konten di sidebar kiri, atau tambah baru</p>
               </div>
             ) : (
               <div style={styles.editorCard}>
@@ -1370,7 +1587,7 @@ const ManageMateri = () => {
                 <input 
                   value={sections.find(s => s.id === activeSection)?.title || ''} 
                   onChange={e => updateSection(activeSection, 'title', e.target.value)} 
-                  placeholder="Judul section (contoh: Bab 1, Pengertian, dll)" 
+                  placeholder="Judul section..." 
                   style={styles.sectionTitleInput} 
                 />
 
@@ -1381,7 +1598,7 @@ const ManageMateri = () => {
         </div>
       )}
 
-      {/* FLOATING FOOTER */}
+      {/* ===== FLOATING FOOTER ===== */}
       <div style={styles.floatingFooter}>
         <button onClick={() => navigate('/guru/modul')} style={styles.btnFooterCancel}>
           Batal
@@ -1395,7 +1612,7 @@ const ManageMateri = () => {
           ...styles.btnFooterSave,
           opacity: saving ? 0.6 : 1
         }}>
-          <Save size={14} /> {saving ? 'Menyimpan...' : editId ? 'Update Modul' : 'Terbitkan Modul'}
+          <Save size={14} /> {saving ? 'Menyimpan...' : editId ? 'Update' : 'Terbitkan'}
         </button>
       </div>
     </div>
