@@ -61,7 +61,7 @@ const getTimeRemaining = (deadline) => {
   if (diff <= 0) return { text: '⛔ Terlewat', color: '#ef4444', isExpired: true };
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const days = Math.floor(hours / 24);
-  if (days > 0) return { text: `⏳ ${days}h ${hours % 24}j lagi`, color: days <= 1 ? '#f59e0b' : '#10b981', isExpired: false };
+  if (days > 0) return { text: `⏳ ${days}d ${hours % 24}j lagi`, color: days <= 1 ? '#f59e0b' : '#10b981', isExpired: false };
   return { text: `⚠️ ${hours}j lagi`, color: '#f59e0b', isExpired: false };
 };
 
@@ -269,7 +269,6 @@ const StudentElearning = () => {
   const fetchModules = async () => {
     setLoading(true);
     try {
-      // 🔥 QUERY DENGAN INDEX YANG EFEKTIF
       const q = query(
         collection(db, "bimbel_modul"),
         where("status", "==", "aktif"),
@@ -279,7 +278,6 @@ const StudentElearning = () => {
       
       let allModules = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
-      // 🔥 FILTER BERDASARKAN TARGET (KATEGORI & KELAS)
       allModules = allModules.filter(module => {
         const targetKategori = module.targetKategori || "Semua";
         const targetKelas = module.targetKelas || "Semua";
@@ -288,7 +286,6 @@ const StudentElearning = () => {
         return kategoriMatch && kelasMatch;
       });
       
-      // 🔥 FILTER SISWA SPESIFIK (jika ada selectedStudents)
       allModules = allModules.filter(module => {
         if (module.sendToSpecificStudents && module.selectedStudents?.length > 0) {
           return module.selectedStudents.some(s => 
@@ -301,11 +298,9 @@ const StudentElearning = () => {
       setModules(allModules);
       setFilteredModules(allModules);
       
-      // Ambil submissions
       if (studentId) await fetchSubmissions(studentId);
       if (studentId) await fetchQuizSubmissions(studentId);
       
-      // Hitung stats
       const assignments = allModules.filter(m => m.blocks?.some(b => b.type === 'assignment'));
       const quizzes = allModules.filter(m => m.quizData?.length > 0);
       
@@ -320,7 +315,6 @@ const StudentElearning = () => {
       
     } catch (error) {
       console.error("Error fetch modules:", error);
-      // Fallback: ambil semua tanpa order
       const snapshot = await getDocs(collection(db, "bimbel_modul"));
       let allModules = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       allModules = allModules.filter(m => m.status === "aktif");
@@ -398,7 +392,6 @@ const StudentElearning = () => {
       let fileUrl = null, filePath = null, fileName = null;
       
       if (assignmentFile) {
-        // 🔥 UPLOAD KE SUPABASE
         const result = await uploadElearningFile(assignmentFile, 'tugas');
         if (!result.success) throw new Error(result.error);
         fileUrl = result.downloadURL;
@@ -406,7 +399,6 @@ const StudentElearning = () => {
         fileName = assignmentFile.name;
       }
       
-      // Simpan ke Firestore
       await addDoc(collection(db, "jawaban_tugas"), {
         modulId: selectedModule.id,
         modulTitle: selectedModule.title,
@@ -461,7 +453,6 @@ const StudentElearning = () => {
         onClick={() => handleModuleClick(module)}
         style={cardStyles.card}
       >
-        {/* Cover */}
         <div style={cardStyles.cover}>
           {coverImage ? (
             <img src={coverImage} alt={module.title} style={cardStyles.coverImage} />
@@ -471,7 +462,6 @@ const StudentElearning = () => {
             </div>
           )}
           
-          {/* Badges */}
           <div style={cardStyles.badgeTop}>
             {isQuiz ? (
               <span style={{...cardStyles.badge, background: '#8b5cf6', color: 'white' }}>
@@ -496,7 +486,6 @@ const StudentElearning = () => {
             </span>
           )}
           
-          {/* ID Badge */}
           {module.guruId && (
             <span style={cardStyles.idBadge}>
               <Hash size={8} /> {module.guruId}
@@ -504,7 +493,6 @@ const StudentElearning = () => {
           )}
         </div>
         
-        {/* Body */}
         <div style={cardStyles.body}>
           <h3 style={cardStyles.title}>{module.title}</h3>
           <div style={cardStyles.subject}>
@@ -622,7 +610,6 @@ const StudentElearning = () => {
 
     return (
       <div style={detailStyles.container}>
-        {/* Header */}
         <div style={detailStyles.header}>
           <button onClick={handleBack} style={detailStyles.backBtn}>
             <ChevronLeft size={20} /> Kembali
@@ -650,21 +637,18 @@ const StudentElearning = () => {
           </div>
         </div>
 
-        {/* Cover */}
         {coverImage && (
           <div style={detailStyles.cover}>
             <img src={coverImage} alt={selectedModule.title} style={detailStyles.coverImage} />
           </div>
         )}
 
-        {/* Description */}
         {selectedModule.description && (
           <div style={detailStyles.desc}>
             <p>{selectedModule.description}</p>
           </div>
         )}
 
-        {/* Tabs */}
         <div style={detailStyles.tabs}>
           <button 
             onClick={() => setActiveTab('materi')}
@@ -690,10 +674,8 @@ const StudentElearning = () => {
           )}
         </div>
 
-        {/* Content */}
         <div style={detailStyles.content}>
           
-          {/* Materi Tab */}
           {activeTab === 'materi' && materials.map((block, idx) => (
             <div key={block.id} style={detailStyles.block}>
               <div style={detailStyles.blockHeader}>
@@ -745,7 +727,6 @@ const StudentElearning = () => {
             </div>
           ))}
 
-          {/* Tugas Tab */}
           {activeTab === 'tugas' && assignments.map((block) => {
             const timeRem = getTimeRemaining(block.endTime);
             const isExpired = timeRem?.isExpired || false;
@@ -796,7 +777,6 @@ const StudentElearning = () => {
             );
           })}
 
-          {/* Kuis Tab */}
           {activeTab === 'kuis' && hasQuiz && (
             <div style={{...detailStyles.block, borderLeft: '4px solid #8b5cf6' }}>
               <div style={detailStyles.blockHeader}>
@@ -985,7 +965,6 @@ const StudentElearning = () => {
 
   return (
     <div style={listStyles.container}>
-      {/* Header */}
       <div style={listStyles.header}>
         <div>
           <h1 style={listStyles.title}>
@@ -1006,7 +985,6 @@ const StudentElearning = () => {
         </div>
       </div>
 
-      {/* Stats */}
       <div style={listStyles.statsRow}>
         <div style={listStyles.statItem}>
           <span style={listStyles.statValue}>{stats.totalModules}</span>
@@ -1026,7 +1004,6 @@ const StudentElearning = () => {
         </div>
       </div>
 
-      {/* Filter Bar */}
       <div style={listStyles.filterBar}>
         <div style={listStyles.searchBox}>
           <Search size={18} color="#94a3b8" />
@@ -1065,7 +1042,6 @@ const StudentElearning = () => {
         </div>
       </div>
 
-      {/* Module Grid / List */}
       {filteredModules.length === 0 ? (
         <div style={listStyles.emptyState}>
           <BookOpen size={56} color="#cbd5e1" />
@@ -1115,7 +1091,6 @@ const StudentElearning = () => {
         </div>
       )}
 
-      {/* Preview Modal */}
       {previewFile && <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
     </div>
   );
