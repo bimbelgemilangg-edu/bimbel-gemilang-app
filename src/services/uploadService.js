@@ -1,7 +1,8 @@
+// src/services/uploadService.js
 import { createClient } from '@supabase/supabase-js';
 
-// Konfigurasi Supabase Bimbel Gemilang
-const supabaseUrl = 'https://supabase.co';
+// ✅ PERBAIKAN: Menggunakan URL subdomain proyek asli milik Bimbel Gemilang
+const supabaseUrl = 'https://hqoasblnrsijbflupoir.supabase.co';
 const supabaseAnonKey = 'sb_publishable_TsPJgcnaLOCPV9-DpSyMuA_EQkbrEKt';
 
 // Inisialisasi Client Supabase
@@ -12,10 +13,6 @@ const BUCKET_NAME = 'materi-bimbel';
 
 /**
  * Mengompres gambar sebelum diunggah ke storage untuk menghemat kuota gratisan
- * @param {File} file - Objek file gambar asli
- * @param {number} maxWidth - Lebar maksimal gambar (default 1024px)
- * @param {number} quality - Kualitas kompresi (0.1 - 1.0), default 0.7
- * @returns {Promise<Blob>} - Hasil kompresi dalam bentuk Blob siap upload
  */
 const compressImage = (file, maxWidth = 1024, quality = 0.7) => {
   return new Promise((resolve, reject) => {
@@ -29,7 +26,6 @@ const compressImage = (file, maxWidth = 1024, quality = 0.7) => {
         let width = img.width;
         let height = img.height;
 
-        // Hitung proporsi dimensi baru
         if (width > maxWidth) {
           height = (height * maxWidth) / width;
           width = maxWidth;
@@ -41,7 +37,6 @@ const compressImage = (file, maxWidth = 1024, quality = 0.7) => {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Ubah canvas menjadi Blob JPEG
         canvas.toBlob((blob) => {
           if (blob) {
             resolve(blob);
@@ -57,10 +52,7 @@ const compressImage = (file, maxWidth = 1024, quality = 0.7) => {
 };
 
 /**
- * Mengunggah file E-Learning langsung dari input HTML (<input type="file">)
- * @param {File} file - Objek file dari browser
- * @param {string} customPath - Kategori folder kustom ('materi', 'tugas', 'cover', dll)
- * @returns {Promise<object>} - Status sukses, URL publik, dan detail file
+ * Mengunggah file E-Learning langsung dari input HTML
  */
 export const uploadElearningFile = async (file, customPath = 'materi') => {
   try {
@@ -68,35 +60,30 @@ export const uploadElearningFile = async (file, customPath = 'materi') => {
 
     let dataToUpload = file;
     let finalFileType = file.type;
-    let finalFileName = file.name.replace(/\s+/g, '_'); // Ganti spasi dengan underscore
+    let finalFileName = file.name.replace(/\s+/g, '_'); 
 
-    // 🔥 OPTIMASI: Kompres otomatis jika file yang diunggah adalah gambar
     if (file.type.startsWith('image/')) {
       console.log(`📦 Mengompres gambar: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
       try {
         dataToUpload = await compressImage(file, 1024, 0.7);
         finalFileType = 'image/jpeg';
-        // Ubah ekstensi file menjadi .jpg
         finalFileName = finalFileName.replace(/\.[^/.]+$/, '') + '.jpg';
         console.log(`✅ Gambar berhasil dikompres menjadi format JPEG`);
       } catch (compressError) {
         console.warn('Gagal mengompres gambar, menggunakan file asli:', compressError);
-        dataToUpload = file; // Fallback ke file asli jika kompresi gagal
+        dataToUpload = file; 
       }
     }
 
-    // Validasi ukuran maksimal (Batas aman Supabase Free Tier 50MB per file)
-    const maxSize = 50 * 1024 * 1024; // 50MB
+    const maxSize = 50 * 1024 * 1024; 
     const currentSize = dataToUpload.size || dataToUpload.length;
     if (currentSize > maxSize) {
       throw new Error('Ukuran file terlalu besar. Maksimal batas unggah adalah 50MB.');
     }
 
-    // Generate nama unik menggunakan timestamp agar tidak menimpa file lain
     const timestamp = Date.now();
     const uniqueFileName = `${timestamp}_${finalFileName}`;
 
-    // Tentukan struktur folder otomatis di Supabase Storage
     let folderPath = `${customPath}/`;
     if (customPath === 'materi') {
       if (finalFileType.startsWith('image/')) {
@@ -110,7 +97,6 @@ export const uploadElearningFile = async (file, customPath = 'materi') => {
 
     const filePath = `${folderPath}${uniqueFileName}`;
 
-    // Unggah file langsung ke Supabase Storage
     const { data, error } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(filePath, dataToUpload, {
@@ -121,7 +107,6 @@ export const uploadElearningFile = async (file, customPath = 'materi') => {
 
     if (error) throw error;
 
-    // Ambil URL publik yang bisa diakses langsung tanpa token/auth
     const { data: urlData } = supabase.storage
       .from(BUCKET_NAME)
       .getPublicUrl(filePath);
@@ -145,12 +130,28 @@ export const uploadElearningFile = async (file, customPath = 'materi') => {
 };
 
 /**
- * Menghitung total kapasitas terpakai dan sisa kuota penyimpanan gratis Supabase (1 GB)
- * @returns {Promise<object>} - Data statistik memori dalam satuan MegaBytes (MB)
+ * ✅ TAMBAHAN: Fungsi deleteFile agar fitur hapus materi/file sampah tidak memicu error build
+ */
+export const deleteFile = async (filePath) => {
+  try {
+    if (!filePath) return { success: false, error: 'Path kosong' };
+    const { data, error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .remove([filePath]);
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error) {
+    console.error("Gagal menghapus file di Supabase:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Menghitung total kapasitas terpakai
  */
 export const getStorageUsage = async () => {
   try {
-    // Fungsi rekursif untuk membaca semua file di seluruh folder dalam bucket
     const getAllFiles = async (path = '') => {
       const { data, error } = await supabase.storage
         .from(BUCKET_NAME)
@@ -161,11 +162,9 @@ export const getStorageUsage = async () => {
       let total = 0;
       for (const item of data) {
         if (item.id === null) {
-          // Jika id null, berarti ini adalah sebuah sub-folder, telusuri ke dalam
           const subPath = path ? `${path}/${item.name}` : item.name;
           total += await getAllFiles(subPath);
         } else {
-          // Jika berupa file, tambahkan ukurannya (metadata.size)
           total += item.metadata?.size || 0;
         }
       }
@@ -173,12 +172,9 @@ export const getStorageUsage = async () => {
     };
 
     const totalBytes = await getAllFiles();
-
-    // Batas kuota gratis Supabase Tier (1 GB = 1024 * 1024 * 1024 Bytes)
     const LIMIT_FREE_TIER = 1 * 1024 * 1024 * 1024;
     const remainingBytes = LIMIT_FREE_TIER - totalBytes;
 
-    // Konversi hitungan byte ke MegaBytes (MB)
     const usedMB = (totalBytes / (1024 * 1024)).toFixed(2);
     const remainingMB = (remainingBytes / (1024 * 1024)).toFixed(2);
     const percentageUsed = ((totalBytes / LIMIT_FREE_TIER) * 100).toFixed(1);
@@ -204,7 +200,6 @@ export const getStorageUsage = async () => {
   }
 };
 
-// Fungsi kompatibilitas lama (Fallback Base64 untuk panel lama jika tidak sengaja terpanggil)
 export const uploadToDrive = async (base64Data, fileName, fileType) => {
   try {
     const response = await fetch(base64Data);
@@ -225,6 +220,7 @@ export const getDriveDownloadUrl = (url) => url;
 
 export default {
   uploadElearningFile,
+  deleteFile,
   getStorageUsage,
   uploadToDrive,
   uploadToImgBB,
