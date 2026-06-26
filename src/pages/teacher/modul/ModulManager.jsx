@@ -46,7 +46,6 @@ const ModulManager = () => {
   const [deletingId, setDeletingId] = useState(null);
   const [toast, setToast] = useState(null);
 
-  const navigate = useNavigate();
   const COLLECTION_NAME = "bimbel_modul";
   const PAGE_SIZE = 12;
 
@@ -718,7 +717,7 @@ const ModulManager = () => {
 };
 
 // ============================================================
-// STYLES - SEMUA DALAM OBJEK JAVASCRIPT (NO @media)
+// STYLES
 // ============================================================
 const styles = {
   container: {
