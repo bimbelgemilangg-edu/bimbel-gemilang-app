@@ -1,12 +1,12 @@
 // src/pages/teacher/modul/ManageMateri.jsx
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '../../../firebase';
 import { 
   collection, addDoc, doc, getDoc, updateDoc, serverTimestamp, 
-  getDocs, deleteDoc, query, where, orderBy, limit, runTransaction
+  getDocs, deleteDoc, query, where, orderBy, limit
 } from "firebase/firestore";
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { uploadElearningFile, supabase } from '../../../services/uploadService';
+import { supabase, deleteFile } from '../../../services/uploadService';
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, ArrowLeft, 
   FileUp, Type, Video, X, Image as ImageIcon, BookOpen, 
@@ -14,88 +14,52 @@ import {
   CheckCircle, Calendar, Users, Target, AlertCircle, 
   Smartphone, Tablet, Laptop, Info, ExternalLink, CalendarDays, 
   Archive, UserPlus, UserCheck, Search, Loader2, Hash, Tag, 
-  Zap, Sparkles, Filter, User, GraduationCap, Shield, 
-  Database, ChevronRight, Home, RefreshCw, AlertTriangle,
-  Copy, Link, Play, FileArchive, FileCode, FileJson,
+  Zap, Sparkles, Filter, User, GraduationCap, 
   FileSpreadsheet, FileImage, File, FileVideo,
-  Globe, Upload, Cloud, Server, Cpu, Gauge,
-  TrendingUp, Activity, BarChart3, PieChart
+  Upload, Cloud, Server
 } from 'lucide-react';
 
 // ============================================================
-// PREVIEW COMPONENTS
+// PREVIEW COMPONENT
 // ============================================================
 const FilePreview = ({ url, fileName, fileType }) => {
   const [previewError, setPreviewError] = useState(false);
   
   if (!url) return null;
   
-  // YouTube
   const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?#]+)/);
   if (youtubeMatch) {
     return (
-      <div style={previewStyles.videoWrapper}>
-        <iframe 
-          src={`https://www.youtube.com/embed/${youtubeMatch[1]}`}
-          style={previewStyles.videoIframe}
-          allowFullScreen
-          title="Video Preview"
-        />
+      <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 8, overflow: 'hidden' }}>
+        <iframe src={`https://www.youtube.com/embed/${youtubeMatch[1]}`} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }} allowFullScreen title="Video" />
       </div>
     );
   }
   
-  // Image
   if (fileType?.startsWith('image/') || url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
     return (
-      <div style={previewStyles.imageWrapper}>
-        <img 
-          src={url} 
-          alt={fileName || 'Preview'}
-          style={previewStyles.imagePreview}
-          onError={() => setPreviewError(true)}
-        />
-        {previewError && <div style={previewStyles.previewError}>Gagal memuat gambar</div>}
+      <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', maxHeight: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <img src={url} alt={fileName || 'Preview'} style={{ width: '100%', maxHeight: 400, objectFit: 'contain' }} onError={() => setPreviewError(true)} />
+        {previewError && <div style={{ padding: 20, color: '#ef4444', textAlign: 'center' }}>Gagal memuat gambar</div>}
       </div>
     );
   }
   
-  // PDF
   if (fileType === 'application/pdf' || url.match(/\.pdf$/i)) {
     return (
-      <div style={previewStyles.pdfWrapper}>
-        <div style={previewStyles.pdfIcon}><File size={40} color="#ef4444" /></div>
-        <a href={url} target="_blank" rel="noopener noreferrer" style={previewStyles.pdfLink}>
-          📄 Buka PDF
-        </a>
-        <embed src={url} type="application/pdf" style={previewStyles.pdfEmbed} />
+      <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', padding: 16, textAlign: 'center' }}>
+        <div style={{ marginBottom: 8 }}><File size={40} color="#ef4444" /></div>
+        <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '8px 16px', background: '#ef4444', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 12 }}>📄 Buka PDF</a>
       </div>
     );
   }
   
-  // Other files
   return (
-    <div style={previewStyles.fileWrapper}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, justifyContent: 'center' }}>
       <FileText size={32} color="#3b82f6" />
-      <a href={url} target="_blank" rel="noopener noreferrer" style={previewStyles.fileLink}>
-        📎 {fileName || 'Buka File'}
-      </a>
+      <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', fontSize: 13 }}>📎 {fileName || 'Buka File'}</a>
     </div>
   );
-};
-
-const previewStyles = {
-  videoWrapper: { position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 8, overflow: 'hidden' },
-  videoIframe: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' },
-  imageWrapper: { borderRadius: 8, overflow: 'hidden', background: '#f8fafc', maxHeight: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  imagePreview: { width: '100%', maxHeight: 400, objectFit: 'contain' },
-  previewError: { padding: 20, color: '#ef4444', textAlign: 'center' },
-  pdfWrapper: { borderRadius: 8, overflow: 'hidden', background: '#f8fafc', padding: 16, textAlign: 'center' },
-  pdfIcon: { marginBottom: 8 },
-  pdfLink: { display: 'inline-block', padding: '8px 16px', background: '#ef4444', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 12 },
-  pdfEmbed: { width: '100%', height: 400, marginTop: 12, border: 'none', borderRadius: 8 },
-  fileWrapper: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, justifyContent: 'center' },
-  fileLink: { color: '#3b82f6', fontWeight: 600, textDecoration: 'none', fontSize: 13 }
 };
 
 // ============================================================
@@ -139,23 +103,16 @@ const SimpleEditor = ({ value, onChange, placeholder }) => {
   const toolbarBtn = {
     background: 'none', border: 'none', padding: '4px 10px', 
     borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600,
-    color: '#64748b', transition: '0.2s'
+    color: '#64748b'
   };
 
   return (
     <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
       <div style={{ display: 'flex', gap: 2, padding: 6, background: '#f8fafc', borderBottom: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
-        {[
-          { label: 'B', format: 'bold', title: 'Bold' },
-          { label: 'I', format: 'italic', title: 'Italic' },
-          { label: 'U', format: 'underline', title: 'Underline' },
-          { label: '• List', format: 'list', title: 'Bullet List' },
-          { label: '🔗 Link', format: 'link', title: 'Insert Link' }
-        ].map(btn => (
-          <button key={btn.format} type="button" onClick={() => applyFormat(btn.format)} style={toolbarBtn} title={btn.title}>
-            {btn.label}
-          </button>
-        ))}
+        {['B','I','U','• List','🔗 Link'].map((label, i) => {
+          const formats = ['bold','italic','underline','list','link'];
+          return <button key={i} type="button" onClick={() => applyFormat(formats[i])} style={toolbarBtn}>{label}</button>;
+        })}
       </div>
       <textarea
         id="editor-textarea"
@@ -181,10 +138,7 @@ const ManageMateri = () => {
   const fileInputRef = useRef(null);
   const coverInputRef = useRef(null);
 
-  // ===== RESPONSIVE =====
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  // ===== LOADING & STATUS =====
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -195,24 +149,20 @@ const ManageMateri = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState({ type: '', message: '' });
   
-  // ===== DATA GURU (BERBASIS ID) =====
   const [guruData, setGuruData] = useState(null);
   const [guruId, setGuruId] = useState('');
   const [kodeMapel, setKodeMapel] = useState('');
   const [guruName, setGuruName] = useState('');
   
-  // ===== IDENTITAS MODUL =====
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [coverImage, setCoverImage] = useState(null);
   const [description, setDescription] = useState("");
   const [modulId, setModulId] = useState(null);
   
-  // ===== KONTEN =====
   const [sections, setSections] = useState([]);
   const [activeSection, setActiveSection] = useState(null);
   
-  // ===== PENGATURAN =====
   const [targetKategori, setTargetKategori] = useState("Reguler");
   const [targetKelas, setTargetKelas] = useState("Semua");
   const [mingguKe, setMingguKe] = useState(1);
@@ -226,7 +176,6 @@ const ManageMateri = () => {
   });
   const [tanggalSelesai, setTanggalSelesai] = useState("");
   
-  // ===== SISWA (FILTER BERDASARKAN JADWAL + ID) =====
   const [allStudents, setAllStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [selectedStudents, setSelectedStudents] = useState([]);
@@ -234,13 +183,9 @@ const ManageMateri = () => {
   const [showStudentPicker, setShowStudentPicker] = useState(false);
   const [sendToSpecificStudents, setSendToSpecificStudents] = useState(false);
   
-  // ===== STATS =====
   const [stats, setStats] = useState({ totalSiswa: 0, totalJadwal: 0, totalMapel: 0, totalKonten: 0 });
-  
-  // ===== QUIZ =====
   const [quizData, setQuizData] = useState([]);
   
-  // ===== DATA REFERENSI =====
   const [availableClasses, setAvailableClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [authorName, setAuthorName] = useState("");
@@ -261,9 +206,6 @@ const ManageMateri = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // ============================================================
-  // FETCH DATA GURU (BERBASIS ID)
-  // ============================================================
   const fetchTeacherData = useCallback(async () => {
     try {
       const saved = JSON.parse(localStorage.getItem('teacherData') || '{}');
@@ -292,9 +234,6 @@ const ManageMateri = () => {
     }
   }, []);
 
-  // ============================================================
-  // FETCH SISWA DARI JADWAL (BERBASIS ID)
-  // ============================================================
   const fetchStudentsFromSchedules = useCallback(async (teacherName) => {
     if (!teacherName) return [];
     
@@ -354,9 +293,6 @@ const ManageMateri = () => {
     }
   }, []);
 
-  // ============================================================
-  // MAIN DATA FETCH
-  // ============================================================
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -381,9 +317,6 @@ const ManageMateri = () => {
     loadData();
   }, [editId]);
 
-  // ============================================================
-  // FETCH MODUL DATA
-  // ============================================================
   const fetchModulData = async () => {
     try {
       const docRef = doc(db, COLLECTION_NAME, editId);
@@ -413,9 +346,6 @@ const ManageMateri = () => {
     }
   };
 
-  // ============================================================
-  // FILTER SISWA
-  // ============================================================
   useEffect(() => {
     if (!studentSearch.trim()) {
       setFilteredStudents(allStudents);
@@ -429,9 +359,9 @@ const ManageMateri = () => {
   }, [studentSearch, allStudents]);
 
   // ============================================================
-  // UPLOAD FILE (LANGSUNG KE SUPABASE - TANPA BASE64)
+  // 🔥 UPLOAD FILE - VERSI YANG BENAR
   // ============================================================
-  const handleFileUpload = async (file, type = 'cover') => {
+  const handleFileUpload = async (file, type = 'materi') => {
     if (!file) return null;
     if (file.size > 50 * 1024 * 1024) {
       alert("❌ Maksimal 50MB!");
@@ -443,29 +373,62 @@ const ManageMateri = () => {
     setUploadStatus({ type: 'loading', message: `Mengupload ${file.name}...` });
 
     try {
-      const interval = setInterval(() => {
-        setUploadProgress(prev => Math.min(prev + 8, 90));
-      }, 200);
-
-      const result = await uploadElearningFile(file, type);
-
-      clearInterval(interval);
-      setUploadProgress(100);
-
-      if (result.success) {
-        setUploadStatus({ type: 'success', message: '✅ File berhasil diunggah!' });
-        setAutoSaveStatus('✅ File berhasil diunggah!');
-        setTimeout(() => setAutoSaveStatus(''), 2000);
-        return result.downloadURL;
-      } else {
-        setUploadStatus({ type: 'error', message: `❌ ${result.error}` });
-        alert("❌ Upload gagal: " + result.error);
-        return null;
+      // 1. TENTUKAN FOLDER BERDASARKAN TIPE FILE
+      let folder = 'dokumen';
+      if (type === 'cover') {
+        folder = 'cover';
+      } else if (file.type.includes('image')) {
+        folder = 'gambar';
+      } else if (file.type.includes('pdf')) {
+        folder = 'pdf';
       }
+
+      // 2. BUAT PATH UNIK
+      const fileExtension = file.name.split('.').pop();
+      const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExtension}`;
+      const cleanFilePath = `${folder}/${uniqueFileName}`;
+
+      console.log(`📤 Upload ke Supabase: ${cleanFilePath} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+
+      // 3. UPLOAD KE SUPABASE
+      const { data, error: uploadError } = await supabase.storage
+        .from('materi-bimbel')
+        .upload(cleanFilePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type
+        });
+
+      if (uploadError) {
+        console.error('❌ Supabase upload error:', uploadError);
+        throw uploadError;
+      }
+
+      // 4. AMBIL PUBLIC URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('materi-bimbel')
+        .getPublicUrl(cleanFilePath);
+
+      console.log('✅ Upload berhasil:', publicUrl);
+
+      setUploadProgress(100);
+      setUploadStatus({ type: 'success', message: '✅ File berhasil diunggah!' });
+      setAutoSaveStatus('✅ File berhasil diunggah!');
+      setTimeout(() => setAutoSaveStatus(''), 2000);
+
+      return {
+        success: true,
+        downloadURL: publicUrl,
+        filePath: cleanFilePath,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+      };
+
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error('❌ Upload error:', error);
       setUploadStatus({ type: 'error', message: `❌ ${error.message}` });
-      alert("❌ Terjadi kesalahan: " + error.message);
+      alert("❌ Upload gagal: " + error.message);
       return null;
     } finally {
       setUploading(false);
@@ -474,6 +437,9 @@ const ManageMateri = () => {
     }
   };
 
+  // ============================================================
+  // COVER UPLOAD
+  // ============================================================
   const handleCoverUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -481,27 +447,106 @@ const ManageMateri = () => {
       alert('❌ File harus berupa gambar!');
       return;
     }
-    const url = await handleFileUpload(file, 'cover');
-    if (url) setCoverImage(url);
+    const result = await handleFileUpload(file, 'cover');
+    if (result?.success) {
+      setCoverImage(result.downloadURL);
+    }
     if (coverInputRef.current) coverInputRef.current.value = '';
   };
 
+  // ============================================================
+  // 🔥 SECTION FILE UPLOAD - VERSI YANG BENAR
+  // ============================================================
   const handleSectionFileUpload = async (e, sectionId) => {
     const file = e.target.files[0];
     if (!file) return;
-    const url = await handleFileUpload(file, 'materi');
-    if (url) {
+
+    const result = await handleFileUpload(file, 'materi');
+    
+    if (result?.success) {
       setSections(sections.map(s => 
         s.id === sectionId 
-          ? { ...s, content: url, fileName: file.name, mimeType: file.type, fileSize: file.size, filePath: url.split('/').slice(-2).join('/') } 
+          ? { 
+              ...s, 
+              content: result.downloadURL,
+              fileName: result.fileName,
+              mimeType: result.fileType,
+              fileSize: result.fileSize,
+              filePath: result.filePath  // 🔥 Simpan cleanFilePath
+            } 
           : s
       ));
     }
+    
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   // ============================================================
-  // KONTEN FUNCTIONS
+  // DELETE SECTION + HAPUS FILE DARI SUPABASE
+  // ============================================================
+  const removeSection = async (id) => {
+    if (!window.confirm("Hapus section ini? File terkait juga akan dihapus dari penyimpanan.")) return;
+    
+    const section = sections.find(s => s.id === id);
+    if (section?.filePath) {
+      try {
+        const { error } = await supabase.storage
+          .from('materi-bimbel')
+          .remove([section.filePath]);
+        if (error) {
+          console.warn('⚠️ Gagal hapus file:', error);
+        } else {
+          console.log('✅ File berhasil dihapus dari Supabase');
+        }
+      } catch (err) {
+        console.error('Error deleting file:', err);
+      }
+    }
+    
+    setSections(sections.filter(s => s.id !== id));
+    if (activeSection === id) {
+      setActiveSection(sections.length > 1 ? sections[0]?.id : null);
+    }
+    setStats(prev => ({ ...prev, totalKonten: sections.length - 1 }));
+  };
+
+  // ============================================================
+  // DELETE MODUL + HAPUS SEMUA FILE
+  // ============================================================
+  const handleDeleteModul = async () => {
+    if (!modulId) return;
+    if (!window.confirm(`⚠️ Hapus modul "${title}"?\n\nSemua data dan file terkait akan dihapus permanen!`)) return;
+    
+    try {
+      const filePaths = sections.filter(s => s.filePath).map(s => s.filePath);
+      
+      if (filePaths.length > 0) {
+        const { error } = await supabase.storage
+          .from('materi-bimbel')
+          .remove(filePaths);
+        if (error) console.warn('⚠️ Gagal hapus beberapa file:', error);
+        else console.log(`✅ ${filePaths.length} file dihapus dari Supabase`);
+      }
+      
+      if (coverImage) {
+        const coverPath = coverImage.split('/').slice(-2).join('/');
+        if (coverPath) {
+          await supabase.storage.from('materi-bimbel').remove([coverPath]);
+        }
+      }
+      
+      await deleteDoc(doc(db, COLLECTION_NAME, modulId));
+      alert('✅ Modul dan semua file terkait berhasil dihapus!');
+      navigate('/guru/modul');
+      
+    } catch (error) {
+      console.error('Error deleting modul:', error);
+      alert('❌ Gagal menghapus modul: ' + error.message);
+    }
+  };
+
+  // ============================================================
+  // FUNGSI KONTEN LAINNYA
   // ============================================================
   const addSection = (type) => {
     const titles = { 
@@ -529,33 +574,6 @@ const ManageMateri = () => {
 
   const updateSection = (id, field, value) => {
     setSections(sections.map(s => s.id === id ? { ...s, [field]: value } : s));
-  };
-  
-  // ============================================================
-  // DELETE SECTION + HAPUS FILE DARI SUPABASE
-  // ============================================================
-  const removeSection = async (id) => {
-    if (!window.confirm("Hapus section ini? File terkait juga akan dihapus dari penyimpanan.")) return;
-    
-    const section = sections.find(s => s.id === id);
-    if (section?.filePath) {
-      try {
-        const result = await deleteFile(section.filePath);
-        if (result.success) {
-          console.log('✅ File berhasil dihapus dari Supabase');
-        } else {
-          console.warn('⚠️ Gagal hapus file:', result.error);
-        }
-      } catch (err) {
-        console.error('Error deleting file:', err);
-      }
-    }
-    
-    setSections(sections.filter(s => s.id !== id));
-    if (activeSection === id) {
-      setActiveSection(sections.length > 1 ? sections[0]?.id : null);
-    }
-    setStats(prev => ({ ...prev, totalKonten: sections.length - 1 }));
   };
 
   const moveSection = (id, direction) => {
@@ -612,52 +630,6 @@ const ManageMateri = () => {
   };
 
   // ============================================================
-  // DELETE MODUL + HAPUS SEMUA FILE DARI SUPABASE
-  // ============================================================
-  const handleDeleteModul = async () => {
-    if (!modulId) return;
-    if (!window.confirm(`⚠️ Hapus modul "${title}"?\n\nSemua data dan file terkait akan dihapus permanen!`)) return;
-    
-    try {
-      // 1. Hapus semua file di Supabase dari setiap section
-      const filePaths = sections
-        .filter(s => s.filePath)
-        .map(s => s.filePath);
-      
-      if (filePaths.length > 0) {
-        const { data, error } = await supabase
-          .storage
-          .from('materi-bimbel')
-          .remove(filePaths);
-        
-        if (error) {
-          console.warn('⚠️ Gagal hapus beberapa file:', error);
-        } else {
-          console.log(`✅ ${filePaths.length} file berhasil dihapus dari Supabase`);
-        }
-      }
-      
-      // 2. Hapus cover image dari Supabase
-      if (coverImage) {
-        const coverPath = coverImage.split('/').slice(-2).join('/');
-        if (coverPath) {
-          await supabase.storage.from('materi-bimbel').remove([coverPath]);
-        }
-      }
-      
-      // 3. Hapus data dari Firestore
-      await deleteDoc(doc(db, COLLECTION_NAME, modulId));
-      
-      alert('✅ Modul dan semua file terkait berhasil dihapus!');
-      navigate('/guru/modul');
-      
-    } catch (error) {
-      console.error('Error deleting modul:', error);
-      alert('❌ Gagal menghapus modul: ' + error.message);
-    }
-  };
-
-  // ============================================================
   // SIMPAN MODUL
   // ============================================================
   const handleSave = async () => {
@@ -701,7 +673,6 @@ const ManageMateri = () => {
     }
     
     try {
-      let docId = editId;
       if (editId) {
         await updateDoc(doc(db, COLLECTION_NAME, editId), payload);
         alert("✅ Modul berhasil diperbarui!");
@@ -709,10 +680,9 @@ const ManageMateri = () => {
         payload.createdAt = serverTimestamp();
         payload.createdBy = authorName;
         const newDoc = await addDoc(collection(db, COLLECTION_NAME), payload);
-        docId = newDoc.id;
         localStorage.removeItem('draft_modul');
         alert(`✅ Modul "${title}" berhasil diterbitkan!`);
-        navigate(`/guru/modul/materi?edit=${docId}`);
+        navigate(`/guru/modul/materi?edit=${newDoc.id}`);
         return;
       }
     } catch (err) {
@@ -721,9 +691,6 @@ const ManageMateri = () => {
     setSaving(false);
   };
 
-  // ============================================================
-  // FORMAT FILE SIZE
-  // ============================================================
   const formatFileSize = (bytes) => {
     if (!bytes) return '0 B';
     if (bytes < 1024) return bytes + ' B';
@@ -741,59 +708,38 @@ const ManageMateri = () => {
     const isNotYetActive = isScheduled && scheduleDate && scheduleDate > new Date();
     
     return (
-      <div style={previewContainerStyles.container}>
-        <div style={previewContainerStyles.header}>
-          <div style={previewContainerStyles.deviceBtns}>
-            {['mobile', 'tablet', 'desktop'].map(device => (
-              <button key={device} onClick={() => setPreviewDevice(device)} style={previewContainerStyles.deviceBtn(previewDevice === device)}>
+      <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', marginTop: 16, background: '#f8fafc' }}>
+        <div style={{ background: '#1e293b', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #334155' }}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {['mobile','tablet','desktop'].map(device => (
+              <button key={device} onClick={() => setPreviewDevice(device)} style={{ padding: '4px 8px', borderRadius: 6, background: previewDevice === device ? '#3b82f6' : 'transparent', color: 'white', border: 'none', cursor: 'pointer' }}>
                 {device === 'mobile' ? <Smartphone size={14} /> : device === 'tablet' ? <Tablet size={14} /> : <Laptop size={14} />}
               </button>
             ))}
           </div>
-          <span style={previewContainerStyles.title}>Preview Tampilan Siswa</span>
-          <button onClick={() => setShowPreview(false)} style={previewContainerStyles.closeBtn}>✕</button>
+          <span style={{ fontSize: 10, color: '#94a3b8' }}>Preview Tampilan Siswa</span>
+          <button onClick={() => setShowPreview(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>✕</button>
         </div>
-        <div style={{ ...previewContainerStyles.body, maxWidth: previewWidth }}>
-          <div style={previewContainerStyles.content}>
-            {isNotYetActive && (
-              <div style={previewContainerStyles.scheduledBanner}>
-                <Clock size={14} /> Modul tersedia {scheduleDate.toLocaleDateString('id-ID')} {scheduleDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-              </div>
-            )}
-            {sendToSpecificStudents && selectedStudents.length > 0 && (
-              <div style={previewContainerStyles.studentBanner}>
-                <UserCheck size={14} /> Dikirim ke {selectedStudents.length} siswa
-              </div>
-            )}
-            {coverImage && <img src={coverImage} alt="" style={previewContainerStyles.cover} />}
-            <h2 style={previewContainerStyles.previewTitle}>{title || 'Judul Modul'}</h2>
-            <p style={previewContainerStyles.previewSub}>{subject} • {targetKelas}</p>
-            {guruId && <p style={previewContainerStyles.previewId}>👨‍🏫 {guruId}</p>}
-            {description && <div style={previewContainerStyles.desc}>{description}</div>}
-            
-            {sections.map((sec, idx) => (
-              <div key={sec.id} style={previewContainerStyles.section}>
-                <h4 style={previewContainerStyles.sectionTitle}>{sec.title || `Bagian ${idx + 1}`}</h4>
-                {sec.type === 'text' && <div style={previewContainerStyles.textContent}>{sec.content}</div>}
-                {sec.type === 'file' && sec.content && (
-                  <FilePreview url={sec.content} fileName={sec.fileName} fileType={sec.mimeType} />
-                )}
-                {sec.type === 'video' && sec.content && (
-                  <FilePreview url={sec.content} fileName={sec.fileName} fileType={sec.mimeType} />
-                )}
-                {sec.type === 'assignment' && (
-                  <div style={previewContainerStyles.assignment}>
-                    <p>📝 {sec.content || 'Instruksi tugas'}</p>
-                    {sec.endTime && <p style={previewContainerStyles.deadline}>⏰ Deadline: {new Date(sec.endTime).toLocaleString('id-ID')}</p>}
-                  </div>
-                )}
-              </div>
-            ))}
-            
-            {quizData?.length > 0 && (
-              <div style={previewContainerStyles.quizBanner}>❓ Kuis ({quizData.length} soal)</div>
-            )}
-          </div>
+        <div style={{ maxWidth: previewWidth, margin: '0 auto', background: 'white', minHeight: 400, padding: 16, transition: 'all 0.3s ease' }}>
+          {isNotYetActive && <div style={{ background: '#fef3c7', padding: 8, borderRadius: 8, marginBottom: 16, textAlign: 'center', border: '1px solid #fde68a', fontSize: 11, color: '#b45309', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><Clock size={14} /> Modul tersedia {scheduleDate.toLocaleDateString('id-ID')} {scheduleDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>}
+          {sendToSpecificStudents && selectedStudents.length > 0 && <div style={{ background: '#e0e7ff', padding: 8, borderRadius: 8, marginBottom: 16, border: '1px solid #818cf8', fontSize: 11, color: '#3730a3', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><UserCheck size={14} /> Dikirim ke {selectedStudents.length} siswa</div>}
+          {coverImage && <img src={coverImage} alt="" style={{ width: '100%', maxHeight: 150, objectFit: 'cover', borderRadius: 8, marginBottom: 12 }} />}
+          <h2 style={{ fontSize: 20, fontWeight: 'bold', color: '#1e293b', margin: 0, textAlign: 'center' }}>{title || 'Judul Modul'}</h2>
+          <p style={{ fontSize: 12, color: '#64748b', textAlign: 'center', marginTop: 4 }}>{subject} • {targetKelas}</p>
+          {guruId && <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center' }}>👨‍🏫 {guruId}</p>}
+          {description && <div style={{ background: '#f1f5f9', padding: 12, borderRadius: 8, marginBottom: 20, fontSize: 13, color: '#475569' }}>{description}</div>}
+          
+          {sections.map((sec, idx) => (
+            <div key={sec.id} style={{ marginBottom: 20, borderBottom: '1px solid #e2e8f0', paddingBottom: 16 }}>
+              <h4 style={{ fontSize: 16, fontWeight: 'bold', color: '#1e293b', marginBottom: 8 }}>{sec.title || `Bagian ${idx + 1}`}</h4>
+              {sec.type === 'text' && <div style={{ fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{sec.content}</div>}
+              {sec.type === 'file' && sec.content && <FilePreview url={sec.content} fileName={sec.fileName} fileType={sec.mimeType} />}
+              {sec.type === 'video' && sec.content && <FilePreview url={sec.content} fileName={sec.fileName} fileType={sec.mimeType} />}
+              {sec.type === 'assignment' && <div style={{ background: '#fffbeb', padding: 12, borderRadius: 8, border: '1px solid #fde68a' }}><p>📝 {sec.content || 'Instruksi tugas'}</p>{sec.endTime && <p style={{ fontSize: 11, color: '#f59e0b' }}>⏰ Deadline: {new Date(sec.endTime).toLocaleString('id-ID')}</p>}</div>}
+            </div>
+          ))}
+          {quizData?.length > 0 && <div style={{ background: '#f0fdf4', padding: 12, borderRadius: 8, border: '1px solid #bbf7d0', fontSize: 13, fontWeight: 'bold', color: '#166534', textAlign: 'center' }}>❓ Kuis ({quizData.length} soal)</div>}
+          <div style={{ marginTop: 20, textAlign: 'center', padding: 12, background: '#f8fafc', borderRadius: 8 }}><p style={{ fontSize: 11, color: '#94a3b8' }}>✨ Ini adalah tampilan yang akan dilihat siswa ✨</p></div>
         </div>
       </div>
     );
@@ -805,60 +751,40 @@ const ManageMateri = () => {
     if (!section) return null;
     
     if (section.type === 'text') {
-      return (
-        <SimpleEditor 
-          value={section.content} 
-          onChange={value => updateSection(activeSection, 'content', value)}
-          placeholder="Tulis materi di sini... Gunakan toolbar untuk format teks"
-        />
-      );
+      return <SimpleEditor value={section.content} onChange={value => updateSection(activeSection, 'content', value)} placeholder="Tulis materi di sini... Gunakan toolbar untuk format teks" />;
     }
     
     if (section.type === 'file') {
       return section.content ? (
-        <div style={editorStyles.fileUploaded}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
           <FileText size={36} color="#3b82f6" />
-          <div>
-            <p style={editorStyles.fileName}>{section.fileName || 'File'}</p>
-            <p style={editorStyles.fileSize}>{formatFileSize(section.fileSize)}</p>
-          </div>
-          <div style={editorStyles.fileActions}>
-            <a href={section.content} target="_blank" rel="noreferrer" style={editorStyles.fileActionBtn}>🔍 Buka</a>
-            <button onClick={() => updateSection(activeSection, 'content', '')} style={editorStyles.fileActionBtnDelete}>🗑️ Hapus</button>
+          <div><p style={{ fontWeight: 600, fontSize: 13, color: '#1e293b' }}>{section.fileName || 'File'}</p><p style={{ fontSize: 10, color: '#94a3b8' }}>{formatFileSize(section.fileSize)}</p></div>
+          <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
+            <a href={section.content} target="_blank" rel="noreferrer" style={{ padding: '4px 10px', background: '#3b82f6', color: 'white', borderRadius: 6, textDecoration: 'none', fontSize: 11, fontWeight: 600 }}>🔍 Buka</a>
+            <button onClick={() => updateSection(activeSection, 'content', '')} style={{ padding: '4px 10px', background: '#fee2e2', color: '#ef4444', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600 }}>🗑️ Hapus</button>
           </div>
         </div>
       ) : (
         <div>
-          <label style={editorStyles.uploadBox}>
+          <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '30px 20px', border: '2px dashed #e2e8f0', borderRadius: 10, cursor: 'pointer', background: '#f8fafc', color: '#64748b', fontSize: 13 }}>
             {uploading ? (
-              <div style={editorStyles.uploadProgress}>
+              <div style={{ textAlign: 'center', width: '100%' }}>
                 <Loader2 size={30} className="spin" />
                 <span>Mengunggah... {uploadProgress}%</span>
-                <div style={editorStyles.progressBar}>
-                  <div style={{ ...editorStyles.progressFill, width: `${uploadProgress}%` }} />
+                <div style={{ width: '100%', height: 4, background: '#e2e8f0', borderRadius: 2, marginTop: 8, overflow: 'hidden' }}>
+                  <div style={{ width: `${uploadProgress}%`, height: '100%', background: '#3b82f6', borderRadius: 2, transition: 'width 0.3s' }} />
                 </div>
               </div>
             ) : (
               <>
                 <Upload size={30} color="#94a3b8" />
                 <span>Upload PDF/DOCX/PPT/Gambar (Max 50MB)</span>
-                <span style={editorStyles.uploadHint}>Seret atau klik untuk upload</span>
+                <span style={{ fontSize: 10, color: '#94a3b8' }}>Seret atau klik untuk upload</span>
               </>
             )}
-            <input 
-              ref={fileInputRef}
-              type="file" 
-              accept=".pdf,.doc,.docx,.ppt,.pptx,image/*" 
-              hidden 
-              onChange={(e) => handleSectionFileUpload(e, activeSection)} 
-              disabled={uploading}
-            />
+            <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,image/*" hidden onChange={(e) => handleSectionFileUpload(e, activeSection)} disabled={uploading} />
           </label>
-          {uploadStatus.message && (
-            <div style={{ ...editorStyles.uploadStatus, color: uploadStatus.type === 'error' ? '#ef4444' : '#10b981' }}>
-              {uploadStatus.message}
-            </div>
-          )}
+          {uploadStatus.message && <div style={{ fontSize: 11, fontWeight: 600, marginTop: 8, textAlign: 'center', color: uploadStatus.type === 'error' ? '#ef4444' : '#10b981' }}>{uploadStatus.message}</div>}
         </div>
       );
     }
@@ -867,19 +793,9 @@ const ManageMateri = () => {
       const youtubeId = getYouTubeId(section.content);
       return (
         <>
-          <input 
-            value={section.content} 
-            onChange={e => updateSection(activeSection, 'content', e.target.value)} 
-            placeholder="Tempel link YouTube, Canva, Google Drive..." 
-            style={editorStyles.videoInput} 
-          />
-          {youtubeId && (
-            <div style={editorStyles.videoPreview}>
-              <p style={editorStyles.videoPreviewLabel}>✅ Preview video:</p>
-              <iframe width="100%" height="250" src={`https://www.youtube.com/embed/${youtubeId}`} frameBorder="0" allowFullScreen style={{ borderRadius: 8 }} />
-            </div>
-          )}
-          <p style={editorStyles.videoHint}>💡 Link YouTube akan otomatis ditampilkan sebagai video player</p>
+          <input value={section.content} onChange={e => updateSection(activeSection, 'content', e.target.value)} placeholder="Tempel link YouTube, Canva, Google Drive..." style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box', background: '#f8fafc' }} />
+          {youtubeId && <div style={{ marginTop: 12 }}><p style={{ fontSize: 11, color: '#10b981', marginBottom: 6 }}>✅ Preview video:</p><iframe width="100%" height="250" src={`https://www.youtube.com/embed/${youtubeId}`} frameBorder="0" allowFullScreen style={{ borderRadius: 8 }} /></div>}
+          <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>💡 Link YouTube akan otomatis ditampilkan sebagai video player</p>
         </>
       );
     }
@@ -887,23 +803,13 @@ const ManageMateri = () => {
     if (section.type === 'assignment') {
       return (
         <div>
-          <textarea 
-            value={section.content} 
-            onChange={e => updateSection(activeSection, 'content', e.target.value)} 
-            placeholder="Tulis instruksi tugas di sini..."
-            style={editorStyles.assignmentInput}
-          />
-          <div style={editorStyles.deadlineBox}>
+          <textarea value={section.content} onChange={e => updateSection(activeSection, 'content', e.target.value)} placeholder="Tulis instruksi tugas di sini..." style={{ width: '100%', minHeight: 120, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, resize: 'vertical', fontFamily: 'inherit', background: '#f8fafc' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12, padding: 12, background: '#fffbeb', borderRadius: 8 }}>
             <Clock size={18} color="#f59e0b" />
-            <span style={editorStyles.deadlineLabel}>Deadline Tugas:</span>
-            <input 
-              type="datetime-local" 
-              value={section.endTime} 
-              onChange={e => updateSection(activeSection, 'endTime', e.target.value)} 
-              style={editorStyles.deadlineInput} 
-            />
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#b45309' }}>Deadline Tugas:</span>
+            <input type="datetime-local" value={section.endTime} onChange={e => updateSection(activeSection, 'endTime', e.target.value)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #fde68a', fontSize: 12, outline: 'none', background: 'white' }} />
           </div>
-          <p style={editorStyles.deadlineHint}>💡 Kosongkan jika tidak ada batas waktu</p>
+          <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>💡 Kosongkan jika tidak ada batas waktu</p>
         </div>
       );
     }
@@ -932,10 +838,10 @@ const ManageMateri = () => {
     sidebar: { width: isMobile ? '100%' : '350px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 },
     card: { background: 'white', padding: 14, borderRadius: 14, border: '1px solid #f1f5f9', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' },
     cardTitle: { margin: '0 0 12px', fontSize: 12, fontWeight: 700, color: '#64748b', display: 'flex', alignItems: 'center', gap: 6 },
-    input: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', marginBottom: 8, boxSizing: 'border-box', background: '#f8fafc', transition: '0.2s' },
+    input: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', marginBottom: 8, boxSizing: 'border-box', background: '#f8fafc' },
     inputSmall: { flex: 1, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 10, outline: 'none', boxSizing: 'border-box', background: '#f8fafc' },
     select: { flex: 1, padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, background: 'white', outline: 'none', cursor: 'pointer' },
-    coverUpload: { display: 'block', height: 80, borderRadius: 8, overflow: 'hidden', cursor: 'pointer', border: '2px dashed #e2e8f0', marginTop: 4, background: '#f8fafc', transition: '0.2s' },
+    coverUpload: { display: 'block', height: 80, borderRadius: 8, overflow: 'hidden', cursor: 'pointer', border: '2px dashed #e2e8f0', marginTop: 4, background: '#f8fafc' },
     warningBanner: { background: '#fef3c7', padding: 8, borderRadius: 6, fontSize: 10, color: '#b45309', display: 'flex', alignItems: 'center', gap: 6 },
     scheduleBox: { background: '#fffbeb', padding: 12, borderRadius: 8, marginTop: 8, border: '1px solid #fde68a' },
     scheduleTitle: { fontSize: 11, fontWeight: 700, color: '#b45309', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 },
@@ -944,12 +850,12 @@ const ManageMateri = () => {
     statusMessageGreen: { background: '#dcfce7', padding: 8, borderRadius: 6, fontSize: 10, color: '#166534', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 },
     statusMessageGray: { background: '#f1f5f9', padding: 8, borderRadius: 6, fontSize: 10, color: '#64748b', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 },
     emptyContent: { background: '#f8fafc', padding: 20, borderRadius: 8, textAlign: 'center', border: '1px dashed #e2e8f0' },
-    sectionItem: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', marginBottom: 4, border: '1px solid #e2e8f0', transition: '0.2s' },
+    sectionItem: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', marginBottom: 4, border: '1px solid #e2e8f0' },
     sectionLabel: { flex: 1, fontSize: 11, fontWeight: 600, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 },
     btnArrow: { background: 'none', border: 'none', cursor: 'pointer', padding: 2, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6 },
     btnX: { background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 4, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' },
     addSectionGrid: { display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)', gap: 6 },
-    addSectionBtn: { padding: isMobile ? '6px' : '8px', background: 'white', border: '1px solid #e2e8f0', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: isMobile ? 10 : 11, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: '0.2s' },
+    addSectionBtn: { padding: isMobile ? '6px' : '8px', background: 'white', border: '1px solid #e2e8f0', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: isMobile ? 10 : 11, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
     quizInfo: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, background: '#f0fdf4', padding: 8, borderRadius: 6 },
     btnEditQuiz: { marginLeft: 'auto', background: '#10b981', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 4, cursor: 'pointer', fontWeight: 600, fontSize: 10 },
     btnCreateQuiz: { width: '100%', padding: 8, background: '#3b82f6', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
@@ -960,9 +866,8 @@ const ManageMateri = () => {
     studentPickerHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', borderBottom: '1px solid #e2e8f0' },
     closePicker: { background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 14 },
     studentPickerList: { maxHeight: 250, overflowY: 'auto', padding: 4 },
-    studentPickerItem: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 6, cursor: 'pointer', transition: '0.2s' },
+    studentPickerItem: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 6, cursor: 'pointer' },
     studentPickerAvatar: { width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 'bold', flexShrink: 0 },
-    studentBadge: { fontSize: 8, padding: '1px 6px', borderRadius: 8, fontWeight: 600, background: '#f1f5f9', color: '#64748b' },
     studentIdChip: { fontSize: 8, color: '#94a3b8', fontFamily: 'monospace', background: '#f1f5f9', padding: '1px 4px', borderRadius: 4 },
     editorArea: { flex: 1, minWidth: 0 },
     emptyEditor: { textAlign: 'center', padding: isMobile ? 30 : 60, background: 'white', borderRadius: 12, border: '2px dashed #e2e8f0', color: '#94a3b8' },
@@ -977,61 +882,11 @@ const ManageMateri = () => {
     btnFooterLive: { padding: isMobile ? '8px 14px' : '10px 20px', background: 'white', border: '1px solid #e2e8f0', borderRadius: 8, fontWeight: 600, fontSize: isMobile ? 12 : 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 },
     btnFooterSave: { padding: isMobile ? '8px 18px' : '10px 25px', background: '#10b981', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: isMobile ? 12 : 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 },
     statsRow: { display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(5, 1fr)', gap: 8, marginBottom: 12 },
-    statMini: { background: 'white', padding: '8px 12px', borderRadius: 10, border: '1px solid #f1f5f9', textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' },
+    statMini: { background: 'white', padding: '8px 12px', borderRadius: 10, border: '1px solid #f1f5f9', textAlign: 'center' },
     statMiniValue: { fontSize: isMobile ? 16 : 18, fontWeight: 900, color: '#1e293b' },
     statMiniLabel: { fontSize: 9, color: '#94a3b8' },
     idBadge: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 6, fontSize: 9, background: '#eef2ff', color: '#3b82f6', fontWeight: 600 },
     mapelBadge: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 6, fontSize: 9, background: '#ede9fe', color: '#8b5cf6', fontWeight: 600 }
-  };
-
-  // Preview styles
-  const previewContainerStyles = {
-    container: { border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', marginTop: 16, background: '#f8fafc' },
-    header: { background: '#1e293b', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #334155' },
-    deviceBtns: { display: 'flex', gap: 4 },
-    deviceBtn: (active) => ({ padding: '4px 8px', borderRadius: 6, background: active ? '#3b82f6' : 'transparent', color: 'white', border: 'none', cursor: 'pointer' }),
-    title: { fontSize: 10, color: '#94a3b8' },
-    closeBtn: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 16 },
-    body: { margin: '0 auto', background: 'white', minHeight: 400, padding: 16, transition: 'all 0.3s ease' },
-    content: { maxWidth: 800, margin: '0 auto' },
-    scheduledBanner: { background: '#fef3c7', padding: 8, borderRadius: 8, marginBottom: 16, textAlign: 'center', border: '1px solid #fde68a', fontSize: 11, color: '#b45309', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
-    studentBanner: { background: '#e0e7ff', padding: 8, borderRadius: 8, marginBottom: 16, border: '1px solid #818cf8', fontSize: 11, color: '#3730a3', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
-    cover: { width: '100%', maxHeight: 150, objectFit: 'cover', borderRadius: 8, marginBottom: 12 },
-    previewTitle: { fontSize: 20, fontWeight: 'bold', color: '#1e293b', margin: 0, textAlign: 'center' },
-    previewSub: { fontSize: 12, color: '#64748b', textAlign: 'center', marginTop: 4 },
-    previewId: { fontSize: 10, color: '#94a3b8', textAlign: 'center', marginTop: 2 },
-    desc: { background: '#f1f5f9', padding: 12, borderRadius: 8, marginBottom: 20, fontSize: 13, color: '#475569' },
-    section: { marginBottom: 20, borderBottom: '1px solid #e2e8f0', paddingBottom: 16 },
-    sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#1e293b', marginBottom: 8 },
-    textContent: { fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap' },
-    assignment: { background: '#fffbeb', padding: 12, borderRadius: 8, border: '1px solid #fde68a' },
-    deadline: { fontSize: 11, color: '#f59e0b', marginTop: 4 },
-    quizBanner: { background: '#f0fdf4', padding: 12, borderRadius: 8, border: '1px solid #bbf7d0', fontSize: 13, fontWeight: 'bold', color: '#166534', textAlign: 'center' }
-  };
-
-  // Editor styles
-  const editorStyles = {
-    fileUploaded: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' },
-    fileName: { fontWeight: 600, fontSize: 13, color: '#1e293b' },
-    fileSize: { fontSize: 10, color: '#94a3b8' },
-    fileActions: { display: 'flex', gap: 6, marginLeft: 'auto' },
-    fileActionBtn: { padding: '4px 10px', background: '#3b82f6', color: 'white', borderRadius: 6, textDecoration: 'none', fontSize: 11, fontWeight: 600 },
-    fileActionBtnDelete: { padding: '4px 10px', background: '#fee2e2', color: '#ef4444', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600 },
-    uploadBox: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '30px 20px', border: '2px dashed #e2e8f0', borderRadius: 10, cursor: 'pointer', background: '#f8fafc', color: '#64748b', fontSize: 13, transition: '0.2s' },
-    uploadProgress: { textAlign: 'center', width: '100%' },
-    progressBar: { width: '100%', height: 4, background: '#e2e8f0', borderRadius: 2, marginTop: 8, overflow: 'hidden' },
-    progressFill: { height: '100%', background: '#3b82f6', borderRadius: 2, transition: 'width 0.3s' },
-    uploadHint: { fontSize: 10, color: '#94a3b8' },
-    uploadStatus: { fontSize: 11, fontWeight: 600, marginTop: 8, textAlign: 'center' },
-    videoInput: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box', background: '#f8fafc' },
-    videoPreview: { marginTop: 12 },
-    videoPreviewLabel: { fontSize: 11, color: '#10b981', marginBottom: 6 },
-    videoHint: { fontSize: 10, color: '#94a3b8', marginTop: 8 },
-    assignmentInput: { width: '100%', minHeight: 120, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, resize: 'vertical', fontFamily: 'inherit', background: '#f8fafc' },
-    deadlineBox: { display: 'flex', alignItems: 'center', gap: 12, marginTop: 12, padding: 12, background: '#fffbeb', borderRadius: 8 },
-    deadlineLabel: { fontSize: 13, fontWeight: 600, color: '#b45309' },
-    deadlineInput: { padding: '6px 10px', borderRadius: 6, border: '1px solid #fde68a', fontSize: 12, outline: 'none', background: 'white' },
-    deadlineHint: { fontSize: 10, color: '#94a3b8', marginTop: 8 }
   };
 
   // ============================================================
@@ -1052,9 +907,7 @@ const ManageMateri = () => {
     <div style={styles.container}>
       <style>{`
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .spin { animation: spin 1s linear infinite; }
-        .slide-up { animation: slideUp 0.3s ease-out; }
       `}</style>
       
       {autoSaveStatus && <div style={styles.autoSaveToast}>{autoSaveStatus}</div>}
@@ -1120,7 +973,6 @@ const ManageMateri = () => {
           {/* ===== SIDEBAR ===== */}
           <div style={styles.sidebar}>
             
-            {/* Identitas */}
             <div style={styles.card}>
               <h4 style={styles.cardTitle}><BookOpen size={14} /> Identitas</h4>
               <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Judul modul..." style={styles.input} />
@@ -1138,7 +990,6 @@ const ManageMateri = () => {
               </label>
             </div>
 
-            {/* Target */}
             <div style={styles.card}>
               <h4 style={styles.cardTitle}><Target size={14} /> Target</h4>
               <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
@@ -1153,7 +1004,6 @@ const ManageMateri = () => {
                 <div style={styles.warningBanner}><AlertCircle size={12} /> Modul untuk {(targetKelas === "Semua" ? 'SEMUA KELAS ' : '')}{(targetKategori === "Semua" ? 'SEMUA PROGRAM' : '')}</div>
               )}
               
-              {/* Kirim ke Siswa Tertentu */}
               <div style={{ marginTop: 12, borderTop: '1px solid #e2e8f0', paddingTop: 12 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                   <input type="checkbox" checked={sendToSpecificStudents} onChange={() => setSendToSpecificStudents(!sendToSpecificStudents)} />
@@ -1195,32 +1045,10 @@ const ManageMateri = () => {
                             filteredStudents.map(s => {
                               const isSelected = selectedStudents.some(sel => sel.studentId === s.studentId);
                               return (
-                                <div 
-                                  key={s.studentId} 
-                                  onClick={() => toggleStudentSelection(s)} 
-                                  style={{ 
-                                    ...styles.studentPickerItem, 
-                                    background: isSelected ? '#eef2ff' : 'transparent', 
-                                    borderLeft: isSelected ? '3px solid #3b82f6' : '3px solid transparent' 
-                                  }}
-                                >
-                                  <div style={styles.studentPickerAvatar}>
-                                    {getStudentInitials(s.nama)}
-                                  </div>
-                                  <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                      {s.nama}
-                                      <span style={styles.studentIdChip}>#{s.studentId}</span>
-                                    </div>
-                                    <div style={{ fontSize: 9, color: '#94a3b8' }}>
-                                      {s.kelasSekolah || '-'}
-                                    </div>
-                                  </div>
-                                  {isSelected ? (
-                                    <CheckCircle size={16} color="#10b981" />
-                                  ) : (
-                                    <div style={{ width: 16, height: 16, border: '2px solid #d1d5db', borderRadius: '50%' }} />
-                                  )}
+                                <div key={s.studentId} onClick={() => toggleStudentSelection(s)} style={{ ...styles.studentPickerItem, background: isSelected ? '#eef2ff' : 'transparent', borderLeft: isSelected ? '3px solid #3b82f6' : '3px solid transparent' }}>
+                                  <div style={styles.studentPickerAvatar}>{getStudentInitials(s.nama)}</div>
+                                  <div style={{ flex: 1 }}><div style={{ fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>{s.nama}<span style={styles.studentIdChip}>#{s.studentId}</span></div><div style={{ fontSize: 9, color: '#94a3b8' }}>{s.kelasSekolah || '-'}</div></div>
+                                  {isSelected ? <CheckCircle size={16} color="#10b981" /> : <div style={{ width: 16, height: 16, border: '2px solid #d1d5db', borderRadius: '50%' }} />}
                                 </div>
                               );
                             })
@@ -1234,7 +1062,6 @@ const ManageMateri = () => {
               </div>
             </div>
 
-            {/* Pengaturan */}
             <div style={styles.card}>
               <h4 style={styles.cardTitle}><Settings size={14} /> Pengaturan</h4>
               <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
@@ -1261,7 +1088,6 @@ const ManageMateri = () => {
               {statusModul === 'arsip' && <div style={styles.statusMessageGray}>📦 Tidak tampil di dashboard</div>}
             </div>
 
-            {/* Konten */}
             <div style={styles.card}>
               <h4 style={styles.cardTitle}><Layers size={14} /> Konten ({sections.length})</h4>
               {sections.length === 0 && <div style={styles.emptyContent}><p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Belum ada konten</p></div>}
@@ -1277,7 +1103,6 @@ const ManageMateri = () => {
               ))}
             </div>
 
-            {/* Tambah Konten */}
             <div style={styles.addSectionGrid}>
               {[
                 { type: 'text', icon: <Type size={13} />, label: 'Teks', color: '#3b82f6' },
@@ -1289,7 +1114,6 @@ const ManageMateri = () => {
               ))}
             </div>
 
-            {/* Kuis */}
             <div style={styles.card}>
               <h4 style={styles.cardTitle}><HelpCircle size={14} /> Kuis</h4>
               {quizData?.length > 0 ? (
@@ -1328,7 +1152,6 @@ const ManageMateri = () => {
         </div>
       )}
 
-      {/* ===== FLOATING FOOTER ===== */}
       <div style={styles.floatingFooter}>
         <button onClick={() => navigate('/guru/modul')} style={styles.btnFooterCancel}>Batal</button>
         {editId && <button onClick={() => window.open(`/siswa/materi/${editId}`, '_blank')} style={styles.btnFooterLive}><ExternalLink size={14} /> {!isMobile && 'Live Preview'}</button>}
