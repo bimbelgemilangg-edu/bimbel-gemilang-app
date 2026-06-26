@@ -6,7 +6,7 @@ import {
   getDocs, deleteDoc, query, where, orderBy, limit
 } from "firebase/firestore";
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { supabase, deleteFile } from '../../../services/uploadService';
+import { uploadElearningFile, deleteFile, supabase } from '../../../services/uploadService';
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, ArrowLeft, 
   FileUp, Type, Video, X, Image as ImageIcon, BookOpen, 
@@ -16,7 +16,7 @@ import {
   Archive, UserPlus, UserCheck, Search, Loader2, Hash, Tag, 
   Zap, Sparkles, Filter, User, GraduationCap, 
   FileSpreadsheet, FileImage, File, FileVideo,
-  Upload, Cloud, Server
+  Upload, Cloud, Server, RefreshCw, Home, ChevronRight
 } from 'lucide-react';
 
 // ============================================================
@@ -31,7 +31,12 @@ const FilePreview = ({ url, fileName, fileType }) => {
   if (youtubeMatch) {
     return (
       <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 8, overflow: 'hidden' }}>
-        <iframe src={`https://www.youtube.com/embed/${youtubeMatch[1]}`} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }} allowFullScreen title="Video" />
+        <iframe 
+          src={`https://www.youtube.com/embed/${youtubeMatch[1]}`} 
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }} 
+          allowFullScreen 
+          title="Video Preview" 
+        />
       </div>
     );
   }
@@ -39,7 +44,12 @@ const FilePreview = ({ url, fileName, fileType }) => {
   if (fileType?.startsWith('image/') || url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
     return (
       <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', maxHeight: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <img src={url} alt={fileName || 'Preview'} style={{ width: '100%', maxHeight: 400, objectFit: 'contain' }} onError={() => setPreviewError(true)} />
+        <img 
+          src={url} 
+          alt={fileName || 'Preview'} 
+          style={{ width: '100%', maxHeight: 400, objectFit: 'contain' }} 
+          onError={() => setPreviewError(true)} 
+        />
         {previewError && <div style={{ padding: 20, color: '#ef4444', textAlign: 'center' }}>Gagal memuat gambar</div>}
       </div>
     );
@@ -49,7 +59,10 @@ const FilePreview = ({ url, fileName, fileType }) => {
     return (
       <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', padding: 16, textAlign: 'center' }}>
         <div style={{ marginBottom: 8 }}><File size={40} color="#ef4444" /></div>
-        <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '8px 16px', background: '#ef4444', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 12 }}>📄 Buka PDF</a>
+        <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '8px 16px', background: '#ef4444', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 12 }}>
+          📄 Buka PDF
+        </a>
+        <embed src={url} type="application/pdf" style={{ width: '100%', height: 400, marginTop: 12, border: 'none', borderRadius: 8 }} />
       </div>
     );
   }
@@ -57,7 +70,9 @@ const FilePreview = ({ url, fileName, fileType }) => {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, justifyContent: 'center' }}>
       <FileText size={32} color="#3b82f6" />
-      <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', fontSize: 13 }}>📎 {fileName || 'Buka File'}</a>
+      <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', fontSize: 13 }}>
+        📎 {fileName || 'Buka File'}
+      </a>
     </div>
   );
 };
@@ -90,7 +105,9 @@ const SimpleEditor = ({ value, onChange, placeholder }) => {
         break;
       case 'link':
         const url = prompt('Masukkan URL:', 'https://');
-        if (url) newText = value.substring(0, start) + `[${selectedText}](${url})` + value.substring(end);
+        if (url) {
+          newText = value.substring(0, start) + `[${selectedText}](${url})` + value.substring(end);
+        }
         break;
       default:
         break;
@@ -103,16 +120,23 @@ const SimpleEditor = ({ value, onChange, placeholder }) => {
   const toolbarBtn = {
     background: 'none', border: 'none', padding: '4px 10px', 
     borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600,
-    color: '#64748b'
+    color: '#64748b', transition: '0.2s'
   };
 
   return (
     <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
       <div style={{ display: 'flex', gap: 2, padding: 6, background: '#f8fafc', borderBottom: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
-        {['B','I','U','• List','🔗 Link'].map((label, i) => {
-          const formats = ['bold','italic','underline','list','link'];
-          return <button key={i} type="button" onClick={() => applyFormat(formats[i])} style={toolbarBtn}>{label}</button>;
-        })}
+        {[
+          { label: 'B', format: 'bold', title: 'Bold' },
+          { label: 'I', format: 'italic', title: 'Italic' },
+          { label: 'U', format: 'underline', title: 'Underline' },
+          { label: '• List', format: 'list', title: 'Bullet List' },
+          { label: '🔗 Link', format: 'link', title: 'Insert Link' }
+        ].map(btn => (
+          <button key={btn.format} type="button" onClick={() => applyFormat(btn.format)} style={toolbarBtn} title={btn.title}>
+            {btn.label}
+          </button>
+        ))}
       </div>
       <textarea
         id="editor-textarea"
@@ -157,6 +181,7 @@ const ManageMateri = () => {
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [coverImage, setCoverImage] = useState(null);
+  const [coverFilePath, setCoverFilePath] = useState('');
   const [description, setDescription] = useState("");
   const [modulId, setModulId] = useState(null);
   
@@ -327,6 +352,7 @@ const ManageMateri = () => {
         setTitle(data.title || "");
         setSubject(data.subject || "");
         setCoverImage(data.coverImage || null);
+        setCoverFilePath(data.coverFilePath || '');
         setDescription(data.description || "");
         setSections(data.blocks || []);
         setQuizData(data.quizData || []);
@@ -359,7 +385,7 @@ const ManageMateri = () => {
   }, [studentSearch, allStudents]);
 
   // ============================================================
-  // 🔥 UPLOAD FILE - VERSI YANG BENAR
+  // UPLOAD FILE - VERSI DENGAN CLEAN FILEPATH
   // ============================================================
   const handleFileUpload = async (file, type = 'materi') => {
     if (!file) return null;
@@ -373,62 +399,24 @@ const ManageMateri = () => {
     setUploadStatus({ type: 'loading', message: `Mengupload ${file.name}...` });
 
     try {
-      // 1. TENTUKAN FOLDER BERDASARKAN TIPE FILE
-      let folder = 'dokumen';
-      if (type === 'cover') {
-        folder = 'cover';
-      } else if (file.type.includes('image')) {
-        folder = 'gambar';
-      } else if (file.type.includes('pdf')) {
-        folder = 'pdf';
+      // 🔥 GUNAKAN FUNGSI uploadElearningFile DARI SERVICE
+      const result = await uploadElearningFile(file, type);
+
+      if (result.success) {
+        setUploadProgress(100);
+        setUploadStatus({ type: 'success', message: '✅ File berhasil diunggah!' });
+        setAutoSaveStatus('✅ File berhasil diunggah!');
+        setTimeout(() => setAutoSaveStatus(''), 2000);
+        return result;
+      } else {
+        setUploadStatus({ type: 'error', message: `❌ ${result.error}` });
+        alert("❌ Upload gagal: " + result.error);
+        return null;
       }
-
-      // 2. BUAT PATH UNIK
-      const fileExtension = file.name.split('.').pop();
-      const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExtension}`;
-      const cleanFilePath = `${folder}/${uniqueFileName}`;
-
-      console.log(`📤 Upload ke Supabase: ${cleanFilePath} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
-
-      // 3. UPLOAD KE SUPABASE
-      const { data, error: uploadError } = await supabase.storage
-        .from('materi-bimbel')
-        .upload(cleanFilePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: file.type
-        });
-
-      if (uploadError) {
-        console.error('❌ Supabase upload error:', uploadError);
-        throw uploadError;
-      }
-
-      // 4. AMBIL PUBLIC URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('materi-bimbel')
-        .getPublicUrl(cleanFilePath);
-
-      console.log('✅ Upload berhasil:', publicUrl);
-
-      setUploadProgress(100);
-      setUploadStatus({ type: 'success', message: '✅ File berhasil diunggah!' });
-      setAutoSaveStatus('✅ File berhasil diunggah!');
-      setTimeout(() => setAutoSaveStatus(''), 2000);
-
-      return {
-        success: true,
-        downloadURL: publicUrl,
-        filePath: cleanFilePath,
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type
-      };
-
     } catch (error) {
-      console.error('❌ Upload error:', error);
+      console.error("Upload error:", error);
       setUploadStatus({ type: 'error', message: `❌ ${error.message}` });
-      alert("❌ Upload gagal: " + error.message);
+      alert("❌ Terjadi kesalahan: " + error.message);
       return null;
     } finally {
       setUploading(false);
@@ -450,12 +438,13 @@ const ManageMateri = () => {
     const result = await handleFileUpload(file, 'cover');
     if (result?.success) {
       setCoverImage(result.downloadURL);
+      setCoverFilePath(result.filePath);
     }
     if (coverInputRef.current) coverInputRef.current.value = '';
   };
 
   // ============================================================
-  // 🔥 SECTION FILE UPLOAD - VERSI YANG BENAR
+  // SECTION FILE UPLOAD - DENGAN CLEAN FILEPATH
   // ============================================================
   const handleSectionFileUpload = async (e, sectionId) => {
     const file = e.target.files[0];
@@ -470,9 +459,9 @@ const ManageMateri = () => {
               ...s, 
               content: result.downloadURL,
               fileName: result.fileName,
-              mimeType: result.fileType,
-              fileSize: result.fileSize,
-              filePath: result.filePath  // 🔥 Simpan cleanFilePath
+              mimeType: file.type,
+              fileSize: file.size,
+              filePath: result.filePath
             } 
           : s
       ));
@@ -490,13 +479,11 @@ const ManageMateri = () => {
     const section = sections.find(s => s.id === id);
     if (section?.filePath) {
       try {
-        const { error } = await supabase.storage
-          .from('materi-bimbel')
-          .remove([section.filePath]);
-        if (error) {
-          console.warn('⚠️ Gagal hapus file:', error);
-        } else {
+        const result = await deleteFile(section.filePath);
+        if (result.success) {
           console.log('✅ File berhasil dihapus dari Supabase');
+        } else {
+          console.warn('⚠️ Gagal hapus file:', result.error);
         }
       } catch (err) {
         console.error('Error deleting file:', err);
@@ -511,31 +498,37 @@ const ManageMateri = () => {
   };
 
   // ============================================================
-  // DELETE MODUL + HAPUS SEMUA FILE
+  // DELETE MODUL + HAPUS SEMUA FILE DARI SUPABASE
   // ============================================================
   const handleDeleteModul = async () => {
     if (!modulId) return;
     if (!window.confirm(`⚠️ Hapus modul "${title}"?\n\nSemua data dan file terkait akan dihapus permanen!`)) return;
     
     try {
+      // 1. Kumpulkan semua filePath dari sections
       const filePaths = sections.filter(s => s.filePath).map(s => s.filePath);
       
+      // 2. Tambahkan coverFilePath jika ada
+      if (coverFilePath) {
+        filePaths.push(coverFilePath);
+      }
+      
+      // 3. Hapus semua file dari Supabase
       if (filePaths.length > 0) {
         const { error } = await supabase.storage
           .from('materi-bimbel')
           .remove(filePaths);
-        if (error) console.warn('⚠️ Gagal hapus beberapa file:', error);
-        else console.log(`✅ ${filePaths.length} file dihapus dari Supabase`);
-      }
-      
-      if (coverImage) {
-        const coverPath = coverImage.split('/').slice(-2).join('/');
-        if (coverPath) {
-          await supabase.storage.from('materi-bimbel').remove([coverPath]);
+        
+        if (error) {
+          console.warn('⚠️ Gagal hapus beberapa file:', error);
+        } else {
+          console.log(`✅ ${filePaths.length} file berhasil dihapus dari Supabase`);
         }
       }
       
+      // 4. Hapus data dari Firestore
       await deleteDoc(doc(db, COLLECTION_NAME, modulId));
+      
       alert('✅ Modul dan semua file terkait berhasil dihapus!');
       navigate('/guru/modul');
       
@@ -651,6 +644,7 @@ const ManageMateri = () => {
       kodeMapel: kodeMapel,
       guruName: guruName,
       coverImage,
+      coverFilePath,
       description,
       blocks: sections,
       quizData,
@@ -711,7 +705,7 @@ const ManageMateri = () => {
       <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', marginTop: 16, background: '#f8fafc' }}>
         <div style={{ background: '#1e293b', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #334155' }}>
           <div style={{ display: 'flex', gap: 8 }}>
-            {['mobile','tablet','desktop'].map(device => (
+            {['mobile', 'tablet', 'desktop'].map(device => (
               <button key={device} onClick={() => setPreviewDevice(device)} style={{ padding: '4px 8px', borderRadius: 6, background: previewDevice === device ? '#3b82f6' : 'transparent', color: 'white', border: 'none', cursor: 'pointer' }}>
                 {device === 'mobile' ? <Smartphone size={14} /> : device === 'tablet' ? <Tablet size={14} /> : <Laptop size={14} />}
               </button>
@@ -721,8 +715,16 @@ const ManageMateri = () => {
           <button onClick={() => setShowPreview(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>✕</button>
         </div>
         <div style={{ maxWidth: previewWidth, margin: '0 auto', background: 'white', minHeight: 400, padding: 16, transition: 'all 0.3s ease' }}>
-          {isNotYetActive && <div style={{ background: '#fef3c7', padding: 8, borderRadius: 8, marginBottom: 16, textAlign: 'center', border: '1px solid #fde68a', fontSize: 11, color: '#b45309', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><Clock size={14} /> Modul tersedia {scheduleDate.toLocaleDateString('id-ID')} {scheduleDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>}
-          {sendToSpecificStudents && selectedStudents.length > 0 && <div style={{ background: '#e0e7ff', padding: 8, borderRadius: 8, marginBottom: 16, border: '1px solid #818cf8', fontSize: 11, color: '#3730a3', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><UserCheck size={14} /> Dikirim ke {selectedStudents.length} siswa</div>}
+          {isNotYetActive && (
+            <div style={{ background: '#fef3c7', padding: 8, borderRadius: 8, marginBottom: 16, textAlign: 'center', border: '1px solid #fde68a', fontSize: 11, color: '#b45309', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+              <Clock size={14} /> Modul tersedia {scheduleDate.toLocaleDateString('id-ID')} {scheduleDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+            </div>
+          )}
+          {sendToSpecificStudents && selectedStudents.length > 0 && (
+            <div style={{ background: '#e0e7ff', padding: 8, borderRadius: 8, marginBottom: 16, border: '1px solid #818cf8', fontSize: 11, color: '#3730a3', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+              <UserCheck size={14} /> Dikirim ke {selectedStudents.length} siswa
+            </div>
+          )}
           {coverImage && <img src={coverImage} alt="" style={{ width: '100%', maxHeight: 150, objectFit: 'cover', borderRadius: 8, marginBottom: 12 }} />}
           <h2 style={{ fontSize: 20, fontWeight: 'bold', color: '#1e293b', margin: 0, textAlign: 'center' }}>{title || 'Judul Modul'}</h2>
           <p style={{ fontSize: 12, color: '#64748b', textAlign: 'center', marginTop: 4 }}>{subject} • {targetKelas}</p>
@@ -735,11 +737,23 @@ const ManageMateri = () => {
               {sec.type === 'text' && <div style={{ fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{sec.content}</div>}
               {sec.type === 'file' && sec.content && <FilePreview url={sec.content} fileName={sec.fileName} fileType={sec.mimeType} />}
               {sec.type === 'video' && sec.content && <FilePreview url={sec.content} fileName={sec.fileName} fileType={sec.mimeType} />}
-              {sec.type === 'assignment' && <div style={{ background: '#fffbeb', padding: 12, borderRadius: 8, border: '1px solid #fde68a' }}><p>📝 {sec.content || 'Instruksi tugas'}</p>{sec.endTime && <p style={{ fontSize: 11, color: '#f59e0b' }}>⏰ Deadline: {new Date(sec.endTime).toLocaleString('id-ID')}</p>}</div>}
+              {sec.type === 'assignment' && (
+                <div style={{ background: '#fffbeb', padding: 12, borderRadius: 8, border: '1px solid #fde68a' }}>
+                  <p>📝 {sec.content || 'Instruksi tugas'}</p>
+                  {sec.endTime && <p style={{ fontSize: 11, color: '#f59e0b' }}>⏰ Deadline: {new Date(sec.endTime).toLocaleString('id-ID')}</p>}
+                </div>
+              )}
             </div>
           ))}
-          {quizData?.length > 0 && <div style={{ background: '#f0fdf4', padding: 12, borderRadius: 8, border: '1px solid #bbf7d0', fontSize: 13, fontWeight: 'bold', color: '#166534', textAlign: 'center' }}>❓ Kuis ({quizData.length} soal)</div>}
-          <div style={{ marginTop: 20, textAlign: 'center', padding: 12, background: '#f8fafc', borderRadius: 8 }}><p style={{ fontSize: 11, color: '#94a3b8' }}>✨ Ini adalah tampilan yang akan dilihat siswa ✨</p></div>
+          
+          {quizData?.length > 0 && (
+            <div style={{ background: '#f0fdf4', padding: 12, borderRadius: 8, border: '1px solid #bbf7d0', fontSize: 13, fontWeight: 'bold', color: '#166534', textAlign: 'center' }}>
+              ❓ Kuis ({quizData.length} soal)
+            </div>
+          )}
+          <div style={{ marginTop: 20, textAlign: 'center', padding: 12, background: '#f8fafc', borderRadius: 8 }}>
+            <p style={{ fontSize: 11, color: '#94a3b8' }}>✨ Ini adalah tampilan yang akan dilihat siswa ✨</p>
+          </div>
         </div>
       </div>
     );
@@ -751,14 +765,23 @@ const ManageMateri = () => {
     if (!section) return null;
     
     if (section.type === 'text') {
-      return <SimpleEditor value={section.content} onChange={value => updateSection(activeSection, 'content', value)} placeholder="Tulis materi di sini... Gunakan toolbar untuk format teks" />;
+      return (
+        <SimpleEditor 
+          value={section.content} 
+          onChange={value => updateSection(activeSection, 'content', value)} 
+          placeholder="Tulis materi di sini... Gunakan toolbar untuk format teks" 
+        />
+      );
     }
     
     if (section.type === 'file') {
       return section.content ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
           <FileText size={36} color="#3b82f6" />
-          <div><p style={{ fontWeight: 600, fontSize: 13, color: '#1e293b' }}>{section.fileName || 'File'}</p><p style={{ fontSize: 10, color: '#94a3b8' }}>{formatFileSize(section.fileSize)}</p></div>
+          <div>
+            <p style={{ fontWeight: 600, fontSize: 13, color: '#1e293b' }}>{section.fileName || 'File'}</p>
+            <p style={{ fontSize: 10, color: '#94a3b8' }}>{formatFileSize(section.fileSize)}</p>
+          </div>
           <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
             <a href={section.content} target="_blank" rel="noreferrer" style={{ padding: '4px 10px', background: '#3b82f6', color: 'white', borderRadius: 6, textDecoration: 'none', fontSize: 11, fontWeight: 600 }}>🔍 Buka</a>
             <button onClick={() => updateSection(activeSection, 'content', '')} style={{ padding: '4px 10px', background: '#fee2e2', color: '#ef4444', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600 }}>🗑️ Hapus</button>
@@ -782,9 +805,20 @@ const ManageMateri = () => {
                 <span style={{ fontSize: 10, color: '#94a3b8' }}>Seret atau klik untuk upload</span>
               </>
             )}
-            <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,image/*" hidden onChange={(e) => handleSectionFileUpload(e, activeSection)} disabled={uploading} />
+            <input 
+              ref={fileInputRef} 
+              type="file" 
+              accept=".pdf,.doc,.docx,.ppt,.pptx,image/*" 
+              hidden 
+              onChange={(e) => handleSectionFileUpload(e, activeSection)} 
+              disabled={uploading} 
+            />
           </label>
-          {uploadStatus.message && <div style={{ fontSize: 11, fontWeight: 600, marginTop: 8, textAlign: 'center', color: uploadStatus.type === 'error' ? '#ef4444' : '#10b981' }}>{uploadStatus.message}</div>}
+          {uploadStatus.message && (
+            <div style={{ fontSize: 11, fontWeight: 600, marginTop: 8, textAlign: 'center', color: uploadStatus.type === 'error' ? '#ef4444' : '#10b981' }}>
+              {uploadStatus.message}
+            </div>
+          )}
         </div>
       );
     }
@@ -793,8 +827,18 @@ const ManageMateri = () => {
       const youtubeId = getYouTubeId(section.content);
       return (
         <>
-          <input value={section.content} onChange={e => updateSection(activeSection, 'content', e.target.value)} placeholder="Tempel link YouTube, Canva, Google Drive..." style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box', background: '#f8fafc' }} />
-          {youtubeId && <div style={{ marginTop: 12 }}><p style={{ fontSize: 11, color: '#10b981', marginBottom: 6 }}>✅ Preview video:</p><iframe width="100%" height="250" src={`https://www.youtube.com/embed/${youtubeId}`} frameBorder="0" allowFullScreen style={{ borderRadius: 8 }} /></div>}
+          <input 
+            value={section.content} 
+            onChange={e => updateSection(activeSection, 'content', e.target.value)} 
+            placeholder="Tempel link YouTube, Canva, Google Drive..." 
+            style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box', background: '#f8fafc' }} 
+          />
+          {youtubeId && (
+            <div style={{ marginTop: 12 }}>
+              <p style={{ fontSize: 11, color: '#10b981', marginBottom: 6 }}>✅ Preview video:</p>
+              <iframe width="100%" height="250" src={`https://www.youtube.com/embed/${youtubeId}`} frameBorder="0" allowFullScreen style={{ borderRadius: 8 }} />
+            </div>
+          )}
           <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>💡 Link YouTube akan otomatis ditampilkan sebagai video player</p>
         </>
       );
@@ -803,11 +847,21 @@ const ManageMateri = () => {
     if (section.type === 'assignment') {
       return (
         <div>
-          <textarea value={section.content} onChange={e => updateSection(activeSection, 'content', e.target.value)} placeholder="Tulis instruksi tugas di sini..." style={{ width: '100%', minHeight: 120, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, resize: 'vertical', fontFamily: 'inherit', background: '#f8fafc' }} />
+          <textarea 
+            value={section.content} 
+            onChange={e => updateSection(activeSection, 'content', e.target.value)} 
+            placeholder="Tulis instruksi tugas di sini..." 
+            style={{ width: '100%', minHeight: 120, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, resize: 'vertical', fontFamily: 'inherit', background: '#f8fafc' }} 
+          />
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12, padding: 12, background: '#fffbeb', borderRadius: 8 }}>
             <Clock size={18} color="#f59e0b" />
             <span style={{ fontSize: 13, fontWeight: 600, color: '#b45309' }}>Deadline Tugas:</span>
-            <input type="datetime-local" value={section.endTime} onChange={e => updateSection(activeSection, 'endTime', e.target.value)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #fde68a', fontSize: 12, outline: 'none', background: 'white' }} />
+            <input 
+              type="datetime-local" 
+              value={section.endTime} 
+              onChange={e => updateSection(activeSection, 'endTime', e.target.value)} 
+              style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #fde68a', fontSize: 12, outline: 'none', background: 'white' }} 
+            />
           </div>
           <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>💡 Kosongkan jika tidak ada batas waktu</p>
         </div>
@@ -985,7 +1039,14 @@ const ManageMateri = () => {
               </div>
               <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Deskripsi..." style={{...styles.input, minHeight: 60, resize: 'vertical'}} />
               <label style={styles.coverUpload}>
-                {coverImage ? <img src={coverImage} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, color: '#94a3b8', padding: '20px 0' }}><ImageIcon size={18} /><span style={{ fontSize: 11 }}>Upload Cover</span></div>}
+                {coverImage ? (
+                  <img src={coverImage} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, color: '#94a3b8', padding: '20px 0' }}>
+                    <ImageIcon size={18} />
+                    <span style={{ fontSize: 11 }}>Upload Cover</span>
+                  </div>
+                )}
                 <input ref={coverInputRef} type="file" accept="image/*" hidden onChange={handleCoverUpload} />
               </label>
             </div>
@@ -994,14 +1055,18 @@ const ManageMateri = () => {
               <h4 style={styles.cardTitle}><Target size={14} /> Target</h4>
               <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                 <select value={targetKategori} onChange={e => setTargetKategori(e.target.value)} style={styles.select}>
-                  <option value="Reguler">📚 Reguler</option><option value="English">🗣️ English</option><option value="Semua">🌐 Semua</option>
+                  <option value="Reguler">📚 Reguler</option>
+                  <option value="English">🗣️ English</option>
+                  <option value="Semua">🌐 Semua</option>
                 </select>
                 <select value={targetKelas} onChange={e => setTargetKelas(e.target.value)} style={styles.select}>
                   {availableClasses.map(k => <option key={k} value={k}>{k}</option>)}
                 </select>
               </div>
               {(targetKelas === "Semua" || targetKategori === "Semua") && (
-                <div style={styles.warningBanner}><AlertCircle size={12} /> Modul untuk {(targetKelas === "Semua" ? 'SEMUA KELAS ' : '')}{(targetKategori === "Semua" ? 'SEMUA PROGRAM' : '')}</div>
+                <div style={styles.warningBanner}>
+                  <AlertCircle size={12} /> Modul untuk {(targetKelas === "Semua" ? 'SEMUA KELAS ' : '')}{(targetKategori === "Semua" ? 'SEMUA PROGRAM' : '')}
+                </div>
               )}
               
               <div style={{ marginTop: 12, borderTop: '1px solid #e2e8f0', paddingTop: 12 }}>
@@ -1018,7 +1083,11 @@ const ManageMateri = () => {
                       </div>
                       <button onClick={selectAllFiltered} style={styles.btnSelectAll}>Pilih Semua</button>
                     </div>
-                    {allStudents.length === 0 && <div style={{ background: '#fef3c7', padding: 8, borderRadius: 6, fontSize: 10, color: '#b45309', marginTop: 6 }}>⚠️ Tidak ada siswa dijadwalkan. Hubungi admin.</div>}
+                    {allStudents.length === 0 && (
+                      <div style={{ background: '#fef3c7', padding: 8, borderRadius: 6, fontSize: 10, color: '#b45309', marginTop: 6 }}>
+                        ⚠️ Tidak ada siswa dijadwalkan. Hubungi admin.
+                      </div>
+                    )}
                     {selectedStudents.length > 0 && (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
                         {selectedStudents.map(s => (
@@ -1047,7 +1116,13 @@ const ManageMateri = () => {
                               return (
                                 <div key={s.studentId} onClick={() => toggleStudentSelection(s)} style={{ ...styles.studentPickerItem, background: isSelected ? '#eef2ff' : 'transparent', borderLeft: isSelected ? '3px solid #3b82f6' : '3px solid transparent' }}>
                                   <div style={styles.studentPickerAvatar}>{getStudentInitials(s.nama)}</div>
-                                  <div style={{ flex: 1 }}><div style={{ fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>{s.nama}<span style={styles.studentIdChip}>#{s.studentId}</span></div><div style={{ fontSize: 9, color: '#94a3b8' }}>{s.kelasSekolah || '-'}</div></div>
+                                  <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                      {s.nama}
+                                      <span style={styles.studentIdChip}>#{s.studentId}</span>
+                                    </div>
+                                    <div style={{ fontSize: 9, color: '#94a3b8' }}>{s.kelasSekolah || '-'}</div>
+                                  </div>
                                   {isSelected ? <CheckCircle size={16} color="#10b981" /> : <div style={{ width: 16, height: 16, border: '2px solid #d1d5db', borderRadius: '50%' }} />}
                                 </div>
                               );
@@ -1056,7 +1131,9 @@ const ManageMateri = () => {
                         </div>
                       </div>
                     )}
-                    <div style={{ fontSize: 10, color: '#64748b', marginTop: 6 }}>{selectedStudents.length} dari {allStudents.length} siswa dipilih</div>
+                    <div style={{ fontSize: 10, color: '#64748b', marginTop: 6 }}>
+                      {selectedStudents.length} dari {allStudents.length} siswa dipilih
+                    </div>
                   </div>
                 )}
               </div>
@@ -1079,25 +1156,46 @@ const ManageMateri = () => {
                 <div style={styles.scheduleBox}>
                   <p style={styles.scheduleTitle}><CalendarDays size={14} /> Jadwal Rilis</p>
                   <div style={{ display: 'flex', gap: 10, flexDirection: isMobile ? 'column' : 'row' }}>
-                    <div style={{ flex: 1 }}><label style={styles.scheduleLabel}>Mulai *</label><input type="datetime-local" value={tanggalMulai} onChange={e => setTanggalMulai(e.target.value)} style={styles.scheduleInput} /></div>
-                    <div style={{ flex: 1 }}><label style={styles.scheduleLabel}>Selesai</label><input type="datetime-local" value={tanggalSelesai} onChange={e => setTanggalSelesai(e.target.value)} style={styles.scheduleInput} /></div>
+                    <div style={{ flex: 1 }}>
+                      <label style={styles.scheduleLabel}>Mulai *</label>
+                      <input type="datetime-local" value={tanggalMulai} onChange={e => setTanggalMulai(e.target.value)} style={styles.scheduleInput} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={styles.scheduleLabel}>Selesai</label>
+                      <input type="datetime-local" value={tanggalSelesai} onChange={e => setTanggalSelesai(e.target.value)} style={styles.scheduleInput} />
+                    </div>
                   </div>
                 </div>
               )}
-              {statusModul === 'aktif' && <div style={styles.statusMessageGreen}><CheckCircle size={12} /> Langsung aktif</div>}
-              {statusModul === 'arsip' && <div style={styles.statusMessageGray}>📦 Tidak tampil di dashboard</div>}
+              {statusModul === 'aktif' && (
+                <div style={styles.statusMessageGreen}>
+                  <CheckCircle size={12} /> Langsung aktif
+                </div>
+              )}
+              {statusModul === 'arsip' && (
+                <div style={styles.statusMessageGray}>
+                  📦 Tidak tampil di dashboard
+                </div>
+              )}
             </div>
 
             <div style={styles.card}>
               <h4 style={styles.cardTitle}><Layers size={14} /> Konten ({sections.length})</h4>
-              {sections.length === 0 && <div style={styles.emptyContent}><p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Belum ada konten</p></div>}
+              {sections.length === 0 && (
+                <div style={styles.emptyContent}>
+                  <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Belum ada konten</p>
+                </div>
+              )}
               {sections.map((sec, idx) => (
                 <div key={sec.id} onClick={() => setActiveSection(sec.id)} style={{ ...styles.sectionItem, background: activeSection === sec.id ? '#eef2ff' : '#f8fafc', borderColor: activeSection === sec.id ? '#3b82f6' : '#e2e8f0' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <button onClick={(e) => { e.stopPropagation(); moveSection(sec.id, 'up'); }} style={styles.btnArrow} disabled={idx === 0}><ChevronUp size={12} /></button>
                     <button onClick={(e) => { e.stopPropagation(); moveSection(sec.id, 'down'); }} style={styles.btnArrow} disabled={idx === sections.length - 1}><ChevronDown size={12} /></button>
                   </div>
-                  <span style={styles.sectionLabel}>{sec.type === 'text' ? '📄' : sec.type === 'file' ? '📁' : sec.type === 'video' ? '🎥' : '📝'}<span>{sec.title || `Bagian ${idx + 1}`}</span></span>
+                  <span style={styles.sectionLabel}>
+                    {sec.type === 'text' ? '📄' : sec.type === 'file' ? '📁' : sec.type === 'video' ? '🎥' : '📝'}
+                    <span>{sec.title || `Bagian ${idx + 1}`}</span>
+                  </span>
                   <button onClick={(e) => { e.stopPropagation(); removeSection(sec.id); }} style={styles.btnX}><X size={12} /></button>
                 </div>
               ))}
@@ -1110,16 +1208,32 @@ const ManageMateri = () => {
                 { type: 'video', icon: <Video size={13} />, label: 'Video', color: '#ef4444' },
                 { type: 'assignment', icon: <Send size={13} />, label: 'Tugas', color: '#f59e0b' }
               ].map(btn => (
-                <button key={btn.type} onClick={() => addSection(btn.type)} style={{ ...styles.addSectionBtn, borderColor: `${btn.color}20`, color: btn.color }}>{btn.icon} {btn.label}</button>
+                <button key={btn.type} onClick={() => addSection(btn.type)} style={{ ...styles.addSectionBtn, borderColor: `${btn.color}20`, color: btn.color }}>
+                  {btn.icon} {btn.label}
+                </button>
               ))}
             </div>
 
             <div style={styles.card}>
               <h4 style={styles.cardTitle}><HelpCircle size={14} /> Kuis</h4>
               {quizData?.length > 0 ? (
-                <div style={styles.quizInfo}><CheckCircle size={14} color="#10b981" /><span>{quizData.length} soal</span><button onClick={() => { if (!editId) return alert("Simpan dulu!"); navigate(`/guru/manage-quiz?modulId=${editId}`); }} style={styles.btnEditQuiz}>Edit</button></div>
+                <div style={styles.quizInfo}>
+                  <CheckCircle size={14} color="#10b981" />
+                  <span>{quizData.length} soal</span>
+                  <button 
+                    onClick={() => { if (!editId) return alert("Simpan dulu!"); navigate(`/guru/manage-quiz?modulId=${editId}`); }} 
+                    style={styles.btnEditQuiz}
+                  >
+                    Edit
+                  </button>
+                </div>
               ) : (
-                <button onClick={() => { if (!editId) return alert("Simpan dulu!"); navigate(`/guru/manage-quiz?modulId=${editId}`); }} style={styles.btnCreateQuiz}><HelpCircle size={14} /> + Buat Kuis</button>
+                <button 
+                  onClick={() => { if (!editId) return alert("Simpan dulu!"); navigate(`/guru/manage-quiz?modulId=${editId}`); }} 
+                  style={styles.btnCreateQuiz}
+                >
+                  <HelpCircle size={14} /> + Buat Kuis
+                </button>
               )}
             </div>
           </div>
@@ -1154,8 +1268,14 @@ const ManageMateri = () => {
 
       <div style={styles.floatingFooter}>
         <button onClick={() => navigate('/guru/modul')} style={styles.btnFooterCancel}>Batal</button>
-        {editId && <button onClick={() => window.open(`/siswa/materi/${editId}`, '_blank')} style={styles.btnFooterLive}><ExternalLink size={14} /> {!isMobile && 'Live Preview'}</button>}
-        <button onClick={handleSave} disabled={saving} style={{ ...styles.btnFooterSave, opacity: saving ? 0.6 : 1 }}><Save size={14} /> {saving ? 'Menyimpan...' : editId ? 'Update' : 'Terbitkan'}</button>
+        {editId && (
+          <button onClick={() => window.open(`/siswa/materi/${editId}`, '_blank')} style={styles.btnFooterLive}>
+            <ExternalLink size={14} /> {!isMobile && 'Live Preview'}
+          </button>
+        )}
+        <button onClick={handleSave} disabled={saving} style={{ ...styles.btnFooterSave, opacity: saving ? 0.6 : 1 }}>
+          <Save size={14} /> {saving ? 'Menyimpan...' : editId ? 'Update' : 'Terbitkan'}
+        </button>
       </div>
     </div>
   );
