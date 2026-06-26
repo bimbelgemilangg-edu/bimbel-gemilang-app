@@ -141,6 +141,10 @@ const modalStyles = {
 const StudentElearning = () => {
   const navigate = useNavigate();
   
+  // ============================================================
+  // 🔥 SEMUA HOOKS DIPANGGIL DI SINI (SEBELUM CONDITIONAL RETURN)
+  // ============================================================
+  
   // ===== STATES =====
   const [modules, setModules] = useState([]);
   const [filteredModules, setFilteredModules] = useState([]);
@@ -152,7 +156,7 @@ const StudentElearning = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   
-  // ===== STUDENT DATA (BERBASIS ID) =====
+  // ===== STUDENT DATA =====
   const [studentId, setStudentId] = useState(null);
   const [studentData, setStudentData] = useState(null);
   const [studentName, setStudentName] = useState("");
@@ -182,91 +186,44 @@ const StudentElearning = () => {
     avgScore: 0
   });
 
-  // ============================================================
-  // EFFECTS
-  // ============================================================
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Ambil data siswa dari localStorage & Firestore
-  useEffect(() => {
-    const loadStudentData = async () => {
-      try {
-        const sId = localStorage.getItem('studentId');
-        const sName = localStorage.getItem('studentName');
-        
-        setStudentId(sId);
-        setStudentName(sName || "Siswa");
-        
-        if (sId) {
-          const docSnap = await getDoc(doc(db, "students", sId));
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            setStudentData({ id: sId, ...data });
-            setStudentKelas(data.kelasSekolah || "");
-            setStudentKategori(data.kategori || "Reguler");
-            setStudentNim(data.studentId || data.nim || sId);
-          }
-        }
-      } catch (error) {
-        console.error("Error load student data:", error);
-      }
-    };
-    loadStudentData();
-  }, []);
-
-  // Fetch modules setelah data siswa siap
-  useEffect(() => {
-    if (studentKategori && studentKelas) {
-      fetchModules();
-    }
-  }, [studentKategori, studentKelas]);
-
-  // Filter modules
-  useEffect(() => {
-    let filtered = modules;
-    
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(m => 
-        m.title?.toLowerCase().includes(term) ||
-        m.subject?.toLowerCase().includes(term) ||
-        m.description?.toLowerCase().includes(term)
+  // ===== FUNGSI FETCH (DIDEKLARASIKAN SEBELUM useEffect) =====
+  const fetchSubmissions = useCallback(async (sId) => {
+    try {
+      const q = query(
+        collection(db, "jawaban_tugas"),
+        where("studentId", "==", sId)
       );
+      const snapshot = await getDocs(q);
+      const submissionsMap = {};
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        submissionsMap[data.modulId] = { id: doc.id, ...data };
+      });
+      setSubmissions(submissionsMap);
+    } catch (error) {
+      console.error("Error fetch submissions:", error);
     }
-    
-    if (filterType === 'module') {
-      filtered = filtered.filter(m => m.type !== 'kuis_mandiri');
-    } else if (filterType === 'quiz') {
-      filtered = filtered.filter(m => m.type === 'kuis_mandiri');
-    } else if (filterType === 'assignment') {
-      filtered = filtered.filter(m => m.blocks?.some(b => b.type === 'assignment'));
-    }
-    
-    if (filterMapel !== 'all') {
-      filtered = filtered.filter(m => m.subject === filterMapel || m.kodeMapel === filterMapel);
-    }
-    
-    setFilteredModules(filtered);
-  }, [searchTerm, filterType, filterMapel, modules]);
+  }, []);
 
-  // Auto-select module from URL param
-  useEffect(() => {
-    const selectedModuleId = localStorage.getItem('selectedModuleId');
-    if (selectedModuleId && modules.length > 0) {
-      const target = modules.find(m => m.id === selectedModuleId);
-      if (target) setSelectedModule(target);
-      localStorage.removeItem('selectedModuleId');
+  const fetchQuizSubmissions = useCallback(async (sId) => {
+    try {
+      const q = query(
+        collection(db, "jawaban_kuis"),
+        where("studentId", "==", sId)
+      );
+      const snapshot = await getDocs(q);
+      const submissionsMap = {};
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        submissionsMap[data.modulId] = { id: doc.id, ...data };
+      });
+      setQuizSubmissions(submissionsMap);
+    } catch (error) {
+      console.error("Error fetch quiz submissions:", error);
     }
-  }, [modules]);
+  }, []);
 
-  // ============================================================
-  // FETCH FUNCTIONS (BERBASIS ID UNIK)
-  // ============================================================
-  const fetchModules = async () => {
+  const fetchModules = useCallback(async () => {
     setLoading(true);
     try {
       const q = query(
@@ -322,66 +279,25 @@ const StudentElearning = () => {
       setFilteredModules(allModules);
     }
     setLoading(false);
-  };
+  }, [studentKategori, studentKelas, studentNim, studentId, fetchSubmissions, fetchQuizSubmissions]);
 
-  const fetchSubmissions = async (sId) => {
-    try {
-      const q = query(
-        collection(db, "jawaban_tugas"),
-        where("studentId", "==", sId)
-      );
-      const snapshot = await getDocs(q);
-      const submissionsMap = {};
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        submissionsMap[data.modulId] = { id: doc.id, ...data };
-      });
-      setSubmissions(submissionsMap);
-    } catch (error) {
-      console.error("Error fetch submissions:", error);
-    }
-  };
-
-  const fetchQuizSubmissions = async (sId) => {
-    try {
-      const q = query(
-        collection(db, "jawaban_kuis"),
-        where("studentId", "==", sId)
-      );
-      const snapshot = await getDocs(q);
-      const submissionsMap = {};
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        submissionsMap[data.modulId] = { id: doc.id, ...data };
-      });
-      setQuizSubmissions(submissionsMap);
-    } catch (error) {
-      console.error("Error fetch quiz submissions:", error);
-    }
-  };
-
-  // ============================================================
-  // HANDLERS
-  // ============================================================
-  const handleModuleClick = (module) => {
+  // ===== HANDLERS =====
+  const handleModuleClick = useCallback((module) => {
     setSelectedModule(module);
     setActiveTab('materi');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     setSelectedModule(null);
     setActiveTab('materi');
-  };
+  }, []);
 
-  const handlePreviewFile = (url, name, type) => {
+  const handlePreviewFile = useCallback((url, name, type) => {
     setPreviewFile({ url, name, type });
-  };
+  }, []);
 
-  // ============================================================
-  // SUBMIT ASSIGNMENT (DENGAN SUPABASE UPLOAD)
-  // ============================================================
-  const handleSubmitAssignment = async () => {
+  const handleSubmitAssignment = useCallback(async () => {
     if (!selectedAssignment) return;
     if (!assignmentAnswer && !assignmentFile) {
       return alert("❌ Harap isi jawaban atau upload file!");
@@ -430,12 +346,107 @@ const StudentElearning = () => {
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [selectedAssignment, assignmentAnswer, assignmentFile, selectedModule, studentId, studentName, studentNim, studentKelas, fetchSubmissions]);
 
   // ============================================================
-  // RENDER: MODULE CARD
+  // 🔥 SEMUA useEffect DIPANGGIL DI SINI (SEBELUM CONDITIONAL RETURN)
   // ============================================================
-  const renderModuleCard = (module) => {
+  
+  // Responsive
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Ambil data siswa dari localStorage & Firestore
+  useEffect(() => {
+    const loadStudentData = async () => {
+      try {
+        const sId = localStorage.getItem('studentId');
+        const sName = localStorage.getItem('studentName');
+        
+        setStudentId(sId);
+        setStudentName(sName || "Siswa");
+        
+        if (sId) {
+          const docSnap = await getDoc(doc(db, "students", sId));
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setStudentData({ id: sId, ...data });
+            setStudentKelas(data.kelasSekolah || "");
+            setStudentKategori(data.kategori || "Reguler");
+            setStudentNim(data.studentId || data.nim || sId);
+          }
+        }
+      } catch (error) {
+        console.error("Error load student data:", error);
+      }
+    };
+    loadStudentData();
+  }, []);
+
+  // Fetch modules setelah data siswa siap
+  useEffect(() => {
+    if (studentKategori && studentKelas) {
+      fetchModules();
+    }
+  }, [studentKategori, studentKelas, fetchModules]);
+
+  // Filter modules
+  useEffect(() => {
+    let filtered = modules;
+    
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(m => 
+        m.title?.toLowerCase().includes(term) ||
+        m.subject?.toLowerCase().includes(term) ||
+        m.description?.toLowerCase().includes(term)
+      );
+    }
+    
+    if (filterType === 'module') {
+      filtered = filtered.filter(m => m.type !== 'kuis_mandiri');
+    } else if (filterType === 'quiz') {
+      filtered = filtered.filter(m => m.type === 'kuis_mandiri');
+    } else if (filterType === 'assignment') {
+      filtered = filtered.filter(m => m.blocks?.some(b => b.type === 'assignment'));
+    }
+    
+    if (filterMapel !== 'all') {
+      filtered = filtered.filter(m => m.subject === filterMapel || m.kodeMapel === filterMapel);
+    }
+    
+    setFilteredModules(filtered);
+  }, [searchTerm, filterType, filterMapel, modules]);
+
+  // Auto-select module from URL param
+  useEffect(() => {
+    const selectedModuleId = localStorage.getItem('selectedModuleId');
+    if (selectedModuleId && modules.length > 0) {
+      const target = modules.find(m => m.id === selectedModuleId);
+      if (target) setSelectedModule(target);
+      localStorage.removeItem('selectedModuleId');
+    }
+  }, [modules]);
+
+  // ============================================================
+  // 🔥 useMemo DIPANGGIL DI SINI (SEBELUM CONDITIONAL RETURN)
+  // ============================================================
+  const subjects = useMemo(() => {
+    const mapelSet = new Set();
+    modules.forEach(m => {
+      if (m.subject) mapelSet.add(m.subject);
+      if (m.kodeMapel) mapelSet.add(m.kodeMapel);
+    });
+    return ['all', ...Array.from(mapelSet)];
+  }, [modules]);
+
+  // ============================================================
+  // RENDER FUNCTIONS (DIDEKLARASIKAN SEBELUM CONDITIONAL RETURN)
+  // ============================================================
+  const renderModuleCard = useCallback((module) => {
     const isQuiz = module.type === 'kuis_mandiri';
     const hasAssignment = module.blocks?.some(b => b.type === 'assignment');
     const hasQuiz = module.quizData?.length > 0;
@@ -512,91 +523,9 @@ const StudentElearning = () => {
         </div>
       </div>
     );
-  };
+  }, [submissions, quizSubmissions, handleModuleClick]);
 
-  const cardStyles = {
-    card: {
-      background: 'white',
-      borderRadius: 16,
-      overflow: 'hidden',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-      border: '1px solid #f1f5f9',
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column'
-    },
-    cover: {
-      position: 'relative',
-      height: 140,
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      overflow: 'hidden',
-      flexShrink: 0
-    },
-    coverImage: { width: '100%', height: '100%', objectFit: 'cover' },
-    coverPlaceholder: {
-      width: '100%', height: '100%',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-    },
-    badgeTop: {
-      position: 'absolute', top: 10, left: 10,
-      display: 'flex', gap: 4, flexWrap: 'wrap'
-    },
-    badge: {
-      display: 'inline-flex', alignItems: 'center', gap: 4,
-      padding: '2px 10px', borderRadius: 12,
-      fontSize: 9, fontWeight: 700,
-      backdropFilter: 'blur(4px)'
-    },
-    badgeStatus: {
-      position: 'absolute', top: 10, right: 10,
-      padding: '2px 10px', borderRadius: 12,
-      fontSize: 9, fontWeight: 700,
-      backdropFilter: 'blur(4px)'
-    },
-    idBadge: {
-      position: 'absolute', bottom: 10, left: 10,
-      display: 'inline-flex', alignItems: 'center', gap: 3,
-      padding: '1px 8px', borderRadius: 10,
-      fontSize: 8, color: '#3b82f6',
-      background: 'rgba(255,255,255,0.9)',
-      fontWeight: 600
-    },
-    body: { padding: 14, flex: 1, display: 'flex', flexDirection: 'column' },
-    title: { fontSize: 14, fontWeight: 700, color: '#1e293b', margin: '0 0 4px', lineHeight: 1.3 },
-    subject: {
-      fontSize: 11, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4,
-      marginBottom: 8
-    },
-    mapelTag: {
-      fontSize: 8, color: '#8b5cf6', background: '#ede9fe',
-      padding: '1px 6px', borderRadius: 4,
-      display: 'inline-flex', alignItems: 'center', gap: 2
-    },
-    meta: {
-      display: 'flex', gap: 6, flexWrap: 'wrap',
-      marginBottom: 10, marginTop: 'auto'
-    },
-    metaItem: {
-      fontSize: 9, padding: '2px 8px', borderRadius: 10,
-      background: '#f1f5f9', color: '#64748b',
-      display: 'inline-flex', alignItems: 'center', gap: 3
-    },
-    btn: {
-      width: '100%', padding: 8,
-      background: '#3b82f6', color: 'white',
-      border: 'none', borderRadius: 8,
-      fontSize: 11, fontWeight: 700, cursor: 'pointer',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4
-    }
-  };
-
-  // ============================================================
-  // RENDER: MODULE DETAIL
-  // ============================================================
-  const renderModuleDetail = () => {
+  const renderModuleDetail = useCallback(() => {
     if (!selectedModule) return null;
     
     const assignments = selectedModule.blocks?.filter(b => b.type === 'assignment') || [];
@@ -812,61 +741,9 @@ const StudentElearning = () => {
         </div>
       </div>
     );
-  };
+  }, [selectedModule, submissions, quizSubmissions, activeTab, handleBack, handlePreviewFile, navigate]);
 
-  const detailStyles = {
-    container: { width: '100%', maxWidth: 900, margin: '0 auto' },
-    header: { marginBottom: 24 },
-    backBtn: {
-      display: 'inline-flex', alignItems: 'center', gap: 6,
-      background: 'white', border: '1px solid #e2e8f0',
-      padding: '8px 16px', borderRadius: 10,
-      cursor: 'pointer', fontSize: 13, fontWeight: 600,
-      marginBottom: 12
-    },
-    titleSection: { marginTop: 4 },
-    title: { fontSize: 24, fontWeight: 800, color: '#1e293b', margin: '0 0 8px' },
-    meta: { display: 'flex', gap: 8, flexWrap: 'wrap' },
-    metaItem: {
-      display: 'inline-flex', alignItems: 'center', gap: 4,
-      fontSize: 11, color: '#64748b', background: '#f1f5f9',
-      padding: '3px 10px', borderRadius: 6
-    },
-    cover: { borderRadius: 12, overflow: 'hidden', marginBottom: 16 },
-    coverImage: { width: '100%', maxHeight: 200, objectFit: 'cover' },
-    desc: { background: '#f1f5f9', padding: 16, borderRadius: 12, marginBottom: 20, fontSize: 13, color: '#475569', lineHeight: 1.6 },
-    tabs: { display: 'flex', gap: 4, background: 'white', padding: 4, borderRadius: 12, marginBottom: 20, border: '1px solid #e2e8f0' },
-    tab: {
-      flex: 1, padding: '8px 12px', borderRadius: 8,
-      border: 'none', fontWeight: 700, fontSize: 11,
-      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4
-    },
-    content: { display: 'flex', flexDirection: 'column', gap: 12 },
-    block: { background: 'white', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' },
-    blockHeader: { marginBottom: 12 },
-    blockType: { fontSize: 9, fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase' },
-    blockTitle: { fontSize: 16, fontWeight: 700, color: '#1e293b', margin: '4px 0 0' },
-    textContent: { fontSize: 14, color: '#475569', lineHeight: 1.7, whiteSpace: 'pre-wrap' },
-    fileBlock: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, padding: 12, background: '#f8fafc', borderRadius: 8 },
-    fileInfo: { display: 'flex', alignItems: 'center', gap: 8 },
-    fileSize: { fontSize: 10, color: '#94a3b8' },
-    fileActions: { display: 'flex', gap: 6 },
-    previewBtn: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#eef2ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 600, color: '#3b82f6' },
-    downloadBtn: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#f1f5f9', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 600, color: '#64748b', textDecoration: 'none' },
-    videoBlock: { borderRadius: 8, overflow: 'hidden' },
-    videoIframe: { width: '100%', height: 300, border: 'none' },
-    linkExternal: { display: 'inline-flex', alignItems: 'center', gap: 6, color: '#3b82f6', textDecoration: 'none', fontWeight: 600 },
-    deadline: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600, marginTop: 8 },
-    submittedBox: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, background: '#dcfce7', borderRadius: 8, marginTop: 8, fontSize: 12, fontWeight: 600, color: '#166534' },
-    viewSubmitBtn: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: 'white', border: '1px solid #e2e8f0', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, marginLeft: 'auto' },
-    submitBtn: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 20px', background: '#f59e0b', border: 'none', borderRadius: 8, color: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer', marginTop: 8 },
-    quizInfo: { display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12, color: '#64748b', marginBottom: 12 }
-  };
-
-  // ============================================================
-  // RENDER: SUBMIT ASSIGNMENT MODAL
-  // ============================================================
-  const renderSubmitModal = () => {
+  const renderSubmitModal = useCallback(() => {
     if (!selectedAssignment) return null;
     
     return (
@@ -926,11 +803,12 @@ const StudentElearning = () => {
         </div>
       </div>
     );
-  };
+  }, [selectedAssignment, assignmentAnswer, assignmentFile, submitting, handleSubmitAssignment]);
 
   // ============================================================
-  // RENDER: MAIN
+  // 🔥 CONDITIONAL RETURN - DILETAKKAN DI BAWAH SEMUA HOOKS
   // ============================================================
+  
   if (loading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '70vh', gap: 16 }}>
@@ -954,15 +832,6 @@ const StudentElearning = () => {
   // ============================================================
   // RENDER: MODULE LIST
   // ============================================================
-  const subjects = useMemo(() => {
-    const mapelSet = new Set();
-    modules.forEach(m => {
-      if (m.subject) mapelSet.add(m.subject);
-      if (m.kodeMapel) mapelSet.add(m.kodeMapel);
-    });
-    return ['all', ...Array.from(mapelSet)];
-  }, [modules]);
-
   return (
     <div style={listStyles.container}>
       <div style={listStyles.header}>
@@ -1094,6 +963,137 @@ const StudentElearning = () => {
       {previewFile && <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
     </div>
   );
+};
+
+// ============================================================
+// STYLES
+// ============================================================
+const cardStyles = {
+  card: {
+    background: 'white',
+    borderRadius: 16,
+    overflow: 'hidden',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+    border: '1px solid #f1f5f9',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  cover: {
+    position: 'relative',
+    height: 140,
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    overflow: 'hidden',
+    flexShrink: 0
+  },
+  coverImage: { width: '100%', height: '100%', objectFit: 'cover' },
+  coverPlaceholder: {
+    width: '100%', height: '100%',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+  },
+  badgeTop: {
+    position: 'absolute', top: 10, left: 10,
+    display: 'flex', gap: 4, flexWrap: 'wrap'
+  },
+  badge: {
+    display: 'inline-flex', alignItems: 'center', gap: 4,
+    padding: '2px 10px', borderRadius: 12,
+    fontSize: 9, fontWeight: 700,
+    backdropFilter: 'blur(4px)'
+  },
+  badgeStatus: {
+    position: 'absolute', top: 10, right: 10,
+    padding: '2px 10px', borderRadius: 12,
+    fontSize: 9, fontWeight: 700,
+    backdropFilter: 'blur(4px)'
+  },
+  idBadge: {
+    position: 'absolute', bottom: 10, left: 10,
+    display: 'inline-flex', alignItems: 'center', gap: 3,
+    padding: '1px 8px', borderRadius: 10,
+    fontSize: 8, color: '#3b82f6',
+    background: 'rgba(255,255,255,0.9)',
+    fontWeight: 600
+  },
+  body: { padding: 14, flex: 1, display: 'flex', flexDirection: 'column' },
+  title: { fontSize: 14, fontWeight: 700, color: '#1e293b', margin: '0 0 4px', lineHeight: 1.3 },
+  subject: {
+    fontSize: 11, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4,
+    marginBottom: 8
+  },
+  mapelTag: {
+    fontSize: 8, color: '#8b5cf6', background: '#ede9fe',
+    padding: '1px 6px', borderRadius: 4,
+    display: 'inline-flex', alignItems: 'center', gap: 2
+  },
+  meta: {
+    display: 'flex', gap: 6, flexWrap: 'wrap',
+    marginBottom: 10, marginTop: 'auto'
+  },
+  metaItem: {
+    fontSize: 9, padding: '2px 8px', borderRadius: 10,
+    background: '#f1f5f9', color: '#64748b',
+    display: 'inline-flex', alignItems: 'center', gap: 3
+  },
+  btn: {
+    width: '100%', padding: 8,
+    background: '#3b82f6', color: 'white',
+    border: 'none', borderRadius: 8,
+    fontSize: 11, fontWeight: 700, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4
+  }
+};
+
+const detailStyles = {
+  container: { width: '100%', maxWidth: 900, margin: '0 auto' },
+  header: { marginBottom: 24 },
+  backBtn: {
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    background: 'white', border: '1px solid #e2e8f0',
+    padding: '8px 16px', borderRadius: 10,
+    cursor: 'pointer', fontSize: 13, fontWeight: 600,
+    marginBottom: 12
+  },
+  titleSection: { marginTop: 4 },
+  title: { fontSize: 24, fontWeight: 800, color: '#1e293b', margin: '0 0 8px' },
+  meta: { display: 'flex', gap: 8, flexWrap: 'wrap' },
+  metaItem: {
+    display: 'inline-flex', alignItems: 'center', gap: 4,
+    fontSize: 11, color: '#64748b', background: '#f1f5f9',
+    padding: '3px 10px', borderRadius: 6
+  },
+  cover: { borderRadius: 12, overflow: 'hidden', marginBottom: 16 },
+  coverImage: { width: '100%', maxHeight: 200, objectFit: 'cover' },
+  desc: { background: '#f1f5f9', padding: 16, borderRadius: 12, marginBottom: 20, fontSize: 13, color: '#475569', lineHeight: 1.6 },
+  tabs: { display: 'flex', gap: 4, background: 'white', padding: 4, borderRadius: 12, marginBottom: 20, border: '1px solid #e2e8f0' },
+  tab: {
+    flex: 1, padding: '8px 12px', borderRadius: 8,
+    border: 'none', fontWeight: 700, fontSize: 11,
+    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4
+  },
+  content: { display: 'flex', flexDirection: 'column', gap: 12 },
+  block: { background: 'white', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' },
+  blockHeader: { marginBottom: 12 },
+  blockType: { fontSize: 9, fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase' },
+  blockTitle: { fontSize: 16, fontWeight: 700, color: '#1e293b', margin: '4px 0 0' },
+  textContent: { fontSize: 14, color: '#475569', lineHeight: 1.7, whiteSpace: 'pre-wrap' },
+  fileBlock: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, padding: 12, background: '#f8fafc', borderRadius: 8 },
+  fileInfo: { display: 'flex', alignItems: 'center', gap: 8 },
+  fileSize: { fontSize: 10, color: '#94a3b8' },
+  fileActions: { display: 'flex', gap: 6 },
+  previewBtn: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#eef2ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 600, color: '#3b82f6' },
+  downloadBtn: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#f1f5f9', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 600, color: '#64748b', textDecoration: 'none' },
+  videoBlock: { borderRadius: 8, overflow: 'hidden' },
+  videoIframe: { width: '100%', height: 300, border: 'none' },
+  linkExternal: { display: 'inline-flex', alignItems: 'center', gap: 6, color: '#3b82f6', textDecoration: 'none', fontWeight: 600 },
+  deadline: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600, marginTop: 8 },
+  submittedBox: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, background: '#dcfce7', borderRadius: 8, marginTop: 8, fontSize: 12, fontWeight: 600, color: '#166534' },
+  viewSubmitBtn: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: 'white', border: '1px solid #e2e8f0', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, marginLeft: 'auto' },
+  submitBtn: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 20px', background: '#f59e0b', border: 'none', borderRadius: 8, color: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer', marginTop: 8 },
+  quizInfo: { display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12, color: '#64748b', marginBottom: 12 }
 };
 
 const listStyles = {
