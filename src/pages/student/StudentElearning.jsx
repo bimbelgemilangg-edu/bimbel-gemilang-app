@@ -1,7 +1,10 @@
 // src/pages/student/StudentElearning.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { db } from '../../firebase';
-import { collection, getDocs, doc, getDoc, updateDoc, addDoc, serverTimestamp, query, orderBy, where } from "firebase/firestore";
+import { 
+  collection, getDocs, doc, getDoc, updateDoc, addDoc, 
+  serverTimestamp, query, orderBy, where, deleteDoc, runTransaction 
+} from "firebase/firestore";
 import { useNavigate } from 'react-router-dom';
 import { 
   BookOpen, Clock, ChevronLeft, ChevronRight, FileText, 
@@ -10,98 +13,273 @@ import {
   ExternalLink, FileQuestion, Award, ChevronDown, ChevronUp,
   Search, Filter, Layers, FolderOpen, Star, TrendingUp,
   MessageSquare, Paperclip, Upload, X, Menu, Home, Grid3x3, List,
-  Image as ImageIcon, Play, File, HelpCircle
+  Image as ImageIcon, Play, File, HelpCircle, Hash, Tag,
+  UserCheck, GraduationCap, Sparkles, Zap, Shield, Database,
+  BarChart3, Activity, PieChart, Bell, BellOff, Clock4,
+  CalendarDays, Timer, Award as AwardIcon, Trophy, Medal,
+  Flame, Target, Compass, MapPin, Rocket, Coffee, Sun,
+  Moon, Cloud, CloudRain, Snowflake, Wind, Droplets
 } from 'lucide-react';
 import { InlineMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
+import { uploadElearningFile, deleteFile, supabase } from '../../services/uploadService';
 
-// 🔥 IMPORT UNTUK UPLOAD KE SUPABASE (TAMBAHAN, TIDAK MENGHAPUS APAPUN)
-import { uploadToDrive } from '../../services/uploadService';
+// ============================================================
+// CONSTANTS
+// ============================================================
+const FILE_TYPES = {
+  IMAGE: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
+  PDF: ['application/pdf'],
+  DOC: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+  VIDEO: ['video/mp4', 'video/webm', 'video/ogg'],
+  AUDIO: ['audio/mpeg', 'audio/wav', 'audio/ogg']
+};
 
+const STATUS_COLORS = {
+  not_submitted: { bg: '#fee2e2', color: '#ef4444', label: 'Belum' },
+  submitted: { bg: '#fef3c7', color: '#f59e0b', label: 'Terkirim' },
+  graded: { bg: '#dcfce7', color: '#10b981', label: 'Dinilai' }
+};
+
+// ============================================================
+// HELPER FUNCTIONS
+// ============================================================
+const formatDate = (date) => {
+  if (!date) return '-';
+  const d = date.toDate ? date.toDate() : new Date(date);
+  return d.toLocaleDateString('id-ID', { 
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+};
+
+const getTimeRemaining = (deadline) => {
+  if (!deadline) return null;
+  const dl = new Date(deadline);
+  const now = new Date();
+  const diff = dl - now;
+  if (diff <= 0) return { text: '⛔ Terlewat', color: '#ef4444', isExpired: true };
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(hours / 24);
+  if (days > 0) return { text: `⏳ ${days}h ${hours % 24}j lagi`, color: days <= 1 ? '#f59e0b' : '#10b981', isExpired: false };
+  return { text: `⚠️ ${hours}j lagi`, color: '#f59e0b', isExpired: false };
+};
+
+const getInitials = (name) => {
+  if (!name) return 'S';
+  return name.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('');
+};
+
+// ============================================================
+// SUB-COMPONENTS
+// ============================================================
+const FilePreviewModal = ({ file, onClose }) => {
+  if (!file) return null;
+  const isImage = FILE_TYPES.IMAGE.some(t => file.type?.includes(t) || file.url?.match(/\.(jpg|jpeg|png|gif|webp)$/i));
+  const isPDF = FILE_TYPES.PDF.some(t => file.type?.includes(t) || file.url?.match(/\.pdf$/i));
+  
+  return (
+    <div style={modalStyles.overlay} onClick={onClose}>
+      <div style={modalStyles.content} onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} style={modalStyles.closeBtn}><X size={20} /></button>
+        <h4 style={modalStyles.title}>{file.name || 'Preview'}</h4>
+        <div style={modalStyles.body}>
+          {isImage && <img src={file.url} alt={file.name} style={modalStyles.image} />}
+          {isPDF && (
+            <iframe 
+              src={`https://docs.google.com/viewer?url=${encodeURIComponent(file.url)}&embedded=true`} 
+              style={modalStyles.iframe} 
+              title="PDF Preview" 
+            />
+          )}
+          {!isImage && !isPDF && (
+            <div style={modalStyles.fallback}>
+              <File size={48} color="#94a3b8" />
+              <p>Tidak dapat preview file ini</p>
+              <a href={file.url} download style={modalStyles.downloadBtn}>
+                <Download size={16} /> Unduh File
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const modalStyles = {
+  overlay: {
+    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
+    zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: 20, backdropFilter: 'blur(4px)'
+  },
+  content: {
+    background: 'white', borderRadius: 16, maxWidth: '90vw', maxHeight: '90vh',
+    width: '100%', maxWidth: 900, overflow: 'hidden', position: 'relative'
+  },
+  closeBtn: {
+    position: 'absolute', top: 12, right: 12, background: 'rgba(255,255,255,0.95)',
+    border: 'none', borderRadius: '50%', width: 36, height: 36,
+    cursor: 'pointer', zIndex: 1, display: 'flex', alignItems: 'center',
+    justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+  },
+  title: { padding: '16px 20px', margin: 0, fontSize: 14, fontWeight: 700, borderBottom: '1px solid #e2e8f0' },
+  body: { padding: 20, minHeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  image: { maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain' },
+  iframe: { width: '100%', height: '70vh', border: 'none' },
+  fallback: { textAlign: 'center', padding: 40, color: '#94a3b8' },
+  downloadBtn: {
+    display: 'inline-flex', alignItems: 'center', gap: 8,
+    background: '#3b82f6', color: 'white', padding: '10px 20px',
+    borderRadius: 8, textDecoration: 'none', marginTop: 12
+  }
+};
+
+// ============================================================
+// MAIN COMPONENT
+// ============================================================
 const StudentElearning = () => {
   const navigate = useNavigate();
+  
+  // ===== STATES =====
   const [modules, setModules] = useState([]);
   const [filteredModules, setFilteredModules] = useState([]);
   const [selectedModule, setSelectedModule] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
+  const [filterMapel, setFilterMapel] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  
+  // ===== STUDENT DATA (BERBASIS ID) =====
   const [studentId, setStudentId] = useState(null);
+  const [studentData, setStudentData] = useState(null);
   const [studentName, setStudentName] = useState("");
   const [studentKelas, setStudentKelas] = useState("");
   const [studentKategori, setStudentKategori] = useState("");
-  const [submissions, setSubmissions] = useState({});
+  const [studentNim, setStudentNim] = useState("");
   
+  // ===== SUBMISSIONS =====
+  const [submissions, setSubmissions] = useState({});
+  const [quizSubmissions, setQuizSubmissions] = useState({});
+  
+  // ===== MODALS =====
   const [previewFile, setPreviewFile] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [assignmentAnswer, setAssignmentAnswer] = useState("");
   const [assignmentFile, setAssignmentFile] = useState(null);
+  const [activeTab, setActiveTab] = useState('materi');
+  
+  // ===== STATS =====
+  const [stats, setStats] = useState({
+    totalModules: 0,
+    totalAssignments: 0,
+    submittedAssignments: 0,
+    totalQuizzes: 0,
+    completedQuizzes: 0,
+    avgScore: 0
+  });
 
+  // ============================================================
+  // EFFECTS
+  // ============================================================
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Ambil data siswa dari localStorage & Firestore
   useEffect(() => {
-    const sId = localStorage.getItem('studentId');
-    const sName = localStorage.getItem('studentName');
-    setStudentId(sId);
-    setStudentName(sName || "Siswa");
-    if (sId) fetchStudentProfile(sId);
+    const loadStudentData = async () => {
+      try {
+        const sId = localStorage.getItem('studentId');
+        const sName = localStorage.getItem('studentName');
+        
+        setStudentId(sId);
+        setStudentName(sName || "Siswa");
+        
+        if (sId) {
+          const docSnap = await getDoc(doc(db, "students", sId));
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setStudentData({ id: sId, ...data });
+            setStudentKelas(data.kelasSekolah || "");
+            setStudentKategori(data.kategori || "Reguler");
+            setStudentNim(data.studentId || data.nim || sId);
+          }
+        }
+      } catch (error) {
+        console.error("Error load student data:", error);
+      }
+    };
+    loadStudentData();
   }, []);
 
+  // Fetch modules setelah data siswa siap
   useEffect(() => {
-    if (studentKategori && studentKelas) fetchModules();
+    if (studentKategori && studentKelas) {
+      fetchModules();
+    }
   }, [studentKategori, studentKelas]);
 
-  useEffect(() => {
-    const selectedModuleId = localStorage.getItem('selectedModuleId');
-    if (selectedModuleId && modules.length > 0) {
-      const targetModule = modules.find(m => m.id === selectedModuleId);
-      if (targetModule) setSelectedModule(targetModule);
-      localStorage.removeItem('selectedModuleId');
-    }
-  }, [modules]);
-
+  // Filter modules
   useEffect(() => {
     let filtered = modules;
+    
     if (searchTerm) {
+      const term = searchTerm.toLowerCase();
       filtered = filtered.filter(m => 
-        m.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        m.subject?.toLowerCase().includes(searchTerm.toLowerCase())
+        m.title?.toLowerCase().includes(term) ||
+        m.subject?.toLowerCase().includes(term) ||
+        m.description?.toLowerCase().includes(term)
       );
     }
+    
     if (filterType === 'module') {
       filtered = filtered.filter(m => m.type !== 'kuis_mandiri');
     } else if (filterType === 'quiz') {
       filtered = filtered.filter(m => m.type === 'kuis_mandiri');
+    } else if (filterType === 'assignment') {
+      filtered = filtered.filter(m => m.blocks?.some(b => b.type === 'assignment'));
     }
+    
+    if (filterMapel !== 'all') {
+      filtered = filtered.filter(m => m.subject === filterMapel || m.kodeMapel === filterMapel);
+    }
+    
     setFilteredModules(filtered);
-  }, [searchTerm, filterType, modules]);
+  }, [searchTerm, filterType, filterMapel, modules]);
 
-  const fetchStudentProfile = async (id) => {
-    try {
-      const docSnap = await getDoc(doc(db, "students", id));
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setStudentKelas(data.kelasSekolah || "");
-        setStudentKategori(data.kategori || "Reguler");
-      }
-    } catch (error) {
-      console.error("Error fetch student profile:", error);
+  // Auto-select module from URL param
+  useEffect(() => {
+    const selectedModuleId = localStorage.getItem('selectedModuleId');
+    if (selectedModuleId && modules.length > 0) {
+      const target = modules.find(m => m.id === selectedModuleId);
+      if (target) setSelectedModule(target);
+      localStorage.removeItem('selectedModuleId');
     }
-  };
+  }, [modules]);
 
+  // ============================================================
+  // FETCH FUNCTIONS (BERBASIS ID UNIK)
+  // ============================================================
   const fetchModules = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, "bimbel_modul"), where("status", "==", "aktif"), orderBy("updatedAt", "desc"));
+      // 🔥 QUERY DENGAN INDEX YANG EFEKTIF
+      const q = query(
+        collection(db, "bimbel_modul"),
+        where("status", "==", "aktif"),
+        orderBy("updatedAt", "desc")
+      );
       const snapshot = await getDocs(q);
+      
       let allModules = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      // 🔥 FILTER BERDASARKAN TARGET (KATEGORI & KELAS)
       allModules = allModules.filter(module => {
         const targetKategori = module.targetKategori || "Semua";
         const targetKelas = module.targetKelas || "Semua";
@@ -109,117 +287,141 @@ const StudentElearning = () => {
         const kelasMatch = targetKelas === "Semua" || targetKelas === studentKelas;
         return kategoriMatch && kelasMatch;
       });
+      
+      // 🔥 FILTER SISWA SPESIFIK (jika ada selectedStudents)
+      allModules = allModules.filter(module => {
+        if (module.sendToSpecificStudents && module.selectedStudents?.length > 0) {
+          return module.selectedStudents.some(s => 
+            s.studentId === studentNim || s.id === studentId
+          );
+        }
+        return true;
+      });
+      
       setModules(allModules);
       setFilteredModules(allModules);
+      
+      // Ambil submissions
       if (studentId) await fetchSubmissions(studentId);
+      if (studentId) await fetchQuizSubmissions(studentId);
+      
+      // Hitung stats
+      const assignments = allModules.filter(m => m.blocks?.some(b => b.type === 'assignment'));
+      const quizzes = allModules.filter(m => m.quizData?.length > 0);
+      
+      setStats({
+        totalModules: allModules.length,
+        totalAssignments: assignments.length,
+        submittedAssignments: Object.keys(submissions).length,
+        totalQuizzes: quizzes.length,
+        completedQuizzes: Object.keys(quizSubmissions).length,
+        avgScore: 0
+      });
+      
     } catch (error) {
+      console.error("Error fetch modules:", error);
+      // Fallback: ambil semua tanpa order
       const snapshot = await getDocs(collection(db, "bimbel_modul"));
       let allModules = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      allModules = allModules.filter(module => {
-        const isActive = module.status === "aktif";
-        const targetKategori = module.targetKategori || "Semua";
-        const targetKelas = module.targetKelas || "Semua";
-        const kategoriMatch = targetKategori === "Semua" || targetKategori === studentKategori;
-        const kelasMatch = targetKelas === "Semua" || targetKelas === studentKelas;
-        return isActive && kategoriMatch && kelasMatch;
-      });
-      allModules.sort((a, b) => {
-        const dateA = a.updatedAt?.toDate ? a.updatedAt.toDate() : new Date(0);
-        const dateB = b.updatedAt?.toDate ? b.updatedAt.toDate() : new Date(0);
-        return dateB - dateA;
-      });
+      allModules = allModules.filter(m => m.status === "aktif");
       setModules(allModules);
       setFilteredModules(allModules);
-      if (studentId) await fetchSubmissions(studentId);
     }
     setLoading(false);
   };
 
   const fetchSubmissions = async (sId) => {
     try {
-      const q = query(collection(db, "jawaban_tugas"), where("studentId", "==", sId));
+      const q = query(
+        collection(db, "jawaban_tugas"),
+        where("studentId", "==", sId)
+      );
       const snapshot = await getDocs(q);
       const submissionsMap = {};
-      snapshot.forEach(doc => { submissionsMap[doc.data().modulId] = doc.data(); });
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        submissionsMap[data.modulId] = { id: doc.id, ...data };
+      });
       setSubmissions(submissionsMap);
     } catch (error) {
       console.error("Error fetch submissions:", error);
     }
   };
 
+  const fetchQuizSubmissions = async (sId) => {
+    try {
+      const q = query(
+        collection(db, "jawaban_kuis"),
+        where("studentId", "==", sId)
+      );
+      const snapshot = await getDocs(q);
+      const submissionsMap = {};
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        submissionsMap[data.modulId] = { id: doc.id, ...data };
+      });
+      setQuizSubmissions(submissionsMap);
+    } catch (error) {
+      console.error("Error fetch quiz submissions:", error);
+    }
+  };
+
+  // ============================================================
+  // HANDLERS
+  // ============================================================
   const handleModuleClick = (module) => {
     setSelectedModule(module);
+    setActiveTab('materi');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleBack = () => setSelectedModule(null);
-  const handlePreviewFile = (fileUrl, fileName) => setPreviewFile({ url: fileUrl, name: fileName });
-
-  const renderMath = (text) => {
-    if (!text) return null;
-    const parts = text.split(/(\$.*?\$)/g);
-    return parts.map((part, i) => {
-      if (part.startsWith('$') && part.endsWith('$')) {
-        try { return <InlineMath key={i} math={part.substring(1, part.length - 1)} />; }
-        catch (e) { return <span key={i} style={{ color: 'red' }}>{part}</span>; }
-      }
-      return <span key={i}>{part}</span>;
-    });
+  const handleBack = () => {
+    setSelectedModule(null);
+    setActiveTab('materi');
   };
 
-  // 🔥🔥🔥 FUNGSI HANDLE SUBMIT YANG DIPERBAIKI (TAMBAH UPLOAD KE SUPABASE) 🔥🔥🔥
-  // SEMUA FITUR LAIN TETAP SAMA, HANYA PROSES UPLOAD FILE YANG DIUBAH
+  const handlePreviewFile = (url, name, type) => {
+    setPreviewFile({ url, name, type });
+  };
+
+  // ============================================================
+  // SUBMIT ASSIGNMENT (DENGAN SUPABASE UPLOAD)
+  // ============================================================
   const handleSubmitAssignment = async () => {
     if (!selectedAssignment) return;
-    if (!assignmentAnswer && !assignmentFile) return alert("❌ Harap isi jawaban atau upload file!");
+    if (!assignmentAnswer && !assignmentFile) {
+      return alert("❌ Harap isi jawaban atau upload file!");
+    }
     
     setSubmitting(true);
     try {
-      let fileUrl = null, fileName = null, filePath = null;
+      let fileUrl = null, filePath = null, fileName = null;
       
       if (assignmentFile) {
-        // Validasi ukuran file (maksimal 10MB)
-        if (assignmentFile.size > 10 * 1024 * 1024) {
-          throw new Error("Ukuran file terlalu besar. Maksimal 10MB.");
-        }
-        
-        // Konversi file ke Base64 untuk dikirim ke uploadService
-        const reader = new FileReader();
-        const base64 = await new Promise((resolve, reject) => {
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(assignmentFile);
-        });
-        
-        console.log(`📤 Upload file: ${assignmentFile.name} (${(assignmentFile.size / 1024 / 1024).toFixed(2)}MB)`);
-        
-        // 🔥 UPLOAD KE SUPABASE STORAGE (PERUBAHAN UTAMA)
-        const result = await uploadToDrive(base64, assignmentFile.name, assignmentFile.type);
-        
-        if (!result.success) {
-          throw new Error(result.error);
-        }
-        
+        // 🔥 UPLOAD KE SUPABASE
+        const result = await uploadElearningFile(assignmentFile, 'tugas');
+        if (!result.success) throw new Error(result.error);
         fileUrl = result.downloadURL;
         filePath = result.filePath;
         fileName = assignmentFile.name;
-        
-        console.log(`✅ Upload berhasil: ${fileUrl}`);
       }
       
-      // 🔥 SIMPAN KE FIRESTORE (SAMA PERSIS DENGAN YANG LAMA, HANYA fileUrl SEKARANG DARI SUPABASE)
+      // Simpan ke Firestore
       await addDoc(collection(db, "jawaban_tugas"), {
         modulId: selectedModule.id,
         modulTitle: selectedModule.title,
-        studentId,
-        studentName,
-        studentKelas,
+        blockId: selectedAssignment.id,
+        blockTitle: selectedAssignment.title,
+        studentId: studentId,
+        studentName: studentName,
+        studentNim: studentNim,
+        studentKelas: studentKelas,
         question: selectedAssignment.content,
         answer: assignmentAnswer,
-        fileUrl,      // ← SEKARANG URL DARI SUPABASE (BUKAN BASE64)
-        filePath,     // ← TAMBAHAN (PATH DI SUPABASE)
+        fileUrl,
+        filePath,
         fileName,
-        status: "submitted",
+        status: "Pending",
         submittedAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
@@ -231,639 +433,728 @@ const StudentElearning = () => {
       await fetchSubmissions(studentId);
       
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error("Submit error:", error);
       alert("❌ Gagal mengirim tugas: " + error.message);
     } finally {
       setSubmitting(false);
     }
   };
-  // 🔥🔥🔥 END PERBAIKAN 🔥🔥🔥
 
-  const getSubmissionStatus = (moduleId) => {
-    const sub = submissions[moduleId];
-    if (!sub) return { status: 'not_submitted', label: 'Belum', color: '#ef4444', bg: '#fee2e2', icon: <XCircle size={12} /> };
-    if (sub.graded) return { status: 'graded', label: 'Dinilai', color: '#10b981', bg: '#dcfce7', icon: <CheckCircle size={12} /> };
-    return { status: 'submitted', label: 'Terkirim', color: '#f59e0b', bg: '#fef3c7', icon: <Clock size={12} /> };
-  };
-
-  // RENDER MODERN CARD (LIKE NETFLIX) - TIDAK BERUBAH
-  const renderModernCard = (module) => {
-    const isQuizMandiri = module.type === 'kuis_mandiri';
+  // ============================================================
+  // RENDER: MODULE CARD
+  // ============================================================
+  const renderModuleCard = (module) => {
+    const isQuiz = module.type === 'kuis_mandiri';
     const hasAssignment = module.blocks?.some(b => b.type === 'assignment');
     const hasQuiz = module.quizData?.length > 0;
-    const submissionStatus = getSubmissionStatus(module.id);
+    const submission = submissions[module.id];
+    const quizSub = quizSubmissions[module.id];
     const coverImage = module.coverImage || module.imageUrl || null;
+    const isSubmitted = !!submission;
+    const isQuizDone = !!quizSub;
+    const status = submission?.status || 'not_submitted';
+    const statusInfo = STATUS_COLORS[status] || STATUS_COLORS.not_submitted;
 
     return (
       <div 
         key={module.id} 
         onClick={() => handleModuleClick(module)}
-        style={styles.modernCard}
+        style={cardStyles.card}
       >
-        {/* COVER IMAGE AREA */}
-        <div style={styles.modernCardCover}>
+        {/* Cover */}
+        <div style={cardStyles.cover}>
           {coverImage ? (
-            <>
-              <img 
-                src={coverImage} 
-                alt={module.title}
-                style={styles.modernCardImage}
-              />
-              <div style={styles.modernCardOverlay}>
-                <span style={styles.modernCardPlayIcon}>▶</span>
-              </div>
-            </>
+            <img src={coverImage} alt={module.title} style={cardStyles.coverImage} />
           ) : (
-            <div style={styles.modernCardPlaceholder}>
-              {isQuizMandiri ? <FileQuestion size={40} color="#8b5cf6" /> : <BookOpen size={40} color="#3b82f6" />}
+            <div style={cardStyles.coverPlaceholder}>
+              {isQuiz ? <FileQuestion size={40} color="#8b5cf6" /> : <BookOpen size={40} color="#3b82f6" />}
             </div>
           )}
           
-          {/* BADGE STATUS */}
-          {submissionStatus.status !== 'not_submitted' && (
-            <div style={{ ...styles.modernCardBadge, background: submissionStatus.bg, color: submissionStatus.color }}>
-              {submissionStatus.icon} {submissionStatus.label}
-            </div>
-          )}
-          
-          {/* BADGE TYPE */}
-          <div style={styles.modernCardTypeBadge}>
-            {isQuizMandiri ? '📝 Kuis' : '📚 Modul'}
+          {/* Badges */}
+          <div style={cardStyles.badgeTop}>
+            {isQuiz ? (
+              <span style={{...cardStyles.badge, background: '#8b5cf6', color: 'white' }}>
+                <FileQuestion size={10} /> Kuis
+              </span>
+            ) : (
+              <span style={{...cardStyles.badge, background: '#3b82f6', color: 'white' }}>
+                <BookOpen size={10} /> Modul
+              </span>
+            )}
           </div>
+          
+          {isSubmitted && (
+            <span style={{...cardStyles.badgeStatus, background: statusInfo.bg, color: statusInfo.color }}>
+              {statusInfo.label}
+            </span>
+          )}
+          
+          {isQuizDone && (
+            <span style={{...cardStyles.badgeStatus, background: '#dcfce7', color: '#10b981' }}>
+              ✅ Selesai
+            </span>
+          )}
+          
+          {/* ID Badge */}
+          {module.guruId && (
+            <span style={cardStyles.idBadge}>
+              <Hash size={8} /> {module.guruId}
+            </span>
+          )}
         </div>
         
-        {/* CARD BODY */}
-        <div style={styles.modernCardBody}>
-          <h3 style={styles.modernCardTitle}>{module.title}</h3>
-          <p style={styles.modernCardSubject}>
-            {module.subject || 'Materi Pembelajaran'}
-          </p>
-          
-          {/* META INFO */}
-          <div style={styles.modernCardMeta}>
-            {hasAssignment && (
-              <span style={styles.modernCardMetaItem}>
-                <Send size={10} /> Tugas
-              </span>
-            )}
-            {hasQuiz && (
-              <span style={styles.modernCardMetaItem}>
-                <HelpCircle size={10} /> Kuis
-              </span>
-            )}
-            {module.deadlineTugas && (
-              <span style={styles.modernCardMetaItem}>
-                <Clock size={10} /> Deadline
-              </span>
-            )}
+        {/* Body */}
+        <div style={cardStyles.body}>
+          <h3 style={cardStyles.title}>{module.title}</h3>
+          <div style={cardStyles.subject}>
+            <BookOpen size={12} /> {module.subject || 'Materi'}
+            {module.kodeMapel && <span style={cardStyles.mapelTag}><Tag size={8} /> {module.kodeMapel}</span>}
           </div>
           
-          {/* DEADLINE DATE */}
-          {module.deadlineTugas && (
-            <div style={styles.modernCardDeadline}>
-              <Clock size={10} color="#f59e0b" />
-              <span>{new Date(module.deadlineTugas).toLocaleDateString('id-ID')}</span>
-            </div>
-          )}
+          <div style={cardStyles.meta}>
+            {hasAssignment && <span style={cardStyles.metaItem}><Send size={10} /> Tugas</span>}
+            {hasQuiz && <span style={cardStyles.metaItem}><HelpCircle size={10} /> Kuis</span>}
+            {module.totalKonten > 0 && <span style={cardStyles.metaItem}><Layers size={10} /> {module.totalKonten}</span>}
+          </div>
           
-          <button style={styles.modernCardBtn}>
-            Buka Modul <ChevronRight size={14} />
+          <button style={cardStyles.btn}>
+            Buka <ChevronRight size={14} />
           </button>
         </div>
       </div>
     );
   };
 
-  // RENDER LIST VIEW (ALTERNATIF) - TIDAK BERUBAH
-  const renderListView = (module) => {
-    const isQuizMandiri = module.type === 'kuis_mandiri';
-    const submissionStatus = getSubmissionStatus(module.id);
-    const coverImage = module.coverImage || module.imageUrl || null;
-
-    return (
-      <div key={module.id} onClick={() => handleModuleClick(module)} style={styles.listCard}>
-        <div style={styles.listCardImage}>
-          {coverImage ? (
-            <img src={coverImage} alt={module.title} style={styles.listCardImg} />
-          ) : (
-            <div style={styles.listCardPlaceholder}>
-              {isQuizMandiri ? <FileQuestion size={24} color="#8b5cf6" /> : <BookOpen size={24} color="#3b82f6" />}
-            </div>
-          )}
-        </div>
-        <div style={styles.listCardContent}>
-          <div style={styles.listCardHeader}>
-            <h3 style={styles.listCardTitle}>{module.title}</h3>
-            <div style={{ ...styles.listCardBadge, background: submissionStatus.bg, color: submissionStatus.color }}>
-              {submissionStatus.icon} {submissionStatus.label}
-            </div>
-          </div>
-          <p style={styles.listCardSubject}>{module.subject || 'Materi Pembelajaran'}</p>
-          <div style={styles.listCardMeta}>
-            {module.blocks?.some(b => b.type === 'assignment') && <span>📝 Tugas</span>}
-            {module.quizData?.length > 0 && <span>❓ Kuis</span>}
-          </div>
-        </div>
-        <ChevronRight size={20} color="#94a3b8" />
-      </div>
-    );
+  const cardStyles = {
+    card: {
+      background: 'white',
+      borderRadius: 16,
+      overflow: 'hidden',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+      border: '1px solid #f1f5f9',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column'
+    },
+    cover: {
+      position: 'relative',
+      height: 140,
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      overflow: 'hidden',
+      flexShrink: 0
+    },
+    coverImage: { width: '100%', height: '100%', objectFit: 'cover' },
+    coverPlaceholder: {
+      width: '100%', height: '100%',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    },
+    badgeTop: {
+      position: 'absolute', top: 10, left: 10,
+      display: 'flex', gap: 4, flexWrap: 'wrap'
+    },
+    badge: {
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      padding: '2px 10px', borderRadius: 12,
+      fontSize: 9, fontWeight: 700,
+      backdropFilter: 'blur(4px)'
+    },
+    badgeStatus: {
+      position: 'absolute', top: 10, right: 10,
+      padding: '2px 10px', borderRadius: 12,
+      fontSize: 9, fontWeight: 700,
+      backdropFilter: 'blur(4px)'
+    },
+    idBadge: {
+      position: 'absolute', bottom: 10, left: 10,
+      display: 'inline-flex', alignItems: 'center', gap: 3,
+      padding: '1px 8px', borderRadius: 10,
+      fontSize: 8, color: '#3b82f6',
+      background: 'rgba(255,255,255,0.9)',
+      fontWeight: 600
+    },
+    body: { padding: 14, flex: 1, display: 'flex', flexDirection: 'column' },
+    title: { fontSize: 14, fontWeight: 700, color: '#1e293b', margin: '0 0 4px', lineHeight: 1.3 },
+    subject: {
+      fontSize: 11, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4,
+      marginBottom: 8
+    },
+    mapelTag: {
+      fontSize: 8, color: '#8b5cf6', background: '#ede9fe',
+      padding: '1px 6px', borderRadius: 4,
+      display: 'inline-flex', alignItems: 'center', gap: 2
+    },
+    meta: {
+      display: 'flex', gap: 6, flexWrap: 'wrap',
+      marginBottom: 10, marginTop: 'auto'
+    },
+    metaItem: {
+      fontSize: 9, padding: '2px 8px', borderRadius: 10,
+      background: '#f1f5f9', color: '#64748b',
+      display: 'inline-flex', alignItems: 'center', gap: 3
+    },
+    btn: {
+      width: '100%', padding: 8,
+      background: '#3b82f6', color: 'white',
+      border: 'none', borderRadius: 8,
+      fontSize: 11, fontWeight: 700, cursor: 'pointer',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4
+    }
   };
 
-  // RENDER DETAIL MODUL - TIDAK BERUBAH
+  // ============================================================
+  // RENDER: MODULE DETAIL
+  // ============================================================
   const renderModuleDetail = () => {
     if (!selectedModule) return null;
+    
     const assignments = selectedModule.blocks?.filter(b => b.type === 'assignment') || [];
     const materials = selectedModule.blocks?.filter(b => b.type !== 'assignment') || [];
     const hasQuiz = selectedModule.quizData?.length > 0;
     const coverImage = selectedModule.coverImage || selectedModule.imageUrl || null;
+    const submission = submissions[selectedModule.id];
+    const isSubmitted = !!submission;
+    const quizSub = quizSubmissions[selectedModule.id];
+    const isQuizDone = !!quizSub;
 
     return (
-      <div style={styles.moduleDetail}>
-        <div style={styles.detailHeader}>
-          <button onClick={handleBack} style={styles.btnBack}><ChevronLeft size={20} /> Kembali</button>
-          <div style={styles.detailTitle}>
-            <h1 style={styles.detailTitleText}>{selectedModule.title}</h1>
-            <div style={styles.detailMeta}>
-              <span style={styles.detailMetaItem}><BookOpen size={14} /> {selectedModule.subject || 'Materi'}</span>
-              {selectedModule.deadlineTugas && <span style={styles.detailMetaItem}><Clock size={14} /> Deadline: {new Date(selectedModule.deadlineTugas).toLocaleDateString('id-ID')}</span>}
+      <div style={detailStyles.container}>
+        {/* Header */}
+        <div style={detailStyles.header}>
+          <button onClick={handleBack} style={detailStyles.backBtn}>
+            <ChevronLeft size={20} /> Kembali
+          </button>
+          <div style={detailStyles.titleSection}>
+            <h1 style={detailStyles.title}>{selectedModule.title}</h1>
+            <div style={detailStyles.meta}>
+              <span style={detailStyles.metaItem}>
+                <BookOpen size={14} /> {selectedModule.subject || 'Materi'}
+              </span>
+              {selectedModule.kodeMapel && (
+                <span style={{...detailStyles.metaItem, background: '#ede9fe', color: '#8b5cf6' }}>
+                  <Tag size={12} /> {selectedModule.kodeMapel}
+                </span>
+              )}
+              {selectedModule.guruId && (
+                <span style={{...detailStyles.metaItem, background: '#eef2ff', color: '#3b82f6' }}>
+                  <Hash size={12} /> {selectedModule.guruId}
+                </span>
+              )}
+              <span style={detailStyles.metaItem}>
+                <User size={12} /> {selectedModule.guruName || selectedModule.authorName || 'Guru'}
+              </span>
             </div>
           </div>
         </div>
-        
+
+        {/* Cover */}
         {coverImage && (
-          <div style={styles.detailCover}>
-            <img src={coverImage} alt={selectedModule.title} style={styles.detailCoverImg} />
+          <div style={detailStyles.cover}>
+            <img src={coverImage} alt={selectedModule.title} style={detailStyles.coverImage} />
           </div>
         )}
-        
+
+        {/* Description */}
         {selectedModule.description && (
-          <div style={styles.descriptionBox}><p>{selectedModule.description}</p></div>
+          <div style={detailStyles.desc}>
+            <p>{selectedModule.description}</p>
+          </div>
         )}
-        
-        {materials.length > 0 && (
-          <div style={styles.sectionBox}>
-            <h3 style={styles.sectionTitle}><BookOpen size={18} color="#3b82f6" /> Materi Pembelajaran</h3>
-            <div style={styles.materialsList}>
-              {materials.map((material, idx) => (
-                <div key={material.id || idx} style={styles.materialCard}>
-                  <div style={styles.materialIcon}>
-                    {material.type === 'text' && <FileText size={24} color="#3b82f6" />}
-                    {material.type === 'file' && <Download size={24} color="#10b981" />}
-                    {material.type === 'video' && <Video size={24} color="#ef4444" />}
-                    {!material.type && <FileText size={24} color="#64748b" />}
+
+        {/* Tabs */}
+        <div style={detailStyles.tabs}>
+          <button 
+            onClick={() => setActiveTab('materi')}
+            style={{...detailStyles.tab, background: activeTab === 'materi' ? '#3b82f6' : '#f1f5f9', color: activeTab === 'materi' ? 'white' : '#64748b' }}
+          >
+            <BookOpen size={14} /> Materi ({materials.length})
+          </button>
+          {assignments.length > 0 && (
+            <button 
+              onClick={() => setActiveTab('tugas')}
+              style={{...detailStyles.tab, background: activeTab === 'tugas' ? '#f59e0b' : '#f1f5f9', color: activeTab === 'tugas' ? 'white' : '#64748b' }}
+            >
+              <Send size={14} /> Tugas ({assignments.length})
+            </button>
+          )}
+          {hasQuiz && (
+            <button 
+              onClick={() => setActiveTab('kuis')}
+              style={{...detailStyles.tab, background: activeTab === 'kuis' ? '#8b5cf6' : '#f1f5f9', color: activeTab === 'kuis' ? 'white' : '#64748b' }}
+            >
+              <HelpCircle size={14} /> Kuis {isQuizDone ? '✅' : ''}
+            </button>
+          )}
+        </div>
+
+        {/* Content */}
+        <div style={detailStyles.content}>
+          
+          {/* Materi Tab */}
+          {activeTab === 'materi' && materials.map((block, idx) => (
+            <div key={block.id} style={detailStyles.block}>
+              <div style={detailStyles.blockHeader}>
+                <span style={detailStyles.blockType}>
+                  {block.type === 'text' ? '📄' : block.type === 'file' ? '📁' : block.type === 'video' ? '🎥' : '📝'}
+                  {' '}{block.type?.toUpperCase() || 'MATERI'}
+                </span>
+                <h3 style={detailStyles.blockTitle}>{block.title || `Bagian ${idx + 1}`}</h3>
+              </div>
+              
+              {block.type === 'text' && (
+                <div style={detailStyles.textContent}>{block.content}</div>
+              )}
+              
+              {block.type === 'file' && block.content && (
+                <div style={detailStyles.fileBlock}>
+                  <div style={detailStyles.fileInfo}>
+                    <FileText size={24} color="#3b82f6" />
+                    <span>{block.fileName || 'File'}</span>
+                    {block.fileSize && <span style={detailStyles.fileSize}>{(block.fileSize / 1024).toFixed(1)} KB</span>}
                   </div>
-                  <div style={styles.materialContent}>
-                    <h4 style={styles.materialTitle}>{material.title || `Materi ${idx + 1}`}</h4>
-                    {material.type === 'text' && <div style={styles.materialText}>{renderMath(material.content)}</div>}
-                    {material.type === 'file' && material.content && (
-                      <div style={styles.filePreview}>
-                        <span style={styles.fileName}>{material.fileName || 'File Materi'}</span>
-                        <button onClick={() => handlePreviewFile(material.content, material.fileName)} style={styles.btnPreview}><Eye size={14} /> Lihat</button>
-                        <a href={material.content} download style={styles.btnDownload}><Download size={14} /> Unduh</a>
-                      </div>
-                    )}
-                    {material.type === 'video' && material.content && (
-                      <div style={styles.videoLink}>
-                        <a href={material.content} target="_blank" rel="noopener noreferrer" style={styles.linkExternal}><ExternalLink size={14} /> Buka Link Materi</a>
-                      </div>
-                    )}
+                  <div style={detailStyles.fileActions}>
+                    <button onClick={() => handlePreviewFile(block.content, block.fileName, block.mimeType)} style={detailStyles.previewBtn}>
+                      <Eye size={14} /> Preview
+                    </button>
+                    <a href={block.content} download style={detailStyles.downloadBtn}>
+                      <Download size={14} /> Unduh
+                    </a>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {assignments.length > 0 && (
-          <div style={styles.sectionBox}>
-            <h3 style={styles.sectionTitle}><Send size={18} color="#f59e0b" /> Tugas</h3>
-            {assignments.map((assignment, idx) => {
-              const submission = submissions[selectedModule.id];
-              const isSubmitted = !!submission;
-              return (
-                <div key={assignment.id || idx} style={styles.assignmentCard}>
-                  <div style={styles.assignmentHeader}>
-                    <h4 style={styles.assignmentTitle}>{assignment.title || `Tugas ${idx + 1}`}</h4>
-                    {isSubmitted && <span style={{ ...styles.badge, background: '#dcfce7', color: '#166534' }}><CheckCircle size={12} /> Terkirim</span>}
-                  </div>
-                  <div style={styles.assignmentContent}>{renderMath(assignment.content)}</div>
-                  {assignment.endTime && <div style={styles.assignmentDeadline}><Clock size={14} /> Deadline: {new Date(assignment.endTime).toLocaleString('id-ID')}</div>}
-                  {!isSubmitted ? (
-                    <button onClick={() => setSelectedAssignment(assignment)} style={styles.btnSubmit}><Send size={16} /> Kumpulkan Tugas</button>
+              )}
+              
+              {block.type === 'video' && block.content && (
+                <div style={detailStyles.videoBlock}>
+                  {block.content.includes('youtube.com') || block.content.includes('youtu.be') ? (
+                    <iframe 
+                      src={`https://www.youtube.com/embed/${block.content.split('v=')[1]?.split('&')[0] || block.content.split('/').pop()}`}
+                      style={detailStyles.videoIframe}
+                      allowFullScreen
+                      title="Video"
+                    />
                   ) : (
-                    <div style={styles.submittedInfo}><Clock size={14} /> Tugas sudah dikirim pada {new Date(submission.submittedAt?.toDate()).toLocaleString('id-ID')}</div>
+                    <a href={block.content} target="_blank" rel="noopener noreferrer" style={detailStyles.linkExternal}>
+                      <ExternalLink size={16} /> Buka Link Video
+                    </a>
                   )}
                 </div>
-              );
-            })}
-          </div>
-        )}
-        
-        {hasQuiz && (
-          <div style={styles.sectionBox}>
-            <h3 style={styles.sectionTitle}><FileQuestion size={18} color="#8b5cf6" /> Kuis</h3>
-            <div style={styles.quizCard}>
-              <div style={styles.quizInfo}>
-                <span>📝 {selectedModule.quizData?.length || 0} soal</span>
-                {selectedModule.deadlineQuiz && <span>⏰ Deadline: {new Date(selectedModule.deadlineQuiz).toLocaleDateString('id-ID')}</span>}
-              </div>
-              <button onClick={() => window.location.href = `/siswa/kuis/${selectedModule.id}`} style={styles.btnQuiz}><FileQuestion size={16} /> Mulai Kuis</button>
+              )}
             </div>
-          </div>
-        )}
+          ))}
+
+          {/* Tugas Tab */}
+          {activeTab === 'tugas' && assignments.map((block) => {
+            const timeRem = getTimeRemaining(block.endTime);
+            const isExpired = timeRem?.isExpired || false;
+            const isSubmitted = !!submissions[selectedModule.id];
+            
+            return (
+              <div key={block.id} style={{...detailStyles.block, borderLeft: '4px solid #f59e0b' }}>
+                <div style={detailStyles.blockHeader}>
+                  <span style={{...detailStyles.blockType, color: '#f59e0b' }}>📝 TUGAS</span>
+                  <h3 style={detailStyles.blockTitle}>{block.title}</h3>
+                </div>
+                
+                <div style={detailStyles.textContent}>{block.content}</div>
+                
+                {timeRem && (
+                  <div style={{...detailStyles.deadline, color: timeRem.color, background: timeRem.color + '15' }}>
+                    <Clock size={14} /> {timeRem.text}
+                  </div>
+                )}
+                
+                {isSubmitted ? (
+                  <div style={detailStyles.submittedBox}>
+                    <CheckCircle size={16} color="#10b981" />
+                    <span>Tugas telah dikirim</span>
+                    <button 
+                      onClick={() => {
+                        const sub = submissions[selectedModule.id];
+                        if (sub?.fileUrl) handlePreviewFile(sub.fileUrl, sub.fileName);
+                      }}
+                      style={detailStyles.viewSubmitBtn}
+                    >
+                      <Eye size={14} /> Lihat
+                    </button>
+                  </div>
+                ) : isExpired ? (
+                  <div style={{...detailStyles.submittedBox, background: '#fee2e2', color: '#ef4444' }}>
+                    <XCircle size={16} /> Deadline terlewat
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => setSelectedAssignment(block)}
+                    style={detailStyles.submitBtn}
+                  >
+                    <Send size={14} /> Kumpulkan Tugas
+                  </button>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Kuis Tab */}
+          {activeTab === 'kuis' && hasQuiz && (
+            <div style={{...detailStyles.block, borderLeft: '4px solid #8b5cf6' }}>
+              <div style={detailStyles.blockHeader}>
+                <span style={{...detailStyles.blockType, color: '#8b5cf6' }}>❓ KUIS</span>
+                <h3 style={detailStyles.blockTitle}>Evaluasi Pembelajaran</h3>
+              </div>
+              
+              <div style={detailStyles.quizInfo}>
+                <span>📝 {selectedModule.quizData?.length || 0} soal</span>
+                {selectedModule.deadlineQuiz && (
+                  <span>⏰ Deadline: {formatDate(selectedModule.deadlineQuiz)}</span>
+                )}
+              </div>
+              
+              {isQuizDone ? (
+                <div style={detailStyles.submittedBox}>
+                  <CheckCircle size={16} color="#10b981" />
+                  <span>Kuis selesai! Nilai: {quizSub?.score || 0}</span>
+                  <button onClick={() => navigate(`/siswa/kuis/${selectedModule.id}`)} style={detailStyles.viewSubmitBtn}>
+                    <Eye size={14} /> Detail
+                  </button>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => navigate(`/siswa/kuis/${selectedModule.id}`)}
+                  style={{...detailStyles.submitBtn, background: '#8b5cf6' }}
+                >
+                  <HelpCircle size={14} /> Mulai Kuis
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     );
   };
 
-  // RENDER DAFTAR MODUL - TIDAK BERUBAH
-  const renderModuleList = () => (
-    <div style={styles.moduleList}>
-      <div style={styles.listHeader}>
-        <div>
-          <h2 style={styles.listTitle}><BookOpen size={24} color="#3b82f6" /> E-Learning</h2>
-          <p style={styles.listSubtitle}>Materi belajar, tugas, dan kuis untuk <strong>{studentKategori} - Kelas {studentKelas}</strong></p>
+  const detailStyles = {
+    container: { width: '100%', maxWidth: 900, margin: '0 auto' },
+    header: { marginBottom: 24 },
+    backBtn: {
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      background: 'white', border: '1px solid #e2e8f0',
+      padding: '8px 16px', borderRadius: 10,
+      cursor: 'pointer', fontSize: 13, fontWeight: 600,
+      marginBottom: 12
+    },
+    titleSection: { marginTop: 4 },
+    title: { fontSize: 24, fontWeight: 800, color: '#1e293b', margin: '0 0 8px' },
+    meta: { display: 'flex', gap: 8, flexWrap: 'wrap' },
+    metaItem: {
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      fontSize: 11, color: '#64748b', background: '#f1f5f9',
+      padding: '3px 10px', borderRadius: 6
+    },
+    cover: { borderRadius: 12, overflow: 'hidden', marginBottom: 16 },
+    coverImage: { width: '100%', maxHeight: 200, objectFit: 'cover' },
+    desc: { background: '#f1f5f9', padding: 16, borderRadius: 12, marginBottom: 20, fontSize: 13, color: '#475569', lineHeight: 1.6 },
+    tabs: { display: 'flex', gap: 4, background: 'white', padding: 4, borderRadius: 12, marginBottom: 20, border: '1px solid #e2e8f0' },
+    tab: {
+      flex: 1, padding: '8px 12px', borderRadius: 8,
+      border: 'none', fontWeight: 700, fontSize: 11,
+      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4
+    },
+    content: { display: 'flex', flexDirection: 'column', gap: 12 },
+    block: { background: 'white', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' },
+    blockHeader: { marginBottom: 12 },
+    blockType: { fontSize: 9, fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase' },
+    blockTitle: { fontSize: 16, fontWeight: 700, color: '#1e293b', margin: '4px 0 0' },
+    textContent: { fontSize: 14, color: '#475569', lineHeight: 1.7, whiteSpace: 'pre-wrap' },
+    fileBlock: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, padding: 12, background: '#f8fafc', borderRadius: 8 },
+    fileInfo: { display: 'flex', alignItems: 'center', gap: 8 },
+    fileSize: { fontSize: 10, color: '#94a3b8' },
+    fileActions: { display: 'flex', gap: 6 },
+    previewBtn: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#eef2ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 600, color: '#3b82f6' },
+    downloadBtn: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#f1f5f9', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 600, color: '#64748b', textDecoration: 'none' },
+    videoBlock: { borderRadius: 8, overflow: 'hidden' },
+    videoIframe: { width: '100%', height: 300, border: 'none' },
+    linkExternal: { display: 'inline-flex', alignItems: 'center', gap: 6, color: '#3b82f6', textDecoration: 'none', fontWeight: 600 },
+    deadline: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600, marginTop: 8 },
+    submittedBox: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, background: '#dcfce7', borderRadius: 8, marginTop: 8, fontSize: 12, fontWeight: 600, color: '#166534' },
+    viewSubmitBtn: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: 'white', border: '1px solid #e2e8f0', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, marginLeft: 'auto' },
+    submitBtn: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 20px', background: '#f59e0b', border: 'none', borderRadius: 8, color: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer', marginTop: 8 },
+    quizInfo: { display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12, color: '#64748b', marginBottom: 12 }
+  };
+
+  // ============================================================
+  // RENDER: SUBMIT ASSIGNMENT MODAL
+  // ============================================================
+  const renderSubmitModal = () => {
+    if (!selectedAssignment) return null;
+    
+    return (
+      <div style={modalStyles.overlay} onClick={() => setSelectedAssignment(null)}>
+        <div style={modalStyles.content} onClick={e => e.stopPropagation()}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>📝 Kumpulkan Tugas</h3>
+            <button onClick={() => setSelectedAssignment(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button>
+          </div>
+          
+          <div style={{ padding: 20 }}>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Soal/Instruksi</label>
+              <div style={{ background: '#f8fafc', padding: 12, borderRadius: 8, fontSize: 13, lineHeight: 1.6 }}>{selectedAssignment.content}</div>
+            </div>
+            
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Jawaban Anda</label>
+              <textarea 
+                value={assignmentAnswer} 
+                onChange={(e) => setAssignmentAnswer(e.target.value)} 
+                placeholder="Tulis jawaban di sini..." 
+                style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, resize: 'vertical', minHeight: 100, fontFamily: 'inherit' }} 
+              />
+            </div>
+            
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Upload File (Opsional)</label>
+              <div style={{ border: '2px dashed #e2e8f0', borderRadius: 8, padding: 20, textAlign: 'center', cursor: 'pointer' }}>
+                <input 
+                  type="file" 
+                  id="assignmentFile" 
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" 
+                  onChange={(e) => setAssignmentFile(e.target.files[0])} 
+                  style={{ display: 'none' }} 
+                />
+                <label htmlFor="assignmentFile" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+                  <Upload size={24} color="#94a3b8" />
+                  <span style={{ fontSize: 13, color: '#64748b' }}>{assignmentFile ? assignmentFile.name : 'Klik untuk upload file'}</span>
+                  <span style={{ fontSize: 10, color: '#94a3b8' }}>PDF, DOC, DOCX, JPG, PNG (Max 10MB)</span>
+                </label>
+              </div>
+              {assignmentFile && (
+                <button onClick={() => setAssignmentFile(null)} style={{ marginTop: 8, background: '#fee2e2', border: 'none', padding: '4px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600, color: '#ef4444', cursor: 'pointer' }}>
+                  <X size={12} /> Hapus File
+                </button>
+              )}
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '16px 20px', borderTop: '1px solid #e2e8f0' }}>
+            <button onClick={() => setSelectedAssignment(null)} style={{ padding: '10px 20px', background: '#f1f5f9', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>Batal</button>
+            <button onClick={handleSubmitAssignment} disabled={submitting} style={{ padding: '10px 24px', background: '#10b981', border: 'none', borderRadius: 8, fontWeight: 700, color: 'white', cursor: 'pointer' }}>
+              {submitting ? 'Mengirim...' : 'Kirim Tugas'}
+            </button>
+          </div>
         </div>
-        <div style={styles.viewToggle}>
-          <button onClick={() => setViewMode('grid')} style={{ ...styles.viewBtn, background: viewMode === 'grid' ? '#3b82f6' : '#f1f5f9', color: viewMode === 'grid' ? 'white' : '#64748b' }}>
+      </div>
+    );
+  };
+
+  // ============================================================
+  // RENDER: MAIN
+  // ============================================================
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '70vh', gap: 16 }}>
+        <div style={{ width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #652D90', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+        <p style={{ color: '#94a3b8', fontSize: 13 }}>Memuat materi pembelajaran...</p>
+        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (selectedModule) {
+    return (
+      <>
+        {renderModuleDetail()}
+        {renderSubmitModal()}
+        {previewFile && <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
+      </>
+    );
+  }
+
+  // ============================================================
+  // RENDER: MODULE LIST
+  // ============================================================
+  const subjects = useMemo(() => {
+    const mapelSet = new Set();
+    modules.forEach(m => {
+      if (m.subject) mapelSet.add(m.subject);
+      if (m.kodeMapel) mapelSet.add(m.kodeMapel);
+    });
+    return ['all', ...Array.from(mapelSet)];
+  }, [modules]);
+
+  return (
+    <div style={listStyles.container}>
+      {/* Header */}
+      <div style={listStyles.header}>
+        <div>
+          <h1 style={listStyles.title}>
+            <BookOpen size={28} color="#652D90" /> E-Learning
+          </h1>
+          <p style={listStyles.subtitle}>
+            {studentName} • {studentKategori} • Kelas {studentKelas}
+            {studentNim && <span style={listStyles.nimBadge}><Hash size={10} /> {studentNim}</span>}
+          </p>
+        </div>
+        <div style={listStyles.viewToggle}>
+          <button onClick={() => setViewMode('grid')} style={{...listStyles.viewBtn, background: viewMode === 'grid' ? '#652D90' : '#f1f5f9', color: viewMode === 'grid' ? 'white' : '#64748b' }}>
             <Grid3x3 size={16} />
           </button>
-          <button onClick={() => setViewMode('list')} style={{ ...styles.viewBtn, background: viewMode === 'list' ? '#3b82f6' : '#f1f5f9', color: viewMode === 'list' ? 'white' : '#64748b' }}>
+          <button onClick={() => setViewMode('list')} style={{...listStyles.viewBtn, background: viewMode === 'list' ? '#652D90' : '#f1f5f9', color: viewMode === 'list' ? 'white' : '#64748b' }}>
             <List size={16} />
           </button>
         </div>
       </div>
-      
-      <div style={styles.filterBar}>
-        <div style={styles.searchBox}>
+
+      {/* Stats */}
+      <div style={listStyles.statsRow}>
+        <div style={listStyles.statItem}>
+          <span style={listStyles.statValue}>{stats.totalModules}</span>
+          <span style={listStyles.statLabel}>📚 Modul</span>
+        </div>
+        <div style={listStyles.statItem}>
+          <span style={listStyles.statValue}>{stats.totalAssignments}</span>
+          <span style={listStyles.statLabel}>📝 Tugas</span>
+        </div>
+        <div style={listStyles.statItem}>
+          <span style={listStyles.statValue}>{stats.submittedAssignments}/{stats.totalAssignments}</span>
+          <span style={listStyles.statLabel}>✅ Terkirim</span>
+        </div>
+        <div style={listStyles.statItem}>
+          <span style={listStyles.statValue}>{stats.totalQuizzes}</span>
+          <span style={listStyles.statLabel}>❓ Kuis</span>
+        </div>
+      </div>
+
+      {/* Filter Bar */}
+      <div style={listStyles.filterBar}>
+        <div style={listStyles.searchBox}>
           <Search size={18} color="#94a3b8" />
-          <input type="text" placeholder="Cari materi atau tugas..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={styles.searchInput} />
+          <input 
+            type="text" 
+            placeholder="Cari materi, mapel, atau ID..." 
+            value={searchTerm} 
+            onChange={(e) => setSearchTerm(e.target.value)} 
+            style={listStyles.searchInput} 
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm('')} style={listStyles.clearBtn}>✕</button>
+          )}
         </div>
-        <div style={styles.filterButtons}>
-          <button onClick={() => setFilterType('all')} style={{ ...styles.filterBtn, background: filterType === 'all' ? '#3b82f6' : '#f1f5f9', color: filterType === 'all' ? 'white' : '#64748b' }}>Semua</button>
-          <button onClick={() => setFilterType('module')} style={{ ...styles.filterBtn, background: filterType === 'module' ? '#3b82f6' : '#f1f5f9', color: filterType === 'module' ? 'white' : '#64748b' }}><BookOpen size={12} /> Modul</button>
-          <button onClick={() => setFilterType('quiz')} style={{ ...styles.filterBtn, background: filterType === 'quiz' ? '#3b82f6' : '#f1f5f9', color: filterType === 'quiz' ? 'white' : '#64748b' }}><FileQuestion size={12} /> Kuis</button>
+        <div style={listStyles.filterGroup}>
+          <select 
+            value={filterType} 
+            onChange={(e) => setFilterType(e.target.value)} 
+            style={listStyles.filterSelect}
+          >
+            <option value="all">Semua</option>
+            <option value="module">📚 Modul</option>
+            <option value="assignment">📝 Tugas</option>
+            <option value="quiz">❓ Kuis</option>
+          </select>
+          <select 
+            value={filterMapel} 
+            onChange={(e) => setFilterMapel(e.target.value)} 
+            style={listStyles.filterSelect}
+          >
+            <option value="all">📖 Semua Mapel</option>
+            {subjects.filter(s => s !== 'all').map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
         </div>
       </div>
-      
-      <div style={styles.statsBar}>
-        <div style={styles.statCard}><Layers size={16} /> {filteredModules.length} Modul</div>
-        <div style={styles.statCard}><Send size={16} /> {filteredModules.filter(m => m.blocks?.some(b => b.type === 'assignment')).length} Tugas</div>
-        <div style={styles.statCard}><FileQuestion size={16} /> {filteredModules.filter(m => m.quizData?.length > 0).length} Kuis</div>
-      </div>
-      
-      {loading ? (
-        <div style={styles.loadingBox}><div style={styles.spinner}></div><p>Memuat materi...</p></div>
-      ) : filteredModules.length === 0 ? (
-        <div style={styles.emptyBox}>
-          <BookOpen size={48} color="#cbd5e1" />
-          <p>Belum ada materi untuk {studentKategori} - Kelas {studentKelas}</p>
+
+      {/* Module Grid / List */}
+      {filteredModules.length === 0 ? (
+        <div style={listStyles.emptyState}>
+          <BookOpen size={56} color="#cbd5e1" />
+          <h3 style={listStyles.emptyTitle}>Belum ada materi</h3>
+          <p style={listStyles.emptyDesc}>
+            {searchTerm ? 'Coba ubah kata kunci pencarian' : `Belum ada materi untuk ${studentKategori} - Kelas ${studentKelas}`}
+          </p>
         </div>
       ) : viewMode === 'grid' ? (
-        <div style={styles.modernGrid}>
-          {filteredModules.map(module => renderModernCard(module))}
+        <div style={listStyles.grid}>
+          {filteredModules.map(module => renderModuleCard(module))}
         </div>
       ) : (
-        <div style={styles.listContainer}>
-          {filteredModules.map(module => renderListView(module))}
+        <div style={listStyles.list}>
+          {filteredModules.map(module => {
+            const isQuiz = module.type === 'kuis_mandiri';
+            const submission = submissions[module.id];
+            const status = submission?.status || 'not_submitted';
+            const statusInfo = STATUS_COLORS[status] || STATUS_COLORS.not_submitted;
+            
+            return (
+              <div 
+                key={module.id} 
+                onClick={() => handleModuleClick(module)} 
+                style={listStyles.listItem}
+              >
+                <div style={listStyles.listItemIcon}>
+                  {isQuiz ? <HelpCircle size={20} color="#8b5cf6" /> : <BookOpen size={20} color="#3b82f6" />}
+                </div>
+                <div style={listStyles.listItemContent}>
+                  <div style={listStyles.listItemHeader}>
+                    <span style={listStyles.listItemTitle}>{module.title}</span>
+                    <span style={{...listStyles.listItemStatus, background: statusInfo.bg, color: statusInfo.color }}>
+                      {statusInfo.label}
+                    </span>
+                  </div>
+                  <div style={listStyles.listItemMeta}>
+                    <span>{module.subject || 'Materi'}</span>
+                    {module.kodeMapel && <span style={listStyles.listItemTag}>{module.kodeMapel}</span>}
+                    {module.guruId && <span style={listStyles.listItemTag}><Hash size={8} /> {module.guruId}</span>}
+                  </div>
+                </div>
+                <ChevronRight size={18} color="#94a3b8" />
+              </div>
+            );
+          })}
         </div>
       )}
-    </div>
-  );
 
-  // MODAL SUBMIT TUGAS - TIDAK BERUBAH
-  const renderSubmitModal = () => {
-    if (!selectedAssignment) return null;
-    return (
-      <div style={styles.modalOverlay} onClick={() => setSelectedAssignment(null)}>
-        <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-          <div style={styles.modalHeader}><h3 style={styles.modalTitle}>Kumpulkan Tugas</h3><button onClick={() => setSelectedAssignment(null)} style={styles.modalClose}><X size={20} /></button></div>
-          <div style={styles.modalBody}>
-            <div style={styles.assignmentQuestionBox}><label style={styles.modalLabel}>Soal/Instruksi:</label><div style={styles.assignmentQuestion}>{renderMath(selectedAssignment.content)}</div></div>
-            <div style={styles.assignmentAnswerBox}><label style={styles.modalLabel}>Jawaban Anda:</label><textarea value={assignmentAnswer} onChange={(e) => setAssignmentAnswer(e.target.value)} placeholder="Tulis jawaban Anda di sini..." style={styles.assignmentTextarea} rows={6} /></div>
-            <div style={styles.assignmentFileBox}>
-              <label style={styles.modalLabel}>Upload File (Opsional):</label>
-              <div style={styles.fileUploadArea}>
-                <input type="file" id="assignmentFile" accept=".pdf,.doc,.docx,.jpg,.png,.txt" onChange={(e) => setAssignmentFile(e.target.files[0])} style={{ display: 'none' }} />
-                <label htmlFor="assignmentFile" style={styles.fileUploadLabel}><Upload size={20} /> {assignmentFile ? assignmentFile.name : 'Klik untuk upload file'}</label>
-                {assignmentFile && <button onClick={() => setAssignmentFile(null)} style={styles.removeFileBtn}><X size={14} /> Hapus</button>}
-              </div>
-              <p style={styles.fileHint}>Format: PDF, DOC, DOCX, JPG, PNG (Max 10MB)</p>
-            </div>
-          </div>
-          <div style={styles.modalFooter}>
-            <button onClick={() => setSelectedAssignment(null)} style={styles.btnCancel}>Batal</button>
-            <button onClick={handleSubmitAssignment} disabled={submitting} style={styles.btnSubmitModal}>{submitting ? 'Mengirim...' : 'Kirim Tugas'}</button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderPreviewModal = () => {
-    if (!previewFile) return null;
-    return (
-      <div style={styles.modalOverlay} onClick={() => setPreviewFile(null)}>
-        <div style={styles.previewModalContent} onClick={(e) => e.stopPropagation()}>
-          <div style={styles.modalHeader}><h3 style={styles.modalTitle}>Preview: {previewFile.name}</h3><button onClick={() => setPreviewFile(null)} style={styles.modalClose}><X size={20} /></button></div>
-          <div style={styles.previewBody}>
-            {previewFile.url.includes('.pdf') ? (
-              <iframe src={`https://docs.google.com/viewer?url=${encodeURIComponent(previewFile.url)}&embedded=true`} style={styles.previewIframe} title="PDF Preview" />
-            ) : previewFile.url.includes('.jpg') || previewFile.url.includes('.png') ? (
-              <img src={previewFile.url} alt="Preview" style={styles.previewImage} />
-            ) : (
-              <div style={styles.previewFallback}><FileText size={48} color="#64748b" /><p>File tidak dapat dipreview langsung</p><a href={previewFile.url} download style={styles.btnDownloadLarge}><Download size={16} /> Unduh File</a></div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div style={styles.container}>
-      {selectedModule ? renderModuleDetail() : renderModuleList()}
-      {renderSubmitModal()}
-      {renderPreviewModal()}
+      {/* Preview Modal */}
+      {previewFile && <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
     </div>
   );
 };
 
-const styles = {
+const listStyles = {
   container: { maxWidth: 1200, margin: '0 auto', padding: '20px', minHeight: '100vh', background: '#f8fafc' },
-  
-  // MODERN GRID STYLES
-  modernGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' },
-  
-  modernCard: {
-    background: 'white',
-    borderRadius: '20px',
-    overflow: 'hidden',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-    ':hover': { transform: 'translateY(-6px)', boxShadow: '0 20px 30px -12px rgba(0,0,0,0.15)' }
-  },
-  
-  modernCardCover: {
-    position: 'relative',
-    height: '160px',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    overflow: 'hidden'
-  },
-  
-  modernCardImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    transition: 'transform 0.3s ease',
-    ':hover': { transform: 'scale(1.05)' }
-  },
-  
-  modernCardPlaceholder: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-  },
-  
-  modernCardOverlay: {
-    position: 'absolute',
-    inset: 0,
-    background: 'rgba(0,0,0,0.3)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    opacity: 0,
-    transition: 'opacity 0.3s ease',
-    ':hover': { opacity: 1 }
-  },
-  
-  modernCardPlayIcon: {
-    width: '48px',
-    height: '48px',
-    background: 'rgba(255,255,255,0.9)',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '20px',
-    color: '#1e293b'
-  },
-  
-  modernCardBadge: {
-    position: 'absolute',
-    top: '12px',
-    right: '12px',
-    padding: '4px 10px',
-    borderRadius: '20px',
-    fontSize: '10px',
-    fontWeight: '600',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    backdropFilter: 'blur(4px)'
-  },
-  
-  modernCardTypeBadge: {
-    position: 'absolute',
-    bottom: '12px',
-    left: '12px',
-    padding: '4px 10px',
-    borderRadius: '20px',
-    fontSize: '10px',
-    fontWeight: '600',
-    background: 'rgba(0,0,0,0.6)',
-    color: 'white'
-  },
-  
-  modernCardBody: { padding: '16px' },
-  
-  modernCardTitle: {
-    fontSize: '16px',
-    fontWeight: '700',
-    color: '#1e293b',
-    margin: '0 0 4px 0',
-    lineHeight: '1.3',
-    display: '-webkit-box',
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: 'vertical',
-    overflow: 'hidden'
-  },
-  
-  modernCardSubject: {
-    fontSize: '12px',
-    color: '#64748b',
-    margin: '0 0 12px 0'
-  },
-  
-  modernCardMeta: {
-    display: 'flex',
-    gap: '8px',
-    marginBottom: '12px',
-    flexWrap: 'wrap'
-  },
-  
-  modernCardMetaItem: {
-    fontSize: '10px',
-    padding: '3px 8px',
-    borderRadius: '12px',
-    background: '#f1f5f9',
-    color: '#64748b',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px'
-  },
-  
-  modernCardDeadline: {
-    fontSize: '11px',
-    color: '#f59e0b',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    marginBottom: '12px'
-  },
-  
-  modernCardBtn: {
-    width: '100%',
-    padding: '10px',
-    background: '#3b82f6',
-    color: 'white',
-    border: 'none',
-    borderRadius: '10px',
-    fontSize: '12px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px'
-  },
-  
-  // LIST VIEW STYLES
-  listContainer: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  
-  listCard: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-    background: 'white',
-    padding: '12px',
-    borderRadius: '16px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    border: '1px solid #e2e8f0',
-    ':hover': { background: '#f8fafc', transform: 'translateX(4px)' }
-  },
-  
-  listCardImage: {
-    width: '60px',
-    height: '60px',
-    borderRadius: '12px',
-    overflow: 'hidden',
-    flexShrink: 0,
-    background: '#f1f5f9'
-  },
-  
-  listCardImg: { width: '100%', height: '100%', objectFit: 'cover' },
-  listCardPlaceholder: { width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  listCardContent: { flex: 1 },
-  listCardHeader: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' },
-  listCardTitle: { fontSize: '14px', fontWeight: '700', color: '#1e293b', margin: 0 },
-  listCardBadge: { padding: '2px 8px', borderRadius: '12px', fontSize: '9px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' },
-  listCardSubject: { fontSize: '11px', color: '#64748b', margin: '0 0 6px 0' },
-  listCardMeta: { display: 'flex', gap: '8px', fontSize: '10px', color: '#94a3b8' },
-  
-  // HEADER & FILTER STYLES
-  listHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' },
-  listTitle: { fontSize: '24px', fontWeight: '800', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 },
-  listSubtitle: { fontSize: '13px', color: '#64748b', margin: '4px 0 0 0' },
-  
-  viewToggle: { display: 'flex', gap: '8px', background: '#f1f5f9', padding: '4px', borderRadius: '12px' },
-  viewBtn: { padding: '8px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: '600' },
-  
-  filterBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' },
-  searchBox: { flex: 1, display: 'flex', alignItems: 'center', gap: '8px', background: 'white', padding: '10px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', minWidth: '200px' },
-  searchInput: { flex: 1, border: 'none', outline: 'none', fontSize: '13px', background: 'transparent' },
-  
-  filterButtons: { display: 'flex', gap: '8px' },
-  filterBtn: { padding: '8px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' },
-  
-  statsBar: { display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' },
-  statCard: { background: 'white', padding: '8px 14px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600', color: '#1e293b', border: '1px solid #e2e8f0' },
-  
-  // DETAIL MODUL STYLES
-  moduleDetail: { width: '100%' },
-  detailHeader: { marginBottom: '24px' },
-  btnBack: { display: 'flex', alignItems: 'center', gap: '6px', background: 'white', border: '1px solid #e2e8f0', padding: '8px 16px', borderRadius: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', marginBottom: '16px' },
-  detailTitle: { marginBottom: '8px' },
-  detailTitleText: { fontSize: '24px', fontWeight: '800', color: '#1e293b', margin: '0 0 8px 0' },
-  detailMeta: { display: 'flex', gap: '16px', flexWrap: 'wrap' },
-  detailMetaItem: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#64748b' },
-  detailCover: { marginBottom: '20px', borderRadius: '16px', overflow: 'hidden' },
-  detailCoverImg: { width: '100%', maxHeight: '300px', objectFit: 'cover' },
-  descriptionBox: { background: '#f1f5f9', padding: '16px', borderRadius: '12px', marginBottom: '24px', color: '#475569', fontSize: '14px', lineHeight: '1.6' },
-  sectionBox: { background: 'white', borderRadius: '16px', padding: '20px', marginBottom: '20px', border: '1px solid #e2e8f0' },
-  sectionTitle: { fontSize: '16px', fontWeight: '700', color: '#1e293b', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' },
-  materialsList: { display: 'flex', flexDirection: 'column', gap: '16px' },
-  materialCard: { display: 'flex', gap: '14px', padding: '12px', background: '#f8fafc', borderRadius: '12px' },
-  materialIcon: { flexShrink: 0 },
-  materialContent: { flex: 1 },
-  materialTitle: { fontSize: '14px', fontWeight: '700', color: '#1e293b', margin: '0 0 8px 0' },
-  materialText: { fontSize: '13px', color: '#475569', lineHeight: '1.6' },
-  filePreview: { display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' },
-  fileName: { fontSize: '12px', color: '#3b82f6', background: '#eef2ff', padding: '4px 10px', borderRadius: '6px' },
-  btnPreview: { background: '#eef2ff', border: 'none', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' },
-  btnDownload: { background: '#f1f5f9', border: 'none', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', color: '#475569' },
-  linkExternal: { display: 'flex', alignItems: 'center', gap: '6px', color: '#3b82f6', textDecoration: 'none', fontSize: '12px' },
-  assignmentCard: { padding: '16px', background: '#fffbeb', borderRadius: '12px', border: '1px solid #fde68a' },
-  assignmentHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' },
-  assignmentTitle: { fontSize: '14px', fontWeight: '700', color: '#b45309', margin: 0 },
-  badge: { padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' },
-  assignmentContent: { fontSize: '13px', color: '#475569', lineHeight: '1.6', marginBottom: '12px' },
-  assignmentDeadline: { fontSize: '11px', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '12px' },
-  btnSubmit: { background: '#f59e0b', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' },
-  submittedInfo: { fontSize: '11px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px' },
-  quizCard: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' },
-  quizInfo: { display: 'flex', gap: '16px', flexWrap: 'wrap', fontSize: '12px', color: '#64748b' },
-  btnQuiz: { background: '#8b5cf6', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' },
-  
-  loadingBox: { textAlign: 'center', padding: '60px', color: '#64748b' },
-  emptyBox: { textAlign: 'center', padding: '60px', color: '#94a3b8' },
-  spinner: { width: '40px', height: '40px', border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' },
-  
-  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' },
-  modalContent: { background: 'white', borderRadius: '20px', width: '100%', maxWidth: '600px', maxHeight: '85vh', overflowY: 'auto' },
-  previewModalContent: { background: 'white', borderRadius: '20px', width: '90%', maxWidth: '900px', maxHeight: '85vh', overflowY: 'auto' },
-  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid #e2e8f0' },
-  modalTitle: { fontSize: '16px', fontWeight: '700', margin: 0 },
-  modalClose: { background: 'none', border: 'none', cursor: 'pointer', padding: '4px' },
-  modalBody: { padding: '20px' },
-  modalFooter: { display: 'flex', justifyContent: 'flex-end', gap: '12px', padding: '16px 20px', borderTop: '1px solid #e2e8f0' },
-  assignmentQuestionBox: { marginBottom: '20px' },
-  modalLabel: { display: 'block', fontSize: '13px', fontWeight: '600', color: '#1e293b', marginBottom: '8px' },
-  assignmentQuestion: { background: '#f8fafc', padding: '12px', borderRadius: '8px', fontSize: '13px', lineHeight: '1.6' },
-  assignmentAnswerBox: { marginBottom: '20px' },
-  assignmentTextarea: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical', outline: 'none' },
-  assignmentFileBox: { marginBottom: '20px' },
-  fileUploadArea: { marginBottom: '8px' },
-  fileUploadLabel: { display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: '#f1f5f9', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', color: '#64748b' },
-  removeFileBtn: { marginTop: '8px', background: '#fee2e2', border: 'none', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: '#ef4444' },
-  fileHint: { fontSize: '10px', color: '#94a3b8', margin: '4px 0 0' },
-  btnCancel: { background: '#f1f5f9', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' },
-  btnSubmitModal: { background: '#10b981', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' },
-  previewBody: { padding: '20px', minHeight: '400px' },
-  previewIframe: { width: '100%', height: '500px', border: 'none', borderRadius: '8px' },
-  previewImage: { maxWidth: '100%', maxHeight: '500px', objectFit: 'contain', display: 'block', margin: '0 auto' },
-  previewFallback: { textAlign: 'center', padding: '60px' },
-  btnDownloadLarge: { display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#3b82f6', color: 'white', textDecoration: 'none', padding: '10px 20px', borderRadius: '8px', marginTop: '16px' }
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 },
+  title: { fontSize: 24, fontWeight: 800, color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: 8 },
+  subtitle: { fontSize: 13, color: '#64748b', margin: '4px 0 0' },
+  nimBadge: { display: 'inline-flex', alignItems: 'center', gap: 3, background: '#eef2ff', color: '#3b82f6', padding: '1px 8px', borderRadius: 10, fontSize: 10, fontWeight: 600, marginLeft: 6 },
+  viewToggle: { display: 'flex', gap: 4, background: '#f1f5f9', padding: 4, borderRadius: 10 },
+  viewBtn: { padding: '8px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  statsRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12, marginBottom: 20 },
+  statItem: { background: 'white', padding: '12px 16px', borderRadius: 12, border: '1px solid #f1f5f9', textAlign: 'center' },
+  statValue: { fontSize: 18, fontWeight: 900, color: '#1e293b', display: 'block' },
+  statLabel: { fontSize: 10, color: '#94a3b8', fontWeight: 500 },
+  filterBar: { display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' },
+  searchBox: { flex: 2, display: 'flex', alignItems: 'center', gap: 8, background: 'white', padding: '8px 14px', borderRadius: 10, border: '1px solid #e2e8f0', minWidth: 200 },
+  searchInput: { flex: 1, border: 'none', outline: 'none', fontSize: 13, background: 'transparent' },
+  clearBtn: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 14 },
+  filterGroup: { display: 'flex', gap: 6, flexWrap: 'wrap' },
+  filterSelect: { padding: '8px 12px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, background: 'white', cursor: 'pointer' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 },
+  list: { display: 'flex', flexDirection: 'column', gap: 8 },
+  listItem: { display: 'flex', alignItems: 'center', gap: 12, background: 'white', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', cursor: 'pointer', transition: '0.2s' },
+  listItemIcon: { width: 40, height: 40, borderRadius: 10, background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  listItemContent: { flex: 1, minWidth: 0 },
+  listItemHeader: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  listItemTitle: { fontSize: 14, fontWeight: 700, color: '#1e293b' },
+  listItemStatus: { padding: '2px 8px', borderRadius: 10, fontSize: 9, fontWeight: 600 },
+  listItemMeta: { display: 'flex', gap: 8, fontSize: 11, color: '#94a3b8', marginTop: 2, flexWrap: 'wrap' },
+  listItemTag: { display: 'inline-flex', alignItems: 'center', gap: 2, background: '#f1f5f9', padding: '1px 6px', borderRadius: 4, fontSize: 9 },
+  emptyState: { textAlign: 'center', padding: '60px 20px', background: 'white', borderRadius: 16, border: '2px dashed #e2e8f0', color: '#94a3b8' },
+  emptyTitle: { fontSize: 18, fontWeight: 700, color: '#64748b', margin: '12px 0 4px' },
+  emptyDesc: { fontSize: 13 }
 };
 
-if (typeof document !== 'undefined') {
-  const style = document.createElement('style');
-  style.textContent = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } .modern-card:hover .cover-image { transform: scale(1.05); } .modern-card:hover .card-overlay { opacity: 1; }`;
-  document.head.appendChild(style);
-}
-
+// ============================================================
+// EXPORT
+// ============================================================
 export default StudentElearning;
