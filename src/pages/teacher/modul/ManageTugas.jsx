@@ -1,42 +1,92 @@
+// src/pages/teacher/modul/ManageTugas.jsx
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
-import { collection, addDoc, serverTimestamp, getDocs } from 'firebase/firestore';
-import { Edit3, Clock, ArrowLeft, BookOpen, Target, Users, CheckCircle, AlertCircle, Shield } from 'lucide-react';
+import { collection, addDoc, serverTimestamp, getDocs, query, where } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Edit3, Clock, ArrowLeft, BookOpen, Target, Users, 
+  CheckCircle, AlertCircle, Shield, Hash, Tag, User,
+  Calendar, Send, FileText, Layers, Zap, Sparkles,
+  X, Plus, Filter, ChevronDown, ChevronUp, Globe,
+  GraduationCap, Briefcase, Award, Star, TrendingUp
+} from 'lucide-react';
 
 const ManageTugas = () => {
+  const navigate = useNavigate();
+  
+  // ===== STATES =====
   const [tugas, setTugas] = useState({ 
     title: '', 
     desc: '', 
     deadline: '',
     targetKategori: 'Reguler',
-    targetKelas: '1 SD'
+    targetKelas: '1 SD',
+    guruId: '',
+    kodeMapel: '',
+    guruName: ''
   });
   const [loading, setLoading] = useState(false);
   const [availableClasses, setAvailableClasses] = useState([]);
   const [availablePrograms] = useState(['Reguler', 'English']);
   const [showConfig, setShowConfig] = useState(true);
   const [warningShown, setWarningShown] = useState(false);
-  const navigate = useNavigate();
+  const [guruData, setGuruData] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  // Ambil daftar kelas dari database
+  // ===== RESPONSIVE =====
   useEffect(() => {
-    const fetchClasses = async () => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // ===== AMBIL DATA GURU & KELAS =====
+  useEffect(() => {
+    const fetchData = async () => {
       try {
+        // 1. Ambil data guru dari localStorage
+        const saved = JSON.parse(localStorage.getItem('teacherData') || '{}');
+        const teacherName = saved.nama || '';
+        const teacherId = saved.guruId || saved.id || '';
+        
+        setTugas(prev => ({
+          ...prev,
+          guruId: teacherId,
+          guruName: teacherName
+        }));
+
+        // 2. Cari data lengkap guru dari Firestore
+        if (teacherName) {
+          const qGuru = query(collection(db, "teachers"), where("nama", "==", teacherName));
+          const snapGuru = await getDocs(qGuru);
+          if (!snapGuru.empty) {
+            const guru = snapGuru.docs[0].data();
+            setGuruData(guru);
+            setTugas(prev => ({
+              ...prev,
+              kodeMapel: guru.kodeMapel || '',
+              guruId: guru.guruId || teacherId
+            }));
+          }
+        }
+
+        // 3. Ambil daftar kelas
         const snapSiswa = await getDocs(collection(db, "students"));
         const siswaData = snapSiswa.docs.map(d => d.data());
         const kelas = [...new Set(siswaData.map(s => s.kelasSekolah).filter(Boolean))];
         kelas.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
         setAvailableClasses(['Semua', ...kelas]);
+        
       } catch (error) {
-        console.error("Error fetching classes:", error);
+        console.error("Error fetching data:", error);
         setAvailableClasses(['Semua', '1 SD', '2 SD', '3 SD', '4 SD', '5 SD', '6 SD', '7 SMP', '8 SMP', '9 SMP']);
       }
     };
-    fetchClasses();
+    fetchData();
   }, []);
 
-  // Peringatan jika target masih "Semua"
+  // ===== PERINGATAN TARGET =====
   useEffect(() => {
     if ((tugas.targetKelas === 'Semua' || tugas.targetKategori === 'Semua') && !warningShown && tugas.title) {
       setWarningShown(true);
@@ -44,30 +94,24 @@ const ManageTugas = () => {
     }
   }, [tugas.targetKelas, tugas.targetKategori, tugas.title, warningShown]);
 
+  // ===== HANDLE CREATE =====
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!tugas.title) return alert("❌ Judul tugas wajib diisi!");
     if (!tugas.desc) return alert("❌ Instruksi tugas wajib diisi!");
     
-    // Peringatan jika target masih "Semua"
+    // Peringatan target
     if (tugas.targetKelas === 'Semua' && tugas.targetKategori === 'Semua') {
-      if (!window.confirm("⚠️ Peringatan: Tugas ini akan muncul untuk SEMUA siswa (semua kelas dan program).\n\nLanjutkan?")) {
-        return;
-      }
+      if (!window.confirm("⚠️ Tugas ini akan muncul untuk SEMUA siswa (semua kelas dan program).\n\nLanjutkan?")) return;
     } else if (tugas.targetKelas === 'Semua') {
-      if (!window.confirm(`⚠️ Peringatan: Tugas ini akan muncul untuk SEMUA kelas pada program ${tugas.targetKategori}.\n\nLanjutkan?`)) {
-        return;
-      }
+      if (!window.confirm(`⚠️ Tugas ini akan muncul untuk SEMUA kelas pada program ${tugas.targetKategori}.\n\nLanjutkan?`)) return;
     } else if (tugas.targetKategori === 'Semua') {
-      if (!window.confirm(`⚠️ Peringatan: Tugas ini akan muncul untuk SEMUA program pada kelas ${tugas.targetKelas}.\n\nLanjutkan?`)) {
-        return;
-      }
+      if (!window.confirm(`⚠️ Tugas ini akan muncul untuk SEMUA program pada kelas ${tugas.targetKelas}.\n\nLanjutkan?`)) return;
     }
     
     setLoading(true);
     try {
-      // 🔥 SIMPAN KE "bimbel_modul" DENGAN FIELD LENGKAP
-      await addDoc(collection(db, "bimbel_modul"), {
+      const payload = {
         title: tugas.title.toUpperCase(),
         subject: "Tugas",
         description: tugas.desc,
@@ -76,6 +120,11 @@ const ManageTugas = () => {
         targetKategori: tugas.targetKategori,
         targetKelas: tugas.targetKelas,
         status: 'aktif',
+        // === ID UNIK ===
+        guruId: tugas.guruId,
+        kodeMapel: tugas.kodeMapel,
+        guruName: tugas.guruName,
+        // ===
         blocks: [{ 
           id: Date.now(), 
           type: 'assignment', 
@@ -84,13 +133,19 @@ const ManageTugas = () => {
           endTime: tugas.deadline || null
         }],
         quizData: [],
-        authorName: localStorage.getItem('teacherName') || localStorage.getItem('userName') || "Guru",
+        authorName: tugas.guruName || localStorage.getItem('teacherName') || localStorage.getItem('userName') || "Guru",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
-      });
+      };
 
-      alert(`✅ Tugas "${tugas.title}" berhasil dipublikasikan!`);
-      navigate('/guru/modul');
+      await addDoc(collection(db, "bimbel_modul"), payload);
+      
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        navigate('/guru/modul');
+      }, 2000);
+      
     } catch (err) {
       console.error("Error creating tugas:", err);
       alert("❌ Gagal mengirim tugas: " + err.message);
@@ -98,24 +153,55 @@ const ManageTugas = () => {
     setLoading(false);
   };
 
+  // ===== FORMAT DEADLINE =====
+  const formatDeadline = (date) => {
+    if (!date) return 'Tidak ada deadline';
+    const d = new Date(date);
+    return d.toLocaleDateString('id-ID', { 
+      day: '2-digit', month: 'long', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  };
+
+  // ===== RENDER =====
   return (
     <div style={styles.container}>
+      {/* TOP BAR */}
       <div style={styles.topBar}>
         <button onClick={() => navigate('/guru/modul')} style={styles.btnBack}>
-          <ArrowLeft size={18}/> Kembali ke Modul
+          <ArrowLeft size={18} /> Kembali ke Modul
         </button>
+        {tugas.guruId && (
+          <span style={styles.guruIdBadge}>
+            <Hash size={10} /> {tugas.guruId}
+            {tugas.kodeMapel && <Tag size={10} style={{ marginLeft: 8 }} />}
+            {tugas.kodeMapel}
+          </span>
+        )}
       </div>
 
       <div style={styles.card}>
+        {/* HEADER */}
         <div style={styles.header}>
           <div style={styles.iconCircle}>
             <Edit3 size={28} color="#673ab7" />
           </div>
           <h2 style={styles.title}>Buat Tugas Baru</h2>
-          <p style={styles.subtitle}>Tugas akan muncul di dashboard siswa dan halaman E-Learning</p>
+          <p style={styles.subtitle}>
+            Tugas akan muncul di dashboard siswa dan halaman E-Learning
+            {tugas.guruName && <span style={styles.authorBadge}> • {tugas.guruName}</span>}
+          </p>
         </div>
 
-        {/* Peringatan jika target masih "Semua" */}
+        {/* SUCCESS TOAST */}
+        {showSuccess && (
+          <div style={styles.successToast}>
+            <CheckCircle size={20} color="#10b981" />
+            <span>✅ Tugas berhasil dipublikasikan!</span>
+          </div>
+        )}
+
+        {/* WARNING */}
         {warningShown && (tugas.targetKelas === 'Semua' || tugas.targetKategori === 'Semua') && (
           <div style={styles.warningBox}>
             <AlertCircle size={16} color="#f59e0b" />
@@ -127,7 +213,7 @@ const ManageTugas = () => {
         )}
 
         <form onSubmit={handleCreate} style={styles.form}>
-          {/* JUDUL TUGAS */}
+          {/* JUDUL */}
           <div style={styles.inputGroup}>
             <label style={styles.label}>
               <Edit3 size={14} /> Judul Tugas <span style={{ color: '#ef4444' }}>*</span>
@@ -153,7 +239,7 @@ const ManageTugas = () => {
             />
           </div>
 
-          {/* BATAS WAKTU */}
+          {/* DEADLINE */}
           <div style={styles.inputGroup}>
             <label style={styles.label}>
               <Clock size={14} /> Batas Waktu Pengumpulan (Opsional)
@@ -164,19 +250,22 @@ const ManageTugas = () => {
               value={tugas.deadline}
               onChange={e => setTugas({...tugas, deadline: e.target.value})} 
             />
-            <p style={styles.hintText}>Kosongkan jika tidak ada batas waktu</p>
+            <p style={styles.hintText}>
+              {tugas.deadline ? `Deadline: ${formatDeadline(tugas.deadline)}` : 'Kosongkan jika tidak ada batas waktu'}
+            </p>
           </div>
 
-          {/* TOMBOL KONFIGURASI TARGET */}
+          {/* CONFIG TOGGLE */}
           <button 
             type="button" 
             onClick={() => setShowConfig(!showConfig)}
             style={styles.btnConfig}
           >
+            {showConfig ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             <Target size={14} /> {showConfig ? 'Sembunyikan' : 'Tampilkan'} Pengaturan Target
           </button>
 
-          {/* TARGET PUBLISH */}
+          {/* TARGET PANEL */}
           {showConfig && (
             <div style={styles.configPanel}>
               <div style={styles.configHeader}>
@@ -192,8 +281,7 @@ const ManageTugas = () => {
                   <select 
                     value={tugas.targetKategori}
                     onChange={e => setTugas({...tugas, targetKategori: e.target.value})}
-                    style={styles.select}
-                    className={tugas.targetKategori === 'Semua' ? 'warning-select' : ''}
+                    style={{...styles.select, borderColor: tugas.targetKategori === 'Semua' ? '#f59e0b' : '#e2e8f0'}}
                   >
                     <option value="Reguler">📚 Reguler</option>
                     <option value="English">🗣️ English</option>
@@ -207,8 +295,7 @@ const ManageTugas = () => {
                   <select 
                     value={tugas.targetKelas}
                     onChange={e => setTugas({...tugas, targetKelas: e.target.value})}
-                    style={styles.select}
-                    className={tugas.targetKelas === 'Semua' ? 'warning-select' : ''}
+                    style={{...styles.select, borderColor: tugas.targetKelas === 'Semua' ? '#f59e0b' : '#e2e8f0'}}
                   >
                     {availableClasses.map(k => (
                       <option key={k} value={k}>{k === 'Semua' ? '📋 Semua Kelas' : k}</option>
@@ -221,7 +308,7 @@ const ManageTugas = () => {
                 <AlertCircle size={12} color={tugas.targetKelas === 'Semua' || tugas.targetKategori === 'Semua' ? '#f59e0b' : '#10b981'} />
                 <span style={styles.infoText}>
                   {tugas.targetKelas === 'Semua' && tugas.targetKategori === 'Semua' ? (
-                    <strong style={{ color: '#f59e0b' }}>⚠️ Peringatan: Tugas ini akan muncul untuk SEMUA siswa!</strong>
+                    <strong style={{ color: '#f59e0b' }}>⚠️ Tugas akan muncul untuk SEMUA siswa!</strong>
                   ) : tugas.targetKelas === 'Semua' ? (
                     <span>Tugas akan muncul untuk <strong>SEMUA KELAS</strong> pada program <strong>{tugas.targetKategori}</strong>.</span>
                   ) : tugas.targetKategori === 'Semua' ? (
@@ -234,7 +321,7 @@ const ManageTugas = () => {
             </div>
           )}
 
-          {/* TOMBOL SUBMIT */}
+          {/* SUBMIT */}
           <button 
             type="submit" 
             disabled={loading}
@@ -246,12 +333,14 @@ const ManageTugas = () => {
                 Memproses...
               </>
             ) : (
-              '📤 Publikasikan Tugas'
+              <>
+                <Send size={16} /> Publikasikan Tugas
+              </>
             )}
           </button>
         </form>
 
-        {/* INFO PENTING */}
+        {/* FOOTER INFO */}
         <div style={styles.infoFooter}>
           <CheckCircle size={14} color="#10b981" />
           <span style={styles.infoFooterText}>
@@ -266,15 +355,19 @@ const ManageTugas = () => {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
-        .warning-select {
-          border-color: #f59e0b !important;
-          background-color: #fffbeb !important;
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
+        .slide-up { animation: slideUp 0.3s ease-out; }
       `}</style>
     </div>
   );
 };
 
+// ============================================================
+// STYLES
+// ============================================================
 const styles = {
   container: { 
     padding: '40px 20px', 
@@ -287,7 +380,12 @@ const styles = {
   topBar: { 
     width: '100%', 
     maxWidth: '700px', 
-    marginBottom: '20px' 
+    marginBottom: '20px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8
   },
   btnBack: { 
     background: 'none', 
@@ -299,6 +397,15 @@ const styles = {
     gap: '8px', 
     fontWeight: 'bold',
     fontSize: '13px'
+  },
+  guruIdBadge: {
+    display: 'inline-flex', alignItems: 'center', gap: 4,
+    padding: '4px 12px', borderRadius: 20,
+    fontSize: 10, fontWeight: 600,
+    background: '#eef2ff', color: '#3b82f6'
+  },
+  authorBadge: {
+    fontSize: 11, color: '#94a3b8', fontWeight: 400
   },
   card: { 
     background: 'white', 
@@ -334,12 +441,26 @@ const styles = {
     color: '#64748b', 
     margin: 0 
   },
+  successToast: {
+    background: '#dcfce7',
+    border: '1px solid #bbf7d0',
+    borderRadius: '10px',
+    padding: '12px 16px',
+    marginBottom: '16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    color: '#166534',
+    fontWeight: 600,
+    fontSize: 13,
+    animation: 'slideUp 0.3s ease'
+  },
   warningBox: {
     background: '#fffbeb',
     border: '1px solid #fde68a',
     borderRadius: '10px',
     padding: '10px 14px',
-    marginBottom: '20px',
+    marginBottom: '16px',
     display: 'flex',
     alignItems: 'center',
     gap: '10px'
@@ -381,7 +502,11 @@ const styles = {
     outline: 'none', 
     fontSize: '14px', 
     transition: '0.2s',
-    fontFamily: 'inherit'
+    fontFamily: 'inherit',
+    '&:focus': {
+      borderColor: '#673ab7',
+      boxShadow: '0 0 0 3px rgba(103,58,183,0.1)'
+    }
   },
   hintText: {
     fontSize: '10px',
@@ -422,10 +547,12 @@ const styles = {
   configRow: {
     display: 'flex',
     gap: '16px',
-    marginBottom: '12px'
+    marginBottom: '12px',
+    flexWrap: 'wrap'
   },
   configGroup: {
-    flex: 1
+    flex: 1,
+    minWidth: 140
   },
   select: {
     width: '100%',
@@ -464,7 +591,11 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '8px',
-    transition: '0.3s'
+    transition: '0.3s',
+    '&:hover': {
+      background: '#5b2d9e',
+      transform: 'translateY(-1px)'
+    }
   },
   btnDisabled: { 
     background: '#cbd5e1', 
