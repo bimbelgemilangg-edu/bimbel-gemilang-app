@@ -16,8 +16,20 @@ import {
   Archive, UserPlus, UserCheck, Search, Loader2, Hash, Tag, 
   Zap, Sparkles, Filter, User, GraduationCap, 
   FileSpreadsheet, FileImage, File, FileVideo,
-  Upload, Cloud, Server, RefreshCw, Home, ChevronRight
+  Upload, Cloud, Server, RefreshCw, Home, ChevronRight,
+  FilePdf, FileWord, FileArchive, FileCode, FileJson, Globe, Link,
+  Plus, Minus, Copy, Edit, MoreVertical
 } from 'lucide-react';
+
+// ============================================================
+// CONSTANTS - JENIS FILE YANG DIIZINKAN UNTUK TUGAS
+// ============================================================
+const FILE_TYPE_OPTIONS = [
+  { value: 'all', label: '📁 Semua File', accept: '*/*', icon: <File size={14} /> },
+  { value: 'pdf', label: '📄 PDF', accept: '.pdf,application/pdf', icon: <FilePdf size={14} color="#ef4444" /> },
+  { value: 'image', label: '🖼️ Gambar', accept: 'image/*', icon: <FileImage size={14} color="#10b981" /> },
+  { value: 'word', label: '📝 Word/DOCX', accept: '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document', icon: <FileWord size={14} color="#3b82f6" /> },
+];
 
 // ============================================================
 // PREVIEW COMPONENT
@@ -58,7 +70,7 @@ const FilePreview = ({ url, fileName, fileType }) => {
   if (fileType === 'application/pdf' || url.match(/\.pdf$/i)) {
     return (
       <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', padding: 16, textAlign: 'center' }}>
-        <div style={{ marginBottom: 8 }}><File size={40} color="#ef4444" /></div>
+        <div style={{ marginBottom: 8 }}><FilePdf size={40} color="#ef4444" /></div>
         <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '8px 16px', background: '#ef4444', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 12 }}>
           📄 Buka PDF
         </a>
@@ -385,7 +397,7 @@ const ManageMateri = () => {
   }, [studentSearch, allStudents]);
 
   // ============================================================
-  // UPLOAD FILE - VERSI DENGAN CLEAN FILEPATH
+  // UPLOAD FILE
   // ============================================================
   const handleFileUpload = async (file, type = 'materi') => {
     if (!file) return null;
@@ -399,7 +411,6 @@ const ManageMateri = () => {
     setUploadStatus({ type: 'loading', message: `Mengupload ${file.name}...` });
 
     try {
-      // 🔥 GUNAKAN FUNGSI uploadElearningFile DARI SERVICE
       const result = await uploadElearningFile(file, type);
 
       if (result.success) {
@@ -425,9 +436,6 @@ const ManageMateri = () => {
     }
   };
 
-  // ============================================================
-  // COVER UPLOAD
-  // ============================================================
   const handleCoverUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -443,9 +451,6 @@ const ManageMateri = () => {
     if (coverInputRef.current) coverInputRef.current.value = '';
   };
 
-  // ============================================================
-  // SECTION FILE UPLOAD - DENGAN CLEAN FILEPATH
-  // ============================================================
   const handleSectionFileUpload = async (e, sectionId) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -505,15 +510,12 @@ const ManageMateri = () => {
     if (!window.confirm(`⚠️ Hapus modul "${title}"?\n\nSemua data dan file terkait akan dihapus permanen!`)) return;
     
     try {
-      // 1. Kumpulkan semua filePath dari sections
       const filePaths = sections.filter(s => s.filePath).map(s => s.filePath);
       
-      // 2. Tambahkan coverFilePath jika ada
       if (coverFilePath) {
         filePaths.push(coverFilePath);
       }
       
-      // 3. Hapus semua file dari Supabase
       if (filePaths.length > 0) {
         const { error } = await supabase.storage
           .from('materi-bimbel')
@@ -526,7 +528,6 @@ const ManageMateri = () => {
         }
       }
       
-      // 4. Hapus data dari Firestore
       await deleteDoc(doc(db, COLLECTION_NAME, modulId));
       
       alert('✅ Modul dan semua file terkait berhasil dihapus!');
@@ -539,7 +540,7 @@ const ManageMateri = () => {
   };
 
   // ============================================================
-  // FUNGSI KONTEN LAINNYA
+  // FUNGSI KONTEN
   // ============================================================
   const addSection = (type) => {
     const titles = { 
@@ -557,7 +558,9 @@ const ManageMateri = () => {
       mimeType: '', 
       fileSize: 0,
       filePath: '',
-      endTime: '' 
+      endTime: '',
+      // 🔥 FITUR BARU: Jenis file yang diizinkan untuk tugas
+      allowedFileType: 'all' 
     };
     setSections([...sections, newSection]);
     setActiveSection(newSection.id);
@@ -741,6 +744,11 @@ const ManageMateri = () => {
                 <div style={{ background: '#fffbeb', padding: 12, borderRadius: 8, border: '1px solid #fde68a' }}>
                   <p>📝 {sec.content || 'Instruksi tugas'}</p>
                   {sec.endTime && <p style={{ fontSize: 11, color: '#f59e0b' }}>⏰ Deadline: {new Date(sec.endTime).toLocaleString('id-ID')}</p>}
+                  {sec.allowedFileType && (
+                    <p style={{ fontSize: 10, color: '#64748b', marginTop: 4 }}>
+                      📎 Jenis file: {FILE_TYPE_OPTIONS.find(f => f.value === sec.allowedFileType)?.label || 'Semua'}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -853,6 +861,41 @@ const ManageMateri = () => {
             placeholder="Tulis instruksi tugas di sini..." 
             style={{ width: '100%', minHeight: 120, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, resize: 'vertical', fontFamily: 'inherit', background: '#f8fafc' }} 
           />
+          
+          {/* 🔥 FITUR BARU: Pilihan jenis file untuk tugas */}
+          <div style={{ marginTop: 12, padding: 12, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <FileUp size={14} /> Jenis File yang Diizinkan untuk Siswa
+            </label>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {FILE_TYPE_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => updateSection(activeSection, 'allowedFileType', opt.value)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 8,
+                    border: section.allowedFileType === opt.value ? '2px solid #673ab7' : '1px solid #e2e8f0',
+                    background: section.allowedFileType === opt.value ? '#f3e8ff' : 'white',
+                    color: section.allowedFileType === opt.value ? '#673ab7' : '#64748b',
+                    cursor: 'pointer',
+                    fontSize: 11,
+                    fontWeight: section.allowedFileType === opt.value ? 700 : 500,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4
+                  }}
+                >
+                  {opt.icon} {opt.label}
+                </button>
+              ))}
+            </div>
+            <p style={{ fontSize: 9, color: '#94a3b8', marginTop: 6 }}>
+              💡 Pilih jenis file yang boleh diupload siswa. "Semua File" untuk semua jenis.
+            </p>
+          </div>
+          
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12, padding: 12, background: '#fffbeb', borderRadius: 8 }}>
             <Clock size={18} color="#f59e0b" />
             <span style={{ fontSize: 13, fontWeight: 600, color: '#b45309' }}>Deadline Tugas:</span>
