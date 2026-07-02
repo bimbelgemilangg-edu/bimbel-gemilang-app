@@ -17,8 +17,7 @@ import {
   Zap, Sparkles, Filter, User, GraduationCap, 
   FileSpreadsheet, FileImage, File, FileVideo,
   Upload, Cloud, Server, RefreshCw, Home, ChevronRight,
-  FilePdf, FileWord, FileArchive, FileCode, FileJson, Globe, Link,
-  Plus, Minus, Copy, Edit, MoreVertical
+  Globe, Link, Plus, Minus, Copy, Edit, MoreVertical
 } from 'lucide-react';
 
 // ============================================================
@@ -26,9 +25,9 @@ import {
 // ============================================================
 const FILE_TYPE_OPTIONS = [
   { value: 'all', label: '📁 Semua File', accept: '*/*', icon: <File size={14} /> },
-  { value: 'pdf', label: '📄 PDF', accept: '.pdf,application/pdf', icon: <FilePdf size={14} color="#ef4444" /> },
+  { value: 'pdf', label: '📄 PDF', accept: '.pdf,application/pdf', icon: <File size={14} color="#ef4444" /> },
   { value: 'image', label: '🖼️ Gambar', accept: 'image/*', icon: <FileImage size={14} color="#10b981" /> },
-  { value: 'word', label: '📝 Word/DOCX', accept: '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document', icon: <FileWord size={14} color="#3b82f6" /> },
+  { value: 'word', label: '📝 Word/DOCX', accept: '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document', icon: <FileText size={14} color="#3b82f6" /> },
 ];
 
 // ============================================================
@@ -70,7 +69,7 @@ const FilePreview = ({ url, fileName, fileType }) => {
   if (fileType === 'application/pdf' || url.match(/\.pdf$/i)) {
     return (
       <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', padding: 16, textAlign: 'center' }}>
-        <div style={{ marginBottom: 8 }}><FilePdf size={40} color="#ef4444" /></div>
+        <div style={{ marginBottom: 8 }}><File size={40} color="#ef4444" /></div>
         <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '8px 16px', background: '#ef4444', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 12 }}>
           📄 Buka PDF
         </a>
@@ -234,9 +233,6 @@ const ManageMateri = () => {
     { value: 'arsip', label: 'Arsip', color: '#64748b', bg: '#f1f5f9', icon: <Archive size={12} /> }
   ];
 
-  // ============================================================
-  // EFFECTS
-  // ============================================================
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
@@ -396,9 +392,6 @@ const ManageMateri = () => {
     ));
   }, [studentSearch, allStudents]);
 
-  // ============================================================
-  // UPLOAD FILE
-  // ============================================================
   const handleFileUpload = async (file, type = 'materi') => {
     if (!file) return null;
     if (file.size > 50 * 1024 * 1024) {
@@ -475,9 +468,6 @@ const ManageMateri = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // ============================================================
-  // DELETE SECTION + HAPUS FILE DARI SUPABASE
-  // ============================================================
   const removeSection = async (id) => {
     if (!window.confirm("Hapus section ini? File terkait juga akan dihapus dari penyimpanan.")) return;
     
@@ -502,9 +492,6 @@ const ManageMateri = () => {
     setStats(prev => ({ ...prev, totalKonten: sections.length - 1 }));
   };
 
-  // ============================================================
-  // DELETE MODUL + HAPUS SEMUA FILE DARI SUPABASE
-  // ============================================================
   const handleDeleteModul = async () => {
     if (!modulId) return;
     if (!window.confirm(`⚠️ Hapus modul "${title}"?\n\nSemua data dan file terkait akan dihapus permanen!`)) return;
@@ -539,9 +526,6 @@ const ManageMateri = () => {
     }
   };
 
-  // ============================================================
-  // FUNGSI KONTEN
-  // ============================================================
   const addSection = (type) => {
     const titles = { 
       text: '📄 Materi Teks', 
@@ -559,7 +543,6 @@ const ManageMateri = () => {
       fileSize: 0,
       filePath: '',
       endTime: '',
-      // 🔥 FITUR BARU: Jenis file yang diizinkan untuk tugas
       allowedFileType: 'all' 
     };
     setSections([...sections, newSection]);
@@ -590,9 +573,6 @@ const ManageMateri = () => {
     return match ? match[1] : null;
   };
 
-  // ============================================================
-  // SISWA FUNCTIONS
-  // ============================================================
   const toggleStudentSelection = (student) => {
     setSelectedStudents(prev => {
       const exists = prev.some(s => s.studentId === student.studentId);
@@ -625,9 +605,6 @@ const ManageMateri = () => {
     return name.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('');
   };
 
-  // ============================================================
-  // SIMPAN MODUL
-  // ============================================================
   const handleSave = async () => {
     if (!title) return alert("❌ Judul modul wajib diisi!");
     if (!subject) return alert("❌ Mata pelajaran wajib dipilih!");
@@ -695,9 +672,6 @@ const ManageMateri = () => {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
-  // ============================================================
-  // RENDER FUNCTIONS
-  // ============================================================
   const renderStudentPreview = () => {
     const previewWidth = previewDevice === 'mobile' ? 375 : previewDevice === 'tablet' ? 768 : '100%';
     const isScheduled = statusModul === 'terjadwal' && tanggalMulai;
@@ -862,7 +836,6 @@ const ManageMateri = () => {
             style={{ width: '100%', minHeight: 120, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, resize: 'vertical', fontFamily: 'inherit', background: '#f8fafc' }} 
           />
           
-          {/* 🔥 FITUR BARU: Pilihan jenis file untuk tugas */}
           <div style={{ marginTop: 12, padding: 12, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
             <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
               <FileUp size={14} /> Jenis File yang Diizinkan untuk Siswa
@@ -914,9 +887,6 @@ const ManageMateri = () => {
     return null;
   };
 
-  // ============================================================
-  // STYLES
-  // ============================================================
   const styles = {
     container: { maxWidth: 1400, margin: '0 auto', paddingBottom: 100, paddingLeft: isMobile ? 12 : 16, paddingRight: isMobile ? 12 : 16 },
     loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 16 },
@@ -986,9 +956,6 @@ const ManageMateri = () => {
     mapelBadge: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 6, fontSize: 9, background: '#ede9fe', color: '#8b5cf6', fontWeight: 600 }
   };
 
-  // ============================================================
-  // RENDER
-  // ============================================================
   if (loading) {
     return (
       <div style={styles.container}>
@@ -1066,10 +1033,7 @@ const ManageMateri = () => {
         renderStudentPreview()
       ) : (
         <div style={styles.mainGrid}>
-          
-          {/* ===== SIDEBAR ===== */}
           <div style={styles.sidebar}>
-            
             <div style={styles.card}>
               <h4 style={styles.cardTitle}><BookOpen size={14} /> Identitas</h4>
               <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Judul modul..." style={styles.input} />
@@ -1281,7 +1245,6 @@ const ManageMateri = () => {
             </div>
           </div>
 
-          {/* ===== EDITOR ===== */}
           <div style={styles.editorArea}>
             {!activeSection ? (
               <div style={styles.emptyEditor}>
