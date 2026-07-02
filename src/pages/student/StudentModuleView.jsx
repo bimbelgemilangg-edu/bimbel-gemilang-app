@@ -10,19 +10,19 @@ import {
   Eye, Link as LinkIcon, HelpCircle, AlertCircle, FileDigit, 
   User, Trash2, X, Send, Zap, Calendar, Maximize2, 
   Download, BookOpen, Hash, Tag, File, Image as ImageIcon,
-  FilePdf, FileWord, FileArchive, Upload, Check, AlertTriangle,
+  FileArchive, Upload, Check, AlertTriangle,
   List, Grid, Filter, ChevronDown, ChevronUp, Settings
 } from 'lucide-react';
 import { uploadElearningFile, deleteFile, supabase } from '../../services/uploadService';
 
 // ============================================================
-// CONSTANTS
+// CONSTANTS - JENIS FILE YANG DIIZINKAN (TANPA FilePdf & FileWord)
 // ============================================================
 const ALLOWED_FILE_TYPES = {
   all: { label: 'Semua File', accept: '*/*', icon: <File size={16} /> },
-  pdf: { label: 'PDF', accept: '.pdf,application/pdf', icon: <FilePdf size={16} color="#ef4444" /> },
+  pdf: { label: 'PDF', accept: '.pdf,application/pdf', icon: <File size={16} color="#ef4444" /> },
   image: { label: 'Gambar', accept: 'image/*', icon: <ImageIcon size={16} color="#10b981" /> },
-  word: { label: 'Word/DOCX', accept: '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document', icon: <FileWord size={16} color="#3b82f6" /> },
+  word: { label: 'Word/DOCX', accept: '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document', icon: <FileText size={16} color="#3b82f6" /> },
 };
 
 // ============================================================
