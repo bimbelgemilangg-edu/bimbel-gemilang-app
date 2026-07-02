@@ -1,5 +1,6 @@
 // src/pages/student/StudentModuleView.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { 
   doc, getDoc, collection, addDoc, serverTimestamp, 
@@ -11,12 +12,14 @@ import {
   User, Trash2, X, Send, Zap, Calendar, Maximize2, 
   Download, BookOpen, Hash, Tag, File, Image as ImageIcon,
   FileArchive, Upload, Check, AlertTriangle,
-  List, Grid, Filter, ChevronDown, ChevronUp, Settings
+  List, Grid, Filter, ChevronDown, ChevronUp, Settings,
+  Menu, Home, LogOut
 } from 'lucide-react';
 import { uploadElearningFile, deleteFile, supabase } from '../../services/uploadService';
+import SidebarSiswa from '../../components/SidebarSiswa';
 
 // ============================================================
-// CONSTANTS - JENIS FILE YANG DIIZINKAN (TANPA FilePdf & FileWord)
+// CONSTANTS - JENIS FILE YANG DIIZINKAN
 // ============================================================
 const ALLOWED_FILE_TYPES = {
   all: { label: 'Semua File', accept: '*/*', icon: <File size={16} /> },
@@ -170,6 +173,12 @@ const previewModalStyles = {
 // MAIN COMPONENT
 // ============================================================
 const StudentModuleView = ({ modulId, onBack, studentData }) => {
+  const navigate = useNavigate();
+  
+  // ===== SIDEBAR STATE =====
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState('materi');
+  
   // ===== STATES =====
   const [modul, setModul] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -494,10 +503,20 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   // ============================================================
   if (loading) {
     return (
-      <div style={{ display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', height:'100vh', gap:12, fontWeight:'bold', color:'#673ab7' }}>
-        <div style={{ width:36, height:36, border:'4px solid #f3e8ff', borderTop:'4px solid #673ab7', borderRadius:'50%', animation:'spin 1s linear infinite' }}></div>
-        Membuka Modul...
-        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      <div style={styles.wrapper}>
+        <SidebarSiswa 
+          activeMenu={activeMenu} 
+          setActiveMenu={setActiveMenu}
+          isOpen={sidebarOpen}
+          setIsOpen={setSidebarOpen}
+        />
+        <div style={styles.mainContent}>
+          <div style={styles.loadingContainer}>
+            <div style={styles.spinner}></div>
+            <p style={{ color: '#94a3b8', fontSize: 13 }}>Membuka Modul...</p>
+            <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+          </div>
+        </div>
       </div>
     );
   }
@@ -506,274 +525,506 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const materiBlocks = (modul?.blocks || []).filter(b => b.type !== 'assignment');
 
   return (
-    <div style={{ background: '#f8fafc', minHeight: '100vh', paddingBottom: 100 }}>
-      
-      {/* HERO */}
-      <div style={{ height: isMobile ? 200 : 280, position: 'relative', width: '100%', overflow: 'hidden' }}>
-        <button onClick={onBack} style={{ position:'absolute', top:isMobile?10:18, left:isMobile?10:18, zIndex:10, background:'white', border:'none', padding:isMobile?'8px 12px':'10px 18px', borderRadius:30, cursor:'pointer', display:'flex', alignItems:'center', gap:6, fontWeight:800, boxShadow:'0 10px 25px rgba(0,0,0,0.15)', color:'#1e293b', fontSize:isMobile?11:13 }}>
-          <ArrowLeft size={14} /> {!isMobile && 'Kembali'}
-        </button>
-        <img src={modul?.coverImage || "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1000"} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-        <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'linear-gradient(transparent,rgba(15,23,42,0.95))', padding:isMobile?'20px 15px':'35px 6%', color:'white' }}>
-          <div style={{ display:'flex', gap:6, marginBottom:8, flexWrap:'wrap' }}>
-            <span style={{ background:'#673ab7', padding:'4px 10px', borderRadius:8, fontSize:9, fontWeight:800 }}>
-              {modul?.subject || 'Umum'}
-            </span>
-            <span style={{ background:'rgba(255,255,255,0.2)', padding:'4px 10px', borderRadius:8, fontSize:9 }}>
-              {modul?.targetKategori || 'Semua'} • {modul?.targetKelas || 'Semua'}
-            </span>
-            {modul?.guruId && (
-              <span style={{ background:'rgba(59,130,246,0.3)', padding:'4px 10px', borderRadius:8, fontSize:8 }}>
-                <Hash size={8} /> {modul.guruId}
+    <div style={styles.wrapper}>
+      {/* ===== SIDEBAR ===== */}
+      <SidebarSiswa 
+        activeMenu={activeMenu} 
+        setActiveMenu={setActiveMenu}
+        isOpen={sidebarOpen}
+        setIsOpen={setSidebarOpen}
+      />
+
+      {/* ===== MAIN CONTENT ===== */}
+      <div style={styles.mainContent}>
+        
+        {/* ===== MOBILE HEADER ===== */}
+        <div style={styles.mobileHeader}>
+          <button 
+            onClick={() => setSidebarOpen(true)} 
+            style={styles.menuBtn}
+          >
+            <Menu size={24} color="#1e293b" />
+          </button>
+          <span style={styles.mobileTitle}>{modul?.title || 'Modul'}</span>
+          <div style={{ width: 24 }}></div>
+        </div>
+
+        {/* ===== HERO ===== */}
+        <div style={{ height: isMobile ? 200 : 280, position: 'relative', width: '100%', overflow: 'hidden' }}>
+          <button onClick={onBack} style={{ 
+            position:'absolute', top:isMobile?10:18, left:isMobile?10:18, zIndex:10, 
+            background:'rgba(255,255,255,0.95)', border:'none', padding:isMobile?'8px 12px':'10px 18px', 
+            borderRadius:30, cursor:'pointer', display:'flex', alignItems:'center', gap:6, 
+            fontWeight:800, boxShadow:'0 10px 25px rgba(0,0,0,0.15)', color:'#1e293b', 
+            fontSize:isMobile?11:13 
+          }}>
+            <ArrowLeft size={14} /> {!isMobile && 'Kembali'}
+          </button>
+          <img 
+            src={modul?.coverImage || "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1000"} 
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            alt="" 
+          />
+          <div style={{ 
+            position:'absolute', bottom:0, left:0, right:0, 
+            background:'linear-gradient(transparent,rgba(15,23,42,0.95))', 
+            padding:isMobile?'20px 15px':'35px 6%', color:'white' 
+          }}>
+            <div style={{ display:'flex', gap:6, marginBottom:8, flexWrap:'wrap' }}>
+              <span style={{ background:'#673ab7', padding:'4px 10px', borderRadius:8, fontSize:9, fontWeight:800 }}>
+                {modul?.subject || 'Umum'}
               </span>
-            )}
-            {modul?.kodeMapel && (
-              <span style={{ background:'rgba(139,92,246,0.3)', padding:'4px 10px', borderRadius:8, fontSize:8 }}>
-                <Tag size={8} /> {modul.kodeMapel}
+              <span style={{ background:'rgba(255,255,255,0.2)', padding:'4px 10px', borderRadius:8, fontSize:9 }}>
+                {modul?.targetKategori || 'Semua'} • {modul?.targetKelas || 'Semua'}
               </span>
-            )}
-          </div>
-          <h1 style={{ fontSize:isMobile?18:26, margin:'0 0 6px', fontWeight:900, lineHeight:1.2 }}>{modul?.title}</h1>
-          <div style={{ display:'flex', gap:12, fontSize:11, opacity:0.8, flexWrap:'wrap' }}>
-            <span><User size={12} /> {modul?.authorName || modul?.guruName || 'Guru'}</span>
-            <span><Calendar size={12} /> {formatDate(modul?.createdAt)}</span>
-            {studentNim && <span><Hash size={12} /> {studentNim}</span>}
+              {modul?.guruId && (
+                <span style={{ background:'rgba(59,130,246,0.3)', padding:'4px 10px', borderRadius:8, fontSize:8 }}>
+                  <Hash size={8} /> {modul.guruId}
+                </span>
+              )}
+              {modul?.kodeMapel && (
+                <span style={{ background:'rgba(139,92,246,0.3)', padding:'4px 10px', borderRadius:8, fontSize:8 }}>
+                  <Tag size={8} /> {modul.kodeMapel}
+                </span>
+              )}
+            </div>
+            <h1 style={{ fontSize:isMobile?18:26, margin:'0 0 6px', fontWeight:900, lineHeight:1.2 }}>
+              {modul?.title}
+            </h1>
+            <div style={{ display:'flex', gap:12, fontSize:11, opacity:0.8, flexWrap:'wrap' }}>
+              <span><User size={12} /> {modul?.authorName || modul?.guruName || 'Guru'}</span>
+              <span><Calendar size={12} /> {formatDate(modul?.createdAt)}</span>
+              {studentNim && <span><Hash size={12} /> {studentNim}</span>}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* TABS */}
-      <div style={{ display:'flex', gap:4, background:'white', margin:isMobile?'-20px 12px 0':'-30px 20px 0', borderRadius:12, padding:5, boxShadow:'0 4px 12px rgba(0,0,0,0.06)', position:'relative', zIndex:5, flexWrap:'wrap' }}>
-        <button onClick={() => setActiveTab('materi')} style={{ flex:1, padding:'10px', border:'none', borderRadius:8, fontWeight:700, fontSize:12, cursor:'pointer', background:activeTab==='materi'?'#673ab7':'transparent', color:activeTab==='materi'?'white':'#64748b', display:'flex', alignItems:'center', justifyContent:'center', gap:6, minWidth:80 }}>
-          <BookOpen size={14} /> Materi ({materiBlocks.length})
-        </button>
-        {tugasBlocks.length > 0 && (
-          <button onClick={() => setActiveTab('tugas')} style={{ flex:1, padding:'10px', border:'none', borderRadius:8, fontWeight:700, fontSize:12, cursor:'pointer', background:activeTab==='tugas'?'#673ab7':'transparent', color:activeTab==='tugas'?'white':'#64748b', display:'flex', alignItems:'center', justifyContent:'center', gap:6, minWidth:80 }}>
-            <Send size={14} /> Tugas ({Object.keys(submittedTasks).length}/{tugasBlocks.length})
+        {/* ===== TABS ===== */}
+        <div style={{ 
+          display:'flex', gap:4, background:'white', 
+          margin:isMobile?'-20px 12px 0':'-30px 20px 0', 
+          borderRadius:12, padding:5, 
+          boxShadow:'0 4px 12px rgba(0,0,0,0.06)', 
+          position:'relative', zIndex:5, flexWrap:'wrap' 
+        }}>
+          <button 
+            onClick={() => setActiveTab('materi')} 
+            style={{ 
+              flex:1, padding:'10px', border:'none', borderRadius:8, 
+              fontWeight:700, fontSize:12, cursor:'pointer', 
+              background:activeTab==='materi'?'#673ab7':'transparent', 
+              color:activeTab==='materi'?'white':'#64748b', 
+              display:'flex', alignItems:'center', justifyContent:'center', gap:6, 
+              minWidth:80 
+            }}
+          >
+            <BookOpen size={14} /> Materi ({materiBlocks.length})
           </button>
-        )}
-        {modul?.quizData?.length > 0 && (
-          <button onClick={() => setActiveTab('kuis')} style={{ flex:1, padding:'10px', border:'none', borderRadius:8, fontWeight:700, fontSize:12, cursor:'pointer', background:activeTab==='kuis'?'#673ab7':'transparent', color:activeTab==='kuis'?'white':'#64748b', display:'flex', alignItems:'center', justifyContent:'center', gap:6, minWidth:80 }}>
-            <HelpCircle size={14} /> Kuis {quizSubmitted ? '✅' : ''}
-          </button>
-        )}
-      </div>
+          {tugasBlocks.length > 0 && (
+            <button 
+              onClick={() => setActiveTab('tugas')} 
+              style={{ 
+                flex:1, padding:'10px', border:'none', borderRadius:8, 
+                fontWeight:700, fontSize:12, cursor:'pointer', 
+                background:activeTab==='tugas'?'#673ab7':'transparent', 
+                color:activeTab==='tugas'?'white':'#64748b', 
+                display:'flex', alignItems:'center', justifyContent:'center', gap:6, 
+                minWidth:80 
+              }}
+            >
+              <Send size={14} /> Tugas ({Object.keys(submittedTasks).length}/{tugasBlocks.length})
+            </button>
+          )}
+          {modul?.quizData?.length > 0 && (
+            <button 
+              onClick={() => setActiveTab('kuis')} 
+              style={{ 
+                flex:1, padding:'10px', border:'none', borderRadius:8, 
+                fontWeight:700, fontSize:12, cursor:'pointer', 
+                background:activeTab==='kuis'?'#673ab7':'transparent', 
+                color:activeTab==='kuis'?'white':'#64748b', 
+                display:'flex', alignItems:'center', justifyContent:'center', gap:6, 
+                minWidth:80 
+              }}
+            >
+              <HelpCircle size={14} /> Kuis {quizSubmitted ? '✅' : ''}
+            </button>
+          )}
+        </div>
 
-      {/* KONTEN */}
-      <div style={{ maxWidth:900, margin:'0 auto', padding:isMobile?'15px 12px':'20px' }}>
-        
-        {/* TAB MATERI */}
-        {activeTab === 'materi' && materiBlocks.map((block, idx) => (
-          <div key={block.id} style={{ background:'white', padding:isMobile?18:25, borderRadius:isMobile?14:18, marginBottom:12, boxShadow:'0 2px 8px rgba(0,0,0,0.03)', border:'1px solid #f1f5f9' }}>
-            <div style={{ marginBottom:12, borderLeft:'4px solid #673ab7', paddingLeft:10 }}>
-              <div style={{ fontSize:9, fontWeight:800, color:'#673ab7', marginBottom:2 }}>{block.type==='file'?'📁 FILE':block.type==='video'?'🔗 LINK':'📄 BAGIAN '+(idx+1)}</div>
-              <h3 style={{ fontSize:isMobile?16:20, margin:0, color:'#0f172a', fontWeight:800 }}>{block.title}</h3>
-            </div>
-            {block.type==='text' && <div style={{ lineHeight:1.8, color:'#334155', fontSize:isMobile?14:16, whiteSpace:'pre-wrap' }}>{block.content}</div>}
-            {(block.type==='video'||block.type==='file') && <div style={{marginTop:10}}>{renderMedia(block)}</div>}
-          </div>
-        ))}
-
-        {/* TAB TUGAS */}
-        {activeTab === 'tugas' && tugasBlocks.map(block => {
-          const timeRem = getTimeRemaining(block.endTime, currentTime);
-          const isExpired = isTugasExpired || (block.endTime && new Date(block.endTime) < currentTime);
-          const isSubmitted = !!submittedTasks[block.id];
-          const submission = submittedTasks[block.id];
-          const allowedFileType = block.allowedFileType || 'all';
-          const fileTypeInfo = ALLOWED_FILE_TYPES[allowedFileType] || ALLOWED_FILE_TYPES.all;
+        {/* ===== KONTEN ===== */}
+        <div style={{ maxWidth:900, margin:'0 auto', padding:isMobile?'15px 12px':'20px' }}>
           
-          return (
-            <div key={block.id} style={{ background:'white', padding:isMobile?18:25, borderRadius:isMobile?14:18, marginBottom:12, boxShadow:'0 2px 8px rgba(0,0,0,0.03)', border:'1px solid #f1f5f9', borderLeft:'4px solid #f59e0b' }}>
-              <div style={{ marginBottom:12, paddingLeft:10 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4, flexWrap:'wrap' }}>
-                  <span style={{ fontSize:9, fontWeight:800, color:'#f59e0b' }}>📝 TUGAS</span>
-                  <span style={{ fontSize:8, background:'#f1f5f9', padding:'2px 6px', borderRadius:4, color:'#64748b' }}>
-                    {fileTypeInfo.icon} {fileTypeInfo.label}
-                  </span>
+          {/* TAB MATERI */}
+          {activeTab === 'materi' && materiBlocks.map((block, idx) => (
+            <div key={block.id} style={{ 
+              background:'white', padding:isMobile?18:25, 
+              borderRadius:isMobile?14:18, marginBottom:12, 
+              boxShadow:'0 2px 8px rgba(0,0,0,0.03)', border:'1px solid #f1f5f9' 
+            }}>
+              <div style={{ marginBottom:12, borderLeft:'4px solid #673ab7', paddingLeft:10 }}>
+                <div style={{ fontSize:9, fontWeight:800, color:'#673ab7', marginBottom:2 }}>
+                  {block.type==='file'?'📁 FILE':block.type==='video'?'🔗 LINK':'📄 BAGIAN '+(idx+1)}
                 </div>
-                <h3 style={{ fontSize:isMobile?16:20, margin:0, color:'#0f172a', fontWeight:800 }}>{block.title}</h3>
+                <h3 style={{ fontSize:isMobile?16:20, margin:0, color:'#0f172a', fontWeight:800 }}>
+                  {block.title}
+                </h3>
               </div>
-              <div style={{ lineHeight:1.8, color:'#334155', fontSize:isMobile?14:16, whiteSpace:'pre-wrap', marginBottom:15 }}>{block.content}</div>
-
-              {timeRem && (
-                <div style={{ padding:10, borderRadius:8, marginBottom:15, display:'flex', alignItems:'center', gap:8, fontWeight:700, fontSize:12, background:timeRem.color+'15', color:timeRem.color }}>
-                  <Clock size={14} /> {timeRem.text}
+              {block.type==='text' && 
+                <div style={{ lineHeight:1.8, color:'#334155', fontSize:isMobile?14:16, whiteSpace:'pre-wrap' }}>
+                  {block.content}
                 </div>
-              )}
-
-              {/* Text Answer Input */}
-              <div style={{ marginBottom:12 }}>
-                <label style={{ fontSize:12, fontWeight:600, color:'#64748b', display:'block', marginBottom:4 }}>
-                  ✍️ Tulis Jawaban (Opsional)
-                </label>
-                <textarea 
-                  value={textAnswers[block.id] || ''}
-                  onChange={(e) => setTextAnswers({...textAnswers, [block.id]: e.target.value})}
-                  placeholder="Tulis jawaban di sini..."
-                  disabled={isSubmitted || isExpired}
-                  style={{ 
-                    width:'100%', padding:10, borderRadius:8, border:'1px solid #e2e8f0',
-                    fontSize:13, fontFamily:'inherit', resize:'vertical', minHeight:60,
-                    background: isSubmitted ? '#f8fafc' : 'white',
-                    color: isSubmitted ? '#94a3b8' : '#1e293b'
-                  }}
-                />
-              </div>
-
-              {isSubmitted ? (
-                <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                  <div style={{ color:'#059669', fontWeight:700, background:'#dcfce7', padding:10, borderRadius:8, display:'flex', alignItems:'center', gap:6, fontSize:12 }}>
-                    <CheckCircle size={16} /> Terkumpul
-                  </div>
-                  {submission.textAnswer && (
-                    <div style={{ background:'#f8fafc', padding:8, borderRadius:6, fontSize:12, color:'#475569' }}>
-                      <span style={{ fontWeight:600 }}>Jawaban:</span> {submission.textAnswer}
-                    </div>
-                  )}
-                  {submission.fileUrl && (
-                    <a href={submission.fileUrl} target="_blank" rel="noreferrer" style={{ background:'#f1f5f9', color:'#64748b', padding:10, borderRadius:8, fontSize:12, fontWeight:600, textDecoration:'none', textAlign:'center', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
-                      <Eye size={14} /> Lihat File
-                    </a>
-                  )}
-                  {!isExpired && (
-                    <button onClick={() => handleDeleteTask(block.id)} style={{ background:'#fee2e2', color:'#ef4444', border:'none', padding:10, borderRadius:8, fontWeight:700, fontSize:12, cursor:'pointer' }}>
-                      Tarik Data
-                    </button>
-                  )}
-                </div>
-              ) : isExpired ? (
-                <div style={{ color:'#ef4444', fontWeight:700, background:'#fee2e2', padding:10, borderRadius:8, textAlign:'center', fontSize:12 }}>
-                  ⛔ Deadline Terlewat
-                </div>
-              ) : (
-                <div>
-                  <label style={{ display:'block', background:'#f59e0b', color:'white', padding:12, borderRadius:8, textAlign:'center', fontWeight:700, fontSize:12, cursor:'pointer' }}>
-                    📎 {fileTypeInfo.icon} Pilih File ({fileTypeInfo.label})
-                    <input 
-                      type="file" 
-                      accept={fileTypeInfo.accept} 
-                      hidden 
-                      onChange={(e) => handleFileChange(e, block.id)} 
-                    />
-                  </label>
-                  {localFiles[block.id] && (
-                    <div style={{ marginTop:8, fontSize:11, color:'#10b981', display:'flex', alignItems:'center', gap:6 }}>
-                      <CheckCircle size={14} /> {localFiles[block.id].name} siap diupload
-                    </div>
-                  )}
-                </div>
-              )}
+              }
+              {(block.type==='video'||block.type==='file') && 
+                <div style={{marginTop:10}}>{renderMedia(block)}</div>
+              }
             </div>
-          );
-        })}
+          ))}
 
-        {/* TAB KUIS */}
-        {activeTab === 'kuis' && modul?.quizData?.length > 0 && (
-          <div style={{ background:'white', padding:isMobile?18:25, borderRadius:isMobile?14:18, marginBottom:12, boxShadow:'0 2px 8px rgba(0,0,0,0.03)', border:'1px solid #f1f5f9', borderTop:'4px solid '+(isQuizExpired?'#ef4444':'#673ab7') }}>
-            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20 }}>
-              <div style={{ background:'#673ab7', padding:10, borderRadius:12 }}><HelpCircle size={20} color="white"/></div>
-              <div>
-                <h2 style={{ margin:0, fontSize:isMobile?16:20 }}>Kuis Evaluasi</h2>
-                {modul.deadlineQuiz && (
-                  <p style={{ margin:0, fontSize:11, color:isQuizExpired?'#ef4444':'#64748b' }}>
-                    {getTimeRemaining(modul.deadlineQuiz, currentTime)?.text || 'Deadline: '+formatDate(modul.deadlineQuiz)}
+          {/* TAB TUGAS */}
+          {activeTab === 'tugas' && tugasBlocks.map(block => {
+            const timeRem = getTimeRemaining(block.endTime, currentTime);
+            const isExpired = isTugasExpired || (block.endTime && new Date(block.endTime) < currentTime);
+            const isSubmitted = !!submittedTasks[block.id];
+            const submission = submittedTasks[block.id];
+            const allowedFileType = block.allowedFileType || 'all';
+            const fileTypeInfo = ALLOWED_FILE_TYPES[allowedFileType] || ALLOWED_FILE_TYPES.all;
+            
+            return (
+              <div key={block.id} style={{ 
+                background:'white', padding:isMobile?18:25, 
+                borderRadius:isMobile?14:18, marginBottom:12, 
+                boxShadow:'0 2px 8px rgba(0,0,0,0.03)', 
+                border:'1px solid #f1f5f9', borderLeft:'4px solid #f59e0b' 
+              }}>
+                <div style={{ marginBottom:12, paddingLeft:10 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4, flexWrap:'wrap' }}>
+                    <span style={{ fontSize:9, fontWeight:800, color:'#f59e0b' }}>📝 TUGAS</span>
+                    <span style={{ fontSize:8, background:'#f1f5f9', padding:'2px 6px', borderRadius:4, color:'#64748b' }}>
+                      {fileTypeInfo.icon} {fileTypeInfo.label}
+                    </span>
+                  </div>
+                  <h3 style={{ fontSize:isMobile?16:20, margin:0, color:'#0f172a', fontWeight:800 }}>
+                    {block.title}
+                  </h3>
+                </div>
+                <div style={{ 
+                  lineHeight:1.8, color:'#334155', fontSize:isMobile?14:16, 
+                  whiteSpace:'pre-wrap', marginBottom:15 
+                }}>
+                  {block.content}
+                </div>
+
+                {timeRem && (
+                  <div style={{ 
+                    padding:10, borderRadius:8, marginBottom:15, 
+                    display:'flex', alignItems:'center', gap:8, 
+                    fontWeight:700, fontSize:12, 
+                    background:timeRem.color+'15', color:timeRem.color 
+                  }}>
+                    <Clock size={14} /> {timeRem.text}
+                  </div>
+                )}
+
+                {/* Text Answer Input */}
+                <div style={{ marginBottom:12 }}>
+                  <label style={{ fontSize:12, fontWeight:600, color:'#64748b', display:'block', marginBottom:4 }}>
+                    ✍️ Tulis Jawaban (Opsional)
+                  </label>
+                  <textarea 
+                    value={textAnswers[block.id] || ''}
+                    onChange={(e) => setTextAnswers({...textAnswers, [block.id]: e.target.value})}
+                    placeholder="Tulis jawaban di sini..."
+                    disabled={isSubmitted || isExpired}
+                    style={{ 
+                      width:'100%', padding:10, borderRadius:8, border:'1px solid #e2e8f0',
+                      fontSize:13, fontFamily:'inherit', resize:'vertical', minHeight:60,
+                      background: isSubmitted ? '#f8fafc' : 'white',
+                      color: isSubmitted ? '#94a3b8' : '#1e293b'
+                    }}
+                  />
+                </div>
+
+                {isSubmitted ? (
+                  <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                    <div style={{ 
+                      color:'#059669', fontWeight:700, background:'#dcfce7', 
+                      padding:10, borderRadius:8, display:'flex', alignItems:'center', gap:6, fontSize:12 
+                    }}>
+                      <CheckCircle size={16} /> Terkumpul
+                    </div>
+                    {submission.textAnswer && (
+                      <div style={{ background:'#f8fafc', padding:8, borderRadius:6, fontSize:12, color:'#475569' }}>
+                        <span style={{ fontWeight:600 }}>Jawaban:</span> {submission.textAnswer}
+                      </div>
+                    )}
+                    {submission.fileUrl && (
+                      <a href={submission.fileUrl} target="_blank" rel="noreferrer" style={{ 
+                        background:'#f1f5f9', color:'#64748b', padding:10, borderRadius:8, 
+                        fontSize:12, fontWeight:600, textDecoration:'none', textAlign:'center', 
+                        display:'flex', alignItems:'center', justifyContent:'center', gap:6 
+                      }}>
+                        <Eye size={14} /> Lihat File
+                      </a>
+                    )}
+                    {!isExpired && (
+                      <button onClick={() => handleDeleteTask(block.id)} style={{ 
+                        background:'#fee2e2', color:'#ef4444', border:'none', 
+                        padding:10, borderRadius:8, fontWeight:700, fontSize:12, cursor:'pointer' 
+                      }}>
+                        Tarik Data
+                      </button>
+                    )}
+                  </div>
+                ) : isExpired ? (
+                  <div style={{ 
+                    color:'#ef4444', fontWeight:700, background:'#fee2e2', 
+                    padding:10, borderRadius:8, textAlign:'center', fontSize:12 
+                  }}>
+                    ⛔ Deadline Terlewat
+                  </div>
+                ) : (
+                  <div>
+                    <label style={{ 
+                      display:'block', background:'#f59e0b', color:'white', 
+                      padding:12, borderRadius:8, textAlign:'center', 
+                      fontWeight:700, fontSize:12, cursor:'pointer' 
+                    }}>
+                      📎 {fileTypeInfo.icon} Pilih File ({fileTypeInfo.label})
+                      <input 
+                        type="file" 
+                        accept={fileTypeInfo.accept} 
+                        hidden 
+                        onChange={(e) => handleFileChange(e, block.id)} 
+                      />
+                    </label>
+                    {localFiles[block.id] && (
+                      <div style={{ marginTop:8, fontSize:11, color:'#10b981', display:'flex', alignItems:'center', gap:6 }}>
+                        <CheckCircle size={14} /> {localFiles[block.id].name} siap diupload
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* TAB KUIS */}
+          {activeTab === 'kuis' && modul?.quizData?.length > 0 && (
+            <div style={{ 
+              background:'white', padding:isMobile?18:25, borderRadius:isMobile?14:18, 
+              marginBottom:12, boxShadow:'0 2px 8px rgba(0,0,0,0.03)', 
+              border:'1px solid #f1f5f9', borderTop:'4px solid '+(isQuizExpired?'#ef4444':'#673ab7') 
+            }}>
+              <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20 }}>
+                <div style={{ background:'#673ab7', padding:10, borderRadius:12 }}>
+                  <HelpCircle size={20} color="white"/>
+                </div>
+                <div>
+                  <h2 style={{ margin:0, fontSize:isMobile?16:20 }}>Kuis Evaluasi</h2>
+                  {modul.deadlineQuiz && (
+                    <p style={{ margin:0, fontSize:11, color:isQuizExpired?'#ef4444':'#64748b' }}>
+                      {getTimeRemaining(modul.deadlineQuiz, currentTime)?.text || 'Deadline: '+formatDate(modul.deadlineQuiz)}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {modul.quizData.map((q, qIdx) => (
+                <div key={q.id} style={{ marginBottom:18 }}>
+                  <p style={{ fontSize:isMobile?14:16, fontWeight:800, color:'#1e293b', display:'flex', gap:10, flexDirection:'column' }}>
+                    <span style={{ display:'flex', alignItems:'center', gap:10 }}>
+                      <span style={{ 
+                        background:'#f1f5f9', color:'#673ab7', minWidth:28, height:28, 
+                        borderRadius:8, display:'flex', alignItems:'center', 
+                        justifyContent:'center', fontSize:13, flexShrink:0 
+                      }}>
+                        {qIdx+1}
+                      </span>
+                      {q.question}
+                    </span>
+                    {q.questionImage && (
+                      <img 
+                        src={q.questionImage} 
+                        alt="Gambar Soal" 
+                        style={{ 
+                          maxWidth:'100%', maxHeight:isMobile?200:300, objectFit:'contain', 
+                          borderRadius:10, border:'1px solid #e2e8f0', marginTop:8, cursor:'pointer' 
+                        }}
+                        onClick={() => setPreviewImage(q.questionImage)}
+                      />
+                    )}
                   </p>
+                  <div style={{ display:'grid', gap:6, marginTop:8 }}>
+                    {q.options.map((opt, oIdx) => {
+                      const optionImage = q.optionImages?.[oIdx];
+                      return (
+                        <button 
+                          key={oIdx} 
+                          disabled={quizSubmitted || isQuizExpired} 
+                          onClick={() => setQuizAnswers({...quizAnswers, [q.id]: oIdx})}
+                          style={{
+                            padding: isMobile?'10px 14px':'12px 16px', 
+                            borderRadius:10, border:'2px solid', textAlign:'left', 
+                            fontSize:isMobile?13:14, fontWeight:700, cursor:'pointer',
+                            background: quizAnswers[q.id]===oIdx?'#673ab7':'#f8fafc', 
+                            color: quizAnswers[q.id]===oIdx?'white':'#1e293b', 
+                            borderColor: quizAnswers[q.id]===oIdx?'#673ab7':'#e2e8f0',
+                            display:'flex', flexDirection:'column', gap:6
+                          }}
+                        >
+                          <span style={{display:'flex', alignItems:'center', gap:6}}>
+                            <span style={{ opacity:0.6, minWidth:20 }}>
+                              {String.fromCharCode(65+oIdx)}.
+                            </span> {opt}
+                          </span>
+                          {optionImage && (
+                            <img 
+                              src={optionImage} 
+                              alt={`Opsi ${String.fromCharCode(65+oIdx)}`}
+                              style={{ 
+                                maxWidth:'100%', maxHeight:isMobile?120:180, objectFit:'contain', 
+                                borderRadius:8, border:'1px solid rgba(255,255,255,0.3)',
+                                marginLeft:26, marginTop:4 
+                              }}
+                            />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              <div style={{ marginTop:15 }}>
+                {!quizSubmitted && !isQuizExpired ? (
+                  <button onClick={handleQuizSubmit} style={{ 
+                    width:'100%', padding:14, borderRadius:12, border:'none', 
+                    background:'#673ab7', color:'white', fontWeight:800, fontSize:15, cursor:'pointer' 
+                  }}>
+                    Kirim Jawaban Kuis
+                  </button>
+                ) : (
+                  <div style={{ 
+                    textAlign:'center', padding:14, background:'#f0fdf4', 
+                    color:'#15803d', borderRadius:12, fontWeight:700, fontSize:13 
+                  }}>
+                    <CheckCircle size={18} /> {quizSubmitted ? 'Kuis Selesai' : 'Waktu Habis'}
+                  </div>
                 )}
               </div>
             </div>
-            {modul.quizData.map((q, qIdx) => (
-              <div key={q.id} style={{ marginBottom:18 }}>
-                <p style={{ fontSize:isMobile?14:16, fontWeight:800, color:'#1e293b', display:'flex', gap:10, flexDirection:'column' }}>
-                  <span style={{ display:'flex', alignItems:'center', gap:10 }}>
-                    <span style={{ background:'#f1f5f9', color:'#673ab7', minWidth:28, height:28, borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, flexShrink:0 }}>{qIdx+1}</span>
-                    {q.question}
-                  </span>
-                  {q.questionImage && (
-                    <img 
-                      src={q.questionImage} 
-                      alt="Gambar Soal" 
-                      style={{ maxWidth:'100%', maxHeight:isMobile?200:300, objectFit:'contain', borderRadius:10, border:'1px solid #e2e8f0', marginTop:8, cursor:'pointer' }}
-                      onClick={() => setPreviewImage(q.questionImage)}
-                    />
-                  )}
-                </p>
-                <div style={{ display:'grid', gap:6, marginTop:8 }}>
-                  {q.options.map((opt, oIdx) => {
-                    const optionImage = q.optionImages?.[oIdx];
-                    return (
-                      <button key={oIdx} disabled={quizSubmitted || isQuizExpired} onClick={() => setQuizAnswers({...quizAnswers, [q.id]: oIdx})}
-                        style={{
-                          padding: isMobile?'10px 14px':'12px 16px', borderRadius:10, border:'2px solid', textAlign:'left', fontSize:isMobile?13:14, fontWeight:700, cursor:'pointer',
-                          background: quizAnswers[q.id]===oIdx?'#673ab7':'#f8fafc', color: quizAnswers[q.id]===oIdx?'white':'#1e293b', borderColor: quizAnswers[q.id]===oIdx?'#673ab7':'#e2e8f0',
-                          display:'flex', flexDirection:'column', gap:6
-                        }}>
-                        <span style={{display:'flex', alignItems:'center', gap:6}}>
-                          <span style={{ opacity:0.6, minWidth:20 }}>{String.fromCharCode(65+oIdx)}.</span> {opt}
-                        </span>
-                        {optionImage && (
-                          <img 
-                            src={optionImage} 
-                            alt={`Opsi ${String.fromCharCode(65+oIdx)}`}
-                            style={{ maxWidth:'100%', maxHeight:isMobile?120:180, objectFit:'contain', borderRadius:8, border:'1px solid rgba(255,255,255,0.3)', marginLeft:26, marginTop:4 }}
-                          />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-            <div style={{ marginTop:15 }}>
-              {!quizSubmitted && !isQuizExpired ? (
-                <button onClick={handleQuizSubmit} style={{ width:'100%', padding:14, borderRadius:12, border:'none', background:'#673ab7', color:'white', fontWeight:800, fontSize:15, cursor:'pointer' }}>
-                  Kirim Jawaban Kuis
-                </button>
-              ) : (
-                <div style={{ textAlign:'center', padding:14, background:'#f0fdf4', color:'#15803d', borderRadius:12, fontWeight:700, fontSize:13 }}>
-                  <CheckCircle size={18} /> {quizSubmitted ? 'Kuis Selesai' : 'Waktu Habis'}
-                </div>
-              )}
-            </div>
+          )}
+        </div>
+
+        {/* MODAL PREVIEW GAMBAR FULLSCREEN */}
+        {previewImage && (
+          <div 
+            onClick={() => setPreviewImage(null)}
+            style={{ 
+              position:'fixed', inset:0, background:'rgba(0,0,0,0.9)', zIndex:9999,
+              display:'flex', alignItems:'center', justifyContent:'center', padding:20, cursor:'pointer' 
+            }}
+          >
+            <button 
+              onClick={(e) => { e.stopPropagation(); setPreviewImage(null); }}
+              style={{ 
+                position:'absolute', top:20, right:20, background:'rgba(255,255,255,0.2)', 
+                color:'white', border:'none', borderRadius:'50%', width:40, height:40, 
+                cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 
+              }}
+            ><X size={24}/></button>
+            <img 
+              src={previewImage} 
+              alt="Preview" 
+              style={{ maxWidth:'95%', maxHeight:'90vh', objectFit:'contain', borderRadius:12 }}
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         )}
-      </div>
 
-      {/* MODAL PREVIEW GAMBAR FULLSCREEN */}
-      {previewImage && (
-        <div 
-          onClick={() => setPreviewImage(null)}
-          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.9)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:20, cursor:'pointer' }}
-        >
-          <button 
-            onClick={(e) => { e.stopPropagation(); setPreviewImage(null); }}
-            style={{ position:'absolute', top:20, right:20, background:'rgba(255,255,255,0.2)', color:'white', border:'none', borderRadius:'50%', width:40, height:40, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 }}
-          ><X size={24}/></button>
-          <img 
-            src={previewImage} 
-            alt="Preview" 
-            style={{ maxWidth:'95%', maxHeight:'90vh', objectFit:'contain', borderRadius:12 }}
-            onClick={(e) => e.stopPropagation()}
+        {/* MODAL PREVIEW SEBELUM UPLOAD */}
+        {showPreviewModal && pendingFile && (
+          <FilePreviewBeforeUpload 
+            file={pendingFile}
+            onConfirm={handleConfirmUpload}
+            onCancel={handleCancelUpload}
+            uploading={uploading[pendingBlockId] || false}
           />
-        </div>
-      )}
+        )}
 
-      {/* MODAL PREVIEW SEBELUM UPLOAD */}
-      {showPreviewModal && pendingFile && (
-        <FilePreviewBeforeUpload 
-          file={pendingFile}
-          onConfirm={handleConfirmUpload}
-          onCancel={handleCancelUpload}
-          uploading={uploading[pendingBlockId] || false}
-        />
-      )}
-
-      <style>{`
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
+        <style>{`
+          @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        `}</style>
+      </div>
     </div>
   );
 };
+
+// ============================================================
+// STYLES
+// ============================================================
+const styles = {
+  wrapper: {
+    display: 'flex',
+    minHeight: '100vh',
+    background: '#f8fafc'
+  },
+  mainContent: {
+    flex: 1,
+    marginLeft: 0,
+    minHeight: '100vh',
+    transition: 'margin-left 0.3s ease',
+    overflowX: 'hidden'
+  },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '70vh',
+    gap: 16
+  },
+  spinner: {
+    width: 40,
+    height: 40,
+    border: '4px solid #e2e8f0',
+    borderTop: '4px solid #652D90',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite'
+  },
+  mobileHeader: {
+    display: 'none',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '12px 16px',
+    background: 'white',
+    borderBottom: '1px solid #e2e8f0',
+    position: 'sticky',
+    top: 0,
+    zIndex: 50
+  },
+  menuBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '4px'
+  },
+  mobileTitle: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: '#1e293b',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    maxWidth: '60%'
+  }
+};
+
+// ============================================================
+// RESPONSIVE OVERRIDE
+// ============================================================
+// Media query untuk mobile (di atas 768px sidebar tetap terlihat)
+// Di dalam komponen sudah menggunakan isMobile untuk mengatur tampilan
+// Sidebar akan muncul saat isOpen true di mobile
 
 export default StudentModuleView;
