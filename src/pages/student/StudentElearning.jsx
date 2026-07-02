@@ -23,6 +23,7 @@ import {
 import { InlineMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 import { uploadElearningFile, deleteFile, supabase } from '../../services/uploadService';
+import SidebarSiswa from '../../components/SidebarSiswa';
 
 // ============================================================
 // CONSTANTS
@@ -149,9 +150,9 @@ const modalStyles = {
 const StudentElearning = () => {
   const navigate = useNavigate();
   
-  // ============================================================
-  // 🔥 SEMUA HOOKS DIPANGGIL DI SINI (SEBELUM CONDITIONAL RETURN)
-  // ============================================================
+  // ===== SIDEBAR STATE =====
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState('materi');
   
   // ===== STATES =====
   const [modules, setModules] = useState([]);
@@ -294,7 +295,8 @@ const StudentElearning = () => {
     setSelectedModule(module);
     setActiveTab('materi');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+    if (isMobile) setSidebarOpen(false);
+  }, [isMobile]);
 
   const handleBack = useCallback(() => {
     setSelectedModule(null);
@@ -819,21 +821,50 @@ const StudentElearning = () => {
   
   if (loading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '70vh', gap: 16 }}>
-        <div style={{ width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #652D90', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-        <p style={{ color: '#94a3b8', fontSize: 13 }}>Memuat materi pembelajaran...</p>
-        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      <div style={styles.wrapper}>
+        <SidebarSiswa 
+          activeMenu={activeMenu} 
+          setActiveMenu={setActiveMenu}
+          isOpen={sidebarOpen}
+          setIsOpen={setSidebarOpen}
+        />
+        <div style={styles.mainContent}>
+          <div style={styles.loadingContainer}>
+            <div style={styles.spinner}></div>
+            <p style={{ color: '#94a3b8', fontSize: 13 }}>Memuat materi pembelajaran...</p>
+            <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (selectedModule) {
     return (
-      <>
-        {renderModuleDetail()}
-        {renderSubmitModal()}
-        {previewFile && <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
-      </>
+      <div style={styles.wrapper}>
+        <SidebarSiswa 
+          activeMenu={activeMenu} 
+          setActiveMenu={setActiveMenu}
+          isOpen={sidebarOpen}
+          setIsOpen={setSidebarOpen}
+        />
+        <div style={styles.mainContent}>
+          {/* Mobile Header */}
+          <div style={styles.mobileHeader}>
+            <button 
+              onClick={() => setSidebarOpen(true)} 
+              style={styles.menuBtn}
+            >
+              <Menu size={24} color="#1e293b" />
+            </button>
+            <span style={styles.mobileTitle}>{selectedModule?.title || 'Modul'}</span>
+            <div style={{ width: 24 }}></div>
+          </div>
+          {renderModuleDetail()}
+          {renderSubmitModal()}
+          {previewFile && <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
+        </div>
+      </div>
     );
   }
 
@@ -841,140 +872,222 @@ const StudentElearning = () => {
   // RENDER: MODULE LIST
   // ============================================================
   return (
-    <div style={listStyles.container}>
-      <div style={listStyles.header}>
-        <div>
-          <h1 style={listStyles.title}>
-            <BookOpen size={28} color="#652D90" /> E-Learning
-          </h1>
-          <p style={listStyles.subtitle}>
-            {studentName} • {studentKategori} • Kelas {studentKelas}
-            {studentNim && <span style={listStyles.nimBadge}><Hash size={10} /> {studentNim}</span>}
-          </p>
-        </div>
-        <div style={listStyles.viewToggle}>
-          <button onClick={() => setViewMode('grid')} style={{...listStyles.viewBtn, background: viewMode === 'grid' ? '#652D90' : '#f1f5f9', color: viewMode === 'grid' ? 'white' : '#64748b' }}>
-            <Grid3x3 size={16} />
-          </button>
-          <button onClick={() => setViewMode('list')} style={{...listStyles.viewBtn, background: viewMode === 'list' ? '#652D90' : '#f1f5f9', color: viewMode === 'list' ? 'white' : '#64748b' }}>
-            <List size={16} />
-          </button>
-        </div>
-      </div>
-
-      <div style={listStyles.statsRow}>
-        <div style={listStyles.statItem}>
-          <span style={listStyles.statValue}>{stats.totalModules}</span>
-          <span style={listStyles.statLabel}>📚 Modul</span>
-        </div>
-        <div style={listStyles.statItem}>
-          <span style={listStyles.statValue}>{stats.totalAssignments}</span>
-          <span style={listStyles.statLabel}>📝 Tugas</span>
-        </div>
-        <div style={listStyles.statItem}>
-          <span style={listStyles.statValue}>{stats.submittedAssignments}/{stats.totalAssignments}</span>
-          <span style={listStyles.statLabel}>✅ Terkirim</span>
-        </div>
-        <div style={listStyles.statItem}>
-          <span style={listStyles.statValue}>{stats.totalQuizzes}</span>
-          <span style={listStyles.statLabel}>❓ Kuis</span>
-        </div>
-      </div>
-
-      <div style={listStyles.filterBar}>
-        <div style={listStyles.searchBox}>
-          <Search size={18} color="#94a3b8" />
-          <input 
-            type="text" 
-            placeholder="Cari materi, mapel, atau ID..." 
-            value={searchTerm} 
-            onChange={(e) => setSearchTerm(e.target.value)} 
-            style={listStyles.searchInput} 
-          />
-          {searchTerm && (
-            <button onClick={() => setSearchTerm('')} style={listStyles.clearBtn}>✕</button>
-          )}
-        </div>
-        <div style={listStyles.filterGroup}>
-          <select 
-            value={filterType} 
-            onChange={(e) => setFilterType(e.target.value)} 
-            style={listStyles.filterSelect}
+    <div style={styles.wrapper}>
+      <SidebarSiswa 
+        activeMenu={activeMenu} 
+        setActiveMenu={setActiveMenu}
+        isOpen={sidebarOpen}
+        setIsOpen={setSidebarOpen}
+      />
+      <div style={styles.mainContent}>
+        {/* Mobile Header */}
+        <div style={styles.mobileHeader}>
+          <button 
+            onClick={() => setSidebarOpen(true)} 
+            style={styles.menuBtn}
           >
-            <option value="all">Semua</option>
-            <option value="module">📚 Modul</option>
-            <option value="assignment">📝 Tugas</option>
-            <option value="quiz">❓ Kuis</option>
-          </select>
-          <select 
-            value={filterMapel} 
-            onChange={(e) => setFilterMapel(e.target.value)} 
-            style={listStyles.filterSelect}
-          >
-            <option value="all">📖 Semua Mapel</option>
-            {subjects.filter(s => s !== 'all').map(s => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
+            <Menu size={24} color="#1e293b" />
+          </button>
+          <span style={styles.mobileTitle}>E-Learning</span>
+          <div style={{ width: 24 }}></div>
         </div>
-      </div>
 
-      {filteredModules.length === 0 ? (
-        <div style={listStyles.emptyState}>
-          <BookOpen size={56} color="#cbd5e1" />
-          <h3 style={listStyles.emptyTitle}>Belum ada materi</h3>
-          <p style={listStyles.emptyDesc}>
-            {searchTerm ? 'Coba ubah kata kunci pencarian' : `Belum ada materi untuk ${studentKategori} - Kelas ${studentKelas}`}
-          </p>
-        </div>
-      ) : viewMode === 'grid' ? (
-        <div style={listStyles.grid}>
-          {filteredModules.map(module => renderModuleCard(module))}
-        </div>
-      ) : (
-        <div style={listStyles.list}>
-          {filteredModules.map(module => {
-            const isQuiz = module.type === 'kuis_mandiri';
-            const submission = submissions[module.id];
-            const status = submission?.status || 'not_submitted';
-            const statusInfo = STATUS_COLORS[status] || STATUS_COLORS.not_submitted;
-            
-            return (
-              <div 
-                key={module.id} 
-                onClick={() => handleModuleClick(module)} 
-                style={listStyles.listItem}
+        <div style={listStyles.container}>
+          <div style={listStyles.header}>
+            <div>
+              <h1 style={listStyles.title}>
+                <BookOpen size={28} color="#652D90" /> E-Learning
+              </h1>
+              <p style={listStyles.subtitle}>
+                {studentName} • {studentKategori} • Kelas {studentKelas}
+                {studentNim && <span style={listStyles.nimBadge}><Hash size={10} /> {studentNim}</span>}
+              </p>
+            </div>
+            <div style={listStyles.viewToggle}>
+              <button onClick={() => setViewMode('grid')} style={{...listStyles.viewBtn, background: viewMode === 'grid' ? '#652D90' : '#f1f5f9', color: viewMode === 'grid' ? 'white' : '#64748b' }}>
+                <Grid3x3 size={16} />
+              </button>
+              <button onClick={() => setViewMode('list')} style={{...listStyles.viewBtn, background: viewMode === 'list' ? '#652D90' : '#f1f5f9', color: viewMode === 'list' ? 'white' : '#64748b' }}>
+                <List size={16} />
+              </button>
+            </div>
+          </div>
+
+          <div style={listStyles.statsRow}>
+            <div style={listStyles.statItem}>
+              <span style={listStyles.statValue}>{stats.totalModules}</span>
+              <span style={listStyles.statLabel}>📚 Modul</span>
+            </div>
+            <div style={listStyles.statItem}>
+              <span style={listStyles.statValue}>{stats.totalAssignments}</span>
+              <span style={listStyles.statLabel}>📝 Tugas</span>
+            </div>
+            <div style={listStyles.statItem}>
+              <span style={listStyles.statValue}>{stats.submittedAssignments}/{stats.totalAssignments}</span>
+              <span style={listStyles.statLabel}>✅ Terkirim</span>
+            </div>
+            <div style={listStyles.statItem}>
+              <span style={listStyles.statValue}>{stats.totalQuizzes}</span>
+              <span style={listStyles.statLabel}>❓ Kuis</span>
+            </div>
+          </div>
+
+          <div style={listStyles.filterBar}>
+            <div style={listStyles.searchBox}>
+              <Search size={18} color="#94a3b8" />
+              <input 
+                type="text" 
+                placeholder="Cari materi, mapel, atau ID..." 
+                value={searchTerm} 
+                onChange={(e) => setSearchTerm(e.target.value)} 
+                style={listStyles.searchInput} 
+              />
+              {searchTerm && (
+                <button onClick={() => setSearchTerm('')} style={listStyles.clearBtn}>✕</button>
+              )}
+            </div>
+            <div style={listStyles.filterGroup}>
+              <select 
+                value={filterType} 
+                onChange={(e) => setFilterType(e.target.value)} 
+                style={listStyles.filterSelect}
               >
-                <div style={listStyles.listItemIcon}>
-                  {isQuiz ? <HelpCircle size={20} color="#8b5cf6" /> : <BookOpen size={20} color="#3b82f6" />}
-                </div>
-                <div style={listStyles.listItemContent}>
-                  <div style={listStyles.listItemHeader}>
-                    <span style={listStyles.listItemTitle}>{module.title}</span>
-                    <span style={{...listStyles.listItemStatus, background: statusInfo.bg, color: statusInfo.color }}>
-                      {statusInfo.label}
-                    </span>
-                  </div>
-                  <div style={listStyles.listItemMeta}>
-                    <span>{module.subject || 'Materi'}</span>
-                    {module.kodeMapel && <span style={listStyles.listItemTag}>{module.kodeMapel}</span>}
-                    {module.guruId && <span style={listStyles.listItemTag}><Hash size={8} /> {module.guruId}</span>}
-                  </div>
-                </div>
-                <ChevronRight size={18} color="#94a3b8" />
-              </div>
-            );
-          })}
-        </div>
-      )}
+                <option value="all">Semua</option>
+                <option value="module">📚 Modul</option>
+                <option value="assignment">📝 Tugas</option>
+                <option value="quiz">❓ Kuis</option>
+              </select>
+              <select 
+                value={filterMapel} 
+                onChange={(e) => setFilterMapel(e.target.value)} 
+                style={listStyles.filterSelect}
+              >
+                <option value="all">📖 Semua Mapel</option>
+                {subjects.filter(s => s !== 'all').map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-      {previewFile && <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
+          {filteredModules.length === 0 ? (
+            <div style={listStyles.emptyState}>
+              <BookOpen size={56} color="#cbd5e1" />
+              <h3 style={listStyles.emptyTitle}>Belum ada materi</h3>
+              <p style={listStyles.emptyDesc}>
+                {searchTerm ? 'Coba ubah kata kunci pencarian' : `Belum ada materi untuk ${studentKategori} - Kelas ${studentKelas}`}
+              </p>
+            </div>
+          ) : viewMode === 'grid' ? (
+            <div style={listStyles.grid}>
+              {filteredModules.map(module => renderModuleCard(module))}
+            </div>
+          ) : (
+            <div style={listStyles.list}>
+              {filteredModules.map(module => {
+                const isQuiz = module.type === 'kuis_mandiri';
+                const submission = submissions[module.id];
+                const status = submission?.status || 'not_submitted';
+                const statusInfo = STATUS_COLORS[status] || STATUS_COLORS.not_submitted;
+                
+                return (
+                  <div 
+                    key={module.id} 
+                    onClick={() => handleModuleClick(module)} 
+                    style={listStyles.listItem}
+                  >
+                    <div style={listStyles.listItemIcon}>
+                      {isQuiz ? <HelpCircle size={20} color="#8b5cf6" /> : <BookOpen size={20} color="#3b82f6" />}
+                    </div>
+                    <div style={listStyles.listItemContent}>
+                      <div style={listStyles.listItemHeader}>
+                        <span style={listStyles.listItemTitle}>{module.title}</span>
+                        <span style={{...listStyles.listItemStatus, background: statusInfo.bg, color: statusInfo.color }}>
+                          {statusInfo.label}
+                        </span>
+                      </div>
+                      <div style={listStyles.listItemMeta}>
+                        <span>{module.subject || 'Materi'}</span>
+                        {module.kodeMapel && <span style={listStyles.listItemTag}>{module.kodeMapel}</span>}
+                        {module.guruId && <span style={listStyles.listItemTag}><Hash size={8} /> {module.guruId}</span>}
+                      </div>
+                    </div>
+                    <ChevronRight size={18} color="#94a3b8" />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {previewFile && <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
+        </div>
+      </div>
     </div>
   );
 };
 
 // ============================================================
 // STYLES
+// ============================================================
+const styles = {
+  wrapper: {
+    display: 'flex',
+    minHeight: '100vh',
+    background: '#f8fafc'
+  },
+  mainContent: {
+    flex: 1,
+    marginLeft: 0,
+    minHeight: '100vh',
+    transition: 'margin-left 0.3s ease',
+    overflowX: 'hidden'
+  },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '70vh',
+    gap: 16
+  },
+  spinner: {
+    width: 40,
+    height: 40,
+    border: '4px solid #e2e8f0',
+    borderTop: '4px solid #652D90',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite'
+  },
+  mobileHeader: {
+    display: 'none',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '12px 16px',
+    background: 'white',
+    borderBottom: '1px solid #e2e8f0',
+    position: 'sticky',
+    top: 0,
+    zIndex: 50
+  },
+  menuBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '4px'
+  },
+  mobileTitle: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: '#1e293b',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    maxWidth: '60%'
+  }
+};
+
+// ============================================================
+// STYLES CARD, DETAIL, LIST (SAMA SEPERTI SEBELUMNYA)
 // ============================================================
 const cardStyles = {
   card: {
