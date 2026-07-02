@@ -107,15 +107,17 @@ const FilePreviewModal = ({ file, onClose }) => {
   );
 };
 
+// 🔥 MODAL STYLES - DIPERBAIKI (TIDAK ADA DUPLIKASI KEY)
 const modalStyles = {
   overlay: {
     position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
     zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center',
     padding: 20, backdropFilter: 'blur(4px)'
   },
-  content: {
-    background: 'white', borderRadius: 16, maxWidth: '90vw', maxHeight: '90vh',
-    width: '100%', maxWidth: 900, overflow: 'hidden', position: 'relative'
+  content: { 
+    background: 'white', borderRadius: 16, 
+    width: '90vw', maxHeight: '90vh',
+    maxWidth: 900, overflow: 'hidden', position: 'relative'
   },
   closeBtn: {
     position: 'absolute', top: 12, right: 12, background: 'rgba(255,255,255,0.95)',
@@ -123,8 +125,14 @@ const modalStyles = {
     cursor: 'pointer', zIndex: 1, display: 'flex', alignItems: 'center',
     justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
   },
-  title: { padding: '16px 20px', margin: 0, fontSize: 14, fontWeight: 700, borderBottom: '1px solid #e2e8f0' },
-  body: { padding: 20, minHeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  title: { 
+    padding: '16px 20px', margin: 0, fontSize: 14, 
+    fontWeight: 700, borderBottom: '1px solid #e2e8f0' 
+  },
+  body: { 
+    padding: 20, minHeight: 300, display: 'flex', 
+    alignItems: 'center', justifyContent: 'center' 
+  },
   image: { maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain' },
   iframe: { width: '100%', height: '70vh', border: 'none' },
   fallback: { textAlign: 'center', padding: 40, color: '#94a3b8' },
