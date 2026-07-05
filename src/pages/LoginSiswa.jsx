@@ -8,7 +8,7 @@ import {
   Sparkles, Shield, CheckCircle, AlertCircle, 
   Rocket, Star, Trophy, Gamepad2, X, ChevronLeft, 
   ChevronRight, Calendar, Clock, Users, Award,
-  TrendingUp, Zap, Globe, Menu
+  TrendingUp, Zap, Globe, Menu, Download, Smartphone
 } from 'lucide-react';
 
 const LoginSiswa = () => {
@@ -22,6 +22,14 @@ const LoginSiswa = () => {
   const [theme] = useState('dark');
   const [currentPosterIndex, setCurrentPosterIndex] = useState(0);
   
+  // ===== PWA INSTALL =====
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [showInstallBtn, setShowInstallBtn] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
   // ===== GAME STATE =====
   const [showGame, setShowGame] = useState(false);
   const [gameWords, setGameWords] = useState([
@@ -37,15 +45,30 @@ const LoginSiswa = () => {
   const [gameMessage, setGameMessage] = useState('');
   const [gameScore, setGameScore] = useState(0);
   const [gameComplete, setGameComplete] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
+  // ============================================================
+  // EFFECTS
+  // ============================================================
+  
+  // Responsive & Device Detection
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
     window.addEventListener('resize', handleResize);
+    
+    // Deteksi iOS
+    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    setIsIOS(iOS);
+    
+    // Deteksi Android
+    const android = /Android/.test(navigator.userAgent);
+    setIsAndroid(android);
+    
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // ===== FETCH POSTERS =====
+  // ===== AMBIL POSTER =====
   useEffect(() => {
     const fetchPosters = async () => {
       try {
@@ -68,6 +91,93 @@ const LoginSiswa = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, [posters.length]);
+
+  // ===== PWA INSTALL HANDLER =====
+  useEffect(() => {
+    // Cek apakah sudah terinstall
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                          window.navigator.standalone;
+    if (isStandalone) {
+      setIsInstalled(true);
+      setShowInstallBtn(false);
+      return;
+    }
+
+    // Handler untuk beforeinstallprompt (Android/Desktop)
+    const handler = (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+      setShowInstallBtn(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+
+    // iOS: Cek apakah sudah di home screen
+    if (isIOS && !isStandalone) {
+      setShowInstallBtn(true);
+    }
+
+    // Event ketika app terinstall
+    window.addEventListener('appinstalled', () => {
+      setIsInstalled(true);
+      setShowInstallBtn(false);
+    });
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+    };
+  }, [isIOS]);
+
+  // ============================================================
+  // FUNCTIONS
+  // ============================================================
+  
+  // ===== INSTALL HANDLER =====
+  const handleInstall = async () => {
+    // IOS
+    if (isIOS) {
+      alert(
+        '📱 CARA INSTALL APLIKASI DI iPhone/iPad:\n\n' +
+        '1. Tap ikon [Bagikan/Share] (kotak dengan panah ke atas) di bawah layar.\n' +
+        '2. Gulir ke bawah lalu pilih "Add to Home Screen" (Tambahkan ke Layar Utama).\n' +
+        '3. Tap "Add" di pojok kanan atas.\n\n' +
+        '✅ Aplikasi akan muncul di layar utama iPhone Anda!'
+      );
+      return;
+    }
+
+    // Android dengan beforeinstallprompt
+    if (installPrompt) {
+      try {
+        await installPrompt.prompt();
+        const result = await installPrompt.userChoice;
+        if (result.outcome === 'accepted') {
+          setIsInstalled(true);
+          setShowInstallBtn(false);
+        }
+        setInstallPrompt(null);
+      } catch (err) {
+        console.log('Install error:', err);
+      }
+      return;
+    }
+
+    // Fallback untuk Android tanpa beforeinstallprompt
+    if (isAndroid) {
+      alert(
+        '📱 CARA INSTALL APLIKASI DI Android:\n\n' +
+        '1. Buka Chrome browser.\n' +
+        '2. Tap ikon titik tiga (⋮) di pojok kanan atas.\n' +
+        '3. Pilih "Install Aplikasi" atau "Add to Home Screen".\n' +
+        '4. Tap "Install".\n\n' +
+        '✅ Aplikasi akan muncul di layar utama HP Anda!'
+      );
+      return;
+    }
+
+    // Desktop
+    alert('💻 Gunakan browser Chrome atau Edge di desktop untuk install aplikasi.');
+  };
 
   // ===== LOGIN =====
   const handleLogin = async (e) => {
@@ -193,6 +303,31 @@ const LoginSiswa = () => {
   return (
     <div style={styles.container}>
       
+      {/* ===== META VIEWPORT FIX UNTUK IOS ZOOM ===== */}
+      <style>{`
+        @viewport {
+          width: device-width;
+          initial-scale: 1;
+          maximum-scale: 1;
+          user-scalable: no;
+        }
+        html, body {
+          -webkit-text-size-adjust: 100%;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
+        }
+        input, select, textarea {
+          font-size: 16px !important;
+          -webkit-appearance: none;
+          appearance: none;
+        }
+        @media screen and (max-width: 768px) {
+          input, select, textarea {
+            font-size: 16px !important;
+          }
+        }
+      `}</style>
+
       {/* ===== BACKGROUND EPIK ===== */}
       <div style={styles.background}>
         <div style={styles.gradientOrbit1}></div>
@@ -216,7 +351,7 @@ const LoginSiswa = () => {
         </div>
       </div>
 
-      {/* ===== MODAL POSTER (BESAR & INTERAKTIF) ===== */}
+      {/* ===== MODAL POSTER ===== */}
       {selectedPoster && (
         <div style={styles.modalOverlay} onClick={() => setSelectedPoster(null)}>
           <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
@@ -274,7 +409,32 @@ const LoginSiswa = () => {
           </div>
         </div>
 
-        {/* ===== POSTER SLIDER (BESAR) ===== */}
+        {/* ===== INSTALL BUTTON (FIX IOS ZOOM) ===== */}
+        {showInstallBtn && !isInstalled && (
+          <button 
+            onClick={handleInstall} 
+            style={{
+              ...styles.installBtn,
+              WebkitTapHighlightColor: 'transparent'
+            }}
+          >
+            {isIOS ? (
+              <><Download size={16} /> Install di iPhone</>
+            ) : isAndroid ? (
+              <><Download size={16} /> Install di Android</>
+            ) : (
+              <><Smartphone size={16} /> Install Aplikasi</>
+            )}
+          </button>
+        )}
+
+        {isInstalled && (
+          <div style={styles.installedBadge}>
+            ✅ Aplikasi sudah terinstall di perangkat Anda
+          </div>
+        )}
+
+        {/* ===== POSTER SLIDER ===== */}
         {posters.length > 0 && (
           <div style={styles.posterSection}>
             <div style={styles.posterSlider}>
@@ -307,7 +467,6 @@ const LoginSiswa = () => {
               </button>
             </div>
             
-            {/* Poster Indicators */}
             {posters.length > 1 && (
               <div style={styles.posterDots}>
                 {posters.map((_, idx) => (
@@ -523,6 +682,21 @@ const LoginSiswa = () => {
         .game-letter-btn:active {
           transform: scale(0.92);
         }
+        /* FIX IOS ZOOM */
+        input, select, textarea, button {
+          -webkit-appearance: none !important;
+          appearance: none !important;
+          border-radius: 10px !important;
+        }
+        input:focus, select:focus, textarea:focus {
+          outline: none !important;
+        }
+        @media screen and (max-width: 768px) {
+          input, select, textarea {
+            font-size: 16px !important;
+            padding: 12px 14px 12px 38px !important;
+          }
+        }
       `}</style>
     </div>
   );
@@ -546,7 +720,6 @@ const styles = {
     background: 'linear-gradient(135deg, #05070f 0%, #0d1b2a 30%, #1a0a2e 60%, #0a0e1a 100%)'
   },
   
-  // ===== BACKGROUND =====
   background: {
     position: 'absolute',
     top: 0, left: 0, right: 0, bottom: 0,
@@ -597,7 +770,6 @@ const styles = {
     animation: 'twinkle ease-in-out infinite'
   },
   
-  // ===== CARD =====
   card: {
     position: 'relative',
     zIndex: 10,
@@ -613,10 +785,10 @@ const styles = {
     boxSizing: 'border-box',
     maxHeight: '96vh',
     overflowY: 'auto',
-    animation: 'fadeUp 0.6s ease'
+    animation: 'fadeUp 0.6s ease',
+    WebkitOverflowScrolling: 'touch'
   },
   
-  // ===== HEADER =====
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -664,7 +836,41 @@ const styles = {
     color: '#fbbf24'
   },
   
-  // ===== POSTER SECTION =====
+  installBtn: {
+    width: '100%',
+    padding: '10px 14px',
+    marginBottom: '12px',
+    background: 'linear-gradient(135deg, #10b981, #059669)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '10px',
+    fontWeight: 700,
+    fontSize: '12px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    boxShadow: '0 4px 16px rgba(16,185,129,0.2)',
+    transition: 'all 0.2s ease',
+    WebkitTapHighlightColor: 'transparent',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 8px 30px rgba(16,185,129,0.3)'
+    }
+  },
+  installedBadge: {
+    padding: '8px 12px',
+    marginBottom: '12px',
+    borderRadius: '10px',
+    background: 'rgba(16,185,129,0.1)',
+    border: '1px solid rgba(16,185,129,0.15)',
+    color: '#10b981',
+    fontSize: '11px',
+    fontWeight: 600,
+    textAlign: 'center'
+  },
+  
   posterSection: {
     marginBottom: '16px',
     borderRadius: '14px',
@@ -691,7 +897,8 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'all 0.2s ease',
-    backdropFilter: 'blur(4px)'
+    backdropFilter: 'blur(4px)',
+    WebkitTapHighlightColor: 'transparent'
   },
   posterWrapper: {
     width: '100%',
@@ -765,7 +972,6 @@ const styles = {
     transition: 'all 0.3s ease'
   },
   
-  // ===== FORM =====
   form: {
     display: 'flex',
     flexDirection: 'column',
@@ -806,12 +1012,12 @@ const styles = {
     background: 'transparent',
     border: 'none',
     outline: 'none',
-    fontSize: '13px',
+    fontSize: '16px',
     color: 'white',
     boxSizing: 'border-box',
-    '&:focus': {
-      '& + .input-icon': { opacity: 0.8 }
-    }
+    WebkitAppearance: 'none',
+    appearance: 'none',
+    borderRadius: '10px'
   },
   eyeBtn: {
     position: 'absolute',
@@ -824,10 +1030,10 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    WebkitTapHighlightColor: 'transparent',
     '&:hover': { color: 'rgba(255,255,255,0.6)' }
   },
   
-  // ===== BUTTONS =====
   actionRow: {
     display: 'flex',
     gap: '8px',
@@ -849,6 +1055,7 @@ const styles = {
     gap: '8px',
     transition: 'all 0.2s ease',
     boxShadow: '0 4px 16px rgba(243,156,18,0.2)',
+    WebkitTapHighlightColor: 'transparent',
     '&:hover': {
       transform: 'translateY(-2px)',
       boxShadow: '0 8px 30px rgba(243,156,18,0.3)'
@@ -881,6 +1088,7 @@ const styles = {
     justifyContent: 'center',
     gap: '6px',
     transition: 'all 0.2s ease',
+    WebkitTapHighlightColor: 'transparent',
     '&:hover': {
       background: 'rgba(139,92,246,0.25)',
       transform: 'translateY(-2px)'
@@ -895,7 +1103,6 @@ const styles = {
     animation: 'spin 0.6s linear infinite'
   },
   
-  // ===== GAME SECTION =====
   gameSection: {
     marginTop: '12px',
     padding: '14px 16px',
@@ -996,7 +1203,8 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    transition: 'all 0.15s ease'
+    transition: 'all 0.15s ease',
+    WebkitTapHighlightColor: 'transparent'
   },
   gameMessage: {
     textAlign: 'center',
@@ -1011,7 +1219,6 @@ const styles = {
     marginTop: '4px'
   },
   
-  // ===== GAME COMPLETE =====
   gameComplete: {
     textAlign: 'center',
     padding: '16px 0'
@@ -1042,7 +1249,6 @@ const styles = {
     cursor: 'pointer'
   },
   
-  // ===== FOOTER =====
   footer: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -1066,7 +1272,6 @@ const styles = {
     fontWeight: 500
   },
   
-  // ===== MODAL POSTER =====
   modalOverlay: {
     position: 'fixed',
     top: 0, left: 0, right: 0, bottom: 0,
@@ -1108,6 +1313,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'all 0.2s ease',
+    WebkitTapHighlightColor: 'transparent',
     '&:hover': {
       background: 'rgba(255,255,255,0.1)'
     }
@@ -1162,6 +1368,7 @@ const styles = {
     fontSize: '12px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
+    WebkitTapHighlightColor: 'transparent',
     '&:hover': {
       transform: 'translateY(-2px)',
       boxShadow: '0 4px 16px rgba(243,156,18,0.2)'
