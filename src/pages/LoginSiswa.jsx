@@ -8,7 +8,8 @@ import {
   Sparkles, Shield, CheckCircle, AlertCircle, 
   Rocket, Star, Trophy, Gamepad2, X, ChevronLeft, 
   ChevronRight, Calendar, Clock, Users, Award,
-  TrendingUp, Zap, Globe, Menu, Download, Smartphone
+  TrendingUp, Zap, Globe, Menu, Download, Smartphone,
+  Plus, Minus, Maximize2, Minimize2
 } from 'lucide-react';
 
 const LoginSiswa = () => {
@@ -50,25 +51,21 @@ const LoginSiswa = () => {
   // EFFECTS
   // ============================================================
   
-  // Responsive & Device Detection
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
     };
     window.addEventListener('resize', handleResize);
     
-    // Deteksi iOS
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     setIsIOS(iOS);
     
-    // Deteksi Android
     const android = /Android/.test(navigator.userAgent);
     setIsAndroid(android);
     
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // ===== AMBIL POSTER =====
   useEffect(() => {
     const fetchPosters = async () => {
       try {
@@ -83,7 +80,6 @@ const LoginSiswa = () => {
     fetchPosters();
   }, []);
 
-  // ===== AUTO SLIDE POSTER =====
   useEffect(() => {
     if (posters.length <= 1) return;
     const interval = setInterval(() => {
@@ -92,9 +88,7 @@ const LoginSiswa = () => {
     return () => clearInterval(interval);
   }, [posters.length]);
 
-  // ===== PWA INSTALL HANDLER =====
   useEffect(() => {
-    // Cek apakah sudah terinstall
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                           window.navigator.standalone;
     if (isStandalone) {
@@ -103,7 +97,6 @@ const LoginSiswa = () => {
       return;
     }
 
-    // Handler untuk beforeinstallprompt (Android/Desktop)
     const handler = (e) => {
       e.preventDefault();
       setInstallPrompt(e);
@@ -112,12 +105,10 @@ const LoginSiswa = () => {
 
     window.addEventListener('beforeinstallprompt', handler);
 
-    // iOS: Cek apakah sudah di home screen
     if (isIOS && !isStandalone) {
       setShowInstallBtn(true);
     }
 
-    // Event ketika app terinstall
     window.addEventListener('appinstalled', () => {
       setIsInstalled(true);
       setShowInstallBtn(false);
@@ -132,9 +123,7 @@ const LoginSiswa = () => {
   // FUNCTIONS
   // ============================================================
   
-  // ===== INSTALL HANDLER =====
   const handleInstall = async () => {
-    // IOS
     if (isIOS) {
       alert(
         '📱 CARA INSTALL APLIKASI DI iPhone/iPad:\n\n' +
@@ -146,7 +135,6 @@ const LoginSiswa = () => {
       return;
     }
 
-    // Android dengan beforeinstallprompt
     if (installPrompt) {
       try {
         await installPrompt.prompt();
@@ -162,7 +150,6 @@ const LoginSiswa = () => {
       return;
     }
 
-    // Fallback untuk Android tanpa beforeinstallprompt
     if (isAndroid) {
       alert(
         '📱 CARA INSTALL APLIKASI DI Android:\n\n' +
@@ -175,11 +162,9 @@ const LoginSiswa = () => {
       return;
     }
 
-    // Desktop
     alert('💻 Gunakan browser Chrome atau Edge di desktop untuk install aplikasi.');
   };
 
-  // ===== LOGIN =====
   const handleLogin = async (e) => {
     e.preventDefault();
     const inputUsername = username.trim();
@@ -226,7 +211,6 @@ const LoginSiswa = () => {
     }
   };
 
-  // ===== GAME FUNCTIONS =====
   const startGame = () => {
     setShowGame(true);
     setGameScore(0);
@@ -288,7 +272,6 @@ const LoginSiswa = () => {
     setGameMessage('');
   };
 
-  // ===== NAVIGASI POSTER =====
   const prevPoster = () => {
     setCurrentPosterIndex(prev => (prev - 1 + posters.length) % posters.length);
   };
@@ -303,7 +286,6 @@ const LoginSiswa = () => {
   return (
     <div style={styles.container}>
       
-      {/* ===== META VIEWPORT FIX UNTUK IOS ZOOM ===== */}
       <style>{`
         @viewport {
           width: device-width;
@@ -326,9 +308,81 @@ const LoginSiswa = () => {
             font-size: 16px !important;
           }
         }
+        @keyframes floatUp {
+          0% { opacity: 0; transform: translateY(20px) scale(0.9); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes pulseRing {
+          0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+          70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.2; }
+          50% { opacity: 1; }
+        }
+        @keyframes orbit {
+          0% { transform: rotate(0deg) translateX(150px) rotate(0deg); }
+          100% { transform: rotate(360deg) translateX(150px) rotate(-360deg); }
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+        .install-float {
+          animation: floatUp 0.5s ease-out;
+        }
+        .install-ring {
+          animation: pulseRing 2s infinite;
+        }
+        .poster-nav:hover {
+          background: rgba(255,255,255,0.2) !important;
+        }
+        ::-webkit-scrollbar {
+          width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+          background: rgba(255,255,255,0.02);
+        }
+        ::-webkit-scrollbar-thumb {
+          background: rgba(243,156,18,0.3);
+          border-radius: 10px;
+        }
+        .game-letter-btn {
+          transition: all 0.15s ease;
+        }
+        .game-letter-btn:hover {
+          transform: scale(1.08);
+          background: rgba(243,156,18,0.2);
+        }
+        .game-letter-btn:active {
+          transform: scale(0.92);
+        }
+        input, select, textarea, button {
+          -webkit-appearance: none !important;
+          appearance: none !important;
+          border-radius: 10px !important;
+        }
+        input:focus, select:focus, textarea:focus {
+          outline: none !important;
+        }
+        @media screen and (max-width: 768px) {
+          input, select, textarea {
+            font-size: 16px !important;
+            padding: 12px 14px 12px 38px !important;
+          }
+        }
       `}</style>
 
-      {/* ===== BACKGROUND EPIK ===== */}
+      {/* ===== BACKGROUND ===== */}
       <div style={styles.background}>
         <div style={styles.gradientOrbit1}></div>
         <div style={styles.gradientOrbit2}></div>
@@ -350,6 +404,38 @@ const LoginSiswa = () => {
           ))}
         </div>
       </div>
+
+      {/* ===== FLOATING INSTALL BUTTON ===== */}
+      {showInstallBtn && !isInstalled && (
+        <button 
+          onClick={handleInstall} 
+          className="install-float install-ring"
+          style={{
+            ...styles.installFloatBtn,
+            bottom: isMobile ? '20px' : '30px',
+            right: isMobile ? '16px' : '24px',
+          }}
+        >
+          <div style={styles.installFloatIcon}>
+            {isIOS ? (
+              <Download size={20} />
+            ) : isAndroid ? (
+              <Download size={20} />
+            ) : (
+              <Smartphone size={20} />
+            )}
+          </div>
+          <div style={styles.installFloatText}>
+            <span style={styles.installFloatTitle}>Install App</span>
+            <span style={styles.installFloatSub}>
+              {isIOS ? 'iPhone/iPad' : isAndroid ? 'Android' : 'PWA'}
+            </span>
+          </div>
+          <div style={styles.installFloatBadge}>
+            <span style={styles.installFloatBadgeText}>📱</span>
+          </div>
+        </button>
+      )}
 
       {/* ===== MODAL POSTER ===== */}
       {selectedPoster && (
@@ -408,25 +494,6 @@ const LoginSiswa = () => {
             <span style={styles.headerBadgeText}>v3.0</span>
           </div>
         </div>
-
-        {/* ===== INSTALL BUTTON (FIX IOS ZOOM) ===== */}
-        {showInstallBtn && !isInstalled && (
-          <button 
-            onClick={handleInstall} 
-            style={{
-              ...styles.installBtn,
-              WebkitTapHighlightColor: 'transparent'
-            }}
-          >
-            {isIOS ? (
-              <><Download size={16} /> Install di iPhone</>
-            ) : isAndroid ? (
-              <><Download size={16} /> Install di Android</>
-            ) : (
-              <><Smartphone size={16} /> Install Aplikasi</>
-            )}
-          </button>
-        )}
 
         {isInstalled && (
           <div style={styles.installedBadge}>
@@ -633,77 +700,12 @@ const LoginSiswa = () => {
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 1; }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-30px) rotate(5deg); }
-        }
-        @keyframes orbit {
-          0% { transform: rotate(0deg) translateX(150px) rotate(0deg); }
-          100% { transform: rotate(360deg) translateX(150px) rotate(-360deg); }
-        }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.6; }
-          50% { opacity: 1; }
-        }
-        .poster-nav:hover {
-          background: rgba(255,255,255,0.2) !important;
-        }
-        ::-webkit-scrollbar {
-          width: 4px;
-        }
-        ::-webkit-scrollbar-track {
-          background: rgba(255,255,255,0.02);
-        }
-        ::-webkit-scrollbar-thumb {
-          background: rgba(243,156,18,0.3);
-          border-radius: 10px;
-        }
-        .game-letter-btn {
-          transition: all 0.15s ease;
-        }
-        .game-letter-btn:hover {
-          transform: scale(1.08);
-          background: rgba(243,156,18,0.2);
-        }
-        .game-letter-btn:active {
-          transform: scale(0.92);
-        }
-        /* FIX IOS ZOOM */
-        input, select, textarea, button {
-          -webkit-appearance: none !important;
-          appearance: none !important;
-          border-radius: 10px !important;
-        }
-        input:focus, select:focus, textarea:focus {
-          outline: none !important;
-        }
-        @media screen and (max-width: 768px) {
-          input, select, textarea {
-            font-size: 16px !important;
-            padding: 12px 14px 12px 38px !important;
-          }
-        }
-      `}</style>
     </div>
   );
 };
 
 // ============================================================
-// STYLES
+// STYLES - LENGKAP SEMUA
 // ============================================================
 const styles = {
   container: {
@@ -836,29 +838,64 @@ const styles = {
     color: '#fbbf24'
   },
   
-  installBtn: {
-    width: '100%',
-    padding: '10px 14px',
-    marginBottom: '12px',
-    background: 'linear-gradient(135deg, #10b981, #059669)',
+  installFloatBtn: {
+    position: 'fixed',
+    zIndex: 9998,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '10px 14px 10px 12px',
+    background: 'linear-gradient(135deg, #065f46, #047857)',
+    border: '1px solid rgba(16,185,129,0.3)',
+    borderRadius: '14px',
     color: 'white',
-    border: 'none',
-    borderRadius: '10px',
-    fontWeight: 700,
-    fontSize: '12px',
     cursor: 'pointer',
+    boxShadow: '0 8px 30px rgba(16,185,129,0.35), 0 0 0 1px rgba(16,185,129,0.1)',
+    transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    WebkitTapHighlightColor: 'transparent',
+    userSelect: 'none'
+  },
+  installFloatIcon: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '8px',
-    boxShadow: '0 4px 16px rgba(16,185,129,0.2)',
-    transition: 'all 0.2s ease',
-    WebkitTapHighlightColor: 'transparent',
-    '&:hover': {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 8px 30px rgba(16,185,129,0.3)'
-    }
+    width: '32px',
+    height: '32px',
+    borderRadius: '8px',
+    background: 'rgba(255,255,255,0.12)',
+    flexShrink: 0
   },
+  installFloatText: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1px'
+  },
+  installFloatTitle: {
+    fontSize: '12px',
+    fontWeight: 700,
+    color: 'white',
+    lineHeight: 1.2
+  },
+  installFloatSub: {
+    fontSize: '9px',
+    color: 'rgba(255,255,255,0.5)',
+    fontWeight: 500
+  },
+  installFloatBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '2px 6px',
+    borderRadius: '6px',
+    background: 'rgba(251,191,36,0.2)',
+    marginLeft: '4px'
+  },
+  installFloatBadgeText: {
+    fontSize: '10px'
+  },
+  
   installedBadge: {
     padding: '8px 12px',
     marginBottom: '12px',
@@ -1030,8 +1067,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    WebkitTapHighlightColor: 'transparent',
-    '&:hover': { color: 'rgba(255,255,255,0.6)' }
+    WebkitTapHighlightColor: 'transparent'
   },
   
   actionRow: {
@@ -1055,11 +1091,7 @@ const styles = {
     gap: '8px',
     transition: 'all 0.2s ease',
     boxShadow: '0 4px 16px rgba(243,156,18,0.2)',
-    WebkitTapHighlightColor: 'transparent',
-    '&:hover': {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 8px 30px rgba(243,156,18,0.3)'
-    }
+    WebkitTapHighlightColor: 'transparent'
   },
   btnDisabled: {
     flex: 2,
@@ -1088,11 +1120,7 @@ const styles = {
     justifyContent: 'center',
     gap: '6px',
     transition: 'all 0.2s ease',
-    WebkitTapHighlightColor: 'transparent',
-    '&:hover': {
-      background: 'rgba(139,92,246,0.25)',
-      transform: 'translateY(-2px)'
-    }
+    WebkitTapHighlightColor: 'transparent'
   },
   spinner: {
     width: '18px',
@@ -1141,8 +1169,7 @@ const styles = {
     border: 'none',
     color: 'rgba(255,255,255,0.2)',
     cursor: 'pointer',
-    padding: '2px',
-    '&:hover': { color: 'rgba(255,255,255,0.5)' }
+    padding: '2px'
   },
   gameHint: {
     textAlign: 'center',
@@ -1313,10 +1340,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'all 0.2s ease',
-    WebkitTapHighlightColor: 'transparent',
-    '&:hover': {
-      background: 'rgba(255,255,255,0.1)'
-    }
+    WebkitTapHighlightColor: 'transparent'
   },
   modalImageWrapper: {
     width: '100%',
@@ -1368,11 +1392,7 @@ const styles = {
     fontSize: '12px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    WebkitTapHighlightColor: 'transparent',
-    '&:hover': {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 4px 16px rgba(243,156,18,0.2)'
-    }
+    WebkitTapHighlightColor: 'transparent'
   }
 };
 
