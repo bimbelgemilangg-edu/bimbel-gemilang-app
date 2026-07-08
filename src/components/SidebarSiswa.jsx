@@ -4,9 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LogOut, X, Home, BarChart2, BookOpen, Wallet, 
   Trophy, TrendingUp, GraduationCap, Calendar, 
-  FileText, Award, Sparkles, Zap, Shield, User,
-  Hash, Tag, Clock, CheckCircle, Star, Medal,
-  Settings, HelpCircle, Bell, Menu
+  User, Hash
 } from 'lucide-react';
 
 // Logo dari folder public
@@ -15,44 +13,20 @@ const LogoBimbel = "/logo-gemilang.png";
 const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
   const [studentData, setStudentData] = useState({ name: '', nim: '', kelas: '' });
 
   // ===== EFFECTS =====
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    const handleResize = () => setIsMobile(window.innerWidth <= 1024);
     window.addEventListener('resize', handleResize);
     
-    // 🔥 AMBIL DATA DENGAN PRIORITAS YANG BENAR
+    // Ambil data siswa
     const name = localStorage.getItem('studentName') || 'Siswa';
-    
-    // 🔥 PRIORITAS: studentNim (studentId asli)
-    // FALLBACK: studentId (tapi hati-hati)
-    let nim = localStorage.getItem('studentNim');
-    
-    // 🔥 Jika studentNim kosong atau panjangnya > 20 (kemungkinan docId), coba studentId
-    if (!nim || nim.length > 20) {
-      nim = localStorage.getItem('studentId') || '';
-    }
-    
-    // 🔥 Jika masih kosong atau terlalu panjang, coba dari localStorage lain
-    if (!nim || nim.length > 20) {
-      const allKeys = Object.keys(localStorage);
-      for (const key of allKeys) {
-        if (key.toLowerCase().includes('student') && key.toLowerCase().includes('id')) {
-          const val = localStorage.getItem(key);
-          if (val && val.length < 20) {
-            nim = val;
-            break;
-          }
-        }
-      }
-    }
-    
+    const nim = localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
     const kelas = localStorage.getItem('studentKelas') || 
                   localStorage.getItem('studentGrade') || '';
     
-    console.log('📊 Sidebar - Data siswa:', { name, nim, kelas });
     setStudentData({ name, nim, kelas });
     
     return () => window.removeEventListener('resize', handleResize);
@@ -114,11 +88,13 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
 
   // ===== HANDLERS =====
   const handleMenuClick = (item) => {
-    setActiveMenu(item.id);
+    if (typeof setActiveMenu === 'function') {
+      setActiveMenu(item.id);
+    }
     if (item.path) {
       navigate(item.path);
     }
-    if (isMobile) {
+    if (isMobile && typeof setIsOpen === 'function') {
       setIsOpen(false);
     }
   };
@@ -177,7 +153,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
           )}
         </div>
 
-        {/* ===== PROFILE CARD - TAMPILKAN NIM ===== */}
+        {/* PROFILE CARD */}
         <div style={styles.profileCard}>
           <div style={styles.profileAvatar}>
             {getInitials(studentData.name)}
@@ -213,6 +189,12 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
                   borderLeft: isActive ? `3px solid ${item.color}` : '3px solid transparent',
                   color: isActive ? item.color : '#94a3b8'
                 }}
+                onMouseEnter={(e) => {
+                  if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) e.currentTarget.style.background = 'transparent';
+                }}
               >
                 <span style={{ 
                   ...styles.menuIcon,
@@ -236,10 +218,30 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
 
         {/* FOOTER */}
         <div style={styles.footer}>
-          <button onClick={() => navigate('/siswa/profile')} style={styles.profileBtn}>
+          <button 
+            onClick={() => navigate('/siswa/profile')} 
+            style={styles.profileBtn}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.color = 'white';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+              e.currentTarget.style.color = '#94a3b8';
+            }}
+          >
             <User size={16} /> Profil
           </button>
-          <button onClick={handleLogout} style={styles.logoutBtn}>
+          <button 
+            onClick={handleLogout} 
+            style={styles.logoutBtn}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#dc2626';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#ef4444';
+            }}
+          >
             <LogOut size={16} /> Keluar
           </button>
         </div>
@@ -251,19 +253,6 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
           <span>Bimbel Gemilang</span>
         </div>
       </div>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateX(-20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        .fade-in { animation: fadeIn 0.3s ease-out; }
-        .slide-in { animation: slideIn 0.3s ease-out; }
-      `}</style>
     </>
   );
 };
@@ -321,9 +310,7 @@ const styles = {
     color: 'white', 
     cursor: 'pointer',
     padding: '4px',
-    borderRadius: '8px',
-    transition: '0.2s',
-    '&:hover': { background: '#334155' }
+    borderRadius: '8px'
   },
   
   profileCard: {
@@ -409,10 +396,7 @@ const styles = {
     fontSize: '13px', 
     fontWeight: 500,
     transition: 'all 0.2s ease',
-    position: 'relative',
-    '&:hover': {
-      background: 'rgba(255,255,255,0.05)'
-    }
+    position: 'relative'
   },
   menuIcon: {
     marginRight: '12px',
@@ -454,11 +438,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '6px',
-    transition: '0.2s',
-    '&:hover': {
-      background: 'rgba(255,255,255,0.1)',
-      color: 'white'
-    }
+    transition: '0.2s'
   },
   logoutBtn: {
     flex: 1,
@@ -474,10 +454,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '6px',
-    transition: '0.2s',
-    '&:hover': {
-      background: '#dc2626'
-    }
+    transition: '0.2s'
   },
   
   version: {
@@ -500,8 +477,7 @@ const styles = {
     bottom: 0, 
     background: 'rgba(0,0,0,0.6)', 
     zIndex: 999, 
-    backdropFilter: 'blur(4px)',
-    animation: 'fadeIn 0.3s ease-out'
+    backdropFilter: 'blur(4px)'
   }
 };
 
