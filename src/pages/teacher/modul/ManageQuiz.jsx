@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { collection, addDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy } from "firebase/firestore";
-import { Plus, Trash2, CheckCircle, ArrowLeft, Save, Layout, FileText, X, Calculator, Target, BookOpen, Users, Send, Settings, Clock as ClockIcon, HelpCircle, Image, Upload } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, ArrowLeft, Save, FileText, X, Calculator, Target, BookOpen, Users, Send, Settings, Clock as ClockIcon, HelpCircle, Image, Upload } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { uploadToDrive } from '../../../services/uploadService';
+import { uploadElearningFile } from '../../../services/uploadService';
 import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
 
@@ -113,56 +113,46 @@ const ManageQuiz = () => {
     }
   }, [modulId]);
 
-  // 🔥 FUNGSI UPLOAD GAMBAR
+  // 🔥 FUNGSI UPLOAD GAMBAR - LANGSUNG KE SUPABASE
   const handleImageUpload = async (file, questionId, targetType, optionIndex = null) => {
     if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      alert("❌ Gambar maksimal 10MB!");
+      return;
+    }
     
     setUploading(true);
     setUploadTarget(`${questionId}-${targetType}-${optionIndex || ''}`);
     
     try {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
+      // Upload langsung ke Supabase tanpa base64 middleware
+      const result = await uploadElearningFile(file, 'kuis');
       
-      reader.onload = async (e) => {
-        const base64Data = e.target.result;
-        const result = await uploadToDrive(base64Data, file.name, file.type);
+      if (result.success) {
+        const url = result.downloadURL;
         
-        if (result.success) {
-          const url = result.downloadURL;
-          
-          setQuestions(prev => prev.map(q => {
-            if (q.id === questionId) {
-              if (targetType === 'question') {
-                return { ...q, qImage: url };
-              } else if (targetType === 'option' && optionIndex !== null) {
-                const newOptionImages = [...q.optionImages];
-                newOptionImages[optionIndex] = url;
-                return { ...q, optionImages: newOptionImages };
-              }
+        setQuestions(prev => prev.map(q => {
+          if (q.id === questionId) {
+            if (targetType === 'question') {
+              return { ...q, qImage: url };
+            } else if (targetType === 'option' && optionIndex !== null) {
+              const newOptionImages = [...q.optionImages];
+              newOptionImages[optionIndex] = url;
+              return { ...q, optionImages: newOptionImages };
             }
-            return q;
-          }));
-        } else {
-          alert("❌ Gagal upload: " + result.error);
-        }
-        
-        setUploading(false);
-        setUploadTarget(null);
-      };
-      
-      reader.onerror = () => {
-        alert("❌ Gagal membaca file");
-        setUploading(false);
-        setUploadTarget(null);
-      };
-      
+          }
+          return q;
+        }));
+      } else {
+        alert("❌ Gagal upload: " + result.error);
+      }
     } catch (error) {
       console.error("Upload error:", error);
       alert("❌ Gagal upload gambar: " + error.message);
-      setUploading(false);
-      setUploadTarget(null);
     }
+    
+    setUploading(false);
+    setUploadTarget(null);
   };
 
   const handleRemoveImage = (questionId, targetType, optionIndex = null) => {
@@ -192,7 +182,7 @@ const ManageQuiz = () => {
     });
   };
 
-  // 📥 BULK IMPORT - PINTAR DETEKSI FORMAT
+  // 📥 BULK IMPORT
   const handleBulkImport = () => {
     if (!bulkText.trim()) return;
     
@@ -201,15 +191,11 @@ const ManageQuiz = () => {
       const lines = block.trim().split('\n').filter(l => l.trim());
       if (lines.length === 0) return null;
       
-      // Ambil pertanyaan (baris pertama setelah nomor)
       const qt = lines[0].replace(/^\d+[\.\$\s\)]*/, '').trim();
-      
-      // Deteksi opsi (A. B. C. D. atau A) B) C) D))
       const opts = lines.slice(1)
         .filter(l => /^[A-E][\.\$\s\)]/i.test(l.trim()))
         .map(o => o.replace(/^[A-E][\.\$\s\)]*/i, '').trim());
       
-      // Pastikan ada 4 opsi
       while (opts.length < 4) opts.push("");
       
       return { 
@@ -268,6 +254,8 @@ const ManageQuiz = () => {
         await updateDoc(doc(db, "bimbel_modul", selectedModul), quizPayload);
         alert(`✅ Kuis disimpan ke modul!`);
       } else {
+        // 🔥 Tambahkan guruId + kodeMapel + subject untuk filter di CekTugasSiswa
+        const saved = JSON.parse(localStorage.getItem('teacherData') || '{}');
         await addDoc(collection(db, "bimbel_modul"), {
           title: quizTitle.toUpperCase(),
           subject: quizSubject || "Kuis",
@@ -278,6 +266,9 @@ const ManageQuiz = () => {
           targetKategori: publishTarget === 'jenjang' ? selectedProgram : "Semua",
           targetKelas: publishTarget === 'jenjang' ? selectedKelas : "Semua",
           status: 'aktif',
+          guruId: saved.guruId || saved.id || '',
+          kodeMapel: saved.kodeMapel || '',
+          guruName: saved.nama || '',
           authorName: localStorage.getItem('teacherName') || localStorage.getItem('userName') || "Guru",
           timeLimit: advancedMode ? timeLimit : null,
           randomOrder: advancedMode ? randomOrder : null,
