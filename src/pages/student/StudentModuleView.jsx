@@ -130,42 +130,64 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     setStudentNim(sNim);
   }, [studentData]);
 
-  // ===== FETCH MODUL =====
+  // ===== FETCH MODUL - SOLUSI ANTI MACET =====
   useEffect(() => {
-    if (!modulId || !studentNim) return;
-    
+    if (!modulId) return;
+
     const fetchModul = async () => {
       dispatch({ type: 'SET_LOADING', payload: true });
       try {
+        // 🔥 Ambil NIM langsung dari localStorage (real-time, tanpa tunggu state React)
+        const activeNim = studentData?.studentId || studentData?.nim || studentData?.studentNim || 
+                          localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
+
         const snap = await getDoc(doc(db, "bimbel_modul", modulId));
-        if (!snap.exists()) return console.error('Modul tidak ditemukan');
+        if (!snap.exists()) {
+          dispatch({ type: 'SET_LOADING', payload: false });
+          return console.error('Modul tidak ditemukan');
+        }
         
         const data = snap.data();
         dispatch({ type: 'SET_MODUL', payload: data });
 
-        // Check expiration
+        // Cek deadline
         const now = new Date();
-        const assignBlock = (data.blocks||[]).find(b => b.type==='assignment' && b.endTime);
-        if (assignBlock?.endTime) dispatch({ type:'SET_TUGAS_EXPIRED', payload: now > new Date(assignBlock.endTime) });
-        if (data.deadlineQuiz) dispatch({ type:'SET_QUIZ_EXPIRED', payload: now > new Date(data.deadlineQuiz) });
+        const assignBlock = (data.blocks || []).find(b => b.type === 'assignment' && b.endTime);
+        if (assignBlock?.endTime) dispatch({ type: 'SET_TUGAS_EXPIRED', payload: now > new Date(assignBlock.endTime) });
+        if (data.deadlineQuiz) dispatch({ type: 'SET_QUIZ_EXPIRED', payload: now > new Date(data.deadlineQuiz) });
 
-        // Check submissions
-        const q = query(collection(db,"jawaban_tugas"), where("modulId","==",modulId), where("studentNim","==",studentNim));
-        const snapSub = await getDocs(q);
-        const completed = {};
-        snapSub.forEach(d => { const dt = d.data(); completed[dt.blockId] = { docId:d.id, fileUrl:dt.fileUrl, fileName:dt.fileName||'Lihat File', textAnswer:dt.answer||dt.textAnswer||'', status:dt.status||'Pending' }; });
-        dispatch({ type:'SET_SUBMITTED_TASKS', payload: completed });
+        // 🔥 Jalankan query Firestore HANYA jika NIM tersedia
+        if (activeNim) {
+          // Cek tugas
+          const q = query(collection(db, "jawaban_tugas"), where("modulId", "==", modulId), where("studentNim", "==", activeNim));
+          const snapSub = await getDocs(q);
+          const completed = {};
+          snapSub.forEach(d => { 
+            const dt = d.data(); 
+            completed[dt.blockId] = { 
+              docId: d.id, 
+              fileUrl: dt.fileUrl, 
+              fileName: dt.fileName || 'Lihat File', 
+              textAnswer: dt.answer || dt.textAnswer || '', 
+              status: dt.status || 'Pending' 
+            }; 
+          });
+          dispatch({ type: 'SET_SUBMITTED_TASKS', payload: completed });
 
-        // Check quiz
-        const qQuiz = query(collection(db,"jawaban_kuis"), where("modulId","==",modulId), where("studentNim","==",studentNim));
-        const snapQuiz = await getDocs(qQuiz);
-        if (!snapQuiz.empty) dispatch({ type:'SET_QUIZ_SUBMITTED', payload: true });
+          // Cek kuis
+          const qQuiz = query(collection(db, "jawaban_kuis"), where("modulId", "==", modulId), where("studentNim", "==", activeNim));
+          const snapQuiz = await getDocs(qQuiz);
+          if (!snapQuiz.empty) dispatch({ type: 'SET_QUIZ_SUBMITTED', payload: true });
+        }
 
-      } catch(e) { console.error(e); }
-      dispatch({ type:'SET_LOADING', payload: false });
+      } catch (e) { 
+        console.error("Gagal fetch modul:", e); 
+      }
+      dispatch({ type: 'SET_LOADING', payload: false });
     };
+
     fetchModul();
-  }, [modulId, studentNim]);
+  }, [modulId]);
 
   // ===== HANDLERS =====
   const handleFileChange = (e, blockId) => {
@@ -173,7 +195,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     const file = e.target.files[0];
     if (!file) return;
     
-    const block = state.modul?.blocks?.find(b => b.id===blockId);
+    const block = state.modul?.blocks?.find(b => b.id === blockId);
     const at = block?.allowedFileType || 'all';
     const allowed = ALLOWED_FILE_TYPES[at];
     
@@ -183,40 +205,57 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     }
     if (file.size > 52428800) return alert("❌ Maks 50MB.");
     
-    dispatch({ type:'SET_PENDING_FILE', file, blockId });
+    dispatch({ type: 'SET_PENDING_FILE', file, blockId });
   };
 
   const handleConfirmUpload = async () => {
     const { pendingFile: file, pendingBlockId: blockId } = state;
     if (!file || !blockId) return;
     
-    dispatch({ type:'SET_UPLOADING', blockId, value: true });
-    dispatch({ type:'CLEAR_PENDING' });
+    dispatch({ type: 'SET_UPLOADING', blockId, value: true });
+    dispatch({ type: 'CLEAR_PENDING' });
     
     try {
       const result = await uploadElearningFile(file, 'tugas');
-      if (!result.success) return alert('❌ '+result.error);
+      if (!result.success) return alert('❌ ' + result.error);
       
       const payload = {
-        modulId, modulTitle: state.modul.title, blockId,
-        blockTitle: state.modul.blocks?.find(b=>b.id===blockId)?.title||'Tugas',
-        studentId, studentNim,
-        studentName: studentData?.nama||localStorage.getItem('studentName')||'Siswa',
-        studentClass: studentData?.kelasSekolah||'Umum',
-        guruId: state.modul.guruId||'',
-        fileUrl: result.downloadURL, filePath: result.filePath,
-        fileName: file.name, fileSize: file.size, fileType: file.type,
-        answer: state.textAnswers[blockId]||'',
-        submittedAt: serverTimestamp(), status:'Pending', type:'assignment'
+        modulId, 
+        modulTitle: state.modul.title, 
+        blockId,
+        blockTitle: state.modul.blocks?.find(b => b.id === blockId)?.title || 'Tugas',
+        studentId, 
+        studentNim,
+        studentName: studentData?.nama || localStorage.getItem('studentName') || 'Siswa',
+        studentClass: studentData?.kelasSekolah || 'Umum',
+        guruId: state.modul.guruId || '',
+        fileUrl: result.downloadURL, 
+        filePath: result.filePath,
+        fileName: file.name, 
+        fileSize: file.size, 
+        fileType: file.type,
+        answer: state.textAnswers[blockId] || '',
+        submittedAt: serverTimestamp(), 
+        status: 'Pending', 
+        type: 'assignment'
       };
       
-      const docRef = await addDoc(collection(db,'jawaban_tugas'), payload);
-      dispatch({ type:'SET_SUBMITTED_TASKS', payload: {
-        ...state.submittedTasks, [blockId]: { docId:docRef.id, fileUrl:result.downloadURL, fileName:file.name, textAnswer:state.textAnswers[blockId]||'', status:'Pending' }
+      const docRef = await addDoc(collection(db, 'jawaban_tugas'), payload);
+      dispatch({ type: 'SET_SUBMITTED_TASKS', payload: {
+        ...state.submittedTasks, 
+        [blockId]: { 
+          docId: docRef.id, 
+          fileUrl: result.downloadURL, 
+          fileName: file.name, 
+          textAnswer: state.textAnswers[blockId] || '', 
+          status: 'Pending' 
+        }
       }});
       alert('✅ Terupload!');
-    } catch(e) { alert('❌ '+e.message); }
-    dispatch({ type:'SET_UPLOADING', blockId, value: false });
+    } catch (e) { 
+      alert('❌ ' + e.message); 
+    }
+    dispatch({ type: 'SET_UPLOADING', blockId, value: false });
   };
 
   const handleDeleteTask = async (blockId) => {
@@ -224,37 +263,51 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     if (!confirm("Tarik?")) return;
     try {
       const info = state.submittedTasks[blockId];
-      if (info?.docId) await deleteDoc(doc(db,"jawaban_tugas",info.docId));
-      const ns = {...state.submittedTasks}; delete ns[blockId];
-      dispatch({ type:'SET_SUBMITTED_TASKS', payload: ns });
+      if (info?.docId) await deleteDoc(doc(db, "jawaban_tugas", info.docId));
+      const ns = { ...state.submittedTasks }; 
+      delete ns[blockId];
+      dispatch({ type: 'SET_SUBMITTED_TASKS', payload: ns });
       alert('✅ Ditarik');
-    } catch(e) { alert('❌ '+e.message); }
+    } catch (e) { 
+      alert('❌ ' + e.message); 
+    }
   };
 
   const handleQuizSubmit = async () => {
     if (state.isQuizExpired) return alert("❌ Kuis ditutup.");
-    const qd = state.modul?.quizData||[];
+    const qd = state.modul?.quizData || [];
     if (!qd.length) return alert("Tidak ada soal.");
-    const un = qd.filter(q => state.quizAnswers[q.id]===undefined);
+    const un = qd.filter(q => state.quizAnswers[q.id] === undefined);
     if (un.length) return alert(`❌ ${un.length} soal belum dijawab.`);
     if (!confirm("Kirim?")) return;
     
     try {
       let correct = 0;
-      qd.forEach(q => { if (state.quizAnswers[q.id]===q.correctAnswer) correct++; });
-      const score = Math.round((correct/qd.length)*100);
+      qd.forEach(q => { if (state.quizAnswers[q.id] === q.correctAnswer) correct++; });
+      const score = Math.round((correct / qd.length) * 100);
       
-      await addDoc(collection(db,"jawaban_kuis"), {
-        modulId, modulTitle: state.modul.title, studentId, studentNim,
-        studentName: studentData?.nama||localStorage.getItem('studentName')||'Siswa',
-        studentClass: studentData?.kelasSekolah||'Umum',
-        guruId: state.modul.guruId||'',
-        answers: state.quizAnswers, correctAnswers: correct, totalQuestions: qd.length, score,
-        submittedAt: serverTimestamp(), status:"Dinilai", gradedAt: serverTimestamp(), type:"quiz"
+      await addDoc(collection(db, "jawaban_kuis"), {
+        modulId, 
+        modulTitle: state.modul.title, 
+        studentId, 
+        studentNim,
+        studentName: studentData?.nama || localStorage.getItem('studentName') || 'Siswa',
+        studentClass: studentData?.kelasSekolah || 'Umum',
+        guruId: state.modul.guruId || '',
+        answers: state.quizAnswers, 
+        correctAnswers: correct, 
+        totalQuestions: qd.length, 
+        score,
+        submittedAt: serverTimestamp(), 
+        status: "Dinilai", 
+        gradedAt: serverTimestamp(), 
+        type: "quiz"
       });
-      dispatch({ type:'SET_QUIZ_SUBMITTED', payload: true });
+      dispatch({ type: 'SET_QUIZ_SUBMITTED', payload: true });
       alert(`🎉 Nilai: ${score}\nBenar: ${correct}/${qd.length}`);
-    } catch(e) { alert('❌ '+e.message); }
+    } catch (e) { 
+      alert('❌ ' + e.message); 
+    }
   };
 
   // ===== RENDER MEDIA =====
@@ -270,7 +323,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         <div className="media-doc">
           <div className="media-doc-header">
             <FileText size={36} color="#673ab7" />
-            <div><b>{block.fileName||'Dokumen'}</b><small>Klik unduh</small></div>
+            <div><b>{block.fileName || 'Dokumen'}</b><small>Klik unduh</small></div>
             <a href={url} target="_blank" download className="btn-download"><Download size={14}/> Unduh</a>
           </div>
           <iframe src={`https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`} className="media-iframe"></iframe>
@@ -279,7 +332,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     }
     
     if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i) || fType.startsWith('image/')) {
-      return <img src={url} className="media-image" onClick={()=>dispatch({type:'SET_PREVIEW_IMAGE',payload:url})} alt="" />;
+      return <img src={url} className="media-image" onClick={() => dispatch({ type: 'SET_PREVIEW_IMAGE', payload: url })} alt="" />;
     }
     
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
@@ -306,34 +359,34 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     );
   }
 
-  const tugasBlocks = (state.modul?.blocks||[]).filter(b=>b.type==='assignment');
-  const materiBlocks = (state.modul?.blocks||[]).filter(b=>b.type!=='assignment');
+  const tugasBlocks = (state.modul?.blocks || []).filter(b => b.type === 'assignment');
+  const materiBlocks = (state.modul?.blocks || []).filter(b => b.type !== 'assignment');
 
   return (
     <div className="student-wrapper">
       <SidebarSiswa activeMenu={activeMenu} setActiveMenu={setActiveMenu} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       
       <div className="student-main">
-        {/* MOBILE HEADER - SELALU MUNCUL DI HP */}
+        {/* MOBILE HEADER */}
         <div className="mobile-header">
-          <button onClick={()=>setSidebarOpen(true)} className="hamburger-btn"><Menu size={24}/></button>
-          <span className="mobile-title">{state.modul?.title||'Modul'}</span>
-          <div style={{width:24}} />
+          <button onClick={() => setSidebarOpen(true)} className="hamburger-btn"><Menu size={24}/></button>
+          <span className="mobile-title">{state.modul?.title || 'Modul'}</span>
+          <div style={{ width: 24 }} />
         </div>
 
         {/* COVER */}
         <div className="cover-section">
-          <button onClick={onBack} className="back-btn"><ArrowLeft size={14}/> {!isMobile&&'Kembali'}</button>
-          <img src={state.modul?.coverImage||'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1000'} alt="" />
+          <button onClick={onBack} className="back-btn"><ArrowLeft size={14}/> {!isMobile && 'Kembali'}</button>
+          <img src={state.modul?.coverImage || 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1000'} alt="" />
           <div className="cover-overlay">
             <div className="cover-tags">
-              <span className="tag-purple">{state.modul?.subject||'Umum'}</span>
-              <span className="tag-glass">{state.modul?.targetKategori||'Semua'} • {state.modul?.targetKelas||'Semua'}</span>
+              <span className="tag-purple">{state.modul?.subject || 'Umum'}</span>
+              <span className="tag-glass">{state.modul?.targetKategori || 'Semua'} • {state.modul?.targetKelas || 'Semua'}</span>
               {state.modul?.guruId && <span className="tag-blue"><Hash size={8}/> {state.modul.guruId}</span>}
             </div>
             <h1>{state.modul?.title}</h1>
             <div className="cover-meta">
-              <span>👤 {state.modul?.authorName||state.modul?.guruName||'Guru'}</span>
+              <span>👤 {state.modul?.authorName || state.modul?.guruName || 'Guru'}</span>
               <span>📅 {formatDate(state.modul?.createdAt)}</span>
               {studentNim && <span>🆔 {studentNim}</span>}
             </div>
@@ -342,17 +395,17 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
 
         {/* TAB NAVIGATION */}
         <div className="tab-nav">
-          <button className={`tab-btn ${state.activeTab==='materi'?'active':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'materi'})}>
+          <button className={`tab-btn ${state.activeTab === 'materi' ? 'active' : ''}`} onClick={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: 'materi' })}>
             <BookOpen size={14}/> Materi ({materiBlocks.length})
           </button>
-          {tugasBlocks.length>0 && (
-            <button className={`tab-btn ${state.activeTab==='tugas'?'active':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'tugas'})}>
+          {tugasBlocks.length > 0 && (
+            <button className={`tab-btn ${state.activeTab === 'tugas' ? 'active' : ''}`} onClick={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: 'tugas' })}>
               <Send size={14}/> Tugas ({Object.keys(state.submittedTasks).length}/{tugasBlocks.length})
             </button>
           )}
-          {state.modul?.quizData?.length>0 && (
-            <button className={`tab-btn ${state.activeTab==='kuis'?'active':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'kuis'})}>
-              <HelpCircle size={14}/> Kuis {state.quizSubmitted?'✅':''}
+          {state.modul?.quizData?.length > 0 && (
+            <button className={`tab-btn ${state.activeTab === 'kuis' ? 'active' : ''}`} onClick={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: 'kuis' })}>
+              <HelpCircle size={14}/> Kuis {state.quizSubmitted ? '✅' : ''}
             </button>
           )}
         </div>
@@ -360,24 +413,24 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         {/* CONTENT AREA */}
         <div className="content-area">
           {/* MATERI */}
-          {state.activeTab==='materi' && materiBlocks.map((block,idx)=>(
+          {state.activeTab === 'materi' && materiBlocks.map((block, idx) => (
             <div key={block.id} className="block-card">
               <div className="block-title">
-                <small>{block.type==='file'?'📁 FILE':block.type==='video'?'🔗 LINK':`📄 BAGIAN ${idx+1}`}</small>
+                <small>{block.type === 'file' ? '📁 FILE' : block.type === 'video' ? '🔗 LINK' : `📄 BAGIAN ${idx+1}`}</small>
                 <h3>{block.title}</h3>
               </div>
-              {block.type==='text' && <div className="block-text">{block.content}</div>}
-              {(block.type==='video'||block.type==='file') && renderMedia(block)}
+              {block.type === 'text' && <div className="block-text">{block.content}</div>}
+              {(block.type === 'video' || block.type === 'file') && renderMedia(block)}
             </div>
           ))}
 
           {/* TUGAS */}
-          {state.activeTab==='tugas' && tugasBlocks.map(block=>{
+          {state.activeTab === 'tugas' && tugasBlocks.map(block => {
             const tr = getTimeRemaining(block.endTime);
-            const expired = state.isTugasExpired || (block.endTime && new Date(block.endTime)<new Date());
+            const expired = state.isTugasExpired || (block.endTime && new Date(block.endTime) < new Date());
             const submitted = !!state.submittedTasks[block.id];
             const sub = state.submittedTasks[block.id];
-            const ft = ALLOWED_FILE_TYPES[block.allowedFileType||'all']||ALLOWED_FILE_TYPES.all;
+            const ft = ALLOWED_FILE_TYPES[block.allowedFileType || 'all'] || ALLOWED_FILE_TYPES.all;
             
             return (
               <div key={block.id} className="block-card tugas-card">
@@ -387,13 +440,13 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                 </div>
                 <div className="block-text">{block.content}</div>
                 
-                {tr && <div className="deadline-badge" style={{background:tr.color+'20',color:tr.color}}><Clock size={14}/> {tr.text}</div>}
+                {tr && <div className="deadline-badge" style={{ background: tr.color + '20', color: tr.color }}><Clock size={14}/> {tr.text}</div>}
                 
                 <textarea 
-                  value={state.textAnswers[block.id]||''}
-                  onChange={e=>dispatch({type:'SET_TEXT_ANSWERS',blockId:block.id,value:e.target.value})}
+                  value={state.textAnswers[block.id] || ''}
+                  onChange={e => dispatch({ type: 'SET_TEXT_ANSWERS', blockId: block.id, value: e.target.value })}
                   placeholder="Tulis jawaban..."
-                  disabled={submitted||expired}
+                  disabled={submitted || expired}
                   className="answer-textarea"
                 />
                 
@@ -402,14 +455,14 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                     <div className="submitted-badge"><CheckCircle size={16}/> Terkumpul</div>
                     {sub.textAnswer && <div className="submitted-answer"><b>Jawaban:</b> {sub.textAnswer}</div>}
                     {sub.fileUrl && <a href={sub.fileUrl} target="_blank" className="btn-view"><Eye size={14}/> Lihat File</a>}
-                    {!expired && <button onClick={()=>handleDeleteTask(block.id)} className="btn-delete">Tarik Data</button>}
+                    {!expired && <button onClick={() => handleDeleteTask(block.id)} className="btn-delete">Tarik Data</button>}
                   </div>
                 ) : expired ? (
                   <div className="expired-box">⛔ Deadline Terlewat</div>
                 ) : (
                   <label className="upload-label">
                     📎 Pilih File ({ft.label})
-                    <input type="file" accept={ft.accept} hidden onChange={e=>handleFileChange(e,block.id)} />
+                    <input type="file" accept={ft.accept} hidden onChange={e => handleFileChange(e, block.id)} />
                   </label>
                 )}
               </div>
@@ -417,26 +470,26 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           })}
 
           {/* KUIS */}
-          {state.activeTab==='kuis' && state.modul?.quizData?.length>0 && (
+          {state.activeTab === 'kuis' && state.modul?.quizData?.length > 0 && (
             <div className="block-card quiz-card">
               <div className="quiz-header">
                 <div className="quiz-icon"><HelpCircle size={20} color="white"/></div>
                 <div>
                   <h2>Kuis Evaluasi</h2>
-                  {state.modul.deadlineQuiz && <small style={{color:state.isQuizExpired?'#ef4444':'#64748b'}}>{getTimeRemaining(state.modul.deadlineQuiz)?.text||'Deadline: '+formatDate(state.modul.deadlineQuiz)}</small>}
+                  {state.modul.deadlineQuiz && <small style={{ color: state.isQuizExpired ? '#ef4444' : '#64748b' }}>{getTimeRemaining(state.modul.deadlineQuiz)?.text || 'Deadline: ' + formatDate(state.modul.deadlineQuiz)}</small>}
                 </div>
               </div>
-              {state.modul.quizData.map((q,qi)=>(
+              {state.modul.quizData.map((q, qi) => (
                 <div key={q.id} className="quiz-item">
                   <p className="quiz-question">
                     <span className="quiz-num">{qi+1}</span>
                     {q.question}
-                    {q.questionImage && <img src={q.questionImage} alt="Soal" className="quiz-q-img" onClick={()=>dispatch({type:'SET_PREVIEW_IMAGE',payload:q.questionImage})}/>}
+                    {q.questionImage && <img src={q.questionImage} alt="Soal" className="quiz-q-img" onClick={() => dispatch({ type: 'SET_PREVIEW_IMAGE', payload: q.questionImage })}/>}
                   </p>
                   <div className="quiz-options">
-                    {q.options.map((opt,oi)=>(
-                      <button key={oi} disabled={state.quizSubmitted||state.isQuizExpired} onClick={()=>dispatch({type:'SET_QUIZ_ANSWERS',qId:q.id,value:oi})}
-                        className={`quiz-opt ${state.quizAnswers[q.id]===oi?'selected':''}`}>
+                    {q.options.map((opt, oi) => (
+                      <button key={oi} disabled={state.quizSubmitted || state.isQuizExpired} onClick={() => dispatch({ type: 'SET_QUIZ_ANSWERS', qId: q.id, value: oi })}
+                        className={`quiz-opt ${state.quizAnswers[q.id] === oi ? 'selected' : ''}`}>
                         {String.fromCharCode(65+oi)}. {opt}
                         {q.optionImages?.[oi] && <img src={q.optionImages[oi]} alt={`Opsi ${String.fromCharCode(65+oi)}`} className="quiz-opt-img"/>}
                       </button>
@@ -447,7 +500,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
               {!state.quizSubmitted && !state.isQuizExpired ? (
                 <button onClick={handleQuizSubmit} className="btn-submit-quiz">Kirim Jawaban Kuis</button>
               ) : (
-                <div className="quiz-done"><CheckCircle size={18}/> {state.quizSubmitted?'Kuis Selesai':'Waktu Habis'}</div>
+                <div className="quiz-done"><CheckCircle size={18}/> {state.quizSubmitted ? 'Kuis Selesai' : 'Waktu Habis'}</div>
               )}
             </div>
           )}
@@ -455,9 +508,9 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
 
         {/* PREVIEW IMAGE MODAL */}
         {state.previewImage && (
-          <div className="preview-overlay" onClick={()=>dispatch({type:'SET_PREVIEW_IMAGE',payload:null})}>
-            <button className="preview-close" onClick={e=>{e.stopPropagation();dispatch({type:'SET_PREVIEW_IMAGE',payload:null});}}><X size={24}/></button>
-            <img src={state.previewImage} alt="Preview" onClick={e=>e.stopPropagation()}/>
+          <div className="preview-overlay" onClick={() => dispatch({ type: 'SET_PREVIEW_IMAGE', payload: null })}>
+            <button className="preview-close" onClick={e => { e.stopPropagation(); dispatch({ type: 'SET_PREVIEW_IMAGE', payload: null }); }}><X size={24}/></button>
+            <img src={state.previewImage} alt="Preview" onClick={e => e.stopPropagation()}/>
           </div>
         )}
 
@@ -467,7 +520,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
             <div className="preview-upload-card">
               <div className="preview-upload-header">
                 <h4>📎 Preview File</h4>
-                <button onClick={()=>dispatch({type:'CLEAR_PENDING'})}><X size={20}/></button>
+                <button onClick={() => dispatch({ type: 'CLEAR_PENDING' })}><X size={20}/></button>
               </div>
               <div className="preview-upload-body">
                 <div className="preview-upload-info">
@@ -476,13 +529,13 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                 </div>
                 {state.pendingFile.type?.startsWith('image/') ? (
                   <img src={URL.createObjectURL(state.pendingFile)} alt="" className="preview-upload-img"/>
-                ) : state.pendingFile.type==='application/pdf' ? (
+                ) : state.pendingFile.type === 'application/pdf' ? (
                   <embed src={URL.createObjectURL(state.pendingFile)} type="application/pdf" className="preview-upload-embed"/>
                 ) : (
                   <div className="preview-upload-fallback"><File size={48}/><p>File siap diupload</p></div>
                 )}
                 <div className="preview-upload-actions">
-                  <button onClick={()=>dispatch({type:'CLEAR_PENDING'})} className="btn-cancel" disabled={state.uploading[state.pendingBlockId]}>Batal</button>
+                  <button onClick={() => dispatch({ type: 'CLEAR_PENDING' })} className="btn-cancel" disabled={state.uploading[state.pendingBlockId]}>Batal</button>
                   <button onClick={handleConfirmUpload} disabled={state.uploading[state.pendingBlockId]} className="btn-confirm">
                     {state.uploading[state.pendingBlockId] ? 'Uploading...' : <><Upload size={16}/> Upload</>}
                   </button>
