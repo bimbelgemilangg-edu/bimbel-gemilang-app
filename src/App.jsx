@@ -77,12 +77,10 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
+// ✅ PERBAIKAN 1: GuruRoute - Terima role 'guru' ATAU 'teacher'
 const GuruRoute = ({ children }) => {
-  // ✅ PERBAIKAN: Cek fleksibel - teacherData ATAU isGuruLoggedIn
   const isAuth = localStorage.getItem('isGuruLoggedIn') === 'true' || !!localStorage.getItem('teacherData');
   const role = localStorage.getItem('role');
-  
-  // ✅ PERBAIKAN: Terima role 'guru' ATAU 'teacher'
   if (!isAuth || (role !== 'guru' && role !== 'teacher')) return <Navigate to="/login-guru" replace />;
   return children;
 };
@@ -131,7 +129,7 @@ const TeacherLayout = ({ children }) => {
 };
 
 // ============================================================
-// SISWA LAYOUT - ✅ PERBAIKAN: TAMBAH SIDEBAR SISWA
+// SISWA LAYOUT - ✅ PERBAIKAN 2: Tambah SidebarSiswa
 // ============================================================
 const SiswaLayout = ({ children }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
