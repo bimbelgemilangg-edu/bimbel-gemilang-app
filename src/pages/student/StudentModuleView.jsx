@@ -221,78 +221,129 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   // Ambil student data
   useEffect(() => {
     const sId = studentData?.uid || studentData?.id || localStorage.getItem('studentId');
-    const sNim = studentData?.studentId || studentData?.nim || localStorage.getItem('studentNim');
+    const sNim = studentData?.studentId || 
+                 studentData?.nim || 
+                 studentData?.studentNim || 
+                 localStorage.getItem('studentNim') || 
+                 localStorage.getItem('studentId');
+    
     setStudentId(sId);
     setStudentNim(sNim);
+    
+    console.log('🔍 Student NIM loaded:', sNim);
   }, [studentData]);
 
-  // Fetch modul detail
+  // Fetch modul detail - LANGSUNG EKSEKUSI TANPA DELAY
   useEffect(() => {
     const fetchDetail = async () => {
+      if (!modulId || !studentNim) {
+        console.warn('⚠️ Menunggu data lengkap...');
+        return;
+      }
+      
       try {
+        setLoading(true);
         const docRef = doc(db, "bimbel_modul", modulId);
         const snap = await getDoc(docRef);
+        
         if (snap.exists()) {
           const data = snap.data();
           setModul(data);
+          
           const now = new Date();
           const assignmentBlock = (data.blocks || []).find(b => b.type === 'assignment' && b.endTime);
-          if (assignmentBlock?.endTime) setIsTugasExpired(now > new Date(assignmentBlock.endTime));
-          if (data.deadlineQuiz) setIsQuizExpired(now > new Date(data.deadlineQuiz));
-          checkExistingSubmissions(modulId);
-          checkQuizStatus(modulId);
+          if (assignmentBlock?.endTime) {
+            setIsTugasExpired(now > new Date(assignmentBlock.endTime));
+          }
+          if (data.deadlineQuiz) {
+            setIsQuizExpired(now > new Date(data.deadlineQuiz));
+          }
+          
+          // Jalankan query data
+          await Promise.all([
+            checkExistingSubmissions(modulId),
+            checkQuizStatus(modulId)
+          ]);
+        } else {
+          console.error('❌ Modul tidak ditemukan');
         }
-      } catch (err) { console.error(err); } 
-      finally { setLoading(false); }
+      } catch (err) { 
+        console.error('Error fetching module:', err); 
+      } finally { 
+        setLoading(false); 
+      }
     };
+
     fetchDetail();
-  }, [modulId]);
+  }, [modulId, studentNim]);
 
   // ============================================================
-  // 🔥 CHECK SUBMISSIONS - DIOPTIMASI DENGAN QUERY WHERE
+  // CHECK SUBMISSIONS - OPTIMASI DENGAN QUERY MENGGUNAKAN NIM
   // ============================================================
   const checkExistingSubmissions = async (mId) => {
-    if (!studentId) return;
+    if (!studentNim) {
+      console.warn('⚠️ checkExistingSubmissions: studentNim tidak tersedia');
+      return;
+    }
     
-    // 🔥 OPTIMASI: Query langsung dengan where, bukan getDocs semua
-    const q = query(
-      collection(db, "jawaban_tugas"),
-      where("modulId", "==", mId),
-      where("studentId", "==", studentId)
-    );
-    const snap = await getDocs(q);
-    const completed = {};
-    snap.forEach(doc => { 
-      const data = doc.data();
-      completed[data.blockId] = { 
-        docId: doc.id, 
-        fileUrl: data.fileUrl, 
-        fileName: data.fileName || "Lihat File",
-        textAnswer: data.answer || data.textAnswer || '',
-        status: data.status || 'Pending'
-      }; 
-    });
-    setSubmittedTasks(completed);
+    try {
+      const q = query(
+        collection(db, "jawaban_tugas"),
+        where("modulId", "==", mId),
+        where("studentNim", "==", studentNim)
+      );
+      const snap = await getDocs(q);
+      const completed = {};
+      
+      snap.forEach(doc => { 
+        const data = doc.data();
+        completed[data.blockId] = { 
+          docId: doc.id, 
+          fileUrl: data.fileUrl, 
+          fileName: data.fileName || "Lihat File",
+          textAnswer: data.answer || data.textAnswer || '',
+          status: data.status || 'Pending'
+        }; 
+      });
+      
+      setSubmittedTasks(completed);
+      console.log(`✅ Found ${Object.keys(completed).length} submissions for NIM: ${studentNim}`);
+    } catch (err) {
+      console.error('Error checking submissions:', err);
+    }
   };
 
   const checkQuizStatus = async (mId) => {
-    if (!studentId) return;
+    if (!studentNim) {
+      console.warn('⚠️ checkQuizStatus: studentNim tidak tersedia');
+      return;
+    }
     
-    // 🔥 OPTIMASI: Query langsung dengan where
-    const q = query(
-      collection(db, "jawaban_kuis"),
-      where("modulId", "==", mId),
-      where("studentId", "==", studentId)
-    );
-    const snap = await getDocs(q);
-    if (!snap.empty) setQuizSubmitted(true);
+    try {
+      const q = query(
+        collection(db, "jawaban_kuis"),
+        where("modulId", "==", mId),
+        where("studentNim", "==", studentNim)
+      );
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        setQuizSubmitted(true);
+      }
+      console.log(`✅ Quiz status checked for NIM: ${studentNim}`);
+    } catch (err) {
+      console.error('Error checking quiz status:', err);
+    }
   };
 
   // ============================================================
   // UPLOAD HANDLERS
   // ============================================================
   const handleFileChange = (e, blockId) => {
-    if (isTugasExpired) return alert("❌ Deadline terlewat.");
+    if (isTugasExpired) {
+      alert("❌ Deadline terlewat.");
+      return;
+    }
+    
     const file = e.target.files[0];
     if (!file) return;
     
@@ -305,12 +356,14 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       const regex = new RegExp(acceptPattern.replace(/\./g, '\\.').replace(/\*/g, '.*'), 'i');
       const isValid = regex.test(file.type) || regex.test(file.name);
       if (!isValid) {
-        return alert(`❌ Format file tidak diizinkan. Hanya: ${allowed.label}`);
+        alert(`❌ Format file tidak diizinkan. Hanya: ${allowed.label}`);
+        return;
       }
     }
     
     if (file.size > 50 * 1024 * 1024) {
-      return alert("❌ Maksimal 50MB.");
+      alert("❌ Maksimal 50MB.");
+      return;
     }
     
     setPendingFile(file);
@@ -324,11 +377,12 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     const blockId = pendingBlockId;
     const file = pendingFile;
     
-    setUploading({...uploading, [blockId]: true});
+    setUploading(prev => ({...prev, [blockId]: true}));
     setShowPreviewModal(false);
     
     try {
       const result = await uploadElearningFile(file, 'tugas');
+      
       if (result.success) {
         const payload = {
           modulId,
@@ -350,7 +404,9 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           status: 'Pending',
           type: 'assignment'
         };
+        
         const docRef = await addDoc(collection(db, 'jawaban_tugas'), payload);
+        
         setSubmittedTasks({
           ...submittedTasks, 
           [blockId]: { 
@@ -361,6 +417,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
             status: 'Pending'
           }
         });
+        
         setLocalFiles({...localFiles, [blockId]: null});
         alert('✅ Tugas berhasil diupload!');
       } else {
@@ -369,7 +426,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     } catch (err) { 
       alert('❌ Gagal: ' + err.message); 
     } finally {
-      setUploading({...uploading, [blockId]: false});
+      setUploading(prev => ({...prev, [blockId]: false}));
       setPendingFile(null);
       setPendingBlockId(null);
     }
@@ -382,8 +439,13 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   };
 
   const handleDeleteTask = async (blockId) => {
-    if (isTugasExpired) return alert("❌ Tidak bisa menarik.");
+    if (isTugasExpired) {
+      alert("❌ Tidak bisa menarik.");
+      return;
+    }
+    
     if (!window.confirm("Tarik tugas?")) return;
+    
     try {
       const info = submittedTasks[blockId];
       if (info?.docId) { 
@@ -391,26 +453,47 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         const ns = {...submittedTasks}; 
         delete ns[blockId]; 
         setSubmittedTasks(ns); 
+        alert('✅ Tugas berhasil ditarik');
       }
-    } catch (err) { alert("Gagal."); }
+    } catch (err) { 
+      alert("❌ Gagal menarik tugas: " + err.message); 
+    }
   };
 
   // ============================================================
   // QUIZ HANDLERS
   // ============================================================
   const handleQuizSubmit = async () => {
-    if (isQuizExpired) return alert("❌ Kuis ditutup.");
+    if (isQuizExpired) {
+      alert("❌ Kuis ditutup.");
+      return;
+    }
+    
     const qd = modul?.quizData || [];
-    if (qd.length === 0) return alert("Tidak ada soal.");
+    if (qd.length === 0) {
+      alert("Tidak ada soal.");
+      return;
+    }
+    
     const unas = qd.filter(q => quizAnswers[q.id] === undefined);
-    if (unas.length > 0) return alert(`❌ ${unas.length} soal belum dijawab.`);
+    if (unas.length > 0) {
+      alert(`❌ ${unas.length} soal belum dijawab.`);
+      return;
+    }
+    
     if (!window.confirm("Kirim kuis?")) return;
+    
     try {
       let correct = 0;
-      qd.forEach(q => { if (quizAnswers[q.id] === q.correctAnswer) correct++; });
+      qd.forEach(q => { 
+        if (quizAnswers[q.id] === q.correctAnswer) correct++; 
+      });
+      
       const score = Math.round((correct / qd.length) * 100);
+      
       await addDoc(collection(db, "jawaban_kuis"), {
-        modulId, modulTitle: modul.title,
+        modulId, 
+        modulTitle: modul.title,
         studentId: studentId,
         studentNim: studentNim,
         studentName: studentData?.nama || localStorage.getItem('studentName') || 'Siswa',
@@ -425,9 +508,12 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         gradedAt: serverTimestamp(),
         type: "quiz"
       });
+      
       setQuizSubmitted(true);
       alert(`🎉 Nilai: ${score}\nBenar: ${correct}/${qd.length}`);
-    } catch (err) { alert("Gagal."); }
+    } catch (err) { 
+      alert("❌ Gagal mengirim kuis: " + err.message); 
+    }
   };
 
   // ============================================================
@@ -436,6 +522,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const renderMedia = (block) => {
     const contentUrl = block.content || block.fileUrl || block.url || block.file;
     if (!contentUrl) return null;
+    
     const fName = block.fileName || "Dokumen";
     const fType = block.mimeType || "";
     const isDoc = fType.includes('pdf') || fType.includes('word') || fType.includes('document') || 
@@ -474,6 +561,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
 
     let embedUrl = contentUrl;
     let showIframe = false;
+    
     if (contentUrl.includes('youtube.com') || contentUrl.includes('youtu.be')) {
       const vid = contentUrl.split('v=')[1]?.split('&')[0] || contentUrl.split('/').pop();
       embedUrl = `https://www.youtube.com/embed/${vid}`;
@@ -512,7 +600,10 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           isOpen={sidebarOpen}
           setIsOpen={setSidebarOpen}
         />
-        <div style={{...styles.mainContent, marginLeft: isMobile ? 0 : '270px'}}>
+        <div style={{
+          ...styles.mainContent,
+          marginLeft: isMobile ? 0 : '270px'
+        }}>
           <div style={styles.loadingContainer}>
             <div style={styles.spinner}></div>
             <p style={{ color: '#94a3b8', fontSize: 13 }}>Membuka Modul...</p>
@@ -536,7 +627,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         setIsOpen={setSidebarOpen}
       />
 
-      {/* ===== MAIN CONTENT - DENGAN MARGIN UNTUK LAYAR BESAR ===== */}
+      {/* ===== MAIN CONTENT ===== */}
       <div style={{
         ...styles.mainContent,
         marginLeft: isMobile ? 0 : '270px',
@@ -544,7 +635,10 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       }}>
         
         {/* ===== MOBILE HEADER ===== */}
-        <div style={styles.mobileHeader}>
+        <div style={{
+          ...styles.mobileHeader,
+          display: isMobile ? 'flex' : 'none'
+        }}>
           <button 
             onClick={() => setSidebarOpen(true)} 
             style={styles.menuBtn}
@@ -600,7 +694,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
             <div style={{ display:'flex', gap:12, fontSize:11, opacity:0.8, flexWrap:'wrap' }}>
               <span><User size={12} /> {modul?.authorName || modul?.guruName || 'Guru'}</span>
               <span><Calendar size={12} /> {formatDate(modul?.createdAt)}</span>
-              {studentNim && <span><Hash size={12} /> {studentNim}</span>}
+              {studentNim && <span><Hash size={12} /> NIM: {studentNim}</span>}
             </div>
           </div>
         </div>
@@ -1025,12 +1119,5 @@ const styles = {
     maxWidth: '60%'
   }
 };
-
-// ============================================================
-// RESPONSIVE OVERRIDE
-// ============================================================
-// Media query untuk mobile (di atas 768px sidebar tetap terlihat)
-// Di dalam komponen sudah menggunakan isMobile untuk mengatur tampilan
-// Sidebar akan muncul saat isOpen true di mobile
 
 export default StudentModuleView;
