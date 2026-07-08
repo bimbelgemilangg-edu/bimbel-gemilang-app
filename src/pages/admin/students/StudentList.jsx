@@ -1,3 +1,4 @@
+// src/pages/admin/students/StudentList.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
@@ -6,7 +7,8 @@ import { collection, getDocs, deleteDoc, doc, updateDoc } from "firebase/firesto
 import { 
   Search, Plus, Edit3, Trash2, Eye, UserCheck, UserX, Users,
   Home, ChevronRight, BookOpen, RefreshCw, AlertCircle, CheckCircle,
-  CreditCard, Calendar, Clock, IdCard, Filter, MoreVertical, X
+  CreditCard, Calendar, Clock, IdCard, Filter, MoreVertical, X,
+  Hash, Tag, User, GraduationCap
 } from 'lucide-react';
 
 const StudentList = () => {
@@ -37,11 +39,19 @@ const StudentList = () => {
     setLoading(true);
     try {
       const snap = await getDocs(collection(db, "students"));
-      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const data = snap.docs.map(d => ({ 
+        id: d.id, 
+        ...d.data(),
+        // 🔥 PASTIKAN studentId SELALU ADA
+        studentId: d.data().studentId || d.id
+      }));
       data.sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
       setStudents(data);
-    } catch (error) { console.error("Fetch error:", error); } 
-    finally { setLoading(false); }
+    } catch (error) { 
+      console.error("Fetch error:", error); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   useEffect(() => { fetchStudents(); }, []);
@@ -57,9 +67,9 @@ const StudentList = () => {
     
     const diffDays = Math.ceil((selesai - today) / (1000 * 60 * 60 * 24));
     
-    if (diffDays < 0) return { label: 'Habis', color: '#ef4444', bg: '#fee2e2' };
-    if (diffDays <= 30) return { label: `${diffDays} hari lagi`, color: '#f59e0b', bg: '#fef3c7' };
-    return { label: 'Aktif', color: '#10b981', bg: '#dcfce7' };
+    if (diffDays < 0) return { label: '⛔ Habis', color: '#ef4444', bg: '#fee2e2' };
+    if (diffDays <= 30) return { label: `⏳ ${diffDays} hari`, color: '#f59e0b', bg: '#fef3c7' };
+    return { label: '✅ Aktif', color: '#10b981', bg: '#dcfce7' };
   };
 
   const getSisaTagihan = (s) => {
@@ -95,7 +105,12 @@ const StudentList = () => {
   };
 
   // === FILTER ===
-  const kelasList = ['Semua', ...new Set(students.map(s => s.kelasSekolah).filter(Boolean))].sort();
+  const kelasList = ['Semua', ...new Set(students.map(s => s.kelasSekolah).filter(Boolean))].sort((a, b) => {
+    const numA = parseInt(a);
+    const numB = parseInt(b);
+    if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+    return a.localeCompare(b);
+  });
   const programList = ['Semua', 'Reguler', 'English'];
   
   const filtered = students.filter(s => {
@@ -107,13 +122,13 @@ const StudentList = () => {
     const matchStatus = filterStatus === 'Semua' || 
       (filterStatus === 'Aktif' && !s.isBlocked) || 
       (filterStatus === 'Blokir' && s.isBlocked) ||
-      (filterStatus === 'Habis' && getMasaAktifStatus(s).label === 'Habis');
+      (filterStatus === 'Habis' && getMasaAktifStatus(s).label === '⛔ Habis');
     return matchSearch && matchKelas && matchProgram && matchStatus;
   });
 
   const totalAktif = students.filter(s => !s.isBlocked).length;
   const totalBlokir = students.filter(s => s.isBlocked).length;
-  const totalHabis = students.filter(s => getMasaAktifStatus(s).label === 'Habis').length;
+  const totalHabis = students.filter(s => getMasaAktifStatus(s).label === '⛔ Habis').length;
   const totalPiutang = students.reduce((sum, s) => sum + Math.max(0, getSisaTagihan(s)), 0);
 
   if (loading) return (
@@ -143,13 +158,22 @@ const StudentList = () => {
             <ChevronRight size={12} color="#94a3b8" />
             <span style={{color: '#3b82f6', fontWeight: 'bold'}}>Kelola Siswa</span>
           </div>
+          <div style={{display: 'flex', gap: 8}}>
+            <span style={styles.totalBadge}>
+              <Users size={14} /> {students.length} Siswa
+            </span>
+          </div>
         </div>
 
         {/* HEADER */}
         <div style={styles.header(isMobile)}>
           <div>
             <h2 style={styles.pageTitle(isMobile)}><Users size={22} /> Daftar Siswa</h2>
-            <p style={styles.subtitle}>{students.length} siswa terdaftar</p>
+            <p style={styles.subtitle}>
+              {students.length} siswa terdaftar • 
+              <span style={{color: '#10b981'}}> {totalAktif} aktif</span> • 
+              <span style={{color: '#ef4444'}}> {totalBlokir} blokir</span>
+            </p>
           </div>
           <button onClick={() => navigate('/admin/students/add')} style={styles.btnAdd(isMobile)}>
             <Plus size={18} /> Tambah Siswa
@@ -262,6 +286,7 @@ const StudentList = () => {
                 <table style={styles.table}>
                   <thead>
                     <tr style={styles.thr}>
+                      <th style={styles.th}>#</th>
                       <th style={styles.th}>ID / Nama</th>
                       <th style={styles.th}>Kelas</th>
                       <th style={styles.th}>Program</th>
@@ -272,11 +297,14 @@ const StudentList = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map(s => {
+                    {filtered.map((s, idx) => {
                       const masa = getMasaAktifStatus(s);
                       const sisa = getSisaTagihan(s);
                       return (
                         <tr key={s.id} style={{...styles.tr, opacity: s.isBlocked ? 0.5 : 1}}>
+                          <td style={styles.td}>
+                            <span style={styles.indexBadge}>{idx + 1}</span>
+                          </td>
                           <td style={styles.td}>
                             <div style={styles.studentCell}>
                               <div style={styles.studentAvatar(isMobile)}>
@@ -284,9 +312,9 @@ const StudentList = () => {
                               </div>
                               <div>
                                 <div style={{fontWeight: 'bold', fontSize: 13}}>{s.nama}</div>
-                                <div style={{fontSize: 10, color: '#94a3b8', fontFamily: 'monospace'}}>
-                                  <IdCard size={10} style={{marginRight: 2}} />
-                                  {s.studentId || '-'}
+                                {/* 🔥 STUDENT ID (NIM) FORMAT STD-YYYY-NNNN */}
+                                <div style={styles.idBadge}>
+                                  <Hash size={10} /> {s.studentId || 'Belum ada ID'}
                                 </div>
                               </div>
                             </div>
@@ -388,8 +416,9 @@ const StudentList = () => {
                         </div>
                         <div>
                           <div style={{fontWeight: 'bold', fontSize: 14}}>{s.nama}</div>
-                          <div style={{fontSize: 10, color: '#94a3b8'}}>
-                            {s.studentId} • {s.kelasSekolah}
+                          {/* 🔥 STUDENT ID (NIM) FORMAT STD-YYYY-NNNN */}
+                          <div style={styles.mobileIdBadge}>
+                            <Hash size={10} /> {s.studentId || '-'}
                           </div>
                         </div>
                       </div>
@@ -401,6 +430,7 @@ const StudentList = () => {
                       </span>
                     </div>
                     <div style={styles.mobileCardInfo}>
+                      <span style={styles.mobileKelasBadge}>{s.kelasSekolah || '-'}</span>
                       <span style={styles.programBadge(s.kategori)}>
                         {s.kategori === 'English' ? '🇬🇧 English' : '📚 Reguler'}
                       </span>
@@ -435,77 +465,231 @@ const StudentList = () => {
   );
 };
 
+// ============================================================
+// STYLES
+// ============================================================
 const styles = {
   wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
-  mainContent: (m) => ({ marginLeft: m ? '0' : '250px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' }),
-  
-  // Toast
-  toast: { position: 'fixed', top: 20, right: 20, zIndex: 9999, background: '#1e293b', color: 'white', padding: '12px 20px', borderRadius: 12, fontWeight: 'bold', fontSize: 14, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
-  loadingState: { textAlign: 'center', padding: 80 },
-  spinner: { width: 40, height: 40, border: '4px solid #f3e8ff', borderTop: '4px solid #673ab7', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 15px' },
-  
-  // Breadcrumb
-  breadcrumb: (m) => ({ marginBottom: 20 }),
-  breadcrumbTrail: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 },
-  
-  // Header
-  header: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexDirection: m ? 'column' : 'row', gap: m ? 10 : 0 }),
-  pageTitle: (m) => ({ margin: 0, color: '#1e293b', fontSize: m ? 18 : 22, display: 'flex', alignItems: 'center', gap: 8 }),
-  subtitle: { color: '#64748b', marginTop: 4, fontSize: 13 },
-  btnAdd: (m) => ({ background: '#3b82f6', color: 'white', border: 'none', padding: m ? '10px 15px' : '12px 20px', borderRadius: 12, cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 6, fontSize: m ? 12 : 14, boxShadow: '0 4px 12px rgba(59,130,246,0.3)' }),
-  
-  // Stats
-  statsRow: (m) => ({ display: 'flex', gap: m ? 6 : 10, marginBottom: 20, flexWrap: 'wrap' }),
-  statMini: { flex: 1, minWidth: 80, background: 'white', padding: 12, borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' },
-  
-  // Filter
-  filterBar: (m) => ({ display: 'flex', gap: 8, marginBottom: 12 }),
-  searchBox: { flex: 2, display: 'flex', alignItems: 'center', gap: 8, background: 'white', padding: '10px 15px', borderRadius: 10, border: '1px solid #e2e8f0' },
-  searchInput: { border: 'none', outline: 'none', width: '100%', fontSize: 14, background: 'transparent' },
-  clearBtn: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 16 },
-  btnFilter: (m) => ({ background: 'white', border: '1px solid #e2e8f0', padding: '10px 15px', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#64748b' }),
-  btnRefresh: (m) => ({ background: 'white', border: '1px solid #e2e8f0', padding: '10px 15px', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#64748b' }),
-  
-  // Advanced Filters
-  advancedFilters: (m) => ({ display: 'flex', gap: 12, marginBottom: 15, padding: 15, background: 'white', borderRadius: 12, border: '1px solid #f1f5f9', flexWrap: 'wrap' }),
-  filterGroup: { flex: 1, minWidth: 120 },
-  filterLabel: { fontSize: 10, fontWeight: 'bold', color: '#94a3b8', display: 'block', marginBottom: 4 },
-  filterSelect: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, background: '#f8fafc' },
-  
-  // Table
-  card: { background: 'white', borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', overflow: 'hidden' },
-  emptyState: { textAlign: 'center', padding: 60, color: '#94a3b8' },
-  table: { width: '100%', borderCollapse: 'collapse', minWidth: '900px' },
-  thr: { background: '#f8fafc', textAlign: 'left' },
-  th: { padding: '12px 15px', fontSize: 11, color: '#64748b', fontWeight: 800, textTransform: 'uppercase', borderBottom: '2px solid #f1f5f9' },
-  tr: { borderBottom: '1px solid #f1f5f9', transition: '0.2s' },
-  td: { padding: '12px 15px', fontSize: 13, verticalAlign: 'middle' },
-  
-  // Student Cell
-  studentCell: { display: 'flex', alignItems: 'center', gap: 10 },
-  studentAvatar: (m) => ({ 
-    width: m ? 36 : 32, height: m ? 36 : 32, borderRadius: '50%', 
-    background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', 
-    color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: m ? 14 : 12, fontWeight: 'bold', flexShrink: 0
+  mainContent: (m) => ({ 
+    marginLeft: m ? '0' : '250px', 
+    padding: m ? '15px' : '30px', 
+    width: '100%', 
+    boxSizing: 'border-box', 
+    transition: '0.3s' 
   }),
   
-  // Badges
-  kelasBadge: { padding: '3px 8px', borderRadius: 6, fontSize: 12, background: '#f1f5f9', color: '#475569', fontWeight: '500' },
-  programBadge: (kat) => ({ padding: '3px 8px', borderRadius: 10, fontSize: 11, fontWeight: 'bold', background: kat === 'English' ? '#e0e7ff' : '#f0fdf4', color: kat === 'English' ? '#3730a3' : '#166534' }),
-  statusBadge: (blocked) => ({ padding: '3px 8px', borderRadius: 10, fontSize: 11, fontWeight: 'bold', background: blocked ? '#fee2e2' : '#dcfce7', color: blocked ? '#ef4444' : '#166534' }),
+  toast: { 
+    position: 'fixed', top: 20, right: 20, zIndex: 9999, 
+    background: '#1e293b', color: 'white', 
+    padding: '12px 20px', borderRadius: 12, 
+    fontWeight: 'bold', fontSize: 14, 
+    boxShadow: '0 10px 30px rgba(0,0,0,0.2)' 
+  },
+  loadingState: { textAlign: 'center', padding: 80 },
+  spinner: { 
+    width: 40, height: 40, 
+    border: '4px solid #f3e8ff', borderTop: '4px solid #673ab7', 
+    borderRadius: '50%', animation: 'spin 1s linear infinite', 
+    margin: '0 auto 15px' 
+  },
   
-  // Actions
+  totalBadge: {
+    display: 'inline-flex', alignItems: 'center', gap: 4,
+    padding: '4px 12px', borderRadius: 20,
+    background: '#f1f5f9', color: '#64748b',
+    fontSize: 11, fontWeight: 600
+  },
+  
+  breadcrumb: (m) => ({ 
+    display: 'flex', justifyContent: 'space-between', 
+    alignItems: 'center', marginBottom: 20,
+    flexWrap: 'wrap', gap: 8
+  }),
+  breadcrumbTrail: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 },
+  
+  header: (m) => ({ 
+    display: 'flex', justifyContent: 'space-between', 
+    alignItems: 'center', marginBottom: 20, 
+    flexDirection: m ? 'column' : 'row', gap: m ? 10 : 0 
+  }),
+  pageTitle: (m) => ({ 
+    margin: 0, color: '#1e293b', 
+    fontSize: m ? 18 : 22, 
+    display: 'flex', alignItems: 'center', gap: 8 
+  }),
+  subtitle: { color: '#64748b', marginTop: 4, fontSize: 13 },
+  btnAdd: (m) => ({ 
+    background: '#3b82f6', color: 'white', border: 'none', 
+    padding: m ? '10px 15px' : '12px 20px', borderRadius: 12, 
+    cursor: 'pointer', fontWeight: 'bold', 
+    display: 'flex', alignItems: 'center', gap: 6, 
+    fontSize: m ? 12 : 14, 
+    boxShadow: '0 4px 12px rgba(59,130,246,0.3)' 
+  }),
+  
+  statsRow: (m) => ({ 
+    display: 'flex', gap: m ? 6 : 10, marginBottom: 20, flexWrap: 'wrap' 
+  }),
+  statMini: { 
+    flex: 1, minWidth: 80, background: 'white', padding: 12, 
+    borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, 
+    boxShadow: '0 2px 4px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' 
+  },
+  
+  filterBar: (m) => ({ 
+    display: 'flex', gap: 8, marginBottom: 12, 
+    flexDirection: m ? 'column' : 'row' 
+  }),
+  searchBox: { 
+    flex: 2, display: 'flex', alignItems: 'center', gap: 8, 
+    background: 'white', padding: '10px 15px', borderRadius: 10, 
+    border: '1px solid #e2e8f0' 
+  },
+  searchInput: { 
+    border: 'none', outline: 'none', width: '100%', 
+    fontSize: 14, background: 'transparent' 
+  },
+  clearBtn: { 
+    background: 'none', border: 'none', color: '#94a3b8', 
+    cursor: 'pointer', fontSize: 16 
+  },
+  btnFilter: (m) => ({ 
+    background: 'white', border: '1px solid #e2e8f0', 
+    padding: '10px 15px', borderRadius: 10, cursor: 'pointer', 
+    display: 'flex', alignItems: 'center', gap: 5, 
+    fontSize: 13, color: '#64748b' 
+  }),
+  btnRefresh: (m) => ({ 
+    background: 'white', border: '1px solid #e2e8f0', 
+    padding: '10px 15px', borderRadius: 10, cursor: 'pointer', 
+    display: 'flex', alignItems: 'center', gap: 5, 
+    fontSize: 13, color: '#64748b' 
+  }),
+  
+  advancedFilters: (m) => ({ 
+    display: 'flex', gap: 12, marginBottom: 15, padding: 15, 
+    background: 'white', borderRadius: 12, 
+    border: '1px solid #f1f5f9', flexWrap: 'wrap' 
+  }),
+  filterGroup: { flex: 1, minWidth: 120 },
+  filterLabel: { 
+    fontSize: 10, fontWeight: 'bold', color: '#94a3b8', 
+    display: 'block', marginBottom: 4 
+  },
+  filterSelect: { 
+    width: '100%', padding: '8px 10px', borderRadius: 8, 
+    border: '1px solid #e2e8f0', fontSize: 12, background: '#f8fafc' 
+  },
+  
+  card: { 
+    background: 'white', borderRadius: 14, 
+    boxShadow: '0 2px 8px rgba(0,0,0,0.04)', 
+    border: '1px solid #f1f5f9', overflow: 'hidden' 
+  },
+  emptyState: { textAlign: 'center', padding: 60, color: '#94a3b8' },
+  
+  table: { width: '100%', borderCollapse: 'collapse', minWidth: '950px' },
+  thr: { background: '#f8fafc', textAlign: 'left' },
+  th: { 
+    padding: '10px 12px', fontSize: 10, color: '#64748b', 
+    fontWeight: 800, textTransform: 'uppercase', 
+    borderBottom: '2px solid #f1f5f9' 
+  },
+  tr: { borderBottom: '1px solid #f1f5f9', transition: '0.2s' },
+  td: { padding: '10px 12px', fontSize: 12, verticalAlign: 'middle' },
+  
+  indexBadge: { 
+    display: 'inline-block', width: 24, height: 24, 
+    background: '#f1f5f9', borderRadius: '50%', 
+    textAlign: 'center', lineHeight: '24px', 
+    fontSize: 10, fontWeight: 600, color: '#64748b' 
+  },
+  
+  studentCell: { display: 'flex', alignItems: 'center', gap: 10 },
+  studentAvatar: (m) => ({ 
+    width: m ? 36 : 32, height: m ? 36 : 32, 
+    borderRadius: '50%', 
+    background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', 
+    color: 'white', display: 'flex', alignItems: 'center', 
+    justifyContent: 'center', fontSize: m ? 14 : 12, 
+    fontWeight: 'bold', flexShrink: 0 
+  }),
+  
+  // 🔥 ID BADGE FORMAT STD-YYYY-NNNN
+  idBadge: { 
+    display: 'inline-flex', alignItems: 'center', gap: 3,
+    fontSize: 9, color: '#3b82f6', 
+    background: '#eef2ff', padding: '1px 8px', 
+    borderRadius: 10, fontWeight: 600,
+    width: 'fit-content'
+  },
+  
+  mobileIdBadge: {
+    display: 'inline-flex', alignItems: 'center', gap: 3,
+    fontSize: 9, color: '#3b82f6', 
+    background: '#eef2ff', padding: '1px 6px', 
+    borderRadius: 8, fontWeight: 600,
+    width: 'fit-content'
+  },
+  
+  kelasBadge: { 
+    padding: '3px 8px', borderRadius: 6, 
+    fontSize: 11, background: '#f1f5f9', 
+    color: '#475569', fontWeight: 500 
+  },
+  mobileKelasBadge: {
+    padding: '2px 8px', borderRadius: 6,
+    fontSize: 10, background: '#f1f5f9',
+    color: '#475569', fontWeight: 500
+  },
+  
+  programBadge: (kat) => ({ 
+    padding: '3px 8px', borderRadius: 10, 
+    fontSize: 10, fontWeight: 'bold', 
+    background: kat === 'English' ? '#e0e7ff' : '#f0fdf4', 
+    color: kat === 'English' ? '#3730a3' : '#166534' 
+  }),
+  
+  statusBadge: (blocked) => ({ 
+    padding: '3px 8px', borderRadius: 10, 
+    fontSize: 10, fontWeight: 'bold', 
+    background: blocked ? '#fee2e2' : '#dcfce7', 
+    color: blocked ? '#ef4444' : '#166534' 
+  }),
+  
   actionGroup: { display: 'flex', gap: 4, flexWrap: 'wrap' },
-  btnAction: { background: '#f1f5f9', color: '#475569', border: 'none', padding: '7px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  btnAction: { 
+    background: '#f1f5f9', color: '#475569', 
+    border: 'none', padding: '6px', borderRadius: 8, 
+    cursor: 'pointer', display: 'flex', 
+    alignItems: 'center', justifyContent: 'center' 
+  },
   
-  // Mobile
   mobileList: { display: 'flex', flexDirection: 'column', gap: 10 },
-  mobileCard: { background: 'white', padding: 15, borderRadius: 14, boxShadow: '0 2px 4px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' },
-  mobileCardTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  mobileCardInfo: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 },
-  mobileCardActions: { display: 'flex', gap: 8, borderTop: '1px solid #f1f5f9', paddingTop: 10 },
-  mobileBtn: { flex: 1, padding: '8px', borderRadius: 8, border: '1px solid #e2e8f0', background: 'white', fontSize: 11, fontWeight: 'bold', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 },
+  mobileCard: { 
+    background: 'white', padding: 14, borderRadius: 14, 
+    boxShadow: '0 2px 4px rgba(0,0,0,0.04)', 
+    border: '1px solid #f1f5f9' 
+  },
+  mobileCardTop: { 
+    display: 'flex', justifyContent: 'space-between', 
+    alignItems: 'center', marginBottom: 8 
+  },
+  mobileCardInfo: { 
+    display: 'flex', gap: 6, alignItems: 'center', 
+    flexWrap: 'wrap', marginBottom: 8 
+  },
+  mobileCardActions: { 
+    display: 'flex', gap: 6, 
+    borderTop: '1px solid #f1f5f9', paddingTop: 10 
+  },
+  mobileBtn: { 
+    flex: 1, padding: '6px', borderRadius: 8, 
+    border: '1px solid #e2e8f0', background: 'white', 
+    fontSize: 10, fontWeight: 'bold', color: '#475569', 
+    cursor: 'pointer', display: 'flex', 
+    alignItems: 'center', justifyContent: 'center', gap: 4 
+  }
 };
 
 export default StudentList;
