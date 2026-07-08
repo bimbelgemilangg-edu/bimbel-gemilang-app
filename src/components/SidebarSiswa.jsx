@@ -23,10 +23,36 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
     
-    // Ambil data siswa dari localStorage
+    // 🔥 AMBIL DATA DENGAN PRIORITAS YANG BENAR
     const name = localStorage.getItem('studentName') || 'Siswa';
-    const nim = localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
-    const kelas = localStorage.getItem('studentKelas') || localStorage.getItem('studentGrade') || '';
+    
+    // 🔥 PRIORITAS: studentNim (studentId asli)
+    // FALLBACK: studentId (tapi hati-hati)
+    let nim = localStorage.getItem('studentNim');
+    
+    // 🔥 Jika studentNim kosong atau panjangnya > 20 (kemungkinan docId), coba studentId
+    if (!nim || nim.length > 20) {
+      nim = localStorage.getItem('studentId') || '';
+    }
+    
+    // 🔥 Jika masih kosong atau terlalu panjang, coba dari localStorage lain
+    if (!nim || nim.length > 20) {
+      const allKeys = Object.keys(localStorage);
+      for (const key of allKeys) {
+        if (key.toLowerCase().includes('student') && key.toLowerCase().includes('id')) {
+          const val = localStorage.getItem(key);
+          if (val && val.length < 20) {
+            nim = val;
+            break;
+          }
+        }
+      }
+    }
+    
+    const kelas = localStorage.getItem('studentKelas') || 
+                  localStorage.getItem('studentGrade') || '';
+    
+    console.log('📊 Sidebar - Data siswa:', { name, nim, kelas });
     setStudentData({ name, nim, kelas });
     
     return () => window.removeEventListener('resize', handleResize);
@@ -121,7 +147,6 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
   // ============================================================
   return (
     <>
-      {/* Overlay untuk mobile */}
       {isMobile && isOpen && (
         <div onClick={() => setIsOpen(false)} style={styles.overlay} />
       )}
@@ -131,7 +156,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         transform: isOpen || !isMobile ? 'translateX(0)' : 'translateX(-100%)',
       }}>
         
-        {/* ===== HEADER ===== */}
+        {/* HEADER */}
         <div style={styles.header}>
           <div style={styles.brandWrapper}>
             <img 
@@ -140,7 +165,6 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
               style={styles.logoSidebar} 
               onError={(e) => { 
                 e.target.style.display = 'none'; 
-                console.warn('Logo tidak ditemukan, pastikan file ada di public/logo-gemilang.png');
               }} 
             />
             <span style={styles.brandText}>Bimbel Gemilang</span>
@@ -153,7 +177,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
           )}
         </div>
 
-        {/* ===== PROFILE CARD ===== */}
+        {/* ===== PROFILE CARD - TAMPILKAN NIM ===== */}
         <div style={styles.profileCard}>
           <div style={styles.profileAvatar}>
             {getInitials(studentData.name)}
@@ -175,7 +199,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
 
         <hr style={styles.divider} />
         
-        {/* ===== MENU ===== */}
+        {/* MENU */}
         <ul style={styles.menuList}>
           {menuItems.map((item) => {
             const isActive = activeMenu === item.id || location.pathname === item.path;
@@ -210,7 +234,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
           })}
         </ul>
 
-        {/* ===== FOOTER ===== */}
+        {/* FOOTER */}
         <div style={styles.footer}>
           <button onClick={() => navigate('/siswa/profile')} style={styles.profileBtn}>
             <User size={16} /> Profil
@@ -220,7 +244,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
           </button>
         </div>
 
-        {/* ===== VERSION ===== */}
+        {/* VERSION */}
         <div style={styles.version}>
           <span>v2.0.0</span>
           <span>•</span>
@@ -265,7 +289,6 @@ const styles = {
     boxShadow: '4px 0 20px rgba(0,0,0,0.3)'
   },
   
-  // Header
   header: { 
     display: 'flex', 
     justifyContent: 'space-between', 
@@ -303,7 +326,6 @@ const styles = {
     '&:hover': { background: '#334155' }
   },
   
-  // Profile Card
   profileCard: {
     display: 'flex',
     alignItems: 'center',
@@ -370,7 +392,6 @@ const styles = {
     marginBottom: '16px' 
   },
   
-  // Menu
   menuList: { 
     listStyle: 'none', 
     padding: 0, 
@@ -412,7 +433,6 @@ const styles = {
     letterSpacing: '0.5px'
   },
   
-  // Footer
   footer: {
     display: 'flex',
     gap: '8px',
@@ -460,7 +480,6 @@ const styles = {
     }
   },
   
-  // Version
   version: {
     display: 'flex',
     alignItems: 'center',
@@ -473,7 +492,6 @@ const styles = {
     color: '#475569'
   },
   
-  // Overlay
   overlay: { 
     position: 'fixed', 
     top: 0, 
