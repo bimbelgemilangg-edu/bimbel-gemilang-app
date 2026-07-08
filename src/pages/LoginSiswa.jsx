@@ -165,6 +165,9 @@ const LoginSiswa = () => {
     alert('💻 Gunakan browser Chrome atau Edge di desktop untuk install aplikasi.');
   };
 
+  // ============================================================
+  // 🔥 LOGIN - DIPERBAIKI (NIM SINKRON)
+  // ============================================================
   const handleLogin = async (e) => {
     e.preventDefault();
     const inputUsername = username.trim();
@@ -178,23 +181,34 @@ const LoginSiswa = () => {
     try {
       const querySnapshot = await getDocs(collection(db, "students"));
       let studentData = null;
-      let studentId = null;
+      let docId = null;
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         if (data.username && data.username.toLowerCase() === inputUsername.toLowerCase()) {
           studentData = data;
-          studentId = doc.id;
+          docId = doc.id;
         }
       });
 
       if (studentData) {
         if (String(studentData.password) === inputPassword) {
+          // 🔥 AMBIL STUDENT ID ASLI (bukan docId)
+          const studentId = studentData.studentId || docId;
+          
+          // 🔥 SIMPAN KE LOCALSTORAGE DENGAN BENAR
           localStorage.setItem("isSiswaLoggedIn", "true");
           localStorage.setItem("role", "siswa");
+          
+          // ⭐ STUDENT ID ASLI (format STD-2024-0001)
           localStorage.setItem("studentId", studentId);
-          localStorage.setItem("studentName", studentData.nama);
+          localStorage.setItem("studentNim", studentId);  // ← NIM PAKAI STUDENT ID ASLI
+          
+          localStorage.setItem("studentName", studentData.nama || "Siswa");
+          localStorage.setItem("studentKelas", studentData.kelasSekolah || "");
           localStorage.setItem("studentGrade", studentData.kelasSekolah || "");
+          
+          console.log("✅ Login berhasil - Student ID:", studentId);
           
           navigate("/siswa/dashboard");
         } else {
