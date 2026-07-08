@@ -249,10 +249,12 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   }, [modulId]);
 
   // ============================================================
-  // CHECK SUBMISSIONS
+  // 🔥 CHECK SUBMISSIONS - DIOPTIMASI DENGAN QUERY WHERE
   // ============================================================
   const checkExistingSubmissions = async (mId) => {
     if (!studentId) return;
+    
+    // 🔥 OPTIMASI: Query langsung dengan where, bukan getDocs semua
     const q = query(
       collection(db, "jawaban_tugas"),
       where("modulId", "==", mId),
@@ -275,6 +277,8 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
 
   const checkQuizStatus = async (mId) => {
     if (!studentId) return;
+    
+    // 🔥 OPTIMASI: Query langsung dengan where
     const q = query(
       collection(db, "jawaban_kuis"),
       where("modulId", "==", mId),
@@ -292,7 +296,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     const file = e.target.files[0];
     if (!file) return;
     
-    // Validasi file berdasarkan jenis yang diizinkan
     const block = modul?.blocks?.find(b => b.id === blockId);
     const allowedType = block?.allowedFileType || 'all';
     const allowed = ALLOWED_FILE_TYPES[allowedType];
@@ -310,7 +313,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       return alert("❌ Maksimal 50MB.");
     }
     
-    // Simpan file untuk preview
     setPendingFile(file);
     setPendingBlockId(blockId);
     setShowPreviewModal(true);
@@ -510,7 +512,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           isOpen={sidebarOpen}
           setIsOpen={setSidebarOpen}
         />
-        <div style={styles.mainContent}>
+        <div style={{...styles.mainContent, marginLeft: isMobile ? 0 : '270px'}}>
           <div style={styles.loadingContainer}>
             <div style={styles.spinner}></div>
             <p style={{ color: '#94a3b8', fontSize: 13 }}>Membuka Modul...</p>
@@ -534,8 +536,12 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         setIsOpen={setSidebarOpen}
       />
 
-      {/* ===== MAIN CONTENT ===== */}
-      <div style={styles.mainContent}>
+      {/* ===== MAIN CONTENT - DENGAN MARGIN UNTUK LAYAR BESAR ===== */}
+      <div style={{
+        ...styles.mainContent,
+        marginLeft: isMobile ? 0 : '270px',
+        transition: 'margin-left 0.3s ease'
+      }}>
         
         {/* ===== MOBILE HEADER ===== */}
         <div style={styles.mobileHeader}>
