@@ -259,7 +259,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
             setIsQuizExpired(now > new Date(data.deadlineQuiz));
           }
           
-          // Jalankan query data
+          // Jalankan query data secara paralel
           await Promise.all([
             checkExistingSubmissions(modulId),
             checkQuizStatus(modulId)
@@ -589,7 +589,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   };
 
   // ============================================================
-  // RENDER
+  // RENDER UTAMA - BEBAS TYPO & MARGIN DINAMIS ANTI-KETUTUPAN
   // ============================================================
   if (loading) {
     return (
@@ -600,14 +600,10 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           isOpen={sidebarOpen}
           setIsOpen={setSidebarOpen}
         />
-        <div style={{
-          ...styles.mainContent,
-          marginLeft: isMobile ? 0 : '270px'
-        }}>
+        <div style={{...styles.mainContent, marginLeft: isMobile ? 0 : '270px'}}>
           <div style={styles.loadingContainer}>
             <div style={styles.spinner}></div>
             <p style={{ color: '#94a3b8', fontSize: 13 }}>Membuka Modul...</p>
-            <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
           </div>
         </div>
       </div>
@@ -619,7 +615,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
 
   return (
     <div style={styles.wrapper}>
-      {/* ===== SIDEBAR ===== */}
+      {/* ===== SIDEBAR PORTAL SISWA ===== */}
       <SidebarSiswa 
         activeMenu={activeMenu} 
         setActiveMenu={setActiveMenu}
@@ -627,14 +623,14 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         setIsOpen={setSidebarOpen}
       />
 
-      {/* ===== MAIN CONTENT ===== */}
+      {/* ===== MAIN CONTENT - TERDORONG KE KANAN DI LAPTOP ===== */}
       <div style={{
         ...styles.mainContent,
         marginLeft: isMobile ? 0 : '270px',
         transition: 'margin-left 0.3s ease'
       }}>
         
-        {/* ===== MOBILE HEADER ===== */}
+        {/* ===== MOBILE HEADER - MUNCUL DI HP DENGAN TOMBOL MENU AKTIF ===== */}
         <div style={{
           ...styles.mobileHeader,
           display: isMobile ? 'flex' : 'none'
@@ -649,7 +645,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           <div style={{ width: 24 }}></div>
         </div>
 
-        {/* ===== HERO ===== */}
+        {/* ===== HERO BANNER MATERI ===== */}
         <div style={{ height: isMobile ? 200 : 280, position: 'relative', width: '100%', overflow: 'hidden' }}>
           <button onClick={onBack} style={{ 
             position:'absolute', top:isMobile?10:18, left:isMobile?10:18, zIndex:10, 
@@ -699,7 +695,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           </div>
         </div>
 
-        {/* ===== TABS ===== */}
+        {/* ===== NAVIGASI TABS MATERI & TUGAS ===== */}
         <div style={{ 
           display:'flex', gap:4, background:'white', 
           margin:isMobile?'-20px 12px 0':'-30px 20px 0', 
@@ -707,8 +703,8 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           boxShadow:'0 4px 12px rgba(0,0,0,0.06)', 
           position:'relative', zIndex:5, flexWrap:'wrap' 
         }}>
-          <button 
-            onClick={() => setActiveTab('materi')} 
+          <button
+            onClick={() => setActiveTab('materi')}
             style={{ 
               flex:1, padding:'10px', border:'none', borderRadius:8, 
               fontWeight:700, fontSize:12, cursor:'pointer', 
@@ -720,9 +716,10 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           >
             <BookOpen size={14} /> Materi ({materiBlocks.length})
           </button>
+          
           {tugasBlocks.length > 0 && (
-            <button 
-              onClick={() => setActiveTab('tugas')} 
+            <button
+              onClick={() => setActiveTab('tugas')}
               style={{ 
                 flex:1, padding:'10px', border:'none', borderRadius:8, 
                 fontWeight:700, fontSize:12, cursor:'pointer', 
@@ -735,9 +732,10 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
               <Send size={14} /> Tugas ({Object.keys(submittedTasks).length}/{tugasBlocks.length})
             </button>
           )}
+
           {modul?.quizData?.length > 0 && (
-            <button 
-              onClick={() => setActiveTab('kuis')} 
+            <button
+              onClick={() => setActiveTab('kuis')}
               style={{ 
                 flex:1, padding:'10px', border:'none', borderRadius:8, 
                 fontWeight:700, fontSize:12, cursor:'pointer', 
@@ -752,10 +750,8 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           )}
         </div>
 
-        {/* ===== KONTEN ===== */}
+        {/* ===== KONTEN MATERI AKTIF ===== */}
         <div style={{ maxWidth:900, margin:'0 auto', padding:isMobile?'15px 12px':'20px' }}>
-          
-          {/* TAB MATERI */}
           {activeTab === 'materi' && materiBlocks.map((block, idx) => (
             <div key={block.id} style={{ 
               background:'white', padding:isMobile?18:25, 
@@ -775,13 +771,13 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                   {block.content}
                 </div>
               }
-              {(block.type==='video'||block.type==='file') && 
+              {(block.type==='video' || block.type==='file') && 
                 <div style={{marginTop:10}}>{renderMedia(block)}</div>
               }
             </div>
           ))}
 
-          {/* TAB TUGAS */}
+          {/* ===== KONTEN TUGAS AKTIF ===== */}
           {activeTab === 'tugas' && tugasBlocks.map(block => {
             const timeRem = getTimeRemaining(block.endTime, currentTime);
             const isExpired = isTugasExpired || (block.endTime && new Date(block.endTime) < currentTime);
@@ -909,7 +905,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
             );
           })}
 
-          {/* TAB KUIS */}
+          {/* ===== KONTEN KUIS AKTIF ===== */}
           {activeTab === 'kuis' && modul?.quizData?.length > 0 && (
             <div style={{ 
               background:'white', padding:isMobile?18:25, borderRadius:isMobile?14:18, 
