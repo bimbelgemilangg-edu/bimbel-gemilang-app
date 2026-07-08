@@ -6,9 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Edit3, Clock, ArrowLeft, BookOpen, Target, Users, 
   CheckCircle, AlertCircle, Shield, Hash, Tag, User,
-  Calendar, Send, FileText, Layers, Zap, Sparkles,
-  X, Plus, Filter, ChevronDown, ChevronUp, Globe,
-  GraduationCap, Briefcase, Award, Star, TrendingUp
+  Calendar, Send, ChevronDown, ChevronUp
 } from 'lucide-react';
 
 const ManageTugas = () => {
@@ -23,11 +21,11 @@ const ManageTugas = () => {
     targetKelas: '1 SD',
     guruId: '',
     kodeMapel: '',
-    guruName: ''
+    guruName: '',
+    mapelGuru: ''
   });
   const [loading, setLoading] = useState(false);
   const [availableClasses, setAvailableClasses] = useState([]);
-  const [availablePrograms] = useState(['Reguler', 'English']);
   const [showConfig, setShowConfig] = useState(true);
   const [warningShown, setWarningShown] = useState(false);
   const [guruData, setGuruData] = useState(null);
@@ -45,18 +43,18 @@ const ManageTugas = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 1. Ambil data guru dari localStorage
         const saved = JSON.parse(localStorage.getItem('teacherData') || '{}');
         const teacherName = saved.nama || '';
         const teacherId = saved.guruId || saved.id || '';
+        const teacherMapel = saved.mapel || '';
         
         setTugas(prev => ({
           ...prev,
           guruId: teacherId,
-          guruName: teacherName
+          guruName: teacherName,
+          mapelGuru: teacherMapel
         }));
 
-        // 2. Cari data lengkap guru dari Firestore
         if (teacherName) {
           const qGuru = query(collection(db, "teachers"), where("nama", "==", teacherName));
           const snapGuru = await getDocs(qGuru);
@@ -66,12 +64,12 @@ const ManageTugas = () => {
             setTugas(prev => ({
               ...prev,
               kodeMapel: guru.kodeMapel || '',
-              guruId: guru.guruId || teacherId
+              guruId: guru.guruId || teacherId,
+              mapelGuru: guru.mapel || teacherMapel
             }));
           }
         }
 
-        // 3. Ambil daftar kelas
         const snapSiswa = await getDocs(collection(db, "students"));
         const siswaData = snapSiswa.docs.map(d => d.data());
         const kelas = [...new Set(siswaData.map(s => s.kelasSekolah).filter(Boolean))];
@@ -100,7 +98,6 @@ const ManageTugas = () => {
     if (!tugas.title) return alert("❌ Judul tugas wajib diisi!");
     if (!tugas.desc) return alert("❌ Instruksi tugas wajib diisi!");
     
-    // Peringatan target
     if (tugas.targetKelas === 'Semua' && tugas.targetKategori === 'Semua') {
       if (!window.confirm("⚠️ Tugas ini akan muncul untuk SEMUA siswa (semua kelas dan program).\n\nLanjutkan?")) return;
     } else if (tugas.targetKelas === 'Semua') {
@@ -111,20 +108,21 @@ const ManageTugas = () => {
     
     setLoading(true);
     try {
+      // 🔥 GUNAKAN MAPEL GURU, BUKAN HARDCODE "Tugas"
+      const subjectMapel = tugas.mapelGuru || 'Tugas';
+      
       const payload = {
         title: tugas.title.toUpperCase(),
-        subject: "Tugas",
+        subject: subjectMapel,  // ✅ Mapel guru, bukan "Tugas"
         description: tugas.desc,
         deadlineTugas: tugas.deadline || null,
         type: 'assignment',
         targetKategori: tugas.targetKategori,
         targetKelas: tugas.targetKelas,
         status: 'aktif',
-        // === ID UNIK ===
         guruId: tugas.guruId,
         kodeMapel: tugas.kodeMapel,
         guruName: tugas.guruName,
-        // ===
         blocks: [{ 
           id: Date.now(), 
           type: 'assignment', 
@@ -174,8 +172,7 @@ const ManageTugas = () => {
         {tugas.guruId && (
           <span style={styles.guruIdBadge}>
             <Hash size={10} /> {tugas.guruId}
-            {tugas.kodeMapel && <Tag size={10} style={{ marginLeft: 8 }} />}
-            {tugas.kodeMapel}
+            {tugas.kodeMapel && <><Tag size={10} style={{ marginLeft: 8 }} /> {tugas.kodeMapel}</>}
           </span>
         )}
       </div>
@@ -190,6 +187,7 @@ const ManageTugas = () => {
           <p style={styles.subtitle}>
             Tugas akan muncul di dashboard siswa dan halaman E-Learning
             {tugas.guruName && <span style={styles.authorBadge}> • {tugas.guruName}</span>}
+            {tugas.mapelGuru && <span style={styles.authorBadge}> • 📖 {tugas.mapelGuru}</span>}
           </p>
         </div>
 
@@ -366,7 +364,7 @@ const ManageTugas = () => {
 };
 
 // ============================================================
-// STYLES
+// STYLES - SUDAH DIBERSIHKAN DARI & FOCUS DAN & HOVER
 // ============================================================
 const styles = {
   container: { 
@@ -502,11 +500,7 @@ const styles = {
     outline: 'none', 
     fontSize: '14px', 
     transition: '0.2s',
-    fontFamily: 'inherit',
-    '&:focus': {
-      borderColor: '#673ab7',
-      boxShadow: '0 0 0 3px rgba(103,58,183,0.1)'
-    }
+    fontFamily: 'inherit'
   },
   hintText: {
     fontSize: '10px',
@@ -591,11 +585,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '8px',
-    transition: '0.3s',
-    '&:hover': {
-      background: '#5b2d9e',
-      transform: 'translateY(-1px)'
-    }
+    transition: '0.3s'
   },
   btnDisabled: { 
     background: '#cbd5e1', 
