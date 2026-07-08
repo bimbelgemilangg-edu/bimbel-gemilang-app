@@ -6,10 +6,9 @@ import {
   query, where, serverTimestamp 
 } from "firebase/firestore";
 import { 
-  CheckCircle, Clock, Search, Edit3, Save, Download, 
+  CheckCircle, Clock, Search, Edit3, Save, 
   Trash2, FileText, HelpCircle, BarChart3, RefreshCw, 
-  User, Hash, Tag, Filter, X, BookOpen, Eye, AlertCircle,
-  GraduationCap
+  User, Hash, Tag, Filter, X, BookOpen, Eye
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -59,7 +58,15 @@ const CekTugasSiswa = () => {
             const guru = snap.docs[0].data();
             setGuruData(guru);
             setKodeMapel(guru.kodeMapel || '');
-            setMapelList(guru.mapel ? [guru.mapel] : []);
+            // 🔥 Simpan SEMUA variasi mapel (capitalized, uppercase, lowercase)
+            const mapelVariations = [];
+            if (guru.mapel) {
+              mapelVariations.push(guru.mapel);
+              mapelVariations.push(guru.mapel.toUpperCase());
+              mapelVariations.push(guru.mapel.toLowerCase());
+              mapelVariations.push(guru.mapel.charAt(0).toUpperCase() + guru.mapel.slice(1).toLowerCase());
+            }
+            setMapelList([...new Set(mapelVariations)]);
           }
         }
       } catch (e) { console.error(e); }
@@ -67,103 +74,79 @@ const CekTugasSiswa = () => {
     init();
   }, []);
 
-  // ===== FETCH DATA - SOLUSI TANPA guruId =====
+  // ===== FETCH DATA - CLIENT-SIDE FILTER =====
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      // 🔥 Ambil mapel guru dari localStorage juga (fallback)
       const saved = JSON.parse(localStorage.getItem('teacherData') || '{}');
-      const guruMapel = saved.mapel || saved.subject || '';
+      const guruMapel = saved.mapel || '';
       
-      // Gabungkan semua mapel yang mungkin
-      const allMapel = [...new Set([kodeMapel, guruMapel, guruData?.mapel].filter(Boolean))];
+      // 🔥 Ambil SEMUA data dulu (1 query per koleksi)
+      const [snapT, snapQ] = await Promise.all([
+        getDocs(collection(db, "jawaban_tugas")),
+        getDocs(collection(db, "jawaban_kuis"))
+      ]);
       
-      if (allMapel.length === 0) {
-        // Jika tidak ada mapel, ambil semua data (fallback aman)
-        const snapT = await getDocs(collection(db, "jawaban_tugas"));
-        const tasksData = snapT.docs.map(d => ({ id: d.id, ...d.data(), type: 'tugas' }));
-        setTasks(tasksData);
+      const allTasks = snapT.docs.map(d => ({ id: d.id, ...d.data(), type: 'tugas' }));
+      const allQuizzes = snapQ.docs.map(d => ({ id: d.id, ...d.data(), type: 'kuis' }));
 
-        const snapQ = await getDocs(collection(db, "jawaban_kuis"));
-        const quizData = snapQ.docs.map(d => ({ id: d.id, ...d.data(), type: 'kuis' }));
-        setQuizzes(quizData);
+      // 🔥 Gabungkan semua variasi mapel untuk filter
+      const mapelVariations = [...new Set([
+        kodeMapel,
+        guruMapel,
+        guruMapel?.toUpperCase(),
+        guruMapel?.toLowerCase(),
+        guruData?.mapel,
+        guruData?.mapel?.toUpperCase(),
+        guruData?.mapel?.toLowerCase(),
+        ...mapelList
+      ].filter(Boolean))];
 
-        setStats({
-          totalTugas: tasksData.length,
-          pendingTugas: tasksData.filter(t => !t.score).length,
-          gradedTugas: tasksData.filter(t => t.score).length,
-          totalKuis: quizData.length,
-          avgScore: quizData.length ? Math.round(quizData.reduce((a,q)=>a+(q.score||0),0)/quizData.length) : 0
-        });
-      } else {
-        // 🔥 FILTER BERDASARKAN MAPEL (BUKAN guruId)
-        const tasksData = [];
-        const quizData = [];
+      // 🔥 FILTER CLIENT-SIDE (case-insensitive)
+      const filterByMapel = (item) => {
+        if (mapelVariations.length === 0) return true; // Tampilkan semua kalau tidak ada mapel
         
-        for (const mapel of allMapel) {
-          // Query tugas berdasarkan subject/modulTitle yang mengandung mapel
-          const qT = query(collection(db, "jawaban_tugas"), where("subject", "==", mapel));
-          const snapT = await getDocs(qT);
-          snapT.forEach(d => tasksData.push({ id: d.id, ...d.data(), type: 'tugas' }));
+        const itemSubject = (item.subject || '').toLowerCase();
+        const itemModulTitle = (item.modulTitle || '').toLowerCase();
+        
+        return mapelVariations.some(m => {
+          const ml = m.toLowerCase();
+          return itemSubject.includes(ml) || itemModulTitle.includes(ml);
+        });
+      };
 
-          // Query kuis
-          const qQ = query(collection(db, "jawaban_kuis"), where("subject", "==", mapel));
-          const snapQ = await getDocs(qQ);
-          snapQ.forEach(d => quizData.push({ id: d.id, ...d.data(), type: 'kuis' }));
-        }
+      const filteredTasks = allTasks.filter(filterByMapel);
+      const filteredQuizzes = allQuizzes.filter(filterByMapel);
 
-        // Jika masih kosong, coba filter by modulTitle
-        if (tasksData.length === 0) {
-          const snapT = await getDocs(collection(db, "jawaban_tugas"));
-          snapT.forEach(d => {
-            const data = d.data();
-            const matchMapel = allMapel.some(m => 
-              (data.modulTitle||'').toLowerCase().includes(m.toLowerCase()) ||
-              (data.subject||'').toLowerCase().includes(m.toLowerCase())
-            );
-            if (matchMapel) tasksData.push({ id: d.id, ...data, type: 'tugas' });
-          });
-        }
-        if (quizData.length === 0) {
-          const snapQ = await getDocs(collection(db, "jawaban_kuis"));
-          snapQ.forEach(d => {
-            const data = d.data();
-            const matchMapel = allMapel.some(m => 
-              (data.modulTitle||'').toLowerCase().includes(m.toLowerCase()) ||
-              (data.subject||'').toLowerCase().includes(m.toLowerCase())
-            );
-            if (matchMapel) quizData.push({ id: d.id, ...data, type: 'kuis' });
-          });
-        }
-
-        // Auto-hitung skor kuis yang belum dinilai
-        const updatedQuizzes = quizData.map(q => {
-          if (q.correctAnswers !== undefined && q.totalQuestions && q.totalQuestions > 0) {
-            const autoScore = Math.round((q.correctAnswers / q.totalQuestions) * 100);
-            if (!q.score || q.score !== autoScore) {
-              return { ...q, score: autoScore, status: 'Dinilai' };
-            }
+      // Auto-hitung skor kuis
+      const updatedQuizzes = filteredQuizzes.map(q => {
+        if (q.correctAnswers !== undefined && q.totalQuestions && q.totalQuestions > 0) {
+          const autoScore = Math.round((q.correctAnswers / q.totalQuestions) * 100);
+          if (!q.score || q.score !== autoScore) {
+            return { ...q, score: autoScore, status: 'Dinilai' };
           }
-          return q;
-        });
+        }
+        return q;
+      });
 
-        setTasks(tasksData);
-        setQuizzes(updatedQuizzes);
+      setTasks(filteredTasks);
+      setQuizzes(updatedQuizzes);
 
-        setStats({
-          totalTugas: tasksData.length,
-          pendingTugas: tasksData.filter(t => !t.score || t.status === 'Pending').length,
-          gradedTugas: tasksData.filter(t => t.score && t.status !== 'Pending').length,
-          totalKuis: updatedQuizzes.length,
-          avgScore: updatedQuizzes.length ? Math.round(updatedQuizzes.reduce((a,q)=>a+(q.score||0),0)/updatedQuizzes.length) : 0
-        });
-      }
+      setStats({
+        totalTugas: filteredTasks.length,
+        pendingTugas: filteredTasks.filter(t => !t.score || t.status === 'Pending').length,
+        gradedTugas: filteredTasks.filter(t => t.score && t.status !== 'Pending').length,
+        totalKuis: updatedQuizzes.length,
+        avgScore: updatedQuizzes.length 
+          ? Math.round(updatedQuizzes.reduce((a, q) => a + (q.score || 0), 0) / updatedQuizzes.length) 
+          : 0
+      });
     } catch (e) { 
       console.error("Error fetch:", e); 
     }
     setLoading(false);
     setRefreshing(false);
-  }, [kodeMapel, guruData]);
+  }, [kodeMapel, guruData, mapelList]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -203,9 +186,9 @@ const CekTugasSiswa = () => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       data = data.filter(item => 
-        (item.studentName||'').toLowerCase().includes(term) ||
-        (item.modulTitle||'').toLowerCase().includes(term) ||
-        (item.studentNim||'').toLowerCase().includes(term)
+        (item.studentName || '').toLowerCase().includes(term) ||
+        (item.modulTitle || '').toLowerCase().includes(term) ||
+        (item.studentNim || '').toLowerCase().includes(term)
       );
     }
     if (filterStatus === 'Pending') data = data.filter(item => !item.score || item.status === 'Pending');
@@ -310,8 +293,19 @@ const CekTugasSiswa = () => {
               </thead>
               <tbody>
                 {filteredData.map(item => {
-                  const time = item.submittedAt?.toDate?.() || new Date(item.submittedAt);
-                  const tStr = time instanceof Date ? time.toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '-';
+                  // 🔥 Format tanggal yang aman
+                  let tStr = '-';
+                  try {
+                    if (item.submittedAt?.toDate) {
+                      tStr = item.submittedAt.toDate().toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+                    } else if (item.submittedAt) {
+                      const d = new Date(item.submittedAt);
+                      if (!isNaN(d.getTime())) {
+                        tStr = d.toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+                      }
+                    }
+                  } catch(e) { /* biarkan '-' */ }
+                  
                   const sc = item.score;
                   const scColor = sc>=75?'#10b981':sc>=50?'#f59e0b':'#ef4444';
                   const coll = item.type==='tugas'?'jawaban_tugas':'jawaban_kuis';
@@ -342,7 +336,7 @@ const CekTugasSiswa = () => {
                       <td style={s.td}>
                         {item.type==='tugas' ? (
                           item.fileUrl ? (
-                            <a href={item.fileUrl} target="_blank" style={s.btnView}><Eye size={12}/> Lihat</a>
+                            <a href={item.fileUrl} target="_blank" rel="noreferrer" style={s.btnView}><Eye size={12}/> Lihat</a>
                           ) : <span style={{fontSize:10,color:'#94a3b8'}}>-</span>
                         ) : (
                           <span style={s.quizBadge}>✅ {item.correctAnswers||0}/{item.totalQuestions||'?'}</span>
@@ -387,7 +381,7 @@ const CekTugasSiswa = () => {
 };
 
 // ============================================================
-// STYLES (MINIMALIS)
+// STYLES
 // ============================================================
 const s = {
   wrap: { width:'100%', maxWidth:1300, margin:'0 auto', padding:'16px 20px 40px', minHeight:'100vh', background:'#f8fafc' },
