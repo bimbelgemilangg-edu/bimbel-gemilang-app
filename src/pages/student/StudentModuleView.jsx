@@ -8,11 +8,13 @@ import {
 import { 
   ArrowLeft, Clock, FileText, CheckCircle, Eye, 
   Link as LinkIcon, HelpCircle, Trash2, X, Send, 
-  Download, BookOpen, Hash, Tag, File, Upload, Menu, User
+  Download, BookOpen, Hash, Tag, File, Upload, User
 } from 'lucide-react';
 import { uploadElearningFile } from '../../services/uploadService';
-import SidebarSiswa from '../../components/SidebarSiswa';
 
+// ============================================================
+// CONSTANTS
+// ============================================================
 const ALLOWED_FILE_TYPES = {
   all: { label: 'Semua File', accept: '*/*' },
   pdf: { label: 'PDF', accept: '.pdf,application/pdf' },
@@ -20,6 +22,9 @@ const ALLOWED_FILE_TYPES = {
   word: { label: 'Word/DOCX', accept: '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
 };
 
+// ============================================================
+// HELPERS
+// ============================================================
 const formatDate = (ts) => {
   if (!ts) return "-";
   const d = ts.toDate ? ts.toDate() : new Date(ts);
@@ -43,6 +48,9 @@ const getTimeRemaining = (deadline) => {
   return { text: `⚠️ ${h} jam`, color: '#f59e0b', expired: false };
 };
 
+// ============================================================
+// REDUCER
+// ============================================================
 const initialState = {
   modul: null, loading: true, uploading: {}, submittedTasks: {},
   quizAnswers: {}, quizSubmitted: false, textAnswers: {},
@@ -67,27 +75,29 @@ function reducer(state, action) {
   }
 }
 
+// ============================================================
+// MAIN COMPONENT
+// ============================================================
 const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState('materi');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [studentNim, setStudentNim] = useState('');
 
+  // ===== RESPONSIVE =====
   useEffect(() => {
     const h = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', h);
     return () => window.removeEventListener('resize', h);
   }, []);
 
-  // Ambil NIM langsung
+  // ===== AMBIL NIM =====
   useEffect(() => {
     const nim = studentData?.studentId || studentData?.nim || studentData?.studentNim || 
                 localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
     setStudentNim(nim);
   }, [studentData]);
 
-  // FETCH MODUL - TANPA studentNim dependency
+  // ===== FETCH MODUL - ANTI RACE CONDITION =====
   useEffect(() => {
     if (!modulId) return;
     let cancelled = false;
@@ -95,7 +105,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     const fetchAll = async () => {
       dispatch({ type: 'SET_LOADING', payload: true });
       try {
-        // Ambil NIM langsung dari localStorage (real-time)
         const activeNim = studentData?.studentId || studentData?.nim || studentData?.studentNim || 
                           localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
 
@@ -136,6 +145,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     return () => { cancelled = true; };
   }, [modulId]);
 
+  // ===== UPLOAD HANDLER =====
   const handleFileChange = (e, blockId) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -208,6 +218,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     } catch(e) { alert('❌ '+e.message); }
   };
 
+  // ===== RENDER MEDIA =====
   const renderMedia = (block) => {
     const url = block.content || block.fileUrl || block.url || block.file;
     if (!url) return null;
@@ -230,150 +241,139 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     return <a href={url} target="_blank" className="ml"><LinkIcon size={20}/> Buka Link ↗</a>;
   };
 
+  // ===== LOADING =====
   if (state.loading) return (
-    <div className="sw">
-      <SidebarSiswa activeMenu={activeMenu} setActiveMenu={setActiveMenu} isOpen={sidebarOpen} setIsOpen={setSidebarOpen}/>
-      <div className="sm" style={{marginLeft:isMobile?0:'270px'}}>
-        <div className="ls"><div className="sp"/><p>Memuat Modul...</p></div>
-      </div>
-    </div>
+    <div className="ls"><div className="sp"/><p>Memuat Modul...</p></div>
   );
 
   const tugasBlocks = (state.modul?.blocks||[]).filter(b=>b.type==='assignment');
   const materiBlocks = (state.modul?.blocks||[]).filter(b=>b.type!=='assignment');
 
+  // ===== RENDER UTAMA =====
   return (
-    <div className="sw">
-      <SidebarSiswa activeMenu={activeMenu} setActiveMenu={setActiveMenu} isOpen={sidebarOpen} setIsOpen={setSidebarOpen}/>
-      
-      <div className="sm" style={{marginLeft:isMobile?0:'270px'}}>
-        {isMobile && (
-          <div className="mh">
-            <button onClick={()=>setSidebarOpen(true)} className="mhb"><Menu size={24}/></button>
-            <span className="mht">{state.modul?.title||'Modul'}</span>
-            <div style={{width:24}}/>
+    <>
+      {/* COVER */}
+      <div className="cv">
+        <button onClick={onBack} className="cbb"><ArrowLeft size={14}/> {!isMobile&&'Kembali'}</button>
+        <img src={state.modul?.coverImage||'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1000'} alt=""/>
+        <div className="cvo">
+          <div className="cvt">
+            <span className="tp">{state.modul?.subject||'Umum'}</span>
+            <span className="tg">{state.modul?.targetKategori||'Semua'} • {state.modul?.targetKelas||'Semua'}</span>
           </div>
-        )}
-
-        <div className="cv">
-          <button onClick={onBack} className="cbb"><ArrowLeft size={14}/> {!isMobile&&'Kembali'}</button>
-          <img src={state.modul?.coverImage||'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1000'} alt=""/>
-          <div className="cvo">
-            <div className="cvt">
-              <span className="tp">{state.modul?.subject||'Umum'}</span>
-              <span className="tg">{state.modul?.targetKategori||'Semua'} • {state.modul?.targetKelas||'Semua'}</span>
-            </div>
-            <h1>{state.modul?.title}</h1>
-            <div className="cvm">
-              <span><User size={12}/> {state.modul?.authorName||state.modul?.guruName||'Guru'}</span>
-              <span>📅 {formatDate(state.modul?.createdAt)}</span>
-              {studentNim && <span>🆔 {studentNim}</span>}
-            </div>
+          <h1>{state.modul?.title}</h1>
+          <div className="cvm">
+            <span><User size={12}/> {state.modul?.authorName||state.modul?.guruName||'Guru'}</span>
+            <span>📅 {formatDate(state.modul?.createdAt)}</span>
+            {studentNim && <span>🆔 {studentNim}</span>}
           </div>
         </div>
+      </div>
 
-        <div className="tb">
-          <button className={`tbt ${state.activeTab==='materi'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'materi'})}>
-            <BookOpen size={14}/> Materi ({materiBlocks.length})
+      {/* TABS */}
+      <div className="tb">
+        <button className={`tbt ${state.activeTab==='materi'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'materi'})}>
+          <BookOpen size={14}/> Materi ({materiBlocks.length})
+        </button>
+        {tugasBlocks.length>0 && (
+          <button className={`tbt ${state.activeTab==='tugas'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'tugas'})}>
+            <Send size={14}/> Tugas ({Object.keys(state.submittedTasks).length}/{tugasBlocks.length})
           </button>
-          {tugasBlocks.length>0 && (
-            <button className={`tbt ${state.activeTab==='tugas'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'tugas'})}>
-              <Send size={14}/> Tugas ({Object.keys(state.submittedTasks).length}/{tugasBlocks.length})
-            </button>
-          )}
-          {(state.modul?.quizData||[]).length>0 && (
-            <button className={`tbt ${state.activeTab==='kuis'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'kuis'})}>
-              <HelpCircle size={14}/> Kuis {state.quizSubmitted?'✅':''}
-            </button>
-          )}
-        </div>
-
-        <div className="ct">
-          {state.activeTab==='materi' && (materiBlocks.length>0 ? materiBlocks.map((b,i)=>(
-            <div key={b.id||i} className="cd">
-              <div className="cdt"><small>{b.type==='file'?'📁 FILE':'📄 BAGIAN '+(i+1)}</small><h3>{b.title}</h3></div>
-              {b.type==='text'&&<div className="cdtx">{b.content}</div>}
-              {(b.type==='video'||b.type==='file')&&renderMedia(b)}
-            </div>
-          )) : <div className="em">Belum ada materi</div>)}
-
-          {state.activeTab==='tugas' && (tugasBlocks.length>0 ? tugasBlocks.map(b=>{
-            const sub = state.submittedTasks[b.id];
-            const expired = b.endTime && new Date(b.endTime) < new Date();
-            return (
-              <div key={b.id} className="cd tg">
-                <div className="cdt"><small>📝 TUGAS</small><h3>{b.title}</h3></div>
-                <div className="cdtx">{b.content}</div>
-                {b.endTime && <div className="dl"><Clock size={14}/> {getTimeRemaining(b.endTime)?.text}</div>}
-                <textarea value={state.textAnswers[b.id]||''} onChange={e=>dispatch({type:'SET_TEXT_ANSWERS',blockId:b.id,value:e.target.value})} placeholder="Tulis jawaban..." disabled={!!sub||expired} className="ta"/>
-                {sub ? (
-                  <div className="sb">
-                    <div className="sbb"><CheckCircle size={16}/> Terkumpul</div>
-                    {sub.fileUrl && <a href={sub.fileUrl} target="_blank" className="bv"><Eye size={14}/> Lihat File</a>}
-                    {!expired && <button onClick={()=>handleDeleteTask(b.id)} className="bd">Tarik Data</button>}
-                  </div>
-                ) : expired ? <div className="ex">⛔ Deadline Terlewat</div> : (
-                  <label className="ul">📎 Pilih File <input type="file" hidden onChange={e=>handleFileChange(e,b.id)} disabled={state.uploading[b.id]}/></label>
-                )}
-              </div>
-            );
-          }) : <div className="em">Tidak ada tugas</div>)}
-
-          {state.activeTab==='kuis' && (state.modul?.quizData||[]).length>0 && (
-            <div className="cd kq">
-              <div className="kqh"><div className="kqi"><HelpCircle size={20} color="white"/></div><h2>Kuis Evaluasi</h2></div>
-              {state.modul.quizData.map((q,qi)=>(
-                <div key={q.id} className="kqi2">
-                  <p className="kqq"><span className="kqn">{qi+1}</span>{q.question}</p>
-                  <div className="kqo">
-                    {q.options.map((opt,oi)=>(
-                      <button key={oi} disabled={state.quizSubmitted} onClick={()=>dispatch({type:'SET_QUIZ_ANSWERS',qId:q.id,value:oi})} className={`kqob ${state.quizAnswers[q.id]===oi?'sel':''}`}>
-                        {String.fromCharCode(65+oi)}. {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              {!state.quizSubmitted ? <button onClick={handleQuizSubmit} className="bkq">Kirim Jawaban</button> : <div className="kqd"><CheckCircle size={18}/> Kuis Selesai</div>}
-            </div>
-          )}
-        </div>
-
-        {state.previewImage && (
-          <div className="po" onClick={()=>dispatch({type:'SET_PREVIEW_IMAGE',payload:null})}>
-            <button className="poc" onClick={e=>{e.stopPropagation();dispatch({type:'SET_PREVIEW_IMAGE',payload:null});}}><X size={24}/></button>
-            <img src={state.previewImage} alt="" onClick={e=>e.stopPropagation()}/>
-          </div>
         )}
+        {(state.modul?.quizData||[]).length>0 && (
+          <button className={`tbt ${state.activeTab==='kuis'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'kuis'})}>
+            <HelpCircle size={14}/> Kuis {state.quizSubmitted?'✅':''}
+          </button>
+        )}
+      </div>
 
-        {state.showPreviewModal && state.pendingFile && (
-          <div className="po" style={{background:'rgba(0,0,0,0.7)'}}>
-            <div className="puc">
-              <div className="puch"><h4>📎 Preview</h4><button onClick={()=>dispatch({type:'CLEAR_PENDING'})}><X size={20}/></button></div>
-              <div className="pucb">
-                <div className="pui"><FileText size={24}/><div><b>{state.pendingFile.name}</b><small>{formatFileSize(state.pendingFile.size)}</small></div></div>
-                {state.pendingFile.type?.startsWith('image/') ? <img src={URL.createObjectURL(state.pendingFile)} className="pui2" alt=""/> :
-                 state.pendingFile.type==='application/pdf' ? <embed src={URL.createObjectURL(state.pendingFile)} className="pue"/> :
-                 <div className="puf"><File size={48}/><p>File siap upload</p></div>}
-                <div className="pua">
-                  <button onClick={()=>dispatch({type:'CLEAR_PENDING'})} className="bc" disabled={state.uploading[state.pendingBlockId]}>Batal</button>
-                  <button onClick={handleConfirmUpload} disabled={state.uploading[state.pendingBlockId]} className="bs">
-                    {state.uploading[state.pendingBlockId]?'Uploading...':<><Upload size={16}/> Upload</>}
-                  </button>
+      {/* CONTENT */}
+      <div className="ct">
+        {/* MATERI */}
+        {state.activeTab==='materi' && (materiBlocks.length>0 ? materiBlocks.map((b,i)=>(
+          <div key={b.id||i} className="cd">
+            <div className="cdt"><small>{b.type==='file'?'📁 FILE':'📄 BAGIAN '+(i+1)}</small><h3>{b.title}</h3></div>
+            {b.type==='text'&&<div className="cdtx">{b.content}</div>}
+            {(b.type==='video'||b.type==='file')&&renderMedia(b)}
+          </div>
+        )) : <div className="em">Belum ada materi</div>)}
+
+        {/* TUGAS */}
+        {state.activeTab==='tugas' && (tugasBlocks.length>0 ? tugasBlocks.map(b=>{
+          const sub = state.submittedTasks[b.id];
+          const expired = b.endTime && new Date(b.endTime) < new Date();
+          return (
+            <div key={b.id} className="cd tg">
+              <div className="cdt"><small>📝 TUGAS</small><h3>{b.title}</h3></div>
+              <div className="cdtx">{b.content}</div>
+              {b.endTime && <div className="dl"><Clock size={14}/> {getTimeRemaining(b.endTime)?.text}</div>}
+              <textarea value={state.textAnswers[b.id]||''} onChange={e=>dispatch({type:'SET_TEXT_ANSWERS',blockId:b.id,value:e.target.value})} placeholder="Tulis jawaban..." disabled={!!sub||expired} className="ta"/>
+              {sub ? (
+                <div className="sb">
+                  <div className="sbb"><CheckCircle size={16}/> Terkumpul</div>
+                  {sub.fileUrl && <a href={sub.fileUrl} target="_blank" className="bv"><Eye size={14}/> Lihat File</a>}
+                  {!expired && <button onClick={()=>handleDeleteTask(b.id)} className="bd">Tarik Data</button>}
+                </div>
+              ) : expired ? <div className="ex">⛔ Deadline Terlewat</div> : (
+                <label className="ul">📎 Pilih File <input type="file" hidden onChange={e=>handleFileChange(e,b.id)} disabled={state.uploading[b.id]}/></label>
+              )}
+            </div>
+          );
+        }) : <div className="em">Tidak ada tugas</div>)}
+
+        {/* KUIS */}
+        {state.activeTab==='kuis' && (state.modul?.quizData||[]).length>0 && (
+          <div className="cd kq">
+            <div className="kqh"><div className="kqi"><HelpCircle size={20} color="white"/></div><h2>Kuis Evaluasi</h2></div>
+            {state.modul.quizData.map((q,qi)=>(
+              <div key={q.id} className="kqi2">
+                <p className="kqq"><span className="kqn">{qi+1}</span>{q.question}</p>
+                <div className="kqo">
+                  {q.options.map((opt,oi)=>(
+                    <button key={oi} disabled={state.quizSubmitted} onClick={()=>dispatch({type:'SET_QUIZ_ANSWERS',qId:q.id,value:oi})} className={`kqob ${state.quizAnswers[q.id]===oi?'sel':''}`}>
+                      {String.fromCharCode(65+oi)}. {opt}
+                    </button>
+                  ))}
                 </div>
               </div>
-            </div>
+            ))}
+            {!state.quizSubmitted ? <button onClick={handleQuizSubmit} className="bkq">Kirim Jawaban</button> : <div className="kqd"><CheckCircle size={18}/> Kuis Selesai</div>}
           </div>
         )}
       </div>
 
+      {/* PREVIEW IMAGE */}
+      {state.previewImage && (
+        <div className="po" onClick={()=>dispatch({type:'SET_PREVIEW_IMAGE',payload:null})}>
+          <button className="poc" onClick={e=>{e.stopPropagation();dispatch({type:'SET_PREVIEW_IMAGE',payload:null});}}><X size={24}/></button>
+          <img src={state.previewImage} alt="" onClick={e=>e.stopPropagation()}/>
+        </div>
+      )}
+
+      {/* UPLOAD PREVIEW */}
+      {state.showPreviewModal && state.pendingFile && (
+        <div className="po" style={{background:'rgba(0,0,0,0.7)'}}>
+          <div className="puc">
+            <div className="puch"><h4>📎 Preview</h4><button onClick={()=>dispatch({type:'CLEAR_PENDING'})}><X size={20}/></button></div>
+            <div className="pucb">
+              <div className="pui"><FileText size={24}/><div><b>{state.pendingFile.name}</b><small>{formatFileSize(state.pendingFile.size)}</small></div></div>
+              {state.pendingFile.type?.startsWith('image/') ? <img src={URL.createObjectURL(state.pendingFile)} className="pui2" alt=""/> :
+               state.pendingFile.type==='application/pdf' ? <embed src={URL.createObjectURL(state.pendingFile)} className="pue"/> :
+               <div className="puf"><File size={48}/><p>File siap upload</p></div>}
+              <div className="pua">
+                <button onClick={()=>dispatch({type:'CLEAR_PENDING'})} className="bc" disabled={state.uploading[state.pendingBlockId]}>Batal</button>
+                <button onClick={handleConfirmUpload} disabled={state.uploading[state.pendingBlockId]} className="bs">
+                  {state.uploading[state.pendingBlockId]?'Uploading...':<><Upload size={16}/> Upload</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CSS */}
       <style>{`
         *{box-sizing:border-box;margin:0;padding:0}
-        .sw{display:flex;min-height:100vh;background:#f8fafc}
-        .sm{flex:1;min-height:100vh;transition:margin-left .3s;overflow-x:hidden;padding-bottom:40px}
-        .mh{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1px solid #e2e8f0;position:sticky;top:0;z-index:50}
-        .mhb{background:0;border:0;cursor:pointer;padding:4px}
-        .mht{font-size:14px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%}
         .ls{display:flex;flex-direction:column;align-items:center;justify-content:center;height:70vh;gap:16px;color:#64748b;font-size:13px}
         .sp{width:40px;height:40px;border:4px solid #e2e8f0;border-top:4px solid #673ab7;border-radius:50%;animation:spin 1s linear infinite}
         @keyframes spin{to{transform:rotate(360deg)}}
@@ -443,7 +443,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         .bs:disabled{opacity:.6;cursor:not-allowed}
         @media(max-width:768px){.cv{height:200px}.cvo h1{font-size:18px}.tb{margin:-20px 12px 0}.ct{padding:15px 12px}.cd{padding:18px;border-radius:14px}.cdt h3{font-size:16px}.cdtx{font-size:14px}.mdi{height:250px}}
       `}</style>
-    </div>
+    </>
   );
 };
 
