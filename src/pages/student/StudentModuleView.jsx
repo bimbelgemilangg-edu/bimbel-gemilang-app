@@ -1,5 +1,5 @@
 // src/pages/student/StudentModuleView.jsx
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { 
@@ -8,14 +8,12 @@ import {
 } from "firebase/firestore";
 import { 
   ArrowLeft, Clock, FileText, CheckCircle, UploadCloud, 
-  Eye, Link as LinkIcon, HelpCircle, AlertCircle, FileDigit, 
-  User, Trash2, X, Send, Zap, Calendar, Maximize2, 
+  Eye, Link as LinkIcon, HelpCircle, AlertCircle, 
+  User, Trash2, X, Send, Calendar,
   Download, BookOpen, Hash, Tag, File, Image as ImageIcon,
-  FileArchive, Upload, Check, AlertTriangle,
-  List, Grid, Filter, ChevronDown, ChevronUp, Settings,
-  Menu, Home, LogOut
+  Upload, Menu
 } from 'lucide-react';
-import { uploadElearningFile, deleteFile, supabase } from '../../services/uploadService';
+import { uploadElearningFile } from '../../services/uploadService';
 import SidebarSiswa from '../../components/SidebarSiswa';
 
 // ============================================================
