@@ -10,7 +10,7 @@ import {
 import { 
   Users, Trash2, UserPlus, Phone, ArrowLeft,
   Home, ChevronRight, FileText, Save, Edit3, Eye,
-  Wallet, X, Send
+  Wallet, X, Send, MessageCircle, BookOpen, Hash, Tag
 } from 'lucide-react';
 
 const ManageOnlineRegistration = () => {
@@ -40,6 +40,15 @@ const ManageOnlineRegistration = () => {
   const [payNote, setPayNote] = useState('');
   const [processingId, setProcessingId] = useState(null);
   const [virtualLoading, setVirtualLoading] = useState(false);
+
+  // ===== DATA PAKET =====
+  const [paketData, setPaketData] = useState({ SD: [], SMP: [], SMA: [] });
+  const [selectedPaket, setSelectedPaket] = useState(null);
+
+  // ===== WHATSAPP ADMIN =====
+  const [waAdmin, setWaAdmin] = useState('628123456789');
+  const [editingWA, setEditingWA] = useState(false);
+  const [tempWA, setTempWA] = useState('');
 
   // ===== TATA TERTIB DEFAULT =====
   const DEFAULT_TATA_TERTIB = `PERATURAN DAN TATA TERTIB BIMBEL GEMILANG
@@ -88,6 +97,40 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
     if (activeTab === 'tatatertib') fetchTataTertib();
   }, [activeTab]);
 
+  useEffect(() => {
+    fetchPaketData();
+    fetchWAAdmin();
+  }, []);
+
+  // ============================================================
+  // FETCH DATA
+  // ============================================================
+  const fetchPaketData = async () => {
+    try {
+      const snap = await getDoc(doc(db, "settings", "paket_bimbel"));
+      if (snap.exists()) setPaketData(snap.data());
+    } catch (e) { console.error(e); }
+  };
+
+  const fetchWAAdmin = async () => {
+    try {
+      const snap = await getDoc(doc(db, "settings", "whatsapp_admin"));
+      if (snap.exists() && snap.data().number) {
+        setWaAdmin(snap.data().number);
+        setTempWA(snap.data().number);
+      }
+    } catch (e) { console.error(e); }
+  };
+
+  const handleSaveWA = async () => {
+    try {
+      await setDoc(doc(db, "settings", "whatsapp_admin"), { number: tempWA, updatedAt: new Date().toISOString() });
+      setWaAdmin(tempWA);
+      setEditingWA(false);
+      alert('✅ Nomor WhatsApp admin tersimpan!');
+    } catch (e) { alert('❌ Gagal: ' + e.message); }
+  };
+
   // ============================================================
   // TATA TERTIB
   // ============================================================
@@ -133,19 +176,22 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
     return { label: '🟡 Pending', bg: '#fff7ed', color: '#c2410c' };
   };
 
+  const getAllPaketList = () => {
+    let all = [];
+    Object.keys(paketData).forEach(jenjang => {
+      paketData[jenjang].forEach(p => {
+        all.push({ ...p, jenjang });
+      });
+    });
+    return all;
+  };
+
   // ============================================================
   // MODAL HANDLERS
   // ============================================================
-  const openBayarModal = (reg) => {
-    setSelectedReg(reg);
-    setPayNominal('');
-    setPayMethod('Tunai');
-    setPayNote('');
-    setShowBayarModal(true);
-  };
-
   const openVirtualModal = (reg) => {
     setSelectedReg(reg);
+    setSelectedPaket(null);
     setPayNominal('');
     setPayNote('');
     setShowVirtualModal(true);
@@ -156,45 +202,13 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
     setShowDetailModal(true);
   };
 
-  // ============================================================
-  // CATAT PEMBAYARAN
-  // ============================================================
-  const handleCatatBayar = async (e) => {
-    e.preventDefault();
-    const nominal = parseInt(payNominal);
-    if (!nominal || nominal <= 0) return alert('⚠️ Nominal tidak valid!');
-    
-    setProcessingId(selectedReg.id);
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      
-      await addDoc(collection(db, "finance_logs"), {
-        studentId: selectedReg.id,
-        namaSiswa: selectedReg.namaLengkap,
-        date: today,
-        type: 'Pemasukan',
-        category: 'Pendaftaran Online',
-        amount: nominal,
-        method: payMethod,
-        note: payNote || `Pembayaran ${payMethod}: ${selectedReg.namaLengkap}`,
-        createdAt: serverTimestamp()
-      });
-
-      await updateDoc(doc(db, "online_registrations", selectedReg.id), {
-        totalPaid: (selectedReg.totalPaid || 0) + nominal,
-        lastPaymentDate: today,
-        lastPaymentMethod: payMethod,
-        lastPaymentNote: payNote || ''
-      });
-
-      alert(`✅ Pembayaran ${formatRupiah(nominal)} tercatat!`);
-      setShowBayarModal(false);
-    } catch (e) { alert('❌ Gagal: ' + e.message); }
-    setProcessingId(null);
+  const handlePaketSelect = (paket) => {
+    setSelectedPaket(paket);
+    setPayNominal(paket.harga);
   };
 
   // ============================================================
-  // KIRIM VIRTUAL (MIDTRANS)
+  // KIRIM VIRTUAL (MIDTRANS) + UPDATE PAKET
   // ============================================================
   const handleKirimVirtual = async (e) => {
     e.preventDefault();
@@ -203,6 +217,19 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
     
     setVirtualLoading(true);
     try {
+      // Update data pendaftaran dengan paket yang dipilih
+      const updateData = {
+        paymentLinkAmount: nominal
+      };
+      
+      if (selectedPaket) {
+        updateData.paketBimbelId = selectedPaket.id;
+        updateData.paketBimbelNama = selectedPaket.nama;
+        updateData.paketBimbelHarga = selectedPaket.harga;
+        updateData.paketBimbelDesc = selectedPaket.desc || '';
+        updateData.paketBimbelJenjang = selectedPaket.jenjang;
+      }
+
       const response = await fetch('/api/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -211,36 +238,43 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
           grossAmount: nominal,
           customerName: selectedReg.namaLengkap,
           customerPhone: selectedReg.whatsappAktif,
-          paketNama: selectedReg.kelasSekolah || 'Pendaftaran',
-          note: payNote || `Pembayaran Pendaftaran`
+          paketNama: selectedPaket ? selectedPaket.nama : 'Pendaftaran',
+          note: payNote || ''
         })
       });
 
       const data = await response.json();
 
       if (data.success && data.redirect_url) {
-        await updateDoc(doc(db, "online_registrations", selectedReg.id), {
-          paymentLink: data.redirect_url,
-          paymentLinkCreated: new Date().toISOString(),
-          paymentLinkAmount: nominal
-        });
+        updateData.paymentLink = data.redirect_url;
+        updateData.paymentLinkCreated = new Date().toISOString();
+      }
 
+      await updateDoc(doc(db, "online_registrations", selectedReg.id), updateData);
+
+      if (data.success && data.redirect_url) {
+        // Buka Midtrans di tab baru
         window.open(data.redirect_url, '_blank');
         setShowVirtualModal(false);
-        alert('🔗 Link pembayaran dibuat! Buka tab baru.');
+        alert('🔗 Link pembayaran dibuat! Buka tab baru untuk membayar.\n\nSiswa juga bisa cek di iPad dengan input Nama & WA.');
       } else {
-        alert('❌ Gagal: ' + (data.error || 'Unknown error'));
+        setShowVirtualModal(false);
+        alert('✅ Data paket & nominal tersimpan! Midtrans belum tersedia.\n\nSiswa bisa cek di iPad.');
       }
-    } catch (e) { alert('❌ Gagal: ' + e.message); }
+    } catch (e) { 
+      alert('❌ Gagal: ' + e.message); 
+    }
     setVirtualLoading(false);
   };
 
   // ============================================================
-  // SAHKAN AKUN
+  // SAHKAN AKUN + WHATSAPP OTOMATIS
   // ============================================================
   const handleSahkan = async (reg) => {
-    if ((reg.totalPaid || 0) <= 0) return alert('⚠️ Belum ada pembayaran! Catat pembayaran dulu.');
-    if (!window.confirm(`Sahkan ${reg.namaLengkap}? Akun siswa akan dibuat.`)) return;
+    if ((reg.totalPaid || 0) <= 0 && !reg.paymentLinkAmount) {
+      return alert('⚠️ Belum ada pembayaran! Buat pembayaran dulu.');
+    }
+    if (!window.confirm(`Sahkan ${reg.namaLengkap}?\n\nAkun siswa akan dibuat dan WhatsApp otomatis terkirim.`)) return;
 
     setProcessingId(reg.id);
     try {
@@ -255,7 +289,6 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
         username, password,
         wa: reg.whatsappAktif,
         alamat: reg.alamatRumah,
-        orangTua: reg.namaAyah ? `${reg.namaAyah} / ${reg.namaIbu}` : (reg.namaOrangTua || ''),
         ortu: {
           ayah: reg.namaAyah || '',
           ibu: reg.namaIbu || '',
@@ -263,6 +296,11 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
           pekerjaanIbu: reg.pekerjaanIbu || '',
           hp: reg.whatsappAktif
         },
+        paket: reg.paketBimbelNama || '',
+        paketId: reg.paketBimbelId || '',
+        paketHarga: reg.paketBimbelHarga || reg.paymentLinkAmount || 0,
+        totalTagihan: reg.paketBimbelHarga || reg.paymentLinkAmount || 0,
+        totalBayar: reg.totalPaid || 0,
         status: 'Aktif',
         isBlocked: false,
         tataTertibDisetujui: true,
@@ -277,7 +315,23 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
         activatedAt: new Date().toISOString()
       });
 
-      alert(`✅ AKUN BERHASIL DIBUAT!\n\n👤 ${reg.namaLengkap}\n📧 Username: ${username}\n🔑 Password: ${password}`);
+      // ===== WHATSAPP OTOMATIS =====
+      const paketInfo = reg.paketBimbelNama ? `\n📚 Paket: ${reg.paketBimbelNama}` : '';
+      const hargaInfo = reg.paketBimbelHarga ? `\n💰 Harga: ${formatRupiah(reg.paketBimbelHarga)}` : '';
+      
+      const waMessage = encodeURIComponent(
+        `*🎉 PENDAFTARAN BERHASIL - BIMBEL GEMILANG*\n\n` +
+        `👤 Nama: ${reg.namaLengkap}\n` +
+        `🏫 Kelas: ${reg.kelasSekolah}\n` +
+        `📧 Username: ${username}\n` +
+        `🔑 Password: ${password}${paketInfo}${hargaInfo}\n\n` +
+        `🔗 Login: https://bimbel-gemilang-app.vercel.app/login-siswa\n\n` +
+        `_Simpan username & password ini. Jangan berikan ke orang lain._`
+      );
+
+      window.open(`https://wa.me/${reg.whatsappAktif}?text=${waMessage}`, '_blank');
+
+      alert(`✅ AKUN BERHASIL DIBUAT!\n\n👤 ${reg.namaLengkap}\n📧 Username: ${username}\n🔑 Password: ${password}\n\n📱 WhatsApp otomatis terbuka. Kirim pesan ke siswa.`);
     } catch (e) { alert('❌ Gagal: ' + e.message); }
     setProcessingId(null);
   };
@@ -289,6 +343,16 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
     if (!window.confirm(`Hapus ${nama}?`)) return;
     try { await deleteDoc(doc(db, "online_registrations", id)); }
     catch (e) { alert('❌ Gagal: ' + e.message); }
+  };
+
+  // ============================================================
+  // KIRIM WHATSAPP MANUAL
+  // ============================================================
+  const handleKirimWA = (reg) => {
+    const nama = reg.namaLengkap || '';
+    const wa = reg.whatsappAktif || '';
+    const waMsg = encodeURIComponent(`Halo ${nama}, pendaftaran Anda di Bimbel Gemilang sedang diproses. Admin akan menghubungi Anda.`);
+    window.open(`https://wa.me/${wa}?text=${waMsg}`, '_blank');
   };
 
   // ============================================================
@@ -307,8 +371,23 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
 
         {/* Header */}
         <div style={s.header}>
-          <h2 style={s.title}><UserPlus size={22} color="#f59e0b" /> Pendaftaran Online</h2>
-          <span style={s.count}>{registrations.length} pendaftar</span>
+          <div>
+            <h2 style={s.title}><UserPlus size={22} color="#f59e0b" /> Pendaftaran Online</h2>
+            <div style={{display:'flex',alignItems:'center',gap:8,marginTop:4}}>
+              <span style={s.count}>{registrations.length} pendaftar</span>
+              {editingWA ? (
+                <div style={{display:'flex',alignItems:'center',gap:4,marginLeft:8}}>
+                  <span style={{fontSize:10,color:'#64748b'}}>WA Admin:</span>
+                  <input value={tempWA} onChange={e=>setTempWA(e.target.value)} style={{width:100,padding:'2px 6px',borderRadius:4,border:'1px solid #e2e8f0',fontSize:10}} />
+                  <button onClick={handleSaveWA} style={{padding:'2px 8px',borderRadius:4,background:'#10b981',color:'white',border:'none',cursor:'pointer',fontSize:10}}>OK</button>
+                </div>
+              ) : (
+                <span onClick={()=>setEditingWA(true)} style={{fontSize:10,color:'#94a3b8',cursor:'pointer',marginLeft:8}}>
+                  📞 WA Admin: {waAdmin} (klik edit)
+                </span>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -328,7 +407,8 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
                 <thead><tr style={s.thr}>
                   <th style={s.th}>Tgl</th><th style={s.th}>Nama</th><th style={s.th}>WA</th>
                   <th style={s.th}>Kelas</th><th style={s.th}>Sekolah</th>
-                  <th style={s.th}>Bayar</th><th style={s.th}>Status</th><th style={s.th}>Aksi</th>
+                  <th style={s.th}>Paket</th><th style={s.th}>Bayar</th>
+                  <th style={s.th}>Status</th><th style={s.th}>Aksi</th>
                 </tr></thead>
                 <tbody>
                   {registrations.map(reg => {
@@ -336,6 +416,7 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
                     const isActive = reg.status === 'active';
                     const st = getStatusBadge(reg);
                     const isProc = processingId === reg.id;
+                    const hasPaket = reg.paketBimbelNama || reg.paymentLinkAmount;
 
                     return (
                       <tr key={reg.id} style={s.tr}>
@@ -344,9 +425,20 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
                           <button onClick={() => openDetailModal(reg)} style={s.nameBtn}>{reg.namaLengkap}</button>
                           {reg.gender && <span style={{fontSize:10,color:'#94a3b8',marginLeft:4}}>({reg.gender === 'Laki-laki' ? 'L' : 'P'})</span>}
                         </td>
-                        <td style={s.td}><a href={`https://wa.me/${reg.whatsappAktif}`} target="_blank" rel="noreferrer" style={s.wa}>{reg.whatsappAktif}</a></td>
+                        <td style={s.td}>
+                          <a href={`https://wa.me/${reg.whatsappAktif}`} target="_blank" rel="noreferrer" style={s.wa}>{reg.whatsappAktif}</a>
+                        </td>
                         <td style={s.td}><span style={s.badge2}>{reg.kelasSekolah}</span></td>
                         <td style={s.td}><span style={{fontSize:11,color:'#475569'}}>{reg.asalSekolah || '-'}</span></td>
+                        <td style={s.td}>
+                          {reg.paketBimbelNama ? (
+                            <span style={{fontSize:10,fontWeight:600,color:'#1e293b'}}>{reg.paketBimbelNama}</span>
+                          ) : reg.paymentLinkAmount ? (
+                            <span style={{fontSize:10,color:'#94a3b8'}}>{(reg.paketBimbelJenjang || '')} - {formatRupiah(reg.paymentLinkAmount)}</span>
+                          ) : (
+                            <span style={{fontSize:10,color:'#94a3b8'}}>-</span>
+                          )}
+                        </td>
                         <td style={s.td}>
                           <span style={{color: paid > 0 ? '#10b981' : '#94a3b8',fontWeight:700}}>{formatRupiah(paid)}</span>
                         </td>
@@ -355,14 +447,19 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
                           <div style={s.acts}>
                             {!isActive && (
                               <>
-                                <button onClick={() => openVirtualModal(reg)} style={s.btn('virtual')} title="Kirim Virtual"><Send size={12} /></button>
-                                <button onClick={() => openBayarModal(reg)} style={s.btn('bayar')} title="Catat Bayar"><Wallet size={12} /></button>
-                                <button onClick={() => handleSahkan(reg)} disabled={paid<=0||isProc} style={s.btn('sahkan', paid<=0||isProc)}>
+                                <button onClick={() => openVirtualModal(reg)} style={s.btn('virtual')} title="Buat Pembayaran">
+                                  <Wallet size={12} /> {!isMobile && 'Bayar'}
+                                </button>
+                                <button onClick={() => handleSahkan(reg)} disabled={!hasPaket||isProc} style={s.btn('sahkan', !hasPaket||isProc)}>
                                   <UserPlus size={12} /> {!isMobile && 'Sahkan'}
                                 </button>
                               </>
                             )}
-                            {isActive && <span style={{fontSize:10,color:'#10b981'}}>✅ Aktif</span>}
+                            {isActive && (
+                              <button onClick={() => handleKirimWA(reg)} style={s.btn('wa')} title="WhatsApp">
+                                <MessageCircle size={12} />
+                              </button>
+                            )}
                             <button onClick={() => handleDelete(reg.id, reg.namaLengkap)} style={s.btn('hapus')}><Trash2 size={12} /></button>
                           </div>
                         </td>
@@ -402,44 +499,59 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
 
       </div>
 
-      {/* MODAL: CATAT BAYAR */}
-      {showBayarModal && selectedReg && (
-        <div style={s.ov} onClick={() => setShowBayarModal(false)}>
-          <div style={s.mod(isMobile)} onClick={e => e.stopPropagation()}>
-            <div style={s.mh}><h3><Wallet size={18} /> Catat Pembayaran</h3><button onClick={() => setShowBayarModal(false)} style={s.xb}><X size={18} /></button></div>
-            <div style={s.mb}>
-              <div style={s.mi}><span>Siswa</span><strong>{selectedReg.namaLengkap}</strong></div>
-              <div style={s.mi}><span>Kelas</span><strong>{selectedReg.kelasSekolah}</strong></div>
-              <div style={s.mi}><span>Total Bayar</span><strong style={{color:'#10b981'}}>{formatRupiah(selectedReg.totalPaid||0)}</strong></div>
-              <form onSubmit={handleCatatBayar}>
-                <div style={s.fg}><label style={s.lb}>Nominal (Rp) *</label><input type="number" value={payNominal} onChange={e=>setPayNominal(e.target.value)} style={s.inp} required autoFocus placeholder="Masukkan nominal" /></div>
-                <div style={s.fg}><label style={s.lb}>Metode</label><select value={payMethod} onChange={e=>setPayMethod(e.target.value)} style={s.inp}><option value="Tunai">💵 Tunai</option><option value="Transfer">💳 Transfer</option></select></div>
-                <div style={s.fg}><label style={s.lb}>Catatan</label><input value={payNote} onChange={e=>setPayNote(e.target.value)} style={s.inp} placeholder="Opsional" /></div>
-                <div style={s.mf}>
-                  <button type="button" onClick={()=>setShowBayarModal(false)} style={s.btnC}>Batal</button>
-                  <button type="submit" disabled={!!processingId} style={s.btnS}>{processingId?'⏳':'💾 Catat'}</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL: KIRIM VIRTUAL */}
+      {/* MODAL: BUAT PEMBAYARAN */}
       {showVirtualModal && selectedReg && (
         <div style={s.ov} onClick={() => setShowVirtualModal(false)}>
           <div style={s.mod(isMobile)} onClick={e => e.stopPropagation()}>
-            <div style={s.mh}><h3><Send size={18} /> Kirim Pembayaran Virtual</h3><button onClick={() => setShowVirtualModal(false)} style={s.xb}><X size={18} /></button></div>
+            <div style={s.mh}><h3><Wallet size={18} /> Buat Pembayaran</h3><button onClick={() => setShowVirtualModal(false)} style={s.xb}><X size={18} /></button></div>
             <div style={s.mb}>
               <div style={s.mi}><span>Siswa</span><strong>{selectedReg.namaLengkap}</strong></div>
+              <div style={s.mi}><span>Kelas</span><strong>{selectedReg.kelasSekolah} {selectedReg.gender ? `(${selectedReg.gender === 'Laki-laki' ? 'L' : 'P'})` : ''}</strong></div>
               <div style={s.mi}><span>WhatsApp</span><strong>{selectedReg.whatsappAktif}</strong></div>
+              
+              <div style={{marginTop:12,marginBottom:8}}>
+                <label style={s.lb}>Pilih Paket (Opsional)</label>
+                <div style={{maxHeight:150,overflowY:'auto',border:'1px solid #e2e8f0',borderRadius:8}}>
+                  {getAllPaketList().map(p => {
+                    const isSel = selectedPaket?.id === p.id;
+                    return (
+                      <div key={p.id} onClick={() => handlePaketSelect(p)} style={{
+                        padding:'8px 12px',cursor:'pointer',borderBottom:'1px solid #f1f5f9',
+                        background: isSel ? '#eef2ff' : 'white',
+                        borderLeft: isSel ? '4px solid #3b82f6' : '4px solid transparent'
+                      }}>
+                        <div style={{fontSize:12,fontWeight:600}}>
+                          {isSel && '✅ '}{p.nama}
+                          <span style={{fontSize:10,color:'#94a3b8',marginLeft:6}}>({p.jenjang})</span>
+                        </div>
+                        <div style={{fontSize:10,color:'#64748b'}}>{p.desc}</div>
+                        <div style={{fontSize:13,fontWeight:700,color:'#1e293b',marginTop:2}}>{formatRupiah(p.harga)}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               <form onSubmit={handleKirimVirtual}>
-                <div style={s.fg}><label style={s.lb}>Nominal Tagihan (Rp) *</label><input type="number" value={payNominal} onChange={e=>setPayNominal(e.target.value)} style={s.inp} required placeholder="Masukkan nominal" /></div>
-                <div style={s.fg}><label style={s.lb}>Keterangan</label><input value={payNote} onChange={e=>setPayNote(e.target.value)} style={s.inp} placeholder="Misal: DP Pendaftaran" /></div>
-                <div style={{...s.inf,background:'#eef2ff',color:'#4338ca',marginBottom:10}}>💳 Link Midtrans dibuat sesuai nominal. Siswa bisa bayar via Gopay, OVO, Transfer Bank.</div>
+                <div style={s.fg}>
+                  <label style={s.lb}>Nominal Tagihan (Rp) *</label>
+                  <input type="number" value={payNominal} onChange={e=>setPayNominal(e.target.value)} style={s.inp} required autoFocus placeholder="Masukkan nominal" />
+                  {selectedPaket && (
+                    <small style={{color:'#3b82f6',fontWeight:600}}>📦 {selectedPaket.nama} - {formatRupiah(selectedPaket.harga)}</small>
+                  )}
+                </div>
+                <div style={s.fg}>
+                  <label style={s.lb}>Keterangan (Opsional)</label>
+                  <input value={payNote} onChange={e=>setPayNote(e.target.value)} style={s.inp} placeholder="Misal: DP Pendaftaran, Biaya Buku, dll" />
+                </div>
+                <div style={{...s.inf,background:'#eef2ff',color:'#4338ca',marginBottom:10}}>
+                  💳 Klik <strong>"Generate & Kirim"</strong> untuk membuat link pembayaran Midtrans (Gopay, OVO, Transfer Bank).
+                </div>
                 <div style={s.mf}>
                   <button type="button" onClick={()=>setShowVirtualModal(false)} style={s.btnC}>Batal</button>
-                  <button type="submit" disabled={virtualLoading} style={{...s.btnS,background:'#6366f1'}}>{virtualLoading?'⏳':<><Send size={14} /> Kirim Virtual</>}</button>
+                  <button type="submit" disabled={virtualLoading} style={{...s.btnS,background:'#6366f1'}}>
+                    {virtualLoading ? '⏳' : <><Send size={14} /> Generate & Kirim</>}
+                  </button>
                 </div>
               </form>
             </div>
@@ -450,7 +562,7 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
       {/* MODAL: DETAIL */}
       {showDetailModal && selectedReg && (
         <div style={s.ov} onClick={() => setShowDetailModal(false)}>
-          <div style={{...s.mod(isMobile),maxWidth:450}} onClick={e => e.stopPropagation()}>
+          <div style={{...s.mod(isMobile),maxWidth:480}} onClick={e => e.stopPropagation()}>
             <div style={s.mh}><h3><Eye size={18} /> Detail Pendaftar</h3><button onClick={() => setShowDetailModal(false)} style={s.xb}><X size={18} /></button></div>
             <div style={s.mb}>
               <div style={s.dr}><span>Nama</span><strong>{selectedReg.namaLengkap}</strong></div>
@@ -463,6 +575,8 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
               <div style={s.dr}><span>Nama Ibu</span><strong>{selectedReg.namaIbu || '-'}</strong></div>
               <div style={s.dr}><span>Pekerjaan Ibu</span><strong>{selectedReg.pekerjaanIbu || '-'}</strong></div>
               <div style={s.dr}><span>Alamat</span><strong>{selectedReg.alamatRumah}</strong></div>
+              <div style={{...s.dr,borderBottom:'2px solid #f1f5f9',paddingTop:8}}><span>Paket</span><strong>{selectedReg.paketBimbelNama || '-'}</strong></div>
+              <div style={s.dr}><span>Harga Paket</span><strong>{selectedReg.paketBimbelHarga ? formatRupiah(selectedReg.paketBimbelHarga) : '-'}</strong></div>
               <div style={s.dr}><span>Total Bayar</span><strong style={{color:'#10b981'}}>{formatRupiah(selectedReg.totalPaid||0)}</strong></div>
               <div style={s.dr}><span>Status</span><strong>{getStatusBadge(selectedReg).label}</strong></div>
               {selectedReg.tandaTangan && (
@@ -504,7 +618,7 @@ const s = {
   spin: { width:30,height:30,border:'3px solid #e2e8f0',borderTop:'3px solid #f59e0b',borderRadius:'50%',animation:'spin 1s linear infinite',margin:'0 auto 12px' },
   empty: { textAlign:'center',padding:60,background:'white',borderRadius:14,border:'2px dashed #e2e8f0',color:'#94a3b8' },
   
-  tbl: { width:'100%',borderCollapse:'collapse',fontSize:12,minWidth:800 },
+  tbl: { width:'100%',borderCollapse:'collapse',fontSize:12,minWidth:900 },
   thr: { background:'#f8fafc',borderBottom:'1px solid #e2e8f0' },
   th: { padding:'10px 12px',textAlign:'left',color:'#64748b',fontWeight:700,fontSize:10,textTransform:'uppercase' },
   tr: { borderBottom:'1px solid #f1f5f9' },
@@ -518,8 +632,8 @@ const s = {
   btn: (type, disabled) => ({
     border:'none',padding:'5px 8px',borderRadius:6,cursor: disabled?'not-allowed':'pointer',fontSize:10,fontWeight:600,
     display:'inline-flex',alignItems:'center',gap:3,opacity:disabled?0.5:1,
-    background: type==='virtual'?'#6366f1':type==='bayar'?'#f59e0b':type==='sahkan'?'#10b981':'#fee2e2',
-    color: type==='hapus'?'#ef4444':'white'
+    background: type==='virtual'?'#6366f1':type==='sahkan'?'#10b981':type==='wa'?'#25D366':type==='hapus'?'#fee2e2':'#f1f5f9',
+    color: type==='hapus'?'#ef4444':type==='wa'?'white':'white'
   }),
   
   ttHead: { display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,padding:16,borderBottom:'1px solid #f1f5f9' },
@@ -531,7 +645,7 @@ const s = {
   inf: { marginTop:16,padding:'12px 16px',borderRadius:10,background:'#eef2ff',color:'#4338ca',fontSize:12,lineHeight:1.6 },
   
   ov: { position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999,padding:20 },
-  mod: (m) => ({ background:'white',borderRadius:16,padding:24,width:m?'95%':'420px',maxHeight:'90vh',overflowY:'auto',animation:'slideUp 0.3s ease',boxShadow:'0 20px 40px rgba(0,0,0,0.2)' }),
+  mod: (m) => ({ background:'white',borderRadius:16,padding:24,width:m?'95%':'450px',maxHeight:'90vh',overflowY:'auto',animation:'slideUp 0.3s ease',boxShadow:'0 20px 40px rgba(0,0,0,0.2)' }),
   mh: { display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,paddingBottom:12,borderBottom:'1px solid #f1f5f9' },
   xb: { background:'#f1f5f9',border:'none',width:32,height:32,borderRadius:'50%',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#64748b' },
   mb: {},
