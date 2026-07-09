@@ -10,7 +10,7 @@ import {
 import { 
   Users, Trash2, UserPlus, Phone, ArrowLeft,
   Home, ChevronRight, FileText, Save, Edit3, Eye,
-  Wallet, X, Send, DollarSign
+  Wallet, X, Send
 } from 'lucide-react';
 
 const ManageOnlineRegistration = () => {
@@ -41,6 +41,7 @@ const ManageOnlineRegistration = () => {
   const [processingId, setProcessingId] = useState(null);
   const [virtualLoading, setVirtualLoading] = useState(false);
 
+  // ===== TATA TERTIB DEFAULT =====
   const DEFAULT_TATA_TERTIB = `PERATURAN DAN TATA TERTIB BIMBEL GEMILANG
 
 1. KEHADIRAN
@@ -105,7 +106,7 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
     try {
       await setDoc(doc(db, "settings", "tata_tertib"), { konten: tataTertib, updatedAt: new Date().toISOString() });
       setEditingTT(false);
-      alert('✅ Tata tertib tersimpan! Langsung tampil di formulir.');
+      alert('✅ Tata tertib tersimpan!');
     } catch (e) { alert('❌ Gagal: ' + e.message); }
     setSavingTT(false);
   };
@@ -126,11 +127,8 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
     return `${base}${Math.floor(1000 + Math.random() * 9000)}`;
   };
 
-  const getSisaTagihan = (reg) => Math.max(0, (reg.paketBimbelHarga || 0) - (reg.totalPaid || 0));
-
   const getStatusBadge = (reg) => {
     if (reg.status === 'active') return { label: '✅ Aktif', bg: '#dcfce7', color: '#166534' };
-    if (getSisaTagihan(reg) <= 0) return { label: '💰 Lunas', bg: '#dcfce7', color: '#166534' };
     if ((reg.totalPaid || 0) > 0) return { label: '💵 DP', bg: '#fef3c7', color: '#b45309' };
     return { label: '🟡 Pending', bg: '#fff7ed', color: '#c2410c' };
   };
@@ -140,7 +138,7 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
   // ============================================================
   const openBayarModal = (reg) => {
     setSelectedReg(reg);
-    setPayNominal(getSisaTagihan(reg) || reg.paketBimbelHarga);
+    setPayNominal('');
     setPayMethod('Tunai');
     setPayNote('');
     setShowBayarModal(true);
@@ -148,7 +146,7 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
 
   const openVirtualModal = (reg) => {
     setSelectedReg(reg);
-    setPayNominal(getSisaTagihan(reg) || reg.paketBimbelHarga);
+    setPayNominal('');
     setPayNote('');
     setShowVirtualModal(true);
   };
@@ -213,8 +211,8 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
           grossAmount: nominal,
           customerName: selectedReg.namaLengkap,
           customerPhone: selectedReg.whatsappAktif,
-          paketNama: selectedReg.paketBimbelNama,
-          note: payNote || `Pembayaran ${selectedReg.paketBimbelNama}`
+          paketNama: selectedReg.kelasSekolah || 'Pendaftaran',
+          note: payNote || `Pembayaran Pendaftaran`
         })
       });
 
@@ -229,7 +227,7 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
 
         window.open(data.redirect_url, '_blank');
         setShowVirtualModal(false);
-        alert('🔗 Link pembayaran dibuat! Buka tab baru atau kirim ke WhatsApp siswa.');
+        alert('🔗 Link pembayaran dibuat! Buka tab baru.');
       } else {
         alert('❌ Gagal: ' + (data.error || 'Unknown error'));
       }
@@ -241,7 +239,7 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
   // SAHKAN AKUN
   // ============================================================
   const handleSahkan = async (reg) => {
-    if ((reg.totalPaid || 0) <= 0) return alert('⚠️ Belum ada pembayaran!');
+    if ((reg.totalPaid || 0) <= 0) return alert('⚠️ Belum ada pembayaran! Catat pembayaran dulu.');
     if (!window.confirm(`Sahkan ${reg.namaLengkap}? Akun siswa akan dibuat.`)) return;
 
     setProcessingId(reg.id);
@@ -251,16 +249,20 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
 
       const studentRef = await addDoc(collection(db, "students"), {
         nama: reg.namaLengkap,
+        gender: reg.gender || '',
         kelasSekolah: reg.kelasSekolah,
+        asalSekolah: reg.asalSekolah || '',
         username, password,
         wa: reg.whatsappAktif,
         alamat: reg.alamatRumah,
-        orangTua: reg.namaOrangTua,
-        paket: reg.paketBimbelNama,
-        paketId: reg.paketBimbelId,
-        paketHarga: reg.paketBimbelHarga,
-        totalTagihan: reg.paketBimbelHarga,
-        totalBayar: reg.totalPaid || 0,
+        orangTua: reg.namaAyah ? `${reg.namaAyah} / ${reg.namaIbu}` : (reg.namaOrangTua || ''),
+        ortu: {
+          ayah: reg.namaAyah || '',
+          ibu: reg.namaIbu || '',
+          pekerjaanAyah: reg.pekerjaanAyah || '',
+          pekerjaanIbu: reg.pekerjaanIbu || '',
+          hp: reg.whatsappAktif
+        },
         status: 'Aktif',
         isBlocked: false,
         tataTertibDisetujui: true,
@@ -325,15 +327,12 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
               <table style={s.tbl}>
                 <thead><tr style={s.thr}>
                   <th style={s.th}>Tgl</th><th style={s.th}>Nama</th><th style={s.th}>WA</th>
-                  <th style={s.th}>Kelas</th><th style={s.th}>Paket</th><th style={s.th}>Harga</th>
+                  <th style={s.th}>Kelas</th><th style={s.th}>Sekolah</th>
                   <th style={s.th}>Bayar</th><th style={s.th}>Status</th><th style={s.th}>Aksi</th>
                 </tr></thead>
                 <tbody>
                   {registrations.map(reg => {
                     const paid = reg.totalPaid || 0;
-                    const total = reg.paketBimbelHarga || 0;
-                    const sisa = getSisaTagihan(reg);
-                    const isLunas = sisa <= 0;
                     const isActive = reg.status === 'active';
                     const st = getStatusBadge(reg);
                     const isProc = processingId === reg.id;
@@ -343,28 +342,25 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
                         <td style={s.td}>{formatDate(reg.createdAt)}</td>
                         <td style={{...s.td,fontWeight:600}}>
                           <button onClick={() => openDetailModal(reg)} style={s.nameBtn}>{reg.namaLengkap}</button>
+                          {reg.gender && <span style={{fontSize:10,color:'#94a3b8',marginLeft:4}}>({reg.gender === 'Laki-laki' ? 'L' : 'P'})</span>}
                         </td>
                         <td style={s.td}><a href={`https://wa.me/${reg.whatsappAktif}`} target="_blank" rel="noreferrer" style={s.wa}>{reg.whatsappAktif}</a></td>
                         <td style={s.td}><span style={s.badge2}>{reg.kelasSekolah}</span></td>
-                        <td style={s.td}>{reg.paketBimbelNama}</td>
-                        <td style={{...s.td,fontWeight:700}}>{formatRupiah(total)}</td>
+                        <td style={s.td}><span style={{fontSize:11,color:'#475569'}}>{reg.asalSekolah || '-'}</span></td>
                         <td style={s.td}>
-                          <span style={{color:'#10b981',fontWeight:700}}>{formatRupiah(paid)}</span>
-                          {!isLunas && <span style={{color:'#ef4444',fontSize:10}}> / {formatRupiah(total)}</span>}
+                          <span style={{color: paid > 0 ? '#10b981' : '#94a3b8',fontWeight:700}}>{formatRupiah(paid)}</span>
                         </td>
                         <td style={s.td}><span style={{...s.statBadge,background:st.bg,color:st.color}}>{st.label}</span></td>
                         <td style={{...s.td,textAlign:'center'}}>
                           <div style={s.acts}>
-                            {!isActive && !isLunas && (
+                            {!isActive && (
                               <>
                                 <button onClick={() => openVirtualModal(reg)} style={s.btn('virtual')} title="Kirim Virtual"><Send size={12} /></button>
                                 <button onClick={() => openBayarModal(reg)} style={s.btn('bayar')} title="Catat Bayar"><Wallet size={12} /></button>
+                                <button onClick={() => handleSahkan(reg)} disabled={paid<=0||isProc} style={s.btn('sahkan', paid<=0||isProc)}>
+                                  <UserPlus size={12} /> {!isMobile && 'Sahkan'}
+                                </button>
                               </>
-                            )}
-                            {!isActive && (
-                              <button onClick={() => handleSahkan(reg)} disabled={paid<=0||isProc} style={s.btn('sahkan', paid<=0||isProc)}>
-                                <UserPlus size={12} /> {!isMobile && 'Sahkan'}
-                              </button>
                             )}
                             {isActive && <span style={{fontSize:10,color:'#10b981'}}>✅ Aktif</span>}
                             <button onClick={() => handleDelete(reg.id, reg.namaLengkap)} style={s.btn('hapus')}><Trash2 size={12} /></button>
@@ -398,7 +394,7 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
                 ) : (
                   <pre style={s.ttPrev}>{tataTertib}</pre>
                 )}
-                <div style={s.inf}>💡 Tata tertib ini tampil di <strong>Step 3</strong> formulir iPad. Calon siswa wajib menyetujui sebelum TTD.</div>
+                <div style={s.inf}>💡 Tata tertib ini tampil di <strong>Step 2</strong> formulir pendaftaran.</div>
               </>
             )}
           </div>
@@ -413,11 +409,10 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
             <div style={s.mh}><h3><Wallet size={18} /> Catat Pembayaran</h3><button onClick={() => setShowBayarModal(false)} style={s.xb}><X size={18} /></button></div>
             <div style={s.mb}>
               <div style={s.mi}><span>Siswa</span><strong>{selectedReg.namaLengkap}</strong></div>
-              <div style={s.mi}><span>Paket</span><strong>{selectedReg.paketBimbelNama} ({formatRupiah(selectedReg.paketBimbelHarga)})</strong></div>
-              <div style={s.mi}><span>Sudah Bayar</span><strong style={{color:'#10b981'}}>{formatRupiah(selectedReg.totalPaid||0)}</strong></div>
-              <div style={s.mi}><span>Sisa</span><strong style={{color:'#ef4444'}}>{formatRupiah(getSisaTagihan(selectedReg))}</strong></div>
+              <div style={s.mi}><span>Kelas</span><strong>{selectedReg.kelasSekolah}</strong></div>
+              <div style={s.mi}><span>Total Bayar</span><strong style={{color:'#10b981'}}>{formatRupiah(selectedReg.totalPaid||0)}</strong></div>
               <form onSubmit={handleCatatBayar}>
-                <div style={s.fg}><label style={s.lb}>Nominal (Rp)</label><input type="number" value={payNominal} onChange={e=>setPayNominal(e.target.value)} style={s.inp} required autoFocus /></div>
+                <div style={s.fg}><label style={s.lb}>Nominal (Rp) *</label><input type="number" value={payNominal} onChange={e=>setPayNominal(e.target.value)} style={s.inp} required autoFocus placeholder="Masukkan nominal" /></div>
                 <div style={s.fg}><label style={s.lb}>Metode</label><select value={payMethod} onChange={e=>setPayMethod(e.target.value)} style={s.inp}><option value="Tunai">💵 Tunai</option><option value="Transfer">💳 Transfer</option></select></div>
                 <div style={s.fg}><label style={s.lb}>Catatan</label><input value={payNote} onChange={e=>setPayNote(e.target.value)} style={s.inp} placeholder="Opsional" /></div>
                 <div style={s.mf}>
@@ -437,12 +432,11 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
             <div style={s.mh}><h3><Send size={18} /> Kirim Pembayaran Virtual</h3><button onClick={() => setShowVirtualModal(false)} style={s.xb}><X size={18} /></button></div>
             <div style={s.mb}>
               <div style={s.mi}><span>Siswa</span><strong>{selectedReg.namaLengkap}</strong></div>
-              <div style={s.mi}><span>Paket</span><strong>{selectedReg.paketBimbelNama} ({formatRupiah(selectedReg.paketBimbelHarga)})</strong></div>
-              <div style={s.mi}><span>Sisa Tagihan</span><strong style={{color:'#ef4444'}}>{formatRupiah(getSisaTagihan(selectedReg))}</strong></div>
+              <div style={s.mi}><span>WhatsApp</span><strong>{selectedReg.whatsappAktif}</strong></div>
               <form onSubmit={handleKirimVirtual}>
-                <div style={s.fg}><label style={s.lb}>Nominal Tagihan (Rp)</label><input type="number" value={payNominal} onChange={e=>setPayNominal(e.target.value)} style={s.inp} required /></div>
+                <div style={s.fg}><label style={s.lb}>Nominal Tagihan (Rp) *</label><input type="number" value={payNominal} onChange={e=>setPayNominal(e.target.value)} style={s.inp} required placeholder="Masukkan nominal" /></div>
                 <div style={s.fg}><label style={s.lb}>Keterangan</label><input value={payNote} onChange={e=>setPayNote(e.target.value)} style={s.inp} placeholder="Misal: DP Pendaftaran" /></div>
-                <div style={{...s.inf,background:'#eef2ff',color:'#4338ca',marginBottom:10}}>💳 Link Midtrans dibuat sesuai nominal. Siswa bisa bayar via Gopay, OVO, Transfer Bank, dll.</div>
+                <div style={{...s.inf,background:'#eef2ff',color:'#4338ca',marginBottom:10}}>💳 Link Midtrans dibuat sesuai nominal. Siswa bisa bayar via Gopay, OVO, Transfer Bank.</div>
                 <div style={s.mf}>
                   <button type="button" onClick={()=>setShowVirtualModal(false)} style={s.btnC}>Batal</button>
                   <button type="submit" disabled={virtualLoading} style={{...s.btnS,background:'#6366f1'}}>{virtualLoading?'⏳':<><Send size={14} /> Kirim Virtual</>}</button>
@@ -460,18 +454,21 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
             <div style={s.mh}><h3><Eye size={18} /> Detail Pendaftar</h3><button onClick={() => setShowDetailModal(false)} style={s.xb}><X size={18} /></button></div>
             <div style={s.mb}>
               <div style={s.dr}><span>Nama</span><strong>{selectedReg.namaLengkap}</strong></div>
+              <div style={s.dr}><span>Gender</span><strong>{selectedReg.gender || '-'}</strong></div>
               <div style={s.dr}><span>WhatsApp</span><strong>{selectedReg.whatsappAktif}</strong></div>
+              <div style={s.dr}><span>Asal Sekolah</span><strong>{selectedReg.asalSekolah || '-'}</strong></div>
               <div style={s.dr}><span>Kelas</span><strong>{selectedReg.kelasSekolah}</strong></div>
-              <div style={s.dr}><span>Orang Tua</span><strong>{selectedReg.namaOrangTua}</strong></div>
+              <div style={s.dr}><span>Nama Ayah</span><strong>{selectedReg.namaAyah || '-'}</strong></div>
+              <div style={s.dr}><span>Pekerjaan Ayah</span><strong>{selectedReg.pekerjaanAyah || '-'}</strong></div>
+              <div style={s.dr}><span>Nama Ibu</span><strong>{selectedReg.namaIbu || '-'}</strong></div>
+              <div style={s.dr}><span>Pekerjaan Ibu</span><strong>{selectedReg.pekerjaanIbu || '-'}</strong></div>
               <div style={s.dr}><span>Alamat</span><strong>{selectedReg.alamatRumah}</strong></div>
-              <div style={s.dr}><span>Paket</span><strong>{selectedReg.paketBimbelNama}</strong></div>
-              <div style={s.dr}><span>Total Tagihan</span><strong>{formatRupiah(selectedReg.paketBimbelHarga)}</strong></div>
               <div style={s.dr}><span>Total Bayar</span><strong style={{color:'#10b981'}}>{formatRupiah(selectedReg.totalPaid||0)}</strong></div>
               <div style={s.dr}><span>Status</span><strong>{getStatusBadge(selectedReg).label}</strong></div>
               {selectedReg.tandaTangan && (
                 <div style={{marginTop:12}}>
                   <span style={{fontSize:11,color:'#64748b'}}>✍️ Tanda Tangan:</span>
-                  <img src={selectedReg.tandaTangan} alt="TTD" style={{width:'100%',maxHeight:120,borderRadius:8,border:'1px solid #e2e8f0',marginTop:4}} />
+                  <img src={selectedReg.tandaTangan} alt="TTD" style={{width:'100%',maxHeight:100,borderRadius:8,border:'1px solid #e2e8f0',marginTop:4,background:'white'}} />
                 </div>
               )}
             </div>
@@ -507,12 +504,12 @@ const s = {
   spin: { width:30,height:30,border:'3px solid #e2e8f0',borderTop:'3px solid #f59e0b',borderRadius:'50%',animation:'spin 1s linear infinite',margin:'0 auto 12px' },
   empty: { textAlign:'center',padding:60,background:'white',borderRadius:14,border:'2px dashed #e2e8f0',color:'#94a3b8' },
   
-  tbl: { width:'100%',borderCollapse:'collapse',fontSize:12,minWidth:900 },
+  tbl: { width:'100%',borderCollapse:'collapse',fontSize:12,minWidth:800 },
   thr: { background:'#f8fafc',borderBottom:'1px solid #e2e8f0' },
   th: { padding:'10px 12px',textAlign:'left',color:'#64748b',fontWeight:700,fontSize:10,textTransform:'uppercase' },
   tr: { borderBottom:'1px solid #f1f5f9' },
   td: { padding:'10px 12px',color:'#334155',verticalAlign:'middle' },
-  nameBtn: { background:'none',border:'none',color:'#1e293b',cursor:'pointer',fontWeight:600,fontSize:12,padding:0,textDecoration:'underline' },
+  nameBtn: { background:'none',border:'none',color:'#1e293b',cursor:'pointer',fontWeight:600,fontSize:12,padding:0,textDecoration:'underline',textAlign:'left' },
   wa: { color:'#25D366',textDecoration:'none',fontWeight:600,display:'flex',alignItems:'center',gap:4 },
   badge2: { padding:'2px 8px',borderRadius:10,background:'#e0f2fe',color:'#0369a1',fontSize:10,fontWeight:600 },
   statBadge: { padding:'2px 8px',borderRadius:10,fontSize:10,fontWeight:700,display:'inline-block' },
@@ -525,7 +522,6 @@ const s = {
     color: type==='hapus'?'#ef4444':'white'
   }),
   
-  // Tata Tertib
   ttHead: { display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,padding:16,borderBottom:'1px solid #f1f5f9' },
   btnE: { padding:'8px 16px',borderRadius:8,background:'#fef3c7',color:'#b45309',border:'none',cursor:'pointer',fontWeight:600,fontSize:12,display:'flex',alignItems:'center',gap:6 },
   btnC: { padding:'10px 16px',borderRadius:8,background:'#f1f5f9',color:'#64748b',border:'none',cursor:'pointer',fontWeight:600,fontSize:12 },
@@ -534,7 +530,6 @@ const s = {
   ttPrev: { whiteSpace:'pre-wrap',fontSize:13,lineHeight:1.8,color:'#334155',padding:16,background:'#f8fafc',borderRadius:10,border:'1px solid #e2e8f0',margin:0,maxHeight:500,overflowY:'auto' },
   inf: { marginTop:16,padding:'12px 16px',borderRadius:10,background:'#eef2ff',color:'#4338ca',fontSize:12,lineHeight:1.6 },
   
-  // Modal
   ov: { position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999,padding:20 },
   mod: (m) => ({ background:'white',borderRadius:16,padding:24,width:m?'95%':'420px',maxHeight:'90vh',overflowY:'auto',animation:'slideUp 0.3s ease',boxShadow:'0 20px 40px rgba(0,0,0,0.2)' }),
   mh: { display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,paddingBottom:12,borderBottom:'1px solid #f1f5f9' },
