@@ -40,7 +40,7 @@ import ManageSurvey from './pages/admin/portal-siswa/ManageSurvey';
 import SidebarGuru from './components/SidebarGuru';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherHistory from './pages/teacher/TeacherHistory';
-import TeacherManualInput from './pages/teacher/TeacherManualInput';
+import TeacherAttendance from './pages/teacher/TeacherAttendance'; // ← GANTI TeacherManualInput
 import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade';
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager';
 import TeacherProfile from './pages/teacher/TeacherProfile';
@@ -129,7 +129,7 @@ const TeacherLayout = ({ children }) => {
 };
 
 // ============================================================
-// SISWA LAYOUT - ✅ PERBAIKAN 2: Tambah SidebarSiswa
+// SISWA LAYOUT
 // ============================================================
 const SiswaLayout = ({ children }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
@@ -145,7 +145,6 @@ const SiswaLayout = ({ children }) => {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100%', background: '#f8fafc' }}>
       
-      {/* ✅ SIDEBAR SISWA DIPASANG DI SINI */}
       <SidebarSiswa 
         activeMenu={activeMenu} 
         setActiveMenu={setActiveMenu} 
@@ -255,21 +254,31 @@ function App() {
         <Route path="/admin/blog" element={<AdminRoute><ManageBlog /></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
 
-        {/* GURU */}
+        {/* ============================================================
+            GURU - SEMUA ROUTE DENGAN PATH YANG BENAR
+            ============================================================ */}
+        
+        {/* Dashboard & Profile */}
         <Route path="/guru/dashboard" element={<GuruRoute><TeacherLayout><TeacherDashboard /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/profile" element={<GuruRoute><TeacherLayout><TeacherProfile /></TeacherLayout></GuruRoute>} />
+        
+        {/* Jadwal & Absensi */}
+        <Route path="/guru/schedule" element={<GuruRoute><TeacherLayout><TeacherSchedulePage /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/attendance" element={<GuruRoute><TeacherLayout><TeacherAttendance /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/history" element={<GuruRoute><TeacherLayout><TeacherHistory /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/class-session" element={<GuruRoute><TeacherLayout><ClassSession /></TeacherLayout></GuruRoute>} />
+        
+        {/* Nilai & Raport */}
         <Route path="/guru/grades/input" element={<GuruRoute><TeacherLayout><TeacherInputGrade /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/grades/manage" element={<GuruRoute><TeacherLayout><TeacherGradeManager /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/grades/generate" element={<GuruRoute><TeacherLayout><GenerateRaport /></TeacherLayout></GuruRoute>} />
+        
+        {/* E-Learning / Modul */}
         <Route path="/guru/modul" element={<GuruRoute><TeacherLayout><ModulManager /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/modul/materi" element={<GuruRoute><TeacherLayout><ManageMateriGuru /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/modul/tugas" element={<GuruRoute><TeacherLayout><ManageTugas /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/modul/cek-tugas" element={<GuruRoute><TeacherLayout><CekTugasSiswa /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/modul/quiz" element={<GuruRoute><TeacherLayout><ManageQuiz /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/schedule" element={<GuruRoute><TeacherLayout><TeacherSchedulePage /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/attendance" element={<GuruRoute><TeacherLayout><TeacherManualInput /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/cek-tugas" element={<GuruRoute><TeacherLayout><CekTugasSiswa /></TeacherLayout></GuruRoute>} />
 
         {/* SISWA */}
         <Route path="/siswa/dashboard" element={<SiswaRoute><SiswaLayout><StudentDashboard /></SiswaLayout></SiswaRoute>} />
@@ -282,15 +291,27 @@ function App() {
         <Route path="/siswa/absensi" element={<SiswaRoute><SiswaLayout><StudentAttendanceSiswa /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/kuis/:id" element={<SiswaRoute><SiswaLayout><KuisSiswaWrapper /></SiswaLayout></SiswaRoute>} />
 
-        {/* REDIRECT & FALLBACK */}
+        {/* ============================================================
+            REDIRECT & FALLBACK
+            ============================================================ */}
+        
+        {/* Admin Redirects */}
         <Route path="/admin/finance/income" element={<Navigate to="/admin/finance" replace />} />
         <Route path="/admin/finance/expense" element={<Navigate to="/admin/finance" replace />} />
         <Route path="/admin/finance/debt" element={<Navigate to="/admin/finance" replace />} />
         <Route path="/admin/teachers/schedule" element={<Navigate to="/admin/schedule" replace />} />
+        
+        {/* Teacher Redirects - OLD PATHS → NEW PATHS */}
         <Route path="/teacher/*" element={<Navigate to="/guru/dashboard" replace />} />
-        <Route path="/guru/manage-quiz" element={<Navigate to="/guru/modul/quiz" replace />} />
         <Route path="/guru/manual-input" element={<Navigate to="/guru/attendance" replace />} />
+        <Route path="/guru/manage-quiz" element={<Navigate to="/guru/modul/quiz" replace />} />
         <Route path="/guru/generate-raport" element={<Navigate to="/guru/grades/generate" replace />} />
+        <Route path="/guru/modul/cek-tugas" element={<Navigate to="/guru/cek-tugas" replace />} />
+        
+        {/* Student Redirects */}
+        <Route path="/siswa/raport" element={<Navigate to="/siswa/rapor" replace />} />
+        
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
