@@ -40,7 +40,8 @@ import ManageSurvey from './pages/admin/portal-siswa/ManageSurvey';
 import SidebarGuru from './components/SidebarGuru';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherHistory from './pages/teacher/TeacherHistory';
-import TeacherAttendance from './pages/teacher/TeacherAttendance'; // ← GANTI TeacherManualInput
+// import TeacherManualInput from './pages/teacher/TeacherManualInput'; // ← DIHAPUS
+import TeacherAttendance from './pages/teacher/TeacherAttendance'; // ← BARU
 import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade';
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager';
 import TeacherProfile from './pages/teacher/TeacherProfile';
@@ -77,7 +78,6 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
-// ✅ PERBAIKAN 1: GuruRoute - Terima role 'guru' ATAU 'teacher'
 const GuruRoute = ({ children }) => {
   const isAuth = localStorage.getItem('isGuruLoggedIn') === 'true' || !!localStorage.getItem('teacherData');
   const role = localStorage.getItem('role');
@@ -144,14 +144,12 @@ const SiswaLayout = ({ children }) => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100%', background: '#f8fafc' }}>
-      
       <SidebarSiswa 
         activeMenu={activeMenu} 
         setActiveMenu={setActiveMenu} 
         isOpen={sidebarOpen} 
         setIsOpen={setSidebarOpen} 
       />
-
       <main style={{ 
         flex: 1, 
         marginLeft: isMobile ? 0 : '260px',
@@ -255,7 +253,7 @@ function App() {
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
 
         {/* ============================================================
-            GURU - SEMUA ROUTE DENGAN PATH YANG BENAR
+            GURU
             ============================================================ */}
         
         {/* Dashboard & Profile */}
