@@ -5,7 +5,7 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { 
   collection, addDoc, getDocs, query, orderBy, limit, 
-  doc, getDoc, serverTimestamp, updateDoc 
+  doc, getDoc, serverTimestamp 
 } from "firebase/firestore";
 import { 
   ArrowLeft, Save, User, BookOpen, Calendar, CreditCard, 
@@ -20,29 +20,62 @@ const AddStudent = () => {
   const [loading, setLoading] = useState(false);
   const [alertMsg, setAlertMsg] = useState(null);
 
-  // === PRICING (OTOMATIS DARI SETTINGS) ===
+  // === PRICING FROM SETTINGS ===
   const [pricing, setPricing] = useState({
-    sd: { paket1: 0, paket2: 0, paket3: 0, paket4: 0 },
-    smp: { paket1: 0, paket2: 0, paket3: 0, paket4: 0 },
-    sma: { paket1: 0, paket2: 0, paket3: 0, paket4: 0 },
-    english: { kids: 0, junior: 0, professional: 0 }
+    sd: { packages: [] },
+    smp: { packages: [] },
+    sma: { packages: [] },
+    english: { levels: [] }
+  });
+  const [biayaPendaftaran, setBiayaPendaftaran] = useState(25000);
+
+  // === FORM DATA ===
+  const [formData, setFormData] = useState({
+    nama: '',
+    tempatLahir: '',
+    alamat: '',
+    noHp: '',
+    namaAyah: '',
+    namaIbu: '',
+    kelasSekolah: '1 SD',
+    programType: 'Reguler',
+    jenjang: 'SD',
+    paketId: null,
+    englishLevelId: null,
+    tanggalMulai: new Date().toISOString().split('T')[0],
+    durasiBulan: 1,
+    metodeBayar: 'Tunai',
+    biayaDaftar: true,
+    diskon: 0,
+    tenor: 1,
+    tanggalCicilan1: new Date().toISOString().split('T')[0],
   });
 
+  const [tglLahir, setTglLahir] = useState({ hari: '', bulan: '', tahun: '' });
+
+  // === FETCH PRICING ===
   useEffect(() => {
     const fetchPricing = async () => {
       try {
         const docRef = doc(db, "settings", "global_config");
         const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().prices) {
-          const data = docSnap.data().prices;
-          setPricing({
-            sd: { paket1: 0, paket2: 0, paket3: 0, paket4: 0, ...(data.sd || {}) },
-            smp: { paket1: 0, paket2: 0, paket3: 0, paket4: 0, ...(data.smp || {}) },
-            sma: { paket1: 0, paket2: 0, paket3: 0, paket4: 0, ...(data.sma || {}) },
-            english: { kids: 0, junior: 0, professional: 0, ...(data.english || {}) }
-          });
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.prices) {
+            setPricing({
+              sd: data.prices.sd || { packages: [] },
+              smp: data.prices.smp || { packages: [] },
+              sma: data.prices.sma || { packages: [] },
+              english: data.prices.english || { levels: [] }
+            });
+          }
+          if (data.biayaPendaftaran) {
+            setBiayaPendaftaran(data.biayaPendaftaran);
+          }
         }
-      } catch (error) { console.error("Error load harga:", error); }
+      } catch (error) {
+        console.error("Error load harga:", error);
+      }
     };
     fetchPricing();
   }, []);
@@ -58,7 +91,7 @@ const AddStudent = () => {
     setTimeout(() => setAlertMsg(null), duration);
   };
 
-  // === GENERATE STUDENT ID (FIXED) ===
+  // === GENERATE STUDENT ID ===
   const generateStudentId = async () => {
     try {
       const year = new Date().getFullYear();
@@ -89,9 +122,7 @@ const AddStudent = () => {
     }
   };
 
-  // === TANGGAL LAHIR DROPDOWNS ===
-  const [tglLahir, setTglLahir] = useState({ hari: '', bulan: '', tahun: '' });
-
+  // === TANGGAL LAHIR ===
   const tahunOptions = [];
   const currentYear = new Date().getFullYear();
   for (let y = currentYear; y >= 1995; y--) {
@@ -99,7 +130,6 @@ const AddStudent = () => {
   }
 
   const hariOptions = Array.from({ length: 31 }, (_, i) => i + 1);
-
   const bulanOptions = [
     { value: '01', label: 'Januari' }, { value: '02', label: 'Februari' },
     { value: '03', label: 'Maret' }, { value: '04', label: 'April' },
@@ -123,28 +153,75 @@ const AddStudent = () => {
     }
   }, []);
 
-  // === FORM DATA ===
-  const [formData, setFormData] = useState({
-    nama: '',
-    tempatLahir: '',
-    alamat: '',
-    noHp: '',
-    namaAyah: '',
-    namaIbu: '',
-    kelasSekolah: '1 SD',
-    programType: 'Reguler',
-    jenjang: 'SD',
-    paket: 'paket1',
-    englishLevel: 'kids',
-    tanggalMulai: new Date().toISOString().split('T')[0],
-    durasiBulan: 3,
-    metodeBayar: 'Tunai',
-    biayaDaftar: true,
-    diskon: 0,
-    tenor: 1,
-    tanggalCicilan1: new Date().toISOString().split('T')[0],
-    customDueDates: []
-  });
+  // === AUTO SET JENJANG ===
+  useEffect(() => {
+    if (formData.programType === 'Reguler') {
+      let jenjang = 'SD';
+      if (formData.kelasSekolah.includes('SMP')) jenjang = 'SMP';
+      else if (formData.kelasSekolah.includes('SMA')) jenjang = 'SMA';
+      setFormData(prev => ({...prev, jenjang, paketId: null}));
+    }
+  }, [formData.kelasSekolah, formData.programType]);
+
+  // === AUTO GENERATE DUE DATES ===
+  const [customDueDates, setCustomDueDates] = useState([]);
+  useEffect(() => {
+    if (formData.metodeBayar === 'Cicilan' && formData.tenor > 0) {
+      const dates = [];
+      const startDate = new Date(formData.tanggalCicilan1);
+      for (let i = 0; i < formData.tenor; i++) {
+        const nextDate = new Date(startDate);
+        nextDate.setMonth(startDate.getMonth() + i);
+        dates.push(nextDate.toISOString().split('T')[0]);
+      }
+      setCustomDueDates(dates);
+    }
+  }, [formData.metodeBayar, formData.tenor, formData.tanggalCicilan1]);
+
+  const updateField = (field, value) => {
+    setFormData(prev => ({...prev, [field]: value}));
+  };
+
+  // === GET SELECTED PACKAGE ===
+  const getSelectedPackage = () => {
+    if (formData.programType === 'English') {
+      return pricing.english.levels.find(l => l.id === formData.englishLevelId);
+    }
+    const jenjang = formData.jenjang.toLowerCase();
+    return pricing[jenjang]?.packages?.find(p => p.id === formData.paketId);
+  };
+
+  // === GET BASE PRICE (BULANAN) ===
+  const getBasePrice = () => {
+    const pkg = getSelectedPackage();
+    return pkg ? pkg.price : 0;
+  };
+
+  // === HITUNG TOTAL (DURASI x BULANAN) ===
+  const hitungTotal = () => {
+    const basePrice = getBasePrice();
+    // Kalikan dengan durasi bulan
+    let total = basePrice * parseInt(formData.durasiBulan || 1);
+    
+    // Tambah biaya pendaftaran
+    if (formData.biayaDaftar) total += biayaPendaftaran;
+    
+    // Kurangi diskon
+    total -= parseInt(formData.diskon || 0);
+    
+    return total > 0 ? total : 0;
+  };
+
+  const hitungCicilan = () => {
+    return formData.tenor > 0 ? Math.ceil(hitungTotal() / formData.tenor) : hitungTotal();
+  };
+
+  const getTanggalSelesai = () => {
+    if (!formData.tanggalMulai) return '-';
+    const start = new Date(formData.tanggalMulai);
+    start.setMonth(start.getMonth() + parseInt(formData.durasiBulan || 0));
+    return start.toISOString().split('T')[0];
+  };
 
   const getUsername = () => {
     if (!formData.nama) return '';
@@ -162,76 +239,29 @@ const AddStudent = () => {
     return `${namaBersih}123`;
   };
 
-  useEffect(() => {
-    if (formData.programType === 'Reguler') {
-      if (formData.kelasSekolah.includes('SD')) setFormData(prev => ({...prev, jenjang: 'SD'}));
-      else if (formData.kelasSekolah.includes('SMP')) setFormData(prev => ({...prev, jenjang: 'SMP'}));
-      else if (formData.kelasSekolah.includes('SMA')) setFormData(prev => ({...prev, jenjang: 'SMA'}));
-    }
-  }, [formData.kelasSekolah, formData.programType]);
-
-  useEffect(() => {
-    if (formData.metodeBayar === 'Cicilan' && formData.tenor > 0) {
-      const dates = [];
-      const startDate = new Date(formData.tanggalCicilan1);
-      for (let i = 0; i < formData.tenor; i++) {
-        const nextDate = new Date(startDate);
-        nextDate.setMonth(startDate.getMonth() + i);
-        dates.push(nextDate.toISOString().split('T')[0]);
-      }
-      setFormData(prev => ({...prev, customDueDates: dates}));
-    }
-  }, [formData.metodeBayar, formData.tenor, formData.tanggalCicilan1]);
-
-  const updateField = (field, value) => {
-    setFormData(prev => ({...prev, [field]: value}));
-  };
-
-  // === GENERATE DAFTAR PAKET OTOMATIS DARI SETTINGS ===
-  const getPaketOptions = (jenjang) => {
-    const level = jenjang.toLowerCase();
-    const pk = pricing[level] || {};
-    return Object.keys(pk)
-      .filter(k => k.startsWith('paket'))
-      .sort()
-      .map(k => ({
-        value: k,
-        label: `${k.replace('paket', 'Paket ')} - Rp ${(pk[k] || 0).toLocaleString()}`,
-        harga: pk[k] || 0
-      }));
-  };
-
-  // === HARGA ===
-  const getBasePrice = () => {
+  // === GET PAKET OPTIONS ===
+  const getPaketOptions = () => {
     if (formData.programType === 'English') {
-      return pricing.english ? parseInt(pricing.english[formData.englishLevel] || 0) : 0;
+      return pricing.english.levels.map(l => ({
+        id: l.id,
+        name: l.name,
+        price: l.price
+      }));
     }
-    const level = formData.jenjang.toLowerCase();
-    return pricing[level] ? parseInt(pricing[level][formData.paket] || 0) : 0;
+    const jenjang = formData.jenjang.toLowerCase();
+    return pricing[jenjang]?.packages || [];
   };
 
-  const hitungTotal = () => {
-    let total = getBasePrice();
-    if (formData.biayaDaftar) total += 25000;
-    total -= parseInt(formData.diskon || 0);
-    return total > 0 ? total : 0;
-  };
-
-  const hitungCicilan = () => {
-    return formData.tenor > 0 ? Math.ceil(hitungTotal() / formData.tenor) : hitungTotal();
-  };
-
-  const getTanggalSelesai = () => {
-    if (!formData.tanggalMulai) return '-';
-    const start = new Date(formData.tanggalMulai);
-    start.setMonth(start.getMonth() + parseInt(formData.durasiBulan || 0));
-    return start.toISOString().split('T')[0];
-  };
-
-  // === SUBMIT (FIXED: import statis, validasi double save) ===
+  // === SUBMIT ===
   const handleSubmit = async () => {
     if (!formData.nama || !formData.noHp) {
       showAlert('⚠️ Nama dan No HP wajib diisi!');
+      return;
+    }
+
+    const pkg = getSelectedPackage();
+    if (!pkg) {
+      showAlert('⚠️ Pilih paket terlebih dahulu!');
       return;
     }
 
@@ -243,6 +273,12 @@ const AddStudent = () => {
       const tanggalLahirStr = getTanggalLahirStr();
       const today = new Date().toISOString().split('T')[0];
 
+      // Data paket
+      const paketName = pkg.name || pkg.id;
+      const detailProgram = formData.programType === 'English' 
+        ? `English - ${paketName}` 
+        : `${formData.jenjang} - ${paketName}`;
+
       // 1. SIMPAN DATA SISWA
       const studentData = {
         studentId: studentId,
@@ -252,10 +288,10 @@ const AddStudent = () => {
         role: 'siswa',
         kategori: formData.programType,
         jenjang: formData.programType === 'English' ? 'English' : formData.jenjang,
-        detailProgram: formData.programType === 'English' 
-          ? `English - ${formData.englishLevel}` 
-          : `${formData.jenjang} - ${formData.paket}`,
-        paket: formData.programType === 'English' ? formData.englishLevel : formData.paket,
+        detailProgram: detailProgram,
+        paket: formData.programType === 'English' ? formData.englishLevelId : formData.paketId,
+        paketNama: paketName,
+        paketHargaBulanan: pkg.price,
         kelasSekolah: formData.kelasSekolah,
         tempatLahir: formData.tempatLahir,
         tanggalLahir: tanggalLahirStr,
@@ -268,6 +304,8 @@ const AddStudent = () => {
         tanggalMulai: formData.tanggalMulai,
         tanggalSelesai: tanggalSelesai,
         durasiBulan: parseInt(formData.durasiBulan),
+        biayaPendaftaran: formData.biayaDaftar ? biayaPendaftaran : 0,
+        diskon: parseInt(formData.diskon || 0),
         totalTagihan: totalTagihan,
         totalBayar: formData.metodeBayar === 'Tunai' || formData.metodeBayar === 'Transfer' ? totalTagihan : 0,
         metodeBayar: formData.metodeBayar,
@@ -278,7 +316,7 @@ const AddStudent = () => {
 
       const docRef = await addDoc(collection(db, "students"), studentData);
 
-      // 2. SIMPAN PEMBAYARAN (JIKA LUNAS)
+      // 2. SIMPAN PEMBAYARAN
       if (formData.metodeBayar === 'Tunai' || formData.metodeBayar === 'Transfer') {
         await addDoc(collection(db, "finance_logs"), {
           studentId: studentId,
@@ -288,12 +326,12 @@ const AddStudent = () => {
           category: 'Pendaftaran',
           amount: totalTagihan,
           method: formData.metodeBayar,
-          note: `Pendaftaran Baru: ${formData.nama} (${formData.programType}) - LUNAS`,
+          note: `Pendaftaran Baru: ${formData.nama} (${detailProgram}) - LUNAS (${formData.durasiBulan} bulan)`,
           createdAt: serverTimestamp()
         });
       } else if (formData.metodeBayar === 'Cicilan') {
         const cicilanNominal = hitungCicilan();
-        const installments = formData.customDueDates.map((dateStr, index) => ({
+        const installments = customDueDates.map((dateStr, index) => ({
           bulanKe: index + 1,
           nominal: cicilanNominal,
           status: 'Belum Lunas',
@@ -326,7 +364,7 @@ const AddStudent = () => {
     }
   };
 
-  // === RENDER STEP ===
+  // === RENDER STEP 1 ===
   const renderStep1 = () => (
     <div style={styles.stepContent}>
       <div style={styles.sectionHeader}>
@@ -440,129 +478,189 @@ const AddStudent = () => {
     </div>
   );
 
-  const renderStep2 = () => (
-    <div style={styles.stepContent}>
-      <div style={styles.sectionHeader}>
-        <BookOpen size={20} color="#8b5cf6" />
-        <h3 style={styles.sectionTitle}>Program & Paket Belajar</h3>
-      </div>
+  // === RENDER STEP 2 ===
+  const renderStep2 = () => {
+    const paketOptions = getPaketOptions();
+    const selectedPkg = getSelectedPackage();
 
-      <div style={styles.inputGroup}>
-        <label style={styles.label}>Jenis Program</label>
-        <div style={styles.tabRow}>
-          <button type="button" onClick={() => updateField('programType', 'Reguler')} style={styles.tabBtn(formData.programType === 'Reguler')}>📚 Bimbel Reguler</button>
-          <button type="button" onClick={() => updateField('programType', 'English')} style={styles.tabBtn(formData.programType === 'English', '#8b5cf6')}>🇬🇧 English Course</button>
+    return (
+      <div style={styles.stepContent}>
+        <div style={styles.sectionHeader}>
+          <BookOpen size={20} color="#8b5cf6" />
+          <h3 style={styles.sectionTitle}>Program & Paket Belajar</h3>
         </div>
-      </div>
 
-      {formData.programType === 'Reguler' ? (
-        <div style={styles.row2}>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Jenjang</label>
-            <select style={styles.input} value={formData.jenjang} onChange={e => updateField('jenjang', e.target.value)}>
-              <option value="SD">SD (Kelas 1-6)</option><option value="SMP">SMP (Kelas 7-9)</option><option value="SMA">SMA (Kelas 10-12)</option>
-            </select>
+        <div style={styles.inputGroup}>
+          <label style={styles.label}>Jenis Program</label>
+          <div style={styles.tabRow}>
+            <button type="button" onClick={() => updateField('programType', 'Reguler')} style={styles.tabBtn(formData.programType === 'Reguler')}>📚 Bimbel Reguler</button>
+            <button type="button" onClick={() => updateField('programType', 'English')} style={styles.tabBtn(formData.programType === 'English', '#8b5cf6')}>🇬🇧 English Course</button>
           </div>
+        </div>
+
+        {formData.programType === 'Reguler' ? (
+          <div style={styles.row2}>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Jenjang</label>
+              <select style={styles.input} value={formData.jenjang} onChange={e => updateField('jenjang', e.target.value)}>
+                <option value="SD">SD (Kelas 1-6)</option>
+                <option value="SMP">SMP (Kelas 7-9)</option>
+                <option value="SMA">SMA (Kelas 10-12)</option>
+              </select>
+            </div>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Pilih Paket</label>
+              <select 
+                style={styles.input} 
+                value={formData.paketId || ''} 
+                onChange={e => updateField('paketId', e.target.value)}
+              >
+                <option value="">-- Pilih Paket --</option>
+                {paketOptions.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} - Rp {p.price.toLocaleString()}/bulan
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        ) : (
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Paket</label>
-            <select style={styles.input} value={formData.paket} onChange={e => updateField('paket', e.target.value)}>
-              {getPaketOptions(formData.jenjang).map(p => (
-                <option key={p.value} value={p.value}>{p.label}</option>
+            <label style={styles.label}>Pilih Level</label>
+            <select 
+              style={styles.input} 
+              value={formData.englishLevelId || ''} 
+              onChange={e => updateField('englishLevelId', e.target.value)}
+            >
+              <option value="">-- Pilih Level --</option>
+              {paketOptions.map(l => (
+                <option key={l.id} value={l.id}>
+                  {l.name} - Rp {l.price.toLocaleString()}/bulan
+                </option>
               ))}
             </select>
           </div>
+        )}
+
+        {selectedPkg && (
+          <div style={styles.infoBox}>
+            <div style={styles.infoRow}><span>📘 Paket:</span><strong>{selectedPkg.name}</strong></div>
+            <div style={styles.infoRow}><span>💰 Harga Bulanan:</span><strong>Rp {selectedPkg.price.toLocaleString()}</strong></div>
+          </div>
+        )}
+
+        <div style={styles.sectionHeader}>
+          <Calendar size={20} color="#8b5cf6" />
+          <h3 style={styles.sectionTitle}>Masa Aktif Paket</h3>
         </div>
-      ) : (
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Level</label>
-          <select style={styles.input} value={formData.englishLevel} onChange={e => updateField('englishLevel', e.target.value)}>
-            {pricing.english?.kids > 0 && <option value="kids">Kids - Rp {pricing.english.kids.toLocaleString()}</option>}
-            {pricing.english?.junior > 0 && <option value="junior">Junior - Rp {pricing.english.junior.toLocaleString()}</option>}
-            {pricing.english?.professional > 0 && <option value="professional">Professional - Rp {pricing.english.professional.toLocaleString()}</option>}
-          </select>
-        </div>
-      )}
 
-      <div style={styles.sectionHeader}>
-        <Calendar size={20} color="#8b5cf6" />
-        <h3 style={styles.sectionTitle}>Masa Aktif Paket</h3>
-      </div>
-
-      <div style={styles.row2}>
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Tanggal Mulai</label>
-          <input type="date" style={styles.input} value={formData.tanggalMulai} onChange={e => updateField('tanggalMulai', e.target.value)} />
-        </div>
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Durasi</label>
-          <select style={styles.input} value={formData.durasiBulan} onChange={e => updateField('durasiBulan', e.target.value)}>
-            <option value={1}>1 Bulan</option><option value={3}>3 Bulan (1 Term)</option><option value={6}>6 Bulan (1 Semester)</option><option value={12}>12 Bulan (1 Tahun)</option>
-          </select>
-        </div>
-      </div>
-
-      <div style={styles.infoBox}>
-        <div style={styles.infoRow}><span>📅 Mulai:</span><strong>{formData.tanggalMulai}</strong></div>
-        <div style={styles.infoRow}><span>🏁 Selesai:</span><strong style={{color: '#ef4444'}}>{getTanggalSelesai()}</strong></div>
-        <div style={styles.infoRow}><span>⏳ Durasi:</span><strong>{formData.durasiBulan} bulan</strong></div>
-      </div>
-
-      <div style={styles.accountPreview}>
-        <div style={styles.accountHeader}><IdCard size={16} /><span>Akun Portal (Auto-generated)</span></div>
-        <div style={styles.accountRow}><span style={styles.accountLabel}>Username:</span><code style={styles.accountValue}>{getUsername()}</code></div>
-        <div style={styles.accountRow}><span style={styles.accountLabel}>Password:</span><code style={styles.accountValue}>{getPassword()}</code></div>
-      </div>
-    </div>
-  );
-
-  const renderStep3 = () => (
-    <div style={styles.stepContent}>
-      <div style={styles.sectionHeader}>
-        <CreditCard size={20} color="#10b981" />
-        <h3 style={styles.sectionTitle}>Pembayaran</h3>
-      </div>
-
-      <div style={styles.paymentCard}>
-        <div style={styles.paymentRow}><span>Biaya Paket</span><span>Rp {getBasePrice().toLocaleString()}</span></div>
-        <div style={styles.paymentRow}>
-          <span><label style={{cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6}}><input type="checkbox" checked={formData.biayaDaftar} onChange={e => updateField('biayaDaftar', e.target.checked)} />Biaya Pendaftaran</label></span>
-          <span>Rp 25.000</span>
-        </div>
-        <div style={styles.paymentRow}><span>Diskon</span><input type="number" style={styles.diskonInput} value={formData.diskon} onChange={e => updateField('diskon', e.target.value)} placeholder="0" /></div>
-        <div style={styles.paymentTotal}><span>TOTAL</span><span>Rp {hitungTotal().toLocaleString()}</span></div>
-      </div>
-
-      <div style={styles.inputGroup}>
-        <label style={styles.label}>Metode Pembayaran</label>
-        <div style={styles.tabRow3}>
-          <button type="button" onClick={() => updateField('metodeBayar', 'Tunai')} style={styles.methodBtn(formData.metodeBayar === 'Tunai')}>💵 Tunai</button>
-          <button type="button" onClick={() => updateField('metodeBayar', 'Transfer')} style={styles.methodBtn(formData.metodeBayar === 'Transfer')}>💳 Transfer</button>
-          <button type="button" onClick={() => updateField('metodeBayar', 'Cicilan')} style={styles.methodBtn(formData.metodeBayar === 'Cicilan')}>📋 Cicilan</button>
-        </div>
-      </div>
-
-      {formData.metodeBayar === 'Cicilan' && (
-        <div style={styles.cicilanBox}>
-          <label style={styles.label}>Tenor Cicilan</label>
-          <div style={styles.tenorRow}>
-            {[1,2,3,4,5,6].map(t => (
-              <button key={t} type="button" onClick={() => updateField('tenor', t)} style={styles.tenorBtn(formData.tenor === t)}>{t}x</button>
-            ))}
+        <div style={styles.row2}>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Tanggal Mulai</label>
+            <input type="date" style={styles.input} value={formData.tanggalMulai} onChange={e => updateField('tanggalMulai', e.target.value)} />
           </div>
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Tanggal Cicilan Pertama</label>
-            <input type="date" style={styles.input} value={formData.tanggalCicilan1} onChange={e => updateField('tanggalCicilan1', e.target.value)} />
-          </div>
-          <div style={styles.cicilanPreview}>
-            <p style={{fontWeight: 'bold', marginBottom: 8}}>{formData.tenor}x Cicilan @ Rp {hitungCicilan().toLocaleString()}</p>
-            {formData.customDueDates.map((date, idx) => (
-              <div key={idx} style={styles.cicilanItem}><span>Cicilan ke-{idx + 1}</span><span>{date}</span></div>
-            ))}
+            <label style={styles.label}>Durasi (Bulan)</label>
+            <select style={styles.input} value={formData.durasiBulan} onChange={e => updateField('durasiBulan', parseInt(e.target.value))}>
+              <option value={1}>1 Bulan</option>
+              <option value={3}>3 Bulan (1 Term)</option>
+              <option value={6}>6 Bulan (1 Semester)</option>
+              <option value={12}>12 Bulan (1 Tahun)</option>
+              <option value={24}>24 Bulan (2 Tahun)</option>
+            </select>
           </div>
         </div>
-      )}
-    </div>
-  );
+
+        <div style={styles.infoBox}>
+          <div style={styles.infoRow}><span>📅 Mulai:</span><strong>{formData.tanggalMulai}</strong></div>
+          <div style={styles.infoRow}><span>🏁 Selesai:</span><strong style={{color: '#ef4444'}}>{getTanggalSelesai()}</strong></div>
+          <div style={styles.infoRow}><span>⏳ Durasi:</span><strong>{formData.durasiBulan} bulan</strong></div>
+          {selectedPkg && (
+            <div style={styles.infoRow}><span>💰 Total Paket:</span><strong>Rp {(selectedPkg.price * formData.durasiBulan).toLocaleString()}</strong></div>
+          )}
+        </div>
+
+        <div style={styles.accountPreview}>
+          <div style={styles.accountHeader}><IdCard size={16} /><span>Akun Portal (Auto-generated)</span></div>
+          <div style={styles.accountRow}><span style={styles.accountLabel}>Username:</span><code style={styles.accountValue}>{getUsername()}</code></div>
+          <div style={styles.accountRow}><span style={styles.accountLabel}>Password:</span><code style={styles.accountValue}>{getPassword()}</code></div>
+        </div>
+      </div>
+    );
+  };
+
+  // === RENDER STEP 3 ===
+  const renderStep3 = () => {
+    const total = hitungTotal();
+    const cicilan = hitungCicilan();
+    const selectedPkg = getSelectedPackage();
+
+    return (
+      <div style={styles.stepContent}>
+        <div style={styles.sectionHeader}>
+          <CreditCard size={20} color="#10b981" />
+          <h3 style={styles.sectionTitle}>Pembayaran</h3>
+        </div>
+
+        {selectedPkg && (
+          <div style={styles.paymentCard}>
+            <div style={styles.paymentRow}>
+              <span>Paket {selectedPkg.name} × {formData.durasiBulan} bulan</span>
+              <span>Rp {(selectedPkg.price * formData.durasiBulan).toLocaleString()}</span>
+            </div>
+            <div style={styles.paymentRow}>
+              <span><label style={{cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6}}>
+                <input type="checkbox" checked={formData.biayaDaftar} onChange={e => updateField('biayaDaftar', e.target.checked)} />
+                Biaya Pendaftaran
+              </label></span>
+              <span>Rp {biayaPendaftaran.toLocaleString()}</span>
+            </div>
+            <div style={styles.paymentRow}>
+              <span>Diskon</span>
+              <input type="number" style={styles.diskonInput} value={formData.diskon} onChange={e => updateField('diskon', e.target.value)} placeholder="0" />
+            </div>
+            <div style={styles.paymentTotal}>
+              <span>TOTAL</span>
+              <span>Rp {total.toLocaleString()}</span>
+            </div>
+          </div>
+        )}
+
+        <div style={styles.inputGroup}>
+          <label style={styles.label}>Metode Pembayaran</label>
+          <div style={styles.tabRow3}>
+            <button type="button" onClick={() => updateField('metodeBayar', 'Tunai')} style={styles.methodBtn(formData.metodeBayar === 'Tunai')}>💵 Tunai</button>
+            <button type="button" onClick={() => updateField('metodeBayar', 'Transfer')} style={styles.methodBtn(formData.metodeBayar === 'Transfer')}>💳 Transfer</button>
+            <button type="button" onClick={() => updateField('metodeBayar', 'Cicilan')} style={styles.methodBtn(formData.metodeBayar === 'Cicilan')}>📋 Cicilan</button>
+          </div>
+        </div>
+
+        {formData.metodeBayar === 'Cicilan' && (
+          <div style={styles.cicilanBox}>
+            <label style={styles.label}>Tenor Cicilan</label>
+            <div style={styles.tenorRow}>
+              {[1,2,3,4,5,6].map(t => (
+                <button key={t} type="button" onClick={() => updateField('tenor', t)} style={styles.tenorBtn(formData.tenor === t)}>{t}x</button>
+              ))}
+            </div>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Tanggal Cicilan Pertama</label>
+              <input type="date" style={styles.input} value={formData.tanggalCicilan1} onChange={e => updateField('tanggalCicilan1', e.target.value)} />
+            </div>
+            <div style={styles.cicilanPreview}>
+              <p style={{fontWeight: 'bold', marginBottom: 8}}>{formData.tenor}x Cicilan @ Rp {cicilan.toLocaleString()}</p>
+              {customDueDates.map((date, idx) => (
+                <div key={idx} style={styles.cicilanItem}>
+                  <span>Cicilan ke-{idx + 1}</span>
+                  <span>{date}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const totalSteps = 3;
   const stepLabels = ['Biodata', 'Program', 'Pembayaran'];
@@ -579,7 +677,9 @@ const AddStudent = () => {
         <div style={styles.stepIndicator(isMobile)}>
           {stepLabels.map((label, idx) => (
             <div key={idx} style={styles.stepItem}>
-              <div style={styles.stepCircle(idx + 1 === step, idx + 1 < step)}>{idx + 1 < step ? <CheckCircle size={16} /> : idx + 1}</div>
+              <div style={styles.stepCircle(idx + 1 === step, idx + 1 < step)}>
+                {idx + 1 < step ? <CheckCircle size={16} /> : idx + 1}
+              </div>
               <span style={styles.stepLabel(idx + 1 === step)}>{label}</span>
               {idx < totalSteps - 1 && <div style={styles.stepLine} />}
             </div>
@@ -608,7 +708,7 @@ const AddStudent = () => {
   );
 };
 
-// === STYLES (sama seperti sebelumnya, tidak berubah) ===
+// === STYLES ===
 const styles = {
   wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
   mainContent: (m) => ({ marginLeft: m ? '0' : '250px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' }),

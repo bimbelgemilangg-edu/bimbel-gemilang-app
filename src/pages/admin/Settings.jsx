@@ -3,17 +3,45 @@ import React, { useState, useEffect } from 'react';
 import SidebarAdmin from '../../components/SidebarAdmin';
 import { db } from '../../firebase';
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { Save, Lock, Info, Shield, Eye, EyeOff } from 'lucide-react';
+import { Save, Lock, Info, Shield, Eye, EyeOff, Plus, Trash2 } from 'lucide-react';
 
 const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
+  // Struktur harga dengan nama paket custom
   const [prices, setPrices] = useState({
-    sd: { paket1: 150000, paket2: 200000, paket3: 250000, paket4: 300000 },
-    smp: { paket1: 200000, paket2: 250000, paket3: 300000, paket4: 400000 },
-    sma: { paket1: 300000, paket2: 350000, paket3: 450000, paket4: 550000 },
-    english: { kids: 150000, junior: 200000, professional: 300000 }
+    sd: {
+      packages: [
+        { id: 'paket1', name: 'Paket 1', price: 150000 },
+        { id: 'paket2', name: 'Paket 2', price: 200000 },
+        { id: 'paket3', name: 'Paket 3', price: 250000 },
+        { id: 'paket4', name: 'Paket 4', price: 300000 }
+      ]
+    },
+    smp: {
+      packages: [
+        { id: 'paket1', name: 'Paket 1', price: 200000 },
+        { id: 'paket2', name: 'Paket 2', price: 250000 },
+        { id: 'paket3', name: 'Paket 3', price: 300000 },
+        { id: 'paket4', name: 'Paket 4', price: 400000 }
+      ]
+    },
+    sma: {
+      packages: [
+        { id: 'paket1', name: 'Paket 1', price: 300000 },
+        { id: 'paket2', name: 'Paket 2', price: 350000 },
+        { id: 'paket3', name: 'Paket 3', price: 450000 },
+        { id: 'paket4', name: 'Paket 4', price: 550000 }
+      ]
+    },
+    english: {
+      levels: [
+        { id: 'kids', name: 'Kids', price: 150000 },
+        { id: 'junior', name: 'Junior', price: 200000 },
+        { id: 'professional', name: 'Professional', price: 300000 }
+      ]
+    }
   });
 
   const [salaryRules, setSalaryRules] = useState({
@@ -26,6 +54,7 @@ const Settings = () => {
   const [inputPin, setInputPin] = useState("");
   const [showPin, setShowPin] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [biayaPendaftaran, setBiayaPendaftaran] = useState(25000);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -43,6 +72,7 @@ const Settings = () => {
           if (data.prices) setPrices(prev => ({...prev, ...data.prices}));
           if (data.salaryRules) setSalaryRules(prev => ({...prev, ...data.salaryRules}));
           if (data.ownerPin) setOwnerPin(data.ownerPin);
+          if (data.biayaPendaftaran) setBiayaPendaftaran(data.biayaPendaftaran);
         }
       } catch (error) { console.error(error); }
       finally { setLoading(false); }
@@ -68,7 +98,7 @@ const Settings = () => {
     setSaving(true);
     try {
       await setDoc(doc(db, "settings", "global_config"), {
-        prices, salaryRules, ownerPin
+        prices, salaryRules, ownerPin, biayaPendaftaran
       }, { merge: true });
       alert("✅ Pengaturan Berhasil Disimpan!");
     } catch (error) {
@@ -78,7 +108,88 @@ const Settings = () => {
     }
   };
 
-  const kompensasiNominal = Math.round(salaryRules.honorSD * (salaryRules.kompensasiPersen / 100));
+  // === FUNGSI MANAJEMEN PAKET ===
+  const addPackage = (jenjang) => {
+    const newId = `paket${prices[jenjang].packages.length + 1}`;
+    setPrices({
+      ...prices,
+      [jenjang]: {
+        ...prices[jenjang],
+        packages: [
+          ...prices[jenjang].packages,
+          { id: newId, name: `Paket ${prices[jenjang].packages.length + 1}`, price: 0 }
+        ]
+      }
+    });
+  };
+
+  const removePackage = (jenjang, index) => {
+    if (prices[jenjang].packages.length <= 1) {
+      alert("Minimal 1 paket harus ada!");
+      return;
+    }
+    const newPackages = prices[jenjang].packages.filter((_, i) => i !== index);
+    setPrices({
+      ...prices,
+      [jenjang]: {
+        ...prices[jenjang],
+        packages: newPackages
+      }
+    });
+  };
+
+  const updatePackage = (jenjang, index, field, value) => {
+    const newPackages = [...prices[jenjang].packages];
+    newPackages[index] = { ...newPackages[index], [field]: value };
+    setPrices({
+      ...prices,
+      [jenjang]: {
+        ...prices[jenjang],
+        packages: newPackages
+      }
+    });
+  };
+
+  const addEnglishLevel = () => {
+    const newId = `level${prices.english.levels.length + 1}`;
+    setPrices({
+      ...prices,
+      english: {
+        ...prices.english,
+        levels: [
+          ...prices.english.levels,
+          { id: newId, name: `Level ${prices.english.levels.length + 1}`, price: 0 }
+        ]
+      }
+    });
+  };
+
+  const removeEnglishLevel = (index) => {
+    if (prices.english.levels.length <= 1) {
+      alert("Minimal 1 level harus ada!");
+      return;
+    }
+    const newLevels = prices.english.levels.filter((_, i) => i !== index);
+    setPrices({
+      ...prices,
+      english: {
+        ...prices.english,
+        levels: newLevels
+      }
+    });
+  };
+
+  const updateEnglishLevel = (index, field, value) => {
+    const newLevels = [...prices.english.levels];
+    newLevels[index] = { ...newLevels[index], [field]: value };
+    setPrices({
+      ...prices,
+      english: {
+        ...prices.english,
+        levels: newLevels
+      }
+    });
+  };
 
   // === LOCK SCREEN ===
   if (isLocked) {
@@ -120,11 +231,10 @@ const Settings = () => {
       <SidebarAdmin />
       <div style={styles.mainContent(isMobile)}>
         
-        {/* HEADER */}
         <div style={styles.header(isMobile)}>
           <div>
             <h2 style={styles.pageTitle}>⚙️ Pengaturan Sistem</h2>
-            <p style={styles.subtitle}>Kelola harga SPP, honor guru, dan PIN keamanan</p>
+            <p style={styles.subtitle}>Kelola harga paket, honor guru, dan PIN keamanan</p>
           </div>
           <button onClick={handleSaveData} disabled={saving} style={styles.btnSave}>
             <Save size={18} /> {saving ? 'Menyimpan...' : 'SIMPAN SEMUA'}
@@ -169,40 +279,151 @@ const Settings = () => {
 
             <div style={styles.infoBox}>
               <Info size={14} /> <strong>Cara Hitung:</strong><br/>
-              <span style={{fontSize: 11}}>Reguler: Honor Jenjang × Jam | English: (Honor SD + Bonus) × Jam | 0 Hadir: {salaryRules.kompensasiPersen}% × Honor SD × Jam = Rp {kompensasiNominal.toLocaleString()}/jam</span>
+              <span style={{fontSize: 11}}>Reguler: Honor Jenjang × Jam | English: (Honor SD + Bonus) × Jam | 0 Hadir: {salaryRules.kompensasiPersen}% × Honor SD × Jam</span>
             </div>
           </div>
 
-          {/* === HARGA SPP + PIN === */}
+          {/* === HARGA PAKET === */}
           <div style={styles.card}>
-            <h3 style={styles.cardTitle}>📚 Harga SPP</h3>
-            
+            <h3 style={styles.cardTitle}>📚 Harga Paket Belajar</h3>
+            <p style={styles.cardDesc}>Tambahkan/kelola paket untuk setiap jenjang. Harga akan otomatis terupdate di halaman pendaftaran.</p>
+
+            {/* Biaya Pendaftaran */}
+            <div style={styles.fieldRow}>
+              <span>📋 Biaya Pendaftaran</span>
+              <input type="number" value={biayaPendaftaran} onChange={e => setBiayaPendaftaran(parseInt(e.target.value) || 0)} style={styles.input} />
+            </div>
+            <div style={styles.divider} />
+
             {/* SD */}
-            <h4 style={styles.subTitle}>🎒 SD (Sekolah Dasar)</h4>
-            <div style={styles.fieldRow}><span>Paket 1</span><input type="number" value={prices.sd.paket1} onChange={e => setPrices({...prices, sd: {...prices.sd, paket1: parseInt(e.target.value) || 0}})} style={styles.input} /></div>
-            <div style={styles.fieldRow}><span>Paket 2</span><input type="number" value={prices.sd.paket2} onChange={e => setPrices({...prices, sd: {...prices.sd, paket2: parseInt(e.target.value) || 0}})} style={styles.input} /></div>
-            <div style={styles.fieldRow}><span>Paket 3</span><input type="number" value={prices.sd.paket3} onChange={e => setPrices({...prices, sd: {...prices.sd, paket3: parseInt(e.target.value) || 0}})} style={styles.input} /></div>
-            <div style={styles.fieldRow}><span>Paket 4</span><input type="number" value={prices.sd.paket4} onChange={e => setPrices({...prices, sd: {...prices.sd, paket4: parseInt(e.target.value) || 0}})} style={styles.input} /></div>
+            <div style={styles.jenjangSection}>
+              <div style={styles.jenjangHeader}>
+                <h4 style={styles.subTitle}>🎒 SD</h4>
+                <button onClick={() => addPackage('sd')} style={styles.btnAdd}>
+                  <Plus size={14} /> Tambah Paket
+                </button>
+              </div>
+              {prices.sd.packages.map((pkg, idx) => (
+                <div key={pkg.id} style={styles.packageRow}>
+                  <input 
+                    type="text" 
+                    value={pkg.name} 
+                    onChange={e => updatePackage('sd', idx, 'name', e.target.value)}
+                    style={styles.packageNameInput}
+                    placeholder="Nama Paket"
+                  />
+                  <input 
+                    type="number" 
+                    value={pkg.price} 
+                    onChange={e => updatePackage('sd', idx, 'price', parseInt(e.target.value) || 0)}
+                    style={styles.packagePriceInput}
+                    placeholder="Harga"
+                  />
+                  <button onClick={() => removePackage('sd', idx)} style={styles.btnRemove}>
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div style={styles.divider} />
 
             {/* SMP */}
-            <h4 style={styles.subTitle}>🎒 SMP (Sekolah Menengah Pertama)</h4>
-            <div style={styles.fieldRow}><span>Paket 1</span><input type="number" value={prices.smp.paket1} onChange={e => setPrices({...prices, smp: {...prices.smp, paket1: parseInt(e.target.value) || 0}})} style={styles.input} /></div>
-            <div style={styles.fieldRow}><span>Paket 2</span><input type="number" value={prices.smp.paket2} onChange={e => setPrices({...prices, smp: {...prices.smp, paket2: parseInt(e.target.value) || 0}})} style={styles.input} /></div>
-            <div style={styles.fieldRow}><span>Paket 3</span><input type="number" value={prices.smp.paket3} onChange={e => setPrices({...prices, smp: {...prices.smp, paket3: parseInt(e.target.value) || 0}})} style={styles.input} /></div>
-            <div style={styles.fieldRow}><span>Paket 4</span><input type="number" value={prices.smp.paket4} onChange={e => setPrices({...prices, smp: {...prices.smp, paket4: parseInt(e.target.value) || 0}})} style={styles.input} /></div>
+            <div style={styles.jenjangSection}>
+              <div style={styles.jenjangHeader}>
+                <h4 style={styles.subTitle}>🎒 SMP</h4>
+                <button onClick={() => addPackage('smp')} style={styles.btnAdd}>
+                  <Plus size={14} /> Tambah Paket
+                </button>
+              </div>
+              {prices.smp.packages.map((pkg, idx) => (
+                <div key={pkg.id} style={styles.packageRow}>
+                  <input 
+                    type="text" 
+                    value={pkg.name} 
+                    onChange={e => updatePackage('smp', idx, 'name', e.target.value)}
+                    style={styles.packageNameInput}
+                    placeholder="Nama Paket"
+                  />
+                  <input 
+                    type="number" 
+                    value={pkg.price} 
+                    onChange={e => updatePackage('smp', idx, 'price', parseInt(e.target.value) || 0)}
+                    style={styles.packagePriceInput}
+                    placeholder="Harga"
+                  />
+                  <button onClick={() => removePackage('smp', idx)} style={styles.btnRemove}>
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div style={styles.divider} />
 
             {/* SMA */}
-            <h4 style={styles.subTitle}>🎒 SMA (Sekolah Menengah Atas)</h4>
-            <div style={styles.fieldRow}><span>Paket 1</span><input type="number" value={prices.sma.paket1} onChange={e => setPrices({...prices, sma: {...prices.sma, paket1: parseInt(e.target.value) || 0}})} style={styles.input} /></div>
-            <div style={styles.fieldRow}><span>Paket 2</span><input type="number" value={prices.sma.paket2} onChange={e => setPrices({...prices, sma: {...prices.sma, paket2: parseInt(e.target.value) || 0}})} style={styles.input} /></div>
-            <div style={styles.fieldRow}><span>Paket 3</span><input type="number" value={prices.sma.paket3} onChange={e => setPrices({...prices, sma: {...prices.sma, paket3: parseInt(e.target.value) || 0}})} style={styles.input} /></div>
-            <div style={styles.fieldRow}><span>Paket 4</span><input type="number" value={prices.sma.paket4} onChange={e => setPrices({...prices, sma: {...prices.sma, paket4: parseInt(e.target.value) || 0}})} style={styles.input} /></div>
+            <div style={styles.jenjangSection}>
+              <div style={styles.jenjangHeader}>
+                <h4 style={styles.subTitle}>🎒 SMA</h4>
+                <button onClick={() => addPackage('sma')} style={styles.btnAdd}>
+                  <Plus size={14} /> Tambah Paket
+                </button>
+              </div>
+              {prices.sma.packages.map((pkg, idx) => (
+                <div key={pkg.id} style={styles.packageRow}>
+                  <input 
+                    type="text" 
+                    value={pkg.name} 
+                    onChange={e => updatePackage('sma', idx, 'name', e.target.value)}
+                    style={styles.packageNameInput}
+                    placeholder="Nama Paket"
+                  />
+                  <input 
+                    type="number" 
+                    value={pkg.price} 
+                    onChange={e => updatePackage('sma', idx, 'price', parseInt(e.target.value) || 0)}
+                    style={styles.packagePriceInput}
+                    placeholder="Harga"
+                  />
+                  <button onClick={() => removePackage('sma', idx)} style={styles.btnRemove}>
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div style={styles.divider} />
 
             {/* English */}
-            <h4 style={styles.subTitle}>🗣️ English Course</h4>
-            <div style={styles.fieldRow}><span>Kids</span><input type="number" value={prices.english.kids} onChange={e => setPrices({...prices, english: {...prices.english, kids: parseInt(e.target.value) || 0}})} style={styles.input} /></div>
-            <div style={styles.fieldRow}><span>Junior</span><input type="number" value={prices.english.junior} onChange={e => setPrices({...prices, english: {...prices.english, junior: parseInt(e.target.value) || 0}})} style={styles.input} /></div>
-            <div style={styles.fieldRow}><span>Professional</span><input type="number" value={prices.english.professional} onChange={e => setPrices({...prices, english: {...prices.english, professional: parseInt(e.target.value) || 0}})} style={styles.input} /></div>
+            <div style={styles.jenjangSection}>
+              <div style={styles.jenjangHeader}>
+                <h4 style={styles.subTitle}>🗣️ English Course</h4>
+                <button onClick={addEnglishLevel} style={styles.btnAdd}>
+                  <Plus size={14} /> Tambah Level
+                </button>
+              </div>
+              {prices.english.levels.map((lvl, idx) => (
+                <div key={lvl.id} style={styles.packageRow}>
+                  <input 
+                    type="text" 
+                    value={lvl.name} 
+                    onChange={e => updateEnglishLevel(idx, 'name', e.target.value)}
+                    style={styles.packageNameInput}
+                    placeholder="Nama Level"
+                  />
+                  <input 
+                    type="number" 
+                    value={lvl.price} 
+                    onChange={e => updateEnglishLevel(idx, 'price', parseInt(e.target.value) || 0)}
+                    style={styles.packagePriceInput}
+                    placeholder="Harga"
+                  />
+                  <button onClick={() => removeEnglishLevel(idx)} style={styles.btnRemove}>
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
 
             <div style={styles.divider} />
             
@@ -236,12 +457,22 @@ const styles = {
   subtitle: { color: '#64748b', fontSize: 12, margin: '4px 0 0' },
   btnSave: { display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', background: '#1e293b', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 'bold', fontSize: 14 },
 
-  grid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : 'repeat(auto-fit, minmax(400px, 1fr))', gap: 20 }),
+  grid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : 'repeat(auto-fit, minmax(450px, 1fr))', gap: 20 }),
   
   card: { background: 'white', padding: 24, borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' },
   cardTitle: { margin: '0 0 4px', fontSize: 16, fontWeight: 'bold', color: '#1e293b' },
   cardDesc: { color: '#94a3b8', fontSize: 11, marginBottom: 16 },
-  subTitle: { color: '#64748b', fontSize: 12, fontWeight: 'bold', marginTop: 16, marginBottom: 8, borderBottom: '1px solid #f1f5f9', paddingBottom: 6 },
+  
+  jenjangSection: { marginBottom: 12 },
+  jenjangHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  subTitle: { color: '#64748b', fontSize: 12, fontWeight: 'bold', margin: 0, borderBottom: 'none', paddingBottom: 0 },
+  
+  btnAdd: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 'bold' },
+  btnRemove: { padding: '4px 8px', background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 6, cursor: 'pointer' },
+  
+  packageRow: { display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6 },
+  packageNameInput: { flex: 2, padding: '6px 10px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, background: '#f8fafc' },
+  packagePriceInput: { flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, textAlign: 'right', background: '#f8fafc' },
   
   fieldRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f8fafc', gap: 10 },
   input: { width: 120, padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', textAlign: 'right', fontSize: 13, fontWeight: 'bold', background: '#f8fafc' },
