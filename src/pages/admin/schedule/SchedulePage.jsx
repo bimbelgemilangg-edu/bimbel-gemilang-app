@@ -11,7 +11,8 @@ import {
   BookOpen, Users, GraduationCap, Filter, RefreshCw, ChevronLeft, 
   ChevronRight, Home, ChevronRight as ChevronRightIcon, Flag, Eye, EyeOff,
   Copy, CheckCircle, AlertCircle, Hash, Tag, Link as LinkIcon,
-  User, UserPlus, Shield, BadgeCheck, Sparkles, Database, Layers
+  User, UserPlus, Shield, BadgeCheck, Sparkles, Database, Layers,
+  Palette, PenTool, CalendarDays
 } from 'lucide-react';
 
 // ============================================================
@@ -46,6 +47,12 @@ const LEVELS = ["SD", "SMP", "SMA", "Umum"];
 const KELAS_LIST = ["Semua", "1 SD", "2 SD", "3 SD", "4 SD", "5 SD", "6 SD", "7 SMP", "8 SMP", "9 SMP", "10 SMA", "11 SMA", "12 SMA", "Alumni", "Umum"];
 const MONTH_NAMES = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
+// Warna preset untuk event
+const EVENT_COLORS = [
+  '#ef4444', '#f59e0b', '#eab308', '#22c55e', '#10b981', 
+  '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e'
+];
+
 const SchedulePage = () => {
   // ============================================================
   // STATES
@@ -59,6 +66,17 @@ const SchedulePage = () => {
   const [availableTeachers, setAvailableTeachers] = useState([]);
   const [availableStudents, setAvailableStudents] = useState([]);
   const [availableMapel, setAvailableMapel] = useState([]);
+  
+  // Custom Events
+  const [customEvents, setCustomEvents] = useState([]);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const [editingEventIndex, setEditingEventIndex] = useState(null);
+  const [eventForm, setEventForm] = useState({ 
+    date: '', 
+    label: '', 
+    color: '#f59e0b',
+    description: ''
+  });
   
   // Calendar
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -82,11 +100,11 @@ const SchedulePage = () => {
     program: "Reguler",
     level: "SD",
     title: "",
-    mapelId: "",          // ← KODE UNIK MAPEL
+    mapelId: "",
     mapelName: "",
-    teacherId: "",        // ← KODE UNIK GURU (GURU-XXX)
+    teacherId: "",
     teacherName: "",
-    selectedStudents: [], // ← Array of studentId
+    selectedStudents: [],
     repeat: "Once"
   };
   const [formData, setFormData] = useState(defaultForm);
@@ -140,6 +158,10 @@ const SchedulePage = () => {
   const isHoliday = (dateStr) => INDONESIAN_HOLIDAYS[dateStr] || null;
   const isSunday = (dateObj) => dateObj.getDay() === 0;
 
+  const getCustomEvent = (dateStr) => {
+    return customEvents.find(e => e.date === dateStr);
+  };
+
   // ============================================================
   // FETCH DATA
   // ============================================================
@@ -150,17 +172,16 @@ const SchedulePage = () => {
       const schedSnap = await getDocs(collection(db, "jadwal_bimbel"));
       setSchedules(schedSnap.docs.map(d => ({ id: d.id, ...d.data() })));
 
-      // 2. Fetch teachers (dengan guruId)
+      // 2. Fetch teachers
       const tSnap = await getDocs(collection(db, "teachers"));
       const teachers = tSnap.docs.map(d => ({ 
         id: d.id, 
         ...d.data(),
-        // Pastikan ada guruId
         guruId: d.data().guruId || `GURU-${String(d.id).slice(0, 4)}`
       }));
       setAvailableTeachers(teachers);
 
-      // 3. Fetch students (dengan studentId)
+      // 3. Fetch students
       const sSnap = await getDocs(collection(db, "students"));
       const students = sSnap.docs.map(d => ({ 
         id: d.id, 
@@ -169,7 +190,7 @@ const SchedulePage = () => {
       }));
       setAvailableStudents(students);
 
-      // 4. Fetch mapel (dengan kodeMapel)
+      // 4. Fetch mapel
       const mSnap = await getDocs(collection(db, "mapel"));
       const mapelData = mSnap.docs.map(d => ({ 
         id: d.id, 
@@ -188,6 +209,14 @@ const SchedulePage = () => {
         setDailyCode("⚠️ Belum Diset");
         setTempCode("");
       }
+
+      // 6. Fetch custom events
+      const eventDoc = await getDoc(doc(db, "settings", "calendar_events"));
+      if (eventDoc.exists()) {
+        setCustomEvents(eventDoc.data().events || []);
+      } else {
+        setCustomEvents([]);
+      }
     } catch (e) {
       console.error("Fetch Error:", e);
       showAlert("❌ Gagal memuat data");
@@ -199,10 +228,83 @@ const SchedulePage = () => {
   useEffect(() => { fetchData(); }, [selectedDate]);
 
   // ============================================================
-  // HANDLERS
+  // HANDLERS - CUSTOM EVENTS
   // ============================================================
-  
-  // Pilih guru → otomatis isi mapelId & mapelName
+  const handleOpenEventModal = (dateStr = null) => {
+    setEditingEventIndex(null);
+    setEventForm({
+      date: dateStr || getSmartDateString(selectedDate),
+      label: '',
+      color: '#f59e0b',
+      description: ''
+    });
+    setIsEventModalOpen(true);
+  };
+
+  const handleEditEvent = (index) => {
+    const event = customEvents[index];
+    setEditingEventIndex(index);
+    setEventForm({
+      date: event.date,
+      label: event.label,
+      color: event.color || '#f59e0b',
+      description: event.description || ''
+    });
+    setIsEventModalOpen(true);
+  };
+
+  const handleSaveEvent = async () => {
+    if (!eventForm.date || !eventForm.label) {
+      return showAlert("⚠️ Tanggal dan label wajib diisi!");
+    }
+
+    try {
+      const docRef = doc(db, "settings", "calendar_events");
+      let events = [...customEvents];
+
+      if (editingEventIndex !== null) {
+        // Edit existing
+        events[editingEventIndex] = { ...eventForm };
+      } else {
+        // Check duplicate date
+        const existing = events.findIndex(e => e.date === eventForm.date);
+        if (existing >= 0) {
+          if (!window.confirm(`Tanggal ${eventForm.date} sudah memiliki event. Ganti dengan yang baru?`)) {
+            return;
+          }
+          events[existing] = { ...eventForm };
+        } else {
+          events.push({ ...eventForm });
+        }
+      }
+
+      await setDoc(docRef, { events }, { merge: true });
+      setCustomEvents(events);
+      setIsEventModalOpen(false);
+      showAlert("✅ Event berhasil disimpan!");
+      fetchData();
+    } catch (e) {
+      showAlert("❌ Gagal menyimpan event: " + e.message);
+    }
+  };
+
+  const handleDeleteEvent = async (index) => {
+    if (!window.confirm(`Hapus event "${customEvents[index].label}"?`)) return;
+    
+    try {
+      const events = customEvents.filter((_, i) => i !== index);
+      await setDoc(doc(db, "settings", "calendar_events"), { events }, { merge: true });
+      setCustomEvents(events);
+      showAlert("🗑️ Event dihapus!");
+      fetchData();
+    } catch (e) {
+      showAlert("❌ Gagal menghapus event: " + e.message);
+    }
+  };
+
+  // ============================================================
+  // HANDLERS - SCHEDULES
+  // ============================================================
   const handleTeacherSelect = (teacherId) => {
     const teacher = availableTeachers.find(t => t.id === teacherId || t.guruId === teacherId);
     if (teacher) {
@@ -210,7 +312,6 @@ const SchedulePage = () => {
         ...formData,
         teacherId: teacher.guruId || teacher.id,
         teacherName: teacher.nama,
-        // Auto fill mapel dari guru
         mapelId: teacher.kodeMapel || '',
         mapelName: teacher.mapel || ''
       });
@@ -225,7 +326,6 @@ const SchedulePage = () => {
     }
   };
 
-  // Pilih mapel dari daftar (override otomatis dari guru)
   const handleMapelSelect = (mapelId) => {
     const mapel = availableMapel.find(m => m.id === mapelId || m.kodeMapel === mapelId);
     if (mapel) {
@@ -270,7 +370,6 @@ const SchedulePage = () => {
     if (!formData.mapelId) return showAlert("❌ Pilih mata pelajaran!");
 
     try {
-      // Build student data dengan ID lengkap
       const studentsFullData = formData.selectedStudents.map(sid => {
         const s = availableStudents.find(stud => 
           stud.id === sid || stud.studentId === sid
@@ -290,16 +389,14 @@ const SchedulePage = () => {
         program: formData.program,
         level: formData.level,
         title: formData.title,
-        // === KODE UNIK ===
-        mapelId: formData.mapelId,        // MAPEL-XXX
+        mapelId: formData.mapelId,
         mapelName: formData.mapelName,
-        teacherId: formData.teacherId,     // GURU-XXX
+        teacherId: formData.teacherId,
         teacherName: formData.teacherName,
-        // ===
         start: formData.start,
         end: formData.end,
         students: studentsFullData,
-        studentIds: studentsFullData.map(s => s.studentId), // Array of studentId untuk query cepat
+        studentIds: studentsFullData.map(s => s.studentId),
         dateStr: getSmartDateString(selectedDate),
         status: "scheduled",
         updatedAt: new Date().toISOString()
@@ -365,22 +462,19 @@ const SchedulePage = () => {
   // ============================================================
   const getFilteredStudents = () => {
     return availableStudents.filter(s => {
-      // Filter jenjang
       if (formData.level !== 'Umum') {
         const siswaJenjang = s.kelasSekolah?.includes(formData.level) || s.jenjang === formData.level;
         if (!siswaJenjang) return false;
       }
-      // Search
       const matchNama = (s.nama || '').toLowerCase().includes(studentSearch.toLowerCase());
       const matchId = (s.studentId || '').toLowerCase().includes(studentSearch.toLowerCase());
-      // Filter kelas
       const matchKelas = studentFilterKelas === "Semua" || s.kelasSekolah === studentFilterKelas;
       return (matchNama || matchId) && matchKelas;
     });
   };
 
   // ============================================================
-  // RENDER: Calendar Mini
+  // RENDER: Calendar Mini with Events
   // ============================================================
   const renderMiniCalendar = () => {
     const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
@@ -402,16 +496,20 @@ const SchedulePage = () => {
       const holiday = isHoliday(dateStr);
       const isRed = holiday || isSunday(dateObj);
       const hasSchedule = schedules.some(s => s.dateStr === dateStr);
+      const customEvent = getCustomEvent(dateStr);
 
       days.push(
         <div
           key={d}
           onClick={() => setSelectedDate(dateObj)}
-          style={styles.miniDay(isSel, isRed, isToday)}
-          title={holiday ? `🔴 ${holiday.name}` : hasSchedule ? 'Ada jadwal' : ''}
+          style={styles.miniDay(isSel, isRed, isToday, customEvent)}
+          title={customEvent ? `📌 ${customEvent.label}` : holiday ? `🔴 ${holiday.name}` : hasSchedule ? 'Ada jadwal' : ''}
         >
           <span style={styles.miniDayNum(isSel, isRed, isToday)}>{d}</span>
-          {hasSchedule && !isSel && <div style={styles.miniDayDot}></div>}
+          {customEvent && !isSel && (
+            <div style={{...styles.miniEventDot, background: customEvent.color || '#f59e0b'}} />
+          )}
+          {hasSchedule && !isSel && !customEvent && <div style={styles.miniDayDot}></div>}
           {holiday && <Flag size={8} style={{color: '#ef4444', position: 'absolute', top: 2, right: 2}} />}
         </div>
       );
@@ -425,9 +523,32 @@ const SchedulePage = () => {
   // ============================================================
   const renderDailyView = () => {
     const dateStr = getSmartDateString(selectedDate);
+    const customEvent = getCustomEvent(dateStr);
 
     return (
       <div style={styles.planetGrid}>
+        {/* Custom Event Banner */}
+        {customEvent && (
+          <div style={{...styles.eventBanner, background: customEvent.color || '#f59e0b'}}>
+            <div style={styles.eventBannerContent}>
+              <CalendarDays size={18} color="white" />
+              <span style={styles.eventBannerLabel}>{customEvent.label}</span>
+              {customEvent.description && (
+                <span style={styles.eventBannerDesc}>{customEvent.description}</span>
+              )}
+            </div>
+            <button 
+              onClick={() => {
+                const idx = customEvents.findIndex(e => e.date === customEvent.date);
+                handleEditEvent(idx);
+              }}
+              style={styles.eventBannerEdit}
+            >
+              <Edit3 size={12} /> Edit
+            </button>
+          </div>
+        )}
+
         {PLANETS.map(planet => {
           const items = schedules.filter(s => s.planet === planet && s.dateStr === dateStr);
           return (
@@ -452,7 +573,6 @@ const SchedulePage = () => {
                         </div>
                         <div style={styles.scheduleTitle}>{item.title || "Materi Umum"}</div>
                         
-                        {/* TAMPILKAN KODE UNIK */}
                         <div style={styles.scheduleCodes}>
                           {item.teacherId && (
                             <span style={styles.codeBadgeTeacher}>
@@ -472,7 +592,6 @@ const SchedulePage = () => {
                           <span>👥 {item.students?.length || 0} siswa</span>
                         </div>
                         
-                        {/* Tampilkan 3 siswa pertama */}
                         {item.students && item.students.length > 0 && (
                           <div style={styles.studentPreview}>
                             {item.students.slice(0, 3).map((s, i) => (
@@ -509,7 +628,7 @@ const SchedulePage = () => {
   };
 
   // ============================================================
-  // RENDER: Weekly View
+  // RENDER: Weekly View with Events
   // ============================================================
   const renderWeeklyView = () => {
     const weekDates = getWeekDates(selectedDate);
@@ -521,12 +640,18 @@ const SchedulePage = () => {
           const isToday = dateStr === getSmartDateString(new Date());
           const items = schedules.filter(s => s.dateStr === dateStr);
           const holiday = isHoliday(dateStr);
+          const customEvent = getCustomEvent(dateStr);
 
           return (
-            <div key={dateStr} style={styles.weeklyDay(isToday, !!holiday)}>
+            <div key={dateStr} style={styles.weeklyDay(isToday, !!holiday, !!customEvent)}>
               <div style={styles.weeklyHeader}>
                 <span style={styles.weeklyDayName(!!holiday || isSunday(dateObj))}>{dayName}</span>
                 <span style={styles.weeklyDate}>{dateObj.getDate()}/{dateObj.getMonth() + 1}</span>
+                {customEvent && (
+                  <div style={{...styles.weeklyEventBadge, background: customEvent.color || '#f59e0b'}}>
+                    📌 {customEvent.label}
+                  </div>
+                )}
                 {holiday && <Flag size={10} color="#ef4444" />}
               </div>
               <div style={styles.weeklyBody}>
@@ -572,7 +697,6 @@ const SchedulePage = () => {
             <div style={styles.detailRow}><span>📅 Tanggal</span><strong>{detailSchedule.dateStr}</strong></div>
             <div style={styles.detailRow}><span>📚 Program</span><strong>{detailSchedule.program} / {detailSchedule.level}</strong></div>
             
-            {/* KODE UNIK */}
             <div style={styles.detailRow}>
               <span>👨‍🏫 Guru</span>
               <strong>
@@ -621,6 +745,106 @@ const SchedulePage = () => {
   };
 
   // ============================================================
+  // RENDER: Event Modal
+  // ============================================================
+  const renderEventModal = () => {
+    if (!isEventModalOpen) return null;
+
+    return (
+      <div style={styles.overlay} onClick={() => setIsEventModalOpen(false)}>
+        <div style={styles.modal(isMobile)} onClick={e => e.stopPropagation()}>
+          <div style={styles.modalHeader}>
+            <h3 style={{margin: 0}}>
+              {editingEventIndex !== null ? "✏️ Edit Event" : "📌 Tambah Event Kalender"}
+            </h3>
+            <button onClick={() => setIsEventModalOpen(false)} style={styles.btnClose}>
+              <X size={20} />
+            </button>
+          </div>
+
+          <div style={styles.modalBody}>
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>📅 Tanggal</label>
+              <input 
+                type="date" 
+                value={eventForm.date} 
+                onChange={e => setEventForm({...eventForm, date: e.target.value})}
+                style={styles.formInput} 
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>🏷️ Label Event</label>
+              <input 
+                type="text" 
+                value={eventForm.label} 
+                onChange={e => setEventForm({...eventForm, label: e.target.value})}
+                style={styles.formInput} 
+                placeholder="Contoh: Rapat Guru, Ujian Semester, Libur"
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>📝 Deskripsi (Opsional)</label>
+              <input 
+                type="text" 
+                value={eventForm.description} 
+                onChange={e => setEventForm({...eventForm, description: e.target.value})}
+                style={styles.formInput} 
+                placeholder="Detail tambahan..."
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>🎨 Warna</label>
+              <div style={styles.colorPickerRow}>
+                {EVENT_COLORS.map(color => (
+                  <div
+                    key={color}
+                    onClick={() => setEventForm({...eventForm, color})}
+                    style={styles.colorOption(eventForm.color === color, color)}
+                  />
+                ))}
+                <input 
+                  type="color" 
+                  value={eventForm.color} 
+                  onChange={e => setEventForm({...eventForm, color: e.target.value})}
+                  style={styles.colorInput} 
+                />
+              </div>
+            </div>
+
+            <div style={styles.eventPreviewBox}>
+              <strong>Preview:</strong>
+              <div style={{...styles.eventPreview, background: eventForm.color || '#f59e0b'}}>
+                📌 {eventForm.label || 'Label Event'}
+              </div>
+            </div>
+
+            <div style={styles.modalFooter}>
+              {editingEventIndex !== null && (
+                <button 
+                  type="button" 
+                  onClick={() => handleDeleteEvent(editingEventIndex)} 
+                  style={{...styles.btnCancel, color: '#ef4444', borderColor: '#fecaca'}}
+                >
+                  <Trash2 size={14} /> Hapus
+                </button>
+              )}
+              <button type="button" onClick={() => setIsEventModalOpen(false)} style={styles.btnCancel}>
+                Batal
+              </button>
+              <button onClick={handleSaveEvent} style={styles.btnSave}>
+                <Save size={16} /> {editingEventIndex !== null ? 'Update' : 'Simpan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ============================================================
   // MAIN RENDER
   // ============================================================
   if (loading) {
@@ -653,6 +877,14 @@ const SchedulePage = () => {
             </p>
           </div>
           <div style={styles.headerRight}>
+            <div style={styles.headerButtons}>
+              <button 
+                onClick={() => handleOpenEventModal(getSmartDateString(selectedDate))} 
+                style={styles.btnEvent}
+              >
+                <Flag size={14} /> Tambah Event
+              </button>
+            </div>
             <div style={styles.codeBox}>
               <span style={styles.codeLabel}>KODE ABSEN:</span>
               {isEditingCode ? (
@@ -693,25 +925,41 @@ const SchedulePage = () => {
               <div style={styles.miniCalDays}>
                 {renderMiniCalendar()}
               </div>
-              <div style={styles.miniCalLegend}>
-                <div style={styles.legendItem}><div style={{...styles.legendDot, background: '#3b82f6'}}></div><span>Jadwal</span></div>
-                <div style={styles.legendItem}><div style={{...styles.legendDot, background: '#ef4444'}}></div><span>Libur/Minggu</span></div>
-                <div style={styles.legendItem}><div style={{...styles.legendDot, background: '#10b981', border: '2px solid #10b981'}}></div><span>Hari Ini</span></div>
-              </div>
-              {Object.entries(INDONESIAN_HOLIDAYS).filter(([d]) => {
-                const hd = new Date(d);
-                return hd.getMonth() === currentMonth.getMonth() && hd.getFullYear() === currentMonth.getFullYear();
+
+              {/* List Events */}
+              {customEvents.filter(e => {
+                const d = new Date(e.date);
+                return d.getMonth() === currentMonth.getMonth() && d.getFullYear() === currentMonth.getFullYear();
               }).length > 0 && (
-                <div style={styles.holidayList}>
-                  <strong style={{fontSize: 10, color: '#ef4444'}}>🔴 Libur Bulan Ini:</strong>
-                  {Object.entries(INDONESIAN_HOLIDAYS).filter(([d]) => {
-                    const hd = new Date(d);
-                    return hd.getMonth() === currentMonth.getMonth() && hd.getFullYear() === currentMonth.getFullYear();
-                  }).map(([d, h]) => (
-                    <div key={d} style={styles.holidayItem}>{new Date(d).getDate()} - {h.name}</div>
+                <div style={styles.eventList}>
+                  <strong style={styles.eventListTitle}>📌 Event Bulan Ini:</strong>
+                  {customEvents.filter(e => {
+                    const d = new Date(e.date);
+                    return d.getMonth() === currentMonth.getMonth() && d.getFullYear() === currentMonth.getFullYear();
+                  }).sort((a, b) => a.date.localeCompare(b.date)).map((e, idx) => (
+                    <div key={idx} style={styles.eventListItem}>
+                      <div style={{...styles.eventListDot, background: e.color || '#f59e0b'}} />
+                      <span style={styles.eventListDate}>{new Date(e.date).getDate()}</span>
+                      <span style={styles.eventListLabel}>{e.label}</span>
+                      <div style={styles.eventListActions}>
+                        <button onClick={() => handleEditEvent(customEvents.indexOf(e))} style={styles.eventListEdit}>
+                          <Edit3 size={10} />
+                        </button>
+                        <button onClick={() => handleDeleteEvent(customEvents.indexOf(e))} style={styles.eventListDelete}>
+                          <X size={10} />
+                        </button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
+
+              <div style={styles.miniCalLegend}>
+                <div style={styles.legendItem}><div style={{...styles.legendDot, background: '#3b82f6'}}></div><span>Jadwal</span></div>
+                <div style={styles.legendItem}><div style={{...styles.legendDot, background: '#ef4444'}}></div><span>Libur</span></div>
+                <div style={styles.legendItem}><div style={{...styles.legendDot, background: '#f59e0b'}}></div><span>Event</span></div>
+                <div style={styles.legendItem}><div style={{...styles.legendDot, background: '#10b981', border: '2px solid #10b981'}}></div><span>Hari Ini</span></div>
+              </div>
             </div>
           </div>
 
@@ -721,7 +969,7 @@ const SchedulePage = () => {
           </div>
         </div>
 
-        {/* MODAL TAMBAH/EDIT */}
+        {/* MODAL TAMBAH/EDIT JADWAL */}
         {isModalOpen && (
           <div style={styles.overlay} onClick={() => setIsModalOpen(false)}>
             <div style={styles.modal(isMobile)} onClick={e => e.stopPropagation()}>
@@ -731,7 +979,7 @@ const SchedulePage = () => {
               </div>
 
               <form onSubmit={handleSave} style={styles.modalBody}>
-                {/* Waktu */}
+                {/* ... form content same as before ... */}
                 <div style={styles.modalRow}>
                   <div style={styles.formGroup}>
                     <label style={styles.formLabel}>⏰ Mulai</label>
@@ -743,7 +991,6 @@ const SchedulePage = () => {
                   </div>
                 </div>
 
-                {/* Program & Level */}
                 <div style={styles.modalRow}>
                   <div style={styles.formGroup}>
                     <label style={styles.formLabel}>Program</label>
@@ -760,18 +1007,9 @@ const SchedulePage = () => {
                   </div>
                 </div>
 
-                {/* Pilih Guru → Auto Mapel */}
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>
-                    👨‍🏫 Guru 
-                    <span style={{fontSize: 10, color: '#94a3b8', marginLeft: 6}}>(ID & Mapel otomatis)</span>
-                  </label>
-                  <select 
-                    required 
-                    value={formData.teacherId} 
-                    onChange={e => handleTeacherSelect(e.target.value)} 
-                    style={styles.formSelect}
-                  >
+                  <label style={styles.formLabel}>👨‍🏫 Guru</label>
+                  <select required value={formData.teacherId} onChange={e => handleTeacherSelect(e.target.value)} style={styles.formSelect}>
                     <option value="">-- Pilih Guru --</option>
                     {availableTeachers.map(t => (
                       <option key={t.id} value={t.guruId || t.id}>
@@ -779,28 +1017,11 @@ const SchedulePage = () => {
                       </option>
                     ))}
                   </select>
-                  {formData.teacherId && (
-                    <div style={styles.infoBox}>
-                      <Hash size={14} color="#3b82f6" />
-                      <span style={{fontSize: 11, color: '#475569'}}>
-                        ID Guru: <strong>{formData.teacherId}</strong>
-                      </span>
-                    </div>
-                  )}
                 </div>
 
-                {/* Pilih Mapel (bisa override) */}
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>
-                    📘 Mapel 
-                    <span style={{fontSize: 10, color: '#94a3b8', marginLeft: 6}}>(kode unik)</span>
-                  </label>
-                  <select 
-                    required 
-                    value={formData.mapelId} 
-                    onChange={e => handleMapelSelect(e.target.value)} 
-                    style={styles.formSelect}
-                  >
+                  <label style={styles.formLabel}>📘 Mapel</label>
+                  <select required value={formData.mapelId} onChange={e => handleMapelSelect(e.target.value)} style={styles.formSelect}>
                     <option value="">-- Pilih Mapel --</option>
                     {availableMapel.map(m => (
                       <option key={m.id} value={m.kodeMapel || m.id}>
@@ -808,40 +1029,21 @@ const SchedulePage = () => {
                       </option>
                     ))}
                   </select>
-                  {formData.mapelId && (
-                    <div style={styles.infoBox}>
-                      <Tag size={14} color="#8b5cf6" />
-                      <span style={{fontSize: 11, color: '#475569'}}>
-                        Kode Mapel: <strong>{formData.mapelId}</strong>
-                      </span>
-                    </div>
-                  )}
                 </div>
 
-                {/* Materi */}
                 <div style={styles.formGroup}>
                   <label style={styles.formLabel}>📝 Materi / Judul</label>
                   <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} style={styles.formInput} placeholder="Contoh: Matematika Pecahan" />
                 </div>
 
-                {/* Assign Siswa */}
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>
-                    👥 Assign Siswa ({formData.selectedStudents.length} dipilih)
-                  </label>
-                  <p style={{fontSize: 9, color: '#94a3b8', marginTop: 2}}>
-                    Menampilkan siswa jenjang {formData.level}
-                  </p>
-
-                  {/* Filter Siswa */}
+                  <label style={styles.formLabel}>👥 Assign Siswa ({formData.selectedStudents.length} dipilih)</label>
                   <div style={{display: 'flex', gap: 6, marginTop: 6, marginBottom: 8}}>
                     <select value={studentFilterKelas} onChange={e => setStudentFilterKelas(e.target.value)} style={{...styles.formSelect, flex: 1, fontSize: 11, padding: '6px 8px'}}>
                       {KELAS_LIST.map(k => <option key={k} value={k}>{k}</option>)}
                     </select>
                     <input type="text" placeholder="Cari nama/ID..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} style={{...styles.formInput, flex: 2, fontSize: 11, padding: '6px 8px'}} />
                   </div>
-
-                  {/* Student List */}
                   <div style={styles.studentSelectList}>
                     {getFilteredStudents().length === 0 ? (
                       <div style={{textAlign: 'center', padding: 15, color: '#94a3b8', fontSize: 11}}>
@@ -881,7 +1083,6 @@ const SchedulePage = () => {
                   </div>
                 </div>
 
-                {/* Repeat */}
                 {!editId && (
                   <div style={styles.formGroup}>
                     <label style={styles.formLabel}>🔄 Pengulangan</label>
@@ -892,7 +1093,6 @@ const SchedulePage = () => {
                   </div>
                 )}
 
-                {/* Submit */}
                 <div style={styles.modalFooter}>
                   <button type="button" onClick={() => setIsModalOpen(false)} style={styles.btnCancel}>Batal</button>
                   <button type="submit" style={styles.btnSave}><Save size={16} /> {editId ? 'Update' : 'Simpan'}</button>
@@ -901,6 +1101,9 @@ const SchedulePage = () => {
             </div>
           </div>
         )}
+
+        {/* EVENT MODAL */}
+        {renderEventModal()}
 
         {/* DETAIL MODAL */}
         {renderDetailModal()}
@@ -912,7 +1115,7 @@ const SchedulePage = () => {
 };
 
 // ============================================================
-// STYLES - SEMUA DALAM OBJEK JAVASCRIPT (NO @media)
+// STYLES
 // ============================================================
 const styles = {
   wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
@@ -952,10 +1155,19 @@ const styles = {
   headerLeft: {},
   pageTitle: { margin: 0, fontSize: 20, display: 'flex', alignItems: 'center', gap: 8, color: 'white' },
   headerDate: { margin: '4px 0 0', fontSize: 12, opacity: 0.7 },
-  headerRight: {},
+  headerRight: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' },
+  headerButtons: { display: 'flex', gap: 8 },
+  
+  btnEvent: { 
+    background: 'rgba(255,255,255,0.15)', 
+    color: 'white', border: '1px solid rgba(255,255,255,0.2)',
+    padding: '8px 14px', borderRadius: 8, cursor: 'pointer',
+    fontWeight: 'bold', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
+    transition: '0.2s'
+  },
   
   codeBox: { 
-    background: 'rgba(255,255,255,0.1)', padding: '10px 16px', 
+    background: 'rgba(255,255,255,0.1)', padding: '8px 14px', 
     borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10 
   },
   codeLabel: { fontSize: 10, fontWeight: 'bold', opacity: 0.8 },
@@ -987,22 +1199,105 @@ const styles = {
   miniCalWeekday: (d) => ({ textAlign: 'center', fontSize: 10, fontWeight: 'bold', color: d === 'Min' ? '#ef4444' : '#94a3b8', padding: '4px 0' }),
   miniCalDays: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 },
   miniDayEmpty: { aspectRatio: '1' },
-  miniDay: (sel, red, today) => ({
+  miniDay: (sel, red, today, event) => ({
     aspectRatio: '1', borderRadius: 8, display: 'flex', flexDirection: 'column',
     alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
     position: 'relative', fontSize: 12, fontWeight: sel ? 'bold' : 'normal',
-    background: sel ? '#3b82f6' : red ? '#fee2e2' : 'white',
-    color: sel ? 'white' : red ? '#ef4444' : today ? '#3b82f6' : '#334155',
-    border: today && !sel ? '2px solid #3b82f6' : red && !sel ? '1px solid #fecaca' : '1px solid transparent',
+    background: sel ? '#3b82f6' : red ? '#fee2e2' : event ? `${event.color}20` : 'white',
+    color: sel ? 'white' : red ? '#ef4444' : event ? event.color : today ? '#3b82f6' : '#334155',
+    border: today && !sel ? '2px solid #3b82f6' : red && !sel ? '1px solid #fecaca' : event && !sel ? `1px solid ${event.color}` : '1px solid transparent',
     transition: '0.2s'
   }),
   miniDayNum: (sel, red, today) => ({ fontSize: 12, fontWeight: sel || today ? 'bold' : 'normal' }),
   miniDayDot: { width: 4, height: 4, borderRadius: '50%', background: '#3b82f6', marginTop: 2 },
+  miniEventDot: { width: 8, height: 8, borderRadius: '50%', marginTop: 2, border: '1px solid rgba(255,255,255,0.5)' },
+  
   miniCalLegend: { display: 'flex', gap: 12, marginTop: 12, paddingTop: 10, borderTop: '1px solid #f1f5f9', flexWrap: 'wrap' },
   legendItem: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 9, color: '#64748b' },
   legendDot: { width: 8, height: 8, borderRadius: '50%' },
-  holidayList: { marginTop: 10, paddingTop: 10, borderTop: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', gap: 3 },
-  holidayItem: { fontSize: 9, color: '#ef4444', padding: '2px 6px', background: '#fef2f2', borderRadius: 4 },
+  
+  // Event List
+  eventList: { marginTop: 12, paddingTop: 10, borderTop: '1px solid #f1f5f9' },
+  eventListTitle: { fontSize: 10, color: '#1e293b', display: 'block', marginBottom: 6 },
+  eventListItem: { 
+    display: 'flex', alignItems: 'center', gap: 6, 
+    padding: '4px 6px', borderRadius: 4, 
+    fontSize: 10, background: '#f8fafc', marginBottom: 2 
+  },
+  eventListDot: { width: 6, height: 6, borderRadius: '50%', flexShrink: 0 },
+  eventListDate: { fontWeight: 'bold', color: '#64748b', minWidth: 20 },
+  eventListLabel: { flex: 1, color: '#1e293b' },
+  eventListActions: { display: 'flex', gap: 2 },
+  eventListEdit: { 
+    background: 'none', border: 'none', cursor: 'pointer', 
+    color: '#64748b', padding: '2px', borderRadius: 4 
+  },
+  eventListDelete: { 
+    background: 'none', border: 'none', cursor: 'pointer', 
+    color: '#ef4444', padding: '2px', borderRadius: 4 
+  },
+
+  // Event Banner
+  eventBanner: { 
+    padding: '12px 16px', borderRadius: 10, 
+    display: 'flex', justifyContent: 'space-between', 
+    alignItems: 'center', color: 'white', marginBottom: 12 
+  },
+  eventBannerContent: { display: 'flex', alignItems: 'center', gap: 10 },
+  eventBannerLabel: { fontWeight: 'bold', fontSize: 14 },
+  eventBannerDesc: { fontSize: 11, opacity: 0.9 },
+  eventBannerEdit: { 
+    background: 'rgba(255,255,255,0.2)', 
+    border: 'none', color: 'white', 
+    padding: '6px 12px', borderRadius: 6, 
+    cursor: 'pointer', fontSize: 11,
+    display: 'flex', alignItems: 'center', gap: 4
+  },
+
+  // Weekly
+  weeklyDay: (today, holiday, event) => ({ 
+    background: event ? `${event}10` : 'white',
+    borderRadius: 12, padding: 14, 
+    border: holiday ? '2px solid #fecaca' : 
+           event ? `2px solid ${event}` :
+           today ? '2px solid #3b82f6' : '1px solid #f1f5f9' 
+  }),
+  weeklyEventBadge: { 
+    fontSize: 9, padding: '2px 8px', borderRadius: 10, 
+    color: 'white', fontWeight: 'bold' 
+  },
+
+  // Modal styles from previous
+  overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000, backdropFilter: 'blur(2px)' },
+  modal: (m) => ({ background: 'white', padding: m ? 20 : 25, borderRadius: m ? '20px 20px 0 0' : 20, width: m ? '100%' : '90%', maxWidth: '650px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', animation: 'slideUp 0.3s ease' }),
+  detailModal: (m) => ({ background: 'white', padding: m ? 20 : 25, borderRadius: m ? '20px 20px 0 0' : 20, width: m ? '100%' : '90%', maxWidth: '550px', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', animation: 'slideUp 0.3s ease' }),
+  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #f1f5f9' },
+  btnClose: { background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#ef4444' },
+  modalBody: { display: 'flex', flexDirection: 'column', gap: 12 },
+  modalRow: { display: 'flex', gap: 10, flexWrap: 'wrap' },
+  formGroup: { flex: 1, minWidth: 140, display: 'flex', flexDirection: 'column', gap: 4 },
+  formLabel: { fontSize: 11, fontWeight: 'bold', color: '#64748b' },
+  formInput: { padding: '10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, width: '100%', boxSizing: 'border-box', background: '#f8fafc' },
+  formSelect: { padding: '10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, width: '100%', boxSizing: 'border-box', background: 'white' },
+  studentSelectList: { maxHeight: '200px', overflowY: 'auto', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', padding: '6px' },
+  studentCheckItem: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', fontSize: 12 },
+  studentKelasChip: { fontSize: 10, background: '#eef2ff', color: '#3b82f6', padding: '2px 6px', borderRadius: 8, fontWeight: 'bold' },
+  modalFooter: { display: 'flex', gap: 10, marginTop: 12, paddingTop: 12, borderTop: '1px solid #f1f5f9' },
+  btnCancel: { flex: 1, padding: 12, borderRadius: 10, border: '1px solid #e2e8f0', background: 'white', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', color: '#64748b' },
+  btnSave: { flex: 2, padding: 12, borderRadius: 10, border: 'none', background: '#1e293b', color: 'white', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
+
+  // Event Color Picker
+  colorPickerRow: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' },
+  colorOption: (selected, color) => ({ 
+    width: 32, height: 32, borderRadius: '50%', 
+    background: color, cursor: 'pointer',
+    border: selected ? '3px solid #1e293b' : '2px solid transparent',
+    transition: '0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+  }),
+  colorInput: { width: 40, height: 40, padding: 2, borderRadius: 8, border: '1px solid #e2e8f0', cursor: 'pointer' },
+  
+  eventPreviewBox: { marginTop: 8, padding: 12, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' },
+  eventPreview: { padding: '8px 12px', borderRadius: 6, color: 'white', fontWeight: 'bold', fontSize: 13, textAlign: 'center' },
 
   // Planet Grid
   planetGrid: { display: 'flex', flexDirection: 'column', gap: 15 },
@@ -1020,44 +1315,22 @@ const styles = {
   timeBadge: { fontSize: 12, fontWeight: '900', color: '#1e293b', background: '#e2e8f0', padding: '2px 8px', borderRadius: 6 },
   programBadge: (p) => ({ fontSize: 10, fontWeight: 'bold', color: p === 'English' ? '#ef4444' : '#10b981' }),
   scheduleTitle: { fontSize: 14, fontWeight: 'bold', marginBottom: 4, color: '#1e293b' },
-  
-  // Kode Badges
   scheduleCodes: { display: 'flex', gap: 6, marginBottom: 4, flexWrap: 'wrap' },
-  codeBadgeTeacher: { 
-    display: 'inline-flex', alignItems: 'center', gap: 3,
-    fontSize: 9, color: '#3b82f6', background: '#eef2ff',
-    padding: '1px 6px', borderRadius: 10, fontWeight: 600
-  },
-  codeBadgeMapel: {
-    display: 'inline-flex', alignItems: 'center', gap: 3,
-    fontSize: 9, color: '#8b5cf6', background: '#ede9fe',
-    padding: '1px 6px', borderRadius: 10, fontWeight: 600
-  },
-  
+  codeBadgeTeacher: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, color: '#3b82f6', background: '#eef2ff', padding: '1px 6px', borderRadius: 10, fontWeight: 600 },
+  codeBadgeMapel: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, color: '#8b5cf6', background: '#ede9fe', padding: '1px 6px', borderRadius: 10, fontWeight: 600 },
   scheduleInfo: { display: 'flex', gap: 8, fontSize: 11, color: '#64748b', flexWrap: 'wrap', marginBottom: 6 },
   studentPreview: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 },
-  studentChip: { 
-    background: '#e0e7ff', color: '#3730a3', 
-    padding: '2px 8px', borderRadius: 10, 
-    fontSize: 10, fontWeight: 'bold',
-    display: 'flex', alignItems: 'center', gap: 4
-  },
-  studentIdChip: { 
-    fontSize: 8, color: '#94a3b8', 
-    background: 'rgba(255,255,255,0.5)', 
-    padding: '0 4px', borderRadius: 4,
-    fontFamily: 'monospace'
-  },
+  studentChip: { background: '#e0e7ff', color: '#3730a3', padding: '2px 8px', borderRadius: 10, fontSize: 10, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 4 },
+  studentIdChip: { fontSize: 8, color: '#94a3b8', background: 'rgba(255,255,255,0.5)', padding: '0 4px', borderRadius: 4, fontFamily: 'monospace' },
   studentMore: { fontSize: 10, color: '#94a3b8' },
   scheduleActions: { display: 'flex', gap: 6, borderTop: '1px solid #e2e8f0', paddingTop: 8 },
   btnEditSm: { flex: 1, padding: '6px', borderRadius: 6, background: '#fef3c7', color: '#b45309', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 },
   btnDetailSm: { flex: 1, padding: '6px', borderRadius: 6, background: '#e0e7ff', color: '#3730a3', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 },
   btnDeleteSm: { flex: 1, padding: '6px', borderRadius: 6, background: '#fee2e2', color: '#ef4444', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 },
 
-  // Weekly View
+  // Weekly
   weeklyGrid: { display: 'flex', flexDirection: 'column', gap: 10 },
-  weeklyDay: (today, holiday) => ({ background: 'white', borderRadius: 12, padding: 14, border: holiday ? '2px solid #fecaca' : today ? '2px solid #3b82f6' : '1px solid #f1f5f9' }),
-  weeklyHeader: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 },
+  weeklyHeader: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' },
   weeklyDayName: (red) => ({ fontSize: 13, fontWeight: 'bold', color: red ? '#ef4444' : '#1e293b' }),
   weeklyDate: { fontSize: 11, color: '#94a3b8' },
   weeklyBody: { display: 'flex', flexDirection: 'column', gap: 4 },
@@ -1068,26 +1341,6 @@ const styles = {
   weeklyTitle: { fontSize: 11, fontWeight: '500' },
   weeklyTeacher: { fontSize: 10, color: '#94a3b8' },
   weeklyIdBadge: { fontSize: 8, color: '#3b82f6', background: '#eef2ff', padding: '1px 4px', borderRadius: 4, fontFamily: 'monospace' },
-
-  // Modal
-  overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000, backdropFilter: 'blur(2px)' },
-  modal: (m) => ({ background: 'white', padding: m ? 20 : 25, borderRadius: m ? '20px 20px 0 0' : 20, width: m ? '100%' : '90%', maxWidth: '650px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', animation: 'slideUp 0.3s ease' }),
-  detailModal: (m) => ({ background: 'white', padding: m ? 20 : 25, borderRadius: m ? '20px 20px 0 0' : 20, width: m ? '100%' : '90%', maxWidth: '550px', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', animation: 'slideUp 0.3s ease' }),
-  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #f1f5f9' },
-  btnClose: { background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#ef4444' },
-  modalBody: { display: 'flex', flexDirection: 'column', gap: 12 },
-  modalRow: { display: 'flex', gap: 10, flexWrap: 'wrap' },
-  formGroup: { flex: 1, minWidth: 140, display: 'flex', flexDirection: 'column', gap: 4 },
-  formLabel: { fontSize: 11, fontWeight: 'bold', color: '#64748b' },
-  formInput: { padding: '10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, width: '100%', boxSizing: 'border-box', background: '#f8fafc' },
-  formSelect: { padding: '10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, width: '100%', boxSizing: 'border-box', background: 'white' },
-  infoBox: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 6, background: '#f8fafc', border: '1px solid #e2e8f0' },
-  studentSelectList: { maxHeight: '200px', overflowY: 'auto', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', padding: '6px' },
-  studentCheckItem: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', fontSize: 12 },
-  studentKelasChip: { fontSize: 10, background: '#eef2ff', color: '#3b82f6', padding: '2px 6px', borderRadius: 8, fontWeight: 'bold' },
-  modalFooter: { display: 'flex', gap: 10, marginTop: 12, paddingTop: 12, borderTop: '1px solid #f1f5f9' },
-  btnCancel: { flex: 1, padding: 12, borderRadius: 10, border: '1px solid #e2e8f0', background: 'white', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', color: '#64748b' },
-  btnSave: { flex: 2, padding: 12, borderRadius: 10, border: 'none', background: '#1e293b', color: 'white', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
 
   // Detail Content
   detailContent: { display: 'flex', flexDirection: 'column', gap: 10 },
