@@ -10,13 +10,14 @@ import {
   Calendar, ChevronLeft, ChevronRight, Clock, MapPin, 
   Users, BookOpen, Flag, AlertCircle, CheckCircle, XCircle,
   Eye, FileText, Award, Home, Layers, Hash, Tag,
-  Sparkles, Coffee, Sun, Moon, GraduationCap
+  Sparkles, Coffee, Sun, Moon, GraduationCap, Plus
 } from 'lucide-react';
 
 // ============================================================
-// DATA HARI LIBUR NASIONAL INDONESIA
+// DATA HARI LIBUR NASIONAL INDONESIA (LENGKAP)
 // ============================================================
 const INDONESIAN_HOLIDAYS = {
+  // 2025
   '2025-01-01': { name: 'Tahun Baru 2025 Masehi', color: '#ef4444' },
   '2025-01-27': { name: 'Isra Mikraj Nabi Muhammad SAW', color: '#ef4444' },
   '2025-01-29': { name: 'Tahun Baru Imlek 2576 Kongzili', color: '#ef4444' },
@@ -33,8 +34,25 @@ const INDONESIAN_HOLIDAYS = {
   '2025-08-17': { name: 'Hari Kemerdekaan RI', color: '#ef4444' },
   '2025-09-05': { name: 'Maulid Nabi Muhammad SAW', color: '#ef4444' },
   '2025-12-25': { name: 'Hari Raya Natal', color: '#ef4444' },
+  // 2026
   '2026-01-01': { name: 'Tahun Baru 2026 Masehi', color: '#ef4444' },
+  '2026-01-19': { name: 'Tahun Baru Imlek 2577 Kongzili', color: '#ef4444' },
+  '2026-03-19': { name: 'Hari Suci Nyepi (Tahun Baru Saka 1948)', color: '#ef4444' },
+  '2026-04-03': { name: 'Wafat Yesus Kristus', color: '#ef4444' },
+  '2026-05-01': { name: 'Hari Buruh Internasional', color: '#ef4444' },
+  '2026-05-14': { name: 'Kenaikan Yesus Kristus', color: '#ef4444' },
+  '2026-06-01': { name: 'Hari Lahir Pancasila', color: '#ef4444' },
+  '2026-08-17': { name: 'Hari Kemerdekaan RI', color: '#ef4444' },
+  '2026-12-25': { name: 'Hari Raya Natal', color: '#ef4444' },
 };
+
+// ============================================================
+// DATA MINGGU AKADEMIK (Contoh - bisa diisi admin nanti)
+// ============================================================
+const DEFAULT_ACADEMIC_EVENTS = [
+  // { date: '2026-07-15', label: 'Rapat Guru', color: '#f59e0b', description: 'Rapat koordinasi' },
+  // { date: '2026-07-20', label: 'Ujian Tengah Semester', color: '#3b82f6', description: 'UTS Ganjil' },
+];
 
 // ============================================================
 // MAIN COMPONENT
@@ -44,10 +62,10 @@ const TeacherSchedule = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [loading, setLoading] = useState(true);
   const [schedules, setSchedules] = useState([]);
-  const [customEvents, setCustomEvents] = useState([]);
+  const [customEvents, setCustomEvents] = useState(DEFAULT_ACADEMIC_EVENTS);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [viewMode, setViewMode] = useState('monthly'); // 'monthly' | 'daily'
+  const [viewMode, setViewMode] = useState('monthly');
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [teacherData, setTeacherData] = useState(null);
   const [dailyCode, setDailyCode] = useState("");
@@ -85,58 +103,25 @@ const TeacherSchedule = () => {
 
   // Fetch data jadwal & custom events
   useEffect(() => {
-    if (!teacherData?.nama) return;
-
-    setLoading(true);
-
-    // 1. Ambil jadwal berdasarkan nama guru
-    const q = query(
-      collection(db, "jadwal_bimbel"),
-      where("teacherName", "==", teacherData.nama)
-    );
-
-    const unsubscribe = onSnapshot(q, (snap) => {
-      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setSchedules(data);
-      
-      // Hitung statistik
-      const today = getDateStr(new Date());
-      const todayClasses = data.filter(s => s.dateStr === today).length;
-      const totalStudents = new Set();
-      data.forEach(s => {
-        if (s.students) {
-          s.students.forEach(st => totalStudents.add(st.studentId || st.id));
-        }
-      });
-      
-      setTeacherStats({
-        totalStudents: totalStudents.size,
-        totalClasses: data.length,
-        todayClasses: todayClasses
-      });
-      
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching schedules:", error);
-      setLoading(false);
-    });
-
-    // 2. Ambil custom events dari admin
+    // 1. Ambil custom events dari admin (jika ada)
     const fetchCustomEvents = async () => {
       try {
         const docRef = doc(db, "settings", "calendar_events");
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const events = docSnap.data().events || [];
-          setCustomEvents(events);
+          setCustomEvents([...DEFAULT_ACADEMIC_EVENTS, ...events]);
+        } else {
+          setCustomEvents(DEFAULT_ACADEMIC_EVENTS);
         }
       } catch (e) {
         console.error("Error fetching custom events:", e);
+        setCustomEvents(DEFAULT_ACADEMIC_EVENTS);
       }
     };
     fetchCustomEvents();
 
-    // 3. Ambil daily code
+    // 2. Ambil daily code
     const fetchDailyCode = async () => {
       try {
         const today = getDateStr(new Date());
@@ -151,7 +136,71 @@ const TeacherSchedule = () => {
     };
     fetchDailyCode();
 
-    return () => unsubscribe();
+    // 3. Ambil jadwal (jika ada data guru)
+    if (!teacherData?.nama) {
+      setLoading(false);
+      return;
+    }
+
+    const teacherName = teacherData.nama;
+    
+    // Coba query dengan teacherName
+    const q1 = query(
+      collection(db, "jadwal_bimbel"),
+      where("teacherName", "==", teacherName)
+    );
+
+    // Coba query dengan booker (fallback)
+    const q2 = query(
+      collection(db, "jadwal_bimbel"),
+      where("booker", "==", teacherName)
+    );
+
+    const fetchSchedules = async () => {
+      try {
+        const [snap1, snap2] = await Promise.all([
+          getDocs(q1),
+          getDocs(q2)
+        ]);
+
+        const data1 = snap1.docs.map(d => ({ id: d.id, ...d.data() }));
+        const data2 = snap2.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // Gabungkan dan hindari duplikat
+        const merged = [...data1];
+        data2.forEach(item => {
+          if (!merged.find(d => d.id === item.id)) {
+            merged.push(item);
+          }
+        });
+
+        setSchedules(merged);
+        
+        // Hitung statistik
+        const today = getDateStr(new Date());
+        const todayClasses = merged.filter(s => s.dateStr === today).length;
+        const totalStudents = new Set();
+        merged.forEach(s => {
+          if (s.students) {
+            s.students.forEach(st => totalStudents.add(st.studentId || st.id));
+          }
+        });
+        
+        setTeacherStats({
+          totalStudents: totalStudents.size,
+          totalClasses: merged.length,
+          todayClasses: todayClasses
+        });
+        
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching schedules:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchSchedules();
+
   }, [teacherData]);
 
   // ============================================================
@@ -217,14 +266,12 @@ const TeacherSchedule = () => {
 
     return (
       <div style={styles.monthGrid}>
-        {/* Header hari */}
         {DAYS_ID.map((d, i) => (
           <div key={i} style={styles.monthDayHeader(i === 0)}>
             {d}
           </div>
         ))}
 
-        {/* Hari-hari dalam bulan */}
         {days.map((day, idx) => {
           if (!day) {
             return <div key={`empty-${idx}`} style={styles.monthDayEmpty}></div>;
@@ -239,7 +286,6 @@ const TeacherSchedule = () => {
           const isRed = holiday || isSunday(day);
           const isWeekend = isSunday(day);
 
-          // Warna latar belakang berdasarkan event
           let bgColor = 'white';
           let borderColor = 'transparent';
           let textColor = '#1e293b';
@@ -249,7 +295,7 @@ const TeacherSchedule = () => {
             textColor = 'white';
             borderColor = '#3b82f6';
           } else if (customEvent) {
-            bgColor = customEvent.color || '#fef3c7';
+            bgColor = customEvent.color + '20' || '#fef3c7';
             textColor = '#1e293b';
             borderColor = customEvent.color || '#f59e0b';
           } else if (holiday || isWeekend) {
@@ -275,7 +321,6 @@ const TeacherSchedule = () => {
                 <span style={styles.monthDayNumber(isSelected, textColor)}>
                   {day.getDate()}
                 </span>
-                {/* Indikator event */}
                 {customEvent && !isSelected && (
                   <div style={{...styles.eventIndicator, background: customEvent.color || '#f59e0b'}} 
                        title={customEvent.label} />
@@ -285,7 +330,6 @@ const TeacherSchedule = () => {
                 )}
               </div>
 
-              {/* Daftar jadwal di hari itu (max 2) */}
               {daySchedules.length > 0 && (
                 <div style={styles.monthDaySchedules}>
                   {daySchedules.slice(0, 2).map((s, i) => (
@@ -294,9 +338,6 @@ const TeacherSchedule = () => {
                       <span style={styles.monthDayTitle}>
                         {s.title || s.mapelName || 'Materi'}
                       </span>
-                      {s.teacherId && (
-                        <span style={styles.monthDayTeacherId}>#{s.teacherId?.slice(-4)}</span>
-                      )}
                     </div>
                   ))}
                   {daySchedules.length > 2 && (
@@ -305,10 +346,16 @@ const TeacherSchedule = () => {
                 </div>
               )}
 
-              {/* Label custom event */}
               {customEvent && (
                 <div style={styles.customEventLabel(customEvent.color || '#f59e0b')}>
                   {customEvent.label}
+                </div>
+              )}
+
+              {/* Tampilkan "Kosong" jika tidak ada jadwal dan bukan weekend */}
+              {!daySchedules.length && !isWeekend && !holiday && !customEvent && (
+                <div style={styles.emptyDaySlot}>
+                  <span style={styles.emptyDayText}>-</span>
                 </div>
               )}
             </div>
@@ -330,7 +377,6 @@ const TeacherSchedule = () => {
 
     return (
       <div style={styles.dailyView}>
-        {/* Header Hari */}
         <div style={styles.dailyHeader}>
           <div style={styles.dailyHeaderLeft}>
             <button onClick={() => {
@@ -365,28 +411,36 @@ const TeacherSchedule = () => {
         </div>
 
         {/* Status Hari */}
-        {(holiday || customEvent || isWeekend) && (
-          <div style={styles.dailyStatus}>
-            {holiday && (
-              <div style={styles.dailyStatusItem}>
-                <Flag size={14} color="#ef4444" />
-                <span style={styles.dailyStatusText}>Libur Nasional: {holiday.name}</span>
-              </div>
-            )}
-            {customEvent && (
-              <div style={{...styles.dailyStatusItem, background: customEvent.color + '20', borderColor: customEvent.color}}>
-                <div style={{...styles.dailyStatusDot, background: customEvent.color || '#f59e0b'}} />
-                <span style={styles.dailyStatusText}>{customEvent.label}</span>
-              </div>
-            )}
-            {isWeekend && !holiday && (
-              <div style={styles.dailyStatusItem}>
-                <AlertCircle size={14} color="#f59e0b" />
-                <span style={styles.dailyStatusText}>Hari Minggu / Libur</span>
-              </div>
-            )}
-          </div>
-        )}
+        <div style={styles.dailyStatus}>
+          {holiday && (
+            <div style={styles.dailyStatusItem}>
+              <Flag size={14} color="#ef4444" />
+              <span style={styles.dailyStatusText}>Libur Nasional: {holiday.name}</span>
+            </div>
+          )}
+          {customEvent && (
+            <div style={{...styles.dailyStatusItem, background: customEvent.color + '20', borderColor: customEvent.color}}>
+              <div style={{...styles.dailyStatusDot, background: customEvent.color || '#f59e0b'}} />
+              <span style={styles.dailyStatusText}>{customEvent.label}</span>
+              {customEvent.description && (
+                <span style={styles.dailyStatusDesc}>{customEvent.description}</span>
+              )}
+            </div>
+          )}
+          {isWeekend && !holiday && !customEvent && (
+            <div style={{...styles.dailyStatusItem, background: '#fef3c7', borderColor: '#f59e0b'}}>
+              <AlertCircle size={14} color="#f59e0b" />
+              <span style={styles.dailyStatusText}>Hari Minggu / Libur</span>
+            </div>
+          )}
+          {!holiday && !customEvent && !isWeekend && daySchedules.length === 0 && (
+            <div style={{...styles.dailyStatusItem, background: '#eff6ff', borderColor: '#3b82f6'}}>
+              <BookOpen size={14} color="#3b82f6" />
+              <span style={styles.dailyStatusText}>Belum ada jadwal pada hari ini</span>
+              <span style={styles.dailyStatusDesc}>Jadwal akan muncul setelah admin menjadwalkan</span>
+            </div>
+          )}
+        </div>
 
         {/* Kode Absensi */}
         {dailyCode && (
@@ -399,11 +453,14 @@ const TeacherSchedule = () => {
         {/* Daftar Jadwal */}
         {daySchedules.length === 0 ? (
           <div style={styles.dailyEmpty}>
-            <BookOpen size={40} color="#cbd5e1" />
-            <p>Tidak ada jadwal mengajar pada hari ini</p>
-            {!isWeekend && !holiday && (
-              <p style={styles.dailyEmptySub}>Selamat beristirahat! 🎉</p>
-            )}
+            <Calendar size={48} color="#cbd5e1" />
+            <h3 style={styles.dailyEmptyTitle}>Tidak Ada Jadwal</h3>
+            <p style={styles.dailyEmptyText}>
+              {isWeekend || holiday ? 'Hari libur, selamat beristirahat! 🎉' : 'Belum ada jadwal yang dijadwalkan untuk hari ini'}
+            </p>
+            <p style={styles.dailyEmptySub}>
+              {!isWeekend && !holiday && 'Silakan cek kembali nanti atau hubungi admin untuk penjadwalan'}
+            </p>
           </div>
         ) : (
           <div style={styles.dailySchedules}>
@@ -429,11 +486,6 @@ const TeacherSchedule = () => {
                       {s.program || 'Reguler'}
                     </span>
                     <span style={styles.dailyScheduleLevel}>{s.level || 'SD'}</span>
-                    {s.mapelId && (
-                      <span style={styles.dailyScheduleMapelId}>
-                        <Tag size={10} /> {s.mapelId}
-                      </span>
-                    )}
                     {s.teacherId && (
                       <span style={styles.dailyScheduleTeacherId}>
                         <Hash size={10} /> {s.teacherId}
@@ -455,7 +507,6 @@ const TeacherSchedule = () => {
                   </button>
                 </div>
 
-                {/* Preview siswa */}
                 {s.students && s.students.length > 0 && (
                   <div style={styles.dailyStudentPreview}>
                     {s.students.slice(0, 3).map((student, i) => (
@@ -566,17 +617,6 @@ const TeacherSchedule = () => {
   // ============================================================
   // MAIN RENDER
   // ============================================================
-  if (loading) {
-    return (
-      <TeacherLayout>
-        <div style={styles.loadingBox}>
-          <div style={styles.spinner}></div>
-          <p>Memuat jadwal...</p>
-        </div>
-      </TeacherLayout>
-    );
-  }
-
   return (
     <TeacherLayout>
       <div style={styles.container}>
@@ -585,10 +625,10 @@ const TeacherSchedule = () => {
         <div style={styles.header}>
           <div style={styles.headerLeft}>
             <h2 style={styles.pageTitle}>
-              <Calendar size={22} color="#3b82f6" /> Kalender Mengajar
+              <Calendar size={22} color="#3b82f6" /> Kalender Akademik
             </h2>
             <p style={styles.headerSub}>
-              Halo, <strong>{teacherData?.nama || 'Guru'}</strong> 👋
+              {teacherData?.nama ? `Halo, ${teacherData.nama} 👋` : 'Selamat datang di Kalender Akademik'}
             </p>
           </div>
           <div style={styles.headerRight}>
@@ -619,30 +659,32 @@ const TeacherSchedule = () => {
           </div>
         </div>
 
-        {/* STATS */}
-        <div style={styles.statsRow}>
-          <div style={styles.statCard}>
-            <div style={styles.statIcon}><BookOpen size={18} color="#3b82f6" /></div>
-            <div>
-              <div style={styles.statValue}>{teacherStats.totalClasses}</div>
-              <div style={styles.statLabel}>Total Kelas</div>
+        {/* STATS - hanya tampil jika ada data guru */}
+        {teacherData?.nama && (
+          <div style={styles.statsRow}>
+            <div style={styles.statCard}>
+              <div style={styles.statIcon}><BookOpen size={18} color="#3b82f6" /></div>
+              <div>
+                <div style={styles.statValue}>{teacherStats.totalClasses}</div>
+                <div style={styles.statLabel}>Total Kelas</div>
+              </div>
+            </div>
+            <div style={styles.statCard}>
+              <div style={styles.statIcon}><Users size={18} color="#8b5cf6" /></div>
+              <div>
+                <div style={styles.statValue}>{teacherStats.totalStudents}</div>
+                <div style={styles.statLabel}>Total Siswa</div>
+              </div>
+            </div>
+            <div style={styles.statCard}>
+              <div style={styles.statIcon}><Clock size={18} color="#f59e0b" /></div>
+              <div>
+                <div style={styles.statValue}>{teacherStats.todayClasses}</div>
+                <div style={styles.statLabel}>Hari Ini</div>
+              </div>
             </div>
           </div>
-          <div style={styles.statCard}>
-            <div style={styles.statIcon}><Users size={18} color="#8b5cf6" /></div>
-            <div>
-              <div style={styles.statValue}>{teacherStats.totalStudents}</div>
-              <div style={styles.statLabel}>Total Siswa</div>
-            </div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statIcon}><Clock size={18} color="#f59e0b" /></div>
-            <div>
-              <div style={styles.statValue}>{teacherStats.todayClasses}</div>
-              <div style={styles.statLabel}>Hari Ini</div>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* VIEW TOGGLE */}
         <div style={styles.viewToggle}>
@@ -673,7 +715,7 @@ const TeacherSchedule = () => {
           </div>
           <div style={styles.legendItem}>
             <div style={{...styles.legendDot, background: '#f59e0b'}}></div>
-            <span>Event Custom (Admin)</span>
+            <span>Event Akademik</span>
           </div>
           <div style={styles.legendItem}>
             <div style={{...styles.legendDot, background: '#ef4444'}}></div>
@@ -702,22 +744,6 @@ const styles = {
     maxWidth: '1400px',
     margin: '0 auto',
     width: '100%'
-  },
-
-  loadingBox: { 
-    textAlign: 'center', 
-    padding: 80, 
-    color: '#94a3b8',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 16
-  },
-  spinner: { 
-    width: 40, height: 40, 
-    border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', 
-    borderRadius: '50%', 
-    margin: '0 auto' 
   },
 
   header: { 
@@ -756,8 +782,7 @@ const styles = {
     cursor: 'pointer', 
     color: '#64748b', 
     borderRadius: 6,
-    transition: '0.2s',
-    ':hover': { background: '#f1f5f9' }
+    transition: '0.2s'
   },
   monthLabel: { 
     fontWeight: 'bold', 
@@ -775,11 +800,9 @@ const styles = {
     cursor: 'pointer', 
     fontWeight: 'bold', 
     fontSize: 12,
-    transition: '0.2s',
-    ':hover': { background: '#2563eb' }
+    transition: '0.2s'
   },
 
-  // Stats
   statsRow: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
@@ -841,7 +864,6 @@ const styles = {
     border: '1px solid #f1f5f9' 
   },
 
-  // Monthly View
   monthGrid: { 
     display: 'grid', 
     gridTemplateColumns: 'repeat(7, 1fr)', 
@@ -866,8 +888,7 @@ const styles = {
     flexDirection: 'column',
     transition: '0.2s', 
     position: 'relative',
-    color: color,
-    ':hover': { transform: 'scale(1.02)', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }
+    color: color
   }),
   monthDayTop: { display: 'flex', alignItems: 'center', gap: 4 },
   monthDayNumber: (selected, color) => ({ 
@@ -903,7 +924,6 @@ const styles = {
   },
   monthDayTime: { fontWeight: 'bold', color: '#3b82f6', fontSize: 7 },
   monthDayTitle: { fontSize: 7, color: '#1e293b', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' },
-  monthDayTeacherId: { fontSize: 6, color: '#94a3b8', fontFamily: 'monospace' },
   monthDayMore: { fontSize: 7, color: '#94a3b8', fontStyle: 'italic', paddingLeft: 4 },
   customEventLabel: (color) => ({ 
     fontSize: 7, 
@@ -918,6 +938,18 @@ const styles = {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap'
   }),
+  emptyDaySlot: { 
+    marginTop: 'auto', 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    padding: '4px 0'
+  },
+  emptyDayText: { 
+    fontSize: 8, 
+    color: '#d1d5db',
+    fontStyle: 'italic'
+  },
 
   // Daily View
   dailyView: { 
@@ -943,8 +975,7 @@ const styles = {
     padding: '6px 10px', 
     borderRadius: 6, 
     cursor: 'pointer',
-    transition: '0.2s',
-    ':hover': { background: '#e2e8f0' }
+    transition: '0.2s'
   },
   dailyDateInfo: { textAlign: 'center' },
   dailyDayName: { 
@@ -966,8 +997,7 @@ const styles = {
     cursor: 'pointer', 
     fontSize: 11, 
     fontWeight: 'bold',
-    transition: '0.2s',
-    ':hover': { background: '#2563eb' }
+    transition: '0.2s'
   },
   dailyBackBtn: { 
     padding: '6px 12px', 
@@ -981,8 +1011,7 @@ const styles = {
     display: 'flex', 
     alignItems: 'center', 
     gap: 4,
-    transition: '0.2s',
-    ':hover': { background: '#e2e8f0' }
+    transition: '0.2s'
   },
 
   dailyStatus: { 
@@ -1001,6 +1030,7 @@ const styles = {
   },
   dailyStatusDot: { width: 8, height: 8, borderRadius: '50%' },
   dailyStatusText: { fontSize: 13, fontWeight: '500' },
+  dailyStatusDesc: { fontSize: 11, color: '#64748b', marginLeft: 'auto' },
 
   dailyCodeBox: { 
     background: '#f0fdf4', 
@@ -1030,6 +1060,8 @@ const styles = {
     alignItems: 'center', 
     gap: 8 
   },
+  dailyEmptyTitle: { fontSize: 18, fontWeight: 'bold', color: '#64748b', margin: 0 },
+  dailyEmptyText: { fontSize: 14, color: '#94a3b8' },
   dailyEmptySub: { fontSize: 12, color: '#cbd5e1' },
 
   dailySchedules: { 
@@ -1042,8 +1074,7 @@ const styles = {
     padding: 16, 
     borderRadius: 12, 
     border: '1px solid #e2e8f0',
-    transition: '0.2s',
-    ':hover': { borderColor: '#3b82f6' }
+    transition: '0.2s'
   },
   dailyScheduleHeader: { 
     display: 'flex', 
@@ -1093,17 +1124,6 @@ const styles = {
     padding: '2px 8px', 
     borderRadius: 10 
   },
-  dailyScheduleMapelId: {
-    fontSize: 9,
-    color: '#8b5cf6',
-    background: '#ede9fe',
-    padding: '2px 6px',
-    borderRadius: 10,
-    fontFamily: 'monospace',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 2
-  },
   dailyScheduleTeacherId: { 
     fontSize: 9, 
     color: '#3b82f6',
@@ -1141,8 +1161,7 @@ const styles = {
     display: 'flex', 
     alignItems: 'center', 
     gap: 4,
-    transition: '0.2s',
-    ':hover': { background: '#c7d2fe' }
+    transition: '0.2s'
   },
   dailyStudentPreview: { 
     display: 'flex', 
@@ -1205,8 +1224,7 @@ const styles = {
     border: 'none', 
     cursor: 'pointer', 
     color: '#94a3b8',
-    transition: '0.2s',
-    ':hover': { color: '#ef4444' }
+    transition: '0.2s'
   },
   detailContent: { display: 'flex', flexDirection: 'column', gap: 8 },
   detailRow: { 
@@ -1284,7 +1302,6 @@ const styleSheet = document.createElement("style");
 styleSheet.textContent = `
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-  .hover\\:bg-gray-100:hover { background: #f1f5f9; }
 `;
 document.head.appendChild(styleSheet);
 
