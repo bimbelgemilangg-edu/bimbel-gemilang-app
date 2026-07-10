@@ -37,15 +37,13 @@ import ManagePoster from './pages/admin/portal-siswa/ManagePoster';
 import ManageSurvey from './pages/admin/portal-siswa/ManageSurvey';
 
 // === GURU ===
-import SidebarGuru from './components/SidebarGuru';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherHistory from './pages/teacher/TeacherHistory';
-// import TeacherManualInput from './pages/teacher/TeacherManualInput'; // ← DIHAPUS
-import TeacherAttendance from './pages/teacher/TeacherAttendance'; // ← BARU
+import TeacherAttendance from './pages/teacher/TeacherAttendance';
 import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade';
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager';
 import TeacherProfile from './pages/teacher/TeacherProfile';
-import TeacherSchedulePage from './pages/teacher/TeacherSchedule';
+import TeacherSchedule from './pages/teacher/TeacherSchedule'; // ← PERBAIKI: HAPUS "Page"
 import ModulManager from './pages/teacher/modul/ModulManager';
 import CekTugasSiswa from './pages/teacher/modul/CekTugasSiswa';
 import ManageMateriGuru from './pages/teacher/modul/ManageMateri';
@@ -92,41 +90,9 @@ const SiswaRoute = ({ children }) => {
 };
 
 // ============================================================
-// TEACHER LAYOUT
+// TEACHER LAYOUT - PAKAI YANG DARI FILE
 // ============================================================
-const TeacherLayout = ({ children }) => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 1024);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  return (
-    <div style={{ display: 'flex', minHeight: '100vh', width: '100%', background: '#f8fafc' }}>
-      <SidebarGuru />
-      <main style={{
-        flex: 1, marginLeft: isMobile ? 0 : '260px', transition: 'margin-left 0.3s ease',
-        width: isMobile ? '100%' : 'calc(100% - 260px)', maxWidth: '100vw', overflowX: 'hidden'
-      }}>
-        <header style={{
-          background: 'white', padding: '12px 20px', display: 'flex', justifyContent: 'space-between',
-          alignItems: 'center', borderBottom: '1px solid #eee', position: 'sticky', top: 0, zIndex: 99
-        }}>
-          <div style={{ paddingLeft: isMobile ? '50px' : '0px' }}>
-            <h4 style={{ margin: 0, fontSize: 13, color: '#1e293b' }}>Bimbel Gemilang</h4>
-            <small style={{ color: '#7f8c8d', fontSize: 10 }}>Portal Akademik</small>
-          </div>
-          <div style={{ width: 32, height: 32, background: '#3498db', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white', fontSize: 12 }}>G</div>
-        </header>
-        <div style={{ padding: isMobile ? 10 : 20, width: '100%', boxSizing: 'border-box', minHeight: 'calc(100vh - 60px)' }}>
-          {children}
-        </div>
-      </main>
-    </div>
-  );
-};
+import TeacherLayout from './pages/teacher/TeacherLayout';
 
 // ============================================================
 // SISWA LAYOUT
@@ -253,7 +219,7 @@ function App() {
         <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
 
         {/* ============================================================
-            GURU
+            GURU - PAKAI TeacherLayout DARI FILE
             ============================================================ */}
         
         {/* Dashboard & Profile */}
@@ -261,7 +227,7 @@ function App() {
         <Route path="/guru/profile" element={<GuruRoute><TeacherLayout><TeacherProfile /></TeacherLayout></GuruRoute>} />
         
         {/* Jadwal & Absensi */}
-        <Route path="/guru/schedule" element={<GuruRoute><TeacherLayout><TeacherSchedulePage /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/schedule" element={<GuruRoute><TeacherLayout><TeacherSchedule /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/attendance" element={<GuruRoute><TeacherLayout><TeacherAttendance /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/history" element={<GuruRoute><TeacherLayout><TeacherHistory /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/class-session" element={<GuruRoute><TeacherLayout><ClassSession /></TeacherLayout></GuruRoute>} />
@@ -293,23 +259,18 @@ function App() {
             REDIRECT & FALLBACK
             ============================================================ */}
         
-        {/* Admin Redirects */}
         <Route path="/admin/finance/income" element={<Navigate to="/admin/finance" replace />} />
         <Route path="/admin/finance/expense" element={<Navigate to="/admin/finance" replace />} />
         <Route path="/admin/finance/debt" element={<Navigate to="/admin/finance" replace />} />
         <Route path="/admin/teachers/schedule" element={<Navigate to="/admin/schedule" replace />} />
         
-        {/* Teacher Redirects - OLD PATHS → NEW PATHS */}
         <Route path="/teacher/*" element={<Navigate to="/guru/dashboard" replace />} />
         <Route path="/guru/manual-input" element={<Navigate to="/guru/attendance" replace />} />
         <Route path="/guru/manage-quiz" element={<Navigate to="/guru/modul/quiz" replace />} />
         <Route path="/guru/generate-raport" element={<Navigate to="/guru/grades/generate" replace />} />
         <Route path="/guru/modul/cek-tugas" element={<Navigate to="/guru/cek-tugas" replace />} />
-        
-        {/* Student Redirects */}
         <Route path="/siswa/raport" element={<Navigate to="/siswa/rapor" replace />} />
         
-        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
