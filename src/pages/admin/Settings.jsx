@@ -9,30 +9,30 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  // Struktur harga dengan nama paket custom
-  const [prices, setPrices] = useState({
+  // DEFAULT DATA PAKET
+  const defaultPrices = {
     sd: {
       packages: [
-        { id: 'paket1', name: 'Paket 1', price: 150000 },
-        { id: 'paket2', name: 'Paket 2', price: 200000 },
-        { id: 'paket3', name: 'Paket 3', price: 250000 },
-        { id: 'paket4', name: 'Paket 4', price: 300000 }
+        { id: 'paket1', name: 'Paket 1 SD', price: 150000 },
+        { id: 'paket2', name: 'Paket 2 SD', price: 200000 },
+        { id: 'paket3', name: 'Paket 3 SD', price: 250000 },
+        { id: 'paket4', name: 'Paket 4 SD', price: 300000 }
       ]
     },
     smp: {
       packages: [
-        { id: 'paket1', name: 'Paket 1', price: 200000 },
-        { id: 'paket2', name: 'Paket 2', price: 250000 },
-        { id: 'paket3', name: 'Paket 3', price: 300000 },
-        { id: 'paket4', name: 'Paket 4', price: 400000 }
+        { id: 'paket1', name: 'Paket 1 SMP', price: 200000 },
+        { id: 'paket2', name: 'Paket 2 SMP', price: 250000 },
+        { id: 'paket3', name: 'Paket 3 SMP', price: 300000 },
+        { id: 'paket4', name: 'Paket 4 SMP', price: 400000 }
       ]
     },
     sma: {
       packages: [
-        { id: 'paket1', name: 'Paket 1', price: 300000 },
-        { id: 'paket2', name: 'Paket 2', price: 350000 },
-        { id: 'paket3', name: 'Paket 3', price: 450000 },
-        { id: 'paket4', name: 'Paket 4', price: 550000 }
+        { id: 'paket1', name: 'Paket 1 SMA', price: 300000 },
+        { id: 'paket2', name: 'Paket 2 SMA', price: 350000 },
+        { id: 'paket3', name: 'Paket 3 SMA', price: 450000 },
+        { id: 'paket4', name: 'Paket 4 SMA', price: 550000 }
       ]
     },
     english: {
@@ -42,8 +42,9 @@ const Settings = () => {
         { id: 'professional', name: 'Professional', price: 300000 }
       ]
     }
-  });
+  };
 
+  const [prices, setPrices] = useState(defaultPrices);
   const [salaryRules, setSalaryRules] = useState({
     honorSD: 35000, honorSMP: 40000, honorSMA: 50000,
     bonusInggris: 10000, kompensasiPersen: 50, honorMinimal: 20000,
@@ -69,12 +70,36 @@ const Settings = () => {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
-          if (data.prices) setPrices(prev => ({...prev, ...data.prices}));
-          if (data.salaryRules) setSalaryRules(prev => ({...prev, ...data.salaryRules}));
+          
+          // Merge dengan default untuk memastikan struktur selalu ada
+          if (data.prices) {
+            setPrices(prev => ({
+              sd: { packages: data.prices.sd?.packages || prev.sd.packages },
+              smp: { packages: data.prices.smp?.packages || prev.smp.packages },
+              sma: { packages: data.prices.sma?.packages || prev.sma.packages },
+              english: { levels: data.prices.english?.levels || prev.english.levels }
+            }));
+          }
+          
+          if (data.salaryRules) {
+            setSalaryRules(prev => ({...prev, ...data.salaryRules}));
+          }
           if (data.ownerPin) setOwnerPin(data.ownerPin);
           if (data.biayaPendaftaran) setBiayaPendaftaran(data.biayaPendaftaran);
+        } else {
+          // Jika dokumen tidak ada, buat dengan default
+          await setDoc(doc(db, "settings", "global_config"), {
+            prices: defaultPrices,
+            salaryRules: salaryRules,
+            ownerPin: "2003",
+            biayaPendaftaran: 25000
+          });
         }
-      } catch (error) { console.error(error); }
+      } catch (error) { 
+        console.error("Error loading settings:", error);
+        // Gunakan default jika error
+        setPrices(defaultPrices);
+      }
       finally { setLoading(false); }
     };
     fetchSettings();
@@ -110,25 +135,27 @@ const Settings = () => {
 
   // === FUNGSI MANAJEMEN PAKET ===
   const addPackage = (jenjang) => {
-    const newId = `paket${prices[jenjang].packages.length + 1}`;
+    const currentPackages = prices[jenjang]?.packages || [];
+    const newId = `paket${currentPackages.length + 1}`;
     setPrices({
       ...prices,
       [jenjang]: {
         ...prices[jenjang],
         packages: [
-          ...prices[jenjang].packages,
-          { id: newId, name: `Paket ${prices[jenjang].packages.length + 1}`, price: 0 }
+          ...currentPackages,
+          { id: newId, name: `Paket ${currentPackages.length + 1}`, price: 0 }
         ]
       }
     });
   };
 
   const removePackage = (jenjang, index) => {
-    if (prices[jenjang].packages.length <= 1) {
+    const currentPackages = prices[jenjang]?.packages || [];
+    if (currentPackages.length <= 1) {
       alert("Minimal 1 paket harus ada!");
       return;
     }
-    const newPackages = prices[jenjang].packages.filter((_, i) => i !== index);
+    const newPackages = currentPackages.filter((_, i) => i !== index);
     setPrices({
       ...prices,
       [jenjang]: {
@@ -139,7 +166,8 @@ const Settings = () => {
   };
 
   const updatePackage = (jenjang, index, field, value) => {
-    const newPackages = [...prices[jenjang].packages];
+    const currentPackages = prices[jenjang]?.packages || [];
+    const newPackages = [...currentPackages];
     newPackages[index] = { ...newPackages[index], [field]: value };
     setPrices({
       ...prices,
@@ -151,25 +179,27 @@ const Settings = () => {
   };
 
   const addEnglishLevel = () => {
-    const newId = `level${prices.english.levels.length + 1}`;
+    const currentLevels = prices.english?.levels || [];
+    const newId = `level${currentLevels.length + 1}`;
     setPrices({
       ...prices,
       english: {
         ...prices.english,
         levels: [
-          ...prices.english.levels,
-          { id: newId, name: `Level ${prices.english.levels.length + 1}`, price: 0 }
+          ...currentLevels,
+          { id: newId, name: `Level ${currentLevels.length + 1}`, price: 0 }
         ]
       }
     });
   };
 
   const removeEnglishLevel = (index) => {
-    if (prices.english.levels.length <= 1) {
+    const currentLevels = prices.english?.levels || [];
+    if (currentLevels.length <= 1) {
       alert("Minimal 1 level harus ada!");
       return;
     }
-    const newLevels = prices.english.levels.filter((_, i) => i !== index);
+    const newLevels = currentLevels.filter((_, i) => i !== index);
     setPrices({
       ...prices,
       english: {
@@ -180,7 +210,8 @@ const Settings = () => {
   };
 
   const updateEnglishLevel = (index, field, value) => {
-    const newLevels = [...prices.english.levels];
+    const currentLevels = prices.english?.levels || [];
+    const newLevels = [...currentLevels];
     newLevels[index] = { ...newLevels[index], [field]: value };
     setPrices({
       ...prices,
@@ -303,18 +334,18 @@ const Settings = () => {
                   <Plus size={14} /> Tambah Paket
                 </button>
               </div>
-              {prices.sd.packages.map((pkg, idx) => (
-                <div key={pkg.id} style={styles.packageRow}>
+              {prices.sd?.packages?.map((pkg, idx) => (
+                <div key={pkg.id || idx} style={styles.packageRow}>
                   <input 
                     type="text" 
-                    value={pkg.name} 
+                    value={pkg.name || ''} 
                     onChange={e => updatePackage('sd', idx, 'name', e.target.value)}
                     style={styles.packageNameInput}
                     placeholder="Nama Paket"
                   />
                   <input 
                     type="number" 
-                    value={pkg.price} 
+                    value={pkg.price || 0} 
                     onChange={e => updatePackage('sd', idx, 'price', parseInt(e.target.value) || 0)}
                     style={styles.packagePriceInput}
                     placeholder="Harga"
@@ -336,18 +367,18 @@ const Settings = () => {
                   <Plus size={14} /> Tambah Paket
                 </button>
               </div>
-              {prices.smp.packages.map((pkg, idx) => (
-                <div key={pkg.id} style={styles.packageRow}>
+              {prices.smp?.packages?.map((pkg, idx) => (
+                <div key={pkg.id || idx} style={styles.packageRow}>
                   <input 
                     type="text" 
-                    value={pkg.name} 
+                    value={pkg.name || ''} 
                     onChange={e => updatePackage('smp', idx, 'name', e.target.value)}
                     style={styles.packageNameInput}
                     placeholder="Nama Paket"
                   />
                   <input 
                     type="number" 
-                    value={pkg.price} 
+                    value={pkg.price || 0} 
                     onChange={e => updatePackage('smp', idx, 'price', parseInt(e.target.value) || 0)}
                     style={styles.packagePriceInput}
                     placeholder="Harga"
@@ -369,18 +400,18 @@ const Settings = () => {
                   <Plus size={14} /> Tambah Paket
                 </button>
               </div>
-              {prices.sma.packages.map((pkg, idx) => (
-                <div key={pkg.id} style={styles.packageRow}>
+              {prices.sma?.packages?.map((pkg, idx) => (
+                <div key={pkg.id || idx} style={styles.packageRow}>
                   <input 
                     type="text" 
-                    value={pkg.name} 
+                    value={pkg.name || ''} 
                     onChange={e => updatePackage('sma', idx, 'name', e.target.value)}
                     style={styles.packageNameInput}
                     placeholder="Nama Paket"
                   />
                   <input 
                     type="number" 
-                    value={pkg.price} 
+                    value={pkg.price || 0} 
                     onChange={e => updatePackage('sma', idx, 'price', parseInt(e.target.value) || 0)}
                     style={styles.packagePriceInput}
                     placeholder="Harga"
@@ -402,18 +433,18 @@ const Settings = () => {
                   <Plus size={14} /> Tambah Level
                 </button>
               </div>
-              {prices.english.levels.map((lvl, idx) => (
-                <div key={lvl.id} style={styles.packageRow}>
+              {prices.english?.levels?.map((lvl, idx) => (
+                <div key={lvl.id || idx} style={styles.packageRow}>
                   <input 
                     type="text" 
-                    value={lvl.name} 
+                    value={lvl.name || ''} 
                     onChange={e => updateEnglishLevel(idx, 'name', e.target.value)}
                     style={styles.packageNameInput}
                     placeholder="Nama Level"
                   />
                   <input 
                     type="number" 
-                    value={lvl.price} 
+                    value={lvl.price || 0} 
                     onChange={e => updateEnglishLevel(idx, 'price', parseInt(e.target.value) || 0)}
                     style={styles.packagePriceInput}
                     placeholder="Harga"
