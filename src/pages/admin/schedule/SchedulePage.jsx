@@ -138,7 +138,7 @@ const SchedulePage = () => {
     const year = dateObj.getFullYear();
     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
     const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return year + '-' + month + '-' + day;
   };
 
   const getWeekDates = (currDate) => {
@@ -177,21 +177,36 @@ const SchedulePage = () => {
       const teachers = tSnap.docs.map(d => ({ 
         id: d.id, 
         ...d.data(),
-        guruId: d.data().guruId || `GURU-${String(d.id).slice(0, 4)}`
+        guruId: d.data().guruId || 'GURU-' + String(d.id).slice(0, 4)
       }));
       setAvailableTeachers(teachers);
 
       // 3. Fetch students
       const sSnap = await getDocs(collection(db, "students"));
-      const students = sSnap.docs.map(d => ({ 
-        id: d.id, 
-        ...d.data(),
-        studentId: d.data().studentId || d.id,
-        // 🔥 PASTIKAN JENJANG TERISI UNTUK FILTER
-        jenjang: d.data().jenjang || d.data().kelasSekolah?.includes('SD') ? 'SD' : 
-                 d.data().kelasSekolah?.includes('SMP') ? 'SMP' : 
-                 d.data().kelasSekolah?.includes('SMA') ? 'SMA' : 'Umum'
-      }));
+      const students = sSnap.docs.map(d => {
+        const data = d.data();
+        const kelasSekolah = data.kelasSekolah || '';
+        
+        let jenjang = data.jenjang || '';
+        if (!jenjang) {
+          if (kelasSekolah.includes('SD')) {
+            jenjang = 'SD';
+          } else if (kelasSekolah.includes('SMP')) {
+            jenjang = 'SMP';
+          } else if (kelasSekolah.includes('SMA')) {
+            jenjang = 'SMA';
+          } else {
+            jenjang = 'Umum';
+          }
+        }
+        
+        return {
+          id: d.id,
+          ...data,
+          studentId: data.studentId || d.id,
+          jenjang: jenjang
+        };
+      });
       setAvailableStudents(students);
 
       // 4. Fetch mapel
@@ -199,13 +214,14 @@ const SchedulePage = () => {
       const mapelData = mSnap.docs.map(d => ({ 
         id: d.id, 
         ...d.data(),
-        kodeMapel: d.data().kodeMapel || `MAPEL-${String(d.id).slice(0, 4)}`
+        kodeMapel: d.data().kodeMapel || 'MAPEL-' + String(d.id).slice(0, 4)
       }));
       setAvailableMapel(mapelData);
 
       // 5. Fetch daily code
       const todayStr = getSmartDateString(selectedDate);
-      const cSnap = await getDoc(doc(db, "settings", `daily_code_${todayStr}`));
+      const codeDocId = 'daily_code_' + todayStr;
+      const cSnap = await getDoc(doc(db, "settings", codeDocId));
       if (cSnap.exists()) {
         setDailyCode(cSnap.data().code);
         setTempCode(cSnap.data().code);
@@ -271,7 +287,7 @@ const SchedulePage = () => {
       } else {
         const existing = events.findIndex(e => e.date === eventForm.date);
         if (existing >= 0) {
-          if (!window.confirm(`Tanggal ${eventForm.date} sudah memiliki event. Ganti dengan yang baru?`)) {
+          if (!window.confirm('Tanggal ' + eventForm.date + ' sudah memiliki event. Ganti dengan yang baru?')) {
             return;
           }
           events[existing] = { ...eventForm };
@@ -291,7 +307,7 @@ const SchedulePage = () => {
   };
 
   const handleDeleteEvent = async (index) => {
-    if (!window.confirm(`Hapus event "${customEvents[index].label}"?`)) return;
+    if (!window.confirm('Hapus event "' + customEvents[index].label + '"?')) return;
     
     try {
       const events = customEvents.filter((_, i) => i !== index);
@@ -423,7 +439,7 @@ const SchedulePage = () => {
           tempDate.setDate(tempDate.getDate() + 7);
         }
         await batch.commit();
-        showAlert(`✅ ${loopCount} jadwal berhasil dibuat!`);
+        showAlert("✅ " + loopCount + " jadwal berhasil dibuat!");
       }
 
       setIsModalOpen(false);
@@ -436,7 +452,8 @@ const SchedulePage = () => {
   const handleUpdateCode = async () => {
     try {
       const todayStr = getSmartDateString(selectedDate);
-      await setDoc(doc(db, "settings", `daily_code_${todayStr}`), {
+      const codeDocId = 'daily_code_' + todayStr;
+      await setDoc(doc(db, "settings", codeDocId), {
         code: tempCode,
         updatedAt: new Date().toISOString()
       });
@@ -464,32 +481,34 @@ const SchedulePage = () => {
   // ============================================================
   const getFilteredStudents = () => {
     return availableStudents.filter(s => {
-      // 🔥 PASTIKAN STUDENT ID ADA
       const studentId = s.studentId || s.id;
       if (!studentId) return false;
       
-      // 🔥 FILTER JENJANG - LEBIH FLEKSIBEL
-      if (formData.level !== 'Umum') {
-        const kelas = s.kelasSekolah || '';
-        const jenjang = s.jenjang || '';
-        
-        // Cek apakah kelas mengandung level (misal: "8 SMP" mengandung "SMP")
-        // ATAU cek apakah jenjang sama dengan level
-        const matchKelas = kelas.includes(formData.level);
-        const matchJenjang = jenjang === formData.level;
-        
-        // Jika tidak match, skip siswa ini
-        if (!matchKelas && !matchJenjang) return false;
+      // 🔥 FILTER BERDASARKAN PILIHAN KELAS (studentFilterKelas)
+      if (studentFilterKelas !== 'Semua') {
+        // Jika filter kelas spesifik, cek apakah kelasSekolah sama persis
+        if (s.kelasSekolah !== studentFilterKelas) {
+          return false;
+        }
+      } else {
+        // Jika filter kelas "Semua", filter berdasarkan jenjang (formData.level)
+        if (formData.level !== 'Umum') {
+          const kelas = s.kelasSekolah || '';
+          const jenjang = s.jenjang || '';
+          
+          const matchKelas = kelas.includes(formData.level);
+          const matchJenjang = jenjang === formData.level;
+          
+          if (!matchKelas && !matchJenjang) return false;
+        }
       }
       
       // 🔥 SEARCH (nama atau ID)
-      const matchNama = (s.nama || '').toLowerCase().includes(studentSearch.toLowerCase());
-      const matchId = (studentId || '').toLowerCase().includes(studentSearch.toLowerCase());
+      const searchLower = studentSearch.toLowerCase();
+      const matchNama = (s.nama || '').toLowerCase().includes(searchLower);
+      const matchId = (studentId || '').toLowerCase().includes(searchLower);
       
-      // 🔥 FILTER KELAS
-      const matchKelasFilter = studentFilterKelas === "Semua" || s.kelasSekolah === studentFilterKelas;
-      
-      return (matchNama || matchId) && matchKelasFilter;
+      return matchNama || matchId;
     });
   };
 
@@ -505,7 +524,7 @@ const SchedulePage = () => {
 
     const days = [];
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} style={styles.miniDayEmpty}></div>);
+      days.push(<div key={'empty-' + i} style={styles.miniDayEmpty}></div>);
     }
 
     for (let d = 1; d <= daysInMonth; d++) {
@@ -523,7 +542,7 @@ const SchedulePage = () => {
           key={d}
           onClick={() => setSelectedDate(dateObj)}
           style={styles.miniDay(isSel, isRed, isToday, customEvent)}
-          title={customEvent ? `📌 ${customEvent.label}` : holiday ? `🔴 ${holiday.name}` : hasSchedule ? 'Ada jadwal' : ''}
+          title={customEvent ? '📌 ' + customEvent.label : holiday ? '🔴 ' + holiday.name : hasSchedule ? 'Ada jadwal' : ''}
         >
           <span style={styles.miniDayNum(isSel, isRed, isToday)}>{d}</span>
           {customEvent && !isSel && (
@@ -614,7 +633,7 @@ const SchedulePage = () => {
                         {item.students && item.students.length > 0 && (
                           <div style={styles.studentPreview}>
                             {item.students.slice(0, 3).map((s, i) => (
-                              <span key={i} style={styles.studentChip} title={`${s.nama} (${s.studentId || s.id})`}>
+                              <span key={i} style={styles.studentChip} title={s.nama + ' (' + (s.studentId || s.id) + ')'}>
                                 {s.nama?.split(' ')[0]}
                                 <span style={styles.studentIdChip}>#{s.studentId?.slice(-4) || s.id?.slice(-4)}</span>
                               </span>
@@ -1029,7 +1048,7 @@ const SchedulePage = () => {
                     <option value="">-- Pilih Guru --</option>
                     {availableTeachers.map(t => (
                       <option key={t.id} value={t.guruId || t.id}>
-                        {t.nama} {t.guruId ? `(${t.guruId})` : ''} {t.mapel ? `- ${t.mapel}` : ''}
+                        {t.nama} {t.guruId ? '(' + t.guruId + ')' : ''} {t.mapel ? '- ' + t.mapel : ''}
                       </option>
                     ))}
                   </select>
@@ -1061,6 +1080,7 @@ const SchedulePage = () => {
                   </label>
                   <p style={{fontSize: 9, color: '#94a3b8', marginTop: 2}}>
                     Menampilkan siswa jenjang {formData.level}
+                    {studentFilterKelas !== 'Semua' && ' • Filter: ' + studentFilterKelas}
                   </p>
 
                   <div style={{display: 'flex', gap: 6, marginTop: 6, marginBottom: 8}}>
@@ -1078,11 +1098,9 @@ const SchedulePage = () => {
                       </div>
                     ) : (
                       getFilteredStudents().slice(0, 50).map(s => {
-                        // 🔥 PASTIKAN ID UNIK
                         const studentId = s.studentId || s.id;
                         if (!studentId) return null;
                         
-                        // 🔥 CEK APAKAH SISWA SUDAH DIPILIH
                         const isChecked = formData.selectedStudents.some(id => id === studentId);
                         
                         return (
@@ -1241,7 +1259,11 @@ const SchedulePage = () => {
         {renderDetailModal()}
 
       </div>
-      <style>{`@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}`}</style>
+      <style>{`
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
     </div>
   );
 };
@@ -1331,9 +1353,9 @@ const styles = {
     aspectRatio: '1', borderRadius: 8, display: 'flex', flexDirection: 'column',
     alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
     position: 'relative', fontSize: 12, fontWeight: sel ? 'bold' : 'normal',
-    background: sel ? '#3b82f6' : red ? '#fee2e2' : event ? `${event.color}20` : 'white',
+    background: sel ? '#3b82f6' : red ? '#fee2e2' : event ? event.color + '20' : 'white',
     color: sel ? 'white' : red ? '#ef4444' : event ? event.color : today ? '#3b82f6' : '#334155',
-    border: today && !sel ? '2px solid #3b82f6' : red && !sel ? '1px solid #fecaca' : event && !sel ? `1px solid ${event.color}` : '1px solid transparent',
+    border: today && !sel ? '2px solid #3b82f6' : red && !sel ? '1px solid #fecaca' : event && !sel ? '1px solid ' + event.color : '1px solid transparent',
     transition: '0.2s'
   }),
   miniDayNum: (sel, red, today) => ({ fontSize: 12, fontWeight: sel || today ? 'bold' : 'normal' }),
@@ -1375,10 +1397,10 @@ const styles = {
   },
 
   weeklyDay: (today, holiday, event) => ({ 
-    background: event ? `${event}10` : 'white',
+    background: event ? event + '10' : 'white',
     borderRadius: 12, padding: 14, 
     border: holiday ? '2px solid #fecaca' : 
-           event ? `2px solid ${event}` :
+           event ? '2px solid ' + event :
            today ? '2px solid #3b82f6' : '1px solid #f1f5f9' 
   }),
   weeklyEventBadge: { 
