@@ -5,7 +5,7 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { 
   collection, addDoc, getDocs, query, orderBy, limit, 
-  doc, getDoc, serverTimestamp 
+  doc, getDoc, serverTimestamp, where 
 } from "firebase/firestore";
 import { 
   ArrowLeft, Save, User, BookOpen, Calendar, CreditCard, 
@@ -91,36 +91,54 @@ const AddStudent = () => {
     setTimeout(() => setAlertMsg(null), duration);
   };
 
-  // === GENERATE STUDENT ID ===
+  // ============================================================
+  // 🔥 GENERATE STUDENT ID (UNIK - NIM FORMAT)
+  // ============================================================
   const generateStudentId = async () => {
     try {
       const year = new Date().getFullYear();
+      const month = String(new Date().getMonth() + 1).padStart(2, '0');
+      
+      // Cari semua siswa dengan ID tahun ini
       const q = query(
         collection(db, "students"),
-        orderBy("studentId", "desc"),
-        limit(1)
+        where("studentId", ">=", `STD-${year}`),
+        where("studentId", "<=", `STD-${year}ZZZ`)
       );
       const snap = await getDocs(q);
       
-      let nextNumber = 1;
-      if (!snap.empty) {
-        const lastId = snap.docs[0].data().studentId;
-        if (lastId) {
-          const match = lastId.match(/STD-(\d{4})-?(\d+)/);
-          if (match && match[1] === year.toString()) {
-            nextNumber = parseInt(match[2]) + 1;
+      let maxNumber = 0;
+      snap.docs.forEach(doc => {
+        const data = doc.data();
+        if (data.studentId) {
+          // Cari format STD-YYYYNNNN
+          const match = data.studentId.match(/STD-${year}(\d{4})/);
+          if (match) {
+            const num = parseInt(match[1]);
+            if (num > maxNumber) maxNumber = num;
           }
         }
-      }
+      });
       
-      return `STD-${year}-${String(nextNumber).padStart(4, '0')}`;
+      const nextNumber = maxNumber + 1;
+      return `STD-${year}${String(nextNumber).padStart(4, '0')}`;
     } catch (e) {
       console.error("Error generate ID:", e);
-      const year = new Date().getFullYear();
-      const random = Math.floor(1000 + Math.random() * 9000);
-      return `STD-${year}-${random}`;
+      // Fallback: timestamp + random (PASTI UNIK)
+      const timestamp = Date.now().toString(36).toUpperCase();
+      const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+      return `STD-${timestamp}${random}`;
     }
   };
+
+  // ============================================================
+  // ALTERNATIF: GENERATE ID PASTI UNIK PAKAI TIMESTAMP
+  // ============================================================
+  // const generateStudentId = async () => {
+  //   const timestamp = Date.now().toString(36).toUpperCase();
+  //   const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+  //   return `STD-${timestamp}${random}`;
+  // };
 
   // === TANGGAL LAHIR ===
   const tahunOptions = [];
@@ -200,15 +218,9 @@ const AddStudent = () => {
   // === HITUNG TOTAL (DURASI x BULANAN) ===
   const hitungTotal = () => {
     const basePrice = getBasePrice();
-    // Kalikan dengan durasi bulan
     let total = basePrice * parseInt(formData.durasiBulan || 1);
-    
-    // Tambah biaya pendaftaran
     if (formData.biayaDaftar) total += biayaPendaftaran;
-    
-    // Kurangi diskon
     total -= parseInt(formData.diskon || 0);
-    
     return total > 0 ? total : 0;
   };
 
@@ -273,7 +285,6 @@ const AddStudent = () => {
       const tanggalLahirStr = getTanggalLahirStr();
       const today = new Date().toISOString().split('T')[0];
 
-      // Data paket
       const paketName = pkg.name || pkg.id;
       const detailProgram = formData.programType === 'English' 
         ? `English - ${paketName}` 
@@ -314,7 +325,7 @@ const AddStudent = () => {
         createdAt: serverTimestamp()
       };
 
-      const docRef = await addDoc(collection(db, "students"), studentData);
+      await addDoc(collection(db, "students"), studentData);
 
       // 2. SIMPAN PEMBAYARAN
       if (formData.metodeBayar === 'Tunai' || formData.metodeBayar === 'Transfer') {
