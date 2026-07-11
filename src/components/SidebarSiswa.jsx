@@ -130,6 +130,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
       <div style={{
         ...styles.sidebar,
         transform: isOpen || !isMobile ? 'translateX(0)' : 'translateX(-100%)',
+        position: isMobile ? 'fixed' : 'fixed', // ← TETAP FIXED
       }}>
         
         {/* HEADER */}
@@ -258,7 +259,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
 };
 
 // ============================================================
-// STYLES
+// STYLES - SEMUA DALAM OBJEK (TIDAK TERPUTUS)
 // ============================================================
 const styles = {
   sidebar: { 
@@ -267,7 +268,6 @@ const styles = {
     background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)',
     color: 'white', 
     padding: '20px 16px', 
-    position: 'fixed', 
     left: 0, 
     top: 0, 
     zIndex: 1000,
