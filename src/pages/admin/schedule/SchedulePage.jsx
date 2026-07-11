@@ -263,10 +263,8 @@ const SchedulePage = () => {
       let events = [...customEvents];
 
       if (editingEventIndex !== null) {
-        // Edit existing
         events[editingEventIndex] = { ...eventForm };
       } else {
-        // Check duplicate date
         const existing = events.findIndex(e => e.date === eventForm.date);
         if (existing >= 0) {
           if (!window.confirm(`Tanggal ${eventForm.date} sudah memiliki event. Ganti dengan yang baru?`)) {
@@ -458,17 +456,27 @@ const SchedulePage = () => {
   };
 
   // ============================================================
-  // FILTERED STUDENTS FOR MODAL
+  // FILTERED STUDENTS FOR MODAL - PERBAIKAN
   // ============================================================
   const getFilteredStudents = () => {
     return availableStudents.filter(s => {
+      // 🔥 PASTIKAN STUDENT ID ADA
+      const studentId = s.studentId || s.id;
+      if (!studentId) return false;
+      
+      // Filter jenjang
       if (formData.level !== 'Umum') {
         const siswaJenjang = s.kelasSekolah?.includes(formData.level) || s.jenjang === formData.level;
         if (!siswaJenjang) return false;
       }
+      
+      // Search
       const matchNama = (s.nama || '').toLowerCase().includes(studentSearch.toLowerCase());
-      const matchId = (s.studentId || '').toLowerCase().includes(studentSearch.toLowerCase());
+      const matchId = (studentId || '').toLowerCase().includes(studentSearch.toLowerCase());
+      
+      // Filter kelas
       const matchKelas = studentFilterKelas === "Semua" || s.kelasSekolah === studentFilterKelas;
+      
       return (matchNama || matchId) && matchKelas;
     });
   };
@@ -527,7 +535,6 @@ const SchedulePage = () => {
 
     return (
       <div style={styles.planetGrid}>
-        {/* Custom Event Banner */}
         {customEvent && (
           <div style={{...styles.eventBanner, background: customEvent.color || '#f59e0b'}}>
             <div style={styles.eventBannerContent}>
@@ -863,7 +870,6 @@ const SchedulePage = () => {
       <SidebarAdmin />
       <div style={styles.mainContent(isMobile)}>
         
-        {/* TOAST */}
         {alertMsg && <div style={styles.toast}>{alertMsg}</div>}
 
         {/* HEADER */}
@@ -926,7 +932,6 @@ const SchedulePage = () => {
                 {renderMiniCalendar()}
               </div>
 
-              {/* List Events */}
               {customEvents.filter(e => {
                 const d = new Date(e.date);
                 return d.getMonth() === currentMonth.getMonth() && d.getFullYear() === currentMonth.getFullYear();
@@ -979,7 +984,6 @@ const SchedulePage = () => {
               </div>
 
               <form onSubmit={handleSave} style={styles.modalBody}>
-                {/* ... form content same as before ... */}
                 <div style={styles.modalRow}>
                   <div style={styles.formGroup}>
                     <label style={styles.formLabel}>⏰ Mulai</label>
@@ -1036,50 +1040,166 @@ const SchedulePage = () => {
                   <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} style={styles.formInput} placeholder="Contoh: Matematika Pecahan" />
                 </div>
 
+                {/* ============================================================
+                    ASSIGN SISWA - VERSI PERBAIKAN
+                ============================================================ */}
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>👥 Assign Siswa ({formData.selectedStudents.length} dipilih)</label>
+                  <label style={styles.formLabel}>
+                    👥 Assign Siswa ({formData.selectedStudents.length} dipilih)
+                  </label>
+                  <p style={{fontSize: 9, color: '#94a3b8', marginTop: 2}}>
+                    Menampilkan siswa jenjang {formData.level}
+                  </p>
+
                   <div style={{display: 'flex', gap: 6, marginTop: 6, marginBottom: 8}}>
                     <select value={studentFilterKelas} onChange={e => setStudentFilterKelas(e.target.value)} style={{...styles.formSelect, flex: 1, fontSize: 11, padding: '6px 8px'}}>
                       {KELAS_LIST.map(k => <option key={k} value={k}>{k}</option>)}
                     </select>
                     <input type="text" placeholder="Cari nama/ID..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} style={{...styles.formInput, flex: 2, fontSize: 11, padding: '6px 8px'}} />
                   </div>
+
+                  {/* Student List - PERBAIKAN CHECKBOX */}
                   <div style={styles.studentSelectList}>
                     {getFilteredStudents().length === 0 ? (
                       <div style={{textAlign: 'center', padding: 15, color: '#94a3b8', fontSize: 11}}>
                         Tidak ada siswa ditemukan
                       </div>
                     ) : (
-                      getFilteredStudents().slice(0, 50).map(s => (
-                        <label key={s.id} style={styles.studentCheckItem}>
-                          <input
-                            type="checkbox"
-                            checked={formData.selectedStudents.includes(s.studentId || s.id)}
-                            onChange={(e) => {
-                              const sid = s.studentId || s.id;
-                              setFormData({
-                                ...formData,
-                                selectedStudents: e.target.checked 
-                                  ? [...formData.selectedStudents, sid] 
-                                  : formData.selectedStudents.filter(id => id !== sid)
-                              });
+                      getFilteredStudents().slice(0, 50).map(s => {
+                        // 🔥 PASTIKAN ID UNIK
+                        const studentId = s.studentId || s.id;
+                        if (!studentId) return null;
+                        
+                        // 🔥 CEK APAKAH SISWA SUDAH DIPILIH
+                        const isChecked = formData.selectedStudents.some(id => id === studentId);
+                        
+                        return (
+                          <label 
+                            key={studentId}
+                            style={{
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: 8, 
+                              padding: '8px 10px',
+                              borderBottom: '1px solid #f1f5f9',
+                              cursor: 'pointer',
+                              fontSize: 12,
+                              background: isChecked ? '#eef2ff' : 'transparent',
+                              borderRadius: '4px',
+                              transition: '0.2s'
                             }}
-                            style={{width: 16, height: 16, cursor: 'pointer', accentColor: '#3b82f6'}}
-                          />
-                          <div style={{flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                            <div>
-                              <span style={{fontSize: 12, fontWeight: '500'}}>{s.nama}</span>
-                              {s.studentId && (
-                                <span style={{fontSize: 9, color: '#94a3b8', marginLeft: 6, fontFamily: 'monospace'}}>
-                                  #{s.studentId}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                
+                                let newSelected = [...formData.selectedStudents];
+                                
+                                if (e.target.checked) {
+                                  if (!newSelected.includes(studentId)) {
+                                    newSelected.push(studentId);
+                                  }
+                                } else {
+                                  newSelected = newSelected.filter(id => id !== studentId);
+                                }
+                                
+                                setFormData({
+                                  ...formData,
+                                  selectedStudents: newSelected
+                                });
+                              }}
+                              style={{width: 16, height: 16, cursor: 'pointer', accentColor: '#3b82f6'}}
+                            />
+                            <div style={{flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                              <div>
+                                <span style={{fontSize: 12, fontWeight: isChecked ? '600' : '500'}}>
+                                  {s.nama}
                                 </span>
-                              )}
+                                {s.studentId && (
+                                  <span style={{fontSize: 9, color: '#94a3b8', marginLeft: 6, fontFamily: 'monospace'}}>
+                                    #{s.studentId}
+                                  </span>
+                                )}
+                              </div>
+                              <span style={{
+                                fontSize: 10,
+                                background: '#eef2ff',
+                                color: '#3b82f6',
+                                padding: '2px 6px',
+                                borderRadius: 8,
+                                fontWeight: 'bold'
+                              }}>
+                                {s.kelasSekolah || '-'}
+                              </span>
                             </div>
-                            <span style={styles.studentKelasChip}>{s.kelasSekolah || '-'}</span>
-                          </div>
-                        </label>
-                      ))
+                          </label>
+                        );
+                      })
                     )}
+                  </div>
+
+                  {/* 🔥 TOMBOL SELECT ALL / DESELECT ALL */}
+                  <div style={{display: 'flex', gap: 8, marginTop: 8}}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const allIds = getFilteredStudents()
+                          .slice(0, 50)
+                          .map(s => s.studentId || s.id)
+                          .filter(id => id);
+                        
+                        const currentSelected = formData.selectedStudents || [];
+                        const newSelected = [...new Set([...currentSelected, ...allIds])];
+                        
+                        setFormData({
+                          ...formData,
+                          selectedStudents: newSelected
+                        });
+                      }}
+                      style={{
+                        padding: '4px 12px',
+                        background: '#e0e7ff',
+                        border: 'none',
+                        borderRadius: 6,
+                        cursor: 'pointer',
+                        fontSize: 11,
+                        fontWeight: 'bold',
+                        color: '#3730a3'
+                      }}
+                    >
+                      Pilih Semua
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const visibleIds = getFilteredStudents()
+                          .slice(0, 50)
+                          .map(s => s.studentId || s.id)
+                          .filter(id => id);
+                        
+                        const newSelected = (formData.selectedStudents || [])
+                          .filter(id => !visibleIds.includes(id));
+                        
+                        setFormData({
+                          ...formData,
+                          selectedStudents: newSelected
+                        });
+                      }}
+                      style={{
+                        padding: '4px 12px',
+                        background: '#fee2e2',
+                        border: 'none',
+                        borderRadius: 6,
+                        cursor: 'pointer',
+                        fontSize: 11,
+                        fontWeight: 'bold',
+                        color: '#ef4444'
+                      }}
+                    >
+                      Hapus Semua
+                    </button>
                   </div>
                 </div>
 
@@ -1144,7 +1264,6 @@ const styles = {
     margin: '0 auto 15px' 
   },
 
-  // Header
   headerCard: { 
     background: 'linear-gradient(135deg, #1e293b, #334155)', 
     padding: 20, borderRadius: 16, marginBottom: 20, 
@@ -1176,7 +1295,6 @@ const styles = {
   codeInput: { width: 60, padding: '4px 8px', borderRadius: 4, textAlign: 'center', border: 'none', fontSize: 14, fontWeight: 'bold' },
   codeSaveBtn: { background: '#10b981', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontWeight: 'bold' },
 
-  // View Toggle
   viewToggle: { display: 'flex', gap: 8, marginBottom: 20 },
   viewBtn: (active) => ({ 
     flex: 1, padding: '10px', borderRadius: 10, border: 'none', 
@@ -1185,12 +1303,10 @@ const styles = {
     color: active ? 'white' : '#64748b', transition: '0.2s' 
   }),
 
-  // Content Row
   contentRow: (m) => ({ display: 'flex', gap: 20, flexDirection: m ? 'column' : 'row' }),
   miniCalendarCol: (m) => ({ width: m ? '100%' : '280px', flexShrink: 0 }),
   mainCol: { flex: 1, minWidth: 0 },
 
-  // Mini Calendar
   miniCalendarCard: { background: 'white', padding: 16, borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' },
   miniCalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   miniCalNav: { background: '#f1f5f9', border: 'none', padding: '4px 8px', borderRadius: 6, cursor: 'pointer' },
@@ -1216,7 +1332,6 @@ const styles = {
   legendItem: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 9, color: '#64748b' },
   legendDot: { width: 8, height: 8, borderRadius: '50%' },
   
-  // Event List
   eventList: { marginTop: 12, paddingTop: 10, borderTop: '1px solid #f1f5f9' },
   eventListTitle: { fontSize: 10, color: '#1e293b', display: 'block', marginBottom: 6 },
   eventListItem: { 
@@ -1228,16 +1343,9 @@ const styles = {
   eventListDate: { fontWeight: 'bold', color: '#64748b', minWidth: 20 },
   eventListLabel: { flex: 1, color: '#1e293b' },
   eventListActions: { display: 'flex', gap: 2 },
-  eventListEdit: { 
-    background: 'none', border: 'none', cursor: 'pointer', 
-    color: '#64748b', padding: '2px', borderRadius: 4 
-  },
-  eventListDelete: { 
-    background: 'none', border: 'none', cursor: 'pointer', 
-    color: '#ef4444', padding: '2px', borderRadius: 4 
-  },
+  eventListEdit: { background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '2px', borderRadius: 4 },
+  eventListDelete: { background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '2px', borderRadius: 4 },
 
-  // Event Banner
   eventBanner: { 
     padding: '12px 16px', borderRadius: 10, 
     display: 'flex', justifyContent: 'space-between', 
@@ -1254,7 +1362,6 @@ const styles = {
     display: 'flex', alignItems: 'center', gap: 4
   },
 
-  // Weekly
   weeklyDay: (today, holiday, event) => ({ 
     background: event ? `${event}10` : 'white',
     borderRadius: 12, padding: 14, 
@@ -1267,7 +1374,6 @@ const styles = {
     color: 'white', fontWeight: 'bold' 
   },
 
-  // Modal styles from previous
   overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000, backdropFilter: 'blur(2px)' },
   modal: (m) => ({ background: 'white', padding: m ? 20 : 25, borderRadius: m ? '20px 20px 0 0' : 20, width: m ? '100%' : '90%', maxWidth: '650px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', animation: 'slideUp 0.3s ease' }),
   detailModal: (m) => ({ background: 'white', padding: m ? 20 : 25, borderRadius: m ? '20px 20px 0 0' : 20, width: m ? '100%' : '90%', maxWidth: '550px', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', animation: 'slideUp 0.3s ease' }),
@@ -1280,13 +1386,10 @@ const styles = {
   formInput: { padding: '10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, width: '100%', boxSizing: 'border-box', background: '#f8fafc' },
   formSelect: { padding: '10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, width: '100%', boxSizing: 'border-box', background: 'white' },
   studentSelectList: { maxHeight: '200px', overflowY: 'auto', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', padding: '6px' },
-  studentCheckItem: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', fontSize: 12 },
-  studentKelasChip: { fontSize: 10, background: '#eef2ff', color: '#3b82f6', padding: '2px 6px', borderRadius: 8, fontWeight: 'bold' },
   modalFooter: { display: 'flex', gap: 10, marginTop: 12, paddingTop: 12, borderTop: '1px solid #f1f5f9' },
   btnCancel: { flex: 1, padding: 12, borderRadius: 10, border: '1px solid #e2e8f0', background: 'white', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', color: '#64748b' },
   btnSave: { flex: 2, padding: 12, borderRadius: 10, border: 'none', background: '#1e293b', color: 'white', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
 
-  // Event Color Picker
   colorPickerRow: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' },
   colorOption: (selected, color) => ({ 
     width: 32, height: 32, borderRadius: '50%', 
@@ -1299,7 +1402,6 @@ const styles = {
   eventPreviewBox: { marginTop: 8, padding: 12, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' },
   eventPreview: { padding: '8px 12px', borderRadius: 6, color: 'white', fontWeight: 'bold', fontSize: 13, textAlign: 'center' },
 
-  // Planet Grid
   planetGrid: { display: 'flex', flexDirection: 'column', gap: 15 },
   planetCard: { background: 'white', borderRadius: 14, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' },
   planetHeader: { background: '#f8fafc', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid #f1f5f9' },
@@ -1309,7 +1411,6 @@ const styles = {
   planetBody: { padding: 16, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 },
   emptyPlanet: { gridColumn: '1/-1', textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12, fontStyle: 'italic' },
 
-  // Schedule Item
   scheduleItem: { background: '#f8fafc', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0', transition: '0.2s' },
   scheduleTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   timeBadge: { fontSize: 12, fontWeight: '900', color: '#1e293b', background: '#e2e8f0', padding: '2px 8px', borderRadius: 6 },
@@ -1328,7 +1429,6 @@ const styles = {
   btnDetailSm: { flex: 1, padding: '6px', borderRadius: 6, background: '#e0e7ff', color: '#3730a3', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 },
   btnDeleteSm: { flex: 1, padding: '6px', borderRadius: 6, background: '#fee2e2', color: '#ef4444', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 },
 
-  // Weekly
   weeklyGrid: { display: 'flex', flexDirection: 'column', gap: 10 },
   weeklyHeader: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' },
   weeklyDayName: (red) => ({ fontSize: 13, fontWeight: 'bold', color: red ? '#ef4444' : '#1e293b' }),
@@ -1342,7 +1442,6 @@ const styles = {
   weeklyTeacher: { fontSize: 10, color: '#94a3b8' },
   weeklyIdBadge: { fontSize: 8, color: '#3b82f6', background: '#eef2ff', padding: '1px 4px', borderRadius: 4, fontFamily: 'monospace' },
 
-  // Detail Content
   detailContent: { display: 'flex', flexDirection: 'column', gap: 10 },
   detailRow: { display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f1f5f9', fontSize: 12 },
   detailDivider: { height: 1, background: '#e2e8f0', margin: '8px 0' },
