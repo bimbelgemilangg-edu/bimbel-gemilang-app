@@ -1,3 +1,4 @@
+```jsx
 // src/pages/admin/students/AddStudent.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -92,36 +93,84 @@ const AddStudent = () => {
   };
 
   // ============================================================
-  // 🔥 GENERATE STUDENT ID (UNIK - NIM FORMAT)
+  // 🔥 KODE KELAS UNTUK NIM
+  // ============================================================
+  const getKodeKelas = (kelasSekolah, programType) => {
+    if (programType === 'English') {
+      return 'EN';
+    }
+    
+    const kelasMap = {
+      '1 SD': '01', '2 SD': '02', '3 SD': '03',
+      '4 SD': '04', '5 SD': '05', '6 SD': '06',
+      '7 SMP': '07', '8 SMP': '08', '9 SMP': '09',
+      '10 SMA': '10', '11 SMA': '11', '12 SMA': '12',
+      'Alumni': 'AL',
+      'Umum': 'UM'
+    };
+    
+    return kelasMap[kelasSekolah] || '00';
+  };
+
+  // ============================================================
+  // 🔥 GENERATE STUDENT ID (PASTI UNIK + BERMAKNA)
   // ============================================================
   const generateStudentId = async () => {
     try {
-      const year = new Date().getFullYear();
-      const month = String(new Date().getMonth() + 1).padStart(2, '0');
+      // Ambil data dari form
+      const kelas = formData.kelasSekolah || '1 SD';
+      const program = formData.programType || 'Reguler';
       
-      // Cari semua siswa dengan ID tahun ini
+      // Kode kelas (2 digit)
+      const kodeKelas = getKodeKelas(kelas, program);
+      
+      // Tahun (2 digit) dan Bulan (2 digit)
+      const now = new Date();
+      const tahun = now.getFullYear().toString().slice(-2);
+      const bulan = String(now.getMonth() + 1).padStart(2, '0');
+      
+      // Prefix: STD-KKYYMM
+      const prefix = `STD-${kodeKelas}${tahun}${bulan}`;
+      
+      // 🔥 CARI NOMOR URUT TERAKHIR UNTUK PREFIX INI
       const q = query(
         collection(db, "students"),
-        where("studentId", ">=", `STD-${year}`),
-        where("studentId", "<=", `STD-${year}ZZZ`)
+        where("studentId", ">=", prefix),
+        where("studentId", "<=", `${prefix}ZZZZ`)
       );
       const snap = await getDocs(q);
       
-      let maxNumber = 0;
+      let maxUrut = 0;
       snap.docs.forEach(doc => {
         const data = doc.data();
         if (data.studentId) {
-          // Cari format STD-YYYYNNNN
-          const match = data.studentId.match(/STD-${year}(\d{4})/);
+          // Cari 4 digit terakhir
+          const match = data.studentId.match(new RegExp(`${prefix}(\\d{4})`));
           if (match) {
             const num = parseInt(match[1]);
-            if (num > maxNumber) maxNumber = num;
+            if (num > maxUrut) maxUrut = num;
           }
         }
       });
       
-      const nextNumber = maxNumber + 1;
-      return `STD-${year}${String(nextNumber).padStart(4, '0')}`;
+      // Generate ID lengkap
+      const nextUrut = maxUrut + 1;
+      const studentId = `${prefix}${String(nextUrut).padStart(4, '0')}`;
+      
+      // 🔥 DOUBLE CHECK: Pastikan ID benar-benar unik
+      const checkSnap = await getDocs(
+        query(collection(db, "students"), where("studentId", "==", studentId))
+      );
+      
+      if (!checkSnap.empty) {
+        // Jika ada duplikat (hampir tidak mungkin), generate ulang dengan timestamp
+        console.warn("⚠️ Duplikat ID terdeteksi! Generate ulang...");
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+        return `STD-${timestamp}${random}`;
+      }
+      
+      return studentId;
     } catch (e) {
       console.error("Error generate ID:", e);
       // Fallback: timestamp + random (PASTI UNIK)
@@ -130,15 +179,6 @@ const AddStudent = () => {
       return `STD-${timestamp}${random}`;
     }
   };
-
-  // ============================================================
-  // ALTERNATIF: GENERATE ID PASTI UNIK PAKAI TIMESTAMP
-  // ============================================================
-  // const generateStudentId = async () => {
-  //   const timestamp = Date.now().toString(36).toUpperCase();
-  //   const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-  //   return `STD-${timestamp}${random}`;
-  // };
 
   // === TANGGAL LAHIR ===
   const tahunOptions = [];
@@ -771,3 +811,4 @@ const styles = {
 };
 
 export default AddStudent;
+```
