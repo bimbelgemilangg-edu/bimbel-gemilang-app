@@ -1,3 +1,82 @@
+Error di baris 133 karena ada masalah dengan **template literal** di dalam `new RegExp()`. Coba perbaiki dengan cara ini:
+
+## Perbaikan Cepat - Ganti Fungsi `generateStudentId`:
+
+```jsx
+// ============================================================
+// 🔥 GENERATE STUDENT ID (PASTI UNIK + BERMAKNA)
+// ============================================================
+const generateStudentId = async () => {
+  try {
+    // Ambil data dari form
+    const kelas = formData.kelasSekolah || '1 SD';
+    const program = formData.programType || 'Reguler';
+    
+    // Kode kelas (2 digit)
+    const kodeKelas = getKodeKelas(kelas, program);
+    
+    // Tahun (2 digit) dan Bulan (2 digit)
+    const now = new Date();
+    const tahun = now.getFullYear().toString().slice(-2);
+    const bulan = String(now.getMonth() + 1).padStart(2, '0');
+    
+    // Prefix: STD-KKYYMM
+    const prefix = 'STD-' + kodeKelas + tahun + bulan;
+    
+    // 🔥 CARI NOMOR URUT TERAKHIR UNTUK PREFIX INI
+    const q = query(
+      collection(db, "students"),
+      where("studentId", ">=", prefix),
+      where("studentId", "<=", prefix + "ZZZZ")
+    );
+    const snap = await getDocs(q);
+    
+    let maxUrut = 0;
+    snap.docs.forEach(doc => {
+      const data = doc.data();
+      if (data.studentId) {
+        // Cari 4 digit terakhir - PAKAI cara manual
+        const idStr = data.studentId;
+        if (idStr.startsWith(prefix)) {
+          const suffix = idStr.substring(prefix.length);
+          const num = parseInt(suffix);
+          if (!isNaN(num) && num > maxUrut) {
+            maxUrut = num;
+          }
+        }
+      }
+    });
+    
+    // Generate ID lengkap
+    const nextUrut = maxUrut + 1;
+    const studentId = prefix + String(nextUrut).padStart(4, '0');
+    
+    // 🔥 DOUBLE CHECK: Pastikan ID benar-benar unik
+    const checkSnap = await getDocs(
+      query(collection(db, "students"), where("studentId", "==", studentId))
+    );
+    
+    if (!checkSnap.empty) {
+      // Jika ada duplikat, generate ulang dengan timestamp
+      console.warn("⚠️ Duplikat ID terdeteksi! Generate ulang...");
+      const timestamp = Date.now().toString(36).toUpperCase();
+      const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+      return 'STD-' + timestamp + random;
+    }
+    
+    return studentId;
+  } catch (e) {
+    console.error("Error generate ID:", e);
+    // Fallback: timestamp + random (PASTI UNIK)
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return 'STD-' + timestamp + random;
+  }
+};
+```
+
+## Atau Full Code AddStudent.jsx yang Sudah Diperbaiki:
+
 ```jsx
 // src/pages/admin/students/AddStudent.jsx
 import React, { useState, useEffect } from 'react';
@@ -130,13 +209,13 @@ const AddStudent = () => {
       const bulan = String(now.getMonth() + 1).padStart(2, '0');
       
       // Prefix: STD-KKYYMM
-      const prefix = `STD-${kodeKelas}${tahun}${bulan}`;
+      const prefix = 'STD-' + kodeKelas + tahun + bulan;
       
       // 🔥 CARI NOMOR URUT TERAKHIR UNTUK PREFIX INI
       const q = query(
         collection(db, "students"),
         where("studentId", ">=", prefix),
-        where("studentId", "<=", `${prefix}ZZZZ`)
+        where("studentId", "<=", prefix + "ZZZZ")
       );
       const snap = await getDocs(q);
       
@@ -145,17 +224,20 @@ const AddStudent = () => {
         const data = doc.data();
         if (data.studentId) {
           // Cari 4 digit terakhir
-          const match = data.studentId.match(new RegExp(`${prefix}(\\d{4})`));
-          if (match) {
-            const num = parseInt(match[1]);
-            if (num > maxUrut) maxUrut = num;
+          const idStr = data.studentId;
+          if (idStr.startsWith(prefix)) {
+            const suffix = idStr.substring(prefix.length);
+            const num = parseInt(suffix);
+            if (!isNaN(num) && num > maxUrut) {
+              maxUrut = num;
+            }
           }
         }
       });
       
       // Generate ID lengkap
       const nextUrut = maxUrut + 1;
-      const studentId = `${prefix}${String(nextUrut).padStart(4, '0')}`;
+      const studentId = prefix + String(nextUrut).padStart(4, '0');
       
       // 🔥 DOUBLE CHECK: Pastikan ID benar-benar unik
       const checkSnap = await getDocs(
@@ -167,7 +249,7 @@ const AddStudent = () => {
         console.warn("⚠️ Duplikat ID terdeteksi! Generate ulang...");
         const timestamp = Date.now().toString(36).toUpperCase();
         const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-        return `STD-${timestamp}${random}`;
+        return 'STD-' + timestamp + random;
       }
       
       return studentId;
@@ -176,7 +258,7 @@ const AddStudent = () => {
       // Fallback: timestamp + random (PASTI UNIK)
       const timestamp = Date.now().toString(36).toUpperCase();
       const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-      return `STD-${timestamp}${random}`;
+      return 'STD-' + timestamp + random;
     }
   };
 
