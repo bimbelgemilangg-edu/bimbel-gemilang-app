@@ -6,7 +6,7 @@ import { db } from '../../../firebase';
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { 
   ArrowLeft, Save, User, BookOpen, Calendar, CreditCard, 
-  IdCard, Phone, Edit3, X, AlertCircle, Hash, Tag
+  IdCard, Phone, Edit3, X, AlertCircle, Hash
 } from 'lucide-react';
 
 const EditStudent = () => {
@@ -75,8 +75,8 @@ const EditStudent = () => {
     namaIbu: '',
     programType: 'Reguler', 
     jenjang: 'SD', 
-    paketId: null,      // ← PAKAI paketId (bukan paket)
-    englishLevelId: null, // ← PAKAI englishLevelId (bukan englishLevel)
+    paketId: null,
+    englishLevelId: null,
     tanggalMulai: new Date().toISOString().split('T')[0], 
     durasiBulan: 3,
     username: '', 
@@ -109,7 +109,7 @@ const EditStudent = () => {
   };
 
   // ============================================================
-  // FETCH DATA
+  // FETCH DATA - PERBAIKAN: HAPUS pricing dari dependency
   // ============================================================
   useEffect(() => {
     const fetchData = async () => {
@@ -118,20 +118,28 @@ const EditStudent = () => {
         // 1. Fetch settings (pricing)
         const settingsRef = doc(db, "settings", "global_config");
         const settingsSnap = await getDoc(settingsRef);
+        let pricingData = {
+          sd: { packages: [] },
+          smp: { packages: [] },
+          sma: { packages: [] },
+          english: { levels: [] }
+        };
+        
         if (settingsSnap.exists()) {
           const data = settingsSnap.data();
           if (data.prices) {
-            setPricing({
+            pricingData = {
               sd: data.prices.sd || { packages: [] },
               smp: data.prices.smp || { packages: [] },
               sma: data.prices.sma || { packages: [] },
               english: data.prices.english || { levels: [] }
-            });
+            };
           }
           if (data.biayaPendaftaran) {
             setBiayaPendaftaran(data.biayaPendaftaran);
           }
         }
+        setPricing(pricingData);
 
         // 2. Fetch student data
         const docRef = doc(db, "students", id);
@@ -144,7 +152,7 @@ const EditStudent = () => {
 
         const data = docSnap.data();
         
-        // Parse paketId dan englishLevelId dari data
+        // Parse paketId dari data
         let paketId = null;
         let englishLevelId = null;
         let jenjang = 'SD';
@@ -153,13 +161,11 @@ const EditStudent = () => {
           englishLevelId = data.paket || data.englishLevel || 'kids';
           jenjang = 'English';
         } else {
-          // Cari paketId yang match dengan data.paket atau data.paketNama
-          const pkgName = data.paket || data.paketNama || '';
-          const jenjangKey = data.jenjang || 'SD';
-          const packages = pricing[jenjangKey.toLowerCase()]?.packages || [];
-          const found = packages.find(p => p.name === pkgName || p.id === pkgName);
-          paketId = found?.id || data.paket || 'paket1';
           jenjang = data.jenjang || 'SD';
+          const pkgName = data.paket || data.paketNama || '';
+          const packages = pricingData[jenjang.toLowerCase()]?.packages || [];
+          const found = packages.find(p => p.name === pkgName || p.id === pkgName);
+          paketId = found?.id || data.paket || null;
         }
 
         const initial = {
@@ -195,8 +201,9 @@ const EditStudent = () => {
       }
       finally { setLoading(false); }
     };
+    
     if (id) fetchData();
-  }, [id, pricing]);
+  }, [id]); // ← HANYA [id], BUKAN [id, pricing]!
 
   // ============================================================
   // HELPER FUNCTIONS
@@ -696,19 +703,6 @@ const EditStudent = () => {
                 <span>Sisa Tagihan</span>
                 <span style={{fontWeight: 'bold', color: sisaTagihan > 0 ? '#ef4444' : '#10b981'}}>
                   Rp {sisaTagihan.toLocaleString()}
-                </span>
-              </div>
-              <div style={styles.financeRow}>
-                <span>Status</span>
-                <span style={{
-                  padding: '4px 12px', 
-                  borderRadius: 10, 
-                  fontSize: 11, 
-                  fontWeight: 'bold',
-                  background: formData.isBlocked ? '#fee2e2' : '#dcfce7',
-                  color: formData.isBlocked ? '#ef4444' : '#166534'
-                }}>
-                  {formData.isBlocked ? '🚫 Blokir' : '✅ Aktif'}
                 </span>
               </div>
             </div>
