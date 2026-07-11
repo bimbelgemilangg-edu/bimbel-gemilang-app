@@ -186,7 +186,11 @@ const SchedulePage = () => {
       const students = sSnap.docs.map(d => ({ 
         id: d.id, 
         ...d.data(),
-        studentId: d.data().studentId || d.id
+        studentId: d.data().studentId || d.id,
+        // 🔥 PASTIKAN JENJANG TERISI UNTUK FILTER
+        jenjang: d.data().jenjang || d.data().kelasSekolah?.includes('SD') ? 'SD' : 
+                 d.data().kelasSekolah?.includes('SMP') ? 'SMP' : 
+                 d.data().kelasSekolah?.includes('SMA') ? 'SMA' : 'Umum'
       }));
       setAvailableStudents(students);
 
@@ -456,7 +460,7 @@ const SchedulePage = () => {
   };
 
   // ============================================================
-  // FILTERED STUDENTS FOR MODAL - PERBAIKAN
+  // 🔥 FILTERED STUDENTS FOR MODAL - PERBAIKAN LENGKAP
   // ============================================================
   const getFilteredStudents = () => {
     return availableStudents.filter(s => {
@@ -464,20 +468,28 @@ const SchedulePage = () => {
       const studentId = s.studentId || s.id;
       if (!studentId) return false;
       
-      // Filter jenjang
+      // 🔥 FILTER JENJANG - LEBIH FLEKSIBEL
       if (formData.level !== 'Umum') {
-        const siswaJenjang = s.kelasSekolah?.includes(formData.level) || s.jenjang === formData.level;
-        if (!siswaJenjang) return false;
+        const kelas = s.kelasSekolah || '';
+        const jenjang = s.jenjang || '';
+        
+        // Cek apakah kelas mengandung level (misal: "8 SMP" mengandung "SMP")
+        // ATAU cek apakah jenjang sama dengan level
+        const matchKelas = kelas.includes(formData.level);
+        const matchJenjang = jenjang === formData.level;
+        
+        // Jika tidak match, skip siswa ini
+        if (!matchKelas && !matchJenjang) return false;
       }
       
-      // Search
+      // 🔥 SEARCH (nama atau ID)
       const matchNama = (s.nama || '').toLowerCase().includes(studentSearch.toLowerCase());
       const matchId = (studentId || '').toLowerCase().includes(studentSearch.toLowerCase());
       
-      // Filter kelas
-      const matchKelas = studentFilterKelas === "Semua" || s.kelasSekolah === studentFilterKelas;
+      // 🔥 FILTER KELAS
+      const matchKelasFilter = studentFilterKelas === "Semua" || s.kelasSekolah === studentFilterKelas;
       
-      return (matchNama || matchId) && matchKelas;
+      return (matchNama || matchId) && matchKelasFilter;
     });
   };
 
