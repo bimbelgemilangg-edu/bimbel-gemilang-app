@@ -65,6 +65,7 @@ import StudentGrades from './pages/student/StudentGrades';
 import StudentAttendanceSiswa from './pages/student/StudentAttendance';
 import StudentElearning from './pages/student/StudentElearning';
 import StudentModuleView from './pages/student/StudentModuleView';
+import StudentQuizView from './pages/student/StudentQuizView';
 
 // ============================================================
 // ROUTE GUARDS
@@ -155,7 +156,7 @@ const SiswaLayout = ({ children }) => {
 };
 
 // ============================================================
-// KUIS SISWA WRAPPER
+// 🔥 KUIS SISWA WRAPPER - UNTUK HALAMAN KUIS TERPISAH
 // ============================================================
 const KuisSiswaWrapper = () => {
   const { id } = useParams();
@@ -163,7 +164,32 @@ const KuisSiswaWrapper = () => {
     uid: localStorage.getItem('studentId'),
     id: localStorage.getItem('studentId'),
     nama: localStorage.getItem('studentName'),
-    kelasSekolah: localStorage.getItem('studentGrade') || ''
+    kelasSekolah: localStorage.getItem('studentGrade') || '',
+    studentId: localStorage.getItem('studentId'),
+    nim: localStorage.getItem('studentNim') || localStorage.getItem('studentId')
+  };
+
+  return (
+    <StudentQuizView
+      modulId={id}
+      studentData={studentData}
+      onBack={() => window.history.back()}
+    />
+  );
+};
+
+// ============================================================
+// 🔥 MODUL SISWA WRAPPER - UNTUK LIHAT MODUL
+// ============================================================
+const ModulSiswaWrapper = () => {
+  const { id } = useParams();
+  const studentData = {
+    uid: localStorage.getItem('studentId'),
+    id: localStorage.getItem('studentId'),
+    nama: localStorage.getItem('studentName'),
+    kelasSekolah: localStorage.getItem('studentGrade') || '',
+    studentId: localStorage.getItem('studentId'),
+    nim: localStorage.getItem('studentNim') || localStorage.getItem('studentId')
   };
 
   return (
@@ -244,7 +270,10 @@ function App() {
         <Route path="/guru/modul/quiz" element={<GuruRoute><TeacherLayout><ManageQuiz /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/cek-tugas" element={<GuruRoute><TeacherLayout><CekTugasSiswa /></TeacherLayout></GuruRoute>} />
 
-        {/* SISWA */}
+        {/* ============================================================
+            SISWA - DENGAN WRAPPER UNTUK MODUL & KUIS
+            ============================================================ */}
+        
         <Route path="/siswa/dashboard" element={<SiswaRoute><SiswaLayout><StudentDashboard /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/materi" element={<SiswaRoute><SiswaLayout><StudentElearning /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/jadwal" element={<SiswaRoute><SiswaLayout><StudentSchedule /></SiswaLayout></SiswaRoute>} />
@@ -253,6 +282,11 @@ function App() {
         <Route path="/siswa/smart-rapor" element={<SiswaRoute><SiswaLayout><StudentSmartReport /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/leaderboard" element={<SiswaRoute><SiswaLayout><StudentLeaderboard /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/absensi" element={<SiswaRoute><SiswaLayout><StudentAttendanceSiswa /></SiswaLayout></SiswaRoute>} />
+        
+        {/* 🔥 HALAMAN KHUSUS UNTUK LIHAT MODUL */}
+        <Route path="/siswa/modul/:id" element={<SiswaRoute><SiswaLayout><ModulSiswaWrapper /></SiswaLayout></SiswaRoute>} />
+        
+        {/* 🔥 HALAMAN KHUSUS UNTUK KERJAKAN KUIS */}
         <Route path="/siswa/kuis/:id" element={<SiswaRoute><SiswaLayout><KuisSiswaWrapper /></SiswaLayout></SiswaRoute>} />
 
         {/* ============================================================

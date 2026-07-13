@@ -1,5 +1,6 @@
 // src/pages/student/StudentModuleView.jsx
 import React, { useState, useEffect, useReducer } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { 
   doc, getDoc, collection, addDoc, serverTimestamp, 
@@ -9,7 +10,7 @@ import {
   ArrowLeft, Clock, FileText, CheckCircle, Eye, 
   Link as LinkIcon, HelpCircle, Trash2, X, Send, 
   Download, BookOpen, Hash, Tag, File, Upload, User,
-  AlertCircle, Lock, Shield
+  AlertCircle, Lock, Shield, Zap, Award
 } from 'lucide-react';
 import { uploadElearningFile } from '../../services/uploadService';
 
@@ -55,8 +56,8 @@ const getTimeRemaining = (deadline) => {
 const initialState = {
   modul: null, loading: true, error: null, hasAccess: false,
   uploading: {}, submittedTasks: {},
-  quizAnswers: {}, quizSubmitted: false, textAnswers: {},
-  activeTab: 'materi', previewImage: null,
+  quizAnswers: {}, quizSubmitted: false, quizScore: null,
+  textAnswers: {}, activeTab: 'materi', previewImage: null,
   pendingFile: null, pendingBlockId: null, showPreviewModal: false,
 };
 
@@ -70,6 +71,7 @@ function reducer(state, action) {
     case 'SET_SUBMITTED_TASKS': return { ...state, submittedTasks: action.payload };
     case 'SET_QUIZ_ANSWERS': return { ...state, quizAnswers: { ...state.quizAnswers, [action.qId]: action.value } };
     case 'SET_QUIZ_SUBMITTED': return { ...state, quizSubmitted: action.payload };
+    case 'SET_QUIZ_SCORE': return { ...state, quizScore: action.payload };
     case 'SET_TEXT_ANSWERS': return { ...state, textAnswers: { ...state.textAnswers, [action.blockId]: action.value } };
     case 'SET_ACTIVE_TAB': return { ...state, activeTab: action.payload };
     case 'SET_PREVIEW_IMAGE': return { ...state, previewImage: action.payload };
@@ -83,6 +85,7 @@ function reducer(state, action) {
 // MAIN COMPONENT
 // ============================================================
 const StudentModuleView = ({ modulId, onBack, studentData }) => {
+  const navigate = useNavigate();
   const [state, dispatch] = useReducer(reducer, initialState);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [studentNim, setStudentNim] = useState('');
@@ -160,7 +163,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         
         // 3. Cek jika modul adalah milik guru (akses untuk semua)
         if (!hasAccess && !data.sendToSpecificStudents) {
-          // Jika tidak ada filter spesifik, dan target kelas/program cocok
           const targetKelas = data.targetKelas || 'Semua';
           const targetKategori = data.targetKategori || 'Semua';
           
@@ -203,7 +205,12 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
             }; 
           });
           dispatch({ type:'SET_SUBMITTED_TASKS', payload: completed });
-          if (!snapKuis.empty) dispatch({ type:'SET_QUIZ_SUBMITTED', payload: true });
+          
+          if (!snapKuis.empty) {
+            dispatch({ type:'SET_QUIZ_SUBMITTED', payload: true });
+            const kuisData = snapKuis.docs[0].data();
+            dispatch({ type:'SET_QUIZ_SCORE', payload: kuisData.score || 0 });
+          }
         }
         
       } catch(e) { 
@@ -274,37 +281,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     } catch(e) { alert('❌ '+e.message); }
   };
 
-  const handleQuizSubmit = async () => {
-    const qd = state.modul?.quizData||[];
-    if (!qd.length) return alert("Tidak ada soal.");
-    const un = qd.filter(q => state.quizAnswers[q.id]===undefined);
-    if (un.length) return alert(`❌ ${un.length} soal belum dijawab.`);
-    if (!confirm("Kirim jawaban kuis?")) return;
-    
-    try {
-      let correct = 0;
-      qd.forEach(q => { if (state.quizAnswers[q.id]===q.correctAnswer) correct++; });
-      const score = Math.round((correct/qd.length)*100);
-      
-      await addDoc(collection(db,"jawaban_kuis"), {
-        modulId, 
-        modulTitle: state.modul.title, 
-        studentNim,
-        studentName: localStorage.getItem('studentName')||'Siswa',
-        studentClass: studentKelas || '',
-        subject: state.modul.subject||state.modul.kodeMapel||'',
-        answers: state.quizAnswers, 
-        correctAnswers: correct, 
-        totalQuestions: qd.length, 
-        score,
-        submittedAt: serverTimestamp(), 
-        status:"Dinilai"
-      });
-      dispatch({ type:'SET_QUIZ_SUBMITTED', payload: true });
-      alert(`🎉 Nilai: ${score}\nBenar: ${correct}/${qd.length}`);
-    } catch(e) { alert('❌ '+e.message); }
-  };
-
   // ===== RENDER MEDIA =====
   const renderMedia = (block) => {
     const url = block.content || block.fileUrl || block.url || block.file;
@@ -349,6 +325,9 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
 
   const tugasBlocks = (state.modul?.blocks||[]).filter(b=>b.type==='assignment');
   const materiBlocks = (state.modul?.blocks||[]).filter(b=>b.type!=='assignment');
+  const hasQuiz = (state.modul?.quizData||[]).length > 0;
+  const quizSubmitted = state.quizSubmitted;
+  const quizScore = state.quizScore;
 
   // ===== RENDER UTAMA =====
   return (
@@ -385,9 +364,9 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
             <Send size={14}/> Tugas ({Object.keys(state.submittedTasks).length}/{tugasBlocks.length})
           </button>
         )}
-        {(state.modul?.quizData||[]).length>0 && (
+        {hasQuiz && (
           <button className={`tbt ${state.activeTab==='kuis'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'kuis'})}>
-            <HelpCircle size={14}/> Kuis {state.quizSubmitted?'✅':''}
+            <HelpCircle size={14}/> Kuis {quizSubmitted ? '✅' : ''}
           </button>
         )}
       </div>
@@ -426,23 +405,86 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           );
         }) : <div className="em">Tidak ada tugas</div>)}
 
-        {/* KUIS */}
-        {state.activeTab==='kuis' && (state.modul?.quizData||[]).length>0 && (
+        {/* ============================================================
+            🔥 KUIS - TAMPILAN BARU DENGAN TOMBOL KERJAKAN
+            ============================================================ */}
+        {state.activeTab==='kuis' && hasQuiz && (
           <div className="cd kq">
-            <div className="kqh"><div className="kqi"><HelpCircle size={20} color="white"/></div><h2>Kuis Evaluasi</h2></div>
-            {state.modul.quizData.map((q,qi)=>(
-              <div key={q.id} className="kqi2">
-                <p className="kqq"><span className="kqn">{qi+1}</span>{q.question}</p>
-                <div className="kqo">
-                  {q.options.map((opt,oi)=>(
-                    <button key={oi} disabled={state.quizSubmitted} onClick={()=>dispatch({type:'SET_QUIZ_ANSWERS',qId:q.id,value:oi})} className={`kqob ${state.quizAnswers[q.id]===oi?'sel':''}`}>
-                      {String.fromCharCode(65+oi)}. {opt}
-                    </button>
-                  ))}
-                </div>
+            <div className="kqh">
+              <div className="kqi"><HelpCircle size={20} color="white"/></div>
+              <h2>Kuis Evaluasi</h2>
+            </div>
+            
+            {/* Info Kuis */}
+            <div style={styles.quizInfo}>
+              <div style={styles.quizInfoItem}>
+                <BookOpen size={14} color="#3b82f6" />
+                <span>{state.modul.quizData.length} Soal</span>
               </div>
-            ))}
-            {!state.quizSubmitted ? <button onClick={handleQuizSubmit} className="bkq">Kirim Jawaban</button> : <div className="kqd"><CheckCircle size={18}/> Kuis Selesai</div>}
+              {state.modul.timeLimit > 0 && (
+                <div style={styles.quizInfoItem}>
+                  <Clock size={14} color="#f59e0b" />
+                  <span>{state.modul.timeLimit} Menit</span>
+                </div>
+              )}
+              {state.modul.maxAttempts > 1 && (
+                <div style={styles.quizInfoItem}>
+                  <Zap size={14} color="#8b5cf6" />
+                  <span>Maks {state.modul.maxAttempts}x</span>
+                </div>
+              )}
+              {state.modul.difficulty && (
+                <div style={styles.quizInfoItem}>
+                  <Award size={14} color="#10b981" />
+                  <span>Tingkat {state.modul.difficulty}</span>
+                </div>
+              )}
+              {quizSubmitted && (
+                <div style={{...styles.quizInfoItem, background: '#dcfce7', borderColor: '#10b981'}}>
+                  <CheckCircle size={14} color="#10b981" />
+                  <span>Nilai: {quizScore || 0}</span>
+                </div>
+              )}
+            </div>
+
+            {/* 🔥 TOMBOL KERJAKAN KUIS */}
+            {!quizSubmitted ? (
+              <div style={styles.quizAction}>
+                <button 
+                  onClick={() => navigate(`/siswa/kuis/${modulId}`)}
+                  style={styles.btnStartQuiz}
+                >
+                  <Zap size={20} /> Mulai Kuis
+                </button>
+                <p style={styles.quizHint}>
+                  ⚡ Klik tombol di atas untuk memulai kuis. 
+                  {state.modul.timeLimit > 0 && ` Waktu: ${state.modul.timeLimit} menit.`}
+                  {state.modul.maxAttempts > 1 && ` Bisa dikerjakan ${state.modul.maxAttempts} kali.`}
+                </p>
+              </div>
+            ) : (
+              <div className="kqd">
+                <CheckCircle size={18} color="#10b981" />
+                Kuis Selesai 
+                {quizScore !== null && <span style={{ fontWeight: 900, marginLeft: 8 }}>• Nilai: {quizScore}</span>}
+                <button 
+                  onClick={() => navigate(`/siswa/kuis/${modulId}`)}
+                  style={{
+                    marginLeft: 12,
+                    padding: '6px 16px',
+                    background: '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 8,
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontSize: 11
+                  }}
+                >
+                  Lihat Detail
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -520,15 +562,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         .kqh{display:flex;align-items:center;gap:12px;margin-bottom:20px}
         .kqi{background:#673ab7;padding:10px;border-radius:12px}
         .kqh h2{font-size:20px}
-        .kqi2{margin-bottom:18px}
-        .kqq{font-size:15px;font-weight:800;color:#1e293b;display:flex;gap:10px;align-items:flex-start}
-        .kqn{background:#f1f5f9;color:#673ab7;min-width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-        .kqo{display:grid;gap:6px;margin-top:10px}
-        .kqob{padding:12px 16px;border-radius:10px;border:2px solid #e2e8f0;text-align:left;font-size:14px;font-weight:700;cursor:pointer;background:#f8fafc;color:#1e293b;transition:.2s}
-        .kqob.sel{background:#673ab7;color:#fff;border-color:#673ab7}
-        .kqob:disabled{opacity:.7;cursor:not-allowed}
-        .bkq{width:100%;padding:14px;border-radius:12px;border:0;background:#673ab7;color:#fff;font-weight:800;font-size:15px;cursor:pointer;margin-top:15px}
-        .kqd{text-align:center;padding:14px;background:#f0fdf4;color:#15803d;border-radius:12px;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px}
+        .kqd{text-align:center;padding:14px;background:#f0fdf4;color:#15803d;border-radius:12px;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
         .md{border-radius:12px;overflow:hidden;border:1px solid #e2e8f0}
         .mdh{display:flex;align-items:center;gap:12px;padding:14px;background:#f8fafc;border-bottom:1px solid #e2e8f0}
         .mdh b{font-size:14px;font-weight:700}.mdh small{font-size:10px;color:#94a3b8;display:block}
@@ -556,6 +590,54 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       `}</style>
     </>
   );
+};
+
+// ============================================================
+// STYLES TAMBAHAN
+// ============================================================
+const styles = {
+  quizInfo: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16
+  },
+  quizInfoItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '6px 12px',
+    background: '#f8fafc',
+    borderRadius: 8,
+    border: '1px solid #e2e8f0',
+    fontSize: 12,
+    color: '#1e293b',
+    fontWeight: 600
+  },
+  quizAction: {
+    textAlign: 'center',
+    padding: '20px 0'
+  },
+  btnStartQuiz: {
+    padding: '14px 40px',
+    background: 'linear-gradient(135deg, #673ab7, #8b5cf6)',
+    color: 'white',
+    border: 'none',
+    borderRadius: 12,
+    cursor: 'pointer',
+    fontWeight: 700,
+    fontSize: 18,
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 10,
+    boxShadow: '0 4px 20px rgba(103,58,183,0.35)',
+    transition: 'transform 0.2s'
+  },
+  quizHint: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginTop: 12
+  }
 };
 
 export default StudentModuleView;

@@ -11,7 +11,8 @@ import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
 import { 
   BookOpen, Calendar, Clock, GraduationCap, Menu, ChevronRight, 
   ClipboardList, X, Camera, User, MapPin, Send, CheckCircle, 
-  Megaphone, TrendingUp, Trophy, ArrowRight, AlertCircle
+  Megaphone, TrendingUp, Trophy, ArrowRight, AlertCircle, 
+  HelpCircle, Zap, Award, Lock
 } from 'lucide-react';
 
 const StudentDashboard = () => {
@@ -24,20 +25,47 @@ const StudentDashboard = () => {
   const [studentProfile, setStudentProfile] = useState(null);
   const [todaySchedules, setTodaySchedules] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [allModuls, setAllModuls] = useState([]);
   const [raportSummary, setRaportSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
   const [authReady, setAuthReady] = useState(false);
   const [authError, setAuthError] = useState(false);
+  const [studentKelas, setStudentKelas] = useState('');
+  const [studentProgram, setStudentProgram] = useState('');
+  const [studentNim, setStudentNim] = useState('');
 
   // ============================================================
-  // 🔥 HELPER: Format Tanggal SAMA dengan StudentSchedule
+  // 🔥 HELPER: Format Tanggal
   // ============================================================
   const getSmartDateString = (dateObj) => {
     const year = dateObj.getFullYear();
     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
     const day = String(dateObj.getDate()).padStart(2, '0');
     return year + '-' + month + '-' + day;
+  };
+
+  // ============================================================
+  // 🔥 CEK AKSES SISWA KE MODUL
+  // ============================================================
+  const checkStudentAccess = (modul, studentId, studentKelas, studentProgram) => {
+    // 1. Cek jika modul dikirim ke siswa tertentu
+    if (modul.sendToSpecificStudents) {
+      const studentIds = modul.studentIds || [];
+      const selectedStudentIds = (modul.selectedStudents || []).map(s => s.studentId || s.id);
+      const allTargetIds = [...studentIds, ...selectedStudentIds];
+      
+      return allTargetIds.includes(studentId) || allTargetIds.includes(studentNim);
+    }
+    
+    // 2. Cek berdasarkan kelas dan program
+    const targetKelas = modul.targetKelas || 'Semua';
+    const targetKategori = modul.targetKategori || 'Semua';
+    
+    const matchKelas = targetKelas === 'Semua' || targetKelas === studentKelas;
+    const matchProgram = targetKategori === 'Semua' || targetKategori === studentProgram;
+    
+    return matchKelas && matchProgram;
   };
 
   useEffect(() => { 
@@ -82,16 +110,24 @@ const StudentDashboard = () => {
     
     const fetchData = async () => {
       try {
-        // 🔥 AMBIL JADWAL HARI INI DENGAN FORMAT TANGGAL YANG SAMA
         const todayStr = getSmartDateString(new Date());
         const periode = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
         
-        // Ambil jadwal hari ini
+        // 🔥 AMBIL PROFIL SISWA
+        const sSnap = await getDoc(doc(db, "students", studentId)).catch(() => null);
+        if (sSnap?.exists()) {
+          const data = sSnap.data();
+          setStudentProfile(data);
+          setStudentKelas(data.kelasSekolah || '');
+          setStudentProgram(data.kategori || 'Reguler');
+          setStudentNim(data.studentId || data.id || studentId);
+        }
+        
+        // 🔥 AMBIL JADWAL HARI INI
         const schedSnap = await getDocs(
           query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr))
         ).catch(() => ({ docs: [] }));
         
-        // Filter jadwal yang mengandung studentId
         const fetchedSchedules = schedSnap.docs
           .map(d => ({ id: d.id, ...d.data() }))
           .filter(sch => sch.students?.some(s => s.id === studentId || s === studentId || s.studentId === studentId))
@@ -99,11 +135,39 @@ const StudentDashboard = () => {
           .slice(0, 5);
         setTodaySchedules(fetchedSchedules);
         
-        // Ambil profil siswa
-        const sSnap = await getDoc(doc(db, "students", studentId)).catch(() => null);
-        if (sSnap?.exists()) setStudentProfile(sSnap.data());
+        // 🔥 AMBIL SEMUA MODUL
+        const modulSnap = await getDocs(
+          query(collection(db, "bimbel_modul"), orderBy("updatedAt", "desc"), limit(20))
+        ).catch(() => ({ docs: [] }));
         
-        // Ambil raport
+        const allModulsData = modulSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setAllModuls(allModulsData);
+        
+        // 🔥 FILTER MODUL YANG BISA DIAKSES SISWA
+        const studentIdVal = studentId;
+        const kelasVal = studentKelas || localStorage.getItem('studentKelas') || '';
+        const programVal = studentProgram || localStorage.getItem('studentProgram') || 'Reguler';
+        
+        const accessibleModuls = allModulsData.filter(modul => {
+          // Skip modul yang statusnya arsip
+          if (modul.status === 'arsip') return false;
+          
+          // Cek akses
+          return checkStudentAccess(modul, studentIdVal, kelasVal, programVal);
+        });
+        
+        // 🔥 AMBIL TUGAS & KUIS YANG BISA DIAKSES
+        const fetchedTasks = accessibleModuls
+          .filter(m => {
+            // Tampilkan jika ada quiz atau assignment
+            const hasQuiz = (m.quizData || []).length > 0;
+            const hasAssignment = (m.blocks || []).some(b => b.type === 'assignment');
+            return hasQuiz || hasAssignment;
+          })
+          .slice(0, 3);
+        setTasks(fetchedTasks);
+        
+        // 🔥 AMBIL RAPORT
         const raportSnap = await getDocs(
           query(collection(db, RAPORT_COLLECTIONS.FINAL), where("studentId", "==", studentId), where("periode", "==", periode), limit(1))
         ).catch(() => ({ docs: [] }));
@@ -116,16 +180,6 @@ const StudentDashboard = () => {
             periode: periode
           });
         }
-        
-        // Ambil tugas ringan
-        try {
-          const modulSnap = await getDocs(query(collection(db, "bimbel_modul"), orderBy("updatedAt", "desc"), limit(3)));
-          const fetchedTasks = modulSnap.docs
-            .map(d => ({ id: d.id, ...d.data() }))
-            .filter(m => m.quizData?.length > 0 || m.blocks?.some(b => b.type === 'assignment'))
-            .slice(0, 3);
-          setTasks(fetchedTasks);
-        } catch (e) { setTasks([]); }
         
       } catch (err) { console.error('Error:', err); } 
       finally { setLoading(false); }
@@ -210,6 +264,7 @@ const StudentDashboard = () => {
             <h1 style={{ margin:0, fontSize: isMobile ? 20 : 26, fontWeight:800, color:'#1e293b' }}>Halo, {studentName}! 👋</h1>
             <p style={{ color:'#64748b', marginTop:4, fontSize:13 }}>
               {studentProfile ? (studentProfile.kategori || 'Reguler') + ' - Kelas ' + (studentProfile.kelasSekolah || '-') : ''}
+              {studentNim && <span style={{ marginLeft:8, fontSize:10, background:'#f1f5f9', padding:'2px 8px', borderRadius:4 }}>🆔 {studentNim}</span>}
             </p>
           </div>
           {!isMobile && (
@@ -250,7 +305,7 @@ const StudentDashboard = () => {
         {/* GRID UTAMA */}
         <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:16 }}>
           
-          {/* 🔥 JADWAL HARI INI - SUDAH DIPERBAIKI */}
+          {/* JADWAL HARI INI */}
           <div style={{ background:'white', padding:18, borderRadius:14, border:'1px solid #e2e8f0' }}>
             <h3 style={{ margin:'0 0 14px', fontSize:15, fontWeight:700, display:'flex', alignItems:'center', gap:8 }}><Calendar size={18} color="#3b82f6" /> Jadwal Hari Ini</h3>
             {todaySchedules.length === 0 ? (
@@ -266,22 +321,95 @@ const StudentDashboard = () => {
             ))}
           </div>
 
-          {/* TUGAS TERBARU */}
+          {/* 🔥 TUGAS & KUIS - HANYA YANG DITUJUKAN */}
           <div style={{ background:'white', padding:18, borderRadius:14, border:'1px solid #e2e8f0' }}>
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:14 }}>
-              <h3 style={{ margin:0, fontSize:15, fontWeight:700, display:'flex', alignItems:'center', gap:8 }}><ClipboardList size={18} color="#9b59b6" /> Tugas & Kuis</h3>
-              <button onClick={() => { localStorage.setItem('selectedModuleId', tasks[0]?.id || ''); setActiveMenu('materi'); }} style={{ background:'none', border:'none', color:'#3b82f6', fontWeight:600, fontSize:11, cursor:'pointer' }}>Lihat Semua →</button>
+              <h3 style={{ margin:0, fontSize:15, fontWeight:700, display:'flex', alignItems:'center', gap:8 }}>
+                <ClipboardList size={18} color="#9b59b6" /> Tugas & Kuis
+              </h3>
+              <button 
+                onClick={() => navigate('/siswa/materi')} 
+                style={{ background:'none', border:'none', color:'#3b82f6', fontWeight:600, fontSize:11, cursor:'pointer' }}
+              >
+                Lihat Semua →
+              </button>
             </div>
             {tasks.length === 0 ? (
-              <div style={{ textAlign:'center', padding:20, color:'#94a3b8', fontSize:12 }}>📭 Belum ada tugas</div>
-            ) : tasks.map((task, i) => (
-              <div key={i} style={{ padding:10, background:'#f8fafc', borderRadius:8, marginBottom:6, borderLeft:'3px solid #9b59b6', cursor:'pointer' }} onClick={() => { localStorage.setItem('selectedModuleId', task.id); setActiveMenu('materi'); }}>
-                <div style={{ fontWeight:700, fontSize:13 }}>{task.title}</div>
-                <div style={{ fontSize:10, color:'#64748b' }}>
-                  {task.quizData?.length > 0 ? '📝 ' + task.quizData.length + ' soal' : '📓 Tugas'} • {task.subject || 'Umum'}
-                </div>
+              <div style={{ textAlign:'center', padding:20, color:'#94a3b8', fontSize:12 }}>
+                📭 Belum ada tugas atau kuis untuk Anda
               </div>
-            ))}
+            ) : tasks.map((task, i) => {
+              const hasQuiz = (task.quizData || []).length > 0;
+              const hasAssignment = (task.blocks || []).some(b => b.type === 'assignment');
+              const isTargeted = task.sendToSpecificStudents;
+              const targetInfo = isTargeted ? '🔒 Khusus' : `${task.targetKelas || 'Semua'} • ${task.targetKategori || 'Semua'}`;
+              
+              return (
+                <div 
+                  key={i} 
+                  style={{ 
+                    padding: '10px 12px', 
+                    background: '#f8fafc', 
+                    borderRadius: 8, 
+                    marginBottom: 6, 
+                    borderLeft: `3px solid ${hasQuiz ? '#673ab7' : '#f59e0b'}`,
+                    cursor: 'pointer',
+                    transition: '0.2s'
+                  }} 
+                  onClick={() => {
+                    localStorage.setItem('selectedModuleId', task.id);
+                    navigate('/siswa/materi');
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontWeight: 700, fontSize: 13 }}>{task.title}</div>
+                    {hasQuiz && (
+                      <span style={{ 
+                        fontSize: 9, 
+                        padding: '2px 8px', 
+                        borderRadius: 10, 
+                        background: '#673ab7', 
+                        color: 'white',
+                        fontWeight: 700 
+                      }}>
+                        Kuis
+                      </span>
+                    )}
+                    {hasAssignment && !hasQuiz && (
+                      <span style={{ 
+                        fontSize: 9, 
+                        padding: '2px 8px', 
+                        borderRadius: 10, 
+                        background: '#f59e0b', 
+                        color: 'white',
+                        fontWeight: 700 
+                      }}>
+                        Tugas
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 10, color: '#64748b', display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 2 }}>
+                    <span>{task.subject || 'Umum'}</span>
+                    <span>•</span>
+                    <span>{targetInfo}</span>
+                    {hasQuiz && <span>• 📝 {task.quizData.length} soal</span>}
+                  </div>
+                  {isTargeted && (
+                    <div style={{ 
+                      fontSize: 8, 
+                      color: '#f59e0b', 
+                      background: '#fef3c7', 
+                      padding: '1px 6px', 
+                      borderRadius: 4,
+                      display: 'inline-block',
+                      marginTop: 2
+                    }}>
+                      🔒 Dikirim khusus
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -292,6 +420,7 @@ const StudentDashboard = () => {
             <div>
               <div style={{ fontWeight:'bold', fontSize:14 }}>{studentName}</div>
               <div style={{ fontSize:11, color:'#64748b' }}>{studentProfile?.kelasSekolah || '-'} • {studentProfile?.kategori || 'Reguler'}</div>
+              {studentNim && <div style={{ fontSize:9, color:'#94a3b8', fontFamily:'monospace' }}>ID: {studentNim}</div>}
             </div>
             <button onClick={() => navigate('/siswa/materi')} style={{ marginLeft:'auto', padding:'8px 14px', background:'#3b82f6', color:'white', border:'none', borderRadius:8, fontWeight:600, fontSize:11, cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}>
               <BookOpen size={14} /> Materi Belajar
