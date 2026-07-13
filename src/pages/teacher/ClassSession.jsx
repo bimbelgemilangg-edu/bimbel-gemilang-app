@@ -1,6 +1,6 @@
 // src/pages/teacher/ClassSession.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // ← TAMBAHKAN
+import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { 
   collection, addDoc, doc, getDoc, setDoc, serverTimestamp, 
@@ -9,18 +9,19 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 import { QrCode, ArrowLeft } from 'lucide-react';
 
-const ClassSession = () => { // ← HAPUS PROPS
-  const { id } = useParams(); // ← AMBIL ID DARI URL
+const ClassSession = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   
   const [schedule, setSchedule] = useState(null);
   const [teacher, setTeacher] = useState(null);
   const [loading, setLoading] = useState(true);
   const [attendanceMap, setAttendanceMap] = useState({});
-  const [step, setStep] = useState(1); 
+  const [step, setStep] = useState(1);
   const [materiAktual, setMateriAktual] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [salaryRules, setSalaryRules] = useState(null);
+  const [timeStatus, setTimeStatus] = useState({ isPastEnd: false, remaining: '' });
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -28,11 +29,46 @@ const ClassSession = () => { // ← HAPUS PROPS
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 🔥 AMBIL DATA DARI FIRESTORE
+  // 🔥 CEK WAKTU SETIAP DETIK
+  useEffect(() => {
+    if (!schedule) return;
+    
+    const checkTime = () => {
+      const now = new Date();
+      const [endHour, endMinute] = schedule.end.split(':').map(Number);
+      const endTime = new Date(now);
+      endTime.setHours(endHour, endMinute, 0, 0);
+      
+      const isPastEndTime = now > endTime;
+      
+      if (!isPastEndTime) {
+        const diffMs = endTime - now;
+        const diffMin = Math.floor(diffMs / 60000);
+        const diffHour = Math.floor(diffMin / 60);
+        const remainingMin = diffMin % 60;
+        
+        let remaining = '';
+        if (diffHour > 0) {
+          remaining = diffHour + ' jam ' + remainingMin + ' menit';
+        } else {
+          remaining = remainingMin + ' menit';
+        }
+        setTimeStatus({ isPastEnd: false, remaining });
+      } else {
+        setTimeStatus({ isPastEnd: true, remaining: '0' });
+      }
+    };
+    
+    checkTime();
+    const interval = setInterval(checkTime, 10000); // Update setiap 10 detik
+    
+    return () => clearInterval(interval);
+  }, [schedule]);
+
+  // 🔥 AMBIL DATA
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Ambil jadwal dari Firestore
         const docRef = doc(db, "jadwal_bimbel", id);
         const docSnap = await getDoc(docRef);
         if (!docSnap.exists()) {
@@ -44,7 +80,6 @@ const ClassSession = () => { // ← HAPUS PROPS
         setSchedule(data);
         setMateriAktual(data.title || "");
 
-        // Ambil data guru dari localStorage
         const stored = localStorage.getItem('teacherData');
         if (stored) {
           setTeacher(JSON.parse(stored));
@@ -54,7 +89,6 @@ const ClassSession = () => { // ← HAPUS PROPS
           return;
         }
 
-        // Ambil salary rules
         const salaryRef = doc(db, "settings", "global_config");
         const salarySnap = await getDoc(salaryRef);
         if (salarySnap.exists() && salarySnap.data().salaryRules) {
@@ -191,9 +225,49 @@ const ClassSession = () => { // ← HAPUS PROPS
     return { nominal: Math.round(nominal), detailTxt, statusGaji };
   };
 
-  // 🔥 FINALIZE CLASS
+  // 🔥 HANDLE BACK
+  const handleBack = () => {
+    if (window.confirm("Yakin kembali? Data yang belum disimpan akan hilang.")) {
+      navigate('/guru/dashboard');
+    }
+  };
+
+  // 🔥 FINALIZE CLASS DENGAN VALIDASI JAM
   const handleFinalizeClass = async () => {
     if (!materiAktual) return alert("Mohon isi materi yang diajarkan!");
+    
+    // 🔥 CEK APAKAH SUDAH MELEWATI JAM SELESAI
+    const now = new Date();
+    const [endHour, endMinute] = schedule.end.split(':').map(Number);
+    const endTime = new Date(now);
+    endTime.setHours(endHour, endMinute, 0, 0);
+    
+    const isPastEndTime = now > endTime;
+    
+    // Jika belum melewati jam selesai, beri peringatan
+    if (!isPastEndTime) {
+      const diffMs = endTime - now;
+      const diffMin = Math.floor(diffMs / 60000);
+      const diffHour = Math.floor(diffMin / 60);
+      const remainingMin = diffMin % 60;
+      
+      let timeRemaining = '';
+      if (diffHour > 0) {
+        timeRemaining = diffHour + ' jam ' + remainingMin + ' menit';
+      } else {
+        timeRemaining = remainingMin + ' menit';
+      }
+      
+      const confirmEnd = window.confirm(
+        '⏰ Kelas belum mencapai jam selesai (' + schedule.end + ')!\n\n' +
+        '⏳ Sisa waktu: ' + timeRemaining + '\n\n' +
+        'Apakah Anda yakin ingin mengakhiri kelas lebih awal?\n' +
+        '(Siswa yang belum hadir akan dicatat Alpha)'
+      );
+      
+      if (!confirmEnd) return;
+    }
+    
     if (!window.confirm("Yakin akhiri kelas? Data siswa yang tidak hadir akan dicatat sebagai Alpha.")) return;
     
     setLoading(true);
@@ -232,8 +306,8 @@ const ClassSession = () => { // ← HAPUS PROPS
       const startParts = schedule.start.split(':');
       const endParts = schedule.end.split(':');
       const startTime = new Date(0, 0, 0, startParts[0], startParts[1]);
-      const endTime = new Date(0, 0, 0, endParts[0], endParts[1]);
-      const diffHours = (endTime - startTime) / 36e5;
+      const endTimeCalc = new Date(0, 0, 0, endParts[0], endParts[1]);
+      const diffHours = (endTimeCalc - startTime) / 36e5;
 
       await addDoc(collection(db, "teacher_logs"), {
         teacherId: teacher.id, 
@@ -255,18 +329,22 @@ const ClassSession = () => { // ← HAPUS PROPS
       // Update status jadwal
       await updateDoc(doc(db, "jadwal_bimbel", schedule.id), {
         status: 'completed',
-        completedAt: serverTimestamp()
+        completedAt: serverTimestamp(),
+        completedEarly: !isPastEndTime
       });
 
       const hadirCount = siswaHadirList.length;
       const totalCount = (schedule.students || []).length;
+      
+      const endStatus = !isPastEndTime ? ' (Selesai Lebih Awal ⚠️)' : '';
       
       alert(
         '✅ Kelas Berhasil Disimpan!\n\n' +
         '📚 Materi: ' + materiAktual + '\n' +
         '⏰ Jam: ' + schedule.start + ' - ' + schedule.end + '\n' +
         '🏫 Ruang: ' + (schedule.planet || "Ruang Umum") + '\n' +
-        '👥 Kehadiran: ' + hadirCount + '/' + totalCount + ' siswa hadir'
+        '👥 Kehadiran: ' + hadirCount + '/' + totalCount + ' siswa hadir' +
+        endStatus
       );
       
       navigate('/guru/dashboard');
@@ -274,13 +352,6 @@ const ClassSession = () => { // ← HAPUS PROPS
       alert("Gagal menyimpan sesi: " + error.message); 
     } 
     finally { setLoading(false); }
-  };
-
-  // 🔥 HANDLE BACK
-  const handleBack = () => {
-    if (window.confirm("Yakin kembali? Data yang belum disimpan akan hilang.")) {
-      navigate('/guru/dashboard');
-    }
   };
 
   // 🔥 LOADING
@@ -319,7 +390,19 @@ const ClassSession = () => { // ← HAPUS PROPS
         <div style={styles.headerFlex}>
           <div>
             <h2 style={styles.headerTitle(isMobile)}>{schedule.title || "Umum"}</h2>
-            <p style={styles.headerTime(isMobile)}>⏰ {schedule.start} - {schedule.end}</p>
+            <p style={styles.headerTime(isMobile)}>
+              ⏰ {schedule.start} - {schedule.end}
+              {!timeStatus.isPastEnd && timeStatus.remaining && (
+                <span style={{ color: '#f59e0b', marginLeft: 8 }}>
+                  ⏳ {timeStatus.remaining} lagi
+                </span>
+              )}
+              {timeStatus.isPastEnd && (
+                <span style={{ color: '#10b981', marginLeft: 8 }}>
+                  ✅ Waktu selesai telah lewat
+                </span>
+              )}
+            </p>
           </div>
           <span style={styles.badge(isMobile)}>{schedule.planet || "Ruang Umum"}</span>
         </div>
@@ -405,7 +488,7 @@ const ClassSession = () => { // ← HAPUS PROPS
 };
 
 // ============================================================
-// STYLES (SAMA SEPERTI SEBELUMNYA)
+// STYLES
 // ============================================================
 const styles = {
   container: (m) => ({ 
