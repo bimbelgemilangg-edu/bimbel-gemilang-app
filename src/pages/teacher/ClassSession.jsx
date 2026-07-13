@@ -7,7 +7,7 @@ import {
   onSnapshot, query, where, updateDoc 
 } from "firebase/firestore";
 import { QRCodeSVG } from 'qrcode.react';
-import { QrCode, ArrowLeft } from 'lucide-react';
+import { QrCode, ArrowLeft, ExternalLink } from 'lucide-react';
 
 const ClassSession = () => {
   const { id } = useParams();
@@ -22,6 +22,15 @@ const ClassSession = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [salaryRules, setSalaryRules] = useState(null);
   const [timeStatus, setTimeStatus] = useState({ isPastEnd: false, remaining: '' });
+  
+  // 🔥 STATE UNTUK GOOGLE FORM
+  const [googleForms, setGoogleForms] = useState({
+    sd: '',
+    smp: '',
+    sma: '',
+    english: '',
+    default: ''
+  });
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -60,15 +69,15 @@ const ClassSession = () => {
     };
     
     checkTime();
-    const interval = setInterval(checkTime, 10000); // Update setiap 10 detik
-    
+    const interval = setInterval(checkTime, 10000);
     return () => clearInterval(interval);
   }, [schedule]);
 
-  // 🔥 AMBIL DATA
+  // 🔥 AMBIL DATA + GOOGLE FORM SETTINGS
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // 1. Ambil data jadwal
         const docRef = doc(db, "jadwal_bimbel", id);
         const docSnap = await getDoc(docRef);
         if (!docSnap.exists()) {
@@ -80,6 +89,7 @@ const ClassSession = () => {
         setSchedule(data);
         setMateriAktual(data.title || "");
 
+        // 2. Ambil data guru dari localStorage
         const stored = localStorage.getItem('teacherData');
         if (stored) {
           setTeacher(JSON.parse(stored));
@@ -89,6 +99,7 @@ const ClassSession = () => {
           return;
         }
 
+        // 3. Ambil salary rules
         const salaryRef = doc(db, "settings", "global_config");
         const salarySnap = await getDoc(salaryRef);
         if (salarySnap.exists() && salarySnap.data().salaryRules) {
@@ -98,6 +109,12 @@ const ClassSession = () => {
             honorSD: 35000, honorSMP: 40000, honorSMA: 50000,
             bonusInggris: 10000, kompensasiPersen: 50, honorMinimal: 20000
           });
+        }
+
+        // 🔥 4. AMBIL GOOGLE FORM SETTINGS
+        const formDoc = await getDoc(doc(db, "settings", "google_forms"));
+        if (formDoc.exists()) {
+          setGoogleForms(formDoc.data());
         }
 
         setLoading(false);
@@ -232,7 +249,7 @@ const ClassSession = () => {
     }
   };
 
-  // 🔥 FINALIZE CLASS DENGAN VALIDASI JAM
+  // 🔥 FINALIZE CLASS + REDIRECT GOOGLE FORM
   const handleFinalizeClass = async () => {
     if (!materiAktual) return alert("Mohon isi materi yang diajarkan!");
     
@@ -244,7 +261,6 @@ const ClassSession = () => {
     
     const isPastEndTime = now > endTime;
     
-    // Jika belum melewati jam selesai, beri peringatan
     if (!isPastEndTime) {
       const diffMs = endTime - now;
       const diffMin = Math.floor(diffMs / 60000);
@@ -274,7 +290,7 @@ const ClassSession = () => {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Simpan attendance
+      // 🔥 1. SIMPAN ATTENDANCE
       const batchPromises = (schedule.students || []).map(async (siswa) => {
         const isPresent = !!attendanceMap[siswa.id];
         const absenId = siswa.id + '_' + today + '_' + schedule.id;
@@ -298,7 +314,7 @@ const ClassSession = () => {
       });
       await Promise.all(batchPromises);
 
-      // Simpan teacher logs
+      // 🔥 2. SIMPAN TEACHER LOGS
       const honorData = hitungHonor();
       const siswaHadirList = (schedule.students || []).filter(s => attendanceMap[s.id]);
       const jumlahHadir = siswaHadirList.length;
@@ -326,7 +342,7 @@ const ClassSession = () => {
         createdAt: serverTimestamp()
       });
 
-      // Update status jadwal
+      // 🔥 3. UPDATE STATUS JADWAL
       await updateDoc(doc(db, "jadwal_bimbel", schedule.id), {
         status: 'completed',
         completedAt: serverTimestamp(),
@@ -336,18 +352,35 @@ const ClassSession = () => {
       const hadirCount = siswaHadirList.length;
       const totalCount = (schedule.students || []).length;
       
+      // 🔥 4. AMBIL LINK GOOGLE FORM
+      const level = schedule.level || 'sd';
+      const levelKey = level.toLowerCase();
+      const googleFormLink = googleForms[levelKey] || googleForms.default || '';
+      
+      // 🔥 5. TAMPILKAN ALERT SUKSES
       const endStatus = !isPastEndTime ? ' (Selesai Lebih Awal ⚠️)' : '';
       
-      alert(
+      const alertMessage = 
         '✅ Kelas Berhasil Disimpan!\n\n' +
         '📚 Materi: ' + materiAktual + '\n' +
         '⏰ Jam: ' + schedule.start + ' - ' + schedule.end + '\n' +
         '🏫 Ruang: ' + (schedule.planet || "Ruang Umum") + '\n' +
-        '👥 Kehadiran: ' + hadirCount + '/' + totalCount + ' siswa hadir' +
-        endStatus
-      );
+        '👥 Kehadiran: ' + hadirCount + '/' + totalCount + ' siswa hadir' + endStatus + '\n\n' +
+        (googleFormLink ? 
+          '📋 Klik OK untuk membuka Google Form laporan materi' : 
+          'ℹ️ Belum ada Google Form yang diatur. Admin bisa atur di menu Gaji Guru.');
       
+      alert(alertMessage);
+
+      // 🔥 6. REDIRECT KE GOOGLE FORM JIKA ADA
+      if (googleFormLink) {
+        // Buka di tab baru
+        window.open(googleFormLink, '_blank');
+      }
+      
+      // 🔥 7. NAVIGATE KE DASHBOARD
       navigate('/guru/dashboard');
+      
     } catch (error) { 
       alert("Gagal menyimpan sesi: " + error.message); 
     } 
@@ -419,7 +452,8 @@ const ClassSession = () => {
                   scheduleId: schedule.id, 
                   mapel: schedule.title || "Umum", 
                   teacher: teacher.nama, 
-                  date: new Date().toISOString().split('T')[0] 
+                  date: new Date().toISOString().split('T')[0],
+                  level: schedule.level || "SD" // 🔥 Tambah level untuk validasi
                 })} 
                 size={isMobile ? 140 : 180} 
                 style={{ width: '100%', height: 'auto', maxWidth: isMobile ? '140px' : '180px' }} 
