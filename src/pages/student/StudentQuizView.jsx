@@ -1,13 +1,13 @@
 // src/pages/student/StudentQuizView.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { doc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 import { 
   ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, 
   HelpCircle, Send, User, Hash, Award, Timer, 
   BarChart3, TrendingUp, Shield, AlertTriangle,
-  ChevronLeft, ChevronRight, BookOpen, Zap
+  ChevronLeft, ChevronRight, BookOpen, Zap, RefreshCw
 } from 'lucide-react';
 
 // ============================================================
@@ -31,8 +31,7 @@ const shuffleArray = (array) => {
 // ============================================================
 // MAIN COMPONENT
 // ============================================================
-const StudentQuizView = () => {
-  const { modulId } = useParams();
+const StudentQuizView = ({ modulId, studentData, onBack }) => {
   const navigate = useNavigate();
   
   // ===== STATES =====
@@ -61,13 +60,14 @@ const StudentQuizView = () => {
 
   // ===== AMBIL DATA SISWA =====
   useEffect(() => {
-    const nim = localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
-    const name = localStorage.getItem('studentName') || 'Siswa';
-    const kelas = localStorage.getItem('studentKelas') || '';
+    const nim = studentData?.studentId || studentData?.nim || studentData?.studentNim || 
+                localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
+    const name = studentData?.nama || localStorage.getItem('studentName') || 'Siswa';
+    const kelas = studentData?.kelasSekolah || localStorage.getItem('studentKelas') || '';
     setStudentInfo({ nim, name, kelas });
-  }, []);
+  }, [studentData]);
 
-  // ===== FETCH QUIZ =====
+  // ===== FETCH QUIZ - AMBIL DARI MODUL =====
   useEffect(() => {
     if (!modulId) {
       setError('Modul tidak ditemukan');
@@ -77,6 +77,7 @@ const StudentQuizView = () => {
 
     const fetchQuiz = async () => {
       try {
+        // 🔥 AMBIL DATA MODUL
         const snap = await getDoc(doc(db, "bimbel_modul", modulId));
         if (!snap.exists()) {
           setError('Modul tidak ditemukan');
@@ -114,7 +115,7 @@ const StudentQuizView = () => {
           }
         }
 
-        // 🔥 Siapkan soal
+        // 🔥 Siapkan soal - PASTIKAN FORMATNYA BENAR
         let questionsData = quizDataRaw.map((q, idx) => ({
           id: q.id || idx,
           question: q.question || q.q || `Soal ${idx + 1}`,
@@ -280,6 +281,15 @@ const StudentQuizView = () => {
     setQuizStarted(true);
   };
 
+  // ===== BACK =====
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      navigate(-1);
+    }
+  };
+
   // ===== LOADING =====
   if (loading) {
     return (
@@ -296,14 +306,16 @@ const StudentQuizView = () => {
       <div style={styles.errorContainer}>
         <AlertCircle size={48} color="#ef4444" />
         <h2 style={styles.errorTitle}>⚠️ {error}</h2>
-        <button onClick={() => navigate(-1)} style={styles.backButton}>
+        <button onClick={handleBack} style={styles.backButton}>
           <ArrowLeft size={16} /> Kembali
         </button>
       </div>
     );
   }
 
-  // ===== QUIZ NOT STARTED =====
+  // ============================================================
+  // RENDER - QUIZ NOT STARTED
+  // ============================================================
   if (!quizStarted) {
     return (
       <div style={styles.container}>
@@ -332,7 +344,7 @@ const StudentQuizView = () => {
               <span>Maks {quizData?.maxAttempts || 1}x</span>
             </div>
             {attemptCount > 0 && (
-              <div style={styles.startInfoItem} style={{...styles.startInfoItem, background: '#fef3c7', borderColor: '#f59e0b'}}>
+              <div style={{...styles.startInfoItem, background: '#fef3c7', borderColor: '#f59e0b'}}>
                 <AlertCircle size={18} color="#f59e0b" />
                 <span>Sudah {attemptCount} kali dikerjakan</span>
               </div>
@@ -362,7 +374,7 @@ const StudentQuizView = () => {
           </div>
 
           <div style={styles.startFooter}>
-            <button onClick={() => navigate(-1)} style={styles.btnCancel}>Batal</button>
+            <button onClick={handleBack} style={styles.btnCancel}>Batal</button>
             <button onClick={handleStartQuiz} style={styles.btnStart}>
               <Zap size={16} /> Mulai Kuis
             </button>
@@ -372,7 +384,9 @@ const StudentQuizView = () => {
     );
   }
 
-  // ===== SUBMITTED - SHOW RESULTS =====
+  // ============================================================
+  // RENDER - SUBMITTED
+  // ============================================================
   if (isSubmitted && results) {
     const { correctCount, totalQuestions, score, details, isAuto } = results;
     const isPassed = score >= 70;
@@ -464,7 +478,7 @@ const StudentQuizView = () => {
           )}
 
           <div style={styles.resultFooter}>
-            <button onClick={() => navigate('/siswa/dashboard')} style={styles.btnHome}>
+            <button onClick={handleBack} style={styles.btnHome}>
               🏠 Kembali ke Dashboard
             </button>
             {!isAuto && quizData?.maxAttempts > 1 && attemptCount < quizData.maxAttempts - 1 && (
@@ -485,7 +499,9 @@ const StudentQuizView = () => {
     );
   }
 
-  // ===== QUIZ ACTIVE =====
+  // ============================================================
+  // RENDER - QUIZ ACTIVE
+  // ============================================================
   const currentQuestion = questions[currentIndex];
   const progress = getProgress();
   const isLastQuestion = currentIndex === questions.length - 1;
@@ -499,7 +515,7 @@ const StudentQuizView = () => {
         <div style={styles.quizHeaderLeft}>
           <button onClick={() => {
             if (window.confirm('Yakin keluar? Jawaban akan hilang.')) {
-              navigate(-1);
+              handleBack();
             }
           }} style={styles.quizBackBtn}>
             <ArrowLeft size={16} />
@@ -739,7 +755,6 @@ const styles = {
     border: '1px solid #e2e8f0'
   },
   rulesTitle: { fontSize: 14, fontWeight: 700, color: '#1e293b', margin: '0 0 8px' },
-  rulesList: { listStyle: 'none', padding: 0, margin: 0 },
   rulesList: { listStyle: 'none', padding: 0, margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.8 },
 
   startFooter: { display: 'flex', gap: 10, justifyContent: 'flex-end' },
@@ -847,14 +862,6 @@ const styles = {
   questionNumText: { fontSize: 12, fontWeight: 600, color: '#64748b' },
   questionStatus: { fontSize: 11, fontWeight: 600, color: '#3b82f6' },
 
-  questionImage: {
-    marginBottom: 12,
-    borderRadius: 8,
-    overflow: 'hidden',
-    maxHeight: 300,
-    display: 'flex',
-    justifyContent: 'center'
-  },
   questionImage: {
     marginBottom: 12,
     borderRadius: 8,
