@@ -10,7 +10,7 @@ import {
   Home, ChevronRight, BookOpen, RefreshCw, AlertCircle, CheckCircle,
   CreditCard, Calendar, Clock, IdCard, Filter, MoreVertical, X,
   Hash, Tag, User, GraduationCap, Download, PieChart, BarChart3,
-  FileSpreadsheet, Printer
+  FileSpreadsheet, Printer, TrendingUp, Award, Bell, Zap
 } from 'lucide-react';
 
 const StudentList = () => {
@@ -27,6 +27,7 @@ const StudentList = () => {
   const [deleting, setDeleting] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [showChart, setShowChart] = useState(false);
+  const [showDurasiChart, setShowDurasiChart] = useState(true);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -61,7 +62,7 @@ const StudentList = () => {
 
   // === HELPER FUNCTIONS ===
   const getMasaAktifStatus = (s) => {
-    if (!s.tanggalSelesai) return { label: 'Tidak Diketahui', color: '#94a3b8', bg: '#f1f5f9' };
+    if (!s.tanggalSelesai) return { label: 'Tidak Diketahui', color: '#94a3b8', bg: '#f1f5f9', days: null };
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -70,9 +71,10 @@ const StudentList = () => {
     
     const diffDays = Math.ceil((selesai - today) / (1000 * 60 * 60 * 24));
     
-    if (diffDays < 0) return { label: '⛔ Habis', color: '#ef4444', bg: '#fee2e2' };
-    if (diffDays <= 30) return { label: `⏳ ${diffDays} hari`, color: '#f59e0b', bg: '#fef3c7' };
-    return { label: '✅ Aktif', color: '#10b981', bg: '#dcfce7' };
+    if (diffDays < 0) return { label: '⛔ Habis', color: '#ef4444', bg: '#fee2e2', days: diffDays };
+    if (diffDays <= 30) return { label: `⏳ ${diffDays} hari`, color: '#f59e0b', bg: '#fef3c7', days: diffDays };
+    if (diffDays <= 90) return { label: `📅 ${diffDays} hari`, color: '#3b82f6', bg: '#dbeafe', days: diffDays };
+    return { label: '✅ Aktif', color: '#10b981', bg: '#dcfce7', days: diffDays };
   };
 
   const getDurasiBulan = (s) => {
@@ -80,7 +82,7 @@ const StudentList = () => {
     const mulai = new Date(s.tanggalMulai);
     const sekarang = new Date();
     const bulan = (sekarang.getFullYear() - mulai.getFullYear()) * 12 + (sekarang.getMonth() - mulai.getMonth());
-    return bulan;
+    return Math.max(0, bulan);
   };
 
   const getSisaTagihan = (s) => {
@@ -93,6 +95,81 @@ const StudentList = () => {
     if (!name) return 'S';
     return name.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('');
   };
+
+  const getDurasiBadgeColor = (durasi) => {
+    if (durasi >= 12) return { bg: '#dcfce7', color: '#166534', label: 'Long Term' };
+    if (durasi >= 6) return { bg: '#fef3c7', color: '#b45309', label: 'Medium' };
+    if (durasi >= 3) return { bg: '#dbeafe', color: '#1e40af', label: 'Short' };
+    return { bg: '#fee2e2', color: '#ef4444', label: 'Baru' };
+  };
+
+  // === DURASI DISTRIBUTION ===
+  const getDurasiDistribution = () => {
+    const dist = { 
+      '1 Bulan': 0, 
+      '3 Bulan': 0, 
+      '6 Bulan': 0, 
+      '12 Bulan': 0, 
+      '24 Bulan': 0, 
+      'Lainnya': 0 
+    };
+    students.forEach(s => {
+      const durasi = s.durasiBulan || 0;
+      if (durasi === 1) dist['1 Bulan']++;
+      else if (durasi === 3) dist['3 Bulan']++;
+      else if (durasi === 6) dist['6 Bulan']++;
+      else if (durasi === 12) dist['12 Bulan']++;
+      else if (durasi === 24) dist['24 Bulan']++;
+      else if (durasi > 0) dist['Lainnya']++;
+    });
+    return dist;
+  };
+
+  // === SISWA AKAN HABIS (30 HARI) ===
+  const getAkanHabis = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return students.filter(s => {
+      if (!s.tanggalSelesai || s.isBlocked) return false;
+      const selesai = new Date(s.tanggalSelesai);
+      selesai.setHours(0, 0, 0, 0);
+      const diffDays = Math.ceil((selesai - today) / (1000 * 60 * 60 * 24));
+      return diffDays >= 0 && diffDays <= 30;
+    });
+  };
+
+  // === SISWA YANG SUDAH HABIS ===
+  const getSudahHabis = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return students.filter(s => {
+      if (!s.tanggalSelesai || s.isBlocked) return false;
+      const selesai = new Date(s.tanggalSelesai);
+      selesai.setHours(0, 0, 0, 0);
+      return selesai < today;
+    });
+  };
+
+  // === SISWA AKTIF (masih dalam masa) ===
+  const getAktif = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return students.filter(s => {
+      if (s.isBlocked) return false;
+      if (!s.tanggalSelesai) return true;
+      const selesai = new Date(s.tanggalSelesai);
+      selesai.setHours(0, 0, 0, 0);
+      return selesai >= today;
+    });
+  };
+
+  const akanHabis = getAkanHabis();
+  const sudahHabis = getSudahHabis();
+  const aktif = getAktif();
+  const durasiDist = getDurasiDistribution();
 
   // === HANDLERS ===
   const handleDelete = async (id, nama) => {
@@ -125,16 +202,22 @@ const StudentList = () => {
   const programList = ['Semua', 'Reguler', 'English'];
   const durasiList = ['Semua', '0-3 Bulan', '3-6 Bulan', '6-12 Bulan', '12+ Bulan'];
   
+  const akanHabisIds = new Set(akanHabis.map(s => s.id));
+  const sudahHabisIds = new Set(sudahHabis.map(s => s.id));
+  
   const filtered = students.filter(s => {
     const matchNama = (s.nama || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchStudentId = (s.studentId || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchSearch = matchNama || matchStudentId;
     const matchKelas = filterKelas === 'Semua' || s.kelasSekolah === filterKelas;
     const matchProgram = filterProgram === 'Semua' || s.kategori === filterProgram;
-    const matchStatus = filterStatus === 'Semua' || 
-      (filterStatus === 'Aktif' && !s.isBlocked) || 
-      (filterStatus === 'Blokir' && s.isBlocked) ||
-      (filterStatus === 'Habis' && getMasaAktifStatus(s).label === '⛔ Habis');
+    
+    // Status filter dengan opsi "Akan Habis"
+    let matchStatus = true;
+    if (filterStatus === 'Aktif') matchStatus = !s.isBlocked && !sudahHabisIds.has(s.id);
+    else if (filterStatus === 'Blokir') matchStatus = s.isBlocked;
+    else if (filterStatus === 'Habis') matchStatus = sudahHabisIds.has(s.id);
+    else if (filterStatus === 'AkanHabis') matchStatus = akanHabisIds.has(s.id);
     
     // Filter durasi
     const durasi = getDurasiBulan(s);
@@ -147,16 +230,27 @@ const StudentList = () => {
     return matchSearch && matchKelas && matchProgram && matchStatus && matchDurasi;
   });
 
-  const totalAktif = students.filter(s => !s.isBlocked).length;
+  const totalAktif = aktif.length;
   const totalBlokir = students.filter(s => s.isBlocked).length;
-  const totalHabis = students.filter(s => getMasaAktifStatus(s).label === '⛔ Habis').length;
+  const totalHabis = sudahHabis.length;
+  const totalAkanHabis = akanHabis.length;
   const totalPiutang = students.reduce((sum, s) => sum + Math.max(0, getSisaTagihan(s)), 0);
 
   // === CHART DATA ===
   const chartData = {
-    labels: ['Aktif', 'Blokir', 'Masa Habis'],
-    values: [totalAktif, totalBlokir, totalHabis],
-    colors: ['#10b981', '#ef4444', '#f59e0b']
+    labels: ['Aktif', 'Akan Habis', 'Sudah Habis', 'Blokir'],
+    values: [totalAktif, totalAkanHabis, totalHabis, totalBlokir],
+    colors: ['#10b981', '#f59e0b', '#ef4444', '#94a3b8']
+  };
+
+  // === DURASI CHART COLORS ===
+  const durasiColors = {
+    '1 Bulan': '#3b82f6',
+    '3 Bulan': '#10b981',
+    '6 Bulan': '#f59e0b',
+    '12 Bulan': '#8b5cf6',
+    '24 Bulan': '#ef4444',
+    'Lainnya': '#94a3b8'
   };
 
   // === EXPORT FUNCTIONS ===
@@ -173,14 +267,16 @@ const StudentList = () => {
         'Nama': s.nama || '-',
         'Kelas': s.kelasSekolah || '-',
         'Program': s.kategori || 'Reguler',
+        'Durasi Awal (Bulan)': s.durasiBulan || 0,
+        'Durasi Berjalan (Bulan)': getDurasiBulan(s),
         'Tanggal Mulai': s.tanggalMulai || '-',
         'Tanggal Selesai': s.tanggalSelesai || '-',
-        'Durasi (Bulan)': getDurasiBulan(s),
+        'Sisa Hari': getMasaAktifStatus(s).days !== null ? getMasaAktifStatus(s).days : '-',
+        'Status Masa': getMasaAktifStatus(s).label,
         'Total Tagihan': s.totalTagihan || 0,
         'Total Bayar': s.totalBayar || 0,
         'Sisa Tagihan': getSisaTagihan(s),
-        'Status': s.isBlocked ? 'Blokir' : 'Aktif',
-        'Masa Aktif': getMasaAktifStatus(s).label,
+        'Status Akun': s.isBlocked ? 'Blokir' : 'Aktif',
         'No HP': s.ortu?.hp || '-',
         'Ayah': s.ortu?.ayah || '-',
         'Ibu': s.ortu?.ibu || '-'
@@ -189,8 +285,9 @@ const StudentList = () => {
       const ws = XLSX.utils.json_to_sheet(exportData);
       ws['!cols'] = [
         { wch: 5 }, { wch: 15 }, { wch: 20 }, { wch: 10 }, { wch: 12 },
-        { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 15 },
-        { wch: 15 }, { wch: 10 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 15 }
+        { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 },
+        { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 12 },
+        { wch: 15 }, { wch: 15 }, { wch: 15 }
       ];
       
       const wb = XLSX.utils.book_new();
@@ -205,6 +302,7 @@ const StudentList = () => {
 
   const handleExportAll = () => handleExportExcel(students, 'Semua_Siswa');
   const handleExportFiltered = () => handleExportExcel(filtered, 'Filter_Siswa');
+  const handleExportAkanHabis = () => handleExportExcel(akanHabis, 'Siswa_Akan_Habis');
 
   const handlePrint = () => window.print();
 
@@ -239,6 +337,11 @@ const StudentList = () => {
             <span style={styles.totalBadge}>
               <Users size={14} /> {students.length} Siswa
             </span>
+            {akanHabis.length > 0 && (
+              <span style={{...styles.totalBadge, background: '#fef3c7', color: '#b45309'}}>
+                <Bell size={14} /> {akanHabis.length} Akan Habis
+              </span>
+            )}
           </div>
         </div>
 
@@ -249,13 +352,20 @@ const StudentList = () => {
             <p style={styles.subtitle}>
               {students.length} siswa terdaftar • 
               <span style={{color: '#10b981'}}> {totalAktif} aktif</span> • 
-              <span style={{color: '#ef4444'}}> {totalBlokir} blokir</span>
+              <span style={{color: '#f59e0b'}}> {totalAkanHabis} akan habis</span> • 
+              <span style={{color: '#ef4444'}}> {totalHabis} habis</span> • 
+              <span style={{color: '#94a3b8'}}> {totalBlokir} blokir</span>
             </p>
           </div>
           <div style={{display: 'flex', gap: 8, flexWrap: 'wrap'}}>
             <button onClick={() => setShowChart(!showChart)} style={styles.btnChart(isMobile)}>
               <PieChart size={14} /> {!isMobile && 'Chart'}
             </button>
+            {akanHabis.length > 0 && (
+              <button onClick={handleExportAkanHabis} style={{...styles.btnExport(isMobile), background: '#f59e0b'}}>
+                <Bell size={14} /> {!isMobile && 'Export Habis'}
+              </button>
+            )}
             <button onClick={handleExportFiltered} style={styles.btnExport(isMobile)}>
               <Download size={14} /> {!isMobile && 'Export Filter'}
             </button>
@@ -271,60 +381,38 @@ const StudentList = () => {
           </div>
         </div>
 
-        {/* CHART SECTION */}
-        {showChart && (
-          <div style={styles.chartCard}>
-            <div style={styles.chartHeader}>
-              <h4 style={styles.chartTitle}><PieChart size={18} /> Statistik Siswa</h4>
-              <button onClick={() => setShowChart(false)} style={styles.chartClose}>
-                <X size={16} />
-              </button>
-            </div>
-            <div style={styles.chartContainer(isMobile)}>
-              <div style={styles.chartBars}>
-                {chartData.labels.map((label, idx) => {
-                  const total = students.length || 1;
-                  const percentage = Math.round((chartData.values[idx] / total) * 100);
+        {/* WARNING BANNER - Akan Habis */}
+        {akanHabis.length > 0 && (
+          <div style={styles.warningBanner}>
+            <div style={styles.warningIcon}><Bell size={20} /></div>
+            <div style={styles.warningContent}>
+              <div style={styles.warningTitle}>
+                ⚠️ {akanHabis.length} siswa akan habis masa aktifnya dalam 30 hari!
+              </div>
+              <div style={styles.warningList}>
+                {akanHabis.slice(0, 5).map(s => {
+                  const masa = getMasaAktifStatus(s);
                   return (
-                    <div key={idx} style={styles.chartBarItem}>
-                      <div style={styles.chartBarLabel}>{label}</div>
-                      <div style={styles.chartBarTrack}>
-                        <div style={{
-                          ...styles.chartBarFill,
-                          width: `${percentage}%`,
-                          background: chartData.colors[idx]
-                        }}>
-                          <span style={styles.chartBarValue}>{percentage}%</span>
-                        </div>
-                      </div>
-                      <div style={styles.chartBarCount}>{chartData.values[idx]} siswa</div>
-                    </div>
+                    <span key={s.id} style={styles.warningItem}>
+                      {s.nama} <span style={{color: '#b45309'}}>({masa.days} hari)</span>
+                    </span>
                   );
                 })}
-              </div>
-              <div style={styles.chartSummary}>
-                <div style={styles.chartSummaryItem}>
-                  <div style={{...styles.chartSummaryDot, background: '#10b981'}} />
-                  <span>Aktif: {totalAktif} ({Math.round((totalAktif / students.length) * 100) || 0}%)</span>
-                </div>
-                <div style={styles.chartSummaryItem}>
-                  <div style={{...styles.chartSummaryDot, background: '#ef4444'}} />
-                  <span>Blokir: {totalBlokir} ({Math.round((totalBlokir / students.length) * 100) || 0}%)</span>
-                </div>
-                <div style={styles.chartSummaryItem}>
-                  <div style={{...styles.chartSummaryDot, background: '#f59e0b'}} />
-                  <span>Habis: {totalHabis} ({Math.round((totalHabis / students.length) * 100) || 0}%)</span>
-                </div>
-                <div style={styles.chartSummaryItem}>
-                  <div style={{...styles.chartSummaryDot, background: '#8b5cf6'}} />
-                  <span>Total: {students.length} siswa</span>
-                </div>
+                {akanHabis.length > 5 && (
+                  <span style={styles.warningMore}>+{akanHabis.length - 5} lainnya</span>
+                )}
               </div>
             </div>
+            <button 
+              onClick={() => setFilterStatus('AkanHabis')} 
+              style={styles.warningBtn}
+            >
+              Lihat Semua
+            </button>
           </div>
         )}
 
-        {/* STATS */}
+        {/* STATS ROW - Lengkap */}
         <div style={styles.statsRow(isMobile)}>
           <div style={styles.statMini}>
             <Users size={16} color="#3b82f6" />
@@ -333,35 +421,156 @@ const StudentList = () => {
               <span>Total</span>
             </div>
           </div>
-          <div style={styles.statMini}>
+          <div style={{...styles.statMini, background: '#f0fdf4', borderColor: '#bbf7d0'}}>
             <CheckCircle size={16} color="#10b981" />
             <div>
-              <h3>{totalAktif}</h3>
+              <h3 style={{color: '#166534'}}>{totalAktif}</h3>
               <span>Aktif</span>
             </div>
           </div>
-          <div style={styles.statMini}>
+          <div style={{...styles.statMini, background: '#fef3c7', borderColor: '#fde68a'}}>
+            <Bell size={16} color="#f59e0b" />
+            <div>
+              <h3 style={{color: '#b45309'}}>{totalAkanHabis}</h3>
+              <span>Akan Habis</span>
+            </div>
+          </div>
+          <div style={{...styles.statMini, background: '#fee2e2', borderColor: '#fca5a5'}}>
             <AlertCircle size={16} color="#ef4444" />
+            <div>
+              <h3 style={{color: '#dc2626'}}>{totalHabis}</h3>
+              <span>Sudah Habis</span>
+            </div>
+          </div>
+          <div style={{...styles.statMini, background: '#f1f5f9', borderColor: '#e2e8f0'}}>
+            <UserX size={16} color="#94a3b8" />
             <div>
               <h3>{totalBlokir}</h3>
               <span>Blokir</span>
             </div>
           </div>
-          <div style={styles.statMini}>
-            <Clock size={16} color="#f59e0b" />
-            <div>
-              <h3>{totalHabis}</h3>
-              <span>Habis</span>
-            </div>
-          </div>
-          <div style={styles.statMini}>
+          <div style={{...styles.statMini, background: '#f3e8ff', borderColor: '#d8b4fe'}}>
             <CreditCard size={16} color="#8b5cf6" />
             <div>
-              <h3>Rp {(totalPiutang / 1000).toFixed(0)}K</h3>
+              <h3 style={{color: '#6d28d9'}}>Rp {(totalPiutang / 1000).toFixed(0)}K</h3>
               <span>Piutang</span>
             </div>
           </div>
         </div>
+
+        {/* CHART SECTION - Status & Durasi */}
+        {showChart && (
+          <div style={styles.chartCard}>
+            <div style={styles.chartHeader}>
+              <h4 style={styles.chartTitle}><PieChart size={18} /> Statistik Siswa</h4>
+              <div style={{display: 'flex', gap: 8, alignItems: 'center'}}>
+                <button 
+                  onClick={() => setShowDurasiChart(!showDurasiChart)}
+                  style={styles.chartToggle}
+                >
+                  {showDurasiChart ? '📊 Status' : '📈 Durasi'}
+                </button>
+                <button onClick={() => setShowChart(false)} style={styles.chartClose}>
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+            
+            {showDurasiChart ? (
+              // DURASI CHART
+              <div style={styles.chartContainer(isMobile)}>
+                <div style={{...styles.chartBars, flex: 2}}>
+                  {Object.entries(durasiDist).map(([durasi, count]) => {
+                    const total = students.filter(s => s.durasiBulan > 0).length || 1;
+                    const percentage = Math.round((count / total) * 100);
+                    const color = durasiColors[durasi] || '#94a3b8';
+                    return (
+                      <div key={durasi} style={styles.chartBarItem}>
+                        <div style={{...styles.chartBarLabel, minWidth: 70}}>{durasi}</div>
+                        <div style={styles.chartBarTrack}>
+                          <div style={{
+                            ...styles.chartBarFill,
+                            width: `${Math.max(percentage, 2)}%`,
+                            background: color
+                          }}>
+                            <span style={styles.chartBarValue}>{percentage > 8 ? `${percentage}%` : ''}</span>
+                          </div>
+                        </div>
+                        <div style={styles.chartBarCount}>{count} siswa</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={styles.chartSummary}>
+                  <div style={styles.chartSummaryItem}>
+                    <div style={{...styles.chartSummaryDot, background: '#3b82f6'}} />
+                    <span>Distribusi durasi awal</span>
+                  </div>
+                  <div style={styles.chartSummaryItem}>
+                    <div style={{...styles.chartSummaryDot, background: '#10b981'}} />
+                    <span>Rata-rata: {(students.reduce((sum, s) => sum + (s.durasiBulan || 0), 0) / (students.length || 1)).toFixed(1)} bulan</span>
+                  </div>
+                  <div style={styles.chartSummaryItem}>
+                    <div style={{...styles.chartSummaryDot, background: '#f59e0b'}} />
+                    <span>Durasi terpopuler: {
+                      Object.entries(durasiDist).sort((a, b) => b[1] - a[1])[0]?.[0] || '-'
+                    }</span>
+                  </div>
+                  <div style={{...styles.chartSummaryItem, flexDirection: 'column', alignItems: 'flex-start', gap: 4, marginTop: 4}}>
+                    <span style={{fontSize: 10, color: '#64748b'}}>💡 Insight:</span>
+                    <span style={{fontSize: 11, color: '#1e293b'}}>
+                      {students.filter(s => s.durasiBulan >= 6).length} siswa ({(students.filter(s => s.durasiBulan >= 6).length / (students.length || 1) * 100).toFixed(0)}%) 
+                      berdurasi 6+ bulan (long term)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // STATUS CHART
+              <div style={styles.chartContainer(isMobile)}>
+                <div style={styles.chartBars}>
+                  {chartData.labels.map((label, idx) => {
+                    const total = students.length || 1;
+                    const percentage = Math.round((chartData.values[idx] / total) * 100);
+                    return (
+                      <div key={idx} style={styles.chartBarItem}>
+                        <div style={styles.chartBarLabel}>{label}</div>
+                        <div style={styles.chartBarTrack}>
+                          <div style={{
+                            ...styles.chartBarFill,
+                            width: `${percentage}%`,
+                            background: chartData.colors[idx]
+                          }}>
+                            <span style={styles.chartBarValue}>{percentage}%</span>
+                          </div>
+                        </div>
+                        <div style={styles.chartBarCount}>{chartData.values[idx]} siswa</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={styles.chartSummary}>
+                  <div style={styles.chartSummaryItem}>
+                    <div style={{...styles.chartSummaryDot, background: '#10b981'}} />
+                    <span>Aktif: {totalAktif} ({(totalAktif / students.length * 100).toFixed(0)}%)</span>
+                  </div>
+                  <div style={styles.chartSummaryItem}>
+                    <div style={{...styles.chartSummaryDot, background: '#f59e0b'}} />
+                    <span>Akan Habis: {totalAkanHabis} ({(totalAkanHabis / students.length * 100).toFixed(0)}%)</span>
+                  </div>
+                  <div style={styles.chartSummaryItem}>
+                    <div style={{...styles.chartSummaryDot, background: '#ef4444'}} />
+                    <span>Sudah Habis: {totalHabis} ({(totalHabis / students.length * 100).toFixed(0)}%)</span>
+                  </div>
+                  <div style={styles.chartSummaryItem}>
+                    <div style={{...styles.chartSummaryDot, background: '#94a3b8'}} />
+                    <span>Total: {students.length} siswa</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* FILTER BAR */}
         <div style={styles.filterBar(isMobile)}>
@@ -382,6 +591,9 @@ const StudentList = () => {
             style={styles.btnFilter(isMobile)}
           >
             <Filter size={14} /> {!isMobile && 'Filter'}
+            {(filterKelas !== 'Semua' || filterStatus !== 'Semua' || filterProgram !== 'Semua' || filterDurasi !== 'Semua') && (
+              <span style={styles.filterBadge}>•</span>
+            )}
           </button>
           <button onClick={fetchStudents} style={styles.btnRefresh(isMobile)}>
             <RefreshCw size={14} /> {!isMobile && 'Refresh'}
@@ -408,15 +620,29 @@ const StudentList = () => {
               <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={styles.filterSelect}>
                 <option value="Semua">Semua Status</option>
                 <option value="Aktif">✅ Aktif</option>
+                <option value="AkanHabis">⏳ Akan Habis (30 hari)</option>
+                <option value="Habis">⛔ Sudah Habis</option>
                 <option value="Blokir">🚫 Blokir</option>
-                <option value="Habis">⏰ Masa Habis</option>
               </select>
             </div>
             <div style={styles.filterGroup}>
-              <label style={styles.filterLabel}>Durasi</label>
+              <label style={styles.filterLabel}>Durasi Awal</label>
               <select value={filterDurasi} onChange={e => setFilterDurasi(e.target.value)} style={styles.filterSelect}>
                 {durasiList.map(d => <option key={d} value={d}>{d}</option>)}
               </select>
+            </div>
+            <div style={{...styles.filterGroup, display: 'flex', alignItems: 'flex-end'}}>
+              <button 
+                onClick={() => {
+                  setFilterKelas('Semua');
+                  setFilterStatus('Semua');
+                  setFilterProgram('Semua');
+                  setFilterDurasi('Semua');
+                }}
+                style={styles.resetFilterBtn}
+              >
+                Reset Filter
+              </button>
             </div>
           </div>
         )}
@@ -441,6 +667,7 @@ const StudentList = () => {
                       <th style={styles.th}>Kelas</th>
                       <th style={styles.th}>Program</th>
                       <th style={styles.th}>Durasi</th>
+                      <th style={styles.th}>Sisa Hari</th>
                       <th style={styles.th}>Masa Aktif</th>
                       <th style={styles.th}>Tagihan</th>
                       <th style={styles.th}>Status</th>
@@ -452,8 +679,18 @@ const StudentList = () => {
                       const masa = getMasaAktifStatus(s);
                       const sisa = getSisaTagihan(s);
                       const durasi = getDurasiBulan(s);
+                      const durasiAwal = s.durasiBulan || 0;
+                      const durasiBadge = getDurasiBadgeColor(durasiAwal);
+                      const isAkanHabis = akanHabisIds.has(s.id);
+                      const isHabis = sudahHabisIds.has(s.id);
+                      
                       return (
-                        <tr key={s.id} style={{...styles.tr, opacity: s.isBlocked ? 0.5 : 1}}>
+                        <tr key={s.id} style={{
+                          ...styles.tr, 
+                          opacity: s.isBlocked ? 0.5 : 1,
+                          background: isAkanHabis && !s.isBlocked ? '#fffbeb' : 'transparent',
+                          borderLeft: isAkanHabis && !s.isBlocked ? '3px solid #f59e0b' : 'none'
+                        }}>
                           <td style={styles.td}>
                             <span style={styles.indexBadge}>{idx + 1}</span>
                           </td>
@@ -463,7 +700,15 @@ const StudentList = () => {
                                 {getInitials(s.nama)}
                               </div>
                               <div>
-                                <div style={{fontWeight: 'bold', fontSize: 13}}>{s.nama}</div>
+                                <div style={{fontWeight: 'bold', fontSize: 13}}>
+                                  {s.nama}
+                                  {isAkanHabis && !s.isBlocked && (
+                                    <span style={{marginLeft: 4, fontSize: 9, color: '#f59e0b'}}>⏳</span>
+                                  )}
+                                  {isHabis && !s.isBlocked && (
+                                    <span style={{marginLeft: 4, fontSize: 9, color: '#ef4444'}}>⛔</span>
+                                  )}
+                                </div>
                                 <div style={styles.idBadge}>
                                   <Hash size={10} /> {s.studentId || 'Belum ada ID'}
                                 </div>
@@ -480,17 +725,42 @@ const StudentList = () => {
                           </td>
                           <td style={styles.td}>
                             <span style={{
-                              padding: '4px 10px', borderRadius: 10, fontSize: 11, fontWeight: 'bold',
-                              background: durasi > 12 ? '#dcfce7' : durasi > 6 ? '#fef3c7' : '#fee2e2',
-                              color: durasi > 12 ? '#166534' : durasi > 6 ? '#b45309' : '#ef4444'
+                              padding: '4px 10px', 
+                              borderRadius: 10, 
+                              fontSize: 10, 
+                              fontWeight: 'bold',
+                              background: durasiBadge.bg,
+                              color: durasiBadge.color,
+                              display: 'inline-block',
+                              whiteSpace: 'nowrap'
                             }}>
-                              {durasi > 0 ? `${durasi} Bulan` : 'Baru'}
+                              {durasiAwal > 0 ? `${durasiAwal} bln` : 'Tidak Ada'}
+                              <span style={{fontSize: 8, opacity: 0.7, marginLeft: 2}}>
+                                ({durasiBadge.label})
+                              </span>
                             </span>
                           </td>
                           <td style={styles.td}>
                             <span style={{
-                              padding: '4px 10px', borderRadius: 10, fontSize: 11, fontWeight: 'bold',
-                              background: masa.bg, color: masa.color
+                              padding: '4px 8px',
+                              borderRadius: 10,
+                              fontSize: 11,
+                              fontWeight: 'bold',
+                              background: masa.bg,
+                              color: masa.color
+                            }}>
+                              {masa.days !== null ? `${masa.days} hari` : '-'}
+                            </span>
+                          </td>
+                          <td style={styles.td}>
+                            <span style={{
+                              padding: '4px 10px', 
+                              borderRadius: 10, 
+                              fontSize: 11, 
+                              fontWeight: 'bold',
+                              background: masa.bg, 
+                              color: masa.color,
+                              whiteSpace: 'nowrap'
                             }}>
                               {masa.label}
                             </span>
@@ -568,23 +838,43 @@ const StudentList = () => {
                 const masa = getMasaAktifStatus(s);
                 const sisa = getSisaTagihan(s);
                 const durasi = getDurasiBulan(s);
+                const durasiAwal = s.durasiBulan || 0;
+                const isAkanHabis = akanHabisIds.has(s.id);
+                const isHabis = sudahHabisIds.has(s.id);
+                const durasiBadge = getDurasiBadgeColor(durasiAwal);
+                
                 return (
-                  <div key={s.id} style={styles.mobileCard}>
+                  <div key={s.id} style={{
+                    ...styles.mobileCard,
+                    borderLeft: isAkanHabis && !s.isBlocked ? '4px solid #f59e0b' : '4px solid transparent'
+                  }}>
                     <div style={styles.mobileCardTop}>
                       <div style={styles.studentCell}>
                         <div style={styles.studentAvatar(isMobile)}>
                           {getInitials(s.nama)}
                         </div>
                         <div>
-                          <div style={{fontWeight: 'bold', fontSize: 14}}>{s.nama}</div>
+                          <div style={{fontWeight: 'bold', fontSize: 14}}>
+                            {s.nama}
+                            {isAkanHabis && !s.isBlocked && (
+                              <span style={{marginLeft: 4, fontSize: 10, color: '#f59e0b'}}>⏳</span>
+                            )}
+                            {isHabis && !s.isBlocked && (
+                              <span style={{marginLeft: 4, fontSize: 10, color: '#ef4444'}}>⛔</span>
+                            )}
+                          </div>
                           <div style={styles.mobileIdBadge}>
                             <Hash size={10} /> {s.studentId || '-'}
                           </div>
                         </div>
                       </div>
                       <span style={{
-                        padding: '4px 10px', borderRadius: 10, fontSize: 10, fontWeight: 'bold',
-                        background: masa.bg, color: masa.color
+                        padding: '4px 10px', 
+                        borderRadius: 10, 
+                        fontSize: 10, 
+                        fontWeight: 'bold',
+                        background: masa.bg, 
+                        color: masa.color
                       }}>
                         {masa.label}
                       </span>
@@ -594,15 +884,18 @@ const StudentList = () => {
                       <span style={styles.programBadge(s.kategori)}>
                         {s.kategori === 'English' ? '🇬🇧 English' : '📚 Reguler'}
                       </span>
+                      <span style={{
+                        padding: '2px 8px', 
+                        borderRadius: 10, 
+                        fontSize: 9, 
+                        fontWeight: 'bold',
+                        background: durasiBadge.bg,
+                        color: durasiBadge.color
+                      }}>
+                        {durasiAwal > 0 ? `${durasiAwal} bln` : 'Tanpa'}
+                      </span>
                       <span style={styles.statusBadge(s.isBlocked)}>
                         {s.isBlocked ? '🚫 Blokir' : '✅ Aktif'}
-                      </span>
-                      <span style={{
-                        padding: '2px 8px', borderRadius: 10, fontSize: 9, fontWeight: 'bold',
-                        background: durasi > 12 ? '#dcfce7' : durasi > 6 ? '#fef3c7' : '#fee2e2',
-                        color: durasi > 12 ? '#166534' : durasi > 6 ? '#b45309' : '#ef4444'
-                      }}>
-                        {durasi > 0 ? `${durasi} bln` : 'Baru'}
                       </span>
                       <span style={{fontSize: 13, fontWeight: 'bold', color: sisa > 0 ? '#ef4444' : '#10b981'}}>
                         Rp {sisa.toLocaleString()}
@@ -626,9 +919,20 @@ const StudentList = () => {
           </div>
         )}
 
+        {/* FOOTER */}
+        <div style={styles.footer}>
+          <span style={styles.footerText}>
+            Menampilkan {filtered.length} dari {students.length} siswa
+          </span>
+          <span style={styles.footerText}>
+            {akanHabis.length} siswa akan habis dalam 30 hari
+          </span>
+        </div>
+
       </div>
       <style>{`
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         @media print {
           .no-print { display: none !important; }
           .print-only { display: block !important; }
@@ -810,6 +1114,67 @@ const styles = {
     fontSize: m ? 11 : 13 
   }),
   
+  warningBanner: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    background: '#fef3c7',
+    border: '1px solid #fde68a',
+    borderRadius: 12,
+    padding: '12px 16px',
+    marginBottom: 16,
+    flexWrap: 'wrap'
+  },
+  
+  warningIcon: {
+    color: '#f59e0b',
+    flexShrink: 0
+  },
+  
+  warningContent: {
+    flex: 1,
+    minWidth: 150
+  },
+  
+  warningTitle: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#b45309',
+    marginBottom: 4
+  },
+  
+  warningList: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 6
+  },
+  
+  warningItem: {
+    fontSize: 11,
+    color: '#92400e',
+    background: 'rgba(255,255,255,0.5)',
+    padding: '2px 8px',
+    borderRadius: 6
+  },
+  
+  warningMore: {
+    fontSize: 11,
+    color: '#92400e',
+    fontWeight: 'bold'
+  },
+  
+  warningBtn: {
+    background: '#f59e0b',
+    color: 'white',
+    border: 'none',
+    padding: '6px 14px',
+    borderRadius: 8,
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: 12,
+    flexShrink: 0
+  },
+  
   statsRow: (m) => ({ 
     display: 'flex', 
     gap: m ? 6 : 10, 
@@ -819,9 +1184,10 @@ const styles = {
   
   statMini: { 
     flex: 1, 
-    minWidth: 80, 
+    minWidth: 70,
+    maxWidth: 150,
     background: 'white', 
-    padding: 12, 
+    padding: '10px 14px', 
     borderRadius: 12, 
     display: 'flex', 
     alignItems: 'center', 
@@ -874,8 +1240,15 @@ const styles = {
     alignItems: 'center', 
     gap: 5, 
     fontSize: 13, 
-    color: '#64748b' 
+    color: '#64748b',
+    position: 'relative'
   }),
+  
+  filterBadge: {
+    color: '#3b82f6',
+    fontSize: 18,
+    fontWeight: 'bold'
+  },
   
   btnRefresh: (m) => ({ 
     background: 'white', 
@@ -923,6 +1296,18 @@ const styles = {
     background: '#f8fafc' 
   },
   
+  resetFilterBtn: {
+    padding: '8px 16px',
+    borderRadius: 8,
+    border: '1px solid #e2e8f0',
+    background: '#f1f5f9',
+    color: '#64748b',
+    cursor: 'pointer',
+    fontSize: 12,
+    fontWeight: 'bold',
+    width: '100%'
+  },
+  
   chartCard: {
     background: 'white',
     borderRadius: 14,
@@ -947,6 +1332,17 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: 6
+  },
+  
+  chartToggle: {
+    background: '#f1f5f9',
+    border: 'none',
+    padding: '4px 12px',
+    borderRadius: 6,
+    cursor: 'pointer',
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#64748b'
   },
   
   chartClose: {
@@ -1004,7 +1400,8 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingRight: 8,
-    transition: 'width 0.8s ease'
+    transition: 'width 0.8s ease',
+    minWidth: '4%'
   },
   
   chartBarValue: {
@@ -1063,7 +1460,7 @@ const styles = {
   table: { 
     width: '100%', 
     borderCollapse: 'collapse', 
-    minWidth: '1050px' 
+    minWidth: '1150px' 
   },
   
   thr: { 
@@ -1254,6 +1651,21 @@ const styles = {
     alignItems: 'center', 
     justifyContent: 'center', 
     gap: 4 
+  },
+  
+  footer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '16px 0',
+    marginTop: 12,
+    borderTop: '1px solid #f1f5f9',
+    flexWrap: 'wrap',
+    gap: 8
+  },
+  
+  footerText: {
+    fontSize: 12,
+    color: '#94a3b8'
   }
 };
 
