@@ -271,6 +271,12 @@ const TeacherDashboard = () => {
     if (teacher) await fetchData(teacher);
   };
 
+  const handleStartClass = (schedule) => {
+    setPendingSchedule(schedule);
+    setShowStartModal(true);
+    setInputToken("");
+  };
+
   // 🔥 FUNGSI VERIFIKASI TOKEN DENGAN ROUTING
   const handleVerifyTokenAndStart = async () => {
     if (!pendingSchedule) return;
@@ -315,20 +321,6 @@ const TeacherDashboard = () => {
   const getInitials = (name) => {
     if (!name) return 'G';
     return name.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('');
-  };
-
-  const getStatusColor = (status) => {
-    if (status === 'completed') return '#10b981';
-    if (status === 'in-progress') return '#f59e0b';
-    if (status === 'scheduled') return '#3b82f6';
-    return '#94a3b8';
-  };
-
-  const getStatusText = (status) => {
-    if (status === 'completed') return 'Selesai ✅';
-    if (status === 'in-progress') return 'Berlangsung 🟡';
-    if (status === 'scheduled') return 'Terjadwal 🔵';
-    return 'Belum Dimulai';
   };
 
   const formatDate = (dateStr) => {
@@ -546,7 +538,6 @@ const TeacherDashboard = () => {
               {todaySchedules.slice(0, 5).map(item => {
                 const isCompleted = item.status === 'completed';
                 const isOngoing = item.status === 'ongoing';
-                const isScheduled = item.status === 'scheduled' || !item.status;
                 
                 let btnText = 'Mulai Kelas';
                 let btnBg = '#3b82f6';
@@ -603,13 +594,7 @@ const TeacherDashboard = () => {
                       )}
                     </div>
                     <button 
-                      onClick={() => {
-                        if (!isCompleted && !isOngoing) {
-                          setPendingSchedule(item);
-                          setShowStartModal(true);
-                          setInputToken("");
-                        }
-                      }}
+                      onClick={() => handleStartClass(item)}
                       style={{
                         background: btnBg,
                         color: 'white',
