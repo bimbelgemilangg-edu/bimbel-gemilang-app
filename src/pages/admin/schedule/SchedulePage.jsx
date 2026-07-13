@@ -4,7 +4,7 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { 
   collection, getDocs, deleteDoc, doc, writeBatch, updateDoc, 
-  setDoc, getDoc, addDoc, query, where, orderBy 
+  setDoc, getDoc, addDoc, query, where, orderBy, serverTimestamp
 } from "firebase/firestore";
 import { 
   Search, Plus, Edit3, Trash2, X, Save, Calendar, Clock, MapPin, 
@@ -181,7 +181,7 @@ const SchedulePage = () => {
       }));
       setAvailableTeachers(teachers);
 
-      // 3. Fetch students
+      // 3. Fetch students - PERBAIKAN: mapping yang benar
       const sSnap = await getDocs(collection(db, "students"));
       const students = sSnap.docs.map(d => {
         const data = d.data();
@@ -204,7 +204,10 @@ const SchedulePage = () => {
           id: d.id,
           ...data,
           studentId: data.studentId || d.id,
-          jenjang: jenjang
+          jenjang: jenjang,
+          // Pastikan field yang dibutuhkan ada
+          nama: data.nama || 'Siswa',
+          kelasSekolah: data.kelasSekolah || 'Umum'
         };
       });
       setAvailableStudents(students);
@@ -223,8 +226,8 @@ const SchedulePage = () => {
       const codeDocId = 'daily_code_' + todayStr;
       const cSnap = await getDoc(doc(db, "settings", codeDocId));
       if (cSnap.exists()) {
-        setDailyCode(cSnap.data().code);
-        setTempCode(cSnap.data().code);
+        setDailyCode(cSnap.data().code || '');
+        setTempCode(cSnap.data().code || '');
       } else {
         setDailyCode("⚠️ Belum Diset");
         setTempCode("");
@@ -246,6 +249,11 @@ const SchedulePage = () => {
   };
 
   useEffect(() => { fetchData(); }, [selectedDate]);
+
+  // Reset filter kelas ketika jenjang berubah
+  useEffect(() => {
+    setStudentFilterKelas("Semua");
+  }, [formData.level]);
 
   // ============================================================
   // HANDLERS - CUSTOM EVENTS
@@ -382,31 +390,62 @@ const SchedulePage = () => {
     setIsModalOpen(true);
   };
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    if (!formData.teacherId) return showAlert("❌ Pilih guru terlebih dahulu!");
-    if (!formData.mapelId) return showAlert("❌ Pilih mata pelajaran!");
+  // ============================================================
+  // 🔥 HANDLER TOGGLE SISWA - MENYIMPAN OBJEK LENGKAP
+  // ============================================================
+  const handleToggleStudent = (student) => {
+    const isSelected = formData.selectedStudents.some(s => s.id === student.id);
+    let updated = [];
+    
+    if (isSelected) {
+      updated = formData.selectedStudents.filter(s => s.id !== student.id);
+    } else {
+      updated = [...formData.selectedStudents, {
+        id: student.id,
+        studentId: student.studentId || student.id,
+        nama: student.nama || 'Siswa',
+        kelasSekolah: student.kelasSekolah || 'Umum'
+      }];
+    }
+    
+    setFormData({ ...formData, selectedStudents: updated });
+  };
+
+  // ============================================================
+  // 🔥 HANDLER SIMPAN JADWAL (SUBMIT TO FIRESTORE)
+  // ============================================================
+  const handleSubmitSchedule = async (e) => {
+    if (e) e.preventDefault();
+    
+    if (!formData.teacherId) {
+      return showAlert("❌ Pilih guru terlebih dahulu!");
+    }
+    if (!formData.mapelId) {
+      return showAlert("❌ Pilih mata pelajaran!");
+    }
+    if (formData.selectedStudents.length === 0) {
+      return showAlert("❌ Minimal 1 siswa wajib dipilih!");
+    }
 
     try {
-      const studentsFullData = formData.selectedStudents.map(sid => {
-        const s = availableStudents.find(stud => 
-          stud.id === sid || stud.studentId === sid
-        );
-        return s ? {
-          id: s.id,
-          studentId: s.studentId || s.id,
-          nama: s.nama,
-          kelas: s.kelasSekolah || "-",
-          program: s.detailProgram || formData.program || "Reguler",
-          kelasSekolah: s.kelasSekolah || "-"
-        } : null;
-      }).filter(Boolean);
+      const targetDateStr = getSmartDateString(selectedDate);
+      
+      // Ambil data lengkap siswa yang dipilih
+      const studentsFullData = formData.selectedStudents.map(s => {
+        const student = availableStudents.find(st => st.id === s.id || st.studentId === s.id);
+        return student ? {
+          id: student.id,
+          studentId: student.studentId || student.id,
+          nama: student.nama || 'Siswa',
+          kelasSekolah: student.kelasSekolah || 'Umum'
+        } : s;
+      });
 
       const scheduleData = {
         planet: activePlanet,
         program: formData.program,
         level: formData.level,
-        title: formData.title,
+        title: formData.title || 'Materi Umum',
         mapelId: formData.mapelId,
         mapelName: formData.mapelName,
         teacherId: formData.teacherId,
@@ -414,9 +453,9 @@ const SchedulePage = () => {
         start: formData.start,
         end: formData.end,
         students: studentsFullData,
-        studentIds: studentsFullData.map(s => s.studentId),
-        dateStr: getSmartDateString(selectedDate),
-        status: "scheduled",
+        studentIds: studentsFullData.map(s => s.studentId || s.id),
+        dateStr: targetDateStr,
+        status: 'scheduled',
         updatedAt: new Date().toISOString()
       };
 
@@ -424,55 +463,37 @@ const SchedulePage = () => {
         await updateDoc(doc(db, "jadwal_bimbel", editId), scheduleData);
         showAlert("✅ Jadwal berhasil diperbarui!");
       } else {
-        const batch = writeBatch(db);
-        let tempDate = new Date(selectedDate);
-        const loopCount = formData.repeat === 'Monthly' ? 4 : 1;
-
-        for (let i = 0; i < loopCount; i++) {
-          const newRef = doc(collection(db, "jadwal_bimbel"));
-          batch.set(newRef, {
+        // Handle repeat
+        if (formData.repeat === 'Monthly') {
+          const batch = writeBatch(db);
+          let tempDate = new Date(selectedDate);
+          for (let i = 0; i < 4; i++) {
+            const newRef = doc(collection(db, "jadwal_bimbel"));
+            batch.set(newRef, {
+              ...scheduleData,
+              dateStr: getSmartDateString(tempDate),
+              createdAt: serverTimestamp(),
+              attendance_list: []
+            });
+            tempDate.setDate(tempDate.getDate() + 7);
+          }
+          await batch.commit();
+          showAlert("✅ 4 jadwal (1 bulan) berhasil dibuat!");
+        } else {
+          await addDoc(collection(db, "jadwal_bimbel"), {
             ...scheduleData,
-            dateStr: getSmartDateString(tempDate),
-            createdAt: new Date().toISOString(),
+            createdAt: serverTimestamp(),
             attendance_list: []
           });
-          tempDate.setDate(tempDate.getDate() + 7);
+          showAlert("✅ Jadwal berhasil dibuat!");
         }
-        await batch.commit();
-        showAlert("✅ " + loopCount + " jadwal berhasil dibuat!");
       }
 
       setIsModalOpen(false);
       fetchData();
     } catch (error) {
-      showAlert("❌ Gagal menyimpan: " + error.message);
-    }
-  };
-
-  const handleUpdateCode = async () => {
-    try {
-      const todayStr = getSmartDateString(selectedDate);
-      const codeDocId = 'daily_code_' + todayStr;
-      await setDoc(doc(db, "settings", codeDocId), {
-        code: tempCode,
-        updatedAt: new Date().toISOString()
-      });
-      setDailyCode(tempCode);
-      setIsEditingCode(false);
-      showAlert("✅ Kode absensi berhasil disimpan!");
-    } catch (error) {
-      showAlert("❌ Gagal update kode: " + error.message);
-    }
-  };
-
-  const handleDelete = async (scheduleId) => {
-    if (!window.confirm("Hapus jadwal ini?")) return;
-    try {
-      await deleteDoc(doc(db, "jadwal_bimbel", scheduleId));
-      showAlert("🗑️ Jadwal dihapus!");
-      fetchData();
-    } catch (error) {
-      showAlert("❌ Gagal menghapus: " + error.message);
+      console.error("Error saving schedule:", error);
+      showAlert("❌ Gagal menyimpan jadwal: " + error.message);
     }
   };
 
@@ -555,6 +576,139 @@ const SchedulePage = () => {
     }
 
     return days;
+  };
+
+  // ============================================================
+  // RENDER STUDENT SELECTOR UI
+  // ============================================================
+  const renderStudentSelectorUI = () => {
+    const listSiswaTersaring = getFilteredStudents();
+    return (
+      <div style={{ 
+        marginTop: '14px', 
+        background: '#f8fafc', 
+        padding: '12px', 
+        borderRadius: '10px', 
+        border: '1px solid #e2e8f0' 
+      }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          marginBottom: '8px', 
+          fontSize: '13px' 
+        }}>
+          <span style={{ fontWeight: '600', color: '#334155' }}>
+            👥 Pilih Peserta Didik ({formData.selectedStudents.length})
+          </span>
+          <span style={{ color: '#3b82f6', fontWeight: 'bold' }}>
+            Target: {formData.level}
+          </span>
+        </div>
+
+        {/* Bar Filter */}
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+          <input 
+            type="text"
+            placeholder="Cari nama atau ID siswa..."
+            value={studentSearch}
+            onChange={(e) => setStudentSearch(e.target.value)}
+            style={{ 
+              flex: 1, 
+              padding: '6px 10px', 
+              fontSize: '13px', 
+              border: '1px solid #cbd5e1', 
+              borderRadius: '6px',
+              outline: 'none'
+            }}
+          />
+          <select
+            value={studentFilterKelas}
+            onChange={(e) => setStudentFilterKelas(e.target.value)}
+            style={{ 
+              padding: '6px', 
+              fontSize: '13px', 
+              border: '1px solid #cbd5e1', 
+              borderRadius: '6px', 
+              background: 'white' 
+            }}
+          >
+            <option value="Semua">Semua {formData.level}</option>
+            {KELAS_LIST.filter(k => 
+              k !== "Semua" && 
+              (k === "Umum" || k === "Alumni" || k.includes(formData.level))
+            ).map(kelas => (
+              <option key={kelas} value={kelas}>{kelas}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Daftar Siswa */}
+        <div style={{ 
+          maxHeight: '180px', 
+          overflowY: 'auto', 
+          background: 'white', 
+          border: '1px solid #e2e8f0', 
+          borderRadius: '8px' 
+        }}>
+          {listSiswaTersaring.length === 0 ? (
+            <p style={{ 
+              padding: '15px', 
+              color: '#94a3b8', 
+              fontSize: '12px', 
+              textAlign: 'center' 
+            }}>
+              Siswa tidak ditemukan pada kategori jenjang ini
+            </p>
+          ) : (
+            listSiswaTersaring.map(student => {
+              const checked = formData.selectedStudents.some(s => s.id === student.id);
+              return (
+                <div 
+                  key={student.id}
+                  onClick={() => handleToggleStudent(student)}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between', 
+                    padding: '8px 12px', 
+                    borderBottom: '1px solid #f1f5f9', 
+                    cursor: 'pointer', 
+                    fontSize: '13px',
+                    background: checked ? '#eef2ff' : 'transparent'
+                  }}
+                >
+                  <div>
+                    <span style={{ fontWeight: '500', color: '#1e293b' }}>
+                      {student.nama}
+                    </span>
+                    <span style={{ fontSize: '11px', color: '#64748b', marginLeft: '4px' }}>
+                      ({student.studentId})
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ 
+                      fontSize: '10px', 
+                      background: '#e0f2fe', 
+                      color: '#0369a1', 
+                      padding: '2px 6px', 
+                      borderRadius: '4px' 
+                    }}>
+                      {student.kelasSekolah || "Umum"}
+                    </span>
+                    <input 
+                      type="checkbox" 
+                      checked={checked} 
+                      onChange={() => {}} 
+                      style={{ accentColor: '#3b82f6' }}
+                    />
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    );
   };
 
   // ============================================================
@@ -1014,7 +1168,7 @@ const SchedulePage = () => {
                 <button onClick={() => setIsModalOpen(false)} style={styles.btnClose}><X size={20} /></button>
               </div>
 
-              <form onSubmit={handleSave} style={styles.modalBody}>
+              <form onSubmit={handleSubmitSchedule} style={styles.modalBody}>
                 <div style={styles.modalRow}>
                   <div style={styles.formGroup}>
                     <label style={styles.formLabel}>⏰ Mulai</label>
@@ -1071,167 +1225,8 @@ const SchedulePage = () => {
                   <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} style={styles.formInput} placeholder="Contoh: Matematika Pecahan" />
                 </div>
 
-                {/* ============================================================
-                    ASSIGN SISWA - VERSI PERBAIKAN
-                ============================================================ */}
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>
-                    👥 Assign Siswa ({formData.selectedStudents.length} dipilih)
-                  </label>
-                  <p style={{fontSize: 9, color: '#94a3b8', marginTop: 2}}>
-                    Menampilkan siswa jenjang {formData.level}
-                    {studentFilterKelas !== 'Semua' && ' • Filter: ' + studentFilterKelas}
-                  </p>
-
-                  <div style={{display: 'flex', gap: 6, marginTop: 6, marginBottom: 8}}>
-                    <select value={studentFilterKelas} onChange={e => setStudentFilterKelas(e.target.value)} style={{...styles.formSelect, flex: 1, fontSize: 11, padding: '6px 8px'}}>
-                      {KELAS_LIST.map(k => <option key={k} value={k}>{k}</option>)}
-                    </select>
-                    <input type="text" placeholder="Cari nama/ID..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} style={{...styles.formInput, flex: 2, fontSize: 11, padding: '6px 8px'}} />
-                  </div>
-
-                  {/* Student List - PERBAIKAN CHECKBOX */}
-                  <div style={styles.studentSelectList}>
-                    {getFilteredStudents().length === 0 ? (
-                      <div style={{textAlign: 'center', padding: 15, color: '#94a3b8', fontSize: 11}}>
-                        Tidak ada siswa ditemukan
-                      </div>
-                    ) : (
-                      getFilteredStudents().slice(0, 50).map(s => {
-                        const studentId = s.studentId || s.id;
-                        if (!studentId) return null;
-                        
-                        const isChecked = formData.selectedStudents.some(id => id === studentId);
-                        
-                        return (
-                          <label 
-                            key={studentId}
-                            style={{
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: 8, 
-                              padding: '8px 10px',
-                              borderBottom: '1px solid #f1f5f9',
-                              cursor: 'pointer',
-                              fontSize: 12,
-                              background: isChecked ? '#eef2ff' : 'transparent',
-                              borderRadius: '4px',
-                              transition: '0.2s'
-                            }}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={isChecked}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                
-                                let newSelected = [...formData.selectedStudents];
-                                
-                                if (e.target.checked) {
-                                  if (!newSelected.includes(studentId)) {
-                                    newSelected.push(studentId);
-                                  }
-                                } else {
-                                  newSelected = newSelected.filter(id => id !== studentId);
-                                }
-                                
-                                setFormData({
-                                  ...formData,
-                                  selectedStudents: newSelected
-                                });
-                              }}
-                              style={{width: 16, height: 16, cursor: 'pointer', accentColor: '#3b82f6'}}
-                            />
-                            <div style={{flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                              <div>
-                                <span style={{fontSize: 12, fontWeight: isChecked ? '600' : '500'}}>
-                                  {s.nama}
-                                </span>
-                                {s.studentId && (
-                                  <span style={{fontSize: 9, color: '#94a3b8', marginLeft: 6, fontFamily: 'monospace'}}>
-                                    #{s.studentId}
-                                  </span>
-                                )}
-                              </div>
-                              <span style={{
-                                fontSize: 10,
-                                background: '#eef2ff',
-                                color: '#3b82f6',
-                                padding: '2px 6px',
-                                borderRadius: 8,
-                                fontWeight: 'bold'
-                              }}>
-                                {s.kelasSekolah || '-'}
-                              </span>
-                            </div>
-                          </label>
-                        );
-                      })
-                    )}
-                  </div>
-
-                  {/* 🔥 TOMBOL SELECT ALL / DESELECT ALL */}
-                  <div style={{display: 'flex', gap: 8, marginTop: 8}}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const allIds = getFilteredStudents()
-                          .slice(0, 50)
-                          .map(s => s.studentId || s.id)
-                          .filter(id => id);
-                        
-                        const currentSelected = formData.selectedStudents || [];
-                        const newSelected = [...new Set([...currentSelected, ...allIds])];
-                        
-                        setFormData({
-                          ...formData,
-                          selectedStudents: newSelected
-                        });
-                      }}
-                      style={{
-                        padding: '4px 12px',
-                        background: '#e0e7ff',
-                        border: 'none',
-                        borderRadius: 6,
-                        cursor: 'pointer',
-                        fontSize: 11,
-                        fontWeight: 'bold',
-                        color: '#3730a3'
-                      }}
-                    >
-                      Pilih Semua
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const visibleIds = getFilteredStudents()
-                          .slice(0, 50)
-                          .map(s => s.studentId || s.id)
-                          .filter(id => id);
-                        
-                        const newSelected = (formData.selectedStudents || [])
-                          .filter(id => !visibleIds.includes(id));
-                        
-                        setFormData({
-                          ...formData,
-                          selectedStudents: newSelected
-                        });
-                      }}
-                      style={{
-                        padding: '4px 12px',
-                        background: '#fee2e2',
-                        border: 'none',
-                        borderRadius: 6,
-                        cursor: 'pointer',
-                        fontSize: 11,
-                        fontWeight: 'bold',
-                        color: '#ef4444'
-                      }}
-                    >
-                      Hapus Semua
-                    </button>
-                  </div>
-                </div>
+                {/* 🔥 ASSIGN SISWA - PAKAI renderStudentSelectorUI */}
+                {renderStudentSelectorUI()}
 
                 {!editId && (
                   <div style={styles.formGroup}>
@@ -1245,7 +1240,9 @@ const SchedulePage = () => {
 
                 <div style={styles.modalFooter}>
                   <button type="button" onClick={() => setIsModalOpen(false)} style={styles.btnCancel}>Batal</button>
-                  <button type="submit" style={styles.btnSave}><Save size={16} /> {editId ? 'Update' : 'Simpan'}</button>
+                  <button type="submit" style={styles.btnSave}>
+                    <Save size={16} /> {editId ? 'Update' : 'Simpan'}
+                  </button>
                 </div>
               </form>
             </div>
