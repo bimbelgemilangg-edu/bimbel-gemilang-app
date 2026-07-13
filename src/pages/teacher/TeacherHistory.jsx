@@ -73,9 +73,6 @@ const TeacherHistory = () => {
   // 🔥 HITUNG TOTAL JAM
   const totalJam = logs.reduce((acc, curr) => acc + (parseFloat(curr.durasiJam) || 0), 0);
   
-  // 🔥 HITUNG TOTAL HONOR
-  const totalHonor = logs.reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0);
-  
   // 🔥 HITUNG TOTAL SISWA
   const totalSiswa = logs.reduce((acc, curr) => acc + (parseInt(curr.siswaHadir) || 0), 0);
   
@@ -153,10 +150,10 @@ const TeacherHistory = () => {
         </div>
       </div>
 
-      {/* 🔥 KARTU RINGKASAN */}
+      {/* 🔥 KARTU RINGKASAN - TANPA HONOR */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
+        gridTemplateColumns: isMobile ? '1fr 1fr 1fr' : 'repeat(3, 1fr)',
         gap: 10,
         marginBottom: 16
       }}>
@@ -195,18 +192,6 @@ const TeacherHistory = () => {
             {totalSiswa}
           </div>
           <div style={{ fontSize: 10, color: '#94a3b8' }}>Total Siswa</div>
-        </div>
-        <div style={{
-          background: 'white',
-          padding: 14,
-          borderRadius: 12,
-          border: '1px solid #f1f5f9',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: 20, fontWeight: 900, color: '#f59e0b' }}>
-            Rp {(totalHonor / 1000).toFixed(0)}K
-          </div>
-          <div style={{ fontSize: 10, color: '#94a3b8' }}>Total Honor</div>
         </div>
       </div>
 
@@ -269,7 +254,7 @@ const TeacherHistory = () => {
           </div>
         </div>
 
-        {/* DESKTOP TABLE */}
+        {/* DESKTOP TABLE - TANPA NOMINAL */}
         {!isMobile && (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -322,11 +307,6 @@ const TeacherHistory = () => {
                       }}>
                         {log.status || 'Menunggu Validasi'}
                       </span>
-                      {log.nominal > 0 && (
-                        <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 2 }}>
-                          Rp {log.nominal.toLocaleString()}
-                        </div>
-                      )}
                     </td>
                   </tr>
                 ))}
@@ -335,7 +315,7 @@ const TeacherHistory = () => {
           </div>
         )}
 
-        {/* MOBILE CARDS */}
+        {/* MOBILE CARDS - TANPA NOMINAL */}
         {isMobile && (
           <div>
             {loading ? (
@@ -376,11 +356,6 @@ const TeacherHistory = () => {
                 <div style={{ display: 'flex', gap: 12, fontSize: 11, color: '#64748b', flexWrap: 'wrap' }}>
                   <span><Users size={12} style={{ display: 'inline', marginRight: 4 }} /> {log.siswaHadir || 0} Siswa</span>
                   <span><Clock size={12} style={{ display: 'inline', marginRight: 4 }} /> {log.durasiJam || 0} Jam</span>
-                  {log.nominal > 0 && (
-                    <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>
-                      Rp {log.nominal.toLocaleString()}
-                    </span>
-                  )}
                 </div>
               </div>
             ))}
