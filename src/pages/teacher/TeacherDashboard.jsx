@@ -19,7 +19,57 @@ import {
   Briefcase, BarChart3, Activity, PieChart,
   RefreshCw, Loader2, Eye, EyeOff
 } from 'lucide-react';
-import LogoGemilang from '../../components/LogoGemilang';
+
+// ============================================================
+// LOGO COMPONENT - Menggunakan gambar dari folder public
+// ============================================================
+const LogoGemilang = ({ size = "medium", variant = "default", showText = true }) => {
+  const sizes = {
+    small: { width: 30, height: 30, fontSize: 12 },
+    medium: { width: 40, height: 40, fontSize: 14 },
+    large: { width: 60, height: 60, fontSize: 18 },
+  };
+  
+  const currentSize = sizes[size] || sizes.medium;
+  
+  // Path ke logo di folder public
+  const logoSrc = "/pwa-192x192.png"; // atau bisa pakai /vite.svg, /apple-touch-icon.png, /pwa-512x512.png
+  
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <img 
+        src={logoSrc}
+        alt="Bimbel Gemilang"
+        style={{
+          width: currentSize.width,
+          height: currentSize.height,
+          objectFit: 'contain',
+          borderRadius: variant === 'dark' ? '50%' : '0',
+          filter: variant === 'dark' ? 'none' : 'none',
+        }}
+        onError={(e) => {
+          // Fallback jika gambar tidak ditemukan
+          e.target.style.display = 'none';
+          const parent = e.target.parentElement;
+          const fallback = document.createElement('span');
+          fallback.textContent = '📚';
+          fallback.style.fontSize = currentSize.fontSize + 4 + 'px';
+          parent.appendChild(fallback);
+        }}
+      />
+      {showText && (
+        <span style={{
+          fontSize: currentSize.fontSize,
+          fontWeight: 800,
+          color: variant === 'dark' ? '#1A237E' : '#652D90',
+          letterSpacing: '-0.5px',
+        }}>
+          Bimbel Gemilang
+        </span>
+      )}
+    </div>
+  );
+};
 
 // ============================================================
 // MAIN COMPONENT
@@ -553,7 +603,6 @@ const TeacherDashboard = () => {
                   btnBg = '#10b981';
                   disabled = true;
                 } else if (isOngoing) {
-                  // 🔥 PERBAIKAN: TOMBOL TETAP BISA DITEKAN UNTUK LANJUTKAN KELAS
                   btnText = '🔄 Lanjutkan Kelas';
                   btnBg = '#f59e0b';
                   disabled = false;
@@ -602,27 +651,16 @@ const TeacherDashboard = () => {
                     <button 
                       onClick={() => {
                         if (isOngoing) {
-                          // Jika sedang berlangsung, langsung ke class session
                           navigate('/guru/class-session/' + item.id);
                         } else {
                           handleStartClass(item);
                         }
                       }}
                       style={{
+                        ...styles.startBtn,
                         background: btnBg,
-                        color: 'white',
-                        border: 'none',
-                        padding: '8px 16px',
-                        borderRadius: '8px',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        cursor: disabled ? 'not-allowed' : 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
                         opacity: disabled ? 0.7 : 1,
-                        whiteSpace: 'nowrap',
-                        flexShrink: 0
+                        cursor: disabled ? 'not-allowed' : 'pointer',
                       }}
                       disabled={disabled}
                     >
@@ -1277,6 +1315,19 @@ const styles = {
     fontWeight: 600,
   },
   studentMore: { fontSize: 9, color: '#94a3b8' },
+  startBtn: {
+    padding: '8px 16px',
+    borderRadius: 8,
+    border: 'none',
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 600,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    flexShrink: 0,
+    transition: '0.2s',
+  },
 
   emptyState: { textAlign: 'center', padding: '30px 12px', color: '#94a3b8' },
   emptyText: { fontSize: 13, fontWeight: 600, margin: '8px 0 2px', color: '#64748b' },
