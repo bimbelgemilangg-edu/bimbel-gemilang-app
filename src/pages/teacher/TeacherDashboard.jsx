@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { 
   collection, query, where, getDocs, doc, getDoc, 
-  orderBy, serverTimestamp, limit, onSnapshot 
+  orderBy, serverTimestamp, limit, onSnapshot, updateDoc
 } from "firebase/firestore";
 import { 
   Clock, Users, BookOpen, Star, ArrowRight, 
@@ -33,10 +33,10 @@ const TeacherDashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [todaySchedules, setTodaySchedules] = useState([]);
   const [upcomingSchedules, setUpcomingSchedules] = useState([]);
-  const [mode, setMode] = useState('dashboard');
   const [showStartModal, setShowStartModal] = useState(false);
   const [inputToken, setInputToken] = useState("");
   const [pendingSchedule, setPendingSchedule] = useState(null);
+  const [dailyCode, setDailyCode] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [announcements, setAnnouncements] = useState([]);
   const [selectedNews, setSelectedNews] = useState(null);
@@ -90,7 +90,6 @@ const TeacherDashboard = () => {
         return null;
       }
       
-      // Coba ambil data lengkap dari Firestore
       try {
         const teacherQuery = query(
           collection(db, "teachers"),
@@ -124,7 +123,6 @@ const TeacherDashboard = () => {
       const todayStr = new Date().toISOString().split('T')[0];
       const today = new Date();
       
-      // Get teacher name for queries
       const teacherName = teacher.nama.trim();
       const teacherId = teacher.guruId || teacher.id || teacherName;
       
@@ -136,13 +134,11 @@ const TeacherDashboard = () => {
       const snapJadwal = await getDocs(qJadwal);
       const allSchedules = snapJadwal.docs.map(d => ({ id: d.id, ...d.data() }));
       
-      // Filter hari ini
       const todayScheds = allSchedules
         .filter(s => s.dateStr === todayStr)
         .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
       setTodaySchedules(todayScheds);
       
-      // Filter upcoming (7 hari ke depan)
       const futureDate = new Date(today);
       futureDate.setDate(futureDate.getDate() + 7);
       const futureStr = futureDate.toISOString().split('T')[0];
@@ -161,7 +157,6 @@ const TeacherDashboard = () => {
         s.dateStr >= weekAgoStr && s.dateStr <= todayStr
       );
       
-      // Total siswa unik
       const allStudents = new Set();
       allSchedules.forEach(s => {
         if (s.students) {
@@ -172,10 +167,22 @@ const TeacherDashboard = () => {
         }
       });
       
-      // Attendance rate
+      // ===== AMBIL DAILY CODE =====
+      try {
+        const codeDoc = await getDoc(doc(db, "settings", 'daily_code_' + todayStr));
+        if (codeDoc.exists()) {
+          setDailyCode(codeDoc.data().code || '');
+        } else {
+          setDailyCode('');
+        }
+      } catch (e) {
+        setDailyCode('');
+      }
+      
+      // ===== ATTENDANCE RATE =====
       const qLogs = query(
         collection(db, "teacher_logs"),
-        where("teacher_id", "==", teacherId),
+        where("teacherId", "==", teacherId),
         orderBy("tanggal", "desc"),
         limit(30)
       );
@@ -184,8 +191,8 @@ const TeacherDashboard = () => {
       
       let attendanceRate = 0;
       if (logs.length > 0) {
-        const totalHadir = logs.reduce((acc, l) => acc + (l.siswa_hadir || 0), 0);
-        const totalSiswa = logs.reduce((acc, l) => acc + (l.siswa_total || l.siswa_hadir || 0), 0);
+        const totalHadir = logs.reduce((acc, l) => acc + (l.siswaHadir || 0), 0);
+        const totalSiswa = logs.reduce((acc, l) => acc + (l.siswa_total || l.siswaHadir || 0), 0);
         attendanceRate = totalSiswa > 0 ? Math.round((totalHadir / totalSiswa) * 100) : 0;
       }
       
@@ -237,7 +244,6 @@ const TeacherDashboard = () => {
       if (teacher) {
         await fetchData(teacher);
         
-        // Real-time listener for today's schedules
         const todayStr = new Date().toISOString().split('T')[0];
         const q = query(
           collection(db, "jadwal_bimbel"),
@@ -265,21 +271,35 @@ const TeacherDashboard = () => {
     if (teacher) await fetchData(teacher);
   };
 
-  const handleVerifyAndStart = async () => {
-    if (!inputToken) return alert("Masukkan kode absensi!");
+  // 🔥 FUNGSI VERIFIKASI TOKEN DENGAN ROUTING
+  const handleVerifyTokenAndStart = async () => {
+    if (!pendingSchedule) return;
+    if (!inputToken) {
+      alert("⚠️ Masukkan kode absensi terlebih dahulu!");
+      return;
+    }
+    
+    if (inputToken.trim().toUpperCase() !== dailyCode.trim().toUpperCase()) {
+      alert("⚠️ Token absensi salah! Silakan periksa kembali atau hubungi admin.");
+      setInputToken("");
+      return;
+    }
+
     try {
-      const todayStr = new Date().toISOString().split('T')[0];
-      const codeDoc = await getDoc(doc(db, "settings", `daily_code_${todayStr}`));
+      await updateDoc(doc(db, "jadwal_bimbel", pendingSchedule.id), {
+        status: 'ongoing',
+        startedAt: serverTimestamp()
+      });
+
+      setShowStartModal(false);
+      setInputToken("");
       
-      if (codeDoc.exists() && inputToken.toUpperCase() === codeDoc.data().code) {
-        setMode('session');
-        setShowStartModal(false);
-        setInputToken("");
-      } else {
-        alert("❌ KODE SALAH! Silakan coba lagi.");
-      }
-    } catch (e) {
-      alert("Error: " + e.message);
+      // 🔥 PINDAH KE HALAMAN ATTENDANCE DENGAN ROUTING
+      navigate('/guru/attendance/' + pendingSchedule.id);
+      
+    } catch (error) {
+      console.error("Gagal memulai kelas:", error);
+      alert("❌ Terjadi kesalahan sistem saat membuka kelas.");
     }
   };
 
@@ -316,25 +336,12 @@ const TeacherDashboard = () => {
     const parts = dateStr.split('-');
     if (parts.length !== 3) return dateStr;
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
-    return `${parseInt(parts[2])} ${months[parseInt(parts[1]) - 1]} ${parts[0]}`;
+    return parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
   };
 
   // ============================================================
   // RENDER
   // ============================================================
-  
-  if (mode === 'session') {
-    return (
-      <ClassSession 
-        schedule={pendingSchedule} 
-        teacher={guru} 
-        onBack={() => { 
-          setMode('dashboard'); 
-          fetchData(guru); 
-        }} 
-      />
-    );
-  }
 
   if (loading) {
     return (
@@ -358,7 +365,6 @@ const TeacherDashboard = () => {
         <div style={styles.headerRight}>
           <span style={styles.greeting}>{greeting}</span>
           
-          {/* Notification Bell */}
           <div style={styles.notifWrapper} ref={notificationRef}>
             <button 
               onClick={() => setShowNotifications(!showNotifications)} 
@@ -420,7 +426,7 @@ const TeacherDashboard = () => {
             Assalamu'alaikum, {guru?.nama?.split(' ')[0] || 'Guru'}! 👋
           </h1>
           <p style={styles.bannerSub}>
-            {guru?.mapel ? `Pengajar ${guru.mapel}` : 'Pengajar Bimbel Gemilang'}
+            {guru?.mapel ? 'Pengajar ' + guru.mapel : 'Pengajar Bimbel Gemilang'}
             {guru?.guruId && <span style={styles.bannerId}> • <Hash size={10} /> {guru.guruId}</span>}
           </p>
           <div style={styles.bannerTags}>
@@ -445,7 +451,7 @@ const TeacherDashboard = () => {
               <span style={styles.bannerProgressValue}>{stats.attendanceRate}%</span>
             </div>
             <div style={styles.bannerProgressBar}>
-              <div style={{...styles.bannerProgressFill, width: `${stats.attendanceRate}%`}} />
+              <div style={{...styles.bannerProgressFill, width: stats.attendanceRate + '%'}} />
             </div>
           </div>
         </div>
@@ -537,58 +543,96 @@ const TeacherDashboard = () => {
             </div>
           ) : (
             <div style={styles.scheduleList}>
-              {todaySchedules.slice(0, 5).map(item => (
-                <div key={item.id} style={styles.scheduleCard}>
-                  <div style={styles.scheduleTime}>
-                    <span style={styles.scheduleTimeText}>{item.start}</span>
-                    <span style={styles.scheduleTimeEnd}>- {item.end}</span>
-                  </div>
-                  <div style={styles.scheduleContent}>
-                    <div style={styles.scheduleTitle}>
-                      {item.title || 'Materi Umum'}
-                      {item.mapelId && (
-                        <span style={styles.scheduleMapelId}>
-                          <Tag size={10} /> {item.mapelId}
-                        </span>
-                      )}
+              {todaySchedules.slice(0, 5).map(item => {
+                const isCompleted = item.status === 'completed';
+                const isOngoing = item.status === 'ongoing';
+                const isScheduled = item.status === 'scheduled' || !item.status;
+                
+                let btnText = 'Mulai Kelas';
+                let btnBg = '#3b82f6';
+                let disabled = false;
+                
+                if (isCompleted) {
+                  btnText = '✓ Selesai';
+                  btnBg = '#10b981';
+                  disabled = true;
+                } else if (isOngoing) {
+                  btnText = '🔄 Berlangsung';
+                  btnBg = '#f59e0b';
+                  disabled = true;
+                }
+                
+                return (
+                  <div key={item.id} style={styles.scheduleCard}>
+                    <div style={styles.scheduleTime}>
+                      <span style={styles.scheduleTimeText}>{item.start}</span>
+                      <span style={styles.scheduleTimeEnd}>- {item.end}</span>
                     </div>
-                    <div style={styles.scheduleMeta}>
-                      <span><MapPin size={10} /> {item.planet || 'Ruang'}</span>
-                      <span><Users size={10} /> {item.students?.length || 0} siswa</span>
-                      <span style={styles.programBadge(item.program)}>
-                        {item.program || 'Reguler'}
-                      </span>
-                      {item.teacherId && (
-                        <span style={styles.teacherIdBadge}>
-                          <Hash size={8} /> {item.teacherId}
-                        </span>
-                      )}
-                    </div>
-                    {/* Student preview */}
-                    {item.students && item.students.length > 0 && (
-                      <div style={styles.studentPreview}>
-                        {item.students.slice(0, 3).map((s, i) => (
-                          <span key={i} style={styles.studentChip}>
-                            {s.nama?.split(' ')[0] || 'Siswa'}
+                    <div style={styles.scheduleContent}>
+                      <div style={styles.scheduleTitle}>
+                        {item.title || 'Materi Umum'}
+                        {item.mapelId && (
+                          <span style={styles.scheduleMapelId}>
+                            <Tag size={10} /> {item.mapelId}
                           </span>
-                        ))}
-                        {item.students.length > 3 && (
-                          <span style={styles.studentMore}>+{item.students.length - 3}</span>
                         )}
                       </div>
-                    )}
+                      <div style={styles.scheduleMeta}>
+                        <span><MapPin size={10} /> {item.planet || 'Ruang'}</span>
+                        <span><Users size={10} /> {item.students?.length || 0} siswa</span>
+                        <span style={styles.programBadge(item.program)}>
+                          {item.program || 'Reguler'}
+                        </span>
+                        {item.teacherId && (
+                          <span style={styles.teacherIdBadge}>
+                            <Hash size={8} /> {item.teacherId}
+                          </span>
+                        )}
+                      </div>
+                      {item.students && item.students.length > 0 && (
+                        <div style={styles.studentPreview}>
+                          {item.students.slice(0, 3).map((s, i) => (
+                            <span key={i} style={styles.studentChip}>
+                              {s.nama?.split(' ')[0] || 'Siswa'}
+                            </span>
+                          ))}
+                          {item.students.length > 3 && (
+                            <span style={styles.studentMore}>+{item.students.length - 3}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <button 
+                      onClick={() => {
+                        if (!isCompleted && !isOngoing) {
+                          setPendingSchedule(item);
+                          setShowStartModal(true);
+                          setInputToken("");
+                        }
+                      }}
+                      style={{
+                        background: btnBg,
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: disabled ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        opacity: disabled ? 0.7 : 1,
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0
+                      }}
+                      disabled={disabled}
+                    >
+                      {btnText} <ArrowRight size={14} />
+                    </button>
                   </div>
-                  <button 
-                    onClick={() => { 
-                      setPendingSchedule(item); 
-                      setShowStartModal(true); 
-                    }} 
-                    style={styles.startBtn}
-                  >
-                    <Zap size={12} /> MULAI
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
@@ -620,7 +664,7 @@ const TeacherDashboard = () => {
           <div style={styles.quickActionsCard}>
             <h4 style={styles.quickActionsTitle}>⚡ Akses Cepat</h4>
             <div style={styles.quickActionsGrid}>
-              <button onClick={() => navigate('/guru/input')} style={styles.quickAction}>
+              <button onClick={() => navigate('/guru/attendance')} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#e0e7ff', color: '#4338ca'}}>
                   <UserCheck size={18} />
                 </div>
@@ -652,7 +696,7 @@ const TeacherDashboard = () => {
                 <span style={styles.quickDesc}>Data diri</span>
               </button>
 
-              <button onClick={() => navigate('/guru/raport/input')} style={styles.quickAction}>
+              <button onClick={() => navigate('/guru/grades/input')} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#ede9fe', color: '#6d28d9'}}>
                   <GraduationCap size={18} />
                 </div>
@@ -660,7 +704,7 @@ const TeacherDashboard = () => {
                 <span style={styles.quickDesc}>Input nilai</span>
               </button>
 
-              <button onClick={() => navigate('/guru/manage-tugas')} style={styles.quickAction}>
+              <button onClick={() => navigate('/guru/modul/tugas')} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#fef2f2', color: '#dc2626'}}>
                   <Send size={18} />
                 </div>
@@ -741,7 +785,7 @@ const TeacherDashboard = () => {
             <a href="/" style={styles.footerLink}>Home</a>
             <a href="/guru/modul" style={styles.footerLink}>E-Learning</a>
             <a href="/guru/schedule" style={styles.footerLink}>Jadwal</a>
-            <a href="/guru/raport/input" style={styles.footerLink}>Nilai</a>
+            <a href="/guru/grades/input" style={styles.footerLink}>Nilai</a>
           </div>
           <div style={styles.socialLinks}>
             <a href="https://instagram.com/bimbelgemilangs" target="_blank" rel="noopener noreferrer" style={styles.socialLink}>
@@ -812,7 +856,7 @@ const TeacherDashboard = () => {
               <button onClick={() => setShowStartModal(false)} style={styles.modalCodeCancel}>
                 BATAL
               </button>
-              <button onClick={handleVerifyAndStart} style={styles.modalCodeSubmit}>
+              <button onClick={handleVerifyTokenAndStart} style={styles.modalCodeSubmit}>
                 <Zap size={14} /> VERIFIKASI
               </button>
             </div>
@@ -842,10 +886,9 @@ const TeacherDashboard = () => {
 };
 
 // ============================================================
-// STYLES - SEMUA DALAM OBJEK JAVASCRIPT (NO @media)
+// STYLES
 // ============================================================
 const styles = {
-  // Container
   container: {
     maxWidth: '1200px',
     margin: '0 auto',
@@ -856,7 +899,6 @@ const styles = {
     minHeight: '100vh'
   },
   
-  // Loading
   loadingContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -876,7 +918,6 @@ const styles = {
   },
   loadingText: { color: '#94a3b8', fontSize: 13, fontWeight: 500 },
 
-  // Header
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -900,7 +941,6 @@ const styles = {
   headerRight: { display: 'flex', alignItems: 'center', gap: 8 },
   greeting: { fontSize: 12, color: '#64748b', fontWeight: 500 },
   
-  // Notification
   notifWrapper: { position: 'relative' },
   notifBtn: {
     position: 'relative',
@@ -1014,7 +1054,6 @@ const styles = {
     transition: '0.2s',
   },
 
-  // Banner
   banner: {
     background: 'linear-gradient(135deg, #1A237E 0%, #283593 100%)',
     padding: '20px 24px',
@@ -1069,7 +1108,6 @@ const styles = {
   bannerProgressBar: { height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 2, overflow: 'hidden' },
   bannerProgressFill: { height: '100%', background: 'linear-gradient(90deg, #fbbf24, #10b981)', borderRadius: 2, transition: 'width 0.8s ease' },
 
-  // Stats
   statsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
@@ -1111,7 +1149,6 @@ const styles = {
     background: direction === 'up' ? '#ecfdf5' : direction === 'down' ? '#fef2f2' : '#f1f5f9',
   }),
 
-  // Main Grid
   mainGrid: (m) => ({
     display: 'grid',
     gridTemplateColumns: m ? '1fr' : '1.6fr 1fr',
@@ -1120,10 +1157,28 @@ const styles = {
   }),
   rightCol: { display: 'flex', flexDirection: 'column', gap: 14 },
 
-  // Section
-  section: { background: 'white', padding: 16, borderRadius: 14, border: '1px solid #f1f5f9', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' },
-  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { margin: 0, fontSize: 14, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6, color: '#1e293b' },
+  section: { 
+    background: 'white', 
+    padding: 16, 
+    borderRadius: 14, 
+    border: '1px solid #f1f5f9', 
+    boxShadow: '0 2px 4px rgba(0,0,0,0.02)' 
+  },
+  sectionHeader: { 
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    marginBottom: 12 
+  },
+  sectionTitle: { 
+    margin: 0, 
+    fontSize: 14, 
+    fontWeight: 800, 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 6, 
+    color: '#1e293b' 
+  },
   sectionActions: { display: 'flex', gap: 6 },
   seeAllBtn: {
     background: 'none',
@@ -1136,11 +1191,21 @@ const styles = {
     alignItems: 'center',
     gap: 4,
   },
-  scheduleSubHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  scheduleSubHeader: { 
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    marginBottom: 10 
+  },
   scheduleSubTitle: { fontSize: 12, fontWeight: 600, color: '#64748b' },
-  scheduleCount: { fontSize: 10, color: '#94a3b8', background: '#f1f5f9', padding: '2px 8px', borderRadius: 10 },
+  scheduleCount: { 
+    fontSize: 10, 
+    color: '#94a3b8', 
+    background: '#f1f5f9', 
+    padding: '2px 8px', 
+    borderRadius: 10 
+  },
 
-  // Schedule List
   scheduleList: { display: 'flex', flexDirection: 'column', gap: 8 },
   scheduleCard: {
     background: '#f8fafc',
@@ -1157,9 +1222,34 @@ const styles = {
   scheduleTimeText: { fontWeight: 800, fontSize: 13, color: '#1e293b' },
   scheduleTimeEnd: { fontSize: 10, color: '#94a3b8' },
   scheduleContent: { flex: 1, minWidth: 120 },
-  scheduleTitle: { fontWeight: 700, fontSize: 13, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-  scheduleMapelId: { fontSize: 8, color: '#8b5cf6', background: '#ede9fe', padding: '1px 6px', borderRadius: 4, display: 'inline-flex', alignItems: 'center', gap: 2 },
-  scheduleMeta: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 2, fontSize: 10, color: '#64748b', flexWrap: 'wrap' },
+  scheduleTitle: { 
+    fontWeight: 700, 
+    fontSize: 13, 
+    color: '#1e293b', 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 6, 
+    flexWrap: 'wrap' 
+  },
+  scheduleMapelId: { 
+    fontSize: 8, 
+    color: '#8b5cf6', 
+    background: '#ede9fe', 
+    padding: '1px 6px', 
+    borderRadius: 4, 
+    display: 'inline-flex', 
+    alignItems: 'center', 
+    gap: 2 
+  },
+  scheduleMeta: { 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 8, 
+    marginTop: 2, 
+    fontSize: 10, 
+    color: '#64748b', 
+    flexWrap: 'wrap' 
+  },
   programBadge: (p) => ({
     fontSize: 8,
     fontWeight: 700,
@@ -1189,30 +1279,11 @@ const styles = {
     fontWeight: 600,
   },
   studentMore: { fontSize: 9, color: '#94a3b8' },
-  startBtn: {
-    background: '#10b981',
-    color: 'white',
-    border: 'none',
-    padding: '6px 16px',
-    borderRadius: 8,
-    fontWeight: 800,
-    fontSize: 10,
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-    boxShadow: '0 2px 8px rgba(16,185,129,0.3)',
-    transition: '0.2s',
-  },
 
-  // Empty State
   emptyState: { textAlign: 'center', padding: '30px 12px', color: '#94a3b8' },
   emptyText: { fontSize: 13, fontWeight: 600, margin: '8px 0 2px', color: '#64748b' },
   emptySub: { fontSize: 11, margin: 0 },
 
-  // Upcoming
   upcomingSection: { marginTop: 14, paddingTop: 14, borderTop: '1px solid #f1f5f9' },
   upcomingList: { display: 'flex', flexDirection: 'column', gap: 6 },
   upcomingCard: {
@@ -1230,7 +1301,6 @@ const styles = {
   upcomingTitle: { color: '#64748b', flex: 1 },
   upcomingTeacher: { fontSize: 10, color: '#94a3b8' },
 
-  // Quick Actions
   quickActionsCard: {
     background: 'white',
     padding: 14,
@@ -1270,7 +1340,6 @@ const styles = {
   quickLabel: { fontSize: 10, fontWeight: 700, color: '#1e293b' },
   quickDesc: { fontSize: 8, color: '#94a3b8' },
 
-  // Info Card
   infoCard: {
     background: 'white',
     padding: 14,
@@ -1287,7 +1356,6 @@ const styles = {
   mapelIdTag: { fontSize: 8, color: '#8b5cf6', background: '#ede9fe', padding: '1px 6px', borderRadius: 4 },
   statusActive: { color: '#10b981', background: '#dcfce7', padding: '1px 8px', borderRadius: 10, fontSize: 9, fontWeight: 700 },
 
-  // Announcements
   announceCard: {
     background: 'white',
     padding: 14,
@@ -1311,7 +1379,6 @@ const styles = {
   announceTitle: { fontSize: 11, fontWeight: 600, color: '#1e293b' },
   announceDate: { fontSize: 8, color: '#94a3b8', marginTop: 2 },
 
-  // Footer
   footer: {
     marginTop: 20,
     paddingTop: 16,
@@ -1356,7 +1423,6 @@ const styles = {
     color: '#64748b',
   },
 
-  // Modals
   modalOverlay: {
     position: 'fixed',
     inset: 0,
@@ -1402,7 +1468,6 @@ const styles = {
   modalText: { fontSize: 13, color: '#475569', lineHeight: 1.6, whiteSpace: 'pre-wrap' },
   modalDate: { marginTop: 12, fontSize: 10, color: '#94a3b8' },
 
-  // Code Modal
   modalCode: {
     background: 'white',
     padding: 28,
