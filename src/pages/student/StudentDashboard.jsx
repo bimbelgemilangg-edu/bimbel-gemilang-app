@@ -1,3 +1,4 @@
+// src/pages/student/StudentDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import SidebarSiswa from '../../components/SidebarSiswa';
 import { db, auth } from '../../firebase';
@@ -29,6 +30,16 @@ const StudentDashboard = () => {
   const [authReady, setAuthReady] = useState(false);
   const [authError, setAuthError] = useState(false);
 
+  // ============================================================
+  // 🔥 HELPER: Format Tanggal SAMA dengan StudentSchedule
+  // ============================================================
+  const getSmartDateString = (dateObj) => {
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    return year + '-' + month + '-' + day;
+  };
+
   useEffect(() => { 
     const h = () => setWindowWidth(window.innerWidth); 
     window.addEventListener('resize', h); 
@@ -37,7 +48,7 @@ const StudentDashboard = () => {
   
   const isMobile = windowWidth <= 768;
 
-  // ➕ AUTH CHECK LEBIH AMAN
+  // AUTH CHECK
   useEffect(() => {
     const storedId = localStorage.getItem('studentId');
     const storedName = localStorage.getItem('studentName');
@@ -50,7 +61,6 @@ const StudentDashboard = () => {
       return;
     }
     
-    // Fallback ke onAuthStateChanged
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setStudentName(storedName || user.email || "Siswa");
@@ -66,41 +76,48 @@ const StudentDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-  // ➕ FETCH DATA RINGAN
+  // FETCH DATA
   useEffect(() => {
     if (!authReady || !studentId) return;
     
-    const fetchLight = async () => {
+    const fetchData = async () => {
       try {
-        // Fetch paralel: profil + jadwal + raport (ringan)
-        const todayStr = new Date().toISOString().split('T')[0];
-        const periode = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+        // 🔥 AMBIL JADWAL HARI INI DENGAN FORMAT TANGGAL YANG SAMA
+        const todayStr = getSmartDateString(new Date());
+        const periode = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
         
-        const [sSnap, schedSnap, raportSnap] = await Promise.all([
-          getDoc(doc(db, "students", studentId)).catch(() => null),
-          getDocs(query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr))).catch(() => ({ docs: [] })),
-          getDocs(query(collection(db, RAPORT_COLLECTIONS.FINAL), where("studentId", "==", studentId), where("periode", "==", periode), limit(1))).catch(() => ({ docs: [] }))
-        ]);
+        // Ambil jadwal hari ini
+        const schedSnap = await getDocs(
+          query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr))
+        ).catch(() => ({ docs: [] }));
         
-        if (sSnap?.exists()) setStudentProfile(sSnap.data());
-        
+        // Filter jadwal yang mengandung studentId
         const fetchedSchedules = schedSnap.docs
           .map(d => ({ id: d.id, ...d.data() }))
-          .filter(sch => sch.students?.some(s => s.id === studentId || s === studentId))
+          .filter(sch => sch.students?.some(s => s.id === studentId || s === studentId || s.studentId === studentId))
           .sort((a, b) => (a.start || '').localeCompare(b.start || ''))
           .slice(0, 5);
         setTodaySchedules(fetchedSchedules);
+        
+        // Ambil profil siswa
+        const sSnap = await getDoc(doc(db, "students", studentId)).catch(() => null);
+        if (sSnap?.exists()) setStudentProfile(sSnap.data());
+        
+        // Ambil raport
+        const raportSnap = await getDocs(
+          query(collection(db, RAPORT_COLLECTIONS.FINAL), where("studentId", "==", studentId), where("periode", "==", periode), limit(1))
+        ).catch(() => ({ docs: [] }));
         
         if (!raportSnap.empty) {
           const data = raportSnap.docs[0].data();
           setRaportSummary({
             nilaiAkhir: data.nilai_akhir,
             komponenDipake: data.komponen_dipakai || [],
-            periode
+            periode: periode
           });
         }
         
-        // Tugas ringan — ambil 3 terbaru
+        // Ambil tugas ringan
         try {
           const modulSnap = await getDocs(query(collection(db, "bimbel_modul"), orderBy("updatedAt", "desc"), limit(3)));
           const fetchedTasks = modulSnap.docs
@@ -114,7 +131,7 @@ const StudentDashboard = () => {
       finally { setLoading(false); }
     };
     
-    fetchLight();
+    fetchData();
   }, [authReady, studentId]);
 
   // QR SCANNER
@@ -132,13 +149,13 @@ const StudentDashboard = () => {
             try {
               const d = JSON.parse(text);
               if (d.type === "ABSENSI_BIMBEL") {
-                const today = new Date().toISOString().split('T')[0];
-                await setDoc(doc(db, "attendance", `${studentId}_${today}_${d.scheduleId || ''}`), {
+                const today = getSmartDateString(new Date());
+                await setDoc(doc(db, "attendance", studentId + '_' + today + '_' + (d.scheduleId || '')), {
                   studentId, studentName, teacherName: d.teacher, date: today,
                   tanggal: today, timestamp: serverTimestamp(), status: "Hadir",
                   mapel: d.mapel, scheduleId: d.scheduleId || '', keterangan: "Scan QR"
                 }, { merge: true });
-                alert(`✅ Absen: ${d.mapel}`);
+                alert('✅ Absen: ' + d.mapel);
                 stop();
               }
             } catch (e) {}
@@ -192,7 +209,7 @@ const StudentDashboard = () => {
           <div>
             <h1 style={{ margin:0, fontSize: isMobile ? 20 : 26, fontWeight:800, color:'#1e293b' }}>Halo, {studentName}! 👋</h1>
             <p style={{ color:'#64748b', marginTop:4, fontSize:13 }}>
-              {studentProfile ? `${studentProfile.kategori || 'Reguler'} - Kelas ${studentProfile.kelasSekolah || '-'}` : ''}
+              {studentProfile ? (studentProfile.kategori || 'Reguler') + ' - Kelas ' + (studentProfile.kelasSekolah || '-') : ''}
             </p>
           </div>
           {!isMobile && (
@@ -202,7 +219,7 @@ const StudentDashboard = () => {
           )}
         </div>
 
-        {/* ➕ RINGKASAN RAPORT */}
+        {/* RINGKASAN RAPORT */}
         {raportSummary && (
           <div onClick={() => navigate('/siswa/smart-rapor')} style={{ background:'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius:16, padding:20, color:'white', cursor:'pointer', marginBottom:16, transition:'transform 0.2s' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
@@ -233,17 +250,17 @@ const StudentDashboard = () => {
         {/* GRID UTAMA */}
         <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:16 }}>
           
-          {/* JADWAL HARI INI */}
+          {/* 🔥 JADWAL HARI INI - SUDAH DIPERBAIKI */}
           <div style={{ background:'white', padding:18, borderRadius:14, border:'1px solid #e2e8f0' }}>
             <h3 style={{ margin:'0 0 14px', fontSize:15, fontWeight:700, display:'flex', alignItems:'center', gap:8 }}><Calendar size={18} color="#3b82f6" /> Jadwal Hari Ini</h3>
             {todaySchedules.length === 0 ? (
-              <div style={{ textAlign:'center', padding:20, color:'#94a3b8', fontSize:12 }}>📭 Tidak ada jadwal</div>
+              <div style={{ textAlign:'center', padding:20, color:'#94a3b8', fontSize:12 }}>📭 Tidak ada jadwal hari ini</div>
             ) : todaySchedules.map((sch, i) => (
               <div key={i} style={{ display:'flex', gap:10, padding:'10px 0', borderBottom:'1px solid #f1f5f9' }}>
                 <div style={{ minWidth:50, textAlign:'center', fontWeight:700, fontSize:12 }}>{sch.start}</div>
                 <div>
                   <div style={{ fontWeight:700, fontSize:13 }}>{sch.title || "Kelas"}</div>
-                  <div style={{ fontSize:10, color:'#64748b' }}><MapPin size={9} /> {sch.planet || '-'} • <User size={9} /> {sch.booker || '-'}</div>
+                  <div style={{ fontSize:10, color:'#64748b' }}><MapPin size={9} /> {sch.planet || '-'} • <User size={9} /> {sch.teacherName || sch.booker || '-'}</div>
                 </div>
               </div>
             ))}
@@ -261,7 +278,7 @@ const StudentDashboard = () => {
               <div key={i} style={{ padding:10, background:'#f8fafc', borderRadius:8, marginBottom:6, borderLeft:'3px solid #9b59b6', cursor:'pointer' }} onClick={() => { localStorage.setItem('selectedModuleId', task.id); setActiveMenu('materi'); }}>
                 <div style={{ fontWeight:700, fontSize:13 }}>{task.title}</div>
                 <div style={{ fontSize:10, color:'#64748b' }}>
-                  {task.quizData?.length > 0 ? `📝 ${task.quizData.length} soal` : '📓 Tugas'} • {task.subject || 'Umum'}
+                  {task.quizData?.length > 0 ? '📝 ' + task.quizData.length + ' soal' : '📓 Tugas'} • {task.subject || 'Umum'}
                 </div>
               </div>
             ))}
@@ -288,7 +305,7 @@ const StudentDashboard = () => {
       {/* QR SCANNER MODAL */}
       {isScanning && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.8)', zIndex:2000, display:'flex', justifyContent:'center', alignItems:'center', padding:16 }}>
-          <div style={{ background:'white', padding:20, borderRadius:20, width:'90%', maxWidth:400, textAlign:'center' }}>
+          <div style={{ background:'white', padding:20, borderRadius:20, width:'90%', maxWidth:400, textAlign:'center', position:'relative' }}>
             <button onClick={() => setIsScanning(false)} style={{ position:'absolute', top:10, right:10, background:'rgba(0,0,0,0.5)', color:'white', border:'none', borderRadius:'50%', width:30, height:30, cursor:'pointer' }}><X size={16}/></button>
             <h3>Scan QR Code</h3>
             <div id="reader" style={{ width:'100%', borderRadius:12, overflow:'hidden' }}></div>
