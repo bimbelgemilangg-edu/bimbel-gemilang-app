@@ -305,7 +305,7 @@ const TeacherDashboard = () => {
       setShowStartModal(false);
       setInputToken("");
       
-      // 🔥 PINDAH KE ClassSession (BUKAN TeacherAttendance)
+      // 🔥 PINDAH KE ClassSession
       navigate('/guru/class-session/' + pendingSchedule.id);
       
     } catch (error) {
@@ -553,9 +553,10 @@ const TeacherDashboard = () => {
                   btnBg = '#10b981';
                   disabled = true;
                 } else if (isOngoing) {
-                  btnText = '🔄 Berlangsung';
+                  // 🔥 PERBAIKAN: TOMBOL TETAP BISA DITEKAN UNTUK LANJUTKAN KELAS
+                  btnText = '🔄 Lanjutkan Kelas';
                   btnBg = '#f59e0b';
-                  disabled = true;
+                  disabled = false;
                 }
                 
                 return (
@@ -599,7 +600,14 @@ const TeacherDashboard = () => {
                       )}
                     </div>
                     <button 
-                      onClick={() => handleStartClass(item)}
+                      onClick={() => {
+                        if (isOngoing) {
+                          // Jika sedang berlangsung, langsung ke class session
+                          navigate('/guru/class-session/' + item.id);
+                        } else {
+                          handleStartClass(item);
+                        }
+                      }}
                       style={{
                         background: btnBg,
                         color: 'white',
