@@ -277,9 +277,13 @@ const TeacherDashboard = () => {
     setInputToken("");
   };
 
-  // 🔥 FUNGSI VERIFIKASI TOKEN DENGAN ROUTING
+  // 🔥 FUNGSI VERIFIKASI TOKEN - REDIRECT KE ClassSession
   const handleVerifyTokenAndStart = async () => {
-    if (!pendingSchedule) return;
+    if (!pendingSchedule) {
+      alert("⚠️ Tidak ada jadwal yang dipilih!");
+      return;
+    }
+    
     if (!inputToken) {
       alert("⚠️ Masukkan kode absensi terlebih dahulu!");
       return;
@@ -292,6 +296,7 @@ const TeacherDashboard = () => {
     }
 
     try {
+      // Update status jadwal
       await updateDoc(doc(db, "jadwal_bimbel", pendingSchedule.id), {
         status: 'ongoing',
         startedAt: serverTimestamp()
@@ -300,12 +305,12 @@ const TeacherDashboard = () => {
       setShowStartModal(false);
       setInputToken("");
       
-      // 🔥 PINDAH KE HALAMAN ATTENDANCE DENGAN ROUTING
-      navigate('/guru/attendance/' + pendingSchedule.id);
+      // 🔥 PINDAH KE ClassSession (BUKAN TeacherAttendance)
+      navigate('/guru/class-session/' + pendingSchedule.id);
       
     } catch (error) {
       console.error("Gagal memulai kelas:", error);
-      alert("❌ Terjadi kesalahan sistem saat membuka kelas.");
+      alert("❌ Terjadi kesalahan sistem saat membuka kelas: " + error.message);
     }
   };
 
