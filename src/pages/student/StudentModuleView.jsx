@@ -8,7 +8,8 @@ import {
 import { 
   ArrowLeft, Clock, FileText, CheckCircle, Eye, 
   Link as LinkIcon, HelpCircle, Trash2, X, Send, 
-  Download, BookOpen, Hash, Tag, File, Upload, User
+  Download, BookOpen, Hash, Tag, File, Upload, User,
+  AlertCircle, Lock, Shield
 } from 'lucide-react';
 import { uploadElearningFile } from '../../services/uploadService';
 
@@ -52,7 +53,8 @@ const getTimeRemaining = (deadline) => {
 // REDUCER
 // ============================================================
 const initialState = {
-  modul: null, loading: true, uploading: {}, submittedTasks: {},
+  modul: null, loading: true, error: null, hasAccess: false,
+  uploading: {}, submittedTasks: {},
   quizAnswers: {}, quizSubmitted: false, textAnswers: {},
   activeTab: 'materi', previewImage: null,
   pendingFile: null, pendingBlockId: null, showPreviewModal: false,
@@ -62,6 +64,8 @@ function reducer(state, action) {
   switch (action.type) {
     case 'SET_MODUL': return { ...state, modul: action.payload, loading: false };
     case 'SET_LOADING': return { ...state, loading: action.payload };
+    case 'SET_ERROR': return { ...state, error: action.payload, loading: false };
+    case 'SET_ACCESS': return { ...state, hasAccess: action.payload };
     case 'SET_UPLOADING': return { ...state, uploading: { ...state.uploading, [action.blockId]: action.value } };
     case 'SET_SUBMITTED_TASKS': return { ...state, submittedTasks: action.payload };
     case 'SET_QUIZ_ANSWERS': return { ...state, quizAnswers: { ...state.quizAnswers, [action.qId]: action.value } };
@@ -82,6 +86,8 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [studentNim, setStudentNim] = useState('');
+  const [studentKelas, setStudentKelas] = useState('');
+  const [studentProgram, setStudentProgram] = useState('');
 
   // ===== RESPONSIVE =====
   useEffect(() => {
@@ -90,14 +96,19 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     return () => window.removeEventListener('resize', h);
   }, []);
 
-  // ===== AMBIL NIM =====
+  // ===== AMBIL DATA SISWA =====
   useEffect(() => {
     const nim = studentData?.studentId || studentData?.nim || studentData?.studentNim || 
                 localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
+    const kelas = studentData?.kelasSekolah || localStorage.getItem('studentKelas') || '';
+    const program = studentData?.kategori || studentData?.program || localStorage.getItem('studentProgram') || 'Reguler';
+    
     setStudentNim(nim);
+    setStudentKelas(kelas);
+    setStudentProgram(program);
   }, [studentData]);
 
-  // ===== FETCH MODUL - ANTI RACE CONDITION =====
+  // ===== FETCH MODUL DENGAN FILTER AKSES =====
   useEffect(() => {
     if (!modulId) return;
     let cancelled = false;
@@ -105,24 +116,77 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     const fetchAll = async () => {
       dispatch({ type: 'SET_LOADING', payload: true });
       try {
-        const activeNim = studentData?.studentId || studentData?.nim || studentData?.studentNim || 
-                          localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
-
         const snap = await getDoc(doc(db, "bimbel_modul", modulId));
         if (cancelled) return;
         
         if (!snap.exists()) {
-          dispatch({ type: 'SET_LOADING', payload: false });
+          dispatch({ type: 'SET_ERROR', payload: 'Modul tidak ditemukan' });
           return;
         }
         
         const data = snap.data();
+        
+        // 🔥 CEK HAK AKSES SISWA
+        const nim = studentNim || localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
+        const kelas = studentKelas || localStorage.getItem('studentKelas') || '';
+        const program = studentProgram || localStorage.getItem('studentProgram') || 'Reguler';
+        
+        let hasAccess = false;
+        let accessReason = '';
+        
+        // 1. Cek jika modul dikirim ke siswa tertentu
+        if (data.sendToSpecificStudents) {
+          const studentIds = data.studentIds || [];
+          const selectedStudentIds = (data.selectedStudents || []).map(s => s.studentId || s.id);
+          const allTargetIds = [...studentIds, ...selectedStudentIds];
+          
+          hasAccess = allTargetIds.includes(nim) || allTargetIds.includes(studentData?.id);
+          accessReason = hasAccess ? 'Dikirim khusus ke Anda' : 'Tidak termasuk siswa yang dipilih';
+        }
+        
+        // 2. Cek berdasarkan kelas dan program
+        if (!hasAccess) {
+          const targetKelas = data.targetKelas || 'Semua';
+          const targetKategori = data.targetKategori || 'Semua';
+          
+          const matchKelas = targetKelas === 'Semua' || targetKelas === kelas;
+          const matchProgram = targetKategori === 'Semua' || targetKategori === program;
+          
+          hasAccess = matchKelas && matchProgram;
+          accessReason = hasAccess ? 
+            `Kelas ${kelas} & Program ${program} cocok` : 
+            `Target: ${targetKelas} | ${targetKategori}, Anda: ${kelas} | ${program}`;
+        }
+        
+        // 3. Cek jika modul adalah milik guru (akses untuk semua)
+        if (!hasAccess && !data.sendToSpecificStudents) {
+          // Jika tidak ada filter spesifik, dan target kelas/program cocok
+          const targetKelas = data.targetKelas || 'Semua';
+          const targetKategori = data.targetKategori || 'Semua';
+          
+          const matchKelas = targetKelas === 'Semua' || targetKelas === kelas;
+          const matchProgram = targetKategori === 'Semua' || targetKategori === program;
+          
+          hasAccess = matchKelas && matchProgram;
+        }
+        
+        // 🔥 JIKA TIDAK PUNYA AKSES
+        if (!hasAccess) {
+          console.log('❌ Akses ditolak:', accessReason);
+          dispatch({ type: 'SET_ERROR', payload: 'Anda tidak memiliki akses ke modul ini. ' + accessReason });
+          dispatch({ type: 'SET_ACCESS', payload: false });
+          return;
+        }
+        
+        // ✅ SISWA PUNYA AKSES
+        dispatch({ type: 'SET_ACCESS', payload: true });
         dispatch({ type: 'SET_MODUL', payload: data });
 
-        if (activeNim) {
+        // Ambil data tugas & kuis yang sudah dikerjakan
+        if (nim) {
           const [snapTugas, snapKuis] = await Promise.all([
-            getDocs(query(collection(db,"jawaban_tugas"), where("modulId","==",modulId), where("studentNim","==",activeNim))),
-            getDocs(query(collection(db,"jawaban_kuis"), where("modulId","==",modulId), where("studentNim","==",activeNim)))
+            getDocs(query(collection(db,"jawaban_tugas"), where("modulId","==",modulId), where("studentNim","==",nim))),
+            getDocs(query(collection(db,"jawaban_kuis"), where("modulId","==",modulId), where("studentNim","==",nim)))
           ]);
           
           if (cancelled) return;
@@ -130,20 +194,30 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           const completed = {};
           snapTugas.forEach(d => { 
             const dt = d.data(); 
-            completed[dt.blockId] = { docId:d.id, fileUrl:dt.fileUrl, fileName:dt.fileName||'Lihat File', textAnswer:dt.answer||dt.textAnswer||'', status:dt.status||'Pending' }; 
+            completed[dt.blockId] = { 
+              docId:d.id, 
+              fileUrl:dt.fileUrl, 
+              fileName:dt.fileName||'Lihat File', 
+              textAnswer:dt.answer||dt.textAnswer||'', 
+              status:dt.status||'Pending' 
+            }; 
           });
           dispatch({ type:'SET_SUBMITTED_TASKS', payload: completed });
           if (!snapKuis.empty) dispatch({ type:'SET_QUIZ_SUBMITTED', payload: true });
         }
+        
       } catch(e) { 
-        if (!cancelled) console.error(e); 
+        if (!cancelled) {
+          console.error(e);
+          dispatch({ type: 'SET_ERROR', payload: 'Gagal memuat modul: ' + e.message });
+        }
       }
       if (!cancelled) dispatch({ type: 'SET_LOADING', payload: false });
     };
 
     fetchAll();
     return () => { cancelled = true; };
-  }, [modulId]);
+  }, [modulId, studentNim, studentKelas, studentProgram]);
 
   // ===== UPLOAD HANDLER =====
   const handleFileChange = (e, blockId) => {
@@ -165,31 +239,38 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       if (!result.success) throw new Error(result.error);
       
       const payload = {
-        modulId, modulTitle: modul.title, blockId,
-        studentNim, studentName: localStorage.getItem('studentName')||'Siswa',
-        studentClass: studentData?.kelasSekolah||'',
+        modulId, 
+        modulTitle: modul.title, 
+        blockId,
+        studentNim, 
+        studentName: localStorage.getItem('studentName')||'Siswa',
+        studentClass: studentKelas || '',
         subject: modul.subject||modul.kodeMapel||'',
-        fileUrl: result.downloadURL, filePath: result.filePath,
-        fileName: file.name, fileSize: file.size, fileType: file.type,
+        fileUrl: result.downloadURL, 
+        filePath: result.filePath,
+        fileName: file.name, 
+        fileSize: file.size, 
+        fileType: file.type,
         answer: state.textAnswers[blockId]||'',
-        submittedAt: serverTimestamp(), status:'Pending'
+        submittedAt: serverTimestamp(), 
+        status:'Pending'
       };
 
       await addDoc(collection(db,"jawaban_tugas"), payload);
       dispatch({ type:'SET_SUBMITTED_TASKS', payload: {...state.submittedTasks, [blockId]: payload} });
-      alert('✅ Terupload!');
+      alert('✅ Tugas berhasil diupload!');
     } catch(e) { alert('❌ '+e.message); }
     dispatch({ type:'SET_UPLOADING', blockId, value: false });
   };
 
   const handleDeleteTask = async (blockId) => {
-    if (!confirm("Tarik tugas?")) return;
+    if (!confirm("Yakin ingin menarik tugas ini?")) return;
     try {
       const info = state.submittedTasks[blockId];
       if (info?.docId) await deleteDoc(doc(db,"jawaban_tugas",info.docId));
       const ns = {...state.submittedTasks}; delete ns[blockId];
       dispatch({ type:'SET_SUBMITTED_TASKS', payload: ns });
-      alert('✅ Ditarik');
+      alert('✅ Tugas berhasil ditarik');
     } catch(e) { alert('❌ '+e.message); }
   };
 
@@ -198,7 +279,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     if (!qd.length) return alert("Tidak ada soal.");
     const un = qd.filter(q => state.quizAnswers[q.id]===undefined);
     if (un.length) return alert(`❌ ${un.length} soal belum dijawab.`);
-    if (!confirm("Kirim?")) return;
+    if (!confirm("Kirim jawaban kuis?")) return;
     
     try {
       let correct = 0;
@@ -206,12 +287,18 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       const score = Math.round((correct/qd.length)*100);
       
       await addDoc(collection(db,"jawaban_kuis"), {
-        modulId, modulTitle: state.modul.title, studentNim,
+        modulId, 
+        modulTitle: state.modul.title, 
+        studentNim,
         studentName: localStorage.getItem('studentName')||'Siswa',
-        studentClass: studentData?.kelasSekolah||'',
+        studentClass: studentKelas || '',
         subject: state.modul.subject||state.modul.kodeMapel||'',
-        answers: state.quizAnswers, correctAnswers: correct, totalQuestions: qd.length, score,
-        submittedAt: serverTimestamp(), status:"Dinilai"
+        answers: state.quizAnswers, 
+        correctAnswers: correct, 
+        totalQuestions: qd.length, 
+        score,
+        submittedAt: serverTimestamp(), 
+        status:"Dinilai"
       });
       dispatch({ type:'SET_QUIZ_SUBMITTED', payload: true });
       alert(`🎉 Nilai: ${score}\nBenar: ${correct}/${qd.length}`);
@@ -246,6 +333,20 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     <div className="ls"><div className="sp"/><p>Memuat Modul...</p></div>
   );
 
+  // ===== ERROR / NO ACCESS =====
+  if (state.error || !state.hasAccess) {
+    return (
+      <div className="no-access">
+        <div className="no-access-icon"><Lock size={48} color="#94a3b8" /></div>
+        <h2>Akses Ditolak</h2>
+        <p>{state.error || 'Anda tidak memiliki akses ke modul ini'}</p>
+        <button onClick={onBack} className="cbb" style={{position:'relative',top:0,left:0}}>
+          <ArrowLeft size={14}/> Kembali
+        </button>
+      </div>
+    );
+  }
+
   const tugasBlocks = (state.modul?.blocks||[]).filter(b=>b.type==='assignment');
   const materiBlocks = (state.modul?.blocks||[]).filter(b=>b.type!=='assignment');
 
@@ -260,12 +361,16 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           <div className="cvt">
             <span className="tp">{state.modul?.subject||'Umum'}</span>
             <span className="tg">{state.modul?.targetKategori||'Semua'} • {state.modul?.targetKelas||'Semua'}</span>
+            {state.modul?.sendToSpecificStudents && (
+              <span className="ts">🔒 Khusus</span>
+            )}
           </div>
           <h1>{state.modul?.title}</h1>
           <div className="cvm">
             <span><User size={12}/> {state.modul?.authorName||state.modul?.guruName||'Guru'}</span>
             <span>📅 {formatDate(state.modul?.createdAt)}</span>
             {studentNim && <span>🆔 {studentNim}</span>}
+            {studentKelas && <span>🎓 {studentKelas}</span>}
           </div>
         </div>
       </div>
@@ -377,15 +482,21 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         .ls{display:flex;flex-direction:column;align-items:center;justify-content:center;height:70vh;gap:16px;color:#64748b;font-size:13px}
         .sp{width:40px;height:40px;border:4px solid #e2e8f0;border-top:4px solid #673ab7;border-radius:50%;animation:spin 1s linear infinite}
         @keyframes spin{to{transform:rotate(360deg)}}
+        
+        .no-access{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;padding:20px;text-align:center}
+        .no-access-icon{width:80px;height:80px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+        .no-access h2{font-size:24px;font-weight:800;color:#1e293b;margin:0}
+        .no-access p{color:#64748b;font-size:13px;margin:8px 0 20px}
+        
         .cv{height:260px;position:relative;overflow:hidden}
         .cv img{width:100%;height:100%;object-fit:cover}
         .cvo{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(15,23,42,.95));padding:30px 5%;color:#fff}
         .cvo h1{font-size:24px;font-weight:900;margin:4px 0}
         .cvt{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
         .cvt span{padding:4px 10px;border-radius:8px;font-size:9px;font-weight:800}
-        .tp{background:#673ab7}.tg{background:rgba(255,255,255,.2)}
+        .tp{background:#673ab7}.tg{background:rgba(255,255,255,.2)}.ts{background:#f59e0b;color:#1e293b}
         .cvm{display:flex;gap:12px;font-size:11px;opacity:.8;flex-wrap:wrap}
-        .cbb{position:absolute;top:16px;left:16px;z-index:10;background:rgba(255,255,255,.95);border:0;padding:8px 14px;border-radius:30px;cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:800;box-shadow:0 4px 12px rgba(0,0,0,.1);color:#1e293b;font-size:12px}
+        .cbb{background:rgba(255,255,255,.95);border:0;padding:8px 14px;border-radius:30px;cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:800;box-shadow:0 4px 12px rgba(0,0,0,.1);color:#1e293b;font-size:12px}
         .tb{display:flex;gap:4px;background:#fff;margin:-30px 20px 0;border-radius:12px;padding:5px;box-shadow:0 4px 12px rgba(0,0,0,.06);position:relative;z-index:5;flex-wrap:wrap}
         .tbt{flex:1;padding:10px;border:0;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;background:0;color:#64748b;display:flex;align-items:center;justify-content:center;gap:6px;min-width:80px;transition:.2s}
         .tbt.act{background:#673ab7;color:#fff}
