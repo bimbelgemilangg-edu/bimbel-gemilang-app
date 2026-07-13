@@ -43,7 +43,7 @@ import TeacherAttendance from './pages/teacher/TeacherAttendance';
 import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade';
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager';
 import TeacherProfile from './pages/teacher/TeacherProfile';
-import TeacherSchedule from './pages/teacher/TeacherSchedule'; // ← PERBAIKI: HAPUS "Page"
+import TeacherSchedule from './pages/teacher/TeacherSchedule';
 import ModulManager from './pages/teacher/modul/ModulManager';
 import CekTugasSiswa from './pages/teacher/modul/CekTugasSiswa';
 import ManageMateriGuru from './pages/teacher/modul/ManageMateri';
@@ -230,7 +230,7 @@ function App() {
         <Route path="/guru/schedule" element={<GuruRoute><TeacherLayout><TeacherSchedule /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/attendance" element={<GuruRoute><TeacherLayout><TeacherAttendance /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/history" element={<GuruRoute><TeacherLayout><TeacherHistory /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/class-session" element={<GuruRoute><TeacherLayout><ClassSession /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/class-session/:id" element={<GuruRoute><TeacherLayout><ClassSession /></TeacherLayout></GuruRoute>} />
         
         {/* Nilai & Raport */}
         <Route path="/guru/grades/input" element={<GuruRoute><TeacherLayout><TeacherInputGrade /></TeacherLayout></GuruRoute>} />

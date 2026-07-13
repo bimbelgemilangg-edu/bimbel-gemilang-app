@@ -1,15 +1,24 @@
 // src/pages/teacher/ClassSession.jsx
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom'; // ← TAMBAHKAN
 import { db } from '../../firebase';
-import { collection, addDoc, doc, getDoc, setDoc, serverTimestamp, onSnapshot, query, where } from "firebase/firestore";
+import { 
+  collection, addDoc, doc, getDoc, setDoc, serverTimestamp, 
+  onSnapshot, query, where, updateDoc 
+} from "firebase/firestore";
 import { QRCodeSVG } from 'qrcode.react';
 import { QrCode, ArrowLeft } from 'lucide-react';
 
-const ClassSession = ({ schedule, teacher, onBack }) => {
+const ClassSession = () => { // ← HAPUS PROPS
+  const { id } = useParams(); // ← AMBIL ID DARI URL
+  const navigate = useNavigate();
+  
+  const [schedule, setSchedule] = useState(null);
+  const [teacher, setTeacher] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [attendanceMap, setAttendanceMap] = useState({});
-  const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); 
-  const [materiAktual, setMateriAktual] = useState(schedule?.title || "");
+  const [materiAktual, setMateriAktual] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [salaryRules, setSalaryRules] = useState(null);
 
@@ -19,38 +28,66 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // 🔥 AMBIL DATA DARI FIRESTORE
   useEffect(() => {
-    const fetchSalaryRules = async () => {
+    const fetchData = async () => {
       try {
-        const docRef = doc(db, "settings", "global_config");
+        // Ambil jadwal dari Firestore
+        const docRef = doc(db, "jadwal_bimbel", id);
         const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().salaryRules) {
-          setSalaryRules(docSnap.data().salaryRules);
+        if (!docSnap.exists()) {
+          alert("⚠️ Jadwal tidak ditemukan!");
+          navigate('/guru/dashboard');
+          return;
+        }
+        const data = { id: docSnap.id, ...docSnap.data() };
+        setSchedule(data);
+        setMateriAktual(data.title || "");
+
+        // Ambil data guru dari localStorage
+        const stored = localStorage.getItem('teacherData');
+        if (stored) {
+          setTeacher(JSON.parse(stored));
+        } else {
+          alert("⚠️ Data guru tidak ditemukan!");
+          navigate('/guru/dashboard');
+          return;
+        }
+
+        // Ambil salary rules
+        const salaryRef = doc(db, "settings", "global_config");
+        const salarySnap = await getDoc(salaryRef);
+        if (salarySnap.exists() && salarySnap.data().salaryRules) {
+          setSalaryRules(salarySnap.data().salaryRules);
         } else {
           setSalaryRules({
             honorSD: 35000, honorSMP: 40000, honorSMA: 50000,
             bonusInggris: 10000, kompensasiPersen: 50, honorMinimal: 20000
           });
         }
-      } catch (err) {
-        console.error("Gagal fetch salary rules:", err);
-        setSalaryRules({
-          honorSD: 35000, honorSMP: 40000, honorSMA: 50000,
-          bonusInggris: 10000, kompensasiPersen: 50, honorMinimal: 20000
-        });
+
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        alert("❌ Gagal memuat data kelas");
+        navigate('/guru/dashboard');
       }
     };
-    fetchSalaryRules();
-  }, []);
 
+    if (id) fetchData();
+  }, [id, navigate]);
+
+  // 🔥 REAL-TIME ATTENDANCE
   useEffect(() => {
     if (!schedule?.id) return;
+    
     const today = new Date().toISOString().split('T')[0];
     const q = query(
       collection(db, "attendance"), 
       where("date", "==", today), 
       where("scheduleId", "==", schedule.id)
     );
+    
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const newMap = { ...attendanceMap };
       snapshot.docs.forEach(doc => {
@@ -63,16 +100,22 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
     }, (error) => { 
       console.error("Listener Error:", error); 
     });
+    
     return () => unsubscribe();
   }, [schedule]);
 
+  // 🔥 TOGGLE SISWA
   const toggleStudent = async (student) => {
+    if (!schedule || !teacher) return;
+    
     const isCurrentlyPresent = !!attendanceMap[student.id];
     const willBePresent = !isCurrentlyPresent;
     setAttendanceMap(prev => ({ ...prev, [student.id]: willBePresent }));
+    
     const today = new Date().toISOString().split('T')[0];
     const absenId = student.id + '_' + today + '_' + schedule.id;
     const absenRef = doc(db, "attendance", absenId);
+    
     try {
       await setDoc(absenRef, {
         studentId: student.id, 
@@ -96,7 +139,7 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
     }
   };
 
-  // 🔥 FUNGSI HITUNG HONOR (KOMPENSASI PER JENJANG)
+  // 🔥 HITUNG HONOR
   const hitungHonor = () => {
     if (!salaryRules) return { nominal: 0, detailTxt: "", statusGaji: "Menunggu Validasi" };
 
@@ -116,7 +159,6 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
     let detailTxt = program + ' - ' + level + ' - ' + materiAktual;
     let statusGaji = "Menunggu Validasi";
 
-    // 🔥 Tentukan rate berdasarkan level & program
     if (program === "English") {
       ratePerJam = (salaryRules.honorSD || 35000) + (salaryRules.bonusInggris || 10000);
       detailTxt += " [English Rate]";
@@ -131,7 +173,6 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
     let nominal = 0;
     const kompensasiPersen = salaryRules.kompensasiPersen || 50;
 
-    // 🔥 KOMPENSASI: 50% dari ratePerJam masing-masing jenjang
     if (jumlahHadir === 0) {
       const rateKompensasi = ratePerJam * (kompensasiPersen / 100);
       nominal = rateKompensasi * diffHours;
@@ -141,7 +182,6 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
       nominal = ratePerJam * diffHours;
     }
 
-    // Honor minimal
     const minimal = salaryRules.honorMinimal || 20000;
     if (nominal < minimal) {
       nominal = minimal;
@@ -151,35 +191,40 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
     return { nominal: Math.round(nominal), detailTxt, statusGaji };
   };
 
+  // 🔥 FINALIZE CLASS
   const handleFinalizeClass = async () => {
     if (!materiAktual) return alert("Mohon isi materi yang diajarkan!");
     if (!window.confirm("Yakin akhiri kelas? Data siswa yang tidak hadir akan dicatat sebagai Alpha.")) return;
+    
     setLoading(true);
     try {
       const today = new Date().toISOString().split('T')[0];
+      
+      // Simpan attendance
       const batchPromises = (schedule.students || []).map(async (siswa) => {
         const isPresent = !!attendanceMap[siswa.id];
         const absenId = siswa.id + '_' + today + '_' + schedule.id;
         const absenRef = doc(db, "attendance", absenId);
         return setDoc(absenRef, {
-            studentId: siswa.id, 
-            studentName: siswa.nama,
-            program: siswa.program || schedule.program || "Reguler",
-            kelasSekolah: siswa.kelas || siswa.kelasSekolah || "-",
-            teacherId: teacher.id, 
-            teacherName: teacher.nama,
-            date: today, 
-            tanggal: today, 
-            timestamp: serverTimestamp(),
-            status: isPresent ? "Hadir" : "Alpha",
-            keterangan: isPresent ? "Sesi Selesai" : "Siswa tidak hadir (Otomatis Alpha)",
-            mapel: schedule.title || "Umum",
-            scheduleId: schedule.id || "", 
-            planet: schedule.planet || "Ruang Umum"
+          studentId: siswa.id, 
+          studentName: siswa.nama,
+          program: siswa.program || schedule.program || "Reguler",
+          kelasSekolah: siswa.kelas || siswa.kelasSekolah || "-",
+          teacherId: teacher.id, 
+          teacherName: teacher.nama,
+          date: today, 
+          tanggal: today, 
+          timestamp: serverTimestamp(),
+          status: isPresent ? "Hadir" : "Alpha",
+          keterangan: isPresent ? "Sesi Selesai" : "Siswa tidak hadir (Otomatis Alpha)",
+          mapel: schedule.title || "Umum",
+          scheduleId: schedule.id || "", 
+          planet: schedule.planet || "Ruang Umum"
         }, { merge: true });
       });
       await Promise.all(batchPromises);
 
+      // Simpan teacher logs
       const honorData = hitungHonor();
       const siswaHadirList = (schedule.students || []).filter(s => attendanceMap[s.id]);
       const jumlahHadir = siswaHadirList.length;
@@ -207,8 +252,15 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
         createdAt: serverTimestamp()
       });
 
+      // Update status jadwal
+      await updateDoc(doc(db, "jadwal_bimbel", schedule.id), {
+        status: 'completed',
+        completedAt: serverTimestamp()
+      });
+
       const hadirCount = siswaHadirList.length;
       const totalCount = (schedule.students || []).length;
+      
       alert(
         '✅ Kelas Berhasil Disimpan!\n\n' +
         '📚 Materi: ' + materiAktual + '\n' +
@@ -216,16 +268,50 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
         '🏫 Ruang: ' + (schedule.planet || "Ruang Umum") + '\n' +
         '👥 Kehadiran: ' + hadirCount + '/' + totalCount + ' siswa hadir'
       );
-      onBack();
+      
+      navigate('/guru/dashboard');
     } catch (error) { 
       alert("Gagal menyimpan sesi: " + error.message); 
     } 
     finally { setLoading(false); }
   };
 
+  // 🔥 HANDLE BACK
+  const handleBack = () => {
+    if (window.confirm("Yakin kembali? Data yang belum disimpan akan hilang.")) {
+      navigate('/guru/dashboard');
+    }
+  };
+
+  // 🔥 LOADING
+  if (loading) {
+    return (
+      <div style={styles.container(isMobile)}>
+        <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>
+          <div style={styles.spinner}></div>
+          <p>Memuat kelas...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!schedule || !teacher) {
+    return (
+      <div style={styles.container(isMobile)}>
+        <div style={{ textAlign: 'center', padding: 40, color: '#ef4444' }}>
+          <p>⚠️ Data kelas tidak ditemukan</p>
+          <button onClick={() => navigate('/guru/dashboard')} style={styles.btnBack(isMobile)}>
+            Kembali ke Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 🔥 RENDER
   return (
     <div style={styles.container(isMobile)}>
-      <button onClick={onBack} style={styles.btnBack(isMobile)}>
+      <button onClick={handleBack} style={styles.btnBack(isMobile)}>
         <ArrowLeft size={16}/> Kembali
       </button>
       
@@ -318,6 +404,9 @@ const ClassSession = ({ schedule, teacher, onBack }) => {
   );
 };
 
+// ============================================================
+// STYLES (SAMA SEPERTI SEBELUMNYA)
+// ============================================================
 const styles = {
   container: (m) => ({ 
     padding: m ? '10px' : '15px', 
@@ -326,6 +415,16 @@ const styles = {
     maxWidth: m ? '100%' : '1200px', 
     margin: '0 auto' 
   }),
+  
+  spinner: {
+    width: 40,
+    height: 40,
+    border: '4px solid #e2e8f0',
+    borderTop: '4px solid #652D90',
+    borderRadius: '50%',
+    animation: 'spin 0.8s linear infinite',
+    margin: '0 auto 12px'
+  },
   
   btnBack: (m) => ({ 
     background: 'none', 
