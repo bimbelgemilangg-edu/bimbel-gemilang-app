@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { collection, addDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy } from "firebase/firestore";
-import { Plus, Trash2, CheckCircle, ArrowLeft, Save, FileText, X, Calculator, Target, BookOpen, Users, Send, Settings, Clock as ClockIcon, HelpCircle, Image, Upload } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, ArrowLeft, Save, FileText, X, Calculator, Target, BookOpen, Users, Send, Settings, Clock as ClockIcon, HelpCircle, Image, Upload, Calendar, CalendarDays, AlertCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile } from '../../../services/uploadService';
 import 'katex/dist/katex.min.css';
@@ -23,6 +23,21 @@ const ManageQuiz = () => {
   const [quizTitle, setQuizTitle] = useState("");
   const [quizSubject, setQuizSubject] = useState("");
   const [deadline, setDeadline] = useState("");
+  
+  // 🔥 JADWAL BUKA/TUTUP KUIS
+  const [quizOpenDate, setQuizOpenDate] = useState(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return now.toISOString().slice(0, 16);
+  });
+  const [quizCloseDate, setQuizCloseDate] = useState(() => {
+    const now = new Date();
+    now.setDate(now.getDate() + 7);
+    now.setHours(23, 59, 0, 0);
+    return now.toISOString().slice(0, 16);
+  });
+  const [useSchedule, setUseSchedule] = useState(false);
+  
   const [questions, setQuestions] = useState([{ 
     id: Date.now(), 
     q: '', 
@@ -96,6 +111,10 @@ const ManageQuiz = () => {
           setMaxAttempts(data.maxAttempts || 1);
           setShowExplanation(data.showExplanation !== false);
           setDifficulty(data.difficulty || 'Sedang');
+          setUseSchedule(data.useSchedule || false);
+          setQuizOpenDate(data.quizOpenDate || quizOpenDate);
+          setQuizCloseDate(data.quizCloseDate || quizCloseDate);
+          
           if (data.quizData?.length > 0) {
             setQuestions(data.quizData.map((q, idx) => ({
               id: q.id || Date.now() + idx,
@@ -125,7 +144,6 @@ const ManageQuiz = () => {
     setUploadTarget(`${questionId}-${targetType}-${optionIndex || ''}`);
     
     try {
-      // Upload langsung ke Supabase tanpa base64 middleware
       const result = await uploadElearningFile(file, 'kuis');
       
       if (result.success) {
@@ -219,10 +237,46 @@ const ManageQuiz = () => {
     }
   };
 
+  // 🔥 CEK APAKAH KUIS MASIH BISA DIAKSES
+  const isQuizAccessible = () => {
+    if (!useSchedule) return true;
+    const now = new Date();
+    const open = new Date(quizOpenDate);
+    const close = new Date(quizCloseDate);
+    return now >= open && now <= close;
+  };
+
+  const getQuizStatus = () => {
+    if (!useSchedule) return { status: 'aktif', label: '🟢 Aktif (Tanpa Jadwal)', color: '#10b981' };
+    const now = new Date();
+    const open = new Date(quizOpenDate);
+    const close = new Date(quizCloseDate);
+    
+    if (now < open) {
+      return { status: 'belum', label: '⏳ Belum Dibuka', color: '#f59e0b' };
+    } else if (now > close) {
+      return { status: 'kadaluarsa', label: '⛔ Kadaluarsa', color: '#ef4444' };
+    } else {
+      return { status: 'aktif', label: '✅ Aktif', color: '#10b981' };
+    }
+  };
+
   const handleSaveQuiz = async () => {
     const valid = questions.filter(q => q.q.trim() || q.qImage);
     if (valid.length === 0) return alert("❌ Minimal 1 soal (teks atau gambar)!");
     if (!quizTitle) return alert("❌ Judul kuis wajib diisi!");
+    
+    // 🔥 VALIDASI JADWAL
+    if (useSchedule) {
+      const open = new Date(quizOpenDate);
+      const close = new Date(quizCloseDate);
+      if (open >= close) {
+        return alert("❌ Tanggal buka harus lebih awal dari tanggal tutup!");
+      }
+      if (open < new Date()) {
+        return alert("❌ Tanggal buka tidak boleh kurang dari waktu sekarang!");
+      }
+    }
     
     setLoading(true);
     try {
@@ -238,6 +292,9 @@ const ManageQuiz = () => {
         })),
         totalQuestions: valid.length,
         deadlineQuiz: deadline || null,
+        useSchedule: useSchedule,
+        quizOpenDate: useSchedule ? quizOpenDate : null,
+        quizCloseDate: useSchedule ? quizCloseDate : null,
         updatedAt: serverTimestamp()
       };
 
@@ -251,17 +308,25 @@ const ManageQuiz = () => {
 
       if (publishTarget === 'modul') {
         if (!selectedModul) return alert("❌ Pilih modul tujuan!");
-        await updateDoc(doc(db, "bimbel_modul", selectedModul), quizPayload);
+        
+        // 🔥 AMBIL SUBJECT DARI MODUL
+        const modulSnap = await getDoc(doc(db, "bimbel_modul", selectedModul));
+        let modulSubject = '';
+        if (modulSnap.exists()) {
+          modulSubject = modulSnap.data().subject || '';
+        }
+        
+        await updateDoc(doc(db, "bimbel_modul", selectedModul), {
+          ...quizPayload,
+          subject: modulSubject || quizSubject || "Kuis"
+        });
         alert(`✅ Kuis disimpan ke modul!`);
       } else {
-        // 🔥 Tambahkan guruId + kodeMapel + subject untuk filter di CekTugasSiswa
         const saved = JSON.parse(localStorage.getItem('teacherData') || '{}');
         await addDoc(collection(db, "bimbel_modul"), {
           title: quizTitle.toUpperCase(),
           subject: quizSubject || "Kuis",
-          quizData: quizPayload.quizData,
-          totalQuestions: quizPayload.totalQuestions,
-          deadlineQuiz: deadline || null,
+          ...quizPayload,
           type: 'kuis_mandiri',
           targetKategori: publishTarget === 'jenjang' ? selectedProgram : "Semua",
           targetKelas: publishTarget === 'jenjang' ? selectedKelas : "Semua",
@@ -270,13 +335,7 @@ const ManageQuiz = () => {
           kodeMapel: saved.kodeMapel || '',
           guruName: saved.nama || '',
           authorName: localStorage.getItem('teacherName') || localStorage.getItem('userName') || "Guru",
-          timeLimit: advancedMode ? timeLimit : null,
-          randomOrder: advancedMode ? randomOrder : null,
-          maxAttempts: advancedMode ? maxAttempts : null,
-          showExplanation: advancedMode ? showExplanation : null,
-          difficulty: advancedMode ? difficulty : null,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
+          createdAt: serverTimestamp()
         });
         alert(`✅ Kuis mandiri diterbitkan!`);
       }
@@ -314,8 +373,88 @@ const ManageQuiz = () => {
               <option value="">Mapel</option>
               {subjects.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-            <label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 3 }}>Deadline</label>
+            <label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 3 }}>Deadline Pengumpulan</label>
             <input type="datetime-local" value={deadline} onChange={e => setDeadline(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', boxSizing: 'border-box' }} />
+          </div>
+
+          {/* 🔥 JADWAL BUKA/TUTUP KUIS */}
+          <div style={{ background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <h4 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#64748b' }}>
+                <CalendarDays size={14} /> Jadwal Kuis
+              </h4>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
+                <input 
+                  type="checkbox" 
+                  checked={useSchedule} 
+                  onChange={() => setUseSchedule(!useSchedule)} 
+                />
+                Aktifkan Jadwal
+              </label>
+            </div>
+            
+            {useSchedule && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 2 }}>
+                    <Calendar size={12} /> Tanggal & Jam Buka
+                  </label>
+                  <input 
+                    type="datetime-local" 
+                    value={quizOpenDate} 
+                    onChange={e => setQuizOpenDate(e.target.value)} 
+                    style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', boxSizing: 'border-box' }} 
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 2 }}>
+                    <Calendar size={12} /> Tanggal & Jam Tutup
+                  </label>
+                  <input 
+                    type="datetime-local" 
+                    value={quizCloseDate} 
+                    onChange={e => setQuizCloseDate(e.target.value)} 
+                    style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', boxSizing: 'border-box' }} 
+                  />
+                </div>
+                
+                {/* Status Kuis */}
+                <div style={{ 
+                  padding: 8, 
+                  borderRadius: 6, 
+                  background: getQuizStatus().color + '15',
+                  border: `1px solid ${getQuizStatus().color}`,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: getQuizStatus().color,
+                  textAlign: 'center',
+                  marginTop: 4
+                }}>
+                  {getQuizStatus().label}
+                  {getQuizStatus().status === 'belum' && (
+                    <span style={{ display: 'block', fontSize: 9, color: '#64748b', marginTop: 2 }}>
+                      Akan dibuka {new Date(quizOpenDate).toLocaleString('id-ID')}
+                    </span>
+                  )}
+                  {getQuizStatus().status === 'kadaluarsa' && (
+                    <span style={{ display: 'block', fontSize: 9, color: '#64748b', marginTop: 2 }}>
+                      Ditutup {new Date(quizCloseDate).toLocaleString('id-ID')}
+                    </span>
+                  )}
+                  {getQuizStatus().status === 'aktif' && useSchedule && (
+                    <span style={{ display: 'block', fontSize: 9, color: '#64748b', marginTop: 2 }}>
+                      Dibuka sampai {new Date(quizCloseDate).toLocaleString('id-ID')}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {!useSchedule && (
+              <p style={{ fontSize: 10, color: '#94a3b8', margin: 0 }}>
+                💡 Aktifkan jadwal untuk mengatur waktu buka/tutup kuis
+              </p>
+            )}
           </div>
 
           {/* TOGGLE MODE UJIAN */}
@@ -399,10 +538,10 @@ const ManageQuiz = () => {
                 <button onClick={() => setQuestions(questions.filter(q => q.id !== item.id))} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '4px 8px', borderRadius: 6, cursor: 'pointer' }}><Trash2 size={14}/></button>
               </div>
               
-              {/* UPLOAD GAMBAR SOAL */}
+              {/* UPLOAD GAMBAR SOAL - KE SUPABASE */}
               <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', background: '#f3e8ff', border: '1px solid #673ab7', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#673ab7', opacity: uploading ? 0.6 : 1 }}>
-                  <Image size={14} /> Upload Gambar Soal
+                  <Image size={14} /> Upload Gambar Soal (Supabase)
                   <input type="file" accept="image/*" hidden onChange={(e) => { if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'question'); }} disabled={uploading} />
                 </label>
                 {item.qImage && (
@@ -444,7 +583,7 @@ const ManageQuiz = () => {
                       {item.correct === oIdx && <CheckCircle size={12} color="#10b981"/>}
                     </div>
                     <label style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '3px 8px', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 4, cursor: 'pointer', fontSize: 9, color: '#64748b', marginLeft: 28, opacity: uploading ? 0.6 : 1 }}>
-                      <Upload size={10} /> Gambar Opsi {String.fromCharCode(65+oIdx)}
+                      <Upload size={10} /> Gambar Opsi (Supabase)
                       <input type="file" accept="image/*" hidden onChange={(e) => { if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'option', oIdx); }} disabled={uploading} />
                     </label>
                     {uploading && uploadTarget === `${item.id}-option-${oIdx}` && <span style={{ fontSize: 9, color: '#673ab7', marginLeft: 28 }}>⏳ Uploading...</span>}
