@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { collection, addDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy } from "firebase/firestore";
-import { Plus, Trash2, CheckCircle, ArrowLeft, Save, FileText, X, Calculator, Target, BookOpen, Users, Send, Settings, Clock as ClockIcon, HelpCircle, Image, Upload, Calendar, CalendarDays, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, ArrowLeft, Save, FileText, X, Calculator, Target, BookOpen, Users, Send, Settings, Clock as ClockIcon, HelpCircle, Image, Upload, Calendar, CalendarDays, AlertCircle, Eye, EyeOff, Lock, Unlock } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile } from '../../../services/uploadService';
 import 'katex/dist/katex.min.css';
@@ -69,6 +69,10 @@ const ManageQuiz = () => {
   // Bulk import
   const [showImport, setShowImport] = useState(false);
   const [bulkText, setBulkText] = useState("");
+
+  // 🔥 PREVIEW MODE
+  const [previewMode, setPreviewMode] = useState(false);
+  const [previewAnswers, setPreviewAnswers] = useState({});
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -238,14 +242,6 @@ const ManageQuiz = () => {
   };
 
   // 🔥 CEK APAKAH KUIS MASIH BISA DIAKSES
-  const isQuizAccessible = () => {
-    if (!useSchedule) return true;
-    const now = new Date();
-    const open = new Date(quizOpenDate);
-    const close = new Date(quizCloseDate);
-    return now >= open && now <= close;
-  };
-
   const getQuizStatus = () => {
     if (!useSchedule) return { status: 'aktif', label: '🟢 Aktif (Tanpa Jadwal)', color: '#10b981' };
     const now = new Date();
@@ -253,12 +249,40 @@ const ManageQuiz = () => {
     const close = new Date(quizCloseDate);
     
     if (now < open) {
-      return { status: 'belum', label: '⏳ Belum Dibuka', color: '#f59e0b' };
+      return { status: 'belum', label: '⏳ Belum Dibuka', color: '#f59e0b', icon: <Lock size={14} /> };
     } else if (now > close) {
-      return { status: 'kadaluarsa', label: '⛔ Kadaluarsa', color: '#ef4444' };
+      return { status: 'kadaluarsa', label: '⛔ Kadaluarsa', color: '#ef4444', icon: <Lock size={14} /> };
     } else {
-      return { status: 'aktif', label: '✅ Aktif', color: '#10b981' };
+      return { status: 'aktif', label: '✅ Aktif', color: '#10b981', icon: <Unlock size={14} /> };
     }
+  };
+
+  // 🔥 PREVIEW MODE - SIMULASI JAWABAN SISWA
+  const handlePreviewQuiz = () => {
+    // Generate jawaban acak untuk preview
+    const previewAns = {};
+    questions.forEach(q => {
+      // Random jawaban antara 0-3
+      previewAns[q.id] = Math.floor(Math.random() * 4);
+    });
+    setPreviewAnswers(previewAns);
+    setPreviewMode(true);
+  };
+
+  const handleClosePreview = () => {
+    setPreviewMode(false);
+    setPreviewAnswers({});
+  };
+
+  // 🔥 CEK JAWABAN PREVIEW
+  const isAnswerCorrect = (questionId, optionIndex) => {
+    const q = questions.find(q => q.id === questionId);
+    if (!q) return false;
+    return q.correct === optionIndex;
+  };
+
+  const getUserAnswer = (questionId) => {
+    return previewAnswers[questionId];
   };
 
   const handleSaveQuiz = async () => {
@@ -309,7 +333,6 @@ const ManageQuiz = () => {
       if (publishTarget === 'modul') {
         if (!selectedModul) return alert("❌ Pilih modul tujuan!");
         
-        // 🔥 AMBIL SUBJECT DARI MODUL
         const modulSnap = await getDoc(doc(db, "bimbel_modul", selectedModul));
         let modulSubject = '';
         if (modulSnap.exists()) {
@@ -344,6 +367,215 @@ const ManageQuiz = () => {
     setLoading(false);
   };
 
+  // ============================================================
+  // RENDER - PREVIEW MODE
+  // ============================================================
+  if (previewMode) {
+    return (
+      <div style={{ maxWidth: 900, margin: '0 auto', paddingBottom: 100 }}>
+        {/* HEADER PREVIEW */}
+        <div style={{ 
+          background: 'linear-gradient(135deg, #673ab7, #8b5cf6)', 
+          padding: '16px 20px', 
+          borderRadius: 12, 
+          marginBottom: 20,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 10
+        }}>
+          <div>
+            <h2 style={{ margin: 0, color: 'white', fontSize: isMobile ? 16 : 20 }}>
+              👁️ Preview Kuis: {quizTitle || 'Kuis'}
+            </h2>
+            <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>
+              Simulasi tampilan siswa - Jawaban acak untuk preview
+            </p>
+          </div>
+          <button 
+            onClick={handleClosePreview} 
+            style={{
+              padding: '8px 16px',
+              background: 'rgba(255,255,255,0.15)',
+              color: 'white',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: 12,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6
+            }}
+          >
+            <X size={14} /> Tutup Preview
+          </button>
+        </div>
+
+        {/* PREVIEW SOAL */}
+        {questions.filter(q => q.q.trim() || q.qImage).map((item, idx) => {
+          const userAnswer = getUserAnswer(item.id);
+          const isCorrect = userAnswer === item.correct;
+          
+          return (
+            <div key={item.id} style={{ 
+              background: 'white', 
+              padding: isMobile ? 15 : 20, 
+              borderRadius: 12, 
+              border: `2px solid ${userAnswer !== undefined ? (isCorrect ? '#10b981' : '#ef4444') : '#e2e8f0'}`,
+              marginBottom: 12,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: '#673ab7', background: '#f3e8ff', padding: '4px 10px', borderRadius: 6 }}>
+                  SOAL {idx + 1}
+                </span>
+                <span style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  padding: '4px 10px',
+                  borderRadius: 6,
+                  background: userAnswer !== undefined ? (isCorrect ? '#dcfce7' : '#fee2e2') : '#f1f5f9',
+                  color: userAnswer !== undefined ? (isCorrect ? '#166534' : '#dc2626') : '#94a3b8'
+                }}>
+                  {userAnswer !== undefined ? (isCorrect ? '✅ Benar' : '❌ Salah') : '⏳ Belum dijawab'}
+                </span>
+              </div>
+              
+              {/* Gambar Soal */}
+              {item.qImage && (
+                <div style={{ marginBottom: 10 }}>
+                  <img src={item.qImage} alt="Soal" style={{ maxHeight: 150, borderRadius: 8, border: '1px solid #e2e8f0' }} />
+                </div>
+              )}
+
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>
+                {renderMath(item.q)}
+              </div>
+
+              {/* Opsi Jawaban */}
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 6 }}>
+                {item.options.map((opt, oIdx) => {
+                  const isSelected = userAnswer === oIdx;
+                  const isCorrectAnswer = item.correct === oIdx;
+                  
+                  let bgColor = 'white';
+                  let borderColor = '#e2e8f0';
+                  
+                  if (isSelected && isCorrectAnswer) {
+                    bgColor = '#dcfce7';
+                    borderColor = '#10b981';
+                  } else if (isSelected && !isCorrectAnswer) {
+                    bgColor = '#fee2e2';
+                    borderColor = '#ef4444';
+                  } else if (isCorrectAnswer) {
+                    bgColor = '#f0fdf4';
+                    borderColor = '#10b981';
+                  }
+                  
+                  return (
+                    <div key={oIdx} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '10px 12px',
+                      borderRadius: 8,
+                      border: `2px solid ${borderColor}`,
+                      background: bgColor
+                    }}>
+                      <span style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: isSelected ? (isCorrectAnswer ? '#10b981' : '#ef4444') : '#f1f5f9',
+                        color: isSelected ? 'white' : '#64748b',
+                        fontWeight: 700,
+                        fontSize: 11,
+                        flexShrink: 0
+                      }}>
+                        {String.fromCharCode(65 + oIdx)}
+                      </span>
+                      <span style={{ fontSize: 13 }}>{opt || `Opsi ${String.fromCharCode(65 + oIdx)}`}</span>
+                      {isCorrectAnswer && <CheckCircle size={14} color="#10b981" style={{ marginLeft: 'auto' }} />}
+                      {isSelected && !isCorrectAnswer && <X size={14} color="#ef4444" style={{ marginLeft: 'auto' }} />}
+                      {item.optionImages?.[oIdx] && (
+                        <img src={item.optionImages[oIdx]} alt={`Opsi ${oIdx+1}`} style={{ maxHeight: 40, borderRadius: 4, marginLeft: 4 }} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Jawaban & Pembahasan */}
+              <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: 12, color: '#64748b' }}>
+                  <span>✅ Jawaban benar: </span>
+                  <span style={{ fontWeight: 700, color: '#10b981' }}>
+                    {item.options[item.correct] || `Opsi ${String.fromCharCode(65 + item.correct)}`}
+                  </span>
+                </div>
+                {userAnswer !== undefined && (
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+                    <span>📝 Jawaban Anda: </span>
+                    <span style={{ fontWeight: 700, color: isCorrect ? '#10b981' : '#ef4444' }}>
+                      {item.options[userAnswer] || `Opsi ${String.fromCharCode(65 + userAnswer)}`}
+                    </span>
+                  </div>
+                )}
+                {advancedMode && item.explanation && (
+                  <div style={{ 
+                    marginTop: 6, 
+                    padding: '8px 12px', 
+                    background: '#eef2ff', 
+                    borderRadius: 6, 
+                    fontSize: 12, 
+                    color: '#4338ca' 
+                  }}>
+                    💡 <span style={{ fontWeight: 600 }}>Pembahasan:</span> {item.explanation}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        <div style={{ 
+          textAlign: 'center', 
+          padding: 16, 
+          background: '#f8fafc', 
+          borderRadius: 12, 
+          border: '1px solid #e2e8f0' 
+        }}>
+          <p style={{ fontSize: 12, color: '#64748b' }}>
+            💡 Ini adalah tampilan preview. Siswa akan melihat jawaban benar (hijau) dan jawaban salah (merah) setelah menyelesaikan kuis.
+          </p>
+          <button 
+            onClick={handleClosePreview} 
+            style={{
+              padding: '8px 24px',
+              background: '#673ab7',
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontWeight: 700,
+              fontSize: 12
+            }}
+          >
+            Tutup Preview
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================
+  // RENDER - MAIN
+  // ============================================================
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', paddingBottom: 100 }}>
       
@@ -355,9 +587,29 @@ const ManageQuiz = () => {
         <h2 style={{ margin: 0, fontSize: isMobile ? 16 : 20, fontWeight: 800, color: '#1e293b' }}>
           ❓ {modulId ? 'Edit Kuis Modul' : 'Buat Kuis Baru'}
         </h2>
-        <button onClick={handleSaveQuiz} disabled={loading} style={{ background: '#673ab7', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Send size={14}/> {loading ? '...' : 'Terbitkan'}
-        </button>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button 
+            onClick={handlePreviewQuiz} 
+            style={{ 
+              background: '#8b5cf6', 
+              color: 'white', 
+              border: 'none', 
+              padding: '8px 14px', 
+              borderRadius: 8, 
+              fontWeight: 700, 
+              fontSize: 12, 
+              cursor: 'pointer', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 4 
+            }}
+          >
+            <Eye size={14}/> Preview
+          </button>
+          <button onClick={handleSaveQuiz} disabled={loading} style={{ background: '#673ab7', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Send size={14}/> {loading ? '...' : 'Terbitkan'}
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: 20, flexDirection: isMobile ? 'column' : 'row' }}>
@@ -428,9 +680,13 @@ const ManageQuiz = () => {
                   fontWeight: 600,
                   color: getQuizStatus().color,
                   textAlign: 'center',
-                  marginTop: 4
+                  marginTop: 4,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6
                 }}>
-                  {getQuizStatus().label}
+                  {getQuizStatus().icon} {getQuizStatus().label}
                   {getQuizStatus().status === 'belum' && (
                     <span style={{ display: 'block', fontSize: 9, color: '#64748b', marginTop: 2 }}>
                       Akan dibuka {new Date(quizOpenDate).toLocaleString('id-ID')}
@@ -538,7 +794,7 @@ const ManageQuiz = () => {
                 <button onClick={() => setQuestions(questions.filter(q => q.id !== item.id))} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '4px 8px', borderRadius: 6, cursor: 'pointer' }}><Trash2 size={14}/></button>
               </div>
               
-              {/* UPLOAD GAMBAR SOAL - KE SUPABASE */}
+              {/* UPLOAD GAMBAR SOAL */}
               <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', background: '#f3e8ff', border: '1px solid #673ab7', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#673ab7', opacity: uploading ? 0.6 : 1 }}>
                   <Image size={14} /> Upload Gambar Soal (Supabase)

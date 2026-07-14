@@ -7,7 +7,8 @@ import {
   ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, 
   HelpCircle, Send, User, Hash, Award, Timer, 
   BarChart3, TrendingUp, Shield, AlertTriangle,
-  ChevronLeft, ChevronRight, BookOpen, Zap, RefreshCw
+  ChevronLeft, ChevronRight, BookOpen, Zap, RefreshCw,
+  Eye, EyeOff, Calendar, Lock, Unlock
 } from 'lucide-react';
 
 // ============================================================
@@ -50,6 +51,12 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   const [quizStarted, setQuizStarted] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
   const [attemptCount, setAttemptCount] = useState(0);
+  
+  // 🔥 STATE UNTUK PREVIEW JAWABAN
+  const [showAllAnswers, setShowAllAnswers] = useState(false);
+  const [hasExistingAnswer, setHasExistingAnswer] = useState(false);
+  const [existingResult, setExistingResult] = useState(null);
+  const [quizStatus, setQuizStatus] = useState('');
 
   // ===== RESPONSIVE =====
   useEffect(() => {
@@ -67,7 +74,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     setStudentInfo({ nim, name, kelas });
   }, [studentData]);
 
-  // ===== FETCH QUIZ - AMBIL DARI MODUL =====
+  // ===== FETCH QUIZ =====
   useEffect(() => {
     if (!modulId) {
       setError('Modul tidak ditemukan');
@@ -94,8 +101,9 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           return;
         }
 
-        // 🔥 CEK APAKAH SUDAH PERNAH MENGERJAKAN
         const nim = studentInfo.nim;
+        
+        // 🔥 CEK SUDAH PERNAH MENGERJAKAN
         if (nim) {
           const qJawaban = query(
             collection(db, "jawaban_kuis"),
@@ -106,7 +114,24 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           const existing = snapJawaban.docs.length;
           setAttemptCount(existing);
           
-          // Cek batas percobaan
+          // 🔥 AMBIL HASIL TERAKHIR jika sudah pernah
+          if (existing > 0) {
+            const lastDoc = snapJawaban.docs[snapJawaban.docs.length - 1];
+            const lastData = lastDoc.data();
+            setExistingResult({
+              score: lastData.score || 0,
+              correctAnswers: lastData.correctAnswers || 0,
+              totalQuestions: lastData.totalQuestions || 0,
+              answers: lastData.answers || {},
+              details: lastData.details || [],
+              isAutoSubmit: lastData.isAutoSubmit || false,
+              timeUsed: lastData.timeUsed || 0,
+              submittedAt: lastData.submittedAt,
+            });
+            setHasExistingAnswer(true);
+          }
+          
+          // 🔥 CEK BATAS PERCOBAAN
           const maxAttempts = data.maxAttempts || 1;
           if (maxAttempts > 0 && existing >= maxAttempts) {
             setError(`⚠️ Anda sudah mengerjakan kuis ini ${existing} kali. Batas maksimal ${maxAttempts} kali.`);
@@ -115,7 +140,38 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           }
         }
 
-        // 🔥 Siapkan soal - PASTIKAN FORMATNYA BENAR
+        // 🔥 CEK JADWAL BUKA/TUTUP
+        const now = new Date();
+        
+        if (data.useSchedule) {
+          // CEK TANGGAL BUKA
+          if (data.quizOpenDate) {
+            const open = new Date(data.quizOpenDate);
+            if (now < open) {
+              setError(`⏳ Kuis belum dibuka. Akan dibuka pada ${open.toLocaleString('id-ID', { 
+                day: 'numeric', month: 'long', year: 'numeric', 
+                hour: '2-digit', minute: '2-digit' 
+              })}`);
+              setLoading(false);
+              return;
+            }
+          }
+          
+          // CEK TANGGAL TUTUP
+          if (data.quizCloseDate) {
+            const close = new Date(data.quizCloseDate);
+            if (now > close) {
+              setError(`⛔ Kuis sudah ditutup pada ${close.toLocaleString('id-ID', { 
+                day: 'numeric', month: 'long', year: 'numeric', 
+                hour: '2-digit', minute: '2-digit' 
+              })}. Tidak dapat dikerjakan lagi.`);
+              setLoading(false);
+              return;
+            }
+          }
+        }
+
+        // 🔥 Siapkan soal
         let questionsData = quizDataRaw.map((q, idx) => ({
           id: q.id || idx,
           question: q.question || q.q || `Soal ${idx + 1}`,
@@ -126,8 +182,8 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           explanation: q.explanation || '',
         }));
 
-        // 🔥 Acak soal jika diminta
-        if (data.randomOrder) {
+        // 🔥 Acak soal jika diminta (hanya jika belum pernah dikerjakan)
+        if (data.randomOrder && !hasExistingAnswer) {
           questionsData = shuffleArray(questionsData);
         }
 
@@ -143,6 +199,9 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           maxAttempts: data.maxAttempts || 1,
           showExplanation: data.showExplanation !== false,
           difficulty: data.difficulty || 'Sedang',
+          useSchedule: data.useSchedule || false,
+          quizOpenDate: data.quizOpenDate || null,
+          quizCloseDate: data.quizCloseDate || null,
         });
 
         setQuestions(questionsData);
@@ -156,11 +215,11 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     };
 
     fetchQuiz();
-  }, [modulId, studentInfo.nim]);
+  }, [modulId, studentInfo.nim, hasExistingAnswer]);
 
   // ===== TIMER =====
   useEffect(() => {
-    if (!quizStarted || isSubmitted || timeLeft <= 0) return;
+    if (!quizStarted || isSubmitted || timeLeft <= 0 || hasExistingAnswer) return;
 
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -174,18 +233,18 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [quizStarted, isSubmitted]);
+  }, [quizStarted, isSubmitted, hasExistingAnswer]);
 
   // ===== AUTO SUBMIT =====
   const handleAutoSubmit = useCallback(async () => {
-    if (isSubmitted) return;
+    if (isSubmitted || hasExistingAnswer) return;
     alert('⏰ Waktu habis! Jawaban akan dikirim otomatis.');
     await handleSubmitQuiz(true);
-  }, [isSubmitted]);
+  }, [isSubmitted, hasExistingAnswer]);
 
   // ===== HANDLE ANSWER =====
   const handleSelectAnswer = (questionId, optionIndex) => {
-    if (isSubmitted) return;
+    if (isSubmitted || hasExistingAnswer) return;
     setAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
   };
 
@@ -206,7 +265,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
 
   // ===== SUBMIT QUIZ =====
   const handleSubmitQuiz = async (isAuto = false) => {
-    if (isSubmitted) return;
+    if (isSubmitted || hasExistingAnswer) return;
 
     // Cek semua soal sudah dijawab (kecuali auto submit)
     if (!isAuto) {
@@ -228,7 +287,11 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
       const isCorrect = userAnswer === q.correctAnswer;
       if (isCorrect) correctCount++;
       return {
-        ...q,
+        id: q.id,
+        question: q.question,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation || '',
         userAnswer,
         isCorrect,
       };
@@ -250,6 +313,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         correctAnswers: correctCount,
         totalQuestions: questions.length,
         score: score,
+        details: detailedResults,
         timeUsed: (quizData?.timeLimit || 0) * 60 - timeLeft,
         isAutoSubmit: isAuto,
         submittedAt: serverTimestamp(),
@@ -290,7 +354,9 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     }
   };
 
-  // ===== LOADING =====
+  // ============================================================
+  // RENDER - LOADING
+  // ============================================================
   if (loading) {
     return (
       <div style={styles.loadingContainer}>
@@ -300,7 +366,9 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     );
   }
 
-  // ===== ERROR =====
+  // ============================================================
+  // RENDER - ERROR
+  // ============================================================
   if (error) {
     return (
       <div style={styles.errorContainer}>
@@ -314,9 +382,179 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   }
 
   // ============================================================
+  // RENDER - SUDAH PERNAH MENGERJAKAN (PREVIEW MODE)
+  // ============================================================
+  if (hasExistingAnswer && existingResult) {
+    const { score, correctAnswers, totalQuestions, details, isAutoSubmit } = existingResult;
+    const isPassed = score >= 70;
+
+    return (
+      <div style={styles.container}>
+        <div style={styles.resultCard}>
+          {/* HEADER */}
+          <div style={styles.resultHeader}>
+            <div style={styles.resultIcon(isPassed)}>
+              {isPassed ? <Award size={48} color="white" /> : <AlertCircle size={48} color="white" />}
+            </div>
+            <h2 style={styles.resultTitle(isPassed)}>
+              {isPassed ? '🎉 Selamat!' : '💪 Terus Belajar!'}
+            </h2>
+            <p style={styles.resultSubtitle}>
+              Anda telah mengerjakan kuis ini pada{' '}
+              {existingResult.submittedAt?.toDate 
+                ? existingResult.submittedAt.toDate().toLocaleString('id-ID')
+                : 'sebelumnya'}
+            </p>
+            {isAutoSubmit && (
+              <p style={{ color: '#f59e0b', fontSize: 13, marginTop: 4 }}>
+                ⏰ Dikirim otomatis karena waktu habis
+              </p>
+            )}
+          </div>
+
+          {/* SKOR */}
+          <div style={styles.resultScore}>
+            <div style={styles.scoreCircle}>
+              <span style={styles.scoreValue}>{score}</span>
+              <span style={styles.scoreLabel}>Nilai</span>
+            </div>
+            <div style={styles.scoreDetails}>
+              <div style={styles.scoreDetailItem}>
+                <CheckCircle size={16} color="#10b981" />
+                <span>Benar: {correctAnswers}</span>
+              </div>
+              <div style={styles.scoreDetailItem}>
+                <XCircle size={16} color="#ef4444" />
+                <span>Salah: {totalQuestions - correctAnswers}</span>
+              </div>
+              <div style={styles.scoreDetailItem}>
+                <HelpCircle size={16} color="#3b82f6" />
+                <span>Total: {totalQuestions}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 🔥 TOMBOL LIHAT JAWABAN */}
+          <div style={styles.actionButtons}>
+            <button 
+              onClick={() => setShowAllAnswers(!showAllAnswers)}
+              style={styles.btnToggleAnswers}
+            >
+              {showAllAnswers ? (
+                <><EyeOff size={16} /> Sembunyikan Jawaban</>
+              ) : (
+                <><Eye size={16} /> Lihat Semua Jawaban & Pembahasan</>
+              )}
+            </button>
+          </div>
+
+          {/* 🔥 DAFTAR JAWABAN - HIJAU/MERAH */}
+          {showAllAnswers && details && (
+            <div style={styles.allAnswersSection}>
+              <h4 style={styles.answersTitle}>📋 Daftar Jawaban & Pembahasan</h4>
+              {details.map((q, idx) => {
+                const isCorrect = q.isCorrect;
+                return (
+                  <div key={q.id} style={styles.answerItem(isCorrect)}>
+                    <div style={styles.answerHeader}>
+                      <span style={styles.answerNumber}>Soal {idx + 1}</span>
+                      <span style={styles.answerStatus(isCorrect)}>
+                        {isCorrect ? '✅ Benar' : '❌ Salah'}
+                      </span>
+                    </div>
+                    
+                    <div style={styles.answerQuestion}>{q.question}</div>
+                    
+                    <div style={styles.answerOptions}>
+                      {q.options.map((opt, oIdx) => {
+                        const isCorrectAnswer = oIdx === q.correctAnswer;
+                        const isUserAnswer = oIdx === q.userAnswer;
+                        let bgColor = 'transparent';
+                        let textColor = '#1e293b';
+                        
+                        if (isCorrectAnswer) {
+                          bgColor = '#dcfce7';
+                          textColor = '#166534';
+                        }
+                        if (isUserAnswer && !isCorrectAnswer) {
+                          bgColor = '#fee2e2';
+                          textColor = '#dc2626';
+                        }
+                        if (isUserAnswer && isCorrectAnswer) {
+                          bgColor = '#dcfce7';
+                          textColor = '#166534';
+                        }
+                        
+                        return (
+                          <div key={oIdx} style={{...styles.optionRow, background: bgColor, color: textColor}}>
+                            <span style={styles.optionLabel}>{String.fromCharCode(65 + oIdx)}.</span>
+                            <span>{opt || `Opsi ${String.fromCharCode(65 + oIdx)}`}</span>
+                            {isCorrectAnswer && <CheckCircle size={14} color="#10b981" style={{marginLeft: 'auto'}} />}
+                            {isUserAnswer && !isCorrectAnswer && <XCircle size={14} color="#dc2626" style={{marginLeft: 'auto'}} />}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {q.userAnswer !== undefined && (
+                      <div style={styles.answerUser}>
+                        <span>📝 Jawaban Anda: </span>
+                        <span style={{ fontWeight: 'bold', color: isCorrect ? '#10b981' : '#dc2626' }}>
+                          {q.options[q.userAnswer] || 'Tidak dijawab'}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {q.explanation && (
+                      <div style={styles.answerExplanation}>
+                        💡 <span style={{ fontWeight: 600 }}>Pembahasan:</span> {q.explanation}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div style={styles.resultFooter}>
+            <button onClick={handleBack} style={styles.btnHome}>
+              🏠 Kembali ke Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================
   // RENDER - QUIZ NOT STARTED
   // ============================================================
   if (!quizStarted) {
+    // 🔥 CEK STATUS KUIS
+    let statusText = '';
+    let statusColor = '#10b981';
+    let statusIcon = <Unlock size={16} color="#10b981" />;
+    
+    if (quizData?.useSchedule) {
+      const now = new Date();
+      const open = new Date(quizData.quizOpenDate);
+      const close = new Date(quizData.quizCloseDate);
+      
+      if (now < open) {
+        statusText = `🔒 Belum Dibuka (${open.toLocaleString('id-ID')})`;
+        statusColor = '#f59e0b';
+        statusIcon = <Lock size={16} color="#f59e0b" />;
+      } else if (now > close) {
+        statusText = '⛔ Kuis Ditutup';
+        statusColor = '#ef4444';
+        statusIcon = <Lock size={16} color="#ef4444" />;
+      } else {
+        statusText = '✅ Kuis Aktif';
+        statusColor = '#10b981';
+        statusIcon = <Unlock size={16} color="#10b981" />;
+      }
+    }
+
     return (
       <div style={styles.container}>
         <div style={styles.startCard}>
@@ -324,6 +562,13 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
             <div style={styles.startIcon}>❓</div>
             <h2 style={styles.startTitle}>{quizData?.title || 'Kuis'}</h2>
             <p style={styles.startSubject}>{quizData?.subject || 'Umum'}</p>
+            
+            {/* 🔥 STATUS KUIS */}
+            {quizData?.useSchedule && (
+              <div style={{...styles.quizStatusBadge, borderColor: statusColor, color: statusColor}}>
+                {statusIcon} {statusText}
+              </div>
+            )}
           </div>
 
           <div style={styles.startInfo}>
@@ -349,6 +594,14 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
                 <span>Sudah {attemptCount} kali dikerjakan</span>
               </div>
             )}
+            {quizData?.useSchedule && quizData?.quizOpenDate && quizData?.quizCloseDate && (
+              <div style={{...styles.startInfoItem, background: '#eef2ff', borderColor: '#3b82f6'}}>
+                <Calendar size={18} color="#3b82f6" />
+                <span>
+                  {new Date(quizData.quizOpenDate).toLocaleDateString()} - {new Date(quizData.quizCloseDate).toLocaleDateString()}
+                </span>
+              </div>
+            )}
           </div>
 
           <div style={styles.startRules}>
@@ -364,135 +617,32 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
               ) : (
                 <li>🔒 Hanya bisa dikerjakan 1 kali</li>
               )}
+              <li>📖 Setelah selesai, Anda bisa melihat jawaban & pembahasan</li>
               {quizData?.showExplanation && (
                 <li>💡 Pembahasan akan tampil setelah selesai</li>
               )}
               {quizData?.randomOrder && (
                 <li>🎲 Soal diacak untuk setiap siswa</li>
               )}
+              {quizData?.useSchedule && (
+                <li>📅 Kuis hanya bisa dikerjakan dalam periode yang ditentukan</li>
+              )}
             </ul>
           </div>
 
           <div style={styles.startFooter}>
             <button onClick={handleBack} style={styles.btnCancel}>Batal</button>
-            <button onClick={handleStartQuiz} style={styles.btnStart}>
+            <button 
+              onClick={handleStartQuiz} 
+              style={{
+                ...styles.btnStart,
+                opacity: quizData?.useSchedule && new Date() > new Date(quizData.quizCloseDate) ? 0.5 : 1,
+                cursor: quizData?.useSchedule && new Date() > new Date(quizData.quizCloseDate) ? 'not-allowed' : 'pointer'
+              }}
+              disabled={quizData?.useSchedule && new Date() > new Date(quizData.quizCloseDate)}
+            >
               <Zap size={16} /> Mulai Kuis
             </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ============================================================
-  // RENDER - SUBMITTED
-  // ============================================================
-  if (isSubmitted && results) {
-    const { correctCount, totalQuestions, score, details, isAuto } = results;
-    const isPassed = score >= 70;
-
-    return (
-      <div style={styles.container}>
-        <div style={styles.resultCard}>
-          <div style={styles.resultHeader}>
-            <div style={styles.resultIcon(isPassed)}>
-              {isPassed ? <Award size={48} color="white" /> : <AlertCircle size={48} color="white" />}
-            </div>
-            <h2 style={styles.resultTitle(isPassed)}>
-              {isPassed ? '🎉 Selamat!' : '💪 Terus Belajar!'}
-            </h2>
-            <p style={styles.resultSubtitle}>
-              {isPassed ? 'Anda lulus dengan hasil yang memuaskan' : 'Jangan menyerah, coba lagi lain waktu'}
-            </p>
-          </div>
-
-          <div style={styles.resultScore}>
-            <div style={styles.scoreCircle}>
-              <span style={styles.scoreValue}>{score}</span>
-              <span style={styles.scoreLabel}>Nilai</span>
-            </div>
-            <div style={styles.scoreDetails}>
-              <div style={styles.scoreDetailItem}>
-                <CheckCircle size={16} color="#10b981" />
-                <span>Benar: {correctCount}</span>
-              </div>
-              <div style={styles.scoreDetailItem}>
-                <XCircle size={16} color="#ef4444" />
-                <span>Salah: {totalQuestions - correctCount}</span>
-              </div>
-              <div style={styles.scoreDetailItem}>
-                <HelpCircle size={16} color="#3b82f6" />
-                <span>Total: {totalQuestions}</span>
-              </div>
-              {isAuto && (
-                <div style={styles.scoreDetailItem}>
-                  <AlertTriangle size={16} color="#f59e0b" />
-                  <span>⏰ Dikirim otomatis (waktu habis)</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* PEMBAHASAN */}
-          {quizData?.showExplanation && (
-            <div style={styles.explanationSection}>
-              <button 
-                onClick={() => setShowExplanation(!showExplanation)}
-                style={styles.explanationToggle}
-              >
-                {showExplanation ? '📖 Sembunyikan Pembahasan' : '📖 Lihat Pembahasan'}
-              </button>
-
-              {showExplanation && (
-                <div style={styles.explanationList}>
-                  {details.map((q, idx) => (
-                    <div key={q.id} style={styles.explanationItem}>
-                      <div style={styles.explanationQuestion}>
-                        <span style={styles.explanationNum}>{idx + 1}.</span>
-                        <span>{q.question}</span>
-                      </div>
-                      <div style={styles.explanationAnswer}>
-                        <span>Jawaban Anda: </span>
-                        <span style={{
-                          fontWeight: 'bold',
-                          color: q.isCorrect ? '#10b981' : '#ef4444'
-                        }}>
-                          {q.userAnswer !== undefined ? q.options[q.userAnswer] || 'Tidak dijawab' : 'Tidak dijawab'}
-                        </span>
-                        {!q.isCorrect && (
-                          <span style={{ color: '#10b981', marginLeft: 8 }}>
-                            ✅ Jawaban benar: {q.options[q.correctAnswer]}
-                          </span>
-                        )}
-                      </div>
-                      {q.explanation && (
-                        <div style={styles.explanationText}>
-                          💡 {q.explanation}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          <div style={styles.resultFooter}>
-            <button onClick={handleBack} style={styles.btnHome}>
-              🏠 Kembali ke Dashboard
-            </button>
-            {!isAuto && quizData?.maxAttempts > 1 && attemptCount < quizData.maxAttempts - 1 && (
-              <button onClick={() => {
-                setQuizStarted(false);
-                setIsSubmitted(false);
-                setAnswers({});
-                setResults(null);
-                setCurrentIndex(0);
-                setTimeLeft(quizData.timeLimit * 60);
-              }} style={styles.btnRetry}>
-                <RefreshCw size={16} /> Coba Lagi
-              </button>
-            )}
           </div>
         </div>
       </div>
@@ -552,7 +702,6 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           </span>
         </div>
 
-        {/* Gambar soal */}
         {currentQuestion.questionImage && (
           <div style={styles.questionImage}>
             <img src={currentQuestion.questionImage} alt="Soal" />
@@ -617,7 +766,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         )}
       </div>
 
-      {/* QUESTION PAGINATION */}
+      {/* PAGINATION */}
       <div style={styles.pagination}>
         {questions.map((q, idx) => {
           const isAnswered = answers[q.id] !== undefined;
@@ -727,6 +876,18 @@ const styles = {
   startIcon: { fontSize: 48, marginBottom: 8 },
   startTitle: { fontSize: 24, fontWeight: 900, color: '#1e293b', margin: 0 },
   startSubject: { fontSize: 14, color: '#64748b', marginTop: 4 },
+  
+  quizStatusBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '4px 14px',
+    borderRadius: 20,
+    border: '2px solid',
+    fontSize: 12,
+    fontWeight: 700,
+    marginTop: 8
+  },
 
   startInfo: {
     display: 'grid',
@@ -1011,7 +1172,9 @@ const styles = {
     fontSize: 12
   },
 
-  // RESULT CARD
+  // ============================================================
+  // RESULT & PREVIEW STYLES
+  // ============================================================
   resultCard: {
     background: 'white',
     borderRadius: 20,
@@ -1072,49 +1235,109 @@ const styles = {
     color: '#1e293b'
   },
 
-  explanationSection: { marginBottom: 20 },
-  explanationToggle: {
-    width: '100%',
-    padding: '10px',
-    background: '#f1f5f9',
-    border: 'none',
-    borderRadius: 8,
-    cursor: 'pointer',
-    fontWeight: 600,
-    fontSize: 13,
-    color: '#1e293b'
+  // 🔥 TOMBOL LIHAT JAWABAN
+  actionButtons: {
+    display: 'flex',
+    gap: 10,
+    justifyContent: 'center',
+    marginBottom: 16
   },
-  explanationList: {
-    marginTop: 12,
+  btnToggleAnswers: {
+    padding: '10px 24px',
+    background: '#eef2ff',
+    color: '#4338ca',
+    border: '2px solid #4338ca',
+    borderRadius: 10,
+    cursor: 'pointer',
+    fontWeight: 700,
+    fontSize: 13,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    transition: '0.2s'
+  },
+
+  // 🔥 DAFTAR JAWABAN
+  allAnswersSection: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTop: '2px solid #e2e8f0'
+  },
+  answersTitle: {
+    fontSize: 16,
+    fontWeight: 800,
+    color: '#1e293b',
+    margin: '0 0 16px'
+  },
+  
+  answerItem: (isCorrect) => ({
+    padding: '16px',
+    marginBottom: 12,
+    borderRadius: 12,
+    border: `2px solid ${isCorrect ? '#10b981' : '#ef4444'}`,
+    background: isCorrect ? '#f0fdf4' : '#fef2f2',
+    transition: '0.2s'
+  }),
+  
+  answerHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8
+  },
+  answerNumber: { fontSize: 12, fontWeight: 700, color: '#64748b' },
+  answerStatus: (isCorrect) => ({
+    fontSize: 12,
+    fontWeight: 700,
+    color: isCorrect ? '#10b981' : '#ef4444'
+  }),
+  
+  answerQuestion: {
+    fontSize: 15,
+    fontWeight: 600,
+    color: '#1e293b',
+    marginBottom: 10
+  },
+  
+  answerOptions: {
     display: 'flex',
     flexDirection: 'column',
+    gap: 4,
+    marginBottom: 8
+  },
+  
+  optionRow: {
+    display: 'flex',
+    alignItems: 'center',
     gap: 8,
-    maxHeight: 400,
-    overflowY: 'auto'
+    padding: '6px 12px',
+    borderRadius: 6,
+    fontSize: 13
   },
-  explanationItem: {
-    padding: '12px 16px',
-    background: '#f8fafc',
-    borderRadius: 8,
-    border: '1px solid #e2e8f0'
+  optionLabel: { fontWeight: 700, color: '#64748b' },
+  
+  answerUser: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 4
   },
-  explanationQuestion: { fontWeight: 600, fontSize: 13, marginBottom: 4 },
-  explanationNum: { color: '#94a3b8', marginRight: 4 },
-  explanationAnswer: { fontSize: 12, color: '#64748b' },
-  explanationText: {
-    marginTop: 6,
+  
+  answerExplanation: {
+    marginTop: 8,
     padding: '8px 12px',
     background: '#eef2ff',
     borderRadius: 6,
     fontSize: 12,
-    color: '#4338ca'
+    color: '#4338ca',
+    lineHeight: 1.6
   },
 
   resultFooter: {
     display: 'flex',
     gap: 10,
     justifyContent: 'center',
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    marginTop: 16
   },
   btnHome: {
     padding: '10px 24px',
