@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { Calendar, Clock, Users, Printer } from 'lucide-react';
 
 const TeacherHistory = () => {
@@ -10,16 +10,7 @@ const TeacherHistory = () => {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  const [guru] = useState(() => {
-    const stateGuru = location.state?.teacher;
-    const localGuru = localStorage.getItem('teacherData');
-    if (stateGuru) {
-      localStorage.setItem('teacherData', JSON.stringify(stateGuru));
-      return stateGuru;
-    }
-    return localGuru ? JSON.parse(localGuru) : null;
-  });
-  
+  const [guru, setGuru] = useState(null);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
@@ -30,50 +21,96 @@ const TeacherHistory = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // 🔥 AMBIL DATA GURU
   useEffect(() => {
-    if (!guru) { 
-      navigate('/login-guru'); 
-      return; 
+    const stateGuru = location.state?.teacher;
+    const localGuru = localStorage.getItem('teacherData');
+    
+    if (stateGuru) {
+      localStorage.setItem('teacherData', JSON.stringify(stateGuru));
+      setGuru(stateGuru);
+    } else if (localGuru) {
+      try {
+        setGuru(JSON.parse(localGuru));
+      } catch (e) {
+        console.error("Error parsing teacher data:", e);
+      }
+    } else {
+      navigate('/login-guru');
     }
+  }, [location, navigate]);
+
+  useEffect(() => {
+    if (!guru) return;
     fetchLogs();
   }, [guru, selectedMonth]);
 
-  // 🔥 FETCH LOGS DENGAN FALLBACK
+  // 🔥 FETCH LOGS - FIXED: Pakai guruId
   const fetchLogs = async () => {
     setLoading(true);
     try {
       let data = [];
       
-      // 1. Coba query dengan teacherId
-      if (guru.id) {
-        const q1 = query(collection(db, "teacher_logs"), where("teacherId", "==", guru.id));
-        const snap1 = await getDocs(q1);
-        data = snap1.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // 🔥 Priority: Pakai guruId
+      const teacherId = guru.guruId || guru.id;
+      
+      if (teacherId) {
+        const q = query(
+          collection(db, "teacher_logs"), 
+          where("teacherId", "==", teacherId),
+          orderBy("tanggal", "desc")
+        );
+        const snap = await getDocs(q);
+        data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       }
       
-      // 2. Jika tidak ada, coba dengan nama (fallback)
+      // 🔥 FALLBACK: Jika tidak ada, coba dengan nama
       if (data.length === 0 && guru.nama) {
-        const q2 = query(collection(db, "teacher_logs"), where("namaGuru", "==", guru.nama));
-        const snap2 = await getDocs(q2);
-        data = snap2.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const qFallback = query(
+          collection(db, "teacher_logs"), 
+          where("namaGuru", "==", guru.nama),
+          orderBy("tanggal", "desc")
+        );
+        const snapFallback = await getDocs(qFallback);
+        data = snapFallback.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       }
       
-      // 3. Filter berdasarkan bulan
-      const filtered = data.filter(item => item.tanggal && item.tanggal.startsWith(selectedMonth));
-      filtered.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+      // Filter berdasarkan bulan
+      const filtered = data.filter(item => {
+        if (!item.tanggal) return false;
+        // Format tanggal harus YYYY-MM-DD
+        const dateStr = item.tanggal.split(' ')[0];
+        return dateStr.startsWith(selectedMonth);
+      });
+      
       setLogs(filtered);
     } catch (err) { 
-      console.error("Error fetching logs:", err); 
+      console.error("Error fetching logs:", err);
+      // Jika gagal karena index, coba tanpa orderBy
+      try {
+        const q = query(
+          collection(db, "teacher_logs"), 
+          where("teacherId", "==", guru.guruId || guru.id)
+        );
+        const snap = await getDocs(q);
+        let data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        data.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+        const filtered = data.filter(item => {
+          if (!item.tanggal) return false;
+          return item.tanggal.startsWith(selectedMonth);
+        });
+        setLogs(filtered);
+      } catch (e2) {
+        console.error("Fallback error:", e2);
+      }
     } 
     finally { setLoading(false); }
   };
 
   const handlePrint = () => window.print();
   
-  // 🔥 HITUNG TOTAL JAM
+  // 🔥 HITUNG TOTAL
   const totalJam = logs.reduce((acc, curr) => acc + (parseFloat(curr.durasiJam) || 0), 0);
-  
-  // 🔥 HITUNG TOTAL SISWA
   const totalSiswa = logs.reduce((acc, curr) => acc + (parseInt(curr.siswaHadir) || 0), 0);
   
   const formattedPeriod = new Date(selectedMonth + "-01").toLocaleDateString('id-ID', { 
@@ -81,7 +118,11 @@ const TeacherHistory = () => {
     month: 'long' 
   });
 
-  if (!guru) return null;
+  if (!guru) return (
+    <div style={{ padding: 40, textAlign: 'center' }}>
+      <p>Memuat data guru...</p>
+    </div>
+  );
 
   return (
     <div style={{ width: '100%' }}>
@@ -150,7 +191,7 @@ const TeacherHistory = () => {
         </div>
       </div>
 
-      {/* 🔥 KARTU RINGKASAN - TANPA HONOR */}
+      {/* 🔥 KARTU RINGKASAN */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: isMobile ? '1fr 1fr 1fr' : 'repeat(3, 1fr)',
@@ -254,7 +295,7 @@ const TeacherHistory = () => {
           </div>
         </div>
 
-        {/* DESKTOP TABLE - TANPA NOMINAL */}
+        {/* DESKTOP TABLE */}
         {!isMobile && (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -280,7 +321,7 @@ const TeacherHistory = () => {
                       <div style={{ fontSize: 9, color: '#94a3b8' }}>{log.waktu || ''}</div>
                     </td>
                     <td style={{ padding: 12, fontWeight: 'bold', fontSize: 13 }}>
-                      {log.kegiatan || 'Mengajar'}
+                      {log.program || log.kegiatan || 'Mengajar'}
                     </td>
                     <td style={{ padding: 12, fontSize: 11, color: '#64748b' }}>
                       {log.detail || '-'}
@@ -300,9 +341,9 @@ const TeacherHistory = () => {
                         borderRadius: 20, 
                         fontSize: 10, 
                         fontWeight: 'bold',
-                        background: log.status === 'Disetujui' || log.status === 'Kompensasi' ? '#dcfce7' : 
+                        background: log.status === 'Valid / Sudah Terekap' || log.status === 'Disetujui' ? '#dcfce7' : 
                                   log.status === 'Ditolak' ? '#fee2e2' : '#fef3c7',
-                        color: log.status === 'Disetujui' || log.status === 'Kompensasi' ? '#16a34a' : 
+                        color: log.status === 'Valid / Sudah Terekap' || log.status === 'Disetujui' ? '#16a34a' : 
                                log.status === 'Ditolak' ? '#dc2626' : '#d97706'
                       }}>
                         {log.status || 'Menunggu Validasi'}
@@ -315,7 +356,7 @@ const TeacherHistory = () => {
           </div>
         )}
 
-        {/* MOBILE CARDS - TANPA NOMINAL */}
+        {/* MOBILE CARDS */}
         {isMobile && (
           <div>
             {loading ? (
@@ -340,14 +381,14 @@ const TeacherHistory = () => {
                     borderRadius: 12, 
                     fontSize: 10, 
                     fontWeight: 'bold',
-                    background: log.status === 'Disetujui' || log.status === 'Kompensasi' ? '#dcfce7' : '#fef3c7',
-                    color: log.status === 'Disetujui' || log.status === 'Kompensasi' ? '#16a34a' : '#d97706'
+                    background: log.status === 'Valid / Sudah Terekap' || log.status === 'Disetujui' ? '#dcfce7' : '#fef3c7',
+                    color: log.status === 'Valid / Sudah Terekap' || log.status === 'Disetujui' ? '#16a34a' : '#d97706'
                   }}>
                     {log.status || 'Menunggu Validasi'}
                   </span>
                 </div>
                 <div style={{ margin: '6px 0', fontWeight: 'bold', fontSize: 14 }}>
-                  {log.kegiatan || 'Mengajar'}
+                  {log.program || log.kegiatan || 'Mengajar'}
                 </div>
                 <div style={{ fontSize: 11, color: '#64748b', marginBottom: 8 }}>
                   {log.detail || '-'}

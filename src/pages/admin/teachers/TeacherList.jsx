@@ -124,24 +124,85 @@ const TeacherList = () => {
     }
   };
 
-  // ===== GENERATE KODE UNIK =====
+  // ===== GENERATE KODE UNIK (FIXED: ANTI DUPLIKAT) =====
   const generateGuruId = async () => {
     try {
+      // Ambil semua teacher dan cari ID terakhir
       const snap = await getDocs(collection(db, "teachers"));
-      const count = snap.size + 1;
-      return `GURU-${String(count).padStart(3, '0')}`;
+      let maxNumber = 0;
+      
+      snap.forEach(doc => {
+        const data = doc.data();
+        if (data.guruId) {
+          // Ekstrak angka dari GURU-XXX
+          const num = parseInt(data.guruId.replace('GURU-', ''));
+          if (!isNaN(num) && num > maxNumber) {
+            maxNumber = num;
+          }
+        }
+      });
+      
+      // ID baru = max + 1
+      const newNumber = maxNumber + 1;
+      const newGuruId = `GURU-${String(newNumber).padStart(3, '0')}`;
+      
+      // VALIDASI: Cek apakah ID sudah digunakan (antisipasi duplikat)
+      const idQuery = query(
+        collection(db, "teachers"), 
+        where("guruId", "==", newGuruId)
+      );
+      const idSnap = await getDocs(idQuery);
+      
+      if (!idSnap.empty) {
+        // Jika ID sudah ada, generate ulang dengan timestamp
+        const timestamp = Date.now().toString().slice(-6);
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        return `GURU-${timestamp}${random}`;
+      }
+      
+      return newGuruId;
     } catch (error) {
-      return `GURU-${Date.now().toString().slice(-4)}`;
+      // Fallback: pakai timestamp + random
+      const timestamp = Date.now().toString().slice(-6);
+      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      return `GURU-${timestamp}${random}`;
     }
   };
 
   const generateMapelId = async () => {
     try {
       const snap = await getDocs(collection(db, "mapel"));
-      const count = snap.size + 1;
-      return `MAPEL-${String(count).padStart(3, '0')}`;
+      let maxNumber = 0;
+      
+      snap.forEach(doc => {
+        const data = doc.data();
+        if (data.kodeMapel) {
+          const num = parseInt(data.kodeMapel.replace('MAPEL-', ''));
+          if (!isNaN(num) && num > maxNumber) {
+            maxNumber = num;
+          }
+        }
+      });
+      
+      const newNumber = maxNumber + 1;
+      const newMapelId = `MAPEL-${String(newNumber).padStart(3, '0')}`;
+      
+      // Validasi duplikat
+      const idQuery = query(
+        collection(db, "mapel"), 
+        where("kodeMapel", "==", newMapelId)
+      );
+      const idSnap = await getDocs(idQuery);
+      
+      if (!idSnap.empty) {
+        const timestamp = Date.now().toString().slice(-6);
+        return `MAPEL-${timestamp}`;
+      }
+      
+      return newMapelId;
     } catch (error) {
-      return `MAPEL-${Date.now().toString().slice(-4)}`;
+      const timestamp = Date.now().toString().slice(-6);
+      return `MAPEL-${timestamp}`;
     }
   };
 
@@ -168,6 +229,17 @@ const TeacherList = () => {
     setAddingMapel(true);
     try {
       const kodeMapel = await generateMapelId();
+      
+      // Cek duplikat nama mapel
+      const nameQuery = query(
+        collection(db, "mapel"), 
+        where("namaMapel", "==", mapelForm.namaMapel)
+      );
+      const nameSnap = await getDocs(nameQuery);
+      if (!nameSnap.empty) {
+        return showAlert(`❌ Mapel "${mapelForm.namaMapel}" sudah ada!`, true);
+      }
+      
       await addDoc(collection(db, "mapel"), {
         ...mapelForm,
         kodeMapel: kodeMapel,
@@ -185,7 +257,7 @@ const TeacherList = () => {
     setAddingMapel(false);
   };
 
-  // ===== TAMBAH GURU BARU =====
+  // ===== TAMBAH GURU BARU (FIXED: ANTI DUPLIKAT) =====
   const handleAddTeacher = async (e) => {
     e.preventDefault();
     if (!addForm.nama) return showAlert("⚠️ Nama guru wajib diisi!", true);
@@ -195,18 +267,29 @@ const TeacherList = () => {
     
     setAdding(true);
     try {
-      // 1. Buat akun Auth
+      // 1. CEK DUPLIKAT EMAIL DI FIRESTORE
+      const emailQuery = query(
+        collection(db, "teachers"), 
+        where("email", "==", addForm.email)
+      );
+      const emailSnap = await getDocs(emailQuery);
+      if (!emailSnap.empty) {
+        setAdding(false);
+        return showAlert("❌ Email sudah terdaftar untuk guru lain!", true);
+      }
+      
+      // 2. Buat akun Auth
       const userCredential = await createUserWithEmailAndPassword(auth, addForm.email, addForm.password);
       const authUid = userCredential.user.uid;
       
-      // 2. Generate kode unik guru
+      // 3. Generate kode unik guru (AMAN)
       const guruId = await generateGuruId();
       
-      // 3. Dapatkan kode mapel dari mapel yang dipilih
+      // 4. Dapatkan kode mapel dari mapel yang dipilih
       const selectedMapel = mapelList.find(m => m.id === addForm.mapel);
       const kodeMapel = selectedMapel?.kodeMapel || 'MAPEL-000';
       
-      // 4. Simpan ke Firestore
+      // 5. Simpan ke Firestore
       const teacherData = {
         guruId: guruId,
         nama: addForm.nama,
@@ -641,7 +724,7 @@ const TeacherList = () => {
                 <div style={styles.infoBox}>
                   <Sparkles size={14} color="#3b82f6" />
                   <span style={{fontSize: 12, color: '#64748b'}}>
-                    Kode unik akan dibuat otomatis oleh sistem
+                    Kode unik akan dibuat otomatis oleh sistem (MAPEL-XXX)
                   </span>
                 </div>
                 <div style={styles.modalFooter}>
@@ -732,7 +815,7 @@ const TeacherList = () => {
                       required 
                     />
                   </div>
-                  <p style={styles.hintText}>Email akan digunakan untuk login. Pastikan email valid.</p>
+                  <p style={styles.hintText}>Email akan digunakan untuk login. Pastikan email valid dan unik.</p>
                 </div>
 
                 <div style={styles.formGroup}>
@@ -795,7 +878,7 @@ const TeacherList = () => {
                 <div style={styles.infoBox}>
                   <Shield size={14} color="#10b981" />
                   <span style={{fontSize: 12, color: '#166534'}}>
-                    Guru akan mendapatkan kode unik otomatis: <strong>GURU-XXX</strong>
+                    Guru akan mendapatkan kode unik otomatis: <strong>GURU-XXX</strong> (dijamin unik)
                   </span>
                 </div>
 

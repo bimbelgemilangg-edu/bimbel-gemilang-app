@@ -3,7 +3,10 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
-import { collection, getDocs, doc, addDoc, deleteDoc, updateDoc, getDoc, setDoc } from "firebase/firestore";
+import { 
+  collection, getDocs, doc, addDoc, deleteDoc, updateDoc, getDoc, setDoc,
+  serverTimestamp  // 🔥 TAMBAHKAN INI
+} from "firebase/firestore";
 import { ArrowLeft, RefreshCw, Download, Eye, X, ChevronRight, Home, DollarSign, FileText, Calendar, Link, Save, Globe } from 'lucide-react';
 
 const TeacherSalaries = () => {
@@ -132,7 +135,7 @@ const TeacherSalaries = () => {
         detail: bonusData.keterangan, 
         nominal: parseInt(bonusData.nominal),
         status: "Valid / Sudah Terekap", 
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp()  // ✅ SEKARANG TERDEFINISI
       });
       setBonusData({ keterangan: '', nominal: '' });
       setActiveBonusId(null);
@@ -262,7 +265,7 @@ const TeacherSalaries = () => {
   };
 
   // ============================================================
-  // RENDER
+  // RENDER (SAMA SEPERTI SEBELUMNYA)
   // ============================================================
   return (
     <div style={styles.wrapper}>
@@ -530,7 +533,7 @@ const TeacherSalaries = () => {
 };
 
 // ============================================================
-// STYLES
+// STYLES (TETAP SAMA)
 // ============================================================
 const styles = {
   wrapper: { display: 'flex', minHeight: '100vh', background: '#f8fafc' },

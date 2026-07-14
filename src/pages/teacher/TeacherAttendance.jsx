@@ -49,21 +49,52 @@ const TeacherAttendance = () => {
     }
   }, []);
 
-  // Fetch jadwal hari ini
+  // Fetch jadwal hari ini - 🔥 FIXED: Pakai guruId
   useEffect(() => {
-    if (!guru?.nama) return;
+    if (!guru?.guruId && !guru?.id) return;
 
     const dateStr = getDateStr(selectedDate);
     setLoading(true);
 
-    const q = query(
+    // 🔥 Gunakan guruId atau id
+    const teacherId = guru.guruId || guru.id;
+    
+    // 🔥 Coba query dengan guruId
+    let q = query(
       collection(db, "jadwal_bimbel"),
-      where("teacherName", "==", guru.nama),
+      where("guruId", "==", teacherId),
       where("dateStr", "==", dateStr)
     );
 
     const unsubscribe = onSnapshot(q, (snap) => {
-      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      let data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      
+      // 🔥 FALLBACK: Jika tidak ada, coba dengan teacherName
+      if (data.length === 0 && guru.nama) {
+        const qFallback = query(
+          collection(db, "jadwal_bimbel"),
+          where("teacherName", "==", guru.nama),
+          where("dateStr", "==", dateStr)
+        );
+        
+        // Kita perlu unsubscribe dulu
+        unsubscribe();
+        
+        const unsubFallback = onSnapshot(qFallback, (snap2) => {
+          const fallbackData = snap2.docs.map(d => ({ id: d.id, ...d.data() }));
+          setSchedules(fallbackData);
+          
+          // Load attendance untuk setiap jadwal
+          fallbackData.forEach(s => {
+            loadAttendance(s.id);
+          });
+          
+          setLoading(false);
+        });
+        
+        return () => unsubFallback();
+      }
+      
       setSchedules(data);
       
       // Load attendance untuk setiap jadwal
@@ -429,7 +460,7 @@ const TeacherAttendance = () => {
 };
 
 // ============================================================
-// STYLES
+// STYLES (SAMA SEPERTI SEBELUMNYA)
 // ============================================================
 const styles = {
   container: {
