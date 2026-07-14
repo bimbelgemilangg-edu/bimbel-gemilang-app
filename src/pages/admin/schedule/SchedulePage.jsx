@@ -181,7 +181,7 @@ const SchedulePage = () => {
       }));
       setAvailableTeachers(teachers);
 
-      // 3. Fetch students - PERBAIKAN: mapping yang benar
+      // 3. Fetch students
       const sSnap = await getDocs(collection(db, "students"));
       const students = sSnap.docs.map(d => {
         const data = d.data();
@@ -205,7 +205,6 @@ const SchedulePage = () => {
           ...data,
           studentId: data.studentId || d.id,
           jenjang: jenjang,
-          // Pastikan field yang dibutuhkan ada
           nama: data.nama || 'Siswa',
           kelasSekolah: data.kelasSekolah || 'Umum'
         };
@@ -498,33 +497,86 @@ const SchedulePage = () => {
   };
 
   // ============================================================
-  // 🔥 FILTERED STUDENTS FOR MODAL - PERBAIKAN LENGKAP
+  // 🔥 HANDLER HAPUS JADWAL - AMAN, TIDAK MENGHAPUS SISWA
+  // ============================================================
+  const handleDeleteSchedule = async (scheduleId) => {
+    if (!scheduleId) {
+      showAlert("❌ ID jadwal tidak valid!");
+      return;
+    }
+    
+    // Konfirmasi penghapusan
+    if (!window.confirm("⚠️ Apakah Anda yakin ingin menghapus jadwal ini?\n\nData kehadiran yang terkait juga akan dihapus.\n\n❌ Siswa TIDAK akan terhapus dari sistem.")) {
+      return;
+    }
+    
+    try {
+      // 🔥 HANYA HAPUS DOKUMEN JADWAL, BUKAN SISWA
+      await deleteDoc(doc(db, "jadwal_bimbel", scheduleId));
+      
+      // Update state lokal
+      setSchedules(prev => prev.filter(s => s.id !== scheduleId));
+      
+      showAlert("✅ Jadwal berhasil dihapus! (Siswa tetap aman)");
+      
+      // Refresh data
+      await fetchData();
+    } catch (error) {
+      console.error("Error deleting schedule:", error);
+      showAlert("❌ Gagal menghapus jadwal: " + error.message);
+    }
+  };
+
+  // ============================================================
+  // 🔥 HANDLER UPDATE KODE ABSEN
+  // ============================================================
+  const handleUpdateCode = async () => {
+    if (!tempCode.trim()) {
+      showAlert("❌ Kode tidak boleh kosong!");
+      return;
+    }
+    
+    try {
+      const todayStr = getSmartDateString(selectedDate);
+      const codeDocId = 'daily_code_' + todayStr;
+      
+      await setDoc(doc(db, "settings", codeDocId), {
+        code: tempCode.trim().toUpperCase(),
+        updatedAt: serverTimestamp(),
+        updatedBy: 'Admin'
+      });
+      
+      setDailyCode(tempCode.trim().toUpperCase());
+      setIsEditingCode(false);
+      showAlert("✅ Kode absen berhasil diupdate!");
+    } catch (error) {
+      console.error("Error updating code:", error);
+      showAlert("❌ Gagal update kode: " + error.message);
+    }
+  };
+
+  // ============================================================
+  // FILTERED STUDENTS FOR MODAL
   // ============================================================
   const getFilteredStudents = () => {
     return availableStudents.filter(s => {
       const studentId = s.studentId || s.id;
       if (!studentId) return false;
       
-      // 🔥 FILTER BERDASARKAN PILIHAN KELAS (studentFilterKelas)
       if (studentFilterKelas !== 'Semua') {
-        // Jika filter kelas spesifik, cek apakah kelasSekolah sama persis
         if (s.kelasSekolah !== studentFilterKelas) {
           return false;
         }
       } else {
-        // Jika filter kelas "Semua", filter berdasarkan jenjang (formData.level)
         if (formData.level !== 'Umum') {
           const kelas = s.kelasSekolah || '';
           const jenjang = s.jenjang || '';
-          
           const matchKelas = kelas.includes(formData.level);
           const matchJenjang = jenjang === formData.level;
-          
           if (!matchKelas && !matchJenjang) return false;
         }
       }
       
-      // 🔥 SEARCH (nama atau ID)
       const searchLower = studentSearch.toLowerCase();
       const matchNama = (s.nama || '').toLowerCase().includes(searchLower);
       const matchId = (studentId || '').toLowerCase().includes(searchLower);
@@ -605,7 +657,6 @@ const SchedulePage = () => {
           </span>
         </div>
 
-        {/* Bar Filter */}
         <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
           <input 
             type="text"
@@ -642,7 +693,6 @@ const SchedulePage = () => {
           </select>
         </div>
 
-        {/* Daftar Siswa */}
         <div style={{ 
           maxHeight: '180px', 
           overflowY: 'auto', 
@@ -803,7 +853,7 @@ const SchedulePage = () => {
                           <button onClick={() => setDetailSchedule(item)} style={styles.btnDetailSm}>
                             <Eye size={12} /> Detail
                           </button>
-                          <button onClick={() => handleDelete(item.id)} style={styles.btnDeleteSm}>
+                          <button onClick={() => handleDeleteSchedule(item.id)} style={styles.btnDeleteSm}>
                             <Trash2 size={12} /> Hapus
                           </button>
                         </div>
@@ -1225,7 +1275,6 @@ const SchedulePage = () => {
                   <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} style={styles.formInput} placeholder="Contoh: Matematika Pecahan" />
                 </div>
 
-                {/* 🔥 ASSIGN SISWA - PAKAI renderStudentSelectorUI */}
                 {renderStudentSelectorUI()}
 
                 {!editId && (
