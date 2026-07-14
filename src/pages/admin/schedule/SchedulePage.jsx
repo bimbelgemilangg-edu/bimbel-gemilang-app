@@ -379,7 +379,12 @@ const SchedulePage = () => {
         mapelName: item.mapelName || item.mapel || "",
         teacherId: item.teacherId || "",
         teacherName: item.teacherName || item.booker || "",
-        selectedStudents: item.students ? item.students.map(s => s.studentId || s.id) : [],
+        selectedStudents: item.students ? item.students.map(s => ({ 
+          id: s.id || s.studentId,
+          studentId: s.studentId || s.id,
+          nama: s.nama || 'Siswa',
+          kelasSekolah: s.kelasSekolah || 'Umum'
+        })) : [],
         repeat: "Once"
       });
     } else {
@@ -390,28 +395,38 @@ const SchedulePage = () => {
   };
 
   // ============================================================
-  // 🔥 HANDLER TOGGLE SISWA - MENYIMPAN OBJEK LENGKAP
+  // 🔥 HANDLER TOGGLE SISWA - PERBAIKAN
   // ============================================================
   const handleToggleStudent = (student) => {
-    const isSelected = formData.selectedStudents.some(s => s.id === student.id);
+    // Cari data lengkap siswa dari availableStudents
+    const fullStudent = availableStudents.find(s => s.id === student.id || s.studentId === student.id);
+    
+    if (!fullStudent) {
+      showAlert("❌ Data siswa tidak ditemukan!");
+      return;
+    }
+    
+    const isSelected = formData.selectedStudents.some(s => s.id === fullStudent.id);
     let updated = [];
     
     if (isSelected) {
-      updated = formData.selectedStudents.filter(s => s.id !== student.id);
+      updated = formData.selectedStudents.filter(s => s.id !== fullStudent.id);
     } else {
       updated = [...formData.selectedStudents, {
-        id: student.id,
-        studentId: student.studentId || student.id,
-        nama: student.nama || 'Siswa',
-        kelasSekolah: student.kelasSekolah || 'Umum'
+        id: fullStudent.id,
+        studentId: fullStudent.studentId || fullStudent.id,
+        nama: fullStudent.nama || 'Siswa',
+        kelasSekolah: fullStudent.kelasSekolah || 'Umum',
+        jenjang: fullStudent.jenjang || '',
+        program: fullStudent.kategori || formData.program || 'Reguler'
       }];
     }
     
-    setFormData({ ...formData, selectedStudents: updated });
+    setFormData(prev => ({ ...prev, selectedStudents: updated }));
   };
 
   // ============================================================
-  // 🔥 HANDLER SIMPAN JADWAL (SUBMIT TO FIRESTORE)
+  // 🔥 HANDLER SIMPAN JADWAL - PERBAIKAN
   // ============================================================
   const handleSubmitSchedule = async (e) => {
     if (e) e.preventDefault();
@@ -429,15 +444,26 @@ const SchedulePage = () => {
     try {
       const targetDateStr = getSmartDateString(selectedDate);
       
-      // Ambil data lengkap siswa yang dipilih
+      // 🔥 Ambil data LENGKAP siswa yang dipilih
       const studentsFullData = formData.selectedStudents.map(s => {
+        // Cari di availableStudents untuk data terbaru
         const student = availableStudents.find(st => st.id === s.id || st.studentId === s.id);
         return student ? {
           id: student.id,
           studentId: student.studentId || student.id,
           nama: student.nama || 'Siswa',
-          kelasSekolah: student.kelasSekolah || 'Umum'
-        } : s;
+          kelasSekolah: student.kelasSekolah || 'Umum',
+          jenjang: student.jenjang || '',
+          program: student.kategori || formData.program || 'Reguler'
+        } : {
+          // Fallback jika siswa tidak ditemukan (gunakan data dari form)
+          id: s.id,
+          studentId: s.studentId || s.id,
+          nama: s.nama || 'Siswa',
+          kelasSekolah: s.kelasSekolah || 'Umum',
+          jenjang: s.jenjang || '',
+          program: s.program || formData.program || 'Reguler'
+        };
       });
 
       const scheduleData = {
@@ -459,6 +485,7 @@ const SchedulePage = () => {
       };
 
       if (editId) {
+        // 🔥 UPDATE JADWAL - PASTIKAN STUDENTS TERUPDATE
         await updateDoc(doc(db, "jadwal_bimbel", editId), scheduleData);
         showAlert("✅ Jadwal berhasil diperbarui!");
       } else {
@@ -497,7 +524,7 @@ const SchedulePage = () => {
   };
 
   // ============================================================
-  // 🔥 HANDLER HAPUS JADWAL - AMAN, TIDAK MENGHAPUS SISWA
+  // 🔥 HANDLER HAPUS JADWAL - AMAN
   // ============================================================
   const handleDeleteSchedule = async (scheduleId) => {
     if (!scheduleId) {
@@ -505,21 +532,14 @@ const SchedulePage = () => {
       return;
     }
     
-    // Konfirmasi penghapusan
     if (!window.confirm("⚠️ Apakah Anda yakin ingin menghapus jadwal ini?\n\nData kehadiran yang terkait juga akan dihapus.\n\n❌ Siswa TIDAK akan terhapus dari sistem.")) {
       return;
     }
     
     try {
-      // 🔥 HANYA HAPUS DOKUMEN JADWAL, BUKAN SISWA
       await deleteDoc(doc(db, "jadwal_bimbel", scheduleId));
-      
-      // Update state lokal
       setSchedules(prev => prev.filter(s => s.id !== scheduleId));
-      
       showAlert("✅ Jadwal berhasil dihapus! (Siswa tetap aman)");
-      
-      // Refresh data
       await fetchData();
     } catch (error) {
       console.error("Error deleting schedule:", error);
@@ -631,7 +651,7 @@ const SchedulePage = () => {
   };
 
   // ============================================================
-  // RENDER STUDENT SELECTOR UI
+  // RENDER STUDENT SELECTOR UI - PERBAIKAN
   // ============================================================
   const renderStudentSelectorUI = () => {
     const listSiswaTersaring = getFilteredStudents();
@@ -734,22 +754,22 @@ const SchedulePage = () => {
                     <span style={{ fontSize: '11px', color: '#64748b', marginLeft: '4px' }}>
                       ({student.studentId})
                     </span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ 
-                      fontSize: '10px', 
-                      background: '#e0f2fe', 
-                      color: '#0369a1', 
-                      padding: '2px 6px', 
-                      borderRadius: '4px' 
+                      fontSize: '9px', 
+                      background: '#f1f5f9', 
+                      padding: '1px 6px', 
+                      borderRadius: '4px',
+                      marginLeft: '4px'
                     }}>
                       {student.kelasSekolah || "Umum"}
                     </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <input 
                       type="checkbox" 
                       checked={checked} 
                       onChange={() => {}} 
-                      style={{ accentColor: '#3b82f6' }}
+                      style={{ accentColor: '#3b82f6', width: '16px', height: '16px' }}
                     />
                   </div>
                 </div>
@@ -1275,6 +1295,7 @@ const SchedulePage = () => {
                   <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} style={styles.formInput} placeholder="Contoh: Matematika Pecahan" />
                 </div>
 
+                {/* 🔥 ASSIGN SISWA */}
                 {renderStudentSelectorUI()}
 
                 {!editId && (
