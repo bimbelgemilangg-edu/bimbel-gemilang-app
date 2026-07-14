@@ -1,10 +1,11 @@
+// src/pages/admin/finance/TransactionHistory.jsx
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { 
   collection, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, getDoc 
 } from "firebase/firestore";
 import { 
-  Download, Filter, Search, Edit3, Trash2, X, Save, RefreshCw, Calendar, Lock
+  Download, Filter, Search, Edit3, Trash2, X, Save, RefreshCw, Calendar, Lock, Clock
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -18,7 +19,7 @@ const TransactionHistory = () => {
   // === FILTER ===
   const [filterType, setFilterType] = useState('Semua');
   const [filterMethod, setFilterMethod] = useState('Semua');
-  const [filterMode, setFilterMode] = useState('bulan'); // 'bulan' | 'range' | 'semua'
+  const [filterMode, setFilterMode] = useState('bulan');
   const [filterMonth, setFilterMonth] = useState(new Date().toISOString().slice(0, 7));
   const [dateRange, setDateRange] = useState({
     start: new Date().toISOString().split('T')[0],
@@ -30,20 +31,19 @@ const TransactionHistory = () => {
   const [showEdit, setShowEdit] = useState(false);
   const [editData, setEditData] = useState(null);
 
-  // === PIN (dari Settings) ===
+  // === PIN ===
   const [ownerPin, setOwnerPin] = useState('');
   const [pinInput, setPinInput] = useState('');
   const [showPinModal, setShowPinModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
-    // Ambil PIN dari settings
     getDoc(doc(db, "settings", "global_config")).then(snap => {
       if (snap.exists()) setOwnerPin(snap.data().ownerPin || '2003');
     });
 
-    // Real-time listener
-    const q = query(collection(db, "finance_logs"), orderBy("date", "desc"));
+    // 🔥 ORDER BY date DESC, createdAt DESC
+    const q = query(collection(db, "finance_logs"), orderBy("date", "desc"), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
       const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       setTransactions(data);
@@ -56,13 +56,9 @@ const TransactionHistory = () => {
   useEffect(() => {
     let result = [...transactions];
 
-    // Filter tipe
     if (filterType !== 'Semua') result = result.filter(t => t.type === filterType);
-    
-    // Filter metode
     if (filterMethod !== 'Semua') result = result.filter(t => t.method === filterMethod);
 
-    // Filter tanggal
     if (filterMode === 'bulan' && filterMonth) {
       result = result.filter(t => (t.date || '').startsWith(filterMonth));
     } else if (filterMode === 'range') {
@@ -71,9 +67,7 @@ const TransactionHistory = () => {
         return t.date >= dateRange.start && t.date <= dateRange.end;
       });
     }
-    // 'semua' = no filter
 
-    // Search
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(t => 
@@ -99,7 +93,7 @@ const TransactionHistory = () => {
     return t.type === 'Pemasukan' ? s + (parseInt(t.amount) || 0) : s - (parseInt(t.amount) || 0);
   }, 0);
 
-  // === DELETE (dengan PIN) ===
+  // === DELETE ===
   const confirmDelete = (id) => {
     setDeleteTarget(id);
     setPinInput('');
@@ -152,10 +146,45 @@ const TransactionHistory = () => {
     }
   };
 
-  // === EXPORT ===
+  // === FORMAT TIMESTAMP ===
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return '-';
+    try {
+      if (timestamp.toDate) {
+        const date = timestamp.toDate();
+        return date.toLocaleTimeString('id-ID', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+      }
+      if (typeof timestamp === 'string') {
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString('id-ID', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+      }
+      return '-';
+    } catch (e) {
+      return '-';
+    }
+  };
+
+  // === FORMAT TANGGAL LENGKAP ===
+  const formatFullDate = (dateStr) => {
+    if (!dateStr) return '-';
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+    return `${parseInt(parts[2])} ${months[parseInt(parts[1]) - 1]} ${parts[0]}`;
+  };
+
+  // === EXPORT PDF ===
   const exportPDF = () => {
     if (filtered.length === 0) return alert('⚠️ Data kosong!');
-    const doc = new jsPDF();
+    const doc = new jsPDF({ orientation: 'landscape' });
     doc.setFontSize(13);
     doc.text('BIMBEL GEMILANG - LAPORAN KEUANGAN', 14, 15);
     doc.setFontSize(9);
@@ -163,29 +192,36 @@ const TransactionHistory = () => {
     doc.text(`Total Masuk: Rp ${totalMasuk.toLocaleString()} | Keluar: Rp ${totalKeluar.toLocaleString()} | Saldo: Rp ${(totalMasuk - totalKeluar).toLocaleString()}`, 14, 27);
 
     const body = filtered.map(t => [
-      t.date, t.type, t.method, t.category, (t.note || '-').substring(0, 25),
+      t.date || '-',
+      formatTimestamp(t.createdAt),
+      t.type,
+      t.method,
+      t.category,
+      (t.note || '-').substring(0, 25),
       t.type === 'Pemasukan' ? `Rp ${parseInt(t.amount).toLocaleString()}` : '-',
       t.type === 'Pengeluaran' ? `Rp ${parseInt(t.amount).toLocaleString()}` : '-'
     ]);
 
     autoTable(doc, {
-      head: [['Tgl', 'Tipe', 'Metode', 'Kategori', 'Ket', 'Masuk', 'Keluar']],
+      head: [['Tanggal', 'Jam', 'Tipe', 'Metode', 'Kategori', 'Keterangan', 'Masuk', 'Keluar']],
       body, startY: 32,
-      headStyles: { fillColor: [30, 41, 59], fontSize: 8 },
+      headStyles: { fillColor: [30, 41, 59], fontSize: 7 },
       columnStyles: {
-        5: { halign: 'right', textColor: [16, 185, 129] },
-        6: { halign: 'right', textColor: [239, 68, 68] }
+        6: { halign: 'right', textColor: [16, 185, 129] },
+        7: { halign: 'right', textColor: [239, 68, 68] }
       },
-      styles: { fontSize: 7 }
+      styles: { fontSize: 6 }
     });
     doc.save(`Keuangan_${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
+  // === EXPORT EXCEL ===
   const exportExcel = () => {
     if (filtered.length === 0) return alert('⚠️ Data kosong!');
     const data = filtered.map((t, i) => ({
       'No': i + 1,
-      'Tanggal': t.date,
+      'Tanggal': t.date || '-',
+      'Jam': formatTimestamp(t.createdAt),
       'Tipe': t.type,
       'Metode': t.method,
       'Kategori': t.category,
@@ -194,7 +230,10 @@ const TransactionHistory = () => {
       'Keluar (Rp)': t.type === 'Pengeluaran' ? parseInt(t.amount) : 0
     }));
     const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [{wch:5},{wch:12},{wch:12},{wch:10},{wch:20},{wch:25},{wch:15},{wch:15}];
+    ws['!cols'] = [
+      {wch:5}, {wch:12}, {wch:10}, {wch:12}, 
+      {wch:10}, {wch:20}, {wch:25}, {wch:15}, {wch:15}
+    ];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Transaksi');
     XLSX.writeFile(wb, `Keuangan_${new Date().toISOString().slice(0, 10)}.xlsx`);
@@ -206,7 +245,6 @@ const TransactionHistory = () => {
     <div>
       {/* === FILTER BAR === */}
       <div style={styles.filterBar}>
-        {/* Mode Filter */}
         <div style={styles.filterGroup}>
           <select value={filterMode} onChange={e => setFilterMode(e.target.value)} style={styles.filterSelect}>
             <option value="bulan">📅 Per Bulan</option>
@@ -215,7 +253,6 @@ const TransactionHistory = () => {
           </select>
         </div>
 
-        {/* Input sesuai mode */}
         {filterMode === 'bulan' && (
           <div style={styles.filterGroup}>
             <input type="month" value={filterMonth} onChange={e => setFilterMonth(e.target.value)} style={styles.filterSelect} />
@@ -234,7 +271,6 @@ const TransactionHistory = () => {
           </>
         )}
 
-        {/* Filter Tipe */}
         <div style={styles.filterGroup}>
           <select value={filterType} onChange={e => setFilterType(e.target.value)} style={styles.filterSelect}>
             <option value="Semua">Semua Tipe</option>
@@ -243,7 +279,6 @@ const TransactionHistory = () => {
           </select>
         </div>
 
-        {/* Filter Metode */}
         <div style={styles.filterGroup}>
           <select value={filterMethod} onChange={e => setFilterMethod(e.target.value)} style={styles.filterSelect}>
             <option value="Semua">Semua Metode</option>
@@ -252,7 +287,6 @@ const TransactionHistory = () => {
           </select>
         </div>
 
-        {/* Search */}
         <div style={{...styles.filterGroup, flex: 2}}>
           <div style={styles.searchBox}>
             <Search size={14} color="#94a3b8" />
@@ -261,7 +295,6 @@ const TransactionHistory = () => {
           </div>
         </div>
 
-        {/* Export */}
         <button onClick={exportPDF} style={styles.btnExport('#ef4444')}>📄 PDF</button>
         <button onClick={exportExcel} style={styles.btnExport('#10b981')}>📊 Excel</button>
       </div>
@@ -292,7 +325,8 @@ const TransactionHistory = () => {
           <table style={styles.table}>
             <thead>
               <tr style={styles.thr}>
-                <th style={styles.th}>Tgl</th>
+                <th style={styles.th}>Tanggal</th>
+                <th style={styles.th}>Jam</th>
                 <th style={styles.th}>Tipe</th>
                 <th style={styles.th}>Metode</th>
                 <th style={styles.th}>Kategori</th>
@@ -304,14 +338,21 @@ const TransactionHistory = () => {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{textAlign: 'center', padding: 40, color: '#94a3b8'}}>
+                  <td colSpan={8} style={{textAlign: 'center', padding: 40, color: '#94a3b8'}}>
                     Tidak ada data untuk filter ini
                   </td>
                 </tr>
               ) : (
                 filtered.map(t => (
                   <tr key={t.id} style={styles.tr}>
-                    <td style={styles.td}>{t.date}</td>
+                    <td style={styles.td}>
+                      <span style={styles.dateText}>{formatFullDate(t.date)}</span>
+                    </td>
+                    <td style={styles.td}>
+                      <span style={styles.timeText}>
+                        <Clock size={10} /> {formatTimestamp(t.createdAt)}
+                      </span>
+                    </td>
                     <td style={styles.td}>
                       <span style={styles.typeBadge(t.type)}>
                         {t.type === 'Pemasukan' ? '💰 Masuk' : '📤 Keluar'}
@@ -420,6 +461,13 @@ const TransactionHistory = () => {
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 };
@@ -439,11 +487,15 @@ const styles = {
   summaryCard: (bg, color) => ({ flex: 1, minWidth: 150, background: bg, padding: 14, borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: `1px solid ${color}30`, fontSize: 13 }),
   
   tableCard: { background: 'white', borderRadius: 14, padding: 15, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' },
-  table: { width: '100%', borderCollapse: 'collapse', minWidth: 700 },
+  table: { width: '100%', borderCollapse: 'collapse', minWidth: 850 },
   thr: { background: '#f8fafc', textAlign: 'left' },
   th: { padding: '10px 12px', fontSize: 10, color: '#64748b', fontWeight: 800, textTransform: 'uppercase', borderBottom: '2px solid #f1f5f9' },
   tr: { borderBottom: '1px solid #f1f5f9', transition: '0.2s' },
   td: { padding: '10px 12px', fontSize: 12, verticalAlign: 'middle' },
+  
+  dateText: { fontSize: 12, fontWeight: 600, color: '#1e293b' },
+  timeText: { fontSize: 10, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 3 },
+  
   typeBadge: (type) => ({ padding: '3px 8px', borderRadius: 6, fontSize: 10, fontWeight: 'bold', background: type === 'Pemasukan' ? '#dcfce7' : '#fee2e2', color: type === 'Pemasukan' ? '#166534' : '#991b1b' }),
   methodBadge: (method) => ({ padding: '3px 8px', borderRadius: 6, fontSize: 10, fontWeight: 'bold', background: method === 'Tunai' ? '#fef3c7' : '#e0e7ff', color: method === 'Tunai' ? '#b45309' : '#3730a3' }),
   btnIcon: (color) => ({ background: `${color}15`, color, border: 'none', padding: '7px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center' }),
