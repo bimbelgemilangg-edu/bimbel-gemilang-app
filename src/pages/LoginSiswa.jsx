@@ -419,7 +419,7 @@ const LoginSiswa = () => {
         </div>
       </div>
 
-      {/* ===== FLOATING INSTALL BUTTON ===== */}
+      {/* ===== FLOATING INSTALL BUTTON (DIKECILKAN) ===== */}
       {showInstallBtn && !isInstalled && (
         <button 
           onClick={handleInstall} 
@@ -503,6 +503,7 @@ const LoginSiswa = () => {
               <p style={styles.subtitle}>Portal Akademik Siswa</p>
             </div>
           </div>
+          {/* 🔥 TOMBOL DOWNLOAD DIHAPUS DARI HEADER */}
           <div style={styles.headerBadge}>
             <Sparkles size={12} color="#fbbf24" />
             <span style={styles.headerBadgeText}>v3.0</span>
@@ -706,8 +707,21 @@ const LoginSiswa = () => {
         {/* ===== FOOTER ===== */}
         <div style={styles.footer}>
           <div style={styles.footerLeft}>
-            <Shield size={12} color="#94a3b8" />
-            <span style={styles.footerText}>Aman & Terpercaya</span>
+            {/* 🔥 TOMBOL DOWNLOAD DI SINI (BAWAH TENGAH) */}
+            {!isInstalled ? (
+              <button 
+                onClick={handleInstall} 
+                style={styles.btnDownloadFooter}
+                className="install-ring"
+              >
+                <Download size={14} />
+                <span>Download Aplikasi</span>
+              </button>
+            ) : (
+              <div style={styles.installedFooterBadge}>
+                ✅ Aplikasi Terinstall
+              </div>
+            )}
           </div>
           <div style={styles.footerRight}>
             <span style={styles.footerText}>© {new Date().getFullYear()} Bimbel Gemilang</span>
@@ -1290,29 +1304,65 @@ const styles = {
     cursor: 'pointer'
   },
   
+  // ===== FOOTER BARU =====
   footer: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: '16px',
     paddingTop: '12px',
-    borderTop: '1px solid rgba(255,255,255,0.04)'
+    borderTop: '1px solid rgba(255,255,255,0.04)',
+    flexWrap: 'wrap',
+    gap: '8px'
   },
+
   footerLeft: {
     display: 'flex',
     alignItems: 'center',
-    gap: '6px'
+    gap: '8px'
   },
+
   footerRight: {
     display: 'flex',
     alignItems: 'center'
   },
+
   footerText: {
     fontSize: '9px',
     color: 'rgba(255,255,255,0.15)',
     fontWeight: 500
   },
+
+  // 🔥 TOMBOL DOWNLOAD DI FOOTER
+  btnDownloadFooter: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 14px',
+    background: 'linear-gradient(135deg, #10b981, #059669)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    fontWeight: 700,
+    fontSize: '11px',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 4px 12px rgba(16,185,129,0.25)',
+    WebkitTapHighlightColor: 'transparent',
+    whiteSpace: 'nowrap'
+  },
+
+  installedFooterBadge: {
+    fontSize: '10px',
+    color: '#10b981',
+    fontWeight: 600,
+    padding: '4px 10px',
+    borderRadius: '6px',
+    background: 'rgba(16,185,129,0.1)',
+    border: '1px solid rgba(16,185,129,0.15)'
+  },
   
+  // ===== MODAL =====
   modalOverlay: {
     position: 'fixed',
     top: 0, left: 0, right: 0, bottom: 0,
