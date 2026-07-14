@@ -1,4 +1,4 @@
-// TeacherSalaries.jsx - Tambahkan state dan fungsi untuk Google Form
+// src/pages/admin/teachers/TeacherSalaries.jsx
 import React, { useState, useEffect, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
@@ -75,6 +75,9 @@ const TeacherSalaries = () => {
     setSavingForm(false);
   };
 
+  // ============================================================
+  // 🔥 FETCH DATA
+  // ============================================================
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -113,8 +116,154 @@ const TeacherSalaries = () => {
 
   useEffect(() => { fetchData(); }, [startDate, endDate]);
 
-  // ... (fungsi handleAddBonusAtDate, handleUpdateNominal, handleApproveLog, handleUnapproveLog, handleDeleteLog, handleDownload tetap sama)
+  // ============================================================
+  // 🔥 HANDLE: TAMBAH BONUS
+  // ============================================================
+  const handleAddBonusAtDate = async (originalLog) => {
+    if (!bonusData.keterangan || !bonusData.nominal) {
+      return showAlert("⚠️ Isi keterangan dan nominal bonus!");
+    }
+    try {
+      await addDoc(collection(db, "teacher_logs"), {
+        teacherId: viewDetail.id, 
+        namaGuru: viewDetail.nama,
+        tanggal: originalLog.tanggal, 
+        program: "BONUS/TAMBAHAN",
+        detail: bonusData.keterangan, 
+        nominal: parseInt(bonusData.nominal),
+        status: "Valid / Sudah Terekap", 
+        createdAt: serverTimestamp()
+      });
+      setBonusData({ keterangan: '', nominal: '' });
+      setActiveBonusId(null);
+      showAlert("✅ Bonus berhasil ditambahkan!");
+      fetchData();
+    } catch (e) { 
+      showAlert("❌ Gagal menambah bonus: " + e.message); 
+    }
+  };
 
+  // ============================================================
+  // 🔥 HANDLE: UPDATE NOMINAL
+  // ============================================================
+  const handleUpdateNominal = async (logId, newNominal) => {
+    if (!newNominal) return;
+    try {
+      await updateDoc(doc(db, "teacher_logs", logId), { 
+        nominal: parseInt(newNominal) 
+      });
+      showAlert("✅ Nominal berhasil diupdate!");
+      fetchData();
+    } catch (e) { 
+      showAlert("❌ Gagal update nominal: " + e.message); 
+    }
+  };
+
+  // ============================================================
+  // 🔥 HANDLE: APPROVE LOG
+  // ============================================================
+  const handleApproveLog = async (logId) => {
+    try {
+      await updateDoc(doc(db, "teacher_logs", logId), { 
+        status: "Valid / Sudah Terekap" 
+      });
+      showAlert("✅ Log disetujui!");
+      fetchData();
+    } catch (e) { 
+      showAlert("❌ Gagal approve: " + e.message); 
+    }
+  };
+
+  // ============================================================
+  // 🔥 HANDLE: UNAPPROVE LOG (BATAL VALIDASI)
+  // ============================================================
+  const handleUnapproveLog = async (logId) => {
+    if (!window.confirm("Batalkan validasi untuk merevisi data ini?")) return;
+    try {
+      await updateDoc(doc(db, "teacher_logs", logId), { 
+        status: "Menunggu Validasi" 
+      });
+      showAlert("🔓 Validasi dibatalkan");
+      fetchData();
+    } catch (e) { 
+      showAlert("❌ Gagal membatalkan: " + e.message); 
+    }
+  };
+
+  // ============================================================
+  // 🔥 HANDLE: DELETE LOG
+  // ============================================================
+  const handleDeleteLog = async (logId) => {
+    if (!window.confirm("Yakin ingin menghapus baris riwayat ini secara permanen?")) return;
+    try {
+      await deleteDoc(doc(db, "teacher_logs", logId));
+      showAlert("🗑️ Log dihapus!");
+      fetchData();
+    } catch (e) { 
+      showAlert("❌ Gagal menghapus: " + e.message); 
+    }
+  };
+
+  // ============================================================
+  // 🔥 HANDLE: DOWNLOAD SLIP GAJI
+  // ============================================================
+  const handleDownload = (guru) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return showAlert("⚠️ Pop-up diblokir browser!");
+    
+    printWindow.document.write(`
+      <html><head><title>Slip Gaji - ${guru.nama}</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 8px; border: 1px solid #ddd; }
+        th { background: #f5f5f5; }
+        .total { font-weight: bold; font-size: 16px; margin-top: 15px; }
+        .text-right { text-align: right; }
+      </style>
+      </head>
+      <body>
+        <h2 style="text-align:center">SLIP GAJI GURU</h2>
+        <hr/>
+        <p><b>Nama:</b> ${guru.nama}</p>
+        <p><b>Periode:</b> ${startDate} s/d ${endDate}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Program</th>
+              <th>Detail</th>
+              <th>Nominal</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${guru.rincian.sort((a,b) => (b.tanggal || '').localeCompare(a.tanggal || '')).map(r => `
+              <tr>
+                <td>${r.tanggal} ${r.waktu ? `<br/><small>${r.waktu}</small>` : ''}</td>
+                <td>${r.program}</td>
+                <td><small>${r.detail}</small></td>
+                <td style="text-align:right">Rp ${parseInt(r.nominal || 0).toLocaleString()}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+          <tfoot>
+            <tr style="font-weight:bold;background:#e8f5e9">
+              <td colspan="3" style="text-align:right">TOTAL:</td>
+              <td style="text-align:right">Rp ${guru.totalGaji.toLocaleString()}</td>
+            </tr>
+          </tfoot>
+        </table>
+        <p style="text-align:right;margin-top:20px">Tanda Tangan,</p>
+        <p style="text-align:right;margin-top:40px">_______________</p>
+      </body>
+    </html>`);
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 500);
+  };
+
+  // ============================================================
+  // RENDER
+  // ============================================================
   return (
     <div style={styles.wrapper}>
       <SidebarAdmin />
@@ -314,18 +463,26 @@ const TeacherSalaries = () => {
                           <td style={styles.tdSmall}><b>{log.tanggal}</b><br/><span style={{fontSize: 10, color: '#94a3b8'}}>{log.waktu || '-'}</span></td>
                           <td style={styles.tdSmall}><span style={{color: log.program === 'BONUS/TAMBAHAN' ? '#f59e0b' : '#3b82f6', fontWeight:'bold', fontSize: isMobile ? 10 : 12}}>{log.program || 'Kegiatan'}</span></td>
                           <td style={styles.tdSmall}><small style={{color: '#64748b'}}>{log.detail}</small></td>
-                          <td style={styles.tdSmall}><input type="number" disabled={isValid} defaultValue={log.nominal} onBlur={(e) => handleUpdateNominal(log.id, e.target.value)} style={{...styles.inputNominal(isMobile), borderColor: isValid ? '#10b981' : '#3b82f6'}} /></td>
+                          <td style={styles.tdSmall}>
+                            <input 
+                              type="number" 
+                              disabled={isValid} 
+                              defaultValue={log.nominal} 
+                              onBlur={(e) => handleUpdateNominal(log.id, e.target.value)} 
+                              style={{...styles.inputNominal(isMobile), borderColor: isValid ? '#10b981' : '#3b82f6'}} 
+                            />
+                          </td>
                           <td style={styles.tdSmall}>
                             {isValid ? (
                               <div style={{display:'flex', flexDirection:'column', gap:4}}>
                                 <span style={styles.badgeSuccess}>✅ Valid</span>
-                                <button onClick={()=>handleUnapproveLog(log.id)} style={styles.btnRevise}>Batal</button>
+                                <button onClick={() => handleUnapproveLog(log.id)} style={styles.btnRevise}>Batal</button>
                               </div>
                             ) : (
                               <div style={{display:'flex', gap:4, flexWrap:'wrap'}}>
-                                <button onClick={()=>handleApproveLog(log.id)} style={styles.btnApprove}>✓</button>
-                                <button onClick={()=>setActiveBonusId(log.id)} style={styles.btnBonus}>+</button>
-                                <button onClick={()=>handleDeleteLog(log.id)} style={styles.btnDelete}>✕</button>
+                                <button onClick={() => handleApproveLog(log.id)} style={styles.btnApprove}>✓</button>
+                                <button onClick={() => setActiveBonusId(log.id)} style={styles.btnBonus}>+</button>
+                                <button onClick={() => handleDeleteLog(log.id)} style={styles.btnDelete}>✕</button>
                               </div>
                             )}
                           </td>
@@ -333,13 +490,22 @@ const TeacherSalaries = () => {
                         {activeBonusId === log.id && (
                           <tr style={{background:'#fffbeb'}}>
                             <td colSpan="5" style={{padding:10}}>
-                                <div style={{display:'flex', gap:8, alignItems:'center', flexWrap:'wrap'}}>
-                                    <b style={{fontSize:11}}>TAMBAH BONUS:</b>
-                                    <input placeholder="Keterangan..." onChange={e=>setBonusData({...bonusData, keterangan:e.target.value})} style={styles.miniInput} />
-                                    <input type="number" placeholder="Nominal" onChange={e=>setBonusData({...bonusData, nominal:e.target.value})} style={styles.miniInput} />
-                                    <button onClick={()=>handleAddBonusAtDate(log)} style={styles.btnSaveBonus}>Simpan</button>
-                                    <button onClick={()=>setActiveBonusId(null)} style={{border:'none', background:'none', cursor:'pointer', color:'#ef4444', fontSize:11}}>Batal</button>
-                                </div>
+                              <div style={{display:'flex', gap:8, alignItems:'center', flexWrap:'wrap'}}>
+                                <b style={{fontSize:11}}>TAMBAH BONUS:</b>
+                                <input 
+                                  placeholder="Keterangan..." 
+                                  onChange={e => setBonusData({...bonusData, keterangan: e.target.value})} 
+                                  style={styles.miniInput} 
+                                />
+                                <input 
+                                  type="number" 
+                                  placeholder="Nominal" 
+                                  onChange={e => setBonusData({...bonusData, nominal: e.target.value})} 
+                                  style={styles.miniInput} 
+                                />
+                                <button onClick={() => handleAddBonusAtDate(log)} style={styles.btnSaveBonus}>Simpan</button>
+                                <button onClick={() => setActiveBonusId(null)} style={{border:'none', background:'none', cursor:'pointer', color:'#ef4444', fontSize:11}}>Batal</button>
+                              </div>
                             </td>
                           </tr>
                         )}
@@ -350,7 +516,9 @@ const TeacherSalaries = () => {
                 </table>
               </div>
               <div style={{marginTop:15, textAlign:'right', borderTop:'2px solid #e2e8f0', paddingTop:15}}>
-                <h3 style={{margin:0, color:'#1e293b', fontSize: isMobile ? 14 : 18}}>Total: <span style={{color:'#10b981'}}>Rp {viewDetail.totalGaji.toLocaleString()}</span></h3>
+                <h3 style={{margin:0, color:'#1e293b', fontSize: isMobile ? 14 : 18}}>
+                  Total: <span style={{color:'#10b981'}}>Rp {viewDetail.totalGaji.toLocaleString()}</span>
+                </h3>
               </div>
             </div>
           </div>
@@ -361,6 +529,9 @@ const TeacherSalaries = () => {
   );
 };
 
+// ============================================================
+// STYLES
+// ============================================================
 const styles = {
   wrapper: { display: 'flex', minHeight: '100vh', background: '#f8fafc' },
   mainContent: (m) => ({ marginLeft: m ? '0' : '250px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' }),
@@ -373,7 +544,6 @@ const styles = {
   subtitle: (m) => ({ color:'#94a3b8', marginTop:5, fontSize: m ? 11 : 13 }),
   totalBox: (m) => ({ textAlign: m ? 'center' : 'right', background:'#f0fdf4', padding: m ? '10px 15px' : '10px 20px', borderRadius:12, border:'1px solid #bbf7d0' }),
   
-  // 🔥 GOOGLE FORM SETTINGS STYLES
   btnGoogleForm: (m) => ({ 
     background: '#8b5cf6', 
     color: 'white', 
