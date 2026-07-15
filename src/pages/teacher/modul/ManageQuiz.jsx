@@ -7,7 +7,7 @@ import {
   Calculator, Target, BookOpen, Users, Send, Settings, 
   Clock as ClockIcon, HelpCircle, Image, Upload, Calendar, 
   CalendarDays, AlertCircle, Eye, EyeOff, Lock, Unlock,
-  Layers, Type, FileUp, Video, Rocket, Sparkles
+  Layers, Type, FileUp, Video, Rocket, Sparkles, Loader2
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile } from '../../../services/uploadService';
@@ -22,6 +22,7 @@ const ManageQuiz = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadTarget, setUploadTarget] = useState(null);
   
   // 🔥 MODE KUIS - JELAS
@@ -81,10 +82,14 @@ const ManageQuiz = () => {
   // Preview
   const [previewMode, setPreviewMode] = useState(false);
   const [previewAnswers, setPreviewAnswers] = useState({});
+  const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
   
   // 🔥 EDITING SECTION
   const [editingQuestion, setEditingQuestion] = useState(null);
 
+  // ============================================================
+  // EFFECTS
+  // ============================================================
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
@@ -152,6 +157,9 @@ const ManageQuiz = () => {
     }
   }, [modulId]);
 
+  // ============================================================
+  // 🔥 HANDLER UPLOAD GAMBAR - DENGAN PROGRESS
+  // ============================================================
   const handleImageUpload = async (file, questionId, targetType, optionIndex = null) => {
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
@@ -160,6 +168,7 @@ const ManageQuiz = () => {
     }
     
     setUploading(true);
+    setUploadProgress(0);
     setUploadTarget(`${questionId}-${targetType}-${optionIndex || ''}`);
     
     try {
@@ -179,6 +188,8 @@ const ManageQuiz = () => {
           }
           return q;
         }));
+        setUploadProgress(100);
+        setTimeout(() => setUploadProgress(0), 1000);
       } else {
         alert("❌ Gagal upload: " + result.error);
       }
@@ -206,6 +217,9 @@ const ManageQuiz = () => {
     }));
   };
 
+  // ============================================================
+  // 🔥 RENDER MATH
+  // ============================================================
   const renderMath = (text) => {
     if (!text) return null;
     const parts = text.split(/(\$.*?\$)/g);
@@ -218,6 +232,9 @@ const ManageQuiz = () => {
     });
   };
 
+  // ============================================================
+  // 🔥 BULK IMPORT
+  // ============================================================
   const handleBulkImport = () => {
     if (!bulkText.trim()) return;
     
@@ -254,6 +271,9 @@ const ManageQuiz = () => {
     }
   };
 
+  // ============================================================
+  // 🔥 GET QUIZ STATUS
+  // ============================================================
   const getQuizStatus = () => {
     if (!useSchedule) return { status: 'aktif', label: '🟢 Aktif (Tanpa Jadwal)', color: '#10b981', icon: <Unlock size={14} /> };
     const now = new Date();
@@ -269,24 +289,32 @@ const ManageQuiz = () => {
     }
   };
 
+  // ============================================================
+  // 🔥 PREVIEW
+  // ============================================================
   const handlePreviewQuiz = () => {
     const previewAns = {};
     questions.forEach(q => {
-      previewAns[q.id] = Math.floor(Math.random() * 4);
+      previewAns[q.id] = q.correct; // Set ke jawaban benar untuk preview
     });
     setPreviewAnswers(previewAns);
+    setShowCorrectAnswers(true);
     setPreviewMode(true);
   };
 
   const handleClosePreview = () => {
     setPreviewMode(false);
     setPreviewAnswers({});
+    setShowCorrectAnswers(false);
   };
 
-  const getUserAnswer = (questionId) => {
-    return previewAnswers[questionId];
+  const toggleCorrectAnswers = () => {
+    setShowCorrectAnswers(!showCorrectAnswers);
   };
 
+  // ============================================================
+  // 🔥 CRUD SOAL
+  // ============================================================
   const addQuestion = () => {
     const newQuestion = {
       id: Date.now(),
@@ -299,6 +327,10 @@ const ManageQuiz = () => {
     };
     setQuestions([...questions, newQuestion]);
     setEditingQuestion(newQuestion.id);
+    // Scroll ke bawah
+    setTimeout(() => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }, 100);
   };
 
   const removeQuestion = (id) => {
@@ -311,6 +343,9 @@ const ManageQuiz = () => {
     if (editingQuestion === id) setEditingQuestion(null);
   };
 
+  // ============================================================
+  // 🔥 RENDER QUESTION EDITOR
+  // ============================================================
   const renderQuestionEditor = (item, idx) => {
     const isEditing = editingQuestion === item.id;
     
@@ -323,15 +358,30 @@ const ManageQuiz = () => {
           borderRadius: 12,
           border: isEditing ? '2px solid #3b82f6' : '1px solid #e2e8f0',
           marginBottom: 10,
-          transition: '0.2s',
-          cursor: 'pointer'
+          transition: 'all 0.2s ease',
+          cursor: 'pointer',
+          boxShadow: isEditing ? '0 4px 12px rgba(59,130,246,0.15)' : 'none'
         }}
         onClick={() => setEditingQuestion(item.id)}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>
-            Soal {idx + 1} {item.q.trim() && '✅'}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ 
+              fontSize: 11, 
+              fontWeight: 700, 
+              color: item.q.trim() ? '#10b981' : '#94a3b8',
+              background: item.q.trim() ? '#dcfce7' : '#f1f5f9',
+              padding: '2px 10px',
+              borderRadius: 10
+            }}>
+              Soal {idx + 1} {item.q.trim() ? '✅' : '⏳'}
+            </span>
+            {isEditing && (
+              <span style={{ fontSize: 9, color: '#3b82f6', fontWeight: 600, background: '#eef2ff', padding: '2px 8px', borderRadius: 4 }}>
+                ✏️ Edit
+              </span>
+            )}
+          </div>
           <button 
             onClick={(e) => { e.stopPropagation(); removeQuestion(item.id); }}
             style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }}
@@ -350,14 +400,40 @@ const ManageQuiz = () => {
           <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #e2e8f0' }}>
             {/* Upload Gambar Soal */}
             <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#f3e8ff', border: '1px solid #673ab7', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#673ab7' }}>
-                <Image size={14} /> Upload Gambar
-                <input type="file" accept="image/*" hidden onChange={(e) => { if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'question'); }} />
+              <label style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 4, 
+                padding: '6px 14px', 
+                background: uploading && uploadTarget === `${item.id}-question-` ? '#f3e8ff' : '#f3e8ff',
+                border: '1px solid #673ab7', 
+                borderRadius: 6, 
+                cursor: uploading ? 'not-allowed' : 'pointer', 
+                fontSize: 10, 
+                fontWeight: 600, 
+                color: '#673ab7',
+                opacity: uploading ? 0.6 : 1
+              }}>
+                {uploading && uploadTarget === `${item.id}-question-` ? (
+                  <Loader2 size={14} className="spin" />
+                ) : (
+                  <Image size={14} />
+                )}
+                {uploading && uploadTarget === `${item.id}-question-` ? 'Uploading...' : 'Upload Gambar'}
+                <input type="file" accept="image/*" hidden onChange={(e) => { if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'question'); }} disabled={uploading} />
               </label>
+              
+              {/* Progress Bar */}
+              {uploading && uploadTarget === `${item.id}-question-` && (
+                <div style={{ flex: 1, height: 4, background: '#e2e8f0', borderRadius: 2, overflow: 'hidden' }}>
+                  <div style={{ width: `${uploadProgress}%`, height: '100%', background: '#673ab7', borderRadius: 2, transition: 'width 0.3s' }} />
+                </div>
+              )}
+              
               {item.qImage && (
                 <div style={{ position: 'relative', display: 'inline-block' }}>
-                  <img src={item.qImage} alt="Soal" style={{ maxHeight: 60, borderRadius: 6 }} />
-                  <button onClick={() => handleRemoveImage(item.id, 'question')} style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 16, height: 16, cursor: 'pointer', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={8}/></button>
+                  <img src={item.qImage} alt="Soal" style={{ maxHeight: 60, borderRadius: 6, border: '1px solid #e2e8f0' }} />
+                  <button onClick={() => handleRemoveImage(item.id, 'question')} style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 18, height: 18, cursor: 'pointer', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={8}/></button>
                 </div>
               )}
             </div>
@@ -366,21 +442,26 @@ const ManageQuiz = () => {
               value={item.q} 
               onChange={e => setQuestions(questions.map(q => q.id === item.id ? {...q, q: e.target.value} : q))}
               placeholder="Tulis soal... ($ untuk rumus matematika)"
-              style={{ width: '100%', minHeight: 50, padding: 8, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', resize: 'vertical', boxSizing: 'border-box', marginBottom: 6 }} 
+              style={{ width: '100%', minHeight: 50, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', resize: 'vertical', boxSizing: 'border-box', marginBottom: 6, fontFamily: 'inherit' }} 
             />
 
-            {item.q && <div style={{ padding: 6, background: '#f8fafc', borderRadius: 6, marginBottom: 10, fontSize: 12 }}>{renderMath(item.q)}</div>}
+            {item.q && <div style={{ padding: 8, background: '#f8fafc', borderRadius: 6, marginBottom: 10, fontSize: 13 }}>{renderMath(item.q)}</div>}
 
             {/* Opsi Jawaban */}
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr', gap: 4 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr', gap: 6 }}>
               {item.options.map((opt, oIdx) => (
                 <div key={oIdx} onClick={() => setQuestions(questions.map(q => q.id === item.id ? {...q, correct: oIdx} : q))} style={{
-                  display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 6, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
                   border: `2px solid ${item.correct === oIdx ? '#10b981' : '#e2e8f0'}`,
-                  background: item.correct === oIdx ? '#f0fdf4' : 'white'
+                  background: item.correct === oIdx ? '#f0fdf4' : 'white',
+                  transition: '0.2s'
                 }}>
-                  <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${item.correct === oIdx ? '#10b981' : '#cbd5e1'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {item.correct === oIdx && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }}></div>}
+                  <div style={{ 
+                    width: 20, height: 20, borderRadius: '50%', 
+                    border: `2px solid ${item.correct === oIdx ? '#10b981' : '#cbd5e1'}`, 
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 
+                  }}>
+                    {item.correct === oIdx && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981' }}></div>}
                   </div>
                   <input 
                     value={opt} 
@@ -390,25 +471,58 @@ const ManageQuiz = () => {
                       setQuestions(questions.map(q => q.id === item.id ? {...q, options: newOpts} : q));
                     }}
                     onClick={e => e.stopPropagation()}
-                    style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 11, outline: 'none' }} 
+                    style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 12, outline: 'none' }} 
                   />
-                  {item.correct === oIdx && <CheckCircle size={12} color="#10b981"/>}
+                  {item.correct === oIdx && <CheckCircle size={14} color="#10b981"/>}
                 </div>
               ))}
             </div>
 
-            {/* Pembahasan */}
+            {/* Upload Gambar Opsi */}
+            <div style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' }}>
+              {item.options.map((_, oIdx) => (
+                <label key={oIdx} style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 4, 
+                  padding: '3px 8px', 
+                  background: '#f8fafc', 
+                  border: '1px dashed #cbd5e1', 
+                  borderRadius: 4, 
+                  cursor: uploading ? 'not-allowed' : 'pointer', 
+                  fontSize: 8, 
+                  color: '#64748b',
+                  opacity: uploading ? 0.6 : 1
+                }}>
+                  <Upload size={10} /> Gambar {String.fromCharCode(65+oIdx)}
+                  <input type="file" accept="image/*" hidden onChange={(e) => { if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'option', oIdx); }} disabled={uploading} />
+                </label>
+              ))}
+            </div>
+            {item.optionImages.some(img => img) && (
+              <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
+                {item.optionImages.map((img, oIdx) => img && (
+                  <div key={oIdx} style={{ position: 'relative', display: 'inline-block' }}>
+                    <img src={img} alt={`Opsi ${oIdx+1}`} style={{ maxHeight: 40, borderRadius: 4, border: '1px solid #e2e8f0' }} />
+                    <button onClick={() => handleRemoveImage(item.id, 'option', oIdx)} style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 16, height: 16, cursor: 'pointer', fontSize: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={6}/></button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Pembahasan - Hanya untuk Mode Ujian */}
             {quizMode === 'advanced' && (
-              <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                  <HelpCircle size={12} color="#673ab7" />
-                  <span style={{ fontSize: 10, fontWeight: 700, color: '#673ab7' }}>Pembahasan</span>
+              <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                  <HelpCircle size={14} color="#673ab7" />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#673ab7' }}>Pembahasan</span>
+                  <span style={{ fontSize: 9, color: '#94a3b8' }}>(akan tampil setelah siswa menjawab)</span>
                 </div>
                 <textarea 
                   value={item.explanation || ''} 
                   onChange={e => setQuestions(questions.map(q => q.id === item.id ? {...q, explanation: e.target.value} : q))}
                   placeholder="Tulis pembahasan soal ini..."
-                  style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', resize: 'vertical' }}
+                  style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
                   rows={2}
                 />
               </div>
@@ -419,6 +533,9 @@ const ManageQuiz = () => {
     );
   };
 
+  // ============================================================
+  // 🔥 SAVE QUIZ
+  // ============================================================
   const handleSaveQuiz = async () => {
     const valid = questions.filter(q => q.q.trim() || q.qImage);
     if (valid.length === 0) return alert("❌ Minimal 1 soal!");
@@ -493,7 +610,7 @@ const ManageQuiz = () => {
   };
 
   // ============================================================
-  // RENDER PREVIEW
+  // 🔥 RENDER PREVIEW
   // ============================================================
   if (previewMode) {
     return (
@@ -513,13 +630,27 @@ const ManageQuiz = () => {
             <h2 style={{ margin: 0, color: 'white', fontSize: isMobile ? 16 : 20 }}>👁️ Preview: {quizTitle || 'Kuis'}</h2>
             <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Simulasi tampilan siswa</p>
           </div>
-          <button onClick={handleClosePreview} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>
-            <X size={14} /> Tutup
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={toggleCorrectAnswers} style={{ 
+              padding: '6px 14px', 
+              background: showCorrectAnswers ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.15)', 
+              color: 'white', 
+              border: showCorrectAnswers ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.2)', 
+              borderRadius: 8, 
+              cursor: 'pointer', 
+              fontWeight: 600, 
+              fontSize: 11 
+            }}>
+              {showCorrectAnswers ? '✅ Tampilkan Jawaban' : '👁️ Sembunyikan Jawaban'}
+            </button>
+            <button onClick={handleClosePreview} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>
+              <X size={14} /> Tutup
+            </button>
+          </div>
         </div>
 
         {questions.filter(q => q.q.trim() || q.qImage).map((item, idx) => {
-          const userAnswer = getUserAnswer(item.id);
+          const userAnswer = previewAnswers[item.id];
           const isCorrect = userAnswer === item.correct;
           
           return (
@@ -527,7 +658,7 @@ const ManageQuiz = () => {
               background: 'white', 
               padding: isMobile ? 15 : 20, 
               borderRadius: 12, 
-              border: `2px solid ${userAnswer !== undefined ? (isCorrect ? '#10b981' : '#ef4444') : '#e2e8f0'}`,
+              border: showCorrectAnswers ? (isCorrect ? '2px solid #10b981' : '2px solid #ef4444') : '2px solid #e2e8f0',
               marginBottom: 12
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -546,34 +677,42 @@ const ManageQuiz = () => {
                   const isCorrectAnswer = item.correct === oIdx;
                   
                   let bgColor = 'white', borderColor = '#e2e8f0';
-                  if (isSelected && isCorrectAnswer) { bgColor = '#dcfce7'; borderColor = '#10b981'; }
-                  else if (isSelected && !isCorrectAnswer) { bgColor = '#fee2e2'; borderColor = '#ef4444'; }
-                  else if (isCorrectAnswer) { bgColor = '#f0fdf4'; borderColor = '#10b981'; }
+                  if (showCorrectAnswers) {
+                    if (isCorrectAnswer) { bgColor = '#dcfce7'; borderColor = '#10b981'; }
+                    if (isSelected && !isCorrectAnswer) { bgColor = '#fee2e2'; borderColor = '#ef4444'; }
+                  } else {
+                    if (isSelected) { bgColor = '#eef2ff'; borderColor = '#3b82f6'; }
+                  }
                   
                   return (
                     <div key={oIdx} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 6, border: `2px solid ${borderColor}`, background: bgColor }}>
-                      <span style={{ width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: isSelected ? (isCorrectAnswer ? '#10b981' : '#ef4444') : '#f1f5f9', color: isSelected ? 'white' : '#64748b', fontWeight: 700, fontSize: 10 }}>{String.fromCharCode(65 + oIdx)}</span>
+                      <span style={{ 
+                        width: 20, height: 20, borderRadius: '50%', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                        background: isSelected ? '#3b82f6' : '#f1f5f9', 
+                        color: isSelected ? 'white' : '#64748b', 
+                        fontWeight: 700, fontSize: 10 
+                      }}>{String.fromCharCode(65 + oIdx)}</span>
                       <span style={{ fontSize: 12 }}>{opt}</span>
-                      {isCorrectAnswer && <CheckCircle size={12} color="#10b981" style={{ marginLeft: 'auto' }} />}
-                      {isSelected && !isCorrectAnswer && <X size={12} color="#ef4444" style={{ marginLeft: 'auto' }} />}
+                      {showCorrectAnswers && isCorrectAnswer && <CheckCircle size={12} color="#10b981" style={{ marginLeft: 'auto' }} />}
+                      {showCorrectAnswers && isSelected && !isCorrectAnswer && <X size={12} color="#ef4444" style={{ marginLeft: 'auto' }} />}
                     </div>
                   );
                 })}
               </div>
 
-              <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #e2e8f0', fontSize: 11 }}>
-                <span style={{ color: '#64748b' }}>✅ Jawaban benar: </span>
-                <span style={{ fontWeight: 700, color: '#10b981' }}>{item.options[item.correct] || `Opsi ${String.fromCharCode(65 + item.correct)}`}</span>
-                {userAnswer !== undefined && (
-                  <span style={{ marginLeft: 12, color: '#64748b' }}>📝 Jawaban Anda: <span style={{ fontWeight: 700, color: isCorrect ? '#10b981' : '#ef4444' }}>{item.options[userAnswer]}</span></span>
-                )}
-              </div>
+              {showCorrectAnswers && (
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #e2e8f0', fontSize: 11 }}>
+                  <span style={{ color: '#64748b' }}>✅ Jawaban benar: </span>
+                  <span style={{ fontWeight: 700, color: '#10b981' }}>{item.options[item.correct] || `Opsi ${String.fromCharCode(65 + item.correct)}`}</span>
+                </div>
+              )}
             </div>
           );
         })}
 
         <div style={{ textAlign: 'center', padding: 16, background: '#f8fafc', borderRadius: 12 }}>
-          <p style={{ fontSize: 12, color: '#64748b' }}>💡 Hijau = Benar, Merah = Salah (simulasi jawaban acak)</p>
+          <p style={{ fontSize: 12, color: '#64748b' }}>💡 Preview menampilkan jawaban benar secara otomatis</p>
           <button onClick={handleClosePreview} style={{ padding: '8px 24px', background: '#673ab7', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: 12, marginTop: 8 }}>Tutup Preview</button>
         </div>
       </div>
@@ -581,7 +720,7 @@ const ManageQuiz = () => {
   }
 
   // ============================================================
-  // RENDER MAIN - VERTIKAL
+  // 🔥 RENDER MAIN
   // ============================================================
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? 12 : 20, paddingBottom: 100 }}>
@@ -599,7 +738,8 @@ const ManageQuiz = () => {
             <Eye size={14}/> Preview
           </button>
           <button onClick={handleSaveQuiz} disabled={loading} style={{ background: '#673ab7', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Send size={14}/> {loading ? '...' : 'Terbitkan'}
+            {loading ? <Loader2 size={14} className="spin" /> : <Send size={14}/>} 
+            {loading ? '...' : 'Terbitkan'}
           </button>
         </div>
       </div>
@@ -612,12 +752,12 @@ const ManageQuiz = () => {
           <FileText size={18} /> 1. Identitas Kuis
         </h4>
         <input value={quizTitle} onChange={e => setQuizTitle(e.target.value)} placeholder="Judul kuis..." style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', marginBottom: 8, boxSizing: 'border-box' }} />
-        <div style={{ display: 'flex', gap: 8 }}>
-          <select value={quizSubject} onChange={e => setQuizSubject(e.target.value)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', background: 'white' }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <select value={quizSubject} onChange={e => setQuizSubject(e.target.value)} style={{ flex: 1, minWidth: 120, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', background: 'white' }}>
             <option value="">Pilih Mapel</option>
             {subjects.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
-          <input type="datetime-local" value={deadline} onChange={e => setDeadline(e.target.value)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none' }} />
+          <input type="datetime-local" value={deadline} onChange={e => setDeadline(e.target.value)} style={{ flex: 1, minWidth: 120, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none' }} />
         </div>
       </div>
 
@@ -656,7 +796,7 @@ const ManageQuiz = () => {
       </div>
 
       {/* ========================================================== */}
-      {/* 3️⃣ MODE KUIS - TOMBOL JELAS */}
+      {/* 3️⃣ MODE KUIS */}
       {/* ========================================================== */}
       <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
         <h4 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -701,7 +841,7 @@ const ManageQuiz = () => {
           </button>
         </div>
 
-        {/* Pengaturan Lanjutan - Muncul jika mode ujian */}
+        {/* Pengaturan Lanjutan - Mode Ujian */}
         {quizMode === 'advanced' && (
           <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #e2e8f0' }}>
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
@@ -751,7 +891,7 @@ const ManageQuiz = () => {
         {questions.map((item, idx) => renderQuestionEditor(item, idx))}
 
         <button onClick={addQuestion} style={{
-          width: '100%', padding: '12px', border: '2px dashed #cbd5e1', background: 'white', borderRadius: 10, fontWeight: 700, color: '#64748b', cursor: 'pointer', fontSize: 12, marginTop: 8
+          width: '100%', padding: '12px', border: '2px dashed #cbd5e1', background: 'white', borderRadius: 10, fontWeight: 700, color: '#64748b', cursor: 'pointer', fontSize: 12, marginTop: 8, transition: '0.2s'
         }}>
           <Plus size={14}/> Tambah Soal
         </button>
@@ -862,6 +1002,16 @@ const ManageQuiz = () => {
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        .spin {
+          animation: spin 0.8s linear infinite;
+        }
+      `}</style>
     </div>
   );
 };
