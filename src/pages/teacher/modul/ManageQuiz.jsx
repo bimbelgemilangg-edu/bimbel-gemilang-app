@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile } from '../../../services/uploadService';
+import AIGenerateModal from './AIGenerateModal';
 import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
 
@@ -24,9 +25,10 @@ const ManageQuiz = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadTarget, setUploadTarget] = useState(null);
+  const [showAIGenerate, setShowAIGenerate] = useState(false);
   
-  // 🔥 MODE KUIS - JELAS
-  const [quizMode, setQuizMode] = useState('simple'); // 'simple' | 'advanced'
+  // 🔥 MODE KUIS
+  const [quizMode, setQuizMode] = useState('simple');
   
   // Data Quiz
   const [quizTitle, setQuizTitle] = useState("");
@@ -86,6 +88,15 @@ const ManageQuiz = () => {
   
   // 🔥 EDITING SECTION
   const [editingQuestion, setEditingQuestion] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  // ============================================================
+  // TOAST
+  // ============================================================
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   // ============================================================
   // EFFECTS
@@ -135,7 +146,6 @@ const ManageQuiz = () => {
           setQuizOpenDate(data.quizOpenDate || quizOpenDate);
           setQuizCloseDate(data.quizCloseDate || quizCloseDate);
           
-          // 🔥 Deteksi mode dari data
           if (data.timeLimit > 0 || data.randomOrder || data.maxAttempts > 1) {
             setQuizMode('advanced');
           }
@@ -158,7 +168,33 @@ const ManageQuiz = () => {
   }, [modulId]);
 
   // ============================================================
-  // 🔥 HANDLER UPLOAD GAMBAR - DENGAN PROGRESS
+  // 🔥 HANDLE AI GENERATED QUESTIONS
+  // ============================================================
+  const handleAIGeneratedQuestions = (generatedQuestions) => {
+    if (generatedQuestions && generatedQuestions.length > 0) {
+      const formattedQuestions = generatedQuestions.map((q, idx) => ({
+        id: Date.now() + idx,
+        q: q.q || q.question || '',
+        qImage: q.qImage || '',
+        options: q.options || ['', '', '', ''],
+        optionImages: q.optionImages || ['', '', '', ''],
+        correct: q.correct || 0,
+        explanation: q.explanation || ''
+      }));
+      
+      if (questions.length === 1 && !questions[0].q && !questions[0].qImage) {
+        setQuestions(formattedQuestions);
+      } else {
+        setQuestions([...questions, ...formattedQuestions]);
+      }
+      
+      setShowAIGenerate(false);
+      showToast('✅ ' + formattedQuestions.length + ' soal berhasil digenerate AI!');
+    }
+  };
+
+  // ============================================================
+  // 🔥 HANDLER UPLOAD GAMBAR
   // ============================================================
   const handleImageUpload = async (file, questionId, targetType, optionIndex = null) => {
     if (!file) return;
@@ -295,7 +331,7 @@ const ManageQuiz = () => {
   const handlePreviewQuiz = () => {
     const previewAns = {};
     questions.forEach(q => {
-      previewAns[q.id] = q.correct; // Set ke jawaban benar untuk preview
+      previewAns[q.id] = q.correct;
     });
     setPreviewAnswers(previewAns);
     setShowCorrectAnswers(true);
@@ -327,7 +363,6 @@ const ManageQuiz = () => {
     };
     setQuestions([...questions, newQuestion]);
     setEditingQuestion(newQuestion.id);
-    // Scroll ke bawah
     setTimeout(() => {
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }, 100);
@@ -395,7 +430,6 @@ const ManageQuiz = () => {
           {item.qImage && <span style={{ marginLeft: 6, fontSize: 10, color: '#10b981' }}>🖼️</span>}
         </div>
         
-        {/* EDITOR YANG MUNCUL SAAT DIKLIK */}
         {isEditing && (
           <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #e2e8f0' }}>
             {/* Upload Gambar Soal */}
@@ -423,7 +457,6 @@ const ManageQuiz = () => {
                 <input type="file" accept="image/*" hidden onChange={(e) => { if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'question'); }} disabled={uploading} />
               </label>
               
-              {/* Progress Bar */}
               {uploading && uploadTarget === `${item.id}-question-` && (
                 <div style={{ flex: 1, height: 4, background: '#e2e8f0', borderRadius: 2, overflow: 'hidden' }}>
                   <div style={{ width: `${uploadProgress}%`, height: '100%', background: '#673ab7', borderRadius: 2, transition: 'width 0.3s' }} />
@@ -510,7 +543,7 @@ const ManageQuiz = () => {
               </div>
             )}
 
-            {/* Pembahasan - Hanya untuk Mode Ujian */}
+            {/* Pembahasan - Mode Ujian */}
             {quizMode === 'advanced' && (
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #e2e8f0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
@@ -725,6 +758,19 @@ const ManageQuiz = () => {
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? 12 : 20, paddingBottom: 100 }}>
       
+      {toast && (
+        <div style={{
+          position: 'fixed', top: 20, right: 20, zIndex: 9999,
+          padding: '12px 20px', borderRadius: 12,
+          background: toast.type === 'error' ? '#ef4444' : '#10b981',
+          color: 'white', fontWeight: 600, fontSize: 13,
+          boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+          animation: 'fadeInUp 0.3s ease'
+        }}>
+          {toast.message}
+        </div>
+      )}
+
       {/* HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
         <button onClick={() => navigate(-1)} style={{ background: 'white', border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -733,7 +779,26 @@ const ManageQuiz = () => {
         <h2 style={{ margin: 0, fontSize: isMobile ? 16 : 20, fontWeight: 800, color: '#1e293b' }}>
           ❓ {modulId ? 'Edit Kuis Modul' : 'Buat Kuis Baru'}
         </h2>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button 
+            onClick={() => setShowAIGenerate(true)} 
+            style={{ 
+              background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+              color: 'white', 
+              border: 'none', 
+              padding: '8px 14px', 
+              borderRadius: 8, 
+              fontWeight: 700, 
+              fontSize: 12, 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              boxShadow: '0 4px 12px rgba(139,92,246,0.3)'
+            }}
+          >
+            <Sparkles size={14} /> AI Generate
+          </button>
           <button onClick={handlePreviewQuiz} style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '8px 14px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
             <Eye size={14}/> Preview
           </button>
@@ -973,6 +1038,18 @@ const ManageQuiz = () => {
       </div>
 
       {/* ========================================================== */}
+      {/* AI GENERATE MODAL */}
+      {/* ========================================================== */}
+      {showAIGenerate && (
+        <AIGenerateModal
+          isOpen={showAIGenerate}
+          onClose={() => setShowAIGenerate(false)}
+          onQuestionsGenerated={handleAIGeneratedQuestions}
+          modulId={modulId}
+        />
+      )}
+
+      {/* ========================================================== */}
       {/* BULK IMPORT MODAL */}
       {/* ========================================================== */}
       {showImport && (
@@ -1007,6 +1084,10 @@ const ManageQuiz = () => {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         .spin {
           animation: spin 0.8s linear infinite;
