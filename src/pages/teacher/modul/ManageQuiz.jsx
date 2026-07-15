@@ -2,7 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { collection, addDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy } from "firebase/firestore";
-import { Plus, Trash2, CheckCircle, ArrowLeft, Save, FileText, X, Calculator, Target, BookOpen, Users, Send, Settings, Clock as ClockIcon, HelpCircle, Image, Upload, Calendar, CalendarDays, AlertCircle, Eye, EyeOff, Lock, Unlock } from 'lucide-react';
+import { 
+  Plus, Trash2, CheckCircle, ArrowLeft, Save, FileText, X, 
+  Calculator, Target, BookOpen, Users, Send, Settings, 
+  Clock as ClockIcon, HelpCircle, Image, Upload, Calendar, 
+  CalendarDays, AlertCircle, Eye, EyeOff, Lock, Unlock,
+  Layers, Type, FileUp, Video, Rocket, Sparkles
+} from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile } from '../../../services/uploadService';
 import 'katex/dist/katex.min.css';
@@ -17,14 +23,16 @@ const ManageQuiz = () => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadTarget, setUploadTarget] = useState(null);
-  const [advancedMode, setAdvancedMode] = useState(false);
+  
+  // 🔥 MODE KUIS - JELAS
+  const [quizMode, setQuizMode] = useState('simple'); // 'simple' | 'advanced'
   
   // Data Quiz
   const [quizTitle, setQuizTitle] = useState("");
   const [quizSubject, setQuizSubject] = useState("");
   const [deadline, setDeadline] = useState("");
   
-  // 🔥 JADWAL BUKA/TUTUP KUIS
+  // Jadwal
   const [quizOpenDate, setQuizOpenDate] = useState(() => {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
@@ -48,14 +56,14 @@ const ManageQuiz = () => {
     explanation: '' 
   }]);
   
-  // FITUR LANJUTAN (UJIAN)
+  // Fitur Lanjutan
   const [timeLimit, setTimeLimit] = useState(0);
   const [randomOrder, setRandomOrder] = useState(false);
   const [maxAttempts, setMaxAttempts] = useState(1);
   const [showExplanation, setShowExplanation] = useState(true);
   const [difficulty, setDifficulty] = useState('Sedang');
   
-  // Target Publish
+  // Target
   const [publishTarget, setPublishTarget] = useState('modul');
   const [selectedModul, setSelectedModul] = useState("");
   const [selectedKelas, setSelectedKelas] = useState("Semua");
@@ -69,10 +77,13 @@ const ManageQuiz = () => {
   // Bulk import
   const [showImport, setShowImport] = useState(false);
   const [bulkText, setBulkText] = useState("");
-
-  // 🔥 PREVIEW MODE
+  
+  // Preview
   const [previewMode, setPreviewMode] = useState(false);
   const [previewAnswers, setPreviewAnswers] = useState({});
+  
+  // 🔥 EDITING SECTION
+  const [editingQuestion, setEditingQuestion] = useState(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -119,6 +130,11 @@ const ManageQuiz = () => {
           setQuizOpenDate(data.quizOpenDate || quizOpenDate);
           setQuizCloseDate(data.quizCloseDate || quizCloseDate);
           
+          // 🔥 Deteksi mode dari data
+          if (data.timeLimit > 0 || data.randomOrder || data.maxAttempts > 1) {
+            setQuizMode('advanced');
+          }
+          
           if (data.quizData?.length > 0) {
             setQuestions(data.quizData.map((q, idx) => ({
               id: q.id || Date.now() + idx,
@@ -136,7 +152,6 @@ const ManageQuiz = () => {
     }
   }, [modulId]);
 
-  // 🔥 FUNGSI UPLOAD GAMBAR - LANGSUNG KE SUPABASE
   const handleImageUpload = async (file, questionId, targetType, optionIndex = null) => {
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
@@ -152,7 +167,6 @@ const ManageQuiz = () => {
       
       if (result.success) {
         const url = result.downloadURL;
-        
         setQuestions(prev => prev.map(q => {
           if (q.id === questionId) {
             if (targetType === 'question') {
@@ -204,7 +218,6 @@ const ManageQuiz = () => {
     });
   };
 
-  // 📥 BULK IMPORT
   const handleBulkImport = () => {
     if (!bulkText.trim()) return;
     
@@ -235,15 +248,14 @@ const ManageQuiz = () => {
       setQuestions(prev => (prev.length === 1 && prev[0].q === "") ? parsed : [...prev, ...parsed]);
       setBulkText("");
       setShowImport(false);
-      alert(`✅ ${parsed.length} soal berhasil diimpor! Silakan pilih jawaban benar.`);
+      alert(`✅ ${parsed.length} soal berhasil diimpor!`);
     } else {
-      alert("⚠️ Format tidak terdeteksi. Gunakan format:\n1. Pertanyaan\nA. Opsi A\nB. Opsi B\nC. Opsi C\nD. Opsi D");
+      alert("⚠️ Format tidak terdeteksi.");
     }
   };
 
-  // 🔥 CEK APAKAH KUIS MASIH BISA DIAKSES
   const getQuizStatus = () => {
-    if (!useSchedule) return { status: 'aktif', label: '🟢 Aktif (Tanpa Jadwal)', color: '#10b981' };
+    if (!useSchedule) return { status: 'aktif', label: '🟢 Aktif (Tanpa Jadwal)', color: '#10b981', icon: <Unlock size={14} /> };
     const now = new Date();
     const open = new Date(quizOpenDate);
     const close = new Date(quizCloseDate);
@@ -257,12 +269,9 @@ const ManageQuiz = () => {
     }
   };
 
-  // 🔥 PREVIEW MODE - SIMULASI JAWABAN SISWA
   const handlePreviewQuiz = () => {
-    // Generate jawaban acak untuk preview
     const previewAns = {};
     questions.forEach(q => {
-      // Random jawaban antara 0-3
       previewAns[q.id] = Math.floor(Math.random() * 4);
     });
     setPreviewAnswers(previewAns);
@@ -274,32 +283,152 @@ const ManageQuiz = () => {
     setPreviewAnswers({});
   };
 
-  // 🔥 CEK JAWABAN PREVIEW
-  const isAnswerCorrect = (questionId, optionIndex) => {
-    const q = questions.find(q => q.id === questionId);
-    if (!q) return false;
-    return q.correct === optionIndex;
-  };
-
   const getUserAnswer = (questionId) => {
     return previewAnswers[questionId];
   };
 
+  const addQuestion = () => {
+    const newQuestion = {
+      id: Date.now(),
+      q: '',
+      qImage: '',
+      options: ['', '', '', ''],
+      optionImages: ['', '', '', ''],
+      correct: 0,
+      explanation: ''
+    };
+    setQuestions([...questions, newQuestion]);
+    setEditingQuestion(newQuestion.id);
+  };
+
+  const removeQuestion = (id) => {
+    if (questions.length <= 1) {
+      alert("⚠️ Minimal 1 soal!");
+      return;
+    }
+    if (!window.confirm("Hapus soal ini?")) return;
+    setQuestions(questions.filter(q => q.id !== id));
+    if (editingQuestion === id) setEditingQuestion(null);
+  };
+
+  const renderQuestionEditor = (item, idx) => {
+    const isEditing = editingQuestion === item.id;
+    
+    return (
+      <div 
+        key={item.id} 
+        style={{
+          background: 'white',
+          padding: isMobile ? 14 : 18,
+          borderRadius: 12,
+          border: isEditing ? '2px solid #3b82f6' : '1px solid #e2e8f0',
+          marginBottom: 10,
+          transition: '0.2s',
+          cursor: 'pointer'
+        }}
+        onClick={() => setEditingQuestion(item.id)}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>
+            Soal {idx + 1} {item.q.trim() && '✅'}
+          </span>
+          <button 
+            onClick={(e) => { e.stopPropagation(); removeQuestion(item.id); }}
+            style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }}
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+        
+        <div style={{ fontSize: 13, color: item.q.trim() ? '#1e293b' : '#94a3b8' }}>
+          {item.q.trim() || 'Klik untuk edit soal...'}
+          {item.qImage && <span style={{ marginLeft: 6, fontSize: 10, color: '#10b981' }}>🖼️</span>}
+        </div>
+        
+        {/* EDITOR YANG MUNCUL SAAT DIKLIK */}
+        {isEditing && (
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #e2e8f0' }}>
+            {/* Upload Gambar Soal */}
+            <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#f3e8ff', border: '1px solid #673ab7', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#673ab7' }}>
+                <Image size={14} /> Upload Gambar
+                <input type="file" accept="image/*" hidden onChange={(e) => { if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'question'); }} />
+              </label>
+              {item.qImage && (
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <img src={item.qImage} alt="Soal" style={{ maxHeight: 60, borderRadius: 6 }} />
+                  <button onClick={() => handleRemoveImage(item.id, 'question')} style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 16, height: 16, cursor: 'pointer', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={8}/></button>
+                </div>
+              )}
+            </div>
+
+            <textarea 
+              value={item.q} 
+              onChange={e => setQuestions(questions.map(q => q.id === item.id ? {...q, q: e.target.value} : q))}
+              placeholder="Tulis soal... ($ untuk rumus matematika)"
+              style={{ width: '100%', minHeight: 50, padding: 8, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', resize: 'vertical', boxSizing: 'border-box', marginBottom: 6 }} 
+            />
+
+            {item.q && <div style={{ padding: 6, background: '#f8fafc', borderRadius: 6, marginBottom: 10, fontSize: 12 }}>{renderMath(item.q)}</div>}
+
+            {/* Opsi Jawaban */}
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr', gap: 4 }}>
+              {item.options.map((opt, oIdx) => (
+                <div key={oIdx} onClick={() => setQuestions(questions.map(q => q.id === item.id ? {...q, correct: oIdx} : q))} style={{
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 6, cursor: 'pointer',
+                  border: `2px solid ${item.correct === oIdx ? '#10b981' : '#e2e8f0'}`,
+                  background: item.correct === oIdx ? '#f0fdf4' : 'white'
+                }}>
+                  <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${item.correct === oIdx ? '#10b981' : '#cbd5e1'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {item.correct === oIdx && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }}></div>}
+                  </div>
+                  <input 
+                    value={opt} 
+                    placeholder={`Opsi ${String.fromCharCode(65+oIdx)}`} 
+                    onChange={e => {
+                      const newOpts = [...item.options]; newOpts[oIdx] = e.target.value;
+                      setQuestions(questions.map(q => q.id === item.id ? {...q, options: newOpts} : q));
+                    }}
+                    onClick={e => e.stopPropagation()}
+                    style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 11, outline: 'none' }} 
+                  />
+                  {item.correct === oIdx && <CheckCircle size={12} color="#10b981"/>}
+                </div>
+              ))}
+            </div>
+
+            {/* Pembahasan */}
+            {quizMode === 'advanced' && (
+              <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  <HelpCircle size={12} color="#673ab7" />
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#673ab7' }}>Pembahasan</span>
+                </div>
+                <textarea 
+                  value={item.explanation || ''} 
+                  onChange={e => setQuestions(questions.map(q => q.id === item.id ? {...q, explanation: e.target.value} : q))}
+                  placeholder="Tulis pembahasan soal ini..."
+                  style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', resize: 'vertical' }}
+                  rows={2}
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const handleSaveQuiz = async () => {
     const valid = questions.filter(q => q.q.trim() || q.qImage);
-    if (valid.length === 0) return alert("❌ Minimal 1 soal (teks atau gambar)!");
+    if (valid.length === 0) return alert("❌ Minimal 1 soal!");
     if (!quizTitle) return alert("❌ Judul kuis wajib diisi!");
     
-    // 🔥 VALIDASI JADWAL
     if (useSchedule) {
       const open = new Date(quizOpenDate);
       const close = new Date(quizCloseDate);
-      if (open >= close) {
-        return alert("❌ Tanggal buka harus lebih awal dari tanggal tutup!");
-      }
-      if (open < new Date()) {
-        return alert("❌ Tanggal buka tidak boleh kurang dari waktu sekarang!");
-      }
+      if (open >= close) return alert("❌ Tanggal buka harus lebih awal dari tanggal tutup!");
+      if (open < new Date()) return alert("❌ Tanggal buka tidak boleh kurang dari waktu sekarang!");
     }
     
     setLoading(true);
@@ -312,7 +441,7 @@ const ManageQuiz = () => {
           options: q.options,
           optionImages: q.optionImages || ['', '', '', ''],
           correctAnswer: q.correct,
-          explanation: advancedMode ? (q.explanation || '') : ''
+          explanation: quizMode === 'advanced' ? (q.explanation || '') : ''
         })),
         totalQuestions: valid.length,
         deadlineQuiz: deadline || null,
@@ -322,7 +451,7 @@ const ManageQuiz = () => {
         updatedAt: serverTimestamp()
       };
 
-      if (advancedMode) {
+      if (quizMode === 'advanced') {
         quizPayload.timeLimit = timeLimit;
         quizPayload.randomOrder = randomOrder;
         quizPayload.maxAttempts = maxAttempts;
@@ -332,13 +461,9 @@ const ManageQuiz = () => {
 
       if (publishTarget === 'modul') {
         if (!selectedModul) return alert("❌ Pilih modul tujuan!");
-        
         const modulSnap = await getDoc(doc(db, "bimbel_modul", selectedModul));
         let modulSubject = '';
-        if (modulSnap.exists()) {
-          modulSubject = modulSnap.data().subject || '';
-        }
-        
+        if (modulSnap.exists()) modulSubject = modulSnap.data().subject || '';
         await updateDoc(doc(db, "bimbel_modul", selectedModul), {
           ...quizPayload,
           subject: modulSubject || quizSubject || "Kuis"
@@ -368,12 +493,11 @@ const ManageQuiz = () => {
   };
 
   // ============================================================
-  // RENDER - PREVIEW MODE
+  // RENDER PREVIEW
   // ============================================================
   if (previewMode) {
     return (
-      <div style={{ maxWidth: 900, margin: '0 auto', paddingBottom: 100 }}>
-        {/* HEADER PREVIEW */}
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: 20 }}>
         <div style={{ 
           background: 'linear-gradient(135deg, #673ab7, #8b5cf6)', 
           padding: '16px 20px', 
@@ -386,34 +510,14 @@ const ManageQuiz = () => {
           gap: 10
         }}>
           <div>
-            <h2 style={{ margin: 0, color: 'white', fontSize: isMobile ? 16 : 20 }}>
-              👁️ Preview Kuis: {quizTitle || 'Kuis'}
-            </h2>
-            <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>
-              Simulasi tampilan siswa - Jawaban acak untuk preview
-            </p>
+            <h2 style={{ margin: 0, color: 'white', fontSize: isMobile ? 16 : 20 }}>👁️ Preview: {quizTitle || 'Kuis'}</h2>
+            <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Simulasi tampilan siswa</p>
           </div>
-          <button 
-            onClick={handleClosePreview} 
-            style={{
-              padding: '8px 16px',
-              background: 'rgba(255,255,255,0.15)',
-              color: 'white',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: 12,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6
-            }}
-          >
-            <X size={14} /> Tutup Preview
+          <button onClick={handleClosePreview} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>
+            <X size={14} /> Tutup
           </button>
         </div>
 
-        {/* PREVIEW SOAL */}
         {questions.filter(q => q.q.trim() || q.qImage).map((item, idx) => {
           const userAnswer = getUserAnswer(item.id);
           const isCorrect = userAnswer === item.correct;
@@ -424,160 +528,63 @@ const ManageQuiz = () => {
               padding: isMobile ? 15 : 20, 
               borderRadius: 12, 
               border: `2px solid ${userAnswer !== undefined ? (isCorrect ? '#10b981' : '#ef4444') : '#e2e8f0'}`,
-              marginBottom: 12,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+              marginBottom: 12
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ fontSize: 10, fontWeight: 800, color: '#673ab7', background: '#f3e8ff', padding: '4px 10px', borderRadius: 6 }}>
-                  SOAL {idx + 1}
-                </span>
-                <span style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  padding: '4px 10px',
-                  borderRadius: 6,
-                  background: userAnswer !== undefined ? (isCorrect ? '#dcfce7' : '#fee2e2') : '#f1f5f9',
-                  color: userAnswer !== undefined ? (isCorrect ? '#166534' : '#dc2626') : '#94a3b8'
-                }}>
-                  {userAnswer !== undefined ? (isCorrect ? '✅ Benar' : '❌ Salah') : '⏳ Belum dijawab'}
+                <span style={{ fontSize: 10, fontWeight: 800, color: '#673ab7', background: '#f3e8ff', padding: '4px 10px', borderRadius: 6 }}>SOAL {idx + 1}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 6, background: userAnswer !== undefined ? (isCorrect ? '#dcfce7' : '#fee2e2') : '#f1f5f9', color: userAnswer !== undefined ? (isCorrect ? '#166534' : '#dc2626') : '#94a3b8' }}>
+                  {userAnswer !== undefined ? (isCorrect ? '✅ Benar' : '❌ Salah') : '⏳ Belum'}
                 </span>
               </div>
               
-              {/* Gambar Soal */}
-              {item.qImage && (
-                <div style={{ marginBottom: 10 }}>
-                  <img src={item.qImage} alt="Soal" style={{ maxHeight: 150, borderRadius: 8, border: '1px solid #e2e8f0' }} />
-                </div>
-              )}
+              {item.qImage && <img src={item.qImage} alt="Soal" style={{ maxHeight: 120, borderRadius: 8, marginBottom: 8 }} />}
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 10 }}>{renderMath(item.q)}</div>
 
-              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>
-                {renderMath(item.q)}
-              </div>
-
-              {/* Opsi Jawaban */}
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 6 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 4 }}>
                 {item.options.map((opt, oIdx) => {
                   const isSelected = userAnswer === oIdx;
                   const isCorrectAnswer = item.correct === oIdx;
                   
-                  let bgColor = 'white';
-                  let borderColor = '#e2e8f0';
-                  
-                  if (isSelected && isCorrectAnswer) {
-                    bgColor = '#dcfce7';
-                    borderColor = '#10b981';
-                  } else if (isSelected && !isCorrectAnswer) {
-                    bgColor = '#fee2e2';
-                    borderColor = '#ef4444';
-                  } else if (isCorrectAnswer) {
-                    bgColor = '#f0fdf4';
-                    borderColor = '#10b981';
-                  }
+                  let bgColor = 'white', borderColor = '#e2e8f0';
+                  if (isSelected && isCorrectAnswer) { bgColor = '#dcfce7'; borderColor = '#10b981'; }
+                  else if (isSelected && !isCorrectAnswer) { bgColor = '#fee2e2'; borderColor = '#ef4444'; }
+                  else if (isCorrectAnswer) { bgColor = '#f0fdf4'; borderColor = '#10b981'; }
                   
                   return (
-                    <div key={oIdx} style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      padding: '10px 12px',
-                      borderRadius: 8,
-                      border: `2px solid ${borderColor}`,
-                      background: bgColor
-                    }}>
-                      <span style={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: isSelected ? (isCorrectAnswer ? '#10b981' : '#ef4444') : '#f1f5f9',
-                        color: isSelected ? 'white' : '#64748b',
-                        fontWeight: 700,
-                        fontSize: 11,
-                        flexShrink: 0
-                      }}>
-                        {String.fromCharCode(65 + oIdx)}
-                      </span>
-                      <span style={{ fontSize: 13 }}>{opt || `Opsi ${String.fromCharCode(65 + oIdx)}`}</span>
-                      {isCorrectAnswer && <CheckCircle size={14} color="#10b981" style={{ marginLeft: 'auto' }} />}
-                      {isSelected && !isCorrectAnswer && <X size={14} color="#ef4444" style={{ marginLeft: 'auto' }} />}
-                      {item.optionImages?.[oIdx] && (
-                        <img src={item.optionImages[oIdx]} alt={`Opsi ${oIdx+1}`} style={{ maxHeight: 40, borderRadius: 4, marginLeft: 4 }} />
-                      )}
+                    <div key={oIdx} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 6, border: `2px solid ${borderColor}`, background: bgColor }}>
+                      <span style={{ width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: isSelected ? (isCorrectAnswer ? '#10b981' : '#ef4444') : '#f1f5f9', color: isSelected ? 'white' : '#64748b', fontWeight: 700, fontSize: 10 }}>{String.fromCharCode(65 + oIdx)}</span>
+                      <span style={{ fontSize: 12 }}>{opt}</span>
+                      {isCorrectAnswer && <CheckCircle size={12} color="#10b981" style={{ marginLeft: 'auto' }} />}
+                      {isSelected && !isCorrectAnswer && <X size={12} color="#ef4444" style={{ marginLeft: 'auto' }} />}
                     </div>
                   );
                 })}
               </div>
 
-              {/* Jawaban & Pembahasan */}
-              <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: 12, color: '#64748b' }}>
-                  <span>✅ Jawaban benar: </span>
-                  <span style={{ fontWeight: 700, color: '#10b981' }}>
-                    {item.options[item.correct] || `Opsi ${String.fromCharCode(65 + item.correct)}`}
-                  </span>
-                </div>
+              <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #e2e8f0', fontSize: 11 }}>
+                <span style={{ color: '#64748b' }}>✅ Jawaban benar: </span>
+                <span style={{ fontWeight: 700, color: '#10b981' }}>{item.options[item.correct] || `Opsi ${String.fromCharCode(65 + item.correct)}`}</span>
                 {userAnswer !== undefined && (
-                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
-                    <span>📝 Jawaban Anda: </span>
-                    <span style={{ fontWeight: 700, color: isCorrect ? '#10b981' : '#ef4444' }}>
-                      {item.options[userAnswer] || `Opsi ${String.fromCharCode(65 + userAnswer)}`}
-                    </span>
-                  </div>
-                )}
-                {advancedMode && item.explanation && (
-                  <div style={{ 
-                    marginTop: 6, 
-                    padding: '8px 12px', 
-                    background: '#eef2ff', 
-                    borderRadius: 6, 
-                    fontSize: 12, 
-                    color: '#4338ca' 
-                  }}>
-                    💡 <span style={{ fontWeight: 600 }}>Pembahasan:</span> {item.explanation}
-                  </div>
+                  <span style={{ marginLeft: 12, color: '#64748b' }}>📝 Jawaban Anda: <span style={{ fontWeight: 700, color: isCorrect ? '#10b981' : '#ef4444' }}>{item.options[userAnswer]}</span></span>
                 )}
               </div>
             </div>
           );
         })}
 
-        <div style={{ 
-          textAlign: 'center', 
-          padding: 16, 
-          background: '#f8fafc', 
-          borderRadius: 12, 
-          border: '1px solid #e2e8f0' 
-        }}>
-          <p style={{ fontSize: 12, color: '#64748b' }}>
-            💡 Ini adalah tampilan preview. Siswa akan melihat jawaban benar (hijau) dan jawaban salah (merah) setelah menyelesaikan kuis.
-          </p>
-          <button 
-            onClick={handleClosePreview} 
-            style={{
-              padding: '8px 24px',
-              background: '#673ab7',
-              color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontWeight: 700,
-              fontSize: 12
-            }}
-          >
-            Tutup Preview
-          </button>
+        <div style={{ textAlign: 'center', padding: 16, background: '#f8fafc', borderRadius: 12 }}>
+          <p style={{ fontSize: 12, color: '#64748b' }}>💡 Hijau = Benar, Merah = Salah (simulasi jawaban acak)</p>
+          <button onClick={handleClosePreview} style={{ padding: '8px 24px', background: '#673ab7', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: 12, marginTop: 8 }}>Tutup Preview</button>
         </div>
       </div>
     );
   }
 
   // ============================================================
-  // RENDER - MAIN
+  // RENDER MAIN - VERTIKAL
   // ============================================================
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', paddingBottom: 100 }}>
+    <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? 12 : 20, paddingBottom: 100 }}>
       
       {/* HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
@@ -588,22 +595,7 @@ const ManageQuiz = () => {
           ❓ {modulId ? 'Edit Kuis Modul' : 'Buat Kuis Baru'}
         </h2>
         <div style={{ display: 'flex', gap: 6 }}>
-          <button 
-            onClick={handlePreviewQuiz} 
-            style={{ 
-              background: '#8b5cf6', 
-              color: 'white', 
-              border: 'none', 
-              padding: '8px 14px', 
-              borderRadius: 8, 
-              fontWeight: 700, 
-              fontSize: 12, 
-              cursor: 'pointer', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 4 
-            }}
-          >
+          <button onClick={handlePreviewQuiz} style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '8px 14px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
             <Eye size={14}/> Preview
           </button>
           <button onClick={handleSaveQuiz} disabled={loading} style={{ background: '#673ab7', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -612,268 +604,237 @@ const ManageQuiz = () => {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 20, flexDirection: isMobile ? 'column' : 'row' }}>
-        
-        {/* SIDEBAR KIRI */}
-        <div style={{ width: isMobile ? '100%' : '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          
-          {/* IDENTITAS QUIZ */}
-          <div style={{ background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
-            <h4 style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, color: '#64748b' }}><FileText size={14} /> Identitas Kuis</h4>
-            <input value={quizTitle} onChange={e => setQuizTitle(e.target.value)} placeholder="Judul kuis..." style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', marginBottom: 6, boxSizing: 'border-box' }} />
-            <select value={quizSubject} onChange={e => setQuizSubject(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', marginBottom: 6, boxSizing: 'border-box', background: 'white' }}>
-              <option value="">Mapel</option>
-              {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-            <label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 3 }}>Deadline Pengumpulan</label>
-            <input type="datetime-local" value={deadline} onChange={e => setDeadline(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', boxSizing: 'border-box' }} />
-          </div>
-
-          {/* 🔥 JADWAL BUKA/TUTUP KUIS */}
-          <div style={{ background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <h4 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#64748b' }}>
-                <CalendarDays size={14} /> Jadwal Kuis
-              </h4>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
-                <input 
-                  type="checkbox" 
-                  checked={useSchedule} 
-                  onChange={() => setUseSchedule(!useSchedule)} 
-                />
-                Aktifkan Jadwal
-              </label>
-            </div>
-            
-            {useSchedule && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div>
-                  <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 2 }}>
-                    <Calendar size={12} /> Tanggal & Jam Buka
-                  </label>
-                  <input 
-                    type="datetime-local" 
-                    value={quizOpenDate} 
-                    onChange={e => setQuizOpenDate(e.target.value)} 
-                    style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', boxSizing: 'border-box' }} 
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 2 }}>
-                    <Calendar size={12} /> Tanggal & Jam Tutup
-                  </label>
-                  <input 
-                    type="datetime-local" 
-                    value={quizCloseDate} 
-                    onChange={e => setQuizCloseDate(e.target.value)} 
-                    style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', boxSizing: 'border-box' }} 
-                  />
-                </div>
-                
-                {/* Status Kuis */}
-                <div style={{ 
-                  padding: 8, 
-                  borderRadius: 6, 
-                  background: getQuizStatus().color + '15',
-                  border: `1px solid ${getQuizStatus().color}`,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: getQuizStatus().color,
-                  textAlign: 'center',
-                  marginTop: 4,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6
-                }}>
-                  {getQuizStatus().icon} {getQuizStatus().label}
-                  {getQuizStatus().status === 'belum' && (
-                    <span style={{ display: 'block', fontSize: 9, color: '#64748b', marginTop: 2 }}>
-                      Akan dibuka {new Date(quizOpenDate).toLocaleString('id-ID')}
-                    </span>
-                  )}
-                  {getQuizStatus().status === 'kadaluarsa' && (
-                    <span style={{ display: 'block', fontSize: 9, color: '#64748b', marginTop: 2 }}>
-                      Ditutup {new Date(quizCloseDate).toLocaleString('id-ID')}
-                    </span>
-                  )}
-                  {getQuizStatus().status === 'aktif' && useSchedule && (
-                    <span style={{ display: 'block', fontSize: 9, color: '#64748b', marginTop: 2 }}>
-                      Dibuka sampai {new Date(quizCloseDate).toLocaleString('id-ID')}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {!useSchedule && (
-              <p style={{ fontSize: 10, color: '#94a3b8', margin: 0 }}>
-                💡 Aktifkan jadwal untuk mengatur waktu buka/tutup kuis
-              </p>
-            )}
-          </div>
-
-          {/* TOGGLE MODE UJIAN */}
-          <div style={{ background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <h4 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#64748b' }}><Settings size={14} /> Mode Kuis</h4>
-              <button onClick={() => setAdvancedMode(!advancedMode)} style={{ padding: '4px 12px', borderRadius: 20, fontSize: 10, fontWeight: 700, background: advancedMode ? '#673ab7' : '#f1f5f9', color: advancedMode ? 'white' : '#64748b', border: 'none', cursor: 'pointer' }}>{advancedMode ? '🔒 Mode Ujian' : '📝 Mode Sederhana'}</button>
-            </div>
-            <p style={{ fontSize: 10, color: '#64748b', margin: 0 }}>{advancedMode ? 'Mode Ujian: +Timer, Random Soal, Batas Pengulangan, Pembahasan' : 'Mode Sederhana: Kuis biasa tanpa pengaturan lanjutan'}</p>
-          </div>
-
-          {/* PENGATURAN LANJUTAN */}
-          {advancedMode && (
-            <div style={{ background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
-              <h4 style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, color: '#64748b' }}>⚙️ Pengaturan Ujian</h4>
-              <div style={{ marginBottom: 10 }}>
-                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>⏱️ Batas Waktu</label>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <input type="number" min="0" max="180" value={timeLimit} onChange={e => setTimeLimit(parseInt(e.target.value))} style={{ width: 70, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }} />
-                  <span style={{ fontSize: 11, color: '#64748b' }}>menit (0 = tidak terbatas)</span>
-                </div>
-              </div>
-              <div style={{ marginBottom: 10 }}>
-                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>🎲 Pengaturan Soal</label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, marginBottom: 6 }}><input type="checkbox" checked={randomOrder} onChange={e => setRandomOrder(e.target.checked)} /> Acak urutan soal</label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}><input type="checkbox" checked={showExplanation} onChange={e => setShowExplanation(e.target.checked)} /> Tampilkan pembahasan setelah selesai</label>
-              </div>
-              <div style={{ marginBottom: 10 }}>
-                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>🔄 Batas Pengulangan</label>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <input type="number" min="0" max="10" value={maxAttempts} onChange={e => setMaxAttempts(parseInt(e.target.value))} style={{ width: 70, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }} />
-                  <span style={{ fontSize: 11, color: '#64748b' }}>kali (0 = tidak terbatas)</span>
-                </div>
-              </div>
-              <div>
-                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>📊 Tingkat Kesulitan</label>
-                <select value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, background: 'white' }}>
-                  <option value="Mudah">🟢 Mudah</option><option value="Sedang">🟡 Sedang</option><option value="Sulit">🔴 Sulit</option>
-                </select>
-              </div>
-            </div>
-          )}
-
-          {/* TARGET PUBLISH */}
-          <div style={{ background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
-            <h4 style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, color: '#64748b' }}><Target size={14} /> Target Publish</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <button onClick={() => setPublishTarget('mandiri')} style={{ padding: '8px 12px', borderRadius: 6, border: publishTarget === 'mandiri' ? '2px solid #3b82f6' : '1px solid #e2e8f0', background: publishTarget === 'mandiri' ? '#eef2ff' : 'white', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600 }}><Send size={14} color={publishTarget === 'mandiri' ? '#3b82f6' : '#94a3b8'} /> Kuis Mandiri</button>
-              <button onClick={() => setPublishTarget('modul')} style={{ padding: '8px 12px', borderRadius: 6, border: publishTarget === 'modul' ? '2px solid #10b981' : '1px solid #e2e8f0', background: publishTarget === 'modul' ? '#f0fdf4' : 'white', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600 }}><BookOpen size={14} color={publishTarget === 'modul' ? '#10b981' : '#94a3b8'} /> Tautkan ke Modul</button>
-              <button onClick={() => setPublishTarget('jenjang')} style={{ padding: '8px 12px', borderRadius: 6, border: publishTarget === 'jenjang' ? '2px solid #f59e0b' : '1px solid #e2e8f0', background: publishTarget === 'jenjang' ? '#fffbeb' : 'white', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600 }}><Users size={14} color={publishTarget === 'jenjang' ? '#f59e0b' : '#94a3b8'} /> Tautkan ke Jenjang</button>
-            </div>
-            {publishTarget === 'modul' && (
-              <select value={selectedModul} onChange={e => setSelectedModul(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #10b981', fontSize: 11, outline: 'none', marginTop: 8, background: 'white', boxSizing: 'border-box' }}>
-                <option value="">Pilih Modul...</option>
-                {modulList.filter(m => !m.type || m.type !== 'kuis_mandiri').map(m => <option key={m.id} value={m.id}>{m.title || m.id}</option>)}
-              </select>
-            )}
-            {publishTarget === 'jenjang' && (
-              <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <select value={selectedProgram} onChange={e => setSelectedProgram(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #f59e0b', fontSize: 11, background: 'white', boxSizing: 'border-box' }}><option value="Semua">Semua Program</option><option value="Reguler">📚 Reguler</option><option value="English">🗣️ English</option></select>
-                <select value={selectedKelas} onChange={e => setSelectedKelas(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #f59e0b', fontSize: 11, background: 'white', boxSizing: 'border-box' }}><option value="Semua">Semua Kelas</option>{availableClasses.map(k => <option key={k} value={k}>{k}</option>)}</select>
-              </div>
-            )}
-          </div>
-
-          <div style={{ background: '#f0fdf4', padding: 10, borderRadius: 8, border: '1px solid #bbf7d0', fontSize: 11, fontWeight: 600, color: '#166534' }}>
-            📊 {questions.filter(q => q.q.trim() || q.qImage).length} soal aktif
-          </div>
-
-          <button onClick={() => setShowImport(true)} style={{ width: '100%', padding: 10, background: 'white', border: '1px solid #673ab7', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 11, color: '#673ab7', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-            <Calculator size={14} /> Bulk Import Soal
-          </button>
-        </div>
-
-        {/* AREA SOAL */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {questions.map((item, idx) => (
-            <div key={item.id} style={{ background: 'white', padding: isMobile ? 15 : 20, borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ fontSize: 10, fontWeight: 800, color: '#673ab7', background: '#f3e8ff', padding: '4px 10px', borderRadius: 6 }}>SOAL {idx + 1}</span>
-                <button onClick={() => setQuestions(questions.filter(q => q.id !== item.id))} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '4px 8px', borderRadius: 6, cursor: 'pointer' }}><Trash2 size={14}/></button>
-              </div>
-              
-              {/* UPLOAD GAMBAR SOAL */}
-              <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', background: '#f3e8ff', border: '1px solid #673ab7', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#673ab7', opacity: uploading ? 0.6 : 1 }}>
-                  <Image size={14} /> Upload Gambar Soal (Supabase)
-                  <input type="file" accept="image/*" hidden onChange={(e) => { if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'question'); }} disabled={uploading} />
-                </label>
-                {item.qImage && (
-                  <div style={{ position: 'relative', display: 'inline-block' }}>
-                    <img src={item.qImage} alt="Soal" style={{ maxHeight: 80, borderRadius: 8, border: '1px solid #e2e8f0' }} />
-                    <button onClick={() => handleRemoveImage(item.id, 'question')} style={{ position: 'absolute', top: -6, right: -6, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}><X size={10}/></button>
-                  </div>
-                )}
-                {uploading && uploadTarget === `${item.id}-question-` && <span style={{ fontSize: 10, color: '#673ab7' }}>⏳ Uploading...</span>}
-              </div>
-
-              <textarea value={item.q} onChange={e => setQuestions(questions.map(q => q.id === item.id ? {...q, q: e.target.value} : q))}
-                placeholder="Tulis soal... ($ untuk rumus matematika)" style={{ width: '100%', minHeight: 55, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, fontWeight: 600, outline: 'none', resize: 'vertical', boxSizing: 'border-box', marginBottom: 6 }} />
-
-              {item.q && <div style={{ padding: 8, background: '#f8fafc', borderRadius: 6, marginBottom: 10, fontSize: 12 }}>{renderMath(item.q)}</div>}
-
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 6 }}>
-                {item.options.map((opt, oIdx) => (
-                  <div key={oIdx} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <div onClick={() => setQuestions(questions.map(q => q.id === item.id ? {...q, correct: oIdx} : q))} style={{
-                      display: 'flex', alignItems: 'center', gap: 6, padding: 8, borderRadius: 8, cursor: 'pointer',
-                      border: `2px solid ${item.correct === oIdx ? '#10b981' : '#e2e8f0'}`, background: item.correct === oIdx ? '#f0fdf4' : 'white'
-                    }}>
-                      <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${item.correct === oIdx ? '#10b981' : '#cbd5e1'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        {item.correct === oIdx && <div style={{ width: 9, height: 9, borderRadius: '50%', background: '#10b981' }}></div>}
-                      </div>
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        <input value={opt} placeholder={`Opsi ${String.fromCharCode(65+oIdx)}`} onChange={e => {
-                          const newOpts = [...item.options]; newOpts[oIdx] = e.target.value;
-                          setQuestions(questions.map(q => q.id === item.id ? {...q, options: newOpts} : q));
-                        }} onClick={e => e.stopPropagation()} style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: 500, fontSize: 12, outline: 'none' }} />
-                        {item.optionImages?.[oIdx] && (
-                          <div style={{ position: 'relative', display: 'inline-block' }}>
-                            <img src={item.optionImages[oIdx]} alt={`Opsi ${oIdx+1}`} style={{ maxHeight: 60, borderRadius: 6, border: '1px solid #e2e8f0' }} />
-                            <button onClick={(e) => { e.stopPropagation(); handleRemoveImage(item.id, 'option', oIdx); }} style={{ position: 'absolute', top: -6, right: -6, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 18, height: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9 }}><X size={9}/></button>
-                          </div>
-                        )}
-                      </div>
-                      {item.correct === oIdx && <CheckCircle size={12} color="#10b981"/>}
-                    </div>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '3px 8px', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 4, cursor: 'pointer', fontSize: 9, color: '#64748b', marginLeft: 28, opacity: uploading ? 0.6 : 1 }}>
-                      <Upload size={10} /> Gambar Opsi (Supabase)
-                      <input type="file" accept="image/*" hidden onChange={(e) => { if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'option', oIdx); }} disabled={uploading} />
-                    </label>
-                    {uploading && uploadTarget === `${item.id}-option-${oIdx}` && <span style={{ fontSize: 9, color: '#673ab7', marginLeft: 28 }}>⏳ Uploading...</span>}
-                  </div>
-                ))}
-              </div>
-
-              {advancedMode && (
-                <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #e2e8f0' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                    <HelpCircle size={12} color="#673ab7" />
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#673ab7' }}>Pembahasan / Penjelasan</span>
-                  </div>
-                  <textarea 
-                    value={item.explanation || ''} 
-                    onChange={e => setQuestions(questions.map(q => q.id === item.id ? {...q, explanation: e.target.value} : q))}
-                    placeholder="Tulis pembahasan soal ini (akan ditampilkan setelah siswa menjawab)..."
-                    style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
-                    rows={2}
-                  />
-                </div>
-              )}
-            </div>
-          ))}
-
-          <button onClick={() => setQuestions([...questions, { id: Date.now(), q: '', qImage: '', options: ['', '', '', ''], optionImages: ['', '', '', ''], correct: 0, explanation: '' }])} style={{
-            width: '100%', padding: 12, border: '2px dashed #cbd5e1', background: 'white', borderRadius: 10, fontWeight: 700, color: '#64748b', cursor: 'pointer', fontSize: 12
-          }}>
-            <Plus size={14}/> Tambah Soal
-          </button>
+      {/* ========================================================== */}
+      {/* 1️⃣ IDENTITAS KUIS */}
+      {/* ========================================================== */}
+      <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+        <h4 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <FileText size={18} /> 1. Identitas Kuis
+        </h4>
+        <input value={quizTitle} onChange={e => setQuizTitle(e.target.value)} placeholder="Judul kuis..." style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', marginBottom: 8, boxSizing: 'border-box' }} />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <select value={quizSubject} onChange={e => setQuizSubject(e.target.value)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', background: 'white' }}>
+            <option value="">Pilih Mapel</option>
+            {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <input type="datetime-local" value={deadline} onChange={e => setDeadline(e.target.value)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none' }} />
         </div>
       </div>
 
-      {/* MODAL BULK IMPORT */}
+      {/* ========================================================== */}
+      {/* 2️⃣ JADWAL KUIS */}
+      {/* ========================================================== */}
+      <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <h4 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <CalendarDays size={18} /> 2. Jadwal Kuis
+          </h4>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
+            <input type="checkbox" checked={useSchedule} onChange={() => setUseSchedule(!useSchedule)} />
+            Aktifkan Jadwal
+          </label>
+        </div>
+        
+        {useSchedule && (
+          <div style={{ display: 'flex', gap: 10, flexDirection: isMobile ? 'column' : 'row' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>📅 Buka</label>
+              <input type="datetime-local" value={quizOpenDate} onChange={e => setQuizOpenDate(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>📅 Tutup</label>
+              <input type="datetime-local" value={quizCloseDate} onChange={e => setQuizCloseDate(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+          </div>
+        )}
+        
+        {useSchedule && (
+          <div style={{ marginTop: 8, padding: 8, borderRadius: 6, background: getQuizStatus().color + '15', border: `1px solid ${getQuizStatus().color}`, fontSize: 11, fontWeight: 600, color: getQuizStatus().color, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            {getQuizStatus().icon} {getQuizStatus().label}
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================== */}
+      {/* 3️⃣ MODE KUIS - TOMBOL JELAS */}
+      {/* ========================================================== */}
+      <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+        <h4 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Settings size={18} /> 3. Mode Kuis
+        </h4>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
+          <button 
+            onClick={() => setQuizMode('simple')} 
+            style={{
+              padding: '14px',
+              borderRadius: 10,
+              border: quizMode === 'simple' ? '3px solid #3b82f6' : '2px solid #e2e8f0',
+              background: quizMode === 'simple' ? '#eef2ff' : 'white',
+              cursor: 'pointer',
+              textAlign: 'center',
+              transition: '0.2s'
+            }}
+          >
+            <div style={{ fontSize: 24, marginBottom: 4 }}>📝</div>
+            <div style={{ fontWeight: 700, fontSize: 14, color: quizMode === 'simple' ? '#1e293b' : '#64748b' }}>Mode Sederhana</div>
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>Kuis biasa tanpa pengaturan lanjutan</div>
+            {quizMode === 'simple' && <div style={{ marginTop: 6, fontSize: 10, color: '#3b82f6', fontWeight: 700 }}>✅ Aktif</div>}
+          </button>
+
+          <button 
+            onClick={() => setQuizMode('advanced')} 
+            style={{
+              padding: '14px',
+              borderRadius: 10,
+              border: quizMode === 'advanced' ? '3px solid #673ab7' : '2px solid #e2e8f0',
+              background: quizMode === 'advanced' ? '#f3e8ff' : 'white',
+              cursor: 'pointer',
+              textAlign: 'center',
+              transition: '0.2s'
+            }}
+          >
+            <div style={{ fontSize: 24, marginBottom: 4 }}>🔒</div>
+            <div style={{ fontWeight: 700, fontSize: 14, color: quizMode === 'advanced' ? '#1e293b' : '#64748b' }}>Mode Ujian</div>
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>+Timer, Random Soal, Batas Pengulangan</div>
+            {quizMode === 'advanced' && <div style={{ marginTop: 6, fontSize: 10, color: '#673ab7', fontWeight: 700 }}>✅ Aktif</div>}
+          </button>
+        </div>
+
+        {/* Pengaturan Lanjutan - Muncul jika mode ujian */}
+        {quizMode === 'advanced' && (
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>⏱️ Batas Waktu (menit)</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <input type="number" min="0" max="180" value={timeLimit} onChange={e => setTimeLimit(parseInt(e.target.value))} style={{ width: 80, padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12 }} />
+                  <span style={{ fontSize: 10, color: '#94a3b8' }}>(0 = tidak terbatas)</span>
+                </div>
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>🔄 Batas Pengulangan</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <input type="number" min="0" max="10" value={maxAttempts} onChange={e => setMaxAttempts(parseInt(e.target.value))} style={{ width: 80, padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12 }} />
+                  <span style={{ fontSize: 10, color: '#94a3b8' }}>kali (0 = tak terbatas)</span>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, cursor: 'pointer' }}>
+                <input type="checkbox" checked={randomOrder} onChange={e => setRandomOrder(e.target.checked)} /> Acak soal
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, cursor: 'pointer' }}>
+                <input type="checkbox" checked={showExplanation} onChange={e => setShowExplanation(e.target.checked)} /> Tampilkan pembahasan
+              </label>
+              <select value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, background: 'white' }}>
+                <option value="Mudah">🟢 Mudah</option><option value="Sedang">🟡 Sedang</option><option value="Sulit">🔴 Sulit</option>
+              </select>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================== */}
+      {/* 4️⃣ SOAL KUIS */}
+      {/* ========================================================== */}
+      <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <h4 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Layers size={18} /> 4. Soal Kuis ({questions.filter(q => q.q.trim() || q.qImage).length})
+          </h4>
+          <button onClick={() => setShowImport(true)} style={{ padding: '4px 10px', background: '#eef2ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#3730a3' }}>
+            <Calculator size={12} /> Import
+          </button>
+        </div>
+
+        {questions.map((item, idx) => renderQuestionEditor(item, idx))}
+
+        <button onClick={addQuestion} style={{
+          width: '100%', padding: '12px', border: '2px dashed #cbd5e1', background: 'white', borderRadius: 10, fontWeight: 700, color: '#64748b', cursor: 'pointer', fontSize: 12, marginTop: 8
+        }}>
+          <Plus size={14}/> Tambah Soal
+        </button>
+      </div>
+
+      {/* ========================================================== */}
+      {/* 5️⃣ TARGET PUBLISH */}
+      {/* ========================================================== */}
+      <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+        <h4 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Target size={18} /> 5. Target Publish
+        </h4>
+        
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+          <button onClick={() => setPublishTarget('modul')} style={{ 
+            padding: '8px 14px', 
+            borderRadius: 8, 
+            border: publishTarget === 'modul' ? '2px solid #10b981' : '1px solid #e2e8f0',
+            background: publishTarget === 'modul' ? '#f0fdf4' : 'white',
+            cursor: 'pointer',
+            fontSize: 11,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}>
+            <BookOpen size={14} color={publishTarget === 'modul' ? '#10b981' : '#94a3b8'} /> Tautkan ke Modul
+          </button>
+          <button onClick={() => setPublishTarget('mandiri')} style={{ 
+            padding: '8px 14px', 
+            borderRadius: 8, 
+            border: publishTarget === 'mandiri' ? '2px solid #3b82f6' : '1px solid #e2e8f0',
+            background: publishTarget === 'mandiri' ? '#eef2ff' : 'white',
+            cursor: 'pointer',
+            fontSize: 11,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}>
+            <Send size={14} color={publishTarget === 'mandiri' ? '#3b82f6' : '#94a3b8'} /> Kuis Mandiri
+          </button>
+          <button onClick={() => setPublishTarget('jenjang')} style={{ 
+            padding: '8px 14px', 
+            borderRadius: 8, 
+            border: publishTarget === 'jenjang' ? '2px solid #f59e0b' : '1px solid #e2e8f0',
+            background: publishTarget === 'jenjang' ? '#fffbeb' : 'white',
+            cursor: 'pointer',
+            fontSize: 11,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}>
+            <Users size={14} color={publishTarget === 'jenjang' ? '#f59e0b' : '#94a3b8'} /> Tautkan ke Jenjang
+          </button>
+        </div>
+
+        {publishTarget === 'modul' && (
+          <select value={selectedModul} onChange={e => setSelectedModul(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #10b981', fontSize: 12, outline: 'none', background: 'white' }}>
+            <option value="">Pilih Modul...</option>
+            {modulList.filter(m => !m.type || m.type !== 'kuis_mandiri').map(m => <option key={m.id} value={m.id}>{m.title || m.id}</option>)}
+          </select>
+        )}
+
+        {publishTarget === 'jenjang' && (
+          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <select value={selectedProgram} onChange={e => setSelectedProgram(e.target.value)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #f59e0b', fontSize: 12, outline: 'none', background: 'white' }}>
+              <option value="Semua">Semua Program</option>
+              <option value="Reguler">📚 Reguler</option>
+              <option value="English">🗣️ English</option>
+            </select>
+            <select value={selectedKelas} onChange={e => setSelectedKelas(e.target.value)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #f59e0b', fontSize: 12, outline: 'none', background: 'white' }}>
+              <option value="Semua">Semua Kelas</option>
+              {availableClasses.map(k => <option key={k} value={k}>{k}</option>)}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================== */}
+      {/* BULK IMPORT MODAL */}
+      {/* ========================================================== */}
       {showImport && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
           <div style={{ background: 'white', width: '100%', maxWidth: 550, padding: 25, borderRadius: 16 }}>
@@ -887,17 +848,16 @@ const ManageQuiz = () => {
               A. Opsi A<br/>
               B. Opsi B<br/>
               C. Opsi C<br/>
-              D. Opsi D<br/><br/>
-              ✨ Bisa pakai rumus $x^2$ untuk matematika
+              D. Opsi D
             </div>
             <textarea 
               value={bulkText} 
               onChange={e => setBulkText(e.target.value)}
-              placeholder={"1. Berapa $\\sqrt{64}$?\nA. 6\nB. 8\nC. 10\nD. 12\n\n2. Ibu kota Indonesia?\nA. Jakarta\nB. Bandung\nC. Surabaya\nD. Medan"}
-              style={{ width: '100%', height: 220, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, fontFamily: 'monospace', marginBottom: 12, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} 
+              placeholder={"1. Berapa 2+2?\nA. 2\nB. 4\nC. 6\nD. 8"}
+              style={{ width: '100%', height: 200, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, fontFamily: 'monospace', marginBottom: 12, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} 
             />
             <button onClick={handleBulkImport} style={{ width: '100%', padding: 12, background: '#673ab7', color: 'white', border: 'none', borderRadius: 10, fontWeight: 800, cursor: 'pointer' }}>
-              🚀 PROSES & IMPORT
+              🚀 Proses & Import
             </button>
           </div>
         </div>
