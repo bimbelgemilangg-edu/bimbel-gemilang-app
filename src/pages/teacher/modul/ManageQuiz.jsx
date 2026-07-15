@@ -89,6 +89,9 @@ const ManageQuiz = () => {
   // 🔥 EDITING SECTION
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [toast, setToast] = useState(null);
+  
+  // 🔥 Flag untuk AI Generate
+  const [isAIGenerated, setIsAIGenerated] = useState(false);
 
   // ============================================================
   // TOAST
@@ -145,6 +148,7 @@ const ManageQuiz = () => {
           setUseSchedule(data.useSchedule || false);
           setQuizOpenDate(data.quizOpenDate || quizOpenDate);
           setQuizCloseDate(data.quizCloseDate || quizCloseDate);
+          setIsAIGenerated(data.generatedByAI || false);
           
           if (data.timeLimit > 0 || data.randomOrder || data.maxAttempts > 1) {
             setQuizMode('advanced');
@@ -188,6 +192,7 @@ const ManageQuiz = () => {
         setQuestions([...questions, ...formattedQuestions]);
       }
       
+      setIsAIGenerated(true);
       setShowAIGenerate(false);
       showToast('✅ ' + formattedQuestions.length + ' soal berhasil digenerate AI!');
     }
@@ -416,6 +421,11 @@ const ManageQuiz = () => {
                 ✏️ Edit
               </span>
             )}
+            {isAIGenerated && (
+              <span style={{ fontSize: 9, color: '#8b5cf6', fontWeight: 600, background: '#f3e8ff', padding: '2px 8px', borderRadius: 4 }}>
+                🤖 AI
+              </span>
+            )}
           </div>
           <button 
             onClick={(e) => { e.stopPropagation(); removeQuestion(item.id); }}
@@ -598,7 +608,9 @@ const ManageQuiz = () => {
         useSchedule: useSchedule,
         quizOpenDate: useSchedule ? quizOpenDate : null,
         quizCloseDate: useSchedule ? quizCloseDate : null,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
+        generatedByAI: isAIGenerated,
+        generatedAt: isAIGenerated ? serverTimestamp() : null
       };
 
       if (quizMode === 'advanced') {

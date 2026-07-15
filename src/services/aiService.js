@@ -14,9 +14,6 @@ import { collection, addDoc, doc, getDoc, updateDoc, serverTimestamp } from "fir
  */
 export const extractQuestionsFromText = async (text, maxQuestions = 10) => {
   try {
-    // 🔥 SIMULASI AI EXTRACTION - Dalam produksi, panggil Gemini API
-    // Untuk demo, kita parsing teks manual
-    
     const questions = [];
     const lines = text.split('\n').filter(line => line.trim());
     
@@ -28,11 +25,9 @@ export const extractQuestionsFromText = async (text, maxQuestions = 10) => {
     for (const line of lines) {
       const trimmed = line.trim();
       
-      // Deteksi nomor soal (1., 1), 1) 1. dll)
       const questionMatch = trimmed.match(/^(\d+)\.?\s*\)?\s*(.+)/);
       
       if (questionMatch && questionNumber < maxQuestions) {
-        // Simpan soal sebelumnya
         if (currentQuestion && currentOptions.length > 0) {
           questions.push({
             id: Date.now() + questionNumber,
@@ -50,18 +45,13 @@ export const extractQuestionsFromText = async (text, maxQuestions = 10) => {
         isCollectingOptions = true;
         questionNumber++;
       } else if (isCollectingOptions && currentOptions.length < 4) {
-        // Deteksi opsi (A., A) A. dll)
         const optionMatch = trimmed.match(/^([A-D])\.?\s*\)?\s*(.+)/i);
         if (optionMatch) {
           currentOptions.push(optionMatch[2].trim());
-        } else if (currentOptions.length > 0 && currentOptions.length < 4) {
-          // Jika bukan opsi tapi masih dalam soal, bisa jadi lanjutan
-          // atau opsi tanpa format (bisa diabaikan atau ditambah)
         }
       }
     }
     
-    // Simpan soal terakhir
     if (currentQuestion && currentOptions.length > 0) {
       questions.push({
         id: Date.now() + questionNumber,
@@ -74,9 +64,7 @@ export const extractQuestionsFromText = async (text, maxQuestions = 10) => {
       });
     }
     
-    // Jika tidak ada soal yang terdeteksi, buat contoh
     if (questions.length === 0) {
-      // Generate contoh soal dari teks
       const firstLine = lines.slice(0, 3).join(' ');
       if (firstLine.length > 10) {
         questions.push({
@@ -101,18 +89,11 @@ export const extractQuestionsFromText = async (text, maxQuestions = 10) => {
 
 /**
  * Generate soal dari PDF menggunakan AI
- * @param {File} file - File PDF yang diupload
- * @param {number} maxQuestions - Jumlah maksimal soal
- * @returns {Promise<Array>} - Array of question objects
  */
 export const extractQuestionsFromPDF = async (file, maxQuestions = 10) => {
   try {
-    // 🔥 Simulasi: baca file PDF dan ekstrak teks
-    // Dalam produksi, gunakan pdf.js atau call Gemini API
-    
     const text = await readPDFText(file);
     return await extractQuestionsFromText(text, maxQuestions);
-    
   } catch (error) {
     console.error("PDF Extraction Error:", error);
     return [];
@@ -123,11 +104,9 @@ export const extractQuestionsFromPDF = async (file, maxQuestions = 10) => {
  * Read PDF text (simulasi - gunakan pdf.js di produksi)
  */
 const readPDFText = async (file) => {
-  // 🔥 SIMULASI - Dalam produksi, gunakan pdf.js
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
-      // Simulasi ekstraksi teks dari PDF
       const mockText = `
         1. Bentuk sederhana dari (√5+√3)(√5-√3)/(2-√3) adalah...
         A. 4-2√3

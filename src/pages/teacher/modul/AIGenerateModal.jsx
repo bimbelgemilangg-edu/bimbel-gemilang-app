@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { 
   X, Upload, FileText, Image, Sparkles, Loader2, 
-  CheckCircle, AlertCircle, FileUp, CloudArrowUp,
-  Plus, Trash2, Eye, Edit3, Send, Calculator
+  CheckCircle, AlertCircle, FileUp, Send,
+  Plus, Trash2, Eye, Edit3, Calculator, Cloud
 } from 'lucide-react';
 import { extractQuestionsFromText, extractQuestionsFromPDF, parseManualText } from '../../../services/aiService';
 
@@ -138,7 +138,7 @@ const AIGenerateModal = ({ isOpen, onClose, onQuestionsGenerated, modulId }) => 
                   </div>
                 ) : (
                   <div style={styles.uploadArea}>
-                    <CloudArrowUp size={32} color="#94a3b8" />
+                    <Cloud size={32} color="#94a3b8" />
                     <span style={styles.uploadText}>Klik atau seret file kesini</span>
                     <span style={styles.uploadSubtext}>Mendukung PDF & Gambar</span>
                   </div>
