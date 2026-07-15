@@ -18,11 +18,11 @@ import {
   FileSpreadsheet, FileImage, File, FileVideo,
   Upload, Cloud, Server, RefreshCw, Home, ChevronRight,
   Globe, Link, Plus, Minus, Copy, Edit, MoreVertical,
-  GripVertical, Move, FolderOpen
+  GripVertical, Move, FolderOpen, Rocket, Gift, Star
 } from 'lucide-react';
 
 // ============================================================
-// CONSTANTS - JENIS FILE YANG DIIZINKAN UNTUK TUGAS
+// CONSTANTS
 // ============================================================
 const FILE_TYPE_OPTIONS = [
   { value: 'all', label: '📁 Semua File', accept: '*/*', icon: <File size={14} /> },
@@ -155,7 +155,7 @@ const SimpleEditor = ({ value, onChange, placeholder }) => {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        style={{ width: '100%', minHeight: 250, padding: 12, border: 'none', outline: 'none', fontSize: 13, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.7 }}
+        style={{ width: '100%', minHeight: 200, padding: 12, border: 'none', outline: 'none', fontSize: 13, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.7 }}
       />
       <div style={{ padding: 6, background: '#f8fafc', borderTop: '1px solid #e2e8f0', fontSize: 9, color: '#94a3b8', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         <span>💡 **bold** • *italic* • [teks](url) link</span>
@@ -177,10 +177,13 @@ const ManageMateri = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState({ type: '', message: '' });
+  
+  // 🔥 STATE UNTUK SHOW ADD MENU
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  const [editingSection, setEditingSection] = useState(null);
   
   const [guruData, setGuruData] = useState(null);
   const [guruId, setGuruId] = useState('');
@@ -195,7 +198,7 @@ const ManageMateri = () => {
   const [modulId, setModulId] = useState(null);
   
   const [sections, setSections] = useState([]);
-  const [activeSection, setActiveSection] = useState(null);
+  const [editingContent, setEditingContent] = useState(null);
   
   const [targetKategori, setTargetKategori] = useState("Reguler");
   const [targetKelas, setTargetKelas] = useState("Semua");
@@ -229,6 +232,13 @@ const ManageMateri = () => {
     { value: 'aktif', label: 'Aktif', color: '#10b981', bg: '#dcfce7', icon: <CheckCircle size={12} /> },
     { value: 'terjadwal', label: 'Terjadwal', color: '#f59e0b', bg: '#fef3c7', icon: <CalendarDays size={12} /> },
     { value: 'arsip', label: 'Arsip', color: '#64748b', bg: '#f1f5f9', icon: <Archive size={12} /> }
+  ];
+
+  const CONTENT_TYPES = [
+    { type: 'text', icon: <Type size={16} />, label: 'Teks', color: '#3b82f6', bg: '#e0e7ff' },
+    { type: 'file', icon: <FileUp size={16} />, label: 'File/Dokumen', color: '#10b981', bg: '#dcfce7' },
+    { type: 'video', icon: <Video size={16} />, label: 'Video/Link', color: '#ef4444', bg: '#fee2e2' },
+    { type: 'assignment', icon: <Send size={16} />, label: 'Tugas/PR', color: '#f59e0b', bg: '#fef3c7' },
   ];
 
   useEffect(() => {
@@ -372,11 +382,6 @@ const ManageMateri = () => {
         if (data.selectedStudents) setSelectedStudents(data.selectedStudents);
         if (data.sendToSpecificStudents !== undefined) setSendToSpecificStudents(data.sendToSpecificStudents);
         setStats(prev => ({ ...prev, totalKonten: data.blocks?.length || 0 }));
-        
-        // Set active section ke yang pertama
-        if (data.blocks?.length > 0) {
-          setActiveSection(data.blocks[0].id);
-        }
       }
     } catch (error) {
       console.error("Error fetching modul:", error);
@@ -471,57 +476,37 @@ const ManageMateri = () => {
   };
 
   const removeSection = async (id) => {
-    if (!window.confirm("Hapus section ini? File terkait juga akan dihapus dari penyimpanan.")) return;
+    if (!window.confirm("Hapus konten ini?")) return;
     
     const section = sections.find(s => s.id === id);
     if (section?.filePath) {
       try {
-        const result = await deleteFile(section.filePath);
-        if (result.success) {
-          console.log('✅ File berhasil dihapus dari Supabase');
-        } else {
-          console.warn('⚠️ Gagal hapus file:', result.error);
-        }
+        await deleteFile(section.filePath);
       } catch (err) {
         console.error('Error deleting file:', err);
       }
     }
     
     setSections(sections.filter(s => s.id !== id));
-    if (activeSection === id) {
-      setActiveSection(sections.length > 1 ? sections[0]?.id : null);
-    }
+    if (editingSection === id) setEditingSection(null);
     setStats(prev => ({ ...prev, totalKonten: sections.length - 1 }));
   };
 
   const handleDeleteModul = async () => {
     if (!modulId) return;
-    if (!window.confirm(`⚠️ Hapus modul "${title}"?\n\nSemua data dan file terkait akan dihapus permanen!`)) return;
+    if (!window.confirm(`⚠️ Hapus modul "${title}"?`)) return;
     
     try {
       const filePaths = sections.filter(s => s.filePath).map(s => s.filePath);
-      
-      if (coverFilePath) {
-        filePaths.push(coverFilePath);
-      }
+      if (coverFilePath) filePaths.push(coverFilePath);
       
       if (filePaths.length > 0) {
-        const { error } = await supabase.storage
-          .from('materi-bimbel')
-          .remove(filePaths);
-        
-        if (error) {
-          console.warn('⚠️ Gagal hapus beberapa file:', error);
-        } else {
-          console.log(`✅ ${filePaths.length} file berhasil dihapus dari Supabase`);
-        }
+        await supabase.storage.from('materi-bimbel').remove(filePaths);
       }
       
       await deleteDoc(doc(db, COLLECTION_NAME, modulId));
-      
-      alert('✅ Modul dan semua file terkait berhasil dihapus!');
+      alert('✅ Modul berhasil dihapus!');
       navigate('/guru/modul');
-      
     } catch (error) {
       console.error('Error deleting modul:', error);
       alert('❌ Gagal menghapus modul: ' + error.message);
@@ -532,7 +517,7 @@ const ManageMateri = () => {
     const titles = { 
       text: '📄 Materi Teks', 
       file: '📁 File/Dokumen', 
-      video: '🔗 Link/Video', 
+      video: '🎥 Video/Link', 
       assignment: '📝 Tugas/PR' 
     };
     const newSection = { 
@@ -548,7 +533,8 @@ const ManageMateri = () => {
       allowedFileType: 'all' 
     };
     setSections([...sections, newSection]);
-    setActiveSection(newSection.id);
+    setEditingSection(newSection.id);
+    setShowAddMenu(false);
     setStats(prev => ({ ...prev, totalKonten: sections.length + 1 }));
   };
 
@@ -655,7 +641,6 @@ const ManageMateri = () => {
         payload.createdAt = serverTimestamp();
         payload.createdBy = authorName;
         const newDoc = await addDoc(collection(db, COLLECTION_NAME), payload);
-        localStorage.removeItem('draft_modul');
         alert(`✅ Modul "${title}" berhasil diterbitkan!`);
         navigate(`/guru/modul/materi?edit=${newDoc.id}`);
         return;
@@ -674,140 +659,65 @@ const ManageMateri = () => {
   };
 
   // ============================================================
-  // RENDER EDITOR CONTENT - LEBAR & PREVIEW LANGSUNG
+  // RENDER KONTEN EDITOR
   // ============================================================
-  const renderEditorContent = () => {
-    if (!activeSection) {
-      return (
-        <div style={{ 
-          textAlign: 'center', 
-          padding: isMobile ? 40 : 80, 
-          background: 'white', 
-          borderRadius: 12, 
-          border: '2px dashed #e2e8f0',
-          color: '#94a3b8'
-        }}>
-          <FolderOpen size={48} color="#cbd5e1" />
-          <h3 style={{ fontSize: 16, marginTop: 12, color: '#64748b' }}>Pilih atau Tambah Konten</h3>
-          <p style={{ fontSize: 12, marginTop: 4 }}>Klik konten di sidebar kiri atau tambah baru</p>
-        </div>
-      );
-    }
-
-    const section = sections.find(s => s.id === activeSection);
+  const renderContentEditor = () => {
+    const section = sections.find(s => s.id === editingSection);
     if (!section) return null;
 
-    const typeIcons = {
-      text: '📄',
-      file: '📁',
-      video: '🎥',
-      assignment: '📝'
-    };
-
-    const typeLabels = {
-      text: 'TEKS',
-      file: 'FILE',
-      video: 'VIDEO',
-      assignment: 'TUGAS'
-    };
-
-    const typeColors = {
-      text: '#3b82f6',
-      file: '#10b981',
-      video: '#ef4444',
-      assignment: '#f59e0b'
-    };
+    const typeIcons = { text: '📄', file: '📁', video: '🎥', assignment: '📝' };
+    const typeColors = { text: '#3b82f6', file: '#10b981', video: '#ef4444', assignment: '#f59e0b' };
 
     return (
       <div style={{ 
-        background: 'white', 
-        padding: isMobile ? 14 : 20, 
-        borderRadius: 12, 
-        border: '1px solid #f1f5f9',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+        background: '#f8fafc', 
+        padding: 16, 
+        borderRadius: 10, 
+        border: '1px solid #e2e8f0',
+        marginBottom: 12
       }}>
-        {/* HEADER EDITOR */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          marginBottom: 16, 
-          flexWrap: 'wrap', 
-          gap: 8 
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ 
-              fontSize: 10, 
-              fontWeight: 800, 
-              padding: '4px 12px', 
-              borderRadius: 6,
-              background: typeColors[section.type] + '15',
-              color: typeColors[section.type],
-              border: `1px solid ${typeColors[section.type]}30`
-            }}>
-              {typeIcons[section.type]} {typeLabels[section.type]}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, color: typeColors[section.type], background: typeColors[section.type] + '15', padding: '4px 10px', borderRadius: 6 }}>
+              {typeIcons[section.type]} {section.type.toUpperCase()}
             </span>
-            <span style={{ fontSize: 10, color: '#94a3b8' }}>
-              {section.fileName ? `📎 ${section.fileName}` : ''}
-              {section.fileSize ? ` (${formatFileSize(section.fileSize)})` : ''}
-            </span>
+            <input 
+              value={section.title} 
+              onChange={e => updateSection(editingSection, 'title', e.target.value)} 
+              placeholder="Judul konten..." 
+              style={{ 
+                border: 'none', 
+                background: 'transparent', 
+                fontSize: 14, 
+                fontWeight: 700, 
+                color: '#1e293b',
+                outline: 'none',
+                minWidth: 150
+              }} 
+            />
           </div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button 
-              onClick={() => {
-                const idx = sections.findIndex(s => s.id === activeSection);
-                if (idx > 0) moveSection(activeSection, 'up');
-              }}
-              style={{ padding: '4px 8px', background: '#f1f5f9', border: 'none', borderRadius: 4, cursor: 'pointer' }}
-              title="Pindah ke atas"
-            >
-              <ChevronUp size={14} />
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={() => moveSection(editingSection, 'up')} style={{ padding: '4px 6px', background: '#e2e8f0', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+              <ChevronUp size={12} />
             </button>
-            <button 
-              onClick={() => {
-                const idx = sections.findIndex(s => s.id === activeSection);
-                if (idx < sections.length - 1) moveSection(activeSection, 'down');
-              }}
-              style={{ padding: '4px 8px', background: '#f1f5f9', border: 'none', borderRadius: 4, cursor: 'pointer' }}
-              title="Pindah ke bawah"
-            >
-              <ChevronDown size={14} />
+            <button onClick={() => moveSection(editingSection, 'down')} style={{ padding: '4px 6px', background: '#e2e8f0', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+              <ChevronDown size={12} />
             </button>
-            <button 
-              onClick={() => removeSection(activeSection)}
-              style={{ padding: '4px 8px', background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: 4, cursor: 'pointer' }}
-              title="Hapus konten"
-            >
-              <Trash2 size={14} />
+            <button onClick={() => removeSection(editingSection)} style={{ padding: '4px 6px', background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+              <Trash2 size={12} />
+            </button>
+            <button onClick={() => setEditingSection(null)} style={{ padding: '4px 6px', background: '#e2e8f0', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+              <X size={12} />
             </button>
           </div>
         </div>
-
-        {/* JUDUL SECTION */}
-        <input 
-          value={section.title || ''} 
-          onChange={e => updateSection(activeSection, 'title', e.target.value)} 
-          placeholder="Judul section..." 
-          style={{ 
-            width: '100%', 
-            border: 'none', 
-            fontSize: 18, 
-            fontWeight: 700, 
-            outline: 'none', 
-            marginBottom: 16, 
-            padding: '4px 0', 
-            color: '#1e293b',
-            borderBottom: '2px solid #e2e8f0',
-            background: 'transparent'
-          }} 
-        />
 
         {/* KONTEN EDITOR */}
         {section.type === 'text' && (
           <SimpleEditor 
             value={section.content} 
-            onChange={value => updateSection(activeSection, 'content', value)} 
-            placeholder="Tulis materi di sini... Gunakan toolbar untuk format teks" 
+            onChange={value => updateSection(editingSection, 'content', value)} 
+            placeholder="Tulis materi di sini..." 
           />
         )}
 
@@ -815,89 +725,29 @@ const ManageMateri = () => {
           <div>
             {section.content ? (
               <div>
-                {/* PREVIEW FILE */}
-                <div style={{ 
-                  padding: 16, 
-                  background: '#f8fafc', 
-                  borderRadius: 8, 
-                  border: '1px solid #e2e8f0',
-                  marginBottom: 12
-                }}>
-                  <FilePreview 
-                    url={section.content} 
-                    fileName={section.fileName} 
-                    fileType={section.mimeType} 
-                  />
+                <div style={{ padding: 12, background: 'white', borderRadius: 8, marginBottom: 8 }}>
+                  <FilePreview url={section.content} fileName={section.fileName} fileType={section.mimeType} />
                 </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <button 
-                    onClick={() => {
-                      updateSection(activeSection, 'content', '');
-                      updateSection(activeSection, 'fileName', '');
-                      updateSection(activeSection, 'filePath', '');
-                    }}
-                    style={{ padding: '6px 12px', background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 600 }}
-                  >
-                    <Trash2 size={12} /> Hapus File
-                  </button>
-                  <span style={{ fontSize: 10, color: '#94a3b8' }}>
-                    {section.fileName} ({formatFileSize(section.fileSize)})
-                  </span>
-                </div>
+                <button onClick={() => { updateSection(editingSection, 'content', ''); updateSection(editingSection, 'fileName', ''); }} style={{ padding: '4px 12px', background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 11 }}>
+                  Hapus File
+                </button>
               </div>
             ) : (
-              <div>
-                <label style={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center', 
-                  gap: 8, 
-                  padding: '40px 20px', 
-                  border: '2px dashed #e2e8f0', 
-                  borderRadius: 10, 
-                  cursor: 'pointer', 
-                  background: '#f8fafc', 
-                  color: '#64748b', 
-                  fontSize: 13,
-                  transition: '0.2s'
-                }}>
-                  {uploading ? (
-                    <div style={{ textAlign: 'center', width: '100%' }}>
-                      <Loader2 size={30} className="spin" />
-                      <span>Mengunggah... {uploadProgress}%</span>
-                      <div style={{ width: '100%', height: 4, background: '#e2e8f0', borderRadius: 2, marginTop: 8, overflow: 'hidden' }}>
-                        <div style={{ width: `${uploadProgress}%`, height: '100%', background: '#3b82f6', borderRadius: 2, transition: 'width 0.3s' }} />
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <FileUp size={36} color="#94a3b8" />
-                      <span style={{ fontWeight: 600 }}>Upload File Materi</span>
-                      <span style={{ fontSize: 10, color: '#94a3b8' }}>PDF, DOCX, PPT, Gambar (Max 50MB)</span>
-                      <span style={{ fontSize: 9, color: '#94a3b8' }}>Seret atau klik untuk upload</span>
-                    </>
-                  )}
-                  <input 
-                    ref={fileInputRef} 
-                    type="file" 
-                    accept=".pdf,.doc,.docx,.ppt,.pptx,image/*" 
-                    hidden 
-                    onChange={(e) => handleSectionFileUpload(e, activeSection)} 
-                    disabled={uploading} 
-                  />
-                </label>
-                {uploadStatus.message && (
-                  <div style={{ 
-                    fontSize: 11, 
-                    fontWeight: 600, 
-                    marginTop: 8, 
-                    textAlign: 'center', 
-                    color: uploadStatus.type === 'error' ? '#ef4444' : '#10b981' 
-                  }}>
-                    {uploadStatus.message}
-                  </div>
+              <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '30px 20px', border: '2px dashed #e2e8f0', borderRadius: 8, cursor: 'pointer', background: 'white' }}>
+                {uploading ? (
+                  <>
+                    <Loader2 size={24} className="spin" />
+                    <span>Uploading... {uploadProgress}%</span>
+                  </>
+                ) : (
+                  <>
+                    <FileUp size={24} color="#94a3b8" />
+                    <span style={{ fontWeight: 600 }}>Upload File</span>
+                    <span style={{ fontSize: 10, color: '#94a3b8' }}>PDF, DOCX, PPT, Gambar (Max 50MB)</span>
+                  </>
                 )}
-              </div>
+                <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,image/*" hidden onChange={(e) => handleSectionFileUpload(e, editingSection)} disabled={uploading} />
+              </label>
             )}
           </div>
         )}
@@ -906,35 +756,15 @@ const ManageMateri = () => {
           <div>
             <input 
               value={section.content} 
-              onChange={e => updateSection(activeSection, 'content', e.target.value)} 
-              placeholder="Tempel link YouTube, Canva, Google Drive..." 
-              style={{ 
-                width: '100%', 
-                padding: 10, 
-                borderRadius: 8, 
-                border: '1px solid #e2e8f0', 
-                fontSize: 13, 
-                outline: 'none', 
-                boxSizing: 'border-box', 
-                background: '#f8fafc' 
-              }} 
+              onChange={e => updateSection(editingSection, 'content', e.target.value)} 
+              placeholder="Tempel link YouTube..." 
+              style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none' }} 
             />
             {getYouTubeId(section.content) && (
-              <div style={{ marginTop: 12 }}>
-                <p style={{ fontSize: 11, color: '#10b981', marginBottom: 6 }}>✅ Preview video:</p>
-                <div style={{ borderRadius: 8, overflow: 'hidden', background: '#000' }}>
-                  <iframe 
-                    width="100%" 
-                    height="300" 
-                    src={`https://www.youtube.com/embed/${getYouTubeId(section.content)}`} 
-                    frameBorder="0" 
-                    allowFullScreen 
-                    style={{ borderRadius: 8 }} 
-                  />
-                </div>
+              <div style={{ marginTop: 8, borderRadius: 8, overflow: 'hidden' }}>
+                <iframe width="100%" height="250" src={`https://www.youtube.com/embed/${getYouTubeId(section.content)}`} frameBorder="0" allowFullScreen />
               </div>
             )}
-            <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>💡 Link YouTube akan otomatis ditampilkan sebagai video player</p>
           </div>
         )}
 
@@ -942,86 +772,21 @@ const ManageMateri = () => {
           <div>
             <textarea 
               value={section.content} 
-              onChange={e => updateSection(activeSection, 'content', e.target.value)} 
-              placeholder="Tulis instruksi tugas di sini..." 
-              style={{ 
-                width: '100%', 
-                minHeight: 120, 
-                padding: 10, 
-                borderRadius: 8, 
-                border: '1px solid #e2e8f0', 
-                fontSize: 13, 
-                resize: 'vertical', 
-                fontFamily: 'inherit', 
-                background: '#f8fafc' 
-              }} 
+              onChange={e => updateSection(editingSection, 'content', e.target.value)} 
+              placeholder="Instruksi tugas..." 
+              style={{ width: '100%', minHeight: 100, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, resize: 'vertical' }} 
             />
-            
-            <div style={{ 
-              marginTop: 12, 
-              padding: 12, 
-              background: '#f8fafc', 
-              borderRadius: 8, 
-              border: '1px solid #e2e8f0' 
-            }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#475569', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                <FileUp size={14} /> Jenis File yang Diizinkan untuk Siswa
-              </label>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {FILE_TYPE_OPTIONS.map(opt => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => updateSection(activeSection, 'allowedFileType', opt.value)}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: 8,
-                      border: section.allowedFileType === opt.value ? '2px solid #673ab7' : '1px solid #e2e8f0',
-                      background: section.allowedFileType === opt.value ? '#f3e8ff' : 'white',
-                      color: section.allowedFileType === opt.value ? '#673ab7' : '#64748b',
-                      cursor: 'pointer',
-                      fontSize: 11,
-                      fontWeight: section.allowedFileType === opt.value ? 700 : 500,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4
-                    }}
-                  >
-                    {opt.icon} {opt.label}
-                  </button>
-                ))}
+            <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: 10, fontWeight: 600 }}>Jenis File</label>
+                <select value={section.allowedFileType} onChange={e => updateSection(editingSection, 'allowedFileType', e.target.value)} style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }}>
+                  {FILE_TYPE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
               </div>
-              <p style={{ fontSize: 9, color: '#94a3b8', marginTop: 6 }}>
-                💡 Pilih jenis file yang boleh diupload siswa. "Semua File" untuk semua jenis.
-              </p>
-            </div>
-            
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 12, 
-              marginTop: 12, 
-              padding: 12, 
-              background: '#fffbeb', 
-              borderRadius: 8,
-              flexWrap: 'wrap'
-            }}>
-              <Clock size={18} color="#f59e0b" />
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#b45309' }}>Deadline Tugas:</span>
-              <input 
-                type="datetime-local" 
-                value={section.endTime} 
-                onChange={e => updateSection(activeSection, 'endTime', e.target.value)} 
-                style={{ 
-                  padding: '6px 10px', 
-                  borderRadius: 6, 
-                  border: '1px solid #fde68a', 
-                  fontSize: 12, 
-                  outline: 'none', 
-                  background: 'white' 
-                }} 
-              />
-              <span style={{ fontSize: 10, color: '#94a3b8' }}>Kosongkan jika tidak ada batas waktu</span>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: 10, fontWeight: 600 }}>Deadline</label>
+                <input type="datetime-local" value={section.endTime} onChange={e => updateSection(editingSection, 'endTime', e.target.value)} style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }} />
+              </div>
             </div>
           </div>
         )}
@@ -1029,64 +794,35 @@ const ManageMateri = () => {
     );
   };
 
+  // ============================================================
+  // STYLES
+  // ============================================================
   const styles = {
-    container: { maxWidth: 1400, margin: '0 auto', paddingBottom: 100, paddingLeft: isMobile ? 12 : 16, paddingRight: isMobile ? 12 : 16 },
+    container: { maxWidth: 900, margin: '0 auto', paddingBottom: 100, padding: isMobile ? 12 : 20 },
     loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 16 },
     spinner: { width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #652D90', borderRadius: '50%', animation: 'spin 1s linear infinite' },
-    tipsBanner: { background: '#eef2ff', borderRadius: 12, padding: 12, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 },
-    tipsClose: { background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', fontSize: 11 },
     header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 },
     btnBack: { background: 'white', border: '1px solid #e2e8f0', padding: isMobile ? '6px 10px' : '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: isMobile ? 12 : 13, display: 'flex', alignItems: 'center', gap: 4 },
-    pageTitle: { margin: 0, fontSize: isMobile ? 16 : 20, fontWeight: 800, color: '#1e293b' },
+    pageTitle: { margin: 0, fontSize: isMobile ? 18 : 22, fontWeight: 800, color: '#1e293b' },
     headerActions: { display: 'flex', gap: 6, flexWrap: 'wrap' },
     btnSave: { background: '#10b981', color: 'white', border: 'none', padding: isMobile ? '6px 14px' : '8px 20px', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: isMobile ? 12 : 13, display: 'flex', alignItems: 'center', gap: 6 },
-    btnPreview: { border: 'none', padding: isMobile ? '6px 10px' : '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: isMobile ? 11 : 12, display: 'flex', alignItems: 'center', gap: 4 },
-    mainGrid: { display: 'flex', gap: 20, flexDirection: isMobile ? 'column' : 'row' },
-    sidebar: { width: isMobile ? '100%' : '320px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 },
-    editorArea: { flex: 1, minWidth: 0 },
-    editorWrapper: { background: 'white', borderRadius: 12, border: '1px solid #f1f5f9', padding: isMobile ? 14 : 20 },
-    card: { background: 'white', padding: 14, borderRadius: 14, border: '1px solid #f1f5f9', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' },
-    cardTitle: { margin: '0 0 12px', fontSize: 12, fontWeight: 700, color: '#64748b', display: 'flex', alignItems: 'center', gap: 6 },
-    input: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', marginBottom: 8, boxSizing: 'border-box', background: '#f8fafc' },
-    inputSmall: { flex: 1, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 10, outline: 'none', boxSizing: 'border-box', background: '#f8fafc' },
-    select: { flex: 1, padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, background: 'white', outline: 'none', cursor: 'pointer' },
-    coverUpload: { display: 'block', height: 80, borderRadius: 8, overflow: 'hidden', cursor: 'pointer', border: '2px dashed #e2e8f0', marginTop: 4, background: '#f8fafc' },
-    warningBanner: { background: '#fef3c7', padding: 8, borderRadius: 6, fontSize: 10, color: '#b45309', display: 'flex', alignItems: 'center', gap: 6 },
-    scheduleBox: { background: '#fffbeb', padding: 12, borderRadius: 8, marginTop: 8, border: '1px solid #fde68a' },
-    scheduleTitle: { fontSize: 11, fontWeight: 700, color: '#b45309', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 },
-    scheduleLabel: { fontSize: 10, fontWeight: 600, color: '#92400e', display: 'block', marginBottom: 4 },
-    scheduleInput: { width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #fde68a', fontSize: 11, background: 'white' },
-    statusMessageGreen: { background: '#dcfce7', padding: 8, borderRadius: 6, fontSize: 10, color: '#166534', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 },
-    statusMessageGray: { background: '#f1f5f9', padding: 8, borderRadius: 6, fontSize: 10, color: '#64748b', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 },
-    emptyContent: { background: '#f8fafc', padding: 20, borderRadius: 8, textAlign: 'center', border: '1px dashed #e2e8f0' },
-    sectionItem: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', marginBottom: 4, border: '1px solid #e2e8f0' },
-    sectionLabel: { flex: 1, fontSize: 11, fontWeight: 600, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 },
-    btnArrow: { background: 'none', border: 'none', cursor: 'pointer', padding: 2, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6 },
-    btnX: { background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 4, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-    addSectionGrid: { display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)', gap: 6 },
-    addSectionBtn: { padding: isMobile ? '6px' : '8px', background: 'white', border: '1px solid #e2e8f0', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: isMobile ? 10 : 11, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
-    quizInfo: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, background: '#f0fdf4', padding: 8, borderRadius: 6 },
-    btnEditQuiz: { marginLeft: 'auto', background: '#10b981', color: 'white', border: 'none', padding: '4px 10px', borderRadius: 4, cursor: 'pointer', fontWeight: 600, fontSize: 10 },
-    btnCreateQuiz: { width: '100%', padding: 8, background: '#3b82f6', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
-    btnSelectAll: { padding: '4px 8px', background: '#e0e7ff', border: 'none', borderRadius: 6, cursor: 'pointer', color: '#3730a3', fontSize: 10, fontWeight: 600 },
-    studentTag: { display: 'inline-flex', alignItems: 'center', gap: 4, background: '#eef2ff', padding: '3px 8px', borderRadius: 12, fontSize: 10, fontWeight: 600, color: '#3730a3' },
-    removeTag: { background: 'none', border: 'none', color: '#3730a3', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-    studentPicker: { position: 'relative', marginTop: 8, border: '1px solid #e2e8f0', borderRadius: 8, background: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 10, maxHeight: 300, overflow: 'hidden' },
-    studentPickerHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', borderBottom: '1px solid #e2e8f0' },
-    closePicker: { background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 14 },
-    studentPickerList: { maxHeight: 250, overflowY: 'auto', padding: 4 },
-    studentPickerItem: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 6, cursor: 'pointer' },
-    studentPickerAvatar: { width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 'bold', flexShrink: 0 },
-    studentIdChip: { fontSize: 8, color: '#94a3b8', fontFamily: 'monospace', background: '#f1f5f9', padding: '1px 4px', borderRadius: 4 },
-    statsRow: { display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(5, 1fr)', gap: 8, marginBottom: 12 },
-    statMini: { background: 'white', padding: '8px 12px', borderRadius: 10, border: '1px solid #f1f5f9', textAlign: 'center' },
-    statMiniValue: { fontSize: isMobile ? 16 : 18, fontWeight: 900, color: '#1e293b' },
-    statMiniLabel: { fontSize: 9, color: '#94a3b8' },
-    idBadge: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 6, fontSize: 9, background: '#eef2ff', color: '#3b82f6', fontWeight: 600 },
-    mapelBadge: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 6, fontSize: 9, background: '#ede9fe', color: '#8b5cf6', fontWeight: 600 },
-    floatingFooter: { position: 'fixed', bottom: 0, left: isMobile ? 0 : 260, right: 0, background: 'white', borderTop: '1px solid #e2e8f0', padding: isMobile ? '8px 12px' : '10px 20px', display: 'flex', justifyContent: 'flex-end', gap: 10, zIndex: 50, flexWrap: 'wrap' },
+    card: { background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #f1f5f9', marginBottom: 16 },
+    cardTitle: { margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 },
+    input: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#f8fafc' },
+    textarea: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#f8fafc', resize: 'vertical', fontFamily: 'inherit' },
+    select: { padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, background: 'white', outline: 'none', cursor: 'pointer' },
+    coverUpload: { display: 'block', height: 100, borderRadius: 10, overflow: 'hidden', cursor: 'pointer', border: '2px dashed #e2e8f0', background: '#f8fafc' },
+    sectionItem: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, background: '#f8fafc', border: '1px solid #e2e8f0', cursor: 'pointer', marginBottom: 6, transition: '0.2s' },
+    sectionLabel: { flex: 1, fontSize: 13, fontWeight: 600, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 },
+    badge: { fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 10 },
+    floatingFooter: { position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid #e2e8f0', padding: isMobile ? '10px 16px' : '12px 24px', display: 'flex', justifyContent: 'flex-end', gap: 10, zIndex: 50, flexWrap: 'wrap' },
     btnFooterCancel: { padding: isMobile ? '8px 14px' : '10px 20px', background: '#f1f5f9', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: isMobile ? 12 : 13, cursor: 'pointer' },
     btnFooterSave: { padding: isMobile ? '8px 18px' : '10px 25px', background: '#10b981', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: isMobile ? 12 : 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 },
+    addMenu: { position: 'relative', marginTop: 8 },
+    addButton: { width: '100%', padding: '12px', border: '2px dashed #cbd5e1', borderRadius: 10, background: 'white', cursor: 'pointer', fontWeight: 600, color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: '0.2s' },
+    addMenuOptions: { position: 'absolute', bottom: '100%', left: 0, right: 0, background: 'white', borderRadius: 10, border: '1px solid #e2e8f0', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', padding: 8, marginBottom: 8, zIndex: 10 },
+    addMenuItem: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, cursor: 'pointer', transition: '0.2s' },
+    deleteBtn: { background: '#fee2e2', color: '#ef4444', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12 },
   };
 
   if (loading) {
@@ -1100,24 +836,18 @@ const ManageMateri = () => {
     );
   }
 
+  // ============================================================
+  // MAIN RENDER
+  // ============================================================
   return (
     <div style={styles.container}>
       <style>{`
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
+        .fade-in { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
-      
-      {/* TIPS BANNER */}
-      <div style={styles.tipsBanner}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <Info size={18} color="#3b82f6" />
-          <span style={{ fontSize: 12, color: '#1e40af' }}>
-            💡 Klik konten di sidebar kiri untuk mengedit. Preview langsung di area besar.
-          </span>
-        </div>
-        <button onClick={() => setShowTips(false)} style={styles.tipsClose}>Tutup</button>
-      </div>
-      
+
       {/* HEADER */}
       <div style={styles.header}>
         <button onClick={() => navigate('/guru/modul')} style={styles.btnBack}>
@@ -1125,281 +855,252 @@ const ManageMateri = () => {
         </button>
         <h2 style={styles.pageTitle}>
           {editId ? '✏️ Edit Modul' : '📚 Buat Modul Baru'}
-          {modulId && <span style={styles.idBadge}><Hash size={10} /> {modulId}</span>}
+          {modulId && <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>#{modulId}</span>}
         </h2>
         <div style={styles.headerActions}>
-          <button 
-            onClick={() => setShowPreview(!showPreview)} 
-            style={{ ...styles.btnPreview, background: showPreview ? '#3b82f6' : '#f1f5f9', color: showPreview ? 'white' : '#64748b' }}
-          >
-            <Eye size={14} /> {showPreview ? 'Edit' : 'Preview'}
-          </button>
           {editId && (
-            <button onClick={() => window.open(`/siswa/materi/${editId}`, '_blank')} style={{ ...styles.btnPreview, background: '#f1f5f9' }}>
-              <ExternalLink size={14} /> {!isMobile && 'Live'}
+            <button onClick={() => window.open(`/siswa/materi/${editId}`, '_blank')} style={{ ...styles.btnBack }}>
+              <Eye size={14} /> Live
+            </button>
+          )}
+          {modulId && (
+            <button onClick={handleDeleteModul} style={styles.deleteBtn}>
+              <Trash2 size={14} /> Hapus
             </button>
           )}
           <button onClick={handleSave} disabled={saving} style={{ ...styles.btnSave, opacity: saving ? 0.6 : 1 }}>
             <Save size={14} /> {saving ? 'Menyimpan...' : editId ? 'Update' : 'Terbitkan'}
           </button>
-          {modulId && (
-            <button onClick={handleDeleteModul} style={{ ...styles.btnSave, background: '#ef4444' }}>
-              <Trash2 size={14} /> Hapus
+        </div>
+      </div>
+
+      {/* ========================================================== */}
+      {/* 1️⃣ COVER & IDENTITAS */}
+      {/* ========================================================== */}
+      <div style={styles.card}>
+        <h4 style={styles.cardTitle}><BookOpen size={18} /> 1. Cover & Identitas</h4>
+        <div style={{ display: 'flex', gap: 16, flexDirection: isMobile ? 'column' : 'row' }}>
+          <label style={{ ...styles.coverUpload, width: isMobile ? '100%' : 120, flexShrink: 0 }}>
+            {coverImage ? (
+              <img src={coverImage} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8' }}>
+                <ImageIcon size={24} />
+                <span style={{ fontSize: 9 }}>Upload Cover</span>
+              </div>
+            )}
+            <input ref={coverInputRef} type="file" accept="image/*" hidden onChange={handleCoverUpload} />
+          </label>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Judul modul..." style={styles.input} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <select value={subject} onChange={e => setSubject(e.target.value)} style={{ ...styles.select, flex: 1 }}>
+                <option value="">Pilih Mata Pelajaran</option>
+                {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+              {kodeMapel && <span style={{ background: '#ede9fe', padding: '4px 12px', borderRadius: 6, fontSize: 10, fontWeight: 600, color: '#8b5cf6', display: 'flex', alignItems: 'center' }}>📌 {kodeMapel}</span>}
+            </div>
+            <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Deskripsi modul..." style={styles.textarea} />
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================== */}
+      {/* 2️⃣ KONTEN MODUL */}
+      {/* ========================================================== */}
+      <div style={styles.card}>
+        <h4 style={styles.cardTitle}><Layers size={18} /> 2. Konten Modul ({sections.length})</h4>
+        
+        {/* DAFTAR KONTEN */}
+        {sections.length === 0 && (
+          <div style={{ textAlign: 'center', padding: 30, color: '#94a3b8', border: '1px dashed #e2e8f0', borderRadius: 8 }}>
+            <FolderOpen size={32} color="#cbd5e1" />
+            <p style={{ marginTop: 8, fontSize: 13 }}>Belum ada konten. Klik tombol di bawah untuk menambahkan.</p>
+          </div>
+        )}
+
+        {sections.map((sec, idx) => {
+          const typeIcons = { text: '📄', file: '📁', video: '🎥', assignment: '📝' };
+          const typeColors = { text: '#3b82f6', file: '#10b981', video: '#ef4444', assignment: '#f59e0b' };
+          const isEditing = editingSection === sec.id;
+          
+          return (
+            <div key={sec.id}>
+              <div 
+                style={{ 
+                  ...styles.sectionItem, 
+                  borderColor: isEditing ? '#3b82f6' : '#e2e8f0',
+                  borderWidth: isEditing ? '2px' : '1px',
+                  background: isEditing ? '#eef2ff' : '#f8fafc'
+                }}
+                onClick={() => setEditingSection(isEditing ? null : sec.id)}
+              >
+                <span style={{ fontSize: 16 }}>{typeIcons[sec.type]}</span>
+                <span style={styles.sectionLabel}>
+                  {sec.title || `Konten ${idx + 1}`}
+                  {sec.fileName && <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>📎 {sec.fileName}</span>}
+                </span>
+                <span style={{ ...styles.badge, background: typeColors[sec.type] + '15', color: typeColors[sec.type] }}>
+                  {sec.type.toUpperCase()}
+                </span>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); removeSection(sec.id); }}
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+              
+              {/* EDITOR YANG MUNCUL DI BAWAH KONTEN */}
+              {isEditing && renderContentEditor()}
+            </div>
+          );
+        })}
+
+        {/* TOMBOL TAMBAH KONTEN */}
+        <div style={styles.addMenu}>
+          {showAddMenu ? (
+            <div style={styles.addMenuOptions} className="fade-in">
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 6 }}>
+                {CONTENT_TYPES.map(item => (
+                  <button
+                    key={item.type}
+                    onClick={() => addSection(item.type)}
+                    style={{
+                      padding: '12px 8px',
+                      borderRadius: 8,
+                      border: `2px solid ${item.color}30`,
+                      background: 'white',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 4,
+                      transition: '0.2s',
+                      color: item.color
+                    }}
+                  >
+                    {item.icon}
+                    <span style={{ fontSize: 11, fontWeight: 600 }}>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+              <button 
+                onClick={() => setShowAddMenu(false)}
+                style={{ width: '100%', marginTop: 6, padding: 6, background: '#f1f5f9', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 11, color: '#64748b' }}
+              >
+                Tutup
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={() => setShowAddMenu(true)}
+              style={{ ...styles.addButton, '&:hover': { borderColor: '#3b82f6', color: '#3b82f6' } }}
+            >
+              <Plus size={18} /> Tambah Konten
             </button>
           )}
         </div>
       </div>
 
-      {/* STATS */}
-      <div style={styles.statsRow}>
-        <div style={styles.statMini}><div style={styles.statMiniValue}>{stats.totalSiswa}</div><div style={styles.statMiniLabel}>👥 Siswa</div></div>
-        <div style={styles.statMini}><div style={styles.statMiniValue}>{stats.totalJadwal}</div><div style={styles.statMiniLabel}>📅 Jadwal</div></div>
-        <div style={styles.statMini}><div style={styles.statMiniValue}>{stats.totalMapel}</div><div style={styles.statMiniLabel}>📘 Mapel</div></div>
-        <div style={styles.statMini}><div style={styles.statMiniValue}>{stats.totalKonten}</div><div style={styles.statMiniLabel}>📄 Konten</div></div>
-        <div style={styles.statMini}>
-          <div style={styles.statMiniValue}>
-            {guruId ? <span style={styles.idBadge}><Hash size={10} /> {guruId}</span> : '-'}
-          </div>
-          <div style={styles.statMiniLabel}>🆔 ID Guru</div>
-        </div>
-      </div>
-
-      {showPreview ? (
-        // PREVIEW MODE
-        <div style={{ background: 'white', borderRadius: 12, padding: 20, border: '1px solid #e2e8f0' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#1e293b' }}>
-              👁️ Preview Tampilan Siswa
-            </h3>
-            <button onClick={() => setShowPreview(false)} style={{ padding: '4px 10px', background: '#f1f5f9', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 11 }}>
-              <X size={14} /> Tutup
-            </button>
-          </div>
-          <div style={{ maxWidth: 800, margin: '0 auto' }}>
-            {coverImage && <img src={coverImage} alt="Cover" style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 8, marginBottom: 16 }} />}
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1e293b', textAlign: 'center' }}>{title || 'Judul Modul'}</h2>
-            <p style={{ textAlign: 'center', color: '#64748b', fontSize: 13 }}>{subject} • {targetKelas}</p>
-            {description && <div style={{ background: '#f8fafc', padding: 12, borderRadius: 8, marginBottom: 16, fontSize: 13 }}>{description}</div>}
-            
-            {sections.map((sec, idx) => (
-              <div key={sec.id} style={{ marginBottom: 20, borderBottom: '1px solid #e2e8f0', paddingBottom: 16 }}>
-                <h4 style={{ fontSize: 15, fontWeight: 700, color: '#1e293b', marginBottom: 8 }}>{sec.title || `Bagian ${idx + 1}`}</h4>
-                {sec.type === 'text' && <div style={{ fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{sec.content}</div>}
-                {sec.type === 'file' && sec.content && <FilePreview url={sec.content} fileName={sec.fileName} fileType={sec.mimeType} />}
-                {sec.type === 'video' && sec.content && <FilePreview url={sec.content} fileName={sec.fileName} fileType={sec.mimeType} />}
-                {sec.type === 'assignment' && (
-                  <div style={{ background: '#fffbeb', padding: 12, borderRadius: 8, border: '1px solid #fde68a' }}>
-                    <p>📝 {sec.content || 'Instruksi tugas'}</p>
-                    {sec.endTime && <p style={{ fontSize: 11, color: '#f59e0b' }}>⏰ Deadline: {new Date(sec.endTime).toLocaleString('id-ID')}</p>}
+      {/* ========================================================== */}
+      {/* 3️⃣ TARGET & PENGATURAN */}
+      {/* ========================================================== */}
+      <div style={styles.card}>
+        <h4 style={styles.cardTitle}><Settings size={18} /> 3. Target & Pengaturan</h4>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
+          {/* TARGET */}
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>🎯 Target</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <select value={targetKategori} onChange={e => setTargetKategori(e.target.value)} style={{ ...styles.select, flex: 1 }}>
+                <option value="Reguler">📚 Reguler</option>
+                <option value="English">🗣️ English</option>
+                <option value="Semua">🌐 Semua</option>
+              </select>
+              <select value={targetKelas} onChange={e => setTargetKelas(e.target.value)} style={{ ...styles.select, flex: 1 }}>
+                {availableClasses.map(k => <option key={k} value={k}>{k}</option>)}
+              </select>
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, cursor: 'pointer' }}>
+                <input type="checkbox" checked={sendToSpecificStudents} onChange={() => setSendToSpecificStudents(!sendToSpecificStudents)} />
+                <UserPlus size={14} /> Kirim ke siswa tertentu
+              </label>
+              {sendToSpecificStudents && (
+                <div style={{ marginTop: 6 }}>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <div style={{ flex: 1, position: 'relative' }}>
+                      <Search size={12} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                      <input value={studentSearch} onChange={e => setStudentSearch(e.target.value)} placeholder="Cari siswa..." style={{ ...styles.input, paddingLeft: 28, fontSize: 11 }} onFocus={() => setShowStudentPicker(true)} />
+                    </div>
+                    <button onClick={selectAllFiltered} style={{ padding: '4px 12px', background: '#e0e7ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#3730a3' }}>Pilih Semua</button>
                   </div>
-                )}
-              </div>
-            ))}
-            
-            {quizData?.length > 0 && (
-              <div style={{ background: '#f0fdf4', padding: 12, borderRadius: 8, border: '1px solid #bbf7d0', textAlign: 'center', fontWeight: 700, color: '#166534' }}>
-                ❓ Kuis ({quizData.length} soal)
+                  {selectedStudents.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+                      {selectedStudents.slice(0, 10).map(s => (
+                        <span key={s.studentId} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#eef2ff', padding: '2px 8px', borderRadius: 12, fontSize: 10, fontWeight: 600, color: '#3730a3' }}>
+                          {s.nama}
+                          <button onClick={() => toggleStudentSelection(s)} style={{ background: 'none', border: 'none', color: '#3730a3', cursor: 'pointer', padding: 0 }}><X size={10} /></button>
+                        </span>
+                      ))}
+                      {selectedStudents.length > 10 && <span style={{ fontSize: 10, color: '#94a3b8' }}>+{selectedStudents.length - 10}</span>}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* PENGATURAN */}
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>⚙️ Pengaturan</label>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <input type="number" min="1" max="52" value={mingguKe} onChange={e => setMingguKe(e.target.value)} placeholder="Minggu" style={{ ...styles.input, flex: 1, fontSize: 11 }} />
+              <input type="text" value={tahunAjaran} onChange={e => setTahunAjaran(e.target.value)} placeholder="Tahun" style={{ ...styles.input, flex: 1, fontSize: 11 }} />
+            </div>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {STATUS_OPTIONS.map(opt => (
+                <button key={opt.value} onClick={() => setStatusModul(opt.value)} style={{ 
+                  flex: 1, padding: '6px 8px', borderRadius: 6, fontSize: 10, fontWeight: 600, cursor: 'pointer',
+                  background: statusModul === opt.value ? opt.color : '#f1f5f9',
+                  color: statusModul === opt.value ? 'white' : '#64748b',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 4
+                }}>
+                  {opt.icon} {opt.label}
+                </button>
+              ))}
+            </div>
+            {statusModul === 'terjadwal' && (
+              <div style={{ background: '#fffbeb', padding: 10, borderRadius: 8, marginTop: 8, border: '1px solid #fde68a' }}>
+                <label style={{ fontSize: 10, fontWeight: 600, color: '#92400e', display: 'block', marginBottom: 4 }}>📅 Jadwal Rilis</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input type="datetime-local" value={tanggalMulai} onChange={e => setTanggalMulai(e.target.value)} style={{ ...styles.input, fontSize: 11 }} />
+                  <input type="datetime-local" value={tanggalSelesai} onChange={e => setTanggalSelesai(e.target.value)} style={{ ...styles.input, fontSize: 11 }} />
+                </div>
               </div>
             )}
           </div>
         </div>
-      ) : (
-        // MAIN LAYOUT: SIDEBAR + EDITOR
-        <div style={styles.mainGrid}>
-          {/* SIDEBAR KIRI - KONTEN */}
-          <div style={styles.sidebar}>
-            
-            {/* IDENTITAS */}
-            <div style={styles.card}>
-              <h4 style={styles.cardTitle}><BookOpen size={14} /> Identitas</h4>
-              <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Judul modul..." style={styles.input} />
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 }}>
-                <select value={subject} onChange={e => setSubject(e.target.value)} style={{...styles.select, flex: 1}}>
-                  <option value="">Pilih Mata Pelajaran</option>
-                  {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-                {kodeMapel && <span style={styles.mapelBadge}><Tag size={10} /> {kodeMapel}</span>}
-              </div>
-              <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Deskripsi..." style={{...styles.input, minHeight: 50, resize: 'vertical'}} />
-              <label style={styles.coverUpload}>
-                {coverImage ? (
-                  <img src={coverImage} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, color: '#94a3b8', padding: '16px 0' }}>
-                    <ImageIcon size={18} />
-                    <span style={{ fontSize: 10 }}>Upload Cover</span>
-                  </div>
-                )}
-                <input ref={coverInputRef} type="file" accept="image/*" hidden onChange={handleCoverUpload} />
-              </label>
-            </div>
+      </div>
 
-            {/* TARGET */}
-            <div style={styles.card}>
-              <h4 style={styles.cardTitle}><Target size={14} /> Target</h4>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                <select value={targetKategori} onChange={e => setTargetKategori(e.target.value)} style={styles.select}>
-                  <option value="Reguler">📚 Reguler</option>
-                  <option value="English">🗣️ English</option>
-                  <option value="Semua">🌐 Semua</option>
-                </select>
-                <select value={targetKelas} onChange={e => setTargetKelas(e.target.value)} style={styles.select}>
-                  {availableClasses.map(k => <option key={k} value={k}>{k}</option>)}
-                </select>
-              </div>
-              
-              <div style={{ marginTop: 8, borderTop: '1px solid #e2e8f0', paddingTop: 8 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 11, fontWeight: 600 }}>
-                  <input type="checkbox" checked={sendToSpecificStudents} onChange={() => setSendToSpecificStudents(!sendToSpecificStudents)} />
-                  <UserPlus size={14} /> Kirim ke siswa tertentu
-                </label>
-                {sendToSpecificStudents && (
-                  <div style={{ marginTop: 6 }}>
-                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                      <div style={{ flex: 1, position: 'relative' }}>
-                        <Search size={12} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                        <input value={studentSearch} onChange={e => setStudentSearch(e.target.value)} placeholder="Cari siswa..." style={{...styles.input, paddingLeft: 28, marginBottom: 0, fontSize: 10}} onFocus={() => setShowStudentPicker(true)} />
-                      </div>
-                      <button onClick={selectAllFiltered} style={styles.btnSelectAll}>Pilih Semua</button>
-                    </div>
-                    {selectedStudents.length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
-                        {selectedStudents.slice(0, 5).map(s => (
-                          <span key={s.studentId} style={styles.studentTag}>
-                            {getStudentInitials(s.nama)}
-                            <button onClick={() => toggleStudentSelection(s)} style={styles.removeTag}><X size={10} /></button>
-                          </span>
-                        ))}
-                        {selectedStudents.length > 5 && (
-                          <span style={{ fontSize: 10, color: '#94a3b8' }}>+{selectedStudents.length - 5}</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* PENGATURAN */}
-            <div style={styles.card}>
-              <h4 style={styles.cardTitle}><Settings size={14} /> Pengaturan</h4>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                <input type="number" min="1" max="52" value={mingguKe} onChange={e => setMingguKe(e.target.value)} placeholder="Minggu" style={styles.inputSmall} />
-                <input type="text" value={tahunAjaran} onChange={e => setTahunAjaran(e.target.value)} placeholder="Tahun" style={styles.inputSmall} />
-              </div>
-              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
-                {STATUS_OPTIONS.map(opt => (
-                  <button key={opt.value} onClick={() => setStatusModul(opt.value)} style={{ flex: 1, padding: '4px 6px', borderRadius: 6, fontSize: 9, fontWeight: 600, cursor: 'pointer', background: statusModul === opt.value ? opt.color : '#f1f5f9', color: statusModul === opt.value ? 'white' : '#64748b', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
-                    {opt.icon} {opt.label}
-                  </button>
-                ))}
-              </div>
-              {statusModul === 'terjadwal' && (
-                <div style={styles.scheduleBox}>
-                  <p style={styles.scheduleTitle}><CalendarDays size={12} /> Jadwal Rilis</p>
-                  <div style={{ display: 'flex', gap: 8, flexDirection: isMobile ? 'column' : 'row' }}>
-                    <div style={{ flex: 1 }}>
-                      <label style={styles.scheduleLabel}>Mulai *</label>
-                      <input type="datetime-local" value={tanggalMulai} onChange={e => setTanggalMulai(e.target.value)} style={styles.scheduleInput} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <label style={styles.scheduleLabel}>Selesai</label>
-                      <input type="datetime-local" value={tanggalSelesai} onChange={e => setTanggalSelesai(e.target.value)} style={styles.scheduleInput} />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* DAFTAR KONTEN */}
-            <div style={styles.card}>
-              <h4 style={{...styles.cardTitle, marginBottom: 8 }}>
-                <Layers size={14} /> Konten ({sections.length})
-              </h4>
-              {sections.length === 0 && (
-                <div style={styles.emptyContent}>
-                  <p style={{ fontSize: 10, color: '#94a3b8', margin: 0 }}>Belum ada konten</p>
-                </div>
-              )}
-              {sections.map((sec, idx) => {
-                const typeIcons = { text: '📄', file: '📁', video: '🎥', assignment: '📝' };
-                const isActive = activeSection === sec.id;
-                return (
-                  <div 
-                    key={sec.id} 
-                    onClick={() => setActiveSection(sec.id)} 
-                    style={{ 
-                      ...styles.sectionItem, 
-                      background: isActive ? '#eef2ff' : '#f8fafc', 
-                      borderColor: isActive ? '#3b82f6' : '#e2e8f0',
-                      borderWidth: isActive ? '2px' : '1px'
-                    }}
-                  >
-                    <span style={styles.sectionLabel}>
-                      {typeIcons[sec.type] || '📄'}
-                      <span style={{ fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {sec.title || `Bagian ${idx + 1}`}
-                      </span>
-                    </span>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); removeSection(sec.id); }} 
-                      style={{ ...styles.btnX, padding: 2 }}
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* TOMBOL TAMBAH KONTEN */}
-            <div style={styles.addSectionGrid}>
-              {[
-                { type: 'text', icon: <Type size={12} />, label: 'Teks', color: '#3b82f6' },
-                { type: 'file', icon: <FileUp size={12} />, label: 'File', color: '#10b981' },
-                { type: 'video', icon: <Video size={12} />, label: 'Video', color: '#ef4444' },
-                { type: 'assignment', icon: <Send size={12} />, label: 'Tugas', color: '#f59e0b' }
-              ].map(btn => (
-                <button key={btn.type} onClick={() => addSection(btn.type)} style={{ ...styles.addSectionBtn, borderColor: `${btn.color}30`, color: btn.color }}>
-                  {btn.icon} {btn.label}
-                </button>
-              ))}
-            </div>
-
-            {/* KUIS */}
-            <div style={styles.card}>
-              <h4 style={styles.cardTitle}><HelpCircle size={14} /> Kuis</h4>
-              {quizData?.length > 0 ? (
-                <div style={styles.quizInfo}>
-                  <CheckCircle size={14} color="#10b981" />
-                  <span>{quizData.length} soal</span>
-                  <button onClick={() => { if (!editId) return alert("Simpan dulu!"); navigate(`/guru/manage-quiz?modulId=${editId}`); }} style={styles.btnEditQuiz}>Edit</button>
-                </div>
-              ) : (
-                <button onClick={() => { if (!editId) return alert("Simpan dulu!"); navigate(`/guru/manage-quiz?modulId=${editId}`); }} style={styles.btnCreateQuiz}>
-                  <HelpCircle size={14} /> + Buat Kuis
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* AREA EDITOR - LEBAR */}
-          <div style={styles.editorArea}>
-            {renderEditorContent()}
-          </div>
-        </div>
-      )}
-
-      {/* FLOATING FOOTER */}
+      {/* ========================================================== */}
+      {/* FOOTER */}
+      {/* ========================================================== */}
       <div style={styles.floatingFooter}>
         <button onClick={() => navigate('/guru/modul')} style={styles.btnFooterCancel}>Batal</button>
         {editId && (
           <button onClick={() => window.open(`/siswa/materi/${editId}`, '_blank')} style={{ ...styles.btnFooterCancel, background: 'white', border: '1px solid #e2e8f0' }}>
-            <ExternalLink size={14} /> {!isMobile && 'Live Preview'}
+            <Eye size={14} /> Preview
           </button>
         )}
         <button onClick={handleSave} disabled={saving} style={{ ...styles.btnFooterSave, opacity: saving ? 0.6 : 1 }}>
-          <Save size={14} /> {saving ? 'Menyimpan...' : editId ? 'Update' : 'Terbitkan'}
+          <Rocket size={16} /> {saving ? 'Menyimpan...' : editId ? 'Update Modul' : 'Terbitkan Modul'}
         </button>
       </div>
     </div>
