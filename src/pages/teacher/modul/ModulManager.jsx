@@ -14,9 +14,9 @@ import {
   Archive, CheckCircle, CalendarDays, Award, Star,
   Grid, List, RefreshCw, Loader2, ChevronDown,
   Home, Layout, FolderOpen, File, Video, Clipboard,
-  BarChart3, TrendingUp, Activity, PieChart
+  BarChart3, TrendingUp, Activity, PieChart,
+  Rocket, Gift, BookMarked, FileQuestion
 } from 'lucide-react';
-import LogoGemilang from '../../../components/LogoGemilang';
 
 const ModulManager = () => {
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ const ModulManager = () => {
   const [filterKelas, setFilterKelas] = useState("Semua");
   const [filterMapel, setFilterMapel] = useState("Semua");
   const [filterStatus, setFilterStatus] = useState("Semua");
-  const [filterGuru, setFilterGuru] = useState("saya");
+  const [filterGuru, setFilterGuru] = useState("saya"); // 🔥 DEFAULT "saya"
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [viewMode, setViewMode] = useState('grid');
   const [availableClasses, setAvailableClasses] = useState([]);
@@ -41,8 +41,6 @@ const ModulManager = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [guruData, setGuruData] = useState(null);
   const [guruId, setGuruId] = useState('');
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [showBulkActions, setShowBulkActions] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [toast, setToast] = useState(null);
 
@@ -89,7 +87,6 @@ const ModulManager = () => {
   // ===== FETCH DATA =====
   const fetchFilterOptions = useCallback(async () => {
     try {
-      // Kelas dari siswa
       const siswaSnap = await getDocs(collection(db, "students"));
       const kelasSet = new Set();
       siswaSnap.forEach(doc => {
@@ -103,7 +100,6 @@ const ModulManager = () => {
         return a.localeCompare(b);
       })]);
 
-      // Mapel dari modul
       const modulSnap = await getDocs(collection(db, COLLECTION_NAME));
       const mapelSet = new Set();
       modulSnap.forEach(doc => {
@@ -128,7 +124,7 @@ const ModulManager = () => {
     try {
       let qConstraints = [orderBy("updatedAt", "desc")];
       
-      // 🔥 FILTER BERDASARKAN GURU ID
+      // 🔥 FILTER BERDASARKAN GURU ID (default)
       if (filterGuru === 'saya' && guruId) {
         qConstraints.push(where("guruId", "==", guruId));
       }
@@ -150,9 +146,14 @@ const ModulManager = () => {
       setHasMore(snapshot.docs.length === PAGE_SIZE);
     } catch (error) {
       console.error("Error fetching items:", error);
-      // Fallback: ambil semua
       const snapshot = await getDocs(collection(db, COLLECTION_NAME));
-      const allItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      let allItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      
+      // Filter di client jika query gagal
+      if (filterGuru === 'saya' && guruId) {
+        allItems = allItems.filter(item => item.guruId === guruId);
+      }
+      
       setItems(allItems);
       setHasMore(false);
     }
@@ -168,7 +169,13 @@ const ModulManager = () => {
       orderBy("updatedAt", "desc")
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      let data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      
+      // Filter di client untuk real-time
+      if (filterGuru === 'saya' && guruId) {
+        data = data.filter(item => item.guruId === guruId);
+      }
+      
       setItems(data);
       setLoading(false);
     }, (error) => {
@@ -177,7 +184,7 @@ const ModulManager = () => {
     });
     
     return () => unsubscribe();
-  }, []);
+  }, [filterGuru, guruId]);
 
   useEffect(() => {
     fetchFilterOptions();
@@ -213,52 +220,66 @@ const ModulManager = () => {
   };
 
   const getTypeInfo = (item) => {
-    if (item.type === 'kuis_mandiri') return { 
-      label: 'Kuis', 
-      icon: <HelpCircle size={12} />, 
-      color: '#f59e0b', 
-      bg: '#fef3c7',
-      emoji: '❓',
-      gradient: 'linear-gradient(135deg, #f59e0b, #d97706)'
-    };
-    if (item.type === 'assignment') return { 
-      label: 'Tugas', 
-      icon: <Send size={12} />, 
-      color: '#ef4444', 
-      bg: '#fee2e2',
-      emoji: '📝',
-      gradient: 'linear-gradient(135deg, #ef4444, #dc2626)'
-    };
-    if (item.blocks?.length > 0) return { 
-      label: 'Modul', 
-      icon: <BookOpen size={12} />, 
-      color: '#3b82f6', 
-      bg: '#dbeafe',
-      emoji: '📚',
-      gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)'
-    };
+    // 🔥 DETEKSI JENIS KONTEN
+    if (item.type === 'kuis_mandiri' || (item.quizData && item.quizData.length > 0)) {
+      return { 
+        label: 'Kuis', 
+        icon: <FileQuestion size={14} />, 
+        color: '#f59e0b', 
+        bg: '#fef3c7',
+        emoji: '❓',
+        gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
+        borderColor: '#f59e0b'
+      };
+    }
+    if (item.type === 'assignment' || (item.isTugas)) {
+      return { 
+        label: 'Tugas', 
+        icon: <Send size={14} />, 
+        color: '#ef4444', 
+        bg: '#fee2e2',
+        emoji: '📝',
+        gradient: 'linear-gradient(135deg, #ef4444, #dc2626)',
+        borderColor: '#ef4444'
+      };
+    }
+    if (item.blocks && item.blocks.length > 0) {
+      return { 
+        label: 'Modul', 
+        icon: <BookOpen size={14} />, 
+        color: '#3b82f6', 
+        bg: '#dbeafe',
+        emoji: '📚',
+        gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+        borderColor: '#3b82f6'
+      };
+    }
     return { 
       label: 'Materi', 
-      icon: <FileText size={12} />, 
+      icon: <FileText size={14} />, 
       color: '#64748b', 
       bg: '#f1f5f9',
       emoji: '📄',
-      gradient: 'linear-gradient(135deg, #64748b, #475569)'
+      gradient: 'linear-gradient(135deg, #64748b, #475569)',
+      borderColor: '#64748b'
     };
   };
 
-  // ============================================================
-  // 🔥 FILTERED ITEMS - USE MEMO (WAJIB!)
-  // ============================================================
+  // 🔥 STATISTIK
+  const stats = useMemo(() => ({
+    total: items.length,
+    modul: items.filter(i => i.blocks && i.blocks.length > 0 && i.type !== 'kuis_mandiri' && i.type !== 'assignment').length,
+    tugas: items.filter(i => i.type === 'assignment' || i.isTugas).length,
+    kuis: items.filter(i => i.type === 'kuis_mandiri' || (i.quizData && i.quizData.length > 0)).length,
+    milikSaya: items.filter(i => i.guruId === guruId || i.createdBy === guruData?.nama).length,
+  }), [items, guruId, guruData]);
+
+  // 🔥 FILTERED ITEMS
   const filteredItems = useMemo(() => {
     let filtered = items;
     
-    // Filter berdasarkan guru (jika tidak pakai query)
-    if (filterGuru === 'saya' && guruId) {
-      filtered = filtered.filter(item => 
-        item.guruId === guruId || item.createdBy === guruData?.nama
-      );
-    }
+    // Filter berdasarkan guru (sudah di filter di listener)
+    // Tapi tambahan filter untuk tab
     
     // Search
     if (searchTerm) {
@@ -266,19 +287,27 @@ const ModulManager = () => {
       filtered = filtered.filter(item => 
         (item.title || "").toLowerCase().includes(term) ||
         (item.subject || "").toLowerCase().includes(term) ||
-        (item.description || "").toLowerCase().includes(term)
+        (item.description || "").toLowerCase().includes(term) ||
+        (item.guruId || "").toLowerCase().includes(term)
       );
     }
     
     // Tab filter
     if (activeTab === 'modul') {
       filtered = filtered.filter(item => 
-        !item.type || (item.blocks?.length > 0 && item.type !== 'kuis_mandiri' && item.type !== 'assignment')
+        item.blocks && item.blocks.length > 0 && 
+        item.type !== 'kuis_mandiri' && 
+        item.type !== 'assignment' &&
+        !item.isTugas
       );
     } else if (activeTab === 'tugas') {
-      filtered = filtered.filter(item => item.type === 'assignment');
+      filtered = filtered.filter(item => 
+        item.type === 'assignment' || item.isTugas
+      );
     } else if (activeTab === 'kuis') {
-      filtered = filtered.filter(item => item.type === 'kuis_mandiri');
+      filtered = filtered.filter(item => 
+        item.type === 'kuis_mandiri' || (item.quizData && item.quizData.length > 0)
+      );
     }
     
     // Kelas
@@ -302,27 +331,46 @@ const ModulManager = () => {
     }
     
     return filtered;
-  }, [items, searchTerm, activeTab, filterKelas, filterMapel, filterStatus, filterGuru, guruId, guruData]);
+  }, [items, searchTerm, activeTab, filterKelas, filterMapel, filterStatus]);
 
   const hasActiveFilters = filterKelas !== "Semua" || filterMapel !== "Semua" || 
-                          filterStatus !== "Semua" || filterGuru === 'saya' || searchTerm;
+                          filterStatus !== "Semua" || searchTerm;
 
   const clearFilters = () => {
     setFilterKelas("Semua");
     setFilterMapel("Semua");
     setFilterStatus("Semua");
-    setFilterGuru("semua");
     setSearchTerm("");
     setActiveTab('semua');
   };
 
-  const stats = useMemo(() => ({
-    total: items.length,
-    modul: items.filter(i => !i.type || (i.blocks?.length > 0 && i.type !== 'kuis_mandiri' && i.type !== 'assignment')).length,
-    tugas: items.filter(i => i.type === 'assignment').length,
-    kuis: items.filter(i => i.type === 'kuis_mandiri').length,
-    milikSaya: items.filter(i => i.guruId === guruId || i.createdBy === guruData?.nama).length,
-  }), [items, guruId, guruData]);
+  // 🔥 TOMBOL BUAT BARU - KONTEKSTUAL
+  const getCreateButton = () => {
+    if (activeTab === 'kuis') {
+      return {
+        label: 'Buat Kuis',
+        icon: <FileQuestion size={16} />,
+        color: '#f59e0b',
+        action: () => navigate('/guru/manage-quiz')
+      };
+    } else if (activeTab === 'tugas') {
+      return {
+        label: 'Buat Tugas',
+        icon: <Send size={16} />,
+        color: '#ef4444',
+        action: () => navigate('/guru/modul/materi?type=tugas')
+      };
+    } else {
+      return {
+        label: 'Buat Modul',
+        icon: <Plus size={16} />,
+        color: '#6366f1',
+        action: () => navigate('/guru/modul/materi')
+      };
+    }
+  };
+
+  const createBtn = getCreateButton();
 
   // ============================================================
   // SKELETON LOADING
@@ -355,7 +403,6 @@ const ModulManager = () => {
     return (
       <div style={styles.container}>
         <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }`}</style>
-        {/* Header Skeleton */}
         <div style={styles.header}>
           <div style={styles.headerLeft}>
             <div style={{ width: 48, height: 48, borderRadius: 14, background: '#e2e8f0' }}></div>
@@ -366,13 +413,11 @@ const ModulManager = () => {
           </div>
           <div style={{ width: 140, height: 40, background: '#e2e8f0', borderRadius: 10 }}></div>
         </div>
-        {/* Stats Skeleton */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
           {[...Array(4)].map((_, i) => (
             <div key={i} style={{ width: 100, height: 36, background: '#e2e8f0', borderRadius: 20 }}></div>
           ))}
         </div>
-        {/* Grid Skeleton */}
         <div style={styles.gridContainer}>
           {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
         </div>
@@ -388,9 +433,9 @@ const ModulManager = () => {
       <style>{`
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .fade-in { animation: fadeInUp 0.3s ease-out; }
         .spin { animation: spin 0.8s linear infinite; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.06); }
       `}</style>
 
       {/* TOAST */}
@@ -414,10 +459,9 @@ const ModulManager = () => {
             <BookOpen size={22} color="white" />
           </div>
           <div>
-            <h2 style={styles.pageTitle}>E-Learning Console</h2>
+            <h2 style={styles.pageTitle}>📚 Manajemen Konten</h2>
             <p style={styles.pageSubtitle}>
-              Kelola Modul Pembelajaran
-              {guruId && <span style={styles.guruIdBadge}> <Hash size={10} /> {guruId}</span>}
+              {guruId ? `👨‍🏫 ${guruData?.nama || 'Guru'} • ${guruId}` : 'Kelola modul, tugas, dan kuis'}
             </p>
           </div>
         </div>
@@ -428,15 +472,12 @@ const ModulManager = () => {
           <button onClick={handleRefresh} style={styles.refreshBtn} disabled={refreshing}>
             <RefreshCw size={16} className={refreshing ? 'spin' : ''} />
           </button>
-          {activeTab === 'kuis' ? (
-            <button onClick={() => navigate('/guru/manage-quiz')} style={{...styles.btnCreate, background: '#f59e0b'}}>
-              <HelpCircle size={16} /> Buat Kuis
-            </button>
-          ) : (
-            <button onClick={() => navigate('/guru/modul/materi')} style={styles.btnCreate}>
-              <Plus size={16} /> Buat Modul
-            </button>
-          )}
+          <button 
+            onClick={createBtn.action} 
+            style={{...styles.btnCreate, background: createBtn.color}}
+          >
+            {createBtn.icon} {createBtn.label}
+          </button>
         </div>
       </div>
 
@@ -446,7 +487,7 @@ const ModulManager = () => {
           onClick={() => setActiveTab('semua')}
           style={styles.tabButton(activeTab === 'semua', '#6366f1')}
         >
-          Semua ({stats.total})
+          <Layers size={14} /> Semua ({stats.total})
         </button>
         <button 
           onClick={() => setActiveTab('modul')}
@@ -464,20 +505,11 @@ const ModulManager = () => {
           onClick={() => setActiveTab('kuis')}
           style={styles.tabButton(activeTab === 'kuis', '#f59e0b')}
         >
-          <HelpCircle size={14} /> Kuis ({stats.kuis})
+          <FileQuestion size={14} /> Kuis ({stats.kuis})
         </button>
-        {guruId && (
-          <button 
-            onClick={() => setFilterGuru(filterGuru === 'saya' ? 'semua' : 'saya')}
-            style={{
-              ...styles.tabButton(filterGuru === 'saya', '#8b5cf6'),
-              background: filterGuru === 'saya' ? '#8b5cf6' : '#f1f5f9',
-              color: filterGuru === 'saya' ? 'white' : '#64748b'
-            }}
-          >
-            <User size={14} /> Milik Saya ({stats.milikSaya})
-          </button>
-        )}
+        <div style={{ marginLeft: 'auto', fontSize: 11, color: '#94a3b8' }}>
+          👤 Milik Saya: {stats.milikSaya}
+        </div>
       </div>
 
       {/* ===== SEARCH & FILTER ===== */}
@@ -485,7 +517,7 @@ const ModulManager = () => {
         <div style={styles.searchBox}>
           <Search size={16} color="#94a3b8" />
           <input 
-            placeholder="Cari judul, mapel, atau ID..." 
+            placeholder="Cari judul, mapel, atau ID guru..." 
             value={searchTerm} 
             onChange={e => setSearchTerm(e.target.value)} 
             style={styles.searchInput} 
@@ -544,7 +576,6 @@ const ModulManager = () => {
       {hasActiveFilters && (
         <div style={styles.filterInfo}>
           <span>🔍 {filteredItems.length} item</span>
-          {filterGuru === 'saya' && <span style={styles.filterTag}>👤 Milik Saya</span>}
           {filterKelas !== "Semua" && <span style={styles.filterTag}>🎓 {filterKelas}</span>}
           {filterMapel !== "Semua" && <span style={styles.filterTag}>📖 {filterMapel}</span>}
           {filterStatus !== "Semua" && <span style={styles.filterTag}>📋 {filterStatus}</span>}
@@ -559,10 +590,10 @@ const ModulManager = () => {
           </div>
           <h3 style={styles.emptyTitle}>Tidak Ada Konten</h3>
           <p style={styles.emptyDesc}>
-            {searchTerm ? 'Coba ubah kata kunci pencarian.' : 'Buat modul pembelajaran baru untuk siswa.'}
+            {searchTerm ? 'Coba ubah kata kunci pencarian.' : 'Buat konten pembelajaran baru untuk siswa.'}
           </p>
-          <button onClick={() => navigate('/guru/modul/materi')} style={styles.emptyBtn}>
-            <Plus size={16} /> Buat Modul Sekarang
+          <button onClick={createBtn.action} style={{...styles.emptyBtn, background: createBtn.color}}>
+            {createBtn.icon} {createBtn.label} Sekarang
           </button>
         </div>
       ) : (
@@ -575,17 +606,27 @@ const ModulManager = () => {
               const isForAllClasses = targetKelas === "Semua";
               const isMine = item.guruId === guruId || item.createdBy === guruData?.nama;
               const isDeleting = deletingId === item.id;
+              const totalKonten = item.blocks?.length || 0;
+              const totalSoal = item.quizData?.length || 0;
               
+              const getDetailInfo = () => {
+                if (typeInfo.label === 'Kuis') return `${totalSoal} soal`;
+                if (typeInfo.label === 'Tugas') return item.deadlineTugas ? `Deadline: ${new Date(item.deadlineTugas).toLocaleDateString('id-ID')}` : 'Tanpa deadline';
+                if (typeInfo.label === 'Modul') return `${totalKonten} konten`;
+                return '-';
+              };
+
               const CardComponent = () => (
                 <div 
+                  className="card-hover"
                   style={{
                     ...styles.card,
-                    borderTop: `4px solid ${typeInfo.color}`,
+                    borderTop: `4px solid ${typeInfo.borderColor}`,
                     opacity: item.status === 'arsip' ? 0.7 : 1
                   }}
                   onClick={() => {
                     if (typeInfo.label === 'Kuis') navigate(`/guru/manage-quiz?modulId=${item.id}`);
-                    else if (typeInfo.label === 'Tugas') navigate(`/guru/manage-tugas?edit=${item.id}`);
+                    else if (typeInfo.label === 'Tugas') navigate(`/guru/modul/materi?edit=${item.id}`);
                     else navigate(`/guru/modul/materi?edit=${item.id}`);
                   }}
                 >
@@ -619,11 +660,6 @@ const ModulManager = () => {
                         <Hash size={8} /> {item.guruId}
                       </span>
                     )}
-                    {item.selectedStudents && item.selectedStudents.length > 0 && (
-                      <span style={{...styles.badge, background: '#fce7f3', color: '#be185d' }}>
-                        <Users size={10} /> {item.selectedStudents.length} siswa
-                      </span>
-                    )}
                   </div>
 
                   {/* Title */}
@@ -643,17 +679,11 @@ const ModulManager = () => {
 
                   {/* Meta */}
                   <div style={styles.cardMeta}>
-                    {typeInfo.label === 'Kuis' ? (
-                      <span><HelpCircle size={10}/> {item.quizData?.length || 0} soal</span>
-                    ) : typeInfo.label === 'Tugas' ? (
-                      <span><Clock size={10}/> {item.deadlineTugas ? new Date(item.deadlineTugas).toLocaleDateString('id-ID') : 'Tanpa deadline'}</span>
-                    ) : (
-                      <span><FileText size={10}/> {(item.blocks || []).length} konten</span>
-                    )}
+                    <span>{typeInfo.emoji} {getDetailInfo()}</span>
                     <span><Users size={10}/> {item.targetKategori || 'Reguler'}</span>
                     {item.mingguKe && <span>📅 Mg {item.mingguKe}</span>}
-                    <span><Calendar size={10}/> {item.tahunAjaran || '-'}</span>
                     {item.updatedBy && <span>✏️ {item.updatedBy}</span>}
+                    <span><Calendar size={10}/> {item.tahunAjaran || '-'}</span>
                   </div>
 
                   {/* Actions */}
@@ -661,7 +691,6 @@ const ModulManager = () => {
                     <button 
                       onClick={(e) => { e.stopPropagation(); 
                         if (typeInfo.label === 'Kuis') navigate(`/guru/manage-quiz?modulId=${item.id}`);
-                        else if (typeInfo.label === 'Tugas') navigate(`/guru/manage-tugas?edit=${item.id}`);
                         else navigate(`/guru/modul/materi?edit=${item.id}`);
                       }} 
                       style={styles.btnEdit}
@@ -697,7 +726,6 @@ const ModulManager = () => {
             })}
           </div>
           
-          {/* LOAD MORE */}
           {hasMore && filteredItems.length === items.length && items.length > 0 && (
             <div style={styles.loadMore}>
               <button 
@@ -733,7 +761,6 @@ const styles = {
     minHeight: '100vh'
   },
 
-  // Header
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -758,11 +785,6 @@ const styles = {
   },
   pageTitle: { margin: 0, fontSize: 20, fontWeight: 800, color: '#1e293b' },
   pageSubtitle: { margin: '2px 0 0', fontSize: 12, color: '#94a3b8' },
-  guruIdBadge: {
-    display: 'inline-flex', alignItems: 'center', gap: 3,
-    padding: '1px 8px', borderRadius: 10, fontSize: 9,
-    background: '#eef2ff', color: '#3b82f6', fontWeight: 600
-  },
   headerActions: { display: 'flex', gap: 8, alignItems: 'center' },
   viewToggle: {
     background: '#f1f5f9', border: 'none', padding: '8px 10px',
@@ -775,7 +797,6 @@ const styles = {
     display: 'flex', alignItems: 'center', justifyContent: 'center'
   },
   btnCreate: {
-    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
     color: 'white', border: 'none', padding: '10px 18px',
     borderRadius: 10, cursor: 'pointer', fontWeight: 700,
     fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
@@ -783,12 +804,12 @@ const styles = {
     transition: '0.2s'
   },
 
-  // Stats Tabs
   statsTabs: {
     display: 'flex', gap: 6, marginBottom: 16,
     flexWrap: 'wrap', background: 'white',
     padding: '8px 12px', borderRadius: 12,
-    border: '1px solid #f1f5f9'
+    border: '1px solid #f1f5f9',
+    alignItems: 'center'
   },
   tabButton: (active, color) => ({
     padding: '6px 14px', borderRadius: 20, border: 'none',
@@ -800,7 +821,6 @@ const styles = {
     boxShadow: active ? `0 2px 8px ${color}40` : 'none'
   }),
 
-  // Filter Bar
   filterBar: {
     background: 'white', borderRadius: 12,
     padding: '12px 16px', marginBottom: 16,
@@ -840,7 +860,6 @@ const styles = {
     alignItems: 'center', gap: 3
   },
 
-  // Advanced Filters
   advancedFilters: {
     display: 'flex', gap: 10, flexWrap: 'wrap',
     padding: 12, background: 'white', borderRadius: 12,
@@ -853,7 +872,6 @@ const styles = {
     cursor: 'pointer', outline: 'none'
   },
 
-  // Filter Info
   filterInfo: {
     fontSize: 11, color: '#3b82f6', marginBottom: 12,
     display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center'
@@ -863,7 +881,6 @@ const styles = {
     borderRadius: 12, fontSize: 10, fontWeight: 600
   },
 
-  // Grid / List
   gridContainer: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
@@ -873,7 +890,6 @@ const styles = {
     display: 'flex', flexDirection: 'column', gap: 12
   },
 
-  // Card
   card: {
     background: 'white', borderRadius: 14, overflow: 'hidden',
     padding: 16, border: '1px solid #f1f5f9',
@@ -938,7 +954,6 @@ const styles = {
     display: 'flex', alignItems: 'center', justifyContent: 'center'
   },
 
-  // Empty State
   emptyState: {
     textAlign: 'center', padding: '60px 20px',
     background: 'white', borderRadius: 16,
@@ -948,13 +963,12 @@ const styles = {
   emptyTitle: { fontSize: 18, fontWeight: 700, color: '#64748b', margin: '8px 0 4px' },
   emptyDesc: { fontSize: 13, color: '#94a3b8', marginBottom: 16 },
   emptyBtn: {
-    background: '#6366f1', color: 'white', border: 'none',
+    color: 'white', border: 'none',
     padding: '10px 24px', borderRadius: 10, cursor: 'pointer',
     fontWeight: 600, fontSize: 13, display: 'inline-flex',
     alignItems: 'center', gap: 6
   },
 
-  // Load More
   loadMore: { textAlign: 'center', marginTop: 24 },
   btnLoadMore: {
     background: '#f1f5f9', border: 'none', padding: '10px 24px',
@@ -964,9 +978,6 @@ const styles = {
   }
 };
 
-// ============================================================
-// SKELETON STYLES
-// ============================================================
 const skeletonStyles = {
   card: {
     background: 'white', borderRadius: 14,
