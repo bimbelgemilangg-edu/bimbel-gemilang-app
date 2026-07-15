@@ -15,7 +15,8 @@ import {
   Hash, Tag, User, Calendar, Clock, Filter, X, Layers,
   Database, Server, Cloud, Zap, Shield, BarChart3,
   TrendingUp, Activity, PieChart, Globe, Link as LinkIcon,
-  Copy, Edit3, Plus, Grid3x3, List, ChevronDown
+  Copy, Edit3, Plus, Grid3x3, List, ChevronDown,
+  FileQuestion, Award, Star, Sparkles, Rocket
 } from 'lucide-react';
 
 // ============================================================
@@ -40,6 +41,7 @@ const ManageMateri = () => {
   const [filterMapel, setFilterMapel] = useState('Semua');
   const [filterGuru, setFilterGuru] = useState('Semua');
   const [filterStatus, setFilterStatus] = useState('Semua');
+  const [filterKelas, setFilterKelas] = useState('Semua');
   
   const [stats, setStats] = useState({ 
     totalSiswa: 0, 
@@ -47,7 +49,9 @@ const ManageMateri = () => {
     totalTugasPending: 0, 
     storageUsed: '0 MB',
     totalFiles: 0,
-    totalGuru: 0
+    totalGuru: 0,
+    totalKuis: 0,
+    totalTugas: 0
   });
   const [materiList, setMateriList] = useState([]);
   const [filteredMateri, setFilteredMateri] = useState([]);
@@ -57,6 +61,7 @@ const ManageMateri = () => {
   const [alertMsg, setAlertMsg] = useState(null);
   const [availableMapel, setAvailableMapel] = useState([]);
   const [availableGuru, setAvailableGuru] = useState([]);
+  const [availableKelas, setAvailableKelas] = useState([]);
   const [deletingId, setDeletingId] = useState(null);
   const [deletingFile, setDeletingFile] = useState(null);
 
@@ -119,6 +124,14 @@ const ManageMateri = () => {
       const tugasSnap = await getDocs(query(collection(db, 'jawaban_tugas'), where('status', '==', 'Pending')));
       const guruSnap = await getDocs(collection(db, 'teachers'));
       
+      // Hitung jumlah kuis & tugas
+      let kuisCount = 0, tugasCount = 0;
+      modulSnap.forEach(doc => {
+        const data = doc.data();
+        if (data.type === 'kuis_mandiri' || data.quizData?.length > 0) kuisCount++;
+        if (data.type === 'assignment' || data.blocks?.some(b => b.type === 'assignment')) tugasCount++;
+      });
+      
       // Hitung storage
       const { data: files } = await supabase.storage.from(BUCKET_NAME).list('', { limit: 1000 });
       let totalSize = 0;
@@ -130,6 +143,8 @@ const ManageMateri = () => {
         totalTugasPending: tugasSnap.size,
         totalFiles: files?.length || 0,
         totalGuru: guruSnap.size,
+        totalKuis: kuisCount,
+        totalTugas: tugasCount,
         storageUsed: totalSize > 0 ? (totalSize / (1024 * 1024)).toFixed(2) + ' MB' : '0 MB'
       });
     } catch (err) { console.error(err); }
@@ -165,19 +180,32 @@ const ManageMateri = () => {
       // Ambil mapel dari modul
       const modulSnap = await getDocs(collection(db, 'bimbel_modul'));
       const mapelSet = new Set();
-      modulSnap.forEach(doc => {
-        const mapel = doc.data().subject;
-        if (mapel) mapelSet.add(mapel);
-      });
-      setAvailableMapel(['Semua', ...Array.from(mapelSet).sort()]);
-
-      // Ambil guru dari modul
       const guruSet = new Set();
+      const kelasSet = new Set();
+      
       modulSnap.forEach(doc => {
-        const guru = doc.data().guruName || doc.data().authorName || doc.data().createdBy;
-        if (guru) guruSet.add(guru);
+        const data = doc.data();
+        if (data.subject) mapelSet.add(data.subject);
+        if (data.kodeMapel) mapelSet.add(data.kodeMapel);
+        if (data.guruName || data.authorName) guruSet.add(data.guruName || data.authorName);
+        if (data.guruId) guruSet.add(data.guruId);
+        if (data.targetKelas && data.targetKelas !== 'Semua') kelasSet.add(data.targetKelas);
       });
+      
+      // Tambah guru dari collection teachers
+      const guruSnap = await getDocs(collection(db, 'teachers'));
+      guruSnap.forEach(doc => {
+        const data = doc.data();
+        if (data.nama) guruSet.add(data.nama);
+        if (data.guruId) guruSet.add(data.guruId);
+      });
+      
+      setAvailableMapel(['Semua', ...Array.from(mapelSet).sort()]);
       setAvailableGuru(['Semua', ...Array.from(guruSet).sort()]);
+      setAvailableKelas(['Semua', ...Array.from(kelasSet).sort((a, b) => {
+        const na = parseInt(a), nb = parseInt(b);
+        return !isNaN(na) && !isNaN(nb) ? na - nb : a.localeCompare(b);
+      })]);
     } catch (error) {
       console.error('Error fetching filters:', error);
     }
@@ -192,29 +220,41 @@ const ManageMateri = () => {
       filtered = filtered.filter(m => 
         m.title?.toLowerCase().includes(term) ||
         m.subject?.toLowerCase().includes(term) ||
+        m.kodeMapel?.toLowerCase().includes(term) ||
         m.guruId?.toLowerCase().includes(term) ||
-        m.guruName?.toLowerCase().includes(term)
+        m.guruName?.toLowerCase().includes(term) ||
+        m.authorName?.toLowerCase().includes(term)
       );
     }
     
     if (filterMapel !== 'Semua') {
-      filtered = filtered.filter(m => m.subject === filterMapel);
+      filtered = filtered.filter(m => 
+        m.subject === filterMapel || m.kodeMapel === filterMapel
+      );
     }
     
     if (filterGuru !== 'Semua') {
       filtered = filtered.filter(m => 
         m.guruName === filterGuru || 
         m.authorName === filterGuru || 
-        m.createdBy === filterGuru
+        m.createdBy === filterGuru ||
+        m.guruId === filterGuru
       );
     }
     
     if (filterStatus !== 'Semua') {
-      filtered = filtered.filter(m => m.status === filterStatus);
+      filtered = filtered.filter(m => m.status === filterStatus || (!m.status && filterStatus === 'aktif'));
+    }
+    
+    if (filterKelas !== 'Semua') {
+      filtered = filtered.filter(m => {
+        const target = m.targetKelas || 'Semua';
+        return target === filterKelas || target === 'Semua';
+      });
     }
     
     setFilteredMateri(filtered);
-  }, [searchTerm, filterMapel, filterGuru, filterStatus, materiList]);
+  }, [searchTerm, filterMapel, filterGuru, filterStatus, filterKelas, materiList]);
 
   // ===== HANDLERS =====
   const handleRefresh = () => {
@@ -228,34 +268,20 @@ const ManageMateri = () => {
     
     setDeletingId(id);
     try {
-      // 1. Kumpulkan semua filePath dari sections
       const filePaths = [];
       if (modul.blocks) {
         modul.blocks.forEach(block => {
           if (block.filePath) filePaths.push(block.filePath);
         });
       }
+      if (modul.coverFilePath) filePaths.push(modul.coverFilePath);
       
-      // 2. Hapus cover image jika ada
-      if (modul.coverFilePath) {
-        filePaths.push(modul.coverFilePath);
-      }
-      
-      // 3. Hapus file dari Supabase
       if (filePaths.length > 0) {
-        const { error } = await supabase.storage
-          .from(BUCKET_NAME)
-          .remove(filePaths);
-        if (error) {
-          console.warn('Gagal hapus beberapa file:', error);
-        } else {
-          console.log(`✅ ${filePaths.length} file dihapus dari Supabase`);
-        }
+        const { error } = await supabase.storage.from(BUCKET_NAME).remove(filePaths);
+        if (error) console.warn('Gagal hapus beberapa file:', error);
       }
       
-      // 4. Hapus data dari Firestore
       await deleteDoc(doc(db, 'bimbel_modul', id));
-      
       showAlert(`✅ Modul "${modul.title}" berhasil dihapus!`);
       fetchAllData();
     } catch (error) {
@@ -294,24 +320,30 @@ const ManageMateri = () => {
 
   // ===== GET TYPE INFO =====
   const getTypeInfo = (item) => {
-    if (item.type === 'kuis_mandiri') return { 
-      label: 'Kuis', 
-      icon: <BookOpen size={12} />, 
-      color: '#f59e0b', 
-      bg: '#fef3c7' 
-    };
-    if (item.type === 'assignment') return { 
-      label: 'Tugas', 
-      icon: <Send size={12} />, 
-      color: '#ef4444', 
-      bg: '#fee2e2' 
-    };
-    if (item.blocks?.length > 0) return { 
-      label: 'Modul', 
-      icon: <BookOpen size={12} />, 
-      color: '#3b82f6', 
-      bg: '#dbeafe' 
-    };
+    if (item.type === 'kuis_mandiri' || item.quizData?.length > 0) {
+      return { 
+        label: 'Kuis', 
+        icon: <FileQuestion size={12} />, 
+        color: '#f59e0b', 
+        bg: '#fef3c7' 
+      };
+    }
+    if (item.type === 'assignment' || item.blocks?.some(b => b.type === 'assignment')) {
+      return { 
+        label: 'Tugas', 
+        icon: <Send size={12} />, 
+        color: '#ef4444', 
+        bg: '#fee2e2' 
+      };
+    }
+    if (item.blocks?.length > 0) {
+      return { 
+        label: 'Modul', 
+        icon: <BookOpen size={12} />, 
+        color: '#3b82f6', 
+        bg: '#dbeafe' 
+      };
+    }
     return { 
       label: 'Materi', 
       icon: <FileText size={12} />, 
@@ -342,7 +374,9 @@ const ManageMateri = () => {
     return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
   };
 
-  // ===== RENDER: SKELETON =====
+  // ============================================================
+  // RENDER: SKELETON
+  // ============================================================
   const SkeletonCard = () => (
     <div style={skeletonStyles.card}>
       <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
@@ -363,11 +397,28 @@ const ManageMateri = () => {
     </div>
   );
 
-  // ===== RENDER: MODUL CARD =====
+  const skeletonStyles = {
+    card: {
+      background: 'white', borderRadius: 14,
+      border: '1px solid #f1f5f9', padding: 16,
+      overflow: 'hidden', height: '100%'
+    },
+    badge: { width: 50, height: 18, background: '#f1f5f9', borderRadius: 12 },
+    line: { background: '#f1f5f9', borderRadius: 6 }
+  };
+
+  // ============================================================
+  // RENDER: MODUL CARD
+  // ============================================================
   const renderModulCard = (item) => {
     const typeInfo = getTypeInfo(item);
     const sb = getStatusBadge(item.status);
     const isDeleting = deletingId === item.id;
+    const targetKelas = item.targetKelas || 'Semua';
+    const isForAll = targetKelas === 'Semua';
+    const guruName = item.guruName || item.authorName || item.createdBy || 'Admin';
+    const totalKonten = item.blocks?.length || 0;
+    const totalSoal = item.quizData?.length || 0;
 
     return (
       <div 
@@ -391,14 +442,26 @@ const ManageMateri = () => {
               {item.subject}
             </span>
           )}
+          {item.kodeMapel && (
+            <span style={{...cardStyles.badge, background: '#ede9fe', color: '#8b5cf6' }}>
+              <Tag size={10} /> {item.kodeMapel}
+            </span>
+          )}
+          <span style={{
+            ...cardStyles.badge,
+            background: isForAll ? '#fef3c7' : '#e0e7ff',
+            color: isForAll ? '#b45309' : '#3730a3'
+          }}>
+            {isForAll ? '🌐 Semua' : `🎓 ${targetKelas}`}
+          </span>
+          {item.targetKategori && item.targetKategori !== 'Semua' && (
+            <span style={{...cardStyles.badge, background: '#fce7f3', color: '#be185d' }}>
+              {item.targetKategori}
+            </span>
+          )}
           {item.guruId && (
             <span style={{...cardStyles.badge, background: '#eef2ff', color: '#3b82f6', fontSize: 7 }}>
               <Hash size={8} /> {item.guruId}
-            </span>
-          )}
-          {item.kodeMapel && (
-            <span style={{...cardStyles.badge, background: '#ede9fe', color: '#8b5cf6', fontSize: 7 }}>
-              <Tag size={8} /> {item.kodeMapel}
             </span>
           )}
           {item.selectedStudents && item.selectedStudents.length > 0 && (
@@ -421,16 +484,28 @@ const ManageMateri = () => {
 
         {/* Meta */}
         <div style={cardStyles.meta}>
-          <span><User size={10} /> {item.guruName || item.authorName || item.createdBy || 'Admin'}</span>
+          <span><User size={10} /> {guruName}</span>
           <span><Calendar size={10} /> {formatDate(item.updatedAt || item.createdAt)}</span>
-          <span><Layers size={10} /> {(item.blocks || []).length} konten</span>
-          {item.totalKonten > 0 && <span>📄 {item.totalKonten}</span>}
+          {typeInfo.label === 'Kuis' ? (
+            <span><FileQuestion size={10} /> {totalSoal} soal</span>
+          ) : typeInfo.label === 'Tugas' ? (
+            <span><Clock size={10} /> {item.deadlineTugas ? formatDate(item.deadlineTugas) : 'Tanpa deadline'}</span>
+          ) : (
+            <span><Layers size={10} /> {totalKonten} konten</span>
+          )}
+          {item.mingguKe && <span>📅 Mg {item.mingguKe}</span>}
         </div>
 
         {/* Actions */}
         <div style={cardStyles.actions}>
           <button 
-            onClick={() => navigate(`/guru/modul/materi?edit=${item.id}`)}
+            onClick={() => {
+              if (typeInfo.label === 'Kuis') {
+                navigate(`/guru/manage-quiz?modulId=${item.id}`);
+              } else {
+                navigate(`/guru/modul/materi?edit=${item.id}`);
+              }
+            }}
             style={cardStyles.btnEdit}
           >
             <Edit3 size={12} /> Edit
@@ -505,17 +580,9 @@ const ManageMateri = () => {
     }
   };
 
-  const skeletonStyles = {
-    card: {
-      background: 'white', borderRadius: 14,
-      border: '1px solid #f1f5f9', padding: 16,
-      overflow: 'hidden', height: '100%'
-    },
-    badge: { width: 50, height: 18, background: '#f1f5f9', borderRadius: 12 },
-    line: { background: '#f1f5f9', borderRadius: 6 }
-  };
-
-  // ===== RENDER: STORAGE TABLE =====
+  // ============================================================
+  // RENDER: STORAGE TABLE
+  // ============================================================
   const renderStorageTable = () => (
     <div style={{ overflowX: 'auto' }}>
       <table style={tableStyles.table}>
@@ -633,6 +700,12 @@ const ManageMateri = () => {
             <button onClick={handleRefresh} style={styles.refreshBtn} disabled={refreshing}>
               <RefreshCw size={14} className={refreshing ? 'spin' : ''} /> {!isMobile && 'Refresh'}
             </button>
+            <button 
+              onClick={() => navigate('/guru/modul/materi')} 
+              style={styles.btnCreate}
+            >
+              <Plus size={16} /> Buat Modul
+            </button>
           </div>
         </div>
 
@@ -670,7 +743,7 @@ const ManageMateri = () => {
             📊 Ringkasan
           </button>
           <button onClick={() => setActiveTab('materi')} style={styles.tab(activeTab === 'materi')}>
-            📚 Modul
+            📚 Modul ({stats.totalModul})
           </button>
           <button onClick={() => setActiveTab('tugas')} style={styles.tab(activeTab === 'tugas')}>
             ⏳ Tugas ({stats.totalTugasPending})
@@ -704,7 +777,6 @@ const ManageMateri = () => {
                 ))
               )}
               
-              {/* Modul terbaru */}
               <h4 style={{...styles.sectionTitle, marginTop: 30}}>📚 Modul Terbaru</h4>
               {materiList.slice(0, 5).map(m => (
                 <div key={m.id} style={styles.listItem}>
@@ -731,7 +803,7 @@ const ManageMateri = () => {
                 <div style={styles.searchBox}>
                   <Search size={16} color="#94a3b8" />
                   <input 
-                    placeholder="Cari judul, mapel, atau ID..." 
+                    placeholder="Cari judul, mapel, ID guru..." 
                     value={searchTerm} 
                     onChange={e => setSearchTerm(e.target.value)} 
                     style={styles.searchInput} 
@@ -749,6 +821,12 @@ const ManageMateri = () => {
                     <option value="Semua">👨‍🏫 Semua Guru</option>
                     {availableGuru.filter(g => g !== 'Semua').map(g => (
                       <option key={g} value={g}>{g}</option>
+                    ))}
+                  </select>
+                  <select value={filterKelas} onChange={e => setFilterKelas(e.target.value)} style={styles.filterSelect}>
+                    <option value="Semua">🎓 Semua Kelas</option>
+                    {availableKelas.filter(k => k !== 'Semua').map(k => (
+                      <option key={k} value={k}>{k}</option>
                     ))}
                   </select>
                   <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={styles.filterSelect}>
@@ -922,6 +1000,13 @@ const styles = {
     fontSize: 12, fontWeight: 600, color: '#64748b',
     display: 'flex', alignItems: 'center', gap: 4
   },
+  btnCreate: {
+    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+    color: 'white', border: 'none', padding: '10px 18px',
+    borderRadius: 10, cursor: 'pointer', fontWeight: 700,
+    fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
+    boxShadow: '0 4px 12px rgba(99,102,241,0.25)'
+  },
   statsGrid: (m) => ({ 
     display: 'grid', gridTemplateColumns: m ? 'repeat(2, 1fr)' : 'repeat(6, 1fr)', 
     gap: 12, marginBottom: 20 
@@ -1011,6 +1096,10 @@ const styles = {
   storageHeader: { 
     display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
     marginBottom: 12, flexWrap: 'wrap', gap: 10 
+  },
+  activityItem: {
+    display: 'flex', alignItems: 'center', gap: 10,
+    padding: '8px 0', borderBottom: '1px solid #f1f5f9'
   }
 };
 
