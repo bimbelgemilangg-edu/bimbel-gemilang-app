@@ -32,6 +32,219 @@ const FILE_TYPE_OPTIONS = [
 ];
 
 // ============================================================
+// 🔥 DETEKSI JENIS LINK - PERBAIKAN UNTUK CANVA & GOOGLE
+// ============================================================
+const getLinkType = (url) => {
+  if (!url) return 'unknown';
+  
+  // YouTube
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    return 'youtube';
+  }
+  
+  // Canva
+  if (url.includes('canva.com') || url.includes('canva.cn')) {
+    return 'canva';
+  }
+  
+  // Google Docs / Sheets / Slides / Drive
+  if (url.includes('docs.google.com') || 
+      url.includes('drive.google.com') ||
+      url.includes('google.com/')) {
+    return 'google';
+  }
+  
+  // Vimeo
+  if (url.includes('vimeo.com')) {
+    return 'vimeo';
+  }
+  
+  // Umum
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return 'link';
+  }
+  
+  return 'unknown';
+};
+
+// ============================================================
+// 🔥 RENDER LINK PREVIEW - PERBAIKAN UNTUK CANVA & GOOGLE
+// ============================================================
+const renderLinkPreview = (url) => {
+  if (!url) return null;
+  
+  const type = getLinkType(url);
+  
+  // YOUTUBE
+  if (type === 'youtube') {
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?#]+)/);
+    if (match) {
+      return (
+        <div style={{ borderRadius: 8, overflow: 'hidden', background: '#000' }}>
+          <iframe 
+            width="100%" 
+            height="300" 
+            src={`https://www.youtube.com/embed/${match[1]}`} 
+            frameBorder="0" 
+            allowFullScreen 
+            style={{ display: 'block' }}
+            title="YouTube Video"
+          />
+        </div>
+      );
+    }
+    return <p style={{ color: '#ef4444', fontSize: 12 }}>⚠️ Link YouTube tidak valid</p>;
+  }
+  
+  // CANVA
+  if (type === 'canva') {
+    return (
+      <div style={{ 
+        borderRadius: 8, 
+        overflow: 'hidden', 
+        background: 'linear-gradient(135deg, #f0fdf4, #f8fafc)',
+        padding: 16,
+        border: '1px solid #bbf7d0'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+          <div style={{ 
+            background: '#00c4cc', 
+            padding: '4px 10px', 
+            borderRadius: 4, 
+            fontSize: 10, 
+            color: 'white', 
+            fontWeight: 'bold'
+          }}>
+            CANVA
+          </div>
+          <span style={{ fontSize: 11, color: '#64748b', wordBreak: 'break-all' }}>{url}</span>
+        </div>
+        <a 
+          href={url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '10px 20px',
+            background: '#00c4cc',
+            color: 'white',
+            borderRadius: 8,
+            textDecoration: 'none',
+            fontWeight: 600,
+            fontSize: 13,
+            transition: '0.2s'
+          }}
+          onMouseEnter={(e) => e.target.style.opacity = '0.8'}
+          onMouseLeave={(e) => e.target.style.opacity = '1'}
+        >
+          <ExternalLink size={16} /> Buka di Canva
+        </a>
+        <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>
+          💡 Klik tombol di atas untuk melihat desain Canva
+        </p>
+      </div>
+    );
+  }
+  
+  // GOOGLE DOCS
+  if (type === 'google') {
+    return (
+      <div style={{ 
+        borderRadius: 8, 
+        overflow: 'hidden', 
+        background: '#f8fafc',
+        padding: 12,
+        border: '1px solid #e2e8f0'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <div style={{ 
+            background: '#4285f4', 
+            padding: '4px 10px', 
+            borderRadius: 4, 
+            fontSize: 10, 
+            color: 'white', 
+            fontWeight: 'bold'
+          }}>
+            GOOGLE
+          </div>
+          <span style={{ fontSize: 11, color: '#64748b', wordBreak: 'break-all' }}>{url}</span>
+        </div>
+        <iframe 
+          src={url} 
+          style={{ 
+            width: '100%', 
+            height: 400, 
+            border: 'none', 
+            borderRadius: 8,
+            background: 'white'
+          }} 
+          allowFullScreen
+          title="Google Docs"
+        />
+        <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 6 }}>
+          💡 Jika tidak muncul, klik kanan → "Buka di tab baru"
+        </p>
+      </div>
+    );
+  }
+  
+  // VIMEO
+  if (type === 'vimeo') {
+    const match = url.match(/vimeo\.com\/(\d+)/);
+    if (match) {
+      return (
+        <div style={{ borderRadius: 8, overflow: 'hidden', background: '#000' }}>
+          <iframe 
+            width="100%" 
+            height="300" 
+            src={`https://player.vimeo.com/video/${match[1]}`} 
+            frameBorder="0" 
+            allowFullScreen 
+            style={{ display: 'block' }}
+            title="Vimeo Video"
+          />
+        </div>
+      );
+    }
+    return <p style={{ color: '#ef4444', fontSize: 12 }}>⚠️ Link Vimeo tidak valid</p>;
+  }
+  
+  // LINK BIASA
+  if (type === 'link') {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: 12, 
+        padding: 16, 
+        background: '#f8fafc', 
+        borderRadius: 8,
+        border: '1px solid #e2e8f0'
+      }}>
+        <Link size={24} color="#3b82f6" />
+        <a 
+          href={url} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          style={{ 
+            color: '#3b82f6', 
+            fontWeight: 600, 
+            textDecoration: 'none',
+            wordBreak: 'break-all'
+          }}
+        >
+          {url}
+        </a>
+      </div>
+    );
+  }
+  
+  return null;
+};
+
+// ============================================================
 // PREVIEW COMPONENT
 // ============================================================
 const FilePreview = ({ url, fileName, fileType }) => {
@@ -39,20 +252,15 @@ const FilePreview = ({ url, fileName, fileType }) => {
   
   if (!url) return null;
   
-  const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?#]+)/);
-  if (youtubeMatch) {
-    return (
-      <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 8, overflow: 'hidden' }}>
-        <iframe 
-          src={`https://www.youtube.com/embed/${youtubeMatch[1]}`} 
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }} 
-          allowFullScreen 
-          title="Video Preview" 
-        />
-      </div>
-    );
+  // 🔥 CEK APAKAH INI LINK (bukan file)
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    const linkType = getLinkType(url);
+    if (linkType !== 'unknown') {
+      return renderLinkPreview(url);
+    }
   }
   
+  // FILE: Gambar
   if (fileType?.startsWith('image/') || url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
     return (
       <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', maxHeight: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -67,6 +275,7 @@ const FilePreview = ({ url, fileName, fileType }) => {
     );
   }
   
+  // FILE: PDF
   if (fileType === 'application/pdf' || url.match(/\.pdf$/i)) {
     return (
       <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', padding: 16, textAlign: 'center' }}>
@@ -79,6 +288,7 @@ const FilePreview = ({ url, fileName, fileType }) => {
     );
   }
   
+  // FILE: Lainnya
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, justifyContent: 'center' }}>
       <FileText size={32} color="#3b82f6" />
@@ -181,7 +391,6 @@ const ManageMateri = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState({ type: '', message: '' });
   
-  // 🔥 STATE UNTUK SHOW ADD MENU
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   
@@ -752,19 +961,36 @@ const ManageMateri = () => {
           </div>
         )}
 
+        {/* ========================================================== */}
+        {/* 🔥 VIDEO / LINK - DENGAN DUKUNGAN CANVA & GOOGLE DOCS */}
+        {/* ========================================================== */}
         {section.type === 'video' && (
           <div>
             <input 
               value={section.content} 
               onChange={e => updateSection(editingSection, 'content', e.target.value)} 
-              placeholder="Tempel link YouTube..." 
-              style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none' }} 
+              placeholder="Tempel link YouTube, Canva, Google Docs, Vimeo..." 
+              style={{ 
+                width: '100%', 
+                padding: 10, 
+                borderRadius: 8, 
+                border: '1px solid #e2e8f0', 
+                fontSize: 13, 
+                outline: 'none',
+                boxSizing: 'border-box'
+              }} 
             />
-            {getYouTubeId(section.content) && (
-              <div style={{ marginTop: 8, borderRadius: 8, overflow: 'hidden' }}>
-                <iframe width="100%" height="250" src={`https://www.youtube.com/embed/${getYouTubeId(section.content)}`} frameBorder="0" allowFullScreen />
+            
+            {/* 🔥 PREVIEW LINK - DENGAN DUKUNGAN CANVA & GOOGLE */}
+            {section.content && (
+              <div style={{ marginTop: 10 }}>
+                {renderLinkPreview(section.content)}
               </div>
             )}
+            
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 6 }}>
+              💡 Support: YouTube, Canva, Google Docs/Sheets/Slides, Vimeo, dan link lainnya
+            </div>
           </div>
         )}
 
