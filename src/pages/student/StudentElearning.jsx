@@ -1,15 +1,16 @@
 // src/pages/student/StudentElearning.jsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { 
   collection, getDocs, doc, getDoc, query, orderBy, where 
 } from "firebase/firestore";
-import { useNavigate } from 'react-router-dom';
 import { 
   BookOpen, Search, Filter, X, Grid3x3, List, 
   Hash, Tag, User, ChevronRight, FileQuestion,
   Layers, Send, HelpCircle, Clock, CheckCircle,
-  AlertCircle, Lock, ChevronLeft, ArrowLeft
+  AlertCircle, Lock, ChevronLeft, ArrowLeft,
+  FileText, Download, Eye, ExternalLink, Link as LinkIcon
 } from 'lucide-react';
 import StudentModuleView from './StudentModuleView';
 
@@ -48,6 +49,10 @@ const StudentElearning = () => {
     kelas: '',
     program: 'Reguler'
   });
+  
+  // ===== SUBMISSIONS =====
+  const [submissions, setSubmissions] = useState({});
+  const [quizSubmissions, setQuizSubmissions] = useState({});
   
   // ===== STATS =====
   const [stats, setStats] = useState({
@@ -125,24 +130,47 @@ const StudentElearning = () => {
       setModules(allModules);
       setFilteredModules(allModules);
       
+      // 🔥 FETCH SUBMISSIONS
+      if (nim) {
+        const [snapTugas, snapKuis] = await Promise.all([
+          getDocs(query(collection(db, "jawaban_tugas"), where("studentNim", "==", nim))),
+          getDocs(query(collection(db, "jawaban_kuis"), where("studentNim", "==", nim)))
+        ]);
+        
+        const subMap = {};
+        snapTugas.forEach(d => { 
+          const data = d.data();
+          subMap[data.modulId] = { id: d.id, ...data };
+        });
+        setSubmissions(subMap);
+        
+        const quizMap = {};
+        snapKuis.forEach(d => { 
+          const data = d.data();
+          quizMap[data.modulId] = { id: d.id, ...data };
+        });
+        setQuizSubmissions(quizMap);
+      }
+      
       // Hitung stats
       const modulCount = allModules.filter(m => m.type !== 'kuis_mandiri' && m.blocks?.length > 0).length;
       const tugasCount = allModules.filter(m => m.blocks?.some(b => b.type === 'assignment')).length;
       const kuisCount = allModules.filter(m => m.type === 'kuis_mandiri' || m.quizData?.length > 0).length;
+      const submittedCount = allModules.filter(m => submissions[m.id]).length;
       
       setStats({
         total: allModules.length,
         modul: modulCount,
         tugas: tugasCount,
         kuis: kuisCount,
-        submitted: 0
+        submitted: submittedCount
       });
       
     } catch (error) {
       console.error("Error fetch modules:", error);
     }
     setLoading(false);
-  }, [studentData]);
+  }, [studentData, submissions]);
 
   // Fetch saat data siswa berubah
   useEffect(() => {
@@ -160,7 +188,9 @@ const StudentElearning = () => {
         (m.title || '').toLowerCase().includes(term) ||
         (m.subject || '').toLowerCase().includes(term) ||
         (m.kodeMapel || '').toLowerCase().includes(term) ||
-        (m.description || '').toLowerCase().includes(term)
+        (m.description || '').toLowerCase().includes(term) ||
+        (m.guruName || '').toLowerCase().includes(term) ||
+        (m.authorName || '').toLowerCase().includes(term)
       );
     }
     
@@ -221,6 +251,10 @@ const StudentElearning = () => {
     const hasQuiz = module.quizData?.length > 0;
     const coverImage = module.coverImage || null;
     const isForAll = module.targetKelas === 'Semua';
+    const isSubmitted = !!submissions[module.id];
+    const isQuizDone = !!quizSubmissions[module.id];
+    const quizScore = quizSubmissions[module.id]?.score || 0;
+    const guruName = module.guruName || module.authorName || module.createdBy || 'Guru';
     
     return (
       <div 
@@ -260,15 +294,23 @@ const StudentElearning = () => {
                 {module.targetKategori}
               </span>
             )}
+            {isSubmitted && (
+              <span style={{...cardStyles.badge, background: '#dcfce7', color: '#10b981' }}>
+                <CheckCircle size={10} /> Tugas
+              </span>
+            )}
+            {isQuizDone && (
+              <span style={{...cardStyles.badge, background: '#dcfce7', color: '#10b981' }}>
+                <CheckCircle size={10} /> Kuis {quizScore > 0 && `(${quizScore})`}
+              </span>
+            )}
           </div>
         </div>
         <div style={cardStyles.body}>
           <h3 style={cardStyles.title}>{module.title}</h3>
           <div style={cardStyles.subject}>
             <BookOpen size={12} /> {module.subject || 'Materi'}
-            {module.authorName && (
-              <span style={cardStyles.authorTag}><User size={10} /> {module.authorName}</span>
-            )}
+            <span style={cardStyles.authorTag}><User size={10} /> {guruName}</span>
           </div>
           <div style={cardStyles.meta}>
             {hasAssignment && <span style={cardStyles.metaItem}><Send size={10} /> Tugas</span>}
@@ -283,6 +325,70 @@ const StudentElearning = () => {
         </div>
       </div>
     );
+  };
+
+  const cardStyles = {
+    card: { 
+      background: 'white', borderRadius: 16, overflow: 'hidden', 
+      cursor: 'pointer', transition: 'all 0.3s ease', 
+      boxShadow: '0 2px 8px rgba(0,0,0,0.04)', 
+      border: '1px solid #f1f5f9', 
+      height: '100%', display: 'flex', flexDirection: 'column' 
+    },
+    cover: { 
+      position: 'relative', height: 140, 
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+      overflow: 'hidden', flexShrink: 0 
+    },
+    coverImage: { width: '100%', height: '100%', objectFit: 'cover' },
+    coverPlaceholder: { 
+      width: '100%', height: '100%', display: 'flex', 
+      alignItems: 'center', justifyContent: 'center',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+    },
+    badgeTop: { 
+      position: 'absolute', top: 10, left: 10, 
+      display: 'flex', gap: 4, flexWrap: 'wrap' 
+    },
+    badgeBottom: { 
+      position: 'absolute', bottom: 10, left: 10, 
+      display: 'flex', gap: 4, flexWrap: 'wrap' 
+    },
+    badge: { 
+      display: 'inline-flex', alignItems: 'center', gap: 4, 
+      padding: '2px 10px', borderRadius: 12, fontSize: 9, 
+      fontWeight: 700, background: 'rgba(255,255,255,0.9)',
+      boxShadow: '0 1px 4px rgba(0,0,0,0.05)'
+    },
+    body: { padding: 14, flex: 1, display: 'flex', flexDirection: 'column' },
+    title: { 
+      fontSize: 14, fontWeight: 700, color: '#1e293b', 
+      margin: '0 0 4px', lineHeight: 1.3 
+    },
+    subject: { 
+      fontSize: 11, color: '#64748b', display: 'flex', 
+      alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' 
+    },
+    authorTag: { 
+      fontSize: 9, color: '#3b82f6', background: '#eef2ff', 
+      padding: '1px 8px', borderRadius: 10, display: 'inline-flex', 
+      alignItems: 'center', gap: 2 
+    },
+    meta: { 
+      display: 'flex', gap: 6, flexWrap: 'wrap', 
+      marginBottom: 10, marginTop: 'auto' 
+    },
+    metaItem: { 
+      fontSize: 9, padding: '2px 8px', borderRadius: 10, 
+      background: '#f1f5f9', color: '#64748b', 
+      display: 'inline-flex', alignItems: 'center', gap: 3 
+    },
+    btn: { 
+      width: '100%', padding: 8, background: '#3b82f6', 
+      color: 'white', border: 'none', borderRadius: 8, 
+      fontSize: 11, fontWeight: 700, cursor: 'pointer', 
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 
+    }
   };
 
   // ============================================================
@@ -380,7 +486,7 @@ const StudentElearning = () => {
         </div>
         <div style={{...listStyles.statItem, background: '#f0fdf4', borderColor: '#bbf7d0'}}>
           <span style={{...listStyles.statValue, color: '#10b981'}}>
-            {modules.filter(m => m.type === 'kuis_mandiri' || m.quizData?.length > 0).length}
+            {stats.submitted}
           </span>
           <span style={listStyles.statLabel}>✅ Selesai</span>
         </div>
@@ -392,7 +498,7 @@ const StudentElearning = () => {
           <Search size={18} color="#94a3b8" />
           <input 
             type="text" 
-            placeholder="Cari judul, mapel, atau ID..." 
+            placeholder="Cari judul, mapel, ID guru..." 
             value={searchTerm} 
             onChange={e => setSearchTerm(e.target.value)} 
             style={listStyles.searchInput} 
@@ -477,6 +583,9 @@ const StudentElearning = () => {
           {filteredModules.map(module => {
             const isQuiz = module.type === 'kuis_mandiri';
             const hasAssignment = module.blocks?.some(b => b.type === 'assignment');
+            const isSubmitted = !!submissions[module.id];
+            const isQuizDone = !!quizSubmissions[module.id];
+            const guruName = module.guruName || module.authorName || module.createdBy || 'Guru';
             
             return (
               <div 
@@ -496,9 +605,20 @@ const StudentElearning = () => {
                     {module.guruId && (
                       <span style={listStyles.listItemTag}><Hash size={8} /> {module.guruId}</span>
                     )}
+                    {isSubmitted && (
+                      <span style={{...listStyles.listItemTag, background: '#dcfce7', color: '#10b981' }}>
+                        ✅ Tugas
+                      </span>
+                    )}
+                    {isQuizDone && (
+                      <span style={{...listStyles.listItemTag, background: '#dcfce7', color: '#10b981' }}>
+                        ✅ Kuis
+                      </span>
+                    )}
                   </div>
                   <div style={listStyles.listItemMeta}>
                     <span>{module.subject || 'Materi'}</span>
+                    <span><User size={10} /> {guruName}</span>
                     {hasAssignment && <span>📝 Tugas</span>}
                     {module.blocks?.length > 0 && <span>📄 {module.blocks.length} konten</span>}
                   </div>
@@ -516,70 +636,6 @@ const StudentElearning = () => {
 // ============================================================
 // STYLES
 // ============================================================
-const cardStyles = {
-  card: { 
-    background: 'white', borderRadius: 16, overflow: 'hidden', 
-    cursor: 'pointer', transition: 'all 0.3s ease', 
-    boxShadow: '0 2px 8px rgba(0,0,0,0.04)', 
-    border: '1px solid #f1f5f9', 
-    height: '100%', display: 'flex', flexDirection: 'column' 
-  },
-  cover: { 
-    position: 'relative', height: 140, 
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-    overflow: 'hidden', flexShrink: 0 
-  },
-  coverImage: { width: '100%', height: '100%', objectFit: 'cover' },
-  coverPlaceholder: { 
-    width: '100%', height: '100%', display: 'flex', 
-    alignItems: 'center', justifyContent: 'center',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
-  },
-  badgeTop: { 
-    position: 'absolute', top: 10, left: 10, 
-    display: 'flex', gap: 4, flexWrap: 'wrap' 
-  },
-  badgeBottom: { 
-    position: 'absolute', bottom: 10, left: 10, 
-    display: 'flex', gap: 4, flexWrap: 'wrap' 
-  },
-  badge: { 
-    display: 'inline-flex', alignItems: 'center', gap: 4, 
-    padding: '2px 10px', borderRadius: 12, fontSize: 9, 
-    fontWeight: 700, background: 'rgba(255,255,255,0.9)',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.05)'
-  },
-  body: { padding: 14, flex: 1, display: 'flex', flexDirection: 'column' },
-  title: { 
-    fontSize: 14, fontWeight: 700, color: '#1e293b', 
-    margin: '0 0 4px', lineHeight: 1.3 
-  },
-  subject: { 
-    fontSize: 11, color: '#64748b', display: 'flex', 
-    alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' 
-  },
-  authorTag: { 
-    fontSize: 9, color: '#3b82f6', background: '#eef2ff', 
-    padding: '1px 8px', borderRadius: 10, display: 'inline-flex', 
-    alignItems: 'center', gap: 2 
-  },
-  meta: { 
-    display: 'flex', gap: 6, flexWrap: 'wrap', 
-    marginBottom: 10, marginTop: 'auto' 
-  },
-  metaItem: { 
-    fontSize: 9, padding: '2px 8px', borderRadius: 10, 
-    background: '#f1f5f9', color: '#64748b', 
-    display: 'inline-flex', alignItems: 'center', gap: 3 
-  },
-  btn: { 
-    width: '100%', padding: 8, background: '#3b82f6', 
-    color: 'white', border: 'none', borderRadius: 8, 
-    fontSize: 11, fontWeight: 700, cursor: 'pointer', 
-    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 
-  }
-};
-
 const listStyles = {
   container: { 
     width: '100%', padding: '20px', boxSizing: 'border-box', 

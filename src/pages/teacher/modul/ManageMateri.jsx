@@ -33,7 +33,7 @@ const FILE_TYPE_OPTIONS = [
 ];
 
 // ============================================================
-// 🔥 DETEKSI JENIS LINK
+// DETEKSI JENIS LINK
 // ============================================================
 const getLinkType = (url) => {
   if (!url) return 'unknown';
@@ -46,7 +46,7 @@ const getLinkType = (url) => {
 };
 
 // ============================================================
-// 🔥 RENDER LINK PREVIEW
+// RENDER LINK PREVIEW
 // ============================================================
 const renderLinkPreview = (url) => {
   if (!url) return null;
@@ -203,278 +203,6 @@ const SimpleEditor = ({ value, onChange, placeholder }) => {
 };
 
 // ============================================================
-// 🔥 MODAL EDIT QUIZ - MINI
-// ============================================================
-const QuizEditorModal = ({ isOpen, onClose, section, onSave, modulId }) => {
-  const [loading, setLoading] = useState(false);
-  const [quizData, setQuizData] = useState(null);
-  const [questions, setQuestions] = useState([]);
-  const [quizTitle, setQuizTitle] = useState('');
-  const [timeLimit, setTimeLimit] = useState(0);
-  const [maxAttempts, setMaxAttempts] = useState(1);
-  const [randomOrder, setRandomOrder] = useState(false);
-  const [showExplanation, setShowExplanation] = useState(true);
-  const [difficulty, setDifficulty] = useState('Sedang');
-  const [editingQuestion, setEditingQuestion] = useState(null);
-
-  useEffect(() => {
-    if (isOpen && section?.quizId) {
-      fetchQuizData();
-    } else if (isOpen) {
-      // Quiz baru
-      setQuizTitle(section?.quizTitle || 'Kuis');
-      setQuestions([]);
-    }
-  }, [isOpen, section]);
-
-  const fetchQuizData = async () => {
-    setLoading(true);
-    try {
-      const snap = await getDoc(doc(db, "bimbel_modul", section.quizId));
-      if (snap.exists()) {
-        const data = snap.data();
-        setQuizTitle(data.title || 'Kuis');
-        setTimeLimit(data.timeLimit || 0);
-        setMaxAttempts(data.maxAttempts || 1);
-        setRandomOrder(data.randomOrder || false);
-        setShowExplanation(data.showExplanation !== false);
-        setDifficulty(data.difficulty || 'Sedang');
-        setQuestions(data.quizData || []);
-      }
-    } catch (error) {
-      console.error('Error fetching quiz:', error);
-      alert('❌ Gagal memuat data kuis');
-    }
-    setLoading(false);
-  };
-
-  const addQuestion = () => {
-    const newQuestion = {
-      id: Date.now(),
-      question: '',
-      questionImage: '',
-      options: ['', '', '', ''],
-      optionImages: ['', '', '', ''],
-      correctAnswer: 0,
-      explanation: ''
-    };
-    setQuestions([...questions, newQuestion]);
-    setEditingQuestion(newQuestion.id);
-  };
-
-  const removeQuestion = (id) => {
-    if (questions.length <= 1) return alert('⚠️ Minimal 1 soal!');
-    if (!window.confirm('Hapus soal ini?')) return;
-    setQuestions(questions.filter(q => q.id !== id));
-  };
-
-  const updateQuestion = (id, field, value) => {
-    setQuestions(questions.map(q => q.id === id ? { ...q, [field]: value } : q));
-  };
-
-  const handleSave = async () => {
-    const validQuestions = questions.filter(q => q.question.trim() || q.questionImage);
-    if (validQuestions.length === 0) return alert('❌ Minimal 1 soal!');
-    if (!quizTitle.trim()) return alert('❌ Judul kuis wajib diisi!');
-
-    setLoading(true);
-    try {
-      const quizPayload = {
-        title: quizTitle.toUpperCase(),
-        quizData: validQuestions.map(q => ({
-          id: q.id,
-          question: q.question.trim(),
-          questionImage: q.questionImage || '',
-          options: q.options,
-          optionImages: q.optionImages || ['', '', '', ''],
-          correctAnswer: q.correctAnswer || 0,
-          explanation: q.explanation || ''
-        })),
-        totalQuestions: validQuestions.length,
-        timeLimit,
-        maxAttempts,
-        randomOrder,
-        showExplanation,
-        difficulty,
-        updatedAt: serverTimestamp()
-      };
-
-      let quizId = section?.quizId;
-      
-      if (quizId) {
-        // Update existing quiz
-        await updateDoc(doc(db, "bimbel_modul", quizId), quizPayload);
-      } else {
-        // Create new quiz
-        const newQuiz = await addDoc(collection(db, "bimbel_modul"), {
-          ...quizPayload,
-          type: 'kuis_mandiri',
-          status: 'aktif',
-          createdAt: serverTimestamp()
-        });
-        quizId = newQuiz.id;
-      }
-
-      // Update section
-      onSave({
-        quizId,
-        quizTitle: quizTitle,
-        quizQuestions: validQuestions.length
-      });
-
-      alert('✅ Kuis berhasil disimpan!');
-      onClose();
-    } catch (error) {
-      console.error('Error saving quiz:', error);
-      alert('❌ Gagal menyimpan kuis: ' + error.message);
-    }
-    setLoading(false);
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div style={modalOverlayStyles}>
-      <div style={{...modalContentStyles, maxWidth: 900, maxHeight: '90vh', overflow: 'auto' }}>
-        <div style={modalHeaderStyles}>
-          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <FileQuestion size={20} color="#8b5cf6" /> {section?.quizId ? 'Edit Kuis' : 'Buat Kuis Baru'}
-          </h3>
-          <button onClick={onClose} style={modalCloseStyles}><X size={20} /></button>
-        </div>
-
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: 40 }}><Loader2 size={30} className="spin" /> Memuat...</div>
-        ) : (
-          <div style={{ padding: 16 }}>
-            {/* Identitas Kuis */}
-            <div style={{ marginBottom: 16 }}>
-              <input 
-                value={quizTitle} 
-                onChange={e => setQuizTitle(e.target.value)} 
-                placeholder="Judul kuis..." 
-                style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', marginBottom: 8 }}
-              />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-                <div>
-                  <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b' }}>⏱️ Timer (menit)</label>
-                  <input type="number" min="0" max="180" value={timeLimit} onChange={e => setTimeLimit(parseInt(e.target.value))} style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }} />
-                </div>
-                <div>
-                  <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b' }}>🔄 Max Attempts</label>
-                  <input type="number" min="1" max="10" value={maxAttempts} onChange={e => setMaxAttempts(parseInt(e.target.value))} style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }} />
-                </div>
-                <div>
-                  <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b' }}>📊 Difficulty</label>
-                  <select value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, background: 'white' }}>
-                    <option value="Mudah">🟢 Mudah</option>
-                    <option value="Sedang">🟡 Sedang</option>
-                    <option value="Sulit">🔴 Sulit</option>
-                  </select>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, cursor: 'pointer' }}>
-                  <input type="checkbox" checked={randomOrder} onChange={e => setRandomOrder(e.target.checked)} /> Acak soal
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, cursor: 'pointer' }}>
-                  <input type="checkbox" checked={showExplanation} onChange={e => setShowExplanation(e.target.checked)} /> Tampilkan pembahasan
-                </label>
-              </div>
-            </div>
-
-            {/* Daftar Soal */}
-            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>📝 Soal ({questions.length})</span>
-                <button onClick={addQuestion} style={{ padding: '4px 12px', background: '#8b5cf6', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600 }}>
-                  <Plus size={12} /> Tambah
-                </button>
-              </div>
-
-              {questions.map((q, idx) => (
-                <div key={q.id} style={{ background: '#f8fafc', padding: 10, borderRadius: 8, marginBottom: 6, border: '1px solid #e2e8f0' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>Soal {idx + 1}</span>
-                    <button onClick={() => removeQuestion(q.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}><X size={14} /></button>
-                  </div>
-                  <input 
-                    value={q.question} 
-                    onChange={e => updateQuestion(q.id, 'question', e.target.value)} 
-                    placeholder="Tulis soal..." 
-                    style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', marginBottom: 4 }}
-                  />
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
-                    {q.options.map((opt, oIdx) => (
-                      <div key={oIdx} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <button 
-                          onClick={() => updateQuestion(q.id, 'correctAnswer', oIdx)}
-                          style={{ 
-                            width: 16, height: 16, borderRadius: '50%', border: `2px solid ${q.correctAnswer === oIdx ? '#10b981' : '#cbd5e1'}`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-                          }}
-                        >
-                          {q.correctAnswer === oIdx && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} />}
-                        </button>
-                        <input 
-                          value={opt} 
-                          onChange={e => {
-                            const newOpts = [...q.options];
-                            newOpts[oIdx] = e.target.value;
-                            updateQuestion(q.id, 'options', newOpts);
-                          }}
-                          placeholder={`Opsi ${String.fromCharCode(65 + oIdx)}`}
-                          style={{ flex: 1, padding: '4px 6px', borderRadius: 4, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none' }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  <textarea 
-                    value={q.explanation || ''} 
-                    onChange={e => updateQuestion(q.id, 'explanation', e.target.value)} 
-                    placeholder="Pembahasan (opsional)" 
-                    style={{ width: '100%', padding: 4, borderRadius: 4, border: '1px solid #e2e8f0', fontSize: 10, outline: 'none', resize: 'vertical', minHeight: 30, marginTop: 4 }}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Actions */}
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16, borderTop: '1px solid #e2e8f0', paddingTop: 12 }}>
-              <button onClick={onClose} style={{ padding: '8px 20px', background: '#f1f5f9', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>Batal</button>
-              <button onClick={handleSave} disabled={loading} style={{ padding: '8px 24px', background: '#8b5cf6', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                {loading ? <Loader2 size={14} className="spin" /> : <Save size={14} />}
-                {section?.quizId ? 'Update Kuis' : 'Simpan Kuis'}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const modalOverlayStyles = {
-  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
-  backdropFilter: 'blur(4px)', zIndex: 9999,
-  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
-};
-
-const modalContentStyles = {
-  background: 'white', borderRadius: 16, width: '100%', maxWidth: 800,
-  maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
-};
-
-const modalHeaderStyles = {
-  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-  padding: '16px 20px', borderBottom: '1px solid #e2e8f0'
-};
-
-const modalCloseStyles = {
-  background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8'
-};
-
-// ============================================================
 // MAIN COMPONENT
 // ============================================================
 const ManageMateri = () => {
@@ -493,8 +221,6 @@ const ManageMateri = () => {
   
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
-  const [showQuizEditor, setShowQuizEditor] = useState(false);
-  const [editingQuizSection, setEditingQuizSection] = useState(null);
   
   const [guruData, setGuruData] = useState(null);
   const [guruId, setGuruId] = useState('');
@@ -901,6 +627,9 @@ const ManageMateri = () => {
     return name.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('');
   };
 
+  // ============================================================
+  // 🔥 HANDLE SAVE - DENGAN VALIDASI QUIZ
+  // ============================================================
   const handleSave = async () => {
     if (!title) return alert("❌ Judul modul wajib diisi!");
     if (!subject) return alert("❌ Mata pelajaran wajib dipilih!");
@@ -909,6 +638,13 @@ const ManageMateri = () => {
     }
     if (sendToSpecificStudents && selectedStudents.length === 0) {
       return alert("❌ Pilih minimal 1 siswa!");
+    }
+    
+    // 🔥 VALIDASI QUIZ - Pastikan semua quiz yang ada sudah punya quizId
+    const quizSections = sections.filter(s => s.type === 'quiz');
+    const invalidQuiz = quizSections.find(s => !s.quizId);
+    if (invalidQuiz) {
+      return alert(`⚠️ Kuis "${invalidQuiz.title || 'Tanpa Judul'}" belum dibuat! Klik "Buat Kuis" untuk membuatnya.`);
     }
     
     setSaving(true);
@@ -958,6 +694,17 @@ const ManageMateri = () => {
       alert("❌ Gagal: " + err.message);
     }
     setSaving(false);
+  };
+
+  // ============================================================
+  // 🔥 BUKA MANAGE QUIZ DARI MODUL
+  // ============================================================
+  const openQuizEditor = (section) => {
+    if (!modulId) {
+      alert('⚠️ Simpan modul terlebih dahulu sebelum membuat kuis!');
+      return;
+    }
+    navigate(`/guru/manage-quiz?modulId=${modulId}&sectionId=${section.id}`);
   };
 
   const formatFileSize = (bytes) => {
@@ -1021,7 +768,7 @@ const ManageMateri = () => {
           </div>
         </div>
 
-        {/* 🔥 KONTEN EDITOR */}
+        {/* 🔥 KONTEN EDITOR PER TYPE */}
         {section.type === 'text' && (
           <SimpleEditor 
             value={section.content} 
@@ -1103,35 +850,63 @@ const ManageMateri = () => {
           </div>
         )}
 
-        {/* 🔥 QUIZ - DENGAN TOMBOL EDIT */}
+        {/* 🔥 QUIZ - DENGAN INTEGRASI MANAGE QUIZ */}
         {section.type === 'quiz' && (
-          <div style={{ background: '#ede9fe', padding: 16, borderRadius: 8, border: '1px solid #8b5cf6' }}>
+          <div style={{ 
+            background: section.quizId ? '#f0fdf4' : '#ede9fe', 
+            padding: 16, 
+            borderRadius: 8, 
+            border: `2px solid ${section.quizId ? '#10b981' : '#8b5cf6'}` 
+          }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-              <FileQuestion size={20} color="#8b5cf6" />
-              <span style={{ fontWeight: 700, fontSize: 14, color: '#6d28d9' }}>
+              <FileQuestion size={20} color={section.quizId ? '#10b981' : '#8b5cf6'} />
+              <span style={{ fontWeight: 700, fontSize: 14, color: section.quizId ? '#166534' : '#6d28d9' }}>
                 {section.quizTitle || 'Kuis'}
               </span>
-              <span style={{ 
-                background: '#8b5cf6', 
-                color: 'white', 
-                padding: '2px 10px', 
-                borderRadius: 10,
-                fontSize: 9,
-                fontWeight: 700
-              }}>
-                {section.quizQuestions || 0} soal
-              </span>
+              {section.quizId ? (
+                <>
+                  <span style={{ 
+                    background: '#10b981', 
+                    color: 'white', 
+                    padding: '2px 10px', 
+                    borderRadius: 10,
+                    fontSize: 9,
+                    fontWeight: 700
+                  }}>
+                    {section.quizQuestions || 0} soal
+                  </span>
+                  <span style={{ 
+                    background: '#dcfce7', 
+                    color: '#166534', 
+                    padding: '2px 10px', 
+                    borderRadius: 10,
+                    fontSize: 9,
+                    fontWeight: 700
+                  }}>
+                    ✅ Tersimpan
+                  </span>
+                </>
+              ) : (
+                <span style={{ 
+                  background: '#fef3c7', 
+                  color: '#b45309', 
+                  padding: '2px 10px', 
+                  borderRadius: 10,
+                  fontSize: 9,
+                  fontWeight: 700
+                }}>
+                  ⚠️ Belum dibuat
+                </span>
+              )}
             </div>
             
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {/* 🔥 TOMBOL BUAT/EDIT KUIS - Redirect ke ManageQuiz */}
               <button
-                onClick={() => {
-                  setEditingQuizSection(section);
-                  setShowQuizEditor(true);
-                }}
+                onClick={() => openQuizEditor(section)}
                 style={{
                   padding: '8px 16px',
-                  background: '#8b5cf6',
+                  background: section.quizId ? '#10b981' : '#8b5cf6',
                   color: 'white',
                   border: 'none',
                   borderRadius: 6,
@@ -1146,6 +921,7 @@ const ManageMateri = () => {
                 <Edit3 size={14} /> {section.quizId ? 'Edit Kuis' : 'Buat Kuis'}
               </button>
               
+              {/* 🔥 PREVIEW KUIS */}
               {section.quizId && (
                 <button
                   onClick={() => window.open(`/siswa/kuis/${section.quizId}`, '_blank')}
@@ -1167,9 +943,11 @@ const ManageMateri = () => {
                 </button>
               )}
               
+              {/* 🔥 HAPUS KUIS DARI MODUL (TIDAK MENGHAPUS DATA KUIS) */}
               {section.quizId && (
                 <button
                   onClick={() => {
+                    if (!confirm('Hapus kuis dari modul ini? (Data kuis tetap tersimpan)')) return;
                     updateSection(editingSection, 'quizId', null);
                     updateSection(editingSection, 'quizTitle', '');
                     updateSection(editingSection, 'quizQuestions', 0);
@@ -1185,13 +963,15 @@ const ManageMateri = () => {
                     fontSize: 11
                   }}
                 >
-                  <Trash2 size={14} /> Hapus Kuis
+                  <Trash2 size={14} /> Hapus dari Modul
                 </button>
               )}
             </div>
             
             <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>
-              💡 Kuis akan muncul di antara materi. Siswa bisa mengerjakan kuis setelah membaca materi sebelumnya.
+              {section.quizId 
+                ? '💡 Klik "Edit Kuis" untuk mengubah soal, timer, atau pengaturan lainnya' 
+                : '💡 Klik "Buat Kuis" untuk membuka editor kuis lengkap (AI Generate, 6 tipe soal, timer, dll)'}
             </p>
           </div>
         )}
@@ -1341,9 +1121,14 @@ const ManageMateri = () => {
                 <span style={{ fontSize: 16 }}>{typeIcons[sec.type]}</span>
                 <span style={styles.sectionLabel}>
                   {sec.title || `Konten ${idx + 1}`}
-                  {sec.type === 'quiz' && sec.quizQuestions > 0 && (
-                    <span style={{ fontSize: 9, color: '#8b5cf6', background: '#ede9fe', padding: '1px 8px', borderRadius: 10 }}>
-                      {sec.quizQuestions} soal
+                  {sec.type === 'quiz' && sec.quizId && (
+                    <span style={{ fontSize: 9, color: '#10b981', background: '#dcfce7', padding: '1px 8px', borderRadius: 10 }}>
+                      ✅ {sec.quizQuestions || 0} soal
+                    </span>
+                  )}
+                  {sec.type === 'quiz' && !sec.quizId && (
+                    <span style={{ fontSize: 9, color: '#f59e0b', background: '#fef3c7', padding: '1px 8px', borderRadius: 10 }}>
+                      ⚠️ Belum dibuat
                     </span>
                   )}
                   {sec.fileName && <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>📎 {sec.fileName}</span>}
@@ -1508,28 +1293,6 @@ const ManageMateri = () => {
           <Rocket size={16} /> {saving ? 'Menyimpan...' : editId ? 'Update Modul' : 'Terbitkan Modul'}
         </button>
       </div>
-
-      {/* ========================================================== */}
-      {/* 🔥 QUIZ EDITOR MODAL */}
-      {/* ========================================================== */}
-      <QuizEditorModal
-        isOpen={showQuizEditor}
-        onClose={() => {
-          setShowQuizEditor(false);
-          setEditingQuizSection(null);
-        }}
-        section={editingQuizSection}
-        modulId={modulId}
-        onSave={(quizData) => {
-          if (editingQuizSection) {
-            updateSection(editingQuizSection.id, 'quizId', quizData.quizId);
-            updateSection(editingQuizSection.id, 'quizTitle', quizData.quizTitle);
-            updateSection(editingQuizSection.id, 'quizQuestions', quizData.quizQuestions);
-          }
-          setShowQuizEditor(false);
-          setEditingQuizSection(null);
-        }}
-      />
     </div>
   );
 };

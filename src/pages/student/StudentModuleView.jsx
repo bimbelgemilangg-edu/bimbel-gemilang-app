@@ -11,9 +11,11 @@ import {
   Link as LinkIcon, HelpCircle, Trash2, X, Send, 
   Download, BookOpen, Hash, Tag, File, Upload, User,
   AlertCircle, Lock, Shield, Zap, Award, ExternalLink,
-  FileQuestion, Calendar, Users, Target
+  FileQuestion, Calendar, Users, Target, Edit3
 } from 'lucide-react';
 import { uploadElearningFile } from '../../services/uploadService';
+import 'katex/dist/katex.min.css';
+import { InlineMath, BlockMath } from 'react-katex';
 
 // ============================================================
 // CONSTANTS
@@ -23,6 +25,24 @@ const ALLOWED_FILE_TYPES = {
   pdf: { label: 'PDF', accept: '.pdf,application/pdf' },
   image: { label: 'Gambar', accept: 'image/*' },
   word: { label: 'Word/DOCX', accept: '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+};
+
+// ============================================================
+// 🔥 RENDER MATH - SUPPORT KATEX
+// ============================================================
+const renderMath = (text) => {
+  if (!text) return null;
+  const parts = text.split(/(\$\$.*?\$\$|\$.*?\$)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('$$') && part.endsWith('$$')) {
+      try { return <BlockMath key={i} math={part.substring(2, part.length - 2)} />; }
+      catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
+    } else if (part.startsWith('$') && part.endsWith('$')) {
+      try { return <InlineMath key={i} math={part.substring(1, part.length - 1)} />; }
+      catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
+    }
+    return <span key={i}>{part}</span>;
+  });
 };
 
 // ============================================================
@@ -127,11 +147,10 @@ const renderStudentLink = (url) => {
 const initialState = {
   modul: null, loading: true, error: null, hasAccess: false,
   uploading: {}, submittedTasks: {},
-  quizAnswers: {}, quizSubmitted: {}, // 🔥 ubah jadi object untuk multiple quiz
+  quizStatus: {},
   quizScores: {},
   textAnswers: {}, activeTab: 'materi', previewImage: null,
   pendingFile: null, pendingBlockId: null, showPreviewModal: false,
-  quizStatus: {} // 🔥 untuk tracking status setiap quiz
 };
 
 function reducer(state, action) {
@@ -232,7 +251,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         dispatch({ type: 'SET_ACCESS', payload: true });
         dispatch({ type: 'SET_MODUL', payload: data });
 
-        // 🔥 AMBIL STATUS KUIS (untuk semua quiz di modul)
+        // 🔥 AMBIL STATUS KUIS
         if (nim) {
           const quizBlocks = (data.blocks || []).filter(b => b.type === 'quiz' && b.quizId);
           
@@ -301,7 +320,9 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     return () => { cancelled = true; };
   }, [modulId, studentNim, studentKelas, studentProgram]);
 
-  // ===== UPLOAD HANDLER =====
+  // ============================================================
+  // UPLOAD HANDLER
+  // ============================================================
   const handleFileChange = (e, blockId) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -357,7 +378,51 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   };
 
   // ============================================================
-  // 🔥 RENDER KONTEN - MATERI & QUIZ BERSELANG
+  // RENDER FILE PREVIEW
+  // ============================================================
+  const renderFilePreview = (block) => {
+    const url = block.content || block.fileUrl || block.url || block.file;
+    if (!url) return null;
+    const fType = block.mimeType || '';
+    
+    // Link
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      const linkType = getLinkType(url);
+      if (linkType !== 'unknown') return renderStudentLink(url);
+    }
+    
+    // PDF
+    if (fType.includes('pdf') || url.includes('.pdf')) {
+      return (
+        <div className="md">
+          <div className="mdh">
+            <FileText size={36} color="#673ab7"/>
+            <div><b>{block.fileName||'Dokumen'}</b><small>Klik unduh</small></div>
+            <a href={url} target="_blank" download className="btd"><Download size={14}/> Unduh</a>
+          </div>
+          <iframe src={`https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`} className="mdi"/>
+        </div>
+      );
+    }
+    
+    // Gambar
+    if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i) || fType.startsWith('image/')) {
+      return <img src={url} className="mi" onClick={()=>dispatch({type:'SET_PREVIEW_IMAGE',payload:url})} alt=""/>;
+    }
+    
+    // File lain
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, marginTop: 8 }}>
+        <FileText size={32} color="#3b82f6" />
+        <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', fontSize: 13 }}>
+          📎 {block.fileName || 'Buka File'}
+        </a>
+      </div>
+    );
+  };
+
+  // ============================================================
+  // RENDER KONTEN - MATERI & QUIZ BERSELANG
   // ============================================================
   const renderContent = (block, idx) => {
     // 🔥 JIKA QUIZ
@@ -367,19 +432,22 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       
       return (
         <div key={block.id} style={{ 
-          background: isDone ? '#f0fdf4' : '#ede9fe', 
+          background: block.quizId ? (isDone ? '#f0fdf4' : '#ede9fe') : '#f8fafc', 
           padding: 16, 
           borderRadius: 12,
-          border: `2px solid ${isDone ? '#10b981' : '#8b5cf6'}`,
-          marginBottom: 12
+          border: block.quizId 
+            ? (isDone ? '2px solid #10b981' : '2px solid #8b5cf6') 
+            : '2px dashed #e2e8f0',
+          marginBottom: 12,
+          opacity: block.quizId ? 1 : 0.6
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <FileQuestion size={24} color={isDone ? '#10b981' : '#8b5cf6'} />
+            <FileQuestion size={24} color={block.quizId ? (isDone ? '#10b981' : '#8b5cf6') : '#94a3b8'} />
             <div style={{ flex: 1 }}>
-              <h4 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: isDone ? '#166534' : '#6d28d9' }}>
+              <h4 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: block.quizId ? (isDone ? '#166534' : '#6d28d9') : '#94a3b8' }}>
                 {block.quizTitle || block.title || 'Kuis'}
               </h4>
-              <p style={{ margin: 0, fontSize: 11, color: isDone ? '#166534' : '#7c3aed' }}>
+              <p style={{ margin: 0, fontSize: 11, color: block.quizId ? (isDone ? '#166534' : '#7c3aed') : '#94a3b8' }}>
                 {block.quizQuestions || 0} soal
                 {isDone && ` • ✅ Selesai (Nilai: ${score})`}
               </p>
@@ -396,30 +464,64 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                 ✅ Selesai
               </span>
             )}
+            {!block.quizId && (
+              <span style={{ 
+                background: '#fef3c7', 
+                color: '#b45309',
+                padding: '2px 10px',
+                borderRadius: 10,
+                fontSize: 10,
+                fontWeight: 700
+              }}>
+                ⚠️ Belum tersedia
+              </span>
+            )}
           </div>
           
-          <button
-            onClick={() => navigate(`/siswa/kuis/${block.quizId || modulId}`)}
-            style={{
-              padding: '10px 24px',
-              background: isDone ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-              color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontWeight: 700,
-              fontSize: 13,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8
-            }}
-          >
-            {isDone ? <Eye size={16} /> : <Zap size={16} />}
-            {isDone ? 'Lihat Detail Jawaban' : 'Mulai Kuis'}
-          </button>
+          {block.quizId ? (
+            <button
+              onClick={() => navigate(`/siswa/kuis/${block.quizId}`)}
+              style={{
+                padding: '10px 24px',
+                background: isDone 
+                  ? 'linear-gradient(135deg, #3b82f6, #2563eb)' 
+                  : 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                cursor: 'pointer',
+                fontWeight: 700,
+                fontSize: 13,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                opacity: block.quizId ? 1 : 0.5
+              }}
+              disabled={!block.quizId}
+            >
+              {isDone ? <Eye size={16} /> : <Zap size={16} />}
+              {isDone ? 'Lihat Detail Jawaban' : 'Mulai Kuis'}
+            </button>
+          ) : (
+            <div style={{ 
+              padding: '10px 20px', 
+              background: '#f1f5f9', 
+              borderRadius: 8, 
+              color: '#94a3b8',
+              fontSize: 12,
+              fontWeight: 600,
+              display: 'inline-block'
+            }}>
+              ⚡ Menunggu kuis dari guru
+            </div>
+          )}
           
           <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>
-            💡 {isDone ? 'Klik untuk melihat hasil dan pembahasan' : 'Kerjakan kuis ini untuk menguji pemahaman Anda'}
+            {block.quizId 
+              ? (isDone 
+                ? 'Klik untuk melihat hasil dan pembahasan' 
+                : 'Kerjakan kuis ini untuk menguji pemahaman Anda')
+              : 'Guru belum membuat kuis untuk bagian ini'}
           </p>
         </div>
       );
@@ -436,20 +538,16 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           <small style={{ color: typeColors[block.type] }}>
             {typeIcons[block.type] || '📄'} {typeLabels[block.type] || 'BAGIAN'} {idx + 1}
           </small>
-          <h3>{block.title}</h3>
+          <h3>{renderMath(block.title) || `Bagian ${idx + 1}`}</h3>
         </div>
         
         {block.type === 'text' && (
-          <div className="cdtx">{block.content}</div>
+          <div className="cdtx">{renderMath(block.content)}</div>
         )}
         
         {(block.type === 'file' || block.type === 'video') && (
           <div>
-            {block.content && (
-              block.content.startsWith('http') ? 
-                renderStudentLink(block.content) :
-                <FilePreview url={block.content} fileName={block.fileName} fileType={block.mimeType} />
-            )}
+            {block.content && renderFilePreview(block)}
           </div>
         )}
       </div>
@@ -457,46 +555,15 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   };
 
   // ============================================================
-  // FILE PREVIEW (untuk file)
+  // LOADING
   // ============================================================
-  const FilePreview = ({ url, fileName, fileType }) => {
-    if (!url) return null;
-    
-    if (fileType?.startsWith('image/') || url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
-      return (
-        <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', maxHeight: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img src={url} alt={fileName || 'Preview'} style={{ width: '100%', maxHeight: 400, objectFit: 'contain' }} />
-        </div>
-      );
-    }
-    
-    if (fileType === 'application/pdf' || url.match(/\.pdf$/i)) {
-      return (
-        <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', padding: 16, textAlign: 'center' }}>
-          <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '8px 16px', background: '#ef4444', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 12 }}>
-            📄 Buka PDF
-          </a>
-          <embed src={url} type="application/pdf" style={{ width: '100%', height: 400, marginTop: 12, border: 'none', borderRadius: 8 }} />
-        </div>
-      );
-    }
-    
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, justifyContent: 'center' }}>
-        <FileText size={32} color="#3b82f6" />
-        <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', fontSize: 13 }}>
-          📎 {fileName || 'Buka File'}
-        </a>
-      </div>
-    );
-  };
-
-  // ===== LOADING =====
   if (state.loading) return (
     <div className="ls"><div className="sp"/><p>Memuat Modul...</p></div>
   );
 
-  // ===== ERROR / NO ACCESS =====
+  // ============================================================
+  // ERROR / NO ACCESS
+  // ============================================================
   if (state.error || !state.hasAccess) {
     return (
       <div className="no-access">
@@ -512,12 +579,14 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
 
   // 🔥 FILTER KONTEN
   const allBlocks = state.modul?.blocks || [];
-  const materiBlocks = allBlocks.filter(b => b.type !== 'quiz' && b.type !== 'assignment');
+  const materiBlocks = allBlocks.filter(b => b.type !== 'assignment');
   const tugasBlocks = allBlocks.filter(b => b.type === 'assignment');
   const quizBlocks = allBlocks.filter(b => b.type === 'quiz');
   const hasQuiz = quizBlocks.length > 0;
 
-  // ===== RENDER UTAMA =====
+  // ============================================================
+  // RENDER UTAMA
+  // ============================================================
   return (
     <>
       {/* COVER */}
@@ -530,7 +599,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
             <span className="tg">{state.modul?.targetKategori||'Semua'} • {state.modul?.targetKelas||'Semua'}</span>
             {state.modul?.sendToSpecificStudents && <span className="ts">🔒 Khusus</span>}
           </div>
-          <h1>{state.modul?.title}</h1>
+          <h1>{renderMath(state.modul?.title)}</h1>
           <div className="cvm">
             <span><User size={12}/> {state.modul?.authorName||state.modul?.guruName||'Guru'}</span>
             <span>📅 {formatDate(state.modul?.createdAt)}</span>
@@ -543,11 +612,16 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       {/* TABS */}
       <div className="tb">
         <button className={`tbt ${state.activeTab==='materi'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'materi'})}>
-          <BookOpen size={14}/> Materi ({materiBlocks.length + quizBlocks.length})
+          <BookOpen size={14}/> Materi ({materiBlocks.length})
         </button>
         {tugasBlocks.length>0 && (
           <button className={`tbt ${state.activeTab==='tugas'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'tugas'})}>
             <Send size={14}/> Tugas ({Object.keys(state.submittedTasks).length}/{tugasBlocks.length})
+          </button>
+        )}
+        {hasQuiz && (
+          <button className={`tbt ${state.activeTab==='kuis'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'kuis'})}>
+            <FileQuestion size={14}/> Kuis ({quizBlocks.filter(b => b.quizId).length}/{quizBlocks.length})
           </button>
         )}
       </div>
@@ -557,14 +631,14 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         {/* 🔥 MATERI + QUIZ BERSELANG */}
         {state.activeTab==='materi' && (
           <div>
-            {allBlocks.filter(b => b.type !== 'assignment').length === 0 && (
+            {materiBlocks.length === 0 && (
               <div className="em">Belum ada materi</div>
             )}
-            {allBlocks.filter(b => b.type !== 'assignment').map((block, idx) => renderContent(block, idx))}
+            {materiBlocks.map((block, idx) => renderContent(block, idx))}
           </div>
         )}
 
-        {/* TUGAS */}
+        {/* 🔥 TUGAS */}
         {state.activeTab==='tugas' && (
           <div>
             {tugasBlocks.length === 0 && <div className="em">Tidak ada tugas</div>}
@@ -574,9 +648,15 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
               return (
                 <div key={b.id} className="cd tg">
                   <div className="cdt"><small>📝 TUGAS</small><h3>{b.title}</h3></div>
-                  <div className="cdtx">{b.content}</div>
+                  <div className="cdtx">{renderMath(b.content)}</div>
                   {b.endTime && <div className="dl"><Clock size={14}/> {getTimeRemaining(b.endTime)?.text}</div>}
-                  <textarea value={state.textAnswers[b.id]||''} onChange={e=>dispatch({type:'SET_TEXT_ANSWERS',blockId:b.id,value:e.target.value})} placeholder="Tulis jawaban..." disabled={!!sub||expired} className="ta"/>
+                  <textarea 
+                    value={state.textAnswers[b.id]||''} 
+                    onChange={e=>dispatch({type:'SET_TEXT_ANSWERS',blockId:b.id,value:e.target.value})} 
+                    placeholder="Tulis jawaban..." 
+                    disabled={!!sub||expired} 
+                    className="ta"
+                  />
                   {sub ? (
                     <div className="sb">
                       <div className="sbb"><CheckCircle size={16}/> Terkumpul</div>
@@ -586,6 +666,111 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
                   ) : expired ? <div className="ex">⛔ Deadline Terlewat</div> : (
                     <label className="ul">📎 Pilih File <input type="file" hidden onChange={e=>handleFileChange(e,b.id)} disabled={state.uploading[b.id]}/></label>
                   )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* 🔥 KUIS - DAFTAR SEMUA KUIS */}
+        {state.activeTab==='kuis' && (
+          <div>
+            {quizBlocks.length === 0 && <div className="em">Tidak ada kuis</div>}
+            {quizBlocks.map(block => {
+              const isDone = state.quizStatus[block.quizId] === 'done';
+              const score = state.quizScores[block.quizId] || 0;
+              
+              return (
+                <div key={block.id} style={{ 
+                  background: block.quizId ? (isDone ? '#f0fdf4' : '#ede9fe') : '#f8fafc', 
+                  padding: 16, 
+                  borderRadius: 12,
+                  border: block.quizId 
+                    ? (isDone ? '2px solid #10b981' : '2px solid #8b5cf6') 
+                    : '2px dashed #e2e8f0',
+                  marginBottom: 12,
+                  opacity: block.quizId ? 1 : 0.6
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <FileQuestion size={24} color={block.quizId ? (isDone ? '#10b981' : '#8b5cf6') : '#94a3b8'} />
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: block.quizId ? (isDone ? '#166534' : '#6d28d9') : '#94a3b8' }}>
+                        {block.quizTitle || block.title || 'Kuis'}
+                      </h4>
+                      <p style={{ margin: 0, fontSize: 11, color: block.quizId ? (isDone ? '#166534' : '#7c3aed') : '#94a3b8' }}>
+                        {block.quizQuestions || 0} soal
+                        {isDone && ` • ✅ Selesai (Nilai: ${score})`}
+                      </p>
+                    </div>
+                    {isDone && (
+                      <span style={{ 
+                        background: '#dcfce7', 
+                        color: '#166534',
+                        padding: '2px 10px',
+                        borderRadius: 10,
+                        fontSize: 10,
+                        fontWeight: 700
+                      }}>
+                        ✅ Selesai
+                      </span>
+                    )}
+                    {!block.quizId && (
+                      <span style={{ 
+                        background: '#fef3c7', 
+                        color: '#b45309',
+                        padding: '2px 10px',
+                        borderRadius: 10,
+                        fontSize: 10,
+                        fontWeight: 700
+                      }}>
+                        ⚠️ Belum tersedia
+                      </span>
+                    )}
+                  </div>
+                  
+                  {block.quizId ? (
+                    <button
+                      onClick={() => navigate(`/siswa/kuis/${block.quizId}`)}
+                      style={{
+                        padding: '10px 24px',
+                        background: isDone 
+                          ? 'linear-gradient(135deg, #3b82f6, #2563eb)' 
+                          : 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        fontWeight: 700,
+                        fontSize: 13,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8
+                      }}
+                    >
+                      {isDone ? <Eye size={16} /> : <Zap size={16} />}
+                      {isDone ? 'Lihat Detail Jawaban' : 'Mulai Kuis'}
+                    </button>
+                  ) : (
+                    <div style={{ 
+                      padding: '10px 20px', 
+                      background: '#f1f5f9', 
+                      borderRadius: 8, 
+                      color: '#94a3b8',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      display: 'inline-block'
+                    }}>
+                      ⚡ Menunggu kuis dari guru
+                    </div>
+                  )}
+                  
+                  <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>
+                    {block.quizId 
+                      ? (isDone 
+                        ? 'Klik untuk melihat hasil dan pembahasan' 
+                        : 'Kerjakan kuis ini untuk menguji pemahaman Anda')
+                      : 'Guru belum membuat kuis untuk bagian ini'}
+                  </p>
                 </div>
               );
             })}

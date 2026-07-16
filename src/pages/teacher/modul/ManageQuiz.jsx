@@ -8,7 +8,8 @@ import {
   Clock as ClockIcon, HelpCircle, Image, Upload, Calendar, 
   CalendarDays, AlertCircle, Eye, EyeOff, Lock, Unlock,
   Layers, Type, FileUp, Video, Rocket, Sparkles, Loader2,
-  List, Table, Grid, Hash, AlignLeft, CheckSquare, Square
+  List, Table, Grid, Hash, AlignLeft, CheckSquare, Square,
+  Edit3, FileQuestion
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile } from '../../../services/uploadService';
@@ -28,12 +29,32 @@ const QUESTION_TYPES = [
 ];
 
 // ============================================================
+// 🔥 RENDER MATH
+// ============================================================
+const renderMath = (text) => {
+  if (!text) return null;
+  const parts = text.split(/(\$\$.*?\$\$|\$.*?\$)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('$$') && part.endsWith('$$')) {
+      try { return <BlockMath key={i} math={part.substring(2, part.length - 2)} />; }
+      catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
+    } else if (part.startsWith('$') && part.endsWith('$')) {
+      try { return <InlineMath key={i} math={part.substring(1, part.length - 1)} />; }
+      catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
+    }
+    return <span key={i}>{part}</span>;
+  });
+};
+
+// ============================================================
 // MAIN COMPONENT
 // ============================================================
 const ManageQuiz = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const modulId = searchParams.get('modulId');
+  const sectionId = searchParams.get('sectionId');
+  const isFromModul = !!modulId && !!sectionId;
   
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [loading, setLoading] = useState(false);
@@ -73,14 +94,10 @@ const ManageQuiz = () => {
     correct: 0, 
     correctAnswers: [],
     explanation: '',
-    // 🔥 UNTUK TIPE TRUE/FALSE
     statements: [{ text: '', isTrue: true }],
-    // 🔥 UNTUK TIPE READING
     readingText: '',
     subQuestions: [{ q: '', options: ['', '', '', ''], correct: 0 }],
-    // 🔥 UNTUK TIPE SHORT ANSWER
     shortAnswer: '',
-    // 🔥 UNTUK TIPE CAUSE EFFECT
     cause: '',
     effect: '',
     isCauseTrue: true,
@@ -270,24 +287,6 @@ const ManageQuiz = () => {
   };
 
   // ============================================================
-  // 🔥 RENDER MATH
-  // ============================================================
-  const renderMath = (text) => {
-    if (!text) return null;
-    const parts = text.split(/(\$\$.*?\$\$|\$.*?\$)/g);
-    return parts.map((part, i) => {
-      if (part.startsWith('$$') && part.endsWith('$$')) {
-        try { return <BlockMath key={i} math={part.substring(2, part.length - 2)} />; }
-        catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
-      } else if (part.startsWith('$') && part.endsWith('$')) {
-        try { return <InlineMath key={i} math={part.substring(1, part.length - 1)} />; }
-        catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
-      }
-      return <span key={i}>{part}</span>;
-    });
-  };
-
-  // ============================================================
   // 🔥 CRUD SOAL
   // ============================================================
   const addQuestion = (type = 'multiple') => {
@@ -329,6 +328,108 @@ const ManageQuiz = () => {
 
   const updateQuestion = (id, field, value) => {
     setQuestions(questions.map(q => q.id === id ? { ...q, [field]: value } : q));
+  };
+
+  // ============================================================
+  // 🔥 BULK IMPORT
+  // ============================================================
+  const handleBulkImport = () => {
+    if (!bulkText.trim()) return;
+    
+    const blocks = bulkText.split(/\n(?=\d+[\.\$\s])/);
+    const parsed = blocks.map((block, idx) => {
+      const lines = block.trim().split('\n').filter(l => l.trim());
+      if (lines.length === 0) return null;
+      
+      const qt = lines[0].replace(/^\d+[\.\$\s\)]*/, '').trim();
+      const opts = lines.slice(1)
+        .filter(l => /^[A-E][\.\$\s\)]/i.test(l.trim()))
+        .map(o => o.replace(/^[A-E][\.\$\s\)]*/i, '').trim());
+      
+      while (opts.length < 4) opts.push("");
+      
+      return { 
+        id: Date.now() + idx, 
+        type: 'multiple',
+        q: qt, 
+        qImage: '', 
+        options: opts.slice(0, 4), 
+        optionImages: ['', '', '', ''], 
+        correct: 0, 
+        correctAnswers: [],
+        explanation: '',
+        statements: [{ text: '', isTrue: true }],
+        readingText: '',
+        subQuestions: [{ q: '', options: ['', '', '', ''], correct: 0 }],
+        shortAnswer: '',
+        cause: '',
+        effect: '',
+        isCauseTrue: true,
+        isEffectTrue: true
+      };
+    }).filter(Boolean);
+    
+    if (parsed.length > 0) {
+      setQuestions(prev => (prev.length === 1 && !prev[0].q && !prev[0].qImage) ? parsed : [...prev, ...parsed]);
+      setBulkText("");
+      setShowImport(false);
+      alert(`✅ ${parsed.length} soal berhasil diimpor!`);
+    } else {
+      alert("⚠️ Format tidak terdeteksi.");
+    }
+  };
+
+  // ============================================================
+  // 🔥 GET QUIZ STATUS
+  // ============================================================
+  const getQuizStatus = () => {
+    if (!useSchedule) return { status: 'aktif', label: '🟢 Aktif (Tanpa Jadwal)', color: '#10b981', icon: <Unlock size={14} /> };
+    const now = new Date();
+    const open = new Date(quizOpenDate);
+    const close = new Date(quizCloseDate);
+    
+    if (now < open) {
+      return { status: 'belum', label: '⏳ Belum Dibuka', color: '#f59e0b', icon: <Lock size={14} /> };
+    } else if (now > close) {
+      return { status: 'kadaluarsa', label: '⛔ Kadaluarsa', color: '#ef4444', icon: <Lock size={14} /> };
+    } else {
+      return { status: 'aktif', label: '✅ Aktif', color: '#10b981', icon: <Unlock size={14} /> };
+    }
+  };
+
+  // ============================================================
+  // 🔥 PREVIEW
+  // ============================================================
+  const handlePreviewQuiz = () => {
+    const previewAns = {};
+    questions.forEach(q => {
+      if (q.type === 'multiselect') {
+        previewAns[q.id] = q.correctAnswers;
+      } else if (q.type === 'truefalse') {
+        previewAns[q.id] = q.statements.map(s => s.isTrue);
+      } else if (q.type === 'shortanswer') {
+        previewAns[q.id] = q.shortAnswer;
+      } else if (q.type === 'causeeffect') {
+        previewAns[q.id] = { cause: q.isCauseTrue, effect: q.isEffectTrue };
+      } else if (q.type === 'reading') {
+        previewAns[q.id] = q.subQuestions.map(sq => sq.correct);
+      } else {
+        previewAns[q.id] = q.correct;
+      }
+    });
+    setPreviewAnswers(previewAns);
+    setShowCorrectAnswers(true);
+    setPreviewMode(true);
+  };
+
+  const handleClosePreview = () => {
+    setPreviewMode(false);
+    setPreviewAnswers({});
+    setShowCorrectAnswers(false);
+  };
+
+  const toggleCorrectAnswers = () => {
+    setShowCorrectAnswers(!showCorrectAnswers);
   };
 
   // ============================================================
@@ -818,7 +919,153 @@ const ManageQuiz = () => {
   };
 
   // ============================================================
-  // 🔥 SAVE QUIZ
+  // 🔥 RENDER PREVIEW
+  // ============================================================
+  if (previewMode) {
+    return (
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: 20 }}>
+        <div style={{ 
+          background: 'linear-gradient(135deg, #673ab7, #8b5cf6)', 
+          padding: '16px 20px', 
+          borderRadius: 12, 
+          marginBottom: 20,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 10
+        }}>
+          <div>
+            <h2 style={{ margin: 0, color: 'white', fontSize: isMobile ? 16 : 20 }}>👁️ Preview: {quizTitle || 'Kuis'}</h2>
+            <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Simulasi tampilan siswa</p>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={toggleCorrectAnswers} style={{ 
+              padding: '6px 14px', 
+              background: showCorrectAnswers ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.15)', 
+              color: 'white', 
+              border: showCorrectAnswers ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.2)', 
+              borderRadius: 8, 
+              cursor: 'pointer', 
+              fontWeight: 600, 
+              fontSize: 11 
+            }}>
+              {showCorrectAnswers ? '✅ Tampilkan Jawaban' : '👁️ Sembunyikan Jawaban'}
+            </button>
+            <button onClick={handleClosePreview} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>
+              <X size={14} /> Tutup
+            </button>
+          </div>
+        </div>
+
+        {questions.filter(q => q.q.trim() || q.qImage).map((item, idx) => {
+          const userAnswer = previewAnswers[item.id];
+          const isCorrect = (() => {
+            if (item.type === 'multiselect') {
+              return Array.isArray(userAnswer) && Array.isArray(item.correctAnswers) &&
+                userAnswer.length === item.correctAnswers.length &&
+                userAnswer.every(v => item.correctAnswers.includes(v));
+            }
+            if (item.type === 'truefalse') {
+              return Array.isArray(userAnswer) && Array.isArray(item.statements) &&
+                userAnswer.every((v, i) => v === item.statements[i].isTrue);
+            }
+            if (item.type === 'reading') {
+              return Array.isArray(userAnswer) && Array.isArray(item.subQuestions) &&
+                userAnswer.every((v, i) => v === item.subQuestions[i].correct);
+            }
+            if (item.type === 'shortanswer') {
+              return userAnswer?.toLowerCase().trim() === item.shortAnswer?.toLowerCase().trim();
+            }
+            if (item.type === 'causeeffect') {
+              return userAnswer?.cause === item.isCauseTrue && userAnswer?.effect === item.isEffectTrue;
+            }
+            return userAnswer === item.correct;
+          })();
+          
+          return (
+            <div key={item.id} style={{ 
+              background: 'white', 
+              padding: isMobile ? 15 : 20, 
+              borderRadius: 12, 
+              border: showCorrectAnswers ? (isCorrect ? '2px solid #10b981' : '2px solid #ef4444') : '2px solid #e2e8f0',
+              marginBottom: 12
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: '#673ab7', background: '#f3e8ff', padding: '4px 10px', borderRadius: 6 }}>SOAL {idx + 1}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 6, background: userAnswer !== undefined ? (isCorrect ? '#dcfce7' : '#fee2e2') : '#f1f5f9', color: userAnswer !== undefined ? (isCorrect ? '#166534' : '#dc2626') : '#94a3b8' }}>
+                  {userAnswer !== undefined ? (isCorrect ? '✅ Benar' : '❌ Salah') : '⏳ Belum'}
+                </span>
+              </div>
+              
+              {item.qImage && <img src={item.qImage} alt="Soal" style={{ maxHeight: 120, borderRadius: 8, marginBottom: 8 }} />}
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 10 }}>{renderMath(item.q)}</div>
+
+              {/* Opsi Jawaban */}
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 4 }}>
+                {item.options.map((opt, oIdx) => {
+                  const isSelected = (() => {
+                    if (item.type === 'multiselect') {
+                      return userAnswer?.includes(oIdx) || false;
+                    }
+                    return userAnswer === oIdx;
+                  })();
+                  const isCorrectAnswer = (() => {
+                    if (item.type === 'multiselect') {
+                      return item.correctAnswers.includes(oIdx);
+                    }
+                    return oIdx === item.correct;
+                  })();
+                  
+                  let bgColor = 'white', borderColor = '#e2e8f0';
+                  if (showCorrectAnswers) {
+                    if (isCorrectAnswer) { bgColor = '#dcfce7'; borderColor = '#10b981'; }
+                    if (isSelected && !isCorrectAnswer) { bgColor = '#fee2e2'; borderColor = '#ef4444'; }
+                  } else {
+                    if (isSelected) { bgColor = '#eef2ff'; borderColor = '#3b82f6'; }
+                  }
+                  
+                  return (
+                    <div key={oIdx} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 6, border: `2px solid ${borderColor}`, background: bgColor }}>
+                      <span style={{ 
+                        width: 20, height: 20, borderRadius: '50%', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                        background: isSelected ? '#3b82f6' : '#f1f5f9', 
+                        color: isSelected ? 'white' : '#64748b', 
+                        fontWeight: 700, fontSize: 10 
+                      }}>{String.fromCharCode(65 + oIdx)}</span>
+                      <span style={{ fontSize: 12 }}>{renderMath(opt)}</span>
+                      {showCorrectAnswers && isCorrectAnswer && <CheckCircle size={12} color="#10b981" style={{ marginLeft: 'auto' }} />}
+                      {showCorrectAnswers && isSelected && !isCorrectAnswer && <X size={12} color="#ef4444" style={{ marginLeft: 'auto' }} />}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {showCorrectAnswers && (
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #e2e8f0', fontSize: 11 }}>
+                  <span style={{ color: '#64748b' }}>✅ Jawaban benar: </span>
+                  <span style={{ fontWeight: 700, color: '#10b981' }}>
+                    {item.type === 'multiselect' 
+                      ? item.correctAnswers.map(i => item.options[i]).join(', ')
+                      : item.options[item.correct] || `Opsi ${String.fromCharCode(65 + item.correct)}`}
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        <div style={{ textAlign: 'center', padding: 16, background: '#f8fafc', borderRadius: 12 }}>
+          <p style={{ fontSize: 12, color: '#64748b' }}>💡 Preview menampilkan jawaban benar secara otomatis</p>
+          <button onClick={handleClosePreview} style={{ padding: '8px 24px', background: '#673ab7', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: 12, marginTop: 8 }}>Tutup Preview</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================
+  // 🔥 SAVE QUIZ - DENGAN INTEGRASI MODUL
   // ============================================================
   const handleSaveQuiz = async () => {
     const valid = questions.filter(q => q.q.trim() || q.qImage);
@@ -872,6 +1119,60 @@ const ManageQuiz = () => {
         quizPayload.difficulty = difficulty;
       }
 
+      // 🔥 JIKA DARI MODUL
+      if (isFromModul) {
+        const modulSnap = await getDoc(doc(db, "bimbel_modul", modulId));
+        if (modulSnap.exists()) {
+          const modulData = modulSnap.data();
+          const blocks = modulData.blocks || [];
+          
+          const sectionIndex = blocks.findIndex(b => 
+            String(b.id) === String(sectionId) || b.id === sectionId
+          );
+          
+          if (sectionIndex === -1) {
+            return alert("❌ Section tidak ditemukan di modul!");
+          }
+          
+          const section = blocks[sectionIndex];
+          let quizId = section.quizId;
+          
+          if (quizId) {
+            // Update quiz yang sudah ada
+            await updateDoc(doc(db, "bimbel_modul", quizId), quizPayload);
+          } else {
+            // Buat quiz baru
+            const newQuiz = await addDoc(collection(db, "bimbel_modul"), {
+              ...quizPayload,
+              title: quizTitle.toUpperCase(),
+              subject: quizSubject || "Kuis",
+              type: 'kuis_mandiri',
+              status: 'aktif',
+              createdAt: serverTimestamp()
+            });
+            quizId = newQuiz.id;
+          }
+          
+          // 🔥 UPDATE SECTION DI MODUL
+          blocks[sectionIndex] = {
+            ...section,
+            quizId: quizId,
+            quizTitle: quizTitle,
+            quizQuestions: valid.length
+          };
+          
+          await updateDoc(doc(db, "bimbel_modul", modulId), {
+            blocks: blocks,
+            updatedAt: serverTimestamp()
+          });
+          
+          alert(`✅ Kuis berhasil disimpan ke modul!`);
+          navigate(-1);
+          return;
+        }
+      }
+
+      // 🔥 JIKA KUIS MANDIRI (bukan dari modul)
       if (publishTarget === 'modul') {
         if (!selectedModul) return alert("❌ Pilih modul tujuan!");
         const modulSnap = await getDoc(doc(db, "bimbel_modul", selectedModul));
@@ -901,58 +1202,206 @@ const ManageQuiz = () => {
         alert(`✅ Kuis mandiri diterbitkan!`);
       }
       navigate(-1);
-    } catch (err) { alert("❌ Gagal: " + err.message); }
+    } catch (err) { 
+      alert("❌ Gagal: " + err.message); 
+    }
     setLoading(false);
   };
 
   // ============================================================
-  // 🔥 PREVIEW
+  // RENDER MAIN
   // ============================================================
-  const handlePreviewQuiz = () => {
-    const previewAns = {};
-    questions.forEach(q => {
-      if (q.type === 'multiselect') {
-        previewAns[q.id] = q.correctAnswers;
-      } else if (q.type === 'truefalse') {
-        previewAns[q.id] = q.statements.map(s => s.isTrue);
-      } else if (q.type === 'shortanswer') {
-        previewAns[q.id] = q.shortAnswer;
-      } else if (q.type === 'causeeffect') {
-        previewAns[q.id] = { cause: q.isCauseTrue, effect: q.isEffectTrue };
-      } else {
-        previewAns[q.id] = q.correct;
-      }
-    });
-    setPreviewAnswers(previewAns);
-    setShowCorrectAnswers(true);
-    setPreviewMode(true);
-  };
-
-  const handleClosePreview = () => {
-    setPreviewMode(false);
-    setPreviewAnswers({});
-    setShowCorrectAnswers(false);
-  };
-
-  // ============================================================
-  // 🔥 RENDER PREVIEW
-  // ============================================================
-  // ... (sama seperti sebelumnya, disesuaikan dengan tipe baru)
-
-  // ============================================================
-  // 🔥 RENDER MAIN - TOMBOL TAMBAH SOAL DENGAN TYPE
-  // ============================================================
-  // Tambahkan tombol tambah soal dengan pilihan type
-
-  // ... (rest of the code similar to previous)
-
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? 12 : 20, paddingBottom: 100 }}>
-      {/* ... Header, Identitas, Jadwal, Mode Kuis ... */}
       
-      {/* 🔥 SECTION SOAL DENGAN TOMBOL TAMBAH PER TIPE */}
+      {toast && (
+        <div style={{
+          position: 'fixed', top: 20, right: 20, zIndex: 9999,
+          padding: '12px 20px', borderRadius: 12,
+          background: toast.type === 'error' ? '#ef4444' : '#10b981',
+          color: 'white', fontWeight: 600, fontSize: 13,
+          boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+          animation: 'fadeInUp 0.3s ease'
+        }}>
+          {toast.message}
+        </div>
+      )}
+
+      {/* HEADER */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'white', border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <ArrowLeft size={14}/> Kembali
+        </button>
+        <h2 style={{ margin: 0, fontSize: isMobile ? 16 : 20, fontWeight: 800, color: '#1e293b' }}>
+          ❓ {modulId ? `Kuis untuk Modul` : 'Buat Kuis Baru'}
+          {isFromModul && <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>#{modulId}</span>}
+        </h2>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button 
+            onClick={() => setShowAIGenerate(true)} 
+            style={{ 
+              background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+              color: 'white', 
+              border: 'none', 
+              padding: '8px 14px', 
+              borderRadius: 8, 
+              fontWeight: 700, 
+              fontSize: 12, 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              boxShadow: '0 4px 12px rgba(139,92,246,0.3)'
+            }}
+          >
+            <Sparkles size={14} /> AI Generate
+          </button>
+          <button onClick={handlePreviewQuiz} style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '8px 14px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Eye size={14}/> Preview
+          </button>
+          <button onClick={handleSaveQuiz} disabled={loading} style={{ background: '#673ab7', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+            {loading ? <Loader2 size={14} className="spin" /> : <Send size={14}/>} 
+            {loading ? '...' : isFromModul ? 'Simpan ke Modul' : 'Terbitkan'}
+          </button>
+        </div>
+      </div>
+
+      {/* ========================================================== */}
+      {/* 1️⃣ IDENTITAS KUIS */}
+      {/* ========================================================== */}
       <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 6 }}>
+        <h4 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <FileText size={18} /> 1. Identitas Kuis
+        </h4>
+        <input value={quizTitle} onChange={e => setQuizTitle(e.target.value)} placeholder="Judul kuis..." style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', marginBottom: 8, boxSizing: 'border-box' }} />
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <select value={quizSubject} onChange={e => setQuizSubject(e.target.value)} style={{ flex: 1, minWidth: 120, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', background: 'white' }}>
+            <option value="">Pilih Mapel</option>
+            {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <input type="datetime-local" value={deadline} onChange={e => setDeadline(e.target.value)} style={{ flex: 1, minWidth: 120, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none' }} />
+        </div>
+      </div>
+
+      {/* ========================================================== */}
+      {/* 2️⃣ JADWAL KUIS */}
+      {/* ========================================================== */}
+      <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <h4 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <CalendarDays size={18} /> 2. Jadwal Kuis
+          </h4>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
+            <input type="checkbox" checked={useSchedule} onChange={() => setUseSchedule(!useSchedule)} />
+            Aktifkan Jadwal
+          </label>
+        </div>
+        
+        {useSchedule && (
+          <div style={{ display: 'flex', gap: 10, flexDirection: isMobile ? 'column' : 'row' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>📅 Buka</label>
+              <input type="datetime-local" value={quizOpenDate} onChange={e => setQuizOpenDate(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>📅 Tutup</label>
+              <input type="datetime-local" value={quizCloseDate} onChange={e => setQuizCloseDate(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+          </div>
+        )}
+        
+        {useSchedule && (
+          <div style={{ marginTop: 8, padding: 8, borderRadius: 6, background: getQuizStatus().color + '15', border: `1px solid ${getQuizStatus().color}`, fontSize: 11, fontWeight: 600, color: getQuizStatus().color, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            {getQuizStatus().icon} {getQuizStatus().label}
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================== */}
+      {/* 3️⃣ MODE KUIS */}
+      {/* ========================================================== */}
+      <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+        <h4 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Settings size={18} /> 3. Mode Kuis
+        </h4>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
+          <button 
+            onClick={() => setQuizMode('simple')} 
+            style={{
+              padding: '14px',
+              borderRadius: 10,
+              border: quizMode === 'simple' ? '3px solid #3b82f6' : '2px solid #e2e8f0',
+              background: quizMode === 'simple' ? '#eef2ff' : 'white',
+              cursor: 'pointer',
+              textAlign: 'center',
+              transition: '0.2s'
+            }}
+          >
+            <div style={{ fontSize: 24, marginBottom: 4 }}>📝</div>
+            <div style={{ fontWeight: 700, fontSize: 14, color: quizMode === 'simple' ? '#1e293b' : '#64748b' }}>Mode Sederhana</div>
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>Kuis biasa tanpa pengaturan lanjutan</div>
+            {quizMode === 'simple' && <div style={{ marginTop: 6, fontSize: 10, color: '#3b82f6', fontWeight: 700 }}>✅ Aktif</div>}
+          </button>
+
+          <button 
+            onClick={() => setQuizMode('advanced')} 
+            style={{
+              padding: '14px',
+              borderRadius: 10,
+              border: quizMode === 'advanced' ? '3px solid #673ab7' : '2px solid #e2e8f0',
+              background: quizMode === 'advanced' ? '#f3e8ff' : 'white',
+              cursor: 'pointer',
+              textAlign: 'center',
+              transition: '0.2s'
+            }}
+          >
+            <div style={{ fontSize: 24, marginBottom: 4 }}>🔒</div>
+            <div style={{ fontWeight: 700, fontSize: 14, color: quizMode === 'advanced' ? '#1e293b' : '#64748b' }}>Mode Ujian</div>
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>+Timer, Random Soal, Batas Pengulangan</div>
+            {quizMode === 'advanced' && <div style={{ marginTop: 6, fontSize: 10, color: '#673ab7', fontWeight: 700 }}>✅ Aktif</div>}
+          </button>
+        </div>
+
+        {/* Pengaturan Lanjutan - Mode Ujian */}
+        {quizMode === 'advanced' && (
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>⏱️ Batas Waktu (menit)</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <input type="number" min="0" max="180" value={timeLimit} onChange={e => setTimeLimit(parseInt(e.target.value))} style={{ width: 80, padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12 }} />
+                  <span style={{ fontSize: 10, color: '#94a3b8' }}>(0 = tidak terbatas)</span>
+                </div>
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>🔄 Batas Pengulangan</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <input type="number" min="0" max="10" value={maxAttempts} onChange={e => setMaxAttempts(parseInt(e.target.value))} style={{ width: 80, padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12 }} />
+                  <span style={{ fontSize: 10, color: '#94a3b8' }}>kali (0 = tak terbatas)</span>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, cursor: 'pointer' }}>
+                <input type="checkbox" checked={randomOrder} onChange={e => setRandomOrder(e.target.checked)} /> Acak soal
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, cursor: 'pointer' }}>
+                <input type="checkbox" checked={showExplanation} onChange={e => setShowExplanation(e.target.checked)} /> Tampilkan pembahasan
+              </label>
+              <select value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, background: 'white' }}>
+                <option value="Mudah">🟢 Mudah</option><option value="Sedang">🟡 Sedang</option><option value="Sulit">🔴 Sulit</option>
+              </select>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================== */}
+      {/* 4️⃣ SOAL KUIS */}
+      {/* ========================================================== */}
+      <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <h4 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
             <Layers size={18} /> 4. Soal Kuis ({questions.filter(q => q.q.trim() || q.qImage).length})
           </h4>
@@ -995,7 +1444,125 @@ const ManageQuiz = () => {
         </div>
       </div>
 
-      {/* ... Target Publish, Footer ... */}
+      {/* ========================================================== */}
+      {/* 5️⃣ TARGET PUBLISH */}
+      {/* ========================================================== */}
+      <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+        <h4 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Target size={18} /> 5. Target Publish
+        </h4>
+        
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+          <button onClick={() => setPublishTarget('modul')} style={{ 
+            padding: '8px 14px', 
+            borderRadius: 8, 
+            border: publishTarget === 'modul' ? '2px solid #10b981' : '1px solid #e2e8f0',
+            background: publishTarget === 'modul' ? '#f0fdf4' : 'white',
+            cursor: 'pointer',
+            fontSize: 11,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}>
+            <BookOpen size={14} color={publishTarget === 'modul' ? '#10b981' : '#94a3b8'} /> Tautkan ke Modul
+          </button>
+          <button onClick={() => setPublishTarget('mandiri')} style={{ 
+            padding: '8px 14px', 
+            borderRadius: 8, 
+            border: publishTarget === 'mandiri' ? '2px solid #3b82f6' : '1px solid #e2e8f0',
+            background: publishTarget === 'mandiri' ? '#eef2ff' : 'white',
+            cursor: 'pointer',
+            fontSize: 11,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}>
+            <Send size={14} color={publishTarget === 'mandiri' ? '#3b82f6' : '#94a3b8'} /> Kuis Mandiri
+          </button>
+          <button onClick={() => setPublishTarget('jenjang')} style={{ 
+            padding: '8px 14px', 
+            borderRadius: 8, 
+            border: publishTarget === 'jenjang' ? '2px solid #f59e0b' : '1px solid #e2e8f0',
+            background: publishTarget === 'jenjang' ? '#fffbeb' : 'white',
+            cursor: 'pointer',
+            fontSize: 11,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}>
+            <Users size={14} color={publishTarget === 'jenjang' ? '#f59e0b' : '#94a3b8'} /> Tautkan ke Jenjang
+          </button>
+        </div>
+
+        {publishTarget === 'modul' && (
+          <select value={selectedModul} onChange={e => setSelectedModul(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #10b981', fontSize: 12, outline: 'none', background: 'white' }}>
+            <option value="">Pilih Modul...</option>
+            {modulList.filter(m => !m.type || m.type !== 'kuis_mandiri').map(m => <option key={m.id} value={m.id}>{m.title || m.id}</option>)}
+          </select>
+        )}
+
+        {publishTarget === 'jenjang' && (
+          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <select value={selectedProgram} onChange={e => setSelectedProgram(e.target.value)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #f59e0b', fontSize: 12, outline: 'none', background: 'white' }}>
+              <option value="Semua">Semua Program</option>
+              <option value="Reguler">📚 Reguler</option>
+              <option value="English">🗣️ English</option>
+            </select>
+            <select value={selectedKelas} onChange={e => setSelectedKelas(e.target.value)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #f59e0b', fontSize: 12, outline: 'none', background: 'white' }}>
+              <option value="Semua">Semua Kelas</option>
+              {availableClasses.map(k => <option key={k} value={k}>{k}</option>)}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================== */}
+      {/* BULK IMPORT MODAL */}
+      {/* ========================================================== */}
+      {showImport && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
+          <div style={{ background: 'white', width: '100%', maxWidth: 550, padding: 25, borderRadius: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+              <h3 style={{ margin: 0, fontSize: 16 }}>📥 Bulk Import Soal</h3>
+              <button onClick={() => setShowImport(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X/></button>
+            </div>
+            <div style={{ background: '#eef2ff', padding: 10, borderRadius: 8, fontSize: 10, color: '#4338ca', marginBottom: 12 }}>
+              <b>Format:</b><br/>
+              1. Pertanyaan<br/>
+              A. Opsi A<br/>
+              B. Opsi B<br/>
+              C. Opsi C<br/>
+              D. Opsi D
+            </div>
+            <textarea 
+              value={bulkText} 
+              onChange={e => setBulkText(e.target.value)}
+              placeholder={"1. Berapa 2+2?\nA. 2\nB. 4\nC. 6\nD. 8"}
+              style={{ width: '100%', height: 200, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, fontFamily: 'monospace', marginBottom: 12, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} 
+            />
+            <button onClick={handleBulkImport} style={{ width: '100%', padding: 12, background: '#673ab7', color: 'white', border: 'none', borderRadius: 10, fontWeight: 800, cursor: 'pointer' }}>
+              🚀 Proses & Import
+            </button>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .spin {
+          animation: spin 0.8s linear infinite;
+        }
+      `}</style>
     </div>
   );
 };
