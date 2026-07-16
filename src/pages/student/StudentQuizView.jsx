@@ -8,7 +8,7 @@ import {
   HelpCircle, Send, User, Hash, Award, Timer, 
   BarChart3, TrendingUp, Shield, AlertTriangle,
   ChevronLeft, ChevronRight, BookOpen, Zap, RefreshCw,
-  Eye, EyeOff, Calendar, Lock, Unlock
+  Eye, EyeOff, Calendar, Lock, Unlock, Flag, AlertTriangle as AlertTriangleIcon
 } from 'lucide-react';
 
 // ============================================================
@@ -42,6 +42,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
+  const [flaggedQuestions, setFlaggedQuestions] = useState({}); // 🔥 TANDA RAGU-RAGU
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [results, setResults] = useState(null);
@@ -84,7 +85,6 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
 
     const fetchQuiz = async () => {
       try {
-        // 🔥 AMBIL DATA MODUL
         const snap = await getDoc(doc(db, "bimbel_modul", modulId));
         if (!snap.exists()) {
           setError('Modul tidak ditemukan');
@@ -103,7 +103,6 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
 
         const nim = studentInfo.nim;
         
-        // 🔥 CEK SUDAH PERNAH MENGERJAKAN
         if (nim) {
           const qJawaban = query(
             collection(db, "jawaban_kuis"),
@@ -114,7 +113,6 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           const existing = snapJawaban.docs.length;
           setAttemptCount(existing);
           
-          // 🔥 AMBIL HASIL TERAKHIR jika sudah pernah
           if (existing > 0) {
             const lastDoc = snapJawaban.docs[snapJawaban.docs.length - 1];
             const lastData = lastDoc.data();
@@ -131,7 +129,6 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
             setHasExistingAnswer(true);
           }
           
-          // 🔥 CEK BATAS PERCOBAAN
           const maxAttempts = data.maxAttempts || 1;
           if (maxAttempts > 0 && existing >= maxAttempts) {
             setError(`⚠️ Anda sudah mengerjakan kuis ini ${existing} kali. Batas maksimal ${maxAttempts} kali.`);
@@ -140,54 +137,51 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           }
         }
 
-        // 🔥 CEK JADWAL BUKA/TUTUP
         const now = new Date();
         
         if (data.useSchedule) {
-          // CEK TANGGAL BUKA
           if (data.quizOpenDate) {
             const open = new Date(data.quizOpenDate);
             if (now < open) {
-              setError(`⏳ Kuis belum dibuka. Akan dibuka pada ${open.toLocaleString('id-ID', { 
-                day: 'numeric', month: 'long', year: 'numeric', 
-                hour: '2-digit', minute: '2-digit' 
-              })}`);
+              setError(`⏳ Kuis belum dibuka. Akan dibuka pada ${open.toLocaleString('id-ID')}`);
               setLoading(false);
               return;
             }
           }
-          
-          // CEK TANGGAL TUTUP
           if (data.quizCloseDate) {
             const close = new Date(data.quizCloseDate);
             if (now > close) {
-              setError(`⛔ Kuis sudah ditutup pada ${close.toLocaleString('id-ID', { 
-                day: 'numeric', month: 'long', year: 'numeric', 
-                hour: '2-digit', minute: '2-digit' 
-              })}. Tidak dapat dikerjakan lagi.`);
+              setError(`⛔ Kuis sudah ditutup.`);
               setLoading(false);
               return;
             }
           }
         }
 
-        // 🔥 Siapkan soal
         let questionsData = quizDataRaw.map((q, idx) => ({
           id: q.id || idx,
+          type: q.type || 'multiple',
           question: q.question || q.q || `Soal ${idx + 1}`,
           questionImage: q.questionImage || q.qImage || '',
           options: q.options || [],
           optionImages: q.optionImages || [],
           correctAnswer: q.correctAnswer || q.correct || 0,
+          correctAnswers: q.correctAnswers || [],
           explanation: q.explanation || '',
+          statements: q.statements || [],
+          readingText: q.readingText || '',
+          subQuestions: q.subQuestions || [],
+          shortAnswer: q.shortAnswer || '',
+          cause: q.cause || '',
+          effect: q.effect || '',
+          isCauseTrue: q.isCauseTrue !== undefined ? q.isCauseTrue : true,
+          isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true
         }));
 
-        // 🔥 Acak soal jika diminta (hanya jika belum pernah dikerjakan)
         if (data.randomOrder && !hasExistingAnswer) {
           questionsData = shuffleArray(questionsData);
         }
 
-        // 🔥 Set timer
         const timeLimit = data.timeLimit || 0;
         setTimeLeft(timeLimit * 60);
 
@@ -248,6 +242,15 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     setAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
   };
 
+  // ===== HANDLE FLAG (RAGU-RAGU) =====
+  const handleFlagQuestion = (questionId) => {
+    if (isSubmitted || hasExistingAnswer) return;
+    setFlaggedQuestions(prev => ({
+      ...prev,
+      [questionId]: !prev[questionId]
+    }));
+  };
+
   // ===== NAVIGASI SOAL =====
   const goToQuestion = (index) => {
     if (index >= 0 && index < questions.length) {
@@ -263,11 +266,229 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     return questions.length > 0 ? (getAnsweredCount() / questions.length) * 100 : 0;
   };
 
+  // ===== CEK STATUS SOAL =====
+  const getQuestionStatus = (questionId) => {
+    if (answers[questionId] !== undefined) return 'answered';
+    if (flaggedQuestions[questionId]) return 'flagged';
+    return 'unanswered';
+  };
+
+  // ===== RENDER OPSI BERDASARKAN TIPE SOAL =====
+  const renderQuestionOptions = (question) => {
+    if (question.type === 'truefalse') {
+      // Tabel Benar/Salah
+      return (
+        <div style={{ marginTop: 12 }}>
+          {question.statements.map((stmt, idx) => (
+            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: '1px solid #e2e8f0' }}>
+              <span style={{ flex: 1, fontSize: 13 }}>{stmt.text || `Pernyataan ${idx + 1}`}</span>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {['Benar', 'Salah'].map((label, oIdx) => {
+                  const isSelected = answers[question.id]?.[idx] === (oIdx === 0);
+                  return (
+                    <button
+                      key={oIdx}
+                      onClick={() => {
+                        if (isSubmitted || hasExistingAnswer) return;
+                        const newAnswers = { ...answers };
+                        if (!newAnswers[question.id]) newAnswers[question.id] = {};
+                        newAnswers[question.id][idx] = (oIdx === 0);
+                        setAnswers(newAnswers);
+                      }}
+                      style={{
+                        padding: '4px 12px',
+                        borderRadius: 6,
+                        border: isSelected ? `2px solid ${oIdx === 0 ? '#10b981' : '#ef4444'}` : '1px solid #e2e8f0',
+                        background: isSelected ? (oIdx === 0 ? '#dcfce7' : '#fee2e2') : 'white',
+                        color: isSelected ? (oIdx === 0 ? '#166534' : '#dc2626') : '#64748b',
+                        cursor: isSubmitted || hasExistingAnswer ? 'not-allowed' : 'pointer',
+                        fontWeight: isSelected ? 700 : 500,
+                        fontSize: 11,
+                        opacity: isSubmitted || hasExistingAnswer ? 0.6 : 1
+                      }}
+                      disabled={isSubmitted || hasExistingAnswer}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (question.type === 'multiselect') {
+      // Pilih Lebih dari Satu
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+          {question.options.map((opt, idx) => {
+            const isSelected = answers[question.id]?.includes(idx) || false;
+            return (
+              <button
+                key={idx}
+                onClick={() => {
+                  if (isSubmitted || hasExistingAnswer) return;
+                  const current = answers[question.id] || [];
+                  const newSelected = isSelected 
+                    ? current.filter(i => i !== idx)
+                    : [...current, idx];
+                  setAnswers(prev => ({ ...prev, [question.id]: newSelected }));
+                }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 14px',
+                  borderRadius: 8,
+                  border: isSelected ? '2px solid #8b5cf6' : '1px solid #e2e8f0',
+                  background: isSelected ? '#f3e8ff' : 'white',
+                  cursor: isSubmitted || hasExistingAnswer ? 'not-allowed' : 'pointer',
+                  opacity: isSubmitted || hasExistingAnswer ? 0.6 : 1
+                }}
+                disabled={isSubmitted || hasExistingAnswer}
+              >
+                <div style={{
+                  width: 20, height: 20, borderRadius: 4,
+                  border: `2px solid ${isSelected ? '#8b5cf6' : '#cbd5e1'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: isSelected ? '#8b5cf6' : 'white'
+                }}>
+                  {isSelected && <CheckCircle size={12} color="white" />}
+                </div>
+                <span style={{ fontSize: 13 }}>{opt || `Opsi ${String.fromCharCode(65 + idx)}`}</span>
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (question.type === 'shortanswer') {
+      // Isian Singkat
+      return (
+        <div style={{ marginTop: 12 }}>
+          <input
+            type="text"
+            value={answers[question.id] || ''}
+            onChange={(e) => {
+              if (isSubmitted || hasExistingAnswer) return;
+              setAnswers(prev => ({ ...prev, [question.id]: e.target.value }));
+            }}
+            placeholder="Ketik jawaban Anda..."
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              borderRadius: 8,
+              border: '1px solid #e2e8f0',
+              fontSize: 14,
+              outline: 'none',
+              background: isSubmitted || hasExistingAnswer ? '#f8fafc' : 'white',
+              opacity: isSubmitted || hasExistingAnswer ? 0.6 : 1
+            }}
+            disabled={isSubmitted || hasExistingAnswer}
+          />
+          <p style={{ fontSize: 9, color: '#94a3b8', marginTop: 4 }}>
+            💡 Gunakan $...$ untuk rumus matematika
+          </p>
+        </div>
+      );
+    }
+
+    if (question.type === 'causeeffect') {
+      // Sebab Akibat
+      return (
+        <div style={{ marginTop: 12 }}>
+          <div style={{ padding: '8px 12px', background: '#f8fafc', borderRadius: 6, marginBottom: 8 }}>
+            <p style={{ fontSize: 13, margin: 0 }}><strong>SEBAB:</strong> {question.cause || 'Tidak ada pernyataan'}</p>
+            <p style={{ fontSize: 13, margin: '4px 0 0' }}><strong>AKIBAT:</strong> {question.effect || 'Tidak ada pernyataan'}</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {[
+              { label: 'Pernyataan Sebab BENAR', field: 'cause' },
+              { label: 'Pernyataan Akibat BENAR', field: 'effect' }
+            ].map((item) => {
+              const isSelected = answers[question.id]?.[item.field] !== undefined 
+                ? answers[question.id][item.field] 
+                : false;
+              return (
+                <div key={item.field}>
+                  <button
+                    onClick={() => {
+                      if (isSubmitted || hasExistingAnswer) return;
+                      const current = answers[question.id] || {};
+                      current[item.field] = !current[item.field];
+                      setAnswers(prev => ({ ...prev, [question.id]: current }));
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: 6,
+                      border: isSelected ? '2px solid #10b981' : '1px solid #e2e8f0',
+                      background: isSelected ? '#dcfce7' : 'white',
+                      color: isSelected ? '#166534' : '#64748b',
+                      cursor: isSubmitted || hasExistingAnswer ? 'not-allowed' : 'pointer',
+                      fontWeight: isSelected ? 700 : 500,
+                      fontSize: 11,
+                      opacity: isSubmitted || hasExistingAnswer ? 0.6 : 1
+                    }}
+                    disabled={isSubmitted || hasExistingAnswer}
+                  >
+                    {isSelected ? '✅' : '⬜'} {item.label}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // DEFAULT: Pilihan Ganda Biasa
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+        {question.options.map((option, idx) => {
+          const isSelected = answers[question.id] === idx;
+          const letter = String.fromCharCode(65 + idx);
+          return (
+            <button
+              key={idx}
+              onClick={() => handleSelectAnswer(question.id, idx)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '10px 14px',
+                borderRadius: 8,
+                border: isSelected ? '2px solid #673ab7' : '1px solid #e2e8f0',
+                background: isSelected ? '#f3e8ff' : 'white',
+                cursor: isSubmitted || hasExistingAnswer ? 'not-allowed' : 'pointer',
+                fontSize: 13,
+                color: isSelected ? '#673ab7' : '#1e293b',
+                fontWeight: isSelected ? 700 : 500,
+                opacity: isSubmitted || hasExistingAnswer ? 0.6 : 1
+              }}
+              disabled={isSubmitted || hasExistingAnswer}
+            >
+              <span style={{
+                width: 28, height: 28, borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: isSelected ? '#673ab7' : '#f1f5f9',
+                color: isSelected ? 'white' : '#64748b',
+                fontWeight: 700, fontSize: 12, flexShrink: 0
+              }}>
+                {letter}
+              </span>
+              <span style={{ flex: 1, textAlign: 'left' }}>{option || `Opsi ${letter}`}</span>
+              {isSelected && <CheckCircle size={16} color="#673ab7" />}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
   // ===== SUBMIT QUIZ =====
   const handleSubmitQuiz = async (isAuto = false) => {
     if (isSubmitted || hasExistingAnswer) return;
 
-    // Cek semua soal sudah dijawab (kecuali auto submit)
     if (!isAuto) {
       const unanswered = questions.filter(q => answers[q.id] === undefined);
       if (unanswered.length > 0) {
@@ -280,17 +501,54 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     setShowConfirm(false);
     setIsSubmitted(true);
 
-    // 🔥 HITUNG NILAI
     let correctCount = 0;
     const detailedResults = questions.map(q => {
       const userAnswer = answers[q.id];
-      const isCorrect = userAnswer === q.correctAnswer;
+      let isCorrect = false;
+      
+      // 🔥 CEK BERDASARKAN TIPE SOAL
+      if (q.type === 'truefalse') {
+        // Cek semua pernyataan
+        let allCorrect = true;
+        if (typeof userAnswer === 'object') {
+          q.statements.forEach((stmt, idx) => {
+            if (userAnswer[idx] !== stmt.isTrue) allCorrect = false;
+          });
+        } else {
+          allCorrect = false;
+        }
+        isCorrect = allCorrect;
+      } else if (q.type === 'multiselect') {
+        // Cek semua pilihan
+        if (Array.isArray(userAnswer) && Array.isArray(q.correctAnswers)) {
+          const sortedUser = [...userAnswer].sort();
+          const sortedCorrect = [...q.correctAnswers].sort();
+          isCorrect = sortedUser.length === sortedCorrect.length && 
+                      sortedUser.every((val, i) => val === sortedCorrect[i]);
+        }
+      } else if (q.type === 'shortanswer') {
+        isCorrect = userAnswer?.toLowerCase().trim() === q.shortAnswer?.toLowerCase().trim();
+      } else if (q.type === 'causeeffect') {
+        isCorrect = userAnswer?.cause === q.isCauseTrue && userAnswer?.effect === q.isEffectTrue;
+      } else {
+        // Pilihan Ganda
+        isCorrect = userAnswer === q.correctAnswer;
+      }
+      
       if (isCorrect) correctCount++;
       return {
         id: q.id,
+        type: q.type,
         question: q.question,
         options: q.options,
         correctAnswer: q.correctAnswer,
+        correctAnswers: q.correctAnswers,
+        statements: q.statements,
+        shortAnswer: q.shortAnswer,
+        cause: q.cause,
+        effect: q.effect,
+        isCauseTrue: q.isCauseTrue,
+        isEffectTrue: q.isEffectTrue,
         explanation: q.explanation || '',
         userAnswer,
         isCorrect,
@@ -299,7 +557,6 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
 
     const score = Math.round((correctCount / questions.length) * 100);
 
-    // 🔥 SIMPAN KE FIRESTORE
     try {
       const nim = studentInfo.nim;
       await addDoc(collection(db, "jawaban_kuis"), {
@@ -385,6 +642,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   // RENDER - SUDAH PERNAH MENGERJAKAN (PREVIEW MODE)
   // ============================================================
   if (hasExistingAnswer && existingResult) {
+    // ... (sama seperti sebelumnya)
     const { score, correctAnswers, totalQuestions, details, isAutoSubmit } = existingResult;
     const isPassed = score >= 70;
 
@@ -434,7 +692,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
             </div>
           </div>
 
-          {/* 🔥 TOMBOL LIHAT JAWABAN */}
+          {/* TOMBOL LIHAT JAWABAN */}
           <div style={styles.actionButtons}>
             <button 
               onClick={() => setShowAllAnswers(!showAllAnswers)}
@@ -448,7 +706,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
             </button>
           </div>
 
-          {/* 🔥 DAFTAR JAWABAN - HIJAU/MERAH */}
+          {/* DAFTAR JAWABAN */}
           {showAllAnswers && details && (
             <div style={styles.allAnswersSection}>
               <h4 style={styles.answersTitle}>📋 Daftar Jawaban & Pembahasan</h4>
@@ -467,8 +725,12 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
                     
                     <div style={styles.answerOptions}>
                       {q.options.map((opt, oIdx) => {
-                        const isCorrectAnswer = oIdx === q.correctAnswer;
-                        const isUserAnswer = oIdx === q.userAnswer;
+                        const isCorrectAnswer = q.type === 'multiselect' 
+                          ? q.correctAnswers.includes(oIdx)
+                          : oIdx === q.correctAnswer;
+                        const isUserAnswer = q.type === 'multiselect'
+                          ? q.userAnswer?.includes(oIdx) || false
+                          : q.userAnswer === oIdx;
                         let bgColor = 'transparent';
                         let textColor = '#1e293b';
                         
@@ -500,7 +762,11 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
                       <div style={styles.answerUser}>
                         <span>📝 Jawaban Anda: </span>
                         <span style={{ fontWeight: 'bold', color: isCorrect ? '#10b981' : '#dc2626' }}>
-                          {q.options[q.userAnswer] || 'Tidak dijawab'}
+                          {q.type === 'shortanswer' 
+                            ? q.userAnswer || 'Tidak dijawab'
+                            : q.type === 'multiselect' 
+                              ? (q.userAnswer || []).map(i => q.options[i]).join(', ') || 'Tidak dijawab'
+                              : q.options[q.userAnswer] || 'Tidak dijawab'}
                         </span>
                       </div>
                     )}
@@ -530,7 +796,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   // RENDER - QUIZ NOT STARTED
   // ============================================================
   if (!quizStarted) {
-    // 🔥 CEK STATUS KUIS
+    // ... (sama seperti sebelumnya)
     let statusText = '';
     let statusColor = '#10b981';
     let statusIcon = <Unlock size={16} color="#10b981" />;
@@ -563,7 +829,6 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
             <h2 style={styles.startTitle}>{quizData?.title || 'Kuis'}</h2>
             <p style={styles.startSubject}>{quizData?.subject || 'Umum'}</p>
             
-            {/* 🔥 STATUS KUIS */}
             {quizData?.useSchedule && (
               <div style={{...styles.quizStatusBadge, borderColor: statusColor, color: statusColor}}>
                 {statusIcon} {statusText}
@@ -594,14 +859,6 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
                 <span>Sudah {attemptCount} kali dikerjakan</span>
               </div>
             )}
-            {quizData?.useSchedule && quizData?.quizOpenDate && quizData?.quizCloseDate && (
-              <div style={{...styles.startInfoItem, background: '#eef2ff', borderColor: '#3b82f6'}}>
-                <Calendar size={18} color="#3b82f6" />
-                <span>
-                  {new Date(quizData.quizOpenDate).toLocaleDateString()} - {new Date(quizData.quizCloseDate).toLocaleDateString()}
-                </span>
-              </div>
-            )}
           </div>
 
           <div style={styles.startRules}>
@@ -618,15 +875,8 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
                 <li>🔒 Hanya bisa dikerjakan 1 kali</li>
               )}
               <li>📖 Setelah selesai, Anda bisa melihat jawaban & pembahasan</li>
-              {quizData?.showExplanation && (
-                <li>💡 Pembahasan akan tampil setelah selesai</li>
-              )}
-              {quizData?.randomOrder && (
-                <li>🎲 Soal diacak untuk setiap siswa</li>
-              )}
-              {quizData?.useSchedule && (
-                <li>📅 Kuis hanya bisa dikerjakan dalam periode yang ditentukan</li>
-              )}
+              <li>🚩 Tandai soal yang ragu-ragu dengan tombol bendera</li>
+              {quizData?.randomOrder && <li>🎲 Soal diacak untuk setiap siswa</li>}
             </ul>
           </div>
 
@@ -656,6 +906,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   const progress = getProgress();
   const isLastQuestion = currentIndex === questions.length - 1;
   const isFirstQuestion = currentIndex === 0;
+  const questionStatus = getQuestionStatus(currentQuestion.id);
 
   return (
     <div style={styles.container}>
@@ -693,95 +944,109 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         <div style={{...styles.progressBar, width: `${progress}%`}} />
       </div>
 
+      {/* 🔥 NAVIGASI SOAL - DENGAN STATUS */}
+      <div style={styles.questionNavigator}>
+        <button 
+          onClick={() => goToQuestion(currentIndex - 1)} 
+          disabled={isFirstQuestion}
+          style={styles.navButtonSmall(isFirstQuestion)}
+        >
+          <ChevronLeft size={14} /> Sebelumnya
+        </button>
+        <div style={styles.questionDots}>
+          {questions.map((q, idx) => {
+            const status = getQuestionStatus(q.id);
+            const isActive = idx === currentIndex;
+            return (
+              <button
+                key={q.id}
+                onClick={() => goToQuestion(idx)}
+                style={styles.questionDot(status, isActive)}
+                title={`Soal ${idx + 1}${status === 'answered' ? ' (Terjawab)' : status === 'flagged' ? ' (Ragu-ragu)' : ' (Belum)'}`}
+              >
+                {idx + 1}
+              </button>
+            );
+          })}
+        </div>
+        <button 
+          onClick={() => goToQuestion(currentIndex + 1)} 
+          disabled={isLastQuestion}
+          style={styles.navButtonSmall(isLastQuestion)}
+        >
+          Selanjutnya <ChevronRight size={14} />
+        </button>
+      </div>
+
       {/* QUESTION */}
       <div style={styles.questionCard}>
         <div style={styles.questionNumber}>
-          <span style={styles.questionNumText}>Soal {currentIndex + 1} dari {questions.length}</span>
-          <span style={styles.questionStatus}>
-            {answers[currentQuestion.id] !== undefined ? '✅ Terjawab' : '⏳ Belum dijawab'}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={styles.questionNumText}>Soal {currentIndex + 1} dari {questions.length}</span>
+            <span style={{
+              fontSize: 9,
+              fontWeight: 700,
+              padding: '2px 10px',
+              borderRadius: 10,
+              background: questionStatus === 'answered' ? '#dcfce7' : questionStatus === 'flagged' ? '#fef3c7' : '#f1f5f9',
+              color: questionStatus === 'answered' ? '#166534' : questionStatus === 'flagged' ? '#b45309' : '#94a3b8'
+            }}>
+              {questionStatus === 'answered' ? '✅ Terjawab' : questionStatus === 'flagged' ? '🚩 Ragu-ragu' : '⏳ Belum'}
+            </span>
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button 
+              onClick={() => handleFlagQuestion(currentQuestion.id)}
+              style={{
+                background: flaggedQuestions[currentQuestion.id] ? '#fef3c7' : '#f1f5f9',
+                border: flaggedQuestions[currentQuestion.id] ? '1px solid #f59e0b' : '1px solid #e2e8f0',
+                borderRadius: 6,
+                padding: '4px 8px',
+                cursor: isSubmitted || hasExistingAnswer ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+                fontSize: 10,
+                fontWeight: 600,
+                color: flaggedQuestions[currentQuestion.id] ? '#b45309' : '#64748b',
+                opacity: isSubmitted || hasExistingAnswer ? 0.6 : 1
+              }}
+              disabled={isSubmitted || hasExistingAnswer}
+            >
+              <Flag size={14} /> {flaggedQuestions[currentQuestion.id] ? 'Batalkan' : 'Ragu-ragu'}
+            </button>
+          </div>
         </div>
 
+        {/* Gambar Soal */}
         {currentQuestion.questionImage && (
           <div style={styles.questionImage}>
             <img src={currentQuestion.questionImage} alt="Soal" />
           </div>
         )}
 
+        {/* Teks Bacaan (untuk tipe reading) */}
+        {currentQuestion.type === 'reading' && currentQuestion.readingText && (
+          <div style={styles.readingText}>
+            <h4 style={styles.readingTitle}>📖 Teks Bacaan</h4>
+            <div style={styles.readingContent}>{currentQuestion.readingText}</div>
+          </div>
+        )}
+
         <h3 style={styles.questionText}>{currentQuestion.question}</h3>
 
-        <div style={styles.optionsContainer}>
-          {currentQuestion.options.map((option, idx) => {
-            const isSelected = answers[currentQuestion.id] === idx;
-            const letter = String.fromCharCode(65 + idx);
-            return (
-              <button
-                key={idx}
-                onClick={() => handleSelectAnswer(currentQuestion.id, idx)}
-                style={styles.optionButton(isSelected)}
-                disabled={isSubmitted}
-              >
-                <span style={styles.optionLetter(isSelected)}>{letter}</span>
-                <span style={styles.optionText}>{option || `Opsi ${letter}`}</span>
-                {currentQuestion.optionImages?.[idx] && (
-                  <img src={currentQuestion.optionImages[idx]} alt={`Opsi ${letter}`} style={styles.optionImage} />
-                )}
-                {isSelected && <CheckCircle size={16} color="#10b981" />}
-              </button>
-            );
-          })}
-        </div>
+        {/* Opsi Jawaban */}
+        {renderQuestionOptions(currentQuestion)}
       </div>
 
-      {/* NAVIGATION */}
-      <div style={styles.navigation}>
+      {/* SUBMIT BUTTON */}
+      <div style={styles.submitContainer}>
         <button 
-          onClick={() => goToQuestion(currentIndex - 1)} 
-          disabled={isFirstQuestion}
-          style={styles.navButton(isFirstQuestion)}
+          onClick={() => setShowConfirm(true)}
+          style={styles.submitButton}
         >
-          <ChevronLeft size={16} /> Sebelumnya
+          <Send size={16} /> Kirim Jawaban
         </button>
-
-        <div style={styles.navCenter}>
-          <span style={styles.navProgress}>
-            {currentIndex + 1} / {questions.length}
-          </span>
-        </div>
-
-        {isLastQuestion ? (
-          <button 
-            onClick={() => setShowConfirm(true)}
-            style={styles.submitButton}
-          >
-            <Send size={16} /> Kirim Jawaban
-          </button>
-        ) : (
-          <button 
-            onClick={() => goToQuestion(currentIndex + 1)} 
-            style={styles.navButton(false)}
-          >
-            Selanjutnya <ChevronRight size={16} />
-          </button>
-        )}
-      </div>
-
-      {/* PAGINATION */}
-      <div style={styles.pagination}>
-        {questions.map((q, idx) => {
-          const isAnswered = answers[q.id] !== undefined;
-          const isActive = idx === currentIndex;
-          return (
-            <button
-              key={q.id}
-              onClick={() => goToQuestion(idx)}
-              style={styles.paginationDot(isAnswered, isActive)}
-              title={`Soal ${idx + 1}${isAnswered ? ' (Terjawab)' : ''}`}
-            >
-              {idx + 1}
-            </button>
-          );
-        })}
       </div>
 
       {/* CONFIRM MODAL */}
@@ -812,566 +1077,102 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
 };
 
 // ============================================================
-// STYLES
+// STYLES (TAMBAHAN UNTUK NAVIGASI BARU)
 // ============================================================
 const styles = {
-  container: {
-    maxWidth: 800,
-    margin: '0 auto',
-    padding: '16px',
-    minHeight: '100vh',
-    background: '#f8fafc'
-  },
-
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '60vh',
-    gap: 16
-  },
-  spinner: {
-    width: 40,
-    height: 40,
-    border: '4px solid #e2e8f0',
-    borderTop: '4px solid #673ab7',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite'
-  },
-
-  errorContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '60vh',
-    gap: 16,
-    textAlign: 'center',
-    padding: 20
-  },
-  errorTitle: { fontSize: 20, color: '#1e293b', fontWeight: 700 },
-  backButton: {
-    background: '#f1f5f9',
-    border: 'none',
-    padding: '10px 20px',
-    borderRadius: 10,
-    cursor: 'pointer',
-    fontWeight: 600,
-    fontSize: 13,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6
-  },
-
-  // START CARD
-  startCard: {
-    background: 'white',
-    borderRadius: 20,
-    padding: '32px',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-    border: '1px solid #f1f5f9'
-  },
-  startHeader: { textAlign: 'center', marginBottom: 24 },
-  startIcon: { fontSize: 48, marginBottom: 8 },
-  startTitle: { fontSize: 24, fontWeight: 900, color: '#1e293b', margin: 0 },
-  startSubject: { fontSize: 14, color: '#64748b', marginTop: 4 },
+  // ... (styles sebelumnya tetap sama)
   
-  quizStatusBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '4px 14px',
-    borderRadius: 20,
-    border: '2px solid',
-    fontSize: 12,
-    fontWeight: 700,
-    marginTop: 8
-  },
-
-  startInfo: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-    gap: 8,
-    marginBottom: 20
-  },
-  startInfoItem: {
-    background: '#f8fafc',
-    padding: '10px 14px',
-    borderRadius: 10,
-    border: '1px solid #e2e8f0',
+  // 🔥 NAVIGATOR SOAL
+  questionNavigator: {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
-    fontSize: 13,
-    fontWeight: 600,
-    color: '#1e293b'
-  },
-
-  startRules: {
-    background: '#f8fafc',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 20,
-    border: '1px solid #e2e8f0'
-  },
-  rulesTitle: { fontSize: 14, fontWeight: 700, color: '#1e293b', margin: '0 0 8px' },
-  rulesList: { listStyle: 'none', padding: 0, margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.8 },
-
-  startFooter: { display: 'flex', gap: 10, justifyContent: 'flex-end' },
-  btnCancel: {
-    padding: '10px 24px',
-    background: '#f1f5f9',
-    border: 'none',
-    borderRadius: 10,
-    cursor: 'pointer',
-    fontWeight: 600,
-    fontSize: 13,
-    color: '#64748b'
-  },
-  btnStart: {
-    padding: '10px 32px',
-    background: 'linear-gradient(135deg, #673ab7, #8b5cf6)',
-    color: 'white',
-    border: 'none',
-    borderRadius: 10,
-    cursor: 'pointer',
-    fontWeight: 700,
-    fontSize: 13,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    boxShadow: '0 4px 12px rgba(103,58,183,0.3)'
-  },
-
-  // QUIZ ACTIVE
-  quizHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '12px 16px',
+    padding: '8px 12px',
     background: 'white',
-    borderRadius: 12,
-    border: '1px solid #e2e8f0',
-    marginBottom: 8,
-    flexWrap: 'wrap',
-    gap: 8
-  },
-  quizHeaderLeft: { display: 'flex', alignItems: 'center', gap: 10 },
-  quizBackBtn: {
-    background: '#f1f5f9',
-    border: 'none',
-    padding: '6px 10px',
-    borderRadius: 8,
-    cursor: 'pointer'
-  },
-  quizTitle: { margin: 0, fontSize: 16, fontWeight: 700, color: '#1e293b' },
-  quizSubject: { fontSize: 11, color: '#94a3b8' },
-
-  quizHeaderRight: { display: 'flex', gap: 8, alignItems: 'center' },
-  timerBox: (warning) => ({
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '6px 12px',
-    borderRadius: 8,
-    background: warning ? '#fee2e2' : '#f1f5f9',
-    color: warning ? '#ef4444' : '#64748b',
-    fontWeight: 700,
-    fontSize: 13
-  }),
-  timerText: { fontFamily: 'monospace', fontWeight: 900 },
-  progressBox: {
-    padding: '6px 12px',
-    borderRadius: 8,
-    background: '#eef2ff',
-    color: '#3b82f6',
-    fontWeight: 700,
-    fontSize: 12
-  },
-
-  progressBarContainer: {
-    width: '100%',
-    height: 4,
-    background: '#e2e8f0',
-    borderRadius: 2,
-    marginBottom: 16,
-    overflow: 'hidden'
-  },
-  progressBar: {
-    height: '100%',
-    background: 'linear-gradient(90deg, #673ab7, #8b5cf6)',
-    borderRadius: 2,
-    transition: 'width 0.3s ease'
-  },
-
-  questionCard: {
-    background: 'white',
-    borderRadius: 14,
-    padding: '20px 24px',
-    border: '1px solid #e2e8f0',
-    marginBottom: 12
-  },
-  questionNumber: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-    flexWrap: 'wrap',
-    gap: 4
-  },
-  questionNumText: { fontSize: 12, fontWeight: 600, color: '#64748b' },
-  questionStatus: { fontSize: 11, fontWeight: 600, color: '#3b82f6' },
-
-  questionImage: {
-    marginBottom: 12,
-    borderRadius: 8,
-    overflow: 'hidden',
-    maxHeight: 300,
-    display: 'flex',
-    justifyContent: 'center'
-  },
-  questionText: {
-    fontSize: 17,
-    fontWeight: 700,
-    color: '#1e293b',
-    margin: '0 0 16px',
-    lineHeight: 1.6
-  },
-
-  optionsContainer: { display: 'flex', flexDirection: 'column', gap: 6 },
-  optionButton: (selected) => ({
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-    padding: '12px 16px',
     borderRadius: 10,
-    border: `2px solid ${selected ? '#673ab7' : '#e2e8f0'}`,
-    background: selected ? '#f3e8ff' : 'white',
-    cursor: 'pointer',
-    transition: '0.2s',
-    fontSize: 14,
-    color: selected ? '#673ab7' : '#1e293b',
-    fontWeight: selected ? 700 : 500,
-    width: '100%',
-    textAlign: 'left'
-  }),
-  optionLetter: (selected) => ({
-    width: 28,
-    height: 28,
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: selected ? '#673ab7' : '#f1f5f9',
-    color: selected ? 'white' : '#64748b',
-    fontWeight: 700,
-    fontSize: 12,
-    flexShrink: 0
-  }),
-  optionText: { flex: 1 },
-  optionImage: { maxHeight: 40, borderRadius: 4 },
-
-  navigation: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12
+    border: '1px solid #e2e8f0',
+    marginBottom: 12,
+    flexWrap: 'wrap'
   },
-  navButton: (disabled) => ({
-    padding: '8px 16px',
-    borderRadius: 8,
+  navButtonSmall: (disabled) => ({
+    padding: '4px 10px',
+    borderRadius: 6,
     border: '1px solid #e2e8f0',
     background: disabled ? '#f1f5f9' : 'white',
     cursor: disabled ? 'not-allowed' : 'pointer',
     color: disabled ? '#94a3b8' : '#1e293b',
     fontWeight: 600,
-    fontSize: 12,
+    fontSize: 11,
     display: 'flex',
     alignItems: 'center',
-    gap: 4
+    gap: 4,
+    opacity: disabled ? 0.5 : 1
   }),
-  navCenter: { flex: 1, textAlign: 'center' },
-  navProgress: { fontSize: 12, color: '#94a3b8', fontWeight: 600 },
-  submitButton: {
-    padding: '8px 20px',
+  questionDots: {
+    display: 'flex',
+    gap: 4,
+    flex: 1,
+    flexWrap: 'wrap',
+    justifyContent: 'center'
+  },
+  questionDot: (status, active) => ({
+    width: 32,
+    height: 32,
+    borderRadius: '50%',
+    border: active ? '2px solid #673ab7' : '1px solid #e2e8f0',
+    background: status === 'answered' ? '#10b981' : status === 'flagged' ? '#f59e0b' : 'white',
+    color: status === 'answered' ? 'white' : status === 'flagged' ? 'white' : active ? '#673ab7' : '#94a3b8',
+    cursor: 'pointer',
+    fontWeight: active ? 900 : 600,
+    fontSize: 11,
+    transition: '0.2s',
+    boxShadow: active ? '0 2px 8px rgba(103,58,183,0.3)' : 'none'
+  }),
+  
+  // READING TEXT
+  readingText: {
+    background: '#f8fafc',
+    padding: 16,
     borderRadius: 8,
+    border: '1px solid #e2e8f0',
+    marginBottom: 16,
+    maxHeight: 200,
+    overflowY: 'auto'
+  },
+  readingTitle: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: '#64748b',
+    margin: '0 0 8px'
+  },
+  readingContent: {
+    fontSize: 13,
+    lineHeight: 1.7,
+    color: '#1e293b',
+    whiteSpace: 'pre-wrap'
+  },
+  
+  // SUBMIT CONTAINER
+  submitContainer: {
+    marginTop: 16,
+    display: 'flex',
+    justifyContent: 'center'
+  },
+  submitButton: {
+    padding: '12px 32px',
+    borderRadius: 10,
     border: 'none',
     background: 'linear-gradient(135deg, #10b981, #059669)',
     color: 'white',
     cursor: 'pointer',
     fontWeight: 700,
-    fontSize: 12,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6
-  },
-
-  pagination: {
-    display: 'flex',
-    gap: 4,
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-    padding: '8px 0'
-  },
-  paginationDot: (answered, active) => ({
-    width: 32,
-    height: 32,
-    borderRadius: '50%',
-    border: active ? '2px solid #673ab7' : '1px solid #e2e8f0',
-    background: active ? '#f3e8ff' : answered ? '#10b981' : 'white',
-    color: active ? '#673ab7' : answered ? 'white' : '#94a3b8',
-    cursor: 'pointer',
-    fontWeight: 700,
-    fontSize: 11
-  }),
-
-  // MODAL CONFIRM
-  modalOverlay: {
-    position: 'fixed',
-    inset: 0,
-    background: 'rgba(0,0,0,0.6)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 9999,
-    padding: 20,
-    backdropFilter: 'blur(4px)'
-  },
-  modalCard: {
-    background: 'white',
-    borderRadius: 16,
-    padding: '28px 32px',
-    maxWidth: 400,
-    width: '100%',
-    textAlign: 'center'
-  },
-  modalIcon: { fontSize: 40, marginBottom: 8 },
-  modalTitle: { fontSize: 18, fontWeight: 800, color: '#1e293b', margin: '0 0 8px' },
-  modalDesc: { fontSize: 13, color: '#64748b', margin: '0 0 16px' },
-  modalActions: { display: 'flex', gap: 8, justifyContent: 'center' },
-  modalCancel: {
-    padding: '8px 20px',
-    background: '#f1f5f9',
-    border: 'none',
-    borderRadius: 8,
-    cursor: 'pointer',
-    fontWeight: 600,
-    fontSize: 12,
-    color: '#64748b'
-  },
-  modalSubmit: {
-    padding: '8px 24px',
-    background: 'linear-gradient(135deg, #673ab7, #8b5cf6)',
-    color: 'white',
-    border: 'none',
-    borderRadius: 8,
-    cursor: 'pointer',
-    fontWeight: 700,
-    fontSize: 12
-  },
-
-  // ============================================================
-  // RESULT & PREVIEW STYLES
-  // ============================================================
-  resultCard: {
-    background: 'white',
-    borderRadius: 20,
-    padding: '32px',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-    border: '1px solid #f1f5f9'
-  },
-  resultHeader: { textAlign: 'center', marginBottom: 24 },
-  resultIcon: (passed) => ({
-    width: 72,
-    height: 72,
-    borderRadius: '50%',
-    background: passed ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #f59e0b, #d97706)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '0 auto 12px'
-  }),
-  resultTitle: (passed) => ({
-    fontSize: 24,
-    fontWeight: 900,
-    color: passed ? '#065f46' : '#92400e',
-    margin: 0
-  }),
-  resultSubtitle: { fontSize: 14, color: '#64748b', marginTop: 4 },
-
-  resultScore: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 24,
-    justifyContent: 'center',
-    padding: '20px',
-    background: '#f8fafc',
-    borderRadius: 12,
-    marginBottom: 20,
-    flexWrap: 'wrap'
-  },
-  scoreCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: '50%',
-    background: 'linear-gradient(135deg, #673ab7, #8b5cf6)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'white'
-  },
-  scoreValue: { fontSize: 32, fontWeight: 900 },
-  scoreLabel: { fontSize: 10, fontWeight: 600, opacity: 0.8 },
-
-  scoreDetails: { display: 'flex', flexDirection: 'column', gap: 4 },
-  scoreDetailItem: {
+    fontSize: 14,
     display: 'flex',
     alignItems: 'center',
     gap: 8,
-    fontSize: 13,
-    color: '#1e293b'
-  },
-
-  // 🔥 TOMBOL LIHAT JAWABAN
-  actionButtons: {
-    display: 'flex',
-    gap: 10,
-    justifyContent: 'center',
-    marginBottom: 16
-  },
-  btnToggleAnswers: {
-    padding: '10px 24px',
-    background: '#eef2ff',
-    color: '#4338ca',
-    border: '2px solid #4338ca',
-    borderRadius: 10,
-    cursor: 'pointer',
-    fontWeight: 700,
-    fontSize: 13,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
+    boxShadow: '0 4px 16px rgba(16,185,129,0.3)',
     transition: '0.2s'
-  },
-
-  // 🔥 DAFTAR JAWABAN
-  allAnswersSection: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTop: '2px solid #e2e8f0'
-  },
-  answersTitle: {
-    fontSize: 16,
-    fontWeight: 800,
-    color: '#1e293b',
-    margin: '0 0 16px'
-  },
-  
-  answerItem: (isCorrect) => ({
-    padding: '16px',
-    marginBottom: 12,
-    borderRadius: 12,
-    border: `2px solid ${isCorrect ? '#10b981' : '#ef4444'}`,
-    background: isCorrect ? '#f0fdf4' : '#fef2f2',
-    transition: '0.2s'
-  }),
-  
-  answerHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8
-  },
-  answerNumber: { fontSize: 12, fontWeight: 700, color: '#64748b' },
-  answerStatus: (isCorrect) => ({
-    fontSize: 12,
-    fontWeight: 700,
-    color: isCorrect ? '#10b981' : '#ef4444'
-  }),
-  
-  answerQuestion: {
-    fontSize: 15,
-    fontWeight: 600,
-    color: '#1e293b',
-    marginBottom: 10
-  },
-  
-  answerOptions: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 4,
-    marginBottom: 8
-  },
-  
-  optionRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    padding: '6px 12px',
-    borderRadius: 6,
-    fontSize: 13
-  },
-  optionLabel: { fontWeight: 700, color: '#64748b' },
-  
-  answerUser: {
-    fontSize: 12,
-    color: '#64748b',
-    marginTop: 4
-  },
-  
-  answerExplanation: {
-    marginTop: 8,
-    padding: '8px 12px',
-    background: '#eef2ff',
-    borderRadius: 6,
-    fontSize: 12,
-    color: '#4338ca',
-    lineHeight: 1.6
-  },
-
-  resultFooter: {
-    display: 'flex',
-    gap: 10,
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-    marginTop: 16
-  },
-  btnHome: {
-    padding: '10px 24px',
-    background: '#f1f5f9',
-    border: 'none',
-    borderRadius: 10,
-    cursor: 'pointer',
-    fontWeight: 600,
-    fontSize: 13,
-    color: '#64748b'
-  },
-  btnRetry: {
-    padding: '10px 24px',
-    background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-    color: 'white',
-    border: 'none',
-    borderRadius: 10,
-    cursor: 'pointer',
-    fontWeight: 700,
-    fontSize: 13,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6
   }
 };
-
-// Tambahkan keyframes
-const styleSheet = document.createElement("style");
-styleSheet.textContent = `
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
-document.head.appendChild(styleSheet);
 
 export default StudentQuizView;
