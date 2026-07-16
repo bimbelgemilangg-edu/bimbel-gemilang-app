@@ -1,7 +1,7 @@
 // src/services/uploadService.js
 import { createClient } from '@supabase/supabase-js';
 
-// ✅ PERBAIKAN: Menggunakan URL subdomain proyek asli milik Bimbel Gemilang
+// ✅ URL subdomain proyek asli Bimbel Gemilang
 const supabaseUrl = 'https://hqoasblnrsijbflupoir.supabase.co';
 const supabaseAnonKey = 'sb_publishable_TsPJgcnaLOCPV9-DpSyMuA_EQkbrEKt';
 
@@ -11,8 +11,43 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Nama Bucket Storage di Supabase
 const BUCKET_NAME = 'materi-bimbel';
 
+// ============================================================
+// 🔥 SANITASI NAMA FILE - PERBAIKAN UTAMA
+// ============================================================
+const sanitizeFileName = (fileName) => {
+  if (!fileName) return 'file';
+  
+  // Ambil nama file tanpa ekstensi
+  const lastDotIndex = fileName.lastIndexOf('.');
+  const name = lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
+  const ext = lastDotIndex > 0 ? fileName.substring(lastDotIndex) : '';
+  
+  // 🔥 HAPUS SEMUA KARAKTER BERBAHAYA
+  let sanitized = name
+    // Ganti karakter aneh dengan underscore
+    .replace(/[^a-zA-Z0-9\-_]/g, '_')
+    // Ganti spasi dengan underscore
+    .replace(/\s+/g, '_')
+    // Hapus apostrof, petik, kurung
+    .replace(/['"()]/g, '')
+    // Hapus karakter ganda
+    .replace(/_+/g, '_')
+    // Hapus underscore di awal/akhir
+    .replace(/^_|_$/g, '');
+  
+  // Jika hasil kosong, pakai default
+  if (!sanitized) sanitized = 'file';
+  
+  // Batasi panjang nama
+  if (sanitized.length > 100) {
+    sanitized = sanitized.substring(0, 100);
+  }
+  
+  return sanitized + ext;
+};
+
 /**
- * Mengompres gambar sebelum diunggah ke storage untuk menghemat kuota gratisan
+ * Mengompres gambar sebelum diunggah
  */
 const compressImage = (file, maxWidth = 1024, quality = 0.7) => {
   return new Promise((resolve, reject) => {
@@ -35,13 +70,15 @@ const compressImage = (file, maxWidth = 1024, quality = 0.7) => {
         canvas.height = height;
         
         const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, width, height);
 
         canvas.toBlob((blob) => {
           if (blob) {
             resolve(blob);
           } else {
-            reject(new Error('Gagal melakukan kompresi gambar.'));
+            reject(new Error('Gagal kompresi gambar.'));
           }
         }, 'image/jpeg', quality);
       };
@@ -51,52 +88,69 @@ const compressImage = (file, maxWidth = 1024, quality = 0.7) => {
   });
 };
 
-/**
- * Mengunggah file E-Learning langsung dari input HTML
- */
+// ============================================================
+// 🔥 UPLOAD FILE KE SUPABASE - DENGAN SANITASI
+// ============================================================
 export const uploadElearningFile = async (file, customPath = 'materi') => {
   try {
     if (!file) throw new Error('Tidak ada file yang dipilih.');
 
     let dataToUpload = file;
     let finalFileType = file.type;
-    let finalFileName = file.name.replace(/\s+/g, '_'); 
+    let finalFileName = file.name;
 
+    // Kompres gambar jika perlu
     if (file.type.startsWith('image/')) {
       console.log(`📦 Mengompres gambar: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
       try {
         dataToUpload = await compressImage(file, 1024, 0.7);
         finalFileType = 'image/jpeg';
         finalFileName = finalFileName.replace(/\.[^/.]+$/, '') + '.jpg';
-        console.log(`✅ Gambar berhasil dikompres menjadi format JPEG`);
+        console.log(`✅ Gambar berhasil dikompres`);
       } catch (compressError) {
-        console.warn('Gagal mengompres gambar, menggunakan file asli:', compressError);
-        dataToUpload = file; 
+        console.warn('⚠️ Gagal kompres, pakai file asli:', compressError);
+        dataToUpload = file;
       }
     }
 
-    const maxSize = 50 * 1024 * 1024; 
-    const currentSize = dataToUpload.size || dataToUpload.length;
+    // 🔥 SANITASI NAMA FILE (PERBAIKAN UTAMA)
+    const sanitizedFileName = sanitizeFileName(finalFileName);
+    
+    // 🔥 CEK UKURAN FILE
+    const maxSize = 50 * 1024 * 1024;
+    const currentSize = dataToUpload.size || dataToUpload.length || 0;
     if (currentSize > maxSize) {
-      throw new Error('Ukuran file terlalu besar. Maksimal batas unggah adalah 50MB.');
+      throw new Error(`File terlalu besar (${(currentSize/1024/1024).toFixed(2)}MB). Maks 50MB.`);
     }
 
+    // 🔥 TENTUKAN FOLDER
     const timestamp = Date.now();
-    const uniqueFileName = `${timestamp}_${finalFileName}`;
-
     let folderPath = `${customPath}/`;
+    
+    // Tentukan sub-folder berdasarkan tipe file
     if (customPath === 'materi') {
       if (finalFileType.startsWith('image/')) {
         folderPath = 'gambar/';
       } else if (finalFileType === 'application/pdf') {
         folderPath = 'pdf/';
+      } else if (finalFileType.includes('word') || finalFileType.includes('document')) {
+        folderPath = 'dokumen/';
       } else {
         folderPath = 'dokumen/';
       }
     }
 
-    const filePath = `${folderPath}${uniqueFileName}`;
+    // 🔥 BUILD FILE PATH YANG AMAN
+    const filePath = `${folderPath}${timestamp}_${sanitizedFileName}`;
 
+    console.log('📤 Uploading:', {
+      original: file.name,
+      sanitized: sanitizedFileName,
+      path: filePath,
+      size: (currentSize / 1024).toFixed(1) + ' KB'
+    });
+
+    // 🔥 UPLOAD KE SUPABASE
     const { data, error } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(filePath, dataToUpload, {
@@ -105,51 +159,96 @@ export const uploadElearningFile = async (file, customPath = 'materi') => {
         contentType: finalFileType
       });
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Upload error:', error);
+      return { 
+        success: false, 
+        error: error.message || 'Gagal upload ke Supabase' 
+      };
+    }
 
+    // 🔥 AMBIL URL PUBLIK
     const { data: urlData } = supabase.storage
       .from(BUCKET_NAME)
       .getPublicUrl(filePath);
 
+    console.log('✅ Upload success:', filePath);
+
     return {
       success: true,
       downloadURL: urlData.publicUrl,
-      fileId: data.id || uniqueFileName,
+      fileId: data?.id || timestamp.toString(),
       filePath: filePath,
-      fileName: file.name,
+      fileName: sanitizedFileName,
+      originalName: file.name,
+      fileSize: currentSize,
       message: 'File berhasil diunggah ke Supabase Storage.'
     };
 
   } catch (error) {
-    console.error('Upload Error:', error);
+    console.error('❌ Upload Error:', error);
     return {
       success: false,
-      error: error.message || 'Gagal mengunggah file ke server.'
+      error: error.message || 'Gagal mengunggah file.'
     };
   }
 };
 
-/**
- * ✅ TAMBAHAN: Fungsi deleteFile agar fitur hapus materi/file sampah tidak memicu error build
- */
+// ============================================================
+// 🔥 DELETE FILE DARI SUPABASE
+// ============================================================
 export const deleteFile = async (filePath) => {
   try {
-    if (!filePath) return { success: false, error: 'Path kosong' };
+    if (!filePath) {
+      return { success: false, error: 'Path file kosong' };
+    }
+
+    console.log('🗑️ Deleting file:', filePath);
+
     const { data, error } = await supabase.storage
       .from(BUCKET_NAME)
       .remove([filePath]);
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Delete error:', error);
+      return { success: false, error: error.message };
+    }
+
+    console.log('✅ File deleted:', filePath);
     return { success: true, data };
+
   } catch (error) {
-    console.error("Gagal menghapus file di Supabase:", error.message);
+    console.error('❌ Delete Error:', error);
     return { success: false, error: error.message };
   }
 };
 
-/**
- * Menghitung total kapasitas terpakai
- */
+// ============================================================
+// 🔥 CEK FILE EXIST
+// ============================================================
+export const fileExists = async (filePath) => {
+  try {
+    if (!filePath) return false;
+    
+    const { data, error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .list('', { 
+        limit: 1, 
+        search: filePath 
+      });
+
+    if (error) throw error;
+    return data && data.length > 0;
+
+  } catch (error) {
+    console.error('❌ Check file error:', error);
+    return false;
+  }
+};
+
+// ============================================================
+// 🔥 GET STORAGE USAGE
+// ============================================================
 export const getStorageUsage = async () => {
   try {
     const getAllFiles = async (path = '') => {
@@ -162,9 +261,11 @@ export const getStorageUsage = async () => {
       let total = 0;
       for (const item of data) {
         if (item.id === null) {
+          // Ini adalah folder
           const subPath = path ? `${path}/${item.name}` : item.name;
           total += await getAllFiles(subPath);
         } else {
+          // Ini adalah file
           total += item.metadata?.size || 0;
         }
       }
@@ -172,7 +273,7 @@ export const getStorageUsage = async () => {
     };
 
     const totalBytes = await getAllFiles();
-    const LIMIT_FREE_TIER = 1 * 1024 * 1024 * 1024;
+    const LIMIT_FREE_TIER = 1 * 1024 * 1024 * 1024; // 1GB
     const remainingBytes = LIMIT_FREE_TIER - totalBytes;
 
     const usedMB = (totalBytes / (1024 * 1024)).toFixed(2);
@@ -188,18 +289,21 @@ export const getStorageUsage = async () => {
     };
 
   } catch (error) {
-    console.error('Storage Usage Error:', error);
+    console.error('❌ Storage Usage Error:', error);
     return {
       success: false,
       error: error.message,
       usedMB: 0,
       remainingMB: 1024,
       percentageUsed: 0,
-      textString: 'Gagal memuat informasi sisa penyimpanan'
+      textString: 'Gagal memuat informasi penyimpanan'
     };
   }
 };
 
+// ============================================================
+// 🔥 COMPATIBILITY FUNCTIONS
+// ============================================================
 export const uploadToDrive = async (base64Data, fileName, fileType) => {
   try {
     const response = await fetch(base64Data);
@@ -218,9 +322,13 @@ export const uploadToImgBB = async (imageBase64) => {
 export const getDrivePreviewUrl = (url) => url;
 export const getDriveDownloadUrl = (url) => url;
 
+// ============================================================
+// 🔥 EXPORT DEFAULT
+// ============================================================
 export default {
   uploadElearningFile,
   deleteFile,
+  fileExists,
   getStorageUsage,
   uploadToDrive,
   uploadToImgBB,
