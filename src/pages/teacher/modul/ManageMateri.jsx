@@ -18,7 +18,8 @@ import {
   FileSpreadsheet, FileImage, File, FileVideo,
   Upload, Cloud, Server, RefreshCw, Home, ChevronRight,
   Globe, Link, Plus, Minus, Copy, Edit, MoreVertical,
-  GripVertical, Move, FolderOpen, Rocket, Gift, Star
+  GripVertical, Move, FolderOpen, Rocket, Gift, Star,
+  Edit3, FileQuestion
 } from 'lucide-react';
 
 // ============================================================
@@ -32,211 +33,69 @@ const FILE_TYPE_OPTIONS = [
 ];
 
 // ============================================================
-// 🔥 DETEKSI JENIS LINK - PERBAIKAN UNTUK CANVA & GOOGLE
+// 🔥 DETEKSI JENIS LINK
 // ============================================================
 const getLinkType = (url) => {
   if (!url) return 'unknown';
-  
-  // YouTube
-  if (url.includes('youtube.com') || url.includes('youtu.be')) {
-    return 'youtube';
-  }
-  
-  // Canva
-  if (url.includes('canva.com') || url.includes('canva.cn')) {
-    return 'canva';
-  }
-  
-  // Google Docs / Sheets / Slides / Drive
-  if (url.includes('docs.google.com') || 
-      url.includes('drive.google.com') ||
-      url.includes('google.com/')) {
-    return 'google';
-  }
-  
-  // Vimeo
-  if (url.includes('vimeo.com')) {
-    return 'vimeo';
-  }
-  
-  // Umum
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return 'link';
-  }
-  
+  if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
+  if (url.includes('canva.com') || url.includes('canva.cn')) return 'canva';
+  if (url.includes('docs.google.com') || url.includes('drive.google.com') || url.includes('google.com/')) return 'google';
+  if (url.includes('vimeo.com')) return 'vimeo';
+  if (url.startsWith('http://') || url.startsWith('https://')) return 'link';
   return 'unknown';
 };
 
 // ============================================================
-// 🔥 RENDER LINK PREVIEW - PERBAIKAN UNTUK CANVA & GOOGLE
+// 🔥 RENDER LINK PREVIEW
 // ============================================================
 const renderLinkPreview = (url) => {
   if (!url) return null;
-  
   const type = getLinkType(url);
   
-  // YOUTUBE
   if (type === 'youtube') {
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?#]+)/);
     if (match) {
       return (
         <div style={{ borderRadius: 8, overflow: 'hidden', background: '#000' }}>
-          <iframe 
-            width="100%" 
-            height="300" 
-            src={`https://www.youtube.com/embed/${match[1]}`} 
-            frameBorder="0" 
-            allowFullScreen 
-            style={{ display: 'block' }}
-            title="YouTube Video"
-          />
+          <iframe width="100%" height="300" src={`https://www.youtube.com/embed/${match[1]}`} frameBorder="0" allowFullScreen style={{ display: 'block' }} title="YouTube" />
         </div>
       );
     }
     return <p style={{ color: '#ef4444', fontSize: 12 }}>⚠️ Link YouTube tidak valid</p>;
   }
   
-  // CANVA
   if (type === 'canva') {
     return (
-      <div style={{ 
-        borderRadius: 8, 
-        overflow: 'hidden', 
-        background: 'linear-gradient(135deg, #f0fdf4, #f8fafc)',
-        padding: 16,
-        border: '1px solid #bbf7d0'
-      }}>
+      <div style={{ borderRadius: 8, background: '#f0fdf4', padding: 16, border: '1px solid #bbf7d0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <div style={{ 
-            background: '#00c4cc', 
-            padding: '4px 10px', 
-            borderRadius: 4, 
-            fontSize: 10, 
-            color: 'white', 
-            fontWeight: 'bold'
-          }}>
-            CANVA
-          </div>
+          <div style={{ background: '#00c4cc', padding: '4px 10px', borderRadius: 4, fontSize: 10, color: 'white', fontWeight: 'bold' }}>CANVA</div>
           <span style={{ fontSize: 11, color: '#64748b', wordBreak: 'break-all' }}>{url}</span>
         </div>
-        <a 
-          href={url} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '10px 20px',
-            background: '#00c4cc',
-            color: 'white',
-            borderRadius: 8,
-            textDecoration: 'none',
-            fontWeight: 600,
-            fontSize: 13,
-            transition: '0.2s'
-          }}
-          onMouseEnter={(e) => e.target.style.opacity = '0.8'}
-          onMouseLeave={(e) => e.target.style.opacity = '1'}
-        >
+        <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: '#00c4cc', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>
           <ExternalLink size={16} /> Buka di Canva
         </a>
-        <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>
-          💡 Klik tombol di atas untuk melihat desain Canva
-        </p>
+        <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>💡 Klik tombol di atas untuk melihat desain Canva</p>
       </div>
     );
   }
   
-  // GOOGLE DOCS
   if (type === 'google') {
     return (
-      <div style={{ 
-        borderRadius: 8, 
-        overflow: 'hidden', 
-        background: '#f8fafc',
-        padding: 12,
-        border: '1px solid #e2e8f0'
-      }}>
+      <div style={{ borderRadius: 8, background: '#f8fafc', padding: 12, border: '1px solid #e2e8f0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <div style={{ 
-            background: '#4285f4', 
-            padding: '4px 10px', 
-            borderRadius: 4, 
-            fontSize: 10, 
-            color: 'white', 
-            fontWeight: 'bold'
-          }}>
-            GOOGLE
-          </div>
+          <div style={{ background: '#4285f4', padding: '4px 10px', borderRadius: 4, fontSize: 10, color: 'white', fontWeight: 'bold' }}>GOOGLE</div>
           <span style={{ fontSize: 11, color: '#64748b', wordBreak: 'break-all' }}>{url}</span>
         </div>
-        <iframe 
-          src={url} 
-          style={{ 
-            width: '100%', 
-            height: 400, 
-            border: 'none', 
-            borderRadius: 8,
-            background: 'white'
-          }} 
-          allowFullScreen
-          title="Google Docs"
-        />
-        <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 6 }}>
-          💡 Jika tidak muncul, klik kanan → "Buka di tab baru"
-        </p>
+        <iframe src={url} style={{ width: '100%', height: 400, border: 'none', borderRadius: 8, background: 'white' }} allowFullScreen title="Google Docs" />
       </div>
     );
   }
   
-  // VIMEO
-  if (type === 'vimeo') {
-    const match = url.match(/vimeo\.com\/(\d+)/);
-    if (match) {
-      return (
-        <div style={{ borderRadius: 8, overflow: 'hidden', background: '#000' }}>
-          <iframe 
-            width="100%" 
-            height="300" 
-            src={`https://player.vimeo.com/video/${match[1]}`} 
-            frameBorder="0" 
-            allowFullScreen 
-            style={{ display: 'block' }}
-            title="Vimeo Video"
-          />
-        </div>
-      );
-    }
-    return <p style={{ color: '#ef4444', fontSize: 12 }}>⚠️ Link Vimeo tidak valid</p>;
-  }
-  
-  // LINK BIASA
   if (type === 'link') {
     return (
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: 12, 
-        padding: 16, 
-        background: '#f8fafc', 
-        borderRadius: 8,
-        border: '1px solid #e2e8f0'
-      }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
         <Link size={24} color="#3b82f6" />
-        <a 
-          href={url} 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          style={{ 
-            color: '#3b82f6', 
-            fontWeight: 600, 
-            textDecoration: 'none',
-            wordBreak: 'break-all'
-          }}
-        >
-          {url}
-        </a>
+        <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', wordBreak: 'break-all' }}>{url}</a>
       </div>
     );
   }
@@ -249,52 +108,36 @@ const renderLinkPreview = (url) => {
 // ============================================================
 const FilePreview = ({ url, fileName, fileType }) => {
   const [previewError, setPreviewError] = useState(false);
-  
   if (!url) return null;
   
-  // 🔥 CEK APAKAH INI LINK (bukan file)
   if (url.startsWith('http://') || url.startsWith('https://')) {
     const linkType = getLinkType(url);
-    if (linkType !== 'unknown') {
-      return renderLinkPreview(url);
-    }
+    if (linkType !== 'unknown') return renderLinkPreview(url);
   }
   
-  // FILE: Gambar
   if (fileType?.startsWith('image/') || url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
     return (
       <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', maxHeight: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <img 
-          src={url} 
-          alt={fileName || 'Preview'} 
-          style={{ width: '100%', maxHeight: 400, objectFit: 'contain' }} 
-          onError={() => setPreviewError(true)} 
-        />
+        <img src={url} alt={fileName || 'Preview'} style={{ width: '100%', maxHeight: 400, objectFit: 'contain' }} onError={() => setPreviewError(true)} />
         {previewError && <div style={{ padding: 20, color: '#ef4444', textAlign: 'center' }}>Gagal memuat gambar</div>}
       </div>
     );
   }
   
-  // FILE: PDF
   if (fileType === 'application/pdf' || url.match(/\.pdf$/i)) {
     return (
       <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', padding: 16, textAlign: 'center' }}>
         <div style={{ marginBottom: 8 }}><File size={40} color="#ef4444" /></div>
-        <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '8px 16px', background: '#ef4444', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 12 }}>
-          📄 Buka PDF
-        </a>
+        <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '8px 16px', background: '#ef4444', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 12 }}>📄 Buka PDF</a>
         <embed src={url} type="application/pdf" style={{ width: '100%', height: 400, marginTop: 12, border: 'none', borderRadius: 8 }} />
       </div>
     );
   }
   
-  // FILE: Lainnya
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, justifyContent: 'center' }}>
       <FileText size={32} color="#3b82f6" />
-      <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', fontSize: 13 }}>
-        📎 {fileName || 'Buka File'}
-      </a>
+      <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', fontSize: 13 }}>📎 {fileName || 'Buka File'}</a>
     </div>
   );
 };
@@ -313,37 +156,22 @@ const SimpleEditor = ({ value, onChange, placeholder }) => {
     let newText = value;
     
     switch(format) {
-      case 'bold':
-        newText = value.substring(0, start) + `**${selectedText}**` + value.substring(end);
-        break;
-      case 'italic':
-        newText = value.substring(0, start) + `*${selectedText}*` + value.substring(end);
-        break;
-      case 'underline':
-        newText = value.substring(0, start) + `<u>${selectedText}</u>` + value.substring(end);
-        break;
-      case 'list':
-        newText = value.substring(0, start) + `\n- ${selectedText}` + value.substring(end);
-        break;
+      case 'bold': newText = value.substring(0, start) + `**${selectedText}**` + value.substring(end); break;
+      case 'italic': newText = value.substring(0, start) + `*${selectedText}*` + value.substring(end); break;
+      case 'underline': newText = value.substring(0, start) + `<u>${selectedText}</u>` + value.substring(end); break;
+      case 'list': newText = value.substring(0, start) + `\n- ${selectedText}` + value.substring(end); break;
       case 'link':
         const url = prompt('Masukkan URL:', 'https://');
-        if (url) {
-          newText = value.substring(0, start) + `[${selectedText}](${url})` + value.substring(end);
-        }
+        if (url) newText = value.substring(0, start) + `[${selectedText}](${url})` + value.substring(end);
         break;
-      default:
-        break;
+      default: break;
     }
     
     onChange(newText);
     setTimeout(() => textarea.focus(), 10);
   };
   
-  const toolbarBtn = {
-    background: 'none', border: 'none', padding: '4px 10px', 
-    borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600,
-    color: '#64748b', transition: '0.2s'
-  };
+  const toolbarBtn = { background: 'none', border: 'none', padding: '4px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#64748b', transition: '0.2s' };
 
   return (
     <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
@@ -375,6 +203,278 @@ const SimpleEditor = ({ value, onChange, placeholder }) => {
 };
 
 // ============================================================
+// 🔥 MODAL EDIT QUIZ - MINI
+// ============================================================
+const QuizEditorModal = ({ isOpen, onClose, section, onSave, modulId }) => {
+  const [loading, setLoading] = useState(false);
+  const [quizData, setQuizData] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [quizTitle, setQuizTitle] = useState('');
+  const [timeLimit, setTimeLimit] = useState(0);
+  const [maxAttempts, setMaxAttempts] = useState(1);
+  const [randomOrder, setRandomOrder] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(true);
+  const [difficulty, setDifficulty] = useState('Sedang');
+  const [editingQuestion, setEditingQuestion] = useState(null);
+
+  useEffect(() => {
+    if (isOpen && section?.quizId) {
+      fetchQuizData();
+    } else if (isOpen) {
+      // Quiz baru
+      setQuizTitle(section?.quizTitle || 'Kuis');
+      setQuestions([]);
+    }
+  }, [isOpen, section]);
+
+  const fetchQuizData = async () => {
+    setLoading(true);
+    try {
+      const snap = await getDoc(doc(db, "bimbel_modul", section.quizId));
+      if (snap.exists()) {
+        const data = snap.data();
+        setQuizTitle(data.title || 'Kuis');
+        setTimeLimit(data.timeLimit || 0);
+        setMaxAttempts(data.maxAttempts || 1);
+        setRandomOrder(data.randomOrder || false);
+        setShowExplanation(data.showExplanation !== false);
+        setDifficulty(data.difficulty || 'Sedang');
+        setQuestions(data.quizData || []);
+      }
+    } catch (error) {
+      console.error('Error fetching quiz:', error);
+      alert('❌ Gagal memuat data kuis');
+    }
+    setLoading(false);
+  };
+
+  const addQuestion = () => {
+    const newQuestion = {
+      id: Date.now(),
+      question: '',
+      questionImage: '',
+      options: ['', '', '', ''],
+      optionImages: ['', '', '', ''],
+      correctAnswer: 0,
+      explanation: ''
+    };
+    setQuestions([...questions, newQuestion]);
+    setEditingQuestion(newQuestion.id);
+  };
+
+  const removeQuestion = (id) => {
+    if (questions.length <= 1) return alert('⚠️ Minimal 1 soal!');
+    if (!window.confirm('Hapus soal ini?')) return;
+    setQuestions(questions.filter(q => q.id !== id));
+  };
+
+  const updateQuestion = (id, field, value) => {
+    setQuestions(questions.map(q => q.id === id ? { ...q, [field]: value } : q));
+  };
+
+  const handleSave = async () => {
+    const validQuestions = questions.filter(q => q.question.trim() || q.questionImage);
+    if (validQuestions.length === 0) return alert('❌ Minimal 1 soal!');
+    if (!quizTitle.trim()) return alert('❌ Judul kuis wajib diisi!');
+
+    setLoading(true);
+    try {
+      const quizPayload = {
+        title: quizTitle.toUpperCase(),
+        quizData: validQuestions.map(q => ({
+          id: q.id,
+          question: q.question.trim(),
+          questionImage: q.questionImage || '',
+          options: q.options,
+          optionImages: q.optionImages || ['', '', '', ''],
+          correctAnswer: q.correctAnswer || 0,
+          explanation: q.explanation || ''
+        })),
+        totalQuestions: validQuestions.length,
+        timeLimit,
+        maxAttempts,
+        randomOrder,
+        showExplanation,
+        difficulty,
+        updatedAt: serverTimestamp()
+      };
+
+      let quizId = section?.quizId;
+      
+      if (quizId) {
+        // Update existing quiz
+        await updateDoc(doc(db, "bimbel_modul", quizId), quizPayload);
+      } else {
+        // Create new quiz
+        const newQuiz = await addDoc(collection(db, "bimbel_modul"), {
+          ...quizPayload,
+          type: 'kuis_mandiri',
+          status: 'aktif',
+          createdAt: serverTimestamp()
+        });
+        quizId = newQuiz.id;
+      }
+
+      // Update section
+      onSave({
+        quizId,
+        quizTitle: quizTitle,
+        quizQuestions: validQuestions.length
+      });
+
+      alert('✅ Kuis berhasil disimpan!');
+      onClose();
+    } catch (error) {
+      console.error('Error saving quiz:', error);
+      alert('❌ Gagal menyimpan kuis: ' + error.message);
+    }
+    setLoading(false);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div style={modalOverlayStyles}>
+      <div style={{...modalContentStyles, maxWidth: 900, maxHeight: '90vh', overflow: 'auto' }}>
+        <div style={modalHeaderStyles}>
+          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <FileQuestion size={20} color="#8b5cf6" /> {section?.quizId ? 'Edit Kuis' : 'Buat Kuis Baru'}
+          </h3>
+          <button onClick={onClose} style={modalCloseStyles}><X size={20} /></button>
+        </div>
+
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 40 }}><Loader2 size={30} className="spin" /> Memuat...</div>
+        ) : (
+          <div style={{ padding: 16 }}>
+            {/* Identitas Kuis */}
+            <div style={{ marginBottom: 16 }}>
+              <input 
+                value={quizTitle} 
+                onChange={e => setQuizTitle(e.target.value)} 
+                placeholder="Judul kuis..." 
+                style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', marginBottom: 8 }}
+              />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                <div>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b' }}>⏱️ Timer (menit)</label>
+                  <input type="number" min="0" max="180" value={timeLimit} onChange={e => setTimeLimit(parseInt(e.target.value))} style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b' }}>🔄 Max Attempts</label>
+                  <input type="number" min="1" max="10" value={maxAttempts} onChange={e => setMaxAttempts(parseInt(e.target.value))} style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b' }}>📊 Difficulty</label>
+                  <select value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, background: 'white' }}>
+                    <option value="Mudah">🟢 Mudah</option>
+                    <option value="Sedang">🟡 Sedang</option>
+                    <option value="Sulit">🔴 Sulit</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={randomOrder} onChange={e => setRandomOrder(e.target.checked)} /> Acak soal
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={showExplanation} onChange={e => setShowExplanation(e.target.checked)} /> Tampilkan pembahasan
+                </label>
+              </div>
+            </div>
+
+            {/* Daftar Soal */}
+            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>📝 Soal ({questions.length})</span>
+                <button onClick={addQuestion} style={{ padding: '4px 12px', background: '#8b5cf6', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600 }}>
+                  <Plus size={12} /> Tambah
+                </button>
+              </div>
+
+              {questions.map((q, idx) => (
+                <div key={q.id} style={{ background: '#f8fafc', padding: 10, borderRadius: 8, marginBottom: 6, border: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>Soal {idx + 1}</span>
+                    <button onClick={() => removeQuestion(q.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}><X size={14} /></button>
+                  </div>
+                  <input 
+                    value={q.question} 
+                    onChange={e => updateQuestion(q.id, 'question', e.target.value)} 
+                    placeholder="Tulis soal..." 
+                    style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', marginBottom: 4 }}
+                  />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+                    {q.options.map((opt, oIdx) => (
+                      <div key={oIdx} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <button 
+                          onClick={() => updateQuestion(q.id, 'correctAnswer', oIdx)}
+                          style={{ 
+                            width: 16, height: 16, borderRadius: '50%', border: `2px solid ${q.correctAnswer === oIdx ? '#10b981' : '#cbd5e1'}`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                          }}
+                        >
+                          {q.correctAnswer === oIdx && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} />}
+                        </button>
+                        <input 
+                          value={opt} 
+                          onChange={e => {
+                            const newOpts = [...q.options];
+                            newOpts[oIdx] = e.target.value;
+                            updateQuestion(q.id, 'options', newOpts);
+                          }}
+                          placeholder={`Opsi ${String.fromCharCode(65 + oIdx)}`}
+                          style={{ flex: 1, padding: '4px 6px', borderRadius: 4, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none' }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <textarea 
+                    value={q.explanation || ''} 
+                    onChange={e => updateQuestion(q.id, 'explanation', e.target.value)} 
+                    placeholder="Pembahasan (opsional)" 
+                    style={{ width: '100%', padding: 4, borderRadius: 4, border: '1px solid #e2e8f0', fontSize: 10, outline: 'none', resize: 'vertical', minHeight: 30, marginTop: 4 }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16, borderTop: '1px solid #e2e8f0', paddingTop: 12 }}>
+              <button onClick={onClose} style={{ padding: '8px 20px', background: '#f1f5f9', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>Batal</button>
+              <button onClick={handleSave} disabled={loading} style={{ padding: '8px 24px', background: '#8b5cf6', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                {loading ? <Loader2 size={14} className="spin" /> : <Save size={14} />}
+                {section?.quizId ? 'Update Kuis' : 'Simpan Kuis'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const modalOverlayStyles = {
+  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+  backdropFilter: 'blur(4px)', zIndex: 9999,
+  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+};
+
+const modalContentStyles = {
+  background: 'white', borderRadius: 16, width: '100%', maxWidth: 800,
+  maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+};
+
+const modalHeaderStyles = {
+  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+  padding: '16px 20px', borderBottom: '1px solid #e2e8f0'
+};
+
+const modalCloseStyles = {
+  background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8'
+};
+
+// ============================================================
 // MAIN COMPONENT
 // ============================================================
 const ManageMateri = () => {
@@ -393,6 +493,8 @@ const ManageMateri = () => {
   
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
+  const [showQuizEditor, setShowQuizEditor] = useState(false);
+  const [editingQuizSection, setEditingQuizSection] = useState(null);
   
   const [guruData, setGuruData] = useState(null);
   const [guruId, setGuruId] = useState('');
@@ -407,7 +509,6 @@ const ManageMateri = () => {
   const [modulId, setModulId] = useState(null);
   
   const [sections, setSections] = useState([]);
-  const [editingContent, setEditingContent] = useState(null);
   
   const [targetKategori, setTargetKategori] = useState("Reguler");
   const [targetKelas, setTargetKelas] = useState("Semua");
@@ -448,6 +549,7 @@ const ManageMateri = () => {
     { type: 'file', icon: <FileUp size={16} />, label: 'File/Dokumen', color: '#10b981', bg: '#dcfce7' },
     { type: 'video', icon: <Video size={16} />, label: 'Video/Link', color: '#ef4444', bg: '#fee2e2' },
     { type: 'assignment', icon: <Send size={16} />, label: 'Tugas/PR', color: '#f59e0b', bg: '#fef3c7' },
+    { type: 'quiz', icon: <FileQuestion size={16} />, label: 'Kuis', color: '#8b5cf6', bg: '#ede9fe' },
   ];
 
   useEffect(() => {
@@ -727,7 +829,8 @@ const ManageMateri = () => {
       text: '📄 Materi Teks', 
       file: '📁 File/Dokumen', 
       video: '🎥 Video/Link', 
-      assignment: '📝 Tugas/PR' 
+      assignment: '📝 Tugas/PR',
+      quiz: '❓ Kuis'
     };
     const newSection = { 
       id: Date.now(), 
@@ -739,7 +842,10 @@ const ManageMateri = () => {
       fileSize: 0,
       filePath: '',
       endTime: '',
-      allowedFileType: 'all' 
+      allowedFileType: 'all',
+      quizId: null,
+      quizTitle: '',
+      quizQuestions: 0
     };
     setSections([...sections, newSection]);
     setEditingSection(newSection.id);
@@ -761,12 +867,6 @@ const ManageMateri = () => {
       [newSections[idx], newSections[idx + 1]] = [newSections[idx + 1], newSections[idx]];
     }
     setSections(newSections);
-  };
-
-  const getYouTubeId = (url) => {
-    if (!url) return null;
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?#]+)/);
-    return match ? match[1] : null;
   };
 
   const toggleStudentSelection = (student) => {
@@ -874,8 +974,8 @@ const ManageMateri = () => {
     const section = sections.find(s => s.id === editingSection);
     if (!section) return null;
 
-    const typeIcons = { text: '📄', file: '📁', video: '🎥', assignment: '📝' };
-    const typeColors = { text: '#3b82f6', file: '#10b981', video: '#ef4444', assignment: '#f59e0b' };
+    const typeIcons = { text: '📄', file: '📁', video: '🎥', assignment: '📝', quiz: '❓' };
+    const typeColors = { text: '#3b82f6', file: '#10b981', video: '#ef4444', assignment: '#f59e0b', quiz: '#8b5cf6' };
 
     return (
       <div style={{ 
@@ -921,7 +1021,7 @@ const ManageMateri = () => {
           </div>
         </div>
 
-        {/* KONTEN EDITOR */}
+        {/* 🔥 KONTEN EDITOR */}
         {section.type === 'text' && (
           <SimpleEditor 
             value={section.content} 
@@ -961,33 +1061,19 @@ const ManageMateri = () => {
           </div>
         )}
 
-        {/* ========================================================== */}
-        {/* 🔥 VIDEO / LINK - DENGAN DUKUNGAN CANVA & GOOGLE DOCS */}
-        {/* ========================================================== */}
         {section.type === 'video' && (
           <div>
             <input 
               value={section.content} 
               onChange={e => updateSection(editingSection, 'content', e.target.value)} 
-              placeholder="Tempel link YouTube, Canva, Google Docs, Vimeo..." 
-              style={{ 
-                width: '100%', 
-                padding: 10, 
-                borderRadius: 8, 
-                border: '1px solid #e2e8f0', 
-                fontSize: 13, 
-                outline: 'none',
-                boxSizing: 'border-box'
-              }} 
+              placeholder="Tempel link YouTube, Canva, Google Docs..." 
+              style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} 
             />
-            
-            {/* 🔥 PREVIEW LINK - DENGAN DUKUNGAN CANVA & GOOGLE */}
             {section.content && (
               <div style={{ marginTop: 10 }}>
                 {renderLinkPreview(section.content)}
               </div>
             )}
-            
             <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 6 }}>
               💡 Support: YouTube, Canva, Google Docs/Sheets/Slides, Vimeo, dan link lainnya
             </div>
@@ -1014,6 +1100,99 @@ const ManageMateri = () => {
                 <input type="datetime-local" value={section.endTime} onChange={e => updateSection(editingSection, 'endTime', e.target.value)} style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }} />
               </div>
             </div>
+          </div>
+        )}
+
+        {/* 🔥 QUIZ - DENGAN TOMBOL EDIT */}
+        {section.type === 'quiz' && (
+          <div style={{ background: '#ede9fe', padding: 16, borderRadius: 8, border: '1px solid #8b5cf6' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <FileQuestion size={20} color="#8b5cf6" />
+              <span style={{ fontWeight: 700, fontSize: 14, color: '#6d28d9' }}>
+                {section.quizTitle || 'Kuis'}
+              </span>
+              <span style={{ 
+                background: '#8b5cf6', 
+                color: 'white', 
+                padding: '2px 10px', 
+                borderRadius: 10,
+                fontSize: 9,
+                fontWeight: 700
+              }}>
+                {section.quizQuestions || 0} soal
+              </span>
+            </div>
+            
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button
+                onClick={() => {
+                  setEditingQuizSection(section);
+                  setShowQuizEditor(true);
+                }}
+                style={{
+                  padding: '8px 16px',
+                  background: '#8b5cf6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: 11,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4
+                }}
+              >
+                <Edit3 size={14} /> {section.quizId ? 'Edit Kuis' : 'Buat Kuis'}
+              </button>
+              
+              {section.quizId && (
+                <button
+                  onClick={() => window.open(`/siswa/kuis/${section.quizId}`, '_blank')}
+                  style={{
+                    padding: '8px 16px',
+                    background: '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontSize: 11,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4
+                  }}
+                >
+                  <Eye size={14} /> Preview
+                </button>
+              )}
+              
+              {section.quizId && (
+                <button
+                  onClick={() => {
+                    updateSection(editingSection, 'quizId', null);
+                    updateSection(editingSection, 'quizTitle', '');
+                    updateSection(editingSection, 'quizQuestions', 0);
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    background: '#fee2e2',
+                    color: '#ef4444',
+                    border: 'none',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontSize: 11
+                  }}
+                >
+                  <Trash2 size={14} /> Hapus Kuis
+                </button>
+              )}
+            </div>
+            
+            <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>
+              💡 Kuis akan muncul di antara materi. Siswa bisa mengerjakan kuis setelah membaca materi sebelumnya.
+            </p>
           </div>
         )}
       </div>
@@ -1047,7 +1226,6 @@ const ManageMateri = () => {
     addMenu: { position: 'relative', marginTop: 8 },
     addButton: { width: '100%', padding: '12px', border: '2px dashed #cbd5e1', borderRadius: 10, background: 'white', cursor: 'pointer', fontWeight: 600, color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: '0.2s' },
     addMenuOptions: { position: 'absolute', bottom: '100%', left: 0, right: 0, background: 'white', borderRadius: 10, border: '1px solid #e2e8f0', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', padding: 8, marginBottom: 8, zIndex: 10 },
-    addMenuItem: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, cursor: 'pointer', transition: '0.2s' },
     deleteBtn: { background: '#fee2e2', color: '#ef4444', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12 },
   };
 
@@ -1137,7 +1315,6 @@ const ManageMateri = () => {
       <div style={styles.card}>
         <h4 style={styles.cardTitle}><Layers size={18} /> 2. Konten Modul ({sections.length})</h4>
         
-        {/* DAFTAR KONTEN */}
         {sections.length === 0 && (
           <div style={{ textAlign: 'center', padding: 30, color: '#94a3b8', border: '1px dashed #e2e8f0', borderRadius: 8 }}>
             <FolderOpen size={32} color="#cbd5e1" />
@@ -1146,8 +1323,8 @@ const ManageMateri = () => {
         )}
 
         {sections.map((sec, idx) => {
-          const typeIcons = { text: '📄', file: '📁', video: '🎥', assignment: '📝' };
-          const typeColors = { text: '#3b82f6', file: '#10b981', video: '#ef4444', assignment: '#f59e0b' };
+          const typeIcons = { text: '📄', file: '📁', video: '🎥', assignment: '📝', quiz: '❓' };
+          const typeColors = { text: '#3b82f6', file: '#10b981', video: '#ef4444', assignment: '#f59e0b', quiz: '#8b5cf6' };
           const isEditing = editingSection === sec.id;
           
           return (
@@ -1164,6 +1341,11 @@ const ManageMateri = () => {
                 <span style={{ fontSize: 16 }}>{typeIcons[sec.type]}</span>
                 <span style={styles.sectionLabel}>
                   {sec.title || `Konten ${idx + 1}`}
+                  {sec.type === 'quiz' && sec.quizQuestions > 0 && (
+                    <span style={{ fontSize: 9, color: '#8b5cf6', background: '#ede9fe', padding: '1px 8px', borderRadius: 10 }}>
+                      {sec.quizQuestions} soal
+                    </span>
+                  )}
                   {sec.fileName && <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>📎 {sec.fileName}</span>}
                 </span>
                 <span style={{ ...styles.badge, background: typeColors[sec.type] + '15', color: typeColors[sec.type] }}>
@@ -1177,7 +1359,6 @@ const ManageMateri = () => {
                 </button>
               </div>
               
-              {/* EDITOR YANG MUNCUL DI BAWAH KONTEN */}
               {isEditing && renderContentEditor()}
             </div>
           );
@@ -1187,7 +1368,7 @@ const ManageMateri = () => {
         <div style={styles.addMenu}>
           {showAddMenu ? (
             <div style={styles.addMenuOptions} className="fade-in">
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 6 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(5, 1fr)', gap: 6 }}>
                 {CONTENT_TYPES.map(item => (
                   <button
                     key={item.type}
@@ -1236,7 +1417,6 @@ const ManageMateri = () => {
         <h4 style={styles.cardTitle}><Settings size={18} /> 3. Target & Pengaturan</h4>
         
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
-          {/* TARGET */}
           <div>
             <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>🎯 Target</label>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -1279,7 +1459,6 @@ const ManageMateri = () => {
             </div>
           </div>
 
-          {/* PENGATURAN */}
           <div>
             <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>⚙️ Pengaturan</label>
             <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
@@ -1329,6 +1508,28 @@ const ManageMateri = () => {
           <Rocket size={16} /> {saving ? 'Menyimpan...' : editId ? 'Update Modul' : 'Terbitkan Modul'}
         </button>
       </div>
+
+      {/* ========================================================== */}
+      {/* 🔥 QUIZ EDITOR MODAL */}
+      {/* ========================================================== */}
+      <QuizEditorModal
+        isOpen={showQuizEditor}
+        onClose={() => {
+          setShowQuizEditor(false);
+          setEditingQuizSection(null);
+        }}
+        section={editingQuizSection}
+        modulId={modulId}
+        onSave={(quizData) => {
+          if (editingQuizSection) {
+            updateSection(editingQuizSection.id, 'quizId', quizData.quizId);
+            updateSection(editingQuizSection.id, 'quizTitle', quizData.quizTitle);
+            updateSection(editingQuizSection.id, 'quizQuestions', quizData.quizQuestions);
+          }
+          setShowQuizEditor(false);
+          setEditingQuizSection(null);
+        }}
+      />
     </div>
   );
 };

@@ -10,7 +10,8 @@ import {
   ArrowLeft, Clock, FileText, CheckCircle, Eye, 
   Link as LinkIcon, HelpCircle, Trash2, X, Send, 
   Download, BookOpen, Hash, Tag, File, Upload, User,
-  AlertCircle, Lock, Shield, Zap, Award, ExternalLink
+  AlertCircle, Lock, Shield, Zap, Award, ExternalLink,
+  FileQuestion, Calendar, Users, Target
 } from 'lucide-react';
 import { uploadElearningFile } from '../../services/uploadService';
 
@@ -51,214 +52,68 @@ const getTimeRemaining = (deadline) => {
 };
 
 // ============================================================
-// 🔥 DETEKSI JENIS LINK - UNTUK SISWA
+// 🔥 DETEKSI JENIS LINK
 // ============================================================
 const getLinkType = (url) => {
   if (!url) return 'unknown';
-  
-  // YouTube
-  if (url.includes('youtube.com') || url.includes('youtu.be')) {
-    return 'youtube';
-  }
-  
-  // Canva
-  if (url.includes('canva.com') || url.includes('canva.cn')) {
-    return 'canva';
-  }
-  
-  // Google Docs / Sheets / Slides / Drive
-  if (url.includes('docs.google.com') || 
-      url.includes('drive.google.com') ||
-      url.includes('google.com/')) {
-    return 'google';
-  }
-  
-  // Vimeo
-  if (url.includes('vimeo.com')) {
-    return 'vimeo';
-  }
-  
-  // Umum
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return 'link';
-  }
-  
+  if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
+  if (url.includes('canva.com') || url.includes('canva.cn')) return 'canva';
+  if (url.includes('docs.google.com') || url.includes('drive.google.com') || url.includes('google.com/')) return 'google';
+  if (url.includes('vimeo.com')) return 'vimeo';
+  if (url.startsWith('http://') || url.startsWith('https://')) return 'link';
   return 'unknown';
 };
 
 // ============================================================
-// 🔥 RENDER LINK - UNTUK SISWA (DENGAN CANVA & GOOGLE)
+// 🔥 RENDER LINK UNTUK SISWA
 // ============================================================
 const renderStudentLink = (url) => {
   if (!url) return null;
-  
   const type = getLinkType(url);
   
-  // YOUTUBE
   if (type === 'youtube') {
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?#]+)/);
     if (match) {
       return (
         <div style={{ borderRadius: 8, overflow: 'hidden', background: '#000', marginTop: 8 }}>
-          <iframe 
-            width="100%" 
-            height="300" 
-            src={`https://www.youtube.com/embed/${match[1]}`} 
-            frameBorder="0" 
-            allowFullScreen 
-            style={{ display: 'block' }}
-            title="YouTube Video"
-          />
+          <iframe width="100%" height="300" src={`https://www.youtube.com/embed/${match[1]}`} frameBorder="0" allowFullScreen style={{ display: 'block' }} title="YouTube" />
         </div>
       );
     }
     return <p style={{ color: '#ef4444', fontSize: 12, marginTop: 8 }}>⚠️ Link YouTube tidak valid</p>;
   }
   
-  // CANVA
   if (type === 'canva') {
     return (
-      <div style={{ 
-        borderRadius: 8, 
-        overflow: 'hidden', 
-        background: 'linear-gradient(135deg, #f0fdf4, #f8fafc)',
-        padding: 16,
-        border: '1px solid #bbf7d0',
-        marginTop: 8
-      }}>
+      <div style={{ borderRadius: 8, background: '#f0fdf4', padding: 16, border: '1px solid #bbf7d0', marginTop: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <div style={{ 
-            background: '#00c4cc', 
-            padding: '4px 10px', 
-            borderRadius: 4, 
-            fontSize: 10, 
-            color: 'white', 
-            fontWeight: 'bold'
-          }}>
-            CANVA
-          </div>
+          <div style={{ background: '#00c4cc', padding: '4px 10px', borderRadius: 4, fontSize: 10, color: 'white', fontWeight: 'bold' }}>CANVA</div>
           <span style={{ fontSize: 11, color: '#64748b', wordBreak: 'break-all' }}>{url}</span>
         </div>
-        <a 
-          href={url} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '10px 20px',
-            background: '#00c4cc',
-            color: 'white',
-            borderRadius: 8,
-            textDecoration: 'none',
-            fontWeight: 600,
-            fontSize: 13,
-            transition: '0.2s'
-          }}
-          onMouseEnter={(e) => e.target.style.opacity = '0.8'}
-          onMouseLeave={(e) => e.target.style.opacity = '1'}
-        >
+        <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: '#00c4cc', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>
           <ExternalLink size={16} /> Buka di Canva
         </a>
-        <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>
-          💡 Klik tombol di atas untuk melihat desain Canva
-        </p>
       </div>
     );
   }
   
-  // GOOGLE DOCS
   if (type === 'google') {
     return (
-      <div style={{ 
-        borderRadius: 8, 
-        overflow: 'hidden', 
-        background: '#f8fafc',
-        padding: 12,
-        border: '1px solid #e2e8f0',
-        marginTop: 8
-      }}>
+      <div style={{ borderRadius: 8, background: '#f8fafc', padding: 12, border: '1px solid #e2e8f0', marginTop: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <div style={{ 
-            background: '#4285f4', 
-            padding: '4px 10px', 
-            borderRadius: 4, 
-            fontSize: 10, 
-            color: 'white', 
-            fontWeight: 'bold'
-          }}>
-            GOOGLE
-          </div>
+          <div style={{ background: '#4285f4', padding: '4px 10px', borderRadius: 4, fontSize: 10, color: 'white', fontWeight: 'bold' }}>GOOGLE</div>
           <span style={{ fontSize: 11, color: '#64748b', wordBreak: 'break-all' }}>{url}</span>
         </div>
-        <iframe 
-          src={url} 
-          style={{ 
-            width: '100%', 
-            height: 400, 
-            border: 'none', 
-            borderRadius: 8,
-            background: 'white'
-          }} 
-          allowFullScreen
-          title="Google Docs"
-        />
-        <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 6 }}>
-          💡 Jika tidak muncul, klik kanan → "Buka di tab baru"
-        </p>
+        <iframe src={url} style={{ width: '100%', height: 400, border: 'none', borderRadius: 8, background: 'white' }} allowFullScreen title="Google Docs" />
       </div>
     );
   }
   
-  // VIMEO
-  if (type === 'vimeo') {
-    const match = url.match(/vimeo\.com\/(\d+)/);
-    if (match) {
-      return (
-        <div style={{ borderRadius: 8, overflow: 'hidden', background: '#000', marginTop: 8 }}>
-          <iframe 
-            width="100%" 
-            height="300" 
-            src={`https://player.vimeo.com/video/${match[1]}`} 
-            frameBorder="0" 
-            allowFullScreen 
-            style={{ display: 'block' }}
-            title="Vimeo Video"
-          />
-        </div>
-      );
-    }
-    return <p style={{ color: '#ef4444', fontSize: 12, marginTop: 8 }}>⚠️ Link Vimeo tidak valid</p>;
-  }
-  
-  // LINK BIASA
   if (type === 'link') {
     return (
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: 12, 
-        padding: 16, 
-        background: '#f8fafc', 
-        borderRadius: 8,
-        border: '1px solid #e2e8f0',
-        marginTop: 8
-      }}>
-        <LinkIcon size={24} color="#3b82f6" />
-        <a 
-          href={url} 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          style={{ 
-            color: '#3b82f6', 
-            fontWeight: 600, 
-            textDecoration: 'none',
-            wordBreak: 'break-all'
-          }}
-        >
-          {url}
-        </a>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', marginTop: 8 }}>
+        <LinkIcon size={20} color="#3b82f6" />
+        <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', wordBreak: 'break-all', fontSize: 12 }}>{url}</a>
       </div>
     );
   }
@@ -272,9 +127,11 @@ const renderStudentLink = (url) => {
 const initialState = {
   modul: null, loading: true, error: null, hasAccess: false,
   uploading: {}, submittedTasks: {},
-  quizAnswers: {}, quizSubmitted: false, quizScore: null,
+  quizAnswers: {}, quizSubmitted: {}, // 🔥 ubah jadi object untuk multiple quiz
+  quizScores: {},
   textAnswers: {}, activeTab: 'materi', previewImage: null,
   pendingFile: null, pendingBlockId: null, showPreviewModal: false,
+  quizStatus: {} // 🔥 untuk tracking status setiap quiz
 };
 
 function reducer(state, action) {
@@ -285,9 +142,8 @@ function reducer(state, action) {
     case 'SET_ACCESS': return { ...state, hasAccess: action.payload };
     case 'SET_UPLOADING': return { ...state, uploading: { ...state.uploading, [action.blockId]: action.value } };
     case 'SET_SUBMITTED_TASKS': return { ...state, submittedTasks: action.payload };
-    case 'SET_QUIZ_ANSWERS': return { ...state, quizAnswers: { ...state.quizAnswers, [action.qId]: action.value } };
-    case 'SET_QUIZ_SUBMITTED': return { ...state, quizSubmitted: action.payload };
-    case 'SET_QUIZ_SCORE': return { ...state, quizScore: action.payload };
+    case 'SET_QUIZ_STATUS': return { ...state, quizStatus: { ...state.quizStatus, [action.quizId]: action.status } };
+    case 'SET_QUIZ_SCORE': return { ...state, quizScores: { ...state.quizScores, [action.quizId]: action.score } };
     case 'SET_TEXT_ANSWERS': return { ...state, textAnswers: { ...state.textAnswers, [action.blockId]: action.value } };
     case 'SET_ACTIVE_TAB': return { ...state, activeTab: action.payload };
     case 'SET_PREVIEW_IMAGE': return { ...state, previewImage: action.payload };
@@ -327,7 +183,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     setStudentProgram(program);
   }, [studentData]);
 
-  // ===== FETCH MODUL DENGAN FILTER AKSES =====
+  // ===== FETCH MODUL =====
   useEffect(() => {
     if (!modulId) return;
     let cancelled = false;
@@ -345,67 +201,76 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         
         const data = snap.data();
         
-        // 🔥 CEK HAK AKSES SISWA
+        // 🔥 CEK AKSES
         const nim = studentNim || localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
         const kelas = studentKelas || localStorage.getItem('studentKelas') || '';
         const program = studentProgram || localStorage.getItem('studentProgram') || 'Reguler';
         
         let hasAccess = false;
-        let accessReason = '';
         
-        // 1. Cek jika modul dikirim ke siswa tertentu
         if (data.sendToSpecificStudents) {
           const studentIds = data.studentIds || [];
           const selectedStudentIds = (data.selectedStudents || []).map(s => s.studentId || s.id);
           const allTargetIds = [...studentIds, ...selectedStudentIds];
-          
           hasAccess = allTargetIds.includes(nim) || allTargetIds.includes(studentData?.id);
-          accessReason = hasAccess ? 'Dikirim khusus ke Anda' : 'Tidak termasuk siswa yang dipilih';
         }
         
-        // 2. Cek berdasarkan kelas dan program
         if (!hasAccess) {
           const targetKelas = data.targetKelas || 'Semua';
           const targetKategori = data.targetKategori || 'Semua';
-          
           const matchKelas = targetKelas === 'Semua' || targetKelas === kelas;
           const matchProgram = targetKategori === 'Semua' || targetKategori === program;
-          
-          hasAccess = matchKelas && matchProgram;
-          accessReason = hasAccess ? 
-            `Kelas ${kelas} & Program ${program} cocok` : 
-            `Target: ${targetKelas} | ${targetKategori}, Anda: ${kelas} | ${program}`;
-        }
-        
-        // 3. Cek jika modul adalah milik guru (akses untuk semua)
-        if (!hasAccess && !data.sendToSpecificStudents) {
-          const targetKelas = data.targetKelas || 'Semua';
-          const targetKategori = data.targetKategori || 'Semua';
-          
-          const matchKelas = targetKelas === 'Semua' || targetKelas === kelas;
-          const matchProgram = targetKategori === 'Semua' || targetKategori === program;
-          
           hasAccess = matchKelas && matchProgram;
         }
         
-        // 🔥 JIKA TIDAK PUNYA AKSES
         if (!hasAccess) {
-          console.log('❌ Akses ditolak:', accessReason);
-          dispatch({ type: 'SET_ERROR', payload: 'Anda tidak memiliki akses ke modul ini. ' + accessReason });
+          dispatch({ type: 'SET_ERROR', payload: 'Anda tidak memiliki akses ke modul ini' });
           dispatch({ type: 'SET_ACCESS', payload: false });
           return;
         }
         
-        // ✅ SISWA PUNYA AKSES
         dispatch({ type: 'SET_ACCESS', payload: true });
         dispatch({ type: 'SET_MODUL', payload: data });
 
-        // Ambil data tugas & kuis yang sudah dikerjakan
+        // 🔥 AMBIL STATUS KUIS (untuk semua quiz di modul)
         if (nim) {
-          const [snapTugas, snapKuis] = await Promise.all([
-            getDocs(query(collection(db,"jawaban_tugas"), where("modulId","==",modulId), where("studentNim","==",nim))),
-            getDocs(query(collection(db,"jawaban_kuis"), where("modulId","==",modulId), where("studentNim","==",nim)))
-          ]);
+          const quizBlocks = (data.blocks || []).filter(b => b.type === 'quiz' && b.quizId);
+          
+          for (const block of quizBlocks) {
+            if (block.quizId) {
+              const qJawaban = query(
+                collection(db, "jawaban_kuis"),
+                where("modulId", "==", block.quizId),
+                where("studentNim", "==", nim)
+              );
+              const snapJawaban = await getDocs(qJawaban);
+              
+              if (!snapJawaban.empty) {
+                const lastData = snapJawaban.docs[0].data();
+                dispatch({ 
+                  type: 'SET_QUIZ_STATUS', 
+                  quizId: block.quizId, 
+                  status: 'done' 
+                });
+                dispatch({ 
+                  type: 'SET_QUIZ_SCORE', 
+                  quizId: block.quizId, 
+                  score: lastData.score || 0 
+                });
+              } else {
+                dispatch({ 
+                  type: 'SET_QUIZ_STATUS', 
+                  quizId: block.quizId, 
+                  status: 'pending' 
+                });
+              }
+            }
+          }
+          
+          // 🔥 AMBIL TUGAS
+          const snapTugas = await getDocs(
+            query(collection(db,"jawaban_tugas"), where("modulId","==",modulId), where("studentNim","==",nim))
+          );
           
           if (cancelled) return;
           
@@ -421,12 +286,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
             }; 
           });
           dispatch({ type:'SET_SUBMITTED_TASKS', payload: completed });
-          
-          if (!snapKuis.empty) {
-            dispatch({ type:'SET_QUIZ_SUBMITTED', payload: true });
-            const kuisData = snapKuis.docs[0].data();
-            dispatch({ type:'SET_QUIZ_SCORE', payload: kuisData.score || 0 });
-          }
         }
         
       } catch(e) { 
@@ -498,47 +357,135 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   };
 
   // ============================================================
-  // 🔥 RENDER MEDIA - DENGAN DUKUNGAN CANVA & GOOGLE DOCS
+  // 🔥 RENDER KONTEN - MATERI & QUIZ BERSELANG
   // ============================================================
-  const renderMedia = (block) => {
-    const url = block.content || block.fileUrl || block.url || block.file;
-    if (!url) return null;
-    const fType = block.mimeType || '';
-    
-    // 🔥 CEK APAKAH INI LINK (bukan file)
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      const linkType = getLinkType(url);
-      if (linkType !== 'unknown') {
-        return renderStudentLink(url);
-      }
-    }
-    
-    // FILE: PDF
-    const isDoc = fType.includes('pdf') || fType.includes('word') || url.includes('supabase') || url.includes('.pdf') || url.includes('.doc');
-    if (isDoc) {
+  const renderContent = (block, idx) => {
+    // 🔥 JIKA QUIZ
+    if (block.type === 'quiz') {
+      const isDone = state.quizStatus[block.quizId] === 'done';
+      const score = state.quizScores[block.quizId] || 0;
+      
       return (
-        <div className="md">
-          <div className="mdh">
-            <FileText size={36} color="#673ab7"/>
-            <div><b>{block.fileName||'Dokumen'}</b><small>Klik unduh</small></div>
-            <a href={url} target="_blank" download className="btd"><Download size={14}/> Unduh</a>
+        <div key={block.id} style={{ 
+          background: isDone ? '#f0fdf4' : '#ede9fe', 
+          padding: 16, 
+          borderRadius: 12,
+          border: `2px solid ${isDone ? '#10b981' : '#8b5cf6'}`,
+          marginBottom: 12
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <FileQuestion size={24} color={isDone ? '#10b981' : '#8b5cf6'} />
+            <div style={{ flex: 1 }}>
+              <h4 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: isDone ? '#166534' : '#6d28d9' }}>
+                {block.quizTitle || block.title || 'Kuis'}
+              </h4>
+              <p style={{ margin: 0, fontSize: 11, color: isDone ? '#166534' : '#7c3aed' }}>
+                {block.quizQuestions || 0} soal
+                {isDone && ` • ✅ Selesai (Nilai: ${score})`}
+              </p>
+            </div>
+            {isDone && (
+              <span style={{ 
+                background: '#dcfce7', 
+                color: '#166534',
+                padding: '2px 10px',
+                borderRadius: 10,
+                fontSize: 10,
+                fontWeight: 700
+              }}>
+                ✅ Selesai
+              </span>
+            )}
           </div>
-          <iframe src={`https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`} className="mdi"/>
+          
+          <button
+            onClick={() => navigate(`/siswa/kuis/${block.quizId || modulId}`)}
+            style={{
+              padding: '10px 24px',
+              background: isDone ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontWeight: 700,
+              fontSize: 13,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8
+            }}
+          >
+            {isDone ? <Eye size={16} /> : <Zap size={16} />}
+            {isDone ? 'Lihat Detail Jawaban' : 'Mulai Kuis'}
+          </button>
+          
+          <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>
+            💡 {isDone ? 'Klik untuk melihat hasil dan pembahasan' : 'Kerjakan kuis ini untuk menguji pemahaman Anda'}
+          </p>
         </div>
       );
     }
     
-    // FILE: Gambar
-    if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i) || fType.startsWith('image/')) {
-      return <img src={url} className="mi" onClick={()=>dispatch({type:'SET_PREVIEW_IMAGE',payload:url})} alt=""/>;
+    // 🔥 MATERI (text, file, video)
+    const typeIcons = { text: '📄', file: '📁', video: '🎥' };
+    const typeLabels = { text: 'MATERI', file: 'FILE', video: 'VIDEO' };
+    const typeColors = { text: '#3b82f6', file: '#10b981', video: '#ef4444' };
+    
+    return (
+      <div key={block.id} className="cd">
+        <div className="cdt">
+          <small style={{ color: typeColors[block.type] }}>
+            {typeIcons[block.type] || '📄'} {typeLabels[block.type] || 'BAGIAN'} {idx + 1}
+          </small>
+          <h3>{block.title}</h3>
+        </div>
+        
+        {block.type === 'text' && (
+          <div className="cdtx">{block.content}</div>
+        )}
+        
+        {(block.type === 'file' || block.type === 'video') && (
+          <div>
+            {block.content && (
+              block.content.startsWith('http') ? 
+                renderStudentLink(block.content) :
+                <FilePreview url={block.content} fileName={block.fileName} fileType={block.mimeType} />
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ============================================================
+  // FILE PREVIEW (untuk file)
+  // ============================================================
+  const FilePreview = ({ url, fileName, fileType }) => {
+    if (!url) return null;
+    
+    if (fileType?.startsWith('image/') || url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
+      return (
+        <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', maxHeight: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img src={url} alt={fileName || 'Preview'} style={{ width: '100%', maxHeight: 400, objectFit: 'contain' }} />
+        </div>
+      );
     }
     
-    // FILE: Lainnya
+    if (fileType === 'application/pdf' || url.match(/\.pdf$/i)) {
+      return (
+        <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', padding: 16, textAlign: 'center' }}>
+          <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '8px 16px', background: '#ef4444', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 12 }}>
+            📄 Buka PDF
+          </a>
+          <embed src={url} type="application/pdf" style={{ width: '100%', height: 400, marginTop: 12, border: 'none', borderRadius: 8 }} />
+        </div>
+      );
+    }
+    
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, marginTop: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, justifyContent: 'center' }}>
         <FileText size={32} color="#3b82f6" />
         <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', fontSize: 13 }}>
-          📎 {block.fileName || 'Buka File'}
+          📎 {fileName || 'Buka File'}
         </a>
       </div>
     );
@@ -563,11 +510,12 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     );
   }
 
-  const tugasBlocks = (state.modul?.blocks||[]).filter(b=>b.type==='assignment');
-  const materiBlocks = (state.modul?.blocks||[]).filter(b=>b.type!=='assignment');
-  const hasQuiz = (state.modul?.quizData||[]).length > 0;
-  const quizSubmitted = state.quizSubmitted;
-  const quizScore = state.quizScore;
+  // 🔥 FILTER KONTEN
+  const allBlocks = state.modul?.blocks || [];
+  const materiBlocks = allBlocks.filter(b => b.type !== 'quiz' && b.type !== 'assignment');
+  const tugasBlocks = allBlocks.filter(b => b.type === 'assignment');
+  const quizBlocks = allBlocks.filter(b => b.type === 'quiz');
+  const hasQuiz = quizBlocks.length > 0;
 
   // ===== RENDER UTAMA =====
   return (
@@ -580,9 +528,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           <div className="cvt">
             <span className="tp">{state.modul?.subject||'Umum'}</span>
             <span className="tg">{state.modul?.targetKategori||'Semua'} • {state.modul?.targetKelas||'Semua'}</span>
-            {state.modul?.sendToSpecificStudents && (
-              <span className="ts">🔒 Khusus</span>
-            )}
+            {state.modul?.sendToSpecificStudents && <span className="ts">🔒 Khusus</span>}
           </div>
           <h1>{state.modul?.title}</h1>
           <div className="cvm">
@@ -597,134 +543,52 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       {/* TABS */}
       <div className="tb">
         <button className={`tbt ${state.activeTab==='materi'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'materi'})}>
-          <BookOpen size={14}/> Materi ({materiBlocks.length})
+          <BookOpen size={14}/> Materi ({materiBlocks.length + quizBlocks.length})
         </button>
         {tugasBlocks.length>0 && (
           <button className={`tbt ${state.activeTab==='tugas'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'tugas'})}>
             <Send size={14}/> Tugas ({Object.keys(state.submittedTasks).length}/{tugasBlocks.length})
           </button>
         )}
-        {hasQuiz && (
-          <button className={`tbt ${state.activeTab==='kuis'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'kuis'})}>
-            <HelpCircle size={14}/> Kuis {quizSubmitted ? '✅' : ''}
-          </button>
-        )}
       </div>
 
       {/* CONTENT */}
       <div className="ct">
-        {/* MATERI */}
-        {state.activeTab==='materi' && (materiBlocks.length>0 ? materiBlocks.map((b,i)=>(
-          <div key={b.id||i} className="cd">
-            <div className="cdt"><small>{b.type==='file'?'📁 FILE':'📄 BAGIAN '+(i+1)}</small><h3>{b.title}</h3></div>
-            {b.type==='text'&&<div className="cdtx">{b.content}</div>}
-            {(b.type==='video'||b.type==='file')&&renderMedia(b)}
+        {/* 🔥 MATERI + QUIZ BERSELANG */}
+        {state.activeTab==='materi' && (
+          <div>
+            {allBlocks.filter(b => b.type !== 'assignment').length === 0 && (
+              <div className="em">Belum ada materi</div>
+            )}
+            {allBlocks.filter(b => b.type !== 'assignment').map((block, idx) => renderContent(block, idx))}
           </div>
-        )) : <div className="em">Belum ada materi</div>)}
+        )}
 
         {/* TUGAS */}
-        {state.activeTab==='tugas' && (tugasBlocks.length>0 ? tugasBlocks.map(b=>{
-          const sub = state.submittedTasks[b.id];
-          const expired = b.endTime && new Date(b.endTime) < new Date();
-          return (
-            <div key={b.id} className="cd tg">
-              <div className="cdt"><small>📝 TUGAS</small><h3>{b.title}</h3></div>
-              <div className="cdtx">{b.content}</div>
-              {b.endTime && <div className="dl"><Clock size={14}/> {getTimeRemaining(b.endTime)?.text}</div>}
-              <textarea value={state.textAnswers[b.id]||''} onChange={e=>dispatch({type:'SET_TEXT_ANSWERS',blockId:b.id,value:e.target.value})} placeholder="Tulis jawaban..." disabled={!!sub||expired} className="ta"/>
-              {sub ? (
-                <div className="sb">
-                  <div className="sbb"><CheckCircle size={16}/> Terkumpul</div>
-                  {sub.fileUrl && <a href={sub.fileUrl} target="_blank" className="bv"><Eye size={14}/> Lihat File</a>}
-                  {!expired && <button onClick={()=>handleDeleteTask(b.id)} className="bd">Tarik Data</button>}
+        {state.activeTab==='tugas' && (
+          <div>
+            {tugasBlocks.length === 0 && <div className="em">Tidak ada tugas</div>}
+            {tugasBlocks.map(b => {
+              const sub = state.submittedTasks[b.id];
+              const expired = b.endTime && new Date(b.endTime) < new Date();
+              return (
+                <div key={b.id} className="cd tg">
+                  <div className="cdt"><small>📝 TUGAS</small><h3>{b.title}</h3></div>
+                  <div className="cdtx">{b.content}</div>
+                  {b.endTime && <div className="dl"><Clock size={14}/> {getTimeRemaining(b.endTime)?.text}</div>}
+                  <textarea value={state.textAnswers[b.id]||''} onChange={e=>dispatch({type:'SET_TEXT_ANSWERS',blockId:b.id,value:e.target.value})} placeholder="Tulis jawaban..." disabled={!!sub||expired} className="ta"/>
+                  {sub ? (
+                    <div className="sb">
+                      <div className="sbb"><CheckCircle size={16}/> Terkumpul</div>
+                      {sub.fileUrl && <a href={sub.fileUrl} target="_blank" className="bv"><Eye size={14}/> Lihat File</a>}
+                      {!expired && <button onClick={()=>handleDeleteTask(b.id)} className="bd">Tarik Data</button>}
+                    </div>
+                  ) : expired ? <div className="ex">⛔ Deadline Terlewat</div> : (
+                    <label className="ul">📎 Pilih File <input type="file" hidden onChange={e=>handleFileChange(e,b.id)} disabled={state.uploading[b.id]}/></label>
+                  )}
                 </div>
-              ) : expired ? <div className="ex">⛔ Deadline Terlewat</div> : (
-                <label className="ul">📎 Pilih File <input type="file" hidden onChange={e=>handleFileChange(e,b.id)} disabled={state.uploading[b.id]}/></label>
-              )}
-            </div>
-          );
-        }) : <div className="em">Tidak ada tugas</div>)}
-
-        {/* ============================================================
-            🔥 KUIS - TAMPILAN BARU DENGAN TOMBOL KERJAKAN
-            ============================================================ */}
-        {state.activeTab==='kuis' && hasQuiz && (
-          <div className="cd kq">
-            <div className="kqh">
-              <div className="kqi"><HelpCircle size={20} color="white"/></div>
-              <h2>Kuis Evaluasi</h2>
-            </div>
-            
-            {/* Info Kuis */}
-            <div style={styles.quizInfo}>
-              <div style={styles.quizInfoItem}>
-                <BookOpen size={14} color="#3b82f6" />
-                <span>{state.modul.quizData.length} Soal</span>
-              </div>
-              {state.modul.timeLimit > 0 && (
-                <div style={styles.quizInfoItem}>
-                  <Clock size={14} color="#f59e0b" />
-                  <span>{state.modul.timeLimit} Menit</span>
-                </div>
-              )}
-              {state.modul.maxAttempts > 1 && (
-                <div style={styles.quizInfoItem}>
-                  <Zap size={14} color="#8b5cf6" />
-                  <span>Maks {state.modul.maxAttempts}x</span>
-                </div>
-              )}
-              {state.modul.difficulty && (
-                <div style={styles.quizInfoItem}>
-                  <Award size={14} color="#10b981" />
-                  <span>Tingkat {state.modul.difficulty}</span>
-                </div>
-              )}
-              {quizSubmitted && (
-                <div style={{...styles.quizInfoItem, background: '#dcfce7', borderColor: '#10b981'}}>
-                  <CheckCircle size={14} color="#10b981" />
-                  <span>Nilai: {quizScore || 0}</span>
-                </div>
-              )}
-            </div>
-
-            {/* 🔥 TOMBOL KERJAKAN KUIS */}
-            {!quizSubmitted ? (
-              <div style={styles.quizAction}>
-                <button 
-                  onClick={() => navigate(`/siswa/kuis/${modulId}`)}
-                  style={styles.btnStartQuiz}
-                >
-                  <Zap size={20} /> Mulai Kuis
-                </button>
-                <p style={styles.quizHint}>
-                  ⚡ Klik tombol di atas untuk memulai kuis. 
-                  {state.modul.timeLimit > 0 && ` Waktu: ${state.modul.timeLimit} menit.`}
-                  {state.modul.maxAttempts > 1 && ` Bisa dikerjakan ${state.modul.maxAttempts} kali.`}
-                </p>
-              </div>
-            ) : (
-              <div className="kqd">
-                <CheckCircle size={18} color="#10b981" />
-                Kuis Selesai 
-                {quizScore !== null && <span style={{ fontWeight: 900, marginLeft: 8 }}>• Nilai: {quizScore}</span>}
-                <button 
-                  onClick={() => navigate(`/siswa/kuis/${modulId}`)}
-                  style={{
-                    marginLeft: 12,
-                    padding: '6px 16px',
-                    background: '#3b82f6',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: 8,
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                    fontSize: 11
-                  }}
-                >
-                  Lihat Detail
-                </button>
-              </div>
-            )}
+              );
+            })}
           </div>
         )}
       </div>
@@ -798,18 +662,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         .bd{background:#fee2e2;color:#ef4444;border:0;padding:10px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer}
         .ex{color:#ef4444;font-weight:700;background:#fee2e2;padding:10px;border-radius:8px;text-align:center;font-size:12px}
         .ul{display:block;background:#f59e0b;color:#fff;padding:12px;border-radius:8px;text-align:center;font-weight:700;font-size:12px;cursor:pointer}
-        .kq{border-top:4px solid #673ab7}
-        .kqh{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-        .kqi{background:#673ab7;padding:10px;border-radius:12px}
-        .kqh h2{font-size:20px}
-        .kqd{text-align:center;padding:14px;background:#f0fdf4;color:#15803d;border-radius:12px;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
-        .md{border-radius:12px;overflow:hidden;border:1px solid #e2e8f0}
-        .mdh{display:flex;align-items:center;gap:12px;padding:14px;background:#f8fafc;border-bottom:1px solid #e2e8f0}
-        .mdh b{font-size:14px;font-weight:700}.mdh small{font-size:10px;color:#94a3b8;display:block}
-        .btd{background:#673ab7;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;flex-shrink:0}
-        .mdi{width:100%;height:400px;border:0}
-        .mi{width:100%;max-height:500px;object-fit:contain;border-radius:12px;border:1px solid #e2e8f0;cursor:pointer}
-        .ml{display:flex;align-items:center;gap:12px;padding:16px;background:#f8fafc;border-radius:12px;color:#673ab7;font-weight:700;text-decoration:none}
         .po{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;cursor:pointer}
         .po img{max-width:95%;max-height:90vh;object-fit:contain;border-radius:12px}
         .poc{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:50%;width:40px;height:40px;cursor:pointer;display:flex;align-items:center;justify-content:center}
@@ -826,58 +678,10 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         .bc{padding:8px 20px;background:#f1f5f9;border:0;border-radius:8px;font-weight:600;cursor:pointer;color:#64748b}
         .bs{padding:8px 20px;background:#10b981;border:0;border-radius:8px;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px}
         .bs:disabled{opacity:.6;cursor:not-allowed}
-        @media(max-width:768px){.cv{height:200px}.cvo h1{font-size:18px}.tb{margin:-20px 12px 0}.ct{padding:15px 12px}.cd{padding:18px;border-radius:14px}.cdt h3{font-size:16px}.cdtx{font-size:14px}.mdi{height:250px}}
+        @media(max-width:768px){.cv{height:200px}.cvo h1{font-size:18px}.tb{margin:-20px 12px 0}.ct{padding:15px 12px}.cd{padding:18px;border-radius:14px}.cdt h3{font-size:16px}.cdtx{font-size:14px}}
       `}</style>
     </>
   );
-};
-
-// ============================================================
-// STYLES TAMBAHAN
-// ============================================================
-const styles = {
-  quizInfo: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 16
-  },
-  quizInfoItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '6px 12px',
-    background: '#f8fafc',
-    borderRadius: 8,
-    border: '1px solid #e2e8f0',
-    fontSize: 12,
-    color: '#1e293b',
-    fontWeight: 600
-  },
-  quizAction: {
-    textAlign: 'center',
-    padding: '20px 0'
-  },
-  btnStartQuiz: {
-    padding: '14px 40px',
-    background: 'linear-gradient(135deg, #673ab7, #8b5cf6)',
-    color: 'white',
-    border: 'none',
-    borderRadius: 12,
-    cursor: 'pointer',
-    fontWeight: 700,
-    fontSize: 18,
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 10,
-    boxShadow: '0 4px 20px rgba(103,58,183,0.35)',
-    transition: 'transform 0.2s'
-  },
-  quizHint: {
-    fontSize: 12,
-    color: '#94a3b8',
-    marginTop: 12
-  }
 };
 
 export default StudentModuleView;
