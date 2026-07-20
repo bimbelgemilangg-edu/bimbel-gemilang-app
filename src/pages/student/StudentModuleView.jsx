@@ -11,7 +11,9 @@ import {
   Link as LinkIcon, HelpCircle, Trash2, X, Send, 
   Download, BookOpen, Hash, Tag, File, Upload, User,
   AlertCircle, Lock, Shield, Zap, Award, ExternalLink,
-  FileQuestion, Calendar, Users, Target, Edit3
+  FileQuestion, Calendar, Users, Target, Edit3, EyeOff,
+  File, FileImage, FileVideo, Play, Youtube, Globe,
+  FileSpreadsheet, FileArchive, FileCode, Maximize2
 } from 'lucide-react';
 import { uploadElearningFile } from '../../services/uploadService';
 import 'katex/dist/katex.min.css';
@@ -78,67 +80,358 @@ const getLinkType = (url) => {
   if (!url) return 'unknown';
   if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
   if (url.includes('canva.com') || url.includes('canva.cn')) return 'canva';
-  if (url.includes('docs.google.com') || url.includes('drive.google.com') || url.includes('google.com/')) return 'google';
+  if (url.includes('docs.google.com') || url.includes('drive.google.com')) return 'google';
   if (url.includes('vimeo.com')) return 'vimeo';
+  if (url.endsWith('.pdf')) return 'pdf';
+  if (url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) return 'image';
+  if (url.match(/\.(doc|docx|ppt|pptx|xls|xlsx)$/i)) return 'office';
   if (url.startsWith('http://') || url.startsWith('https://')) return 'link';
   return 'unknown';
 };
 
 // ============================================================
-// 🔥 RENDER LINK UNTUK SISWA
+// 🔥 RENDER FILE - LANGSUNG TAMPIL DENGAN CARD
 // ============================================================
-const renderStudentLink = (url) => {
-  if (!url) return null;
-  const type = getLinkType(url);
+const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
+  const linkType = getLinkType(url);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
-  if (type === 'youtube') {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?#]+)/);
-    if (match) {
-      return (
-        <div style={{ borderRadius: 8, overflow: 'hidden', background: '#000', marginTop: 8 }}>
-          <iframe width="100%" height="300" src={`https://www.youtube.com/embed/${match[1]}`} frameBorder="0" allowFullScreen style={{ display: 'block' }} title="YouTube" />
-        </div>
-      );
+  const getIcon = () => {
+    switch(linkType) {
+      case 'pdf': return <FileText size={20} color="#ef4444" />;
+      case 'image': return <FileImage size={20} color="#10b981" />;
+      case 'youtube': return <Youtube size={20} color="#ff0000" />;
+      case 'canva': return <File size={20} color="#00c4cc" />;
+      case 'google': return <FileText size={20} color="#4285f4" />;
+      case 'office': return <FileSpreadsheet size={20} color="#217346" />;
+      default: return <File size={20} color="#3b82f6" />;
     }
-    return <p style={{ color: '#ef4444', fontSize: 12, marginTop: 8 }}>⚠️ Link YouTube tidak valid</p>;
-  }
+  };
   
-  if (type === 'canva') {
-    return (
-      <div style={{ borderRadius: 8, background: '#f0fdf4', padding: 16, border: '1px solid #bbf7d0', marginTop: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <div style={{ background: '#00c4cc', padding: '4px 10px', borderRadius: 4, fontSize: 10, color: 'white', fontWeight: 'bold' }}>CANVA</div>
-          <span style={{ fontSize: 11, color: '#64748b', wordBreak: 'break-all' }}>{url}</span>
+  const getFileTypeLabel = () => {
+    switch(linkType) {
+      case 'pdf': return '📄 PDF';
+      case 'image': return '🖼️ Gambar';
+      case 'youtube': return '▶️ YouTube';
+      case 'canva': return '🎨 Canva';
+      case 'google': return '📂 Google Docs';
+      case 'office': return '📊 Office File';
+      default: return '📎 File';
+    }
+  };
+  
+  const getFileSizeLabel = () => {
+    if (fileSize) return formatFileSize(fileSize);
+    return '';
+  };
+  
+  const handleDownload = () => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName || 'file';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  
+  const handleOpenNewTab = () => {
+    window.open(url, '_blank');
+  };
+  
+  // 🔥 RENDER KONTEN LANGSUNG
+  const renderContent = () => {
+    switch(linkType) {
+      case 'youtube': {
+        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?#]+)/);
+        if (match) {
+          return (
+            <div style={styles.iframeWrapper}>
+              <iframe 
+                src={`https://www.youtube.com/embed/${match[1]}`} 
+                frameBorder="0" 
+                allowFullScreen 
+                style={styles.iframe}
+                title="YouTube"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              />
+            </div>
+          );
+        }
+        return <p style={styles.errorText}>⚠️ Link YouTube tidak valid</p>;
+      }
+      
+      case 'pdf': {
+        return (
+          <div style={styles.iframeWrapper}>
+            <iframe 
+              src={`https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`} 
+              style={styles.iframe}
+              title="PDF Viewer"
+            />
+          </div>
+        );
+      }
+      
+      case 'image': {
+        return (
+          <div style={styles.imageWrapper}>
+            <img src={url} alt={fileName || 'Gambar'} style={styles.image} />
+          </div>
+        );
+      }
+      
+      case 'canva': {
+        return (
+          <div style={styles.iframeWrapper}>
+            <iframe src={url} style={styles.iframe} title="Canva" allowFullScreen />
+          </div>
+        );
+      }
+      
+      case 'google': {
+        return (
+          <div style={styles.iframeWrapper}>
+            <iframe src={url} style={styles.iframe} title="Google Docs" allowFullScreen />
+          </div>
+        );
+      }
+      
+      case 'link': {
+        return (
+          <div style={styles.linkCard}>
+            <Globe size={24} color="#3b82f6" />
+            <div style={styles.linkInfo}>
+              <div style={styles.linkTitle}>{fileName || 'Link'}</div>
+              <div style={styles.linkUrl}>{url}</div>
+            </div>
+          </div>
+        );
+      }
+      
+      default: {
+        return (
+          <div style={styles.unknownCard}>
+            <File size={40} color="#94a3b8" />
+            <p style={styles.unknownText}>File tidak dapat ditampilkan langsung</p>
+            <button onClick={handleOpenNewTab} style={styles.btnOpenTab}>
+              <ExternalLink size={14} /> Buka di Tab Baru
+            </button>
+          </div>
+        );
+      }
+    }
+  };
+  
+  return (
+    <div style={styles.container}>
+      {/* HEADER */}
+      <div style={styles.header}>
+        <div style={styles.headerLeft}>
+          <span style={styles.iconWrapper}>{getIcon()}</span>
+          <div style={styles.headerInfo}>
+            <div style={styles.fileName}>{fileName || title || 'File'}</div>
+            <div style={styles.fileMeta}>
+              <span style={styles.fileType}>{getFileTypeLabel()}</span>
+              {getFileSizeLabel() && (
+                <span style={styles.fileSize}>• {getFileSizeLabel()}</span>
+              )}
+            </div>
+          </div>
         </div>
-        <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: '#00c4cc', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>
-          <ExternalLink size={16} /> Buka di Canva
-        </a>
-      </div>
-    );
-  }
-  
-  if (type === 'google') {
-    return (
-      <div style={{ borderRadius: 8, background: '#f8fafc', padding: 12, border: '1px solid #e2e8f0', marginTop: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <div style={{ background: '#4285f4', padding: '4px 10px', borderRadius: 4, fontSize: 10, color: 'white', fontWeight: 'bold' }}>GOOGLE</div>
-          <span style={{ fontSize: 11, color: '#64748b', wordBreak: 'break-all' }}>{url}</span>
+        <div style={styles.headerActions}>
+          <button onClick={handleOpenNewTab} style={styles.btnNewTab} title="Buka di tab baru">
+            <ExternalLink size={16} />
+          </button>
+          <button onClick={handleDownload} style={styles.btnDownload} title="Unduh file">
+            <Download size={16} />
+          </button>
         </div>
-        <iframe src={url} style={{ width: '100%', height: 400, border: 'none', borderRadius: 8, background: 'white' }} allowFullScreen title="Google Docs" />
       </div>
-    );
-  }
-  
-  if (type === 'link') {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', marginTop: 8 }}>
-        <LinkIcon size={20} color="#3b82f6" />
-        <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', wordBreak: 'break-all', fontSize: 12 }}>{url}</a>
+      
+      {/* CONTENT */}
+      <div style={styles.content}>
+        {renderContent()}
       </div>
-    );
+    </div>
+  );
+};
+
+// ============================================================
+// 🔥 STYLES
+// ============================================================
+const styles = {
+  container: {
+    background: 'white',
+    borderRadius: 12,
+    border: '1px solid #e2e8f0',
+    overflow: 'hidden',
+    marginTop: 8,
+    boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '12px 16px',
+    background: '#f8fafc',
+    borderBottom: '1px solid #e2e8f0',
+    flexWrap: 'wrap',
+    gap: 8
+  },
+  headerLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    minWidth: 150
+  },
+  iconWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    background: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0
+  },
+  headerInfo: {
+    flex: 1,
+    minWidth: 0
+  },
+  fileName: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: '#1e293b',
+    wordBreak: 'break-word'
+  },
+  fileMeta: {
+    display: 'flex',
+    gap: 6,
+    fontSize: 10,
+    color: '#94a3b8',
+    flexWrap: 'wrap'
+  },
+  fileType: {
+    fontWeight: 500
+  },
+  fileSize: {
+    color: '#94a3b8'
+  },
+  headerActions: {
+    display: 'flex',
+    gap: 4
+  },
+  btnNewTab: {
+    padding: '6px 10px',
+    background: 'white',
+    border: '1px solid #e2e8f0',
+    borderRadius: 6,
+    cursor: 'pointer',
+    color: '#64748b',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: '0.2s'
+  },
+  btnDownload: {
+    padding: '6px 10px',
+    background: '#3b82f6',
+    border: 'none',
+    borderRadius: 6,
+    cursor: 'pointer',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: '0.2s'
+  },
+  content: {
+    padding: '0'
+  },
+  iframeWrapper: {
+    position: 'relative',
+    paddingBottom: '56.25%',
+    height: 0,
+    overflow: 'hidden',
+    background: '#000'
+  },
+  iframe: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    border: 'none'
+  },
+  imageWrapper: {
+    padding: '12px',
+    background: '#f8fafc',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    maxHeight: 500,
+    overflow: 'hidden'
+  },
+  image: {
+    maxWidth: '100%',
+    maxHeight: '100%',
+    objectFit: 'contain',
+    borderRadius: 4
+  },
+  linkCard: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    padding: '16px 20px',
+    background: '#f8fafc',
+    borderRadius: 8,
+    margin: '12px'
+  },
+  linkInfo: {
+    flex: 1,
+    minWidth: 0
+  },
+  linkTitle: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: '#1e293b'
+  },
+  linkUrl: {
+    fontSize: 11,
+    color: '#94a3b8',
+    wordBreak: 'break-all'
+  },
+  unknownCard: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 12,
+    padding: '30px 20px',
+    background: '#f8fafc'
+  },
+  unknownText: {
+    fontSize: 13,
+    color: '#94a3b8'
+  },
+  btnOpenTab: {
+    padding: '8px 20px',
+    background: '#3b82f6',
+    color: 'white',
+    border: 'none',
+    borderRadius: 8,
+    cursor: 'pointer',
+    fontWeight: 600,
+    fontSize: 12,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6
+  },
+  errorText: {
+    padding: '20px',
+    color: '#ef4444',
+    textAlign: 'center'
   }
-  
-  return null;
 };
 
 // ============================================================
@@ -378,51 +671,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   };
 
   // ============================================================
-  // RENDER FILE PREVIEW
-  // ============================================================
-  const renderFilePreview = (block) => {
-    const url = block.content || block.fileUrl || block.url || block.file;
-    if (!url) return null;
-    const fType = block.mimeType || '';
-    
-    // Link
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      const linkType = getLinkType(url);
-      if (linkType !== 'unknown') return renderStudentLink(url);
-    }
-    
-    // PDF
-    if (fType.includes('pdf') || url.includes('.pdf')) {
-      return (
-        <div className="md">
-          <div className="mdh">
-            <FileText size={36} color="#673ab7"/>
-            <div><b>{block.fileName||'Dokumen'}</b><small>Klik unduh</small></div>
-            <a href={url} target="_blank" download className="btd"><Download size={14}/> Unduh</a>
-          </div>
-          <iframe src={`https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`} className="mdi"/>
-        </div>
-      );
-    }
-    
-    // Gambar
-    if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i) || fType.startsWith('image/')) {
-      return <img src={url} className="mi" onClick={()=>dispatch({type:'SET_PREVIEW_IMAGE',payload:url})} alt=""/>;
-    }
-    
-    // File lain
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, marginTop: 8 }}>
-        <FileText size={32} color="#3b82f6" />
-        <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', fontSize: 13 }}>
-          📎 {block.fileName || 'Buka File'}
-        </a>
-      </div>
-    );
-  };
-
-  // ============================================================
-  // RENDER KONTEN - MATERI & QUIZ BERSELANG
+  // RENDER CONTENT - MATERI & QUIZ BERSELANG
   // ============================================================
   const renderContent = (block, idx) => {
     // 🔥 JIKA QUIZ
@@ -546,9 +795,13 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         )}
         
         {(block.type === 'file' || block.type === 'video') && (
-          <div>
-            {block.content && renderFilePreview(block)}
-          </div>
+          <FileViewer 
+            url={block.content}
+            fileName={block.fileName || block.title || 'File'}
+            fileType={block.mimeType}
+            fileSize={block.fileSize}
+            title={block.title}
+          />
         )}
       </div>
     );
