@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile } from '../../../services/uploadService';
+import SmartImportPanel from './SmartImportPanel';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 
@@ -45,6 +46,28 @@ const renderMath = (text) => {
     return <span key={i}>{part}</span>;
   });
 };
+
+// Template soal kosong (dipakai di banyak tempat)
+const emptyQuestion = (idx = 0) => ({
+  id: Date.now() + idx,
+  type: 'multiple',
+  q: '',
+  qImage: '',
+  options: ['', '', '', ''],
+  optionImages: ['', '', '', ''],
+  correct: 0,
+  correctAnswers: [],
+  explanation: '',
+  statements: [{ text: '', isTrue: true }],
+  readingText: '',
+  subQuestions: [{ q: '', options: ['', '', '', ''], correct: 0 }],
+  shortAnswer: '',
+  cause: '',
+  effect: '',
+  isCauseTrue: true,
+  isEffectTrue: true,
+  needsManualAnswer: false
+});
 
 // ============================================================
 // MAIN COMPONENT
@@ -84,25 +107,7 @@ const ManageQuiz = () => {
   });
   const [useSchedule, setUseSchedule] = useState(false);
   
-  const [questions, setQuestions] = useState([{ 
-    id: Date.now(), 
-    type: 'multiple',
-    q: '', 
-    qImage: '',
-    options: ['', '', '', ''], 
-    optionImages: ['', '', '', ''],
-    correct: 0, 
-    correctAnswers: [],
-    explanation: '',
-    statements: [{ text: '', isTrue: true }],
-    readingText: '',
-    subQuestions: [{ q: '', options: ['', '', '', ''], correct: 0 }],
-    shortAnswer: '',
-    cause: '',
-    effect: '',
-    isCauseTrue: true,
-    isEffectTrue: true
-  }]);
+  const [questions, setQuestions] = useState([emptyQuestion(0)]);
   
   // Fitur Lanjutan
   const [timeLimit, setTimeLimit] = useState(0);
@@ -122,9 +127,8 @@ const ManageQuiz = () => {
   const [availableClasses, setAvailableClasses] = useState([]);
   const [subjects, setSubjects] = useState(["Umum"]);
   
-  // Bulk import
-  const [showImport, setShowImport] = useState(false);
-  const [bulkText, setBulkText] = useState("");
+  // 🔥 SMART IMPORT
+  const [showSmartImport, setShowSmartImport] = useState(false);
   
   // Preview
   const [previewMode, setPreviewMode] = useState(false);
@@ -217,7 +221,8 @@ const ManageQuiz = () => {
               cause: q.cause || '',
               effect: q.effect || '',
               isCauseTrue: q.isCauseTrue !== undefined ? q.isCauseTrue : true,
-              isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true
+              isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true,
+              needsManualAnswer: false
             })));
           }
         }
@@ -290,25 +295,7 @@ const ManageQuiz = () => {
   // 🔥 CRUD SOAL
   // ============================================================
   const addQuestion = (type = 'multiple') => {
-    const newQuestion = {
-      id: Date.now(),
-      type: type,
-      q: '',
-      qImage: '',
-      options: ['', '', '', ''],
-      optionImages: ['', '', '', ''],
-      correct: 0,
-      correctAnswers: [],
-      explanation: '',
-      statements: [{ text: '', isTrue: true }],
-      readingText: '',
-      subQuestions: [{ q: '', options: ['', '', '', ''], correct: 0 }],
-      shortAnswer: '',
-      cause: '',
-      effect: '',
-      isCauseTrue: true,
-      isEffectTrue: true
-    };
+    const newQuestion = { ...emptyQuestion(questions.length), type };
     setQuestions([...questions, newQuestion]);
     setEditingQuestion(newQuestion.id);
     setTimeout(() => {
@@ -330,53 +317,25 @@ const ManageQuiz = () => {
     setQuestions(questions.map(q => q.id === id ? { ...q, [field]: value } : q));
   };
 
+  // Dipanggil setiap guru menandai jawaban benar secara manual -> hilangkan badge peringatan
+  const clearManualFlag = (id) => {
+    setQuestions(prev => prev.map(q => q.id === id ? { ...q, needsManualAnswer: false } : q));
+  };
+
   // ============================================================
-  // 🔥 BULK IMPORT
+  // 🔥 SMART IMPORT - HASIL PARSING
   // ============================================================
-  const handleBulkImport = () => {
-    if (!bulkText.trim()) return;
-    
-    const blocks = bulkText.split(/\n(?=\d+[\.\$\s])/);
-    const parsed = blocks.map((block, idx) => {
-      const lines = block.trim().split('\n').filter(l => l.trim());
-      if (lines.length === 0) return null;
-      
-      const qt = lines[0].replace(/^\d+[\.\$\s\)]*/, '').trim();
-      const opts = lines.slice(1)
-        .filter(l => /^[A-E][\.\$\s\)]/i.test(l.trim()))
-        .map(o => o.replace(/^[A-E][\.\$\s\)]*/i, '').trim());
-      
-      while (opts.length < 4) opts.push("");
-      
-      return { 
-        id: Date.now() + idx, 
-        type: 'multiple',
-        q: qt, 
-        qImage: '', 
-        options: opts.slice(0, 4), 
-        optionImages: ['', '', '', ''], 
-        correct: 0, 
-        correctAnswers: [],
-        explanation: '',
-        statements: [{ text: '', isTrue: true }],
-        readingText: '',
-        subQuestions: [{ q: '', options: ['', '', '', ''], correct: 0 }],
-        shortAnswer: '',
-        cause: '',
-        effect: '',
-        isCauseTrue: true,
-        isEffectTrue: true
-      };
-    }).filter(Boolean);
-    
-    if (parsed.length > 0) {
-      setQuestions(prev => (prev.length === 1 && !prev[0].q && !prev[0].qImage) ? parsed : [...prev, ...parsed]);
-      setBulkText("");
-      setShowImport(false);
-      alert(`✅ ${parsed.length} soal berhasil diimpor!`);
-    } else {
-      alert("⚠️ Format tidak terdeteksi.");
+  const handleSmartParsed = (parsedQuestions) => {
+    if (!parsedQuestions || parsedQuestions.length === 0) {
+      showToast("⚠️ Tidak ditemukan soal pada teks tersebut.", 'error');
+      return;
     }
+    setQuestions(prev => {
+      const isPrevEmpty = prev.length === 1 && !prev[0].q.trim() && !prev[0].qImage;
+      return isPrevEmpty ? parsedQuestions : [...prev, ...parsedQuestions];
+    });
+    const needsReview = parsedQuestions.filter(q => q.needsManualAnswer).length;
+    showToast(`✅ ${parsedQuestions.length} soal berhasil diimpor!${needsReview > 0 ? ` ${needsReview} soal perlu ditandai jawabannya.` : ''}`);
   };
 
   // ============================================================
@@ -446,7 +405,7 @@ const ManageQuiz = () => {
           background: 'white',
           padding: isMobile ? 14 : 18,
           borderRadius: 12,
-          border: isEditing ? `2px solid ${typeInfo.color}` : '1px solid #e2e8f0',
+          border: isEditing ? `2px solid ${typeInfo.color}` : (item.needsManualAnswer ? '2px solid #f59e0b' : '1px solid #e2e8f0'),
           marginBottom: 10,
           transition: 'all 0.2s ease',
           cursor: 'pointer',
@@ -476,6 +435,11 @@ const ManageQuiz = () => {
             }}>
               {typeInfo.icon} {typeInfo.label}
             </span>
+            {item.needsManualAnswer && (
+              <span style={{ fontSize: 9, fontWeight: 700, color: '#f59e0b', background: '#fffbeb', border: '1px solid #f59e0b', padding: '2px 8px', borderRadius: 10 }}>
+                ⚠️ Perlu tandai jawaban
+              </span>
+            )}
             {isEditing && (
               <span style={{ fontSize: 9, color: '#3b82f6', fontWeight: 600, background: '#eef2ff', padding: '2px 8px', borderRadius: 4 }}>
                 ✏️ Edit
@@ -574,7 +538,7 @@ const ManageQuiz = () => {
               <div>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr', gap: 6 }}>
                   {item.options.map((opt, oIdx) => (
-                    <div key={oIdx} onClick={() => updateQuestion(item.id, 'correct', oIdx)} style={{
+                    <div key={oIdx} onClick={() => { updateQuestion(item.id, 'correct', oIdx); clearManualFlag(item.id); }} style={{
                       display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
                       border: `2px solid ${item.correct === oIdx ? '#10b981' : '#e2e8f0'}`,
                       background: item.correct === oIdx ? '#f0fdf4' : 'white',
@@ -639,6 +603,7 @@ const ManageQuiz = () => {
                         const newStatements = [...item.statements];
                         newStatements[sIdx].isTrue = !newStatements[sIdx].isTrue;
                         updateQuestion(item.id, 'statements', newStatements);
+                        clearManualFlag(item.id);
                       }}
                       style={{
                         padding: '4px 12px',
@@ -693,6 +658,7 @@ const ManageQuiz = () => {
                           ? item.correctAnswers.filter(i => i !== oIdx)
                           : [...item.correctAnswers, oIdx];
                         updateQuestion(item.id, 'correctAnswers', newCorrect);
+                        clearManualFlag(item.id);
                       }}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
@@ -764,6 +730,7 @@ const ManageQuiz = () => {
                               const newSub = [...item.subQuestions];
                               newSub[sIdx].correct = oIdx;
                               updateQuestion(item.id, 'subQuestions', newSub);
+                              clearManualFlag(item.id);
                             }}
                             style={{ 
                               width: 16, height: 16, borderRadius: '50%', 
@@ -818,7 +785,7 @@ const ManageQuiz = () => {
                   <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b' }}>🔑 Kunci Jawaban</label>
                   <input 
                     value={item.shortAnswer} 
-                    onChange={e => updateQuestion(item.id, 'shortAnswer', e.target.value)}
+                    onChange={e => { updateQuestion(item.id, 'shortAnswer', e.target.value); clearManualFlag(item.id); }}
                     placeholder="Masukkan jawaban yang benar..."
                     style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none' }}
                   />
@@ -844,7 +811,7 @@ const ManageQuiz = () => {
                       style={{ width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', resize: 'vertical' }}
                     />
                     <button 
-                      onClick={() => updateQuestion(item.id, 'isCauseTrue', !item.isCauseTrue)}
+                      onClick={() => { updateQuestion(item.id, 'isCauseTrue', !item.isCauseTrue); clearManualFlag(item.id); }}
                       style={{
                         marginTop: 4,
                         padding: '4px 12px',
@@ -869,7 +836,7 @@ const ManageQuiz = () => {
                       style={{ width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', resize: 'vertical' }}
                     />
                     <button 
-                      onClick={() => updateQuestion(item.id, 'isEffectTrue', !item.isEffectTrue)}
+                      onClick={() => { updateQuestion(item.id, 'isEffectTrue', !item.isEffectTrue); clearManualFlag(item.id); }}
                       style={{
                         marginTop: 4,
                         padding: '4px 12px',
@@ -1071,6 +1038,12 @@ const ManageQuiz = () => {
     const valid = questions.filter(q => q.q.trim() || q.qImage);
     if (valid.length === 0) return alert("❌ Minimal 1 soal!");
     if (!quizTitle) return alert("❌ Judul kuis wajib diisi!");
+
+    const stillNeedsReview = valid.filter(q => q.needsManualAnswer).length;
+    if (stillNeedsReview > 0) {
+      const lanjut = window.confirm(`⚠️ Masih ada ${stillNeedsReview} soal yang belum ditandai jawaban benarnya. Tetap simpan?`);
+      if (!lanjut) return;
+    }
     
     if (useSchedule) {
       const open = new Date(quizOpenDate);
@@ -1238,7 +1211,7 @@ const ManageQuiz = () => {
         </h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <button 
-            onClick={() => setShowAIGenerate(true)} 
+            onClick={() => setShowSmartImport(true)} 
             style={{ 
               background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
               color: 'white', 
@@ -1254,7 +1227,7 @@ const ManageQuiz = () => {
               boxShadow: '0 4px 12px rgba(139,92,246,0.3)'
             }}
           >
-            <Sparkles size={14} /> AI Generate
+            <Sparkles size={14} /> Smart Import
           </button>
           <button onClick={handlePreviewQuiz} style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '8px 14px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
             <Eye size={14}/> Preview
@@ -1405,8 +1378,8 @@ const ManageQuiz = () => {
           <h4 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
             <Layers size={18} /> 4. Soal Kuis ({questions.filter(q => q.q.trim() || q.qImage).length})
           </h4>
-          <button onClick={() => setShowImport(true)} style={{ padding: '4px 10px', background: '#eef2ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#3730a3' }}>
-            <Calculator size={12} /> Import
+          <button onClick={() => setShowSmartImport(true)} style={{ padding: '4px 10px', background: '#eef2ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#3730a3' }}>
+            <Sparkles size={12} /> Smart Import
           </button>
         </div>
 
@@ -1520,34 +1493,13 @@ const ManageQuiz = () => {
       </div>
 
       {/* ========================================================== */}
-      {/* BULK IMPORT MODAL */}
+      {/* SMART IMPORT MODAL */}
       {/* ========================================================== */}
-      {showImport && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-          <div style={{ background: 'white', width: '100%', maxWidth: 550, padding: 25, borderRadius: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-              <h3 style={{ margin: 0, fontSize: 16 }}>📥 Bulk Import Soal</h3>
-              <button onClick={() => setShowImport(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X/></button>
-            </div>
-            <div style={{ background: '#eef2ff', padding: 10, borderRadius: 8, fontSize: 10, color: '#4338ca', marginBottom: 12 }}>
-              <b>Format:</b><br/>
-              1. Pertanyaan<br/>
-              A. Opsi A<br/>
-              B. Opsi B<br/>
-              C. Opsi C<br/>
-              D. Opsi D
-            </div>
-            <textarea 
-              value={bulkText} 
-              onChange={e => setBulkText(e.target.value)}
-              placeholder={"1. Berapa 2+2?\nA. 2\nB. 4\nC. 6\nD. 8"}
-              style={{ width: '100%', height: 200, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, fontFamily: 'monospace', marginBottom: 12, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} 
-            />
-            <button onClick={handleBulkImport} style={{ width: '100%', padding: 12, background: '#673ab7', color: 'white', border: 'none', borderRadius: 10, fontWeight: 800, cursor: 'pointer' }}>
-              🚀 Proses & Import
-            </button>
-          </div>
-        </div>
+      {showSmartImport && (
+        <SmartImportPanel
+          onParsed={handleSmartParsed}
+          onClose={() => setShowSmartImport(false)}
+        />
       )}
 
       <style>{`
