@@ -9,10 +9,10 @@ import {
 import { 
   ArrowLeft, Clock, FileText, CheckCircle, Eye, 
   Link as LinkIcon, HelpCircle, Trash2, X, Send, 
-  Download, BookOpen, Hash, Tag, File, Upload, User,
+  Download, BookOpen, Hash, Tag, Upload, User,
   AlertCircle, Lock, Shield, Zap, Award, ExternalLink,
   FileQuestion, Calendar, Users, Target, Edit3, EyeOff,
-  File, FileImage, FileVideo, Play, Youtube, Globe,
+  FileImage, FileVideo, Play, Youtube, Globe,
   FileSpreadsheet, FileArchive, FileCode, Maximize2
 } from 'lucide-react';
 import { uploadElearningFile } from '../../services/uploadService';
@@ -101,10 +101,10 @@ const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
       case 'pdf': return <FileText size={20} color="#ef4444" />;
       case 'image': return <FileImage size={20} color="#10b981" />;
       case 'youtube': return <Youtube size={20} color="#ff0000" />;
-      case 'canva': return <File size={20} color="#00c4cc" />;
+      case 'canva': return <Globe size={20} color="#00c4cc" />;
       case 'google': return <FileText size={20} color="#4285f4" />;
       case 'office': return <FileSpreadsheet size={20} color="#217346" />;
-      default: return <File size={20} color="#3b82f6" />;
+      default: return <FileText size={20} color="#3b82f6" />;
     }
   };
   
@@ -211,7 +211,7 @@ const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
       default: {
         return (
           <div style={styles.unknownCard}>
-            <File size={40} color="#94a3b8" />
+            <FileText size={40} color="#94a3b8" />
             <p style={styles.unknownText}>File tidak dapat ditampilkan langsung</p>
             <button onClick={handleOpenNewTab} style={styles.btnOpenTab}>
               <ExternalLink size={14} /> Buka di Tab Baru
@@ -1048,7 +1048,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
               <div className="pui"><FileText size={24}/><div><b>{state.pendingFile.name}</b><small>{formatFileSize(state.pendingFile.size)}</small></div></div>
               {state.pendingFile.type?.startsWith('image/') ? <img src={URL.createObjectURL(state.pendingFile)} className="pui2" alt=""/> :
                state.pendingFile.type==='application/pdf' ? <embed src={URL.createObjectURL(state.pendingFile)} className="pue"/> :
-               <div className="puf"><File size={48}/><p>File siap upload</p></div>}
+               <div className="puf"><FileText size={48} color="#94a3b8"/><p>File siap upload</p></div>}
               <div className="pua">
                 <button onClick={()=>dispatch({type:'CLEAR_PENDING'})} className="bc" disabled={state.uploading[state.pendingBlockId]}>Batal</button>
                 <button onClick={handleConfirmUpload} disabled={state.uploading[state.pendingBlockId]} className="bs">
