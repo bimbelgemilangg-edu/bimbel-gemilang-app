@@ -1,15 +1,12 @@
 // src/pages/teacher/modul/SmartImportPanel.jsx
-// Upload PDF -> ekstrak teks+gambar otomatis (pdf.js dari CDN, tanpa install apapun)
-// -> gambar auto-upload ke Supabase -> teks dikirim ke AI -> soal jadi otomatis.
 import React, { useRef, useState } from 'react';
 import { uploadElearningFile } from '../../../services/uploadService';
-import { Loader2, X, Upload, FileText } from 'lucide-react';
+import { Loader2, X, FileText } from 'lucide-react';
 
 const SMART_PARSE_URL = "/api/smartParseQuiz";
 const PDFJS_SCRIPT = "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js";
 const PDFJS_WORKER = "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
 
-// Muat pdf.js dari CDN sekali saja (tidak perlu npm install)
 function ensurePdfJsLoaded() {
   return new Promise((resolve, reject) => {
     if (window.pdfjsLib) { resolve(window.pdfjsLib); return; }
@@ -24,14 +21,13 @@ function ensurePdfJsLoaded() {
   });
 }
 
-// Kumpulkan item teks per halaman jadi baris, tandai bold via nama font
 async function extractPageLines(page, textContent) {
   const items = textContent.items;
   const styles = textContent.styles || {};
   const lineMap = new Map();
 
   items.forEach((item) => {
-    const yKey = Math.round(item.transform[5] / 2) * 2; // toleransi baris
+    const yKey = Math.round(item.transform[5] / 2) * 2;
     const style = styles[item.fontName];
     const isBold = style && /bold/i.test(style.fontFamily || '');
     const text = isBold ? `**${item.str}**` : item.str;
@@ -39,7 +35,7 @@ async function extractPageLines(page, textContent) {
     lineMap.get(yKey).push({ x: item.transform[4], text });
   });
 
-  const sortedY = Array.from(lineMap.keys()).sort((a, b) => b - a); // atas ke bawah
+  const sortedY = Array.from(lineMap.keys()).sort((a, b) => b - a);
   return sortedY
     .map((y) => lineMap.get(y).sort((a, b) => a.x - b.x).map((p) => p.text).join(' ').trim())
     .filter((l) => l.length > 0);
@@ -64,19 +60,44 @@ function renderPageToBlob(page, scale = 2) {
   });
 }
 
+// ============================================================
+// 🔥 BARU: BERSIHKAN SAMPAH (watermark berulang, URL, footer halaman)
+// ============================================================
+function cleanNoiseLines(lines) {
+  // Hitung berapa kali tiap baris (persis sama) muncul
+  const counts = new Map();
+  lines.forEach((l) => {
+    const key = l.trim();
+    counts.set(key, (counts.get(key) || 0) + 1);
+  });
+
+  return lines.filter((line) => {
+    const trimmed = line.trim();
+    if (trimmed.length === 0) return false;
+
+    // Buang baris yang isinya HANYA sebuah URL
+    if (/^https?:\/\/\S+$/i.test(trimmed)) return false;
+
+    // Buang baris footer halaman seperti "TKA - Matematika| 3"
+    if (/^[A-Za-z\s-]+\|\s*\d+$/.test(trimmed)) return false;
+
+    // Buang baris yang muncul berulang ≥3 kali persis sama (watermark/footer)
+    if (counts.get(trimmed) >= 3) return false;
+
+    return true;
+  });
+}
+
 const SmartImportPanel = ({ onParsed, onClose }) => {
   const editorRef = useRef(null);
   const fileInputRef = useRef(null);
-  const [status, setStatus] = useState('idle'); // idle | reading | uploading | parsing
+  const [status, setStatus] = useState('idle');
   const [progressText, setProgressText] = useState('');
   const [pageInfo, setPageInfo] = useState('');
 
-  // ============================================================
-  // UPLOAD & BACA PDF
-  // ============================================================
   const handlePdfChange = async (e) => {
     const file = e.target.files?.[0];
-    e.target.value = ''; // reset supaya bisa pilih file sama lagi kalau perlu
+    e.target.value = '';
     if (!file) return;
     if (file.type !== 'application/pdf') {
       alert('⚠️ Pilih file PDF ya.');
@@ -92,7 +113,7 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-      let combinedLines = [];
+      let allLines = [];
 
       for (let i = 1; i <= pdf.numPages; i++) {
         setPageInfo(`Halaman ${i} dari ${pdf.numPages}`);
@@ -105,17 +126,20 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
           const imgFile = new File([blob], `pdf-page-${i}.jpg`, { type: 'image/jpeg' });
           const result = await uploadElearningFile(imgFile, 'kuis-smart-import');
           if (result.success) {
-            combinedLines.push(`[[GAMBAR]]::${result.downloadURL}`);
+            allLines.push(`[[GAMBAR]]::${result.downloadURL}`);
           }
         }
 
         setProgressText(`Membaca teks halaman ${i}...`);
         const textContent = await page.getTextContent();
         const lines = await extractPageLines(page, textContent);
-        combinedLines.push(...lines);
+        allLines.push(...lines);
       }
 
-      const combinedText = combinedLines.join('\n');
+      // 🔥 Bersihkan sampah SEBELUM ditampilkan/dikirim
+      const cleanedLines = cleanNoiseLines(allLines);
+      const combinedText = cleanedLines.join('\n');
+
       if (editorRef.current) {
         editorRef.current.innerText = combinedText;
       }
@@ -129,7 +153,6 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
     }
   };
 
-  // Tetap dukung paste manual + gambar dari clipboard (opsional, sebagai alternatif)
   const handlePaste = async (e) => {
     const items = e.clipboardData?.items || [];
     const imageFiles = [];
@@ -153,9 +176,6 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
     }
   };
 
-  // ============================================================
-  // KIRIM KE AI
-  // ============================================================
   const handleParse = async () => {
     const rawText = editorRef.current.innerText;
     if (!rawText || rawText.trim().length < 5) {
@@ -163,7 +183,7 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
       return;
     }
     setStatus('parsing');
-    setProgressText('AI sedang membaca & mengelompokkan soal (bisa 10-30 detik jika baru pertama kali)...');
+    setProgressText('AI sedang membaca & mengelompokkan soal (bisa 1-2 menit untuk soal banyak)...');
     try {
       const res = await fetch(SMART_PARSE_URL, {
         method: 'POST',
@@ -194,7 +214,7 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
         </div>
 
         <p style={{ fontSize: 12, color: '#64748b', marginBottom: 12 }}>
-          Upload file PDF soal — teks dan gambar akan diambil otomatis. Atau paste manual di kotak bawah (boleh sertakan gambar).
+          Upload file PDF soal — teks dan gambar akan diambil otomatis, watermark/link berulang otomatis dibersihkan.
         </p>
 
         <input ref={fileInputRef} type="file" accept="application/pdf" hidden onChange={handlePdfChange} />
