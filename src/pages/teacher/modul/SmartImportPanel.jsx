@@ -1,161 +1,144 @@
 // src/pages/teacher/modul/SmartImportPanel.jsx
-// Versi 100% GRATIS — parsing pakai pola/logika (bukan AI), jalan di browser, tanpa server.
+// Upload PDF -> ekstrak teks+gambar otomatis (pdf.js dari CDN, tanpa install apapun)
+// -> gambar auto-upload ke Supabase -> teks dikirim ke AI -> soal jadi otomatis.
 import React, { useRef, useState } from 'react';
 import { uploadElearningFile } from '../../../services/uploadService';
-import { Loader2, X, Info } from 'lucide-react';
+import { Loader2, X, Upload, FileText } from 'lucide-react';
 
-// ============================================================
-// HTML → baris teks, dengan **bold** tetap ditandai
-// ============================================================
-function htmlToLines(html) {
-  const container = document.createElement('div');
-  container.innerHTML = html;
-  const lines = [];
-  let current = '';
-  const BLOCK_TAGS = new Set(['DIV', 'P', 'LI', 'TR']);
+const SMART_PARSE_URL = "/api/smartParseQuiz";
+const PDFJS_SCRIPT = "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js";
+const PDFJS_WORKER = "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
 
-  const pushLine = () => {
-    if (current.trim().length > 0) lines.push(current.trim());
-    current = '';
-  };
-
-  const walk = (node) => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      current += node.textContent;
-      return;
-    }
-    if (node.nodeType !== Node.ELEMENT_NODE) return;
-    const tag = node.tagName;
-    if (tag === 'BR') { pushLine(); return; }
-    if (tag === 'B' || tag === 'STRONG') {
-      current += '**';
-      node.childNodes.forEach(walk);
-      current += '**';
-      return;
-    }
-    const isBlock = BLOCK_TAGS.has(tag);
-    if (isBlock) pushLine();
-    node.childNodes.forEach(walk);
-    if (isBlock) pushLine();
-  };
-
-  container.childNodes.forEach(walk);
-  pushLine();
-  return lines;
+// Muat pdf.js dari CDN sekali saja (tidak perlu npm install)
+function ensurePdfJsLoaded() {
+  return new Promise((resolve, reject) => {
+    if (window.pdfjsLib) { resolve(window.pdfjsLib); return; }
+    const script = document.createElement('script');
+    script.src = PDFJS_SCRIPT;
+    script.onload = () => {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+      resolve(window.pdfjsLib);
+    };
+    script.onerror = () => reject(new Error('Gagal memuat pembaca PDF.'));
+    document.body.appendChild(script);
+  });
 }
 
-// ============================================================
-// HELPERS PARSING
-// ============================================================
-const stripBold = (text) => text.replace(/\*\*/g, '').trim();
-const isBold = (text) => /^\*\*.*\*\*$/.test(text.trim());
+// Kumpulkan item teks per halaman jadi baris, tandai bold via nama font
+async function extractPageLines(page, textContent) {
+  const items = textContent.items;
+  const styles = textContent.styles || {};
+  const lineMap = new Map();
 
-function detectType(blockLines) {
-  const joined = blockLines.join(' ').toLowerCase();
-  if (joined.includes('sebab') && joined.includes('akibat')) return 'causeeffect';
-  if (joined.includes('pilih lebih dari satu') || joined.includes('pilih semua yang benar') || joined.includes('beberapa jawaban benar')) return 'multiselect';
-  const hasLetterOptions = blockLines.some((l) => /^[A-Ea-e][.)]\s+/.test(l));
-  if (!hasLetterOptions) {
-    if (joined.includes('benar atau salah') || joined.includes('benar/salah')) return 'truefalse';
-    return 'shortanswer';
-  }
-  return 'multiple';
+  items.forEach((item) => {
+    const yKey = Math.round(item.transform[5] / 2) * 2; // toleransi baris
+    const style = styles[item.fontName];
+    const isBold = style && /bold/i.test(style.fontFamily || '');
+    const text = isBold ? `**${item.str}**` : item.str;
+    if (!lineMap.has(yKey)) lineMap.set(yKey, []);
+    lineMap.get(yKey).push({ x: item.transform[4], text });
+  });
+
+  const sortedY = Array.from(lineMap.keys()).sort((a, b) => b - a); // atas ke bawah
+  return sortedY
+    .map((y) => lineMap.get(y).sort((a, b) => a.x - b.x).map((p) => p.text).join(' ').trim())
+    .filter((l) => l.length > 0);
 }
 
-function parseBlock(blockLines) {
-  const optionLines = [];
-  const questionLines = [];
-  let seenOption = false;
-
-  for (const line of blockLines) {
-    if (/^[A-Ea-e][.)]\s+/.test(line)) {
-      seenOption = true;
-      optionLines.push(line);
-    } else if (!seenOption) {
-      questionLines.push(line);
-    }
-  }
-
-  let questionText = questionLines.join(' ').replace(/^\d{1,3}[.)]\s*/, '').trim();
-
-  let qImage = '';
-  const imgLine = blockLines.find((l) => l.startsWith('[[GAMBAR]]::'));
-  if (imgLine) {
-    qImage = imgLine.replace('[[GAMBAR]]::', '').trim();
-    questionText = questionText.replace(/\[\[GAMBAR\]\]::\S+/, '').trim();
-  }
-
-  const type = detectType(blockLines);
-  const options = optionLines.map((l) => stripBold(l.replace(/^[A-Ea-e][.)]\s*/, '')));
-
-  let correct = 0;
-  let needsManualAnswer = true;
-  const boldIdx = optionLines.findIndex((l) => isBold(l.replace(/^[A-Ea-e][.)]\s*/, '')));
-  if (boldIdx !== -1) {
-    correct = boldIdx;
-    needsManualAnswer = false;
-  }
-
-  return {
-    id: Date.now() + Math.floor(Math.random() * 100000),
-    type,
-    q: questionText,
-    qImage,
-    options: options.length ? options : ['', '', '', ''],
-    optionImages: ['', '', '', ''],
-    correct,
-    correctAnswers: [],
-    explanation: '',
-    statements: [{ text: '', isTrue: true }],
-    readingText: '',
-    subQuestions: [{ q: '', options: ['', '', '', ''], correct: 0 }],
-    shortAnswer: '',
-    cause: '',
-    effect: '',
-    isCauseTrue: true,
-    isEffectTrue: true,
-    needsManualAnswer,
-  };
+async function pageHasImage(page, pdfjsLib) {
+  const opList = await page.getOperatorList();
+  return opList.fnArray.some(
+    (fn) => fn === pdfjsLib.OPS.paintImageXObject || fn === pdfjsLib.OPS.paintJpegXObject || fn === pdfjsLib.OPS.paintImageMaskXObject
+  );
 }
 
-function smartParseQuestions(lines) {
-  const blocks = [];
-  let current = [];
-
-  for (const line of lines) {
-    const isNewQuestion = /^\d{1,3}[.)]\s+/.test(line);
-    if (isNewQuestion && current.length > 0) {
-      blocks.push(current);
-      current = [line];
-    } else {
-      current.push(line);
-    }
-  }
-  if (current.length > 0) blocks.push(current);
-
-  const questionBlocks = blocks.filter((b) => /^\d{1,3}[.)]\s+/.test(b[0]));
-  return questionBlocks.map((b) => parseBlock(b)).filter((q) => q.q.length > 3);
+function renderPageToBlob(page, scale = 2) {
+  return new Promise(async (resolve) => {
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.85);
+  });
 }
 
-// ============================================================
-// KOMPONEN UTAMA
-// ============================================================
 const SmartImportPanel = ({ onParsed, onClose }) => {
   const editorRef = useRef(null);
-  const [status, setStatus] = useState('idle'); // idle | uploading
+  const fileInputRef = useRef(null);
+  const [status, setStatus] = useState('idle'); // idle | reading | uploading | parsing
   const [progressText, setProgressText] = useState('');
+  const [pageInfo, setPageInfo] = useState('');
 
+  // ============================================================
+  // UPLOAD & BACA PDF
+  // ============================================================
+  const handlePdfChange = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // reset supaya bisa pilih file sama lagi kalau perlu
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+      alert('⚠️ Pilih file PDF ya.');
+      return;
+    }
+
+    try {
+      setStatus('reading');
+      setProgressText('Memuat pembaca PDF...');
+      const pdfjsLib = await ensurePdfJsLoaded();
+
+      setProgressText('Membuka file PDF...');
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+      let combinedLines = [];
+
+      for (let i = 1; i <= pdf.numPages; i++) {
+        setPageInfo(`Halaman ${i} dari ${pdf.numPages}`);
+        const page = await pdf.getPage(i);
+
+        const hasImage = await pageHasImage(page, pdfjsLib);
+        if (hasImage) {
+          setProgressText(`Mengambil & mengupload gambar halaman ${i}...`);
+          const blob = await renderPageToBlob(page);
+          const imgFile = new File([blob], `pdf-page-${i}.jpg`, { type: 'image/jpeg' });
+          const result = await uploadElearningFile(imgFile, 'kuis-smart-import');
+          if (result.success) {
+            combinedLines.push(`[[GAMBAR]]::${result.downloadURL}`);
+          }
+        }
+
+        setProgressText(`Membaca teks halaman ${i}...`);
+        const textContent = await page.getTextContent();
+        const lines = await extractPageLines(page, textContent);
+        combinedLines.push(...lines);
+      }
+
+      const combinedText = combinedLines.join('\n');
+      if (editorRef.current) {
+        editorRef.current.innerText = combinedText;
+      }
+      setPageInfo('');
+      setStatus('idle');
+    } catch (err) {
+      console.error(err);
+      alert('❌ Gagal membaca PDF: ' + err.message);
+      setStatus('idle');
+      setPageInfo('');
+    }
+  };
+
+  // Tetap dukung paste manual + gambar dari clipboard (opsional, sebagai alternatif)
   const handlePaste = async (e) => {
     const items = e.clipboardData?.items || [];
     const imageFiles = [];
-
     for (const item of items) {
       if (item.type.startsWith('image/')) {
         const file = item.getAsFile();
         if (file) imageFiles.push(file);
       }
     }
-
     if (imageFiles.length > 0) {
       e.preventDefault();
       setStatus('uploading');
@@ -163,72 +146,99 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
         setProgressText(`Mengupload gambar ${i + 1}/${imageFiles.length}...`);
         const result = await uploadElearningFile(imageFiles[i], 'kuis-smart-import');
         if (result.success) {
-          document.execCommand('insertHTML', false, `<p>[[GAMBAR]]::${result.downloadURL}</p>`);
-        } else {
-          alert('❌ Gagal upload salah satu gambar: ' + result.error);
+          document.execCommand('insertText', false, `\n[[GAMBAR]]::${result.downloadURL}\n`);
         }
       }
       setStatus('idle');
     }
   };
 
-  const handleParse = () => {
-    const rawHtml = editorRef.current.innerHTML;
-    if (!rawHtml || rawHtml.trim().length < 5) {
-      alert('⚠️ Paste dulu soalnya di kotak putih.');
+  // ============================================================
+  // KIRIM KE AI
+  // ============================================================
+  const handleParse = async () => {
+    const rawText = editorRef.current.innerText;
+    if (!rawText || rawText.trim().length < 5) {
+      alert('⚠️ Upload PDF dulu, atau paste teks soal di kotak putih.');
       return;
     }
-
-    const lines = htmlToLines(rawHtml);
-    const questions = smartParseQuestions(lines);
-
-    if (questions.length === 0) {
-      alert('⚠️ Tidak ada soal yang terdeteksi. Pastikan soal diawali angka (1. 2. 3. dst) dan opsi diawali huruf (A. B. C. dst).');
-      return;
+    setStatus('parsing');
+    setProgressText('AI sedang membaca & mengelompokkan soal (bisa 10-30 detik jika baru pertama kali)...');
+    try {
+      const res = await fetch(SMART_PARSE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: rawText }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        onParsed(data.questions);
+        onClose();
+      } else {
+        alert('❌ Gagal parsing: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('❌ Tidak bisa terhubung ke server AI: ' + err.message);
     }
-
-    onParsed(questions);
-    onClose();
+    setStatus('idle');
   };
+
+  const busy = status !== 'idle';
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-      <div style={{ background: 'white', width: '100%', maxWidth: 700, padding: 25, borderRadius: 16 }}>
+      <div style={{ background: 'white', width: '100%', maxWidth: 720, padding: 25, borderRadius: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <h3 style={{ margin: 0 }}>⚡ Smart Import Soal</h3>
+          <h3 style={{ margin: 0 }}>🧠 Smart Import Soal (dari PDF)</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X /></button>
         </div>
 
-        <div style={{ display: 'flex', gap: 8, padding: '8px 12px', background: '#eef2ff', borderRadius: 8, marginBottom: 12 }}>
-          <Info size={14} color="#4338ca" style={{ flexShrink: 0, marginTop: 2 }} />
-          <p style={{ fontSize: 11, color: '#4338ca', margin: 0 }}>
-            Soal diawali angka (1. 2. 3.), opsi diawali huruf (A. B. C.). Tebalkan (bold) opsi yang benar biar otomatis tertandai. Setelah diproses, cek badge <b>"⚠️ Perlu tandai jawaban"</b> pada soal yang belum ke-bold.
-          </p>
-        </div>
+        <p style={{ fontSize: 12, color: '#64748b', marginBottom: 12 }}>
+          Upload file PDF soal — teks dan gambar akan diambil otomatis. Atau paste manual di kotak bawah (boleh sertakan gambar).
+        </p>
+
+        <input ref={fileInputRef} type="file" accept="application/pdf" hidden onChange={handlePdfChange} />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={busy}
+          style={{
+            width: '100%', padding: '12px', borderRadius: 10, marginBottom: 10,
+            border: '2px dashed #673ab7', background: '#f3e8ff', color: '#673ab7',
+            fontWeight: 700, fontSize: 13, cursor: busy ? 'not-allowed' : 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: busy ? 0.6 : 1,
+          }}
+        >
+          <FileText size={16} /> 📄 Upload PDF Soal
+        </button>
 
         <div
           ref={editorRef}
           contentEditable
           onPaste={handlePaste}
           style={{
-            minHeight: 250, maxHeight: 400, overflowY: 'auto',
+            minHeight: 220, maxHeight: 380, overflowY: 'auto',
             border: '1px solid #e2e8f0', borderRadius: 8, padding: 12,
-            fontSize: 13, outline: 'none', lineHeight: 1.6
+            fontSize: 12, outline: 'none', lineHeight: 1.6, whiteSpace: 'pre-wrap',
           }}
         />
-        {status !== 'idle' && (
-          <div style={{ marginTop: 8, fontSize: 12, color: '#673ab7', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Loader2 size={14} className="spin" /> {progressText}
+
+        {busy && (
+          <div style={{ marginTop: 8, fontSize: 12, color: '#673ab7', display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Loader2 size={14} className="spin" /> {progressText}
+            </div>
+            {pageInfo && <div style={{ fontSize: 11, color: '#94a3b8', marginLeft: 20 }}>{pageInfo}</div>}
           </div>
         )}
+
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
           <button onClick={onClose} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer' }}>Batal</button>
           <button
             onClick={handleParse}
-            disabled={status !== 'idle'}
-            style={{ flex: 2, padding: 10, borderRadius: 8, border: 'none', background: '#673ab7', color: 'white', fontWeight: 700, cursor: status !== 'idle' ? 'not-allowed' : 'pointer', opacity: status !== 'idle' ? 0.7 : 1 }}
+            disabled={busy}
+            style={{ flex: 2, padding: 10, borderRadius: 8, border: 'none', background: '#673ab7', color: 'white', fontWeight: 700, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.7 : 1 }}
           >
-            ⚡ Proses Sekarang
+            🚀 Proses dengan AI
           </button>
         </div>
       </div>
