@@ -2,7 +2,7 @@
 // Pakai Hugging Face Inference API — GRATIS, tanpa kartu kredit.
 
 const QUESTION_TYPES = ["multiple", "truefalse", "multiselect", "reading", "shortanswer", "causeeffect"];
-const HF_MODEL = "meta-llama/Llama-3.1-8B-Instruct";
+const HF_MODEL = "Qwen/Qwen2.5-7B-Instruct";
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
