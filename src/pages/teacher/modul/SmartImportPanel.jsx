@@ -1,11 +1,13 @@
 // src/pages/teacher/modul/SmartImportPanel.jsx
+// Versi "Crop Visual" — soal di-crop sebagai gambar per blok, opsi gambar terdeteksi otomatis.
 import React, { useRef, useState } from 'react';
 import { uploadElearningFile } from '../../../services/uploadService';
-import { Loader2, X, FileText } from 'lucide-react';
+import { Loader2, X, FileText, CheckCircle, Image as ImageIcon } from 'lucide-react';
 
-const SMART_PARSE_URL = "/api/smartParseQuiz";
 const PDFJS_SCRIPT = "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js";
 const PDFJS_WORKER = "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+const RENDER_SCALE = 2.2;
+const LEFT_MARGIN_TOLERANCE = 40; // px toleransi posisi X untuk "nomor soal asli" vs sub-list menjorok
 
 function ensurePdfJsLoaded() {
   return new Promise((resolve, reject) => {
@@ -21,79 +23,144 @@ function ensurePdfJsLoaded() {
   });
 }
 
-async function extractPageLines(page, textContent) {
-  const items = textContent.items;
-  const styles = textContent.styles || {};
-  const lineMap = new Map();
+// ============================================================
+// Ambil garis kiri margin halaman (posisi X paling umum dipakai nomor soal)
+// ============================================================
+function detectLeftMargin(items) {
+  const xCounts = new Map();
+  items.forEach((it) => {
+    const xKey = Math.round(it.transform[4] / 5) * 5;
+    xCounts.set(xKey, (xCounts.get(xKey) || 0) + 1);
+  });
+  let bestX = 0, bestCount = 0;
+  xCounts.forEach((count, x) => {
+    if (count > bestCount) { bestCount = count; bestX = x; }
+  });
+  return bestX;
+}
 
+// ============================================================
+// Deteksi baris "N." yang ada TEPAT di margin kiri (soal asli),
+// bukan yang menjorok (sub-list di dalam soal, mis. "1. Lisosom" yang menjorok)
+// ============================================================
+function detectQuestionStarts(items, leftMargin) {
+  const lineMap = new Map();
   items.forEach((item) => {
     const yKey = Math.round(item.transform[5] / 2) * 2;
-    const style = styles[item.fontName];
-    const isBold = style && /bold/i.test(style.fontFamily || '');
-    const text = isBold ? `**${item.str}**` : item.str;
     if (!lineMap.has(yKey)) lineMap.set(yKey, []);
-    lineMap.get(yKey).push({ x: item.transform[4], text });
+    lineMap.get(yKey).push(item);
   });
 
-  const sortedY = Array.from(lineMap.keys()).sort((a, b) => b - a);
-  return sortedY
-    .map((y) => lineMap.get(y).sort((a, b) => a.x - b.x).map((p) => p.text).join(' ').trim())
-    .filter((l) => l.length > 0);
+  const starts = [];
+  lineMap.forEach((lineItems, y) => {
+    const sorted = lineItems.sort((a, b) => a.transform[4] - b.transform[4]);
+    const first = sorted[0];
+    const text = sorted.map((i) => i.str).join(' ').trim();
+    const isNearMargin = Math.abs(first.transform[4] - leftMargin) <= LEFT_MARGIN_TOLERANCE;
+    const matchesNumber = /^\d{1,3}[.)]\s*/.test(text);
+    if (isNearMargin && matchesNumber) {
+      starts.push({ y, number: parseInt(text.match(/^\d{1,3}/)[0], 10) });
+    }
+  });
+
+  return starts.sort((a, b) => b.y - a.y); // urut dari atas ke bawah (PDF: y besar = atas)
 }
 
-async function pageHasImage(page, pdfjsLib) {
+// ============================================================
+// Cari klaster gambar kecil sejajar (kandidat opsi bergambar)
+// ============================================================
+async function findImageRegions(page, pdfjsLib) {
   const opList = await page.getOperatorList();
-  return opList.fnArray.some(
-    (fn) => fn === pdfjsLib.OPS.paintImageXObject || fn === pdfjsLib.OPS.paintJpegXObject || fn === pdfjsLib.OPS.paintImageMaskXObject
-  );
+  const regions = [];
+  let currentTransform = null;
+
+  for (let i = 0; i < opList.fnArray.length; i++) {
+    const fn = opList.fnArray[i];
+    if (fn === pdfjsLib.OPS.transform) {
+      currentTransform = opList.argsArray[i];
+    }
+    if (
+      fn === pdfjsLib.OPS.paintImageXObject ||
+      fn === pdfjsLib.OPS.paintJpegXObject
+    ) {
+      if (currentTransform) {
+        const [a, b, c, d, e, f] = currentTransform;
+        const width = Math.hypot(a, b);
+        const height = Math.hypot(c, d);
+        regions.push({ x: e, y: f, width, height });
+      }
+    }
+  }
+  return regions;
 }
 
-function renderPageToBlob(page, scale = 2) {
-  return new Promise(async (resolve) => {
-    const viewport = page.getViewport({ scale });
-    const canvas = document.createElement('canvas');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    const ctx = canvas.getContext('2d');
-    await page.render({ canvasContext: ctx, viewport }).promise;
-    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.85);
+// Kelompokkan region gambar yang sejajar (y mirip) dan ukurannya mirip → kemungkinan opsi bergambar
+function clusterOptionImages(regions, pageHeight) {
+  if (regions.length < 2) return null;
+  const sorted = [...regions].sort((a, b) => b.y - a.y);
+  const groups = [];
+  let current = [sorted[0]];
+
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = current[current.length - 1];
+    if (Math.abs(sorted[i].y - prev.y) < 30) {
+      current.push(sorted[i]);
+    } else {
+      groups.push(current);
+      current = [sorted[i]];
+    }
+  }
+  groups.push(current);
+
+  // Cari grup dengan 2-5 gambar berukuran mirip (kandidat kuat opsi bergambar)
+  const candidate = groups.find((g) => {
+    if (g.length < 2 || g.length > 5) return false;
+    const avgW = g.reduce((s, r) => s + r.width, 0) / g.length;
+    return g.every((r) => Math.abs(r.width - avgW) / avgW < 0.4);
   });
+
+  if (!candidate) return null;
+  return candidate.sort((a, b) => a.x - b.x); // urut kiri ke kanan (A, B, C, D)
+}
+
+function pdfRectToCanvasRect(viewport, xPdf, yTopPdf, yBottomPdf, widthPdf) {
+  const [x1, y1] = viewport.convertToViewportPoint(xPdf, yTopPdf);
+  const [x2, y2] = viewport.convertToViewportPoint(xPdf + widthPdf, yBottomPdf);
+  return {
+    x: Math.min(x1, x2),
+    y: Math.min(y1, y2),
+    width: Math.abs(x2 - x1),
+    height: Math.abs(y2 - y1),
+  };
+}
+
+function cropCanvas(sourceCanvas, rect, paddingPx = 8) {
+  const x = Math.max(0, rect.x - paddingPx);
+  const y = Math.max(0, rect.y - paddingPx);
+  const w = Math.min(sourceCanvas.width - x, rect.width + paddingPx * 2);
+  const h = Math.min(sourceCanvas.height - y, rect.height + paddingPx * 2);
+  if (w <= 0 || h <= 0) return null;
+
+  const out = document.createElement('canvas');
+  out.width = w;
+  out.height = h;
+  const ctx = out.getContext('2d');
+  ctx.drawImage(sourceCanvas, x, y, w, h, 0, 0, w, h);
+  return out;
+}
+
+function canvasToBlob(canvas) {
+  return new Promise((resolve) => canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.9));
 }
 
 // ============================================================
-// 🔥 BARU: BERSIHKAN SAMPAH (watermark berulang, URL, footer halaman)
+// KOMPONEN UTAMA
 // ============================================================
-function cleanNoiseLines(lines) {
-  // Hitung berapa kali tiap baris (persis sama) muncul
-  const counts = new Map();
-  lines.forEach((l) => {
-    const key = l.trim();
-    counts.set(key, (counts.get(key) || 0) + 1);
-  });
-
-  return lines.filter((line) => {
-    const trimmed = line.trim();
-    if (trimmed.length === 0) return false;
-
-    // Buang baris yang isinya HANYA sebuah URL
-    if (/^https?:\/\/\S+$/i.test(trimmed)) return false;
-
-    // Buang baris footer halaman seperti "TKA - Matematika| 3"
-    if (/^[A-Za-z\s-]+\|\s*\d+$/.test(trimmed)) return false;
-
-    // Buang baris yang muncul berulang ≥3 kali persis sama (watermark/footer)
-    if (counts.get(trimmed) >= 3) return false;
-
-    return true;
-  });
-}
-
 const SmartImportPanel = ({ onParsed, onClose }) => {
-  const editorRef = useRef(null);
   const fileInputRef = useRef(null);
-  const [status, setStatus] = useState('idle');
+  const [status, setStatus] = useState('idle'); // idle | processing
   const [progressText, setProgressText] = useState('');
-  const [pageInfo, setPageInfo] = useState('');
+  const [detected, setDetected] = useState([]); // { id, image(blob url sementara), type, needsUpload }
 
   const handlePdfChange = async (e) => {
     const file = e.target.files?.[0];
@@ -105,7 +172,7 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
     }
 
     try {
-      setStatus('reading');
+      setStatus('processing');
       setProgressText('Memuat pembaca PDF...');
       const pdfjsLib = await ensurePdfJsLoaded();
 
@@ -113,153 +180,295 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-      let allLines = [];
+      const results = [];
 
-      for (let i = 1; i <= pdf.numPages; i++) {
-        setPageInfo(`Halaman ${i} dari ${pdf.numPages}`);
-        const page = await pdf.getPage(i);
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        setProgressText(`Menganalisis halaman ${pageNum} dari ${pdf.numPages}...`);
+        const page = await pdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale: RENDER_SCALE });
 
-        const hasImage = await pageHasImage(page, pdfjsLib);
-        if (hasImage) {
-          setProgressText(`Mengambil & mengupload gambar halaman ${i}...`);
-          const blob = await renderPageToBlob(page);
-          const imgFile = new File([blob], `pdf-page-${i}.jpg`, { type: 'image/jpeg' });
-          const result = await uploadElearningFile(imgFile, 'kuis-smart-import');
-          if (result.success) {
-            allLines.push(`[[GAMBAR]]::${result.downloadURL}`);
-          }
-        }
+        // Render seluruh halaman jadi canvas resolusi tinggi
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = viewport.width;
+        pageCanvas.height = viewport.height;
+        const ctx = pageCanvas.getContext('2d');
+        await page.render({ canvasContext: ctx, viewport }).promise;
 
-        setProgressText(`Membaca teks halaman ${i}...`);
         const textContent = await page.getTextContent();
-        const lines = await extractPageLines(page, textContent);
-        allLines.push(...lines);
+        const items = textContent.items;
+        if (items.length === 0) continue;
+
+        const leftMargin = detectLeftMargin(items);
+        const starts = detectQuestionStarts(items, leftMargin);
+        const imageRegions = await findImageRegions(page, pdfjsLib);
+
+        for (let i = 0; i < starts.length; i++) {
+          const top = starts[i].y;
+          const bottom = i + 1 < starts.length ? starts[i + 1].y : page.view[1]; // batas bawah halaman PDF
+
+          const rect = pdfRectToCanvasRect(
+            viewport,
+            page.view[0],
+            top + 14, // sedikit ruang di atas teks
+            bottom + 4,
+            page.view[2] - page.view[0]
+          );
+
+          const cropped = cropCanvas(pageCanvas, rect);
+          if (!cropped) continue;
+
+          // Cek apakah ada klaster gambar kecil sejajar DI DALAM rentang y soal ini → opsi bergambar
+          const regionsInThisQuestion = imageRegions.filter(
+            (r) => r.y <= top + 20 && r.y >= bottom - 20
+          );
+          const optionImageCluster = clusterOptionImages(regionsInThisQuestion, page.view[3]);
+
+          let optionCrops = [];
+          if (optionImageCluster) {
+            for (const region of optionImageCluster) {
+              const oRect = pdfRectToCanvasRect(
+                viewport,
+                region.x,
+                region.y + region.height,
+                region.y,
+                region.width
+              );
+              const oCropped = cropCanvas(pageCanvas, oRect, 4);
+              if (oCropped) {
+                const blob = await canvasToBlob(oCropped);
+                optionCrops.push(blob);
+              }
+            }
+          }
+
+          const mainBlob = await canvasToBlob(cropped);
+
+          results.push({
+            id: `q-${pageNum}-${starts[i].number}-${Date.now()}-${i}`,
+            number: starts[i].number,
+            page: pageNum,
+            imageBlob: mainBlob,
+            imagePreviewUrl: URL.createObjectURL(mainBlob),
+            optionsAreImages: optionCrops.length >= 2,
+            optionImageBlobs: optionCrops,
+            optionImagePreviewUrls: optionCrops.map((b) => URL.createObjectURL(b)),
+            type: 'multiple',
+            correct: 0,
+            needsManualAnswer: true,
+          });
+        }
       }
 
-      // 🔥 Bersihkan sampah SEBELUM ditampilkan/dikirim
-      const cleanedLines = cleanNoiseLines(allLines);
-      const combinedText = cleanedLines.join('\n');
-
-      if (editorRef.current) {
-        editorRef.current.innerText = combinedText;
+      if (results.length === 0) {
+        alert('⚠️ Tidak ada soal terdeteksi. Pastikan PDF berisi teks asli (bukan hasil scan gambar) dan penomoran soal (1. 2. 3. dst) ada di margin kiri halaman.');
+        setStatus('idle');
+        return;
       }
-      setPageInfo('');
+
+      setDetected(results);
+      setProgressText('');
       setStatus('idle');
     } catch (err) {
       console.error(err);
       alert('❌ Gagal membaca PDF: ' + err.message);
       setStatus('idle');
-      setPageInfo('');
     }
   };
 
-  const handlePaste = async (e) => {
-    const items = e.clipboardData?.items || [];
-    const imageFiles = [];
-    for (const item of items) {
-      if (item.type.startsWith('image/')) {
-        const file = item.getAsFile();
-        if (file) imageFiles.push(file);
-      }
-    }
-    if (imageFiles.length > 0) {
-      e.preventDefault();
-      setStatus('uploading');
-      for (let i = 0; i < imageFiles.length; i++) {
-        setProgressText(`Mengupload gambar ${i + 1}/${imageFiles.length}...`);
-        const result = await uploadElearningFile(imageFiles[i], 'kuis-smart-import');
-        if (result.success) {
-          document.execCommand('insertText', false, `\n[[GAMBAR]]::${result.downloadURL}\n`);
+  const setAnswer = (id, correctIndex) => {
+    setDetected((prev) => prev.map((q) => (q.id === id ? { ...q, correct: correctIndex, needsManualAnswer: false } : q)));
+  };
+
+  const setType = (id, type) => {
+    setDetected((prev) => prev.map((q) => (q.id === id ? { ...q, type } : q)));
+  };
+
+  const removeDetected = (id) => {
+    setDetected((prev) => prev.filter((q) => q.id !== id));
+  };
+
+  // ============================================================
+  // Upload semua gambar ke Supabase & kirim ke ManageQuiz
+  // ============================================================
+  const handleConfirmAll = async () => {
+    setStatus('processing');
+    const finalQuestions = [];
+
+    for (let i = 0; i < detected.length; i++) {
+      const d = detected[i];
+      setProgressText(`Mengupload soal ${i + 1}/${detected.length}...`);
+
+      const mainFile = new File([d.imageBlob], `soal-${d.id}.jpg`, { type: 'image/jpeg' });
+      const mainUpload = await uploadElearningFile(mainFile, 'kuis-smart-import');
+      const qImage = mainUpload.success ? mainUpload.downloadURL : '';
+
+      let optionImages = ['', '', '', ''];
+      if (d.optionsAreImages && d.optionImageBlobs.length > 0) {
+        optionImages = [];
+        for (let j = 0; j < d.optionImageBlobs.length; j++) {
+          const oFile = new File([d.optionImageBlobs[j]], `opsi-${d.id}-${j}.jpg`, { type: 'image/jpeg' });
+          const oUpload = await uploadElearningFile(oFile, 'kuis-smart-import');
+          optionImages.push(oUpload.success ? oUpload.downloadURL : '');
         }
+        while (optionImages.length < 4) optionImages.push('');
       }
-      setStatus('idle');
-    }
-  };
 
-  const handleParse = async () => {
-    const rawText = editorRef.current.innerText;
-    if (!rawText || rawText.trim().length < 5) {
-      alert('⚠️ Upload PDF dulu, atau paste teks soal di kotak putih.');
-      return;
-    }
-    setStatus('parsing');
-    setProgressText('AI sedang membaca & mengelompokkan soal (bisa 1-2 menit untuk soal banyak)...');
-    try {
-      const res = await fetch(SMART_PARSE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: rawText }),
+      finalQuestions.push({
+        id: Date.now() + i,
+        type: d.type,
+        q: `Soal ${d.number}`, // teks pendek, badan soal utuh ada di qImage
+        qImage,
+        options: d.optionsAreImages ? ['', '', '', ''] : ['', '', '', ''],
+        optionImages,
+        optionsAreImages: d.optionsAreImages,
+        correct: d.correct,
+        correctAnswers: [],
+        explanation: '',
+        statements: [{ text: '', isTrue: true }],
+        readingText: '',
+        subQuestions: [{ q: '', options: ['', '', '', ''], correct: 0 }],
+        shortAnswer: '',
+        cause: '',
+        effect: '',
+        isCauseTrue: true,
+        isEffectTrue: true,
+        needsManualAnswer: d.needsManualAnswer,
       });
-      const data = await res.json();
-      if (data.success) {
-        onParsed(data.questions);
-        onClose();
-      } else {
-        alert('❌ Gagal parsing: ' + (data.error || 'Unknown error'));
-      }
-    } catch (err) {
-      alert('❌ Tidak bisa terhubung ke server AI: ' + err.message);
     }
+
+    onParsed(finalQuestions);
     setStatus('idle');
+    onClose();
   };
 
   const busy = status !== 'idle';
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-      <div style={{ background: 'white', width: '100%', maxWidth: 720, padding: 25, borderRadius: 16 }}>
+      <div style={{ background: 'white', width: '100%', maxWidth: 820, maxHeight: '90vh', padding: 25, borderRadius: 16, display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <h3 style={{ margin: 0 }}>🧠 Smart Import Soal (dari PDF)</h3>
+          <h3 style={{ margin: 0 }}>🧠 Smart Import Soal (Visual Crop)</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X /></button>
         </div>
 
-        <p style={{ fontSize: 12, color: '#64748b', marginBottom: 12 }}>
-          Upload file PDF soal — teks dan gambar akan diambil otomatis, watermark/link berulang otomatis dibersihkan.
-        </p>
-
-        <input ref={fileInputRef} type="file" accept="application/pdf" hidden onChange={handlePdfChange} />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={busy}
-          style={{
-            width: '100%', padding: '12px', borderRadius: 10, marginBottom: 10,
-            border: '2px dashed #673ab7', background: '#f3e8ff', color: '#673ab7',
-            fontWeight: 700, fontSize: 13, cursor: busy ? 'not-allowed' : 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: busy ? 0.6 : 1,
-          }}
-        >
-          <FileText size={16} /> 📄 Upload PDF Soal
-        </button>
-
-        <div
-          ref={editorRef}
-          contentEditable
-          onPaste={handlePaste}
-          style={{
-            minHeight: 220, maxHeight: 380, overflowY: 'auto',
-            border: '1px solid #e2e8f0', borderRadius: 8, padding: 12,
-            fontSize: 12, outline: 'none', lineHeight: 1.6, whiteSpace: 'pre-wrap',
-          }}
-        />
-
-        {busy && (
-          <div style={{ marginTop: 8, fontSize: 12, color: '#673ab7', display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Loader2 size={14} className="spin" /> {progressText}
-            </div>
-            {pageInfo && <div style={{ fontSize: 11, color: '#94a3b8', marginLeft: 20 }}>{pageInfo}</div>}
-          </div>
+        {detected.length === 0 && (
+          <>
+            <p style={{ fontSize: 12, color: '#64748b', marginBottom: 12 }}>
+              Upload PDF soal — tiap soal akan otomatis di-crop sebagai gambar persis seperti aslinya (termasuk tabel, pecahan, diagram). Jika opsi jawaban berupa gambar, sistem akan mendeteksinya otomatis.
+            </p>
+            <input ref={fileInputRef} type="file" accept="application/pdf" hidden onChange={handlePdfChange} />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={busy}
+              style={{
+                width: '100%', padding: '14px', borderRadius: 10,
+                border: '2px dashed #673ab7', background: '#f3e8ff', color: '#673ab7',
+                fontWeight: 700, fontSize: 13, cursor: busy ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: busy ? 0.6 : 1,
+              }}
+            >
+              <FileText size={16} /> 📄 Upload PDF Soal
+            </button>
+            {busy && (
+              <div style={{ marginTop: 12, fontSize: 12, color: '#673ab7', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Loader2 size={14} className="spin" /> {progressText}
+              </div>
+            )}
+          </>
         )}
 
-        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+        {detected.length > 0 && (
+          <>
+            <div style={{ display: 'flex', gap: 8, padding: '8px 12px', background: '#eef2ff', borderRadius: 8, marginBottom: 12, fontSize: 11, color: '#4338ca' }}>
+              {detected.length} soal terdeteksi. Klik jawaban benar untuk tiap soal (opsional, bisa dilewati dan ditandai nanti di editor).
+            </div>
+
+            <div style={{ overflowY: 'auto', flex: 1, marginBottom: 12 }}>
+              {detected.map((q, idx) => (
+                <div key={q.id} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 12, marginBottom: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#673ab7' }}>Soal {q.number} (hal. {q.page})</span>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      <select
+                        value={q.type}
+                        onChange={(e) => setType(q.id, e.target.value)}
+                        style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, border: '1px solid #e2e8f0' }}
+                      >
+                        <option value="multiple">Pilihan Ganda</option>
+                        <option value="multiselect">Pilih {'>'} 1</option>
+                        <option value="truefalse">Benar/Salah</option>
+                        <option value="causeeffect">Sebab Akibat</option>
+                        <option value="shortanswer">Isian Singkat</option>
+                        <option value="reading">Bacaan</option>
+                      </select>
+                      <button onClick={() => removeDetected(q.id)} style={{ fontSize: 10, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>Hapus</button>
+                    </div>
+                  </div>
+
+                  <img src={q.imagePreviewUrl} alt={`Soal ${q.number}`} style={{ maxWidth: '100%', borderRadius: 6, border: '1px solid #f1f5f9', marginBottom: 8 }} />
+
+                  {q.optionsAreImages ? (
+                    <div>
+                      <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <ImageIcon size={12} /> Terdeteksi opsi bergambar — klik gambar yang benar:
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        {q.optionImagePreviewUrls.map((url, oIdx) => (
+                          <button
+                            key={oIdx}
+                            onClick={() => setAnswer(q.id, oIdx)}
+                            style={{
+                              padding: 4, borderRadius: 8, cursor: 'pointer',
+                              border: q.correct === oIdx ? '3px solid #10b981' : '2px solid #e2e8f0',
+                              background: q.correct === oIdx ? '#f0fdf4' : 'white',
+                            }}
+                          >
+                            <img src={url} alt={`Opsi ${String.fromCharCode(65 + oIdx)}`} style={{ height: 70, display: 'block' }} />
+                            <div style={{ fontSize: 9, textAlign: 'center', marginTop: 2, fontWeight: 700 }}>
+                              {String.fromCharCode(65 + oIdx)} {q.correct === oIdx && <CheckCircle size={10} style={{ display: 'inline', marginLeft: 2 }} color="#10b981" />}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>Klik huruf jawaban benar (lihat gambar di atas untuk tahu isi opsinya):</div>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {['A', 'B', 'C', 'D', 'E'].map((letter, oIdx) => (
+                          <button
+                            key={letter}
+                            onClick={() => setAnswer(q.id, oIdx)}
+                            style={{
+                              width: 32, height: 32, borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: 12,
+                              border: q.correct === oIdx ? '2px solid #10b981' : '1px solid #e2e8f0',
+                              background: q.correct === oIdx ? '#dcfce7' : 'white',
+                              color: q.correct === oIdx ? '#166534' : '#64748b',
+                            }}
+                          >
+                            {letter}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={onClose} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer' }}>Batal</button>
-          <button
-            onClick={handleParse}
-            disabled={busy}
-            style={{ flex: 2, padding: 10, borderRadius: 8, border: 'none', background: '#673ab7', color: 'white', fontWeight: 700, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.7 : 1 }}
-          >
-            🚀 Proses dengan AI
-          </button>
+          {detected.length > 0 && (
+            <button
+              onClick={handleConfirmAll}
+              disabled={busy}
+              style={{ flex: 2, padding: 10, borderRadius: 8, border: 'none', background: '#673ab7', color: 'white', fontWeight: 700, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.7 : 1 }}
+            >
+              {busy ? <Loader2 size={14} className="spin" /> : `✅ Masukkan ${detected.length} Soal ke Kuis`}
+            </button>
+          )}
         </div>
       </div>
     </div>
