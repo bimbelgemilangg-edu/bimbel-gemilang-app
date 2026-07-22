@@ -7,6 +7,7 @@ import {
 } from "firebase/firestore";
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile, deleteFile, supabase } from '../../../services/uploadService';
+import AIGenerateMateri from './AIGenerateMateri';
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, ArrowLeft, 
   FileUp, Type, Video, X, Image as ImageIcon, BookOpen, 
@@ -246,6 +247,7 @@ const ManageMateri = () => {
   const [uploadStatus, setUploadStatus] = useState({ type: '', message: '' });
   
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showAIGenerate, setShowAIGenerate] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   
   const [guruData, setGuruData] = useState(null);
@@ -761,6 +763,7 @@ const ManageMateri = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 10, fontWeight: 800, color: typeColors[section.type], background: typeColors[section.type] + '15', padding: '4px 10px', borderRadius: 6 }}>
               {typeIcons[section.type]} {section.type.toUpperCase()}
+              {section.format === 'html' && ' • AI'}
             </span>
             <input 
               value={section.title} 
@@ -794,7 +797,23 @@ const ManageMateri = () => {
         </div>
 
         {/* TEXT */}
-        {section.type === 'text' && (
+        {section.type === 'text' && section.format === 'html' && (
+          <div>
+            <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 8, padding: 10, marginBottom: 8, fontSize: 11, color: '#7c3aed', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Sparkles size={14} /> Konten ini dibuat oleh AI. Edit langsung di HTML mentah di bawah kalau perlu ubah teks.
+            </div>
+            <textarea
+              value={section.content}
+              onChange={e => updateSection(editingSection, 'content', e.target.value)}
+              style={{ width: '100%', minHeight: 220, padding: 12, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, fontFamily: 'monospace', resize: 'vertical' }}
+            />
+            <div style={{ marginTop: 8, padding: 12, background: 'white', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', marginBottom: 6 }}>👁️ PREVIEW</div>
+              <div dangerouslySetInnerHTML={{ __html: section.content }} />
+            </div>
+          </div>
+        )}
+        {section.type === 'text' && section.format !== 'html' && (
           <SimpleEditor 
             value={section.content} 
             onChange={value => updateSection(editingSection, 'content', value)} 
@@ -1253,6 +1272,11 @@ const ManageMateri = () => {
                 <span style={{ fontSize: 16 }}>{typeIcons[sec.type]}</span>
                 <span style={styles.sectionLabel}>
                   {sec.title || `Konten ${idx + 1}`}
+                  {sec.format === 'html' && (
+                    <span style={{ fontSize: 9, color: '#8b5cf6', background: '#ede9fe', padding: '1px 8px', borderRadius: 10, display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+                      <Sparkles size={9} /> AI
+                    </span>
+                  )}
                   {sec.type === 'quiz' && sec.quizId && (
                     <span style={{ fontSize: 9, color: '#10b981', background: '#dcfce7', padding: '1px 8px', borderRadius: 10 }}>
                       ✅ {sec.quizQuestions || 0} soal
@@ -1317,12 +1341,20 @@ const ManageMateri = () => {
               </button>
             </div>
           ) : (
-            <button 
-              onClick={() => setShowAddMenu(true)}
-              style={{ ...styles.addButton, '&:hover': { borderColor: '#3b82f6', color: '#3b82f6' } }}
-            >
-              <Plus size={18} /> Tambah Konten
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button 
+                onClick={() => setShowAddMenu(true)}
+                style={{ ...styles.addButton, flex: 1 }}
+              >
+                <Plus size={18} /> Tambah Konten
+              </button>
+              <button 
+                onClick={() => setShowAIGenerate(true)}
+                style={{ ...styles.addButton, flex: 1, border: '2px dashed #8b5cf6', color: '#8b5cf6', background: '#faf5ff' }}
+              >
+                <Sparkles size={18} /> Generate dengan AI
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -1410,6 +1442,20 @@ const ManageMateri = () => {
           </div>
         </div>
       </div>
+
+      {/* ========================================================== */}
+      {/* MODAL: GENERATE DENGAN AI */}
+      {/* ========================================================== */}
+      {showAIGenerate && (
+        <AIGenerateMateri
+          subject={subject}
+          onGenerated={(newBlocks) => {
+            setSections(prev => [...prev, ...newBlocks]);
+            setStats(prev => ({ ...prev, totalKonten: sections.length + newBlocks.length }));
+          }}
+          onClose={() => setShowAIGenerate(false)}
+        />
+      )}
 
       {/* ========================================================== */}
       {/* FOOTER */}

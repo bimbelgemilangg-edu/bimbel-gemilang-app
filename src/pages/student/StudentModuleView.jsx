@@ -786,11 +786,16 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         <div className="cdt">
           <small style={{ color: typeColors[block.type] }}>
             {typeIcons[block.type] || '📄'} {typeLabels[block.type] || 'BAGIAN'} {idx + 1}
+            {block.format === 'html' && ' • ✨ AI'}
           </small>
           <h3>{renderMath(block.title) || `Bagian ${idx + 1}`}</h3>
         </div>
         
-        {block.type === 'text' && (
+        {/* 🔥 KONTEN TEKS - CEK APAKAH HTML (dari AI Generate) ATAU TEKS BIASA */}
+        {block.type === 'text' && block.format === 'html' && (
+          <div className="cdtx cdtx-html" dangerouslySetInnerHTML={{ __html: block.content }} />
+        )}
+        {block.type === 'text' && block.format !== 'html' && (
           <div className="cdtx">{renderMath(block.content)}</div>
         )}
         
@@ -1090,6 +1095,10 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         .cdt small{font-size:9px;font-weight:800;color:#673ab7;display:block}
         .cdt h3{font-size:18px;color:#0f172a;font-weight:800;margin:2px 0 0}
         .cdtx{line-height:1.8;color:#334155;font-size:15px;white-space:pre-wrap}
+        .cdtx-html{white-space:normal}
+        .cdtx-html p{margin-bottom:12px}
+        .cdtx-html img{max-width:100%;border-radius:10px}
+        .cdtx-html b{color:#1e293b}
         .em{text-align:center;padding:40px;color:#94a3b8}
         .tg{border-left:4px solid #f59e0b}
         .dl{padding:8px 12px;border-radius:8px;margin-bottom:12px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:12px;background:#fef3c7;color:#b45309}
