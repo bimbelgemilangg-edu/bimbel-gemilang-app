@@ -257,6 +257,79 @@ const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
 };
 
 // ============================================================
+// 🔥 FLASHCARD MNEMONIC - KARTU BISA DI-FLIP
+// ============================================================
+const FlashcardWidget = ({ front, back }) => {
+  const [flipped, setFlipped] = useState(false);
+
+  return (
+    <div
+      onClick={() => setFlipped(!flipped)}
+      style={{
+        marginTop: 16,
+        perspective: 1000,
+        cursor: 'pointer',
+        userSelect: 'none',
+      }}
+    >
+      <div style={{ fontSize: 10, fontWeight: 700, color: '#8b5cf6', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+        🧠 Cara Cepat Ingat — Klik kartu untuk lihat jawaban
+      </div>
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          minHeight: 110,
+          transformStyle: 'preserve-3d',
+          transition: 'transform 0.5s',
+          transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+        }}
+      >
+        {/* SISI DEPAN */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backfaceVisibility: 'hidden',
+            background: 'linear-gradient(135deg,#8b5cf6,#6d28d9)',
+            borderRadius: 14,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 20,
+            boxShadow: '0 6px 16px rgba(139,92,246,0.3)',
+          }}
+        >
+          <span style={{ color: 'white', fontSize: 22, fontWeight: 900, textAlign: 'center', letterSpacing: 1 }}>
+            {front}
+          </span>
+        </div>
+        {/* SISI BELAKANG */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)',
+            background: '#f5f3ff',
+            border: '2px solid #8b5cf6',
+            borderRadius: 14,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 20,
+          }}
+        >
+          <span style={{ color: '#4c1d95', fontSize: 14, fontWeight: 600, textAlign: 'center', lineHeight: 1.7 }}
+            dangerouslySetInnerHTML={{ __html: back }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================
 // 🔥 STYLES
 // ============================================================
 const styles = {
@@ -797,6 +870,9 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         )}
         {block.type === 'text' && block.format !== 'html' && (
           <div className="cdtx">{renderMath(block.content)}</div>
+        )}
+        {block.interactive?.type === 'flashcard' && (
+          <FlashcardWidget front={block.interactive.front} back={block.interactive.back} />
         )}
         
         {(block.type === 'file' || block.type === 'video') && (

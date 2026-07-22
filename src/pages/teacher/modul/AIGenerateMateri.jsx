@@ -62,10 +62,7 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
           }
         }
 
-        // 3. Susun HTML final bagian ini
-        const highlightLabel = genData.highlight_type === 'mnemonic' ? '🧠 Cara Cepat Ingat' : '💡 Tau Gak Sih?';
-        const highlightColor = genData.highlight_type === 'mnemonic' ? '#8b5cf6' : '#f59e0b';
-        const highlightBg = genData.highlight_type === 'mnemonic' ? '#f5f3ff' : '#fffbeb';
+        const isMnemonic = genData.highlight_type === 'mnemonic' && genData.flashcard_front && genData.flashcard_back;
 
         const imageHtml = imageUrl
           ? `<div style="margin:14px 0;text-align:center;">
@@ -74,23 +71,35 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
              </div>`
           : '';
 
+        // Kalau FUN FACT -> tetap tempel sebagai kotak statis di dalam HTML (gak butuh interaksi)
+        const funfactHtml = (!isMnemonic && genData.funfact_html)
+          ? `<div style="background:#fffbeb;border-left:4px solid #f59e0b;padding:12px 16px;border-radius:8px;margin-top:14px;">
+               <div style="font-weight:700;font-size:12px;color:#f59e0b;margin-bottom:4px;">💡 Tau Gak Sih?</div>
+               <div style="font-size:13px;color:#334155;">${genData.funfact_html}</div>
+             </div>`
+          : '';
+
         const finalHtml = `
           <div style="margin-bottom:20px;">
             ${genData.content_html}
             ${imageHtml}
-            <div style="background:${highlightBg};border-left:4px solid ${highlightColor};padding:12px 16px;border-radius:8px;margin-top:14px;">
-              <div style="font-weight:700;font-size:12px;color:${highlightColor};margin-bottom:4px;">${highlightLabel}</div>
-              <div style="font-size:13px;color:#334155;">${genData.highlight_html}</div>
-            </div>
+            ${funfactHtml}
           </div>
         `.trim();
+
+        // Kalau MNEMONIC -> jadi data flashcard interaktif TERPISAH (bukan HTML statis),
+        // supaya bisa dirender jadi kartu yang beneran bisa di-klik/flip di sisi siswa.
+        const interactive = isMnemonic
+          ? { type: 'flashcard', front: genData.flashcard_front, back: genData.flashcard_back }
+          : null;
 
         generatedBlocks.push({
           id: Date.now() + i,
           type: 'text',
-          format: 'html', // penting: penanda buat StudentModuleView biar dirender sebagai HTML
+          format: 'html', // penanda buat StudentModuleView biar dirender sebagai HTML
           title: genData.title || poin,
           content: finalHtml,
+          interactive, // { type: 'flashcard', front, back } atau null
           fileName: '', mimeType: '', fileSize: 0, filePath: '',
           endTime: '', allowedFileType: 'all', quizId: null, quizTitle: '', quizQuestions: 0,
         });
@@ -133,7 +142,7 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
             <button onClick={handleGenerate} style={styles.generateBtn}>
               <Wand2 size={16} /> Generate Materi
             </button>
-            <p style={styles.hint}>💡 AI akan menulis tiap poin jadi bacaan gaya blog, otomatis cari foto asli kalau relevan (misal materi hewan/alam), dan kasih kotak "Tau Gak Sih?" atau jembatan keledai di tiap bagian.</p>
+            <p style={styles.hint}>💡 AI akan menulis tiap poin jadi bacaan gaya blog, otomatis cari foto asli kalau relevan, kasih kotak "Tau Gak Sih?" untuk fun fact, atau kartu flashcard yang bisa di-flip kalau materinya butuh dihafal (mnemonic).</p>
           </>
         ) : (
           <div style={styles.progressBox}>
