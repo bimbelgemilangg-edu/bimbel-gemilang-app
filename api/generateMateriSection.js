@@ -25,7 +25,7 @@ async function callGemini(systemPrompt, userPrompt) {
       ],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 2048,
+        maxOutputTokens: 4096,
         responseMimeType: 'application/json', // paksa Gemini balas JSON murni
       },
     }),
@@ -103,10 +103,11 @@ Kembangkan poin ini sesuai ATURAN ISI dan format JSON di atas. Ingat: siswa haru
   }
 
   try {
-    const rawText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const candidate = geminiData?.candidates?.[0];
+    const rawText = candidate?.content?.parts?.[0]?.text || '';
 
     if (!rawText) {
-      console.error('Gemini response kosong/aneh:', JSON.stringify(geminiData));
+      console.error('Gemini response kosong/aneh. finishReason:', candidate?.finishReason, '| full:', JSON.stringify(geminiData));
       return res.status(502).json({ error: 'AI tidak mengembalikan jawaban, coba generate ulang bagian ini.' });
     }
 
@@ -117,9 +118,23 @@ Kembangkan poin ini sesuai ATURAN ISI dan format JSON di atas. Ingat: siswa haru
       // jaga-jaga kalau masih ada teks nyasar di luar JSON
       const jsonMatch = rawText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
-        return res.status(502).json({ error: 'AI mengembalikan format tidak valid, coba generate ulang bagian ini.' });
+        console.error('JSON tidak ditemukan di respons. finishReason:', candidate?.finishReason, '| rawText:', rawText.slice(0, 500));
+        return res.status(502).json({
+          error: candidate?.finishReason === 'MAX_TOKENS'
+            ? 'Jawaban AI kepotong karena poin ini terlalu kompleks. Coba pecah jadi poin yang lebih spesifik/singkat, atau generate ulang.'
+            : 'AI mengembalikan format tidak valid, coba generate ulang bagian ini.',
+        });
       }
-      parsed = JSON.parse(jsonMatch[0]);
+      try {
+        parsed = JSON.parse(jsonMatch[0]);
+      } catch (e2) {
+        console.error('JSON ditemukan tapi tetap gagal parse (kemungkinan kepotong). finishReason:', candidate?.finishReason);
+        return res.status(502).json({
+          error: candidate?.finishReason === 'MAX_TOKENS'
+            ? 'Jawaban AI kepotong karena poin ini terlalu kompleks. Coba pecah jadi poin yang lebih spesifik/singkat, atau generate ulang.'
+            : 'AI mengembalikan JSON rusak, coba generate ulang bagian ini.',
+        });
+      }
     }
 
     const sanitize = (html = '') =>
