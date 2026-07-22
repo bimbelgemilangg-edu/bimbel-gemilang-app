@@ -273,7 +273,7 @@ const FlashcardWidget = ({ front, back }) => {
       }}
     >
       <div style={{ fontSize: 10, fontWeight: 700, color: '#8b5cf6', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-        🧠 Cara Cepat Ingat — Klik kartu untuk lihat jawaban
+        ✨ Cara Gemilang — Klik kartu untuk lihat jawaban
       </div>
       <div
         style={{
@@ -859,7 +859,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         <div className="cdt">
           <small style={{ color: typeColors[block.type] }}>
             {typeIcons[block.type] || '📄'} {typeLabels[block.type] || 'BAGIAN'} {idx + 1}
-            {block.format === 'html' && ' • ✨ AI'}
           </small>
           <h3>{renderMath(block.title) || `Bagian ${idx + 1}`}</h3>
         </div>
