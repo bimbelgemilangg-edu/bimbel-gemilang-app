@@ -29,6 +29,12 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
         const poin = poinList[i];
         setProgress({ current: i + 1, total: poinList.length, label: `Menulis bagian: "${poin}"...` });
 
+        // 🔥 Kasih jeda antar poin (kecuali poin pertama) biar gak kena rate limit Gemini
+        if (i > 0) {
+          setProgress({ current: i + 1, total: poinList.length, label: `Menunggu sebentar biar gak overload AI...` });
+          await new Promise(resolve => setTimeout(resolve, 4000));
+        }
+
         // 1. Generate teks bagian ini
         const genRes = await fetch('/api/generateMateriSection', {
           method: 'POST',

@@ -88,7 +88,7 @@ Poin yang harus dibahas di bagian ini: "${poin}"
 
 Kembangkan poin ini sesuai ATURAN ISI dan format JSON di atas. Ingat: siswa harus dapat CONTOH KONKRET, bukan cuma definisi umum.`;
 
-  // Retry sekali kalau gagal transient
+  // Retry sekali kalau gagal transient, dengan jeda lebih lama kalau kena rate limit
   let geminiData;
   let lastErr;
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -99,6 +99,10 @@ Kembangkan poin ini sesuai ATURAN ISI dan format JSON di atas. Ingat: siswa haru
     } catch (e) {
       lastErr = e;
       console.error(`generateMateriSection Gemini attempt ${attempt + 1} failed:`, e.message);
+      const isRateLimit = e.message.includes('429');
+      if (attempt === 0) {
+        await new Promise(resolve => setTimeout(resolve, isRateLimit ? 8000 : 1500));
+      }
     }
   }
 
