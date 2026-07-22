@@ -9,7 +9,7 @@ import {
   CalendarDays, AlertCircle, Eye, EyeOff, Lock, Unlock,
   Layers, Type, FileUp, Video, Rocket, Sparkles, Loader2,
   List, Table, Grid, Hash, AlignLeft, CheckSquare, Square,
-  Edit3, FileQuestion
+  Edit3, FileQuestion, ArrowLeftRight, Undo2, Redo2
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile } from '../../../services/uploadService';
@@ -27,6 +27,7 @@ const QUESTION_TYPES = [
   { id: 'reading', label: 'Membaca Teks', icon: <AlignLeft size={14} />, color: '#f59e0b' },
   { id: 'shortanswer', label: 'Isian Singkat', icon: <Hash size={14} />, color: '#ef4444' },
   { id: 'causeeffect', label: 'Sebab Akibat', icon: <Grid size={14} />, color: '#06b6d4' },
+  { id: 'matching', label: 'Menjodohkan', icon: <ArrowLeftRight size={14} />, color: '#ec4899' },
 ];
 
 // ============================================================
@@ -66,7 +67,9 @@ const emptyQuestion = (idx = 0) => ({
   effect: '',
   isCauseTrue: true,
   isEffectTrue: true,
-  needsManualAnswer: false
+  needsManualAnswer: false,
+  optionsAreImages: false,
+  matchingPairs: [{ left: '', right: '' }, { left: '', right: '' }]
 });
 
 // ============================================================
@@ -141,6 +144,74 @@ const ManageQuiz = () => {
   
   // 🔥 Flag untuk AI Generate
   const [isAIGenerated, setIsAIGenerated] = useState(false);
+
+  // 🔥 UNDO / REDO
+  const [history, setHistory] = useState([]);
+  const [historyPointer, setHistoryPointer] = useState(-1);
+  const isUndoRedoAction = React.useRef(false);
+  const hasMountedHistory = React.useRef(false);
+
+  useEffect(() => {
+    if (isUndoRedoAction.current) { isUndoRedoAction.current = false; return; }
+    if (!hasMountedHistory.current) { hasMountedHistory.current = true; }
+    setHistory(prev => {
+      const trimmed = prev.slice(0, historyPointer + 1);
+      return [...trimmed, questions].slice(-20);
+    });
+    setHistoryPointer(prev => Math.min(prev + 1, 19));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questions]);
+
+  const handleUndo = () => {
+    if (historyPointer <= 0) return;
+    isUndoRedoAction.current = true;
+    const targetIndex = historyPointer - 1;
+    setHistoryPointer(targetIndex);
+    setQuestions(history[targetIndex]);
+  };
+
+  const handleRedo = () => {
+    if (historyPointer >= history.length - 1) return;
+    isUndoRedoAction.current = true;
+    const targetIndex = historyPointer + 1;
+    setHistoryPointer(targetIndex);
+    setQuestions(history[targetIndex]);
+  };
+
+  // 🔥 DRAFT OTOMATIS (localStorage)
+  const draftKey = `quizDraft_${modulId || 'new'}`;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (questions.some(q => q.q.trim() || q.qImage)) {
+        localStorage.setItem(draftKey, JSON.stringify({
+          quizTitle, quizSubject, questions, savedAt: Date.now()
+        }));
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questions, quizTitle, quizSubject]);
+
+  useEffect(() => {
+    const raw = localStorage.getItem(draftKey);
+    if (raw) {
+      try {
+        const draft = JSON.parse(raw);
+        if (draft.questions?.length > 0) {
+          const waktu = new Date(draft.savedAt).toLocaleString('id-ID');
+          if (window.confirm(`📝 Ditemukan draft tersimpan otomatis (${waktu}). Lanjutkan draft ini?`)) {
+            setQuestions(draft.questions);
+            if (draft.quizTitle) setQuizTitle(draft.quizTitle);
+            if (draft.quizSubject) setQuizSubject(draft.quizSubject);
+          } else {
+            localStorage.removeItem(draftKey);
+          }
+        }
+      } catch (e) { /* abaikan draft rusak */ }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ============================================================
   // TOAST
@@ -536,45 +607,75 @@ const ManageQuiz = () => {
             {/* ========================================================== */}
             {item.type === 'multiple' && (
               <div>
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr', gap: 6 }}>
-                  {item.options.map((opt, oIdx) => (
-                    <div key={oIdx} onClick={() => { updateQuestion(item.id, 'correct', oIdx); clearManualFlag(item.id); }} style={{
-                      display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
-                      border: `2px solid ${item.correct === oIdx ? '#10b981' : '#e2e8f0'}`,
-                      background: item.correct === oIdx ? '#f0fdf4' : 'white',
-                      transition: '0.2s'
-                    }}>
-                      <div style={{ 
-                        width: 20, height: 20, borderRadius: '50%', 
-                        border: `2px solid ${item.correct === oIdx ? '#10b981' : '#cbd5e1'}`, 
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 
-                      }}>
-                        {item.correct === oIdx && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981' }}></div>}
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 600, color: '#64748b', marginBottom: 8, cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={item.optionsAreImages}
+                    onChange={(e) => updateQuestion(item.id, 'optionsAreImages', e.target.checked)}
+                  />
+                  🖼️ Opsi jawaban berupa gambar (bukan teks)
+                </label>
+
+                {item.optionsAreImages ? (
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {[0, 1, 2, 3].map((oIdx) => (
+                      <div key={oIdx} style={{ textAlign: 'center' }}>
+                        <div
+                          onClick={() => { updateQuestion(item.id, 'correct', oIdx); clearManualFlag(item.id); }}
+                          style={{
+                            padding: 4, borderRadius: 8, cursor: 'pointer', width: 90, height: 90,
+                            border: item.correct === oIdx ? '3px solid #10b981' : '2px dashed #cbd5e1',
+                            background: item.correct === oIdx ? '#f0fdf4' : '#f8fafc',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden'
+                          }}
+                        >
+                          {item.optionImages[oIdx] ? (
+                            <img src={item.optionImages[oIdx]} alt={`Opsi ${String.fromCharCode(65 + oIdx)}`} style={{ maxWidth: '100%', maxHeight: '100%' }} />
+                          ) : (
+                            <Upload size={16} color="#cbd5e1" />
+                          )}
+                          {item.correct === oIdx && <CheckCircle size={14} color="#10b981" style={{ position: 'absolute', top: 2, right: 2 }} />}
+                        </div>
+                        <label style={{ fontSize: 9, fontWeight: 700, color: '#673ab7', cursor: 'pointer', display: 'block', marginTop: 2 }}>
+                          {String.fromCharCode(65 + oIdx)} — ganti gambar
+                          <input type="file" accept="image/*" hidden onChange={(e) => { if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'option', oIdx); }} />
+                        </label>
                       </div>
-                      <input 
-                        value={opt} 
-                        placeholder={`Opsi ${String.fromCharCode(65+oIdx)}`} 
-                        onChange={e => {
-                          const newOpts = [...item.options]; newOpts[oIdx] = e.target.value;
-                          updateQuestion(item.id, 'options', newOpts);
-                        }}
-                        onClick={e => e.stopPropagation()}
-                        style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 12, outline: 'none' }} 
-                      />
-                      {item.correct === oIdx && <CheckCircle size={14} color="#10b981"/>}
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr', gap: 6 }}>
+                      {item.options.map((opt, oIdx) => (
+                        <div key={oIdx} onClick={() => { updateQuestion(item.id, 'correct', oIdx); clearManualFlag(item.id); }} style={{
+                          display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
+                          border: `2px solid ${item.correct === oIdx ? '#10b981' : '#e2e8f0'}`,
+                          background: item.correct === oIdx ? '#f0fdf4' : 'white',
+                          transition: '0.2s'
+                        }}>
+                          <div style={{
+                            width: 20, height: 20, borderRadius: '50%',
+                            border: `2px solid ${item.correct === oIdx ? '#10b981' : '#cbd5e1'}`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                          }}>
+                            {item.correct === oIdx && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981' }}></div>}
+                          </div>
+                          <input
+                            value={opt}
+                            placeholder={`Opsi ${String.fromCharCode(65 + oIdx)}`}
+                            onChange={e => {
+                              const newOpts = [...item.options]; newOpts[oIdx] = e.target.value;
+                              updateQuestion(item.id, 'options', newOpts);
+                            }}
+                            onClick={e => e.stopPropagation()}
+                            style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 12, outline: 'none' }}
+                          />
+                          {item.correct === oIdx && <CheckCircle size={14} color="#10b981" />}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-                <div style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' }}>
-                  {item.options.map((_, oIdx) => (
-                    <label key={oIdx} style={{ 
-                      display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 4, cursor: 'pointer', fontSize: 8, color: '#64748b'
-                    }}>
-                      <Upload size={10} /> Gambar {String.fromCharCode(65+oIdx)}
-                      <input type="file" accept="image/*" hidden onChange={(e) => { if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'option', oIdx); }} />
-                    </label>
-                  ))}
-                </div>
+                  </>
+                )}
               </div>
             )}
 
@@ -860,6 +961,63 @@ const ManageQuiz = () => {
                     {item.isEffectTrue ? ' Akibat BENAR' : ' Akibat SALAH'}
                   </p>
                 </div>
+              </div>
+            )}
+
+            {/* ========================================================== */}
+            {/* 🔥 TIPE 7: MENJODOHKAN */}
+            {/* ========================================================== */}
+            {item.type === 'matching' && (
+              <div>
+                <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 6 }}>
+                  🔗 Pasangan Kiri ↔ Kanan (siswa menjodohkan)
+                </label>
+                {item.matchingPairs.map((pair, pIdx) => (
+                  <div key={pIdx} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <input
+                      value={pair.left}
+                      onChange={(e) => {
+                        const newPairs = [...item.matchingPairs];
+                        newPairs[pIdx] = { ...newPairs[pIdx], left: e.target.value };
+                        updateQuestion(item.id, 'matchingPairs', newPairs);
+                      }}
+                      placeholder={`Kiri ${pIdx + 1}`}
+                      style={{ flex: 1, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none' }}
+                    />
+                    <ArrowLeftRight size={12} color="#94a3b8" />
+                    <input
+                      value={pair.right}
+                      onChange={(e) => {
+                        const newPairs = [...item.matchingPairs];
+                        newPairs[pIdx] = { ...newPairs[pIdx], right: e.target.value };
+                        updateQuestion(item.id, 'matchingPairs', newPairs);
+                      }}
+                      placeholder={`Kanan ${pIdx + 1} (jodoh yang benar)`}
+                      style={{ flex: 1, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none' }}
+                    />
+                    <button
+                      onClick={() => {
+                        const newPairs = item.matchingPairs.filter((_, i) => i !== pIdx);
+                        updateQuestion(item.id, 'matchingPairs', newPairs);
+                      }}
+                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={() => {
+                    const newPairs = [...item.matchingPairs, { left: '', right: '' }];
+                    updateQuestion(item.id, 'matchingPairs', newPairs);
+                  }}
+                  style={{ padding: '4px 12px', background: '#fdf2f8', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#ec4899', marginTop: 4 }}
+                >
+                  <Plus size={12} /> Tambah Pasangan
+                </button>
+                <p style={{ fontSize: 9, color: '#94a3b8', marginTop: 6 }}>
+                  💡 Urutan kiri tetap; sistem akan mengacak urutan kolom kanan saat ditampilkan ke siswa.
+                </p>
               </div>
             )}
 
@@ -1174,6 +1332,7 @@ const ManageQuiz = () => {
         });
         alert(`✅ Kuis mandiri diterbitkan!`);
       }
+      localStorage.removeItem(draftKey);
       navigate(-1);
     } catch (err) { 
       alert("❌ Gagal: " + err.message); 
@@ -1210,6 +1369,22 @@ const ManageQuiz = () => {
           {isFromModul && <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>#{modulId}</span>}
         </h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button
+            onClick={handleUndo}
+            disabled={historyPointer <= 0}
+            title="Undo"
+            style={{ background: 'white', border: '1px solid #e2e8f0', padding: '8px 10px', borderRadius: 8, cursor: historyPointer <= 0 ? 'not-allowed' : 'pointer', opacity: historyPointer <= 0 ? 0.4 : 1 }}
+          >
+            <Undo2 size={14} />
+          </button>
+          <button
+            onClick={handleRedo}
+            disabled={historyPointer >= history.length - 1}
+            title="Redo"
+            style={{ background: 'white', border: '1px solid #e2e8f0', padding: '8px 10px', borderRadius: 8, cursor: historyPointer >= history.length - 1 ? 'not-allowed' : 'pointer', opacity: historyPointer >= history.length - 1 ? 0.4 : 1 }}
+          >
+            <Redo2 size={14} />
+          </button>
           <button 
             onClick={() => setShowSmartImport(true)} 
             style={{ 

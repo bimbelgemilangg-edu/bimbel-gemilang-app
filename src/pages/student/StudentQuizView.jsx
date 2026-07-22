@@ -569,6 +569,84 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
       );
     }
 
+    if (question.type === 'matching') {
+      const pairs = question.matchingPairs || [];
+      const rightShuffled = React.useMemo(() => {
+        const arr = pairs.map((p, i) => ({ text: p.right, originalIndex: i }));
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }, [question.id]);
+
+      const currentAnswers = answers[question.id] || {};
+
+      return (
+        <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div>
+            {pairs.map((p, lIdx) => (
+              <div key={lIdx} style={{ padding: '8px 12px', background: '#f8fafc', borderRadius: 6, marginBottom: 6, fontSize: 12 }}>
+                {lIdx + 1}. {renderMath(p.left)}
+              </div>
+            ))}
+          </div>
+          <div>
+            {pairs.map((p, lIdx) => (
+              <select
+                key={lIdx}
+                value={currentAnswers[lIdx] !== undefined ? currentAnswers[lIdx] : ''}
+                onChange={(e) => {
+                  if (isSubmitted || hasExistingAnswer) return;
+                  const val = e.target.value === '' ? undefined : parseInt(e.target.value);
+                  const next = { ...currentAnswers, [lIdx]: val };
+                  setAnswers(prev => ({ ...prev, [question.id]: next }));
+                }}
+                disabled={isSubmitted || hasExistingAnswer}
+                style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, marginBottom: 6, background: 'white' }}
+              >
+                <option value="">-- Pilih jodoh --</option>
+                {rightShuffled.map((r, rIdx) => (
+                  <option key={rIdx} value={r.originalIndex}>{r.text}</option>
+                ))}
+              </select>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (question.optionsAreImages) {
+      return (
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
+          {question.options.map((_, idx) => {
+            const isSelected = answers[question.id] === idx;
+            const letter = String.fromCharCode(65 + idx);
+            const imgUrl = question.optionImages?.[idx];
+            if (!imgUrl) return null;
+            return (
+              <button
+                key={idx}
+                onClick={() => handleSelectAnswer(question.id, idx)}
+                disabled={isSubmitted || hasExistingAnswer}
+                style={{
+                  padding: 4, borderRadius: 8, cursor: isSubmitted || hasExistingAnswer ? 'not-allowed' : 'pointer',
+                  border: isSelected ? '3px solid #673ab7' : '2px solid #e2e8f0',
+                  background: isSelected ? '#f3e8ff' : 'white',
+                  opacity: isSubmitted || hasExistingAnswer ? 0.6 : 1
+                }}
+              >
+                <img src={imgUrl} alt={`Opsi ${letter}`} style={{ maxWidth: 130, maxHeight: 130, display: 'block' }} />
+                <div style={{ fontSize: 11, fontWeight: 700, textAlign: 'center', marginTop: 4, color: isSelected ? '#673ab7' : '#64748b' }}>
+                  {letter} {isSelected && <CheckCircle size={12} style={{ display: 'inline', marginLeft: 2 }} />}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
     // 🔥 DEFAULT: Pilihan Ganda Biasa
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
@@ -667,8 +745,13 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           });
           isCorrect = allCorrect;
         }
+      } else if (q.type === 'matching') {
+        if (typeof userAnswer === 'object' && userAnswer !== null) {
+          const pairs = q.matchingPairs || [];
+          isCorrect = pairs.every((p, idx) => userAnswer[idx] === idx);
+        }
       } else {
-        // Pilihan Ganda
+        // Pilihan Ganda (termasuk yang opsinya gambar)
         isCorrect = userAnswer === q.correctAnswer;
       }
       
@@ -1058,7 +1141,8 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     multiselect: <CheckSquare size={14} />,
     reading: <AlignLeft size={14} />,
     shortanswer: <Hash size={14} />,
-    causeeffect: <Grid size={14} />
+    causeeffect: <Grid size={14} />,
+    matching: <Grid size={14} />
   };
 
   const typeLabels = {
@@ -1067,7 +1151,8 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     multiselect: 'Pilih > 1',
     reading: 'Membaca Teks',
     shortanswer: 'Isian Singkat',
-    causeeffect: 'Sebab Akibat'
+    causeeffect: 'Sebab Akibat',
+    matching: 'Menjodohkan'
   };
 
   return (
