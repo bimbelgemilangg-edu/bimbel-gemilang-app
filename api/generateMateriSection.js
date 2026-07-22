@@ -2,31 +2,41 @@
 // Generate 1 bagian materi (1 poin) jadi teks gaya blog + fun fact/mnemonic.
 // Dipanggil berkali-kali dari frontend (1x per poin), BUKAN sekali untuk semua,
 // supaya tidak timeout dan tidak kepotong.
+//
+// 🔥 PAKAI GOOGLE GEMINI API (gemini-2.5-flash) — gratis, tanpa kartu kredit,
+// kuota jauh lebih longgar dibanding Hugging Face Inference Providers.
 
-async function callHF(systemPrompt, userPrompt) {
-  const hfResponse = await fetch('https://router.huggingface.co/v1/chat/completions', {
+async function callGemini(systemPrompt, userPrompt) {
+  const GEMINI_MODEL = 'gemini-2.5-flash';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.HF_TOKEN}`,
+      'x-goog-api-key': process.env.GEMINI_API_KEY,
     },
     body: JSON.stringify({
-      model: 'Qwen/Qwen2.5-7B-Instruct',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
+      system_instruction: {
+        parts: [{ text: systemPrompt }],
+      },
+      contents: [
+        { role: 'user', parts: [{ text: userPrompt }] },
       ],
-      temperature: 0.7,
-      max_tokens: 1400,
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 2048,
+        responseMimeType: 'application/json', // paksa Gemini balas JSON murni
+      },
     }),
   });
 
-  if (!hfResponse.ok) {
-    const errText = await hfResponse.text();
-    throw new Error(`HF_HTTP_${hfResponse.status}: ${errText}`);
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`GEMINI_HTTP_${response.status}: ${errText}`);
   }
 
-  return hfResponse.json();
+  return response.json();
 }
 
 export default async function handler(req, res) {
@@ -48,64 +58,68 @@ ATURAN ISI (WAJIB dipatuhi, ini yang paling penting):
 - Tulis minimal 3 paragraf yang cukup panjang (bukan paragraf pendek 1-2 kalimat), dengan alur: (1) jelaskan konsepnya, (2) beri contoh konkret/penerapan nyata, (3) kaitkan dengan hal yang siswa sudah familiar di kehidupan sehari-hari.
 - Hindari kalimat generik seperti "hal ini penting untuk dipahami" tanpa penjelasan lanjutan — setiap klaim harus diikuti alasan atau contoh.
 
-ATURAN OUTPUT — WAJIB balas HANYA dengan JSON valid (tanpa markdown code fence, tanpa teks lain), format persis:
+WAJIB balas HANYA dengan JSON valid, format persis (tanpa markdown, tanpa teks lain di luar JSON):
 {
   "title": "judul singkat bagian ini",
   "content_html": "penjelasan gaya blog SESUAI ATURAN ISI DI ATAS, boleh pakai tag <p>, <b>, <i>, <ul><li> saja",
-  "highlight_type": "funfact" atau "mnemonic",
+  "highlight_type": "funfact atau mnemonic",
   "funfact_html": "HANYA diisi jika highlight_type=funfact. Isi kotak fun fact, 1-3 kalimat, boleh pakai <b>. Kosongkan string jika highlight_type=mnemonic.",
-  "flashcard_front": "HANYA diisi jika highlight_type=mnemonic. Sisi depan kartu: singkatan/jembatan keledai itu sendiri, SANGAT SINGKAT (contoh: 'JOKOWI'). Kosongkan string jika highlight_type=funfact.",
+  "flashcard_front": "HANYA diisi jika highlight_type=mnemonic. Sisi depan kartu: singkatan/jembatan keledai itu sendiri, SANGAT SINGKAT (contoh: JOKOWI). Kosongkan string jika highlight_type=funfact.",
   "flashcard_back": "HANYA diisi jika highlight_type=mnemonic. Sisi belakang kartu: kepanjangan/penjelasan tiap huruf, singkat per baris, boleh pakai <br>. Kosongkan string jika highlight_type=funfact.",
   "needs_image": true atau false,
-  "image_keyword": "1-3 kata benda konkret dalam BAHASA INGGRIS untuk pencarian foto (misal: 'tapir', 'water cycle diagram', 'pythagorean theorem'). Kosongkan string jika needs_image false."
+  "image_keyword": "1-3 kata benda konkret dalam BAHASA INGGRIS untuk pencarian foto (misal: tapir, water cycle diagram, pythagorean theorem). Kosongkan string jika needs_image false."
 }
 
 Panduan menentukan needs_image: true HANYA jika materinya tentang objek/makhluk/tempat yang konkret dan siswa akan sangat terbantu MELIHAT wujud aslinya. Untuk materi abstrak (rumus, konsep sosial, dll) set false.
 
-Panduan memilih highlight_type: pakai "mnemonic" HANYA jika materi punya urutan/istilah/rumus yang perlu betul-betul DIHAFAL siswa. Selain itu pakai "funfact".`;
+Panduan memilih highlight_type: pakai mnemonic HANYA jika materi punya urutan/istilah/rumus yang perlu betul-betul DIHAFAL siswa. Selain itu pakai funfact.`;
 
   const userPrompt = `Mata pelajaran: ${mapel || 'Umum'}
 Judul Bab: ${topic}
 Bagian ke-${poinIndex + 1} dari ${totalPoin}
 Poin yang harus dibahas di bagian ini: "${poin}"
 
-Kembangkan poin ini sesuai ATURAN ISI dan ATURAN OUTPUT di atas. Ingat: siswa harus dapat CONTOH KONKRET, bukan cuma definisi umum.`;
+Kembangkan poin ini sesuai ATURAN ISI dan format JSON di atas. Ingat: siswa harus dapat CONTOH KONKRET, bukan cuma definisi umum.`;
 
-  // Retry sekali kalau gagal transient (provider inference kadang timeout/503 sesaat)
-  let hfData;
+  // Retry sekali kalau gagal transient
+  let geminiData;
   let lastErr;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      hfData = await callHF(systemPrompt, userPrompt);
+      geminiData = await callGemini(systemPrompt, userPrompt);
       lastErr = null;
       break;
     } catch (e) {
       lastErr = e;
-      console.error(`generateMateriSection HF attempt ${attempt + 1} failed:`, e.message);
+      console.error(`generateMateriSection Gemini attempt ${attempt + 1} failed:`, e.message);
     }
   }
 
   if (lastErr) {
     return res.status(502).json({
-      error: 'Gagal menghubungi AI (Hugging Face) setelah 2 percobaan. Coba lagi beberapa saat lagi.',
+      error: 'Gagal menghubungi AI (Gemini) setelah 2 percobaan. Coba lagi beberapa saat lagi.',
       debug: lastErr.message,
     });
   }
 
   try {
-    let rawText = hfData.choices?.[0]?.message?.content || '';
-    rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const rawText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return res.status(502).json({ error: 'AI mengembalikan format tidak valid, coba generate ulang bagian ini.' });
+    if (!rawText) {
+      console.error('Gemini response kosong/aneh:', JSON.stringify(geminiData));
+      return res.status(502).json({ error: 'AI tidak mengembalikan jawaban, coba generate ulang bagian ini.' });
     }
 
     let parsed;
     try {
-      parsed = JSON.parse(jsonMatch[0]);
+      parsed = JSON.parse(rawText);
     } catch (e) {
-      return res.status(502).json({ error: 'AI mengembalikan JSON rusak, coba generate ulang bagian ini.' });
+      // jaga-jaga kalau masih ada teks nyasar di luar JSON
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        return res.status(502).json({ error: 'AI mengembalikan format tidak valid, coba generate ulang bagian ini.' });
+      }
+      parsed = JSON.parse(jsonMatch[0]);
     }
 
     const sanitize = (html = '') =>
