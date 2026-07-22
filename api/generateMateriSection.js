@@ -7,7 +7,7 @@
 // kuota jauh lebih longgar dibanding Hugging Face Inference Providers.
 
 async function callGemini(systemPrompt, userPrompt) {
-  const GEMINI_MODEL = 'gemini-2.5-flash';
+  const GEMINI_MODEL = 'gemini-flash-latest';
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
   const response = await fetch(url, {
