@@ -261,13 +261,21 @@ const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
 // ============================================================
 const FlashcardWidget = ({ front, back }) => {
   const [flipped, setFlipped] = useState(false);
+  const [animating, setAnimating] = useState(false);
+
+  const handleFlip = () => {
+    setAnimating(true);
+    setTimeout(() => {
+      setFlipped(f => !f);
+      setAnimating(false);
+    }, 150);
+  };
 
   return (
     <div
-      onClick={() => setFlipped(!flipped)}
+      onClick={handleFlip}
       style={{
         marginTop: 16,
-        perspective: 1000,
         cursor: 'pointer',
         userSelect: 'none',
       }}
@@ -277,53 +285,32 @@ const FlashcardWidget = ({ front, back }) => {
       </div>
       <div
         style={{
-          position: 'relative',
           width: '100%',
           minHeight: 110,
-          transformStyle: 'preserve-3d',
-          transition: 'transform 0.5s',
-          transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+          borderRadius: 14,
+          padding: 20,
+          boxSizing: 'border-box',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'transform 0.15s ease',
+          transform: animating ? 'scaleX(0.05)' : 'scaleX(1)',
+          ...(flipped
+            ? { background: '#f5f3ff', border: '2px solid #8b5cf6' }
+            : { background: 'linear-gradient(135deg,#8b5cf6,#6d28d9)', boxShadow: '0 6px 16px rgba(139,92,246,0.3)' }
+          ),
         }}
       >
-        {/* SISI DEPAN */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backfaceVisibility: 'hidden',
-            background: 'linear-gradient(135deg,#8b5cf6,#6d28d9)',
-            borderRadius: 14,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 20,
-            boxShadow: '0 6px 16px rgba(139,92,246,0.3)',
-          }}
-        >
+        {!flipped ? (
           <span style={{ color: 'white', fontSize: 22, fontWeight: 900, textAlign: 'center', letterSpacing: 1 }}>
             {front}
           </span>
-        </div>
-        {/* SISI BELAKANG */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
-            background: '#f5f3ff',
-            border: '2px solid #8b5cf6',
-            borderRadius: 14,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 20,
-          }}
-        >
-          <span style={{ color: '#4c1d95', fontSize: 14, fontWeight: 600, textAlign: 'center', lineHeight: 1.7 }}
+        ) : (
+          <span
+            style={{ color: '#4c1d95', fontSize: 14, fontWeight: 600, textAlign: 'center', lineHeight: 1.7 }}
             dangerouslySetInnerHTML={{ __html: back }}
           />
-        </div>
+        )}
       </div>
     </div>
   );
