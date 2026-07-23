@@ -10,7 +10,8 @@ import {
   Hash, Tag, User, ChevronRight, FileQuestion,
   Layers, Send, HelpCircle, Clock, CheckCircle,
   AlertCircle, Lock, ChevronLeft, ArrowLeft,
-  FileText, Download, Eye, ExternalLink, Link as LinkIcon
+  FileText, Download, Eye, ExternalLink, Link as LinkIcon,
+  Users, GraduationCap
 } from 'lucide-react';
 import StudentModuleView from './StudentModuleView';
 
@@ -21,6 +22,13 @@ const STATUS_COLORS = {
   not_submitted: { bg: '#fee2e2', color: '#ef4444', label: 'Belum' },
   submitted: { bg: '#fef3c7', color: '#f59e0b', label: 'Terkirim' },
   graded: { bg: '#dcfce7', color: '#10b981', label: 'Dinilai' }
+};
+
+const AVATAR_COLORS = ['#652D90', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899'];
+const colorForName = (name = '') => {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 };
 
 // ============================================================
@@ -40,6 +48,11 @@ const StudentElearning = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [showFilters, setShowFilters] = useState(false);
+
+  // 🔥 BARU: mode tampilan dikelompokkan per guru
+  const [viewGroupMode, setViewGroupMode] = useState('perGuru'); // 'perGuru' | 'semua'
+  const [selectedGuruId, setSelectedGuruId] = useState(null);
+  const [teachersData, setTeachersData] = useState([]);
   
   // ===== STUDENT DATA =====
   const [studentData, setStudentData] = useState({
@@ -91,6 +104,19 @@ const StudentElearning = () => {
         }
       }).catch(() => {});
     }
+  }, []);
+
+  // 🔥 BARU: Ambil data semua guru (buat foto profil & nama di card)
+  useEffect(() => {
+    const fetchTeachersData = async () => {
+      try {
+        const snap = await getDocs(collection(db, "teachers"));
+        setTeachersData(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch (e) {
+        console.error("Error fetch teachers:", e);
+      }
+    };
+    fetchTeachersData();
   }, []);
 
   // ===== FETCH MODULES =====
@@ -177,9 +203,39 @@ const StudentElearning = () => {
     fetchModules();
   }, [fetchModules]);
 
+  // 🔥 BARU: kelompokkan modul per guru (guruId), gabungkan dengan data foto/nama guru
+  const teacherGroups = useMemo(() => {
+    const map = {};
+    modules.forEach(m => {
+      const gid = m.guruId || 'unknown';
+      if (!map[gid]) {
+        const teacherDoc = teachersData.find(t => t.guruId === gid);
+        map[gid] = {
+          guruId: gid,
+          nama: teacherDoc?.nama || m.guruName || m.authorName || m.createdBy || 'Guru',
+          fotoUrl: teacherDoc?.fotoUrl || '',
+          mapelSet: new Set(),
+          moduleCount: 0,
+        };
+      }
+      if (m.subject) map[gid].mapelSet.add(m.subject);
+      map[gid].moduleCount += 1;
+    });
+    return Object.values(map)
+      .map(g => ({ ...g, mapelList: Array.from(g.mapelSet) }))
+      .sort((a, b) => a.nama.localeCompare(b.nama));
+  }, [modules, teachersData]);
+
+  const selectedTeacher = teacherGroups.find(g => g.guruId === selectedGuruId) || null;
+
   // ===== FILTER MODULES =====
   useEffect(() => {
-    let filtered = modules;
+    // 🔥 Kalau lagi di mode "Per Guru" dan sudah pilih 1 guru, filter dulu berdasarkan guru itu
+    const baseModules = (viewGroupMode === 'perGuru' && selectedGuruId)
+      ? modules.filter(m => (m.guruId || 'unknown') === selectedGuruId)
+      : modules;
+
+    let filtered = baseModules;
     
     // Search
     if (searchTerm) {
@@ -211,17 +267,20 @@ const StudentElearning = () => {
     }
     
     setFilteredModules(filtered);
-  }, [searchTerm, filterType, filterMapel, modules]);
+  }, [searchTerm, filterType, filterMapel, modules, viewGroupMode, selectedGuruId]);
 
   // ===== GET MAPEL UNIK =====
   const mapelOptions = useMemo(() => {
     const mapelSet = new Set();
-    modules.forEach(m => {
+    const source = (viewGroupMode === 'perGuru' && selectedGuruId)
+      ? modules.filter(m => (m.guruId || 'unknown') === selectedGuruId)
+      : modules;
+    source.forEach(m => {
       if (m.subject) mapelSet.add(m.subject);
       if (m.kodeMapel) mapelSet.add(m.kodeMapel);
     });
     return ['all', ...Array.from(mapelSet)];
-  }, [modules]);
+  }, [modules, viewGroupMode, selectedGuruId]);
 
   // ===== HANDLERS =====
   const handleModuleClick = (moduleId) => {
@@ -233,6 +292,21 @@ const StudentElearning = () => {
     setSelectedModuleId(null);
   };
 
+  const handleSelectTeacher = (guruId) => {
+    setSelectedGuruId(guruId);
+    setSearchTerm('');
+    setFilterType('all');
+    setFilterMapel('all');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBackToTeachers = () => {
+    setSelectedGuruId(null);
+    setSearchTerm('');
+    setFilterType('all');
+    setFilterMapel('all');
+  };
+
   const clearFilters = () => {
     setSearchTerm('');
     setFilterMapel('all');
@@ -241,6 +315,46 @@ const StudentElearning = () => {
   };
 
   const hasActiveFilters = searchTerm || filterMapel !== 'all' || filterType !== 'all';
+
+  // ============================================================
+  // 🔥 RENDER: TEACHER CARD
+  // ============================================================
+  const renderTeacherCard = (teacher) => (
+    <div
+      key={teacher.guruId}
+      onClick={() => handleSelectTeacher(teacher.guruId)}
+      style={teacherCardStyles.card}
+    >
+      <div style={teacherCardStyles.avatarWrap}>
+        {teacher.fotoUrl ? (
+          <img src={teacher.fotoUrl} alt={teacher.nama} style={teacherCardStyles.avatarImg} />
+        ) : (
+          <div style={{ ...teacherCardStyles.avatarPlaceholder, background: colorForName(teacher.nama) }}>
+            {teacher.nama?.charAt(0)?.toUpperCase() || 'G'}
+          </div>
+        )}
+      </div>
+      <div style={teacherCardStyles.body}>
+        <h3 style={teacherCardStyles.name}>{teacher.nama}</h3>
+        <div style={teacherCardStyles.mapelRow}>
+          {teacher.mapelList.length > 0 ? (
+            teacher.mapelList.slice(0, 3).map(mp => (
+              <span key={mp} style={teacherCardStyles.mapelBadge}>{mp}</span>
+            ))
+          ) : (
+            <span style={teacherCardStyles.mapelBadge}>Umum</span>
+          )}
+          {teacher.mapelList.length > 3 && (
+            <span style={teacherCardStyles.mapelBadgeMore}>+{teacher.mapelList.length - 3}</span>
+          )}
+        </div>
+        <div style={teacherCardStyles.countRow}>
+          <BookOpen size={12} /> {teacher.moduleCount} materi
+        </div>
+      </div>
+      <ChevronRight size={18} color="#94a3b8" />
+    </div>
+  );
 
   // ============================================================
   // RENDER: MODULE CARD
@@ -325,6 +439,36 @@ const StudentElearning = () => {
         </div>
       </div>
     );
+  };
+
+  const teacherCardStyles = {
+    card: {
+      background: 'white', borderRadius: 16, padding: 16,
+      display: 'flex', alignItems: 'center', gap: 14,
+      cursor: 'pointer', transition: '0.2s',
+      border: '1px solid #f1f5f9', boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+    },
+    avatarWrap: { flexShrink: 0 },
+    avatarImg: { width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', border: '2px solid #f1f5f9' },
+    avatarPlaceholder: {
+      width: 56, height: 56, borderRadius: '50%', display: 'flex',
+      alignItems: 'center', justifyContent: 'center', color: 'white',
+      fontWeight: 800, fontSize: 20
+    },
+    body: { flex: 1, minWidth: 0 },
+    name: { margin: '0 0 6px', fontSize: 15, fontWeight: 800, color: '#1e293b' },
+    mapelRow: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 6 },
+    mapelBadge: {
+      fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+      background: '#e0e7ff', color: '#3730a3'
+    },
+    mapelBadgeMore: {
+      fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+      background: '#f1f5f9', color: '#64748b'
+    },
+    countRow: {
+      fontSize: 11, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 4
+    }
   };
 
   const cardStyles = {
@@ -436,6 +580,8 @@ const StudentElearning = () => {
   // ============================================================
   // LIST VIEW
   // ============================================================
+  const showTeacherGrid = viewGroupMode === 'perGuru' && !selectedGuruId;
+
   return (
     <div style={listStyles.container}>
       {/* HEADER */}
@@ -454,20 +600,22 @@ const StudentElearning = () => {
             )}
           </p>
         </div>
-        <div style={listStyles.viewToggle}>
-          <button 
-            onClick={() => setViewMode('grid')} 
-            style={{...listStyles.viewBtn, background: viewMode === 'grid' ? '#652D90' : '#f1f5f9', color: viewMode === 'grid' ? 'white' : '#64748b' }}
-          >
-            <Grid3x3 size={16} />
-          </button>
-          <button 
-            onClick={() => setViewMode('list')} 
-            style={{...listStyles.viewBtn, background: viewMode === 'list' ? '#652D90' : '#f1f5f9', color: viewMode === 'list' ? 'white' : '#64748b' }}
-          >
-            <List size={16} />
-          </button>
-        </div>
+        {!showTeacherGrid && (
+          <div style={listStyles.viewToggle}>
+            <button 
+              onClick={() => setViewMode('grid')} 
+              style={{...listStyles.viewBtn, background: viewMode === 'grid' ? '#652D90' : '#f1f5f9', color: viewMode === 'grid' ? 'white' : '#64748b' }}
+            >
+              <Grid3x3 size={16} />
+            </button>
+            <button 
+              onClick={() => setViewMode('list')} 
+              style={{...listStyles.viewBtn, background: viewMode === 'list' ? '#652D90' : '#f1f5f9', color: viewMode === 'list' ? 'white' : '#64748b' }}
+            >
+              <List size={16} />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* STATS */}
@@ -492,142 +640,205 @@ const StudentElearning = () => {
         </div>
       </div>
 
-      {/* FILTER BAR */}
-      <div style={listStyles.filterBar}>
-        <div style={listStyles.searchBox}>
-          <Search size={18} color="#94a3b8" />
-          <input 
-            type="text" 
-            placeholder="Cari judul, mapel, ID guru..." 
-            value={searchTerm} 
-            onChange={e => setSearchTerm(e.target.value)} 
-            style={listStyles.searchInput} 
-          />
-          {searchTerm && (
-            <button onClick={() => setSearchTerm('')} style={listStyles.clearBtn}>✕</button>
-          )}
-        </div>
-        <button 
-          onClick={() => setShowFilters(!showFilters)} 
+      {/* 🔥 TOGGLE MODE TAMPILAN */}
+      <div style={listStyles.groupToggle}>
+        <button
+          onClick={() => { setViewGroupMode('perGuru'); setSelectedGuruId(null); clearFilters(); }}
           style={{
-            ...listStyles.filterBtn,
-            background: hasActiveFilters ? '#3b82f6' : '#f1f5f9',
-            color: hasActiveFilters ? 'white' : '#64748b'
+            ...listStyles.groupToggleBtn,
+            background: viewGroupMode === 'perGuru' ? '#652D90' : '#f1f5f9',
+            color: viewGroupMode === 'perGuru' ? 'white' : '#64748b'
           }}
         >
-          <Filter size={14} /> Filter
-          {hasActiveFilters && <span style={listStyles.filterDot}>●</span>}
+          <Users size={14} /> Per Guru
         </button>
-        {hasActiveFilters && (
-          <button onClick={clearFilters} style={listStyles.clearFilterBtn}>
-            <X size={12} /> Reset
-          </button>
-        )}
+        <button
+          onClick={() => { setViewGroupMode('semua'); setSelectedGuruId(null); clearFilters(); }}
+          style={{
+            ...listStyles.groupToggleBtn,
+            background: viewGroupMode === 'semua' ? '#652D90' : '#f1f5f9',
+            color: viewGroupMode === 'semua' ? 'white' : '#64748b'
+          }}
+        >
+          <BookOpen size={14} /> Semua Modul
+        </button>
       </div>
 
-      {/* ADVANCED FILTERS */}
-      {showFilters && (
-        <div style={listStyles.advancedFilters}>
-          <select 
-            value={filterType} 
-            onChange={e => setFilterType(e.target.value)} 
-            style={listStyles.filterSelect}
-          >
-            <option value="all">📚 Semua</option>
-            <option value="modul">📖 Modul</option>
-            <option value="tugas">📝 Tugas</option>
-            <option value="kuis">❓ Kuis</option>
-          </select>
-          <select 
-            value={filterMapel} 
-            onChange={e => setFilterMapel(e.target.value)} 
-            style={listStyles.filterSelect}
-          >
-            <option value="all">📖 Semua Mapel</option>
-            {mapelOptions.filter(s => s !== 'all').map(s => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* FILTER INFO */}
-      {hasActiveFilters && (
-        <div style={listStyles.filterInfo}>
-          <span>🔍 {filteredModules.length} modul</span>
-          {filterType !== 'all' && (
-            <span style={listStyles.filterTag}>📋 {filterType}</span>
-          )}
-          {filterMapel !== 'all' && (
-            <span style={listStyles.filterTag}>📖 {filterMapel}</span>
-          )}
-        </div>
-      )}
-
-      {/* CONTENT */}
-      {filteredModules.length === 0 ? (
-        <div style={listStyles.emptyState}>
-          <BookOpen size={56} color="#cbd5e1" />
-          <h3 style={listStyles.emptyTitle}>Tidak Ada Modul</h3>
-          <p style={listStyles.emptyDesc}>
-            {searchTerm ? 'Coba ubah kata kunci pencarian' : 
-             `Belum ada modul untuk ${studentData.program}${studentData.kelas ? ` - Kelas ${studentData.kelas}` : ''}`}
-          </p>
-        </div>
-      ) : viewMode === 'grid' ? (
-        <div style={listStyles.grid}>
-          {filteredModules.map(module => renderModuleCard(module))}
-        </div>
+      {/* 🔥 TAMPILAN 1: GRID GURU (default) */}
+      {showTeacherGrid ? (
+        teacherGroups.length === 0 ? (
+          <div style={listStyles.emptyState}>
+            <Users size={56} color="#cbd5e1" />
+            <h3 style={listStyles.emptyTitle}>Belum Ada Guru</h3>
+            <p style={listStyles.emptyDesc}>Belum ada modul yang tersedia untuk kamu saat ini.</p>
+          </div>
+        ) : (
+          <div style={listStyles.teacherGrid}>
+            {teacherGroups.map(t => renderTeacherCard(t))}
+          </div>
+        )
       ) : (
-        <div style={listStyles.list}>
-          {filteredModules.map(module => {
-            const isQuiz = module.type === 'kuis_mandiri';
-            const hasAssignment = module.blocks?.some(b => b.type === 'assignment');
-            const isSubmitted = !!submissions[module.id];
-            const isQuizDone = !!quizSubmissions[module.id];
-            const guruName = module.guruName || module.authorName || module.createdBy || 'Guru';
-            
-            return (
-              <div 
-                key={module.id} 
-                onClick={() => handleModuleClick(module.id)} 
-                style={listStyles.listItem}
-              >
-                <div style={listStyles.listItemIcon}>
-                  {isQuiz ? <FileQuestion size={20} color="#8b5cf6" /> : <BookOpen size={20} color="#3b82f6" />}
-                </div>
-                <div style={listStyles.listItemContent}>
-                  <div style={listStyles.listItemHeader}>
-                    <span style={listStyles.listItemTitle}>{module.title}</span>
-                    {module.kodeMapel && (
-                      <span style={listStyles.listItemTag}><Tag size={8} /> {module.kodeMapel}</span>
-                    )}
-                    {module.guruId && (
-                      <span style={listStyles.listItemTag}><Hash size={8} /> {module.guruId}</span>
-                    )}
-                    {isSubmitted && (
-                      <span style={{...listStyles.listItemTag, background: '#dcfce7', color: '#10b981' }}>
-                        ✅ Tugas
-                      </span>
-                    )}
-                    {isQuizDone && (
-                      <span style={{...listStyles.listItemTag, background: '#dcfce7', color: '#10b981' }}>
-                        ✅ Kuis
-                      </span>
-                    )}
+        <>
+          {/* Header saat lagi di dalam materi 1 guru */}
+          {viewGroupMode === 'perGuru' && selectedTeacher && (
+            <div style={listStyles.teacherHeaderBar}>
+              <button onClick={handleBackToTeachers} style={listStyles.backToTeachersBtn}>
+                <ArrowLeft size={14} /> Semua Guru
+              </button>
+              <div style={listStyles.teacherHeaderInfo}>
+                {selectedTeacher.fotoUrl ? (
+                  <img src={selectedTeacher.fotoUrl} alt={selectedTeacher.nama} style={listStyles.teacherHeaderAvatarImg} />
+                ) : (
+                  <div style={{ ...listStyles.teacherHeaderAvatarPlaceholder, background: colorForName(selectedTeacher.nama) }}>
+                    {selectedTeacher.nama?.charAt(0)?.toUpperCase() || 'G'}
                   </div>
-                  <div style={listStyles.listItemMeta}>
-                    <span>{module.subject || 'Materi'}</span>
-                    <span><User size={10} /> {guruName}</span>
-                    {hasAssignment && <span>📝 Tugas</span>}
-                    {module.blocks?.length > 0 && <span>📄 {module.blocks.length} konten</span>}
-                  </div>
+                )}
+                <div>
+                  <div style={listStyles.teacherHeaderName}>{selectedTeacher.nama}</div>
+                  <div style={listStyles.teacherHeaderMapel}>{selectedTeacher.mapelList.join(', ') || 'Umum'}</div>
                 </div>
-                <ChevronRight size={18} color="#94a3b8" />
               </div>
-            );
-          })}
-        </div>
+            </div>
+          )}
+
+          {/* FILTER BAR */}
+          <div style={listStyles.filterBar}>
+            <div style={listStyles.searchBox}>
+              <Search size={18} color="#94a3b8" />
+              <input 
+                type="text" 
+                placeholder="Cari judul, mapel, ID guru..." 
+                value={searchTerm} 
+                onChange={e => setSearchTerm(e.target.value)} 
+                style={listStyles.searchInput} 
+              />
+              {searchTerm && (
+                <button onClick={() => setSearchTerm('')} style={listStyles.clearBtn}>✕</button>
+              )}
+            </div>
+            <button 
+              onClick={() => setShowFilters(!showFilters)} 
+              style={{
+                ...listStyles.filterBtn,
+                background: hasActiveFilters ? '#3b82f6' : '#f1f5f9',
+                color: hasActiveFilters ? 'white' : '#64748b'
+              }}
+            >
+              <Filter size={14} /> Filter
+              {hasActiveFilters && <span style={listStyles.filterDot}>●</span>}
+            </button>
+            {hasActiveFilters && (
+              <button onClick={clearFilters} style={listStyles.clearFilterBtn}>
+                <X size={12} /> Reset
+              </button>
+            )}
+          </div>
+
+          {/* ADVANCED FILTERS */}
+          {showFilters && (
+            <div style={listStyles.advancedFilters}>
+              <select 
+                value={filterType} 
+                onChange={e => setFilterType(e.target.value)} 
+                style={listStyles.filterSelect}
+              >
+                <option value="all">📚 Semua</option>
+                <option value="modul">📖 Modul</option>
+                <option value="tugas">📝 Tugas</option>
+                <option value="kuis">❓ Kuis</option>
+              </select>
+              <select 
+                value={filterMapel} 
+                onChange={e => setFilterMapel(e.target.value)} 
+                style={listStyles.filterSelect}
+              >
+                <option value="all">📖 Semua Mapel</option>
+                {mapelOptions.filter(s => s !== 'all').map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* FILTER INFO */}
+          {hasActiveFilters && (
+            <div style={listStyles.filterInfo}>
+              <span>🔍 {filteredModules.length} modul</span>
+              {filterType !== 'all' && (
+                <span style={listStyles.filterTag}>📋 {filterType}</span>
+              )}
+              {filterMapel !== 'all' && (
+                <span style={listStyles.filterTag}>📖 {filterMapel}</span>
+              )}
+            </div>
+          )}
+
+          {/* CONTENT */}
+          {filteredModules.length === 0 ? (
+            <div style={listStyles.emptyState}>
+              <BookOpen size={56} color="#cbd5e1" />
+              <h3 style={listStyles.emptyTitle}>Tidak Ada Modul</h3>
+              <p style={listStyles.emptyDesc}>
+                {searchTerm ? 'Coba ubah kata kunci pencarian' : 
+                 `Belum ada modul untuk ${studentData.program}${studentData.kelas ? ` - Kelas ${studentData.kelas}` : ''}`}
+              </p>
+            </div>
+          ) : viewMode === 'grid' ? (
+            <div style={listStyles.grid}>
+              {filteredModules.map(module => renderModuleCard(module))}
+            </div>
+          ) : (
+            <div style={listStyles.list}>
+              {filteredModules.map(module => {
+                const isQuiz = module.type === 'kuis_mandiri';
+                const hasAssignment = module.blocks?.some(b => b.type === 'assignment');
+                const isSubmitted = !!submissions[module.id];
+                const isQuizDone = !!quizSubmissions[module.id];
+                const guruName = module.guruName || module.authorName || module.createdBy || 'Guru';
+                
+                return (
+                  <div 
+                    key={module.id} 
+                    onClick={() => handleModuleClick(module.id)} 
+                    style={listStyles.listItem}
+                  >
+                    <div style={listStyles.listItemIcon}>
+                      {isQuiz ? <FileQuestion size={20} color="#8b5cf6" /> : <BookOpen size={20} color="#3b82f6" />}
+                    </div>
+                    <div style={listStyles.listItemContent}>
+                      <div style={listStyles.listItemHeader}>
+                        <span style={listStyles.listItemTitle}>{module.title}</span>
+                        {module.kodeMapel && (
+                          <span style={listStyles.listItemTag}><Tag size={8} /> {module.kodeMapel}</span>
+                        )}
+                        {module.guruId && (
+                          <span style={listStyles.listItemTag}><Hash size={8} /> {module.guruId}</span>
+                        )}
+                        {isSubmitted && (
+                          <span style={{...listStyles.listItemTag, background: '#dcfce7', color: '#10b981' }}>
+                            ✅ Tugas
+                          </span>
+                        )}
+                        {isQuizDone && (
+                          <span style={{...listStyles.listItemTag, background: '#dcfce7', color: '#10b981' }}>
+                            ✅ Kuis
+                          </span>
+                        )}
+                      </div>
+                      <div style={listStyles.listItemMeta}>
+                        <span>{module.subject || 'Materi'}</span>
+                        <span><User size={10} /> {guruName}</span>
+                        {hasAssignment && <span>📝 Tugas</span>}
+                        {module.blocks?.length > 0 && <span>📄 {module.blocks.length} konten</span>}
+                      </div>
+                    </div>
+                    <ChevronRight size={18} color="#94a3b8" />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -687,6 +898,42 @@ const listStyles = {
   },
   statValue: { fontSize: 18, fontWeight: 900, color: '#1e293b', display: 'block' },
   statLabel: { fontSize: 10, color: '#94a3b8', fontWeight: 500 },
+
+  // 🔥 Toggle Per Guru / Semua Modul
+  groupToggle: {
+    display: 'flex', gap: 6, marginBottom: 16, background: 'white',
+    padding: 6, borderRadius: 12, border: '1px solid #f1f5f9', width: 'fit-content'
+  },
+  groupToggleBtn: {
+    padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
+    fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6,
+    transition: '0.2s'
+  },
+
+  // 🔥 Grid kartu guru
+  teacherGrid: {
+    display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+    gap: 14
+  },
+
+  // 🔥 Header saat sudah masuk ke materi 1 guru
+  teacherHeaderBar: {
+    display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16, flexWrap: 'wrap'
+  },
+  backToTeachersBtn: {
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    background: 'white', border: '1px solid #e2e8f0',
+    padding: '8px 14px', borderRadius: 10, cursor: 'pointer',
+    fontSize: 12, fontWeight: 700, color: '#475569'
+  },
+  teacherHeaderInfo: { display: 'flex', alignItems: 'center', gap: 10 },
+  teacherHeaderAvatarImg: { width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: '2px solid #f1f5f9' },
+  teacherHeaderAvatarPlaceholder: {
+    width: 40, height: 40, borderRadius: '50%', display: 'flex',
+    alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 15
+  },
+  teacherHeaderName: { fontSize: 14, fontWeight: 800, color: '#1e293b' },
+  teacherHeaderMapel: { fontSize: 11, color: '#64748b' },
   
   filterBar: { 
     display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' 
