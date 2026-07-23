@@ -6,9 +6,18 @@
 // 🔥 PAKAI GOOGLE GEMINI API (gemini-2.5-flash) — gratis, tanpa kartu kredit,
 // kuota jauh lebih longgar dibanding Hugging Face Inference Providers.
 
-async function callGemini(systemPrompt, userPrompt) {
-  const GEMINI_MODEL = 'gemini-flash-latest';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+// 🔥 Daftar model yang dicoba BERURUTAN.
+// Kuota gratis Gemini dihitung PER MODEL, dan model paling baru justru paling pelit
+// (gemini-3.6-flash cuma 20 request/hari). Model Flash-Lite jatahnya jauh lebih besar.
+// Kalau model pertama gagal (kuota habis / nama model berubah), otomatis coba berikutnya.
+const GEMINI_MODELS = [
+  'gemini-flash-lite-latest',
+  'gemini-2.5-flash-lite',
+  'gemini-flash-latest',
+];
+
+async function callGemini(systemPrompt, userPrompt, modelName) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
 
   const response = await fetch(url, {
     method: 'POST',
@@ -88,27 +97,43 @@ Poin yang harus dibahas di bagian ini: "${poin}"
 
 Kembangkan poin ini sesuai ATURAN ISI dan format JSON di atas. Ingat: siswa harus dapat CONTOH KONKRET, bukan cuma definisi umum.`;
 
-  // Retry sekali kalau gagal transient, dengan jeda lebih lama kalau kena rate limit
+  // 🔥 Coba tiap model secara berurutan sampai ada yang berhasil.
+  // Kalau kuota model A habis (429) atau modelnya gak ada (404), langsung lompat ke model B
+  // tanpa buang waktu nunggu — karena nunggu gak nolong kalau kuota HARIAN yang habis.
   let geminiData;
   let lastErr;
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (const modelName of GEMINI_MODELS) {
     try {
-      geminiData = await callGemini(systemPrompt, userPrompt);
+      geminiData = await callGemini(systemPrompt, userPrompt, modelName);
       lastErr = null;
       break;
     } catch (e) {
       lastErr = e;
-      console.error(`generateMateriSection Gemini attempt ${attempt + 1} failed:`, e.message);
-      const isRateLimit = e.message.includes('429');
-      if (attempt === 0) {
-        await new Promise(resolve => setTimeout(resolve, isRateLimit ? 8000 : 1500));
+      console.error(`generateMateriSection gagal pakai model ${modelName}:`, e.message);
+
+      // Kalau error-nya BUKAN soal kuota/model tidak ada (misal server sibuk sesaat),
+      // kasih 1 kesempatan ulang di model yang sama sebelum pindah model.
+      const isQuotaOrNotFound = e.message.includes('429') || e.message.includes('404');
+      if (!isQuotaOrNotFound) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        try {
+          geminiData = await callGemini(systemPrompt, userPrompt, modelName);
+          lastErr = null;
+          break;
+        } catch (e2) {
+          lastErr = e2;
+          console.error(`generateMateriSection retry model ${modelName} juga gagal:`, e2.message);
+        }
       }
     }
   }
 
   if (lastErr) {
+    const isQuota = lastErr.message.includes('429');
     return res.status(502).json({
-      error: 'Gagal menghubungi AI (Gemini) setelah 2 percobaan. Coba lagi beberapa saat lagi.',
+      error: isQuota
+        ? 'Kuota gratis AI untuk hari ini sudah habis di semua model. Coba lagi besok, atau kurangi jumlah poin per generate.'
+        : 'Gagal menghubungi AI (Gemini). Coba lagi beberapa saat lagi.',
       debug: lastErr.message,
     });
   }
