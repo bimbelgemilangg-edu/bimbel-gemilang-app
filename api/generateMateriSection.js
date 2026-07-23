@@ -65,6 +65,28 @@ Pertama tentukan dulu materi ini termasuk jenis apa:
 - Boleh lebih bercerita, tapi setiap konsep WAJIB diikuti contoh konkret dari kehidupan sehari-hari siswa Indonesia.
 - Kalau isinya berupa daftar/kategori/urutan, WAJIB pakai <ul><li><b>Nama</b>: penjelasan</li></ul>, jangan digabung jadi paragraf panjang.
 
+=== ATURAN WAJIB: JANGAN CUMA MENYEBUT, TAPI TUNJUKKAN ===
+Ini kesalahan paling fatal yang harus dihindari: menyebut nama metode/trik tanpa menunjukkan cara pakainya.
+- Setiap kali kamu menyebut sebuah METODE, TRIK, atau CARA CEPAT (contoh: "metode tusuk sate", "cara bersusun", "pohon faktor", "trik coret nol"), kamu WAJIB langsung:
+  1. Menggambarkan BENTUK/TAMPILAN metode itu memakai tag <pre> supaya siswa melihat wujudnya.
+  2. Memberi 1 contoh nyata memakai angka asli, dikerjakan langkah demi langkah sampai ketemu jawaban.
+- Contoh benar untuk metode tusuk sate KPK/FPB dari 12 dan 18:
+<pre>2 | 12   18
+3 |  6    9
+  |  2    3</pre>
+lalu dijelaskan: angka pembagi ada di kiri garis, hasil bagi ada di kanan, terus dibagi sampai tidak bisa dibagi lagi.
+- DILARANG menulis kalimat seperti "gunakan metode tusuk sate" lalu langsung lanjut ke hal lain tanpa menggambarkannya.
+- Kalau sebuah metode tidak bisa digambar, jangan pakai metode itu. Ganti dengan cara lain yang bisa ditunjukkan.
+
+=== ATURAN JEMBATAN KELEDAI HARUS LANGSUNG DIPRAKTIKKAN ===
+Setiap jembatan keledai / cara menghafal yang kamu buat WAJIB langsung diikuti contoh penerapannya pada soal nyata di dalam content_html.
+Percuma siswa hafal kalimatnya kalau tidak tahu cara memakainya saat mengerjakan soal.
+
+=== ATURAN BAGIAN TERAKHIR: LATIHAN MANDIRI ===
+Bagian PALING AKHIR modul WAJIB berjudul "Latihan Mandiri" dan berisi:
+- 3 soal latihan bertingkat (mudah, sedang, agak menantang) yang sesuai jenjang siswa.
+- Di bawahnya tulis "Kunci Jawaban:" berisi jawaban singkat tiap nomor beserta 1 baris cara singkatnya.
+
 === ATURAN UMUM (dua-duanya) ===
 - Bahasa Indonesia yang hangat, ramah siswa, tapi tetap benar secara akademis.
 - Bagi modul jadi 4 sampai 6 bagian yang berurutan logis. Bagian pertama pembuka/dasar, bagian terakhir penerapan atau contoh soal.
@@ -128,7 +150,11 @@ Balas HANYA JSON valid, tanpa teks lain, persis seperti ini:
 }
 
 Panduan needs_image: true HANYA untuk objek/makhluk/alat/tempat nyata yang siswa terbantu kalau MELIHAT wujud aslinya. Untuk rumus dan konsep abstrak, selalu false.
-Panduan highlight_type: pakai "mnemonic" kalau bagian itu ada yang perlu dihafal DAN kalimat mnemonic-nya bisa dibuat natural. Pakai "funfact" kalau ada fakta menarik. Pakai "none" kalau bagian itu isinya contoh soal/perhitungan.`;
+Panduan highlight_type — JANGAN MEMAKSAKAN:
+- Pakai "mnemonic" HANYA kalau materinya benar-benar berupa urutan/istilah yang perlu dihafal DAN kamu bisa membuat kalimat mnemonic yang natural, lucu, dan enak diucapkan. Kalau kamu harus memaksakan kata-kata aneh supaya "pas", JANGAN dipakai.
+- Pakai "funfact" kalau ada fakta menarik yang layak ditonjolkan.
+- Pakai "none" untuk sisanya — TERMASUK kalau materinya punya "cara cepat"/trik pengerjaan tapi tidak cocok dijadikan kalimat hafalan. Cara cepat/trik seperti ini TETAP WAJIB diajarkan, tapi cukup dijelaskan LANGSUNG di dalam content_html (dengan <pre> dan contoh soal sesuai ATURAN WAJIB di atas), tidak perlu dipaksakan jadi jembatan keledai.
+- Ingat: tidak semua materi butuh jembatan keledai. Trik yang dijelaskan dengan jelas dan dipraktikkan langsung sering kali lebih berguna daripada jembatan keledai yang dipaksakan.`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
