@@ -274,6 +274,7 @@ const ManageMateri = () => {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showAIGenerate, setShowAIGenerate] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
+  const [showRawHtml, setShowRawHtml] = useState(false);
   
   const [guruData, setGuruData] = useState(null);
   const [guruId, setGuruId] = useState('');
@@ -324,9 +325,9 @@ const ManageMateri = () => {
   ];
 
   const CONTENT_TYPES = [
-    { type: 'text', icon: <Type size={16} />, label: 'Teks', color: '#3b82f6', bg: '#e0e7ff' },
-    { type: 'file', icon: <FileUp size={16} />, label: 'File/Dokumen', color: '#10b981', bg: '#dcfce7' },
-    { type: 'video', icon: <Video size={16} />, label: 'Video/Link', color: '#ef4444', bg: '#fee2e2' },
+    { type: 'text', icon: <Type size={16} />, label: 'Teks', sub: 'Tulis materi manual', color: '#3b82f6', bg: '#e0e7ff' },
+    { type: 'file', icon: <FileUp size={16} />, label: 'Upload File', sub: 'PDF, Word, Gambar', color: '#10b981', bg: '#dcfce7' },
+    { type: 'video', icon: <Video size={16} />, label: 'Tempel Link', sub: 'YouTube, Canva, Google Docs', color: '#ef4444', bg: '#fee2e2' },
     { type: 'assignment', icon: <Send size={16} />, label: 'Tugas/PR', color: '#f59e0b', bg: '#fef3c7' },
     { type: 'quiz', icon: <FileQuestion size={16} />, label: 'Kuis', color: '#8b5cf6', bg: '#ede9fe' },
   ];
@@ -606,8 +607,8 @@ const ManageMateri = () => {
   const addSection = (type) => {
     const titles = { 
       text: '📄 Materi Teks', 
-      file: '📁 File/Dokumen', 
-      video: '🎥 Video/Link', 
+      file: '📁 Upload File (PDF/Word/Gambar)', 
+      video: '🔗 Link (YouTube/Canva/Google Docs)', 
       assignment: '📝 Tugas/PR',
       quiz: '❓ Kuis'
     };
@@ -825,17 +826,37 @@ const ManageMateri = () => {
         {section.type === 'text' && section.format === 'html' && (
           <div>
             <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 8, padding: 10, marginBottom: 8, fontSize: 11, color: '#7c3aed', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Sparkles size={14} /> Konten ini dibuat oleh AI. Edit langsung di HTML mentah di bawah kalau perlu ubah teks.
+              <Sparkles size={14} /> Konten ini dibuat oleh AI. Ini sudah siap tampil ke siswa — gak perlu diapa-apain lagi kecuali mau diedit.
             </div>
-            <textarea
-              value={section.content}
-              onChange={e => updateSection(editingSection, 'content', e.target.value)}
-              style={{ width: '100%', minHeight: 220, padding: 12, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, fontFamily: 'monospace', resize: 'vertical' }}
-            />
-            <div style={{ marginTop: 8, padding: 12, background: 'white', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-              <div style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', marginBottom: 6 }}>👁️ PREVIEW</div>
+
+            <div style={{ padding: 14, background: 'white', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', marginBottom: 8 }}>👁️ TAMPILAN UNTUK SISWA</div>
               <div dangerouslySetInnerHTML={{ __html: renderMathInHtml(section.content) }} />
             </div>
+
+            <button
+              type="button"
+              onClick={() => setShowRawHtml(v => !v)}
+              style={{
+                marginTop: 8, background: 'none', border: 'none', cursor: 'pointer',
+                fontSize: 10, color: '#94a3b8', textDecoration: 'underline', padding: 0
+              }}
+            >
+              {showRawHtml ? '▲ Sembunyikan kode (lanjutan)' : '▼ Mau edit tulisannya langsung? Klik di sini (lanjutan, teknis)'}
+            </button>
+
+            {showRawHtml && (
+              <div style={{ marginTop: 8 }}>
+                <p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 6 }}>
+                  ⚠️ Ini kode HTML mentah, cuma buat yang mau edit teksnya manual. Boleh diabaikan kalau isinya udah pas seperti tampilan di atas.
+                </p>
+                <textarea
+                  value={section.content}
+                  onChange={e => updateSection(editingSection, 'content', e.target.value)}
+                  style={{ width: '100%', minHeight: 180, padding: 12, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, fontFamily: 'monospace', resize: 'vertical' }}
+                />
+              </div>
+            )}
           </div>
         )}
         {section.type === 'text' && section.format !== 'html' && (
@@ -1355,6 +1376,11 @@ const ManageMateri = () => {
                   >
                     {item.icon}
                     <span style={{ fontSize: 11, fontWeight: 600 }}>{item.label}</span>
+                    {item.sub && (
+                      <span style={{ fontSize: 8, fontWeight: 400, color: '#94a3b8', textAlign: 'center', lineHeight: 1.3 }}>
+                        {item.sub}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
