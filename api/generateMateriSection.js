@@ -1,19 +1,18 @@
 // api/generateMateriSection.js
-// Generate 1 bagian materi (1 poin) jadi teks gaya blog + fun fact/mnemonic.
-// Dipanggil berkali-kali dari frontend (1x per poin), BUKAN sekali untuk semua,
-// supaya tidak timeout dan tidak kepotong.
+// 🔥 VERSI BUKU DIGITAL — sekali panggil AI, langsung jadi SATU MODUL LENGKAP
+// (beberapa bagian sekaligus), bukan per-poin seperti versi lama.
 //
-// 🔥 PAKAI GOOGLE GEMINI API (gemini-2.5-flash) — gratis, tanpa kartu kredit,
-// kuota jauh lebih longgar dibanding Hugging Face Inference Providers.
+// Kenapa diubah: kuota gratis Gemini dihitung PER PANGGILAN, bukan per panjang isi.
+// Versi lama: 1 modul 5 poin = 5 panggilan  -> cuma ~4 modul/hari
+// Versi ini : 1 modul = 1 panggilan         -> ~20 modul/hari, isi lebih nyambung
 
-// 🔥 Daftar model yang dicoba BERURUTAN.
-// Kuota gratis Gemini dihitung PER MODEL, dan model paling baru justru paling pelit
-// (gemini-3.6-flash cuma 20 request/hari). Model Flash-Lite jatahnya jauh lebih besar.
-// Kalau model pertama gagal (kuota habis / nama model berubah), otomatis coba berikutnya.
+// Kuota gratis dihitung PER MODEL. Urutan ini sengaja "pintar dulu":
+// model terbaik dipakai selama jatahnya masih ada, kalau habis otomatis turun
+// ke Flash-Lite yang jatah hariannya jauh lebih besar (biar tidak mentok total).
 const GEMINI_MODELS = [
+  'gemini-flash-latest',
   'gemini-flash-lite-latest',
   'gemini-2.5-flash-lite',
-  'gemini-flash-latest',
 ];
 
 async function callGemini(systemPrompt, userPrompt, modelName) {
@@ -26,16 +25,12 @@ async function callGemini(systemPrompt, userPrompt, modelName) {
       'x-goog-api-key': process.env.GEMINI_API_KEY,
     },
     body: JSON.stringify({
-      system_instruction: {
-        parts: [{ text: systemPrompt }],
-      },
-      contents: [
-        { role: 'user', parts: [{ text: userPrompt }] },
-      ],
+      system_instruction: { parts: [{ text: systemPrompt }] },
+      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 4096,
-        responseMimeType: 'application/json', // paksa Gemini balas JSON murni
+        maxOutputTokens: 16384,
+        responseMimeType: 'application/json',
       },
     }),
   });
@@ -48,81 +43,108 @@ async function callGemini(systemPrompt, userPrompt, modelName) {
   return response.json();
 }
 
+const SYSTEM_PROMPT = `Kamu adalah penyusun buku ajar digital untuk "Bimbel Gemilang" di Indonesia.
+Tugasmu: dari SATU judul materi, susun SATU MODUL LENGKAP yang terbagi jadi beberapa bagian, siap dibaca siswa sendiri di rumah.
+
+=== LANGKAH 1: TENTUKAN JENIS MATERI ===
+Pertama tentukan dulu materi ini termasuk jenis apa:
+- "eksakta" = materi yang inti belajarnya adalah RUMUS, SATUAN, PERHITUNGAN, atau LANGKAH PENGERJAAN. Contoh: Matematika, Fisika, Kimia, dan bagian IPA yang berhitung.
+- "naratif" = materi yang inti belajarnya adalah KONSEP, CERITA, atau PEMAHAMAN. Contoh: Bahasa Indonesia, IPS, Sejarah, Biologi deskriptif.
+
+=== LANGKAH 2: TULIS SESUAI JENISNYA ===
+
+>>> KALAU "eksakta" — INI ATURAN PALING PENTING, PATUHI KETAT:
+- Pengertian/definisi HANYA BOLEH 1 paragraf pendek di bagian pertama. JANGAN bertele-tele. Siswa butuh bisa MENGERJAKAN, bukan cuma tahu artinya.
+- WAJIB ada bagian khusus RUMUS: tulis rumusnya, jelaskan tiap simbol artinya apa, dan KAPAN rumus itu dipakai.
+- WAJIB ada minimal 2 CONTOH SOAL dengan pembahasan LANGKAH DEMI LANGKAH bernomor (Langkah 1, Langkah 2, ...), lengkap dengan angka aslinya sampai ketemu jawaban akhir.
+- WAJIB ada bagian "Langkah Gemilang": trik cepat / cara pintas / pola yang bikin siswa bisa ngerjain lebih cepat dari cara biasa.
+- DILARANG menulis paragraf naratif panjang yang tidak mengajarkan cara mengerjakan.
+- Tulis SEMUA rumus dan simbol matematika dalam format LaTeX di antara tanda dolar. Contoh: $U_n = a + (n-1)b$ atau $v = \\\\frac{s}{t}$. JANGAN tulis rumus sebagai teks biasa.
+
+>>> KALAU "naratif":
+- Boleh lebih bercerita, tapi setiap konsep WAJIB diikuti contoh konkret dari kehidupan sehari-hari siswa Indonesia.
+- Kalau isinya berupa daftar/kategori/urutan, WAJIB pakai <ul><li><b>Nama</b>: penjelasan</li></ul>, jangan digabung jadi paragraf panjang.
+
+=== ATURAN UMUM (dua-duanya) ===
+- Bahasa Indonesia yang hangat, ramah siswa, tapi tetap benar secara akademis.
+- Bagi modul jadi 4 sampai 6 bagian yang berurutan logis. Bagian pertama pembuka/dasar, bagian terakhir penerapan atau contoh soal.
+- Tiap bagian punya judul yang jelas dan spesifik (bukan "Bagian 1").
+
+=== ATURAN "Langkah Gemilang" (mnemonic / jembatan keledai) ===
+Untuk bagian yang isinya perlu DIHAFAL (urutan, daftar satuan, rumus), buat jembatan keledai:
+- DILARANG bikin singkatan gabungan suku kata yang tidak bermakna (contoh JELEK: "PA-MA-WA-SU-KU-IN-JUM").
+- WAJIB berupa SATU KALIMAT INDONESIA ASLI yang lucu / mudah dibayangkan. Contoh kualitas yang harus ditiru:
+  * "Kucing Hitam Dalam Mobil Desi Centil Mondar-Mandir" (km-hm-dam-m-dm-cm-mm)
+  * "Waktu Sekolah Intan Cantik Pantang Menyerah Jualan Molen" (waktu-suhu-intensitas cahaya-arus listrik-panjang-massa-jumlah zat)
+- flashcard_front = kalimat mnemonic-nya.
+- flashcard_back = pemetaan tiap kata ke istilah aslinya, format: "<b>Kata</b> → Istilah Asli (satuan)<br>" per baris.
+
+=== FORMAT JAWABAN ===
+Balas HANYA JSON valid, tanpa teks lain, persis seperti ini:
+{
+  "subject_type": "eksakta atau naratif",
+  "sections": [
+    {
+      "title": "judul bagian yang spesifik",
+      "content_html": "isi bagian, boleh pakai <p>, <b>, <i>, <ul>, <li>, <ol> saja",
+      "highlight_type": "mnemonic atau funfact atau none",
+      "funfact_html": "diisi hanya kalau highlight_type=funfact, 1-3 kalimat menarik",
+      "flashcard_front": "diisi hanya kalau highlight_type=mnemonic",
+      "flashcard_back": "diisi hanya kalau highlight_type=mnemonic",
+      "needs_image": true atau false,
+      "image_keyword": "1-3 kata benda konkret BAHASA INGGRIS untuk cari foto, kosongkan kalau needs_image false"
+    }
+  ]
+}
+
+Panduan needs_image: true HANYA untuk objek/makhluk/alat/tempat nyata yang siswa terbantu kalau MELIHAT wujud aslinya. Untuk rumus dan konsep abstrak, selalu false.
+Panduan highlight_type: pakai "mnemonic" kalau bagian itu ada yang perlu dihafal DAN kalimat mnemonic-nya bisa dibuat natural. Pakai "funfact" kalau ada fakta menarik. Pakai "none" kalau bagian itu isinya contoh soal/perhitungan.`;
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { topic, mapel, poin, poinIndex, totalPoin } = req.body;
+  const { topic, mapel, poin, kelas } = req.body;
 
-  if (!topic || !poin) {
-    return res.status(400).json({ error: 'topic dan poin wajib diisi' });
+  if (!topic) {
+    return res.status(400).json({ error: 'Judul materi wajib diisi' });
   }
 
-  const systemPrompt = `Kamu adalah penyusun kurikulum & penulis buku ajar digital untuk siswa Indonesia, menulis untuk platform bernama "Bimbel Gemilang".
-Tugasmu: mengembangkan SATU poin materi menjadi bacaan gaya blog yang enak dibaca, MENDALAM, KONKRET, dan TERSTRUKTUR — bukan penjabaran umum/basa-basi.
-
-ATURAN ISI (WAJIB dipatuhi):
-- Jangan cuma mendefinisikan istilah secara umum. WAJIB sertakan minimal 1 CONTOH KONKRET sehari-hari yang relevan dengan poin ini.
-- Tulis minimal 3 paragraf yang cukup panjang, dengan alur: (1) jelaskan konsepnya, (2) beri contoh konkret/penerapan nyata, (3) kaitkan dengan hal yang siswa sudah familiar sehari-hari.
-- Hindari kalimat generik tanpa penjelasan lanjutan — setiap klaim harus diikuti alasan atau contoh.
-- PENTING — STRUKTUR: kalau poin ini pada dasarnya berisi DAFTAR/KATEGORI/LANGKAH/URUTAN (misal: "3 pilar sains", "tahapan pertumbuhan", "jenis-jenis X"), JANGAN ditulis sebagai satu paragraf panjang berisi semua item digabung. WAJIB gunakan format <ul><li><b>Nama Item</b>: penjelasan singkat</li></ul> supaya mudah dipindai mata siswa. Paragraf naratif tetap boleh dipakai sebagai pembuka/penutup sebelum atau sesudah list-nya.
-
-ATURAN MNEMONIC (kalau highlight_type=mnemonic, ini WAJIB diikuti persis):
-- JANGAN buat singkatan gabungan suku kata yang tidak bermakna (contoh JELEK yang HARUS DIHINDARI: "PA-MA-WA-SU-KU-IN-JUM").
-- WAJIB buat SATU KALIMAT INDONESIA ASLI yang punya makna/cerita sendiri dan lucu/mudah dibayangkan, di mana kata pertama tiap suku kalimat mewakili huruf awal istilah yang harus dihafal. Contoh kualitas yang harus ditiru: "Kucing Hitam Dalam Mobil Desi Centil Mondar-Mandir" (untuk km-hm-dam-m-dm-cm-mm), atau "Waktu Sekolah Intan Cantik Pantang Menyerah Jualan Molen" (untuk 7 besaran pokok SI: waktu-suhu-intensitas cahaya-arus listrik-panjang-massa-jumlah zat).
-- flashcard_front = kalimat mnemonic kreatif itu sendiri (bukan singkatan huruf).
-- flashcard_back = daftar per kata di kalimat itu dipetakan ke istilah aslinya, format "<b>KataMnemonic</b> → Istilah Asli (satuan/simbol jika relevan)<br>" per baris.
-
-WAJIB balas HANYA dengan JSON valid, format persis (tanpa markdown, tanpa teks lain di luar JSON):
-{
-  "title": "judul singkat bagian ini",
-  "content_html": "penjelasan sesuai ATURAN ISI di atas, boleh pakai tag <p>, <b>, <i>, <ul><li> saja",
-  "highlight_type": "funfact atau mnemonic",
-  "funfact_html": "HANYA diisi jika highlight_type=funfact. Isi kotak fun fact, 1-3 kalimat, boleh pakai <b>. Kosongkan string jika highlight_type=mnemonic.",
-  "flashcard_front": "HANYA diisi jika highlight_type=mnemonic, sesuai ATURAN MNEMONIC di atas. Kosongkan string jika highlight_type=funfact.",
-  "flashcard_back": "HANYA diisi jika highlight_type=mnemonic, sesuai ATURAN MNEMONIC di atas. Kosongkan string jika highlight_type=funfact.",
-  "needs_image": true atau false,
-  "image_keyword": "1-3 kata benda konkret dalam BAHASA INGGRIS untuk pencarian foto (misal: tapir, water cycle diagram, pythagorean theorem). Kosongkan string jika needs_image false."
-}
-
-Panduan menentukan needs_image: true HANYA jika materinya tentang objek/makhluk/tempat yang konkret dan siswa akan sangat terbantu MELIHAT wujud aslinya. Untuk materi abstrak (rumus, konsep sosial, dll) set false.
-
-Panduan memilih highlight_type: pakai mnemonic HANYA jika materi punya urutan/istilah/rumus yang perlu betul-betul DIHAFAL siswa DAN kamu bisa bikin kalimat kreatif yang natural (jangan dipaksakan kalau hasilnya bakal aneh). Kalau tidak yakin bisa bikin kalimat yang bagus, pakai funfact saja.`;
+  const arahanGuru = (poin && poin.trim())
+    ? `\n\nArahan khusus dari guru (WAJIB dipatuhi, jadikan panduan isi modul):\n${poin.trim()}`
+    : `\n\nGuru tidak memberi arahan khusus. Tentukan sendiri bagian-bagian penting yang harus dikuasai siswa untuk materi ini, sesuai kurikulum Indonesia.`;
 
   const userPrompt = `Mata pelajaran: ${mapel || 'Umum'}
-Judul Bab: ${topic}
-Bagian ke-${poinIndex + 1} dari ${totalPoin}
-Poin yang harus dibahas di bagian ini: "${poin}"
+Judul materi: ${topic}${kelas ? `\nJenjang/kelas: ${kelas}` : ''}${arahanGuru}
 
-Kembangkan poin ini sesuai ATURAN ISI dan format JSON di atas. Ingat: siswa harus dapat CONTOH KONKRET, bukan cuma definisi umum.`;
+Susun modul lengkapnya sekarang sesuai semua aturan di atas.`;
 
-  // 🔥 Coba tiap model secara berurutan sampai ada yang berhasil.
-  // Kalau kuota model A habis (429) atau modelnya gak ada (404), langsung lompat ke model B
-  // tanpa buang waktu nunggu — karena nunggu gak nolong kalau kuota HARIAN yang habis.
   let geminiData;
   let lastErr;
+
   for (const modelName of GEMINI_MODELS) {
     try {
-      geminiData = await callGemini(systemPrompt, userPrompt, modelName);
+      geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, modelName);
       lastErr = null;
+      console.log(`generateMateriSection sukses pakai model: ${modelName}`);
       break;
     } catch (e) {
       lastErr = e;
       console.error(`generateMateriSection gagal pakai model ${modelName}:`, e.message);
 
-      // Kalau error-nya BUKAN soal kuota/model tidak ada (misal server sibuk sesaat),
-      // kasih 1 kesempatan ulang di model yang sama sebelum pindah model.
+      // Kalau bukan soal kuota habis / model tidak ada, kasih 1 kesempatan ulang
+      // di model yang sama (mungkin server lagi sibuk sesaat).
       const isQuotaOrNotFound = e.message.includes('429') || e.message.includes('404');
       if (!isQuotaOrNotFound) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(r => setTimeout(r, 2000));
         try {
-          geminiData = await callGemini(systemPrompt, userPrompt, modelName);
+          geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, modelName);
           lastErr = null;
           break;
         } catch (e2) {
           lastErr = e2;
-          console.error(`generateMateriSection retry model ${modelName} juga gagal:`, e2.message);
+          console.error(`retry model ${modelName} juga gagal:`, e2.message);
         }
       }
     }
@@ -132,8 +154,8 @@ Kembangkan poin ini sesuai ATURAN ISI dan format JSON di atas. Ingat: siswa haru
     const isQuota = lastErr.message.includes('429');
     return res.status(502).json({
       error: isQuota
-        ? 'Kuota gratis AI untuk hari ini sudah habis di semua model. Coba lagi besok, atau kurangi jumlah poin per generate.'
-        : 'Gagal menghubungi AI (Gemini). Coba lagi beberapa saat lagi.',
+        ? 'Kuota gratis AI hari ini sudah habis di semua model. Silakan coba lagi besok.'
+        : 'Gagal menghubungi AI. Coba lagi beberapa saat lagi.',
       debug: lastErr.message,
     });
   }
@@ -143,52 +165,61 @@ Kembangkan poin ini sesuai ATURAN ISI dan format JSON di atas. Ingat: siswa haru
     const rawText = candidate?.content?.parts?.[0]?.text || '';
 
     if (!rawText) {
-      console.error('Gemini response kosong/aneh. finishReason:', candidate?.finishReason, '| full:', JSON.stringify(geminiData));
-      return res.status(502).json({ error: 'AI tidak mengembalikan jawaban, coba generate ulang bagian ini.' });
+      console.error('Respons AI kosong. finishReason:', candidate?.finishReason);
+      return res.status(502).json({ error: 'AI tidak mengembalikan jawaban, coba generate ulang.' });
     }
 
     let parsed;
     try {
       parsed = JSON.parse(rawText);
     } catch (e) {
-      // jaga-jaga kalau masih ada teks nyasar di luar JSON
       const jsonMatch = rawText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
-        console.error('JSON tidak ditemukan di respons. finishReason:', candidate?.finishReason, '| rawText:', rawText.slice(0, 500));
+        console.error('JSON tidak ditemukan. finishReason:', candidate?.finishReason);
         return res.status(502).json({
           error: candidate?.finishReason === 'MAX_TOKENS'
-            ? 'Jawaban AI kepotong karena poin ini terlalu kompleks. Coba pecah jadi poin yang lebih spesifik/singkat, atau generate ulang.'
-            : 'AI mengembalikan format tidak valid, coba generate ulang bagian ini.',
+            ? 'Materi terlalu luas sehingga jawaban AI kepotong. Coba persempit judulnya (misal pecah jadi 2 modul terpisah).'
+            : 'AI mengembalikan format tidak valid, coba generate ulang.',
         });
       }
       try {
         parsed = JSON.parse(jsonMatch[0]);
       } catch (e2) {
-        console.error('JSON ditemukan tapi tetap gagal parse (kemungkinan kepotong). finishReason:', candidate?.finishReason);
         return res.status(502).json({
           error: candidate?.finishReason === 'MAX_TOKENS'
-            ? 'Jawaban AI kepotong karena poin ini terlalu kompleks. Coba pecah jadi poin yang lebih spesifik/singkat, atau generate ulang.'
-            : 'AI mengembalikan JSON rusak, coba generate ulang bagian ini.',
+            ? 'Materi terlalu luas sehingga jawaban AI kepotong. Coba persempit judulnya (misal pecah jadi 2 modul terpisah).'
+            : 'AI mengembalikan JSON rusak, coba generate ulang.',
         });
       }
     }
 
     const sanitize = (html = '') =>
-      html.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/on\w+="[^"]*"/gi, '');
+      String(html).replace(/<script[\s\S]*?<\/script>/gi, '').replace(/on\w+="[^"]*"/gi, '');
 
-    const isMnemonic = parsed.highlight_type === 'mnemonic'
-      && parsed.flashcard_front && parsed.flashcard_back;
+    const rawSections = Array.isArray(parsed.sections) ? parsed.sections : [];
+    if (rawSections.length === 0) {
+      return res.status(502).json({ error: 'AI tidak menghasilkan bagian materi apapun, coba generate ulang.' });
+    }
+
+    const sections = rawSections.map((s, i) => {
+      const isMnemonic = s.highlight_type === 'mnemonic' && s.flashcard_front && s.flashcard_back;
+      const isFunfact = s.highlight_type === 'funfact' && s.funfact_html;
+      return {
+        title: sanitize(s.title || `Bagian ${i + 1}`),
+        content_html: sanitize(s.content_html || ''),
+        highlight_type: isMnemonic ? 'mnemonic' : (isFunfact ? 'funfact' : 'none'),
+        funfact_html: isFunfact ? sanitize(s.funfact_html) : '',
+        flashcard_front: isMnemonic ? sanitize(s.flashcard_front) : '',
+        flashcard_back: isMnemonic ? sanitize(s.flashcard_back) : '',
+        needs_image: !!s.needs_image,
+        image_keyword: s.image_keyword || '',
+      };
+    });
 
     return res.status(200).json({
       success: true,
-      title: parsed.title || poin,
-      content_html: sanitize(parsed.content_html || ''),
-      highlight_type: isMnemonic ? 'mnemonic' : 'funfact',
-      funfact_html: sanitize(parsed.funfact_html || ''),
-      flashcard_front: isMnemonic ? sanitize(parsed.flashcard_front) : '',
-      flashcard_back: isMnemonic ? sanitize(parsed.flashcard_back) : '',
-      needs_image: !!parsed.needs_image,
-      image_keyword: parsed.image_keyword || '',
+      subject_type: parsed.subject_type === 'eksakta' ? 'eksakta' : 'naratif',
+      sections,
     });
   } catch (error) {
     console.error('generateMateriSection parse error:', error);
