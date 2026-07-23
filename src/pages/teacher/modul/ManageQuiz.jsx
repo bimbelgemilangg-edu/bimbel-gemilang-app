@@ -258,58 +258,72 @@ const ManageQuiz = () => {
   }, []);
 
   useEffect(() => {
-    if (modulId) {
-      setPublishTarget('modul');
-      setSelectedModul(modulId);
-      const fetchQuiz = async () => {
-        const snap = await getDoc(doc(db, "bimbel_modul", modulId));
-        if (snap.exists()) {
-          const data = snap.data();
-          setQuizTitle(data.title || "");
-          setQuizSubject(data.subject || "");
-          setDeadline(data.deadlineQuiz || "");
-          setTimeLimit(data.timeLimit || 0);
-          setRandomOrder(data.randomOrder || false);
-          setMaxAttempts(data.maxAttempts || 1);
-          setShowExplanation(data.showExplanation !== false);
-          setDifficulty(data.difficulty || 'Sedang');
-          setUseSchedule(data.useSchedule || false);
-          setQuizOpenDate(data.quizOpenDate || quizOpenDate);
-          setQuizCloseDate(data.quizCloseDate || quizCloseDate);
-          setIsAIGenerated(data.generatedByAI || false);
-          
-          if (data.timeLimit > 0 || data.randomOrder || data.maxAttempts > 1) {
-            setQuizMode('advanced');
-          }
-          
-          if (data.quizData?.length > 0) {
-            setQuestions(data.quizData.map((q, idx) => ({
-              id: q.id || Date.now() + idx,
-              type: q.type || 'multiple',
-              q: q.question || '',
-              qImage: q.questionImage || '',
-              options: q.options || ['', '', '', ''],
-              optionImages: q.optionImages || ['', '', '', ''],
-              correct: q.correctAnswer || 0,
-              correctAnswers: q.correctAnswers || [],
-              explanation: q.explanation || '',
-              statements: q.statements || [{ text: '', isTrue: true }],
-              readingText: q.readingText || '',
-              subQuestions: q.subQuestions || [{ q: '', options: ['', '', '', ''], correct: 0 }],
-              shortAnswer: q.shortAnswer || '',
-              cause: q.cause || '',
-              effect: q.effect || '',
-              isCauseTrue: q.isCauseTrue !== undefined ? q.isCauseTrue : true,
-              isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true,
-              matchingPairs: q.matchingPairs && q.matchingPairs.length ? q.matchingPairs : [{ left: '', right: '' }, { left: '', right: '' }],
-              needsManualAnswer: false
-            })));
-          }
+  if (modulId) {
+    setPublishTarget('modul');
+    setSelectedModul(modulId);
+    const fetchQuiz = async () => {
+      let targetDocId = modulId;
+
+      // 🔥 FIX: kalau ada sectionId, cari quizId asli lewat section modul dulu
+      if (sectionId) {
+        const modulSnap = await getDoc(doc(db, "bimbel_modul", modulId));
+        if (modulSnap.exists()) {
+          const section = (modulSnap.data().blocks || []).find(
+            b => String(b.id) === String(sectionId)
+          );
+          if (section?.quizId) targetDocId = section.quizId;
+          else return; // quiz belum pernah dibuat, biarkan form kosong
         }
-      };
-      fetchQuiz();
-    }
-  }, [modulId]);
+      }
+
+      const snap = await getDoc(doc(db, "bimbel_modul", targetDocId));
+      if (snap.exists()) {
+        const data = snap.data();
+        setQuizTitle(data.title || "");
+        setQuizSubject(data.subject || "");
+        setDeadline(data.deadlineQuiz || "");
+        setTimeLimit(data.timeLimit || 0);
+        setRandomOrder(data.randomOrder || false);
+        setMaxAttempts(data.maxAttempts || 1);
+        setShowExplanation(data.showExplanation !== false);
+        setDifficulty(data.difficulty || 'Sedang');
+        setUseSchedule(data.useSchedule || false);
+        setQuizOpenDate(data.quizOpenDate || quizOpenDate);
+        setQuizCloseDate(data.quizCloseDate || quizCloseDate);
+        setIsAIGenerated(data.generatedByAI || false);
+
+        if (data.timeLimit > 0 || data.randomOrder || data.maxAttempts > 1) {
+          setQuizMode('advanced');
+        }
+
+        if (data.quizData?.length > 0) {
+          setQuestions(data.quizData.map((q, idx) => ({
+            id: q.id || Date.now() + idx,
+            type: q.type || 'multiple',
+            q: q.question || '',
+            qImage: q.questionImage || '',
+            options: q.options || ['', '', '', ''],
+            optionImages: q.optionImages || ['', '', '', ''],
+            correct: q.correctAnswer || 0,
+            correctAnswers: q.correctAnswers || [],
+            explanation: q.explanation || '',
+            statements: q.statements || [{ text: '', isTrue: true }],
+            readingText: q.readingText || '',
+            subQuestions: q.subQuestions || [{ q: '', options: ['', '', '', ''], correct: 0 }],
+            shortAnswer: q.shortAnswer || '',
+            cause: q.cause || '',
+            effect: q.effect || '',
+            isCauseTrue: q.isCauseTrue !== undefined ? q.isCauseTrue : true,
+            isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true,
+            matchingPairs: q.matchingPairs && q.matchingPairs.length ? q.matchingPairs : [{ left: '', right: '' }, { left: '', right: '' }],
+            needsManualAnswer: false
+          })));
+        }
+      }
+    };
+    fetchQuiz();
+  }
+}, [modulId, sectionId]);
 
   // ============================================================
   // 🔥 HANDLER UPLOAD GAMBAR
