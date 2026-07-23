@@ -157,6 +157,7 @@ const StudentElearning = () => {
       setFilteredModules(allModules);
       
       // 🔥 FETCH SUBMISSIONS
+      let submissionsMapForStats = {};
       if (nim) {
         const [snapTugas, snapKuis] = await Promise.all([
           getDocs(query(collection(db, "jawaban_tugas"), where("studentNim", "==", nim))),
@@ -169,6 +170,7 @@ const StudentElearning = () => {
           subMap[data.modulId] = { id: d.id, ...data };
         });
         setSubmissions(subMap);
+        submissionsMapForStats = subMap;
         
         const quizMap = {};
         snapKuis.forEach(d => { 
@@ -178,11 +180,13 @@ const StudentElearning = () => {
         setQuizSubmissions(quizMap);
       }
       
-      // Hitung stats
+      // Hitung stats (pakai subMap yang baru di-fetch, BUKAN state submissions yang lama,
+      // supaya tidak perlu bikin fetchModules "mendengarkan" perubahan submissions —
+      // itu yang menyebabkan loop fetch berulang / tampilan kedip-kedip)
       const modulCount = allModules.filter(m => m.type !== 'kuis_mandiri' && m.blocks?.length > 0).length;
       const tugasCount = allModules.filter(m => m.blocks?.some(b => b.type === 'assignment')).length;
       const kuisCount = allModules.filter(m => m.type === 'kuis_mandiri' || m.quizData?.length > 0).length;
-      const submittedCount = allModules.filter(m => submissions[m.id]).length;
+      const submittedCount = allModules.filter(m => submissionsMapForStats[m.id]).length;
       
       setStats({
         total: allModules.length,
@@ -196,7 +200,7 @@ const StudentElearning = () => {
       console.error("Error fetch modules:", error);
     }
     setLoading(false);
-  }, [studentData, submissions]);
+  }, [studentData]);
 
   // Fetch saat data siswa berubah
   useEffect(() => {
