@@ -8,6 +8,8 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile, deleteFile, supabase } from '../../../services/uploadService';
 import AIGenerateMateri from './AIGenerateMateri';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, ArrowLeft, 
   FileUp, Type, Video, X, Image as ImageIcon, BookOpen, 
@@ -32,6 +34,29 @@ const FILE_TYPE_OPTIONS = [
   { value: 'image', label: '🖼️ Gambar', accept: 'image/*', icon: <FileImage size={14} color="#10b981" /> },
   { value: 'word', label: '📝 Word/DOCX', accept: '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document', icon: <FileText size={14} color="#3b82f6" /> },
 ];
+
+// ============================================================
+// 🔥 RENDER MATH DI DALAM HTML STRING (buat preview guru)
+// ============================================================
+const renderMathInHtml = (html) => {
+  if (!html) return html;
+  let result = html;
+  result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, expr) => {
+    try {
+      return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: true });
+    } catch (e) {
+      return match;
+    }
+  });
+  result = result.replace(/\$([^$\n]+?)\$/g, (match, expr) => {
+    try {
+      return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: false });
+    } catch (e) {
+      return match;
+    }
+  });
+  return result;
+};
 
 // ============================================================
 // DETEKSI JENIS LINK
@@ -809,7 +834,7 @@ const ManageMateri = () => {
             />
             <div style={{ marginTop: 8, padding: 12, background: 'white', border: '1px solid #e2e8f0', borderRadius: 8 }}>
               <div style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', marginBottom: 6 }}>👁️ PREVIEW</div>
-              <div dangerouslySetInnerHTML={{ __html: section.content }} />
+              <div dangerouslySetInnerHTML={{ __html: renderMathInHtml(section.content) }} />
             </div>
           </div>
         )}
