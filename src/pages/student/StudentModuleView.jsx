@@ -347,6 +347,66 @@ const FlashcardWidget = ({ front, back }) => {
 };
 
 // ============================================================
+// 🔥 KONTEN AI YANG BISA DIPENCET
+// AI menandai bagian penting dengan <span class="gem-pop" data-info="...">.
+// Karena konten dirender sebagai HTML mentah, klik-nya ditangkap lewat
+// container (event delegation), lalu penjelasannya tampil di kotak bawah.
+// ============================================================
+const AIContentBlock = ({ html }) => {
+  const [info, setInfo] = useState(null);
+
+  const handleClick = (e) => {
+    const el = e.target.closest ? e.target.closest('.gem-pop') : null;
+    if (!el) return;
+    e.preventDefault();
+    const text = el.getAttribute('data-info') || '';
+    if (!text) return;
+    setInfo({ term: el.textContent, text });
+  };
+
+  return (
+    <>
+      <div
+        className="cdtx cdtx-html"
+        onClick={handleClick}
+        dangerouslySetInnerHTML={{ __html: renderMathInHtml(html) }}
+      />
+      {info && (
+        <div style={{
+          marginTop: 12,
+          background: '#eef2ff',
+          border: '1px solid #c7d2fe',
+          borderLeft: '4px solid #6366f1',
+          borderRadius: 10,
+          padding: '12px 14px',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: '#4f46e5', marginBottom: 4 }}>
+                💡 {info.term}
+              </div>
+              <div style={{ fontSize: 13, color: '#334155', lineHeight: 1.6 }}>
+                {info.text}
+              </div>
+            </div>
+            <button
+              onClick={() => setInfo(null)}
+              style={{
+                background: 'white', border: '1px solid #c7d2fe', borderRadius: 6,
+                cursor: 'pointer', padding: '2px 6px', color: '#4f46e5', flexShrink: 0,
+              }}
+              aria-label="Tutup penjelasan"
+            >
+              <X size={13} />
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+// ============================================================
 // 🔥 STYLES
 // ============================================================
 const styles = {
@@ -882,7 +942,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         
         {/* 🔥 KONTEN TEKS - CEK APAKAH HTML (dari AI Generate) ATAU TEKS BIASA */}
         {block.type === 'text' && block.format === 'html' && (
-          <div className="cdtx cdtx-html" dangerouslySetInnerHTML={{ __html: renderMathInHtml(block.content) }} />
+          <AIContentBlock html={block.content} />
         )}
         {block.type === 'text' && block.format !== 'html' && (
           <div className="cdtx">{renderMath(block.content)}</div>
@@ -1191,6 +1251,12 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         .cdtx-html p{margin-bottom:12px}
         .cdtx-html img{max-width:100%;border-radius:10px}
         .cdtx-html b{color:#1e293b}
+        .cdtx-html ul,.cdtx-html ol{margin:10px 0 12px 20px}
+        .cdtx-html li{margin-bottom:6px}
+        .cdtx-html pre{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;line-height:1.7;margin:10px 0}
+        .gem-pop{color:#4f46e5;font-weight:700;border-bottom:2px dotted #6366f1;cursor:pointer;padding:0 2px;border-radius:3px;transition:background .15s}
+        .gem-pop:active{background:#e0e7ff}
+        .gem-pop::after{content:"👆";font-size:9px;vertical-align:super;margin-left:1px;opacity:.5}
         .em{text-align:center;padding:40px;color:#94a3b8}
         .tg{border-left:4px solid #f59e0b}
         .dl{padding:8px 12px;border-radius:8px;margin-bottom:12px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:12px;background:#fef3c7;color:#b45309}

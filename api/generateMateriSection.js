@@ -70,6 +70,36 @@ Pertama tentukan dulu materi ini termasuk jenis apa:
 - Bagi modul jadi 4 sampai 6 bagian yang berurutan logis. Bagian pertama pembuka/dasar, bagian terakhir penerapan atau contoh soal.
 - Tiap bagian punya judul yang jelas dan spesifik (bukan "Bagian 1").
 
+=== ATURAN KALIBRASI JENJANG (SANGAT PENTING) ===
+Sesuaikan bahasa DAN besaran angka dengan jenjang siswa:
+- SD kelas 1-3: kalimat sangat pendek (maksimal 12 kata), kata sehari-hari yang dikenal anak, angka cukup sampai ratusan.
+- SD kelas 4-6: kalimat pendek dan sederhana, angka wajar sampai puluhan ribu. JANGAN pakai angka jutaan/miliaran KECUALI materinya memang khusus tentang bilangan besar. Setiap istilah teknis WAJIB dijelaskan pakai bahasa anak.
+- SMP: boleh istilah akademis, tapi tetap dijelaskan saat pertama kali muncul.
+- SMA/SMK: boleh formal, abstrak, dan lebih padat.
+- Kalau jenjang tidak disebutkan guru, asumsikan SMP.
+Contoh kalimat yang DILARANG untuk SD: "mensejajarkan tanda titik dan nilai tempatnya".
+Contoh yang BENAR untuk SD: "susun angkanya lurus ke bawah, mulai dari angka paling kanan".
+
+=== ATURAN PERHITUNGAN BERSUSUN ===
+Kalau mengajarkan penjumlahan/pengurangan/perkalian bersusun:
+- WAJIB ditampilkan benar-benar tersusun ke bawah memakai tag <pre> supaya angkanya sejajar. Contoh:
+<pre>   1.250.000
++    345.000
+------------
+   1.595.000</pre>
+- DILARANG menulisnya mendatar dalam satu baris.
+- DILARANG menulis angka dengan nol di depan (salah: 0.345.000).
+- Setiap langkah perhitungan ditulis di baris sendiri, sebutkan nilai tempatnya (satuan, puluhan, ratusan), jangan digabung jadi satu baris panjang.
+
+=== ATURAN INTERAKTIF (WAJIB ADA) ===
+Siswa harus bisa memencet bagian penting untuk melihat penjelasannya. Caranya, bungkus 2 sampai 5 bagian penting di tiap section dengan:
+<span class="gem-pop" data-info="penjelasan singkat 1-2 kalimat sesuai jenjang">teks yang ditandai</span>
+- Yang ditandai boleh berupa: potongan angka (misal bagian "350" dari 2.350.400.000), istilah penting, nama simbol rumus, atau kata sulit.
+- Penjelasannya harus MENAMBAH pemahaman, bukan mengulang kata yang sama.
+- DILARANG menaruh tanda dolar ($), tanda kutip ganda, atau tag HTML lain di dalam data-info.
+- DILARANG menaruh span ini di dalam rumus LaTeX (di antara tanda dolar).
+- Maksimal 5 penanda per bagian supaya tidak ramai.
+
 === ATURAN "Langkah Gemilang" (mnemonic / jembatan keledai) ===
 Untuk bagian yang isinya perlu DIHAFAL (urutan, daftar satuan, rumus), buat jembatan keledai:
 - DILARANG bikin singkatan gabungan suku kata yang tidak bermakna (contoh JELEK: "PA-MA-WA-SU-KU-IN-JUM").
@@ -86,7 +116,7 @@ Balas HANYA JSON valid, tanpa teks lain, persis seperti ini:
   "sections": [
     {
       "title": "judul bagian yang spesifik",
-      "content_html": "isi bagian, boleh pakai <p>, <b>, <i>, <ul>, <li>, <ol> saja",
+      "content_html": "isi bagian, boleh pakai <p>, <b>, <i>, <ul>, <li>, <ol>, <pre>, dan <span class=gem-pop data-info=...> saja",
       "highlight_type": "mnemonic atau funfact atau none",
       "funfact_html": "diisi hanya kalau highlight_type=funfact, 1-3 kalimat menarik",
       "flashcard_front": "diisi hanya kalau highlight_type=mnemonic",
