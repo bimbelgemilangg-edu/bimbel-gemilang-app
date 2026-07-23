@@ -694,47 +694,38 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         dispatch({ type: 'SET_ACCESS', payload: true });
         dispatch({ type: 'SET_MODUL', payload: data });
 
-        // 🔥 AMBIL STATUS KUIS
+        // 🔥 AMBIL STATUS KUIS — dijalankan PARALEL (bukan satu-satu berurutan),
+        // supaya modul yang punya banyak kuis tetap cepat dibuka.
         if (nim) {
           const quizBlocks = (data.blocks || []).filter(b => b.type === 'quiz' && b.quizId);
-          
-          for (const block of quizBlocks) {
-            if (block.quizId) {
-              const qJawaban = query(
-                collection(db, "jawaban_kuis"),
-                where("modulId", "==", block.quizId),
-                where("studentNim", "==", nim)
-              );
-              const snapJawaban = await getDocs(qJawaban);
-              
-              if (!snapJawaban.empty) {
-                const lastData = snapJawaban.docs[0].data();
-                dispatch({ 
-                  type: 'SET_QUIZ_STATUS', 
-                  quizId: block.quizId, 
-                  status: 'done' 
-                });
-                dispatch({ 
-                  type: 'SET_QUIZ_SCORE', 
-                  quizId: block.quizId, 
-                  score: lastData.score || 0 
-                });
-              } else {
-                dispatch({ 
-                  type: 'SET_QUIZ_STATUS', 
-                  quizId: block.quizId, 
-                  status: 'pending' 
-                });
-              }
-            }
-          }
-          
-          // 🔥 AMBIL TUGAS
-          const snapTugas = await getDocs(
-            query(collection(db,"jawaban_tugas"), where("modulId","==",modulId), where("studentNim","==",nim))
-          );
-          
+
+          const [quizResults, snapTugas] = await Promise.all([
+            Promise.all(
+              quizBlocks.map(block => {
+                const qJawaban = query(
+                  collection(db, "jawaban_kuis"),
+                  where("modulId", "==", block.quizId),
+                  where("studentNim", "==", nim)
+                );
+                return getDocs(qJawaban).then(snap => ({ quizId: block.quizId, snap }));
+              })
+            ),
+            getDocs(
+              query(collection(db,"jawaban_tugas"), where("modulId","==",modulId), where("studentNim","==",nim))
+            ),
+          ]);
+
           if (cancelled) return;
+
+          quizResults.forEach(({ quizId, snap }) => {
+            if (!snap.empty) {
+              const lastData = snap.docs[0].data();
+              dispatch({ type: 'SET_QUIZ_STATUS', quizId, status: 'done' });
+              dispatch({ type: 'SET_QUIZ_SCORE', quizId, score: lastData.score || 0 });
+            } else {
+              dispatch({ type: 'SET_QUIZ_STATUS', quizId, status: 'pending' });
+            }
+          });
           
           const completed = {};
           snapTugas.forEach(d => { 
