@@ -18,6 +18,7 @@ import {
 import { uploadElearningFile } from '../../services/uploadService';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
+import katex from 'katex';
 
 // ============================================================
 // CONSTANTS
@@ -45,6 +46,35 @@ const renderMath = (text) => {
     }
     return <span key={i}>{part}</span>;
   });
+};
+
+// ============================================================
+// 🔥 RENDER MATH DI DALAM HTML STRING (khusus konten hasil AI)
+// Konten dari AI berupa string HTML mentah (dirender via dangerouslySetInnerHTML),
+// jadi $...$ dan $$...$$ di dalamnya perlu di-convert manual jadi HTML KaTeX
+// SEBELUM di-inject, karena react-katex (komponen React) tidak bisa dipakai
+// di dalam dangerouslySetInnerHTML.
+// ============================================================
+const renderMathInHtml = (html) => {
+  if (!html) return html;
+  let result = html;
+  // Rumus blok $$...$$ dulu (biar gak kepotong sama regex inline $...$)
+  result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, expr) => {
+    try {
+      return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: true });
+    } catch (e) {
+      return match;
+    }
+  });
+  // Rumus inline $...$
+  result = result.replace(/\$([^$\n]+?)\$/g, (match, expr) => {
+    try {
+      return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: false });
+    } catch (e) {
+      return match;
+    }
+  });
+  return result;
 };
 
 // ============================================================
@@ -308,7 +338,7 @@ const FlashcardWidget = ({ front, back }) => {
         ) : (
           <span
             style={{ color: '#4c1d95', fontSize: 14, fontWeight: 600, textAlign: 'center', lineHeight: 1.7 }}
-            dangerouslySetInnerHTML={{ __html: back }}
+            dangerouslySetInnerHTML={{ __html: renderMathInHtml(back) }}
           />
         )}
       </div>
@@ -852,7 +882,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         
         {/* 🔥 KONTEN TEKS - CEK APAKAH HTML (dari AI Generate) ATAU TEKS BIASA */}
         {block.type === 'text' && block.format === 'html' && (
-          <div className="cdtx cdtx-html" dangerouslySetInnerHTML={{ __html: block.content }} />
+          <div className="cdtx cdtx-html" dangerouslySetInnerHTML={{ __html: renderMathInHtml(block.content) }} />
         )}
         {block.type === 'text' && block.format !== 'html' && (
           <div className="cdtx">{renderMath(block.content)}</div>
