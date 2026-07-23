@@ -3,10 +3,13 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '../../../firebase';
 import { 
   collection, addDoc, doc, getDoc, updateDoc, serverTimestamp, 
-  getDocs, deleteDoc, query, where, orderBy, limit, runTransaction
+  getDocs, deleteDoc, query, where, orderBy, limit
 } from "firebase/firestore";
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile, deleteFile, supabase } from '../../../services/uploadService';
+import AIGenerateMateri from './AIGenerateMateri';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 import { 
   Save, Trash2, FileText, HelpCircle, Clock, ArrowLeft, 
   FileUp, Type, Video, X, Image as ImageIcon, BookOpen, 
@@ -19,7 +22,7 @@ import {
   Upload, Cloud, Server, RefreshCw, Home, ChevronRight,
   Globe, Link, Plus, Minus, Copy, Edit, MoreVertical,
   GripVertical, Move, FolderOpen, Rocket, Gift, Star,
-  Edit3, FileQuestion
+  Edit3, FileQuestion, Youtube
 } from 'lucide-react';
 
 // ============================================================
@@ -33,20 +36,43 @@ const FILE_TYPE_OPTIONS = [
 ];
 
 // ============================================================
+// 🔥 RENDER MATH DI DALAM HTML STRING (buat preview guru)
+// ============================================================
+const renderMathInHtml = (html) => {
+  if (!html) return html;
+  let result = html;
+  result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, expr) => {
+    try {
+      return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: true });
+    } catch (e) {
+      return match;
+    }
+  });
+  result = result.replace(/\$([^$\n]+?)\$/g, (match, expr) => {
+    try {
+      return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: false });
+    } catch (e) {
+      return match;
+    }
+  });
+  return result;
+};
+
+// ============================================================
 // DETEKSI JENIS LINK
 // ============================================================
 const getLinkType = (url) => {
   if (!url) return 'unknown';
   if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
   if (url.includes('canva.com') || url.includes('canva.cn')) return 'canva';
-  if (url.includes('docs.google.com') || url.includes('drive.google.com') || url.includes('google.com/')) return 'google';
+  if (url.includes('docs.google.com') || url.includes('drive.google.com')) return 'google';
   if (url.includes('vimeo.com')) return 'vimeo';
   if (url.startsWith('http://') || url.startsWith('https://')) return 'link';
   return 'unknown';
 };
 
 // ============================================================
-// RENDER LINK PREVIEW
+// 🔥 RENDER LINK PREVIEW - DIPERBAIKI DENGAN TAMPILAN RAPI
 // ============================================================
 const renderLinkPreview = (url) => {
   if (!url) return null;
@@ -57,11 +83,20 @@ const renderLinkPreview = (url) => {
     if (match) {
       return (
         <div style={{ borderRadius: 8, overflow: 'hidden', background: '#000' }}>
-          <iframe width="100%" height="300" src={`https://www.youtube.com/embed/${match[1]}`} frameBorder="0" allowFullScreen style={{ display: 'block' }} title="YouTube" />
+          <iframe 
+            width="100%" 
+            height="300" 
+            src={`https://www.youtube.com/embed/${match[1]}`} 
+            frameBorder="0" 
+            allowFullScreen 
+            style={{ display: 'block' }} 
+            title="YouTube"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          />
         </div>
       );
     }
-    return <p style={{ color: '#ef4444', fontSize: 12 }}>⚠️ Link YouTube tidak valid</p>;
+    return <p style={{ color: '#ef4444', fontSize: 12, marginTop: 8 }}>⚠️ Link YouTube tidak valid</p>;
   }
   
   if (type === 'canva') {
@@ -71,10 +106,13 @@ const renderLinkPreview = (url) => {
           <div style={{ background: '#00c4cc', padding: '4px 10px', borderRadius: 4, fontSize: 10, color: 'white', fontWeight: 'bold' }}>CANVA</div>
           <span style={{ fontSize: 11, color: '#64748b', wordBreak: 'break-all' }}>{url}</span>
         </div>
-        <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: '#00c4cc', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>
-          <ExternalLink size={16} /> Buka di Canva
-        </a>
-        <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>💡 Klik tombol di atas untuk melihat desain Canva</p>
+        <iframe 
+          src={url} 
+          style={{ width: '100%', height: 400, border: 'none', borderRadius: 8, background: 'white' }} 
+          allowFullScreen 
+          title="Canva" 
+        />
+        <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>💡 Desain Canva tampil di atas</p>
       </div>
     );
   }
@@ -86,7 +124,12 @@ const renderLinkPreview = (url) => {
           <div style={{ background: '#4285f4', padding: '4px 10px', borderRadius: 4, fontSize: 10, color: 'white', fontWeight: 'bold' }}>GOOGLE</div>
           <span style={{ fontSize: 11, color: '#64748b', wordBreak: 'break-all' }}>{url}</span>
         </div>
-        <iframe src={url} style={{ width: '100%', height: 400, border: 'none', borderRadius: 8, background: 'white' }} allowFullScreen title="Google Docs" />
+        <iframe 
+          src={url} 
+          style={{ width: '100%', height: 400, border: 'none', borderRadius: 8, background: 'white' }} 
+          allowFullScreen 
+          title="Google Docs" 
+        />
       </div>
     );
   }
@@ -95,7 +138,9 @@ const renderLinkPreview = (url) => {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
         <Link size={24} color="#3b82f6" />
-        <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', wordBreak: 'break-all' }}>{url}</a>
+        <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', wordBreak: 'break-all' }}>
+          {url}
+        </a>
       </div>
     );
   }
@@ -104,17 +149,22 @@ const renderLinkPreview = (url) => {
 };
 
 // ============================================================
-// PREVIEW COMPONENT
+// PREVIEW COMPONENT - UNTUK FILE
 // ============================================================
 const FilePreview = ({ url, fileName, fileType }) => {
   const [previewError, setPreviewError] = useState(false);
   if (!url) return null;
   
+  // 🔥 CEK APAKAH INI LINK (YouTube, Canva, Google, dll)
   if (url.startsWith('http://') || url.startsWith('https://')) {
     const linkType = getLinkType(url);
-    if (linkType !== 'unknown') return renderLinkPreview(url);
+    if (linkType !== 'unknown') {
+      const preview = renderLinkPreview(url);
+      if (preview) return preview;
+    }
   }
   
+  // 🔥 GAMBAR
   if (fileType?.startsWith('image/') || url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
     return (
       <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', maxHeight: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -124,6 +174,7 @@ const FilePreview = ({ url, fileName, fileType }) => {
     );
   }
   
+  // 🔥 PDF
   if (fileType === 'application/pdf' || url.match(/\.pdf$/i)) {
     return (
       <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', padding: 16, textAlign: 'center' }}>
@@ -134,6 +185,7 @@ const FilePreview = ({ url, fileName, fileType }) => {
     );
   }
   
+  // 🔥 FILE LAIN
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, justifyContent: 'center' }}>
       <FileText size={32} color="#3b82f6" />
@@ -220,8 +272,8 @@ const ManageMateri = () => {
   const [uploadStatus, setUploadStatus] = useState({ type: '', message: '' });
   
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showAIGenerate, setShowAIGenerate] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
-  const [savingQuiz, setSavingQuiz] = useState(false);
   
   const [guruData, setGuruData] = useState(null);
   const [guruId, setGuruId] = useState('');
@@ -551,9 +603,6 @@ const ManageMateri = () => {
     }
   };
 
-  // ============================================================
-  // 🔥 TAMBAH SECTION (TERMASUK QUIZ)
-  // ============================================================
   const addSection = (type) => {
     const titles = { 
       text: '📄 Materi Teks', 
@@ -575,9 +624,7 @@ const ManageMateri = () => {
       allowedFileType: 'all',
       quizId: null,
       quizTitle: '',
-      quizQuestions: 0,
-      // 🔥 FLAG UNTUK QUIZ YANG PERLU DISIMPAN
-      quizDraft: type === 'quiz' ? { title: 'Kuis Baru', questions: [] } : null
+      quizQuestions: 0
     };
     setSections([...sections, newSection]);
     setEditingSection(newSection.id);
@@ -634,45 +681,7 @@ const ManageMateri = () => {
   };
 
   // ============================================================
-  // 🔥 BUKA MANAGE QUIZ - LANGSUNG TANPA SIMPAN MODUL
-  // ============================================================
-  const openQuizEditor = async (section) => {
-    setSavingQuiz(true);
-    try {
-      // 🔥 Jika modul belum disimpan, buat dulu draft
-      let targetModulId = modulId;
-      
-      if (!modulId) {
-        // Buat modul draft sementara
-        const draftData = {
-          title: title.toUpperCase() || 'DRAFT MODUL',
-          subject: subject || 'Umum',
-          guruId: guruId,
-          guruName: guruName,
-          blocks: sections,
-          status: 'draft',
-          isDraft: true,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        };
-        
-        const newDoc = await addDoc(collection(db, COLLECTION_NAME), draftData);
-        targetModulId = newDoc.id;
-        setModulId(targetModulId);
-      }
-      
-      // 🔥 Redirect ke ManageQuiz
-      navigate(`/guru/manage-quiz?modulId=${targetModulId}&sectionId=${section.id}`);
-      
-    } catch (error) {
-      console.error("Error opening quiz editor:", error);
-      alert("❌ Gagal membuka editor kuis: " + error.message);
-    }
-    setSavingQuiz(false);
-  };
-
-  // ============================================================
-  // 🔥 HANDLE SAVE - DENGAN VALIDASI QUIZ
+  // 🔥 HANDLE SAVE
   // ============================================================
   const handleSave = async () => {
     if (!title) return alert("❌ Judul modul wajib diisi!");
@@ -682,6 +691,12 @@ const ManageMateri = () => {
     }
     if (sendToSpecificStudents && selectedStudents.length === 0) {
       return alert("❌ Pilih minimal 1 siswa!");
+    }
+    
+    const quizSections = sections.filter(s => s.type === 'quiz');
+    const invalidQuiz = quizSections.find(s => !s.quizId);
+    if (invalidQuiz) {
+      return alert(`⚠️ Kuis "${invalidQuiz.title || 'Tanpa Judul'}" belum dibuat! Klik "Buat Kuis" untuk membuatnya.`);
     }
     
     setSaving(true);
@@ -716,15 +731,13 @@ const ManageMateri = () => {
     }
     
     try {
-      if (editId || modulId) {
-        const targetId = modulId || editId;
-        await updateDoc(doc(db, COLLECTION_NAME, targetId), payload);
+      if (editId) {
+        await updateDoc(doc(db, COLLECTION_NAME, editId), payload);
         alert("✅ Modul berhasil diperbarui!");
       } else {
         payload.createdAt = serverTimestamp();
         payload.createdBy = authorName;
         const newDoc = await addDoc(collection(db, COLLECTION_NAME), payload);
-        setModulId(newDoc.id);
         alert(`✅ Modul "${title}" berhasil diterbitkan!`);
         navigate(`/guru/modul/materi?edit=${newDoc.id}`);
         return;
@@ -733,6 +746,17 @@ const ManageMateri = () => {
       alert("❌ Gagal: " + err.message);
     }
     setSaving(false);
+  };
+
+  // ============================================================
+  // 🔥 BUKA MANAGE QUIZ DARI MODUL
+  // ============================================================
+  const openQuizEditor = (section) => {
+    if (!modulId) {
+      alert('⚠️ Simpan modul terlebih dahulu sebelum membuat kuis!');
+      return;
+    }
+    navigate(`/guru/manage-quiz?modulId=${modulId}&sectionId=${section.id}`);
   };
 
   const formatFileSize = (bytes) => {
@@ -764,6 +788,7 @@ const ManageMateri = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 10, fontWeight: 800, color: typeColors[section.type], background: typeColors[section.type] + '15', padding: '4px 10px', borderRadius: 6 }}>
               {typeIcons[section.type]} {section.type.toUpperCase()}
+              {section.format === 'html' && ' • AI'}
             </span>
             <input 
               value={section.title} 
@@ -796,8 +821,24 @@ const ManageMateri = () => {
           </div>
         </div>
 
-        {/* 🔥 KONTEN EDITOR PER TYPE */}
-        {section.type === 'text' && (
+        {/* TEXT */}
+        {section.type === 'text' && section.format === 'html' && (
+          <div>
+            <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 8, padding: 10, marginBottom: 8, fontSize: 11, color: '#7c3aed', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Sparkles size={14} /> Konten ini dibuat oleh AI. Edit langsung di HTML mentah di bawah kalau perlu ubah teks.
+            </div>
+            <textarea
+              value={section.content}
+              onChange={e => updateSection(editingSection, 'content', e.target.value)}
+              style={{ width: '100%', minHeight: 220, padding: 12, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, fontFamily: 'monospace', resize: 'vertical' }}
+            />
+            <div style={{ marginTop: 8, padding: 12, background: 'white', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', marginBottom: 6 }}>👁️ PREVIEW</div>
+              <div dangerouslySetInnerHTML={{ __html: renderMathInHtml(section.content) }} />
+            </div>
+          </div>
+        )}
+        {section.type === 'text' && section.format !== 'html' && (
           <SimpleEditor 
             value={section.content} 
             onChange={value => updateSection(editingSection, 'content', value)} 
@@ -805,6 +846,7 @@ const ManageMateri = () => {
           />
         )}
 
+        {/* FILE */}
         {section.type === 'file' && (
           <div>
             {section.content ? (
@@ -836,17 +878,125 @@ const ManageMateri = () => {
           </div>
         )}
 
+        {/* 🔥 VIDEO/LINK - DENGAN PREVIEW RAPI */}
         {section.type === 'video' && (
           <div>
             <input 
               value={section.content} 
               onChange={e => updateSection(editingSection, 'content', e.target.value)} 
               placeholder="Tempel link YouTube, Canva, Google Docs..." 
-              style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} 
+              style={{ 
+                width: '100%', 
+                padding: 10, 
+                borderRadius: 8, 
+                border: '1px solid #e2e8f0', 
+                fontSize: 13, 
+                outline: 'none', 
+                boxSizing: 'border-box' 
+              }} 
             />
             {section.content && (
               <div style={{ marginTop: 10 }}>
-                {renderLinkPreview(section.content)}
+                <div style={{ 
+                  background: 'white', 
+                  borderRadius: 10, 
+                  border: '1px solid #e2e8f0', 
+                  overflow: 'hidden',
+                  padding: 12,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 8,
+                      background: getLinkType(section.content) === 'youtube' ? '#fee2e2' :
+                                 getLinkType(section.content) === 'canva' ? '#f0fdf4' :
+                                 getLinkType(section.content) === 'google' ? '#e0e7ff' : '#f1f5f9',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      {getLinkType(section.content) === 'youtube' && <Youtube size={16} color="#ef4444" />}
+                      {getLinkType(section.content) === 'canva' && <Globe size={16} color="#00c4cc" />}
+                      {getLinkType(section.content) === 'google' && <FileText size={16} color="#4285f4" />}
+                      {getLinkType(section.content) === 'link' && <Link size={16} color="#3b82f6" />}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#1e293b' }}>
+                        {getLinkType(section.content) === 'youtube' ? 'YouTube Video' :
+                         getLinkType(section.content) === 'canva' ? 'Canva Design' :
+                         getLinkType(section.content) === 'google' ? 'Google Docs' : 'Link'}
+                      </div>
+                      <div style={{ fontSize: 10, color: '#94a3b8', wordBreak: 'break-all' }}>{section.content}</div>
+                    </div>
+                    <a href={section.content} target="_blank" rel="noopener noreferrer" style={{
+                      padding: '4px 12px', 
+                      background: '#3b82f6', 
+                      color: 'white', 
+                      borderRadius: 6,
+                      textDecoration: 'none', 
+                      fontSize: 10, 
+                      fontWeight: 600, 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 4,
+                      flexShrink: 0
+                    }}>
+                      <ExternalLink size={12} /> Buka
+                    </a>
+                  </div>
+                  
+                  {/* 🔥 PREVIEW KONTEN LANGSUNG */}
+                  {getLinkType(section.content) === 'youtube' && (
+                    <div style={{ borderRadius: 8, overflow: 'hidden', background: '#000' }}>
+                      <iframe 
+                        width="100%" height="250" 
+                        src={`https://www.youtube.com/embed/${section.content.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?#]+)/)?.[1] || ''}`} 
+                        frameBorder="0" allowFullScreen 
+                        title="YouTube"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      />
+                    </div>
+                  )}
+                  
+                  {getLinkType(section.content) === 'canva' && (
+                    <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                      <div style={{ padding: 8, display: 'flex', alignItems: 'center', gap: 8, background: '#00c4cc', color: 'white' }}>
+                        <Globe size={14} /> CANVA
+                      </div>
+                      <iframe 
+                        src={section.content} 
+                        style={{ width: '100%', height: 350, border: 'none' }} 
+                        allowFullScreen 
+                        title="Canva" 
+                      />
+                    </div>
+                  )}
+                  
+                  {getLinkType(section.content) === 'google' && (
+                    <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                      <div style={{ padding: 8, display: 'flex', alignItems: 'center', gap: 8, background: '#4285f4', color: 'white' }}>
+                        <FileText size={14} /> GOOGLE
+                      </div>
+                      <iframe 
+                        src={section.content} 
+                        style={{ width: '100%', height: 350, border: 'none' }} 
+                        allowFullScreen 
+                        title="Google Docs" 
+                      />
+                    </div>
+                  )}
+                  
+                  {getLinkType(section.content) === 'link' && (
+                    <div style={{ 
+                      padding: 16, background: '#f8fafc', borderRadius: 8,
+                      display: 'flex', alignItems: 'center', gap: 12
+                    }}>
+                      <Link size={24} color="#3b82f6" />
+                      <a href={section.content} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'none', wordBreak: 'break-all' }}>
+                        {section.content}
+                      </a>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 6 }}>
@@ -855,6 +1005,7 @@ const ManageMateri = () => {
           </div>
         )}
 
+        {/* ASSIGNMENT */}
         {section.type === 'assignment' && (
           <div>
             <textarea 
@@ -878,7 +1029,7 @@ const ManageMateri = () => {
           </div>
         )}
 
-        {/* 🔥 QUIZ - LANGSUNG BISA BUKA TANPA SIMPAN MODUL */}
+        {/* QUIZ */}
         {section.type === 'quiz' && (
           <div style={{ 
             background: section.quizId ? '#f0fdf4' : '#ede9fe', 
@@ -929,34 +1080,25 @@ const ManageMateri = () => {
             </div>
             
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {/* 🔥 TOMBOL BUAT/EDIT KUIS - LANGSUNG BUKA TANPA SIMPAN */}
               <button
                 onClick={() => openQuizEditor(section)}
-                disabled={savingQuiz}
                 style={{
                   padding: '8px 16px',
                   background: section.quizId ? '#10b981' : '#8b5cf6',
                   color: 'white',
                   border: 'none',
                   borderRadius: 6,
-                  cursor: savingQuiz ? 'not-allowed' : 'pointer',
+                  cursor: 'pointer',
                   fontWeight: 600,
                   fontSize: 11,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 4,
-                  opacity: savingQuiz ? 0.6 : 1
+                  gap: 4
                 }}
               >
-                {savingQuiz ? (
-                  <Loader2 size={14} className="spin" />
-                ) : (
-                  <Edit3 size={14} />
-                )}
-                {section.quizId ? 'Edit Kuis' : 'Buat Kuis'}
+                <Edit3 size={14} /> {section.quizId ? 'Edit Kuis' : 'Buat Kuis'}
               </button>
               
-              {/* 🔥 PREVIEW KUIS */}
               {section.quizId && (
                 <button
                   onClick={() => window.open(`/siswa/kuis/${section.quizId}`, '_blank')}
@@ -978,7 +1120,6 @@ const ManageMateri = () => {
                 </button>
               )}
               
-              {/* 🔥 HAPUS KUIS DARI MODUL (TIDAK MENGHAPUS DATA KUIS) */}
               {section.quizId && (
                 <button
                   onClick={() => {
@@ -1006,7 +1147,7 @@ const ManageMateri = () => {
             <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>
               {section.quizId 
                 ? '💡 Klik "Edit Kuis" untuk mengubah soal, timer, atau pengaturan lainnya' 
-                : '💡 Klik "Buat Kuis" untuk membuka editor kuis lengkap (langsung tanpa perlu simpan modul dulu)'}
+                : '💡 Klik "Buat Kuis" untuk membuka editor kuis lengkap (AI Generate, 6 tipe soal, timer, dll)'}
             </p>
           </div>
         )}
@@ -1156,6 +1297,11 @@ const ManageMateri = () => {
                 <span style={{ fontSize: 16 }}>{typeIcons[sec.type]}</span>
                 <span style={styles.sectionLabel}>
                   {sec.title || `Konten ${idx + 1}`}
+                  {sec.format === 'html' && (
+                    <span style={{ fontSize: 9, color: '#8b5cf6', background: '#ede9fe', padding: '1px 8px', borderRadius: 10, display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+                      <Sparkles size={9} /> AI
+                    </span>
+                  )}
                   {sec.type === 'quiz' && sec.quizId && (
                     <span style={{ fontSize: 9, color: '#10b981', background: '#dcfce7', padding: '1px 8px', borderRadius: 10 }}>
                       ✅ {sec.quizQuestions || 0} soal
@@ -1220,12 +1366,20 @@ const ManageMateri = () => {
               </button>
             </div>
           ) : (
-            <button 
-              onClick={() => setShowAddMenu(true)}
-              style={{ ...styles.addButton, '&:hover': { borderColor: '#3b82f6', color: '#3b82f6' } }}
-            >
-              <Plus size={18} /> Tambah Konten
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button 
+                onClick={() => setShowAddMenu(true)}
+                style={{ ...styles.addButton, flex: 1 }}
+              >
+                <Plus size={18} /> Tambah Konten
+              </button>
+              <button 
+                onClick={() => setShowAIGenerate(true)}
+                style={{ ...styles.addButton, flex: 1, border: '2px dashed #8b5cf6', color: '#8b5cf6', background: '#faf5ff' }}
+              >
+                <Sparkles size={18} /> Generate dengan AI
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -1313,6 +1467,20 @@ const ManageMateri = () => {
           </div>
         </div>
       </div>
+
+      {/* ========================================================== */}
+      {/* MODAL: GENERATE DENGAN AI */}
+      {/* ========================================================== */}
+      {showAIGenerate && (
+        <AIGenerateMateri
+          subject={subject}
+          onGenerated={(newBlocks) => {
+            setSections(prev => [...prev, ...newBlocks]);
+            setStats(prev => ({ ...prev, totalKonten: sections.length + newBlocks.length }));
+          }}
+          onClose={() => setShowAIGenerate(false)}
+        />
+      )}
 
       {/* ========================================================== */}
       {/* FOOTER */}
