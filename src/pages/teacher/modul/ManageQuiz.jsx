@@ -14,6 +14,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile } from '../../../services/uploadService';
 import SmartImportPanel from './SmartImportPanel';
+import WordImportQuiz from './WordImportQuiz';
 import AIGenerateQuiz from './AIGenerateQuiz';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
@@ -133,6 +134,9 @@ const ManageQuiz = () => {
   
   // 🔥 SMART IMPORT
   const [showSmartImport, setShowSmartImport] = useState(false);
+
+  // 🔥 IMPORT DARI WORD (lebih akurat dari PDF crop)
+  const [showWordImport, setShowWordImport] = useState(false);
 
   // 🔥 AI GENERATE DARI TOPIK
   const [showAIGenerateQuiz, setShowAIGenerateQuiz] = useState(false);
@@ -547,7 +551,7 @@ const ManageQuiz = () => {
         </div>
         
         <div style={{ fontSize: 13, color: item.q.trim() ? '#1e293b' : '#94a3b8' }}>
-          {item.q.trim() || 'Klik untuk edit soal...'}
+          {item.q.trim() ? renderMath(item.q) : 'Klik untuk edit soal...'}
           {item.qImage && <span style={{ marginLeft: 6, fontSize: 10, color: '#10b981' }}>🖼️</span>}
         </div>
         
@@ -1447,6 +1451,25 @@ const ManageQuiz = () => {
           >
             <Sparkles size={14} /> Smart Import
           </button>
+          <button 
+            onClick={() => setShowWordImport(true)} 
+            style={{ 
+              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+              color: 'white', 
+              border: 'none', 
+              padding: '8px 14px', 
+              borderRadius: 8, 
+              fontWeight: 700, 
+              fontSize: 12, 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              boxShadow: '0 4px 12px rgba(37,99,235,0.3)'
+            }}
+          >
+            <FileText size={14} /> Import dari Word
+          </button>
           <button onClick={handlePreviewQuiz} style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '8px 14px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
             <Eye size={14}/> Preview
           </button>
@@ -1603,6 +1626,9 @@ const ManageQuiz = () => {
             <button onClick={() => setShowSmartImport(true)} style={{ padding: '4px 10px', background: '#eef2ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#3730a3' }}>
               <Sparkles size={12} /> Smart Import
             </button>
+            <button onClick={() => setShowWordImport(true)} style={{ padding: '4px 10px', background: '#eff6ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#1d4ed8' }}>
+              <FileText size={12} /> Import dari Word
+            </button>
           </div>
         </div>
 
@@ -1722,6 +1748,16 @@ const ManageQuiz = () => {
         <SmartImportPanel
           onParsed={handleSmartParsed}
           onClose={() => setShowSmartImport(false)}
+        />
+      )}
+
+      {/* ========================================================== */}
+      {/* IMPORT DARI WORD MODAL (lebih akurat dari PDF crop) */}
+      {/* ========================================================== */}
+      {showWordImport && (
+        <WordImportQuiz
+          onParsed={handleSmartParsed}
+          onClose={() => setShowWordImport(false)}
         />
       )}
 
