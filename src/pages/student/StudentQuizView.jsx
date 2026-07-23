@@ -195,7 +195,10 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           cause: q.cause || '',
           effect: q.effect || '',
           isCauseTrue: q.isCauseTrue !== undefined ? q.isCauseTrue : true,
-          isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true
+          isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true,
+          // 🔥 FIX BUG: matchingPairs dulu tidak pernah dibaca dari database, jadi soal
+          // Menjodohkan selalu tampil kosong ke siswa. Sekarang diikutkan.
+          matchingPairs: q.matchingPairs && q.matchingPairs.length ? q.matchingPairs : [{ left: '', right: '' }, { left: '', right: '' }],
         }));
 
         if (data.randomOrder && !hasExistingAnswer) {
@@ -771,6 +774,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         isEffectTrue: q.isEffectTrue,
         subQuestions: q.subQuestions,
         readingText: q.readingText,
+        matchingPairs: q.matchingPairs,
         explanation: q.explanation || '',
         userAnswer,
         isCorrect,

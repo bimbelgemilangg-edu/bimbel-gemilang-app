@@ -1,12 +1,22 @@
 // api/smartParseQuiz.js
-// Pakai Hugging Face Inference API — GRATIS, tanpa kartu kredit.
-// Diproses per-kelompok soal (chunking) supaya jawaban AI tidak terpotong.
+// 🔥 UPGRADE: sekarang pakai Google Gemini (bukan Hugging Face lagi).
+// Fungsinya TETAP SAMA: guru tempel teks soal yang SUDAH ADA (dari PDF/Word),
+// AI memisahkan jadi soal-soal terstruktur, mendeteksi jawaban benar dari
+// teks **bold**, dan menandai needsManualAnswer kalau tidak ketemu.
+//
+// Kenapa pindah dari HF: HF Inference Providers kuota gratisnya sangat kecil
+// ($0.10/bulan) dan sering gagal. Gemini jauh lebih stabil untuk pemakaian rutin.
 
 export const config = { maxDuration: 60 };
 
-const QUESTION_TYPES = ["multiple", "truefalse", "multiselect", "reading", "shortanswer", "causeeffect"];
-const HF_MODEL = "Qwen/Qwen2.5-7B-Instruct";
+const QUESTION_TYPES = ["multiple", "truefalse", "multiselect", "reading", "shortanswer", "causeeffect", "matching"];
 const QUESTIONS_PER_CHUNK = 5; // jaga jawaban AI tetap pendek biar tidak terpotong
+
+const GEMINI_MODELS = [
+  'gemini-flash-latest',
+  'gemini-flash-lite-latest',
+  'gemini-2.5-flash-lite',
+];
 
 // ============================================================
 // Pecah teks jadi kelompok kecil berdasarkan nomor soal (1. 2. 3. dst)
@@ -27,7 +37,6 @@ function splitIntoChunks(text) {
   }
   if (current.length > 0) blocks.push(current);
 
-  // Buang blok di awal yang bukan soal (judul dokumen dll) tapi tetap simpan sebagai konteks
   const chunks = [];
   for (let i = 0; i < blocks.length; i += QUESTIONS_PER_CHUNK) {
     const group = blocks.slice(i, i + QUESTIONS_PER_CHUNK);
@@ -41,16 +50,13 @@ function splitIntoChunks(text) {
 // ============================================================
 function extractCompleteObjects(rawText) {
   const cleaned = rawText.replace(/```json|```/g, '').trim();
-  const startIdx = cleaned.indexOf('[');
-  if (startIdx === -1) return [];
-
   const objects = [];
   let depth = 0;
   let objStart = -1;
   let inString = false;
   let escapeNext = false;
 
-  for (let i = startIdx; i < cleaned.length; i++) {
+  for (let i = 0; i < cleaned.length; i++) {
     const ch = cleaned[i];
     if (escapeNext) { escapeNext = false; continue; }
     if (ch === '\\') { escapeNext = true; continue; }
@@ -65,7 +71,13 @@ function extractCompleteObjects(rawText) {
       if (depth === 0 && objStart !== -1) {
         const candidate = cleaned.slice(objStart, i + 1);
         try {
-          objects.push(JSON.parse(candidate));
+          const parsed = JSON.parse(candidate);
+          // Objek "questions wrapper" {"questions":[...]} ATAU objek soal langsung
+          if (Array.isArray(parsed.questions)) {
+            objects.push(...parsed.questions);
+          } else if (parsed.question) {
+            objects.push(parsed);
+          }
         } catch (e) {
           // objek ini rusak, lewati saja, jangan gagalkan semua
         }
@@ -76,55 +88,71 @@ function extractCompleteObjects(rawText) {
   return objects;
 }
 
-async function callHF(chunkText, HF_TOKEN) {
-  const systemPrompt = `Kamu adalah parser soal ujian. Input berupa TEKS POLOS potongan dari PDF (bisa berisi 1-5 soal saja), dengan aturan:
+async function callGemini(systemPrompt, userText, modelName) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': process.env.GEMINI_API_KEY,
+    },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: systemPrompt }] },
+      contents: [{ role: 'user', parts: [{ text: userText.slice(0, 4000) }] }],
+      generationConfig: {
+        temperature: 0.1, // ini tugas parsing/ekstraksi, bukan kreatif — presisi maksimal
+        maxOutputTokens: 4096,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`GEMINI_HTTP_${response.status}: ${errText}`);
+  }
+  return response.json();
+}
+
+async function parseChunk(chunkText) {
+  const systemPrompt = `Kamu adalah parser soal ujian. Input berupa TEKS POLOS potongan dari PDF/Word (bisa berisi 1-5 soal saja), dengan aturan:
 - Teks yang dibungkus **seperti ini** artinya BOLD di dokumen asli.
 - Baris "[[GAMBAR]]::url" adalah penanda gambar di halaman itu.
 
 TUGAS:
 1. Pisahkan soal dari teks bukan-soal (judul, instruksi umum). Buang yang bukan soal.
 2. Tentukan type dari: ${QUESTION_TYPES.join(", ")}.
-3. Jika ada opsi bold, itu jawaban benar (needsManualAnswer:false, hapus tanda ** dari teks final). Jika tidak ada bold, correct:0, needsManualAnswer:true.
+3. Jika ada opsi bold, itu jawaban benar (needsManualAnswer:false, hapus tanda ** dari teks final). Jika tidak ada bold sama sekali di soal itu, correct:0, needsManualAnswer:true — JANGAN MENEBAK jawaban benar kalau tidak ada tanda bold, karena bisa salah dan menyesatkan siswa.
 4. Jika ada [[GAMBAR]]::url tepat sebelum soal, jadikan questionImage, hapus barisnya dari hasil.
 5. JAWAB HANYA JSON valid, tanpa penjelasan, tanpa markdown fence.
 
 Format:
-{"questions":[{"type":"multiple","question":"...","questionImage":"","options":["...","...","...","..."],"correct":0,"correctAnswers":[],"needsManualAnswer":true,"statements":[],"readingText":"","subQuestions":[],"shortAnswer":"","cause":"","effect":"","isCauseTrue":true,"isEffectTrue":true}]}`;
+{"questions":[{"type":"multiple","question":"...","questionImage":"","options":["...","...","...","..."],"correct":0,"correctAnswers":[],"needsManualAnswer":true,"statements":[],"readingText":"","subQuestions":[],"shortAnswer":"","cause":"","effect":"","isCauseTrue":true,"isEffectTrue":true,"matchingPairs":[]}]}`;
 
-  const response = await fetch("https://router.huggingface.co/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${HF_TOKEN}`,
-    },
-    body: JSON.stringify({
-      model: HF_MODEL,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: chunkText.slice(0, 3000) },
-      ],
-      max_tokens: 3000,
-      temperature: 0.1,
-    }),
-  });
+  let lastErr;
+  for (const modelName of GEMINI_MODELS) {
+    try {
+      const data = await callGemini(systemPrompt, chunkText, modelName);
+      const rawText = data.choices?.[0]?.message?.content
+        || data.candidates?.[0]?.content?.parts?.[0]?.text
+        || "{}";
 
-  const data = await response.json();
-  if (!response.ok) {
-    console.error("HF API error:", data);
-    throw new Error(data?.error?.message || 'AI gagal memproses satu kelompok soal.');
+      try {
+        const cleaned = rawText.replace(/```json|```/g, "").trim();
+        const parsed = JSON.parse(cleaned);
+        return parsed.questions || [];
+      } catch (e) {
+        // Kemungkinan terpotong — selamatkan objek yang lengkap saja
+        return extractCompleteObjects(rawText);
+      }
+    } catch (e) {
+      lastErr = e;
+      console.error(`smartParseQuiz gagal pakai model ${modelName}:`, e.message);
+      // Kalau kuota habis/model tidak ada, lanjut ke model berikutnya di daftar.
+      // Kalau error lain, tetap lanjut coba model berikutnya juga (chunk kecil, gak worth retry di model sama).
+    }
   }
-
-  const rawText = data.choices?.[0]?.message?.content || "{}";
-
-  // Coba parse langsung dulu (kasus normal, tidak terpotong)
-  try {
-    const cleaned = rawText.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(cleaned);
-    return parsed.questions || [];
-  } catch (e) {
-    // Kalau gagal (kemungkinan terpotong), selamatkan objek yang lengkap saja
-    return extractCompleteObjects(rawText);
-  }
+  console.error("Semua model gagal untuk 1 chunk:", lastErr?.message);
+  return []; // chunk ini gagal total, dilewati saja, chunk lain tetap lanjut
 }
 
 export default async function handler(req, res) {
@@ -142,9 +170,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ success: false, error: 'Teks soal kosong' });
   }
 
-  const HF_TOKEN = process.env.HF_TOKEN;
-  if (!HF_TOKEN) {
-    return res.status(500).json({ success: false, error: 'HF_TOKEN belum di-setting di Vercel' });
+  if (!process.env.GEMINI_API_KEY) {
+    return res.status(500).json({ success: false, error: 'GEMINI_API_KEY belum di-setting di Vercel' });
   }
 
   try {
@@ -155,13 +182,8 @@ export default async function handler(req, res) {
 
     let allRawQuestions = [];
     for (const chunk of chunks) {
-      try {
-        const qs = await callHF(chunk, HF_TOKEN);
-        allRawQuestions.push(...qs);
-      } catch (chunkErr) {
-        console.error("Chunk error (dilewati):", chunkErr.message);
-        // Lanjut ke kelompok berikutnya, jangan gagalkan semuanya
-      }
+      const qs = await parseChunk(chunk);
+      allRawQuestions.push(...qs);
     }
 
     const questions = allRawQuestions.map((q, idx) => ({
@@ -182,6 +204,7 @@ export default async function handler(req, res) {
       effect: q.effect || "",
       isCauseTrue: q.isCauseTrue !== undefined ? q.isCauseTrue : true,
       isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true,
+      matchingPairs: q.matchingPairs && q.matchingPairs.length ? q.matchingPairs : [{ left: "", right: "" }, { left: "", right: "" }],
       needsManualAnswer: q.needsManualAnswer !== false,
     })).filter((q) => q.q.trim().length > 3);
 

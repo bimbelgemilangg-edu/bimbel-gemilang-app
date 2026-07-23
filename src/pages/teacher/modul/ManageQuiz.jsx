@@ -14,6 +14,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile } from '../../../services/uploadService';
 import SmartImportPanel from './SmartImportPanel';
+import AIGenerateQuiz from './AIGenerateQuiz';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 
@@ -132,6 +133,9 @@ const ManageQuiz = () => {
   
   // 🔥 SMART IMPORT
   const [showSmartImport, setShowSmartImport] = useState(false);
+
+  // 🔥 AI GENERATE DARI TOPIK
+  const [showAIGenerateQuiz, setShowAIGenerateQuiz] = useState(false);
   
   // Preview
   const [previewMode, setPreviewMode] = useState(false);
@@ -293,6 +297,7 @@ const ManageQuiz = () => {
               effect: q.effect || '',
               isCauseTrue: q.isCauseTrue !== undefined ? q.isCauseTrue : true,
               isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true,
+              matchingPairs: q.matchingPairs && q.matchingPairs.length ? q.matchingPairs : [{ left: '', right: '' }, { left: '', right: '' }],
               needsManualAnswer: false
             })));
           }
@@ -407,6 +412,22 @@ const ManageQuiz = () => {
     });
     const needsReview = parsedQuestions.filter(q => q.needsManualAnswer).length;
     showToast(`✅ ${parsedQuestions.length} soal berhasil diimpor!${needsReview > 0 ? ` ${needsReview} soal perlu ditandai jawabannya.` : ''}`);
+  };
+
+  // ============================================================
+  // 🔥 AI GENERATE DARI TOPIK - HASIL GENERATE
+  // ============================================================
+  const handleAIQuizGenerated = (generatedQuestions) => {
+    if (!generatedQuestions || generatedQuestions.length === 0) {
+      showToast("⚠️ AI tidak menghasilkan soal.", 'error');
+      return;
+    }
+    setQuestions(prev => {
+      const isPrevEmpty = prev.length === 1 && !prev[0].q.trim() && !prev[0].qImage;
+      return isPrevEmpty ? generatedQuestions : [...prev, ...generatedQuestions];
+    });
+    setIsAIGenerated(true);
+    showToast(`✨ ${generatedQuestions.length} soal berhasil dibuat AI! Cek dulu sebelum diterbitkan.`);
   };
 
   // ============================================================
@@ -1231,6 +1252,9 @@ const ManageQuiz = () => {
           effect: q.type === 'causeeffect' ? q.effect : undefined,
           isCauseTrue: q.type === 'causeeffect' ? q.isCauseTrue : undefined,
           isEffectTrue: q.type === 'causeeffect' ? q.isEffectTrue : undefined,
+          // 🔥 FIX BUG: matchingPairs dulu tidak pernah ikut disimpan, jadi soal
+          // Menjodohkan selalu kosong pas sampai ke siswa. Sekarang diikutkan.
+          matchingPairs: q.type === 'matching' ? q.matchingPairs : undefined,
         })),
         totalQuestions: valid.length,
         deadlineQuiz: deadline || null,
@@ -1384,6 +1408,25 @@ const ManageQuiz = () => {
             style={{ background: 'white', border: '1px solid #e2e8f0', padding: '8px 10px', borderRadius: 8, cursor: historyPointer >= history.length - 1 ? 'not-allowed' : 'pointer', opacity: historyPointer >= history.length - 1 ? 0.4 : 1 }}
           >
             <Redo2 size={14} />
+          </button>
+          <button 
+            onClick={() => setShowAIGenerateQuiz(true)} 
+            style={{ 
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              color: 'white', 
+              border: 'none', 
+              padding: '8px 14px', 
+              borderRadius: 8, 
+              fontWeight: 700, 
+              fontSize: 12, 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              boxShadow: '0 4px 12px rgba(245,158,11,0.3)'
+            }}
+          >
+            <Sparkles size={14} /> Generate dari Topik
           </button>
           <button 
             onClick={() => setShowSmartImport(true)} 
@@ -1553,9 +1596,14 @@ const ManageQuiz = () => {
           <h4 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
             <Layers size={18} /> 4. Soal Kuis ({questions.filter(q => q.q.trim() || q.qImage).length})
           </h4>
-          <button onClick={() => setShowSmartImport(true)} style={{ padding: '4px 10px', background: '#eef2ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#3730a3' }}>
-            <Sparkles size={12} /> Smart Import
-          </button>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button onClick={() => setShowAIGenerateQuiz(true)} style={{ padding: '4px 10px', background: '#fffbeb', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#b45309' }}>
+              <Sparkles size={12} /> Generate dari Topik
+            </button>
+            <button onClick={() => setShowSmartImport(true)} style={{ padding: '4px 10px', background: '#eef2ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#3730a3' }}>
+              <Sparkles size={12} /> Smart Import
+            </button>
+          </div>
         </div>
 
         {questions.map((item, idx) => renderQuestionEditor(item, idx))}
@@ -1674,6 +1722,17 @@ const ManageQuiz = () => {
         <SmartImportPanel
           onParsed={handleSmartParsed}
           onClose={() => setShowSmartImport(false)}
+        />
+      )}
+
+      {/* ========================================================== */}
+      {/* AI GENERATE DARI TOPIK MODAL */}
+      {/* ========================================================== */}
+      {showAIGenerateQuiz && (
+        <AIGenerateQuiz
+          subject={quizSubject}
+          onGenerated={handleAIQuizGenerated}
+          onClose={() => setShowAIGenerateQuiz(false)}
         />
       )}
 
