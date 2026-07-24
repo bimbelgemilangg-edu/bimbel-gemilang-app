@@ -62,6 +62,28 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   const [quizData, setQuizData] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // 🔥 FIX BUG KRITIS: sebelumnya React.useMemo untuk mengacak urutan kolom
+  // "Menjodohkan" dipanggil DI DALAM percabangan if (question.type === 'matching')
+  // pada fungsi renderQuestionOptions — artinya hook itu KADANG kepanggil,
+  // KADANG enggak, tergantung tipe soal yang lagi ditampilkan. Ini melanggar
+  // Rules of Hooks React (jumlah hook yang dipanggil harus selalu SAMA setiap
+  // render), dan menyebabkan crash total (layar putih kosong) begitu siswa
+  // pindah dari soal Menjodohkan ke tipe soal lain atau sebaliknya.
+  // Sekarang hook ini dipindah ke level atas komponen, dipanggil TANPA SYARAT
+  // di setiap render — aman sesuai aturan React.
+  const currentQuestionForShuffle = questions[currentIndex];
+  const shuffledMatchingPairs = React.useMemo(() => {
+    if (!currentQuestionForShuffle || currentQuestionForShuffle.type !== 'matching') return [];
+    const pairs = currentQuestionForShuffle.matchingPairs || [];
+    const arr = pairs.map((p, i) => ({ text: p.right, originalIndex: i }));
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQuestionForShuffle?.id]);
   const [answers, setAnswers] = useState({});
   const [flaggedQuestions, setFlaggedQuestions] = useState({});
   const [timeLeft, setTimeLeft] = useState(0);
@@ -574,14 +596,9 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
 
     if (question.type === 'matching') {
       const pairs = question.matchingPairs || [];
-      const rightShuffled = React.useMemo(() => {
-        const arr = pairs.map((p, i) => ({ text: p.right, originalIndex: i }));
-        for (let i = arr.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-      }, [question.id]);
+      // 🔥 Dipakai dari hook di level atas komponen (shuffledMatchingPairs),
+      // BUKAN dipanggil ulang di sini — lihat penjelasan fix di atas.
+      const rightShuffled = shuffledMatchingPairs;
 
       const currentAnswers = answers[question.id] || {};
 
