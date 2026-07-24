@@ -22,32 +22,104 @@ const QUESTIONS_PER_PACKAGE = 5;
 const MIN_IMAGE_BYTES = 8 * 1024; // gambar di bawah ini kemungkinan cuma bullet/ikon huruf, bukan diagram
 
 // ============================================================
-// Kompres & bersihkan gambar di dalam HTML hasil ekstraksi Word
+// 🔥 KONVERSI HTML -> TEKS POLOS, PAKAI DOMPARSER ASLI (BUKAN REGEX)
 // ============================================================
-async function processImagesInHtml(html, onProgress) {
-  const imgRegex = /<img[^>]*src="(data:[^"]+)"[^>]*>/gi;
-  const matches = [...html.matchAll(imgRegex)];
+// KENAPA DIROMBAK: dokumen Word ujian sering pakai PENOMORAN OTOMATIS
+// Word (bukan diketik manual "1. 2. 3."), dan strukturnya BERLAPIS —
+// soal di level luar (1,2,3...), opsi jawaban a/b/c/d di level DALAM,
+// bersarang di dalam tiap soal. Regex cuma bisa baca 1 lapis daftar, jadi
+// begitu ketemu struktur bersarang begini, hasilnya berantakan (soal
+// tercampur, opsi ilang). DOMParser beneran "paham" struktur pohon HTML-nya,
+// jadi bisa nomorin soal (1. 2. 3.) dan opsi (a. b. c. d.) secara terpisah
+// sesuai levelnya masing-masing — hasilnya jauh lebih akurat.
+//
+// Gambar ditangani lewat token penanda sementara (\x00IMG{n}\x00) dulu,
+// baru diproses (dikompres/dibuang) belakangan secara terpisah, supaya
+// urutan teksnya tetap presisi meski prosesnya asinkron.
+function extractPlainTextAndImages(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const images = [];
+
+  const walkList = (listEl, depth) => {
+    let out = '';
+    let counter = 0;
+    const isOrdered = listEl.tagName.toLowerCase() === 'ol';
+    for (const child of listEl.children) {
+      if (child.tagName.toLowerCase() !== 'li') continue;
+      counter++;
+      let marker;
+      if (!isOrdered) {
+        marker = '- ';
+      } else if (depth === 0) {
+        marker = `${counter}. `; // soal: 1. 2. 3.
+      } else if (depth === 1) {
+        marker = `${String.fromCharCode(96 + counter)}. `; // opsi: a. b. c. d.
+      } else {
+        marker = `${counter}. `;
+      }
+      out += '\n' + marker + walkNode(child, depth + 1).trim() + '\n';
+    }
+    return out;
+  };
+
+  const walkNode = (node, depth) => {
+    let out = '';
+    for (const child of node.childNodes) {
+      if (child.nodeType === Node.TEXT_NODE) {
+        out += child.textContent;
+      } else if (child.nodeType === Node.ELEMENT_NODE) {
+        const tag = child.tagName.toLowerCase();
+        if (tag === 'strong' || tag === 'b') {
+          out += '**' + walkNode(child, depth) + '**';
+        } else if (tag === 'ol' || tag === 'ul') {
+          out += walkList(child, depth);
+        } else if (tag === 'img') {
+          const src = child.getAttribute('src') || '';
+          if (src.startsWith('data:')) {
+            images.push(src);
+            out += `\n\x00IMG${images.length - 1}\x00\n`;
+          }
+        } else if (tag === 'br') {
+          out += '\n';
+        } else if (tag === 'p' || tag === 'div') {
+          out += '\n' + walkNode(child, depth) + '\n';
+        } else {
+          out += walkNode(child, depth);
+        }
+      }
+    }
+    return out;
+  };
+
+  const rawText = walkNode(doc.body, 0);
+  return { rawText, images };
+}
+
+// ============================================================
+// Kompres/bersihkan gambar yang dikumpulkan, lalu tempel balik ke teks
+// ============================================================
+async function resolveImages(rawText, images, onProgress) {
   const seenSignatures = new Set();
-  let result = html;
+  let text = rawText;
   let realImageCount = 0;
 
-  for (let i = 0; i < matches.length; i++) {
-    const fullTag = matches[i][0];
-    const dataUri = matches[i][1];
+  for (let i = 0; i < images.length; i++) {
+    const dataUri = images[i];
+    const placeholder = `\x00IMG${i}\x00`;
     const base64Part = dataUri.split(',')[1] || '';
     const approxBytes = Math.floor(base64Part.length * 0.75);
 
     // Buang gambar kecil (kemungkinan besar cuma bullet/ikon pilihan a/b/c/d,
     // bukan diagram/foto soal beneran)
     if (approxBytes < MIN_IMAGE_BYTES) {
-      result = result.replace(fullTag, '');
+      text = text.replace(placeholder, '');
       continue;
     }
 
     // Buang duplikat persis (dokumen sering ada bagian yang keulang)
     const signature = dataUri.length + '_' + dataUri.slice(0, 80);
     if (seenSignatures.has(signature)) {
-      result = result.replace(fullTag, '');
+      text = text.replace(placeholder, '');
       continue;
     }
     seenSignatures.add(signature);
@@ -62,49 +134,12 @@ async function processImagesInHtml(html, onProgress) {
         useWebWorker: true,
       });
       const compressedDataUri = await imageCompression.getDataUrlFromFile(compressedBlob);
-      result = result.replace(fullTag, `\n[[GAMBAR]]::${compressedDataUri}\n`);
+      text = text.replace(placeholder, `[[GAMBAR]]::${compressedDataUri}`);
     } catch (e) {
       // Gagal kompres 1 gambar -> buang aja gambarnya, jangan gagalkan semuanya
-      result = result.replace(fullTag, '');
+      text = text.replace(placeholder, '');
     }
   }
-
-  return result;
-}
-
-// ============================================================
-// Konversi sisa HTML (setelah gambar diproses) -> teks polos berpenanda
-// ============================================================
-function htmlToPlainText(html) {
-  let text = html;
-
-  // Bold -> **...** (penanda jawaban benar)
-  text = text.replace(/<\/?(strong|b)>/gi, '**');
-
-  // List bernomor Word (<ol><li>) -> mammoth biasanya buang angkanya,
-  // jadi dinomori ulang manual supaya deteksi "1. " tetap jalan
-  text = text.replace(/<ol[^>]*>([\s\S]*?)<\/ol>/gi, (match, inner) => {
-    let counter = 0;
-    return inner.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, (m2, item) => {
-      counter++;
-      return `\n${counter}. ${item}\n`;
-    });
-  });
-
-  // Paragraf & line break -> baris baru
-  text = text.replace(/<\/p>/gi, '\n').replace(/<br\s*\/?>/gi, '\n');
-
-  // Buang sisa tag HTML
-  text = text.replace(/<[^>]+>/g, '');
-
-  // Decode HTML entity dasar
-  text = text
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'");
 
   return text.replace(/\n{3,}/g, '\n\n').trim();
 }
@@ -167,12 +202,15 @@ const WordImportQuiz = ({ onParsed, onClose }) => {
       const arrayBuffer = await file.arrayBuffer();
       const { value: html } = await mammoth.convertToHtml({ arrayBuffer });
 
-      // 2. Kecilin & bersihin gambar di dalamnya (masih di browser)
-      setStatusLabel('Memeriksa gambar di dalam dokumen...');
-      const htmlWithProcessedImages = await processImagesInHtml(html, (msg) => setStatusLabel(msg));
+      // 2. Ubah HTML jadi teks polos (paham struktur soal+opsi berlapis),
+      //    sambil kumpulin gambar buat diproses belakangan
+      setStatusLabel('Membaca struktur soal...');
+      const { rawText, images } = extractPlainTextAndImages(html);
 
-      // 3. Ubah jadi teks polos berpenanda
-      const plainText = htmlToPlainText(htmlWithProcessedImages);
+      // 3. Kecilin & tempel balik gambar-gambarnya
+      setStatusLabel('Memeriksa gambar di dalam dokumen...');
+      const plainText = await resolveImages(rawText, images, (msg) => setStatusLabel(msg));
+
       if (!plainText || plainText.trim().length < 10) {
         throw new Error('File Word kosong atau teksnya tidak bisa dibaca.');
       }
