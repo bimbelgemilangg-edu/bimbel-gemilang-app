@@ -154,6 +154,14 @@ const ManageQuiz = () => {
   
   // 🔥 Flag untuk AI Generate
   const [isAIGenerated, setIsAIGenerated] = useState(false);
+  // 🔥 FIX BUG: flag buat bedain 2 skenario yang KEBETULAN sama-sama pakai
+  // `modulId` di URL tapi maksudnya beda total:
+  // (a) BUKA KUIS YANG SUDAH ADA buat diedit -> modulId = ID kuis itu sendiri
+  // (b) BIKIN KUIS BARU lalu ditautkan ke sebuah modul -> modulId dipilih dari
+  //     dropdown "Tautkan ke Modul", targetnya modul materi (BUKAN kuis)
+  // Tanpa flag ini, skenario (a) kesimpulan salah dianggap skenario (b),
+  // sehingga update malah bikin DUPLIKAT kuis baru alih-alih nimpa yang lama.
+  const [isEditingExistingQuiz, setIsEditingExistingQuiz] = useState(false);
 
   // 🔥 UNDO / REDO
   const [history, setHistory] = useState([]);
@@ -280,6 +288,11 @@ const ManageQuiz = () => {
           setQuizOpenDate(data.quizOpenDate || quizOpenDate);
           setQuizCloseDate(data.quizCloseDate || quizCloseDate);
           setIsAIGenerated(data.generatedByAI || false);
+
+          // 🔥 Kalau dokumen yang ke-fetch ini emang TIPE-NYA kuis (bukan modul
+          // materi), berarti kita lagi BUKA KUIS YANG SUDAH ADA buat diedit —
+          // bukan lagi milih modul tujuan buat kuis baru. Simpan penandanya.
+          setIsEditingExistingQuiz(data.type === 'kuis_mandiri');
           
           if (data.timeLimit > 0 || data.randomOrder || data.maxAttempts > 1) {
             setQuizMode('advanced');
@@ -1308,6 +1321,19 @@ const ManageQuiz = () => {
         quizPayload.maxAttempts = maxAttempts;
         quizPayload.showExplanation = showExplanation;
         quizPayload.difficulty = difficulty;
+      }
+
+      // 🔥 FIX BUG: kalau ini KUIS YANG SUDAH ADA lagi diedit (bukan bikin
+      // baru), langsung UPDATE dokumen itu sendiri di tempat. Ini WAJIB
+      // dicek PALING DULU, sebelum percabangan lain (isFromModul / Tautkan ke
+      // Modul) — soalnya kalau enggak, sistem bisa salah kira ini "mau bikin
+      // kuis baru ditautkan ke modul lain" dan malah bikin DUPLIKAT.
+      if (isEditingExistingQuiz && !isFromModul) {
+        await updateDoc(doc(db, "bimbel_modul", modulId), quizPayload);
+        alert(`✅ Kuis "${quizTitle}" berhasil diperbarui!`);
+        localStorage.removeItem(draftKey);
+        navigate(-1);
+        return;
       }
 
       // 🔥 JIKA DARI MODUL
