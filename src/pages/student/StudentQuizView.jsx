@@ -1347,7 +1347,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
             </p>
             <div style={styles.modalActions}>
               <button onClick={() => setShowConfirm(false)} style={styles.modalCancel}>Batal</button>
-              <button onClick={handleSubmitQuiz} style={styles.modalSubmit}>
+              <button onClick={() => handleSubmitQuiz()} style={styles.modalSubmit}>
                 Kirim Jawaban
               </button>
             </div>
