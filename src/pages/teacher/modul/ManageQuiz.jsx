@@ -672,30 +672,38 @@ const ManageQuiz = () => {
                   <>
                     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr', gap: 6 }}>
                       {item.options.map((opt, oIdx) => (
-                        <div key={oIdx} onClick={() => { updateQuestion(item.id, 'correct', oIdx); clearManualFlag(item.id); }} style={{
-                          display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
-                          border: `2px solid ${item.correct === oIdx ? '#10b981' : '#e2e8f0'}`,
-                          background: item.correct === oIdx ? '#f0fdf4' : 'white',
-                          transition: '0.2s'
-                        }}>
-                          <div style={{
-                            width: 20, height: 20, borderRadius: '50%',
-                            border: `2px solid ${item.correct === oIdx ? '#10b981' : '#cbd5e1'}`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                        <div key={oIdx} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                          <div onClick={() => { updateQuestion(item.id, 'correct', oIdx); clearManualFlag(item.id); }} style={{
+                            display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
+                            border: `2px solid ${item.correct === oIdx ? '#10b981' : '#e2e8f0'}`,
+                            background: item.correct === oIdx ? '#f0fdf4' : 'white',
+                            transition: '0.2s'
                           }}>
-                            {item.correct === oIdx && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981' }}></div>}
+                            <div style={{
+                              width: 20, height: 20, borderRadius: '50%',
+                              border: `2px solid ${item.correct === oIdx ? '#10b981' : '#cbd5e1'}`,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                            }}>
+                              {item.correct === oIdx && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981' }}></div>}
+                            </div>
+                            <input
+                              value={opt}
+                              placeholder={`Opsi ${String.fromCharCode(65 + oIdx)}`}
+                              onChange={e => {
+                                const newOpts = [...item.options]; newOpts[oIdx] = e.target.value;
+                                updateQuestion(item.id, 'options', newOpts);
+                              }}
+                              onClick={e => e.stopPropagation()}
+                              style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 12, outline: 'none' }}
+                            />
+                            {item.correct === oIdx && <CheckCircle size={14} color="#10b981" />}
                           </div>
-                          <input
-                            value={opt}
-                            placeholder={`Opsi ${String.fromCharCode(65 + oIdx)}`}
-                            onChange={e => {
-                              const newOpts = [...item.options]; newOpts[oIdx] = e.target.value;
-                              updateQuestion(item.id, 'options', newOpts);
-                            }}
-                            onClick={e => e.stopPropagation()}
-                            style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 12, outline: 'none' }}
-                          />
-                          {item.correct === oIdx && <CheckCircle size={14} color="#10b981" />}
+                          {/* 🔥 Preview rumus ter-render — biar guru gak cuma liat kode "$...$" mentah */}
+                          {opt && opt.includes('$') && (
+                            <div style={{ paddingLeft: 30, fontSize: 11, color: '#64748b' }}>
+                              👁️ {renderMath(opt)}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -1060,6 +1068,13 @@ const ManageQuiz = () => {
                   style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
                   rows={2}
                 />
+                {/* 🔥 Preview rumus ter-render — biar guru bisa BACA pembahasannya, bukan cuma liat kode LaTeX mentah */}
+                {item.explanation && (
+                  <div style={{ marginTop: 6, padding: 10, background: '#f8fafc', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, lineHeight: 1.6 }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', marginBottom: 4 }}>👁️ TAMPILAN UNTUK DIBACA</div>
+                    {renderMath(item.explanation)}
+                  </div>
+                )}
               </div>
             )}
           </div>

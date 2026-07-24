@@ -215,7 +215,7 @@ const ModulManager = () => {
     const hasQuiz = item.blocks?.some(b => b.type === 'quiz' && b.quizId);
     const hasQuizData = item.quizData?.length > 0;
     
-    if (item.type === 'kuis_mandiri' || hasQuizData) {
+    if (item.type === 'kuis_mandiri') {
       return { 
         label: 'Kuis', 
         icon: <FileQuestion size={12} />, 
@@ -235,6 +235,13 @@ const ModulManager = () => {
         gradient: 'linear-gradient(135deg, #ef4444, #dc2626)'
       };
     }
+    // 🔥 FIX BUG PENTING: sebelumnya `hasQuizData` (sisa field quizData, termasuk
+    // dari bug lama yang menimpa dokumen materi) dicek LEBIH DULU daripada
+    // `blocks`. Akibatnya modul yang beneran punya konten materi tapi kebetulan
+    // ada sisa quizData nempel, ke-klasifikasi sebagai "Kuis" murni — dan guru
+    // jadi tidak bisa lagi masuk ke editor materi untuk modul itu (link Edit
+    // selalu ngarah ke editor kuis). Sekarang `blocks` (konten materi asli)
+    // SELALU diprioritaskan sebagai penentu utama "Modul", apapun sisa data lain.
     if (item.blocks?.length > 0) {
       return { 
         label: 'Modul', 
@@ -243,6 +250,16 @@ const ModulManager = () => {
         bg: '#dbeafe',
         emoji: '📚',
         gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)'
+      };
+    }
+    if (hasQuizData) {
+      return { 
+        label: 'Kuis', 
+        icon: <FileQuestion size={12} />, 
+        color: '#f59e0b', 
+        bg: '#fef3c7',
+        emoji: '❓',
+        gradient: 'linear-gradient(135deg, #f59e0b, #d97706)'
       };
     }
     return { 

@@ -14,6 +14,7 @@ import {
   Users, GraduationCap
 } from 'lucide-react';
 import StudentModuleView from './StudentModuleView';
+import StudentQuizView from './StudentQuizView';
 
 // ============================================================
 // CONSTANTS
@@ -555,9 +556,18 @@ const StudentElearning = () => {
   }
 
   // ============================================================
-  // DETAIL VIEW (pakai StudentModuleView)
+  // DETAIL VIEW
+  // 🔥 FIX BUG PENTING: sebelumnya SEMUA item (termasuk kuis mandiri yang
+  // tidak ditautkan ke modul) selalu dibuka pakai StudentModuleView (tampilan
+  // materi) — karena StudentQuizView tidak pernah dipanggil di sini sama
+  // sekali. Akibatnya kuis mandiri muncul sebagai "Materi (0)" kosong dan
+  // siswa tidak bisa mengerjakannya. Sekarang dicek dulu tipe kontennya:
+  // kalau kuis mandiri -> StudentQuizView, kalau bukan -> StudentModuleView.
   // ============================================================
   if (selectedModuleId) {
+    const selectedModuleData = modules.find(m => m.id === selectedModuleId);
+    const isSelectedQuiz = selectedModuleData?.type === 'kuis_mandiri';
+
     return (
       <div style={{ width: '100%', padding: isMobile ? 10 : 20, boxSizing: 'border-box' }}>
         <button 
@@ -572,11 +582,19 @@ const StudentElearning = () => {
         >
           <ArrowLeft size={16} /> Kembali ke Daftar
         </button>
-        <StudentModuleView 
-          modulId={selectedModuleId} 
-          onBack={handleBack}
-          studentData={studentData}
-        />
+        {isSelectedQuiz ? (
+          <StudentQuizView
+            modulId={selectedModuleId}
+            onBack={handleBack}
+            studentData={studentData}
+          />
+        ) : (
+          <StudentModuleView 
+            modulId={selectedModuleId} 
+            onBack={handleBack}
+            studentData={studentData}
+          />
+        )}
       </div>
     );
   }
