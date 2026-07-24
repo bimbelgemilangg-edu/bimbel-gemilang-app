@@ -1381,7 +1381,11 @@ const ManageQuiz = () => {
 
       // 🔥 JIKA KUIS MANDIRI (bukan dari modul)
       if (publishTarget === 'modul') {
-        if (!selectedModul) return alert("❌ Pilih modul tujuan!");
+        if (!selectedModul) {
+          alert("❌ Pilih modul tujuan!");
+          setLoading(false);
+          return;
+        }
         const modulSnap = await getDoc(doc(db, "bimbel_modul", selectedModul));
         let modulSubject = '';
         if (modulSnap.exists()) modulSubject = modulSnap.data().subject || '';
@@ -1410,9 +1414,18 @@ const ManageQuiz = () => {
       localStorage.removeItem(draftKey);
       navigate(-1);
     } catch (err) { 
+      // 🔥 FIX BUG PENTING: sebelumnya `setLoading(false)` ditulis sebagai
+      // baris BIASA setelah blok try/catch — bukan di dalam `finally`. Begitu
+      // ada `return` di tengah proses (misal validasi "Pilih modul tujuan!"
+      // gagal), `return` itu langsung KELUAR DARI SELURUH FUNGSI dan
+      // MELOMPATI baris `setLoading(false)` yang ada di bawahnya — akibatnya
+      // tombol macet loading terus tanpa pernah balik normal. Sekarang
+      // `setLoading(false)` dipindah ke `finally`, yang DIJAMIN selalu
+      // jalan apapun yang terjadi (sukses, gagal, atau return di tengah).
       alert("❌ Gagal: " + err.message); 
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   // ============================================================

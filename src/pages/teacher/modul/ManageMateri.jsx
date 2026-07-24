@@ -430,14 +430,36 @@ const ManageMateri = () => {
       setLoading(true);
       try {
         const { teacherName } = await fetchTeacherData();
-        const siswaFromJadwal = await fetchStudentsFromSchedules(teacherName);
-        setAllStudents(siswaFromJadwal);
-        setFilteredStudents(siswaFromJadwal);
-        
-        if (editId) await fetchModulData();
-        
+
+        // 🔥 FIX BUG PENTING: sebelumnya daftar siswa buat "kirim ke siswa
+        // tertentu" diambil lewat fetchStudentsFromSchedules() — yang cuma
+        // nampilin siswa yang KEBETULAN sudah pernah dijadwalkan mengajar
+        // sama guru ini (dicocokkan dari nama guru di jadwal_bimbel). Siswa
+        // baru yang ditambahkan admin tapi belum pernah dijadwalkan —
+        // apapun program-nya (Reguler ataupun English) — jadi TIDAK PERNAH
+        // muncul untuk dipilih. Sekarang diambil LANGSUNG dari koleksi
+        // "students", sama seperti cara availableClasses diambil di bawah,
+        // supaya semua siswa yang terdaftar selalu bisa dipilih.
         const snapSiswa = await getDocs(collection(db, "students"));
-        const classes = [...new Set(snapSiswa.docs.map(d => d.data().kelasSekolah).filter(Boolean))];
+        const allSiswaData = snapSiswa.docs.map(d => {
+          const data = d.data();
+          return {
+            id: d.id,
+            studentId: data.studentId || d.id,
+            nama: data.nama || 'Siswa',
+            kelasSekolah: data.kelasSekolah || '-',
+            program: data.kategori || 'Reguler',
+            isActive: data.status === 'Aktif' && !data.isBlocked,
+          };
+        }).sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+
+        setAllStudents(allSiswaData);
+        setFilteredStudents(allSiswaData);
+        setStats(prev => ({ ...prev, totalSiswa: allSiswaData.length }));
+
+        if (editId) await fetchModulData();
+
+        const classes = [...new Set(allSiswaData.map(s => s.kelasSekolah).filter(k => k && k !== '-'))];
         setAvailableClasses(['Semua', ...classes.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))]);
         
       } catch (e) {

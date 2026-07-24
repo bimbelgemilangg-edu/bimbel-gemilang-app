@@ -116,13 +116,13 @@ async function callGemini(systemPrompt, userText, modelName) {
 async function parseChunk(chunkText) {
   const systemPrompt = `Kamu adalah parser soal ujian. Input berupa TEKS POLOS potongan dari PDF/Word (bisa berisi 1-5 soal saja), dengan aturan:
 - Teks yang dibungkus **seperti ini** artinya BOLD di dokumen asli.
-- Baris "[[GAMBAR]]::url" adalah penanda gambar di halaman itu.
+- Penanda "[[IMG:n]]" (n = angka) artinya ADA GAMBAR persis di posisi itu. Kamu TIDAK PERLU dan TIDAK BISA melihat isi gambarnya — cukup salin penanda itu APA ADANYA (utuh, termasuk tanda kurung sikunya) ke field questionImage kalau gambar itu bagian dari soal tersebut. JANGAN mengarang deskripsi gambar, JANGAN mengubah angka n di dalamnya.
 
 TUGAS:
 1. Pisahkan soal dari teks bukan-soal (judul, instruksi umum). Buang yang bukan soal.
 2. Tentukan type dari: ${QUESTION_TYPES.join(", ")}.
 3. Jika ada opsi bold, itu jawaban benar (needsManualAnswer:false, hapus tanda ** dari teks final). Jika tidak ada bold sama sekali di soal itu, correct:0, needsManualAnswer:true — JANGAN MENEBAK jawaban benar kalau tidak ada tanda bold, karena bisa salah dan menyesatkan siswa.
-4. Jika ada [[GAMBAR]]::url tepat sebelum soal, jadikan questionImage, hapus barisnya dari hasil.
+4. Jika ada "[[IMG:n]]" tepat sebelum/di dalam soal, salin PERSIS penanda itu ke questionImage (contoh: "[[IMG:3]]"), lalu hapus penandanya dari teks soal akhir.
 5. JAWAB HANYA JSON valid, tanpa penjelasan, tanpa markdown fence.
 
 Format:

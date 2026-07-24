@@ -96,12 +96,23 @@ function extractPlainTextAndImages(html) {
 }
 
 // ============================================================
-// Kompres/bersihkan gambar yang dikumpulkan, lalu tempel balik ke teks
+// Kompres/bersihkan gambar yang dikumpulkan, HASILKAN PENANDA RINGAN
+// (bukan tempel base64 utuh ke teks!) + peta gambar terpisah
 // ============================================================
+// 🔥 FIX FATAL: sebelumnya base64 gambar (bisa jutaan karakter buat 1
+// dokumen) ditempel LANGSUNG di tengah teks yang dikirim ke AI. AI cuma
+// butuh TAU "di sini ada gambar", dia sama sekali gak perlu (dan gak bisa
+// dengan baik) "membaca" base64 sebagai teks — jadi semua data itu cuma
+// jadi sampah yang bikin request ke AI kegedean & lambat, ujungnya sering
+// gagal/timeout. Sekarang gambar diganti PENANDA RINGAN (cuma beberapa
+// karakter, misal "[[IMG:3]]"), sementara data gambar aslinya disimpan
+// terpisah di sini (imageMap) dan ditempel BALIK ke hasil parsing di sisi
+// browser — bukan lewat AI sama sekali.
 async function resolveImages(rawText, images, onProgress) {
   const seenSignatures = new Set();
   let text = rawText;
   let realImageCount = 0;
+  const imageMap = {}; // { "0": dataURI, "1": dataURI, ... }
 
   for (let i = 0; i < images.length; i++) {
     const dataUri = images[i];
@@ -134,14 +145,18 @@ async function resolveImages(rawText, images, onProgress) {
         useWebWorker: true,
       });
       const compressedDataUri = await imageCompression.getDataUrlFromFile(compressedBlob);
-      text = text.replace(placeholder, `[[GAMBAR]]::${compressedDataUri}`);
+      const imgId = String(Object.keys(imageMap).length);
+      imageMap[imgId] = compressedDataUri;
+      // 🔥 Penanda RINGAN doang yang masuk ke teks (cuma ~10 karakter),
+      // BUKAN data base64-nya. Data asli aman di imageMap, dipakai lagi nanti.
+      text = text.replace(placeholder, `[[IMG:${imgId}]]`);
     } catch (e) {
       // Gagal kompres 1 gambar -> buang aja gambarnya, jangan gagalkan semuanya
       text = text.replace(placeholder, '');
     }
   }
 
-  return text.replace(/\n{3,}/g, '\n\n').trim();
+  return { text: text.replace(/\n{3,}/g, '\n\n').trim(), imageMap };
 }
 
 // ============================================================
@@ -207,9 +222,9 @@ const WordImportQuiz = ({ onParsed, onClose }) => {
       setStatusLabel('Membaca struktur soal...');
       const { rawText, images } = extractPlainTextAndImages(html);
 
-      // 3. Kecilin & tempel balik gambar-gambarnya
+      // 3. Kecilin gambar-gambarnya, GANTI jadi penanda ringan (bukan base64 utuh)
       setStatusLabel('Memeriksa gambar di dalam dokumen...');
-      const plainText = await resolveImages(rawText, images, (msg) => setStatusLabel(msg));
+      const { text: plainText, imageMap } = await resolveImages(rawText, images, (msg) => setStatusLabel(msg));
 
       if (!plainText || plainText.trim().length < 10) {
         throw new Error('File Word kosong atau teksnya tidak bisa dibaca.');
@@ -221,7 +236,8 @@ const WordImportQuiz = ({ onParsed, onClose }) => {
         throw new Error('Tidak ditemukan soal. Pastikan tiap soal diawali nomor (1. 2. 3. dst).');
       }
 
-      // 5. Kirim tiap paket satu-satu ke AI (server), gabungkan hasilnya
+      // 5. Kirim tiap paket satu-satu ke AI (server) — cuma teks + penanda
+      //    ringan "[[IMG:n]]", TANPA data gambar beneran, jadi ringan & cepat
       let allQuestions = [];
       let failedPackages = 0;
       for (let i = 0; i < packages.length; i++) {
@@ -251,6 +267,23 @@ const WordImportQuiz = ({ onParsed, onClose }) => {
       if (allQuestions.length === 0) {
         throw new Error('Tidak ada soal yang berhasil diproses. Coba cek format penomoran soalnya.');
       }
+
+      // 6. Tempel BALIK gambar asli — AI cuma megang penanda "[[IMG:n]]",
+      //    data gambar sebenarnya (base64) diambil dari imageMap yang tadi
+      //    disimpan di browser, TIDAK PERNAH ikut terkirim ke AI.
+      const imgTagRegex = /\[\[IMG:(\d+)\]\]/;
+      allQuestions = allQuestions.map(q => {
+        const match = (q.qImage || '').match(imgTagRegex);
+        if (match && imageMap[match[1]]) {
+          return { ...q, qImage: imageMap[match[1]] };
+        }
+        // AI kadang nyimpen penandanya di `question` bukan `qImage` — cek juga
+        const qMatch = (q.q || '').match(imgTagRegex);
+        if (qMatch && imageMap[qMatch[1]]) {
+          return { ...q, qImage: imageMap[qMatch[1]], q: q.q.replace(imgTagRegex, '').trim() };
+        }
+        return q.qImage && imgTagRegex.test(q.qImage) ? { ...q, qImage: '' } : q; // penanda gagal dicocokkan -> kosongin drpd nyimpen teks aneh
+      });
 
       onParsed(allQuestions);
 
