@@ -241,6 +241,11 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           useSchedule: data.useSchedule || false,
           quizOpenDate: data.quizOpenDate || null,
           quizCloseDate: data.quizCloseDate || null,
+          // 🔥 Disimpan supaya bisa didenormalisasi ke jawaban_kuis pas submit —
+          // dipakai CekTugasSiswa.jsx untuk mencocokkan submission ke guru yang
+          // benar berdasarkan ID, bukan cocok-cocokan nama mapel yang rapuh.
+          guruId: data.guruId || '',
+          kodeMapel: data.kodeMapel || '',
         });
 
         setQuestions(questionsData);
@@ -732,50 +737,77 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     setShowConfirm(false);
     setIsSubmitted(true);
 
-    let correctCount = 0;
+    // 🔥 NILAI PROPORSIONAL untuk soal multi-bagian (Benar/Salah, Sebab-Akibat,
+    // Menjodohkan, Membaca Teks): sebelumnya SEMUA-ATAU-TIDAK-SAMA-SEKALI —
+    // misal soal Menjodohkan 4 pasang, benar cuma 1, itu dihitung SALAH TOTAL
+    // (0 poin), sama kayak kalau semua salah. Sekarang dihitung proporsional:
+    // benar 1 dari 4 = dapat 1/4 poin untuk soal itu, bukan 0.
+    // Pilihan Ganda, Pilih Lebih dari Satu, dan Isian Singkat TETAP semua-atau-
+    // tidak-sama-sekali (memang wajar untuk tipe itu, jawabannya cuma satu).
+    let correctCount = 0; // jumlah soal yang BENAR SEMPURNA (buat statistik "Benar: X")
+    let pointsEarned = 0; // total poin (boleh pecahan) buat hitung skor akhir
     const detailedResults = questions.map(q => {
       const userAnswer = answers[q.id];
       let isCorrect = false;
-      
-      // 🔥 CEK BERDASARKAN TIPE SOAL
+      let partialFraction = 0;
+      let partsCorrect = null;
+      let partsTotal = null;
+
       if (q.type === 'truefalse') {
-        if (typeof userAnswer === 'object') {
-          let allCorrect = true;
-          q.statements.forEach((stmt, idx) => {
-            if (userAnswer[idx] !== stmt.isTrue) allCorrect = false;
-          });
-          isCorrect = allCorrect;
+        const total = q.statements?.length || 0;
+        let benar = 0;
+        if (typeof userAnswer === 'object' && userAnswer !== null) {
+          q.statements.forEach((stmt, idx) => { if (userAnswer[idx] === stmt.isTrue) benar++; });
         }
+        partsCorrect = benar; partsTotal = total;
+        partialFraction = total > 0 ? benar / total : 0;
+        isCorrect = total > 0 && benar === total;
       } else if (q.type === 'multiselect') {
         if (Array.isArray(userAnswer) && Array.isArray(q.correctAnswers)) {
           const sortedUser = [...userAnswer].sort();
           const sortedCorrect = [...q.correctAnswers].sort();
-          isCorrect = sortedUser.length === sortedCorrect.length && 
+          isCorrect = sortedUser.length === sortedCorrect.length &&
                       sortedUser.every((val, i) => val === sortedCorrect[i]);
         }
+        partialFraction = isCorrect ? 1 : 0;
       } else if (q.type === 'shortanswer') {
         isCorrect = userAnswer?.toLowerCase().trim() === q.shortAnswer?.toLowerCase().trim();
+        partialFraction = isCorrect ? 1 : 0;
       } else if (q.type === 'causeeffect') {
-        isCorrect = userAnswer?.cause === q.isCauseTrue && userAnswer?.effect === q.isEffectTrue;
+        let benar = 0;
+        if (userAnswer?.cause === q.isCauseTrue) benar++;
+        if (userAnswer?.effect === q.isEffectTrue) benar++;
+        partsCorrect = benar; partsTotal = 2;
+        partialFraction = benar / 2;
+        isCorrect = benar === 2;
       } else if (q.type === 'reading') {
-        if (typeof userAnswer === 'object') {
-          let allCorrect = true;
-          q.subQuestions.forEach((sq, idx) => {
-            if (userAnswer[idx] !== sq.correct) allCorrect = false;
-          });
-          isCorrect = allCorrect;
-        }
-      } else if (q.type === 'matching') {
+        const total = q.subQuestions?.length || 0;
+        let benar = 0;
         if (typeof userAnswer === 'object' && userAnswer !== null) {
-          const pairs = q.matchingPairs || [];
-          isCorrect = pairs.every((p, idx) => userAnswer[idx] === idx);
+          q.subQuestions.forEach((sq, idx) => { if (userAnswer[idx] === sq.correct) benar++; });
         }
+        partsCorrect = benar; partsTotal = total;
+        partialFraction = total > 0 ? benar / total : 0;
+        isCorrect = total > 0 && benar === total;
+      } else if (q.type === 'matching') {
+        const pairs = q.matchingPairs || [];
+        const total = pairs.length;
+        let benar = 0;
+        if (typeof userAnswer === 'object' && userAnswer !== null) {
+          pairs.forEach((p, idx) => { if (userAnswer[idx] === idx) benar++; });
+        }
+        partsCorrect = benar; partsTotal = total;
+        partialFraction = total > 0 ? benar / total : 0;
+        isCorrect = total > 0 && benar === total;
       } else {
         // Pilihan Ganda (termasuk yang opsinya gambar)
         isCorrect = userAnswer === q.correctAnswer;
+        partialFraction = isCorrect ? 1 : 0;
       }
-      
+
       if (isCorrect) correctCount++;
+      pointsEarned += partialFraction;
+
       return {
         id: q.id,
         type: q.type,
@@ -795,10 +827,14 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         explanation: q.explanation || '',
         userAnswer,
         isCorrect,
+        // 🔥 info nilai sebagian, dipakai buat nampilin "2 dari 4 benar" di layar hasil
+        partialFraction,
+        partsCorrect,
+        partsTotal,
       };
     });
 
-    const score = Math.round((correctCount / questions.length) * 100);
+    const score = questions.length > 0 ? Math.round((pointsEarned / questions.length) * 100) : 0;
 
     try {
       const nim = studentInfo.nim;
@@ -809,6 +845,11 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         studentName: studentInfo.name,
         studentClass: studentInfo.kelas,
         subject: quizData?.subject || 'Umum',
+        // 🔥 FIX: guruId & kodeMapel didenormalisasi dari dokumen kuis, supaya
+        // "Cek Tugas Siswa" bisa cocokin submission ke guru yang benar pakai ID
+        // (akurat), bukan cocok-cocokan nama mapel (rapuh, gampang meleset).
+        guruId: quizData?.guruId || '',
+        kodeMapel: quizData?.kodeMapel || '',
         answers: answers,
         correctAnswers: correctCount,
         totalQuestions: questions.length,
@@ -819,6 +860,24 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         submittedAt: serverTimestamp(),
         status: "Dinilai"
       });
+
+      // 🔥 FIX BUG: sebelumnya `results` cuma di-set tapi TIDAK PERNAH ada
+      // bagian render yang menampilkannya — jadi siswa tetap nyangkut di
+      // layar soal (yang sekarang disabled) tanpa pernah lihat nilai/jawaban.
+      // Sekarang pakai jalur yang SAMA dengan layar "sudah pernah mengerjakan"
+      // (existingResult + hasExistingAnswer) yang memang sudah punya tampilan
+      // lengkap skor + review jawaban — jadi begitu submit sukses, langsung
+      // pindah ke layar itu.
+      setExistingResult({
+        score,
+        correctAnswers: correctCount,
+        totalQuestions: questions.length,
+        details: detailedResults,
+        isAutoSubmit: isAuto,
+        timeUsed: (quizData?.timeLimit || 0) * 60 - timeLeft,
+        submittedAt: new Date(),
+      });
+      setHasExistingAnswer(true);
 
       setResults({
         correctCount,
@@ -902,7 +961,9 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
               Anda telah mengerjakan kuis ini pada{' '}
               {existingResult.submittedAt?.toDate 
                 ? existingResult.submittedAt.toDate().toLocaleString('id-ID')
-                : 'sebelumnya'}
+                : existingResult.submittedAt instanceof Date
+                  ? existingResult.submittedAt.toLocaleString('id-ID')
+                  : 'barusan'}
             </p>
             {isAutoSubmit && (
               <p style={{ color: '#f59e0b', fontSize: 13, marginTop: 4 }}>
@@ -950,12 +1011,17 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
               <h4 style={styles.answersTitle}>📋 Daftar Jawaban & Pembahasan</h4>
               {details.map((q, idx) => {
                 const isCorrect = q.isCorrect;
+                const hasPartial = q.partsTotal !== null && q.partsTotal !== undefined && q.partsTotal > 0;
                 return (
                   <div key={q.id} style={styles.answerItem(isCorrect)}>
                     <div style={styles.answerHeader}>
                       <span style={styles.answerNumber}>Soal {idx + 1}</span>
                       <span style={styles.answerStatus(isCorrect)}>
-                        {isCorrect ? '✅ Benar' : '❌ Salah'}
+                        {isCorrect
+                          ? '✅ Benar'
+                          : hasPartial && q.partsCorrect > 0
+                            ? `🟡 ${q.partsCorrect} dari ${q.partsTotal} benar`
+                            : '❌ Salah'}
                       </span>
                     </div>
                     

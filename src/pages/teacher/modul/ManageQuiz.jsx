@@ -1252,6 +1252,12 @@ const ManageQuiz = () => {
     
     setLoading(true);
     try {
+      // 🔥 Dipindah ke atas: dipakai di SEMUA jalur simpan (bukan cuma kuis
+      // mandiri), supaya guruId konsisten ada di setiap dokumen kuis —
+      // ini yang dipakai CekTugasSiswa.jsx buat nampilin submission ke guru
+      // yang benar, jadi harus selalu keisi, gak boleh ketinggalan.
+      const savedTeacher = JSON.parse(localStorage.getItem('teacherData') || '{}');
+
       const quizPayload = {
         // 🔥 FIX BUG PENTING: Firestore MENOLAK field bernilai `undefined` (bikin
         // addDoc/updateDoc gagal total dengan error "Unsupported field value:
@@ -1314,10 +1320,23 @@ const ManageQuiz = () => {
           
           const section = blocks[sectionIndex];
           let quizId = section.quizId;
+
+          // 🔥 FIX: dulu guruId gak pernah diisi di jalur ini, jadi kuis yang
+          // ditautkan ke modul gak kedeteksi di halaman "Cek Tugas Siswa".
+          // Utamakan guruId dari modul induknya (paling akurat, karena kuis
+          // ini emang bagian dari modul itu), fallback ke akun guru yang lagi login.
+          const ownerGuruId = modulData.guruId || savedTeacher.guruId || savedTeacher.id || '';
+          const ownerGuruName = modulData.guruName || savedTeacher.nama || '';
+          const ownerKodeMapel = modulData.kodeMapel || savedTeacher.kodeMapel || '';
           
           if (quizId) {
             // Update quiz yang sudah ada
-            await updateDoc(doc(db, "bimbel_modul", quizId), quizPayload);
+            await updateDoc(doc(db, "bimbel_modul", quizId), {
+              ...quizPayload,
+              guruId: ownerGuruId,
+              guruName: ownerGuruName,
+              kodeMapel: ownerKodeMapel,
+            });
           } else {
             // Buat quiz baru
             const newQuiz = await addDoc(collection(db, "bimbel_modul"), {
@@ -1326,6 +1345,9 @@ const ManageQuiz = () => {
               subject: quizSubject || "Kuis",
               type: 'kuis_mandiri',
               status: 'aktif',
+              guruId: ownerGuruId,
+              guruName: ownerGuruName,
+              kodeMapel: ownerKodeMapel,
               createdAt: serverTimestamp()
             });
             quizId = newQuiz.id;
@@ -1362,7 +1384,6 @@ const ManageQuiz = () => {
         });
         alert(`✅ Kuis disimpan ke modul!`);
       } else {
-        const saved = JSON.parse(localStorage.getItem('teacherData') || '{}');
         await addDoc(collection(db, "bimbel_modul"), {
           title: quizTitle.toUpperCase(),
           subject: quizSubject || "Kuis",
@@ -1371,9 +1392,9 @@ const ManageQuiz = () => {
           targetKategori: publishTarget === 'jenjang' ? selectedProgram : "Semua",
           targetKelas: publishTarget === 'jenjang' ? selectedKelas : "Semua",
           status: 'aktif',
-          guruId: saved.guruId || saved.id || '',
-          kodeMapel: saved.kodeMapel || '',
-          guruName: saved.nama || '',
+          guruId: savedTeacher.guruId || savedTeacher.id || '',
+          kodeMapel: savedTeacher.kodeMapel || '',
+          guruName: savedTeacher.nama || '',
           authorName: localStorage.getItem('teacherName') || localStorage.getItem('userName') || "Guru",
           createdAt: serverTimestamp()
         });

@@ -59,6 +59,8 @@ const CekTugasSiswa = () => {
             setGuruData(guru);
             setKodeMapel(guru.kodeMapel || '');
             // 🔥 Simpan SEMUA variasi mapel (capitalized, uppercase, lowercase)
+            // — ini tetap dipertahankan sebagai FALLBACK untuk data submission
+            // lama yang belum punya guruId (lihat filterByOwner di bawah).
             const mapelVariations = [];
             if (guru.mapel) {
               mapelVariations.push(guru.mapel);
@@ -80,6 +82,7 @@ const CekTugasSiswa = () => {
     try {
       const saved = JSON.parse(localStorage.getItem('teacherData') || '{}');
       const guruMapel = saved.mapel || '';
+      const myGuruId = saved.guruId || saved.id || '';
       
       // 🔥 Ambil SEMUA data dulu (1 query per koleksi)
       const [snapT, snapQ] = await Promise.all([
@@ -90,7 +93,7 @@ const CekTugasSiswa = () => {
       const allTasks = snapT.docs.map(d => ({ id: d.id, ...d.data(), type: 'tugas' }));
       const allQuizzes = snapQ.docs.map(d => ({ id: d.id, ...d.data(), type: 'kuis' }));
 
-      // 🔥 Gabungkan semua variasi mapel untuk filter
+      // 🔥 Gabungkan semua variasi mapel untuk filter FALLBACK (nama teks)
       const mapelVariations = [...new Set([
         kodeMapel,
         guruMapel,
@@ -102,21 +105,29 @@ const CekTugasSiswa = () => {
         ...mapelList
       ].filter(Boolean))];
 
-      // 🔥 FILTER CLIENT-SIDE (case-insensitive)
-      const filterByMapel = (item) => {
-        if (mapelVariations.length === 0) return true; // Tampilkan semua kalau tidak ada mapel
-        
+      // 🔥 FIX UTAMA: dulu filter SATU-SATUNYA cara adalah cocok-cocokan nama
+      // mapel (rapuh — gampang meleset kalau ada perbedaan kapitalisasi, spasi,
+      // atau kuis dibuat dengan label mapel yang beda dari mapel utama guru).
+      // Sekarang PRIORITAS UTAMA: cocokkan guruId (ID unik, akurat, gak bisa
+      // salah). Fallback ke cocok-cocokan nama mapel HANYA untuk submission
+      // lama yang dokumennya belum punya field guruId sama sekali.
+      const filterByOwner = (item) => {
+        // Prioritas 1: match berdasarkan guruId (akurat)
+        if (item.guruId) {
+          return myGuruId && item.guruId === myGuruId;
+        }
+        // Fallback: data lama tanpa guruId, tetap pakai cocok-cocokan nama
+        if (mapelVariations.length === 0) return true; // Tampilkan semua kalau guru belum ada data mapel
         const itemSubject = (item.subject || '').toLowerCase();
         const itemModulTitle = (item.modulTitle || '').toLowerCase();
-        
         return mapelVariations.some(m => {
           const ml = m.toLowerCase();
           return itemSubject.includes(ml) || itemModulTitle.includes(ml);
         });
       };
 
-      const filteredTasks = allTasks.filter(filterByMapel);
-      const filteredQuizzes = allQuizzes.filter(filterByMapel);
+      const filteredTasks = allTasks.filter(filterByOwner);
+      const filteredQuizzes = allQuizzes.filter(filterByOwner);
 
       // Auto-hitung skor kuis
       const updatedQuizzes = filteredQuizzes.map(q => {

@@ -783,6 +783,11 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         studentName: localStorage.getItem('studentName')||'Siswa',
         studentClass: studentKelas || '',
         subject: modul.subject||modul.kodeMapel||'',
+        // 🔥 FIX: guruId didenormalisasi dari dokumen modul (modul.guruId sudah
+        // ada sejak dibuat lewat ManageMateri.jsx) — dipakai CekTugasSiswa.jsx
+        // buat cocokin submission ke guru yang benar pakai ID, bukan
+        // cocok-cocokan nama mapel yang rapuh.
+        guruId: modul.guruId || '',
         fileUrl: result.downloadURL, 
         filePath: result.filePath,
         fileName: file.name, 
