@@ -1513,7 +1513,6 @@ const ManageMateri = () => {
                       )}
                     </div>
                   )}
-                  </div>
                   {selectedStudents.length > 0 && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
                       {selectedStudents.slice(0, 10).map(s => (
