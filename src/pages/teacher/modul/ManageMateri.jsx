@@ -757,7 +757,7 @@ const ManageMateri = () => {
       alert('⚠️ Simpan modul terlebih dahulu sebelum membuat kuis!');
       return;
     }
-    navigate(`/guru/manage-quiz?modulId=${modulId}&sectionId=${section.id}`);
+    navigate(`/guru/modul/quiz?modulId=${modulId}&sectionId=${section.id}`);
   };
 
   const formatFileSize = (bytes) => {

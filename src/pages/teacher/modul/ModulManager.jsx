@@ -447,7 +447,7 @@ const ModulManager = () => {
             <RefreshCw size={16} className={refreshing ? 'spin' : ''} />
           </button>
           {activeTab === 'kuis' ? (
-            <button onClick={() => navigate('/guru/manage-quiz')} style={{...styles.btnCreate, background: '#f59e0b'}}>
+            <button onClick={() => navigate('/guru/modul/quiz')} style={{...styles.btnCreate, background: '#f59e0b'}}>
               <FileQuestion size={16} /> Buat Kuis
             </button>
           ) : (
@@ -503,7 +503,7 @@ const ModulManager = () => {
         <div style={styles.searchBox}>
           <Search size={16} color="#94a3b8" />
           <input 
-            placeholder="Cari judul, mapel, ID..." 
+            placeholder="Cari judul, mapel, ID guru..." 
             value={searchTerm} 
             onChange={e => setSearchTerm(e.target.value)} 
             style={styles.searchInput} 
@@ -608,9 +608,11 @@ const ModulManager = () => {
                       // Cari quizId pertama di blocks
                       const quizBlock = item.blocks?.find(b => b.type === 'quiz' && b.quizId);
                       if (quizBlock) {
-                        navigate(`/guru/manage-quiz?modulId=${item.id}&sectionId=${quizBlock.id}`);
+                        // 🔥 FIX: navigate langsung ke path final (bukan lewat redirect
+                        // /guru/manage-quiz yang membuang query param modulId & sectionId)
+                        navigate(`/guru/modul/quiz?modulId=${item.id}&sectionId=${quizBlock.id}`);
                       } else {
-                        navigate(`/guru/manage-quiz?modulId=${item.id}`);
+                        navigate(`/guru/modul/quiz?modulId=${item.id}`);
                       }
                     } else if (typeInfo.label === 'Tugas') {
                       navigate(`/guru/modul/materi?edit=${item.id}`);
@@ -698,9 +700,10 @@ const ModulManager = () => {
                         if (typeInfo.label === 'Kuis' || hasQuizInside) {
                           const quizBlock = item.blocks?.find(b => b.type === 'quiz' && b.quizId);
                           if (quizBlock) {
-                            navigate(`/guru/manage-quiz?modulId=${item.id}&sectionId=${quizBlock.id}`);
+                            // 🔥 FIX: sama, langsung ke path final
+                            navigate(`/guru/modul/quiz?modulId=${item.id}&sectionId=${quizBlock.id}`);
                           } else {
-                            navigate(`/guru/manage-quiz?modulId=${item.id}`);
+                            navigate(`/guru/modul/quiz?modulId=${item.id}`);
                           }
                         } else {
                           navigate(`/guru/modul/materi?edit=${item.id}`);

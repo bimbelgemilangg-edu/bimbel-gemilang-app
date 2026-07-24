@@ -258,72 +258,58 @@ const ManageQuiz = () => {
   }, []);
 
   useEffect(() => {
-  if (modulId) {
-    setPublishTarget('modul');
-    setSelectedModul(modulId);
-    const fetchQuiz = async () => {
-      let targetDocId = modulId;
-
-      // 🔥 FIX: kalau ada sectionId, cari quizId asli lewat section modul dulu
-      if (sectionId) {
-        const modulSnap = await getDoc(doc(db, "bimbel_modul", modulId));
-        if (modulSnap.exists()) {
-          const section = (modulSnap.data().blocks || []).find(
-            b => String(b.id) === String(sectionId)
-          );
-          if (section?.quizId) targetDocId = section.quizId;
-          else return; // quiz belum pernah dibuat, biarkan form kosong
+    if (modulId) {
+      setPublishTarget('modul');
+      setSelectedModul(modulId);
+      const fetchQuiz = async () => {
+        const snap = await getDoc(doc(db, "bimbel_modul", modulId));
+        if (snap.exists()) {
+          const data = snap.data();
+          setQuizTitle(data.title || "");
+          setQuizSubject(data.subject || "");
+          setDeadline(data.deadlineQuiz || "");
+          setTimeLimit(data.timeLimit || 0);
+          setRandomOrder(data.randomOrder || false);
+          setMaxAttempts(data.maxAttempts || 1);
+          setShowExplanation(data.showExplanation !== false);
+          setDifficulty(data.difficulty || 'Sedang');
+          setUseSchedule(data.useSchedule || false);
+          setQuizOpenDate(data.quizOpenDate || quizOpenDate);
+          setQuizCloseDate(data.quizCloseDate || quizCloseDate);
+          setIsAIGenerated(data.generatedByAI || false);
+          
+          if (data.timeLimit > 0 || data.randomOrder || data.maxAttempts > 1) {
+            setQuizMode('advanced');
+          }
+          
+          if (data.quizData?.length > 0) {
+            setQuestions(data.quizData.map((q, idx) => ({
+              id: q.id || Date.now() + idx,
+              type: q.type || 'multiple',
+              q: q.question || '',
+              qImage: q.questionImage || '',
+              options: q.options || ['', '', '', ''],
+              optionImages: q.optionImages || ['', '', '', ''],
+              correct: q.correctAnswer || 0,
+              correctAnswers: q.correctAnswers || [],
+              explanation: q.explanation || '',
+              statements: q.statements || [{ text: '', isTrue: true }],
+              readingText: q.readingText || '',
+              subQuestions: q.subQuestions || [{ q: '', options: ['', '', '', ''], correct: 0 }],
+              shortAnswer: q.shortAnswer || '',
+              cause: q.cause || '',
+              effect: q.effect || '',
+              isCauseTrue: q.isCauseTrue !== undefined ? q.isCauseTrue : true,
+              isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true,
+              matchingPairs: q.matchingPairs && q.matchingPairs.length ? q.matchingPairs : [{ left: '', right: '' }, { left: '', right: '' }],
+              needsManualAnswer: false
+            })));
+          }
         }
-      }
-
-      const snap = await getDoc(doc(db, "bimbel_modul", targetDocId));
-      if (snap.exists()) {
-        const data = snap.data();
-        setQuizTitle(data.title || "");
-        setQuizSubject(data.subject || "");
-        setDeadline(data.deadlineQuiz || "");
-        setTimeLimit(data.timeLimit || 0);
-        setRandomOrder(data.randomOrder || false);
-        setMaxAttempts(data.maxAttempts || 1);
-        setShowExplanation(data.showExplanation !== false);
-        setDifficulty(data.difficulty || 'Sedang');
-        setUseSchedule(data.useSchedule || false);
-        setQuizOpenDate(data.quizOpenDate || quizOpenDate);
-        setQuizCloseDate(data.quizCloseDate || quizCloseDate);
-        setIsAIGenerated(data.generatedByAI || false);
-
-        if (data.timeLimit > 0 || data.randomOrder || data.maxAttempts > 1) {
-          setQuizMode('advanced');
-        }
-
-        if (data.quizData?.length > 0) {
-          setQuestions(data.quizData.map((q, idx) => ({
-            id: q.id || Date.now() + idx,
-            type: q.type || 'multiple',
-            q: q.question || '',
-            qImage: q.questionImage || '',
-            options: q.options || ['', '', '', ''],
-            optionImages: q.optionImages || ['', '', '', ''],
-            correct: q.correctAnswer || 0,
-            correctAnswers: q.correctAnswers || [],
-            explanation: q.explanation || '',
-            statements: q.statements || [{ text: '', isTrue: true }],
-            readingText: q.readingText || '',
-            subQuestions: q.subQuestions || [{ q: '', options: ['', '', '', ''], correct: 0 }],
-            shortAnswer: q.shortAnswer || '',
-            cause: q.cause || '',
-            effect: q.effect || '',
-            isCauseTrue: q.isCauseTrue !== undefined ? q.isCauseTrue : true,
-            isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true,
-            matchingPairs: q.matchingPairs && q.matchingPairs.length ? q.matchingPairs : [{ left: '', right: '' }, { left: '', right: '' }],
-            needsManualAnswer: false
-          })));
-        }
-      }
-    };
-    fetchQuiz();
-  }
-}, [modulId, sectionId]);
+      };
+      fetchQuiz();
+    }
+  }, [modulId]);
 
   // ============================================================
   // 🔥 HANDLER UPLOAD GAMBAR
@@ -1252,26 +1238,31 @@ const ManageQuiz = () => {
     setLoading(true);
     try {
       const quizPayload = {
+        // 🔥 FIX BUG PENTING: Firestore MENOLAK field bernilai `undefined` (bikin
+        // addDoc/updateDoc gagal total dengan error "Unsupported field value:
+        // undefined"). Sebelumnya banyak field di sini pakai `: undefined` kalau
+        // tipe soalnya beda — itu penyebab kuis gagal disimpan. Sekarang SEMUA
+        // field selalu diisi nilai valid (null/array kosong/string kosong),
+        // apapun tipe soalnya.
         quizData: valid.map(q => ({ 
           id: q.id, 
           type: q.type || 'multiple',
           question: q.q.trim(), 
           questionImage: q.qImage || '',
-          options: q.options,
+          options: q.options || ['', '', '', ''],
           optionImages: q.optionImages || ['', '', '', ''],
-          correctAnswer: q.type === 'multiselect' ? null : q.correct,
-          correctAnswers: q.type === 'multiselect' ? q.correctAnswers : [],
+          correctAnswer: q.type === 'multiselect' ? null : (q.correct ?? 0),
+          correctAnswers: q.type === 'multiselect' ? (q.correctAnswers || []) : [],
           explanation: quizMode === 'advanced' ? (q.explanation || '') : '',
-          statements: q.type === 'truefalse' ? q.statements : null,
-          readingText: q.type === 'reading' ? q.readingText : null,
-          subQuestions: q.type === 'reading' ? q.subQuestions : null,
-          shortAnswer: q.type === 'shortanswer' ? q.shortAnswer : null,
-          cause: q.type === 'causeeffect' ? q.cause : null,
-          effect: q.type === 'causeeffect' ? q.effect : null,
-          isCauseTrue: q.type === 'causeeffect' ? q.isCauseTrue : null,
-          isEffectTrue: q.type === 'causeeffect' ? q.isEffectTrue : null,
-          // 🔥 FIX: matchingPairs diikutkan, dan null (bukan undefined) biar aman di Firestore
-          matchingPairs: q.type === 'matching' ? q.matchingPairs : null,
+          statements: q.type === 'truefalse' ? (q.statements || []) : [],
+          readingText: q.type === 'reading' ? (q.readingText || '') : '',
+          subQuestions: q.type === 'reading' ? (q.subQuestions || []) : [],
+          shortAnswer: q.type === 'shortanswer' ? (q.shortAnswer || '') : '',
+          cause: q.type === 'causeeffect' ? (q.cause || '') : '',
+          effect: q.type === 'causeeffect' ? (q.effect || '') : '',
+          isCauseTrue: q.type === 'causeeffect' ? !!q.isCauseTrue : true,
+          isEffectTrue: q.type === 'causeeffect' ? !!q.isEffectTrue : true,
+          matchingPairs: q.type === 'matching' ? (q.matchingPairs || []) : [],
         })),
         totalQuestions: valid.length,
         deadlineQuiz: deadline || null,
