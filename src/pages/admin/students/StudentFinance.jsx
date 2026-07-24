@@ -44,6 +44,7 @@ const StudentFinance = () => {
   
   // 🔥 Harga paket (di-cache)
   const [hargaPaket, setHargaPaket] = useState(0);
+  const [namaPaketAktif, setNamaPaketAktif] = useState('');
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -56,19 +57,33 @@ const StudentFinance = () => {
     setTimeout(() => setAlertMsg(null), duration);
   };
 
-  // 🔥 FETCH HARGA PAKET (CACHE)
+  // 🔥 FIX BUG PENTING: sebelumnya kode ini baca `prices[jenjang]?.[paket]`,
+  // seolah-olah harga tersimpan sebagai object langsung (prices.sd.paket1).
+  // Padahal struktur ASLI di Settings (sama seperti dipakai AddStudent.jsx
+  // dan EditStudent.jsx) adalah ARRAY: prices.sd.packages = [{id, name, price}].
+  // Akibatnya hargaPaket SELALU kebaca 0, jadi setiap "Perpanjang Paket"
+  // menghitung tagihan Rp 0 — siswa dapat tambahan bulan gratis tanpa tertagih.
+  // Sekarang dibaca dengan cara yang sama persis seperti AddStudent/EditStudent:
+  // cari di dalam array packages/levels berdasarkan id paket siswa.
   const fetchHargaPaket = async () => {
     try {
       const settingsSnap = await getDoc(doc(db, "settings", "global_config"));
       if (settingsSnap.exists() && settingsSnap.data().prices) {
         const prices = settingsSnap.data().prices;
+
         if (student?.kategori === 'English') {
-          const level = student?.paket || 'kids';
-          setHargaPaket(parseInt(prices.english?.[level] || 0));
+          const levelId = student?.paket || '';
+          const levels = prices.english?.levels || [];
+          const found = levels.find(l => l.id === levelId);
+          setHargaPaket(found ? parseInt(found.price) || 0 : 0);
+          setNamaPaketAktif(found?.name || '');
         } else {
           const jenjang = (student?.jenjang || 'sd').toLowerCase();
-          const paket = student?.paket || 'paket1';
-          setHargaPaket(parseInt(prices[jenjang]?.[paket] || 0));
+          const paketId = student?.paket || '';
+          const packages = prices[jenjang]?.packages || [];
+          const found = packages.find(p => p.id === paketId);
+          setHargaPaket(found ? parseInt(found.price) || 0 : 0);
+          setNamaPaketAktif(found?.name || '');
         }
       }
     } catch (e) { console.error("Error fetch harga:", e); }
@@ -112,9 +127,6 @@ const StudentFinance = () => {
       );
       const logsSnap = await getDocs(qLogs);
       setFinanceLogs(logsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-
-      // 4. Fetch harga paket
-      await fetchHargaPaket();
 
     } catch (error) { 
       console.error("Error:", error); 
@@ -194,6 +206,14 @@ const StudentFinance = () => {
   // ===== PERPANJANGAN =====
   const handlePerpanjang = async (e) => {
     e.preventDefault();
+
+    // 🔥 GUARD BARU: kalau harga paket ternyata 0 (misal karena paket sudah
+    // dihapus dari Settings), JANGAN lanjutkan transaksi senilai Rp 0 —
+    // ini mencegah bug lama (perpanjangan gratis) terulang lewat jalur lain.
+    if (hargaPaket <= 0) {
+      return showAlert('❌ Harga paket tidak ditemukan/Rp 0. Cek pengaturan harga paket di menu Settings sebelum memperpanjang.');
+    }
+
     setIsProcessing(true);
     try {
       const totalPerpanjangan = hitungTotalPerpanjangan();
@@ -573,11 +593,14 @@ const StudentFinance = () => {
               <div style={styles.modalBody}>
                 <div style={styles.payInfo}>
                   <span>Paket Saat Ini</span>
-                  <strong>{student.detailProgram || '-'}</strong>
+                  <strong>{namaPaketAktif || student.detailProgram || '-'}</strong>
                 </div>
                 <div style={styles.payInfo}>
                   <span>Harga per Bulan</span>
-                  <strong>Rp {hargaPaket.toLocaleString()}</strong>
+                  <strong style={{color: hargaPaket <= 0 ? '#ef4444' : '#1e293b'}}>
+                    Rp {hargaPaket.toLocaleString()}
+                    {hargaPaket <= 0 && ' ⚠️ Cek Settings'}
+                  </strong>
                 </div>
                 <div style={styles.payInfo}>
                   <span>Berakhir</span>
@@ -629,7 +652,7 @@ const StudentFinance = () => {
 
                   <div style={styles.modalFooter}>
                     <button type="button" onClick={() => setShowPerpanjangModal(false)} style={styles.btnCancel}>Batal</button>
-                    <button type="submit" style={styles.btnSave} disabled={isProcessing}>
+                    <button type="submit" style={styles.btnSave} disabled={isProcessing || hargaPaket <= 0}>
                       {isProcessing ? '⏳' : <><PlusCircle size={16} /> Perpanjang</>}
                     </button>
                   </div>
