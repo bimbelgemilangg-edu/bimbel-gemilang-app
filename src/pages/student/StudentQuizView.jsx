@@ -251,6 +251,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           // benar berdasarkan ID, bukan cocok-cocokan nama mapel yang rapuh.
           guruId: data.guruId || '',
           kodeMapel: data.kodeMapel || '',
+          showScoreToStudent: data.showScoreToStudent !== false,
         });
 
         setQuestions(questionsData);
@@ -951,16 +952,17 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   if (hasExistingAnswer && existingResult) {
     const { score, correctAnswers, totalQuestions, details, isAutoSubmit } = existingResult;
     const isPassed = score >= 70;
+    const scoreHidden = quizData?.showScoreToStudent === false;
 
     return (
       <div style={styles.container}>
         <div style={styles.resultCard}>
           <div style={styles.resultHeader}>
-            <div style={styles.resultIcon(isPassed)}>
-              {isPassed ? <Award size={48} color="white" /> : <AlertCircle size={48} color="white" />}
+            <div style={scoreHidden ? styles.resultIcon(true) : styles.resultIcon(isPassed)}>
+              {scoreHidden ? <CheckCircle size={48} color="white" /> : (isPassed ? <Award size={48} color="white" /> : <AlertCircle size={48} color="white" />)}
             </div>
-            <h2 style={styles.resultTitle(isPassed)}>
-              {isPassed ? '🎉 Selamat!' : '💪 Terus Belajar!'}
+            <h2 style={scoreHidden ? styles.resultTitle(true) : styles.resultTitle(isPassed)}>
+              {scoreHidden ? '✅ Kuis Selesai' : (isPassed ? '🎉 Selamat!' : '💪 Terus Belajar!')}
             </h2>
             <p style={styles.resultSubtitle}>
               Anda telah mengerjakan kuis ini pada{' '}
@@ -977,26 +979,42 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
             )}
           </div>
 
-          <div style={styles.resultScore}>
-            <div style={styles.scoreCircle}>
-              <span style={styles.scoreValue}>{score}</span>
-              <span style={styles.scoreLabel}>Nilai</span>
+          {quizData?.showScoreToStudent !== false ? (
+            <div style={styles.resultScore}>
+              <div style={styles.scoreCircle}>
+                <span style={styles.scoreValue}>{score}</span>
+                <span style={styles.scoreLabel}>Nilai</span>
+              </div>
+              <div style={styles.scoreDetails}>
+                <div style={styles.scoreDetailItem}>
+                  <CheckCircle size={16} color="#10b981" />
+                  <span>Benar: {correctAnswers}</span>
+                </div>
+                <div style={styles.scoreDetailItem}>
+                  <XCircle size={16} color="#ef4444" />
+                  <span>Salah: {totalQuestions - correctAnswers}</span>
+                </div>
+                <div style={styles.scoreDetailItem}>
+                  <HelpCircle size={16} color="#3b82f6" />
+                  <span>Total: {totalQuestions}</span>
+                </div>
+              </div>
             </div>
-            <div style={styles.scoreDetails}>
-              <div style={styles.scoreDetailItem}>
-                <CheckCircle size={16} color="#10b981" />
-                <span>Benar: {correctAnswers}</span>
-              </div>
-              <div style={styles.scoreDetailItem}>
-                <XCircle size={16} color="#ef4444" />
-                <span>Salah: {totalQuestions - correctAnswers}</span>
-              </div>
-              <div style={styles.scoreDetailItem}>
-                <HelpCircle size={16} color="#3b82f6" />
-                <span>Total: {totalQuestions}</span>
+          ) : (
+            // 🔥 Guru matiin "tampilkan nilai" — siswa cuma tau udah kekirim,
+            // nilainya sengaja disembunyikan dulu sampai guru infokan manual.
+            <div style={{ ...styles.resultScore, justifyContent: 'center', padding: '20px' }}>
+              <div style={{ textAlign: 'center' }}>
+                <CheckCircle size={40} color="#673ab7" style={{ marginBottom: 8 }} />
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: 0 }}>
+                  Jawabanmu sudah terkirim!
+                </p>
+                <p style={{ fontSize: 12, color: '#94a3b8', margin: '4px 0 0' }}>
+                  Nilai akan diinformasikan oleh guru.
+                </p>
               </div>
             </div>
-          </div>
+          )}
 
           <div style={styles.actionButtons}>
             <button 

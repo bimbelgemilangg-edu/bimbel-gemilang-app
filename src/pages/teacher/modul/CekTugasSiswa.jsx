@@ -189,11 +189,18 @@ const CekTugasSiswa = () => {
       const filteredTasks = allTasks.filter(filterByOwner);
       const filteredQuizzes = allQuizzes.filter(filterByOwner);
 
-      // Auto-hitung skor kuis
+      // 🔥 FIX BUG: dulu skor SELALU dihitung ulang pakai rumus lama
+      // (correctAnswers/totalQuestions*100) dan NIMPA skor asli yang sudah
+      // tersimpan — padahal sejak ada nilai sebagian (partial credit) untuk
+      // soal Benar/Salah, Sebab-Akibat, Menjodohkan, dan Membaca Teks, skor
+      // yang benar itu YANG SUDAH TERSIMPAN di database (dihitung pas siswa
+      // submit), bukan hasil hitung ulang di sini yang gak tau soal nilai
+      // sebagian. Sekarang cuma dipakai sebagai CADANGAN kalau skornya
+      // benar-benar belum ada sama sekali (data lampau yang rusak).
       const updatedQuizzes = filteredQuizzes.map(q => {
-        if (q.correctAnswers !== undefined && q.totalQuestions && q.totalQuestions > 0) {
-          const autoScore = Math.round((q.correctAnswers / q.totalQuestions) * 100);
-          if (!q.score || q.score !== autoScore) {
+        if (q.score === undefined || q.score === null) {
+          if (q.correctAnswers !== undefined && q.totalQuestions && q.totalQuestions > 0) {
+            const autoScore = Math.round((q.correctAnswers / q.totalQuestions) * 100);
             return { ...q, score: autoScore, status: 'Dinilai' };
           }
         }

@@ -120,6 +120,7 @@ const ManageQuiz = () => {
   const [randomOrder, setRandomOrder] = useState(false);
   const [maxAttempts, setMaxAttempts] = useState(1);
   const [showExplanation, setShowExplanation] = useState(true);
+  const [showScoreToStudent, setShowScoreToStudent] = useState(true);
   const [difficulty, setDifficulty] = useState('Sedang');
   
   // Target
@@ -273,6 +274,7 @@ const ManageQuiz = () => {
           setRandomOrder(data.randomOrder || false);
           setMaxAttempts(data.maxAttempts || 1);
           setShowExplanation(data.showExplanation !== false);
+          setShowScoreToStudent(data.showScoreToStudent !== false);
           setDifficulty(data.difficulty || 'Sedang');
           setUseSchedule(data.useSchedule || false);
           setQuizOpenDate(data.quizOpenDate || quizOpenDate);
@@ -1293,7 +1295,11 @@ const ManageQuiz = () => {
         quizCloseDate: useSchedule ? quizCloseDate : null,
         updatedAt: serverTimestamp(),
         generatedByAI: isAIGenerated,
-        generatedAt: isAIGenerated ? serverTimestamp() : null
+        generatedAt: isAIGenerated ? serverTimestamp() : null,
+        // 🔥 Selalu disertakan (gak cuma di Mode Ujian) — guru bisa milih siswa
+        // langsung lihat nilai angka setelah submit, atau disembunyikan dulu
+        // (misal guru mau cek/bahas manual sebelum siswa tau nilainya).
+        showScoreToStudent: showScoreToStudent,
       };
 
       if (quizMode === 'advanced') {
@@ -1617,6 +1623,25 @@ const ManageQuiz = () => {
             <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>+Timer, Random Soal, Batas Pengulangan</div>
             {quizMode === 'advanced' && <div style={{ marginTop: 6, fontSize: 10, color: '#673ab7', fontWeight: 700 }}>✅ Aktif</div>}
           </button>
+        </div>
+
+        {/* 🔥 Tampilkan/sembunyikan skor ke siswa — berlaku di SEMUA mode kuis */}
+        <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #e2e8f0' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={showScoreToStudent}
+              onChange={e => setShowScoreToStudent(e.target.checked)}
+            />
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#1e293b' }}>
+              Tampilkan nilai angka ke siswa setelah submit
+            </span>
+          </label>
+          <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 4, marginLeft: 24 }}>
+            {showScoreToStudent
+              ? 'Siswa langsung lihat nilai (misal 58/100) begitu selesai mengerjakan.'
+              : 'Siswa cuma lihat "kuis sudah terkirim", nilainya disembunyikan dulu sampai guru infokan manual.'}
+          </p>
         </div>
 
         {/* Pengaturan Lanjutan - Mode Ujian */}
