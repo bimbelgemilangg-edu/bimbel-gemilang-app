@@ -1461,9 +1461,58 @@ const ManageMateri = () => {
                   <div style={{ display: 'flex', gap: 6 }}>
                     <div style={{ flex: 1, position: 'relative' }}>
                       <Search size={12} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                      <input value={studentSearch} onChange={e => setStudentSearch(e.target.value)} placeholder="Cari siswa..." style={{ ...styles.input, paddingLeft: 28, fontSize: 11 }} onFocus={() => setShowStudentPicker(true)} />
+                      <input
+                        value={studentSearch}
+                        onChange={e => setStudentSearch(e.target.value)}
+                        placeholder="Cari siswa..."
+                        style={{ ...styles.input, paddingLeft: 28, fontSize: 11 }}
+                        onFocus={() => setShowStudentPicker(true)}
+                      />
                     </div>
                     <button onClick={selectAllFiltered} style={{ padding: '4px 12px', background: '#e0e7ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#3730a3' }}>Pilih Semua</button>
+                  </div>
+
+                  {/* 🔥 FIX BUG BESAR: daftar siswa buat diklik/dipilih ini SEBELUMNYA
+                      TIDAK ADA SAMA SEKALI di kode — cuma kotak pencarian doang tanpa
+                      hasil yang ditampilkan. Guru ketik nama, tapi gak ada daftar
+                      muncul buat diklik, jadi fitur "kirim ke siswa tertentu" gak bisa
+                      dipakai sama sekali. Sekarang daftarnya beneran dirender di sini. */}
+                  {showStudentPicker && (
+                    <div style={{
+                      marginTop: 6, maxHeight: 200, overflowY: 'auto',
+                      background: 'white', border: '1px solid #e2e8f0', borderRadius: 8,
+                    }}>
+                      {filteredStudents.length === 0 ? (
+                        <p style={{ padding: 12, fontSize: 11, color: '#94a3b8', textAlign: 'center', margin: 0 }}>
+                          {allStudents.length === 0 ? 'Belum ada data siswa.' : 'Siswa tidak ditemukan.'}
+                        </p>
+                      ) : (
+                        filteredStudents.map(student => {
+                          const checked = selectedStudents.some(s => s.studentId === student.studentId);
+                          return (
+                            <div
+                              key={student.id}
+                              onClick={() => toggleStudentSelection(student)}
+                              style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                padding: '8px 12px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer',
+                                background: checked ? '#eef2ff' : 'white', fontSize: 12,
+                              }}
+                            >
+                              <div>
+                                <span style={{ fontWeight: 600, color: '#1e293b' }}>{student.nama}</span>
+                                <span style={{ fontSize: 10, color: '#64748b', marginLeft: 6 }}>#{student.studentId}</span>
+                                <span style={{ fontSize: 9, background: '#f1f5f9', padding: '1px 6px', borderRadius: 4, marginLeft: 6 }}>
+                                  {student.kelasSekolah} · {student.program}
+                                </span>
+                              </div>
+                              <input type="checkbox" checked={checked} onChange={() => {}} style={{ accentColor: '#3b82f6', width: 16, height: 16 }} />
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
                   </div>
                   {selectedStudents.length > 0 && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>

@@ -1379,7 +1379,16 @@ const ManageQuiz = () => {
         }
       }
 
-      // 🔥 JIKA KUIS MANDIRI (bukan dari modul)
+      // 🔥 FIX ARSITEKTUR BESAR: sebelumnya "Tautkan ke Modul" nimpa field
+      // quizData dkk LANGSUNG ke dokumen modul tujuan (updateDoc ke root
+      // field-nya). Itu SALAH — tampilan materi (blocks) sama sekali gak baca
+      // field itu, jadi biarpun sistem bilang "berhasil", kuisnya gak pernah
+      // beneran nongol sebagai konten di dalam modul. Sekarang dibikin BENAR:
+      // kuis disimpan sebagai DOKUMEN TERPISAH (persis kayak kuis mandiri),
+      // lalu ditambahkan sebagai SATU BLOK BARU bertipe "quiz" di dalam
+      // `blocks` modul tujuan — ini format yang beneran dikenali & ditampilkan
+      // sistem materi (sama seperti kalau guru bikin kuis dari dalam editor
+      // materi langsung).
       if (publishTarget === 'modul') {
         if (!selectedModul) {
           alert("❌ Pilih modul tujuan!");
@@ -1387,13 +1396,41 @@ const ManageQuiz = () => {
           return;
         }
         const modulSnap = await getDoc(doc(db, "bimbel_modul", selectedModul));
-        let modulSubject = '';
-        if (modulSnap.exists()) modulSubject = modulSnap.data().subject || '';
-        await updateDoc(doc(db, "bimbel_modul", selectedModul), {
+        if (!modulSnap.exists()) {
+          alert("❌ Modul tujuan tidak ditemukan!");
+          setLoading(false);
+          return;
+        }
+        const modulData = modulSnap.data();
+
+        // 1. Simpan kuis sebagai dokumen tersendiri
+        const newQuizDoc = await addDoc(collection(db, "bimbel_modul"), {
           ...quizPayload,
-          subject: modulSubject || quizSubject || "Kuis"
+          title: quizTitle.toUpperCase(),
+          subject: modulData.subject || quizSubject || "Kuis",
+          type: 'kuis_mandiri',
+          status: 'aktif',
+          guruId: modulData.guruId || savedTeacher.guruId || savedTeacher.id || '',
+          guruName: modulData.guruName || savedTeacher.nama || '',
+          kodeMapel: modulData.kodeMapel || savedTeacher.kodeMapel || '',
+          createdAt: serverTimestamp()
         });
-        alert(`✅ Kuis disimpan ke modul!`);
+
+        // 2. Tambahkan sebagai blok baru bertipe "quiz" di dalam modul tujuan
+        const existingBlocks = modulData.blocks || [];
+        const newBlock = {
+          id: Date.now(),
+          type: 'quiz',
+          quizId: newQuizDoc.id,
+          quizTitle: quizTitle,
+          quizQuestions: valid.length,
+        };
+        await updateDoc(doc(db, "bimbel_modul", selectedModul), {
+          blocks: [...existingBlocks, newBlock],
+          updatedAt: serverTimestamp(),
+        });
+
+        alert(`✅ Kuis "${quizTitle}" berhasil ditambahkan ke dalam modul "${modulData.title || ''}"!`);
       } else {
         await addDoc(collection(db, "bimbel_modul"), {
           title: quizTitle.toUpperCase(),
