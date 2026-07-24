@@ -11,6 +11,65 @@ import {
   User, Hash, Tag, Filter, X, BookOpen, Eye
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import 'katex/dist/katex.min.css';
+import { InlineMath, BlockMath } from 'react-katex';
+
+// 🔥 Render math sederhana (sama seperti di ManageQuiz/StudentQuizView)
+const renderMath = (text) => {
+  if (!text) return null;
+  const parts = String(text).split(/(\$\$.*?\$\$|\$.*?\$)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('$$') && part.endsWith('$$')) {
+      try { return <BlockMath key={i} math={part.substring(2, part.length - 2)} />; }
+      catch (e) { return <span key={i}>{part}</span>; }
+    } else if (part.startsWith('$') && part.endsWith('$')) {
+      try { return <InlineMath key={i} math={part.substring(1, part.length - 1)} />; }
+      catch (e) { return <span key={i}>{part}</span>; }
+    }
+    return <span key={i}>{part}</span>;
+  });
+};
+
+// 🔥 Ringkasan jawaban per tipe soal (buat modal detail guru)
+const describeAnswer = (q, which) => {
+  const ans = which === 'user' ? q.userAnswer : null;
+  switch (q.type) {
+    case 'multiple':
+      return which === 'user'
+        ? (ans !== undefined && q.options?.[ans] !== undefined ? q.options[ans] : 'Tidak dijawab')
+        : (q.options?.[q.correctAnswer] ?? '-');
+    case 'multiselect':
+      if (which === 'user') {
+        return Array.isArray(ans) && ans.length ? ans.map(i => q.options?.[i]).join(', ') : 'Tidak dijawab';
+      }
+      return (q.correctAnswers || []).map(i => q.options?.[i]).join(', ');
+    case 'shortanswer':
+      return which === 'user' ? (ans || 'Tidak dijawab') : (q.shortAnswer || '-');
+    case 'truefalse':
+      return (q.statements || []).map((s, idx) => {
+        const val = which === 'user' ? q.userAnswer?.[idx] : s.isTrue;
+        return `${s.text || `Pernyataan ${idx + 1}`}: ${val === true ? 'Benar' : val === false ? 'Salah' : '-'}`;
+      }).join(' | ');
+    case 'causeeffect':
+      if (which === 'user') {
+        return `Sebab: ${q.userAnswer?.cause === true ? 'Benar' : q.userAnswer?.cause === false ? 'Salah' : '-'}, Akibat: ${q.userAnswer?.effect === true ? 'Benar' : q.userAnswer?.effect === false ? 'Salah' : '-'}`;
+      }
+      return `Sebab: ${q.isCauseTrue ? 'Benar' : 'Salah'}, Akibat: ${q.isEffectTrue ? 'Benar' : 'Salah'}`;
+    case 'matching':
+      return (q.matchingPairs || []).map((p, idx) => {
+        const rightIdx = which === 'user' ? q.userAnswer?.[idx] : idx;
+        const rightText = rightIdx !== undefined ? q.matchingPairs?.[rightIdx]?.right : '-';
+        return `${p.left} → ${rightText || '-'}`;
+      }).join(' | ');
+    case 'reading':
+      return (q.subQuestions || []).map((sq, idx) => {
+        const oIdx = which === 'user' ? q.userAnswer?.[idx] : sq.correct;
+        return `${idx + 1}. ${oIdx !== undefined ? sq.options?.[oIdx] : '-'}`;
+      }).join(' | ');
+    default:
+      return '-';
+  }
+};
 
 const CekTugasSiswa = () => {
   const navigate = useNavigate();
@@ -34,6 +93,7 @@ const CekTugasSiswa = () => {
   const [mapelList, setMapelList] = useState([]);
 
   const [stats, setStats] = useState({ totalTugas: 0, pendingTugas: 0, gradedTugas: 0, totalKuis: 0, avgScore: 0 });
+  const [viewingDetail, setViewingDetail] = useState(null);
 
   useEffect(() => {
     const h = () => setIsMobile(window.innerWidth <= 768);
@@ -350,7 +410,12 @@ const CekTugasSiswa = () => {
                             <a href={item.fileUrl} target="_blank" rel="noreferrer" style={s.btnView}><Eye size={12}/> Lihat</a>
                           ) : <span style={{fontSize:10,color:'#94a3b8'}}>-</span>
                         ) : (
-                          <span style={s.quizBadge}>✅ {item.correctAnswers||0}/{item.totalQuestions||'?'}</span>
+                          <span
+                            style={{...s.quizBadge, cursor: item.details?.length ? 'pointer' : 'default', textDecoration: item.details?.length ? 'underline' : 'none'}}
+                            onClick={() => item.details?.length && setViewingDetail(item)}
+                          >
+                            ✅ {item.correctAnswers||0}/{item.totalQuestions||'?'} {item.details?.length ? '👁️' : ''}
+                          </span>
                         )}
                       </td>
                       <td style={s.td}>
@@ -387,6 +452,53 @@ const CekTugasSiswa = () => {
         <span>{filteredData.length} dari {currentData.length} data</span>
         <span>{guruName && `👨‍🏫 ${guruName}`}</span>
       </div>
+
+      {/* ========================================================== */}
+      {/* MODAL DETAIL JAWABAN KUIS — guru bisa cek per soal + bahas */}
+      {/* ========================================================== */}
+      {viewingDetail && (
+        <div style={s.modalOverlay} onClick={() => setViewingDetail(null)}>
+          <div style={s.modalContent} onClick={e => e.stopPropagation()}>
+            <div style={s.modalHeader}>
+              <div>
+                <h3 style={s.modalTitle}>{viewingDetail.studentName}</h3>
+                <p style={s.modalSub}>{viewingDetail.modulTitle} — Nilai: {viewingDetail.score ?? '-'}/100 ({viewingDetail.correctAnswers}/{viewingDetail.totalQuestions} benar)</p>
+              </div>
+              <button onClick={() => setViewingDetail(null)} style={s.modalCloseBtn}><X size={18}/></button>
+            </div>
+            <div style={s.modalBody}>
+              {(viewingDetail.details || []).map((q, idx) => {
+                const partial = q.partsTotal ? (q.isCorrect ? null : (q.partsCorrect > 0 ? `🟡 ${q.partsCorrect}/${q.partsTotal} benar` : null)) : null;
+                return (
+                  <div key={q.id || idx} style={s.qCard(q.isCorrect)}>
+                    <div style={s.qHeader}>
+                      <span style={s.qNum}>Soal {idx + 1}</span>
+                      <span style={s.qStatus(q.isCorrect)}>
+                        {q.isCorrect ? '✅ Benar' : partial || '❌ Salah'}
+                      </span>
+                    </div>
+                    <div style={s.qText}>{renderMath(q.question)}</div>
+                    <div style={s.qAnswerRow}>
+                      <span style={s.qAnswerLabelUser}>📝 Jawaban siswa:</span> {renderMath(describeAnswer(q, 'user'))}
+                    </div>
+                    <div style={s.qAnswerRow}>
+                      <span style={s.qAnswerLabelCorrect}>🔑 Jawaban benar:</span> {renderMath(describeAnswer(q, 'correct'))}
+                    </div>
+                    {q.explanation && (
+                      <div style={s.qExplanation}>
+                        <span style={{fontWeight:700}}>💡 Pembahasan:</span> {renderMath(q.explanation)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {(!viewingDetail.details || viewingDetail.details.length === 0) && (
+                <p style={{textAlign:'center', color:'#94a3b8', padding: 20}}>Detail jawaban tidak tersedia untuk submission ini.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -444,7 +556,25 @@ const s = {
   btnEdit: { padding:'5px 8px',borderRadius:6,border:'none',cursor:'pointer',background:'#f1f5f9',color:'#475569' },
   btnDel: { padding:'5px 8px',borderRadius:6,border:'none',cursor:'pointer',background:'#fee2e2',color:'#ef4444' },
   empty: { textAlign:'center',padding:60,color:'#94a3b8' },
-  footer: { display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:12,fontSize:10,color:'#94a3b8',flexWrap:'wrap',gap:8 }
+  footer: { display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:12,fontSize:10,color:'#94a3b8',flexWrap:'wrap',gap:8 },
+
+  // Modal detail jawaban
+  modalOverlay: { position:'fixed', inset:0, background:'rgba(15,23,42,0.6)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:16 },
+  modalContent: { background:'white', borderRadius:16, width:'100%', maxWidth:700, maxHeight:'85vh', overflowY:'auto', boxShadow:'0 20px 50px rgba(0,0,0,0.3)' },
+  modalHeader: { display:'flex', justifyContent:'space-between', alignItems:'flex-start', padding:'18px 20px', borderBottom:'1px solid #f1f5f9', position:'sticky', top:0, background:'white', zIndex:1 },
+  modalTitle: { margin:0, fontSize:16, fontWeight:800, color:'#1e293b' },
+  modalSub: { margin:'4px 0 0', fontSize:12, color:'#64748b' },
+  modalCloseBtn: { background:'#f1f5f9', border:'none', borderRadius:8, padding:6, cursor:'pointer', flexShrink:0 },
+  modalBody: { padding:20, display:'flex', flexDirection:'column', gap:12 },
+  qCard: (correct) => ({ padding:14, borderRadius:10, border:`2px solid ${correct?'#10b981':'#ef4444'}`, background: correct?'#f0fdf4':'#fef2f2' }),
+  qHeader: { display:'flex', justifyContent:'space-between', marginBottom:8 },
+  qNum: { fontSize:11, fontWeight:700, color:'#64748b' },
+  qStatus: (correct) => ({ fontSize:11, fontWeight:700, color: correct?'#10b981':'#ef4444' }),
+  qText: { fontSize:13, fontWeight:600, color:'#1e293b', marginBottom:8, lineHeight:1.5 },
+  qAnswerRow: { fontSize:12, color:'#334155', marginBottom:4, lineHeight:1.5 },
+  qAnswerLabelUser: { fontWeight:700, color:'#475569' },
+  qAnswerLabelCorrect: { fontWeight:700, color:'#166534' },
+  qExplanation: { marginTop:8, padding:'8px 10px', background:'#eef2ff', borderRadius:8, fontSize:12, color:'#3730a3', lineHeight:1.6 },
 };
 
 export default CekTugasSiswa;

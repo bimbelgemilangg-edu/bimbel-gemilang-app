@@ -96,7 +96,8 @@ const ManageQuiz = () => {
   // Data Quiz
   const [quizTitle, setQuizTitle] = useState("");
   const [quizSubject, setQuizSubject] = useState("");
-  const [deadline, setDeadline] = useState("");
+  // 🔥 Field "deadline" lama dihapus dari UI (lihat penjelasan di Identitas
+  // Kuis) — state-nya juga dihapus di sini karena sudah tidak dipakai.
   
   // Jadwal
   const [quizOpenDate, setQuizOpenDate] = useState(() => {
@@ -267,7 +268,7 @@ const ManageQuiz = () => {
           const data = snap.data();
           setQuizTitle(data.title || "");
           setQuizSubject(data.subject || "");
-          setDeadline(data.deadlineQuiz || "");
+          // deadlineQuiz lama tidak lagi dibaca ke state (field sudah dihapus dari UI)
           setTimeLimit(data.timeLimit || 0);
           setRandomOrder(data.randomOrder || false);
           setMaxAttempts(data.maxAttempts || 1);
@@ -1286,7 +1287,7 @@ const ManageQuiz = () => {
           matchingPairs: q.type === 'matching' ? (q.matchingPairs || []) : [],
         })),
         totalQuestions: valid.length,
-        deadlineQuiz: deadline || null,
+        deadlineQuiz: null, // field lama, sudah tidak dipakai (lihat catatan di Identitas Kuis)
         useSchedule: useSchedule,
         quizOpenDate: useSchedule ? quizOpenDate : null,
         quizCloseDate: useSchedule ? quizCloseDate : null,
@@ -1528,13 +1529,14 @@ const ManageQuiz = () => {
           <FileText size={18} /> 1. Identitas Kuis
         </h4>
         <input value={quizTitle} onChange={e => setQuizTitle(e.target.value)} placeholder="Judul kuis..." style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', marginBottom: 8, boxSizing: 'border-box' }} />
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <select value={quizSubject} onChange={e => setQuizSubject(e.target.value)} style={{ flex: 1, minWidth: 120, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', background: 'white' }}>
-            <option value="">Pilih Mapel</option>
-            {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <input type="datetime-local" value={deadline} onChange={e => setDeadline(e.target.value)} style={{ flex: 1, minWidth: 120, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none' }} />
-        </div>
+        {/* 🔥 FIX: field tanggal "deadline" yang dulu ada di sini dihapus —
+            bikin bingung karena mirip "Jadwal Kuis" di bawah, padahal field ini
+            TIDAK PERNAH dibaca/dipakai sama sekali di sisi siswa. Pengaturan
+            buka/tutup kuis yang beneran berfungsi cuma "2. Jadwal Kuis". */}
+        <select value={quizSubject} onChange={e => setQuizSubject(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', background: 'white', boxSizing: 'border-box' }}>
+          <option value="">Pilih Mapel</option>
+          {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
       </div>
 
       {/* ========================================================== */}

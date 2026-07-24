@@ -170,12 +170,17 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
             setHasExistingAnswer(true);
           }
           
-          const maxAttempts = data.maxAttempts || 1;
-          if (maxAttempts > 0 && existing >= maxAttempts) {
-            setError(`⚠️ Anda sudah mengerjakan kuis ini ${existing} kali. Batas maksimal ${maxAttempts} kali.`);
-            setLoading(false);
-            return;
-          }
+          // 🔥 FIX BUG PENTING: sebelumnya di sini ada pengecekan "batas maksimal
+          // percobaan" yang langsung nge-set `error` dan MENGHENTIKAN proses —
+          // padahal beberapa baris di atas sudah nyiapin `existingResult` buat
+          // nampilin layar review (skor + jawaban + pembahasan). Karena `error`
+          // dicek LEBIH DULU daripada `hasExistingAnswer` di render, siswa yang
+          // sudah pernah ngerjain SELALU kena layar blokir "Batas maksimal X
+          // kali" dan gak pernah bisa lihat pembahasannya lagi — padahal itu
+          // justru yang dimaksud guru: siswa gak bisa ngerjain ULANG, tapi
+          // TETAP bisa buka lagi buat baca pembahasan kapan aja selama kuisnya
+          // belum dihapus. Baris pengecekan itu sengaja dihapus di sini;
+          // layar review (existingResult) sudah cukup jadi satu-satunya jalur.
         }
 
         const now = new Date();
