@@ -1343,12 +1343,22 @@ const ManageQuiz = () => {
           const modulData = modulSnap.data();
           const blocks = modulData.blocks || [];
           
-          const sectionIndex = blocks.findIndex(b => 
+          let sectionIndex = blocks.findIndex(b => 
             String(b.id) === String(sectionId) || b.id === sectionId
           );
           
+          // 🔥 FIX BUG "Section tidak ditemukan": kalau section belum tercatat
+          // di modul (misal auto-save telat / section dibuat sangat baru),
+          // JANGAN gagal mati. Bikin section baru bertipe quiz otomatis, biar
+          // guru gak pernah kejebak error yang bikin kerjaan hilang.
           if (sectionIndex === -1) {
-            return alert("❌ Section tidak ditemukan di modul!");
+            blocks.push({
+              id: sectionId,
+              type: 'quiz',
+              title: quizTitle || 'Kuis',
+              quizId: null,
+            });
+            sectionIndex = blocks.length - 1;
           }
           
           const section = blocks[sectionIndex];
@@ -1812,6 +1822,24 @@ const ManageQuiz = () => {
       {/* ========================================================== */}
       {/* 5️⃣ TARGET PUBLISH */}
       {/* ========================================================== */}
+      {/* 🔥 FIX KEBINGUNGAN UTAMA: kalau kuis ini bagian DARI MODUL (dibuka
+          lewat "Tambah Kuis" di dalam materi), targetnya OTOMATIS IKUT MODUL —
+          guru gak perlu (dan gak boleh) milih target lagi. Dulu pilihan
+          "Tautkan ke Modul / Kuis Mandiri / Jenjang" tetap muncul walaupun
+          kuis udah jelas nempel di modul, bikin sistem "bingung" (kuis udah
+          jadi satu kesatuan dgn modul tapi masih ditanya mau dikirim kemana).
+          Sekarang untuk kuis-dalam-modul, panel ini cuma nampilin info bahwa
+          dia ikut aturan modul induknya. */}
+      {isFromModul ? (
+        <div style={{ background: '#f0fdf4', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #bbf7d0', marginBottom: 16 }}>
+          <h4 style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 700, color: '#166534', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <BookOpen size={18} /> Kuis Ini Bagian dari Modul
+          </h4>
+          <p style={{ margin: 0, fontSize: 12, color: '#15803d', lineHeight: 1.6 }}>
+            Kuis ini otomatis mengikuti target modul induknya — jadi kalau modulnya dikirim ke kelas/siswa tertentu, kuis ini ikut ke sana juga. Kamu tidak perlu memilih target lagi di sini. Cukup klik <b>Simpan ke Modul</b> di atas.
+          </p>
+        </div>
+      ) : (
       <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
         <h4 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
           <Target size={18} /> 5. Target Publish
@@ -1883,6 +1911,7 @@ const ManageQuiz = () => {
           </div>
         )}
       </div>
+      )}
 
       {/* ========================================================== */}
       {/* SMART IMPORT MODAL */}

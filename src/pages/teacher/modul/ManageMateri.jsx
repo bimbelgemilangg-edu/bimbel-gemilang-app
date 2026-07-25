@@ -704,6 +704,38 @@ const ManageMateri = () => {
   };
 
   // ============================================================
+  // 🔥 AUTO-SAVE DIAM-DIAM (buat dipanggil sebelum buka editor kuis)
+  // Nyimpen kondisi modul terkini ke database TANPA alert/navigate, supaya
+  // section kuis yang baru ditambah sudah tercatat sebelum editor kuis dibuka.
+  // ============================================================
+  const autoSaveModulSilently = async () => {
+    if (!editId) throw new Error('Modul belum tersimpan');
+    const payload = {
+      title: title.toUpperCase(),
+      subject: (subject || '').toUpperCase(),
+      guruId, kodeMapel, guruName,
+      coverImage, coverFilePath, description,
+      blocks: sections,
+      quizData,
+      targetKategori, targetKelas,
+      mingguKe: parseInt(mingguKe) || 1,
+      tahunAjaran,
+      status: statusModul,
+      sendToSpecificStudents,
+      selectedStudents: sendToSpecificStudents ? selectedStudents : [],
+      studentIds: sendToSpecificStudents ? selectedStudents.map(s => s.studentId) : [],
+      totalKonten: sections.length,
+      updatedAt: serverTimestamp(),
+      updatedBy: authorName,
+    };
+    if (statusModul === 'terjadwal') {
+      payload.tanggalMulai = tanggalMulai;
+      payload.tanggalSelesai = tanggalSelesai || null;
+    }
+    await updateDoc(doc(db, COLLECTION_NAME, editId), payload);
+  };
+
+  // ============================================================
   // 🔥 HANDLE SAVE
   // ============================================================
   const handleSave = async () => {
@@ -774,12 +806,26 @@ const ManageMateri = () => {
   // ============================================================
   // 🔥 BUKA MANAGE QUIZ DARI MODUL
   // ============================================================
-  const openQuizEditor = (section) => {
+  const openQuizEditor = async (section) => {
+    // 🔥 FIX BUG "Section tidak ditemukan": dulu editor kuis langsung dibuka
+    // pakai sectionId yang BARU ADA DI LAYAR tapi BELUM tersimpan ke database.
+    // Jadi pas guru "Terbitkan" kuis, sistem nyari section itu di database,
+    // gak ketemu -> error. Sekarang modul di-SIMPAN OTOMATIS dulu (biar
+    // section-nya beneran ada di database) sebelum pindah ke editor kuis.
+    // Ini juga ngilangin kebingungan "kok disuruh simpan modul dulu" — sistem
+    // yang urus simpannya sendiri, guru tinggal lanjut bikin kuis.
     if (!modulId) {
-      alert('⚠️ Simpan modul terlebih dahulu sebelum membuat kuis!');
+      alert('⚠️ Isi judul modul dulu, lalu klik "Simpan/Update Modul" sekali, baru bisa menambah kuis di dalamnya.');
       return;
     }
-    navigate(`/guru/modul/quiz?modulId=${modulId}&sectionId=${section.id}`);
+    try {
+      // Simpan kondisi modul terkini (termasuk section kuis yang baru ditambah)
+      // supaya sectionId-nya sudah tercatat di database sebelum editor kuis dibuka.
+      await autoSaveModulSilently();
+      navigate(`/guru/modul/quiz?modulId=${modulId}&sectionId=${section.id}`);
+    } catch (e) {
+      alert('❌ Gagal menyiapkan kuis: ' + e.message);
+    }
   };
 
   const formatFileSize = (bytes) => {
