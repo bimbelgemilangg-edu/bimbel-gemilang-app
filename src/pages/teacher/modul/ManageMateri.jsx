@@ -1341,7 +1341,7 @@ const ManageMateri = () => {
         </h2>
         <div style={styles.headerActions}>
           {editId && (
-            <button onClick={() => window.open(`/siswa/materi/${editId}`, '_blank')} style={{ ...styles.btnBack }}>
+            <button onClick={() => window.open(`/siswa/modul/${editId}`, '_blank')} style={{ ...styles.btnBack }}>
               <Eye size={14} /> Live
             </button>
           )}
@@ -1663,7 +1663,7 @@ const ManageMateri = () => {
       <div style={styles.floatingFooter}>
         <button onClick={() => navigate('/guru/modul')} style={styles.btnFooterCancel}>Batal</button>
         {editId && (
-          <button onClick={() => window.open(`/siswa/materi/${editId}`, '_blank')} style={{ ...styles.btnFooterCancel, background: 'white', border: '1px solid #e2e8f0' }}>
+          <button onClick={() => window.open(`/siswa/modul/${editId}`, '_blank')} style={{ ...styles.btnFooterCancel, background: 'white', border: '1px solid #e2e8f0' }}>
             <Eye size={14} /> Preview
           </button>
         )}

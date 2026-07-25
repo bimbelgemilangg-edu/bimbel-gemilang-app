@@ -212,6 +212,18 @@ const ManageQuiz = () => {
   }, [questions, quizTitle, quizSubject]);
 
   useEffect(() => {
+    // 🔥 FIX BUG: dulu prompt "kembalikan draft?" muncul untuk SEMUA kuis,
+    // termasuk kuis yang datanya sudah tersimpan rapi di database. Dua masalah:
+    //  (1) Membingungkan — guru cuma mau mengedit, malah ditanya soal draft
+    //      yang mereka nggak ingat pernah buat.
+    //  (2) BERBAHAYA — pemulihan draft ini berlomba dengan pengambilan data
+    //      dari database (dua-duanya jalan bersamaan). Tergantung siapa yang
+    //      selesai duluan, isi kuis bisa tertimpa draft basi, atau draft yang
+    //      baru dipulihkan langsung hilang tertimpa data database.
+    // Sekarang draft HANYA untuk kuis yang benar-benar baru (belum pernah
+    // disimpan). Untuk kuis yang sudah ada, database satu-satunya acuan.
+    if (modulId) return;
+
     const raw = localStorage.getItem(draftKey);
     if (raw) {
       try {
@@ -275,6 +287,16 @@ const ManageQuiz = () => {
         const snap = await getDoc(doc(db, "bimbel_modul", modulId));
         if (snap.exists()) {
           const data = snap.data();
+
+          // 🔥 PENGAMAN: kalau dokumen ini sebenarnya MODUL MATERI (punya
+          // blocks, dan bukan kuis mandiri) sementara tidak ada sectionId
+          // yang menunjuk blok kuis tertentu, berarti guru nyasar ke sini.
+          // Daripada menampilkan layar kuis kosong (yang bikin modulnya
+          // seolah "hilang"), langsung alihkan ke editor materi yang benar.
+          if (!sectionId && data.type !== 'kuis_mandiri' && (data.blocks?.length > 0)) {
+            navigate(`/guru/modul/materi?edit=${modulId}`, { replace: true });
+            return;
+          }
           setQuizTitle(data.title || "");
           setQuizSubject(data.subject || "");
           // deadlineQuiz lama tidak lagi dibaca ke state (field sudah dihapus dari UI)

@@ -621,18 +621,16 @@ const ModulManager = () => {
                     opacity: item.status === 'arsip' ? 0.7 : 1
                   }}
                   onClick={() => {
-                    if (typeInfo.label === 'Kuis' || hasQuizInside) {
-                      // Cari quizId pertama di blocks
-                      const quizBlock = item.blocks?.find(b => b.type === 'quiz' && b.quizId);
-                      if (quizBlock) {
-                        // 🔥 FIX: navigate langsung ke path final (bukan lewat redirect
-                        // /guru/manage-quiz yang membuang query param modulId & sectionId)
-                        navigate(`/guru/modul/quiz?modulId=${item.id}&sectionId=${quizBlock.id}`);
-                      } else {
-                        navigate(`/guru/modul/quiz?modulId=${item.id}`);
-                      }
-                    } else if (typeInfo.label === 'Tugas') {
-                      navigate(`/guru/modul/materi?edit=${item.id}`);
+                    // 🔥 FIX BUG "modul hilang saat diedit": dulu syaratnya
+                    // `typeInfo.label === 'Kuis' || hasQuizInside`. Artinya
+                    // sebuah MODUL MATERI yang KEBETULAN punya blok kuis di
+                    // dalamnya ikut dilempar ke EDITOR KUIS — padahal badge-nya
+                    // jelas "Modul". Guru jadi gak bisa mengedit materinya sama
+                    // sekali (kelihatan seperti modulnya "hilang"), malah
+                    // ketemu layar kuis kosong + prompt draft yang bikin bingung.
+                    // Sekarang: cuma item yang MEMANG kuis yang masuk editor kuis.
+                    if (typeInfo.label === 'Kuis') {
+                      navigate(`/guru/modul/quiz?modulId=${item.id}`);
                     } else {
                       navigate(`/guru/modul/materi?edit=${item.id}`);
                     }
@@ -714,14 +712,11 @@ const ModulManager = () => {
                   <div style={styles.cardActions}>
                     <button 
                       onClick={(e) => { e.stopPropagation(); 
-                        if (typeInfo.label === 'Kuis' || hasQuizInside) {
-                          const quizBlock = item.blocks?.find(b => b.type === 'quiz' && b.quizId);
-                          if (quizBlock) {
-                            // 🔥 FIX: sama, langsung ke path final
-                            navigate(`/guru/modul/quiz?modulId=${item.id}&sectionId=${quizBlock.id}`);
-                          } else {
-                            navigate(`/guru/modul/quiz?modulId=${item.id}`);
-                          }
+                        // 🔥 Sama seperti klik kartu: modul yang berisi blok kuis
+                        // TETAP dibuka di editor materi. Kuisnya nanti dibuka dari
+                        // dalam editor materi itu (klik blok kuisnya).
+                        if (typeInfo.label === 'Kuis') {
+                          navigate(`/guru/modul/quiz?modulId=${item.id}`);
                         } else {
                           navigate(`/guru/modul/materi?edit=${item.id}`);
                         }
@@ -731,7 +726,17 @@ const ModulManager = () => {
                       <Edit3 size={12} /> Edit
                     </button>
                     <button 
-                      onClick={(e) => { e.stopPropagation(); window.open(`/siswa/materi/${item.id}`, '_blank'); }} 
+                      onClick={(e) => { e.stopPropagation();
+                        // 🔥 FIX BUG: dulu tombol ini membuka `/siswa/materi/{id}`
+                        // — alamat yang TIDAK TERDAFTAR di sistem. Akibatnya guru
+                        // yang klik Preview malah terlempar ke halaman login utama,
+                        // seolah-olah aplikasi error. Alamat yang benar dipisah
+                        // sesuai jenis isinya: modul dan kuis punya halaman sendiri.
+                        const previewUrl = typeInfo.label === 'Kuis'
+                          ? `/siswa/kuis/${item.id}`
+                          : `/siswa/modul/${item.id}`;
+                        window.open(previewUrl, '_blank');
+                      }} 
                       style={styles.btnPreview}
                     >
                       <Eye size={12} /> Preview
