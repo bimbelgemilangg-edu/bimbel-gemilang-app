@@ -900,6 +900,39 @@ const ManageMateri = () => {
             <div style={{ padding: 14, background: 'white', border: '1px solid #e2e8f0', borderRadius: 8 }}>
               <div style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', marginBottom: 8 }}>👁️ TAMPILAN UNTUK SISWA</div>
               <div dangerouslySetInnerHTML={{ __html: renderMathInHtml(section.content) }} />
+
+              {/* 🔥 Soal latihan interaktif disimpan terpisah dari teks (biar
+                  kunci jawabannya tersembunyi dari siswa sampai mereka menjawab).
+                  Di sisi guru, kunci jawabannya SENGAJA ditampilkan supaya guru
+                  bisa mengecek kebenarannya sebelum modul diterbitkan. */}
+              {section.interactive?.practice?.length > 0 && (
+                <div style={{ marginTop: 14, padding: 12, background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: 10 }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: '#0f766e', marginBottom: 8 }}>
+                    📝 LATIHAN INTERAKTIF ({section.interactive.practice.length} soal) — siswa hanya lihat soalnya, kunci jawaban muncul setelah mereka menjawab
+                  </div>
+                  {section.interactive.practice.map((p, pi) => (
+                    <div key={pi} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: pi < section.interactive.practice.length - 1 ? '1px dashed #99f6e4' : 'none' }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#1e293b', marginBottom: 4 }}>
+                        {pi + 1}. <span dangerouslySetInnerHTML={{ __html: renderMathInHtml(p.q || '') }} />
+                      </div>
+                      {(p.options || []).map((o, oi) => (
+                        <div key={oi} style={{
+                          fontSize: 11, marginLeft: 12, lineHeight: 1.7,
+                          color: oi === p.answer ? '#0f766e' : '#64748b',
+                          fontWeight: oi === p.answer ? 700 : 400,
+                        }}>
+                          {String.fromCharCode(65 + oi)}. <span dangerouslySetInnerHTML={{ __html: renderMathInHtml(String(o || '')) }} /> {oi === p.answer && '✅'}
+                        </div>
+                      ))}
+                      {p.explain && (
+                        <div style={{ fontSize: 11, color: '#0f766e', marginTop: 4, marginLeft: 12, fontStyle: 'italic' }}>
+                          💡 <span dangerouslySetInnerHTML={{ __html: renderMathInHtml(p.explain) }} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <button

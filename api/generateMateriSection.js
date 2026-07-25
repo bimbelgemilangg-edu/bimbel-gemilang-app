@@ -109,7 +109,12 @@ Ini penting karena guru berpengalaman tahu di mana siswa biasanya tersandung —
 【B】 LANGKAH GEMILANG (jembatan keledai) — JANGAN DIPAKSAKAN
 - Pakai HANYA kalau materinya berupa urutan/istilah yang perlu dihafal DAN kalimatnya bisa dibuat natural, lucu, mudah dibayangkan.
 - DILARANG membuat singkatan gabungan suku kata yang tidak bermakna (contoh JELEK: "PA-MA-WA-SU-KU-IN-JUM").
-- WAJIB berupa SATU KALIMAT INDONESIA ASLI. Contoh kualitas yang harus ditiru:
+- flashcard_front WAJIB berisi KALIMAT JEMBATAN KELEDAI-nya itu sendiri — BUKAN judul materi, BUKAN nama konsep, BUKAN singkatan huruf saja.
+  * SALAH (jangan begini): "Urutan Struktur Alur Naratif (E-K-K-P-R)"  ← ini judul, bukan jembatan keledai
+  * BENAR: "Enak Kali Kopi Panas Rasanya"  ← kalimat yang gampang diingat
+- flashcard_back WAJIB berisi PEMETAAN tiap kata ke istilah aslinya, satu baris satu pemetaan, format: <b>Kata</b> → istilah asli<br>
+  * Contoh: "<b>Enak</b> → Eksposisi<br><b>Kali</b> → Konflik<br><b>Kopi</b> → Klimaks<br><b>Panas</b> → Peleraian<br><b>Rasanya</b> → Resolusi"
+- Contoh kualitas kalimat yang harus ditiru:
   * "Kucing Hitam Dalam Mobil Desi Centil Mondar-Mandir" (km-hm-dam-m-dm-cm-mm)
   * "Waktu Sekolah Intan Cantik Pantang Menyerah Jualan Molen" (7 besaran pokok SI)
 - Setiap jembatan keledai WAJIB langsung diikuti contoh penerapannya pada soal nyata di dalam content_html. Percuma hafal kalimatnya kalau tidak tahu cara memakainya.
@@ -124,8 +129,20 @@ Bungkus 2 sampai 5 bagian penting di tiap section dengan:
 - DILARANG menaruh span ini di dalam rumus LaTeX.
 - Maksimal 5 penanda per bagian supaya tidak ramai.
 
-【D】 BAGIAN TERAKHIR WAJIB "Latihan Mandiri"
-Berisi 3 soal bertingkat (mudah, sedang, agak menantang) sesuai jenjang, lalu di bawahnya "Kunci Jawaban:" berisi jawaban tiap nomor beserta 1 baris cara singkatnya. Pastikan kunci jawabannya sudah kamu hitung ulang dan benar.
+【D】 LATIHAN INTERAKTIF (WAJIB, DIISI DI FIELD "practice")
+- Bagian TERAKHIR modul WAJIB berjudul "Latihan Mandiri" dan mengisi field "practice".
+- Selain itu, bagian mana pun yang cocok BOLEH juga mengisi "practice" (2-3 soal) sebagai cek pemahaman singkat.
+- "practice" adalah DATA TERSTRUKTUR, bukan teks biasa. Soal, pilihan, jawaban, dan pembahasan dipisah rapi supaya sistem bisa menampilkannya sebagai latihan interaktif yang jawabannya tersembunyi dulu.
+- DILARANG KERAS menulis soal beserta "Kunci Jawaban:" di dalam content_html kalau kamu sudah mengisi "practice". Kunci jawaban harus TERSEMBUNYI di field practice, bukan terpampang di teks — supaya siswa berpikir dulu sebelum melihat jawabannya.
+- Kalau soalnya butuh teks bacaan/stimulus, taruh bacaannya di content_html, lalu soal-soalnya di "practice".
+- Tiap soal WAJIB punya 4 pilihan (A-D) supaya bisa diklik siswa. Kalau materinya berupa uraian, ubah jadi pilihan ganda yang menguji poin yang sama.
+- Tingkat kesulitan bertahap: soal 1 mudah, soal 2 sedang, soal 3 agak menantang.
+- "explain" WAJIB menjelaskan MENGAPA jawabannya benar, bukan cuma mengulang jawabannya.
+
+【E】 PENEMPATAN GAMBAR
+- Kalau needs_image true, WAJIB taruh penanda [[GAMBAR]] PERSIS di posisi paling relevan di dalam content_html — yaitu tepat setelah kalimat yang menjelaskan objek pada gambar itu, BUKAN asal ditaruh di akhir.
+- Contoh: kalau membahas bentuk sel tumbuhan di paragraf kedua, taruh [[GAMBAR]] tepat setelah paragraf kedua itu.
+- Kalau needs_image false, JANGAN tulis penanda [[GAMBAR]] sama sekali.
 
 ════════════════════════════════
 BAGIAN 4 — STRUKTUR MODUL
@@ -144,11 +161,13 @@ Baris PERTAMA berupa metadata:
 {"meta": true, "subject_type": "eksakta atau naratif"}
 
 Baris BERIKUTNYA, masing-masing satu bagian materi dalam satu baris:
-{"title": "judul spesifik", "content_html": "isi bagian, hanya boleh pakai <p>, <b>, <i>, <ul>, <li>, <ol>, <pre>, dan <span class=gem-pop data-info=...>", "highlight_type": "mnemonic atau funfact atau none", "funfact_html": "diisi hanya kalau funfact", "flashcard_front": "diisi hanya kalau mnemonic", "flashcard_back": "diisi hanya kalau mnemonic, format <b>Kata</b> nama istilah<br> per baris", "needs_image": true atau false, "image_keyword": "kata benda BAHASA INGGRIS untuk cari foto, kosongkan kalau false"}
+{"title": "judul spesifik", "content_html": "isi bagian, hanya boleh pakai <p>, <b>, <i>, <ul>, <li>, <ol>, <pre>, <span class=gem-pop data-info=...>, dan penanda [[GAMBAR]]", "highlight_type": "mnemonic atau funfact atau none", "funfact_html": "diisi hanya kalau funfact", "flashcard_front": "KALIMAT jembatan keledainya, diisi hanya kalau mnemonic", "flashcard_back": "pemetaan tiap kata ke istilah asli, format <b>Kata</b> → istilah<br> per baris", "practice": [{"q": "pertanyaan", "options": ["pilihan A", "pilihan B", "pilihan C", "pilihan D"], "answer": 0, "explain": "kenapa jawaban itu benar"}], "needs_image": true atau false, "image_keyword": "kata benda BAHASA INGGRIS untuk cari foto, kosongkan kalau false"}
 
 ATURAN KETAT FORMAT:
 - TIDAK ADA koma di akhir baris. TIDAK ADA kurung siku pembungkus. TIDAK ADA code fence atau teks pembuka/penutup.
 - Setiap baris harus JSON tunggal yang valid dan LENGKAP.
+- "answer" adalah ANGKA INDEKS pilihan yang benar: 0 = pilihan pertama, 1 = kedua, 2 = ketiga, 3 = keempat.
+- "practice" boleh berupa array kosong [] untuk bagian yang tidak perlu latihan, TAPI bagian terakhir ("Latihan Mandiri") WAJIB berisi 3 soal.
 - needs_image true HANYA untuk objek/makhluk/alat/tempat nyata yang siswa terbantu kalau melihat wujud aslinya. Untuk rumus dan konsep abstrak selalu false.
 - highlight_type "none" itu wajar dan sering dipakai — jangan merasa harus selalu mengisi mnemonic atau funfact.
 
@@ -160,9 +179,11 @@ Sebelum mengirim jawaban, periksa diam-diam satu per satu:
 2. Setiap metode yang kusebut sudah kugambar dengan <pre> dan kuberi contoh nyata?
 3. Bahasa dan besaran angkanya sudah pas untuk jenjang yang diminta?
 4. Untuk materi eksakta: apakah aku sudah memberi cukup latihan mengerjakan, bukan cuma penjelasan?
-5. Ada bagian "Latihan Mandiri" beserta kunci jawaban di akhir?
-6. Setiap data-info benar-benar menjelaskan, bukan sekadar mengulang kata?
-7. Format JSONL sudah benar: satu baris satu objek, tanpa koma di akhir, tanpa kurung siku?
+5. Bagian terakhir "Latihan Mandiri" sudah mengisi field "practice" (3 soal, tiap soal 4 pilihan + pembahasan), dan kunci jawabannya TIDAK bocor di content_html?
+6. flashcard_front berisi KALIMAT jembatan keledai (bukan judul materi), dan flashcard_back berisi pemetaannya?
+7. Kalau needs_image true, penanda [[GAMBAR]] sudah kutaruh di posisi paling relevan di dalam content_html (bukan asal di akhir)?
+8. Setiap data-info benar-benar menjelaskan, bukan sekadar mengulang kata?
+9. Format JSONL sudah benar: satu baris satu objek, tanpa koma di akhir, tanpa kurung siku?
 Kalau ada yang belum terpenuhi, perbaiki dulu sebelum menjawab.`;
 
 export default async function handler(req, res) {
@@ -292,6 +313,25 @@ Susun modul lengkapnya sekarang sesuai semua aturan di atas. Ingat: siswa akan m
     const sections = sectionObjs.map((s, i) => {
       const isMnemonic = s.highlight_type === 'mnemonic' && s.flashcard_front && s.flashcard_back;
       const isFunfact = s.highlight_type === 'funfact' && s.funfact_html;
+
+      // 🔥 Latihan interaktif: hanya ambil soal yang BENAR-BENAR lengkap
+      // (ada pertanyaan, 2-4 pilihan, dan indeks jawaban yang valid). Soal
+      // setengah jadi dibuang daripada bikin siswa bingung / salah nilai.
+      const practice = Array.isArray(s.practice)
+        ? s.practice
+            .filter(p =>
+              p && typeof p.q === 'string' && p.q.trim() &&
+              Array.isArray(p.options) && p.options.length >= 2 &&
+              Number.isInteger(p.answer) && p.answer >= 0 && p.answer < p.options.length
+            )
+            .map(p => ({
+              q: sanitize(p.q),
+              options: p.options.map(o => sanitize(String(o))),
+              answer: p.answer,
+              explain: sanitize(p.explain || ''),
+            }))
+        : [];
+
       return {
         title: sanitize(s.title || `Bagian ${i + 1}`),
         content_html: sanitize(s.content_html || ''),
@@ -299,6 +339,7 @@ Susun modul lengkapnya sekarang sesuai semua aturan di atas. Ingat: siswa akan m
         funfact_html: isFunfact ? sanitize(s.funfact_html) : '',
         flashcard_front: isMnemonic ? sanitize(s.flashcard_front) : '',
         flashcard_back: isMnemonic ? sanitize(s.flashcard_back) : '',
+        practice,
         needs_image: !!s.needs_image,
         image_keyword: s.image_keyword || '',
       };

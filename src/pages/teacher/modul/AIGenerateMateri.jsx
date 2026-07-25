@@ -80,17 +80,40 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
              </div>`
           : '';
 
+        // 🔥 PENEMPATAN GAMBAR YANG RELEVAN: AI menaruh penanda [[GAMBAR]] tepat
+        // di posisi paling nyambung dengan pembahasannya. Dulu gambar SELALU
+        // ditempel di paling bawah section, jadi sering nggak nyambung sama
+        // kalimat yang lagi dibahas. Sekarang:
+        //  - kalau ada penanda -> gambar ditaruh persis di situ
+        //  - kalau nggak ada penanda tapi gambarnya ada -> taruh setelah
+        //    paragraf PERTAMA (biar kelihatan lebih awal, bukan di ujung)
+        let bodyHtml = s.content_html || '';
+        if (bodyHtml.includes('[[GAMBAR]]')) {
+          bodyHtml = bodyHtml.replace(/\[\[GAMBAR\]\]/g, imageHtml);
+        } else if (imageHtml) {
+          const firstParaEnd = bodyHtml.indexOf('</p>');
+          bodyHtml = firstParaEnd !== -1
+            ? bodyHtml.slice(0, firstParaEnd + 4) + imageHtml + bodyHtml.slice(firstParaEnd + 4)
+            : imageHtml + bodyHtml;
+        }
+        // Bersihkan penanda sisa kalau gambarnya ternyata gagal didapat
+        bodyHtml = bodyHtml.replace(/\[\[GAMBAR\]\]/g, '');
+
         const finalHtml = `
           <div style="margin-bottom:20px;">
-            ${s.content_html}
-            ${imageHtml}
+            ${bodyHtml}
             ${funfactHtml}
           </div>
         `.trim();
 
-        const interactive = (s.highlight_type === 'mnemonic')
-          ? { type: 'flashcard', front: s.flashcard_front, back: s.flashcard_back }
-          : null;
+        // 🔥 Satu bagian bisa punya jembatan keledai DAN latihan interaktif
+        // sekaligus, jadi keduanya disimpan berdampingan (bukan pilih salah satu).
+        const interactive = {
+          type: s.highlight_type === 'mnemonic' ? 'flashcard' : null,
+          front: s.flashcard_front || '',
+          back: s.flashcard_back || '',
+          practice: Array.isArray(s.practice) ? s.practice : [],
+        };
 
         blocks.push({
           id: Date.now() + i,
@@ -105,6 +128,18 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
       }
 
       onGenerated(blocks);
+
+      if (data.possiblyTruncated) {
+        // Materi tetap tersimpan (partial success), tapi kasih tahu guru
+        // bahwa topiknya kemungkinan terlalu luas untuk 1x generate.
+        alert(
+          `✅ ${blocks.length} bagian materi berhasil dibuat!\n\n` +
+          `⚠️ Catatan: topik ini cukup luas, AI kemungkinan belum sempat menulis semua yang direncanakan. ` +
+          `Cek dulu apakah materinya sudah cukup lengkap — kalau masih kurang, coba generate lagi dengan ` +
+          `judul yang lebih spesifik (misal dipecah per sub-topik).`
+        );
+      }
+
       onClose();
     } catch (e) {
       setError('❌ ' + e.message);

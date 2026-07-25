@@ -1,5 +1,5 @@
 // src/pages/student/StudentModuleView.jsx
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect, useReducer, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { 
@@ -298,48 +298,65 @@ const FlashcardWidget = ({ front, back }) => {
     setTimeout(() => {
       setFlipped(f => !f);
       setAnimating(false);
-    }, 150);
+    }, 160);
   };
 
   return (
-    <div
-      onClick={handleFlip}
-      style={{
-        marginTop: 16,
-        cursor: 'pointer',
-        userSelect: 'none',
-      }}
-    >
-      <div style={{ fontSize: 10, fontWeight: 700, color: '#8b5cf6', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-        ✨ Cara Gemilang — Klik kartu untuk lihat jawaban
+    <div style={{ marginTop: 18 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, color: '#8b5cf6', marginBottom: 8, letterSpacing: 0.3 }}>
+        ✨ CARA GEMILANG — cara cepat menghafal
       </div>
       <div
+        onClick={handleFlip}
         style={{
           width: '100%',
-          minHeight: 110,
-          borderRadius: 14,
-          padding: 20,
+          minHeight: 130,
+          borderRadius: 16,
+          padding: '22px 20px',
           boxSizing: 'border-box',
+          cursor: 'pointer',
+          userSelect: 'none',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          transition: 'transform 0.15s ease',
-          transform: animating ? 'scaleX(0.05)' : 'scaleX(1)',
+          gap: 10,
+          transition: 'transform 0.16s ease, box-shadow 0.16s ease',
+          transform: animating ? 'scaleX(0.04)' : 'scaleX(1)',
           ...(flipped
-            ? { background: '#f5f3ff', border: '2px solid #8b5cf6' }
-            : { background: 'linear-gradient(135deg,#8b5cf6,#6d28d9)', boxShadow: '0 6px 16px rgba(139,92,246,0.3)' }
+            ? { background: '#faf7ff', border: '2px solid #8b5cf6' }
+            : { background: 'linear-gradient(135deg,#8b5cf6,#6d28d9)', border: '2px solid transparent', boxShadow: '0 8px 20px rgba(139,92,246,0.28)' }
           ),
         }}
       >
         {!flipped ? (
-          <span style={{ color: 'white', fontSize: 22, fontWeight: 900, textAlign: 'center', letterSpacing: 1 }}>
-            {front}
-          </span>
+          <>
+            <span style={{
+              color: 'white', fontSize: 20, fontWeight: 900,
+              textAlign: 'center', lineHeight: 1.5, letterSpacing: 0.3,
+            }}>
+              “{front}”
+            </span>
+            <span style={{
+              color: 'rgba(255,255,255,0.85)', fontSize: 11, fontWeight: 600,
+              background: 'rgba(255,255,255,0.15)', padding: '4px 12px', borderRadius: 20,
+            }}>
+              👆 Ketuk untuk lihat artinya
+            </span>
+          </>
         ) : (
-          <span
-            style={{ color: '#4c1d95', fontSize: 14, fontWeight: 600, textAlign: 'center', lineHeight: 1.7 }}
-            dangerouslySetInnerHTML={{ __html: renderMathInHtml(back) }}
-          />
+          <>
+            <div
+              style={{ color: '#4c1d95', fontSize: 14, fontWeight: 600, lineHeight: 2, width: '100%' }}
+              dangerouslySetInnerHTML={{ __html: renderMathInHtml(back) }}
+            />
+            <span style={{
+              color: '#7c3aed', fontSize: 11, fontWeight: 600,
+              background: '#ede9fe', padding: '4px 12px', borderRadius: 20, marginTop: 4,
+            }}>
+              👆 Ketuk untuk balik lagi
+            </span>
+          </>
         )}
       </div>
     </div>
@@ -347,62 +364,274 @@ const FlashcardWidget = ({ front, back }) => {
 };
 
 // ============================================================
+// 🔥 LATIHAN INTERAKTIF (cek pemahaman, TIDAK dinilai)
+// Jawaban & pembahasan sengaja disembunyikan dulu supaya siswa
+// berpikir sendiri. Setelah memilih, baru dibuka dengan animasi.
+// ============================================================
+const PracticeWidget = ({ questions }) => {
+  const [picked, setPicked] = useState({});
+  const [revealed, setRevealed] = useState({});
+
+  if (!Array.isArray(questions) || questions.length === 0) return null;
+
+  const pick = (qi, oi) => {
+    if (revealed[qi]) return;
+    setPicked(p => ({ ...p, [qi]: oi }));
+  };
+  const check = (qi) => {
+    if (picked[qi] === undefined) return;
+    setRevealed(r => ({ ...r, [qi]: true }));
+  };
+  const retry = (qi) => {
+    setPicked(p => { const n = { ...p }; delete n[qi]; return n; });
+    setRevealed(r => { const n = { ...r }; delete n[qi]; return n; });
+  };
+
+  const doneCount = Object.keys(revealed).length;
+  const correctCount = Object.keys(revealed)
+    .filter(qi => picked[qi] === questions[qi]?.answer).length;
+
+  return (
+    <div style={{ marginTop: 20 }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        gap: 8, flexWrap: 'wrap', marginBottom: 10,
+      }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: '#0d9488', letterSpacing: 0.3 }}>
+          📝 CEK PEMAHAMAN — latihan santai, tidak dinilai
+        </div>
+        {doneCount > 0 && (
+          <div style={{
+            fontSize: 10, fontWeight: 700, color: '#0f766e',
+            background: '#ccfbf1', padding: '3px 10px', borderRadius: 20,
+          }}>
+            Benar {correctCount} dari {doneCount} dijawab
+          </div>
+        )}
+      </div>
+
+      {questions.map((q, qi) => {
+        const sel = picked[qi];
+        const open = !!revealed[qi];
+        const isRight = open && sel === q.answer;
+
+        return (
+          <div key={qi} style={{
+            background: 'white',
+            border: `1px solid ${open ? (isRight ? '#5eead4' : '#fca5a5') : '#e2e8f0'}`,
+            borderLeft: `4px solid ${open ? (isRight ? '#0d9488' : '#ef4444') : '#94a3b8'}`,
+            borderRadius: 12,
+            padding: 14,
+            marginBottom: 10,
+            transition: 'border-color 0.25s ease',
+          }}>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+              <span style={{
+                flexShrink: 0, width: 22, height: 22, borderRadius: '50%',
+                background: '#f1f5f9', color: '#475569', fontSize: 11, fontWeight: 800,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>{qi + 1}</span>
+              <div
+                style={{ fontSize: 14, fontWeight: 600, color: '#1e293b', lineHeight: 1.6 }}
+                dangerouslySetInnerHTML={{ __html: renderMathInHtml(q.q) }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {(q.options || []).map((opt, oi) => {
+                const chosen = sel === oi;
+                const correct = q.answer === oi;
+                let bg = 'white', border = '#e2e8f0', color = '#334155', mark = null;
+
+                if (open) {
+                  if (correct) {
+                    bg = '#f0fdfa'; border = '#0d9488'; color = '#115e59'; mark = '✅';
+                  } else if (chosen) {
+                    bg = '#fef2f2'; border = '#ef4444'; color = '#991b1b'; mark = '❌';
+                  } else {
+                    color = '#94a3b8';
+                  }
+                } else if (chosen) {
+                  bg = '#eef2ff'; border = '#6366f1'; color = '#3730a3';
+                }
+
+                return (
+                  <button
+                    key={oi}
+                    onClick={() => pick(qi, oi)}
+                    disabled={open}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      textAlign: 'left', width: '100%',
+                      padding: '9px 12px', borderRadius: 9,
+                      border: `1.5px solid ${border}`, background: bg, color,
+                      cursor: open ? 'default' : 'pointer',
+                      fontSize: 13, lineHeight: 1.5,
+                      transition: 'background 0.18s ease, border-color 0.18s ease',
+                    }}
+                  >
+                    <span style={{
+                      flexShrink: 0, width: 20, height: 20, borderRadius: '50%',
+                      border: `1.5px solid ${border}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 10, fontWeight: 800,
+                      background: chosen && !open ? '#6366f1' : 'transparent',
+                      color: chosen && !open ? 'white' : border,
+                    }}>
+                      {String.fromCharCode(65 + oi)}
+                    </span>
+                    <span
+                      style={{ flex: 1 }}
+                      dangerouslySetInnerHTML={{ __html: renderMathInHtml(String(opt)) }}
+                    />
+                    {mark && <span style={{ flexShrink: 0 }}>{mark}</span>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {!open ? (
+              <button
+                onClick={() => check(qi)}
+                disabled={sel === undefined}
+                style={{
+                  marginTop: 10, width: '100%', padding: '9px 0', borderRadius: 9,
+                  border: 'none', fontSize: 12, fontWeight: 800,
+                  background: sel === undefined ? '#f1f5f9' : 'linear-gradient(135deg,#14b8a6,#0d9488)',
+                  color: sel === undefined ? '#94a3b8' : 'white',
+                  cursor: sel === undefined ? 'not-allowed' : 'pointer',
+                  transition: 'background 0.2s ease',
+                }}
+              >
+                {sel === undefined ? 'Pilih dulu jawabanmu' : '🔍 Cek Jawaban'}
+              </button>
+            ) : (
+              <div className="gem-reveal" style={{ marginTop: 10 }}>
+                <div style={{
+                  background: isRight ? '#f0fdfa' : '#fffbeb',
+                  border: `1px solid ${isRight ? '#99f6e4' : '#fde68a'}`,
+                  borderRadius: 10, padding: '11px 13px',
+                }}>
+                  <div style={{
+                    fontSize: 11, fontWeight: 800, marginBottom: 5,
+                    color: isRight ? '#0f766e' : '#b45309',
+                  }}>
+                    {isRight ? '🎉 Tepat sekali!' : '💡 Belum tepat — ini penjelasannya'}
+                  </div>
+                  <div
+                    style={{ fontSize: 13, color: '#334155', lineHeight: 1.7 }}
+                    dangerouslySetInnerHTML={{ __html: renderMathInHtml(q.explain || '') }}
+                  />
+                </div>
+                <button
+                  onClick={() => retry(qi)}
+                  style={{
+                    marginTop: 8, background: 'none', border: 'none',
+                    color: '#0d9488', fontSize: 11, fontWeight: 700,
+                    cursor: 'pointer', padding: 0, textDecoration: 'underline',
+                  }}
+                >
+                  ↺ Coba lagi soal ini
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// ============================================================
 // 🔥 KONTEN AI YANG BISA DIPENCET
 // AI menandai bagian penting dengan <span class="gem-pop" data-info="...">.
-// Karena konten dirender sebagai HTML mentah, klik-nya ditangkap lewat
-// container (event delegation), lalu penjelasannya tampil di kotak bawah.
+// Penjelasan muncul PERSIS DI BAWAH kata yang diketuk (popover melayang),
+// bukan menumpuk di bawah paragraf — supaya siswa langsung tahu penjelasan
+// itu milik kata yang mana.
 // ============================================================
 const AIContentBlock = ({ html }) => {
-  const [info, setInfo] = useState(null);
+  const wrapRef = useRef(null);
+  const [pop, setPop] = useState(null);
 
   const handleClick = (e) => {
     const el = e.target.closest ? e.target.closest('.gem-pop') : null;
-    if (!el) return;
+    if (!el) { setPop(null); return; }
     e.preventDefault();
+    e.stopPropagation();
     const text = el.getAttribute('data-info') || '';
-    if (!text) return;
-    setInfo({ term: el.textContent, text });
+    if (!text || !wrapRef.current) return;
+
+    const cRect = wrapRef.current.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
+    const maxW = cRect.width;
+    const width = Math.min(300, Math.max(180, maxW - 12));
+    const centerX = rect.left - cRect.left + rect.width / 2;
+    const left = Math.max(4, Math.min(centerX - width / 2, maxW - width - 4));
+    setPop({
+      term: el.textContent,
+      text,
+      top: rect.bottom - cRect.top + 10,
+      left,
+      width,
+      arrowX: Math.max(12, Math.min(centerX - left, width - 12)),
+    });
   };
 
   return (
-    <>
+    <div ref={wrapRef} style={{ position: 'relative' }}>
       <div
         className="cdtx cdtx-html"
         onClick={handleClick}
         dangerouslySetInnerHTML={{ __html: renderMathInHtml(html) }}
       />
-      {info && (
-        <div style={{
-          marginTop: 12,
-          background: '#eef2ff',
-          border: '1px solid #c7d2fe',
-          borderLeft: '4px solid #6366f1',
-          borderRadius: 10,
-          padding: '12px 14px',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: '#4f46e5', marginBottom: 4 }}>
-                💡 {info.term}
+      {pop && (
+        <>
+          <div
+            onClick={() => setPop(null)}
+            style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+          />
+          <div
+            className="gem-pop-bubble"
+            style={{
+              position: 'absolute',
+              top: pop.top, left: pop.left, width: pop.width,
+              zIndex: 50,
+              background: '#312e81',
+              borderRadius: 12,
+              padding: '11px 13px',
+              boxShadow: '0 10px 28px rgba(49,46,129,0.35)',
+            }}
+          >
+            <div style={{
+              position: 'absolute', top: -6, left: pop.arrowX - 6,
+              width: 12, height: 12, background: '#312e81',
+              transform: 'rotate(45deg)', borderRadius: 2,
+            }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 10, fontWeight: 800, color: '#c7d2fe', marginBottom: 4, letterSpacing: 0.3 }}>
+                  💡 {pop.term}
+                </div>
+                <div style={{ fontSize: 12.5, color: 'white', lineHeight: 1.65 }}>
+                  {pop.text}
+                </div>
               </div>
-              <div style={{ fontSize: 13, color: '#334155', lineHeight: 1.6 }}>
-                {info.text}
-              </div>
+              <button
+                onClick={() => setPop(null)}
+                style={{
+                  background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 6,
+                  cursor: 'pointer', padding: '2px 4px', color: 'white', flexShrink: 0,
+                  display: 'flex', alignItems: 'center',
+                }}
+                aria-label="Tutup penjelasan"
+              >
+                <X size={12} />
+              </button>
             </div>
-            <button
-              onClick={() => setInfo(null)}
-              style={{
-                background: 'white', border: '1px solid #c7d2fe', borderRadius: 6,
-                cursor: 'pointer', padding: '2px 6px', color: '#4f46e5', flexShrink: 0,
-              }}
-              aria-label="Tutup penjelasan"
-            >
-              <X size={13} />
-            </button>
           </div>
-        </div>
+        </>
       )}
-    </>
+    </div>
   );
 };
 
@@ -943,8 +1172,11 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         {block.type === 'text' && block.format !== 'html' && (
           <div className="cdtx">{renderMath(block.content)}</div>
         )}
-        {block.interactive?.type === 'flashcard' && (
+        {block.interactive?.type === 'flashcard' && block.interactive.front && (
           <FlashcardWidget front={block.interactive.front} back={block.interactive.back} />
+        )}
+        {block.interactive?.practice?.length > 0 && (
+          <PracticeWidget questions={block.interactive.practice} />
         )}
         
         {(block.type === 'file' || block.type === 'video') && (
@@ -1250,8 +1482,12 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         .cdtx-html ul,.cdtx-html ol{margin:10px 0 12px 20px}
         .cdtx-html li{margin-bottom:6px}
         .cdtx-html pre{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;line-height:1.7;margin:10px 0}
-        .gem-pop{color:#4f46e5;font-weight:700;border-bottom:2px dotted #6366f1;cursor:pointer;padding:0 2px;border-radius:3px;transition:background .15s}
-        .gem-pop:active{background:#e0e7ff}
+        .gem-pop{color:#4f46e5;font-weight:700;background:#eef2ff;border-bottom:2px dotted #6366f1;cursor:pointer;padding:1px 4px;border-radius:4px;transition:background .15s}
+        .gem-pop:active{background:#c7d2fe}
+        .gem-pop-bubble{animation:gemPopIn .16s ease-out}
+        @keyframes gemPopIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+        .gem-reveal{animation:gemReveal .28s ease-out}
+        @keyframes gemReveal{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
         .gem-pop::after{content:"👆";font-size:9px;vertical-align:super;margin-left:1px;opacity:.5}
         .em{text-align:center;padding:40px;color:#94a3b8}
         .tg{border-left:4px solid #f59e0b}
