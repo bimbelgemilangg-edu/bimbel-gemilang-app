@@ -1393,11 +1393,29 @@ const ManageQuiz = () => {
           const ownerGuruId = modulData.guruId || savedTeacher.guruId || savedTeacher.id || '';
           const ownerGuruName = modulData.guruName || savedTeacher.nama || '';
           const ownerKodeMapel = modulData.kodeMapel || savedTeacher.kodeMapel || '';
+
+          // 🔥 FIX BUG URGENT: kuis yang ditautkan ke materi ini dulu SAMA
+          // SEKALI TIDAK ikut pengaturan target modul induknya (targetKelas/
+          // targetKategori/sendToSpecificStudents). Karena kuis ini disimpan
+          // sebagai dokumen `bimbel_modul` tersendiri juga (bukan cuma jadi
+          // bagian dari `blocks`), begitu field target itu kosong, sistem
+          // menganggapnya "Semua" secara default — jadi kuis yang harusnya
+          // cuma buat kelas 7 SMP Reguler malah nyasar ke SEMUA siswa. Sekarang
+          // target-nya WAJIB disalin persis dari modul induknya, sesuai
+          // prinsip "kuis di dalam modul ikut aturan modul".
+          const inheritedTargeting = {
+            targetKategori: modulData.targetKategori || 'Semua',
+            targetKelas: modulData.targetKelas || 'Semua',
+            sendToSpecificStudents: !!modulData.sendToSpecificStudents,
+            selectedStudents: modulData.selectedStudents || [],
+            studentIds: modulData.studentIds || [],
+          };
           
           if (quizId) {
             // Update quiz yang sudah ada
             await updateDoc(doc(db, "bimbel_modul", quizId), {
               ...quizPayload,
+              ...inheritedTargeting,
               guruId: ownerGuruId,
               guruName: ownerGuruName,
               kodeMapel: ownerKodeMapel,
@@ -1406,6 +1424,7 @@ const ManageQuiz = () => {
             // Buat quiz baru
             const newQuiz = await addDoc(collection(db, "bimbel_modul"), {
               ...quizPayload,
+              ...inheritedTargeting,
               title: quizTitle.toUpperCase(),
               subject: quizSubject || "Kuis",
               type: 'kuis_mandiri',
@@ -1461,9 +1480,20 @@ const ManageQuiz = () => {
         }
         const modulData = modulSnap.data();
 
+        // 🔥 Sama seperti perbaikan di atas: kuis WAJIB ikut target modul
+        // tujuan, bukan default "Semua".
+        const inheritedTargeting = {
+          targetKategori: modulData.targetKategori || 'Semua',
+          targetKelas: modulData.targetKelas || 'Semua',
+          sendToSpecificStudents: !!modulData.sendToSpecificStudents,
+          selectedStudents: modulData.selectedStudents || [],
+          studentIds: modulData.studentIds || [],
+        };
+
         // 1. Simpan kuis sebagai dokumen tersendiri
         const newQuizDoc = await addDoc(collection(db, "bimbel_modul"), {
           ...quizPayload,
+          ...inheritedTargeting,
           title: quizTitle.toUpperCase(),
           subject: modulData.subject || quizSubject || "Kuis",
           type: 'kuis_mandiri',

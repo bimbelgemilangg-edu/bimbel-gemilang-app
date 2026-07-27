@@ -1,12 +1,13 @@
 // src/pages/teacher/modul/ManageTugas.jsx
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
-import { collection, addDoc, serverTimestamp, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { notifyStudents } from '../../../utils/notifications';
 import { 
   Edit3, Clock, ArrowLeft, BookOpen, Target, Users, 
   CheckCircle, AlertCircle, Shield, Hash, Tag, User,
-  Calendar, Send, ChevronDown, ChevronUp
+  Calendar, Send, ChevronDown, ChevronUp, Sparkles
 } from 'lucide-react';
 
 const ManageTugas = () => {
@@ -55,9 +56,13 @@ const ManageTugas = () => {
           mapelGuru: teacherMapel
         }));
 
-        if (teacherName) {
-          const qGuru = query(collection(db, "teachers"), where("nama", "==", teacherName));
-          const snapGuru = await getDocs(qGuru);
+        if (teacherId) {
+          // 🔥 FIX BUG: dulu guru dicari dengan mencocokkan NAMA
+          // (where("nama","==",teacherName)) — rapuh, bisa salah ambil data
+          // guru lain kalau ada 2 guru dengan nama yang sama/mirip. Sekarang
+          // dicocokkan lewat field guruId, yang seharusnya unik per guru.
+          const qGuru = query(collection(db, "teachers"), where("guruId", "==", teacherId));
+          const snapGuru = await getDocs(qGuru).catch(() => ({ empty: true, docs: [] }));
           if (!snapGuru.empty) {
             const guru = snapGuru.docs[0].data();
             setGuruData(guru);
@@ -137,7 +142,16 @@ const ManageTugas = () => {
       };
 
       await addDoc(collection(db, "bimbel_modul"), payload);
-      
+
+      // 🔥 Notifikasi ke siswa yang ditarget
+      notifyStudents({
+        targetKelas: tugas.targetKelas,
+        type: 'tugas',
+        title: '📝 Tugas Baru!',
+        message: `"${tugas.title}" baru saja diterbitkan${tugas.deadline ? ` — batas waktu ${formatDeadline(tugas.deadline)}` : ''}.`,
+        link: '/siswa/materi',
+      });
+
       setShowSuccess(true);
       setTimeout(() => {
         setShowSuccess(false);
@@ -178,6 +192,20 @@ const ManageTugas = () => {
       </div>
 
       <div style={styles.card}>
+        {/* 🔥 CATATAN PENTING — dulu gak ada penjelasan sama sekali kapan
+            sebaiknya pakai halaman ini vs lewat editor materi, bikin guru
+            gak sadar tugas dari sini SELALU berdiri sendiri (gak nempel ke
+            modul materi manapun, targetnya harus diatur manual di sini). */}
+        <div style={styles.tipBox}>
+          <Sparkles size={14} color="#0891b2" style={{ flexShrink: 0, marginTop: 1 }} />
+          <span style={styles.tipText}>
+            💡 Halaman ini untuk tugas <strong>MANDIRI</strong> yang berdiri sendiri (target diatur manual di bawah).
+            Kalau tugas ini bagian dari materi tertentu (misal PR setelah bab tertentu), lebih baik tambahkan lewat
+            <strong> Editor Materi → Tambah Konten → Tugas/PR</strong> — supaya otomatis mengikuti target siswa modul itu,
+            gak perlu atur ulang target di sini.
+          </span>
+        </div>
+
         {/* HEADER */}
         <div style={styles.header}>
           <div style={styles.iconCircle}>
@@ -624,6 +652,21 @@ const styles = {
     color: '#166534',
     lineHeight: '1.4',
     flex: 1
+  },
+  tipBox: {
+    background: '#ecfeff',
+    border: '1px solid #a5f3fc',
+    borderRadius: '10px',
+    padding: '12px 14px',
+    marginBottom: '20px',
+    display: 'flex',
+    gap: '8px',
+    alignItems: 'flex-start'
+  },
+  tipText: {
+    fontSize: '11px',
+    color: '#0e7490',
+    lineHeight: '1.6'
   }
 };
 

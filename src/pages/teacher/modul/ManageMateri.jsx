@@ -7,6 +7,7 @@ import {
 } from "firebase/firestore";
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile, deleteFile, supabase } from '../../../services/uploadService';
+import { notifyStudents } from '../../../utils/notifications';
 import AIGenerateMateri from './AIGenerateMateri';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
@@ -794,6 +795,20 @@ const ManageMateri = () => {
         payload.createdBy = authorName;
         const newDoc = await addDoc(collection(db, COLLECTION_NAME), payload);
         alert(`✅ Modul "${title}" berhasil diterbitkan!`);
+
+        // 🔥 NOTIFIKASI — cuma pas PERTAMA KALI diterbitkan (bukan tiap update
+        // kecil, biar gak spam), dan cuma kalau statusnya aktif.
+        if (payload.status === 'aktif') {
+          notifyStudents({
+            targetKelas: sendToSpecificStudents ? undefined : targetKelas,
+            specificStudentIds: sendToSpecificStudents ? selectedStudents.map(s => s.studentId) : [],
+            type: 'materi',
+            title: '📘 Materi Baru!',
+            message: `"${title}" baru saja diterbitkan${subject ? ` untuk mapel ${subject}` : ''}.`,
+            link: `/siswa/modul/${newDoc.id}`,
+          });
+        }
+
         navigate(`/guru/modul/materi?edit=${newDoc.id}`);
         return;
       }
