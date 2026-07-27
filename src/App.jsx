@@ -66,6 +66,9 @@ import StudentAttendanceSiswa from './pages/student/StudentAttendance';
 import StudentElearning from './pages/student/StudentElearning';
 import StudentModuleView from './pages/student/StudentModuleView';
 import StudentQuizView from './pages/student/StudentQuizView';
+// 🔥 BARU: halaman isi survei siswa — sebelumnya belum pernah dibuat sama
+// sekali, padahal dashboard sudah menaruh tombol yang mengarah ke sini.
+import StudentSurveyView from './pages/student/StudentSurveyView';
 
 // ============================================================
 // ROUTE GUARDS
@@ -288,6 +291,12 @@ function App() {
         
         {/* 🔥 HALAMAN KHUSUS UNTUK KERJAKAN KUIS */}
         <Route path="/siswa/kuis/:id" element={<SiswaRoute><SiswaLayout><KuisSiswaWrapper /></SiswaLayout></SiswaRoute>} />
+
+        {/* 🔥 BARU: HALAMAN ISI SURVEI — sebelumnya rute ini belum terdaftar
+            sama sekali, padahal dashboard sudah menaruh tombol yang mengarah
+            ke sini. Itu sebabnya klik "Isi Sekarang" langsung "kepental"
+            (jatuh ke rute "*" -> Navigate ke "/"). */}
+        <Route path="/siswa/survei/:id" element={<SiswaRoute><SiswaLayout><StudentSurveyView /></SiswaLayout></SiswaRoute>} />
 
         {/* ============================================================
             REDIRECT & FALLBACK

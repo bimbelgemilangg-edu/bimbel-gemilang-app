@@ -1,6 +1,5 @@
 // src/pages/student/StudentDashboard.jsx
 import React, { useState, useEffect } from 'react';
-import SidebarSiswa from '../../components/SidebarSiswa';
 import { db, auth } from '../../firebase';
 import { collection, query, getDocs, orderBy, doc, getDoc, setDoc, deleteDoc, addDoc, serverTimestamp, where, limit } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
@@ -9,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
 
 import {
-  BookOpen, Calendar, Menu, ClipboardList, X, Camera, User, MapPin,
+  BookOpen, Calendar, ClipboardList, X, Camera, User, MapPin,
   Trophy, ArrowRight, AlertCircle, Award, Bell, Download,
   Trash2, FileQuestion, FileText, DollarSign, Sparkles, Inbox,
   Megaphone, RefreshCw
@@ -67,8 +66,6 @@ const SkeletonLines = ({ count = 3 }) => (
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
-  const [activeMenu, setActiveMenu] = useState('dashboard');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   const [studentName, setStudentName] = useState(() => localStorage.getItem('studentName') || 'Siswa');
@@ -344,8 +341,21 @@ const StudentDashboard = () => {
     );
   }
 
+  // 🔥 FIX BUG ARSITEKTUR BESAR: sebelumnya komponen ini render SIDEBAR-nya
+  // SENDIRI (<SidebarSiswa>, tombol hamburger, offset marginLeft:260) —
+  // padahal di App.jsx, route "/siswa/dashboard" SUDAH dibungkus <SiswaLayout>
+  // yang JUGA render sidebar + header + offset yang SAMA. Akibatnya: sidebar
+  // ke-render 2 kali dobel (numpuk persis di posisi yang sama, jadi gak
+  // "kelihatan" pecah tapi boros & 2x event listener), dan konten dashboard
+  // ke-geser marginLeft:260 DUA KALI (jadi ~520px kosong di desktop).
+  // Ditambah lagi breakpoint mobile-nya beda (SiswaLayout ≤1024px vs
+  // komponen ini ≤768px), jadi di lebar 769-1024px dua-duanya "gak sepakat"
+  // — ini kemungkinan besar akar dari keluhan "tampilan berantakan di HP".
+  // Sekarang komponen ini HANYA render kontennya sendiri; sidebar & page
+  // shell sepenuhnya diserahkan ke SiswaLayout (persis seperti halaman siswa
+  // lain — StudentElearning, dst — yang sudah benar dari awal).
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f6fb' }}>
+    <div style={{ paddingBottom: isMobile ? 70 : 0 }}>
       <style>{`
         @keyframes skeletonShine { 0%{background-position:100% 50%} 100%{background-position:0 50%} }
         @keyframes fadeSlideIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
@@ -353,24 +363,7 @@ const StudentDashboard = () => {
         .sd-task-item:hover, .sd-survey-btn:hover { filter: brightness(0.97); }
       `}</style>
 
-      <SidebarSiswa activeMenu={activeMenu} setActiveMenu={setActiveMenu} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-
-      {isMobile && (
-        <button onClick={() => setIsSidebarOpen(true)} style={{
-          position: 'fixed', top: 'max(15px, env(safe-area-inset-top))', left: 15, zIndex: 900,
-          background: '#1e293b', color: 'white', border: 'none', padding: 10, borderRadius: 10, cursor: 'pointer',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-        }}><Menu size={22} /></button>
-      )}
-
-      <div style={{
-        marginLeft: isMobile ? 0 : 260,
-        padding: isMobile ? '15px' : '30px',
-        width: isMobile ? '100%' : 'calc(100% - 260px)',
-        boxSizing: 'border-box',
-        paddingTop: isMobile ? 'max(64px, calc(env(safe-area-inset-top) + 54px))' : 30,
-        paddingBottom: isMobile ? 'max(24px, env(safe-area-inset-bottom))' : 30,
-      }}>
+      <div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
           <div>
@@ -655,8 +648,6 @@ const StudentDashboard = () => {
           </div>
         </div>
       </div>
-
-      {isMobile && isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 998 }} />}
 
       {isScanning && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 16 }}>
