@@ -132,18 +132,22 @@ const StudentElearning = () => {
       );
       const snapshot = await getDocs(q);
       let allModules = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      
-      // 🔥 FIX BUG UTAMA (kuis "nyasar" ke siswa yang salah): dokumen kuis
-      // yang cuma nempel/embedded di dalam sebuah modul materi (punya
-      // `parentModulId`) TIDAK PERNAH dievaluasi atau ditampilkan sendiri
-      // di sini. Sebelumnya, kuis begini ikut dinilai target-nya sendiri
-      // (targetKelas/targetKategori miliknya sendiri) — dan field itu gampang
-      // basi kalau guru mengubah target modul induknya belakangan tanpa
-      // membuka ulang tiap kuis satu-satu. Sekarang aksesnya SEPENUHNYA
-      // ngikut modul induk: kuis ini cuma bisa dijangkau lewat modul
-      // induknya (StudentModuleView merender lewat `blocks[].quizId`), jadi
-      // di sini cukup dibuang duluan sebelum evaluasi apapun.
-      allModules = allModules.filter(m => !m.parentModulId);
+
+      // 🔥 FIX BUG UTAMA (revisi ke-2, retroaktif — gak perlu buka & simpan
+      // ulang tiap kuis manual): daripada cuma andalkan penanda parentModulId
+      // yang wajib disimpan ulang dulu di tiap kuis lama, sekarang kita
+      // SENDIRI yang nyisir semua modul materi, kumpulkan SEMUA quizId yang
+      // disebut di `blocks[].quizId`-nya (itu artinya kuis itu SUDAH nempel
+      // ke sebuah materi), lalu buang dokumen manapun yang ID-nya cocok dari
+      // listing ini. Ini langsung berlaku ke kuis LAMA yang sudah ada juga,
+      // tanpa perlu tindakan tambahan dari guru sama sekali.
+      const embeddedQuizIds = new Set();
+      allModules.forEach(m => {
+        (m.blocks || []).forEach(b => {
+          if (b.type === 'quiz' && b.quizId) embeddedQuizIds.add(b.quizId);
+        });
+      });
+      allModules = allModules.filter(m => !embeddedQuizIds.has(m.id) && !m.parentModulId);
 
       // 🔥 FILTER BERDASARKAN AKSES SISWA
       const { nim, kelas, program, id } = studentData;

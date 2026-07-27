@@ -203,14 +203,19 @@ const StudentDashboard = () => {
         setTodaySchedules(fetchedSchedules);
 
         // --- Modul & tugas ---
-        // --- Modul & tugas ---
-        // 🔥 FIX BUG YANG SAMA seperti di StudentElearning.jsx: kuis yang
-        // cuma nempel di sebuah materi (parentModulId) dibuang duluan,
-        // supaya gak pernah dievaluasi/muncul sendiri dengan target-nya
-        // sendiri yang bisa basi. Aksesnya ngikut modul induk sepenuhnya.
-        const allModulsData = modulSnap.docs
-          .map(d => ({ id: d.id, ...d.data() }))
-          .filter(m => !m.parentModulId);
+        // 🔥 FIX BUG UTAMA (retroaktif — gak perlu re-save manual): kumpulin
+        // semua quizId yang disebut di blocks manapun (artinya kuis itu
+        // sudah nempel ke sebuah materi), lalu buang dokumen yang cocok dari
+        // listing. Kuis begini aksesnya sepenuhnya ngikut modul induk,
+        // gak pernah dievaluasi target-nya sendiri yang bisa basi.
+        const rawModulsData = modulSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const embeddedQuizIds = new Set();
+        rawModulsData.forEach(m => {
+          (m.blocks || []).forEach(b => {
+            if (b.type === 'quiz' && b.quizId) embeddedQuizIds.add(b.quizId);
+          });
+        });
+        const allModulsData = rawModulsData.filter(m => !embeddedQuizIds.has(m.id) && !m.parentModulId);
         setAllModuls(allModulsData);
 
         const accessibleModuls = allModulsData.filter(modul => {
