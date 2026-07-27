@@ -7,7 +7,7 @@ import {
   ClipboardList, Globe, TrendingUp, UserPlus, DollarSign
 } from 'lucide-react';
 import { db } from '../firebase';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, getCountFromServer } from 'firebase/firestore';
 
 const SidebarAdmin = () => {
   const location = useLocation();
@@ -49,19 +49,25 @@ const SidebarAdmin = () => {
         setBadgePiutang(piutang);
         setBadgeSiswaBaru(baru);
 
-        // 🔥 Pendaftaran Online pending
-        const pendaftaranSnap = await getDocs(collection(db, "online_registrations"));
-        let pending = 0;
-        pendaftaranSnap.forEach(doc => {
-          const data = doc.data();
-          if (data.paymentStatus === 'pending') pending++;
-        });
-        setBadgePendaftaran(pending);
+        // 🔥 FIX PERFORMA: sebelumnya narik SEMUA dokumen pendaftaran online
+        // cuma buat hitung berapa yang statusnya "pending" — padahal Firestore
+        // punya cara hitung jumlah LANGSUNG DI SERVER (getCountFromServer)
+        // tanpa perlu download isi tiap dokumennya. Jauh lebih ringan,
+        // apalagi ini jalan di SEMUA halaman admin.
+        const pendingQuery = query(collection(db, "online_registrations"), where("paymentStatus", "==", "pending"));
+        const countSnap = await getCountFromServer(pendingQuery);
+        setBadgePendaftaran(countSnap.data().count);
 
       } catch (e) { /* silent */ }
     };
     fetchBadges();
-    const interval = setInterval(fetchBadges, 30000);
+    // 🔥 FIX PERFORMA: sebelumnya narik ulang SEMUA data siswa tiap 30 DETIK,
+    // padahal SidebarAdmin nempel di SETIAP halaman admin — jadi selama
+    // admin buka aplikasi, tarikan data ini numpuk terus-terusan. Badge
+    // notifikasi kayak gini gak butuh update se-real-time itu; 3 menit
+    // masih cukup responsif buat kebutuhan "ada piutang baru/pendaftaran
+    // baru", sambil beban ke server jadi 6x lebih ringan.
+    const interval = setInterval(fetchBadges, 180000);
     return () => clearInterval(interval);
   }, []);
 

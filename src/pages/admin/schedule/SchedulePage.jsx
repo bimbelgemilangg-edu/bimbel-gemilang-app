@@ -478,10 +478,21 @@ const SchedulePage = () => {
         start: formData.start,
         end: formData.end,
         students: studentsFullData,
-        studentIds: studentsFullData.map(s => s.studentId || s.id),
+        // 🔥 FIX BUG: sebelumnya `studentIds` diisi pakai kode unik siswa
+        // (studentId field), padahal `students[].id` di ATAS-nya (baris
+        // sebelumnya) pakai ID DOKUMEN FIRESTORE — dua skema BEDA untuk
+        // data yang seharusnya sama, di dalam 1 dokumen jadwal yang sama.
+        // Kalau ada bagian sistem lain yang baca `studentIds` sambil
+        // ngarep isinya cocok sama `students[].id`, bakal gak nemu apa-apa.
+        // Disamakan jadi ID dokumen juga.
+        studentIds: studentsFullData.map(s => s.id),
         dateStr: targetDateStr,
         status: 'scheduled',
-        updatedAt: new Date().toISOString()
+        // 🔥 FIX: pakai serverTimestamp() biar konsisten sama field lain
+        // (createdAt di bawah, dan field waktu di collection lain kayak
+        // bimbel_modul) — sebelumnya pakai string ISO biasa, tipe datanya
+        // beda sendiri dibanding seluruh sistem yang lain.
+        updatedAt: serverTimestamp()
       };
 
       if (editId) {
@@ -532,7 +543,14 @@ const SchedulePage = () => {
       return;
     }
     
-    if (!window.confirm("⚠️ Apakah Anda yakin ingin menghapus jadwal ini?\n\nData kehadiran yang terkait juga akan dihapus.\n\n❌ Siswa TIDAK akan terhapus dari sistem.")) {
+    // 🔥 FIX BUG: pesan konfirmasi ini SEBELUMNYA BOHONG — bilang "data
+    // kehadiran yang terkait juga akan dihapus", padahal kode di bawahnya
+    // CUMA menghapus dokumen jadwal itu sendiri, TIDAK PERNAH menghapus
+    // data di collection "attendance". Daripada mendadak nambah operasi
+    // hapus baru (berisiko menghilangkan riwayat kehadiran siswa yang
+    // masih berguna), teksnya diperbaiki supaya sesuai KENYATAAN: riwayat
+    // kehadiran memang sengaja DIPERTAHANKAN walau jadwalnya dihapus.
+    if (!window.confirm("⚠️ Apakah Anda yakin ingin menghapus jadwal ini?\n\nℹ️ Riwayat kehadiran siswa yang SUDAH TERCATAT untuk jadwal ini akan TETAP TERSIMPAN (tidak ikut terhapus).\n\n❌ Siswa TIDAK akan terhapus dari sistem.")) {
       return;
     }
     
