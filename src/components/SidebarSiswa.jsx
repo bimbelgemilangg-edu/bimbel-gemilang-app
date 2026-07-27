@@ -33,6 +33,8 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
   }, []);
 
   // ===== MENU ITEMS =====
+  // 🔥 FIX: badge "Baru" di E-Learning dihapus sesuai permintaan — fiturnya
+  // sudah lama ada, badge itu jadi gak relevan lagi dan cuma bikin ramai.
   const menuItems = [
     { 
       id: 'dashboard', 
@@ -46,8 +48,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
       label: '📚 E-Learning', 
       icon: <BookOpen size={18}/>, 
       path: '/siswa/materi',
-      color: '#10b981',
-      badge: 'Baru'
+      color: '#10b981'
     },
     { 
       id: 'smart-rapor', 
@@ -127,10 +128,19 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         <div onClick={() => setIsOpen(false)} style={styles.overlay} />
       )}
 
-      <div style={{
+      {/* 🔥 Hover dipindah ke CSS class (bukan inline onMouseEnter/onMouseLeave
+          yang bikin ulang objek style tiap event) — lebih ringan & rapi. */}
+      <style>{`
+        .sidebar-siswa-menu-item:not(.active):hover { background: rgba(255,255,255,0.06) !important; }
+        .sidebar-siswa-profile-btn:hover { background: rgba(255,255,255,0.12) !important; color: white !important; }
+        .sidebar-siswa-logout-btn:hover { background: #dc2626 !important; }
+        .sidebar-siswa-scroll::-webkit-scrollbar { width: 4px; }
+        .sidebar-siswa-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+      `}</style>
+
+      <div className="sidebar-siswa-scroll" style={{
         ...styles.sidebar,
         transform: isOpen || !isMobile ? 'translateX(0)' : 'translateX(-100%)',
-        position: isMobile ? 'fixed' : 'fixed', // ← TETAP FIXED
       }}>
         
         {/* HEADER */}
@@ -183,18 +193,13 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
             return (
               <li 
                 key={item.id}
+                className={`sidebar-siswa-menu-item${isActive ? ' active' : ''}`}
                 onClick={() => handleMenuClick(item)}
                 style={{ 
                   ...styles.menuItem,
                   background: isActive ? `${item.color}20` : 'transparent',
                   borderLeft: isActive ? `3px solid ${item.color}` : '3px solid transparent',
                   color: isActive ? item.color : '#94a3b8'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) e.currentTarget.style.background = 'transparent';
                 }}
               >
                 <span style={{ 
@@ -204,14 +209,6 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
                   {item.icon}
                 </span>
                 <span style={styles.menuLabel}>{item.label}</span>
-                {item.badge && (
-                  <span style={{
-                    ...styles.menuBadge,
-                    background: item.color,
-                  }}>
-                    {item.badge}
-                  </span>
-                )}
               </li>
             );
           })}
@@ -221,27 +218,15 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         <div style={styles.footer}>
           <button 
             onClick={() => navigate('/siswa/profile')} 
+            className="sidebar-siswa-profile-btn"
             style={styles.profileBtn}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-              e.currentTarget.style.color = 'white';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-              e.currentTarget.style.color = '#94a3b8';
-            }}
           >
             <User size={16} /> Profil
           </button>
           <button 
             onClick={handleLogout} 
+            className="sidebar-siswa-logout-btn"
             style={styles.logoutBtn}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#dc2626';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#ef4444';
-            }}
           >
             <LogOut size={16} /> Keluar
           </button>
@@ -259,15 +244,30 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
 };
 
 // ============================================================
-// STYLES - SEMUA DALAM OBJEK (TIDAK TERPUTUS)
+// STYLES
 // ============================================================
 const styles = {
-  sidebar: { 
-    width: '270px', 
-    height: '100vh', 
+  sidebar: {
+    // 🔥 FIX BUG: lebar sebelumnya 270px, padahal halaman-halaman siswa
+    // (contoh StudentDashboard.jsx) menyisakan ruang cuma 260px buat
+    // sidebar (marginLeft: 260 di konten). Beda 10px ini bikin sidebar &
+    // konten dempet/tumpang-tindih dikit di pinggir. Disamakan jadi 260px.
+    width: '260px',
+    // 🔥 FIX MOBILE: 100vh di HP bisa lebih tinggi dari area yang KELIHATAN
+    // (browser bar HP suka nongol-ilang), jadi footer/tombol Keluar kadang
+    // ketutupan/gak kejangkau. 100dvh (dynamic viewport height) lebih akurat
+    // ngikutin tinggi layar yang BENERAN kelihatan saat itu. Browser lama yang
+    // belum kenal dvh otomatis abaikan baris ini dan tetap pakai 100vh di atasnya.
+    height: '100vh',
+    maxHeight: '100dvh',
     background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)',
     color: 'white', 
-    padding: '20px 16px', 
+    padding: '16px 14px',
+    // 🔥 Aman dari notch/home-indicator iPhone (safe-area-inset) supaya
+    // header & tombol footer gak ketutupan lekukan layar/gesture bar.
+    paddingTop: 'max(16px, env(safe-area-inset-top))',
+    paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
+    position: 'fixed',
     left: 0, 
     top: 0, 
     zIndex: 1000,
@@ -275,16 +275,18 @@ const styles = {
     display: 'flex', 
     flexDirection: 'column',
     overflowY: 'auto',
-    boxShadow: '4px 0 20px rgba(0,0,0,0.3)'
+    boxShadow: '4px 0 20px rgba(0,0,0,0.3)',
+    boxSizing: 'border-box',
   },
   
   header: { 
     display: 'flex', 
     justifyContent: 'space-between', 
     alignItems: 'center', 
-    marginBottom: '16px',
+    marginBottom: '14px',
     paddingBottom: '12px',
-    borderBottom: '1px solid #334155'
+    borderBottom: '1px solid #334155',
+    flexShrink: 0,
   },
   brandWrapper: { 
     display: 'flex', 
@@ -320,8 +322,9 @@ const styles = {
     padding: '12px 14px',
     background: 'rgba(255,255,255,0.05)',
     borderRadius: '12px',
-    marginBottom: '16px',
-    border: '1px solid rgba(255,255,255,0.06)'
+    marginBottom: '14px',
+    border: '1px solid rgba(255,255,255,0.06)',
+    flexShrink: 0,
   },
   profileAvatar: {
     width: '40px',
@@ -376,13 +379,15 @@ const styles = {
   divider: { 
     border: '0', 
     borderTop: '1px solid #334155', 
-    marginBottom: '16px' 
+    marginBottom: '14px',
+    flexShrink: 0,
   },
   
   menuList: { 
     listStyle: 'none', 
     padding: 0, 
     flex: 1,
+    minHeight: 0,
     display: 'flex',
     flexDirection: 'column',
     gap: '2px'
@@ -395,8 +400,9 @@ const styles = {
     alignItems: 'center', 
     fontSize: '13px', 
     fontWeight: 500,
-    transition: 'all 0.2s ease',
-    position: 'relative'
+    transition: 'background 0.2s ease',
+    position: 'relative',
+    flexShrink: 0,
   },
   menuIcon: {
     marginRight: '12px',
@@ -407,22 +413,14 @@ const styles = {
     flexShrink: 0
   },
   menuLabel: { flex: 1 },
-  menuBadge: {
-    fontSize: '8px',
-    fontWeight: 700,
-    padding: '1px 8px',
-    borderRadius: '10px',
-    color: 'white',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px'
-  },
   
   footer: {
     display: 'flex',
     gap: '8px',
     paddingTop: '12px',
     borderTop: '1px solid #334155',
-    marginTop: '4px'
+    marginTop: '4px',
+    flexShrink: 0,
   },
   profileBtn: {
     flex: 1,
@@ -466,7 +464,8 @@ const styles = {
     marginTop: '8px',
     borderTop: '1px solid #334155',
     fontSize: '9px',
-    color: '#475569'
+    color: '#475569',
+    flexShrink: 0,
   },
   
   overlay: { 

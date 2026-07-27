@@ -801,6 +801,7 @@ const ManageMateri = () => {
         if (payload.status === 'aktif') {
           notifyStudents({
             targetKelas: sendToSpecificStudents ? undefined : targetKelas,
+            targetKategori: sendToSpecificStudents ? undefined : targetKategori,
             specificStudentIds: sendToSpecificStudents ? selectedStudents.map(s => s.studentId) : [],
             type: 'materi',
             title: '📘 Materi Baru!',

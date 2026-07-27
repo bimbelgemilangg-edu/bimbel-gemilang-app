@@ -15,7 +15,8 @@ import { collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore
  * Kirim notifikasi ke siswa.
  * @param {object} opts
  * @param {string} [opts.targetKelas] - 'Semua' atau nama kelas spesifik
- * @param {string[]} [opts.specificStudentIds] - kalau diisi, HANYA siswa ini yang dikirimi (mengabaikan targetKelas)
+ * @param {string} [opts.targetKategori] - 'Semua', 'Reguler', atau 'English'
+ * @param {string[]} [opts.specificStudentIds] - kalau diisi, HANYA siswa ini yang dikirimi (mengabaikan targetKelas/targetKategori)
  * @param {string} opts.type - materi | kuis | tugas | survei | tagihan | hasil_kuis | pengumuman
  * @param {string} opts.title
  * @param {string} opts.message
@@ -25,6 +26,7 @@ import { collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore
  */
 export async function notifyStudents({
   targetKelas = 'Semua',
+  targetKategori = 'Semua',
   specificStudentIds = [],
   type,
   title,
@@ -42,7 +44,15 @@ export async function notifyStudents({
       const snap = await getDocs(collection(db, 'students'));
       recipientIds = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
-        .filter(s => targetKelas === 'Semua' || s.kelasSekolah === targetKelas)
+        // 🔥 FIX BUG: sebelumnya di sini CUMA dicek targetKelas — field
+        // program/kategori (Reguler vs English Course) TIDAK PERNAH dicek
+        // sama sekali. Akibatnya kalau guru targetin "English Course" doang,
+        // semua siswa di kelas itu (termasuk yang Reguler) tetap kebagian
+        // notifikasi. Sekarang dua-duanya harus cocok.
+        .filter(s =>
+          (targetKelas === 'Semua' || s.kelasSekolah === targetKelas) &&
+          (targetKategori === 'Semua' || s.kategori === targetKategori)
+        )
         .map(s => s.studentId || s.id);
     }
 
