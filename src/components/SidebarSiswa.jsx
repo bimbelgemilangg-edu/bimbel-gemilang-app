@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LogOut, X, Home, BarChart2, BookOpen, Wallet, 
-  Trophy, TrendingUp, GraduationCap, Calendar, 
+  Trophy, TrendingUp, GraduationCap, Calendar, ClipboardCheck,
   User, Hash
 } from 'lucide-react';
 
@@ -84,6 +84,17 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
       icon: <Calendar size={18}/>, 
       path: '/siswa/jadwal',
       color: '#ec4899'
+    },
+    // 🔥 BARU: menu ini ternyata TIDAK PERNAH ADA sejak awal, padahal
+    // halaman & rutenya (/siswa/absensi -> StudentAttendance.jsx) sudah
+    // lengkap dan berfungsi. Siswa cuma bisa sampai ke sana kalau ketik
+    // alamatnya manual -- gak ada jalan masuk dari menu sama sekali.
+    { 
+      id: 'absensi', 
+      label: '📝 Kehadiran', 
+      icon: <ClipboardCheck size={18}/>, 
+      path: '/siswa/absensi',
+      color: '#14b8a6'
     },
   ];
 

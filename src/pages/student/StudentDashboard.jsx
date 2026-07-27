@@ -64,6 +64,66 @@ const SkeletonLines = ({ count = 3 }) => (
   </div>
 );
 
+// 🔥 Bagan bundar kehadiran — pakai SVG murni, gak perlu library tambahan
+const AttendanceDonut = ({ hadir, izin, alpha, total }) => {
+  const size = 110, stroke = 14, radius = (size - stroke) / 2, circumference = 2 * Math.PI * radius;
+
+  if (total === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '20px 0', color: '#94a3b8', fontSize: 12 }}>
+        📭 Belum ada data kehadiran
+      </div>
+    );
+  }
+
+  const segments = [
+    { value: hadir, color: '#10b981' },
+    { value: izin, color: '#f59e0b' },
+    { value: alpha, color: '#ef4444' },
+  ];
+  let offsetAcc = 0;
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
+      <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+        <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+          <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#f1f5f9" strokeWidth={stroke} />
+          {segments.map((seg, i) => {
+            if (seg.value === 0) return null;
+            const segLen = (seg.value / total) * circumference;
+            const dash = `${segLen} ${circumference - segLen}`;
+            const dashoffset = -offsetAcc;
+            offsetAcc += segLen;
+            return (
+              <circle
+                key={i} cx={size / 2} cy={size / 2} r={radius} fill="none"
+                stroke={seg.color} strokeWidth={stroke} strokeDasharray={dash}
+                strokeDashoffset={dashoffset} strokeLinecap="round"
+                style={{ transition: 'stroke-dasharray 0.5s ease' }}
+              />
+            );
+          })}
+        </svg>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontSize: 22, fontWeight: 900, color: '#1e293b' }}>{total > 0 ? Math.round((hadir / total) * 100) : 0}%</span>
+          <span style={{ fontSize: 9, color: '#94a3b8', fontWeight: 700 }}>HADIR</span>
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} /> Hadir: <b>{hadir}</b>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b' }} /> Izin/Sakit: <b>{izin}</b>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444' }} /> Alpha: <b>{alpha}</b>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -88,6 +148,8 @@ const StudentDashboard = () => {
   const [showNotifPanel, setShowNotifPanel] = useState(false);
 
   const [wajibSurveys, setWajibSurveys] = useState([]);
+  // 🔥 BARU: ringkasan kehadiran buat bagan bundar di dashboard
+  const [attendanceSummary, setAttendanceSummary] = useState({ hadir: 0, izin: 0, alpha: 0, total: 0 });
   const [optionalSurveys, setOptionalSurveys] = useState([]);
   const [dismissedSurveyIds, setDismissedSurveyIds] = useState(() => {
     try { return JSON.parse(localStorage.getItem('dismissedSurveys') || '[]'); }
@@ -178,6 +240,7 @@ const StudentDashboard = () => {
         const [
           schedSnap, modulSnap, raportSnap, notifSnap, surveySnap,
           respByUserId, respByStudentId, respByRespondentId, respByNim,
+          attByDocId, attByKodeUnik,
         ] = await Promise.all([
           getDocs(query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "bimbel_modul"), orderBy("updatedAt", "desc"), limit(20))).catch(() => ({ docs: [] })),
@@ -188,7 +251,26 @@ const StudentDashboard = () => {
           getDocs(query(collection(db, "survey_responses"), where("studentId", "==", nimVal))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "survey_responses"), where("respondentId", "==", nimVal))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "survey_responses"), where("nim", "==", nimVal))).catch(() => ({ docs: [] })),
+          // 🔥 BARU: ringkasan kehadiran buat bagan bundar. Dicari pakai DUA
+          // skema identitas sekaligus (ID dokumen — dipakai scan QR & guru
+          // di ClassSession.jsx — DAN kode unik — dipakai kalau admin input
+          // manual), persis fix yang sama kayak di halaman admin kemarin.
+          // Kalau cuma satu skema dicek, sebagian data kehadiran bisa gak
+          // kehitung di bagannya.
+          getDocs(query(collection(db, "attendance"), where("studentId", "==", studentId))).catch(() => ({ docs: [] })),
+          getDocs(query(collection(db, "attendance"), where("studentId", "==", nimVal))).catch(() => ({ docs: [] })),
         ]);
+
+        // --- Ringkasan kehadiran ---
+        const attMerged = new Map();
+        [...attByDocId.docs, ...attByKodeUnik.docs].forEach(d => attMerged.set(d.id, d.data()));
+        const attList = Array.from(attMerged.values());
+        setAttendanceSummary({
+          hadir: attList.filter(a => a.status === 'Hadir').length,
+          izin: attList.filter(a => a.status === 'Izin' || a.status === 'Sakit').length,
+          alpha: attList.filter(a => a.status === 'Alpha').length,
+          total: attList.length,
+        });
 
         const fetchedSchedules = schedSnap.docs
           .map(d => ({ id: d.id, ...d.data() }))
@@ -630,6 +712,23 @@ const StudentDashboard = () => {
               );
             })}
           </div>
+        </div>
+
+        {/* 🔥 KEHADIRAN — BARU, sesuai permintaan (bagan bundar), sekaligus
+            jadi jalan pintas karena menu "Kehadiran" di sidebar tadinya
+            gak pernah ada. */}
+        <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
+            <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <ClipboardList size={17} color="#14b8a6" /> Kehadiran
+            </h3>
+            <button onClick={() => navigate('/siswa/absensi')} style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+              Riwayat Lengkap →
+            </button>
+          </div>
+          {dataLoading ? <SkeletonLines count={2} /> : (
+            <AttendanceDonut hadir={attendanceSummary.hadir} izin={attendanceSummary.izin} alpha={attendanceSummary.alpha} total={attendanceSummary.total} />
+          )}
         </div>
 
         <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>

@@ -66,16 +66,36 @@ const StudentAttendance = () => {
         setTimeout(() => navigate('/admin/students'), 1500);
         return;
       }
-      setStudent({ id: studentSnap.id, ...studentSnap.data() });
+      const studentData = { id: studentSnap.id, ...studentSnap.data() };
+      setStudent(studentData);
 
-      // Fetch attendance
-      const q = query(
-        collection(db, "attendance"),
-        where("studentId", "==", studentSnap.data().studentId || id),
-        orderBy("tanggal", "desc")
+      // 🔥 FIX BUG KONEKTIVITAS PENTING: sebelumnya di sini HANYA query
+      // pakai field "studentId" milik siswa (kode unik, misal "STD-xxxx").
+      // Itu cocok untuk data yang DIINPUT MANUAL OLEH ADMIN di halaman ini
+      // sendiri. TAPI, saat siswa absen sendiri lewat SCAN QR (di
+      // StudentDashboard.jsx), sistem di sana menulis field "studentId"
+      // dengan ID DOKUMEN FIRESTORE siswa (bukan kode uniknya) — dua skema
+      // identitas yang berbeda untuk field yang sama. Akibatnya: data absen
+      // yang dicatat lewat scan QR TIDAK PERNAH muncul di halaman admin ini,
+      // walau datanya beneran ada di database. Sekarang dicari pakai KEDUA
+      // kemungkinan nilai sekaligus (kode unik DAN ID dokumen), lalu
+      // digabung & dibuang duplikatnya, supaya data dari jalur manapun
+      // (manual admin atau scan QR siswa) sama-sama kebaca.
+      const kodeUnik = studentData.studentId || '';
+      const queries = [
+        getDocs(query(collection(db, "attendance"), where("studentId", "==", kodeUnik))).catch(() => ({ docs: [] })),
+        getDocs(query(collection(db, "attendance"), where("studentId", "==", id))).catch(() => ({ docs: [] })),
+      ];
+      const [snapByKodeUnik, snapByDocId] = await Promise.all(queries);
+
+      const merged = new Map();
+      [...snapByKodeUnik.docs, ...snapByDocId.docs].forEach(d => {
+        merged.set(d.id, { id: d.id, ...d.data() });
+      });
+      const data = Array.from(merged.values()).sort(
+        (a, b) => new Date(b.tanggal || 0) - new Date(a.tanggal || 0)
       );
-      const snap = await getDocs(q);
-      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
       setAttendance(data);
       setFilteredAttendance(data);
     } catch (error) {
