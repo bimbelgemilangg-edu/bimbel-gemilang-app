@@ -5,7 +5,8 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db, auth } from '../../../firebase';
 import { 
   collection, getDocs, deleteDoc, doc, updateDoc, addDoc, 
-  query, where, orderBy, limit, startAfter, runTransaction
+  query, where, orderBy, limit, startAfter, runTransaction,
+  setDoc, getDoc, serverTimestamp
 } from "firebase/firestore";
 import { 
   createUserWithEmailAndPassword, 
@@ -49,14 +50,16 @@ const TeacherList = () => {
   });
   const [adding, setAdding] = useState(false);
 
-  // ADD MAPEL MODAL
+  // ADD/EDIT MAPEL MODAL
   const [showMapelModal, setShowMapelModal] = useState(false);
+  const [editingMapelId, setEditingMapelId] = useState(null); // null = mode tambah, terisi = mode edit
   const [mapelForm, setMapelForm] = useState({
     namaMapel: '',
     deskripsi: '',
     kodeMapel: ''
   });
   const [addingMapel, setAddingMapel] = useState(false);
+  const [deletingMapel, setDeletingMapel] = useState(null);
 
   // EDIT MODAL
   const [editModal, setEditModal] = useState(null);
@@ -64,6 +67,7 @@ const TeacherList = () => {
     nama: '', 
     mapel: '', 
     kodeMapel: '',
+    mapelId: '',
     nohp: '', 
     alamat: '', 
     status: 'Aktif',
@@ -124,87 +128,59 @@ const TeacherList = () => {
     }
   };
 
-  // ===== GENERATE KODE UNIK (FIXED: ANTI DUPLIKAT) =====
-  const generateGuruId = async () => {
+  // ===== GENERATE KODE UNIK — ATOMIK PAKAI TRANSACTION =====
+  // 🔥 FIX BUG: sebelumnya cara generate ID itu "baca semua data, cari
+  // angka terbesar, +1" — TAPI antara baca dan nulis itu ada jeda waktu.
+  // Kalau ada 2 admin nambah guru/mapel PERSIS berbarengan, keduanya bisa
+  // baca angka terbesar yang SAMA dan menghasilkan ID yang SAMA juga
+  // (baru ketahuan pas pengecekan duplikat, itupun gak selalu kejamin
+  // nyambung baik). `runTransaction` sebenarnya SUDAH di-import dari awal
+  // tapi TIDAK PERNAH benar-benar dipakai di manapun — kelihatannya
+  // memang niatnya dipakai buat ini tapi belum sempat diselesaikan.
+  // Sekarang pakai counter tersimpan yang diperbarui secara ATOMIK: kalau
+  // 2 permintaan datang bersamaan, Firestore sendiri yang menjamin
+  // urutannya benar, gak mungkin bentrok.
+  const generateSequentialId = async (counterField, prefix, existingCollectionName, existingIdField) => {
     try {
-      // Ambil semua teacher dan cari ID terakhir
-      const snap = await getDocs(collection(db, "teachers"));
-      let maxNumber = 0;
-      
-      snap.forEach(doc => {
-        const data = doc.data();
-        if (data.guruId) {
-          // Ekstrak angka dari GURU-XXX
-          const num = parseInt(data.guruId.replace('GURU-', ''));
-          if (!isNaN(num) && num > maxNumber) {
-            maxNumber = num;
+      const counterRef = doc(db, "settings", "id_counters");
+
+      // Bootstrap sekali doang: kalau counter ini belum pernah dipakai,
+      // hitung dulu dari data yang SUDAH ADA supaya gak mulai dari 0 dan
+      // bikin ID yang udah kepake sebelumnya.
+      const counterSnap = await getDoc(counterRef);
+      if (!counterSnap.exists() || counterSnap.data()[counterField] === undefined) {
+        const snap = await getDocs(collection(db, existingCollectionName));
+        let maxNumber = 0;
+        snap.forEach(d => {
+          const val = d.data()[existingIdField];
+          if (val) {
+            const num = parseInt(String(val).replace(prefix + '-', ''));
+            if (!isNaN(num) && num > maxNumber) maxNumber = num;
           }
-        }
-      });
-      
-      // ID baru = max + 1
-      const newNumber = maxNumber + 1;
-      const newGuruId = `GURU-${String(newNumber).padStart(3, '0')}`;
-      
-      // VALIDASI: Cek apakah ID sudah digunakan (antisipasi duplikat)
-      const idQuery = query(
-        collection(db, "teachers"), 
-        where("guruId", "==", newGuruId)
-      );
-      const idSnap = await getDocs(idQuery);
-      
-      if (!idSnap.empty) {
-        // Jika ID sudah ada, generate ulang dengan timestamp
-        const timestamp = Date.now().toString().slice(-6);
-        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-        return `GURU-${timestamp}${random}`;
+        });
+        await setDoc(counterRef, { [counterField]: maxNumber }, { merge: true });
       }
-      
-      return newGuruId;
+
+      // Ambil nomor berikutnya secara ATOMIK
+      const newNumber = await runTransaction(db, async (transaction) => {
+        const snap = await transaction.get(counterRef);
+        const current = (snap.data()[counterField] || 0) + 1;
+        transaction.set(counterRef, { [counterField]: current }, { merge: true });
+        return current;
+      });
+
+      return `${prefix}-${String(newNumber).padStart(3, '0')}`;
     } catch (error) {
-      // Fallback: pakai timestamp + random
+      // Fallback tetap dipertahankan: kalau transaction gagal (misal offline),
+      // tetap bisa lanjut kerja pakai ID berbasis timestamp.
       const timestamp = Date.now().toString().slice(-6);
       const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-      return `GURU-${timestamp}${random}`;
+      return `${prefix}-${timestamp}${random}`;
     }
   };
 
-  const generateMapelId = async () => {
-    try {
-      const snap = await getDocs(collection(db, "mapel"));
-      let maxNumber = 0;
-      
-      snap.forEach(doc => {
-        const data = doc.data();
-        if (data.kodeMapel) {
-          const num = parseInt(data.kodeMapel.replace('MAPEL-', ''));
-          if (!isNaN(num) && num > maxNumber) {
-            maxNumber = num;
-          }
-        }
-      });
-      
-      const newNumber = maxNumber + 1;
-      const newMapelId = `MAPEL-${String(newNumber).padStart(3, '0')}`;
-      
-      // Validasi duplikat
-      const idQuery = query(
-        collection(db, "mapel"), 
-        where("kodeMapel", "==", newMapelId)
-      );
-      const idSnap = await getDocs(idQuery);
-      
-      if (!idSnap.empty) {
-        const timestamp = Date.now().toString().slice(-6);
-        return `MAPEL-${timestamp}`;
-      }
-      
-      return newMapelId;
-    } catch (error) {
-      const timestamp = Date.now().toString().slice(-6);
-      return `MAPEL-${timestamp}`;
-    }
-  };
+  const generateGuruId = () => generateSequentialId('guruIdCounter', 'GURU', 'teachers', 'guruId');
+  const generateMapelId = () => generateSequentialId('mapelIdCounter', 'MAPEL', 'mapel', 'kodeMapel');
 
   // ===== TOAST =====
   const showAlert = (msg, isError = false) => {
@@ -221,40 +197,105 @@ const TeacherList = () => {
     });
   };
 
-  // ===== TAMBAH MAPEL BARU =====
+  // ===== TAMBAH / UPDATE MAPEL =====
+  // 🔥 FIX FITUR YANG HILANG: sebelumnya modal ini CUMA bisa nambah mapel
+  // baru -- gak ada cara SAMA SEKALI buat edit/hapus mapel yang udah ada.
+  // Sekarang 1 fungsi ini menangani dua-duanya, tergantung `editingMapelId`.
   const handleAddMapel = async (e) => {
     e.preventDefault();
-    if (!mapelForm.namaMapel) return showAlert("⚠️ Nama mapel wajib diisi!", true);
+    if (!mapelForm.namaMapel.trim()) return showAlert("⚠️ Nama mapel wajib diisi!", true);
     
     setAddingMapel(true);
     try {
-      const kodeMapel = await generateMapelId();
-      
-      // Cek duplikat nama mapel
-      const nameQuery = query(
-        collection(db, "mapel"), 
-        where("namaMapel", "==", mapelForm.namaMapel)
+      const namaTrim = mapelForm.namaMapel.trim();
+
+      // 🔥 FIX: pengecekan duplikat sebelumnya case-sensitive persis --
+      // "matematika" dan "Matematika" dianggap 2 mapel berbeda. Sekarang
+      // dibandingkan tanpa peduli besar-kecil huruf, sambil tetap
+      // menyimpan penulisan aslinya.
+      const dupe = mapelList.find(m =>
+        m.namaMapel.trim().toLowerCase() === namaTrim.toLowerCase() &&
+        m.id !== editingMapelId
       );
-      const nameSnap = await getDocs(nameQuery);
-      if (!nameSnap.empty) {
-        return showAlert(`❌ Mapel "${mapelForm.namaMapel}" sudah ada!`, true);
+      if (dupe) {
+        setAddingMapel(false);
+        return showAlert(`❌ Mapel "${namaTrim}" sudah ada!`, true);
       }
-      
-      await addDoc(collection(db, "mapel"), {
-        ...mapelForm,
-        kodeMapel: kodeMapel,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      });
-      
-      showAlert(`✅ Mapel "${mapelForm.namaMapel}" berhasil ditambahkan! (${kodeMapel})`);
+
+      if (editingMapelId) {
+        // MODE EDIT — update mapel yang sudah ada
+        await updateDoc(doc(db, "mapel", editingMapelId), {
+          namaMapel: namaTrim,
+          deskripsi: mapelForm.deskripsi || '',
+          updatedAt: serverTimestamp(),
+        });
+
+        // 🔥 Sinkronkan juga ke semua guru yang pakai mapel ini, biar nama
+        // mapel di data guru gak basi/beda sama nama mapel yang baru.
+        const affectedTeachers = teachers.filter(t => t.mapelId === editingMapelId);
+        await Promise.all(affectedTeachers.map(t =>
+          updateDoc(doc(db, "teachers", t.id), { mapel: namaTrim, updatedAt: serverTimestamp() })
+        ));
+
+        showAlert(`✅ Mapel "${namaTrim}" berhasil diperbarui!${affectedTeachers.length > 0 ? ` (${affectedTeachers.length} guru ikut disinkronkan)` : ''}`);
+      } else {
+        // MODE TAMBAH — mapel baru
+        const kodeMapel = await generateMapelId();
+        await addDoc(collection(db, "mapel"), {
+          namaMapel: namaTrim,
+          deskripsi: mapelForm.deskripsi || '',
+          kodeMapel: kodeMapel,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+        showAlert(`✅ Mapel "${namaTrim}" berhasil ditambahkan! (${kodeMapel})`);
+      }
+
       setShowMapelModal(false);
+      setEditingMapelId(null);
       setMapelForm({ namaMapel: '', deskripsi: '', kodeMapel: '' });
       fetchMapel();
+      fetchTeachers();
     } catch (error) {
-      showAlert("❌ Gagal menambah mapel: " + error.message, true);
+      showAlert("❌ Gagal menyimpan mapel: " + error.message, true);
     }
     setAddingMapel(false);
+  };
+
+  // 🔥 BARU: buka form dalam mode edit, prefill data mapel yang dipilih
+  const handleOpenEditMapel = (mapel) => {
+    setEditingMapelId(mapel.id);
+    setMapelForm({
+      namaMapel: mapel.namaMapel || '',
+      deskripsi: mapel.deskripsi || '',
+      kodeMapel: mapel.kodeMapel || '',
+    });
+  };
+
+  const handleCancelEditMapel = () => {
+    setEditingMapelId(null);
+    setMapelForm({ namaMapel: '', deskripsi: '', kodeMapel: '' });
+  };
+
+  // 🔥 BARU: hapus mapel, dengan pengaman -- kalau masih ada guru yang
+  // pakai mapel ini, admin diperingatkan dulu (biar gak ada guru yang
+  // tiba-tiba "kehilangan" mapelnya tanpa sadar).
+  const handleDeleteMapel = async (mapel) => {
+    const usedBy = teachers.filter(t => t.mapelId === mapel.id || t.kodeMapel === mapel.kodeMapel);
+    const warningExtra = usedBy.length > 0
+      ? `\n\n⚠️ Mapel ini masih dipakai oleh ${usedBy.length} guru (${usedBy.map(t => t.nama).join(', ')}). Data guru TIDAK akan ikut terhapus, tapi kode mapelnya akan jadi tidak valid.`
+      : '';
+    if (!window.confirm(`Hapus mapel "${mapel.namaMapel}"?${warningExtra}`)) return;
+
+    setDeletingMapel(mapel.id);
+    try {
+      await deleteDoc(doc(db, "mapel", mapel.id));
+      showAlert(`🗑️ Mapel "${mapel.namaMapel}" dihapus!`);
+      fetchMapel();
+    } catch (error) {
+      showAlert("❌ Gagal menghapus mapel: " + error.message, true);
+    }
+    setDeletingMapel(null);
   };
 
   // ===== TAMBAH GURU BARU (FIXED: ANTI DUPLIKAT) =====
@@ -302,8 +343,8 @@ const TeacherList = () => {
         passwordHint: addForm.password,
         status: addForm.status,
         authUid: authUid,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
       };
       
       await addDoc(collection(db, "teachers"), teacherData);
@@ -377,6 +418,12 @@ const TeacherList = () => {
       const fotoRef = ref(storage, `teachers/${editModal}`);
       await deleteObject(fotoRef);
       setEditForm(prev => ({ ...prev, fotoUrl: '' }));
+      // 🔥 Langsung simpan ke Firestore juga, bukan cuma state lokal --
+      // "Hapus" itu tindakan final, harusnya gak nunggu tombol "Simpan"
+      // lagi. Kalau enggak, dan admin klik "Batal" setelah ini, file di
+      // storage udah kehapus tapi Firestore masih nyimpen link yang udah
+      // gak valid (foto jadi pecah di tempat lain yang nampilin data ini).
+      await updateDoc(doc(db, "teachers", editModal), { fotoUrl: '', updatedAt: serverTimestamp() });
       showAlert("✅ Foto berhasil dihapus!");
     } catch (error) { showAlert("❌ Gagal hapus foto: " + error.message, true); }
   };
@@ -388,6 +435,7 @@ const TeacherList = () => {
       nama: teacher.nama || '',
       mapel: teacher.mapel || '',
       kodeMapel: teacher.kodeMapel || '',
+      mapelId: teacher.mapelId || '',
       nohp: teacher.nohp || '',
       alamat: teacher.alamat || '',
       status: teacher.status || 'Aktif',
@@ -408,13 +456,14 @@ const TeacherList = () => {
         nama: editForm.nama,
         mapel: editForm.mapel,
         kodeMapel: editForm.kodeMapel,
+        mapelId: editForm.mapelId,
         nohp: editForm.nohp,
         alamat: editForm.alamat,
         status: editForm.status,
         email: editForm.email,
         fotoUrl: editForm.fotoUrl,
         guruId: editForm.guruId,
-        updatedAt: new Date().toISOString()
+        updatedAt: serverTimestamp()
       };
       
       if (editForm.password && editForm.password.trim() !== '') {
@@ -490,7 +539,7 @@ const TeacherList = () => {
             <button onClick={() => navigate('/admin/teachers/salaries')} style={styles.btnSalary(isMobile)}>
               <DollarSign size={14} /> Gaji
             </button>
-            <button onClick={() => setShowMapelModal(true)} style={styles.btnMapel(isMobile)}>
+            <button onClick={() => { handleCancelEditMapel(); setShowMapelModal(true); }} style={styles.btnMapel(isMobile)}>
               <Layers size={14} /> Mapel
             </button>
             <button onClick={() => setShowAddModal(true)} style={styles.btnAdd(isMobile)}>
@@ -693,11 +742,11 @@ const TeacherList = () => {
         {/* MODAL TAMBAH MAPEL */}
         {/* ============================================ */}
         {showMapelModal && (
-          <div style={styles.overlay} onClick={() => setShowMapelModal(false)}>
+          <div style={styles.overlay} onClick={() => { setShowMapelModal(false); handleCancelEditMapel(); }}>
             <div style={styles.modal(isMobile)} onClick={e => e.stopPropagation()}>
               <div style={styles.modalHeader}>
-                <h3 style={{margin:0}}><Layers size={18} /> Tambah Mapel Baru</h3>
-                <button onClick={() => setShowMapelModal(false)} style={styles.btnClose}><X size={20} /></button>
+                <h3 style={{margin:0}}><Layers size={18} /> {editingMapelId ? 'Edit Mapel' : 'Tambah Mapel Baru'}</h3>
+                <button onClick={() => { setShowMapelModal(false); handleCancelEditMapel(); }} style={styles.btnClose}><X size={20} /></button>
               </div>
               <form onSubmit={handleAddMapel} style={styles.modalBody}>
                 <div style={styles.formGroup}>
@@ -724,16 +773,62 @@ const TeacherList = () => {
                 <div style={styles.infoBox}>
                   <Sparkles size={14} color="#3b82f6" />
                   <span style={{fontSize: 12, color: '#64748b'}}>
-                    Kode unik akan dibuat otomatis oleh sistem (MAPEL-XXX)
+                    {editingMapelId
+                      ? <>Kode <strong>{mapelForm.kodeMapel}</strong> tetap sama, cuma nama & deskripsi yang berubah.</>
+                      : 'Kode unik akan dibuat otomatis oleh sistem (MAPEL-XXX)'}
                   </span>
                 </div>
                 <div style={styles.modalFooter}>
-                  <button type="button" onClick={() => setShowMapelModal(false)} style={styles.btnCancel}>Batal</button>
+                  {editingMapelId ? (
+                    <button type="button" onClick={handleCancelEditMapel} style={styles.btnCancel}>Batal Edit</button>
+                  ) : (
+                    <button type="button" onClick={() => setShowMapelModal(false)} style={styles.btnCancel}>Tutup</button>
+                  )}
                   <button type="submit" disabled={addingMapel} style={styles.btnSave}>
-                    <Save size={16} /> {addingMapel ? 'Menyimpan...' : 'Simpan Mapel'}
+                    <Save size={16} /> {addingMapel ? 'Menyimpan...' : (editingMapelId ? 'Update Mapel' : 'Simpan Mapel')}
                   </button>
                 </div>
               </form>
+
+              {/* 🔥 BARU: daftar mapel yang sudah ada, sebelumnya sama sekali
+                  tidak bisa dilihat/diedit/dihapus dari mana pun. */}
+              <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid #f1f5f9' }}>
+                <h4 style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 700, color: '#334155' }}>
+                  📚 Mapel Terdaftar ({mapelList.length})
+                </h4>
+                <div style={{ maxHeight: 220, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {mapelList.length === 0 ? (
+                    <p style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', padding: 12 }}>Belum ada mapel.</p>
+                  ) : mapelList.map(m => {
+                    const jumlahGuru = teachers.filter(t => t.mapelId === m.id || t.kodeMapel === m.kodeMapel).length;
+                    return (
+                      <div key={m.id} style={{
+                        display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px',
+                        borderRadius: 8, border: editingMapelId === m.id ? '2px solid #3b82f6' : '1px solid #e2e8f0',
+                        background: editingMapelId === m.id ? '#eff6ff' : '#f8fafc',
+                      }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>{m.namaMapel}</div>
+                          <div style={{ fontSize: 9, color: '#94a3b8' }}>
+                            {m.kodeMapel} {jumlahGuru > 0 && `• dipakai ${jumlahGuru} guru`}
+                          </div>
+                        </div>
+                        <button onClick={() => handleOpenEditMapel(m)} title="Edit mapel" style={{ background: '#fef3c7', color: '#b45309', border: 'none', padding: 6, borderRadius: 6, cursor: 'pointer', display: 'flex' }}>
+                          <Edit3 size={12} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMapel(m)}
+                          disabled={deletingMapel === m.id}
+                          title="Hapus mapel"
+                          style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: 6, borderRadius: 6, cursor: 'pointer', display: 'flex', opacity: deletingMapel === m.id ? 0.5 : 1 }}
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -960,12 +1055,13 @@ const TeacherList = () => {
                   <label style={styles.formLabel}>Mata Pelajaran</label>
                   <div style={styles.selectWithButton}>
                     <select 
-                      value={editForm.mapel} 
+                      value={editForm.mapelId} 
                       onChange={e => {
-                        const selected = mapelList.find(m => m.namaMapel === e.target.value);
+                        const selected = mapelList.find(m => m.id === e.target.value);
                         setEditForm({
                           ...editForm, 
-                          mapel: e.target.value,
+                          mapelId: e.target.value,
+                          mapel: selected?.namaMapel || '',
                           kodeMapel: selected?.kodeMapel || ''
                         });
                       }} 
@@ -973,7 +1069,7 @@ const TeacherList = () => {
                     >
                       <option value="">Pilih Mapel</option>
                       {mapelList.map(m => (
-                        <option key={m.id} value={m.namaMapel}>
+                        <option key={m.id} value={m.id}>
                           {m.namaMapel} ({m.kodeMapel})
                         </option>
                       ))}
