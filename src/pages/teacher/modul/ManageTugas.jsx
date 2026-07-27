@@ -146,6 +146,7 @@ const ManageTugas = () => {
       // 🔥 Notifikasi ke siswa yang ditarget
       notifyStudents({
         targetKelas: tugas.targetKelas,
+        targetKategori: tugas.targetKategori,
         type: 'tugas',
         title: '📝 Tugas Baru!',
         message: `"${tugas.title}" baru saja diterbitkan${tugas.deadline ? ` — batas waktu ${formatDeadline(tugas.deadline)}` : ''}.`,
