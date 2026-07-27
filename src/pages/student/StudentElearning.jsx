@@ -133,6 +133,18 @@ const StudentElearning = () => {
       const snapshot = await getDocs(q);
       let allModules = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       
+      // 🔥 FIX BUG UTAMA (kuis "nyasar" ke siswa yang salah): dokumen kuis
+      // yang cuma nempel/embedded di dalam sebuah modul materi (punya
+      // `parentModulId`) TIDAK PERNAH dievaluasi atau ditampilkan sendiri
+      // di sini. Sebelumnya, kuis begini ikut dinilai target-nya sendiri
+      // (targetKelas/targetKategori miliknya sendiri) — dan field itu gampang
+      // basi kalau guru mengubah target modul induknya belakangan tanpa
+      // membuka ulang tiap kuis satu-satu. Sekarang aksesnya SEPENUHNYA
+      // ngikut modul induk: kuis ini cuma bisa dijangkau lewat modul
+      // induknya (StudentModuleView merender lewat `blocks[].quizId`), jadi
+      // di sini cukup dibuang duluan sebelum evaluasi apapun.
+      allModules = allModules.filter(m => !m.parentModulId);
+
       // 🔥 FILTER BERDASARKAN AKSES SISWA
       const { nim, kelas, program, id } = studentData;
       

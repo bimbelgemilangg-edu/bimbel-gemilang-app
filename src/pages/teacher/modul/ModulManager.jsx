@@ -136,7 +136,12 @@ const ModulManager = () => {
       
       const q = query(collection(db, COLLECTION_NAME), ...qConstraints);
       const snapshot = await getDocs(q);
-      const newItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      // 🔥 FIX: kuis yang cuma nempel/embedded di sebuah materi (punya
+      // parentModulId) disembunyikan dari listing utama ini — dia bukan
+      // item berdiri sendiri, cuma bagian dari modul induknya, jadi
+      // seharusnya diedit lewat editor materi itu (bukan muncul dobel di
+      // sini sebagai kartu terpisah yang membingungkan).
+      const newItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).filter(it => !it.parentModulId);
       
       if (isLoadMore) {
         setItems(prev => [...prev, ...newItems]);
@@ -150,7 +155,7 @@ const ModulManager = () => {
       console.error("Error fetching items:", error);
       // Fallback: ambil semua
       const snapshot = await getDocs(collection(db, COLLECTION_NAME));
-      const allItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      const allItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).filter(it => !it.parentModulId);
       setItems(allItems);
       setHasMore(false);
     }

@@ -1394,16 +1394,20 @@ const ManageQuiz = () => {
           const ownerGuruName = modulData.guruName || savedTeacher.nama || '';
           const ownerKodeMapel = modulData.kodeMapel || savedTeacher.kodeMapel || '';
 
-          // 🔥 FIX BUG URGENT: kuis yang ditautkan ke materi ini dulu SAMA
-          // SEKALI TIDAK ikut pengaturan target modul induknya (targetKelas/
-          // targetKategori/sendToSpecificStudents). Karena kuis ini disimpan
-          // sebagai dokumen `bimbel_modul` tersendiri juga (bukan cuma jadi
-          // bagian dari `blocks`), begitu field target itu kosong, sistem
-          // menganggapnya "Semua" secara default — jadi kuis yang harusnya
-          // cuma buat kelas 7 SMP Reguler malah nyasar ke SEMUA siswa. Sekarang
-          // target-nya WAJIB disalin persis dari modul induknya, sesuai
-          // prinsip "kuis di dalam modul ikut aturan modul".
+          // 🔥 FIX BUG URGENT (revisi ke-2): perbaikan sebelumnya (menyalin
+          // target modul induk ke kuisnya) ternyata masih bisa basi — kalau
+          // guru UBAH target modul induk BELAKANGAN, kuis yang udah lebih
+          // dulu dibuat gak ikut ke-update otomatis, jadi tetap bawa target
+          // lama yang salah (persis laporan "sudah update tapi masih nyasar").
+          //
+          // Fix yang benar: kuis ini ditandai `parentModulId` — dengan
+          // penanda ini, sisi siswa TIDAK PERNAH mengevaluasi target kuis ini
+          // sendiri sama sekali. Aksesnya 100% ngikut modul induk, bukan
+          // ngikut field target di kuisnya sendiri (yang gampang basi).
+          // Target tetap disalin sebagai CADANGAN kalau ada bagian sistem
+          // yang belum diperbarui buat baca parentModulId.
           const inheritedTargeting = {
+            parentModulId: modulId,
             targetKategori: modulData.targetKategori || 'Semua',
             targetKelas: modulData.targetKelas || 'Semua',
             sendToSpecificStudents: !!modulData.sendToSpecificStudents,
@@ -1480,9 +1484,12 @@ const ManageQuiz = () => {
         }
         const modulData = modulSnap.data();
 
-        // 🔥 Sama seperti perbaikan di atas: kuis WAJIB ikut target modul
-        // tujuan, bukan default "Semua".
+        // 🔥 Sama seperti perbaikan di atas: ditandai parentModulId supaya
+        // akses kuis ini SELAMANYA ngikut modul tujuan, gak pernah dievaluasi
+        // sendiri (jadi gak akan basi walau target modul induk berubah lagi
+        // nanti).
         const inheritedTargeting = {
+          parentModulId: selectedModul,
           targetKategori: modulData.targetKategori || 'Semua',
           targetKelas: modulData.targetKelas || 'Semua',
           sendToSpecificStudents: !!modulData.sendToSpecificStudents,
