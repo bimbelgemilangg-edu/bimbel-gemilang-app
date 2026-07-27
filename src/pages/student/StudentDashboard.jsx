@@ -9,15 +9,14 @@ import { useNavigate } from 'react-router-dom';
 import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
 
 import {
-  BookOpen, Calendar, Clock, GraduationCap, Menu, ChevronRight,
-  ClipboardList, X, Camera, User, MapPin, Send, CheckCircle,
-  Megaphone, TrendingUp, Trophy, ArrowRight, AlertCircle,
-  HelpCircle, Zap, Award, Lock, Bell, Download, Paperclip,
-  Trash2, FileQuestion, FileText, DollarSign, Sparkles, Inbox
+  BookOpen, Calendar, Menu, ClipboardList, X, Camera, User, MapPin,
+  Trophy, ArrowRight, AlertCircle, Award, Bell, Download,
+  Trash2, FileQuestion, FileText, DollarSign, Sparkles, Inbox,
+  Megaphone, RefreshCw
 } from 'lucide-react';
 
 // ============================================================
-// 🔥 IKON & WARNA PER TIPE NOTIFIKASI
+// IKON & WARNA PER TIPE NOTIFIKASI
 // ============================================================
 const NOTIF_META = {
   materi: { icon: <BookOpen size={16} />, color: '#3b82f6', bg: '#eff6ff', label: 'Materi Baru' },
@@ -42,31 +41,55 @@ const timeAgo = (ts) => {
   return ts.toDate().toLocaleDateString('id-ID');
 };
 
+// Sapaan berdasarkan jam
+const getGreeting = () => {
+  const h = new Date().getHours();
+  if (h < 4) return { text: 'Selamat malam', icon: '🌙' };
+  if (h < 11) return { text: 'Selamat pagi', icon: '☀️' };
+  if (h < 15) return { text: 'Selamat siang', icon: '🌤️' };
+  if (h < 18) return { text: 'Selamat sore', icon: '🌇' };
+  return { text: 'Selamat malam', icon: '🌙' };
+};
+
+// Skeleton loading sederhana
+const SkeletonLines = ({ count = 3 }) => (
+  <div>
+    {Array.from({ length: count }).map((_, i) => (
+      <div key={i} style={{
+        height: 14, borderRadius: 6, marginBottom: 10,
+        width: i === count - 1 ? '60%' : '100%',
+        background: 'linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 37%,#f1f5f9 63%)',
+        backgroundSize: '400% 100%', animation: 'skeletonShine 1.4s ease infinite',
+      }} />
+    ))}
+  </div>
+);
+
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [studentName, setStudentName] = useState("");
+
+  const [studentName, setStudentName] = useState(() => localStorage.getItem('studentName') || 'Siswa');
   const [studentId, setStudentId] = useState(null);
   const [studentProfile, setStudentProfile] = useState(null);
+  const [studentKelas, setStudentKelas] = useState(() => localStorage.getItem('studentKelas') || '');
+  const [studentProgram, setStudentProgram] = useState(() => localStorage.getItem('studentProgram') || 'Reguler');
+  const [studentNim, setStudentNim] = useState(() => localStorage.getItem('studentNim') || '');
+
   const [todaySchedules, setTodaySchedules] = useState([]);
   const [tasks, setTasks] = useState([]);
-  const [allModuls, setAllModuls] = useState([]);
   const [raportSummary, setRaportSummary] = useState(null);
-  const [loading, setLoading] = useState(true);
+
+  const [dataLoading, setDataLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
   const [authReady, setAuthReady] = useState(false);
   const [authError, setAuthError] = useState(false);
-  const [studentKelas, setStudentKelas] = useState('');
-  const [studentProgram, setStudentProgram] = useState('');
-  const [studentNim, setStudentNim] = useState('');
 
-  // 🔥 NOTIFIKASI — BARU, beneran fungsional (bukan dekoratif)
   const [notifications, setNotifications] = useState([]);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
 
-  // 🔥 SURVEI YANG PERLU DIISI — dipisah wajib vs opsional
   const [wajibSurveys, setWajibSurveys] = useState([]);
   const [optionalSurveys, setOptionalSurveys] = useState([]);
   const [dismissedSurveyIds, setDismissedSurveyIds] = useState(() => {
@@ -74,9 +97,6 @@ const StudentDashboard = () => {
     catch { return []; }
   });
 
-  // ============================================================
-  // 🔥 HELPER: Format Tanggal
-  // ============================================================
   const getSmartDateString = (dateObj) => {
     const year = dateObj.getFullYear();
     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -84,9 +104,6 @@ const StudentDashboard = () => {
     return year + '-' + month + '-' + day;
   };
 
-  // ============================================================
-  // 🔥 CEK AKSES SISWA KE MODUL
-  // ============================================================
   const checkStudentAccess = (modul, studentId, studentKelas, studentProgram) => {
     if (modul.sendToSpecificStudents) {
       const studentIds = modul.studentIds || [];
@@ -108,8 +125,8 @@ const StudentDashboard = () => {
   }, []);
 
   const isMobile = windowWidth <= 768;
+  const greeting = getGreeting();
 
-  // AUTH CHECK
   useEffect(() => {
     const storedId = localStorage.getItem('studentId');
     const storedName = localStorage.getItem('studentName');
@@ -131,13 +148,12 @@ const StudentDashboard = () => {
         setAuthReady(true);
       } else {
         setAuthError(true);
-        setLoading(false);
+        setDataLoading(false);
       }
     });
     return () => unsubscribe();
   }, []);
 
-  // FETCH DATA
   useEffect(() => {
     if (!authReady || !studentId) return;
 
@@ -146,9 +162,8 @@ const StudentDashboard = () => {
         const todayStr = getSmartDateString(new Date());
         const periode = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
 
-        // 🔥 AMBIL PROFIL SISWA
         const sSnap = await getDoc(doc(db, "students", studentId)).catch(() => null);
-        let kelasVal = '', programVal = 'Reguler', nimVal = studentId;
+        let kelasVal = studentKelas, programVal = studentProgram, nimVal = studentNim || studentId;
         if (sSnap?.exists()) {
           const data = sSnap.data();
           setStudentProfile(data);
@@ -158,27 +173,11 @@ const StudentDashboard = () => {
           setStudentKelas(kelasVal);
           setStudentProgram(programVal);
           setStudentNim(nimVal);
+          localStorage.setItem('studentKelas', kelasVal);
+          localStorage.setItem('studentProgram', programVal);
+          localStorage.setItem('studentNim', nimVal);
         }
 
-        // 🔥 AMBIL JADWAL HARI INI
-        // ============================================================
-        // 🔥 FIX PERFORMA BESAR: sebelumnya SEMUA query ini dipanggil
-        // satu-satu berurutan (await demi await) — padahal sebagian besar
-        // sama sekali gak saling butuh data satu sama lain. Tiap query
-        // butuh 1 kali pulang-pergi ke server; kalau dipanggil satu-satu,
-        // waktunya NUMPUK (query1 + query2 + query3 + ...). Sekarang semua
-        // query yang independen dijalankan BERSAMAAN lewat Promise.all,
-        // jadi total waktu tunggu = query yang PALING LAMA doang, bukan
-        // jumlah semuanya.
-        //
-        // Selain itu, query survey_responses sebelumnya menarik SELURUH ISI
-        // KOLEKSI tanpa filter apa pun, lalu baru disaring di browser —
-        // persis kesalahan yang berkali-kali kita perbaiki di file lain.
-        // Beban ini nempel di SETIAP siswa, SETIAP kali buka dashboard, dan
-        // makin berat seiring respons survei menumpuk. Sekarang difilter
-        // LANGSUNG DI SERVER pakai where() (dicoba beberapa nama field
-        // sekaligus secara paralel, karena halaman pengisian survei belum
-        // pernah saya lihat kodenya untuk pastikan nama field yang dipakai).
         const [
           schedSnap, modulSnap, raportSnap, notifSnap, surveySnap,
           respByUserId, respByStudentId, respByRespondentId, respByNim,
@@ -194,7 +193,6 @@ const StudentDashboard = () => {
           getDocs(query(collection(db, "survey_responses"), where("nim", "==", nimVal))).catch(() => ({ docs: [] })),
         ]);
 
-        // --- Jadwal hari ini ---
         const fetchedSchedules = schedSnap.docs
           .map(d => ({ id: d.id, ...d.data() }))
           .filter(sch => sch.students?.some(s => s.id === studentId || s === studentId || s.studentId === studentId))
@@ -202,12 +200,6 @@ const StudentDashboard = () => {
           .slice(0, 5);
         setTodaySchedules(fetchedSchedules);
 
-        // --- Modul & tugas ---
-        // 🔥 FIX BUG UTAMA (retroaktif — gak perlu re-save manual): kumpulin
-        // semua quizId yang disebut di blocks manapun (artinya kuis itu
-        // sudah nempel ke sebuah materi), lalu buang dokumen yang cocok dari
-        // listing. Kuis begini aksesnya sepenuhnya ngikut modul induk,
-        // gak pernah dievaluasi target-nya sendiri yang bisa basi.
         const rawModulsData = modulSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         const embeddedQuizIds = new Set();
         rawModulsData.forEach(m => {
@@ -216,7 +208,6 @@ const StudentDashboard = () => {
           });
         });
         const allModulsData = rawModulsData.filter(m => !embeddedQuizIds.has(m.id) && !m.parentModulId);
-        setAllModuls(allModulsData);
 
         const accessibleModuls = allModulsData.filter(modul => {
           if (modul.status === 'arsip') return false;
@@ -232,7 +223,6 @@ const StudentDashboard = () => {
           .slice(0, 3);
         setTasks(fetchedTasks);
 
-        // --- Raport ---
         if (!raportSnap.empty) {
           const data = raportSnap.docs[0].data();
           setRaportSummary({
@@ -242,13 +232,11 @@ const StudentDashboard = () => {
           });
         }
 
-        // --- Notifikasi ---
         const notifList = notifSnap.docs
           .map(d => ({ id: d.id, ...d.data() }))
           .sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
         setNotifications(notifList);
 
-        // --- Survei yang belum diisi ---
         const activeSurveys = surveySnap.docs.map(d => ({ id: d.id, ...d.data() }));
         const respondedIds = new Set(
           [respByUserId, respByStudentId, respByRespondentId, respByNim]
@@ -263,22 +251,19 @@ const StudentDashboard = () => {
           if (sv.targetType === 'jenjang') {
             return !sv.targetKelas || sv.targetKelas === 'Semua' || sv.targetKelas === kelasVal;
           }
-          return true; // semua_siswa / semua
+          return true;
         });
 
         setWajibSurveys(relevantSurveys.filter(sv => sv.isRequired));
         setOptionalSurveys(relevantSurveys.filter(sv => !sv.isRequired));
 
       } catch (err) { console.error('Error:', err); }
-      finally { setLoading(false); }
+      finally { setDataLoading(false); }
     };
 
     fetchData();
   }, [authReady, studentId]);
 
-  // ============================================================
-  // 🔥 AKSI NOTIFIKASI
-  // ============================================================
   const markNotifRead = async (notif) => {
     if (!notif.isRead) {
       setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
@@ -303,9 +288,6 @@ const StudentDashboard = () => {
   const unreadCount = notifications.filter(n => !n.isRead).length;
   const visibleOptionalSurveys = optionalSurveys.filter(sv => !dismissedSurveyIds.includes(sv.id));
 
-  // ============================================================
-  // 🔥 QR SCANNER — FIX BUG KEAMANAN PENTING
-  // ============================================================
   useEffect(() => {
     let qr = null;
     if (!isScanning || !studentId) return;
@@ -321,14 +303,6 @@ const StudentDashboard = () => {
               const d = JSON.parse(text);
               if (d.type !== "ABSENSI_BIMBEL") return;
 
-              // 🔥 FIX BUG KEAMANAN: sebelumnya di sini TIDAK ADA pengecekan
-              // sama sekali apakah scheduleId di QR itu benar-benar salah satu
-              // jadwal siswa ini hari ini. Akibatnya siswa yang jadwalnya
-              // Bahasa Indonesia tetap bisa absen pakai QR kelas Matematika
-              // (atau kelas siapa saja), asal QR-nya valid formatnya.
-              // Sekarang dicocokkan dulu ke `todaySchedules` yang sudah
-              // diambil di atas — kalau scheduleId di QR tidak ada dalam
-              // jadwal siswa hari ini, absen DITOLAK.
               const matchedSchedule = todaySchedules.find(sch => sch.id === d.scheduleId);
               if (!matchedSchedule) {
                 alert('❌ QR ini bukan untuk jadwal kelasmu hari ini. Absen tidak tercatat.\n\nKalau ini keliru, hubungi tentor/admin.');
@@ -357,7 +331,6 @@ const StudentDashboard = () => {
     return () => { if (qr) stop(); };
   }, [isScanning, studentId, todaySchedules, studentName]);
 
-  // Auth error
   if (authError) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc', flexDirection: 'column', gap: 16 }}>
@@ -371,49 +344,61 @@ const StudentDashboard = () => {
     );
   }
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ width: 40, height: 40, border: '3px solid #e2e8f0', borderTop: '3px solid #3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }} />
-          <p style={{ color: '#64748b', fontSize: 13 }}>Memuat...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f6fb' }}>
+      <style>{`
+        @keyframes skeletonShine { 0%{background-position:100% 50%} 100%{background-position:0 50%} }
+        @keyframes fadeSlideIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+        .sd-card { animation: fadeSlideIn 0.25s ease-out; }
+        .sd-task-item:hover, .sd-survey-btn:hover { filter: brightness(0.97); }
+      `}</style>
+
       <SidebarSiswa activeMenu={activeMenu} setActiveMenu={setActiveMenu} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-      {isMobile && <button onClick={() => setIsSidebarOpen(true)} style={{ position: 'fixed', top: 15, left: 15, zIndex: 900, background: '#1e293b', color: 'white', border: 'none', padding: 10, borderRadius: 10, cursor: 'pointer' }}><Menu size={24} /></button>}
 
-      <div style={{ marginLeft: isMobile ? 0 : 260, padding: isMobile ? '15px' : '30px', width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box', paddingTop: isMobile ? 60 : 30 }}>
+      {isMobile && (
+        <button onClick={() => setIsSidebarOpen(true)} style={{
+          position: 'fixed', top: 'max(15px, env(safe-area-inset-top))', left: 15, zIndex: 900,
+          background: '#1e293b', color: 'white', border: 'none', padding: 10, borderRadius: 10, cursor: 'pointer',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        }}><Menu size={22} /></button>
+      )}
 
-        {/* HEADER */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexDirection: isMobile ? 'column' : 'row', gap: 10 }}>
+      <div style={{
+        marginLeft: isMobile ? 0 : 260,
+        padding: isMobile ? '15px' : '30px',
+        width: isMobile ? '100%' : 'calc(100% - 260px)',
+        boxSizing: 'border-box',
+        paddingTop: isMobile ? 'max(64px, calc(env(safe-area-inset-top) + 54px))' : 30,
+        paddingBottom: isMobile ? 'max(24px, env(safe-area-inset-bottom))' : 30,
+      }}>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: isMobile ? 20 : 26, fontWeight: 800, color: '#1e293b' }}>Halo, {studentName}! 👋</h1>
-            <p style={{ color: '#64748b', marginTop: 4, fontSize: 13 }}>
-              {studentProfile ? (studentProfile.kategori || 'Reguler') + ' - Kelas ' + (studentProfile.kelasSekolah || '-') : ''}
-              {studentNim && <span style={{ marginLeft: 8, fontSize: 10, background: '#f1f5f9', padding: '2px 8px', borderRadius: 4 }}>🆔 {studentNim}</span>}
+            <p style={{ margin: 0, fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>{greeting.icon} {greeting.text}</p>
+            <h1 style={{ margin: '2px 0 0', fontSize: isMobile ? 20 : 25, fontWeight: 800, color: '#1e293b' }}>{studentName}!</h1>
+            <p style={{ color: '#64748b', marginTop: 5, fontSize: 12 }}>
+              {(studentProfile?.kategori || studentProgram || 'Reguler')} • Kelas {studentProfile?.kelasSekolah || studentKelas || '-'}
+              {studentNim && <span style={{ marginLeft: 8, fontSize: 10, background: '#eef2ff', color: '#4338ca', padding: '2px 8px', borderRadius: 20, fontWeight: 700 }}>🆔 {studentNim}</span>}
             </p>
           </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative' }}>
-            {/* 🔥 LONCENG NOTIFIKASI — BARU, beneran fungsional */}
             <button
               onClick={() => setShowNotifPanel(v => !v)}
               style={{
-                position: 'relative', width: 42, height: 42, borderRadius: '50%',
+                position: 'relative', width: 42, height: 42, borderRadius: 14,
                 background: 'white', border: '1px solid #e2e8f0', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
               }}
             >
               <Bell size={18} />
               {unreadCount > 0 && (
                 <span style={{
-                  position: 'absolute', top: -2, right: -2, background: '#ef4444', color: 'white',
+                  position: 'absolute', top: -3, right: -3, background: '#ef4444', color: 'white',
                   fontSize: 9, fontWeight: 800, minWidth: 16, height: 16, borderRadius: 8,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px',
+                  border: '2px solid #f4f6fb',
                 }}>
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
@@ -424,8 +409,9 @@ const StudentDashboard = () => {
               <>
                 <div onClick={() => setShowNotifPanel(false)} style={{ position: 'fixed', inset: 0, zIndex: 998 }} />
                 <div style={{
-                  position: 'absolute', top: 50, right: 0, width: isMobile ? 300 : 360, maxHeight: 440,
-                  background: 'white', borderRadius: 14, boxShadow: '0 12px 32px rgba(0,0,0,0.18)',
+                  position: 'absolute', top: 50, right: 0,
+                  width: isMobile ? 'calc(100vw - 32px)' : 360, maxWidth: 380, maxHeight: 440,
+                  background: 'white', borderRadius: 16, boxShadow: '0 16px 40px rgba(0,0,0,0.18)',
                   border: '1px solid #e2e8f0', zIndex: 999, overflow: 'hidden', display: 'flex', flexDirection: 'column',
                 }}>
                   <div style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -480,67 +466,76 @@ const StudentDashboard = () => {
             )}
 
             {!isMobile && (
-              <button onClick={() => setIsScanning(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#3b82f6', color: 'white', border: 'none', padding: '10px 18px', borderRadius: 100, fontWeight: 'bold', cursor: 'pointer' }}>
-                <Camera size={18} /> SCAN ABSEN
+              <button onClick={() => setIsScanning(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#1e293b', color: 'white', border: 'none', padding: '11px 20px', borderRadius: 14, fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 12px rgba(30,41,59,0.2)' }}>
+                <Camera size={17} /> Scan Absen
               </button>
             )}
           </div>
         </div>
 
-        {/* 🔥 BANNER SURVEI WAJIB — dipindah ke bagian paling penting/atas,
-            gak bisa hilang permanen (cuma bisa ditutup sementara untuk sesi
-            ini, tetap muncul lagi di kunjungan berikutnya selama belum diisi) */}
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)', gap: isMobile ? 8 : 14, marginBottom: 16 }}>
+          {[
+            { label: 'Jadwal Hari Ini', value: todaySchedules.length, color: '#3b82f6', bg: '#eff6ff' },
+            { label: 'Tugas & Kuis', value: tasks.length, color: '#9b59b6', bg: '#f5f3ff' },
+            { label: 'Notifikasi Baru', value: unreadCount, color: '#ef4444', bg: '#fef2f2' },
+          ].map((stat, i) => (
+            <div key={i} className="sd-card" style={{ background: stat.bg, borderRadius: 16, padding: isMobile ? '12px 10px' : '16px 18px' }}>
+              <div style={{ fontSize: isMobile ? 22 : 28, fontWeight: 900, color: stat.color, lineHeight: 1 }}>
+                {dataLoading ? '–' : stat.value}
+              </div>
+              <div style={{ fontSize: isMobile ? 9 : 11, color: '#64748b', fontWeight: 700, marginTop: 4 }}>{stat.label}</div>
+            </div>
+          ))}
+        </div>
+
         {wajibSurveys.map(sv => (
-          <div key={sv.id} style={{
-            background: 'linear-gradient(135deg, #f59e0b, #dc2626)', borderRadius: 16, padding: 18, color: 'white',
+          <div key={sv.id} className="sd-card" style={{
+            background: 'linear-gradient(135deg, #f59e0b, #dc2626)', borderRadius: 18, padding: 18, color: 'white',
             marginBottom: 14, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
-            boxShadow: '0 8px 20px rgba(220,38,38,0.25)',
+            boxShadow: '0 10px 24px rgba(220,38,38,0.28)',
           }}>
             {sv.coverImage && (
-              <img src={sv.coverImage} alt={sv.title} style={{ width: 70, height: 70, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }} />
+              <img src={sv.coverImage} alt={sv.title} style={{ width: 68, height: 68, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
             )}
             <div style={{ flex: 1, minWidth: 180 }}>
-              <span style={{ fontSize: 9, fontWeight: 800, background: 'rgba(255,255,255,0.25)', padding: '2px 8px', borderRadius: 10 }}>🔴 SURVEI WAJIB</span>
-              <h3 style={{ margin: '6px 0 2px', fontSize: 16, fontWeight: 800 }}>{sv.title}</h3>
-              <p style={{ margin: 0, fontSize: 11, opacity: 0.9 }}>Wajib diisi sebelum mengakses fitur lain lebih lanjut{sv.deadline ? ` — batas ${new Date(sv.deadline).toLocaleDateString('id-ID')}` : ''}.</p>
+              <span style={{ fontSize: 9, fontWeight: 800, background: 'rgba(255,255,255,0.25)', padding: '3px 9px', borderRadius: 10 }}>🔴 SURVEI WAJIB</span>
+              <h3 style={{ margin: '6px 0 2px', fontSize: 15, fontWeight: 800 }}>{sv.title}</h3>
+              <p style={{ margin: 0, fontSize: 11, opacity: 0.9 }}>Wajib diisi{sv.deadline ? ` — batas ${new Date(sv.deadline).toLocaleDateString('id-ID')}` : ''}.</p>
             </div>
-            <button onClick={() => navigate('/siswa/survei/' + sv.id)} style={{ background: 'white', color: '#dc2626', border: 'none', padding: '10px 18px', borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: 'pointer', flexShrink: 0 }}>
+            <button className="sd-survey-btn" onClick={() => navigate('/siswa/survei/' + sv.id)} style={{ background: 'white', color: '#dc2626', border: 'none', padding: '10px 18px', borderRadius: 12, fontWeight: 800, fontSize: 12, cursor: 'pointer', flexShrink: 0 }}>
               Isi Sekarang →
             </button>
           </div>
         ))}
 
-        {/* 🔥 BANNER SURVEI OPSIONAL — bisa ditutup (X), diingat lewat
-            localStorage supaya gak muncul lagi setelah ditutup. */}
         {visibleOptionalSurveys.map(sv => (
-          <div key={sv.id} style={{
-            background: 'white', border: '1px solid #bae6fd', borderRadius: 14, padding: 14,
+          <div key={sv.id} className="sd-card" style={{
+            background: 'white', border: '1px solid #bae6fd', borderRadius: 16, padding: 14,
             marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', position: 'relative',
           }}>
             {sv.coverImage && (
-              <img src={sv.coverImage} alt={sv.title} style={{ width: 50, height: 50, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
+              <img src={sv.coverImage} alt={sv.title} style={{ width: 48, height: 48, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
             )}
             <div style={{ flex: 1, minWidth: 160 }}>
               <span style={{ fontSize: 9, fontWeight: 700, color: '#0891b2' }}>🔵 SURVEI OPSIONAL</span>
               <h4 style={{ margin: '2px 0', fontSize: 13, fontWeight: 700, color: '#1e293b' }}>{sv.title}</h4>
             </div>
-            <button onClick={() => navigate('/siswa/survei/' + sv.id)} style={{ background: '#ecfeff', color: '#0891b2', border: 'none', padding: '7px 14px', borderRadius: 8, fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+            <button className="sd-survey-btn" onClick={() => navigate('/siswa/survei/' + sv.id)} style={{ background: '#ecfeff', color: '#0891b2', border: 'none', padding: '7px 14px', borderRadius: 10, fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
               Isi
             </button>
-            <button onClick={() => dismissOptionalSurvey(sv.id)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }} title="Tutup, gak akan muncul lagi">
+            <button onClick={() => dismissOptionalSurvey(sv.id)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }} title="Tutup">
               <X size={16} />
             </button>
           </div>
         ))}
 
-        {/* RINGKASAN RAPORT */}
         {raportSummary && (
-          <div onClick={() => navigate('/siswa/smart-rapor')} style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: 16, padding: 20, color: 'white', cursor: 'pointer', marginBottom: 16, transition: 'transform 0.2s' }}>
+          <div className="sd-card" onClick={() => navigate('/siswa/smart-rapor')} style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: 18, padding: 20, color: 'white', cursor: 'pointer', marginBottom: 16, boxShadow: '0 10px 24px rgba(102,126,234,0.25)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Trophy size={28} color="#fbbf24" />
+                <Trophy size={26} color="#fbbf24" />
                 <div>
-                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>📊 Ringkasan Raport</h3>
+                  <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800 }}>📊 Ringkasan Raport</h3>
                   <p style={{ margin: '4px 0 0', fontSize: 11, opacity: 0.85 }}>Periode {raportSummary.periode?.replace('-', ' / ')}</p>
                 </div>
               </div>
@@ -548,12 +543,12 @@ const StudentDashboard = () => {
             </div>
             <div style={{ display: 'flex', gap: 20, marginTop: 16, flexWrap: 'wrap' }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 32, fontWeight: 900 }}>{raportSummary.nilaiAkhir ?? '?'}</div>
+                <div style={{ fontSize: 30, fontWeight: 900 }}>{raportSummary.nilaiAkhir ?? '?'}</div>
                 <div style={{ fontSize: 10, opacity: 0.8 }}>Nilai Akhir</div>
               </div>
               {raportSummary.komponenDipake && (
                 <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: 20 }}>
-                  <div style={{ fontSize: 32, fontWeight: 900 }}>{raportSummary.komponenDipake.length}/4</div>
+                  <div style={{ fontSize: 30, fontWeight: 900 }}>{raportSummary.komponenDipake.length}/4</div>
                   <div style={{ fontSize: 10, opacity: 0.8 }}>Komponen Dinilai</div>
                 </div>
               )}
@@ -561,39 +556,41 @@ const StudentDashboard = () => {
           </div>
         )}
 
-        {/* GRID UTAMA */}
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
 
-          {/* JADWAL HARI INI */}
-          <div style={{ background: 'white', padding: 18, borderRadius: 14, border: '1px solid #e2e8f0' }}>
-            <h3 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}><Calendar size={18} color="#3b82f6" /> Jadwal Hari Ini</h3>
-            {todaySchedules.length === 0 ? (
+          <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+            <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Calendar size={17} color="#3b82f6" /> Jadwal Hari Ini
+            </h3>
+            {dataLoading ? (
+              <SkeletonLines count={2} />
+            ) : todaySchedules.length === 0 ? (
               <div style={{ textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12 }}>📭 Tidak ada jadwal hari ini</div>
             ) : todaySchedules.map((sch, i) => (
-              <div key={i} style={{ display: 'flex', gap: 10, padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
-                <div style={{ minWidth: 50, textAlign: 'center', fontWeight: 700, fontSize: 12 }}>{sch.start}</div>
+              <div key={i} style={{ display: 'flex', gap: 10, padding: '10px 0', borderBottom: i < todaySchedules.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                <div style={{ minWidth: 48, textAlign: 'center', fontWeight: 700, fontSize: 12, color: '#3b82f6' }}>{sch.start}</div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 13 }}>{sch.title || "Kelas"}</div>
-                  <div style={{ fontSize: 10, color: '#64748b' }}><MapPin size={9} /> {sch.planet || '-'} • <User size={9} /> {sch.teacherName || sch.booker || '-'}</div>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b' }}>{sch.title || "Kelas"}</div>
+                  <div style={{ fontSize: 10, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                    <MapPin size={9} /> {sch.planet || '-'} • <User size={9} /> {sch.teacherName || sch.booker || '-'}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* TUGAS & KUIS */}
-          <div style={{ background: 'white', padding: 18, borderRadius: 14, border: '1px solid #e2e8f0' }}>
+          <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
-              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <ClipboardList size={18} color="#9b59b6" /> Tugas & Kuis
+              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <ClipboardList size={17} color="#9b59b6" /> Tugas & Kuis
               </h3>
-              <button
-                onClick={() => navigate('/siswa/materi')}
-                style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 600, fontSize: 11, cursor: 'pointer' }}
-              >
+              <button onClick={() => navigate('/siswa/materi')} style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
                 Lihat Semua →
               </button>
             </div>
-            {tasks.length === 0 ? (
+            {dataLoading ? (
+              <SkeletonLines count={2} />
+            ) : tasks.length === 0 ? (
               <div style={{ textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12 }}>
                 📭 Belum ada tugas atau kuis untuk Anda
               </div>
@@ -606,14 +603,10 @@ const StudentDashboard = () => {
               return (
                 <div
                   key={i}
+                  className="sd-task-item"
                   style={{
-                    padding: '10px 12px',
-                    background: '#f8fafc',
-                    borderRadius: 8,
-                    marginBottom: 6,
-                    borderLeft: `3px solid ${hasQuiz ? '#673ab7' : '#f59e0b'}`,
-                    cursor: 'pointer',
-                    transition: '0.2s'
+                    padding: '10px 12px', background: '#f8fafc', borderRadius: 12, marginBottom: 6,
+                    borderLeft: `3px solid ${hasQuiz ? '#673ab7' : '#f59e0b'}`, cursor: 'pointer', transition: 'filter 0.15s',
                   }}
                   onClick={() => {
                     localStorage.setItem('selectedModuleId', task.id);
@@ -621,30 +614,12 @@ const StudentDashboard = () => {
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontWeight: 700, fontSize: 13 }}>{task.title}</div>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b' }}>{task.title}</div>
                     {hasQuiz && (
-                      <span style={{
-                        fontSize: 9,
-                        padding: '2px 8px',
-                        borderRadius: 10,
-                        background: '#673ab7',
-                        color: 'white',
-                        fontWeight: 700
-                      }}>
-                        Kuis
-                      </span>
+                      <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: '#673ab7', color: 'white', fontWeight: 700 }}>Kuis</span>
                     )}
                     {hasAssignment && !hasQuiz && (
-                      <span style={{
-                        fontSize: 9,
-                        padding: '2px 8px',
-                        borderRadius: 10,
-                        background: '#f59e0b',
-                        color: 'white',
-                        fontWeight: 700
-                      }}>
-                        Tugas
-                      </span>
+                      <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: '#f59e0b', color: 'white', fontWeight: 700 }}>Tugas</span>
                     )}
                   </div>
                   <div style={{ fontSize: 10, color: '#64748b', display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 2 }}>
@@ -654,15 +629,7 @@ const StudentDashboard = () => {
                     {hasQuiz && <span>• 📝 {task.quizData.length} soal</span>}
                   </div>
                   {isTargeted && (
-                    <div style={{
-                      fontSize: 8,
-                      color: '#f59e0b',
-                      background: '#fef3c7',
-                      padding: '1px 6px',
-                      borderRadius: 4,
-                      display: 'inline-block',
-                      marginTop: 2
-                    }}>
+                    <div style={{ fontSize: 8, color: '#f59e0b', background: '#fef3c7', padding: '1px 6px', borderRadius: 4, display: 'inline-block', marginTop: 4 }}>
                       🔒 Dikirim khusus
                     </div>
                   )}
@@ -672,16 +639,17 @@ const StudentDashboard = () => {
           </div>
         </div>
 
-        {/* PROFIL */}
-        <div style={{ background: 'white', padding: 18, borderRadius: 14, border: '1px solid #e2e8f0', marginTop: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 45, height: 45, borderRadius: '50%', background: '#3b82f6', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: 18 }}>{studentName?.charAt(0) || 'S'}</div>
-            <div>
-              <div style={{ fontWeight: 'bold', fontSize: 14 }}>{studentName}</div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>{studentProfile?.kelasSekolah || '-'} • {studentProfile?.kategori || 'Reguler'}</div>
+        <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ width: 44, height: 44, borderRadius: 14, background: 'linear-gradient(135deg,#3b82f6,#8b5cf6)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 17, flexShrink: 0 }}>
+              {studentName?.charAt(0) || 'S'}
+            </div>
+            <div style={{ flex: 1, minWidth: 120 }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color: '#1e293b' }}>{studentName}</div>
+              <div style={{ fontSize: 11, color: '#64748b' }}>{studentProfile?.kelasSekolah || studentKelas || '-'} • {studentProfile?.kategori || studentProgram || 'Reguler'}</div>
               {studentNim && <div style={{ fontSize: 9, color: '#94a3b8', fontFamily: 'monospace' }}>ID: {studentNim}</div>}
             </div>
-            <button onClick={() => navigate('/siswa/materi')} style={{ marginLeft: 'auto', padding: '8px 14px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <button onClick={() => navigate('/siswa/materi')} style={{ padding: '9px 16px', background: '#1e293b', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
               <BookOpen size={14} /> Materi Belajar
             </button>
           </div>
@@ -690,7 +658,6 @@ const StudentDashboard = () => {
 
       {isMobile && isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 998 }} />}
 
-      {/* QR SCANNER MODAL */}
       {isScanning && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 16 }}>
           <div style={{ background: 'white', padding: 20, borderRadius: 20, width: '90%', maxWidth: 400, textAlign: 'center', position: 'relative' }}>
@@ -702,7 +669,14 @@ const StudentDashboard = () => {
         </div>
       )}
 
-      {isMobile && <button onClick={() => setIsScanning(true)} style={{ position: 'fixed', bottom: 20, right: 20, width: 56, height: 56, borderRadius: '50%', background: '#3b82f6', color: 'white', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.3)', zIndex: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Camera size={22} /></button>}
+      {isMobile && (
+        <button onClick={() => setIsScanning(true)} style={{
+          position: 'fixed', bottom: 'max(20px, calc(env(safe-area-inset-bottom) + 12px))', right: 20,
+          width: 56, height: 56, borderRadius: '50%', background: '#1e293b', color: 'white', border: 'none',
+          boxShadow: '0 8px 20px rgba(0,0,0,0.3)', zIndex: 900, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}><Camera size={22} /></button>
+      )}
     </div>
   );
 };
