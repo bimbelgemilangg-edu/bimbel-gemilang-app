@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LogOut, X, Home, BarChart2, BookOpen, Wallet, 
   Trophy, TrendingUp, GraduationCap, Calendar, ClipboardCheck,
-  User, Hash
+  Hash
 } from 'lucide-react';
 
 // Logo dari folder public
@@ -32,69 +32,43 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // ===== MENU ITEMS =====
-  // 🔥 FIX: badge "Baru" di E-Learning dihapus sesuai permintaan — fiturnya
-  // sudah lama ada, badge itu jadi gak relevan lagi dan cuma bikin ramai.
-  const menuItems = [
-    { 
-      id: 'dashboard', 
-      label: 'Dashboard', 
-      icon: <Home size={18}/>, 
-      path: '/siswa/dashboard',
-      color: '#3b82f6'
+  // ===== MENU — DIKELOMPOKKAN & DIURUTKAN ULANG =====
+  // 🔥 Sebelumnya menu ditumpuk berurutan tanpa pengelompokan (Dashboard,
+  // E-Learning, Smart Raport, Leaderboard, Nilai, Keuangan, Jadwal — urutan
+  // acak, gak ada logika jelas). Sekarang dikelompokkan berdasarkan
+  // kegunaan sehari-hari, dari yang paling sering dipakai ke yang paling
+  // jarang: BELAJAR (aktivitas harian) -> PERFORMA (pantau hasil) ->
+  // LAINNYA (administratif, jarang dibuka).
+  const menuGroups = [
+    {
+      label: null,
+      items: [
+        { id: 'dashboard', label: 'Dashboard', icon: <Home size={18} />, path: '/siswa/dashboard', color: '#3b82f6' },
+      ],
     },
-    { 
-      id: 'materi', 
-      label: '📚 E-Learning', 
-      icon: <BookOpen size={18}/>, 
-      path: '/siswa/materi',
-      color: '#10b981'
+    {
+      label: 'BELAJAR',
+      items: [
+        { id: 'materi', label: 'E-Learning', icon: <BookOpen size={18} />, path: '/siswa/materi', color: '#10b981' },
+        { id: 'jadwal', label: 'Jadwal', icon: <Calendar size={18} />, path: '/siswa/jadwal', color: '#ec4899' },
+        // 🔥 Menu ini sebelumnya TIDAK PERNAH ADA sejak awal, padahal
+        // halaman & rutenya (/siswa/absensi) sudah lengkap dan berfungsi.
+        { id: 'absensi', label: 'Kehadiran', icon: <ClipboardCheck size={18} />, path: '/siswa/absensi', color: '#14b8a6' },
+      ],
     },
-    { 
-      id: 'smart-rapor', 
-      label: '📊 Smart Raport', 
-      icon: <TrendingUp size={18}/>, 
-      path: '/siswa/smart-rapor',
-      color: '#8b5cf6'
+    {
+      label: 'PERFORMA',
+      items: [
+        { id: 'smart-rapor', label: 'Smart Raport', icon: <TrendingUp size={18} />, path: '/siswa/smart-rapor', color: '#8b5cf6' },
+        { id: 'rapor', label: 'Nilai & Progres', icon: <BarChart2 size={18} />, path: '/siswa/rapor', color: '#ef4444' },
+        { id: 'leaderboard', label: 'Papan Peringkat', icon: <Trophy size={18} />, path: '/siswa/leaderboard', color: '#f59e0b' },
+      ],
     },
-    { 
-      id: 'leaderboard', 
-      label: '🏆 Papan Peringkat', 
-      icon: <Trophy size={18}/>, 
-      path: '/siswa/leaderboard',
-      color: '#f59e0b'
-    },
-    { 
-      id: 'rapor', 
-      label: '📋 Nilai & Progres', 
-      icon: <BarChart2 size={18}/>, 
-      path: '/siswa/rapor',
-      color: '#ef4444'
-    },
-    { 
-      id: 'keuangan', 
-      label: '💰 Administrasi', 
-      icon: <Wallet size={18}/>, 
-      path: '/siswa/keuangan',
-      color: '#06b6d4'
-    },
-    { 
-      id: 'jadwal', 
-      label: '📅 Jadwal', 
-      icon: <Calendar size={18}/>, 
-      path: '/siswa/jadwal',
-      color: '#ec4899'
-    },
-    // 🔥 BARU: menu ini ternyata TIDAK PERNAH ADA sejak awal, padahal
-    // halaman & rutenya (/siswa/absensi -> StudentAttendance.jsx) sudah
-    // lengkap dan berfungsi. Siswa cuma bisa sampai ke sana kalau ketik
-    // alamatnya manual -- gak ada jalan masuk dari menu sama sekali.
-    { 
-      id: 'absensi', 
-      label: '📝 Kehadiran', 
-      icon: <ClipboardCheck size={18}/>, 
-      path: '/siswa/absensi',
-      color: '#14b8a6'
+    {
+      label: 'LAINNYA',
+      items: [
+        { id: 'keuangan', label: 'Administrasi', icon: <Wallet size={18} />, path: '/siswa/keuangan', color: '#06b6d4' },
+      ],
     },
   ];
 
@@ -143,7 +117,6 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
           yang bikin ulang objek style tiap event) — lebih ringan & rapi. */}
       <style>{`
         .sidebar-siswa-menu-item:not(.active):hover { background: rgba(255,255,255,0.06) !important; }
-        .sidebar-siswa-profile-btn:hover { background: rgba(255,255,255,0.12) !important; color: white !important; }
         .sidebar-siswa-logout-btn:hover { background: #dc2626 !important; }
         .sidebar-siswa-scroll::-webkit-scrollbar { width: 4px; }
         .sidebar-siswa-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
@@ -175,7 +148,8 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
           )}
         </div>
 
-        {/* PROFILE CARD */}
+        {/* PROFILE CARD — sekadar identitas (nama, ID, kelas), TANPA fitur
+            upload foto profil (memang tidak diperlukan). */}
         <div style={styles.profileCard}>
           <div style={styles.profileAvatar}>
             {getInitials(studentData.name)}
@@ -197,45 +171,45 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
 
         <hr style={styles.divider} />
         
-        {/* MENU */}
-        <ul style={styles.menuList}>
-          {menuItems.map((item) => {
-            const isActive = activeMenu === item.id || location.pathname === item.path;
-            return (
-              <li 
-                key={item.id}
-                className={`sidebar-siswa-menu-item${isActive ? ' active' : ''}`}
-                onClick={() => handleMenuClick(item)}
-                style={{ 
-                  ...styles.menuItem,
-                  background: isActive ? `${item.color}20` : 'transparent',
-                  borderLeft: isActive ? `3px solid ${item.color}` : '3px solid transparent',
-                  color: isActive ? item.color : '#94a3b8'
-                }}
-              >
-                <span style={{ 
-                  ...styles.menuIcon,
-                  color: isActive ? item.color : '#64748b'
-                }}>
-                  {item.icon}
-                </span>
-                <span style={styles.menuLabel}>{item.label}</span>
-              </li>
-            );
-          })}
-        </ul>
+        {/* MENU — dikelompokkan dengan label section */}
+        <div style={styles.menuList}>
+          {menuGroups.map((group, gi) => (
+            <div key={gi} style={{ marginBottom: 4 }}>
+              {group.label && (
+                <div style={styles.sectionLabel}>{group.label}</div>
+              )}
+              {group.items.map((item) => {
+                const isActive = activeMenu === item.id || location.pathname === item.path;
+                return (
+                  <div
+                    key={item.id}
+                    className={`sidebar-siswa-menu-item${isActive ? ' active' : ''}`}
+                    onClick={() => handleMenuClick(item)}
+                    style={{
+                      ...styles.menuItem,
+                      background: isActive ? `${item.color}20` : 'transparent',
+                      borderLeft: isActive ? `3px solid ${item.color}` : '3px solid transparent',
+                      color: isActive ? item.color : '#94a3b8',
+                    }}
+                  >
+                    <span style={{ ...styles.menuIcon, color: isActive ? item.color : '#64748b' }}>
+                      {item.icon}
+                    </span>
+                    <span style={styles.menuLabel}>{item.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
 
-        {/* FOOTER */}
+        {/* FOOTER — cuma tombol Keluar. Tombol "Profil" (upload foto)
+            dihapus: fiturnya memang tidak diperlukan, dan sebelumnya
+            mengarah ke alamat /siswa/profile yang tidak pernah terdaftar
+            di App.jsx (kalau diklik pasti "kepental" ke halaman login). */}
         <div style={styles.footer}>
-          <button 
-            onClick={() => navigate('/siswa/profile')} 
-            className="sidebar-siswa-profile-btn"
-            style={styles.profileBtn}
-          >
-            <User size={16} /> Profil
-          </button>
-          <button 
-            onClick={handleLogout} 
+          <button
+            onClick={handleLogout}
             className="sidebar-siswa-logout-btn"
             style={styles.logoutBtn}
           >
@@ -259,23 +233,12 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
 // ============================================================
 const styles = {
   sidebar: {
-    // 🔥 FIX BUG: lebar sebelumnya 270px, padahal halaman-halaman siswa
-    // (contoh StudentDashboard.jsx) menyisakan ruang cuma 260px buat
-    // sidebar (marginLeft: 260 di konten). Beda 10px ini bikin sidebar &
-    // konten dempet/tumpang-tindih dikit di pinggir. Disamakan jadi 260px.
     width: '260px',
-    // 🔥 FIX MOBILE: 100vh di HP bisa lebih tinggi dari area yang KELIHATAN
-    // (browser bar HP suka nongol-ilang), jadi footer/tombol Keluar kadang
-    // ketutupan/gak kejangkau. 100dvh (dynamic viewport height) lebih akurat
-    // ngikutin tinggi layar yang BENERAN kelihatan saat itu. Browser lama yang
-    // belum kenal dvh otomatis abaikan baris ini dan tetap pakai 100vh di atasnya.
     height: '100vh',
     maxHeight: '100dvh',
     background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)',
     color: 'white', 
     padding: '16px 14px',
-    // 🔥 Aman dari notch/home-indicator iPhone (safe-area-inset) supaya
-    // header & tombol footer gak ketutupan lekukan layar/gesture bar.
     paddingTop: 'max(16px, env(safe-area-inset-top))',
     paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
     position: 'fixed',
@@ -390,18 +353,22 @@ const styles = {
   divider: { 
     border: '0', 
     borderTop: '1px solid #334155', 
-    marginBottom: '14px',
+    marginBottom: '10px',
     flexShrink: 0,
+  },
+
+  sectionLabel: {
+    fontSize: '9px',
+    fontWeight: 800,
+    color: '#475569',
+    letterSpacing: '0.8px',
+    padding: '10px 14px 6px',
   },
   
   menuList: { 
-    listStyle: 'none', 
-    padding: 0, 
     flex: 1,
     minHeight: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px'
+    overflowY: 'auto',
   },
   menuItem: { 
     padding: '10px 14px', 
@@ -413,7 +380,7 @@ const styles = {
     fontWeight: 500,
     transition: 'background 0.2s ease',
     position: 'relative',
-    flexShrink: 0,
+    marginBottom: '2px',
   },
   menuIcon: {
     marginRight: '12px',
@@ -433,32 +400,16 @@ const styles = {
     marginTop: '4px',
     flexShrink: 0,
   },
-  profileBtn: {
-    flex: 1,
-    padding: '8px 12px',
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: '8px',
-    color: '#94a3b8',
-    cursor: 'pointer',
-    fontSize: '12px',
-    fontWeight: 600,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-    transition: '0.2s'
-  },
   logoutBtn: {
     flex: 1,
-    padding: '8px 12px',
+    padding: '10px 12px',
     background: '#ef4444',
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '10px',
     color: 'white',
     cursor: 'pointer',
     fontSize: '12px',
-    fontWeight: 600,
+    fontWeight: 700,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
