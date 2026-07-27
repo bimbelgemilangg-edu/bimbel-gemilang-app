@@ -100,6 +100,12 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   const [hasExistingAnswer, setHasExistingAnswer] = useState(false);
   const [existingResult, setExistingResult] = useState(null);
 
+  // 🔥 BARU: Deteksi kecurangan dasar (Mode Ujian) — mendeteksi siswa
+  // pindah tab/aplikasi di PERANGKAT YANG SAMA. Tidak bisa (dan tidak ada
+  // sistem web manapun yang bisa) mendeteksi HP kedua yang terpisah.
+  const [cheatViolations, setCheatViolations] = useState([]);
+  const [showCheatWarning, setShowCheatWarning] = useState(false);
+
   // ===== RESPONSIVE =====
   useEffect(() => {
     const h = () => setIsMobile(window.innerWidth <= 768);
@@ -863,9 +869,19 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         details: detailedResults,
         timeUsed: (quizData?.timeLimit || 0) * 60 - timeLeft,
         isAutoSubmit: isAuto,
+        // 🔥 Log deteksi kecurangan (kalau Mode Ujian mengaktifkannya) —
+        // guru bisa lihat berapa kali & kapan siswa pindah tab/aplikasi
+        // selama mengerjakan, buat pertimbangan sendiri.
+        cheatViolations: cheatViolations,
+        cheatViolationCount: cheatViolations.length,
         submittedAt: serverTimestamp(),
         status: "Dinilai"
       });
+
+      // Keluar dari fullscreen setelah submit (kalau tadi diaktifkan)
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
 
       // 🔥 FIX BUG: sebelumnya `results` cuma di-set tapi TIDAK PERNAH ada
       // bagian render yang menampilkannya — jadi siswa tetap nyangkut di
@@ -907,8 +923,46 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         return;
       }
     }
+    // 🔥 Kalau Mode Ujian mengaktifkan deteksi kecurangan, kunci ke layar
+    // penuh saat kuis dimulai (bukan buat "mengunci HP", cuma mengurangi
+    // godaan lirik-lirik sekilas + jadi salah satu sinyal yang dipantau).
+    if (quizData?.antiCheatEnabled && document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
     setQuizStarted(true);
   };
+
+  // ============================================================
+  // 🔥 DETEKSI KECURANGAN — pindah tab/aplikasi/keluar fullscreen di
+  // PERANGKAT YANG SAMA. Ini deteksi & pencatatan, BUKAN "blokir HP" —
+  // tidak ada halaman web yang bisa mencegah siswa memakai perangkat lain.
+  // ============================================================
+  useEffect(() => {
+    if (!quizStarted || isSubmitted || !quizData?.antiCheatEnabled || hasExistingAnswer) return;
+
+    const logViolation = (type) => {
+      setCheatViolations(prev => [...prev, { type, at: new Date().toISOString() }]);
+      setShowCheatWarning(true);
+    };
+
+    const onVisibilityChange = () => {
+      if (document.hidden) logViolation('pindah_tab_atau_aplikasi');
+    };
+    const onBlur = () => logViolation('keluar_dari_jendela');
+    const onFullscreenChange = () => {
+      if (!document.fullscreenElement) logViolation('keluar_fullscreen');
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('blur', onBlur);
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('blur', onBlur);
+      document.removeEventListener('fullscreenchange', onFullscreenChange);
+    };
+  }, [quizStarted, isSubmitted, quizData?.antiCheatEnabled, hasExistingAnswer]);
 
   // ===== BACK =====
   const handleBack = () => {
@@ -1267,7 +1321,37 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
 
   return (
     <div style={styles.container}>
-      
+
+      {/* 🔥 MODAL PERINGATAN KECURANGAN */}
+      {showCheatWarning && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 3000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+        }}>
+          <div style={{ background: 'white', borderRadius: 16, padding: 24, maxWidth: 380, textAlign: 'center' }}>
+            <AlertCircle size={40} color="#ef4444" style={{ marginBottom: 10 }} />
+            <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 800, color: '#1e293b' }}>
+              ⚠️ Terdeteksi Keluar dari Kuis!
+            </h3>
+            <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, margin: '0 0 16px' }}>
+              Ini pelanggaran ke-<b>{cheatViolations.length}</b>. Kejadian ini tercatat dan akan terlihat oleh gurumu.
+              Tetap di halaman ini sampai selesai mengerjakan.
+            </p>
+            <button
+              onClick={() => {
+                setShowCheatWarning(false);
+                if (quizData?.antiCheatEnabled && document.documentElement.requestFullscreen && !document.fullscreenElement) {
+                  document.documentElement.requestFullscreen().catch(() => {});
+                }
+              }}
+              style={{ background: '#673ab7', color: 'white', border: 'none', padding: '10px 24px', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
+            >
+              Mengerti, Lanjutkan
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* HEADER */}
       <div style={styles.quizHeader}>
         <div style={styles.quizHeaderLeft}>

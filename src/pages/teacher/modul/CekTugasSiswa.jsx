@@ -470,6 +470,14 @@ const CekTugasSiswa = () => {
               <div>
                 <h3 style={s.modalTitle}>{viewingDetail.studentName}</h3>
                 <p style={s.modalSub}>{viewingDetail.modulTitle} — Nilai: {viewingDetail.score ?? '-'}/100 ({viewingDetail.correctAnswers}/{viewingDetail.totalQuestions} benar)</p>
+                {/* 🔥 Info deteksi kecurangan (Mode Ujian) — cuma tampil kalau
+                    ada pelanggaran tercatat. Ini SINYAL buat guru menilai
+                    sendiri, bukan vonis otomatis "curang". */}
+                {viewingDetail.cheatViolationCount > 0 && (
+                  <p style={{ margin: '6px 0 0', fontSize: 11, fontWeight: 700, color: '#b45309', background: '#fffbeb', display: 'inline-block', padding: '3px 10px', borderRadius: 6 }}>
+                    ⚠️ Terdeteksi keluar dari halaman kuis {viewingDetail.cheatViolationCount}x saat mengerjakan
+                  </p>
+                )}
               </div>
               <button onClick={() => setViewingDetail(null)} style={s.modalCloseBtn}><X size={18}/></button>
             </div>

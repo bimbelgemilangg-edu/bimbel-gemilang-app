@@ -122,6 +122,9 @@ const ManageQuiz = () => {
   const [showExplanation, setShowExplanation] = useState(true);
   const [showScoreToStudent, setShowScoreToStudent] = useState(true);
   const [difficulty, setDifficulty] = useState('Sedang');
+  // 🔥 BARU: Deteksi kecurangan dasar khusus Mode Ujian — mendeteksi siswa
+  // pindah tab/aplikasi (BUKAN mencegah HP kedua, itu di luar jangkauan web).
+  const [antiCheatEnabled, setAntiCheatEnabled] = useState(false);
   
   // Target
   const [publishTarget, setPublishTarget] = useState('modul');
@@ -306,6 +309,7 @@ const ManageQuiz = () => {
           setShowExplanation(data.showExplanation !== false);
           setShowScoreToStudent(data.showScoreToStudent !== false);
           setDifficulty(data.difficulty || 'Sedang');
+          setAntiCheatEnabled(data.antiCheatEnabled || false);
           setUseSchedule(data.useSchedule || false);
           setQuizOpenDate(data.quizOpenDate || quizOpenDate);
           setQuizCloseDate(data.quizCloseDate || quizCloseDate);
@@ -1343,6 +1347,7 @@ const ManageQuiz = () => {
         quizPayload.maxAttempts = maxAttempts;
         quizPayload.showExplanation = showExplanation;
         quizPayload.difficulty = difficulty;
+        quizPayload.antiCheatEnabled = antiCheatEnabled;
       }
 
       // 🔥 FIX BUG: kalau ini KUIS YANG SUDAH ADA lagi diedit (bukan bikin
@@ -1818,6 +1823,22 @@ const ManageQuiz = () => {
               <select value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, background: 'white' }}>
                 <option value="Mudah">🟢 Mudah</option><option value="Sedang">🟡 Sedang</option><option value="Sulit">🔴 Sulit</option>
               </select>
+            </div>
+
+            {/* 🔥 DETEKSI KECURANGAN — BARU */}
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px dashed #e2e8f0' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={antiCheatEnabled} onChange={e => setAntiCheatEnabled(e.target.checked)} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>🛡️ Deteksi Kecurangan (pindah tab/aplikasi)</span>
+              </label>
+              <p style={{ fontSize: 10, color: '#94a3b8', margin: '4px 0 0 24px', lineHeight: 1.6 }}>
+                Kalau aktif: layar siswa dikunci ke mode layar-penuh, dan setiap kali siswa <b>pindah tab, buka aplikasi lain,
+                atau keluar dari layar-penuh</b> selama mengerjakan, itu tercatat otomatis dan kelihatan di hasil kuis buat kamu.
+                <br /><br />
+                <b>⚠️ Jujur soal batasnya:</b> ini nangkep kalau siswa pindah-pindah di <b>perangkat yang sama</b> yang lagi dipakai
+                ngerjain kuis. Kalau siswa nyari jawaban pakai <b>HP kedua</b> yang terpisah, itu di luar jangkauan sistem apapun
+                berbasis web — gak ada yang bisa deteksi itu.
+              </p>
             </div>
           </div>
         )}
