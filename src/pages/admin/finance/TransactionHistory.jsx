@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { 
-  collection, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, getDoc 
+  collection, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, getDoc, where, getDocs
 } from "firebase/firestore";
 import { 
   Download, Filter, Search, Edit3, Trash2, X, Save, RefreshCw, Calendar, Lock, Clock
@@ -122,13 +122,37 @@ const TransactionHistory = () => {
   // Filter sedang aktif atau tidak, dipakai untuk memberi keterangan di UI
   const sedangDifilter = filterMode !== 'semua' || filterType !== 'Semua' || filterMethod !== 'Semua' || !!searchTerm;
 
+  // 🔥 BARU: fungsi ini yang bikin finance_logs & data siswa TETAP NYAMBUNG
+  // walau transaksinya diedit/dihapus belakangan. Sebelumnya, edit/hapus di
+  // sini CUMA nyentuh dokumen finance_logs itu sendiri -- field totalBayar
+  // di collection "students" gak pernah ikut disesuaikan, jadi begitu admin
+  // ngoreksi kesalahan hitung, data siswa jadi gak sinkron lagi sama buku
+  // besar keuangan (persis yang dialami).
+  const adjustStudentTotalBayar = async (studentIdKodeUnik, delta) => {
+    if (!studentIdKodeUnik || !delta) return;
+    try {
+      const q = query(collection(db, "students"), where("studentId", "==", studentIdKodeUnik));
+      const snap = await getDocs(q);
+      if (snap.empty) return; // siswanya gak ketemu (mungkin sudah dihapus), gak bisa disesuaikan
+      const studentDoc = snap.docs[0];
+      const current = parseInt(studentDoc.data().totalBayar || 0);
+      const totalTagihan = parseInt(studentDoc.data().totalTagihan || 0);
+      let newValue = current + delta;
+      if (newValue < 0) newValue = 0; // jangan sampai minus
+      if (totalTagihan > 0 && newValue > totalTagihan) newValue = totalTagihan; // jangan lebih dari total tagihan
+      await updateDoc(doc(db, "students", studentDoc.id), { totalBayar: newValue });
+    } catch (e) {
+      console.error("Gagal menyesuaikan totalBayar siswa:", e);
+    }
+  };
+
   // === DELETE ===
-  const confirmDelete = (id) => {
+  const confirmDelete = (item) => {
     if (pinBelumDiatur) {
       alert('⚠️ PIN Owner belum diatur. Atur PIN dulu di halaman Pengaturan sebelum bisa menghapus transaksi.');
       return;
     }
-    setDeleteTarget(id);
+    setDeleteTarget(item);
     setPinInput('');
     setShowPinModal(true);
   };
@@ -141,10 +165,19 @@ const TransactionHistory = () => {
     if (!deleteTarget) return;
     
     try {
-      await deleteDoc(doc(db, "finance_logs", deleteTarget));
+      await deleteDoc(doc(db, "finance_logs", deleteTarget.id));
+
+      // 🔥 Kalau transaksi yang dihapus ternyata pembayaran siswa (ada
+      // studentId & tipenya Pemasukan), kurangi lagi totalBayar siswa itu --
+      // biar gak keliatan siswa "udah bayar" padahal catatannya sudah
+      // dihapus dari buku besar.
+      if (deleteTarget.studentId && deleteTarget.type === 'Pemasukan') {
+        await adjustStudentTotalBayar(deleteTarget.studentId, -parseInt(deleteTarget.amount || 0));
+      }
+
       setShowPinModal(false);
       setDeleteTarget(null);
-      alert('✅ Transaksi berhasil dihapus!');
+      alert('✅ Transaksi berhasil dihapus!' + (deleteTarget.studentId ? ' Data pembayaran siswa ikut disesuaikan.' : ''));
     } catch (e) {
       alert('❌ Gagal menghapus: ' + e.message);
     }
@@ -157,7 +190,10 @@ const TransactionHistory = () => {
       return;
     }
     setPinInput('');
-    setEditData({...item});
+    // 🔥 Simpan nominal & tipe ASLI (sebelum diubah admin) di field terpisah,
+    // biar nanti pas disimpan bisa dihitung SELISIHNYA buat disesuaikan ke
+    // totalBayar siswa (bukan cuma menimpa dengan nilai baru begitu saja).
+    setEditData({...item, _originalAmount: parseInt(item.amount || 0), _originalType: item.type});
     setShowEdit(true);
   };
 
@@ -168,16 +204,34 @@ const TransactionHistory = () => {
       return;
     }
     try {
+      const newAmount = parseInt(editData.amount);
       await updateDoc(doc(db, "finance_logs", editData.id), {
         date: editData.date,
         type: editData.type,
         category: editData.category,
-        amount: parseInt(editData.amount),
+        amount: newAmount,
         method: editData.method,
         note: editData.note
       });
+
+      // 🔥 FIX INTI: sebelumnya edit di sini CUMA update dokumen finance_logs
+      // itu sendiri -- totalBayar siswa yang terhubung gak pernah ikut
+      // disesuaikan, jadi begitu admin ngoreksi salah hitung, angka di buku
+      // besar keuangan dan angka "sisa tagihan" di halaman siswa jadi beda
+      // sendiri-sendiri. Sekarang: kalau transaksi ini punya `studentId` dan
+      // tipenya Pemasukan (pembayaran), selisih antara nominal LAMA dan BARU
+      // otomatis ditambahkan/dikurangkan ke totalBayar siswa itu juga.
+      let pesanTambahan = '';
+      if (editData.studentId && editData.type === 'Pemasukan' && editData._originalType === 'Pemasukan') {
+        const delta = newAmount - editData._originalAmount;
+        if (delta !== 0) {
+          await adjustStudentTotalBayar(editData.studentId, delta);
+          pesanTambahan = ' Data pembayaran siswa ikut disesuaikan.';
+        }
+      }
+
       setShowEdit(false);
-      alert('✅ Transaksi berhasil diupdate!');
+      alert('✅ Transaksi berhasil diupdate!' + pesanTambahan);
     } catch (err) {
       alert('❌ Gagal: ' + err.message);
     }
@@ -420,7 +474,7 @@ const TransactionHistory = () => {
                         <button onClick={() => openEdit(t)} style={styles.btnIcon('#f59e0b')} title="Edit">
                           <Edit3 size={13} />
                         </button>
-                        <button onClick={() => confirmDelete(t.id)} style={styles.btnIcon('#ef4444')} title="Hapus">
+                        <button onClick={() => confirmDelete(t)} style={styles.btnIcon('#ef4444')} title="Hapus">
                           <Trash2 size={13} />
                         </button>
                       </div>
@@ -442,6 +496,11 @@ const TransactionHistory = () => {
               <button onClick={() => setShowEdit(false)} style={styles.closeBtn}><X size={18} /></button>
             </div>
             <form onSubmit={handleEdit} style={{display: 'flex', flexDirection: 'column', gap: 10}}>
+              {editData.studentId && (
+                <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af', padding: '8px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600 }}>
+                  🔗 Transaksi ini terhubung ke siswa: <b>{editData.namaSiswa || editData.studentId}</b>. Kalau nominal diubah, data pembayaran siswa ikut disesuaikan otomatis.
+                </div>
+              )}
               <input type="date" value={editData.date} onChange={e => setEditData(p => ({...p, date: e.target.value}))} style={styles.modalInput} />
               <select value={editData.type} onChange={e => setEditData(p => ({...p, type: e.target.value}))} style={styles.modalInput}>
                 <option value="Pemasukan">💰 Pemasukan</option>
