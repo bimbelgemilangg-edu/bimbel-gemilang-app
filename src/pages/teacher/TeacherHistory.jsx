@@ -45,6 +45,19 @@ const TeacherHistory = () => {
     fetchLogs();
   }, [guru, selectedMonth]);
 
+  // 🔥 PENTING: nominal/gaji TIDAK BOLEH pernah sampai ke sisi guru dalam
+  // bentuk apapun -- bukan cuma "tidak ditampilkan di tabel", tapi memang
+  // tidak boleh ada di data yang dikirim ke browser guru sama sekali.
+  // Kalau cuma "tidak dirender", field itu tetap ada di React state dan
+  // bisa dilihat siapa saja yang buka DevTools browser. Fungsi ini
+  // membuang field `nominal` SEBELUM data masuk ke state, di titik paling
+  // awal setelah data diambil dari Firestore -- berapapun nominalnya,
+  // gak pernah nyampe ke sisi guru.
+  const stripNominal = (docs) => docs.map(d => {
+    const { nominal, ...rest } = d.data();
+    return { id: d.id, ...rest };
+  });
+
   // 🔥 FETCH LOGS - FIXED: Pakai guruId
   const fetchLogs = async () => {
     setLoading(true);
@@ -61,7 +74,7 @@ const TeacherHistory = () => {
           orderBy("tanggal", "desc")
         );
         const snap = await getDocs(q);
-        data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        data = stripNominal(snap.docs);
       }
       
       // 🔥 FALLBACK: Jika tidak ada, coba dengan nama
@@ -72,7 +85,7 @@ const TeacherHistory = () => {
           orderBy("tanggal", "desc")
         );
         const snapFallback = await getDocs(qFallback);
-        data = snapFallback.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        data = stripNominal(snapFallback.docs);
       }
       
       // Filter berdasarkan bulan
@@ -93,7 +106,7 @@ const TeacherHistory = () => {
           where("teacherId", "==", guru.guruId || guru.id)
         );
         const snap = await getDocs(q);
-        let data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        let data = stripNominal(snap.docs);
         data.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
         const filtered = data.filter(item => {
           if (!item.tanggal) return false;

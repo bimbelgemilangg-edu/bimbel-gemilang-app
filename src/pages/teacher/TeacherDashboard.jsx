@@ -237,7 +237,15 @@ const TeacherDashboard = () => {
         limit(30)
       );
       const snapLogs = await getDocs(qLogs);
-      const logs = snapLogs.docs.map(d => ({ id: d.id, ...d.data() }));
+      // 🔥 PENTING: nominal/gaji TIDAK BOLEH pernah sampai ke sisi guru
+      // dalam bentuk apapun -- dibuang di sini, sebelum masuk ke state
+      // React, biar gak ada di memori browser guru sama sekali (bukan
+      // cuma "tidak dirender"). Field lain (durasiJam, siswaHadir, dst)
+      // tetap dipakai untuk hitung statistik kehadiran di dashboard ini.
+      const logs = snapLogs.docs.map(d => {
+        const { nominal, ...rest } = d.data();
+        return { id: d.id, ...rest };
+      });
       
       let attendanceRate = 0;
       if (logs.length > 0) {

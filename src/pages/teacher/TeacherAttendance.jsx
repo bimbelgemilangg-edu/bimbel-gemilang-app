@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../../firebase';
 import { 
   collection, query, where, getDocs, doc, getDoc, addDoc, 
-  onSnapshot, updateDoc, serverTimestamp 
+  onSnapshot, updateDoc, serverTimestamp, setDoc
 } from "firebase/firestore";
 import { 
   Calendar, Clock, MapPin, Users, BookOpen, 
@@ -29,6 +29,7 @@ const TeacherAttendance = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [attendanceList, setAttendanceList] = useState([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -49,27 +50,33 @@ const TeacherAttendance = () => {
     }
   }, []);
 
-  // Fetch jadwal hari ini - 🔥 FIXED: Pakai guruId
+  // Fetch jadwal hari ini
   useEffect(() => {
     if (!guru?.guruId && !guru?.id) return;
 
     const dateStr = getDateStr(selectedDate);
     setLoading(true);
 
-    // 🔥 Gunakan guruId atau id
     const teacherId = guru.guruId || guru.id;
-    
-    // 🔥 Coba query dengan guruId
+
+    // 🔥 FIX BUG: sebelumnya query utama di sini nyari field "guruId" di
+    // dokumen jadwal_bimbel -- padahal SchedulePage.jsx (tempat jadwal
+    // dibuat) TIDAK PERNAH menulis field bernama "guruId" ke jadwal_bimbel,
+    // yang ditulis adalah field "teacherId". Karena field yang dicari itu
+    // memang tidak pernah ada, query ini SELALU 0 hasil, dan kode selalu
+    // "terpaksa" lewat jalur fallback (cari pakai nama guru) tanpa pernah
+    // benar-benar lewat jalur utamanya. Sekarang dibetulkan pakai nama
+    // field yang sebenarnya.
     let q = query(
       collection(db, "jadwal_bimbel"),
-      where("guruId", "==", teacherId),
+      where("teacherId", "==", teacherId),
       where("dateStr", "==", dateStr)
     );
 
     const unsubscribe = onSnapshot(q, (snap) => {
       let data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       
-      // 🔥 FALLBACK: Jika tidak ada, coba dengan teacherName
+      // FALLBACK: Jika tidak ada, coba dengan teacherName
       if (data.length === 0 && guru.nama) {
         const qFallback = query(
           collection(db, "jadwal_bimbel"),
@@ -77,18 +84,12 @@ const TeacherAttendance = () => {
           where("dateStr", "==", dateStr)
         );
         
-        // Kita perlu unsubscribe dulu
         unsubscribe();
         
         const unsubFallback = onSnapshot(qFallback, (snap2) => {
           const fallbackData = snap2.docs.map(d => ({ id: d.id, ...d.data() }));
           setSchedules(fallbackData);
-          
-          // Load attendance untuk setiap jadwal
-          fallbackData.forEach(s => {
-            loadAttendance(s.id);
-          });
-          
+          fallbackData.forEach(s => loadAttendance(s.id, dateStr));
           setLoading(false);
         });
         
@@ -96,19 +97,13 @@ const TeacherAttendance = () => {
       }
       
       setSchedules(data);
-      
-      // Load attendance untuk setiap jadwal
-      data.forEach(s => {
-        loadAttendance(s.id);
-      });
-      
+      data.forEach(s => loadAttendance(s.id, dateStr));
       setLoading(false);
     }, (error) => {
       console.error("Error fetching schedules:", error);
       setLoading(false);
     });
 
-    // Fetch daily code
     fetchDailyCode(dateStr);
 
     return () => unsubscribe();
@@ -128,17 +123,30 @@ const TeacherAttendance = () => {
     }
   };
 
-  const loadAttendance = async (scheduleId) => {
+  // 🔥 FIX BUG BESAR: sebelumnya fungsi ini baca dari field `attendance_list`
+  // DI DALAM dokumen jadwal_bimbel -- tempat yang TIDAK PERNAH dibaca oleh
+  // halaman lain manapun (bukan dashboard siswa, bukan halaman absensi siswa,
+  // bukan admin). Padahal ClassSession.jsx (yang "Mulai Kelas", jalur yang
+  // BENERAN dipakai guru) menulis ke collection "attendance" yang TERPISAH.
+  // Akibatnya: dua sistem absensi berjalan sendiri-sendiri tanpa saling
+  // kenal. Sekarang halaman ini disatukan -- baca dari collection
+  // "attendance" yang sama, difilter berdasarkan scheduleId & tanggal.
+  const loadAttendance = async (scheduleId, dateStr) => {
     try {
-      const docRef = doc(db, "jadwal_bimbel", scheduleId);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setAttendanceLogs(prev => ({
-          ...prev,
-          [scheduleId]: data.attendance_list || []
-        }));
-      }
+      const q = query(
+        collection(db, "attendance"),
+        where("scheduleId", "==", scheduleId),
+        where("date", "==", dateStr)
+      );
+      const snap = await getDocs(q);
+      const data = snap.docs.map(d => ({
+        studentId: d.data().studentId,
+        nama: d.data().studentName,
+        status: d.data().status,
+        checkInTime: d.data().timestamp?.toDate?.()?.toLocaleTimeString?.() || null,
+        note: d.data().keterangan || '',
+      }));
+      setAttendanceLogs(prev => ({ ...prev, [scheduleId]: data }));
     } catch (e) {
       console.error("Error loading attendance:", e);
     }
@@ -159,7 +167,7 @@ const TeacherAttendance = () => {
     // Merge student data with attendance status
     const merged = students.map(student => {
       const existing = attendance.find(a => 
-        a.studentId === student.studentId || a.id === student.id
+        a.studentId === student.studentId || a.studentId === student.id
       );
       return {
         ...student,
@@ -190,31 +198,45 @@ const TeacherAttendance = () => {
     setAttendanceList(updated);
   };
 
+  // 🔥 FIX BUG BESAR: sebelumnya nulis ke field attendance_list di dalam
+  // jadwal_bimbel (terpisah dari sistem yang beneran dipakai). Sekarang
+  // nulis ke collection "attendance" yang sama, pakai skema ID dokumen &
+  // struktur field yang PERSIS SAMA dengan ClassSession.jsx (ID dokumen
+  // deterministik: studentId + tanggal + scheduleId), supaya kalau siswa
+  // sudah lebih dulu absen sendiri lewat scan QR, catatan ini nge-UPDATE
+  // data yang sama (bukan bikin data duplikat/konflik).
   const handleSaveAttendance = async () => {
     if (!selectedSchedule) return;
-    
+    setSaving(true);
     try {
-      // Filter hanya yang sudah diisi
-      const attendanceData = attendanceList
-        .filter(s => s.status !== 'Belum')
-        .map(s => ({
-          studentId: s.studentId || s.id,
-          nama: s.nama,
+      const dateStr = getDateStr(selectedDate);
+      const teacherId = guru?.guruId || guru?.id;
+
+      const toSave = attendanceList.filter(s => s.status !== 'Belum');
+
+      await Promise.all(toSave.map(s => {
+        const studentDocId = s.id || s.studentId;
+        const absenId = studentDocId + '_' + dateStr + '_' + selectedSchedule.id;
+        return setDoc(doc(db, "attendance", absenId), {
+          studentId: studentDocId,
+          studentName: s.nama || 'Siswa',
+          program: s.program || selectedSchedule.program || 'Reguler',
+          kelasSekolah: s.kelas || s.kelasSekolah || '-',
+          teacherId: teacherId || '',
+          teacherName: guru?.nama || '',
+          date: dateStr,
+          tanggal: dateStr,
+          timestamp: serverTimestamp(),
           status: s.status,
-          checkInTime: s.checkInTime || null,
-          note: s.note || ''
-        }));
-
-      await updateDoc(doc(db, "jadwal_bimbel", selectedSchedule.id), {
-        attendance_list: attendanceData,
-        updatedAt: serverTimestamp()
-      });
-
-      // Update local state
-      setAttendanceLogs(prev => ({
-        ...prev,
-        [selectedSchedule.id]: attendanceData
+          keterangan: s.note || 'Input manual guru (Absensi Siswa)',
+          mapel: selectedSchedule.title || selectedSchedule.mapelName || 'Umum',
+          scheduleId: selectedSchedule.id || '',
+          planet: selectedSchedule.planet || 'Ruang Umum',
+        }, { merge: true });
       }));
+
+      // Refresh tampilan dari collection attendance (sumber kebenaran yang sama)
+      await loadAttendance(selectedSchedule.id, dateStr);
 
       alert("✅ Absensi berhasil disimpan!");
       setShowModal(false);
@@ -222,6 +244,7 @@ const TeacherAttendance = () => {
       console.error("Error saving attendance:", e);
       alert("❌ Gagal menyimpan absensi: " + e.message);
     }
+    setSaving(false);
   };
 
   const handleDateChange = (days) => {
@@ -448,8 +471,8 @@ const TeacherAttendance = () => {
               <button onClick={() => setShowModal(false)} style={styles.btnCancel}>
                 Batal
               </button>
-              <button onClick={handleSaveAttendance} style={styles.btnSave}>
-                <CheckCircle size={16} /> Simpan Absensi
+              <button onClick={handleSaveAttendance} disabled={saving} style={{...styles.btnSave, opacity: saving ? 0.6 : 1}}>
+                <CheckCircle size={16} /> {saving ? 'Menyimpan...' : 'Simpan Absensi'}
               </button>
             </div>
           </div>
