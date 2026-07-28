@@ -241,8 +241,26 @@ const TeacherDashboard = () => {
       
       let attendanceRate = 0;
       if (logs.length > 0) {
-        const totalHadir = logs.reduce((acc, l) => acc + (l.siswaHadir || 0), 0);
-        const totalSiswa = logs.reduce((acc, l) => acc + (l.siswa_total || l.siswaHadir || 0), 0);
+        // 🔥 FIX BUG LANJUTAN: field `siswa_total` yang tadinya dijadikan
+        // acuan penyebut TERNYATA tidak pernah ditulis sama sekali oleh
+        // ClassSession.jsx ke collection teacher_logs (sudah dicek lewat
+        // ClassSession.jsx). Daripada persentase Kehadiran jadi 100% palsu
+        // (kode lama) ATAU 0% terus-terusan (kalau field itu di-skip
+        // begitu saja), sekarang total siswa SEBENARNYA dihitung silang
+        // dari data jadwal (`allSchedules`, sudah diambil di atas) lewat
+        // `jadwalId` -- data yang BENERAN ada di database, bukan field
+        // kosong yang gak pernah diisi.
+        const scheduleTotalById = new Map();
+        allSchedules.forEach(s => scheduleTotalById.set(s.id, s.students?.length || 0));
+
+        let totalHadir = 0, totalSiswa = 0;
+        logs.forEach(l => {
+          const total = scheduleTotalById.get(l.jadwalId);
+          if (total) {
+            totalHadir += (l.siswaHadir || 0);
+            totalSiswa += total;
+          }
+        });
         attendanceRate = totalSiswa > 0 ? Math.round((totalHadir / totalSiswa) * 100) : 0;
       }
       
@@ -268,15 +286,34 @@ const TeacherDashboard = () => {
       );
       
       // ===== NOTIFICATIONS =====
-      const qNotif = query(
-        collection(db, "notifications"),
-        where("userId", "==", teacherId),
-        where("userType", "==", "teacher"),
-        orderBy("createdAt", "desc"),
-        limit(5)
-      );
-      const snapNotif = await getDocs(qNotif);
-      const notifData = snapNotif.docs.map(d => ({ id: d.id, ...d.data() }));
+      // 🔥 CATATAN: sistem notifikasi yang sudah dibangun untuk siswa
+      // (notifications.js) menyimpan field `recipientId`/`recipientType`,
+      // BUKAN `userId`/`userType` yang dipakai query di bawah ini. Kalau
+      // fungsi pengirim notifikasi guru (notifyTeachers) ternyata memakai
+      // skema yang sama (recipientId/recipientType) -- yang paling
+      // mungkin, biar konsisten satu sistem -- maka query `userId` di
+      // bawah ini TIDAK AKAN PERNAH menemukan apa-apa. Sekarang dicari
+      // pakai KEDUA kemungkinan skema sekaligus dan digabung, biar aman
+      // dari kemungkinan itu tanpa perlu menebak-nebak.
+      const [snapNotifByUserId, snapNotifByRecipientId] = await Promise.all([
+        getDocs(query(
+          collection(db, "notifications"),
+          where("userId", "==", teacherId),
+          where("userType", "==", "teacher"),
+          limit(10)
+        )).catch(() => ({ docs: [] })),
+        getDocs(query(
+          collection(db, "notifications"),
+          where("recipientId", "==", teacherId),
+          where("recipientType", "==", "teacher"),
+          limit(10)
+        )).catch(() => ({ docs: [] })),
+      ]);
+      const notifMerged = new Map();
+      [...snapNotifByUserId.docs, ...snapNotifByRecipientId.docs].forEach(d => notifMerged.set(d.id, { id: d.id, ...d.data() }));
+      const notifData = Array.from(notifMerged.values())
+        .sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0))
+        .slice(0, 5);
       setNotifications(notifData);
       
     } catch (e) {
@@ -289,29 +326,47 @@ const TeacherDashboard = () => {
 
   // ===== MAIN EFFECT =====
   useEffect(() => {
+    // 🔥 FIX BUG SERIUS: sebelumnya `return () => unsubscribe()` ada di
+    // DALAM fungsi async `init()`, bukan langsung di dalam callback
+    // useEffect. React HANYA membaca nilai yang di-return LANGSUNG dari
+    // callback useEffect untuk dijadikan fungsi cleanup -- nilai yang
+    // di-return dari dalam fungsi async yang dipanggil di dalamnya itu
+    // TIDAK PERNAH sampai ke React. Akibatnya listener `onSnapshot` di
+    // sini TIDAK PERNAH benar-benar berhenti (unsubscribe), walau
+    // komponennya sudah dibongkar/ditinggalkan -- listener nyangkut terus
+    // (memory leak), dan kalau komponen ini sempat ke-mount ulang, listener
+    // lama & baru numpuk sekaligus jalan bareng.
+    let unsubscribe = null;
+    let cancelled = false;
+
     const init = async () => {
       const teacher = await fetchTeacherProfile();
-      if (teacher) {
+      if (teacher && !cancelled) {
         await fetchData(teacher);
-        
+        if (cancelled) return;
+
         const todayStr = new Date().toISOString().split('T')[0];
         const q = query(
           collection(db, "jadwal_bimbel"),
           where("teacherName", "==", teacher.nama.trim()),
           where("dateStr", "==", todayStr)
         );
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+        unsubscribe = onSnapshot(q, (snapshot) => {
           const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
           data.sort((a, b) => (a.start || '').localeCompare(b.start || ''));
           setTodaySchedules(data);
         }, (error) => {
           console.error("Real-time error:", error);
         });
-        
-        return () => unsubscribe();
       }
     };
     init();
+
+    // Sekarang cleanup ini BENERAN dipanggil React saat komponen dibongkar.
+    return () => {
+      cancelled = true;
+      if (unsubscribe) unsubscribe();
+    };
   }, [fetchTeacherProfile, fetchData]);
 
   // ===== HANDLERS =====

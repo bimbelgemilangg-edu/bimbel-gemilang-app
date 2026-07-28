@@ -5,7 +5,6 @@ import { db } from '../../firebase';
 import { 
   collection, query, where, getDocs, doc, getDoc, onSnapshot 
 } from "firebase/firestore";
-import TeacherLayout from './TeacherLayout';
 import { 
   Calendar, ChevronLeft, ChevronRight, Clock, MapPin, 
   Users, BookOpen, Flag, AlertCircle, CheckCircle, XCircle,
@@ -614,124 +613,125 @@ const TeacherSchedule = () => {
     );
   };
 
-  // ============================================================
-  // MAIN RENDER
-  // ============================================================
+  // 🔥 FIX BUG BESAR (pola yang sama persis dengan bug sidebar dobel yang
+  // ditemukan di banyak halaman siswa sebelumnya): komponen ini sebelumnya
+  // membungkus dirinya sendiri dengan <TeacherLayout>, padahal di App.jsx
+  // rute "/guru/schedule" SUDAH dibungkus <TeacherLayout> juga. Akibatnya
+  // sidebar & shell halaman guru ke-render DUA KALI setiap kali halaman
+  // Jadwal dibuka. Sekarang komponen ini hanya me-render kontennya sendiri.
   return (
-    <TeacherLayout>
-      <div style={styles.container}>
-        
-        {/* HEADER */}
-        <div style={styles.header}>
-          <div style={styles.headerLeft}>
-            <h2 style={styles.pageTitle}>
-              <Calendar size={22} color="#3b82f6" /> Kalender Akademik
-            </h2>
-            <p style={styles.headerSub}>
-              {teacherData?.nama ? `Halo, ${teacherData.nama} 👋` : 'Selamat datang di Kalender Akademik'}
-            </p>
-          </div>
-          <div style={styles.headerRight}>
-            <div style={styles.monthNav}>
-              <button 
-                onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))}
-                style={styles.navBtn}
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <span style={styles.monthLabel}>
-                {MONTH_NAMES[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-              </span>
-              <button 
-                onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}
-                style={styles.navBtn}
-              >
-                <ChevronRight size={18} />
-              </button>
-            </div>
-            <button onClick={() => {
-              setCurrentMonth(new Date());
-              setSelectedDate(new Date());
-              setViewMode('daily');
-            }} style={styles.todayBtn}>
-              Hari Ini
+    <div style={styles.container}>
+      
+      {/* HEADER */}
+      <div style={styles.header}>
+        <div style={styles.headerLeft}>
+          <h2 style={styles.pageTitle}>
+            <Calendar size={22} color="#3b82f6" /> Kalender Akademik
+          </h2>
+          <p style={styles.headerSub}>
+            {teacherData?.nama ? `Halo, ${teacherData.nama} 👋` : 'Selamat datang di Kalender Akademik'}
+          </p>
+        </div>
+        <div style={styles.headerRight}>
+          <div style={styles.monthNav}>
+            <button 
+              onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))}
+              style={styles.navBtn}
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <span style={styles.monthLabel}>
+              {MONTH_NAMES[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+            </span>
+            <button 
+              onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}
+              style={styles.navBtn}
+            >
+              <ChevronRight size={18} />
             </button>
           </div>
-        </div>
-
-        {/* STATS - hanya tampil jika ada data guru */}
-        {teacherData?.nama && (
-          <div style={styles.statsRow}>
-            <div style={styles.statCard}>
-              <div style={styles.statIcon}><BookOpen size={18} color="#3b82f6" /></div>
-              <div>
-                <div style={styles.statValue}>{teacherStats.totalClasses}</div>
-                <div style={styles.statLabel}>Total Kelas</div>
-              </div>
-            </div>
-            <div style={styles.statCard}>
-              <div style={styles.statIcon}><Users size={18} color="#8b5cf6" /></div>
-              <div>
-                <div style={styles.statValue}>{teacherStats.totalStudents}</div>
-                <div style={styles.statLabel}>Total Siswa</div>
-              </div>
-            </div>
-            <div style={styles.statCard}>
-              <div style={styles.statIcon}><Clock size={18} color="#f59e0b" /></div>
-              <div>
-                <div style={styles.statValue}>{teacherStats.todayClasses}</div>
-                <div style={styles.statLabel}>Hari Ini</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* VIEW TOGGLE */}
-        <div style={styles.viewToggle}>
-          <button 
-            onClick={() => setViewMode('monthly')} 
-            style={styles.viewToggleBtn(viewMode === 'monthly')}
-          >
-            <Layers size={14} /> Bulanan
-          </button>
-          <button 
-            onClick={() => setViewMode('daily')} 
-            style={styles.viewToggleBtn(viewMode === 'daily')}
-          >
-            <Calendar size={14} /> Harian
+          <button onClick={() => {
+            setCurrentMonth(new Date());
+            setSelectedDate(new Date());
+            setViewMode('daily');
+          }} style={styles.todayBtn}>
+            Hari Ini
           </button>
         </div>
-
-        {/* MAIN CONTENT */}
-        <div style={styles.content}>
-          {viewMode === 'monthly' ? renderMonthlyView() : renderDailyView()}
-        </div>
-
-        {/* LEGEND */}
-        <div style={styles.legend}>
-          <div style={styles.legendItem}>
-            <div style={{...styles.legendDot, background: '#3b82f6'}}></div>
-            <span>Hari Ini</span>
-          </div>
-          <div style={styles.legendItem}>
-            <div style={{...styles.legendDot, background: '#f59e0b'}}></div>
-            <span>Event Akademik</span>
-          </div>
-          <div style={styles.legendItem}>
-            <div style={{...styles.legendDot, background: '#ef4444'}}></div>
-            <span>Libur / Minggu</span>
-          </div>
-          <div style={styles.legendItem}>
-            <div style={{...styles.legendDot, background: '#22c55e'}}></div>
-            <span>Ada Jadwal</span>
-          </div>
-        </div>
-
-        {/* DETAIL MODAL */}
-        {renderDetailModal()}
-
       </div>
-    </TeacherLayout>
+
+      {/* STATS - hanya tampil jika ada data guru */}
+      {teacherData?.nama && (
+        <div style={styles.statsRow}>
+          <div style={styles.statCard}>
+            <div style={styles.statIcon}><BookOpen size={18} color="#3b82f6" /></div>
+            <div>
+              <div style={styles.statValue}>{teacherStats.totalClasses}</div>
+              <div style={styles.statLabel}>Total Kelas</div>
+            </div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statIcon}><Users size={18} color="#8b5cf6" /></div>
+            <div>
+              <div style={styles.statValue}>{teacherStats.totalStudents}</div>
+              <div style={styles.statLabel}>Total Siswa</div>
+            </div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statIcon}><Clock size={18} color="#f59e0b" /></div>
+            <div>
+              <div style={styles.statValue}>{teacherStats.todayClasses}</div>
+              <div style={styles.statLabel}>Hari Ini</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW TOGGLE */}
+      <div style={styles.viewToggle}>
+        <button 
+          onClick={() => setViewMode('monthly')} 
+          style={styles.viewToggleBtn(viewMode === 'monthly')}
+        >
+          <Layers size={14} /> Bulanan
+        </button>
+        <button 
+          onClick={() => setViewMode('daily')} 
+          style={styles.viewToggleBtn(viewMode === 'daily')}
+        >
+          <Calendar size={14} /> Harian
+        </button>
+      </div>
+
+      {/* MAIN CONTENT */}
+      <div style={styles.content}>
+        {viewMode === 'monthly' ? renderMonthlyView() : renderDailyView()}
+      </div>
+
+      {/* LEGEND */}
+      <div style={styles.legend}>
+        <div style={styles.legendItem}>
+          <div style={{...styles.legendDot, background: '#3b82f6'}}></div>
+          <span>Hari Ini</span>
+        </div>
+        <div style={styles.legendItem}>
+          <div style={{...styles.legendDot, background: '#f59e0b'}}></div>
+          <span>Event Akademik</span>
+        </div>
+        <div style={styles.legendItem}>
+          <div style={{...styles.legendDot, background: '#ef4444'}}></div>
+          <span>Libur / Minggu</span>
+        </div>
+        <div style={styles.legendItem}>
+          <div style={{...styles.legendDot, background: '#22c55e'}}></div>
+          <span>Ada Jadwal</span>
+        </div>
+      </div>
+
+      {/* DETAIL MODAL */}
+      {renderDetailModal()}
+
+    </div>
   );
 };
 
