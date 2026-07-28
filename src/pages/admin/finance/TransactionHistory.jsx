@@ -36,10 +36,26 @@ const TransactionHistory = () => {
   const [pinInput, setPinInput] = useState('');
   const [showPinModal, setShowPinModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  // 🔥 BARU: penanda kalau PIN belum pernah diatur admin sama sekali
+  const [pinBelumDiatur, setPinBelumDiatur] = useState(false);
 
   useEffect(() => {
     getDoc(doc(db, "settings", "global_config")).then(snap => {
-      if (snap.exists()) setOwnerPin(snap.data().ownerPin || '2003');
+      // 🔥 FIX KEAMANAN: sebelumnya kalau admin belum pernah mengatur PIN,
+      // sistem diam-diam pakai PIN default "2003" yang tertulis langsung
+      // di kode JavaScript sisi client -- gampang ditemukan siapa saja
+      // yang buka DevTools browser, sehingga proteksi hapus/edit transaksi
+      // keuangan bisa dilewati begitu saja. Sekarang: kalau PIN belum
+      // pernah diatur, TIDAK ADA PIN default yang dipakai -- hapus/edit
+      // akan diblokir sepenuhnya sampai admin mengatur PIN asli di
+      // halaman Pengaturan.
+      if (snap.exists() && snap.data().ownerPin) {
+        setOwnerPin(snap.data().ownerPin);
+        setPinBelumDiatur(false);
+      } else {
+        setOwnerPin('');
+        setPinBelumDiatur(true);
+      }
     });
 
     // 🔥 ORDER BY date DESC, createdAt DESC
@@ -81,20 +97,37 @@ const TransactionHistory = () => {
     setFiltered(result);
   }, [transactions, filterType, filterMethod, filterMode, filterMonth, dateRange, searchTerm]);
 
-  // === TOTALS ===
+  // === TOTALS (mengikuti filter -- ini memang seharusnya per-periode) ===
   const totalMasuk = filtered.filter(t => t.type === 'Pemasukan').reduce((s, t) => s + (parseInt(t.amount) || 0), 0);
   const totalKeluar = filtered.filter(t => t.type === 'Pengeluaran').reduce((s, t) => s + (parseInt(t.amount) || 0), 0);
-  const saldoTunai = filtered.reduce((s, t) => {
+
+  // 🔥 FIX BUG PENTING: "Saldo Tunai/Bank" SEBELUMNYA dihitung dari data
+  // yang SUDAH KEFILTER (bulan/rentang tanggal yang lagi dipilih admin).
+  // Padahal kata "Saldo" secara alami berarti "sisa kas yang BENERAN ADA
+  // sekarang" -- bukan "jumlah bersih transaksi dalam periode yang
+  // kebetulan lagi difilter". Kalau admin filter "bulan ini" doang, angka
+  // yang muncul cuma arus kas bulan itu, BUKAN kas fisik yang sesungguhnya
+  // ada -- bisa bikin admin salah kira jumlah uang kas/bank yang dimiliki.
+  // Sekarang "Saldo" SELALU dihitung dari SELURUH riwayat transaksi sejak
+  // awal (`transactions`, bukan `filtered`), supaya angkanya selalu
+  // mencerminkan kas yang beneran ada, apapun filter yang sedang aktif.
+  const saldoTunai = transactions.reduce((s, t) => {
     if (t.method !== 'Tunai') return s;
     return t.type === 'Pemasukan' ? s + (parseInt(t.amount) || 0) : s - (parseInt(t.amount) || 0);
   }, 0);
-  const saldoBank = filtered.reduce((s, t) => {
+  const saldoBank = transactions.reduce((s, t) => {
     if (t.method !== 'Transfer') return s;
     return t.type === 'Pemasukan' ? s + (parseInt(t.amount) || 0) : s - (parseInt(t.amount) || 0);
   }, 0);
+  // Filter sedang aktif atau tidak, dipakai untuk memberi keterangan di UI
+  const sedangDifilter = filterMode !== 'semua' || filterType !== 'Semua' || filterMethod !== 'Semua' || !!searchTerm;
 
   // === DELETE ===
   const confirmDelete = (id) => {
+    if (pinBelumDiatur) {
+      alert('⚠️ PIN Owner belum diatur. Atur PIN dulu di halaman Pengaturan sebelum bisa menghapus transaksi.');
+      return;
+    }
     setDeleteTarget(id);
     setPinInput('');
     setShowPinModal(true);
@@ -119,6 +152,10 @@ const TransactionHistory = () => {
 
   // === EDIT ===
   const openEdit = (item) => {
+    if (pinBelumDiatur) {
+      alert('⚠️ PIN Owner belum diatur. Atur PIN dulu di halaman Pengaturan sebelum bisa mengedit transaksi.');
+      return;
+    }
     setPinInput('');
     setEditData({...item});
     setShowEdit(true);
@@ -300,21 +337,26 @@ const TransactionHistory = () => {
       </div>
 
       {/* === SUMMARY === */}
+      {pinBelumDiatur && (
+        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', padding: '10px 14px', borderRadius: 10, marginBottom: 12, fontSize: 12, fontWeight: 600 }}>
+          ⚠️ PIN Owner belum diatur — hapus & edit transaksi diblokir sampai PIN diatur di halaman Pengaturan.
+        </div>
+      )}
       <div style={styles.summaryRow}>
         <div style={styles.summaryCard('#f0fdf4', '#10b981')}>
-          <span>Total Masuk</span>
+          <span>Total Masuk {sedangDifilter && '(periode ini)'}</span>
           <strong>Rp {totalMasuk.toLocaleString()}</strong>
         </div>
         <div style={styles.summaryCard('#fef2f2', '#ef4444')}>
-          <span>Total Keluar</span>
+          <span>Total Keluar {sedangDifilter && '(periode ini)'}</span>
           <strong>Rp {totalKeluar.toLocaleString()}</strong>
         </div>
         <div style={styles.summaryCard('#fff7ed', '#f97316')}>
-          <span>💵 Saldo Tunai</span>
+          <span>💵 Saldo Tunai (keseluruhan)</span>
           <strong>Rp {saldoTunai.toLocaleString()}</strong>
         </div>
         <div style={styles.summaryCard('#e0e7ff', '#3b82f6')}>
-          <span>💳 Saldo Bank</span>
+          <span>💳 Saldo Bank (keseluruhan)</span>
           <strong>Rp {saldoBank.toLocaleString()}</strong>
         </div>
       </div>
