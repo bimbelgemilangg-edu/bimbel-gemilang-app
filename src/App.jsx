@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-
 
 // === LOGIN & PUBLIK ===
 import Login from './pages/Login';
+import LoginOwner from './pages/LoginOwner';
 import LoginGuru from './pages/LoginGuru';
 import LoginSiswa from './pages/LoginSiswa';
 import PublicBlog from './pages/PublicBlog';
@@ -90,6 +91,15 @@ const GuruRoute = ({ children }) => {
 const SiswaRoute = ({ children }) => {
   const isAuth = localStorage.getItem('isSiswaLoggedIn') === 'true';
   if (!isAuth) return <Navigate to="/login-siswa" replace />;
+  return children;
+};
+
+// 🔥 BARU: gerbang khusus Portal Owner, terpisah total dari AdminRoute --
+// walau seseorang sudah login sebagai Admin, itu TIDAK memberi akses ke
+// Owner Portal. Harus login sendiri lewat /login-owner.
+const OwnerRoute = ({ children }) => {
+  const isAuth = localStorage.getItem('isOwnerLoggedIn') === 'true';
+  if (!isAuth) return <Navigate to="/login-owner" replace />;
   return children;
 };
 
@@ -221,6 +231,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/login-guru" element={<LoginGuru />} />
         <Route path="/login-siswa" element={<LoginSiswa />} />
+        <Route path="/login-owner" element={<LoginOwner />} />
         <Route path="/aktivitas" element={<PublicBlog />} />
         <Route path="/pendaftaran" element={<PendaftaranOnline />} />
 
@@ -245,7 +256,12 @@ function App() {
         <Route path="/admin/grades/bulk" element={<AdminRoute><AdminBulkRaport /></AdminRoute>} />
         <Route path="/admin/daily-log" element={<AdminRoute><AdminDailyLog /></AdminRoute>} />
         <Route path="/admin/blog" element={<AdminRoute><ManageBlog /></AdminRoute>} />
-        <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
+        {/* 🔥 FIX: Settings sekarang digerbangi OwnerRoute (bukan
+            AdminRoute lagi) -- login sebagai Admin biasa TIDAK memberi
+            akses ke sini. Dua alamat mengarah ke halaman yang sama,
+            /owner/settings sebagai alamat utama Portal Owner. */}
+        <Route path="/admin/settings" element={<OwnerRoute><Settings /></OwnerRoute>} />
+        <Route path="/owner/settings" element={<OwnerRoute><Settings /></OwnerRoute>} />
 
         {/* ============================================================
             GURU - PAKAI TeacherLayout DARI FILE

@@ -30,10 +30,17 @@ const Login = () => {
       const docRef = doc(db, "settings", "global_config");
       const docSnap = await getDoc(docRef);
       
-      let correctPassword = "admin123";
-      if (docSnap.exists() && docSnap.data().adminPassword) {
-        correctPassword = docSnap.data().adminPassword;
+      // 🔥 FIX KEAMANAN: sebelumnya ada default "admin123" hardcoded di
+      // kode -- siapa aja yang baca source code bisa masuk pakai itu kalau
+      // adminPassword belum pernah diatur di database. Sekarang: kalau
+      // belum diatur, login diblokir total (bukan diam-diam nerima
+      // password yang gampang ditebak).
+      if (!docSnap.exists() || !docSnap.data().adminPassword) {
+        alert("⚠️ Password Admin belum diatur di sistem. Hubungi Owner untuk mengatur lewat Portal Owner.");
+        setLoading(false);
+        return;
       }
+      const correctPassword = docSnap.data().adminPassword;
 
       if (inputPassword === correctPassword) {
         localStorage.setItem("isLoggedIn", "true"); 
@@ -217,8 +224,14 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Admin Link */}
+            {/* Admin Link + Owner Link */}
             <div style={styles.adminArea}>
+              <button 
+                onClick={() => navigate('/login-owner')} 
+                style={{ ...styles.adminLink, color: isDark ? '#fbbf24' : '#7c3aed', marginRight: 18 }}
+              >
+                <Sparkles size={14} /> Portal Owner
+              </button>
               <button 
                 onClick={() => setIsAdminMode(true)} 
                 style={{ ...styles.adminLink, color: isDark ? '#f39c12' : '#1a237e' }}

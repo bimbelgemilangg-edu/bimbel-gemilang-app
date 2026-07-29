@@ -1,11 +1,18 @@
 // src/pages/admin/Settings.jsx
+// 🔥 HALAMAN INI SEKARANG JADI "OWNER PORTAL" -- sebelumnya nempel di
+// dalam layout Admin (SidebarAdmin) dan dikunci pakai layar PIN internal.
+// Sekarang gerbangnya udah dipindah ke level RUTE (App.jsx, lewat
+// OwnerRoute), diakses lewat login terpisah (/login-owner) -- jadi
+// halaman ini gak perlu lagi punya layar kunci sendiri, dan gak lagi
+// nebeng sidebar Admin.
 import React, { useState, useEffect } from 'react';
-import SidebarAdmin from '../../components/SidebarAdmin';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { Save, Lock, Info, Shield, Eye, EyeOff, Plus, Trash2 } from 'lucide-react';
+import { Save, Lock, Info, Shield, Eye, EyeOff, Plus, Trash2, Crown, LogOut } from 'lucide-react';
 
 const Settings = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -67,11 +74,14 @@ const Settings = () => {
   const [salaryRules, setSalaryRules] = useState(defaultSalaryRules);
 
   const [ownerPin, setOwnerPin] = useState(""); // 🔥 sengaja kosong (bukan "2003"), cuma keisi dari database
-  const [isLocked, setIsLocked] = useState(true);
-  const [inputPin, setInputPin] = useState("");
-  const [showPin, setShowPin] = useState(false);
   const [saving, setSaving] = useState(false);
   const [biayaPendaftaran, setBiayaPendaftaran] = useState(25000);
+  // 🔥 BARU: sebelumnya field adminPassword ini DIBACA oleh Login.jsx tapi
+  // GAK ADA TEMPAT SAMA SEKALI buat mengaturnya dari UI -- pasti diset
+  // manual langsung ke database. Sekarang Owner bisa atur dari sini.
+  const [adminPassword, setAdminPassword] = useState("");
+  const [showAdminPw, setShowAdminPw] = useState(false);
+  const [showOwnerPin, setShowOwnerPin] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -129,6 +139,7 @@ const Settings = () => {
           }
           if (data.ownerPin) setOwnerPin(data.ownerPin);
           if (data.biayaPendaftaran) setBiayaPendaftaran(data.biayaPendaftaran);
+          if (data.adminPassword) setAdminPassword(data.adminPassword);
         } else {
           // 🔥 FIX KEAMANAN: sebelumnya kalau dokumen belum ada, sistem
           // otomatis bikin PIN default "2003" yang tertanam di kode --
@@ -156,20 +167,13 @@ const Settings = () => {
     fetchSettings();
   }, []);
 
-  const handleUnlock = (e) => {
-    e.preventDefault();
-    // 🔥 Cegah celah: selagi data PIN asli masih dimuat dari database,
-    // jangan izinkan unlock pakai nilai awal/sementara di state.
-    if (loading) {
-      alert('⏳ Sedang memuat data, coba lagi sebentar...');
-      return;
-    }
-    if (inputPin === ownerPin) {
-      setIsLocked(false);
-      setInputPin("");
-    } else {
-      alert("⛔ PIN SALAH! Coba lagi.");
-      setInputPin("");
+  // 🔥 handleUnlock udah gak dipakai lagi -- gerbang akses sekarang di
+  // level rute (OwnerRoute), bukan layar kunci internal di komponen ini.
+  const handleLogout = () => {
+    if (window.confirm("Keluar dari Portal Owner?")) {
+      localStorage.removeItem("isOwnerLoggedIn");
+      localStorage.removeItem("role");
+      navigate("/");
     }
   };
 
@@ -180,7 +184,7 @@ const Settings = () => {
     setSaving(true);
     try {
       await setDoc(doc(db, "settings", "global_config"), {
-        prices, salaryRules, ownerPin, biayaPendaftaran
+        prices, salaryRules, ownerPin, biayaPendaftaran, adminPassword
       }, { merge: true });
       alert("✅ Pengaturan Berhasil Disimpan!");
     } catch (error) {
@@ -333,45 +337,30 @@ const Settings = () => {
     setSalaryRules({ ...salaryRules, bonusRules: updated });
   };
 
-  // === LOCK SCREEN ===
-  if (isLocked) {
-    return (
-      <div style={styles.lockOverlay}>
-        <div style={styles.lockCard}>
-          <Lock size={48} color="#1e293b" style={{marginBottom: 15}} />
-          <h2 style={{margin: '0 0 5px', color: '#1e293b'}}>🔐 Area Owner</h2>
-          <p style={{color: '#64748b', fontSize: 13, marginBottom: 20}}>Masukkan PIN untuk mengakses pengaturan sistem</p>
-          <form onSubmit={handleUnlock}>
-            <div style={{position: 'relative'}}>
-              <input 
-                type={showPin ? 'text' : 'password'} 
-                value={inputPin} onChange={e => setInputPin(e.target.value)} 
-                style={styles.pinInput} autoFocus placeholder="******" maxLength={6} 
-              />
-              <button type="button" onClick={() => setShowPin(!showPin)} style={styles.eyeBtn}>
-                {showPin ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            <button type="submit" style={styles.btnUnlock}>🔓 BUKA AKSES</button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
   if (loading) return (
     <div style={styles.wrapper}>
-      <SidebarAdmin />
-      <div style={styles.mainContent(isMobile)}>
-        <div style={{textAlign: 'center', padding: 80}}>Memuat pengaturan...</div>
-      </div>
+      <div style={{textAlign: 'center', padding: 80}}>Memuat pengaturan...</div>
     </div>
   );
 
   return (
     <div style={styles.wrapper}>
-      <SidebarAdmin />
       <div style={styles.mainContent(isMobile)}>
+
+        {/* 🔥 HEADER KHAS OWNER PORTAL -- menggantikan SidebarAdmin, karena
+            halaman ini sekarang berdiri sendiri terpisah dari Admin. */}
+        <div style={styles.ownerTopBar}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={styles.ownerBadge}><Crown size={16} color="#78350f" /></div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 14, color: '#78350f' }}>Portal Owner</div>
+              <div style={{ fontSize: 10, color: '#92400e' }}>Bimbel Gemilang</div>
+            </div>
+          </div>
+          <button onClick={handleLogout} style={styles.btnLogoutOwner}>
+            <LogOut size={14} /> Keluar
+          </button>
+        </div>
         
         <div style={styles.header(isMobile)}>
           <div>
@@ -627,13 +616,31 @@ const Settings = () => {
 
             <div style={styles.divider} />
             
-            {/* PIN */}
-            <h4 style={styles.subTitle}>🔐 PIN Keamanan</h4>
+            {/* PIN & PASSWORD AKSES */}
+            <h4 style={styles.subTitle}>🔐 Akses & Keamanan</h4>
             <div style={styles.fieldRow}>
-              <span><Shield size={14} /> PIN Owner</span>
-              <input type="text" value={ownerPin} onChange={e => setOwnerPin(e.target.value)} style={styles.input} maxLength={6} placeholder="Min 4 digit" />
+              <span><Crown size={14} /> PIN Owner (Portal ini)</span>
+              <div style={{ position: 'relative' }}>
+                <input type={showOwnerPin ? 'text' : 'password'} value={ownerPin} onChange={e => setOwnerPin(e.target.value)} style={{...styles.input, paddingRight: 30}} maxLength={6} placeholder="Min 4 digit" />
+                <button type="button" onClick={() => setShowOwnerPin(!showOwnerPin)} style={styles.miniEyeBtn}>
+                  {showOwnerPin ? <EyeOff size={13} /> : <Eye size={13} />}
+                </button>
+              </div>
             </div>
-            <p style={{fontSize: 10, color: '#ef4444', marginTop: 4}}>⚠️ PIN ini digunakan untuk hapus/edit transaksi & akses Settings.</p>
+            <p style={{fontSize: 10, color: '#94a3b8', marginTop: 2, marginBottom: 10}}>Dipakai buat login Portal Owner ini, dan buat otorisasi hapus/edit transaksi keuangan di sisi Admin.</p>
+
+            {/* 🔥 BARU: sebelumnya field ini dibaca Login.jsx tapi gak ada
+                tempat ngaturnya sama sekali dari UI. */}
+            <div style={styles.fieldRow}>
+              <span><Shield size={14} /> Password Admin</span>
+              <div style={{ position: 'relative' }}>
+                <input type={showAdminPw ? 'text' : 'password'} value={adminPassword} onChange={e => setAdminPassword(e.target.value)} style={{...styles.input, paddingRight: 30}} placeholder="Password login Admin" />
+                <button type="button" onClick={() => setShowAdminPw(!showAdminPw)} style={styles.miniEyeBtn}>
+                  {showAdminPw ? <EyeOff size={13} /> : <Eye size={13} />}
+                </button>
+              </div>
+            </div>
+            <p style={{fontSize: 10, color: '#ef4444', marginTop: 2}}>⚠️ Ini password yang dipakai staf Admin buat login sehari-hari. Beda sama PIN Owner di atas.</p>
           </div>
         </div>
       </div>
@@ -644,7 +651,10 @@ const Settings = () => {
 // === STYLES ===
 const styles = {
   wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
-  mainContent: (m) => ({ marginLeft: m ? '0' : '250px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' }),
+  mainContent: (m) => ({ padding: m ? '15px' : '30px', width: '100%', maxWidth: 1300, margin: '0 auto', boxSizing: 'border-box' }),
+  ownerTopBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg,#fef3c7,#fde68a)', border: '1px solid #fbbf24', padding: '10px 16px', borderRadius: 12, marginBottom: 16 },
+  ownerBadge: { width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  btnLogoutOwner: { display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'white', color: '#92400e', border: '1px solid #fbbf24', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: 12 },
   
   lockOverlay: { height: '100vh', background: '#0f172a', width: '100vw', position: 'fixed', top: 0, left: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999 },
   lockCard: { background: 'white', padding: 40, borderRadius: 20, textAlign: 'center', width: 320, maxWidth: '90vw', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' },
@@ -677,6 +687,7 @@ const styles = {
   fieldRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f8fafc', gap: 10 },
   input: { width: 120, padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', textAlign: 'right', fontSize: 13, fontWeight: 'bold', background: '#f8fafc' },
   divider: { height: 1, background: '#f1f5f9', margin: '12px 0' },
+  miniEyeBtn: { position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 2, display: 'flex' },
   infoBox: { background: '#f0fdf4', padding: 12, borderRadius: 8, border: '1px solid #bbf7d0', marginTop: 16, fontSize: 12, color: '#065f46', display: 'flex', alignItems: 'flex-start', gap: 6, flexDirection: 'column' }
 };
 
