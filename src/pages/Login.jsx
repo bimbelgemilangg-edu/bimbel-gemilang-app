@@ -224,14 +224,13 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Admin Link + Owner Link */}
+            {/* Admin Link */}
+            {/* 🔥 Tombol "Portal Owner" sengaja DIHAPUS dari sini -- biar
+                halaman login publik cuma nunjukkin Admin/Guru/Siswa, lebih
+                profesional. Rute /login-owner TETAP JALAN normal, cuma
+                gak ada tombol/link ke situ dari halaman manapun. Cuma
+                bisa diakses siapa yang tau alamatnya langsung. */}
             <div style={styles.adminArea}>
-              <button 
-                onClick={() => navigate('/login-owner')} 
-                style={{ ...styles.adminLink, color: isDark ? '#fbbf24' : '#7c3aed', marginRight: 18 }}
-              >
-                <Sparkles size={14} /> Portal Owner
-              </button>
               <button 
                 onClick={() => setIsAdminMode(true)} 
                 style={{ ...styles.adminLink, color: isDark ? '#f39c12' : '#1a237e' }}
