@@ -53,6 +53,46 @@ const AddStudent = () => {
 
   const [tglLahir, setTglLahir] = useState({ hari: '', bulan: '', tahun: '' });
 
+  // 🔥 FIX BUG (lanjutan): randomSuffix sekarang BISA berubah -- tapi
+  // perubahannya terjadi SAAT admin masih mengisi nama (di Step 1), lewat
+  // pengecekan ke database di bawah. Begitu admin sampai di Step 2 (lihat
+  // preview) sampai Submit, nilainya sudah "settle" dan konsisten dipakai
+  // di dua-duanya -- jadi tetap gak nabrak fix "preview harus sama dengan
+  // yang disimpan" yang sebelumnya.
+  const [randomSuffix, setRandomSuffix] = useState(() => Math.floor(100 + Math.random() * 900));
+
+  // 🔥 BARU: cegah 2 siswa dengan nama depan sama dapet username IDENTIK.
+  // Sebelumnya gak ada pengecekan sama sekali -- beda dengan pembuatan
+  // studentId yang sudah dicek duplikatnya. Begitu admin mengisi nama,
+  // sistem cek ke database apakah kombinasi nama-depan+angka ini udah
+  // dipakai siswa lain; kalau iya, generate angka baru sampai ketemu yang
+  // belum dipakai.
+  useEffect(() => {
+    if (!formData.nama.trim()) return;
+    let batal = false;
+    const cekDanGantiKalauBentrok = async () => {
+      const namaBersih = formData.nama.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (!namaBersih) return;
+      let coba = randomSuffix;
+      for (let i = 0; i < 10 && !batal; i++) {
+        const kandidat = `${namaBersih}${coba}@gemilang.com`;
+        try {
+          const snap = await getDocs(query(collection(db, "students"), where("username", "==", kandidat)));
+          if (snap.empty) {
+            if (!batal && coba !== randomSuffix) setRandomSuffix(coba);
+            return;
+          }
+        } catch (e) {
+          return; // kalau query gagal (misal offline), biarkan apa adanya
+        }
+        coba = Math.floor(100 + Math.random() * 900);
+      }
+    };
+    cekDanGantiKalauBentrok();
+    return () => { batal = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.nama]);
+
   // === FETCH PRICING ===
   useEffect(() => {
     const fetchPricing = async () => {
@@ -277,11 +317,12 @@ const AddStudent = () => {
     return start.toISOString().split('T')[0];
   };
 
+  // 🔥 FIX: pakai randomSuffix yang udah dikunci sekali di atas, bukan
+  // generate ulang tiap fungsi ini dipanggil.
   const getUsername = () => {
     if (!formData.nama) return '';
     const namaBersih = formData.nama.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-    const randomNum = Math.floor(100 + Math.random() * 900);
-    return `${namaBersih}${randomNum}@gemilang.com`;
+    return `${namaBersih}${randomSuffix}@gemilang.com`;
   };
 
   const getPassword = () => {
