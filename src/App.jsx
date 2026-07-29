@@ -19,6 +19,7 @@ import ManagePaketHarga from './pages/admin/pendaftaran/ManagePaketHarga';
 // === ADMIN ===
 import Dashboard from './pages/admin/Dashboard';
 import Settings from './pages/admin/Settings';
+import OwnerFinance from './pages/admin/OwnerFinance';
 import StudentList from './pages/admin/students/StudentList';
 import AddStudent from './pages/admin/students/AddStudent';
 import StudentAttendance from './pages/admin/students/StudentAttendance';
@@ -262,6 +263,7 @@ function App() {
             /owner/settings sebagai alamat utama Portal Owner. */}
         <Route path="/admin/settings" element={<OwnerRoute><Settings /></OwnerRoute>} />
         <Route path="/owner/settings" element={<OwnerRoute><Settings /></OwnerRoute>} />
+        <Route path="/owner/finance" element={<OwnerRoute><OwnerFinance /></OwnerRoute>} />
 
         {/* ============================================================
             GURU - PAKAI TeacherLayout DARI FILE

@@ -76,6 +76,18 @@ const Settings = () => {
   const [ownerPin, setOwnerPin] = useState(""); // 🔥 sengaja kosong (bukan "2003"), cuma keisi dari database
   const [saving, setSaving] = useState(false);
   const [biayaPendaftaran, setBiayaPendaftaran] = useState(25000);
+  // 🔥 BARU: Biaya Tetap (fixed cost) -- pengeluaran rutin bulanan yang
+  // gak tergantung jumlah siswa (sewa, listrik, internet, dll). Dipakai
+  // buat ngitung profit bersih yang sesungguhnya, bukan cuma "kas yang ada".
+  const [fixedCosts, setFixedCosts] = useState([
+    { id: 'sewa', label: 'Sewa Tempat', amountPerMonth: 0 },
+    { id: 'listrik', label: 'Listrik & Air', amountPerMonth: 0 },
+    { id: 'internet', label: 'Internet/WiFi', amountPerMonth: 0 },
+  ]);
+  // 🔥 BARU: Aset & Penyusutan -- barang yang dibeli sekali tapi dipakai
+  // lama (AC, proyektor, dll). Penyusutan per bulan dihitung otomatis:
+  // harga beli ÷ perkiraan umur pakai (bulan).
+  const [assets, setAssets] = useState([]);
   // 🔥 BARU: sebelumnya field adminPassword ini DIBACA oleh Login.jsx tapi
   // GAK ADA TEMPAT SAMA SEKALI buat mengaturnya dari UI -- pasti diset
   // manual langsung ke database. Sekarang Owner bisa atur dari sini.
@@ -140,6 +152,8 @@ const Settings = () => {
           if (data.ownerPin) setOwnerPin(data.ownerPin);
           if (data.biayaPendaftaran) setBiayaPendaftaran(data.biayaPendaftaran);
           if (data.adminPassword) setAdminPassword(data.adminPassword);
+          if (Array.isArray(data.fixedCosts)) setFixedCosts(data.fixedCosts);
+          if (Array.isArray(data.assets)) setAssets(data.assets);
         } else {
           // 🔥 FIX KEAMANAN: sebelumnya kalau dokumen belum ada, sistem
           // otomatis bikin PIN default "2003" yang tertanam di kode --
@@ -184,7 +198,7 @@ const Settings = () => {
     setSaving(true);
     try {
       await setDoc(doc(db, "settings", "global_config"), {
-        prices, salaryRules, ownerPin, biayaPendaftaran, adminPassword
+        prices, salaryRules, ownerPin, biayaPendaftaran, adminPassword, fixedCosts, assets
       }, { merge: true });
       alert("✅ Pengaturan Berhasil Disimpan!");
     } catch (error) {
@@ -337,6 +351,32 @@ const Settings = () => {
     setSalaryRules({ ...salaryRules, bonusRules: updated });
   };
 
+  // === FUNGSI MANAJEMEN BIAYA TETAP (BARU) ===
+  const addFixedCost = () => {
+    setFixedCosts([...fixedCosts, { id: `fc${Date.now().toString().slice(-5)}`, label: 'Biaya Baru', amountPerMonth: 0 }]);
+  };
+  const removeFixedCost = (index) => {
+    setFixedCosts(fixedCosts.filter((_, i) => i !== index));
+  };
+  const updateFixedCost = (index, field, value) => {
+    const updated = [...fixedCosts];
+    updated[index] = { ...updated[index], [field]: value };
+    setFixedCosts(updated);
+  };
+
+  // === FUNGSI MANAJEMEN ASET & PENYUSUTAN (BARU) ===
+  const addAsset = () => {
+    setAssets([...assets, { id: `as${Date.now().toString().slice(-5)}`, label: 'Aset Baru', purchasePrice: 0, usefulLifeMonths: 12 }]);
+  };
+  const removeAsset = (index) => {
+    setAssets(assets.filter((_, i) => i !== index));
+  };
+  const updateAsset = (index, field, value) => {
+    const updated = [...assets];
+    updated[index] = { ...updated[index], [field]: value };
+    setAssets(updated);
+  };
+
   if (loading) return (
     <div style={styles.wrapper}>
       <div style={{textAlign: 'center', padding: 80}}>Memuat pengaturan...</div>
@@ -360,6 +400,11 @@ const Settings = () => {
           <button onClick={handleLogout} style={styles.btnLogoutOwner}>
             <LogOut size={14} /> Keluar
           </button>
+        </div>
+
+        <div style={styles.ownerTabs}>
+          <div style={styles.ownerTabActive}>⚙️ Pengaturan</div>
+          <div style={styles.ownerTab} onClick={() => navigate('/owner/finance')}>📊 Keuangan</div>
         </div>
         
         <div style={styles.header(isMobile)}>
@@ -642,6 +687,99 @@ const Settings = () => {
             </div>
             <p style={{fontSize: 10, color: '#ef4444', marginTop: 2}}>⚠️ Ini password yang dipakai staf Admin buat login sehari-hari. Beda sama PIN Owner di atas.</p>
           </div>
+
+          {/* === BIAYA TETAP & ASET/PENYUSUTAN (BARU) === */}
+          <div style={styles.card}>
+            <h3 style={styles.cardTitle}>🏢 Biaya Tetap & Penyusutan</h3>
+            <p style={styles.cardDesc}>Biaya rutin bulanan yang gak tergantung jumlah siswa, dan penyusutan aset. Ini yang bikin laporan Profit di menu Keuangan jadi jujur -- bukan cuma "kas yang ada", tapi profit setelah dikurangi semua biaya ini.</p>
+
+            <div style={styles.jenjangHeader}>
+              <h4 style={styles.subTitle}>Biaya Tetap (per bulan)</h4>
+              <button onClick={addFixedCost} style={styles.btnAdd}>
+                <Plus size={14} /> Tambah Biaya
+              </button>
+            </div>
+            {fixedCosts.length === 0 && <p style={{fontSize: 11, color: '#94a3b8'}}>Belum ada biaya tetap.</p>}
+            {fixedCosts.map((fc, idx) => (
+              <div key={fc.id || idx} style={styles.packageRow}>
+                <input
+                  type="text"
+                  value={fc.label || ''}
+                  onChange={e => updateFixedCost(idx, 'label', e.target.value)}
+                  style={styles.packageNameInput}
+                  placeholder="Nama biaya (misal: Sewa, Listrik)"
+                />
+                <input
+                  type="number"
+                  value={fc.amountPerMonth || 0}
+                  onChange={e => updateFixedCost(idx, 'amountPerMonth', parseInt(e.target.value) || 0)}
+                  style={styles.packagePriceInput}
+                  placeholder="Rp/bulan"
+                />
+                <button onClick={() => removeFixedCost(idx)} style={styles.btnRemove}>
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+            <div style={{ textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#64748b', marginTop: 6 }}>
+              Total Biaya Tetap: Rp {fixedCosts.reduce((s, f) => s + (parseInt(f.amountPerMonth) || 0), 0).toLocaleString()}/bulan
+            </div>
+
+            <div style={styles.divider} />
+
+            <div style={styles.jenjangHeader}>
+              <h4 style={styles.subTitle}>Aset & Penyusutan</h4>
+              <button onClick={addAsset} style={styles.btnAdd}>
+                <Plus size={14} /> Tambah Aset
+              </button>
+            </div>
+            {assets.length === 0 && <p style={{fontSize: 11, color: '#94a3b8'}}>Belum ada aset tercatat (contoh: AC, proyektor, meja-kursi).</p>}
+            {assets.map((a, idx) => {
+              const penyusutanBulanan = a.usefulLifeMonths > 0 ? Math.round((a.purchasePrice || 0) / a.usefulLifeMonths) : 0;
+              return (
+                <div key={a.id || idx} style={{ marginBottom: 8, padding: 10, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                    <input
+                      type="text"
+                      value={a.label || ''}
+                      onChange={e => updateAsset(idx, 'label', e.target.value)}
+                      style={{...styles.packageNameInput, flex: 2}}
+                      placeholder="Nama aset (misal: AC Ruang Venus)"
+                    />
+                    <button onClick={() => removeAsset(idx)} style={styles.btnRemove}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: 9, color: '#94a3b8' }}>Harga Beli (Rp)</label>
+                      <input
+                        type="number"
+                        value={a.purchasePrice || 0}
+                        onChange={e => updateAsset(idx, 'purchasePrice', parseInt(e.target.value) || 0)}
+                        style={{...styles.packagePriceInput, width: '100%', boxSizing: 'border-box'}}
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: 9, color: '#94a3b8' }}>Umur Pakai (bulan)</label>
+                      <input
+                        type="number"
+                        value={a.usefulLifeMonths || 0}
+                        onChange={e => updateAsset(idx, 'usefulLifeMonths', parseInt(e.target.value) || 0)}
+                        style={{...styles.packagePriceInput, width: '100%', boxSizing: 'border-box'}}
+                      />
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 10, color: '#3b82f6', marginTop: 6, fontWeight: 700 }}>
+                    Penyusutan: Rp {penyusutanBulanan.toLocaleString()}/bulan
+                  </div>
+                </div>
+              );
+            })}
+            <div style={{ textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#64748b', marginTop: 6 }}>
+              Total Penyusutan: Rp {assets.reduce((s, a) => s + (a.usefulLifeMonths > 0 ? Math.round((a.purchasePrice || 0) / a.usefulLifeMonths) : 0), 0).toLocaleString()}/bulan
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -655,6 +793,9 @@ const styles = {
   ownerTopBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg,#fef3c7,#fde68a)', border: '1px solid #fbbf24', padding: '10px 16px', borderRadius: 12, marginBottom: 16 },
   ownerBadge: { width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   btnLogoutOwner: { display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'white', color: '#92400e', border: '1px solid #fbbf24', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: 12 },
+  ownerTabs: { display: 'flex', gap: 8, marginBottom: 16 },
+  ownerTabActive: { padding: '8px 16px', borderRadius: 8, background: '#1e293b', color: 'white', fontWeight: 700, fontSize: 12, cursor: 'default' },
+  ownerTab: { padding: '8px 16px', borderRadius: 8, background: 'white', color: '#64748b', fontWeight: 700, fontSize: 12, cursor: 'pointer', border: '1px solid #e2e8f0' },
   
   lockOverlay: { height: '100vh', background: '#0f172a', width: '100vw', position: 'fixed', top: 0, left: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999 },
   lockCard: { background: 'white', padding: 40, borderRadius: 20, textAlign: 'center', width: 320, maxWidth: '90vw', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' },
