@@ -45,12 +45,28 @@ const Settings = () => {
   };
 
   const [prices, setPrices] = useState(defaultPrices);
-  const [salaryRules, setSalaryRules] = useState({
-    honorSD: 35000, honorSMP: 40000, honorSMA: 50000,
-    bonusInggris: 10000, kompensasiPersen: 50, honorMinimal: 20000,
-  });
+  // 🔥 STRUKTUR BARU: honor sekarang berupa DAFTAR (array) yang bisa
+  // ditambah/dikurangi bebas -- persis kayak paket belajar -- bukan field
+  // yang dikunci namanya di kode (honorSD/honorSMP/honorSMA/bonusInggris).
+  // `rates` = tarif per-jam berdasarkan jenjang/kategori (bisa nambah
+  // kategori baru sebebas-bebasnya, gak cuma SD/SMP/SMA).
+  // `bonusRules` = bonus tambahan per-jam yang dipicu kalau program jadwal
+  // cocok (misal "English"), juga bisa ditambah bebas.
+  const defaultSalaryRules = {
+    rates: [
+      { id: 'sd', label: 'SD', pricePerHour: 35000 },
+      { id: 'smp', label: 'SMP', pricePerHour: 40000 },
+      { id: 'sma', label: 'SMA', pricePerHour: 50000 },
+    ],
+    bonusRules: [
+      { id: 'english', label: 'Bonus English', matchProgram: 'English', bonusPerHour: 10000 },
+    ],
+    kompensasiPersen: 50,
+    honorMinimal: 20000,
+  };
+  const [salaryRules, setSalaryRules] = useState(defaultSalaryRules);
 
-  const [ownerPin, setOwnerPin] = useState("2003");
+  const [ownerPin, setOwnerPin] = useState(""); // 🔥 sengaja kosong (bukan "2003"), cuma keisi dari database
   const [isLocked, setIsLocked] = useState(true);
   const [inputPin, setInputPin] = useState("");
   const [showPin, setShowPin] = useState(false);
@@ -82,18 +98,53 @@ const Settings = () => {
           }
           
           if (data.salaryRules) {
-            setSalaryRules(prev => ({...prev, ...data.salaryRules}));
+            // 🔥 MIGRASI OTOMATIS: kalau data yang tersimpan masih format
+            // LAMA (honorSD/honorSMP/honorSMA/bonusInggris sebagai field
+            // tunggal, bukan array `rates`), ubah dulu ke format BARU di
+            // sini -- biar honor yang udah pernah diatur admin sebelumnya
+            // GAK HILANG begitu fitur ini di-update. Kalau sudah format
+            // baru (ada `rates`), langsung dipakai apa adanya.
+            const old = data.salaryRules;
+            if (Array.isArray(old.rates)) {
+              setSalaryRules({
+                rates: old.rates,
+                bonusRules: Array.isArray(old.bonusRules) ? old.bonusRules : defaultSalaryRules.bonusRules,
+                kompensasiPersen: old.kompensasiPersen ?? defaultSalaryRules.kompensasiPersen,
+                honorMinimal: old.honorMinimal ?? defaultSalaryRules.honorMinimal,
+              });
+            } else {
+              setSalaryRules({
+                rates: [
+                  { id: 'sd', label: 'SD', pricePerHour: old.honorSD ?? 35000 },
+                  { id: 'smp', label: 'SMP', pricePerHour: old.honorSMP ?? 40000 },
+                  { id: 'sma', label: 'SMA', pricePerHour: old.honorSMA ?? 50000 },
+                ],
+                bonusRules: [
+                  { id: 'english', label: 'Bonus English', matchProgram: 'English', bonusPerHour: old.bonusInggris ?? 10000 },
+                ],
+                kompensasiPersen: old.kompensasiPersen ?? 50,
+                honorMinimal: old.honorMinimal ?? 20000,
+              });
+            }
           }
           if (data.ownerPin) setOwnerPin(data.ownerPin);
           if (data.biayaPendaftaran) setBiayaPendaftaran(data.biayaPendaftaran);
         } else {
-          // Jika dokumen tidak ada, buat dengan default
+          // 🔥 FIX KEAMANAN: sebelumnya kalau dokumen belum ada, sistem
+          // otomatis bikin PIN default "2003" yang tertanam di kode --
+          // gampang ditemukan siapa aja yang baca source code. Sekarang
+          // digenerate ACAK tiap kali pertama kali dibuat, dan admin
+          // DIWAJIBKAN gantinya sebelum bisa dipakai (lihat peringatan
+          // di bawah).
+          const pinAcak = String(Math.floor(1000 + Math.random() * 9000));
           await setDoc(doc(db, "settings", "global_config"), {
             prices: defaultPrices,
-            salaryRules: salaryRules,
-            ownerPin: "2003",
+            salaryRules: defaultSalaryRules,
+            ownerPin: pinAcak,
             biayaPendaftaran: 25000
           });
+          setOwnerPin(pinAcak);
+          alert(`🔐 PIN Owner otomatis dibuat: ${pinAcak}\n\nCatat PIN ini sekarang, lalu SEGERA ganti dengan PIN pilihan Anda sendiri di bagian bawah halaman ini setelah masuk.`);
         }
       } catch (error) { 
         console.error("Error loading settings:", error);
@@ -107,6 +158,12 @@ const Settings = () => {
 
   const handleUnlock = (e) => {
     e.preventDefault();
+    // 🔥 Cegah celah: selagi data PIN asli masih dimuat dari database,
+    // jangan izinkan unlock pakai nilai awal/sementara di state.
+    if (loading) {
+      alert('⏳ Sedang memuat data, coba lagi sebentar...');
+      return;
+    }
     if (inputPin === ownerPin) {
       setIsLocked(false);
       setInputPin("");
@@ -222,6 +279,60 @@ const Settings = () => {
     });
   };
 
+  // === FUNGSI MANAJEMEN TARIF HONOR (BARU -- bisa tambah/kurang bebas) ===
+  const addRate = () => {
+    const current = salaryRules.rates || [];
+    const newId = `rate${Date.now().toString().slice(-5)}`;
+    setSalaryRules({
+      ...salaryRules,
+      rates: [...current, { id: newId, label: `Kategori Baru`, pricePerHour: 0 }]
+    });
+  };
+
+  const removeRate = (index) => {
+    const current = salaryRules.rates || [];
+    if (current.length <= 1) {
+      alert("Minimal 1 kategori tarif harus ada!");
+      return;
+    }
+    setSalaryRules({
+      ...salaryRules,
+      rates: current.filter((_, i) => i !== index)
+    });
+  };
+
+  const updateRate = (index, field, value) => {
+    const current = salaryRules.rates || [];
+    const updated = [...current];
+    updated[index] = { ...updated[index], [field]: value };
+    setSalaryRules({ ...salaryRules, rates: updated });
+  };
+
+  // === FUNGSI MANAJEMEN BONUS HONOR (BARU -- bisa tambah/kurang bebas) ===
+  const addBonus = () => {
+    const current = salaryRules.bonusRules || [];
+    const newId = `bonus${Date.now().toString().slice(-5)}`;
+    setSalaryRules({
+      ...salaryRules,
+      bonusRules: [...current, { id: newId, label: 'Bonus Baru', matchProgram: '', bonusPerHour: 0 }]
+    });
+  };
+
+  const removeBonus = (index) => {
+    const current = salaryRules.bonusRules || [];
+    setSalaryRules({
+      ...salaryRules,
+      bonusRules: current.filter((_, i) => i !== index)
+    });
+  };
+
+  const updateBonus = (index, field, value) => {
+    const current = salaryRules.bonusRules || [];
+    const updated = [...current];
+    updated[index] = { ...updated[index], [field]: value };
+    setSalaryRules({ ...salaryRules, bonusRules: updated });
+  };
+
   // === LOCK SCREEN ===
   if (isLocked) {
     return (
@@ -279,23 +390,81 @@ const Settings = () => {
             <h3 style={styles.cardTitle}>💰 Aturan Honor Guru</h3>
             <p style={styles.cardDesc}>Berlaku otomatis saat guru menyelesaikan kelas. Nominal TIDAK ditampilkan ke guru.</p>
 
-            <div style={styles.fieldRow}>
-              <span>Honor SD (per jam)</span>
-              <input type="number" value={salaryRules.honorSD} onChange={e => setSalaryRules({...salaryRules, honorSD: parseInt(e.target.value) || 0})} style={styles.input} />
+            {/* 🔥 TARIF PER KATEGORI -- sekarang bebas ditambah/dikurangi,
+                gak cuma SD/SMP/SMA yang dikunci di kode. Label di sini
+                yang dicocokkan ke jenjang jadwal saat guru menutup kelas. */}
+            <div style={styles.jenjangHeader}>
+              <h4 style={styles.subTitle}>Tarif per Kategori/Jenjang (per jam)</h4>
+              <button onClick={addRate} style={styles.btnAdd}>
+                <Plus size={14} /> Tambah Kategori
+              </button>
             </div>
-            <div style={styles.fieldRow}>
-              <span>Honor SMP (per jam)</span>
-              <input type="number" value={salaryRules.honorSMP} onChange={e => setSalaryRules({...salaryRules, honorSMP: parseInt(e.target.value) || 0})} style={styles.input} />
-            </div>
-            <div style={styles.fieldRow}>
-              <span>Honor SMA (per jam)</span>
-              <input type="number" value={salaryRules.honorSMA} onChange={e => setSalaryRules({...salaryRules, honorSMA: parseInt(e.target.value) || 0})} style={styles.input} />
-            </div>
+            {(salaryRules.rates || []).map((r, idx) => (
+              <div key={r.id || idx} style={styles.packageRow}>
+                <input
+                  type="text"
+                  value={r.label || ''}
+                  onChange={e => updateRate(idx, 'label', e.target.value)}
+                  style={styles.packageNameInput}
+                  placeholder="Nama kategori (misal: SD, Privat, dll)"
+                />
+                <input
+                  type="number"
+                  value={r.pricePerHour || 0}
+                  onChange={e => updateRate(idx, 'pricePerHour', parseInt(e.target.value) || 0)}
+                  style={styles.packagePriceInput}
+                  placeholder="Rp/jam"
+                />
+                <button onClick={() => removeRate(idx)} style={styles.btnRemove}>
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+            <p style={{fontSize: 10, color: '#94a3b8', marginTop: 4}}>
+              💡 "Nama kategori" ini harus sama dengan "Jenjang" yang dipilih admin pas bikin jadwal (contoh: SD, SMP, SMA), biar tarifnya otomatis ketemu.
+            </p>
+
             <div style={styles.divider} />
-            <div style={styles.fieldRow}>
-              <span>Bonus English (per jam)</span>
-              <input type="number" value={salaryRules.bonusInggris} onChange={e => setSalaryRules({...salaryRules, bonusInggris: parseInt(e.target.value) || 0})} style={styles.input} />
+
+            {/* 🔥 BONUS TAMBAHAN -- juga bebas ditambah/dikurangi. Dipicu
+                kalau nama Program di jadwal cocok sama "Berlaku untuk
+                Program" di bawah (misal "English"). */}
+            <div style={styles.jenjangHeader}>
+              <h4 style={styles.subTitle}>Bonus Tambahan (per jam)</h4>
+              <button onClick={addBonus} style={styles.btnAdd}>
+                <Plus size={14} /> Tambah Bonus
+              </button>
             </div>
+            {(salaryRules.bonusRules || []).map((b, idx) => (
+              <div key={b.id || idx} style={styles.packageRow}>
+                <input
+                  type="text"
+                  value={b.label || ''}
+                  onChange={e => updateBonus(idx, 'label', e.target.value)}
+                  style={{...styles.packageNameInput, flex: 1.3}}
+                  placeholder="Nama bonus"
+                />
+                <input
+                  type="text"
+                  value={b.matchProgram || ''}
+                  onChange={e => updateBonus(idx, 'matchProgram', e.target.value)}
+                  style={{...styles.packageNameInput, flex: 1}}
+                  placeholder="Berlaku utk Program (misal: English)"
+                />
+                <input
+                  type="number"
+                  value={b.bonusPerHour || 0}
+                  onChange={e => updateBonus(idx, 'bonusPerHour', parseInt(e.target.value) || 0)}
+                  style={styles.packagePriceInput}
+                  placeholder="Rp/jam"
+                />
+                <button onClick={() => removeBonus(idx)} style={styles.btnRemove}>
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+
+            <div style={styles.divider} />
             <div style={styles.fieldRow}>
               <span>Kompensasi 0 Hadir (%)</span>
               <div style={{display: 'flex', alignItems: 'center', gap: 6}}>
@@ -310,7 +479,7 @@ const Settings = () => {
 
             <div style={styles.infoBox}>
               <Info size={14} /> <strong>Cara Hitung:</strong><br/>
-              <span style={{fontSize: 11}}>Reguler: Honor Jenjang × Jam | English: (Honor SD + Bonus) × Jam | 0 Hadir: {salaryRules.kompensasiPersen}% × Honor SD × Jam</span>
+              <span style={{fontSize: 11}}>Tarif dicari dari kategori yang cocok dengan Jenjang jadwal. Kalau Program jadwal cocok sama salah satu Bonus, ditambahkan ke tarif dasar. Kalau 0 siswa hadir: {salaryRules.kompensasiPersen}% dari tarif dasar × jam.</span>
             </div>
           </div>
 

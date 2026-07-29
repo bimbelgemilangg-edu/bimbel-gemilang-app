@@ -103,11 +103,38 @@ const ClassSession = () => {
         const salaryRef = doc(db, "settings", "global_config");
         const salarySnap = await getDoc(salaryRef);
         if (salarySnap.exists() && salarySnap.data().salaryRules) {
-          setSalaryRules(salarySnap.data().salaryRules);
+          const sr = salarySnap.data().salaryRules;
+          // 🔥 Terima format LAMA (honorSD/honorSMP/dst) maupun BARU
+          // (rates array) -- biar kelas yang lagi berjalan gak tiba-tiba
+          // error kalau Settings.jsx belum sempat nyimpen format baru.
+          if (Array.isArray(sr.rates)) {
+            setSalaryRules(sr);
+          } else {
+            setSalaryRules({
+              rates: [
+                { id: 'sd', label: 'SD', pricePerHour: sr.honorSD ?? 35000 },
+                { id: 'smp', label: 'SMP', pricePerHour: sr.honorSMP ?? 40000 },
+                { id: 'sma', label: 'SMA', pricePerHour: sr.honorSMA ?? 50000 },
+              ],
+              bonusRules: [
+                { id: 'english', label: 'Bonus English', matchProgram: 'English', bonusPerHour: sr.bonusInggris ?? 10000 },
+              ],
+              kompensasiPersen: sr.kompensasiPersen ?? 50,
+              honorMinimal: sr.honorMinimal ?? 20000,
+            });
+          }
         } else {
           setSalaryRules({
-            honorSD: 35000, honorSMP: 40000, honorSMA: 50000,
-            bonusInggris: 10000, kompensasiPersen: 50, honorMinimal: 20000
+            rates: [
+              { id: 'sd', label: 'SD', pricePerHour: 35000 },
+              { id: 'smp', label: 'SMP', pricePerHour: 40000 },
+              { id: 'sma', label: 'SMA', pricePerHour: 50000 },
+            ],
+            bonusRules: [
+              { id: 'english', label: 'Bonus English', matchProgram: 'English', bonusPerHour: 10000 },
+            ],
+            kompensasiPersen: 50,
+            honorMinimal: 20000,
           });
         }
 
@@ -190,7 +217,13 @@ const ClassSession = () => {
     }
   };
 
-  // 🔥 HITUNG HONOR
+  // 🔥 FIX INTI: sebelumnya tarif dicari lewat if/else yang HARDCODE nama
+  // jenjang (SD/SMP/SMA) dan program (English) langsung di kode -- kalau
+  // owner mau nambah kategori/jenis honor baru di Settings, gak akan
+  // pernah kepake di sini karena kode ini gak tau kategori itu ada.
+  // Sekarang tarif dicari dari daftar `rates` & `bonusRules` yang diatur
+  // bebas lewat Settings -- kategori/bonus baru otomatis langsung kepake
+  // di sini tanpa perlu sentuh kode lagi.
   const hitungHonor = () => {
     if (!salaryRules) return { nominal: 0, detailTxt: "", statusGaji: "Menunggu Validasi" };
 
@@ -205,24 +238,28 @@ const ClassSession = () => {
 
     const level = schedule.level || "SD";
     const program = schedule.program || "Reguler";
-    
-    let ratePerJam = 0;
+
+    // Cari tarif yang cocok sama Jenjang jadwal (dibandingkan tanpa peduli besar-kecil huruf)
+    const rates = salaryRules.rates || [];
+    const matchedRate = rates.find(r =>
+      (r.id || '').toLowerCase() === level.toLowerCase() ||
+      (r.label || '').toLowerCase() === level.toLowerCase()
+    );
+    // Kalau gak ada yang cocok persis, pakai tarif pertama di daftar sebagai jaring pengaman
+    let ratePerJam = matchedRate ? (matchedRate.pricePerHour || 0) : (rates[0]?.pricePerHour || 35000);
     let detailTxt = program + ' - ' + level + ' - ' + materiAktual;
     let statusGaji = "Menunggu Validasi";
 
-    if (program === "English") {
-      ratePerJam = (salaryRules.honorSD || 35000) + (salaryRules.bonusInggris || 10000);
-      detailTxt += " [English Rate]";
-    } else if (level === "SMA") {
-      ratePerJam = salaryRules.honorSMA || 50000;
-    } else if (level === "SMP") {
-      ratePerJam = salaryRules.honorSMP || 40000;
-    } else {
-      ratePerJam = salaryRules.honorSD || 35000;
+    // Cari bonus yang cocok sama Program jadwal
+    const bonusRules = salaryRules.bonusRules || [];
+    const matchedBonus = bonusRules.find(b => (b.matchProgram || '').toLowerCase() === program.toLowerCase());
+    if (matchedBonus) {
+      ratePerJam += (matchedBonus.bonusPerHour || 0);
+      detailTxt += ` [${matchedBonus.label || 'Bonus'}]`;
     }
 
     let nominal = 0;
-    const kompensasiPersen = salaryRules.kompensasiPersen || 50;
+    const kompensasiPersen = salaryRules.kompensasiPersen ?? 50;
 
     if (jumlahHadir === 0) {
       const rateKompensasi = ratePerJam * (kompensasiPersen / 100);
@@ -233,7 +270,7 @@ const ClassSession = () => {
       nominal = ratePerJam * diffHours;
     }
 
-    const minimal = salaryRules.honorMinimal || 20000;
+    const minimal = salaryRules.honorMinimal ?? 20000;
     if (nominal < minimal) {
       nominal = minimal;
       detailTxt += " [Honor Minimal]";
