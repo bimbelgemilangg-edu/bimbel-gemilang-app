@@ -12,8 +12,10 @@ import {
   ChevronRight, Home, ChevronRight as ChevronRightIcon, Flag, Eye, EyeOff,
   Copy, CheckCircle, AlertCircle, Hash, Tag, Link as LinkIcon,
   User, UserPlus, Shield, BadgeCheck, Sparkles, Database, Layers,
-  Palette, PenTool, CalendarDays
+  Palette, PenTool, CalendarDays, Download
 } from 'lucide-react';
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 // ============================================================
 // DATA HARI LIBUR NASIONAL INDONESIA
@@ -115,6 +117,17 @@ const SchedulePage = () => {
   
   // Detail modal
   const [detailSchedule, setDetailSchedule] = useState(null);
+
+  // PDF Download
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [pdfWeekStart, setPdfWeekStart] = useState(() => {
+    const t = new Date();
+    const y = t.getFullYear();
+    const m = String(t.getMonth() + 1).padStart(2, '0');
+    const d = String(t.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  });
+  const [pdfTeacherFilter, setPdfTeacherFilter] = useState('Semua');
 
   // ============================================================
   // EFFECTS
@@ -591,6 +604,113 @@ const SchedulePage = () => {
       console.error("Error updating code:", error);
       showAlert("❌ Gagal update kode: " + error.message);
     }
+  };
+
+  // ============================================================
+  // 🔥 HANDLER DOWNLOAD JADWAL PDF (PER GURU)
+  // ============================================================
+  const handleDownloadJadwalPDF = () => {
+    const baseDate = new Date(pdfWeekStart);
+    const weekDates = getWeekDates(baseDate); // 7 tanggal, Senin-Minggu
+
+    const weekSchedules = schedules.filter(s => weekDates.includes(s.dateStr));
+    if (weekSchedules.length === 0) {
+      return showAlert("⚠️ Tidak ada jadwal di minggu ini!");
+    }
+
+    // Kelompokkan per guru
+    const byTeacher = {};
+    weekSchedules.forEach(s => {
+      const key = s.teacherId || s.teacherName || 'Tanpa Guru';
+      if (!byTeacher[key]) {
+        byTeacher[key] = {
+          teacherName: s.teacherName || s.booker || 'Tanpa Nama',
+          teacherId: s.teacherId || '-',
+          items: []
+        };
+      }
+      byTeacher[key].items.push(s);
+    });
+
+    let teacherKeys = Object.keys(byTeacher);
+    if (pdfTeacherFilter !== 'Semua') {
+      teacherKeys = teacherKeys.filter(k => k === pdfTeacherFilter);
+    }
+    if (teacherKeys.length === 0) {
+      return showAlert("⚠️ Guru yang dipilih tidak punya jadwal minggu ini!");
+    }
+
+    const docPdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const weekStartLabel = new Date(weekDates[0]).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const weekEndLabel = new Date(weekDates[6]).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const dayOrder = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+
+    teacherKeys.forEach((key, idx) => {
+      const teacher = byTeacher[key];
+      if (idx > 0) docPdf.addPage();
+
+      docPdf.setFontSize(16);
+      docPdf.setFont(undefined, 'bold');
+      docPdf.text('BIMBEL GEMILANG — JADWAL MENGAJAR', 14, 15);
+      docPdf.setFontSize(11);
+      docPdf.setFont(undefined, 'normal');
+      docPdf.text(`Guru: ${teacher.teacherName} (${teacher.teacherId})`, 14, 23);
+      docPdf.text(`Minggu: ${weekStartLabel} - ${weekEndLabel}`, 14, 29);
+
+      const rows = teacher.items
+        .slice()
+        .sort((a, b) => {
+          const dayA = dayOrder.indexOf(DAYS_ID[new Date(a.dateStr).getDay()]);
+          const dayB = dayOrder.indexOf(DAYS_ID[new Date(b.dateStr).getDay()]);
+          if (dayA !== dayB) return dayA - dayB;
+          return a.start.localeCompare(b.start);
+        })
+        .map(s => {
+          const d = new Date(s.dateStr);
+          const hari = DAYS_ID[d.getDay()];
+          const tgl = `${d.getDate()}/${d.getMonth() + 1}`;
+          const siswaNames = (s.students || []).map(st => st.nama).join(', ') || '-';
+          return [
+            `${hari}\n${tgl}`,
+            `${s.start} - ${s.end}`,
+            s.planet,
+            s.mapelName || '-',
+            s.level,
+            String(s.students?.length || 0),
+            siswaNames,
+          ];
+        });
+
+      autoTable(docPdf, {
+        startY: 34,
+        head: [['Hari/Tgl', 'Jam', 'Ruang', 'Mapel', 'Jenjang', 'Jml Siswa', 'Nama Siswa']],
+        body: rows,
+        styles: { fontSize: 9, cellPadding: 3, valign: 'middle' },
+        headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold' },
+        columnStyles: {
+          0: { cellWidth: 22 },
+          1: { cellWidth: 26 },
+          2: { cellWidth: 22 },
+          3: { cellWidth: 30 },
+          4: { cellWidth: 18 },
+          5: { cellWidth: 18, halign: 'center' },
+          6: { cellWidth: 'auto' },
+        },
+        theme: 'grid',
+      });
+
+      const pageH = docPdf.internal.pageSize.getHeight();
+      docPdf.setFontSize(8);
+      docPdf.setTextColor(150);
+      docPdf.text(`Dicetak: ${new Date().toLocaleString('id-ID')}`, 14, pageH - 8);
+    });
+
+    const filenameSafe = teacherKeys.length === 1
+      ? byTeacher[teacherKeys[0]].teacherName.replace(/\s+/g, '_')
+      : 'Semua_Guru';
+    docPdf.save(`Jadwal_${filenameSafe}_${weekDates[0]}.pdf`);
+    setIsPdfModalOpen(false);
+    showAlert("✅ PDF jadwal berhasil didownload!");
   };
 
   // ============================================================
@@ -1125,6 +1245,58 @@ const SchedulePage = () => {
   };
 
   // ============================================================
+  // RENDER: PDF Download Modal
+  // ============================================================
+  const renderPdfModal = () => {
+    if (!isPdfModalOpen) return null;
+    return (
+      <div style={styles.overlay} onClick={() => setIsPdfModalOpen(false)}>
+        <div style={styles.modal(isMobile)} onClick={e => e.stopPropagation()}>
+          <div style={styles.modalHeader}>
+            <h3 style={{ margin: 0 }}>📄 Download Jadwal Guru (PDF)</h3>
+            <button onClick={() => setIsPdfModalOpen(false)} style={styles.btnClose}><X size={20} /></button>
+          </div>
+          <div style={styles.modalBody}>
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>📅 Pilih tanggal (di minggu yang mau didownload)</label>
+              <input
+                type="date"
+                value={pdfWeekStart}
+                onChange={e => setPdfWeekStart(e.target.value)}
+                style={styles.formInput}
+              />
+            </div>
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>👨‍🏫 Guru</label>
+              <select
+                value={pdfTeacherFilter}
+                onChange={e => setPdfTeacherFilter(e.target.value)}
+                style={styles.formSelect}
+              >
+                <option value="Semua">Semua Guru (1 file, tiap guru halaman terpisah)</option>
+                {availableTeachers.map(t => (
+                  <option key={t.id} value={t.guruId || t.id}>
+                    {t.nama} {t.mapel ? '- ' + t.mapel : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <p style={{ fontSize: 12, color: '#64748b' }}>
+              PDF berisi jadwal Senin-Minggu untuk minggu yang mengandung tanggal di atas.
+            </p>
+            <div style={styles.modalFooter}>
+              <button type="button" onClick={() => setIsPdfModalOpen(false)} style={styles.btnCancel}>Batal</button>
+              <button onClick={handleDownloadJadwalPDF} style={styles.btnSave}>
+                <Download size={16} /> Download PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ============================================================
   // MAIN RENDER
   // ============================================================
   if (loading) {
@@ -1157,6 +1329,9 @@ const SchedulePage = () => {
           </div>
           <div style={styles.headerRight}>
             <div style={styles.headerButtons}>
+              <button onClick={() => setIsPdfModalOpen(true)} style={styles.btnEvent}>
+                <Download size={14} /> Download Jadwal
+              </button>
               <button 
                 onClick={() => handleOpenEventModal(getSmartDateString(selectedDate))} 
                 style={styles.btnEvent}
@@ -1342,6 +1517,9 @@ const SchedulePage = () => {
 
         {/* DETAIL MODAL */}
         {renderDetailModal()}
+
+        {/* PDF DOWNLOAD MODAL */}
+        {renderPdfModal()}
 
       </div>
       <style>{`
