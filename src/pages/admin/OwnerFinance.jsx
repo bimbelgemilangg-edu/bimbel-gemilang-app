@@ -36,6 +36,14 @@ const OwnerFinance = () => {
   const [totalFixedCost, setTotalFixedCost] = useState(0);
   const [totalPenyusutan, setTotalPenyusutan] = useState(0);
   const [jumlahSiswaAktif, setJumlahSiswaAktif] = useState(0);
+  // 🔥 BARU: fitur "Pendapatan Diakui vs Titipan" -- per siswa, bukan
+  // cuma agregat. Ini pelengkap yang lebih detail dari kartu "Kewajiban
+  // Belum Terpenuhi" yang udah ada di atas (konsepnya mirip, tapi ini
+  // per-siswa dengan tabel rinci, dihitung dari totalBayar aktual yang
+  // sudah masuk -- bukan dari totalTagihan/proyeksi ke depan).
+  const [siswaDetail, setSiswaDetail] = useState([]);
+  const [totalSudahJadiHak, setTotalSudahJadiHak] = useState(0);
+  const [totalMasihTitipan, setTotalMasihTitipan] = useState(0);
   const [fixedCostsList, setFixedCostsList] = useState([]);
   const [assetsList, setAssetsList] = useState([]);
 
@@ -89,6 +97,9 @@ const OwnerFinance = () => {
         let totalPendapatanKepake = 0;
         let totalKewajiban = 0;
         let aktifCount = 0;
+        let totalSudahJadiHakAcc = 0;
+        let totalMasihTitipanAcc = 0;
+        let siswaDetailAcc = [];
 
         studentsSnap.forEach(d => {
           const s = d.data();
@@ -96,6 +107,50 @@ const OwnerFinance = () => {
           const totalBayar = parseInt(s.totalBayar || 0);
           const sisa = totalTagihan - totalBayar;
           if (sisa > 0) totalPiutang += sisa;
+
+          // 🔥 BARU: "Sudah Jadi Hak vs Masih Titipan" -- dihitung dari
+          // totalBayar AKTUAL yang sudah masuk (bukan proyeksi totalTagihan
+          // ke depan kayak "Kewajiban" di atas). Ditaruh SEBELUM early-return
+          // di bawah supaya tetap kehitung walau siswa itu gak punya
+          // paketHargaBulanan (syarat fitur yang beda).
+          if (s.status === 'Aktif' && s.tanggalMulai && s.durasiBulan && totalBayar > 0) {
+            const durasiBulan = parseInt(s.durasiBulan);
+            const mulaiUtkHak = new Date(s.tanggalMulai);
+            const bayarLunasDiDepan = (s.metodeBayar === 'Tunai' || s.metodeBayar === 'Transfer') && durasiBulan > 1;
+
+            let sudahJadiHak, masihTitipan, bulanBerjalan;
+
+            if (bayarLunasDiDepan) {
+              // bulanBerjalan = jumlah bulan penuh sejak tanggalMulai
+              // sampai hari ini, dibatasi maksimal = durasi paket.
+              let b = (now.getFullYear() - mulaiUtkHak.getFullYear()) * 12 + (now.getMonth() - mulaiUtkHak.getMonth());
+              if (now.getDate() < mulaiUtkHak.getDate()) b -= 1;
+              bulanBerjalan = Math.min(Math.max(b, 0), durasiBulan);
+
+              const jatahPerBulan = totalBayar / durasiBulan;
+              sudahJadiHak = Math.round(jatahPerBulan * bulanBerjalan);
+              masihTitipan = totalBayar - sudahJadiHak;
+            } else {
+              // Cicilan (atau durasi cuma 1 bulan): bayar memang sesuai
+              // jasa berjalan, jadi semuanya sudah jadi hak, gak ada titipan.
+              bulanBerjalan = durasiBulan;
+              sudahJadiHak = totalBayar;
+              masihTitipan = 0;
+            }
+
+            totalSudahJadiHakAcc += sudahJadiHak;
+            totalMasihTitipanAcc += masihTitipan;
+            siswaDetailAcc.push({
+              id: d.id,
+              nama: s.nama || 'Siswa',
+              totalBayar,
+              durasiBulan,
+              bulanBerjalan,
+              sudahJadiHak,
+              masihTitipan,
+              metodeBayar: s.metodeBayar || '-',
+            });
+          }
 
           const mulai = s.tanggalMulai ? new Date(s.tanggalMulai) : null;
           const selesai = s.tanggalSelesai ? new Date(s.tanggalSelesai) : null;
@@ -124,6 +179,9 @@ const OwnerFinance = () => {
           }
         });
 
+        setSiswaDetail(siswaDetailAcc.sort((a, b) => b.masihTitipan - a.masihTitipan));
+        setTotalSudahJadiHak(totalSudahJadiHakAcc);
+        setTotalMasihTitipan(totalMasihTitipanAcc);
         setPiutang(totalPiutang);
         setPendapatanKepake(totalPendapatanKepake);
         setKewajiban(totalKewajiban);
@@ -244,6 +302,62 @@ const OwnerFinance = () => {
           </div>
         </div>
 
+        {/* ===== BAGIAN BARU: PENDAPATAN DIAKUI vs TITIPAN (per siswa) ===== */}
+        <div style={{...styles.card, marginBottom: 20}}>
+          <h3 style={styles.cardTitle}><Receipt size={16} /> Pendapatan Diakui vs Titipan (per Siswa)</h3>
+          <p style={{ fontSize: 11, color: '#94a3b8', margin: '-8px 0 16px' }}>
+            Beda dari "Kewajiban" di atas (yang itu proyeksi ke depan) -- ini dihitung dari duit yang SUDAH masuk (totalBayar), dipecah mana yang udah jadi hak vs masih titipan siswa.
+          </p>
+
+          <div style={styles.recognizeGrid(isMobile)}>
+            <div style={styles.recognizeCard('#f0fdf4', '#10b981')}>
+              <span style={styles.recognizeLabel}>✅ Sudah Jadi Hak Bulan Ini</span>
+              <h3 style={{...styles.recognizeValue, color: '#10b981'}}>{rp(totalSudahJadiHak)}</h3>
+            </div>
+            <div style={styles.recognizeCard('#fffbeb', '#f59e0b')}>
+              <span style={styles.recognizeLabel}>⏳ Masih Titipan</span>
+              <h3 style={{...styles.recognizeValue, color: '#f59e0b'}}>{rp(totalMasihTitipan)}</h3>
+            </div>
+          </div>
+
+          <div style={styles.warnStrip}>
+            ⚠️ <b>Jangan ambil dari angka Titipan (kuning) untuk gaji/pribadi</b> -- itu masih "milik" sesi belajar yang belum diajarkan ke siswa-siswa itu.
+          </div>
+
+          {siswaDetail.length === 0 ? (
+            <p style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', padding: 20 }}>Belum ada siswa aktif dengan data pembayaran lengkap.</p>
+          ) : (
+            <div style={{ overflowX: 'auto', marginTop: 14 }}>
+              <table style={styles.table}>
+                <thead>
+                  <tr style={styles.thr}>
+                    <th style={styles.th}>Nama Siswa</th>
+                    <th style={styles.th}>Metode</th>
+                    <th style={{...styles.th, textAlign: 'right'}}>Total Bayar</th>
+                    <th style={{...styles.th, textAlign: 'center'}}>Durasi</th>
+                    <th style={{...styles.th, textAlign: 'center'}}>Bulan Berjalan</th>
+                    <th style={{...styles.th, textAlign: 'right'}}>Sudah Jadi Hak</th>
+                    <th style={{...styles.th, textAlign: 'right'}}>Masih Titipan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {siswaDetail.map(row => (
+                    <tr key={row.id} style={styles.tr}>
+                      <td style={styles.td}><b>{row.nama}</b></td>
+                      <td style={styles.td}>{row.metodeBayar}</td>
+                      <td style={{...styles.td, textAlign: 'right'}}>{rp(row.totalBayar)}</td>
+                      <td style={{...styles.td, textAlign: 'center'}}>{row.durasiBulan} bln</td>
+                      <td style={{...styles.td, textAlign: 'center'}}>{row.bulanBerjalan}/{row.durasiBulan}</td>
+                      <td style={{...styles.td, textAlign: 'right', color: '#10b981', fontWeight: 700}}>{rp(row.sudahJadiHak)}</td>
+                      <td style={{...styles.td, textAlign: 'right', color: row.masihTitipan > 0 ? '#f59e0b' : '#cbd5e1', fontWeight: 700}}>{rp(row.masihTitipan)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
         {/* ===== BAGIAN 3: RINCIAN PERHITUNGAN PROFIT ===== */}
         <div style={styles.card}>
           <h3 style={styles.cardTitle}><Calculator size={16} /> Rincian Perhitungan Profit Bulan Ini</h3>
@@ -318,6 +432,19 @@ const styles = {
   calcRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f8fafc', fontSize: 12, gap: 10 },
   calcTotal: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0 4px', marginTop: 6, borderTop: '2px solid #1e293b', fontSize: 15, fontWeight: 900 },
   infoBoxBlue: { background: '#eff6ff', padding: 12, borderRadius: 8, border: '1px solid #bfdbfe', marginTop: 16, display: 'flex', alignItems: 'flex-start', gap: 8, color: '#1e40af' },
+
+  // 🔥 BARU: style buat kartu Sudah Jadi Hak vs Titipan + tabel detail
+  recognizeGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 12 }),
+  recognizeCard: (bg, color) => ({ background: bg, padding: 16, borderRadius: 12, border: `1px solid ${color}40` }),
+  recognizeLabel: { fontSize: 11, color: '#64748b', fontWeight: 700 },
+  recognizeValue: { margin: '6px 0 0', fontSize: 20, fontWeight: 900 },
+  warnStrip: { background: '#fef2f2', color: '#991b1b', fontSize: 11, padding: '10px 14px', borderRadius: 8, border: '1px solid #fecaca', marginBottom: 6, fontWeight: 600 },
+
+  table: { width: '100%', borderCollapse: 'collapse', minWidth: 650 },
+  thr: { background: '#f8fafc', textAlign: 'left' },
+  th: { padding: '10px 12px', fontSize: 10, color: '#64748b', fontWeight: 800, textTransform: 'uppercase', borderBottom: '2px solid #f1f5f9' },
+  tr: { borderBottom: '1px solid #f1f5f9' },
+  td: { padding: '10px 12px', fontSize: 12 },
 };
 
 export default OwnerFinance;
