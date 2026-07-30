@@ -5,7 +5,7 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { 
   collection, addDoc, getDocs, query, orderBy, limit, 
-  doc, getDoc, serverTimestamp, where 
+  doc, getDoc, serverTimestamp, where, writeBatch, runTransaction, setDoc
 } from "firebase/firestore";
 import { 
   ArrowLeft, Save, User, BookOpen, Calendar, CreditCard, 
@@ -152,70 +152,63 @@ const AddStudent = () => {
   };
 
   // ============================================================
-  // 🔥 GENERATE STUDENT ID (PASTI UNIK + BERMAKNA)
+  // 🔥 GENERATE STUDENT ID -- SEKARANG ATOMIK
   // ============================================================
+  // Sebelumnya: "baca semua siswa, cari angka terbesar, +1" -- ada jeda
+  // waktu antara baca dan tulis, jadi kalau 2 admin daftarin siswa PERSIS
+  // barengan, bisa dapet studentId yang SAMA (baru ketahuan lewat
+  // pengecekan duplikat setelahnya, itupun gak selalu kejamin nyambung
+  // baik). Sekarang pakai counter tersimpan per-prefix yang diperbarui
+  // secara ATOMIK lewat Firestore transaction -- persis pola yang sama
+  // yang sudah dipakai buat benerin bug serupa di generator ID guru/mapel.
   const generateStudentId = async () => {
+    const kelas = formData.kelasSekolah || '1 SD';
+    const program = formData.programType || 'Reguler';
+    const kodeKelas = getKodeKelas(kelas, program);
+    const now = new Date();
+    const tahun = now.getFullYear().toString().slice(-2);
+    const bulan = String(now.getMonth() + 1).padStart(2, '0');
+    const prefix = 'STD-' + kodeKelas + tahun + bulan;
+    const counterId = `student_id_counter_${prefix}`;
+
     try {
-      // Ambil data dari form
-      const kelas = formData.kelasSekolah || '1 SD';
-      const program = formData.programType || 'Reguler';
-      
-      // Kode kelas (2 digit)
-      const kodeKelas = getKodeKelas(kelas, program);
-      
-      // Tahun (2 digit) dan Bulan (2 digit)
-      const now = new Date();
-      const tahun = now.getFullYear().toString().slice(-2);
-      const bulan = String(now.getMonth() + 1).padStart(2, '0');
-      
-      // Prefix: STD-KKYYMM
-      const prefix = 'STD-' + kodeKelas + tahun + bulan;
-      
-      // 🔥 CARI NOMOR URUT TERAKHIR UNTUK PREFIX INI
-      const q = query(
-        collection(db, "students"),
-        where("studentId", ">=", prefix),
-        where("studentId", "<=", prefix + "ZZZZ")
-      );
-      const snap = await getDocs(q);
-      
-      let maxUrut = 0;
-      snap.docs.forEach(doc => {
-        const data = doc.data();
-        if (data.studentId) {
-          // Cari 4 digit terakhir
-          const idStr = data.studentId;
-          if (idStr.startsWith(prefix)) {
-            const suffix = idStr.substring(prefix.length);
-            const num = parseInt(suffix);
-            if (!isNaN(num) && num > maxUrut) {
-              maxUrut = num;
-            }
+      const counterRef = doc(db, "settings", counterId);
+
+      // Bootstrap sekali doang: kalau counter buat prefix ini belum pernah
+      // dipakai, hitung dulu dari data yang SUDAH ADA supaya gak mulai
+      // dari 0 dan bikin ID yang udah kepake sebelumnya (misal sistem
+      // baru pertama kali pakai fitur ini di bulan berjalan).
+      const counterSnap = await getDoc(counterRef);
+      if (!counterSnap.exists()) {
+        const q = query(
+          collection(db, "students"),
+          where("studentId", ">=", prefix),
+          where("studentId", "<=", prefix + "ZZZZ")
+        );
+        const snap = await getDocs(q);
+        let maxUrut = 0;
+        snap.docs.forEach(d => {
+          const idStr = d.data().studentId;
+          if (idStr && idStr.startsWith(prefix)) {
+            const num = parseInt(idStr.substring(prefix.length));
+            if (!isNaN(num) && num > maxUrut) maxUrut = num;
           }
-        }
-      });
-      
-      // Generate ID lengkap
-      const nextUrut = maxUrut + 1;
-      const studentId = prefix + String(nextUrut).padStart(4, '0');
-      
-      // 🔥 DOUBLE CHECK: Pastikan ID benar-benar unik
-      const checkSnap = await getDocs(
-        query(collection(db, "students"), where("studentId", "==", studentId))
-      );
-      
-      if (!checkSnap.empty) {
-        // Jika ada duplikat, generate ulang dengan timestamp
-        console.warn("⚠️ Duplikat ID terdeteksi! Generate ulang...");
-        const timestamp = Date.now().toString(36).toUpperCase();
-        const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-        return 'STD-' + timestamp + random;
+        });
+        await setDoc(counterRef, { value: maxUrut });
       }
-      
-      return studentId;
+
+      // Ambil nomor urut berikutnya secara ATOMIK
+      const nextUrut = await runTransaction(db, async (transaction) => {
+        const snap = await transaction.get(counterRef);
+        const current = (snap.data()?.value || 0) + 1;
+        transaction.set(counterRef, { value: current });
+        return current;
+      });
+
+      return prefix + String(nextUrut).padStart(4, '0');
     } catch (e) {
       console.error("Error generate ID:", e);
-      // Fallback: timestamp + random (PASTI UNIK)
+      // Fallback: timestamp + random (PASTI UNIK, walau kurang rapi)
       const timestamp = Date.now().toString(36).toUpperCase();
       const random = Math.random().toString(36).substring(2, 6).toUpperCase();
       return 'STD-' + timestamp + random;
@@ -348,9 +341,26 @@ const AddStudent = () => {
   };
 
   // === SUBMIT ===
+  // 🔥 FIX: normalisasi nomor HP ke format 62xxx (dipakai WhatsApp/wa.me
+  // di tempat lain di sistem). Sebelumnya nomor diterima APAPUN formatnya
+  // tanpa validasi -- format lokal (08xxx) atau ada karakter aneh bisa
+  // bikin fitur WhatsApp di halaman lain diam-diam gak jalan.
+  const normalisasiNoHp = (raw) => {
+    let bersih = (raw || '').replace(/[^0-9]/g, ''); // buang semua selain angka
+    if (bersih.startsWith('0')) bersih = '62' + bersih.substring(1);
+    if (!bersih.startsWith('62')) bersih = '62' + bersih;
+    return bersih;
+  };
+
   const handleSubmit = async () => {
-    if (!formData.nama || !formData.noHp) {
+    if (!formData.nama.trim() || !formData.noHp.trim()) {
       showAlert('⚠️ Nama dan No HP wajib diisi!');
+      return;
+    }
+
+    const noHpBersih = normalisasiNoHp(formData.noHp);
+    if (noHpBersih.length < 10 || noHpBersih.length > 15) {
+      showAlert('⚠️ Nomor HP kelihatannya gak valid. Cek lagi ya (contoh: 628123456789).');
       return;
     }
 
@@ -386,14 +396,18 @@ const AddStudent = () => {
         paket: formData.programType === 'English' ? formData.englishLevelId : formData.paketId,
         paketNama: paketName,
         paketHargaBulanan: pkg.price,
-        kelasSekolah: formData.kelasSekolah,
+        // 🔥 FIX: kalau program English, "Kelas Sekolah" dari Step 1 (yang
+        // default-nya "1 SD") gak relevan buat siswa kursus Inggris --
+        // bisa aja anak SMA atau orang dewasa. Simpen "Umum" aja biar gak
+        // menyesatkan data.
+        kelasSekolah: formData.programType === 'English' ? 'Umum' : formData.kelasSekolah,
         tempatLahir: formData.tempatLahir,
         tanggalLahir: tanggalLahirStr,
         ortu: {
           ayah: formData.namaAyah,
           ibu: formData.namaIbu,
           alamat: formData.alamat,
-          hp: formData.noHp
+          hp: noHpBersih
         },
         tanggalMulai: formData.tanggalMulai,
         tanggalSelesai: tanggalSelesai,
@@ -408,11 +422,22 @@ const AddStudent = () => {
         createdAt: serverTimestamp()
       };
 
-      await addDoc(collection(db, "students"), studentData);
+      // 🔥 FIX BUG PALING KRUSIAL: sebelumnya data siswa dan data keuangan
+      // ditulis lewat 2 panggilan addDoc() TERPISAH. Kalau tulisan
+      // pertama (siswa) sukses tapi yang kedua (keuangan) gagal karena
+      // apapun (koneksi putus, dll), siswa itu KETERCATAT di sistem tapi
+      // uangnya HILANG dari pembukuan -- padahal di dunia nyata siswanya
+      // beneran udah bayar. Sekarang pakai writeBatch: SEMUA tulisan ini
+      // sukses BARENGAN, atau GAGAL BARENGAN (gak ada kondisi setengah-jadi).
+      const batch = writeBatch(db);
 
-      // 2. SIMPAN PEMBAYARAN
+      const studentRef = doc(collection(db, "students"));
+      batch.set(studentRef, studentData);
+
+      // 2. SIMPAN PEMBAYARAN (dalam batch yang sama)
       if (formData.metodeBayar === 'Tunai' || formData.metodeBayar === 'Transfer') {
-        await addDoc(collection(db, "finance_logs"), {
+        const financeLogRef = doc(collection(db, "finance_logs"));
+        batch.set(financeLogRef, {
           studentId: studentId,
           namaSiswa: formData.nama,
           date: today,
@@ -433,16 +458,20 @@ const AddStudent = () => {
           tanggalBayar: null
         }));
 
-        await addDoc(collection(db, "finance_tagihan"), {
+        const tagihanRef = doc(collection(db, "finance_tagihan"));
+        batch.set(tagihanRef, {
           studentId: studentId,
           namaSiswa: formData.nama,
-          noHp: formData.noHp,
+          noHp: noHpBersih,
           totalTagihan: totalTagihan,
           sisaTagihan: totalTagihan,
           detailCicilan: installments,
           createdAt: serverTimestamp()
         });
       }
+
+      // 🔥 Eksekusi SEMUA tulisan di atas sekaligus, atomik.
+      await batch.commit();
 
       showAlert(`✅ Siswa berhasil didaftarkan! ID: ${studentId}`, 5000);
       
@@ -691,6 +720,23 @@ const AddStudent = () => {
 
     return (
       <div style={styles.stepContent}>
+        {/* 🔥 BARU: ringkasan review sebelum submit -- sebelumnya admin
+            ngisi biodata di Step 1 lalu gak pernah liat lagi datanya
+            sampai submit beneran. Kalau ada typo, baru ketauan setelah
+            data kesimpen. */}
+        <div style={styles.reviewBox}>
+          <div style={styles.reviewTitle}>📋 Cek Sekali Lagi Sebelum Disimpan</div>
+          <div style={styles.reviewGrid}>
+            <div><span style={styles.reviewLabel}>Nama</span><div style={styles.reviewValue}>{formData.nama || '-'}</div></div>
+            <div><span style={styles.reviewLabel}>No HP</span><div style={styles.reviewValue}>{formData.noHp || '-'}</div></div>
+            <div><span style={styles.reviewLabel}>Kelas Sekolah</span><div style={styles.reviewValue}>{formData.programType === 'English' ? '(Kursus Inggris)' : formData.kelasSekolah}</div></div>
+            <div><span style={styles.reviewLabel}>Program</span><div style={styles.reviewValue}>{formData.programType === 'English' ? (pricing.english.levels.find(l => l.id === formData.englishLevelId)?.name || '-') : `${formData.jenjang} - ${getSelectedPackage()?.name || '-'}`}</div></div>
+            <div><span style={styles.reviewLabel}>Nama Ayah</span><div style={styles.reviewValue}>{formData.namaAyah || '-'}</div></div>
+            <div><span style={styles.reviewLabel}>Nama Ibu</span><div style={styles.reviewValue}>{formData.namaIbu || '-'}</div></div>
+          </div>
+          <p style={styles.reviewHint}>Kalau ada yang salah, klik "Sebelumnya" buat balik & benerin dulu.</p>
+        </div>
+
         <div style={styles.sectionHeader}>
           <CreditCard size={20} color="#10b981" />
           <h3 style={styles.sectionTitle}>Pembayaran</h3>
@@ -759,6 +805,22 @@ const AddStudent = () => {
   const totalSteps = 3;
   const stepLabels = ['Biodata', 'Program', 'Pembayaran'];
 
+  // 🔥 FIX #5: sebelumnya admin bisa lanjut ke Step 2/3 walau Step 1
+  // (Nama, No HP) masih kosong -- baru ketauan pas coba submit di paling
+  // akhir, buang waktu ngisi step berikutnya buat apa-apa. Sekarang
+  // divalidasi per-step dulu sebelum boleh lanjut.
+  const handleNext = () => {
+    if (step === 1) {
+      if (!formData.nama.trim()) return showAlert('⚠️ Nama lengkap wajib diisi dulu!');
+      if (!formData.noHp.trim()) return showAlert('⚠️ No HP/WhatsApp wajib diisi dulu!');
+    }
+    if (step === 2) {
+      const pkg = getSelectedPackage();
+      if (!pkg) return showAlert('⚠️ Pilih paket/level dulu sebelum lanjut!');
+    }
+    setStep(step + 1);
+  };
+
   return (
     <div style={styles.wrapper}>
       <SidebarAdmin />
@@ -788,7 +850,7 @@ const AddStudent = () => {
               <button onClick={() => setStep(step - 1)} style={styles.btnPrev}><ChevronLeft size={16} /> Sebelumnya</button>
             )}
             {step < totalSteps ? (
-              <button onClick={() => setStep(step + 1)} style={styles.btnNext}>Selanjutnya <ChevronRight size={16} /></button>
+              <button onClick={handleNext} style={styles.btnNext}>Selanjutnya <ChevronRight size={16} /></button>
             ) : (
               <button onClick={handleSubmit} style={styles.btnSave} disabled={loading}>
                 {loading ? '⏳ Menyimpan...' : <><Save size={16} /> Simpan & Selesai</>}
@@ -836,6 +898,12 @@ const styles = {
   accountRow: { display: 'flex', justifyContent: 'space-between', padding: '3px 0', fontSize: 12 },
   accountLabel: { color: '#64748b' },
   accountValue: { background: 'white', padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 'bold', color: '#0f172a' },
+  reviewBox: { background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 18 },
+  reviewTitle: { fontSize: 13, fontWeight: 800, color: '#1e293b', marginBottom: 12 },
+  reviewGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 },
+  reviewLabel: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' },
+  reviewValue: { fontSize: 13, color: '#1e293b', fontWeight: 600, marginTop: 2 },
+  reviewHint: { fontSize: 10, color: '#94a3b8', marginTop: 12, marginBottom: 0, fontStyle: 'italic' },
   paymentCard: { background: '#f0fdf4', padding: 16, borderRadius: 12, border: '1px solid #bbf7d0', marginBottom: 16 },
   paymentRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', fontSize: 13 },
   paymentTotal: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0 0', marginTop: 8, borderTop: '2px solid #bbf7d0', fontSize: 16, fontWeight: 'bold', color: '#166534' },
