@@ -150,6 +150,9 @@ const StudentDashboard = () => {
   const [wajibSurveys, setWajibSurveys] = useState([]);
   // 🔥 BARU: ringkasan kehadiran buat bagan bundar di dashboard
   const [attendanceSummary, setAttendanceSummary] = useState({ hadir: 0, izin: 0, alpha: 0, total: 0 });
+  // 🔥 SEMENTARA: panel diagnosa absensi -- buat nyari tau kenapa data
+  // kosong. Aman dihapus nanti kalau udah gak dibutuhkan.
+  const [attDebug, setAttDebug] = useState(null);
   const [optionalSurveys, setOptionalSurveys] = useState([]);
   const [dismissedSurveyIds, setDismissedSurveyIds] = useState(() => {
     try { return JSON.parse(localStorage.getItem('dismissedSurveys') || '[]'); }
@@ -240,10 +243,17 @@ const StudentDashboard = () => {
         const [
           schedSnap, modulSnap, raportSnap, notifSnap, surveySnap,
           respByUserId, respByStudentId, respByRespondentId, respByNim,
-          attByDocId, attByKodeUnik,
+          attByDocId, attByKodeUnik, attByName, attByNamaSiswa,
         ] = await Promise.all([
           getDocs(query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr))).catch(() => ({ docs: [] })),
-          getDocs(query(collection(db, "bimbel_modul"), orderBy("updatedAt", "desc"), limit(20))).catch(() => ({ docs: [] })),
+          // 🔥 FIX BUG: sebelumnya limit(20) di sini itu 20 modul TERBARU
+          // SE-SISTEM (bukan per siswa) -- kalau bimbel punya banyak guru
+          // yang sering update modul/kuis, modul yang BENERAN ditargetkan
+          // ke siswa ini bisa kegeser keluar dari 20-besar-terbaru itu dan
+          // gak pernah kelihatan di widget ini, walau targetnya udah benar
+          // dari awal. Limit dinaikkan jauh (200) biar hampir gak mungkin
+          // ke-truncate untuk skala bimbel manapun.
+          getDocs(query(collection(db, "bimbel_modul"), orderBy("updatedAt", "desc"), limit(200))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, RAPORT_COLLECTIONS.FINAL), where("studentId", "==", studentId), where("periode", "==", periode), limit(1))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "notifications"), where("recipientId", "==", nimVal), limit(30))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "surveys"), where("status", "==", "aktif"), limit(50))).catch(() => ({ docs: [] })),
@@ -259,6 +269,13 @@ const StudentDashboard = () => {
           // kehitung di bagannya.
           getDocs(query(collection(db, "attendance"), where("studentId", "==", studentId))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "attendance"), where("studentId", "==", nimVal))).catch(() => ({ docs: [] })),
+          // 🔥 SEMENTARA (diagnosa): cari absensi berdasarkan NAMA siswa
+          // (bukan ID). Kalau ini nemu data tapi dua query di atas nggak,
+          // berarti data absensinya BENERAN ADA tapi skema ID yang dipakai
+          // nulisnya beda dari yang diduga -- dan ini bakal nunjukkin
+          // persis skema ID yang sebenarnya dipakai.
+          getDocs(query(collection(db, "attendance"), where("studentName", "==", studentName))).catch(() => ({ docs: [] })),
+          getDocs(query(collection(db, "attendance"), where("namaSiswa", "==", studentName))).catch(() => ({ docs: [] })),
         ]);
 
         // --- Ringkasan kehadiran ---
@@ -270,6 +287,19 @@ const StudentDashboard = () => {
           izin: attList.filter(a => a.status === 'Izin' || a.status === 'Sakit').length,
           alpha: attList.filter(a => a.status === 'Alpha').length,
           total: attList.length,
+        });
+
+        // --- Diagnosa (sementara) ---
+        const byNameMerged = new Map();
+        [...attByName.docs, ...attByNamaSiswa.docs].forEach(d => byNameMerged.set(d.id, d.data()));
+        const byNameList = Array.from(byNameMerged.values());
+        setAttDebug({
+          studentIdDipakaiCari: studentId,
+          nimValDipakaiCari: nimVal,
+          ketemuLewatDocId: attByDocId.docs.length,
+          ketemuLewatKodeUnik: attByKodeUnik.docs.length,
+          ketemuLewatNama: byNameList.length,
+          contohStudentIdAsli: byNameList.slice(0, 3).map(a => a.studentId),
         });
 
         const fetchedSchedules = schedSnap.docs
@@ -290,6 +320,14 @@ const StudentDashboard = () => {
 
         const accessibleModuls = allModulsData.filter(modul => {
           if (modul.status === 'arsip') return false;
+          // 🔥 Fix yang sama kayak di StudentElearning.jsx: modul
+          // "terjadwal" dianggap aktif secara efektif begitu tanggalMulai
+          // udah lewat, karena gak ada mekanisme yang otomatis ngubah
+          // statusnya jadi "aktif".
+          if (modul.status === 'terjadwal') {
+            if (!modul.tanggalMulai) return false;
+            if (new Date(modul.tanggalMulai) > new Date()) return false;
+          }
           return checkStudentAccess(modul, studentId, kelasVal, programVal);
         });
 
@@ -728,6 +766,26 @@ const StudentDashboard = () => {
           </div>
           {dataLoading ? <SkeletonLines count={2} /> : (
             <AttendanceDonut hadir={attendanceSummary.hadir} izin={attendanceSummary.izin} alpha={attendanceSummary.alpha} total={attendanceSummary.total} />
+          )}
+
+          {/* 🔥 PANEL DIAGNOSA SEMENTARA -- hapus setelah masalah absensi
+              ketemu akarnya. Nunjukkin persis skema ID apa yang beneran
+              dipakai nulis data absensi di database. */}
+          {attDebug && (
+            <div style={{ marginTop: 14, padding: 10, background: '#fffbeb', border: '1px dashed #f59e0b', borderRadius: 10, fontSize: 10, fontFamily: 'monospace', color: '#78350f', lineHeight: 1.7 }}>
+              <b>🔍 Diagnosa Absensi (sementara)</b><br/>
+              ID dokumen dicari: {attDebug.studentIdDipakaiCari}<br/>
+              Kode unik dicari: {attDebug.nimValDipakaiCari}<br/>
+              Ketemu lewat ID dokumen: {attDebug.ketemuLewatDocId}<br/>
+              Ketemu lewat kode unik: {attDebug.ketemuLewatKodeUnik}<br/>
+              Ketemu lewat NAMA: {attDebug.ketemuLewatNama}<br/>
+              {attDebug.contohStudentIdAsli.length > 0 && (
+                <>Contoh studentId asli di data: {attDebug.contohStudentIdAsli.join(', ')}</>
+              )}
+              {attDebug.ketemuLewatNama === 0 && (
+                <><br/>⚠️ Gak ketemu SAMA SEKALI walau dicari pakai nama -- kemungkinan siswa ini memang belum pernah diabsen sama sekali di database.</>
+              )}
+            </div>
           )}
         </div>
 

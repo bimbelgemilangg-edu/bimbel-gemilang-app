@@ -124,14 +124,34 @@ const StudentElearning = () => {
   const fetchModules = useCallback(async () => {
     setLoading(true);
     try {
-      // 🔥 AMBIL SEMUA MODUL AKTIF
+      // 🔥 FIX BUG: sebelumnya query di sini CUMA ambil modul berstatus
+      // "aktif" -- padahal ManageMateri.jsx juga punya opsi status
+      // "terjadwal" (buat modul yang di-set nyala di tanggal mendatang),
+      // dan TIDAK ADA mekanisme apapun di sistem ini (gak ada cron job,
+      // gak ada pengecekan otomatis) yang mengubah status dari "terjadwal"
+      // ke "aktif" pas tanggalnya tiba. Akibatnya modul yang guru
+      // jadwalkan TERKUNCI SELAMANYA, gak pernah muncul ke siswa sampai
+      // ada yang manual masuk edit ganti statusnya. Sekarang query ambil
+      // dua-duanya, lalu modul "terjadwal" dianggap "aktif secara efektif"
+      // begitu tanggalMulai-nya sudah lewat -- gak perlu ada yang ubah
+      // status manual lagi.
       const q = query(
         collection(db, "bimbel_modul"),
-        where("status", "==", "aktif"),
+        where("status", "in", ["aktif", "terjadwal"]),
         orderBy("updatedAt", "desc")
       );
       const snapshot = await getDocs(q);
       let allModules = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      const sekarang = new Date();
+      allModules = allModules.filter(m => {
+        if (m.status === 'aktif') return true;
+        if (m.status === 'terjadwal') {
+          if (!m.tanggalMulai) return false; // terjadwal tapi gak ada tanggal -> jangan tampilkan
+          return new Date(m.tanggalMulai) <= sekarang;
+        }
+        return false;
+      });
 
       // 🔥 FIX BUG UTAMA (revisi ke-2, retroaktif — gak perlu buka & simpan
       // ulang tiap kuis manual): daripada cuma andalkan penanda parentModulId

@@ -9,7 +9,8 @@ import {
   CalendarDays, AlertCircle, Eye, EyeOff, Lock, Unlock,
   Layers, Type, FileUp, Video, Rocket, Sparkles, Loader2,
   List, Table, Grid, Hash, AlignLeft, CheckSquare, Square,
-  Edit3, FileQuestion, ArrowLeftRight, Undo2, Redo2
+  Edit3, FileQuestion, ArrowLeftRight, Undo2, Redo2,
+  Search, UserPlus
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile } from '../../../services/uploadService';
@@ -121,6 +122,64 @@ const ManageQuiz = () => {
   const [maxAttempts, setMaxAttempts] = useState(1);
   const [showExplanation, setShowExplanation] = useState(true);
   const [showScoreToStudent, setShowScoreToStudent] = useState(true);
+  // 🔥 BARU: fitur "target siswa tertentu" buat kuis STANDALONE (yang
+  // gak nempel ke modul). Sebelumnya opsi ini cuma ada buat kuis yang
+  // ngikutin target modul induknya -- kuis mandiri gak punya jalan sama
+  // sekali buat ditargetin ke siswa spesifik.
+  const [allStudentsForQuiz, setAllStudentsForQuiz] = useState([]);
+  const [filteredStudentsForQuiz, setFilteredStudentsForQuiz] = useState([]);
+  const [studentSearchForQuiz, setStudentSearchForQuiz] = useState('');
+  const [showStudentPickerForQuiz, setShowStudentPickerForQuiz] = useState(false);
+  const [selectedStudentsForQuiz, setSelectedStudentsForQuiz] = useState([]);
+
+  // Ambil daftar siswa (dipakai kalau guru pilih mode "Siswa Tertentu")
+  useEffect(() => {
+    const fetchStudentsForQuiz = async () => {
+      try {
+        const snap = await getDocs(collection(db, "students"));
+        const data = snap.docs.map(d => {
+          const s = d.data();
+          return {
+            id: d.id,
+            studentId: s.studentId || d.id,
+            nama: s.nama || 'Siswa',
+            kelasSekolah: s.kelasSekolah || '-',
+            program: s.kategori || 'Reguler',
+          };
+        }).sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+        setAllStudentsForQuiz(data);
+        setFilteredStudentsForQuiz(data);
+      } catch (e) {
+        console.error("Gagal ambil data siswa buat target kuis:", e);
+      }
+    };
+    fetchStudentsForQuiz();
+  }, []);
+
+  useEffect(() => {
+    if (!studentSearchForQuiz.trim()) {
+      setFilteredStudentsForQuiz(allStudentsForQuiz);
+      return;
+    }
+    const term = studentSearchForQuiz.toLowerCase();
+    setFilteredStudentsForQuiz(allStudentsForQuiz.filter(s =>
+      (s.nama || '').toLowerCase().includes(term) || (s.studentId || '').toLowerCase().includes(term)
+    ));
+  }, [studentSearchForQuiz, allStudentsForQuiz]);
+
+  const toggleStudentForQuiz = (student) => {
+    setSelectedStudentsForQuiz(prev => {
+      const exists = prev.some(s => s.studentId === student.studentId);
+      if (exists) return prev.filter(s => s.studentId !== student.studentId);
+      return [...prev, { id: student.id, studentId: student.studentId, nama: student.nama, kelasSekolah: student.kelasSekolah }];
+    });
+  };
+
+  const selectAllFilteredForQuiz = () => {
+    const already = selectedStudentsForQuiz.map(s => s.studentId);
+    const toAdd = filteredStudentsForQuiz.filter(s => !already.includes(s.studentId));
+    setSelectedStudentsForQuiz(prev => [...prev, ...toAdd.map(s => ({ id: s.id, studentId: s.studentId, nama: s.nama, kelasSekolah: s.kelasSekolah }))]);
+  };
   const [difficulty, setDifficulty] = useState('Sedang');
   // 🔥 BARU: Deteksi kecurangan dasar khusus Mode Ujian — mendeteksi siswa
   // pindah tab/aplikasi (BUKAN mencegah HP kedua, itu di luar jangkauan web).
@@ -1278,6 +1337,10 @@ const ManageQuiz = () => {
     const valid = questions.filter(q => q.q.trim() || q.qImage);
     if (valid.length === 0) return alert("❌ Minimal 1 soal!");
     if (!quizTitle) return alert("❌ Judul kuis wajib diisi!");
+    // 🔥 BARU: validasi buat mode target "Siswa Tertentu"
+    if (publishTarget === 'siswa' && selectedStudentsForQuiz.length === 0) {
+      return alert("❌ Pilih minimal 1 siswa dulu buat mode 'Siswa Tertentu'!");
+    }
 
     const stillNeedsReview = valid.filter(q => q.needsManualAnswer).length;
     if (stillNeedsReview > 0) {
@@ -1539,6 +1602,12 @@ const ManageQuiz = () => {
           type: 'kuis_mandiri',
           targetKategori: publishTarget === 'jenjang' ? selectedProgram : "Semua",
           targetKelas: publishTarget === 'jenjang' ? selectedKelas : "Semua",
+          // 🔥 BARU: sebelumnya field-field ini TIDAK PERNAH ditulis di
+          // jalur kuis standalone -- makanya "target siswa tertentu"
+          // buat kuis mandiri gak pernah bisa berfungsi sama sekali.
+          sendToSpecificStudents: publishTarget === 'siswa',
+          selectedStudents: publishTarget === 'siswa' ? selectedStudentsForQuiz : [],
+          studentIds: publishTarget === 'siswa' ? selectedStudentsForQuiz.map(s => s.studentId) : [],
           status: 'aktif',
           guruId: savedTeacher.guruId || savedTeacher.id || '',
           kodeMapel: savedTeacher.kodeMapel || '',
@@ -1968,6 +2037,23 @@ const ManageQuiz = () => {
           }}>
             <Users size={14} color={publishTarget === 'jenjang' ? '#f59e0b' : '#94a3b8'} /> Tautkan ke Jenjang
           </button>
+          {/* 🔥 BARU: mode ini sebelumnya gak ada sama sekali -- kuis
+              standalone cuma bisa "Semua" atau kelas/kategori, gak pernah
+              bisa ditargetin ke siswa spesifik. */}
+          <button onClick={() => setPublishTarget('siswa')} style={{ 
+            padding: '8px 14px', 
+            borderRadius: 8, 
+            border: publishTarget === 'siswa' ? '2px solid #8b5cf6' : '1px solid #e2e8f0',
+            background: publishTarget === 'siswa' ? '#f5f3ff' : 'white',
+            cursor: 'pointer',
+            fontSize: 11,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}>
+            <UserPlus size={14} color={publishTarget === 'siswa' ? '#8b5cf6' : '#94a3b8'} /> Siswa Tertentu
+          </button>
         </div>
 
         {publishTarget === 'modul' && (
@@ -1988,6 +2074,70 @@ const ManageQuiz = () => {
               <option value="Semua">Semua Kelas</option>
               {availableClasses.map(k => <option key={k} value={k}>{k}</option>)}
             </select>
+          </div>
+        )}
+
+        {/* 🔥 BARU: panel picker siswa buat mode "Siswa Tertentu" */}
+        {publishTarget === 'siswa' && (
+          <div style={{ marginTop: 8 }}>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <Search size={12} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                <input
+                  value={studentSearchForQuiz}
+                  onChange={e => setStudentSearchForQuiz(e.target.value)}
+                  placeholder="Cari siswa..."
+                  style={{ width: '100%', padding: '8px 10px 8px 28px', borderRadius: 8, border: '1px solid #8b5cf6', fontSize: 12, outline: 'none', boxSizing: 'border-box' }}
+                  onFocus={() => setShowStudentPickerForQuiz(true)}
+                />
+              </div>
+              <button onClick={selectAllFilteredForQuiz} style={{ padding: '4px 12px', background: '#f5f3ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#6d28d9' }}>Pilih Semua</button>
+            </div>
+
+            {showStudentPickerForQuiz && (
+              <div style={{ marginTop: 6, maxHeight: 200, overflowY: 'auto', background: 'white', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+                {filteredStudentsForQuiz.length === 0 ? (
+                  <p style={{ padding: 12, fontSize: 11, color: '#94a3b8', textAlign: 'center', margin: 0 }}>
+                    {allStudentsForQuiz.length === 0 ? 'Belum ada data siswa.' : 'Siswa tidak ditemukan.'}
+                  </p>
+                ) : (
+                  filteredStudentsForQuiz.map(student => {
+                    const checked = selectedStudentsForQuiz.some(s => s.studentId === student.studentId);
+                    return (
+                      <div
+                        key={student.id}
+                        onClick={() => toggleStudentForQuiz(student)}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '8px 12px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer',
+                          background: checked ? '#f5f3ff' : 'white', fontSize: 12,
+                        }}
+                      >
+                        <div>
+                          <span style={{ fontWeight: 600, color: '#1e293b' }}>{student.nama}</span>
+                          <span style={{ fontSize: 10, color: '#64748b', marginLeft: 6 }}>#{student.studentId}</span>
+                          <span style={{ fontSize: 9, background: '#f1f5f9', padding: '1px 6px', borderRadius: 4, marginLeft: 6 }}>
+                            {student.kelasSekolah} · {student.program}
+                          </span>
+                        </div>
+                        <input type="checkbox" checked={checked} onChange={() => {}} style={{ accentColor: '#8b5cf6', width: 16, height: 16 }} />
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+            {selectedStudentsForQuiz.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+                {selectedStudentsForQuiz.slice(0, 10).map(s => (
+                  <span key={s.studentId} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#f5f3ff', padding: '2px 8px', borderRadius: 12, fontSize: 10, fontWeight: 600, color: '#6d28d9' }}>
+                    {s.nama}
+                    <button onClick={() => toggleStudentForQuiz(s)} style={{ background: 'none', border: 'none', color: '#6d28d9', cursor: 'pointer', padding: 0 }}><X size={10} /></button>
+                  </span>
+                ))}
+                {selectedStudentsForQuiz.length > 10 && <span style={{ fontSize: 10, color: '#94a3b8' }}>+{selectedStudentsForQuiz.length - 10}</span>}
+              </div>
+            )}
           </div>
         )}
       </div>
