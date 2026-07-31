@@ -85,6 +85,24 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentQuestionForShuffle?.id]);
   const [answers, setAnswers] = useState({});
+
+  // 🔥 BARU: draft otomatis jawaban siswa, tersimpan di HP-nya sendiri
+  // (localStorage), bukan cuma di memori React. Sebelumnya kalau submit
+  // gagal karena APAPUN (bug Chrome Translate, koneksi putus, dll) DAN
+  // siswa terlanjur nutup/refresh halaman, seluruh jawaban yang udah
+  // diisi HILANG TOTAL -- gak ada cadangannya sama sekali, siswa harus
+  // ngerjain ulang dari nol. Sekarang jawaban otomatis "nempel" di HP
+  // itu sendiri, dan otomatis dipulihkan kalau siswa buka lagi kuis yang
+  // sama sebelum sempat submit final.
+  const quizDraftKey = modulId && studentInfo.nim ? `quiz_draft_${modulId}_${studentInfo.nim}` : null;
+
+  useEffect(() => {
+    if (!quizDraftKey) return;
+    if (Object.keys(answers).length === 0) return; // jangan timpa draft lama dengan kosongan
+    try {
+      localStorage.setItem(quizDraftKey, JSON.stringify(answers));
+    } catch (e) { /* localStorage penuh/gak tersedia -- diamkan, gak fatal */ }
+  }, [answers, quizDraftKey]);
   const [flaggedQuestions, setFlaggedQuestions] = useState({});
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -159,6 +177,23 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           const snapJawaban = await getDocs(qJawaban);
           const existing = snapJawaban.docs.length;
           setAttemptCount(existing);
+          
+          // 🔥 Kalau belum pernah ada submission FINAL yang tersimpan
+          // (existing === 0), cek apakah ada draft jawaban yang
+          // "nyangkut" di HP ini dari percobaan sebelumnya yang gagal
+          // submit -- kalau ada, pulihkan otomatis biar siswa gak perlu
+          // ngulang dari kosong.
+          if (existing === 0 && quizDraftKey) {
+            try {
+              const savedDraft = localStorage.getItem(quizDraftKey);
+              if (savedDraft) {
+                const parsedDraft = JSON.parse(savedDraft);
+                if (parsedDraft && Object.keys(parsedDraft).length > 0) {
+                  setAnswers(parsedDraft);
+                }
+              }
+            } catch (e) { /* draft rusak/gak valid -- abaikan, jangan sampai error */ }
+          }
           
           if (existing > 0) {
             const lastDoc = snapJawaban.docs[snapJawaban.docs.length - 1];
@@ -868,8 +903,19 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         score: score,
         details: detailedResults,
         timeUsed: (quizData?.timeLimit || 0) * 60 - timeLeft,
-        isAutoSubmit: isAuto,
-        // 🔥 Log deteksi kecurangan (kalau Mode Ujian mengaktifkannya) —
+        // 🔥 FIX BUG: siswa ini (pakai Chrome dengan fitur terjemahan
+        // otomatis ke Bahasa Indonesia aktif) gagal kirim jawaban kuis
+        // dengan pesan error "Unsupported field value: a custom w object
+        // (found in field isAutoSubmit)". Ini kasus yang cukup dikenal:
+        // fitur terjemahan bawaan Chrome bisa "membungkus" nilai JavaScript
+        // sederhana jadi objek yang gak standar dengan cara yang gak
+        // terduga. Firestore CUMA nerima tipe data standar (boolean/
+        // string/number/dll), bukan objek custom apapun bentuknya.
+        // `!!isAuto` MEMAKSA nilainya balik jadi boolean murni (true/false)
+        // apapun "bungkusnya" -- jadi nutup celah ini SIAPAPUN
+        // penyebabnya, bukan cuma buat kasus Chrome Translate doang.
+        isAutoSubmit: !!isAuto,
+        // Log deteksi kecurangan (kalau Mode Ujian mengaktifkannya) —
         // guru bisa lihat berapa kali & kapan siswa pindah tab/aplikasi
         // selama mengerjakan, buat pertimbangan sendiri.
         cheatViolations: cheatViolations,
@@ -877,6 +923,12 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         submittedAt: serverTimestamp(),
         status: "Dinilai"
       });
+
+      // 🔥 Submit sukses -- draft di localStorage udah gak diperlukan lagi,
+      // bersihkan biar gak numpuk.
+      if (quizDraftKey) {
+        try { localStorage.removeItem(quizDraftKey); } catch (e) { /* abaikan */ }
+      }
 
       // Keluar dari fullscreen setelah submit (kalau tadi diaktifkan)
       if (document.fullscreenElement) {
@@ -895,7 +947,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         correctAnswers: correctCount,
         totalQuestions: questions.length,
         details: detailedResults,
-        isAutoSubmit: isAuto,
+        isAutoSubmit: !!isAuto,
         timeUsed: (quizData?.timeLimit || 0) * 60 - timeLeft,
         submittedAt: new Date(),
       });
