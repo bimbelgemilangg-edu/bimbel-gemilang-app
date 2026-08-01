@@ -8,7 +8,7 @@ import {
   HelpCircle, Send, User, Hash, Award, Timer, 
   BarChart3, TrendingUp, Shield, AlertTriangle,
   ChevronLeft, ChevronRight, BookOpen, Zap, RefreshCw,
-  Eye, EyeOff, Calendar, Lock, Unlock, Flag, AlertTriangle as AlertTriangleIcon,
+  Eye, EyeOff, Calendar, Lock, Unlock, Flag,
   FileQuestion, Table, CheckSquare, AlignLeft, Grid
 } from 'lucide-react';
 import 'katex/dist/katex.min.css';
@@ -85,24 +85,6 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentQuestionForShuffle?.id]);
   const [answers, setAnswers] = useState({});
-
-  // 🔥 BARU: draft otomatis jawaban siswa, tersimpan di HP-nya sendiri
-  // (localStorage), bukan cuma di memori React. Sebelumnya kalau submit
-  // gagal karena APAPUN (bug Chrome Translate, koneksi putus, dll) DAN
-  // siswa terlanjur nutup/refresh halaman, seluruh jawaban yang udah
-  // diisi HILANG TOTAL -- gak ada cadangannya sama sekali, siswa harus
-  // ngerjain ulang dari nol. Sekarang jawaban otomatis "nempel" di HP
-  // itu sendiri, dan otomatis dipulihkan kalau siswa buka lagi kuis yang
-  // sama sebelum sempat submit final.
-  const quizDraftKey = modulId && studentInfo.nim ? `quiz_draft_${modulId}_${studentInfo.nim}` : null;
-
-  useEffect(() => {
-    if (!quizDraftKey) return;
-    if (Object.keys(answers).length === 0) return; // jangan timpa draft lama dengan kosongan
-    try {
-      localStorage.setItem(quizDraftKey, JSON.stringify(answers));
-    } catch (e) { /* localStorage penuh/gak tersedia -- diamkan, gak fatal */ }
-  }, [answers, quizDraftKey]);
   const [flaggedQuestions, setFlaggedQuestions] = useState({});
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -123,6 +105,33 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   // sistem web manapun yang bisa) mendeteksi HP kedua yang terpisah.
   const [cheatViolations, setCheatViolations] = useState([]);
   const [showCheatWarning, setShowCheatWarning] = useState(false);
+
+  // 🔥 FIX BUG KRITIS (TDZ / ReferenceError): sebelumnya `quizDraftKey` dan
+  // `useEffect` auto-save draft-nya diletakkan DI ATAS, sebelum baris
+  // `const [studentInfo, setStudentInfo] = useState(...)` didefinisikan.
+  // Karena `quizDraftKey` langsung memakai `studentInfo.nim` di baris yang
+  // dieksekusi SEBELUM `studentInfo` sempat di-declare oleh `useState`, ini
+  // melanggar aturan "temporal dead zone" JavaScript untuk `const`/`let` —
+  // hasilnya: "Uncaught ReferenceError: Cannot access '_' before
+  // initialization", dan seluruh halaman kuis di sisi siswa jadi BLANK PUTIH
+  // TOTAL (component crash sebelum sempat render apapun).
+  // Fix: definisi `quizDraftKey` + effect auto-save-nya dipindah ke SINI,
+  // yaitu SETELAH `studentInfo` sudah pasti ter-declare oleh useState di atas.
+  const quizDraftKey = modulId && studentInfo.nim ? `quiz_draft_${modulId}_${studentInfo.nim}` : null;
+
+  // 🔥 Draft otomatis jawaban siswa, tersimpan di HP-nya sendiri
+  // (localStorage), bukan cuma di memori React. Kalau submit gagal karena
+  // APAPUN (bug Chrome Translate, koneksi putus, dll) DAN siswa terlanjur
+  // nutup/refresh halaman, jawaban yang udah diisi otomatis "nempel" di HP
+  // itu sendiri, dan otomatis dipulihkan kalau siswa buka lagi kuis yang
+  // sama sebelum sempat submit final.
+  useEffect(() => {
+    if (!quizDraftKey) return;
+    if (Object.keys(answers).length === 0) return; // jangan timpa draft lama dengan kosongan
+    try {
+      localStorage.setItem(quizDraftKey, JSON.stringify(answers));
+    } catch (e) { /* localStorage penuh/gak tersedia -- diamkan, gak fatal */ }
+  }, [answers, quizDraftKey]);
 
   // ===== RESPONSIVE =====
   useEffect(() => {
@@ -287,6 +296,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           useSchedule: data.useSchedule || false,
           quizOpenDate: data.quizOpenDate || null,
           quizCloseDate: data.quizCloseDate || null,
+          antiCheatEnabled: data.antiCheatEnabled || false,
           // 🔥 Disimpan supaya bisa didenormalisasi ke jawaban_kuis pas submit —
           // dipakai CekTugasSiswa.jsx untuk mencocokkan submission ke guru yang
           // benar berdasarkan ID, bukan cocok-cocokan nama mapel yang rapuh.
@@ -326,11 +336,29 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     return () => clearInterval(timer);
   }, [quizStarted, isSubmitted, hasExistingAnswer]);
 
+  // 🔥 FIX BUG KRITIS #2 (stale closure pada auto-submit): `handleAutoSubmit`
+  // dibungkus `useCallback` dengan deps `[isSubmitted, hasExistingAnswer]`.
+  // Kedua state itu cuma berubah SEKALI di awal kuis, jadi fungsi ini
+  // langsung "dibekukan" sejak awal dan mengunci referensi `handleSubmitQuiz`
+  // versi SAAT ITU JUGA — yang closure-nya masih membawa `answers = {}`
+  // (kosong, karena kuis baru dimulai). Akibatnya, begitu waktu habis dan
+  // auto-submit terpicu, yang terkirim ke Firestore adalah jawaban KOSONG/
+  // BASI, bukan jawaban terbaru yang sudah diisi siswa — kehilangan data
+  // secara diam-diam tanpa error apapun yang terlihat.
+  // Fix: simpan referensi `handleSubmitQuiz` TERBARU di dalam ref yang
+  // di-update setiap render (tanpa dependency array), lalu `handleAutoSubmit`
+  // memanggil lewat ref itu -- supaya selalu memakai versi paling baru,
+  // lengkap dengan `answers`, `timeLeft`, dan `questions` yang up-to-date.
+  const handleSubmitQuizRef = React.useRef(null);
+  useEffect(() => {
+    handleSubmitQuizRef.current = handleSubmitQuiz;
+  }); // sengaja TANPA dependency array — di-refresh di setiap render
+
   // ===== AUTO SUBMIT =====
   const handleAutoSubmit = useCallback(async () => {
     if (isSubmitted || hasExistingAnswer) return;
     alert('⏰ Waktu habis! Jawaban akan dikirim otomatis.');
-    await handleSubmitQuiz(true);
+    await handleSubmitQuizRef.current?.(true);
   }, [isSubmitted, hasExistingAnswer]);
 
   // ===== HANDLE ANSWER =====
@@ -1017,7 +1045,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   }, [quizStarted, isSubmitted, quizData?.antiCheatEnabled, hasExistingAnswer]);
 
   // ============================================================
-  // 🔥 BARU: ANTI AUTO-TRANSLATE (khusus buat soal Bahasa Inggris)
+  // 🔥 ANTI AUTO-TRANSLATE (khusus buat soal Bahasa Inggris)
   // ============================================================
   // Fitur terjemahan otomatis Chrome bikin soal Bahasa Inggris jadi
   // kebaca dalam Bahasa Indonesia -- buat try out/ujian Bahasa Inggris,
