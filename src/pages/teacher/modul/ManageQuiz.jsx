@@ -101,6 +101,11 @@ const ManageQuiz = () => {
   const navigate = useNavigate();
   const modulId = searchParams.get('modulId');
   const sectionId = searchParams.get('sectionId');
+  // 🔥 BARU: id dokumen KUIS itu sendiri (kalau section ini sudah pernah
+  // dibuatkan kuis sebelumnya). Dikirim oleh ManageMateri.jsx dari
+  // section.quizId. Ini yang benerin bug "kuis yang sudah ada hilang saat
+  // dibuka lagi" — lihat penjelasan di useEffect pemuatan data di bawah.
+  const linkedQuizIdParam = searchParams.get('quizId');
   const isFromModul = !!modulId && !!sectionId;
   
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -361,76 +366,124 @@ const ManageQuiz = () => {
     fetchRefs();
   }, []);
 
+  // 🔥 Helper: isi semua state kuis dari SATU dokumen kuis (bukan dokumen
+  // modul materi). Dipisah jadi fungsi sendiri supaya bisa dipanggil dari
+  // dua jalur pemuatan (kuis mandiri langsung, atau kuis yang nempel di
+  // dalam modul materi) tanpa duplikasi kode.
+  const populateQuizFromDoc = (data) => {
+    setQuizTitle(data.title || "");
+    setQuizSubject(data.subject || "");
+    // deadlineQuiz lama tidak lagi dibaca ke state (field sudah dihapus dari UI)
+    setTimeLimit(data.timeLimit || 0);
+    setRandomOrder(data.randomOrder || false);
+    setMaxAttempts(data.maxAttempts || 1);
+    setShowExplanation(data.showExplanation !== false);
+    setShowScoreToStudent(data.showScoreToStudent !== false);
+    setDifficulty(data.difficulty || 'Sedang');
+    setAntiCheatEnabled(data.antiCheatEnabled || false);
+    setUseSchedule(data.useSchedule || false);
+    setQuizOpenDate(data.quizOpenDate || quizOpenDate);
+    setQuizCloseDate(data.quizCloseDate || quizCloseDate);
+    setIsAIGenerated(data.generatedByAI || false);
+
+    if (data.timeLimit > 0 || data.randomOrder || data.maxAttempts > 1) {
+      setQuizMode('advanced');
+    }
+
+    if (data.quizData?.length > 0) {
+      setQuestions(data.quizData.map((q, idx) => ({
+        id: q.id || Date.now() + idx,
+        type: q.type || 'multiple',
+        q: q.question || '',
+        qImage: q.questionImage || '',
+        options: q.options || ['', '', '', ''],
+        optionImages: q.optionImages || ['', '', '', ''],
+        correct: q.correctAnswer || 0,
+        correctAnswers: q.correctAnswers || [],
+        explanation: q.explanation || '',
+        statements: q.statements || [{ text: '', isTrue: true }],
+        readingText: q.readingText || '',
+        subQuestions: q.subQuestions || [{ q: '', options: ['', '', '', ''], correct: 0 }],
+        shortAnswer: q.shortAnswer || '',
+        cause: q.cause || '',
+        effect: q.effect || '',
+        isCauseTrue: q.isCauseTrue !== undefined ? q.isCauseTrue : true,
+        isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true,
+        matchingPairs: q.matchingPairs && q.matchingPairs.length ? q.matchingPairs : [{ left: '', right: '' }, { left: '', right: '' }],
+        needsManualAnswer: false
+      })));
+    }
+  };
+
   useEffect(() => {
-    if (modulId) {
+    if (!modulId) return;
+
+    const fetchQuiz = async () => {
+      // ── KASUS A: TIDAK ada sectionId → modulId di URL adalah ID DOKUMEN
+      // KUIS itu sendiri (kuis mandiri yang dibuka langsung buat diedit).
+      if (!sectionId) {
+        const snap = await getDoc(doc(db, "bimbel_modul", modulId));
+        if (!snap.exists()) return;
+        const data = snap.data();
+
+        // 🔥 PENGAMAN: kalau dokumen ini sebenarnya MODUL MATERI (punya
+        // blocks, dan bukan kuis mandiri), berarti guru nyasar ke sini.
+        // Daripada menampilkan layar kuis kosong, alihkan ke editor materi.
+        if (data.type !== 'kuis_mandiri' && (data.blocks?.length > 0)) {
+          navigate(`/guru/modul/materi?edit=${modulId}`, { replace: true });
+          return;
+        }
+
+        setPublishTarget('modul');
+        setSelectedModul(modulId);
+        setIsEditingExistingQuiz(true);
+        populateQuizFromDoc(data);
+        return;
+      }
+
+      // ── KASUS B: ADA sectionId → modulId di URL adalah MODUL MATERI
+      // INDUK (bukan dokumen kuis). Kuis yang sebenarnya — kalau sudah
+      // pernah dibuat — tersimpan di DOKUMEN TERPISAH yang idnya ada di
+      // `section.quizId` di dalam modul induk.
+      //
+      // 🔥 FIX BUG UTAMA ("kuis yang sudah ada hilang saat dibuka lagi"):
+      // sebelumnya kode di sini SALAH membaca dokumen MODUL MATERI seolah
+      // itu dokumen kuis — jadi soal, timer, dan pengaturan kuis yang SUDAH
+      // ADA sebelumnya tidak pernah termuat sama sekali (selalu tampil
+      // kosong, seolah kuisnya hilang), karena dokumen modul materi memang
+      // tidak punya field `quizData`/`timeLimit`/dst di level atasnya itu.
+      // Sekarang kita cari dulu ID dokumen kuis yang benar (dari parameter
+      // `quizId` di URL, atau sebagai cadangan dicari dari `section.quizId`
+      // di dalam modul induk), baru fetch DOKUMEN KUIS-nya sendiri.
       setPublishTarget('modul');
       setSelectedModul(modulId);
-      const fetchQuiz = async () => {
-        const snap = await getDoc(doc(db, "bimbel_modul", modulId));
-        if (snap.exists()) {
-          const data = snap.data();
 
-          // 🔥 PENGAMAN: kalau dokumen ini sebenarnya MODUL MATERI (punya
-          // blocks, dan bukan kuis mandiri) sementara tidak ada sectionId
-          // yang menunjuk blok kuis tertentu, berarti guru nyasar ke sini.
-          // Daripada menampilkan layar kuis kosong (yang bikin modulnya
-          // seolah "hilang"), langsung alihkan ke editor materi yang benar.
-          if (!sectionId && data.type !== 'kuis_mandiri' && (data.blocks?.length > 0)) {
-            navigate(`/guru/modul/materi?edit=${modulId}`, { replace: true });
-            return;
-          }
-          setQuizTitle(data.title || "");
-          setQuizSubject(data.subject || "");
-          // deadlineQuiz lama tidak lagi dibaca ke state (field sudah dihapus dari UI)
-          setTimeLimit(data.timeLimit || 0);
-          setRandomOrder(data.randomOrder || false);
-          setMaxAttempts(data.maxAttempts || 1);
-          setShowExplanation(data.showExplanation !== false);
-          setShowScoreToStudent(data.showScoreToStudent !== false);
-          setDifficulty(data.difficulty || 'Sedang');
-          setAntiCheatEnabled(data.antiCheatEnabled || false);
-          setUseSchedule(data.useSchedule || false);
-          setQuizOpenDate(data.quizOpenDate || quizOpenDate);
-          setQuizCloseDate(data.quizCloseDate || quizCloseDate);
-          setIsAIGenerated(data.generatedByAI || false);
-
-          // 🔥 Kalau dokumen yang ke-fetch ini emang TIPE-NYA kuis (bukan modul
-          // materi), berarti kita lagi BUKA KUIS YANG SUDAH ADA buat diedit —
-          // bukan lagi milih modul tujuan buat kuis baru. Simpan penandanya.
-          setIsEditingExistingQuiz(data.type === 'kuis_mandiri');
-          
-          if (data.timeLimit > 0 || data.randomOrder || data.maxAttempts > 1) {
-            setQuizMode('advanced');
-          }
-          
-          if (data.quizData?.length > 0) {
-            setQuestions(data.quizData.map((q, idx) => ({
-              id: q.id || Date.now() + idx,
-              type: q.type || 'multiple',
-              q: q.question || '',
-              qImage: q.questionImage || '',
-              options: q.options || ['', '', '', ''],
-              optionImages: q.optionImages || ['', '', '', ''],
-              correct: q.correctAnswer || 0,
-              correctAnswers: q.correctAnswers || [],
-              explanation: q.explanation || '',
-              statements: q.statements || [{ text: '', isTrue: true }],
-              readingText: q.readingText || '',
-              subQuestions: q.subQuestions || [{ q: '', options: ['', '', '', ''], correct: 0 }],
-              shortAnswer: q.shortAnswer || '',
-              cause: q.cause || '',
-              effect: q.effect || '',
-              isCauseTrue: q.isCauseTrue !== undefined ? q.isCauseTrue : true,
-              isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true,
-              matchingPairs: q.matchingPairs && q.matchingPairs.length ? q.matchingPairs : [{ left: '', right: '' }, { left: '', right: '' }],
-              needsManualAnswer: false
-            })));
-          }
+      let quizIdToLoad = linkedQuizIdParam || null;
+      if (!quizIdToLoad) {
+        const parentSnap = await getDoc(doc(db, "bimbel_modul", modulId));
+        if (parentSnap.exists()) {
+          const parentData = parentSnap.data();
+          const block = (parentData.blocks || []).find(b => String(b.id) === String(sectionId));
+          quizIdToLoad = block?.quizId || null;
+          if (!quizIdToLoad) setQuizSubject(parentData.subject || '');
         }
-      };
-      fetchQuiz();
-    }
-  }, [modulId]);
+      }
+
+      if (quizIdToLoad) {
+        const quizSnap = await getDoc(doc(db, "bimbel_modul", quizIdToLoad));
+        if (quizSnap.exists()) {
+          setIsEditingExistingQuiz(true);
+          populateQuizFromDoc(quizSnap.data());
+        }
+      } else {
+        // Kuis ini memang belum pernah dibuat -- mulai dari kosong, wajar.
+        setIsEditingExistingQuiz(false);
+      }
+    };
+
+    fetchQuiz();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modulId, sectionId, linkedQuizIdParam]);
 
   // ============================================================
   // 🔥 HANDLER UPLOAD GAMBAR

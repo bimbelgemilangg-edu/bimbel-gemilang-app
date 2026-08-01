@@ -37,7 +37,7 @@ const ModulManager = () => {
   const [availableSubjects, setAvailableSubjects] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
   const [lastDoc, setLastDoc] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [guruData, setGuruData] = useState(null);
   const [guruId, setGuruId] = useState('');
@@ -114,11 +114,19 @@ const ModulManager = () => {
     }
   }, []);
 
+  // 🔥 Helper terpusat: dokumen kuis yang cuma nempel/embedded di sebuah
+  // materi (punya parentModulId) BUKAN item berdiri sendiri -- dia bagian
+  // dari modul induknya, diedit lewat editor materi itu (buka modulnya,
+  // baru edit kuisnya dari dalam sana), bukan muncul dobel di listing utama
+  // ini sebagai kartu terpisah. Dipakai di SEMUA jalur pengambilan data
+  // (fetchItems maupun onSnapshot) supaya konsisten.
+  const stripEmbeddedQuizzes = (docsArr) => docsArr.filter(it => !it.parentModulId);
+
   const fetchItems = useCallback(async (isLoadMore = false) => {
     if (!isLoadMore) {
       setLoading(true);
       setLastDoc(null);
-      setHasMore(true);
+      setHasMore(false);
     } else {
       setLoadingMore(true);
     }
@@ -131,20 +139,27 @@ const ModulManager = () => {
         qConstraints.push(where("guruId", "==", guruId));
       }
       
-      if (!isLoadMore && lastDoc) qConstraints.push(startAfter(lastDoc));
+      // 🔥 FIX BUG PENTING: kondisi ini sebelumnya kebalik (`!isLoadMore &&
+      // lastDoc`) -- artinya `startAfter` cuma ditambahkan saat BUKAN "muat
+      // lebih banyak", padahal harusnya PERSIS sebaliknya: `startAfter`
+      // harus dipasang KETIKA guru mengklik "Muat Lebih Banyak" (isLoadMore
+      // true), supaya query lanjut dari batas terakhir, bukan mengulang
+      // dari halaman pertama setiap kali diklik.
+      if (isLoadMore && lastDoc) qConstraints.push(startAfter(lastDoc));
       qConstraints.push(limit(PAGE_SIZE));
       
       const q = query(collection(db, COLLECTION_NAME), ...qConstraints);
       const snapshot = await getDocs(q);
-      // 🔥 FIX: kuis yang cuma nempel/embedded di sebuah materi (punya
-      // parentModulId) disembunyikan dari listing utama ini — dia bukan
-      // item berdiri sendiri, cuma bagian dari modul induknya, jadi
-      // seharusnya diedit lewat editor materi itu (bukan muncul dobel di
-      // sini sebagai kartu terpisah yang membingungkan).
-      const newItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).filter(it => !it.parentModulId);
+      const newItems = stripEmbeddedQuizzes(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
       
       if (isLoadMore) {
-        setItems(prev => [...prev, ...newItems]);
+        // 🔥 Cegah duplikasi kartu kalau ada overlap id (mis. dokumen yang
+        // baru saja di-update sehingga "updatedAt"-nya bergeser di antara
+        // dua pemuatan halaman).
+        setItems(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          return [...prev, ...newItems.filter(it => !existingIds.has(it.id))];
+        });
       } else {
         setItems(newItems);
       }
@@ -155,7 +170,7 @@ const ModulManager = () => {
       console.error("Error fetching items:", error);
       // Fallback: ambil semua
       const snapshot = await getDocs(collection(db, COLLECTION_NAME));
-      const allItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).filter(it => !it.parentModulId);
+      const allItems = stripEmbeddedQuizzes(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
       setItems(allItems);
       setHasMore(false);
     }
@@ -171,15 +186,34 @@ const ModulManager = () => {
       orderBy("updatedAt", "desc")
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      // 🔥 FIX BUG UTAMA ("tampilan card berantakan"): listener real-time ini
+      // SEBELUMNYA menampilkan SEMUA dokumen apa adanya, TANPA memfilter
+      // dokumen kuis yang cuma nempel/embedded di sebuah modul materi
+      // (yang punya `parentModulId`). Karena listener ini yang jadi sumber
+      // data UTAMA (langsung jalan begitu halaman dibuka, sebelum fetchItems
+      // sempat dipanggil), akibatnya kuis-kuis yang sudah "bersembunyi rapi"
+      // di dalam modul induknya tetap muncul lagi sebagai kartu-kartu
+      // terpisah yang membingungkan -- persis keluhan "card berantakan".
+      // Sekarang filter yang sama (`stripEmbeddedQuizzes`) dipakai di sini
+      // juga, supaya listing selalu konsisten: modul tampil sebagai Modul,
+      // kuis yang sudah sepaket dengan modul TIDAK tampil sebagai kartu
+      // terpisah lagi (edit dari dalam modulnya), dan cuma kuis yang
+      // BENERAN mandiri (dipublish sendiri, bukan ditautkan ke modul) yang
+      // muncul sebagai kartu Kuis.
+      const data = stripEmbeddedQuizzes(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
       setItems(data);
       setLoading(false);
+      // Listener ini mengambil SELURUH koleksi tanpa batas halaman, jadi
+      // secara efektif sudah "memuat semua" -- tombol "Muat Lebih Banyak"
+      // tidak relevan lagi selama listener ini aktif.
+      setHasMore(false);
     }, (error) => {
       console.error("Real-time error:", error);
       fetchItems();
     });
     
     return () => unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -193,6 +227,15 @@ const ModulManager = () => {
     
     setDeletingId(id);
     try {
+      // 🔥 BARU: kalau item yang dihapus ini MODUL yang punya kuis nempel
+      // di dalamnya, hapus juga dokumen kuis itu -- biar gak jadi data
+      // yatim yang nyangkut selamanya di database (parentModulId menunjuk
+      // ke modul yang sudah tidak ada).
+      const item = items.find(it => it.id === id);
+      const embeddedQuizIds = (item?.blocks || []).filter(b => b.type === 'quiz' && b.quizId).map(b => b.quizId);
+      if (embeddedQuizIds.length > 0) {
+        await Promise.all(embeddedQuizIds.map(qid => deleteDoc(doc(db, COLLECTION_NAME, qid)).catch(() => {})));
+      }
       await deleteDoc(doc(db, COLLECTION_NAME, id));
       showToast('✅ Modul berhasil dihapus!');
     } catch (error) {
@@ -310,8 +353,14 @@ const ModulManager = () => {
     } else if (activeTab === 'tugas') {
       filtered = filtered.filter(item => item.type === 'assignment');
     } else if (activeTab === 'kuis') {
+      // 🔥 Tab "Kuis" cuma buat kuis yang BENERAN mandiri (dipublish sendiri
+      // dengan tujuan tertentu), BUKAN kuis yang sudah sepaket di dalam
+      // sebuah modul -- itu urusannya tab "Modul" (buka modulnya, edit
+      // kuisnya dari dalam sana). Sebelumnya kondisi ini juga mengikutkan
+      // `item.blocks?.some(b => b.type==='quiz' ...)`, yang bikin SEBUAH
+      // MODUL ikut muncul dobel di tab Kuis maupun tab Modul sekaligus.
       filtered = filtered.filter(item => 
-        item.type === 'kuis_mandiri' || item.quizData?.length > 0 || item.blocks?.some(b => b.type === 'quiz' && b.quizId)
+        item.type === 'kuis_mandiri' || (item.quizData?.length > 0 && !(item.blocks?.length > 0))
       );
     }
     
@@ -354,7 +403,9 @@ const ModulManager = () => {
     total: items.length,
     modul: items.filter(i => !i.type || (i.blocks?.length > 0 && i.type !== 'kuis_mandiri' && i.type !== 'assignment')).length,
     tugas: items.filter(i => i.type === 'assignment').length,
-    kuis: items.filter(i => i.type === 'kuis_mandiri' || i.quizData?.length > 0 || i.blocks?.some(b => b.type === 'quiz' && b.quizId)).length,
+    // 🔥 Konsisten dengan filter tab "Kuis" di atas: cuma hitung kuis yang
+    // BENERAN berdiri sendiri, bukan yang sudah sepaket di dalam modul.
+    kuis: items.filter(i => i.type === 'kuis_mandiri' || (i.quizData?.length > 0 && !(i.blocks?.length > 0))).length,
     milikSaya: items.filter(i => i.guruId === guruId || i.createdBy === guruData?.nama).length,
   }), [items, guruId, guruData]);
 
@@ -634,6 +685,10 @@ const ModulManager = () => {
                     // sekali (kelihatan seperti modulnya "hilang"), malah
                     // ketemu layar kuis kosong + prompt draft yang bikin bingung.
                     // Sekarang: cuma item yang MEMANG kuis yang masuk editor kuis.
+                    // Modul yang punya kuis di dalamnya TETAP dibuka lewat
+                    // editor materi -- kuisnya dibuka dari dalam sana (klik
+                    // blok kuisnya, sesuai keinginan: "modul ya buka modulnya,
+                    // edit kuisnya dari dalam situ").
                     if (typeInfo.label === 'Kuis') {
                       navigate(`/guru/modul/quiz?modulId=${item.id}`);
                     } else {

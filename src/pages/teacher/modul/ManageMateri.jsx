@@ -27,6 +27,19 @@ import {
 } from 'lucide-react';
 
 // ============================================================
+// 🔥 HELPER TANGGAL — FIX BUG TIMEZONE (sama seperti di ManageQuiz.jsx)
+// ============================================================
+// `toISOString()` selalu mengonversi ke UTC, sementara
+// `<input type="datetime-local">` butuh string dalam WAKTU LOKAL. Untuk
+// WIB (UTC+7), efeknya default "tanggal mulai" bisa geser ke hari
+// sebelumnya / jam yang salah. Helper ini membangun string dari komponen
+// waktu LOKAL, bukan dari toISOString().
+const toLocalInputValue = (date) => {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+// ============================================================
 // CONSTANTS
 // ============================================================
 const FILE_TYPE_OPTIONS = [
@@ -296,11 +309,13 @@ const ManageMateri = () => {
   const [mingguKe, setMingguKe] = useState(1);
   const [tahunAjaran, setTahunAjaran] = useState("2025/2026");
   const [statusModul, setStatusModul] = useState("aktif");
+  // 🔥 FIX BUG TIMEZONE: sebelumnya pakai toISOString() (UTC), sekarang
+  // toLocalInputValue() (waktu lokal perangkat) — lihat penjelasan di atas.
   const [tanggalMulai, setTanggalMulai] = useState(() => {
     const date = new Date();
     date.setDate(date.getDate() + 2);
     date.setHours(0, 0, 0, 0);
-    return date.toISOString().slice(0, 16);
+    return toLocalInputValue(date);
   });
   const [tanggalSelesai, setTanggalSelesai] = useState("");
   
@@ -600,6 +615,19 @@ const ManageMateri = () => {
         console.error('Error deleting file:', err);
       }
     }
+
+    // 🔥 BARU: kalau konten yang dihapus ini blok KUIS yang sudah pernah
+    // dibuat (punya quizId), hapus juga DOKUMEN KUIS-nya di database.
+    // Sebelumnya cuma blok-nya yang hilang dari daftar konten, tapi
+    // dokumen kuisnya sendiri tetap nyangkut selamanya di database sebagai
+    // data yatim (parentModulId menunjuk ke section yang sudah tidak ada).
+    if (section?.type === 'quiz' && section.quizId) {
+      try {
+        await deleteDoc(doc(db, COLLECTION_NAME, section.quizId));
+      } catch (err) {
+        console.error('Error deleting linked quiz doc:', err);
+      }
+    }
     
     setSections(sections.filter(s => s.id !== id));
     if (editingSection === id) setEditingSection(null);
@@ -617,6 +645,12 @@ const ManageMateri = () => {
       if (filePaths.length > 0) {
         await supabase.storage.from('materi-bimbel').remove(filePaths);
       }
+
+      // 🔥 BARU: hapus juga semua dokumen KUIS yang nempel di modul ini
+      // (kalau ada), supaya gak jadi data yatim yang nyangkut selamanya di
+      // database begitu modul induknya dihapus.
+      const quizIdsToDelete = sections.filter(s => s.type === 'quiz' && s.quizId).map(s => s.quizId);
+      await Promise.all(quizIdsToDelete.map(qid => deleteDoc(doc(db, COLLECTION_NAME, qid)).catch(() => {})));
       
       await deleteDoc(doc(db, COLLECTION_NAME, modulId));
       alert('✅ Modul berhasil dihapus!');
@@ -838,7 +872,16 @@ const ManageMateri = () => {
       // Simpan kondisi modul terkini (termasuk section kuis yang baru ditambah)
       // supaya sectionId-nya sudah tercatat di database sebelum editor kuis dibuka.
       await autoSaveModulSilently();
-      navigate(`/guru/modul/quiz?modulId=${modulId}&sectionId=${section.id}`);
+      // 🔥 FIX BUG PENTING ("kuis yang sudah ada hilang saat dibuka lagi"):
+      // sebelumnya URL cuma bawa modulId (id MODUL MATERI induk) + sectionId,
+      // tanpa pernah bawa id DOKUMEN KUIS-nya sendiri. Akibatnya ManageQuiz.jsx
+      // salah baca dokumen (baca dokumen modul materi, bukan dokumen kuis),
+      // jadi soal-soal yang sudah dibuat sebelumnya tidak pernah termuat lagi.
+      // Sekarang kalau section ini SUDAH punya quizId (kuis sudah pernah
+      // dibuat), id itu ikut dikirim lewat parameter `quizId` di URL, supaya
+      // ManageQuiz.jsx tahu persis dokumen mana yang harus dibuka.
+      const quizIdParam = section.quizId ? `&quizId=${section.quizId}` : '';
+      navigate(`/guru/modul/quiz?modulId=${modulId}&sectionId=${section.id}${quizIdParam}`);
     } catch (e) {
       alert('❌ Gagal menyiapkan kuis: ' + e.message);
     }
@@ -1260,8 +1303,18 @@ const ManageMateri = () => {
               
               {section.quizId && (
                 <button
-                  onClick={() => {
-                    if (!confirm('Hapus kuis dari modul ini? (Data kuis tetap tersimpan)')) return;
+                  onClick={async () => {
+                    if (!confirm('Hapus kuis dari modul ini? Data kuis di database juga akan ikut terhapus.')) return;
+                    // 🔥 FIX: sebelumnya tombol ini cuma melepas quizId dari
+                    // section (dokumen kuisnya sendiri TIDAK ikut dihapus,
+                    // jadi jadi data yatim yang nyangkut di database selamanya
+                    // walau labelnya "Hapus dari Modul"). Sekarang dokumen
+                    // kuisnya beneran ikut dihapus, sesuai teks tombolnya.
+                    try {
+                      await deleteDoc(doc(db, COLLECTION_NAME, section.quizId));
+                    } catch (err) {
+                      console.error('Error deleting linked quiz doc:', err);
+                    }
                     updateSection(editingSection, 'quizId', null);
                     updateSection(editingSection, 'quizTitle', '');
                     updateSection(editingSection, 'quizQuestions', 0);
