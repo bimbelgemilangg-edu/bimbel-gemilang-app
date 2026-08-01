@@ -156,30 +156,59 @@ const ManageQuiz = () => {
   const [studentSearchForQuiz, setStudentSearchForQuiz] = useState('');
   const [showStudentPickerForQuiz, setShowStudentPickerForQuiz] = useState(false);
   const [selectedStudentsForQuiz, setSelectedStudentsForQuiz] = useState([]);
+  // 🔥 BARU: status pemuatan daftar siswa -- dipakai buat bedain "masih
+  // dimuat" / "gagal dimuat" / "beneran kosong", karena tiga kondisi itu
+  // butuh pesan & aksi yang beda ke guru.
+  const [studentsForQuizStatus, setStudentsForQuizStatus] = useState('loading'); // loading | error | loaded
 
   // Ambil daftar siswa (dipakai kalau guru pilih mode "Siswa Tertentu")
-  useEffect(() => {
-    const fetchStudentsForQuiz = async () => {
-      try {
-        const snap = await getDocs(collection(db, "students"));
-        const data = snap.docs.map(d => {
-          const s = d.data();
-          return {
-            id: d.id,
-            studentId: s.studentId || d.id,
-            nama: s.nama || 'Siswa',
-            kelasSekolah: s.kelasSekolah || '-',
-            program: s.kategori || 'Reguler',
-          };
-        }).sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
-        setAllStudentsForQuiz(data);
-        setFilteredStudentsForQuiz(data);
-      } catch (e) {
-        console.error("Gagal ambil data siswa buat target kuis:", e);
-      }
-    };
-    fetchStudentsForQuiz();
+  // 🔥 FIX BUG "daftar siswa gak muncul": sebelumnya query ini cuma
+  // dicoba SEKALI, dan kalau gagal (paling sering karena race condition --
+  // query ini nembak Firestore SEBELUM sesi login/Auth sempat pulih penuh
+  // begitu halaman baru dibuka, jadi ditolak aturan keamanan), kegagalannya
+  // cuma dicatat di console lalu dibiarkan. Guru cuma lihat "Belum ada data
+  // siswa" yang keliatan seperti memang kosong, padahal sebenarnya GAGAL
+  // MEMUAT. Sekarang logikanya dipisah jadi fungsi `loadStudentsForQuiz`
+  // yang: (1) otomatis dicoba ulang sekali setelah jeda singkat kalau gagal
+  // di percobaan pertama (menutupi race condition semacam itu), dan (2)
+  // kalau tetap gagal, status ditandai 'error' supaya UI bisa kasih tombol
+  // "Coba Lagi" yang jelas -- bisa dipanggil ulang juga kapan saja lewat
+  // tombol itu.
+  const loadStudentsForQuiz = React.useCallback(async () => {
+    setStudentsForQuizStatus('loading');
+    try {
+      const snap = await getDocs(collection(db, "students"));
+      const data = snap.docs.map(d => {
+        const s = d.data();
+        return {
+          id: d.id,
+          studentId: s.studentId || d.id,
+          nama: s.nama || 'Siswa',
+          kelasSekolah: s.kelasSekolah || '-',
+          program: s.kategori || 'Reguler',
+        };
+      }).sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+      setAllStudentsForQuiz(data);
+      setFilteredStudentsForQuiz(data);
+      setStudentsForQuizStatus('loaded');
+      return true;
+    } catch (e) {
+      console.error("Gagal ambil data siswa buat target kuis:", e);
+      setStudentsForQuizStatus('error');
+      return false;
+    }
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const ok = await loadStudentsForQuiz();
+      if (!ok && !cancelled) {
+        setTimeout(() => { if (!cancelled) loadStudentsForQuiz(); }, 1200);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [loadStudentsForQuiz]);
 
   useEffect(() => {
     if (!studentSearchForQuiz.trim()) {
@@ -347,24 +376,78 @@ const ManageQuiz = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-    const fetchRefs = async () => {
-      const snapModul = await getDocs(query(collection(db, "bimbel_modul"), orderBy("updatedAt", "desc")));
-      setModulList(snapModul.docs.map(d => ({ id: d.id, ...d.data() })));
-      
-      const snapSiswa = await getDocs(collection(db, "students"));
-      const siswaData = snapSiswa.docs.map(d => d.data());
-      const kelas = [...new Set(siswaData.map(s => s.kelasSekolah))].filter(Boolean).sort((a,b) => a.localeCompare(b, undefined, {numeric:true}));
+  // 🔥 FIX BUG "Tautkan ke Modul selalu error" & "Jenjang kadang gak
+  // keluar": sebelumnya TIGA query di sini (daftar modul, daftar kelas dari
+  // siswa, daftar mapel dari guru) dijalankan BERURUTAN (`await` satu-satu)
+  // TANPA try/catch sama sekali. Begitu SATU SAJA dari ketiganya gagal
+  // (paling sering karena race condition -- query nembak Firestore sebelum
+  // sesi login/Auth sempat pulih penuh begitu halaman baru dibuka), seluruh
+  // fungsi berhenti di situ dan SISANYA tidak pernah ke-set: dropdown
+  // "Pilih Modul..." tetap kosong (bikin "Tautkan ke Modul" selalu gagal
+  // dengan pesan "Pilih modul tujuan!"), dan dropdown kelas buat "Tautkan
+  // ke Jenjang" ikut kosong juga -- padahal keduanya sebenarnya gak saling
+  // berhubungan. Sekarang ketiganya dijalankan PARALEL & INDEPENDEN lewat
+  // Promise.allSettled: kalaupun satu gagal, dua lainnya tetap berhasil
+  // dimuat. Kalau ADA yang gagal, otomatis dicoba ulang sekali, dan kalau
+  // masih gagal juga, UI kasih tombol "Coba Lagi" yang jelas.
+  const [refsStatus, setRefsStatus] = useState('loading'); // loading | error | loaded
+
+  const loadRefs = React.useCallback(async () => {
+    setRefsStatus('loading');
+    const [modulResult, siswaResult, guruResult] = await Promise.allSettled([
+      getDocs(query(collection(db, "bimbel_modul"), orderBy("updatedAt", "desc"))),
+      getDocs(collection(db, "students")),
+      getDocs(collection(db, "teachers")),
+    ]);
+
+    let anyFailed = false;
+
+    if (modulResult.status === 'fulfilled') {
+      setModulList(modulResult.value.docs.map(d => ({ id: d.id, ...d.data() })));
+    } else {
+      anyFailed = true;
+      console.error("Gagal ambil daftar modul:", modulResult.reason);
+    }
+
+    if (siswaResult.status === 'fulfilled') {
+      const siswaData = siswaResult.value.docs.map(d => d.data());
+      const kelas = [...new Set(siswaData.map(s => s.kelasSekolah))].filter(Boolean).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
       setAvailableClasses(kelas);
-      
-      const snapGuru = await getDocs(collection(db, "teachers"));
-      const guruData = snapGuru.docs.map(d => d.data());
-      const mapel = [...new Set(guruData.map(t => t.mapel).filter(Boolean))];
+    } else {
+      anyFailed = true;
+      console.error("Gagal ambil daftar kelas:", siswaResult.reason);
+    }
+
+    if (guruResult.status === 'fulfilled') {
+      const guruData = guruResult.value.docs.map(d => d.data());
+      // 🔥 Satu guru sekarang bisa ngampu lebih dari 1 mapel (field `mapel`
+      // di data guru bisa berisi gabungan "Matematika, IPA" dipisah koma) --
+      // dipecah dulu per mapel supaya dropdown di sini nampilin tiap mapel
+      // satu-satu, bukan gabungan string yang aneh dibaca.
+      const mapel = [...new Set(
+        guruData.flatMap(t => (t.mapel || '').split(',').map(m => m.trim()).filter(Boolean))
+      )];
       if (mapel.length === 0) mapel.push("Umum");
       setSubjects(mapel.sort());
-    };
-    fetchRefs();
+    } else {
+      anyFailed = true;
+      console.error("Gagal ambil daftar mapel:", guruResult.reason);
+    }
+
+    setRefsStatus(anyFailed ? 'error' : 'loaded');
+    return !anyFailed;
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const ok = await loadRefs();
+      if (!ok && !cancelled) {
+        setTimeout(() => { if (!cancelled) loadRefs(); }, 1200);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [loadRefs]);
 
   // 🔥 Helper: isi semua state kuis dari SATU dokumen kuis (bukan dokumen
   // modul materi). Dipisah jadi fungsi sendiri supaya bisa dipanggil dari
@@ -2130,23 +2213,39 @@ const ManageQuiz = () => {
         </div>
 
         {publishTarget === 'modul' && (
-          <select value={selectedModul} onChange={e => setSelectedModul(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #10b981', fontSize: 12, outline: 'none', background: 'white' }}>
-            <option value="">Pilih Modul...</option>
-            {modulList.filter(m => !m.type || m.type !== 'kuis_mandiri').map(m => <option key={m.id} value={m.id}>{m.title || m.id}</option>)}
-          </select>
+          <div>
+            <select value={selectedModul} onChange={e => setSelectedModul(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #10b981', fontSize: 12, outline: 'none', background: 'white' }}>
+              <option value="">{refsStatus === 'loading' ? 'Memuat daftar modul...' : 'Pilih Modul...'}</option>
+              {modulList.filter(m => !m.type || m.type !== 'kuis_mandiri').map(m => <option key={m.id} value={m.id}>{m.title || m.id}</option>)}
+            </select>
+            {refsStatus === 'error' && (
+              <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#ef4444' }}>
+                ⚠️ Gagal memuat sebagian data (daftar modul/kelas/mapel).
+                <button type="button" onClick={loadRefs} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '3px 10px', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 10 }}>🔄 Coba Lagi</button>
+              </div>
+            )}
+          </div>
         )}
 
         {publishTarget === 'jenjang' && (
-          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-            <select value={selectedProgram} onChange={e => setSelectedProgram(e.target.value)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #f59e0b', fontSize: 12, outline: 'none', background: 'white' }}>
-              <option value="Semua">Semua Program</option>
-              <option value="Reguler">📚 Reguler</option>
-              <option value="English">🗣️ English</option>
-            </select>
-            <select value={selectedKelas} onChange={e => setSelectedKelas(e.target.value)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #f59e0b', fontSize: 12, outline: 'none', background: 'white' }}>
-              <option value="Semua">Semua Kelas</option>
-              {availableClasses.map(k => <option key={k} value={k}>{k}</option>)}
-            </select>
+          <div style={{ marginTop: 8 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <select value={selectedProgram} onChange={e => setSelectedProgram(e.target.value)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #f59e0b', fontSize: 12, outline: 'none', background: 'white' }}>
+                <option value="Semua">Semua Program</option>
+                <option value="Reguler">📚 Reguler</option>
+                <option value="English">🗣️ English</option>
+              </select>
+              <select value={selectedKelas} onChange={e => setSelectedKelas(e.target.value)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #f59e0b', fontSize: 12, outline: 'none', background: 'white' }}>
+                <option value="Semua">{refsStatus === 'loading' ? 'Memuat daftar kelas...' : 'Semua Kelas'}</option>
+                {availableClasses.map(k => <option key={k} value={k}>{k}</option>)}
+              </select>
+            </div>
+            {refsStatus === 'error' && (
+              <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#ef4444' }}>
+                ⚠️ Gagal memuat daftar kelas.
+                <button type="button" onClick={loadRefs} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '3px 10px', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 10 }}>🔄 Coba Lagi</button>
+              </div>
+            )}
           </div>
         )}
 
@@ -2169,7 +2268,14 @@ const ManageQuiz = () => {
 
             {showStudentPickerForQuiz && (
               <div style={{ marginTop: 6, maxHeight: 200, overflowY: 'auto', background: 'white', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-                {filteredStudentsForQuiz.length === 0 ? (
+                {studentsForQuizStatus === 'loading' ? (
+                  <p style={{ padding: 12, fontSize: 11, color: '#94a3b8', textAlign: 'center', margin: 0 }}>⏳ Memuat daftar siswa...</p>
+                ) : studentsForQuizStatus === 'error' ? (
+                  <div style={{ padding: 14, textAlign: 'center' }}>
+                    <p style={{ fontSize: 11, color: '#ef4444', margin: '0 0 8px' }}>⚠️ Gagal memuat daftar siswa.</p>
+                    <button type="button" onClick={loadStudentsForQuiz} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '5px 14px', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 11 }}>🔄 Coba Lagi</button>
+                  </div>
+                ) : filteredStudentsForQuiz.length === 0 ? (
                   <p style={{ padding: 12, fontSize: 11, color: '#94a3b8', textAlign: 'center', margin: 0 }}>
                     {allStudentsForQuiz.length === 0 ? 'Belum ada data siswa.' : 'Siswa tidak ditemukan.'}
                   </p>

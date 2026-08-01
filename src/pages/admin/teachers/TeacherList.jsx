@@ -22,6 +22,97 @@ import {
   UserPlus, Shield, BadgeCheck, Sparkles, Database, Layers
 } from 'lucide-react';
 
+// ============================================================
+// 🔥 BARU: SATU GURU BISA NGAMPU LEBIH DARI 1 MATA PELAJARAN
+// ============================================================
+// Sebelumnya skema data guru cuma punya field TUNGGAL (mapel, mapelId,
+// kodeMapel) -- artinya 1 guru = 1 mapel. Kalau kenyataannya guru itu
+// ngajar 2-3 mapel, admin dulu terpaksa: (a) cuma pilih satu mapel dan
+// mapel lainnya "hilang" dari data guru, atau (b) bikin akun guru
+// duplikat buat tiap mapel -- dua-duanya bikin berantakan: siswa lihat
+// badge mapel yang salah/kurang di halaman E-Learning "Per Guru", dan
+// admin harus kelola beberapa akun buat 1 orang yang sama.
+//
+// Sekarang guru bisa pilih SEKALIGUS beberapa mapel lewat komponen
+// MapelMultiSelect di bawah. Field baru yang jadi SUMBER UTAMA data:
+//   - mapelIds: array id dokumen mapel, mis. ["mapelDocId1","mapelDocId2"]
+//   - mapelDetails: array {id, namaMapel, kodeMapel} -- disimpan langsung
+//     (didenormalisasi) di dokumen guru supaya halaman lain yang nampilin
+//     daftar guru TIDAK perlu query tambahan per guru buat tau mapelnya.
+// Field LAMA (mapel, kodeMapel, mapelId -- semuanya tunggal) TETAP diisi
+// otomatis sebagai GABUNGAN semua mapel yang diampu (dipisah koma untuk
+// mapel/kodeMapel, dan mapelId = mapel pertama). Ini supaya bagian lain
+// sistem yang MASIH baca field tunggal itu (mis. halaman pembuatan modul
+// materi yang belum di-update) tidak langsung error/rusak -- tinggal
+// nanti dipindah bertahap ke mapelIds/mapelDetails.
+const getTeacherMapelList = (t) => {
+  if (t?.mapelDetails && t.mapelDetails.length > 0) return t.mapelDetails;
+  // Fallback data lama: guru yang dibuat sebelum fitur ini ada cuma punya
+  // field tunggal.
+  if (t?.mapel) return [{ id: t.mapelId || '', namaMapel: t.mapel, kodeMapel: t.kodeMapel || '' }];
+  return [];
+};
+
+const MapelMultiSelect = ({ mapelList, selectedIds, onChange }) => {
+  const [open, setOpen] = useState(false);
+  const toggle = (id) => {
+    if (selectedIds.includes(id)) onChange(selectedIds.filter(x => x !== id));
+    else onChange([...selectedIds, id]);
+  };
+  const selectedMapels = mapelList.filter(m => selectedIds.includes(m.id));
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <div
+        onClick={() => setOpen(v => !v)}
+        style={{
+          minHeight: 42, padding: '8px 12px', borderRadius: 10, border: '1px solid #e2e8f0',
+          background: 'white', cursor: 'pointer', display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center'
+        }}
+      >
+        {selectedMapels.length === 0 ? (
+          <span style={{ color: '#94a3b8', fontSize: 13 }}>Pilih 1 atau lebih mata pelajaran...</span>
+        ) : selectedMapels.map(m => (
+          <span key={m.id} style={{ background: '#e0e7ff', color: '#3730a3', padding: '3px 8px', borderRadius: 10, fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+            {m.namaMapel}
+            <X size={10} onClick={(e) => { e.stopPropagation(); toggle(m.id); }} style={{ cursor: 'pointer' }} />
+          </span>
+        ))}
+      </div>
+      {open && (
+        <>
+          <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 10 }} />
+          <div style={{
+            position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4,
+            background: 'white', border: '1px solid #e2e8f0', borderRadius: 10, maxHeight: 220,
+            overflowY: 'auto', zIndex: 20, boxShadow: '0 10px 25px rgba(0,0,0,0.12)'
+          }}>
+            {mapelList.length === 0 ? (
+              <p style={{ padding: 12, fontSize: 12, color: '#94a3b8', textAlign: 'center', margin: 0 }}>Belum ada mapel. Tambah dulu lewat tombol "Mapel".</p>
+            ) : mapelList.map(m => {
+              const checked = selectedIds.includes(m.id);
+              return (
+                <div
+                  key={m.id}
+                  onClick={() => toggle(m.id)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                    padding: '8px 12px', cursor: 'pointer', fontSize: 13,
+                    background: checked ? '#eff6ff' : 'white', borderBottom: '1px solid #f1f5f9'
+                  }}
+                >
+                  <span>{m.namaMapel} <span style={{ fontSize: 10, color: '#94a3b8' }}>({m.kodeMapel})</span></span>
+                  <input type="checkbox" checked={checked} onChange={() => {}} style={{ accentColor: '#3b82f6', width: 16, height: 16 }} />
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
 const TeacherList = () => {
   const navigate = useNavigate();
   const [teachers, setTeachers] = useState([]);
@@ -40,8 +131,7 @@ const TeacherList = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [addForm, setAddForm] = useState({
     nama: '', 
-    mapel: '', 
-    kodeMapel: '',
+    mapelIds: [], // 🔥 array, bukan string tunggal lagi
     nohp: '', 
     alamat: '',
     email: '', 
@@ -65,9 +155,7 @@ const TeacherList = () => {
   const [editModal, setEditModal] = useState(null);
   const [editForm, setEditForm] = useState({ 
     nama: '', 
-    mapel: '', 
-    kodeMapel: '',
-    mapelId: '',
+    mapelIds: [], // 🔥 array, bukan mapelId string tunggal lagi
     nohp: '', 
     alamat: '', 
     status: 'Aktif',
@@ -232,10 +320,22 @@ const TeacherList = () => {
 
         // 🔥 Sinkronkan juga ke semua guru yang pakai mapel ini, biar nama
         // mapel di data guru gak basi/beda sama nama mapel yang baru.
-        const affectedTeachers = teachers.filter(t => t.mapelId === editingMapelId);
-        await Promise.all(affectedTeachers.map(t =>
-          updateDoc(doc(db, "teachers", t.id), { mapel: namaTrim, updatedAt: serverTimestamp() })
-        ));
+        // Sekarang ikut mengecek `mapelIds` (array, guru multi-mapel) --
+        // bukan cuma `mapelId` tunggal (data lama) seperti sebelumnya.
+        const affectedTeachers = teachers.filter(t =>
+          t.mapelId === editingMapelId || (t.mapelIds && t.mapelIds.includes(editingMapelId))
+        );
+        await Promise.all(affectedTeachers.map(t => {
+          const hasDetails = t.mapelDetails && t.mapelDetails.length > 0;
+          const updatedDetails = hasDetails
+            ? t.mapelDetails.map(md => md.id === editingMapelId ? { ...md, namaMapel: namaTrim } : md)
+            : [{ id: editingMapelId, namaMapel: namaTrim, kodeMapel: t.kodeMapel || '' }];
+          return updateDoc(doc(db, "teachers", t.id), {
+            mapelDetails: updatedDetails,
+            mapel: updatedDetails.map(m => m.namaMapel).join(', '),
+            updatedAt: serverTimestamp(),
+          });
+        }));
 
         showAlert(`✅ Mapel "${namaTrim}" berhasil diperbarui!${affectedTeachers.length > 0 ? ` (${affectedTeachers.length} guru ikut disinkronkan)` : ''}`);
       } else {
@@ -281,7 +381,12 @@ const TeacherList = () => {
   // pakai mapel ini, admin diperingatkan dulu (biar gak ada guru yang
   // tiba-tiba "kehilangan" mapelnya tanpa sadar).
   const handleDeleteMapel = async (mapel) => {
-    const usedBy = teachers.filter(t => t.mapelId === mapel.id || t.kodeMapel === mapel.kodeMapel);
+    // 🔥 Ikut mengecek mapelIds (array) selain mapelId/kodeMapel tunggal.
+    const usedBy = teachers.filter(t =>
+      t.mapelId === mapel.id ||
+      t.kodeMapel === mapel.kodeMapel ||
+      (t.mapelIds && t.mapelIds.includes(mapel.id))
+    );
     const warningExtra = usedBy.length > 0
       ? `\n\n⚠️ Mapel ini masih dipakai oleh ${usedBy.length} guru (${usedBy.map(t => t.nama).join(', ')}). Data guru TIDAK akan ikut terhapus, tapi kode mapelnya akan jadi tidak valid.`
       : '';
@@ -298,13 +403,13 @@ const TeacherList = () => {
     setDeletingMapel(null);
   };
 
-  // ===== TAMBAH GURU BARU (FIXED: ANTI DUPLIKAT) =====
+  // ===== TAMBAH GURU BARU (FIXED: ANTI DUPLIKAT + MULTI MAPEL) =====
   const handleAddTeacher = async (e) => {
     e.preventDefault();
     if (!addForm.nama) return showAlert("⚠️ Nama guru wajib diisi!", true);
     if (!addForm.email) return showAlert("⚠️ Email wajib diisi!", true);
     if (!addForm.password) return showAlert("⚠️ Password wajib diisi!", true);
-    if (!addForm.mapel) return showAlert("⚠️ Pilih mata pelajaran!", true);
+    if (addForm.mapelIds.length === 0) return showAlert("⚠️ Pilih minimal 1 mata pelajaran!", true);
     
     setAdding(true);
     try {
@@ -326,17 +431,22 @@ const TeacherList = () => {
       // 3. Generate kode unik guru (AMAN)
       const guruId = await generateGuruId();
       
-      // 4. Dapatkan kode mapel dari mapel yang dipilih
-      const selectedMapel = mapelList.find(m => m.id === addForm.mapel);
-      const kodeMapel = selectedMapel?.kodeMapel || 'MAPEL-000';
+      // 4. Kumpulkan detail SEMUA mapel yang dipilih (bisa lebih dari 1)
+      const selectedMapels = mapelList.filter(m => addForm.mapelIds.includes(m.id));
       
       // 5. Simpan ke Firestore
       const teacherData = {
         guruId: guruId,
         nama: addForm.nama,
-        mapel: selectedMapel?.namaMapel || addForm.mapel,
-        kodeMapel: kodeMapel,
-        mapelId: addForm.mapel,
+        // 🔥 Sumber data utama sekarang array:
+        mapelIds: addForm.mapelIds,
+        mapelDetails: selectedMapels.map(m => ({ id: m.id, namaMapel: m.namaMapel, kodeMapel: m.kodeMapel })),
+        // 🔥 Field lama dipertahankan (gabungan semua mapel yang diampu),
+        // supaya bagian sistem lain yang belum diperbarui buat baca
+        // mapelDetails/mapelIds tetap dapat data yang masuk akal.
+        mapel: selectedMapels.map(m => m.namaMapel).join(', '),
+        kodeMapel: selectedMapels.map(m => m.kodeMapel).join(', '),
+        mapelId: selectedMapels[0]?.id || '',
         nohp: addForm.nohp,
         alamat: addForm.alamat,
         email: addForm.email,
@@ -351,7 +461,7 @@ const TeacherList = () => {
       
       showAlert(`✅ Guru ${addForm.nama} berhasil ditambahkan! (${guruId})`);
       setShowAddModal(false);
-      setAddForm({ nama: '', mapel: '', kodeMapel: '', nohp: '', alamat: '', email: '', password: '', status: 'Aktif' });
+      setAddForm({ nama: '', mapelIds: [], nohp: '', alamat: '', email: '', password: '', status: 'Aktif' });
       fetchTeachers();
     } catch (error) {
       if (error.code === 'auth/email-already-in-use') {
@@ -433,9 +543,12 @@ const TeacherList = () => {
     setEditModal(teacher.id);
     setEditForm({
       nama: teacher.nama || '',
-      mapel: teacher.mapel || '',
-      kodeMapel: teacher.kodeMapel || '',
-      mapelId: teacher.mapelId || '',
+      // 🔥 Fallback data lama: guru yang dibuat sebelum fitur multi-mapel
+      // ada cuma punya `mapelId` tunggal -- dijadikan array berisi 1 item
+      // supaya tetap kepilih dengan benar di MapelMultiSelect.
+      mapelIds: (teacher.mapelIds && teacher.mapelIds.length > 0)
+        ? teacher.mapelIds
+        : (teacher.mapelId ? [teacher.mapelId] : []),
       nohp: teacher.nohp || '',
       alamat: teacher.alamat || '',
       status: teacher.status || 'Aktif',
@@ -450,13 +563,17 @@ const TeacherList = () => {
   // ===== SIMPAN EDIT =====
   const handleSaveEdit = async () => {
     if (!editForm.nama) return showAlert("⚠️ Nama guru wajib diisi!", true);
+    if (editForm.mapelIds.length === 0) return showAlert("⚠️ Pilih minimal 1 mata pelajaran!", true);
     setSaving(true);
     try {
+      const selectedMapels = mapelList.filter(m => editForm.mapelIds.includes(m.id));
       const updateData = {
         nama: editForm.nama,
-        mapel: editForm.mapel,
-        kodeMapel: editForm.kodeMapel,
-        mapelId: editForm.mapelId,
+        mapelIds: editForm.mapelIds,
+        mapelDetails: selectedMapels.map(m => ({ id: m.id, namaMapel: m.namaMapel, kodeMapel: m.kodeMapel })),
+        mapel: selectedMapels.map(m => m.namaMapel).join(', '),
+        kodeMapel: selectedMapels.map(m => m.kodeMapel).join(', '),
+        mapelId: selectedMapels[0]?.id || '',
         nohp: editForm.nohp,
         alamat: editForm.alamat,
         status: editForm.status,
@@ -491,13 +608,21 @@ const TeacherList = () => {
   };
 
   // ===== FILTER DATA =====
-  const filtered = teachers.filter(t => 
-    (t.nama || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (t.mapel || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (t.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (t.guruId || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (t.kodeMapel || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // 🔥 Pencarian sekarang ikut mencakup SEMUA mapel yang diampu guru
+  // (bukan cuma field tunggal `mapel`), pakai helper getTeacherMapelList.
+  const filtered = teachers.filter(t => {
+    const mapels = getTeacherMapelList(t);
+    const mapelNames = mapels.map(m => m.namaMapel).join(' ').toLowerCase();
+    const mapelKodes = mapels.map(m => m.kodeMapel).join(' ').toLowerCase();
+    const term = searchTerm.toLowerCase();
+    return (
+      (t.nama || '').toLowerCase().includes(term) ||
+      mapelNames.includes(term) ||
+      (t.email || '').toLowerCase().includes(term) ||
+      (t.guruId || '').toLowerCase().includes(term) ||
+      mapelKodes.includes(term)
+    );
+  });
 
   // ===== SKELETON LOADING =====
   if (loading) return (
@@ -621,7 +746,9 @@ const TeacherList = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((t, idx) => (
+                  {filtered.map((t, idx) => {
+                    const mapels = getTeacherMapelList(t);
+                    return (
                     <tr key={t.id} style={styles.tr}>
                       <td style={styles.td}>
                         <span style={styles.indexBadge}>{idx + 1}</span>
@@ -642,13 +769,20 @@ const TeacherList = () => {
                         </div>
                       </td>
                       <td style={styles.td}>
+                        {/* 🔥 Sekarang bisa nampilin LEBIH DARI 1 mapel per guru */}
                         <div style={styles.mapelCell}>
-                          <span style={styles.mapelBadge}>{t.mapel || 'Umum'}</span>
-                          {t.kodeMapel && (
-                            <span style={styles.kodeBadge}>
-                              <Tag size={10} /> {t.kodeMapel}
-                            </span>
-                          )}
+                          {mapels.length === 0 ? (
+                            <span style={{ fontSize: 11, color: '#94a3b8' }}>Belum ada mapel</span>
+                          ) : mapels.map((m, mi) => (
+                            <div key={mi} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <span style={styles.mapelBadge}>{m.namaMapel}</span>
+                              {m.kodeMapel && (
+                                <span style={styles.kodeBadge}>
+                                  <Tag size={10} /> {m.kodeMapel}
+                                </span>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       </td>
                       <td style={styles.td}>
@@ -731,7 +865,8 @@ const TeacherList = () => {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -800,7 +935,7 @@ const TeacherList = () => {
                   {mapelList.length === 0 ? (
                     <p style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', padding: 12 }}>Belum ada mapel.</p>
                   ) : mapelList.map(m => {
-                    const jumlahGuru = teachers.filter(t => t.mapelId === m.id || t.kodeMapel === m.kodeMapel).length;
+                    const jumlahGuru = teachers.filter(t => t.mapelId === m.id || t.kodeMapel === m.kodeMapel || (t.mapelIds && t.mapelIds.includes(m.id))).length;
                     return (
                       <div key={m.id} style={{
                         display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px',
@@ -858,28 +993,15 @@ const TeacherList = () => {
                 </div>
 
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Mata Pelajaran *</label>
+                  <label style={styles.formLabel}>Mata Pelajaran * <span style={{ fontWeight: 400, color: '#94a3b8' }}>(bisa pilih lebih dari satu, mis. guru yang ngampu 2-3 mapel)</span></label>
                   <div style={styles.selectWithButton}>
-                    <select 
-                      value={addForm.mapel} 
-                      onChange={e => {
-                        const selected = mapelList.find(m => m.id === e.target.value);
-                        setAddForm({
-                          ...addForm, 
-                          mapel: e.target.value,
-                          kodeMapel: selected?.kodeMapel || ''
-                        });
-                      }} 
-                      style={{...styles.formSelect, flex: 1}}
-                      required
-                    >
-                      <option value="">Pilih Mapel</option>
-                      {mapelList.map(m => (
-                        <option key={m.id} value={m.id}>
-                          {m.namaMapel} ({m.kodeMapel})
-                        </option>
-                      ))}
-                    </select>
+                    <div style={{ flex: 1 }}>
+                      <MapelMultiSelect
+                        mapelList={mapelList}
+                        selectedIds={addForm.mapelIds}
+                        onChange={(ids) => setAddForm({ ...addForm, mapelIds: ids })}
+                      />
+                    </div>
                     <button 
                       type="button" 
                       onClick={() => setShowMapelModal(true)}
@@ -889,10 +1011,12 @@ const TeacherList = () => {
                       <Plus size={16} />
                     </button>
                   </div>
-                  {addForm.kodeMapel && (
+                  {addForm.mapelIds.length > 0 && (
                     <div style={styles.infoBox}>
                       <Tag size={14} color="#3b82f6" />
-                      <span style={{fontSize: 11, color: '#475569'}}>Kode Mapel: <strong>{addForm.kodeMapel}</strong></span>
+                      <span style={{fontSize: 11, color: '#475569'}}>
+                        Kode: <strong>{mapelList.filter(m => addForm.mapelIds.includes(m.id)).map(m => m.kodeMapel).join(', ')}</strong>
+                      </span>
                     </div>
                   )}
                 </div>
@@ -1052,33 +1176,22 @@ const TeacherList = () => {
                 </div>
 
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Mata Pelajaran</label>
+                  <label style={styles.formLabel}>Mata Pelajaran <span style={{ fontWeight: 400, color: '#94a3b8' }}>(bisa pilih lebih dari satu)</span></label>
                   <div style={styles.selectWithButton}>
-                    <select 
-                      value={editForm.mapelId} 
-                      onChange={e => {
-                        const selected = mapelList.find(m => m.id === e.target.value);
-                        setEditForm({
-                          ...editForm, 
-                          mapelId: e.target.value,
-                          mapel: selected?.namaMapel || '',
-                          kodeMapel: selected?.kodeMapel || ''
-                        });
-                      }} 
-                      style={{...styles.formSelect, flex: 1}}
-                    >
-                      <option value="">Pilih Mapel</option>
-                      {mapelList.map(m => (
-                        <option key={m.id} value={m.id}>
-                          {m.namaMapel} ({m.kodeMapel})
-                        </option>
-                      ))}
-                    </select>
+                    <div style={{ flex: 1 }}>
+                      <MapelMultiSelect
+                        mapelList={mapelList}
+                        selectedIds={editForm.mapelIds}
+                        onChange={(ids) => setEditForm({ ...editForm, mapelIds: ids })}
+                      />
+                    </div>
                   </div>
-                  {editForm.kodeMapel && (
+                  {editForm.mapelIds.length > 0 && (
                     <div style={styles.infoBox}>
                       <Tag size={14} color="#3b82f6" />
-                      <span style={{fontSize: 11, color: '#475569'}}>Kode Mapel: <strong>{editForm.kodeMapel}</strong></span>
+                      <span style={{fontSize: 11, color: '#475569'}}>
+                        Kode: <strong>{mapelList.filter(m => editForm.mapelIds.includes(m.id)).map(m => m.kodeMapel).join(', ')}</strong>
+                      </span>
                     </div>
                   )}
                 </div>
@@ -1217,7 +1330,7 @@ const styles = {
     display: 'flex', alignItems: 'center', justifyContent: 'center'
   },
   selectWithButton: {
-    display: 'flex', gap: 8, alignItems: 'center'
+    display: 'flex', gap: 8, alignItems: 'flex-start'
   },
   
   // Header
@@ -1290,7 +1403,7 @@ const styles = {
     padding: '1px 6px', borderRadius: 10, fontWeight: 600,
     width: 'fit-content'
   },
-  mapelCell: { display: 'flex', flexDirection: 'column', gap: 3 },
+  mapelCell: { display: 'flex', flexDirection: 'column', gap: 4 },
   mapelBadge: { 
     padding: '3px 8px', borderRadius: 10, fontSize: 11, 
     fontWeight: 'bold', background: '#e0e7ff', color: '#3730a3',
