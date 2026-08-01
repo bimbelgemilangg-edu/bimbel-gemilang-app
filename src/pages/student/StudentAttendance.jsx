@@ -7,22 +7,31 @@ const StudentAttendance = () => {
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Ambil ID Siswa dari localStorage
+  // Ambil ID & Nama Siswa dari localStorage
   const studentId = localStorage.getItem('studentId');
+  const studentNameLS = localStorage.getItem('studentName');
 
   useEffect(() => {
     const fetchAttendance = async () => {
-      if (!studentId) return;
+      if (!studentId && !studentNameLS) return;
       setLoading(true);
       try {
-        // Query ke koleksi 'attendance' berdasarkan studentId (Konek dengan data Admin)
-        const q = query(
-          collection(db, "attendance"),
-          where("studentId", "==", studentId)
-        );
+        // 🔥 FIX: sebelumnya CUMA cari lewat 1 skema ID (studentId dari
+        // localStorage) -- ternyata nilai itu SERING SALAH (localStorage
+        // nyimpen kode unik siswa, bukan ID dokumen Firestore asli yang
+        // dipakai nulis data absensi). Sekarang dicari juga lewat NAMA
+        // sebagai jaring pengaman kedua, biar tetap ketemu walau ID-nya
+        // gak cocok.
+        const queries = [
+          studentId ? getDocs(query(collection(db, "attendance"), where("studentId", "==", studentId))) : Promise.resolve({ docs: [] }),
+          studentNameLS ? getDocs(query(collection(db, "attendance"), where("studentName", "==", studentNameLS))) : Promise.resolve({ docs: [] }),
+          studentNameLS ? getDocs(query(collection(db, "attendance"), where("namaSiswa", "==", studentNameLS))) : Promise.resolve({ docs: [] }),
+        ];
+        const [snapById, snapByName1, snapByName2] = await Promise.all(queries.map(p => p.catch(() => ({ docs: [] }))));
 
-        const querySnapshot = await getDocs(q);
-        const data = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        const merged = new Map();
+        [...snapById.docs, ...snapByName1.docs, ...snapByName2.docs].forEach(d => merged.set(d.id, { id: d.id, ...d.data() }));
+        const data = Array.from(merged.values());
 
         // Urutkan berdasarkan tanggal terbaru
         data.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
@@ -35,7 +44,7 @@ const StudentAttendance = () => {
     };
 
     fetchAttendance();
-  }, [studentId]);
+  }, [studentId, studentNameLS]);
 
   // Hitung Ringkasan
   const stats = {

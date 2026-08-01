@@ -279,8 +279,13 @@ const StudentDashboard = () => {
         ]);
 
         // --- Ringkasan kehadiran ---
+        // 🔥 FIX: sebelumnya panel diagnosa nyari lewat NAMA dan BERHASIL
+        // nemuin datanya, tapi hasil pencarian nama itu cuma dipakai buat
+        // laporan diagnosa -- gak pernah ikut digabung ke data yang
+        // BENERAN dipakai nampilin bagan. Sekarang hasil nama ikut
+        // digabung juga, jadi bagan bener-bener nunjukkin data yang ada.
         const attMerged = new Map();
-        [...attByDocId.docs, ...attByKodeUnik.docs].forEach(d => attMerged.set(d.id, d.data()));
+        [...attByDocId.docs, ...attByKodeUnik.docs, ...attByName.docs, ...attByNamaSiswa.docs].forEach(d => attMerged.set(d.id, d.data()));
         const attList = Array.from(attMerged.values());
         setAttendanceSummary({
           hadir: attList.filter(a => a.status === 'Hadir').length,
