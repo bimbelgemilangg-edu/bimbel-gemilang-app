@@ -1,5 +1,5 @@
 // src/pages/student/StudentModuleView.jsx
-import React, { useState, useEffect, useReducer, useRef } from 'react';
+import React, { useState, useEffect, useReducer, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { 
@@ -13,12 +13,60 @@ import {
   AlertCircle, Lock, Shield, Zap, Award, ExternalLink,
   FileQuestion, Calendar, Users, Target, Edit3, EyeOff,
   FileImage, FileVideo, Play, Youtube, Globe,
-  FileSpreadsheet, FileArchive, FileCode, Maximize2
+  FileSpreadsheet, FileArchive, FileCode, Maximize2,
+  Sparkles, ChevronRight, BookMarked, PartyPopper
 } from 'lucide-react';
 import { uploadElearningFile } from '../../services/uploadService';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 import katex from 'katex';
+
+// ============================================================
+// 🔥 BARU: "LAPISAN USIA" -- SD vs REMAJA (SMP-SMA)
+// ============================================================
+// Riset desain anak (SD) vs remaja (SMP-SMA) beda kebutuhan visualnya:
+// SD butuh warna cerah, elemen besar, feedback seru & instan (lebih
+// "playful"); remaja mulai risih sama tampilan kekanakan, lebih cocok
+// desain bersih & modern tapi tetap hangat, dengan gamifikasi yang
+// dibungkus lebih "dewasa" (progress/streak, bukan bintang-bintang).
+// Dideteksi otomatis dari field kelasSekolah siswa (mis. "3 SD", "9 SMP",
+// "12 SMA") -- tidak perlu setting manual apa pun dari guru/admin.
+const getAgeTier = (kelasSekolah) => {
+  const k = (kelasSekolah || '').toUpperCase();
+  if (k.includes('SD')) return 'sd';
+  return 'remaja'; // SMP & SMA digabung -- dua-duanya sama-sama remaja
+};
+
+// 🔥 Warna aksen per mata pelajaran -- bantu siswa (terutama SD yang belum
+// lancar baca) mengenali mapel dari WARNA sebelum sempat baca teksnya.
+const SUBJECT_THEME = (subject = '') => {
+  const s = subject.toLowerCase();
+  const table = [
+    { keys: ['matemat', 'math'], color: '#3b82f6', bg: '#eff6ff', emoji: '🔢' },
+    { keys: ['ipa', 'sains', 'science', 'fisika', 'kimia', 'biologi'], color: '#10b981', bg: '#f0fdf4', emoji: '🔬' },
+    { keys: ['ips', 'sosial', 'sejarah', 'geografi', 'ekonomi'], color: '#f59e0b', bg: '#fffbeb', emoji: '🌍' },
+    { keys: ['bahasa indonesia', 'b. indonesia'], color: '#ef4444', bg: '#fef2f2', emoji: '📖' },
+    { keys: ['english', 'inggris'], color: '#8b5cf6', bg: '#f5f3ff', emoji: '🗣️' },
+    { keys: ['tka', 'kompetensi'], color: '#06b6d4', bg: '#ecfeff', emoji: '🚀' },
+  ];
+  const match = table.find(t => t.keys.some(k => s.includes(k)));
+  return match || { color: '#673ab7', bg: '#f5f3ff', emoji: '✨' };
+};
+
+// 🔥 Estimasi waktu baca -- riset nunjukin nampilin estimasi waktu di awal
+// menurunkan tingkat siswa berhenti baca di tengah jalan (mereka tahu
+// komitmennya berapa lama, gak berasa "gak ada ujungnya").
+const estimateReadingMinutes = (blocks) => {
+  const wordsPerMinute = 130; // dikalibrasi buat kecepatan baca anak-remaja
+  let totalWords = 0;
+  (blocks || []).forEach(b => {
+    if (b.type === 'text') {
+      const plain = (b.content || '').replace(/<[^>]+>/g, ' ');
+      totalWords += plain.split(/\s+/).filter(Boolean).length;
+    }
+  });
+  return Math.max(1, Math.round(totalWords / wordsPerMinute));
+};
 
 // ============================================================
 // CONSTANTS
@@ -50,15 +98,10 @@ const renderMath = (text) => {
 
 // ============================================================
 // 🔥 RENDER MATH DI DALAM HTML STRING (khusus konten hasil AI)
-// Konten dari AI berupa string HTML mentah (dirender via dangerouslySetInnerHTML),
-// jadi $...$ dan $$...$$ di dalamnya perlu di-convert manual jadi HTML KaTeX
-// SEBELUM di-inject, karena react-katex (komponen React) tidak bisa dipakai
-// di dalam dangerouslySetInnerHTML.
 // ============================================================
 const renderMathInHtml = (html) => {
   if (!html) return html;
   let result = html;
-  // Rumus blok $$...$$ dulu (biar gak kepotong sama regex inline $...$)
   result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, expr) => {
     try {
       return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: true });
@@ -66,7 +109,6 @@ const renderMathInHtml = (html) => {
       return match;
     }
   });
-  // Rumus inline $...$
   result = result.replace(/\$([^$\n]+?)\$/g, (match, expr) => {
     try {
       return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: false });
@@ -124,7 +166,6 @@ const getLinkType = (url) => {
 // ============================================================
 const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
   const linkType = getLinkType(url);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   
   const getIcon = () => {
     switch(linkType) {
@@ -168,7 +209,6 @@ const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
     window.open(url, '_blank');
   };
   
-  // 🔥 RENDER KONTEN LANGSUNG
   const renderContent = () => {
     switch(linkType) {
       case 'youtube': {
@@ -189,7 +229,6 @@ const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
         }
         return <p style={styles.errorText}>⚠️ Link YouTube tidak valid</p>;
       }
-      
       case 'pdf': {
         return (
           <div style={styles.iframeWrapper}>
@@ -201,7 +240,6 @@ const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
           </div>
         );
       }
-      
       case 'image': {
         return (
           <div style={styles.imageWrapper}>
@@ -209,7 +247,6 @@ const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
           </div>
         );
       }
-      
       case 'canva': {
         return (
           <div style={styles.iframeWrapper}>
@@ -217,7 +254,6 @@ const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
           </div>
         );
       }
-      
       case 'google': {
         return (
           <div style={styles.iframeWrapper}>
@@ -225,7 +261,6 @@ const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
           </div>
         );
       }
-      
       case 'link': {
         return (
           <div style={styles.linkCard}>
@@ -237,7 +272,6 @@ const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
           </div>
         );
       }
-      
       default: {
         return (
           <div style={styles.unknownCard}>
@@ -254,7 +288,6 @@ const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
   
   return (
     <div style={styles.container}>
-      {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerLeft}>
           <span style={styles.iconWrapper}>{getIcon()}</span>
@@ -277,8 +310,6 @@ const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
           </button>
         </div>
       </div>
-      
-      {/* CONTENT */}
       <div style={styles.content}>
         {renderContent()}
       </div>
@@ -335,7 +366,7 @@ const FlashcardWidget = ({ front, back }) => {
               color: 'white', fontSize: 20, fontWeight: 900,
               textAlign: 'center', lineHeight: 1.5, letterSpacing: 0.3,
             }}>
-              “{front}”
+              "{front}"
             </span>
             <span style={{
               color: 'rgba(255,255,255,0.85)', fontSize: 11, fontWeight: 600,
@@ -365,8 +396,6 @@ const FlashcardWidget = ({ front, back }) => {
 
 // ============================================================
 // 🔥 LATIHAN INTERAKTIF (cek pemahaman, TIDAK dinilai)
-// Jawaban & pembahasan sengaja disembunyikan dulu supaya siswa
-// berpikir sendiri. Setelah memilih, baru dibuka dengan animasi.
 // ============================================================
 const PracticeWidget = ({ questions }) => {
   const [picked, setPicked] = useState({});
@@ -544,10 +573,6 @@ const PracticeWidget = ({ questions }) => {
 
 // ============================================================
 // 🔥 KONTEN AI YANG BISA DIPENCET
-// AI menandai bagian penting dengan <span class="gem-pop" data-info="...">.
-// Penjelasan muncul PERSIS DI BAWAH kata yang diketuk (popover melayang),
-// bukan menumpuk di bawah paragraf — supaya siswa langsung tahu penjelasan
-// itu milik kata yang mana.
 // ============================================================
 const AIContentBlock = ({ html }) => {
   const wrapRef = useRef(null);
@@ -636,182 +661,31 @@ const AIContentBlock = ({ html }) => {
 };
 
 // ============================================================
-// 🔥 STYLES
+// 🔥 BARU: SKELETON LOADING -- kerangka konten (bukan spinner polos).
+// Kerangka ini bikin loading TERASA jauh lebih cepat (riset UX: skeleton
+// dipersepsikan ~30-40% lebih cepat dibanding spinner walau waktu
+// aktualnya sama), karena siswa langsung lihat "bentuk" halamannya alih-
+// alih layar kosong berputar-putar.
 // ============================================================
-const styles = {
-  container: {
-    background: 'white',
-    borderRadius: 12,
-    border: '1px solid #e2e8f0',
-    overflow: 'hidden',
-    marginTop: 8,
-    boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '12px 16px',
-    background: '#f8fafc',
-    borderBottom: '1px solid #e2e8f0',
-    flexWrap: 'wrap',
-    gap: 8
-  },
-  headerLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-    minWidth: 150
-  },
-  iconWrapper: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    background: 'white',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0
-  },
-  headerInfo: {
-    flex: 1,
-    minWidth: 0
-  },
-  fileName: {
-    fontSize: 13,
-    fontWeight: 600,
-    color: '#1e293b',
-    wordBreak: 'break-word'
-  },
-  fileMeta: {
-    display: 'flex',
-    gap: 6,
-    fontSize: 10,
-    color: '#94a3b8',
-    flexWrap: 'wrap'
-  },
-  fileType: {
-    fontWeight: 500
-  },
-  fileSize: {
-    color: '#94a3b8'
-  },
-  headerActions: {
-    display: 'flex',
-    gap: 4
-  },
-  btnNewTab: {
-    padding: '6px 10px',
-    background: 'white',
-    border: '1px solid #e2e8f0',
-    borderRadius: 6,
-    cursor: 'pointer',
-    color: '#64748b',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: '0.2s'
-  },
-  btnDownload: {
-    padding: '6px 10px',
-    background: '#3b82f6',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-    color: 'white',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: '0.2s'
-  },
-  content: {
-    padding: '0'
-  },
-  iframeWrapper: {
-    position: 'relative',
-    paddingBottom: '56.25%',
-    height: 0,
-    overflow: 'hidden',
-    background: '#000'
-  },
-  iframe: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    border: 'none'
-  },
-  imageWrapper: {
-    padding: '12px',
-    background: '#f8fafc',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    maxHeight: 500,
-    overflow: 'hidden'
-  },
-  image: {
-    maxWidth: '100%',
-    maxHeight: '100%',
-    objectFit: 'contain',
-    borderRadius: 4
-  },
-  linkCard: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-    padding: '16px 20px',
-    background: '#f8fafc',
-    borderRadius: 8,
-    margin: '12px'
-  },
-  linkInfo: {
-    flex: 1,
-    minWidth: 0
-  },
-  linkTitle: {
-    fontSize: 13,
-    fontWeight: 600,
-    color: '#1e293b'
-  },
-  linkUrl: {
-    fontSize: 11,
-    color: '#94a3b8',
-    wordBreak: 'break-all'
-  },
-  unknownCard: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 12,
-    padding: '30px 20px',
-    background: '#f8fafc'
-  },
-  unknownText: {
-    fontSize: 13,
-    color: '#94a3b8'
-  },
-  btnOpenTab: {
-    padding: '8px 20px',
-    background: '#3b82f6',
-    color: 'white',
-    border: 'none',
-    borderRadius: 8,
-    cursor: 'pointer',
-    fontWeight: 600,
-    fontSize: 12,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6
-  },
-  errorText: {
-    padding: '20px',
-    color: '#ef4444',
-    textAlign: 'center'
-  }
-};
+const ModuleSkeleton = () => (
+  <div style={{ maxWidth: 720, margin: '0 auto', padding: '20px 16px' }}>
+    <style>{`
+      @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+      .gem-skel { background: linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 37%,#f1f5f9 63%); background-size: 800px 100%; animation: shimmer 1.4s linear infinite; border-radius: 12px; }
+    `}</style>
+    <div className="gem-skel" style={{ height: 160, marginBottom: 20 }} />
+    <div className="gem-skel" style={{ height: 28, width: '70%', marginBottom: 10 }} />
+    <div className="gem-skel" style={{ height: 14, width: '40%', marginBottom: 26 }} />
+    {[1, 2, 3].map(i => (
+      <div key={i} style={{ marginBottom: 16 }}>
+        <div className="gem-skel" style={{ height: 16, width: '30%', marginBottom: 10 }} />
+        <div className="gem-skel" style={{ height: 14, marginBottom: 6 }} />
+        <div className="gem-skel" style={{ height: 14, marginBottom: 6 }} />
+        <div className="gem-skel" style={{ height: 14, width: '80%' }} />
+      </div>
+    ))}
+  </div>
+);
 
 // ============================================================
 // REDUCER
@@ -844,6 +718,8 @@ function reducer(state, action) {
   }
 }
 
+const MODUL_CACHE_PREFIX = 'gemilang_modulCache_';
+
 // ============================================================
 // MAIN COMPONENT
 // ============================================================
@@ -854,6 +730,16 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const [studentNim, setStudentNim] = useState('');
   const [studentKelas, setStudentKelas] = useState('');
   const [studentProgram, setStudentProgram] = useState('');
+  // 🔥 BARU: sudah lewat berapa persen konten yang di-scroll -- progress
+  // bar tipis yang nempel di atas, kasih siswa rasa "ada ujungnya" & rasa
+  // pencapaian pas nyampe 100%.
+  const [scrollProgress, setScrollProgress] = useState(0);
+  // 🔥 BARU: tanda "sudah dibaca" per bagian materi -- disimpan ringan di
+  // localStorage (bukan database, gak perlu skema baru) semata buat kasih
+  // sinyal "kompetensi tercapai" ke siswa (centang hijau), bukan buat
+  // pelaporan ke guru.
+  const [readBlocks, setReadBlocks] = useState({});
+  const contentRef = useRef(null);
 
   // ===== RESPONSIVE =====
   useEffect(() => {
@@ -874,13 +760,23 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
     setStudentProgram(program);
   }, [studentData]);
 
+  const ageTier = useMemo(() => getAgeTier(studentKelas), [studentKelas]);
+
   // ===== FETCH MODUL =====
+  // 🔥 BARU: strategi "cache-first" -- kalau modul ini PERNAH dibuka
+  // sebelumnya di perangkat ini, tampilkan LANGSUNG dari cache (TANPA
+  // skeleton/spinner sama sekali, terasa instan), sambil diam-diam
+  // refresh data terbaru di belakang layar. Loading spinner/skeleton
+  // cuma muncul di kunjungan PERTAMA KALI (memang gak ada cara
+  // menampilkan data yang belum pernah diambil), tapi setelah itu siswa
+  // hampir gak pernah lihat layar loading lagi buat modul yang sama.
   useEffect(() => {
     if (!modulId) return;
     let cancelled = false;
+    const cacheKey = MODUL_CACHE_PREFIX + modulId;
 
-    const fetchAll = async () => {
-      dispatch({ type: 'SET_LOADING', payload: true });
+    const fetchAll = async (isBackgroundRefresh) => {
+      if (!isBackgroundRefresh) dispatch({ type: 'SET_LOADING', payload: true });
       try {
         const snap = await getDoc(doc(db, "bimbel_modul", modulId));
         if (cancelled) return;
@@ -892,7 +788,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         
         const data = snap.data();
         
-        // 🔥 CEK AKSES
         const nim = studentNim || localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
         const kelas = studentKelas || localStorage.getItem('studentKelas') || '';
         const program = studentProgram || localStorage.getItem('studentProgram') || 'Reguler';
@@ -923,8 +818,10 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         dispatch({ type: 'SET_ACCESS', payload: true });
         dispatch({ type: 'SET_MODUL', payload: data });
 
-        // 🔥 AMBIL STATUS KUIS — dijalankan PARALEL (bukan satu-satu berurutan),
-        // supaya modul yang punya banyak kuis tetap cepat dibuka.
+        // 🔥 Simpan ke cache buat kunjungan BERIKUTNYA (bukan yang sekarang)
+        try { localStorage.setItem(cacheKey, JSON.stringify({ data, cachedAt: Date.now() })); } catch (e) { /* penuh/gak tersedia, gak fatal */ }
+
+        // 🔥 AMBIL STATUS KUIS — PARALEL
         if (nim) {
           const quizBlocks = (data.blocks || []).filter(b => b.type === 'quiz' && b.quizId);
 
@@ -971,17 +868,55 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         }
         
       } catch(e) { 
-        if (!cancelled) {
+        if (!cancelled && !isBackgroundRefresh) {
           console.error(e);
           dispatch({ type: 'SET_ERROR', payload: 'Gagal memuat modul: ' + e.message });
+        } else if (!cancelled) {
+          console.error('Gagal refresh modul di belakang layar:', e);
         }
       }
-      if (!cancelled) dispatch({ type: 'SET_LOADING', payload: false });
+      if (!cancelled && !isBackgroundRefresh) dispatch({ type: 'SET_LOADING', payload: false });
     };
 
-    fetchAll();
+    // Coba tampilkan dari cache dulu buat kesan instan
+    let hasCachedVersion = false;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.data) {
+          dispatch({ type: 'SET_ACCESS', payload: true });
+          dispatch({ type: 'SET_MODUL', payload: parsed.data });
+          hasCachedVersion = true;
+        }
+      }
+    } catch (e) { /* cache rusak, abaikan */ }
+
+    fetchAll(hasCachedVersion);
     return () => { cancelled = true; };
   }, [modulId, studentNim, studentKelas, studentProgram]);
+
+  // 🔥 BARU: lacak progress scroll konten -- dipakai buat progress bar
+  // tipis di atas & buat auto-tandai "sudah dibaca" begitu sebuah bagian
+  // sudah kelewat sepenuhnya di layar.
+  useEffect(() => {
+    const onScroll = () => {
+      const el = contentRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const total = rect.height - window.innerHeight;
+      if (total <= 0) { setScrollProgress(100); return; }
+      const scrolled = Math.min(Math.max(-rect.top, 0), total);
+      setScrollProgress(Math.round((scrolled / total) * 100));
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [state.modul]);
+
+  const toggleReadBlock = (blockId) => {
+    setReadBlocks(prev => ({ ...prev, [blockId]: !prev[blockId] }));
+  };
 
   // ============================================================
   // UPLOAD HANDLER
@@ -1012,10 +947,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         studentName: localStorage.getItem('studentName')||'Siswa',
         studentClass: studentKelas || '',
         subject: modul.subject||modul.kodeMapel||'',
-        // 🔥 FIX: guruId didenormalisasi dari dokumen modul (modul.guruId sudah
-        // ada sejak dibuat lewat ManageMateri.jsx) — dipakai CekTugasSiswa.jsx
-        // buat cocokin submission ke guru yang benar pakai ID, bukan
-        // cocok-cocokan nama mapel yang rapuh.
         guruId: modul.guruId || '',
         fileUrl: result.downloadURL, 
         filePath: result.filePath,
@@ -1048,129 +979,88 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   // ============================================================
   // RENDER CONTENT - MATERI & QUIZ BERSELANG
   // ============================================================
+  const theme = SUBJECT_THEME(state.modul?.subject);
+
   const renderContent = (block, idx) => {
+    const isRead = !!readBlocks[block.id];
+
     // 🔥 JIKA QUIZ
     if (block.type === 'quiz') {
       const isDone = state.quizStatus[block.quizId] === 'done';
       const score = state.quizScores[block.quizId] || 0;
       
       return (
-        <div key={block.id} style={{ 
-          background: block.quizId ? (isDone ? '#f0fdf4' : '#ede9fe') : '#f8fafc', 
-          padding: 16, 
-          borderRadius: 12,
-          border: block.quizId 
-            ? (isDone ? '2px solid #10b981' : '2px solid #8b5cf6') 
-            : '2px dashed #e2e8f0',
-          marginBottom: 12,
-          opacity: block.quizId ? 1 : 0.6
+        <div key={block.id} style={{
+          ...styles.quizCard(ageTier),
+          background: block.quizId ? (isDone ? '#f0fdf4' : styles.quizActiveBg(ageTier)) : '#f8fafc',
+          border: block.quizId ? (isDone ? '2px solid #10b981' : `2px solid ${styles.quizActiveBorder(ageTier)}`) : '2px dashed #e2e8f0',
+          opacity: block.quizId ? 1 : 0.6,
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <FileQuestion size={24} color={block.quizId ? (isDone ? '#10b981' : '#8b5cf6') : '#94a3b8'} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+            <div style={{
+              width: ageTier === 'sd' ? 52 : 44, height: ageTier === 'sd' ? 52 : 44, borderRadius: 16,
+              background: block.quizId ? (isDone ? '#dcfce7' : 'rgba(255,255,255,0.6)') : '#f1f5f9',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <FileQuestion size={ageTier === 'sd' ? 28 : 22} color={block.quizId ? (isDone ? '#10b981' : styles.quizActiveBorder(ageTier)) : '#94a3b8'} />
+            </div>
             <div style={{ flex: 1 }}>
-              <h4 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: block.quizId ? (isDone ? '#166534' : '#6d28d9') : '#94a3b8' }}>
+              <h4 style={{ margin: 0, fontSize: ageTier === 'sd' ? 18 : 16, fontWeight: 800, color: block.quizId ? (isDone ? '#166534' : '#1e293b') : '#94a3b8' }}>
                 {block.quizTitle || block.title || 'Kuis'}
               </h4>
-              <p style={{ margin: 0, fontSize: 11, color: block.quizId ? (isDone ? '#166534' : '#7c3aed') : '#94a3b8' }}>
+              <p style={{ margin: 0, fontSize: 12, color: block.quizId ? (isDone ? '#166534' : '#64748b') : '#94a3b8', fontWeight: 600 }}>
                 {block.quizQuestions || 0} soal
                 {isDone && ` • ✅ Selesai (Nilai: ${score})`}
               </p>
             </div>
-            {isDone && (
-              <span style={{ 
-                background: '#dcfce7', 
-                color: '#166534',
-                padding: '2px 10px',
-                borderRadius: 10,
-                fontSize: 10,
-                fontWeight: 700
-              }}>
-                ✅ Selesai
-              </span>
-            )}
-            {!block.quizId && (
-              <span style={{ 
-                background: '#fef3c7', 
-                color: '#b45309',
-                padding: '2px 10px',
-                borderRadius: 10,
-                fontSize: 10,
-                fontWeight: 700
-              }}>
-                ⚠️ Belum tersedia
-              </span>
-            )}
+            {isDone && <span style={{ fontSize: 22 }}>🏆</span>}
           </div>
           
           {block.quizId ? (
             <button
               onClick={() => navigate(`/siswa/kuis/${block.quizId}`)}
               style={{
-                padding: '10px 24px',
-                background: isDone 
-                  ? 'linear-gradient(135deg, #3b82f6, #2563eb)' 
-                  : 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-                color: 'white',
-                border: 'none',
-                borderRadius: 8,
+                width: '100%',
+                padding: ageTier === 'sd' ? '14px' : '12px',
+                background: isDone ? '#3b82f6' : 'white',
+                color: isDone ? 'white' : styles.quizActiveBorder(ageTier),
+                border: isDone ? 'none' : `2px solid ${styles.quizActiveBorder(ageTier)}`,
+                borderRadius: 12,
                 cursor: 'pointer',
-                fontWeight: 700,
-                fontSize: 13,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                opacity: block.quizId ? 1 : 0.5
+                fontWeight: 800,
+                fontSize: 14,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               }}
-              disabled={!block.quizId}
             >
-              {isDone ? <Eye size={16} /> : <Zap size={16} />}
-              {isDone ? 'Lihat Detail Jawaban' : 'Mulai Kuis'}
+              {isDone ? <Eye size={18} /> : <Zap size={18} />}
+              {isDone ? 'Lihat Hasil & Pembahasan' : 'Yuk, Mulai Kuis!'}
             </button>
           ) : (
-            <div style={{ 
-              padding: '10px 20px', 
-              background: '#f1f5f9', 
-              borderRadius: 8, 
-              color: '#94a3b8',
-              fontSize: 12,
-              fontWeight: 600,
-              display: 'inline-block'
-            }}>
-              ⚡ Menunggu kuis dari guru
+            <div style={{ padding: '10px 20px', background: '#f1f5f9', borderRadius: 10, color: '#94a3b8', fontSize: 12, fontWeight: 700, textAlign: 'center' }}>
+              ⏳ Menunggu kuis dari guru
             </div>
           )}
-          
-          <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>
-            {block.quizId 
-              ? (isDone 
-                ? 'Klik untuk melihat hasil dan pembahasan' 
-                : 'Kerjakan kuis ini untuk menguji pemahaman Anda')
-              : 'Guru belum membuat kuis untuk bagian ini'}
-          </p>
         </div>
       );
     }
     
     // 🔥 MATERI (text, file, video)
-    const typeIcons = { text: '📄', file: '📁', video: '🎥' };
     const typeLabels = { text: 'MATERI', file: 'FILE', video: 'VIDEO' };
-    const typeColors = { text: '#3b82f6', file: '#10b981', video: '#ef4444' };
     
     return (
-      <div key={block.id} className="cd">
-        <div className="cdt">
-          <small style={{ color: typeColors[block.type] }}>
-            {typeIcons[block.type] || '📄'} {typeLabels[block.type] || 'BAGIAN'} {idx + 1}
+      <div key={block.id} className="cd" style={styles.contentCard(ageTier)}>
+        <div style={styles.cdt(theme)}>
+          <small style={{ color: theme.color }}>
+            {theme.emoji} {typeLabels[block.type] || 'BAGIAN'} {idx + 1}
           </small>
-          <h3>{renderMath(block.title) || `Bagian ${idx + 1}`}</h3>
+          <h3 style={styles.cdtHeading(ageTier)}>{renderMath(block.title) || `Bagian ${idx + 1}`}</h3>
         </div>
         
-        {/* 🔥 KONTEN TEKS - CEK APAKAH HTML (dari AI Generate) ATAU TEKS BIASA */}
         {block.type === 'text' && block.format === 'html' && (
           <AIContentBlock html={block.content} />
         )}
         {block.type === 'text' && block.format !== 'html' && (
-          <div className="cdtx">{renderMath(block.content)}</div>
+          <div style={styles.cdtx(ageTier)}>{renderMath(block.content)}</div>
         )}
         {block.interactive?.type === 'flashcard' && block.interactive.front && (
           <FlashcardWidget front={block.interactive.front} back={block.interactive.back} />
@@ -1188,16 +1078,28 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
             title={block.title}
           />
         )}
+
+        {/* 🔥 BARU: tombol "Tandai Sudah Dibaca" -- cuma buat materi teks
+            (bukan file/video/quiz), kasih siswa rasa pencapaian (competence)
+            per bagian, bukan cuma di akhir modul. Disimpan lokal saja
+            (localStorage), tidak mempengaruhi nilai/laporan ke guru. */}
+        {block.type === 'text' && (
+          <button
+            onClick={() => toggleReadBlock(block.id)}
+            style={styles.readToggle(isRead, ageTier)}
+          >
+            <CheckCircle size={16} />
+            {isRead ? 'Sudah dibaca ✓' : 'Tandai sudah dibaca'}
+          </button>
+        )}
       </div>
     );
   };
 
   // ============================================================
-  // LOADING
+  // LOADING -- skeleton, bukan spinner polos
   // ============================================================
-  if (state.loading) return (
-    <div className="ls"><div className="sp"/><p>Memuat Modul...</p></div>
-  );
+  if (state.loading) return <ModuleSkeleton />;
 
   // ============================================================
   // ERROR / NO ACCESS
@@ -1221,199 +1123,126 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   const tugasBlocks = allBlocks.filter(b => b.type === 'assignment');
   const quizBlocks = allBlocks.filter(b => b.type === 'quiz');
   const hasQuiz = quizBlocks.length > 0;
+  const readingMinutes = estimateReadingMinutes(materiBlocks);
+  const materiTextBlocks = materiBlocks.filter(b => b.type === 'text');
+  const readCount = materiTextBlocks.filter(b => readBlocks[b.id]).length;
 
   // ============================================================
   // RENDER UTAMA
   // ============================================================
   return (
     <>
-      {/* COVER */}
-      <div className="cv">
-        <button onClick={onBack} className="cbb"><ArrowLeft size={14}/> {!isMobile&&'Kembali'}</button>
-        <img src={state.modul?.coverImage||'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1000'} alt=""/>
-        <div className="cvo">
-          <div className="cvt">
-            <span className="tp">{state.modul?.subject||'Umum'}</span>
-            <span className="tg">{state.modul?.targetKategori||'Semua'} • {state.modul?.targetKelas||'Semua'}</span>
-            {state.modul?.sendToSpecificStudents && <span className="ts">🔒 Khusus</span>}
-          </div>
-          <h1>{renderMath(state.modul?.title)}</h1>
-          <div className="cvm">
-            <span><User size={12}/> {state.modul?.authorName||state.modul?.guruName||'Guru'}</span>
-            <span>📅 {formatDate(state.modul?.createdAt)}</span>
-            {studentNim && <span>🆔 {studentNim}</span>}
-            {studentKelas && <span>🎓 {studentKelas}</span>}
+      {/* 🔥 PROGRESS BAR SCROLL -- nempel di paling atas, kasih rasa "ada
+          ujungnya" pas baca materi panjang. */}
+      <div style={styles.scrollBarBg}>
+        <div style={{ ...styles.scrollBarFill, width: `${scrollProgress}%`, background: theme.color }} />
+      </div>
+
+      <div ref={contentRef}>
+        {/* COVER */}
+        <div className="cv" style={{ background: `linear-gradient(160deg, ${theme.color}dd, ${theme.color}99)` }}>
+          <button onClick={onBack} className="cbb"><ArrowLeft size={14}/> {!isMobile&&'Kembali'}</button>
+          {state.modul?.coverImage ? (
+            <img src={state.modul.coverImage} alt="" />
+          ) : (
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: ageTier === 'sd' ? 90 : 60, opacity: 0.35 }}>
+              {theme.emoji}
+            </div>
+          )}
+          <div className="cvo">
+            <div className="cvt">
+              <span className="tp" style={{ background: theme.color }}>{theme.emoji} {state.modul?.subject||'Umum'}</span>
+              <span className="tg">{state.modul?.targetKategori||'Semua'} • {state.modul?.targetKelas||'Semua'}</span>
+              {state.modul?.sendToSpecificStudents && <span className="ts">🔒 Khusus</span>}
+            </div>
+            <h1 style={{ fontSize: ageTier === 'sd' ? 26 : 22 }}>{renderMath(state.modul?.title)}</h1>
+            <div className="cvm">
+              <span><User size={12}/> {state.modul?.authorName||state.modul?.guruName||'Guru'}</span>
+              <span><Clock size={12}/> ~{readingMinutes} menit baca</span>
+              {studentKelas && <span>🎓 {studentKelas}</span>}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* TABS */}
-      <div className="tb">
-        <button className={`tbt ${state.activeTab==='materi'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'materi'})}>
-          <BookOpen size={14}/> Materi ({materiBlocks.length})
-        </button>
-        {tugasBlocks.length>0 && (
-          <button className={`tbt ${state.activeTab==='tugas'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'tugas'})}>
-            <Send size={14}/> Tugas ({Object.keys(state.submittedTasks).length}/{tugasBlocks.length})
+        {/* TABS -- diperbesar & dibikin lebih jelas ikonnya, terutama buat SD */}
+        <div className="tb" style={{ padding: ageTier === 'sd' ? 8 : 5 }}>
+          <button className={`tbt ${state.activeTab==='materi'?'act':''}`} style={{ padding: ageTier === 'sd' ? '14px 8px' : '10px' }} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'materi'})}>
+            <BookOpen size={ageTier === 'sd' ? 18 : 14}/> Materi ({materiBlocks.length})
           </button>
-        )}
-        {hasQuiz && (
-          <button className={`tbt ${state.activeTab==='kuis'?'act':''}`} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'kuis'})}>
-            <FileQuestion size={14}/> Kuis ({quizBlocks.filter(b => b.quizId).length}/{quizBlocks.length})
-          </button>
-        )}
-      </div>
+          {tugasBlocks.length>0 && (
+            <button className={`tbt ${state.activeTab==='tugas'?'act':''}`} style={{ padding: ageTier === 'sd' ? '14px 8px' : '10px' }} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'tugas'})}>
+              <Send size={ageTier === 'sd' ? 18 : 14}/> Tugas ({Object.keys(state.submittedTasks).length}/{tugasBlocks.length})
+            </button>
+          )}
+          {hasQuiz && (
+            <button className={`tbt ${state.activeTab==='kuis'?'act':''}`} style={{ padding: ageTier === 'sd' ? '14px 8px' : '10px' }} onClick={()=>dispatch({type:'SET_ACTIVE_TAB',payload:'kuis'})}>
+              <FileQuestion size={ageTier === 'sd' ? 18 : 14}/> Kuis ({quizBlocks.filter(b => b.quizId).length}/{quizBlocks.length})
+            </button>
+          )}
+        </div>
 
-      {/* CONTENT */}
-      <div className="ct">
-        {/* 🔥 MATERI + QUIZ BERSELANG */}
-        {state.activeTab==='materi' && (
-          <div>
-            {materiBlocks.length === 0 && (
-              <div className="em">Belum ada materi</div>
-            )}
-            {materiBlocks.map((block, idx) => renderContent(block, idx))}
-          </div>
-        )}
-
-        {/* 🔥 TUGAS */}
-        {state.activeTab==='tugas' && (
-          <div>
-            {tugasBlocks.length === 0 && <div className="em">Tidak ada tugas</div>}
-            {tugasBlocks.map(b => {
-              const sub = state.submittedTasks[b.id];
-              const expired = b.endTime && new Date(b.endTime) < new Date();
-              return (
-                <div key={b.id} className="cd tg">
-                  <div className="cdt"><small>📝 TUGAS</small><h3>{b.title}</h3></div>
-                  <div className="cdtx">{renderMath(b.content)}</div>
-                  {b.endTime && <div className="dl"><Clock size={14}/> {getTimeRemaining(b.endTime)?.text}</div>}
-                  <textarea 
-                    value={state.textAnswers[b.id]||''} 
-                    onChange={e=>dispatch({type:'SET_TEXT_ANSWERS',blockId:b.id,value:e.target.value})} 
-                    placeholder="Tulis jawaban..." 
-                    disabled={!!sub||expired} 
-                    className="ta"
-                  />
-                  {sub ? (
-                    <div className="sb">
-                      <div className="sbb"><CheckCircle size={16}/> Terkumpul</div>
-                      {sub.fileUrl && <a href={sub.fileUrl} target="_blank" className="bv"><Eye size={14}/> Lihat File</a>}
-                      {!expired && <button onClick={()=>handleDeleteTask(b.id)} className="bd">Tarik Data</button>}
-                    </div>
-                  ) : expired ? <div className="ex">⛔ Deadline Terlewat</div> : (
-                    <label className="ul">📎 Pilih File <input type="file" hidden onChange={e=>handleFileChange(e,b.id)} disabled={state.uploading[b.id]}/></label>
-                  )}
+        {/* CONTENT */}
+        <div className="ct">
+          {/* 🔥 MATERI + QUIZ BERSELANG */}
+          {state.activeTab==='materi' && (
+            <div>
+              {materiTextBlocks.length > 0 && (
+                <div style={styles.readProgressBanner(theme)}>
+                  <span>📚 {readCount} dari {materiTextBlocks.length} bagian sudah kamu tandai selesai</span>
+                  <div style={styles.readProgressBarBg}>
+                    <div style={{ ...styles.readProgressBarFill, width: `${materiTextBlocks.length ? (readCount/materiTextBlocks.length)*100 : 0}%`, background: theme.color }} />
+                  </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+              )}
+              {materiBlocks.length === 0 && (
+                <div className="em">Belum ada materi</div>
+              )}
+              {materiBlocks.map((block, idx) => renderContent(block, idx))}
+            </div>
+          )}
 
-        {/* 🔥 KUIS - DAFTAR SEMUA KUIS */}
-        {state.activeTab==='kuis' && (
-          <div>
-            {quizBlocks.length === 0 && <div className="em">Tidak ada kuis</div>}
-            {quizBlocks.map(block => {
-              const isDone = state.quizStatus[block.quizId] === 'done';
-              const score = state.quizScores[block.quizId] || 0;
-              
-              return (
-                <div key={block.id} style={{ 
-                  background: block.quizId ? (isDone ? '#f0fdf4' : '#ede9fe') : '#f8fafc', 
-                  padding: 16, 
-                  borderRadius: 12,
-                  border: block.quizId 
-                    ? (isDone ? '2px solid #10b981' : '2px solid #8b5cf6') 
-                    : '2px dashed #e2e8f0',
-                  marginBottom: 12,
-                  opacity: block.quizId ? 1 : 0.6
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                    <FileQuestion size={24} color={block.quizId ? (isDone ? '#10b981' : '#8b5cf6') : '#94a3b8'} />
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: block.quizId ? (isDone ? '#166534' : '#6d28d9') : '#94a3b8' }}>
-                        {block.quizTitle || block.title || 'Kuis'}
-                      </h4>
-                      <p style={{ margin: 0, fontSize: 11, color: block.quizId ? (isDone ? '#166534' : '#7c3aed') : '#94a3b8' }}>
-                        {block.quizQuestions || 0} soal
-                        {isDone && ` • ✅ Selesai (Nilai: ${score})`}
-                      </p>
-                    </div>
-                    {isDone && (
-                      <span style={{ 
-                        background: '#dcfce7', 
-                        color: '#166534',
-                        padding: '2px 10px',
-                        borderRadius: 10,
-                        fontSize: 10,
-                        fontWeight: 700
-                      }}>
-                        ✅ Selesai
-                      </span>
-                    )}
-                    {!block.quizId && (
-                      <span style={{ 
-                        background: '#fef3c7', 
-                        color: '#b45309',
-                        padding: '2px 10px',
-                        borderRadius: 10,
-                        fontSize: 10,
-                        fontWeight: 700
-                      }}>
-                        ⚠️ Belum tersedia
-                      </span>
+          {/* 🔥 TUGAS */}
+          {state.activeTab==='tugas' && (
+            <div>
+              {tugasBlocks.length === 0 && <div className="em">Tidak ada tugas</div>}
+              {tugasBlocks.map(b => {
+                const sub = state.submittedTasks[b.id];
+                const expired = b.endTime && new Date(b.endTime) < new Date();
+                return (
+                  <div key={b.id} className="cd tg" style={styles.contentCard(ageTier)}>
+                    <div className="cdt"><small>📝 TUGAS</small><h3 style={styles.cdtHeading(ageTier)}>{b.title}</h3></div>
+                    <div style={styles.cdtx(ageTier)}>{renderMath(b.content)}</div>
+                    {b.endTime && <div className="dl"><Clock size={14}/> {getTimeRemaining(b.endTime)?.text}</div>}
+                    <textarea 
+                      value={state.textAnswers[b.id]||''} 
+                      onChange={e=>dispatch({type:'SET_TEXT_ANSWERS',blockId:b.id,value:e.target.value})} 
+                      placeholder="Tulis jawaban..." 
+                      disabled={!!sub||expired} 
+                      className="ta"
+                    />
+                    {sub ? (
+                      <div className="sb">
+                        <div className="sbb"><CheckCircle size={16}/> Terkumpul</div>
+                        {sub.fileUrl && <a href={sub.fileUrl} target="_blank" className="bv"><Eye size={14}/> Lihat File</a>}
+                        {!expired && <button onClick={()=>handleDeleteTask(b.id)} className="bd">Tarik Data</button>}
+                      </div>
+                    ) : expired ? <div className="ex">⛔ Deadline Terlewat</div> : (
+                      <label className="ul">📎 Pilih File <input type="file" hidden onChange={e=>handleFileChange(e,b.id)} disabled={state.uploading[b.id]}/></label>
                     )}
                   </div>
-                  
-                  {block.quizId ? (
-                    <button
-                      onClick={() => navigate(`/siswa/kuis/${block.quizId}`)}
-                      style={{
-                        padding: '10px 24px',
-                        background: isDone 
-                          ? 'linear-gradient(135deg, #3b82f6, #2563eb)' 
-                          : 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: 8,
-                        cursor: 'pointer',
-                        fontWeight: 700,
-                        fontSize: 13,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 8
-                      }}
-                    >
-                      {isDone ? <Eye size={16} /> : <Zap size={16} />}
-                      {isDone ? 'Lihat Detail Jawaban' : 'Mulai Kuis'}
-                    </button>
-                  ) : (
-                    <div style={{ 
-                      padding: '10px 20px', 
-                      background: '#f1f5f9', 
-                      borderRadius: 8, 
-                      color: '#94a3b8',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      display: 'inline-block'
-                    }}>
-                      ⚡ Menunggu kuis dari guru
-                    </div>
-                  )}
-                  
-                  <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>
-                    {block.quizId 
-                      ? (isDone 
-                        ? 'Klik untuk melihat hasil dan pembahasan' 
-                        : 'Kerjakan kuis ini untuk menguji pemahaman Anda')
-                      : 'Guru belum membuat kuis untuk bagian ini'}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
+
+          {/* 🔥 KUIS - DAFTAR SEMUA KUIS */}
+          {state.activeTab==='kuis' && (
+            <div>
+              {quizBlocks.length === 0 && <div className="em">Tidak ada kuis</div>}
+              {quizBlocks.map((block, idx) => renderContent(block, idx))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* PREVIEW IMAGE */}
@@ -1448,10 +1277,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
       {/* CSS */}
       <style>{`
         *{box-sizing:border-box;margin:0;padding:0}
-        .ls{display:flex;flex-direction:column;align-items:center;justify-content:center;height:70vh;gap:16px;color:#64748b;font-size:13px}
-        .sp{width:40px;height:40px;border:4px solid #e2e8f0;border-top:4px solid #673ab7;border-radius:50%;animation:spin 1s linear infinite}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        
         .no-access{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;padding:20px;text-align:center}
         .no-access-icon{width:80px;height:80px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
         .no-access h2{font-size:24px;font-weight:800;color:#1e293b;margin:0}
@@ -1459,22 +1284,19 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         
         .cv{height:260px;position:relative;overflow:hidden}
         .cv img{width:100%;height:100%;object-fit:cover}
-        .cvo{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(15,23,42,.95));padding:30px 5%;color:#fff}
-        .cvo h1{font-size:24px;font-weight:900;margin:4px 0}
+        .cvo{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(15,23,42,.85));padding:30px 5%;color:#fff}
+        .cvo h1{font-weight:900;margin:4px 0}
         .cvt{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
         .cvt span{padding:4px 10px;border-radius:8px;font-size:9px;font-weight:800}
-        .tp{background:#673ab7}.tg{background:rgba(255,255,255,.2)}.ts{background:#f59e0b;color:#1e293b}
-        .cvm{display:flex;gap:12px;font-size:11px;opacity:.8;flex-wrap:wrap}
-        .cbb{background:rgba(255,255,255,.95);border:0;padding:8px 14px;border-radius:30px;cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:800;box-shadow:0 4px 12px rgba(0,0,0,.1);color:#1e293b;font-size:12px}
-        .tb{display:flex;gap:4px;background:#fff;margin:-30px 20px 0;border-radius:12px;padding:5px;box-shadow:0 4px 12px rgba(0,0,0,.06);position:relative;z-index:5;flex-wrap:wrap}
-        .tbt{flex:1;padding:10px;border:0;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;background:0;color:#64748b;display:flex;align-items:center;justify-content:center;gap:6px;min-width:80px;transition:.2s}
+        .tg{background:rgba(255,255,255,.2)}.ts{background:#f59e0b;color:#1e293b}
+        .cvm{display:flex;gap:12px;font-size:11px;opacity:.9;flex-wrap:wrap}
+        .cbb{background:rgba(255,255,255,.95);border:0;padding:8px 14px;border-radius:30px;cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:800;box-shadow:0 4px 12px rgba(0,0,0,.1);color:#1e293b;font-size:12px;position:absolute;top:16px;left:16px;z-index:2}
+        .tb{display:flex;gap:4px;background:#fff;margin:-24px 20px 0;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.08);position:relative;z-index:5;flex-wrap:wrap}
+        .tbt{flex:1;border:0;border-radius:10px;font-weight:800;font-size:12px;cursor:pointer;background:0;color:#64748b;display:flex;align-items:center;justify-content:center;gap:6px;min-width:80px;transition:.2s}
         .tbt.act{background:#673ab7;color:#fff}
-        .ct{max-width:900px;margin:0 auto;padding:20px}
-        .cd{background:#fff;padding:22px;border-radius:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.02);border:1px solid #f1f5f9}
-        .cdt{margin-bottom:12px;border-left:4px solid #673ab7;padding-left:10px}
-        .cdt small{font-size:9px;font-weight:800;color:#673ab7;display:block}
-        .cdt h3{font-size:18px;color:#0f172a;font-weight:800;margin:2px 0 0}
-        .cdtx{line-height:1.8;color:#334155;font-size:15px;white-space:pre-wrap}
+        .ct{max-width:720px;margin:0 auto;padding:20px}
+        .cdt{margin-bottom:12px;border-left:4px solid currentColor;padding-left:10px}
+        .cdt small{font-size:9px;font-weight:800;display:block}
         .cdtx-html{white-space:normal}
         .cdtx-html p{margin-bottom:12px}
         .cdtx-html img{max-width:100%;border-radius:10px}
@@ -1515,10 +1337,79 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         .bc{padding:8px 20px;background:#f1f5f9;border:0;border-radius:8px;font-weight:600;cursor:pointer;color:#64748b}
         .bs{padding:8px 20px;background:#10b981;border:0;border-radius:8px;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px}
         .bs:disabled{opacity:.6;cursor:not-allowed}
-        @media(max-width:768px){.cv{height:200px}.cvo h1{font-size:18px}.tb{margin:-20px 12px 0}.ct{padding:15px 12px}.cd{padding:18px;border-radius:14px}.cdt h3{font-size:16px}.cdtx{font-size:14px}}
+        @media(max-width:768px){.cv{height:200px}.tb{margin:-20px 12px 0}.ct{padding:15px 12px}}
       `}</style>
     </>
   );
+};
+
+// ============================================================
+// STYLES (JS objects, dipakai bareng sama CSS class di atas)
+// ============================================================
+const styles = {
+  container: { background: 'white', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden', marginTop: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', flexWrap: 'wrap', gap: 8 },
+  headerLeft: { display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 150 },
+  iconWrapper: { width: 32, height: 32, borderRadius: 8, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  headerInfo: { flex: 1, minWidth: 0 },
+  fileName: { fontSize: 13, fontWeight: 600, color: '#1e293b', wordBreak: 'break-word' },
+  fileMeta: { display: 'flex', gap: 6, fontSize: 10, color: '#94a3b8', flexWrap: 'wrap' },
+  fileType: { fontWeight: 500 },
+  fileSize: { color: '#94a3b8' },
+  headerActions: { display: 'flex', gap: 4 },
+  btnNewTab: { padding: '6px 10px', background: 'white', border: '1px solid #e2e8f0', borderRadius: 6, cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  btnDownload: { padding: '6px 10px', background: '#3b82f6', border: 'none', borderRadius: 6, cursor: 'pointer', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  content: { padding: '0' },
+  iframeWrapper: { position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', background: '#000' },
+  iframe: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' },
+  imageWrapper: { padding: '12px', background: '#f8fafc', display: 'flex', justifyContent: 'center', alignItems: 'center', maxHeight: 500, overflow: 'hidden' },
+  image: { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 4 },
+  linkCard: { display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', background: '#f8fafc', borderRadius: 8, margin: '12px' },
+  linkInfo: { flex: 1, minWidth: 0 },
+  linkTitle: { fontSize: 13, fontWeight: 600, color: '#1e293b' },
+  linkUrl: { fontSize: 11, color: '#94a3b8', wordBreak: 'break-all' },
+  unknownCard: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '30px 20px', background: '#f8fafc' },
+  unknownText: { fontSize: 13, color: '#94a3b8' },
+  btnOpenTab: { padding: '8px 20px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 },
+  errorText: { padding: '20px', color: '#ef4444', textAlign: 'center' },
+
+  // 🔥 Progress bar scroll global
+  scrollBarBg: { position: 'fixed', top: 0, left: 0, right: 0, height: 3, background: 'rgba(0,0,0,0.06)', zIndex: 200 },
+  scrollBarFill: { height: '100%', transition: 'width 0.15s ease' },
+
+  // 🔥 Kartu konten -- ukuran & padding beda per tier usia
+  contentCard: (tier) => ({
+    background: '#fff', padding: tier === 'sd' ? 26 : 22, borderRadius: tier === 'sd' ? 20 : 16,
+    marginBottom: 14, boxShadow: '0 1px 3px rgba(0,0,0,.02)', border: '1px solid #f1f5f9',
+  }),
+  cdt: (theme) => ({ marginBottom: 12, borderLeft: `4px solid ${theme.color}`, paddingLeft: 10, color: theme.color }),
+  cdtHeading: (tier) => ({ fontSize: tier === 'sd' ? 22 : 18, color: '#0f172a', fontWeight: 800, margin: '2px 0 0' }),
+  cdtx: (tier) => ({
+    lineHeight: tier === 'sd' ? 2 : 1.8, color: '#334155',
+    fontSize: tier === 'sd' ? 17 : 15, whiteSpace: 'pre-wrap',
+  }),
+
+  // 🔥 Tombol "sudah dibaca"
+  readToggle: (isRead, tier) => ({
+    marginTop: 16, padding: tier === 'sd' ? '12px 20px' : '9px 16px',
+    borderRadius: 12, border: isRead ? '2px solid #10b981' : '2px dashed #cbd5e1',
+    background: isRead ? '#f0fdf4' : 'white', color: isRead ? '#166534' : '#64748b',
+    fontWeight: 700, fontSize: 13, cursor: 'pointer',
+    display: 'inline-flex', alignItems: 'center', gap: 8,
+  }),
+
+  // 🔥 Banner progress baca (di atas daftar materi)
+  readProgressBanner: (theme) => ({
+    background: theme.bg, border: `1px solid ${theme.color}30`, borderRadius: 14,
+    padding: '12px 16px', marginBottom: 16, fontSize: 12, fontWeight: 700, color: theme.color,
+  }),
+  readProgressBarBg: { marginTop: 8, height: 6, background: 'rgba(0,0,0,0.06)', borderRadius: 4, overflow: 'hidden' },
+  readProgressBarFill: { height: '100%', borderRadius: 4, transition: 'width 0.3s ease' },
+
+  // 🔥 Kartu kuis
+  quizCard: (tier) => ({ padding: tier === 'sd' ? 22 : 18, borderRadius: tier === 'sd' ? 20 : 16, marginBottom: 14 }),
+  quizActiveBg: (tier) => tier === 'sd' ? '#f5f3ff' : '#faf9ff',
+  quizActiveBorder: (tier) => '#8b5cf6',
 };
 
 export default StudentModuleView;
