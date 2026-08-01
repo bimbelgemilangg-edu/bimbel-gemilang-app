@@ -1016,6 +1016,75 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     };
   }, [quizStarted, isSubmitted, quizData?.antiCheatEnabled, hasExistingAnswer]);
 
+  // ============================================================
+  // 🔥 BARU: ANTI AUTO-TRANSLATE (khusus buat soal Bahasa Inggris)
+  // ============================================================
+  // Fitur terjemahan otomatis Chrome bikin soal Bahasa Inggris jadi
+  // kebaca dalam Bahasa Indonesia -- buat try out/ujian Bahasa Inggris,
+  // itu sama aja ngasih kunci jawaban. Ada 2 lapisan di sini:
+  //
+  //  1. PENCEGAHAN: pasang penanda standar (atribut translate="no",
+  //     class "notranslate", dan meta tag) yang bikin Chrome TIDAK
+  //     menawarkan/menjalankan terjemahan di halaman ini.
+  //  2. DETEKSI: kalau siswa maksa nerjemahin lewat menu manual, Chrome
+  //     ninggalin jejak yang bisa dikenali (atribut `class="translated-*"`
+  //     di elemen <html>). Kita awasi itu; kalau muncul, dicatat sebagai
+  //     pelanggaran dan siswa dikasih peringatan.
+  //
+  // JUJUR SOAL BATASNYA: ini efektif buat auto-translate bawaan Chrome
+  // (penyebab kasus kemarin), tapi TIDAK bisa mencegah siswa nyalin soal
+  // ke aplikasi terjemahan lain di HP kedua, atau pakai ekstensi
+  // terjemahan pihak ketiga yang bekerja beda. Sama seperti anti-cheat
+  // yang sudah ada -- ini mempersulit & mencatat, bukan menjamin 100%.
+  useEffect(() => {
+    if (!quizStarted || isSubmitted || !quizData?.antiCheatEnabled || hasExistingAnswer) return;
+
+    // --- Lapisan 1: PENCEGAHAN ---
+    const htmlEl = document.documentElement;
+    const prevTranslateAttr = htmlEl.getAttribute('translate');
+    htmlEl.setAttribute('translate', 'no');
+    htmlEl.classList.add('notranslate');
+
+    const metaTag = document.createElement('meta');
+    metaTag.name = 'google';
+    metaTag.content = 'notranslate';
+    document.head.appendChild(metaTag);
+
+    // --- Lapisan 2: DETEKSI ---
+    const cekSudahDiterjemahkan = () => {
+      const cls = htmlEl.className || '';
+      // Chrome menandai <html> dengan class seperti "translated-ltr"
+      // atau "translated-rtl" begitu halaman selesai diterjemahkan.
+      return cls.includes('translated-ltr') || cls.includes('translated-rtl');
+    };
+
+    let sudahDilaporkan = false;
+    const laporkanKalauDiterjemahkan = () => {
+      if (sudahDilaporkan) return; // jangan spam berkali-kali
+      if (cekSudahDiterjemahkan()) {
+        sudahDilaporkan = true;
+        setCheatViolations(prev => [...prev, { type: 'halaman_diterjemahkan_otomatis', at: new Date().toISOString() }]);
+        setShowCheatWarning(true);
+      }
+    };
+
+    // Cek sekali di awal (kalau halaman udah ke-translate sebelum kuis mulai)
+    laporkanKalauDiterjemahkan();
+
+    // Terus awasi kalau-kalau baru diterjemahkan di tengah pengerjaan
+    const observer = new MutationObserver(laporkanKalauDiterjemahkan);
+    observer.observe(htmlEl, { attributes: true, attributeFilter: ['class'] });
+
+    return () => {
+      observer.disconnect();
+      // Kembalikan seperti semula setelah keluar dari kuis
+      if (prevTranslateAttr === null) htmlEl.removeAttribute('translate');
+      else htmlEl.setAttribute('translate', prevTranslateAttr);
+      htmlEl.classList.remove('notranslate');
+      if (metaTag.parentNode) metaTag.parentNode.removeChild(metaTag);
+    };
+  }, [quizStarted, isSubmitted, quizData?.antiCheatEnabled, hasExistingAnswer]);
+
   // ===== BACK =====
   const handleBack = () => {
     if (onBack) {
@@ -1375,7 +1444,15 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     <div style={styles.container}>
 
       {/* 🔥 MODAL PERINGATAN KECURANGAN */}
-      {showCheatWarning && (
+      {showCheatWarning && (() => {
+        // 🔥 Pesan disesuaikan sama JENIS pelanggaran terakhir -- kalau
+        // yang kedeteksi itu terjemahan otomatis, siswa perlu instruksi
+        // SPESIFIK cara matiinnya, bukan pesan generik "jangan keluar
+        // dari kuis" yang malah bikin bingung (dia gak keluar kemana-mana).
+        const pelanggaranTerakhir = cheatViolations[cheatViolations.length - 1];
+        const soalTerjemahan = pelanggaranTerakhir?.type === 'halaman_diterjemahkan_otomatis';
+
+        return (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 3000,
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
@@ -1383,12 +1460,26 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           <div style={{ background: 'white', borderRadius: 16, padding: 24, maxWidth: 380, textAlign: 'center' }}>
             <AlertCircle size={40} color="#ef4444" style={{ marginBottom: 10 }} />
             <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 800, color: '#1e293b' }}>
-              ⚠️ Terdeteksi Keluar dari Kuis!
+              {soalTerjemahan ? '🌐 Terjemahan Otomatis Terdeteksi!' : '⚠️ Terdeteksi Keluar dari Kuis!'}
             </h3>
-            <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, margin: '0 0 16px' }}>
-              Ini pelanggaran ke-<b>{cheatViolations.length}</b>. Kejadian ini tercatat dan akan terlihat oleh gurumu.
-              Tetap di halaman ini sampai selesai mengerjakan.
-            </p>
+            {soalTerjemahan ? (
+              <div style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, margin: '0 0 16px', textAlign: 'left' }}>
+                <p style={{ margin: '0 0 10px' }}>
+                  Halaman ini sedang diterjemahkan otomatis oleh browser. Untuk soal Bahasa Inggris, ini <b>tidak diperbolehkan</b> dan sudah tercatat untuk gurumu.
+                </p>
+                <p style={{ margin: '0 0 6px', fontWeight: 700, color: '#1e293b' }}>Cara mematikannya:</p>
+                <ol style={{ margin: 0, paddingLeft: 18 }}>
+                  <li>Cari ikon terjemahan di bagian atas browser (biasanya berbentuk huruf <b>文</b> atau <b>G</b>)</li>
+                  <li>Ketuk ikon itu, lalu pilih <b>"Tampilkan halaman asli"</b></li>
+                  <li><b>Jangan</b> me-refresh halaman — jawabanmu tetap aman</li>
+                </ol>
+              </div>
+            ) : (
+              <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, margin: '0 0 16px' }}>
+                Ini pelanggaran ke-<b>{cheatViolations.length}</b>. Kejadian ini tercatat dan akan terlihat oleh gurumu.
+                Tetap di halaman ini sampai selesai mengerjakan.
+              </p>
+            )}
             <button
               onClick={() => {
                 setShowCheatWarning(false);
@@ -1402,7 +1493,8 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
             </button>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* HEADER */}
       <div style={styles.quizHeader}>

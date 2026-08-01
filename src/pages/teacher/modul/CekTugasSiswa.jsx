@@ -472,12 +472,28 @@ const CekTugasSiswa = () => {
                 <p style={s.modalSub}>{viewingDetail.modulTitle} — Nilai: {viewingDetail.score ?? '-'}/100 ({viewingDetail.correctAnswers}/{viewingDetail.totalQuestions} benar)</p>
                 {/* 🔥 Info deteksi kecurangan (Mode Ujian) — cuma tampil kalau
                     ada pelanggaran tercatat. Ini SINYAL buat guru menilai
-                    sendiri, bukan vonis otomatis "curang". */}
-                {viewingDetail.cheatViolationCount > 0 && (
-                  <p style={{ margin: '6px 0 0', fontSize: 11, fontWeight: 700, color: '#b45309', background: '#fffbeb', display: 'inline-block', padding: '3px 10px', borderRadius: 6 }}>
-                    ⚠️ Terdeteksi keluar dari halaman kuis {viewingDetail.cheatViolationCount}x saat mengerjakan
-                  </p>
-                )}
+                    sendiri, bukan vonis otomatis "curang".
+                    Dipecah PER JENIS karena artinya beda-beda: "keluar
+                    halaman" ≠ "pakai terjemahan otomatis". */}
+                {viewingDetail.cheatViolationCount > 0 && (() => {
+                  const daftar = viewingDetail.cheatViolations || [];
+                  const jmlTerjemahan = daftar.filter(v => v.type === 'halaman_diterjemahkan_otomatis').length;
+                  const jmlKeluar = viewingDetail.cheatViolationCount - jmlTerjemahan;
+                  return (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                      {jmlKeluar > 0 && (
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#b45309', background: '#fffbeb', padding: '3px 10px', borderRadius: 6 }}>
+                          ⚠️ Keluar dari halaman kuis {jmlKeluar}x
+                        </span>
+                      )}
+                      {jmlTerjemahan > 0 && (
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#991b1b', background: '#fef2f2', padding: '3px 10px', borderRadius: 6 }}>
+                          🌐 Pakai terjemahan otomatis browser
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
               <button onClick={() => setViewingDetail(null)} style={s.modalCloseBtn}><X size={18}/></button>
             </div>
