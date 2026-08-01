@@ -19,50 +19,64 @@ import { X, Loader2, AlertCircle, FileText, Upload, CheckCircle2 } from 'lucide-
 // paket, tiap request cuma butuh beberapa detik, jadi aman berapa pun jumlah
 // soal di dokumennya (40, 100, dst) karena diproses bertahap satu per satu.
 const QUESTIONS_PER_PACKAGE = 5;
-const MIN_IMAGE_BYTES = 8 * 1024; // gambar di bawah ini kemungkinan cuma bullet/ikon huruf, bukan diagram
+// 🔥 FIX BUG: sebelumnya nilainya 8KB -- terlalu agresif buat diagram
+// sederhana (mis. pola susunan kubus, garis-garis doang, sedikit warna) yang
+// setelah dikompres bisa aja ukurannya di bawah itu, padahal itu GAMBAR SOAL
+// PENTING, bukan bullet/ikon dekoratif. Diturunkan jauh supaya diagram garis
+// sederhana gak ikut kebuang -- bullet/ikon asli Word biasanya di bawah 1-2KB,
+// jadi ambang 2KB ini masih cukup buat nyaring itu tanpa ikut membuang
+// diagram soal yang beneran penting.
+const MIN_IMAGE_BYTES = 2 * 1024;
+// 🔥 BARU: daftar dengan jumlah item segini ke bawah dianggap OPSI JAWABAN
+// (diberi huruf a,b,c,d,...), lebih dari ini dianggap DAFTAR SOAL (diberi
+// angka 1,2,3,...). Lihat penjelasan lengkap di extractPlainTextAndImages().
+const MAX_OPTION_LIST_SIZE = 8;
 
 // ============================================================
 // 🔥 KONVERSI HTML -> TEKS POLOS, PAKAI DOMPARSER ASLI (BUKAN REGEX)
 // ============================================================
-// KENAPA DIROMBAK: dokumen Word ujian sering pakai PENOMORAN OTOMATIS
-// Word (bukan diketik manual "1. 2. 3."), dan strukturnya BERLAPIS —
-// soal di level luar (1,2,3...), opsi jawaban a/b/c/d di level DALAM,
-// bersarang di dalam tiap soal. Regex cuma bisa baca 1 lapis daftar, jadi
-// begitu ketemu struktur bersarang begini, hasilnya berantakan (soal
-// tercampur, opsi ilang). DOMParser beneran "paham" struktur pohon HTML-nya,
-// jadi bisa nomorin soal (1. 2. 3.) dan opsi (a. b. c. d.) secara terpisah
-// sesuai levelnya masing-masing — hasilnya jauh lebih akurat.
+// 🔥 FIX BUG BESAR (ini kemungkinan akar dari "selalu gagal impor"):
+// Sebelumnya, jenis penomoran (angka "1.2.3" buat soal vs huruf "a.b.c" buat
+// opsi jawaban) ditentukan dari KEDALAMAN NESTING html -- asumsinya opsi
+// jawaban itu daftar Word yang SENGAJA disarangkan DI DALAM item soal
+// (<ol><li>soal<ol><li>opsi</li></ol></li></ol>). Asumsi ini SALAH untuk
+// mayoritas dokumen ujian yang beneran dipakai guru: soal dan opsi jawaban
+// hampir selalu berupa DUA DAFTAR TERPISAH yang cuma BERSEBELAHAN (bukan
+// bersarang) -- atau bahkan opsinya cuma paragraf biasa yang ditik manual.
+// Begitu strukturnya gak nested, kode lama salah total nebak jenis
+// penomoran: opsi jawaban ikut kehitung "level 0" dan dikasih angka 1,2,3,4
+// -- lalu sistem deteksi "ini soal baru" (yang nyari pola angka di awal
+// baris) jadi ngira SETIAP OPSI adalah soal baru sendiri. Hasilnya
+// berantakan total atau gagal.
 //
-// Gambar ditangani lewat token penanda sementara (\x00IMG{n}\x00) dulu,
-// baru diproses (dikompres/dibuang) belakangan secara terpisah, supaya
-// urutan teksnya tetap presisi meski prosesnya asinkron.
+// Mammoth juga TIDAK menyimpan info "list ini aslinya format angka atau
+// huruf" di HTML dasarnya (dua-duanya sama-sama jadi <ol> generik) -- jadi
+// kita gak bisa "baca" formatnya dari HTML. Solusi yang jauh lebih akurat:
+// TEBAK dari JUMLAH ITEM per daftar, bukan dari kedalaman nesting. Daftar
+// pendek (2-8 item) hampir pasti opsi jawaban (a/b/c/d/e) -- jarang ada
+// soal ujian dengan lebih dari 8 pilihan. Daftar panjang (>8 item) hampir
+// pasti daftar soal (1,2,3,...). Heuristik ini jalan baik untuk struktur
+// bersarang MAUPUN bersebelahan, karena gak bergantung sama sekali pada
+// posisi/kedalaman di pohon HTML.
 function extractPlainTextAndImages(html) {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const images = [];
 
-  const walkList = (listEl, depth) => {
+  const walkList = (listEl) => {
+    const liChildren = Array.from(listEl.children).filter(c => c.tagName.toLowerCase() === 'li');
+    if (liChildren.length === 0) return '';
+    const looksLikeOptions = liChildren.length <= MAX_OPTION_LIST_SIZE;
     let out = '';
-    let counter = 0;
-    const isOrdered = listEl.tagName.toLowerCase() === 'ol';
-    for (const child of listEl.children) {
-      if (child.tagName.toLowerCase() !== 'li') continue;
-      counter++;
-      let marker;
-      if (!isOrdered) {
-        marker = '- ';
-      } else if (depth === 0) {
-        marker = `${counter}. `; // soal: 1. 2. 3.
-      } else if (depth === 1) {
-        marker = `${String.fromCharCode(96 + counter)}. `; // opsi: a. b. c. d.
-      } else {
-        marker = `${counter}. `;
-      }
-      out += '\n' + marker + walkNode(child, depth + 1).trim() + '\n';
-    }
+    liChildren.forEach((li, idx) => {
+      const marker = looksLikeOptions
+        ? `${String.fromCharCode(97 + idx)}. ` // a. b. c. d. ...
+        : `${idx + 1}. `; // 1. 2. 3. ...
+      out += '\n' + marker + walkNode(li).trim() + '\n';
+    });
     return out;
   };
 
-  const walkNode = (node, depth) => {
+  const walkNode = (node) => {
     let out = '';
     for (const child of node.childNodes) {
       if (child.nodeType === Node.TEXT_NODE) {
@@ -70,9 +84,9 @@ function extractPlainTextAndImages(html) {
       } else if (child.nodeType === Node.ELEMENT_NODE) {
         const tag = child.tagName.toLowerCase();
         if (tag === 'strong' || tag === 'b') {
-          out += '**' + walkNode(child, depth) + '**';
+          out += '**' + walkNode(child) + '**';
         } else if (tag === 'ol' || tag === 'ul') {
-          out += walkList(child, depth);
+          out += walkList(child);
         } else if (tag === 'img') {
           const src = child.getAttribute('src') || '';
           if (src.startsWith('data:')) {
@@ -82,16 +96,16 @@ function extractPlainTextAndImages(html) {
         } else if (tag === 'br') {
           out += '\n';
         } else if (tag === 'p' || tag === 'div') {
-          out += '\n' + walkNode(child, depth) + '\n';
+          out += '\n' + walkNode(child) + '\n';
         } else {
-          out += walkNode(child, depth);
+          out += walkNode(child);
         }
       }
     }
     return out;
   };
 
-  const rawText = walkNode(doc.body, 0);
+  const rawText = walkNode(doc.body);
   return { rawText, images };
 }
 
@@ -152,11 +166,12 @@ async function resolveImages(rawText, images, onProgress) {
       text = text.replace(placeholder, `[[IMG:${imgId}]]`);
     } catch (e) {
       // Gagal kompres 1 gambar -> buang aja gambarnya, jangan gagalkan semuanya
+      console.error('Gagal kompres gambar ke-' + i + ':', e);
       text = text.replace(placeholder, '');
     }
   }
 
-  return { text: text.replace(/\n{3,}/g, '\n\n').trim(), imageMap };
+  return { text: text.replace(/\n{3,}/g, '\n\n').trim(), imageMap, totalRealImages: Object.keys(imageMap).length };
 }
 
 // ============================================================
@@ -185,7 +200,24 @@ function splitIntoPackages(text, perPackage) {
     const chunk = blocks.slice(i, i + perPackage).join('\n');
     if (chunk.trim().length > 10) packages.push(chunk);
   }
-  return packages;
+  return { packages, detectedQuestionBlocks: blocks.length };
+}
+
+// 🔥 Helper: tempel gambar dari placeholder [[IMG:n]] balik ke satu string,
+// kembalikan { cleanText, imageDataUri } -- dipakai bareng buat teks soal
+// MAUPUN teks tiap opsi jawaban.
+const IMG_TAG_REGEX = /\[\[IMG:(\d+)\]\]/;
+function extractImageFromText(text, imageMap) {
+  const raw = String(text || '');
+  const match = raw.match(IMG_TAG_REGEX);
+  if (match && imageMap[match[1]]) {
+    return { cleanText: raw.replace(IMG_TAG_REGEX, '').trim(), imageDataUri: imageMap[match[1]] };
+  }
+  // Penanda ada tapi gambarnya gak ketemu di map (mis. kebuang krn kekecilan) -- bersihkan aja teksnya
+  if (IMG_TAG_REGEX.test(raw)) {
+    return { cleanText: raw.replace(IMG_TAG_REGEX, '').trim(), imageDataUri: '' };
+  }
+  return { cleanText: raw, imageDataUri: '' };
 }
 
 // props:
@@ -215,26 +247,33 @@ const WordImportQuiz = ({ onParsed, onClose }) => {
       // 1. Baca & ekstrak isi Word LANGSUNG DI BROWSER (bukan dikirim ke server dulu)
       setStatusLabel('Membaca isi file Word...');
       const arrayBuffer = await file.arrayBuffer();
-      const { value: html } = await mammoth.convertToHtml({ arrayBuffer });
+      const { value: html, messages: mammothMessages } = await mammoth.convertToHtml({ arrayBuffer });
+      if (mammothMessages?.length) {
+        // Peringatan dari mammoth (mis. gaya/format yang gak sepenuhnya
+        // didukung) -- gak fatal, tapi berguna buat debug kalau ada laporan
+        // "gagal impor" lagi ke depannya.
+        console.warn('Peringatan mammoth saat baca Word:', mammothMessages);
+      }
 
-      // 2. Ubah HTML jadi teks polos (paham struktur soal+opsi berlapis),
-      //    sambil kumpulin gambar buat diproses belakangan
+      // 2. Ubah HTML jadi teks polos (paham struktur soal+opsi, baik bersarang
+      //    maupun bersebelahan), sambil kumpulin gambar buat diproses belakangan
       setStatusLabel('Membaca struktur soal...');
       const { rawText, images } = extractPlainTextAndImages(html);
 
       // 3. Kecilin gambar-gambarnya, GANTI jadi penanda ringan (bukan base64 utuh)
       setStatusLabel('Memeriksa gambar di dalam dokumen...');
-      const { text: plainText, imageMap } = await resolveImages(rawText, images, (msg) => setStatusLabel(msg));
+      const { text: plainText, imageMap, totalRealImages } = await resolveImages(rawText, images, (msg) => setStatusLabel(msg));
 
       if (!plainText || plainText.trim().length < 10) {
-        throw new Error('File Word kosong atau teksnya tidak bisa dibaca.');
+        throw new Error('File Word kosong atau teksnya tidak bisa dibaca. Coba buka & Save As ulang file-nya di Word, lalu upload lagi.');
       }
 
       // 4. Pecah jadi paket-paket kecil biar aman dikirim (di bawah batas server)
-      const packages = splitIntoPackages(plainText, QUESTIONS_PER_PACKAGE);
+      const { packages, detectedQuestionBlocks } = splitIntoPackages(plainText, QUESTIONS_PER_PACKAGE);
       if (packages.length === 0) {
-        throw new Error('Tidak ditemukan soal. Pastikan tiap soal diawali nomor (1. 2. 3. dst).');
+        throw new Error('Tidak ditemukan soal. Pastikan tiap soal diawali nomor (1. 2. 3. dst) di baris tersendiri.');
       }
+      console.log(`[WordImportQuiz] Terdeteksi ~${detectedQuestionBlocks} blok soal, ${totalRealImages} gambar valid, dipecah jadi ${packages.length} paket kiriman.`);
 
       // 5. Kirim tiap paket satu-satu ke AI (server) — cuma teks + penanda
       //    ringan "[[IMG:n]]", TANPA data gambar beneran, jadi ringan & cepat
@@ -257,46 +296,85 @@ const WordImportQuiz = ({ onParsed, onClose }) => {
             allQuestions = allQuestions.concat(data.questions);
           } else {
             failedPackages++;
+            console.error(`[WordImportQuiz] Paket ${i + 1} gagal:`, data?.error || res.statusText);
           }
         } catch (e) {
           // Kalau 1 paket gagal, tetap lanjut ke paket berikutnya -> partial success
           failedPackages++;
+          console.error(`[WordImportQuiz] Paket ${i + 1} error jaringan:`, e);
         }
       }
 
       if (allQuestions.length === 0) {
-        throw new Error('Tidak ada soal yang berhasil diproses. Coba cek format penomoran soalnya.');
+        throw new Error('Tidak ada soal yang berhasil diproses. Coba cek format penomoran soalnya, atau coba lagi (mungkin kuota AI lagi penuh).');
       }
 
       // 6. Tempel BALIK gambar asli — AI cuma megang penanda "[[IMG:n]]",
       //    data gambar sebenarnya (base64) diambil dari imageMap yang tadi
       //    disimpan di browser, TIDAK PERNAH ikut terkirim ke AI.
-      const imgTagRegex = /\[\[IMG:(\d+)\]\]/;
       allQuestions = allQuestions.map(q => {
-        const match = (q.qImage || '').match(imgTagRegex);
-        if (match && imageMap[match[1]]) {
-          return { ...q, qImage: imageMap[match[1]] };
+        let next = { ...q };
+
+        // Gambar SOAL (dari field qImage ATAU nyempil di teks soal)
+        const fromQImage = extractImageFromText(next.qImage, imageMap);
+        if (fromQImage.imageDataUri) {
+          next.qImage = fromQImage.imageDataUri;
+        } else {
+          const fromQuestionText = extractImageFromText(next.q, imageMap);
+          if (fromQuestionText.imageDataUri) {
+            next.qImage = fromQuestionText.imageDataUri;
+            next.q = fromQuestionText.cleanText;
+          } else {
+            next.qImage = fromQImage.cleanText ? '' : (next.qImage || '');
+            if (IMG_TAG_REGEX.test(next.qImage || '')) next.qImage = '';
+          }
         }
-        // AI kadang nyimpen penandanya di `question` bukan `qImage` — cek juga
-        const qMatch = (q.q || '').match(imgTagRegex);
-        if (qMatch && imageMap[qMatch[1]]) {
-          return { ...q, qImage: imageMap[qMatch[1]], q: q.q.replace(imgTagRegex, '').trim() };
+
+        // 🔥 BARU: Gambar di OPSI JAWABAN (mis. soal pola kubus yang tiap
+        // pilihannya berupa gambar, bukan teks) -- SEBELUMNYA SAMA SEKALI
+        // TIDAK DITANGANI, jadi soal bergambar-di-opsi selalu rusak/hilang
+        // pas diimpor. Sekarang tiap opsi dicek satu per satu; kalau ada
+        // penanda gambarnya, dipindah ke `optionImages` dan `optionsAreImages`
+        // otomatis diaktifkan supaya ManageQuiz.jsx menampilkannya sebagai
+        // pilihan bergambar, persis seperti kalau guru upload manual.
+        if (Array.isArray(next.options) && next.options.length > 0) {
+          const optionImages = ['', '', '', ''];
+          let hasOptionImage = false;
+          const cleanedOptions = next.options.slice(0, 4).map((opt, idx) => {
+            const resolved = extractImageFromText(opt, imageMap);
+            if (resolved.imageDataUri) {
+              optionImages[idx] = resolved.imageDataUri;
+              hasOptionImage = true;
+            }
+            return resolved.cleanText;
+          });
+          if (hasOptionImage) {
+            next.options = cleanedOptions.length === 4 ? cleanedOptions : [...cleanedOptions, ...Array(4 - cleanedOptions.length).fill('')];
+            next.optionImages = optionImages;
+            next.optionsAreImages = true;
+          }
         }
-        return q.qImage && imgTagRegex.test(q.qImage) ? { ...q, qImage: '' } : q; // penanda gagal dicocokkan -> kosongin drpd nyimpen teks aneh
+
+        return next;
       });
 
       onParsed(allQuestions);
 
+      const totalImagesUsed = allQuestions.filter(q => q.qImage || q.optionsAreImages).length;
+      let noteMsg = '';
       if (failedPackages > 0) {
-        alert(
-          `✅ ${allQuestions.length} soal berhasil diimpor.\n\n` +
-          `⚠️ Tapi ${failedPackages} bagian gagal diproses (kemungkinan kuota AI penuh atau koneksi terputus). ` +
-          `Cek dulu apakah ada nomor soal yang terlewat — kalau ada, bisa diimpor ulang atau ditambah manual.`
-        );
+        noteMsg += `⚠️ ${failedPackages} dari ${packages.length} bagian gagal diproses (kemungkinan kuota AI penuh atau koneksi terputus). Cek dulu apakah ada nomor soal yang terlewat — kalau ada, bisa diimpor ulang atau ditambah manual.\n\n`;
+      }
+      if (totalRealImages > 0) {
+        noteMsg += `🖼️ ${totalRealImages} gambar terdeteksi di dokumen, ${totalImagesUsed} soal berhasil ditempeli gambar. Cek dulu satu-satu sebelum diterbitkan, terutama soal yang seharusnya bergambar tapi belum ada gambarnya.`;
+      }
+      if (noteMsg) {
+        alert(`✅ ${allQuestions.length} soal berhasil diimpor.\n\n${noteMsg}`);
       }
 
       onClose();
     } catch (err) {
+      console.error('[WordImportQuiz] Gagal impor:', err);
       setError('❌ ' + err.message);
     } finally {
       setProcessing(false);
@@ -334,7 +412,7 @@ const WordImportQuiz = ({ onParsed, onClose }) => {
               <ul style={styles.guideList}>
                 <li>Tiap soal diawali nomor, contoh: <b>1. Sebuah teko listrik...</b></li>
                 <li>Jawaban benar ditandai <b>bold/tebal</b> langsung di depan opsinya</li>
-                <li>Gambar (kalau ada) ditempel langsung di dalam dokumen Word, tepat dekat soalnya</li>
+                <li>Gambar (kalau ada) ditempel langsung di dalam dokumen Word, tepat dekat soalnya — termasuk kalau OPSI JAWABANNYA sendiri berupa gambar (bukan cuma soalnya)</li>
                 <li>Kalau file masih PDF, convert dulu ke Word (banyak tools gratis di internet) sebelum upload di sini</li>
               </ul>
             </div>
