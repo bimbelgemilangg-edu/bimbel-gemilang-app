@@ -21,6 +21,24 @@ import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 
 // ============================================================
+// 🔥 HELPER TANGGAL — FIX BUG TIMEZONE
+// ============================================================
+// 🔥 FIX BUG PENTING: sebelumnya default tanggal buka/tutup kuis dibuat
+// pakai `date.toISOString().slice(0, 16)`. `toISOString()` SELALU
+// mengonversi ke UTC, sementara `<input type="datetime-local">` butuh
+// string dalam WAKTU LOKAL. Untuk WIB (UTC+7), efeknya: jam 00:00 lokal
+// jadi "17:00 hari sebelumnya" pas di-slice, lalu saat dibaca ulang buat
+// mengecek status kuis (`new Date(quizOpenDate)`), string itu di-parse
+// lagi sebagai waktu LOKAL — jadi geser lagi 7 jam dari yang seharusnya.
+// Ini akar dari keluhan "tanggal berantakan" / status kuis salah.
+// Fix: helper ini membangun string datetime-local dari KOMPONEN WAKTU
+// LOKAL (getFullYear/getHours/dst), bukan dari toISOString().
+const toLocalInputValue = (date) => {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+// ============================================================
 // 🔥 TIPE SOAL
 // ============================================================
 const QUESTION_TYPES = [
@@ -101,16 +119,18 @@ const ManageQuiz = () => {
   // Kuis) — state-nya juga dihapus di sini karena sudah tidak dipakai.
   
   // Jadwal
+  // 🔥 FIX BUG TANGGAL: dulu pakai toISOString() (UTC) — sekarang pakai
+  // toLocalInputValue() (waktu lokal perangkat), lihat penjelasan di atas.
   const [quizOpenDate, setQuizOpenDate] = useState(() => {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
-    return now.toISOString().slice(0, 16);
+    return toLocalInputValue(now);
   });
   const [quizCloseDate, setQuizCloseDate] = useState(() => {
     const now = new Date();
     now.setDate(now.getDate() + 7);
     now.setHours(23, 59, 0, 0);
-    return now.toISOString().slice(0, 16);
+    return toLocalInputValue(now);
   });
   const [useSchedule, setUseSchedule] = useState(false);
   

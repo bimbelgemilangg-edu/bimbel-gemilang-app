@@ -336,13 +336,88 @@ const StudentDashboard = () => {
           return checkStudentAccess(modul, studentId, kelasVal, programVal);
         });
 
+        // 🔥 FIX BUG "kuis gak muncul di dashboard": sejak kuis "ditautkan
+        // ke modul" disimpan sebagai BLOK TERPISAH (block.type === 'quiz'
+        // + block.quizId menunjuk ke dokumen kuis lain), modul induknya
+        // sendiri TIDAK PUNYA field `quizData` — jadi cek lama
+        // `(m.quizData || []).length > 0` selalu `false` buat kuis model
+        // ini dan kuis itu gak pernah dianggap "ada tugas" oleh dashboard.
+        // Di bawah ini kita kumpulkan quizId dari blok-blok itu, ambil
+        // dokumen kuisnya (buat tau deadline-nya juga), lalu dipakai baik
+        // buat DETEKSI (hasQuiz) maupun buat SORTING deadline di bawah.
+        const quizIdsToCheck = new Set();
+        accessibleModuls.forEach(m => {
+          (m.blocks || []).forEach(b => {
+            if (b.type === 'quiz' && b.quizId) quizIdsToCheck.add(b.quizId);
+          });
+        });
+
+        const quizDeadlineMap = {};
+        if (quizIdsToCheck.size > 0) {
+          const quizSnaps = await Promise.all(
+            Array.from(quizIdsToCheck).map(id => getDoc(doc(db, "bimbel_modul", id)).catch(() => null))
+          );
+          quizSnaps.forEach(snap => {
+            if (snap?.exists()) {
+              const d = snap.data();
+              quizDeadlineMap[snap.id] = {
+                useSchedule: d.useSchedule || false,
+                quizCloseDate: d.quizCloseDate || null,
+              };
+            }
+          });
+        }
+
+        // 🔥 Cari deadline PALING DEKAT dari semua blok tugas & kuis di
+        // dalam satu modul (dipakai buat ngurutin mana yang paling urgent).
+        const getEarliestDeadline = (m) => {
+          const deadlines = [];
+          (m.blocks || []).forEach(b => {
+            if (b.type === 'assignment' && b.endTime) {
+              const t = new Date(b.endTime);
+              if (!isNaN(t)) deadlines.push(t);
+            }
+            if (b.type === 'quiz' && b.quizId) {
+              const qd = quizDeadlineMap[b.quizId];
+              if (qd?.useSchedule && qd.quizCloseDate) {
+                const t = new Date(qd.quizCloseDate);
+                if (!isNaN(t)) deadlines.push(t);
+              }
+            }
+          });
+          // Kuis lama (model quizData langsung di modul) juga dicek
+          if ((m.quizData || []).length > 0 && m.useSchedule && m.quizCloseDate) {
+            const t = new Date(m.quizCloseDate);
+            if (!isNaN(t)) deadlines.push(t);
+          }
+          return deadlines.length ? deadlines.reduce((a, b) => (a < b ? a : b)) : null;
+        };
+
+        const nowTs = new Date();
         const fetchedTasks = accessibleModuls
           .filter(m => {
-            const hasQuiz = (m.quizData || []).length > 0;
+            // 🔥 hasQuiz sekarang mengecek DUA model kuis: model lama
+            // (quizData langsung di modul) DAN model baru (blok 'quiz'
+            // yang menunjuk ke dokumen kuis terpisah).
+            const hasQuiz = (m.quizData || []).length > 0 || (m.blocks || []).some(b => b.type === 'quiz' && b.quizId);
             const hasAssignment = (m.blocks || []).some(b => b.type === 'assignment');
             return hasQuiz || hasAssignment;
           })
-          .slice(0, 3);
+          .map(m => ({ ...m, __deadline: getEarliestDeadline(m) }))
+          // Buang yang deadline-nya sudah lewat semua (biar gak nampilin
+          // tugas/kuis yang udah kadaluarsa sebagai "aktif")
+          .filter(m => !m.__deadline || m.__deadline >= nowTs)
+          // 🔥 URUTKAN BERDASARKAN DEADLINE PALING DEKAT DULU — sebelumnya
+          // sama sekali gak ada sorting urgency, cuma ambil 3 modul
+          // pertama dari urutan "terakhir diupdate". Modul tanpa deadline
+          // (tugas/kuis bebas waktu) ditaruh di bawah yang punya deadline.
+          .sort((a, b) => {
+            if (a.__deadline && b.__deadline) return a.__deadline - b.__deadline;
+            if (a.__deadline) return -1;
+            if (b.__deadline) return 1;
+            return 0;
+          })
+          .slice(0, 5); // naik dari 3 -> 5 karena sekarang sudah terurut yang paling urgent duluan
         setTasks(fetchedTasks);
 
         if (!raportSnap.empty) {
@@ -713,10 +788,19 @@ const StudentDashboard = () => {
                 📭 Belum ada tugas atau kuis untuk Anda
               </div>
             ) : tasks.map((task, i) => {
-              const hasQuiz = (task.quizData || []).length > 0;
+              const hasQuiz = (task.quizData || []).length > 0 || (task.blocks || []).some(b => b.type === 'quiz' && b.quizId);
               const hasAssignment = (task.blocks || []).some(b => b.type === 'assignment');
               const isTargeted = task.sendToSpecificStudents;
               const targetInfo = isTargeted ? '🔒 Khusus' : `${task.targetKelas || 'Semua'} • ${task.targetKategori || 'Semua'}`;
+
+              // 🔥 BARU: badge deadline paling dekat, biar keliatan mana yang
+              // paling urgent (bukan cuma ngandelin urutan list aja).
+              let deadlineBadge = null;
+              if (task.__deadline) {
+                const diffH = Math.floor((task.__deadline - new Date()) / 3600000);
+                if (diffH < 24) deadlineBadge = { text: `⏰ ${Math.max(diffH, 0)} jam lagi`, color: '#ef4444' };
+                else deadlineBadge = { text: `📅 ${Math.floor(diffH / 24)} hari lagi`, color: '#f59e0b' };
+              }
 
               return (
                 <div
@@ -733,22 +817,29 @@ const StudentDashboard = () => {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b' }}>{task.title}</div>
-                    {hasQuiz && (
-                      <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: '#673ab7', color: 'white', fontWeight: 700 }}>Kuis</span>
-                    )}
-                    {hasAssignment && !hasQuiz && (
-                      <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: '#f59e0b', color: 'white', fontWeight: 700 }}>Tugas</span>
-                    )}
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      {hasQuiz && (
+                        <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: '#673ab7', color: 'white', fontWeight: 700 }}>Kuis</span>
+                      )}
+                      {hasAssignment && !hasQuiz && (
+                        <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: '#f59e0b', color: 'white', fontWeight: 700 }}>Tugas</span>
+                      )}
+                    </div>
                   </div>
                   <div style={{ fontSize: 10, color: '#64748b', display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 2 }}>
                     <span>{task.subject || 'Umum'}</span>
                     <span>•</span>
                     <span>{targetInfo}</span>
-                    {hasQuiz && <span>• 📝 {task.quizData.length} soal</span>}
+                    {hasQuiz && (task.quizData?.length > 0) && <span>• 📝 {task.quizData.length} soal</span>}
                   </div>
                   {isTargeted && (
                     <div style={{ fontSize: 8, color: '#f59e0b', background: '#fef3c7', padding: '1px 6px', borderRadius: 4, display: 'inline-block', marginTop: 4 }}>
                       🔒 Dikirim khusus
+                    </div>
+                  )}
+                  {deadlineBadge && (
+                    <div style={{ fontSize: 9, color: deadlineBadge.color, fontWeight: 700, marginTop: 4 }}>
+                      {deadlineBadge.text}
                     </div>
                   )}
                 </div>
