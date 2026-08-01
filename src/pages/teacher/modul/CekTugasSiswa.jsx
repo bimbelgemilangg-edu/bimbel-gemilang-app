@@ -2,13 +2,14 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { db } from '../../../firebase';
 import { 
-  collection, getDocs, doc, updateDoc, deleteDoc, 
+  collection, getDocs, doc, getDoc, updateDoc, deleteDoc, 
   query, where, serverTimestamp 
 } from "firebase/firestore";
 import { 
   CheckCircle, Clock, Search, Edit3, Save, 
   Trash2, FileText, HelpCircle, BarChart3, RefreshCw, 
-  User, Hash, Tag, Filter, X, BookOpen, Eye
+  User, Hash, Tag, Filter, X, BookOpen, Eye,
+  ChevronDown, ChevronUp, Users, AlertTriangle, ArrowLeft
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import 'katex/dist/katex.min.css';
@@ -94,6 +95,21 @@ const CekTugasSiswa = () => {
 
   const [stats, setStats] = useState({ totalTugas: 0, pendingTugas: 0, gradedTugas: 0, totalKuis: 0, avgScore: 0 });
   const [viewingDetail, setViewingDetail] = useState(null);
+  // 🔥 BARU: urutan soal KANONIK (urutan asli sesuai dokumen kuisnya, BUKAN
+  // urutan yang tersimpan di submission siswa -- yang bisa beda-beda per
+  // siswa kalau kuisnya pakai "Acak Soal"). Lihat penjelasan lengkap di
+  // openDetail() di bawah.
+  const [canonicalOrderMap, setCanonicalOrderMap] = useState({}); // { [quizDocId]: [questionId, ...] }
+  const [loadingCanonicalOrder, setLoadingCanonicalOrder] = useState(false);
+
+  // 🔥 BARU: target tampilan card per tugas/kuis (bukan tabel gepeng semua
+  // dicampur). `null` = tampilan daftar card ringkasan. Kalau diisi id
+  // grup, berarti lagi "masuk" ke satu tugas/kuis spesifik buat lihat
+  // daftar siswa yang mengerjakan itu SAJA.
+  const [openGroupKey, setOpenGroupKey] = useState(null);
+  // Target audiens per modul (dari targeting kelas/kategori/siswa spesifik)
+  // -- dipakai buat hitung persentase "X dari Y siswa sudah mengerjakan".
+  const [targetCounts, setTargetCounts] = useState({}); // { [modulId]: totalSiswaTarget }
 
   useEffect(() => {
     const h = () => setIsMobile(window.innerWidth <= 768);
@@ -123,10 +139,15 @@ const CekTugasSiswa = () => {
             // lama yang belum punya guruId (lihat filterByOwner di bawah).
             const mapelVariations = [];
             if (guru.mapel) {
-              mapelVariations.push(guru.mapel);
-              mapelVariations.push(guru.mapel.toUpperCase());
-              mapelVariations.push(guru.mapel.toLowerCase());
-              mapelVariations.push(guru.mapel.charAt(0).toUpperCase() + guru.mapel.slice(1).toLowerCase());
+              // 🔥 Guru bisa ngampu lebih dari 1 mapel (field `mapel` bisa
+              // berisi gabungan "Matematika, IPA" dipisah koma) -- dipecah
+              // dulu per mapel biar semua variannya ikut dicek.
+              guru.mapel.split(',').map(m => m.trim()).filter(Boolean).forEach(m => {
+                mapelVariations.push(m);
+                mapelVariations.push(m.toUpperCase());
+                mapelVariations.push(m.toLowerCase());
+                mapelVariations.push(m.charAt(0).toUpperCase() + m.slice(1).toLowerCase());
+              });
             }
             setMapelList([...new Set(mapelVariations)]);
           }
@@ -219,6 +240,40 @@ const CekTugasSiswa = () => {
           ? Math.round(updatedQuizzes.reduce((a, q) => a + (q.score || 0), 0) / updatedQuizzes.length) 
           : 0
       });
+
+      // 🔥 BARU: hitung berapa siswa yang SEHARUSNYA mengerjakan tiap
+      // modul/kuis (buat persentase progres), dengan fetch dokumen modulnya
+      // + cocokkan ke koleksi "students" berdasarkan targeting (kelas,
+      // kategori, atau daftar siswa spesifik). Dijalankan sekali per
+      // modulId unik yang muncul di submission, PARALEL & independen
+      // (kalau satu modul gagal di-fetch, yang lain tetap jalan).
+      const allModulIds = [...new Set([...filteredTasks, ...updatedQuizzes].map(i => i.modulId).filter(Boolean))];
+      if (allModulIds.length > 0) {
+        const snapSiswaAll = await getDocs(collection(db, "students")).catch(() => null);
+        const allSiswa = snapSiswaAll ? snapSiswaAll.docs.map(d => ({ id: d.id, ...d.data() })) : [];
+
+        const results = await Promise.allSettled(
+          allModulIds.map(mid => getDoc(doc(db, "bimbel_modul", mid)))
+        );
+        const counts = {};
+        results.forEach((res, idx) => {
+          const mid = allModulIds[idx];
+          if (res.status !== 'fulfilled' || !res.value.exists()) { counts[mid] = null; return; }
+          const modul = res.value.data();
+          if (modul.sendToSpecificStudents) {
+            const ids = modul.studentIds || (modul.selectedStudents || []).map(s => s.studentId || s.id);
+            counts[mid] = ids.length;
+          } else {
+            const targetKelas = modul.targetKelas || 'Semua';
+            const targetKategori = modul.targetKategori || 'Semua';
+            counts[mid] = allSiswa.filter(s =>
+              (targetKelas === 'Semua' || s.kelasSekolah === targetKelas) &&
+              (targetKategori === 'Semua' || s.kategori === targetKategori)
+            ).length;
+          }
+        });
+        setTargetCounts(counts);
+      }
     } catch (e) { 
       console.error("Error fetch:", e); 
     }
@@ -256,23 +311,106 @@ const CekTugasSiswa = () => {
     } catch (e) { alert("Gagal: " + e.message); }
   };
 
-  // ===== FILTER =====
+  // ============================================================
+  // 🔥 BUKA DETAIL SATU SUBMISSION -- SEKALIGUS BENERIN "POLA SOAL BEDA"
+  // ============================================================
+  // Kalau kuisnya pakai "Acak Soal" (randomOrder), urutan soal yang
+  // TERSIMPAN di `details` tiap siswa itu urutan HASIL ACAKAN buat siswa
+  // itu masing-masing -- BUKAN urutan asli di dokumen kuis. Jadi kalau guru
+  // buka jawaban Siswa A lalu Siswa B untuk KUIS YANG SAMA, "Soal 1" bisa
+  // merujuk ke pertanyaan yang BEDA di masing-masing (keliatan "polanya
+  // beda" padahal sebenarnya soal yang sama, cuma urutannya diacak per
+  // siswa). Fix: begitu modal dibuka, ambil dokumen kuis ASLI-nya (pakai
+  // modulId yang tersimpan di submission), catat urutan soal KANONIK-nya
+  // (urutan asli di database, sebelum diacak), lalu urutkan ulang `details`
+  // berdasarkan itu tiap kali ditampilkan -- supaya "Soal 1" SELALU berarti
+  // pertanyaan yang sama, siapapun siswanya.
+  const openDetail = async (item) => {
+    setViewingDetail(item);
+    if (item.type !== 'kuis' || !item.modulId || canonicalOrderMap[item.modulId]) return;
+    setLoadingCanonicalOrder(true);
+    try {
+      const snap = await getDoc(doc(db, "bimbel_modul", item.modulId));
+      if (snap.exists()) {
+        const order = (snap.data().quizData || []).map(q => q.id);
+        setCanonicalOrderMap(prev => ({ ...prev, [item.modulId]: order }));
+      }
+    } catch (e) {
+      console.error("Gagal ambil urutan soal asli:", e);
+    }
+    setLoadingCanonicalOrder(false);
+  };
+
+  const orderedDetailQuestions = useMemo(() => {
+    if (!viewingDetail?.details) return [];
+    const order = canonicalOrderMap[viewingDetail.modulId];
+    if (!order || order.length === 0) return viewingDetail.details;
+    return [...viewingDetail.details].sort((a, b) => {
+      const ia = order.indexOf(a.id);
+      const ib = order.indexOf(b.id);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
+  }, [viewingDetail, canonicalOrderMap]);
+
+  // ===== FILTER (dalam satu grup yang lagi dibuka) =====
   const currentData = useMemo(() => activeTab === 'tugas' ? tasks : quizzes, [activeTab, tasks, quizzes]);
 
-  const filteredData = useMemo(() => {
-    let data = currentData;
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      data = data.filter(item => 
-        (item.studentName || '').toLowerCase().includes(term) ||
-        (item.modulTitle || '').toLowerCase().includes(term) ||
-        (item.studentNim || '').toLowerCase().includes(term)
-      );
-    }
+  // ============================================================
+  // 🔥 BARU: KELOMPOKKAN SUBMISSION PER TUGAS/KUIS (bukan tabel gepeng)
+  // ============================================================
+  // Dikelompokkan pakai `modulId` (paling akurat -- selalu merujuk ke
+  // dokumen tugas/kuis yang sama persis), dengan fallback ke kombinasi
+  // judul+blockId untuk data lampau yang mungkin belum punya modulId.
+  const groups = useMemo(() => {
+    const map = new Map();
+    currentData.forEach(item => {
+      const key = item.modulId || `${item.modulTitle || 'Tanpa Judul'}::${item.blockId || ''}`;
+      if (!map.has(key)) {
+        map.set(key, {
+          key,
+          modulId: item.modulId || null,
+          title: item.modulTitle || 'Tanpa Judul',
+          subject: item.subject || 'Umum',
+          items: [],
+        });
+      }
+      map.get(key).items.push(item);
+    });
+    return Array.from(map.values())
+      .map(g => {
+        const scored = g.items.filter(i => i.score !== undefined && i.score !== null);
+        const pending = g.items.filter(i => !i.score || i.status === 'Pending').length;
+        const violations = g.items.filter(i => (i.cheatViolationCount || 0) > 0).length;
+        const target = g.modulId ? targetCounts[g.modulId] : null;
+        return {
+          ...g,
+          submittedCount: g.items.length,
+          gradedCount: scored.length,
+          pendingCount: pending,
+          violationCount: violations,
+          avgScore: scored.length ? Math.round(scored.reduce((a, i) => a + i.score, 0) / scored.length) : null,
+          targetCount: target,
+          percentDone: target ? Math.round((g.items.length / target) * 100) : null,
+        };
+      })
+      .sort((a, b) => b.submittedCount - a.submittedCount);
+  }, [currentData, targetCounts]);
+
+  const filteredGroups = useMemo(() => {
+    if (!searchTerm) return groups;
+    const term = searchTerm.toLowerCase();
+    return groups.filter(g => g.title.toLowerCase().includes(term) || g.subject.toLowerCase().includes(term));
+  }, [groups, searchTerm]);
+
+  const openGroup = groups.find(g => g.key === openGroupKey) || null;
+
+  const filteredGroupItems = useMemo(() => {
+    if (!openGroup) return [];
+    let data = openGroup.items;
     if (filterStatus === 'Pending') data = data.filter(item => !item.score || item.status === 'Pending');
     if (filterStatus === 'Dinilai') data = data.filter(item => item.score && item.status !== 'Pending');
     return data;
-  }, [currentData, searchTerm, filterStatus]);
+  }, [openGroup, filterStatus]);
 
   // ===== RENDER =====
   if (loading && tasks.length === 0) {
@@ -297,7 +435,7 @@ const CekTugasSiswa = () => {
             <div style={s.hMeta}>
               {guruId && <span style={s.badge}><Hash size={10}/> {guruId}</span>}
               {kodeMapel && <span style={s.badge2}><Tag size={10}/> {kodeMapel}</span>}
-              <span>{currentData.length} data</span>
+              <span>{currentData.length} submission • {groups.length} tugas/kuis</span>
             </div>
           </div>
         </div>
@@ -307,10 +445,9 @@ const CekTugasSiswa = () => {
           </button>
           <div style={s.searchBox}>
             <Search size={14} color="#94a3b8"/>
-            <input placeholder="Cari..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} style={s.searchIn}/>
+            <input placeholder="Cari judul tugas/kuis..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} style={s.searchIn}/>
             {searchTerm && <button onClick={()=>setSearchTerm('')} style={s.btnX}><X size={12}/></button>}
           </div>
-          <button onClick={()=>setShowFilters(!showFilters)} style={s.btnF(showFilters)}><Filter size={14}/></button>
         </div>
       </div>
 
@@ -330,133 +467,182 @@ const CekTugasSiswa = () => {
         ))}
       </div>
 
-      {/* FILTERS */}
-      {showFilters && (
-        <div style={s.filterBar}>
-          <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} style={s.sel}>
-            <option value="Semua">Semua Status</option>
-            <option value="Pending">Perlu Dinilai</option>
-            <option value="Dinilai">Sudah Dinilai</option>
-          </select>
-          <button onClick={()=>{setFilterStatus('Semua');setSearchTerm('')}} style={s.btnReset}><X size={12}/> Reset</button>
-        </div>
-      )}
-
       {/* TABS */}
       <div style={s.tabs}>
-        <button onClick={()=>setActiveTab('tugas')} style={s.tab(activeTab==='tugas')}><FileText size={14}/> Tugas ({tasks.length})</button>
-        <button onClick={()=>setActiveTab('kuis')} style={s.tab(activeTab==='kuis')}><HelpCircle size={14}/> Kuis ({quizzes.length})</button>
+        <button onClick={()=>{setActiveTab('tugas'); setOpenGroupKey(null);}} style={s.tab(activeTab==='tugas')}><FileText size={14}/> Tugas ({tasks.length})</button>
+        <button onClick={()=>{setActiveTab('kuis'); setOpenGroupKey(null);}} style={s.tab(activeTab==='kuis')}><HelpCircle size={14}/> Kuis ({quizzes.length})</button>
       </div>
 
-      {/* TABLE */}
-      <div style={s.tableWrap}>
-        {filteredData.length === 0 ? (
+      {/* ============================================================ */}
+      {/* MODE A: DAFTAR CARD PER TUGAS/KUIS (default, gak dicampur lagi) */}
+      {/* ============================================================ */}
+      {!openGroup ? (
+        filteredGroups.length === 0 ? (
           <div style={s.empty}>
             <BookOpen size={48} color="#cbd5e1"/>
             <h4>Belum ada data</h4>
             <p>{searchTerm?'Tidak ditemukan.':'Siswa belum mengirim tugas/kuis.'}</p>
           </div>
         ) : (
-          <div style={{overflowX:'auto'}}>
-            <table style={s.table}>
-              <thead>
-                <tr style={s.thead}>
-                  <th style={s.th}>Siswa</th>
-                  <th style={s.th}>Materi</th>
-                  <th style={s.th}>Waktu</th>
-                  <th style={s.th}>{activeTab==='tugas'?'File':'Jawaban'}</th>
-                  <th style={s.th}>Nilai</th>
-                  <th style={s.th}>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredData.map(item => {
-                  // 🔥 Format tanggal yang aman
-                  let tStr = '-';
-                  try {
-                    if (item.submittedAt?.toDate) {
-                      tStr = item.submittedAt.toDate().toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-                    } else if (item.submittedAt) {
-                      const d = new Date(item.submittedAt);
-                      if (!isNaN(d.getTime())) {
-                        tStr = d.toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-                      }
-                    }
-                  } catch(e) { /* biarkan '-' */ }
-                  
-                  const sc = item.score;
-                  const scColor = sc>=75?'#10b981':sc>=50?'#f59e0b':'#ef4444';
-                  const coll = item.type==='tugas'?'jawaban_tugas':'jawaban_kuis';
-                  
-                  return (
-                    <tr key={item.id} style={s.tr}>
-                      <td style={s.td}>
-                        <div style={s.stuCell}>
-                          <div style={s.av}>{item.studentName?.charAt(0)||'S'}</div>
-                          <div>
-                            <strong>{item.studentName||'-'}</strong>
-                            <div style={s.meta}>
-                              <span style={s.cls}>{item.studentClass||'-'}</span>
-                              {item.studentNim && <span style={s.nim}>#{item.studentNim}</span>}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td style={s.td}>
-                        <div>
-                          <div style={s.mTitle}>{item.modulTitle||'-'}</div>
-                          {item.blockTitle && <small style={{color:'#94a3b8'}}>{item.blockTitle}</small>}
-                        </div>
-                      </td>
-                      <td style={s.td}>
-                        <span style={{fontSize:11,color:'#64748b'}}><Clock size={10}/> {tStr}</span>
-                      </td>
-                      <td style={s.td}>
-                        {item.type==='tugas' ? (
-                          item.fileUrl ? (
-                            <a href={item.fileUrl} target="_blank" rel="noreferrer" style={s.btnView}><Eye size={12}/> Lihat</a>
-                          ) : <span style={{fontSize:10,color:'#94a3b8'}}>-</span>
-                        ) : (
-                          <span
-                            style={{...s.quizBadge, cursor: item.details?.length ? 'pointer' : 'default', textDecoration: item.details?.length ? 'underline' : 'none'}}
-                            onClick={() => item.details?.length && setViewingDetail(item)}
-                          >
-                            ✅ {item.correctAnswers||0}/{item.totalQuestions||'?'} {item.details?.length ? '👁️' : ''}
-                          </span>
-                        )}
-                      </td>
-                      <td style={s.td}>
-                        {editingScore===item.id ? (
-                          <div style={{display:'flex',alignItems:'center',gap:4}}>
-                            <input type="number" min="0" max="100" value={newScore} onChange={e=>setNewScore(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleUpdateScore(item.id,coll)} autoFocus style={s.scoreIn}/>
-                            <button onClick={()=>handleUpdateScore(item.id,coll)} style={s.btnSave}><Save size={12}/></button>
-                          </div>
-                        ) : (
-                          <div style={{display:'flex',alignItems:'center',gap:2,cursor:'pointer'}} onClick={()=>{setEditingScore(item.id);setNewScore(item.score?.toString()||'')}}>
-                            <span style={{fontSize:15,fontWeight:800,color:scColor}}>{sc??'--'}</span>
-                            <span style={{fontSize:9,color:'#cbd5e1'}}>/100</span>
-                          </div>
-                        )}
-                      </td>
-                      <td style={s.td}>
-                        <div style={{display:'flex',gap:4}}>
-                          {editingScore!==item.id && (
-                            <button onClick={()=>{setEditingScore(item.id);setNewScore(item.score?.toString()||'')}} style={s.btnEdit}><Edit3 size={12}/></button>
-                          )}
-                          <button onClick={()=>handleDelete(item.id,coll)} style={s.btnDel}><Trash2 size={12}/></button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div style={s.groupGrid}>
+            {filteredGroups.map(g => (
+              <div key={g.key} style={s.groupCard} onClick={() => { setOpenGroupKey(g.key); setFilterStatus('Semua'); }}>
+                <div style={s.groupCardTop}>
+                  <span style={s.groupSubjectBadge}>{g.subject}</span>
+                  {g.violationCount > 0 && (
+                    <span style={s.groupViolationBadge}><AlertTriangle size={10}/> {g.violationCount} pelanggaran</span>
+                  )}
+                </div>
+                <h4 style={s.groupTitle}>{g.title}</h4>
+
+                {/* 🔥 Progres pengerjaan -- persentase siswa yang sudah mengerjakan */}
+                <div style={s.progressWrap}>
+                  <div style={s.progressLabelRow}>
+                    <span style={{display:'flex',alignItems:'center',gap:4}}><Users size={11}/> {g.submittedCount}{g.targetCount != null ? ` / ${g.targetCount} siswa` : ' siswa mengerjakan'}</span>
+                    {g.percentDone != null && <span style={{fontWeight:800,color: g.percentDone>=80?'#10b981':g.percentDone>=40?'#f59e0b':'#ef4444'}}>{g.percentDone}%</span>}
+                  </div>
+                  {g.percentDone != null && (
+                    <div style={s.progressBarBg}>
+                      <div style={{...s.progressBarFill, width:`${Math.min(g.percentDone,100)}%`, background: g.percentDone>=80?'#10b981':g.percentDone>=40?'#f59e0b':'#ef4444'}} />
+                    </div>
+                  )}
+                </div>
+
+                <div style={s.groupMetaRow}>
+                  <span>⏳ {g.pendingCount} perlu dinilai</span>
+                  {g.avgScore != null && <span>⭐ Rata-rata {g.avgScore}</span>}
+                </div>
+              </div>
+            ))}
           </div>
-        )}
-      </div>
+        )
+      ) : (
+        // ============================================================
+        // MODE B: DAFTAR SISWA UNTUK 1 TUGAS/KUIS YANG DIBUKA
+        // ============================================================
+        <div>
+          <div style={s.groupDetailHeader}>
+            <button onClick={() => setOpenGroupKey(null)} style={s.btnBackToGroups}><ArrowLeft size={14}/> Semua {activeTab === 'tugas' ? 'Tugas' : 'Kuis'}</button>
+            <div style={{flex:1, minWidth:180}}>
+              <h3 style={{margin:0, fontSize:15, fontWeight:800, color:'#1e293b'}}>{openGroup.title}</h3>
+              <p style={{margin:'2px 0 0', fontSize:11, color:'#64748b'}}>
+                {openGroup.subject} • {openGroup.submittedCount}{openGroup.targetCount != null ? ` dari ${openGroup.targetCount} siswa` : ' siswa'} sudah mengerjakan
+                {openGroup.percentDone != null && ` (${openGroup.percentDone}%)`}
+              </p>
+            </div>
+            <div style={s.filterActionsRow}>
+              <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} style={s.sel}>
+                <option value="Semua">Semua Status</option>
+                <option value="Pending">Perlu Dinilai</option>
+                <option value="Dinilai">Sudah Dinilai</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={s.tableWrap}>
+            {filteredGroupItems.length === 0 ? (
+              <div style={s.empty}>
+                <BookOpen size={40} color="#cbd5e1"/>
+                <p>Tidak ada siswa yang cocok dengan filter ini.</p>
+              </div>
+            ) : (
+              <div style={{overflowX:'auto'}}>
+                <table style={s.table}>
+                  <thead>
+                    <tr style={s.thead}>
+                      <th style={s.th}>Siswa</th>
+                      <th style={s.th}>Waktu</th>
+                      <th style={s.th}>{activeTab==='tugas'?'File':'Jawaban'}</th>
+                      <th style={s.th}>Nilai</th>
+                      <th style={s.th}>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredGroupItems.map(item => {
+                      let tStr = '-';
+                      try {
+                        if (item.submittedAt?.toDate) {
+                          tStr = item.submittedAt.toDate().toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+                        } else if (item.submittedAt) {
+                          const d = new Date(item.submittedAt);
+                          if (!isNaN(d.getTime())) {
+                            tStr = d.toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+                          }
+                        }
+                      } catch(e) { /* biarkan '-' */ }
+                      
+                      const sc = item.score;
+                      const scColor = sc>=75?'#10b981':sc>=50?'#f59e0b':'#ef4444';
+                      const coll = item.type==='tugas'?'jawaban_tugas':'jawaban_kuis';
+                      
+                      return (
+                        <tr key={item.id} style={s.tr}>
+                          <td style={s.td}>
+                            <div style={s.stuCell}>
+                              <div style={s.av}>{item.studentName?.charAt(0)||'S'}</div>
+                              <div>
+                                <strong>{item.studentName||'-'}</strong>
+                                <div style={s.meta}>
+                                  <span style={s.cls}>{item.studentClass||'-'}</span>
+                                  {item.studentNim && <span style={s.nim}>#{item.studentNim}</span>}
+                                  {(item.cheatViolationCount || 0) > 0 && (
+                                    <span style={s.violationTag}><AlertTriangle size={9}/> {item.cheatViolationCount}</span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td style={s.td}>
+                            <span style={{fontSize:11,color:'#64748b'}}><Clock size={10}/> {tStr}</span>
+                          </td>
+                          <td style={s.td}>
+                            {item.type==='tugas' ? (
+                              item.fileUrl ? (
+                                <a href={item.fileUrl} target="_blank" rel="noreferrer" style={s.btnView}><Eye size={12}/> Lihat</a>
+                              ) : <span style={{fontSize:10,color:'#94a3b8'}}>-</span>
+                            ) : (
+                              <span
+                                style={{...s.quizBadge, cursor: item.details?.length ? 'pointer' : 'default', textDecoration: item.details?.length ? 'underline' : 'none'}}
+                                onClick={() => item.details?.length && openDetail(item)}
+                              >
+                                ✅ {item.correctAnswers||0}/{item.totalQuestions||'?'} {item.details?.length ? '👁️' : ''}
+                              </span>
+                            )}
+                          </td>
+                          <td style={s.td}>
+                            {editingScore===item.id ? (
+                              <div style={{display:'flex',alignItems:'center',gap:4}}>
+                                <input type="number" min="0" max="100" value={newScore} onChange={e=>setNewScore(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleUpdateScore(item.id,coll)} autoFocus style={s.scoreIn}/>
+                                <button onClick={()=>handleUpdateScore(item.id,coll)} style={s.btnSave}><Save size={12}/></button>
+                              </div>
+                            ) : (
+                              <div style={{display:'flex',alignItems:'center',gap:2,cursor:'pointer'}} onClick={()=>{setEditingScore(item.id);setNewScore(item.score?.toString()||'')}}>
+                                <span style={{fontSize:15,fontWeight:800,color:scColor}}>{sc??'--'}</span>
+                                <span style={{fontSize:9,color:'#cbd5e1'}}>/100</span>
+                              </div>
+                            )}
+                          </td>
+                          <td style={s.td}>
+                            <div style={{display:'flex',gap:4}}>
+                              {editingScore!==item.id && (
+                                <button onClick={()=>{setEditingScore(item.id);setNewScore(item.score?.toString()||'')}} style={s.btnEdit}><Edit3 size={12}/></button>
+                              )}
+                              <button onClick={()=>handleDelete(item.id,coll)} style={s.btnDel}><Trash2 size={12}/></button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div style={s.footer}>
-        <span>{filteredData.length} dari {currentData.length} data</span>
+        <span>{groups.length} tugas/kuis • {currentData.length} total submission</span>
         <span>{guruName && `👨‍🏫 ${guruName}`}</span>
       </div>
 
@@ -470,6 +656,9 @@ const CekTugasSiswa = () => {
               <div>
                 <h3 style={s.modalTitle}>{viewingDetail.studentName}</h3>
                 <p style={s.modalSub}>{viewingDetail.modulTitle} — Nilai: {viewingDetail.score ?? '-'}/100 ({viewingDetail.correctAnswers}/{viewingDetail.totalQuestions} benar)</p>
+                {loadingCanonicalOrder && (
+                  <p style={{margin:'4px 0 0', fontSize:10, color:'#94a3b8'}}>⏳ Menyusun urutan soal asli...</p>
+                )}
                 {/* 🔥 Info deteksi kecurangan (Mode Ujian) — cuma tampil kalau
                     ada pelanggaran tercatat. Ini SINYAL buat guru menilai
                     sendiri, bukan vonis otomatis "curang".
@@ -498,7 +687,7 @@ const CekTugasSiswa = () => {
               <button onClick={() => setViewingDetail(null)} style={s.modalCloseBtn}><X size={18}/></button>
             </div>
             <div style={s.modalBody}>
-              {(viewingDetail.details || []).map((q, idx) => {
+              {orderedDetailQuestions.map((q, idx) => {
                 const partial = q.partsTotal ? (q.isCorrect ? null : (q.partsCorrect > 0 ? `🟡 ${q.partsCorrect}/${q.partsTotal} benar` : null)) : null;
                 return (
                   <div key={q.id || idx} style={s.qCard(q.isCorrect)}>
@@ -523,7 +712,7 @@ const CekTugasSiswa = () => {
                   </div>
                 );
               })}
-              {(!viewingDetail.details || viewingDetail.details.length === 0) && (
+              {orderedDetailQuestions.length === 0 && (
                 <p style={{textAlign:'center', color:'#94a3b8', padding: 20}}>Detail jawaban tidak tersedia untuk submission ini.</p>
               )}
             </div>
@@ -552,24 +741,39 @@ const s = {
   hRight: { display:'flex', gap:8, alignItems:'center', flexWrap:'wrap' },
   btnR: { background:'white',border:'1px solid #e2e8f0',padding:'8px 10px',borderRadius:10,cursor:'pointer',color:'#64748b' },
   searchBox: { display:'flex',alignItems:'center',gap:8,background:'white',padding:'8px 14px',borderRadius:10,border:'1px solid #e2e8f0' },
-  searchIn: { border:'none',outline:'none',fontSize:13,width:140,background:'transparent' },
+  searchIn: { border:'none',outline:'none',fontSize:13,width:180,background:'transparent' },
   btnX: { background:'none',border:'none',color:'#94a3b8',cursor:'pointer' },
-  btnF: (active) => ({ background:active?'#3b82f6':'white',border:'1px solid #e2e8f0',padding:'8px 10px',borderRadius:10,cursor:'pointer',color:active?'white':'#64748b' }),
   
   stats: { display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(100px,1fr))', gap:10, marginBottom:16 },
   statCard: { background:'white', padding:'10px 14px', borderRadius:10, border:'1px solid #f1f5f9', textAlign:'center' },
   statV: { fontSize:18, fontWeight:900, color:'#1e293b', display:'block' },
   statL: { fontSize:9, color:'#94a3b8' },
   
-  filterBar: { display:'flex',gap:10,padding:12,background:'white',borderRadius:12,border:'1px solid #f1f5f9',marginBottom:16 },
   sel: { padding:'6px 12px',borderRadius:8,border:'1px solid #e2e8f0',fontSize:11,background:'white',cursor:'pointer' },
-  btnReset: { padding:'6px 12px',background:'#fee2e2',border:'none',borderRadius:8,color:'#ef4444',fontSize:11,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:4 },
   
   tabs: { display:'flex',gap:8,marginBottom:16 },
   tab: (active) => ({ padding:'8px 16px',borderRadius:8,border:'none',fontWeight:700,fontSize:12,cursor:'pointer',background:active?'#6366f1':'#f1f5f9',color:active?'white':'#64748b',display:'flex',alignItems:'center',gap:4 }),
+
+  // 🔥 CARD GRID PER TUGAS/KUIS
+  groupGrid: { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:14 },
+  groupCard: { background:'white', borderRadius:14, border:'1px solid #e2e8f0', padding:16, cursor:'pointer', transition:'0.15s', boxShadow:'0 1px 3px rgba(0,0,0,0.03)' },
+  groupCardTop: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8, flexWrap:'wrap', gap:6 },
+  groupSubjectBadge: { fontSize:9, fontWeight:700, background:'#eef2ff', color:'#3b82f6', padding:'2px 8px', borderRadius:10 },
+  groupViolationBadge: { fontSize:9, fontWeight:700, background:'#fef2f2', color:'#dc2626', padding:'2px 8px', borderRadius:10, display:'flex', alignItems:'center', gap:3 },
+  groupTitle: { margin:'0 0 10px', fontSize:14, fontWeight:800, color:'#1e293b', lineHeight:1.3 },
+  progressWrap: { marginBottom:10 },
+  progressLabelRow: { display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:11, color:'#64748b', marginBottom:4 },
+  progressBarBg: { width:'100%', height:6, background:'#f1f5f9', borderRadius:4, overflow:'hidden' },
+  progressBarFill: { height:'100%', borderRadius:4, transition:'width 0.3s ease' },
+  groupMetaRow: { display:'flex', gap:12, fontSize:10, color:'#94a3b8', flexWrap:'wrap' },
+
+  // Detail 1 grup
+  groupDetailHeader: { display:'flex', alignItems:'center', gap:14, marginBottom:14, flexWrap:'wrap', background:'white', padding:'12px 16px', borderRadius:12, border:'1px solid #f1f5f9' },
+  btnBackToGroups: { background:'#f1f5f9', border:'none', padding:'8px 12px', borderRadius:8, cursor:'pointer', fontSize:11, fontWeight:700, color:'#475569', display:'flex', alignItems:'center', gap:4, flexShrink:0 },
+  filterActionsRow: { display:'flex', gap:8, alignItems:'center' },
   
   tableWrap: { background:'white',borderRadius:16,border:'1px solid #e2e8f0',overflow:'hidden' },
-  table: { width:'100%',borderCollapse:'collapse',minWidth:800 },
+  table: { width:'100%',borderCollapse:'collapse',minWidth:700 },
   thead: { background:'#f8fafc' },
   th: { padding:'10px 14px',fontSize:10,color:'#64748b',fontWeight:800,textTransform:'uppercase',borderBottom:'2px solid #f1f5f9',textAlign:'left',whiteSpace:'nowrap' },
   tr: { borderBottom:'1px solid #f1f5f9' },
@@ -579,7 +783,7 @@ const s = {
   meta: { display:'flex',gap:4,alignItems:'center',flexWrap:'wrap' },
   cls: { fontSize:8,color:'#3b82f6',background:'#eef2ff',padding:'1px 6px',borderRadius:4,fontWeight:600 },
   nim: { fontSize:8,color:'#94a3b8',fontFamily:'monospace' },
-  mTitle: { fontSize:12,fontWeight:500 },
+  violationTag: { fontSize:8, fontWeight:700, color:'#dc2626', background:'#fef2f2', padding:'1px 6px', borderRadius:4, display:'inline-flex', alignItems:'center', gap:2 },
   btnView: { background:'#6366f1',color:'white',border:'none',padding:'4px 10px',borderRadius:6,cursor:'pointer',fontSize:9,fontWeight:700,display:'inline-flex',alignItems:'center',gap:4,textDecoration:'none' },
   quizBadge: { fontSize:10,fontWeight:700,color:'#475569',background:'#f1f5f9',padding:'2px 6px',borderRadius:4 },
   scoreIn: { width:50,border:'2px solid #6366f1',borderRadius:4,textAlign:'center',fontWeight:'bold',fontSize:14,padding:2,outline:'none' },

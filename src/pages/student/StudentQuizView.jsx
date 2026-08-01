@@ -9,7 +9,8 @@ import {
   BarChart3, TrendingUp, Shield, AlertTriangle,
   ChevronLeft, ChevronRight, BookOpen, Zap, RefreshCw,
   Eye, EyeOff, Calendar, Lock, Unlock, Flag,
-  FileQuestion, Table, CheckSquare, AlignLeft, Grid
+  FileQuestion, Table, CheckSquare, AlignLeft, Grid,
+  List, X
 } from 'lucide-react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
@@ -94,6 +95,13 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
   const [attemptCount, setAttemptCount] = useState(0);
+  // 🔥 BARU: panel daftar soal (dibuka lewat tombol "☰ Daftar Soal" di
+  // header) -- menggantikan deretan titik nomor soal yang dulu nempel di
+  // atas kartu soal (yang bisa overflow/gak semua kelihatan kalau soalnya
+  // banyak). Sekarang daftar lengkap soal ada di panel terpisah yang bisa
+  // discroll, dan tampilan kartu soal jadi bersih -- cuma soal + penanda
+  // ragu-ragu.
+  const [showQuestionList, setShowQuestionList] = useState(false);
   
   // 🔥 STATE UNTUK PREVIEW JAWABAN
   const [showAllAnswers, setShowAllAnswers] = useState(false);
@@ -922,7 +930,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         subject: quizData?.subject || 'Umum',
         // 🔥 FIX: guruId & kodeMapel didenormalisasi dari dokumen kuis, supaya
         // "Cek Tugas Siswa" bisa cocokin submission ke guru yang benar pakai ID
-        // (akurat), bukan cocok-cocokan nama mapel (rapuh, gampang meleset).
+        // (akurat), bukan cocok-cocokan nama mapel yang rapuh.
         guruId: quizData?.guruId || '',
         kodeMapel: quizData?.kodeMapel || '',
         answers: answers,
@@ -1549,6 +1557,13 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           <div style={styles.progressBox}>
             <span style={styles.progressText}>{getAnsweredCount()}/{questions.length}</span>
           </div>
+          {/* 🔥 BARU: tombol daftar soal (menggantikan deretan titik nomor
+              soal yang dulu selalu tampil di atas -- bisa overflow/gak
+              semua kelihatan kalau soal banyak). Sekarang daftar lengkap
+              dibuka lewat panel terpisah yang bisa discroll. */}
+          <button onClick={() => setShowQuestionList(true)} style={styles.btnQuestionList} title="Daftar Soal">
+            <List size={16} />
+          </button>
         </div>
       </div>
 
@@ -1557,92 +1572,72 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         <div style={{...styles.progressBar, width: `${progress}%`}} />
       </div>
 
-      {/* 🔥 NAVIGASI SOAL */}
-      <div style={styles.questionNavigator}>
-        <button 
-          onClick={() => goToQuestion(currentIndex - 1)} 
-          disabled={isFirstQuestion}
-          style={styles.navButtonSmall(isFirstQuestion)}
-        >
-          <ChevronLeft size={14} /> Sebelumnya
-        </button>
-        <div style={styles.questionDots}>
-          {questions.map((q, idx) => {
-            const status = getQuestionStatus(q.id);
-            const isActive = idx === currentIndex;
-            return (
-              <button
-                key={q.id}
-                onClick={() => goToQuestion(idx)}
-                style={styles.questionDot(status, isActive)}
-                title={`Soal ${idx + 1}${status === 'answered' ? ' (Terjawab)' : status === 'flagged' ? ' (Ragu-ragu)' : ' (Belum)'}`}
-              >
-                {idx + 1}
-              </button>
-            );
-          })}
+      {/* 🔥 PANEL DAFTAR SOAL -- dibuka lewat tombol ☰ di header. Isinya
+          nomor soal + statusnya (terjawab/ragu-ragu/belum), bisa discroll
+          penuh jadi semua soal PASTI kelihatan, gak kayak deretan titik
+          lama yang bisa kepotong. */}
+      {showQuestionList && (
+        <div style={styles.qlOverlay} onClick={() => setShowQuestionList(false)}>
+          <div style={styles.qlPanel} onClick={e => e.stopPropagation()}>
+            <div style={styles.qlHeader}>
+              <h4 style={styles.qlTitle}>📋 Daftar Soal</h4>
+              <button onClick={() => setShowQuestionList(false)} style={styles.qlCloseBtn}><X size={18} /></button>
+            </div>
+            <div style={styles.qlLegend}>
+              <span><span style={{...styles.qlDot, background:'#10b981'}}/> Terjawab</span>
+              <span><span style={{...styles.qlDot, background:'#f59e0b'}}/> Ragu-ragu</span>
+              <span><span style={{...styles.qlDot, background:'#e2e8f0'}}/> Belum</span>
+            </div>
+            <div style={styles.qlGrid}>
+              {questions.map((q, idx) => {
+                const status = getQuestionStatus(q.id);
+                const isActive = idx === currentIndex;
+                return (
+                  <button
+                    key={q.id}
+                    onClick={() => { goToQuestion(idx); setShowQuestionList(false); }}
+                    style={styles.qlItem(status, isActive)}
+                  >
+                    {idx + 1}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={styles.qlFooterInfo}>
+              {getAnsweredCount()} dari {questions.length} soal terjawab
+            </div>
+          </div>
         </div>
-        <button 
-          onClick={() => goToQuestion(currentIndex + 1)} 
-          disabled={isLastQuestion}
-          style={styles.navButtonSmall(isLastQuestion)}
-        >
-          Selanjutnya <ChevronRight size={14} />
-        </button>
-      </div>
+      )}
 
       {/* QUESTION */}
       <div style={styles.questionCard}>
+        {/* 🔥 Header kartu soal dibersihkan -- sekarang cuma nomor soal
+            + tombol ragu-ragu, sesuai permintaan tampilan yang lebih
+            bersih (badge status & tipe soal dipindah ke panel Daftar
+            Soal, gak perlu nempel terus di tiap kartu). */}
         <div style={styles.questionNumber}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span style={styles.questionNumText}>Soal {currentIndex + 1} dari {questions.length}</span>
-            <span style={{
-              fontSize: 9,
-              fontWeight: 700,
-              padding: '2px 10px',
-              borderRadius: 10,
-              background: questionStatus === 'answered' ? '#dcfce7' : questionStatus === 'flagged' ? '#fef3c7' : '#f1f5f9',
-              color: questionStatus === 'answered' ? '#166534' : questionStatus === 'flagged' ? '#b45309' : '#94a3b8'
-            }}>
-              {questionStatus === 'answered' ? '✅ Terjawab' : questionStatus === 'flagged' ? '🚩 Ragu-ragu' : '⏳ Belum'}
-            </span>
-            <span style={{
-              fontSize: 8,
-              fontWeight: 600,
-              padding: '2px 8px',
-              borderRadius: 10,
-              background: '#f1f5f9',
-              color: '#64748b',
+          <span style={styles.questionNumText}>Soal {currentIndex + 1} dari {questions.length}</span>
+          <button 
+            onClick={() => handleFlagQuestion(currentQuestion.id)}
+            style={{
+              background: flaggedQuestions[currentQuestion.id] ? '#fef3c7' : '#f1f5f9',
+              border: flaggedQuestions[currentQuestion.id] ? '1px solid #f59e0b' : '1px solid #e2e8f0',
+              borderRadius: 6,
+              padding: '4px 10px',
+              cursor: isSubmitted || hasExistingAnswer ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: 3
-            }}>
-              {typeIcons[currentQuestion.type] || <HelpCircle size={12} />}
-              {typeLabels[currentQuestion.type] || 'Soal'}
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button 
-              onClick={() => handleFlagQuestion(currentQuestion.id)}
-              style={{
-                background: flaggedQuestions[currentQuestion.id] ? '#fef3c7' : '#f1f5f9',
-                border: flaggedQuestions[currentQuestion.id] ? '1px solid #f59e0b' : '1px solid #e2e8f0',
-                borderRadius: 6,
-                padding: '4px 8px',
-                cursor: isSubmitted || hasExistingAnswer ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-                fontSize: 10,
-                fontWeight: 600,
-                color: flaggedQuestions[currentQuestion.id] ? '#b45309' : '#64748b',
-                opacity: isSubmitted || hasExistingAnswer ? 0.6 : 1
-              }}
-              disabled={isSubmitted || hasExistingAnswer}
-            >
-              <Flag size={14} /> {flaggedQuestions[currentQuestion.id] ? 'Batalkan' : 'Ragu-ragu'}
-            </button>
-          </div>
+              gap: 4,
+              fontSize: 11,
+              fontWeight: 600,
+              color: flaggedQuestions[currentQuestion.id] ? '#b45309' : '#64748b',
+              opacity: isSubmitted || hasExistingAnswer ? 0.6 : 1
+            }}
+            disabled={isSubmitted || hasExistingAnswer}
+          >
+            <Flag size={14} /> {flaggedQuestions[currentQuestion.id] ? 'Ragu-ragu ✓' : 'Tandai Ragu-ragu'}
+          </button>
         </div>
 
         {/* Gambar Soal */}
@@ -1666,14 +1661,33 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         {renderQuestionOptions(currentQuestion)}
       </div>
 
-      {/* SUBMIT BUTTON */}
-      <div style={styles.submitContainer}>
-        <button 
-          onClick={() => setShowConfirm(true)}
-          style={styles.submitButton}
+      {/* 🔥 NAVIGASI BAWAH -- DIBUAT ULANG: sebelumnya tombol "Kirim
+          Jawaban" SELALU tampil di bawah SETIAP soal (bukan cuma di soal
+          terakhir), duduk persis di posisi yang biasanya dipakai tombol
+          "Selanjutnya" di UI kuis pada umumnya -- makanya banyak siswa
+          kepencet, ngira itu tombol lanjut ke soal berikutnya, padahal
+          langsung mengirim jawaban. Sekarang: tombol utama di bawah
+          adalah "Soal Selanjutnya" (biru) untuk semua soal KECUALI soal
+          terakhir, dan baru di soal PALING TERAKHIR tombolnya berubah
+          jadi "Kirim Jawaban" (hijau, beda warna jelas) -- gak akan
+          ketemu di posisi yang sama dengan tombol next sebelumnya. */}
+      <div style={styles.bottomNav}>
+        <button
+          onClick={() => goToQuestion(currentIndex - 1)}
+          disabled={isFirstQuestion}
+          style={styles.btnPrev(isFirstQuestion)}
         >
-          <Send size={16} /> Kirim Jawaban
+          <ChevronLeft size={16} /> Sebelumnya
         </button>
+        {isLastQuestion ? (
+          <button onClick={() => setShowConfirm(true)} style={styles.btnSubmitFinal}>
+            <Send size={16} /> Kirim Jawaban
+          </button>
+        ) : (
+          <button onClick={() => goToQuestion(currentIndex + 1)} style={styles.btnNext}>
+            Soal Selanjutnya <ChevronRight size={16} />
+          </button>
+        )}
       </div>
 
       {/* CONFIRM MODAL */}
@@ -1712,7 +1726,8 @@ const styles = {
     margin: '0 auto',
     padding: '16px',
     minHeight: '100vh',
-    background: '#f8fafc'
+    background: '#f8fafc',
+    paddingBottom: 90, // 🔥 ruang buat bottom nav supaya gak numpuk di soal terakhir
   },
 
   loadingContainer: {
@@ -1881,6 +1896,12 @@ const styles = {
     fontWeight: 700,
     fontSize: 12
   },
+  // 🔥 BARU: tombol ☰ pembuka panel daftar soal
+  btnQuestionList: {
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: '#f1f5f9', border: 'none', borderRadius: 8,
+    padding: '8px 10px', cursor: 'pointer', color: '#475569',
+  },
 
   progressBarContainer: {
     width: '100%',
@@ -1897,52 +1918,33 @@ const styles = {
     transition: 'width 0.3s ease'
   },
 
-  // 🔥 NAVIGATOR SOAL
-  questionNavigator: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    padding: '8px 12px',
-    background: 'white',
-    borderRadius: 10,
-    border: '1px solid #e2e8f0',
-    marginBottom: 12,
-    flexWrap: 'wrap'
+  // 🔥 PANEL DAFTAR SOAL
+  qlOverlay: {
+    position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', zIndex: 4000,
+    display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
   },
-  navButtonSmall: (disabled) => ({
-    padding: '4px 10px',
-    borderRadius: 6,
-    border: '1px solid #e2e8f0',
-    background: disabled ? '#f1f5f9' : 'white',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    color: disabled ? '#94a3b8' : '#1e293b',
-    fontWeight: 600,
-    fontSize: 11,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-    opacity: disabled ? 0.5 : 1
-  }),
-  questionDots: {
-    display: 'flex',
-    gap: 4,
-    flex: 1,
-    flexWrap: 'wrap',
-    justifyContent: 'center'
+  qlPanel: {
+    background: 'white', borderRadius: '20px 20px 0 0', width: '100%', maxWidth: 480,
+    maxHeight: '75vh', padding: 20, display: 'flex', flexDirection: 'column',
+    boxShadow: '0 -10px 40px rgba(0,0,0,0.2)',
   },
-  questionDot: (status, active) => ({
-    width: 32,
-    height: 32,
-    borderRadius: '50%',
+  qlHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  qlTitle: { margin: 0, fontSize: 15, fontWeight: 800, color: '#1e293b' },
+  qlCloseBtn: { background: '#f1f5f9', border: 'none', borderRadius: 8, padding: 6, cursor: 'pointer' },
+  qlLegend: { display: 'flex', gap: 14, fontSize: 11, color: '#64748b', marginBottom: 14, flexWrap: 'wrap' },
+  qlDot: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', marginRight: 4 },
+  qlGrid: {
+    display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(42px, 1fr))', gap: 8,
+    overflowY: 'auto', paddingRight: 4,
+  },
+  qlItem: (status, active) => ({
+    aspectRatio: '1', minHeight: 40, borderRadius: 10,
     border: active ? '2px solid #673ab7' : '1px solid #e2e8f0',
     background: status === 'answered' ? '#10b981' : status === 'flagged' ? '#f59e0b' : 'white',
-    color: status === 'answered' ? 'white' : status === 'flagged' ? 'white' : active ? '#673ab7' : '#94a3b8',
-    cursor: 'pointer',
-    fontWeight: active ? 900 : 600,
-    fontSize: 11,
-    transition: '0.2s',
-    boxShadow: active ? '0 2px 8px rgba(103,58,183,0.3)' : 'none'
+    color: status === 'answered' || status === 'flagged' ? 'white' : active ? '#673ab7' : '#64748b',
+    fontWeight: active ? 900 : 600, fontSize: 13, cursor: 'pointer',
   }),
+  qlFooterInfo: { marginTop: 14, textAlign: 'center', fontSize: 12, color: '#94a3b8', fontWeight: 600 },
 
   questionCard: {
     background: 'white',
@@ -2001,26 +2003,54 @@ const styles = {
     whiteSpace: 'pre-wrap'
   },
 
-  // SUBMIT
-  submitContainer: {
-    marginTop: 16,
+  // 🔥 BOTTOM NAV BARU
+  bottomNav: {
+    position: 'fixed',
+    bottom: 0, left: 0, right: 0,
+    background: 'white',
+    borderTop: '1px solid #e2e8f0',
+    padding: '12px 16px',
     display: 'flex',
-    justifyContent: 'center'
+    gap: 10,
+    justifyContent: 'space-between',
+    zIndex: 100,
+    boxShadow: '0 -4px 16px rgba(0,0,0,0.05)',
   },
-  submitButton: {
-    padding: '12px 32px',
+  btnPrev: (disabled) => ({
+    padding: '12px 18px',
+    borderRadius: 10,
+    border: '1px solid #e2e8f0',
+    background: disabled ? '#f8fafc' : 'white',
+    color: disabled ? '#cbd5e1' : '#475569',
+    fontWeight: 700,
+    fontSize: 13,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    display: 'flex', alignItems: 'center', gap: 6,
+  }),
+  btnNext: {
+    flex: 1,
+    padding: '12px 18px',
+    borderRadius: 10,
+    border: 'none',
+    background: 'linear-gradient(135deg, #673ab7, #8b5cf6)',
+    color: 'white',
+    fontWeight: 700,
+    fontSize: 13,
+    cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+  },
+  btnSubmitFinal: {
+    flex: 1,
+    padding: '12px 18px',
     borderRadius: 10,
     border: 'none',
     background: 'linear-gradient(135deg, #10b981, #059669)',
     color: 'white',
-    cursor: 'pointer',
-    fontWeight: 700,
+    fontWeight: 800,
     fontSize: 14,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    boxShadow: '0 4px 16px rgba(16,185,129,0.3)',
-    transition: '0.2s'
+    cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+    boxShadow: '0 4px 14px rgba(16,185,129,0.35)',
   },
 
   // MODAL CONFIRM
