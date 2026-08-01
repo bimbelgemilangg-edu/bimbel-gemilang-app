@@ -811,8 +811,29 @@ const StudentDashboard = () => {
                     borderLeft: `3px solid ${hasQuiz ? '#673ab7' : '#f59e0b'}`, cursor: 'pointer', transition: 'filter 0.15s',
                   }}
                   onClick={() => {
-                    localStorage.setItem('selectedModuleId', task.id);
-                    navigate('/siswa/materi');
+                    // 🔥 FIX BUG: sebelumnya SEMUA kartu di sini (kuis maupun
+                    // tugas) cuma nyimpen `selectedModuleId` ke localStorage
+                    // lalu lempar ke halaman daftar "Pilih Guru/Mapel"
+                    // (`/siswa/materi`) -- padahal halaman itu TIDAK PERNAH
+                    // membaca localStorage tsb buat langsung loncat ke
+                    // modul/kuisnya. Efeknya siswa klik "Mulai Kuis" tapi
+                    // malah nyasar ke layar pilihan tentor, harus cari-cari
+                    // modulnya lagi secara manual. Sekarang: kalau kartunya
+                    // KUIS, langsung diarahkan ke halaman pengerjaan kuis;
+                    // kalau TUGAS/modul biasa, langsung ke halaman detail
+                    // modulnya -- tanpa mampir ke halaman pilihan sama sekali.
+                    if (hasQuiz) {
+                      const quizBlock = (task.blocks || []).find(b => b.type === 'quiz' && b.quizId);
+                      // Kuis "model lama" (quizData langsung nempel di modul,
+                      // bukan blok terpisah) -- id kuisnya adalah id modul itu
+                      // sendiri.
+                      const quizId = quizBlock?.quizId || (task.quizData?.length > 0 ? task.id : null);
+                      if (quizId) {
+                        navigate(`/siswa/kuis/${quizId}`);
+                        return;
+                      }
+                    }
+                    navigate(`/siswa/modul/${task.id}`);
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
