@@ -31,6 +31,56 @@ import katex from 'katex';
 // dibungkus lebih "dewasa" (progress/streak, bukan bintang-bintang).
 // Dideteksi otomatis dari field kelasSekolah siswa (mis. "3 SD", "9 SMP",
 // "12 SMA") -- tidak perlu setting manual apa pun dari guru/admin.
+// ============================================================
+// 🔥 BARU: GERBANG AKSES PER PAKET MAPEL
+// ============================================================
+// Bimbel Gemilang sekarang punya strategi harga paket per mapel (1 mapel /
+// 2 mapel / 4 mapel lengkap khusus SD) -- siswa yang cuma daftar 1 mapel
+// (misal Matematika doang, buat coba-coba dulu) SEHARUSNYA gak otomatis
+// bisa akses modul mapel lain (IPA, Bahasa Indonesia, dst) walau dia satu
+// kelas/kategori sama siswa yang bayar paket lengkap.
+//
+// Sebelumnya sistem gak punya konsep ini sama sekali -- targeting cuma
+// berdasar kelas & kategori, jadi begitu guru targetin "Semua kelas 9
+// SMP", SEMUA siswa kelas itu ikut kebuka aksesnya, gak peduli mapel apa
+// yang dia bayar. Solusinya BUKAN nyuruh guru pilih-pilih siswa manual
+// tiap bikin materi (itu kerjaan berat & rawan salah) -- tapi nyimpen
+// daftar mapel yang dibayar siswa SEKALI di data siswa (`enrolledSubjects`),
+// lalu sistem yang otomatis nyaring setiap kali siswa buka modul. Guru
+// tetap targetin "Semua" seperti biasa, gak nambah kerjaan sama sekali.
+//
+// `enrolledSubjects` diisi lewat halaman administrasi siswa (di luar file
+// ini) -- contoh: ["Matematika"] buat siswa 1 mapel, atau ["Semua"] buat
+// paket lengkap. Kalau field ini belum ada/kosong (siswa lama sebelum
+// fitur ini ada), DEFAULT-nya akses PENUH -- supaya gak ada siswa lama
+// yang tiba-tiba keblokir cuma karena datanya belum sempat diisi.
+const hasSubjectAccess = (enrolledSubjects, modulSubject) => {
+  if (!modulSubject || modulSubject === 'Umum') return true; // konten umum selalu bisa diakses siapa saja
+  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return true; // data belum diisi -> jangan blokir (aman buat siswa lama)
+  if (enrolledSubjects.includes('Semua')) return true; // paket lengkap
+  return enrolledSubjects.includes(modulSubject);
+};
+
+// 🔥 BARU: cadangan kalau siswa buka link modul LANGSUNG (dari WhatsApp/
+// notifikasi) tanpa lewat Dashboard dulu, jadi cache localStorage-nya
+// belum sempat keisi. Query & alasan sama persis dengan versi di
+// StudentDashboard.jsx -- `jadwal_bimbel` adalah satu-satunya sumber
+// kebenaran soal mapel yang diambil siswa, ditarik dari SEMUA jadwal
+// sepanjang waktu (bukan cuma hari ini).
+const deriveEnrolledSubjectsFromSchedule = async (studentDocId) => {
+  try {
+    const q = query(collection(db, "jadwal_bimbel"), where("studentIds", "array-contains", studentDocId));
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    const subjects = new Set();
+    snap.docs.forEach(d => { const m = d.data().mapelName; if (m) subjects.add(m); });
+    return subjects.size > 0 ? Array.from(subjects) : null;
+  } catch (e) {
+    console.error("Gagal menurunkan mapel dari jadwal:", e);
+    return null;
+  }
+};
+
 const getAgeTier = (kelasSekolah) => {
   const k = (kelasSekolah || '').toUpperCase();
   if (k.includes('SD')) return 'sd';
@@ -791,6 +841,19 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         const nim = studentNim || localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
         const kelas = studentKelas || localStorage.getItem('studentKelas') || '';
         const program = studentProgram || localStorage.getItem('studentProgram') || 'Reguler';
+        // 🔥 BARU: daftar mapel yang dibayar siswa ini. Dicoba dari beberapa
+        // sumber (prop studentData dulu, fallback ke localStorage) -- sama
+        // pola kayak kelas/program di atas. Kalau dua-duanya kosong (siswa
+        // buka link modul LANGSUNG dari WhatsApp/notifikasi tanpa lewat
+        // Dashboard dulu, jadi cache-nya belum sempat keisi), turunkan
+        // langsung dari jadwal_bimbel sebagai cadangan terakhir.
+        let enrolledSubjectsRaw = studentData?.enrolledSubjects || localStorage.getItem('studentEnrolledSubjects');
+        if (typeof enrolledSubjectsRaw === 'string') {
+          try { enrolledSubjectsRaw = JSON.parse(enrolledSubjectsRaw); } catch (e) { enrolledSubjectsRaw = null; }
+        }
+        if (!enrolledSubjectsRaw && studentData?.id) {
+          enrolledSubjectsRaw = await deriveEnrolledSubjectsFromSchedule(studentData.id);
+        }
         
         let hasAccess = false;
         
@@ -798,6 +861,10 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           const studentIds = data.studentIds || [];
           const selectedStudentIds = (data.selectedStudents || []).map(s => s.studentId || s.id);
           const allTargetIds = [...studentIds, ...selectedStudentIds];
+          // 🔥 Guru MEMILIH LANGSUNG siswa ini secara manual -- dianggap izin
+          // khusus dari guru (misal buat trial/bonus lintas mapel), jadi
+          // SENGAJA tidak ikut kena batasan paket mapel di bawah. Guru tetap
+          // pegang kendali penuh buat ngasih akses ekstra kalau memang mau.
           hasAccess = allTargetIds.includes(nim) || allTargetIds.includes(studentData?.id);
         }
         
@@ -806,7 +873,20 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           const targetKategori = data.targetKategori || 'Semua';
           const matchKelas = targetKelas === 'Semua' || targetKelas === kelas;
           const matchProgram = targetKategori === 'Semua' || targetKategori === program;
-          hasAccess = matchKelas && matchProgram;
+          // 🔥 BARU: buat targeting umum (bukan pilihan manual guru), akses
+          // sekarang JUGA harus lolos cek paket mapel -- ini yang mencegah
+          // siswa paket 1 mapel otomatis ikut kebuka modul mapel lain.
+          const matchSubject = hasSubjectAccess(enrolledSubjectsRaw, data.subject);
+          hasAccess = matchKelas && matchProgram && matchSubject;
+
+          // 🔥 BARU: kalau alasan gagalnya SPESIFIK karena paket mapel (bukan
+          // kelas/kategori), kasih pesan yang jelas -- biar siswa/ortu ngerti
+          // ini soal paket langganan, bukan dikira bug/error sistem.
+          if (matchKelas && matchProgram && !matchSubject) {
+            dispatch({ type: 'SET_ERROR', payload: `Modul ini untuk mapel ${data.subject || '-'}, sedangkan paketmu belum termasuk mapel ini. Hubungi admin Bimbel Gemilang untuk info upgrade paket.` });
+            dispatch({ type: 'SET_ACCESS', payload: false });
+            return;
+          }
         }
         
         if (!hasAccess) {

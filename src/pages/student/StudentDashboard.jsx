@@ -124,6 +124,64 @@ const AttendanceDonut = ({ hadir, izin, alpha, total }) => {
   );
 };
 
+// ============================================================
+// 🔥 CEK AKSES MAPEL (paket 1 mapel / 2 mapel / paket lengkap)
+// ============================================================
+// Pola & alasan sama persis dengan StudentModuleView.jsx (halaman baca
+// materi) -- ditaruh di sini juga supaya daftar modul yang tampil di
+// dashboard SUDAH tersaring dari awal (siswa gak perlu lihat modul yang
+// nanti bakal ditolak aksesnya pas diklik). `enrolledSubjects` diisi lewat
+// halaman administrasi siswa: `["Matematika"]` buat siswa 1 mapel, atau
+// `["Semua"]` buat paket lengkap. Kalau belum diisi (siswa lama), akses
+// TETAP PENUH -- gak ada yang tiba-tiba keblokir.
+const hasSubjectAccess = (enrolledSubjects, modulSubject) => {
+  if (!modulSubject || modulSubject === 'Umum') return true;
+  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return true;
+  if (enrolledSubjects.includes('Semua')) return true;
+  return enrolledSubjects.includes(modulSubject);
+};
+
+// ============================================================
+// 🔥 BARU: TURUNKAN "MAPEL YANG DIAMBIL SISWA" DARI JADWAL BESAR
+// (jadwal_bimbel), BUKAN DARI FIELD TERPISAH YANG HARUS DIISI MANUAL
+// ============================================================
+// KENAPA BEGINI: begitu admin bikin jadwal "Guru Matematika + pilih siswa
+// ini" di halaman Manajemen Jadwal, itu SUDAH MEMBUKTIKAN siswa ini ambil
+// mapel Matematika -- gak perlu dicatat ULANG di tempat terpisah (field
+// enrolledSubjects manual). `jadwal_bimbel` dijadikan SATU-SATUNYA sumber
+// kebenaran (single source of truth) buat "siswa ini ambil mapel apa".
+// Admin tetap bikin jadwal seperti biasa, TIDAK ADA kerjaan tambahan.
+//
+// PENTING -- ini nyari SEMUA jadwal siswa itu SEPANJANG WAKTU (bukan cuma
+// jadwal HARI INI). Kalau cuma dicek "jadwal hari ini", modul Matematika
+// bakal ketutup di hari-hari siswa gak ada kelas Matematika -- padahal dia
+// tetap siswa Matematika, cuma kebetulan gak ada sesi hari itu. "Pernah
+// terjadwal di mapel X" itu yang jadi patokan akses, bukan "ada jadwal
+// mapel X HARI INI".
+//
+// ATURAN AMAN buat siswa baru: kalau siswa BELUM PERNAH SAMA SEKALI masuk
+// jadwal apa pun (baru daftar, belum sempat dijadwalin gurunya), dianggap
+// `null` (belum "terverifikasi" ke mapel manapun) -- yang berarti TETAP
+// akses penuh dulu, sampai jadwal pertamanya dibuat. Begitu jadwal pertama
+// dibuat, pembatasan mapel baru mulai berlaku berdasarkan mapel-mapel yang
+// pernah dia ikuti.
+const deriveEnrolledSubjectsFromSchedule = async (studentDocId) => {
+  try {
+    const q = query(collection(db, "jadwal_bimbel"), where("studentIds", "array-contains", studentDocId));
+    const snap = await getDocs(q);
+    if (snap.empty) return null; // belum pernah dijadwalin sama sekali -> jangan blokir
+    const subjects = new Set();
+    snap.docs.forEach(d => {
+      const mapelName = d.data().mapelName;
+      if (mapelName) subjects.add(mapelName);
+    });
+    return subjects.size > 0 ? Array.from(subjects) : null;
+  } catch (e) {
+    console.error("Gagal menurunkan mapel dari jadwal:", e);
+    return null; // gagal ambil -> jangan blokir siapa pun gara-gara error jaringan
+  }
+};
+
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -166,7 +224,17 @@ const StudentDashboard = () => {
     return year + '-' + month + '-' + day;
   };
 
-  const checkStudentAccess = (modul, studentId, studentKelas, studentProgram) => {
+  // 🔥 BARU: parameter `studentEnrolledSubjects` -- daftar mapel yang
+  // beneran diambil/dibayar siswa (buat strategi harga "1 mapel / 2 mapel /
+  // paket lengkap" yang baru). Cek detailnya di hasSubjectAccess() di atas.
+  //
+  // PENTING: pengecekan mapel ini SENGAJA cuma jalan buat targeting umum
+  // (kelas/kategori) -- kalau modul secara eksplisit ditarget ke SISWA
+  // TERTENTU (`sendToSpecificStudents`), itu berarti guru MEMILIH siswa
+  // ini secara sadar satu-satu, jadi keputusan guru itu diprioritaskan
+  // (gak ditimpa pembatasan mapel otomatis) -- guru mungkin sengaja mau
+  // kasih akses bonus ke luar mapel yang diambil siswa.
+  const checkStudentAccess = (modul, studentId, studentKelas, studentProgram, studentEnrolledSubjects) => {
     if (modul.sendToSpecificStudents) {
       const studentIds = modul.studentIds || [];
       const selectedStudentIds = (modul.selectedStudents || []).map(s => s.studentId || s.id);
@@ -177,7 +245,8 @@ const StudentDashboard = () => {
     const targetKategori = modul.targetKategori || 'Semua';
     const matchKelas = targetKelas === 'Semua' || targetKelas === studentKelas;
     const matchProgram = targetKategori === 'Semua' || targetKategori === studentProgram;
-    return matchKelas && matchProgram;
+    const matchSubject = hasSubjectAccess(studentEnrolledSubjects, modul.subject || modul.kodeMapel || '');
+    return matchKelas && matchProgram && matchSubject;
   };
 
   useEffect(() => {
@@ -226,18 +295,36 @@ const StudentDashboard = () => {
 
         const sSnap = await getDoc(doc(db, "students", studentId)).catch(() => null);
         let kelasVal = studentKelas, programVal = studentProgram, nimVal = studentNim || studentId;
+        // 🔥 BARU: mapel yang beneran diambil siswa (buat strategi harga 1
+        // mapel / 2 mapel / paket lengkap) -- lihat penjelasan lengkap di
+        // deriveEnrolledSubjectsFromSchedule() di atas. Prioritas: (1) kalau
+        // ADMIN sengaja isi field `enrolledSubjects` manual di data siswa
+        // (buat kasus khusus), pakai itu; (2) kalau enggak, TURUNKAN
+        // otomatis dari jadwal_bimbel (siswa ini pernah dijadwalin ke mapel
+        // apa aja); (3) kalau dua-duanya kosong (siswa baru, belum pernah
+        // dijadwalin), `null` -- akses tetap penuh dulu.
+        let enrolledSubjectsVal = null;
         if (sSnap?.exists()) {
           const data = sSnap.data();
           setStudentProfile(data);
           kelasVal = data.kelasSekolah || '';
           programVal = data.kategori || 'Reguler';
           nimVal = data.studentId || data.id || studentId;
+          enrolledSubjectsVal = Array.isArray(data.enrolledSubjects) && data.enrolledSubjects.length > 0
+            ? data.enrolledSubjects
+            : await deriveEnrolledSubjectsFromSchedule(studentId);
           setStudentKelas(kelasVal);
           setStudentProgram(programVal);
           setStudentNim(nimVal);
           localStorage.setItem('studentKelas', kelasVal);
           localStorage.setItem('studentProgram', programVal);
           localStorage.setItem('studentNim', nimVal);
+          // 🔥 Disimpan juga di localStorage supaya StudentModuleView.jsx
+          // (halaman baca materi) bisa langsung pakai tanpa fetch ulang.
+          try {
+            if (enrolledSubjectsVal) localStorage.setItem('studentEnrolledSubjects', JSON.stringify(enrolledSubjectsVal));
+            else localStorage.removeItem('studentEnrolledSubjects');
+          } catch (e) { /* localStorage penuh/gak tersedia -- gak fatal */ }
         }
 
         const [
@@ -333,7 +420,7 @@ const StudentDashboard = () => {
             if (!modul.tanggalMulai) return false;
             if (new Date(modul.tanggalMulai) > new Date()) return false;
           }
-          return checkStudentAccess(modul, studentId, kelasVal, programVal);
+          return checkStudentAccess(modul, studentId, kelasVal, programVal, enrolledSubjectsVal);
         });
 
         // 🔥 FIX BUG "kuis gak muncul di dashboard": sejak kuis "ditautkan

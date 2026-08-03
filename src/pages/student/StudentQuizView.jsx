@@ -54,6 +54,42 @@ const normalizeShortAnswer = (s) =>
     .trim();
 
 // ============================================================
+// 🔥 CEK AKSES MAPEL (paket 1 mapel / 2 mapel / paket lengkap)
+// ============================================================
+// Pola & alasan sama persis dengan StudentModuleView.jsx (halaman baca
+// materi) -- FIX BUG PENTING: sebelumnya halaman kuis ini SAMA SEKALI gak
+// ada pengecekan akses apa pun (kelas/kategori/mapel/siswa tertentu)!
+// Siapa aja yang tau/nebak link kuisnya bisa langsung buka & kerjain,
+// gak peduli target atau paket mapel yang dia bayar -- lubang penting
+// buat strategi harga per-mapel yang baru. `enrolledSubjects` diisi lewat
+// halaman administrasi siswa: `["Matematika"]` buat siswa 1 mapel, atau
+// `["Semua"]` buat paket lengkap. Kalau belum diisi (siswa lama), akses
+// TETAP PENUH -- gak ada yang tiba-tiba keblokir.
+const hasSubjectAccess = (enrolledSubjects, modulSubject) => {
+  if (!modulSubject || modulSubject === 'Umum') return true;
+  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return true;
+  if (enrolledSubjects.includes('Semua')) return true;
+  return enrolledSubjects.includes(modulSubject);
+};
+
+// 🔥 BARU: cadangan kalau siswa buka link kuis LANGSUNG tanpa lewat
+// Dashboard dulu (cache localStorage belum keisi). Pola sama persis
+// dengan StudentDashboard.jsx / StudentModuleView.jsx.
+const deriveEnrolledSubjectsFromSchedule = async (studentDocId) => {
+  try {
+    const q = query(collection(db, "jadwal_bimbel"), where("studentIds", "array-contains", studentDocId));
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    const subjects = new Set();
+    snap.docs.forEach(d => { const m = d.data().mapelName; if (m) subjects.add(m); });
+    return subjects.size > 0 ? Array.from(subjects) : null;
+  } catch (e) {
+    console.error("Gagal menurunkan mapel dari jadwal:", e);
+    return null;
+  }
+};
+
+// ============================================================
 // 🔥 RENDER MATH - SUPPORT KATEX
 // ============================================================
 const renderMath = (text) => {
@@ -110,7 +146,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [results, setResults] = useState(null);
-  const [studentInfo, setStudentInfo] = useState({ nim: '', name: '', kelas: '' });
+  const [studentInfo, setStudentInfo] = useState({ nim: '', name: '', kelas: '', program: '', enrolledSubjects: null });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [showConfirm, setShowConfirm] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
@@ -174,7 +210,18 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
                 localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
     const name = studentData?.nama || localStorage.getItem('studentName') || 'Siswa';
     const kelas = studentData?.kelasSekolah || localStorage.getItem('studentKelas') || '';
-    setStudentInfo({ nim, name, kelas });
+    const program = studentData?.kategori || localStorage.getItem('studentProgram') || 'Reguler';
+    // 🔥 BARU: dipakai buat pengecekan akses paket mapel (1 mapel/2 mapel/
+    // paket lengkap) -- lihat penjelasan lengkap di hasSubjectAccess() &
+    // pengecekan akses di fetchQuiz() di bawah.
+    let enrolledSubjects = studentData?.enrolledSubjects || null;
+    if (!enrolledSubjects) {
+      try {
+        const raw = localStorage.getItem('studentEnrolledSubjects');
+        enrolledSubjects = raw ? JSON.parse(raw) : null;
+      } catch (e) { enrolledSubjects = null; }
+    }
+    setStudentInfo({ nim, name, kelas, program, enrolledSubjects });
   }, [studentData]);
 
   // ===== FETCH QUIZ =====
@@ -219,6 +266,59 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         
         if (quizDataRaw.length === 0) {
           setError('Belum ada kuis di modul ini');
+          setLoading(false);
+          return;
+        }
+
+        // 🔥 BARU: PENGECEKAN AKSES -- sebelumnya TIDAK ADA sama sekali di
+        // halaman ini (lihat catatan panjang di hasSubjectAccess() di
+        // atas). Kalau kuis ini adalah BLOK yang nempel di sebuah modul
+        // materi (`parentModulId` ada), aksesnya HARUS ngikut target modul
+        // INDUKnya (bukan field target di kuisnya sendiri, yang bisa basi
+        // -- pola yang sama kayak arsitektur modul materi). Kalau kuis
+        // mandiri (gak nempel modul), pakai target dia sendiri.
+        let targetingSource = data;
+        if (data.parentModulId) {
+          try {
+            const parentSnap = await getDoc(doc(db, "bimbel_modul", data.parentModulId));
+            if (parentSnap.exists()) targetingSource = parentSnap.data();
+          } catch (e) { /* gagal ambil induk -> pakai data kuis sendiri sbg fallback di bawah */ }
+        }
+
+        const nimForAccess = studentInfo.nim;
+        let hasQuizAccess = false;
+
+        if (targetingSource.sendToSpecificStudents) {
+          const studentIds = targetingSource.studentIds || [];
+          const selectedStudentIds = (targetingSource.selectedStudents || []).map(s => s.studentId || s.id);
+          const allTargetIds = [...studentIds, ...selectedStudentIds];
+          // Guru MEMILIH LANGSUNG siswa ini -- prioritaskan keputusan guru,
+          // gak ditimpa batasan paket mapel otomatis.
+          hasQuizAccess = allTargetIds.includes(nimForAccess) || allTargetIds.includes(studentData?.id);
+        } else {
+          const targetKelas = targetingSource.targetKelas || 'Semua';
+          const targetKategori = targetingSource.targetKategori || 'Semua';
+          const matchKelas = targetKelas === 'Semua' || targetKelas === studentInfo.kelas;
+          const matchProgram = targetKategori === 'Semua' || targetKategori === studentInfo.program;
+          // 🔥 Kalau belum ada data mapel sama sekali (siswa buka link kuis
+          // LANGSUNG tanpa lewat Dashboard dulu, cache belum keisi), coba
+          // turunkan langsung dari jadwal_bimbel sebagai cadangan terakhir.
+          let effectiveEnrolledSubjects = studentInfo.enrolledSubjects;
+          if (!effectiveEnrolledSubjects && studentData?.id) {
+            effectiveEnrolledSubjects = await deriveEnrolledSubjectsFromSchedule(studentData.id);
+          }
+          const matchSubject = hasSubjectAccess(effectiveEnrolledSubjects, data.subject || data.kodeMapel || '');
+          hasQuizAccess = matchKelas && matchProgram && matchSubject;
+
+          if (matchKelas && matchProgram && !matchSubject) {
+            setError(`Kuis ini untuk mapel ${data.subject || '-'}, sedangkan paketmu belum termasuk mapel ini. Hubungi admin Bimbel Gemilang untuk info upgrade paket.`);
+            setLoading(false);
+            return;
+          }
+        }
+
+        if (!hasQuizAccess) {
+          setError('Anda tidak memiliki akses ke kuis ini.');
           setLoading(false);
           return;
         }
