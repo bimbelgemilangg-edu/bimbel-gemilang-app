@@ -166,6 +166,26 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     }
 
     const fetchQuiz = async () => {
+      // 🔥 FIX BUG PENTING (lanjutan dari fix jadwal sebelumnya): efek ini
+      // jalan ULANG setiap kali `studentInfo.nim` berubah (lihat dependency
+      // array di bawah). Begitu komponen ini baru dibuka, `studentInfo.nim`
+      // MASIH KOSONG sesaat (data NIM siswa belum sempat kemuat dari
+      // localStorage/props) -- jadi PERCOBAAN PERTAMA fungsi ini jalan
+      // dengan nim='' (gak nemu submission lama sama sekali), lanjut ke
+      // pengecekan jadwal tutup, dan BISA nge-set `error` kalau kuisnya
+      // udah lewat jadwal. Sesaat kemudian, `studentInfo.nim` KEMUAT
+      // (dari efek lain), efek ini jalan LAGI dengan nim yang benar, kali
+      // ini BENAR nemu submission lama & benar melewati pengecekan jadwal
+      // (sesuai fix sebelumnya) -- TAPI `error` dari PERCOBAAN PERTAMA yang
+      // keliru itu TIDAK PERNAH DIBERSIHKAN, dan karena tampilan mengecek
+      // `error` LEBIH DULU sebelum status "sudah pernah mengerjakan",
+      // siswa tetap kejebak layar error basi itu walau percobaan kedua
+      // yang benar sudah selesai jalan. Sekarang `error` (dan `loading`)
+      // di-reset bersih di AWAL setiap kali fungsi ini dipanggil, supaya
+      // tiap percobaan mulai dari kondisi bersih -- gak ada sisa dari
+      // percobaan sebelumnya yang "nyangkut".
+      setError(null);
+      setLoading(true);
       try {
         const snap = await getDoc(doc(db, "bimbel_modul", modulId));
         if (!snap.exists()) {
