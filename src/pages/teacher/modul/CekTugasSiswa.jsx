@@ -1,6 +1,8 @@
 // src/pages/teacher/modul/CekTugasSiswa.jsx
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { db } from '../../../firebase';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { 
   collection, getDocs, doc, getDoc, updateDoc, deleteDoc, 
   query, where, serverTimestamp 
@@ -9,7 +11,8 @@ import {
   CheckCircle, Clock, Search, Edit3, Save, 
   Trash2, FileText, HelpCircle, BarChart3, RefreshCw, 
   User, Hash, Tag, Filter, X, BookOpen, Eye,
-  ChevronDown, ChevronUp, Users, AlertTriangle, ArrowLeft
+  ChevronDown, ChevronUp, Users, AlertTriangle, ArrowLeft,
+  Download, Sparkles
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import 'katex/dist/katex.min.css';
@@ -70,6 +73,265 @@ const describeAnswer = (q, which) => {
     default:
       return '-';
   }
+};
+
+// ============================================================
+// 🌟 ASTRO GEMILANG — LAPORAN EVALUASI KOGNITIF (PDF, siap diunduh & dikirim
+// ke orang tua)
+// ============================================================
+// 🔥 KENAPA NARASINYA BERBASIS ATURAN (BUKAN AI GENERATIF LANGSUNG): ini
+// dokumen RESMI yang dikirim ke orang tua. Kalau narasinya digenerate AI
+// setiap kali, ada risiko AI "mengarang" kesimpulan yang gak didukung data
+// aslinya (halusinasi) -- itu bisa bikin bimbel kelihatan gak profesional
+// kalau orang tua nangkep ada kesimpulan yang gak nyambung sama angkanya.
+// Semua kalimat di laporan ini ditarik LANGSUNG dari data pengerjaan siswa
+// yang beneran tersimpan (skor, akurasi per tipe soal, waktu, pelanggaran)
+// -- 100% bisa dipertanggungjawabkan, gak ada yang "dikarang".
+const TYPE_LABELS_PDF = {
+  multiple: 'Pilihan Ganda',
+  truefalse: 'Benar/Salah',
+  multiselect: 'Pilih Lebih dari Satu',
+  reading: 'Membaca Teks',
+  shortanswer: 'Isian Singkat',
+  causeeffect: 'Sebab Akibat',
+  matching: 'Menjodohkan',
+};
+
+const VIOLATION_LABELS_PDF = {
+  halaman_diterjemahkan_otomatis: 'Halaman diterjemahkan otomatis',
+  pindah_tab_atau_aplikasi: 'Berpindah tab/aplikasi',
+  keluar_dari_jendela: 'Keluar dari jendela browser',
+  keluar_fullscreen: 'Keluar dari mode layar penuh',
+};
+
+// 🔥 Kelompokkan jawaban per TIPE SOAL, hitung akurasi -- ini jadi proxy
+// "analisis kognitif" yang paling jujur bisa ditarik dari data yang ada
+// (belum ada tagging domain seperti "Numerasi"/"Literasi" per soal di
+// skema kuis saat ini -- kalau nanti ditambahkan, tabel ini tinggal
+// dikelompokkan ulang berdasarkan domain, bukan tipe soal).
+const summarizeByType = (details) => {
+  const byType = {};
+  (details || []).forEach(q => {
+    const t = q.type || 'multiple';
+    if (!byType[t]) byType[t] = { count: 0, points: 0 };
+    byType[t].count += 1;
+    byType[t].points += (q.partialFraction !== undefined && q.partialFraction !== null)
+      ? q.partialFraction
+      : (q.isCorrect ? 1 : 0);
+  });
+  return byType;
+};
+
+const buildNarrative = (item, byType) => {
+  const lines = [];
+  const score = item.score ?? 0;
+  const title = item.modulTitle || 'kuis ini';
+
+  if (score >= 85) lines.push(`Ananda menunjukkan penguasaan yang sangat baik pada "${title}" dengan perolehan nilai ${score}.`);
+  else if (score >= 70) lines.push(`Ananda menunjukkan penguasaan yang baik pada "${title}" dengan perolehan nilai ${score}.`);
+  else if (score >= 50) lines.push(`Ananda menunjukkan penguasaan yang cukup pada "${title}" dengan perolehan nilai ${score}, dan masih ada ruang untuk peningkatan.`);
+  else lines.push(`Ananda memerlukan pendampingan lebih lanjut pada "${title}" dengan perolehan nilai ${score}.`);
+
+  const typesArr = Object.entries(byType).map(([t, s]) => ({ type: t, acc: s.count ? s.points / s.count : 0 }));
+  if (typesArr.length > 1) {
+    const sorted = [...typesArr].sort((a, b) => b.acc - a.acc);
+    const strongest = sorted[0];
+    const weakest = sorted[sorted.length - 1];
+    if (strongest.acc >= 0.7) {
+      lines.push(`Kekuatan utama terlihat pada soal tipe ${TYPE_LABELS_PDF[strongest.type] || strongest.type} (akurasi ${Math.round(strongest.acc * 100)}%).`);
+    }
+    if (weakest.acc < 0.6) {
+      lines.push(`Area yang disarankan untuk diperkuat adalah soal tipe ${TYPE_LABELS_PDF[weakest.type] || weakest.type} (akurasi ${Math.round(weakest.acc * 100)}%).`);
+    }
+  }
+
+  if (item.isAutoSubmit) {
+    lines.push('Kuis ini terkirim otomatis karena waktu pengerjaan habis -- disarankan untuk melatih manajemen waktu saat mengerjakan soal.');
+  }
+
+  const pending = (item.totalQuestions || 0) - (item.details || []).filter(d => d.userAnswer !== undefined && d.userAnswer !== null && d.userAnswer !== '').length;
+  if (pending > 0) {
+    lines.push(`Terdapat ${pending} soal yang belum dijawab pada saat pengumpulan.`);
+  }
+
+  return lines;
+};
+
+const generateAstroGemilangReport = (item) => {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  let y = 34;
+
+  // Header / letterhead
+  doc.setFillColor(103, 58, 183);
+  doc.rect(0, 0, pageWidth, 26, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(16);
+  doc.setFont(undefined, 'bold');
+  doc.text('Astro Gemilang', 14, 12);
+  doc.setFontSize(9);
+  doc.setFont(undefined, 'normal');
+  doc.text('Asisten Analisis Akademik - Bimbel Gemilang', 14, 19);
+  doc.setFontSize(8);
+  const genDate = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+  doc.text(`Laporan dibuat: ${genDate}`, pageWidth - 14, 19, { align: 'right' });
+  doc.setTextColor(30, 41, 59);
+
+  // Info siswa & kuis
+  doc.setFontSize(11);
+  doc.setFont(undefined, 'bold');
+  doc.text('Informasi Siswa & Kuis', 14, y);
+  y += 4;
+  const infoRows = [
+    ['Nama Siswa', item.studentName || '-'],
+    ['NIM / ID', item.studentNim || '-'],
+    ['Kelas', item.studentClass || '-'],
+    ['Mata Pelajaran', item.subject || '-'],
+    ['Nama Kuis', item.modulTitle || '-'],
+    ['Waktu Pengerjaan', item.submittedAt?.toDate ? item.submittedAt.toDate().toLocaleString('id-ID') : '-'],
+  ];
+  autoTable(doc, {
+    startY: y,
+    body: infoRows,
+    theme: 'plain',
+    styles: { fontSize: 9, cellPadding: 1.2 },
+    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 45 } },
+  });
+  y = doc.lastAutoTable.finalY + 8;
+
+  // Ringkasan skor
+  const score = item.score ?? 0;
+  const scoreColor = score >= 85 ? [16, 185, 129] : score >= 70 ? [59, 130, 246] : score >= 50 ? [245, 158, 11] : [239, 68, 68];
+  doc.setFillColor(...scoreColor);
+  doc.roundedRect(14, y, 45, 26, 3, 3, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20);
+  doc.setFont(undefined, 'bold');
+  doc.text(String(score ?? '-'), 36.5, y + 14, { align: 'center' });
+  doc.setFontSize(7);
+  doc.setFont(undefined, 'normal');
+  doc.text('NILAI AKHIR', 36.5, y + 21, { align: 'center' });
+
+  doc.setTextColor(30, 41, 59);
+  doc.setFontSize(9);
+  const rightColX = 65;
+  doc.text(`Benar: ${item.correctAnswers ?? 0} dari ${item.totalQuestions ?? 0} soal`, rightColX, y + 6);
+  doc.text(`Waktu digunakan: ${item.timeUsed ? Math.round(item.timeUsed / 60) + ' menit' : '-'}`, rightColX, y + 12);
+  doc.text(`Status pengiriman: ${item.isAutoSubmit ? 'Otomatis (waktu habis)' : 'Dikirim manual oleh siswa'}`, rightColX, y + 18);
+  y += 34;
+
+  // Analisis kognitif per tipe soal
+  const byType = summarizeByType(item.details);
+  const typeTableRows = Object.entries(byType).map(([t, s]) => [
+    TYPE_LABELS_PDF[t] || t,
+    String(s.count),
+    s.points.toFixed(1),
+    Math.round((s.points / s.count) * 100) + '%',
+  ]);
+
+  if (typeTableRows.length > 0) {
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.text('Analisis Kognitif per Tipe Soal', 14, y);
+    y += 4;
+    autoTable(doc, {
+      startY: y,
+      head: [['Tipe Soal', 'Jumlah', 'Skor Diperoleh', 'Akurasi']],
+      body: typeTableRows,
+      theme: 'striped',
+      headStyles: { fillColor: [103, 58, 183] },
+      styles: { fontSize: 9 },
+    });
+    y = doc.lastAutoTable.finalY + 8;
+  }
+
+  // Narasi (berbasis data, lihat penjelasan di buildNarrative)
+  const narrativeLines = buildNarrative(item, byType);
+  doc.setFontSize(11);
+  doc.setFont(undefined, 'bold');
+  doc.text('Ringkasan Analisis', 14, y);
+  y += 6;
+  doc.setFont(undefined, 'normal');
+  doc.setFontSize(9.5);
+  narrativeLines.forEach(line => {
+    const split = doc.splitTextToSize('- ' + line, pageWidth - 28);
+    doc.text(split, 14, y);
+    y += split.length * 5 + 2;
+  });
+  y += 4;
+
+  // Rincian jawaban per soal
+  if (y > 240) { doc.addPage(); y = 18; }
+  if ((item.details || []).length > 0) {
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.text('Rincian Jawaban', 14, y);
+    y += 4;
+    const detailRows = item.details.map((q, i) => {
+      const status = q.isCorrect ? 'Benar' : (q.partsTotal ? `Sebagian (${q.partsCorrect}/${q.partsTotal})` : 'Salah');
+      const qText = String(q.question || '').replace(/\$\$?/g, '').slice(0, 65);
+      return [String(i + 1), qText, TYPE_LABELS_PDF[q.type] || q.type, status];
+    });
+    autoTable(doc, {
+      startY: y,
+      head: [['No', 'Soal', 'Tipe', 'Status']],
+      body: detailRows,
+      theme: 'striped',
+      headStyles: { fillColor: [103, 58, 183] },
+      styles: { fontSize: 8, cellPadding: 1.5 },
+      columnStyles: { 0: { cellWidth: 8 }, 1: { cellWidth: 100 }, 2: { cellWidth: 35 }, 3: { cellWidth: 30 } },
+    });
+    y = doc.lastAutoTable.finalY + 8;
+  }
+
+  // Catatan integritas pengerjaan (kalau ada pelanggaran tercatat)
+  if ((item.cheatViolationCount || 0) > 0) {
+    if (y > 235) { doc.addPage(); y = 18; }
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(180, 60, 20);
+    doc.text('Catatan Integritas Pengerjaan', 14, y);
+    doc.setTextColor(30, 41, 59);
+    y += 5;
+    doc.setFontSize(8.5);
+    doc.setFont(undefined, 'normal');
+    const noteSplit = doc.splitTextToSize(
+      'Sistem mendeteksi beberapa aktivitas selama pengerjaan (mis. berpindah tab/aplikasi). Ini adalah sinyal untuk didiskusikan bersama guru, bukan vonis kecurangan otomatis.',
+      pageWidth - 28
+    );
+    doc.text(noteSplit, 14, y);
+    y += noteSplit.length * 4 + 4;
+    const violRows = (item.cheatViolations || []).map((v, i) => [
+      String(i + 1),
+      VIOLATION_LABELS_PDF[v.type] || v.type,
+      v.at ? new Date(v.at).toLocaleTimeString('id-ID') : '-',
+    ]);
+    autoTable(doc, {
+      startY: y,
+      head: [['No', 'Jenis Aktivitas', 'Waktu']],
+      body: violRows,
+      theme: 'striped',
+      headStyles: { fillColor: [239, 68, 68] },
+      styles: { fontSize: 8 },
+    });
+    y = doc.lastAutoTable.finalY + 8;
+  }
+
+  // Footer disclaimer + nomor halaman di setiap halaman
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= pageCount; p++) {
+    doc.setPage(p);
+    doc.setFontSize(7);
+    doc.setTextColor(148, 163, 184);
+    doc.text(
+      'Laporan dihasilkan otomatis dari data hasil pengerjaan kuis (Astro Gemilang). Untuk diskusi lebih lanjut, silakan hubungi guru mata pelajaran terkait.',
+      14, 290
+    );
+    doc.text(`Halaman ${p} dari ${pageCount}`, pageWidth - 14, 290, { align: 'right' });
+  }
+
+  const safeName = (s) => String(s || '').replace(/[^a-z0-9]/gi, '_');
+  doc.save(`Laporan_AstroGemilang_${safeName(item.studentName)}_${safeName(item.modulTitle)}.pdf`);
 };
 
 const CekTugasSiswa = () => {
@@ -627,6 +889,15 @@ const CekTugasSiswa = () => {
                               {editingScore!==item.id && (
                                 <button onClick={()=>{setEditingScore(item.id);setNewScore(item.score?.toString()||'')}} style={s.btnEdit}><Edit3 size={12}/></button>
                               )}
+                              {item.type === 'kuis' && item.details?.length > 0 && (
+                                <button
+                                  onClick={() => generateAstroGemilangReport(item)}
+                                  style={s.btnPdf}
+                                  title="Unduh Laporan PDF (Astro Gemilang) — bisa dikirim ke orang tua"
+                                >
+                                  <Download size={12}/>
+                                </button>
+                              )}
                               <button onClick={()=>handleDelete(item.id,coll)} style={s.btnDel}><Trash2 size={12}/></button>
                             </div>
                           </td>
@@ -684,7 +955,16 @@ const CekTugasSiswa = () => {
                   );
                 })()}
               </div>
-              <button onClick={() => setViewingDetail(null)} style={s.modalCloseBtn}><X size={18}/></button>
+              <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                <button
+                  onClick={() => generateAstroGemilangReport(viewingDetail)}
+                  style={s.btnPdfModal}
+                  title="Unduh Laporan PDF (Astro Gemilang) — bisa dikirim ke orang tua"
+                >
+                  <Sparkles size={13}/> <Download size={13}/> PDF
+                </button>
+                <button onClick={() => setViewingDetail(null)} style={s.modalCloseBtn}><X size={18}/></button>
+              </div>
             </div>
             <div style={s.modalBody}>
               {orderedDetailQuestions.map((q, idx) => {
@@ -789,6 +1069,8 @@ const s = {
   scoreIn: { width:50,border:'2px solid #6366f1',borderRadius:4,textAlign:'center',fontWeight:'bold',fontSize:14,padding:2,outline:'none' },
   btnSave: { padding:'5px 8px',borderRadius:6,border:'none',cursor:'pointer',background:'#10b981',color:'white' },
   btnEdit: { padding:'5px 8px',borderRadius:6,border:'none',cursor:'pointer',background:'#f1f5f9',color:'#475569' },
+  btnPdf: { padding:'5px 8px',borderRadius:6,border:'none',cursor:'pointer',background:'#ede9fe',color:'#7c3aed' },
+  btnPdfModal: { display:'flex',alignItems:'center',gap:5,padding:'6px 12px',borderRadius:8,border:'none',cursor:'pointer',background:'linear-gradient(135deg,#8b5cf6,#7c3aed)',color:'white',fontSize:11,fontWeight:700 },
   btnDel: { padding:'5px 8px',borderRadius:6,border:'none',cursor:'pointer',background:'#fee2e2',color:'#ef4444' },
   empty: { textAlign:'center',padding:60,color:'#94a3b8' },
   footer: { display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:12,fontSize:10,color:'#94a3b8',flexWrap:'wrap',gap:8 },
