@@ -34,6 +34,26 @@ const shuffleArray = (array) => {
 };
 
 // ============================================================
+// 🔥 FIX BUG PENTING: penilaian "Isian Singkat" sebelumnya HARUS SAMA
+// PERSIS (cuma diabaikan besar-kecil huruf & spasi di awal/akhir) --
+// bedanya SATU tanda hubung/tanda baca aja ("satu-satunya" vs "satu
+// satunya") bikin jawaban yang maknanya IDENTIK dianggap SALAH TOTAL.
+// Ini gak adil buat siswa & bikin nilai gak akurat. Sekarang perbandingan
+// dibuat lebih longgar: tanda baca (hubung, titik, koma, dll) dan spasi
+// berlebih diabaikan dulu sebelum dibandingkan -- jadi "satu-satunya",
+// "satu satunya", dan "SATU SATUNYA" semuanya dianggap SAMA. Ini TETAP
+// membandingkan KATA-katanya secara utuh (bukan fuzzy matching yang bisa
+// salah nerima jawaban beda makna) -- cuma mengabaikan format
+// penulisan/tanda baca yang gak substansial.
+const normalizeShortAnswer = (s) => 
+  String(s || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ') // buang semua tanda baca (hubung, titik, koma, dst), sisakan huruf/angka/spasi
+    .replace(/\s+/g, ' ')
+    .trim();
+
+// ============================================================
 // 🔥 RENDER MATH - SUPPORT KATEX
 // ============================================================
 const renderMath = (text) => {
@@ -894,7 +914,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         }
         partialFraction = isCorrect ? 1 : 0;
       } else if (q.type === 'shortanswer') {
-        isCorrect = userAnswer?.toLowerCase().trim() === q.shortAnswer?.toLowerCase().trim();
+        isCorrect = normalizeShortAnswer(userAnswer) === normalizeShortAnswer(q.shortAnswer);
         partialFraction = isCorrect ? 1 : 0;
       } else if (q.type === 'causeeffect') {
         let benar = 0;
@@ -1301,50 +1321,152 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
                     
                     <div style={styles.answerQuestion}>{renderMath(q.question)}</div>
                     
-                    <div style={styles.answerOptions}>
-                      {q.options.map((opt, oIdx) => {
-                        let isCorrectAnswer = false;
-                        let isUserAnswer = false;
-                        
-                        if (q.type === 'multiselect') {
-                          isCorrectAnswer = q.correctAnswers.includes(oIdx);
-                          isUserAnswer = q.userAnswer?.includes(oIdx) || false;
-                        } else if (q.type === 'truefalse') {
-                          // Handle truefalse di detail
-                          return null;
-                        } else {
-                          isCorrectAnswer = oIdx === q.correctAnswer;
-                          isUserAnswer = q.userAnswer === oIdx;
-                        }
-                        
-                        let bgColor = 'transparent';
-                        let textColor = '#1e293b';
-                        
-                        if (isCorrectAnswer) {
-                          bgColor = '#dcfce7';
-                          textColor = '#166534';
-                        }
-                        if (isUserAnswer && !isCorrectAnswer) {
-                          bgColor = '#fee2e2';
-                          textColor = '#dc2626';
-                        }
-                        if (isUserAnswer && isCorrectAnswer) {
-                          bgColor = '#dcfce7';
-                          textColor = '#166534';
-                        }
-                        
-                        return (
-                          <div key={oIdx} style={{...styles.optionRow, background: bgColor, color: textColor}}>
-                            <span style={styles.optionLabel}>{String.fromCharCode(65 + oIdx)}.</span>
-                            <span>{renderMath(opt) || `Opsi ${String.fromCharCode(65 + oIdx)}`}</span>
-                            {isCorrectAnswer && <CheckCircle size={14} color="#10b981" style={{marginLeft: 'auto'}} />}
-                            {isUserAnswer && !isCorrectAnswer && <XCircle size={14} color="#dc2626" style={{marginLeft: 'auto'}} />}
-                          </div>
-                        );
-                      })}
-                    </div>
+                    {/* 🔥 FIX BUG BESAR: sebelumnya bagian ini SELALU nampilin
+                        daftar opsi A/B/C/D generik apa pun tipe soalnya. Buat
+                        tipe yang gak punya data "opsi" beneran (Isian Singkat,
+                        Sebab-Akibat, Menjodohkan, Membaca Teks) itu bikin
+                        siswa lihat placeholder kosong "Opsi A", "Opsi B", dst
+                        -- kelihatan kayak pilihan ganda padahal bukan, bikin
+                        bingung persis kayak dilaporkan. Sekarang tiap tipe
+                        soal punya tampilan pembahasan sendiri yang sesuai. */}
+                    {(q.type === 'multiple' || q.type === 'multiselect') && (
+                      <div style={styles.answerOptions}>
+                        {(q.options || []).map((opt, oIdx) => {
+                          let isCorrectAnswer = false;
+                          let isUserAnswer = false;
+                          
+                          if (q.type === 'multiselect') {
+                            isCorrectAnswer = (q.correctAnswers || []).includes(oIdx);
+                            isUserAnswer = q.userAnswer?.includes(oIdx) || false;
+                          } else {
+                            isCorrectAnswer = oIdx === q.correctAnswer;
+                            isUserAnswer = q.userAnswer === oIdx;
+                          }
+                          
+                          let bgColor = 'transparent';
+                          let textColor = '#1e293b';
+                          
+                          if (isCorrectAnswer) {
+                            bgColor = '#dcfce7';
+                            textColor = '#166534';
+                          }
+                          if (isUserAnswer && !isCorrectAnswer) {
+                            bgColor = '#fee2e2';
+                            textColor = '#dc2626';
+                          }
+                          
+                          return (
+                            <div key={oIdx} style={{...styles.optionRow, background: bgColor, color: textColor}}>
+                              <span style={styles.optionLabel}>{String.fromCharCode(65 + oIdx)}.</span>
+                              <span>{renderMath(opt) || `Opsi ${String.fromCharCode(65 + oIdx)}`}</span>
+                              {isCorrectAnswer && <CheckCircle size={14} color="#10b981" style={{marginLeft: 'auto'}} />}
+                              {isUserAnswer && !isCorrectAnswer && <XCircle size={14} color="#dc2626" style={{marginLeft: 'auto'}} />}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {q.type === 'shortanswer' && (
+                      <div style={{ marginTop: 4, padding: 10, background: '#f0fdf4', borderRadius: 8, fontSize: 12, border: '1px solid #bbf7d0' }}>
+                        🔑 Kunci Jawaban: <b style={{ color: '#166534' }}>{q.shortAnswer || '-'}</b>
+                      </div>
+                    )}
+
+                    {q.type === 'truefalse' && (
+                      <div style={{ marginTop: 4 }}>
+                        {(q.statements || []).map((stmt, sIdx) => {
+                          const userVal = q.userAnswer?.[sIdx];
+                          const correctVal = stmt.isTrue;
+                          const answered = userVal !== undefined;
+                          const rowCorrect = answered && userVal === correctVal;
+                          return (
+                            <div key={sIdx} style={{
+                              display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8,
+                              padding: '8px 10px', borderRadius: 6, marginBottom: 4,
+                              background: rowCorrect ? '#dcfce7' : (answered ? '#fee2e2' : '#f8fafc'),
+                            }}>
+                              <span style={{ fontSize: 12, color: '#1e293b', flex: 1 }}>{renderMath(stmt.text)}</span>
+                              <span style={{ fontSize: 10, fontWeight: 700, color: rowCorrect ? '#166534' : '#dc2626', whiteSpace: 'nowrap' }}>
+                                Jawabmu: {answered ? (userVal ? 'Benar' : 'Salah') : '-'} · Kunci: {correctVal ? 'Benar' : 'Salah'}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {q.type === 'causeeffect' && (
+                      <div style={{ marginTop: 4, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                        {[
+                          { label: 'SEBAB', text: q.cause, userVal: q.userAnswer?.cause, correctVal: q.isCauseTrue },
+                          { label: 'AKIBAT', text: q.effect, userVal: q.userAnswer?.effect, correctVal: q.isEffectTrue },
+                        ].map((part, pIdx) => {
+                          const answered = part.userVal !== undefined;
+                          const rowCorrect = answered && part.userVal === part.correctVal;
+                          return (
+                            <div key={pIdx} style={{ padding: 10, borderRadius: 8, background: rowCorrect ? '#dcfce7' : '#fee2e2' }}>
+                              <div style={{ fontSize: 9, fontWeight: 700, color: '#64748b' }}>{part.label}</div>
+                              <div style={{ fontSize: 12, color: '#1e293b', margin: '2px 0 6px' }}>{renderMath(part.text) || '-'}</div>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: rowCorrect ? '#166534' : '#dc2626' }}>
+                                Jawabmu: {answered ? (part.userVal ? 'Benar' : 'Salah') : '-'} · Kunci: {part.correctVal ? 'Benar' : 'Salah'}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {q.type === 'matching' && (
+                      <div style={{ marginTop: 4 }}>
+                        {(q.matchingPairs || []).map((p, pIdx) => {
+                          const userIdx = q.userAnswer?.[pIdx];
+                          const answered = userIdx !== undefined;
+                          const rowCorrect = answered && userIdx === pIdx;
+                          const userText = answered ? q.matchingPairs?.[userIdx]?.right : null;
+                          return (
+                            <div key={pIdx} style={{
+                              display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8,
+                              padding: '8px 10px', borderRadius: 6, marginBottom: 4, fontSize: 12,
+                              background: rowCorrect ? '#dcfce7' : '#fee2e2',
+                            }}>
+                              <span style={{ color: '#1e293b' }}>{renderMath(p.left)}</span>
+                              <span style={{ fontWeight: 700, color: rowCorrect ? '#166534' : '#dc2626', textAlign: 'right' }}>
+                                {userText || 'Tidak dijawab'}
+                                {!rowCorrect && <span style={{ display: 'block', fontSize: 10, color: '#166534', fontWeight: 600 }}>Kunci: {p.right}</span>}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {q.type === 'reading' && (
+                      <div style={{ marginTop: 4 }}>
+                        {(q.subQuestions || []).map((sq, sIdx) => {
+                          const userIdx = q.userAnswer?.[sIdx];
+                          const answered = userIdx !== undefined;
+                          const rowCorrect = answered && userIdx === sq.correct;
+                          return (
+                            <div key={sIdx} style={{
+                              padding: 10, borderRadius: 8, marginBottom: 6,
+                              background: rowCorrect ? '#f0fdf4' : '#fef2f2',
+                              border: `1px solid ${rowCorrect ? '#bbf7d0' : '#fecaca'}`,
+                            }}>
+                              <div style={{ fontSize: 12, fontWeight: 600, color: '#1e293b', marginBottom: 4 }}>{sIdx + 1}. {renderMath(sq.q)}</div>
+                              <div style={{ fontSize: 11, color: rowCorrect ? '#166534' : '#dc2626' }}>
+                                Jawabmu: {answered ? (sq.options?.[userIdx] || '-') : 'Tidak dijawab'}
+                              </div>
+                              {!rowCorrect && (
+                                <div style={{ fontSize: 11, color: '#166534', marginTop: 2 }}>Kunci: {sq.options?.[sq.correct]}</div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                     
-                    {q.userAnswer !== undefined && (
+                    {q.userAnswer !== undefined && (q.type === 'multiple' || q.type === 'multiselect' || q.type === 'shortanswer') && (
                       <div style={styles.answerUser}>
                         <span>📝 Jawaban Anda: </span>
                         <span style={{ fontWeight: 'bold', color: isCorrect ? '#10b981' : '#dc2626' }}>
@@ -1352,9 +1474,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
                             ? q.userAnswer || 'Tidak dijawab'
                             : q.type === 'multiselect' 
                               ? (q.userAnswer || []).map(i => q.options[i]).join(', ') || 'Tidak dijawab'
-                              : q.type === 'truefalse'
-                                ? 'Lihat tabel di atas'
-                                : q.options[q.userAnswer] || 'Tidak dijawab'}
+                              : q.options[q.userAnswer] || 'Tidak dijawab'}
                         </span>
                       </div>
                     )}
