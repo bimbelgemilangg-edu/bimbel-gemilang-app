@@ -184,6 +184,10 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         }
 
         const nim = studentInfo.nim;
+        // 🔥 Dideklarasikan di scope luar (bukan di dalam blok `if (nim)`)
+        // supaya bisa dibaca lagi nanti oleh pengecekan jadwal buka/tutup
+        // kuis di bawah -- lihat penjelasan lengkap di sana.
+        let existingAnswerFound = false;
         
         if (nim) {
           const qJawaban = query(
@@ -193,6 +197,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           );
           const snapJawaban = await getDocs(qJawaban);
           const existing = snapJawaban.docs.length;
+          existingAnswerFound = existing > 0;
           setAttemptCount(existing);
           
           // 🔥 Kalau belum pernah ada submission FINAL yang tersimpan
@@ -243,7 +248,22 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
 
         const now = new Date();
         
-        if (data.useSchedule) {
+        // 🔥 FIX BUG PENTING (pola sama persis dengan fix "batas maksimal
+        // percobaan" sebelumnya, tapi di tempat berbeda yang kelewat waktu
+        // itu): sebelumnya pengecekan jadwal buka/tutup kuis ini jalan TANPA
+        // PEDULI apakah siswa SUDAH PERNAH mengerjakan kuis ini atau belum.
+        // Begitu tanggal tutup (`quizCloseDate`) sudah lewat, `error` selalu
+        // di-set "Kuis sudah ditutup" -- dan karena render mengecek `error`
+        // LEBIH DULU sebelum `hasExistingAnswer`, siswa yang SUDAH SELESAI
+        // mengerjakan (dan cuma mau BUKA LAGI buat baca ulang pembahasan)
+        // ikut ke-blokir total, gak bisa belajar dari kesalahannya sendiri --
+        // padahal itu justru manfaat utama fitur "Tampilkan pembahasan".
+        // Jadwal buka/tutup itu SEHARUSNYA cuma membatasi kapan siswa boleh
+        // MULAI MENGERJAKAN kuis yang belum pernah dikerjakan -- BUKAN
+        // membatasi akses untuk membaca ulang hasil/pembahasan yang sudah
+        // ada. Sekarang pengecekan ini dilewati sepenuhnya kalau siswa
+        // sudah punya submission tersimpan (`existingAnswerFound`).
+        if (data.useSchedule && !existingAnswerFound) {
           if (data.quizOpenDate) {
             const open = new Date(data.quizOpenDate);
             if (now < open) {
@@ -1319,7 +1339,15 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
                       </div>
                     )}
                     
-                    {q.explanation && (
+                    {/* 🔥 FIX BUG: sebelumnya pembahasan SELALU tampil kalau
+                        `q.explanation` ada isinya, TANPA PEDULI toggle
+                        "Tampilkan pembahasan" yang guru atur di Mode Ujian.
+                        Kalau guru sengaja matiin toggle itu (misal karena
+                        mau bahas manual di kelas dulu sebelum siswa baca
+                        sendiri), pembahasan tetap kebaca -- toggle-nya gak
+                        beneran ngefek. Sekarang dicek dulu `quizData.
+                        showExplanation` sebelum nampilin. */}
+                    {q.explanation && quizData?.showExplanation !== false && (
                       <div style={styles.answerExplanation}>
                         💡 <span style={{ fontWeight: 600 }}>Pembahasan:</span> {renderMath(q.explanation)}
                       </div>
