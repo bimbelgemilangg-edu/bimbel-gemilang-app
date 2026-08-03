@@ -54,11 +54,23 @@ import katex from 'katex';
 // paket lengkap. Kalau field ini belum ada/kosong (siswa lama sebelum
 // fitur ini ada), DEFAULT-nya akses PENUH -- supaya gak ada siswa lama
 // yang tiba-tiba keblokir cuma karena datanya belum sempat diisi.
-const hasSubjectAccess = (enrolledSubjects, modulSubject) => {
-  if (!modulSubject || modulSubject === 'Umum') return true; // konten umum selalu bisa diakses siapa saja
+// 🔥 FIX BUG: sebelumnya perbandingan mapel ini case-sensitive, dan cuma
+// bisa cocokin lewat NAMA (yang teksnya bisa beda-beda tiap kali diketik/
+// dipilih -- mis. "BAHASA INGGRIS SD" vs "Bahasa Inggris SMP", atau ada
+// mapel duplikat kayak "IPS (Pengganti)"). Sekarang COBA COCOKIN LEWAT
+// KODE MAPEL DULU (mis. "MAPEL-004") sebelum jatuh ke nama -- kode itu ID
+// TETAP yang gak pernah berubah, jauh lebih bisa diandalkan. `modulKodeMapel`
+// kadang berisi BEBERAPA kode dipisah koma (guru multi-mapel), dipecah dulu
+// satu-satu sebelum dibandingkan.
+const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
+  if (!modulSubject || modulSubject.toLowerCase().trim() === 'umum') return true; // konten umum selalu bisa diakses siapa saja
   if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return true; // data belum diisi -> jangan blokir (aman buat siswa lama)
-  if (enrolledSubjects.includes('Semua')) return true; // paket lengkap
-  return enrolledSubjects.includes(modulSubject);
+  const norm = (s) => String(s || '').toLowerCase().trim();
+  if (enrolledSubjects.some(s => norm(s) === 'semua')) return true;
+  const modulCodes = String(modulKodeMapel || '').split(',').map(norm).filter(Boolean);
+  if (modulCodes.length > 0 && enrolledSubjects.some(s => modulCodes.includes(norm(s)))) return true;
+  const target = norm(modulSubject);
+  return enrolledSubjects.some(s => norm(s) === target);
 };
 
 // 🔥 BARU: cadangan kalau siswa buka link modul LANGSUNG (dari WhatsApp/
@@ -66,14 +78,19 @@ const hasSubjectAccess = (enrolledSubjects, modulSubject) => {
 // belum sempat keisi. Query & alasan sama persis dengan versi di
 // StudentDashboard.jsx -- `jadwal_bimbel` adalah satu-satunya sumber
 // kebenaran soal mapel yang diambil siswa, ditarik dari SEMUA jadwal
-// sepanjang waktu (bukan cuma hari ini).
+// sepanjang waktu (bukan cuma hari ini). Kode mapel (mapelId) ikut
+// disimpan, bukan cuma nama -- lihat penjelasan di hasSubjectAccess().
 const deriveEnrolledSubjectsFromSchedule = async (studentDocId) => {
   try {
     const q = query(collection(db, "jadwal_bimbel"), where("studentIds", "array-contains", studentDocId));
     const snap = await getDocs(q);
     if (snap.empty) return null;
     const subjects = new Set();
-    snap.docs.forEach(d => { const m = d.data().mapelName; if (m) subjects.add(m); });
+    snap.docs.forEach(d => {
+      const sched = d.data();
+      if (sched.mapelName) subjects.add(sched.mapelName);
+      if (sched.mapelId) subjects.add(sched.mapelId);
+    });
     return subjects.size > 0 ? Array.from(subjects) : null;
   } catch (e) {
     console.error("Gagal menurunkan mapel dari jadwal:", e);
@@ -876,7 +893,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           // 🔥 BARU: buat targeting umum (bukan pilihan manual guru), akses
           // sekarang JUGA harus lolos cek paket mapel -- ini yang mencegah
           // siswa paket 1 mapel otomatis ikut kebuka modul mapel lain.
-          const matchSubject = hasSubjectAccess(enrolledSubjectsRaw, data.subject);
+          const matchSubject = hasSubjectAccess(enrolledSubjectsRaw, data.subject, data.kodeMapel);
           hasAccess = matchKelas && matchProgram && matchSubject;
 
           // 🔥 BARU: kalau alasan gagalnya SPESIFIK karena paket mapel (bukan

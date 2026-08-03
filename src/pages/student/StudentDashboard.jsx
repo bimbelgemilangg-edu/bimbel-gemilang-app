@@ -134,11 +134,29 @@ const AttendanceDonut = ({ hadir, izin, alpha, total }) => {
 // halaman administrasi siswa: `["Matematika"]` buat siswa 1 mapel, atau
 // `["Semua"]` buat paket lengkap. Kalau belum diisi (siswa lama), akses
 // TETAP PENUH -- gak ada yang tiba-tiba keblokir.
-const hasSubjectAccess = (enrolledSubjects, modulSubject) => {
-  if (!modulSubject || modulSubject === 'Umum') return true;
+// 🔥 FIX BUG: sebelumnya perbandingan mapel ini case-sensitive (persis
+// sama besar-kecil hurufnya) -- jadi "Matematika SD" (dari nama mapel di
+// jadwal) dianggap BEDA dari "MATEMATIKA SD" (dari field subject modul,
+// yang kebetulan disimpan huruf besar semua) walau maksudnya mapel yang
+// SAMA PERSIS. Siswa yang udah jelas terjadwal ke mapel itu malah kena
+// tolak akses gara-gara beda kapitalisasi doang.
+//
+// 🔥 BARU: sekarang COBA COCOKIN LEWAT KODE MAPEL DULU (mis. "MAPEL-004")
+// sebelum jatuh ke pencocokan nama. Kode itu ID TETAP yang gak pernah
+// berubah -- jauh lebih bisa diandalkan daripada nama, yang teksnya bisa
+// beda-beda tiap kali diketik/dipilih (lihat data mapel yang berantakan:
+// "BAHASA INGGRIS SD" vs "Bahasa Inggris SMP", dst). `modulKodeMapel`
+// kadang berisi BEBERAPA kode dipisah koma (guru yang ngampu multi-mapel),
+// jadi dipecah dulu satu-satu sebelum dibandingkan.
+const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
+  if (!modulSubject || modulSubject.toLowerCase().trim() === 'umum') return true;
   if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return true;
-  if (enrolledSubjects.includes('Semua')) return true;
-  return enrolledSubjects.includes(modulSubject);
+  const norm = (s) => String(s || '').toLowerCase().trim();
+  if (enrolledSubjects.some(s => norm(s) === 'semua')) return true;
+  const modulCodes = String(modulKodeMapel || '').split(',').map(norm).filter(Boolean);
+  if (modulCodes.length > 0 && enrolledSubjects.some(s => modulCodes.includes(norm(s)))) return true;
+  const target = norm(modulSubject);
+  return enrolledSubjects.some(s => norm(s) === target);
 };
 
 // ============================================================
@@ -172,8 +190,16 @@ const deriveEnrolledSubjectsFromSchedule = async (studentDocId) => {
     if (snap.empty) return null; // belum pernah dijadwalin sama sekali -> jangan blokir
     const subjects = new Set();
     snap.docs.forEach(d => {
-      const mapelName = d.data().mapelName;
-      if (mapelName) subjects.add(mapelName);
+      const sched = d.data();
+      // 🔥 FIX: sebelumnya cuma nyimpen NAMA mapel (mapelName), yang teksnya
+      // bisa beda-beda tiap kali diketik/dipilih (mis. "BAHASA INGGRIS SD"
+      // vs "Bahasa Inggris SMP", atau ada mapel duplikat kayak "IPS
+      // (Pengganti)"). KODE mapel (mapelId, mis. "MAPEL-004") itu ID TETAP
+      // yang gak pernah berubah -- jadi sekarang dua-duanya disimpan, dan
+      // hasSubjectAccess() bisa cocokin pakai KODE dulu (lebih bisa
+      // diandalkan) sebelum jatuh ke pencocokan nama sebagai cadangan.
+      if (sched.mapelName) subjects.add(sched.mapelName);
+      if (sched.mapelId) subjects.add(sched.mapelId);
     });
     return subjects.size > 0 ? Array.from(subjects) : null;
   } catch (e) {
@@ -245,7 +271,7 @@ const StudentDashboard = () => {
     const targetKategori = modul.targetKategori || 'Semua';
     const matchKelas = targetKelas === 'Semua' || targetKelas === studentKelas;
     const matchProgram = targetKategori === 'Semua' || targetKategori === studentProgram;
-    const matchSubject = hasSubjectAccess(studentEnrolledSubjects, modul.subject || modul.kodeMapel || '');
+    const matchSubject = hasSubjectAccess(studentEnrolledSubjects, modul.subject || '', modul.kodeMapel || '');
     return matchKelas && matchProgram && matchSubject;
   };
 

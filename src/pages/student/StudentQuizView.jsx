@@ -65,23 +65,37 @@ const normalizeShortAnswer = (s) =>
 // halaman administrasi siswa: `["Matematika"]` buat siswa 1 mapel, atau
 // `["Semua"]` buat paket lengkap. Kalau belum diisi (siswa lama), akses
 // TETAP PENUH -- gak ada yang tiba-tiba keblokir.
-const hasSubjectAccess = (enrolledSubjects, modulSubject) => {
-  if (!modulSubject || modulSubject === 'Umum') return true;
+// 🔥 FIX BUG: sebelumnya perbandingan mapel ini case-sensitive & cuma bisa
+// cocokin lewat NAMA (yang teksnya bisa beda-beda tiap kali diketik/
+// dipilih). Sekarang COBA COCOKIN LEWAT KODE MAPEL DULU (mis. "MAPEL-004")
+// sebelum jatuh ke nama -- lihat penjelasan lengkap di
+// StudentDashboard.jsx/StudentModuleView.jsx.
+const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
+  if (!modulSubject || modulSubject.toLowerCase().trim() === 'umum') return true;
   if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return true;
-  if (enrolledSubjects.includes('Semua')) return true;
-  return enrolledSubjects.includes(modulSubject);
+  const norm = (s) => String(s || '').toLowerCase().trim();
+  if (enrolledSubjects.some(s => norm(s) === 'semua')) return true;
+  const modulCodes = String(modulKodeMapel || '').split(',').map(norm).filter(Boolean);
+  if (modulCodes.length > 0 && enrolledSubjects.some(s => modulCodes.includes(norm(s)))) return true;
+  const target = norm(modulSubject);
+  return enrolledSubjects.some(s => norm(s) === target);
 };
 
 // 🔥 BARU: cadangan kalau siswa buka link kuis LANGSUNG tanpa lewat
 // Dashboard dulu (cache localStorage belum keisi). Pola sama persis
-// dengan StudentDashboard.jsx / StudentModuleView.jsx.
+// dengan StudentDashboard.jsx / StudentModuleView.jsx. Kode mapel
+// (mapelId) ikut disimpan, bukan cuma nama.
 const deriveEnrolledSubjectsFromSchedule = async (studentDocId) => {
   try {
     const q = query(collection(db, "jadwal_bimbel"), where("studentIds", "array-contains", studentDocId));
     const snap = await getDocs(q);
     if (snap.empty) return null;
     const subjects = new Set();
-    snap.docs.forEach(d => { const m = d.data().mapelName; if (m) subjects.add(m); });
+    snap.docs.forEach(d => {
+      const sched = d.data();
+      if (sched.mapelName) subjects.add(sched.mapelName);
+      if (sched.mapelId) subjects.add(sched.mapelId);
+    });
     return subjects.size > 0 ? Array.from(subjects) : null;
   } catch (e) {
     console.error("Gagal menurunkan mapel dari jadwal:", e);
@@ -307,7 +321,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           if (!effectiveEnrolledSubjects && studentData?.id) {
             effectiveEnrolledSubjects = await deriveEnrolledSubjectsFromSchedule(studentData.id);
           }
-          const matchSubject = hasSubjectAccess(effectiveEnrolledSubjects, data.subject || data.kodeMapel || '');
+          const matchSubject = hasSubjectAccess(effectiveEnrolledSubjects, data.subject || '', data.kodeMapel || '');
           hasQuizAccess = matchKelas && matchProgram && matchSubject;
 
           if (matchKelas && matchProgram && !matchSubject) {
