@@ -1,6 +1,8 @@
 // src/pages/teacher/modul/ManageQuiz.jsx
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { collection, addDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy } from "firebase/firestore";
 import { 
   Plus, Trash2, CheckCircle, ArrowLeft, Save, FileText, X, 
@@ -10,7 +12,7 @@ import {
   Layers, Type, FileUp, Video, Rocket, Sparkles, Loader2,
   List, Table, Grid, Hash, AlignLeft, CheckSquare, Square,
   Edit3, FileQuestion, ArrowLeftRight, Undo2, Redo2,
-  Search, UserPlus
+  Search, UserPlus, Download
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile } from '../../../services/uploadService';
@@ -89,9 +91,300 @@ const emptyQuestion = (idx = 0) => ({
   isCauseTrue: true,
   isEffectTrue: true,
   needsManualAnswer: false,
+  // 🔥 BARU: penanda dari AI Generate ("Generate dari Topik") kalau soal ini
+  // sebaiknya dilengkapi gambar/diagram akurat oleh guru. Kosong/false untuk
+  // soal yang dibuat manual (gak relevan).
+  needsImage: false,
+  imageHint: '',
   optionsAreImages: false,
   matchingPairs: [{ left: '', right: '' }, { left: '', right: '' }]
 });
+
+// ============================================================
+// 🔥 BARU: DOWNLOAD SOAL & JAWABAN LENGKAP (PDF)
+// ============================================================
+// KENAPA DITAMBAHKAN: kasus nyata -- Guru A gak bisa hadir buat bahas
+// pembahasan try out yang dia bikin sendiri, digantikan Guru C. Daripada
+// Guru C harus masuk akun Guru A (risiko gak sengaja ubah/hapus data guru
+// lain), Guru A (atau admin) tinggal download PDF ini SEKALI dan kirim
+// lewat WhatsApp/email ke Guru C -- isinya semua soal, opsi, KUNCI
+// JAWABAN, dan pembahasan, dari SEMUA tipe soal (bukan cuma pilihan
+// ganda). Guru C bisa langsung pegang PDF ini pas ngajar tanpa pernah
+// nyentuh dashboard Guru A sama sekali.
+const TYPE_LABELS_PDF_QUIZ = {
+  multiple: 'Pilihan Ganda',
+  truefalse: 'Tabel Benar/Salah',
+  multiselect: 'Pilih Lebih dari Satu',
+  reading: 'Membaca Teks',
+  shortanswer: 'Isian Singkat',
+  causeeffect: 'Sebab Akibat',
+  matching: 'Menjodohkan',
+};
+
+// 🔥 Coba unduh gambar & ubah jadi data URI buat ditempel ke PDF. Gambar
+// tersimpan di Firebase Storage, dan environment ini sudah pernah
+// kejadian gagal load gambar gara-gara CORS -- jadi ini WAJIB dibungkus
+// try/catch. Kalau gagal, PDF tetap lanjut jalan (skip gambar itu, kasih
+// catatan link-nya) daripada bikin seluruh proses download gagal total.
+const loadImageForPdf = async (url) => {
+  if (!url) return null;
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    const dims = await new Promise((resolve) => {
+      const img = new window.Image();
+      img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+      img.onerror = () => resolve({ w: 120, h: 90 });
+      img.src = dataUrl;
+    });
+    return { dataUrl, ...dims };
+  } catch (e) {
+    console.error('Gagal muat gambar buat PDF:', url, e);
+    return null;
+  }
+};
+
+const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizMode, difficulty) => {
+  const validQuestions = questions.filter(q => q.q.trim() || q.qImage);
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginX = 14;
+  const contentWidth = pageWidth - marginX * 2;
+  let y = 20;
+
+  const ensureSpace = (needed) => {
+    if (y + needed > pageHeight - 18) {
+      doc.addPage();
+      y = 20;
+    }
+  };
+
+  // Header
+  doc.setFillColor(103, 58, 183);
+  doc.rect(0, 0, pageWidth, 24, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.setFont(undefined, 'bold');
+  doc.text('SOAL & KUNCI JAWABAN LENGKAP', marginX, 11);
+  doc.setFontSize(9);
+  doc.setFont(undefined, 'normal');
+  doc.text('Bimbel Gemilang - Dokumen internal guru (bukan untuk siswa)', marginX, 18);
+  doc.setTextColor(30, 41, 59);
+  y = 32;
+
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.text(quizTitle || 'Kuis', marginX, y);
+  y += 6;
+  doc.setFontSize(9);
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Mapel: ${quizSubject || '-'}  |  Jumlah soal: ${validQuestions.length}  |  Tingkat: ${difficulty || '-'}  |  Dibuat: ${new Date().toLocaleDateString('id-ID')}`, marginX, y);
+  doc.setTextColor(30, 41, 59);
+  y += 8;
+
+  for (let idx = 0; idx < validQuestions.length; idx++) {
+    const q = validQuestions[idx];
+    ensureSpace(20);
+
+    // Nomor + tipe soal
+    doc.setFillColor(243, 232, 255);
+    doc.roundedRect(marginX, y - 4, 28, 6, 2, 2, 'F');
+    doc.setFontSize(8.5);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(103, 58, 183);
+    doc.text(`Soal ${idx + 1}`, marginX + 3, y);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(100, 116, 139);
+    doc.text(TYPE_LABELS_PDF_QUIZ[q.type] || q.type, marginX + 32, y);
+    doc.setTextColor(30, 41, 59);
+    y += 6;
+
+    // Teks soal (rumus $...$ ditampilkan apa adanya sebagai teks biasa di PDF)
+    doc.setFontSize(10.5);
+    doc.setFont(undefined, 'bold');
+    const qLines = doc.splitTextToSize(q.q || '(soal bergambar)', contentWidth);
+    ensureSpace(qLines.length * 5 + 4);
+    doc.text(qLines, marginX, y);
+    y += qLines.length * 5 + 2;
+    doc.setFont(undefined, 'normal');
+
+    // Gambar soal (kalau ada)
+    if (q.qImage) {
+      const img = await loadImageForPdf(q.qImage);
+      if (img) {
+        const maxW = 80, maxH = 60;
+        let w = img.w, h = img.h;
+        const scale = Math.min(maxW / w, maxH / h, 1);
+        w *= scale; h *= scale;
+        ensureSpace(h + 4);
+        try {
+          doc.addImage(img.dataUrl, 'PNG', marginX, y, w, h);
+          y += h + 4;
+        } catch (e) {
+          doc.setFontSize(8);
+          doc.setTextColor(148, 163, 184);
+          doc.text('[Gambar gagal ditempel — buka link di editor kuis]', marginX, y);
+          doc.setTextColor(30, 41, 59);
+          y += 5;
+        }
+      } else {
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.text('[Gambar tidak dapat dimuat — cek langsung di editor kuis]', marginX, y);
+        doc.setTextColor(30, 41, 59);
+        y += 5;
+      }
+    }
+
+    doc.setFontSize(9.5);
+
+    // ===== BODY PER TIPE SOAL =====
+    if (q.type === 'multiple') {
+      if (q.optionsAreImages) {
+        for (let oi = 0; oi < q.options.length; oi++) {
+          const letter = String.fromCharCode(65 + oi);
+          const isCorrect = q.correct === oi;
+          ensureSpace(10);
+          doc.setFont(undefined, isCorrect ? 'bold' : 'normal');
+          doc.setTextColor(isCorrect ? 16 : 30, isCorrect ? 129 : 41, isCorrect ? 76 : 59);
+          doc.text(`${letter}. ${isCorrect ? '✔ KUNCI JAWABAN' : '(gambar opsi — lihat di editor kuis)'}`, marginX + 3, y);
+          doc.setTextColor(30, 41, 59);
+          y += 5;
+        }
+      } else {
+        (q.options || []).forEach((opt, oi) => {
+          const letter = String.fromCharCode(65 + oi);
+          const isCorrect = q.correct === oi;
+          const lines = doc.splitTextToSize(`${letter}. ${opt || '-'}${isCorrect ? '   ✔ KUNCI' : ''}`, contentWidth - 6);
+          ensureSpace(lines.length * 5);
+          doc.setFont(undefined, isCorrect ? 'bold' : 'normal');
+          if (isCorrect) doc.setTextColor(16, 129, 76); else doc.setTextColor(51, 65, 85);
+          doc.text(lines, marginX + 3, y);
+          doc.setTextColor(30, 41, 59);
+          y += lines.length * 5;
+        });
+      }
+    } else if (q.type === 'multiselect') {
+      (q.options || []).forEach((opt, oi) => {
+        const letter = String.fromCharCode(65 + oi);
+        const isCorrect = (q.correctAnswers || []).includes(oi);
+        const lines = doc.splitTextToSize(`${letter}. ${opt || '-'}${isCorrect ? '   ✔ KUNCI' : ''}`, contentWidth - 6);
+        ensureSpace(lines.length * 5);
+        doc.setFont(undefined, isCorrect ? 'bold' : 'normal');
+        if (isCorrect) doc.setTextColor(16, 129, 76); else doc.setTextColor(51, 65, 85);
+        doc.text(lines, marginX + 3, y);
+        doc.setTextColor(30, 41, 59);
+        y += lines.length * 5;
+      });
+    } else if (q.type === 'truefalse') {
+      (q.statements || []).forEach((stmt, si) => {
+        const lines = doc.splitTextToSize(`${si + 1}. ${stmt.text || '-'}   [Kunci: ${stmt.isTrue ? 'BENAR' : 'SALAH'}]`, contentWidth - 6);
+        ensureSpace(lines.length * 5);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(51, 65, 85);
+        doc.text(lines, marginX + 3, y);
+        doc.setTextColor(30, 41, 59);
+        y += lines.length * 5;
+      });
+    } else if (q.type === 'shortanswer') {
+      ensureSpace(6);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(16, 129, 76);
+      doc.text(`Kunci Jawaban: ${q.shortAnswer || '-'}`, marginX + 3, y);
+      doc.setTextColor(30, 41, 59);
+      y += 6;
+    } else if (q.type === 'causeeffect') {
+      ensureSpace(12);
+      doc.setFont(undefined, 'normal');
+      const causeLines = doc.splitTextToSize(`SEBAB: ${q.cause || '-'}   [${q.isCauseTrue ? 'BENAR' : 'SALAH'}]`, contentWidth - 6);
+      doc.text(causeLines, marginX + 3, y);
+      y += causeLines.length * 5;
+      const effectLines = doc.splitTextToSize(`AKIBAT: ${q.effect || '-'}   [${q.isEffectTrue ? 'BENAR' : 'SALAH'}]`, contentWidth - 6);
+      ensureSpace(effectLines.length * 5);
+      doc.text(effectLines, marginX + 3, y);
+      y += effectLines.length * 5;
+    } else if (q.type === 'matching') {
+      (q.matchingPairs || []).forEach((p, pi) => {
+        const lines = doc.splitTextToSize(`${pi + 1}. ${p.left || '-'}  →  ${p.right || '-'}`, contentWidth - 6);
+        ensureSpace(lines.length * 5);
+        doc.text(lines, marginX + 3, y);
+        y += lines.length * 5;
+      });
+    } else if (q.type === 'reading') {
+      if (q.readingText) {
+        ensureSpace(10);
+        doc.setFont(undefined, 'italic');
+        doc.setTextColor(100, 116, 139);
+        const rLines = doc.splitTextToSize(q.readingText, contentWidth - 6);
+        doc.text(rLines, marginX + 3, y);
+        doc.setTextColor(30, 41, 59);
+        y += rLines.length * 5 + 2;
+      }
+      (q.subQuestions || []).forEach((sq, sqi) => {
+        doc.setFont(undefined, 'bold');
+        const sqLines = doc.splitTextToSize(`${sqi + 1}. ${sq.q || '-'}`, contentWidth - 6);
+        ensureSpace(sqLines.length * 5);
+        doc.text(sqLines, marginX + 3, y);
+        y += sqLines.length * 5;
+        doc.setFont(undefined, 'normal');
+        (sq.options || []).forEach((opt, oi) => {
+          const letter = String.fromCharCode(65 + oi);
+          const isCorrect = sq.correct === oi;
+          const lines = doc.splitTextToSize(`   ${letter}. ${opt || '-'}${isCorrect ? '  ✔ KUNCI' : ''}`, contentWidth - 10);
+          ensureSpace(lines.length * 5);
+          if (isCorrect) doc.setTextColor(16, 129, 76); else doc.setTextColor(51, 65, 85);
+          doc.text(lines, marginX + 6, y);
+          doc.setTextColor(30, 41, 59);
+          y += lines.length * 5;
+        });
+      });
+    }
+
+    // Pembahasan
+    if (q.explanation) {
+      ensureSpace(10);
+      y += 1;
+      doc.setFillColor(238, 242, 255);
+      const expLines = doc.splitTextToSize(`💡 Pembahasan: ${q.explanation}`, contentWidth - 8);
+      const boxH = expLines.length * 4.6 + 4;
+      ensureSpace(boxH);
+      doc.roundedRect(marginX, y - 3, contentWidth, boxH, 2, 2, 'F');
+      doc.setFontSize(8.5);
+      doc.setTextColor(67, 56, 202);
+      doc.text(expLines, marginX + 3, y + 1);
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(9.5);
+      y += boxH + 2;
+    }
+
+    // Separator antar soal
+    y += 3;
+    doc.setDrawColor(226, 232, 240);
+    doc.line(marginX, y, pageWidth - marginX, y);
+    y += 6;
+  }
+
+  // Footer di semua halaman
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= pageCount; p++) {
+    doc.setPage(p);
+    doc.setFontSize(7);
+    doc.setTextColor(148, 163, 184);
+    doc.text('Dokumen internal guru — berisi kunci jawaban lengkap, JANGAN dibagikan ke siswa.', marginX, pageHeight - 8);
+    doc.text(`Halaman ${p}/${pageCount}`, pageWidth - marginX, pageHeight - 8, { align: 'right' });
+  }
+
+  const safeName = String(quizTitle || 'Kuis').replace(/[^a-z0-9]/gi, '_');
+  doc.save(`Soal_Jawaban_${safeName}.pdf`);
+};
 
 // ============================================================
 // MAIN COMPONENT
@@ -110,6 +403,11 @@ const ManageQuiz = () => {
   
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [loading, setLoading] = useState(false);
+  // 🔥 BARU: status terpisah buat tombol download PDF soal+jawaban --
+  // dipisah dari `loading` (yang dipakai buat simpan kuis) karena
+  // proses ambil gambar buat PDF makan waktu sendiri & gak boleh ke-mix
+  // sama proses simpan.
+  const [pdfDownloading, setPdfDownloading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadTarget, setUploadTarget] = useState(null);
@@ -493,6 +791,8 @@ const ManageQuiz = () => {
         isCauseTrue: q.isCauseTrue !== undefined ? q.isCauseTrue : true,
         isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true,
         matchingPairs: q.matchingPairs && q.matchingPairs.length ? q.matchingPairs : [{ left: '', right: '' }, { left: '', right: '' }],
+        needsImage: q.needsImage || false,
+        imageHint: q.imageHint || '',
         needsManualAnswer: false
       })));
     }
@@ -793,6 +1093,11 @@ const ManageQuiz = () => {
                 ⚠️ Perlu tandai jawaban
               </span>
             )}
+            {item.needsImage && !item.qImage && (
+              <span style={{ fontSize: 9, fontWeight: 700, color: '#92400e', background: '#fef3c7', border: '1px solid #f59e0b', padding: '2px 8px', borderRadius: 10 }}>
+                💡 AI: sebaiknya pakai gambar
+              </span>
+            )}
             {isEditing && (
               <span style={{ fontSize: 9, color: '#3b82f6', fontWeight: 600, background: '#eef2ff', padding: '2px 8px', borderRadius: 4 }}>
                 ✏️ Edit
@@ -841,6 +1146,30 @@ const ManageQuiz = () => {
                 ))}
               </div>
             </div>
+
+            {/* 🔥 BARU: kalau soal ini dihasilkan AI ("Generate dari Topik") dan
+                AI menandai soal ini idealnya pakai gambar/diagram (mis. soal
+                pola bangun ruang, diagram sel, grafik), tampilkan sinyal jelas
+                di sini -- supaya guru gampang lihat soal mana yang perlu
+                dilengkapi gambar akurat SENDIRI. AI sengaja TIDAK disuruh
+                menggambar diagramnya sendiri -- untuk konten sains/matematika
+                yang butuh presisi (posisi organel sel, struktur nefron, dll),
+                AI gambar bisa salah tanpa guru sadar, dan itu bahaya buat
+                akurasi materi ajar. Jadi AI cuma "kasih tau", guru yang
+                lengkapi gambarnya (dari bank soal resmi/sumber terpercaya).*/}
+            {item.needsImage && !item.qImage && (
+              <div style={{
+                marginBottom: 10, padding: '10px 12px', background: '#fffbeb',
+                border: '1px solid #fde68a', borderRadius: 8, fontSize: 11, color: '#92400e',
+                display: 'flex', gap: 8, alignItems: 'flex-start'
+              }}>
+                <span style={{ flexShrink: 0 }}>💡</span>
+                <span>
+                  <b>AI menyarankan soal ini pakai gambar/diagram</b>
+                  {item.imageHint ? `: ${item.imageHint}` : '.'} Upload gambar yang AKURAT (dari bank soal/sumber terpercaya) lewat tombol "Upload Gambar" di bawah ini — AI sengaja tidak menggambar sendiri supaya diagram sains/matematika tetap tepat.
+                </span>
+              </div>
+            )}
 
             {/* Upload Gambar Soal */}
             <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -1545,6 +1874,13 @@ const ManageQuiz = () => {
           isCauseTrue: q.type === 'causeeffect' ? !!q.isCauseTrue : true,
           isEffectTrue: q.type === 'causeeffect' ? !!q.isEffectTrue : true,
           matchingPairs: q.type === 'matching' ? (q.matchingPairs || []) : [],
+          // 🔥 BARU: simpan sinyal "AI menyarankan gambar" supaya kalau guru
+          // buka lagi kuis ini nanti buat diedit, hint-nya masih ada
+          // (bukan cuma muncul sekali pas baru di-generate lalu hilang).
+          // Otomatis gak lagi relevan begitu guru sudah upload gambarnya
+          // sendiri (dicek via `!item.qImage` di tampilan, bukan di sini).
+          needsImage: q.needsImage || false,
+          imageHint: q.imageHint || '',
         })),
         totalQuestions: valid.length,
         deadlineQuiz: null, // field lama, sudah tidak dipakai (lihat catatan di Identitas Kuis)
@@ -1891,6 +2227,26 @@ const ManageQuiz = () => {
             }}
           >
             <FileText size={14} /> Import dari Word
+          </button>
+          <button
+            onClick={async () => {
+              if (!quizTitle) return alert("❌ Isi dulu judul kuisnya sebelum download.");
+              const hasContent = questions.some(q => q.q.trim() || q.qImage);
+              if (!hasContent) return alert("❌ Belum ada soal untuk didownload.");
+              setPdfDownloading(true);
+              try {
+                await generateQuizAnswerKeyPDF(quizTitle, quizSubject, questions, quizMode, difficulty);
+              } catch (err) {
+                alert("❌ Gagal membuat PDF: " + err.message);
+              }
+              setPdfDownloading(false);
+            }}
+            disabled={pdfDownloading}
+            title="Unduh semua soal + kunci jawaban lengkap sebagai PDF — buat dikirim ke guru pengganti tanpa perlu masuk akun ini"
+            style={{ background: '#0d9488', color: 'white', border: 'none', padding: '8px 14px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: pdfDownloading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 4, opacity: pdfDownloading ? 0.7 : 1 }}
+          >
+            {pdfDownloading ? <Loader2 size={14} className="spin" /> : <Download size={14}/>}
+            {pdfDownloading ? 'Menyiapkan...' : 'Soal + Jawaban (PDF)'}
           </button>
           <button onClick={handlePreviewQuiz} style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '8px 14px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
             <Eye size={14}/> Preview
