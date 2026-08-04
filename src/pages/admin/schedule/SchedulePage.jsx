@@ -55,6 +55,23 @@ const EVENT_COLORS = [
   '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e'
 ];
 
+// ============================================================
+// 🔥 BARU: PENGECEKAN BENTROK JADWAL
+// ============================================================
+// KENAPA DITAMBAHKAN: sebelumnya sistem sama sekali tidak memberi
+// peringatan kalau admin (sengaja atau tidak sengaja) bikin jadwal yang
+// bentrok -- ruangan yang sama dipakai 2 kelas di jam yang sama, guru
+// yang sama dijadwalkan ngajar 2 tempat sekaligus, atau siswa yang sama
+// dimasukkan ke 2 kelas berbeda di jam yang tumpang tindih. Ini murni
+// PERINGATAN (bukan pemblokiran total) -- ada kalanya bentrok itu memang
+// disengaja (mis. kelas gabungan), jadi admin tetap bisa lanjut menyimpan
+// setelah membaca peringatannya.
+const timesOverlap = (startA, endA, startB, endB) => {
+  // Format waktu "HH:MM" bisa dibandingkan langsung sebagai string
+  // (perbandingan leksikografis) karena selalu 2 digit jam + 2 digit menit.
+  return startA < endB && startB < endA;
+};
+
 const SchedulePage = () => {
   // ============================================================
   // STATES
@@ -94,6 +111,12 @@ const SchedulePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activePlanet, setActivePlanet] = useState("");
   const [editId, setEditId] = useState(null);
+  // 🔥 BARU: kalau jadwal yang lagi diedit itu bagian dari seri "Otomatis 4
+  // Pekan", `editingSeriesId` menyimpan penanda seri-nya, dan
+  // `applyToSeries` adalah pilihan admin: terapkan perubahan cuma ke sesi
+  // ini, atau ke SEMUA sesi (4 minggu) yang berbagi seri yang sama.
+  const [editingSeriesId, setEditingSeriesId] = useState(null);
+  const [applyToSeries, setApplyToSeries] = useState(false);
   
   // Form
   const defaultForm = {
@@ -173,6 +196,36 @@ const SchedulePage = () => {
 
   const getCustomEvent = (dateStr) => {
     return customEvents.find(e => e.date === dateStr);
+  };
+
+  // ============================================================
+  // 🔥 BARU: CARI BENTROK JADWAL (ruangan / guru / siswa)
+  // ============================================================
+  // Dipanggil sebelum menyimpan (create ATAU edit). `excludeId` dipakai
+  // supaya jadwal yang lagi diedit gak dianggap "bentrok sama dirinya
+  // sendiri". Hasilnya array deskripsi bentrok (bisa kosong = aman).
+  const findScheduleConflicts = (targetDateStr, start, end, planet, teacherId, selectedStudentIds, excludeId) => {
+    const conflicts = [];
+    schedules.forEach(s => {
+      if (s.id === excludeId) return;
+      if (s.dateStr !== targetDateStr) return;
+      if (!s.start || !s.end) return;
+      if (!timesOverlap(start, end, s.start, s.end)) return;
+
+      if (s.planet === planet) {
+        conflicts.push(`🪐 Ruang ${planet} sudah dipakai jam ${s.start}-${s.end} (${s.mapelName || s.title || 'sesi lain'}, ${s.teacherName || '-'})`);
+      }
+      if (teacherId && s.teacherId === teacherId) {
+        conflicts.push(`👨‍🏫 ${s.teacherName || 'Guru ini'} sudah punya kelas jam ${s.start}-${s.end} di Ruang ${s.planet}`);
+      }
+      const sStudentIds = s.studentIds || (s.students || []).map(st => st.id);
+      const overlapIds = sStudentIds.filter(id => selectedStudentIds.includes(id));
+      if (overlapIds.length > 0) {
+        const names = (s.students || []).filter(st => overlapIds.includes(st.id)).map(st => st.nama);
+        conflicts.push(`👥 ${names.join(', ') || (overlapIds.length + ' siswa')} sudah ada jadwal jam ${s.start}-${s.end} di Ruang ${s.planet}`);
+      }
+    });
+    return conflicts;
   };
 
   // ============================================================
@@ -379,6 +432,9 @@ const SchedulePage = () => {
     setActivePlanet(planet);
     setStudentSearch("");
     setStudentFilterKelas("Semua");
+    // 🔥 BARU: reset & isi ulang status seri tiap kali modal dibuka
+    setApplyToSeries(false);
+    setEditingSeriesId(isEdit && item ? (item.seriesId || null) : null);
     
     if (isEdit && item) {
       setEditId(item.id);
@@ -479,6 +535,21 @@ const SchedulePage = () => {
         };
       });
 
+      // 🔥 BARU: cek bentrok SEBELUM menyimpan. Ini cuma PERINGATAN (admin
+      // tetap bisa lanjut) -- ada kalanya bentrok itu memang disengaja.
+      const conflicts = findScheduleConflicts(
+        targetDateStr, formData.start, formData.end, activePlanet,
+        formData.teacherId, studentsFullData.map(s => s.id), editId
+      );
+      if (conflicts.length > 0) {
+        const proceed = window.confirm(
+          "⚠️ Terdeteksi kemungkinan BENTROK jadwal:\n\n" +
+          conflicts.map(c => "• " + c).join("\n") +
+          "\n\nTetap simpan jadwal ini?"
+        );
+        if (!proceed) return;
+      }
+
       const scheduleData = {
         planet: activePlanet,
         program: formData.program,
@@ -509,18 +580,39 @@ const SchedulePage = () => {
       };
 
       if (editId) {
-        // 🔥 UPDATE JADWAL - PASTIKAN STUDENTS TERUPDATE
-        await updateDoc(doc(db, "jadwal_bimbel", editId), scheduleData);
-        showAlert("✅ Jadwal berhasil diperbarui!");
+        // 🔥 BARU: kalau jadwal ini bagian dari seri 4-mingguan DAN admin
+        // centang "terapkan ke semua sesi", update SEMUA dokumen yang
+        // berbagi seriesId yang sama -- KECUALI `dateStr`, yang harus tetap
+        // beda-beda per sesi (masing-masing tetap di harinya sendiri).
+        // Ini yang jadi jawaban buat "mau ganti ruangan/guru/kelas buat
+        // sekaligus 4 minggu, tanpa hapus satu-satu".
+        if (applyToSeries && editingSeriesId) {
+          const seriesQuery = query(collection(db, "jadwal_bimbel"), where("seriesId", "==", editingSeriesId));
+          const seriesSnap = await getDocs(seriesQuery);
+          const { dateStr: _omitDate, ...seriesUpdateData } = scheduleData;
+          const batch = writeBatch(db);
+          seriesSnap.docs.forEach(d => batch.update(d.ref, seriesUpdateData));
+          await batch.commit();
+          showAlert(`✅ ${seriesSnap.docs.length} sesi dalam seri berhasil diperbarui!`);
+        } else {
+          // 🔥 UPDATE JADWAL - PASTIKAN STUDENTS TERUPDATE
+          await updateDoc(doc(db, "jadwal_bimbel", editId), scheduleData);
+          showAlert("✅ Jadwal berhasil diperbarui!");
+        }
       } else {
         // Handle repeat
         if (formData.repeat === 'Monthly') {
+          // 🔥 BARU: `seriesId` menandai keempat sesi ini sebagai SATU
+          // PAKET, supaya nanti bisa di-edit/dihapus sekaligus (bukan
+          // satu-satu) lewat pilihan "terapkan ke semua sesi di seri ini".
+          const seriesId = doc(collection(db, "jadwal_bimbel")).id;
           const batch = writeBatch(db);
           let tempDate = new Date(selectedDate);
           for (let i = 0; i < 4; i++) {
             const newRef = doc(collection(db, "jadwal_bimbel"));
             batch.set(newRef, {
               ...scheduleData,
+              seriesId,
               dateStr: getSmartDateString(tempDate),
               createdAt: serverTimestamp(),
               attendance_list: []
@@ -548,12 +640,45 @@ const SchedulePage = () => {
   };
 
   // ============================================================
-  // 🔥 HANDLER HAPUS JADWAL - AMAN
+  // 🔥 HANDLER HAPUS JADWAL - AMAN + SADAR SERI 4 MINGGU
   // ============================================================
-  const handleDeleteSchedule = async (scheduleId) => {
-    if (!scheduleId) {
+  // 🔥 FIX FITUR: sebelumnya cuma bisa hapus SATU sesi, walaupun sesi itu
+  // bagian dari paket "Otomatis 4 Pekan" -- admin harus hapus 4x manual
+  // kalau mau bersihkan semuanya. Sekarang, kalau sesi ini punya
+  // `seriesId`, admin ditanya dulu: mau hapus SATU ini aja, atau SEMUA
+  // sesi di seri yang sama (4 minggu).
+  const handleDeleteSchedule = async (item) => {
+    if (!item?.id) {
       showAlert("❌ ID jadwal tidak valid!");
       return;
+    }
+
+    if (item.seriesId) {
+      const deleteWholeSeries = window.confirm(
+        "📅 Jadwal ini bagian dari seri berulang (4 minggu).\n\n" +
+        "Klik OK untuk hapus SEMUA sesi di seri ini (4 minggu sekaligus).\n" +
+        "Klik Cancel untuk pilihan hapus SATU sesi ini saja."
+      );
+      if (deleteWholeSeries) {
+        if (!window.confirm("⚠️ Yakin hapus SEMUA sesi (4 minggu) dalam seri ini?\n\nℹ️ Riwayat kehadiran yang sudah tercatat tetap aman, tidak ikut terhapus.")) {
+          return;
+        }
+        try {
+          const seriesQuery = query(collection(db, "jadwal_bimbel"), where("seriesId", "==", item.seriesId));
+          const seriesSnap = await getDocs(seriesQuery);
+          const batch = writeBatch(db);
+          seriesSnap.docs.forEach(d => batch.delete(d.ref));
+          await batch.commit();
+          setSchedules(prev => prev.filter(s => s.seriesId !== item.seriesId));
+          showAlert(`✅ ${seriesSnap.docs.length} sesi dalam seri berhasil dihapus!`);
+          await fetchData();
+        } catch (error) {
+          console.error("Error deleting series:", error);
+          showAlert("❌ Gagal menghapus seri: " + error.message);
+        }
+        return;
+      }
+      // Kalau admin klik Cancel di atas -> lanjut ke alur hapus satu sesi di bawah
     }
     
     // 🔥 FIX BUG: pesan konfirmasi ini SEBELUMNYA BOHONG — bilang "data
@@ -568,8 +693,8 @@ const SchedulePage = () => {
     }
     
     try {
-      await deleteDoc(doc(db, "jadwal_bimbel", scheduleId));
-      setSchedules(prev => prev.filter(s => s.id !== scheduleId));
+      await deleteDoc(doc(db, "jadwal_bimbel", item.id));
+      setSchedules(prev => prev.filter(s => s.id !== item.id));
       showAlert("✅ Jadwal berhasil dihapus! (Siswa tetap aman)");
       await fetchData();
     } catch (error) {
@@ -970,6 +1095,11 @@ const SchedulePage = () => {
                         <div style={styles.scheduleTop}>
                           <span style={styles.timeBadge}>⏰ {item.start} - {item.end}</span>
                           <span style={styles.programBadge(item.program)}>{item.program}</span>
+                          {item.seriesId && (
+                            <span style={styles.seriesBadge} title="Bagian dari seri 4 minggu">
+                              <RefreshCw size={9} /> 4 Minggu
+                            </span>
+                          )}
                         </div>
                         <div style={styles.scheduleTitle}>{item.title || "Materi Umum"}</div>
                         
@@ -1011,7 +1141,7 @@ const SchedulePage = () => {
                           <button onClick={() => setDetailSchedule(item)} style={styles.btnDetailSm}>
                             <Eye size={12} /> Detail
                           </button>
-                          <button onClick={() => handleDeleteSchedule(item.id)} style={styles.btnDeleteSm}>
+                          <button onClick={() => handleDeleteSchedule(item)} style={styles.btnDeleteSm}>
                             <Trash2 size={12} /> Hapus
                           </button>
                         </div>
@@ -1096,6 +1226,9 @@ const SchedulePage = () => {
             <div style={styles.detailRow}><span>⏰ Waktu</span><strong>{detailSchedule.start} - {detailSchedule.end}</strong></div>
             <div style={styles.detailRow}><span>📅 Tanggal</span><strong>{detailSchedule.dateStr}</strong></div>
             <div style={styles.detailRow}><span>📚 Program</span><strong>{detailSchedule.program} / {detailSchedule.level}</strong></div>
+            {detailSchedule.seriesId && (
+              <div style={styles.detailRow}><span>🔄 Seri</span><strong>Bagian dari jadwal 4 minggu</strong></div>
+            )}
             
             <div style={styles.detailRow}>
               <span>👨‍🏫 Guru</span>
@@ -1432,6 +1565,32 @@ const SchedulePage = () => {
               </div>
 
               <form onSubmit={handleSubmitSchedule} style={styles.modalBody}>
+                {/* 🔥 BARU: kalau jadwal yang diedit bagian dari seri 4
+                    minggu, tampilkan pilihan lingkup perubahan di paling
+                    atas -- supaya admin sadar dulu sebelum ubah field lain
+                    di bawahnya. */}
+                {editId && editingSeriesId && (
+                  <div style={styles.seriesNotice}>
+                    <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={applyToSeries}
+                        onChange={e => setApplyToSeries(e.target.checked)}
+                        style={{ marginTop: 2, width: 16, height: 16, flexShrink: 0 }}
+                      />
+                      <span style={{ fontSize: 12, color: '#78350f' }}>
+                        <b>🔄 Jadwal ini bagian dari seri 4 minggu.</b> Terapkan perubahan ke SEMUA sesi di seri ini?
+                        <br />
+                        <span style={{ fontSize: 11, color: '#92400e' }}>
+                          {applyToSeries
+                            ? 'Ruangan/guru/mapel/siswa/jam akan diubah di keempat sesi sekaligus (tanggal masing-masing tetap seperti semula).'
+                            : 'Kalau tidak dicentang, perubahan cuma berlaku untuk sesi tanggal ini saja.'}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                )}
+
                 <div style={styles.modalRow}>
                   <div style={styles.formGroup}>
                     <label style={styles.formLabel}>⏰ Mulai</label>
@@ -1460,7 +1619,7 @@ const SchedulePage = () => {
                 </div>
 
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>👨‍🏫 Guru</label>
+                  <label style={styles.formLabel}>👨‍🏫 Guru <span style={{ fontWeight: 400, color: '#94a3b8' }}>(guru berhalangan? ganti di sini, siswa & materi tidak terpengaruh)</span></label>
                   <select required value={formData.teacherId} onChange={e => handleTeacherSelect(e.target.value)} style={styles.formSelect}>
                     <option value="">-- Pilih Guru --</option>
                     {availableTeachers.map(t => (
@@ -1687,6 +1846,9 @@ const styles = {
   btnCancel: { flex: 1, padding: 12, borderRadius: 10, border: '1px solid #e2e8f0', background: 'white', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', color: '#64748b' },
   btnSave: { flex: 2, padding: 12, borderRadius: 10, border: 'none', background: '#1e293b', color: 'white', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
 
+  // 🔥 BARU: notifikasi seri 4-mingguan di dalam form edit
+  seriesNotice: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: 12 },
+
   colorPickerRow: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' },
   colorOption: (selected, color) => ({ 
     width: 32, height: 32, borderRadius: '50%', 
@@ -1709,9 +1871,10 @@ const styles = {
   emptyPlanet: { gridColumn: '1/-1', textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12, fontStyle: 'italic' },
 
   scheduleItem: { background: '#f8fafc', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0', transition: '0.2s' },
-  scheduleTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  scheduleTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 4 },
   timeBadge: { fontSize: 12, fontWeight: '900', color: '#1e293b', background: '#e2e8f0', padding: '2px 8px', borderRadius: 6 },
   programBadge: (p) => ({ fontSize: 10, fontWeight: 'bold', color: p === 'English' ? '#ef4444' : '#10b981' }),
+  seriesBadge: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, fontWeight: 700, color: '#b45309', background: '#fef3c7', padding: '2px 7px', borderRadius: 10 },
   scheduleTitle: { fontSize: 14, fontWeight: 'bold', marginBottom: 4, color: '#1e293b' },
   scheduleCodes: { display: 'flex', gap: 6, marginBottom: 4, flexWrap: 'wrap' },
   codeBadgeTeacher: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, color: '#3b82f6', background: '#eef2ff', padding: '1px 6px', borderRadius: 10, fontWeight: 600 },
