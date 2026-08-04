@@ -231,14 +231,14 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
         } catch (e) {
           doc.setFontSize(8);
           doc.setTextColor(148, 163, 184);
-          doc.text('[Gambar gagal ditempel — buka link di editor kuis]', marginX, y);
+          doc.text('[Gambar gagal ditempel - buka link di editor kuis]', marginX, y);
           doc.setTextColor(30, 41, 59);
           y += 5;
         }
       } else {
         doc.setFontSize(8);
         doc.setTextColor(148, 163, 184);
-        doc.text('[Gambar tidak dapat dimuat — cek langsung di editor kuis]', marginX, y);
+        doc.text('[Gambar tidak dapat dimuat - cek langsung di editor kuis]', marginX, y);
         doc.setTextColor(30, 41, 59);
         y += 5;
       }
@@ -255,7 +255,7 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
           ensureSpace(10);
           doc.setFont(undefined, isCorrect ? 'bold' : 'normal');
           doc.setTextColor(isCorrect ? 16 : 30, isCorrect ? 129 : 41, isCorrect ? 76 : 59);
-          doc.text(`${letter}. ${isCorrect ? '✔ KUNCI JAWABAN' : '(gambar opsi — lihat di editor kuis)'}`, marginX + 3, y);
+          doc.text(`${letter}. ${isCorrect ? '(KUNCI JAWABAN)' : '(gambar opsi - lihat di editor kuis)'}`, marginX + 3, y);
           doc.setTextColor(30, 41, 59);
           y += 5;
         }
@@ -263,7 +263,7 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
         (q.options || []).forEach((opt, oi) => {
           const letter = String.fromCharCode(65 + oi);
           const isCorrect = q.correct === oi;
-          const lines = doc.splitTextToSize(`${letter}. ${opt || '-'}${isCorrect ? '   ✔ KUNCI' : ''}`, contentWidth - 6);
+          const lines = doc.splitTextToSize(`${letter}. ${opt || '-'}${isCorrect ? '   (KUNCI)' : ''}`, contentWidth - 6);
           ensureSpace(lines.length * 5);
           doc.setFont(undefined, isCorrect ? 'bold' : 'normal');
           if (isCorrect) doc.setTextColor(16, 129, 76); else doc.setTextColor(51, 65, 85);
@@ -276,7 +276,7 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
       (q.options || []).forEach((opt, oi) => {
         const letter = String.fromCharCode(65 + oi);
         const isCorrect = (q.correctAnswers || []).includes(oi);
-        const lines = doc.splitTextToSize(`${letter}. ${opt || '-'}${isCorrect ? '   ✔ KUNCI' : ''}`, contentWidth - 6);
+        const lines = doc.splitTextToSize(`${letter}. ${opt || '-'}${isCorrect ? '   (KUNCI)' : ''}`, contentWidth - 6);
         ensureSpace(lines.length * 5);
         doc.setFont(undefined, isCorrect ? 'bold' : 'normal');
         if (isCorrect) doc.setTextColor(16, 129, 76); else doc.setTextColor(51, 65, 85);
@@ -313,7 +313,7 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
       y += effectLines.length * 5;
     } else if (q.type === 'matching') {
       (q.matchingPairs || []).forEach((p, pi) => {
-        const lines = doc.splitTextToSize(`${pi + 1}. ${p.left || '-'}  →  ${p.right || '-'}`, contentWidth - 6);
+        const lines = doc.splitTextToSize(`${pi + 1}. ${p.left || '-'}  ->  ${p.right || '-'}`, contentWidth - 6);
         ensureSpace(lines.length * 5);
         doc.text(lines, marginX + 3, y);
         y += lines.length * 5;
@@ -338,7 +338,7 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
         (sq.options || []).forEach((opt, oi) => {
           const letter = String.fromCharCode(65 + oi);
           const isCorrect = sq.correct === oi;
-          const lines = doc.splitTextToSize(`   ${letter}. ${opt || '-'}${isCorrect ? '  ✔ KUNCI' : ''}`, contentWidth - 10);
+          const lines = doc.splitTextToSize(`   ${letter}. ${opt || '-'}${isCorrect ? '  (KUNCI)' : ''}`, contentWidth - 10);
           ensureSpace(lines.length * 5);
           if (isCorrect) doc.setTextColor(16, 129, 76); else doc.setTextColor(51, 65, 85);
           doc.text(lines, marginX + 6, y);
@@ -353,7 +353,7 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
       ensureSpace(10);
       y += 1;
       doc.setFillColor(238, 242, 255);
-      const expLines = doc.splitTextToSize(`💡 Pembahasan: ${q.explanation}`, contentWidth - 8);
+      const expLines = doc.splitTextToSize(`Pembahasan: ${q.explanation}`, contentWidth - 8);
       const boxH = expLines.length * 4.6 + 4;
       ensureSpace(boxH);
       doc.roundedRect(marginX, y - 3, contentWidth, boxH, 2, 2, 'F');
@@ -378,7 +378,7 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
     doc.setPage(p);
     doc.setFontSize(7);
     doc.setTextColor(148, 163, 184);
-    doc.text('Dokumen internal guru — berisi kunci jawaban lengkap, JANGAN dibagikan ke siswa.', marginX, pageHeight - 8);
+    doc.text('Dokumen internal guru - berisi kunci jawaban lengkap, JANGAN dibagikan ke siswa.', marginX, pageHeight - 8);
     doc.text(`Halaman ${p}/${pageCount}`, pageWidth - marginX, pageHeight - 8, { align: 'right' });
   }
 
