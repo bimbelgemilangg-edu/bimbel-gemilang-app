@@ -1911,7 +1911,15 @@ const ManageQuiz = () => {
       // Modul) — soalnya kalau enggak, sistem bisa salah kira ini "mau bikin
       // kuis baru ditautkan ke modul lain" dan malah bikin DUPLIKAT.
       if (isEditingExistingQuiz && !isFromModul) {
-        await updateDoc(doc(db, "bimbel_modul", modulId), quizPayload);
+        // 🔥 FIX BUG (sama kayak jalur kuis-dalam-modul di bawah): update ini
+        // sebelumnya juga TIDAK menyertakan `subject`/`title`, jadi kalau
+        // guru edit ulang kuis mandiri dan ganti mapel/judulnya, perubahan
+        // itu gak pernah kesimpen -- database tetap nyangkut ke nilai lama.
+        await updateDoc(doc(db, "bimbel_modul", modulId), {
+          ...quizPayload,
+          title: quizTitle.toUpperCase(),
+          subject: quizSubject || "Kuis",
+        });
         alert(`✅ Kuis "${quizTitle}" berhasil diperbarui!`);
         localStorage.removeItem(draftKey);
         navigate(-1);
@@ -1976,10 +1984,20 @@ const ManageQuiz = () => {
           };
           
           if (quizId) {
-            // Update quiz yang sudah ada
+            // 🔥 FIX BUG: sebelumnya update di sini TIDAK PERNAH menyertakan
+            // `subject`/`title` -- jadi kalau guru edit ULANG kuis yang udah
+            // nempel di modul (bukan bikin baru), field mapel & judulnya di
+            // database TETAP nyangkut ke nilai lama dari kali PERTAMA
+            // dibuat, walau guru udah ganti pilihan mapel/judul di form.
+            // Ini bisa jadi biang kerok siswa "tidak memiliki akses" -- soal
+            // pengecekan akses mapel siswa cocokin ke field `subject` ini,
+            // jadi kalau field-nya basi/salah, aksesnya ikut salah walau
+            // tampilan form guru udah keliatan benar.
             await updateDoc(doc(db, "bimbel_modul", quizId), {
               ...quizPayload,
               ...inheritedTargeting,
+              title: quizTitle.toUpperCase(),
+              subject: quizSubject || "Kuis",
               guruId: ownerGuruId,
               guruName: ownerGuruName,
               kodeMapel: ownerKodeMapel,

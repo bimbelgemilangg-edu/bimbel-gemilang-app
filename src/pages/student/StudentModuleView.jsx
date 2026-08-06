@@ -896,6 +896,23 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           const matchSubject = hasSubjectAccess(enrolledSubjectsRaw, data.subject, data.kodeMapel);
           hasAccess = matchKelas && matchProgram && matchSubject;
 
+          // 🔥 BARU: log detail alasan akses ditolak/diterima -- kalau ada
+          // laporan "modul gak bisa dibuka via Tautkan Jenjang" lagi, buka
+          // Console browser (F12) pas kejadian, cari baris ini buat lihat
+          // PERSIS bagian mana yang gak cocok (kelas/kategori/mapel).
+          console.log('[Cek Akses Modul]', {
+            hasAccess,
+            modulTitle: data.title,
+            modulSubject: data.subject,
+            modulKodeMapel: data.kodeMapel,
+            modulTargetKelas: targetKelas,
+            modulTargetKategori: targetKategori,
+            studentKelas: kelas,
+            studentProgram: program,
+            studentEnrolledSubjects: enrolledSubjectsRaw,
+            matchKelas, matchProgram, matchSubject,
+          });
+
           // 🔥 BARU: kalau alasan gagalnya SPESIFIK karena paket mapel (bukan
           // kelas/kategori), kasih pesan yang jelas -- biar siswa/ortu ngerti
           // ini soal paket langganan, bukan dikira bug/error sistem.

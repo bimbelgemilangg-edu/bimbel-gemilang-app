@@ -324,6 +324,24 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           const matchSubject = hasSubjectAccess(effectiveEnrolledSubjects, data.subject || '', data.kodeMapel || '');
           hasQuizAccess = matchKelas && matchProgram && matchSubject;
 
+          // 🔥 BARU: log detail alasan akses ditolak/diterima -- kalau siswa
+          // lapor "tidak memiliki akses" tapi keliatannya seharusnya bisa,
+          // buka Console browser (F12) pas kejadian, cari baris ini buat
+          // lihat PERSIS bagian mana yang gak cocok (kelas/kategori/mapel)
+          // -- daripada nebak-nebak dari pesan error yang cuma generik.
+          console.log('[Cek Akses Kuis]', {
+            hasQuizAccess,
+            quizSubject: data.subject,
+            quizKodeMapel: data.kodeMapel,
+            quizTargetKelas: targetKelas,
+            quizTargetKategori: targetKategori,
+            studentKelas: studentInfo.kelas,
+            studentProgram: studentInfo.program,
+            studentEnrolledSubjects: effectiveEnrolledSubjects,
+            matchKelas, matchProgram, matchSubject,
+            parentModulId: data.parentModulId || null,
+          });
+
           if (matchKelas && matchProgram && !matchSubject) {
             setError(`Kuis ini untuk mapel ${data.subject || '-'}, sedangkan paketmu belum termasuk mapel ini. Hubungi admin Bimbel Gemilang untuk info upgrade paket.`);
             setLoading(false);
@@ -1483,7 +1501,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
 
                     {q.type === 'shortanswer' && (
                       <div style={{ marginTop: 4, padding: 10, background: '#f0fdf4', borderRadius: 8, fontSize: 12, border: '1px solid #bbf7d0' }}>
-                        🔑 Kunci Jawaban: <b style={{ color: '#166534' }}>{q.shortAnswer || '-'}</b>
+                        🔑 Kunci Jawaban: <b style={{ color: '#166534' }}>{renderMath(q.shortAnswer) || '-'}</b>
                       </div>
                     )}
 
@@ -1546,8 +1564,8 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
                             }}>
                               <span style={{ color: '#1e293b' }}>{renderMath(p.left)}</span>
                               <span style={{ fontWeight: 700, color: rowCorrect ? '#166534' : '#dc2626', textAlign: 'right' }}>
-                                {userText || 'Tidak dijawab'}
-                                {!rowCorrect && <span style={{ display: 'block', fontSize: 10, color: '#166534', fontWeight: 600 }}>Kunci: {p.right}</span>}
+                                {userText ? renderMath(userText) : 'Tidak dijawab'}
+                                {!rowCorrect && <span style={{ display: 'block', fontSize: 10, color: '#166534', fontWeight: 600 }}>Kunci: {renderMath(p.right)}</span>}
                               </span>
                             </div>
                           );
@@ -1569,10 +1587,10 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
                             }}>
                               <div style={{ fontSize: 12, fontWeight: 600, color: '#1e293b', marginBottom: 4 }}>{sIdx + 1}. {renderMath(sq.q)}</div>
                               <div style={{ fontSize: 11, color: rowCorrect ? '#166534' : '#dc2626' }}>
-                                Jawabmu: {answered ? (sq.options?.[userIdx] || '-') : 'Tidak dijawab'}
+                                Jawabmu: {answered ? renderMath(sq.options?.[userIdx]) || '-' : 'Tidak dijawab'}
                               </div>
                               {!rowCorrect && (
-                                <div style={{ fontSize: 11, color: '#166534', marginTop: 2 }}>Kunci: {sq.options?.[sq.correct]}</div>
+                                <div style={{ fontSize: 11, color: '#166534', marginTop: 2 }}>Kunci: {renderMath(sq.options?.[sq.correct])}</div>
                               )}
                             </div>
                           );
@@ -1585,10 +1603,17 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
                         <span>📝 Jawaban Anda: </span>
                         <span style={{ fontWeight: 'bold', color: isCorrect ? '#10b981' : '#dc2626' }}>
                           {q.type === 'shortanswer' 
-                            ? q.userAnswer || 'Tidak dijawab'
+                            ? (q.userAnswer ? renderMath(q.userAnswer) : 'Tidak dijawab')
                             : q.type === 'multiselect' 
-                              ? (q.userAnswer || []).map(i => q.options[i]).join(', ') || 'Tidak dijawab'
-                              : q.options[q.userAnswer] || 'Tidak dijawab'}
+                              ? ((q.userAnswer || []).length > 0 
+                                  ? (q.userAnswer || []).map((i, idx2) => (
+                                      <React.Fragment key={i}>
+                                        {idx2 > 0 && ', '}
+                                        {renderMath(q.options[i])}
+                                      </React.Fragment>
+                                    ))
+                                  : 'Tidak dijawab')
+                              : (q.userAnswer !== undefined && q.options[q.userAnswer] ? renderMath(q.options[q.userAnswer]) : 'Tidak dijawab')}
                         </span>
                       </div>
                     )}
