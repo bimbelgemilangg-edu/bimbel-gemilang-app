@@ -1,4 +1,3 @@
-// src/pages/teacher/modul/AIGenerateMateri.jsx
 import React, { useState } from 'react';
 import { Sparkles, X, Loader2, AlertCircle, Wand2, BookOpen } from 'lucide-react';
 
@@ -80,13 +79,6 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
              </div>`
           : '';
 
-        // 🔥 PENEMPATAN GAMBAR YANG RELEVAN: AI menaruh penanda [[GAMBAR]] tepat
-        // di posisi paling nyambung dengan pembahasannya. Dulu gambar SELALU
-        // ditempel di paling bawah section, jadi sering nggak nyambung sama
-        // kalimat yang lagi dibahas. Sekarang:
-        //  - kalau ada penanda -> gambar ditaruh persis di situ
-        //  - kalau nggak ada penanda tapi gambarnya ada -> taruh setelah
-        //    paragraf PERTAMA (biar kelihatan lebih awal, bukan di ujung)
         let bodyHtml = s.content_html || '';
         if (bodyHtml.includes('[[GAMBAR]]')) {
           bodyHtml = bodyHtml.replace(/\[\[GAMBAR\]\]/g, imageHtml);
@@ -96,7 +88,6 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
             ? bodyHtml.slice(0, firstParaEnd + 4) + imageHtml + bodyHtml.slice(firstParaEnd + 4)
             : imageHtml + bodyHtml;
         }
-        // Bersihkan penanda sisa kalau gambarnya ternyata gagal didapat
         bodyHtml = bodyHtml.replace(/\[\[GAMBAR\]\]/g, '');
 
         const finalHtml = `
@@ -106,8 +97,6 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
           </div>
         `.trim();
 
-        // 🔥 Satu bagian bisa punya jembatan keledai DAN latihan interaktif
-        // sekaligus, jadi keduanya disimpan berdampingan (bukan pilih salah satu).
         const interactive = {
           type: s.highlight_type === 'mnemonic' ? 'flashcard' : null,
           front: s.flashcard_front || '',
@@ -122,6 +111,17 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
           title: s.title,
           content: finalHtml,
           interactive,
+          // 🔥 BARU: "Catatan Mengajar" -- lapisan KEDUA yang di-generate
+          // BARENGAN dengan materi siswa di atas (satu kali panggil AI,
+          // dapat dua-duanya sekaligus, jadi selalu nyambung & gak perlu
+          // generate ulang). Ini KHUSUS GURU: alasan kenapa Cara Gemilang-
+          // nya jalan (logikanya, bukan cuma hafalan), titik yang biasanya
+          // bikin siswa bingung + cara jelasinnya, contoh tambahan buat
+          // dibahas lisan di kelas. TIDAK PERNAH ditampilkan ke siswa --
+          // field ini cuma dibaca di ManageMateri.jsx (editor guru),
+          // StudentModuleView.jsx sama sekali gak menyentuh field ini jadi
+          // otomatis tetap privat tanpa perlu pengaman tambahan.
+          teachingNotes: s.teaching_notes_html || '',
           fileName: '', mimeType: '', fileSize: 0, filePath: '',
           endTime: '', allowedFileType: 'all', quizId: null, quizTitle: '', quizQuestions: 0,
         });
@@ -130,8 +130,6 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
       onGenerated(blocks);
 
       if (data.possiblyTruncated) {
-        // Materi tetap tersimpan (partial success), tapi kasih tahu guru
-        // bahwa topiknya kemungkinan terlalu luas untuk 1x generate.
         alert(
           `✅ ${blocks.length} bagian materi berhasil dibuat!\n\n` +
           `⚠️ Catatan: topik ini cukup luas, AI kemungkinan belum sempat menulis semua yang direncanakan. ` +
@@ -199,9 +197,11 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
             <div style={styles.hintBox}>
               <BookOpen size={13} color="#8b5cf6" style={{ flexShrink: 0, marginTop: 1 }} />
               <span>
-                AI akan menyusun <b>satu modul lengkap</b> terbagi beberapa bagian. Untuk materi berhitung
-                (Matematika/Fisika/Kimia), fokusnya ke <b>rumus, contoh soal bertahap, dan Langkah Gemilang</b> —
-                bukan penjelasan panjang. Untuk materi bacaan, penjelasannya lebih naratif dengan contoh nyata.
+                AI akan menyusun <b>satu modul lengkap</b> terbagi beberapa bagian, DUA lapis sekaligus:
+                materi yang langsung siap tampil ke siswa, DAN "Catatan Mengajar" khusus kamu (gak pernah
+                kelihatan siswa) — alasan kenapa Cara Gemilang-nya jalan, titik yang biasanya bikin siswa
+                bingung, dan cara jelasinnya. Untuk materi berhitung, fokusnya ke <b>rumus, contoh soal
+                bertahap, dan Langkah Gemilang</b>. Untuk materi bacaan, lebih naratif dengan contoh nyata.
               </span>
             </div>
           </>
