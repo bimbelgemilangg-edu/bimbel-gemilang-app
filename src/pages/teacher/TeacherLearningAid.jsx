@@ -7,12 +7,17 @@
 // mengarang dari pengetahuan umumnya) -- lengkap dengan Capaian
 // Pembelajaran, RPP ringkas, dan materi inti bergaya Cara Gemilang.
 //
-// ⚠️ DEPENDENSI BARU yang dibutuhkan: `pdfjs-dist` (buat baca teks dari
-// PDF buku paket langsung di browser). Kalau belum ada:
-//   npm install pdfjs-dist
+// 🔥 BARU: dulu guru harus isi manual "Dari Halaman X sampai Y" -- padahal
+// nomor halaman FISIK PDF hampir selalu beda dari nomor cetak di buku
+// (kegeser gara-gara cover, kata pengantar, daftar isi). Sekarang begitu
+// buku diupload, sistem otomatis MEMETAKAN tiap Bab ke halaman fisiknya
+// (lewat /api/detectBookChapters, dipanggil SEKALI saat upload, bukan tiap
+// generate). Guru tinggal KLIK nama babnya, gak perlu ngitung halaman sama
+// sekali. Kalau deteksinya gagal/buku gak berstruktur bab jelas, tetap ada
+// jalur manual sebagai cadangan.
 //
-// ⚠️ Backend endpoint baru yang dibutuhkan: /api/generateGuruLearningAid
-// (lihat file generateGuruLearningAid.js yang dikirim terpisah).
+// ⚠️ DEPENDENSI: `pdfjs-dist` (baca teks dari PDF buku paket di browser).
+// ⚠️ Backend endpoint: /api/generateGuruLearningAid dan /api/detectBookChapters
 
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../../firebase';
@@ -25,7 +30,7 @@ import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
 import {
   GraduationCap, Upload, BookOpen, Sparkles, Loader2, X, Trash2,
   FileText, Search, Target, ClipboardList, Wand2, AlertCircle,
-  ChevronRight, Hash, CheckCircle
+  ChevronRight, Hash, CheckCircle, ListTree, PencilLine, ArrowLeft
 } from 'lucide-react';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
@@ -66,6 +71,29 @@ const extractPdfPages = async (file, onProgress) => {
   return pages;
 };
 
+// ============================================================
+// 🔥 DETEKSI STRUKTUR BAB — dipanggil sekali pas upload. Gagal pun gak
+// masalah, upload buku tetap lanjut (fallback ke halaman manual nanti).
+// ============================================================
+const detectChapters = async (pages, bookTitle) => {
+  try {
+    const res = await fetch('/api/detectBookChapters', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        bookTitle,
+        totalPages: pages.length,
+        pages: pages.map(p => ({ pageNumber: p.pageNumber, snippet: p.text.slice(0, 160) })),
+      }),
+    });
+    const data = await res.json();
+    return data?.success ? (data.chapters || []) : [];
+  } catch (e) {
+    console.error('Deteksi struktur bab gagal, lanjut tanpa itu:', e);
+    return [];
+  }
+};
+
 const TeacherLearningAid = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [activeTab, setActiveTab] = useState('buat'); // 'buat' | 'upload'
@@ -87,6 +115,8 @@ const TeacherLearningAid = () => {
 
   // ===== GENERATE =====
   const [selectedBukuId, setSelectedBukuId] = useState('');
+  const [selectedChapterIdx, setSelectedChapterIdx] = useState(null);
+  const [showManualRange, setShowManualRange] = useState(false);
   const [pageStart, setPageStart] = useState(1);
   const [pageEnd, setPageEnd] = useState(10);
   const [topic, setTopic] = useState('');
@@ -150,6 +180,11 @@ const TeacherLearningAid = () => {
         throw new Error('Tidak ada teks yang bisa dibaca dari PDF ini. Kemungkinan ini hasil scan/foto (bukan PDF teks asli) — coba pakai file PDF yang teksnya bisa di-select/copy.');
       }
 
+      // 🔥 Deteksi struktur bab OTOMATIS supaya nanti guru tinggal klik nama
+      // bab, gak perlu tau/hitung sendiri nomor halaman fisik PDF-nya.
+      setUploadStatus('Memetakan struktur bab...');
+      const chapters = await detectChapters(pages, uploadTitle.trim());
+
       setUploadStatus('Menyimpan ke bank referensi...');
       const bukuRef = await addDoc(collection(db, 'buku_referensi'), {
         title: uploadTitle.trim(),
@@ -157,6 +192,7 @@ const TeacherLearningAid = () => {
         kelas: uploadKelas.trim() || '-',
         fileName: file.name,
         totalPages: pages.length,
+        chapters, // [] kalau deteksi gagal -- generate tab otomatis fallback ke manual
         guruId, guruName,
         createdAt: serverTimestamp(),
       });
@@ -176,7 +212,10 @@ const TeacherLearningAid = () => {
         setUploadStatus(`Menyimpan halaman ${Math.min(i + CHUNK, pages.length)} dari ${pages.length}...`);
       }
 
-      alert(`✅ "${uploadTitle}" berhasil diupload (${pages.length} halaman)! Sekarang bisa dipakai buat generate alat bantu belajar kapan pun, gak perlu upload ulang.`);
+      const chapterNote = chapters.length > 0
+        ? `Sistem berhasil memetakan ${chapters.length} bab -- nanti tinggal klik nama babnya, gak perlu isi nomor halaman.`
+        : `Sistem belum berhasil memetakan bab otomatis untuk buku ini -- nanti bisa atur halaman manual saat generate.`;
+      alert(`✅ "${uploadTitle}" berhasil diupload (${pages.length} halaman)!\n\n${chapterNote}`);
       setUploadTitle(''); setUploadMapel(''); setUploadKelas('');
       await fetchBukuList();
       setActiveTab('buat');
@@ -212,10 +251,28 @@ const TeacherLearningAid = () => {
   // GENERATE ALAT BANTU (GROUNDED KE BUKU YANG DIPILIH)
   // ============================================================
   const selectedBuku = bukuList.find(b => b.id === selectedBukuId);
+  const hasChapters = (selectedBuku?.chapters || []).length > 0;
+
+  const handleSelectBuku = (id) => {
+    setSelectedBukuId(id);
+    setSelectedChapterIdx(null);
+    setShowManualRange(false);
+    setPageStart(1);
+    setPageEnd(10);
+  };
+
+  const handleSelectChapter = (idx, chapter) => {
+    setSelectedChapterIdx(idx);
+    setPageStart(chapter.startPage);
+    setPageEnd(chapter.endPage);
+  };
 
   const handleGenerate = async () => {
     setError('');
     if (!selectedBukuId) return setError('❌ Pilih dulu buku referensinya.');
+    if (hasChapters && !showManualRange && selectedChapterIdx === null) {
+      return setError('❌ Pilih dulu bab/bagian yang mau dijadikan sumber.');
+    }
     if (!topic.trim()) return setError('❌ Isi dulu topik yang mau dicari (mis. "Integral Tak Tentu").');
     if (pageStart < 1 || pageEnd < pageStart) return setError('❌ Rentang halaman tidak valid.');
     if (pageEnd - pageStart > 25) {
@@ -303,8 +360,9 @@ const TeacherLearningAid = () => {
           <div style={cardStyle}>
             <h4 style={cardTitleStyle}><Upload size={16} /> Upload Buku Paket Baru</h4>
             <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12 }}>
-              Upload SEKALI per buku, dipakai berkali-kali selamanya buat generate topik apa pun dari buku itu. Butuh PDF
-              yang teksnya bisa di-select (bukan hasil scan foto halaman).
+              Upload SEKALI per buku, dipakai berkali-kali selamanya buat generate topik apa pun dari buku itu. Sistem
+              otomatis memetakan bab-babnya, jadi nanti tinggal klik nama babnya. Butuh PDF yang teksnya bisa
+              di-select (bukan hasil scan foto halaman).
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: 8, marginBottom: 10 }}>
               <input value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder="Judul buku (wajib)" style={inputStyle} disabled={uploading} />
@@ -341,6 +399,7 @@ const TeacherLearningAid = () => {
                     <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>{b.title}</div>
                     <div style={{ fontSize: 10, color: '#94a3b8' }}>
                       {b.mapel} · {b.kelas} · {b.totalPages} halaman · diupload {b.guruName || '-'}
+                      {b.chapters?.length > 0 && <> · <span style={{ color: '#673ab7', fontWeight: 700 }}>{b.chapters.length} bab terdeteksi</span></>}
                     </div>
                   </div>
                   <button onClick={() => handleDeleteBuku(b)} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: 6, padding: '6px 8px', cursor: 'pointer' }}>
@@ -374,7 +433,7 @@ const TeacherLearningAid = () => {
 
               <div style={{ marginBottom: 10 }}>
                 <label style={labelStyle}>📚 Buku Referensi</label>
-                <select value={selectedBukuId} onChange={e => setSelectedBukuId(e.target.value)} style={selectStyle}>
+                <select value={selectedBukuId} onChange={e => handleSelectBuku(e.target.value)} style={selectStyle}>
                   <option value="">-- Pilih Buku --</option>
                   {bukuList.map(b => (
                     <option key={b.id} value={b.id}>{b.title} ({b.mapel} · {b.kelas} · {b.totalPages} hal)</option>
@@ -382,25 +441,83 @@ const TeacherLearningAid = () => {
                 </select>
               </div>
 
+              {/* ============================================================
+                  🔥 PEMILIHAN SUMBER -- daftar bab (klik nama) sebagai jalur
+                  utama, halaman manual cuma jalur cadangan buat kasus khusus
+                  (buku tanpa struktur bab jelas, atau topik lintas-bab).
+                  ============================================================ */}
               {selectedBuku && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
-                  <div>
-                    <label style={labelStyle}>Dari Halaman</label>
-                    <input type="number" min={1} max={selectedBuku.totalPages} value={pageStart} onChange={e => setPageStart(parseInt(e.target.value) || 1)} style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Sampai Halaman</label>
-                    <input type="number" min={1} max={selectedBuku.totalPages} value={pageEnd} onChange={e => setPageEnd(parseInt(e.target.value) || 1)} style={inputStyle} />
-                  </div>
-                  <p style={{ gridColumn: '1 / -1', fontSize: 10, color: '#94a3b8', margin: 0 }}>
-                    💡 Cek daftar isi buku paket kamu buat tau kira-kira topik ini ada di halaman berapa. Buku ini punya {selectedBuku.totalPages} halaman total.
-                  </p>
+                <div style={{ marginBottom: 10 }}>
+                  {hasChapters && !showManualRange ? (
+                    <div>
+                      <label style={labelStyle}><ListTree size={12} style={{ verticalAlign: -2 }} /> Pilih Bab / Bagian</label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 280, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 8, padding: 6, background: '#fafafa' }}>
+                        {selectedBuku.chapters.map((c, idx) => {
+                          const active = selectedChapterIdx === idx;
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => handleSelectChapter(idx, c)}
+                              style={{
+                                textAlign: 'left', padding: '10px 12px', borderRadius: 8,
+                                border: active ? '2px solid #673ab7' : '1px solid #e2e8f0',
+                                background: active ? '#f5f3ff' : 'white', cursor: 'pointer',
+                                fontSize: 12, fontWeight: active ? 700 : 500, color: '#1e293b',
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                              }}
+                            >
+                              <span>
+                                {c.title}
+                                <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400, marginTop: 2 }}>Halaman {c.startPage}–{c.endPage}</div>
+                              </span>
+                              {active && <CheckCircle size={16} color="#673ab7" style={{ flexShrink: 0 }} />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowManualRange(true)}
+                        style={{ marginTop: 6, background: 'none', border: 'none', fontSize: 10, color: '#94a3b8', textDecoration: 'underline', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+                      >
+                        <PencilLine size={11} /> Topik saya lintas-bab / gak ada di daftar? Atur halaman manual
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      {hasChapters && (
+                        <button
+                          type="button"
+                          onClick={() => setShowManualRange(false)}
+                          style={{ marginBottom: 8, background: 'none', border: 'none', fontSize: 10, color: '#673ab7', textDecoration: 'underline', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+                        >
+                          <ArrowLeft size={11} /> Kembali pilih dari daftar bab
+                        </button>
+                      )}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                        <div>
+                          <label style={labelStyle}>Dari Halaman</label>
+                          <input type="number" min={1} max={selectedBuku.totalPages} value={pageStart} onChange={e => setPageStart(parseInt(e.target.value) || 1)} style={inputStyle} />
+                        </div>
+                        <div>
+                          <label style={labelStyle}>Sampai Halaman</label>
+                          <input type="number" min={1} max={selectedBuku.totalPages} value={pageEnd} onChange={e => setPageEnd(parseInt(e.target.value) || 1)} style={inputStyle} />
+                        </div>
+                      </div>
+                      <p style={{ fontSize: 10, color: '#94a3b8', margin: '6px 0 0' }}>
+                        💡 Nomor halaman di sini mengikuti urutan FISIK file PDF (halaman pertama = cover), bukan
+                        nomor cetak di buku. Cek dulu di file PDF-nya buku ini ada di halaman fisik berapa.
+                        {!hasChapters && ' Sistem belum berhasil memetakan bab otomatis untuk buku ini.'}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
               <div style={{ marginBottom: 10 }}>
                 <label style={labelStyle}>🎯 Topik <span style={{ color: '#ef4444' }}>*wajib</span></label>
-                <input value={topic} onChange={e => setTopic(e.target.value)} placeholder="Contoh: Integral Tak Tentu" style={inputStyle} />
+                <input value={topic} onChange={e => setTopic(e.target.value)} placeholder="Contoh: Kedudukan Titik atau Garis terhadap Lingkaran" style={inputStyle} />
               </div>
 
               <div style={{ marginBottom: 10 }}>
