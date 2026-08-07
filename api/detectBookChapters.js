@@ -133,13 +133,10 @@ const GEMINI_MODELS = [
   
       if (!Array.isArray(chapters)) chapters = [];
   
-      // Validasi tiap entri & urutkan berdasarkan halaman mulai, buang yang formatnya rusak
       chapters = chapters
         .filter(c => c && typeof c.title === 'string' && c.title.trim() && Number.isInteger(c.startPage) && c.startPage >= 1)
         .sort((a, b) => a.startPage - b.startPage);
   
-      // 🔥 Hitung endPage tiap bab = startPage bab berikutnya - 1.
-      // Bab terakhir berakhir di halaman terakhir buku.
       const total = totalPages || pages.length;
       const chaptersWithRange = chapters.map((c, i) => ({
         title: c.title.trim(),

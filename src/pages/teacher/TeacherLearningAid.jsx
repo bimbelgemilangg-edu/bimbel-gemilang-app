@@ -1,20 +1,25 @@
 // src/pages/teacher/TeacherLearningAid.jsx
 //
 // 🔥 "ALAT BANTU GURU" — TERPISAH TOTAL dari E-Learning (yang tampil ke
-// siswa). Ini ruang kerja PRIVAT guru: upload buku paket SEKALI, jadi bank
-// referensi permanen, lalu cari topik & generate alat bantu belajar yang
-// DIGROUNDING ke buku itu (AI baca bagian buku yang relevan, bukan
-// mengarang dari pengetahuan umumnya) -- lengkap dengan Capaian
-// Pembelajaran, RPP ringkas, dan materi inti bergaya Cara Gemilang.
+// siswa). Upload buku paket sekali, jadi bank referensi permanen, lalu cari
+// topik & generate alat bantu belajar yang DIGROUNDING ke buku itu.
 //
-// 🔥 BARU: dulu guru harus isi manual "Dari Halaman X sampai Y" -- padahal
-// nomor halaman FISIK PDF hampir selalu beda dari nomor cetak di buku
-// (kegeser gara-gara cover, kata pengantar, daftar isi). Sekarang begitu
-// buku diupload, sistem otomatis MEMETAKAN tiap Bab ke halaman fisiknya
-// (lewat /api/detectBookChapters, dipanggil SEKALI saat upload, bukan tiap
-// generate). Guru tinggal KLIK nama babnya, gak perlu ngitung halaman sama
-// sekali. Kalau deteksinya gagal/buku gak berstruktur bab jelas, tetap ada
-// jalur manual sebagai cadangan.
+// 🔥 BARU (revisi ini) — 2 masalah nyata yang dibenerin:
+//
+// 1) DUA JENIS BUKU DIGABUNG SEBAGAI SUMBER, bukan pilih salah satu.
+//    Buku Guru sudah TERSTRUKTUR persis format Capaian Pembelajaran/Tujuan
+//    Pembelajaran, sedangkan Buku Siswa isinya materi inti yang lebih dalam
+//    (rumus, contoh soal). Sekarang guru bisa upload & tandai jenis
+//    bukunya (Siswa/Guru/Lainnya), lalu saat generate boleh gabung DUA
+//    buku sekaligus sebagai sumber -- RPP & Capaian Pembelajaran ditarik
+//    utamanya dari Buku Guru, Materi Inti dari Buku Siswa.
+//
+// 2) KALAU SUMBER TERNYATA GAK CUKUP buat topik yang diminta (misal guru
+//    minta "Integral" tapi rentang yang dipilih cuma Bab Turunan Fungsi),
+//    backend sekarang WAJIB balas flag terpisah `source_insufficient`,
+//    BUKAN nulis kalimat penolakan di dalam isi hasil seolah itu konten
+//    beneran. Depan sini ditampilin sebagai peringatan jelas + tombol buat
+//    cari ulang, bukan kartu hasil yang isinya membingungkan.
 //
 // ⚠️ DEPENDENSI: `pdfjs-dist` (baca teks dari PDF buku paket di browser).
 // ⚠️ Backend endpoint: /api/generateGuruLearningAid dan /api/detectBookChapters
@@ -30,16 +35,20 @@ import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
 import {
   GraduationCap, Upload, BookOpen, Sparkles, Loader2, X, Trash2,
   FileText, Search, Target, ClipboardList, Wand2, AlertCircle,
-  ChevronRight, Hash, CheckCircle, ListTree, PencilLine, ArrowLeft
+  ChevronRight, Hash, CheckCircle, ListTree, PencilLine, ArrowLeft,
+  Link2, Plus, RefreshCw
 } from 'lucide-react';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
-// ============================================================
-// RENDER RUMUS DI DALAM HTML (sama pola dengan file lain di sistem)
-// ============================================================
+const BOOK_TYPES = [
+  { value: 'siswa', label: '📗 Buku Siswa' },
+  { value: 'guru', label: '📘 Buku Guru' },
+  { value: 'lainnya', label: '📄 Lainnya' },
+];
+
 const renderMathInHtml = (html) => {
   if (!html) return html;
   let result = html;
@@ -54,9 +63,6 @@ const renderMathInHtml = (html) => {
   return result;
 };
 
-// ============================================================
-// EKSTRAK TEKS PDF PER HALAMAN (di browser, gak lewat server)
-// ============================================================
 const extractPdfPages = async (file, onProgress) => {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -71,10 +77,6 @@ const extractPdfPages = async (file, onProgress) => {
   return pages;
 };
 
-// ============================================================
-// 🔥 DETEKSI STRUKTUR BAB — dipanggil sekali pas upload. Gagal pun gak
-// masalah, upload buku tetap lanjut (fallback ke halaman manual nanti).
-// ============================================================
 const detectChapters = async (pages, bookTitle) => {
   try {
     const res = await fetch('/api/detectBookChapters', {
@@ -94,31 +96,30 @@ const detectChapters = async (pages, bookTitle) => {
   }
 };
 
+const emptySourceState = () => ({ bukuId: '', chapterIdx: null, showManualRange: false, pageStart: 1, pageEnd: 10 });
+
 const TeacherLearningAid = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [activeTab, setActiveTab] = useState('buat'); // 'buat' | 'upload'
+  const [activeTab, setActiveTab] = useState('buat');
   const fileInputRef = useRef(null);
 
   const [guruId, setGuruId] = useState('');
   const [guruName, setGuruName] = useState('');
 
-  // ===== BANK BUKU REFERENSI =====
   const [bukuList, setBukuList] = useState([]);
   const [loadingBuku, setLoadingBuku] = useState(true);
 
-  // ===== UPLOAD =====
   const [uploadTitle, setUploadTitle] = useState('');
   const [uploadMapel, setUploadMapel] = useState('');
   const [uploadKelas, setUploadKelas] = useState('');
+  const [uploadBookType, setUploadBookType] = useState('siswa');
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
 
-  // ===== GENERATE =====
-  const [selectedBukuId, setSelectedBukuId] = useState('');
-  const [selectedChapterIdx, setSelectedChapterIdx] = useState(null);
-  const [showManualRange, setShowManualRange] = useState(false);
-  const [pageStart, setPageStart] = useState(1);
-  const [pageEnd, setPageEnd] = useState(10);
+  const [primary, setPrimary] = useState(emptySourceState());
+  const [secondaryEnabled, setSecondaryEnabled] = useState(false);
+  const [secondary, setSecondary] = useState(emptySourceState());
+
   const [topic, setTopic] = useState('');
   const [kelasTopik, setKelasTopik] = useState('');
   const [arahan, setArahan] = useState('');
@@ -153,9 +154,6 @@ const TeacherLearningAid = () => {
 
   useEffect(() => { fetchBukuList(); }, []);
 
-  // ============================================================
-  // UPLOAD BUKU PAKET
-  // ============================================================
   const handleUploadPdf = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -164,7 +162,7 @@ const TeacherLearningAid = () => {
       return;
     }
     if (!uploadTitle.trim()) {
-      alert('❌ Isi dulu judul buku (mis. "Buku Paket Matematika Kelas 8 SMP") sebelum upload.');
+      alert('❌ Isi dulu judul buku sebelum upload.');
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -177,11 +175,9 @@ const TeacherLearningAid = () => {
       });
 
       if (pages.length === 0 || pages.every(p => !p.text)) {
-        throw new Error('Tidak ada teks yang bisa dibaca dari PDF ini. Kemungkinan ini hasil scan/foto (bukan PDF teks asli) — coba pakai file PDF yang teksnya bisa di-select/copy.');
+        throw new Error('Tidak ada teks yang bisa dibaca dari PDF ini. Kemungkinan ini hasil scan/foto — coba pakai file PDF yang teksnya bisa di-select/copy.');
       }
 
-      // 🔥 Deteksi struktur bab OTOMATIS supaya nanti guru tinggal klik nama
-      // bab, gak perlu tau/hitung sendiri nomor halaman fisik PDF-nya.
       setUploadStatus('Memetakan struktur bab...');
       const chapters = await detectChapters(pages, uploadTitle.trim());
 
@@ -190,17 +186,14 @@ const TeacherLearningAid = () => {
         title: uploadTitle.trim(),
         mapel: uploadMapel.trim() || 'Umum',
         kelas: uploadKelas.trim() || '-',
+        bookType: uploadBookType,
         fileName: file.name,
         totalPages: pages.length,
-        chapters, // [] kalau deteksi gagal -- generate tab otomatis fallback ke manual
+        chapters,
         guruId, guruName,
         createdAt: serverTimestamp(),
       });
 
-      // 🔥 Simpan tiap halaman sebagai dokumen TERPISAH di subcollection
-      // (bukan 1 dokumen raksasa) -- buku 300+ halaman bisa gampang tembus
-      // batas ukuran 1 dokumen Firestore (1MB) kalau digabung jadi satu.
-      // Ditulis per 400 biar aman di bawah batas 500 operasi/batch Firestore.
       const CHUNK = 400;
       for (let i = 0; i < pages.length; i += CHUNK) {
         const batch = writeBatch(db);
@@ -212,10 +205,19 @@ const TeacherLearningAid = () => {
         setUploadStatus(`Menyimpan halaman ${Math.min(i + CHUNK, pages.length)} dari ${pages.length}...`);
       }
 
+      const pairFound = bukuList.find(b =>
+        (b.mapel || '').trim().toLowerCase() === (uploadMapel || 'Umum').trim().toLowerCase() &&
+        (b.kelas || '').trim().toLowerCase() === (uploadKelas || '-').trim().toLowerCase() &&
+        b.bookType && b.bookType !== uploadBookType
+      );
+
       const chapterNote = chapters.length > 0
-        ? `Sistem berhasil memetakan ${chapters.length} bab -- nanti tinggal klik nama babnya, gak perlu isi nomor halaman.`
-        : `Sistem belum berhasil memetakan bab otomatis untuk buku ini -- nanti bisa atur halaman manual saat generate.`;
-      alert(`✅ "${uploadTitle}" berhasil diupload (${pages.length} halaman)!\n\n${chapterNote}`);
+        ? `Sistem berhasil memetakan ${chapters.length} bab.`
+        : `Sistem belum berhasil memetakan bab otomatis -- nanti bisa atur halaman manual saat generate.`;
+      const pairNote = pairFound
+        ? `\n\n📎 Ketemu pasangannya: "${pairFound.title}" sudah pernah diupload. Nanti pas generate, keduanya bisa digabung jadi sumber sekaligus.`
+        : '';
+      alert(`✅ "${uploadTitle}" berhasil diupload (${pages.length} halaman)!\n\n${chapterNote}${pairNote}`);
       setUploadTitle(''); setUploadMapel(''); setUploadKelas('');
       await fetchBukuList();
       setActiveTab('buat');
@@ -230,7 +232,7 @@ const TeacherLearningAid = () => {
   };
 
   const handleDeleteBuku = async (buku) => {
-    if (!window.confirm(`Hapus "${buku.title}" dari bank referensi? Semua ${buku.totalPages} halaman yang tersimpan ikut terhapus.`)) return;
+    if (!window.confirm(`Hapus "${buku.title}" dari bank referensi? Semua ${buku.totalPages} halaman ikut terhapus.`)) return;
     try {
       const pagesSnap = await getDocs(collection(db, 'buku_referensi', buku.id, 'pages'));
       const CHUNK = 400;
@@ -247,73 +249,183 @@ const TeacherLearningAid = () => {
     }
   };
 
-  // ============================================================
-  // GENERATE ALAT BANTU (GROUNDED KE BUKU YANG DIPILIH)
-  // ============================================================
-  const selectedBuku = bukuList.find(b => b.id === selectedBukuId);
-  const hasChapters = (selectedBuku?.chapters || []).length > 0;
+  const primaryBuku = bukuList.find(b => b.id === primary.bukuId);
+  const secondaryBuku = bukuList.find(b => b.id === secondary.bukuId);
 
-  const handleSelectBuku = (id) => {
-    setSelectedBukuId(id);
-    setSelectedChapterIdx(null);
-    setShowManualRange(false);
-    setPageStart(1);
-    setPageEnd(10);
+  const suggestedPair = primaryBuku
+    ? bukuList.find(b =>
+        b.id !== primaryBuku.id &&
+        (b.mapel || '').trim().toLowerCase() === (primaryBuku.mapel || '').trim().toLowerCase() &&
+        (b.kelas || '').trim().toLowerCase() === (primaryBuku.kelas || '').trim().toLowerCase() &&
+        b.bookType && primaryBuku.bookType && b.bookType !== primaryBuku.bookType
+      )
+    : null;
+
+  const handleSelectPrimary = (id) => {
+    setPrimary({ ...emptySourceState(), bukuId: id });
+    setSecondaryEnabled(false);
+    setSecondary(emptySourceState());
   };
 
-  const handleSelectChapter = (idx, chapter) => {
-    setSelectedChapterIdx(idx);
-    setPageStart(chapter.startPage);
-    setPageEnd(chapter.endPage);
+  const handleEnableSuggestedPair = () => {
+    if (!suggestedPair) return;
+    setSecondaryEnabled(true);
+    setSecondary({ ...emptySourceState(), bukuId: suggestedPair.id });
+  };
+
+  const renderSourcePicker = (buku, source, setSource) => {
+    if (!buku) return null;
+    const hasChapters = (buku.chapters || []).length > 0;
+    return (
+      <div>
+        {hasChapters && !source.showManualRange ? (
+          <div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 240, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 8, padding: 6, background: '#fafafa' }}>
+              {buku.chapters.map((c, idx) => {
+                const active = source.chapterIdx === idx;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setSource({ ...source, chapterIdx: idx, pageStart: c.startPage, pageEnd: c.endPage })}
+                    style={{
+                      textAlign: 'left', padding: '10px 12px', borderRadius: 8,
+                      border: active ? '2px solid #673ab7' : '1px solid #e2e8f0',
+                      background: active ? '#f5f3ff' : 'white', cursor: 'pointer',
+                      fontSize: 12, fontWeight: active ? 700 : 500, color: '#1e293b',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                    }}
+                  >
+                    <span>
+                      {c.title}
+                      <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400, marginTop: 2 }}>Halaman {c.startPage}–{c.endPage}</div>
+                    </span>
+                    {active && <CheckCircle size={16} color="#673ab7" style={{ flexShrink: 0 }} />}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              onClick={() => setSource({ ...source, showManualRange: true })}
+              style={{ marginTop: 6, background: 'none', border: 'none', fontSize: 10, color: '#94a3b8', textDecoration: 'underline', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              <PencilLine size={11} /> Gak ada di daftar / lintas-bab? Atur halaman manual
+            </button>
+          </div>
+        ) : (
+          <div>
+            {hasChapters && (
+              <button
+                type="button"
+                onClick={() => setSource({ ...source, showManualRange: false })}
+                style={{ marginBottom: 8, background: 'none', border: 'none', fontSize: 10, color: '#673ab7', textDecoration: 'underline', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+              >
+                <ArrowLeft size={11} /> Kembali pilih dari daftar bab
+              </button>
+            )}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <div>
+                <label style={labelStyle}>Dari Halaman</label>
+                <input type="number" min={1} max={buku.totalPages} value={source.pageStart} onChange={e => setSource({ ...source, pageStart: parseInt(e.target.value) || 1 })} style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Sampai Halaman</label>
+                <input type="number" min={1} max={buku.totalPages} value={source.pageEnd} onChange={e => setSource({ ...source, pageEnd: parseInt(e.target.value) || 1 })} style={inputStyle} />
+              </div>
+            </div>
+            <p style={{ fontSize: 10, color: '#94a3b8', margin: '6px 0 0' }}>
+              💡 Nomor halaman ngikutin urutan FISIK file PDF, bukan nomor cetak di buku.
+              {!hasChapters && ' Sistem belum berhasil memetakan bab otomatis untuk buku ini.'}
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const fetchSourceText = async (bukuId, pageStart, pageEnd) => {
+    const q = query(
+      collection(db, 'buku_referensi', bukuId, 'pages'),
+      where('pageNumber', '>=', Number(pageStart)),
+      where('pageNumber', '<=', Number(pageEnd))
+    );
+    const snap = await getDocs(q);
+    return snap.docs
+      .map(d => d.data())
+      .sort((a, b) => a.pageNumber - b.pageNumber)
+      .map(p => p.text)
+      .join('\n\n');
   };
 
   const handleGenerate = async () => {
     setError('');
-    if (!selectedBukuId) return setError('❌ Pilih dulu buku referensinya.');
-    if (hasChapters && !showManualRange && selectedChapterIdx === null) {
-      return setError('❌ Pilih dulu bab/bagian yang mau dijadikan sumber.');
+    if (!primary.bukuId) return setError('❌ Pilih dulu buku referensi utamanya.');
+    const primaryHasChapters = (primaryBuku?.chapters || []).length > 0;
+    if (primaryHasChapters && !primary.showManualRange && primary.chapterIdx === null) {
+      return setError('❌ Pilih dulu bab/bagian dari buku utama.');
     }
-    if (!topic.trim()) return setError('❌ Isi dulu topik yang mau dicari (mis. "Integral Tak Tentu").');
-    if (pageStart < 1 || pageEnd < pageStart) return setError('❌ Rentang halaman tidak valid.');
-    if (pageEnd - pageStart > 25) {
-      const lanjut = window.confirm('⚠️ Rentang halaman cukup luas (>25 halaman). Prosesnya bisa lebih lama dan hasilnya kurang fokus. Tetap lanjut?');
+    if (!topic.trim()) return setError('❌ Isi dulu topik yang mau dicari.');
+    if (primary.pageStart < 1 || primary.pageEnd < primary.pageStart) return setError('❌ Rentang halaman buku utama tidak valid.');
+    if (secondaryEnabled) {
+      if (!secondary.bukuId) return setError('❌ Pilih buku pasangannya, atau matikan opsi "gabung buku pasangan".');
+      if (secondary.pageStart < 1 || secondary.pageEnd < secondary.pageStart) return setError('❌ Rentang halaman buku pasangan tidak valid.');
+    }
+
+    const totalSpan = (primary.pageEnd - primary.pageStart) + (secondaryEnabled ? (secondary.pageEnd - secondary.pageStart) : 0);
+    if (totalSpan > 40) {
+      const lanjut = window.confirm('⚠️ Total rentang halaman cukup luas. Prosesnya bisa lebih lama dan hasilnya kurang fokus. Tetap lanjut?');
       if (!lanjut) return;
     }
 
     setGenerating(true);
     setResult(null);
-    setStatusLabel(`Membaca halaman ${pageStart}-${pageEnd} dari "${selectedBuku.title}"...`);
+    setStatusLabel(`Membaca sumber dari "${primaryBuku.title}"...`);
 
     try {
-      const q = query(
-        collection(db, 'buku_referensi', selectedBukuId, 'pages'),
-        where('pageNumber', '>=', Number(pageStart)),
-        where('pageNumber', '<=', Number(pageEnd))
-      );
-      const snap = await getDocs(q);
-      const sourceText = snap.docs
-        .map(d => d.data())
-        .sort((a, b) => a.pageNumber - b.pageNumber)
-        .map(p => p.text)
-        .join('\n\n');
-
-      if (!sourceText.trim()) {
-        throw new Error('Gak ada teks ditemukan di rentang halaman itu. Cek lagi nomor halamannya.');
+      const textPrimary = await fetchSourceText(primary.bukuId, primary.pageStart, primary.pageEnd);
+      let textSecondary = '';
+      if (secondaryEnabled && secondary.bukuId) {
+        setStatusLabel(`Membaca sumber dari "${secondaryBuku.title}"...`);
+        textSecondary = await fetchSourceText(secondary.bukuId, secondary.pageStart, secondary.pageEnd);
       }
 
+      if (!textPrimary.trim() && !textSecondary.trim()) {
+        throw new Error('Gak ada teks ditemukan di rentang halaman yang dipilih. Cek lagi bab/halamannya.');
+      }
+
+      let sourceTextGuru = '', sourceLabelGuru = '';
+      let sourceTextSiswa = '', sourceLabelSiswa = '';
+      const bucket = (buku, text) => {
+        if (!buku || !text?.trim()) return;
+        if (buku.bookType === 'guru') {
+          sourceTextGuru += (sourceTextGuru ? '\n\n' : '') + text;
+          sourceLabelGuru = sourceLabelGuru ? `${sourceLabelGuru}, ${buku.title}` : buku.title;
+        } else {
+          sourceTextSiswa += (sourceTextSiswa ? '\n\n' : '') + text;
+          sourceLabelSiswa = sourceLabelSiswa ? `${sourceLabelSiswa}, ${buku.title}` : buku.title;
+        }
+      };
+      bucket(primaryBuku, textPrimary);
+      if (secondaryEnabled) bucket(secondaryBuku, textSecondary);
+
       setStatusLabel('AI menyusun Capaian Pembelajaran, RPP, dan materi... (30-60 detik)');
+
+      const pageRangeLabel = secondaryEnabled
+        ? `${primaryBuku.title} (hal. ${primary.pageStart}-${primary.pageEnd}) + ${secondaryBuku.title} (hal. ${secondary.pageStart}-${secondary.pageEnd})`
+        : `${primaryBuku.title} (hal. ${primary.pageStart}-${primary.pageEnd})`;
 
       const res = await fetch('/api/generateGuruLearningAid', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           topic: topic.trim(),
-          mapel: selectedBuku.mapel,
-          kelas: kelasTopik.trim() || selectedBuku.kelas,
+          mapel: primaryBuku.mapel,
+          kelas: kelasTopik.trim() || primaryBuku.kelas,
           arahan: arahan.trim(),
-          sourceText,
-          sourceTitle: selectedBuku.title,
-          pageRange: `${pageStart}-${pageEnd}`,
+          sourceTextGuru, sourceLabelGuru,
+          sourceTextSiswa, sourceLabelSiswa,
+          pageRangeLabel,
         }),
       });
       const data = await res.json();
@@ -327,9 +439,6 @@ const TeacherLearningAid = () => {
     }
   };
 
-  // ============================================================
-  // RENDER
-  // ============================================================
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? 12 : 24, paddingBottom: 80 }}>
       <div style={{ marginBottom: 20 }}>
@@ -342,7 +451,6 @@ const TeacherLearningAid = () => {
         </p>
       </div>
 
-      {/* TAB */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
         <button onClick={() => setActiveTab('buat')} style={tabBtnStyle(activeTab === 'buat')}>
           <Sparkles size={14} /> Buat Alat Bantu
@@ -352,22 +460,21 @@ const TeacherLearningAid = () => {
         </button>
       </div>
 
-      {/* ============================================================ */}
-      {/* TAB: UPLOAD BUKU */}
-      {/* ============================================================ */}
       {activeTab === 'upload' && (
         <div>
           <div style={cardStyle}>
             <h4 style={cardTitleStyle}><Upload size={16} /> Upload Buku Paket Baru</h4>
             <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12 }}>
-              Upload SEKALI per buku, dipakai berkali-kali selamanya buat generate topik apa pun dari buku itu. Sistem
-              otomatis memetakan bab-babnya, jadi nanti tinggal klik nama babnya. Butuh PDF yang teksnya bisa
-              di-select (bukan hasil scan foto halaman).
+              Upload Buku Siswa DAN Buku Guru buat mapel+kelas yang sama (tandai jenisnya) supaya nanti bisa
+              digabung jadi sumber sekaligus — Buku Guru buat Capaian Pembelajaran & RPP, Buku Siswa buat materi inti.
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: 8, marginBottom: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 10 }}>
               <input value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder="Judul buku (wajib)" style={inputStyle} disabled={uploading} />
-              <input value={uploadMapel} onChange={e => setUploadMapel(e.target.value)} placeholder="Mapel (mis. Matematika)" style={inputStyle} disabled={uploading} />
-              <input value={uploadKelas} onChange={e => setUploadKelas(e.target.value)} placeholder="Kelas (mis. 8 SMP)" style={inputStyle} disabled={uploading} />
+              <input value={uploadMapel} onChange={e => setUploadMapel(e.target.value)} placeholder="Mapel (mis. Kimia)" style={inputStyle} disabled={uploading} />
+              <input value={uploadKelas} onChange={e => setUploadKelas(e.target.value)} placeholder="Kelas (mis. 12 SMA)" style={inputStyle} disabled={uploading} />
+              <select value={uploadBookType} onChange={e => setUploadBookType(e.target.value)} style={selectStyle} disabled={uploading}>
+                {BOOK_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
             </div>
             <label style={{ ...uploadBoxStyle, opacity: uploading ? 0.7 : 1, cursor: uploading ? 'not-allowed' : 'pointer' }}>
               {uploading ? (
@@ -396,7 +503,12 @@ const TeacherLearningAid = () => {
               bukuList.map(b => (
                 <div key={b.id} style={bukuRowStyle}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>{b.title}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      {b.title}
+                      <span style={{ fontSize: 9, fontWeight: 700, color: '#673ab7', background: '#ede9fe', padding: '1px 8px', borderRadius: 10 }}>
+                        {BOOK_TYPES.find(t => t.value === b.bookType)?.label || '📄 Lainnya'}
+                      </span>
+                    </div>
                     <div style={{ fontSize: 10, color: '#94a3b8' }}>
                       {b.mapel} · {b.kelas} · {b.totalPages} halaman · diupload {b.guruName || '-'}
                       {b.chapters?.length > 0 && <> · <span style={{ color: '#673ab7', fontWeight: 700 }}>{b.chapters.length} bab terdeteksi</span></>}
@@ -412,16 +524,13 @@ const TeacherLearningAid = () => {
         </div>
       )}
 
-      {/* ============================================================ */}
-      {/* TAB: BUAT ALAT BANTU */}
-      {/* ============================================================ */}
       {activeTab === 'buat' && (
         <div>
           {bukuList.length === 0 && !loadingBuku ? (
             <div style={{ ...cardStyle, textAlign: 'center', padding: 30 }}>
               <BookOpen size={32} color="#cbd5e1" />
               <p style={{ fontSize: 13, color: '#64748b', marginTop: 10 }}>
-                Belum ada buku referensi. Upload buku paket dulu di tab "Buku Referensi" sebelum bisa generate alat bantu.
+                Belum ada buku referensi. Upload buku paket dulu sebelum bisa generate alat bantu.
               </p>
               <button onClick={() => setActiveTab('upload')} style={{ marginTop: 10, padding: '8px 18px', background: '#673ab7', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
                 Upload Buku Sekarang
@@ -432,84 +541,51 @@ const TeacherLearningAid = () => {
               <h4 style={cardTitleStyle}><Search size={16} /> Cari Topik dari Buku Referensi</h4>
 
               <div style={{ marginBottom: 10 }}>
-                <label style={labelStyle}>📚 Buku Referensi</label>
-                <select value={selectedBukuId} onChange={e => handleSelectBuku(e.target.value)} style={selectStyle}>
+                <label style={labelStyle}>📚 Buku Utama</label>
+                <select value={primary.bukuId} onChange={e => handleSelectPrimary(e.target.value)} style={selectStyle}>
                   <option value="">-- Pilih Buku --</option>
                   {bukuList.map(b => (
-                    <option key={b.id} value={b.id}>{b.title} ({b.mapel} · {b.kelas} · {b.totalPages} hal)</option>
+                    <option key={b.id} value={b.id}>
+                      {BOOK_TYPES.find(t => t.value === b.bookType)?.label.split(' ')[0] || ''} {b.title} ({b.mapel} · {b.kelas})
+                    </option>
                   ))}
                 </select>
               </div>
 
-              {/* ============================================================
-                  🔥 PEMILIHAN SUMBER -- daftar bab (klik nama) sebagai jalur
-                  utama, halaman manual cuma jalur cadangan buat kasus khusus
-                  (buku tanpa struktur bab jelas, atau topik lintas-bab).
-                  ============================================================ */}
-              {selectedBuku && (
+              {primaryBuku && (
                 <div style={{ marginBottom: 10 }}>
-                  {hasChapters && !showManualRange ? (
+                  {renderSourcePicker(primaryBuku, primary, setPrimary)}
+                </div>
+              )}
+
+              {primaryBuku && (
+                <div style={{ marginBottom: 14, padding: 12, background: '#f8fafc', borderRadius: 10, border: '1px dashed #cbd5e1' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: '#475569', cursor: 'pointer', marginBottom: secondaryEnabled ? 10 : 0 }}>
+                    <input type="checkbox" checked={secondaryEnabled} onChange={e => { setSecondaryEnabled(e.target.checked); if (!e.target.checked) setSecondary(emptySourceState()); }} />
+                    <Link2 size={13} /> Gabung dengan buku pasangan (mis. Buku Siswa + Buku Guru)
+                  </label>
+
+                  {suggestedPair && !secondaryEnabled && (
+                    <button
+                      type="button"
+                      onClick={handleEnableSuggestedPair}
+                      style={{ marginTop: 8, fontSize: 11, color: '#673ab7', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 6, padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <Sparkles size={12} /> Ketemu kemungkinan pasangannya: "{suggestedPair.title}" — klik buat gabungkan
+                    </button>
+                  )}
+
+                  {secondaryEnabled && (
                     <div>
-                      <label style={labelStyle}><ListTree size={12} style={{ verticalAlign: -2 }} /> Pilih Bab / Bagian</label>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 280, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 8, padding: 6, background: '#fafafa' }}>
-                        {selectedBuku.chapters.map((c, idx) => {
-                          const active = selectedChapterIdx === idx;
-                          return (
-                            <button
-                              key={idx}
-                              type="button"
-                              onClick={() => handleSelectChapter(idx, c)}
-                              style={{
-                                textAlign: 'left', padding: '10px 12px', borderRadius: 8,
-                                border: active ? '2px solid #673ab7' : '1px solid #e2e8f0',
-                                background: active ? '#f5f3ff' : 'white', cursor: 'pointer',
-                                fontSize: 12, fontWeight: active ? 700 : 500, color: '#1e293b',
-                                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-                              }}
-                            >
-                              <span>
-                                {c.title}
-                                <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400, marginTop: 2 }}>Halaman {c.startPage}–{c.endPage}</div>
-                              </span>
-                              {active && <CheckCircle size={16} color="#673ab7" style={{ flexShrink: 0 }} />}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setShowManualRange(true)}
-                        style={{ marginTop: 6, background: 'none', border: 'none', fontSize: 10, color: '#94a3b8', textDecoration: 'underline', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
-                      >
-                        <PencilLine size={11} /> Topik saya lintas-bab / gak ada di daftar? Atur halaman manual
-                      </button>
-                    </div>
-                  ) : (
-                    <div>
-                      {hasChapters && (
-                        <button
-                          type="button"
-                          onClick={() => setShowManualRange(false)}
-                          style={{ marginBottom: 8, background: 'none', border: 'none', fontSize: 10, color: '#673ab7', textDecoration: 'underline', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
-                        >
-                          <ArrowLeft size={11} /> Kembali pilih dari daftar bab
-                        </button>
-                      )}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                        <div>
-                          <label style={labelStyle}>Dari Halaman</label>
-                          <input type="number" min={1} max={selectedBuku.totalPages} value={pageStart} onChange={e => setPageStart(parseInt(e.target.value) || 1)} style={inputStyle} />
-                        </div>
-                        <div>
-                          <label style={labelStyle}>Sampai Halaman</label>
-                          <input type="number" min={1} max={selectedBuku.totalPages} value={pageEnd} onChange={e => setPageEnd(parseInt(e.target.value) || 1)} style={inputStyle} />
-                        </div>
-                      </div>
-                      <p style={{ fontSize: 10, color: '#94a3b8', margin: '6px 0 0' }}>
-                        💡 Nomor halaman di sini mengikuti urutan FISIK file PDF (halaman pertama = cover), bukan
-                        nomor cetak di buku. Cek dulu di file PDF-nya buku ini ada di halaman fisik berapa.
-                        {!hasChapters && ' Sistem belum berhasil memetakan bab otomatis untuk buku ini.'}
-                      </p>
+                      <select value={secondary.bukuId} onChange={e => setSecondary({ ...emptySourceState(), bukuId: e.target.value })} style={{ ...selectStyle, marginBottom: 8 }}>
+                        <option value="">-- Pilih Buku Pasangan --</option>
+                        {bukuList.filter(b => b.id !== primary.bukuId).map(b => (
+                          <option key={b.id} value={b.id}>
+                            {BOOK_TYPES.find(t => t.value === b.bookType)?.label.split(' ')[0] || ''} {b.title} ({b.mapel} · {b.kelas})
+                          </option>
+                        ))}
+                      </select>
+                      {secondaryBuku && renderSourcePicker(secondaryBuku, secondary, setSecondary)}
                     </div>
                   )}
                 </div>
@@ -522,7 +598,7 @@ const TeacherLearningAid = () => {
 
               <div style={{ marginBottom: 10 }}>
                 <label style={labelStyle}>🎓 Kelas (opsional, default ikut buku)</label>
-                <input value={kelasTopik} onChange={e => setKelasTopik(e.target.value)} placeholder={selectedBuku?.kelas || 'Kelas 12 SMA'} style={inputStyle} />
+                <input value={kelasTopik} onChange={e => setKelasTopik(e.target.value)} placeholder={primaryBuku?.kelas || 'Kelas 12 SMA'} style={inputStyle} />
               </div>
 
               <div style={{ marginBottom: 12 }}>
@@ -545,49 +621,52 @@ const TeacherLearningAid = () => {
             </div>
           )}
 
-          {/* ============================================================ */}
-          {/* HASIL GENERATE */}
-          {/* ============================================================ */}
-          {result && (
+          {result?.source_insufficient && (
+            <div style={{ ...cardStyle, background: '#fffbeb', border: '1px solid #fde68a', marginTop: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <AlertCircle size={22} color="#b45309" style={{ flexShrink: 0, marginTop: 2 }} />
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#92400e', marginBottom: 4 }}>
+                    Sumber yang dipilih belum mencakup topik "{topic}"
+                  </div>
+                  <p style={{ fontSize: 12, color: '#78350f', lineHeight: 1.7, margin: 0 }}>{result.insufficient_note}</p>
+                  <p style={{ fontSize: 11, color: '#92400e', marginTop: 8, fontStyle: 'italic' }}>
+                    💡 Sistem sengaja TIDAK mengarang materi di luar buku yang kamu upload, biar gak ada info yang salah/gak akurat.
+                    Coba cari bab lain di buku ini, atau gabungkan dengan buku pasangannya (Buku Siswa/Buku Guru) di atas.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {result && !result.source_insufficient && (
             <div style={{ marginTop: 16 }}>
               <div style={{ ...cardStyle, background: '#f5f3ff', border: '1px solid #ddd6fe' }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: '#6d28d9', marginBottom: 4 }}>
-                  📖 Sumber: {result.sourceTitle} (hal. {result.pageRange})
+                  📖 Sumber: {result.pageRangeLabel}
                 </div>
                 <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#1e293b' }}>{topic}</h3>
               </div>
 
-              {/* CAPAIAN PEMBELAJARAN */}
               <div style={resultSectionStyle}>
                 <div style={resultSectionHeader('#0d9488', '#f0fdfa')}>
                   <Target size={16} color="#0d9488" /> Capaian Pembelajaran
                 </div>
-                <div
-                  style={{ fontSize: 13, color: '#134e4a', lineHeight: 1.8, padding: '14px 16px' }}
-                  dangerouslySetInnerHTML={{ __html: renderMathInHtml(result.capaian_pembelajaran) }}
-                />
+                <div style={{ fontSize: 13, color: '#134e4a', lineHeight: 1.8, padding: '14px 16px' }} dangerouslySetInnerHTML={{ __html: renderMathInHtml(result.capaian_pembelajaran) }} />
               </div>
 
-              {/* RPP RINGKAS */}
               <div style={resultSectionStyle}>
                 <div style={resultSectionHeader('#b45309', '#fffbeb')}>
                   <ClipboardList size={16} color="#b45309" /> RPP Ringkas
                 </div>
-                <div
-                  style={{ fontSize: 13, color: '#78350f', lineHeight: 1.8, padding: '14px 16px' }}
-                  dangerouslySetInnerHTML={{ __html: renderMathInHtml(result.rpp_ringkas) }}
-                />
+                <div style={{ fontSize: 13, color: '#78350f', lineHeight: 1.8, padding: '14px 16px' }} dangerouslySetInnerHTML={{ __html: renderMathInHtml(result.rpp_ringkas) }} />
               </div>
 
-              {/* MATERI INTI */}
               <div style={resultSectionStyle}>
                 <div style={resultSectionHeader('#673ab7', '#faf5ff')}>
                   <Sparkles size={16} color="#673ab7" /> Materi Inti — Cara Gemilang
                 </div>
-                <div
-                  style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.8, padding: '14px 16px' }}
-                  dangerouslySetInnerHTML={{ __html: renderMathInHtml(result.materi_inti) }}
-                />
+                <div style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.8, padding: '14px 16px' }} dangerouslySetInnerHTML={{ __html: renderMathInHtml(result.materi_inti) }} />
               </div>
 
               <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center', marginTop: 12 }}>
@@ -606,9 +685,6 @@ const TeacherLearningAid = () => {
   );
 };
 
-// ============================================================
-// STYLES
-// ============================================================
 const tabBtnStyle = (active) => ({
   padding: '10px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
   fontWeight: 700, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
