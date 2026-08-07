@@ -55,28 +55,36 @@ export default defineConfig({
         // 🔥 FIX BUILD ERROR (workbox maximumFileSizeToCacheInBytes):
         // sebelumnya SEMUA node_modules digabung jadi SATU file 'vendor'
         // (5.16 MB), jadi gampang lewat limit workbox tiap nambah library
-        // baru. Sekarang dipecah per grup library -- selain fix error ini,
-        // efek sampingnya juga bagus: siswa yang buka /siswa/* gak perlu
-        // download pdfjs/exceljs/jspdf/mammoth/xlsx yang cuma dipakai di
-        // halaman guru (/guru/alat-bantu, export raport, dll), karena
-        // chunk-chunk itu cuma ke-load kalau halamannya beneran butuh.
+        // baru.
+        //
+        // 🔥 FIX SUSULAN (Uncaught TypeError: Cannot read properties of
+        // undefined, reading 'forwardRef'): percobaan pertama sempat
+        // memisahkan react/react-dom ke chunk sendiri ('vendor-react'),
+        // padahal banyak library lain (lucide-react, recharts, swiper, dll)
+        // MEMANGGIL React.forwardRef DARI DALAM MODUL MEREKA SENDIRI saat
+        // pertama kali di-load. Kalau chunk itu kebetulan dieksekusi
+        // sebelum chunk React siap, hasilnya persis error di atas -- dan
+        // ini rawan beda-beda hasilnya antar browser (Chrome vs Safari).
+        // Aturan amannya: JANGAN pisahkan react/react-dom dari library apa
+        // pun yang notabene "React library" (pakai hooks/forwardRef).
+        // Yang boleh dipisah HANYA library besar & berdiri sendiri yang
+        // TIDAK bergantung ke React sama sekali secara langsung.
         manualChunks(id) {
           if (!id.includes('node_modules')) return;
 
-          // Library berat yang cuma dipakai fitur tertentu -> chunk sendiri
+          // Library besar & berdiri sendiri (tidak bergantung ke React) ->
+          // aman dipisah ke chunk sendiri, ini yang jadi biang bengkaknya
+          // ukuran vendor kemarin.
           if (id.includes('pdfjs-dist')) return 'vendor-pdf';
-          if (id.includes('katex')) return 'vendor-katex';
           if (id.includes('mammoth')) return 'vendor-mammoth';
           if (id.includes('xlsx') || id.includes('exceljs')) return 'vendor-excel';
           if (id.includes('jspdf') || id.includes('html2canvas')) return 'vendor-pdfmaker';
           if (id.includes('firebase')) return 'vendor-firebase';
-          if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
-          if (id.includes('react-dom') || id.includes('/react/') || id.includes('react-router')) {
-            return 'vendor-react';
-          }
 
-          // Sisanya (lucide-react, swiper, jszip, qrcode.react, dll) -> satu
-          // chunk umum yang lebih kecil daripada gabungan semuanya dulu.
+          // Sisanya -- termasuk react, react-dom, react-router, lucide-react,
+          // katex, recharts, swiper, jszip, dll -- SENGAJA digabung jadi
+          // satu chunk supaya urutan load-nya selalu benar, gak ada lagi
+          // risiko forwardRef undefined.
           return 'vendor';
         },
       },
