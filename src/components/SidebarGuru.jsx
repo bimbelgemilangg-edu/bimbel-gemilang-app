@@ -4,7 +4,7 @@ import {
   LayoutDashboard, User, BookOpen, Edit, 
   History, Calendar, ClipboardCheck, LogOut, Menu, X,
   Database, FileText, Upload, Award, CheckSquare,
-  Clock, Users, Settings, FileSpreadsheet
+  Clock, Users, Settings, FileSpreadsheet, GraduationCap
 } from 'lucide-react';
 
 const SidebarGuru = () => {
@@ -37,6 +37,18 @@ const SidebarGuru = () => {
       name: 'E-Learning', 
       path: '/guru/modul', 
       icon: <BookOpen size={20}/> 
+    },
+    // 🔥 BARU: "Alat Bantu Guru" — TERPISAH TOTAL dari E-Learning di atas.
+    // E-Learning = modul yang tampil ke SISWA (buat belajar di rumah).
+    // Alat Bantu Guru = ruang kerja PRIVAT guru: upload buku paket jadi
+    // "bank referensi" permanen per mapel, lalu cari topik & generate alat
+    // bantu belajar (lengkap Capaian Pembelajaran + RPP + Cara Gemilang)
+    // yang GROUNDED ke buku paket yang diupload -- bukan generate bebas
+    // dari pengetahuan umum AI. Ini gak pernah tampil ke siswa sama sekali.
+    { 
+      name: 'Alat Bantu Guru', 
+      path: '/guru/alat-bantu', 
+      icon: <GraduationCap size={20}/> 
     },
     { 
       name: 'Pemeriksaan Tugas', 

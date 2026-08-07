@@ -52,6 +52,11 @@ import ManageMateriGuru from './pages/teacher/modul/ManageMateri';
 import ManageQuiz from './pages/teacher/modul/ManageQuiz';
 import ManageTugas from './pages/teacher/modul/ManageTugas';
 import ClassSession from './pages/teacher/ClassSession';
+// 🔥 BARU: "Alat Bantu Guru" -- TERPISAH TOTAL dari ManageMateriGuru di
+// atas. ManageMateriGuru = editor modul yang tampil ke SISWA. Ini = ruang
+// kerja PRIVAT guru (upload buku paket, generate Capaian Pembelajaran +
+// RPP + materi inti grounded ke buku itu), gak pernah tampil ke siswa.
+import TeacherLearningAid from './pages/teacher/TeacherLearningAid';
 
 // === SMART RAPORT ===
 import GenerateRaport from './pages/teacher/grades/GenerateRaport';
@@ -290,6 +295,11 @@ function App() {
         <Route path="/guru/modul/tugas" element={<GuruRoute><TeacherLayout><ManageTugas /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/modul/quiz" element={<GuruRoute><TeacherLayout><ManageQuiz /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/cek-tugas" element={<GuruRoute><TeacherLayout><CekTugasSiswa /></TeacherLayout></GuruRoute>} />
+
+        {/* 🔥 BARU: Alat Bantu Guru — ruang kerja PRIVAT guru, terpisah
+            total dari E-Learning di atas. Upload buku paket + generate
+            Capaian Pembelajaran/RPP/materi inti grounded ke buku itu. */}
+        <Route path="/guru/alat-bantu" element={<GuruRoute><TeacherLayout><TeacherLearningAid /></TeacherLayout></GuruRoute>} />
 
         {/* ============================================================
             SISWA - DENGAN WRAPPER UNTUK MODUL & KUIS

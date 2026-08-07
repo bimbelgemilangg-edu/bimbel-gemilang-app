@@ -289,9 +289,6 @@ const ManageMateri = () => {
   const [showAIGenerate, setShowAIGenerate] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   const [showRawHtml, setShowRawHtml] = useState(false);
-  // 🔥 BARU: toggle buat panel "Catatan Mengajar" (guru-only) -- default
-  // KEBUKA supaya guru langsung notice fitur baru ini, bukan ketutup diam-diam.
-  const [showTeachingNotes, setShowTeachingNotes] = useState(true);
   
   const [guruData, setGuruData] = useState(null);
   const [guruId, setGuruId] = useState('');
@@ -677,10 +674,6 @@ const ManageMateri = () => {
       type, 
       title: titles[type] || '', 
       content: '', 
-      // 🔥 BARU: field catatan mengajar (guru-only) -- konsisten ada di
-      // semua section (manual maupun AI-generate), biar guru juga bisa
-      // nulis catatan mengajar manual buat materi yang diketik sendiri.
-      teachingNotes: '',
       fileName: '', 
       mimeType: '', 
       fileSize: 0,
@@ -904,58 +897,6 @@ const ManageMateri = () => {
   // ============================================================
   // RENDER KONTEN EDITOR
   // ============================================================
-  // ============================================================
-  // 🔥 BARU: PANEL "CATATAN MENGAJAR" — GURU-ONLY, TIDAK PERNAH KE SISWA
-  // ============================================================
-  // Field `teachingNotes` ini SAMA SEKALI gak disentuh sama
-  // StudentModuleView.jsx (halaman baca materi siswa) -- jadi otomatis
-  // tetap privat tanpa perlu pengaman tambahan. Buat materi hasil "Generate
-  // dengan AI", ini lapisan KEDUA yang di-generate BARENGAN materi siswa
-  // (satu kali generate AI, dapat dua-duanya, selalu nyambung). Buat materi
-  // yang diketik manual, guru juga bisa isi ini sendiri kalau mau.
-  const renderTeachingNotesPanel = (section) => (
-    <div style={{ marginTop: 12 }}>
-      <button
-        type="button"
-        onClick={() => setShowTeachingNotes(v => !v)}
-        style={{
-          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '10px 12px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8,
-          cursor: 'pointer', textAlign: 'left',
-        }}
-      >
-        <span style={{ fontSize: 12, fontWeight: 800, color: '#92400e', display: 'flex', alignItems: 'center', gap: 6 }}>
-          📝 Catatan Mengajar
-          <span style={{ fontSize: 9, fontWeight: 700, color: '#b45309', background: '#fef3c7', padding: '2px 8px', borderRadius: 10 }}>
-            🔒 Cuma Kamu — Gak Tampil ke Siswa
-          </span>
-        </span>
-        <span style={{ fontSize: 11, color: '#92400e' }}>{showTeachingNotes ? '▲' : '▼'}</span>
-      </button>
-
-      {showTeachingNotes && (
-        <div style={{ padding: 14, background: '#fffbeb', border: '1px solid #fde68a', borderTop: 'none', borderRadius: '0 0 8px 8px' }}>
-          {section.teachingNotes ? (
-            <div
-              style={{ fontSize: 13, color: '#78350f', lineHeight: 1.7, marginBottom: 10 }}
-              dangerouslySetInnerHTML={{ __html: renderMathInHtml(section.teachingNotes) }}
-            />
-          ) : (
-            <p style={{ fontSize: 11, color: '#b45309', marginBottom: 10, fontStyle: 'italic' }}>
-              Belum ada catatan mengajar buat bagian ini. Kalau materi ini dibuat pakai "Generate dengan AI", catatannya otomatis muncul di sini. Bisa juga ditulis manual di kotak bawah.
-            </p>
-          )}
-          <textarea
-            value={section.teachingNotes || ''}
-            onChange={e => updateSection(editingSection, 'teachingNotes', e.target.value)}
-            placeholder="Tulis/edit catatan mengajar di sini (boleh HTML sederhana, mis. <b>tebal</b>)..."
-            style={{ width: '100%', minHeight: 90, padding: 10, borderRadius: 6, border: '1px solid #fde68a', fontSize: 12, fontFamily: 'monospace', resize: 'vertical', background: 'white' }}
-          />
-        </div>
-      )}
-    </div>
-  );
-
   const renderContentEditor = () => {
     const section = sections.find(s => s.id === editingSection);
     if (!section) return null;
@@ -1053,8 +994,6 @@ const ManageMateri = () => {
               )}
             </div>
 
-            {renderTeachingNotesPanel(section)}
-
             <button
               type="button"
               onClick={() => setShowRawHtml(v => !v)}
@@ -1081,14 +1020,11 @@ const ManageMateri = () => {
           </div>
         )}
         {section.type === 'text' && section.format !== 'html' && (
-          <>
-            <SimpleEditor 
-              value={section.content} 
-              onChange={value => updateSection(editingSection, 'content', value)} 
-              placeholder="Tulis materi di sini..." 
-            />
-            {renderTeachingNotesPanel(section)}
-          </>
+          <SimpleEditor 
+            value={section.content} 
+            onChange={value => updateSection(editingSection, 'content', value)} 
+            placeholder="Tulis materi di sini..." 
+          />
         )}
 
         {/* FILE */}
@@ -1783,20 +1719,8 @@ const ManageMateri = () => {
         <AIGenerateMateri
           subject={subject}
           onGenerated={(newBlocks) => {
-            // 🔥 FIX BUG KECIL: sebelumnya `totalKonten` dihitung pakai
-            // `sections.length` dari closure (nilai SEBELUM update ini) +
-            // `newBlocks.length` -- kalau AI Generate dipanggil beberapa kali
-            // berturut-turut dalam sesi yang sama, closure `sections` yang
-            // dipakai bisa jadi basi (stale) karena setSections belum
-            // sempat "settle" antar pemanggilan, jadi angka totalKonten yang
-            // ditampilkan bisa meleset dari jumlah section yang SEBENARNYA
-            // ada. Sekarang dihitung dari functional updater `prev` yang
-            // sama-sama dipakai buat updateSections, dijamin konsisten.
-            setSections(prev => {
-              const updated = [...prev, ...newBlocks];
-              setStats(s => ({ ...s, totalKonten: updated.length }));
-              return updated;
-            });
+            setSections(prev => [...prev, ...newBlocks]);
+            setStats(prev => ({ ...prev, totalKonten: sections.length + newBlocks.length }));
           }}
           onClose={() => setShowAIGenerate(false)}
         />
