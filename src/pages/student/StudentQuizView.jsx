@@ -65,43 +65,39 @@ const normalizeShortAnswer = (s) =>
 // halaman administrasi siswa: `["Matematika"]` buat siswa 1 mapel, atau
 // `["Semua"]` buat paket lengkap. Kalau belum diisi (siswa lama), akses
 // TETAP PENUH -- gak ada yang tiba-tiba keblokir.
-// 🔥 FIX BUG: sebelumnya perbandingan mapel ini case-sensitive & cuma bisa
-// cocokin lewat NAMA (yang teksnya bisa beda-beda tiap kali diketik/
-// dipilih). Sekarang COBA COCOKIN LEWAT KODE MAPEL DULU (mis. "MAPEL-004")
-// sebelum jatuh ke nama -- lihat penjelasan lengkap di
-// StudentDashboard.jsx/StudentModuleView.jsx.
+// 🔥 FIX BUG: sebelumnya kalau kode mapel gak cocok, sistem masih coba
+// cocokin lewat NAMA mapel sebagai cadangan -- tapi NAMA itu sendiri
+// sumber bug paling sering (guru ketik "IPA 8 SMP" vs "IPA Kelas 8", beda
+// dikit aja gagal cocok). Sekarang HANYA kode mapel (mis. "MAPEL-004")
+// yang dipakai buat mencocokkan -- kode dipilih dari dropdown baku, jauh
+// lebih stabil daripada teks bebas. Cadangan nama SUDAH DIHAPUS SELURUHNYA.
+// ⚠️ KONSEKUENSI: kalau field manual `enrolledSubjects` di data siswa
+// (yang admin isi lewat halaman siswa) berisi NAMA mapel (bukan kode),
+// itu SEKARANG TIDAK AKAN COCOK LAGI. Field itu perlu diisi kode mapel,
+// bukan nama -- lihat catatan di StudentDashboard.jsx.
+// 🔥 PERUBAHAN BESAR (atas permintaan eksplisit): satu-satunya sumber
+// akses sekarang field `enrolledSubjects` yang diisi MANUAL admin lewat
+// halaman Edit Siswa -- turunan otomatis dari jadwal DIHAPUS TOTAL (lihat
+// penjelasan lengkap di StudentDashboard.jsx). Kosong = BLOKIR, bukan lagi
+// izinkan -- keputusan sadar buat nutup celah "siswa kelepasan akses semua
+// mapel padahal cuma bayar 1 mapel".
 const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
   if (!modulSubject || modulSubject.toLowerCase().trim() === 'umum') return true;
-  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return true;
+  const modulCodes = String(modulKodeMapel || '').split(',').map(s => String(s || '').toLowerCase().trim()).filter(Boolean);
+  if (modulCodes.length === 0) return true; // modul/kuis ini gak punya kode mapel -> gak ada dasar buat blokir, biarkan lewat
+  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false; // 🔥 DIBALIK: kosong = BLOKIR
   const norm = (s) => String(s || '').toLowerCase().trim();
   if (enrolledSubjects.some(s => norm(s) === 'semua')) return true;
-  const modulCodes = String(modulKodeMapel || '').split(',').map(norm).filter(Boolean);
-  if (modulCodes.length > 0 && enrolledSubjects.some(s => modulCodes.includes(norm(s)))) return true;
-  const target = norm(modulSubject);
-  return enrolledSubjects.some(s => norm(s) === target);
+  return enrolledSubjects.some(s => modulCodes.includes(norm(s)));
 };
 
-// 🔥 BARU: cadangan kalau siswa buka link kuis LANGSUNG tanpa lewat
-// Dashboard dulu (cache localStorage belum keisi). Pola sama persis
-// dengan StudentDashboard.jsx / StudentModuleView.jsx. Kode mapel
-// (mapelId) ikut disimpan, bukan cuma nama.
-const deriveEnrolledSubjectsFromSchedule = async (studentDocId) => {
-  try {
-    const q = query(collection(db, "jadwal_bimbel"), where("studentIds", "array-contains", studentDocId));
-    const snap = await getDocs(q);
-    if (snap.empty) return null;
-    const subjects = new Set();
-    snap.docs.forEach(d => {
-      const sched = d.data();
-      if (sched.mapelName) subjects.add(sched.mapelName);
-      if (sched.mapelId) subjects.add(sched.mapelId);
-    });
-    return subjects.size > 0 ? Array.from(subjects) : null;
-  } catch (e) {
-    console.error("Gagal menurunkan mapel dari jadwal:", e);
-    return null;
-  }
-};
+// ============================================================
+// 🔥 DIHAPUS: deriveEnrolledSubjectsFromSchedule()
+// ============================================================
+// Dulu menurunkan akses mapel dari jadwal_bimbel otomatis. Sekarang
+// DIHAPUS TOTAL -- satu-satunya sumber akses adalah `enrolledSubjects`
+// manual, lihat penjelasan di hasSubjectAccess() di atas dan di
+// StudentDashboard.jsx.
 
 // ============================================================
 // 🔥 RENDER MATH - SUPPORT KATEX
@@ -314,13 +310,11 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           const targetKategori = targetingSource.targetKategori || 'Semua';
           const matchKelas = targetKelas === 'Semua' || targetKelas === studentInfo.kelas;
           const matchProgram = targetKategori === 'Semua' || targetKategori === studentInfo.program;
-          // 🔥 Kalau belum ada data mapel sama sekali (siswa buka link kuis
-          // LANGSUNG tanpa lewat Dashboard dulu, cache belum keisi), coba
-          // turunkan langsung dari jadwal_bimbel sebagai cadangan terakhir.
-          let effectiveEnrolledSubjects = studentInfo.enrolledSubjects;
-          if (!effectiveEnrolledSubjects && studentData?.id) {
-            effectiveEnrolledSubjects = await deriveEnrolledSubjectsFromSchedule(studentData.id);
-          }
+          // 🔥 BERUBAH: mapel yang diambil siswa sekarang HANYA dari field
+          // manual `enrolledSubjects` (turunan otomatis dari jadwal_bimbel
+          // DIHAPUS TOTAL) -- lihat StudentDashboard.jsx buat penjelasan
+          // lengkap kenapa ini sengaja dibalik jadi ketat.
+          const effectiveEnrolledSubjects = studentInfo.enrolledSubjects;
           const matchSubject = hasSubjectAccess(effectiveEnrolledSubjects, data.subject || '', data.kodeMapel || '');
           hasQuizAccess = matchKelas && matchProgram && matchSubject;
 

@@ -841,10 +841,28 @@ const SchedulePage = () => {
   // ============================================================
   // FILTERED STUDENTS FOR MODAL
   // ============================================================
+  // 🔥 PERUBAHAN BESAR (atas permintaan eksplisit): siswa yang BELUM
+  // didaftarkan ke mapel ini lewat halaman Edit Siswa (field manual
+  // `enrolledSubjects`) SEKARANG TIDAK MUNCUL SAMA SEKALI di daftar
+  // pilihan sini -- bukan cuma disembunyikan diam-diam, biar admin sadar
+  // kalau ada siswa yang mau dijadwalkan tapi belum didaftarin mapelnya.
+  // Ini pasangan dari perubahan di StudentDashboard.jsx/StudentModuleView.jsx/
+  // StudentQuizView.jsx yang sekarang WAJIB `enrolledSubjects` diisi
+  // sebelum siswa bisa akses materi/kuis mapel itu -- di sini jadi
+  // pengaman TAMBAHAN di sisi penjadwalan: kalau siswa belum terdaftar ke
+  // mapelnya, admin gak akan bisa asal jadwalkan dia ke situ juga.
   const getFilteredStudents = () => {
     return availableStudents.filter(s => {
       const studentId = s.studentId || s.id;
       if (!studentId) return false;
+
+      // 🔥 BARU: wajib sudah terdaftar ke mapel yang sedang dijadwalkan.
+      if (formData.mapelId) {
+        const enrolled = Array.isArray(s.enrolledSubjects) ? s.enrolledSubjects : [];
+        const norm = (v) => String(v || '').toLowerCase().trim();
+        const isEnrolled = enrolled.some(code => norm(code) === norm(formData.mapelId) || norm(code) === 'semua');
+        if (!isEnrolled) return false;
+      }
       
       if (studentFilterKelas !== 'Semua') {
         if (s.kelasSekolah !== studentFilterKelas) {
@@ -990,7 +1008,9 @@ const SchedulePage = () => {
               fontSize: '12px', 
               textAlign: 'center' 
             }}>
-              Siswa tidak ditemukan pada kategori jenjang ini
+              {formData.mapelId
+                ? 'Belum ada siswa yang terdaftar ke mapel ini. Daftarkan mapelnya dulu lewat halaman Edit Siswa (Data Siswa → pilih siswa → Akses Mapel Manual).'
+                : 'Siswa tidak ditemukan pada kategori jenjang ini'}
             </p>
           ) : (
             listSiswaTersaring.map(student => {

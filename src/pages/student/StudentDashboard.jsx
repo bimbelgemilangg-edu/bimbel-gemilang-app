@@ -148,15 +148,41 @@ const AttendanceDonut = ({ hadir, izin, alpha, total }) => {
 // "BAHASA INGGRIS SD" vs "Bahasa Inggris SMP", dst). `modulKodeMapel`
 // kadang berisi BEBERAPA kode dipisah koma (guru yang ngampu multi-mapel),
 // jadi dipecah dulu satu-satu sebelum dibandingkan.
+// 🔥 FIX BUG (revisi terbaru): pencadangan lewat NAMA mapel yang tadinya
+// ada di sini SUDAH DIHAPUS TOTAL. Nama sering beda ejaan/gaya penulisan
+// antar guru (mis. "BAHASA INGGRIS SD" vs "Bahasa Inggris SMP", atau ada
+// mapel duplikat kayak "IPS (Pengganti)") -- itu jadi sumber bug paling
+// sering ("siswa gak bisa akses padahal harusnya bisa"). Sekarang HANYA
+// kode mapel (mapelId, mis. "MAPEL-004") yang dipakai buat mencocokkan,
+// karena kode dipilih dari dropdown baku dan gak pernah berubah/typo.
+// `modulKodeMapel` kadang berisi BEBERAPA kode dipisah koma (guru yang
+// ngampu multi-mapel), jadi dipecah dulu satu-satu sebelum dibandingkan.
+// ⚠️ KONSEKUENSI PENTING: kalau field manual `enrolledSubjects` di data
+// siswa (yang admin isi manual lewat halaman siswa, buat kasus khusus)
+// berisi NAMA mapel, itu SEKARANG TIDAK AKAN COCOK LAGI -- field itu
+// harus diisi KODE mapel (mis. "MAPEL-004"), bukan nama seperti dulu.
+// Kalau ada data lama yang masih berisi nama, perlu diupdate manual satu
+// kali ke kode yang sesuai supaya override-nya tetap jalan.
+// 🔥 PERUBAHAN BESAR (atas permintaan eksplisit): sistem sebelumnya
+// menurunkan akses OTOMATIS dari jadwal (jadwal_bimbel), dengan fallback
+// PERMISIF (izinkan) kalau data kosong -- supaya siswa lama gak keblokir
+// tiba-tiba. Sekarang DIBALIK TOTAL jadi PENGECEKAN KETAT: satu-satunya
+// sumber akses adalah field `enrolledSubjects` yang diisi MANUAL admin
+// lewat halaman Edit Siswa. Kalau field itu KOSONG/belum diisi, siswa
+// TIDAK dapat akses ke modul/kuis mapel apa pun (kecuali konten "Umum").
+// Ini keputusan sadar: turunan otomatis dari jadwal punya celah -- siswa
+// bisa "kelepasan" dapat akses ke SEMUA mapel padahal cuma bayar paket 1
+// mapel, kalau data jadwalnya kebetulan permisif/gak lengkap. Kontrol
+// ketat ini nutup celah itu, dengan konsekuensi: ADMIN WAJIB isi mapel
+// tiap siswa secara manual lewat halaman Edit Siswa setelah pendaftaran.
 const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
   if (!modulSubject || modulSubject.toLowerCase().trim() === 'umum') return true;
-  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return true;
+  const modulCodes = String(modulKodeMapel || '').split(',').map(s => String(s || '').toLowerCase().trim()).filter(Boolean);
+  if (modulCodes.length === 0) return true; // modul/kuis ini gak punya kode mapel -> gak ada dasar buat blokir (masalah data di sisi materi, bukan siswa)
+  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false; // 🔥 DIBALIK: kosong = BLOKIR, bukan lagi izinkan
   const norm = (s) => String(s || '').toLowerCase().trim();
   if (enrolledSubjects.some(s => norm(s) === 'semua')) return true;
-  const modulCodes = String(modulKodeMapel || '').split(',').map(norm).filter(Boolean);
-  if (modulCodes.length > 0 && enrolledSubjects.some(s => modulCodes.includes(norm(s)))) return true;
-  const target = norm(modulSubject);
-  return enrolledSubjects.some(s => norm(s) === target);
+  return enrolledSubjects.some(s => modulCodes.includes(norm(s)));
 };
 
 // ============================================================
@@ -183,30 +209,15 @@ const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
 // akses penuh dulu, sampai jadwal pertamanya dibuat. Begitu jadwal pertama
 // dibuat, pembatasan mapel baru mulai berlaku berdasarkan mapel-mapel yang
 // pernah dia ikuti.
-const deriveEnrolledSubjectsFromSchedule = async (studentDocId) => {
-  try {
-    const q = query(collection(db, "jadwal_bimbel"), where("studentIds", "array-contains", studentDocId));
-    const snap = await getDocs(q);
-    if (snap.empty) return null; // belum pernah dijadwalin sama sekali -> jangan blokir
-    const subjects = new Set();
-    snap.docs.forEach(d => {
-      const sched = d.data();
-      // 🔥 FIX: sebelumnya cuma nyimpen NAMA mapel (mapelName), yang teksnya
-      // bisa beda-beda tiap kali diketik/dipilih (mis. "BAHASA INGGRIS SD"
-      // vs "Bahasa Inggris SMP", atau ada mapel duplikat kayak "IPS
-      // (Pengganti)"). KODE mapel (mapelId, mis. "MAPEL-004") itu ID TETAP
-      // yang gak pernah berubah -- jadi sekarang dua-duanya disimpan, dan
-      // hasSubjectAccess() bisa cocokin pakai KODE dulu (lebih bisa
-      // diandalkan) sebelum jatuh ke pencocokan nama sebagai cadangan.
-      if (sched.mapelName) subjects.add(sched.mapelName);
-      if (sched.mapelId) subjects.add(sched.mapelId);
-    });
-    return subjects.size > 0 ? Array.from(subjects) : null;
-  } catch (e) {
-    console.error("Gagal menurunkan mapel dari jadwal:", e);
-    return null; // gagal ambil -> jangan blokir siapa pun gara-gara error jaringan
-  }
-};
+// ============================================================
+// 🔥 DIHAPUS: deriveEnrolledSubjectsFromSchedule()
+// ============================================================
+// Fungsi ini dulu menurunkan akses mapel siswa dari jadwal_bimbel secara
+// otomatis. Sekarang DIHAPUS TOTAL sesuai keputusan sadar: satu-satunya
+// sumber akses adalah field `enrolledSubjects` yang diisi manual admin
+// lewat halaman Edit Siswa -- lihat penjelasan lengkap di hasSubjectAccess()
+// di atas. Kalau butuh melihat versi lama fungsi ini, cek riwayat/backup
+// sebelum perubahan ini.
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -321,14 +332,11 @@ const StudentDashboard = () => {
 
         const sSnap = await getDoc(doc(db, "students", studentId)).catch(() => null);
         let kelasVal = studentKelas, programVal = studentProgram, nimVal = studentNim || studentId;
-        // 🔥 BARU: mapel yang beneran diambil siswa (buat strategi harga 1
-        // mapel / 2 mapel / paket lengkap) -- lihat penjelasan lengkap di
-        // deriveEnrolledSubjectsFromSchedule() di atas. Prioritas: (1) kalau
-        // ADMIN sengaja isi field `enrolledSubjects` manual di data siswa
-        // (buat kasus khusus), pakai itu; (2) kalau enggak, TURUNKAN
-        // otomatis dari jadwal_bimbel (siswa ini pernah dijadwalin ke mapel
-        // apa aja); (3) kalau dua-duanya kosong (siswa baru, belum pernah
-        // dijadwalin), `null` -- akses tetap penuh dulu.
+        // 🔥 BERUBAH: mapel yang beneran diambil siswa (buat strategi harga 1
+        // mapel / 2 mapel / paket lengkap) sekarang HANYA dari field manual
+        // `enrolledSubjects` -- lihat penjelasan lengkap di hasSubjectAccess()
+        // di atas. Kalau field ini kosong, siswa dianggap BELUM diisi
+        // mapelnya sama sekali (bukan lagi "akses penuh sementara").
         let enrolledSubjectsVal = null;
         if (sSnap?.exists()) {
           const data = sSnap.data();
@@ -336,9 +344,7 @@ const StudentDashboard = () => {
           kelasVal = data.kelasSekolah || '';
           programVal = data.kategori || 'Reguler';
           nimVal = data.studentId || data.id || studentId;
-          enrolledSubjectsVal = Array.isArray(data.enrolledSubjects) && data.enrolledSubjects.length > 0
-            ? data.enrolledSubjects
-            : await deriveEnrolledSubjectsFromSchedule(studentId);
+          enrolledSubjectsVal = Array.isArray(data.enrolledSubjects) ? data.enrolledSubjects : [];
           setStudentKelas(kelasVal);
           setStudentProgram(programVal);
           setStudentNim(nimVal);

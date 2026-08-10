@@ -62,41 +62,36 @@ import katex from 'katex';
 // TETAP yang gak pernah berubah, jauh lebih bisa diandalkan. `modulKodeMapel`
 // kadang berisi BEBERAPA kode dipisah koma (guru multi-mapel), dipecah dulu
 // satu-satu sebelum dibandingkan.
+// 🔥 FIX BUG: cadangan cocokin lewat NAMA mapel sudah DIHAPUS TOTAL --
+// nama teksnya sering beda dikit-dikit (typo/gaya penulisan) dan itu
+// sumber bug paling sering. Sekarang HANYA kode mapel (mis. "MAPEL-004")
+// yang dipakai, karena kode dipilih dari dropdown baku, jauh lebih stabil.
+// ⚠️ KONSEKUENSI: field manual `enrolledSubjects` di data siswa (yang
+// admin isi lewat halaman siswa) HARUS berisi KODE mapel sekarang, bukan
+// nama -- lihat catatan di StudentDashboard.jsx.
+// 🔥 PERUBAHAN BESAR (atas permintaan eksplisit): satu-satunya sumber
+// akses sekarang field `enrolledSubjects` yang diisi MANUAL admin lewat
+// halaman Edit Siswa -- turunan otomatis dari jadwal DIHAPUS TOTAL (lihat
+// penjelasan lengkap di StudentDashboard.jsx). Kosong = BLOKIR, bukan lagi
+// izinkan -- keputusan sadar buat nutup celah "siswa kelepasan akses semua
+// mapel padahal cuma bayar 1 mapel".
 const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
   if (!modulSubject || modulSubject.toLowerCase().trim() === 'umum') return true; // konten umum selalu bisa diakses siapa saja
-  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return true; // data belum diisi -> jangan blokir (aman buat siswa lama)
+  const modulCodes = String(modulKodeMapel || '').split(',').map(s => String(s || '').toLowerCase().trim()).filter(Boolean);
+  if (modulCodes.length === 0) return true; // modul ini gak punya kode mapel -> gak ada dasar buat blokir (masalah data materi, bukan siswa)
+  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false; // 🔥 DIBALIK: kosong = BLOKIR
   const norm = (s) => String(s || '').toLowerCase().trim();
   if (enrolledSubjects.some(s => norm(s) === 'semua')) return true;
-  const modulCodes = String(modulKodeMapel || '').split(',').map(norm).filter(Boolean);
-  if (modulCodes.length > 0 && enrolledSubjects.some(s => modulCodes.includes(norm(s)))) return true;
-  const target = norm(modulSubject);
-  return enrolledSubjects.some(s => norm(s) === target);
+  return enrolledSubjects.some(s => modulCodes.includes(norm(s)));
 };
 
-// 🔥 BARU: cadangan kalau siswa buka link modul LANGSUNG (dari WhatsApp/
-// notifikasi) tanpa lewat Dashboard dulu, jadi cache localStorage-nya
-// belum sempat keisi. Query & alasan sama persis dengan versi di
-// StudentDashboard.jsx -- `jadwal_bimbel` adalah satu-satunya sumber
-// kebenaran soal mapel yang diambil siswa, ditarik dari SEMUA jadwal
-// sepanjang waktu (bukan cuma hari ini). Kode mapel (mapelId) ikut
-// disimpan, bukan cuma nama -- lihat penjelasan di hasSubjectAccess().
-const deriveEnrolledSubjectsFromSchedule = async (studentDocId) => {
-  try {
-    const q = query(collection(db, "jadwal_bimbel"), where("studentIds", "array-contains", studentDocId));
-    const snap = await getDocs(q);
-    if (snap.empty) return null;
-    const subjects = new Set();
-    snap.docs.forEach(d => {
-      const sched = d.data();
-      if (sched.mapelName) subjects.add(sched.mapelName);
-      if (sched.mapelId) subjects.add(sched.mapelId);
-    });
-    return subjects.size > 0 ? Array.from(subjects) : null;
-  } catch (e) {
-    console.error("Gagal menurunkan mapel dari jadwal:", e);
-    return null;
-  }
-};
+// ============================================================
+// 🔥 DIHAPUS: deriveEnrolledSubjectsFromSchedule()
+// ============================================================
+// Dulu menurunkan akses mapel dari jadwal_bimbel otomatis. Sekarang
+// DIHAPUS TOTAL -- satu-satunya sumber akses adalah `enrolledSubjects`
+// manual, lihat penjelasan di hasSubjectAccess() di atas dan di
+// StudentDashboard.jsx.
 
 const getAgeTier = (kelasSekolah) => {
   const k = (kelasSekolah || '').toUpperCase();
@@ -858,18 +853,15 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         const nim = studentNim || localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
         const kelas = studentKelas || localStorage.getItem('studentKelas') || '';
         const program = studentProgram || localStorage.getItem('studentProgram') || 'Reguler';
-        // 🔥 BARU: daftar mapel yang dibayar siswa ini. Dicoba dari beberapa
-        // sumber (prop studentData dulu, fallback ke localStorage) -- sama
-        // pola kayak kelas/program di atas. Kalau dua-duanya kosong (siswa
-        // buka link modul LANGSUNG dari WhatsApp/notifikasi tanpa lewat
-        // Dashboard dulu, jadi cache-nya belum sempat keisi), turunkan
-        // langsung dari jadwal_bimbel sebagai cadangan terakhir.
+        // 🔥 BERUBAH: daftar mapel yang dibayar siswa ini SEKARANG HANYA
+        // dari field manual `enrolledSubjects` (prop studentData atau cache
+        // localStorage) -- turunan otomatis dari jadwal_bimbel DIHAPUS
+        // TOTAL. Kalau kosong, dianggap belum diisi admin (bukan lagi
+        // "izinkan sementara") -- lihat StudentDashboard.jsx buat penjelasan
+        // lengkap kenapa ini sengaja dibalik jadi ketat.
         let enrolledSubjectsRaw = studentData?.enrolledSubjects || localStorage.getItem('studentEnrolledSubjects');
         if (typeof enrolledSubjectsRaw === 'string') {
           try { enrolledSubjectsRaw = JSON.parse(enrolledSubjectsRaw); } catch (e) { enrolledSubjectsRaw = null; }
-        }
-        if (!enrolledSubjectsRaw && studentData?.id) {
-          enrolledSubjectsRaw = await deriveEnrolledSubjectsFromSchedule(studentData.id);
         }
         
         let hasAccess = false;

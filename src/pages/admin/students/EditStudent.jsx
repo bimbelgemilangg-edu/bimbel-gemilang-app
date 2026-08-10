@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, collection, getDocs, deleteField } from "firebase/firestore";
 import { 
   ArrowLeft, Save, User, BookOpen, Calendar, CreditCard, 
-  IdCard, Phone, Edit3, X, AlertCircle, Hash
+  IdCard, Phone, Edit3, X, AlertCircle, Hash, Key, Info
 } from 'lucide-react';
 
 const EditStudent = () => {
@@ -28,6 +28,21 @@ const EditStudent = () => {
     english: { levels: [] }
   });
   const [biayaPendaftaran, setBiayaPendaftaran] = useState(25000);
+
+  // ============================================================
+  // 🔥 BARU: AKSES MAPEL MANUAL (OPSIONAL) — pelengkap sistem akses
+  // otomatis dari jadwal, BUKAN pengganti. Defaultnya (dikosongkan) akses
+  // tetap mengikuti jadwal seperti biasa, gak ada kerjaan tambahan buat
+  // admin. Cuma diisi kalau ada KASUS KHUSUS -- misal jadwal siswa itu
+  // belum lengkap/lagi bermasalah, tapi dia harus tetap bisa akses materi
+  // mapel tertentu duluan. Begitu diisi, field ini JADI PRIORITAS di atas
+  // hasil turunan dari jadwal (lihat hasSubjectAccess() di
+  // StudentDashboard.jsx/StudentModuleView.jsx/StudentQuizView.jsx).
+  // Disimpan sebagai KODE mapel (bukan nama) -- konsisten dengan
+  // perubahan "kodeMapel-only" yang sudah diterapkan di ketiga file itu.
+  const [mapelList, setMapelList] = useState([]);
+  const [selectedMapelCodes, setSelectedMapelCodes] = useState([]);
+  const [hadManualOverride, setHadManualOverride] = useState(false);
 
   // ============================================================
   // TANGGAL LAHIR DROPDOWNS
@@ -141,6 +156,15 @@ const EditStudent = () => {
         }
         setPricing(pricingData);
 
+        // 🔥 BARU: fetch daftar mapel (dari koleksi "mapel", sumber yang
+        // sama dipakai halaman Kelola Guru) buat checkbox akses manual.
+        try {
+          const mapelSnap = await getDocs(collection(db, "mapel"));
+          setMapelList(mapelSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.namaMapel || '').localeCompare(b.namaMapel || '')));
+        } catch (e) {
+          console.error("Gagal memuat daftar mapel:", e);
+        }
+
         // 2. Fetch student data
         const docRef = doc(db, "students", id);
         const docSnap = await getDoc(docRef);
@@ -194,6 +218,14 @@ const EditStudent = () => {
         setFormData(initial);
         setOriginalData(initial);
         parseTanggalLahir(data.tanggalLahir);
+
+        // 🔥 BARU: kalau siswa ini SUDAH punya override manual (dari
+        // database langsung, atau dari halaman ini sebelumnya), tampilkan
+        // apa adanya supaya admin lihat kondisi sebenarnya, bukan kosong.
+        if (Array.isArray(data.enrolledSubjects) && data.enrolledSubjects.length > 0) {
+          setSelectedMapelCodes(data.enrolledSubjects);
+          setHadManualOverride(true);
+        }
         
       } catch (e) { 
         console.error(e); 
@@ -209,6 +241,12 @@ const EditStudent = () => {
   // HELPER FUNCTIONS
   // ============================================================
   const updateField = (field, value) => setFormData(prev => ({...prev, [field]: value}));
+
+  const toggleMapelCode = (kodeMapel) => {
+    setSelectedMapelCodes(prev =>
+      prev.includes(kodeMapel) ? prev.filter(c => c !== kodeMapel) : [...prev, kodeMapel]
+    );
+  };
 
   const getTanggalSelesai = () => {
     if (!formData.tanggalMulai) return '-';
@@ -288,7 +326,7 @@ const EditStudent = () => {
     try {
       const tanggalLahirStr = getTanggalLahirStr();
       
-      await updateDoc(doc(db, "students", id), {
+      const payload = {
         nama: formData.nama,
         username: formData.username, 
         password: formData.password,
@@ -313,7 +351,19 @@ const EditStudent = () => {
         status: formData.status,
         isBlocked: formData.isBlocked,
         updatedAt: new Date().toISOString()
-      });
+      };
+
+      // 🔥 BARU: kalau admin PILIH minimal 1 mapel -> simpan sebagai
+      // override (PRIORITAS di atas jadwal). Kalau admin GAK PILIH APA
+      // PUN (kosong) -> HAPUS field itu total (pakai deleteField()),
+      // BUKAN menyimpan array kosong. Ini penting: array kosong `[]`
+      // dibaca sistem sebagai "akses semua mapel" (permisif), beda arti
+      // sama sekali dari "gak ada override, ikut jadwal seperti biasa".
+      // deleteField() memastikan siswa balik ke mode otomatis normal
+      // kalau admin memang mau hapus override yang pernah diisi.
+      payload.enrolledSubjects = selectedMapelCodes.length > 0 ? selectedMapelCodes : deleteField();
+
+      await updateDoc(doc(db, "students", id), payload);
 
       showAlert('✅ Data siswa berhasil diperbarui!');
       setTimeout(() => navigate('/admin/students'), 1000);
@@ -503,6 +553,45 @@ const EditStudent = () => {
                   onChange={e => updateField('namaIbu', e.target.value)} 
                 />
               </div>
+            </div>
+
+            {/* ============================================================ */}
+            {/* 🔥 BARU: AKSES MAPEL MANUAL (OPSIONAL) */}
+            {/* ============================================================ */}
+            <div style={styles.sectionHeader}>
+              <Key size={18} color="#673ab7" />
+              <h3 style={styles.sectionTitle}>Akses Mapel Manual (Opsional)</h3>
+            </div>
+            <div style={styles.overrideHint}>
+              <Info size={13} color="#673ab7" style={{ flexShrink: 0, marginTop: 1 }} />
+              <span>
+                <b>Kosongkan kalau gak ada kasus khusus</b> — akses materi/kuis siswa ini otomatis mengikuti jadwal
+                mengajarnya seperti biasa, gak perlu diisi apa-apa di sini. Centang mapel di bawah HANYA kalau ada
+                masalah spesifik (misal jadwalnya belum lengkap tapi siswa harus tetap bisa akses materi mapel
+                tertentu duluan) — begitu dicentang, itu jadi PRIORITAS di atas hasil dari jadwal.
+              </span>
+            </div>
+            {hadManualOverride && (
+              <div style={styles.overrideActiveBadge}>
+                ⚠️ Siswa ini SAAT INI punya override manual aktif — akses gak sepenuhnya ngikutin jadwal.
+              </div>
+            )}
+            <div style={styles.mapelCheckGrid}>
+              {mapelList.length === 0 ? (
+                <p style={{ fontSize: 11, color: '#94a3b8', gridColumn: '1 / -1' }}>Belum ada data mapel.</p>
+              ) : (
+                mapelList.map(m => (
+                  <label key={m.id} style={styles.mapelCheckItem(selectedMapelCodes.includes(m.kodeMapel))}>
+                    <input
+                      type="checkbox"
+                      checked={selectedMapelCodes.includes(m.kodeMapel)}
+                      onChange={() => toggleMapelCode(m.kodeMapel)}
+                      style={{ accentColor: '#673ab7' }}
+                    />
+                    <span>{m.namaMapel}</span>
+                  </label>
+                ))
+              )}
             </div>
           </div>
 
@@ -991,6 +1080,26 @@ const styles = {
     padding: '4px 0', 
     fontSize: 12 
   },
+
+  // 🔥 BARU: styles buat panel akses mapel manual
+  overrideHint: {
+    display: 'flex', gap: 6, fontSize: 11, color: '#5b21b6', lineHeight: 1.6,
+    background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 8,
+    padding: 10, marginBottom: 10,
+  },
+  overrideActiveBadge: {
+    fontSize: 11, fontWeight: 700, color: '#92400e', background: '#fffbeb',
+    border: '1px solid #fde68a', borderRadius: 8, padding: '8px 10px', marginBottom: 10,
+  },
+  mapelCheckGrid: {
+    display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 6,
+  },
+  mapelCheckItem: (checked) => ({
+    display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 8,
+    border: checked ? '2px solid #673ab7' : '1px solid #e2e8f0',
+    background: checked ? '#f5f3ff' : 'white', cursor: 'pointer', fontSize: 12,
+    fontWeight: checked ? 700 : 500, color: checked ? '#5b21b6' : '#475569',
+  }),
 
   financeRow: { 
     display: 'flex', 
