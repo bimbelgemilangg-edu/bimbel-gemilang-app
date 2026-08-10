@@ -32,57 +32,43 @@ import katex from 'katex';
 // Dideteksi otomatis dari field kelasSekolah siswa (mis. "3 SD", "9 SMP",
 // "12 SMA") -- tidak perlu setting manual apa pun dari guru/admin.
 // ============================================================
-// 🔥 BARU: GERBANG AKSES PER PAKET MAPEL
+// 🔥 GERBANG AKSES PER PAKET MAPEL
 // ============================================================
-// Bimbel Gemilang sekarang punya strategi harga paket per mapel (1 mapel /
-// 2 mapel / 4 mapel lengkap khusus SD) -- siswa yang cuma daftar 1 mapel
-// (misal Matematika doang, buat coba-coba dulu) SEHARUSNYA gak otomatis
-// bisa akses modul mapel lain (IPA, Bahasa Indonesia, dst) walau dia satu
-// kelas/kategori sama siswa yang bayar paket lengkap.
+// Bimbel Gemilang punya strategi harga paket per mapel (1 mapel / 2 mapel
+// / 4 mapel lengkap khusus SD) -- siswa yang cuma daftar 1 mapel (misal
+// Matematika doang) SEHARUSNYA gak otomatis bisa akses modul mapel lain
+// (IPA, Bahasa Indonesia, dst) walau dia satu kelas/kategori sama siswa
+// yang bayar paket lengkap.
 //
-// Sebelumnya sistem gak punya konsep ini sama sekali -- targeting cuma
-// berdasar kelas & kategori, jadi begitu guru targetin "Semua kelas 9
-// SMP", SEMUA siswa kelas itu ikut kebuka aksesnya, gak peduli mapel apa
-// yang dia bayar. Solusinya BUKAN nyuruh guru pilih-pilih siswa manual
-// tiap bikin materi (itu kerjaan berat & rawan salah) -- tapi nyimpen
-// daftar mapel yang dibayar siswa SEKALI di data siswa (`enrolledSubjects`),
-// lalu sistem yang otomatis nyaring setiap kali siswa buka modul. Guru
-// tetap targetin "Semua" seperti biasa, gak nambah kerjaan sama sekali.
+// `enrolledSubjects` diisi lewat halaman administrasi siswa (Edit Siswa)
+// -- bisa berisi KODE mapel (mis. "MAPEL-004") atau NAMA mapel (mis.
+// "Matematika"), atau "Semua" buat paket lengkap. Kalau field ini kosong
+// (belum diisi admin), akses DIBLOKIR -- bukan lagi diizinkan default.
 //
-// `enrolledSubjects` diisi lewat halaman administrasi siswa (di luar file
-// ini) -- contoh: ["Matematika"] buat siswa 1 mapel, atau ["Semua"] buat
-// paket lengkap. Kalau field ini belum ada/kosong (siswa lama sebelum
-// fitur ini ada), DEFAULT-nya akses PENUH -- supaya gak ada siswa lama
-// yang tiba-tiba keblokir cuma karena datanya belum sempat diisi.
-// 🔥 FIX BUG: sebelumnya perbandingan mapel ini case-sensitive, dan cuma
-// bisa cocokin lewat NAMA (yang teksnya bisa beda-beda tiap kali diketik/
-// dipilih -- mis. "BAHASA INGGRIS SD" vs "Bahasa Inggris SMP", atau ada
-// mapel duplikat kayak "IPS (Pengganti)"). Sekarang COBA COCOKIN LEWAT
-// KODE MAPEL DULU (mis. "MAPEL-004") sebelum jatuh ke nama -- kode itu ID
-// TETAP yang gak pernah berubah, jauh lebih bisa diandalkan. `modulKodeMapel`
-// kadang berisi BEBERAPA kode dipisah koma (guru multi-mapel), dipecah dulu
-// satu-satu sebelum dibandingkan.
-// 🔥 FIX BUG: cadangan cocokin lewat NAMA mapel sudah DIHAPUS TOTAL --
-// nama teksnya sering beda dikit-dikit (typo/gaya penulisan) dan itu
-// sumber bug paling sering. Sekarang HANYA kode mapel (mis. "MAPEL-004")
-// yang dipakai, karena kode dipilih dari dropdown baku, jauh lebih stabil.
-// ⚠️ KONSEKUENSI: field manual `enrolledSubjects` di data siswa (yang
-// admin isi lewat halaman siswa) HARUS berisi KODE mapel sekarang, bukan
-// nama -- lihat catatan di StudentDashboard.jsx.
-// 🔥 PERUBAHAN BESAR (atas permintaan eksplisit): satu-satunya sumber
-// akses sekarang field `enrolledSubjects` yang diisi MANUAL admin lewat
-// halaman Edit Siswa -- turunan otomatis dari jadwal DIHAPUS TOTAL (lihat
-// penjelasan lengkap di StudentDashboard.jsx). Kosong = BLOKIR, bukan lagi
-// izinkan -- keputusan sadar buat nutup celah "siswa kelepasan akses semua
-// mapel padahal cuma bayar 1 mapel".
+// 🔥 FIX BUG "siswa sudah didaftarkan mapelnya tapi tetap Akses Ditolak":
+// sebelumnya pencocokan CUMA lewat KODE mapel (modul.kodeMapel vs
+// enrolledSubjects). Masalahnya kode mapel di dokumen modul (asalnya dari
+// data guru) dan kode mapel di enrolledSubjects siswa (asalnya dari
+// dokumen "mapel") bisa beda format/belum sinkron -- terutama buat guru
+// lama atau modul lama -- padahal NAMA mapelnya sama persis. Sekarang
+// pencocokan coba lewat KODE dulu (paling akurat kalau datanya konsisten),
+// dan kalau gak ketemu, coba juga lewat NAMA mapel (dinormalisasi huruf
+// kecil + spasi) sebagai fallback -- supaya siswa yang benar didaftarkan
+// (baik dicatat pakai kode ATAU nama) tetap ketemu aksesnya.
 const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
   if (!modulSubject || modulSubject.toLowerCase().trim() === 'umum') return true; // konten umum selalu bisa diakses siapa saja
-  const modulCodes = String(modulKodeMapel || '').split(',').map(s => String(s || '').toLowerCase().trim()).filter(Boolean);
-  if (modulCodes.length === 0) return true; // modul ini gak punya kode mapel -> gak ada dasar buat blokir (masalah data materi, bukan siswa)
-  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false; // 🔥 DIBALIK: kosong = BLOKIR
   const norm = (s) => String(s || '').toLowerCase().trim();
+  const modulCodes = String(modulKodeMapel || '').split(',').map(norm).filter(Boolean);
+  const modulNameNorm = norm(modulSubject);
+
+  if (modulCodes.length === 0 && !modulNameNorm) return true; // modul ini gak punya kode/nama mapel -> gak ada dasar buat blokir (masalah data materi, bukan siswa)
+  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false; // kosong = BLOKIR
   if (enrolledSubjects.some(s => norm(s) === 'semua')) return true;
-  return enrolledSubjects.some(s => modulCodes.includes(norm(s)));
+
+  return enrolledSubjects.some(s => {
+    const es = norm(s);
+    return modulCodes.includes(es) || es === modulNameNorm;
+  });
 };
 
 // ============================================================
