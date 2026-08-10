@@ -281,6 +281,26 @@ const ManageMateri = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  // 🔥 BARU: alur "Buat Modul" sekarang berupa WIZARD 3 langkah (Judul →
+  // Konten → Target), bukan satu halaman panjang lagi. Ini langsung
+  // memecahkan 2 keluhan nyata:
+  // (1) "Kadang kelewat belum save judul, terus pas tambah kuis muncul
+  //     alert 'isi judul dulu' yang bikin bingung" -- sekarang JUDUL itu
+  //     sendiri jadi Langkah 1 yang wajib dan gak bisa dilewati. Begitu
+  //     lolos Langkah 1, sistem OTOMATIS bikin dokumen modulnya diam-diam
+  //     di background (lihat handleAdvanceFromStep1()), jadi begitu guru
+  //     nyampe Langkah 2 dan mau tambah kuis, modulId-nya SUDAH ADA --
+  //     gak akan pernah ketemu alert "isi judul dulu" lagi.
+  // (2) Target & siswa dipindah jadi Langkah TERAKHIR (konfirmasi sebelum
+  //     terbit), bukan tercampur di tengah -- alurnya jadi: Judul → Cover
+  //     & Konten → Target (konfirmasi) → Terbitkan.
+  const [step, setStep] = useState(1);
+  const TOTAL_STEPS = 3;
+  // Dipakai buat nge-track modul yang BENERAN baru dibuat lewat wizard ini
+  // (bukan modul lama yang lagi diedit) -- supaya notifikasi "Materi Baru"
+  // ke siswa cuma nyala SEKALI pas Langkah 3 "Terbitkan" ditekan pertama
+  // kali, bukan tiap kali auto-save draft terjadi di background.
+  const alreadyNotifiedRef = useRef(!!editId);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState({ type: '', message: '' });
@@ -364,21 +384,27 @@ const ManageMateri = () => {
       setGuruId(teacherId);
       setGuruName(teacherName);
       
+      let kodeMapelVal = '';
       if (teacherName) {
         const qGuru = query(collection(db, "teachers"), where("nama", "==", teacherName));
         const snapGuru = await getDocs(qGuru);
         if (!snapGuru.empty) {
           const guru = snapGuru.docs[0].data();
           setGuruData(guru);
-          setKodeMapel(guru.kodeMapel || '');
+          kodeMapelVal = guru.kodeMapel || '';
+          setKodeMapel(kodeMapelVal);
           setSubject(guru.mapel || '');
           if (guru.mapel) setSubjects([guru.mapel]);
         }
       }
-      return { teacherName, teacherId };
+      // 🔥 BARU: kodeMapel ikut di-return (bukan cuma di-set ke state) supaya
+      // bisa langsung dipakai buat filter daftar siswa DI DALAM effect yang
+      // sama tanpa nunggu re-render -- state React gak langsung ke-update
+      // dalam function yang sama.
+      return { teacherName, teacherId, kodeMapel: kodeMapelVal };
     } catch (e) {
       console.error("Error fetching teacher:", e);
-      return { teacherName: '', teacherId: '' };
+      return { teacherName: '', teacherId: '', kodeMapel: '' };
     }
   }, []);
 
@@ -445,7 +471,7 @@ const ManageMateri = () => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const { teacherName } = await fetchTeacherData();
+        const { teacherName, kodeMapel: kodeMapelVal } = await fetchTeacherData();
 
         // 🔥 FIX BUG PENTING: sebelumnya daftar siswa buat "kirim ke siswa
         // tertentu" diambil lewat fetchStudentsFromSchedules() — yang cuma
@@ -456,7 +482,17 @@ const ManageMateri = () => {
         // muncul untuk dipilih. Sekarang diambil LANGSUNG dari koleksi
         // "students", sama seperti cara availableClasses diambil di bawah,
         // supaya semua siswa yang terdaftar selalu bisa dipilih.
+        //
+        // 🔥 BARU (lapis pengaman tambahan): daftar ini SEKARANG JUGA
+        // difilter -- HANYA siswa yang sudah didaftarkan admin ke mapel
+        // guru ini (field `enrolledSubjects`, sistem yang sama dipakai di
+        // Manajemen Jadwal) yang muncul di sini. Ini konsisten dengan
+        // aturan "kalau siswa gak muncul di Jadwal Besar buat mapel ini,
+        // dia juga gak akan muncul di sini" -- yang mengurangi risiko
+        // modul salah kirim (misal modul mapel SMA gak sengaja kekirim ke
+        // siswa SD/SMP yang sebenarnya gak terdaftar ke mapel itu).
         const snapSiswa = await getDocs(collection(db, "students"));
+        const normKode = (v) => String(v || '').toLowerCase().trim();
         const allSiswaData = snapSiswa.docs.map(d => {
           const data = d.data();
           return {
@@ -466,7 +502,11 @@ const ManageMateri = () => {
             kelasSekolah: data.kelasSekolah || '-',
             program: data.kategori || 'Reguler',
             isActive: data.status === 'Aktif' && !data.isBlocked,
+            enrolledSubjects: Array.isArray(data.enrolledSubjects) ? data.enrolledSubjects : [],
           };
+        }).filter(s => {
+          if (!kodeMapelVal) return true; // kodeMapel guru belum ke-set (data guru belum lengkap) -> jangan blokir semua siswa gara-gara ini
+          return s.enrolledSubjects.some(code => normKode(code) === normKode(kodeMapelVal) || normKode(code) === 'semua');
         }).sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
 
         setAllStudents(allSiswaData);
@@ -511,6 +551,12 @@ const ManageMateri = () => {
         if (data.selectedStudents) setSelectedStudents(data.selectedStudents);
         if (data.sendToSpecificStudents !== undefined) setSendToSpecificStudents(data.sendToSpecificStudents);
         setStats(prev => ({ ...prev, totalKonten: data.blocks?.length || 0 }));
+        // 🔥 BARU: modul yang SUDAH ADA (lagi diedit/dibuka lagi setelah
+        // nambah kuis) langsung dibuka di Langkah 2 (Konten) -- judul &
+        // mapelnya udah pasti valid (Langkah 1 gak perlu diulang lagi),
+        // jadi gak perlu klik "Selanjutnya" dulu buat sampai ke konten.
+        // Langkah 1 & 3 tetap bisa diklik bebas lewat indikator di atas.
+        setStep(2);
       }
     } catch (error) {
       console.error("Error fetching modul:", error);
@@ -744,7 +790,12 @@ const ManageMateri = () => {
   // section kuis yang baru ditambah sudah tercatat sebelum editor kuis dibuka.
   // ============================================================
   const autoSaveModulSilently = async () => {
-    if (!editId) throw new Error('Modul belum tersimpan');
+    // 🔥 FIX: sebelumnya pakai `editId` (parameter URL) sebagai syarat --
+    // tapi modul yang baru dibuat lewat wizard (Langkah 1->2) sudah punya
+    // `modulId` (state, dokumennya BENERAN ada di database) SEBELUM URL-nya
+    // sempat bawa parameter ?edit=. Kalau tetap syaratnya `editId`, fungsi
+    // ini bakal salah nolak modul yang justru udah valid buat disimpan.
+    if (!modulId) throw new Error('Modul belum tersimpan');
     const payload = {
       title: title.toUpperCase(),
       subject: (subject || '').toUpperCase(),
@@ -767,7 +818,62 @@ const ManageMateri = () => {
       payload.tanggalMulai = tanggalMulai;
       payload.tanggalSelesai = tanggalSelesai || null;
     }
-    await updateDoc(doc(db, COLLECTION_NAME, editId), payload);
+    await updateDoc(doc(db, COLLECTION_NAME, modulId), payload);
+  };
+
+  // ============================================================
+  // 🔥 BARU: LANJUT DARI LANGKAH 1 (JUDUL) KE LANGKAH 2 (KONTEN)
+  // ============================================================
+  // Ini jantung dari perbaikan "kadang kelewat isi judul, terus pas mau
+  // tambah kuis muncul alert bingung". Begitu guru lolos validasi Langkah
+  // 1 (judul + mapel terisi), modulnya LANGSUNG dibuat diam-diam di
+  // database (draft kosong, belum ada konten) -- BUKAN nunggu guru pencet
+  // "Simpan" secara terpisah. Jadi begitu guru masuk Langkah 2 dan mau
+  // tambah blok Kuis, `modulId` udah pasti ada, dan openQuizEditor() bisa
+  // langsung jalan tanpa pernah nyentuh alert "isi judul dulu" itu lagi.
+  const handleAdvanceFromStep1 = async () => {
+    if (!title.trim()) return alert("❌ Judul modul wajib diisi!");
+    if (!subject) return alert("❌ Mata pelajaran wajib dipilih!");
+
+    // Kalau ini modul yang SUDAH ADA (lagi diedit) atau draft-nya udah
+    // sempat dibuat sebelumnya (misal guru sempat maju-mundur antar
+    // langkah), gak perlu bikin dokumen baru lagi -- tinggal lanjut.
+    if (modulId) {
+      setStep(2);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const draftPayload = {
+        title: title.toUpperCase(),
+        subject: subject.toUpperCase(),
+        guruId, kodeMapel, guruName,
+        coverImage: null,
+        coverFilePath: '',
+        description: '',
+        blocks: [],
+        quizData: [],
+        targetKategori, targetKelas,
+        mingguKe: parseInt(mingguKe) || 1,
+        tahunAjaran,
+        status: statusModul,
+        sendToSpecificStudents: false,
+        selectedStudents: [],
+        studentIds: [],
+        totalKonten: 0,
+        createdAt: serverTimestamp(),
+        createdBy: authorName,
+        updatedAt: serverTimestamp(),
+        updatedBy: authorName,
+      };
+      const newDoc = await addDoc(collection(db, COLLECTION_NAME), draftPayload);
+      setModulId(newDoc.id);
+      setStep(2);
+    } catch (e) {
+      alert('❌ Gagal menyiapkan modul: ' + e.message);
+    }
+    setSaving(false);
   };
 
   // ============================================================
@@ -821,18 +927,51 @@ const ManageMateri = () => {
     }
     
     try {
-      if (editId) {
-        await updateDoc(doc(db, COLLECTION_NAME, editId), payload);
-        alert("✅ Modul berhasil diperbarui!");
+      // 🔥 FIX: sekarang cek berdasarkan `modulId` (state), BUKAN `editId`
+      // (parameter URL) -- modul yang dibuat lewat wizard baru ini sudah
+      // punya modulId (dibuat otomatis diam-diam di Langkah 1->2), walau
+      // URL-nya belum tentu bawa parameter ?edit= itu. Update vs create
+      // harus ngikutin data SEBENARNYA (dokumennya sudah ada di database
+      // atau belum), bukan ngikutin URL.
+      const isFirstTimePublish = !alreadyNotifiedRef.current;
+
+      if (modulId) {
+        await updateDoc(doc(db, COLLECTION_NAME, modulId), payload);
+
+        // 🔥 NOTIFIKASI -- cuma nyala SEKALI buat modul yang BENERAN baru
+        // (dibuat lewat wizard ini), pas pertama kali status-nya "aktif" di
+        // Langkah 3. Update-update berikutnya (edit ulang modul yang sudah
+        // lama ada, atau auto-save diam-diam di Langkah 1->2) TIDAK memicu
+        // notifikasi lagi -- biar gak spam siswa tiap guru benerin typo.
+        if (isFirstTimePublish && payload.status === 'aktif') {
+          notifyStudents({
+            targetKelas: sendToSpecificStudents ? undefined : targetKelas,
+            targetKategori: sendToSpecificStudents ? undefined : targetKategori,
+            specificStudentIds: sendToSpecificStudents ? selectedStudents.map(s => s.studentId) : [],
+            type: 'materi',
+            title: '📘 Materi Baru!',
+            message: `"${title}" baru saja diterbitkan${subject ? ` untuk mapel ${subject}` : ''}.`,
+            link: `/siswa/modul/${modulId}`,
+          });
+          alreadyNotifiedRef.current = true;
+        }
+
+        alert(isFirstTimePublish ? `✅ Modul "${title}" berhasil diterbitkan!` : "✅ Modul berhasil diperbarui!");
+
+        if (isFirstTimePublish) {
+          navigate(`/guru/modul/materi?edit=${modulId}`);
+          return;
+        }
       } else {
+        // Jalur cadangan: kalau entah kenapa modulId belum ada sama sekali
+        // saat sampai di sini (mestinya udah gak kejadian lagi berkat
+        // wizard yang bikin draft otomatis, tapi tetap dijaga jaga-jaga).
         payload.createdAt = serverTimestamp();
         payload.createdBy = authorName;
         const newDoc = await addDoc(collection(db, COLLECTION_NAME), payload);
         alert(`✅ Modul "${title}" berhasil diterbitkan!`);
 
-        // 🔥 NOTIFIKASI — cuma pas PERTAMA KALI diterbitkan (bukan tiap update
-        // kecil, biar gak spam), dan cuma kalau statusnya aktif.
-        if (payload.status === 'aktif') {
+        if (isFirstTimePublish && payload.status === 'aktif') {
           notifyStudents({
             targetKelas: sendToSpecificStudents ? undefined : targetKelas,
             targetKategori: sendToSpecificStudents ? undefined : targetKategori,
@@ -842,6 +981,7 @@ const ManageMateri = () => {
             message: `"${title}" baru saja diterbitkan${subject ? ` untuk mapel ${subject}` : ''}.`,
             link: `/siswa/modul/${newDoc.id}`,
           });
+          alreadyNotifiedRef.current = true;
         }
 
         navigate(`/guru/modul/materi?edit=${newDoc.id}`);
@@ -864,8 +1004,13 @@ const ManageMateri = () => {
     // section-nya beneran ada di database) sebelum pindah ke editor kuis.
     // Ini juga ngilangin kebingungan "kok disuruh simpan modul dulu" — sistem
     // yang urus simpannya sendiri, guru tinggal lanjut bikin kuis.
+    // 🔥 Jaring pengaman terakhir (harusnya HAMPIR GAK PERNAH kepicu lagi):
+    // di alur wizard sekarang, `modulId` sudah pasti ada begitu guru lolos
+    // Langkah 1 (Judul) dan masuk ke Langkah 2 (Konten) -- lihat
+    // handleAdvanceFromStep1(). Alert ini cuma jaga-jaga kalau ada jalur
+    // aneh yang somehow lolos tanpa modulId.
     if (!modulId) {
-      alert('⚠️ Isi judul modul dulu, lalu klik "Simpan/Update Modul" sekali, baru bisa menambah kuis di dalamnya.');
+      alert('⚠️ Modul belum siap. Coba kembali ke Langkah 1 dan pastikan judul sudah terisi.');
       return;
     }
     try {
@@ -1358,6 +1503,12 @@ const ManageMateri = () => {
     pageTitle: { margin: 0, fontSize: isMobile ? 18 : 22, fontWeight: 800, color: '#1e293b' },
     headerActions: { display: 'flex', gap: 6, flexWrap: 'wrap' },
     btnSave: { background: '#10b981', color: 'white', border: 'none', padding: isMobile ? '6px 14px' : '8px 20px', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: isMobile ? 12 : 13, display: 'flex', alignItems: 'center', gap: 6 },
+    // 🔥 BARU: styles buat indikator langkah wizard
+    stepIndicatorRow: { display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, gap: 4, background: 'white', padding: '14px 10px', borderRadius: 14, border: '1px solid #f1f5f9' },
+    stepCircleBtn: (active, done, disabled) => ({ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.4 : 1, padding: '4px 8px' }),
+    stepCircle: (active, done) => ({ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0, background: done ? '#10b981' : active ? '#673ab7' : '#e2e8f0', color: done || active ? 'white' : '#94a3b8' }),
+    stepLabelText: (active) => ({ fontSize: 12, fontWeight: active ? 800 : 600, color: active ? '#1e293b' : '#94a3b8' }),
+    stepConnector: { width: isMobile ? 20 : 50, height: 2, background: '#e2e8f0' },
     card: { background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #f1f5f9', marginBottom: 16 },
     cardTitle: { margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 },
     input: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#f8fafc' },
@@ -1419,17 +1570,72 @@ const ManageMateri = () => {
               <Trash2 size={14} /> Hapus
             </button>
           )}
-          <button onClick={handleSave} disabled={saving} style={{ ...styles.btnSave, opacity: saving ? 0.6 : 1 }}>
-            <Save size={14} /> {saving ? 'Menyimpan...' : editId ? 'Update' : 'Terbitkan'}
-          </button>
+          {/* 🔥 BARU: tombol Save di header cuma muncul kalau modulnya udah
+              punya modulId (lolos Langkah 1) -- biar konsisten sama alur
+              wizard, gak ada tombol save "nyasar" pas guru masih di
+              Langkah 1 yang belum ada apa-apa buat disimpan. */}
+          {modulId && (
+            <button onClick={handleSave} disabled={saving} style={{ ...styles.btnSave, opacity: saving ? 0.6 : 1 }}>
+              <Save size={14} /> {saving ? 'Menyimpan...' : editId ? 'Update' : 'Terbitkan'}
+            </button>
+          )}
         </div>
       </div>
 
       {/* ========================================================== */}
+      {/* 🔥 BARU: INDIKATOR LANGKAH WIZARD */}
+      {/* ========================================================== */}
+      <div style={styles.stepIndicatorRow}>
+        {[
+          { n: 1, label: 'Judul' },
+          { n: 2, label: 'Konten' },
+          { n: 3, label: 'Target' },
+        ].map((s, idx, arr) => (
+          <React.Fragment key={s.n}>
+            <button
+              type="button"
+              onClick={() => { if (modulId || s.n === 1) setStep(s.n); }}
+              disabled={!modulId && s.n !== 1}
+              style={styles.stepCircleBtn(step === s.n, step > s.n, !modulId && s.n !== 1)}
+            >
+              <span style={styles.stepCircle(step === s.n, step > s.n)}>
+                {step > s.n ? <CheckCircle size={14} /> : s.n}
+              </span>
+              <span style={styles.stepLabelText(step === s.n)}>{s.label}</span>
+            </button>
+            {idx < arr.length - 1 && <div style={styles.stepConnector} />}
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* ========================================================== */}
+      {/* LANGKAH 1: JUDUL & MATA PELAJARAN */}
+      {/* ========================================================== */}
+      {step === 1 && (
+        <div style={styles.card}>
+          <h4 style={styles.cardTitle}><BookOpen size={18} /> 1. Judul & Mata Pelajaran</h4>
+          <p style={{ fontSize: 11, color: '#94a3b8', marginTop: -6, marginBottom: 14 }}>
+            Isi ini dulu buat lanjut -- cover, deskripsi, dan konten (termasuk kuis) diisi di langkah berikutnya.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 480 }}>
+            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Judul modul... (wajib)" style={styles.input} autoFocus />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <select value={subject} onChange={e => setSubject(e.target.value)} style={{ ...styles.select, flex: 1 }}>
+                <option value="">Pilih Mata Pelajaran (wajib)</option>
+                {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+              {kodeMapel && <span style={{ background: '#ede9fe', padding: '4px 12px', borderRadius: 6, fontSize: 10, fontWeight: 600, color: '#8b5cf6', display: 'flex', alignItems: 'center' }}>📌 {kodeMapel}</span>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================== */}
       {/* 1️⃣ COVER & IDENTITAS */}
       {/* ========================================================== */}
+      {step === 2 && (
       <div style={styles.card}>
-        <h4 style={styles.cardTitle}><BookOpen size={18} /> 1. Cover & Identitas</h4>
+        <h4 style={styles.cardTitle}><ImageIcon size={18} /> Cover & Deskripsi (Opsional)</h4>
         <div style={{ display: 'flex', gap: 16, flexDirection: isMobile ? 'column' : 'row' }}>
           <label style={{ ...styles.coverUpload, width: isMobile ? '100%' : 120, flexShrink: 0 }}>
             {coverImage ? (
@@ -1443,24 +1649,19 @@ const ManageMateri = () => {
             <input ref={coverInputRef} type="file" accept="image/*" hidden onChange={handleCoverUpload} />
           </label>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Judul modul..." style={styles.input} />
-            <div style={{ display: 'flex', gap: 8 }}>
-              <select value={subject} onChange={e => setSubject(e.target.value)} style={{ ...styles.select, flex: 1 }}>
-                <option value="">Pilih Mata Pelajaran</option>
-                {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-              {kodeMapel && <span style={{ background: '#ede9fe', padding: '4px 12px', borderRadius: 6, fontSize: 10, fontWeight: 600, color: '#8b5cf6', display: 'flex', alignItems: 'center' }}>📌 {kodeMapel}</span>}
-            </div>
-            <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Deskripsi modul..." style={styles.textarea} />
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>{title}</div>
+            <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Deskripsi modul (opsional)..." style={styles.textarea} />
           </div>
         </div>
       </div>
+      )}
 
       {/* ========================================================== */}
       {/* 2️⃣ KONTEN MODUL */}
       {/* ========================================================== */}
+      {step === 2 && (
       <div style={styles.card}>
-        <h4 style={styles.cardTitle}><Layers size={18} /> 2. Konten Modul ({sections.length})</h4>
+        <h4 style={styles.cardTitle}><Layers size={18} /> Konten Modul ({sections.length})</h4>
         
         {sections.length === 0 && (
           <div style={{ textAlign: 'center', padding: 30, color: '#94a3b8', border: '1px dashed #e2e8f0', borderRadius: 8 }}>
@@ -1579,12 +1780,19 @@ const ManageMateri = () => {
           )}
         </div>
       </div>
+      )}
 
       {/* ========================================================== */}
       {/* 3️⃣ TARGET & PENGATURAN */}
       {/* ========================================================== */}
+      {step === 3 && (
       <div style={styles.card}>
-        <h4 style={styles.cardTitle}><Settings size={18} /> 3. Target & Pengaturan</h4>
+        <h4 style={styles.cardTitle}><Settings size={18} /> 3. Target & Pengaturan (Konfirmasi Sebelum Terbit)</h4>
+        {kodeMapel && (
+          <p style={{ fontSize: 11, color: '#673ab7', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 8, padding: '8px 10px', marginTop: -6, marginBottom: 14 }}>
+            💡 Daftar siswa di bawah cuma nampilin siswa yang SUDAH terdaftar ke mapel ini (kode <b>{kodeMapel}</b>) lewat halaman Edit Siswa -- sama persis kayak aturan di Manajemen Jadwal, biar gak ada modul salah kirim ke siswa yang gak seharusnya.
+          </p>
+        )}
         
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
           <div>
@@ -1632,7 +1840,9 @@ const ManageMateri = () => {
                     }}>
                       {filteredStudents.length === 0 ? (
                         <p style={{ padding: 12, fontSize: 11, color: '#94a3b8', textAlign: 'center', margin: 0 }}>
-                          {allStudents.length === 0 ? 'Belum ada data siswa.' : 'Siswa tidak ditemukan.'}
+                          {allStudents.length === 0
+                            ? (kodeMapel ? `Belum ada siswa yang terdaftar ke mapel ini (${kodeMapel}). Daftarkan dulu lewat halaman Edit Siswa.` : 'Belum ada data siswa.')
+                            : 'Siswa tidak ditemukan.'}
                         </p>
                       ) : (
                         filteredStudents.map(student => {
@@ -1711,6 +1921,7 @@ const ManageMateri = () => {
           </div>
         </div>
       </div>
+      )}
 
       {/* ========================================================== */}
       {/* MODAL: GENERATE DENGAN AI */}
@@ -1727,18 +1938,47 @@ const ManageMateri = () => {
       )}
 
       {/* ========================================================== */}
-      {/* FOOTER */}
+      {/* FOOTER -- SEKARANG NAVIGASI ANTAR-LANGKAH WIZARD */}
       {/* ========================================================== */}
       <div style={styles.floatingFooter}>
-        <button onClick={() => navigate('/guru/modul')} style={styles.btnFooterCancel}>Batal</button>
-        {editId && (
-          <button onClick={() => window.open(`/siswa/modul/${editId}`, '_blank')} style={{ ...styles.btnFooterCancel, background: 'white', border: '1px solid #e2e8f0' }}>
-            <Eye size={14} /> Preview
-          </button>
+        {step === 1 && (
+          <>
+            <button onClick={() => navigate('/guru/modul')} style={styles.btnFooterCancel}>Batal</button>
+            <button onClick={handleAdvanceFromStep1} disabled={saving} style={{ ...styles.btnFooterSave, opacity: saving ? 0.6 : 1, marginLeft: 'auto' }}>
+              {saving ? 'Menyiapkan...' : 'Selanjutnya'} <ChevronRight size={16} />
+            </button>
+          </>
         )}
-        <button onClick={handleSave} disabled={saving} style={{ ...styles.btnFooterSave, opacity: saving ? 0.6 : 1 }}>
-          <Rocket size={16} /> {saving ? 'Menyimpan...' : editId ? 'Update Modul' : 'Terbitkan Modul'}
-        </button>
+        {step === 2 && (
+          <>
+            <button onClick={() => setStep(1)} style={styles.btnFooterCancel}>Sebelumnya</button>
+            <button
+              onClick={async () => {
+                // 🔥 Simpan konten yang udah diisi (diam-diam, gak ada alert)
+                // sebelum lanjut ke Langkah 3, biar gak ilang kalau guru
+                // refresh/nutup tab di tengah jalan.
+                try { await autoSaveModulSilently(); } catch (e) { /* modulId pasti udah ada di titik ini, harusnya gak gagal */ }
+                setStep(3);
+              }}
+              style={{ ...styles.btnFooterSave, marginLeft: 'auto' }}
+            >
+              Selanjutnya <ChevronRight size={16} />
+            </button>
+          </>
+        )}
+        {step === 3 && (
+          <>
+            <button onClick={() => setStep(2)} style={styles.btnFooterCancel}>Sebelumnya</button>
+            {editId && (
+              <button onClick={() => window.open(`/siswa/modul/${editId}`, '_blank')} style={{ ...styles.btnFooterCancel, background: 'white', border: '1px solid #e2e8f0' }}>
+                <Eye size={14} /> Preview
+              </button>
+            )}
+            <button onClick={handleSave} disabled={saving} style={{ ...styles.btnFooterSave, opacity: saving ? 0.6 : 1, marginLeft: editId ? 0 : 'auto' }}>
+              <Rocket size={16} /> {saving ? 'Menyimpan...' : editId ? 'Update Modul' : 'Terbitkan Modul'}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
