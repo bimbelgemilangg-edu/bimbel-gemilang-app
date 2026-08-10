@@ -767,6 +767,26 @@ const ManageQuiz = () => {
     setQuizCloseDate(data.quizCloseDate || quizCloseDate);
     setIsAIGenerated(data.generatedByAI || false);
 
+    // 🔥 FIX BUG BESAR (pasangan dari fix di handleSaveQuiz): sebelumnya
+    // fungsi ini TIDAK PERNAH memulihkan target publish (publishTarget,
+    // siswa yang dipilih, kelas/program) dari data yang tersimpan --
+    // panel "5. Target Publish" selalu balik ke nilai DEFAULT setiap kali
+    // guru membuka lagi kuis yang sudah ada. Ini berbahaya: kalau guru
+    // buka kuis buat alasan lain (mis. nambah soal) tanpa sadar panel
+    // Target sudah "diam-diam" ke-reset, terus klik Simpan, target yang
+    // sebenarnya (misal "Siswa Tertentu" yang sudah benar) bisa KETIMPA
+    // balik ke default. Sekarang dipulihkan persis sesuai data tersimpan.
+    if (data.sendToSpecificStudents) {
+      setPublishTarget('siswa');
+      setSelectedStudentsForQuiz(data.selectedStudents || []);
+    } else if ((data.targetKelas && data.targetKelas !== 'Semua') || (data.targetKategori && data.targetKategori !== 'Semua')) {
+      setPublishTarget('jenjang');
+      setSelectedKelas(data.targetKelas || 'Semua');
+      setSelectedProgram(data.targetKategori || 'Semua');
+    } else {
+      setPublishTarget('mandiri');
+    }
+
     if (data.timeLimit > 0 || data.randomOrder || data.maxAttempts > 1) {
       setQuizMode('advanced');
     }
@@ -1905,20 +1925,36 @@ const ManageQuiz = () => {
         quizPayload.antiCheatEnabled = antiCheatEnabled;
       }
 
-      // 🔥 FIX BUG: kalau ini KUIS YANG SUDAH ADA lagi diedit (bukan bikin
-      // baru), langsung UPDATE dokumen itu sendiri di tempat. Ini WAJIB
-      // dicek PALING DULU, sebelum percabangan lain (isFromModul / Tautkan ke
-      // Modul) — soalnya kalau enggak, sistem bisa salah kira ini "mau bikin
-      // kuis baru ditautkan ke modul lain" dan malah bikin DUPLIKAT.
+      // 🔥 FIX BUG PALING PENTING (baru ditemukan): kalau ini KUIS YANG SUDAH
+      // ADA lagi diedit (bukan bikin baru), langsung UPDATE dokumen itu
+      // sendiri di tempat. Ini WAJIB dicek PALING DULU, sebelum percabangan
+      // lain (isFromModul / Tautkan ke Modul) — soalnya kalau enggak, sistem
+      // bisa salah kira ini "mau bikin kuis baru ditautkan ke modul lain"
+      // dan malah bikin DUPLIKAT.
+      //
+      // 🔥 FIX BUG KRUSIAL (kasus nyata): update ini SEBELUMNYA TIDAK
+      // MENYERTAKAN field target sama sekali (targetKategori, targetKelas,
+      // sendToSpecificStudents, selectedStudents, studentIds) — cuma
+      // quizPayload + title + subject. Akibatnya: kalau guru bikin kuis
+      // dengan target biasa (jenjang/kelas) dulu, lalu BELAKANGAN buka lagi
+      // buat diedit dan ganti ke "Siswa Tertentu" (pilih nama siswa
+      // langsung), pilihan itu KELIHATAN tersimpan di UI tapi SEBENARNYA
+      // TIDAK PERNAH nyampe ke database sama sekali — field
+      // `sendToSpecificStudents` di database tetap `false` (nilai lama),
+      // jadi siswa yang dipilih guru tetap kena pengecekan mapel/kelas
+      // biasa dan ditolak, walau di layar guru keliatan sudah benar. Ini
+      // yang bikin fitur "Siswa Tertentu" kelihatan "gak jalan" padahal
+      // sebenarnya cuma gak pernah kesimpen.
       if (isEditingExistingQuiz && !isFromModul) {
-        // 🔥 FIX BUG (sama kayak jalur kuis-dalam-modul di bawah): update ini
-        // sebelumnya juga TIDAK menyertakan `subject`/`title`, jadi kalau
-        // guru edit ulang kuis mandiri dan ganti mapel/judulnya, perubahan
-        // itu gak pernah kesimpen -- database tetap nyangkut ke nilai lama.
         await updateDoc(doc(db, "bimbel_modul", modulId), {
           ...quizPayload,
           title: quizTitle.toUpperCase(),
           subject: quizSubject || "Kuis",
+          targetKategori: publishTarget === 'jenjang' ? selectedProgram : "Semua",
+          targetKelas: publishTarget === 'jenjang' ? selectedKelas : "Semua",
+          sendToSpecificStudents: publishTarget === 'siswa',
+          selectedStudents: publishTarget === 'siswa' ? selectedStudentsForQuiz : [],
+          studentIds: publishTarget === 'siswa' ? selectedStudentsForQuiz.map(s => s.studentId) : [],
         });
         alert(`✅ Kuis "${quizTitle}" berhasil diperbarui!`);
         localStorage.removeItem(draftKey);
