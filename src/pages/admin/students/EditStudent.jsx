@@ -310,6 +310,15 @@ const EditStudent = () => {
   const handleSave = async () => {
     if (!formData.nama) return showAlert('⚠️ Nama tidak boleh kosong!');
 
+    // 🔥 BERUBAH: dari OPSIONAL jadi WAJIB. Kalau kosong, siswa ini gak
+    // akan bisa akses materi/kuis mapel apa pun (sistem sekarang sengaja
+    // ketat, gak lagi ngikut jadwal otomatis) DAN gak akan muncul sama
+    // sekali di daftar pilihan siswa buat dijadwalkan atau ditargetkan
+    // modul -- jadi ini gerbang wajib sebelum siswa bisa dipakai di mana pun.
+    if (selectedMapelCodes.length === 0) {
+      return showAlert('⚠️ Pilih minimal 1 mapel di bagian "Akses Mapel" sebelum menyimpan! Tanpa ini, siswa gak akan muncul di Jadwal maupun target modul guru.');
+    }
+
     const total = parseInt(formData.totalTagihan) || 0;
     const bayar = parseInt(formData.totalBayar) || 0;
     if (total < bayar) {
@@ -361,7 +370,10 @@ const EditStudent = () => {
       // sama sekali dari "gak ada override, ikut jadwal seperti biasa".
       // deleteField() memastikan siswa balik ke mode otomatis normal
       // kalau admin memang mau hapus override yang pernah diisi.
-      payload.enrolledSubjects = selectedMapelCodes.length > 0 ? selectedMapelCodes : deleteField();
+      // 🔥 BERUBAH: karena sekarang WAJIB (divalidasi di atas sebelum sampai
+      // sini), selectedMapelCodes dijamin gak kosong -- langsung disimpan
+      // apa adanya, gak perlu lagi jalur deleteField() buat "hapus override".
+      payload.enrolledSubjects = selectedMapelCodes;
 
       await updateDoc(doc(db, "students", id), payload);
 
@@ -556,24 +568,24 @@ const EditStudent = () => {
             </div>
 
             {/* ============================================================ */}
-            {/* 🔥 BARU: AKSES MAPEL MANUAL (OPSIONAL) */}
+            {/* 🔥 BERUBAH: AKSES MAPEL — SEKARANG WAJIB, bukan opsional lagi */}
             {/* ============================================================ */}
             <div style={styles.sectionHeader}>
               <Key size={18} color="#673ab7" />
-              <h3 style={styles.sectionTitle}>Akses Mapel Manual (Opsional)</h3>
+              <h3 style={styles.sectionTitle}>Akses Mapel <span style={{ color: '#ef4444' }}>*wajib</span></h3>
             </div>
             <div style={styles.overrideHint}>
               <Info size={13} color="#673ab7" style={{ flexShrink: 0, marginTop: 1 }} />
               <span>
-                <b>Kosongkan kalau gak ada kasus khusus</b> — akses materi/kuis siswa ini otomatis mengikuti jadwal
-                mengajarnya seperti biasa, gak perlu diisi apa-apa di sini. Centang mapel di bawah HANYA kalau ada
-                masalah spesifik (misal jadwalnya belum lengkap tapi siswa harus tetap bisa akses materi mapel
-                tertentu duluan) — begitu dicentang, itu jadi PRIORITAS di atas hasil dari jadwal.
+                <b>Wajib dicentang minimal 1 mapel.</b> Sistem sekarang TIDAK LAGI otomatis ngikut jadwal mengajar --
+                akses materi/kuis siswa 100% ditentukan dari centangan di sini. Kalau kosong, siswa ini{' '}
+                <b>gak akan muncul sama sekali</b> di daftar pilihan siswa buat dijadwalkan (Manajemen Jadwal) maupun
+                ditargetkan modul (halaman guru).
               </span>
             </div>
-            {hadManualOverride && (
+            {selectedMapelCodes.length === 0 && (
               <div style={styles.overrideActiveBadge}>
-                ⚠️ Siswa ini SAAT INI punya override manual aktif — akses gak sepenuhnya ngikutin jadwal.
+                ⚠️ Siswa ini BELUM punya akses mapel apa pun -- dia gak akan muncul di Jadwal maupun target modul sampai dicentang.
               </div>
             )}
             <div style={styles.mapelCheckGrid}>
@@ -805,7 +817,7 @@ const EditStudent = () => {
           <button 
             onClick={handleSave} 
             style={styles.btnSave} 
-            disabled={saving || !!errorMsg}
+            disabled={saving || !!errorMsg || selectedMapelCodes.length === 0}
           >
             {saving ? '⏳ Menyimpan...' : <><Save size={16} /> Simpan</>}
           </button>

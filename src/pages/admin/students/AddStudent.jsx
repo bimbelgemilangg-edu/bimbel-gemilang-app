@@ -10,7 +10,7 @@ import {
 import { 
   ArrowLeft, Save, User, BookOpen, Calendar, CreditCard, 
   CheckCircle, ChevronRight, ChevronLeft, IdCard, Phone,
-  Sparkles
+  Sparkles, Key, Info
 } from 'lucide-react';
 
 const AddStudent = () => {
@@ -28,6 +28,15 @@ const AddStudent = () => {
     english: { levels: [] }
   });
   const [biayaPendaftaran, setBiayaPendaftaran] = useState(25000);
+
+  // 🔥 BARU: AKSES MAPEL — sekarang WAJIB diisi sebagai bagian dari alur
+  // pendaftaran, bukan lagi urusan terpisah yang baru diisi belakangan
+  // lewat halaman Edit Siswa. Sejak sistem akses mapel dibalik jadi KETAT
+  // (kosong = terblokir dari semua materi/kuis, dan gak muncul di daftar
+  // Jadwal/target modul), langsung minta admin isi ini SAAT mendaftarkan
+  // siswa baru -- biar gak ada siswa yang "lolos" tanpa akses ke apa pun.
+  const [mapelList, setMapelList] = useState([]);
+  const [selectedMapelCodes, setSelectedMapelCodes] = useState([]);
 
   // === FORM DATA ===
   const [formData, setFormData] = useState({
@@ -53,20 +62,8 @@ const AddStudent = () => {
 
   const [tglLahir, setTglLahir] = useState({ hari: '', bulan: '', tahun: '' });
 
-  // 🔥 FIX BUG (lanjutan): randomSuffix sekarang BISA berubah -- tapi
-  // perubahannya terjadi SAAT admin masih mengisi nama (di Step 1), lewat
-  // pengecekan ke database di bawah. Begitu admin sampai di Step 2 (lihat
-  // preview) sampai Submit, nilainya sudah "settle" dan konsisten dipakai
-  // di dua-duanya -- jadi tetap gak nabrak fix "preview harus sama dengan
-  // yang disimpan" yang sebelumnya.
   const [randomSuffix, setRandomSuffix] = useState(() => Math.floor(100 + Math.random() * 900));
 
-  // 🔥 BARU: cegah 2 siswa dengan nama depan sama dapet username IDENTIK.
-  // Sebelumnya gak ada pengecekan sama sekali -- beda dengan pembuatan
-  // studentId yang sudah dicek duplikatnya. Begitu admin mengisi nama,
-  // sistem cek ke database apakah kombinasi nama-depan+angka ini udah
-  // dipakai siswa lain; kalau iya, generate angka baru sampai ketemu yang
-  // belum dipakai.
   useEffect(() => {
     if (!formData.nama.trim()) return;
     let batal = false;
@@ -83,7 +80,7 @@ const AddStudent = () => {
             return;
           }
         } catch (e) {
-          return; // kalau query gagal (misal offline), biarkan apa adanya
+          return;
         }
         coba = Math.floor(100 + Math.random() * 900);
       }
@@ -93,7 +90,6 @@ const AddStudent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.nama]);
 
-  // === FETCH PRICING ===
   useEffect(() => {
     const fetchPricing = async () => {
       try {
@@ -120,6 +116,20 @@ const AddStudent = () => {
     fetchPricing();
   }, []);
 
+  // 🔥 BARU: fetch daftar mapel (koleksi "mapel", sumber yang sama dipakai
+  // Kelola Guru & panel Akses Mapel di Edit Siswa) buat checkbox di Step 2.
+  useEffect(() => {
+    const fetchMapel = async () => {
+      try {
+        const snap = await getDocs(collection(db, "mapel"));
+        setMapelList(snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.namaMapel || '').localeCompare(b.namaMapel || '')));
+      } catch (e) {
+        console.error("Gagal memuat daftar mapel:", e);
+      }
+    };
+    fetchMapel();
+  }, []);
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -131,9 +141,12 @@ const AddStudent = () => {
     setTimeout(() => setAlertMsg(null), duration);
   };
 
-  // ============================================================
-  // 🔥 KODE KELAS UNTUK NIM
-  // ============================================================
+  const toggleMapelCode = (kodeMapel) => {
+    setSelectedMapelCodes(prev =>
+      prev.includes(kodeMapel) ? prev.filter(c => c !== kodeMapel) : [...prev, kodeMapel]
+    );
+  };
+
   const getKodeKelas = (kelasSekolah, programType) => {
     if (programType === 'English') {
       return 'EN';
@@ -151,16 +164,6 @@ const AddStudent = () => {
     return kelasMap[kelasSekolah] || '00';
   };
 
-  // ============================================================
-  // 🔥 GENERATE STUDENT ID -- SEKARANG ATOMIK
-  // ============================================================
-  // Sebelumnya: "baca semua siswa, cari angka terbesar, +1" -- ada jeda
-  // waktu antara baca dan tulis, jadi kalau 2 admin daftarin siswa PERSIS
-  // barengan, bisa dapet studentId yang SAMA (baru ketahuan lewat
-  // pengecekan duplikat setelahnya, itupun gak selalu kejamin nyambung
-  // baik). Sekarang pakai counter tersimpan per-prefix yang diperbarui
-  // secara ATOMIK lewat Firestore transaction -- persis pola yang sama
-  // yang sudah dipakai buat benerin bug serupa di generator ID guru/mapel.
   const generateStudentId = async () => {
     const kelas = formData.kelasSekolah || '1 SD';
     const program = formData.programType || 'Reguler';
@@ -174,10 +177,6 @@ const AddStudent = () => {
     try {
       const counterRef = doc(db, "settings", counterId);
 
-      // Bootstrap sekali doang: kalau counter buat prefix ini belum pernah
-      // dipakai, hitung dulu dari data yang SUDAH ADA supaya gak mulai
-      // dari 0 dan bikin ID yang udah kepake sebelumnya (misal sistem
-      // baru pertama kali pakai fitur ini di bulan berjalan).
       const counterSnap = await getDoc(counterRef);
       if (!counterSnap.exists()) {
         const q = query(
@@ -197,7 +196,6 @@ const AddStudent = () => {
         await setDoc(counterRef, { value: maxUrut });
       }
 
-      // Ambil nomor urut berikutnya secara ATOMIK
       const nextUrut = await runTransaction(db, async (transaction) => {
         const snap = await transaction.get(counterRef);
         const current = (snap.data()?.value || 0) + 1;
@@ -208,14 +206,12 @@ const AddStudent = () => {
       return prefix + String(nextUrut).padStart(4, '0');
     } catch (e) {
       console.error("Error generate ID:", e);
-      // Fallback: timestamp + random (PASTI UNIK, walau kurang rapi)
       const timestamp = Date.now().toString(36).toUpperCase();
       const random = Math.random().toString(36).substring(2, 6).toUpperCase();
       return 'STD-' + timestamp + random;
     }
   };
 
-  // === TANGGAL LAHIR ===
   const tahunOptions = [];
   const currentYear = new Date().getFullYear();
   for (let y = currentYear; y >= 1995; y--) {
@@ -246,7 +242,6 @@ const AddStudent = () => {
     }
   }, []);
 
-  // === AUTO SET JENJANG ===
   useEffect(() => {
     if (formData.programType === 'Reguler') {
       let jenjang = 'SD';
@@ -256,7 +251,6 @@ const AddStudent = () => {
     }
   }, [formData.kelasSekolah, formData.programType]);
 
-  // === AUTO GENERATE DUE DATES ===
   const [customDueDates, setCustomDueDates] = useState([]);
   useEffect(() => {
     if (formData.metodeBayar === 'Cicilan' && formData.tenor > 0) {
@@ -275,7 +269,6 @@ const AddStudent = () => {
     setFormData(prev => ({...prev, [field]: value}));
   };
 
-  // === GET SELECTED PACKAGE ===
   const getSelectedPackage = () => {
     if (formData.programType === 'English') {
       return pricing.english.levels.find(l => l.id === formData.englishLevelId);
@@ -284,13 +277,11 @@ const AddStudent = () => {
     return pricing[jenjang]?.packages?.find(p => p.id === formData.paketId);
   };
 
-  // === GET BASE PRICE (BULANAN) ===
   const getBasePrice = () => {
     const pkg = getSelectedPackage();
     return pkg ? pkg.price : 0;
   };
 
-  // === HITUNG TOTAL (DURASI x BULANAN) ===
   const hitungTotal = () => {
     const basePrice = getBasePrice();
     let total = basePrice * parseInt(formData.durasiBulan || 1);
@@ -310,8 +301,6 @@ const AddStudent = () => {
     return start.toISOString().split('T')[0];
   };
 
-  // 🔥 FIX: pakai randomSuffix yang udah dikunci sekali di atas, bukan
-  // generate ulang tiap fungsi ini dipanggil.
   const getUsername = () => {
     if (!formData.nama) return '';
     const namaBersih = formData.nama.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -327,7 +316,6 @@ const AddStudent = () => {
     return `${namaBersih}123`;
   };
 
-  // === GET PAKET OPTIONS ===
   const getPaketOptions = () => {
     if (formData.programType === 'English') {
       return pricing.english.levels.map(l => ({
@@ -340,13 +328,8 @@ const AddStudent = () => {
     return pricing[jenjang]?.packages || [];
   };
 
-  // === SUBMIT ===
-  // 🔥 FIX: normalisasi nomor HP ke format 62xxx (dipakai WhatsApp/wa.me
-  // di tempat lain di sistem). Sebelumnya nomor diterima APAPUN formatnya
-  // tanpa validasi -- format lokal (08xxx) atau ada karakter aneh bisa
-  // bikin fitur WhatsApp di halaman lain diam-diam gak jalan.
   const normalisasiNoHp = (raw) => {
-    let bersih = (raw || '').replace(/[^0-9]/g, ''); // buang semua selain angka
+    let bersih = (raw || '').replace(/[^0-9]/g, '');
     if (bersih.startsWith('0')) bersih = '62' + bersih.substring(1);
     if (!bersih.startsWith('62')) bersih = '62' + bersih;
     return bersih;
@@ -370,6 +353,14 @@ const AddStudent = () => {
       return;
     }
 
+    // 🔥 BARU: gerbang wajib -- gak boleh submit tanpa minimal 1 mapel
+    // dicentang. Ini jaring pengaman terakhir (harusnya udah kevalidasi
+    // duluan di handleNext Step 2), tetap dicek ulang di sini biar aman.
+    if (selectedMapelCodes.length === 0) {
+      showAlert('⚠️ Pilih minimal 1 mapel di bagian "Akses Mapel" sebelum menyimpan!');
+      return;
+    }
+
     setLoading(true);
     try {
       const studentId = await generateStudentId();
@@ -383,7 +374,6 @@ const AddStudent = () => {
         ? `English - ${paketName}` 
         : `${formData.jenjang} - ${paketName}`;
 
-      // 1. SIMPAN DATA SISWA
       const studentData = {
         studentId: studentId,
         nama: formData.nama,
@@ -396,10 +386,6 @@ const AddStudent = () => {
         paket: formData.programType === 'English' ? formData.englishLevelId : formData.paketId,
         paketNama: paketName,
         paketHargaBulanan: pkg.price,
-        // 🔥 FIX: kalau program English, "Kelas Sekolah" dari Step 1 (yang
-        // default-nya "1 SD") gak relevan buat siswa kursus Inggris --
-        // bisa aja anak SMA atau orang dewasa. Simpen "Umum" aja biar gak
-        // menyesatkan data.
         kelasSekolah: formData.programType === 'English' ? 'Umum' : formData.kelasSekolah,
         tempatLahir: formData.tempatLahir,
         tanggalLahir: tanggalLahirStr,
@@ -419,22 +405,17 @@ const AddStudent = () => {
         metodeBayar: formData.metodeBayar,
         status: 'Aktif',
         isBlocked: false,
+        // 🔥 BARU: akses mapel diisi LANGSUNG pas pendaftaran -- gak perlu
+        // lagi bolak-balik ke halaman Edit Siswa buat ngisi ini belakangan.
+        enrolledSubjects: selectedMapelCodes,
         createdAt: serverTimestamp()
       };
 
-      // 🔥 FIX BUG PALING KRUSIAL: sebelumnya data siswa dan data keuangan
-      // ditulis lewat 2 panggilan addDoc() TERPISAH. Kalau tulisan
-      // pertama (siswa) sukses tapi yang kedua (keuangan) gagal karena
-      // apapun (koneksi putus, dll), siswa itu KETERCATAT di sistem tapi
-      // uangnya HILANG dari pembukuan -- padahal di dunia nyata siswanya
-      // beneran udah bayar. Sekarang pakai writeBatch: SEMUA tulisan ini
-      // sukses BARENGAN, atau GAGAL BARENGAN (gak ada kondisi setengah-jadi).
       const batch = writeBatch(db);
 
       const studentRef = doc(collection(db, "students"));
       batch.set(studentRef, studentData);
 
-      // 2. SIMPAN PEMBAYARAN (dalam batch yang sama)
       if (formData.metodeBayar === 'Tunai' || formData.metodeBayar === 'Transfer') {
         const financeLogRef = doc(collection(db, "finance_logs"));
         batch.set(financeLogRef, {
@@ -470,7 +451,6 @@ const AddStudent = () => {
         });
       }
 
-      // 🔥 Eksekusi SEMUA tulisan di atas sekaligus, atomik.
       await batch.commit();
 
       showAlert(`✅ Siswa berhasil didaftarkan! ID: ${studentId}`, 5000);
@@ -487,7 +467,6 @@ const AddStudent = () => {
     }
   };
 
-  // === RENDER STEP 1 ===
   const renderStep1 = () => (
     <div style={styles.stepContent}>
       <div style={styles.sectionHeader}>
@@ -601,7 +580,6 @@ const AddStudent = () => {
     </div>
   );
 
-  // === RENDER STEP 2 ===
   const renderStep2 = () => {
     const paketOptions = getPaketOptions();
     const selectedPkg = getSelectedPackage();
@@ -672,6 +650,39 @@ const AddStudent = () => {
           </div>
         )}
 
+        {/* ============================================================ */}
+        {/* 🔥 BARU: AKSES MAPEL — WAJIB, diisi langsung pas pendaftaran */}
+        {/* ============================================================ */}
+        <div style={styles.sectionHeader}>
+          <Key size={20} color="#673ab7" />
+          <h3 style={styles.sectionTitle}>Akses Mapel <span style={{ color: '#ef4444' }}>*wajib</span></h3>
+        </div>
+        <div style={styles.overrideHint}>
+          <Info size={13} color="#673ab7" style={{ flexShrink: 0, marginTop: 1 }} />
+          <span>
+            <b>Wajib dicentang minimal 1 mapel</b> sesuai paket yang diambil siswa ini. Tanpa ini, siswa gak akan
+            bisa akses materi/kuis apa pun, dan gak akan muncul di daftar pilihan siswa buat dijadwalkan (Manajemen
+            Jadwal) maupun ditargetkan modul oleh guru.
+          </span>
+        </div>
+        <div style={styles.mapelCheckGrid}>
+          {mapelList.length === 0 ? (
+            <p style={{ fontSize: 11, color: '#94a3b8', gridColumn: '1 / -1' }}>Belum ada data mapel.</p>
+          ) : (
+            mapelList.map(m => (
+              <label key={m.id} style={styles.mapelCheckItem(selectedMapelCodes.includes(m.kodeMapel))}>
+                <input
+                  type="checkbox"
+                  checked={selectedMapelCodes.includes(m.kodeMapel)}
+                  onChange={() => toggleMapelCode(m.kodeMapel)}
+                  style={{ accentColor: '#673ab7' }}
+                />
+                <span>{m.namaMapel}</span>
+              </label>
+            ))
+          )}
+        </div>
+
         <div style={styles.sectionHeader}>
           <Calendar size={20} color="#8b5cf6" />
           <h3 style={styles.sectionTitle}>Masa Aktif Paket</h3>
@@ -712,7 +723,6 @@ const AddStudent = () => {
     );
   };
 
-  // === RENDER STEP 3 ===
   const renderStep3 = () => {
     const total = hitungTotal();
     const cicilan = hitungCicilan();
@@ -720,10 +730,6 @@ const AddStudent = () => {
 
     return (
       <div style={styles.stepContent}>
-        {/* 🔥 BARU: ringkasan review sebelum submit -- sebelumnya admin
-            ngisi biodata di Step 1 lalu gak pernah liat lagi datanya
-            sampai submit beneran. Kalau ada typo, baru ketauan setelah
-            data kesimpen. */}
         <div style={styles.reviewBox}>
           <div style={styles.reviewTitle}>📋 Cek Sekali Lagi Sebelum Disimpan</div>
           <div style={styles.reviewGrid}>
@@ -733,6 +739,12 @@ const AddStudent = () => {
             <div><span style={styles.reviewLabel}>Program</span><div style={styles.reviewValue}>{formData.programType === 'English' ? (pricing.english.levels.find(l => l.id === formData.englishLevelId)?.name || '-') : `${formData.jenjang} - ${getSelectedPackage()?.name || '-'}`}</div></div>
             <div><span style={styles.reviewLabel}>Nama Ayah</span><div style={styles.reviewValue}>{formData.namaAyah || '-'}</div></div>
             <div><span style={styles.reviewLabel}>Nama Ibu</span><div style={styles.reviewValue}>{formData.namaIbu || '-'}</div></div>
+            <div>
+              <span style={styles.reviewLabel}>Akses Mapel</span>
+              <div style={styles.reviewValue}>
+                {selectedMapelCodes.length > 0 ? selectedMapelCodes.join(', ') : <span style={{ color: '#ef4444' }}>⚠️ Belum dipilih!</span>}
+              </div>
+            </div>
           </div>
           <p style={styles.reviewHint}>Kalau ada yang salah, klik "Sebelumnya" buat balik & benerin dulu.</p>
         </div>
@@ -805,10 +817,6 @@ const AddStudent = () => {
   const totalSteps = 3;
   const stepLabels = ['Biodata', 'Program', 'Pembayaran'];
 
-  // 🔥 FIX #5: sebelumnya admin bisa lanjut ke Step 2/3 walau Step 1
-  // (Nama, No HP) masih kosong -- baru ketauan pas coba submit di paling
-  // akhir, buang waktu ngisi step berikutnya buat apa-apa. Sekarang
-  // divalidasi per-step dulu sebelum boleh lanjut.
   const handleNext = () => {
     if (step === 1) {
       if (!formData.nama.trim()) return showAlert('⚠️ Nama lengkap wajib diisi dulu!');
@@ -817,6 +825,7 @@ const AddStudent = () => {
     if (step === 2) {
       const pkg = getSelectedPackage();
       if (!pkg) return showAlert('⚠️ Pilih paket/level dulu sebelum lanjut!');
+      if (selectedMapelCodes.length === 0) return showAlert('⚠️ Pilih minimal 1 mapel di bagian "Akses Mapel" sebelum lanjut!');
     }
     setStep(step + 1);
   };
@@ -864,7 +873,6 @@ const AddStudent = () => {
   );
 };
 
-// === STYLES ===
 const styles = {
   wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
   mainContent: (m) => ({ marginLeft: m ? '0' : '250px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' }),
@@ -893,6 +901,20 @@ const styles = {
   tabBtn: (active, color = '#3b82f6') => ({ flex: 1, padding: '10px 16px', borderRadius: 10, border: active ? `2px solid ${color}` : '1px solid #e2e8f0', background: active ? '#eff6ff' : 'white', color: active ? color : '#64748b', fontWeight: active ? 'bold' : '500', fontSize: 13, cursor: 'pointer', transition: '0.2s' }),
   infoBox: { background: '#f0f9ff', padding: 14, borderRadius: 10, border: '1px solid #bae6fd', marginTop: 10 },
   infoRow: { display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 12 },
+  overrideHint: {
+    display: 'flex', gap: 6, fontSize: 11, color: '#5b21b6', lineHeight: 1.6,
+    background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 8,
+    padding: 10, marginBottom: 10,
+  },
+  mapelCheckGrid: {
+    display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 6, marginBottom: 16,
+  },
+  mapelCheckItem: (checked) => ({
+    display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 8,
+    border: checked ? '2px solid #673ab7' : '1px solid #e2e8f0',
+    background: checked ? '#f5f3ff' : 'white', cursor: 'pointer', fontSize: 12,
+    fontWeight: checked ? 700 : 500, color: checked ? '#5b21b6' : '#475569',
+  }),
   accountPreview: { marginTop: 16, background: '#fefce8', padding: 14, borderRadius: 10, border: '1px solid #fef08a' },
   accountHeader: { display: 'flex', alignItems: 'center', gap: 6, fontWeight: 'bold', fontSize: 12, color: '#854d0e', marginBottom: 8 },
   accountRow: { display: 'flex', justifyContent: 'space-between', padding: '3px 0', fontSize: 12 },
