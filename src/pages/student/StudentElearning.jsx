@@ -241,14 +241,28 @@ const StudentElearning = () => {
 
       // 🔥 FILTER BERDASARKAN AKSES SISWA
       const { nim, kelas, program, id, enrolledSubjects } = studentData;
-      
+
+      // 🔥 BARU: log ringkasan SEBELUM filter -- kalau daftar modul kosong
+      // padahal seharusnya ada, buka Console (F12) dan cari baris
+      // '[Cek Daftar Modul Siswa]' ini buat lihat PERSIS data siswa yang
+      // dipakai buat nyaring (terutama enrolledSubjects -- kalau ini
+      // kosong `[]`, itu tandanya data di database memang belum keisi/
+      // belum tersimpan, BUKAN bug di kode penyaringnya).
+      console.log('[Cek Daftar Modul Siswa] Data siswa dipakai filter:', {
+        nim, kelas, program, id, enrolledSubjects,
+        totalModulSebelumFilter: allModules.length,
+      });
+
+      const rejectedLog = [];
       allModules = allModules.filter(module => {
         // 1. Cek jika modul dikirim ke siswa tertentu
         if (module.sendToSpecificStudents) {
           const targetIds = module.studentIds || [];
           const selectedIds = (module.selectedStudents || []).map(s => s.studentId || s.id);
           const allTargetIds = [...targetIds, ...selectedIds];
-          return allTargetIds.includes(nim) || allTargetIds.includes(id);
+          const ok = allTargetIds.includes(nim) || allTargetIds.includes(id);
+          if (!ok) rejectedLog.push({ title: module.title, alasan: 'sendToSpecificStudents tapi siswa ini gak ada di daftar target' });
+          return ok;
         }
         
         // 2. Cek berdasarkan kelas & program
@@ -263,9 +277,22 @@ const StudentElearning = () => {
         // belakangan pas modul-nya diklik. Sekarang disaring dari awal,
         // konsisten dengan pengecekan yang sama di StudentModuleView.jsx.
         const matchSubject = hasSubjectAccess(enrolledSubjects, module.subject || '', module.kodeMapel || '');
-        
-        return matchKelas && matchProgram && matchSubject;
+
+        const ok = matchKelas && matchProgram && matchSubject;
+        if (!ok) {
+          rejectedLog.push({
+            title: module.title, modulSubject: module.subject, modulKodeMapel: module.kodeMapel,
+            modulTargetKelas: targetKelas, modulTargetProgram: targetProgram,
+            matchKelas, matchProgram, matchSubject,
+          });
+        }
+        return ok;
       });
+
+      if (rejectedLog.length > 0) {
+        console.log('[Cek Daftar Modul Siswa] Modul yang DITOLAK & alasannya:', rejectedLog);
+      }
+      console.log('[Cek Daftar Modul Siswa] Total modul LOLOS filter:', allModules.length);
       
       setModules(allModules);
       setFilteredModules(allModules);
