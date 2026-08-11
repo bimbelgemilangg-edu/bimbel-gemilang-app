@@ -306,7 +306,27 @@ const StudentDashboard = () => {
         const todayStr = getSmartDateString(new Date());
         const periode = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
 
-        const sSnap = await getDoc(doc(db, "students", studentId)).catch(() => null);
+        // 🔥 FIX BUG AKAR MASALAH (sama persis dengan yang di
+        // StudentElearning.jsx): `studentId` yang tersimpan di localStorage
+        // saat login itu KODE UNIK siswa (mis. "STD-1226080003"), BUKAN ID
+        // DOKUMEN Firestore (mis. "qO0RTPw7ylj2rolT5MMS"). Jadi getDoc
+        // langsung pakai nilai itu nyari dokumen yang GAK PERNAH ADA ->
+        // `enrolledSubjects` gak pernah keisi -> siswa keblokir dari semua
+        // materi & kuis, TANPA error apa pun (karena `.catch(() => null)`
+        // membungkam kegagalannya). Sekarang: coba dulu sebagai ID dokumen,
+        // kalau gak ketemu cari lewat FIELD `studentId`.
+        let sSnap = await getDoc(doc(db, "students", studentId)).catch(() => null);
+        if (!sSnap?.exists()) {
+          try {
+            const byField = await getDocs(
+              query(collection(db, "students"), where("studentId", "==", studentId))
+            );
+            if (!byField.empty) sSnap = byField.docs[0];
+            else console.warn('[Data Siswa] Dokumen siswa tidak ditemukan:', studentId);
+          } catch (e) {
+            console.error('[Data Siswa] Gagal mencari dokumen siswa:', e);
+          }
+        }
         let kelasVal = studentKelas, programVal = studentProgram, nimVal = studentNim || studentId;
         // 🔥 BERUBAH: mapel yang beneran diambil siswa (buat strategi harga 1
         // mapel / 2 mapel / paket lengkap) sekarang HANYA dari field manual
@@ -314,6 +334,11 @@ const StudentDashboard = () => {
         // di atas. Kalau field ini kosong, siswa dianggap BELUM diisi
         // mapelnya sama sekali (bukan lagi "akses penuh sementara").
         let enrolledSubjectsVal = null;
+        // 🔥 ID DOKUMEN yang SEBENARNYA (bisa beda dari `studentId` di
+        // localStorage) -- dipakai buat mencocokkan target "kirim ke siswa
+        // tertentu" yang menyimpan ID dokumen di selectedStudents[].id.
+        const realDocId = sSnap?.id || studentId;
+
         if (sSnap?.exists()) {
           const data = sSnap.data();
           setStudentProfile(data);
@@ -428,7 +453,9 @@ const StudentDashboard = () => {
             if (!modul.tanggalMulai) return false;
             if (new Date(modul.tanggalMulai) > new Date()) return false;
           }
-          return checkStudentAccess(modul, studentId, kelasVal, programVal, enrolledSubjectsVal);
+          // 🔥 pakai ID DOKUMEN asli (realDocId), bukan nilai localStorage
+          // yang bisa jadi kode unik -- biar target "siswa tertentu" cocok.
+          return checkStudentAccess(modul, realDocId, kelasVal, programVal, enrolledSubjectsVal);
         });
 
         // 🔥 FIX BUG "kuis gak muncul di dashboard": sejak kuis "ditautkan

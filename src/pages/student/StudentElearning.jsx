@@ -142,39 +142,100 @@ const StudentElearning = () => {
     } catch (e) { enrolledSubjectsFallback = []; }
 
     setStudentData({ id, nim, name, kelas, program, enrolledSubjects: enrolledSubjectsFallback });
-    
-    if (id) {
-      getDoc(doc(db, "students", id)).then(snap => {
+
+    // ============================================================
+    // 🔥 FIX BUG AKAR MASALAH "siswa sudah didaftarkan mapelnya tapi
+    // enrolledSubjects selalu kosong / modul & kuis gak muncul sama sekali"
+    // ============================================================
+    // Ada DUA bug bertumpuk di sini, yang kedua nutupin yang pertama:
+    //
+    // (1) Field `enrolledSubjects` gak pernah disalin ke `studentData`
+    //     (sudah diperbaiki di bawah).
+    //
+    // (2) YANG LEBIH DALAM: pengambilan dokumen siswa pakai
+    //     `getDoc(doc(db, "students", id))` dengan `id` yang diambil dari
+    //     `localStorage.getItem('studentId')` -- padahal isi localStorage
+    //     itu KODE UNIK siswa (mis. "STD-1226080003"), BUKAN ID DOKUMEN
+    //     Firestore (mis. "qO0RTPw7ylj2rolT5MMS", lihat URL halaman Edit
+    //     Siswa di admin). Jadi `getDoc` nyari dokumen dengan ID yang
+    //     memang GAK PERNAH ADA -> `snap.exists()` selalu false ->
+    //     enrolledSubjects gak pernah keisi. Lebih parah lagi, ujungnya
+    //     ada `.catch(() => {})` yang MEMBUNGKAM kegagalan ini total --
+    //     gak ada error, gak ada warning, jadi bug ini "diam-diam" bikin
+    //     SEMUA siswa keblokir tanpa jejak apa pun di console.
+    //
+    // Perbaikan: coba dulu sebagai ID dokumen (buat akun yang memang
+    // login-nya nyimpen ID dokumen), dan KALAU GAK KETEMU, cari lewat
+    // FIELD `studentId` (buat akun yang nyimpen kode unik). Dua-duanya
+    // ditangani, jadi apapun skema yang dipakai saat login, datanya
+    // tetap ketemu.
+    const applyStudentDoc = (docId, data) => {
+      const enrolled = Array.isArray(data.enrolledSubjects) ? data.enrolledSubjects : [];
+      setStudentData(prev => ({
+        ...prev,
+        // 🔥 `id` disamakan ke ID DOKUMEN yang sebenarnya -- ini penting
+        // karena dipakai buat mencocokkan target "kirim ke siswa tertentu"
+        // (yang menyimpan ID dokumen di `selectedStudents[].id`).
+        id: docId || prev.id,
+        nim: data.studentId || data.nim || nim,
+        kelas: data.kelasSekolah || kelas,
+        program: data.kategori || data.program || program,
+        enrolledSubjects: enrolled,
+      }));
+      // Sinkronkan ke localStorage biar halaman lain (StudentModuleView /
+      // StudentQuizView) yang baca dari sini juga dapat data terbaru.
+      try {
+        localStorage.setItem('studentEnrolledSubjects', JSON.stringify(enrolled));
+      } catch (e) { /* localStorage penuh/gak tersedia -- gak fatal */ }
+    };
+
+    const loadStudentDoc = async () => {
+      if (!id) return;
+      try {
+        // Percobaan 1: anggap `id` adalah ID DOKUMEN Firestore
+        const snap = await getDoc(doc(db, "students", id));
         if (snap.exists()) {
-          const data = snap.data();
-          // 🔥 FIX BUG UTAMA: sebelumnya field `enrolledSubjects` TIDAK
-          // PERNAH disalin ke `studentData` di sini -- padahal `data`
-          // (hasil getDoc langsung dari dokumen siswa) SUDAH punya field
-          // ini dengan benar. Akibatnya `studentData.enrolledSubjects`
-          // yang diteruskan ke StudentModuleView/StudentQuizView SELALU
-          // undefined/kosong, apapun isi database-nya -- sistem lalu jatuh
-          // ke fallback localStorage yang sering juga kosong (kalau siswa
-          // gak sempat mampir ke StudentDashboard dulu di sesi itu), dan
-          // berakhir di "Akses Ditolak" walau admin sudah mendaftarkan
-          // mapelnya dengan benar. Sekarang disalin juga di sini, sumber
-          // paling akurat karena langsung dari dokumen siswa itu sendiri.
-          setStudentData(prev => ({
-            ...prev,
-            nim: data.studentId || data.nim || nim,
-            kelas: data.kelasSekolah || kelas,
-            program: data.kategori || data.program || program,
-            enrolledSubjects: Array.isArray(data.enrolledSubjects) ? data.enrolledSubjects : [],
-          }));
-          // Sinkronkan juga ke localStorage, biar halaman lain (kalau
-          // dibuka duluan) juga dapat data terbaru ini.
-          try {
-            if (Array.isArray(data.enrolledSubjects)) {
-              localStorage.setItem('studentEnrolledSubjects', JSON.stringify(data.enrolledSubjects));
-            }
-          } catch (e) { /* localStorage penuh/gak tersedia -- gak fatal */ }
+          applyStudentDoc(snap.id, snap.data());
+          return;
         }
-      }).catch(() => {});
-    }
+
+        // Percobaan 2 (INI YANG MEMPERBAIKI BUG): `id` ternyata KODE UNIK
+        // siswa, bukan ID dokumen -> cari lewat field `studentId`.
+        const byField = await getDocs(
+          query(collection(db, "students"), where("studentId", "==", id))
+        );
+        if (!byField.empty) {
+          const d = byField.docs[0];
+          applyStudentDoc(d.id, d.data());
+          return;
+        }
+
+        // Percobaan 3: kalau `nim` beda dari `id`, coba juga pakai `nim`.
+        if (nim && nim !== id) {
+          const byNim = await getDocs(
+            query(collection(db, "students"), where("studentId", "==", nim))
+          );
+          if (!byNim.empty) {
+            const d = byNim.docs[0];
+            applyStudentDoc(d.id, d.data());
+            return;
+          }
+        }
+
+        // 🔥 Kalau SEMUA percobaan gagal, JANGAN dibungkam diam-diam
+        // (itu penyebab bug ini gak ketahuan berhari-hari). Catat jelas
+        // di console supaya ketahuan kalau memang datanya bermasalah.
+        console.warn('[Data Siswa] Dokumen siswa TIDAK DITEMUKAN dengan cara apapun.', {
+          dicariSebagaiIdDokumen: id,
+          dicariSebagaiStudentId: id,
+          nim,
+        });
+      } catch (e) {
+        console.error('[Data Siswa] Gagal memuat dokumen siswa:', e);
+      }
+    };
+
+    loadStudentDoc();
   }, []);
 
   // 🔥 BARU: Ambil data semua guru (buat foto profil & nama di card)
