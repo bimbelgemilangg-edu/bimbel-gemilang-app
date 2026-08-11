@@ -800,7 +800,13 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
   useEffect(() => {
     const nim = studentData?.studentId || studentData?.nim || studentData?.studentNim || 
                 localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
-    const kelas = studentData?.kelasSekolah || localStorage.getItem('studentKelas') || '';
+    // 🔥 FIX BUG NYATA (sama kayak yang ketemu di StudentQuizView.jsx):
+    // `kelas` di sini cuma cek `studentData?.kelasSekolah`, padahal
+    // StudentElearning.jsx ngirim field ini dengan nama BEDA (`kelas`,
+    // bukan `kelasSekolah`) -- `program` di baris bawah udah bener duluan
+    // (sudah ada fallback `.program`), tapi `kelas` kelewat gak ikut
+    // dibenerin. Sekarang dua-duanya konsisten nerima kedua nama field.
+    const kelas = studentData?.kelasSekolah || studentData?.kelas || localStorage.getItem('studentKelas') || '';
     const program = studentData?.kategori || studentData?.program || localStorage.getItem('studentProgram') || 'Reguler';
     
     setStudentNim(nim);
@@ -861,6 +867,22 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           // SENGAJA tidak ikut kena batasan paket mapel di bawah. Guru tetap
           // pegang kendali penuh buat ngasih akses ekstra kalau memang mau.
           hasAccess = allTargetIds.includes(nim) || allTargetIds.includes(studentData?.id);
+
+          // 🔥 BARU: blok ini sebelumnya SAMA SEKALI GAK ADA log diagnostik
+          // -- beda dari blok pengecekan mapel di bawah yang sudah lama
+          // punya. Kalau ada laporan "udah dipilih 'Siswa Tertentu' tapi
+          // tetap ketolak", buka Console (F12) dan cari baris
+          // '[Cek Akses Modul - Siswa Tertentu]' ini buat lihat PERSIS
+          // ID/nim mana yang gagal cocok -- daripada nebak-nebak lagi.
+          console.log('[Cek Akses Modul - Siswa Tertentu]', {
+            hasAccess,
+            modulTitle: data.title,
+            nim,
+            studentDataId: studentData?.id,
+            allTargetIds,
+            rawStudentIds: studentIds,
+            rawSelectedStudents: data.selectedStudents,
+          });
         }
         
         if (!hasAccess) {
