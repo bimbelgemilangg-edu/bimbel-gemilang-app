@@ -1,404 +1,565 @@
-// src/pages/teacher/modul/ManageMateri.jsx
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+// src/pages/teacher/modul/ManageQuiz.jsx
+import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { collection, addDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy } from "firebase/firestore";
 import { 
-  collection, addDoc, doc, getDoc, updateDoc, serverTimestamp, 
-  getDocs, deleteDoc, query, where, orderBy, limit
-} from "firebase/firestore";
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { uploadElearningFile, deleteFile, supabase } from '../../../services/uploadService';
-import { notifyStudents } from '../../../utils/notifications';
-import AIGenerateMateri from './AIGenerateMateri';
-import katex from 'katex';
-import 'katex/dist/katex.min.css';
-import { 
-  Save, Trash2, FileText, HelpCircle, Clock, ArrowLeft, 
-  FileUp, Type, Video, X, Image as ImageIcon, BookOpen, 
-  Send, Layers, ChevronDown, ChevronUp, Settings, Eye, 
-  CheckCircle, Calendar, Users, Target, AlertCircle, 
-  Smartphone, Tablet, Laptop, Info, ExternalLink, CalendarDays, 
-  Archive, UserPlus, UserCheck, Search, Loader2, Hash, Tag, 
-  Zap, Sparkles, Filter, User, GraduationCap, 
-  FileSpreadsheet, FileImage, File, FileVideo,
-  Upload, Cloud, Server, RefreshCw, Home, ChevronRight,
-  Globe, Link, Plus, Minus, Copy, Edit, MoreVertical,
-  GripVertical, Move, FolderOpen, Rocket, Gift, Star,
-  Edit3, FileQuestion, Youtube
+  Plus, Trash2, CheckCircle, ArrowLeft, Save, FileText, X, 
+  Calculator, Target, BookOpen, Users, Send, Settings, 
+  Clock as ClockIcon, HelpCircle, Image, Upload, Calendar, 
+  CalendarDays, AlertCircle, Eye, EyeOff, Lock, Unlock,
+  Layers, Type, FileUp, Video, Rocket, Sparkles, Loader2,
+  List, Table, Grid, Hash, AlignLeft, CheckSquare, Square,
+  Edit3, FileQuestion, ArrowLeftRight, Undo2, Redo2,
+  Search, UserPlus, Download
 } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { uploadElearningFile } from '../../../services/uploadService';
+import SmartImportPanel from './SmartImportPanel';
+import WordImportQuiz from './WordImportQuiz';
+import AIGenerateQuiz from './AIGenerateQuiz';
+import 'katex/dist/katex.min.css';
+import { InlineMath, BlockMath } from 'react-katex';
 
 // ============================================================
-// 🔥 HELPER TANGGAL — FIX BUG TIMEZONE (sama seperti di ManageQuiz.jsx)
+// 🔥 HELPER TANGGAL — FIX BUG TIMEZONE
 // ============================================================
-// `toISOString()` selalu mengonversi ke UTC, sementara
-// `<input type="datetime-local">` butuh string dalam WAKTU LOKAL. Untuk
-// WIB (UTC+7), efeknya default "tanggal mulai" bisa geser ke hari
-// sebelumnya / jam yang salah. Helper ini membangun string dari komponen
-// waktu LOKAL, bukan dari toISOString().
 const toLocalInputValue = (date) => {
   const pad = (n) => String(n).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
 // ============================================================
-// 🔥 FIX BUG "siswa sudah didaftarkan mapelnya tapi gak muncul di daftar
-// pilihan siswa (Kirim ke siswa tertentu)": sebelumnya pencocokan
-// enrolledSubjects siswa vs mapel guru CUMA lewat KODE mapel
-// (guru.kodeMapel). Kalau enrolledSubjects siswa disimpan sebagai NAMA
-// mapel (mis. "Bahasa Inggris SMP"), atau kode di data guru kebetulan
-// belum sinkron dengan kode di koleksi "mapel", siswa itu gak akan pernah
-// ketemu di sini walau dia sudah didaftarkan dengan benar lewat Edit
-// Siswa. Sekarang dicocokkan lewat KODE dulu, dan kalau gak ketemu, coba
-// juga lewat NAMA mapel sebagai fallback -- pola yang sama persis dengan
-// hasSubjectAccess() di StudentDashboard.jsx/StudentModuleView.jsx, supaya
-// konsisten di seluruh sistem. Guru bisa ngampu multi-mapel (kodeMapel &
-// mapel bisa berisi beberapa nilai dipisah koma), jadi dipecah dulu
-// satu-satu sebelum dibandingkan.
-const isStudentEnrolledForTeacher = (enrolledSubjects, kodeMapelCombined, mapelNamesCombined) => {
-  const norm = (v) => String(v || '').toLowerCase().trim();
-  const kodeList = String(kodeMapelCombined || '').split(',').map(norm).filter(Boolean);
-  const namaList = String(mapelNamesCombined || '').split(',').map(norm).filter(Boolean);
-  if (kodeList.length === 0 && namaList.length === 0) return true; // data guru belum lengkap -> jangan blokir semua siswa gara-gara ini
-
-  const enrolled = Array.isArray(enrolledSubjects) ? enrolledSubjects : [];
-  if (enrolled.length === 0) return false;
-
-  return enrolled.some(code => {
-    const c = norm(code);
-    if (c === 'semua') return true;
-    if (kodeList.includes(c)) return true;
-    if (namaList.includes(c)) return true;
-    return false;
-  });
-};
-
+// 🔥 TIPE SOAL
 // ============================================================
-// CONSTANTS
-// ============================================================
-const FILE_TYPE_OPTIONS = [
-  { value: 'all', label: '📁 Semua File', accept: '*/*', icon: <File size={14} /> },
-  { value: 'pdf', label: '📄 PDF', accept: '.pdf,application/pdf', icon: <File size={14} color="#ef4444" /> },
-  { value: 'image', label: '🖼️ Gambar', accept: 'image/*', icon: <FileImage size={14} color="#10b981" /> },
-  { value: 'word', label: '📝 Word/DOCX', accept: '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document', icon: <FileText size={14} color="#3b82f6" /> },
+const QUESTION_TYPES = [
+  { id: 'multiple', label: 'Pilihan Ganda Biasa', icon: <CheckCircle size={14} />, color: '#3b82f6' },
+  { id: 'truefalse', label: 'Tabel Benar/Salah', icon: <Table size={14} />, color: '#10b981' },
+  { id: 'multiselect', label: 'Pilih Lebih dari Satu', icon: <CheckSquare size={14} />, color: '#8b5cf6' },
+  { id: 'reading', label: 'Membaca Teks', icon: <AlignLeft size={14} />, color: '#f59e0b' },
+  { id: 'shortanswer', label: 'Isian Singkat', icon: <Hash size={14} />, color: '#ef4444' },
+  { id: 'causeeffect', label: 'Sebab Akibat', icon: <Grid size={14} />, color: '#06b6d4' },
+  { id: 'matching', label: 'Menjodohkan', icon: <ArrowLeftRight size={14} />, color: '#ec4899' },
 ];
 
 // ============================================================
-// 🔥 RENDER MATH DI DALAM HTML STRING (buat preview guru)
+// 🔥 RENDER MATH
 // ============================================================
-const renderMathInHtml = (html) => {
-  if (!html) return html;
-  let result = html;
-  result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, expr) => {
-    try {
-      return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: true });
-    } catch (e) {
-      return match;
+const renderMath = (text) => {
+  if (!text) return null;
+  const parts = text.split(/(\$\$.*?\$\$|\$.*?\$)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('$$') && part.endsWith('$$')) {
+      try { return <BlockMath key={i} math={part.substring(2, part.length - 2)} />; }
+      catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
+    } else if (part.startsWith('$') && part.endsWith('$')) {
+      try { return <InlineMath key={i} math={part.substring(1, part.length - 1)} />; }
+      catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
     }
+    return <span key={i}>{part}</span>;
   });
-  result = result.replace(/\$([^$\n]+?)\$/g, (match, expr) => {
-    try {
-      return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: false });
-    } catch (e) {
-      return match;
-    }
-  });
-  return result;
 };
 
-// ============================================================
-// DETEKSI JENIS LINK
-// ============================================================
-const getLinkType = (url) => {
-  if (!url) return 'unknown';
-  if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
-  if (url.includes('canva.com') || url.includes('canva.cn')) return 'canva';
-  if (url.includes('docs.google.com') || url.includes('drive.google.com')) return 'google';
-  if (url.includes('vimeo.com')) return 'vimeo';
-  if (url.startsWith('http://') || url.startsWith('https://')) return 'link';
-  return 'unknown';
-};
+// Template soal kosong (dipakai di banyak tempat)
+const emptyQuestion = (idx = 0) => ({
+  id: Date.now() + idx,
+  type: 'multiple',
+  q: '',
+  qImage: '',
+  options: ['', '', '', ''],
+  optionImages: ['', '', '', ''],
+  correct: 0,
+  correctAnswers: [],
+  explanation: '',
+  statements: [{ text: '', isTrue: true }],
+  readingText: '',
+  subQuestions: [{ q: '', options: ['', '', '', ''], correct: 0 }],
+  shortAnswer: '',
+  cause: '',
+  effect: '',
+  isCauseTrue: true,
+  isEffectTrue: true,
+  needsManualAnswer: false,
+  needsImage: false,
+  imageHint: '',
+  optionsAreImages: false,
+  matchingPairs: [{ left: '', right: '' }, { left: '', right: '' }]
+});
 
 // ============================================================
-// 🔥 RENDER LINK PREVIEW - DIPERBAIKI DENGAN TAMPILAN RAPI
+// 🔥 DOWNLOAD SOAL & JAWABAN LENGKAP (PDF)
 // ============================================================
-const renderLinkPreview = (url) => {
+const TYPE_LABELS_PDF_QUIZ = {
+  multiple: 'Pilihan Ganda',
+  truefalse: 'Tabel Benar/Salah',
+  multiselect: 'Pilih Lebih dari Satu',
+  reading: 'Membaca Teks',
+  shortanswer: 'Isian Singkat',
+  causeeffect: 'Sebab Akibat',
+  matching: 'Menjodohkan',
+};
+
+const loadImageForPdf = async (url) => {
   if (!url) return null;
-  const type = getLinkType(url);
-  
-  if (type === 'youtube') {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?#]+)/);
-    if (match) {
-      return (
-        <div style={{ borderRadius: 8, overflow: 'hidden', background: '#000' }}>
-          <iframe 
-            width="100%" 
-            height="300" 
-            src={`https://www.youtube.com/embed/${match[1]}`} 
-            frameBorder="0" 
-            allowFullScreen 
-            style={{ display: 'block' }} 
-            title="YouTube"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          />
-        </div>
-      );
-    }
-    return <p style={{ color: '#ef4444', fontSize: 12, marginTop: 8 }}>⚠️ Link YouTube tidak valid</p>;
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    const dims = await new Promise((resolve) => {
+      const img = new window.Image();
+      img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+      img.onerror = () => resolve({ w: 120, h: 90 });
+      img.src = dataUrl;
+    });
+    return { dataUrl, ...dims };
+  } catch (e) {
+    console.error('Gagal muat gambar buat PDF:', url, e);
+    return null;
   }
-  
-  if (type === 'canva') {
-    return (
-      <div style={{ borderRadius: 8, background: '#f0fdf4', padding: 16, border: '1px solid #bbf7d0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <div style={{ background: '#00c4cc', padding: '4px 10px', borderRadius: 4, fontSize: 10, color: 'white', fontWeight: 'bold' }}>CANVA</div>
-          <span style={{ fontSize: 11, color: '#64748b', wordBreak: 'break-all' }}>{url}</span>
-        </div>
-        <iframe 
-          src={url} 
-          style={{ width: '100%', height: 400, border: 'none', borderRadius: 8, background: 'white' }} 
-          allowFullScreen 
-          title="Canva" 
-        />
-        <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>💡 Desain Canva tampil di atas</p>
-      </div>
-    );
-  }
-  
-  if (type === 'google') {
-    return (
-      <div style={{ borderRadius: 8, background: '#f8fafc', padding: 12, border: '1px solid #e2e8f0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <div style={{ background: '#4285f4', padding: '4px 10px', borderRadius: 4, fontSize: 10, color: 'white', fontWeight: 'bold' }}>GOOGLE</div>
-          <span style={{ fontSize: 11, color: '#64748b', wordBreak: 'break-all' }}>{url}</span>
-        </div>
-        <iframe 
-          src={url} 
-          style={{ width: '100%', height: 400, border: 'none', borderRadius: 8, background: 'white' }} 
-          allowFullScreen 
-          title="Google Docs" 
-        />
-      </div>
-    );
-  }
-  
-  if (type === 'link') {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
-        <Link size={24} color="#3b82f6" />
-        <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', wordBreak: 'break-all' }}>
-          {url}
-        </a>
-      </div>
-    );
-  }
-  
-  return null;
 };
 
-// ============================================================
-// PREVIEW COMPONENT - UNTUK FILE
-// ============================================================
-const FilePreview = ({ url, fileName, fileType }) => {
-  const [previewError, setPreviewError] = useState(false);
-  if (!url) return null;
-  
-  // 🔥 CEK APAKAH INI LINK (YouTube, Canva, Google, dll)
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    const linkType = getLinkType(url);
-    if (linkType !== 'unknown') {
-      const preview = renderLinkPreview(url);
-      if (preview) return preview;
-    }
-  }
-  
-  // 🔥 GAMBAR
-  if (fileType?.startsWith('image/') || url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
-    return (
-      <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', maxHeight: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <img src={url} alt={fileName || 'Preview'} style={{ width: '100%', maxHeight: 400, objectFit: 'contain' }} onError={() => setPreviewError(true)} />
-        {previewError && <div style={{ padding: 20, color: '#ef4444', textAlign: 'center' }}>Gagal memuat gambar</div>}
-      </div>
-    );
-  }
-  
-  // 🔥 PDF
-  if (fileType === 'application/pdf' || url.match(/\.pdf$/i)) {
-    return (
-      <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', padding: 16, textAlign: 'center' }}>
-        <div style={{ marginBottom: 8 }}><File size={40} color="#ef4444" /></div>
-        <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '8px 16px', background: '#ef4444', color: 'white', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 12 }}>📄 Buka PDF</a>
-        <embed src={url} type="application/pdf" style={{ width: '100%', height: 400, marginTop: 12, border: 'none', borderRadius: 8 }} />
-      </div>
-    );
-  }
-  
-  // 🔥 FILE LAIN
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: '#f8fafc', borderRadius: 8, justifyContent: 'center' }}>
-      <FileText size={32} color="#3b82f6" />
-      <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', fontSize: 13 }}>📎 {fileName || 'Buka File'}</a>
-    </div>
-  );
-};
+const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizMode, difficulty) => {
+  const validQuestions = questions.filter(q => q.q.trim() || q.qImage);
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginX = 14;
+  const contentWidth = pageWidth - marginX * 2;
+  let y = 20;
 
-// ============================================================
-// SIMPLE EDITOR
-// ============================================================
-const SimpleEditor = ({ value, onChange, placeholder }) => {
-  const applyFormat = (format) => {
-    const textarea = document.getElementById('editor-textarea');
-    if (!textarea) return;
-    
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = value.substring(start, end);
-    let newText = value;
-    
-    switch(format) {
-      case 'bold': newText = value.substring(0, start) + `**${selectedText}**` + value.substring(end); break;
-      case 'italic': newText = value.substring(0, start) + `*${selectedText}*` + value.substring(end); break;
-      case 'underline': newText = value.substring(0, start) + `<u>${selectedText}</u>` + value.substring(end); break;
-      case 'list': newText = value.substring(0, start) + `\n- ${selectedText}` + value.substring(end); break;
-      case 'link':
-        const url = prompt('Masukkan URL:', 'https://');
-        if (url) newText = value.substring(0, start) + `[${selectedText}](${url})` + value.substring(end);
-        break;
-      default: break;
+  const ensureSpace = (needed) => {
+    if (y + needed > pageHeight - 18) {
+      doc.addPage();
+      y = 20;
     }
-    
-    onChange(newText);
-    setTimeout(() => textarea.focus(), 10);
   };
-  
-  const toolbarBtn = { background: 'none', border: 'none', padding: '4px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#64748b', transition: '0.2s' };
 
-  return (
-    <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
-      <div style={{ display: 'flex', gap: 2, padding: 6, background: '#f8fafc', borderBottom: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
-        {[
-          { label: 'B', format: 'bold', title: 'Bold' },
-          { label: 'I', format: 'italic', title: 'Italic' },
-          { label: 'U', format: 'underline', title: 'Underline' },
-          { label: '• List', format: 'list', title: 'Bullet List' },
-          { label: '🔗 Link', format: 'link', title: 'Insert Link' }
-        ].map(btn => (
-          <button key={btn.format} type="button" onClick={() => applyFormat(btn.format)} style={toolbarBtn} title={btn.title}>
-            {btn.label}
-          </button>
-        ))}
-      </div>
-      <textarea
-        id="editor-textarea"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        style={{ width: '100%', minHeight: 200, padding: 12, border: 'none', outline: 'none', fontSize: 13, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.7 }}
-      />
-      <div style={{ padding: 6, background: '#f8fafc', borderTop: '1px solid #e2e8f0', fontSize: 9, color: '#94a3b8', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-        <span>💡 **bold** • *italic* • [teks](url) link</span>
-      </div>
-    </div>
-  );
+  doc.setFillColor(103, 58, 183);
+  doc.rect(0, 0, pageWidth, 24, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.setFont(undefined, 'bold');
+  doc.text('SOAL & KUNCI JAWABAN LENGKAP', marginX, 11);
+  doc.setFontSize(9);
+  doc.setFont(undefined, 'normal');
+  doc.text('Bimbel Gemilang - Dokumen internal guru (bukan untuk siswa)', marginX, 18);
+  doc.setTextColor(30, 41, 59);
+  y = 32;
+
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
+  doc.text(quizTitle || 'Kuis', marginX, y);
+  y += 6;
+  doc.setFontSize(9);
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Mapel: ${quizSubject || '-'}  |  Jumlah soal: ${validQuestions.length}  |  Tingkat: ${difficulty || '-'}  |  Dibuat: ${new Date().toLocaleDateString('id-ID')}`, marginX, y);
+  doc.setTextColor(30, 41, 59);
+  y += 8;
+
+  for (let idx = 0; idx < validQuestions.length; idx++) {
+    const q = validQuestions[idx];
+    ensureSpace(20);
+
+    doc.setFillColor(243, 232, 255);
+    doc.roundedRect(marginX, y - 4, 28, 6, 2, 2, 'F');
+    doc.setFontSize(8.5);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(103, 58, 183);
+    doc.text(`Soal ${idx + 1}`, marginX + 3, y);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(100, 116, 139);
+    doc.text(TYPE_LABELS_PDF_QUIZ[q.type] || q.type, marginX + 32, y);
+    doc.setTextColor(30, 41, 59);
+    y += 6;
+
+    doc.setFontSize(10.5);
+    doc.setFont(undefined, 'bold');
+    const qLines = doc.splitTextToSize(q.q || '(soal bergambar)', contentWidth);
+    ensureSpace(qLines.length * 5 + 4);
+    doc.text(qLines, marginX, y);
+    y += qLines.length * 5 + 2;
+    doc.setFont(undefined, 'normal');
+
+    if (q.qImage) {
+      const img = await loadImageForPdf(q.qImage);
+      if (img) {
+        const maxW = 80, maxH = 60;
+        let w = img.w, h = img.h;
+        const scale = Math.min(maxW / w, maxH / h, 1);
+        w *= scale; h *= scale;
+        ensureSpace(h + 4);
+        try {
+          doc.addImage(img.dataUrl, 'PNG', marginX, y, w, h);
+          y += h + 4;
+        } catch (e) {
+          doc.setFontSize(8);
+          doc.setTextColor(148, 163, 184);
+          doc.text('[Gambar gagal ditempel - buka link di editor kuis]', marginX, y);
+          doc.setTextColor(30, 41, 59);
+          y += 5;
+        }
+      } else {
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.text('[Gambar tidak dapat dimuat - cek langsung di editor kuis]', marginX, y);
+        doc.setTextColor(30, 41, 59);
+        y += 5;
+      }
+    }
+
+    doc.setFontSize(9.5);
+
+    if (q.type === 'multiple') {
+      if (q.optionsAreImages) {
+        for (let oi = 0; oi < q.options.length; oi++) {
+          const letter = String.fromCharCode(65 + oi);
+          const isCorrect = q.correct === oi;
+          ensureSpace(10);
+          doc.setFont(undefined, isCorrect ? 'bold' : 'normal');
+          doc.setTextColor(isCorrect ? 16 : 30, isCorrect ? 129 : 41, isCorrect ? 76 : 59);
+          doc.text(`${letter}. ${isCorrect ? '(KUNCI JAWABAN)' : '(gambar opsi - lihat di editor kuis)'}`, marginX + 3, y);
+          doc.setTextColor(30, 41, 59);
+          y += 5;
+        }
+      } else {
+        (q.options || []).forEach((opt, oi) => {
+          const letter = String.fromCharCode(65 + oi);
+          const isCorrect = q.correct === oi;
+          const lines = doc.splitTextToSize(`${letter}. ${opt || '-'}${isCorrect ? '   (KUNCI)' : ''}`, contentWidth - 6);
+          ensureSpace(lines.length * 5);
+          doc.setFont(undefined, isCorrect ? 'bold' : 'normal');
+          if (isCorrect) doc.setTextColor(16, 129, 76); else doc.setTextColor(51, 65, 85);
+          doc.text(lines, marginX + 3, y);
+          doc.setTextColor(30, 41, 59);
+          y += lines.length * 5;
+        });
+      }
+    } else if (q.type === 'multiselect') {
+      (q.options || []).forEach((opt, oi) => {
+        const letter = String.fromCharCode(65 + oi);
+        const isCorrect = (q.correctAnswers || []).includes(oi);
+        const lines = doc.splitTextToSize(`${letter}. ${opt || '-'}${isCorrect ? '   (KUNCI)' : ''}`, contentWidth - 6);
+        ensureSpace(lines.length * 5);
+        doc.setFont(undefined, isCorrect ? 'bold' : 'normal');
+        if (isCorrect) doc.setTextColor(16, 129, 76); else doc.setTextColor(51, 65, 85);
+        doc.text(lines, marginX + 3, y);
+        doc.setTextColor(30, 41, 59);
+        y += lines.length * 5;
+      });
+    } else if (q.type === 'truefalse') {
+      (q.statements || []).forEach((stmt, si) => {
+        const lines = doc.splitTextToSize(`${si + 1}. ${stmt.text || '-'}   [Kunci: ${stmt.isTrue ? 'BENAR' : 'SALAH'}]`, contentWidth - 6);
+        ensureSpace(lines.length * 5);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(51, 65, 85);
+        doc.text(lines, marginX + 3, y);
+        doc.setTextColor(30, 41, 59);
+        y += lines.length * 5;
+      });
+    } else if (q.type === 'shortanswer') {
+      ensureSpace(6);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(16, 129, 76);
+      doc.text(`Kunci Jawaban: ${q.shortAnswer || '-'}`, marginX + 3, y);
+      doc.setTextColor(30, 41, 59);
+      y += 6;
+    } else if (q.type === 'causeeffect') {
+      ensureSpace(12);
+      doc.setFont(undefined, 'normal');
+      const causeLines = doc.splitTextToSize(`SEBAB: ${q.cause || '-'}   [${q.isCauseTrue ? 'BENAR' : 'SALAH'}]`, contentWidth - 6);
+      doc.text(causeLines, marginX + 3, y);
+      y += causeLines.length * 5;
+      const effectLines = doc.splitTextToSize(`AKIBAT: ${q.effect || '-'}   [${q.isEffectTrue ? 'BENAR' : 'SALAH'}]`, contentWidth - 6);
+      ensureSpace(effectLines.length * 5);
+      doc.text(effectLines, marginX + 3, y);
+      y += effectLines.length * 5;
+    } else if (q.type === 'matching') {
+      (q.matchingPairs || []).forEach((p, pi) => {
+        const lines = doc.splitTextToSize(`${pi + 1}. ${p.left || '-'}  ->  ${p.right || '-'}`, contentWidth - 6);
+        ensureSpace(lines.length * 5);
+        doc.text(lines, marginX + 3, y);
+        y += lines.length * 5;
+      });
+    } else if (q.type === 'reading') {
+      if (q.readingText) {
+        ensureSpace(10);
+        doc.setFont(undefined, 'italic');
+        doc.setTextColor(100, 116, 139);
+        const rLines = doc.splitTextToSize(q.readingText, contentWidth - 6);
+        doc.text(rLines, marginX + 3, y);
+        doc.setTextColor(30, 41, 59);
+        y += rLines.length * 5 + 2;
+      }
+      (q.subQuestions || []).forEach((sq, sqi) => {
+        doc.setFont(undefined, 'bold');
+        const sqLines = doc.splitTextToSize(`${sqi + 1}. ${sq.q || '-'}`, contentWidth - 6);
+        ensureSpace(sqLines.length * 5);
+        doc.text(sqLines, marginX + 3, y);
+        y += sqLines.length * 5;
+        doc.setFont(undefined, 'normal');
+        (sq.options || []).forEach((opt, oi) => {
+          const letter = String.fromCharCode(65 + oi);
+          const isCorrect = sq.correct === oi;
+          const lines = doc.splitTextToSize(`   ${letter}. ${opt || '-'}${isCorrect ? '  (KUNCI)' : ''}`, contentWidth - 10);
+          ensureSpace(lines.length * 5);
+          if (isCorrect) doc.setTextColor(16, 129, 76); else doc.setTextColor(51, 65, 85);
+          doc.text(lines, marginX + 6, y);
+          doc.setTextColor(30, 41, 59);
+          y += lines.length * 5;
+        });
+      });
+    }
+
+    if (q.explanation) {
+      ensureSpace(10);
+      y += 1;
+      doc.setFillColor(238, 242, 255);
+      const expLines = doc.splitTextToSize(`Pembahasan: ${q.explanation}`, contentWidth - 8);
+      const boxH = expLines.length * 4.6 + 4;
+      ensureSpace(boxH);
+      doc.roundedRect(marginX, y - 3, contentWidth, boxH, 2, 2, 'F');
+      doc.setFontSize(8.5);
+      doc.setTextColor(67, 56, 202);
+      doc.text(expLines, marginX + 3, y + 1);
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(9.5);
+      y += boxH + 2;
+    }
+
+    y += 3;
+    doc.setDrawColor(226, 232, 240);
+    doc.line(marginX, y, pageWidth - marginX, y);
+    y += 6;
+  }
+
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= pageCount; p++) {
+    doc.setPage(p);
+    doc.setFontSize(7);
+    doc.setTextColor(148, 163, 184);
+    doc.text('Dokumen internal guru - berisi kunci jawaban lengkap, JANGAN dibagikan ke siswa.', marginX, pageHeight - 8);
+    doc.text(`Halaman ${p}/${pageCount}`, pageWidth - marginX, pageHeight - 8, { align: 'right' });
+  }
+
+  const safeName = String(quizTitle || 'Kuis').replace(/[^a-z0-9]/gi, '_');
+  doc.save(`Soal_Jawaban_${safeName}.pdf`);
 };
 
 // ============================================================
 // MAIN COMPONENT
 // ============================================================
-const ManageMateri = () => {
+const ManageQuiz = () => {
   const [searchParams] = useSearchParams();
-  const editId = searchParams.get('edit');
   const navigate = useNavigate();
-  const fileInputRef = useRef(null);
-  const coverInputRef = useRef(null);
-
+  const modulId = searchParams.get('modulId');
+  const sectionId = searchParams.get('sectionId');
+  const linkedQuizIdParam = searchParams.get('quizId');
+  const isFromModul = !!modulId && !!sectionId;
+  
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  // 🔥 BARU: alur "Buat Modul" sekarang berupa WIZARD 3 langkah (Judul →
-  // Konten → Target), bukan satu halaman panjang lagi. Ini langsung
-  // memecahkan 2 keluhan nyata:
-  // (1) "Kadang kelewat belum save judul, terus pas tambah kuis muncul
-  //     alert 'isi judul dulu' yang bikin bingung" -- sekarang JUDUL itu
-  //     sendiri jadi Langkah 1 yang wajib dan gak bisa dilewati. Begitu
-  //     lolos Langkah 1, sistem OTOMATIS bikin dokumen modulnya diam-diam
-  //     di background (lihat handleAdvanceFromStep1()), jadi begitu guru
-  //     nyampe Langkah 2 dan mau tambah kuis, modulId-nya SUDAH ADA --
-  //     gak akan pernah ketemu alert "isi judul dulu" lagi.
-  // (2) Target & siswa dipindah jadi Langkah TERAKHIR (konfirmasi sebelum
-  //     terbit), bukan tercampur di tengah -- alurnya jadi: Judul → Cover
-  //     & Konten → Target (konfirmasi) → Terbitkan.
-  const [step, setStep] = useState(1);
-  const TOTAL_STEPS = 3;
-  // Dipakai buat nge-track modul yang BENERAN baru dibuat lewat wizard ini
-  // (bukan modul lama yang lagi diedit) -- supaya notifikasi "Materi Baru"
-  // ke siswa cuma nyala SEKALI pas Langkah 3 "Terbitkan" ditekan pertama
-  // kali, bukan tiap kali auto-save draft terjadi di background.
-  const alreadyNotifiedRef = useRef(!!editId);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [pdfDownloading, setPdfDownloading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState({ type: '', message: '' });
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadTarget, setUploadTarget] = useState(null);
   
-  const [showAddMenu, setShowAddMenu] = useState(false);
-  const [showAIGenerate, setShowAIGenerate] = useState(false);
-  const [editingSection, setEditingSection] = useState(null);
-  const [showRawHtml, setShowRawHtml] = useState(false);
+  const [quizMode, setQuizMode] = useState('simple');
   
-  const [guruData, setGuruData] = useState(null);
-  const [guruId, setGuruId] = useState('');
-  const [kodeMapel, setKodeMapel] = useState('');
-  const [guruName, setGuruName] = useState('');
+  const [quizTitle, setQuizTitle] = useState("");
+  const [quizSubject, setQuizSubject] = useState("");
   
-  const [title, setTitle] = useState("");
-  const [subject, setSubject] = useState("");
-  const [coverImage, setCoverImage] = useState(null);
-  const [coverFilePath, setCoverFilePath] = useState('');
-  const [description, setDescription] = useState("");
-  const [modulId, setModulId] = useState(null);
-  
-  const [sections, setSections] = useState([]);
-  
-  const [targetKategori, setTargetKategori] = useState("Reguler");
-  const [targetKelas, setTargetKelas] = useState("Semua");
-  const [mingguKe, setMingguKe] = useState(1);
-  const [tahunAjaran, setTahunAjaran] = useState("2025/2026");
-  const [statusModul, setStatusModul] = useState("aktif");
-  // 🔥 FIX BUG TIMEZONE: sebelumnya pakai toISOString() (UTC), sekarang
-  // toLocalInputValue() (waktu lokal perangkat) — lihat penjelasan di atas.
-  const [tanggalMulai, setTanggalMulai] = useState(() => {
-    const date = new Date();
-    date.setDate(date.getDate() + 2);
-    date.setHours(0, 0, 0, 0);
-    return toLocalInputValue(date);
+  const [quizOpenDate, setQuizOpenDate] = useState(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return toLocalInputValue(now);
   });
-  const [tanggalSelesai, setTanggalSelesai] = useState("");
+  const [quizCloseDate, setQuizCloseDate] = useState(() => {
+    const now = new Date();
+    now.setDate(now.getDate() + 7);
+    now.setHours(23, 59, 0, 0);
+    return toLocalInputValue(now);
+  });
+  const [useSchedule, setUseSchedule] = useState(false);
   
-  const [allStudents, setAllStudents] = useState([]);
-  const [filteredStudents, setFilteredStudents] = useState([]);
-  const [selectedStudents, setSelectedStudents] = useState([]);
-  const [studentSearch, setStudentSearch] = useState('');
-  const [showStudentPicker, setShowStudentPicker] = useState(false);
-  const [sendToSpecificStudents, setSendToSpecificStudents] = useState(false);
+  const [questions, setQuestions] = useState([emptyQuestion(0)]);
   
-  const [stats, setStats] = useState({ totalSiswa: 0, totalJadwal: 0, totalMapel: 0, totalKonten: 0 });
-  const [quizData, setQuizData] = useState([]);
+  const [timeLimit, setTimeLimit] = useState(0);
+  const [randomOrder, setRandomOrder] = useState(false);
+  const [maxAttempts, setMaxAttempts] = useState(1);
+  const [showExplanation, setShowExplanation] = useState(true);
+  const [showScoreToStudent, setShowScoreToStudent] = useState(true);
+  const [allStudentsForQuiz, setAllStudentsForQuiz] = useState([]);
+  const [filteredStudentsForQuiz, setFilteredStudentsForQuiz] = useState([]);
+  const [studentSearchForQuiz, setStudentSearchForQuiz] = useState('');
+  const [showStudentPickerForQuiz, setShowStudentPickerForQuiz] = useState(false);
+  const [selectedStudentsForQuiz, setSelectedStudentsForQuiz] = useState([]);
+  const [studentsForQuizStatus, setStudentsForQuizStatus] = useState('loading'); // loading | error | loaded
+
+  const loadStudentsForQuiz = React.useCallback(async () => {
+    setStudentsForQuizStatus('loading');
+    try {
+      const snap = await getDocs(collection(db, "students"));
+      const data = snap.docs.map(d => {
+        const s = d.data();
+        return {
+          id: d.id,
+          studentId: s.studentId || d.id,
+          nama: s.nama || 'Siswa',
+          kelasSekolah: s.kelasSekolah || '-',
+          program: s.kategori || 'Reguler',
+        };
+      }).sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+      setAllStudentsForQuiz(data);
+      setFilteredStudentsForQuiz(data);
+      setStudentsForQuizStatus('loaded');
+      return true;
+    } catch (e) {
+      console.error("Gagal ambil data siswa buat target kuis:", e);
+      setStudentsForQuizStatus('error');
+      return false;
+    }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const ok = await loadStudentsForQuiz();
+      if (!ok && !cancelled) {
+        setTimeout(() => { if (!cancelled) loadStudentsForQuiz(); }, 1200);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [loadStudentsForQuiz]);
+
+  useEffect(() => {
+    if (!studentSearchForQuiz.trim()) {
+      setFilteredStudentsForQuiz(allStudentsForQuiz);
+      return;
+    }
+    const term = studentSearchForQuiz.toLowerCase();
+    setFilteredStudentsForQuiz(allStudentsForQuiz.filter(s =>
+      (s.nama || '').toLowerCase().includes(term) || (s.studentId || '').toLowerCase().includes(term)
+    ));
+  }, [studentSearchForQuiz, allStudentsForQuiz]);
+
+  const toggleStudentForQuiz = (student) => {
+    setSelectedStudentsForQuiz(prev => {
+      const exists = prev.some(s => s.studentId === student.studentId);
+      if (exists) return prev.filter(s => s.studentId !== student.studentId);
+      return [...prev, { id: student.id, studentId: student.studentId, nama: student.nama, kelasSekolah: student.kelasSekolah }];
+    });
+  };
+
+  const selectAllFilteredForQuiz = () => {
+    const already = selectedStudentsForQuiz.map(s => s.studentId);
+    const toAdd = filteredStudentsForQuiz.filter(s => !already.includes(s.studentId));
+    setSelectedStudentsForQuiz(prev => [...prev, ...toAdd.map(s => ({ id: s.id, studentId: s.studentId, nama: s.nama, kelasSekolah: s.kelasSekolah }))]);
+  };
+  const [difficulty, setDifficulty] = useState('Sedang');
+  const [antiCheatEnabled, setAntiCheatEnabled] = useState(false);
   
+  const [publishTarget, setPublishTarget] = useState('modul');
+  const [selectedModul, setSelectedModul] = useState("");
+  const [selectedKelas, setSelectedKelas] = useState("Semua");
+  const [selectedProgram, setSelectedProgram] = useState("Semua");
+  
+  const [modulList, setModulList] = useState([]);
   const [availableClasses, setAvailableClasses] = useState([]);
-  const [subjects, setSubjects] = useState([]);
-  const [authorName, setAuthorName] = useState("");
+  const [subjects, setSubjects] = useState(["Umum"]);
+  
+  const [showSmartImport, setShowSmartImport] = useState(false);
+  const [showWordImport, setShowWordImport] = useState(false);
+  const [showAIGenerateQuiz, setShowAIGenerateQuiz] = useState(false);
+  
+  const [previewMode, setPreviewMode] = useState(false);
+  const [previewAnswers, setPreviewAnswers] = useState({});
+  const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
+  
+  const [editingQuestion, setEditingQuestion] = useState(null);
+  const [toast, setToast] = useState(null);
+  
+  const [isAIGenerated, setIsAIGenerated] = useState(false);
+  const [isEditingExistingQuiz, setIsEditingExistingQuiz] = useState(false);
 
-  const COLLECTION_NAME = "bimbel_modul";
-  const STATUS_OPTIONS = [
-    { value: 'aktif', label: 'Aktif', color: '#10b981', bg: '#dcfce7', icon: <CheckCircle size={12} /> },
-    { value: 'terjadwal', label: 'Terjadwal', color: '#f59e0b', bg: '#fef3c7', icon: <CalendarDays size={12} /> },
-    { value: 'arsip', label: 'Arsip', color: '#64748b', bg: '#f1f5f9', icon: <Archive size={12} /> }
-  ];
+  const [history, setHistory] = useState([]);
+  const [historyPointer, setHistoryPointer] = useState(-1);
+  const isUndoRedoAction = React.useRef(false);
+  const hasMountedHistory = React.useRef(false);
 
-  const CONTENT_TYPES = [
-    { type: 'text', icon: <Type size={16} />, label: 'Teks', sub: 'Tulis materi manual', color: '#3b82f6', bg: '#e0e7ff' },
-    { type: 'file', icon: <FileUp size={16} />, label: 'Upload File', sub: 'PDF, Word, Gambar', color: '#10b981', bg: '#dcfce7' },
-    { type: 'video', icon: <Video size={16} />, label: 'Tempel Link', sub: 'YouTube, Canva, Google Docs', color: '#ef4444', bg: '#fee2e2' },
-    { type: 'assignment', icon: <Send size={16} />, label: 'Tugas/PR', color: '#f59e0b', bg: '#fef3c7' },
-    { type: 'quiz', icon: <FileQuestion size={16} />, label: 'Kuis', color: '#8b5cf6', bg: '#ede9fe' },
-  ];
+  useEffect(() => {
+    if (isUndoRedoAction.current) { isUndoRedoAction.current = false; return; }
+    if (!hasMountedHistory.current) { hasMountedHistory.current = true; }
+    setHistory(prev => {
+      const trimmed = prev.slice(0, historyPointer + 1);
+      return [...trimmed, questions].slice(-20);
+    });
+    setHistoryPointer(prev => Math.min(prev + 1, 19));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questions]);
+
+  const handleUndo = () => {
+    if (historyPointer <= 0) return;
+    isUndoRedoAction.current = true;
+    const targetIndex = historyPointer - 1;
+    setHistoryPointer(targetIndex);
+    setQuestions(history[targetIndex]);
+  };
+
+  const handleRedo = () => {
+    if (historyPointer >= history.length - 1) return;
+    isUndoRedoAction.current = true;
+    const targetIndex = historyPointer + 1;
+    setHistoryPointer(targetIndex);
+    setQuestions(history[targetIndex]);
+  };
+
+  const draftKey = `quizDraft_${modulId || 'new'}`;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (questions.some(q => q.q.trim() || q.qImage)) {
+        localStorage.setItem(draftKey, JSON.stringify({
+          quizTitle, quizSubject, questions, savedAt: Date.now()
+        }));
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questions, quizTitle, quizSubject]);
+
+  useEffect(() => {
+    if (modulId) return;
+
+    const raw = localStorage.getItem(draftKey);
+    if (raw) {
+      try {
+        const draft = JSON.parse(raw);
+        if (draft.questions?.length > 0) {
+          const waktu = new Date(draft.savedAt).toLocaleString('id-ID');
+          if (window.confirm(`📝 Ditemukan draft tersimpan otomatis (${waktu}). Lanjutkan draft ini?`)) {
+            setQuestions(draft.questions);
+            if (draft.quizTitle) setQuizTitle(draft.quizTitle);
+            if (draft.quizSubject) setQuizSubject(draft.quizSubject);
+          } else {
+            localStorage.removeItem(draftKey);
+          }
+        }
+      } catch (e) { /* abaikan draft rusak */ }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -406,1625 +567,1903 @@ const ManageMateri = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const fetchTeacherData = useCallback(async () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem('teacherData') || '{}');
-      const teacherName = saved.nama || '';
-      const teacherId = saved.guruId || saved.id || '';
-      
-      setAuthorName(teacherName);
-      setGuruId(teacherId);
-      setGuruName(teacherName);
-      
-      let kodeMapelVal = '';
-      // 🔥 BARU: nama mapel guru (bisa lebih dari 1, dipisah koma buat guru
-      // multi-mapel) -- dipakai sebagai FALLBACK pencocokan enrolledSubjects
-      // siswa, lihat isStudentEnrolledForTeacher() di atas.
-      let mapelNamesVal = '';
-      if (teacherName) {
-        const qGuru = query(collection(db, "teachers"), where("nama", "==", teacherName));
-        const snapGuru = await getDocs(qGuru);
-        if (!snapGuru.empty) {
-          const guru = snapGuru.docs[0].data();
-          setGuruData(guru);
-          kodeMapelVal = guru.kodeMapel || '';
-          mapelNamesVal = guru.mapel || '';
-          setKodeMapel(kodeMapelVal);
-          setSubject(guru.mapel || '');
-          if (guru.mapel) setSubjects([guru.mapel]);
-        }
-      }
-      // 🔥 BARU: kodeMapel & mapelNames ikut di-return (bukan cuma di-set
-      // ke state) supaya bisa langsung dipakai buat filter daftar siswa DI
-      // DALAM effect yang sama tanpa nunggu re-render -- state React gak
-      // langsung ke-update dalam function yang sama.
-      return { teacherName, teacherId, kodeMapel: kodeMapelVal, mapelNames: mapelNamesVal };
-    } catch (e) {
-      console.error("Error fetching teacher:", e);
-      return { teacherName: '', teacherId: '', kodeMapel: '', mapelNames: '' };
-    }
-  }, []);
+  const [refsStatus, setRefsStatus] = useState('loading'); // loading | error | loaded
 
-  const fetchStudentsFromSchedules = useCallback(async (teacherName) => {
-    if (!teacherName) return [];
-    
-    try {
-      const qJadwal = query(
-        collection(db, "jadwal_bimbel"),
-        where("teacherName", "==", teacherName),
-        orderBy("dateStr", "desc"),
-        limit(100)
-      );
-      const snapJadwal = await getDocs(qJadwal);
-      const schedules = snapJadwal.docs.map(d => ({ id: d.id, ...d.data() }));
-      
-      const studentIdSet = new Set();
-      schedules.forEach(schedule => {
-        if (schedule.students) {
-          schedule.students.forEach(s => {
-            const sid = s.studentId || s.id;
-            if (sid) studentIdSet.add(sid);
-          });
-        }
-      });
-      
-      const siswaList = [];
-      if (studentIdSet.size > 0) {
-        const qSiswa = query(collection(db, "students"));
-        const snapSiswa = await getDocs(qSiswa);
-        const allSiswa = snapSiswa.docs.map(d => ({ id: d.id, ...d.data() }));
-        
-        allSiswa.forEach(s => {
-          const sid = s.studentId || s.id;
-          if (studentIdSet.has(sid)) {
-            siswaList.push({
-              id: s.id,
-              studentId: sid,
-              nama: s.nama || 'Siswa',
-              kelasSekolah: s.kelasSekolah || '-',
-              program: s.kategori || 'Reguler',
-              isActive: s.status === 'Aktif' && !s.isBlocked
-            });
-          }
-        });
-        siswaList.sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
-      }
-      
-      setStats(prev => ({
-        ...prev,
-        totalSiswa: siswaList.length,
-        totalJadwal: schedules.length,
-        totalMapel: new Set(schedules.map(s => s.mapelId || s.mapel)).size
-      }));
-      
-      return siswaList;
-    } catch (e) {
-      console.error("Error fetching schedules:", e);
-      return [];
+  const loadRefs = React.useCallback(async () => {
+    setRefsStatus('loading');
+    const [modulResult, siswaResult, guruResult] = await Promise.allSettled([
+      getDocs(query(collection(db, "bimbel_modul"), orderBy("updatedAt", "desc"))),
+      getDocs(collection(db, "students")),
+      getDocs(collection(db, "teachers")),
+    ]);
+
+    let anyFailed = false;
+
+    if (modulResult.status === 'fulfilled') {
+      setModulList(modulResult.value.docs.map(d => ({ id: d.id, ...d.data() })));
+    } else {
+      anyFailed = true;
+      console.error("Gagal ambil daftar modul:", modulResult.reason);
     }
+
+    if (siswaResult.status === 'fulfilled') {
+      const siswaData = siswaResult.value.docs.map(d => d.data());
+      const kelas = [...new Set(siswaData.map(s => s.kelasSekolah))].filter(Boolean).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+      setAvailableClasses(kelas);
+    } else {
+      anyFailed = true;
+      console.error("Gagal ambil daftar kelas:", siswaResult.reason);
+    }
+
+    if (guruResult.status === 'fulfilled') {
+      const guruData = guruResult.value.docs.map(d => d.data());
+      const mapel = [...new Set(
+        guruData.flatMap(t => (t.mapel || '').split(',').map(m => m.trim()).filter(Boolean))
+      )];
+      if (mapel.length === 0) mapel.push("Umum");
+      setSubjects(mapel.sort());
+    } else {
+      anyFailed = true;
+      console.error("Gagal ambil daftar mapel:", guruResult.reason);
+    }
+
+    setRefsStatus(anyFailed ? 'error' : 'loaded');
+    return !anyFailed;
   }, []);
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        const { teacherName, kodeMapel: kodeMapelVal, mapelNames: mapelNamesVal } = await fetchTeacherData();
-
-        // 🔥 FIX BUG PENTING: sebelumnya daftar siswa buat "kirim ke siswa
-        // tertentu" diambil lewat fetchStudentsFromSchedules() — yang cuma
-        // nampilin siswa yang KEBETULAN sudah pernah dijadwalkan mengajar
-        // sama guru ini (dicocokkan dari nama guru di jadwal_bimbel). Siswa
-        // baru yang ditambahkan admin tapi belum pernah dijadwalkan —
-        // apapun program-nya (Reguler ataupun English) — jadi TIDAK PERNAH
-        // muncul untuk dipilih. Sekarang diambil LANGSUNG dari koleksi
-        // "students", sama seperti cara availableClasses diambil di bawah,
-        // supaya semua siswa yang terdaftar selalu bisa dipilih.
-        //
-        // 🔥 BARU (lapis pengaman tambahan): daftar ini SEKARANG JUGA
-        // difilter -- HANYA siswa yang sudah didaftarkan admin ke mapel
-        // guru ini (field `enrolledSubjects`, sistem yang sama dipakai di
-        // Manajemen Jadwal) yang muncul di sini. Ini konsisten dengan
-        // aturan "kalau siswa gak muncul di Jadwal Besar buat mapel ini,
-        // dia juga gak akan muncul di sini" -- yang mengurangi risiko
-        // modul salah kirim (misal modul mapel SMA gak sengaja kekirim ke
-        // siswa SD/SMP yang sebenarnya gak terdaftar ke mapel itu).
-        //
-        // 🔥 FIX BUG "siswa sudah didaftarkan mapelnya tapi tetap gak
-        // muncul di sini": sebelumnya pencocokan CUMA lewat KODE mapel
-        // guru (kodeMapelVal). Sekarang pakai isStudentEnrolledForTeacher()
-        // yang juga fallback lewat NAMA mapel guru (mapelNamesVal) --
-        // pola yang sama persis dengan hasSubjectAccess() di
-        // StudentDashboard.jsx/StudentModuleView.jsx, supaya konsisten:
-        // siswa yang sudah didaftarkan admin harus lolos di SEMUA titik
-        // pengecekan, bukan cuma sebagian.
-        const snapSiswa = await getDocs(collection(db, "students"));
-        const allSiswaData = snapSiswa.docs.map(d => {
-          const data = d.data();
-          return {
-            id: d.id,
-            studentId: data.studentId || d.id,
-            nama: data.nama || 'Siswa',
-            kelasSekolah: data.kelasSekolah || '-',
-            program: data.kategori || 'Reguler',
-            isActive: data.status === 'Aktif' && !data.isBlocked,
-            enrolledSubjects: Array.isArray(data.enrolledSubjects) ? data.enrolledSubjects : [],
-          };
-        }).filter(s => isStudentEnrolledForTeacher(s.enrolledSubjects, kodeMapelVal, mapelNamesVal))
-          .sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
-
-        setAllStudents(allSiswaData);
-        setFilteredStudents(allSiswaData);
-        setStats(prev => ({ ...prev, totalSiswa: allSiswaData.length }));
-
-        if (editId) await fetchModulData();
-
-        const classes = [...new Set(allSiswaData.map(s => s.kelasSekolah).filter(k => k && k !== '-'))];
-        setAvailableClasses(['Semua', ...classes.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))]);
-        
-      } catch (e) {
-        console.error("Error loading data:", e);
-      } finally {
-        setLoading(false);
+    let cancelled = false;
+    (async () => {
+      const ok = await loadRefs();
+      if (!ok && !cancelled) {
+        setTimeout(() => { if (!cancelled) loadRefs(); }, 1200);
       }
-    };
-    loadData();
-  }, [editId]);
+    })();
+    return () => { cancelled = true; };
+  }, [loadRefs]);
 
-  const fetchModulData = async () => {
-    try {
-      const docRef = doc(db, COLLECTION_NAME, editId);
-      const snap = await getDoc(docRef);
-      if (snap.exists()) {
-        const data = snap.data();
-        setModulId(editId);
-        setTitle(data.title || "");
-        setSubject(data.subject || "");
-        setCoverImage(data.coverImage || null);
-        setCoverFilePath(data.coverFilePath || '');
-        setDescription(data.description || "");
-        setSections(data.blocks || []);
-        setQuizData(data.quizData || []);
-        setTargetKategori(data.targetKategori || "Reguler");
-        setTargetKelas(data.targetKelas || "Semua");
-        setMingguKe(data.mingguKe || 1);
-        setTahunAjaran(data.tahunAjaran || "2025/2026");
-        setStatusModul(data.status || "aktif");
-        if (data.tanggalMulai) setTanggalMulai(data.tanggalMulai);
-        if (data.tanggalSelesai) setTanggalSelesai(data.tanggalSelesai);
-        if (data.selectedStudents) setSelectedStudents(data.selectedStudents);
-        if (data.sendToSpecificStudents !== undefined) setSendToSpecificStudents(data.sendToSpecificStudents);
-        setStats(prev => ({ ...prev, totalKonten: data.blocks?.length || 0 }));
-        // 🔥 BARU: modul yang SUDAH ADA (lagi diedit/dibuka lagi setelah
-        // nambah kuis) langsung dibuka di Langkah 2 (Konten) -- judul &
-        // mapelnya udah pasti valid (Langkah 1 gak perlu diulang lagi),
-        // jadi gak perlu klik "Selanjutnya" dulu buat sampai ke konten.
-        // Langkah 1 & 3 tetap bisa diklik bebas lewat indikator di atas.
-        setStep(2);
-      }
-    } catch (error) {
-      console.error("Error fetching modul:", error);
+  const populateQuizFromDoc = (data) => {
+    setQuizTitle(data.title || "");
+    setQuizSubject(data.subject || "");
+    setTimeLimit(data.timeLimit || 0);
+    setRandomOrder(data.randomOrder || false);
+    setMaxAttempts(data.maxAttempts || 1);
+    setShowExplanation(data.showExplanation !== false);
+    setShowScoreToStudent(data.showScoreToStudent !== false);
+    setDifficulty(data.difficulty || 'Sedang');
+    setAntiCheatEnabled(data.antiCheatEnabled || false);
+    setUseSchedule(data.useSchedule || false);
+    setQuizOpenDate(data.quizOpenDate || quizOpenDate);
+    setQuizCloseDate(data.quizCloseDate || quizCloseDate);
+    setIsAIGenerated(data.generatedByAI || false);
+
+    if (data.sendToSpecificStudents) {
+      setPublishTarget('siswa');
+      setSelectedStudentsForQuiz(data.selectedStudents || []);
+    } else if ((data.targetKelas && data.targetKelas !== 'Semua') || (data.targetKategori && data.targetKategori !== 'Semua')) {
+      setPublishTarget('jenjang');
+      setSelectedKelas(data.targetKelas || 'Semua');
+      setSelectedProgram(data.targetKategori || 'Semua');
+    } else {
+      setPublishTarget('mandiri');
+    }
+
+    if (data.timeLimit > 0 || data.randomOrder || data.maxAttempts > 1) {
+      setQuizMode('advanced');
+    }
+
+    if (data.quizData?.length > 0) {
+      setQuestions(data.quizData.map((q, idx) => ({
+        id: q.id || Date.now() + idx,
+        type: q.type || 'multiple',
+        q: q.question || '',
+        qImage: q.questionImage || '',
+        options: q.options || ['', '', '', ''],
+        optionImages: q.optionImages || ['', '', '', ''],
+        correct: q.correctAnswer || 0,
+        correctAnswers: q.correctAnswers || [],
+        explanation: q.explanation || '',
+        statements: q.statements || [{ text: '', isTrue: true }],
+        readingText: q.readingText || '',
+        subQuestions: q.subQuestions || [{ q: '', options: ['', '', '', ''], correct: 0 }],
+        shortAnswer: q.shortAnswer || '',
+        cause: q.cause || '',
+        effect: q.effect || '',
+        isCauseTrue: q.isCauseTrue !== undefined ? q.isCauseTrue : true,
+        isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true,
+        matchingPairs: q.matchingPairs && q.matchingPairs.length ? q.matchingPairs : [{ left: '', right: '' }, { left: '', right: '' }],
+        needsImage: q.needsImage || false,
+        imageHint: q.imageHint || '',
+        needsManualAnswer: false
+      })));
     }
   };
 
   useEffect(() => {
-    if (!studentSearch.trim()) {
-      setFilteredStudents(allStudents);
+    if (!modulId) return;
+
+    const fetchQuiz = async () => {
+      if (!sectionId) {
+        const snap = await getDoc(doc(db, "bimbel_modul", modulId));
+        if (!snap.exists()) return;
+        const data = snap.data();
+
+        if (data.type !== 'kuis_mandiri' && (data.blocks?.length > 0)) {
+          navigate(`/guru/modul/materi?edit=${modulId}`, { replace: true });
+          return;
+        }
+
+        setPublishTarget('modul');
+        setSelectedModul(modulId);
+        setIsEditingExistingQuiz(true);
+        populateQuizFromDoc(data);
+        return;
+      }
+
+      setPublishTarget('modul');
+      setSelectedModul(modulId);
+
+      let quizIdToLoad = linkedQuizIdParam || null;
+      if (!quizIdToLoad) {
+        const parentSnap = await getDoc(doc(db, "bimbel_modul", modulId));
+        if (parentSnap.exists()) {
+          const parentData = parentSnap.data();
+          const block = (parentData.blocks || []).find(b => String(b.id) === String(sectionId));
+          quizIdToLoad = block?.quizId || null;
+          if (!quizIdToLoad) setQuizSubject(parentData.subject || '');
+        }
+      }
+
+      if (quizIdToLoad) {
+        const quizSnap = await getDoc(doc(db, "bimbel_modul", quizIdToLoad));
+        if (quizSnap.exists()) {
+          setIsEditingExistingQuiz(true);
+          populateQuizFromDoc(quizSnap.data());
+        }
+      } else {
+        setIsEditingExistingQuiz(false);
+      }
+    };
+
+    fetchQuiz();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modulId, sectionId, linkedQuizIdParam]);
+
+  const handleImageUpload = async (file, questionId, targetType, optionIndex = null) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      alert("❌ Gambar maksimal 10MB!");
       return;
     }
-    const search = studentSearch.toLowerCase();
-    setFilteredStudents(allStudents.filter(s => 
-      (s.nama || '').toLowerCase().includes(search) ||
-      (s.studentId || '').toLowerCase().includes(search)
-    ));
-  }, [studentSearch, allStudents]);
-
-  const handleFileUpload = async (file, type = 'materi') => {
-    if (!file) return null;
-    if (file.size > 50 * 1024 * 1024) {
-      alert("❌ Maksimal 50MB!");
-      return null;
-    }
-
+    
     setUploading(true);
     setUploadProgress(0);
-    setUploadStatus({ type: 'loading', message: `Mengupload ${file.name}...` });
-
+    setUploadTarget(`${questionId}-${targetType}-${optionIndex || ''}`);
+    
     try {
-      const result = await uploadElearningFile(file, type);
-
+      const result = await uploadElearningFile(file, 'kuis');
+      
       if (result.success) {
+        const url = result.downloadURL;
+        setQuestions(prev => prev.map(q => {
+          if (q.id === questionId) {
+            if (targetType === 'question') {
+              return { ...q, qImage: url };
+            } else if (targetType === 'option' && optionIndex !== null) {
+              const newOptionImages = [...q.optionImages];
+              newOptionImages[optionIndex] = url;
+              return { ...q, optionImages: newOptionImages };
+            }
+          }
+          return q;
+        }));
         setUploadProgress(100);
-        setUploadStatus({ type: 'success', message: '✅ File berhasil diunggah!' });
-        setTimeout(() => setUploadStatus({ type: '', message: '' }), 2000);
-        return result;
+        setTimeout(() => setUploadProgress(0), 1000);
       } else {
-        setUploadStatus({ type: 'error', message: `❌ ${result.error}` });
-        alert("❌ Upload gagal: " + result.error);
-        return null;
+        alert("❌ Gagal upload: " + result.error);
       }
     } catch (error) {
       console.error("Upload error:", error);
-      setUploadStatus({ type: 'error', message: `❌ ${error.message}` });
-      alert("❌ Terjadi kesalahan: " + error.message);
-      return null;
-    } finally {
-      setUploading(false);
-      setUploadProgress(0);
-      setTimeout(() => setUploadStatus({ type: '', message: '' }), 3000);
+      alert("❌ Gagal upload gambar: " + error.message);
     }
+    
+    setUploading(false);
+    setUploadTarget(null);
   };
 
-  const handleCoverUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      alert('❌ File harus berupa gambar!');
+  const handleRemoveImage = (questionId, targetType, optionIndex = null) => {
+    setQuestions(prev => prev.map(q => {
+      if (q.id === questionId) {
+        if (targetType === 'question') {
+          return { ...q, qImage: '' };
+        } else if (targetType === 'option' && optionIndex !== null) {
+          const newOptionImages = [...q.optionImages];
+          newOptionImages[optionIndex] = '';
+          return { ...q, optionImages: newOptionImages };
+        }
+      }
+      return q;
+    }));
+  };
+
+  const addQuestion = (type = 'multiple') => {
+    const newQuestion = { ...emptyQuestion(questions.length), type };
+    setQuestions([...questions, newQuestion]);
+    setEditingQuestion(newQuestion.id);
+    setTimeout(() => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }, 100);
+  };
+
+  const removeQuestion = (id) => {
+    if (questions.length <= 1) {
+      alert("⚠️ Minimal 1 soal!");
       return;
     }
-    const result = await handleFileUpload(file, 'cover');
-    if (result?.success) {
-      setCoverImage(result.downloadURL);
-      setCoverFilePath(result.filePath);
-    }
-    if (coverInputRef.current) coverInputRef.current.value = '';
+    if (!window.confirm("Hapus soal ini?")) return;
+    setQuestions(questions.filter(q => q.id !== id));
+    if (editingQuestion === id) setEditingQuestion(null);
   };
 
-  const handleSectionFileUpload = async (e, sectionId) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const updateQuestion = (id, field, value) => {
+    setQuestions(questions.map(q => q.id === id ? { ...q, [field]: value } : q));
+  };
 
-    const result = await handleFileUpload(file, 'materi');
+  const clearManualFlag = (id) => {
+    setQuestions(prev => prev.map(q => q.id === id ? { ...q, needsManualAnswer: false } : q));
+  };
+
+  const handleSmartParsed = (parsedQuestions) => {
+    if (!parsedQuestions || parsedQuestions.length === 0) {
+      showToast("⚠️ Tidak ditemukan soal pada teks tersebut.", 'error');
+      return;
+    }
+    setQuestions(prev => {
+      const isPrevEmpty = prev.length === 1 && !prev[0].q.trim() && !prev[0].qImage;
+      return isPrevEmpty ? parsedQuestions : [...prev, ...parsedQuestions];
+    });
+    const needsReview = parsedQuestions.filter(q => q.needsManualAnswer).length;
+    showToast(`✅ ${parsedQuestions.length} soal berhasil diimpor!${needsReview > 0 ? ` ${needsReview} soal perlu ditandai jawabannya.` : ''}`);
+  };
+
+  const handleAIQuizGenerated = (generatedQuestions) => {
+    if (!generatedQuestions || generatedQuestions.length === 0) {
+      showToast("⚠️ AI tidak menghasilkan soal.", 'error');
+      return;
+    }
+    setQuestions(prev => {
+      const isPrevEmpty = prev.length === 1 && !prev[0].q.trim() && !prev[0].qImage;
+      return isPrevEmpty ? generatedQuestions : [...prev, ...generatedQuestions];
+    });
+    setIsAIGenerated(true);
+    showToast(`✨ ${generatedQuestions.length} soal berhasil dibuat AI! Cek dulu sebelum diterbitkan.`);
+  };
+
+  const getQuizStatus = () => {
+    if (!useSchedule) return { status: 'aktif', label: '🟢 Aktif (Tanpa Jadwal)', color: '#10b981', icon: <Unlock size={14} /> };
+    const now = new Date();
+    const open = new Date(quizOpenDate);
+    const close = new Date(quizCloseDate);
     
-    if (result?.success) {
-      setSections(sections.map(s => 
-        s.id === sectionId 
-          ? { 
-              ...s, 
-              content: result.downloadURL,
-              fileName: result.fileName,
-              mimeType: file.type,
-              fileSize: file.size,
-              filePath: result.filePath
-            } 
-          : s
-      ));
-    }
-    
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const removeSection = async (id) => {
-    if (!window.confirm("Hapus konten ini?")) return;
-    
-    const section = sections.find(s => s.id === id);
-    if (section?.filePath) {
-      try {
-        await deleteFile(section.filePath);
-      } catch (err) {
-        console.error('Error deleting file:', err);
-      }
-    }
-
-    // 🔥 BARU: kalau konten yang dihapus ini blok KUIS yang sudah pernah
-    // dibuat (punya quizId), hapus juga DOKUMEN KUIS-nya di database.
-    // Sebelumnya cuma blok-nya yang hilang dari daftar konten, tapi
-    // dokumen kuisnya sendiri tetap nyangkut selamanya di database sebagai
-    // data yatim (parentModulId menunjuk ke section yang sudah tidak ada).
-    if (section?.type === 'quiz' && section.quizId) {
-      try {
-        await deleteDoc(doc(db, COLLECTION_NAME, section.quizId));
-      } catch (err) {
-        console.error('Error deleting linked quiz doc:', err);
-      }
-    }
-    
-    setSections(sections.filter(s => s.id !== id));
-    if (editingSection === id) setEditingSection(null);
-    setStats(prev => ({ ...prev, totalKonten: sections.length - 1 }));
-  };
-
-  const handleDeleteModul = async () => {
-    if (!modulId) return;
-    if (!window.confirm(`⚠️ Hapus modul "${title}"?`)) return;
-    
-    try {
-      const filePaths = sections.filter(s => s.filePath).map(s => s.filePath);
-      if (coverFilePath) filePaths.push(coverFilePath);
-      
-      if (filePaths.length > 0) {
-        await supabase.storage.from('materi-bimbel').remove(filePaths);
-      }
-
-      // 🔥 BARU: hapus juga semua dokumen KUIS yang nempel di modul ini
-      // (kalau ada), supaya gak jadi data yatim yang nyangkut selamanya di
-      // database begitu modul induknya dihapus.
-      const quizIdsToDelete = sections.filter(s => s.type === 'quiz' && s.quizId).map(s => s.quizId);
-      await Promise.all(quizIdsToDelete.map(qid => deleteDoc(doc(db, COLLECTION_NAME, qid)).catch(() => {})));
-      
-      await deleteDoc(doc(db, COLLECTION_NAME, modulId));
-      alert('✅ Modul berhasil dihapus!');
-      navigate('/guru/modul');
-    } catch (error) {
-      console.error('Error deleting modul:', error);
-      alert('❌ Gagal menghapus modul: ' + error.message);
+    if (now < open) {
+      return { status: 'belum', label: '⏳ Belum Dibuka', color: '#f59e0b', icon: <Lock size={14} /> };
+    } else if (now > close) {
+      return { status: 'kadaluarsa', label: '⛔ Kadaluarsa', color: '#ef4444', icon: <Lock size={14} /> };
+    } else {
+      return { status: 'aktif', label: '✅ Aktif', color: '#10b981', icon: <Unlock size={14} /> };
     }
   };
 
-  const addSection = (type) => {
-    const titles = { 
-      text: '📄 Materi Teks', 
-      file: '📁 Upload File (PDF/Word/Gambar)', 
-      video: '🔗 Link (YouTube/Canva/Google Docs)', 
-      assignment: '📝 Tugas/PR',
-      quiz: '❓ Kuis'
-    };
-    const newSection = { 
-      id: Date.now(), 
-      type, 
-      title: titles[type] || '', 
-      content: '', 
-      fileName: '', 
-      mimeType: '', 
-      fileSize: 0,
-      filePath: '',
-      endTime: '',
-      allowedFileType: 'all',
-      quizId: null,
-      quizTitle: '',
-      quizQuestions: 0
-    };
-    setSections([...sections, newSection]);
-    setEditingSection(newSection.id);
-    setShowAddMenu(false);
-    setStats(prev => ({ ...prev, totalKonten: sections.length + 1 }));
-  };
-
-  const updateSection = (id, field, value) => {
-    setSections(sections.map(s => s.id === id ? { ...s, [field]: value } : s));
-  };
-
-  const moveSection = (id, direction) => {
-    const idx = sections.findIndex(s => s.id === id);
-    if (idx < 0) return;
-    const newSections = [...sections];
-    if (direction === 'up' && idx > 0) {
-      [newSections[idx], newSections[idx - 1]] = [newSections[idx - 1], newSections[idx]];
-    } else if (direction === 'down' && idx < sections.length - 1) {
-      [newSections[idx], newSections[idx + 1]] = [newSections[idx + 1], newSections[idx]];
-    }
-    setSections(newSections);
-  };
-
-  const toggleStudentSelection = (student) => {
-    setSelectedStudents(prev => {
-      const exists = prev.some(s => s.studentId === student.studentId);
-      if (exists) {
-        return prev.filter(s => s.studentId !== student.studentId);
+  const handlePreviewQuiz = () => {
+    const previewAns = {};
+    questions.forEach(q => {
+      if (q.type === 'multiselect') {
+        previewAns[q.id] = q.correctAnswers;
+      } else if (q.type === 'truefalse') {
+        previewAns[q.id] = q.statements.map(s => s.isTrue);
+      } else if (q.type === 'shortanswer') {
+        previewAns[q.id] = q.shortAnswer;
+      } else if (q.type === 'causeeffect') {
+        previewAns[q.id] = { cause: q.isCauseTrue, effect: q.isEffectTrue };
+      } else if (q.type === 'reading') {
+        previewAns[q.id] = q.subQuestions.map(sq => sq.correct);
       } else {
-        return [...prev, { 
-          id: student.id, 
-          studentId: student.studentId, 
-          nama: student.nama,
-          kelasSekolah: student.kelasSekolah
-        }];
+        previewAns[q.id] = q.correct;
       }
     });
+    setPreviewAnswers(previewAns);
+    setShowCorrectAnswers(true);
+    setPreviewMode(true);
   };
 
-  const selectAllFiltered = () => {
-    const alreadySelected = selectedStudents.map(s => s.studentId);
-    const newStudents = filteredStudents.filter(s => !alreadySelected.includes(s.studentId));
-    setSelectedStudents(prev => [...prev, ...newStudents.map(s => ({
-      id: s.id,
-      studentId: s.studentId,
-      nama: s.nama,
-      kelasSekolah: s.kelasSekolah
-    }))]);
+  const handleClosePreview = () => {
+    setPreviewMode(false);
+    setPreviewAnswers({});
+    setShowCorrectAnswers(false);
   };
 
-  const getStudentInitials = (name) => {
-    if (!name) return '?';
-    return name.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('');
+  const toggleCorrectAnswers = () => {
+    setShowCorrectAnswers(!showCorrectAnswers);
   };
 
-  // ============================================================
-  // 🔥 AUTO-SAVE DIAM-DIAM (buat dipanggil sebelum buka editor kuis)
-  // Nyimpen kondisi modul terkini ke database TANPA alert/navigate, supaya
-  // section kuis yang baru ditambah sudah tercatat sebelum editor kuis dibuka.
-  // ============================================================
-  const autoSaveModulSilently = async () => {
-    // 🔥 FIX: sebelumnya pakai `editId` (parameter URL) sebagai syarat --
-    // tapi modul yang baru dibuat lewat wizard (Langkah 1->2) sudah punya
-    // `modulId` (state, dokumennya BENERAN ada di database) SEBELUM URL-nya
-    // sempat bawa parameter ?edit=. Kalau tetap syaratnya `editId`, fungsi
-    // ini bakal salah nolak modul yang justru udah valid buat disimpan.
-    if (!modulId) throw new Error('Modul belum tersimpan');
-    const payload = {
-      title: title.toUpperCase(),
-      subject: (subject || '').toUpperCase(),
-      guruId, kodeMapel, guruName,
-      coverImage, coverFilePath, description,
-      blocks: sections,
-      quizData,
-      targetKategori, targetKelas,
-      mingguKe: parseInt(mingguKe) || 1,
-      tahunAjaran,
-      status: statusModul,
-      sendToSpecificStudents,
-      selectedStudents: sendToSpecificStudents ? selectedStudents : [],
-      studentIds: sendToSpecificStudents ? selectedStudents.map(s => s.studentId) : [],
-      totalKonten: sections.length,
-      updatedAt: serverTimestamp(),
-      updatedBy: authorName,
-    };
-    if (statusModul === 'terjadwal') {
-      payload.tanggalMulai = tanggalMulai;
-      payload.tanggalSelesai = tanggalSelesai || null;
-    }
-    await updateDoc(doc(db, COLLECTION_NAME, modulId), payload);
-  };
-
-  // ============================================================
-  // 🔥 BARU: LANJUT DARI LANGKAH 1 (JUDUL) KE LANGKAH 2 (KONTEN)
-  // ============================================================
-  // Ini jantung dari perbaikan "kadang kelewat isi judul, terus pas mau
-  // tambah kuis muncul alert bingung". Begitu guru lolos validasi Langkah
-  // 1 (judul + mapel terisi), modulnya LANGSUNG dibuat diam-diam di
-  // database (draft kosong, belum ada konten) -- BUKAN nunggu guru pencet
-  // "Simpan" secara terpisah. Jadi begitu guru masuk Langkah 2 dan mau
-  // tambah blok Kuis, `modulId` udah pasti ada, dan openQuizEditor() bisa
-  // langsung jalan tanpa pernah nyentuh alert "isi judul dulu" itu lagi.
-  const handleAdvanceFromStep1 = async () => {
-    if (!title.trim()) return alert("❌ Judul modul wajib diisi!");
-    if (!subject) return alert("❌ Mata pelajaran wajib dipilih!");
-
-    // Kalau ini modul yang SUDAH ADA (lagi diedit) atau draft-nya udah
-    // sempat dibuat sebelumnya (misal guru sempat maju-mundur antar
-    // langkah), gak perlu bikin dokumen baru lagi -- tinggal lanjut.
-    if (modulId) {
-      setStep(2);
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const draftPayload = {
-        title: title.toUpperCase(),
-        subject: subject.toUpperCase(),
-        guruId, kodeMapel, guruName,
-        coverImage: null,
-        coverFilePath: '',
-        description: '',
-        blocks: [],
-        quizData: [],
-        targetKategori, targetKelas,
-        mingguKe: parseInt(mingguKe) || 1,
-        tahunAjaran,
-        status: statusModul,
-        sendToSpecificStudents: false,
-        selectedStudents: [],
-        studentIds: [],
-        totalKonten: 0,
-        createdAt: serverTimestamp(),
-        createdBy: authorName,
-        updatedAt: serverTimestamp(),
-        updatedBy: authorName,
-      };
-      const newDoc = await addDoc(collection(db, COLLECTION_NAME), draftPayload);
-      setModulId(newDoc.id);
-      setStep(2);
-    } catch (e) {
-      alert('❌ Gagal menyiapkan modul: ' + e.message);
-    }
-    setSaving(false);
-  };
-
-  // ============================================================
-  // 🔥 HANDLE SAVE
-  // ============================================================
-  const handleSave = async () => {
-    if (!title) return alert("❌ Judul modul wajib diisi!");
-    if (!subject) return alert("❌ Mata pelajaran wajib dipilih!");
-    if (statusModul === 'terjadwal' && !tanggalMulai) {
-      return alert("❌ Silakan isi tanggal mulai!");
-    }
-    if (sendToSpecificStudents && selectedStudents.length === 0) {
-      return alert("❌ Pilih minimal 1 siswa!");
-    }
+  const renderQuestionEditor = (item, idx) => {
+    const isEditing = editingQuestion === item.id;
+    const typeInfo = QUESTION_TYPES.find(t => t.id === item.type) || QUESTION_TYPES[0];
     
-    const quizSections = sections.filter(s => s.type === 'quiz');
-    const invalidQuiz = quizSections.find(s => !s.quizId);
-    if (invalidQuiz) {
-      return alert(`⚠️ Kuis "${invalidQuiz.title || 'Tanpa Judul'}" belum dibuat! Klik "Buat Kuis" untuk membuatnya.`);
-    }
-    
-    setSaving(true);
-    
-    const payload = {
-      title: title.toUpperCase(),
-      subject: subject.toUpperCase(),
-      guruId: guruId,
-      kodeMapel: kodeMapel,
-      guruName: guruName,
-      coverImage,
-      coverFilePath,
-      description,
-      blocks: sections,
-      quizData,
-      targetKategori,
-      targetKelas,
-      mingguKe: parseInt(mingguKe) || 1,
-      tahunAjaran,
-      status: statusModul,
-      sendToSpecificStudents,
-      selectedStudents: sendToSpecificStudents ? selectedStudents : [],
-      studentIds: sendToSpecificStudents ? selectedStudents.map(s => s.studentId) : [],
-      totalKonten: sections.length,
-      updatedAt: serverTimestamp(),
-      updatedBy: authorName,
-    };
-    
-    if (statusModul === 'terjadwal') {
-      payload.tanggalMulai = tanggalMulai;
-      payload.tanggalSelesai = tanggalSelesai || null;
-    }
-    
-    try {
-      // 🔥 FIX: sekarang cek berdasarkan `modulId` (state), BUKAN `editId`
-      // (parameter URL) -- modul yang dibuat lewat wizard baru ini sudah
-      // punya modulId (dibuat otomatis diam-diam di Langkah 1->2), walau
-      // URL-nya belum tentu bawa parameter ?edit= itu. Update vs create
-      // harus ngikutin data SEBENARNYA (dokumennya sudah ada di database
-      // atau belum), bukan ngikutin URL.
-      const isFirstTimePublish = !alreadyNotifiedRef.current;
-
-      if (modulId) {
-        await updateDoc(doc(db, COLLECTION_NAME, modulId), payload);
-
-        // 🔥 NOTIFIKASI -- cuma nyala SEKALI buat modul yang BENERAN baru
-        // (dibuat lewat wizard ini), pas pertama kali status-nya "aktif" di
-        // Langkah 3. Update-update berikutnya (edit ulang modul yang sudah
-        // lama ada, atau auto-save diam-diam di Langkah 1->2) TIDAK memicu
-        // notifikasi lagi -- biar gak spam siswa tiap guru benerin typo.
-        if (isFirstTimePublish && payload.status === 'aktif') {
-          notifyStudents({
-            targetKelas: sendToSpecificStudents ? undefined : targetKelas,
-            targetKategori: sendToSpecificStudents ? undefined : targetKategori,
-            specificStudentIds: sendToSpecificStudents ? selectedStudents.map(s => s.studentId) : [],
-            type: 'materi',
-            title: '📘 Materi Baru!',
-            message: `"${title}" baru saja diterbitkan${subject ? ` untuk mapel ${subject}` : ''}.`,
-            link: `/siswa/modul/${modulId}`,
-          });
-          alreadyNotifiedRef.current = true;
-        }
-
-        alert(isFirstTimePublish ? `✅ Modul "${title}" berhasil diterbitkan!` : "✅ Modul berhasil diperbarui!");
-
-        if (isFirstTimePublish) {
-          navigate(`/guru/modul/materi?edit=${modulId}`);
-          return;
-        }
-      } else {
-        // Jalur cadangan: kalau entah kenapa modulId belum ada sama sekali
-        // saat sampai di sini (mestinya udah gak kejadian lagi berkat
-        // wizard yang bikin draft otomatis, tapi tetap dijaga jaga-jaga).
-        payload.createdAt = serverTimestamp();
-        payload.createdBy = authorName;
-        const newDoc = await addDoc(collection(db, COLLECTION_NAME), payload);
-        alert(`✅ Modul "${title}" berhasil diterbitkan!`);
-
-        if (isFirstTimePublish && payload.status === 'aktif') {
-          notifyStudents({
-            targetKelas: sendToSpecificStudents ? undefined : targetKelas,
-            targetKategori: sendToSpecificStudents ? undefined : targetKategori,
-            specificStudentIds: sendToSpecificStudents ? selectedStudents.map(s => s.studentId) : [],
-            type: 'materi',
-            title: '📘 Materi Baru!',
-            message: `"${title}" baru saja diterbitkan${subject ? ` untuk mapel ${subject}` : ''}.`,
-            link: `/siswa/modul/${newDoc.id}`,
-          });
-          alreadyNotifiedRef.current = true;
-        }
-
-        navigate(`/guru/modul/materi?edit=${newDoc.id}`);
-        return;
-      }
-    } catch (err) {
-      alert("❌ Gagal: " + err.message);
-    }
-    setSaving(false);
-  };
-
-  // ============================================================
-  // 🔥 BUKA MANAGE QUIZ DARI MODUL
-  // ============================================================
-  const openQuizEditor = async (section) => {
-    // 🔥 FIX BUG "Section tidak ditemukan": dulu editor kuis langsung dibuka
-    // pakai sectionId yang BARU ADA DI LAYAR tapi BELUM tersimpan ke database.
-    // Jadi pas guru "Terbitkan" kuis, sistem nyari section itu di database,
-    // gak ketemu -> error. Sekarang modul di-SIMPAN OTOMATIS dulu (biar
-    // section-nya beneran ada di database) sebelum pindah ke editor kuis.
-    // Ini juga ngilangin kebingungan "kok disuruh simpan modul dulu" — sistem
-    // yang urus simpannya sendiri, guru tinggal lanjut bikin kuis.
-    // 🔥 Jaring pengaman terakhir (harusnya HAMPIR GAK PERNAH kepicu lagi):
-    // di alur wizard sekarang, `modulId` sudah pasti ada begitu guru lolos
-    // Langkah 1 (Judul) dan masuk ke Langkah 2 (Konten) -- lihat
-    // handleAdvanceFromStep1(). Alert ini cuma jaga-jaga kalau ada jalur
-    // aneh yang somehow lolos tanpa modulId.
-    if (!modulId) {
-      alert('⚠️ Modul belum siap. Coba kembali ke Langkah 1 dan pastikan judul sudah terisi.');
-      return;
-    }
-    try {
-      // Simpan kondisi modul terkini (termasuk section kuis yang baru ditambah)
-      // supaya sectionId-nya sudah tercatat di database sebelum editor kuis dibuka.
-      await autoSaveModulSilently();
-      // 🔥 FIX BUG PENTING ("kuis yang sudah ada hilang saat dibuka lagi"):
-      // sebelumnya URL cuma bawa modulId (id MODUL MATERI induk) + sectionId,
-      // tanpa pernah bawa id DOKUMEN KUIS-nya sendiri. Akibatnya ManageQuiz.jsx
-      // salah baca dokumen (baca dokumen modul materi, bukan dokumen kuis),
-      // jadi soal-soal yang sudah dibuat sebelumnya tidak pernah termuat lagi.
-      // Sekarang kalau section ini SUDAH punya quizId (kuis sudah pernah
-      // dibuat), id itu ikut dikirim lewat parameter `quizId` di URL, supaya
-      // ManageQuiz.jsx tahu persis dokumen mana yang harus dibuka.
-      const quizIdParam = section.quizId ? `&quizId=${section.quizId}` : '';
-      navigate(`/guru/modul/quiz?modulId=${modulId}&sectionId=${section.id}${quizIdParam}`);
-    } catch (e) {
-      alert('❌ Gagal menyiapkan kuis: ' + e.message);
-    }
-  };
-
-  const formatFileSize = (bytes) => {
-    if (!bytes) return '0 B';
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  };
-
-  // ============================================================
-  // RENDER KONTEN EDITOR
-  // ============================================================
-  const renderContentEditor = () => {
-    const section = sections.find(s => s.id === editingSection);
-    if (!section) return null;
-
-    const typeIcons = { text: '📄', file: '📁', video: '🎥', assignment: '📝', quiz: '❓' };
-    const typeColors = { text: '#3b82f6', file: '#10b981', video: '#ef4444', assignment: '#f59e0b', quiz: '#8b5cf6' };
-
     return (
-      <div style={{ 
-        background: '#f8fafc', 
-        padding: 16, 
-        borderRadius: 10, 
-        border: '1px solid #e2e8f0',
-        marginBottom: 12
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 10, fontWeight: 800, color: typeColors[section.type], background: typeColors[section.type] + '15', padding: '4px 10px', borderRadius: 6 }}>
-              {typeIcons[section.type]} {section.type.toUpperCase()}
-              {section.format === 'html' && ' • AI'}
+      <div 
+        key={item.id} 
+        style={{
+          background: 'white',
+          padding: isMobile ? 14 : 18,
+          borderRadius: 12,
+          border: isEditing ? `2px solid ${typeInfo.color}` : (item.needsManualAnswer ? '2px solid #f59e0b' : '1px solid #e2e8f0'),
+          marginBottom: 10,
+          transition: 'all 0.2s ease',
+          cursor: 'pointer',
+          boxShadow: isEditing ? `0 4px 12px ${typeInfo.color}25` : 'none'
+        }}
+        onClick={() => setEditingQuestion(item.id)}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ 
+              fontSize: 11, 
+              fontWeight: 700, 
+              color: item.q.trim() ? '#10b981' : '#94a3b8',
+              background: item.q.trim() ? '#dcfce7' : '#f1f5f9',
+              padding: '2px 10px',
+              borderRadius: 10
+            }}>
+              Soal {idx + 1} {item.q.trim() ? '✅' : '⏳'}
             </span>
-            <input 
-              value={section.title} 
-              onChange={e => updateSection(editingSection, 'title', e.target.value)} 
-              placeholder="Judul konten..." 
-              style={{ 
-                border: 'none', 
-                background: 'transparent', 
-                fontSize: 14, 
-                fontWeight: 700, 
-                color: '#1e293b',
-                outline: 'none',
-                minWidth: 150
-              }} 
-            />
+            <span style={{
+              fontSize: 9,
+              fontWeight: 700,
+              color: typeInfo.color,
+              background: typeInfo.color + '15',
+              padding: '2px 10px',
+              borderRadius: 10
+            }}>
+              {typeInfo.icon} {typeInfo.label}
+            </span>
+            {item.needsManualAnswer && (
+              <span style={{ fontSize: 9, fontWeight: 700, color: '#f59e0b', background: '#fffbeb', border: '1px solid #f59e0b', padding: '2px 8px', borderRadius: 10 }}>
+                ⚠️ Perlu tandai jawaban
+              </span>
+            )}
+            {item.needsImage && !item.qImage && (
+              <span style={{ fontSize: 9, fontWeight: 700, color: '#92400e', background: '#fef3c7', border: '1px solid #f59e0b', padding: '2px 8px', borderRadius: 10 }}>
+                💡 AI: sebaiknya pakai gambar
+              </span>
+            )}
+            {isEditing && (
+              <span style={{ fontSize: 9, color: '#3b82f6', fontWeight: 600, background: '#eef2ff', padding: '2px 8px', borderRadius: 4 }}>
+                ✏️ Edit
+              </span>
+            )}
           </div>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => moveSection(editingSection, 'up')} style={{ padding: '4px 6px', background: '#e2e8f0', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
-              <ChevronUp size={12} />
-            </button>
-            <button onClick={() => moveSection(editingSection, 'down')} style={{ padding: '4px 6px', background: '#e2e8f0', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
-              <ChevronDown size={12} />
-            </button>
-            <button onClick={() => removeSection(editingSection)} style={{ padding: '4px 6px', background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
-              <Trash2 size={12} />
-            </button>
-            <button onClick={() => setEditingSection(null)} style={{ padding: '4px 6px', background: '#e2e8f0', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
-              <X size={12} />
-            </button>
-          </div>
+          <button 
+            onClick={(e) => { e.stopPropagation(); removeQuestion(item.id); }}
+            style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }}
+          >
+            <Trash2 size={14} />
+          </button>
         </div>
-
-        {/* TEXT */}
-        {section.type === 'text' && section.format === 'html' && (
-          <div>
-            <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 8, padding: 10, marginBottom: 8, fontSize: 11, color: '#7c3aed', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Sparkles size={14} /> Konten ini dibuat oleh AI. Ini sudah siap tampil ke siswa — gak perlu diapa-apain lagi kecuali mau diedit.
+        
+        <div style={{ fontSize: 13, color: item.q.trim() ? '#1e293b' : '#94a3b8' }}>
+          {item.q.trim() ? renderMath(item.q) : 'Klik untuk edit soal...'}
+          {item.qImage && <span style={{ marginLeft: 6, fontSize: 10, color: '#10b981' }}>🖼️</span>}
+        </div>
+        
+        {isEditing && (
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #e2e8f0' }}>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>📋 Tipe Soal</label>
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                {QUESTION_TYPES.map(type => (
+                  <button
+                    key={type.id}
+                    onClick={() => updateQuestion(item.id, 'type', type.id)}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: 6,
+                      border: item.type === type.id ? `2px solid ${type.color}` : '1px solid #e2e8f0',
+                      background: item.type === type.id ? type.color + '15' : 'white',
+                      color: item.type === type.id ? type.color : '#64748b',
+                      cursor: 'pointer',
+                      fontSize: 9,
+                      fontWeight: item.type === type.id ? 700 : 500,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4
+                    }}
+                  >
+                    {type.icon} {type.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div style={{ padding: 14, background: 'white', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-              <div style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', marginBottom: 8 }}>👁️ TAMPILAN UNTUK SISWA</div>
-              <div dangerouslySetInnerHTML={{ __html: renderMathInHtml(section.content) }} />
+            {item.needsImage && !item.qImage && (
+              <div style={{
+                marginBottom: 10, padding: '10px 12px', background: '#fffbeb',
+                border: '1px solid #fde68a', borderRadius: 8, fontSize: 11, color: '#92400e',
+                display: 'flex', gap: 8, alignItems: 'flex-start'
+              }}>
+                <span style={{ flexShrink: 0 }}>💡</span>
+                <span>
+                  <b>AI menyarankan soal ini pakai gambar/diagram</b>
+                  {item.imageHint ? `: ${item.imageHint}` : '.'} Upload gambar yang AKURAT (dari bank soal/sumber terpercaya) lewat tombol "Upload Gambar" di bawah ini — AI sengaja tidak menggambar sendiri supaya diagram sains/matematika tetap tepat.
+                </span>
+              </div>
+            )}
 
-              {/* 🔥 Soal latihan interaktif disimpan terpisah dari teks (biar
-                  kunci jawabannya tersembunyi dari siswa sampai mereka menjawab).
-                  Di sisi guru, kunci jawabannya SENGAJA ditampilkan supaya guru
-                  bisa mengecek kebenarannya sebelum modul diterbitkan. */}
-              {section.interactive?.practice?.length > 0 && (
-                <div style={{ marginTop: 14, padding: 12, background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: 10 }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, color: '#0f766e', marginBottom: 8 }}>
-                    📝 LATIHAN INTERAKTIF ({section.interactive.practice.length} soal) — siswa hanya lihat soalnya, kunci jawaban muncul setelah mereka menjawab
-                  </div>
-                  {section.interactive.practice.map((p, pi) => (
-                    <div key={pi} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: pi < section.interactive.practice.length - 1 ? '1px dashed #99f6e4' : 'none' }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: '#1e293b', marginBottom: 4 }}>
-                        {pi + 1}. <span dangerouslySetInnerHTML={{ __html: renderMathInHtml(p.q || '') }} />
-                      </div>
-                      {(p.options || []).map((o, oi) => (
-                        <div key={oi} style={{
-                          fontSize: 11, marginLeft: 12, lineHeight: 1.7,
-                          color: oi === p.answer ? '#0f766e' : '#64748b',
-                          fontWeight: oi === p.answer ? 700 : 400,
-                        }}>
-                          {String.fromCharCode(65 + oi)}. <span dangerouslySetInnerHTML={{ __html: renderMathInHtml(String(o || '')) }} /> {oi === p.answer && '✅'}
-                        </div>
-                      ))}
-                      {p.explain && (
-                        <div style={{ fontSize: 11, color: '#0f766e', marginTop: 4, marginLeft: 12, fontStyle: 'italic' }}>
-                          💡 <span dangerouslySetInnerHTML={{ __html: renderMathInHtml(p.explain) }} />
-                        </div>
-                      )}
-                    </div>
-                  ))}
+            <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <label style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 4, 
+                padding: '6px 14px', 
+                background: '#f3e8ff',
+                border: '1px solid #673ab7', 
+                borderRadius: 6, 
+                cursor: uploading ? 'not-allowed' : 'pointer', 
+                fontSize: 10, 
+                fontWeight: 600, 
+                color: '#673ab7',
+                opacity: uploading ? 0.6 : 1
+              }}>
+                {uploading && uploadTarget === `${item.id}-question-` ? (
+                  <Loader2 size={14} className="spin" />
+                ) : (
+                  <Image size={14} />
+                )}
+                {uploading && uploadTarget === `${item.id}-question-` ? 'Uploading...' : 'Upload Gambar'}
+                <input type="file" accept="image/*" hidden onChange={(e) => { if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'question'); }} disabled={uploading} />
+              </label>
+              
+              {item.qImage && (
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <img src={item.qImage} alt="Soal" style={{ maxHeight: 60, borderRadius: 6, border: '1px solid #e2e8f0' }} />
+                  <button onClick={() => handleRemoveImage(item.id, 'question')} style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: 18, height: 18, cursor: 'pointer', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={8}/></button>
                 </div>
               )}
             </div>
 
-            <button
-              type="button"
-              onClick={() => setShowRawHtml(v => !v)}
-              style={{
-                marginTop: 8, background: 'none', border: 'none', cursor: 'pointer',
-                fontSize: 10, color: '#94a3b8', textDecoration: 'underline', padding: 0
-              }}
-            >
-              {showRawHtml ? '▲ Sembunyikan kode (lanjutan)' : '▼ Mau edit tulisannya langsung? Klik di sini (lanjutan, teknis)'}
-            </button>
+            <textarea 
+              value={item.q} 
+              onChange={e => updateQuestion(item.id, 'q', e.target.value)}
+              placeholder="Tulis soal... (Gunakan $...$ untuk rumus matematika)"
+              style={{ width: '100%', minHeight: 50, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', resize: 'vertical', boxSizing: 'border-box', marginBottom: 6, fontFamily: 'inherit' }} 
+            />
+            {item.q && <div style={{ padding: 8, background: '#f8fafc', borderRadius: 6, marginBottom: 10, fontSize: 13 }}>{renderMath(item.q)}</div>}
 
-            {showRawHtml && (
-              <div style={{ marginTop: 8 }}>
-                <p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 6 }}>
-                  ⚠️ Ini kode HTML mentah, cuma buat yang mau edit teksnya manual. Boleh diabaikan kalau isinya udah pas seperti tampilan di atas.
-                </p>
-                <textarea
-                  value={section.content}
-                  onChange={e => updateSection(editingSection, 'content', e.target.value)}
-                  style={{ width: '100%', minHeight: 180, padding: 12, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, fontFamily: 'monospace', resize: 'vertical' }}
-                />
-              </div>
-            )}
-          </div>
-        )}
-        {section.type === 'text' && section.format !== 'html' && (
-          <SimpleEditor 
-            value={section.content} 
-            onChange={value => updateSection(editingSection, 'content', value)} 
-            placeholder="Tulis materi di sini..." 
-          />
-        )}
-
-        {/* FILE */}
-        {section.type === 'file' && (
-          <div>
-            {section.content ? (
+            {item.type === 'multiple' && (
               <div>
-                <div style={{ padding: 12, background: 'white', borderRadius: 8, marginBottom: 8 }}>
-                  <FilePreview url={section.content} fileName={section.fileName} fileType={section.mimeType} />
-                </div>
-                <button onClick={() => { updateSection(editingSection, 'content', ''); updateSection(editingSection, 'fileName', ''); }} style={{ padding: '4px 12px', background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 11 }}>
-                  Hapus File
-                </button>
-              </div>
-            ) : (
-              <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '30px 20px', border: '2px dashed #e2e8f0', borderRadius: 8, cursor: 'pointer', background: 'white' }}>
-                {uploading ? (
-                  <>
-                    <Loader2 size={24} className="spin" />
-                    <span>Uploading... {uploadProgress}%</span>
-                  </>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 600, color: '#64748b', marginBottom: 8, cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={item.optionsAreImages}
+                    onChange={(e) => updateQuestion(item.id, 'optionsAreImages', e.target.checked)}
+                  />
+                  🖼️ Opsi jawaban berupa gambar (bukan teks)
+                </label>
+
+                {item.optionsAreImages ? (
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {[0, 1, 2, 3].map((oIdx) => (
+                      <div key={oIdx} style={{ textAlign: 'center' }}>
+                        <div
+                          onClick={() => { updateQuestion(item.id, 'correct', oIdx); clearManualFlag(item.id); }}
+                          style={{
+                            padding: 4, borderRadius: 8, cursor: 'pointer', width: 90, height: 90,
+                            border: item.correct === oIdx ? '3px solid #10b981' : '2px dashed #cbd5e1',
+                            background: item.correct === oIdx ? '#f0fdf4' : '#f8fafc',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden'
+                          }}
+                        >
+                          {item.optionImages[oIdx] ? (
+                            <img src={item.optionImages[oIdx]} alt={`Opsi ${String.fromCharCode(65 + oIdx)}`} style={{ maxWidth: '100%', maxHeight: '100%' }} />
+                          ) : (
+                            <Upload size={16} color="#cbd5e1" />
+                          )}
+                          {item.correct === oIdx && <CheckCircle size={14} color="#10b981" style={{ position: 'absolute', top: 2, right: 2 }} />}
+                        </div>
+                        <label style={{ fontSize: 9, fontWeight: 700, color: '#673ab7', cursor: 'pointer', display: 'block', marginTop: 2 }}>
+                          {String.fromCharCode(65 + oIdx)} — ganti gambar
+                          <input type="file" accept="image/*" hidden onChange={(e) => { if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'option', oIdx); }} />
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 ) : (
                   <>
-                    <FileUp size={24} color="#94a3b8" />
-                    <span style={{ fontWeight: 600 }}>Upload File</span>
-                    <span style={{ fontSize: 10, color: '#94a3b8' }}>PDF, DOCX, PPT, Gambar (Max 50MB)</span>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr', gap: 6 }}>
+                      {item.options.map((opt, oIdx) => (
+                        <div key={oIdx} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                          <div onClick={() => { updateQuestion(item.id, 'correct', oIdx); clearManualFlag(item.id); }} style={{
+                            display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
+                            border: `2px solid ${item.correct === oIdx ? '#10b981' : '#e2e8f0'}`,
+                            background: item.correct === oIdx ? '#f0fdf4' : 'white',
+                            transition: '0.2s'
+                          }}>
+                            <div style={{
+                              width: 20, height: 20, borderRadius: '50%',
+                              border: `2px solid ${item.correct === oIdx ? '#10b981' : '#cbd5e1'}`,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                            }}>
+                              {item.correct === oIdx && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981' }}></div>}
+                            </div>
+                            <input
+                              value={opt}
+                              placeholder={`Opsi ${String.fromCharCode(65 + oIdx)}`}
+                              onChange={e => {
+                                const newOpts = [...item.options]; newOpts[oIdx] = e.target.value;
+                                updateQuestion(item.id, 'options', newOpts);
+                              }}
+                              onClick={e => e.stopPropagation()}
+                              style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 12, outline: 'none' }}
+                            />
+                            {item.correct === oIdx && <CheckCircle size={14} color="#10b981" />}
+                          </div>
+                          {opt && opt.includes('$') && (
+                            <div style={{ paddingLeft: 30, fontSize: 11, color: '#64748b' }}>
+                              👁️ {renderMath(opt)}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </>
                 )}
-                <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,image/*" hidden onChange={(e) => handleSectionFileUpload(e, editingSection)} disabled={uploading} />
-              </label>
+              </div>
             )}
-          </div>
-        )}
 
-        {/* 🔥 VIDEO/LINK - DENGAN PREVIEW RAPI */}
-        {section.type === 'video' && (
-          <div>
-            <input 
-              value={section.content} 
-              onChange={e => updateSection(editingSection, 'content', e.target.value)} 
-              placeholder="Tempel link YouTube, Canva, Google Docs..." 
-              style={{ 
-                width: '100%', 
-                padding: 10, 
-                borderRadius: 8, 
-                border: '1px solid #e2e8f0', 
-                fontSize: 13, 
-                outline: 'none', 
-                boxSizing: 'border-box' 
-              }} 
-            />
-            {section.content && (
-              <div style={{ marginTop: 10 }}>
-                <div style={{ 
-                  background: 'white', 
-                  borderRadius: 10, 
-                  border: '1px solid #e2e8f0', 
-                  overflow: 'hidden',
-                  padding: 12,
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: 8,
-                      background: getLinkType(section.content) === 'youtube' ? '#fee2e2' :
-                                 getLinkType(section.content) === 'canva' ? '#f0fdf4' :
-                                 getLinkType(section.content) === 'google' ? '#e0e7ff' : '#f1f5f9',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      flexShrink: 0
-                    }}>
-                      {getLinkType(section.content) === 'youtube' && <Youtube size={16} color="#ef4444" />}
-                      {getLinkType(section.content) === 'canva' && <Globe size={16} color="#00c4cc" />}
-                      {getLinkType(section.content) === 'google' && <FileText size={16} color="#4285f4" />}
-                      {getLinkType(section.content) === 'link' && <Link size={16} color="#3b82f6" />}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: '#1e293b' }}>
-                        {getLinkType(section.content) === 'youtube' ? 'YouTube Video' :
-                         getLinkType(section.content) === 'canva' ? 'Canva Design' :
-                         getLinkType(section.content) === 'google' ? 'Google Docs' : 'Link'}
-                      </div>
-                      <div style={{ fontSize: 10, color: '#94a3b8', wordBreak: 'break-all' }}>{section.content}</div>
-                    </div>
-                    <a href={section.content} target="_blank" rel="noopener noreferrer" style={{
-                      padding: '4px 12px', 
-                      background: '#3b82f6', 
-                      color: 'white', 
-                      borderRadius: 6,
-                      textDecoration: 'none', 
-                      fontSize: 10, 
-                      fontWeight: 600, 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: 4,
-                      flexShrink: 0
-                    }}>
-                      <ExternalLink size={12} /> Buka
-                    </a>
+            {item.type === 'truefalse' && (
+              <div>
+                <div style={{ marginBottom: 6 }}>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b' }}>Pernyataan</label>
+                </div>
+                {item.statements.map((stmt, sIdx) => (
+                  <div key={sIdx} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <input 
+                      value={stmt.text} 
+                      onChange={e => {
+                        const newStatements = [...item.statements];
+                        newStatements[sIdx].text = e.target.value;
+                        updateQuestion(item.id, 'statements', newStatements);
+                      }}
+                      placeholder={`Pernyataan ${sIdx + 1}`}
+                      style={{ flex: 1, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none' }}
+                    />
+                    <button 
+                      onClick={() => {
+                        const newStatements = [...item.statements];
+                        newStatements[sIdx].isTrue = !newStatements[sIdx].isTrue;
+                        updateQuestion(item.id, 'statements', newStatements);
+                        clearManualFlag(item.id);
+                      }}
+                      style={{
+                        padding: '4px 12px',
+                        borderRadius: 6,
+                        background: stmt.isTrue ? '#dcfce7' : '#fee2e2',
+                        border: `1px solid ${stmt.isTrue ? '#10b981' : '#ef4444'}`,
+                        color: stmt.isTrue ? '#166534' : '#dc2626',
+                        cursor: 'pointer',
+                        fontSize: 10,
+                        fontWeight: 600
+                      }}
+                    >
+                      {stmt.isTrue ? '✅ Benar' : '❌ Salah'}
+                    </button>
+                    <button 
+                      onClick={() => {
+                        const newStatements = item.statements.filter((_, i) => i !== sIdx);
+                        updateQuestion(item.id, 'statements', newStatements);
+                      }}
+                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
-                  
-                  {/* 🔥 PREVIEW KONTEN LANGSUNG */}
-                  {getLinkType(section.content) === 'youtube' && (
-                    <div style={{ borderRadius: 8, overflow: 'hidden', background: '#000' }}>
-                      <iframe 
-                        width="100%" height="250" 
-                        src={`https://www.youtube.com/embed/${section.content.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?#]+)/)?.[1] || ''}`} 
-                        frameBorder="0" allowFullScreen 
-                        title="YouTube"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      />
-                    </div>
-                  )}
-                  
-                  {getLinkType(section.content) === 'canva' && (
-                    <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-                      <div style={{ padding: 8, display: 'flex', alignItems: 'center', gap: 8, background: '#00c4cc', color: 'white' }}>
-                        <Globe size={14} /> CANVA
+                ))}
+                <button 
+                  onClick={() => {
+                    const newStatements = [...item.statements, { text: '', isTrue: true }];
+                    updateQuestion(item.id, 'statements', newStatements);
+                  }}
+                  style={{ padding: '4px 12px', background: '#eef2ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#3b82f6', marginTop: 4 }}
+                >
+                  <Plus size={12} /> Tambah Pernyataan
+                </button>
+              </div>
+            )}
+
+            {item.type === 'multiselect' && (
+              <div>
+                <div style={{ marginBottom: 6 }}>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b' }}>Pilihan (Klik untuk pilih jawaban benar)</label>
+                </div>
+                {item.options.map((opt, oIdx) => {
+                  const isCorrect = item.correctAnswers.includes(oIdx);
+                  return (
+                    <div key={oIdx} 
+                      onClick={() => {
+                        const newCorrect = isCorrect 
+                          ? item.correctAnswers.filter(i => i !== oIdx)
+                          : [...item.correctAnswers, oIdx];
+                        updateQuestion(item.id, 'correctAnswers', newCorrect);
+                        clearManualFlag(item.id);
+                      }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
+                        border: `2px solid ${isCorrect ? '#8b5cf6' : '#e2e8f0'}`,
+                        background: isCorrect ? '#f3e8ff' : 'white',
+                        transition: '0.2s',
+                        marginBottom: 4
+                      }}
+                    >
+                      <div style={{ 
+                        width: 20, height: 20, borderRadius: 4,
+                        border: `2px solid ${isCorrect ? '#8b5cf6' : '#cbd5e1'}`, 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                        background: isCorrect ? '#8b5cf6' : 'white'
+                      }}>
+                        {isCorrect && <CheckSquare size={14} color="white" />}
                       </div>
-                      <iframe 
-                        src={section.content} 
-                        style={{ width: '100%', height: 350, border: 'none' }} 
-                        allowFullScreen 
-                        title="Canva" 
+                      <input 
+                        value={opt} 
+                        placeholder={`Opsi ${String.fromCharCode(65+oIdx)}`} 
+                        onChange={e => {
+                          const newOpts = [...item.options]; newOpts[oIdx] = e.target.value;
+                          updateQuestion(item.id, 'options', newOpts);
+                        }}
+                        onClick={e => e.stopPropagation()}
+                        style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 12, outline: 'none' }} 
                       />
+                      {isCorrect && <CheckCircle size={14} color="#8b5cf6"/>}
                     </div>
-                  )}
-                  
-                  {getLinkType(section.content) === 'google' && (
-                    <div style={{ borderRadius: 8, overflow: 'hidden', background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                      <div style={{ padding: 8, display: 'flex', alignItems: 'center', gap: 8, background: '#4285f4', color: 'white' }}>
-                        <FileText size={14} /> GOOGLE
-                      </div>
-                      <iframe 
-                        src={section.content} 
-                        style={{ width: '100%', height: 350, border: 'none' }} 
-                        allowFullScreen 
-                        title="Google Docs" 
-                      />
+                  );
+                })}
+              </div>
+            )}
+
+            {item.type === 'reading' && (
+              <div>
+                <div style={{ marginBottom: 8 }}>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b' }}>📖 Teks Bacaan</label>
+                  <textarea 
+                    value={item.readingText} 
+                    onChange={e => updateQuestion(item.id, 'readingText', e.target.value)}
+                    placeholder="Tempel teks bacaan di sini..."
+                    style={{ width: '100%', minHeight: 120, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
+                  />
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b' }}>📝 Pertanyaan</label>
+                </div>
+                {item.subQuestions.map((sq, sIdx) => (
+                  <div key={sIdx} style={{ background: '#f8fafc', padding: 10, borderRadius: 8, marginBottom: 6 }}>
+                    <input 
+                      value={sq.q} 
+                      onChange={e => {
+                        const newSub = [...item.subQuestions];
+                        newSub[sIdx].q = e.target.value;
+                        updateQuestion(item.id, 'subQuestions', newSub);
+                      }}
+                      placeholder={`Pertanyaan ${sIdx + 1}`}
+                      style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', marginBottom: 4 }}
+                    />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+                      {sq.options.map((opt, oIdx) => (
+                        <div key={oIdx} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <button 
+                            onClick={() => {
+                              const newSub = [...item.subQuestions];
+                              newSub[sIdx].correct = oIdx;
+                              updateQuestion(item.id, 'subQuestions', newSub);
+                              clearManualFlag(item.id);
+                            }}
+                            style={{ 
+                              width: 16, height: 16, borderRadius: '50%', 
+                              border: `2px solid ${sq.correct === oIdx ? '#10b981' : '#cbd5e1'}`,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                            }}
+                          >
+                            {sq.correct === oIdx && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} />}
+                          </button>
+                          <input 
+                            value={opt} 
+                            placeholder={`Opsi ${String.fromCharCode(65+oIdx)}`} 
+                            onChange={e => {
+                              const newSub = [...item.subQuestions];
+                              newSub[sIdx].options[oIdx] = e.target.value;
+                              updateQuestion(item.id, 'subQuestions', newSub);
+                            }}
+                            style={{ flex: 1, padding: '4px 6px', borderRadius: 4, border: '1px solid #e2e8f0', fontSize: 10, outline: 'none' }}
+                          />
+                        </div>
+                      ))}
                     </div>
-                  )}
-                  
-                  {getLinkType(section.content) === 'link' && (
-                    <div style={{ 
-                      padding: 16, background: '#f8fafc', borderRadius: 8,
-                      display: 'flex', alignItems: 'center', gap: 12
-                    }}>
-                      <Link size={24} color="#3b82f6" />
-                      <a href={section.content} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'none', wordBreak: 'break-all' }}>
-                        {section.content}
-                      </a>
-                    </div>
-                  )}
+                    <button 
+                      onClick={() => {
+                        const newSub = item.subQuestions.filter((_, i) => i !== sIdx);
+                        updateQuestion(item.id, 'subQuestions', newSub);
+                      }}
+                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 10, marginTop: 4 }}
+                    >
+                      <X size={12} /> Hapus Pertanyaan
+                    </button>
+                  </div>
+                ))}
+                <button 
+                  onClick={() => {
+                    const newSub = [...item.subQuestions, { q: '', options: ['', '', '', ''], correct: 0 }];
+                    updateQuestion(item.id, 'subQuestions', newSub);
+                  }}
+                  style={{ padding: '4px 12px', background: '#eef2ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#3b82f6' }}
+                >
+                  <Plus size={12} /> Tambah Pertanyaan
+                </button>
+              </div>
+            )}
+
+            {item.type === 'shortanswer' && (
+              <div>
+                <div style={{ marginBottom: 6 }}>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b' }}>🔑 Kunci Jawaban</label>
+                  <input 
+                    value={item.shortAnswer} 
+                    onChange={e => { updateQuestion(item.id, 'shortAnswer', e.target.value); clearManualFlag(item.id); }}
+                    placeholder="Masukkan jawaban yang benar..."
+                    style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none' }}
+                  />
+                  <p style={{ fontSize: 9, color: '#94a3b8', marginTop: 2 }}>
+                    💡 Siswa akan mengetik jawaban. Gunakan $...$ untuk rumus matematika.
+                  </p>
                 </div>
               </div>
             )}
-            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 6 }}>
-              💡 Support: YouTube, Canva, Google Docs/Sheets/Slides, Vimeo, dan link lainnya
-            </div>
-          </div>
-        )}
 
-        {/* ASSIGNMENT */}
-        {section.type === 'assignment' && (
-          <div>
-            <textarea 
-              value={section.content} 
-              onChange={e => updateSection(editingSection, 'content', e.target.value)} 
-              placeholder="Instruksi tugas..." 
-              style={{ width: '100%', minHeight: 100, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, resize: 'vertical' }} 
-            />
-            <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: 10, fontWeight: 600 }}>Jenis File</label>
-                <select value={section.allowedFileType} onChange={e => updateSection(editingSection, 'allowedFileType', e.target.value)} style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }}>
-                  {FILE_TYPE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                </select>
+            {item.type === 'causeeffect' && (
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <div>
+                    <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b' }}>📌 SEBAB</label>
+                    <textarea 
+                      value={item.cause} 
+                      onChange={e => updateQuestion(item.id, 'cause', e.target.value)}
+                      placeholder="Tulis pernyataan sebab..."
+                      style={{ width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', resize: 'vertical' }}
+                    />
+                    <button 
+                      onClick={() => { updateQuestion(item.id, 'isCauseTrue', !item.isCauseTrue); clearManualFlag(item.id); }}
+                      style={{
+                        marginTop: 4,
+                        padding: '4px 12px',
+                        borderRadius: 6,
+                        background: item.isCauseTrue ? '#dcfce7' : '#fee2e2',
+                        border: `1px solid ${item.isCauseTrue ? '#10b981' : '#ef4444'}`,
+                        color: item.isCauseTrue ? '#166534' : '#dc2626',
+                        cursor: 'pointer',
+                        fontSize: 10,
+                        fontWeight: 600
+                      }}
+                    >
+                      {item.isCauseTrue ? '✅ Pernyataan BENAR' : '❌ Pernyataan SALAH'}
+                    </button>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b' }}>🔗 AKIBAT</label>
+                    <textarea 
+                      value={item.effect} 
+                      onChange={e => updateQuestion(item.id, 'effect', e.target.value)}
+                      placeholder="Tulis pernyataan akibat..."
+                      style={{ width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', resize: 'vertical' }}
+                    />
+                    <button 
+                      onClick={() => { updateQuestion(item.id, 'isEffectTrue', !item.isEffectTrue); clearManualFlag(item.id); }}
+                      style={{
+                        marginTop: 4,
+                        padding: '4px 12px',
+                        borderRadius: 6,
+                        background: item.isEffectTrue ? '#dcfce7' : '#fee2e2',
+                        border: `1px solid ${item.isEffectTrue ? '#10b981' : '#ef4444'}`,
+                        color: item.isEffectTrue ? '#166534' : '#dc2626',
+                        cursor: 'pointer',
+                        fontSize: 10,
+                        fontWeight: 600
+                      }}
+                    >
+                      {item.isEffectTrue ? '✅ Pernyataan BENAR' : '❌ Pernyataan SALAH'}
+                    </button>
+                  </div>
+                </div>
+                <div style={{ marginTop: 8, padding: 8, background: '#f0fdf4', borderRadius: 6, border: '1px solid #bbf7d0' }}>
+                  <p style={{ fontSize: 10, color: '#166534', margin: 0 }}>
+                    💡 Siswa akan menilai: 
+                    {item.isCauseTrue ? ' Sebab BENAR' : ' Sebab SALAH'} dan 
+                    {item.isEffectTrue ? ' Akibat BENAR' : ' Akibat SALAH'}
+                  </p>
+                </div>
               </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: 10, fontWeight: 600 }}>Deadline</label>
-                <input type="datetime-local" value={section.endTime} onChange={e => updateSection(editingSection, 'endTime', e.target.value)} style={{ width: '100%', padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }} />
-              </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* QUIZ */}
-        {section.type === 'quiz' && (
-          <div style={{ 
-            background: section.quizId ? '#f0fdf4' : '#ede9fe', 
-            padding: 16, 
-            borderRadius: 8, 
-            border: `2px solid ${section.quizId ? '#10b981' : '#8b5cf6'}` 
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-              <FileQuestion size={20} color={section.quizId ? '#10b981' : '#8b5cf6'} />
-              <span style={{ fontWeight: 700, fontSize: 14, color: section.quizId ? '#166534' : '#6d28d9' }}>
-                {section.quizTitle || 'Kuis'}
-              </span>
-              {section.quizId ? (
-                <>
-                  <span style={{ 
-                    background: '#10b981', 
-                    color: 'white', 
-                    padding: '2px 10px', 
-                    borderRadius: 10,
-                    fontSize: 9,
-                    fontWeight: 700
-                  }}>
-                    {section.quizQuestions || 0} soal
-                  </span>
-                  <span style={{ 
-                    background: '#dcfce7', 
-                    color: '#166534', 
-                    padding: '2px 10px', 
-                    borderRadius: 10,
-                    fontSize: 9,
-                    fontWeight: 700
-                  }}>
-                    ✅ Tersimpan
-                  </span>
-                </>
-              ) : (
-                <span style={{ 
-                  background: '#fef3c7', 
-                  color: '#b45309', 
-                  padding: '2px 10px', 
-                  borderRadius: 10,
-                  fontSize: 9,
-                  fontWeight: 700
-                }}>
-                  ⚠️ Belum dibuat
-                </span>
-              )}
-            </div>
-            
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button
-                onClick={() => openQuizEditor(section)}
-                style={{
-                  padding: '8px 16px',
-                  background: section.quizId ? '#10b981' : '#8b5cf6',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  fontSize: 11,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4
-                }}
-              >
-                <Edit3 size={14} /> {section.quizId ? 'Edit Kuis' : 'Buat Kuis'}
-              </button>
-              
-              {section.quizId && (
+            {item.type === 'matching' && (
+              <div>
+                <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 6 }}>
+                  🔗 Pasangan Kiri ↔ Kanan (siswa menjodohkan)
+                </label>
+                {item.matchingPairs.map((pair, pIdx) => (
+                  <div key={pIdx} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <input
+                      value={pair.left}
+                      onChange={(e) => {
+                        const newPairs = [...item.matchingPairs];
+                        newPairs[pIdx] = { ...newPairs[pIdx], left: e.target.value };
+                        updateQuestion(item.id, 'matchingPairs', newPairs);
+                      }}
+                      placeholder={`Kiri ${pIdx + 1}`}
+                      style={{ flex: 1, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none' }}
+                    />
+                    <ArrowLeftRight size={12} color="#94a3b8" />
+                    <input
+                      value={pair.right}
+                      onChange={(e) => {
+                        const newPairs = [...item.matchingPairs];
+                        newPairs[pIdx] = { ...newPairs[pIdx], right: e.target.value };
+                        updateQuestion(item.id, 'matchingPairs', newPairs);
+                      }}
+                      placeholder={`Kanan ${pIdx + 1} (jodoh yang benar)`}
+                      style={{ flex: 1, padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none' }}
+                    />
+                    <button
+                      onClick={() => {
+                        const newPairs = item.matchingPairs.filter((_, i) => i !== pIdx);
+                        updateQuestion(item.id, 'matchingPairs', newPairs);
+                      }}
+                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
                 <button
-                  onClick={() => window.open(`/siswa/kuis/${section.quizId}`, '_blank')}
-                  style={{
-                    padding: '8px 16px',
-                    background: '#3b82f6',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: 6,
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                    fontSize: 11,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4
+                  onClick={() => {
+                    const newPairs = [...item.matchingPairs, { left: '', right: '' }];
+                    updateQuestion(item.id, 'matchingPairs', newPairs);
                   }}
+                  style={{ padding: '4px 12px', background: '#fdf2f8', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#ec4899', marginTop: 4 }}
                 >
-                  <Eye size={14} /> Preview
+                  <Plus size={12} /> Tambah Pasangan
                 </button>
-              )}
-              
-              {section.quizId && (
-                <button
-                  onClick={async () => {
-                    if (!confirm('Hapus kuis dari modul ini? Data kuis di database juga akan ikut terhapus.')) return;
-                    // 🔥 FIX: sebelumnya tombol ini cuma melepas quizId dari
-                    // section (dokumen kuisnya sendiri TIDAK ikut dihapus,
-                    // jadi jadi data yatim yang nyangkut di database selamanya
-                    // walau labelnya "Hapus dari Modul"). Sekarang dokumen
-                    // kuisnya beneran ikut dihapus, sesuai teks tombolnya.
-                    try {
-                      await deleteDoc(doc(db, COLLECTION_NAME, section.quizId));
-                    } catch (err) {
-                      console.error('Error deleting linked quiz doc:', err);
-                    }
-                    updateSection(editingSection, 'quizId', null);
-                    updateSection(editingSection, 'quizTitle', '');
-                    updateSection(editingSection, 'quizQuestions', 0);
-                  }}
-                  style={{
-                    padding: '8px 16px',
-                    background: '#fee2e2',
-                    color: '#ef4444',
-                    border: 'none',
-                    borderRadius: 6,
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                    fontSize: 11
-                  }}
-                >
-                  <Trash2 size={14} /> Hapus dari Modul
-                </button>
-              )}
-            </div>
-            
-            <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>
-              {section.quizId 
-                ? '💡 Klik "Edit Kuis" untuk mengubah soal, timer, atau pengaturan lainnya' 
-                : '💡 Klik "Buat Kuis" untuk membuka editor kuis lengkap (AI Generate, 6 tipe soal, timer, dll)'}
-            </p>
+                <p style={{ fontSize: 9, color: '#94a3b8', marginTop: 6 }}>
+                  💡 Urutan kiri tetap; sistem akan mengacak urutan kolom kanan saat ditampilkan ke siswa.
+                </p>
+              </div>
+            )}
+
+            {quizMode === 'advanced' && (
+              <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                  <HelpCircle size={14} color="#673ab7" />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#673ab7' }}>Pembahasan</span>
+                </div>
+                <textarea 
+                  value={item.explanation || ''} 
+                  onChange={e => updateQuestion(item.id, 'explanation', e.target.value)}
+                  placeholder="Tulis pembahasan soal ini..."
+                  style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
+                  rows={2}
+                />
+                {item.explanation && (
+                  <div style={{ marginTop: 6, padding: 10, background: '#f8fafc', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, lineHeight: 1.6 }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', marginBottom: 4 }}>👁️ TAMPILAN UNTUK DIBACA</div>
+                    {renderMath(item.explanation)}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
     );
   };
 
-  // ============================================================
-  // STYLES
-  // ============================================================
-  const styles = {
-    container: { maxWidth: 900, margin: '0 auto', paddingBottom: 100, padding: isMobile ? 12 : 20 },
-    loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 16 },
-    spinner: { width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #652D90', borderRadius: '50%', animation: 'spin 1s linear infinite' },
-    header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 },
-    btnBack: { background: 'white', border: '1px solid #e2e8f0', padding: isMobile ? '6px 10px' : '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: isMobile ? 12 : 13, display: 'flex', alignItems: 'center', gap: 4 },
-    pageTitle: { margin: 0, fontSize: isMobile ? 18 : 22, fontWeight: 800, color: '#1e293b' },
-    headerActions: { display: 'flex', gap: 6, flexWrap: 'wrap' },
-    btnSave: { background: '#10b981', color: 'white', border: 'none', padding: isMobile ? '6px 14px' : '8px 20px', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: isMobile ? 12 : 13, display: 'flex', alignItems: 'center', gap: 6 },
-    // 🔥 BARU: styles buat indikator langkah wizard
-    stepIndicatorRow: { display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, gap: 4, background: 'white', padding: '14px 10px', borderRadius: 14, border: '1px solid #f1f5f9' },
-    stepCircleBtn: (active, done, disabled) => ({ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.4 : 1, padding: '4px 8px' }),
-    stepCircle: (active, done) => ({ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0, background: done ? '#10b981' : active ? '#673ab7' : '#e2e8f0', color: done || active ? 'white' : '#94a3b8' }),
-    stepLabelText: (active) => ({ fontSize: 12, fontWeight: active ? 800 : 600, color: active ? '#1e293b' : '#94a3b8' }),
-    stepConnector: { width: isMobile ? 20 : 50, height: 2, background: '#e2e8f0' },
-    card: { background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #f1f5f9', marginBottom: 16 },
-    cardTitle: { margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 },
-    input: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#f8fafc' },
-    textarea: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#f8fafc', resize: 'vertical', fontFamily: 'inherit' },
-    select: { padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, background: 'white', outline: 'none', cursor: 'pointer' },
-    coverUpload: { display: 'block', height: 100, borderRadius: 10, overflow: 'hidden', cursor: 'pointer', border: '2px dashed #e2e8f0', background: '#f8fafc' },
-    sectionItem: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, background: '#f8fafc', border: '1px solid #e2e8f0', cursor: 'pointer', marginBottom: 6, transition: '0.2s' },
-    sectionLabel: { flex: 1, fontSize: 13, fontWeight: 600, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 },
-    badge: { fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 10 },
-    floatingFooter: { position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid #e2e8f0', padding: isMobile ? '10px 16px' : '12px 24px', display: 'flex', justifyContent: 'flex-end', gap: 10, zIndex: 50, flexWrap: 'wrap' },
-    btnFooterCancel: { padding: isMobile ? '8px 14px' : '10px 20px', background: '#f1f5f9', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: isMobile ? 12 : 13, cursor: 'pointer' },
-    btnFooterSave: { padding: isMobile ? '8px 18px' : '10px 25px', background: '#10b981', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: isMobile ? 12 : 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 },
-    addMenu: { position: 'relative', marginTop: 8 },
-    addButton: { width: '100%', padding: '12px', border: '2px dashed #cbd5e1', borderRadius: 10, background: 'white', cursor: 'pointer', fontWeight: 600, color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: '0.2s' },
-    addMenuOptions: { position: 'absolute', bottom: '100%', left: 0, right: 0, background: 'white', borderRadius: 10, border: '1px solid #e2e8f0', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', padding: 8, marginBottom: 8, zIndex: 10 },
-    deleteBtn: { background: '#fee2e2', color: '#ef4444', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12 },
-  };
-
-  if (loading) {
+  if (previewMode) {
     return (
-      <div style={styles.container}>
-        <div style={styles.loadingContainer}>
-          <div style={styles.spinner}></div>
-          <p style={{ color: '#94a3b8', fontSize: 13 }}>Memuat data...</p>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: 20 }}>
+        <div style={{ 
+          background: 'linear-gradient(135deg, #673ab7, #8b5cf6)', 
+          padding: '16px 20px', 
+          borderRadius: 12, 
+          marginBottom: 20,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 10
+        }}>
+          <div>
+            <h2 style={{ margin: 0, color: 'white', fontSize: isMobile ? 16 : 20 }}>👁️ Preview: {quizTitle || 'Kuis'}</h2>
+            <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Simulasi tampilan siswa</p>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={toggleCorrectAnswers} style={{ 
+              padding: '6px 14px', 
+              background: showCorrectAnswers ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.15)', 
+              color: 'white', 
+              border: showCorrectAnswers ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.2)', 
+              borderRadius: 8, 
+              cursor: 'pointer', 
+              fontWeight: 600, 
+              fontSize: 11 
+            }}>
+              {showCorrectAnswers ? '✅ Tampilkan Jawaban' : '👁️ Sembunyikan Jawaban'}
+            </button>
+            <button onClick={handleClosePreview} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>
+              <X size={14} /> Tutup
+            </button>
+          </div>
+        </div>
+
+        {questions.filter(q => q.q.trim() || q.qImage).map((item, idx) => {
+          const userAnswer = previewAnswers[item.id];
+          const isCorrect = (() => {
+            if (item.type === 'multiselect') {
+              return Array.isArray(userAnswer) && Array.isArray(item.correctAnswers) &&
+                userAnswer.length === item.correctAnswers.length &&
+                userAnswer.every(v => item.correctAnswers.includes(v));
+            }
+            if (item.type === 'truefalse') {
+              return Array.isArray(userAnswer) && Array.isArray(item.statements) &&
+                userAnswer.every((v, i) => v === item.statements[i].isTrue);
+            }
+            if (item.type === 'reading') {
+              return Array.isArray(userAnswer) && Array.isArray(item.subQuestions) &&
+                userAnswer.every((v, i) => v === item.subQuestions[i].correct);
+            }
+            if (item.type === 'shortanswer') {
+              return userAnswer?.toLowerCase().trim() === item.shortAnswer?.toLowerCase().trim();
+            }
+            if (item.type === 'causeeffect') {
+              return userAnswer?.cause === item.isCauseTrue && userAnswer?.effect === item.isEffectTrue;
+            }
+            return userAnswer === item.correct;
+          })();
+          
+          return (
+            <div key={item.id} style={{ 
+              background: 'white', 
+              padding: isMobile ? 15 : 20, 
+              borderRadius: 12, 
+              border: showCorrectAnswers ? (isCorrect ? '2px solid #10b981' : '2px solid #ef4444') : '2px solid #e2e8f0',
+              marginBottom: 12
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: '#673ab7', background: '#f3e8ff', padding: '4px 10px', borderRadius: 6 }}>SOAL {idx + 1}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 6, background: userAnswer !== undefined ? (isCorrect ? '#dcfce7' : '#fee2e2') : '#f1f5f9', color: userAnswer !== undefined ? (isCorrect ? '#166534' : '#dc2626') : '#94a3b8' }}>
+                  {userAnswer !== undefined ? (isCorrect ? '✅ Benar' : '❌ Salah') : '⏳ Belum'}
+                </span>
+              </div>
+              
+              {item.qImage && <img src={item.qImage} alt="Soal" style={{ maxHeight: 120, borderRadius: 8, marginBottom: 8 }} />}
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 10 }}>{renderMath(item.q)}</div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 4 }}>
+                {item.options.map((opt, oIdx) => {
+                  const isSelected = (() => {
+                    if (item.type === 'multiselect') {
+                      return userAnswer?.includes(oIdx) || false;
+                    }
+                    return userAnswer === oIdx;
+                  })();
+                  const isCorrectAnswer = (() => {
+                    if (item.type === 'multiselect') {
+                      return item.correctAnswers.includes(oIdx);
+                    }
+                    return oIdx === item.correct;
+                  })();
+                  
+                  let bgColor = 'white', borderColor = '#e2e8f0';
+                  if (showCorrectAnswers) {
+                    if (isCorrectAnswer) { bgColor = '#dcfce7'; borderColor = '#10b981'; }
+                    if (isSelected && !isCorrectAnswer) { bgColor = '#fee2e2'; borderColor = '#ef4444'; }
+                  } else {
+                    if (isSelected) { bgColor = '#eef2ff'; borderColor = '#3b82f6'; }
+                  }
+                  
+                  return (
+                    <div key={oIdx} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 6, border: `2px solid ${borderColor}`, background: bgColor }}>
+                      <span style={{ 
+                        width: 20, height: 20, borderRadius: '50%', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                        background: isSelected ? '#3b82f6' : '#f1f5f9', 
+                        color: isSelected ? 'white' : '#64748b', 
+                        fontWeight: 700, fontSize: 10 
+                      }}>{String.fromCharCode(65 + oIdx)}</span>
+                      <span style={{ fontSize: 12 }}>{renderMath(opt)}</span>
+                      {showCorrectAnswers && isCorrectAnswer && <CheckCircle size={12} color="#10b981" style={{ marginLeft: 'auto' }} />}
+                      {showCorrectAnswers && isSelected && !isCorrectAnswer && <X size={12} color="#ef4444" style={{ marginLeft: 'auto' }} />}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {showCorrectAnswers && (
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #e2e8f0', fontSize: 11 }}>
+                  <span style={{ color: '#64748b' }}>✅ Jawaban benar: </span>
+                  <span style={{ fontWeight: 700, color: '#10b981' }}>
+                    {item.type === 'multiselect' 
+                      ? item.correctAnswers.map(i => item.options[i]).join(', ')
+                      : item.options[item.correct] || `Opsi ${String.fromCharCode(65 + item.correct)}`}
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        <div style={{ textAlign: 'center', padding: 16, background: '#f8fafc', borderRadius: 12 }}>
+          <p style={{ fontSize: 12, color: '#64748b' }}>💡 Preview menampilkan jawaban benar secara otomatis</p>
+          <button onClick={handleClosePreview} style={{ padding: '8px 24px', background: '#673ab7', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: 12, marginTop: 8 }}>Tutup Preview</button>
         </div>
       </div>
     );
   }
 
   // ============================================================
-  // MAIN RENDER
+  // 🔥 SAVE QUIZ - DENGAN INTEGRASI MODUL
+  // ============================================================
+  const handleSaveQuiz = async () => {
+    const valid = questions.filter(q => q.q.trim() || q.qImage);
+    if (valid.length === 0) return alert("❌ Minimal 1 soal!");
+    if (!quizTitle) return alert("❌ Judul kuis wajib diisi!");
+    if (publishTarget === 'siswa' && selectedStudentsForQuiz.length === 0) {
+      return alert("❌ Pilih minimal 1 siswa dulu buat mode 'Siswa Tertentu'!");
+    }
+
+    const stillNeedsReview = valid.filter(q => q.needsManualAnswer).length;
+    if (stillNeedsReview > 0) {
+      const lanjut = window.confirm(`⚠️ Masih ada ${stillNeedsReview} soal yang belum ditandai jawaban benarnya. Tetap simpan?`);
+      if (!lanjut) return;
+    }
+    
+    if (useSchedule) {
+      const open = new Date(quizOpenDate);
+      const close = new Date(quizCloseDate);
+      if (open >= close) return alert("❌ Tanggal buka harus lebih awal dari tanggal tutup!");
+      if (open < new Date()) return alert("❌ Tanggal buka tidak boleh kurang dari waktu sekarang!");
+    }
+    
+    setLoading(true);
+    try {
+      const savedTeacher = JSON.parse(localStorage.getItem('teacherData') || '{}');
+
+      const quizPayload = {
+        quizData: valid.map(q => ({ 
+          id: q.id, 
+          type: q.type || 'multiple',
+          question: q.q.trim(), 
+          questionImage: q.qImage || '',
+          options: q.options || ['', '', '', ''],
+          optionImages: q.optionImages || ['', '', '', ''],
+          correctAnswer: q.type === 'multiselect' ? null : (q.correct ?? 0),
+          correctAnswers: q.type === 'multiselect' ? (q.correctAnswers || []) : [],
+          explanation: quizMode === 'advanced' ? (q.explanation || '') : '',
+          statements: q.type === 'truefalse' ? (q.statements || []) : [],
+          readingText: q.type === 'reading' ? (q.readingText || '') : '',
+          subQuestions: q.type === 'reading' ? (q.subQuestions || []) : [],
+          shortAnswer: q.type === 'shortanswer' ? (q.shortAnswer || '') : '',
+          cause: q.type === 'causeeffect' ? (q.cause || '') : '',
+          effect: q.type === 'causeeffect' ? (q.effect || '') : '',
+          isCauseTrue: q.type === 'causeeffect' ? !!q.isCauseTrue : true,
+          isEffectTrue: q.type === 'causeeffect' ? !!q.isEffectTrue : true,
+          matchingPairs: q.type === 'matching' ? (q.matchingPairs || []) : [],
+          needsImage: q.needsImage || false,
+          imageHint: q.imageHint || '',
+        })),
+        totalQuestions: valid.length,
+        deadlineQuiz: null,
+        useSchedule: useSchedule,
+        quizOpenDate: useSchedule ? quizOpenDate : null,
+        quizCloseDate: useSchedule ? quizCloseDate : null,
+        updatedAt: serverTimestamp(),
+        generatedByAI: isAIGenerated,
+        generatedAt: isAIGenerated ? serverTimestamp() : null,
+        showScoreToStudent: showScoreToStudent,
+      };
+
+      if (quizMode === 'advanced') {
+        quizPayload.timeLimit = timeLimit;
+        quizPayload.randomOrder = randomOrder;
+        quizPayload.maxAttempts = maxAttempts;
+        quizPayload.showExplanation = showExplanation;
+        quizPayload.difficulty = difficulty;
+        quizPayload.antiCheatEnabled = antiCheatEnabled;
+      }
+
+      // 🔥 FIX BUG PALING PENTING: kalau ini KUIS YANG SUDAH ADA lagi
+      // diedit LANGSUNG (bukan lewat modul), update dokumen itu di tempat.
+      //
+      // 🔥🔥 FIX BUG BARU (ini yang bikin "Siswa Tertentu" kelihatan gak
+      // jalan padahal sudah dipilih & disimpan): kuis yang DULUNYA dibuat
+      // lewat jalur "Tautkan ke Modul" ditandai `parentModulId` -- dan
+      // begitu field itu ada, StudentQuizView.jsx MENGABAIKAN TOTAL target
+      // yang tersimpan di kuis ini sendiri, lalu pakai target dari MODUL
+      // INDUKnya. Sebelumnya, update di sini TIDAK PERNAH menghapus
+      // `parentModulId` lama -- jadi walau guru sudah benar memilih
+      // "Siswa Tertentu" dan field sendToSpecificStudents/selectedStudents
+      // sudah ke-update dengan benar di database, sisi siswa TETAP
+      // mengevaluasi akses pakai target MODUL INDUK YANG BASI (yang gak
+      // menyertakan siswa2 itu) -- bukan target baru yang guru pilih.
+      // Sekarang `parentModulId` DIKOSONGKAN begitu guru mengedit target
+      // kuis ini secara manual dari sini -- kuis jadi independen
+      // sepenuhnya, aksesnya ngikut PERSIS apa yang dipilih guru di panel
+      // "5. Target Publish" di layar ini.
+      if (isEditingExistingQuiz && !isFromModul) {
+        await updateDoc(doc(db, "bimbel_modul", modulId), {
+          ...quizPayload,
+          title: quizTitle.toUpperCase(),
+          subject: quizSubject || "Kuis",
+          parentModulId: null,
+          targetKategori: publishTarget === 'jenjang' ? selectedProgram : "Semua",
+          targetKelas: publishTarget === 'jenjang' ? selectedKelas : "Semua",
+          sendToSpecificStudents: publishTarget === 'siswa',
+          selectedStudents: publishTarget === 'siswa' ? selectedStudentsForQuiz : [],
+          studentIds: publishTarget === 'siswa' ? selectedStudentsForQuiz.map(s => s.studentId) : [],
+        });
+        alert(`✅ Kuis "${quizTitle}" berhasil diperbarui!`);
+        localStorage.removeItem(draftKey);
+        navigate(-1);
+        return;
+      }
+
+      // 🔥 JIKA DARI MODUL
+      if (isFromModul) {
+        const modulSnap = await getDoc(doc(db, "bimbel_modul", modulId));
+        if (modulSnap.exists()) {
+          const modulData = modulSnap.data();
+          const blocks = modulData.blocks || [];
+          
+          let sectionIndex = blocks.findIndex(b => 
+            String(b.id) === String(sectionId) || b.id === sectionId
+          );
+          
+          if (sectionIndex === -1) {
+            blocks.push({
+              id: sectionId,
+              type: 'quiz',
+              title: quizTitle || 'Kuis',
+              quizId: null,
+            });
+            sectionIndex = blocks.length - 1;
+          }
+          
+          const section = blocks[sectionIndex];
+          let quizId = section.quizId;
+
+          const ownerGuruId = modulData.guruId || savedTeacher.guruId || savedTeacher.id || '';
+          const ownerGuruName = modulData.guruName || savedTeacher.nama || '';
+          const ownerKodeMapel = modulData.kodeMapel || savedTeacher.kodeMapel || '';
+
+          const inheritedTargeting = {
+            parentModulId: modulId,
+            targetKategori: modulData.targetKategori || 'Semua',
+            targetKelas: modulData.targetKelas || 'Semua',
+            sendToSpecificStudents: !!modulData.sendToSpecificStudents,
+            selectedStudents: modulData.selectedStudents || [],
+            studentIds: modulData.studentIds || [],
+          };
+          
+          if (quizId) {
+            await updateDoc(doc(db, "bimbel_modul", quizId), {
+              ...quizPayload,
+              ...inheritedTargeting,
+              title: quizTitle.toUpperCase(),
+              subject: quizSubject || "Kuis",
+              guruId: ownerGuruId,
+              guruName: ownerGuruName,
+              kodeMapel: ownerKodeMapel,
+            });
+          } else {
+            const newQuiz = await addDoc(collection(db, "bimbel_modul"), {
+              ...quizPayload,
+              ...inheritedTargeting,
+              title: quizTitle.toUpperCase(),
+              subject: quizSubject || "Kuis",
+              type: 'kuis_mandiri',
+              status: 'aktif',
+              guruId: ownerGuruId,
+              guruName: ownerGuruName,
+              kodeMapel: ownerKodeMapel,
+              createdAt: serverTimestamp()
+            });
+            quizId = newQuiz.id;
+          }
+          
+          blocks[sectionIndex] = {
+            ...section,
+            quizId: quizId,
+            quizTitle: quizTitle,
+            quizQuestions: valid.length
+          };
+          
+          await updateDoc(doc(db, "bimbel_modul", modulId), {
+            blocks: blocks,
+            updatedAt: serverTimestamp()
+          });
+          
+          alert(`✅ Kuis berhasil disimpan ke modul!`);
+          navigate(-1);
+          return;
+        }
+      }
+
+      if (publishTarget === 'modul') {
+        if (!selectedModul) {
+          alert("❌ Pilih modul tujuan!");
+          setLoading(false);
+          return;
+        }
+        const modulSnap = await getDoc(doc(db, "bimbel_modul", selectedModul));
+        if (!modulSnap.exists()) {
+          alert("❌ Modul tujuan tidak ditemukan!");
+          setLoading(false);
+          return;
+        }
+        const modulData = modulSnap.data();
+
+        const inheritedTargeting = {
+          parentModulId: selectedModul,
+          targetKategori: modulData.targetKategori || 'Semua',
+          targetKelas: modulData.targetKelas || 'Semua',
+          sendToSpecificStudents: !!modulData.sendToSpecificStudents,
+          selectedStudents: modulData.selectedStudents || [],
+          studentIds: modulData.studentIds || [],
+        };
+
+        const newQuizDoc = await addDoc(collection(db, "bimbel_modul"), {
+          ...quizPayload,
+          ...inheritedTargeting,
+          title: quizTitle.toUpperCase(),
+          subject: modulData.subject || quizSubject || "Kuis",
+          type: 'kuis_mandiri',
+          status: 'aktif',
+          guruId: modulData.guruId || savedTeacher.guruId || savedTeacher.id || '',
+          guruName: modulData.guruName || savedTeacher.nama || '',
+          kodeMapel: modulData.kodeMapel || savedTeacher.kodeMapel || '',
+          createdAt: serverTimestamp()
+        });
+
+        const existingBlocks = modulData.blocks || [];
+        const newBlock = {
+          id: Date.now(),
+          type: 'quiz',
+          quizId: newQuizDoc.id,
+          quizTitle: quizTitle,
+          quizQuestions: valid.length,
+        };
+        await updateDoc(doc(db, "bimbel_modul", selectedModul), {
+          blocks: [...existingBlocks, newBlock],
+          updatedAt: serverTimestamp(),
+        });
+
+        alert(`✅ Kuis "${quizTitle}" berhasil ditambahkan ke dalam modul "${modulData.title || ''}"!`);
+      } else {
+        await addDoc(collection(db, "bimbel_modul"), {
+          title: quizTitle.toUpperCase(),
+          subject: quizSubject || "Kuis",
+          ...quizPayload,
+          type: 'kuis_mandiri',
+          targetKategori: publishTarget === 'jenjang' ? selectedProgram : "Semua",
+          targetKelas: publishTarget === 'jenjang' ? selectedKelas : "Semua",
+          sendToSpecificStudents: publishTarget === 'siswa',
+          selectedStudents: publishTarget === 'siswa' ? selectedStudentsForQuiz : [],
+          studentIds: publishTarget === 'siswa' ? selectedStudentsForQuiz.map(s => s.studentId) : [],
+          status: 'aktif',
+          guruId: savedTeacher.guruId || savedTeacher.id || '',
+          kodeMapel: savedTeacher.kodeMapel || '',
+          guruName: savedTeacher.nama || '',
+          authorName: localStorage.getItem('teacherName') || localStorage.getItem('userName') || "Guru",
+          createdAt: serverTimestamp()
+        });
+        alert(`✅ Kuis mandiri diterbitkan!`);
+      }
+      localStorage.removeItem(draftKey);
+      navigate(-1);
+    } catch (err) { 
+      alert("❌ Gagal: " + err.message); 
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ============================================================
+  // RENDER MAIN
   // ============================================================
   return (
-    <div style={styles.container}>
-      <style>{`
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .spin { animation: spin 1s linear infinite; }
-        .fade-in { animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
+    <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? 12 : 20, paddingBottom: 100 }}>
+      
+      {toast && (
+        <div style={{
+          position: 'fixed', top: 20, right: 20, zIndex: 9999,
+          padding: '12px 20px', borderRadius: 12,
+          background: toast.type === 'error' ? '#ef4444' : '#10b981',
+          color: 'white', fontWeight: 600, fontSize: 13,
+          boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+          animation: 'fadeInUp 0.3s ease'
+        }}>
+          {toast.message}
+        </div>
+      )}
 
       {/* HEADER */}
-      <div style={styles.header}>
-        <button onClick={() => navigate('/guru/modul')} style={styles.btnBack}>
-          <ArrowLeft size={14} /> {!isMobile && 'Kembali'}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'white', border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <ArrowLeft size={14}/> Kembali
         </button>
-        <h2 style={styles.pageTitle}>
-          {editId ? '✏️ Edit Modul' : '📚 Buat Modul Baru'}
-          {modulId && <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>#{modulId}</span>}
+        <h2 style={{ margin: 0, fontSize: isMobile ? 16 : 20, fontWeight: 800, color: '#1e293b' }}>
+          ❓ {modulId ? `Kuis untuk Modul` : 'Buat Kuis Baru'}
+          {isFromModul && <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>#{modulId}</span>}
         </h2>
-        <div style={styles.headerActions}>
-          {editId && (
-            <button onClick={() => window.open(`/siswa/modul/${editId}`, '_blank')} style={{ ...styles.btnBack }}>
-              <Eye size={14} /> Live
-            </button>
-          )}
-          {modulId && (
-            <button onClick={handleDeleteModul} style={styles.deleteBtn}>
-              <Trash2 size={14} /> Hapus
-            </button>
-          )}
-          {/* 🔥 BARU: tombol Save di header cuma muncul kalau modulnya udah
-              punya modulId (lolos Langkah 1) -- biar konsisten sama alur
-              wizard, gak ada tombol save "nyasar" pas guru masih di
-              Langkah 1 yang belum ada apa-apa buat disimpan. */}
-          {modulId && (
-            <button onClick={handleSave} disabled={saving} style={{ ...styles.btnSave, opacity: saving ? 0.6 : 1 }}>
-              <Save size={14} /> {saving ? 'Menyimpan...' : editId ? 'Update' : 'Terbitkan'}
-            </button>
-          )}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button
+            onClick={handleUndo}
+            disabled={historyPointer <= 0}
+            title="Undo"
+            style={{ background: 'white', border: '1px solid #e2e8f0', padding: '8px 10px', borderRadius: 8, cursor: historyPointer <= 0 ? 'not-allowed' : 'pointer', opacity: historyPointer <= 0 ? 0.4 : 1 }}
+          >
+            <Undo2 size={14} />
+          </button>
+          <button
+            onClick={handleRedo}
+            disabled={historyPointer >= history.length - 1}
+            title="Redo"
+            style={{ background: 'white', border: '1px solid #e2e8f0', padding: '8px 10px', borderRadius: 8, cursor: historyPointer >= history.length - 1 ? 'not-allowed' : 'pointer', opacity: historyPointer >= history.length - 1 ? 0.4 : 1 }}
+          >
+            <Redo2 size={14} />
+          </button>
+          <button 
+            onClick={() => setShowAIGenerateQuiz(true)} 
+            style={{ 
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              color: 'white', 
+              border: 'none', 
+              padding: '8px 14px', 
+              borderRadius: 8, 
+              fontWeight: 700, 
+              fontSize: 12, 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              boxShadow: '0 4px 12px rgba(245,158,11,0.3)'
+            }}
+          >
+            <Sparkles size={14} /> Generate dari Topik
+          </button>
+          <button 
+            onClick={() => setShowSmartImport(true)} 
+            style={{ 
+              background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+              color: 'white', 
+              border: 'none', 
+              padding: '8px 14px', 
+              borderRadius: 8, 
+              fontWeight: 700, 
+              fontSize: 12, 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              boxShadow: '0 4px 12px rgba(139,92,246,0.3)'
+            }}
+          >
+            <Sparkles size={14} /> Smart Import
+          </button>
+          <button 
+            onClick={() => setShowWordImport(true)} 
+            style={{ 
+              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+              color: 'white', 
+              border: 'none', 
+              padding: '8px 14px', 
+              borderRadius: 8, 
+              fontWeight: 700, 
+              fontSize: 12, 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              boxShadow: '0 4px 12px rgba(37,99,235,0.3)'
+            }}
+          >
+            <FileText size={14} /> Import dari Word
+          </button>
+          <button
+            onClick={async () => {
+              if (!quizTitle) return alert("❌ Isi dulu judul kuisnya sebelum download.");
+              const hasContent = questions.some(q => q.q.trim() || q.qImage);
+              if (!hasContent) return alert("❌ Belum ada soal untuk didownload.");
+              setPdfDownloading(true);
+              try {
+                await generateQuizAnswerKeyPDF(quizTitle, quizSubject, questions, quizMode, difficulty);
+              } catch (err) {
+                alert("❌ Gagal membuat PDF: " + err.message);
+              }
+              setPdfDownloading(false);
+            }}
+            disabled={pdfDownloading}
+            title="Unduh semua soal + kunci jawaban lengkap sebagai PDF — buat dikirim ke guru pengganti tanpa perlu masuk akun ini"
+            style={{ background: '#0d9488', color: 'white', border: 'none', padding: '8px 14px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: pdfDownloading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 4, opacity: pdfDownloading ? 0.7 : 1 }}
+          >
+            {pdfDownloading ? <Loader2 size={14} className="spin" /> : <Download size={14}/>}
+            {pdfDownloading ? 'Menyiapkan...' : 'Soal + Jawaban (PDF)'}
+          </button>
+          <button onClick={handlePreviewQuiz} style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '8px 14px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Eye size={14}/> Preview
+          </button>
+          <button onClick={handleSaveQuiz} disabled={loading} style={{ background: '#673ab7', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+            {loading ? <Loader2 size={14} className="spin" /> : <Send size={14}/>} 
+            {loading ? '...' : isFromModul ? 'Simpan ke Modul' : 'Terbitkan'}
+          </button>
         </div>
       </div>
 
       {/* ========================================================== */}
-      {/* 🔥 BARU: INDIKATOR LANGKAH WIZARD */}
+      {/* 1️⃣ IDENTITAS KUIS */}
       {/* ========================================================== */}
-      <div style={styles.stepIndicatorRow}>
-        {[
-          { n: 1, label: 'Judul' },
-          { n: 2, label: 'Konten' },
-          { n: 3, label: 'Target' },
-        ].map((s, idx, arr) => (
-          <React.Fragment key={s.n}>
-            <button
-              type="button"
-              onClick={() => { if (modulId || s.n === 1) setStep(s.n); }}
-              disabled={!modulId && s.n !== 1}
-              style={styles.stepCircleBtn(step === s.n, step > s.n, !modulId && s.n !== 1)}
-            >
-              <span style={styles.stepCircle(step === s.n, step > s.n)}>
-                {step > s.n ? <CheckCircle size={14} /> : s.n}
-              </span>
-              <span style={styles.stepLabelText(step === s.n)}>{s.label}</span>
-            </button>
-            {idx < arr.length - 1 && <div style={styles.stepConnector} />}
-          </React.Fragment>
-        ))}
+      <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+        <h4 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <FileText size={18} /> 1. Identitas Kuis
+        </h4>
+        <input value={quizTitle} onChange={e => setQuizTitle(e.target.value)} placeholder="Judul kuis..." style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', marginBottom: 8, boxSizing: 'border-box' }} />
+        <select value={quizSubject} onChange={e => setQuizSubject(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', background: 'white', boxSizing: 'border-box' }}>
+          <option value="">Pilih Mapel</option>
+          {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
       </div>
 
       {/* ========================================================== */}
-      {/* LANGKAH 1: JUDUL & MATA PELAJARAN */}
+      {/* 2️⃣ JADWAL KUIS */}
       {/* ========================================================== */}
-      {step === 1 && (
-        <div style={styles.card}>
-          <h4 style={styles.cardTitle}><BookOpen size={18} /> 1. Judul & Mata Pelajaran</h4>
-          <p style={{ fontSize: 11, color: '#94a3b8', marginTop: -6, marginBottom: 14 }}>
-            Isi ini dulu buat lanjut -- cover, deskripsi, dan konten (termasuk kuis) diisi di langkah berikutnya.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 480 }}>
-            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Judul modul... (wajib)" style={styles.input} autoFocus />
-            <div style={{ display: 'flex', gap: 8 }}>
-              <select value={subject} onChange={e => setSubject(e.target.value)} style={{ ...styles.select, flex: 1 }}>
-                <option value="">Pilih Mata Pelajaran (wajib)</option>
-                {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-              {kodeMapel && <span style={{ background: '#ede9fe', padding: '4px 12px', borderRadius: 6, fontSize: 10, fontWeight: 600, color: '#8b5cf6', display: 'flex', alignItems: 'center' }}>📌 {kodeMapel}</span>}
+      <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <h4 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <CalendarDays size={18} /> 2. Jadwal Kuis
+          </h4>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
+            <input type="checkbox" checked={useSchedule} onChange={() => setUseSchedule(!useSchedule)} />
+            Aktifkan Jadwal
+          </label>
+        </div>
+        
+        {useSchedule && (
+          <div style={{ display: 'flex', gap: 10, flexDirection: isMobile ? 'column' : 'row' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>📅 Buka</label>
+              <input type="datetime-local" value={quizOpenDate} onChange={e => setQuizOpenDate(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>📅 Tutup</label>
+              <input type="datetime-local" value={quizCloseDate} onChange={e => setQuizCloseDate(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
             </div>
           </div>
-        </div>
-      )}
+        )}
+        
+        {useSchedule && (
+          <div style={{ marginTop: 8, padding: 8, borderRadius: 6, background: getQuizStatus().color + '15', border: `1px solid ${getQuizStatus().color}`, fontSize: 11, fontWeight: 600, color: getQuizStatus().color, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            {getQuizStatus().icon} {getQuizStatus().label}
+          </div>
+        )}
+      </div>
 
       {/* ========================================================== */}
-      {/* 1️⃣ COVER & IDENTITAS */}
+      {/* 3️⃣ MODE KUIS */}
       {/* ========================================================== */}
-      {step === 2 && (
-      <div style={styles.card}>
-        <h4 style={styles.cardTitle}><ImageIcon size={18} /> Cover & Deskripsi (Opsional)</h4>
-        <div style={{ display: 'flex', gap: 16, flexDirection: isMobile ? 'column' : 'row' }}>
-          <label style={{ ...styles.coverUpload, width: isMobile ? '100%' : 120, flexShrink: 0 }}>
-            {coverImage ? (
-              <img src={coverImage} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8' }}>
-                <ImageIcon size={24} />
-                <span style={{ fontSize: 9 }}>Upload Cover</span>
+      <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+        <h4 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Settings size={18} /> 3. Mode Kuis
+        </h4>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
+          <button 
+            onClick={() => setQuizMode('simple')} 
+            style={{
+              padding: '14px',
+              borderRadius: 10,
+              border: quizMode === 'simple' ? '3px solid #3b82f6' : '2px solid #e2e8f0',
+              background: quizMode === 'simple' ? '#eef2ff' : 'white',
+              cursor: 'pointer',
+              textAlign: 'center',
+              transition: '0.2s'
+            }}
+          >
+            <div style={{ fontSize: 24, marginBottom: 4 }}>📝</div>
+            <div style={{ fontWeight: 700, fontSize: 14, color: quizMode === 'simple' ? '#1e293b' : '#64748b' }}>Mode Sederhana</div>
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>Kuis biasa tanpa pengaturan lanjutan</div>
+            {quizMode === 'simple' && <div style={{ marginTop: 6, fontSize: 10, color: '#3b82f6', fontWeight: 700 }}>✅ Aktif</div>}
+          </button>
+
+          <button 
+            onClick={() => setQuizMode('advanced')} 
+            style={{
+              padding: '14px',
+              borderRadius: 10,
+              border: quizMode === 'advanced' ? '3px solid #673ab7' : '2px solid #e2e8f0',
+              background: quizMode === 'advanced' ? '#f3e8ff' : 'white',
+              cursor: 'pointer',
+              textAlign: 'center',
+              transition: '0.2s'
+            }}
+          >
+            <div style={{ fontSize: 24, marginBottom: 4 }}>🔒</div>
+            <div style={{ fontWeight: 700, fontSize: 14, color: quizMode === 'advanced' ? '#1e293b' : '#64748b' }}>Mode Ujian</div>
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>+Timer, Random Soal, Batas Pengulangan</div>
+            {quizMode === 'advanced' && <div style={{ marginTop: 6, fontSize: 10, color: '#673ab7', fontWeight: 700 }}>✅ Aktif</div>}
+          </button>
+        </div>
+
+        <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #e2e8f0' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={showScoreToStudent}
+              onChange={e => setShowScoreToStudent(e.target.checked)}
+            />
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#1e293b' }}>
+              Tampilkan nilai angka ke siswa setelah submit
+            </span>
+          </label>
+          <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 4, marginLeft: 24 }}>
+            {showScoreToStudent
+              ? 'Siswa langsung lihat nilai (misal 58/100) begitu selesai mengerjakan.'
+              : 'Siswa cuma lihat "kuis sudah terkirim", nilainya disembunyikan dulu sampai guru infokan manual.'}
+          </p>
+        </div>
+
+        {quizMode === 'advanced' && (
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>⏱️ Batas Waktu (menit)</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <input type="number" min="0" max="180" value={timeLimit} onChange={e => setTimeLimit(parseInt(e.target.value))} style={{ width: 80, padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12 }} />
+                  <span style={{ fontSize: 10, color: '#94a3b8' }}>(0 = tidak terbatas)</span>
+                </div>
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>🔄 Batas Pengulangan</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <input type="number" min="0" max="10" value={maxAttempts} onChange={e => setMaxAttempts(parseInt(e.target.value))} style={{ width: 80, padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12 }} />
+                  <span style={{ fontSize: 10, color: '#94a3b8' }}>kali (0 = tak terbatas)</span>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, cursor: 'pointer' }}>
+                <input type="checkbox" checked={randomOrder} onChange={e => setRandomOrder(e.target.checked)} /> Acak soal
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, cursor: 'pointer' }}>
+                <input type="checkbox" checked={showExplanation} onChange={e => setShowExplanation(e.target.checked)} /> Tampilkan pembahasan
+              </label>
+              <select value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11, background: 'white' }}>
+                <option value="Mudah">🟢 Mudah</option><option value="Sedang">🟡 Sedang</option><option value="Sulit">🔴 Sulit</option>
+              </select>
+            </div>
+
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px dashed #e2e8f0' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={antiCheatEnabled} onChange={e => setAntiCheatEnabled(e.target.checked)} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>🛡️ Deteksi Kecurangan (pindah tab/aplikasi)</span>
+              </label>
+              <p style={{ fontSize: 10, color: '#94a3b8', margin: '4px 0 0 24px', lineHeight: 1.6 }}>
+                Kalau aktif: layar siswa dikunci ke mode layar-penuh, dan setiap kali siswa <b>pindah tab, buka aplikasi lain,
+                atau keluar dari layar-penuh</b> selama mengerjakan, itu tercatat otomatis dan kelihatan di hasil kuis buat kamu.
+                <br /><br />
+                <b>⚠️ Jujur soal batasnya:</b> ini nangkep kalau siswa pindah-pindah di <b>perangkat yang sama</b> yang lagi dipakai
+                ngerjain kuis. Kalau siswa nyari jawaban pakai <b>HP kedua</b> yang terpisah, itu di luar jangkauan sistem apapun
+                berbasis web — gak ada yang bisa deteksi itu.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================== */}
+      {/* 4️⃣ SOAL KUIS */}
+      {/* ========================================================== */}
+      <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <h4 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Layers size={18} /> 4. Soal Kuis ({questions.filter(q => q.q.trim() || q.qImage).length})
+          </h4>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button onClick={() => setShowAIGenerateQuiz(true)} style={{ padding: '4px 10px', background: '#fffbeb', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#b45309' }}>
+              <Sparkles size={12} /> Generate dari Topik
+            </button>
+            <button onClick={() => setShowSmartImport(true)} style={{ padding: '4px 10px', background: '#eef2ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#3730a3' }}>
+              <Sparkles size={12} /> Smart Import
+            </button>
+            <button onClick={() => setShowWordImport(true)} style={{ padding: '4px 10px', background: '#eff6ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#1d4ed8' }}>
+              <FileText size={12} /> Import dari Word
+            </button>
+          </div>
+        </div>
+
+        {questions.map((item, idx) => renderQuestionEditor(item, idx))}
+
+        <div style={{ marginTop: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)', gap: 4 }}>
+            {QUESTION_TYPES.map(type => (
+              <button
+                key={type.id}
+                onClick={() => addQuestion(type.id)}
+                style={{
+                  padding: '6px 4px',
+                  borderRadius: 6,
+                  border: `1px solid ${type.color}30`,
+                  background: 'white',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 2,
+                  transition: '0.2s',
+                  color: type.color,
+                  fontSize: 8,
+                  fontWeight: 600,
+                  textAlign: 'center'
+                }}
+              >
+                {type.icon}
+                <span style={{ fontSize: 7 }}>{type.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================== */}
+      {/* 5️⃣ TARGET PUBLISH */}
+      {/* ========================================================== */}
+      {isFromModul ? (
+        <div style={{ background: '#f0fdf4', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #bbf7d0', marginBottom: 16 }}>
+          <h4 style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 700, color: '#166534', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <BookOpen size={18} /> Kuis Ini Bagian dari Modul
+          </h4>
+          <p style={{ margin: 0, fontSize: 12, color: '#15803d', lineHeight: 1.6 }}>
+            Kuis ini otomatis mengikuti target modul induknya — jadi kalau modulnya dikirim ke kelas/siswa tertentu, kuis ini ikut ke sana juga. Kamu tidak perlu memilih target lagi di sini. Cukup klik <b>Simpan ke Modul</b> di atas.
+          </p>
+        </div>
+      ) : (
+      <div style={{ background: 'white', padding: isMobile ? 14 : 20, borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+        <h4 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Target size={18} /> 5. Target Publish
+        </h4>
+
+        {isEditingExistingQuiz && (
+          <div style={{ marginBottom: 10, padding: '8px 12px', background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 8, fontSize: 11, color: '#3730a3' }}>
+            💡 Kuis ini sekarang dikelola independen sesuai target yang kamu pilih di sini (tidak lagi ikut modul manapun).
+          </div>
+        )}
+        
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+          <button onClick={() => setPublishTarget('modul')} style={{ 
+            padding: '8px 14px', 
+            borderRadius: 8, 
+            border: publishTarget === 'modul' ? '2px solid #10b981' : '1px solid #e2e8f0',
+            background: publishTarget === 'modul' ? '#f0fdf4' : 'white',
+            cursor: 'pointer',
+            fontSize: 11,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}>
+            <BookOpen size={14} color={publishTarget === 'modul' ? '#10b981' : '#94a3b8'} /> Tautkan ke Modul
+          </button>
+          <button onClick={() => setPublishTarget('mandiri')} style={{ 
+            padding: '8px 14px', 
+            borderRadius: 8, 
+            border: publishTarget === 'mandiri' ? '2px solid #3b82f6' : '1px solid #e2e8f0',
+            background: publishTarget === 'mandiri' ? '#eef2ff' : 'white',
+            cursor: 'pointer',
+            fontSize: 11,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}>
+            <Send size={14} color={publishTarget === 'mandiri' ? '#3b82f6' : '#94a3b8'} /> Kuis Mandiri
+          </button>
+          <button onClick={() => setPublishTarget('jenjang')} style={{ 
+            padding: '8px 14px', 
+            borderRadius: 8, 
+            border: publishTarget === 'jenjang' ? '2px solid #f59e0b' : '1px solid #e2e8f0',
+            background: publishTarget === 'jenjang' ? '#fffbeb' : 'white',
+            cursor: 'pointer',
+            fontSize: 11,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}>
+            <Users size={14} color={publishTarget === 'jenjang' ? '#f59e0b' : '#94a3b8'} /> Tautkan ke Jenjang
+          </button>
+          <button onClick={() => setPublishTarget('siswa')} style={{ 
+            padding: '8px 14px', 
+            borderRadius: 8, 
+            border: publishTarget === 'siswa' ? '2px solid #8b5cf6' : '1px solid #e2e8f0',
+            background: publishTarget === 'siswa' ? '#f5f3ff' : 'white',
+            cursor: 'pointer',
+            fontSize: 11,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}>
+            <UserPlus size={14} color={publishTarget === 'siswa' ? '#8b5cf6' : '#94a3b8'} /> Siswa Tertentu
+          </button>
+        </div>
+
+        {publishTarget === 'modul' && (
+          <div>
+            <select value={selectedModul} onChange={e => setSelectedModul(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #10b981', fontSize: 12, outline: 'none', background: 'white' }}>
+              <option value="">{refsStatus === 'loading' ? 'Memuat daftar modul...' : 'Pilih Modul...'}</option>
+              {modulList.filter(m => !m.type || m.type !== 'kuis_mandiri').map(m => <option key={m.id} value={m.id}>{m.title || m.id}</option>)}
+            </select>
+            {refsStatus === 'error' && (
+              <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#ef4444' }}>
+                ⚠️ Gagal memuat sebagian data (daftar modul/kelas/mapel).
+                <button type="button" onClick={loadRefs} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '3px 10px', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 10 }}>🔄 Coba Lagi</button>
               </div>
             )}
-            <input ref={coverInputRef} type="file" accept="image/*" hidden onChange={handleCoverUpload} />
-          </label>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>{title}</div>
-            <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Deskripsi modul (opsional)..." style={styles.textarea} />
-          </div>
-        </div>
-      </div>
-      )}
-
-      {/* ========================================================== */}
-      {/* 2️⃣ KONTEN MODUL */}
-      {/* ========================================================== */}
-      {step === 2 && (
-      <div style={styles.card}>
-        <h4 style={styles.cardTitle}><Layers size={18} /> Konten Modul ({sections.length})</h4>
-        
-        {sections.length === 0 && (
-          <div style={{ textAlign: 'center', padding: 30, color: '#94a3b8', border: '1px dashed #e2e8f0', borderRadius: 8 }}>
-            <FolderOpen size={32} color="#cbd5e1" />
-            <p style={{ marginTop: 8, fontSize: 13 }}>Belum ada konten. Klik tombol di bawah untuk menambahkan.</p>
           </div>
         )}
 
-        {sections.map((sec, idx) => {
-          const typeIcons = { text: '📄', file: '📁', video: '🎥', assignment: '📝', quiz: '❓' };
-          const typeColors = { text: '#3b82f6', file: '#10b981', video: '#ef4444', assignment: '#f59e0b', quiz: '#8b5cf6' };
-          const isEditing = editingSection === sec.id;
-          
-          return (
-            <div key={sec.id}>
-              <div 
-                style={{ 
-                  ...styles.sectionItem, 
-                  borderColor: isEditing ? '#3b82f6' : '#e2e8f0',
-                  borderWidth: isEditing ? '2px' : '1px',
-                  background: isEditing ? '#eef2ff' : '#f8fafc'
-                }}
-                onClick={() => setEditingSection(isEditing ? null : sec.id)}
-              >
-                <span style={{ fontSize: 16 }}>{typeIcons[sec.type]}</span>
-                <span style={styles.sectionLabel}>
-                  {sec.title || `Konten ${idx + 1}`}
-                  {sec.format === 'html' && (
-                    <span style={{ fontSize: 9, color: '#8b5cf6', background: '#ede9fe', padding: '1px 8px', borderRadius: 10, display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                      <Sparkles size={9} /> AI
-                    </span>
-                  )}
-                  {sec.type === 'quiz' && sec.quizId && (
-                    <span style={{ fontSize: 9, color: '#10b981', background: '#dcfce7', padding: '1px 8px', borderRadius: 10 }}>
-                      ✅ {sec.quizQuestions || 0} soal
-                    </span>
-                  )}
-                  {sec.type === 'quiz' && !sec.quizId && (
-                    <span style={{ fontSize: 9, color: '#f59e0b', background: '#fef3c7', padding: '1px 8px', borderRadius: 10 }}>
-                      ⚠️ Belum dibuat
-                    </span>
-                  )}
-                  {sec.fileName && <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>📎 {sec.fileName}</span>}
-                </span>
-                <span style={{ ...styles.badge, background: typeColors[sec.type] + '15', color: typeColors[sec.type] }}>
-                  {sec.type.toUpperCase()}
-                </span>
-                <button 
-                  onClick={(e) => { e.stopPropagation(); removeSection(sec.id); }}
-                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }}
-                >
-                  <X size={14} />
-                </button>
-              </div>
-              
-              {isEditing && renderContentEditor()}
-            </div>
-          );
-        })}
-
-        {/* TOMBOL TAMBAH KONTEN */}
-        <div style={styles.addMenu}>
-          {showAddMenu ? (
-            <div style={styles.addMenuOptions} className="fade-in">
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(5, 1fr)', gap: 6 }}>
-                {CONTENT_TYPES.map(item => (
-                  <button
-                    key={item.type}
-                    onClick={() => addSection(item.type)}
-                    style={{
-                      padding: '12px 8px',
-                      borderRadius: 8,
-                      border: `2px solid ${item.color}30`,
-                      background: 'white',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: 4,
-                      transition: '0.2s',
-                      color: item.color
-                    }}
-                  >
-                    {item.icon}
-                    <span style={{ fontSize: 11, fontWeight: 600 }}>{item.label}</span>
-                    {item.sub && (
-                      <span style={{ fontSize: 8, fontWeight: 400, color: '#94a3b8', textAlign: 'center', lineHeight: 1.3 }}>
-                        {item.sub}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-              <button 
-                onClick={() => setShowAddMenu(false)}
-                style={{ width: '100%', marginTop: 6, padding: 6, background: '#f1f5f9', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 11, color: '#64748b' }}
-              >
-                Tutup
-              </button>
-            </div>
-          ) : (
+        {publishTarget === 'jenjang' && (
+          <div style={{ marginTop: 8 }}>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button 
-                onClick={() => setShowAddMenu(true)}
-                style={{ ...styles.addButton, flex: 1 }}
-              >
-                <Plus size={18} /> Tambah Konten
-              </button>
-              <button 
-                onClick={() => setShowAIGenerate(true)}
-                style={{ ...styles.addButton, flex: 1, border: '2px dashed #8b5cf6', color: '#8b5cf6', background: '#faf5ff' }}
-              >
-                <Sparkles size={18} /> Generate dengan AI
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-      )}
-
-      {/* ========================================================== */}
-      {/* 3️⃣ TARGET & PENGATURAN */}
-      {/* ========================================================== */}
-      {step === 3 && (
-      <div style={styles.card}>
-        <h4 style={styles.cardTitle}><Settings size={18} /> 3. Target & Pengaturan (Konfirmasi Sebelum Terbit)</h4>
-        {kodeMapel && (
-          <p style={{ fontSize: 11, color: '#673ab7', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 8, padding: '8px 10px', marginTop: -6, marginBottom: 14 }}>
-            💡 Daftar siswa di bawah cuma nampilin siswa yang SUDAH terdaftar ke mapel ini (kode <b>{kodeMapel}</b>{subject ? <> / nama <b>{subject}</b></> : ''}) lewat halaman Edit Siswa -- sama persis kayak aturan di Manajemen Jadwal, biar gak ada modul salah kirim ke siswa yang gak seharusnya.
-          </p>
-        )}
-        
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>🎯 Target</label>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <select value={targetKategori} onChange={e => setTargetKategori(e.target.value)} style={{ ...styles.select, flex: 1 }}>
+              <select value={selectedProgram} onChange={e => setSelectedProgram(e.target.value)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #f59e0b', fontSize: 12, outline: 'none', background: 'white' }}>
+                <option value="Semua">Semua Program</option>
                 <option value="Reguler">📚 Reguler</option>
                 <option value="English">🗣️ English</option>
-                <option value="Semua">🌐 Semua</option>
               </select>
-              <select value={targetKelas} onChange={e => setTargetKelas(e.target.value)} style={{ ...styles.select, flex: 1 }}>
+              <select value={selectedKelas} onChange={e => setSelectedKelas(e.target.value)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #f59e0b', fontSize: 12, outline: 'none', background: 'white' }}>
+                <option value="Semua">{refsStatus === 'loading' ? 'Memuat daftar kelas...' : 'Semua Kelas'}</option>
                 {availableClasses.map(k => <option key={k} value={k}>{k}</option>)}
               </select>
             </div>
-            <div style={{ marginTop: 8 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, cursor: 'pointer' }}>
-                <input type="checkbox" checked={sendToSpecificStudents} onChange={() => setSendToSpecificStudents(!sendToSpecificStudents)} />
-                <UserPlus size={14} /> Kirim ke siswa tertentu
-              </label>
-              {sendToSpecificStudents && (
-                <div style={{ marginTop: 6 }}>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <div style={{ flex: 1, position: 'relative' }}>
-                      <Search size={12} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                      <input
-                        value={studentSearch}
-                        onChange={e => setStudentSearch(e.target.value)}
-                        placeholder="Cari siswa..."
-                        style={{ ...styles.input, paddingLeft: 28, fontSize: 11 }}
-                        onFocus={() => setShowStudentPicker(true)}
-                      />
-                    </div>
-                    <button onClick={selectAllFiltered} style={{ padding: '4px 12px', background: '#e0e7ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#3730a3' }}>Pilih Semua</button>
-                  </div>
-
-                  {/* 🔥 FIX BUG BESAR: daftar siswa buat diklik/dipilih ini SEBELUMNYA
-                      TIDAK ADA SAMA SEKALI di kode — cuma kotak pencarian doang tanpa
-                      hasil yang ditampilkan. Guru ketik nama, tapi gak ada daftar
-                      muncul buat diklik, jadi fitur "kirim ke siswa tertentu" gak bisa
-                      dipakai sama sekali. Sekarang daftarnya beneran dirender di sini. */}
-                  {showStudentPicker && (
-                    <div style={{
-                      marginTop: 6, maxHeight: 200, overflowY: 'auto',
-                      background: 'white', border: '1px solid #e2e8f0', borderRadius: 8,
-                    }}>
-                      {filteredStudents.length === 0 ? (
-                        <p style={{ padding: 12, fontSize: 11, color: '#94a3b8', textAlign: 'center', margin: 0 }}>
-                          {allStudents.length === 0
-                            ? (kodeMapel ? `Belum ada siswa yang terdaftar ke mapel ini (${kodeMapel}). Daftarkan dulu lewat halaman Edit Siswa.` : 'Belum ada data siswa.')
-                            : 'Siswa tidak ditemukan.'}
-                        </p>
-                      ) : (
-                        filteredStudents.map(student => {
-                          const checked = selectedStudents.some(s => s.studentId === student.studentId);
-                          return (
-                            <div
-                              key={student.id}
-                              onClick={() => toggleStudentSelection(student)}
-                              style={{
-                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                padding: '8px 12px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer',
-                                background: checked ? '#eef2ff' : 'white', fontSize: 12,
-                              }}
-                            >
-                              <div>
-                                <span style={{ fontWeight: 600, color: '#1e293b' }}>{student.nama}</span>
-                                <span style={{ fontSize: 10, color: '#64748b', marginLeft: 6 }}>#{student.studentId}</span>
-                                <span style={{ fontSize: 9, background: '#f1f5f9', padding: '1px 6px', borderRadius: 4, marginLeft: 6 }}>
-                                  {student.kelasSekolah} · {student.program}
-                                </span>
-                              </div>
-                              <input type="checkbox" checked={checked} onChange={() => {}} style={{ accentColor: '#3b82f6', width: 16, height: 16 }} />
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  )}
-                  {selectedStudents.length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
-                      {selectedStudents.slice(0, 10).map(s => (
-                        <span key={s.studentId} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#eef2ff', padding: '2px 8px', borderRadius: 12, fontSize: 10, fontWeight: 600, color: '#3730a3' }}>
-                          {s.nama}
-                          <button onClick={() => toggleStudentSelection(s)} style={{ background: 'none', border: 'none', color: '#3730a3', cursor: 'pointer', padding: 0 }}><X size={10} /></button>
-                        </span>
-                      ))}
-                      {selectedStudents.length > 10 && <span style={{ fontSize: 10, color: '#94a3b8' }}>+{selectedStudents.length - 10}</span>}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>⚙️ Pengaturan</label>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-              <input type="number" min="1" max="52" value={mingguKe} onChange={e => setMingguKe(e.target.value)} placeholder="Minggu" style={{ ...styles.input, flex: 1, fontSize: 11 }} />
-              <input type="text" value={tahunAjaran} onChange={e => setTahunAjaran(e.target.value)} placeholder="Tahun" style={{ ...styles.input, flex: 1, fontSize: 11 }} />
-            </div>
-            <div style={{ display: 'flex', gap: 4 }}>
-              {STATUS_OPTIONS.map(opt => (
-                <button key={opt.value} onClick={() => setStatusModul(opt.value)} style={{ 
-                  flex: 1, padding: '6px 8px', borderRadius: 6, fontSize: 10, fontWeight: 600, cursor: 'pointer',
-                  background: statusModul === opt.value ? opt.color : '#f1f5f9',
-                  color: statusModul === opt.value ? 'white' : '#64748b',
-                  border: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 4
-                }}>
-                  {opt.icon} {opt.label}
-                </button>
-              ))}
-            </div>
-            {statusModul === 'terjadwal' && (
-              <div style={{ background: '#fffbeb', padding: 10, borderRadius: 8, marginTop: 8, border: '1px solid #fde68a' }}>
-                <label style={{ fontSize: 10, fontWeight: 600, color: '#92400e', display: 'block', marginBottom: 4 }}>📅 Jadwal Rilis</label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <input type="datetime-local" value={tanggalMulai} onChange={e => setTanggalMulai(e.target.value)} style={{ ...styles.input, fontSize: 11 }} />
-                  <input type="datetime-local" value={tanggalSelesai} onChange={e => setTanggalSelesai(e.target.value)} style={{ ...styles.input, fontSize: 11 }} />
-                </div>
+            {refsStatus === 'error' && (
+              <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#ef4444' }}>
+                ⚠️ Gagal memuat daftar kelas.
+                <button type="button" onClick={loadRefs} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '3px 10px', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 10 }}>🔄 Coba Lagi</button>
               </div>
             )}
           </div>
-        </div>
+        )}
+
+        {publishTarget === 'siswa' && (
+          <div style={{ marginTop: 8 }}>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <Search size={12} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                <input
+                  value={studentSearchForQuiz}
+                  onChange={e => setStudentSearchForQuiz(e.target.value)}
+                  placeholder="Cari siswa..."
+                  style={{ width: '100%', padding: '8px 10px 8px 28px', borderRadius: 8, border: '1px solid #8b5cf6', fontSize: 12, outline: 'none', boxSizing: 'border-box' }}
+                  onFocus={() => setShowStudentPickerForQuiz(true)}
+                />
+              </div>
+              <button onClick={selectAllFilteredForQuiz} style={{ padding: '4px 12px', background: '#f5f3ff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 600, color: '#6d28d9' }}>Pilih Semua</button>
+            </div>
+
+            {showStudentPickerForQuiz && (
+              <div style={{ marginTop: 6, maxHeight: 200, overflowY: 'auto', background: 'white', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+                {studentsForQuizStatus === 'loading' ? (
+                  <p style={{ padding: 12, fontSize: 11, color: '#94a3b8', textAlign: 'center', margin: 0 }}>⏳ Memuat daftar siswa...</p>
+                ) : studentsForQuizStatus === 'error' ? (
+                  <div style={{ padding: 14, textAlign: 'center' }}>
+                    <p style={{ fontSize: 11, color: '#ef4444', margin: '0 0 8px' }}>⚠️ Gagal memuat daftar siswa.</p>
+                    <button type="button" onClick={loadStudentsForQuiz} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '5px 14px', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 11 }}>🔄 Coba Lagi</button>
+                  </div>
+                ) : filteredStudentsForQuiz.length === 0 ? (
+                  <p style={{ padding: 12, fontSize: 11, color: '#94a3b8', textAlign: 'center', margin: 0 }}>
+                    {allStudentsForQuiz.length === 0 ? 'Belum ada data siswa.' : 'Siswa tidak ditemukan.'}
+                  </p>
+                ) : (
+                  filteredStudentsForQuiz.map(student => {
+                    const checked = selectedStudentsForQuiz.some(s => s.studentId === student.studentId);
+                    return (
+                      <div
+                        key={student.id}
+                        onClick={() => toggleStudentForQuiz(student)}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '8px 12px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer',
+                          background: checked ? '#f5f3ff' : 'white', fontSize: 12,
+                        }}
+                      >
+                        <div>
+                          <span style={{ fontWeight: 600, color: '#1e293b' }}>{student.nama}</span>
+                          <span style={{ fontSize: 10, color: '#64748b', marginLeft: 6 }}>#{student.studentId}</span>
+                          <span style={{ fontSize: 9, background: '#f1f5f9', padding: '1px 6px', borderRadius: 4, marginLeft: 6 }}>
+                            {student.kelasSekolah} · {student.program}
+                          </span>
+                        </div>
+                        <input type="checkbox" checked={checked} onChange={() => {}} style={{ accentColor: '#8b5cf6', width: 16, height: 16 }} />
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+            {selectedStudentsForQuiz.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+                {selectedStudentsForQuiz.slice(0, 10).map(s => (
+                  <span key={s.studentId} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#f5f3ff', padding: '2px 8px', borderRadius: 12, fontSize: 10, fontWeight: 600, color: '#6d28d9' }}>
+                    {s.nama}
+                    <button onClick={() => toggleStudentForQuiz(s)} style={{ background: 'none', border: 'none', color: '#6d28d9', cursor: 'pointer', padding: 0 }}><X size={10} /></button>
+                  </span>
+                ))}
+                {selectedStudentsForQuiz.length > 10 && <span style={{ fontSize: 10, color: '#94a3b8' }}>+{selectedStudentsForQuiz.length - 10}</span>}
+              </div>
+            )}
+          </div>
+        )}
       </div>
       )}
 
       {/* ========================================================== */}
-      {/* MODAL: GENERATE DENGAN AI */}
+      {/* SMART IMPORT MODAL */}
       {/* ========================================================== */}
-      {showAIGenerate && (
-        <AIGenerateMateri
-          subject={subject}
-          onGenerated={(newBlocks) => {
-            setSections(prev => [...prev, ...newBlocks]);
-            setStats(prev => ({ ...prev, totalKonten: sections.length + newBlocks.length }));
-          }}
-          onClose={() => setShowAIGenerate(false)}
+      {showSmartImport && (
+        <SmartImportPanel
+          onParsed={handleSmartParsed}
+          onClose={() => setShowSmartImport(false)}
         />
       )}
 
       {/* ========================================================== */}
-      {/* FOOTER -- SEKARANG NAVIGASI ANTAR-LANGKAH WIZARD */}
+      {/* IMPORT DARI WORD MODAL (lebih akurat dari PDF crop) */}
       {/* ========================================================== */}
-      <div style={styles.floatingFooter}>
-        {step === 1 && (
-          <>
-            <button onClick={() => navigate('/guru/modul')} style={styles.btnFooterCancel}>Batal</button>
-            <button onClick={handleAdvanceFromStep1} disabled={saving} style={{ ...styles.btnFooterSave, opacity: saving ? 0.6 : 1, marginLeft: 'auto' }}>
-              {saving ? 'Menyiapkan...' : 'Selanjutnya'} <ChevronRight size={16} />
-            </button>
-          </>
-        )}
-        {step === 2 && (
-          <>
-            <button onClick={() => setStep(1)} style={styles.btnFooterCancel}>Sebelumnya</button>
-            <button
-              onClick={async () => {
-                // 🔥 Simpan konten yang udah diisi (diam-diam, gak ada alert)
-                // sebelum lanjut ke Langkah 3, biar gak ilang kalau guru
-                // refresh/nutup tab di tengah jalan.
-                try { await autoSaveModulSilently(); } catch (e) { /* modulId pasti udah ada di titik ini, harusnya gak gagal */ }
-                setStep(3);
-              }}
-              style={{ ...styles.btnFooterSave, marginLeft: 'auto' }}
-            >
-              Selanjutnya <ChevronRight size={16} />
-            </button>
-          </>
-        )}
-        {step === 3 && (
-          <>
-            <button onClick={() => setStep(2)} style={styles.btnFooterCancel}>Sebelumnya</button>
-            {editId && (
-              <button onClick={() => window.open(`/siswa/modul/${editId}`, '_blank')} style={{ ...styles.btnFooterCancel, background: 'white', border: '1px solid #e2e8f0' }}>
-                <Eye size={14} /> Preview
-              </button>
-            )}
-            <button onClick={handleSave} disabled={saving} style={{ ...styles.btnFooterSave, opacity: saving ? 0.6 : 1, marginLeft: editId ? 0 : 'auto' }}>
-              <Rocket size={16} /> {saving ? 'Menyimpan...' : editId ? 'Update Modul' : 'Terbitkan Modul'}
-            </button>
-          </>
-        )}
-      </div>
+      {showWordImport && (
+        <WordImportQuiz
+          onParsed={handleSmartParsed}
+          onClose={() => setShowWordImport(false)}
+        />
+      )}
+
+      {/* ========================================================== */}
+      {/* AI GENERATE DARI TOPIK MODAL */}
+      {/* ========================================================== */}
+      {showAIGenerateQuiz && (
+        <AIGenerateQuiz
+          subject={quizSubject}
+          onGenerated={handleAIQuizGenerated}
+          onClose={() => setShowAIGenerateQuiz(false)}
+        />
+      )}
+
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .spin {
+          animation: spin 0.8s linear infinite;
+        }
+      `}</style>
     </div>
   );
 };
 
-export default ManageMateri;
+export default ManageQuiz;
