@@ -33,6 +33,44 @@ const colorForName = (name = '') => {
 };
 
 // ============================================================
+// 🔥 FIX BUG BESAR: "siswa sudah didaftarkan mapelnya (enrolledSubjects)
+// tapi tetap kena Akses Ditolak begitu buka modul dari halaman ini"
+// ============================================================
+// Root cause-nya BUKAN di sini awalnya -- tapi di bawah, di bagian fetch
+// data siswa: field `enrolledSubjects` gak pernah ikut disalin ke
+// `studentData`, jadi `StudentModuleView`/`StudentQuizView` yang dibuka
+// dari sini SELALU menerima `enrolledSubjects` kosong walau datanya di
+// database sudah benar (lihat komentar lengkap di situ).
+//
+// Sebagai perbaikan KEDUA (bukan cuma nutup bug di sumbernya, tapi juga
+// bikin daftar modul di halaman ini SENDIRI sudah tersaring dari awal):
+// dulu `fetchModules()` di bawah cuma nyaring berdasarkan targetKelas &
+// targetKategori -- SAMA SEKALI TIDAK mengecek mapel/enrolledSubjects.
+// Efeknya: modul mapel APAPUN nongol di daftar (kartu "LATIHAN TKA JENIS
+// TEKS DAN STRUKTUR" dst tetap kelihatan), padahal begitu diklik "Buka"
+// baru ketauan ditolak di StudentModuleView -- pengalaman yang
+// membingungkan (kelihatan bisa diakses, ternyata enggak). Sekarang
+// pengecekan mapel yang SAMA (kode ATAU nama, pola identik dengan
+// hasSubjectAccess() di StudentDashboard.jsx/StudentModuleView.jsx) juga
+// diterapkan di sini, supaya modul yang memang bukan hak siswa itu TIDAK
+// PERNAH muncul di daftar sama sekali -- konsisten di semua titik.
+const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
+  if (!modulSubject || modulSubject.toLowerCase().trim() === 'umum') return true;
+  const norm = (s) => String(s || '').toLowerCase().trim();
+  const modulCodes = String(modulKodeMapel || '').split(',').map(norm).filter(Boolean);
+  const modulNameNorm = norm(modulSubject);
+
+  if (modulCodes.length === 0 && !modulNameNorm) return true; // modul gak punya kode/nama mapel -> gak ada dasar buat blokir
+  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false; // kosong = BLOKIR
+  if (enrolledSubjects.some(s => norm(s) === 'semua')) return true;
+
+  return enrolledSubjects.some(s => {
+    const es = norm(s);
+    return modulCodes.includes(es) || es === modulNameNorm;
+  });
+};
+
+// ============================================================
 // MAIN COMPONENT
 // ============================================================
 const StudentElearning = () => {
@@ -56,12 +94,17 @@ const StudentElearning = () => {
   const [teachersData, setTeachersData] = useState([]);
   
   // ===== STUDENT DATA =====
+  // 🔥 FIX: tambah field `enrolledSubjects` -- SEBELUMNYA TIDAK ADA SAMA
+  // SEKALI di state ini, itu akar bug "siswa sudah didaftarkan mapelnya
+  // tapi tetap Akses Ditolak". Lihat penjelasan lengkap di effect fetch
+  // data siswa di bawah.
   const [studentData, setStudentData] = useState({
     id: '',
     nim: '',
     name: '',
     kelas: '',
-    program: 'Reguler'
+    program: 'Reguler',
+    enrolledSubjects: []
   });
   
   // ===== SUBMISSIONS =====
@@ -89,19 +132,46 @@ const StudentElearning = () => {
     const name = localStorage.getItem('studentName') || 'Siswa';
     const kelas = localStorage.getItem('studentKelas') || '';
     const program = localStorage.getItem('studentProgram') || 'Reguler';
-    
-    setStudentData({ id, nim, name, kelas, program });
+    // 🔥 FIX: fallback awal dari localStorage juga (dipakai bila
+    // getDoc di bawah belum selesai / gagal) -- sama seperti pola yang
+    // sudah dipakai StudentModuleView.jsx & StudentQuizView.jsx.
+    let enrolledSubjectsFallback = [];
+    try {
+      const raw = localStorage.getItem('studentEnrolledSubjects');
+      enrolledSubjectsFallback = raw ? JSON.parse(raw) : [];
+    } catch (e) { enrolledSubjectsFallback = []; }
+
+    setStudentData({ id, nim, name, kelas, program, enrolledSubjects: enrolledSubjectsFallback });
     
     if (id) {
       getDoc(doc(db, "students", id)).then(snap => {
         if (snap.exists()) {
           const data = snap.data();
+          // 🔥 FIX BUG UTAMA: sebelumnya field `enrolledSubjects` TIDAK
+          // PERNAH disalin ke `studentData` di sini -- padahal `data`
+          // (hasil getDoc langsung dari dokumen siswa) SUDAH punya field
+          // ini dengan benar. Akibatnya `studentData.enrolledSubjects`
+          // yang diteruskan ke StudentModuleView/StudentQuizView SELALU
+          // undefined/kosong, apapun isi database-nya -- sistem lalu jatuh
+          // ke fallback localStorage yang sering juga kosong (kalau siswa
+          // gak sempat mampir ke StudentDashboard dulu di sesi itu), dan
+          // berakhir di "Akses Ditolak" walau admin sudah mendaftarkan
+          // mapelnya dengan benar. Sekarang disalin juga di sini, sumber
+          // paling akurat karena langsung dari dokumen siswa itu sendiri.
           setStudentData(prev => ({
             ...prev,
             nim: data.studentId || data.nim || nim,
             kelas: data.kelasSekolah || kelas,
-            program: data.kategori || data.program || program
+            program: data.kategori || data.program || program,
+            enrolledSubjects: Array.isArray(data.enrolledSubjects) ? data.enrolledSubjects : [],
           }));
+          // Sinkronkan juga ke localStorage, biar halaman lain (kalau
+          // dibuka duluan) juga dapat data terbaru ini.
+          try {
+            if (Array.isArray(data.enrolledSubjects)) {
+              localStorage.setItem('studentEnrolledSubjects', JSON.stringify(data.enrolledSubjects));
+            }
+          } catch (e) { /* localStorage penuh/gak tersedia -- gak fatal */ }
         }
       }).catch(() => {});
     }
@@ -170,7 +240,7 @@ const StudentElearning = () => {
       allModules = allModules.filter(m => !embeddedQuizIds.has(m.id) && !m.parentModulId);
 
       // 🔥 FILTER BERDASARKAN AKSES SISWA
-      const { nim, kelas, program, id } = studentData;
+      const { nim, kelas, program, id, enrolledSubjects } = studentData;
       
       allModules = allModules.filter(module => {
         // 1. Cek jika modul dikirim ke siswa tertentu
@@ -186,8 +256,15 @@ const StudentElearning = () => {
         const targetProgram = module.targetKategori || 'Semua';
         const matchKelas = targetKelas === 'Semua' || targetKelas === kelas;
         const matchProgram = targetProgram === 'Semua' || targetProgram === program;
+
+        // 🔥 BARU: 3. Cek akses mapel (paket 1 mapel/2 mapel/lengkap) --
+        // SEBELUMNYA TIDAK ADA SAMA SEKALI di sini, jadi modul mapel
+        // apapun nongol di daftar walau siswa gak berhak, baru ditolak
+        // belakangan pas modul-nya diklik. Sekarang disaring dari awal,
+        // konsisten dengan pengecekan yang sama di StudentModuleView.jsx.
+        const matchSubject = hasSubjectAccess(enrolledSubjects, module.subject || '', module.kodeMapel || '');
         
-        return matchKelas && matchProgram;
+        return matchKelas && matchProgram && matchSubject;
       });
       
       setModules(allModules);
