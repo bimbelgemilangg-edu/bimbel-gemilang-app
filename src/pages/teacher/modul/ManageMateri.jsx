@@ -40,6 +40,38 @@ const toLocalInputValue = (date) => {
 };
 
 // ============================================================
+// 🔥 FIX BUG "siswa sudah didaftarkan mapelnya tapi gak muncul di daftar
+// pilihan siswa (Kirim ke siswa tertentu)": sebelumnya pencocokan
+// enrolledSubjects siswa vs mapel guru CUMA lewat KODE mapel
+// (guru.kodeMapel). Kalau enrolledSubjects siswa disimpan sebagai NAMA
+// mapel (mis. "Bahasa Inggris SMP"), atau kode di data guru kebetulan
+// belum sinkron dengan kode di koleksi "mapel", siswa itu gak akan pernah
+// ketemu di sini walau dia sudah didaftarkan dengan benar lewat Edit
+// Siswa. Sekarang dicocokkan lewat KODE dulu, dan kalau gak ketemu, coba
+// juga lewat NAMA mapel sebagai fallback -- pola yang sama persis dengan
+// hasSubjectAccess() di StudentDashboard.jsx/StudentModuleView.jsx, supaya
+// konsisten di seluruh sistem. Guru bisa ngampu multi-mapel (kodeMapel &
+// mapel bisa berisi beberapa nilai dipisah koma), jadi dipecah dulu
+// satu-satu sebelum dibandingkan.
+const isStudentEnrolledForTeacher = (enrolledSubjects, kodeMapelCombined, mapelNamesCombined) => {
+  const norm = (v) => String(v || '').toLowerCase().trim();
+  const kodeList = String(kodeMapelCombined || '').split(',').map(norm).filter(Boolean);
+  const namaList = String(mapelNamesCombined || '').split(',').map(norm).filter(Boolean);
+  if (kodeList.length === 0 && namaList.length === 0) return true; // data guru belum lengkap -> jangan blokir semua siswa gara-gara ini
+
+  const enrolled = Array.isArray(enrolledSubjects) ? enrolledSubjects : [];
+  if (enrolled.length === 0) return false;
+
+  return enrolled.some(code => {
+    const c = norm(code);
+    if (c === 'semua') return true;
+    if (kodeList.includes(c)) return true;
+    if (namaList.includes(c)) return true;
+    return false;
+  });
+};
+
+// ============================================================
 // CONSTANTS
 // ============================================================
 const FILE_TYPE_OPTIONS = [
@@ -385,6 +417,10 @@ const ManageMateri = () => {
       setGuruName(teacherName);
       
       let kodeMapelVal = '';
+      // 🔥 BARU: nama mapel guru (bisa lebih dari 1, dipisah koma buat guru
+      // multi-mapel) -- dipakai sebagai FALLBACK pencocokan enrolledSubjects
+      // siswa, lihat isStudentEnrolledForTeacher() di atas.
+      let mapelNamesVal = '';
       if (teacherName) {
         const qGuru = query(collection(db, "teachers"), where("nama", "==", teacherName));
         const snapGuru = await getDocs(qGuru);
@@ -392,19 +428,20 @@ const ManageMateri = () => {
           const guru = snapGuru.docs[0].data();
           setGuruData(guru);
           kodeMapelVal = guru.kodeMapel || '';
+          mapelNamesVal = guru.mapel || '';
           setKodeMapel(kodeMapelVal);
           setSubject(guru.mapel || '');
           if (guru.mapel) setSubjects([guru.mapel]);
         }
       }
-      // 🔥 BARU: kodeMapel ikut di-return (bukan cuma di-set ke state) supaya
-      // bisa langsung dipakai buat filter daftar siswa DI DALAM effect yang
-      // sama tanpa nunggu re-render -- state React gak langsung ke-update
-      // dalam function yang sama.
-      return { teacherName, teacherId, kodeMapel: kodeMapelVal };
+      // 🔥 BARU: kodeMapel & mapelNames ikut di-return (bukan cuma di-set
+      // ke state) supaya bisa langsung dipakai buat filter daftar siswa DI
+      // DALAM effect yang sama tanpa nunggu re-render -- state React gak
+      // langsung ke-update dalam function yang sama.
+      return { teacherName, teacherId, kodeMapel: kodeMapelVal, mapelNames: mapelNamesVal };
     } catch (e) {
       console.error("Error fetching teacher:", e);
-      return { teacherName: '', teacherId: '', kodeMapel: '' };
+      return { teacherName: '', teacherId: '', kodeMapel: '', mapelNames: '' };
     }
   }, []);
 
@@ -471,7 +508,7 @@ const ManageMateri = () => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const { teacherName, kodeMapel: kodeMapelVal } = await fetchTeacherData();
+        const { teacherName, kodeMapel: kodeMapelVal, mapelNames: mapelNamesVal } = await fetchTeacherData();
 
         // 🔥 FIX BUG PENTING: sebelumnya daftar siswa buat "kirim ke siswa
         // tertentu" diambil lewat fetchStudentsFromSchedules() — yang cuma
@@ -491,8 +528,16 @@ const ManageMateri = () => {
         // dia juga gak akan muncul di sini" -- yang mengurangi risiko
         // modul salah kirim (misal modul mapel SMA gak sengaja kekirim ke
         // siswa SD/SMP yang sebenarnya gak terdaftar ke mapel itu).
+        //
+        // 🔥 FIX BUG "siswa sudah didaftarkan mapelnya tapi tetap gak
+        // muncul di sini": sebelumnya pencocokan CUMA lewat KODE mapel
+        // guru (kodeMapelVal). Sekarang pakai isStudentEnrolledForTeacher()
+        // yang juga fallback lewat NAMA mapel guru (mapelNamesVal) --
+        // pola yang sama persis dengan hasSubjectAccess() di
+        // StudentDashboard.jsx/StudentModuleView.jsx, supaya konsisten:
+        // siswa yang sudah didaftarkan admin harus lolos di SEMUA titik
+        // pengecekan, bukan cuma sebagian.
         const snapSiswa = await getDocs(collection(db, "students"));
-        const normKode = (v) => String(v || '').toLowerCase().trim();
         const allSiswaData = snapSiswa.docs.map(d => {
           const data = d.data();
           return {
@@ -504,10 +549,8 @@ const ManageMateri = () => {
             isActive: data.status === 'Aktif' && !data.isBlocked,
             enrolledSubjects: Array.isArray(data.enrolledSubjects) ? data.enrolledSubjects : [],
           };
-        }).filter(s => {
-          if (!kodeMapelVal) return true; // kodeMapel guru belum ke-set (data guru belum lengkap) -> jangan blokir semua siswa gara-gara ini
-          return s.enrolledSubjects.some(code => normKode(code) === normKode(kodeMapelVal) || normKode(code) === 'semua');
-        }).sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+        }).filter(s => isStudentEnrolledForTeacher(s.enrolledSubjects, kodeMapelVal, mapelNamesVal))
+          .sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
 
         setAllStudents(allSiswaData);
         setFilteredStudents(allSiswaData);
@@ -1790,7 +1833,7 @@ const ManageMateri = () => {
         <h4 style={styles.cardTitle}><Settings size={18} /> 3. Target & Pengaturan (Konfirmasi Sebelum Terbit)</h4>
         {kodeMapel && (
           <p style={{ fontSize: 11, color: '#673ab7', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 8, padding: '8px 10px', marginTop: -6, marginBottom: 14 }}>
-            💡 Daftar siswa di bawah cuma nampilin siswa yang SUDAH terdaftar ke mapel ini (kode <b>{kodeMapel}</b>) lewat halaman Edit Siswa -- sama persis kayak aturan di Manajemen Jadwal, biar gak ada modul salah kirim ke siswa yang gak seharusnya.
+            💡 Daftar siswa di bawah cuma nampilin siswa yang SUDAH terdaftar ke mapel ini (kode <b>{kodeMapel}</b>{subject ? <> / nama <b>{subject}</b></> : ''}) lewat halaman Edit Siswa -- sama persis kayak aturan di Manajemen Jadwal, biar gak ada modul salah kirim ke siswa yang gak seharusnya.
           </p>
         )}
         

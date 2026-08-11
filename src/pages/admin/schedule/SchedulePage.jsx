@@ -72,6 +72,35 @@ const timesOverlap = (startA, endA, startB, endB) => {
   return startA < endB && startB < endA;
 };
 
+// ============================================================
+// 🔥 FIX BUG "siswa sudah didaftarkan mapelnya tapi tetap gak muncul di
+// daftar pilihan siswa jadwal": sebelumnya pencocokan enrolledSubjects
+// siswa vs mapel yang lagi dijadwalkan CUMA lewat KODE mapel
+// (formData.mapelId, mis. "MAPEL-015"). Kalau enrolledSubjects siswa
+// disimpan sebagai NAMA mapel (mis. "Bahasa Inggris SMP") -- atau kode di
+// data guru/mapel kebetulan belum sinkron -- siswa itu gak pernah ketemu
+// biar pun dia sudah didaftarkan dengan benar. Sekarang dicocokkan lewat
+// KODE dulu, dan kalau gak ketemu, coba juga lewat NAMA mapel
+// (dinormalisasi huruf kecil + spasi) sebagai fallback -- pola yang sama
+// persis dengan hasSubjectAccess() di StudentDashboard.jsx /
+// StudentModuleView.jsx, supaya konsisten di seluruh sistem: satu siswa
+// yang sudah didaftarkan mapelnya harus lolos di SEMUA titik pengecekan
+// (jadwal, dashboard, halaman baca modul/kuis), bukan cuma sebagian.
+const isStudentEnrolledInMapel = (enrolledSubjects, mapelCode, mapelName) => {
+  const enrolled = Array.isArray(enrolledSubjects) ? enrolledSubjects : [];
+  if (enrolled.length === 0) return false;
+  const norm = (v) => String(v || '').toLowerCase().trim();
+  const targetCode = norm(mapelCode);
+  const targetName = norm(mapelName);
+  return enrolled.some(code => {
+    const c = norm(code);
+    if (c === 'semua') return true;
+    if (targetCode && c === targetCode) return true;
+    if (targetName && c === targetName) return true;
+    return false;
+  });
+};
+
 const SchedulePage = () => {
   // ============================================================
   // STATES
@@ -851,17 +880,24 @@ const SchedulePage = () => {
   // sebelum siswa bisa akses materi/kuis mapel itu -- di sini jadi
   // pengaman TAMBAHAN di sisi penjadwalan: kalau siswa belum terdaftar ke
   // mapelnya, admin gak akan bisa asal jadwalkan dia ke situ juga.
+  //
+  // 🔥 FIX BUG "siswa sudah didaftarkan mapelnya tapi gak muncul di sini":
+  // sebelumnya pencocokan CUMA lewat KODE mapel (formData.mapelId). Sekarang
+  // pakai isStudentEnrolledInMapel() yang juga fallback lewat NAMA mapel
+  // (formData.mapelName) -- pola yang sama persis dengan hasSubjectAccess()
+  // di StudentDashboard.jsx/StudentModuleView.jsx, supaya konsisten di
+  // seluruh sistem.
   const getFilteredStudents = () => {
     return availableStudents.filter(s => {
       const studentId = s.studentId || s.id;
       if (!studentId) return false;
 
-      // 🔥 BARU: wajib sudah terdaftar ke mapel yang sedang dijadwalkan.
+      // 🔥 wajib sudah terdaftar ke mapel yang sedang dijadwalkan (lewat
+      // kode ATAU nama mapel).
       if (formData.mapelId) {
-        const enrolled = Array.isArray(s.enrolledSubjects) ? s.enrolledSubjects : [];
-        const norm = (v) => String(v || '').toLowerCase().trim();
-        const isEnrolled = enrolled.some(code => norm(code) === norm(formData.mapelId) || norm(code) === 'semua');
-        if (!isEnrolled) return false;
+        if (!isStudentEnrolledInMapel(s.enrolledSubjects, formData.mapelId, formData.mapelName)) {
+          return false;
+        }
       }
       
       if (studentFilterKelas !== 'Semua') {
