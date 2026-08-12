@@ -240,8 +240,8 @@ Susun modul lengkapnya sekarang sesuai semua aturan di atas. Ingat: siswa akan m
     const isQuota = lastErr.message.includes('429');
     return res.status(502).json({
       error: isQuota
-        ? 'Kuota gratis AI hari ini sudah habis di semua model. Silakan coba lagi besok.'
-        : 'Gagal menghubungi AI. Coba lagi beberapa saat lagi.',
+        ? 'Kuota gratis Astro Gemilang hari ini sudah habis di semua model. Silakan coba lagi besok.'
+        : 'Gagal menghubungi Astro Gemilang. Coba lagi beberapa saat lagi.',
       debug: lastErr.message,
     });
   }
@@ -251,8 +251,8 @@ Susun modul lengkapnya sekarang sesuai semua aturan di atas. Ingat: siswa akan m
     const rawText = candidate?.content?.parts?.[0]?.text || '';
 
     if (!rawText) {
-      console.error('Respons AI kosong. finishReason:', candidate?.finishReason);
-      return res.status(502).json({ error: 'AI tidak mengembalikan jawaban, coba generate ulang.' });
+      console.error('Respons Astro Gemilang kosong. finishReason:', candidate?.finishReason);
+      return res.status(502).json({ error: 'Astro Gemilang tidak mengembalikan jawaban, coba generate ulang.' });
     }
 
     // 🔥 Scanner JSONL yang TAHAN TERHADAP JAWABAN TERPOTONG.
@@ -295,8 +295,8 @@ Susun modul lengkapnya sekarang sesuai semua aturan di atas. Ingat: siswa akan m
       console.error('Tidak ada objek JSON terbaca. finishReason:', candidate?.finishReason, '| cuplikan:', rawText.slice(0, 300));
       return res.status(502).json({
         error: candidate?.finishReason === 'MAX_TOKENS'
-          ? 'Materi terlalu luas sehingga AI belum sempat menulis apapun sebelum terpotong. Coba persempit judulnya.'
-          : 'AI mengembalikan format tidak terbaca, coba generate ulang.',
+          ? 'Materi terlalu luas sehingga Astro Gemilang belum sempat menulis apapun sebelum terpotong. Coba persempit judulnya.'
+          : 'Astro Gemilang mengembalikan format tidak terbaca, coba generate ulang.',
       });
     }
 
@@ -304,7 +304,7 @@ Susun modul lengkapnya sekarang sesuai semua aturan di atas. Ingat: siswa akan m
     const sectionObjs = objects.filter(o => o.meta !== true && (o.title || o.content_html));
 
     if (sectionObjs.length === 0) {
-      return res.status(502).json({ error: 'AI belum sempat menulis satu bagian materi pun, coba generate ulang.' });
+      return res.status(502).json({ error: 'Astro Gemilang belum sempat menulis satu bagian materi pun, coba generate ulang.' });
     }
 
     const sanitize = (html = '') =>

@@ -18,7 +18,7 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
     if (!topic.trim()) return setError('❌ Judul materi wajib diisi!');
 
     setGenerating(true);
-    setStatusLabel('Menyusun buku digital... (30-60 detik)');
+    setStatusLabel('Astro Gemilang sedang menyusun buku digital... (30-60 detik)');
 
     try {
       // 1️⃣ SEKALI PANGGIL -> dapat seluruh bagian modul
@@ -133,7 +133,7 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
         // bahwa topiknya kemungkinan terlalu luas untuk 1x generate.
         alert(
           `✅ ${blocks.length} bagian materi berhasil dibuat!\n\n` +
-          `⚠️ Catatan: topik ini cukup luas, AI kemungkinan belum sempat menulis semua yang direncanakan. ` +
+          `⚠️ Catatan: topik ini cukup luas, Astro Gemilang kemungkinan belum sempat menulis semua yang direncanakan. ` +
           `Cek dulu apakah materinya sudah cukup lengkap — kalau masih kurang, coba generate lagi dengan ` +
           `judul yang lebih spesifik (misal dipecah per sub-topik).`
         );
@@ -152,7 +152,7 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
       <div style={styles.modal} onClick={e => e.stopPropagation()}>
         <div style={styles.header}>
           <span style={styles.headerTitle}>
-            <Sparkles size={18} color="#8b5cf6" /> Buat Buku Digital dengan AI
+            <Sparkles size={18} color="#8b5cf6" /> Buat Buku Digital — Astro Gemilang
           </span>
           {!generating && <button onClick={onClose} style={styles.closeBtn}><X size={18} /></button>}
         </div>
@@ -180,7 +180,7 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
             </div>
 
             <div style={styles.field}>
-              <label style={styles.label}>📝 Arahan khusus (opsional — kosongkan kalau mau AI susun sendiri)</label>
+              <label style={styles.label}>📝 Arahan khusus (opsional — kosongkan kalau mau Astro Gemilang susun sendiri)</label>
               <textarea
                 value={poinText}
                 onChange={e => setPoinText(e.target.value)}
@@ -198,7 +198,7 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
             <div style={styles.hintBox}>
               <BookOpen size={13} color="#8b5cf6" style={{ flexShrink: 0, marginTop: 1 }} />
               <span>
-                AI akan menyusun <b>satu modul lengkap</b> terbagi beberapa bagian. Untuk materi berhitung
+                Astro Gemilang akan menyusun <b>satu modul lengkap</b> terbagi beberapa bagian. Untuk materi berhitung
                 (Matematika/Fisika/Kimia), fokusnya ke <b>rumus, contoh soal bertahap, dan Langkah Gemilang</b> —
                 bukan penjelasan panjang. Untuk materi bacaan, penjelasannya lebih naratif dengan contoh nyata.
               </span>
