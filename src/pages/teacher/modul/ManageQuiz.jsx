@@ -67,7 +67,30 @@ const renderMath = (text) => {
       try { return <InlineMath key={i} math={part.substring(1, part.length - 1)} />; }
       catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
     }
-    return <span key={i}>{part}</span>;
+    // 🔥 FIX: bagian non-math -- prompt AI sekarang udah dilarang pakai
+    // markdown, TAPI ini lapis jaga-jaga kedua kalau suatu saat masih
+    // kelolos (model AI beda, arahan guru yang aneh-aneh, dll). Tanpa ini,
+    // "**Perlakuan A**" nongol mentah dengan bintangnya dan bikin guru
+    // bingung baca soal -- sekarang **teks** beneran dirender tebal, dan
+    // baris baru (\n) jadi line break asli, bukan simbol mentah.
+    const lines = part.split('\n');
+    return (
+      <React.Fragment key={i}>
+        {lines.map((line, li) => {
+          const boldParts = line.split(/(\*\*.+?\*\*)/g);
+          return (
+            <React.Fragment key={li}>
+              {boldParts.map((bp, bi) =>
+                bp.startsWith('**') && bp.endsWith('**') && bp.length > 4
+                  ? <strong key={bi}>{bp.slice(2, -2)}</strong>
+                  : bp
+              )}
+              {li < lines.length - 1 && <br />}
+            </React.Fragment>
+          );
+        })}
+      </React.Fragment>
+    );
   });
 };
 
@@ -460,6 +483,14 @@ const ManageQuiz = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadTarget, setUploadTarget] = useState(null);
+  // 🔥 BARU: hasil pencarian gambar otomatis (Openverse -> Wikimedia fallback)
+  // buat soal yang AI tandai "needsImage". Disimpan per-questionId biar
+  // beberapa soal bisa nampilin hasil pencarian sendiri-sendiri tanpa
+  // tabrakan. searchingImageFor nyimpen id soal yang lagi dicariin (buat
+  // munculin loading spinner cuma di soal itu).
+  const [imageSearchResults, setImageSearchResults] = useState({}); // { [questionId]: [{url, thumb, title, source}] }
+  const [searchingImageFor, setSearchingImageFor] = useState(null);
+  const [imageSearchError, setImageSearchError] = useState({});
   
   // 🔥 MODE KUIS
   const [quizMode, setQuizMode] = useState('simple');
@@ -1008,6 +1039,96 @@ const ManageQuiz = () => {
     setUploadTarget(null);
   };
 
+  // ============================================================
+  // 🔥 BARU: PENCARIAN GAMBAR OTOMATIS (Openverse -> Wikimedia fallback)
+  // ============================================================
+  // Cuma dipakai buat soal yang AI tandai "needsImage" -- yaitu objek/
+  // fenomena NYATA yang emang perlu FOTO ASLI (bukan diagram teknis yang
+  // sudah dihandle graph/shape/pattern). Openverse jadi sumber utama karena
+  // dia agregat dari banyak sumber (Flickr, museum, dll) yang lebih
+  // beragam & lebih baru dibanding Wikimedia doang; Wikimedia jadi
+  // cadangan kalau Openverse gak nemu apa-apa. DUA-DUANYA gratis, gak
+  // perlu API key, dan HANYA nampilin gambar yang beneran berlisensi bebas
+  // pakai ulang -- bukan comot sembarangan dari web yang berisiko hak
+  // cipta. Guru TETAP yang milih dari beberapa kandidat (bukan auto-pasang
+  // tanpa cek), karena AI gak selalu bisa mastiin akurasi gambar buat
+  // konten sains/anatomi presisi.
+  const searchImagesForQuestion = async (questionId, keyword) => {
+    if (!keyword || !keyword.trim()) return;
+    setSearchingImageFor(questionId);
+    setImageSearchError(prev => ({ ...prev, [questionId]: '' }));
+    setImageSearchResults(prev => ({ ...prev, [questionId]: [] }));
+
+    const results = [];
+
+    // Sumber 1: Openverse (api.openverse.org) -- agregat CC-licensed image
+    // dari banyak sumber, cakupan lebih luas & lebih baru dari Wikimedia.
+    try {
+      const ovRes = await fetch(
+        `https://api.openverse.org/v1/images/?q=${encodeURIComponent(keyword)}&license_type=all-cc&page_size=6`
+      );
+      if (ovRes.ok) {
+        const ovData = await ovRes.json();
+        (ovData.results || []).forEach(r => {
+          if (r.url) {
+            results.push({
+              url: r.url,
+              thumb: r.thumbnail || r.url,
+              title: r.title || keyword,
+              source: `Openverse (${r.source || r.license || 'CC'})`,
+            });
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('Openverse search gagal, lanjut ke Wikimedia:', e.message);
+    }
+
+    // Sumber 2: Wikimedia Commons -- fallback kalau Openverse kosong/gagal.
+    // Endpoint publik, CORS-enabled lewat origin=*, gak perlu API key.
+    if (results.length < 4) {
+      try {
+        const wmRes = await fetch(
+          `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(keyword)}&gsrnamespace=6&gsrlimit=6&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=400&format=json&origin=*`
+        );
+        if (wmRes.ok) {
+          const wmData = await wmRes.json();
+          const pages = wmData?.query?.pages || {};
+          Object.values(pages).forEach(p => {
+            const info = p.imageinfo && p.imageinfo[0];
+            if (info && info.url) {
+              results.push({
+                url: info.url,
+                thumb: info.thumburl || info.url,
+                title: p.title ? p.title.replace('File:', '') : keyword,
+                source: 'Wikimedia Commons',
+              });
+            }
+          });
+        }
+      } catch (e) {
+        console.warn('Wikimedia search gagal:', e.message);
+      }
+    }
+
+    setImageSearchResults(prev => ({ ...prev, [questionId]: results }));
+    if (results.length === 0) {
+      setImageSearchError(prev => ({
+        ...prev,
+        [questionId]: 'Gak nemu gambar yang cocok. Coba upload manual dari sumber terpercaya.',
+      }));
+    }
+    setSearchingImageFor(null);
+  };
+
+  // Guru klik salah satu hasil pencarian -> langsung dipasang jadi qImage,
+  // sama seperti hasil upload manual.
+  const selectSearchedImage = (questionId, url) => {
+    setQuestions(prev => prev.map(q => q.id === questionId ? { ...q, qImage: url } : q));
+    setImageSearchResults(prev => ({ ...prev, [questionId]: [] }));
+  };
+
+
   const handleRemoveImage = (questionId, targetType, optionIndex = null) => {
     setQuestions(prev => prev.map(q => {
       if (q.id === questionId) {
@@ -1261,8 +1382,63 @@ const ManageQuiz = () => {
                 <span style={{ flexShrink: 0 }}>💡</span>
                 <span>
                   <b>AI menyarankan soal ini pakai gambar/diagram</b>
-                  {item.imageHint ? `: ${item.imageHint}` : '.'} Upload gambar yang AKURAT (dari bank soal/sumber terpercaya) lewat tombol "Upload Gambar" di bawah ini — AI sengaja tidak menggambar sendiri supaya diagram sains/matematika tetap tepat.
+                  {item.imageHint ? `: ${item.imageHint}` : '.'} Klik "Cari Gambar" buat cari otomatis dari sumber berlisensi bebas, atau upload sendiri dari bank soal/sumber terpercaya kalau hasil pencarian kurang pas.
                 </span>
+              </div>
+            )}
+
+            {/* 🔥 BARU: Cari Gambar Otomatis (Openverse/Wikimedia, gratis & legal
+                buat dipakai ulang) -- guru tetap yang milih dari kandidat,
+                bukan auto-pasang, supaya akurasi konten sains/anatomi tetap
+                terjaga. */}
+            {item.needsImage && !item.qImage && (
+              <div style={{ marginBottom: 10 }}>
+                <button
+                  onClick={() => searchImagesForQuestion(item.id, item.imageHint || item.q)}
+                  disabled={searchingImageFor === item.id}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px',
+                    background: '#eff6ff', border: '1px solid #3b82f6', borderRadius: 6,
+                    cursor: searchingImageFor === item.id ? 'not-allowed' : 'pointer',
+                    fontSize: 10, fontWeight: 600, color: '#3b82f6',
+                    opacity: searchingImageFor === item.id ? 0.6 : 1,
+                  }}
+                >
+                  {searchingImageFor === item.id ? <Loader2 size={14} className="spin" /> : <Search size={14} />}
+                  {searchingImageFor === item.id ? 'Nyari gambar...' : '🔍 Cari Gambar (Openverse/Wikimedia)'}
+                </button>
+
+                {imageSearchError[item.id] && (
+                  <div style={{ marginTop: 6, fontSize: 10, color: '#ef4444' }}>{imageSearchError[item.id]}</div>
+                )}
+
+                {imageSearchResults[item.id] && imageSearchResults[item.id].length > 0 && (
+                  <div style={{ marginTop: 8 }}>
+                    <div style={{ fontSize: 10, color: '#64748b', marginBottom: 6 }}>
+                      Pilih gambar yang paling akurat buat soal ini:
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {imageSearchResults[item.id].map((r, ri) => (
+                        <div
+                          key={ri}
+                          onClick={() => selectSearchedImage(item.id, r.url)}
+                          title={`${r.title} — ${r.source} (klik untuk pakai)`}
+                          style={{
+                            width: 90, cursor: 'pointer', border: '2px solid #e2e8f0', borderRadius: 8,
+                            overflow: 'hidden', transition: '0.15s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = '#3b82f6'}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = '#e2e8f0'}
+                        >
+                          <img src={r.thumb} alt={r.title} style={{ width: '100%', height: 70, objectFit: 'cover', display: 'block' }} />
+                          <div style={{ fontSize: 8, color: '#94a3b8', padding: '2px 4px', background: '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {r.source}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1467,7 +1643,8 @@ const ManageQuiz = () => {
                 {item.options.map((opt, oIdx) => {
                   const isCorrect = item.correctAnswers.includes(oIdx);
                   return (
-                    <div key={oIdx} 
+                    <div key={oIdx}>
+                    <div
                       onClick={() => {
                         const newCorrect = isCorrect 
                           ? item.correctAnswers.filter(i => i !== oIdx)
@@ -1502,6 +1679,16 @@ const ManageQuiz = () => {
                         style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 12, outline: 'none' }} 
                       />
                       {isCorrect && <CheckCircle size={14} color="#8b5cf6"/>}
+                    </div>
+                    {/* 🔥 FIX: preview rumus ter-render -- sebelumnya cuma ada
+                        di tipe Pilihan Ganda Biasa, jadi di tipe Pilih Lebih
+                        dari Satu guru selalu liat kode LaTeX mentah kayak
+                        "$\text{NaHCO}_3$" apa adanya. Sekarang disamakan. */}
+                    {opt && opt.includes('$') && (
+                      <div style={{ paddingLeft: 30, marginBottom: 4, fontSize: 11, color: '#64748b' }}>
+                        👁️ {renderMath(opt)}
+                      </div>
+                    )}
                     </div>
                   );
                 })}

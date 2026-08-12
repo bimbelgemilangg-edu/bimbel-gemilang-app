@@ -232,6 +232,7 @@ ATURAN YANG TIDAK BOLEH DILANGGAR
 [3] Setiap soal WAJIB punya "explanation" yang menjelaskan CARA mendapatkan jawaban, bukan cuma mengulang jawabannya.
 [4] Bahasa dan tingkat kesulitan disesuaikan jenjang siswa. Kalau tidak disebutkan, asumsikan SMP.
 [5] Tulis rumus/simbol matematika dalam LaTeX di antara tanda dolar, contoh: $\\frac{s}{t}$.
+[5b] JANGAN PERNAH pakai sintaks markdown -- TANPA **tebal**, TANPA _miring_, TANPA list pakai tanda "-" atau "*", TANPA heading "#". Sistem tampilan soal HANYA merender teks polos dan LaTeX $...$ -- markdown TIDAK dirender dan akan muncul sebagai tanda baca mentah yang bikin bingung siswa/guru. Kalau perlu daftar/rincian (misal beberapa perlakuan percobaan A/B/C/D), tulis sebagai KALIMAT NARATIF biasa dipisah titik, atau paragraf baru pakai \\n di dalam string JSON -- BUKAN simbol bullet. Untuk penekanan istilah, cukup tulis apa adanya tanpa bintang.
 [6] Kalau ada arahan khusus dari guru, WAJIB diikuti sebagai prioritas utama.
 [7] Variasikan soal — jangan mengulang konsep yang sama persis, kecuali diminta.
 
@@ -282,7 +283,8 @@ PERIKSA SENDIRI SEBELUM MENJAWAB
 5. Kalau pakai "pattern": polanya beneran logis dan konsisten, bukan asal random?
 6. Kalau diminta HOTS: soal ini beneran butuh analisis/evaluasi/penerapan?
 7. needs_image cuma dipakai buat objek nyata yang bisa difoto, BUKAN diagram teknis?
-8. Format JSONL benar: satu baris satu objek, tanpa koma akhir, tanpa kurung siku?`;
+8. Format JSONL benar: satu baris satu objek, tanpa koma akhir, tanpa kurung siku?
+9. TIDAK ADA sintaks markdown (**tebal**, list "-", heading "#") di manapun -- semua teks polos + LaTeX $...$ saja?`;
 
 // ============================================================
 // HANDLER
