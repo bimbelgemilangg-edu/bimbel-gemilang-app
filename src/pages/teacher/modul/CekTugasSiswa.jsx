@@ -1018,6 +1018,16 @@ const CekTugasSiswa = () => {
                       </span>
                     </div>
                     <div style={s.qText}>{renderMath(q.question)}</div>
+                    {/* 🔥 BARU: gambar soal SEBELUMNYA TIDAK PERNAH ditampilkan
+                        di sini sama sekali -- soal yang punya gambar (upload
+                        manual guru atau hasil generate Astro Gemilang: grafik
+                        fungsi/bangun ruang/pola bentuk) jadi gak lengkap kalau
+                        gurunya mau koreksi manual & gambarnya gak kelihatan. */}
+                    {q.questionImage && (
+                      <div style={{ margin: '8px 0', textAlign: 'center' }}>
+                        <img src={q.questionImage} alt="Gambar soal" style={{ maxWidth: '100%', maxHeight: 260, objectFit: 'contain', borderRadius: 8, border: '1px solid #e2e8f0' }} />
+                      </div>
+                    )}
                     <div style={s.qAnswerRow}>
                       <span style={s.qAnswerLabelUser}>📝 Jawaban siswa:</span> {renderMath(describeAnswer(q, 'user'))}
                     </div>

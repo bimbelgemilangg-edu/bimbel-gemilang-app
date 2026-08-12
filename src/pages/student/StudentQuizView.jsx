@@ -1168,6 +1168,16 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         id: q.id,
         type: q.type,
         question: q.question,
+        // 🔥 FIX BUG NYATA: `questionImage` sebelumnya TIDAK PERNAH ikut
+        // disimpan ke catatan jawaban siswa (jawaban_kuis) -- jadi walau
+        // soalnya punya gambar (baik upload manual guru maupun hasil
+        // generate Astro Gemilang: grafik fungsi/bangun ruang/pola
+        // bentuk), begitu siswa submit, GAMBARNYA HILANG dari catatan.
+        // Akibatnya halaman "Cek Tugas Siswa" (buat guru koreksi per
+        // soal) gak pernah bisa nampilin gambar soalnya sama sekali,
+        // walau soal itu sendiri gak lengkap tanpa gambarnya (mis. soal
+        // "berapa luas bangun ini?" tapi bangunnya gak kelihatan).
+        questionImage: q.questionImage || '',
         options: q.options,
         correctAnswer: q.correctAnswer,
         correctAnswers: q.correctAnswers,

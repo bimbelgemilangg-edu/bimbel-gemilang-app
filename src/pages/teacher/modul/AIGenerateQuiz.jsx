@@ -1,6 +1,6 @@
 // src/pages/teacher/modul/AIGenerateQuiz.jsx
 import React, { useState } from 'react';
-import { Sparkles, X, Loader2, AlertCircle, Wand2, FileQuestion } from 'lucide-react';
+import { Sparkles, X, Loader2, AlertCircle, Wand2, FileQuestion, Globe, Brain } from 'lucide-react';
 
 const TYPE_OPTIONS = [
   { id: 'multiple', label: 'Pilihan Ganda' },
@@ -9,10 +9,20 @@ const TYPE_OPTIONS = [
   { id: 'shortanswer', label: 'Isian Singkat' },
   { id: 'causeeffect', label: 'Sebab Akibat' },
   { id: 'matching', label: 'Menjodohkan' },
+  // 🔥 BARU: sebelumnya gak ditawarkan sama sekali (backend juga belum
+  // support) -- sekarang backend udah bisa bikin bacaan panjang +
+  // beberapa sub-soal, jadi ditampilkan di sini juga.
+  { id: 'reading', label: 'Membaca Teks (bacaan panjang)' },
+];
+
+const HOTS_OPTIONS = [
+  { id: '', label: 'Standar (gak wajib HOTS)' },
+  { id: 'sedang', label: 'HOTS Sedang' },
+  { id: 'tinggi', label: 'HOTS Tinggi (setara SNBT/UTBK)' },
 ];
 
 // props:
-// - subject: mapel guru (konteks AI)
+// - subject: mapel guru (konteks Astro Gemilang)
 // - onGenerated: (questionsArray dalam format internal ManageQuiz) => void
 // - onClose: () => void
 const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
@@ -21,9 +31,16 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
   const [jumlahSoal, setJumlahSoal] = useState(5);
   const [selectedTypes, setSelectedTypes] = useState(['multiple']);
   const [arahan, setArahan] = useState('');
+  // 🔥 BARU: dua toggle baru -- pencarian tren internet & level HOTS.
+  const [useTrendSearch, setUseTrendSearch] = useState(false);
+  const [hotsLevel, setHotsLevel] = useState('');
   const [generating, setGenerating] = useState(false);
   const [statusLabel, setStatusLabel] = useState('');
   const [error, setError] = useState('');
+  // 🔥 BARU: sumber yang dipakai Astro Gemilang buat baca tren (kalau
+  // useTrendSearch aktif) -- ditampilkan setelah selesai generate, biar
+  // guru tau ini bukan klaim kosong.
+  const [lastGroundingSources, setLastGroundingSources] = useState([]);
 
   const toggleType = (id) => {
     setSelectedTypes(prev =>
@@ -33,12 +50,17 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
 
   const handleGenerate = async () => {
     setError('');
+    setLastGroundingSources([]);
     if (!topic.trim()) return setError('❌ Topik/materi kuis wajib diisi!');
     if (selectedTypes.length === 0) return setError('❌ Pilih minimal 1 tipe soal!');
     if (jumlahSoal < 1 || jumlahSoal > 20) return setError('❌ Jumlah soal antara 1-20!');
 
     setGenerating(true);
-    setStatusLabel('AI sedang menyusun soal... (20-50 detik)');
+    setStatusLabel(
+      useTrendSearch
+        ? 'Astro Gemilang sedang membaca tren soal terbaru & menyusun soal... (30-70 detik)'
+        : 'Astro Gemilang sedang menyusun soal... (20-50 detik)'
+    );
 
     try {
       const res = await fetch('/api/generateQuizFromTopic', {
@@ -51,6 +73,8 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
           jumlahSoal,
           types: selectedTypes,
           arahan: arahan.trim(),
+          useTrendSearch,
+          hotsLevel,
         }),
       });
       const data = await res.json();
@@ -61,23 +85,35 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
 
       const qs = data.questions || [];
       if (qs.length === 0) {
-        throw new Error('AI tidak menghasilkan soal apapun, coba lagi.');
+        throw new Error('Astro Gemilang tidak menghasilkan soal apapun, coba lagi.');
       }
 
-      // Konversi ke format internal yang dipakai ManageQuiz.jsx (emptyQuestion shape)
+      // 🔥 FIX BUG NYATA: sebelumnya `qImage` DIPAKSA jadi string kosong
+      // di sini, apapun yang dikirim backend -- jadi walau backend udah
+      // bikin gambar (grafik fungsi/bangun ruang/pola bentuk) buat soal
+      // itu, frontend BUANG gambarnya begitu aja, gak pernah nyampe ke
+      // editor. Sekarang `q.qImage` dari backend (hasil generate sendiri,
+      // BUKAN dicari dari internet -- lihat penjelasan di backend) diambil
+      // apa adanya.
+      //
+      // 🔥 FIX BUG NYATA JUGA: tipe "reading" sebelumnya SELALU dikasih
+      // readingText/subQuestions KOSONG di sini, gak peduli apa isi
+      // beneran dari backend -- soal bacaan yang di-generate selalu
+      // tampil kosong total ke guru. Sekarang field-field itu diambil
+      // dari `q` yang beneran dikirim backend.
       const converted = qs.map((q, i) => ({
         id: Date.now() + i,
         type: q.type || 'multiple',
         q: q.question || '',
-        qImage: '',
+        qImage: q.qImage || '',
         options: q.options && q.options.length ? q.options : ['', '', '', ''],
         optionImages: ['', '', '', ''],
         correct: typeof q.correct === 'number' ? q.correct : 0,
         correctAnswers: q.correctAnswers || [],
         explanation: q.explanation || '',
         statements: q.statements && q.statements.length ? q.statements : [{ text: '', isTrue: true }],
-        readingText: '',
-        subQuestions: [{ q: '', options: ['', '', '', ''], correct: 0 }],
+        readingText: q.readingText || '',
+        subQuestions: q.subQuestions && q.subQuestions.length ? q.subQuestions : [{ q: '', options: ['', '', '', ''], correct: 0 }],
         shortAnswer: q.shortAnswer || '',
         cause: q.cause || '',
         effect: q.effect || '',
@@ -86,9 +122,16 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
         needsManualAnswer: false,
         optionsAreImages: false,
         matchingPairs: q.matchingPairs && q.matchingPairs.length ? q.matchingPairs : [{ left: '', right: '' }, { left: '', right: '' }],
+        // 🔥 Diteruskan juga -- kalau backend nandain soal ini idealnya
+        // pakai foto objek nyata (needs_image) tapi belum ketemu/gak
+        // sempat dicari, editor kuis (ManageQuiz.jsx) udah punya panel
+        // "AI menyarankan gambar" yang baca field ini.
+        needsImage: q.needsImage || false,
+        imageHint: q.imageHint || '',
       }));
 
       onGenerated(converted);
+      setLastGroundingSources(data.groundingSources || []);
 
       if (data.possiblyTruncated) {
         alert(
@@ -111,7 +154,7 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
       <div style={styles.modal} onClick={e => e.stopPropagation()}>
         <div style={styles.header}>
           <span style={styles.headerTitle}>
-            <Sparkles size={18} color="#f59e0b" /> Generate Soal dari Topik
+            <Sparkles size={18} color="#f59e0b" /> Generate Soal — Astro Gemilang
           </span>
           {!generating && <button onClick={onClose} style={styles.closeBtn}><X size={18} /></button>}
         </div>
@@ -171,8 +214,47 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
                 ))}
               </div>
               <p style={styles.hintSmall}>
-                💡 Kalau pilih lebih dari 1 tipe, AI akan mencampur jenisnya sesuai jumlah soal yang diminta.
+                💡 Kalau pilih lebih dari 1 tipe, Astro Gemilang akan mencampur jenisnya sesuai jumlah soal yang diminta.
               </p>
+            </div>
+
+            {/* 🔥 BARU: level HOTS */}
+            <div style={styles.field}>
+              <label style={styles.label}><Brain size={12} style={{ display: 'inline', marginRight: 4, verticalAlign: -2 }} /> Level Berpikir Kritis (HOTS)</label>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {HOTS_OPTIONS.map(h => (
+                  <button
+                    key={h.id}
+                    type="button"
+                    onClick={() => setHotsLevel(h.id)}
+                    style={{
+                      ...styles.hotsBtn,
+                      background: hotsLevel === h.id ? '#ede9fe' : 'white',
+                      border: hotsLevel === h.id ? '2px solid #8b5cf6' : '1px solid #e2e8f0',
+                      color: hotsLevel === h.id ? '#6d28d9' : '#64748b',
+                    }}
+                  >
+                    {h.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 🔥 BARU: toggle pencarian tren internet */}
+            <div style={styles.trendBox}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={useTrendSearch} onChange={e => setUseTrendSearch(e.target.checked)} style={{ marginTop: 2 }} />
+                <span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: '#1e293b' }}>
+                    <Globe size={13} color="#3b82f6" /> Sesuaikan pola dengan tren soal terbaru
+                  </span>
+                  <span style={{ fontSize: 10, color: '#64748b', lineHeight: 1.6, display: 'block', marginTop: 3 }}>
+                    Astro Gemilang membaca pola/format soal SNBT/TKA/ujian sekolah dari tahun-tahun terakhir yang beneran ada,
+                    lalu membuat soal latihan BARU (orisinal) dengan pola & level kesulitan setara.
+                    <b> Ini bukan "prediksi soal tahun depan"</b> — proses generate jadi lebih lama (30-70 detik).
+                  </span>
+                </span>
+              </label>
             </div>
 
             <div style={styles.field}>
@@ -187,6 +269,15 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
 
             {error && <div style={styles.errorBox}><AlertCircle size={14} /> {error}</div>}
 
+            {lastGroundingSources.length > 0 && (
+              <div style={styles.sourcesBox}>
+                <b>Sumber yang dibaca Astro Gemilang buat soal barusan:</b>
+                <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
+                  {lastGroundingSources.map((s, i) => <li key={i}>{s}</li>)}
+                </ul>
+              </div>
+            )}
+
             <button onClick={handleGenerate} style={styles.generateBtn}>
               <Wand2 size={16} /> Generate Soal
             </button>
@@ -194,7 +285,7 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
             <div style={styles.hintBox}>
               <FileQuestion size={13} color="#f59e0b" style={{ flexShrink: 0, marginTop: 1 }} />
               <span>
-                Soal & jawaban otomatis diisi AI (termasuk pembahasan), tapi <b>tetap cek dulu</b> sebelum
+                Soal & jawaban otomatis diisi Astro Gemilang (termasuk pembahasan), tapi <b>tetap cek dulu</b> sebelum
                 diterbitkan ke siswa — terutama hitungan matematika dan kunci jawabannya.
               </span>
             </div>
@@ -229,8 +320,11 @@ const styles = {
   textarea: { width: '100%', minHeight: 70, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' },
   typeGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 },
   typeBtn: { padding: '8px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 700, textAlign: 'left' },
+  hotsBtn: { padding: '8px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 700 },
   hintSmall: { fontSize: 9, color: '#94a3b8', marginTop: 6 },
+  trendBox: { background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: 12, marginBottom: 14 },
   errorBox: { background: '#fee2e2', color: '#ef4444', padding: 10, borderRadius: 8, fontSize: 12, display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 12, lineHeight: 1.5 },
+  sourcesBox: { background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: 10, fontSize: 10, color: '#166534', marginBottom: 12, lineHeight: 1.6 },
   generateBtn: { width: '100%', padding: 12, background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: 'white', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 },
   hintBox: { display: 'flex', gap: 6, fontSize: 10, color: '#64748b', marginTop: 12, lineHeight: 1.6, background: '#fffbeb', padding: 10, borderRadius: 8, border: '1px solid #fde68a' },
   progressBox: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '30px 0' },
