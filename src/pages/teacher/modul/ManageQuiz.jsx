@@ -121,6 +121,54 @@ const TYPE_LABELS_PDF_QUIZ = {
   matching: 'Menjodohkan',
 };
 
+// 🔥 BARU: jsPDF TIDAK BISA render rumus LaTeX/KaTeX beneran (beda dari
+// tampilan di layar guru/siswa yang pakai KaTeX buat nge-render simbol
+// matematika visual) -- kalau teks mentah "$\frac{v \times t}{2}$" langsung
+// ditulis ke PDF, hasilnya persis kode aslinya yang berantakan dibaca,
+// bukan simbol matematika. Fungsi ini mengonversi notasi LaTeX yang PALING
+// SERING dipakai di soal (pecahan, kali, subscript/superscript, \text{},
+// implies, dll) jadi teks biasa yang tetap kebaca jelas walau gak
+// se-rapi rendering visual asli. Gak lengkap 100% buat LaTeX yang rumit
+// banget, tapi jauh lebih baik daripada kode mentah apa adanya.
+const latexToPlainTextForPdf = (raw = '') => {
+  let s = String(raw || '');
+  // \text{...} -> isinya doang
+  s = s.replace(/\\text\{([^}]*)\}/g, '$1');
+  // \frac{a}{b} -> (a)/(b)
+  s = s.replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, '($1)/($2)');
+  // \sqrt{a} -> √(a)
+  s = s.replace(/\\sqrt\{([^}]*)\}/g, '√($1)');
+  // operator umum
+  s = s
+    .replace(/\\times/g, '×')
+    .replace(/\\div/g, '÷')
+    .replace(/\\cdot/g, '·')
+    .replace(/\\pm/g, '±')
+    .replace(/\\approx/g, '≈')
+    .replace(/\\neq/g, '≠')
+    .replace(/\\leq/g, '≤')
+    .replace(/\\geq/g, '≥')
+    .replace(/\\implies/g, '⟹')
+    .replace(/\\rightarrow/g, '→')
+    .replace(/\\Delta/g, 'Δ')
+    .replace(/\\eta/g, 'η')
+    .replace(/\\pi/g, 'π')
+    .replace(/\\alpha/g, 'α')
+    .replace(/\\beta/g, 'β')
+    .replace(/\\theta/g, 'θ')
+    .replace(/\\Omega/g, 'Ω')
+    .replace(/\\%/g, '%');
+  // subscript/superscript sederhana: X_1 -> X1, X^2 -> X^2 (dibiarkan
+  // simple, cukup dihapus kurung kurawalnya kalau ada)
+  s = s.replace(/_\{([^}]*)\}/g, '$1').replace(/\^\{([^}]*)\}/g, '^$1');
+  s = s.replace(/_([a-zA-Z0-9])/g, '$1');
+  // buang delimiter dolar & kurung kurawal sisa yang gak kepakai fungsi di atas
+  s = s.replace(/\$\$/g, '').replace(/\$/g, '');
+  s = s.replace(/\\left|\\right/g, '');
+  s = s.replace(/[{}]/g, '');
+  return s;
+};
+
 // 🔥 Coba unduh gambar & ubah jadi data URI buat ditempel ke PDF. Gambar
 // tersimpan di Firebase Storage, dan environment ini sudah pernah
 // kejadian gagal load gambar gara-gara CORS -- jadi ini WAJIB dibungkus
@@ -207,10 +255,11 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
     doc.setTextColor(30, 41, 59);
     y += 6;
 
-    // Teks soal (rumus $...$ ditampilkan apa adanya sebagai teks biasa di PDF)
+    // Teks soal (rumus LaTeX dikonversi dulu ke teks biasa -- jsPDF gak bisa
+    // render LaTeX beneran, lihat penjelasan lengkap di latexToPlainTextForPdf())
     doc.setFontSize(10.5);
     doc.setFont(undefined, 'bold');
-    const qLines = doc.splitTextToSize(q.q || '(soal bergambar)', contentWidth);
+    const qLines = doc.splitTextToSize(latexToPlainTextForPdf(q.q) || '(soal bergambar)', contentWidth);
     ensureSpace(qLines.length * 5 + 4);
     doc.text(qLines, marginX, y);
     y += qLines.length * 5 + 2;
@@ -263,7 +312,7 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
         (q.options || []).forEach((opt, oi) => {
           const letter = String.fromCharCode(65 + oi);
           const isCorrect = q.correct === oi;
-          const lines = doc.splitTextToSize(`${letter}. ${opt || '-'}${isCorrect ? '   (KUNCI)' : ''}`, contentWidth - 6);
+          const lines = doc.splitTextToSize(`${letter}. ${latexToPlainTextForPdf(opt) || '-'}${isCorrect ? '   (KUNCI)' : ''}`, contentWidth - 6);
           ensureSpace(lines.length * 5);
           doc.setFont(undefined, isCorrect ? 'bold' : 'normal');
           if (isCorrect) doc.setTextColor(16, 129, 76); else doc.setTextColor(51, 65, 85);
@@ -276,7 +325,7 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
       (q.options || []).forEach((opt, oi) => {
         const letter = String.fromCharCode(65 + oi);
         const isCorrect = (q.correctAnswers || []).includes(oi);
-        const lines = doc.splitTextToSize(`${letter}. ${opt || '-'}${isCorrect ? '   (KUNCI)' : ''}`, contentWidth - 6);
+        const lines = doc.splitTextToSize(`${letter}. ${latexToPlainTextForPdf(opt) || '-'}${isCorrect ? '   (KUNCI)' : ''}`, contentWidth - 6);
         ensureSpace(lines.length * 5);
         doc.setFont(undefined, isCorrect ? 'bold' : 'normal');
         if (isCorrect) doc.setTextColor(16, 129, 76); else doc.setTextColor(51, 65, 85);
@@ -286,7 +335,7 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
       });
     } else if (q.type === 'truefalse') {
       (q.statements || []).forEach((stmt, si) => {
-        const lines = doc.splitTextToSize(`${si + 1}. ${stmt.text || '-'}   [Kunci: ${stmt.isTrue ? 'BENAR' : 'SALAH'}]`, contentWidth - 6);
+        const lines = doc.splitTextToSize(`${si + 1}. ${latexToPlainTextForPdf(stmt.text) || '-'}   [Kunci: ${stmt.isTrue ? 'BENAR' : 'SALAH'}]`, contentWidth - 6);
         ensureSpace(lines.length * 5);
         doc.setFont(undefined, 'normal');
         doc.setTextColor(51, 65, 85);
@@ -298,22 +347,22 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
       ensureSpace(6);
       doc.setFont(undefined, 'bold');
       doc.setTextColor(16, 129, 76);
-      doc.text(`Kunci Jawaban: ${q.shortAnswer || '-'}`, marginX + 3, y);
+      doc.text(`Kunci Jawaban: ${latexToPlainTextForPdf(q.shortAnswer) || '-'}`, marginX + 3, y);
       doc.setTextColor(30, 41, 59);
       y += 6;
     } else if (q.type === 'causeeffect') {
       ensureSpace(12);
       doc.setFont(undefined, 'normal');
-      const causeLines = doc.splitTextToSize(`SEBAB: ${q.cause || '-'}   [${q.isCauseTrue ? 'BENAR' : 'SALAH'}]`, contentWidth - 6);
+      const causeLines = doc.splitTextToSize(`SEBAB: ${latexToPlainTextForPdf(q.cause) || '-'}   [${q.isCauseTrue ? 'BENAR' : 'SALAH'}]`, contentWidth - 6);
       doc.text(causeLines, marginX + 3, y);
       y += causeLines.length * 5;
-      const effectLines = doc.splitTextToSize(`AKIBAT: ${q.effect || '-'}   [${q.isEffectTrue ? 'BENAR' : 'SALAH'}]`, contentWidth - 6);
+      const effectLines = doc.splitTextToSize(`AKIBAT: ${latexToPlainTextForPdf(q.effect) || '-'}   [${q.isEffectTrue ? 'BENAR' : 'SALAH'}]`, contentWidth - 6);
       ensureSpace(effectLines.length * 5);
       doc.text(effectLines, marginX + 3, y);
       y += effectLines.length * 5;
     } else if (q.type === 'matching') {
       (q.matchingPairs || []).forEach((p, pi) => {
-        const lines = doc.splitTextToSize(`${pi + 1}. ${p.left || '-'}  ->  ${p.right || '-'}`, contentWidth - 6);
+        const lines = doc.splitTextToSize(`${pi + 1}. ${latexToPlainTextForPdf(p.left) || '-'}  ->  ${latexToPlainTextForPdf(p.right) || '-'}`, contentWidth - 6);
         ensureSpace(lines.length * 5);
         doc.text(lines, marginX + 3, y);
         y += lines.length * 5;
@@ -323,14 +372,14 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
         ensureSpace(10);
         doc.setFont(undefined, 'italic');
         doc.setTextColor(100, 116, 139);
-        const rLines = doc.splitTextToSize(q.readingText, contentWidth - 6);
+        const rLines = doc.splitTextToSize(latexToPlainTextForPdf(q.readingText), contentWidth - 6);
         doc.text(rLines, marginX + 3, y);
         doc.setTextColor(30, 41, 59);
         y += rLines.length * 5 + 2;
       }
       (q.subQuestions || []).forEach((sq, sqi) => {
         doc.setFont(undefined, 'bold');
-        const sqLines = doc.splitTextToSize(`${sqi + 1}. ${sq.q || '-'}`, contentWidth - 6);
+        const sqLines = doc.splitTextToSize(`${sqi + 1}. ${latexToPlainTextForPdf(sq.q) || '-'}`, contentWidth - 6);
         ensureSpace(sqLines.length * 5);
         doc.text(sqLines, marginX + 3, y);
         y += sqLines.length * 5;
@@ -338,7 +387,7 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
         (sq.options || []).forEach((opt, oi) => {
           const letter = String.fromCharCode(65 + oi);
           const isCorrect = sq.correct === oi;
-          const lines = doc.splitTextToSize(`   ${letter}. ${opt || '-'}${isCorrect ? '  (KUNCI)' : ''}`, contentWidth - 10);
+          const lines = doc.splitTextToSize(`   ${letter}. ${latexToPlainTextForPdf(opt) || '-'}${isCorrect ? '  (KUNCI)' : ''}`, contentWidth - 10);
           ensureSpace(lines.length * 5);
           if (isCorrect) doc.setTextColor(16, 129, 76); else doc.setTextColor(51, 65, 85);
           doc.text(lines, marginX + 6, y);
@@ -353,7 +402,7 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
       ensureSpace(10);
       y += 1;
       doc.setFillColor(238, 242, 255);
-      const expLines = doc.splitTextToSize(`Pembahasan: ${q.explanation}`, contentWidth - 8);
+      const expLines = doc.splitTextToSize(`Pembahasan: ${latexToPlainTextForPdf(q.explanation)}`, contentWidth - 8);
       const boxH = expLines.length * 4.6 + 4;
       ensureSpace(boxH);
       doc.roundedRect(marginX, y - 3, contentWidth, boxH, 2, 2, 'F');
@@ -1798,48 +1847,136 @@ const ManageQuiz = () => {
               {item.qImage && <img src={item.qImage} alt="Soal" style={{ maxHeight: 120, borderRadius: 8, marginBottom: 8 }} />}
               <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 10 }}>{renderMath(item.q)}</div>
 
-              {/* Opsi Jawaban */}
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 4 }}>
-                {item.options.map((opt, oIdx) => {
-                  const isSelected = (() => {
-                    if (item.type === 'multiselect') {
-                      return userAnswer?.includes(oIdx) || false;
-                    }
-                    return userAnswer === oIdx;
-                  })();
-                  const isCorrectAnswer = (() => {
-                    if (item.type === 'multiselect') {
-                      return item.correctAnswers.includes(oIdx);
-                    }
-                    return oIdx === item.correct;
-                  })();
-                  
-                  let bgColor = 'white', borderColor = '#e2e8f0';
-                  if (showCorrectAnswers) {
-                    if (isCorrectAnswer) { bgColor = '#dcfce7'; borderColor = '#10b981'; }
-                    if (isSelected && !isCorrectAnswer) { bgColor = '#fee2e2'; borderColor = '#ef4444'; }
-                  } else {
-                    if (isSelected) { bgColor = '#eef2ff'; borderColor = '#3b82f6'; }
-                  }
-                  
-                  return (
-                    <div key={oIdx} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 6, border: `2px solid ${borderColor}`, background: bgColor }}>
-                      <span style={{ 
-                        width: 20, height: 20, borderRadius: '50%', 
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                        background: isSelected ? '#3b82f6' : '#f1f5f9', 
-                        color: isSelected ? 'white' : '#64748b', 
-                        fontWeight: 700, fontSize: 10 
-                      }}>{String.fromCharCode(65 + oIdx)}</span>
-                      <span style={{ fontSize: 12 }}>{renderMath(opt)}</span>
-                      {showCorrectAnswers && isCorrectAnswer && <CheckCircle size={12} color="#10b981" style={{ marginLeft: 'auto' }} />}
-                      {showCorrectAnswers && isSelected && !isCorrectAnswer && <X size={12} color="#ef4444" style={{ marginLeft: 'auto' }} />}
-                    </div>
-                  );
-                })}
-              </div>
+              {/* 🔥 FIX BUG BESAR: sebelumnya SEMUA tipe soal di preview ini
+                  dipaksa render sebagai pilihan ganda A/B/C/D (`item.options.map`),
+                  gak peduli tipe aslinya. Buat "Isian Singkat", "Tabel
+                  Benar/Salah", "Sebab Akibat", "Menjodohkan", "Membaca Teks" --
+                  field `options` itu kosong/gak relevan, jadi hasilnya kacau
+                  (kotak kosong dikasih huruf A/B/C/D, "Jawaban benar" nunjuk ke
+                  opsi yang gak ada). Sekarang tiap tipe dirender sesuai
+                  bentuknya masing-masing. */}
+              {item.type === 'multiple' && (
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 4 }}>
+                  {item.options.map((opt, oIdx) => {
+                    const isSelected = userAnswer === oIdx;
+                    const isCorrectAnswer = oIdx === item.correct;
+                    let bgColor = 'white', borderColor = '#e2e8f0';
+                    if (showCorrectAnswers) {
+                      if (isCorrectAnswer) { bgColor = '#dcfce7'; borderColor = '#10b981'; }
+                      if (isSelected && !isCorrectAnswer) { bgColor = '#fee2e2'; borderColor = '#ef4444'; }
+                    } else if (isSelected) { bgColor = '#eef2ff'; borderColor = '#3b82f6'; }
+                    return (
+                      <div key={oIdx} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 6, border: `2px solid ${borderColor}`, background: bgColor }}>
+                        <span style={{ width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: isSelected ? '#3b82f6' : '#f1f5f9', color: isSelected ? 'white' : '#64748b', fontWeight: 700, fontSize: 10 }}>{String.fromCharCode(65 + oIdx)}</span>
+                        <span style={{ fontSize: 12 }}>{renderMath(opt)}</span>
+                        {showCorrectAnswers && isCorrectAnswer && <CheckCircle size={12} color="#10b981" style={{ marginLeft: 'auto' }} />}
+                        {showCorrectAnswers && isSelected && !isCorrectAnswer && <X size={12} color="#ef4444" style={{ marginLeft: 'auto' }} />}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
-              {showCorrectAnswers && (
+              {item.type === 'multiselect' && (
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 4 }}>
+                  {item.options.map((opt, oIdx) => {
+                    const isSelected = userAnswer?.includes(oIdx) || false;
+                    const isCorrectAnswer = item.correctAnswers.includes(oIdx);
+                    let bgColor = 'white', borderColor = '#e2e8f0';
+                    if (showCorrectAnswers) {
+                      if (isCorrectAnswer) { bgColor = '#dcfce7'; borderColor = '#10b981'; }
+                      if (isSelected && !isCorrectAnswer) { bgColor = '#fee2e2'; borderColor = '#ef4444'; }
+                    } else if (isSelected) { bgColor = '#eef2ff'; borderColor = '#3b82f6'; }
+                    return (
+                      <div key={oIdx} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 6, border: `2px solid ${borderColor}`, background: bgColor }}>
+                        <span style={{ width: 20, height: 20, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isSelected ? '#3b82f6' : '#f1f5f9', color: isSelected ? 'white' : '#64748b', fontWeight: 700, fontSize: 10 }}>{String.fromCharCode(65 + oIdx)}</span>
+                        <span style={{ fontSize: 12 }}>{renderMath(opt)}</span>
+                        {showCorrectAnswers && isCorrectAnswer && <CheckCircle size={12} color="#10b981" style={{ marginLeft: 'auto' }} />}
+                        {showCorrectAnswers && isSelected && !isCorrectAnswer && <X size={12} color="#ef4444" style={{ marginLeft: 'auto' }} />}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {item.type === 'truefalse' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {(item.statements || []).map((stmt, sIdx) => (
+                    <div key={sIdx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', borderRadius: 6, border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                      <span style={{ fontSize: 12, flex: 1 }}>{sIdx + 1}. {renderMath(stmt.text)}</span>
+                      {showCorrectAnswers && <span style={{ fontSize: 10, fontWeight: 700, color: stmt.isTrue ? '#10b981' : '#ef4444', whiteSpace: 'nowrap' }}>Kunci: {stmt.isTrue ? 'BENAR' : 'SALAH'}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {item.type === 'shortanswer' && (
+                <div style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                  <span style={{ fontSize: 11, color: '#94a3b8' }}>Jawaban siswa berupa isian teks bebas.</span>
+                  {showCorrectAnswers && (
+                    <div style={{ marginTop: 6, fontSize: 12 }}>
+                      <span style={{ fontWeight: 700, color: '#10b981' }}>Kunci: {renderMath(item.shortAnswer)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {item.type === 'causeeffect' && (
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 8 }}>
+                  <div style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>SEBAB</div>
+                    <div style={{ fontSize: 12 }}>{renderMath(item.cause)}</div>
+                    {showCorrectAnswers && <div style={{ marginTop: 4, fontSize: 10, fontWeight: 700, color: item.isCauseTrue ? '#10b981' : '#ef4444' }}>Kunci: {item.isCauseTrue ? 'BENAR' : 'SALAH'}</div>}
+                  </div>
+                  <div style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>AKIBAT</div>
+                    <div style={{ fontSize: 12 }}>{renderMath(item.effect)}</div>
+                    {showCorrectAnswers && <div style={{ marginTop: 4, fontSize: 10, fontWeight: 700, color: item.isEffectTrue ? '#10b981' : '#ef4444' }}>Kunci: {item.isEffectTrue ? 'BENAR' : 'SALAH'}</div>}
+                  </div>
+                </div>
+              )}
+
+              {item.type === 'matching' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {(item.matchingPairs || []).map((p, pIdx) => (
+                    <div key={pIdx} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 6, border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: 12 }}>
+                      <span style={{ flex: 1 }}>{renderMath(p.left)}</span>
+                      <span style={{ color: '#94a3b8' }}>→</span>
+                      <span style={{ flex: 1, fontWeight: showCorrectAnswers ? 700 : 400, color: showCorrectAnswers ? '#10b981' : '#1e293b' }}>{renderMath(p.right)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {item.type === 'reading' && (
+                <div>
+                  {item.readingText && (
+                    <div style={{ padding: '10px 12px', borderRadius: 8, background: '#f8fafc', border: '1px solid #e2e8f0', marginBottom: 10, fontSize: 12, fontStyle: 'italic', color: '#475569' }}>
+                      {renderMath(item.readingText)}
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {(item.subQuestions || []).map((sq, sqIdx) => (
+                      <div key={sqIdx}>
+                        <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>{sqIdx + 1}. {renderMath(sq.q)}</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 4 }}>
+                          {(sq.options || []).map((opt, oIdx) => {
+                            const isCorrectAnswer = oIdx === sq.correct;
+                            return (
+                              <div key={oIdx} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 6, border: `1px solid ${showCorrectAnswers && isCorrectAnswer ? '#10b981' : '#e2e8f0'}`, background: showCorrectAnswers && isCorrectAnswer ? '#dcfce7' : 'white' }}>
+                                <span style={{ width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', color: '#64748b', fontWeight: 700, fontSize: 9 }}>{String.fromCharCode(65 + oIdx)}</span>
+                                <span style={{ fontSize: 11 }}>{renderMath(opt)}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {showCorrectAnswers && (item.type === 'multiple' || item.type === 'multiselect') && (
                 <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #e2e8f0', fontSize: 11 }}>
                   <span style={{ color: '#64748b' }}>✅ Jawaban benar: </span>
                   <span style={{ fontWeight: 700, color: '#10b981' }}>

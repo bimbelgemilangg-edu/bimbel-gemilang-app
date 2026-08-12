@@ -34,6 +34,46 @@ const renderMath = (text) => {
   });
 };
 
+// 🔥 BARU: jsPDF TIDAK BISA render rumus LaTeX/KaTeX beneran (beda dari
+// tampilan di layar yang pakai KaTeX/react-katex buat nge-render simbol
+// matematika visual) -- sebelumnya di sini cuma tanda "$" yang dibuang
+// (baris qText di bawah), tapi kode LaTeX-nya sendiri (\frac{}, \text{},
+// \times, dll) tetap ditulis mentah ke PDF, jadi hasilnya berantakan
+// dibaca. Fungsi ini konversi notasi LaTeX yang PALING SERING dipakai di
+// soal jadi teks biasa yang tetap kebaca jelas -- sama persis pola yang
+// dipakai di generateQuizAnswerKeyPDF() (ManageQuiz.jsx).
+const latexToPlainTextForPdf = (raw = '') => {
+  let s = String(raw || '');
+  s = s.replace(/\\text\{([^}]*)\}/g, '$1');
+  s = s.replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, '($1)/($2)');
+  s = s.replace(/\\sqrt\{([^}]*)\}/g, '√($1)');
+  s = s
+    .replace(/\\times/g, '×')
+    .replace(/\\div/g, '÷')
+    .replace(/\\cdot/g, '·')
+    .replace(/\\pm/g, '±')
+    .replace(/\\approx/g, '≈')
+    .replace(/\\neq/g, '≠')
+    .replace(/\\leq/g, '≤')
+    .replace(/\\geq/g, '≥')
+    .replace(/\\implies/g, '⟹')
+    .replace(/\\rightarrow/g, '→')
+    .replace(/\\Delta/g, 'Δ')
+    .replace(/\\eta/g, 'η')
+    .replace(/\\pi/g, 'π')
+    .replace(/\\alpha/g, 'α')
+    .replace(/\\beta/g, 'β')
+    .replace(/\\theta/g, 'θ')
+    .replace(/\\Omega/g, 'Ω')
+    .replace(/\\%/g, '%');
+  s = s.replace(/_\{([^}]*)\}/g, '$1').replace(/\^\{([^}]*)\}/g, '^$1');
+  s = s.replace(/_([a-zA-Z0-9])/g, '$1');
+  s = s.replace(/\$\$/g, '').replace(/\$/g, '');
+  s = s.replace(/\\left|\\right/g, '');
+  s = s.replace(/[{}]/g, '');
+  return s;
+};
+
 // 🔥 Ringkasan jawaban per tipe soal (buat modal detail guru)
 const describeAnswer = (q, which) => {
   const ans = which === 'user' ? q.userAnswer : null;
@@ -269,7 +309,7 @@ const generateAstroGemilangReport = (item) => {
     y += 4;
     const detailRows = item.details.map((q, i) => {
       const status = q.isCorrect ? 'Benar' : (q.partsTotal ? `Sebagian (${q.partsCorrect}/${q.partsTotal})` : 'Salah');
-      const qText = String(q.question || '').replace(/\$\$?/g, '').slice(0, 65);
+      const qText = latexToPlainTextForPdf(q.question).slice(0, 65);
       return [String(i + 1), qText, TYPE_LABELS_PDF[q.type] || q.type, status];
     });
     autoTable(doc, {
