@@ -306,37 +306,39 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           // gak ditimpa batasan paket mapel otomatis.
           hasQuizAccess = allTargetIds.includes(nimForAccess) || allTargetIds.includes(studentData?.id);
         } else {
-          const targetKelas = targetingSource.targetKelas || 'Semua';
-          const targetKategori = targetingSource.targetKategori || 'Semua';
-          const matchKelas = targetKelas === 'Semua' || targetKelas === studentInfo.kelas;
-          const matchProgram = targetKategori === 'Semua' || targetKategori === studentInfo.program;
-          // 🔥 BERUBAH: mapel yang diambil siswa sekarang HANYA dari field
-          // manual `enrolledSubjects` (turunan otomatis dari jadwal_bimbel
-          // DIHAPUS TOTAL) -- lihat StudentDashboard.jsx buat penjelasan
-          // lengkap kenapa ini sengaja dibalik jadi ketat.
+          // 🔥 BERUBAH (atas permintaan eksplisit): pengecekan kelas/kategori
+          // (`matchKelas`/`matchProgram`) DIHAPUS TOTAL dari sini. Alasannya:
+          // kode mapel (mis. "MAPEL-004") itu SENDIRI SUDAH spesifik per
+          // jenjang -- guru bikin entri mapel TERPISAH buat "Bahasa
+          // Indonesia SD" vs "Bahasa Indonesia SMP" vs "...SMA", masing-
+          // masing dengan kode beda (lihat perbaikan ManageMateri.jsx/
+          // ManageQuiz.jsx sebelumnya). Jadi kelas/kategori itu INFORMASI
+          // GANDA yang udah otomatis kesaring lewat kodeMapel -- dan
+          // ternyata jadi TITIK RAPUH nyata: kalau `studentInfo.kelas`/
+          // `.program` kebetulan belum sempat kemuat (kosong) pas
+          // pengecekan ini jalan, siswa ketolak PADAHAL mapelnya udah benar
+          // terdaftar. Sekarang akses HANYA ditentukan dari kodeMapel
+          // (`matchSubject`) -- satu sumber kebenaran, sama kayak yang
+          // sudah diterapkan di field `enrolledSubjects` Edit Siswa.
           const effectiveEnrolledSubjects = studentInfo.enrolledSubjects;
           const matchSubject = hasSubjectAccess(effectiveEnrolledSubjects, data.subject || '', data.kodeMapel || '');
-          hasQuizAccess = matchKelas && matchProgram && matchSubject;
+          hasQuizAccess = matchSubject;
 
-          // 🔥 BARU: log detail alasan akses ditolak/diterima -- kalau siswa
+          // 🔥 log detail alasan akses ditolak/diterima -- kalau siswa
           // lapor "tidak memiliki akses" tapi keliatannya seharusnya bisa,
           // buka Console browser (F12) pas kejadian, cari baris ini buat
-          // lihat PERSIS bagian mana yang gak cocok (kelas/kategori/mapel)
-          // -- daripada nebak-nebak dari pesan error yang cuma generik.
+          // lihat PERSIS mapel mana yang gak cocok -- daripada nebak-nebak
+          // dari pesan error yang cuma generik.
           console.log('[Cek Akses Kuis]', {
             hasQuizAccess,
             quizSubject: data.subject,
             quizKodeMapel: data.kodeMapel,
-            quizTargetKelas: targetKelas,
-            quizTargetKategori: targetKategori,
-            studentKelas: studentInfo.kelas,
-            studentProgram: studentInfo.program,
             studentEnrolledSubjects: effectiveEnrolledSubjects,
-            matchKelas, matchProgram, matchSubject,
+            matchSubject,
             parentModulId: data.parentModulId || null,
           });
 
-          if (matchKelas && matchProgram && !matchSubject) {
+          if (!matchSubject) {
             setError(`Kuis ini untuk mapel ${data.subject || '-'}, sedangkan paketmu belum termasuk mapel ini. Hubungi admin Bimbel Gemilang untuk info upgrade paket.`);
             setLoading(false);
             return;

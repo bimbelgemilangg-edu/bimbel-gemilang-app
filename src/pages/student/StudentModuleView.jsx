@@ -886,37 +886,28 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         }
         
         if (!hasAccess) {
-          const targetKelas = data.targetKelas || 'Semua';
-          const targetKategori = data.targetKategori || 'Semua';
-          const matchKelas = targetKelas === 'Semua' || targetKelas === kelas;
-          const matchProgram = targetKategori === 'Semua' || targetKategori === program;
-          // 🔥 BARU: buat targeting umum (bukan pilihan manual guru), akses
-          // sekarang JUGA harus lolos cek paket mapel -- ini yang mencegah
-          // siswa paket 1 mapel otomatis ikut kebuka modul mapel lain.
+          // 🔥 BERUBAH (atas permintaan eksplisit, sama seperti perbaikan di
+          // StudentQuizView.jsx): pengecekan kelas/kategori (`matchKelas`/
+          // `matchProgram`) DIHAPUS TOTAL dari sini -- kode mapel itu SENDIRI
+          // sudah spesifik per jenjang (entri mapel terpisah per jenjang,
+          // kode beda-beda), jadi kelas/kategori itu informasi ganda yang
+          // ternyata jadi titik rapuh nyata: kalau `kelas`/`program` belum
+          // sempat kemuat (kosong) pas pengecekan ini jalan, siswa ketolak
+          // PADAHAL mapelnya udah benar terdaftar. Sekarang akses HANYA
+          // ditentukan dari kodeMapel (`matchSubject`).
           const matchSubject = hasSubjectAccess(enrolledSubjectsRaw, data.subject, data.kodeMapel);
-          hasAccess = matchKelas && matchProgram && matchSubject;
+          hasAccess = matchSubject;
 
-          // 🔥 BARU: log detail alasan akses ditolak/diterima -- kalau ada
-          // laporan "modul gak bisa dibuka via Tautkan Jenjang" lagi, buka
-          // Console browser (F12) pas kejadian, cari baris ini buat lihat
-          // PERSIS bagian mana yang gak cocok (kelas/kategori/mapel).
           console.log('[Cek Akses Modul]', {
             hasAccess,
             modulTitle: data.title,
             modulSubject: data.subject,
             modulKodeMapel: data.kodeMapel,
-            modulTargetKelas: targetKelas,
-            modulTargetKategori: targetKategori,
-            studentKelas: kelas,
-            studentProgram: program,
             studentEnrolledSubjects: enrolledSubjectsRaw,
-            matchKelas, matchProgram, matchSubject,
+            matchSubject,
           });
 
-          // 🔥 BARU: kalau alasan gagalnya SPESIFIK karena paket mapel (bukan
-          // kelas/kategori), kasih pesan yang jelas -- biar siswa/ortu ngerti
-          // ini soal paket langganan, bukan dikira bug/error sistem.
-          if (matchKelas && matchProgram && !matchSubject) {
+          if (!matchSubject) {
             dispatch({ type: 'SET_ERROR', payload: `Modul ini untuk mapel ${data.subject || '-'}, sedangkan paketmu belum termasuk mapel ini. Hubungi admin Bimbel Gemilang untuk info upgrade paket.` });
             dispatch({ type: 'SET_ACCESS', payload: false });
             return;

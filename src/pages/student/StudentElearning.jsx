@@ -326,25 +326,21 @@ const StudentElearning = () => {
           return ok;
         }
         
-        // 2. Cek berdasarkan kelas & program
-        const targetKelas = module.targetKelas || 'Semua';
-        const targetProgram = module.targetKategori || 'Semua';
-        const matchKelas = targetKelas === 'Semua' || targetKelas === kelas;
-        const matchProgram = targetProgram === 'Semua' || targetProgram === program;
-
-        // 🔥 BARU: 3. Cek akses mapel (paket 1 mapel/2 mapel/lengkap) --
-        // SEBELUMNYA TIDAK ADA SAMA SEKALI di sini, jadi modul mapel
-        // apapun nongol di daftar walau siswa gak berhak, baru ditolak
-        // belakangan pas modul-nya diklik. Sekarang disaring dari awal,
-        // konsisten dengan pengecekan yang sama di StudentModuleView.jsx.
+        // 🔥 BERUBAH (atas permintaan eksplisit, sama seperti perbaikan di
+        // StudentQuizView.jsx & StudentModuleView.jsx): pengecekan kelas/
+        // kategori DIHAPUS TOTAL dari sini -- kode mapel itu SENDIRI sudah
+        // spesifik per jenjang, jadi kelas/kategori jadi informasi ganda
+        // yang ternyata jadi titik rapuh nyata (kalau `kelas`/`program`
+        // siswa belum sempat kemuat pas filter ini jalan, modul yang
+        // seharusnya boleh malah gak muncul di daftar). Sekarang murni dari
+        // kodeMapel (`matchSubject`).
         const matchSubject = hasSubjectAccess(enrolledSubjects, module.subject || '', module.kodeMapel || '');
 
-        const ok = matchKelas && matchProgram && matchSubject;
+        const ok = matchSubject;
         if (!ok) {
           rejectedLog.push({
             title: module.title, modulSubject: module.subject, modulKodeMapel: module.kodeMapel,
-            modulTargetKelas: targetKelas, modulTargetProgram: targetProgram,
-            matchKelas, matchProgram, matchSubject,
+            matchSubject,
           });
         }
         return ok;
