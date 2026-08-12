@@ -2425,7 +2425,17 @@ const ManageQuiz = () => {
           });
           
           alert(`✅ Kuis berhasil disimpan ke modul!`);
-          navigate(-1);
+          // 🔥 FIX BUG NYATA: sebelumnya `navigate(-1)` (andalkan "kembali"
+          // berdasar riwayat browser) -- ini GAK RELIABLE. Kalau riwayat
+          // browser sempat "kacau" (refresh halaman, dibuka lewat cara
+          // lain, dll), navigate(-1) bisa nyasar ke halaman MANA PUN yang
+          // kebetulan ada di riwayat sebelumnya -- termasuk balik ke
+          // halaman "buat modul baru" yang kosong (laporan nyata: "kembali
+          // malah ke modul baru kosongan"). Sekarang navigasi eksplisit ke
+          // modul yang BENERAN barusan diedit (`modulId` yang sama persis
+          // dipakai buat updateDoc di atas) -- gak ngandelin riwayat
+          // browser sama sekali, jadi SELALU balik ke modul yang benar.
+          navigate(`/guru/modul/materi?edit=${modulId}`, { replace: true });
           return;
         }
       }
