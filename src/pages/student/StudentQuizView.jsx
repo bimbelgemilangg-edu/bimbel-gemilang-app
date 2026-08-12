@@ -242,6 +242,23 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
       return;
     }
 
+    // 🔥 FIX BUG RACE CONDITION NYATA: efek ini jalan ULANG tiap kali
+    // `studentInfo.nim` berubah -- begitu komponen baru dibuka, dia jalan
+    // PERTAMA KALI dengan data siswa yang belum lengkap (enrolledSubjects
+    // masih null), lalu jalan LAGI begitu data lengkap kemuat. Kedua
+    // eksekusi itu SAMA-SAMA async (banyak `await` ke Firestore) dan
+    // JALAN BARENGAN -- gak ada jaminan urutan SELESAINYA sama dengan
+    // urutan MULAINYA. Terbukti nyata dari console: percobaan KEDUA
+    // (benar, `hasQuizAccess: true`) kadang beres LEBIH DULU, tapi begitu
+    // percobaan PERTAMA (basi, `hasQuizAccess: false`) akhirnya "mendarat"
+    // belakangan, dia MENIMPA hasil yang sudah benar itu dengan
+    // `setError('Anda tidak memiliki akses...')` -- padahal itu hasil dari
+    // data yang udah gak relevan lagi. Sekarang dipasang penanda
+    // `cancelled`: begitu efek ini jalan ULANG (atau komponen dilepas),
+    // hasil dari eksekusi SEBELUMNYA yang masih "nyantol" di-ABAIKAN,
+    // gak lagi boleh nimpa state.
+    let cancelled = false;
+
     const fetchQuiz = async () => {
       // 🔥 FIX BUG PENTING (lanjutan dari fix jadwal sebelumnya): efek ini
       // jalan ULANG setiap kali `studentInfo.nim` berubah (lihat dependency
@@ -265,6 +282,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
       setLoading(true);
       try {
         const snap = await getDoc(doc(db, "bimbel_modul", modulId));
+        if (cancelled) return; // 🔥 eksekusi ini sudah basi (efek sudah jalan ulang) -- abaikan, jangan sentuh state lagi
         if (!snap.exists()) {
           setError('Modul tidak ditemukan');
           setLoading(false);
@@ -294,6 +312,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
             if (parentSnap.exists()) targetingSource = parentSnap.data();
           } catch (e) { /* gagal ambil induk -> pakai data kuis sendiri sbg fallback di bawah */ }
         }
+        if (cancelled) return; // 🔥 eksekusi ini sudah basi -- abaikan sebelum masuk ke keputusan akses final
 
         const nimForAccess = studentInfo.nim;
         let hasQuizAccess = false;
@@ -512,6 +531,11 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     };
 
     fetchQuiz();
+    // 🔥 Cleanup: begitu efek ini jalan ULANG (dependency berubah) atau
+    // komponen dilepas, tandai eksekusi yang lagi berjalan sebagai basi --
+    // ini yang mencegah hasil dari percobaan LAMA "mendarat belakangan" dan
+    // menimpa hasil dari percobaan BARU yang lebih benar.
+    return () => { cancelled = true; };
   }, [modulId, studentInfo.nim, hasExistingAnswer]);
 
   // ===== TIMER =====
