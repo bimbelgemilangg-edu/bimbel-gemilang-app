@@ -420,7 +420,14 @@ const StudentElearning = () => {
           moduleCount: 0,
         };
       }
-      if (m.subject) map[gid].mapelSet.add(m.subject);
+      // 🔥 FIX BUG NYATA: `Set` cuma buang duplikat kalau STRING-nya PERSIS
+      // SAMA -- kalau ada modul lama vs baru yang nyimpen "Bahasa Indonesia
+      // SMA" dengan spasi nyempil/beda kapitalisasi dikit, itu keanggep DUA
+      // nilai beda oleh Set, jadi tetap nongol dobel di daftar (persis kasus
+      // "BAHASA INDONESIA SMA, BAHASA INDONESIA SMA, ..." yang dilaporkan).
+      // Sekarang di-trim dulu sebelum masuk Set, biar duplikat karena
+      // whitespace nyempil beneran kebuang.
+      if (m.subject) map[gid].mapelSet.add(String(m.subject).trim());
       map[gid].moduleCount += 1;
     });
     return Object.values(map)
