@@ -158,6 +158,10 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   const [results, setResults] = useState(null);
   const [studentInfo, setStudentInfo] = useState({ nim: '', name: '', kelas: '', program: '', enrolledSubjects: null });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  // 🔥 BARU: dipakai buat dropdown "Menjodohkan" versi custom (bukan
+  // `<select>` bawaan) -- lihat penjelasan lengkap kenapa ini WAJIB diganti
+  // di dekat renderQuestionBody(), tipe 'matching'.
+  const [openMatchingDropdown, setOpenMatchingDropdown] = useState(null); // `${questionId}-${lIdx}` atau null
   const [showConfirm, setShowConfirm] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
   const [attemptCount, setAttemptCount] = useState(0);
@@ -902,35 +906,92 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
 
       const currentAnswers = answers[question.id] || {};
 
+      // 🔥 FIX BUG NYATA & SERIUS: sebelumnya opsi jodoh dipilih lewat
+      // `<select><option>` BAWAAN HTML. Masalahnya, `<option>` itu SECARA
+      // TEKNIS TIDAK BISA nampilin apa pun selain teks polos -- gak ada
+      // cara render simbol matematika (KaTeX) di dalamnya, apapun cara
+      // kodenya ditulis. Jadi begitu jawabannya ngandung rumus/satuan
+      // (mis. "$5.000\\text{ gram}$"), yang keliatan siswa PASTI kode LaTeX
+      // mentah -- bukan salah kode, tapi keterbatasan dasar HTML `<option>`.
+      // Ini kejadian di banyak mapel (Matematika, Fisika, Kimia, Biologi,
+      // IPAS) karena semua itu wajar pakai satuan/rumus, dan siswa kelas
+      // rendah (SD) yang paling bingung karena mereka belum pernah lihat
+      // notasi kayak gitu. Sekarang diganti dropdown CUSTOM (bukan
+      // `<select>` bawaan) yang dibangun dari div/button biasa -- itu BISA
+      // nampilin hasil renderMath() dengan benar di setiap pilihannya.
       return (
         <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           <div>
             {pairs.map((p, lIdx) => (
-              <div key={lIdx} style={{ padding: '8px 12px', background: '#f8fafc', borderRadius: 6, marginBottom: 6, fontSize: 12 }}>
+              <div key={lIdx} style={{ padding: '8px 12px', background: '#f8fafc', borderRadius: 6, marginBottom: 6, fontSize: 12, minHeight: 36, display: 'flex', alignItems: 'center' }}>
                 {lIdx + 1}. {renderMath(p.left)}
               </div>
             ))}
           </div>
           <div>
-            {pairs.map((p, lIdx) => (
-              <select
-                key={lIdx}
-                value={currentAnswers[lIdx] !== undefined ? currentAnswers[lIdx] : ''}
-                onChange={(e) => {
-                  if (isSubmitted || hasExistingAnswer) return;
-                  const val = e.target.value === '' ? undefined : parseInt(e.target.value);
-                  const next = { ...currentAnswers, [lIdx]: val };
-                  setAnswers(prev => ({ ...prev, [question.id]: next }));
-                }}
-                disabled={isSubmitted || hasExistingAnswer}
-                style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12, marginBottom: 6, background: 'white' }}
-              >
-                <option value="">-- Pilih jodoh --</option>
-                {rightShuffled.map((r, rIdx) => (
-                  <option key={rIdx} value={r.originalIndex}>{r.text}</option>
-                ))}
-              </select>
-            ))}
+            {pairs.map((p, lIdx) => {
+              const ddKey = `${question.id}-${lIdx}`;
+              const isOpen = openMatchingDropdown === ddKey;
+              const selectedRight = rightShuffled.find(r => r.originalIndex === currentAnswers[lIdx]);
+              const isDisabled = isSubmitted || hasExistingAnswer;
+              return (
+                <div key={lIdx} style={{ position: 'relative', marginBottom: 6 }}>
+                  <button
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => !isDisabled && setOpenMatchingDropdown(isOpen ? null : ddKey)}
+                    style={{
+                      width: '100%', textAlign: 'left', padding: 8, borderRadius: 6,
+                      border: `1px solid ${isOpen ? '#8b5cf6' : '#e2e8f0'}`, fontSize: 12,
+                      background: isDisabled ? '#f1f5f9' : 'white', cursor: isDisabled ? 'not-allowed' : 'pointer',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6, minHeight: 36,
+                    }}
+                  >
+                    <span style={{ color: selectedRight ? '#1e293b' : '#94a3b8' }}>
+                      {selectedRight ? renderMath(selectedRight.text) : '-- Pilih jodoh --'}
+                    </span>
+                    <span style={{ color: '#94a3b8', flexShrink: 0 }}>{isOpen ? '▲' : '▼'}</span>
+                  </button>
+                  {isOpen && (
+                    <div style={{
+                      position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 30,
+                      background: 'white', border: '1px solid #e2e8f0', borderRadius: 6,
+                      marginTop: 2, boxShadow: '0 8px 20px rgba(0,0,0,0.12)', maxHeight: 220, overflowY: 'auto',
+                    }}>
+                      <div
+                        onClick={() => {
+                          const next = { ...currentAnswers };
+                          delete next[lIdx];
+                          setAnswers(prev => ({ ...prev, [question.id]: next }));
+                          setOpenMatchingDropdown(null);
+                        }}
+                        style={{ padding: '8px 10px', fontSize: 12, color: '#94a3b8', cursor: 'pointer', borderBottom: '1px solid #f1f5f9' }}
+                      >
+                        -- Pilih jodoh --
+                      </div>
+                      {rightShuffled.map((r, rIdx) => (
+                        <div
+                          key={rIdx}
+                          onClick={() => {
+                            const next = { ...currentAnswers, [lIdx]: r.originalIndex };
+                            setAnswers(prev => ({ ...prev, [question.id]: next }));
+                            setOpenMatchingDropdown(null);
+                          }}
+                          style={{
+                            padding: '8px 10px', fontSize: 12, cursor: 'pointer',
+                            background: currentAnswers[lIdx] === r.originalIndex ? '#f5f3ff' : 'white',
+                          }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = '#faf5ff'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = currentAnswers[lIdx] === r.originalIndex ? '#f5f3ff' : 'white'; }}
+                        >
+                          {renderMath(r.text)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       );
