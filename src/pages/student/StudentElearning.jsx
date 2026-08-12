@@ -407,6 +407,23 @@ const StudentElearning = () => {
 
   // 🔥 BARU: kelompokkan modul per guru (guruId), gabungkan dengan data foto/nama guru
   const teacherGroups = useMemo(() => {
+    // 🔥 BARU: dulu daftar mapel yang ditampilin di header guru itu SEMUA
+    // mapel yang kebetulan diampu guru itu (misal "Fisika SMA, IPAS SD,
+    // Kimia SMA") -- padahal siswa yang lihat itu SMA, jadi kelihatan aneh/
+    // kurang kredibel ("kok tentor SMA-ku ngajar SD juga?"). Sekarang
+    // disaring cuma tampilin mapel yang JENJANGNYA COCOK sama kelas siswa
+    // sendiri (SD/SMP/SMA, diambil dari akhiran nama kelas siswa, mis. "12
+    // SMA" -> "SMA"). Ini MURNI penyaringan TAMPILAN -- akses tetap
+    // ditentukan oleh enrolledSubjects seperti biasa, ini cuma soal apa
+    // yang keliatan di layar biar gak bikin persepsi keliru.
+    const jenjangSiswa = (() => {
+      const k = (studentData.kelas || '').toUpperCase();
+      if (k.includes('SMA')) return 'SMA';
+      if (k.includes('SMP')) return 'SMP';
+      if (k.includes('SD')) return 'SD';
+      return null; // gak kenal jenjangnya (mis. English) -> jangan filter, tampilin apa adanya
+    })();
+
     const map = {};
     modules.forEach(m => {
       const gid = m.guruId || 'unknown';
@@ -427,13 +444,17 @@ const StudentElearning = () => {
       // "BAHASA INDONESIA SMA, BAHASA INDONESIA SMA, ..." yang dilaporkan).
       // Sekarang di-trim dulu sebelum masuk Set, biar duplikat karena
       // whitespace nyempil beneran kebuang.
-      if (m.subject) map[gid].mapelSet.add(String(m.subject).trim());
+      const subjTrim = m.subject ? String(m.subject).trim() : '';
+      // Filter jenjang: kalau kita KENAL jenjang siswa ini, cuma masukin
+      // mapel yang nama-nya mengandung jenjang itu juga.
+      const cocokJenjang = !jenjangSiswa || subjTrim.toUpperCase().includes(jenjangSiswa);
+      if (subjTrim && cocokJenjang) map[gid].mapelSet.add(subjTrim);
       map[gid].moduleCount += 1;
     });
     return Object.values(map)
       .map(g => ({ ...g, mapelList: Array.from(g.mapelSet) }))
       .sort((a, b) => a.nama.localeCompare(b.nama));
-  }, [modules, teachersData]);
+  }, [modules, teachersData, studentData.kelas]);
 
   const selectedTeacher = teacherGroups.find(g => g.guruId === selectedGuruId) || null;
 
