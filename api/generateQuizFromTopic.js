@@ -29,7 +29,11 @@
 const GEMINI_MODELS = [
   'gemini-flash-latest',
   'gemini-flash-lite-latest',
-  'gemini-2.5-flash-lite',
+  // 🔥 FIX: 'gemini-2.5-flash-lite' udah gak bisa dipakai user baru
+  // (Google udah rilis generasi 3.x -- 3.6 Flash & 3.5 Flash-Lite GA
+  // per 21 Juli 2026). Ganti fallback terakhir ke model yang beneran
+  // masih available.
+  'gemini-3.5-flash-lite',
 ];
 
 async function callGemini(systemPrompt, userPrompt, modelName, useTrendSearch) {
