@@ -451,62 +451,23 @@ const ManageQuiz = () => {
   // sekali buat ditargetin ke siswa spesifik.
   const [allStudentsForQuiz, setAllStudentsForQuiz] = useState([]);
   const [filteredStudentsForQuiz, setFilteredStudentsForQuiz] = useState([]);
+  // 🔥 BARU: data siswa MENTAH (belum disaring kodeMapel) -- diisi oleh
+  // loadRefs(), disaring reaktif di effect terpisah tiap `kodeMapel`
+  // (mapel yang lagi dipilih) berubah. Lihat penjelasan lengkap di loadRefs.
+  const [allStudentsForQuizRaw, setAllStudentsForQuizRaw] = useState([]);
   const [studentSearchForQuiz, setStudentSearchForQuiz] = useState('');
   const [showStudentPickerForQuiz, setShowStudentPickerForQuiz] = useState(false);
   const [selectedStudentsForQuiz, setSelectedStudentsForQuiz] = useState([]);
-  // 🔥 BARU: status pemuatan daftar siswa -- dipakai buat bedain "masih
-  // dimuat" / "gagal dimuat" / "beneran kosong", karena tiga kondisi itu
-  // butuh pesan & aksi yang beda ke guru.
-  const [studentsForQuizStatus, setStudentsForQuizStatus] = useState('loading'); // loading | error | loaded
-
-  // Ambil daftar siswa (dipakai kalau guru pilih mode "Siswa Tertentu")
-  // 🔥 FIX BUG "daftar siswa gak muncul": sebelumnya query ini cuma
-  // dicoba SEKALI, dan kalau gagal (paling sering karena race condition --
-  // query ini nembak Firestore SEBELUM sesi login/Auth sempat pulih penuh
-  // begitu halaman baru dibuka, jadi ditolak aturan keamanan), kegagalannya
-  // cuma dicatat di console lalu dibiarkan. Guru cuma lihat "Belum ada data
-  // siswa" yang keliatan seperti memang kosong, padahal sebenarnya GAGAL
-  // MEMUAT. Sekarang logikanya dipisah jadi fungsi `loadStudentsForQuiz`
-  // yang: (1) otomatis dicoba ulang sekali setelah jeda singkat kalau gagal
-  // di percobaan pertama (menutupi race condition semacam itu), dan (2)
-  // kalau tetap gagal, status ditandai 'error' supaya UI bisa kasih tombol
-  // "Coba Lagi" yang jelas -- bisa dipanggil ulang juga kapan saja lewat
-  // tombol itu.
-  const loadStudentsForQuiz = React.useCallback(async () => {
-    setStudentsForQuizStatus('loading');
-    try {
-      const snap = await getDocs(collection(db, "students"));
-      const data = snap.docs.map(d => {
-        const s = d.data();
-        return {
-          id: d.id,
-          studentId: s.studentId || d.id,
-          nama: s.nama || 'Siswa',
-          kelasSekolah: s.kelasSekolah || '-',
-          program: s.kategori || 'Reguler',
-        };
-      }).sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
-      setAllStudentsForQuiz(data);
-      setFilteredStudentsForQuiz(data);
-      setStudentsForQuizStatus('loaded');
-      return true;
-    } catch (e) {
-      console.error("Gagal ambil data siswa buat target kuis:", e);
-      setStudentsForQuizStatus('error');
-      return false;
-    }
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const ok = await loadStudentsForQuiz();
-      if (!ok && !cancelled) {
-        setTimeout(() => { if (!cancelled) loadStudentsForQuiz(); }, 1200);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [loadStudentsForQuiz]);
+  // 🔥 BARU: kode SATU mapel spesifik yang lagi dipilih guru (beda dari
+  // `quizSubject` yang cuma nyimpen NAMA-nya) -- dipakai buat nyaring
+  // daftar siswa & disimpan ke dokumen kuis, supaya target kuis "Bahasa
+  // Indonesia SD" gak nyasar ke siswa SMP/SMA walau guru yang sama ngajar
+  // ketiganya. Lihat penjelasan lengkap di loadRefs().
+  const [kodeMapel, setKodeMapel] = useState('');
+  // 🔥 BARU: pasangan {nama, kode} tiap mapel yang diampu guru ini secara
+  // individual -- dipakai buat nyari kodeMapel yang BENAR begitu guru
+  // ganti pilihan mapel di dropdown Identitas Kuis.
+  const [teacherMapelOptions, setTeacherMapelOptions] = useState([]);
 
   useEffect(() => {
     if (!studentSearchForQuiz.trim()) {
@@ -538,13 +499,15 @@ const ManageQuiz = () => {
   const [antiCheatEnabled, setAntiCheatEnabled] = useState(false);
   
   // Target
-  const [publishTarget, setPublishTarget] = useState('modul');
-  const [selectedModul, setSelectedModul] = useState("");
+  // 🔥 BERUBAH: opsi "Tautkan ke Modul" DIHAPUS -- kalau guru mau kuis
+  // nempel ke sebuah modul, satu-satunya jalan resmi sekarang lewat
+  // "Tambah Kuis" DARI DALAM ManageMateri.jsx. Default sekarang 'mandiri'.
+  const [publishTarget, setPublishTarget] = useState('mandiri');
+  // `selectedModul`/`modulList` DIHAPUS -- gak dipakai lagi.
   const [selectedKelas, setSelectedKelas] = useState("Semua");
   const [selectedProgram, setSelectedProgram] = useState("Semua");
   
   // Data referensi
-  const [modulList, setModulList] = useState([]);
   const [availableClasses, setAvailableClasses] = useState([]);
   const [subjects, setSubjects] = useState(["Umum"]);
   
@@ -692,49 +655,82 @@ const ManageQuiz = () => {
 
   const loadRefs = React.useCallback(async () => {
     setRefsStatus('loading');
-    const [modulResult, siswaResult, guruResult] = await Promise.allSettled([
-      getDocs(query(collection(db, "bimbel_modul"), orderBy("updatedAt", "desc"))),
+    // 🔥 BERUBAH: fetch daftar modul (buat dropdown "Tautkan ke Modul")
+    // DIHAPUS -- opsi itu sudah gak ada lagi (lihat penjelasan di bagian
+    // handleSaveQuiz & render Target Publish). Fetch guru juga DIUBAH: dulu
+    // ambil SEMUA guru se-sekolah lalu gabung SEMUA mapel mereka jadi satu
+    // daftar besar (dropdown nampilin mapel guru LAIN juga, aneh dan gak
+    // relevan) -- sekarang cuma ambil dokumen guru yang LAGI LOGIN, terus
+    // pecah mapel-mapel MILIK GURU ITU SENDIRI jadi opsi individual.
+    const savedTeacher = JSON.parse(localStorage.getItem('teacherData') || '{}');
+    const teacherName = savedTeacher.nama || '';
+
+    const [siswaResult, guruResult] = await Promise.allSettled([
       getDocs(collection(db, "students")),
-      getDocs(collection(db, "teachers")),
+      teacherName
+        ? getDocs(query(collection(db, "teachers"), where("nama", "==", teacherName)))
+        : Promise.resolve({ docs: [] }),
     ]);
 
     let anyFailed = false;
 
-    if (modulResult.status === 'fulfilled') {
-      setModulList(modulResult.value.docs.map(d => ({ id: d.id, ...d.data() })));
-    } else {
-      anyFailed = true;
-      console.error("Gagal ambil daftar modul:", modulResult.reason);
-    }
-
     if (siswaResult.status === 'fulfilled') {
-      const siswaData = siswaResult.value.docs.map(d => d.data());
+      const siswaData = siswaResult.value.docs.map(d => {
+        const s = d.data();
+        return {
+          id: d.id,
+          studentId: s.studentId || d.id,
+          nama: s.nama || 'Siswa',
+          kelasSekolah: s.kelasSekolah || '-',
+          program: s.kategori || 'Reguler',
+          enrolledSubjects: Array.isArray(s.enrolledSubjects) ? s.enrolledSubjects : [],
+        };
+      }).sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+      // 🔥 BARU: data siswa MENTAH (belum disaring kodeMapel) buat panel
+      // "Siswa Tertentu" -- penyaringan sebenarnya dilakukan di effect
+      // terpisah (bereaksi ke `kodeMapel`), lihat penjelasan di sana.
+      setAllStudentsForQuizRaw(siswaData);
       const kelas = [...new Set(siswaData.map(s => s.kelasSekolah))].filter(Boolean).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
       setAvailableClasses(kelas);
     } else {
       anyFailed = true;
-      console.error("Gagal ambil daftar kelas:", siswaResult.reason);
+      console.error("Gagal ambil daftar kelas & siswa:", siswaResult.reason);
     }
 
     if (guruResult.status === 'fulfilled') {
-      const guruData = guruResult.value.docs.map(d => d.data());
-      // 🔥 Satu guru sekarang bisa ngampu lebih dari 1 mapel (field `mapel`
-      // di data guru bisa berisi gabungan "Matematika, IPA" dipisah koma) --
-      // dipecah dulu per mapel supaya dropdown di sini nampilin tiap mapel
-      // satu-satu, bukan gabungan string yang aneh dibaca.
-      const mapel = [...new Set(
-        guruData.flatMap(t => (t.mapel || '').split(',').map(m => m.trim()).filter(Boolean))
-      )];
-      if (mapel.length === 0) mapel.push("Umum");
-      setSubjects(mapel.sort());
+      const guru = guruResult.value.docs[0]?.data();
+      // 🔥 FIX BUG NYATA & PERKETAT (sama seperti perbaikan di
+      // ManageMateri.jsx): guru bisa ngajar LEBIH DARI 1 mapel, disimpan
+      // sebagai STRING GABUNGAN dipisah koma di field `mapel` (nama) &
+      // `kodeMapel` (kode) yang SALING BERPASANGAN posisinya. Sekarang
+      // dipecah jadi pasangan {nama, kode} individual -- guru WAJIB pilih
+      // SATU dari situ buat tiap kuis, supaya kodeMapel yang kesimpen ke
+      // kuis jadi SATU kode spesifik aja (bukan gabungan semua mapel guru
+      // itu) -- ini yang mastiin target siswanya juga tepat sesuai mapel
+      // yang benar-benar dipilih, bukan nyasar ke jenjang lain.
+      const namaList = String(guru?.mapel || '').split(',').map(s => s.trim()).filter(Boolean);
+      const kodeList = String(guru?.kodeMapel || '').split(',').map(s => s.trim()).filter(Boolean);
+      const pairedOptions = namaList.map((nama, idx) => ({ nama, kode: kodeList[idx] || '' }));
+
+      setTeacherMapelOptions(pairedOptions);
+      setSubjects(pairedOptions.length > 0 ? pairedOptions.map(o => o.nama) : ["Umum"]);
+
+      // Default: pilih mapel PERTAMA guru itu, TAPI cuma kalau ini kuis
+      // BARU (belum ada quizSubject terisi dari data tersimpan) -- jangan
+      // menimpa pilihan yang sudah dipulihkan dari dokumen lewat
+      // populateQuizFromDoc().
+      if (pairedOptions.length > 0 && !quizSubject) {
+        setQuizSubject(pairedOptions[0].nama);
+        setKodeMapel(pairedOptions[0].kode);
+      }
     } else {
       anyFailed = true;
-      console.error("Gagal ambil daftar mapel:", guruResult.reason);
+      console.error("Gagal ambil data mapel guru:", guruResult.reason);
     }
 
     setRefsStatus(anyFailed ? 'error' : 'loaded');
     return !anyFailed;
-  }, []);
+  }, [quizSubject]);
 
   useEffect(() => {
     let cancelled = false;
@@ -745,7 +741,28 @@ const ManageQuiz = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [loadRefs]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 🔥 sengaja cuma sekali di awal (bukan [loadRefs]) -- loadRefs sekarang punya dependency quizSubject yang berubah-ubah, kalau diikutin bisa refetch berulang terus
+
+  // ============================================================
+  // 🔥 BARU: SARING DAFTAR SISWA "SISWA TERTENTU" SESUAI MAPEL TERPILIH
+  // ============================================================
+  // Bereaksi ke `kodeMapel` (kode SATU mapel spesifik yang lagi dipilih di
+  // dropdown Identitas Kuis) -- bukan dihitung sekali doang. Jadi kalau
+  // guru ganti pilihan mapel, daftar siswa yang bisa ditarget di panel
+  // "Siswa Tertentu" otomatis ikut nyesuaiin diri: cuma siswa yang memang
+  // didaftarkan admin ke mapel itu (lewat halaman Edit Siswa) yang muncul.
+  useEffect(() => {
+    const normKode = (v) => String(v || '').toLowerCase().trim();
+    const kodeAktif = normKode(kodeMapel);
+    const hasil = !kodeAktif
+      ? allStudentsForQuizRaw // belum ada mapel terpilih -> jangan blokir siapa pun
+      : allStudentsForQuizRaw.filter(s =>
+          s.enrolledSubjects.some(code => normKode(code) === kodeAktif || normKode(code) === 'semua')
+        );
+    setAllStudentsForQuiz(hasil);
+    setFilteredStudentsForQuiz(hasil);
+  }, [kodeMapel, allStudentsForQuizRaw]);
 
   // 🔥 Helper: isi semua state kuis dari SATU dokumen kuis (bukan dokumen
   // modul materi). Dipisah jadi fungsi sendiri supaya bisa dipanggil dari
@@ -754,6 +771,14 @@ const ManageQuiz = () => {
   const populateQuizFromDoc = (data) => {
     setQuizTitle(data.title || "");
     setQuizSubject(data.subject || "");
+    // 🔥 FIX BUG NYATA: kodeMapel materi/kuis ini WAJIB disinkronkan ke yang
+    // TERSIMPAN di dokumennya sendiri -- sebelumnya cuma `subject` (nama)
+    // yang dipulihkan, `kodeMapel` gak disentuh sama sekali, jadi tetap
+    // nyangkut ke default mapel PERTAMA guru (dari loadRefs). Kalau kuis
+    // ini sebenarnya buat mapel ke-2/ke-3 guru, kodeMapel-nya jadi SALAH
+    // begitu dibuka lagi -- daftar siswa "Siswa Tertentu" bisa nampilin
+    // siswa mapel yang keliru, dan pengecekan akses siswa jadi salah arah.
+    if (data.kodeMapel) setKodeMapel(data.kodeMapel);
     // deadlineQuiz lama tidak lagi dibaca ke state (field sudah dihapus dari UI)
     setTimeLimit(data.timeLimit || 0);
     setRandomOrder(data.randomOrder || false);
@@ -837,8 +862,7 @@ const ManageQuiz = () => {
           return;
         }
 
-        setPublishTarget('modul');
-        setSelectedModul(modulId);
+        setPublishTarget('mandiri'); // nilai sementara, langsung ditimpa populateQuizFromDoc() di bawah kalau datanya sudah punya target lain
         setIsEditingExistingQuiz(true);
         populateQuizFromDoc(data);
         return;
@@ -858,8 +882,10 @@ const ManageQuiz = () => {
       // Sekarang kita cari dulu ID dokumen kuis yang benar (dari parameter
       // `quizId` di URL, atau sebagai cadangan dicari dari `section.quizId`
       // di dalam modul induk), baru fetch DOKUMEN KUIS-nya sendiri.
-      setPublishTarget('modul');
-      setSelectedModul(modulId);
+      // 🔥 BERUBAH: `setPublishTarget`/`setSelectedModul` yang dulu ada di
+      // sini DIHAPUS -- gak relevan buat kuis isFromModul (panel Target
+      // Publish sama sekali gak dirender buat kasus ini, selalu diganti
+      // kotak info "Kuis Ini Bagian dari Modul").
 
       let quizIdToLoad = linkedQuizIdParam || null;
       if (!quizIdToLoad) {
@@ -1950,6 +1976,12 @@ const ManageQuiz = () => {
           ...quizPayload,
           title: quizTitle.toUpperCase(),
           subject: quizSubject || "Kuis",
+          // 🔥 FIX BUG NYATA: kodeMapel sebelumnya TIDAK ikut diupdate di
+          // sini -- kalau guru buka lagi kuis lama buat diedit dan GANTI
+          // pilihan mapelnya, `subject` (nama) keupdate tapi `kodeMapel`
+          // (kode yang beneran dipakai buat pengecekan akses) tetap
+          // nyangkut ke nilai lama. Sekarang ikut disinkronkan.
+          kodeMapel: kodeMapel || '',
           targetKategori: publishTarget === 'jenjang' ? selectedProgram : "Semua",
           targetKelas: publishTarget === 'jenjang' ? selectedKelas : "Semua",
           sendToSpecificStudents: publishTarget === 'siswa',
@@ -2074,95 +2106,46 @@ const ManageQuiz = () => {
         }
       }
 
-      // 🔥 FIX ARSITEKTUR BESAR: sebelumnya "Tautkan ke Modul" nimpa field
-      // quizData dkk LANGSUNG ke dokumen modul tujuan (updateDoc ke root
-      // field-nya). Itu SALAH — tampilan materi (blocks) sama sekali gak baca
-      // field itu, jadi biarpun sistem bilang "berhasil", kuisnya gak pernah
-      // beneran nongol sebagai konten di dalam modul. Sekarang dibikin BENAR:
-      // kuis disimpan sebagai DOKUMEN TERPISAH (persis kayak kuis mandiri),
-      // lalu ditambahkan sebagai SATU BLOK BARU bertipe "quiz" di dalam
-      // `blocks` modul tujuan — ini format yang beneran dikenali & ditampilkan
-      // sistem materi (sama seperti kalau guru bikin kuis dari dalam editor
-      // materi langsung).
-      if (publishTarget === 'modul') {
-        if (!selectedModul) {
-          alert("❌ Pilih modul tujuan!");
-          setLoading(false);
-          return;
-        }
-        const modulSnap = await getDoc(doc(db, "bimbel_modul", selectedModul));
-        if (!modulSnap.exists()) {
-          alert("❌ Modul tujuan tidak ditemukan!");
-          setLoading(false);
-          return;
-        }
-        const modulData = modulSnap.data();
-
-        // 🔥 Sama seperti perbaikan di atas: ditandai parentModulId supaya
-        // akses kuis ini SELAMANYA ngikut modul tujuan, gak pernah dievaluasi
-        // sendiri (jadi gak akan basi walau target modul induk berubah lagi
-        // nanti).
-        const inheritedTargeting = {
-          parentModulId: selectedModul,
-          targetKategori: modulData.targetKategori || 'Semua',
-          targetKelas: modulData.targetKelas || 'Semua',
-          sendToSpecificStudents: !!modulData.sendToSpecificStudents,
-          selectedStudents: modulData.selectedStudents || [],
-          studentIds: modulData.studentIds || [],
-        };
-
-        // 1. Simpan kuis sebagai dokumen tersendiri
-        const newQuizDoc = await addDoc(collection(db, "bimbel_modul"), {
-          ...quizPayload,
-          ...inheritedTargeting,
-          title: quizTitle.toUpperCase(),
-          subject: modulData.subject || quizSubject || "Kuis",
-          type: 'kuis_mandiri',
-          status: 'aktif',
-          guruId: modulData.guruId || savedTeacher.guruId || savedTeacher.id || '',
-          guruName: modulData.guruName || savedTeacher.nama || '',
-          kodeMapel: modulData.kodeMapel || savedTeacher.kodeMapel || '',
-          createdAt: serverTimestamp()
-        });
-
-        // 2. Tambahkan sebagai blok baru bertipe "quiz" di dalam modul tujuan
-        const existingBlocks = modulData.blocks || [];
-        const newBlock = {
-          id: Date.now(),
-          type: 'quiz',
-          quizId: newQuizDoc.id,
-          quizTitle: quizTitle,
-          quizQuestions: valid.length,
-        };
-        await updateDoc(doc(db, "bimbel_modul", selectedModul), {
-          blocks: [...existingBlocks, newBlock],
-          updatedAt: serverTimestamp(),
-        });
-
-        alert(`✅ Kuis "${quizTitle}" berhasil ditambahkan ke dalam modul "${modulData.title || ''}"!`);
-      } else {
-        await addDoc(collection(db, "bimbel_modul"), {
-          title: quizTitle.toUpperCase(),
-          subject: quizSubject || "Kuis",
-          ...quizPayload,
-          type: 'kuis_mandiri',
-          targetKategori: publishTarget === 'jenjang' ? selectedProgram : "Semua",
-          targetKelas: publishTarget === 'jenjang' ? selectedKelas : "Semua",
-          // 🔥 BARU: sebelumnya field-field ini TIDAK PERNAH ditulis di
-          // jalur kuis standalone -- makanya "target siswa tertentu"
-          // buat kuis mandiri gak pernah bisa berfungsi sama sekali.
-          sendToSpecificStudents: publishTarget === 'siswa',
-          selectedStudents: publishTarget === 'siswa' ? selectedStudentsForQuiz : [],
-          studentIds: publishTarget === 'siswa' ? selectedStudentsForQuiz.map(s => s.studentId) : [],
-          status: 'aktif',
-          guruId: savedTeacher.guruId || savedTeacher.id || '',
-          kodeMapel: savedTeacher.kodeMapel || '',
-          guruName: savedTeacher.nama || '',
-          authorName: localStorage.getItem('teacherName') || localStorage.getItem('userName') || "Guru",
-          createdAt: serverTimestamp()
-        });
-        alert(`✅ Kuis mandiri diterbitkan!`);
-      }
+      // 🔥 BERUBAH: blok "Tautkan ke Modul" DIHAPUS TOTAL. Alasannya: dua
+      // jalur berbeda buat hasil yang sama (nempelin kuis ke sebuah modul)
+      // -- (1) lewat sini, pilih modul dari dropdown SETELAH kuis dibuat
+      // terpisah, vs (2) lewat "Tambah Kuis" DARI DALAM ManageMateri.jsx --
+      // bikin sistem gampang salah kira satu skenario sebagai skenario
+      // lainnya. Sekarang cuma ada SATU jalan resmi buat kuis nempel ke
+      // modul: dibuat DARI DALAM modul itu sendiri (isFromModul, ditangani
+      // di percabangan atas). Kuis yang dibuat dari halaman ini SELALU jadi
+      // kuis mandiri.
+      //
+      // 🔥 FIX BUG NYATA & PERKETAT: `kodeMapel` yang disimpan sekarang
+      // pakai state `kodeMapel` (kode SATU mapel spesifik yang dipilih guru
+      // di dropdown Identitas Kuis) -- BUKAN LAGI `savedTeacher.kodeMapel`
+      // (gabungan SEMUA mapel guru itu). Sebelumnya, guru yang ngajar 3
+      // mapel (mis. Bahasa Indonesia SD/SMP/SMA) selalu nyimpen KETIGA kode
+      // itu ke SETIAP kuis yang dia buat, gak peduli mapel mana yang
+      // sebenernya dipilih -- akibatnya kuis "Bahasa Indonesia SD" bisa
+      // "nyasar" ketarget juga ke siswa SMP/SMA. Sekarang targetnya presisi
+      // ke SATU mapel yang benar-benar dipilih.
+      await addDoc(collection(db, "bimbel_modul"), {
+        title: quizTitle.toUpperCase(),
+        subject: quizSubject || "Kuis",
+        ...quizPayload,
+        type: 'kuis_mandiri',
+        targetKategori: publishTarget === 'jenjang' ? selectedProgram : "Semua",
+        targetKelas: publishTarget === 'jenjang' ? selectedKelas : "Semua",
+        // 🔥 BARU: sebelumnya field-field ini TIDAK PERNAH ditulis di
+        // jalur kuis standalone -- makanya "target siswa tertentu"
+        // buat kuis mandiri gak pernah bisa berfungsi sama sekali.
+        sendToSpecificStudents: publishTarget === 'siswa',
+        selectedStudents: publishTarget === 'siswa' ? selectedStudentsForQuiz : [],
+        studentIds: publishTarget === 'siswa' ? selectedStudentsForQuiz.map(s => s.studentId) : [],
+        status: 'aktif',
+        guruId: savedTeacher.guruId || savedTeacher.id || '',
+        kodeMapel: kodeMapel || savedTeacher.kodeMapel || '',
+        guruName: savedTeacher.nama || '',
+        authorName: localStorage.getItem('teacherName') || localStorage.getItem('userName') || "Guru",
+        createdAt: serverTimestamp()
+      });
+      alert(`✅ Kuis mandiri diterbitkan!`);
       localStorage.removeItem(draftKey);
       navigate(-1);
     } catch (err) { 
@@ -2324,10 +2307,27 @@ const ManageQuiz = () => {
             bikin bingung karena mirip "Jadwal Kuis" di bawah, padahal field ini
             TIDAK PERNAH dibaca/dipakai sama sekali di sisi siswa. Pengaturan
             buka/tutup kuis yang beneran berfungsi cuma "2. Jadwal Kuis". */}
-        <select value={quizSubject} onChange={e => setQuizSubject(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', background: 'white', boxSizing: 'border-box' }}>
-          <option value="">Pilih Mapel</option>
-          {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <select
+            value={quizSubject}
+            onChange={e => {
+              const namaTerpilih = e.target.value;
+              setQuizSubject(namaTerpilih);
+              // 🔥 FIX: begitu guru ganti pilihan mapel, kodeMapel kuis ini
+              // ikut disetel ke kode yang SPESIFIK punya mapel itu (bukan
+              // tetap nyangkut ke kode gabungan semua mapel guru) -- ini
+              // yang mastiin target siswa "Siswa Tertentu" di bawah otomatis
+              // ikut nyaring sesuai mapel yang benar-benar dipilih di sini.
+              const match = teacherMapelOptions.find(o => o.nama === namaTerpilih);
+              setKodeMapel(match?.kode || '');
+            }}
+            style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', background: 'white', boxSizing: 'border-box' }}
+          >
+            <option value="">Pilih Mapel</option>
+            {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          {kodeMapel && <span style={{ background: '#ede9fe', padding: '0 12px', borderRadius: 6, fontSize: 10, fontWeight: 600, color: '#8b5cf6', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>📌 {kodeMapel}</span>}
+        </div>
       </div>
 
       {/* ========================================================== */}
@@ -2561,20 +2561,9 @@ const ManageQuiz = () => {
         </h4>
         
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
-          <button onClick={() => setPublishTarget('modul')} style={{ 
-            padding: '8px 14px', 
-            borderRadius: 8, 
-            border: publishTarget === 'modul' ? '2px solid #10b981' : '1px solid #e2e8f0',
-            background: publishTarget === 'modul' ? '#f0fdf4' : 'white',
-            cursor: 'pointer',
-            fontSize: 11,
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6
-          }}>
-            <BookOpen size={14} color={publishTarget === 'modul' ? '#10b981' : '#94a3b8'} /> Tautkan ke Modul
-          </button>
+          {/* 🔥 BERUBAH: tombol "Tautkan ke Modul" DIHAPUS -- kalau guru mau
+              kuis nempel ke modul, satu-satunya jalan resmi sekarang lewat
+              "Tambah Kuis" DARI DALAM ManageMateri.jsx. */}
           <button onClick={() => setPublishTarget('mandiri')} style={{ 
             padding: '8px 14px', 
             borderRadius: 8, 
@@ -2622,18 +2611,10 @@ const ManageQuiz = () => {
           </button>
         </div>
 
-        {publishTarget === 'modul' && (
-          <div>
-            <select value={selectedModul} onChange={e => setSelectedModul(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #10b981', fontSize: 12, outline: 'none', background: 'white' }}>
-              <option value="">{refsStatus === 'loading' ? 'Memuat daftar modul...' : 'Pilih Modul...'}</option>
-              {modulList.filter(m => !m.type || m.type !== 'kuis_mandiri').map(m => <option key={m.id} value={m.id}>{m.title || m.id}</option>)}
-            </select>
-            {refsStatus === 'error' && (
-              <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#ef4444' }}>
-                ⚠️ Gagal memuat sebagian data (daftar modul/kelas/mapel).
-                <button type="button" onClick={loadRefs} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '3px 10px', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 10 }}>🔄 Coba Lagi</button>
-              </div>
-            )}
+        {refsStatus === 'error' && (
+          <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#ef4444' }}>
+            ⚠️ Gagal memuat sebagian data (daftar siswa/kelas/mapel).
+            <button type="button" onClick={loadRefs} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '3px 10px', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 10 }}>🔄 Coba Lagi</button>
           </div>
         )}
 
@@ -2678,16 +2659,18 @@ const ManageQuiz = () => {
 
             {showStudentPickerForQuiz && (
               <div style={{ marginTop: 6, maxHeight: 200, overflowY: 'auto', background: 'white', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-                {studentsForQuizStatus === 'loading' ? (
+                {refsStatus === 'loading' ? (
                   <p style={{ padding: 12, fontSize: 11, color: '#94a3b8', textAlign: 'center', margin: 0 }}>⏳ Memuat daftar siswa...</p>
-                ) : studentsForQuizStatus === 'error' ? (
+                ) : refsStatus === 'error' ? (
                   <div style={{ padding: 14, textAlign: 'center' }}>
                     <p style={{ fontSize: 11, color: '#ef4444', margin: '0 0 8px' }}>⚠️ Gagal memuat daftar siswa.</p>
-                    <button type="button" onClick={loadStudentsForQuiz} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '5px 14px', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 11 }}>🔄 Coba Lagi</button>
+                    <button type="button" onClick={loadRefs} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '5px 14px', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 11 }}>🔄 Coba Lagi</button>
                   </div>
                 ) : filteredStudentsForQuiz.length === 0 ? (
                   <p style={{ padding: 12, fontSize: 11, color: '#94a3b8', textAlign: 'center', margin: 0 }}>
-                    {allStudentsForQuiz.length === 0 ? 'Belum ada data siswa.' : 'Siswa tidak ditemukan.'}
+                    {allStudentsForQuiz.length === 0
+                      ? (kodeMapel ? `Belum ada siswa yang terdaftar ke mapel ini (${kodeMapel}). Daftarkan dulu lewat halaman Edit Siswa.` : 'Belum ada data siswa.')
+                      : 'Siswa tidak ditemukan.'}
                   </p>
                 ) : (
                   filteredStudentsForQuiz.map(student => {
