@@ -113,7 +113,27 @@ const renderMath = (text) => {
       try { return <InlineMath key={i} math={part.substring(1, part.length - 1)} />; }
       catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
     }
-    return <span key={i}>{part}</span>;
+    // 🔥 FIX: sama seperti di ManageQuiz.jsx -- kalau AI kelolos nyelipin
+    // markdown (**tebal**, baris baru), siswa yang ngerjain soal TETAP
+    // liat tampilan rapi, bukan simbol mentah yang bikin bingung pas ujian.
+    const lines = part.split('\n');
+    return (
+      <React.Fragment key={i}>
+        {lines.map((line, li) => {
+          const boldParts = line.split(/(\*\*.+?\*\*)/g);
+          return (
+            <React.Fragment key={li}>
+              {boldParts.map((bp, bi) =>
+                bp.startsWith('**') && bp.endsWith('**') && bp.length > 4
+                  ? <strong key={bi}>{bp.slice(2, -2)}</strong>
+                  : bp
+              )}
+              {li < lines.length - 1 && <br />}
+            </React.Fragment>
+          );
+        })}
+      </React.Fragment>
+    );
   });
 };
 
