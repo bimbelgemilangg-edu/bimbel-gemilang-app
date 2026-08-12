@@ -341,6 +341,12 @@ const ManageMateri = () => {
   
   const [allStudents, setAllStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
+  // 🔥 BARU: simpan data siswa MENTAH (belum disaring kodeMapel) terpisah
+  // dari `allStudents` (yang sudah disaring) -- soalnya sekarang guru bisa
+  // GANTI pilihan mapel di Langkah 1 (dropdown), dan daftar siswa target
+  // di Langkah 3 WAJIB ikut nyesuaiin diri ke mapel yang lagi dipilih SAAT
+  // ITU, bukan cuma dihitung sekali pas halaman pertama dibuka.
+  const [allStudentsRaw, setAllStudentsRaw] = useState([]);
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [studentSearch, setStudentSearch] = useState('');
   const [showStudentPicker, setShowStudentPicker] = useState(false);
@@ -351,6 +357,11 @@ const ManageMateri = () => {
   
   const [availableClasses, setAvailableClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  // 🔥 BARU: pasangan {nama, kode} per mapel yang diampu guru ini secara
+  // individual -- dipakai buat nyari kodeMapel yang BENAR (satu kode
+  // spesifik, bukan gabungan semua mapel guru) begitu guru ganti pilihan
+  // mapel di dropdown Langkah 1.
+  const [teacherMapelOptions, setTeacherMapelOptions] = useState([]);
   const [authorName, setAuthorName] = useState("");
 
   const COLLECTION_NAME = "bimbel_modul";
@@ -391,10 +402,41 @@ const ManageMateri = () => {
         if (!snapGuru.empty) {
           const guru = snapGuru.docs[0].data();
           setGuruData(guru);
-          kodeMapelVal = guru.kodeMapel || '';
-          setKodeMapel(kodeMapelVal);
-          setSubject(guru.mapel || '');
-          if (guru.mapel) setSubjects([guru.mapel]);
+
+          // 🔥 FIX BUG NYATA & PERKETAT: guru bisa ngajar LEBIH DARI 1 mapel
+          // (mis. "Bahasa Indonesia SD, Bahasa Indonesia SMP, Bahasa
+          // Indonesia SMA"), disimpan sebagai STRING GABUNGAN dipisah koma
+          // di field `mapel` (nama) & `kodeMapel` (kode) -- posisinya
+          // SALING BERPASANGAN (index ke-0 nama pasangan index ke-0 kode,
+          // dst). SEBELUMNYA ini gak pernah dipecah: dropdown "Mata
+          // Pelajaran" cuma punya SATU pilihan berisi STRING GABUNGAN itu
+          // utuh, dan `kodeMapel` yang kesimpen ke SETIAP materi juga
+          // SELALU gabungan SEMUA mapel guru -- bukan cuma mapel yang
+          // sebenarnya dipilih buat materi itu. Akibatnya materi "Bahasa
+          // Indonesia SD" bisa "nyasar" ketarget juga ke siswa SMP/SMA
+          // (dan sebaliknya), karena kodeMapel-nya nyangkut ketiga-tiganya
+          // sekaligus -- ini yang bikin sistem gak "profesional/fokus"
+          // sesuai maksud awal (guru pilih SATU mapel spesifik per materi).
+          //
+          // Sekarang dipecah jadi pasangan {nama, kode} individual, dan
+          // guru WAJIB pilih SATU dari situ buat tiap materi -- kodeMapel
+          // yang kesimpen ke materi jadi SATU kode spesifik aja, bukan
+          // gabungan semua mapel guru itu.
+          const namaList = String(guru.mapel || '').split(',').map(s => s.trim()).filter(Boolean);
+          const kodeList = String(guru.kodeMapel || '').split(',').map(s => s.trim()).filter(Boolean);
+          const pairedOptions = namaList.map((nama, idx) => ({ nama, kode: kodeList[idx] || '' }));
+
+          setTeacherMapelOptions(pairedOptions);
+          setSubjects(pairedOptions.map(o => o.nama));
+
+          // Default: pilih mapel PERTAMA guru itu (guru tetap bisa ganti
+          // manual di dropdown Langkah 1 kalau mau bikin materi buat mapel
+          // lain yang dia ampu).
+          if (pairedOptions.length > 0) {
+            setSubject(pairedOptions[0].nama);
+            kodeMapelVal = pairedOptions[0].kode;
+            setKodeMapel(kodeMapelVal);
+          }
         }
       }
       // 🔥 BARU: kodeMapel ikut di-return (bukan cuma di-set ke state) supaya
@@ -483,17 +525,8 @@ const ManageMateri = () => {
         // "students", sama seperti cara availableClasses diambil di bawah,
         // supaya semua siswa yang terdaftar selalu bisa dipilih.
         //
-        // 🔥 BARU (lapis pengaman tambahan): daftar ini SEKARANG JUGA
-        // difilter -- HANYA siswa yang sudah didaftarkan admin ke mapel
-        // guru ini (field `enrolledSubjects`, sistem yang sama dipakai di
-        // Manajemen Jadwal) yang muncul di sini. Ini konsisten dengan
-        // aturan "kalau siswa gak muncul di Jadwal Besar buat mapel ini,
-        // dia juga gak akan muncul di sini" -- yang mengurangi risiko
-        // modul salah kirim (misal modul mapel SMA gak sengaja kekirim ke
-        // siswa SD/SMP yang sebenarnya gak terdaftar ke mapel itu).
         const snapSiswa = await getDocs(collection(db, "students"));
-        const normKode = (v) => String(v || '').toLowerCase().trim();
-        const allSiswaData = snapSiswa.docs.map(d => {
+        const rawSiswaData = snapSiswa.docs.map(d => {
           const data = d.data();
           return {
             id: d.id,
@@ -504,18 +537,20 @@ const ManageMateri = () => {
             isActive: data.status === 'Aktif' && !data.isBlocked,
             enrolledSubjects: Array.isArray(data.enrolledSubjects) ? data.enrolledSubjects : [],
           };
-        }).filter(s => {
-          if (!kodeMapelVal) return true; // kodeMapel guru belum ke-set (data guru belum lengkap) -> jangan blokir semua siswa gara-gara ini
-          return s.enrolledSubjects.some(code => normKode(code) === normKode(kodeMapelVal) || normKode(code) === 'semua');
         }).sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
 
-        setAllStudents(allSiswaData);
-        setFilteredStudents(allSiswaData);
-        setStats(prev => ({ ...prev, totalSiswa: allSiswaData.length }));
+        // 🔥 BARU: data mentah (BELUM disaring kodeMapel) disimpan terpisah.
+        // Penyaringan sebenarnya sekarang dilakukan di effect terpisah di
+        // bawah (bereaksi ke `kodeMapel`), supaya begitu guru GANTI pilihan
+        // mapel di Langkah 1, daftar siswa target di Langkah 3 ikut
+        // nyesuaiin diri secara otomatis -- bukan cuma dihitung sekali pas
+        // halaman pertama dibuka pakai mapel PERTAMA guru itu doang.
+        setAllStudentsRaw(rawSiswaData);
+        setStats(prev => ({ ...prev, totalSiswa: rawSiswaData.length }));
 
         if (editId) await fetchModulData();
 
-        const classes = [...new Set(allSiswaData.map(s => s.kelasSekolah).filter(k => k && k !== '-'))];
+        const classes = [...new Set(rawSiswaData.map(s => s.kelasSekolah).filter(k => k && k !== '-'))];
         setAvailableClasses(['Semua', ...classes.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))]);
         
       } catch (e) {
@@ -527,6 +562,30 @@ const ManageMateri = () => {
     loadData();
   }, [editId]);
 
+  // ============================================================
+  // 🔥 BARU: SARING DAFTAR SISWA TARGET SESUAI MAPEL YANG LAGI DIPILIH
+  // ============================================================
+  // Effect ini KHUSUS bereaksi ke `kodeMapel` (kode SATU mapel spesifik
+  // yang lagi dipilih guru di Langkah 1) -- bukan cuma dihitung sekali pas
+  // halaman dibuka. Jadi kalau guru A ngampu 3 mapel (Bahasa Indonesia
+  // SD/SMP/SMA) dan ganti-ganti pilihan mapel di dropdown Langkah 1, daftar
+  // siswa target di Langkah 3 OTOMATIS ikut nyesuaiin diri -- materi
+  // "Bahasa Indonesia SD" cuma nampilin siswa SD yang didaftarkan admin ke
+  // mapel itu, "Bahasa Indonesia SMP" cuma nampilin siswa SMP-nya, dst --
+  // gak lagi tercampur/nyasar antar jenjang walau guru & nama pelajarannya
+  // sama.
+  useEffect(() => {
+    const normKode = (v) => String(v || '').toLowerCase().trim();
+    const kodeAktif = normKode(kodeMapel);
+    const hasil = !kodeAktif
+      ? allStudentsRaw // belum ada mapel terpilih (data belum lengkap) -> jangan blokir siapa pun
+      : allStudentsRaw.filter(s =>
+          s.enrolledSubjects.some(code => normKode(code) === kodeAktif || normKode(code) === 'semua')
+        );
+    setAllStudents(hasil);
+    setFilteredStudents(hasil);
+  }, [kodeMapel, allStudentsRaw]);
+
   const fetchModulData = async () => {
     try {
       const docRef = doc(db, COLLECTION_NAME, editId);
@@ -536,6 +595,14 @@ const ManageMateri = () => {
         setModulId(editId);
         setTitle(data.title || "");
         setSubject(data.subject || "");
+        // 🔥 FIX: kodeMapel materi ini ikut disinkronkan ke yang TERSIMPAN di
+        // dokumennya sendiri -- sebelumnya cuma `subject` (nama) yang
+        // dipulihkan, `kodeMapel` tetap nyangkut ke default mapel PERTAMA
+        // guru itu (dari fetchTeacherData). Kalau materi ini sebenarnya
+        // buat mapel ke-2/ke-3 guru, kodeMapel-nya jadi SALAH begitu dibuka
+        // lagi -- daftar siswa target di Langkah 3 bisa nampilin siswa
+        // mapel yang keliru.
+        if (data.kodeMapel) setKodeMapel(data.kodeMapel);
         setCoverImage(data.coverImage || null);
         setCoverFilePath(data.coverFilePath || '');
         setDescription(data.description || "");
@@ -1620,7 +1687,21 @@ const ManageMateri = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 480 }}>
             <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Judul modul... (wajib)" style={styles.input} autoFocus />
             <div style={{ display: 'flex', gap: 8 }}>
-              <select value={subject} onChange={e => setSubject(e.target.value)} style={{ ...styles.select, flex: 1 }}>
+              <select
+                value={subject}
+                onChange={e => {
+                  const namaTerpilih = e.target.value;
+                  setSubject(namaTerpilih);
+                  // 🔥 FIX: begitu guru ganti pilihan mapel, kodeMapel materi
+                  // ini ikut disetel ke kode yang SPESIFIK punya mapel itu
+                  // (bukan tetap nyangkut ke kode gabungan semua mapel guru)
+                  // -- ini yang mastiin materi "Bahasa Indonesia SD" cuma
+                  // ketarget ke siswa SD, bukan ikut ke SMP/SMA juga.
+                  const match = teacherMapelOptions.find(o => o.nama === namaTerpilih);
+                  setKodeMapel(match?.kode || '');
+                }}
+                style={{ ...styles.select, flex: 1 }}
+              >
                 <option value="">Pilih Mata Pelajaran (wajib)</option>
                 {subjects.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
