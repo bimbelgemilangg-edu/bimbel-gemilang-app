@@ -28,29 +28,30 @@ import { collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore
  * @param {string} [opts.fileName]
  */
 export async function notifyStudents({
-  // 🔥 FIX BUG PENTING ("notif nyasar ke semua siswa semua jenjang"):
-  // sebelumnya targetKelas & targetKategori punya default value 'Semua' di
-  // sini. Masalahnya, default parameter di JavaScript JUGA aktif kalau
-  // pemanggil mengirim `undefined` secara eksplisit -- bukan cuma kalau
-  // parameternya benar-benar tidak diisi. Beberapa pemanggil (misal
-  // ManageMateri.jsx) memang mengirim `undefined` untuk kedua field ini
-  // saat memakai mode "kirim ke siswa tertentu". Normalnya itu aman karena
-  // `specificStudentIds` akan terisi menggantikannya -- TAPI kalau karena
-  // sebab apa pun (race condition, state kosong, bug kecil di pemanggil)
-  // `specificStudentIds` ikut kosong juga, fungsi ini dulu diam-diam
-  // menganggap "targetKelas=Semua & targetKategori=Semua" dan langsung
-  // MEMBROADCAST notifikasi ke SELURUH SISWA DI SEMUA JENJANG (SD-SMA) --
-  // tanpa error, tanpa peringatan apa pun. Itu pola yang paling mungkin
-  // menyebabkan laporan "notif kelas 9 SMP nyasar ke semua siswa".
+  // 🔥 FIX BUG BARU & PALING PENTING (laporan nyata: "guru SMP upload
+  // sesuatu, notifnya muncul di siswa SD"): sistem AKSES KONTEN (siapa
+  // yang boleh buka modul/kuis) SUDAH DIPINDAH TOTAL ke `kodeMapel` +
+  // `enrolledSubjects` siswa beberapa perbaikan lalu -- targetKelas &
+  // targetKategori SUDAH TIDAK LAGI dipakai buat nentuin akses konten.
+  // TAPI fungsi notifikasi ini KELEWATAN, masih pakai targetKelas/
+  // targetKategori (skema LAMA) buat nentuin siapa yang dikirimi
+  // notifikasi -- jadi NOTIFIKASI dan AKSES KONTEN jalan di DUA ATURAN
+  // YANG BEDA. Efeknya persis laporan yang masuk: guru bikin modul mapel
+  // SMP (targetKelas defaultnya sering "Semua" karena akses udah gak
+  // bergantung ke situ lagi), notifikasinya jadi ke-broadcast ke SEMUA
+  // KELAS termasuk SD -- padahal siswa SD itu gak akan pernah bisa buka
+  // modulnya sama sekali (mapelnya gak match), jadi notifnya nyasar/gak
+  // relevan buat mereka.
   //
-  // Sekarang default value DIHILANGKAN dari sini. 'Semua' cuma dipakai
-  // kalau pemanggil BENAR-BENAR mengirim string 'Semua' secara eksplisit
-  // (pilihan sadar dari UI). Kalau targetKelas & targetKategori dua-duanya
-  // kosong/undefined DAN specificStudentIds juga kosong, fungsi ini
-  // MENOLAK MENGIRIM (fail-safe) dan mencatat peringatan di console --
-  // bukan lagi diam-diam mengirim ke semua orang (fail-open).
-  targetKelas,
-  targetKategori,
+  // Sekarang `kodeMapel` jadi PENENTU UTAMA audiens notifikasi -- SAMA
+  // PERSIS aturan yang dipakai buat akses konten (`enrolledSubjects`
+  // siswa harus mengandung kodeMapel itu, atau 'Semua'). targetKelas/
+  // targetKategori DIHAPUS dari sini (bukan dipakai buat filter lagi) --
+  // supaya SATU-SATUNYA sumber kebenaran soal "siswa ini dapat notif
+  // modul ini atau enggak" SAMA PERSIS dengan "siswa ini bisa buka modul
+  // ini atau enggak". Gak ada lagi dua aturan yang bisa saling gak
+  // sinkron.
+  kodeMapel,
   specificStudentIds = [],
   type,
   title,
@@ -65,42 +66,43 @@ export async function notifyStudents({
     if (specificStudentIds.length > 0) {
       recipientIds = specificStudentIds;
     } else {
-      const kelasProvided = targetKelas !== undefined && targetKelas !== null && targetKelas !== '';
-      const kategoriProvided = targetKategori !== undefined && targetKategori !== null && targetKategori !== '';
+      const kodeProvided = typeof kodeMapel === 'string' && kodeMapel.trim() !== '';
 
-      // 🔥 GERBANG FAIL-SAFE: kalau gak ada satu pun sinyal targeting yang
-      // jelas (bukan siswa spesifik, bukan kelas spesifik, bukan kategori
-      // spesifik -- semuanya kosong), ini HAMPIR PASTI bug di pemanggil,
-      // bukan niat asli guru buat kirim ke seluruh siswa. Tolak kirim
-      // daripada menebak "berarti maksudnya semua orang".
-      if (!kelasProvided && !kategoriProvided) {
+      // 🔥 GERBANG FAIL-SAFE (tetap dipertahankan, sekarang berbasis
+      // kodeMapel): kalau gak ada kodeMapel yang jelas DAN bukan siswa
+      // spesifik, ini hampir pasti bug di pemanggil -- tolak kirim
+      // daripada nebak "berarti semua orang".
+      if (!kodeProvided) {
         console.error(
-          '⚠️ notifyStudents DIBATALKAN: tidak ada target yang jelas ' +
-          '(targetKelas & targetKategori kosong/undefined, specificStudentIds juga kosong). ' +
-          'Ini sengaja dicegah supaya notifikasi tidak nyasar ke SEMUA siswa di semua jenjang secara tidak sengaja. ' +
-          `Kalau memang mau broadcast ke semua siswa, kirim targetKelas: 'Semua' dan/atau targetKategori: 'Semua' secara eksplisit. ` +
+          '⚠️ notifyStudents DIBATALKAN: tidak ada kodeMapel yang jelas ' +
+          '(kodeMapel kosong/undefined, specificStudentIds juga kosong). ' +
+          'Ini sengaja dicegah supaya notifikasi tidak nyasar ke siswa yang mapelnya gak relevan sama sekali. ' +
+          `Kalau memang mau broadcast ke SEMUA siswa (pengumuman umum, bukan konten per-mapel), kirim kodeMapel: 'Semua' secara eksplisit. ` +
           `Detail panggilan yang dibatalkan: type="${type}", title="${title}".`
         );
         return;
       }
 
-      const finalKelas = kelasProvided ? targetKelas : 'Semua';
-      const finalKategori = kategoriProvided ? targetKategori : 'Semua';
+      const normKode = (v) => String(v || '').toLowerCase().trim();
+      const kodeNorm = normKode(kodeMapel);
+      // `kodeMapel` bisa berisi BEBERAPA kode dipisah koma (kalau
+      // pemanggil kebetulan ngirim gabungan) -- dipecah dulu biar tetap
+      // match walau formatnya begitu.
+      const kodeList = kodeMapel.split(',').map(normKode).filter(Boolean);
 
       const snap = await getDocs(collection(db, 'students'));
       recipientIds = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
-        // 🔥 Perbandingan di-trim (dan kategori dibuat case-insensitive)
-        // supaya beda spasi/kapitalisasi kecil di data siswa (input manual
-        // admin, impor dari Excel, dll) tidak menyebabkan kecocokan yang
-        // salah atau kelewatan -- baik targetKelas maupun targetKategori
-        // dua-duanya harus cocok, kecuali memang eksplisit 'Semua'.
+        // 🔥 SAMA PERSIS pola hasSubjectAccess() yang dipakai di semua
+        // halaman siswa -- kodeMapel 'Semua' di enrolledSubjects siswa
+        // berarti akses/dapat notif ke apa pun.
         .filter(s => {
-          const kelasSiswa = String(s.kelasSekolah || '').trim();
-          const kategoriSiswa = String(s.kategori || '').trim().toLowerCase();
-          const kelasCocok = finalKelas === 'Semua' || kelasSiswa === String(finalKelas).trim();
-          const kategoriCocok = finalKategori === 'Semua' || kategoriSiswa === String(finalKategori).trim().toLowerCase();
-          return kelasCocok && kategoriCocok;
+          if (kodeNorm === 'semua') return true; // pemanggil sengaja broadcast umum
+          const enrolled = Array.isArray(s.enrolledSubjects) ? s.enrolledSubjects : [];
+          return enrolled.some(code => {
+            const c = normKode(code);
+            return c === 'semua' || kodeList.includes(c);
+          });
         })
         .map(s => s.studentId || s.id);
     }

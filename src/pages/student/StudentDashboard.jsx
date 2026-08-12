@@ -538,7 +538,7 @@ const StudentDashboard = () => {
             if (b.__deadline) return 1;
             return 0;
           })
-          .slice(0, 5); // naik dari 3 -> 5 karena sekarang sudah terurut yang paling urgent duluan
+          .slice(0, 8); // 🔥 naik dari 5 -> 8: tugas/kuis TANPA deadline (jadwal bebas) selalu ditaruh di bawah yang punya deadline -- kalau bimbel sudah punya 5+ tugas berdeadline aktif, kuis/tugas BARU yang gak berdeadline bisa ketutup dari widget ringkasan ini padahal aksesnya udah benar (bisa dibuka normal lewat E-Learning). Batas dinaikkan supaya lebih jarang kejadian.
         setTasks(fetchedTasks);
 
         if (!raportSnap.empty) {

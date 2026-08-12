@@ -1011,9 +1011,13 @@ const ManageMateri = () => {
         // lama ada, atau auto-save diam-diam di Langkah 1->2) TIDAK memicu
         // notifikasi lagi -- biar gak spam siswa tiap guru benerin typo.
         if (isFirstTimePublish && payload.status === 'aktif') {
+          // FIX: kirim kodeMapel (bukan lagi targetKelas/targetKategori) --
+          // ini yang mastiin audiens notifikasi SAMA PERSIS dengan siapa
+          // yang beneran bisa buka modulnya (lihat penjelasan lengkap di
+          // notifications.js). sendToSpecificStudents tetap diprioritaskan
+          // kalau guru sengaja pilih siswa tertentu.
           notifyStudents({
-            targetKelas: sendToSpecificStudents ? undefined : targetKelas,
-            targetKategori: sendToSpecificStudents ? undefined : targetKategori,
+            kodeMapel: sendToSpecificStudents ? undefined : kodeMapel,
             specificStudentIds: sendToSpecificStudents ? selectedStudents.map(s => s.studentId) : [],
             type: 'materi',
             title: '📘 Materi Baru!',
@@ -1039,9 +1043,13 @@ const ManageMateri = () => {
         alert(`✅ Modul "${title}" berhasil diterbitkan!`);
 
         if (isFirstTimePublish && payload.status === 'aktif') {
+          // FIX: kirim kodeMapel (bukan lagi targetKelas/targetKategori) --
+          // ini yang mastiin audiens notifikasi SAMA PERSIS dengan siapa
+          // yang beneran bisa buka modulnya (lihat penjelasan lengkap di
+          // notifications.js). sendToSpecificStudents tetap diprioritaskan
+          // kalau guru sengaja pilih siswa tertentu.
           notifyStudents({
-            targetKelas: sendToSpecificStudents ? undefined : targetKelas,
-            targetKategori: sendToSpecificStudents ? undefined : targetKategori,
+            kodeMapel: sendToSpecificStudents ? undefined : kodeMapel,
             specificStudentIds: sendToSpecificStudents ? selectedStudents.map(s => s.studentId) : [],
             type: 'materi',
             title: '📘 Materi Baru!',
