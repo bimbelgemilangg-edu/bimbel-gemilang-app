@@ -80,7 +80,13 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Gagal membuat soal');
+        // 🔥 FIX: sebelumnya cuma nampilin pesan generic ("Gagal
+        // menghubungi AI...") -- sekarang ikut nampilin `data.debug`
+        // (pesan asli dari Gemini: 401/403 = API key salah, 429 = kuota
+        // habis, 404 = model gak ada) biar gampang didiagnosis dari UI
+        // tanpa perlu buka Vercel logs.
+        const msg = data.debug ? `${data.error} [debug: ${data.debug}]` : (data.error || 'Gagal membuat soal');
+        throw new Error(msg);
       }
 
       const qs = data.questions || [];
