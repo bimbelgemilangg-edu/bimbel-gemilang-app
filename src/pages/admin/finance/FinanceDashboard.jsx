@@ -174,7 +174,17 @@ const FinanceDashboard = () => {
     const pesan = s.sudahHabis
       ? `Halo, kami dari Bimbel Gemilang ingin menginformasikan bahwa masa aktif paket belajar ananda ${s.nama} sudah berakhir sejak ${new Date(s.tanggalSelesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}. Mohon segera melakukan perpanjangan agar ananda dapat tetap mengikuti kegiatan belajar. Terima kasih 🙏`
       : `Halo, kami dari Bimbel Gemilang ingin mengingatkan bahwa masa aktif paket belajar ananda ${s.nama} akan berakhir pada ${new Date(s.tanggalSelesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} (${s.diffDays} hari lagi). Mohon kesediaannya untuk melakukan perpanjangan sebelum tanggal tersebut. Terima kasih 🙏`;
-    return `https://wa.me/${s.noHp}?text=${encodeURIComponent(pesan)}`;
+    // 🔥 FIX BUG NYATA: sebelumnya pakai format link "wa.me/{nomor}?text=..."
+    // -- format ini didesain awalnya buat deep-link ke APLIKASI WhatsApp
+    // (mobile/desktop app), dan pas dibuka dari BROWSER DESKTOP (kasus
+    // admin yang makai WA Web), redirect-nya ke web.whatsapp.com KADANG
+    // GAK STABIL -- parameter nomor & pesannya bisa "ilang" di tengah
+    // proses redirect, jadi WA Web kebuka KOSONG tanpa nomor/pesan
+    // ke-isi (persis laporan "tombol ijo blank"). Sekarang pakai format
+    // "api.whatsapp.com/send" -- ini format resmi dari Meta yang memang
+    // ditujukan buat alur WEB (bukan app deep-link), jauh lebih stabil
+    // buat kasus admin yang bukanya lewat WA Web di browser.
+    return `https://api.whatsapp.com/send?phone=${s.noHp}&text=${encodeURIComponent(pesan)}`;
   };
 
   return (
