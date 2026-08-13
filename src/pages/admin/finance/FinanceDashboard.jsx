@@ -128,7 +128,18 @@ const FinanceDashboard = () => {
                 // 🔥 BARU: dibawa juga buat tombol "Kirim WA" -- field ini
                 // sama yang dipakai di AddStudent.jsx (`noHp`, sudah
                 // dinormalisasi ke format 628xxx saat pendaftaran).
-                noHp: d.noHp || '',
+                // 🔥 FIX BUG NYATA: sebelumnya cuma baca `d.noHp` (field
+                // level-atas). Nomor HP orang tua ternyata bisa tersimpan
+                // di DUA jalur beda tergantung KAPAN siswa itu didaftar/
+                // diedit -- `noHp` (level atas, dipakai tombol WA ini) ATAU
+                // `ortu.hp` (bersarang, dipakai halaman Edit Siswa). Kalau
+                // data siswa itu KEBETULAN cuma punya `ortu.hp` terisi
+                // (mis. didaftarkan/diedit sebelum field noHp level-atas
+                // ikut disinkronkan), tombol WA gak akan pernah muncul
+                // padahal nomornya BENERAN ADA di data siswa itu -- cuma
+                // dibaca dari jalur yang salah. Sekarang dicek DUA-DUANYA,
+                // mana yang keisi dulu itu yang dipakai.
+                noHp: d.noHp || d.ortu?.hp || '',
               });
             }
           }
