@@ -58,10 +58,27 @@ const TransactionHistory = () => {
       }
     });
 
-    // 🔥 ORDER BY date DESC, createdAt DESC
-    const q = query(collection(db, "finance_logs"), orderBy("date", "desc"), orderBy("createdAt", "desc"));
+    // 🔥 FIX BUG NYATA (kelas yang sama dengan StudentFinance.jsx admin):
+    // `orderBy("date")` + `orderBy("createdAt")` SEKALIGUS itu WAJIB
+    // composite index tersendiri di Firestore -- kalau index itu belum
+    // pernah dibuat di project ini, query ini SELALU GAGAL dilempar
+    // sebagai error begitu halaman Riwayat dibuka (persis pola error
+    // index yang dilaporkan di halaman lain). Sekarang `orderBy` dihapus
+    // dari query Firestore (gak butuh index apa pun lagi, ambil semua
+    // dokumen apa adanya) -- pengurutan "tanggal terbaru dulu, lalu jam
+    // dibuat terbaru dulu" dipindah ke sisi JavaScript setelah data
+    // berhasil diambil.
+    const q = query(collection(db, "finance_logs"));
     const unsub = onSnapshot(q, (snap) => {
-      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const data = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => {
+          const dateCompare = (b.date || '').localeCompare(a.date || '');
+          if (dateCompare !== 0) return dateCompare;
+          const aCreated = a.createdAt?.toMillis?.() || 0;
+          const bCreated = b.createdAt?.toMillis?.() || 0;
+          return bCreated - aCreated;
+        });
       setTransactions(data);
       setLoading(false);
     });
