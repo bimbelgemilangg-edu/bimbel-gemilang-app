@@ -102,6 +102,44 @@ const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
 // ============================================================
 // 🔥 RENDER MATH - SUPPORT KATEX
 // ============================================================
+// 🔥 FIX BUG FATAL & NYATA: Firestore MENOLAK TOTAL nilai `undefined` di
+// mana pun di dalam dokumen (termasuk nested di dalam array/object) --
+// addDoc() langsung gagal dengan error "Unsupported field value: undefined"
+// dan SELURUH dokumen gagal tersimpan, bukan cuma field yang bermasalah.
+// Sumbernya: tiap TIPE soal (pilihan ganda, benar/salah, sebab-akibat,
+// menjodohkan, dst) cuma punya field yang RELEVAN buat tipe itu -- field
+// yang gak relevan (mis. `options` buat soal "benar/salah", atau `cause`/
+// `effect` buat soal "pilihan ganda") otomatis `undefined` di objek soal
+// aslinya. Waktu detail jawaban siswa disusun, field-field yang undefined
+// itu ikut kebawa APA ADANYA ke payload yang dikirim ke Firestore --
+// begitu SATU SAJA soal di kuis itu punya tipe yang bikin field manapun
+// undefined, PENGIRIMAN SELURUH JAWABAN GAGAL TOTAL (baik submit manual
+// maupun submit otomatis pas waktu habis -- dua-duanya lewat jalur yang
+// sama). Ini kemungkinan besar penyebab laporan "gak bisa kirim jawaban
+// kuis" & "waktu habis gak bisa submit".
+//
+// Fungsi ini membersihkan SELURUH struktur data (rekursif, tembus ke
+// dalam array & object bersarang) SEBELUM dikirim ke Firestore -- setiap
+// `undefined` diganti `null` (Firestore MENERIMA `null`, cuma menolak
+// `undefined`). Dipasang sebagai lapis pengaman terakhir sebelum tiap
+// panggilan addDoc/setDoc/updateDoc yang bawa data dinamis dari soal,
+// jadi gak perlu nambal satu-satu tiap field secara manual (rawan
+// kelewatan kalau nanti ada field baru).
+const stripUndefinedDeep = (value) => {
+  if (value === undefined) return null;
+  if (value === null || typeof value !== 'object') return value;
+  if (Array.isArray(value)) return value.map(stripUndefinedDeep);
+  // Hindari nyentuh objek non-plain (mis. Firestore Timestamp/serverTimestamp
+  // sentinel) -- itu objek khusus yang JANGAN diubah, cuma object literal
+  // biasa yang perlu dibersihkan.
+  if (value.constructor !== Object) return value;
+  const cleaned = {};
+  for (const key of Object.keys(value)) {
+    cleaned[key] = stripUndefinedDeep(value[key]);
+  }
+  return cleaned;
+};
+
 const renderMath = (text) => {
   if (!text) return null;
   const parts = text.split(/(\$\$.*?\$\$|\$.*?\$)/g);
@@ -1224,7 +1262,11 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
 
     try {
       const nim = studentInfo.nim;
-      await addDoc(collection(db, "jawaban_kuis"), {
+      // 🔥 Payload dibersihkan dari `undefined` DULU (lihat penjelasan
+      // lengkap di stripUndefinedDeep()) SEBELUM dikirim -- ini yang
+      // mencegah "Gagal menyimpan jawaban: ... Unsupported field value:
+      // undefined" yang bikin submit gagal total.
+      const submissionPayload = stripUndefinedDeep({
         modulId,
         modulTitle: quizData?.title || 'Kuis',
         studentNim: nim,
@@ -1259,8 +1301,15 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
         // selama mengerjakan, buat pertimbangan sendiri.
         cheatViolations: cheatViolations,
         cheatViolationCount: cheatViolations.length,
-        submittedAt: serverTimestamp(),
         status: "Dinilai"
+      });
+      await addDoc(collection(db, "jawaban_kuis"), {
+        ...submissionPayload,
+        // 🔥 serverTimestamp() itu sentinel khusus Firestore (bukan objek
+        // literal biasa) -- WAJIB ditambahkan SETELAH stripUndefinedDeep(),
+        // soalnya kalau ikut dibersihkan/di-deep-copy, sentinel-nya rusak
+        // dan gak akan tergantikan jadi waktu server yang benar.
+        submittedAt: serverTimestamp(),
       });
 
       // 🔥 Submit sukses -- draft di localStorage udah gak diperlukan lagi,
