@@ -214,16 +214,33 @@ const TransactionHistory = () => {
         note: editData.note
       });
 
-      // 🔥 FIX INTI: sebelumnya edit di sini CUMA update dokumen finance_logs
-      // itu sendiri -- totalBayar siswa yang terhubung gak pernah ikut
-      // disesuaikan, jadi begitu admin ngoreksi salah hitung, angka di buku
-      // besar keuangan dan angka "sisa tagihan" di halaman siswa jadi beda
-      // sendiri-sendiri. Sekarang: kalau transaksi ini punya `studentId` dan
-      // tipenya Pemasukan (pembayaran), selisih antara nominal LAMA dan BARU
-      // otomatis ditambahkan/dikurangkan ke totalBayar siswa itu juga.
+      // 🔥 FIX BUG NYATA (celah yang kelewat dari perbaikan sebelumnya):
+      // logika lama CUMA nyesuain totalBayar siswa kalau tipe transaksi
+      // TETAP "Pemasukan" dari awal sampai akhir (`_originalType ===
+      // 'Pemasukan' && type === 'Pemasukan'`). Kalau admin mengoreksi
+      // TIPE-nya juga (misal transaksi yang tadinya salah dicatat sebagai
+      // "Pengeluaran" padahal harusnya "Pemasukan" dari siswa, atau
+      // sebaliknya), penyesuaian ke totalBayar siswa SAMA SEKALI GAK
+      // KE-TRIGGER -- data siswa tetap nyangkut ke nilai lama padahal
+      // transaksinya udah dikoreksi. Sekarang keempat kombinasi transisi
+      // tipe ditangani eksplisit:
+      // - Pemasukan -> Pemasukan: sesuaikan SELISIH nominal (seperti sebelumnya)
+      // - Pemasukan -> Pengeluaran: batalkan SELURUH nominal lama (bukan lagi dianggap bayaran siswa)
+      // - Pengeluaran -> Pemasukan: tambahkan SELURUH nominal baru (baru sekarang dianggap bayaran siswa)
+      // - Pengeluaran -> Pengeluaran: gak ada dampak ke totalBayar siswa (tetap seperti sebelumnya)
       let pesanTambahan = '';
-      if (editData.studentId && editData.type === 'Pemasukan' && editData._originalType === 'Pemasukan') {
-        const delta = newAmount - editData._originalAmount;
+      if (editData.studentId) {
+        const wasIncome = editData._originalType === 'Pemasukan';
+        const isIncome = editData.type === 'Pemasukan';
+        let delta = 0;
+        if (wasIncome && isIncome) {
+          delta = newAmount - editData._originalAmount;
+        } else if (wasIncome && !isIncome) {
+          delta = -editData._originalAmount;
+        } else if (!wasIncome && isIncome) {
+          delta = newAmount;
+        }
+        // else: Pengeluaran -> Pengeluaran, delta tetap 0, gak ada aksi
         if (delta !== 0) {
           await adjustStudentTotalBayar(editData.studentId, delta);
           pesanTambahan = ' Data pembayaran siswa ikut disesuaikan.';

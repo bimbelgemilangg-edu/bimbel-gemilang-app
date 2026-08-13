@@ -5,7 +5,7 @@ import { collection, query, onSnapshot, getDocs, where, orderBy, limit } from "f
 import { 
   Eye, EyeOff, TrendingUp, TrendingDown, Wallet, 
   CreditCard, AlertCircle, Users, ArrowRight, DollarSign,
-  Calendar, RefreshCw
+  Calendar, RefreshCw, MessageCircle
 } from 'lucide-react';
 
 const FinanceDashboard = () => {
@@ -25,6 +25,9 @@ const FinanceDashboard = () => {
   
   // Siswa baru belum bayar
   const [newStudents, setNewStudents] = useState([]);
+
+  // 🔥 BARU: siswa yang masa aktif paketnya sudah habis / akan habis dalam 7 hari
+  const [expiringStudents, setExpiringStudents] = useState([]);
 
   useEffect(() => {
     const qLogs = query(collection(db, "finance_logs"));
@@ -64,6 +67,17 @@ const FinanceDashboard = () => {
         let totalHutang = 0;
         let listNunggak = [];
         let listBaru = [];
+        // 🔥 BARU: daftar siswa yang masa aktif paketnya SUDAH HABIS atau
+        // AKAN habis dalam 7 hari -- sebelumnya status ini CUMA dihitung
+        // di StudentList.jsx (kekubur di kolom tabel panjang, gampang
+        // kelewat), gak pernah muncul sebagai peringatan yang menonjol di
+        // "Pusat Kontrol Keuangan" ini -- padahal siswa yang masa
+        // aktifnya habis itu jelas urusan keuangan (perlu diperpanjang/
+        // ditagih). Logika ambang batasnya SAMA PERSIS dengan
+        // getMasaAktifStatus() di StudentList.jsx, biar konsisten.
+        let listHabisMasa = [];
+        const todayForExpiry = new Date();
+        todayForExpiry.setHours(0, 0, 0, 0);
         
         snap.forEach(doc => {
           const d = doc.data();
@@ -95,11 +109,36 @@ const FinanceDashboard = () => {
               });
             }
           }
+
+          // 🔥 BARU: cek masa aktif paket -- sama seperti perpanjangan,
+          // siswa yang di-nonaktifkan (isBlocked) sengaja dilewati (sudah
+          // ditangani manual oleh admin, gak perlu diingatkan lagi).
+          if (d.tanggalSelesai && !d.isBlocked) {
+            const selesai = new Date(d.tanggalSelesai);
+            selesai.setHours(0, 0, 0, 0);
+            const diffDaysExpiry = Math.ceil((selesai - todayForExpiry) / (1000 * 60 * 60 * 24));
+            if (diffDaysExpiry <= 7) {
+              listHabisMasa.push({
+                id: doc.id,
+                nama: d.nama,
+                studentId: d.studentId,
+                tanggalSelesai: d.tanggalSelesai,
+                diffDays: diffDaysExpiry,
+                sudahHabis: diffDaysExpiry < 0,
+                // 🔥 BARU: dibawa juga buat tombol "Kirim WA" -- field ini
+                // sama yang dipakai di AddStudent.jsx (`noHp`, sudah
+                // dinormalisasi ke format 628xxx saat pendaftaran).
+                noHp: d.noHp || '',
+              });
+            }
+          }
         });
         
         setTotalPiutang(totalHutang);
         setDebtors(listNunggak.sort((a, b) => b.sisa - a.sisa).slice(0, 5));
         setNewStudents(listBaru);
+        // Urutkan yang paling mendesak dulu (sudah lewat paling lama, baru yang mau habis)
+        setExpiringStudents(listHabisMasa.sort((a, b) => a.diffDays - b.diffDays));
         setLoading(false);
       } catch (error) {
         console.error(error);
@@ -112,6 +151,20 @@ const FinanceDashboard = () => {
   }, []);
 
   const rp = (num) => privacyMode ? "Rp ••••••••" : "Rp " + (num || 0).toLocaleString('id-ID');
+
+  // 🔥 BARU: bikin link WhatsApp (wa.me) buat ngirim pengingat masa aktif
+  // habis -- ini BUKAN integrasi WhatsApp API berbayar, cuma "nitip buka"
+  // ke WhatsApp yang udah admin pakai sendiri (Web/App, tergantung
+  // device), dengan nomor orang tua & draft pesan udah keisi otomatis.
+  // Admin TETAP yang review & tekan kirim di WhatsApp-nya sendiri -- bukan
+  // sistem yang otomatis ngirim tanpa sepengetahuan admin.
+  const buildWaLink = (s) => {
+    if (!s.noHp) return null;
+    const pesan = s.sudahHabis
+      ? `Halo, kami dari Bimbel Gemilang ingin menginformasikan bahwa masa aktif paket belajar ananda ${s.nama} sudah berakhir sejak ${new Date(s.tanggalSelesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}. Mohon segera melakukan perpanjangan agar ananda dapat tetap mengikuti kegiatan belajar. Terima kasih 🙏`
+      : `Halo, kami dari Bimbel Gemilang ingin mengingatkan bahwa masa aktif paket belajar ananda ${s.nama} akan berakhir pada ${new Date(s.tanggalSelesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} (${s.diffDays} hari lagi). Mohon kesediaannya untuk melakukan perpanjangan sebelum tanggal tersebut. Terima kasih 🙏`;
+    return `https://wa.me/${s.noHp}?text=${encodeURIComponent(pesan)}`;
+  };
 
   return (
     <div>
@@ -157,6 +210,51 @@ const FinanceDashboard = () => {
           <h2 style={{...styles.mediumValue, color: '#f97316'}}>{rp(totalPiutang)}</h2>
         </div>
       </div>
+
+      {/* === BARU: ALERT SISWA MASA AKTIF HABIS/AKAN HABIS === */}
+      {expiringStudents.length > 0 && (
+        <div style={styles.expiryBox}>
+          <div style={styles.expiryHeader}>
+            <Calendar size={18} />
+            <strong>Masa Aktif Paket Habis / Akan Habis</strong>
+            <span style={styles.expiryBadge}>{expiringStudents.length}</span>
+          </div>
+          <div style={styles.alertList}>
+            {expiringStudents.map(s => (
+              <div key={s.id} style={styles.alertItem}>
+                <div>
+                  <strong>{s.nama}</strong>
+                  <span style={{fontSize: 10, color: '#94a3b8', marginLeft: 8}}>{s.studentId}</span>
+                </div>
+                <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
+                  <span style={{fontWeight: 'bold', color: s.sudahHabis ? '#ef4444' : '#f59e0b', fontSize: 12}}>
+                    {s.sudahHabis ? `⛔ Habis ${Math.abs(s.diffDays)} hari lalu` : `⏰ ${s.diffDays} hari lagi`}
+                  </span>
+                  {/* 🔥 BARU: tombol kirim pengingat WA -- kalau nomor HP
+                      ortu gak ada di data siswa, tombol disembunyikan
+                      (daripada nampilin tombol yang gak bisa dipakai). */}
+                  {buildWaLink(s) && (
+                    <a
+                      href={buildWaLink(s)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={styles.waBtn}
+                    >
+                      <MessageCircle size={12} /> WA
+                    </a>
+                  )}
+                  <button
+                    onClick={() => navigate(`/admin/students/finance/${s.id}`)}
+                    style={{...styles.alertBtn, background: s.sudahHabis ? '#ef4444' : '#f59e0b'}}
+                  >
+                    Perpanjang <ArrowRight size={12} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* === ALERT SISWA BARU BELUM BAYAR === */}
       {newStudents.length > 0 && (
@@ -243,6 +341,19 @@ const styles = {
   alertList: { display: 'flex', flexDirection: 'column', gap: 8 },
   alertItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'white', borderRadius: 10, flexWrap: 'wrap', gap: 8 },
   alertBtn: { padding: '6px 12px', background: '#f97316', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 'bold', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 },
+
+  // 🔥 BARU: alert masa aktif habis/akan habis -- pakai warna merah (beda
+  // dari alertBox oranye "siswa baru") supaya keliatan beda urgensinya
+  // sekilas mata, dan ditaruh PALING ATAS (sebelum alert lain) karena ini
+  // paling mendesak (siswa yang paketnya udah expired berarti berpotensi
+  // masih dianggap aktif belajar padahal harusnya udah diperpanjang/stop).
+  expiryBox: { background: '#fef2f2', border: '2px solid #ef4444', padding: 16, borderRadius: 14, marginBottom: 20 },
+  expiryHeader: { display: 'flex', alignItems: 'center', gap: 8, color: '#b91c1c', marginBottom: 12, fontSize: 14 },
+  expiryBadge: { background: '#ef4444', color: 'white', padding: '2px 10px', borderRadius: 20, fontSize: 12, fontWeight: 'bold' },
+  // 🔥 BARU: tombol kirim WA -- hijau khas WhatsApp, dibuat sebagai <a>
+  // (bukan <button>) karena tujuannya buka link eksternal, bukan aksi
+  // dalam aplikasi.
+  waBtn: { padding: '6px 12px', background: '#25D366', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 'bold', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, textDecoration: 'none' },
 
   // Debtors
   debtBox: { background: 'white', padding: 16, borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' },

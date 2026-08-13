@@ -5,7 +5,7 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { 
   doc, getDoc, collection, query, where, getDocs, 
-  updateDoc, addDoc, serverTimestamp, orderBy 
+  updateDoc, addDoc, serverTimestamp, orderBy, writeBatch
 } from "firebase/firestore";
 import { 
   ArrowLeft, CreditCard, CheckCircle, Clock, AlertCircle,
@@ -35,7 +35,21 @@ const StudentFinance = () => {
   // Modal perpanjangan
   const [showPerpanjangModal, setShowPerpanjangModal] = useState(false);
   const [perpanjangData, setPerpanjangData] = useState({
-    durasiTambah: 3,
+    // 🔥 FIX BUG NYATA & BERBAHAYA (laporan langsung: "harusnya perpanjang
+    // 1 bulan, kepencet jadi 3 bulan"): sebelumnya default `durasiTambah`
+    // di sini adalah `3` -- jadi begitu modal "Perpanjang Paket" dibuka,
+    // dropdown-nya SUDAH otomatis kepilih "3 Bulan" duluan, BUKAN "1
+    // Bulan". Kalau admin gak sadar/gak sempat ngecek ulang pilihan yang
+    // udah ke-pre-select itu (mengira defaultnya pasti opsi paling
+    // sederhana/pertama), lalu langsung proses -- jadinya kebayar/
+    // ketagih 3 bulan padahal maksudnya cuma 1 bulan. Ini kesalahan
+    // finansial nyata yang bisa bikin siswa ketagih lebih dari
+    // seharusnya, atau billing yang salah dicatat.
+    // Sekarang `durasiTambah` DIKOSONGKAN (0 = "belum pilih") -- dropdown
+    // WAJIB tampil "-- Pilih Durasi --" dulu, admin HARUS aktif memilih
+    // sendiri sebelum bisa lanjut. Gak ada lagi opsi "keliru gara-gara
+    // gak ngecek default".
+    durasiTambah: 0,
     metodeBayar: 'Tunai',
     tenor: 1,
     tanggalCicilan1: new Date().toISOString().split('T')[0],
@@ -207,6 +221,15 @@ const StudentFinance = () => {
   const handlePerpanjang = async (e) => {
     e.preventDefault();
 
+    // 🔥 GUARD BARU (langsung terkait fix default durasi di atas): kalau
+    // admin belum sempat pilih durasi sama sekali (masih di "-- Pilih
+    // Durasi --" / nilai 0), TOLAK proses -- daripada nebak "berarti
+    // maksudnya 0 bulan" atau kejadian bug lama lagi (durasi kepencet gak
+    // sengaja). Admin WAJIB pilih durasi secara sadar dulu.
+    if (!perpanjangData.durasiTambah || perpanjangData.durasiTambah <= 0) {
+      return showAlert('❌ Pilih durasi perpanjangan dulu!');
+    }
+
     // 🔥 GUARD BARU: kalau harga paket ternyata 0 (misal karena paket sudah
     // dihapus dari Settings), JANGAN lanjutkan transaksi senilai Rp 0 —
     // ini mencegah bug lama (perpanjangan gratis) terulang lewat jalur lain.
@@ -226,21 +249,32 @@ const StudentFinance = () => {
       newSelesai.setMonth(newSelesai.getMonth() + perpanjangData.durasiTambah);
       const newSelesaiStr = newSelesai.toISOString().split('T')[0];
 
-      // 2. Update students
+      // 2. Hitung nilai baru buat students
       const newTotalTagihan = (parseInt(student.totalTagihan || 0)) + totalPerpanjangan;
       const newTotalBayar = (perpanjangData.metodeBayar === 'Tunai' || perpanjangData.metodeBayar === 'Transfer')
         ? (parseInt(student.totalBayar || 0)) + totalPerpanjangan
         : parseInt(student.totalBayar || 0);
 
-      await updateDoc(doc(db, "students", id), {
+      // 🔥 FIX BUG NYATA (sama persis kelasnya dengan handleBayar di atas):
+      // sebelumnya update ke `students`, catatan `finance_logs`, dan
+      // `finance_tagihan` adalah TIGA-EMPAT penulisan terpisah satu-satu.
+      // Kalau salah satu di tengah gagal (mis. koneksi putus PAS lagi
+      // proses), sebagian data udah kesimpen (mis. tanggalSelesai siswa
+      // udah keupdate) tapi catatan keuangannya belum -- data jadi gak
+      // sinkron tanpa admin sadar. Sekarang SEMUA digabung jadi SATU
+      // `writeBatch`: sukses bareng semua, atau gagal bareng semua (gak
+      // ada yang "setengah tersimpan").
+      const batch = writeBatch(db);
+
+      batch.update(doc(db, "students", id), {
         totalTagihan: newTotalTagihan,
         totalBayar: newTotalBayar,
         tanggalSelesai: newSelesaiStr,
         durasiBulan: (parseInt(student.durasiBulan || 0)) + perpanjangData.durasiTambah
       });
 
-      // 3. Catat di finance_logs
-      await addDoc(collection(db, "finance_logs"), {
+      const logRef = doc(collection(db, "finance_logs"));
+      batch.set(logRef, {
         studentId: kodeUnik,
         namaSiswa: student?.nama || '',
         date: today,
@@ -255,8 +289,12 @@ const StudentFinance = () => {
       // 4. Jika cicilan, buat/update finance_tagihan
       if (perpanjangData.metodeBayar === 'Cicilan') {
         const cicilanNominal = hitungCicilanPerpanjang();
+        // 🔥 Pengaman sama seperti handleBayar: pastikan detailCicilan lama
+        // beneran array sebelum digabung, jangan sampai nilai gak terduga
+        // (bukan array) bikin batch ini gagal ditulis.
+        const existingCicilanAman = Array.isArray(tagihan?.detailCicilan) ? tagihan.detailCicilan : [];
         const installments = perpanjangData.customDueDates.map((dateStr, index) => ({
-          bulanKe: (tagihan?.detailCicilan?.length || 0) + index + 1,
+          bulanKe: existingCicilanAman.length + index + 1,
           nominal: cicilanNominal,
           status: 'Belum Lunas',
           jatuhTempo: dateStr,
@@ -264,15 +302,15 @@ const StudentFinance = () => {
         }));
 
         if (tagihan) {
-          const existingCicilan = tagihan.detailCicilan || [];
           const newSisa = (tagihan.sisaTagihan || 0) + totalPerpanjangan;
-          await updateDoc(doc(db, "finance_tagihan", tagihan.id), {
+          batch.update(doc(db, "finance_tagihan", tagihan.id), {
             totalTagihan: (tagihan.totalTagihan || 0) + totalPerpanjangan,
             sisaTagihan: newSisa,
-            detailCicilan: [...existingCicilan, ...installments]
+            detailCicilan: [...existingCicilanAman, ...installments]
           });
         } else {
-          await addDoc(collection(db, "finance_tagihan"), {
+          const newTagihanRef = doc(collection(db, "finance_tagihan"));
+          batch.set(newTagihanRef, {
             studentId: kodeUnik,
             namaSiswa: student?.nama || '',
             noHp: student?.ortu?.hp || '',
@@ -283,6 +321,8 @@ const StudentFinance = () => {
           });
         }
       }
+
+      await batch.commit();
 
       showAlert(`✅ Perpanjangan ${perpanjangData.durasiTambah} bulan berhasil! Selesai: ${newSelesaiStr}`);
       setShowPerpanjangModal(false);
@@ -321,7 +361,41 @@ const StudentFinance = () => {
       const kodeUnik = student?.studentId || id;
       const today = new Date().toISOString().split('T')[0];
 
-      await addDoc(collection(db, "finance_logs"), {
+      // 🔥 FIX BUG NYATA #1 (risiko crash): sebelumnya `tagihan.detailCicilan`
+      // langsung di-spread (`[...tagihan.detailCicilan]`) atau di-`.map()`
+      // TANPA ngecek dulu apakah itu beneran array. Kalau ada satu dokumen
+      // tagihan yang datanya gak lengkap (rusak/diedit manual di Firestore,
+      // atau dari jalur pembuatan lama yang kelewat isi field ini), ini
+      // langsung CRASH ("Cannot read properties of undefined") begitu
+      // admin coba proses pembayaran -- pembayaran gagal total, gak ada
+      // penjelasan jelas ke admin selain pesan error teknis. Sekarang
+      // dicek dulu pakai Array.isArray(); kalau ternyata bukan array,
+      // dianggap kosong (bukan crash) -- pembayaran tetap bisa diproses
+      // buat bagian totalBayar siswa, cuma rincian per-cicilan yang gak
+      // ikut ter-update (lebih baik daripada gagal total).
+      const detailCicilanAman = Array.isArray(tagihan?.detailCicilan) ? tagihan.detailCicilan : [];
+
+      const newTotalBayar = Math.min(
+        parseInt(student.totalTagihan || 0),
+        (parseInt(student.totalBayar || 0)) + nominal
+      );
+
+      // 🔥 FIX BUG NYATA #2 (data gak sinkron): sebelumnya update ke
+      // `students.totalBayar` dan `finance_tagihan` (rincian cicilan)
+      // adalah DUA PENULISAN TERPISAH (dua `updateDoc` beda, dieksekusi
+      // satu-satu). Kalau penulisan PERTAMA sukses tapi yang KEDUA gagal
+      // (internet putus, Firestore hiccup, dll), data siswa udah kebilang
+      // "sudah bayar" tapi rincian cicilannya GAK ikut ter-update --
+      // dua sumber data (halaman siswa vs rincian cicilan) jadi beda
+      // sendiri-sendiri, persis keluhan "data gak sinkron". Sekarang
+      // SEMUA penulisan (log transaksi + update siswa + update tagihan)
+      // digabung jadi SATU `writeBatch` -- Firestore menjamin SEMUANYA
+      // berhasil bareng, atau GAK ADA SATU PUN yang tersimpan kalau ada
+      // yang gagal. Gak ada lagi kondisi "setengah tersimpan".
+      const batch = writeBatch(db);
+
+      const logRef = doc(collection(db, "finance_logs"));
+      batch.set(logRef, {
         studentId: kodeUnik,
         namaSiswa: student?.nama || '',
         date: today,
@@ -333,25 +407,25 @@ const StudentFinance = () => {
         createdAt: serverTimestamp()
       });
 
-      const newTotalBayar = Math.min(
-        parseInt(student.totalTagihan || 0),
-        (parseInt(student.totalBayar || 0)) + nominal
-      );
-      await updateDoc(doc(db, "students", id), { totalBayar: newTotalBayar });
+      batch.update(doc(db, "students", id), { totalBayar: newTotalBayar });
 
       if (payingIndex !== null && tagihan) {
-        const newDetails = [...tagihan.detailCicilan];
-        newDetails[payingIndex] = { ...newDetails[payingIndex], status: 'Lunas', tanggalBayar: today };
-        await updateDoc(doc(db, "finance_tagihan", tagihan.id), {
+        const newDetails = [...detailCicilanAman];
+        if (newDetails[payingIndex]) {
+          newDetails[payingIndex] = { ...newDetails[payingIndex], status: 'Lunas', tanggalBayar: today };
+        }
+        batch.update(doc(db, "finance_tagihan", tagihan.id), {
           detailCicilan: newDetails,
-          sisaTagihan: Math.max(0, tagihan.sisaTagihan - nominal)
+          sisaTagihan: Math.max(0, (tagihan.sisaTagihan || 0) - nominal)
         });
       } else if (tagihan && payingIndex === null) {
-        const newDetails = tagihan.detailCicilan.map(c => ({
+        const newDetails = detailCicilanAman.map(c => ({
           ...c, status: 'Lunas', tanggalBayar: c.status === 'Belum Lunas' ? today : c.tanggalBayar
         }));
-        await updateDoc(doc(db, "finance_tagihan", tagihan.id), { detailCicilan: newDetails, sisaTagihan: 0 });
+        batch.update(doc(db, "finance_tagihan", tagihan.id), { detailCicilan: newDetails, sisaTagihan: 0 });
       }
+
+      await batch.commit();
 
       showAlert(`✅ Pembayaran Rp ${nominal.toLocaleString()} berhasil!`);
       setShowPayModal(false);
@@ -482,7 +556,28 @@ const StudentFinance = () => {
               </button>
             )}
 
-            <button onClick={() => setShowPerpanjangModal(true)} style={styles.btnPerpanjang}>
+            <button
+              onClick={() => {
+                // 🔥 FIX BUG TERKAIT: sebelumnya modal dibuka TANPA reset
+                // `perpanjangData` -- kalau admin pernah buka modal ini
+                // sebelumnya (buat siswa lain, atau sempat pilih durasi
+                // lalu batal), pilihan LAMA itu masih nyangkut & langsung
+                // ke-pre-select lagi begitu modal dibuka ulang. Sekarang
+                // di-reset bersih ke kondisi "belum pilih apa-apa" setiap
+                // kali modal ini dibuka, supaya admin SELALU mulai dari
+                // keadaan netral -- gak ada peninggalan pilihan dari sesi
+                // sebelumnya yang bisa bikin salah pencet.
+                setPerpanjangData({
+                  durasiTambah: 0,
+                  metodeBayar: 'Tunai',
+                  tenor: 1,
+                  tanggalCicilan1: new Date().toISOString().split('T')[0],
+                  customDueDates: []
+                });
+                setShowPerpanjangModal(true);
+              }}
+              style={styles.btnPerpanjang}
+            >
               <RefreshCw size={16} /> Perpanjang Paket
             </button>
           </div>
@@ -611,6 +706,7 @@ const StudentFinance = () => {
                   <div style={styles.inputGroup}>
                     <label style={styles.label}>Tambah Durasi</label>
                     <select style={styles.input} value={perpanjangData.durasiTambah} onChange={e => setPerpanjangData(prev => ({...prev, durasiTambah: parseInt(e.target.value)}))}>
+                      <option value={0}>-- Pilih Durasi --</option>
                       <option value={1}>1 Bulan - Rp {(hargaPaket * 1).toLocaleString()}</option>
                       <option value={3}>3 Bulan (1 Term) - Rp {(hargaPaket * 3).toLocaleString()}</option>
                       <option value={6}>6 Bulan (1 Semester) - Rp {(hargaPaket * 6).toLocaleString()}</option>

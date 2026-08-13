@@ -245,9 +245,6 @@ const StudentDashboard = () => {
   const [wajibSurveys, setWajibSurveys] = useState([]);
   // 🔥 BARU: ringkasan kehadiran buat bagan bundar di dashboard
   const [attendanceSummary, setAttendanceSummary] = useState({ hadir: 0, izin: 0, alpha: 0, total: 0 });
-  // 🔥 SEMENTARA: panel diagnosa absensi -- buat nyari tau kenapa data
-  // kosong. Aman dihapus nanti kalau udah gak dibutuhkan.
-  const [attDebug, setAttDebug] = useState(null);
   const [optionalSurveys, setOptionalSurveys] = useState([]);
   const [dismissedSurveyIds, setDismissedSurveyIds] = useState(() => {
     try { return JSON.parse(localStorage.getItem('dismissedSurveys') || '[]'); }
@@ -413,19 +410,6 @@ const StudentDashboard = () => {
           izin: attList.filter(a => a.status === 'Izin' || a.status === 'Sakit').length,
           alpha: attList.filter(a => a.status === 'Alpha').length,
           total: attList.length,
-        });
-
-        // --- Diagnosa (sementara) ---
-        const byNameMerged = new Map();
-        [...attByName.docs, ...attByNamaSiswa.docs].forEach(d => byNameMerged.set(d.id, d.data()));
-        const byNameList = Array.from(byNameMerged.values());
-        setAttDebug({
-          studentIdDipakaiCari: studentId,
-          nimValDipakaiCari: nimVal,
-          ketemuLewatDocId: attByDocId.docs.length,
-          ketemuLewatKodeUnik: attByKodeUnik.docs.length,
-          ketemuLewatNama: byNameList.length,
-          contohStudentIdAsli: byNameList.slice(0, 3).map(a => a.studentId),
         });
 
         const fetchedSchedules = schedSnap.docs
@@ -1036,25 +1020,6 @@ const StudentDashboard = () => {
             <AttendanceDonut hadir={attendanceSummary.hadir} izin={attendanceSummary.izin} alpha={attendanceSummary.alpha} total={attendanceSummary.total} />
           )}
 
-          {/* 🔥 PANEL DIAGNOSA SEMENTARA -- hapus setelah masalah absensi
-              ketemu akarnya. Nunjukkin persis skema ID apa yang beneran
-              dipakai nulis data absensi di database. */}
-          {attDebug && (
-            <div style={{ marginTop: 14, padding: 10, background: '#fffbeb', border: '1px dashed #f59e0b', borderRadius: 10, fontSize: 10, fontFamily: 'monospace', color: '#78350f', lineHeight: 1.7 }}>
-              <b>🔍 Diagnosa Absensi (sementara)</b><br/>
-              ID dokumen dicari: {attDebug.studentIdDipakaiCari}<br/>
-              Kode unik dicari: {attDebug.nimValDipakaiCari}<br/>
-              Ketemu lewat ID dokumen: {attDebug.ketemuLewatDocId}<br/>
-              Ketemu lewat kode unik: {attDebug.ketemuLewatKodeUnik}<br/>
-              Ketemu lewat NAMA: {attDebug.ketemuLewatNama}<br/>
-              {attDebug.contohStudentIdAsli.length > 0 && (
-                <>Contoh studentId asli di data: {attDebug.contohStudentIdAsli.join(', ')}</>
-              )}
-              {attDebug.ketemuLewatNama === 0 && (
-                <><br/>⚠️ Gak ketemu SAMA SEKALI walau dicari pakai nama -- kemungkinan siswa ini memang belum pernah diabsen sama sekali di database.</>
-              )}
-            </div>
-          )}
         </div>
 
         <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
