@@ -296,6 +296,17 @@ const StudentFinance = () => {
         amount: totalPerpanjangan,
         method: perpanjangData.metodeBayar,
         note: `Perpanjangan ${perpanjangData.durasiTambah} bulan: ${student?.nama} (s.d ${newSelesaiStr})`,
+        // 🔥 BARU: field TERSTRUKTUR (bukan cuma nempel di teks catatan)
+        // -- dipakai TransactionHistory.jsx buat bisa MEMBALIKIN transaksi
+        // ini secara AKURAT & OTOMATIS kalau nanti admin salah input dan
+        // perlu dihapus. Tanpa ini, sistem gak punya cara pasti buat tau
+        // "berapa bulan yang harus dibalikin" kalau transaksi ini dihapus
+        // -- sebelumnya cuma nominal (totalBayar) yang kebalikin, tanggal
+        // selesai & durasi bulan TETAP NYANGKUT ke versi yang salah (ini
+        // laporan nyata yang masuk: admin salah pilih 3 bulan, sudah
+        // dikoreksi nominalnya di Riwayat, tapi tanggal selesai & durasi
+        // paket TETAP kebawa 3 bulan).
+        durasiTambah: perpanjangData.durasiTambah,
         createdAt: serverTimestamp()
       });
 

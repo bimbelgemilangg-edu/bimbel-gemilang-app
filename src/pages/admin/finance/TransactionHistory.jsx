@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { 
-  collection, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, getDoc, where, getDocs
+  collection, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, getDoc, where, getDocs, writeBatch
 } from "firebase/firestore";
 import { 
   Download, Filter, Search, Edit3, Trash2, X, Save, RefreshCw, Calendar, Lock, Clock
@@ -163,6 +163,74 @@ const TransactionHistory = () => {
     }
   };
 
+  // 🔥 BARU: fungsi KHUSUS buat MEMBATALKAN transaksi "Perpanjangan Paket".
+  // Ini beda dari adjustStudentTotalBayar() di atas -- satu transaksi
+  // perpanjangan itu ngubah EMPAT hal sekaligus di data siswa (totalTagihan,
+  // totalBayar, tanggalSelesai, durasiBulan), bukan cuma totalBayar doang.
+  // Sebelumnya kalau transaksi kayak gini dihapus, CUMA totalBayar yang
+  // kebalikin -- tiga field lainnya TETAP nyangkut ke versi yang salah
+  // (laporan nyata: admin salah pilih 3 bulan, sudah dihapus/diedit
+  // nominalnya, tapi tanggal selesai & durasi paket TETAP kebawa 3 bulan).
+  // Sekarang SEMUA field yang kena dampak perpanjangan itu dibalikin
+  // bareng, dalam SATU writeBatch (atomik, gak ada yang "setengah balik").
+  const reversePerpanjangan = async (item) => {
+    if (!item.studentId || !item.durasiTambah) {
+      // Transaksi "Perpanjangan Paket" versi LAMA (dibuat sebelum field
+      // durasiTambah ditambahkan) -- gak ada info pasti berapa bulan yang
+      // harus dibalikin, jadi gak bisa dibalikin otomatis. Fallback ke
+      // penyesuaian totalBayar doang (perilaku lama), sambil kasih tau
+      // admin biar cek manual sisanya.
+      await adjustStudentTotalBayar(item.studentId, -parseInt(item.amount || 0));
+      alert('⚠️ Transaksi perpanjangan ini dibuat sebelum sistem bisa membalikkan otomatis. Total dibayar sudah disesuaikan, tapi CEK MANUAL tanggal selesai & durasi paket siswa ini di halaman Edit Siswa.');
+      return;
+    }
+
+    const q = query(collection(db, "students"), where("studentId", "==", item.studentId));
+    const snap = await getDocs(q);
+    if (snap.empty) return;
+    const studentDoc = snap.docs[0];
+    const s = studentDoc.data();
+
+    const amount = parseInt(item.amount || 0);
+    const durasi = parseInt(item.durasiTambah || 0);
+
+    // Balikin tanggalSelesai mundur sejumlah bulan yang sama seperti pas ditambahkan
+    let newSelesai = null;
+    if (s.tanggalSelesai) {
+      const d = new Date(s.tanggalSelesai);
+      d.setMonth(d.getMonth() - durasi);
+      newSelesai = d.toISOString().split('T')[0];
+    }
+
+    const newTotalTagihan = Math.max(0, parseInt(s.totalTagihan || 0) - amount);
+    // 🔥 totalBayar cuma ikut dikurangi kalau metode pembayaran perpanjangan
+    // itu Tunai/Transfer -- SAMA PERSIS aturan pas awal ditambahkan di
+    // handlePerpanjang() (StudentFinance.jsx): kalau metodenya Cicilan,
+    // totalBayar TIDAK pernah ikut nambah waktu itu, jadi juga TIDAK boleh
+    // ikut dikurangi sekarang (kalau dikurangi, malah jadi minus/salah).
+    const isTunaiTransfer = item.method === 'Tunai' || item.method === 'Transfer';
+    const newTotalBayar = isTunaiTransfer
+      ? Math.max(0, parseInt(s.totalBayar || 0) - amount)
+      : parseInt(s.totalBayar || 0);
+    const newDurasiBulan = Math.max(0, parseInt(s.durasiBulan || 0) - durasi);
+
+    const batch = writeBatch(db);
+    batch.update(doc(db, "students", studentDoc.id), {
+      totalTagihan: newTotalTagihan,
+      totalBayar: newTotalBayar,
+      durasiBulan: newDurasiBulan,
+      ...(newSelesai ? { tanggalSelesai: newSelesai } : {}),
+    });
+    batch.delete(doc(db, "finance_logs", item.id));
+    await batch.commit();
+
+    if (item.method === 'Cicilan') {
+      alert(`✅ Perpanjangan ${durasi} bulan dibatalkan & data siswa dikembalikan.\n\n⚠️ PENTING: perpanjangan ini metodenya Cicilan -- cek manual jadwal cicilan siswa ini (finance_tagihan), karena jadwal cicilan yang sempat dibuat dari perpanjangan ini TIDAK ikut terhapus otomatis (berisiko kalau sudah ada cicilan yang kadung dibayar).`);
+    } else {
+      alert(`✅ Perpanjangan ${durasi} bulan berhasil dibatalkan, data siswa (tagihan, tanggal selesai, durasi) sudah dikembalikan ke posisi semula.`);
+    }
+  };
+
   // === DELETE ===
   const confirmDelete = (item) => {
     if (pinBelumDiatur) {
@@ -182,19 +250,33 @@ const TransactionHistory = () => {
     if (!deleteTarget) return;
     
     try {
-      await deleteDoc(doc(db, "finance_logs", deleteTarget.id));
-
-      // 🔥 Kalau transaksi yang dihapus ternyata pembayaran siswa (ada
-      // studentId & tipenya Pemasukan), kurangi lagi totalBayar siswa itu --
-      // biar gak keliatan siswa "udah bayar" padahal catatannya sudah
-      // dihapus dari buku besar.
-      if (deleteTarget.studentId && deleteTarget.type === 'Pemasukan') {
-        await adjustStudentTotalBayar(deleteTarget.studentId, -parseInt(deleteTarget.amount || 0));
+      // 🔥 FIX BUG NYATA UTAMA (laporan langsung dari pengguna): transaksi
+      // "Perpanjangan Paket" ditangani BEDA dari transaksi biasa -- pakai
+      // reversePerpanjangan() yang membalikkan SEMUA field terkait
+      // (tagihan, dibayar, tanggal selesai, durasi), bukan cuma totalBayar
+      // doang. Transaksi jenis lain (SPP/Cicilan reguler, dll) tetap pakai
+      // jalur lama (cuma totalBayar) -- itu sudah benar buat kasus itu
+      // karena pembayaran biasa emang gak ngubah tanggal/durasi paket.
+      if (deleteTarget.category === 'Perpanjangan Paket' && deleteTarget.studentId) {
+        await reversePerpanjangan(deleteTarget);
+      } else {
+        await deleteDoc(doc(db, "finance_logs", deleteTarget.id));
+        // 🔥 Kalau transaksi yang dihapus ternyata pembayaran siswa (ada
+        // studentId & tipenya Pemasukan), kurangi lagi totalBayar siswa itu --
+        // biar gak keliatan siswa "udah bayar" padahal catatannya sudah
+        // dihapus dari buku besar.
+        if (deleteTarget.studentId && deleteTarget.type === 'Pemasukan') {
+          await adjustStudentTotalBayar(deleteTarget.studentId, -parseInt(deleteTarget.amount || 0));
+        }
+        if (deleteTarget.studentId) {
+          alert('✅ Transaksi berhasil dihapus! Data pembayaran siswa ikut disesuaikan.');
+        } else {
+          alert('✅ Transaksi berhasil dihapus!');
+        }
       }
 
       setShowPinModal(false);
       setDeleteTarget(null);
-      alert('✅ Transaksi berhasil dihapus!' + (deleteTarget.studentId ? ' Data pembayaran siswa ikut disesuaikan.' : ''));
     } catch (e) {
       alert('❌ Gagal menghapus: ' + e.message);
     }
@@ -204,6 +286,19 @@ const TransactionHistory = () => {
   const openEdit = (item) => {
     if (pinBelumDiatur) {
       alert('⚠️ PIN Owner belum diatur. Atur PIN dulu di halaman Pengaturan sebelum bisa mengedit transaksi.');
+      return;
+    }
+    // 🔥 FIX BUG TERKAIT: transaksi "Perpanjangan Paket" SENGAJA gak boleh
+    // diedit nominalnya langsung dari sini -- satu transaksi ini ngubah 4
+    // field sekaligus di data siswa (tagihan/dibayar/tanggal selesai/
+    // durasi) yang SALING BERGANTUNG dari nominal aslinya, jadi ngedit
+    // nominal doang gak bisa nge-cascade ke 3 field lainnya secara akurat
+    // (persis akar masalah yang dilaporkan). Kalau ada kesalahan input,
+    // cara yang BENAR & AMAN adalah HAPUS transaksi ini (otomatis
+    // membalikkan SEMUA field terkait, lihat reversePerpanjangan()) lalu
+    // ulangi "Perpanjang Paket" dengan input yang benar dari awal.
+    if (item.category === 'Perpanjangan Paket') {
+      alert('⚠️ Transaksi "Perpanjangan Paket" tidak bisa diedit langsung di sini (nominalnya terkait ke tanggal selesai & durasi paket siswa).\n\nKalau ada kesalahan input, HAPUS transaksi ini (klik ikon tempat sampah) -- sistem akan otomatis membalikkan tagihan, tanggal selesai, dan durasi paket siswa ke posisi semula. Setelah itu, ulangi "Perpanjang Paket" dari halaman Keuangan Siswa dengan input yang benar.');
       return;
     }
     setPinInput('');
