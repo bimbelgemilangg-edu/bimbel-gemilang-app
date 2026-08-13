@@ -444,17 +444,22 @@ const StudentDashboard = () => {
         });
         const allModulsData = rawModulsData.filter(m => !embeddedQuizIds.has(m.id) && !m.parentModulId);
 
+        const nowTsForFilter = new Date();
         const accessibleModuls = allModulsData.filter(modul => {
           if (modul.status === 'arsip') return false;
-          // 🔥 Fix yang sama kayak di StudentElearning.jsx: modul
-          // "terjadwal" dianggap aktif secara efektif begitu tanggalMulai
-          // udah lewat, karena gak ada mekanisme yang otomatis ngubah
-          // statusnya jadi "aktif".
-          if (modul.status === 'terjadwal') {
-            if (!modul.tanggalMulai) return false;
-            if (new Date(modul.tanggalMulai) > new Date()) return false;
-          }
+          // 🔥 FIX BUG NYATA: sebelumnya modul/kuis yang statusnya
+          // "terjadwal" dengan tanggalMulai di MASA DEPAN langsung DIBUANG
+          // TOTAL dari daftar (`return false`) -- jadi siswa gak pernah
+          // lihat "eh ada kuis yang bakal kebuka minggu depan" sama
+          // sekali, padahal itu berguna sebagai PENGINGAT. Sekarang item
+          // yang belum waktunya TETAP masuk daftar (ditandai `isUpcoming`
+          // di bawah), cuma gak dianggap "aktif sekarang" -- biar tetap
+          // kelihatan di dashboard sebagai pengingat "akan datang", bukan
+          // hilang sama sekali sampai tanggalnya tiba.
           return checkStudentAccess(modul, studentId, kelasVal, programVal, enrolledSubjectsVal);
+        }).map(modul => {
+          const isUpcoming = modul.status === 'terjadwal' && modul.tanggalMulai && new Date(modul.tanggalMulai) > nowTsForFilter;
+          return { ...modul, __isUpcoming: isUpcoming };
         });
 
         // 🔥 FIX BUG "kuis gak muncul di dashboard": sejak kuis "ditautkan
@@ -524,18 +529,23 @@ const StudentDashboard = () => {
             const hasAssignment = (m.blocks || []).some(b => b.type === 'assignment');
             return hasQuiz || hasAssignment;
           })
-          .map(m => ({ ...m, __deadline: getEarliestDeadline(m) }))
+          .map(m => ({ ...m, __deadline: m.__isUpcoming ? null : getEarliestDeadline(m) }))
           // Buang yang deadline-nya sudah lewat semua (biar gak nampilin
-          // tugas/kuis yang udah kadaluarsa sebagai "aktif")
+          // tugas/kuis yang udah kadaluarsa sebagai "aktif") -- item
+          // __isUpcoming SELALU lolos di sini (deadline-nya null, belum
+          // relevan sampai tanggalMulai-nya tiba).
           .filter(m => !m.__deadline || m.__deadline >= nowTs)
-          // 🔥 URUTKAN BERDASARKAN DEADLINE PALING DEKAT DULU — sebelumnya
-          // sama sekali gak ada sorting urgency, cuma ambil 3 modul
-          // pertama dari urutan "terakhir diupdate". Modul tanpa deadline
-          // (tugas/kuis bebas waktu) ditaruh di bawah yang punya deadline.
+          // 🔥 URUTKAN: item AKTIF dengan deadline paling dekat dulu, baru
+          // item "AKAN DATANG" (belum waktunya tapi tetap jadi pengingat,
+          // diurutkan berdasar tanggalMulai paling dekat), baru yang gak
+          // punya deadline sama sekali.
           .sort((a, b) => {
             if (a.__deadline && b.__deadline) return a.__deadline - b.__deadline;
-            if (a.__deadline) return -1;
-            if (b.__deadline) return 1;
+            if (a.__deadline && !b.__isUpcoming) return -1;
+            if (b.__deadline && !a.__isUpcoming) return 1;
+            if (a.__isUpcoming && b.__isUpcoming) return new Date(a.tanggalMulai) - new Date(b.tanggalMulai);
+            if (a.__isUpcoming) return a.__deadline ? -1 : 1;
+            if (b.__isUpcoming) return b.__deadline ? 1 : -1;
             return 0;
           })
           .slice(0, 8); // 🔥 naik dari 5 -> 8: tugas/kuis TANPA deadline (jadwal bebas) selalu ditaruh di bawah yang punya deadline -- kalau bimbel sudah punya 5+ tugas berdeadline aktif, kuis/tugas BARU yang gak berdeadline bisa ketutup dari widget ringkasan ini padahal aksesnya udah benar (bisa dibuka normal lewat E-Learning). Batas dinaikkan supaya lebih jarang kejadian.
@@ -923,15 +933,31 @@ const StudentDashboard = () => {
                 else deadlineBadge = { text: `📅 ${Math.floor(diffH / 24)} hari lagi`, color: '#f59e0b' };
               }
 
+              // 🔥 BARU: badge "Akan Datang" -- item yang tanggalMulai-nya
+              // masih di masa depan (lihat penjelasan lengkap di fetchData()
+              // soal kenapa ini sekarang TETAP masuk daftar, bukan
+              // disembunyikan total). Ditampilkan sebagai pengingat, TAPI
+              // gak bisa diklik buat dibuka -- soalnya kontennya beneran
+              // belum kebuka sampai tanggalnya tiba, klik ke sana cuma
+              // bakal berujung error/kosong.
+              const upcomingBadge = task.__isUpcoming && task.tanggalMulai
+                ? { text: `🔜 Dibuka ${new Date(task.tanggalMulai).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}`, color: '#0891b2' }
+                : null;
+
               return (
                 <div
                   key={i}
                   className="sd-task-item"
                   style={{
-                    padding: '10px 12px', background: '#f8fafc', borderRadius: 12, marginBottom: 6,
-                    borderLeft: `3px solid ${hasQuiz ? '#673ab7' : '#f59e0b'}`, cursor: 'pointer', transition: 'filter 0.15s',
+                    padding: '10px 12px', background: task.__isUpcoming ? '#f0fdfa' : '#f8fafc', borderRadius: 12, marginBottom: 6,
+                    borderLeft: `3px solid ${task.__isUpcoming ? '#0891b2' : (hasQuiz ? '#673ab7' : '#f59e0b')}`,
+                    cursor: task.__isUpcoming ? 'default' : 'pointer', transition: 'filter 0.15s',
+                    opacity: task.__isUpcoming ? 0.85 : 1,
                   }}
                   onClick={() => {
+                    // 🔥 Item "akan datang" SENGAJA gak bisa diklik -- kontennya
+                    // beneran belum kebuka, biar gak nyasar ke halaman error.
+                    if (task.__isUpcoming) return;
                     // 🔥 FIX BUG: sebelumnya SEMUA kartu di sini (kuis maupun
                     // tugas) cuma nyimpen `selectedModuleId` ke localStorage
                     // lalu lempar ke halaman daftar "Pilih Guru/Mapel"
@@ -979,7 +1005,11 @@ const StudentDashboard = () => {
                       🔒 Dikirim khusus
                     </div>
                   )}
-                  {deadlineBadge && (
+                  {upcomingBadge ? (
+                    <div style={{ fontSize: 9, color: upcomingBadge.color, fontWeight: 700, marginTop: 4 }}>
+                      {upcomingBadge.text}
+                    </div>
+                  ) : deadlineBadge && (
                     <div style={{ fontSize: 9, color: deadlineBadge.color, fontWeight: 700, marginTop: 4 }}>
                       {deadlineBadge.text}
                     </div>
