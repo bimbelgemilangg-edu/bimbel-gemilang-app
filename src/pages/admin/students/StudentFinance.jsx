@@ -133,14 +133,27 @@ const StudentFinance = () => {
       }
 
       // 3. Fetch finance logs
+      // 🔥 FIX BUG NYATA: sebelumnya query ini gabung DUA filter kesamaan
+      // (studentId, type) SEKALIGUS `orderBy("date")` -- kombinasi ini
+      // WAJIB punya composite index khusus di Firestore. Kalau index itu
+      // belum pernah dibuat di project (yang ternyata belum), query ini
+      // SELALU GAGAL dilempar sebagai error -- ketangkep di catch,
+      // muncul "Gagal memuat data", dan Riwayat Pembayaran jadi kosong
+      // walau siswanya udah lunas (data pembayarannya BENERAN ADA, cuma
+      // query buat nampilinnya yang gagal). Sekarang `orderBy` dihapus
+      // dari query Firestore (gak butuh index khusus lagi, cuma 2 filter
+      // kesamaan biasa) -- pengurutan "terbaru dulu" dipindah ke sisi
+      // JavaScript setelah data berhasil diambil.
       const qLogs = query(
         collection(db, "finance_logs"),
         where("studentId", "==", kodeUnik),
-        where("type", "==", "Pemasukan"),
-        orderBy("date", "desc")
+        where("type", "==", "Pemasukan")
       );
       const logsSnap = await getDocs(qLogs);
-      setFinanceLogs(logsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const logsData = logsSnap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      setFinanceLogs(logsData);
 
     } catch (error) { 
       console.error("Error:", error); 

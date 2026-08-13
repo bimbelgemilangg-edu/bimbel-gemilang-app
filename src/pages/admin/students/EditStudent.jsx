@@ -9,6 +9,17 @@ import {
   IdCard, Phone, Edit3, X, AlertCircle, Hash, Key, Info
 } from 'lucide-react';
 
+// 🔥 BARU: sama persis logikanya dengan normalisasiNoHp() di AddStudent.jsx
+// -- diperlukan supaya format nomor HASIL EDIT juga selalu 628xxx (format
+// yang dibutuhkan link WhatsApp wa.me), bukan format apa adanya yang
+// diketik admin (bisa aja "08xxx" atau ada spasi/tanda baca).
+const normalisasiNoHp = (raw) => {
+  let bersih = (raw || '').replace(/[^0-9]/g, '');
+  if (bersih.startsWith('0')) bersih = '62' + bersih.substring(1);
+  if (!bersih.startsWith('62')) bersih = '62' + bersih;
+  return bersih;
+};
+
 const EditStudent = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -334,7 +345,21 @@ const EditStudent = () => {
     setSaving(true);
     try {
       const tanggalLahirStr = getTanggalLahirStr();
-      
+      // 🔥 FIX BUG NYATA & SERIUS: nomor HP orang tua ternyata disimpan di
+      // DUA TEMPAT BEDA di seluruh sistem -- field level-atas `noHp` (yang
+      // dipakai fitur kirim WhatsApp otomatis di FinanceDashboard.jsx) DAN
+      // field bersarang `ortu.hp` (yang dipakai halaman ini buat baca/
+      // tampilkan). AddStudent.jsx nulis KE DUA-DUANYA pas siswa daftar,
+      // jadi konsisten di awal -- TAPI halaman Edit ini SEBELUMNYA cuma
+      // update `ortu.hp`, gak pernah nyentuh `noHp` level-atas sama
+      // sekali. Akibatnya: begitu admin edit nomor ortu (misal ganti
+      // nomor), `ortu.hp` ke-update tapi `noHp` TETAP NYANGKUT ke nomor
+      // LAMA selamanya -- fitur kirim WA otomatis bakal ngirim ke nomor
+      // yang udah gak berlaku. Sekarang DUA-DUANYA di-update bareng,
+      // sama-sama dinormalisasi ke format 628xxx (biar link WA-nya juga
+      // gak rusak kalau admin ngetik format "08xxx").
+      const noHpBersih = normalisasiNoHp(formData.noHp);
+
       const payload = {
         nama: formData.nama,
         username: formData.username, 
@@ -342,11 +367,14 @@ const EditStudent = () => {
         tempatLahir: formData.tempatLahir,
         tanggalLahir: tanggalLahirStr || originalData?.tanggalLahir || '',
         kelasSekolah: formData.kelasSekolah,
+        // 🔥 Field level-atas ini yang dibaca fitur kirim WA otomatis di
+        // FinanceDashboard.jsx -- WAJIB ikut disinkronkan tiap ada edit.
+        noHp: noHpBersih,
         ortu: { 
           ayah: formData.namaAyah, 
           ibu: formData.namaIbu, 
           alamat: formData.alamat, 
-          hp: formData.noHp 
+          hp: noHpBersih 
         },
         kategori: formData.programType,
         jenjang: formData.programType === 'English' ? 'English' : formData.jenjang,
