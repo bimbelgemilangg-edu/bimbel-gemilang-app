@@ -150,6 +150,28 @@ const renderMath = (text) => {
 const renderMathInHtml = (html) => {
   if (!html) return html;
   let result = html;
+  // 🔥 FIX BUG NYATA: sebelumnya fungsi ini CUMA nyari rumus yang
+  // dibungkus tanda dolar ($...$ atau $$...$$). Kalau sumber konten
+  // (hasil generate materi) kebetulan nulis lingkungan matriks
+  // (\begin{pmatrix}...\end{pmatrix}, dst) TANPA dibungkus dolar --
+  // fungsi ini SAMA SEKALI GAK NYENTUH teks itu, jadi kode LaTeX mentah
+  // (backslash, "\\", dst) muncul apa adanya ke siswa, persis laporan
+  // "Latihan Mandiri" yang soal matriksnya keliatan berantakan padahal
+  // rumus lain di badan materi yang sama tampil normal. Sekarang
+  // ditambah lapisan KETIGA: tangkap lingkungan matriks/array UMUM yang
+  // BERDIRI SENDIRI (gak dibungkus dolar sama sekali) dan tetap
+  // dirender -- jadi biarpun sumber datanya lupa bungkus dolar, hasilnya
+  // tetap kebaca rapi buat siswa, bukan kode mentah.
+  result = result.replace(
+    /\\begin\{(pmatrix|bmatrix|vmatrix|Vmatrix|matrix|cases|array|Bmatrix)\}[\s\S]*?\\end\{\1\}/g,
+    (match) => {
+      try {
+        return katex.renderToString(match, { throwOnError: false, displayMode: true });
+      } catch (e) {
+        return match;
+      }
+    }
+  );
   result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, expr) => {
     try {
       return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: true });
