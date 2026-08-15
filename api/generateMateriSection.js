@@ -91,6 +91,8 @@ Tentukan dulu materi ini termasuk jenis apa:
 - WAJIB ada minimal 2 CONTOH SOAL dengan pembahasan bernomor (Langkah 1, Langkah 2, ...), memakai angka asli sampai jawaban akhir.
 - Tiap langkah perhitungan ditulis di baris sendiri. DILARANG menggabungkan banyak perhitungan dalam satu baris panjang.
 - Tulis SEMUA rumus dan simbol matematika dalam LaTeX di antara tanda dolar. Contoh: $U_n = a + (n-1)b$ atau $v = \\frac{s}{t}$. JANGAN tulis rumus sebagai teks biasa.
+- KHUSUS RUMUS KIMIA: sistem ini TIDAK mendukung paket LaTeX kimia khusus seperti \\ce{...} (mhchem) -- JANGAN PERNAH pakai itu, walau itu cara yang lazim dipakai ahli kimia menulis LaTeX. Tulis rumus kimia pakai subscript/superscript LaTeX standar saja, contoh: $H_2O$, $CO_2$, $Ca(OH)_2$, $2H_2 + O_2 \\rightarrow 2H_2O$. Kalau dipaksa pakai \\ce{}, rumus itu GAK AKAN BISA dirender sama sekali oleh sistem dan tampil sebagai kode mentah ke siswa.
+- KHUSUS MATRIKS: WAJIB pakai lingkungan LaTeX matriks beneran ($\\begin{pmatrix}1 & 2 \\\\ 3 & 4\\end{pmatrix}$ atau \\begin{bmatrix}...\\end{bmatrix} kalau butuh kurung siku), SELALU dibungkus tanda dolar -- JANGAN PERNAH menyingkat matriks jadi notasi teks kayak "(1 2 / 3 4)", itu bikin matriksnya susah dibedain baris/kolomnya dan gak sesuai gaya buku ajar sungguhan. Aturan ini berlaku juga buat soal-soal di dalam "practice" (Latihan Mandiri/Cek Pemahaman).
 - DILARANG menulis paragraf naratif panjang yang tidak mengajarkan cara mengerjakan.
 
 >>> KALAU "naratif":

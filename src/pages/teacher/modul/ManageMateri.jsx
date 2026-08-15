@@ -55,6 +55,15 @@ const FILE_TYPE_OPTIONS = [
 const renderMathInHtml = (html) => {
   if (!html) return html;
   let result = html;
+  // 🔥 FIX BUG NYATA (konsisten dengan perbaikan di StudentModuleView.jsx):
+  // fungsi ini dipakai buat PREVIEW guru (termasuk soal Latihan Mandiri di
+  // editor ini) -- sebelumnya CUMA nangkep rumus yang dibungkus tanda
+  // dolar. Kalau AI generate matriks TANPA dibungkus dolar, guru juga
+  // bakal lihat kode LaTeX mentah di preview-nya (sama kayak yang
+  // dilaporkan di sisi siswa). Ditambah lapisan pencadangan, dengan
+  // URUTAN YANG BENAR (dolar dulu, matriks-tanpa-dolar belakangan) --
+  // urutan ini PENTING, kalau dibalik bisa bikin tabrakan render ganda
+  // (lihat penjelasan detail soal kenapa di riwayat perbaikan sebelumnya).
   result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, expr) => {
     try {
       return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: true });
@@ -69,6 +78,16 @@ const renderMathInHtml = (html) => {
       return match;
     }
   });
+  result = result.replace(
+    /\\begin\{(pmatrix|bmatrix|vmatrix|Vmatrix|matrix|cases|array|Bmatrix)\}[\s\S]*?\\end\{\1\}/g,
+    (match) => {
+      try {
+        return katex.renderToString(match, { throwOnError: false, displayMode: true });
+      } catch (e) {
+        return match;
+      }
+    }
+  );
   return result;
 };
 
