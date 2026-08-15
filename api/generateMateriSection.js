@@ -13,7 +13,7 @@ const GEMINI_MODELS = [
   'gemini-2.5-flash-lite',
 ];
 
-async function callGemini(systemPrompt, userPrompt, modelName) {
+async function callGemini(systemPrompt, userPrompt, modelName, useSearch = true) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
 
   const body = {
@@ -27,14 +27,23 @@ async function callGemini(systemPrompt, userPrompt, modelName) {
       // Sengaja TIDAK pakai responseMimeType 'application/json' karena format
       // jawaban adalah JSONL (banyak objek terpisah per baris), bukan 1 objek tunggal.
     },
-    // 🔥 BERUBAH (atas keputusan sadar): grounding ke Google Search sekarang
-    // SELALU AKTIF, bukan lagi opsi yang guru harus nyalain manual. Keselarasan
-    // kurikulum itu sifatnya WAJIB, bukan "kalau sempat" -- guru gak boleh perlu
-    // inget-inget nyalain toggle supaya materinya akurat. Konsekuensinya proses
-    // generate jadi sedikit lebih lama buat SEMUA materi, itu trade-off yang
-    // sepadan demi akurasi yang konsisten.
-    tools: [{ google_search: {} }],
   };
+
+  // 🔥 FIX BUG NYATA (laporan langsung: "Gagal menghubungi Astro Gemilang"
+  // pas cuma coba generate materi biasa): grounding ke Google Search
+  // SELALU AKTIF itu bagus buat akurasi, TAPI ternyata gak semua model di
+  // daftar fallback (`GEMINI_MODELS`) MENDUKUNG fitur ini dengan sama
+  // baiknya -- model yang lebih ringan (flash-lite) kadang menolak/gagal
+  // kalau dipaksa pakai grounding, dan sebelumnya SATU kegagalan ini
+  // langsung dianggap "semua model gagal", generate GAGAL TOTAL walau
+  // sebenarnya model itu MASIH BISA jalan normal TANPA pencarian. Sekarang
+  // `useSearch` bisa dimatikan per percobaan -- dipakai buat fallback di
+  // bawah (coba WAJIB pakai pencarian dulu, kalau gagal justru karena
+  // pencarian itu sendiri, coba ulang TANPA pencarian sebelum nyerah ke
+  // model berikutnya).
+  if (useSearch) {
+    body.tools = [{ google_search: {} }];
+  }
 
   const response = await fetch(url, {
     method: 'POST',
@@ -256,32 +265,46 @@ Susun modul lengkapnya sekarang sesuai semua aturan di atas. Ingat: siswa akan m
 
   let geminiData;
   let lastErr;
+  // 🔥 BARU: nyatet apakah percobaan yang AKHIRNYA berhasil itu pakai
+  // pencarian atau enggak -- kalau ternyata gak sempat pakai pencarian
+  // sama sekali (search sendiri yang bikin gagal di semua model), guru
+  // masih dapat materinya (lebih baik daripada gagal total), tapi pesan
+  // di console kasih tau jujur biar ketauan kalau grounding lagi bermasalah.
+  let usedSearch = false;
 
   for (const modelName of GEMINI_MODELS) {
+    // Percobaan 1: WAJIB pakai pencarian (perilaku standar/diinginkan).
     try {
-      geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, modelName);
+      geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, modelName, true);
       lastErr = null;
-      console.log(`generateMateriSection sukses pakai model: ${modelName}`);
+      usedSearch = true;
+      console.log(`generateMateriSection sukses pakai model: ${modelName} (dengan pencarian)`);
       break;
     } catch (e) {
       lastErr = e;
-      console.error(`generateMateriSection gagal pakai model ${modelName}:`, e.message);
+      console.error(`generateMateriSection gagal pakai model ${modelName} (dengan pencarian):`, e.message);
 
-      // Kalau bukan soal kuota habis / model tidak ada, beri 1 kesempatan ulang
-      // di model yang sama (kemungkinan server sedang sibuk sesaat).
       const isQuotaOrNotFound = e.message.includes('429') || e.message.includes('404');
-      if (!isQuotaOrNotFound) {
-        await new Promise(r => setTimeout(r, 2000));
-        try {
-          geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, modelName);
-          lastErr = null;
-          break;
-        } catch (e2) {
-          lastErr = e2;
-          console.error(`retry model ${modelName} juga gagal:`, e2.message);
-        }
+      if (isQuotaOrNotFound) continue; // model ini emang gak bisa dipakai sama sekali, langsung ke model berikutnya
+
+      // Percobaan 2: coba lagi TANPA pencarian di model yang SAMA --
+      // ini yang mencegah kegagalan grounding bikin generate gagal total,
+      // padahal modelnya sendiri sebenarnya masih sanggup jalan normal.
+      try {
+        geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, modelName, false);
+        lastErr = null;
+        usedSearch = false;
+        console.log(`generateMateriSection sukses pakai model: ${modelName} (TANPA pencarian, fallback)`);
+        break;
+      } catch (e2) {
+        lastErr = e2;
+        console.error(`generateMateriSection gagal pakai model ${modelName} (tanpa pencarian juga):`, e2.message);
       }
     }
+  }
+
+  if (!usedSearch && !lastErr) {
+    console.warn('⚠️ generateMateriSection: materi berhasil dibuat TANPA pencarian internet (grounding gagal di semua model yang sempat dicoba). Keselarasan kurikulum di materi ini murni dari pengetahuan model, belum sempat diverifikasi lewat pencarian.');
   }
 
   if (lastErr) {
@@ -400,6 +423,11 @@ Susun modul lengkapnya sekarang sesuai semua aturan di atas. Ingat: siswa akan m
       subject_type: metaObj.subject_type === 'eksakta' ? 'eksakta' : 'naratif',
       sections,
       possiblyTruncated,
+      // 🔥 Transparansi: kasih tau apakah materi ini sempat diverifikasi
+      // lewat pencarian internet atau enggak (lihat penjelasan lengkap di
+      // fallback loop atas -- kadang grounding gagal tapi materinya tetap
+      // berhasil dibuat).
+      usedTrendSearch: usedSearch,
     });
   } catch (error) {
     console.error('generateMateriSection parse error:', error);
