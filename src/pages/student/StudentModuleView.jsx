@@ -150,28 +150,30 @@ const renderMath = (text) => {
 const renderMathInHtml = (html) => {
   if (!html) return html;
   let result = html;
-  // 🔥 FIX BUG NYATA: sebelumnya fungsi ini CUMA nyari rumus yang
-  // dibungkus tanda dolar ($...$ atau $$...$$). Kalau sumber konten
-  // (hasil generate materi) kebetulan nulis lingkungan matriks
-  // (\begin{pmatrix}...\end{pmatrix}, dst) TANPA dibungkus dolar --
-  // fungsi ini SAMA SEKALI GAK NYENTUH teks itu, jadi kode LaTeX mentah
-  // (backslash, "\\", dst) muncul apa adanya ke siswa, persis laporan
-  // "Latihan Mandiri" yang soal matriksnya keliatan berantakan padahal
-  // rumus lain di badan materi yang sama tampil normal. Sekarang
-  // ditambah lapisan KETIGA: tangkap lingkungan matriks/array UMUM yang
-  // BERDIRI SENDIRI (gak dibungkus dolar sama sekali) dan tetap
-  // dirender -- jadi biarpun sumber datanya lupa bungkus dolar, hasilnya
-  // tetap kebaca rapi buat siswa, bukan kode mentah.
-  result = result.replace(
-    /\\begin\{(pmatrix|bmatrix|vmatrix|Vmatrix|matrix|cases|array|Bmatrix)\}[\s\S]*?\\end\{\1\}/g,
-    (match) => {
-      try {
-        return katex.renderToString(match, { throwOnError: false, displayMode: true });
-      } catch (e) {
-        return match;
-      }
-    }
-  );
+  // 🔥 FIX BUG FATAL & NYATA (dari perbaikan sebelumnya, urutannya salah):
+  // sebelumnya lapisan "tangkap matriks tanpa dolar" dijalankan PALING
+  // AWAL, tanpa peduli apakah matriks itu SEBENARNYA sudah dibungkus
+  // tanda dolar ($...$) atau enggak. Kalau konten aslinya SUDAH benar
+  // dibungkus dolar (mis. "$A+B = \begin{pmatrix}...\end{pmatrix}$"),
+  // lapisan itu tetap "mencomot" bagian \begin{pmatrix}...\end{pmatrix}
+  // di DALAMNYA duluan dan mengubahnya jadi HTML KaTeX -- menyisakan
+  // tanda dolar di luar yang sekarang MEMBUNGKUS HTML, bukan lagi LaTeX
+  // murni. Giliran lapisan $...$ jalan setelahnya, dia coba me-render
+  // ULANG teks yang isinya sudah berupa HTML itu sebagai rumus
+  // matematika -- KaTeX gak ngerti tag HTML, jadi tag-tag itu (span,
+  // class, dst) dirender APA ADANYA sebagai deretan huruf miring gaya
+  // matematika, PERSIS "kode HTML mentah muncul jadi tulisan miring
+  // aneh" yang dilaporkan.
+  //
+  // Sekarang URUTANNYA DIBALIK: proses $$...$$ dan $...$ DULU (nangkep
+  // SEMUA yang emang udah dibungkus dolar dengan benar, termasuk matriks
+  // di dalamnya -- karena regex-nya udah `[\s\S]`-aware buat blok, dan
+  // konten di dalam $...$ ikut kebawa utuh). BARU SETELAH ITU lapisan
+  // pencadangan matriks-tanpa-dolar dijalankan -- di titik ini, satu-
+  // satunya \begin{...}...\end{...} yang MASIH ada di teks adalah yang
+  // MEMANG dari awal gak pernah dibungkus dolar sama sekali (yang sudah
+  // dibungkus dolar sudah "abis" diproses & diganti HTML di langkah
+  // sebelumnya) -- jadi gak ada lagi tabrakan/double-render.
   result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, expr) => {
     try {
       return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: true });
@@ -186,6 +188,21 @@ const renderMathInHtml = (html) => {
       return match;
     }
   });
+  // Lapisan pencadangan: matriks/array yang BERDIRI SENDIRI tanpa dolar
+  // sama sekali (lihat penjelasan bug sebelumnya soal kenapa ini perlu
+  // ada) -- aman dijalankan di sini karena semua yang tadinya dibungkus
+  // dolar sudah selesai diproses & gak akan ke-match ulang oleh regex ini
+  // (isinya sekarang tag HTML KaTeX, bukan lagi teks "\begin{...}").
+  result = result.replace(
+    /\\begin\{(pmatrix|bmatrix|vmatrix|Vmatrix|matrix|cases|array|Bmatrix)\}[\s\S]*?\\end\{\1\}/g,
+    (match) => {
+      try {
+        return katex.renderToString(match, { throwOnError: false, displayMode: true });
+      } catch (e) {
+        return match;
+      }
+    }
+  );
   return result;
 };
 
