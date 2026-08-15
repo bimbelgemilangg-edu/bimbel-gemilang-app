@@ -18,7 +18,7 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
     if (!topic.trim()) return setError('❌ Judul materi wajib diisi!');
 
     setGenerating(true);
-    setStatusLabel('Astro Gemilang sedang menyusun buku digital... (30-60 detik)');
+    setStatusLabel('Astro Gemilang lagi cek kurikulum terbaru & menyusun buku digital... (30-70 detik)');
 
     try {
       // 1️⃣ SEKALI PANGGIL -> dapat seluruh bagian modul
@@ -198,9 +198,10 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
             <div style={styles.hintBox}>
               <BookOpen size={13} color="#8b5cf6" style={{ flexShrink: 0, marginTop: 1 }} />
               <span>
-                Astro Gemilang akan menyusun <b>satu modul lengkap</b> terbagi beberapa bagian. Untuk materi berhitung
-                (Matematika/Fisika/Kimia), fokusnya ke <b>rumus, contoh soal bertahap, dan Langkah Gemilang</b> —
-                bukan penjelasan panjang. Untuk materi bacaan, penjelasannya lebih naratif dengan contoh nyata.
+                Halo, aku <b>Astro Gemilang</b> — asisten akademik kamu. Yuk susun materi buat siswa Gemilang!
+                Untuk mapel berhitung (Matematika/Fisika/Kimia), aku fokusin ke <b>rumus, contoh soal bertahap, dan Langkah Gemilang</b>.
+                Untuk mapel bacaan, aku bikin lebih naratif dengan contoh nyata. Aku juga selalu cek dulu kurikulum
+                terbaru sebelum nulis, biar materinya gak ketinggalan zaman.
               </span>
             </div>
           </>

@@ -290,6 +290,171 @@ const SimpleEditor = ({ value, onChange, placeholder }) => {
 // ============================================================
 // MAIN COMPONENT
 // ============================================================
+// ============================================================
+// 🔥 BARU: "LIHAT SEPERTI SISWA" -- preview yang beneran nunjukkin PERSIS
+// tampilan & pengalaman yang siswa lihat, bukan versi editor yang
+// styling-nya beda dan kunci jawaban langsung kelihatan. Guru bisa pakai
+// ini buat: (1) mastiin materinya beneran enak dibaca sebelum diterbitkan,
+// (2) lihat & pakai ulang pola "Langkah Gemilang" yang dibikin AI buat
+// materi lain yang ditulis manual sendiri -- biar gaya konsisten di
+// seluruh Bimbel Gemilang.
+//
+// Styling di sini SENGAJA disamain sedekat mungkin sama StudentModuleView.jsx
+// (warna, ukuran font, padding kartu) -- bukan preview yang "mirip-mirip",
+// tapi representasi yang beneran akurat dari apa yang siswa lihat.
+// ============================================================
+const StudentPreviewModal = ({ sections, judulModul, onClose }) => {
+  const [pickedMap, setPickedMap] = useState({}); // `${sectionId}-${qIdx}` -> pilihan index
+  const [revealedMap, setRevealedMap] = useState({}); // `${sectionId}-${qIdx}` -> true/false
+
+  const pick = (key, oi) => {
+    if (revealedMap[key]) return;
+    setPickedMap(p => ({ ...p, [key]: oi }));
+  };
+  const check = (key) => {
+    if (pickedMap[key] === undefined) return;
+    setRevealedMap(r => ({ ...r, [key]: true }));
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.7)', zIndex: 10000, display: 'flex', justifyContent: 'center', padding: '20px 12px', overflowY: 'auto' }}>
+      <div style={{ width: '100%', maxWidth: 720, height: 'fit-content' }}>
+        {/* Bilah atas -- penanda ini mode preview, bukan aplikasi siswa asli */}
+        <div style={{
+          position: 'sticky', top: 0, zIndex: 2, background: '#1e293b', color: 'white',
+          padding: '12px 18px', borderRadius: '14px 14px 0 0', display: 'flex',
+          justifyContent: 'space-between', alignItems: 'center', gap: 10,
+        }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700 }}>
+            <Eye size={16} /> Mode "Lihat seperti Siswa" — {judulModul || 'Materi'}
+          </span>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700 }}>
+            <X size={13} /> Tutup
+          </button>
+        </div>
+
+        <div style={{ background: '#f4f6fb', padding: '18px 16px 30px', borderRadius: '0 0 14px 14px' }}>
+          {sections.filter(s => s.type === 'text' && s.format === 'html').length === 0 && (
+            <div style={{ background: 'white', padding: 30, borderRadius: 16, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>
+              Belum ada bagian materi (teks) yang bisa di-preview. Tambahkan bagian dulu, atau generate lewat Astro Gemilang.
+            </div>
+          )}
+          {sections.filter(s => s.type === 'text' && s.format === 'html').map((section, idx) => (
+            <div key={section.id} style={pStyles.contentCard}>
+              <div style={pStyles.cdt}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase' }}>Materi {idx + 1}</div>
+                <h3 style={pStyles.cdtHeading}>{section.title || `Bagian ${idx + 1}`}</h3>
+              </div>
+              <div style={pStyles.cdtx} dangerouslySetInnerHTML={{ __html: renderMathInHtml(section.content) }} />
+
+              {section.interactive?.type === 'flashcard' && section.interactive?.front && (
+                <FlashcardPreview front={section.interactive.front} back={section.interactive.back} />
+              )}
+
+              {section.interactive?.practice?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: '#0d9488', letterSpacing: 0.3, marginBottom: 10 }}>
+                    📝 CEK PEMAHAMAN — latihan santai, tidak dinilai
+                  </div>
+                  {section.interactive.practice.map((p, pi) => {
+                    const key = `${section.id}-${pi}`;
+                    const sel = pickedMap[key];
+                    const open = !!revealedMap[key];
+                    const isRight = open && sel === p.answer;
+                    return (
+                      <div key={pi} style={{
+                        background: 'white',
+                        border: `1px solid ${open ? (isRight ? '#5eead4' : '#fca5a5') : '#e2e8f0'}`,
+                        borderLeft: `4px solid ${open ? (isRight ? '#0d9488' : '#ef4444') : '#94a3b8'}`,
+                        borderRadius: 12, padding: 14, marginBottom: 10,
+                      }}>
+                        <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                          <span style={{ flexShrink: 0, width: 22, height: 22, borderRadius: '50%', background: '#f1f5f9', color: '#475569', fontSize: 11, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{pi + 1}</span>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: '#1e293b', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: renderMathInHtml(p.q || '') }} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {(p.options || []).map((opt, oi) => {
+                            const chosen = sel === oi;
+                            const correct = p.answer === oi;
+                            let bg = 'white', border = '#e2e8f0', color = '#334155', mark = null;
+                            if (open) {
+                              if (correct) { bg = '#f0fdfa'; border = '#0d9488'; color = '#115e59'; mark = '✅'; }
+                              else if (chosen) { bg = '#fef2f2'; border = '#ef4444'; color = '#991b1b'; mark = '❌'; }
+                              else { color = '#94a3b8'; }
+                            } else if (chosen) { bg = '#eef2ff'; border = '#6366f1'; color = '#3730a3'; }
+                            return (
+                              <button
+                                key={oi}
+                                onClick={() => pick(key, oi)}
+                                disabled={open}
+                                style={{
+                                  display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left', width: '100%',
+                                  padding: '9px 12px', borderRadius: 9, border: `1.5px solid ${border}`, background: bg, color,
+                                  cursor: open ? 'default' : 'pointer', fontSize: 13, lineHeight: 1.5,
+                                }}
+                              >
+                                <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: '50%', border: `1.5px solid ${border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, background: chosen && !open ? '#6366f1' : 'transparent', color: chosen && !open ? 'white' : border }}>
+                                  {String.fromCharCode(65 + oi)}
+                                </span>
+                                <span style={{ flex: 1 }} dangerouslySetInnerHTML={{ __html: renderMathInHtml(String(opt || '')) }} />
+                                {mark && <span style={{ flexShrink: 0 }}>{mark}</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {!open ? (
+                          <button onClick={() => check(key)} disabled={sel === undefined} style={{ marginTop: 10, padding: '7px 16px', borderRadius: 8, border: 'none', background: sel === undefined ? '#e2e8f0' : '#0d9488', color: sel === undefined ? '#94a3b8' : 'white', fontWeight: 700, fontSize: 12, cursor: sel === undefined ? 'not-allowed' : 'pointer' }}>
+                            Cek Jawaban
+                          </button>
+                        ) : (
+                          <div style={{ marginTop: 10, fontSize: 12, color: '#475569', lineHeight: 1.6 }}>
+                            💡 <span dangerouslySetInnerHTML={{ __html: renderMathInHtml(p.explain || '') }} />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Kartu jembatan keledai versi preview siswa -- klik buat balik kartu, sama kayak yang siswa alami.
+const FlashcardPreview = ({ front, back }) => {
+  const [flipped, setFlipped] = useState(false);
+  return (
+    <div
+      onClick={() => setFlipped(v => !v)}
+      style={{
+        marginTop: 16, padding: 16, borderRadius: 14, cursor: 'pointer',
+        background: flipped ? '#fffbeb' : 'linear-gradient(135deg,#8b5cf6,#6d28d9)',
+        color: flipped ? '#78350f' : 'white', minHeight: 70,
+        display: 'flex', flexDirection: 'column', justifyContent: 'center',
+        transition: 'background 0.2s ease',
+      }}
+    >
+      <div style={{ fontSize: 9, fontWeight: 800, opacity: 0.85, marginBottom: 6, letterSpacing: 0.5 }}>
+        {flipped ? '🔑 ARTINYA (klik buat balik lagi)' : '🎴 JEMBATAN KELEDAI (klik buat lihat artinya)'}
+      </div>
+      {flipped
+        ? <div style={{ fontSize: 13, lineHeight: 1.8 }} dangerouslySetInnerHTML={{ __html: renderMathInHtml(back || '') }} />
+        : <div style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.5 }}>{front}</div>}
+    </div>
+  );
+};
+
+const pStyles = {
+  contentCard: { background: '#fff', padding: 22, borderRadius: 16, marginBottom: 14, boxShadow: '0 1px 3px rgba(0,0,0,.04)', border: '1px solid #f1f5f9' },
+  cdt: { marginBottom: 12, borderLeft: '4px solid #8b5cf6', paddingLeft: 10, color: '#8b5cf6' },
+  cdtHeading: { fontSize: 18, color: '#0f172a', fontWeight: 800, margin: '2px 0 0' },
+  cdtx: { lineHeight: 1.8, color: '#334155', fontSize: 15 },
+};
+
 const ManageMateri = () => {
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
@@ -328,6 +493,8 @@ const ManageMateri = () => {
   const [showAIGenerate, setShowAIGenerate] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   const [showRawHtml, setShowRawHtml] = useState(false);
+  // 🔥 BARU: toggle modal "Lihat seperti Siswa"
+  const [showStudentPreview, setShowStudentPreview] = useState(false);
   
   const [guruData, setGuruData] = useState(null);
   const [guruId, setGuruId] = useState('');
@@ -1654,6 +1821,15 @@ const ManageMateri = () => {
           {modulId && <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>#{modulId}</span>}
         </h2>
         <div style={styles.headerActions}>
+          {/* 🔥 BARU: beda dari tombol "Live" di sebelah (yang buka data yang
+              SUDAH tersimpan) -- tombol ini preview DRAFT yang lagi diketik
+              SEKARANG, langsung dari state di layar, tanpa perlu save dulu.
+              Muncul begitu ada minimal 1 bagian materi teks buat di-preview. */}
+          {sections.some(s => s.type === 'text' && s.format === 'html') && (
+            <button onClick={() => setShowStudentPreview(true)} style={{ ...styles.btnBack, background: '#faf5ff', borderColor: '#e9d5ff', color: '#7c3aed' }}>
+              <Eye size={14} /> Lihat seperti Siswa
+            </button>
+          )}
           {editId && (
             <button onClick={() => window.open(`/siswa/modul/${editId}`, '_blank')} style={{ ...styles.btnBack }}>
               <Eye size={14} /> Live
@@ -2088,6 +2264,15 @@ const ManageMateri = () => {
           </>
         )}
       </div>
+
+      {/* 🔥 BARU: modal "Lihat seperti Siswa" */}
+      {showStudentPreview && (
+        <StudentPreviewModal
+          sections={sections}
+          judulModul={title || sections[0]?.title}
+          onClose={() => setShowStudentPreview(false)}
+        />
+      )}
     </div>
   );
 };
