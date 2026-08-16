@@ -770,8 +770,10 @@ const ManageQuiz = () => {
       // "Siswa Tertentu" -- penyaringan sebenarnya dilakukan di effect
       // terpisah (bereaksi ke `kodeMapel`), lihat penjelasan di sana.
       setAllStudentsForQuizRaw(siswaData);
-      const kelas = [...new Set(siswaData.map(s => s.kelasSekolah))].filter(Boolean).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-      setAvailableClasses(kelas);
+      // 🔥 `availableClasses` DIHAPUS dari sini -- sekarang dihitung
+      // REAKTIF di effect terpisah (bereaksi ke `kodeMapel`) di bawah,
+      // supaya ke-scope cuma ke jenjang yang beneran ada siswanya
+      // terdaftar di mapel yang lagi diedit.
     } else {
       anyFailed = true;
       console.error("Gagal ambil daftar kelas & siswa:", siswaResult.reason);
@@ -842,6 +844,16 @@ const ManageQuiz = () => {
         );
     setAllStudentsForQuiz(hasil);
     setFilteredStudentsForQuiz(hasil);
+
+    // 🔥 FIX BUG NYATA (sama persis kelasnya dengan yang ketemu di
+    // ManageMateri.jsx): sebelumnya `availableClasses` dihitung dari
+    // SEMUA siswa system-wide, gak peduli kodeMapel yang lagi diedit --
+    // dropdown "Target Jenjang" jadi nampilin kelas yang gak nyambung
+    // sama sekali ke mapel kuis ini, gampang bikin guru salah pencet.
+    // Sekarang di-scope PERSIS pakai `hasil` yang sama (siswa yang
+    // BENERAN terdaftar admin ke kodeMapel yang lagi aktif).
+    const kelasRelevan = [...new Set(hasil.map(s => s.kelasSekolah))].filter(Boolean).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    setAvailableClasses(kelasRelevan);
   }, [kodeMapel, allStudentsForQuizRaw]);
 
   // 🔥 Helper: isi semua state kuis dari SATU dokumen kuis (bukan dokumen
