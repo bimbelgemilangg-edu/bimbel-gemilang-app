@@ -13,6 +13,53 @@ const GEMINI_MODELS = [
   'gemini-2.5-flash-lite',
 ];
 
+// ============================================================
+// 🔥 BARU: generator ilustrasi bangun datar/ruang PRESISI -- dipakai buat
+// section yang ngebahas segitiga/persegi/bangun geometri dengan ukuran
+// SPESIFIK (mis. "segitiga siku-siku sisi 3,4,5 cm"). Digambar dari
+// koordinat vertex yang dihitung AI, bukan dicari/disalin dari internet
+// (itu berisiko hak cipta & gak akan cocok sama angka soal) dan bukan
+// diketik sebagai teks ASCII (itu berantakan, lihat penjelasan lengkap di
+// Aturan Matriks/Gambar). Sama persis logikanya dengan buildShapeImageSvg
+// di generateQuizFromTopic.js, biar konsisten hasil visualnya.
+// ============================================================
+const escapeXmlMateri = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+const buildShapeImageSvg = (shape) => {
+  if (!shape || !Array.isArray(shape.vertices) || shape.vertices.length < 3) return '';
+  const verts = shape.vertices.filter(v => typeof v.x === 'number' && typeof v.y === 'number');
+  if (verts.length < 3) return '';
+  const labels = Array.isArray(shape.labels) ? shape.labels : [];
+
+  const allX = [...verts.map(v => v.x), ...labels.map(l => l.x)];
+  const allY = [...verts.map(v => v.y), ...labels.map(l => l.y)];
+  const minX = Math.min(...allX), maxX = Math.max(...allX);
+  const minY = Math.min(...allY), maxY = Math.max(...allY);
+  const w = Math.max(maxX - minX, 1), h = Math.max(maxY - minY, 1);
+
+  const pad = Math.max(w, h) * 0.25 + 1;
+  const viewW = w + pad * 2, viewH = h + pad * 2;
+
+  // SVG y tumbuh ke BAWAH, gambar geometri biasa y tumbuh ke ATAS.
+  const flipY = (y) => (maxY - y) + pad;
+  const shiftX = (x) => (x - minX) + pad;
+
+  const pointsAttr = verts.map(v => `${shiftX(v.x).toFixed(2)},${flipY(v.y).toFixed(2)}`).join(' ');
+  const fontSize = Math.max(viewW, viewH) * 0.05;
+
+  const labelSvg = labels.map(l =>
+    `<text x="${shiftX(l.x).toFixed(2)}" y="${flipY(l.y).toFixed(2)}" font-size="${fontSize.toFixed(2)}" fill="#1e293b" text-anchor="middle" font-family="sans-serif">${escapeXmlMateri(String(l.text || ''))}</text>`
+  ).join('');
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${viewW.toFixed(2)} ${viewH.toFixed(2)}" width="420" height="${(420 * viewH / viewW).toFixed(0)}">
+    <rect x="0" y="0" width="${viewW.toFixed(2)}" height="${viewH.toFixed(2)}" fill="white"/>
+    <polygon points="${pointsAttr}" fill="#c7d2fe" stroke="#1e293b" stroke-width="${(fontSize * 0.08).toFixed(2)}"/>
+    ${labelSvg}
+  </svg>`;
+
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+};
+
 async function callGemini(systemPrompt, userPrompt, modelName, useSearch = true) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
 
@@ -137,6 +184,7 @@ Tentukan dulu materi ini termasuk jenis apa:
 - Tulis SEMUA rumus dan simbol matematika dalam LaTeX di antara tanda dolar. Contoh: $U_n = a + (n-1)b$ atau $v = \\frac{s}{t}$. JANGAN tulis rumus sebagai teks biasa.
 - KHUSUS RUMUS KIMIA: sistem ini TIDAK mendukung paket LaTeX kimia khusus seperti \\ce{...} (mhchem) -- JANGAN PERNAH pakai itu, walau itu cara yang lazim dipakai ahli kimia menulis LaTeX. Tulis rumus kimia pakai subscript/superscript LaTeX standar saja, contoh: $H_2O$, $CO_2$, $Ca(OH)_2$, $2H_2 + O_2 \\rightarrow 2H_2O$. Kalau dipaksa pakai \\ce{}, rumus itu GAK AKAN BISA dirender sama sekali oleh sistem dan tampil sebagai kode mentah ke siswa.
 - KHUSUS MATRIKS: WAJIB pakai lingkungan LaTeX matriks beneran ($\\begin{pmatrix}1 & 2 \\\\ 3 & 4\\end{pmatrix}$ atau \\begin{bmatrix}...\\end{bmatrix} kalau butuh kurung siku), SELALU dibungkus tanda dolar -- JANGAN PERNAH menyingkat matriks jadi notasi teks kayak "(1 2 / 3 4)", itu bikin matriksnya susah dibedain baris/kolomnya dan gak sesuai gaya buku ajar sungguhan. Aturan ini berlaku juga buat soal-soal di dalam "practice" (Latihan Mandiri/Cek Pemahaman).
+  - KHUSUS kalau kamu mau nunjukin matriks DENGAN LABEL baris/kolom buat mengenalkan konsep ke siswa baru (misal "Baris 1", "Kolom 2", dst) -- JANGAN PERNAH bikin tabel ASCII manual pakai spasi/teks rata kiri-kanan kayak kode program (contoh yang DILARANG: nulis "Kolom 1  Kolom 2" lalu baris angka di bawahnya diratain pakai spasi manual). Itu HANYA rapi kalau ditampilkan pakai font monospace khusus, padahal browser siswa nampilinnya sebagai teks biasa -- hasilnya berantakan, angka gak sejajar, malah tambah bingung, apalagi buat siswa SD/pemula. Sebagai gantinya, WAJIB pakai tabel HTML beneran: <table style="border-collapse:collapse;margin:12px 0;"><tr><td></td><td style="padding:8px 14px;text-align:center;font-weight:600;color:#64748b;">Kolom 1</td><td style="padding:8px 14px;text-align:center;font-weight:600;color:#64748b;">Kolom 2</td></tr><tr><td style="padding:8px 14px;font-weight:600;color:#64748b;">Baris 1</td><td style="padding:8px 14px;text-align:center;border:1px solid #e2e8f0;">2</td><td style="padding:8px 14px;text-align:center;border:1px solid #e2e8f0;">5</td></tr></table> (sesuaikan jumlah baris/kolom kebutuhan). Tabel HTML beneran DIJAMIN rapi & sejajar di layar siswa, apapun ukuran layarnya -- beda sama teks ASCII yang gampang berantakan.
 - DILARANG menulis paragraf naratif panjang yang tidak mengajarkan cara mengerjakan.
 
 >>> KALAU "naratif":
@@ -193,10 +241,12 @@ Banyak topik (bukan cuma matematika -- ini berlaku ke SEMUA mapel) punya lebih d
 - Tingkat kesulitan bertahap: soal 1 mudah, soal 2 sedang, soal 3 agak menantang.
 - "explain" WAJIB menjelaskan MENGAPA jawabannya benar, bukan cuma mengulang jawabannya.
 
-【F】 PENEMPATAN GAMBAR
-- Kalau needs_image true, WAJIB taruh penanda [[GAMBAR]] PERSIS di posisi paling relevan di dalam content_html — yaitu tepat setelah kalimat yang menjelaskan objek pada gambar itu, BUKAN asal ditaruh di akhir.
-- Contoh: kalau membahas bentuk sel tumbuhan di paragraf kedua, taruh [[GAMBAR]] tepat setelah paragraf kedua itu.
-- Kalau needs_image false, JANGAN tulis penanda [[GAMBAR]] sama sekali.
+【F】 PENEMPATAN GAMBAR -- ADA 2 JENIS, JANGAN TERTUKAR
+Ada dua kebutuhan gambar yang BEDA, jangan disamain:
+
+(a) OBJEK NYATA (needs_image) -- buat makhluk/alat/tempat yang beneran ada wujud fisiknya dan siswa terbantu kalau lihat foto aslinya (contoh: sel tumbuhan, candi Borobudur, penampang daun, peta lempeng tektonik). WAJIB taruh penanda [[GAMBAR]] PERSIS di posisi paling relevan di content_html -- tepat setelah kalimat yang menjelaskan objek itu, BUKAN asal ditaruh di akhir. Kalau needs_image false, JANGAN tulis penanda [[GAMBAR]] sama sekali.
+
+(b) BANGUN DATAR/RUANG DENGAN UKURAN SPESIFIK (shape) -- buat segitiga/persegi/bangun geometri lain yang disebut dengan ANGKA/UKURAN TERTENTU di materi (contoh: "segitiga siku-siku dengan sisi 3, 4, 5 cm", "persegi panjang luas 24 cm²"). JANGAN PERNAH pakai needs_image buat ini (foto generik dari internet gak akan cocok sama angka yang kamu tulis, malah bikin bingung) -- dan JANGAN gambarkan pakai teks ASCII/tabel manual (lihat penjelasan Aturan Matriks di atas kenapa itu berantakan). Sebagai gantinya, isi field "shape" di section itu (SEJAJAR dengan "needs_image", BUKAN pengganti): {"vertices":[{"x":0,"y":0},{"x":4,"y":0},{"x":4,"y":3}], "labels":[{"text":"4 cm","x":2,"y":-0.5},{"text":"3 cm","x":4.5,"y":1.5},{"text":"5 cm","x":1.8,"y":1.8}]} -- kamu WAJIB hitung sendiri koordinat titik sudutnya (vertices) berdasarkan ukuran yang disebutkan (anggap titik (0,0) pojok kiri-bawah, bayangkan dulu bentuknya sebelum nulis koordinat), dan taruh penanda [[GAMBAR]] di content_html persis di posisi yang relevan, SAMA seperti needs_image. Kalau section ini gak butuh bangun geometri presisi, JANGAN isi field "shape" (biarkan kosong/tidak ada).
 
 ════════════════════════════════
 BAGIAN 4 — STRUKTUR MODUL
@@ -215,7 +265,7 @@ Baris PERTAMA berupa metadata:
 {"meta": true, "subject_type": "eksakta atau naratif"}
 
 Baris BERIKUTNYA, masing-masing satu bagian materi dalam satu baris:
-{"title": "judul spesifik", "content_html": "isi bagian, hanya boleh pakai <p>, <b>, <i>, <ul>, <li>, <ol>, <pre>, <span class=gem-pop data-info=...>, dan penanda [[GAMBAR]]", "highlight_type": "mnemonic atau funfact atau none", "funfact_html": "diisi hanya kalau funfact", "flashcard_front": "KALIMAT jembatan keledainya, diisi hanya kalau mnemonic", "flashcard_back": "pemetaan tiap kata ke istilah asli, format <b>Kata</b> → istilah<br> per baris", "practice": [{"q": "pertanyaan", "options": ["pilihan A", "pilihan B", "pilihan C", "pilihan D"], "answer": 0, "explain": "kenapa jawaban itu benar"}], "needs_image": true atau false, "image_keyword": "kata benda BAHASA INGGRIS untuk cari foto, kosongkan kalau false"}
+{"title": "judul spesifik", "content_html": "isi bagian, hanya boleh pakai <p>, <b>, <i>, <ul>, <li>, <ol>, <pre>, <span class=gem-pop data-info=...>, <table> (khusus buat matriks berlabel, lihat Aturan Matriks), dan penanda [[GAMBAR]]", "highlight_type": "mnemonic atau funfact atau none", "funfact_html": "diisi hanya kalau funfact", "flashcard_front": "KALIMAT jembatan keledainya, diisi hanya kalau mnemonic", "flashcard_back": "pemetaan tiap kata ke istilah asli, format <b>Kata</b> → istilah<br> per baris", "practice": [{"q": "pertanyaan", "options": ["pilihan A", "pilihan B", "pilihan C", "pilihan D"], "answer": 0, "explain": "kenapa jawaban itu benar"}], "needs_image": true atau false, "image_keyword": "kata benda BAHASA INGGRIS untuk cari foto, kosongkan kalau false", "shape": {"vertices": [...], "labels": [...]} -- HANYA diisi kalau section ini butuh ilustrasi bangun datar/ruang presisi (lihat Aturan Gambar bagian b), kosongkan/hilangkan field ini kalau tidak perlu}
 
 ATURAN KETAT FORMAT:
 - TIDAK ADA koma di akhir baris. TIDAK ADA kurung siku pembungkus. TIDAK ADA code fence atau teks pembuka/penutup.
@@ -418,16 +468,35 @@ Susun modul lengkapnya sekarang sesuai semua aturan di atas. Ingat: siswa akan m
             }))
         : [];
 
+      // 🔥 BARU: kalau section ini punya "shape" (bangun datar/ruang
+      // presisi), gambar SVG-nya dibangun LANGSUNG di sini (backend) dan
+      // ditempelin ke posisi penanda [[GAMBAR]] -- beda dari needs_image
+      // (foto Wikimedia) yang butuh pencarian TERPISAH di sisi guru,
+      // shape ini murni hasil hitungan, jadi bisa langsung jadi tanpa
+      // nunggu proses tambahan apa pun.
+      let contentHtml = sanitize(s.content_html || '');
+      const shapeImg = buildShapeImageSvg(s.shape);
+      if (shapeImg) {
+        const imgTag = `<div style="margin:14px 0;text-align:center;"><img src="${shapeImg}" alt="${sanitize(s.title || 'Ilustrasi bangun')}" style="max-width:100%;border-radius:10px;" /></div>`;
+        if (contentHtml.includes('[[GAMBAR]]')) {
+          contentHtml = contentHtml.replace(/\[\[GAMBAR\]\]/g, imgTag);
+        } else {
+          contentHtml += imgTag;
+        }
+      }
+
       return {
         title: sanitize(s.title || `Bagian ${i + 1}`),
-        content_html: sanitize(s.content_html || ''),
+        content_html: contentHtml,
         highlight_type: isMnemonic ? 'mnemonic' : (isFunfact ? 'funfact' : 'none'),
         funfact_html: isFunfact ? sanitize(s.funfact_html) : '',
         flashcard_front: isMnemonic ? sanitize(s.flashcard_front) : '',
         flashcard_back: isMnemonic ? sanitize(s.flashcard_back) : '',
         practice,
-        needs_image: !!s.needs_image,
-        image_keyword: s.image_keyword || '',
+        // Kalau shape sudah berhasil ditempel, needs_image otomatis
+        // dianggap gak relevan lagi buat section ini (gak perlu dua-duanya).
+        needs_image: !shapeImg && !!s.needs_image,
+        image_keyword: (!shapeImg && s.needs_image) ? (s.image_keyword || '') : '',
       };
     });
 
