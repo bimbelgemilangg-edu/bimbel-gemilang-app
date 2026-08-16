@@ -736,8 +736,11 @@ const ManageMateri = () => {
 
         if (editId) await fetchModulData();
 
-        const classes = [...new Set(rawSiswaData.map(s => s.kelasSekolah).filter(k => k && k !== '-'))];
-        setAvailableClasses(['Semua', ...classes.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))]);
+        // 🔥 `availableClasses` DIHAPUS dari sini -- sekarang dihitung
+        // REAKTIF di effect terpisah (bereaksi ke `kodeMapel`) di bawah,
+        // supaya ke-scope cuma ke jenjang yang beneran ada siswanya
+        // terdaftar di mapel yang lagi diedit, bukan semua kelas di
+        // seluruh bimbel. Lihat penjelasan lengkap di effect itu.
         
       } catch (e) {
         console.error("Error loading data:", e);
@@ -770,6 +773,23 @@ const ManageMateri = () => {
         );
     setAllStudents(hasil);
     setFilteredStudents(hasil);
+
+    // 🔥 FIX BUG NYATA (langsung dari laporan: dropdown "Target Jenjang"
+    // gampang salah pencet karena isinya SEMUA kelas di SELURUH bimbel,
+    // gak peduli apakah kelas itu beneran ada siswanya terdaftar di mapel
+    // guru ini): sebelumnya `availableClasses` dihitung SEKALI dari
+    // `rawSiswaData` MENTAH (semua siswa, semua mapel) -- disconnect total
+    // dari mapel yang lagi diedit. Sekarang di-scope ULANG di sini,
+    // PERSIS pakai data `hasil` yang sama (siswa yang BENERAN terdaftar
+    // admin ke kodeMapel yang lagi aktif) -- jadi dropdown-nya cuma
+    // nunjukin jenjang yang beneran relevan buat mapel ini. Kasus kayak
+    // "Asisten TKA" (satu kode buat SD-SMP-SMA) bakal nunjukin ketiga
+    // jenjang itu SEKALIGUS (karena emang ketiganya beneran terdaftar di
+    // kode itu) -- guru tetap harus pilih manual yang mana, tapi
+    // pilihannya sekarang PASTI valid & relevan, bukan daftar kelas 1-12
+    // yang gak nyambung sama mapelnya sama sekali.
+    const kelasRelevan = [...new Set(hasil.map(s => s.kelasSekolah).filter(k => k && k !== '-'))];
+    setAvailableClasses(['Semua', ...kelasRelevan.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))]);
   }, [kodeMapel, allStudentsRaw]);
 
   const fetchModulData = async () => {

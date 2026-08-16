@@ -326,21 +326,29 @@ const StudentElearning = () => {
           return ok;
         }
         
-        // 🔥 BERUBAH (atas permintaan eksplisit, sama seperti perbaikan di
-        // StudentQuizView.jsx & StudentModuleView.jsx): pengecekan kelas/
-        // kategori DIHAPUS TOTAL dari sini -- kode mapel itu SENDIRI sudah
-        // spesifik per jenjang, jadi kelas/kategori jadi informasi ganda
-        // yang ternyata jadi titik rapuh nyata (kalau `kelas`/`program`
-        // siswa belum sempat kemuat pas filter ini jalan, modul yang
-        // seharusnya boleh malah gak muncul di daftar). Sekarang murni dari
-        // kodeMapel (`matchSubject`).
+        // 🔥 FIX BUG NYATA (laporan langsung: mapel yang sengaja mencakup
+        // banyak jenjang di bawah SATU kode mapel yang sama, kayak
+        // "Asisten TKA" buat SD-SMP-SMA sekaligus -- diganti target
+        // jenjangnya ke "9 SMP" tapi TETAP muncul di daftar siswa SD): sesi
+        // sebelumnya pengecekan kelas DIHAPUS TOTAL dengan asumsi kode
+        // mapel udah cukup spesifik per jenjang -- asumsi itu benar buat
+        // mapel BIASA (kode terpisah tiap jenjang), tapi SALAH buat mapel
+        // yang sengaja dipakai LINTAS jenjang di bawah satu kode yang sama.
+        // Target jenjang yang guru pilih jadi satu-satunya pembeda buat
+        // kasus itu, dan kemarin gak dicek sama sekali. Sekarang kelas
+        // dicek LAGI sebagai syarat TAMBAHAN (AND) -- modul harus lolos
+        // DUA-DUANYA. Buat mapel biasa yang target jenjangnya "Semua",
+        // gak ada dampak sama sekali.
+        const targetKelas = module.targetKelas || 'Semua';
+        const matchKelas = targetKelas === 'Semua' || targetKelas === kelas;
         const matchSubject = hasSubjectAccess(enrolledSubjects, module.subject || '', module.kodeMapel || '');
 
-        const ok = matchSubject;
+        const ok = matchKelas && matchSubject;
         if (!ok) {
           rejectedLog.push({
             title: module.title, modulSubject: module.subject, modulKodeMapel: module.kodeMapel,
-            matchSubject,
+            modulTargetKelas: targetKelas, studentKelas: kelas,
+            matchKelas, matchSubject,
           });
         }
         return ok;

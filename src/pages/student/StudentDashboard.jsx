@@ -275,14 +275,31 @@ const StudentDashboard = () => {
       const allTargetIds = [...studentIds, ...selectedStudentIds];
       return allTargetIds.includes(studentId) || allTargetIds.includes(studentNim);
     }
-    // 🔥 BERUBAH (atas permintaan eksplisit, konsisten dengan
-    // StudentQuizView.jsx/StudentModuleView.jsx/StudentElearning.jsx):
-    // pengecekan kelas/kategori DIHAPUS TOTAL -- kode mapel itu SENDIRI
-    // sudah spesifik per jenjang, jadi kelas/kategori jadi informasi ganda
-    // yang ternyata jadi titik rapuh nyata (kalau kelas/program siswa
-    // belum sempat kemuat, konten yang seharusnya boleh malah ketolak).
-    // Sekarang murni dari kodeMapel.
-    return hasSubjectAccess(studentEnrolledSubjects, modul.subject || '', modul.kodeMapel || '');
+    // 🔥 FIX BUG NYATA (laporan langsung: modul "Asisten TKA" ke-set ke
+    // jenjang "9 SMP" tapi TETAP muncul di siswa SD): sesi sebelumnya
+    // pengecekan kelas/jenjang DIHAPUS TOTAL dengan asumsi kode mapel itu
+    // SENDIRI udah spesifik per jenjang (mis. "Bahasa Indonesia SD" vs
+    // "...SMP" punya kode BEDA) -- asumsi itu BENAR buat mapel biasa, tapi
+    // SALAH buat kasus mapel seperti "Asisten TKA" yang SENGAJA dipakai
+    // SATU guru buat nangani SD-SMP-SMA SEKALIGUS di bawah SATU kode mapel
+    // yang SAMA. Buat kasus itu, kode mapel doang GAK CUKUP buat
+    // membedakan "materi ini buat SD" vs "buat SMP" -- satu-satunya
+    // pembeda yang tersisa adalah target jenjang yang guru pilih manual,
+    // dan itu KEMARIN GAK DICEK SAMA SEKALI (cuma dekorasi), jadi berapa
+    // pun guru ganti target jenjangnya, TETAP muncul ke semua siswa yang
+    // punya kode mapel itu di enrolledSubjects-nya.
+    //
+    // Sekarang jenjang (`targetKelas`) dicek LAGI, TAPI SEBAGAI SYARAT
+    // TAMBAHAN (AND), bukan gantiin kode mapel: modul harus LOLOS
+    // DUA-DUANYA (kode mapel siswa cocok DAN kelasnya cocok kalau target
+    // jenjangnya bukan "Semua"). Buat mapel biasa yang targetKelas-nya
+    // dibiarkan "Semua" (karena kode mapelnya udah unik per jenjang),
+    // syarat kelas ini otomatis lolos, gak ada dampak sama sekali --
+    // cuma berlaku nyata di kasus kayak Asisten TKA yang butuh
+    // pembeda tambahan itu.
+    const targetKelas = modul.targetKelas || 'Semua';
+    const matchKelas = targetKelas === 'Semua' || targetKelas === studentKelas;
+    return matchKelas && hasSubjectAccess(studentEnrolledSubjects, modul.subject || '', modul.kodeMapel || '');
   };
 
   useEffect(() => {

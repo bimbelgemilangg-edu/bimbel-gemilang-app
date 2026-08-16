@@ -131,13 +131,26 @@ const ALLOWED_FILE_TYPES = {
 // ============================================================
 const renderMath = (text) => {
   if (!text) return null;
-  const parts = text.split(/(\$\$.*?\$\$|\$.*?\$)/g);
+  // 🔥 FIX BUG NYATA (konsisten dengan perbaikan renderMathInHtml()): ada
+  // DUA fungsi render rumus terpisah di file ini -- yang ini (`renderMath`,
+  // pakai komponen React react-katex) dipakai buat konten TEKS POLOS, dan
+  // `renderMathInHtml` (string+dangerouslySetInnerHTML) buat konten HTML.
+  // Sebelumnya cuma `renderMathInHtml` yang dikasih pengaman "tangkap
+  // matriks tanpa dolar" -- fungsi ini KELEWATAN, padahal sama-sama bisa
+  // kebagian konten materi yang matriksnya lupa dibungkus dolar. Sekarang
+  // ditambahin split-pattern yang SAMA -- matriks/array berdiri sendiri
+  // (tanpa dolar) ikut ke-deteksi & dirender lewat BlockMath juga.
+  const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]*?\$|\\begin\{(?:pmatrix|bmatrix|vmatrix|Vmatrix|matrix|cases|array|Bmatrix)\}[\s\S]*?\\end\{(?:pmatrix|bmatrix|vmatrix|Vmatrix|matrix|cases|array|Bmatrix)\})/g);
   return parts.map((part, i) => {
+    if (!part) return null;
     if (part.startsWith('$$') && part.endsWith('$$')) {
       try { return <BlockMath key={i} math={part.substring(2, part.length - 2)} />; }
       catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
     } else if (part.startsWith('$') && part.endsWith('$')) {
       try { return <InlineMath key={i} math={part.substring(1, part.length - 1)} />; }
+      catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
+    } else if (part.startsWith('\\begin{')) {
+      try { return <BlockMath key={i} math={part} />; }
       catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
     }
     return <span key={i}>{part}</span>;
@@ -925,27 +938,41 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         }
         
         if (!hasAccess) {
-          // 🔥 BERUBAH (atas permintaan eksplisit, sama seperti perbaikan di
-          // StudentQuizView.jsx): pengecekan kelas/kategori (`matchKelas`/
-          // `matchProgram`) DIHAPUS TOTAL dari sini -- kode mapel itu SENDIRI
-          // sudah spesifik per jenjang (entri mapel terpisah per jenjang,
-          // kode beda-beda), jadi kelas/kategori itu informasi ganda yang
-          // ternyata jadi titik rapuh nyata: kalau `kelas`/`program` belum
-          // sempat kemuat (kosong) pas pengecekan ini jalan, siswa ketolak
-          // PADAHAL mapelnya udah benar terdaftar. Sekarang akses HANYA
-          // ditentukan dari kodeMapel (`matchSubject`).
+          // 🔥 FIX BUG NYATA (laporan langsung: modul mapel yang sengaja
+          // mencakup banyak jenjang di bawah SATU kode mapel yang sama,
+          // kayak "Asisten TKA" buat SD-SMP-SMA sekaligus -- diganti target
+          // jenjangnya ke "9 SMP" tapi TETAP muncul di siswa SD): sesi
+          // sebelumnya pengecekan kelas DIHAPUS TOTAL dengan asumsi kode
+          // mapel udah cukup spesifik per jenjang -- asumsi itu SALAH buat
+          // kasus mapel yang sengaja dipakai lintas jenjang kayak ini, kode
+          // mapelnya SAMA buat SD/SMP/SMA jadi gak bisa dibedain lewat kode
+          // doang. Target jenjang yang guru pilih jadi satu-satunya
+          // pembeda, dan itu kemarin gak dicek sama sekali (dekorasi doang).
+          // Sekarang kelas dicek LAGI sebagai syarat TAMBAHAN (AND) -- modul
+          // harus lolos DUA-DUANYA (kode mapel cocok DAN kelas cocok kalau
+          // target jenjangnya bukan "Semua"). Buat mapel biasa yang target
+          // jenjangnya dibiarkan "Semua", ini gak ada dampak sama sekali.
+          const targetKelas = data.targetKelas || 'Semua';
+          const matchKelas = targetKelas === 'Semua' || targetKelas === kelas;
           const matchSubject = hasSubjectAccess(enrolledSubjectsRaw, data.subject, data.kodeMapel);
-          hasAccess = matchSubject;
+          hasAccess = matchKelas && matchSubject;
 
           console.log('[Cek Akses Modul]', {
             hasAccess,
             modulTitle: data.title,
             modulSubject: data.subject,
             modulKodeMapel: data.kodeMapel,
+            modulTargetKelas: targetKelas,
+            studentKelas: kelas,
             studentEnrolledSubjects: enrolledSubjectsRaw,
-            matchSubject,
+            matchKelas, matchSubject,
           });
 
+          if (matchSubject && !matchKelas) {
+            dispatch({ type: 'SET_ERROR', payload: `Modul ini untuk jenjang ${targetKelas}, sedangkan kelasmu ${kelas || '-'}. Hubungi admin Bimbel Gemilang kalau ini keliru.` });
+            dispatch({ type: 'SET_ACCESS', payload: false });
+            return;
+          }
           if (!matchSubject) {
             dispatch({ type: 'SET_ERROR', payload: `Modul ini untuk mapel ${data.subject || '-'}, sedangkan paketmu belum termasuk mapel ini. Hubungi admin Bimbel Gemilang untuk info upgrade paket.` });
             dispatch({ type: 'SET_ACCESS', payload: false });

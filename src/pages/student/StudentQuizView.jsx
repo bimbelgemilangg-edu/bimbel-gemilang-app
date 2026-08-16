@@ -387,38 +387,47 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           // gak ditimpa batasan paket mapel otomatis.
           hasQuizAccess = allTargetIds.includes(nimForAccess) || allTargetIds.includes(studentData?.id);
         } else {
-          // 🔥 BERUBAH (atas permintaan eksplisit): pengecekan kelas/kategori
-          // (`matchKelas`/`matchProgram`) DIHAPUS TOTAL dari sini. Alasannya:
-          // kode mapel (mis. "MAPEL-004") itu SENDIRI SUDAH spesifik per
-          // jenjang -- guru bikin entri mapel TERPISAH buat "Bahasa
-          // Indonesia SD" vs "Bahasa Indonesia SMP" vs "...SMA", masing-
-          // masing dengan kode beda (lihat perbaikan ManageMateri.jsx/
-          // ManageQuiz.jsx sebelumnya). Jadi kelas/kategori itu INFORMASI
-          // GANDA yang udah otomatis kesaring lewat kodeMapel -- dan
-          // ternyata jadi TITIK RAPUH nyata: kalau `studentInfo.kelas`/
-          // `.program` kebetulan belum sempat kemuat (kosong) pas
-          // pengecekan ini jalan, siswa ketolak PADAHAL mapelnya udah benar
-          // terdaftar. Sekarang akses HANYA ditentukan dari kodeMapel
-          // (`matchSubject`) -- satu sumber kebenaran, sama kayak yang
-          // sudah diterapkan di field `enrolledSubjects` Edit Siswa.
+          // 🔥 FIX BUG NYATA (laporan langsung: mapel yang sengaja mencakup
+          // banyak jenjang di bawah SATU kode mapel yang sama, kayak
+          // "Asisten TKA" buat SD-SMP-SMA sekaligus -- diganti target
+          // jenjangnya ke "9 SMP" tapi kuisnya TETAP muncul di siswa SD):
+          // sesi sebelumnya pengecekan kelas DIHAPUS TOTAL dengan asumsi
+          // kode mapel udah cukup spesifik per jenjang -- asumsi itu benar
+          // buat mapel BIASA (kode terpisah tiap jenjang), tapi SALAH buat
+          // mapel yang sengaja dipakai LINTAS jenjang di bawah satu kode
+          // yang sama kayak ini. Target jenjang yang guru pilih jadi
+          // satu-satunya pembeda buat kasus itu, dan kemarin gak dicek
+          // sama sekali. Sekarang kelas dicek LAGI sebagai syarat TAMBAHAN
+          // (AND) -- kuis harus lolos DUA-DUANYA (kode mapel cocok DAN
+          // kelas cocok kalau target jenjangnya bukan "Semua"). Buat mapel
+          // biasa yang target jenjangnya dibiarkan "Semua", gak ada dampak.
+          const targetKelas = targetingSource.targetKelas || 'Semua';
+          const matchKelas = targetKelas === 'Semua' || targetKelas === studentInfo.kelas;
           const effectiveEnrolledSubjects = studentInfo.enrolledSubjects;
           const matchSubject = hasSubjectAccess(effectiveEnrolledSubjects, data.subject || '', data.kodeMapel || '');
-          hasQuizAccess = matchSubject;
+          hasQuizAccess = matchKelas && matchSubject;
 
           // 🔥 log detail alasan akses ditolak/diterima -- kalau siswa
           // lapor "tidak memiliki akses" tapi keliatannya seharusnya bisa,
           // buka Console browser (F12) pas kejadian, cari baris ini buat
-          // lihat PERSIS mapel mana yang gak cocok -- daripada nebak-nebak
-          // dari pesan error yang cuma generik.
+          // lihat PERSIS mapel/jenjang mana yang gak cocok -- daripada
+          // nebak-nebak dari pesan error yang cuma generik.
           console.log('[Cek Akses Kuis]', {
             hasQuizAccess,
             quizSubject: data.subject,
             quizKodeMapel: data.kodeMapel,
+            quizTargetKelas: targetKelas,
+            studentKelas: studentInfo.kelas,
             studentEnrolledSubjects: effectiveEnrolledSubjects,
-            matchSubject,
+            matchKelas, matchSubject,
             parentModulId: data.parentModulId || null,
           });
 
+          if (matchSubject && !matchKelas) {
+            setError(`Kuis ini untuk jenjang ${targetKelas}, sedangkan kelasmu ${studentInfo.kelas || '-'}. Hubungi admin Bimbel Gemilang kalau ini keliru.`);
+            setLoading(false);
+            return;
+          }
           if (!matchSubject) {
             setError(`Kuis ini untuk mapel ${data.subject || '-'}, sedangkan paketmu belum termasuk mapel ini. Hubungi admin Bimbel Gemilang untuk info upgrade paket.`);
             setLoading(false);
