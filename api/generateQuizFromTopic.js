@@ -29,11 +29,7 @@
 const GEMINI_MODELS = [
   'gemini-flash-latest',
   'gemini-flash-lite-latest',
-  // 🔥 FIX: 'gemini-2.5-flash-lite' udah gak bisa dipakai user baru
-  // (Google udah rilis generasi 3.x -- 3.6 Flash & 3.5 Flash-Lite GA
-  // per 21 Juli 2026). Ganti fallback terakhir ke model yang beneran
-  // masih available.
-  'gemini-3.5-flash-lite',
+  'gemini-2.5-flash-lite',
 ];
 
 async function callGemini(systemPrompt, userPrompt, modelName, useTrendSearch) {
@@ -231,8 +227,7 @@ ATURAN YANG TIDAK BOLEH DILANGGAR
 [2] Untuk pilihan ganda: 3 opsi pengecoh harus MASUK AKAL (berasal dari kesalahan hitung yang umum dilakukan siswa), bukan asal-asalan.
 [3] Setiap soal WAJIB punya "explanation" yang menjelaskan CARA mendapatkan jawaban, bukan cuma mengulang jawabannya.
 [4] Bahasa dan tingkat kesulitan disesuaikan jenjang siswa. Kalau tidak disebutkan, asumsikan SMP.
-[5] Tulis rumus/simbol matematika dalam LaTeX di antara tanda dolar, contoh: $\\frac{s}{t}$.
-[5b] JANGAN PERNAH pakai sintaks markdown -- TANPA **tebal**, TANPA _miring_, TANPA list pakai tanda "-" atau "*", TANPA heading "#". Sistem tampilan soal HANYA merender teks polos dan LaTeX $...$ -- markdown TIDAK dirender dan akan muncul sebagai tanda baca mentah yang bikin bingung siswa/guru. Kalau perlu daftar/rincian (misal beberapa perlakuan percobaan A/B/C/D), tulis sebagai KALIMAT NARATIF biasa dipisah titik, atau paragraf baru pakai \\n di dalam string JSON -- BUKAN simbol bullet. Untuk penekanan istilah, cukup tulis apa adanya tanpa bintang.
+[5] Tulis rumus/simbol matematika dalam LaTeX di antara tanda dolar, contoh: $\\frac{s}{t}$. KHUSUS RUMUS KIMIA: sistem ini TIDAK mendukung paket \\ce{...} (mhchem) -- JANGAN PERNAH pakai itu. Tulis rumus kimia pakai subscript/superscript LaTeX standar, contoh: $H_2O$, $2H_2 + O_2 \\rightarrow 2H_2O$. KHUSUS MATRIKS: WAJIB pakai lingkungan LaTeX matriks beneran ($\\begin{pmatrix}1 & 2 \\\\ 3 & 4\\end{pmatrix}$ atau \\begin{bmatrix}...\\end{bmatrix} kalau butuh kurung siku), SELALU dibungkus tanda dolar -- JANGAN PERNAH menyingkat matriks jadi notasi teks kayak "(1 2 / 3 4)", itu bukan cara matriks ditulis di soal ujian sungguhan dan bikin siswa bingung bedain baris/kolom.
 [6] Kalau ada arahan khusus dari guru, WAJIB diikuti sebagai prioritas utama.
 [7] Variasikan soal — jangan mengulang konsep yang sama persis, kecuali diminta.
 
@@ -283,8 +278,7 @@ PERIKSA SENDIRI SEBELUM MENJAWAB
 5. Kalau pakai "pattern": polanya beneran logis dan konsisten, bukan asal random?
 6. Kalau diminta HOTS: soal ini beneran butuh analisis/evaluasi/penerapan?
 7. needs_image cuma dipakai buat objek nyata yang bisa difoto, BUKAN diagram teknis?
-8. Format JSONL benar: satu baris satu objek, tanpa koma akhir, tanpa kurung siku?
-9. TIDAK ADA sintaks markdown (**tebal**, list "-", heading "#") di manapun -- semua teks polos + LaTeX $...$ saja?`;
+8. Format JSONL benar: satu baris satu objek, tanpa koma akhir, tanpa kurung siku?`;
 
 // ============================================================
 // HANDLER
@@ -329,16 +323,29 @@ Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
     } catch (e) {
       lastErr = e;
       console.error(`generateQuizFromTopic gagal pakai model ${modelName}:`, e.message);
-      const isQuotaOrNotFound = e.message.includes('429') || e.message.includes('404');
-      if (!isQuotaOrNotFound) {
-        await new Promise(r => setTimeout(r, 2000));
-        try {
-          geminiData = await callGemini(systemPrompt, userPrompt, modelName, !!useTrendSearch);
-          lastErr = null;
-          break;
-        } catch (e2) {
-          lastErr = e2;
-        }
+      // 🔥 FIX BUG NYATA (kelas yang sama persis dengan yang ketemu di
+      // generateMateriSection.js): sebelumnya SETIAP error 429 (kuota
+      // habis) langsung dianggap "model ini gak bisa dipakai sama
+      // sekali", padahal 429 itu BISA JADI cuma kuota fitur PENCARIAN
+      // (`useTrendSearch`) doang yang habis -- generate soal POLOS TANPA
+      // pencarian di model yang sama seringkali masih longgar kuotanya.
+      // Sekarang HANYA 404 (model beneran gak ada) yang langsung dianggap
+      // model ini gak bisa dipakai. Untuk 429 ATAU error lain, tetap
+      // dicoba ulang -- dan KALAU tadinya pakai pencarian, percobaan
+      // ulang ini SENGAJA TANPA pencarian (bukan pakai setting yang sama
+      // seperti sebelumnya, yang percuma kalau penyebabnya emang
+      // pencarian itu sendiri).
+      const isModelNotFound = e.message.includes('404');
+      if (isModelNotFound) continue;
+
+      await new Promise(r => setTimeout(r, 2000));
+      try {
+        geminiData = await callGemini(systemPrompt, userPrompt, modelName, false);
+        lastErr = null;
+        console.log(`generateQuizFromTopic sukses pakai model: ${modelName} (TANPA pencarian, fallback)`);
+        break;
+      } catch (e2) {
+        lastErr = e2;
       }
     }
   }
@@ -347,8 +354,8 @@ Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
     const isQuota = lastErr.message.includes('429');
     return res.status(502).json({
       error: isQuota
-        ? 'Kuota gratis AI hari ini sudah habis di semua model. Coba lagi besok.'
-        : 'Gagal menghubungi AI. Coba lagi beberapa saat lagi.',
+        ? 'Kuota gratis Astro Gemilang hari ini sudah habis di semua model. Coba lagi besok.'
+        : 'Gagal menghubungi Astro Gemilang. Coba lagi beberapa saat lagi.',
       debug: lastErr.message,
     });
   }
@@ -358,7 +365,7 @@ Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
     const rawText = candidate?.content?.parts?.[0]?.text || '';
 
     if (!rawText) {
-      return res.status(502).json({ error: 'AI tidak mengembalikan jawaban, coba generate ulang.' });
+      return res.status(502).json({ error: 'Astro Gemilang tidak mengembalikan jawaban, coba generate ulang.' });
     }
 
     const extractJsonObjects = (text) => {
@@ -397,8 +404,8 @@ Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
     if (questionObjs.length === 0) {
       return res.status(502).json({
         error: candidate?.finishReason === 'MAX_TOKENS'
-          ? 'AI belum sempat menulis soal sebelum terpotong. Coba kurangi jumlah soal atau tipe yang diminta.'
-          : 'AI tidak menghasilkan soal yang valid, coba generate ulang.',
+          ? 'Astro Gemilang belum sempat menulis soal sebelum terpotong. Coba kurangi jumlah soal atau tipe yang diminta.'
+          : 'Astro Gemilang tidak menghasilkan soal yang valid, coba generate ulang.',
       });
     }
 
@@ -407,7 +414,7 @@ Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
     const questions = questionObjs
       .map((q) => {
         if (!allowedTypes.includes(q.type)) {
-          console.warn('Soal AI dibuang karena tipe gak sesuai permintaan:', q.type, 'diminta:', allowedTypes);
+          console.warn('Soal Astro Gemilang dibuang karena tipe gak sesuai permintaan:', q.type, 'diminta:', allowedTypes);
           return null;
         }
         const type = q.type;
@@ -476,7 +483,7 @@ Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
 
     if (questions.length === 0) {
       return res.status(502).json({
-        error: 'AI menghasilkan soal, tapi tidak ada satu pun yang formatnya valid/sesuai permintaan. Coba generate ulang.',
+        error: 'Astro Gemilang menghasilkan soal, tapi tidak ada satu pun yang formatnya valid/sesuai permintaan. Coba generate ulang.',
       });
     }
 

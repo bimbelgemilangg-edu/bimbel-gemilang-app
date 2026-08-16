@@ -265,40 +265,55 @@ Susun modul lengkapnya sekarang sesuai semua aturan di atas. Ingat: siswa akan m
 
   let geminiData;
   let lastErr;
-  // 🔥 BARU: nyatet apakah percobaan yang AKHIRNYA berhasil itu pakai
-  // pencarian atau enggak -- kalau ternyata gak sempat pakai pencarian
-  // sama sekali (search sendiri yang bikin gagal di semua model), guru
-  // masih dapat materinya (lebih baik daripada gagal total), tapi pesan
-  // di console kasih tau jujur biar ketauan kalau grounding lagi bermasalah.
   let usedSearch = false;
 
-  for (const modelName of GEMINI_MODELS) {
-    // Percobaan 1: WAJIB pakai pencarian (perilaku standar/diinginkan).
-    try {
-      geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, modelName, true);
-      lastErr = null;
-      usedSearch = true;
-      console.log(`generateMateriSection sukses pakai model: ${modelName} (dengan pencarian)`);
-      break;
-    } catch (e) {
-      lastErr = e;
-      console.error(`generateMateriSection gagal pakai model ${modelName} (dengan pencarian):`, e.message);
+  // 🔥 FIX BUG FATAL (laporan langsung: "kena limit, gabisa generate
+  // materi" -- MASIH KEJADIAN setelah perbaikan sebelumnya): setelah
+  // ditelusuri lebih dalam, ternyata bukan soal kuota Gemini sama sekali
+  // -- ini soal WAKTU. Arsitektur SEBELUMNYA nyoba SETIAP model (3 model)
+  // sampai 2 KALI (pakai pencarian + tanpa pencarian) = sampai 6 kali
+  // panggilan BERURUTAN. Generate DENGAN pencarian itu sendiri butuh
+  // 30-70 DETIK sekali panggil -- kalau ditotal skenario terburuk (6
+  // panggilan berurutan + jeda antar percobaan), ini gampang lewat 5
+  // MENIT. Server (Vercel) punya batas waktu proses per permintaan --
+  // request yang lewat batas itu KE-CUT PAKSA sebelum sempat balikin
+  // jawaban, dan itu KELIHATAN kayak "kena limit" ke guru walau
+  // sebenarnya BUKAN soal kuota Gemini sama sekali.
+  //
+  // Sekarang arsitekturnya diubah biar JAUH LEBIH CEPAT dalam skenario
+  // terburuk: pencarian internet CUMA DICOBA SEKALI, di model PERTAMA
+  // (paling kuat) doang. Begitu itu gagal karena alasan apa pun (kecuali
+  // 404 model gak ada), LANGSUNG lanjut ke rangkaian percobaan TANPA
+  // pencarian di SEMUA model (jauh lebih cepat per panggilannya) --
+  // bukan lagi coba-pencarian-dulu di TIAP model satu-satu. Jeda buatan
+  // 2 detik antar percobaan juga DIHAPUS (itu waktu terbuang percuma,
+  // gak ada gunanya buat nunggu tanpa alasan jelas).
+  const firstModel = GEMINI_MODELS[0];
 
-      const isQuotaOrNotFound = e.message.includes('429') || e.message.includes('404');
-      if (isQuotaOrNotFound) continue; // model ini emang gak bisa dipakai sama sekali, langsung ke model berikutnya
+  // Percobaan tunggal DENGAN pencarian -- hanya di model pertama.
+  try {
+    geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, firstModel, true);
+    usedSearch = true;
+    console.log(`generateMateriSection sukses pakai model: ${firstModel} (dengan pencarian)`);
+  } catch (e) {
+    lastErr = e;
+    console.error(`generateMateriSection gagal pakai model ${firstModel} (dengan pencarian):`, e.message);
+  }
 
-      // Percobaan 2: coba lagi TANPA pencarian di model yang SAMA --
-      // ini yang mencegah kegagalan grounding bikin generate gagal total,
-      // padahal modelnya sendiri sebenarnya masih sanggup jalan normal.
+  // Kalau percobaan dengan pencarian gagal/belum dicoba, jalankan rangkaian
+  // TANPA pencarian di SEMUA model (termasuk model pertama tadi) -- cepat,
+  // gak ada jeda buatan, berhenti di percobaan pertama yang berhasil.
+  if (!geminiData) {
+    for (const modelName of GEMINI_MODELS) {
       try {
         geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, modelName, false);
         lastErr = null;
         usedSearch = false;
-        console.log(`generateMateriSection sukses pakai model: ${modelName} (TANPA pencarian, fallback)`);
+        console.log(`generateMateriSection sukses pakai model: ${modelName} (TANPA pencarian, fallback cepat)`);
         break;
-      } catch (e2) {
-        lastErr = e2;
-        console.error(`generateMateriSection gagal pakai model ${modelName} (tanpa pencarian juga):`, e2.message);
+      } catch (e) {
+        lastErr = e;
+        console.error(`generateMateriSection gagal pakai model ${modelName} (tanpa pencarian):`, e.message);
       }
     }
   }
