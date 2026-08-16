@@ -60,6 +60,82 @@ const buildShapeImageSvg = (shape) => {
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 };
 
+// ============================================================
+// 🔥 BARU: generator BANGUN RUANG 3D (kubus/balok) + irisan bidang --
+// dipakai buat topik geometri ruang SMA (irisan bidang, metode sumbu
+// afinitas, dll) yang MUSTAHIL dipahami cuma lewat teks. Proyeksi yang
+// dipakai (oblique/kavalier, sudut 45°, faktor 0.5) itu gaya standar buku
+// ajar Indonesia buat gambar kubus/balok "dari depan-atas" -- rusuk
+// belakang digambar putus-putus, rusuk depan garis penuh, dan bidang
+// irisan yang disebut section.crossSection disorot warna beda.
+// ============================================================
+const project3D = (p) => {
+  // Sudut 45°, faktor perspektif 0.5 -- konvensi standar gambar kubus di
+  // buku ajar Indonesia (rusuk z "masuk ke dalam" digambar miring).
+  const angle = Math.PI / 4;
+  const k = 0.5;
+  return {
+    x: p.x + p.z * k * Math.cos(angle),
+    y: p.y + p.z * k * Math.sin(angle),
+  };
+};
+
+const buildShape3DImageSvg = (shape3d) => {
+  if (!shape3d || !Array.isArray(shape3d.vertices) || shape3d.vertices.length < 4) return '';
+  const verts3d = shape3d.vertices.filter(v => typeof v.x === 'number' && typeof v.y === 'number' && typeof v.z === 'number');
+  if (verts3d.length < 4) return '';
+  const edges = Array.isArray(shape3d.edges) ? shape3d.edges : [];
+  const crossSection = Array.isArray(shape3d.crossSection) ? shape3d.crossSection : [];
+  const labels3d = Array.isArray(shape3d.labels) ? shape3d.labels : [];
+
+  const projected = verts3d.map(project3D);
+  const projectedLabels = labels3d.map(l => ({ ...project3D(l), text: l.text }));
+  const projectedCross = crossSection
+    .map(p => (typeof p.x === 'number' && typeof p.y === 'number' && typeof p.z === 'number') ? project3D(p) : null)
+    .filter(Boolean);
+
+  const allPts = [...projected, ...projectedLabels, ...projectedCross];
+  const allX = allPts.map(p => p.x), allY = allPts.map(p => p.y);
+  const minX = Math.min(...allX), maxX = Math.max(...allX);
+  const minY = Math.min(...allY), maxY = Math.max(...allY);
+  const w = Math.max(maxX - minX, 1), h = Math.max(maxY - minY, 1);
+  const pad = Math.max(w, h) * 0.2 + 1;
+  const viewW = w + pad * 2, viewH = h + pad * 2;
+
+  const flipY = (y) => (maxY - y) + pad;
+  const shiftX = (x) => (x - minX) + pad;
+  const toScreen = (p) => `${shiftX(p.x).toFixed(2)},${flipY(p.y).toFixed(2)}`;
+
+  const fontSize = Math.max(viewW, viewH) * 0.04;
+
+  // Rusuk bangun ruang -- garis abu-abu tipis, semuanya digambar penuh
+  // (versi sederhana, tanpa deteksi rusuk-tersembunyi otomatis -- cukup
+  // buat ilustrasi pembelajaran dasar).
+  const edgesSvg = edges.map(([i, j]) => {
+    if (!projected[i] || !projected[j]) return '';
+    return `<line x1="${shiftX(projected[i].x).toFixed(2)}" y1="${flipY(projected[i].y).toFixed(2)}" x2="${shiftX(projected[j].x).toFixed(2)}" y2="${flipY(projected[j].y).toFixed(2)}" stroke="#94a3b8" stroke-width="1.5"/>`;
+  }).join('');
+
+  // Bidang irisan -- disorot warna beda (kuning transparan + garis putus merah)
+  const crossSvg = projectedCross.length >= 3
+    ? `<polygon points="${projectedCross.map(toScreen).join(' ')}" fill="#fde68a" fill-opacity="0.55" stroke="#dc2626" stroke-width="2" stroke-dasharray="5,3"/>`
+    : '';
+
+  const pointDotsSvg = projectedLabels.map(l =>
+    `<circle cx="${shiftX(l.x).toFixed(2)}" cy="${flipY(l.y).toFixed(2)}" r="${(fontSize * 0.25).toFixed(2)}" fill="#1e293b"/>` +
+    `<text x="${shiftX(l.x).toFixed(2)}" y="${(flipY(l.y) - fontSize * 0.5).toFixed(2)}" font-size="${fontSize.toFixed(2)}" fill="#1e293b" text-anchor="middle" font-family="sans-serif">${escapeXmlMateri(String(l.text || ''))}</text>`
+  ).join('');
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${viewW.toFixed(2)} ${viewH.toFixed(2)}" width="440" height="${(440 * viewH / viewW).toFixed(0)}">
+    <rect x="0" y="0" width="${viewW.toFixed(2)}" height="${viewH.toFixed(2)}" fill="white"/>
+    ${edgesSvg}
+    ${crossSvg}
+    ${pointDotsSvg}
+  </svg>`;
+
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+};
+
 async function callGemini(systemPrompt, userPrompt, modelName, useSearch = true) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
 
@@ -251,6 +327,8 @@ Ada dua kebutuhan gambar yang BEDA, jangan disamain:
 
 (b) BANGUN DATAR/RUANG DENGAN UKURAN SPESIFIK (shape) -- buat segitiga/persegi/bangun geometri lain yang disebut dengan ANGKA/UKURAN TERTENTU di materi (contoh: "segitiga siku-siku dengan sisi 3, 4, 5 cm", "persegi panjang luas 24 cm²"). JANGAN PERNAH pakai needs_image buat ini (foto generik dari internet gak akan cocok sama angka yang kamu tulis, malah bikin bingung) -- dan JANGAN gambarkan pakai teks ASCII/tabel manual (lihat penjelasan Aturan Matriks di atas kenapa itu berantakan). Sebagai gantinya, isi field "shape" di section itu (SEJAJAR dengan "needs_image", BUKAN pengganti): {"vertices":[{"x":0,"y":0},{"x":4,"y":0},{"x":4,"y":3}], "labels":[{"text":"4 cm","x":2,"y":-0.5},{"text":"3 cm","x":4.5,"y":1.5},{"text":"5 cm","x":1.8,"y":1.8}]} -- kamu WAJIB hitung sendiri koordinat titik sudutnya (vertices) berdasarkan ukuran yang disebutkan (anggap titik (0,0) pojok kiri-bawah, bayangkan dulu bentuknya sebelum nulis koordinat), dan taruh penanda [[GAMBAR]] di content_html persis di posisi yang relevan, SAMA seperti needs_image. Kalau section ini gak butuh bangun geometri presisi, JANGAN isi field "shape" (biarkan kosong/tidak ada).
 
+(c) BANGUN RUANG 3D + IRISAN BIDANG (shape3d) -- KHUSUS buat topik geometri ruang SMA yang MUSTAHIL dipahami cuma lewat teks (irisan bidang pada kubus/balok, metode sumbu afinitas, titik potong rusuk, dll -- kalau kamu dapati dirimu menjelaskan "titik-titik pada rusuk yang sebidang" atau semacamnya PANJANG LEBAR lewat kata-kata doang TANPA gambar, itu tandanya kamu WAJIB pakai mekanisme ini). Isi field "shape3d" (SEJAJAR dengan "needs_image"/"shape", pilih SATU yang paling cocok buat section itu): {"vertices":[{"x":0,"y":0,"z":0},{"x":4,"y":0,"z":0},{"x":4,"y":4,"z":0},{"x":0,"y":4,"z":0},{"x":0,"y":0,"z":4},{"x":4,"y":0,"z":4},{"x":4,"y":4,"z":4},{"x":0,"y":4,"z":4}], "edges":[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]], "crossSection":[{"x":2,"y":0,"z":0},{"x":4,"y":2,"z":0},{"x":4,"y":4,"z":4},{"x":0,"y":4,"z":4},{"x":0,"y":2,"z":0}], "labels":[{"x":2,"y":0,"z":0,"text":"P"},{"x":4,"y":2,"z":0,"text":"Q"}]} -- "vertices" adalah 8 titik sudut kubus/balok (kamu WAJIB hitung sesuai ukuran yang disebut di soal, sumbu x=kanan, y=depan, z=atas, titik (0,0,0) di pojok kiri-depan-bawah), "edges" adalah PASANGAN INDEX vertices yang membentuk rusuk (buat kubus/balok standar selalu 12 pasang seperti contoh di atas, sesuaikan urutan index kalau vertices-mu beda urutan), "crossSection" adalah titik-titik (BOLEH di tengah rusuk, bukan cuma di sudut -- kamu WAJIB hitung posisi presisinya sesuai soal) yang membentuk bidang irisan yang mau disorot, "labels" buat namain titik-titik penting (P, Q, R, dst sesuai soal). Kalau section ini gak butuh ilustrasi 3D, JANGAN isi field "shape3d".
+
 ════════════════════════════════
 BAGIAN 4 — STRUKTUR MODUL
 ════════════════════════════════
@@ -268,7 +346,7 @@ Baris PERTAMA berupa metadata:
 {"meta": true, "subject_type": "eksakta atau naratif"}
 
 Baris BERIKUTNYA, masing-masing satu bagian materi dalam satu baris:
-{"title": "judul spesifik", "content_html": "isi bagian, hanya boleh pakai <p>, <b>, <i>, <ul>, <li>, <ol>, <pre>, <span class=gem-pop data-info=...>, <table> (khusus buat matriks berlabel, lihat Aturan Matriks), dan penanda [[GAMBAR]]", "highlight_type": "mnemonic atau funfact atau none", "funfact_html": "diisi hanya kalau funfact", "flashcard_front": "KALIMAT jembatan keledainya, diisi hanya kalau mnemonic", "flashcard_back": "pemetaan tiap kata ke istilah asli, format <b>Kata</b> → istilah<br> per baris", "practice": [{"q": "pertanyaan", "options": ["pilihan A", "pilihan B", "pilihan C", "pilihan D"], "answer": 0, "explain": "kenapa jawaban itu benar"}], "needs_image": true atau false, "image_keyword": "kata benda BAHASA INGGRIS untuk cari foto, kosongkan kalau false", "shape": {"vertices": [...], "labels": [...]} -- HANYA diisi kalau section ini butuh ilustrasi bangun datar/ruang presisi (lihat Aturan Gambar bagian b), kosongkan/hilangkan field ini kalau tidak perlu}
+{"title": "judul spesifik", "content_html": "isi bagian, hanya boleh pakai <p>, <b>, <i>, <ul>, <li>, <ol>, <pre>, <span class=gem-pop data-info=...>, <table> (khusus buat matriks berlabel, lihat Aturan Matriks), dan penanda [[GAMBAR]]", "highlight_type": "mnemonic atau funfact atau none", "funfact_html": "diisi hanya kalau funfact", "flashcard_front": "KALIMAT jembatan keledainya, diisi hanya kalau mnemonic", "flashcard_back": "pemetaan tiap kata ke istilah asli, format <b>Kata</b> → istilah<br> per baris", "practice": [{"q": "pertanyaan", "options": ["pilihan A", "pilihan B", "pilihan C", "pilihan D"], "answer": 0, "explain": "kenapa jawaban itu benar"}], "needs_image": true atau false, "image_keyword": "kata benda BAHASA INGGRIS untuk cari foto, kosongkan kalau false", "shape": {"vertices": [...], "labels": [...]} -- HANYA diisi kalau section ini butuh ilustrasi bangun datar/ruang presisi (lihat Aturan Gambar bagian b), kosongkan/hilangkan field ini kalau tidak perlu, "shape3d": {"vertices": [...], "edges": [...], "crossSection": [...], "labels": [...]} -- HANYA diisi kalau section ini butuh ilustrasi 3D kubus/balok + irisan bidang (lihat Aturan Gambar bagian c), kosongkan/hilangkan field ini kalau tidak perlu}
 
 ATURAN KETAT FORMAT:
 - TIDAK ADA koma di akhir baris. TIDAK ADA kurung siku pembungkus. TIDAK ADA code fence atau teks pembuka/penutup.
@@ -472,14 +550,16 @@ Susun modul lengkapnya sekarang sesuai semua aturan di atas. Ingat: siswa akan m
             }))
         : [];
 
-      // 🔥 BARU: kalau section ini punya "shape" (bangun datar/ruang
-      // presisi), gambar SVG-nya dibangun LANGSUNG di sini (backend) dan
-      // ditempelin ke posisi penanda [[GAMBAR]] -- beda dari needs_image
-      // (foto Wikimedia) yang butuh pencarian TERPISAH di sisi guru,
-      // shape ini murni hasil hitungan, jadi bisa langsung jadi tanpa
-      // nunggu proses tambahan apa pun.
+      // 🔥 BARU: kalau section ini punya "shape" ATAU "shape3d" (bangun
+      // datar/ruang presisi, termasuk kubus/balok + irisan bidang), gambar
+      // SVG-nya dibangun LANGSUNG di sini (backend) dan ditempelin ke
+      // posisi penanda [[GAMBAR]] -- beda dari needs_image (foto
+      // Wikimedia) yang butuh pencarian TERPISAH di sisi guru, shape ini
+      // murni hasil hitungan, jadi bisa langsung jadi tanpa nunggu proses
+      // tambahan apa pun.
       let contentHtml = sanitize(s.content_html || '');
-      const shapeImg = buildShapeImageSvg(s.shape);
+      let shapeImg = buildShapeImageSvg(s.shape);
+      if (!shapeImg) shapeImg = buildShape3DImageSvg(s.shape3d);
       if (shapeImg) {
         const imgTag = `<div style="margin:14px 0;text-align:center;"><img src="${shapeImg}" alt="${sanitize(s.title || 'Ilustrasi bangun')}" style="max-width:100%;border-radius:10px;" /></div>`;
         if (contentHtml.includes('[[GAMBAR]]')) {
