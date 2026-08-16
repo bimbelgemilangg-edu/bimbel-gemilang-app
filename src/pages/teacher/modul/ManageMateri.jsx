@@ -1322,7 +1322,7 @@ const ManageMateri = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 10, fontWeight: 800, color: typeColors[section.type], background: typeColors[section.type] + '15', padding: '4px 10px', borderRadius: 6 }}>
               {typeIcons[section.type]} {section.type.toUpperCase()}
-              {section.format === 'html' && ' • AI'}
+              {section.format === 'html' && ' • Astro'}
             </span>
             <input 
               value={section.title} 
@@ -1359,7 +1359,7 @@ const ManageMateri = () => {
         {section.type === 'text' && section.format === 'html' && (
           <div>
             <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 8, padding: 10, marginBottom: 8, fontSize: 11, color: '#7c3aed', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Sparkles size={14} /> Konten ini dibuat oleh AI. Ini sudah siap tampil ke siswa — gak perlu diapa-apain lagi kecuali mau diedit.
+              <Sparkles size={14} /> Konten ini dibuat oleh Astro Gemilang. Ini sudah siap tampil ke siswa — gak perlu diapa-apain lagi kecuali mau diedit.
             </div>
 
             <div style={{ padding: 14, background: 'white', border: '1px solid #e2e8f0', borderRadius: 8 }}>
@@ -1744,7 +1744,7 @@ const ManageMateri = () => {
             <p style={{ fontSize: 10, color: '#94a3b8', marginTop: 8 }}>
               {section.quizId 
                 ? '💡 Klik "Edit Kuis" untuk mengubah soal, timer, atau pengaturan lainnya' 
-                : '💡 Klik "Buat Kuis" untuk membuka editor kuis lengkap (AI Generate, 6 tipe soal, timer, dll)'}
+                : '💡 Klik "Buat Kuis" untuk membuka editor kuis lengkap (Astro Gemilang, 6 tipe soal, timer, dll)'}
             </p>
           </div>
         )}
@@ -1975,7 +1975,7 @@ const ManageMateri = () => {
                   {sec.title || `Konten ${idx + 1}`}
                   {sec.format === 'html' && (
                     <span style={{ fontSize: 9, color: '#8b5cf6', background: '#ede9fe', padding: '1px 8px', borderRadius: 10, display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                      <Sparkles size={9} /> AI
+                      <Sparkles size={9} /> Astro
                     </span>
                   )}
                   {sec.type === 'quiz' && sec.quizId && (
@@ -2058,7 +2058,7 @@ const ManageMateri = () => {
                 onClick={() => setShowAIGenerate(true)}
                 style={{ ...styles.addButton, flex: 1, border: '2px dashed #8b5cf6', color: '#8b5cf6', background: '#faf5ff' }}
               >
-                <Sparkles size={18} /> Generate dengan AI
+                <Sparkles size={18} /> Generate dengan Astro Gemilang
               </button>
             </div>
           )}
@@ -2208,7 +2208,7 @@ const ManageMateri = () => {
       )}
 
       {/* ========================================================== */}
-      {/* MODAL: GENERATE DENGAN AI */}
+      {/* MODAL: GENERATE DENGAN ASTRO GEMILANG */}
       {/* ========================================================== */}
       {showAIGenerate && (
         <AIGenerateMateri
