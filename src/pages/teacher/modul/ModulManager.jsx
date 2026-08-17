@@ -41,6 +41,29 @@ const ModulManager = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [guruData, setGuruData] = useState(null);
   const [guruId, setGuruId] = useState('');
+  // 🔥 BARU: daftar KODE MAPEL yang beneran didaftarkan buat guru yang
+  // lagi login (bisa lebih dari satu, dipisah koma di data guru -- sama
+  // persis pola yang dipakai ManageMateri.jsx/ManageQuiz.jsx). Dipakai
+  // buat nentuin BOLEH-TIDAKNYA edit/hapus suatu konten -- BUKAN
+  // berdasar "siapa pembuat aslinya" (itu terlalu ketat, nutup
+  // kolaborasi kayak "Asisten TKA" yang sengaja dipegang beberapa guru
+  // sekaligus), tapi berdasar "apakah guru ini beneran ditugasin ngajar
+  // mapel yang sama dengan konten itu". Guru Bahasa Indonesia yang gak
+  // pernah didaftarkan ke "Asisten TKA" TETAP gak akan bisa edit/hapus
+  // konten TKA walau dia punya login yang sah ke sistem -- tapi 2 guru
+  // yang SAMA-SAMA terdaftar ke TKA (guru asli + asisten) bisa
+  // sama-sama edit/upload konten di situ, sesuai alur kerja yang memang
+  // dimaksud (satu upload soal, satu lagi upload materi keesokan hari).
+  const myMapelCodes = useMemo(() => {
+    const raw = String(guruData?.kodeMapel || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+    return raw;
+  }, [guruData]);
+
+  const canEditContent = (item) => {
+    const kode = String(item.kodeMapel || '').trim().toLowerCase();
+    if (!kode) return false; // konten gak punya kode mapel sama sekali -- gak ada dasar buat ngizinin siapa pun edit, lebih aman ditolak
+    return myMapelCodes.includes(kode);
+  };
   const [deletingId, setDeletingId] = useState(null);
   const [toast, setToast] = useState(null);
 
@@ -665,6 +688,11 @@ const ModulManager = () => {
               const targetKelas = item.targetKelas || "Semua";
               const isForAllClasses = targetKelas === "Semua";
               const isMine = item.guruId === guruId || item.createdBy === guruData?.nama;
+              // 🔥 BARU: izin edit/hapus sekarang berdasar KECOCOKAN MAPEL
+              // (apakah guru ini terdaftar ngajar mapel yang sama dengan
+              // konten ini), BUKAN "siapa pembuat aslinya" -- lihat
+              // penjelasan lengkap di canEditContent() di atas.
+              const canEdit = canEditContent(item);
               const isDeleting = deletingId === item.id;
               const hasQuizInside = item.blocks?.some(b => b.type === 'quiz' && b.quizId);
               const guruName = item.guruName || item.authorName || item.createdBy || 'Admin';
@@ -677,18 +705,20 @@ const ModulManager = () => {
                     opacity: item.status === 'arsip' ? 0.7 : 1
                   }}
                   onClick={() => {
-                    // 🔥 FIX BUG "modul hilang saat diedit": dulu syaratnya
-                    // `typeInfo.label === 'Kuis' || hasQuizInside`. Artinya
-                    // sebuah MODUL MATERI yang KEBETULAN punya blok kuis di
-                    // dalamnya ikut dilempar ke EDITOR KUIS — padahal badge-nya
-                    // jelas "Modul". Guru jadi gak bisa mengedit materinya sama
-                    // sekali (kelihatan seperti modulnya "hilang"), malah
-                    // ketemu layar kuis kosong + prompt draft yang bikin bingung.
-                    // Sekarang: cuma item yang MEMANG kuis yang masuk editor kuis.
-                    // Modul yang punya kuis di dalamnya TETAP dibuka lewat
-                    // editor materi -- kuisnya dibuka dari dalam sana (klik
-                    // blok kuisnya, sesuai keinginan: "modul ya buka modulnya,
-                    // edit kuisnya dari dalam situ").
+                    // 🔥 FIX BUG NYATA & PENTING (langsung dari permintaan):
+                    // sebelumnya SIAPA PUN yang punya login guru bisa klik
+                    // kartu ini dan langsung MASUK KE MODE EDIT konten
+                    // apapun, gak peduli dia terdaftar ke mapel itu atau
+                    // enggak -- guru Bahasa Indonesia bisa aja gak sengaja
+                    // (atau sengaja) ngubah konten "Asisten TKA" cuma
+                    // karena kebetulan punya akses ke sistem. Sekarang
+                    // dicek dulu: kalau guru ini GAK terdaftar ke kode
+                    // mapel konten itu, klik kartu cuma buka mode LIHAT
+                    // (read-only) -- bukan mode edit.
+                    if (!canEdit) {
+                      alert(`👀 Kamu bisa lihat konten ini, tapi gak bisa edit -- kamu belum terdaftar ngajar mapel "${item.subject || item.kodeMapel || '-'}".\n\nKalau ini keliru (harusnya kamu memang ditugaskan ke mapel ini), hubungi admin buat didaftarkan.`);
+                      return;
+                    }
                     if (typeInfo.label === 'Kuis') {
                       navigate(`/guru/modul/quiz?modulId=${item.id}`);
                     } else {
@@ -770,21 +800,46 @@ const ModulManager = () => {
 
                   {/* Actions */}
                   <div style={styles.cardActions}>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); 
-                        // 🔥 Sama seperti klik kartu: modul yang berisi blok kuis
-                        // TETAP dibuka di editor materi. Kuisnya nanti dibuka dari
-                        // dalam editor materi itu (klik blok kuisnya).
-                        if (typeInfo.label === 'Kuis') {
-                          navigate(`/guru/modul/quiz?modulId=${item.id}`);
-                        } else {
-                          navigate(`/guru/modul/materi?edit=${item.id}`);
-                        }
-                      }} 
-                      style={styles.btnEdit}
-                    >
-                      <Edit3 size={12} /> Edit
-                    </button>
+                    {/* 🔥 FIX BUG NYATA: tombol Edit & Hapus sebelumnya SELALU
+                        aktif buat SIAPA PUN yang lihat kartu ini, gak peduli
+                        apakah guru itu terdaftar ke mapel kontennya atau
+                        enggak -- guru dari mapel lain bisa gak sengaja
+                        ngubah/hapus konten mapel yang bukan tanggung
+                        jawabnya. Sekarang cuma muncul kalau `canEdit` true
+                        (guru ini beneran terdaftar ngajar mapel yang sama
+                        dengan konten ini) -- kalau enggak, tombolnya diganti
+                        penanda "hanya bisa lihat", TIDAK ada tombol Edit/
+                        Hapus yang bisa diklik sama sekali. */}
+                    {canEdit ? (
+                      <>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); 
+                            // 🔥 Sama seperti klik kartu: modul yang berisi blok kuis
+                            // TETAP dibuka di editor materi. Kuisnya nanti dibuka dari
+                            // dalam editor materi itu (klik blok kuisnya).
+                            if (typeInfo.label === 'Kuis') {
+                              navigate(`/guru/modul/quiz?modulId=${item.id}`);
+                            } else {
+                              navigate(`/guru/modul/materi?edit=${item.id}`);
+                            }
+                          }} 
+                          style={styles.btnEdit}
+                        >
+                          <Edit3 size={12} /> Edit
+                        </button>
+                        <button 
+                          onClick={(e) => handleDelete(e, item.id)} 
+                          disabled={isDeleting}
+                          style={styles.btnDelete}
+                        >
+                          {isDeleting ? <Loader2 size={12} className="spin" /> : <Trash2 size={12} />}
+                        </button>
+                      </>
+                    ) : (
+                      <span style={{ fontSize: 10, color: '#94a3b8', fontStyle: 'italic', padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Eye size={11} /> Hanya bisa lihat
+                      </span>
+                    )}
                     <button 
                       onClick={(e) => { e.stopPropagation();
                         // 🔥 FIX BUG: dulu tombol ini membuka `/siswa/materi/{id}`
@@ -800,13 +855,6 @@ const ModulManager = () => {
                       style={styles.btnPreview}
                     >
                       <Eye size={12} /> Preview
-                    </button>
-                    <button 
-                      onClick={(e) => handleDelete(e, item.id)} 
-                      disabled={isDeleting}
-                      style={styles.btnDelete}
-                    >
-                      {isDeleting ? <Loader2 size={12} className="spin" /> : <Trash2 size={12} />}
                     </button>
                   </div>
                 </div>
