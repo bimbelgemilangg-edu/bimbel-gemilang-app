@@ -11,7 +11,7 @@ import {
   ArrowLeft, CreditCard, CheckCircle, Clock, AlertCircle,
   Calendar, Home, ChevronRight, Wallet,
   DollarSign, Receipt, TrendingUp, X, Save,
-  RefreshCw, PlusCircle
+  RefreshCw, PlusCircle, Edit3, ShieldAlert
 } from 'lucide-react';
 
 const StudentFinance = () => {
@@ -34,6 +34,18 @@ const StudentFinance = () => {
 
   // Modal perpanjangan
   const [showPerpanjangModal, setShowPerpanjangModal] = useState(false);
+  // 🔥 BARU: panel "Koreksi Data Paket" -- buat admin betulin LANGSUNG
+  // kalau ada kesalahan input yang mengakibatkan salah satu field paket
+  // (tagihan/dibayar/tanggal mulai/tanggal selesai/durasi) jadi keliru.
+  // BEDA dari "Perpanjang Paket" (yang selalu MENAMBAH ke posisi
+  // sekarang) -- ini buat MENIMPA LANGSUNG ke nilai yang benar, gak
+  // ngotak-ngatik riwayat transaksi sama sekali (lebih aman daripada
+  // hapus-tambah transaksi lama yang bisa bikin runtut sejarah
+  // pembayaran jadi kacau -- lihat penjelasan lengkap di tombol buka
+  // panel ini).
+  const [showKoreksiModal, setShowKoreksiModal] = useState(false);
+  const [koreksiData, setKoreksiData] = useState(null);
+  const [isKoreksiProcessing, setIsKoreksiProcessing] = useState(false);
   const [perpanjangData, setPerpanjangData] = useState({
     // 🔥 FIX BUG NYATA & BERBAHAYA (laporan langsung: "harusnya perpanjang
     // 1 bulan, kepencet jadi 3 bulan"): sebelumnya default `durasiTambah`
@@ -231,6 +243,74 @@ const StudentFinance = () => {
   }, [perpanjangData.metodeBayar, perpanjangData.tenor, perpanjangData.tanggalCicilan1]);
 
   // ===== PERPANJANGAN =====
+  // 🔥 BARU: buka panel koreksi, diisi otomatis dengan nilai SAAT INI
+  // (biar admin cuma perlu ubah yang salah, bukan ngetik ulang semua dari nol).
+  const openKoreksiModal = () => {
+    setKoreksiData({
+      totalTagihan: student.totalTagihan || 0,
+      totalBayar: student.totalBayar || 0,
+      tanggalMulai: student.tanggalMulai || '',
+      tanggalSelesai: student.tanggalSelesai || '',
+      durasiBulan: student.durasiBulan || 0,
+      alasan: '',
+    });
+    setShowKoreksiModal(true);
+  };
+
+  // 🔥 BARU: simpan koreksi -- MENIMPA LANGSUNG field-field paket siswa ke
+  // nilai yang admin masukkan, TANPA menyentuh riwayat transaksi
+  // (finance_logs) sama sekali. Ini SENGAJA beda dari "hapus transaksi di
+  // Riwayat lalu berharap semuanya otomatis kebalikin" -- pendekatan itu
+  // rapuh buat transaksi PENDAFTARAN (beda dari Perpanjangan Paket yang
+  // udah punya mekanisme baliknya sendiri), karena satu transaksi
+  // pendaftaran itu ngatur 5 field sekaligus dan gak selalu jelas "harus
+  // dibalikin ke apa" kalau udah ada transaksi LAIN yang numpuk di
+  // atasnya. Koreksi langsung itu lebih jujur & transparan: admin lihat
+  // sendiri semua field, tentuin nilai yang BENAR, dan sistem cuma
+  // nyimpen itu -- gak nebak-nebak.
+  const handleSimpanKoreksi = async () => {
+    if (!koreksiData.alasan.trim()) {
+      return showAlert('⚠️ Isi dulu alasan koreksi (buat jejak audit, biar jelas kenapa datanya diubah manual).');
+    }
+    setIsKoreksiProcessing(true);
+    try {
+      const payload = {
+        totalTagihan: parseInt(koreksiData.totalTagihan) || 0,
+        totalBayar: parseInt(koreksiData.totalBayar) || 0,
+        tanggalMulai: koreksiData.tanggalMulai,
+        tanggalSelesai: koreksiData.tanggalSelesai,
+        durasiBulan: parseInt(koreksiData.durasiBulan) || 0,
+      };
+      await updateDoc(doc(db, "students", id), payload);
+
+      // 🔥 Dicatat sebagai log TERPISAH (bukan di finance_logs, biar gak
+      // ketiban ikut kehitung sebagai transaksi uang) -- murni jejak audit
+      // "kapan & kenapa data ini pernah dikoreksi manual", biar transparan
+      // kalau nanti perlu ditelusuri.
+      await addDoc(collection(db, "koreksi_data_log"), {
+        studentId: student?.studentId || id,
+        namaSiswa: student?.nama || '',
+        sebelum: {
+          totalTagihan: student.totalTagihan || 0,
+          totalBayar: student.totalBayar || 0,
+          tanggalMulai: student.tanggalMulai || '',
+          tanggalSelesai: student.tanggalSelesai || '',
+          durasiBulan: student.durasiBulan || 0,
+        },
+        sesudah: payload,
+        alasan: koreksiData.alasan.trim(),
+        createdAt: serverTimestamp(),
+      });
+
+      showAlert('✅ Data paket berhasil dikoreksi!');
+      setShowKoreksiModal(false);
+      fetchData();
+    } catch (error) {
+      showAlert('❌ Gagal menyimpan koreksi: ' + error.message);
+    }
+    setIsKoreksiProcessing(false);
+  };
+
   const handlePerpanjang = async (e) => {
     e.preventDefault();
 
@@ -604,6 +684,14 @@ const StudentFinance = () => {
             >
               <RefreshCw size={16} /> Perpanjang Paket
             </button>
+
+            {/* 🔥 BARU: tombol koreksi -- KHUSUS buat kasus SALAH INPUT (bukan
+                perpanjangan beneran), mis. pendaftaran salah masukin tanggal/
+                nominal. Bedanya ditegasin lewat warna & label, biar admin gak
+                ketuker sama "Perpanjang Paket" (yang selalu NAMBAH). */}
+            <button onClick={openKoreksiModal} style={styles.btnKoreksi}>
+              <Edit3 size={14} /> Koreksi Data (kalau salah input)
+            </button>
           </div>
 
           {/* KANAN - Cicilan & Riwayat */}
@@ -782,6 +870,67 @@ const StudentFinance = () => {
           </div>
         )}
 
+        {/* 🔥 BARU: MODAL KOREKSI DATA PAKET */}
+        {showKoreksiModal && koreksiData && (
+          <div style={styles.modalOverlay} onClick={() => !isKoreksiProcessing && setShowKoreksiModal(false)}>
+            <div style={{...styles.modalContent(isMobile), maxWidth: '480px'}} onClick={e => e.stopPropagation()}>
+              <div style={styles.modalHeader}>
+                <h3 style={styles.modalTitle}><Edit3 size={20} /> Koreksi Data Paket</h3>
+                <button onClick={() => setShowKoreksiModal(false)} style={styles.modalClose}><X size={18} /></button>
+              </div>
+              <div style={styles.modalBody}>
+                <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: 12, marginBottom: 16, display: 'flex', gap: 8 }}>
+                  <ShieldAlert size={16} color="#f59e0b" style={{ flexShrink: 0, marginTop: 1 }} />
+                  <span style={{ fontSize: 11, color: '#92400e', lineHeight: 1.6 }}>
+                    Ini buat MEMBETULKAN data yang salah input (bukan buat perpanjangan beneran).
+                    Nilai di bawah ini akan LANGSUNG MENIMPA data siswa, tanpa nambah/kurang riwayat transaksi.
+                    Wajib isi alasan di bawah -- ini bakal dicatat sebagai jejak audit.
+                  </span>
+                </div>
+
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Total Tagihan (Rp)</label>
+                  <input type="number" value={koreksiData.totalTagihan} onChange={e => setKoreksiData(p => ({ ...p, totalTagihan: e.target.value }))} style={styles.input} />
+                </div>
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Total Dibayar (Rp)</label>
+                  <input type="number" value={koreksiData.totalBayar} onChange={e => setKoreksiData(p => ({ ...p, totalBayar: e.target.value }))} style={styles.input} />
+                </div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <div style={{ ...styles.inputGroup, flex: 1 }}>
+                    <label style={styles.label}>Tanggal Mulai</label>
+                    <input type="date" value={koreksiData.tanggalMulai} onChange={e => setKoreksiData(p => ({ ...p, tanggalMulai: e.target.value }))} style={styles.input} />
+                  </div>
+                  <div style={{ ...styles.inputGroup, flex: 1 }}>
+                    <label style={styles.label}>Tanggal Selesai</label>
+                    <input type="date" value={koreksiData.tanggalSelesai} onChange={e => setKoreksiData(p => ({ ...p, tanggalSelesai: e.target.value }))} style={styles.input} />
+                  </div>
+                </div>
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Durasi (bulan)</label>
+                  <input type="number" value={koreksiData.durasiBulan} onChange={e => setKoreksiData(p => ({ ...p, durasiBulan: e.target.value }))} style={styles.input} />
+                </div>
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Alasan Koreksi <span style={{ color: '#ef4444' }}>*wajib</span></label>
+                  <textarea
+                    value={koreksiData.alasan}
+                    onChange={e => setKoreksiData(p => ({ ...p, alasan: e.target.value }))}
+                    placeholder="Contoh: salah input durasi pas pendaftaran, seharusnya 1 bulan bukan 3 bulan"
+                    style={{ ...styles.input, minHeight: 60, resize: 'vertical', fontFamily: 'inherit' }}
+                  />
+                </div>
+
+                <div style={styles.modalFooter}>
+                  <button type="button" onClick={() => setShowKoreksiModal(false)} style={styles.btnCancel}>Batal</button>
+                  <button onClick={handleSimpanKoreksi} disabled={isKoreksiProcessing} style={styles.btnSave}>
+                    {isKoreksiProcessing ? '⏳' : <><Save size={16} /> Simpan Koreksi</>}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
       <style>{`@keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}`}</style>
     </div>
@@ -828,6 +977,7 @@ const styles = {
   
   btnLunasin: { width: '100%', marginTop: 12, padding: '12px', background: '#10b981', color: 'white', border: 'none', borderRadius: 10, fontWeight: 'bold', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 },
   btnPerpanjang: { width: '100%', marginTop: 8, padding: '12px', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', color: 'white', border: 'none', borderRadius: 10, fontWeight: 'bold', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 12px rgba(59,130,246,0.3)' },
+  btnKoreksi: { width: '100%', marginTop: 8, padding: '10px', background: 'white', color: '#b45309', border: '1.5px dashed #f59e0b', borderRadius: 10, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
   
   cicilanList: { display: 'flex', flexDirection: 'column', gap: 8 },
   cicilanItem: (status) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 10, borderRadius: 10, background: status === 'Lunas' ? '#f0fdf4' : '#fefce8', border: `1px solid ${status === 'Lunas' ? '#bbf7d0' : '#fef08a'}`, flexWrap: 'wrap', gap: 8 }),

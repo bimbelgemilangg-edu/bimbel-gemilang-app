@@ -1,1022 +1,422 @@
-// src/pages/admin/students/StudentFinance.jsx
+// src/pages/student/StudentFinance.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import SidebarAdmin from '../../../components/SidebarAdmin';
-import { db } from '../../../firebase';
-import { 
-  doc, getDoc, collection, query, where, getDocs, 
-  updateDoc, addDoc, serverTimestamp, orderBy, writeBatch
-} from "firebase/firestore";
-import { 
-  ArrowLeft, CreditCard, CheckCircle, Clock, AlertCircle,
-  Calendar, Home, ChevronRight, Wallet,
-  DollarSign, Receipt, TrendingUp, X, Save,
-  RefreshCw, PlusCircle, Edit3, ShieldAlert
-} from 'lucide-react';
+import { db } from '../../firebase'; 
+import { doc, getDoc, query, collection, where, getDocs, onSnapshot, orderBy } from "firebase/firestore";
+import { Wallet, Lock, History, ShieldCheck, AlertCircle, Clock, Receipt, CalendarClock } from 'lucide-react';
 
 const StudentFinance = () => {
-  const navigate = useNavigate();
-  const { id } = useParams();
-
   const [student, setStudent] = useState(null);
   const [tagihan, setTagihan] = useState(null);
-  const [financeLogs, setFinanceLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [alertMsg, setAlertMsg] = useState(null);
+  const [expiryInfo, setExpiryInfo] = useState({ daysLeft: null, status: 'normal' });
+  // 🔥 BARU: riwayat pembayaran (finance_logs milik siswa ini) -- beda dari
+  // `tagihan.detailCicilan` yang cuma nunjukkin JADWAL cicilan, ini
+  // nunjukkin TRANSAKSI yang BENERAN sudah tercatat/dibayar, lengkap
+  // tanggal & metode -- lebih transparan buat siswa/ortu lihat histori
+  // pembayaran mereka sendiri.
+  const [paymentHistory, setPaymentHistory] = useState([]);
 
-  // Modal bayar cicilan/lunas
-  const [showPayModal, setShowPayModal] = useState(false);
-  const [payingIndex, setPayingIndex] = useState(null);
-  const [payAmount, setPayAmount] = useState('');
-  const [payMethod, setPayMethod] = useState('Tunai');
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  // Modal perpanjangan
-  const [showPerpanjangModal, setShowPerpanjangModal] = useState(false);
-  // 🔥 BARU: panel "Koreksi Data Paket" -- buat admin betulin LANGSUNG
-  // kalau ada kesalahan input yang mengakibatkan salah satu field paket
-  // (tagihan/dibayar/tanggal mulai/tanggal selesai/durasi) jadi keliru.
-  // BEDA dari "Perpanjang Paket" (yang selalu MENAMBAH ke posisi
-  // sekarang) -- ini buat MENIMPA LANGSUNG ke nilai yang benar, gak
-  // ngotak-ngatik riwayat transaksi sama sekali (lebih aman daripada
-  // hapus-tambah transaksi lama yang bisa bikin runtut sejarah
-  // pembayaran jadi kacau -- lihat penjelasan lengkap di tombol buka
-  // panel ini).
-  const [showKoreksiModal, setShowKoreksiModal] = useState(false);
-  const [koreksiData, setKoreksiData] = useState(null);
-  const [isKoreksiProcessing, setIsKoreksiProcessing] = useState(false);
-  const [perpanjangData, setPerpanjangData] = useState({
-    // 🔥 FIX BUG NYATA & BERBAHAYA (laporan langsung: "harusnya perpanjang
-    // 1 bulan, kepencet jadi 3 bulan"): sebelumnya default `durasiTambah`
-    // di sini adalah `3` -- jadi begitu modal "Perpanjang Paket" dibuka,
-    // dropdown-nya SUDAH otomatis kepilih "3 Bulan" duluan, BUKAN "1
-    // Bulan". Kalau admin gak sadar/gak sempat ngecek ulang pilihan yang
-    // udah ke-pre-select itu (mengira defaultnya pasti opsi paling
-    // sederhana/pertama), lalu langsung proses -- jadinya kebayar/
-    // ketagih 3 bulan padahal maksudnya cuma 1 bulan. Ini kesalahan
-    // finansial nyata yang bisa bikin siswa ketagih lebih dari
-    // seharusnya, atau billing yang salah dicatat.
-    // Sekarang `durasiTambah` DIKOSONGKAN (0 = "belum pilih") -- dropdown
-    // WAJIB tampil "-- Pilih Durasi --" dulu, admin HARUS aktif memilih
-    // sendiri sebelum bisa lanjut. Gak ada lagi opsi "keliru gara-gara
-    // gak ngecek default".
-    durasiTambah: 0,
-    metodeBayar: 'Tunai',
-    tenor: 1,
-    tanggalCicilan1: new Date().toISOString().split('T')[0],
-    customDueDates: []
-  });
-  
-  // 🔥 Harga paket (di-cache)
-  const [hargaPaket, setHargaPaket] = useState(0);
-  const [namaPaketAktif, setNamaPaketAktif] = useState('');
+  // 🔥 AMBIL NIM & DOC ID DARI LOCALSTORAGE
+  const studentNim = localStorage.getItem("studentNim") || localStorage.getItem("studentId") || '';
+  const studentDocId = localStorage.getItem("studentId") || '';
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    if (!studentNim && !studentDocId) {
+      setLoading(false);
+      return;
+    }
 
-  const showAlert = (msg, duration = 3500) => {
-    setAlertMsg(msg);
-    setTimeout(() => setAlertMsg(null), duration);
-  };
+    // 🔥 FIX BUG NYATA (Bug #4 dari analisis): sebelumnya data diambil
+    // SEKALI doang pas halaman dibuka (`getDoc`/`getDocs` biasa) -- kalau
+    // admin catat pembayaran ATAU perpanjangan SAAT siswa lagi buka
+    // halaman ini, siswa gak akan lihat perubahannya sampai refresh
+    // manual. Sekarang dokumen siswanya dipantau pakai `onSnapshot` --
+    // begitu ada perubahan di sisi admin, halaman ini otomatis ke-update
+    // sendiri tanpa siswa perlu refresh.
+    let unsubStudent = null;
+    let unsubTagihan = null;
+    let unsubLogs = null;
+    let cancelled = false;
 
-  // 🔥 FIX BUG PENTING: sebelumnya kode ini baca `prices[jenjang]?.[paket]`,
-  // seolah-olah harga tersimpan sebagai object langsung (prices.sd.paket1).
-  // Padahal struktur ASLI di Settings (sama seperti dipakai AddStudent.jsx
-  // dan EditStudent.jsx) adalah ARRAY: prices.sd.packages = [{id, name, price}].
-  // Akibatnya hargaPaket SELALU kebaca 0, jadi setiap "Perpanjang Paket"
-  // menghitung tagihan Rp 0 — siswa dapat tambahan bulan gratis tanpa tertagih.
-  // Sekarang dibaca dengan cara yang sama persis seperti AddStudent/EditStudent:
-  // cari di dalam array packages/levels berdasarkan id paket siswa.
-  const fetchHargaPaket = async () => {
-    try {
-      const settingsSnap = await getDoc(doc(db, "settings", "global_config"));
-      if (settingsSnap.exists() && settingsSnap.data().prices) {
-        const prices = settingsSnap.data().prices;
+    const setupListeners = async () => {
+      // Cari dulu doc ID siswa yang BENAR (lewat query studentId kalau ada
+      // NIM, fallback ke doc ID langsung) -- baru setelah itu pasang
+      // listener real-time ke dokumen yang tepat.
+      let resolvedDocId = null;
+      let resolvedStudentId = studentNim;
 
-        if (student?.kategori === 'English') {
-          const levelId = student?.paket || '';
-          const levels = prices.english?.levels || [];
-          const found = levels.find(l => l.id === levelId);
-          setHargaPaket(found ? parseInt(found.price) || 0 : 0);
-          setNamaPaketAktif(found?.name || '');
-        } else {
-          const jenjang = (student?.jenjang || 'sd').toLowerCase();
-          const paketId = student?.paket || '';
-          const packages = prices[jenjang]?.packages || [];
-          const found = packages.find(p => p.id === paketId);
-          setHargaPaket(found ? parseInt(found.price) || 0 : 0);
-          setNamaPaketAktif(found?.name || '');
-        }
+      if (studentNim) {
+        try {
+          const q = query(collection(db, "students"), where("studentId", "==", studentNim));
+          const snap = await getDocs(q);
+          if (!snap.empty) resolvedDocId = snap.docs[0].id;
+        } catch (e) { /* lanjut ke fallback */ }
       }
-    } catch (e) { console.error("Error fetch harga:", e); }
-  };
+      if (!resolvedDocId && studentDocId) {
+        try {
+          const sSnap = await getDoc(doc(db, "students", studentDocId));
+          if (sSnap.exists()) resolvedDocId = sSnap.id;
+        } catch (e) { /* ignore */ }
+      }
 
-  // 🔥 FETCH ALL DATA
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      // 1. Cari student by doc ID
-      const studentSnap = await getDoc(doc(db, "students", id));
-      if (!studentSnap.exists()) {
-        showAlert('❌ Siswa tidak ditemukan!');
-        setTimeout(() => navigate('/admin/students'), 1500);
+      if (!resolvedDocId || cancelled) {
+        if (!cancelled) setLoading(false);
         return;
       }
-      const studentData = { id: studentSnap.id, ...studentSnap.data() };
-      setStudent(studentData);
 
-      // 🔥 GUNAKAN studentId (KODE UNIK) UNTUK QUERY
-      const kodeUnik = studentData.studentId || id;
+      unsubStudent = onSnapshot(doc(db, "students", resolvedDocId), (sSnap) => {
+        if (!sSnap.exists()) { setLoading(false); return; }
+        const studentData = { id: sSnap.id, ...sSnap.data() };
+        setStudent(studentData);
+        resolvedStudentId = studentData.studentId || resolvedStudentId;
 
-      // 2. Fetch tagihan
+        // 🔥 FIX BUG NYATA (Bug #2 dari analisis): sebelumnya masa aktif
+        // dihitung SENDIRI di sini dari `tanggalMulai + durasiBulan`
+        // (bulan) -- PADAHAL sisi admin (termasuk alur "Perpanjang Paket")
+        // pakai field `tanggalSelesai` yang tersimpan LANGSUNG di database
+        // sebagai satu-satunya sumber kebenaran. Dua perhitungan
+        // independen ini rawan geser beda (mis. admin pernah edit manual,
+        // atau pembulatan bulan beda) -- akibatnya siswa bisa gak lihat
+        // peringatan yang seharusnya ada, atau lihat versi yang beda dari
+        // yang admin lihat. Sekarang PAKAI `tanggalSelesai` LANGSUNG, sama
+        // persis sumbernya dengan StudentList.jsx & FinanceDashboard.jsx
+        // di sisi admin -- satu sumber kebenaran, gak ada lagi risiko
+        // beda hitungan.
+        if (studentData.tanggalSelesai) {
+          const today = new Date(); today.setHours(0, 0, 0, 0);
+          const selesai = new Date(studentData.tanggalSelesai); selesai.setHours(0, 0, 0, 0);
+          const diffDays = Math.ceil((selesai - today) / (1000 * 60 * 60 * 24));
+
+          if (diffDays < 0) {
+            setExpiryInfo({ daysLeft: 0, status: 'expired' });
+          } else if (diffDays <= 7) {
+            setExpiryInfo({ daysLeft: diffDays, status: 'warning' });
+          } else {
+            setExpiryInfo({ daysLeft: diffDays, status: 'normal' });
+          }
+        }
+
+        setLoading(false);
+      }, (err) => { console.error("Gagal memantau data siswa:", err); setLoading(false); });
+
+      // Tagihan -- juga dipantau real-time
       const qTagihan = query(
-        collection(db, "finance_tagihan"), 
-        where("studentId", "==", kodeUnik)
+        collection(db, "finance_tagihan"),
+        where("studentId", "==", studentNim || resolvedStudentId || studentDocId)
       );
-      const tagihanSnap = await getDocs(qTagihan);
-      if (!tagihanSnap.empty) {
-        setTagihan({ id: tagihanSnap.docs[0].id, ...tagihanSnap.docs[0].data() });
-      } else {
-        setTagihan(null);
-      }
+      unsubTagihan = onSnapshot(qTagihan, (qSnap) => {
+        if (!qSnap.empty) {
+          setTagihan({ id: qSnap.docs[0].id, ...qSnap.docs[0].data() });
+        } else {
+          setTagihan(null);
+        }
+      }, (err) => console.error("Gagal memantau tagihan:", err));
 
-      // 3. Fetch finance logs
-      // 🔥 FIX BUG NYATA: sebelumnya query ini gabung DUA filter kesamaan
-      // (studentId, type) SEKALIGUS `orderBy("date")` -- kombinasi ini
-      // WAJIB punya composite index khusus di Firestore. Kalau index itu
-      // belum pernah dibuat di project (yang ternyata belum), query ini
-      // SELALU GAGAL dilempar sebagai error -- ketangkep di catch,
-      // muncul "Gagal memuat data", dan Riwayat Pembayaran jadi kosong
-      // walau siswanya udah lunas (data pembayarannya BENERAN ADA, cuma
-      // query buat nampilinnya yang gagal). Sekarang `orderBy` dihapus
-      // dari query Firestore (gak butuh index khusus lagi, cuma 2 filter
-      // kesamaan biasa) -- pengurutan "terbaru dulu" dipindah ke sisi
-      // JavaScript setelah data berhasil diambil.
+      // 🔥 BARU: riwayat pembayaran (finance_logs) -- transaksi yang
+      // BENERAN tercatat/dibayar (Pemasukan), diurutkan terbaru dulu.
       const qLogs = query(
         collection(db, "finance_logs"),
-        where("studentId", "==", kodeUnik),
-        where("type", "==", "Pemasukan")
+        where("studentId", "==", studentNim || resolvedStudentId || studentDocId)
       );
-      const logsSnap = await getDocs(qLogs);
-      const logsData = logsSnap.docs
-        .map(d => ({ id: d.id, ...d.data() }))
-        .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-      setFinanceLogs(logsData);
+      unsubLogs = onSnapshot(qLogs, (logSnap) => {
+        const logs = logSnap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(l => l.type === 'Pemasukan')
+          .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        setPaymentHistory(logs);
+      }, (err) => console.error("Gagal memantau riwayat pembayaran:", err));
+    };
 
-    } catch (error) { 
-      console.error("Error:", error); 
-      showAlert('❌ Gagal memuat data');
-    }
-    setLoading(false);
-  };
+    setupListeners();
 
-  useEffect(() => { 
-    if (id) fetchData(); 
-  }, [id]);
+    return () => {
+      cancelled = true;
+      if (unsubStudent) unsubStudent();
+      if (unsubTagihan) unsubTagihan();
+      if (unsubLogs) unsubLogs();
+    };
+  }, []);
 
-  // 🔥 Fetch harga paket setelah student tersedia
-  useEffect(() => {
-    if (student) fetchHargaPaket();
-  }, [student]);
+  // 🔥 FIX BUG NYATA #1 (paling utama dari laporan "peringatan tagihan gak
+  // muncul"): sebelumnya halaman ini CUMA punya 1 jenis peringatan (tanggal
+  // masa aktif habis) -- TIDAK ADA peringatan sama sekali soal cicilan yang
+  // sudah lewat jatuh tempo tapi belum dibayar, padahal tiap cicilan punya
+  // field `jatuhTempo` & `status` yang sebenarnya cukup buat ngecek itu.
+  // Siswa yang telat bayar cicilan (walau masa paketnya masih jauh dari
+  // habis) gak akan lihat peringatan apa pun. Sekarang dihitung di sini:
+  // semua cicilan yang jatuhTempo-nya sudah lewat DAN statusnya belum
+  // "Lunas" dikumpulkan, buat ditampilkan sebagai alert terpisah dari
+  // alert masa aktif.
+  const overdueInstallments = (() => {
+    if (!Array.isArray(tagihan?.detailCicilan)) return [];
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    return tagihan.detailCicilan
+      .map((item, idx) => {
+        if (item.status === 'Lunas' || !item.jatuhTempo) return null;
+        const due = new Date(item.jatuhTempo); due.setHours(0, 0, 0, 0);
+        const daysLate = Math.floor((today - due) / (1000 * 60 * 60 * 24));
+        if (daysLate <= 0) return null; // belum jatuh tempo, bukan telat
+        return { ...item, idx, daysLate };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.daysLate - a.daysLate);
+  })();
 
-  // ===== HELPER =====
-  const isAlreadyLunas = () => {
-    if (!student) return false;
-    return ((parseInt(student.totalTagihan || 0)) - (parseInt(student.totalBayar || 0))) <= 0;
-  };
-
-  const isPendaftaranLunas = () => {
-    return student?.metodeBayar === 'Tunai' || student?.metodeBayar === 'Transfer';
-  };
-
-  const getSisaTagihan = () => {
-    if (!student) return 0;
-    return Math.max(0, (parseInt(student.totalTagihan || 0)) - (parseInt(student.totalBayar || 0)));
-  };
-
-  const getProgressPercent = () => {
-    if (!student || !student.totalTagihan || student.totalTagihan === 0) return 100;
-    return Math.min(100, Math.round((parseInt(student.totalBayar || 0) / parseInt(student.totalTagihan)) * 100));
-  };
-
-  const getInitials = (name) => {
-    if (!name) return 'S';
-    return name.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('');
-  };
-
-  const getMasaStatus = () => {
-    if (!student?.tanggalSelesai) return { label: 'Unknown', color: '#94a3b8', bg: '#f1f5f9' };
-    const today = new Date(); today.setHours(0,0,0,0);
-    const selesai = new Date(student.tanggalSelesai); selesai.setHours(0,0,0,0);
-    const diffDays = Math.ceil((selesai - today) / (1000 * 60 * 60 * 24));
-    if (diffDays < 0) return { label: 'HABIS', color: '#ef4444', bg: '#fee2e2' };
-    if (diffDays <= 30) return { label: `${diffDays} hari lagi`, color: '#f59e0b', bg: '#fef3c7' };
-    return { label: 'Aktif', color: '#10b981', bg: '#dcfce7' };
-  };
-
-  // 🔥 HITUNG PERPANJANGAN (SYNCHRONOUS - pakai harga dari state)
-  const hitungTotalPerpanjangan = () => {
-    return hargaPaket * perpanjangData.durasiTambah;
-  };
-
-  const hitungCicilanPerpanjang = () => {
-    const total = hitungTotalPerpanjangan();
-    return perpanjangData.tenor > 0 ? Math.ceil(total / perpanjangData.tenor) : total;
-  };
-
-  // Hitung jatuh tempo cicilan perpanjangan
-  useEffect(() => {
-    if (perpanjangData.metodeBayar === 'Cicilan' && perpanjangData.tenor > 0) {
-      const dates = [];
-      const startDate = new Date(perpanjangData.tanggalCicilan1);
-      for (let i = 0; i < perpanjangData.tenor; i++) {
-        const nextDate = new Date(startDate);
-        nextDate.setMonth(startDate.getMonth() + i);
-        dates.push(nextDate.toISOString().split('T')[0]);
-      }
-      setPerpanjangData(prev => ({...prev, customDueDates: dates}));
-    }
-  }, [perpanjangData.metodeBayar, perpanjangData.tenor, perpanjangData.tanggalCicilan1]);
-
-  // ===== PERPANJANGAN =====
-  // 🔥 BARU: buka panel koreksi, diisi otomatis dengan nilai SAAT INI
-  // (biar admin cuma perlu ubah yang salah, bukan ngetik ulang semua dari nol).
-  const openKoreksiModal = () => {
-    setKoreksiData({
-      totalTagihan: student.totalTagihan || 0,
-      totalBayar: student.totalBayar || 0,
-      tanggalMulai: student.tanggalMulai || '',
-      tanggalSelesai: student.tanggalSelesai || '',
-      durasiBulan: student.durasiBulan || 0,
-      alasan: '',
-    });
-    setShowKoreksiModal(true);
-  };
-
-  // 🔥 BARU: simpan koreksi -- MENIMPA LANGSUNG field-field paket siswa ke
-  // nilai yang admin masukkan, TANPA menyentuh riwayat transaksi
-  // (finance_logs) sama sekali. Ini SENGAJA beda dari "hapus transaksi di
-  // Riwayat lalu berharap semuanya otomatis kebalikin" -- pendekatan itu
-  // rapuh buat transaksi PENDAFTARAN (beda dari Perpanjangan Paket yang
-  // udah punya mekanisme baliknya sendiri), karena satu transaksi
-  // pendaftaran itu ngatur 5 field sekaligus dan gak selalu jelas "harus
-  // dibalikin ke apa" kalau udah ada transaksi LAIN yang numpuk di
-  // atasnya. Koreksi langsung itu lebih jujur & transparan: admin lihat
-  // sendiri semua field, tentuin nilai yang BENAR, dan sistem cuma
-  // nyimpen itu -- gak nebak-nebak.
-  const handleSimpanKoreksi = async () => {
-    if (!koreksiData.alasan.trim()) {
-      return showAlert('⚠️ Isi dulu alasan koreksi (buat jejak audit, biar jelas kenapa datanya diubah manual).');
-    }
-    setIsKoreksiProcessing(true);
-    try {
-      const payload = {
-        totalTagihan: parseInt(koreksiData.totalTagihan) || 0,
-        totalBayar: parseInt(koreksiData.totalBayar) || 0,
-        tanggalMulai: koreksiData.tanggalMulai,
-        tanggalSelesai: koreksiData.tanggalSelesai,
-        durasiBulan: parseInt(koreksiData.durasiBulan) || 0,
-      };
-      await updateDoc(doc(db, "students", id), payload);
-
-      // 🔥 Dicatat sebagai log TERPISAH (bukan di finance_logs, biar gak
-      // ketiban ikut kehitung sebagai transaksi uang) -- murni jejak audit
-      // "kapan & kenapa data ini pernah dikoreksi manual", biar transparan
-      // kalau nanti perlu ditelusuri.
-      await addDoc(collection(db, "koreksi_data_log"), {
-        studentId: student?.studentId || id,
-        namaSiswa: student?.nama || '',
-        sebelum: {
-          totalTagihan: student.totalTagihan || 0,
-          totalBayar: student.totalBayar || 0,
-          tanggalMulai: student.tanggalMulai || '',
-          tanggalSelesai: student.tanggalSelesai || '',
-          durasiBulan: student.durasiBulan || 0,
-        },
-        sesudah: payload,
-        alasan: koreksiData.alasan.trim(),
-        createdAt: serverTimestamp(),
-      });
-
-      showAlert('✅ Data paket berhasil dikoreksi!');
-      setShowKoreksiModal(false);
-      fetchData();
-    } catch (error) {
-      showAlert('❌ Gagal menyimpan koreksi: ' + error.message);
-    }
-    setIsKoreksiProcessing(false);
-  };
-
-  const handlePerpanjang = async (e) => {
-    e.preventDefault();
-
-    // 🔥 GUARD BARU (langsung terkait fix default durasi di atas): kalau
-    // admin belum sempat pilih durasi sama sekali (masih di "-- Pilih
-    // Durasi --" / nilai 0), TOLAK proses -- daripada nebak "berarti
-    // maksudnya 0 bulan" atau kejadian bug lama lagi (durasi kepencet gak
-    // sengaja). Admin WAJIB pilih durasi secara sadar dulu.
-    if (!perpanjangData.durasiTambah || perpanjangData.durasiTambah <= 0) {
-      return showAlert('❌ Pilih durasi perpanjangan dulu!');
-    }
-
-    // 🔥 GUARD BARU: kalau harga paket ternyata 0 (misal karena paket sudah
-    // dihapus dari Settings), JANGAN lanjutkan transaksi senilai Rp 0 —
-    // ini mencegah bug lama (perpanjangan gratis) terulang lewat jalur lain.
-    if (hargaPaket <= 0) {
-      return showAlert('❌ Harga paket tidak ditemukan/Rp 0. Cek pengaturan harga paket di menu Settings sebelum memperpanjang.');
-    }
-
-    setIsProcessing(true);
-    try {
-      const totalPerpanjangan = hitungTotalPerpanjangan();
-      const today = new Date().toISOString().split('T')[0];
-      const kodeUnik = student?.studentId || id;
-
-      // 1. Hitung tanggal selesai baru
-      const oldSelesai = student.tanggalSelesai || today;
-      const newSelesai = new Date(oldSelesai);
-      newSelesai.setMonth(newSelesai.getMonth() + perpanjangData.durasiTambah);
-      const newSelesaiStr = newSelesai.toISOString().split('T')[0];
-
-      // 2. Hitung nilai baru buat students
-      const newTotalTagihan = (parseInt(student.totalTagihan || 0)) + totalPerpanjangan;
-      const newTotalBayar = (perpanjangData.metodeBayar === 'Tunai' || perpanjangData.metodeBayar === 'Transfer')
-        ? (parseInt(student.totalBayar || 0)) + totalPerpanjangan
-        : parseInt(student.totalBayar || 0);
-
-      // 🔥 FIX BUG NYATA (sama persis kelasnya dengan handleBayar di atas):
-      // sebelumnya update ke `students`, catatan `finance_logs`, dan
-      // `finance_tagihan` adalah TIGA-EMPAT penulisan terpisah satu-satu.
-      // Kalau salah satu di tengah gagal (mis. koneksi putus PAS lagi
-      // proses), sebagian data udah kesimpen (mis. tanggalSelesai siswa
-      // udah keupdate) tapi catatan keuangannya belum -- data jadi gak
-      // sinkron tanpa admin sadar. Sekarang SEMUA digabung jadi SATU
-      // `writeBatch`: sukses bareng semua, atau gagal bareng semua (gak
-      // ada yang "setengah tersimpan").
-      const batch = writeBatch(db);
-
-      batch.update(doc(db, "students", id), {
-        totalTagihan: newTotalTagihan,
-        totalBayar: newTotalBayar,
-        tanggalSelesai: newSelesaiStr,
-        durasiBulan: (parseInt(student.durasiBulan || 0)) + perpanjangData.durasiTambah
-      });
-
-      const logRef = doc(collection(db, "finance_logs"));
-      batch.set(logRef, {
-        studentId: kodeUnik,
-        namaSiswa: student?.nama || '',
-        date: today,
-        type: 'Pemasukan',
-        category: 'Perpanjangan Paket',
-        amount: totalPerpanjangan,
-        method: perpanjangData.metodeBayar,
-        note: `Perpanjangan ${perpanjangData.durasiTambah} bulan: ${student?.nama} (s.d ${newSelesaiStr})`,
-        // 🔥 BARU: field TERSTRUKTUR (bukan cuma nempel di teks catatan)
-        // -- dipakai TransactionHistory.jsx buat bisa MEMBALIKIN transaksi
-        // ini secara AKURAT & OTOMATIS kalau nanti admin salah input dan
-        // perlu dihapus. Tanpa ini, sistem gak punya cara pasti buat tau
-        // "berapa bulan yang harus dibalikin" kalau transaksi ini dihapus
-        // -- sebelumnya cuma nominal (totalBayar) yang kebalikin, tanggal
-        // selesai & durasi bulan TETAP NYANGKUT ke versi yang salah (ini
-        // laporan nyata yang masuk: admin salah pilih 3 bulan, sudah
-        // dikoreksi nominalnya di Riwayat, tapi tanggal selesai & durasi
-        // paket TETAP kebawa 3 bulan).
-        durasiTambah: perpanjangData.durasiTambah,
-        createdAt: serverTimestamp()
-      });
-
-      // 4. Jika cicilan, buat/update finance_tagihan
-      if (perpanjangData.metodeBayar === 'Cicilan') {
-        const cicilanNominal = hitungCicilanPerpanjang();
-        // 🔥 Pengaman sama seperti handleBayar: pastikan detailCicilan lama
-        // beneran array sebelum digabung, jangan sampai nilai gak terduga
-        // (bukan array) bikin batch ini gagal ditulis.
-        const existingCicilanAman = Array.isArray(tagihan?.detailCicilan) ? tagihan.detailCicilan : [];
-        const installments = perpanjangData.customDueDates.map((dateStr, index) => ({
-          bulanKe: existingCicilanAman.length + index + 1,
-          nominal: cicilanNominal,
-          status: 'Belum Lunas',
-          jatuhTempo: dateStr,
-          tanggalBayar: null
-        }));
-
-        if (tagihan) {
-          const newSisa = (tagihan.sisaTagihan || 0) + totalPerpanjangan;
-          batch.update(doc(db, "finance_tagihan", tagihan.id), {
-            totalTagihan: (tagihan.totalTagihan || 0) + totalPerpanjangan,
-            sisaTagihan: newSisa,
-            detailCicilan: [...existingCicilanAman, ...installments]
-          });
-        } else {
-          const newTagihanRef = doc(collection(db, "finance_tagihan"));
-          batch.set(newTagihanRef, {
-            studentId: kodeUnik,
-            namaSiswa: student?.nama || '',
-            noHp: student?.ortu?.hp || '',
-            totalTagihan: totalPerpanjangan,
-            sisaTagihan: totalPerpanjangan,
-            detailCicilan: installments,
-            createdAt: serverTimestamp()
-          });
-        }
-      }
-
-      await batch.commit();
-
-      showAlert(`✅ Perpanjangan ${perpanjangData.durasiTambah} bulan berhasil! Selesai: ${newSelesaiStr}`);
-      setShowPerpanjangModal(false);
-      fetchData();
-    } catch (error) {
-      console.error("Error:", error);
-      showAlert('❌ Gagal: ' + error.message);
-    }
-    setIsProcessing(false);
-  };
-
-  // ===== BAYAR CICILAN =====
-  const openBayarModal = (index = null) => {
-    if (isPendaftaranLunas() && index === null) {
-      return showAlert('⚠️ Pembayaran pendaftaran sudah LUNAS!');
-    }
-    setPayingIndex(index);
-    if (index !== null && tagihan?.detailCicilan) {
-      if (tagihan.detailCicilan[index].status === 'Lunas') return showAlert('⚠️ Cicilan ini sudah dibayar!');
-      setPayAmount(tagihan.detailCicilan[index].nominal.toString());
-    } else {
-      setPayAmount(getSisaTagihan().toString());
-    }
-    setPayMethod('Tunai');
-    setShowPayModal(true);
-  };
-
-  const handleBayar = async (e) => {
-    e.preventDefault();
-    const nominal = parseInt(payAmount);
-    if (!nominal || nominal <= 0) return showAlert('⚠️ Nominal tidak valid!');
-    if (getSisaTagihan() <= 0 && payingIndex === null) return showAlert('⚠️ Tidak ada tagihan!');
-
-    setIsProcessing(true);
-    try {
-      const kodeUnik = student?.studentId || id;
-      const today = new Date().toISOString().split('T')[0];
-
-      // 🔥 FIX BUG NYATA #1 (risiko crash): sebelumnya `tagihan.detailCicilan`
-      // langsung di-spread (`[...tagihan.detailCicilan]`) atau di-`.map()`
-      // TANPA ngecek dulu apakah itu beneran array. Kalau ada satu dokumen
-      // tagihan yang datanya gak lengkap (rusak/diedit manual di Firestore,
-      // atau dari jalur pembuatan lama yang kelewat isi field ini), ini
-      // langsung CRASH ("Cannot read properties of undefined") begitu
-      // admin coba proses pembayaran -- pembayaran gagal total, gak ada
-      // penjelasan jelas ke admin selain pesan error teknis. Sekarang
-      // dicek dulu pakai Array.isArray(); kalau ternyata bukan array,
-      // dianggap kosong (bukan crash) -- pembayaran tetap bisa diproses
-      // buat bagian totalBayar siswa, cuma rincian per-cicilan yang gak
-      // ikut ter-update (lebih baik daripada gagal total).
-      const detailCicilanAman = Array.isArray(tagihan?.detailCicilan) ? tagihan.detailCicilan : [];
-
-      const newTotalBayar = Math.min(
-        parseInt(student.totalTagihan || 0),
-        (parseInt(student.totalBayar || 0)) + nominal
-      );
-
-      // 🔥 FIX BUG NYATA #2 (data gak sinkron): sebelumnya update ke
-      // `students.totalBayar` dan `finance_tagihan` (rincian cicilan)
-      // adalah DUA PENULISAN TERPISAH (dua `updateDoc` beda, dieksekusi
-      // satu-satu). Kalau penulisan PERTAMA sukses tapi yang KEDUA gagal
-      // (internet putus, Firestore hiccup, dll), data siswa udah kebilang
-      // "sudah bayar" tapi rincian cicilannya GAK ikut ter-update --
-      // dua sumber data (halaman siswa vs rincian cicilan) jadi beda
-      // sendiri-sendiri, persis keluhan "data gak sinkron". Sekarang
-      // SEMUA penulisan (log transaksi + update siswa + update tagihan)
-      // digabung jadi SATU `writeBatch` -- Firestore menjamin SEMUANYA
-      // berhasil bareng, atau GAK ADA SATU PUN yang tersimpan kalau ada
-      // yang gagal. Gak ada lagi kondisi "setengah tersimpan".
-      const batch = writeBatch(db);
-
-      const logRef = doc(collection(db, "finance_logs"));
-      batch.set(logRef, {
-        studentId: kodeUnik,
-        namaSiswa: student?.nama || '',
-        date: today,
-        type: 'Pemasukan',
-        category: 'SPP / Cicilan',
-        amount: nominal,
-        method: payMethod,
-        note: payingIndex !== null ? `Cicilan ke-${payingIndex + 1}: ${student?.nama}` : `Pelunasan: ${student?.nama}`,
-        createdAt: serverTimestamp()
-      });
-
-      batch.update(doc(db, "students", id), { totalBayar: newTotalBayar });
-
-      if (payingIndex !== null && tagihan) {
-        const newDetails = [...detailCicilanAman];
-        if (newDetails[payingIndex]) {
-          newDetails[payingIndex] = { ...newDetails[payingIndex], status: 'Lunas', tanggalBayar: today };
-        }
-        batch.update(doc(db, "finance_tagihan", tagihan.id), {
-          detailCicilan: newDetails,
-          sisaTagihan: Math.max(0, (tagihan.sisaTagihan || 0) - nominal)
-        });
-      } else if (tagihan && payingIndex === null) {
-        const newDetails = detailCicilanAman.map(c => ({
-          ...c, status: 'Lunas', tanggalBayar: c.status === 'Belum Lunas' ? today : c.tanggalBayar
-        }));
-        batch.update(doc(db, "finance_tagihan", tagihan.id), { detailCicilan: newDetails, sisaTagihan: 0 });
-      }
-
-      await batch.commit();
-
-      showAlert(`✅ Pembayaran Rp ${nominal.toLocaleString()} berhasil!`);
-      setShowPayModal(false);
-      fetchData();
-    } catch (error) { 
-      console.error(error); 
-      showAlert('❌ Gagal: ' + error.message); 
-    }
-    setIsProcessing(false);
-  };
-
-  // ===== LOADING =====
   if (loading) {
     return (
-      <div style={styles.wrapper}>
-        <SidebarAdmin />
-        <div style={styles.mainContent(isMobile)}>
-          <div style={styles.loadingState}>
-            <div style={styles.spinner}></div>
-            <p>Memuat data keuangan...</p>
-          </div>
-        </div>
-        <style>{`@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
+      <div style={{ textAlign: 'center', padding: '50px', color: '#94a3b8' }}>
+        <div style={{ width: 32, height: 32, border: '3px solid #e2e8f0', borderTop: '3px solid #652D90', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 12px' }}></div>
+        Menyinkronkan Data Keuangan...
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
-  if (!student) return null;
+  if (!student) {
+    return (
+      <div style={styles.lockContainer}>
+        <div style={styles.lockCard}>
+          <AlertCircle size={50} color="#f59e0b" style={{ marginBottom: '20px' }} />
+          <h2 style={{ margin: '0 0 10px 0', color: '#1e293b' }}>Data Tidak Ditemukan</h2>
+          <p style={{ color: '#64748b', fontSize: '14px', lineHeight: '1.6' }}>
+            Data keuangan tidak dapat dimuat. Silakan hubungi admin.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-  const sisa = getSisaTagihan();
-  const isLunas = isAlreadyLunas();
-  const masa = getMasaStatus();
+  // Render Tampilan Blokir
+  if (student?.isBlocked) {
+    return (
+      <div style={styles.lockContainer}>
+        <div style={styles.lockCard}>
+          <Lock size={50} color="#ef4444" style={{ marginBottom: '20px' }} />
+          <h2 style={{ margin: '0 0 10px 0', color: '#1e293b' }}>Akses Akun Terbatas</h2>
+          <p style={{ color: '#64748b', fontSize: '14px', lineHeight: '1.6' }}>
+            Mohon maaf, akses ke rapor dan materi belajar ditangguhkan sementara karena kendala administrasi. 
+            Silakan selesaikan kewajiban pembayaran Anda.
+          </p>
+          <button style={styles.btnWa} onClick={() => window.open('https://wa.me/628123456789')}>
+            Hubungi Admin Sekarang
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={styles.wrapper}>
-      <SidebarAdmin />
-      <div style={styles.mainContent(isMobile)}>
-        
-        {alertMsg && <div style={styles.toast}>{alertMsg}</div>}
-
-        {/* BREADCRUMB */}
-        <div style={styles.breadcrumb(isMobile)}>
-          <button onClick={() => navigate('/admin/students')} style={styles.backBtn}>
-            <ArrowLeft size={16} /> Kembali
-          </button>
-          <div style={styles.breadcrumbTrail}>
-            <Home size={12} color="#94a3b8" />
-            <ChevronRight size={12} color="#94a3b8" />
-            <span style={{color: '#94a3b8'}}>Siswa</span>
-            <ChevronRight size={12} color="#94a3b8" />
-            <span style={{color: '#8b5cf6', fontWeight: 'bold'}}>Keuangan</span>
+    <div style={{ width: '100%' }}>
+      {/* NOTIFIKASI PERINGATAN MASA AKTIF -- warna/skema TETAP seperti semula, cuma sumber datanya yang dibenerin (lihat penjelasan di atas) */}
+      {expiryInfo.status !== 'normal' && (
+        <div style={{
+          ...styles.alertBox,
+          background: expiryInfo.status === 'expired' ? '#fee2e2' : '#fff7ed',
+          border: `1px solid ${expiryInfo.status === 'expired' ? '#ef4444' : '#f97316'}`,
+        }}>
+          <AlertCircle color={expiryInfo.status === 'expired' ? '#ef4444' : '#f97316'} size={24} />
+          <div style={{ flex: 1 }}>
+            <b style={{ color: expiryInfo.status === 'expired' ? '#b91c1c' : '#9a3412', display: 'block' }}>
+              {expiryInfo.status === 'expired' ? 'Masa Paket Belajar Habis!' : 'Perhatian: Masa Paket Segera Berakhir'}
+            </b>
+            <span style={{ fontSize: '13px', color: expiryInfo.status === 'expired' ? '#ef4444' : '#c2410c' }}>
+              {expiryInfo.status === 'expired' 
+                ? 'Paket Anda telah berakhir. Silakan hubungi admin untuk perpanjangan agar tetap bisa mengakses materi.' 
+                : `Paket belajar Anda akan berakhir dalam ${expiryInfo.daysLeft} hari lagi. Segera lakukan perpanjangan.`}
+            </span>
           </div>
         </div>
+      )}
 
-        {/* STUDENT CARD */}
-        <div style={styles.studentCard(isMobile)}>
-          <div style={styles.studentAvatar}>{getInitials(student.nama)}</div>
-          <div style={styles.studentInfo}>
-            <h3 style={styles.studentName}>{student.nama}</h3>
-            <div style={styles.studentMeta}>
-              <span style={styles.idBadge}>📋 {student.studentId || '-'}</span>
-              <span style={styles.programBadge}>
-                {student.kategori === 'English' ? '🇬🇧 English' : '📚 Reguler'}
-              </span>
-              <span style={{...styles.masaBadge, background: masa.bg, color: masa.color}}>
-                <Clock size={10} /> {masa.label}
-              </span>
-            </div>
-          </div>
-          <div style={{display: 'flex', gap: 8, flexShrink: 0}}>
-            <div style={styles.lunasBadge(isLunas)}>
-              {isLunas ? <><CheckCircle size={14} /> LUNAS</> : <><Clock size={14} /> BELUM</>}
-            </div>
-          </div>
-        </div>
-
-        <div style={styles.gridContainer(isMobile)}>
-          {/* KIRI - Ringkasan */}
-          <div style={styles.card}>
-            <h3 style={styles.cardTitle}><Wallet size={18} /> Ringkasan Tagihan</h3>
-            
-            <div style={styles.progressSection}>
-              <div style={styles.progressBar}>
-                <div style={styles.progressFill(getProgressPercent())}></div>
-              </div>
-              <div style={styles.progressLabel}>
-                <span>{getProgressPercent()}% Terbayar</span>
-                <span>Rp {(student.totalBayar || 0).toLocaleString()} / Rp {(student.totalTagihan || 0).toLocaleString()}</span>
-              </div>
-            </div>
-
-            <div style={styles.financeGrid}>
-              <div style={styles.financeItem}>
-                <TrendingUp size={16} color="#3b82f6" />
-                <div>
-                  <span style={styles.financeLabel}>Total</span>
-                  <strong style={styles.financeValue}>Rp {(student.totalTagihan || 0).toLocaleString()}</strong>
-                </div>
-              </div>
-              <div style={styles.financeItem}>
-                <DollarSign size={16} color="#10b981" />
-                <div>
-                  <span style={styles.financeLabel}>Dibayar</span>
-                  <strong style={{...styles.financeValue, color: '#10b981'}}>Rp {(student.totalBayar || 0).toLocaleString()}</strong>
-                </div>
-              </div>
-              <div style={styles.financeItem}>
-                <Receipt size={16} color={sisa > 0 ? '#ef4444' : '#10b981'} />
-                <div>
-                  <span style={styles.financeLabel}>Sisa</span>
-                  <strong style={{...styles.financeValue, color: sisa > 0 ? '#ef4444' : '#10b981'}}>Rp {sisa.toLocaleString()}</strong>
-                </div>
-              </div>
-              <div style={styles.financeItem}>
-                <Calendar size={16} color="#8b5cf6" />
-                <div>
-                  <span style={styles.financeLabel}>Masa Paket</span>
-                  <strong style={{...styles.financeValue, fontSize: 11}}>
-                    {student.tanggalMulai || '-'} → {student.tanggalSelesai || '-'}
-                  </strong>
-                </div>
-              </div>
-            </div>
-
-            {!isLunas && !isPendaftaranLunas() && (
-              <button onClick={() => openBayarModal(null)} style={styles.btnLunasin}>
-                <CheckCircle size={16} /> Bayar Lunas
-              </button>
-            )}
-
-            <button
-              onClick={() => {
-                // 🔥 FIX BUG TERKAIT: sebelumnya modal dibuka TANPA reset
-                // `perpanjangData` -- kalau admin pernah buka modal ini
-                // sebelumnya (buat siswa lain, atau sempat pilih durasi
-                // lalu batal), pilihan LAMA itu masih nyangkut & langsung
-                // ke-pre-select lagi begitu modal dibuka ulang. Sekarang
-                // di-reset bersih ke kondisi "belum pilih apa-apa" setiap
-                // kali modal ini dibuka, supaya admin SELALU mulai dari
-                // keadaan netral -- gak ada peninggalan pilihan dari sesi
-                // sebelumnya yang bisa bikin salah pencet.
-                setPerpanjangData({
-                  durasiTambah: 0,
-                  metodeBayar: 'Tunai',
-                  tenor: 1,
-                  tanggalCicilan1: new Date().toISOString().split('T')[0],
-                  customDueDates: []
-                });
-                setShowPerpanjangModal(true);
-              }}
-              style={styles.btnPerpanjang}
-            >
-              <RefreshCw size={16} /> Perpanjang Paket
-            </button>
-
-            {/* 🔥 BARU: tombol koreksi -- KHUSUS buat kasus SALAH INPUT (bukan
-                perpanjangan beneran), mis. pendaftaran salah masukin tanggal/
-                nominal. Bedanya ditegasin lewat warna & label, biar admin gak
-                ketuker sama "Perpanjang Paket" (yang selalu NAMBAH). */}
-            <button onClick={openKoreksiModal} style={styles.btnKoreksi}>
-              <Edit3 size={14} /> Koreksi Data (kalau salah input)
-            </button>
-          </div>
-
-          {/* KANAN - Cicilan & Riwayat */}
-          <div style={{display: 'flex', flexDirection: 'column', gap: 15}}>
-            {tagihan && tagihan.detailCicilan && tagihan.detailCicilan.length > 0 && (
-              <div style={styles.card}>
-                <h3 style={styles.cardTitle}><CreditCard size={18} /> Cicilan</h3>
-                <div style={styles.cicilanList}>
-                  {tagihan.detailCicilan.map((item, idx) => (
-                    <div key={idx} style={styles.cicilanItem(item.status)}>
-                      <div style={styles.cicilanLeft}>
-                        <span style={styles.cicilanNum}>#{idx + 1}</span>
-                        <span style={styles.cicilanDate}>📅 {item.jatuhTempo}</span>
-                      </div>
-                      <div style={styles.cicilanRight}>
-                        <strong style={styles.cicilanAmount}>Rp {item.nominal?.toLocaleString()}</strong>
-                        {item.status === 'Lunas' ? (
-                          <span style={styles.badgeLunas}>✅</span>
-                        ) : (
-                          <button onClick={() => openBayarModal(idx)} style={styles.btnBayarCicilan}>Bayar</button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div style={styles.card}>
-              <h3 style={styles.cardTitle}><Receipt size={18} /> Riwayat Pembayaran</h3>
-              {financeLogs.length === 0 ? (
-                <div style={styles.emptyHistory}>
-                  <AlertCircle size={32} color="#94a3b8" />
-                  <p>Belum ada riwayat pembayaran</p>
-                </div>
-              ) : (
-                <div style={styles.historyList}>
-                  {financeLogs.slice(0, 10).map((log) => (
-                    <div key={log.id} style={styles.historyItem}>
-                      <div style={styles.historyLeft}>
-                        <div style={styles.historyDot(log.category)}></div>
-                        <div>
-                          <div style={styles.historyDate}>{log.date}</div>
-                          <div style={styles.historyNote}>{log.note || log.category}</div>
-                        </div>
-                      </div>
-                      <div style={styles.historyRight}>
-                        <strong style={{color: '#10b981'}}>+ Rp {log.amount?.toLocaleString()}</strong>
-                        <div style={{fontSize: 9, color: '#94a3b8'}}>{log.method}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+      {/* 🔥 BARU: ALERT CICILAN TELAT -- terpisah dari alert masa aktif di atas,
+          nutup Bug #1. Gak ada tombol WA (sengaja, gak ada sumber nomor admin
+          yang pasti/terkonfigurasi -- daripada hardcode nomor yang mungkin
+          salah/kadaluarsa). */}
+      {overdueInstallments.length > 0 && (
+        <div style={{ ...styles.alertBox, background: '#fef2f2', border: '1px solid #ef4444' }}>
+          <CalendarClock color="#ef4444" size={24} />
+          <div style={{ flex: 1 }}>
+            <b style={{ color: '#b91c1c', display: 'block', marginBottom: 6 }}>
+              {overdueInstallments.length === 1 ? 'Ada Cicilan yang Telat Dibayar' : `Ada ${overdueInstallments.length} Cicilan yang Telat Dibayar`}
+            </b>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {overdueInstallments.map(item => (
+                <span key={item.idx} style={{ fontSize: '13px', color: '#ef4444' }}>
+                  • Cicilan Bulan Ke-{item.bulanKe}: <b>Rp {item.nominal?.toLocaleString()}</b> — terlambat {item.daysLate} hari (jatuh tempo {new Date(item.jatuhTempo).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })})
+                </span>
+              ))}
             </div>
           </div>
         </div>
+      )}
 
-        {/* ===== MODAL BAYAR ===== */}
-        {showPayModal && (
-          <div style={styles.modalOverlay} onClick={() => setShowPayModal(false)}>
-            <div style={styles.modalContent(isMobile)} onClick={e => e.stopPropagation()}>
-              <div style={styles.modalHeader}>
-                <h3 style={styles.modalTitle}>
-                  <CreditCard size={20} /> {payingIndex !== null ? `Bayar Cicilan #${payingIndex + 1}` : 'Pembayaran'}
-                </h3>
-                <button onClick={() => setShowPayModal(false)} style={styles.modalClose}><X size={18} /></button>
-              </div>
-              <div style={styles.modalBody}>
-                <div style={styles.payInfo}>
-                  <span>Sisa Tagihan</span>
-                  <strong style={{color: '#ef4444'}}>Rp {sisa.toLocaleString()}</strong>
-                </div>
-                <form onSubmit={handleBayar}>
-                  <div style={styles.inputGroup}>
-                    <label style={styles.label}>Jumlah (Rp)</label>
-                    <input type="number" style={styles.input} value={payAmount} onChange={e => setPayAmount(e.target.value)} required autoFocus />
-                  </div>
-                  <div style={styles.inputGroup}>
-                    <label style={styles.label}>Metode</label>
-                    <select style={styles.input} value={payMethod} onChange={e => setPayMethod(e.target.value)}>
-                      <option value="Tunai">💵 Tunai</option>
-                      <option value="Transfer">💳 Transfer</option>
-                    </select>
-                  </div>
-                  <div style={styles.modalFooter}>
-                    <button type="button" onClick={() => setShowPayModal(false)} style={styles.btnCancel}>Batal</button>
-                    <button type="submit" style={styles.btnSave} disabled={isProcessing}>
-                      {isProcessing ? '⏳' : <><Save size={16} /> Bayar</>}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
+      <div style={styles.financeHeader}>
+        <div style={styles.headerInfo}>
+          <div style={styles.iconBg}><Wallet color="white" size={24} /></div>
+          <div>
+            <h2 style={{ margin: 0, color: 'white' }}>Informasi Pembayaran</h2>
+            <p style={{ margin: '4px 0 0 0', color: '#dbeafe', fontSize: '13px' }}>Kelola tagihan dan riwayat pembayaranmu.</p>
           </div>
-        )}
-
-        {/* ===== MODAL PERPANJANGAN ===== */}
-        {showPerpanjangModal && (
-          <div style={styles.modalOverlay} onClick={() => setShowPerpanjangModal(false)}>
-            <div style={{...styles.modalContent(isMobile), maxWidth: '500px'}} onClick={e => e.stopPropagation()}>
-              <div style={styles.modalHeader}>
-                <h3 style={styles.modalTitle}><RefreshCw size={20} /> Perpanjang Paket</h3>
-                <button onClick={() => setShowPerpanjangModal(false)} style={styles.modalClose}><X size={18} /></button>
-              </div>
-              <div style={styles.modalBody}>
-                <div style={styles.payInfo}>
-                  <span>Paket Saat Ini</span>
-                  <strong>{namaPaketAktif || student.detailProgram || '-'}</strong>
-                </div>
-                <div style={styles.payInfo}>
-                  <span>Harga per Bulan</span>
-                  <strong style={{color: hargaPaket <= 0 ? '#ef4444' : '#1e293b'}}>
-                    Rp {hargaPaket.toLocaleString()}
-                    {hargaPaket <= 0 && ' ⚠️ Cek Settings'}
-                  </strong>
-                </div>
-                <div style={styles.payInfo}>
-                  <span>Berakhir</span>
-                  <strong style={{color: '#ef4444'}}>{student.tanggalSelesai || '-'}</strong>
-                </div>
-
-                <form onSubmit={handlePerpanjang}>
-                  <div style={styles.inputGroup}>
-                    <label style={styles.label}>Tambah Durasi</label>
-                    <select style={styles.input} value={perpanjangData.durasiTambah} onChange={e => setPerpanjangData(prev => ({...prev, durasiTambah: parseInt(e.target.value)}))}>
-                      <option value={0}>-- Pilih Durasi --</option>
-                      <option value={1}>1 Bulan - Rp {(hargaPaket * 1).toLocaleString()}</option>
-                      <option value={3}>3 Bulan (1 Term) - Rp {(hargaPaket * 3).toLocaleString()}</option>
-                      <option value={6}>6 Bulan (1 Semester) - Rp {(hargaPaket * 6).toLocaleString()}</option>
-                      <option value={12}>12 Bulan (1 Tahun) - Rp {(hargaPaket * 12).toLocaleString()}</option>
-                    </select>
-                  </div>
-
-                  <div style={styles.inputGroup}>
-                    <label style={styles.label}>Total: <strong style={{color: '#10b981'}}>Rp {hitungTotalPerpanjangan().toLocaleString()}</strong></label>
-                  </div>
-
-                  <div style={styles.inputGroup}>
-                    <label style={styles.label}>Metode Pembayaran</label>
-                    <div style={styles.tabRow3}>
-                      <button type="button" onClick={() => setPerpanjangData(prev => ({...prev, metodeBayar: 'Tunai'}))} style={styles.methodBtn(perpanjangData.metodeBayar === 'Tunai')}>💵 Tunai</button>
-                      <button type="button" onClick={() => setPerpanjangData(prev => ({...prev, metodeBayar: 'Transfer'}))} style={styles.methodBtn(perpanjangData.metodeBayar === 'Transfer')}>💳 Transfer</button>
-                      <button type="button" onClick={() => setPerpanjangData(prev => ({...prev, metodeBayar: 'Cicilan'}))} style={styles.methodBtn(perpanjangData.metodeBayar === 'Cicilan')}>📋 Cicilan</button>
-                    </div>
-                  </div>
-
-                  {perpanjangData.metodeBayar === 'Cicilan' && (
-                    <>
-                      <div style={styles.inputGroup}>
-                        <label style={styles.label}>Tenor</label>
-                        <div style={{display: 'flex', gap: 6, flexWrap: 'wrap'}}>
-                          {[1,2,3,4,5,6].map(t => (
-                            <button key={t} type="button" onClick={() => setPerpanjangData(prev => ({...prev, tenor: t}))} style={styles.tenorBtn(perpanjangData.tenor === t)}>
-                              {t}x @ Rp {hitungCicilanPerpanjang().toLocaleString()}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div style={styles.inputGroup}>
-                        <label style={styles.label}>Cicilan Pertama</label>
-                        <input type="date" style={styles.input} value={perpanjangData.tanggalCicilan1} onChange={e => setPerpanjangData(prev => ({...prev, tanggalCicilan1: e.target.value}))} />
-                      </div>
-                    </>
-                  )}
-
-                  <div style={styles.modalFooter}>
-                    <button type="button" onClick={() => setShowPerpanjangModal(false)} style={styles.btnCancel}>Batal</button>
-                    <button type="submit" style={styles.btnSave} disabled={isProcessing || hargaPaket <= 0}>
-                      {isProcessing ? '⏳' : <><PlusCircle size={16} /> Perpanjang</>}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 🔥 BARU: MODAL KOREKSI DATA PAKET */}
-        {showKoreksiModal && koreksiData && (
-          <div style={styles.modalOverlay} onClick={() => !isKoreksiProcessing && setShowKoreksiModal(false)}>
-            <div style={{...styles.modalContent(isMobile), maxWidth: '480px'}} onClick={e => e.stopPropagation()}>
-              <div style={styles.modalHeader}>
-                <h3 style={styles.modalTitle}><Edit3 size={20} /> Koreksi Data Paket</h3>
-                <button onClick={() => setShowKoreksiModal(false)} style={styles.modalClose}><X size={18} /></button>
-              </div>
-              <div style={styles.modalBody}>
-                <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: 12, marginBottom: 16, display: 'flex', gap: 8 }}>
-                  <ShieldAlert size={16} color="#f59e0b" style={{ flexShrink: 0, marginTop: 1 }} />
-                  <span style={{ fontSize: 11, color: '#92400e', lineHeight: 1.6 }}>
-                    Ini buat MEMBETULKAN data yang salah input (bukan buat perpanjangan beneran).
-                    Nilai di bawah ini akan LANGSUNG MENIMPA data siswa, tanpa nambah/kurang riwayat transaksi.
-                    Wajib isi alasan di bawah -- ini bakal dicatat sebagai jejak audit.
-                  </span>
-                </div>
-
-                <div style={styles.inputGroup}>
-                  <label style={styles.label}>Total Tagihan (Rp)</label>
-                  <input type="number" value={koreksiData.totalTagihan} onChange={e => setKoreksiData(p => ({ ...p, totalTagihan: e.target.value }))} style={styles.input} />
-                </div>
-                <div style={styles.inputGroup}>
-                  <label style={styles.label}>Total Dibayar (Rp)</label>
-                  <input type="number" value={koreksiData.totalBayar} onChange={e => setKoreksiData(p => ({ ...p, totalBayar: e.target.value }))} style={styles.input} />
-                </div>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <div style={{ ...styles.inputGroup, flex: 1 }}>
-                    <label style={styles.label}>Tanggal Mulai</label>
-                    <input type="date" value={koreksiData.tanggalMulai} onChange={e => setKoreksiData(p => ({ ...p, tanggalMulai: e.target.value }))} style={styles.input} />
-                  </div>
-                  <div style={{ ...styles.inputGroup, flex: 1 }}>
-                    <label style={styles.label}>Tanggal Selesai</label>
-                    <input type="date" value={koreksiData.tanggalSelesai} onChange={e => setKoreksiData(p => ({ ...p, tanggalSelesai: e.target.value }))} style={styles.input} />
-                  </div>
-                </div>
-                <div style={styles.inputGroup}>
-                  <label style={styles.label}>Durasi (bulan)</label>
-                  <input type="number" value={koreksiData.durasiBulan} onChange={e => setKoreksiData(p => ({ ...p, durasiBulan: e.target.value }))} style={styles.input} />
-                </div>
-                <div style={styles.inputGroup}>
-                  <label style={styles.label}>Alasan Koreksi <span style={{ color: '#ef4444' }}>*wajib</span></label>
-                  <textarea
-                    value={koreksiData.alasan}
-                    onChange={e => setKoreksiData(p => ({ ...p, alasan: e.target.value }))}
-                    placeholder="Contoh: salah input durasi pas pendaftaran, seharusnya 1 bulan bukan 3 bulan"
-                    style={{ ...styles.input, minHeight: 60, resize: 'vertical', fontFamily: 'inherit' }}
-                  />
-                </div>
-
-                <div style={styles.modalFooter}>
-                  <button type="button" onClick={() => setShowKoreksiModal(false)} style={styles.btnCancel}>Batal</button>
-                  <button onClick={handleSimpanKoreksi} disabled={isKoreksiProcessing} style={styles.btnSave}>
-                    {isKoreksiProcessing ? '⏳' : <><Save size={16} /> Simpan Koreksi</>}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
+        </div>
+        <div style={styles.statusBadge}>
+          <ShieldCheck size={16} /> 
+          {student?.status === 'Aktif' ? 'Akun Aktif' : student?.status || 'Aktif'}
+        </div>
       </div>
-      <style>{`@keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}`}</style>
+
+      <div style={styles.gridStats}>
+        <div style={styles.cardStat}>
+          <span style={styles.labelStat}>Sisa Tagihan</span>
+          <div style={{ ...styles.valueStat, color: '#ef4444' }}>Rp {tagihan?.sisaTagihan?.toLocaleString() || 0}</div>
+        </div>
+        <div style={styles.cardStat}>
+          <span style={styles.labelStat}>Total Terbayar</span>
+          <div style={{ ...styles.valueStat, color: '#10b981' }}>Rp {student?.totalBayar?.toLocaleString() || 0}</div>
+        </div>
+      </div>
+
+      {/* INFO MASA PAKET */}
+      <div style={{ ...styles.cardStat, marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <div style={{ background: '#f1f5f9', padding: '10px', borderRadius: '12px' }}><Clock size={20} color="#64748b" /></div>
+        <div>
+          <span style={styles.labelStat}>Masa Aktif Paket</span>
+          <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1e293b' }}>
+            {student?.tanggalMulai ? `Mulai: ${student.tanggalMulai} — Berakhir: ${student.tanggalSelesai || '-'}` : 'Belum Diatur'}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ ...styles.tableCard, marginBottom: 25 }}>
+        <div style={styles.tableHeader}><History size={18} /> Jadwal Cicilan / Tagihan</div>
+        <table style={styles.table}>
+          <thead style={{ background: '#f8fafc' }}>
+            <tr>
+              <th style={styles.th}>Deskripsi</th>
+              <th style={styles.th}>Nominal</th>
+              <th style={styles.th}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tagihan?.detailCicilan?.length > 0 ? (
+              tagihan.detailCicilan.map((item, idx) => {
+                const isOverdue = overdueInstallments.some(o => o.idx === idx);
+                return (
+                  <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={styles.td}>Cicilan Bulan Ke-{item.bulanKe}</td>
+                    <td style={styles.td}><b>Rp {item.nominal?.toLocaleString()}</b></td>
+                    <td style={styles.td}>
+                      <span style={item.status === 'Lunas' ? styles.badgeLunas : (isOverdue ? styles.badgeTerlambat : styles.badgeWait)}>
+                        {item.status === 'Lunas' ? 'Lunas' : (isOverdue ? 'Terlambat' : item.status)}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan="3" style={{ ...styles.td, textAlign: 'center', color: '#94a3b8', padding: '40px' }}>
+                  Belum ada riwayat tagihan cicilan.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* 🔥 BARU: RIWAYAT PEMBAYARAN -- transaksi yang beneran sudah tercatat
+          dibayar (bukan cuma jadwal). Lebih transparan buat siswa/ortu lihat
+          histori pembayaran mereka sendiri sejak awal daftar. */}
+      <div style={styles.tableCard}>
+        <div style={styles.tableHeader}><Receipt size={18} /> Riwayat Pembayaran</div>
+        <table style={styles.table}>
+          <thead style={{ background: '#f8fafc' }}>
+            <tr>
+              <th style={styles.th}>Tanggal</th>
+              <th style={styles.th}>Keterangan</th>
+              <th style={styles.th}>Metode</th>
+              <th style={styles.th}>Nominal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paymentHistory.length > 0 ? (
+              paymentHistory.map((item) => (
+                <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                  <td style={styles.td}>{item.date ? new Date(item.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
+                  <td style={styles.td}>{item.note || item.category || '-'}</td>
+                  <td style={styles.td}>{item.method || '-'}</td>
+                  <td style={styles.td}><b style={{ color: '#10b981' }}>Rp {(item.amount || 0).toLocaleString()}</b></td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" style={{ ...styles.td, textAlign: 'center', color: '#94a3b8', padding: '40px' }}>
+                  Belum ada riwayat pembayaran tercatat.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
 
-// ============================================================
-// STYLES
-// ============================================================
 const styles = {
-  wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
-  mainContent: (m) => ({ marginLeft: m ? '0' : '250px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' }),
-  toast: { position: 'fixed', top: 20, right: 20, zIndex: 9999, background: '#1e293b', color: 'white', padding: '14px 24px', borderRadius: 12, fontWeight: 'bold', fontSize: 14, boxShadow: '0 10px 30px rgba(0,0,0,0.2)', animation: 'toastIn 0.3s ease' },
-  loadingState: { textAlign: 'center', padding: 80, color: '#94a3b8' },
-  spinner: { width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #8b5cf6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 15px' },
-  
-  breadcrumb: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }),
-  backBtn: { background: 'white', border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, color: '#64748b' },
-  breadcrumbTrail: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 },
-  
-  studentCard: (m) => ({ display: 'flex', alignItems: 'center', gap: 16, background: 'white', padding: m ? 15 : 20, borderRadius: 14, marginBottom: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', flexWrap: m ? 'wrap' : 'nowrap' }),
-  studentAvatar: { width: 50, height: 50, borderRadius: '50%', background: 'linear-gradient(135deg, #8b5cf6, #6366f1)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 'bold', flexShrink: 0 },
-  studentInfo: { flex: 1, minWidth: 0 },
-  studentName: { margin: 0, fontSize: 16, color: '#1e293b' },
-  studentMeta: { display: 'flex', gap: 8, marginTop: 4, flexWrap: 'wrap', alignItems: 'center' },
-  idBadge: { display: 'inline-flex', alignItems: 'center', gap: 4, background: '#f1f5f9', padding: '3px 10px', borderRadius: 10, fontSize: 11, fontWeight: 'bold', color: '#475569' },
-  programBadge: { padding: '3px 10px', borderRadius: 10, fontSize: 11, fontWeight: 'bold', background: '#f0fdf4', color: '#166534' },
-  masaBadge: { padding: '3px 10px', borderRadius: 10, fontSize: 10, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 4 },
-  lunasBadge: (isLunas) => ({ display: 'flex', alignItems: 'center', gap: 4, padding: '8px 14px', borderRadius: 12, fontSize: 12, fontWeight: 'bold', background: isLunas ? '#dcfce7' : '#fee2e2', color: isLunas ? '#166534' : '#ef4444', flexShrink: 0 }),
-  
-  gridContainer: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : '1fr 400px', gap: 20 }),
-  card: { background: 'white', padding: 20, borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' },
-  cardTitle: { display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 16px 0', fontSize: 14, color: '#1e293b', fontWeight: 'bold', paddingBottom: 10, borderBottom: '2px solid #f1f5f9' },
-  
-  progressSection: { marginBottom: 20 },
-  progressBar: { height: 10, borderRadius: 5, background: '#f1f5f9', overflow: 'hidden' },
-  progressFill: (pct) => ({ height: '100%', borderRadius: 5, background: pct >= 100 ? '#10b981' : '#3b82f6', width: `${pct}%`, transition: 'width 0.5s ease' }),
-  progressLabel: { display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 11, color: '#64748b' },
-  
-  financeGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 },
-  financeItem: { display: 'flex', alignItems: 'center', gap: 10, padding: 12, background: '#f8fafc', borderRadius: 10 },
-  financeLabel: { display: 'block', fontSize: 10, color: '#94a3b8' },
-  financeValue: { fontSize: 13, color: '#1e293b' },
-  
-  btnLunasin: { width: '100%', marginTop: 12, padding: '12px', background: '#10b981', color: 'white', border: 'none', borderRadius: 10, fontWeight: 'bold', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  btnPerpanjang: { width: '100%', marginTop: 8, padding: '12px', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', color: 'white', border: 'none', borderRadius: 10, fontWeight: 'bold', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 12px rgba(59,130,246,0.3)' },
-  btnKoreksi: { width: '100%', marginTop: 8, padding: '10px', background: 'white', color: '#b45309', border: '1.5px dashed #f59e0b', borderRadius: 10, fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
-  
-  cicilanList: { display: 'flex', flexDirection: 'column', gap: 8 },
-  cicilanItem: (status) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 10, borderRadius: 10, background: status === 'Lunas' ? '#f0fdf4' : '#fefce8', border: `1px solid ${status === 'Lunas' ? '#bbf7d0' : '#fef08a'}`, flexWrap: 'wrap', gap: 8 }),
-  cicilanLeft: { display: 'flex', flexDirection: 'column', gap: 2 },
-  cicilanNum: { fontSize: 11, fontWeight: 'bold', color: '#1e293b' },
-  cicilanDate: { fontSize: 9, color: '#64748b' },
-  cicilanRight: { display: 'flex', alignItems: 'center', gap: 10 },
-  cicilanAmount: { fontSize: 12, color: '#1e293b' },
-  badgeLunas: { padding: '3px 8px', borderRadius: 8, fontSize: 10, fontWeight: 'bold', background: '#dcfce7', color: '#166534' },
-  btnBayarCicilan: { padding: '5px 12px', borderRadius: 8, background: '#f59e0b', color: 'white', border: 'none', fontWeight: 'bold', fontSize: 10, cursor: 'pointer' },
-  
-  emptyHistory: { textAlign: 'center', padding: 30, color: '#94a3b8' },
-  historyList: { display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 400, overflowY: 'auto' },
-  historyItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', borderRadius: 8, background: '#f8fafc' },
-  historyLeft: { display: 'flex', alignItems: 'center', gap: 10 },
-  historyDot: (cat) => ({ width: 8, height: 8, borderRadius: '50%', background: cat === 'Perpanjangan Paket' ? '#8b5cf6' : cat === 'SPP / Cicilan' ? '#f59e0b' : '#3b82f6' }),
-  historyDate: { fontSize: 11, fontWeight: 'bold', color: '#1e293b' },
-  historyNote: { fontSize: 9, color: '#94a3b8' },
-  historyRight: { textAlign: 'right' },
-  
-  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 },
-  modalContent: (m) => ({ background: 'white', borderRadius: 16, padding: 24, width: m ? '95%' : '420px', maxWidth: '500px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', animation: 'slideUp 0.3s ease' }),
-  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 12, borderBottom: '1px solid #f1f5f9' },
-  modalTitle: { margin: 0, fontSize: 16, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 },
-  modalClose: { background: '#f1f5f9', border: 'none', width: 32, height: 32, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' },
-  modalBody: {},
-  modalFooter: { display: 'flex', gap: 10, marginTop: 20, paddingTop: 16, borderTop: '1px solid #f1f5f9' },
-  
-  payInfo: { display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: '#f8fafc', borderRadius: 8, marginBottom: 10, fontSize: 13 },
-  inputGroup: { marginBottom: 14 },
-  label: { display: 'block', fontSize: 12, fontWeight: 'bold', color: '#64748b', marginBottom: 5 },
-  input: { width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 14, boxSizing: 'border-box', background: '#f8fafc' },
-  
-  tabRow3: { display: 'flex', gap: 6 },
-  methodBtn: (active) => ({ flex: 1, padding: '8px', borderRadius: 8, border: active ? '2px solid #10b981' : '1px solid #e2e8f0', background: active ? '#f0fdf4' : 'white', color: active ? '#166534' : '#64748b', fontWeight: active ? 'bold' : '500', fontSize: 11, cursor: 'pointer' }),
-  tenorBtn: (active) => ({ padding: '7px 14px', borderRadius: 8, border: active ? '2px solid #f59e0b' : '1px solid #e2e8f0', background: active ? '#fffbeb' : 'white', color: active ? '#b45309' : '#64748b', fontWeight: active ? 'bold' : '500', fontSize: 11, cursor: 'pointer' }),
-  
-  btnCancel: { flex: 1, padding: '12px', borderRadius: 10, border: '1px solid #e2e8f0', background: 'white', color: '#64748b', fontWeight: 'bold', fontSize: 13, cursor: 'pointer' },
-  btnSave: { flex: 2, padding: '12px', borderRadius: 10, border: 'none', background: '#10b981', color: 'white', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }
+  financeHeader: { 
+    background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', 
+    padding: '30px', borderRadius: '24px', display: 'flex', 
+    justifyContent: 'space-between', alignItems: 'center', 
+    marginBottom: '25px', flexWrap: 'wrap', gap: 15 
+  },
+  headerInfo: { display: 'flex', alignItems: 'center', gap: '20px' },
+  iconBg: { background: 'rgba(255,255,255,0.1)', padding: '12px', borderRadius: '15px' },
+  statusBadge: { 
+    background: '#dcfce7', color: '#166534', padding: '8px 16px', 
+    borderRadius: '100px', fontSize: '12px', fontWeight: 'bold', 
+    display: 'flex', alignItems: 'center', gap: '6px' 
+  },
+  gridStats: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '25px' },
+  cardStat: { background: 'white', padding: '24px', borderRadius: '20px', border: '1px solid #e2e8f0' },
+  labelStat: { fontSize: '12px', color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' },
+  valueStat: { fontSize: '24px', fontWeight: '800', marginTop: '8px' },
+  tableCard: { background: 'white', borderRadius: '24px', border: '1px solid #e2e8f0', overflow: 'hidden' },
+  tableHeader: { 
+    padding: '20px', borderBottom: '1px solid #f1f5f9', fontWeight: 'bold', 
+    display: 'flex', alignItems: 'center', gap: '10px' 
+  },
+  table: { width: '100%', borderCollapse: 'collapse' },
+  th: { padding: '15px 20px', textAlign: 'left', fontSize: '13px', color: '#64748b' },
+  td: { padding: '18px 20px', fontSize: '14px' },
+  badgeLunas: { 
+    background: '#dcfce7', color: '#166534', padding: '6px 12px', 
+    borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' 
+  },
+  badgeWait: { 
+    background: '#fff7ed', color: '#c2410c', padding: '6px 12px', 
+    borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' 
+  },
+  // 🔥 BARU: badge khusus buat cicilan yang KETAHUAN telat (beda dari
+  // "Belum Lunas" biasa yang masih dalam tenggat) -- merah, biar beda
+  // urgensinya keliatan sekilas mata dibanding yang masih wajar nunggu.
+  badgeTerlambat: {
+    background: '#fee2e2', color: '#b91c1c', padding: '6px 12px',
+    borderRadius: '8px', fontSize: '12px', fontWeight: 'bold'
+  },
+  lockContainer: { padding: '60px 20px', textAlign: 'center' },
+  lockCard: { 
+    maxWidth: '450px', margin: '0 auto', background: 'white', 
+    padding: '40px', borderRadius: '30px', border: '1px solid #fee2e2', 
+    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' 
+  },
+  btnWa: { 
+    background: '#2563eb', color: 'white', border: 'none', 
+    padding: '15px 30px', borderRadius: '12px', fontWeight: 'bold', 
+    marginTop: '20px', cursor: 'pointer', transition: 'background 0.3s' 
+  },
+  alertBox: { 
+    display: 'flex', alignItems: 'center', gap: '15px', 
+    padding: '20px', borderRadius: '18px', marginBottom: '25px' 
+  }
 };
 
 export default StudentFinance;
