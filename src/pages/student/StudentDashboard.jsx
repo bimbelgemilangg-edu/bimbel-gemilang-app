@@ -6,12 +6,13 @@ import { onAuthStateChanged } from "firebase/auth";
 import { Html5Qrcode } from "html5-qrcode";
 import { useNavigate } from 'react-router-dom';
 import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
+import StudentDigitalCard from '../../components/StudentDigitalCard';
 
 import {
   BookOpen, Calendar, ClipboardList, X, Camera, User, MapPin,
   Trophy, ArrowRight, AlertCircle, Award, Bell, Download,
   Trash2, FileQuestion, FileText, DollarSign, Sparkles, Inbox,
-  Megaphone, RefreshCw
+  Megaphone, RefreshCw, IdCard
 } from 'lucide-react';
 
 // ============================================================
@@ -1053,6 +1054,18 @@ const StudentDashboard = () => {
               <BookOpen size={14} /> Materi Belajar
             </button>
           </div>
+        </div>
+
+        {/* 🔥 KARTU IDENTITAS SISWA DIGITAL */}
+        <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+          <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <IdCard size={17} color="#673ab7" /> Kartu Identitas Siswa
+          </h3>
+          <StudentDigitalCard
+            studentId={studentId}
+            student={studentProfile}
+            onUpdated={(patch) => setStudentProfile((prev) => ({ ...prev, ...patch }))}
+          />
         </div>
       </div>
 

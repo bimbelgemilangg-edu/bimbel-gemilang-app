@@ -4,9 +4,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { doc, getDoc, updateDoc, collection, getDocs, deleteField } from "firebase/firestore";
+import { uploadElearningFile } from '../../../services/uploadService';
 import { 
   ArrowLeft, Save, User, BookOpen, Calendar, CreditCard, 
-  IdCard, Phone, Edit3, X, AlertCircle, Hash, Key, Info
+  IdCard, Phone, Edit3, X, AlertCircle, Hash, Key, Info, Camera, RotateCcw
 } from 'lucide-react';
 
 // 🔥 BARU: sama persis logikanya dengan normalisasiNoHp() di AddStudent.jsx
@@ -114,6 +115,17 @@ const EditStudent = () => {
   });
 
   const [originalData, setOriginalData] = useState(null);
+
+  // ============================================================
+  // 🔥 BARU: FOTO SISWA (buat Kartu Identitas Digital)
+  // Siswa cuma boleh ganti foto SEKALI sendiri (lihat StudentDigitalCard.jsx)
+  // -- selanjutnya cuma admin yang bisa. Admin bisa ganti kapan saja lewat
+  // panel ini, dan bisa "buka jatah" siswa lagi kalau perlu.
+  // ============================================================
+  const [fotoUrl, setFotoUrl] = useState(null);
+  const [fotoDiubahOlehSiswa, setFotoDiubahOlehSiswa] = useState(false);
+  const [uploadingFoto, setUploadingFoto] = useState(false);
+  const fotoInputRef = React.useRef(null);
 
   // ============================================================
   // EFFECTS
@@ -229,6 +241,8 @@ const EditStudent = () => {
         setFormData(initial);
         setOriginalData(initial);
         parseTanggalLahir(data.tanggalLahir);
+        setFotoUrl(data.fotoUrl || null);
+        setFotoDiubahOlehSiswa(!!data.fotoDiubahOlehSiswa);
 
         // 🔥 BARU: kalau siswa ini SUDAH punya override manual (dari
         // database langsung, atau dari halaman ini sebelumnya), tampilkan
@@ -252,6 +266,47 @@ const EditStudent = () => {
   // HELPER FUNCTIONS
   // ============================================================
   const updateField = (field, value) => setFormData(prev => ({...prev, [field]: value}));
+
+  // 🔥 Admin ganti foto siswa — tidak dibatasi jumlah, langsung tersimpan
+  // begitu file dipilih (gak nunggu tombol "Simpan Perubahan" di bawah).
+  const handleAdminFotoChange = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !id) return;
+
+    if (!file.type.startsWith('image/')) {
+      showError('❌ File harus berupa gambar.');
+      return;
+    }
+
+    setUploadingFoto(true);
+    try {
+      const result = await uploadElearningFile(file, 'foto-siswa');
+      if (!result.success) throw new Error(result.error || 'Upload gagal');
+
+      await updateDoc(doc(db, 'students', id), { fotoUrl: result.downloadURL });
+      setFotoUrl(result.downloadURL);
+      showAlert('✅ Foto siswa berhasil diperbarui');
+    } catch (err) {
+      console.error('Gagal ganti foto siswa:', err);
+      showError('❌ Gagal mengunggah foto: ' + (err.message || ''));
+    } finally {
+      setUploadingFoto(false);
+    }
+  };
+
+  // 🔥 Buka lagi jatah "ganti foto sendiri" buat siswa (misal fotonya dulu
+  // salah upload dan siswa minta kesempatan kedua).
+  const handleResetJatahFoto = async () => {
+    if (!id) return;
+    try {
+      await updateDoc(doc(db, 'students', id), { fotoDiubahOlehSiswa: false });
+      setFotoDiubahOlehSiswa(false);
+      showAlert('✅ Siswa bisa ganti foto sendiri sekali lagi');
+    } catch (err) {
+      showError('❌ Gagal mengatur ulang jatah foto');
+    }
+  };
 
   const toggleMapelCode = (kodeMapel) => {
     setSelectedMapelCodes(prev =>
@@ -453,8 +508,27 @@ const EditStudent = () => {
 
         {/* Student Card */}
         <div style={styles.studentCard(isMobile)}>
-          <div style={styles.studentAvatar}>
-            {formData.nama?.charAt(0)?.toUpperCase() || 'S'}
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div style={{ ...styles.studentAvatar, overflow: 'hidden' }}>
+              {fotoUrl ? (
+                <img src={fotoUrl} alt={formData.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                formData.nama?.charAt(0)?.toUpperCase() || 'S'
+              )}
+            </div>
+            <button
+              onClick={() => fotoInputRef.current?.click()}
+              disabled={uploadingFoto}
+              title="Ganti foto siswa"
+              style={{
+                position: 'absolute', bottom: -4, right: -4, width: 26, height: 26, borderRadius: '50%',
+                background: '#f59e0b', border: '2px solid white', color: 'white', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', cursor: uploadingFoto ? 'default' : 'pointer',
+              }}
+            >
+              <Camera size={13} />
+            </button>
+            <input ref={fotoInputRef} type="file" accept="image/*" onChange={handleAdminFotoChange} style={{ display: 'none' }} />
           </div>
           <div style={styles.studentInfo}>
             <h3 style={styles.studentName}>{formData.nama}</h3>
@@ -468,6 +542,15 @@ const EditStudent = () => {
               <span style={styles.statusBadge(formData.isBlocked)}>
                 {formData.isBlocked ? '🚫 Blokir' : '✅ Aktif'}
               </span>
+              {fotoDiubahOlehSiswa && (
+                <button onClick={handleResetJatahFoto} style={{
+                  display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700,
+                  padding: '3px 8px', borderRadius: 10, border: '1px solid #ddd6fe', background: '#f5f3ff',
+                  color: '#5b21b6', cursor: 'pointer',
+                }}>
+                  <RotateCcw size={11} /> Buka jatah ganti foto siswa
+                </button>
+              )}
             </div>
           </div>
         </div>

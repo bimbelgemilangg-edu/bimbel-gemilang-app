@@ -138,6 +138,9 @@ export const uploadElearningFile = async (file, customPath = 'materi') => {
       } else {
         folderPath = 'dokumen/';
       }
+    } else if (customPath === 'foto-siswa') {
+      // 🔥 BARU: folder khusus buat foto Kartu Identitas Siswa Digital
+      folderPath = 'foto-siswa/';
     }
 
     // 🔥 BUILD FILE PATH YANG AMAN
