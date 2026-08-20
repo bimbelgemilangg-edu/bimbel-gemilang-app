@@ -200,9 +200,17 @@ const LoginSiswa = () => {
           localStorage.setItem("isSiswaLoggedIn", "true");
           localStorage.setItem("role", "siswa");
           
-          // ⭐ STUDENT ID ASLI (format STD-2024-0001)
+          // ⭐ STUDENT ID ASLI (format STD-2024-0001) -- dipakai buat TAMPILAN saja
           localStorage.setItem("studentId", studentId);
           localStorage.setItem("studentNim", studentId);  // ← NIM PAKAI STUDENT ID ASLI
+
+          // 🔥 BARU: simpan JUGA docId Firestore yang asli (misal
+          // "7Hyjs2gL0BzSSzOS7ajF"). Ini WAJIB dipakai tiap kali baca/tulis
+          // ke collection "students" -- karena docId INI yang dipakai admin
+          // di /admin/students/edit/{docId}, BUKAN studentId (NIS) di atas.
+          // Kalau ketuker, data nyasar ke dokumen "hantu" yang gak pernah
+          // kebuka admin (ini penyebab foto & alamat gak sinkron sebelumnya).
+          localStorage.setItem("studentDocId", docId);
           
           localStorage.setItem("studentName", studentData.nama || "Siswa");
           localStorage.setItem("studentKelas", studentData.kelasSekolah || "");

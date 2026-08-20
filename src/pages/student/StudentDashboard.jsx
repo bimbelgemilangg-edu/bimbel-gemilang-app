@@ -226,6 +226,10 @@ const StudentDashboard = () => {
 
   const [studentName, setStudentName] = useState(() => localStorage.getItem('studentName') || 'Siswa');
   const [studentId, setStudentId] = useState(null);
+  // 🔥 BARU: docId Firestore yang ASLI (beda dari studentId/NIS di atas).
+  // Ini yang dipakai buat getDoc/setDoc ke collection "students" supaya
+  // nyambung ke dokumen yang sama persis dengan yang dibuka admin.
+  const [studentDocId, setStudentDocId] = useState(null);
   const [studentProfile, setStudentProfile] = useState(null);
   const [studentKelas, setStudentKelas] = useState(() => localStorage.getItem('studentKelas') || '');
   const [studentProgram, setStudentProgram] = useState(() => localStorage.getItem('studentProgram') || 'Reguler');
@@ -315,10 +319,12 @@ const StudentDashboard = () => {
   useEffect(() => {
     const storedId = localStorage.getItem('studentId');
     const storedName = localStorage.getItem('studentName');
+    const storedDocId = localStorage.getItem('studentDocId'); // 🔥 BARU
     const isLoggedIn = localStorage.getItem('isSiswaLoggedIn') === 'true';
 
     if (isLoggedIn && storedId) {
       setStudentId(storedId);
+      setStudentDocId(storedDocId || null); // kosong kalau login sebelum fix ini
       setStudentName(storedName || "Siswa");
       setAuthReady(true);
       return;
@@ -347,7 +353,26 @@ const StudentDashboard = () => {
         const todayStr = getSmartDateString(new Date());
         const periode = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
 
-        const sSnap = await getDoc(doc(db, "students", studentId)).catch(() => null);
+        // 🔥 FIX UTAMA: tentukan docId Firestore yang BENAR sebelum fetch.
+        // Kalau sesi login sudah simpan studentDocId (login setelah fix ini),
+        // langsung pakai itu. Kalau belum (sesi lama), cari dulu docId-nya
+        // dengan query field `studentId` (NIS) -- lalu simpan biar gak perlu
+        // query ulang tiap buka dashboard.
+        let resolvedDocId = studentDocId;
+        if (!resolvedDocId) {
+          const found = await getDocs(
+            query(collection(db, "students"), where("studentId", "==", studentId), limit(1))
+          ).catch(() => null);
+          if (found && !found.empty) {
+            resolvedDocId = found.docs[0].id;
+            setStudentDocId(resolvedDocId);
+            localStorage.setItem('studentDocId', resolvedDocId);
+          } else {
+            resolvedDocId = studentId; // fallback terakhir, kemungkinan doc ID == NIS
+          }
+        }
+
+        const sSnap = await getDoc(doc(db, "students", resolvedDocId)).catch(() => null);
         let kelasVal = studentKelas, programVal = studentProgram, nimVal = studentNim || studentId;
         // 🔥 BERUBAH: mapel yang beneran diambil siswa (buat strategi harga 1
         // mapel / 2 mapel / paket lengkap) sekarang HANYA dari field manual
@@ -1062,7 +1087,7 @@ const StudentDashboard = () => {
             <IdCard size={17} color="#673ab7" /> Kartu Identitas Siswa
           </h3>
           <StudentDigitalCard
-            studentId={studentId}
+            studentId={studentDocId || studentId}
             nama={studentName}
             nim={studentNim}
             student={studentProfile}
