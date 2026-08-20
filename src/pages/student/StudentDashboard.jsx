@@ -1063,8 +1063,10 @@ const StudentDashboard = () => {
           </h3>
           <StudentDigitalCard
             studentId={studentId}
+            nama={studentName}
+            nim={studentNim}
             student={studentProfile}
-            onUpdated={(patch) => setStudentProfile((prev) => ({ ...prev, ...patch }))}
+            onUpdated={(patch) => setStudentProfile((prev) => ({ ...(prev || {}), ...patch }))}
           />
         </div>
       </div>

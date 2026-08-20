@@ -1,7 +1,7 @@
 // src/components/StudentDigitalCard.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import QRCode from 'qrcode';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { uploadElearningFile } from '../services/uploadService';
 import { Camera, X, IdCard } from 'lucide-react';
@@ -32,28 +32,30 @@ const generateBarcodeBars = (seedStr, count = 38) => {
   return bars;
 };
 
-const StudentDigitalCard = ({ studentId, student, onUpdated }) => {
+const StudentDigitalCard = ({ studentId, nama, nim, student, onUpdated }) => {
   const [flipped, setFlipped] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const fileInputRef = useRef(null);
 
-  const {
-    nama = 'Siswa',
-    fotoUrl = null,
-    fotoDiubahOlehSiswa = false, // 🔥 flag: sudah pakai jatah ganti foto sendiri?
-  } = student || {};
-  // 🔥 alamat disimpan di dalam field "ortu" (lihat EditStudent.jsx), bukan
-  // di top-level -- disesuaikan biar konsisten dengan struktur data asli.
+  // 🔥 FIX: nama & NIM SEKARANG diambil dari props eksplisit (nama, nim)
+  // yang dikirim dari state dashboard yang sudah pasti benar (studentName,
+  // studentNim -- diisi dari localStorage saat login). Sebelumnya kartu ini
+  // cuma baca dari `student.nama` / `student.studentId` hasil fetch
+  // Firestore terpisah -- kalau fetch itu gagal ketemu dokumennya, kartu
+  // jatuh ke default "Siswa" walau bagian dashboard lain tetap tampil benar.
+  const displayNama = nama || student?.nama || 'Siswa';
+  const displayNim = nim || student?.studentId || '';
+  const fotoUrl = student?.fotoUrl || null;
+  const fotoDiubahOlehSiswa = !!student?.fotoDiubahOlehSiswa;
   const alamat = student?.ortu?.alamat || student?.alamat || '';
 
-  const nim = student?.studentId || studentId || '';
-  const bars = generateBarcodeBars(nim);
+  const bars = generateBarcodeBars(displayNim);
 
   useEffect(() => {
     let active = true;
-    QRCode.toDataURL(`GEMILANG-SISWA:${nim}`, {
+    QRCode.toDataURL(`GEMILANG-SISWA:${displayNim}`, {
       width: 160,
       margin: 0,
       color: { dark: '#1e1b4b', light: '#ffffff' },
@@ -61,7 +63,7 @@ const StudentDigitalCard = ({ studentId, student, onUpdated }) => {
       .then((url) => { if (active) setQrDataUrl(url); })
       .catch(() => {});
     return () => { active = false; };
-  }, [nim]);
+  }, [displayNim]);
 
   const handlePickFile = (e) => {
     e.stopPropagation(); // biar gak ikut mem-flip kartu
@@ -72,7 +74,11 @@ const StudentDigitalCard = ({ studentId, student, onUpdated }) => {
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = ''; // reset biar bisa pilih file yang sama lagi kalau gagal
-    if (!file || !studentId) return;
+    if (!file || !studentId) {
+      setErrorMsg('ID siswa tidak ditemukan, hubungi admin.');
+      setTimeout(() => setErrorMsg(''), 3000);
+      return;
+    }
 
     if (!file.type.startsWith('image/')) {
       setErrorMsg('File harus berupa gambar.');
@@ -86,11 +92,16 @@ const StudentDigitalCard = ({ studentId, student, onUpdated }) => {
       const result = await uploadElearningFile(file, 'foto-siswa');
       if (!result.success) throw new Error(result.error || 'Upload gagal');
 
-      await updateDoc(doc(db, 'students', studentId), {
+      // 🔥 FIX: pakai setDoc(..., {merge:true}) bukan updateDoc. updateDoc
+      // akan ERROR ("No document to update") kalau dokumen students/{id}
+      // ternyata belum ada / ID-nya gak cocok persis -- itu salah satu
+      // penyebab foto gagal ke-upload sebelumnya. setDoc+merge aman dipakai
+      // baik dokumennya sudah ada maupun belum.
+      await setDoc(doc(db, 'students', studentId), {
         fotoUrl: result.downloadURL,
         fotoDiubahOlehSiswa: true, // 🔒 jatah siswa terpakai, selanjutnya cuma admin
         fotoUpdatedAt: new Date().toISOString(),
-      });
+      }, { merge: true });
 
       onUpdated?.({ fotoUrl: result.downloadURL, fotoDiubahOlehSiswa: true });
     } catch (err) {
@@ -144,15 +155,15 @@ const StudentDigitalCard = ({ studentId, student, onUpdated }) => {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {fotoUrl ? (
-                  <img src={fotoUrl} alt={nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={fotoUrl} alt={displayNama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
                   <span style={{ fontSize: 22, fontWeight: 800, color: '#fcd34d' }}>
-                    {nama.charAt(0).toUpperCase()}
+                    {displayNama.charAt(0).toUpperCase()}
                   </span>
                 )}
               </div>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 15 }}>{nama}</div>
+                <div style={{ fontWeight: 700, fontSize: 15 }}>{displayNama}</div>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)', marginTop: 4, lineHeight: 1.4 }}>
                   {alamat || 'Alamat belum diisi'}
                 </div>

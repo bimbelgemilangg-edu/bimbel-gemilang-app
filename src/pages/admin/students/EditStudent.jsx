@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
-import { doc, getDoc, updateDoc, collection, getDocs, deleteField } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc, collection, getDocs, deleteField } from "firebase/firestore";
 import { uploadElearningFile } from '../../../services/uploadService';
 import { 
   ArrowLeft, Save, User, BookOpen, Calendar, CreditCard, 
@@ -284,7 +284,7 @@ const EditStudent = () => {
       const result = await uploadElearningFile(file, 'foto-siswa');
       if (!result.success) throw new Error(result.error || 'Upload gagal');
 
-      await updateDoc(doc(db, 'students', id), { fotoUrl: result.downloadURL });
+      await setDoc(doc(db, 'students', id), { fotoUrl: result.downloadURL }, { merge: true });
       setFotoUrl(result.downloadURL);
       showAlert('✅ Foto siswa berhasil diperbarui');
     } catch (err) {
@@ -300,7 +300,7 @@ const EditStudent = () => {
   const handleResetJatahFoto = async () => {
     if (!id) return;
     try {
-      await updateDoc(doc(db, 'students', id), { fotoDiubahOlehSiswa: false });
+      await setDoc(doc(db, 'students', id), { fotoDiubahOlehSiswa: false }, { merge: true });
       setFotoDiubahOlehSiswa(false);
       showAlert('✅ Siswa bisa ganti foto sendiri sekali lagi');
     } catch (err) {
