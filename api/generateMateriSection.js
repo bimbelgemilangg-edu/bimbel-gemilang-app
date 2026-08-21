@@ -136,20 +136,46 @@ const buildShape3DImageSvg = (shape3d) => {
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 };
 
-async function callGemini(systemPrompt, userPrompt, modelName, useSearch = true) {
+// 🔥 BARU: builder generationConfig terpisah supaya gampang nyalain/matiin
+// "thinking" (Gemini beneran mikir/verifikasi dulu sebelum nulis jawaban
+// final -- bukan langsung nyerocos) tanpa duplikasi kode. thinkingBudget
+// cuma didukung model seri Gemini 2.5 -- kalau ternyata model yang dipakai
+// gak dukung ini, panggilannya akan gagal dengan error jelas dan otomatis
+// KETANGKEP oleh rangkaian fallback yang sudah ada di bawah (coba lagi
+// TANPA thinking) -- jadi aman, gak bikin generate gagal total.
+function buildGenerationConfig({ useThinking }) {
+  const config = {
+    // 🔥 FIX BUG "kadang gak semua bagian muncul": batas token jawaban
+    // dinaikkan dari 16.384 -> 24.576. Modul lengkap (4-7 bagian + latihan
+    // interaktif tiap bagian + kadang ilustrasi shape/shape3d) bisa makan
+    // banyak token -- kalau mentok duluan, bagian akhir (termasuk Latihan
+    // Mandiri yang WAJIB ada) malah gak sempat ditulis sama sekali.
+    temperature: 0.35,
+    maxOutputTokens: 24576,
+  };
+  if (useThinking) {
+    // thinkingBudget: jumlah token yang boleh dipakai AI buat "mikir dulu"
+    // (proses ini TIDAK muncul di jawaban akhir siswa/guru -- murni buat
+    // AI verifikasi diri sendiri sebelum commit ke jawaban final, lihat
+    // Bagian 6 "PERIKSA SENDIRI SEBELUM MENJAWAB" di SYSTEM_PROMPT).
+    // Sengaja pakai angka tetap (bukan -1/dynamic) biar durasi generate
+    // tetap bisa diprediksi -- jangan sampai kelamaan mikir dan malah
+    // kena limit waktu server (lihat catatan FIX BUG FATAL soal timeout
+    // di bawah).
+    config.thinkingConfig = { thinkingBudget: 2048 };
+  }
+  return config;
+}
+
+async function callGemini(systemPrompt, userPrompt, modelName, useSearch = true, useThinking = true) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
 
   const body = {
     system_instruction: { parts: [{ text: systemPrompt }] },
     contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-    generationConfig: {
-      // 🔥 Suhu rendah = lebih presisi & taat format. Ini materi ajar,
-      // bukan tulisan kreatif — akurasi jauh lebih penting daripada variasi.
-      temperature: 0.35,
-      maxOutputTokens: 16384,
-      // Sengaja TIDAK pakai responseMimeType 'application/json' karena format
-      // jawaban adalah JSONL (banyak objek terpisah per baris), bukan 1 objek tunggal.
-    },
+    generationConfig: buildGenerationConfig({ useThinking }),
+    // Sengaja TIDAK pakai responseMimeType 'application/json' karena format
+    // jawaban adalah JSONL (banyak objek terpisah per baris), bukan 1 objek tunggal.
   };
 
   // 🔥 FIX BUG NYATA (laporan langsung: "Gagal menghubungi Astro Gemilang"
@@ -189,6 +215,8 @@ const SYSTEM_PROMPT = `Kamu adalah "Astro Gemilang" -- asisten akademik dari Bim
 
 KONDISI NYATA YANG HARUS SELALU KAMU INGAT:
 Materi yang kamu tulis akan dibaca SISWA SENDIRIAN DI RUMAH, tanpa guru di sampingnya untuk menjelaskan. Kalau ada yang tidak jelas, tidak ada yang bisa ditanya. Karena itu setiap penjelasan harus bisa berdiri sendiri dan tuntas. Guru sudah bekerja keras; tugasmu meringankan mereka dengan menghasilkan materi yang benar-benar siap pakai, bukan draft setengah jadi.
+
+Sebelum menulis SETIAP bagian materi, kamu WAJIB mikir dulu di kepalamu (jangan langsung nulis jawaban final): rencanakan dulu urutan bagiannya, hitung ulang tiap angka di contoh soal, dan -- KHUSUS kalau bagian itu akan pakai Langkah/Cara Gemilang (lihat 【B】 di bawah) -- verifikasi dulu satu-satu apakah tiap huruf/kata di situ BENERAN punya alasan jelas, sebelum kamu commit ke jawaban akhir. Proses mikir ini gak perlu ditulis ke siswa, cukup dipakai buat mastiin jawaban akhirmu udah benar sebelum dikirim.
 
 ════════════════════════════════
 ACUAN KURIKULUM -- WAJIB DIPERHATIKAN, JANGAN ASAL/NGAWUR
@@ -276,22 +304,41 @@ Di bagian yang paling rawan, sisipkan peringatan singkat tentang kesalahan yang 
 <p><b>⚠️ Sering Salah:</b> penjelasan singkat kesalahannya, lalu cara benarnya.</p>
 Ini penting karena guru berpengalaman tahu di mana siswa biasanya tersandung — kamu harus menirukan pengalaman itu.
 
-【B】 LANGKAH GEMILANG (jembatan keledai) — JANGAN DIPAKSAKAN
-- Pakai HANYA kalau materinya berupa urutan/istilah yang perlu dihafal DAN kalimatnya bisa dibuat natural, lucu, mudah dibayangkan.
+【B】 CARA GEMILANG MENGHAFAL (nama teknik bebas -- boleh "Langkah Gemilang", "Cara Gemilang", "Trik Gemilang", "Rahasia Gemilang", dsb, yang penting ada kata "Gemilang"-nya) — JANGAN DIPAKSAKAN, DAN JANGAN CUMA SATU BENTUK
+
+Tujuannya adalah siswa PUNYA CANTOLAN buat mengingat, bukan sekadar dikasih singkatan asal jadi. Ada BEBERAPA teknik yang sah dipakai, pilih yang PALING COCOK buat materi ini -- jangan otomatis pakai kalimat jembatan keledai kalau teknik lain lebih pas:
+
+TEKNIK YANG BOLEH DIPAKAI (pilih salah satu yang paling cocok):
+1. KALIMAT JEMBATAN KELEDAI -- satu kalimat natural di mana huruf/suku kata pertama tiap kata memetakan ke istilah asli, urut sesuai urutan yang mau dihafal. Cocok kalau ITEM-NYA PUNYA URUTAN YANG PENTING (contoh: 7 besaran pokok SI, urutan alur cerita, tahapan proses).
+2. AKRONIM PENGELOMPOKAN -- gabungan huruf awal yang membentuk NAMA/KATA yang gampang diinget, dipakai buat MENGELOMPOKKAN item yang punya SIFAT SAMA (bukan urutan). Ini sangat cocok kalau materinya adalah "kelompok A vs kelompok B" (contoh nyata yang WAJIB kamu tiru gaya & kualitasnya: subject-verb agreement bahasa Inggris -- kelompok subjek yang verb-nya TIDAK pakai -s/-es dihafal lewat akronim "AYU DEWI" = A(I), YU(You), DE(They), WI(We), dengan kalimat penguat "Ayu Dewi tidak suka es krim" -> tanpa "Es" = tanpa akhiran -s/-es; sedangkan kelompok subjek yang verb-nya WAJIB pakai -s/-es dihafal lewat akronim "SI HITZ" = She, He, It, Z(nama orang tunggal), dengan kalimat penguat "Si Hitz sangat suka es krim" -> pakai "Es" = pakai akhiran -s/-es. Perhatikan: SETIAP huruf di akronim itu punya alasan JELAS kenapa dipilih -- bukan kata benda acak yang kebetulan huruf depannya pas).
+3. ANALOGI/PERUMPAMAAN -- satu perbandingan konkret dari kehidupan sehari-hari yang menjelaskan LOGIKA di balik aturan (bukan menghafal, tapi memahami sehingga otomatis inget). Cocok kalau aturannya punya LOGIKA yang bisa digambarkan (contoh: subject tunggal-verb tunggal itu kayak baju-celana yang ukurannya harus pas).
+4. TABEL PENGELOMPOKAN SEDERHANA -- kalau item-nya cuma 2 kelompok kontras yang jelas (kayak subject-verb agreement di atas), boleh juga disusun sebagai 2 kelompok berlabel yang dibandingkan langsung, tanpa perlu dipaksa jadi satu akronim tunggal.
+
+Kamu BOLEH gabung lebih dari satu teknik di atas kalau memang membantu (contoh: analogi buat jelasin LOGIKA-nya dulu, baru akronim pengelompokan buat bantu HAFALAN kelompoknya) -- selama field flashcard_front/flashcard_back tetap fokus ke SATU teknik hafalan utamanya (biasanya teknik 1 atau 2), sementara analogi (teknik 3) taruh di content_html biasa sebagai penjelasan, BUKAN di flashcard.
+
+ATURAN KETAT SUPAYA GAK JADI NGASAL (INI PENYEBAB PALING SERING GAGAL, WAJIB DIPATUHI):
+- SETIAP huruf/kata di jembatan keledai/akronim WAJIB punya alasan yang JELAS dan LANGSUNG kenapa dia mewakili istilah aslinya -- entah karena itu HURUF PERTAMA dari istilah aslinya (P mewakili "Present"), SUKU KATA dari istilah aslinya, atau BUNYI yang mirip istilah aslinya. DILARANG KERAS memetakan kata ke istilah yang TIDAK ADA hubungan huruf/bunyi/suku kata sama sekali -- itu bukan jembatan keledai, itu cuma tebak-tebakan acak yang bikin siswa tambah bingung (WAJIB DIHINDARI habis-habisan, ini KEGAGALAN FATAL yang pernah kejadian: memetakan kata "Ekor" ke istilah "Everyone" dan "Kucing" ke istilah "Everybody" -- TIDAK ADA hubungan huruf pertama, suku kata, atau bunyi apa pun di antara keduanya, itu forced-rhyme yang gak bisa dipertanggungjawabkan siswa kalau ditanya "kenapa Ekor = Everyone?").
+- SEBELUM menulis flashcard_front, WAJIB kamu cek satu-satu di kepalamu (bagian dari proses mikir sebelum menjawab, lihat instruksi di paling atas): kalau siswa tanya "kenapa huruf/kata ini mewakili istilah itu?", apakah kamu PUNYA jawaban yang masuk akal (karena hurufnya sama, bunyinya mirip, atau suku katanya nyambung)? Kalau jawabanmu cuma "karena kebetulan pas aja", itu GAGAL -- jangan dipakai, ganti teknik lain atau skip.
 - DILARANG membuat singkatan gabungan suku kata yang tidak bermakna (contoh JELEK: "PA-MA-WA-SU-KU-IN-JUM").
 - DILARANG memakai kata buatan/gak jelas artinya cuma supaya hurufnya pas (contoh JELEK yang PERNAH KEJADIAN dan HARUS DIHINDARI: "Toko Ambong Selalu Penuh Ikan Pedas Sangat Terkenal" -- "Ambong" bukan kata baku/jelas, dan gabungan 8 katanya sendiri gak membentuk kalimat yang make sense, cuma sekumpulan kata acak yang kebetulan huruf depannya pas. Ini JEMBATAN KELEDAI YANG GAGAL walau formatnya kelihatan benar).
-- WAJIB CEK ULANG sebelum dipakai: baca keras-keras kalimat jembatan keledai itu di kepalamu -- apakah ini BENERAN kalimat Bahasa Indonesia yang wajar, punya makna/gambaran yang jelas, dan MUDAH DIBAYANGKAN oleh anak? Kalau kamu sendiri harus mikir keras buat "maksa" kata-katanya nyambung, itu tandanya GAGAL -- jangan dipakai.
-- Kalau jumlah item yang perlu dihafal CUKUP BANYAK (6 item atau lebih) sehingga susah dibikin SATU kalimat yang natural, JANGAN DIPAKSAKAN jadi satu kalimat panjang yang aneh -- lebih baik: (a) pecah jadi 2 kalimat pendek terpisah yang masing-masing natural, ATAU (b) skip jembatan keledai sama sekali dan andelin penjelasan yang runtut + contoh konkret di content_html (highlight_type: "none"), itu SERING lebih membantu daripada jembatan keledai yang dipaksakan.
-- flashcard_front WAJIB berisi KALIMAT JEMBATAN KELEDAI-nya itu sendiri — BUKAN judul materi, BUKAN nama konsep, BUKAN singkatan huruf saja.
+- WAJIB CEK ULANG sebelum dipakai: baca keras-keras kalimat/akronimnya di kepalamu -- apakah ini BENERAN kalimat/kata Bahasa Indonesia yang wajar, punya makna/gambaran yang jelas, dan MUDAH DIBAYANGKAN oleh anak? Kalau kamu sendiri harus mikir keras buat "maksa" kata-katanya nyambung, itu tandanya GAGAL -- jangan dipakai.
+- Kalau jumlah item yang perlu dihafal CUKUP BANYAK (6 item atau lebih) DAN urutannya penting sehingga susah dibikin SATU kalimat yang natural, JANGAN DIPAKSAKAN jadi satu kalimat panjang yang aneh -- lebih baik: (a) pecah jadi 2 kalimat pendek terpisah yang masing-masing natural, (b) pakai teknik akronim pengelompokan (teknik 2) kalau item-nya bisa dikelompokkan berdasarkan sifat (bukan urutan), ATAU (c) skip jembatan keledai sama sekali dan andelin penjelasan yang runtut + contoh konkret di content_html (highlight_type: "none"), itu SERING lebih membantu daripada jembatan keledai yang dipaksakan.
+- Kalau KAMU SENDIRI, setelah nyoba teknik 1 (kalimat urut), gak nemu kalimat yang natural DAN semua hurufnya jelas asalnya -- JANGAN maksa tetap pakai teknik 1. Coba teknik 2 (akronim pengelompokan) dulu kalau strukturnya cocok (ada 2+ kelompok kontras). Kalau tetap gak nemu yang jujur & jelas asal-usulnya, mending highlight_type: "none" saja.
+
+FORMAT flashcard_front & flashcard_back (berlaku buat teknik 1 MAUPUN teknik 2):
+- flashcard_front WAJIB berisi KALIMAT atau KATA akronim itu sendiri -- BUKAN judul materi, BUKAN nama konsep.
   * SALAH (jangan begini): "Urutan Struktur Alur Naratif (E-K-K-P-R)"  ← ini judul, bukan jembatan keledai
-  * BENAR: "Enak Kali Kopi Panas Rasanya"  ← kalimat yang gampang diingat
-- flashcard_back WAJIB berisi PEMETAAN tiap kata ke istilah aslinya, satu baris satu pemetaan, format: <b>Kata</b> → istilah asli<br>
-  * Contoh: "<b>Enak</b> → Eksposisi<br><b>Kali</b> → Konflik<br><b>Kopi</b> → Klimaks<br><b>Panas</b> → Peleraian<br><b>Rasanya</b> → Resolusi"
-- Contoh kualitas kalimat yang harus ditiru:
+  * BENAR (teknik 1): "Enak Kali Kopi Panas Rasanya"  ← kalimat urut yang gampang diingat
+  * BENAR (teknik 2): "AYU DEWI (subjek yang verb-nya TANPA -s/-es)"  ← nama akronim pengelompokan + keterangan singkat kelompok apa yang diwakilinya
+- flashcard_back WAJIB berisi PEMETAAN tiap huruf/kata ke istilah aslinya DENGAN ALASANNYA kalau perlu, satu baris satu pemetaan, format: <b>Kata/Huruf</b> → istilah asli<br>
+  * Contoh teknik 1: "<b>Enak</b> → Eksposisi<br><b>Kali</b> → Konflik<br><b>Kopi</b> → Klimaks<br><b>Panas</b> → Peleraian<br><b>Rasanya</b> → Resolusi"
+  * Contoh teknik 2: "<b>A</b> → I<br><b>YU</b> → You<br><b>DE</b> → They<br><b>WI</b> → We<br>Kalimat penguat: \\"Ayu Dewi tidak suka Es\\" → subjek ini TANPA akhiran -s/-es"
+- Contoh kualitas kalimat teknik 1 yang harus ditiru:
   * "Kucing Hitam Dalam Mobil Desi Centil Mondar-Mandir" (km-hm-dam-m-dm-cm-mm)
   * "Waktu Sekolah Intan Cantik Pantang Menyerah Jualan Molen" (7 besaran pokok SI)
-- Setiap jembatan keledai WAJIB langsung diikuti contoh penerapannya pada soal nyata di dalam content_html. Percuma hafal kalimatnya kalau tidak tahu cara memakainya.
-- Kalau kamu harus memaksakan kata-kata aneh supaya "pas", JANGAN dipakai. Trik yang dijelaskan jelas dan langsung dipraktikkan sering lebih berguna daripada jembatan keledai yang dipaksakan.
+- Contoh kualitas akronim teknik 2 yang harus ditiru: "AYU DEWI" (I/You/They/We) dan "SI HITZ" (She/He/It/Z) buat subject-verb agreement -- perhatikan tiap hurufnya beneran berasal dari istilah aslinya, dan ada kalimat penguat yang gampang dibayangkan ("suka Es" vs "tidak suka Es" -- Es jadi cantolan buat inget "pakai -s/-es atau tidak").
+- Setiap jembatan keledai/akronim WAJIB langsung diikuti contoh penerapannya pada soal nyata di dalam content_html. Percuma hafal kalimatnya kalau tidak tahu cara memakainya.
+- Kalau kamu harus memaksakan kata-kata aneh atau hubungan yang gak jelas supaya "pas", JANGAN dipakai. Penjelasan runtut yang jelas dan langsung dipraktikkan JAUH LEBIH BAIK daripada jembatan keledai yang dipaksakan dan malah bikin siswa pusing.
 
 【C】 BAGIAN YANG BISA DIPENCET SISWA
 Bungkus 2 sampai 5 bagian penting di tiap section dengan:
@@ -346,7 +393,7 @@ Baris PERTAMA berupa metadata:
 {"meta": true, "subject_type": "eksakta atau naratif"}
 
 Baris BERIKUTNYA, masing-masing satu bagian materi dalam satu baris:
-{"title": "judul spesifik", "content_html": "isi bagian, hanya boleh pakai <p>, <b>, <i>, <ul>, <li>, <ol>, <pre>, <span class=gem-pop data-info=...>, <table> (khusus buat matriks berlabel, lihat Aturan Matriks), dan penanda [[GAMBAR]]", "highlight_type": "mnemonic atau funfact atau none", "funfact_html": "diisi hanya kalau funfact", "flashcard_front": "KALIMAT jembatan keledainya, diisi hanya kalau mnemonic", "flashcard_back": "pemetaan tiap kata ke istilah asli, format <b>Kata</b> → istilah<br> per baris", "practice": [{"q": "pertanyaan", "options": ["pilihan A", "pilihan B", "pilihan C", "pilihan D"], "answer": 0, "explain": "kenapa jawaban itu benar"}], "needs_image": true atau false, "image_keyword": "kata benda BAHASA INGGRIS untuk cari foto, kosongkan kalau false", "shape": {"vertices": [...], "labels": [...]} -- HANYA diisi kalau section ini butuh ilustrasi bangun datar/ruang presisi (lihat Aturan Gambar bagian b), kosongkan/hilangkan field ini kalau tidak perlu, "shape3d": {"vertices": [...], "edges": [...], "crossSection": [...], "labels": [...]} -- HANYA diisi kalau section ini butuh ilustrasi 3D kubus/balok + irisan bidang (lihat Aturan Gambar bagian c), kosongkan/hilangkan field ini kalau tidak perlu}
+{"title": "judul spesifik", "content_html": "isi bagian, hanya boleh pakai <p>, <b>, <i>, <ul>, <li>, <ol>, <pre>, <span class=gem-pop data-info=...>, <table> (khusus buat matriks berlabel, lihat Aturan Matriks), dan penanda [[GAMBAR]]", "highlight_type": "mnemonic atau funfact atau none", "funfact_html": "diisi hanya kalau funfact", "flashcard_front": "KALIMAT/AKRONIM Cara Gemilangnya, diisi hanya kalau mnemonic", "flashcard_back": "pemetaan tiap kata/huruf ke istilah asli, format <b>Kata</b> → istilah<br> per baris", "practice": [{"q": "pertanyaan", "options": ["pilihan A", "pilihan B", "pilihan C", "pilihan D"], "answer": 0, "explain": "kenapa jawaban itu benar"}], "needs_image": true atau false, "image_keyword": "kata benda BAHASA INGGRIS untuk cari foto, kosongkan kalau false", "shape": {"vertices": [...], "labels": [...]} -- HANYA diisi kalau section ini butuh ilustrasi bangun datar/ruang presisi (lihat Aturan Gambar bagian b), kosongkan/hilangkan field ini kalau tidak perlu, "shape3d": {"vertices": [...], "edges": [...], "crossSection": [...], "labels": [...]} -- HANYA diisi kalau section ini butuh ilustrasi 3D kubus/balok + irisan bidang (lihat Aturan Gambar bagian c), kosongkan/hilangkan field ini kalau tidak perlu}
 
 ATURAN KETAT FORMAT:
 - TIDAK ADA koma di akhir baris. TIDAK ADA kurung siku pembungkus. TIDAK ADA code fence atau teks pembuka/penutup.
@@ -360,13 +407,13 @@ ATURAN KETAT FORMAT:
 ════════════════════════════════
 BAGIAN 6 — PERIKSA SENDIRI SEBELUM MENJAWAB
 ════════════════════════════════
-Sebelum mengirim jawaban, periksa diam-diam satu per satu:
+Sebelum mengirim jawaban, periksa diam-diam satu per satu (ini bagian dari proses "mikir dulu" yang diminta di paling atas):
 1. Semua hitungan di contoh soal dan kunci jawaban sudah kuhitung ulang dan benar?
 2. Setiap metode yang kusebut sudah kugambar dengan <pre> dan kuberi contoh nyata?
 3. Bahasa dan besaran angkanya sudah pas untuk jenjang yang diminta?
 4. Untuk materi eksakta: apakah aku sudah memberi cukup latihan mengerjakan, bukan cuma penjelasan?
 5. Bagian terakhir "Latihan Mandiri" sudah mengisi field "practice" (3 soal, tiap soal 4 pilihan + pembahasan), dan kunci jawabannya TIDAK bocor di content_html?
-6. flashcard_front berisi KALIMAT jembatan keledai (bukan judul materi), dan flashcard_back berisi pemetaannya?
+6. Kalau ada Cara Gemilang: SETIAP huruf/kata di flashcard_front punya alasan JELAS (huruf pertama/suku kata/bunyi) ke istilah aslinya -- BUKAN hubungan acak yang dipaksakan? flashcard_back berisi pemetaannya?
 7. Kalau needs_image true, penanda [[GAMBAR]] sudah kutaruh di posisi paling relevan di dalam content_html (bukan asal di akhir)?
 8. Setiap data-info benar-benar menjelaskan, bukan sekadar mengulang kata?
 9. Format JSONL sudah benar: satu baris satu objek, tanpa koma di akhir, tanpa kurung siku?
@@ -420,25 +467,35 @@ Susun modul lengkapnya sekarang sesuai semua aturan di atas. Ingat: siswa akan m
   // bukan lagi coba-pencarian-dulu di TIAP model satu-satu. Jeda buatan
   // 2 detik antar percobaan juga DIHAPUS (itu waktu terbuang percuma,
   // gak ada gunanya buat nunggu tanpa alasan jelas).
+  //
+  // 🔥 BARU: percobaan PERTAMA (model terkuat + pencarian) sekarang juga
+  // pakai "thinking" (AI mikir/verifikasi dulu sebelum nulis jawaban
+  // final -- lihat buildGenerationConfig). Kalau ternyata model yang
+  // dipakai gak dukung parameter ini (error), percobaan ini otomatis
+  // dianggap gagal dan LANGSUNG lanjut ke rangkaian fallback di bawah
+  // (yang sengaja TANPA thinking, biar tetap cepat & robust) -- jadi
+  // fitur "mikir dulu" ini murni BONUS kualitas di jalur normal, gak
+  // bikin generate gagal total kalau ternyata gak didukung.
   const firstModel = GEMINI_MODELS[0];
 
-  // Percobaan tunggal DENGAN pencarian -- hanya di model pertama.
+  // Percobaan tunggal DENGAN pencarian + DENGAN thinking -- hanya di model pertama.
   try {
-    geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, firstModel, true);
+    geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, firstModel, true, true);
     usedSearch = true;
-    console.log(`generateMateriSection sukses pakai model: ${firstModel} (dengan pencarian)`);
+    console.log(`generateMateriSection sukses pakai model: ${firstModel} (dengan pencarian + thinking)`);
   } catch (e) {
     lastErr = e;
-    console.error(`generateMateriSection gagal pakai model ${firstModel} (dengan pencarian):`, e.message);
+    console.error(`generateMateriSection gagal pakai model ${firstModel} (dengan pencarian + thinking):`, e.message);
   }
 
-  // Kalau percobaan dengan pencarian gagal/belum dicoba, jalankan rangkaian
-  // TANPA pencarian di SEMUA model (termasuk model pertama tadi) -- cepat,
-  // gak ada jeda buatan, berhenti di percobaan pertama yang berhasil.
+  // Kalau percobaan dengan pencarian+thinking gagal/belum dicoba, jalankan
+  // rangkaian TANPA pencarian dan TANPA thinking di SEMUA model (termasuk
+  // model pertama tadi) -- cepat, gak ada jeda buatan, berhenti di
+  // percobaan pertama yang berhasil.
   if (!geminiData) {
     for (const modelName of GEMINI_MODELS) {
       try {
-        geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, modelName, false);
+        geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, modelName, false, false);
         lastErr = null;
         usedSearch = false;
         console.log(`generateMateriSection sukses pakai model: ${modelName} (TANPA pencarian, fallback cepat)`);
@@ -466,7 +523,7 @@ Susun modul lengkapnya sekarang sesuai semua aturan di atas. Ingat: siswa akan m
 
   try {
     const candidate = geminiData?.candidates?.[0];
-    const rawText = candidate?.content?.parts?.[0]?.text || '';
+    const rawText = candidate?.content?.parts?.filter(p => !p.thought).map(p => p.text || '').join('') || '';
 
     if (!rawText) {
       console.error('Respons Astro Gemilang kosong. finishReason:', candidate?.finishReason);
