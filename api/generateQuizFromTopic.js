@@ -28,28 +28,29 @@
 //       yang bisa difoto (dicari lewat Wikimedia di frontend), BUKAN
 //       diagram teknis.
 
+// Model yang dipakai untuk GENERATE OFFLINE. 3.6 Flash saat ini tercatat
+// sebagai model stable dan tersedia di Free Tier. Untuk menghindari error
+// karena alias/model lama, jangan lagi pakai 2.5-flash-lite sebagai default.
 const GEMINI_MODELS = [
-  // Stable models with a documented Free Tier. Keep this list explicit
-  // so a future alias change does not silently move the app to a paid model.
-  'gemini-2.5-flash-lite',
-  'gemini-2.5-flash',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash-lite',
 ];
 
-async function callGemini(systemPrompt, userPrompt, modelName, useTrendSearch) {
+// Riset internet tidak lagi memakai `google_search` di generateContent.
+// Pada model Gemini 3.x, Search grounding API bukan fitur Free Tier.
+// Sebagai gantinya, mode riset memakai Antigravity managed agent yang memang
+// menyediakan Google Search + URL fetching dan tersedia pada project Free Tier
+// dengan kuota gratis. Tidak ada fallback diam-diam ke offline.
+async function callGemini(systemPrompt, userPrompt, modelName) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
 
   const body = {
     system_instruction: { parts: [{ text: systemPrompt }] },
     contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
     generationConfig: {
-      temperature: 0.35,
       maxOutputTokens: 16384,
     },
   };
-
-  if (useTrendSearch) {
-    body.tools = [{ google_search: {} }];
-  }
 
   const response = await fetch(url, {
     method: 'POST',
@@ -66,6 +67,87 @@ async function callGemini(systemPrompt, userPrompt, modelName, useTrendSearch) {
   }
 
   return response.json();
+}
+
+async function callAntigravityResearch(systemPrompt, userPrompt) {
+  const url = 'https://generativelanguage.googleapis.com/v1beta/interactions';
+  const body = {
+    agent: 'antigravity-preview-05-2026',
+    input: `${systemPrompt}\n\n${userPrompt}\n\nPENTING: gunakan web search dan URL context terlebih dahulu. Cari beberapa contoh soal publik nyata dari minimal 3 sumber/domain berbeda. Setelah membaca sumber, hasilkan JSONL FINAL saja sesuai format di atas. Jangan keluarkan Markdown, narasi, atau code fence.`,
+    environment: 'remote',
+    tools: [
+      { type: 'google_search' },
+      { type: 'url_context' },
+    ],
+    agent_config: {
+      type: 'antigravity',
+      model: 'gemini-3.5-flash-lite',
+      max_total_tokens: 30000,
+    },
+    store: false,
+  };
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 120000);
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': process.env.GEMINI_API_KEY,
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`ANTIGRAVITY_HTTP_${response.status}: ${errText}`);
+    }
+
+    const data = await response.json();
+    if (data.status && data.status !== 'completed') {
+      throw new Error(`ANTIGRAVITY_STATUS_${data.status}`);
+    }
+    return data;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function normalizeAntigravityResponse(data) {
+  const steps = Array.isArray(data?.steps) ? data.steps : [];
+  const outputStep = [...steps].reverse().find(s => s?.type === 'model_output');
+  const textParts = Array.isArray(outputStep?.content)
+    ? outputStep.content.filter(p => p?.type === 'text').map(p => p.text || '')
+    : [];
+  const rawText = textParts.join('\n').trim() || String(data?.output_text || '').trim();
+
+  const sources = [];
+  const queries = [];
+  for (const step of steps) {
+    if (step?.type === 'google_search_call') {
+      const qs = Array.isArray(step.arguments?.queries) ? step.arguments.queries : [];
+      qs.forEach(q => { if (q && !queries.includes(q)) queries.push(q); });
+    }
+    if (step?.type === 'model_output' && Array.isArray(step.content)) {
+      step.content.forEach(part => {
+        const anns = Array.isArray(part?.annotations) ? part.annotations : [];
+        anns.forEach(a => {
+          if (a?.type === 'url_citation' && a.url) {
+            if (!sources.some(x => x.url === a.url)) sources.push({ title: a.title || a.url, url: a.url });
+          }
+        });
+      });
+    }
+  }
+
+  return {
+    rawText,
+    groundingSources: sources.slice(0, 12),
+    groundingQueries: queries.slice(0, 12),
+    usedModel: data?.model || 'antigravity-preview-05-2026',
+  };
 }
 
 // ============================================================
@@ -346,7 +428,7 @@ ATURAN YANG TIDAK BOLEH DILANGGAR
 Ciri soal HOTS asli: butuh ANALISIS (memecah info, mengenali pola/hubungan), EVALUASI (menilai argumen/opsi mana paling tepat), atau PENERAPAN ke situasi BARU. Biasanya berbasis STIMULUS (bacaan/data/tabel/grafik/skenario) sebelum pertanyaan. DILARANG bikin "HOTS" cuma dengan angka lebih besar/kalimat lebih panjang -- itu bukan HOTS, itu cuma ribet. Kalau topiknya sederhana, bikin soal cerita yang MENERAPKAN konsep ke situasi nyata.
 
 ${useTrendSearch ? `[9] RISET INTERNET -- WAJIB DAN HARUS MENJADI SUMBER UTAMA
-Gunakan Google Search untuk melakukan RISET INTERNET TERLEBIH DAHULU sebelum menulis soal. Target latihan adalah ${targetYear || 'tahun berikutnya'}. Kamu TIDAK boleh menganggap soal tahun ${targetYear || 'mendatang'} sudah diketahui. Tugasmu adalah mempelajari sebanyak mungkin CONTOH SOAL PUBLIK yang benar-benar sudah ada dari tahun-tahun sebelumnya, terutama TKA/SNBT/UTBK/ujian sekolah dan sumber pendidikan tepercaya yang relevan dengan topik.
+Gunakan kemampuan penelusuran web pada mode riset untuk melakukan RISET INTERNET TERLEBIH DAHULU sebelum menulis soal. Target latihan adalah ${targetYear || 'tahun berikutnya'}. Kamu TIDAK boleh menganggap soal tahun ${targetYear || 'mendatang'} sudah diketahui. Tugasmu adalah mempelajari sebanyak mungkin CONTOH SOAL PUBLIK yang benar-benar sudah ada dari tahun-tahun sebelumnya, terutama TKA/SNBT/UTBK/ujian sekolah dan sumber pendidikan tepercaya yang relevan dengan topik.
 
 CARA RISET:
 - Lakukan beberapa pencarian berbeda (minimal 4 kueri berbeda bila pencarian tersedia) dengan sudut pandang berbeda: topik, istilah ujian, contoh soal, dan stimulus. Jangan bergantung pada satu hasil pencarian.
@@ -417,7 +499,7 @@ PERIKSA SENDIRI SEBELUM MENJAWAB
 // ============================================================
 const VALID_VISUAL_KINDS = new Set(['none', 'clock', 'graph', 'shape', 'pattern', 'real_photo', 'table', 'diagram']);
 
-const hasExplicitVisualReference = (questionText) => /\b(lihat|perhatikan|amati|berdasarkan)\s+(gambar|grafik|diagram|tabel|peta)|gambar\s+berikut|grafik\s+berikut|diagram\s+berikut|tabel\s+berikut/i.test(String(questionText || ''));
+const hasExplicitVisualReference = (questionText) => /\b(lihat|look at|perhatikan|amati|berdasarkan)\s+(gambar|picture|image|photo|grafik|graph|diagram|tabel|table|peta|map)|\b(gambar|picture|image|photo|grafik|graph|diagram|tabel|table|peta|map)\s+(berikut|below|above|di bawah|di atas)/i.test(String(questionText || ''));
 
 const isValidQuestionObject = (q, allowedTypes) => {
   if (!q || typeof q !== 'object' || !allowedTypes.includes(q.type)) return false;
@@ -491,43 +573,69 @@ ${useTrendSearch ? 'Mulai dengan RISET INTERNET dan gunakan hasil pencarian seba
 
 Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
 
-  let geminiData;
-  let lastErr;
+  let geminiData = null;
+  let lastErr = null;
   let usedModel = '';
+  let groundingSourcesFromResearch = [];
+  let groundingQueriesFromResearch = [];
+  let normalizedResearchText = '';
 
-  for (const modelName of GEMINI_MODELS) {
+  if (useTrendSearch) {
     try {
-      geminiData = await callGemini(systemPrompt, userPrompt, modelName, !!useTrendSearch);
-      lastErr = null;
-      usedModel = modelName;
-      console.log(`generateQuizFromTopic sukses pakai model: ${modelName}${useTrendSearch ? ' (RISET INTERNET)' : ''}`);
-      break;
+      const researchData = await callAntigravityResearch(systemPrompt, userPrompt);
+      const normalized = normalizeAntigravityResponse(researchData);
+      normalizedResearchText = normalized.rawText;
+      groundingSourcesFromResearch = normalized.groundingSources;
+      groundingQueriesFromResearch = normalized.groundingQueries;
+      usedModel = normalized.usedModel;
+      if (!normalizedResearchText) throw new Error('ANTIGRAVITY_NO_OUTPUT');
+      console.log(`generateQuizFromTopic sukses riset via Antigravity: ${usedModel}`);
     } catch (e) {
       lastErr = e;
-      console.error(`generateQuizFromTopic gagal pakai model ${modelName}:`, e.message);
-      const msg = String(e.message || '');
-      // Never burn the second model after a search quota error. A 429 in
-      // research mode should remain a clear free-tier quota message.
-      if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) break;
-      // Only move to the next stable free-tier model for model availability
-      // or transient server errors. Do not silently disable research mode.
-      if (!(msg.includes('404') || msg.includes('500') || msg.includes('502') || msg.includes('503'))) break;
-      await new Promise(r => setTimeout(r, 1200));
+      console.error('generateQuizFromTopic riset Antigravity gagal:', e.message);
+    }
+  } else {
+    for (const modelName of GEMINI_MODELS) {
+      try {
+        geminiData = await callGemini(systemPrompt, userPrompt, modelName);
+        lastErr = null;
+        usedModel = modelName;
+        console.log(`generateQuizFromTopic sukses pakai model: ${modelName}`);
+        break;
+      } catch (e) {
+        lastErr = e;
+        console.error(`generateQuizFromTopic gagal pakai model ${modelName}:`, e.message);
+        const msg = String(e.message || '');
+        if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) break;
+        await new Promise(r => setTimeout(r, 800));
+      }
     }
   }
 
   if (lastErr) {
-    const isQuota = String(lastErr.message || '').includes('429') || String(lastErr.message || '').includes('RESOURCE_EXHAUSTED');
+    const msg = String(lastErr.message || '');
+    const isQuota = msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('QUOTA');
     return res.status(502).json({
       error: isQuota
-        ? (useTrendSearch
-          ? 'Kuota gratis riset internet Gemini sudah mencapai batas. Sistem TIDAK beralih ke mode offline agar hasil tetap berbasis sumber. Coba lagi setelah kuota reset.'
-          : 'Kuota gratis Astro Gemilang sudah mencapai batas. Coba lagi setelah kuota reset.')
-        : 'Layanan AI gratis Gemini sedang tidak tersedia. Coba lagi beberapa saat lagi.',
+        ? 'Kuota gratis Gemini/Antigravity sudah mencapai batas. Sistem tidak beralih ke layanan berbayar. Coba lagi setelah kuota reset.'
+        : (useTrendSearch
+          ? 'Riset internet gratis Gemini sedang tidak tersedia untuk project ini. Tidak ada fallback diam-diam ke AI offline.'
+          : 'Layanan AI gratis Gemini sedang tidak tersedia. Coba lagi beberapa saat lagi.'),
       debug: lastErr.message,
       usedModel,
       freeTierOnly: true,
     });
+  }
+
+  // Normalisasi hasil riset agent ke bentuk yang sama dengan generateContent.
+  if (useTrendSearch) {
+    geminiData = {
+      candidates: [{
+        content: { parts: [{ text: normalizedResearchText }] },
+        groundingMetadata: null,
+        finishReason: 'STOP',
+      }],
+    };
   }
 
   try {
@@ -575,12 +683,14 @@ Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
     };
 
     const groundingChunks = candidate?.groundingMetadata?.groundingChunks || [];
-    const groundingSources = groundingChunks
+    const generatedGroundingSources = groundingChunks
       .map(c => c.web ? { title: c.web.title || c.web.uri || 'Sumber web', url: c.web.uri || '' } : null)
       .filter(Boolean)
       .filter((item, idx, arr) => item.url && arr.findIndex(x => x.url === item.url) === idx)
       .slice(0, 12);
-    const groundingQueries = candidate?.groundingMetadata?.webSearchQueries || [];
+    const groundingSources = generatedGroundingSources.length > 0 ? generatedGroundingSources : groundingSourcesFromResearch;
+    const generatedGroundingQueries = candidate?.groundingMetadata?.webSearchQueries || [];
+    const groundingQueries = generatedGroundingQueries.length > 0 ? generatedGroundingQueries : groundingQueriesFromResearch;
 
     const objects = extractJsonObjects(fixedRawText);
     const questionObjs = objects.filter(o => o.meta !== true && (o.question || o.readingText));

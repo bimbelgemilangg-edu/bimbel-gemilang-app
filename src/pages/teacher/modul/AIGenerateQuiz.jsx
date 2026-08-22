@@ -261,7 +261,7 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
                 <input type="checkbox" checked={useTrendSearch} onChange={e => setUseTrendSearch(e.target.checked)} style={{ marginTop: 2 }} />
                 <span style={{ flex: 1 }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 800, color: '#1e293b' }}>
-                    <Globe size={13} color="#2563eb" /> Riset Internet — pakai banyak contoh soal nyata
+                    <Globe size={13} color="#2563eb" /> Riset Internet Gratis — pakai banyak contoh soal nyata
                   </span>
                   <span style={{ fontSize: 10, color: '#475569', lineHeight: 1.6, display: 'block', marginTop: 3 }}>
                     Astro Gemilang akan mencari beberapa sumber soal yang sudah terpublikasi, membandingkan pola/topik/stimulus, lalu menyusun latihan baru yang paling representatif.
