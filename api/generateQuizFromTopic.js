@@ -1454,6 +1454,52 @@ function validateQuestion(
     return null;
   }
 
+  // 🔥 JARING PENGAMAN TAMBAHAN (di luar perbaikan system prompt di
+  // atas): walau skema JSON sekarang sudah dijelaskan eksplisit ke
+  // Gemini, model AI kadang masih meleset dan pakai field "answer"
+  // (berisi TEKS jawaban, misal "0,90") padahal yang divalidasi adalah
+  // "correct"/"correctAnswers" (ANGKA INDEKS ke "options"). Daripada
+  // langsung menolak soal yang isinya sebenarnya benar cuma gara-gara
+  // nama field meleset, di sini dicoba dulu MENERJEMAHKAN "answer" jadi
+  // indeks yang tepat dengan mencocokkan teksnya ke salah satu isi
+  // "options" -- baru soal itu lanjut ke validasi normal di bawah.
+  if (
+    Array.isArray(raw?.options) &&
+    raw?.answer !== undefined &&
+    raw.answer !== null
+  ) {
+    const normalize = (v) =>
+      String(v).trim().toLowerCase();
+    const answerText = normalize(raw.answer);
+
+    if (
+      raw.type === 'multiple' &&
+      !isIntegerInRange(raw.correct, 0, raw.options.length - 1)
+    ) {
+      const idx = raw.options.findIndex(
+        (opt) => normalize(opt) === answerText
+      );
+      if (idx !== -1) {
+        raw = { ...raw, correct: idx };
+      }
+    }
+
+    if (
+      raw.type === 'multiselect' &&
+      (!Array.isArray(raw.correctAnswers) || !raw.correctAnswers.length)
+    ) {
+      const answerList = Array.isArray(raw.answer)
+        ? raw.answer.map(normalize)
+        : [answerText];
+      const idxList = raw.options
+        .map((opt, i) => (answerList.includes(normalize(opt)) ? i : -1))
+        .filter((i) => i !== -1);
+      if (idxList.length > 0) {
+        raw = { ...raw, correctAnswers: idxList };
+      }
+    }
+  }
+
   if (
     !allowedTypes.includes(
       raw.type
@@ -2010,7 +2056,64 @@ FOTO NYATA:
 "needs_image":true,
 "image_keyword":"english keyword"
 
-TIPE SOAL YANG DIIZINKAN:
+TIPE SOAL YANG DIIZINKAN & SKEMA JSON WAJIB PER TIPE:
+
+// 🔥 FIX BUG AKAR "0 soal lolos quality gate padahal isinya benar":
+// sebelumnya prompt ini SAMA SEKALI TIDAK MENYEBUTKAN nama field JSON
+// yang wajib dipakai per tipe soal -- cuma daftar nama tipe ("multiple",
+// "truefalse", dst) tanpa skemanya. Tanpa arahan itu, Gemini menebak
+// sendiri nama field yang "masuk akal" secara bahasa natural -- misalnya
+// "answer":"0,90" (TEKS jawabannya) -- padahal validator di backend
+// (lihat validateQuestion()) menunggu field "correct" berisi ANGKA
+// INDEKS (0-3) ke array "options", BUKAN teks jawaban. Soalnya sendiri
+// benar secara matematis/isi, tapi karena nama field & tipe datanya gak
+// cocok satu-satu dengan yang divalidasi, SEMUA soal ditolak quality
+// gate walau isinya bagus. Sekarang skema PERSIS per tipe (nama field +
+// tipe data + jumlah minimum array) ditulis eksplisit supaya Gemini
+// gak perlu nebak.
+
+WAJIB PATUHI SKEMA INI PERSIS (nama field, huruf besar/kecil, dan tipe
+datanya harus SAMA PERSIS -- JANGAN pakai nama field lain walau
+maknanya sama, misal JANGAN pakai "answer" untuk kunci jawaban):
+
+multiple:
+{"type":"multiple","question":"...","options":["A","B","C","D"],"correct":0,"explanation":"..."}
+- "options" HARUS tepat 4 string.
+- "correct" HARUS ANGKA INDEKS 0/1/2/3 (posisi jawaban benar di
+  "options"), BUKAN teks jawabannya, BUKAN huruf (A/B/C/D).
+
+multiselect:
+{"type":"multiselect","question":"...","options":["A","B","C",...],"correctAnswers":[0,2],"explanation":"..."}
+- "options" minimal 2 string.
+- "correctAnswers" HARUS array ANGKA INDEKS (bisa lebih dari satu),
+  BUKAN array teks jawaban.
+
+truefalse:
+{"type":"truefalse","question":"...","statements":[{"text":"...","isTrue":true},{"text":"...","isTrue":false}],"explanation":"..."}
+- "statements" minimal 2 object, tiap object wajib punya "text" (string)
+  dan "isTrue" (boolean true/false).
+
+shortanswer:
+{"type":"shortanswer","question":"...","shortAnswer":"jawaban singkatnya","explanation":"..."}
+
+causeeffect:
+{"type":"causeeffect","question":"...","cause":"pernyataan sebab","effect":"pernyataan akibat","isCauseTrue":true,"isEffectTrue":true,"explanation":"..."}
+- "isCauseTrue" dan "isEffectTrue" WAJIB boolean true/false.
+
+matching:
+{"type":"matching","question":"...","matchingPairs":[{"left":"...","right":"..."},{"left":"...","right":"..."},{"left":"...","right":"..."}],"explanation":"..."}
+- "matchingPairs" minimal 3 pasang.
+
+reading:
+{"type":"reading","question":"...","readingText":"teks bacaan lengkap","subQuestions":[{"q":"...","options":["A","B","C","D"],"correct":0},{"q":"...","options":[...],"correct":0},{"q":"...","options":[...],"correct":0}],"explanation":"..."}
+- "readingText" wajib diisi teks bacaannya.
+- "subQuestions" minimal 3 object, tiap object skemanya sama seperti
+  tipe "multiple" ("correct" = indeks angka, bukan teks jawaban).
+
+Field "explanation" WAJIB diisi di SEMUA tipe (pembahasan kenapa
+jawaban itu benar).
+
+TIPE SOAL YANG DIIZINKAN UNTUK REQUEST INI:
 
 ${allowedTypes
   .map(
@@ -2025,7 +2128,7 @@ Baris pertama:
 {"meta":true}
 
 Setiap soal:
-SATU OBJECT JSON DALAM SATU BARIS.
+SATU OBJECT JSON DALAM SATU BARIS, MENGIKUTI SKEMA DI ATAS PERSIS.
 
 Tanpa:
 - markdown,
