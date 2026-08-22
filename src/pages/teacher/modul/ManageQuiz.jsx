@@ -589,7 +589,7 @@ const ManageQuiz = () => {
   
   // Data referensi
   const [availableClasses, setAvailableClasses] = useState([]);
-  const [subjects, setSubjects] = useState(["Umum"]);
+  const [subjects, setSubjects] = useState([]);
   
   // 🔥 SMART IMPORT
   const [showSmartImport, setShowSmartImport] = useState(false);
@@ -795,7 +795,26 @@ const ManageQuiz = () => {
       const pairedOptions = namaList.map((nama, idx) => ({ nama, kode: kodeList[idx] || '' }));
 
       setTeacherMapelOptions(pairedOptions);
-      setSubjects(pairedOptions.length > 0 ? pairedOptions.map(o => o.nama) : ["Umum"]);
+      // 🔥 FIX BUG AKAR MASALAH (laporan langsung: "kuis tertaut Mapel
+      // Umum, padahal Mapel Umum gak pernah ditambahin di mana pun"):
+      // SEBELUMNYA di sini ada fallback `["Umum"]` kalau guru belum punya
+      // mapel/kodeMapel valid di Firestore -- itu OPSI PALSU yang gak
+      // terhubung ke kodeMapel manapun. Begitu guru (siapa pun) kepaksa
+      // milih itu karena cuma itu opsi yang ada, tersimpan permanen ke
+      // database sebagai subject:"Umum", kodeMapel:"" -- lalu (a) target
+      // siswanya jadi TIDAK TERSARING SAMA SEKALI (lihat efek kodeMapel di
+      // bawah, kodeMapel kosong = "jangan blokir siapa pun" = bocor ke
+      // SEMUA siswa lintas mapel), dan (b) kuis itu jadi ORPHAN permanen:
+      // begitu data guru DIPERBAIKI admin, opsi "Umum" ini hilang dari
+      // dropdown (karena sekarang munculnya cuma dari mapel ASLI guru),
+      // sehingga kuis lama itu gak pernah bisa dipilih ulang mapelnya lewat
+      // dropdown biasa -- makanya WAJIB ditangani khusus di bawah (lihat
+      // blok "opsi tambahan buat nilai lama yang gak valid lagi").
+      // SEKARANG: kalau guru beneran belum py mapel valid, `subjects`
+      // dibiarkan KOSONG -- form akan menampilkan peringatan jelas & kunci
+      // tombol simpan (lihat render-nya di bawah), BUKAN diam-diam kasih
+      // opsi palsu yang bisa kepilih dan mencemari database lagi.
+      setSubjects(pairedOptions.map(o => o.nama));
 
       // Default: pilih mapel PERTAMA guru itu, TAPI cuma kalau ini kuis
       // BARU (belum ada quizSubject terisi dari data tersimpan) -- jangan
@@ -986,7 +1005,25 @@ const ManageQuiz = () => {
           const parentData = parentSnap.data();
           const block = (parentData.blocks || []).find(b => String(b.id) === String(sectionId));
           quizIdToLoad = block?.quizId || null;
-          if (!quizIdToLoad) setQuizSubject(parentData.subject || '');
+          // 🔥 FIX BUG AKAR "guru terblokir gak bisa simpan kuis dalam modul":
+          // sebelumnya cuma `subject` (NAMA mapel) yang disalin dari modul
+          // induk ke state kuis baru ini, `kodeMapel` (KODE-nya, yang beneran
+          // dipakai buat validasi & penyaringan akses siswa) TIDAK PERNAH
+          // ikut disalin. Karena `quizSubject` jadi terisi duluan, default-
+          // setter kodeMapel di loadRefs() (yang syaratnya "cuma isi kalau
+          // quizSubject masih kosong") ikut ke-skip -- hasilnya kodeMapel
+          // nyangkut KOSONG SELAMANYA walau nama mapelnya keliatan benar di
+          // dropdown. Begitu guru klik "Simpan ke Modul", validasi
+          // `!quizSubject || !kodeMapel` di handleSaveQuiz nge-block dengan
+          // pesan seolah guru belum terdaftar ke mapel manapun -- padahal
+          // guru udah bener, sistemnya yang lupa nyalin kode mapelnya.
+          // Sekarang identitas mapel kuis 100% DISALIN UTUH (nama + kode)
+          // dari modul induk, konsisten dengan prinsip "kuis-dalam-modul
+          // ikut aturan modul induknya", persis kayak Target Publish.
+          if (!quizIdToLoad) {
+            setQuizSubject(parentData.subject || '');
+            setKodeMapel(parentData.kodeMapel || '');
+          }
         }
       }
 
@@ -2204,6 +2241,47 @@ const ManageQuiz = () => {
     const valid = questions.filter(q => q.q.trim() || q.qImage);
     if (valid.length === 0) return alert("❌ Minimal 1 soal!");
     if (!quizTitle) return alert("❌ Judul kuis wajib diisi!");
+    // 🔥 BARU: FIX BUG AKAR MASALAH "Mapel Umum" -- validasi ini yang
+    // mastiin kuis TIDAK PERNAH bisa tersimpan lagi tanpa mapel & kodeMapel
+    // yang beneran valid (lihat penjelasan lengkap di loadRefs soal
+    // kenapa ini penting: kodeMapel kosong = target siswa gak tersaring
+    // sama sekali = bocor ke semua siswa lintas mapel).
+    // 🔥 FIX BUG AKAR "guru terblokir gak bisa simpan kuis dalam modul":
+    // validasi mapel di bawah ini SEKARANG DIPISAH jadi dua jalur:
+    //  (a) Kuis MANDIRI (isFromModul === false) -- mapelnya milik guru
+    //      sendiri, jadi tetap WAJIB dicocokkan persis ke daftar mapel yang
+    //      beneran terdaftar buat guru ini (mencegah kasus "Mapel Umum"
+    //      lama, lihat penjelasan panjang di loadRefs).
+    //  (b) Kuis DALAM MODUL (isFromModul === true) -- mapelnya 100% WARISAN
+    //      dari modul induk (lihat panel "1. Identitas Kuis" & fetchQuiz di
+    //      atas), BUKAN pilihan bebas guru dari dropdown mapelnya sendiri.
+    //      Sebelumnya kuis-dalam-modul ikut kena pengecekan
+    //      `teacherMapelOptions.some(...)` yang sama seperti kuis mandiri --
+    //      begitu kodeMapel warisan modul gak PERSIS cocok satu-satu dengan
+    //      salah satu mapel guru yang lagi login (misal guru kolaborator,
+    //      atau sekadar format string beda), simpan ditolak dengan pesan
+    //      seolah guru belum terdaftar mapel apa pun, padahal dia jelas
+    //      berhak (sudah lolos pengecekan akses edit di ModulManager).
+    //      Sekarang kuis-dalam-modul cukup dicek ADA isinya (gak kosong),
+    //      gak perlu cocok ke daftar mapel pribadi guru ini.
+    if (!quizSubject || !kodeMapel) {
+      return alert(
+        isFromModul
+          ? "❌ Mapel dari modul induk belum termuat. Tunggu sebentar lalu coba simpan lagi -- kalau masih gagal, buka ulang halaman ini."
+          : teacherMapelOptions.length === 0
+            ? "❌ Kamu belum terdaftar mengajar mapel apa pun. Hubungi admin untuk didaftarkan ke mapel dulu sebelum bisa membuat kuis."
+            : "❌ Pilih mapel yang valid dari daftar dulu sebelum menyimpan (mapel kuis ini belum/tidak valid)."
+      );
+    }
+    // 🔥 BARU: jaga-jaga tambahan -- kalau quizSubject somehow gak
+    // cocok persis sama salah satu mapel guru yang beneran terdaftar
+    // (misal nilai lama/orphan yang belum diganti guru), tetap tolak.
+    // Cuma berlaku buat kuis MANDIRI -- kuis dalam modul warisan mapelnya
+    // dari modul induk, bukan dari daftar mapel pribadi guru ini (lihat
+    // penjelasan di atas).
+    if (!isFromModul && !teacherMapelOptions.some(o => o.nama === quizSubject && o.kode === kodeMapel)) {
+      return alert("❌ Mapel yang dipilih sudah tidak valid. Silakan pilih ulang mapel dari daftar dropdown sebelum menyimpan.");
+    }
     // 🔥 BARU: validasi buat mode target "Siswa Tertentu"
     if (publishTarget === 'siswa' && selectedStudentsForQuiz.length === 0) {
       return alert("❌ Pilih minimal 1 siswa dulu buat mode 'Siswa Tertentu'!");
@@ -2653,6 +2731,30 @@ const ManageQuiz = () => {
             bikin bingung karena mirip "Jadwal Kuis" di bawah, padahal field ini
             TIDAK PERNAH dibaca/dipakai sama sekali di sisi siswa. Pengaturan
             buka/tutup kuis yang beneran berfungsi cuma "2. Jadwal Kuis". */}
+        {/* 🔥 FIX KEBINGUNGAN & BLOKIR UTAMA (sama prinsipnya dengan panel
+            "5. Target Publish" di bawah): kalau kuis ini BAGIAN DARI MODUL,
+            mapel/kodeMapel-nya WAJIB 100% ikut modul induk -- guru gak perlu
+            (dan gak boleh) pilih ulang dari dropdown mapel pribadinya
+            sendiri. Sebelumnya dropdown editable ini tetap tampil buat kuis
+            dalam-modul juga, lalu divalidasi HARUS PERSIS COCOK ke salah
+            satu mapel guru yang lagi login (lihat handleSaveQuiz) -- itu
+            akar masalah "guru terblokir gak bisa simpan kuis dalam modul"
+            (kombinasi dengan kodeMapel yang lupa disalin di fetchQuiz di
+            atas). Sekarang buat kuis-dalam-modul cukup tampilkan info
+            read-only; validasi ketat itu juga sudah gak dipakai lagi buat
+            kasus ini di handleSaveQuiz. */}
+        {isFromModul ? (
+          <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 12, color: '#166534' }}>
+              📎 Mapel kuis ini otomatis mengikuti modul induk:
+            </span>
+            <span style={{ fontWeight: 700, fontSize: 12, color: '#166534' }}>
+              {quizSubject || '(memuat...)'}
+            </span>
+            {kodeMapel && <span style={{ background: '#dcfce7', padding: '2px 10px', borderRadius: 6, fontSize: 10, fontWeight: 600, color: '#166534', whiteSpace: 'nowrap' }}>📌 {kodeMapel}</span>}
+          </div>
+        ) : (
+        <>
         <div style={{ display: 'flex', gap: 8 }}>
           <select
             value={quizSubject}
@@ -2667,13 +2769,38 @@ const ManageQuiz = () => {
               const match = teacherMapelOptions.find(o => o.nama === namaTerpilih);
               setKodeMapel(match?.kode || '');
             }}
-            style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', background: 'white', boxSizing: 'border-box' }}
+            disabled={subjects.length === 0}
+            style={{ flex: 1, padding: 10, borderRadius: 8, border: `1px solid ${(!kodeMapel && quizSubject) ? '#f59e0b' : '#e2e8f0'}`, fontSize: 13, outline: 'none', background: subjects.length === 0 ? '#f1f5f9' : 'white', boxSizing: 'border-box' }}
           >
             <option value="">Pilih Mapel</option>
             {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+            {/* 🔥 BARU: kalau kuis ini kebetulan lagi bawa nilai mapel LAMA
+                yang gak ada lagi di daftar mapel guru sekarang (data
+                "orphan" -- lihat contoh kasus "Mapel Umum" yang sebenarnya
+                gak pernah beneran terdaftar di mana pun), tampilkan SATU
+                opsi tambahan yang jelas ditandai peringatan. Ini supaya
+                guru LANGSUNG LIHAT ada yang gak beres (bukan dropdown
+                kosong yang membingungkan), dan validasi di handleSaveQuiz
+                akan TETAP MENOLAK simpan selama opsi ini yang kepilih --
+                guru wajib ganti ke salah satu mapel asli di atas dulu. */}
+            {quizSubject && !subjects.includes(quizSubject) && (
+              <option value={quizSubject}>⚠️ {quizSubject} (mapel tidak valid — wajib diganti)</option>
+            )}
           </select>
           {kodeMapel && <span style={{ background: '#ede9fe', padding: '0 12px', borderRadius: 6, fontSize: 10, fontWeight: 600, color: '#8b5cf6', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>📌 {kodeMapel}</span>}
         </div>
+        {subjects.length === 0 && (
+          <p style={{ margin: '8px 0 0', fontSize: 11, color: '#b91c1c', background: '#fef2f2', padding: '8px 10px', borderRadius: 8 }}>
+            ⚠️ Kamu belum terdaftar mengajar mapel apa pun di sistem. Hubungi admin untuk didaftarkan ke mapel dulu — kuis tidak bisa disimpan tanpa mapel yang valid.
+          </p>
+        )}
+        {quizSubject && !subjects.includes(quizSubject) && subjects.length > 0 && (
+          <p style={{ margin: '8px 0 0', fontSize: 11, color: '#b45309', background: '#fffbeb', padding: '8px 10px', borderRadius: 8 }}>
+            ⚠️ Kuis ini tertaut ke mapel "{quizSubject}" yang sudah tidak valid/tidak terdaftar. Pilih salah satu mapel di atas sebelum menyimpan.
+          </p>
+        )}
+        </>
+        )}
       </div>
 
       {/* ========================================================== */}
