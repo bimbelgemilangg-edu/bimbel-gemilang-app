@@ -342,6 +342,25 @@ async function callGemini(
       topP: 0.9,
       maxOutputTokens:
         MAX_OUTPUT_TOKENS,
+      // 🔥 FIX BUG AKAR "Tidak ada soal yang lolos quality gate": model
+      // Gemini generasi 3.x (termasuk 3.5 Flash) MELAKUKAN "thinking"
+      // internal secara default, dan token buat proses mikir itu DIAMBIL
+      // DARI JATAH maxOutputTokens YANG SAMA dengan jatah buat nulis
+      // jawaban JSON-nya -- bukan budget terpisah. Tanpa thinkingBudget
+      // di-nolkan, model bisa menghabiskan sebagian besar (bahkan semua)
+      // dari 14.000 token itu buat "mikir" dulu sebelum sempat nulis
+      // satu pun baris JSONL soal -- apalagi di mode riset internet yang
+      // konteksnya jauh lebih besar (isi banyak sumber web sekaligus),
+      // yang mendorong model buat mikir lebih panjang. Hasilnya: teks
+      // yang balik ke extractJsonObjects() kosong/terpotong, JADI TIDAK
+      // ADA SATU SOAL PUN yang berhasil di-parse, apalagi lolos quality
+      // gate -- persis gejala yang dilaporkan. Thinking dimatikan total
+      // di sini karena tugas ini (susun JSON soal terstruktur ketat)
+      // gak butuh reasoning tersembunyi; seluruh token output harus
+      // dipakai buat hasil akhirnya langsung.
+      thinkingConfig: {
+        thinkingBudget: 0,
+      },
     },
   };
 
@@ -2534,6 +2553,13 @@ Prioritaskan akurasi daripada memaksakan jumlah.
     questions.length ===
     0
   ) {
+    // 🔥 BARU: sebelumnya kegagalan di titik ini cuma dikasih pesan
+    // generik tanpa info lanjutan -- padahal "0 soal lolos" bisa
+    // disebabkan macam-macam hal berbeda yang butuh diagnosis berbeda
+    // juga (respons Gemini kepotong kehabisan token, format JSON-nya
+    // rusak duluan sebelum sempat di-parse, atau JSON-nya valid tapi
+    // semua ditolak validasi tipe/isi). Sekarang debug info-nya
+    // disertakan supaya kelihatan jelas persis di titik mana macetnya.
     return res.status(
       502
     ).json({
@@ -2541,6 +2567,17 @@ Prioritaskan akurasi daripada memaksakan jumlah.
         researchMode
           ? 'Tidak ada soal yang lolos quality gate setelah riset internet.'
           : 'Tidak ada soal valid yang berhasil dibuat.',
+
+      debug: {
+        finishReason:
+          candidate?.finishReason || null,
+        parsedObjectCount:
+          objects.length,
+        rawTextLength:
+          rawText.length,
+        rawTextSample:
+          rawText.slice(0, 400),
+      },
 
       researchSources:
         sources.map(
