@@ -64,6 +64,20 @@ const ModulManager = () => {
     if (!kode) return false; // konten gak punya kode mapel sama sekali -- gak ada dasar buat ngizinin siapa pun edit, lebih aman ditolak
     return myMapelCodes.includes(kode);
   };
+  // 🔥 BARU: FIX BUG NYATA (laporan langsung: kuis rusak dengan mapel
+  // "Umum" yang gak pernah beneran ada gak bisa DIHAPUS SAMA SEKALI --
+  // tombol Edit & Hapus sebelumnya digabung jadi satu, keduanya cuma
+  // muncul kalau `canEditContent` true. Karena "Umum" gak pernah jadi
+  // mapel resmi siapa pun, `canEditContent` SELAMANYA false buat SEMUA
+  // guru -- termasuk guru yang punya kuis itu sendiri, jadi kontennya
+  // terkunci permanen, gak bisa diedit (itu memang benar) TAPI JUGA gak
+  // bisa dihapus (ini yang salah -- harusnya tetap bisa buat bersihin data
+  // rusak). Sekarang izin HAPUS dipisah dari izin EDIT: Edit tetap ketat
+  // (wajib match kode mapel, biar gak bisa oprek konten mapel guru lain),
+  // tapi Hapus konten MILIK SENDIRI (guruId/createdBy cocok) tetap boleh
+  // walau mapelnya udah invalid/orphan -- supaya kuis/modul rusak akibat
+  // bug data lama tetap bisa dibersihin oleh pemiliknya sendiri.
+  const canDeleteContent = (item, isMine) => canEditContent(item) || isMine;
   const [deletingId, setDeletingId] = useState(null);
   const [toast, setToast] = useState(null);
 
@@ -712,6 +726,7 @@ const ModulManager = () => {
               // konten ini), BUKAN "siapa pembuat aslinya" -- lihat
               // penjelasan lengkap di canEditContent() di atas.
               const canEdit = canEditContent(item);
+              const canDelete = canDeleteContent(item, isMine);
               const isDeleting = deletingId === item.id;
               const hasQuizInside = item.blocks?.some(b => b.type === 'quiz' && b.quizId);
               const guruName = item.guruName || item.authorName || item.createdBy || 'Admin';
@@ -735,7 +750,8 @@ const ModulManager = () => {
                     // mapel konten itu, klik kartu cuma buka mode LIHAT
                     // (read-only) -- bukan mode edit.
                     if (!canEdit) {
-                      alert(`👀 Kamu bisa lihat konten ini, tapi gak bisa edit -- kamu belum terdaftar ngajar mapel "${item.subject || item.kodeMapel || '-'}".\n\nKalau ini keliru (harusnya kamu memang ditugaskan ke mapel ini), hubungi admin buat didaftarkan.`);
+                      const pesanHapus = isMine ? '\n\nKamu masih bisa menghapus konten ini lewat tombol 🗑️ di kartu (karena ini milikmu), walau gak bisa diedit.' : '';
+                      alert(`👀 Kamu bisa lihat konten ini, tapi gak bisa edit -- kamu belum terdaftar ngajar mapel "${item.subject || item.kodeMapel || '-'}".\n\nKalau ini keliru (harusnya kamu memang ditugaskan ke mapel ini), hubungi admin buat didaftarkan.${pesanHapus}`);
                       return;
                     }
                     if (typeInfo.label === 'Kuis') {
@@ -819,42 +835,47 @@ const ModulManager = () => {
 
                   {/* Actions */}
                   <div style={styles.cardActions}>
-                    {/* 🔥 FIX BUG NYATA: tombol Edit & Hapus sebelumnya SELALU
+                    {/* 🔥 FIX BUG NYATA: tombol Edit sebelumnya SELALU
                         aktif buat SIAPA PUN yang lihat kartu ini, gak peduli
                         apakah guru itu terdaftar ke mapel kontennya atau
                         enggak -- guru dari mapel lain bisa gak sengaja
-                        ngubah/hapus konten mapel yang bukan tanggung
-                        jawabnya. Sekarang cuma muncul kalau `canEdit` true
-                        (guru ini beneran terdaftar ngajar mapel yang sama
-                        dengan konten ini) -- kalau enggak, tombolnya diganti
-                        penanda "hanya bisa lihat", TIDAK ada tombol Edit/
-                        Hapus yang bisa diklik sama sekali. */}
-                    {canEdit ? (
-                      <>
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); 
-                            // 🔥 Sama seperti klik kartu: modul yang berisi blok kuis
-                            // TETAP dibuka di editor materi. Kuisnya nanti dibuka dari
-                            // dalam editor materi itu (klik blok kuisnya).
-                            if (typeInfo.label === 'Kuis') {
-                              navigate(`/guru/modul/quiz?modulId=${item.id}`);
-                            } else {
-                              navigate(`/guru/modul/materi?edit=${item.id}`);
-                            }
-                          }} 
-                          style={styles.btnEdit}
-                        >
-                          <Edit3 size={12} /> Edit
-                        </button>
-                        <button 
-                          onClick={(e) => handleDelete(e, item.id)} 
-                          disabled={isDeleting}
-                          style={styles.btnDelete}
-                        >
-                          {isDeleting ? <Loader2 size={12} className="spin" /> : <Trash2 size={12} />}
-                        </button>
-                      </>
-                    ) : (
+                        ngubah konten mapel yang bukan tanggung jawabnya.
+                        Sekarang Edit cuma muncul kalau `canEdit` true (guru
+                        ini beneran terdaftar ngajar mapel yang sama dengan
+                        konten ini). Tombol HAPUS dipisah izinnya sendiri
+                        (`canDelete`, lihat penjelasan di canDeleteContent()
+                        di atas) -- supaya konten MILIK SENDIRI yang
+                        kebetulan punya mapel rusak/orphan (mis. kasus nyata
+                        "Mapel Umum") tetap bisa dibersihin pemiliknya,
+                        walau gak bisa diedit. */}
+                    {canEdit && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); 
+                          // 🔥 Sama seperti klik kartu: modul yang berisi blok kuis
+                          // TETAP dibuka di editor materi. Kuisnya nanti dibuka dari
+                          // dalam editor materi itu (klik blok kuisnya).
+                          if (typeInfo.label === 'Kuis') {
+                            navigate(`/guru/modul/quiz?modulId=${item.id}`);
+                          } else {
+                            navigate(`/guru/modul/materi?edit=${item.id}`);
+                          }
+                        }} 
+                        style={styles.btnEdit}
+                      >
+                        <Edit3 size={12} /> Edit
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button 
+                        onClick={(e) => handleDelete(e, item.id)} 
+                        disabled={isDeleting}
+                        style={styles.btnDelete}
+                        title={!canEdit ? 'Hapus konten mapel tidak valid milikmu' : 'Hapus'}
+                      >
+                        {isDeleting ? <Loader2 size={12} className="spin" /> : <Trash2 size={12} />}
+                      </button>
+                    )}
+                    {!canEdit && !canDelete && (
                       <span style={{ fontSize: 10, color: '#94a3b8', fontStyle: 'italic', padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 4 }}>
                         <Eye size={11} /> Hanya bisa lihat
                       </span>
