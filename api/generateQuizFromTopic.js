@@ -1,14 +1,14 @@
 // api/generateQuizFromTopic.js
 // ============================================================
 // BIMBEL GEMILANG — PROFESSIONAL QUIZ ENGINE
-// FREE WEB RESEARCH + GEMINI 3.6 FLASH
+// FREE WEB RESEARCH + GEMINI 3.5 FLASH
 // ============================================================
 // Arsitektur:
 // WEB SEARCH GRATIS
 //      ↓
 // contoh/sumber soal nyata
 //      ↓
-// GEMINI 3.6 FLASH
+// GEMINI 3.5 FLASH
 //      ↓
 // soal latihan baru berbasis riset
 //      ↓
@@ -29,7 +29,19 @@
 //   dapat mengambil dari sumber gambar berlisensi terbuka.
 // ============================================================
 
-const GEMINI_MODEL = 'gemini-3.6-flash';
+// 🔥 FIX BUG AKAR "selalu gagal bikin soal (mode riset MAUPUN mode
+// topik/soal asli biasa)": sebelumnya nilai di sini adalah
+// 'gemini-3.6-flash' -- model dengan nama itu TIDAK PERNAH ada di Gemini
+// API. Per rilis resmi Google, seri Gemini 3.x cuma sampai "3.5 Flash"
+// (dan "3.1 Pro" / "3.1 Flash-Lite") -- gak ada versi "3.6". Akibatnya
+// SETIAP panggilan ke callGemini() -- baik dari mode riset internet
+// maupun mode topik biasa (keduanya sama-sama lewat fungsi yang sama) --
+// selalu dibalas 404 "model not found" oleh Google, lalu ditangkap di
+// blok catch handler (lihat pesan "Gemini 3.6 Flash tidak tersedia...")
+// dan gagal total. Ini BUKAN soal konten/topik soalnya sama sekali --
+// request-nya bahkan gak pernah nyampe sukses ke Gemini. Sekarang
+// dibetulkan ke nama model yang beneran ada.
+const GEMINI_MODEL = 'gemini-3.5-flash';
 
 const MAX_BATCH_QUESTIONS = 10;
 const MAX_OUTPUT_TOKENS = 14000;
@@ -129,16 +141,31 @@ async function searchWebFree(query) {
       query
     )}`;
 
+  // 🔥 FIX TAMBAHAN: s.jina.ai sekarang mensyaratkan API key buat
+  // endpoint search-nya (dulu bisa dipakai gratis tanpa header apa pun,
+  // tapi kebijakan Jina berubah) -- tanpa header ini, request bisa
+  // ditolak (401/422) SEBELUM sempat kena rate limit sama sekali, dan
+  // error-nya gampang disalahartikan sebagai "topik gak ditemukan"
+  // padahal sebenarnya cuma soal autentikasi. Kalau JINA_API_KEY ada di
+  // environment, disertakan; kalau tidak ada, tetap dicoba tanpa key
+  // (perilaku lama) supaya gak makin membatasi yang masih kepakai.
+  const headers = {
+    Accept: 'application/json',
+    'User-Agent':
+      'BimbelGemilangQuiz/1.0',
+  };
+
+  if (process.env.JINA_API_KEY) {
+    headers.Authorization =
+      `Bearer ${process.env.JINA_API_KEY}`;
+  }
+
   const response =
     await fetchWithTimeout(
       url,
       {
         method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'User-Agent':
-            'BimbelGemilangQuiz/1.0',
-        },
+        headers,
       },
       SEARCH_TIMEOUT_MS
     );
@@ -147,8 +174,18 @@ async function searchWebFree(query) {
     await response.text();
 
   if (!response.ok) {
+    // 🔥 FIX: pesan error sekarang membedakan kasus "butuh API key" dari
+    // kegagalan lain, supaya gampang didiagnosis lain kali kalau mode
+    // riset internet yang gagal (bukan mode topik biasa).
+    const authHint =
+      (response.status === 401 ||
+        response.status === 403) &&
+      !process.env.JINA_API_KEY
+        ? ' (kemungkinan s.jina.ai sekarang butuh JINA_API_KEY -- tambahkan di environment Vercel.)'
+        : '';
+
     throw new Error(
-      `WEB_SEARCH_HTTP_${response.status}: ${raw.slice(
+      `WEB_SEARCH_HTTP_${response.status}${authHint}: ${raw.slice(
         0,
         500
       )}`
@@ -261,7 +298,7 @@ function buildResearchQueries({
 }
 
 // ============================================================
-// GEMINI 3.6 FLASH
+// GEMINI 3.5 FLASH
 // ============================================================
 
 async function callGemini(
@@ -2318,7 +2355,7 @@ Prioritaskan akurasi daripada memaksakan jumlah.
         502
       ).json({
         error:
-          'Gemini 3.6 Flash tidak tersedia untuk API key/project ini. Pastikan API key Vercel adalah API key Gemini terbaru.',
+          `Model Gemini ("${GEMINI_MODEL}") tidak tersedia untuk API key/project ini. Pastikan API key Vercel adalah API key Gemini terbaru, dan cek daftar model yang benar-benar tersedia di Google AI Studio.`,
         debug:
           message,
       });
@@ -2361,7 +2398,7 @@ Prioritaskan akurasi daripada memaksakan jumlah.
       502
     ).json({
       error:
-        'Gemini 3.6 Flash gagal membuat soal.',
+        'Gemini gagal membuat soal.',
       debug:
         message,
     });
