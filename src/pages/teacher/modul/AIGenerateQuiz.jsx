@@ -84,12 +84,22 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        // 🔥 FIX: sebelumnya cuma nampilin pesan generic ("Gagal
-        // menghubungi AI...") -- sekarang ikut nampilin `data.debug`
-        // (pesan asli dari Gemini: 401/403 = API key salah, 429 = kuota
-        // habis, 404 = model gak ada) biar gampang didiagnosis dari UI
-        // tanpa perlu buka Vercel logs.
-        const msg = data.debug ? `${data.error} [debug: ${data.debug}]` : (data.error || 'Gagal membuat soal');
+        // 🔥 FIX BUG NYATA: sebelumnya `data.debug` selalu diperlakukan
+        // seolah-olah STRING (digabung langsung ke template literal) --
+        // itu bener kalau debug-nya pesan error dari Gemini/Jina (memang
+        // string). TAPI sejak backend nambahin info debug khusus buat
+        // kasus "0 soal lolos quality gate", `data.debug` di jalur itu
+        // adalah OBJECT ({finishReason, parsedObjectCount, rawTextLength,
+        // rawTextSample}) -- digabung ke string lewat `${...}` otomatis
+        // jadi teks "[object Object]" oleh JavaScript, isinya ketutup
+        // total dan gak kebaca sama sekali dari UI. Sekarang dicek dulu
+        // tipenya: object di-stringify rapi (biar semua field debug-nya
+        // kebaca), string dipakai apa adanya seperti sebelumnya.
+        const debugText =
+          data.debug && typeof data.debug === 'object'
+            ? JSON.stringify(data.debug, null, 2)
+            : data.debug;
+        const msg = debugText ? `${data.error} [debug: ${debugText}]` : (data.error || 'Gagal membuat soal');
         throw new Error(msg);
       }
 
