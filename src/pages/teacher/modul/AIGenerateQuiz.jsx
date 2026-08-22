@@ -32,7 +32,8 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
   const [selectedTypes, setSelectedTypes] = useState(['multiple']);
   const [arahan, setArahan] = useState('');
   // 🔥 BARU: dua toggle baru -- pencarian tren internet & level HOTS.
-  const [useTrendSearch, setUseTrendSearch] = useState(false);
+  const [useTrendSearch, setUseTrendSearch] = useState(true);
+  const [targetYear, setTargetYear] = useState(() => new Date().getFullYear() + 1);
   const [hotsLevel, setHotsLevel] = useState('');
   const [generating, setGenerating] = useState(false);
   const [statusLabel, setStatusLabel] = useState('');
@@ -41,6 +42,7 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
   // useTrendSearch aktif) -- ditampilkan setelah selesai generate, biar
   // guru tau ini bukan klaim kosong.
   const [lastGroundingSources, setLastGroundingSources] = useState([]);
+  const [lastGroundingQueries, setLastGroundingQueries] = useState([]);
 
   const toggleType = (id) => {
     setSelectedTypes(prev =>
@@ -51,6 +53,7 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
   const handleGenerate = async () => {
     setError('');
     setLastGroundingSources([]);
+    setLastGroundingQueries([]);
     if (!topic.trim()) return setError('❌ Topik/materi kuis wajib diisi!');
     if (selectedTypes.length === 0) return setError('❌ Pilih minimal 1 tipe soal!');
     if (jumlahSoal < 1 || jumlahSoal > 20) return setError('❌ Jumlah soal antara 1-20!');
@@ -58,7 +61,7 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
     setGenerating(true);
     setStatusLabel(
       useTrendSearch
-        ? 'Astro Gemilang sedang membaca tren soal terbaru & menyusun soal... (30-70 detik)'
+        ? `Astro Gemilang sedang meriset beberapa sumber soal publik untuk latihan ${targetYear}... (30-90 detik)`
         : 'Astro Gemilang sedang menyusun soal... (20-50 detik)'
     );
 
@@ -74,6 +77,7 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
           types: selectedTypes,
           arahan: arahan.trim(),
           useTrendSearch,
+          targetYear: Number(targetYear) || new Date().getFullYear() + 1,
           hotsLevel,
         }),
       });
@@ -134,10 +138,15 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
         // "AI menyarankan gambar" yang baca field ini.
         needsImage: q.needsImage || false,
         imageHint: q.imageHint || '',
+        researchBacked: q.researchBacked || false,
+        visualRequired: q.visualRequired || false,
+        visualKind: q.visualKind || 'none',
+        researchSources: data.groundingSources || [],
       }));
 
       onGenerated(converted);
       setLastGroundingSources(data.groundingSources || []);
+      setLastGroundingQueries(data.groundingQueries || []);
 
       if (data.possiblyTruncated) {
         alert(
@@ -246,21 +255,31 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
               </div>
             </div>
 
-            {/* 🔥 BARU: toggle pencarian tren internet */}
+            {/* 🔥 RISET INTERNET — mode utama untuk latihan berbasis tren */}
             <div style={styles.trendBox}>
               <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer' }}>
                 <input type="checkbox" checked={useTrendSearch} onChange={e => setUseTrendSearch(e.target.checked)} style={{ marginTop: 2 }} />
-                <span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: '#1e293b' }}>
-                    <Globe size={13} color="#3b82f6" /> Sesuaikan pola dengan tren soal terbaru
+                <span style={{ flex: 1 }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 800, color: '#1e293b' }}>
+                    <Globe size={13} color="#2563eb" /> Riset Internet — pakai banyak contoh soal nyata
                   </span>
-                  <span style={{ fontSize: 10, color: '#64748b', lineHeight: 1.6, display: 'block', marginTop: 3 }}>
-                    Astro Gemilang membaca pola/format soal SNBT/TKA/ujian sekolah dari tahun-tahun terakhir yang beneran ada,
-                    lalu membuat soal latihan BARU (orisinal) dengan pola & level kesulitan setara.
-                    <b> Ini bukan "prediksi soal tahun depan"</b> — proses generate jadi lebih lama (30-70 detik).
+                  <span style={{ fontSize: 10, color: '#475569', lineHeight: 1.6, display: 'block', marginTop: 3 }}>
+                    Astro Gemilang akan mencari beberapa sumber soal yang sudah terpublikasi, membandingkan pola/topik/stimulus, lalu menyusun latihan baru yang paling representatif.
+                    <b> Bukan bocoran atau prediksi pasti.</b> Sistem menolak hasil riset bila bukti web tidak cukup dan tidak diam-diam beralih offline.
                   </span>
                 </span>
               </label>
+              <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <label style={{ ...styles.label, margin: 0 }}>🎯 Tahun target latihan</label>
+                <input
+                  type="number"
+                  min={new Date().getFullYear()}
+                  max={new Date().getFullYear() + 5}
+                  value={targetYear}
+                  onChange={e => setTargetYear(parseInt(e.target.value) || new Date().getFullYear() + 1)}
+                  style={{ ...styles.input, width: 90, padding: 8 }}
+                />
+              </div>
             </div>
 
             <div style={styles.field}>
@@ -277,10 +296,23 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
 
             {lastGroundingSources.length > 0 && (
               <div style={styles.sourcesBox}>
-                <b>Sumber yang dibaca Astro Gemilang buat soal barusan:</b>
+                <b>🌐 Sumber web yang dipakai untuk riset:</b>
                 <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
-                  {lastGroundingSources.map((s, i) => <li key={i}>{s}</li>)}
+                  {lastGroundingSources.map((s, i) => (
+                    <li key={i}>
+                      {typeof s === 'string'
+                        ? s
+                        : (s?.url
+                          ? <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#0369a1' }}>{s.title || s.url}</a>
+                          : s?.title)}
+                    </li>
+                  ))}
                 </ul>
+                {lastGroundingQueries.length > 0 && (
+                  <div style={{ marginTop: 6, fontSize: 9, color: '#64748b' }}>
+                    {lastGroundingQueries.length} kueri pencarian digunakan oleh Gemini.
+                  </div>
+                )}
               </div>
             )}
 
@@ -291,7 +323,7 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
             <div style={styles.hintBox}>
               <FileQuestion size={13} color="#f59e0b" style={{ flexShrink: 0, marginTop: 1 }} />
               <span>
-                Soal & jawaban otomatis diisi Astro Gemilang (termasuk pembahasan), tapi <b>tetap cek dulu</b> sebelum
+                Mode riset menggunakan Gemini Free Tier + Google Search grounding; kuotanya terbatas dan tidak ada fallback berbayar. Soal & jawaban otomatis diisi Astro Gemilang (termasuk pembahasan), tapi <b>tetap cek dulu</b> sebelum
                 diterbitkan ke siswa — terutama hitungan matematika dan kunci jawabannya.
               </span>
             </div>

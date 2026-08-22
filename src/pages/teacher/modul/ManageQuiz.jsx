@@ -119,6 +119,11 @@ const emptyQuestion = (idx = 0) => ({
   // soal yang dibuat manual (gak relevan).
   needsImage: false,
   imageHint: '',
+  imageSource: null,
+  researchBacked: false,
+  researchSources: [],
+  visualRequired: false,
+  visualKind: 'none',
   optionsAreImages: false,
   matchingPairs: [{ left: '', right: '' }, { left: '', right: '' }]
 });
@@ -949,6 +954,10 @@ const ManageQuiz = () => {
         matchingPairs: q.matchingPairs && q.matchingPairs.length ? q.matchingPairs : [{ left: '', right: '' }, { left: '', right: '' }],
         needsImage: q.needsImage || false,
         imageHint: q.imageHint || '',
+        researchBacked: q.researchBacked || false,
+        researchSources: q.researchSources || [],
+        visualRequired: q.visualRequired || false,
+        visualKind: q.visualKind || 'none',
         needsManualAnswer: false
       })));
     }
@@ -1065,7 +1074,7 @@ const ManageQuiz = () => {
         setQuestions(prev => prev.map(q => {
           if (q.id === questionId) {
             if (targetType === 'question') {
-              return { ...q, qImage: url };
+              return { ...q, qImage: url, imageSource: null };
             } else if (targetType === 'option' && optionIndex !== null) {
               const newOptionImages = [...q.optionImages];
               newOptionImages[optionIndex] = url;
@@ -1172,8 +1181,12 @@ const ManageQuiz = () => {
 
   // Guru klik salah satu hasil pencarian -> langsung dipasang jadi qImage,
   // sama seperti hasil upload manual.
-  const selectSearchedImage = (questionId, url) => {
-    setQuestions(prev => prev.map(q => q.id === questionId ? { ...q, qImage: url } : q));
+  const selectSearchedImage = (questionId, result) => {
+    setQuestions(prev => prev.map(q => q.id === questionId ? {
+      ...q,
+      qImage: result?.url || '',
+      imageSource: result ? { title: result.title || '', url: result.url || '', source: result.source || '' } : null
+    } : q));
     setImageSearchResults(prev => ({ ...prev, [questionId]: [] }));
   };
 
@@ -1182,7 +1195,7 @@ const ManageQuiz = () => {
     setQuestions(prev => prev.map(q => {
       if (q.id === questionId) {
         if (targetType === 'question') {
-          return { ...q, qImage: '' };
+          return { ...q, qImage: '', imageSource: null };
         } else if (targetType === 'option' && optionIndex !== null) {
           const newOptionImages = [...q.optionImages];
           newOptionImages[optionIndex] = '';
@@ -1380,10 +1393,24 @@ const ManageQuiz = () => {
         <div style={{ fontSize: 13, color: item.q.trim() ? '#1e293b' : '#94a3b8' }}>
           {item.q.trim() ? renderMath(item.q) : 'Klik untuk edit soal...'}
           {item.qImage && <span style={{ marginLeft: 6, fontSize: 10, color: '#10b981' }}>🖼️</span>}
+          {item.researchBacked && <span style={{ marginLeft: 6, fontSize: 9, color: '#2563eb', background: '#eff6ff', padding: '2px 7px', borderRadius: 10, fontWeight: 700 }}>🌐 RISET INTERNET</span>}
         </div>
         
         {isEditing && (
           <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #e2e8f0' }}>
+            {item.researchBacked && item.researchSources?.length > 0 && (
+              <div style={{ marginBottom: 10, padding: '8px 10px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, fontSize: 10, color: '#0c4a6e' }}>
+                <div style={{ fontWeight: 800, marginBottom: 4 }}>🌐 Dasar riset internet</div>
+                <div style={{ lineHeight: 1.5 }}>Contoh web yang dibaca untuk menyusun pola soal ini:</div>
+                <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
+                  {item.researchSources.slice(0, 5).map((src, i) => (
+                    <li key={i}>
+                      {src?.url ? <a href={src.url} target="_blank" rel="noreferrer" style={{ color: '#0369a1' }}>{src.title || src.url}</a> : String(src?.title || src)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {/* Pilih Tipe Soal */}
             <div style={{ marginBottom: 12 }}>
               <label style={{ fontSize: 10, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>📋 Tipe Soal</label>
@@ -1470,7 +1497,7 @@ const ManageQuiz = () => {
                       {imageSearchResults[item.id].map((r, ri) => (
                         <div
                           key={ri}
-                          onClick={() => selectSearchedImage(item.id, r.url)}
+                          onClick={() => selectSearchedImage(item.id, r)}
                           title={`${r.title} — ${r.source} (klik untuk pakai)`}
                           style={{
                             width: 90, cursor: 'pointer', border: '2px solid #e2e8f0', borderRadius: 8,
@@ -1516,6 +1543,11 @@ const ManageQuiz = () => {
                 <input type="file" accept="image/*" hidden onChange={(e) => { if (e.target.files[0]) handleImageUpload(e.target.files[0], item.id, 'question'); }} disabled={uploading} />
               </label>
               
+              {item.qImage && item.imageSource?.url && (
+                <div style={{ width: '100%', fontSize: 9, color: '#64748b' }}>
+                  Sumber gambar: <a href={item.imageSource.url} target="_blank" rel="noreferrer" style={{ color: '#0369a1' }}>{item.imageSource.title || item.imageSource.source || item.imageSource.url}</a>
+                </div>
+              )}
               {item.qImage && (
                 <div style={{ position: 'relative', display: 'inline-block' }}>
                   <img src={item.qImage} alt="Soal" style={{ maxHeight: 60, borderRadius: 6, border: '1px solid #e2e8f0' }} />
@@ -2292,6 +2324,24 @@ const ManageQuiz = () => {
       const lanjut = window.confirm(`⚠️ Masih ada ${stillNeedsReview} soal yang belum ditandai jawaban benarnya. Tetap simpan?`);
       if (!lanjut) return;
     }
+
+    // PROFESSIONAL QUALITY GATE: soal yang secara eksplisit membutuhkan
+    // stimulus visual tidak boleh diterbitkan tanpa stimulus. Ini mencegah
+    // kasus seperti "jam 08:30" yang tampil tanpa jam yang benar.
+    const missingVisual = valid.find(q => q.visualRequired && !q.qImage);
+    if (missingVisual) {
+      return alert(
+        `❌ Soal #${valid.indexOf(missingVisual) + 1} membutuhkan gambar/diagram (${missingVisual.visualKind || 'visual'}) tetapi stimulus belum tersedia. ` +
+        `Lengkapi gambarnya dulu sebelum kuis diterbitkan.`
+      );
+    }
+
+    // Soal riset internet harus tetap menyimpan minimal satu sumber untuk
+    // audit guru. Soal AI biasa tidak terkena aturan ini.
+    const researchWithoutSource = valid.find(q => q.researchBacked && (!Array.isArray(q.researchSources) || q.researchSources.length === 0));
+    if (researchWithoutSource) {
+      return alert(`❌ Ada soal yang bertanda RISET INTERNET tetapi sumber risetnya hilang. Generate ulang soal tersebut agar jejak sumber tetap ada.`);
+    }
     
     if (useSchedule) {
       const open = new Date(quizOpenDate);
@@ -2341,6 +2391,11 @@ const ManageQuiz = () => {
           // sendiri (dicek via `!item.qImage` di tampilan, bukan di sini).
           needsImage: q.needsImage || false,
           imageHint: q.imageHint || '',
+          imageSource: q.imageSource || null,
+          researchBacked: q.researchBacked || false,
+          researchSources: q.researchSources || [],
+          visualRequired: q.visualRequired || false,
+          visualKind: q.visualKind || 'none',
         })),
         totalQuestions: valid.length,
         deadlineQuiz: null, // field lama, sudah tidak dipakai (lihat catatan di Identitas Kuis)

@@ -17,7 +17,7 @@
 //    dari internet (itu berisiko hak cipta & gak terjamin akurat). Ada 5
 //    mekanisme:
 //    a) "graph"   -- grafik fungsi matematika, di-plot dari titik (x,y)
-//       hasil hitungan AI lewat QuickChart.
+//       hasil hitungan AI lewat SVG lokal (tanpa layanan chart eksternal).
 //    b) "shape"   -- bangun datar/ruang gabungan dengan ukuran spesifik,
 //       digambar dari koordinat vertex yang dihitung AI, SVG presisi.
 //    c) "pattern" -- soal pola bentuk ala SBMPTN Penalaran Umum, dirender
@@ -29,9 +29,10 @@
 //       diagram teknis.
 
 const GEMINI_MODELS = [
-  'gemini-flash-latest',
-  'gemini-flash-lite-latest',
+  // Stable models with a documented Free Tier. Keep this list explicit
+  // so a future alias change does not silently move the app to a paid model.
   'gemini-2.5-flash-lite',
+  'gemini-2.5-flash',
 ];
 
 async function callGemini(systemPrompt, userPrompt, modelName, useTrendSearch) {
@@ -71,7 +72,7 @@ async function callGemini(systemPrompt, userPrompt, modelName, useTrendSearch) {
 // GENERATOR GAMBAR -- SEMUA ORISINAL, DIGAMBAR DARI DATA
 // ============================================================
 
-const escapeXml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const escapeXml = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 // ============================================================
 // 🔥 BARU: FIX BUG NYATA (laporan langsung: soal isian singkat & jumbled
@@ -103,49 +104,74 @@ const sanitizeLatexEscapes = (text) => {
     .replace(/\\([bfnrtu])(?=[a-zA-Z])/g, '\\\\$1');
 };
 
-// (a) Grafik fungsi matematika -- di-plot lewat QuickChart.io dari titik
+// (a) Grafik fungsi matematika -- dirender sebagai SVG lokal dari titik
 // (x,y) hasil hitungan AI. Akurat karena murni dari angka, bukan gambar.
 const buildGraphImageUrl = (graph) => {
   if (!graph || !Array.isArray(graph.points) || graph.points.length < 2) return '';
-  const validPoints = graph.points.filter(p => typeof p.x === 'number' && typeof p.y === 'number');
+  const validPoints = graph.points.filter(p => Number.isFinite(p?.x) && Number.isFinite(p?.y));
   if (validPoints.length < 2) return '';
   const highlight = Array.isArray(graph.highlight)
-    ? graph.highlight.filter(p => typeof p.x === 'number' && typeof p.y === 'number')
+    ? graph.highlight.filter(p => Number.isFinite(p?.x) && Number.isFinite(p?.y))
     : [];
 
-  const chartConfig = {
-    type: 'line',
-    data: {
-      datasets: [
-        {
-          label: 'f(x)',
-          data: validPoints.map(p => ({ x: p.x, y: p.y })),
-          borderColor: '#1e293b',
-          borderWidth: 2.5,
-          pointRadius: 0,
-          fill: false,
-          tension: 0.35,
-        },
-        ...(highlight.length > 0 ? [{
-          label: 'Titik',
-          data: highlight.map(p => ({ x: p.x, y: p.y })),
-          borderColor: '#dc2626',
-          backgroundColor: '#dc2626',
-          pointRadius: 5,
-          showLine: false,
-        }] : []),
-      ],
-    },
-    options: {
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { title: { display: true, text: graph.xLabel || 'x' }, grid: { color: '#e2e8f0' } },
-        y: { title: { display: true, text: graph.yLabel || 'y' }, grid: { color: '#e2e8f0' } },
-      },
-    },
-  };
+  // Pure SVG: no QuickChart, no third-party chart request, no paid dependency.
+  const xs = validPoints.map(p => p.x);
+  const ys = validPoints.map(p => p.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const spanX = Math.max(maxX - minX, 1);
+  const spanY = Math.max(maxY - minY, 1);
+  const pad = 56;
+  const width = 560;
+  const height = 380;
+  const plotW = width - pad * 2;
+  const plotH = height - pad * 2;
+  const toSvg = (x, y) => ({
+    x: pad + ((x - minX) / spanX) * plotW,
+    y: height - pad - ((y - minY) / spanY) * plotH,
+  });
 
-  return `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(chartConfig))}&backgroundColor=white&width=500&height=380`;
+  const path = validPoints.map((p, i) => {
+    const pt = toSvg(p.x, p.y);
+    return `${i === 0 ? 'M' : 'L'} ${pt.x.toFixed(2)} ${pt.y.toFixed(2)}`;
+  }).join(' ');
+
+  const zeroX = minX <= 0 && maxX >= 0 ? toSvg(0, minY).x : null;
+  const zeroY = minY <= 0 && maxY >= 0 ? toSvg(minX, 0).y : null;
+  const grid = [];
+  const ticks = 8;
+  for (let i = 0; i <= ticks; i++) {
+    const x = pad + (plotW * i / ticks);
+    const y = pad + (plotH * i / ticks);
+    const xv = minX + spanX * i / ticks;
+    const yv = maxY - spanY * i / ticks;
+    grid.push(`<line x1="${x.toFixed(2)}" y1="${pad}" x2="${x.toFixed(2)}" y2="${height - pad}" stroke="#e2e8f0" stroke-width="1"/>`);
+    grid.push(`<line x1="${pad}" y1="${y.toFixed(2)}" x2="${width - pad}" y2="${y.toFixed(2)}" stroke="#e2e8f0" stroke-width="1"/>`);
+    grid.push(`<text x="${x.toFixed(2)}" y="${height - 24}" font-size="10" fill="#64748b" text-anchor="middle">${xv.toFixed(2)}</text>`);
+    grid.push(`<text x="${pad - 8}" y="${(y + 3).toFixed(2)}" font-size="10" fill="#64748b" text-anchor="end">${yv.toFixed(2)}</text>`);
+  }
+
+  const pointsSvg = highlight.map(p => {
+    const pt = toSvg(p.x, p.y);
+    return `<circle cx="${pt.x.toFixed(2)}" cy="${pt.y.toFixed(2)}" r="5" fill="#dc2626"/>`;
+  }).join('');
+
+  const axisSvg = [
+    zeroX !== null ? `<line x1="${zeroX.toFixed(2)}" y1="${pad}" x2="${zeroX.toFixed(2)}" y2="${height - pad}" stroke="#475569" stroke-width="1.5"/>` : '',
+    zeroY !== null ? `<line x1="${pad}" y1="${zeroY.toFixed(2)}" x2="${width - pad}" y2="${zeroY.toFixed(2)}" stroke="#475569" stroke-width="1.5"/>` : '',
+  ].join('');
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
+    <rect x="0" y="0" width="${width}" height="${height}" fill="white"/>
+    ${grid.join('')}
+    ${axisSvg}
+    <path d="${path}" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${pointsSvg}
+    <text x="${width / 2}" y="${height - 6}" font-size="12" fill="#1e293b" text-anchor="middle">${escapeXml(graph.xLabel || 'x')}</text>
+    <text x="14" y="${height / 2}" font-size="12" fill="#1e293b" text-anchor="middle" transform="rotate(-90 14 ${height / 2})">${escapeXml(graph.yLabel || 'y')}</text>
+  </svg>`;
+
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 };
 
 // (b) Bangun datar/ruang gabungan dengan ukuran spesifik -- digambar dari
@@ -303,7 +329,7 @@ const TYPE_DESCRIPTIONS = {
   reading: `"reading" — Membaca Teks (bacaan panjang + beberapa sub-soal): {"type":"reading","question":"judul singkat bacaan","readingText":"teks bacaan LENGKAP, 2-5 paragraf, gaya artikel/esai natural","subQuestions":[{"q":"pertanyaan 1","options":["A","B","C","D"],"correct":0},{"q":"pertanyaan 2","options":["A","B","C","D"],"correct":1}],"explanation":"penjelasan per nomor"} (minimal 3 sub-soal per bacaan, satu bacaan = SATU baris JSONL)`,
 };
 
-const SYSTEM_PROMPT_TEMPLATE = (allowedTypes, useTrendSearch, hotsLevel) => `Kamu adalah penyusun soal ujian untuk "Bimbel Gemilang" di Indonesia, setara standar soal SNBT/UTBK/TKA yang sesungguhnya.
+const SYSTEM_PROMPT_TEMPLATE = (allowedTypes, useTrendSearch, hotsLevel, targetYear) => `Kamu adalah penyusun soal ujian untuk "Bimbel Gemilang" di Indonesia, setara standar soal SNBT/UTBK/TKA yang sesungguhnya.
 
 KONDISI NYATA: soal yang kamu buat akan langsung dipakai menguji siswa. Kesalahan hitungan atau kunci jawaban yang salah akan membuat siswa yang menjawab BENAR malah disalahkan sistem — ini fatal dan harus dihindari mati-matian.
 
@@ -319,15 +345,31 @@ ATURAN YANG TIDAK BOLEH DILANGGAR
 [8] SOAL HOTS (Higher Order Thinking Skills)${hotsLevel ? ' -- WAJIB, level: ' + hotsLevel : ' (kalau diminta)'}
 Ciri soal HOTS asli: butuh ANALISIS (memecah info, mengenali pola/hubungan), EVALUASI (menilai argumen/opsi mana paling tepat), atau PENERAPAN ke situasi BARU. Biasanya berbasis STIMULUS (bacaan/data/tabel/grafik/skenario) sebelum pertanyaan. DILARANG bikin "HOTS" cuma dengan angka lebih besar/kalimat lebih panjang -- itu bukan HOTS, itu cuma ribet. Kalau topiknya sederhana, bikin soal cerita yang MENERAPKAN konsep ke situasi nyata.
 
-${useTrendSearch ? `[9] GUNAKAN PENCARIAN INTERNET -- WAJIB DIPAKAI
-Kamu punya akses pencarian Google. WAJIB dipakai buat cari pola/format soal SNBT/UTBK/TKA/ujian sekolah TERBARU yang BENERAN ADA (tahun-tahun yang sudah lewat), topik yang sering muncul, dan gaya bahasa/level kesulitan ujian sungguhan.
+${useTrendSearch ? `[9] RISET INTERNET -- WAJIB DAN HARUS MENJADI SUMBER UTAMA
+Gunakan Google Search untuk melakukan RISET INTERNET TERLEBIH DAHULU sebelum menulis soal. Target latihan adalah ${targetYear || 'tahun berikutnya'}. Kamu TIDAK boleh menganggap soal tahun ${targetYear || 'mendatang'} sudah diketahui. Tugasmu adalah mempelajari sebanyak mungkin CONTOH SOAL PUBLIK yang benar-benar sudah ada dari tahun-tahun sebelumnya, terutama TKA/SNBT/UTBK/ujian sekolah dan sumber pendidikan tepercaya yang relevan dengan topik.
 
-ATURAN KETAT:
-- JANGAN PERNAH klaim "soal asli tahun [tahun depan]" -- itu MUSTAHIL, soal yang belum dibuat gak ada di internet manapun.
-- JANGAN menyalin soal asli kata demi kata -- itu pelanggaran hak cipta. Yang boleh: pelajari POLA-nya (jenis stimulus, gaya pertanyaan, topik tren), lalu buat soal BARU yang ORISINAL dengan angka/konteks berbeda tapi pola setara.
-- Kalau pencarian gak nemu info relevan, tetap lanjut bikin soal berkualitas standar tinggi berdasarkan pengetahuanmu.
+CARA RISET:
+- Lakukan beberapa pencarian berbeda (minimal 4 kueri berbeda bila pencarian tersedia) dengan sudut pandang berbeda: topik, istilah ujian, contoh soal, dan stimulus. Jangan bergantung pada satu hasil pencarian.
+- Prioritaskan sumber resmi/pemerintah/lembaga pendidikan serta situs pendidikan tepercaya. Cari contoh soal publik dari beberapa tahun terakhir dan, bila relevan, dokumen/PDF yang benar-benar dapat diakses publik.
+- Bandingkan pola topik, bentuk stimulus, tipe penalaran, tingkat kesulitan, dan jenis jebakan yang berulang.
+- Ambil INSIGHT dari contoh-contoh tersebut, bukan mengarang pola yang tidak didukung sumber.
+- Setelah riset selesai, susun soal latihan BARU dan ORISINAL yang paling representatif terhadap pola yang ditemukan. Jangan menyalin soal asli kata demi kata.
+- Jangan mengklaim soal yang dibuat adalah "soal resmi tahun ${targetYear || 'mendatang'}", "bocoran", atau "prediksi pasti". Gunakan istilah "latihan berbasis tren/pola soal terpublikasi".
+- Bila hasil pencarian sedikit atau tidak relevan, JANGAN berpura-pura memiliki bukti. Dalam MODE RISET, hasil dengan bukti web yang tidak memadai harus DITOLAK, bukan diam-diam berubah menjadi mode offline.
+
+SETIAP SOAL HASIL MODE RISET INTERNET WAJIB MENYERTAKAN:
+\"researchBacked\": true
+\"visualRequired\": true/false
+\"visualKind\": \"none\" | \"clock\" | \"graph\" | \"shape\" | \"pattern\" | \"real_photo\" | \"table\" | \"diagram\"
+Jangan menulis URL sumber sendiri dalam objek soal. Sumber resmi ditampilkan dari metadata grounding API. Setiap soal riset harus benar-benar didasarkan pada pola/contoh yang ditemukan, bukan sekadar diberi label researchBacked.
 ` : ''}
-[10] GAMBAR/DIAGRAM -- SEMUA WAJIB ORISINAL, ADA 4 MEKANISME
+[10] VALIDASI VISUAL -- JANGAN PERNAH MEMBUAT SOAL YANG MENYEBUT STIMULUS TETAPI STIMULUSNYA TIDAK ADA
+- Jika pertanyaan menggunakan frasa seperti "lihat gambar", "perhatikan gambar", "berdasarkan grafik", "berdasarkan diagram", atau membutuhkan visual untuk menjawab, set "visualRequired": true.
+- Jika visualKind = "clock", WAJIB gunakan mekanisme "clock" dan JANGAN pernah meminta foto jam generik.
+- Jika visualKind = "graph", "shape", atau "pattern", gunakan mekanisme terprogram yang tersedia.
+- Jika visualKind = "real_photo", gunakan "needs_image" + "image_keyword" hanya untuk foto objek/fenomena nyata yang memang diperlukan. Jangan menciptakan soal yang bergantung pada gambar acak.
+- Jika visualRequired=true tetapi sistem tidak dapat menyediakan visual yang tepat, soal WAJIB dianggap tidak valid dan jangan dipaksakan masuk ke hasil.
+[11] GAMBAR/DIAGRAM -- SEMUA WAJIB ORISINAL, ADA 5 MEKANISME
 JANGAN PERNAH berasumsi kamu "menyisipkan" gambar dari internet -- SETIAP gambar di sistem ini dibuat ULANG dari data presisi yang kamu tentukan. Pilih SATU mekanisme paling cocok untuk soal itu (kalau soal gak butuh gambar sama sekali, kosongkan semua):
 
 (a) "graph" -- buat GRAFIK FUNGSI MATEMATIKA. Format:
@@ -371,6 +413,50 @@ PERIKSA SENDIRI SEBELUM MENJAWAB
 9. Semua LaTeX (kalau ada) ditulis dengan benar di antara tanda dolar, bukan disingkat/dipotong?`;
 
 // ============================================================
+// QUALITY GATE
+// ============================================================
+const VALID_VISUAL_KINDS = new Set(['none', 'clock', 'graph', 'shape', 'pattern', 'real_photo', 'table', 'diagram']);
+
+const hasExplicitVisualReference = (questionText) => /\b(lihat|perhatikan|amati|berdasarkan)\s+(gambar|grafik|diagram|tabel|peta)|gambar\s+berikut|grafik\s+berikut|diagram\s+berikut|tabel\s+berikut/i.test(String(questionText || ''));
+
+const isValidQuestionObject = (q, allowedTypes) => {
+  if (!q || typeof q !== 'object' || !allowedTypes.includes(q.type)) return false;
+  if (typeof q.question !== 'string' || !q.question.trim()) return false;
+
+  switch (q.type) {
+    case 'multiple':
+      return Array.isArray(q.options) && q.options.length === 4 &&
+        q.options.every(o => typeof o === 'string' && o.trim()) &&
+        Number.isInteger(q.correct) && q.correct >= 0 && q.correct < 4;
+    case 'multiselect':
+      return Array.isArray(q.options) && q.options.length >= 4 &&
+        q.options.every(o => typeof o === 'string' && o.trim()) &&
+        Array.isArray(q.correctAnswers) && q.correctAnswers.length >= 1 &&
+        q.correctAnswers.every(i => Number.isInteger(i) && i >= 0 && i < q.options.length);
+    case 'truefalse':
+      return Array.isArray(q.statements) && q.statements.length >= 2 &&
+        q.statements.every(s => s && typeof s.text === 'string' && s.text.trim() && typeof s.isTrue === 'boolean');
+    case 'shortanswer':
+      return typeof q.shortAnswer === 'string' && q.shortAnswer.trim();
+    case 'causeeffect':
+      return typeof q.cause === 'string' && q.cause.trim() && typeof q.effect === 'string' && q.effect.trim() &&
+        typeof q.isCauseTrue === 'boolean' && typeof q.isEffectTrue === 'boolean';
+    case 'matching':
+      return Array.isArray(q.matchingPairs) && q.matchingPairs.length >= 3 &&
+        q.matchingPairs.every(p => p && typeof p.left === 'string' && p.left.trim() && typeof p.right === 'string' && p.right.trim());
+    case 'reading':
+      return typeof q.readingText === 'string' && q.readingText.trim() &&
+        Array.isArray(q.subQuestions) && q.subQuestions.length >= 3 &&
+        q.subQuestions.every(sq => sq && typeof sq.q === 'string' && sq.q.trim() &&
+          Array.isArray(sq.options) && sq.options.length === 4 &&
+          sq.options.every(o => typeof o === 'string' && o.trim()) &&
+          Number.isInteger(sq.correct) && sq.correct >= 0 && sq.correct < 4);
+    default:
+      return false;
+  }
+};
+
+// ============================================================
 // HANDLER
 // ============================================================
 
@@ -379,7 +465,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { topic, mapel, kelas, jumlahSoal, types, arahan, useTrendSearch, hotsLevel } = req.body;
+  const { topic, mapel, kelas, jumlahSoal, types, arahan, useTrendSearch, hotsLevel, targetYear } = req.body;
 
   if (!topic) {
     return res.status(400).json({ error: 'Topik wajib diisi' });
@@ -388,7 +474,8 @@ export default async function handler(req, res) {
   const allowedTypes = Array.isArray(types) && types.length > 0 ? types : ['multiple'];
   const jumlah = Math.min(Math.max(parseInt(jumlahSoal) || 5, 1), 20);
 
-  const systemPrompt = SYSTEM_PROMPT_TEMPLATE(allowedTypes, !!useTrendSearch, hotsLevel || '');
+  const resolvedTargetYear = parseInt(targetYear) || (new Date().getFullYear() + 1);
+  const systemPrompt = SYSTEM_PROMPT_TEMPLATE(allowedTypes, !!useTrendSearch, hotsLevel || '', resolvedTargetYear);
 
   const arahanText = (arahan && arahan.trim())
     ? `\n\nArahan khusus dari guru (WAJIB diikuti):\n${arahan.trim()}`
@@ -397,56 +484,49 @@ export default async function handler(req, res) {
   const userPrompt = `Mata pelajaran: ${mapel || 'Umum'}
 Topik/materi: ${topic}${kelas ? `\nJenjang/kelas: ${kelas}` : ''}
 Jumlah soal yang diminta: ${jumlah}
+Target latihan: ${resolvedTargetYear}
 Tipe soal yang boleh dipakai: ${allowedTypes.join(', ')}${arahanText}
+
+${useTrendSearch ? 'Mulai dengan RISET INTERNET dan gunakan hasil pencarian sebagai dasar utama sebelum menyusun soal. Jangan gunakan mode offline sebagai sumber utama.' : 'Buat soal berdasarkan pengetahuan model.'}
 
 Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
 
   let geminiData;
   let lastErr;
+  let usedModel = '';
 
   for (const modelName of GEMINI_MODELS) {
     try {
       geminiData = await callGemini(systemPrompt, userPrompt, modelName, !!useTrendSearch);
       lastErr = null;
-      console.log(`generateQuizFromTopic sukses pakai model: ${modelName}${useTrendSearch ? ' (dengan pencarian internet)' : ''}`);
+      usedModel = modelName;
+      console.log(`generateQuizFromTopic sukses pakai model: ${modelName}${useTrendSearch ? ' (RISET INTERNET)' : ''}`);
       break;
     } catch (e) {
       lastErr = e;
       console.error(`generateQuizFromTopic gagal pakai model ${modelName}:`, e.message);
-      // 🔥 FIX BUG NYATA (kelas yang sama persis dengan yang ketemu di
-      // generateMateriSection.js): sebelumnya SETIAP error 429 (kuota
-      // habis) langsung dianggap "model ini gak bisa dipakai sama
-      // sekali", padahal 429 itu BISA JADI cuma kuota fitur PENCARIAN
-      // (`useTrendSearch`) doang yang habis -- generate soal POLOS TANPA
-      // pencarian di model yang sama seringkali masih longgar kuotanya.
-      // Sekarang HANYA 404 (model beneran gak ada) yang langsung dianggap
-      // model ini gak bisa dipakai. Untuk 429 ATAU error lain, tetap
-      // dicoba ulang -- dan KALAU tadinya pakai pencarian, percobaan
-      // ulang ini SENGAJA TANPA pencarian (bukan pakai setting yang sama
-      // seperti sebelumnya, yang percuma kalau penyebabnya emang
-      // pencarian itu sendiri).
-      const isModelNotFound = e.message.includes('404');
-      if (isModelNotFound) continue;
-
-      await new Promise(r => setTimeout(r, 2000));
-      try {
-        geminiData = await callGemini(systemPrompt, userPrompt, modelName, false);
-        lastErr = null;
-        console.log(`generateQuizFromTopic sukses pakai model: ${modelName} (TANPA pencarian, fallback)`);
-        break;
-      } catch (e2) {
-        lastErr = e2;
-      }
+      const msg = String(e.message || '');
+      // Never burn the second model after a search quota error. A 429 in
+      // research mode should remain a clear free-tier quota message.
+      if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) break;
+      // Only move to the next stable free-tier model for model availability
+      // or transient server errors. Do not silently disable research mode.
+      if (!(msg.includes('404') || msg.includes('500') || msg.includes('502') || msg.includes('503'))) break;
+      await new Promise(r => setTimeout(r, 1200));
     }
   }
 
   if (lastErr) {
-    const isQuota = lastErr.message.includes('429');
+    const isQuota = String(lastErr.message || '').includes('429') || String(lastErr.message || '').includes('RESOURCE_EXHAUSTED');
     return res.status(502).json({
       error: isQuota
-        ? 'Kuota gratis Astro Gemilang hari ini sudah habis di semua model. Coba lagi besok.'
-        : 'Gagal menghubungi Astro Gemilang. Coba lagi beberapa saat lagi.',
+        ? (useTrendSearch
+          ? 'Kuota gratis riset internet Gemini sudah mencapai batas. Sistem TIDAK beralih ke mode offline agar hasil tetap berbasis sumber. Coba lagi setelah kuota reset.'
+          : 'Kuota gratis Astro Gemilang sudah mencapai batas. Coba lagi setelah kuota reset.')
+        : 'Layanan AI gratis Gemini sedang tidak tersedia. Coba lagi beberapa saat lagi.',
       debug: lastErr.message,
+      usedModel,
+      freeTierOnly: true,
     });
   }
 
@@ -494,6 +574,14 @@ Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
       return objects;
     };
 
+    const groundingChunks = candidate?.groundingMetadata?.groundingChunks || [];
+    const groundingSources = groundingChunks
+      .map(c => c.web ? { title: c.web.title || c.web.uri || 'Sumber web', url: c.web.uri || '' } : null)
+      .filter(Boolean)
+      .filter((item, idx, arr) => item.url && arr.findIndex(x => x.url === item.url) === idx)
+      .slice(0, 12);
+    const groundingQueries = candidate?.groundingMetadata?.webSearchQueries || [];
+
     const objects = extractJsonObjects(fixedRawText);
     const questionObjs = objects.filter(o => o.meta !== true && (o.question || o.readingText));
 
@@ -509,34 +597,36 @@ Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
 
     const questions = questionObjs
       .map((q) => {
-        if (!allowedTypes.includes(q.type)) {
-          console.warn('Soal Astro Gemilang dibuang karena tipe gak sesuai permintaan:', q.type, 'diminta:', allowedTypes);
+        if (!isValidQuestionObject(q, allowedTypes)) {
+          console.warn('Quality gate: format/kunci soal tidak valid, dibuang:', q?.type, q?.question);
           return null;
         }
-        const type = q.type;
 
-        if (type === 'reading') {
-          const validSub = Array.isArray(q.subQuestions)
-            ? q.subQuestions.filter(sq =>
-                sq && typeof sq.q === 'string' && sq.q.trim() &&
-                Array.isArray(sq.options) && sq.options.length >= 2 &&
-                Number.isInteger(sq.correct) && sq.correct >= 0 && sq.correct < sq.options.length
-              )
-            : [];
-          if (!q.readingText || validSub.length === 0) {
-            console.warn('Soal reading dibuang karena readingText/subQuestions gak lengkap');
-            return null;
-          }
+        if (useTrendSearch && !q.researchBacked) {
+          console.warn('Quality gate: soal riset tidak memiliki researchBacked=true, dibuang.');
+          return null;
         }
 
-        // Gambar: coba tiap mekanisme, urutan prioritas graph -> shape ->
-        // pattern -> needs_image (real photo). Kalau satu gagal/gak
-        // lengkap, dianggap gak ada gambar (bukan error fatal).
+        const type = q.type;
+        const visualRequired = !!q.visualRequired || hasExplicitVisualReference(q.question);
         let qImage = '';
-        try { if (q.graph) qImage = buildGraphImageUrl(q.graph); } catch (e) { /* abaikan, lanjut tanpa gambar */ }
-        if (!qImage) { try { if (q.shape) qImage = buildShapeImageSvg(q.shape); } catch (e) { /* abaikan */ } }
-        if (!qImage) { try { if (q.pattern) qImage = buildPatternImageSvg(q.pattern); } catch (e) { /* abaikan */ } }
-        if (!qImage) { try { if (q.clock) qImage = buildClockImageSvg(q.clock); } catch (e) { /* abaikan */ } }
+        let builtVisualKind = 'none';
+
+        try { if (q.graph) { qImage = buildGraphImageUrl(q.graph); builtVisualKind = 'graph'; } } catch (e) { console.warn('graph visual gagal:', e.message); }
+        if (!qImage) { try { if (q.shape) { qImage = buildShapeImageSvg(q.shape); builtVisualKind = 'shape'; } } catch (e) { console.warn('shape visual gagal:', e.message); } }
+        if (!qImage) { try { if (q.pattern) { qImage = buildPatternImageSvg(q.pattern); builtVisualKind = 'pattern'; } } catch (e) { console.warn('pattern visual gagal:', e.message); } }
+        if (!qImage) { try { if (q.clock) { qImage = buildClockImageSvg(q.clock); builtVisualKind = 'clock'; } } catch (e) { console.warn('clock visual gagal:', e.message); } }
+
+        const visualKind = VALID_VISUAL_KINDS.has(q.visualKind) ? q.visualKind : builtVisualKind;
+        const wantsRealImage = q.needs_image === true || visualKind === 'real_photo';
+
+        // Quality gate: explicit visual references must have an immediately
+        // available visual, except real-photo requests which deliberately
+        // hand the teacher a source-search task rather than using a random photo.
+        if (visualRequired && !qImage && !wantsRealImage) {
+          console.warn('Quality gate: visual wajib tetapi tidak tersedia, dibuang:', q.question);
+          return null;
+        }
 
         return {
           type,
@@ -557,26 +647,36 @@ Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
             : undefined,
           readingText: q.readingText ? sanitizeText(q.readingText) : undefined,
           subQuestions: Array.isArray(q.subQuestions)
-            ? q.subQuestions
-                .filter(sq => sq && typeof sq.q === 'string' && Array.isArray(sq.options) && Number.isInteger(sq.correct))
-                .map(sq => ({
-                  q: sanitizeText(sq.q),
-                  options: sq.options.map(o => sanitizeText(String(o))),
-                  correct: sq.correct,
-                }))
+            ? q.subQuestions.map(sq => ({
+                q: sanitizeText(sq.q || ''),
+                options: Array.isArray(sq.options) ? sq.options.map(o => sanitizeText(String(o))) : [],
+                correct: Number.isInteger(sq.correct) ? sq.correct : 0,
+              }))
             : undefined,
           explanation: sanitizeText(q.explanation || ''),
-          // Gambar hasil generate sendiri (graph/shape/pattern) langsung
-          // dipasang ke qImage -- guru gak perlu upload apa-apa lagi.
+          researchBacked: !!q.researchBacked && !!useTrendSearch,
+          visualRequired,
+          visualKind: visualKind || (qImage ? builtVisualKind : 'none'),
           qImage: qImage || undefined,
-          // needs_image tetap diteruskan sebagai petunjuk buat frontend
-          // (dicari lewat Wikimedia di sana) -- HANYA relevan kalau qImage
-          // masih kosong (gak ada graph/shape/pattern buat soal ini).
-          needsImage: !qImage && !!q.needs_image,
-          imageHint: (!qImage && q.needs_image) ? sanitizeText(q.image_keyword || '') : '',
+          needsImage: !qImage && wantsRealImage,
+          imageHint: (!qImage && wantsRealImage) ? sanitizeText(q.image_keyword || '') : '',
         };
       })
       .filter(Boolean);
+
+    if (useTrendSearch) {
+      const sourceUrls = groundingSources;
+      const domains = [...new Set(sourceUrls.map(s => { try { return new URL(s.url).hostname.replace(/^www\./, ''); } catch (_) { return ''; } }).filter(Boolean))];
+      if (sourceUrls.length < 3 || domains.length < 2) {
+        return res.status(502).json({
+          error: 'Riset internet belum menemukan cukup sumber yang relevan. Sistem menolak membuat soal agar tidak mengarang dasar tren.',
+          researchQuality: { sources: sourceUrls.length, domains: domains.length },
+          groundingSources: sourceUrls,
+          groundingQueries: groundingQueries || [],
+          freeTierOnly: true,
+        });
+      }
+    }
 
     if (questions.length === 0) {
       return res.status(502).json({
@@ -586,17 +686,25 @@ Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
 
     const possiblyTruncated = candidate?.finishReason === 'MAX_TOKENS' || questions.length < jumlah;
 
-    const groundingSources = (candidate?.groundingMetadata?.groundingChunks || [])
-      .map(c => c.web?.title || c.web?.uri)
-      .filter(Boolean)
-      .slice(0, 5);
+    const sourceDomains = [...new Set(groundingSources.map(s => {
+      try { return new URL(s.url).hostname.replace(/^www\./, ''); } catch (_) { return ''; }
+    }).filter(Boolean))];
 
     return res.status(200).json({
       success: true,
       questions,
       possiblyTruncated,
       usedTrendSearch: !!useTrendSearch,
+      usedModel,
+      freeTierOnly: true,
+      targetYear: resolvedTargetYear,
       groundingSources,
+      groundingQueries,
+      researchQuality: {
+        sourceCount: groundingSources.length,
+        domainCount: sourceDomains.length,
+        queryCount: groundingQueries.length,
+      },
     });
   } catch (error) {
     console.error('generateQuizFromTopic parse error:', error);
