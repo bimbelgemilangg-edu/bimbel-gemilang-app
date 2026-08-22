@@ -1,69 +1,99 @@
 // api/generateQuizFromTopic.js
 // ============================================================
-// GEMILANG PROFESSIONAL QUIZ ENGINE
+// BIMBEL GEMILANG — PROFESSIONAL QUIZ ENGINE
+// FREE WEB RESEARCH + GEMINI 3.6 FLASH
 // ============================================================
-// Prinsip:
-// 1. Gemini 2.5 Flash-Lite / Flash = Free Tier
-// 2. Riset internet menggunakan Google Search grounding resmi
-// 3. TIDAK menggunakan Antigravity
-// 4. TIDAK fallback diam-diam dari riset -> offline
-// 5. Maksimum 10 soal / request agar stabil
-//    => AIGenerateQuiz dapat menjalankan 10 + 10 + 10 + 10 = 40 soal
-// 6. Soal hasil riset = soal latihan BARU berbasis sumber web,
-//    bukan salinan massal soal berhak cipta
-// 7. Sumber grounding disimpan agar guru bisa audit
-// 8. Visual matematis dibuat lokal: graph / shape / pattern / clock
-// 9. Foto objek nyata hanya dicari dari Openverse / Wikimedia
-// 10. Soal yang menyebut visual tetapi visualnya tidak tersedia DITOLAK
+// Arsitektur:
+// WEB SEARCH GRATIS
+//      ↓
+// contoh/sumber soal nyata
+//      ↓
+// GEMINI 3.6 FLASH
+//      ↓
+// soal latihan baru berbasis riset
+//      ↓
+// QUALITY GATE
+//      ↓
+// MANAGE QUIZ
+//
+// PENTING:
+// - Tidak memakai Antigravity.
+// - Tidak memakai gemini-2.5.
+// - Tidak memakai Google Search grounding Gemini 3.x
+//   karena tidak tersedia pada Free Tier API.
+// - Tidak fallback diam-diam dari riset ke AI offline.
+// - Maksimal 10 soal per request.
+// - Untuk 40 soal: frontend nanti memanggil 10 + 10 + 10 + 10.
+// - Visual clock/graph/shape/pattern dibuat lokal.
+// - Foto nyata memakai needsImage + imageHint agar frontend
+//   dapat mengambil dari sumber gambar berlisensi terbuka.
 // ============================================================
 
-const GEMINI_MODELS = [
-  'gemini-2.5-flash-lite',
-  'gemini-2.5-flash',
-];
+const GEMINI_MODEL = 'gemini-3.6-flash';
 
 const MAX_BATCH_QUESTIONS = 10;
 const MAX_OUTPUT_TOKENS = 14000;
-const REQUEST_TIMEOUT_MS = 70000;
+
+const GEMINI_TIMEOUT_MS = 70000;
+const SEARCH_TIMEOUT_MS = 30000;
+
+// Search Jina tanpa API key memiliki rate limit rendah.
+// Kita sengaja memberi jarak antarpencarian agar tidak melakukan
+// request paralel yang mudah terkena rate limit.
+const SEARCH_INTERVAL_MS = 22000;
+
+let lastSearchAt = 0;
 
 // ============================================================
-// BASIC HELPERS
+// HELPERS
 // ============================================================
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 const sanitizeText = (value = '') =>
   String(value ?? '')
     .replace(/<script[\s\S]*?<\/script>/gi, '')
     .trim();
 
-const sanitizeLatexEscapes = (text = '') => {
-  return String(text)
+const sanitizeLatexEscapes = (text = '') =>
+  String(text)
     .replace(/\\(?!["\\/bfnrtu])/g, '\\\\')
     .replace(/\\([bfnrtu])(?=[a-zA-Z])/g, '\\\\$1');
-};
 
-const escapeXml = (s = '') =>
-  String(s)
+const escapeXml = (value = '') =>
+  String(value)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
 
-const isFiniteNumber = (v) =>
-  typeof v === 'number' && Number.isFinite(v);
+const isFiniteNumber = (value) =>
+  typeof value === 'number' &&
+  Number.isFinite(value);
 
-const isIntegerInRange = (v, min, max) =>
-  Number.isInteger(v) && v >= min && v <= max;
+const isIntegerInRange = (
+  value,
+  min,
+  max
+) =>
+  Number.isInteger(value) &&
+  value >= min &&
+  value <= max;
 
 const fetchWithTimeout = async (
   url,
   options = {},
-  timeoutMs = REQUEST_TIMEOUT_MS
+  timeoutMs = 30000
 ) => {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const controller =
+    new AbortController();
+
+  const timer = setTimeout(
+    () => controller.abort(),
+    timeoutMs
+  );
 
   try {
     return await fetch(url, {
@@ -76,212 +106,611 @@ const fetchWithTimeout = async (
 };
 
 // ============================================================
-// DETEKSI KEBUTUHAN VISUAL
+// FREE WEB SEARCH
 // ============================================================
 
-const containsVisualCue = (text = '') => {
-  const t = String(text).toLowerCase();
+async function searchWebFree(query) {
+  const now = Date.now();
 
-  const cues = [
-    'lihat gambar',
-    'perhatikan gambar',
-    'gambar berikut',
-    'berdasarkan gambar',
-    'pada gambar',
-    'lihat grafik',
-    'perhatikan grafik',
-    'grafik berikut',
-    'berdasarkan grafik',
-    'lihat diagram',
-    'perhatikan diagram',
-    'diagram berikut',
-    'berdasarkan diagram',
-    'lihat tabel',
-    'perhatikan tabel',
-    'tabel berikut',
-    'berdasarkan tabel',
-    'lihat peta',
-    'perhatikan peta',
+  const wait = Math.max(
+    0,
+    SEARCH_INTERVAL_MS -
+      (now - lastSearchAt)
+  );
 
-    'look at the picture',
-    'look at the image',
-    'look at the graph',
-    'look at the diagram',
-    'look at the table',
-    'look at the map',
-    'based on the picture',
-    'based on the image',
-    'based on the graph',
-    'based on the diagram',
-    'based on the table',
-    'based on the map',
-  ];
+  if (wait > 0) {
+    await sleep(wait);
+  }
 
-  return cues.some((cue) => t.includes(cue));
-};
+  lastSearchAt = Date.now();
 
-// ============================================================
-// GEMINI CALL
-// ============================================================
-
-async function callGemini({
-  systemPrompt,
-  userPrompt,
-  modelName,
-  useTrendSearch,
-}) {
   const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
+    `https://s.jina.ai/?q=${encodeURIComponent(
+      query
+    )}`;
+
+  const response =
+    await fetchWithTimeout(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'User-Agent':
+            'BimbelGemilangQuiz/1.0',
+        },
+      },
+      SEARCH_TIMEOUT_MS
+    );
+
+  const raw =
+    await response.text();
+
+  if (!response.ok) {
+    throw new Error(
+      `WEB_SEARCH_HTTP_${response.status}: ${raw.slice(
+        0,
+        500
+      )}`
+    );
+  }
+
+  // Jina dapat mengembalikan JSON
+  // ataupun teks tergantung gateway.
+
+  try {
+    const parsed =
+      JSON.parse(raw);
+
+    const items =
+      Array.isArray(parsed)
+        ? parsed
+        : Array.isArray(
+            parsed?.data
+          )
+        ? parsed.data
+        : Array.isArray(
+            parsed?.results
+          )
+        ? parsed.results
+        : [];
+
+    if (items.length > 0) {
+      return items
+        .slice(0, 8)
+        .map((item) => ({
+          title: sanitizeText(
+            item.title ||
+              item.name ||
+              ''
+          ),
+
+          url: sanitizeText(
+            item.url ||
+              item.link ||
+              ''
+          ),
+
+          content:
+            sanitizeText(
+              item.content ||
+                item.description ||
+                item.snippet ||
+                ''
+            ).slice(0, 8000),
+        }))
+        .filter(
+          (item) =>
+            item.title ||
+            item.url ||
+            item.content
+        );
+    }
+  } catch (_) {
+    // lanjut ke mode plain text
+  }
+
+  if (!raw.trim()) {
+    return [];
+  }
+
+  return [
+    {
+      title:
+        'Web Search Result',
+
+      url: '',
+
+      content:
+        raw.slice(0, 12000),
+    },
+  ];
+}
+
+// ============================================================
+// RESEARCH QUERY
+// ============================================================
+
+function buildResearchQueries({
+  topic,
+  mapel,
+  kelas,
+  targetYear,
+}) {
+  const year =
+    targetYear ||
+    String(
+      new Date().getFullYear() + 1
+    );
+
+  return [
+    `"${topic}" ${mapel || ''} ${
+      kelas || ''
+    } TKA contoh soal`,
+
+    `"${topic}" ${mapel || ''} ${
+      kelas || ''
+    } latihan soal tahun sebelumnya`,
+
+    `${mapel || ''} ${
+      kelas || ''
+    } TKA soal ${year}`,
+
+    `${topic} soal HOTS ${mapel || ''}`,
+  ];
+}
+
+// ============================================================
+// GEMINI 3.6 FLASH
+// ============================================================
+
+async function callGemini(
+  systemPrompt,
+  userPrompt
+) {
+  if (
+    !process.env.GEMINI_API_KEY
+  ) {
+    throw new Error(
+      'GEMINI_API_KEY belum tersedia.'
+    );
+  }
+
+  const url =
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
   const body = {
     system_instruction: {
-      parts: [{ text: systemPrompt }],
+      parts: [
+        {
+          text: systemPrompt,
+        },
+      ],
     },
 
     contents: [
       {
         role: 'user',
-        parts: [{ text: userPrompt }],
+
+        parts: [
+          {
+            text: userPrompt,
+          },
+        ],
       },
     ],
 
     generationConfig: {
       temperature: 0.2,
       topP: 0.9,
-      maxOutputTokens: MAX_OUTPUT_TOKENS,
+      maxOutputTokens:
+        MAX_OUTPUT_TOKENS,
     },
   };
 
-  // ==========================================================
-  // PENTING:
-  // Gunakan Google Search grounding resmi.
-  // TIDAK memakai Antigravity.
-  // ==========================================================
-  if (useTrendSearch) {
-    body.tools = [
+  const response =
+    await fetchWithTimeout(
+      url,
       {
-        google_search: {},
-      },
-    ];
-  }
+        method: 'POST',
 
-  const response = await fetchWithTimeout(
-    url,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': process.env.GEMINI_API_KEY,
-      },
-      body: JSON.stringify(body),
-    },
-    REQUEST_TIMEOUT_MS
-  );
+        headers: {
+          'Content-Type':
+            'application/json',
 
-  const raw = await response.text();
+          'x-goog-api-key':
+            process.env
+              .GEMINI_API_KEY,
+        },
+
+        body: JSON.stringify(
+          body
+        ),
+      },
+      GEMINI_TIMEOUT_MS
+    );
+
+  const raw =
+    await response.text();
 
   if (!response.ok) {
     let detail = raw;
 
     try {
-      const parsed = JSON.parse(raw);
-      detail = parsed?.error?.message || raw;
+      const parsed =
+        JSON.parse(raw);
+
+      detail =
+        parsed?.error
+          ?.message || raw;
     } catch (_) {}
 
-    const err = new Error(
-      `GEMINI_HTTP_${response.status}: ${detail}`
-    );
+    const error =
+      new Error(
+        `GEMINI_HTTP_${response.status}: ${detail}`
+      );
 
-    err.status = response.status;
-    err.raw = raw;
+    error.status =
+      response.status;
 
-    throw err;
+    throw error;
   }
 
-  try {
-    return JSON.parse(raw);
-  } catch (_) {
-    throw new Error(
-      'Respons Gemini tidak dapat diparse sebagai JSON.'
-    );
-  }
+  return JSON.parse(raw);
 }
 
 // ============================================================
-// VISUAL GENERATOR
+// VISUAL — CLOCK
 // ============================================================
 
-// ---------- GRAPH ----------
-
-const buildGraphImageSvg = (graph) => {
-  if (!graph || !Array.isArray(graph.points)) return '';
-
-  const points = graph.points
-    .filter(
-      (p) =>
-        isFiniteNumber(p?.x) &&
-        isFiniteNumber(p?.y)
+const buildClockImageSvg = (
+  clock
+) => {
+  if (
+    !clock ||
+    !isFiniteNumber(
+      clock.hour
+    ) ||
+    !isFiniteNumber(
+      clock.minute
     )
-    .slice(0, 100);
+  ) {
+    return '';
+  }
 
-  if (points.length < 2) return '';
+  const hour =
+    ((Number(clock.hour) %
+      12) +
+      12) %
+    12;
 
-  const highlights = Array.isArray(graph.highlight)
-    ? graph.highlight.filter(
-        (p) =>
-          isFiniteNumber(p?.x) &&
-          isFiniteNumber(p?.y)
+  const minute =
+    Math.max(
+      0,
+      Math.min(
+        59,
+        Number(clock.minute)
       )
-    : [];
+    );
 
-  const xs = points.map((p) => p.x);
-  const ys = points.map((p) => p.y);
+  const size = 280;
 
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
+  const cx =
+    size / 2;
 
-  const W = 640;
-  const H = 420;
-  const pad = 55;
+  const cy =
+    size / 2;
 
-  const mapX = (x) =>
-    pad +
-    ((x - minX) / Math.max(maxX - minX, 1)) *
-      (W - pad * 2);
+  const radius =
+    112;
 
-  const mapY = (y) =>
-    H -
-    pad -
-    ((y - minY) / Math.max(maxY - minY, 1)) *
-      (H - pad * 2);
+  const toXY = (
+    angle,
+    length
+  ) => {
+    const rad =
+      ((angle - 90) *
+        Math.PI) /
+      180;
 
-  const path = points
-    .map(
-      (p, i) =>
-        `${i === 0 ? 'M' : 'L'} ${mapX(p.x).toFixed(1)} ${mapY(
-          p.y
-        ).toFixed(1)}`
-    )
-    .join(' ');
+    return {
+      x:
+        cx +
+        length *
+          Math.cos(rad),
 
-  const highlightSvg = highlights
-    .map(
-      (p) =>
-        `<circle cx="${mapX(p.x).toFixed(1)}"
-                 cy="${mapY(p.y).toFixed(1)}"
-                 r="6"
-                 fill="#dc2626"/>`
-    )
-    .join('');
+      y:
+        cy +
+        length *
+          Math.sin(rad),
+    };
+  };
+
+  const hourTip =
+    toXY(
+      hour * 30 +
+        minute * 0.5,
+      radius * 0.52
+    );
+
+  const minuteTip =
+    toXY(
+      minute * 6,
+      radius * 0.78
+    );
+
+  const ticks =
+    Array.from(
+      { length: 60 },
+      (_, i) => {
+        const major =
+          i % 5 === 0;
+
+        const outer =
+          toXY(
+            i * 6,
+            radius
+          );
+
+        const inner =
+          toXY(
+            i * 6,
+            major
+              ? radius - 13
+              : radius - 7
+          );
+
+        return `
+<line
+  x1="${outer.x.toFixed(2)}"
+  y1="${outer.y.toFixed(2)}"
+  x2="${inner.x.toFixed(2)}"
+  y2="${inner.y.toFixed(2)}"
+  stroke="#334155"
+  stroke-width="${
+    major ? 2 : 1
+  }"
+/>`;
+      }
+    ).join('');
+
+  const numbers =
+    Array.from(
+      { length: 12 },
+      (_, i) => {
+        const number =
+          i === 0
+            ? 12
+            : i;
+
+        const pos =
+          toXY(
+            i * 30,
+            radius - 25
+          );
+
+        return `
+<text
+  x="${pos.x.toFixed(1)}"
+  y="${(
+    pos.y + 6
+  ).toFixed(1)}"
+  text-anchor="middle"
+  font-family="Arial"
+  font-size="18"
+  font-weight="700"
+  fill="#1e293b"
+>${number}</text>`;
+      }
+    ).join('');
 
   const svg = `
-<svg xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 ${W} ${H}"
-     width="${W}"
-     height="${H}">
-  <rect width="${W}" height="${H}" fill="white"/>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 ${size} ${size}"
+  width="${size}"
+  height="${size}"
+>
+  <rect
+    width="${size}"
+    height="${size}"
+    fill="white"
+  />
+
+  <circle
+    cx="${cx}"
+    cy="${cy}"
+    r="${radius}"
+    fill="white"
+    stroke="#1e293b"
+    stroke-width="3"
+  />
+
+  ${ticks}
+
+  ${numbers}
+
+  <line
+    x1="${cx}"
+    y1="${cy}"
+    x2="${hourTip.x.toFixed(2)}"
+    y2="${hourTip.y.toFixed(2)}"
+    stroke="#1e293b"
+    stroke-width="6"
+    stroke-linecap="round"
+  />
+
+  <line
+    x1="${cx}"
+    y1="${cy}"
+    x2="${minuteTip.x.toFixed(2)}"
+    y2="${minuteTip.y.toFixed(2)}"
+    stroke="#334155"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+
+  <circle
+    cx="${cx}"
+    cy="${cy}"
+    r="5"
+    fill="#1e293b"
+  />
+</svg>
+`;
+
+  return (
+    `data:image/svg+xml;base64,` +
+    Buffer.from(svg).toString(
+      'base64'
+    )
+  );
+};
+
+// ============================================================
+// VISUAL — GRAPH
+// ============================================================
+
+const buildGraphImageSvg = (
+  graph
+) => {
+  if (
+    !graph ||
+    !Array.isArray(
+      graph.points
+    )
+  ) {
+    return '';
+  }
+
+  const points =
+    graph.points
+      .filter(
+        (point) =>
+          isFiniteNumber(
+            point?.x
+          ) &&
+          isFiniteNumber(
+            point?.y
+          )
+      )
+      .slice(0, 100);
+
+  if (
+    points.length < 2
+  ) {
+    return '';
+  }
+
+  const xs =
+    points.map(
+      (p) => p.x
+    );
+
+  const ys =
+    points.map(
+      (p) => p.y
+    );
+
+  const minX =
+    Math.min(...xs);
+
+  const maxX =
+    Math.max(...xs);
+
+  const minY =
+    Math.min(...ys);
+
+  const maxY =
+    Math.max(...ys);
+
+  const W = 640;
+
+  const H = 420;
+
+  const pad = 55;
+
+  const mapX = (
+    x
+  ) =>
+    pad +
+    ((x - minX) /
+      Math.max(
+        maxX - minX,
+        1
+      )) *
+      (W - pad * 2);
+
+  const mapY = (
+    y
+  ) =>
+    H -
+    pad -
+    ((y - minY) /
+      Math.max(
+        maxY - minY,
+        1
+      )) *
+      (H - pad * 2);
+
+  const path =
+    points
+      .map(
+        (point, i) =>
+          `${
+            i === 0
+              ? 'M'
+              : 'L'
+          } ${mapX(
+            point.x
+          ).toFixed(1)} ${mapY(
+            point.y
+          ).toFixed(1)}`
+      )
+      .join(' ');
+
+  const highlights =
+    Array.isArray(
+      graph.highlight
+    )
+      ? graph.highlight
+          .filter(
+            (point) =>
+              isFiniteNumber(
+                point?.x
+              ) &&
+              isFiniteNumber(
+                point?.y
+              )
+          )
+          .map(
+            (point) =>
+              `<circle
+                cx="${mapX(
+                  point.x
+                ).toFixed(1)}"
+                cy="${mapY(
+                  point.y
+                ).toFixed(1)}"
+                r="6"
+                fill="#dc2626"
+              />`
+          )
+          .join('')
+      : '';
+
+  const svg = `
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 ${W} ${H}"
+  width="${W}"
+  height="${H}"
+>
+  <rect
+    width="${W}"
+    height="${H}"
+    fill="white"
+  />
 
   <line
     x1="${pad}"
@@ -310,7 +739,7 @@ const buildGraphImageSvg = (graph) => {
     stroke-linejoin="round"
   />
 
-  ${highlightSvg}
+  ${highlights}
 
   <text
     x="${W - pad}"
@@ -318,8 +747,11 @@ const buildGraphImageSvg = (graph) => {
     text-anchor="end"
     font-family="Arial"
     font-size="16"
-    fill="#334155">
-    ${escapeXml(graph.xLabel || 'x')}
+    fill="#334155"
+  >
+    ${escapeXml(
+      graph.xLabel || 'x'
+    )}
   </text>
 
   <text
@@ -327,654 +759,619 @@ const buildGraphImageSvg = (graph) => {
     y="${pad}"
     font-family="Arial"
     font-size="16"
-    fill="#334155">
-    ${escapeXml(graph.yLabel || 'y')}
+    fill="#334155"
+  >
+    ${escapeXml(
+      graph.yLabel || 'y'
+    )}
   </text>
-</svg>`;
+</svg>
+`;
 
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString(
-    'base64'
-  )}`;
+  return (
+    `data:image/svg+xml;base64,` +
+    Buffer.from(svg).toString(
+      'base64'
+    )
+  );
 };
 
-// ---------- SHAPE ----------
+// ============================================================
+// VISUAL — SHAPE
+// ============================================================
 
-const buildShapeImageSvg = (shape) => {
+const buildShapeImageSvg = (
+  shape
+) => {
   if (
     !shape ||
-    !Array.isArray(shape.vertices)
+    !Array.isArray(
+      shape.vertices
+    )
   ) {
     return '';
   }
 
-  const vertices = shape.vertices
-    .filter(
-      (v) =>
-        isFiniteNumber(v?.x) &&
-        isFiniteNumber(v?.y)
-    )
-    .slice(0, 30);
-
-  if (vertices.length < 3) return '';
-
-  const labels = Array.isArray(shape.labels)
-    ? shape.labels.filter(
-        (l) =>
-          isFiniteNumber(l?.x) &&
-          isFiniteNumber(l?.y)
+  const vertices =
+    shape.vertices
+      .filter(
+        (vertex) =>
+          isFiniteNumber(
+            vertex?.x
+          ) &&
+          isFiniteNumber(
+            vertex?.y
+          )
       )
-    : [];
+      .slice(0, 30);
+
+  if (
+    vertices.length < 3
+  ) {
+    return '';
+  }
+
+  const labels =
+    Array.isArray(
+      shape.labels
+    )
+      ? shape.labels.filter(
+          (label) =>
+            isFiniteNumber(
+              label?.x
+            ) &&
+            isFiniteNumber(
+              label?.y
+            )
+        )
+      : [];
 
   const allX = [
-    ...vertices.map((v) => v.x),
-    ...labels.map((l) => l.x),
+    ...vertices.map(
+      (v) => v.x
+    ),
+
+    ...labels.map(
+      (l) => l.x
+    ),
   ];
 
   const allY = [
-    ...vertices.map((v) => v.y),
-    ...labels.map((l) => l.y),
+    ...vertices.map(
+      (v) => v.y
+    ),
+
+    ...labels.map(
+      (l) => l.y
+    ),
   ];
 
-  const minX = Math.min(...allX);
-  const maxX = Math.max(...allX);
-  const minY = Math.min(...allY);
-  const maxY = Math.max(...allY);
+  const minX =
+    Math.min(...allX);
 
-  const span = Math.max(
-    maxX - minX,
-    maxY - minY,
-    1
-  );
+  const maxX =
+    Math.max(...allX);
 
-  const pad = span * 0.2 + 10;
-  const W = Math.max(
-    maxX - minX + pad * 2,
-    180
-  );
-  const H = Math.max(
-    maxY - minY + pad * 2,
-    180
-  );
+  const minY =
+    Math.min(...allY);
 
-  const sx = (x) =>
+  const maxY =
+    Math.max(...allY);
+
+  const span =
+    Math.max(
+      maxX - minX,
+      maxY - minY,
+      1
+    );
+
+  const pad =
+    span * 0.2 + 10;
+
+  const W =
+    Math.max(
+      maxX - minX +
+        pad * 2,
+      180
+    );
+
+  const H =
+    Math.max(
+      maxY - minY +
+        pad * 2,
+      180
+    );
+
+  const sx = (
+    x
+  ) =>
     x - minX + pad;
 
-  const sy = (y) =>
+  const sy = (
+    y
+  ) =>
     maxY - y + pad;
 
-  const polygonPoints = vertices
-    .map(
-      (v) =>
-        `${sx(v.x).toFixed(1)},${sy(v.y).toFixed(1)}`
-    )
-    .join(' ');
+  const polygon =
+    vertices
+      .map(
+        (vertex) =>
+          `${sx(
+            vertex.x
+          ).toFixed(1)},${sy(
+            vertex.y
+          ).toFixed(1)}`
+      )
+      .join(' ');
 
-  const labelSvg = labels
-    .map(
-      (l) =>
-        `<text
-          x="${sx(l.x).toFixed(1)}"
-          y="${sy(l.y).toFixed(1)}"
-          text-anchor="middle"
-          font-family="Arial"
-          font-size="16"
-          fill="#334155">
-          ${escapeXml(l.text || '')}
-        </text>`
-    )
-    .join('');
+  const labelSvg =
+    labels
+      .map(
+        (label) =>
+          `<text
+            x="${sx(
+              label.x
+            ).toFixed(1)}"
+            y="${sy(
+              label.y
+            ).toFixed(1)}"
+            text-anchor="middle"
+            font-family="Arial"
+            font-size="16"
+            fill="#334155"
+          >${escapeXml(
+            label.text || ''
+          )}</text>`
+      )
+      .join('');
 
   const svg = `
-<svg xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 ${W} ${H}"
-     width="500"
-     height="360">
-  <rect width="${W}" height="${H}" fill="white"/>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 ${W} ${H}"
+  width="500"
+  height="360"
+>
+  <rect
+    width="${W}"
+    height="${H}"
+    fill="white"
+  />
 
   <polygon
-    points="${polygonPoints}"
+    points="${polygon}"
     fill="#dbeafe"
     stroke="#1e293b"
     stroke-width="3"
   />
 
   ${labelSvg}
-</svg>`;
+</svg>
+`;
 
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString(
-    'base64'
-  )}`;
+  return (
+    `data:image/svg+xml;base64,` +
+    Buffer.from(svg).toString(
+      'base64'
+    )
+  );
 };
 
-// ---------- PATTERN ----------
+// ============================================================
+// VISUAL — PATTERN
+// ============================================================
 
-const SHAPE_PRIMITIVES = {
-  circle: (cx, cy, r, filled) =>
-    `<circle
-      cx="${cx}"
-      cy="${cy}"
-      r="${r}"
-      fill="${filled ? '#1e293b' : 'white'}"
-      stroke="#1e293b"
-      stroke-width="2"/>`,
+const PRIMITIVES = {
+  circle:
+    (
+      cx,
+      cy,
+      r,
+      filled
+    ) =>
+      `<circle
+        cx="${cx}"
+        cy="${cy}"
+        r="${r}"
+        fill="${
+          filled
+            ? '#1e293b'
+            : 'white'
+        }"
+        stroke="#1e293b"
+        stroke-width="2"
+      />`,
 
-  square: (cx, cy, r, filled) =>
-    `<rect
-      x="${cx - r}"
-      y="${cy - r}"
-      width="${r * 2}"
-      height="${r * 2}"
-      fill="${filled ? '#1e293b' : 'white'}"
-      stroke="#1e293b"
-      stroke-width="2"/>`,
+  square:
+    (
+      cx,
+      cy,
+      r,
+      filled
+    ) =>
+      `<rect
+        x="${cx - r}"
+        y="${cy - r}"
+        width="${r * 2}"
+        height="${r * 2}"
+        fill="${
+          filled
+            ? '#1e293b'
+            : 'white'
+        }"
+        stroke="#1e293b"
+        stroke-width="2"
+      />`,
 
-  triangle: (cx, cy, r, filled) =>
-    `<polygon
-      points="${cx},${cy - r}
-              ${cx - r},${cy + r}
-              ${cx + r},${cy + r}"
-      fill="${filled ? '#1e293b' : 'white'}"
-      stroke="#1e293b"
-      stroke-width="2"/>`,
+  triangle:
+    (
+      cx,
+      cy,
+      r,
+      filled
+    ) =>
+      `<polygon
+        points="${cx},${
+          cy - r
+        } ${
+          cx - r
+        },${cy + r} ${
+          cx + r
+        },${cy + r}"
+        fill="${
+          filled
+            ? '#1e293b'
+            : 'white'
+        }"
+        stroke="#1e293b"
+        stroke-width="2"
+      />`,
 
-  pentagon: (cx, cy, r, filled) => {
-    const pts = Array.from(
-      { length: 5 },
-      (_, i) => {
-        const a =
-          -Math.PI / 2 +
-          (i * 2 * Math.PI) / 5;
+  pentagon: (
+    cx,
+    cy,
+    r,
+    filled
+  ) => {
+    const points =
+      Array.from(
+        { length: 5 },
+        (_, i) => {
+          const angle =
+            -Math.PI / 2 +
+            (i *
+              2 *
+              Math.PI) /
+              5;
 
-        return `${(
-          cx +
-          r * Math.cos(a)
-        ).toFixed(1)},${(
-          cy +
-          r * Math.sin(a)
-        ).toFixed(1)}`;
-      }
-    ).join(' ');
+          return `${(
+            cx +
+            r *
+              Math.cos(
+                angle
+              )
+          ).toFixed(1)},${(
+            cy +
+            r *
+              Math.sin(
+                angle
+              )
+          ).toFixed(1)}`;
+        }
+      ).join(' ');
 
-    return `<polygon
-      points="${pts}"
-      fill="${filled ? '#1e293b' : 'white'}"
-      stroke="#1e293b"
-      stroke-width="2"/>`;
+    return `
+<polygon
+  points="${points}"
+  fill="${
+    filled
+      ? '#1e293b'
+      : 'white'
+  }"
+  stroke="#1e293b"
+  stroke-width="2"
+/>`;
   },
 
-  star: (cx, cy, r, filled) => {
-    const pts = Array.from(
-      { length: 10 },
-      (_, i) => {
-        const rr =
-          i % 2 === 0
-            ? r
-            : r * 0.45;
+  star: (
+    cx,
+    cy,
+    r,
+    filled
+  ) => {
+    const points =
+      Array.from(
+        { length: 10 },
+        (_, i) => {
+          const rr =
+            i % 2 === 0
+              ? r
+              : r * 0.45;
 
-        const a =
-          -Math.PI / 2 +
-          (i * Math.PI) / 5;
+          const angle =
+            -Math.PI / 2 +
+            (i * Math.PI) /
+              5;
 
-        return `${(
-          cx +
-          rr * Math.cos(a)
-        ).toFixed(1)},${(
-          cy +
-          rr * Math.sin(a)
-        ).toFixed(1)}`;
-      }
-    ).join(' ');
+          return `${(
+            cx +
+            rr *
+              Math.cos(
+                angle
+              )
+          ).toFixed(1)},${(
+            cy +
+            rr *
+              Math.sin(
+                angle
+              )
+          ).toFixed(1)}`;
+        }
+      ).join(' ');
 
-    return `<polygon
-      points="${pts}"
-      fill="${filled ? '#1e293b' : 'white'}"
-      stroke="#1e293b"
-      stroke-width="2"/>`;
+    return `
+<polygon
+  points="${points}"
+  fill="${
+    filled
+      ? '#1e293b'
+      : 'white'
+  }"
+  stroke="#1e293b"
+  stroke-width="2"
+/>`;
   },
 };
 
-const buildPatternImageSvg = (pattern) => {
+const buildPatternImageSvg = (
+  pattern
+) => {
   if (
     !pattern ||
-    !Array.isArray(pattern.sequence)
+    !Array.isArray(
+      pattern.sequence
+    )
   ) {
     return '';
   }
 
-  const sequence = pattern.sequence.filter(
-    (item) =>
-      item &&
-      SHAPE_PRIMITIVES[item.shape]
-  );
+  const sequence =
+    pattern.sequence
+      .filter(
+        (item) =>
+          item &&
+          PRIMITIVES[
+            item.shape
+          ]
+      )
+      .slice(0, 12);
 
-  if (!sequence.length) return '';
+  if (
+    sequence.length ===
+    0
+  ) {
+    return '';
+  }
 
   const cell = 90;
-  const W = sequence.length * cell;
+
+  const W =
+    sequence.length *
+    cell;
+
   const H = cell;
 
-  const cells = sequence
-    .map((item, i) => {
-      const cx =
-        i * cell +
-        cell / 2;
+  const cells =
+    sequence
+      .map(
+        (item, index) => {
+          const cx =
+            index *
+              cell +
+            cell /
+              2;
 
-      const cy =
-        cell / 2;
+          const cy =
+            cell / 2;
 
-      const rotation = Number.isFinite(
-        item.rotation
-      )
-        ? item.rotation
-        : 0;
-
-      return `
-        <rect
-          x="${i * cell + 2}"
-          y="2"
-          width="${cell - 4}"
-          height="${cell - 4}"
-          fill="none"
-          stroke="#e2e8f0"/>
-
-        <g transform="rotate(${rotation} ${cx} ${cy})">
-          ${
-            SHAPE_PRIMITIVES[item.shape](
-              cx,
-              cy,
-              26,
-              Boolean(item.filled)
+          const rotation =
+            isFiniteNumber(
+              item.rotation
             )
-          }
-        </g>
-      `;
-    })
-    .join('');
+              ? item.rotation
+              : 0;
 
-  const svg = `
-<svg xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 ${W} ${H}"
-     width="${W}"
-     height="${H}">
-  <rect width="${W}" height="${H}" fill="white"/>
-  ${cells}
-</svg>`;
+          return `
+<rect
+  x="${
+    index * cell +
+    2
+  }"
+  y="2"
+  width="${
+    cell - 4
+  }"
+  height="${
+    cell - 4
+  }"
+  fill="none"
+  stroke="#e2e8f0"
+/>
 
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString(
-    'base64'
-  )}`;
-};
-
-// ---------- CLOCK ----------
-
-const buildClockImageSvg = (clock) => {
-  if (
-    !clock ||
-    !Number.isFinite(clock.hour) ||
-    !Number.isFinite(clock.minute)
-  ) {
-    return '';
+<g transform="rotate(${rotation} ${cx} ${cy})">
+  ${
+    PRIMITIVES[
+      item.shape
+    ](
+      cx,
+      cy,
+      26,
+      Boolean(
+        item.filled
+      )
+    )
   }
-
-  const hour =
-    ((Number(clock.hour) % 12) + 12) %
-    12;
-
-  const minute = Math.max(
-    0,
-    Math.min(59, Number(clock.minute))
-  );
-
-  const size = 280;
-  const cx = size / 2;
-  const cy = size / 2;
-  const r = 112;
-
-  const toXY = (
-    angleDeg,
-    length
-  ) => {
-    const rad =
-      ((angleDeg - 90) *
-        Math.PI) /
-      180;
-
-    return {
-      x:
-        cx +
-        length *
-          Math.cos(rad),
-
-      y:
-        cy +
-        length *
-          Math.sin(rad),
-    };
-  };
-
-  const minuteAngle =
-    minute * 6;
-
-  const hourAngle =
-    hour * 30 +
-    minute * 0.5;
-
-  const minuteTip =
-    toXY(
-      minuteAngle,
-      r * 0.78
-    );
-
-  const hourTip =
-    toXY(
-      hourAngle,
-      r * 0.52
-    );
-
-  const ticks =
-    Array.from(
-      { length: 60 },
-      (_, i) => {
-        const major =
-          i % 5 === 0;
-
-        const outer =
-          toXY(
-            i * 6,
-            r
-          );
-
-        const inner =
-          toXY(
-            i * 6,
-            major
-              ? r - 13
-              : r - 7
-          );
-
-        return `
-        <line
-          x1="${outer.x.toFixed(2)}"
-          y1="${outer.y.toFixed(2)}"
-          x2="${inner.x.toFixed(2)}"
-          y2="${inner.y.toFixed(2)}"
-          stroke="#334155"
-          stroke-width="${major ? 2 : 1}"
-        />`;
-      }
-    ).join('');
-
-  const numerals =
-    Array.from(
-      { length: 12 },
-      (_, i) => {
-        const n =
-          i === 0 ? 12 : i;
-
-        const p =
-          toXY(
-            i * 30,
-            r - 25
-          );
-
-        return `
-        <text
-          x="${p.x.toFixed(1)}"
-          y="${(p.y + 6).toFixed(1)}"
-          text-anchor="middle"
-          font-family="Arial"
-          font-size="18"
-          font-weight="700"
-          fill="#1e293b">
-          ${n}
-        </text>`;
-      }
-    ).join('');
+</g>`;
+        }
+      )
+      .join('');
 
   const svg = `
-<svg xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 ${size} ${size}"
-     width="${size}"
-     height="${size}">
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 ${W} ${H}"
+  width="${W}"
+  height="${H}"
+>
   <rect
-    width="${size}"
-    height="${size}"
-    fill="white"/>
-
-  <circle
-    cx="${cx}"
-    cy="${cy}"
-    r="${r}"
+    width="${W}"
+    height="${H}"
     fill="white"
-    stroke="#1e293b"
-    stroke-width="3"/>
+  />
+  ${cells}
+</svg>
+`;
 
-  ${ticks}
-
-  ${numerals}
-
-  <line
-    x1="${cx}"
-    y1="${cy}"
-    x2="${hourTip.x.toFixed(2)}"
-    y2="${hourTip.y.toFixed(2)}"
-    stroke="#1e293b"
-    stroke-width="6"
-    stroke-linecap="round"/>
-
-  <line
-    x1="${cx}"
-    y1="${cy}"
-    x2="${minuteTip.x.toFixed(2)}"
-    y2="${minuteTip.y.toFixed(2)}"
-    stroke="#334155"
-    stroke-width="4"
-    stroke-linecap="round"/>
-
-  <circle
-    cx="${cx}"
-    cy="${cy}"
-    r="5"
-    fill="#1e293b"/>
-</svg>`;
-
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString(
-    'base64'
-  )}`;
+  return (
+    `data:image/svg+xml;base64,` +
+    Buffer.from(svg).toString(
+      'base64'
+    )
+  );
 };
 
 // ============================================================
-// TYPE DESCRIPTIONS
+// VISUAL CUE
 // ============================================================
 
-const TYPE_DESCRIPTIONS = {
-  multiple:
-    '"multiple" — pilihan ganda 4 opsi',
+const hasVisualCue = (
+  text = ''
+) => {
+  const value =
+    String(text)
+      .toLowerCase();
 
-  truefalse:
-    '"truefalse" — beberapa pernyataan benar/salah',
+  const cues = [
+    'lihat gambar',
+    'perhatikan gambar',
+    'gambar berikut',
+    'berdasarkan gambar',
+    'pada gambar',
 
-  multiselect:
-    '"multiselect" — pilih lebih dari satu jawaban benar',
+    'lihat grafik',
+    'perhatikan grafik',
+    'grafik berikut',
+    'berdasarkan grafik',
 
-  shortanswer:
-    '"shortanswer" — isian singkat',
+    'lihat diagram',
+    'perhatikan diagram',
+    'diagram berikut',
+    'berdasarkan diagram',
 
-  causeeffect:
-    '"causeeffect" — sebab akibat',
+    'lihat tabel',
+    'perhatikan tabel',
+    'tabel berikut',
+    'berdasarkan tabel',
 
-  matching:
-    '"matching" — menjodohkan minimal 3 pasang',
+    'look at the picture',
+    'look at the image',
+    'look at the graph',
+    'look at the diagram',
+    'look at the table',
 
-  reading:
-    '"reading" — bacaan 2–5 paragraf + minimal 3 sub-soal pilihan ganda',
+    'based on the picture',
+    'based on the image',
+    'based on the graph',
+    'based on the diagram',
+    'based on the table',
+  ];
+
+  return cues.some(
+    (cue) =>
+      value.includes(cue)
+  );
 };
 
 // ============================================================
-// PROFESSIONAL SYSTEM PROMPT
+// JSON PARSER
 // ============================================================
 
-const buildSystemPrompt = ({
-  allowedTypes,
-  useTrendSearch,
-  hotsLevel,
-  targetYear,
-}) => {
-  const researchSection = useTrendSearch
-    ? `
-MODE RISET INTERNET AKTIF.
-
-WAJIB:
-- Gunakan Google Search grounding pada request ini.
-- Cari beberapa sumber yang relevan.
-- Prioritaskan sumber resmi pemerintah, lembaga pendidikan,
-  sekolah/universitas, dan sumber pendidikan terpercaya.
-- Gunakan hasil web untuk:
-  1. topik yang sering muncul,
-  2. model stimulus,
-  3. pola pertanyaan,
-  4. level kesulitan,
-  5. distribusi kompetensi,
-  6. bentuk visual yang lazim.
-- Target tahun latihan: ${targetYear || '2027'}.
-- JANGAN mengklaim mengetahui soal yang belum dipublikasikan.
-- JANGAN mengaku soal keluaran adalah bocoran.
-- Hasil akhir harus berupa SOAL LATIHAN BARU yang
-  berbasis bukti dari sumber web.
-- Jangan menyalin satu soal dari sumber kata demi kata.
-- Sumber web WAJIB tercermin melalui grounding metadata.
-`
-    : `
-MODE AI ORIGINAL.
-Buat soal baru berdasarkan topik tanpa mengklaim hasil sebagai
-soal resmi atau bocoran ujian.
-`;
-
-  const visualSection = `
-ATURAN VISUAL:
-1. Jangan membuat kalimat "lihat gambar" jika gambar tidak ada.
-2. Jika menggunakan clock, wajib keluarkan:
-   "clock":{"hour":...,"minute":...}
-3. Jika menggunakan graph, wajib keluarkan:
-   "graph":{"points":[...]}
-4. Jika menggunakan shape, wajib keluarkan:
-   "shape":{"vertices":[...]}
-5. Jika menggunakan pattern, wajib keluarkan:
-   "pattern":{"sequence":[...]}
-6. Jangan menggunakan needs_image untuk clock/graph/shape/pattern.
-7. Untuk foto objek nyata, gunakan:
-   "needs_image":true,
-   "image_keyword":"english keyword"
-8. Jangan membuat visual hanya agar soal terlihat menarik.
-9. Visual harus menjadi bagian yang benar-benar diperlukan untuk
-   menjawab soal.
-`;
-
-  return `
-Kamu adalah penyusun soal profesional Bimbel Gemilang Indonesia.
-
-${researchSection}
-
-${visualSection}
-
-ATURAN KUALITAS:
-- Soal harus cocok dengan mapel.
-- Soal harus cocok dengan jenjang.
-- Soal harus sesuai topik.
-- Tidak boleh ada konteks yang tidak relevan.
-- Hitungan harus dihitung ulang.
-- Kunci harus benar.
-- Semua opsi harus masuk akal.
-- Pembahasan harus menjelaskan cara memperoleh jawaban.
-- Hindari pengulangan ide yang sama.
-- Jika soal berbasis data, data harus konsisten.
-- Jika soal menggunakan stimulus, stimulus harus cukup untuk menjawab.
-- Jangan gunakan markdown.
-- Gunakan LaTeX yang valid jika diperlukan.
-${hotsLevel ? `- LEVEL HOTS: ${hotsLevel}` : ''}
-
-TIPE YANG BOLEH:
-${allowedTypes
-  .map(
-    (t) =>
-      TYPE_DESCRIPTIONS[t] ||
-      `"${t}"`
-  )
-  .join('\n')}
-
-FORMAT:
-Baris pertama:
-{"meta":true}
-
-Baris berikutnya:
-satu objek JSON per baris.
-
-Contoh pilihan ganda:
-{"type":"multiple","question":"...","options":["A","B","C","D"],"correct":0,"explanation":"..."}
-
-Jangan bungkus jawaban dalam array.
-Jangan memakai code fence.
-Jangan menambahkan komentar.
-`;
-};
-
-// ============================================================
-// JSONL EXTRACTION
-// ============================================================
-
-const extractJsonObjects = (text = '') => {
+const extractJsonObjects = (
+  text = ''
+) => {
   const objects = [];
 
   let depth = 0;
+
   let start = -1;
-  let inString = false;
-  let escapeNext = false;
+
+  let inString =
+    false;
+
+  let escaped =
+    false;
 
   for (
     let i = 0;
     i < text.length;
     i++
   ) {
-    const ch = text[i];
+    const ch =
+      text[i];
 
-    if (escapeNext) {
-      escapeNext = false;
+    if (escaped) {
+      escaped =
+        false;
+
       continue;
     }
 
     if (ch === '\\') {
-      escapeNext = true;
+      escaped =
+        true;
+
       continue;
     }
 
     if (ch === '"') {
-      inString = !inString;
+      inString =
+        !inString;
+
       continue;
     }
 
     if (inString) continue;
 
     if (ch === '{') {
-      if (depth === 0) start = i;
-      depth++;
+      if (
+        depth ===
+        0
+      ) {
+        start = i;
+      }
+
+      depth += 1;
     }
 
     if (ch === '}') {
-      depth--;
+      depth -= 1;
 
       if (
-        depth === 0 &&
+        depth ===
+          0 &&
         start !== -1
       ) {
-        const candidate =
-          text.slice(
-            start,
-            i + 1
-          );
-
         try {
+          const item =
+            JSON.parse(
+              text.slice(
+                start,
+                i + 1
+              )
+            );
+
           objects.push(
-            JSON.parse(candidate)
+            item
           );
         } catch (_) {}
 
@@ -987,199 +1384,50 @@ const extractJsonObjects = (text = '') => {
 };
 
 // ============================================================
-// GROUNDING SOURCE EXTRACTION
-// ============================================================
-
-const getGroundingSources = (candidate) => {
-  const chunks =
-    candidate?.groundingMetadata
-      ?.groundingChunks || [];
-
-  return chunks
-    .map((chunk) => {
-      if (chunk?.web) {
-        return {
-          title:
-            sanitizeText(
-              chunk.web.title || ''
-            ),
-
-          url:
-            sanitizeText(
-              chunk.web.uri || ''
-            ),
-        };
-      }
-
-      return null;
-    })
-
-    .filter(
-      (x) =>
-        x &&
-        (x.title || x.url)
-    )
-
-    .filter(
-      (item, index, arr) =>
-        index ===
-        arr.findIndex(
-          (other) =>
-            other.url ===
-            item.url
-        )
-    )
-
-    .slice(0, 12);
-};
-
-// ============================================================
-// OPEN-LICENSE IMAGE SEARCH
-// ============================================================
-
-async function searchOpenLicenseImage(
-  keyword
-) {
-  const results = [];
-
-  if (!keyword) return results;
-
-  // Openverse
-  try {
-    const url =
-      `https://api.openverse.org/v1/images/?q=` +
-      `${encodeURIComponent(keyword)}` +
-      `&license_type=all-cc&page_size=6`;
-
-    const response =
-      await fetchWithTimeout(
-        url,
-        {},
-        12000
-      );
-
-    if (response.ok) {
-      const data =
-        await response.json();
-
-      for (
-        const item of
-          data.results || []
-      ) {
-        if (!item.url) continue;
-
-        results.push({
-          url: item.url,
-          thumb:
-            item.thumbnail ||
-            item.url,
-          title:
-            item.title ||
-            keyword,
-          source:
-            `Openverse${
-              item.license
-                ? ` (${item.license})`
-                : ''
-            }`,
-        });
-      }
-    }
-  } catch (_) {}
-
-  // Wikimedia fallback
-  if (results.length < 4) {
-    try {
-      const url =
-        `https://commons.wikimedia.org/w/api.php` +
-        `?action=query` +
-        `&generator=search` +
-        `&gsrsearch=${encodeURIComponent(
-          keyword
-        )}` +
-        `&gsrnamespace=6` +
-        `&gsrlimit=6` +
-        `&prop=imageinfo` +
-        `&iiprop=url|extmetadata` +
-        `&iiurlwidth=500` +
-        `&format=json` +
-        `&origin=*`;
-
-      const response =
-        await fetchWithTimeout(
-          url,
-          {},
-          12000
-        );
-
-      if (response.ok) {
-        const data =
-          await response.json();
-
-        const pages =
-          data?.query?.pages ||
-          {};
-
-        Object.values(
-          pages
-        ).forEach((page) => {
-          const info =
-            page?.imageinfo?.[0];
-
-          if (!info?.url) return;
-
-          results.push({
-            url: info.url,
-            thumb:
-              info.thumburl ||
-              info.url,
-            title:
-              page.title
-                ? page.title.replace(
-                    /^File:/,
-                    ''
-                  )
-                : keyword,
-            source:
-              'Wikimedia Commons',
-          });
-        });
-      }
-    } catch (_) {}
-  }
-
-  return results.slice(0, 8);
-}
-
-// ============================================================
-// QUESTION VALIDATION
+// QUESTION VALIDATOR
 // ============================================================
 
 function validateQuestion(
   raw,
   allowedTypes
 ) {
-  if (!raw || raw.meta === true)
+  if (
+    !raw ||
+    raw.meta === true
+  ) {
     return null;
+  }
 
-  if (!allowedTypes.includes(raw.type))
+  if (
+    !allowedTypes.includes(
+      raw.type
+    )
+  ) {
     return null;
+  }
 
   const question =
     sanitizeText(
-      raw.question || ''
+      raw.question ||
+        ''
     );
 
-  if (!question) return null;
+  if (!question) {
+    return null;
+  }
 
-  // ---------- MULTIPLE ----------
+  // Multiple
 
-  if (raw.type === 'multiple') {
+  if (
+    raw.type ===
+    'multiple'
+  ) {
     if (
       !Array.isArray(
         raw.options
       ) ||
-      raw.options.length !== 4
+      raw.options.length !==
+        4
     ) {
       return null;
     }
@@ -1195,14 +1443,18 @@ function validateQuestion(
     }
   }
 
-  // ---------- MULTISELECT ----------
+  // Multi select
 
-  if (raw.type === 'multiselect') {
+  if (
+    raw.type ===
+    'multiselect'
+  ) {
     if (
       !Array.isArray(
         raw.options
       ) ||
-      raw.options.length < 2
+      raw.options.length <
+        2
     ) {
       return null;
     }
@@ -1211,18 +1463,20 @@ function validateQuestion(
       !Array.isArray(
         raw.correctAnswers
       ) ||
-      !raw.correctAnswers.length
+      !raw.correctAnswers
+        .length
     ) {
       return null;
     }
 
     if (
       !raw.correctAnswers.every(
-        (v) =>
+        (answer) =>
           isIntegerInRange(
-            v,
+            answer,
             0,
-            raw.options.length - 1
+            raw.options
+              .length - 1
           )
       )
     ) {
@@ -1230,23 +1484,27 @@ function validateQuestion(
     }
   }
 
-  // ---------- TRUE FALSE ----------
+  // True false
 
-  if (raw.type === 'truefalse') {
+  if (
+    raw.type ===
+    'truefalse'
+  ) {
     if (
       !Array.isArray(
         raw.statements
       ) ||
-      raw.statements.length < 2
+      raw.statements.length <
+        2
     ) {
       return null;
     }
 
     if (
       !raw.statements.every(
-        (s) =>
-          s &&
-          typeof s.text ===
+        (statement) =>
+          statement &&
+          typeof statement.text ===
             'string'
       )
     ) {
@@ -1254,9 +1512,12 @@ function validateQuestion(
     }
   }
 
-  // ---------- SHORT ----------
+  // Short answer
 
-  if (raw.type === 'shortanswer') {
+  if (
+    raw.type ===
+    'shortanswer'
+  ) {
     if (
       !sanitizeText(
         raw.shortAnswer
@@ -1266,10 +1527,11 @@ function validateQuestion(
     }
   }
 
-  // ---------- CAUSE EFFECT ----------
+  // Cause effect
 
   if (
-    raw.type === 'causeeffect'
+    raw.type ===
+    'causeeffect'
   ) {
     if (
       !sanitizeText(
@@ -1292,36 +1554,29 @@ function validateQuestion(
     }
   }
 
-  // ---------- MATCHING ----------
+  // Matching
 
-  if (raw.type === 'matching') {
+  if (
+    raw.type ===
+    'matching'
+  ) {
     if (
       !Array.isArray(
         raw.matchingPairs
       ) ||
-      raw.matchingPairs.length < 3
-    ) {
-      return null;
-    }
-
-    if (
-      !raw.matchingPairs.every(
-        (pair) =>
-          sanitizeText(
-            pair?.left
-          ) &&
-          sanitizeText(
-            pair?.right
-          )
-      )
+      raw.matchingPairs.length <
+        3
     ) {
       return null;
     }
   }
 
-  // ---------- READING ----------
+  // Reading
 
-  if (raw.type === 'reading') {
+  if (
+    raw.type ===
+    'reading'
+  ) {
     if (
       !sanitizeText(
         raw.readingText
@@ -1334,27 +1589,8 @@ function validateQuestion(
       !Array.isArray(
         raw.subQuestions
       ) ||
-      raw.subQuestions.length < 3
-    ) {
-      return null;
-    }
-
-    if (
-      !raw.subQuestions.every(
-        (sq) =>
-          sanitizeText(
-            sq?.q
-          ) &&
-          Array.isArray(
-            sq?.options
-          ) &&
-          sq.options.length >= 2 &&
-          isIntegerInRange(
-            sq.correct,
-            0,
-            sq.options.length - 1
-          )
-      )
+      raw.subQuestions.length <
+        3
     ) {
       return null;
     }
@@ -1364,59 +1600,98 @@ function validateQuestion(
   // VISUAL
   // ==========================================================
 
-  let qImage = '';
-  let visualRequired = false;
-  let visualKind = 'none';
-  let needsImage = false;
-  let imageHint = '';
+  let qImage =
+    '';
 
-  if (raw.graph) {
-    qImage =
-      buildGraphImageSvg(
-        raw.graph
-      );
+  let visualRequired =
+    false;
 
-    visualRequired = true;
-    visualKind = 'graph';
-  } else if (raw.shape) {
-    qImage =
-      buildShapeImageSvg(
-        raw.shape
-      );
+  let visualKind =
+    'none';
 
-    visualRequired = true;
-    visualKind = 'shape';
-  } else if (raw.pattern) {
-    qImage =
-      buildPatternImageSvg(
-        raw.pattern
-      );
+  let needsImage =
+    false;
 
-    visualRequired = true;
-    visualKind = 'pattern';
-  } else if (raw.clock) {
+  let imageHint =
+    '';
+
+  if (
+    raw.clock
+  ) {
     qImage =
       buildClockImageSvg(
         raw.clock
       );
 
-    visualRequired = true;
-    visualKind = 'clock';
-  } else if (raw.needs_image) {
-    needsImage = true;
+    visualRequired =
+      true;
+
+    visualKind =
+      'clock';
+  } else if (
+    raw.graph
+  ) {
+    qImage =
+      buildGraphImageSvg(
+        raw.graph
+      );
+
+    visualRequired =
+      true;
+
+    visualKind =
+      'graph';
+  } else if (
+    raw.shape
+  ) {
+    qImage =
+      buildShapeImageSvg(
+        raw.shape
+      );
+
+    visualRequired =
+      true;
+
+    visualKind =
+      'shape';
+  } else if (
+    raw.pattern
+  ) {
+    qImage =
+      buildPatternImageSvg(
+        raw.pattern
+      );
+
+    visualRequired =
+      true;
+
+    visualKind =
+      'pattern';
+  } else if (
+    raw.needs_image
+  ) {
+    needsImage =
+      true;
 
     imageHint =
       sanitizeText(
-        raw.image_keyword || ''
+        raw.image_keyword ||
+          ''
       );
 
-    visualRequired = true;
-    visualKind = 'photo';
+    visualRequired =
+      true;
+
+    visualKind =
+      'photo';
   }
 
-  // Visual cue tetapi tidak ada mekanisme visual
+  // Jika soal mengharuskan
+  // gambar tapi tidak ada visual,
+  // TOLAK.
+
   if (
-    containsVisualCue(
+    hasVisualCue(
       question
     ) &&
     !qImage &&
@@ -1425,12 +1700,16 @@ function validateQuestion(
     return null;
   }
 
-  const cleanQuestion = {
-    type: raw.type,
+  return {
+    type:
+      raw.type,
+
     question,
 
     options:
-      Array.isArray(raw.options)
+      Array.isArray(
+        raw.options
+      )
         ? raw.options.map(
             sanitizeText
           )
@@ -1455,15 +1734,16 @@ function validateQuestion(
         raw.statements
       )
         ? raw.statements.map(
-            (stmt) => ({
+            (statement) => ({
               text:
                 sanitizeText(
-                  stmt?.text ||
+                  statement?.text ||
                     ''
                 ),
+
               isTrue:
                 Boolean(
-                  stmt?.isTrue
+                  statement?.isTrue
                 ),
             })
           )
@@ -1473,17 +1753,22 @@ function validateQuestion(
       sanitizeText(
         raw.shortAnswer ||
           ''
-      ) || undefined,
+      ) ||
+      undefined,
 
     cause:
       sanitizeText(
-        raw.cause || ''
-      ) || undefined,
+        raw.cause ||
+          ''
+      ) ||
+      undefined,
 
     effect:
       sanitizeText(
-        raw.effect || ''
-      ) || undefined,
+        raw.effect ||
+          ''
+      ) ||
+      undefined,
 
     isCauseTrue:
       typeof raw.isCauseTrue ===
@@ -1508,6 +1793,7 @@ function validateQuestion(
                   pair?.left ||
                     ''
                 ),
+
               right:
                 sanitizeText(
                   pair?.right ||
@@ -1521,28 +1807,32 @@ function validateQuestion(
       sanitizeText(
         raw.readingText ||
           ''
-      ) || undefined,
+      ) ||
+      undefined,
 
     subQuestions:
       Array.isArray(
         raw.subQuestions
       )
         ? raw.subQuestions.map(
-            (sq) => ({
+            (subQuestion) => ({
               q:
                 sanitizeText(
-                  sq?.q || ''
+                  subQuestion?.q ||
+                    ''
                 ),
+
               options:
                 Array.isArray(
-                  sq?.options
+                  subQuestion?.options
                 )
-                  ? sq.options.map(
+                  ? subQuestion.options.map(
                       sanitizeText
                     )
                   : [],
+
               correct:
-                sq?.correct,
+                subQuestion?.correct,
             })
           )
         : undefined,
@@ -1554,7 +1844,8 @@ function validateQuestion(
       ),
 
     qImage:
-      qImage || undefined,
+      qImage ||
+      undefined,
 
     needsImage,
 
@@ -1570,22 +1861,128 @@ function validateQuestion(
     researchBacked:
       false,
 
-    researchSources: [],
+    researchSources:
+      [],
   };
-
-  // Jika foto nyata dibutuhkan,
-  // cari hanya dari sumber lisensi terbuka.
-  if (
-    needsImage &&
-    imageHint
-  ) {
-    // Tidak langsung memilih otomatis.
-    // Frontend dapat menggunakan imageHint
-    // untuk pencarian Openverse/Wikimedia.
-  }
-
-  return cleanQuestion;
 }
+
+// ============================================================
+// PROMPT
+// ============================================================
+
+const buildSystemPrompt = ({
+  allowedTypes,
+  researchMode,
+  targetYear,
+  hotsLevel,
+}) => `
+Kamu adalah penyusun soal profesional untuk Bimbel Gemilang.
+
+MODE:
+${
+  researchMode
+    ? `
+Sistem sudah memberikan bahan riset dari internet.
+
+Gunakan bahan tersebut untuk:
+- menemukan topik yang sering muncul,
+- memahami bentuk soal,
+- memahami model stimulus,
+- memahami kompetensi,
+- memahami tingkat kesulitan,
+- memahami pola visual.
+
+JANGAN mengklaim soal sebagai bocoran.
+JANGAN mengklaim mengetahui soal ujian masa depan.
+JANGAN menyalin satu soal sumber kata demi kata.
+
+Buat SOAL LATIHAN BARU berdasarkan pola dan kompetensi
+yang didukung oleh bahan riset.
+`
+    : `
+Buat soal original berdasarkan topik.
+`
+}
+
+TARGET LATIHAN:
+${targetYear}
+
+ATURAN WAJIB:
+
+1. Mapel harus sesuai.
+
+2. Topik harus sesuai.
+
+3. Jenjang harus sesuai.
+
+4. Jangan memasukkan konteks tidak relevan.
+
+5. Semua jawaban harus diverifikasi.
+
+6. Untuk matematika/fisika/kimia:
+   hitung ulang sebelum menentukan kunci.
+
+7. Distraktor harus masuk akal.
+
+8. Pembahasan harus menjelaskan jawaban.
+
+9. Jangan membuat soal duplikat.
+
+10. Jangan menggunakan markdown.
+
+11. Jangan membuat kalimat "lihat gambar"
+    jika gambar tidak tersedia.
+
+12. Gunakan visual hanya jika benar-benar
+    diperlukan oleh soal.
+
+VISUAL:
+
+CLOCK:
+"clock":{"hour":8,"minute":30}
+
+GRAPH:
+"graph":{"points":[...],"highlight":[...]}
+
+SHAPE:
+"shape":{"vertices":[...],"labels":[...]}
+
+PATTERN:
+"pattern":{"sequence":[...]}
+
+FOTO NYATA:
+"needs_image":true,
+"image_keyword":"english keyword"
+
+TIPE SOAL YANG DIIZINKAN:
+
+${allowedTypes
+  .map(
+    (type) =>
+      `- ${type}`
+  )
+  .join('\n')}
+
+FORMAT OUTPUT:
+
+Baris pertama:
+{"meta":true}
+
+Setiap soal:
+SATU OBJECT JSON DALAM SATU BARIS.
+
+Tanpa:
+- markdown,
+- code fence,
+- komentar,
+- teks di luar JSONL.
+
+${
+  hotsLevel
+    ? `\nLEVEL HOTS: ${hotsLevel}`
+    : ''
+}
+`;
 
 // ============================================================
 // HANDLER
@@ -1595,22 +1992,29 @@ export default async function handler(
   req,
   res
 ) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({
+  if (
+    req.method !==
+    'POST'
+  ) {
+    return res.status(
+      405
+    ).json({
       error:
         'Method not allowed',
     });
   }
 
-  if (!process.env.GEMINI_API_KEY) {
-    return res.status(500).json({
+  if (
+    !process.env
+      .GEMINI_API_KEY
+  ) {
+    return res.status(
+      500
+    ).json({
       error:
-        'GEMINI_API_KEY belum tersedia. Masukkan API key pada Environment Variables Vercel.',
+        'GEMINI_API_KEY belum tersedia di environment Vercel.',
     });
   }
-
-  const body =
-    req.body || {};
 
   const {
     topic,
@@ -1622,23 +2026,21 @@ export default async function handler(
     useTrendSearch,
     hotsLevel,
     targetYear,
-  } = body;
+  } =
+    req.body || {};
 
   if (
-    !String(topic || '')
-      .trim()
+    !String(
+      topic || ''
+    ).trim()
   ) {
-    return res.status(400).json({
+    return res.status(
+      400
+    ).json({
       error:
         'Topik wajib diisi.',
     });
   }
-
-  // ==========================================================
-  // MAX 10 / REQUEST
-  // AIGenerateQuiz akan memanggil endpoint beberapa kali
-  // untuk total 20/30/40 soal.
-  // ==========================================================
 
   const requested =
     parseInt(
@@ -1660,8 +2062,10 @@ export default async function handler(
     );
 
   const allowedTypes =
-    Array.isArray(types) &&
-    types.length > 0
+    Array.isArray(
+      types
+    ) &&
+    types.length
       ? types
       : ['multiple'];
 
@@ -1670,168 +2074,311 @@ export default async function handler(
       useTrendSearch
     );
 
+  const finalTargetYear =
+    targetYear ||
+    String(
+      new Date().getFullYear() +
+        1
+    );
+
+  // ==========================================================
+  // 1. SEARCH INTERNET
+  // ==========================================================
+
+  let sources = [];
+
+  if (
+    researchMode
+  ) {
+    const queries =
+      buildResearchQueries({
+        topic,
+        mapel,
+        kelas,
+        targetYear:
+          finalTargetYear,
+      });
+
+    const allSources =
+      [];
+
+    try {
+      for (
+        const query of
+          queries
+      ) {
+        const results =
+          await searchWebFree(
+            query
+          );
+
+        allSources.push(
+          ...results
+        );
+      }
+    } catch (
+      error
+    ) {
+      console.error(
+        '[Gemilang Web Search]',
+        error
+          .message
+      );
+
+      return res.status(
+        502
+      ).json({
+        error:
+          'Pencarian internet gratis gagal. Batch dihentikan agar sistem tidak berpura-pura berbasis internet.',
+        debug:
+          error.message,
+      });
+    }
+
+    // Deduplicate berdasarkan URL
+    const seenUrls =
+      new Set();
+
+    sources =
+      allSources
+        .filter(
+          (source) => {
+            if (
+              !source.url
+            ) {
+              return true;
+            }
+
+            if (
+              seenUrls.has(
+                source.url
+              )
+            ) {
+              return false;
+            }
+
+            seenUrls.add(
+              source.url
+            );
+
+            return true;
+          }
+        )
+        .slice(
+          0,
+          12
+        );
+
+    if (
+      sources.length ===
+      0
+    ) {
+      return res.status(
+        502
+      ).json({
+        error:
+          'Tidak ditemukan sumber web yang cukup relevan.',
+      });
+    }
+  }
+
+  // ==========================================================
+  // 2. PROMPT
+  // ==========================================================
+
   const systemPrompt =
     buildSystemPrompt({
       allowedTypes,
-      useTrendSearch:
-        researchMode,
+      researchMode,
+      targetYear:
+        finalTargetYear,
       hotsLevel:
         hotsLevel || '',
-      targetYear:
-        targetYear ||
-        String(
-          new Date().getFullYear() +
-            1
-        ),
     });
 
+  const sourcePack =
+    researchMode
+      ? sources
+          .map(
+            (
+              source,
+              index
+            ) => `
+SUMBER ${index + 1}
+Judul:
+${
+  source.title ||
+  '(tanpa judul)'
+}
+
+URL:
+${
+  source.url ||
+  '(tanpa URL)'
+}
+
+Isi:
+${
+  source.content ||
+  '(tidak ada isi)'
+}
+`
+          )
+          .join(
+            '\n'
+          )
+      : '';
+
   const userPrompt = `
-Mata pelajaran:
+MATA PELAJARAN:
 ${mapel || 'Umum'}
 
-Topik:
+TOPIK:
 ${String(topic).trim()}
 
-Jenjang/Kelas:
+JENJANG/KELAS:
 ${kelas || 'SMP'}
 
-Target tahun latihan:
-${targetYear || new Date().getFullYear() + 1}
+TARGET TAHUN LATIHAN:
+${finalTargetYear}
 
-Jumlah soal batch ini:
+JUMLAH SOAL:
 ${jumlah}
 
-Tipe soal:
-${allowedTypes.join(', ')}
+TIPE:
+${allowedTypes.join(
+  ', '
+)}
 
-${arahan?.trim()
-  ? `Arahan guru:
-${arahan.trim()}`
-  : ''}
-
-${researchMode
-  ? `
-TUGAS RISET:
-Cari beberapa contoh soal dan sumber pendidikan
-yang relevan dengan topik ini.
-Bandingkan pola dan kompetensinya.
-Buat latihan baru yang representatif.
+${
+  arahan?.trim()
+    ? `
+ARAHAN GURU:
+${arahan.trim()}
 `
-  : `
-TUGAS ORIGINAL:
-Buat soal baru yang valid dan relevan.
-`}
+    : ''
+}
 
-Buat tepat ${jumlah} soal jika memungkinkan.
-Prioritaskan kualitas daripada membuat soal yang tidak valid.
+${
+  researchMode
+    ? `
+BAHAN RISET INTERNET:
+
+${sourcePack}
+
+Gunakan bahan ini untuk menentukan:
+- kompetensi,
+- pola,
+- tipe stimulus,
+- tingkat kesulitan,
+- variasi soal.
+
+Buat soal latihan baru.
+Jangan menyalin teks soal sumber.
+`
+    : ''
+}
+
+Buat ${jumlah} soal valid.
+Prioritaskan akurasi daripada memaksakan jumlah.
 `;
 
   // ==========================================================
-  // CALL GEMINI
+  // 3. GEMINI
   // ==========================================================
 
-  let geminiData =
-    null;
+  let geminiData;
 
-  let lastError =
-    null;
-
-  for (
-    let i = 0;
-    i < GEMINI_MODELS.length;
-    i++
+  try {
+    geminiData =
+      await callGemini(
+        systemPrompt,
+        userPrompt
+      );
+  } catch (
+    error
   ) {
-    const modelName =
-      GEMINI_MODELS[i];
+    console.error(
+      '[Gemilang Gemini]',
+      error.message
+    );
 
-    try {
-      geminiData =
-        await callGemini({
-          systemPrompt,
-          userPrompt,
-          modelName,
-          useTrendSearch:
-            researchMode,
-        });
-
-      lastError =
-        null;
-
-      break;
-    } catch (error) {
-      lastError =
-        error;
-
-      console.error(
-        `[Gemilang Quiz] ${modelName} gagal:`,
-        error.message
+    const message =
+      String(
+        error.message ||
+          ''
       );
 
-      // 401/403 = API key / permission
-      // Tidak masuk akal mencoba model lain.
-      if (
-        error.status ===
-          401 ||
-        error.status ===
-          403
-      ) {
-        break;
-      }
-
-      await sleep(600);
-    }
-  }
-
-  if (!geminiData) {
-    const debug =
-      lastError?.message ||
-      'Tidak ada respons Gemini.';
-
     if (
-      debug.includes(
-        '429'
+      message.includes(
+        '404'
       )
     ) {
-      return res.status(429).json({
+      return res.status(
+        502
+      ).json({
         error:
-          'Kuota gratis Gemini sedang mencapai batas. Batch ini dihentikan agar tidak membebankan biaya.',
-        debug,
+          'Gemini 3.6 Flash tidak tersedia untuk API key/project ini. Pastikan API key Vercel adalah API key Gemini terbaru.',
+        debug:
+          message,
       });
     }
 
     if (
-      debug.includes(
+      message.includes(
         '401'
       ) ||
-      debug.includes(
+      message.includes(
         '403'
       )
     ) {
-      return res.status(502).json({
+      return res.status(
+        502
+      ).json({
         error:
-          'GEMINI_API_KEY ditolak. Cek API key dan project Gemini yang digunakan Vercel.',
-        debug,
+          'GEMINI_API_KEY ditolak. Periksa API key pada Vercel.',
+        debug:
+          message,
       });
     }
 
-    return res.status(502).json({
+    if (
+      message.includes(
+        '429'
+      )
+    ) {
+      return res.status(
+        429
+      ).json({
+        error:
+          'Kuota gratis Gemini sedang mencapai batas. Tidak ada fallback berbayar.',
+        debug:
+          message,
+      });
+    }
+
+    return res.status(
+      502
+    ).json({
       error:
-        researchMode
-          ? 'Riset Internet gagal. Sistem TIDAK membuat fallback seolah-olah hasilnya dari internet.'
-          : 'Gemini gagal membuat soal.',
-      debug,
+        'Gemini 3.6 Flash gagal membuat soal.',
+      debug:
+        message,
     });
   }
 
   // ==========================================================
-  // PARSE RESPONSE
+  // 4. EXTRACT TEXT
   // ==========================================================
 
   const candidate =
-    geminiData?.candidates?.[0];
+    geminiData
+      ?.candidates?.[0];
 
   const rawText =
-    candidate?.content?.parts
+    candidate
+      ?.content
+      ?.parts
       ?.filter(
         (part) =>
           typeof part?.text ===
@@ -1841,11 +2388,16 @@ Prioritaskan kualitas daripada membuat soal yang tidak valid.
         (part) =>
           part.text
       )
-      ?.join('\n') ||
-    '';
+      ?.join(
+        '\n'
+      ) || '';
 
-  if (!rawText.trim()) {
-    return res.status(502).json({
+  if (
+    !rawText.trim()
+  ) {
+    return res.status(
+      502
+    ).json({
       error:
         'Gemini tidak mengembalikan soal.',
     });
@@ -1861,16 +2413,19 @@ Prioritaskan kualitas daripada membuat soal yang tidak valid.
       fixedText
     );
 
-  const groundingSources =
-    getGroundingSources(
-      candidate
-    );
+  // ==========================================================
+  // 5. QUALITY GATE
+  // ==========================================================
 
   const questions =
     [];
 
+  const fingerprints =
+    new Set();
+
   for (
-    const rawQuestion of objects
+    const rawQuestion of
+      objects
   ) {
     const question =
       validateQuestion(
@@ -1878,29 +2433,48 @@ Prioritaskan kualitas daripada membuat soal yang tidak valid.
         allowedTypes
       );
 
-    if (!question)
+    if (
+      !question
+    ) {
       continue;
+    }
 
-    // ========================================================
-    // RISET INTERNET:
-    // wajib punya grounding evidence.
-    // ========================================================
+    const fingerprint =
+      `${question.type}|${question.question
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim()}`;
+
+    if (
+      fingerprints.has(
+        fingerprint
+      )
+    ) {
+      continue;
+    }
+
+    fingerprints.add(
+      fingerprint
+    );
 
     if (
       researchMode
     ) {
-      if (
-        groundingSources.length ===
-        0
-      ) {
-        continue;
-      }
-
       question.researchBacked =
         true;
 
       question.researchSources =
-        groundingSources;
+        sources.map(
+          (source) => ({
+            title:
+              source.title ||
+              '',
+
+            url:
+              source.url ||
+              '',
+          })
+        );
     }
 
     questions.push(
@@ -1915,27 +2489,45 @@ Prioritaskan kualitas daripada membuat soal yang tidak valid.
     }
   }
 
+  // ==========================================================
+  // NO VALID RESULT
+  // ==========================================================
+
   if (
     questions.length ===
     0
   ) {
-    return res.status(502).json({
+    return res.status(
+      502
+    ).json({
       error:
         researchMode
-          ? 'Tidak ada soal yang lolos validasi dari riset internet. Tidak ada soal offline yang dimasukkan.'
+          ? 'Tidak ada soal yang lolos quality gate setelah riset internet.'
           : 'Tidak ada soal valid yang berhasil dibuat.',
-      groundingSources,
+
+      researchSources:
+        sources.map(
+          (source) => ({
+            title:
+              source.title ||
+              '',
+            url:
+              source.url ||
+              '',
+          })
+        ),
     });
   }
 
-  const possiblyTruncated =
-    candidate?.finishReason ===
-      'MAX_TOKENS' ||
-    questions.length <
-      jumlah;
+  // ==========================================================
+  // RESPONSE
+  // ==========================================================
 
-  return res.status(200).json({
-    success: true,
+  return res.status(
+    200
+  ).json({
+    success:
+      true,
 
     questions,
 
@@ -1948,18 +2540,33 @@ Prioritaskan kualitas daripada membuat soal yang tidak valid.
     maxBatchSize:
       MAX_BATCH_QUESTIONS,
 
-    possiblyTruncated,
+    possiblyTruncated:
+      questions.length <
+        jumlah ||
+      candidate?.finishReason ===
+        'MAX_TOKENS',
 
     usedTrendSearch:
       researchMode,
 
-    groundingSources,
+    researchProvider:
+      researchMode
+        ? 'Jina Search'
+        : null,
 
-    provider:
-      'Gemini generateContent + Google Search grounding',
+    researchSources:
+      sources.map(
+        (source) => ({
+          title:
+            source.title ||
+            '',
+          url:
+            source.url ||
+            '',
+        })
+      ),
 
     model:
-      candidate?.modelVersion ||
-      'gemini-2.5',
+      GEMINI_MODEL,
   });
 }
