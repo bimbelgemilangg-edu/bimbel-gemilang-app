@@ -14,7 +14,7 @@
 // 3) TIPE "reading" (Membaca Teks/bacaan panjang berparagraf).
 // 4) GAMBAR/DIAGRAM -- SEMUA gambar di sistem ini ORISINAL, digambar ulang
 //    dari data presisi yang dihitung/ditentukan AI, BUKAN dicari/disalin
-//    dari internet (itu berisiko hak cipta & gak terjamin akurat). Ada 4
+//    dari internet (itu berisiko hak cipta & gak terjamin akurat). Ada 5
 //    mekanisme:
 //    a) "graph"   -- grafik fungsi matematika, di-plot dari titik (x,y)
 //       hasil hitungan AI lewat QuickChart.
@@ -22,7 +22,9 @@
 //       digambar dari koordinat vertex yang dihitung AI, SVG presisi.
 //    c) "pattern" -- soal pola bentuk ala SBMPTN Penalaran Umum, dirender
 //       sebagai SVG dari deskripsi urutan bentuk yang dibuat AI.
-//    d) "needs_image"+"image_keyword" -- HANYA untuk objek/fenomena NYATA
+//    d) "clock"   -- jam analog presisi (soal baca jam), jarumnya
+//       dihitung otomatis dari jam:menit yang ditentukan AI.
+//    e) "needs_image"+"image_keyword" -- HANYA untuk objek/fenomena NYATA
 //       yang bisa difoto (dicari lewat Wikimedia di frontend), BUKAN
 //       diagram teknis.
 
@@ -70,6 +72,36 @@ async function callGemini(systemPrompt, userPrompt, modelName, useTrendSearch) {
 // ============================================================
 
 const escapeXml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+// ============================================================
+// 🔥 BARU: FIX BUG NYATA (laporan langsung: soal isian singkat & jumbled
+// words tampil rusak jadi "ext{...}", "extfootball" dst -- LaTeX-nya
+// hilang separuh). Akar masalahnya: AI menulis LaTeX kayak \text{...}
+// dengan backslash TUNGGAL di dalam string JSON. Itu sebenarnya JSON TIDAK
+// VALID (backslash di JSON string WAJIB di-double: \\text{...}), tapi
+// JSON.parse gak langsung error -- dia diam-diam membaca \t sebagai
+// escape resmi JSON buat karakter TAB, "melahap" huruf t-nya dan
+// menyisakan "ext{...}" sebagai teks. Ini juga kejadian ke \b \f \n \r
+// (semua kebetulan sama dengan huruf pertama perintah LaTeX yang sering
+// dipakai: \beta/\bar/\binom, \frac, \neq/\nabla, \rightarrow/\rho).
+// Perbaikannya: SEBELUM JSON.parse, dobelkan backslash-backslash yang
+// jelas-jelas bukan escape JSON resmi yang disengaja (huruf-huruf LaTeX
+// lain kayak \t(imes), \a(lpha), dst), supaya JSON.parse balikin
+// backslash TUNGGAL + nama perintah LENGKAP seperti seharusnya.
+// ============================================================
+const sanitizeLatexEscapes = (text) => {
+  return text
+    // Backslash + huruf yang BUKAN salah satu escape resmi JSON
+    // (" \ / b f n r t u) -- ini SELALU perintah LaTeX (\alpha, \times,
+    // \circ, dst), gak pernah dimaksudkan sebagai escape JSON. Dobelkan.
+    .replace(/\\(?!["\\/bfnrtu])/g, '\\\\')
+    // Backslash + salah satu dari b/f/n/r/t/u YANG DIIKUTI huruf lain
+    // lagi (\text, \frac, \neq, \rho, \times, dst) -- ini AMBIGU secara
+    // JSON (bisa dibaca sebagai escape resmi), tapi kalau langsung
+    // disambung huruf lain berarti itu jelas nama perintah LaTeX, BUKAN
+    // escape tunggal yang disengaja. Dobelkan juga backslash-nya.
+    .replace(/\\([bfnrtu])(?=[a-zA-Z])/g, '\\\\$1');
+};
 
 // (a) Grafik fungsi matematika -- di-plot lewat QuickChart.io dari titik
 // (x,y) hasil hitungan AI. Akurat karena murni dari angka, bukan gambar.
@@ -204,6 +236,59 @@ const buildPatternImageSvg = (pattern) => {
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 };
 
+// (d) Jam analog presisi -- KHUSUS buat soal "jam menunjukkan pukul
+// sekian, ini pukul berapa/tulis dalam bahasa Inggris/dst". Ini BUKAN
+// objek nyata yang bisa difoto (gak ada foto asli "jam analog jarumnya
+// PERSIS di posisi X:Y" yang cocok buat tiap soal) -- makanya sebelumnya
+// AI kepaksa pakai needs_image dan hasilnya ngasal (foto tekstur/kain
+// random dari Wikimedia yang gak ada hubungannya sama sekali). Sekarang
+// jamnya digambar SENDIRI sebagai SVG, jarumnya dihitung presisi dari jam
+// & menit yang ditentukan AI -- selalu akurat, gak pernah nyasar.
+const buildClockImageSvg = (clock) => {
+  if (!clock || typeof clock.hour !== 'number' || typeof clock.minute !== 'number') return '';
+  const hour = ((clock.hour % 12) + 12) % 12;
+  const minute = ((clock.minute % 60) + 60) % 60;
+
+  const size = 260;
+  const cx = size / 2, cy = size / 2;
+  const r = size / 2 - 14;
+
+  // Sudut dihitung dari arah jam 12 (atas), searah jarum jam.
+  const minuteAngle = (minute / 60) * 360;
+  const hourAngle = (hour / 12) * 360 + (minute / 60) * 30;
+  const toXY = (angleDeg, length) => {
+    const rad = (angleDeg - 90) * (Math.PI / 180);
+    return { x: cx + length * Math.cos(rad), y: cy + length * Math.sin(rad) };
+  };
+  const hourTip = toXY(hourAngle, r * 0.5);
+  const minuteTip = toXY(minuteAngle, r * 0.75);
+
+  // Angka 1-12 + garis penanda tiap 5 menit.
+  const numeralsSvg = Array.from({ length: 12 }, (_, i) => {
+    const n = i === 0 ? 12 : i;
+    const pos = toXY(i * 30, r * 0.82);
+    return `<text x="${pos.x.toFixed(2)}" y="${(pos.y + 6).toFixed(2)}" font-size="16" fill="#1e293b" text-anchor="middle" font-family="sans-serif" font-weight="600">${n}</text>`;
+  }).join('');
+  const ticksSvg = Array.from({ length: 60 }, (_, i) => {
+    const isHour = i % 5 === 0;
+    const outer = toXY(i * 6, r);
+    const inner = toXY(i * 6, isHour ? r * 0.88 : r * 0.94);
+    return `<line x1="${outer.x.toFixed(2)}" y1="${outer.y.toFixed(2)}" x2="${inner.x.toFixed(2)}" y2="${inner.y.toFixed(2)}" stroke="#1e293b" stroke-width="${isHour ? 2 : 1}"/>`;
+  }).join('');
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+    <rect x="0" y="0" width="${size}" height="${size}" fill="white"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="white" stroke="#1e293b" stroke-width="3"/>
+    ${ticksSvg}
+    ${numeralsSvg}
+    <line x1="${cx}" y1="${cy}" x2="${hourTip.x.toFixed(2)}" y2="${hourTip.y.toFixed(2)}" stroke="#1e293b" stroke-width="5" stroke-linecap="round"/>
+    <line x1="${cx}" y1="${cy}" x2="${minuteTip.x.toFixed(2)}" y2="${minuteTip.y.toFixed(2)}" stroke="#1e293b" stroke-width="3.5" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="5" fill="#1e293b"/>
+  </svg>`;
+
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+};
+
 // ============================================================
 // PROMPT
 // ============================================================
@@ -256,14 +341,18 @@ JANGAN PERNAH berasumsi kamu "menyisipkan" gambar dari internet -- SETIAP gambar
 "pattern": {"sequence": [{"shape":"circle","filled":false,"rotation":0}, {"shape":"triangle","filled":true,"rotation":90}, ...]}
 (rancang POLA LOGIS yang jelas -- misal jumlah sisi bertambah, rotasi konsisten tiap langkah, isi berselang-seling -- polanya adalah INTI soal penalarannya)
 
-(d) "needs_image" + "image_keyword" -- HANYA untuk objek/tempat/fenomena NYATA yang punya foto asli (mis. "penampang daun", "candi Borobudur"). "image_keyword" diisi kata benda BAHASA INGGRIS. JANGAN pakai ini untuk diagram teknis dengan angka spesifik -- pakai (a)/(b)/(c), atau jelaskan lewat teks/tabel di "question".
+(d) "clock" -- buat SOAL BACA JAM ANALOG (mis. "jam menunjukkan pukul berapa", "tulis waktu ini dalam Bahasa Inggris", dst). Format:
+"clock": {"hour": 8, "minute": 30}
+(hour 0-11 atau 12/13-23 sama-sama boleh, minute 0-59 -- jarum dihitung otomatis presisi dari angka ini, kamu TIDAK perlu menggambar apa pun sendiri)
+
+(e) "needs_image" + "image_keyword" -- HANYA untuk objek/tempat/fenomena NYATA yang punya foto asli (mis. "penampang daun", "candi Borobudur"). "image_keyword" diisi kata benda BAHASA INGGRIS. JANGAN pakai ini untuk diagram teknis dengan angka spesifik -- pakai (a)/(b)/(c)/(d), atau jelaskan lewat teks/tabel di "question". KHUSUS SOAL JAM: JANGAN PERNAH pakai needs_image buat ini walau kelihatannya "jam itu benda nyata" -- gak ada foto asli jam analog yang jarumnya PERSIS di posisi waktu yang kamu maksud di soal, pencarian foto pasti nyasar ke gambar gak relevan (ini KEGAGALAN NYATA yang PERNAH KEJADIAN: soal "jam pukul 08:30" malah dapat foto kain/kulit/buku yang gak ada hubungannya sama sekali). WAJIB pakai mekanisme (d) "clock" buat SEMUA soal yang butuh gambar jam analog.
 
 TIPE SOAL YANG BOLEH DIPAKAI (hanya ini, sesuai permintaan guru)
 ${allowedTypes.map(t => TYPE_DESCRIPTIONS[t]).join('\n')}
 
 FORMAT JAWABAN — WAJIB JSONL (SATU BARIS = SATU SOAL)
 Baris PERTAMA metadata: {"meta": true}
-Baris berikutnya, SATU baris SATU soal. Setiap soal WAJIB juga menyertakan salah satu (atau tidak sama sekali kalau gak perlu gambar) dari: "graph", "shape", "pattern", ATAU "needs_image"+"image_keyword".
+Baris berikutnya, SATU baris SATU soal. Setiap soal WAJIB juga menyertakan salah satu (atau tidak sama sekali kalau gak perlu gambar) dari: "graph", "shape", "pattern", "clock", ATAU "needs_image"+"image_keyword".
 
 ATURAN KETAT FORMAT:
 - TIDAK ADA koma di akhir baris. TIDAK ADA kurung siku pembungkus semua soal. TIDAK ADA code fence/teks lain.
@@ -277,8 +366,9 @@ PERIKSA SENDIRI SEBELUM MENJAWAB
 4. Kalau pakai "shape": koordinat vertex-nya beneran membentuk bangun yang dimaksud soal?
 5. Kalau pakai "pattern": polanya beneran logis dan konsisten, bukan asal random?
 6. Kalau diminta HOTS: soal ini beneran butuh analisis/evaluasi/penerapan?
-7. needs_image cuma dipakai buat objek nyata yang bisa difoto, BUKAN diagram teknis?
-8. Format JSONL benar: satu baris satu objek, tanpa koma akhir, tanpa kurung siku?`;
+7. needs_image cuma dipakai buat objek nyata yang bisa difoto (BUKAN soal jam -- itu wajib pakai mekanisme "clock"), BUKAN diagram teknis?
+8. Format JSONL benar: satu baris satu objek, tanpa koma akhir, tanpa kurung siku?
+9. Semua LaTeX (kalau ada) ditulis dengan benar di antara tanda dolar, bukan disingkat/dipotong?`;
 
 // ============================================================
 // HANDLER
@@ -368,6 +458,12 @@ Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
       return res.status(502).json({ error: 'Astro Gemilang tidak mengembalikan jawaban, coba generate ulang.' });
     }
 
+    // 🔥 WAJIB dijalankan SEBELUM parsing JSON -- lihat penjelasan lengkap
+    // di definisi sanitizeLatexEscapes di atas. Kalau ini dilewat, semua
+    // LaTeX yang mengandung \t../\n../\f../\b../\r.. akan rusak diam-diam
+    // sebelum sempat diperiksa sanitizeText sama sekali.
+    const fixedRawText = sanitizeLatexEscapes(rawText);
+
     const extractJsonObjects = (text) => {
       const objects = [];
       let depth = 0;
@@ -398,7 +494,7 @@ Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
       return objects;
     };
 
-    const objects = extractJsonObjects(rawText);
+    const objects = extractJsonObjects(fixedRawText);
     const questionObjs = objects.filter(o => o.meta !== true && (o.question || o.readingText));
 
     if (questionObjs.length === 0) {
@@ -440,6 +536,7 @@ Buat ${jumlah} soal sekarang sesuai semua aturan di atas.`;
         try { if (q.graph) qImage = buildGraphImageUrl(q.graph); } catch (e) { /* abaikan, lanjut tanpa gambar */ }
         if (!qImage) { try { if (q.shape) qImage = buildShapeImageSvg(q.shape); } catch (e) { /* abaikan */ } }
         if (!qImage) { try { if (q.pattern) qImage = buildPatternImageSvg(q.pattern); } catch (e) { /* abaikan */ } }
+        if (!qImage) { try { if (q.clock) qImage = buildClockImageSvg(q.clock); } catch (e) { /* abaikan */ } }
 
         return {
           type,
