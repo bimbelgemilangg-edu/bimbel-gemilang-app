@@ -174,6 +174,21 @@ async function searchWebFree(query) {
     await response.text();
 
   if (!response.ok) {
+    // 🔥 FIX BUG AKAR "1 query kosong = seluruh batch riset dibatalkan":
+    // status 422 dari Jina ("No search results available for query...")
+    // itu JAWABAN SAH -- artinya query itu spesifik BENERAN gak nemu
+    // hasil di web (wajar terjadi, apalagi buat query panjang/spesifik).
+    // Ini BUKAN kegagalan search service kayak 401 (auth) atau 5xx
+    // (server down) -- sebelumnya semua status non-2xx digebyah sama
+    // rata jadi "error" yang dilempar ke atas dan MEMBATALKAN SELURUH
+    // proses riset (4 query lainnya ikut gak kepakai walau mungkin
+    // berhasil). Sekarang 422 khusus ditangani sebagai "kosong tapi sah"
+    // -- return array kosong, bukan throw -- supaya query lain di daftar
+    // tetap sempat dicoba.
+    if (response.status === 422) {
+      return [];
+    }
+
     // 🔥 FIX: pesan error sekarang membedakan kasus "butuh API key" dari
     // kegagalan lain, supaya gampang didiagnosis lain kali kalau mode
     // riset internet yang gagal (bukan mode topik biasa).
@@ -280,20 +295,62 @@ function buildResearchQueries({
       new Date().getFullYear() + 1
     );
 
+  // 🔥 FIX BUG AKAR "query sering balik 0 hasil (422)": sebelumnya
+  // SELURUH topik selalu dibungkus tanda kutip ("${topic}"), yang artinya
+  // mesin pencari WAJIB nyari FRASA PERSIS kata demi kata sesuai urutan
+  // itu. Ini gampang banget balik nol hasil kalau topiknya panjang
+  // (banyak kata sekaligus HARUS cocok persis), ada typo dari guru
+  // (misal "KEMAMPUAN" ketik "KEMAMOUAN"), atau frasanya jarang muncul
+  // utuh di web manapun -- padahal kata-kata di dalamnya sendiri
+  // (terpisah, tanpa kutip) mungkin banyak sumbernya. Sekarang tanda
+  // kutip cuma dipakai kalau topiknya pendek (maks 3 kata) yang aman
+  // buat exact-match; topik lebih panjang dibiarkan tanpa kutip supaya
+  // mesin pencari bebas mencocokkan kata-kata individualnya, bukan
+  // menuntut frasa utuh yang identik.
+  const topicTrimmed =
+    String(topic || '').trim();
+
+  const topicWordCount =
+    topicTrimmed
+      .split(/\s+/)
+      .filter(Boolean).length;
+
+  const topicTerm =
+    topicWordCount > 0 &&
+    topicWordCount <= 3
+      ? `"${topicTrimmed}"`
+      : topicTrimmed;
+
+  // Gabungkan potongan kalimat lalu rapikan spasi ganda yang muncul
+  // kalau mapel/kelas kosong -- query jadi lebih bersih buat mesin
+  // pencari (spasi ganda/berantakan juga bisa memperkecil peluang match).
+  const clean = (str) =>
+    String(str)
+      .replace(/\s+/g, ' ')
+      .trim();
+
   return [
-    `"${topic}" ${mapel || ''} ${
-      kelas || ''
-    } TKA contoh soal`,
+    clean(
+      `${topicTerm} ${mapel || ''} ${
+        kelas || ''
+      } TKA contoh soal`
+    ),
 
-    `"${topic}" ${mapel || ''} ${
-      kelas || ''
-    } latihan soal tahun sebelumnya`,
+    clean(
+      `${topicTerm} ${mapel || ''} ${
+        kelas || ''
+      } latihan soal tahun sebelumnya`
+    ),
 
-    `${mapel || ''} ${
-      kelas || ''
-    } TKA soal ${year}`,
+    clean(
+      `${mapel || ''} ${
+        kelas || ''
+      } TKA soal ${year}`
+    ),
 
-    `${topic} soal HOTS ${mapel || ''}`,
+    clean(
+      `${topicTrimmed} soal HOTS ${mapel || ''}`
+    ),
   ];
 }
 
@@ -2261,11 +2318,24 @@ export default async function handler(
     const allSources =
       [];
 
-    try {
-      for (
-        const query of
-          queries
-      ) {
+    // 🔥 FIX BUG AKAR "1 query gagal = seluruh riset dibatalkan":
+    // sebelumnya `for` loop di sini dibungkus SATU try/catch besar --
+    // begitu SATU SAJA dari 4 query melempar error (misal kena rate
+    // limit sesaat, koneksi putus sebentar, atau -- sebelum fix di
+    // searchWebFree() di atas -- "422 no results"), exception itu
+    // langsung LOMPAT KELUAR loop dan MEMBATALKAN SISA QUERY yang belum
+    // sempat dicoba, walau mereka mungkin bakal berhasil. Sekarang tiap
+    // query dicoba dalam try/catch SENDIRI-SENDIRI di dalam loop -- kalau
+    // satu gagal, dicatat lalu lanjut ke query berikutnya. Baru kalau
+    // BENERAN SEMUA query gagal/kosong, laporkan error ke user (dengan
+    // detail masing-masing query biar gampang didiagnosis).
+    const queryErrors = [];
+
+    for (
+      const query of
+        queries
+    ) {
+      try {
         const results =
           await searchWebFree(
             query
@@ -2274,23 +2344,37 @@ export default async function handler(
         allSources.push(
           ...results
         );
-      }
-    } catch (
-      error
-    ) {
-      console.error(
-        '[Gemilang Web Search]',
+      } catch (
         error
-          .message
-      );
+      ) {
+        console.error(
+          '[Gemilang Web Search]',
+          query,
+          error.message
+        );
 
+        queryErrors.push({
+          query,
+          message: error.message,
+        });
+      }
+    }
+
+    if (
+      allSources.length ===
+        0 &&
+      queryErrors.length ===
+        queries.length
+    ) {
+      // Semua query gagal total (bukan cuma "kebetulan kosong") --
+      // baru di titik ini proses riset benar-benar dihentikan.
       return res.status(
         502
       ).json({
         error:
           'Pencarian internet gratis gagal. Batch dihentikan agar sistem tidak berpura-pura berbasis internet.',
         debug:
-          error.message,
+          queryErrors,
       });
     }
 
