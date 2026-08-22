@@ -1,405 +1,1949 @@
-// src/pages/teacher/modul/AIGenerateQuiz.jsx
-import React, { useState } from 'react';
-import { Sparkles, X, Loader2, AlertCircle, Wand2, FileQuestion, Globe, Brain } from 'lucide-react';
+// api/generateQuizFromTopic.js
+// ============================================================
+// BIMBEL GEMILANG - PROFESSIONAL QUIZ ENGINE
+// GEMINI 3.6 FLASH + FREE WEB RESEARCH
+// ============================================================
 
-const TYPE_OPTIONS = [
-  { id: 'multiple', label: 'Pilihan Ganda' },
-  { id: 'truefalse', label: 'Benar/Salah' },
-  { id: 'multiselect', label: 'Pilih Lebih dari Satu' },
-  { id: 'shortanswer', label: 'Isian Singkat' },
-  { id: 'causeeffect', label: 'Sebab Akibat' },
-  { id: 'matching', label: 'Menjodohkan' },
-  // 🔥 BARU: sebelumnya gak ditawarkan sama sekali (backend juga belum
-  // support) -- sekarang backend udah bisa bikin bacaan panjang +
-  // beberapa sub-soal, jadi ditampilkan di sini juga.
-  { id: 'reading', label: 'Membaca Teks (bacaan panjang)' },
-];
+const GEMINI_MODEL = 'gemini-3.6-flash';
 
-const HOTS_OPTIONS = [
-  { id: '', label: 'Standar (gak wajib HOTS)' },
-  { id: 'sedang', label: 'HOTS Sedang' },
-  { id: 'tinggi', label: 'HOTS Tinggi (setara SNBT/UTBK)' },
-];
+const MAX_BATCH_QUESTIONS = 10;
+const MAX_OUTPUT_TOKENS = 14000;
+const GEMINI_TIMEOUT = 70000;
+const SEARCH_TIMEOUT = 20000;
+const SEARCH_DELAY = 1500;
 
-// props:
-// - subject: mapel guru (konteks Astro Gemilang)
-// - onGenerated: (questionsArray dalam format internal ManageQuiz) => void
-// - onClose: () => void
-const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
-  const [topic, setTopic] = useState('');
-  const [kelas, setKelas] = useState('');
-  const [jumlahSoal, setJumlahSoal] = useState(5);
-  const [selectedTypes, setSelectedTypes] = useState(['multiple']);
-  const [arahan, setArahan] = useState('');
-  // 🔥 BARU: dua toggle baru -- pencarian tren internet & level HOTS.
-  const [useTrendSearch, setUseTrendSearch] = useState(true);
-  const [targetYear, setTargetYear] = useState(() => new Date().getFullYear() + 1);
-  const [hotsLevel, setHotsLevel] = useState('');
-  const [generating, setGenerating] = useState(false);
-  const [statusLabel, setStatusLabel] = useState('');
-  const [error, setError] = useState('');
-  // 🔥 BARU: sumber yang dipakai Astro Gemilang buat baca tren (kalau
-  // useTrendSearch aktif) -- ditampilkan setelah selesai generate, biar
-  // guru tau ini bukan klaim kosong.
-  const [lastGroundingSources, setLastGroundingSources] = useState([]);
-  const [lastGroundingQueries, setLastGroundingQueries] = useState([]);
+let lastSearchAt = 0;
 
-  const toggleType = (id) => {
-    setSelectedTypes(prev =>
-      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
-    );
-  };
+// ============================================================
+// BASIC HELPERS
+// ============================================================
 
-  const handleGenerate = async () => {
-    setError('');
-    setLastGroundingSources([]);
-    setLastGroundingQueries([]);
-    if (!topic.trim()) return setError('❌ Topik/materi kuis wajib diisi!');
-    if (selectedTypes.length === 0) return setError('❌ Pilih minimal 1 tipe soal!');
-    if (jumlahSoal < 1 || jumlahSoal > 20) return setError('❌ Jumlah soal antara 1-20!');
+const sleep = (ms) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
-    setGenerating(true);
-    setStatusLabel(
-      useTrendSearch
-        ? `Astro Gemilang sedang meriset beberapa sumber soal publik untuk latihan ${targetYear}... (30-90 detik)`
-        : 'Astro Gemilang sedang menyusun soal... (20-50 detik)'
-    );
+const cleanText = (value = '') =>
+  String(value ?? '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const escapeXml = (value = '') =>
+  String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+
+const isNum = (value) =>
+  typeof value === 'number' &&
+  Number.isFinite(value);
+
+const validIndex = (value, min, max) =>
+  Number.isInteger(value) &&
+  value >= min &&
+  value <= max;
+
+const fetchTimeout = async (
+  url,
+  options = {},
+  timeout = 30000
+) => {
+  const controller = new AbortController();
+
+  const timer = setTimeout(
+    () => controller.abort(),
+    timeout
+  );
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+// ============================================================
+// FREE WEB SEARCH
+// ============================================================
+// Kita tidak menggunakan Jina.
+// Kita mencoba DuckDuckGo HTML lalu Lite.
+// Karena ini endpoint web publik, hasil dapat berubah sewaktu-waktu.
+// ============================================================
+
+const decodeHtml = (value = '') =>
+  String(value)
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/gi, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+
+const stripHtml = (value = '') =>
+  decodeHtml(
+    String(value)
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
+
+const parseDuckResults = (html = '') => {
+  const results = [];
+  const seen = new Set();
+
+  const regex =
+    /<a[^>]+class=["'][^"']*result__a[^"']*["'][^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+
+  let match;
+
+  while (
+    (match = regex.exec(html)) !== null &&
+    results.length < 8
+  ) {
+    let url = decodeHtml(match[1] || '');
+    const title = stripHtml(match[2] || '');
+
+    if (!url || !title) continue;
 
     try {
-      const res = await fetch('/api/generateQuizFromTopic', {
+      const parsed = new URL(
+        url.startsWith('//')
+          ? `https:${url}`
+          : url
+      );
+
+      const uddg =
+        parsed.searchParams.get('uddg');
+
+      if (uddg) url = uddg;
+    } catch (_) {}
+
+    if (seen.has(url)) continue;
+
+    seen.add(url);
+
+    results.push({
+      title,
+      url,
+      content: '',
+    });
+  }
+
+  const snippetRegex =
+    /<(?:a|div)[^>]+class=["'][^"']*result__snippet[^"']*["'][^>]*>([\s\S]*?)<\/(?:a|div)>/gi;
+
+  const snippets = [];
+
+  let snippetMatch;
+
+  while (
+    (snippetMatch =
+      snippetRegex.exec(html)) !== null &&
+    snippets.length < 8
+  ) {
+    snippets.push(
+      stripHtml(
+        snippetMatch[1] || ''
+      )
+    );
+  }
+
+  results.forEach((item, index) => {
+    item.content =
+      snippets[index] || '';
+  });
+
+  return results;
+};
+
+const searchDuck = async (
+  endpoint,
+  query
+) => {
+  const body =
+    new URLSearchParams({
+      q: query,
+    }).toString();
+
+  const response =
+    await fetchTimeout(
+      endpoint,
+      {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          topic: topic.trim(),
-          mapel: subject,
-          kelas: kelas.trim(),
-          jumlahSoal,
-          types: selectedTypes,
-          arahan: arahan.trim(),
-          useTrendSearch,
-          targetYear: Number(targetYear) || new Date().getFullYear() + 1,
-          hotsLevel,
-        }),
-      });
-      const data = await res.json();
 
-      if (!res.ok || !data.success) {
-        // 🔥 FIX BUG NYATA: sebelumnya `data.debug` selalu diperlakukan
-        // seolah-olah STRING (digabung langsung ke template literal) --
-        // itu bener kalau debug-nya pesan error dari Gemini/Jina (memang
-        // string). TAPI sejak backend nambahin info debug khusus buat
-        // kasus "0 soal lolos quality gate", `data.debug` di jalur itu
-        // adalah OBJECT ({finishReason, parsedObjectCount, rawTextLength,
-        // rawTextSample}) -- digabung ke string lewat `${...}` otomatis
-        // jadi teks "[object Object]" oleh JavaScript, isinya ketutup
-        // total dan gak kebaca sama sekali dari UI. Sekarang dicek dulu
-        // tipenya: object di-stringify rapi (biar semua field debug-nya
-        // kebaca), string dipakai apa adanya seperti sebelumnya.
-        const debugText =
-          data.debug && typeof data.debug === 'object'
-            ? JSON.stringify(data.debug, null, 2)
-            : data.debug;
-        const msg = debugText ? `${data.error} [debug: ${debugText}]` : (data.error || 'Gagal membuat soal');
-        throw new Error(msg);
-      }
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/151 Safari/537.36',
 
-      const qs = data.questions || [];
-      if (qs.length === 0) {
-        throw new Error('Astro Gemilang tidak menghasilkan soal apapun, coba lagi.');
-      }
+          Accept:
+            'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 
-      // 🔥 FIX BUG NYATA: sebelumnya `qImage` DIPAKSA jadi string kosong
-      // di sini, apapun yang dikirim backend -- jadi walau backend udah
-      // bikin gambar (grafik fungsi/bangun ruang/pola bentuk) buat soal
-      // itu, frontend BUANG gambarnya begitu aja, gak pernah nyampe ke
-      // editor. Sekarang `q.qImage` dari backend (hasil generate sendiri,
-      // BUKAN dicari dari internet -- lihat penjelasan di backend) diambil
-      // apa adanya.
-      //
-      // 🔥 FIX BUG NYATA JUGA: tipe "reading" sebelumnya SELALU dikasih
-      // readingText/subQuestions KOSONG di sini, gak peduli apa isi
-      // beneran dari backend -- soal bacaan yang di-generate selalu
-      // tampil kosong total ke guru. Sekarang field-field itu diambil
-      // dari `q` yang beneran dikirim backend.
-      const converted = qs.map((q, i) => ({
-        id: Date.now() + i,
-        type: q.type || 'multiple',
-        q: q.question || '',
-        qImage: q.qImage || '',
-        options: q.options && q.options.length ? q.options : ['', '', '', ''],
-        optionImages: ['', '', '', ''],
-        correct: typeof q.correct === 'number' ? q.correct : 0,
-        correctAnswers: q.correctAnswers || [],
-        explanation: q.explanation || '',
-        statements: q.statements && q.statements.length ? q.statements : [{ text: '', isTrue: true }],
-        readingText: q.readingText || '',
-        subQuestions: q.subQuestions && q.subQuestions.length ? q.subQuestions : [{ q: '', options: ['', '', '', ''], correct: 0 }],
-        shortAnswer: q.shortAnswer || '',
-        cause: q.cause || '',
-        effect: q.effect || '',
-        isCauseTrue: q.isCauseTrue !== undefined ? q.isCauseTrue : true,
-        isEffectTrue: q.isEffectTrue !== undefined ? q.isEffectTrue : true,
-        needsManualAnswer: false,
-        optionsAreImages: false,
-        matchingPairs: q.matchingPairs && q.matchingPairs.length ? q.matchingPairs : [{ left: '', right: '' }, { left: '', right: '' }],
-        // 🔥 Diteruskan juga -- kalau backend nandain soal ini idealnya
-        // pakai foto objek nyata (needs_image) tapi belum ketemu/gak
-        // sempat dicari, editor kuis (ManageQuiz.jsx) udah punya panel
-        // "AI menyarankan gambar" yang baca field ini.
-        needsImage: q.needsImage || false,
-        imageHint: q.imageHint || '',
-        researchBacked: q.researchBacked || false,
-        visualRequired: q.visualRequired || false,
-        visualKind: q.visualKind || 'none',
-        // 🔥 FIX BUG AKAR "Semua hasil batch ditolak: sumber riset tidak
-        // lengkap": sebelumnya baris ini baca `data.groundingSources` --
-        // nama field LAMA yang SUDAH TIDAK PERNAH DIKIRIM backend sama
-        // sekali (backend mengirim `researchSources`, lihat response di
-        // generateQuizFromTopic.js). Karena field yang dibaca gak ada,
-        // hasilnya SELALU array kosong []. Padahal soal-soal itu ditandai
-        // `researchBacked: true` (memang hasil riset internet), dan ada
-        // aturan validasi yang menolak soal yang "ngaku hasil riset tapi
-        // daftar sumbernya kosong" -- jadi SELURUH batch ditolak walau
-        // soal & sumbernya sebenarnya ADA dan valid, cuma gagal dioper
-        // karena salah nama field. Sekarang dibaca dari field yang benar,
-        // dengan prioritas per-soal (q.researchSources, backend mengisi
-        // ini per soal) lalu fallback ke daftar tingkat-response.
-        researchSources:
-          (Array.isArray(q.researchSources) && q.researchSources.length
-            ? q.researchSources
-            : data.researchSources) || [],
-      }));
+          'Content-Type':
+            'application/x-www-form-urlencoded',
 
-      onGenerated(converted);
-      // 🔥 FIX menyusul dari perbaikan di atas: dua state ini juga membaca
-      // nama field lama yang gak pernah dikirim backend, jadi panel
-      // "sumber riset" di UI selalu tampil kosong. `groundingQueries`
-      // memang tidak ada padanannya di response sekarang, jadi dibiarkan
-      // kosong; yang penting daftar sumbernya kebaca.
-      setLastGroundingSources(data.researchSources || []);
-      setLastGroundingQueries(data.groundingQueries || []);
+          'Accept-Language':
+            'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+        },
 
-      if (data.possiblyTruncated) {
-        alert(
-          `✅ ${converted.length} soal berhasil dibuat!\n\n` +
-          `⚠️ Catatan: kemungkinan belum semua soal yang diminta sempat dibuat karena topiknya luas. ` +
-          `Cek dulu jumlahnya, generate lagi kalau masih kurang.`
-        );
-      }
+        body,
+      },
+      SEARCH_TIMEOUT
+    );
 
-      onClose();
-    } catch (e) {
-      setError('❌ ' + e.message);
-    } finally {
-      setGenerating(false);
-    }
+  const html =
+    await response.text();
+
+  if (!response.ok) {
+    throw new Error(
+      `WEB_SEARCH_HTTP_${response.status}`
+    );
+  }
+
+  const results =
+    parseDuckResults(html);
+
+  if (!results.length) {
+    throw new Error(
+      'WEB_SEARCH_NO_RESULTS'
+    );
+  }
+
+  return results;
+};
+
+const searchWebFree = async (
+  query
+) => {
+  const wait = Math.max(
+    0,
+    SEARCH_DELAY -
+      (Date.now() - lastSearchAt)
+  );
+
+  if (wait > 0) {
+    await sleep(wait);
+  }
+
+  lastSearchAt = Date.now();
+
+  try {
+    return await searchDuck(
+      'https://html.duckduckgo.com/html/',
+      query
+    );
+  } catch (firstError) {
+    console.warn(
+      'DuckDuckGo HTML gagal:',
+      firstError.message
+    );
+
+    return searchDuck(
+      'https://lite.duckduckgo.com/lite/',
+      query
+    );
+  }
+};
+
+// ============================================================
+// RESEARCH QUERIES
+// ============================================================
+
+const buildQueries = ({
+  topic,
+  mapel,
+  kelas,
+  targetYear,
+}) => {
+  const clean = (text) =>
+    String(text || '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const topik =
+    clean(topic);
+
+  return [
+    clean(
+      `${topik} ${mapel || ''} ${
+        kelas || ''
+      } TKA contoh soal`
+    ),
+
+    clean(
+      `${topik} ${mapel || ''} ${
+        kelas || ''
+      } latihan soal`
+    ),
+
+    clean(
+      `${mapel || ''} ${
+        kelas || ''
+      } TKA soal ${targetYear}`
+    ),
+
+    clean(
+      `${topik} ${mapel || ''} soal HOTS`
+    ),
+  ];
+};
+
+// ============================================================
+// GEMINI 3.6 FLASH
+// ============================================================
+
+const callGemini = async (
+  systemPrompt,
+  userPrompt
+) => {
+  if (
+    !process.env.GEMINI_API_KEY
+  ) {
+    throw new Error(
+      'GEMINI_API_KEY belum tersedia.'
+    );
+  }
+
+  const url =
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+  const body = {
+    system_instruction: {
+      parts: [
+        {
+          text: systemPrompt,
+        },
+      ],
+    },
+
+    contents: [
+      {
+        role: 'user',
+
+        parts: [
+          {
+            text: userPrompt,
+          },
+        ],
+      },
+    ],
+
+    generationConfig: {
+      maxOutputTokens:
+        MAX_OUTPUT_TOKENS,
+    },
   };
 
+  const response =
+    await fetchTimeout(
+      url,
+      {
+        method: 'POST',
+
+        headers: {
+          'Content-Type':
+            'application/json',
+
+          'x-goog-api-key':
+            process.env
+              .GEMINI_API_KEY,
+        },
+
+        body: JSON.stringify(
+          body
+        ),
+      },
+      GEMINI_TIMEOUT
+    );
+
+  const raw =
+    await response.text();
+
+  if (!response.ok) {
+    let detail = raw;
+
+    try {
+      const parsed =
+        JSON.parse(raw);
+
+      detail =
+        parsed?.error?.message ||
+        raw;
+    } catch (_) {}
+
+    const error =
+      new Error(
+        `GEMINI_HTTP_${response.status}: ${detail}`
+      );
+
+    error.status =
+      response.status;
+
+    throw error;
+  }
+
+  return JSON.parse(raw);
+};
+
+// ============================================================
+// LOCAL VISUAL - CLOCK
+// ============================================================
+
+const buildClock = (
+  clock
+) => {
+  if (
+    !clock ||
+    !isNum(clock.hour) ||
+    !isNum(clock.minute)
+  ) {
+    return '';
+  }
+
+  const hour =
+    ((Number(clock.hour) %
+      12) +
+      12) %
+    12;
+
+  const minute =
+    Math.max(
+      0,
+      Math.min(
+        59,
+        Number(clock.minute)
+      )
+    );
+
+  const size = 280;
+  const cx = 140;
+  const cy = 140;
+  const r = 112;
+
+  const point = (
+    angle,
+    length
+  ) => {
+    const rad =
+      ((angle - 90) *
+        Math.PI) /
+      180;
+
+    return {
+      x:
+        cx +
+        length *
+          Math.cos(rad),
+
+      y:
+        cy +
+        length *
+          Math.sin(rad),
+    };
+  };
+
+  const hourTip =
+    point(
+      hour * 30 +
+        minute * 0.5,
+      r * 0.52
+    );
+
+  const minuteTip =
+    point(
+      minute * 6,
+      r * 0.78
+    );
+
+  const ticks =
+    Array.from(
+      { length: 60 },
+      (_, i) => {
+        const major =
+          i % 5 === 0;
+
+        const outer =
+          point(
+            i * 6,
+            r
+          );
+
+        const inner =
+          point(
+            i * 6,
+            major
+              ? r - 13
+              : r - 7
+          );
+
+        return `
+<line
+x1="${outer.x}"
+y1="${outer.y}"
+x2="${inner.x}"
+y2="${inner.y}"
+stroke="#334155"
+stroke-width="${
+  major ? 2 : 1
+}"
+/>`;
+      }
+    ).join('');
+
+  const numbers =
+    Array.from(
+      { length: 12 },
+      (_, i) => {
+        const number =
+          i === 0
+            ? 12
+            : i;
+
+        const p =
+          point(
+            i * 30,
+            r - 25
+          );
+
+        return `
+<text
+x="${p.x}"
+y="${p.y + 6}"
+text-anchor="middle"
+font-family="Arial"
+font-size="18"
+font-weight="700"
+fill="#1e293b"
+>${number}</text>`;
+      }
+    ).join('');
+
+  const svg = `
+<svg
+xmlns="http://www.w3.org/2000/svg"
+viewBox="0 0 280 280"
+width="280"
+height="280"
+>
+<rect
+width="280"
+height="280"
+fill="white"
+/>
+
+<circle
+cx="140"
+cy="140"
+r="${r}"
+fill="white"
+stroke="#1e293b"
+stroke-width="3"
+/>
+
+${ticks}
+
+${numbers}
+
+<line
+x1="140"
+y1="140"
+x2="${hourTip.x}"
+y2="${hourTip.y}"
+stroke="#1e293b"
+stroke-width="6"
+stroke-linecap="round"
+/>
+
+<line
+x1="140"
+y1="140"
+x2="${minuteTip.x}"
+y2="${minuteTip.y}"
+stroke="#334155"
+stroke-width="4"
+stroke-linecap="round"
+/>
+
+<circle
+cx="140"
+cy="140"
+r="5"
+fill="#1e293b"
+/>
+</svg>`;
+
   return (
-    <div style={styles.overlay} onClick={!generating ? onClose : undefined}>
-      <div style={styles.modal} onClick={e => e.stopPropagation()}>
-        <div style={styles.header}>
-          <span style={styles.headerTitle}>
-            <Sparkles size={18} color="#f59e0b" /> Generate Soal — Astro Gemilang
-          </span>
-          {!generating && <button onClick={onClose} style={styles.closeBtn}><X size={18} /></button>}
-        </div>
-
-        {!generating ? (
-          <>
-            <div style={styles.field}>
-              <label style={styles.label}>📖 Topik/Materi Kuis <span style={{ color: '#ef4444' }}>*wajib</span></label>
-              <input
-                value={topic}
-                onChange={e => setTopic(e.target.value)}
-                placeholder="Contoh: Pola Bilangan"
-                style={styles.input}
-              />
-            </div>
-
-            <div style={styles.row}>
-              <div style={{ ...styles.field, flex: 1 }}>
-                <label style={styles.label}>🎓 Kelas/Jenjang (opsional)</label>
-                <input
-                  value={kelas}
-                  onChange={e => setKelas(e.target.value)}
-                  placeholder="Kelas 8 SMP"
-                  style={styles.input}
-                />
-              </div>
-              <div style={{ ...styles.field, width: 100 }}>
-                <label style={styles.label}>🔢 Jumlah Soal</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={jumlahSoal}
-                  onChange={e => setJumlahSoal(parseInt(e.target.value) || 1)}
-                  style={styles.input}
-                />
-              </div>
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>📋 Tipe Soal (bisa pilih lebih dari 1)</label>
-              <div style={styles.typeGrid}>
-                {TYPE_OPTIONS.map(t => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => toggleType(t.id)}
-                    style={{
-                      ...styles.typeBtn,
-                      background: selectedTypes.includes(t.id) ? '#fef3c7' : 'white',
-                      border: selectedTypes.includes(t.id) ? '2px solid #f59e0b' : '1px solid #e2e8f0',
-                      color: selectedTypes.includes(t.id) ? '#b45309' : '#64748b',
-                    }}
-                  >
-                    {selectedTypes.includes(t.id) ? '✅ ' : ''}{t.label}
-                  </button>
-                ))}
-              </div>
-              <p style={styles.hintSmall}>
-                💡 Kalau pilih lebih dari 1 tipe, Astro Gemilang akan mencampur jenisnya sesuai jumlah soal yang diminta.
-              </p>
-            </div>
-
-            {/* 🔥 BARU: level HOTS */}
-            <div style={styles.field}>
-              <label style={styles.label}><Brain size={12} style={{ display: 'inline', marginRight: 4, verticalAlign: -2 }} /> Level Berpikir Kritis (HOTS)</label>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {HOTS_OPTIONS.map(h => (
-                  <button
-                    key={h.id}
-                    type="button"
-                    onClick={() => setHotsLevel(h.id)}
-                    style={{
-                      ...styles.hotsBtn,
-                      background: hotsLevel === h.id ? '#ede9fe' : 'white',
-                      border: hotsLevel === h.id ? '2px solid #8b5cf6' : '1px solid #e2e8f0',
-                      color: hotsLevel === h.id ? '#6d28d9' : '#64748b',
-                    }}
-                  >
-                    {h.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 🔥 RISET INTERNET — mode utama untuk latihan berbasis tren */}
-            <div style={styles.trendBox}>
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer' }}>
-                <input type="checkbox" checked={useTrendSearch} onChange={e => setUseTrendSearch(e.target.checked)} style={{ marginTop: 2 }} />
-                <span style={{ flex: 1 }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 800, color: '#1e293b' }}>
-                    <Globe size={13} color="#2563eb" /> Riset Internet Gratis — pakai banyak contoh soal nyata
-                  </span>
-                  <span style={{ fontSize: 10, color: '#475569', lineHeight: 1.6, display: 'block', marginTop: 3 }}>
-                    Astro Gemilang akan mencari beberapa sumber soal yang sudah terpublikasi, membandingkan pola/topik/stimulus, lalu menyusun latihan baru yang paling representatif.
-                    <b> Bukan bocoran atau prediksi pasti.</b> Sistem menolak hasil riset bila bukti web tidak cukup dan tidak diam-diam beralih offline.
-                  </span>
-                </span>
-              </label>
-              <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <label style={{ ...styles.label, margin: 0 }}>🎯 Tahun target latihan</label>
-                <input
-                  type="number"
-                  min={new Date().getFullYear()}
-                  max={new Date().getFullYear() + 5}
-                  value={targetYear}
-                  onChange={e => setTargetYear(parseInt(e.target.value) || new Date().getFullYear() + 1)}
-                  style={{ ...styles.input, width: 90, padding: 8 }}
-                />
-              </div>
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>📝 Arahan khusus (opsional)</label>
-              <textarea
-                value={arahan}
-                onChange={e => setArahan(e.target.value)}
-                placeholder="Kosongkan kalau tidak ada, atau isi contoh: fokus ke soal cerita jual beli"
-                style={styles.textarea}
-              />
-            </div>
-
-            {error && <div style={styles.errorBox}><AlertCircle size={14} /> {error}</div>}
-
-            {lastGroundingSources.length > 0 && (
-              <div style={styles.sourcesBox}>
-                <b>🌐 Sumber web yang dipakai untuk riset:</b>
-                <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
-                  {lastGroundingSources.map((s, i) => (
-                    <li key={i}>
-                      {typeof s === 'string'
-                        ? s
-                        : (s?.url
-                          ? <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#0369a1' }}>{s.title || s.url}</a>
-                          : s?.title)}
-                    </li>
-                  ))}
-                </ul>
-                {lastGroundingQueries.length > 0 && (
-                  <div style={{ marginTop: 6, fontSize: 9, color: '#64748b' }}>
-                    {lastGroundingQueries.length} kueri pencarian digunakan oleh Gemini.
-                  </div>
-                )}
-              </div>
-            )}
-
-            <button onClick={handleGenerate} style={styles.generateBtn}>
-              <Wand2 size={16} /> Generate Soal
-            </button>
-
-            <div style={styles.hintBox}>
-              <FileQuestion size={13} color="#f59e0b" style={{ flexShrink: 0, marginTop: 1 }} />
-              <span>
-                Mode riset menggunakan Gemini Free Tier + Google Search grounding; kuotanya terbatas dan tidak ada fallback berbayar. Soal & jawaban otomatis diisi Astro Gemilang (termasuk pembahasan), tapi <b>tetap cek dulu</b> sebelum
-                diterbitkan ke siswa — terutama hitungan matematika dan kunci jawabannya.
-              </span>
-            </div>
-          </>
-        ) : (
-          <div style={styles.progressBox}>
-            <Loader2 size={34} className="spin-ai" color="#f59e0b" />
-            <p style={styles.progressLabel}>{statusLabel}</p>
-            <div style={styles.progressBarBg}><div style={styles.progressBarIndeterminate} /></div>
-          </div>
-        )}
-      </div>
-      <style>{`
-        @keyframes spinAi{to{transform:rotate(360deg)}}
-        .spin-ai{animation:spinAi 1s linear infinite}
-        @keyframes slideAiQ{0%{margin-left:-40%}100%{margin-left:100%}}
-      `}</style>
-    </div>
+    'data:image/svg+xml;base64,' +
+    Buffer.from(
+      svg
+    ).toString('base64')
   );
 };
 
-const styles = {
-  overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 },
-  modal: { background: 'white', borderRadius: 16, padding: 20, width: '100%', maxWidth: 500, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  headerTitle: { fontSize: 15, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 },
-  closeBtn: { background: '#f1f5f9', border: 'none', borderRadius: 8, padding: 6, cursor: 'pointer' },
-  field: { marginBottom: 14 },
-  row: { display: 'flex', gap: 10 },
-  label: { fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 6 },
-  input: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', boxSizing: 'border-box' },
-  textarea: { width: '100%', minHeight: 70, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' },
-  typeGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 },
-  typeBtn: { padding: '8px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 700, textAlign: 'left' },
-  hotsBtn: { padding: '8px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 700 },
-  hintSmall: { fontSize: 9, color: '#94a3b8', marginTop: 6 },
-  trendBox: { background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: 12, marginBottom: 14 },
-  errorBox: { background: '#fee2e2', color: '#ef4444', padding: 10, borderRadius: 8, fontSize: 12, display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 12, lineHeight: 1.5 },
-  sourcesBox: { background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: 10, fontSize: 10, color: '#166534', marginBottom: 12, lineHeight: 1.6 },
-  generateBtn: { width: '100%', padding: 12, background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: 'white', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  hintBox: { display: 'flex', gap: 6, fontSize: 10, color: '#64748b', marginTop: 12, lineHeight: 1.6, background: '#fffbeb', padding: 10, borderRadius: 8, border: '1px solid #fde68a' },
-  progressBox: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '30px 0' },
-  progressLabel: { fontSize: 13, color: '#475569', textAlign: 'center', fontWeight: 600, lineHeight: 1.5 },
-  progressBarBg: { width: '100%', height: 6, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' },
-  progressBarIndeterminate: { width: '40%', height: '100%', background: 'linear-gradient(90deg,#f59e0b,#d97706)', borderRadius: 4, animation: 'slideAiQ 1.4s ease-in-out infinite' },
+// ============================================================
+// LOCAL VISUAL - GRAPH
+// ============================================================
+
+const buildGraph = (
+  graph
+) => {
+  if (
+    !graph ||
+    !Array.isArray(
+      graph.points
+    )
+  ) {
+    return '';
+  }
+
+  const points =
+    graph.points.filter(
+      (p) =>
+        isNum(p?.x) &&
+        isNum(p?.y)
+    );
+
+  if (
+    points.length < 2
+  ) {
+    return '';
+  }
+
+  const W = 640;
+  const H = 420;
+  const pad = 55;
+
+  const minX =
+    Math.min(
+      ...points.map(
+        (p) => p.x
+      )
+    );
+
+  const maxX =
+    Math.max(
+      ...points.map(
+        (p) => p.x
+      )
+    );
+
+  const minY =
+    Math.min(
+      ...points.map(
+        (p) => p.y
+      )
+    );
+
+  const maxY =
+    Math.max(
+      ...points.map(
+        (p) => p.y
+      )
+    );
+
+  const mapX = (
+    x
+  ) =>
+    pad +
+    ((x - minX) /
+      Math.max(
+        maxX - minX,
+        1
+      )) *
+      (W - pad * 2);
+
+  const mapY = (
+    y
+  ) =>
+    H -
+    pad -
+    ((y - minY) /
+      Math.max(
+        maxY - minY,
+        1
+      )) *
+      (H - pad * 2);
+
+  const path =
+    points
+      .map(
+        (p, i) =>
+          `${
+            i === 0
+              ? 'M'
+              : 'L'
+          } ${mapX(
+            p.x
+          )} ${mapY(
+            p.y
+          )}`
+      )
+      .join(' ');
+
+  const svg = `
+<svg
+xmlns="http://www.w3.org/2000/svg"
+viewBox="0 0 ${W} ${H}"
+>
+<rect
+width="${W}"
+height="${H}"
+fill="white"
+/>
+
+<line
+x1="${pad}"
+y1="${H - pad}"
+x2="${W - pad}"
+y2="${H - pad}"
+stroke="#64748b"
+/>
+
+<line
+x1="${pad}"
+y1="${pad}"
+x2="${pad}"
+y2="${H - pad}"
+stroke="#64748b"
+/>
+
+<path
+d="${path}"
+fill="none"
+stroke="#1e293b"
+stroke-width="3"
+/>
+
+<text
+x="${W - pad}"
+y="${H - 15}"
+text-anchor="end"
+font-family="Arial"
+font-size="16"
+>
+${escapeXml(
+  graph.xLabel ||
+    'x'
+)}
+</text>
+
+<text
+x="18"
+y="${pad}"
+font-family="Arial"
+font-size="16"
+>
+${escapeXml(
+  graph.yLabel ||
+    'y'
+)}
+</text>
+</svg>`;
+
+  return (
+    'data:image/svg+xml;base64,' +
+    Buffer.from(
+      svg
+    ).toString('base64')
+  );
 };
 
-export default AIGenerateQuiz;
+// ============================================================
+// JSON EXTRACTION
+// ============================================================
+
+const extractJson =
+  (text = '') => {
+    const result = [];
+
+    let depth = 0;
+    let start = -1;
+    let stringMode = false;
+    let escaped = false;
+
+    for (
+      let i = 0;
+      i < text.length;
+      i++
+    ) {
+      const ch =
+        text[i];
+
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+
+      if (ch === '\\') {
+        escaped = true;
+        continue;
+      }
+
+      if (ch === '"') {
+        stringMode =
+          !stringMode;
+
+        continue;
+      }
+
+      if (stringMode)
+        continue;
+
+      if (ch === '{') {
+        if (
+          depth === 0
+        ) {
+          start = i;
+        }
+
+        depth++;
+      }
+
+      if (ch === '}') {
+        depth--;
+
+        if (
+          depth === 0 &&
+          start !== -1
+        ) {
+          try {
+            result.push(
+              JSON.parse(
+                text.slice(
+                  start,
+                  i + 1
+                )
+              )
+            );
+          } catch (_) {}
+
+          start = -1;
+        }
+      }
+    }
+
+    return result;
+  };
+
+// ============================================================
+// VISUAL CUE
+// ============================================================
+
+const hasVisualCue =
+  (text = '') => {
+    const value =
+      String(text)
+        .toLowerCase();
+
+    return [
+      'lihat gambar',
+      'perhatikan gambar',
+      'gambar berikut',
+      'berdasarkan gambar',
+      'lihat grafik',
+      'perhatikan grafik',
+      'grafik berikut',
+      'berdasarkan grafik',
+      'lihat diagram',
+      'perhatikan diagram',
+      'diagram berikut',
+      'berdasarkan diagram',
+      'lihat tabel',
+      'perhatikan tabel',
+      'tabel berikut',
+      'berdasarkan tabel',
+      'look at the picture',
+      'look at the image',
+      'look at the graph',
+      'look at the diagram',
+      'look at the table',
+    ].some(
+      (cue) =>
+        value.includes(cue)
+    );
+  };
+
+// ============================================================
+// QUESTION VALIDATION
+// ============================================================
+
+const validateQuestion = (
+  raw,
+  allowedTypes
+) => {
+  if (
+    !raw ||
+    raw.meta === true
+  ) {
+    return null;
+  }
+
+  if (
+    !allowedTypes.includes(
+      raw.type
+    )
+  ) {
+    return null;
+  }
+
+  const question =
+    cleanText(
+      raw.question ||
+        ''
+    );
+
+  if (!question) {
+    return null;
+  }
+
+  // MULTIPLE
+
+  if (
+    raw.type ===
+    'multiple'
+  ) {
+    if (
+      !Array.isArray(
+        raw.options
+      ) ||
+      raw.options.length !==
+        4
+    ) {
+      return null;
+    }
+
+    if (
+      !validIndex(
+        raw.correct,
+        0,
+        3
+      )
+    ) {
+      return null;
+    }
+  }
+
+  // MULTISELECT
+
+  if (
+    raw.type ===
+    'multiselect'
+  ) {
+    if (
+      !Array.isArray(
+        raw.options
+      ) ||
+      raw.options.length <
+        2
+    ) {
+      return null;
+    }
+
+    if (
+      !Array.isArray(
+        raw.correctAnswers
+      ) ||
+      !raw.correctAnswers
+        .length
+    ) {
+      return null;
+    }
+  }
+
+  // TRUE FALSE
+
+  if (
+    raw.type ===
+    'truefalse'
+  ) {
+    if (
+      !Array.isArray(
+        raw.statements
+      ) ||
+      raw.statements.length <
+        2
+    ) {
+      return null;
+    }
+  }
+
+  // SHORT ANSWER
+
+  if (
+    raw.type ===
+    'shortanswer'
+  ) {
+    if (
+      !cleanText(
+        raw.shortAnswer
+      )
+    ) {
+      return null;
+    }
+  }
+
+  // CAUSE EFFECT
+
+  if (
+    raw.type ===
+    'causeeffect'
+  ) {
+    if (
+      !cleanText(
+        raw.cause
+      ) ||
+      !cleanText(
+        raw.effect
+      )
+    ) {
+      return null;
+    }
+
+    if (
+      typeof raw.isCauseTrue !==
+        'boolean' ||
+      typeof raw.isEffectTrue !==
+        'boolean'
+    ) {
+      return null;
+    }
+  }
+
+  // MATCHING
+
+  if (
+    raw.type ===
+    'matching'
+  ) {
+    if (
+      !Array.isArray(
+        raw.matchingPairs
+      ) ||
+      raw.matchingPairs.length <
+        3
+    ) {
+      return null;
+    }
+  }
+
+  // READING
+
+  if (
+    raw.type ===
+    'reading'
+  ) {
+    if (
+      !cleanText(
+        raw.readingText
+      )
+    ) {
+      return null;
+    }
+
+    if (
+      !Array.isArray(
+        raw.subQuestions
+      ) ||
+      raw.subQuestions.length <
+        3
+    ) {
+      return null;
+    }
+  }
+
+  // VISUAL
+
+  let qImage = '';
+  let visualRequired =
+    false;
+  let visualKind =
+    'none';
+  let needsImage =
+    false;
+  let imageHint = '';
+
+  if (
+    raw.clock
+  ) {
+    qImage =
+      buildClock(
+        raw.clock
+      );
+
+    visualRequired =
+      true;
+
+    visualKind =
+      'clock';
+  } else if (
+    raw.graph
+  ) {
+    qImage =
+      buildGraph(
+        raw.graph
+      );
+
+    visualRequired =
+      true;
+
+    visualKind =
+      'graph';
+  } else if (
+    raw.needs_image
+  ) {
+    needsImage =
+      true;
+
+    imageHint =
+      cleanText(
+        raw.image_keyword ||
+          ''
+      );
+
+    visualRequired =
+      true;
+
+    visualKind =
+      'photo';
+  }
+
+  if (
+    hasVisualCue(
+      question
+    ) &&
+    !qImage &&
+    !needsImage
+  ) {
+    return null;
+  }
+
+  return {
+    type:
+      raw.type,
+
+    question,
+
+    options:
+      Array.isArray(
+        raw.options
+      )
+        ? raw.options.map(
+            cleanText
+          )
+        : undefined,
+
+    correct:
+      Number.isInteger(
+        raw.correct
+      )
+        ? raw.correct
+        : undefined,
+
+    correctAnswers:
+      Array.isArray(
+        raw.correctAnswers
+      )
+        ? raw.correctAnswers
+        : undefined,
+
+    statements:
+      Array.isArray(
+        raw.statements
+      )
+        ? raw.statements.map(
+            (s) => ({
+              text:
+                cleanText(
+                  s?.text ||
+                    ''
+                ),
+
+              isTrue:
+                Boolean(
+                  s?.isTrue
+                ),
+            })
+          )
+        : undefined,
+
+    shortAnswer:
+      cleanText(
+        raw.shortAnswer ||
+          ''
+      ) || undefined,
+
+    cause:
+      cleanText(
+        raw.cause ||
+          ''
+      ) || undefined,
+
+    effect:
+      cleanText(
+        raw.effect ||
+          ''
+      ) || undefined,
+
+    isCauseTrue:
+      typeof raw.isCauseTrue ===
+      'boolean'
+        ? raw.isCauseTrue
+        : undefined,
+
+    isEffectTrue:
+      typeof raw.isEffectTrue ===
+      'boolean'
+        ? raw.isEffectTrue
+        : undefined,
+
+    matchingPairs:
+      Array.isArray(
+        raw.matchingPairs
+      )
+        ? raw.matchingPairs.map(
+            (pair) => ({
+              left:
+                cleanText(
+                  pair?.left ||
+                    ''
+                ),
+
+              right:
+                cleanText(
+                  pair?.right ||
+                    ''
+                ),
+            })
+          )
+        : undefined,
+
+    readingText:
+      cleanText(
+        raw.readingText ||
+          ''
+      ) || undefined,
+
+    subQuestions:
+      Array.isArray(
+        raw.subQuestions
+      )
+        ? raw.subQuestions
+        : undefined,
+
+    explanation:
+      cleanText(
+        raw.explanation ||
+          ''
+      ),
+
+    qImage:
+      qImage || '',
+
+    needsImage,
+
+    imageHint,
+
+    researchBacked:
+      false,
+
+    researchSources:
+      [],
+
+    visualRequired,
+
+    visualKind,
+  };
+};
+
+// ============================================================
+// SYSTEM PROMPT
+// ============================================================
+
+const buildPrompt = ({
+  allowedTypes,
+  researchMode,
+  targetYear,
+  hotsLevel,
+}) => `
+Kamu adalah penyusun soal profesional Bimbel Gemilang.
+
+MODE:
+${
+  researchMode
+    ? `
+Gunakan data riset web yang diberikan.
+Analisis pola topik, kompetensi, model stimulus,
+dan kesulitan.
+
+Jangan mengklaim soal sebagai bocoran.
+Jangan menyalin soal sumber kata demi kata.
+Buat soal latihan baru yang representatif.
+`
+    : `
+Buat soal original yang relevan.
+`
+}
+
+TARGET:
+${targetYear}
+
+ATURAN:
+- sesuai mapel
+- sesuai kelas
+- sesuai topik
+- kunci jawaban harus benar
+- pembahasan harus benar
+- hindari duplikasi
+- jangan membuat konteks yang tidak relevan
+- jangan memakai markdown
+- jangan mengatakan "lihat gambar" jika visual tidak ada
+
+SCHEMA WAJIB:
+
+multiple:
+{
+ "type":"multiple",
+ "question":"...",
+ "options":["A","B","C","D"],
+ "correct":0,
+ "explanation":"..."
+}
+
+multiselect:
+{
+ "type":"multiselect",
+ "question":"...",
+ "options":["A","B","C","D"],
+ "correctAnswers":[0,2],
+ "explanation":"..."
+}
+
+truefalse:
+{
+ "type":"truefalse",
+ "question":"...",
+ "statements":[
+   {"text":"...","isTrue":true},
+   {"text":"...","isTrue":false}
+ ],
+ "explanation":"..."
+}
+
+shortanswer:
+{
+ "type":"shortanswer",
+ "question":"...",
+ "shortAnswer":"...",
+ "explanation":"..."
+}
+
+causeeffect:
+{
+ "type":"causeeffect",
+ "question":"...",
+ "cause":"...",
+ "effect":"...",
+ "isCauseTrue":true,
+ "isEffectTrue":false,
+ "explanation":"..."
+}
+
+matching:
+{
+ "type":"matching",
+ "question":"...",
+ "matchingPairs":[
+   {"left":"...","right":"..."},
+   {"left":"...","right":"..."},
+   {"left":"...","right":"..."}
+ ],
+ "explanation":"..."
+}
+
+reading:
+{
+ "type":"reading",
+ "question":"...",
+ "readingText":"...",
+ "subQuestions":[
+   {
+     "q":"...",
+     "options":["A","B","C","D"],
+     "correct":0
+   },
+   {
+     "q":"...",
+     "options":["A","B","C","D"],
+     "correct":1
+   },
+   {
+     "q":"...",
+     "options":["A","B","C","D"],
+     "correct":2
+   }
+ ],
+ "explanation":"..."
+}
+
+VISUAL:
+
+Untuk jam:
+"clock":{"hour":8,"minute":30}
+
+Untuk grafik:
+"graph":{
+  "points":[
+    {"x":0,"y":0},
+    {"x":1,"y":2}
+  ],
+  "xLabel":"x",
+  "yLabel":"y"
+}
+
+Untuk foto:
+"needs_image":true,
+"image_keyword":"english keyword"
+
+Tipe yang boleh:
+${allowedTypes.join(
+  ', '
+)}
+
+Output:
+baris pertama {"meta":true}
+
+Setiap soal satu JSON object per baris.
+Jangan gunakan code fence.
+Jangan menambahkan komentar.
+${
+  hotsLevel
+    ? `HOTS: ${hotsLevel}`
+    : ''
+}
+`;
+
+// ============================================================
+// MAIN HANDLER
+// ============================================================
+
+export default async function handler(
+  req,
+  res
+) {
+  if (
+    req.method !== 'POST'
+  ) {
+    return res
+      .status(405)
+      .json({
+        error:
+          'Method not allowed',
+      });
+  }
+
+  if (
+    !process.env
+      .GEMINI_API_KEY
+  ) {
+    return res
+      .status(500)
+      .json({
+        error:
+          'GEMINI_API_KEY belum tersedia di Vercel.',
+      });
+  }
+
+  const {
+    topic,
+    mapel,
+    kelas,
+    jumlahSoal,
+    types,
+    arahan,
+    useTrendSearch,
+    targetYear,
+    hotsLevel,
+  } =
+    req.body || {};
+
+  if (
+    !String(
+      topic || ''
+    ).trim()
+  ) {
+    return res
+      .status(400)
+      .json({
+        error:
+          'Topik wajib diisi.',
+      });
+  }
+
+  const requested =
+    parseInt(
+      jumlahSoal,
+      10
+    );
+
+  const jumlah =
+    Math.min(
+      Math.max(
+        Number.isFinite(
+          requested
+        )
+          ? requested
+          : 5,
+        1
+      ),
+      MAX_BATCH_QUESTIONS
+    );
+
+  const allowedTypes =
+    Array.isArray(types) &&
+    types.length
+      ? types
+      : ['multiple'];
+
+  const researchMode =
+    Boolean(
+      useTrendSearch
+    );
+
+  const finalYear =
+    targetYear ||
+    new Date().getFullYear() +
+      1;
+
+  // ==========================================================
+  // RESEARCH
+  // ==========================================================
+
+  let sources = [];
+
+  if (
+    researchMode
+  ) {
+    const queries =
+      buildQueries({
+        topic,
+        mapel,
+        kelas,
+        targetYear:
+          finalYear,
+      });
+
+    const all = [];
+
+    const errors = [];
+
+    for (
+      const query of
+        queries
+    ) {
+      try {
+        const result =
+          await searchWebFree(
+            query
+          );
+
+        all.push(
+          ...result
+        );
+      } catch (
+        error
+      ) {
+        console.warn(
+          'Search gagal:',
+          query,
+          error.message
+        );
+
+        errors.push({
+          query,
+          error:
+            error.message,
+        });
+      }
+    }
+
+    const seen =
+      new Set();
+
+    sources =
+      all.filter(
+        (item) => {
+          if (
+            !item.url
+          ) {
+            return true;
+          }
+
+          if (
+            seen.has(
+              item.url
+            )
+          ) {
+            return false;
+          }
+
+          seen.add(
+            item.url
+          );
+
+          return true;
+        }
+      ).slice(0, 12);
+
+    if (
+      !sources.length
+    ) {
+      return res
+        .status(502)
+        .json({
+          error:
+            'Tidak ada hasil pencarian web yang berhasil diperoleh. Sistem tidak berpura-pura menggunakan internet.',
+          debug:
+            errors,
+        });
+    }
+  }
+
+  // ==========================================================
+  // GEMINI PROMPT
+  // ==========================================================
+
+  const systemPrompt =
+    buildPrompt({
+      allowedTypes,
+      researchMode,
+      targetYear:
+        finalYear,
+      hotsLevel:
+        hotsLevel || '',
+    });
+
+  const researchText =
+    researchMode
+      ? sources
+          .map(
+            (
+              item,
+              index
+            ) => `
+SUMBER ${index + 1}
+Judul:
+${item.title}
+
+URL:
+${item.url}
+
+Ringkasan/snippet:
+${item.content}
+`
+          )
+          .join(
+            '\n'
+          )
+      : '';
+
+  const userPrompt = `
+MAPEL:
+${mapel || 'Umum'}
+
+KELAS:
+${kelas || 'SMP'}
+
+TOPIK:
+${String(topic).trim()}
+
+TARGET LATIHAN:
+${finalYear}
+
+JUMLAH:
+${jumlah}
+
+TIPE:
+${allowedTypes.join(
+  ', '
+)}
+
+${arahan?.trim()
+  ? `ARAHAN GURU:
+${arahan.trim()}`
+  : ''}
+
+${
+  researchMode
+    ? `
+BAHAN RISET INTERNET:
+${researchText}
+
+Gunakan sumber ini untuk memahami pola.
+Jangan menyalin soal sumber.
+`
+    : ''
+}
+
+Buat ${jumlah} soal berkualitas.
+Jika tidak bisa memenuhi jumlah karena validitas,
+utamakan soal yang benar daripada mengarang.
+`;
+
+  // ==========================================================
+  // GENERATE
+  // ==========================================================
+
+  let gemini;
+
+  try {
+    gemini =
+      await callGemini(
+        systemPrompt,
+        userPrompt
+      );
+  } catch (
+    error
+  ) {
+    const message =
+      String(
+        error?.message ||
+          ''
+      );
+
+    console.error(
+      '[Gemilang Gemini]',
+      message
+    );
+
+    return res
+      .status(
+        message.includes(
+          '429'
+        )
+          ? 429
+          : 502
+      )
+      .json({
+        error:
+          message.includes(
+            '429'
+          )
+            ? 'Kuota gratis Gemini sedang mencapai batas. Coba lagi setelah kuota reset.'
+            : 'Gemini gagal membuat soal.',
+        debug:
+          message,
+      });
+  }
+
+  // ==========================================================
+  // EXTRACT
+  // ==========================================================
+
+  const candidate =
+    gemini?.candidates?.[0];
+
+  const rawText =
+    candidate
+      ?.content
+      ?.parts
+      ?.filter(
+        (part) =>
+          typeof part?.text ===
+          'string'
+      )
+      ?.map(
+        (part) =>
+          part.text
+      )
+      ?.join(
+        '\n'
+      ) || '';
+
+  if (
+    !rawText.trim()
+  ) {
+    return res
+      .status(502)
+      .json({
+        error:
+          'Gemini tidak mengembalikan teks soal.',
+      });
+  }
+
+  const objects =
+    extractJson(
+      rawText
+    );
+
+  const questions = [];
+  const fingerprints =
+    new Set();
+
+  for (
+    const raw of objects
+  ) {
+    const question =
+      validateQuestion(
+        raw,
+        allowedTypes
+      );
+
+    if (!question)
+      continue;
+
+    const fingerprint =
+      (
+        question.type +
+        '|' +
+        question.question
+      )
+        .toLowerCase()
+        .replace(
+          /\s+/g,
+          ' '
+        )
+        .trim();
+
+    if (
+      fingerprints.has(
+        fingerprint
+      )
+    ) {
+      continue;
+    }
+
+    fingerprints.add(
+      fingerprint
+    );
+
+    question.researchBacked =
+      researchMode;
+
+    question.researchSources =
+      researchMode
+        ? sources.map(
+            (source) => ({
+              title:
+                source.title ||
+                '',
+
+              url:
+                source.url ||
+                '',
+            })
+          )
+        : [];
+
+    questions.push(
+      question
+    );
+
+    if (
+      questions.length >=
+      jumlah
+    ) {
+      break;
+    }
+  }
+
+  // ==========================================================
+  // FAILED QUALITY GATE
+  // ==========================================================
+
+  if (
+    !questions.length
+  ) {
+    return res
+      .status(502)
+      .json({
+        error:
+          'Tidak ada soal yang lolos quality gate.',
+        debug: {
+          finishReason:
+            candidate?.finishReason ||
+            null,
+
+          parsedObjectCount:
+            objects.length,
+
+          rawTextLength:
+            rawText.length,
+
+          rawTextSample:
+            rawText.slice(
+              0,
+              600
+            ),
+        },
+
+        researchSources:
+          sources.map(
+            (source) => ({
+              title:
+                source.title ||
+                '',
+              url:
+                source.url ||
+                '',
+            })
+          ),
+      });
+  }
+
+  // ==========================================================
+  // RESPONSE
+  // ==========================================================
+
+  return res
+    .status(200)
+    .json({
+      success:
+        true,
+
+      questions,
+
+      requestedCount:
+        jumlah,
+
+      returnedCount:
+        questions.length,
+
+      maxBatchSize:
+        MAX_BATCH_QUESTIONS,
+
+      possiblyTruncated:
+        questions.length <
+          jumlah ||
+        candidate?.finishReason ===
+          'MAX_TOKENS',
+
+      usedTrendSearch:
+        researchMode,
+
+      researchProvider:
+        researchMode
+          ? 'DuckDuckGo HTML/Lite'
+          : null,
+
+      researchSources:
+        sources.map(
+          (source) => ({
+            title:
+              source.title ||
+              '',
+            url:
+              source.url ||
+              '',
+          })
+        ),
+
+      model:
+        GEMINI_MODEL,
+    });
+}
