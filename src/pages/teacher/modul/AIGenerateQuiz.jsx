@@ -151,11 +151,32 @@ const AIGenerateQuiz = ({ subject, onGenerated, onClose }) => {
         researchBacked: q.researchBacked || false,
         visualRequired: q.visualRequired || false,
         visualKind: q.visualKind || 'none',
-        researchSources: data.groundingSources || [],
+        // 🔥 FIX BUG AKAR "Semua hasil batch ditolak: sumber riset tidak
+        // lengkap": sebelumnya baris ini baca `data.groundingSources` --
+        // nama field LAMA yang SUDAH TIDAK PERNAH DIKIRIM backend sama
+        // sekali (backend mengirim `researchSources`, lihat response di
+        // generateQuizFromTopic.js). Karena field yang dibaca gak ada,
+        // hasilnya SELALU array kosong []. Padahal soal-soal itu ditandai
+        // `researchBacked: true` (memang hasil riset internet), dan ada
+        // aturan validasi yang menolak soal yang "ngaku hasil riset tapi
+        // daftar sumbernya kosong" -- jadi SELURUH batch ditolak walau
+        // soal & sumbernya sebenarnya ADA dan valid, cuma gagal dioper
+        // karena salah nama field. Sekarang dibaca dari field yang benar,
+        // dengan prioritas per-soal (q.researchSources, backend mengisi
+        // ini per soal) lalu fallback ke daftar tingkat-response.
+        researchSources:
+          (Array.isArray(q.researchSources) && q.researchSources.length
+            ? q.researchSources
+            : data.researchSources) || [],
       }));
 
       onGenerated(converted);
-      setLastGroundingSources(data.groundingSources || []);
+      // 🔥 FIX menyusul dari perbaikan di atas: dua state ini juga membaca
+      // nama field lama yang gak pernah dikirim backend, jadi panel
+      // "sumber riset" di UI selalu tampil kosong. `groundingQueries`
+      // memang tidak ada padanannya di response sekarang, jadi dibiarkan
+      // kosong; yang penting daftar sumbernya kebaca.
+      setLastGroundingSources(data.researchSources || []);
       setLastGroundingQueries(data.groundingQueries || []);
 
       if (data.possiblyTruncated) {
