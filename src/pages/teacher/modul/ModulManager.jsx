@@ -68,6 +68,12 @@ const ModulManager = () => {
   const [toast, setToast] = useState(null);
 
   const COLLECTION_NAME = "bimbel_modul";
+  // 🔥 BARU: label buat dokumen yang gak punya field `subject` sama sekali
+  // (data lama/rusak) -- SENGAJA diberi tanda ⚠️ dan kata "Tanpa Mapel",
+  // BUKAN "Umum", supaya gak pernah lagi disalahartikan sebagai nama mapel
+  // yang sah/bisa dipilih di form manapun (lihat penjelasan lengkap soal
+  // asal-usul bug "Mapel Umum" di ManageQuiz.jsx).
+  const TANPA_MAPEL_LABEL = "⚠️ Tanpa Mapel";
   const PAGE_SIZE = 12;
 
   // ===== TOAST =====
@@ -130,6 +136,12 @@ const ModulManager = () => {
       modulSnap.forEach(doc => {
         const mapel = doc.data().subject;
         if (mapel && mapel !== "Tugas") mapelSet.add(mapel);
+        // 🔥 BARU: dokumen TANPA field subject sama sekali (data lama/
+        // rusak) tetap dimunculin sebagai opsi filter -- pakai label
+        // TANPA_MAPEL_LABEL yang jelas ini BUKAN mapel sah, supaya guru
+        // bisa nemuin & benerin dokumen-dokumen bermasalah ini lewat UI,
+        // bukan tersembunyi begitu saja dari filter.
+        if (!mapel) mapelSet.add(TANPA_MAPEL_LABEL);
       });
       setAvailableSubjects(['Semua', ...Array.from(mapelSet).sort()]);
     } catch (error) {
@@ -397,7 +409,14 @@ const ModulManager = () => {
     
     // Mapel
     if (filterMapel !== "Semua") {
-      filtered = filtered.filter(item => (item.subject || "Umum") === filterMapel);
+      // 🔥 FIX BUG AKAR MASALAH "Mapel Umum": SEBELUMNYA fallback di sini
+      // pakai label "Umum" -- kelihatan kayak mapel asli yang sah, padahal
+      // ini murni penanda "dokumen ini gak punya field subject sama
+      // sekali" (biasanya data lama/rusak). Disamakan labelnya dengan yang
+      // dipakai di fetchFilterOptions di bawah supaya konsisten satu
+      // sistem, dan jelas ini BUKAN mapel yang bisa dipilih guru di form
+      // manapun.
+      filtered = filtered.filter(item => (item.subject || TANPA_MAPEL_LABEL) === filterMapel);
     }
     
     // Status
