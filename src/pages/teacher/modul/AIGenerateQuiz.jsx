@@ -133,6 +133,9 @@ const AIGenerateQuiz = ({
   const [error, setError] =
     useState('');
 
+  const [usedFingerprints, setUsedFingerprints] =
+    useState([]);
+
   // ==========================================================
   // TYPE
   // ==========================================================
@@ -388,6 +391,7 @@ const AIGenerateQuiz = ({
               hotsLevel,
 
               sourceMode,
+              excludeFingerprints: usedFingerprints.slice(-60),
             }),
         }
       ).then(
@@ -434,6 +438,7 @@ const AIGenerateQuiz = ({
 
   const handleGenerate = () => {
     setError('');
+    setUsedFingerprints([]);
 
     if (
       !topic.trim()
@@ -553,6 +558,25 @@ const AIGenerateQuiz = ({
               // LANGSUNG masukkan ke ManageQuiz.
               if (typeof onGenerated === 'function' && converted.length > 0) {
                 onGenerated(converted);
+              }
+
+              setUsedFingerprints((previous) => [
+                ...new Set([
+                  ...previous,
+                  ...converted.map((item) =>
+                    String(item.q || '')
+                      .toLowerCase()
+                      .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+                      .replace(/\s+/g, ' ')
+                      .trim()
+                  ).filter(Boolean),
+                ]),
+              ].slice(-60));
+
+              if (data.blueprint?.allocationStatus) {
+                setStatus(
+                  `${sourceMode === 'source' ? '🔎' : '🧠'} Blueprint: ${data.blueprint.allocationStatus === 'official' ? 'berbasis sumber resmi' : 'distribusi rekomendasi Gemilang'} • ${done + converted.length}/${total}`
+                );
               }
 
               done += converted.length;
