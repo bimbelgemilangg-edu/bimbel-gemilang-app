@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { collection, addDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, where, orderBy } from "firebase/firestore";
+import { collection, addDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy } from "firebase/firestore";
 import { 
   Plus, Trash2, CheckCircle, ArrowLeft, Save, FileText, X, 
   Calculator, Target, BookOpen, Users, Send, Settings, 
@@ -940,19 +940,6 @@ const ManageQuiz = () => {
         qImage: q.questionImage || '',
         options: q.options || ['', '', '', ''],
         optionImages: q.optionImages || ['', '', '', ''],
-        // 🔥 PELENGKAP PERUBAHAN B: field-field baru ini harus ikut DIBACA
-        // BALIK juga waktu kuis dibuka lagi buat diedit. Kalau cuma
-        // disimpan tapi gak dibaca, nilainya balik ke default tiap kali
-        // guru buka kuisnya -- lalu ketimpa nilai default itu pas
-        // disimpan ulang, alias HILANG PERMANEN walau tadinya sudah benar
-        // tersimpan di database.
-        optionsAreImages: !!q.optionsAreImages,
-        answerVerification: q.answerVerification || '',
-        analysisSummary: q.analysisSummary || '',
-        sourceMode: q.sourceMode || 'source',
-        sourceQuestionVerbatim: !!q.sourceQuestionVerbatim,
-        sourceTitle: q.sourceTitle || '',
-        sourceUrl: q.sourceUrl || '',
         correct: q.correctAnswer || 0,
         correctAnswers: q.correctAnswers || [],
         explanation: q.explanation || '',
@@ -2385,33 +2372,9 @@ const ManageQuiz = () => {
           questionImage: q.qImage || '',
           options: q.options || ['', '', '', ''],
           optionImages: q.optionImages || ['', '', '', ''],
-          // 🔥 PERUBAHAN B: penanda kalau PILIHAN JAWABAN soal ini berupa
-          // gambar (bukan teks). StudentQuizView sebenarnya SUDAH punya
-          // dukungan menampilkan opsi bergambar, tapi flag-nya gak pernah
-          // ikut tersimpan ke Firestore -- jadi di sisi siswa opsi
-          // gambarnya gak pernah aktif. Sekarang ikut disimpan.
-          optionsAreImages: !!q.optionsAreImages,
           correctAnswer: q.type === 'multiselect' ? null : (q.correct ?? 0),
           correctAnswers: q.type === 'multiselect' ? (q.correctAnswers || []) : [],
-          // 🔥 PERUBAHAN A: sebelumnya pembahasan CUMA disimpan kalau kuis
-          // dalam Mode Ujian (advanced) -- di mode biasa, `explanation`
-          // dipaksa jadi string kosong walau AI/guru sudah mengisinya,
-          // jadi pembahasannya HILANG PERMANEN begitu kuis disimpan.
-          // Padahal soal hasil riset internet selalu membawa pembahasan
-          // dan itu justru nilai utamanya. Sekarang selalu disimpan apa
-          // adanya, terlepas dari mode kuisnya.
-          explanation: q.explanation || '',
-          // 🔥 PERUBAHAN B: metadata hasil riset internet -- verifikasi
-          // kunci jawaban, ringkasan analisis, asal sumber (judul + URL),
-          // dan penanda mode (ambil-dari-sumber vs prediksi). Tanpa ini,
-          // jejak "soal ini datang dari mana dan kenapa kuncinya begitu"
-          // hilang begitu kuis disimpan.
-          answerVerification: q.answerVerification || '',
-          analysisSummary: q.analysisSummary || '',
-          sourceMode: q.sourceMode || 'source',
-          sourceQuestionVerbatim: !!q.sourceQuestionVerbatim,
-          sourceTitle: q.sourceTitle || '',
-          sourceUrl: q.sourceUrl || '',
+          explanation: quizMode === 'advanced' ? (q.explanation || '') : '',
           statements: q.type === 'truefalse' ? (q.statements || []) : [],
           readingText: q.type === 'reading' ? (q.readingText || '') : '',
           subQuestions: q.type === 'reading' ? (q.subQuestions || []) : [],
@@ -2446,22 +2409,13 @@ const ManageQuiz = () => {
         // langsung lihat nilai angka setelah submit, atau disembunyikan dulu
         // (misal guru mau cek/bahas manual sebelum siswa tau nilainya).
         showScoreToStudent: showScoreToStudent,
-        // 🔥 PERUBAHAN C: pengaturan "Tampilkan pembahasan" sebelumnya
-        // CUMA ikut tersimpan kalau kuis dalam Mode Ujian (advanced) --
-        // di mode biasa field ini gak pernah ada di dokumen sama sekali.
-        // Sisi siswa (StudentQuizView) membacanya dengan
-        // `data.showExplanation !== false`, jadi field yang hilang itu
-        // kebetulan masih jatuh ke "true"; tapi artinya pilihan guru buat
-        // MENYEMBUNYIKAN pembahasan di kuis biasa TIDAK PERNAH BERLAKU.
-        // Sekarang selalu disimpan supaya pengaturannya benar-benar
-        // dihormati di semua mode.
-        showExplanation: showExplanation !== false,
       };
 
       if (quizMode === 'advanced') {
         quizPayload.timeLimit = timeLimit;
         quizPayload.randomOrder = randomOrder;
         quizPayload.maxAttempts = maxAttempts;
+        quizPayload.showExplanation = showExplanation;
         quizPayload.difficulty = difficulty;
         quizPayload.antiCheatEnabled = antiCheatEnabled;
       }
