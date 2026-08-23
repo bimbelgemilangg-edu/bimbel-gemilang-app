@@ -38,17 +38,17 @@ const CLOUDFLARE_MODEL =
   process.env.CLOUDFLARE_MODEL ||
   '@cf/zai-org/glm-4.7-flash';
 
-const MAX_BATCH_QUESTIONS = 10;
+const MAX_BATCH_QUESTIONS = 5;
 
-const JINA_TIMEOUT_MS = 10000;
+const JINA_TIMEOUT_MS = 8000;
 const PAGE_TIMEOUT_MS = 18000;
-const CLOUDFLARE_TIMEOUT_MS = 35000;
+const CLOUDFLARE_TIMEOUT_MS = 38000;
 
 const MAX_RESULTS_PER_QUERY = 10;
-const MAX_UNIQUE_SOURCES = 8;
+const MAX_UNIQUE_SOURCES = 6;
 
-const MAX_SOURCE_CHARS = 7000;
-const MAX_RESEARCH_PACK_CHARS = 28000;
+const MAX_SOURCE_CHARS = 6000;
+const MAX_RESEARCH_PACK_CHARS = 16000;
 
 const MIN_SOURCE_TEXT = 120;
 
@@ -1140,7 +1140,7 @@ async function readSourcePage(
               'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/151 Safari/537.36',
           },
         },
-        8000
+        6000
       );
 
     if (
