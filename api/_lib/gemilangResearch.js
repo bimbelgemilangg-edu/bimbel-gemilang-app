@@ -1,11 +1,41 @@
 // Bimbel Gemilang - shared research engine utilities
-// Jina Search + Cloudflare Workers AI
+// FREE SEARCH CHAIN + Cloudflare Workers AI
+//
+// 🔥 PERUBAHAN BESAR: pencarian TIDAK LAGI bergantung pada Jina.
+//
+// KENAPA:
+// s.jina.ai sekarang WAJIB API key berbayar dan kuotanya habis.
+// Bergantung pada SATU penyedia berbayar itu titik lemah fatal --
+// begitu token habis, SELURUH fitur riset mati total (persis yang
+// terjadi kemarin: error 401 di semua endpoint sekaligus).
+//
+// GANTINYA: rantai penyedia gratis bertingkat.
+//   ① DuckDuckGo HTML  -> gratis, tanpa key, tanpa kuota
+//   ② SearXNG publik   -> gratis, tanpa key, cadangan
+//   ③ Cloudflare       -> cadangan terakhir (hemat jatah 10 menit/hari)
+// Kalau ① gagal/kosong, otomatis lanjut ke ②, lalu ③. Sistem tidak
+// pernah mati total gara-gara satu layanan bermasalah.
 
 const MODEL = process.env.CLOUDFLARE_MODEL || '@cf/zai-org/glm-4.7-flash';
-const JINA_TIMEOUT = 30000;
+const SEARCH_TIMEOUT = 20000;
 const AI_TIMEOUT = 70000;
 const MAX_SOURCE_CHARS = 10000;
 const MAX_SOURCES = 24;
+
+// Jeda antarpencarian. Jauh lebih kecil dari era Jina (yang butuh
+// 22 detik demi menghindari rate limit akun) karena penyedia gratis
+// ini tidak punya kuota berbasis akun -- tapi tetap ada jeda supaya
+// kita jadi "tamu yang sopan" dan tidak diblokir karena membanjiri.
+const SEARCH_INTERVAL = 1200;
+let lastSearchAt = 0;
+
+// Instance SearXNG publik. Sengaja beberapa: instance publik kadang
+// mati atau berganti alamat, jadi kalau satu tumbang, coba yang lain.
+const SEARXNG_INSTANCES = [
+  'https://searx.be',
+  'https://search.bus-hit.me',
+  'https://searxng.site'
+];
 
 export const clean = (value = '') => String(value ?? '')
   .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -36,42 +66,211 @@ export async function fetchTimeout(url, options = {}, timeoutMs = 30000) {
   }
 }
 
+// 🔥 JINA_API_KEY SUDAH DIHAPUS dari daftar wajib. Sebelumnya
+// keberadaannya diwajibkan di sini, sehingga meskipun pemanggilan AI
+// sama sekali tidak memerlukan Jina, seluruh proses tetap gagal saat
+// token Jina habis -- kegagalan yang sepenuhnya tidak perlu.
 function assertEnv() {
-  const missing = ['JINA_API_KEY', 'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID']
+  const missing = ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID']
     .filter(name => !process.env[name]);
   if (missing.length) throw new Error(`Environment variable belum tersedia: ${missing.join(', ')}`);
 }
 
-export async function jinaSearch(query, { maxResults = 10 } = {}) {
-  if (!process.env.JINA_API_KEY) throw new Error('JINA_API_KEY belum tersedia di Vercel.');
-  const response = await fetchTimeout(
-    `https://s.jina.ai/?q=${encodeURIComponent(query)}`,
-    {
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${process.env.JINA_API_KEY}`,
-        'User-Agent': 'BimbelGemilangResearch/3.0'
+// Header peramban biasa. Tanpa ini banyak situs menolak permintaan
+// atau mengirim versi halaman yang berbeda ke sesuatu yang terlihat
+// seperti bot.
+const BROWSER_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36',
+  'Accept-Language': 'id-ID,id;q=0.9,en;q=0.8',
+  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+};
+
+// ============================================================
+// PENYEDIA ① — DUCKDUCKGO (HTML)
+// ============================================================
+// DuckDuckGo punya endpoint HTML sederhana tanpa JavaScript, tanpa
+// API key, tanpa pendaftaran. Ini tulang punggung utama kita karena
+// benar-benar tanpa batas kuota.
+
+function parseDuckDuckGo(html, maxResults) {
+  const results = [];
+  const blockRegex = /<a[^>]+class="[^"]*result__a[^"]*"[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
+  const snippetRegex = /<a[^>]+class="[^"]*result__snippet[^"]*"[^>]*>([\s\S]*?)<\/a>/gi;
+
+  const decode = (text = '') => clean(String(text).replace(/<[^>]+>/g, ' '))
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .trim();
+
+  const snippets = [];
+  let snip;
+  while ((snip = snippetRegex.exec(html)) !== null) snippets.push(decode(snip[1]));
+
+  let match;
+  let index = 0;
+  while ((match = blockRegex.exec(html)) !== null && results.length < maxResults) {
+    let url = match[1];
+    // DDG membungkus link asli di parameter uddg=... Kita kembalikan
+    // ke URL aslinya supaya bisa dibaca isinya dan dikutip sumbernya.
+    try {
+      if (url.includes('uddg=')) {
+        const real = new URL(url, 'https://duckduckgo.com').searchParams.get('uddg');
+        if (real) url = real;
       }
+      if (url.startsWith('//')) url = `https:${url}`;
+    } catch (_) {}
+
+    const title = decode(match[2]);
+    if (title && url.startsWith('http')) {
+      results.push({ title, url, content: (snippets[index] || '').slice(0, MAX_SOURCE_CHARS) });
+    }
+    index += 1;
+  }
+  return results;
+}
+
+async function searchDuckDuckGo(query, maxResults) {
+  const response = await fetchTimeout(
+    `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`,
+    {
+      method: 'POST',
+      headers: { ...BROWSER_HEADERS, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `q=${encodeURIComponent(query)}`
     },
-    JINA_TIMEOUT
+    SEARCH_TIMEOUT
+  );
+  if (!response.ok) throw new Error(`DDG_HTTP_${response.status}`);
+  const html = await response.text();
+  // DDG sesekali menampilkan halaman verifikasi anti-bot. Itu bukan
+  // "tidak ada hasil" -- itu penolakan, jadi harus dilempar sebagai
+  // error supaya pindah ke penyedia cadangan.
+  if (/anomaly|unusual traffic|challenge-form/i.test(html) && html.length < 6000) {
+    throw new Error('DDG_BLOCKED_TEMPORARILY');
+  }
+  return parseDuckDuckGo(html, maxResults);
+}
+
+// ============================================================
+// PENYEDIA ② — SEARXNG (JSON)
+// ============================================================
+
+async function searchSearxng(query, maxResults) {
+  let lastError = null;
+  for (const base of SEARXNG_INSTANCES) {
+    try {
+      const response = await fetchTimeout(
+        `${base}/search?q=${encodeURIComponent(query)}&format=json&language=id&safesearch=1`,
+        { headers: { ...BROWSER_HEADERS, Accept: 'application/json' } },
+        SEARCH_TIMEOUT
+      );
+      if (!response.ok) { lastError = new Error(`SEARXNG_HTTP_${response.status}@${base}`); continue; }
+      const data = await response.json();
+      const items = Array.isArray(data?.results) ? data.results : [];
+      if (!items.length) continue;
+      return items.slice(0, maxResults).map(item => ({
+        title: clean(item.title || ''),
+        url: clean(item.url || ''),
+        content: clean(item.content || '').slice(0, MAX_SOURCE_CHARS)
+      }));
+    } catch (error) { lastError = error; }
+  }
+  if (lastError) throw lastError;
+  return [];
+}
+
+// ============================================================
+// PENYEDIA ③ — CLOUDFLARE BROWSER RENDERING
+// ============================================================
+// Cadangan TERAKHIR. Cloudflare tidak punya endpoint "cari", tapi
+// punya browser sungguhan -- jadi kita suruh dia MEMBUKA halaman
+// hasil pencarian lalu ambil tautannya. Ditaruh paling akhir karena
+// memakan jatah 10 menit waktu browser per hari.
+
+async function searchCloudflare(query, maxResults) {
+  if (!process.env.CLOUDFLARE_ACCOUNT_ID || !process.env.CLOUDFLARE_API_TOKEN) {
+    throw new Error('CLOUDFLARE_CREDENTIALS_MISSING');
+  }
+  const response = await fetchTimeout(
+    `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/browser-rendering/links`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ url: `https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(query)}` })
+    },
+    30000
   );
   const raw = await response.text();
-  if (!response.ok) throw new Error(`JINA_HTTP_${response.status}: ${raw}`);
-
-  try {
-    const parsed = JSON.parse(raw);
-    const items = Array.isArray(parsed) ? parsed : (parsed?.data || parsed?.results || []);
-    if (Array.isArray(items) && items.length) {
-      return items.slice(0, maxResults).map(item => ({
-        title: clean(item?.title || item?.name || ''),
-        url: clean(item?.url || item?.link || ''),
-        content: clean(item?.content || item?.description || item?.snippet || '').slice(0, MAX_SOURCE_CHARS)
-      })).filter(item => item.url || item.content);
-    }
-  } catch (_) {}
-
-  return raw.trim() ? [{ title: 'Jina Search Result', url: '', content: raw.slice(0, MAX_SOURCE_CHARS) }] : [];
+  if (!response.ok) throw new Error(`CF_SEARCH_HTTP_${response.status}: ${raw.slice(0, 200)}`);
+  let data;
+  try { data = JSON.parse(raw); } catch (_) { throw new Error('CF_SEARCH_BAD_JSON'); }
+  const links = Array.isArray(data?.result) ? data.result
+    : (Array.isArray(data?.result?.links) ? data.result.links : []);
+  return links
+    .map(item => (typeof item === 'string' ? { url: item } : item))
+    .map(item => ({
+      title: clean(item?.text || item?.title || ''),
+      url: clean(item?.url || item?.href || ''),
+      content: ''
+    }))
+    .filter(item => item.url.startsWith('http') && !/duckduckgo\.com/i.test(item.url))
+    .slice(0, maxResults);
 }
+
+// ============================================================
+// ORKESTRATOR PENCARIAN
+// ============================================================
+
+const PROVIDERS = [
+  { name: 'DuckDuckGo', fn: searchDuckDuckGo, free: true },
+  { name: 'SearXNG', fn: searchSearxng, free: true },
+  { name: 'Cloudflare', fn: searchCloudflare, free: false }
+];
+
+// Catatan diagnosis penyedia terakhir yang dipakai -- berguna buat
+// ditampilkan di response endpoint tanpa perlu mengubah alur.
+export const searchDiagnostics = { lastProvider: null, attempts: [] };
+
+/**
+ * Cari di web secara gratis.
+ *
+ * TIDAK PERNAH melempar error hanya karena "tidak ada hasil" --
+ * hasil kosong itu jawaban yang sah, bukan kegagalan sistem. Ini
+ * penting: dulu satu kueri kosong bisa membatalkan seluruh riset.
+ */
+export async function searchWeb(query, { maxResults = 10, allowCloudflare = false } = {}) {
+  const wait = Math.max(0, SEARCH_INTERVAL - (Date.now() - lastSearchAt));
+  if (wait > 0) await sleep(wait);
+  lastSearchAt = Date.now();
+
+  const attempts = [];
+  for (const provider of PROVIDERS) {
+    if (!provider.free && !allowCloudflare) continue;
+    try {
+      const results = await provider.fn(query, maxResults);
+      if (results && results.length) {
+        searchDiagnostics.lastProvider = provider.name;
+        return results.filter(item => item.url || item.content);
+      }
+      attempts.push({ provider: provider.name, status: 'empty' });
+    } catch (error) {
+      attempts.push({ provider: provider.name, status: 'error', message: error.message });
+    }
+  }
+  searchDiagnostics.attempts = attempts;
+  return [];
+}
+
+// Alias kompatibilitas: endpoint lama memanggil `jinaSearch(...)`.
+// Dibiarkan ada supaya file-file yang sudah jalan tidak perlu diubah
+// satu per satu, tapi isinya sekarang pencarian gratis -- bukan Jina.
+export const jinaSearch = searchWeb;
 
 export async function readWebPage(source) {
   if (!source?.url) return source;
@@ -81,7 +280,7 @@ export async function readWebPage(source) {
         Accept: 'text/html,application/xhtml+xml,application/pdf',
         'User-Agent': 'Mozilla/5.0 BimbelGemilangResearch/3.0'
       }
-    }, JINA_TIMEOUT / 2);
+    }, SEARCH_TIMEOUT);
     if (!response.ok) return source;
     const contentType = response.headers.get('content-type') || '';
     if (contentType.includes('application/pdf')) return { ...source, content: source.content || '', contentType };

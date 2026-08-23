@@ -13,9 +13,14 @@ import {
   fingerprint,
   jinaSearch,
   readWebPage,
+  searchDiagnostics,
   MODEL
 } from './_lib/gemilangResearch.js';
-import { dedupeQuestions, validateQuestion } from './questionQualityGate.js';
+// 🔥 Jalur diperbarui: questionQualityGate.js dipindah ke `_lib/`
+// karena dia modul bantu, bukan endpoint -- lihat penjelasan lengkap
+// di kepala file tersebut. Pemindahan itu yang membebaskan slot
+// Serverless Function agar deployment tidak lagi menembus batas 12.
+import { dedupeQuestions, validateQuestion } from './_lib/questionQualityGate.js';
 
 const MAX_BATCH = 10;
 const MAX_CANDIDATES = 30;
@@ -193,7 +198,11 @@ export default async function handler(req, res) {
       returnedCount: finalQuestions.length,
       possiblyTruncated: finalQuestions.length < count,
       sourceMode: mode,
-      researchProvider: 'Jina Search',
+      // 🔥 Tidak lagi melaporkan "Jina Search" -- label itu sudah tidak
+      // benar sejak pencarian pindah ke rantai penyedia gratis. Sekarang
+      // melaporkan penyedia yang BENAR-BENAR berhasil dipakai, supaya
+      // kalau nanti ada masalah kita tahu lapisan mana yang bekerja.
+      researchProvider: searchDiagnostics.lastProvider || 'Free Search Chain',
       aiProvider: 'Cloudflare Workers AI',
       model: MODEL,
       researchSources: plan.pages.map(p => ({ title: p.title || '', url: p.url || '' })),

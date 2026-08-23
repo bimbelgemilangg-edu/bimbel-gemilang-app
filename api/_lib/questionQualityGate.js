@@ -1,6 +1,24 @@
-// /api/questionQualityGate.js
+// /api/_lib/questionQualityGate.js
 // Final structural + semantic sanity checks.
-import { clean, fingerprint } from './_lib/gemilangResearch.js';
+//
+// 🔥 FILE INI DIPINDAH dari `api/` ke `api/_lib/`.
+//
+// KENAPA: file ini BUKAN endpoint -- dia mengekspor kumpulan fungsi
+// (`export default { validateQuestion, dedupeQuestions }`), bukan
+// handler `(req, res)`. Dia tidak bisa melayani request HTTP sama
+// sekali. Tapi selama berada langsung di `api/`, Vercel tetap
+// menghitungnya sebagai SATU Serverless Function -- memakan slot
+// sia-sia. Itu yang membuat total fungsi jadi 13 dan menembus batas
+// 12 pada paket Hobby, sehingga SELURUH deployment gagal.
+//
+// File/folder berawalan `_` tidak diubah menjadi Serverless Function,
+// jadi menaruhnya di `_lib/` membebaskan slot tanpa mengubah logika
+// apa pun.
+//
+// Jalur import di bawah ikut disesuaikan: sekarang file ini sudah
+// BERADA DI DALAM `_lib/`, jadi `gemilangResearch.js` ada di folder
+// yang sama -- tidak perlu lagi awalan `_lib/`.
+import { clean, fingerprint } from './gemilangResearch.js';
 
 export function validateQuestion(question, allowedTypes = ['multiple']) {
   if (!question || !allowedTypes.includes(question.type)) return { ok: false, reason: 'type_invalid' };
