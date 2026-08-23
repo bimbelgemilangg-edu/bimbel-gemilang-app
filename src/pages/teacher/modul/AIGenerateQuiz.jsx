@@ -475,6 +475,7 @@ const AIGenerateQuiz = ({
     });
 
     let done = 0;
+    const seenFingerprints = new Set();
 
     const runNext =
       () => {
@@ -534,37 +535,36 @@ const AIGenerateQuiz = ({
                 );
               }
 
-              const converted =
-                questions.map(
-                  (
-                    question,
-                    index
-                  ) =>
-                    convertQuestion(
-                      question,
-                      done +
-                        index
-                    )
-                );
+              const converted = questions
+                .map((question, index) =>
+                  convertQuestion(question, done + index)
+                )
+                .filter((question) => {
+                  const key = `${question.type}|${String(question.q || '')
+                    .toLowerCase()
+                    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim()}`;
+                  if (!key || seenFingerprints.has(key)) return false;
+                  seenFingerprints.add(key);
+                  return true;
+                });
 
-              // LANGSUNG masukkan
-              // ke ManageQuiz.
-              if (
-                typeof onGenerated ===
-                'function'
-              ) {
-                onGenerated(
-                  converted
-                );
+              // LANGSUNG masukkan ke ManageQuiz.
+              if (typeof onGenerated === 'function' && converted.length > 0) {
+                onGenerated(converted);
               }
 
-              done +=
-                converted.length;
+              done += converted.length;
+              setProgress({ done, total });
 
-              setProgress({
-                done,
-                total,
-              });
+              // Jangan mengulang batch tanpa batas jika source mode
+              // tidak menemukan soal baru.
+              if (converted.length === 0) {
+                setStatus(`⚠️ Tidak ada soal baru yang lolos dedup pada batch ini (${done}/${total}).`);
+                setGenerating(false);
+                return;
+              }
 
               runNext();
             }
