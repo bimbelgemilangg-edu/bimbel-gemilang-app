@@ -23,7 +23,7 @@ import {
 } from './_lib/questionQualityGate.js';
 
 const MAX_BATCH = 10;
-const MAX_RESEARCH_CHARS = 36000;
+const MAX_RESEARCH_CHARS = 16000;
 
 function buildClockImage(clock) {
   if (!clock) return '';
@@ -166,7 +166,7 @@ async function collectResearch({ topic, mapel, kelas, targetYear }) {
   const errors = [];
 
   // Only two search queries in one request. This is deliberate to avoid Vercel timeouts.
-  for (const query of queries.slice(0, 2)) {
+  for (const query of queries.slice(0, 1)) {
     try {
       const results = await jinaSearch(query);
       all.push(...results);
@@ -294,7 +294,7 @@ export default async function handler(req, res) {
     diagnostics.provider = searchState.lastProvider;
     diagnostics.searchAttempts = searchState.attempts;
 
-    const sources = research.sources;
+    const sources = research.sources.slice(0, 6);
     const blueprint = buildFallbackBlueprint({
       topic,
       mapel,
@@ -394,7 +394,7 @@ export default async function handler(req, res) {
       debug: {
         message: error?.message || String(error),
         hint: String(error?.message || '').includes('aborted')
-          ? 'Salah satu request eksternal melewati batas waktu. Research Engine versi final membatasi jumlah pencarian dan tidak melakukan crawl halaman penuh.'
+          ? 'Request eksternal melewati batas waktu. Engine kini memakai maksimal 1 pencarian cepat dan 1 panggilan Cloudflare AI per batch.'
           : undefined,
       },
       diagnostics,
