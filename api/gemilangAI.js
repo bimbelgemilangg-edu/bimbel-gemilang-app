@@ -1,7 +1,7 @@
 // api/gemilangAI.js
 // ============================================================
-// GEMILANG AI GATEWAY — CLOUDLFARE WORKERS AI
-// Tahap 1: koneksi + test model
+// GEMILANG AI GATEWAY — CLOUDFLARE WORKERS AI
+// TEST CONNECTION VERSION
 // ============================================================
 
 const MODEL =
@@ -23,14 +23,10 @@ const fetchWithTimeout = async (
   );
 
   try {
-    return await fetch(
-      url,
-      {
-        ...options,
-        signal:
-          controller.signal,
-      }
-    );
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
   } finally {
     clearTimeout(timer);
   }
@@ -40,66 +36,80 @@ export default async function handler(
   req,
   res
 ) {
-  if (
-    req.method !== 'POST'
-  ) {
-    return res
-      .status(405)
-      .json({
-        success: false,
-        error:
-          'Method not allowed',
-      });
+  if (req.method !== 'POST') {
+    return res.status(405).json({
+      success: false,
+      error: 'Method not allowed',
+    });
   }
 
   const token =
-    process.env
-      .CLOUDFLARE_API_TOKEN;
+    process.env.CLOUDFLARE_API_TOKEN;
 
   const accountId =
-    process.env
-      .CLOUDFLARE_ACCOUNT_ID;
+    process.env.CLOUDFLARE_ACCOUNT_ID;
+
+  // ----------------------------------------------------------
+  // ENV CHECK
+  // ----------------------------------------------------------
 
   if (!token) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        error:
-          'CLOUDFLARE_API_TOKEN belum tersedia di Vercel.',
-      });
+    return res.status(500).json({
+      success: false,
+      error:
+        'CLOUDFLARE_API_TOKEN belum tersedia di Vercel.',
+    });
   }
 
   if (!accountId) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        error:
-          'CLOUDFLARE_ACCOUNT_ID belum tersedia di Vercel.',
-      });
+    return res.status(500).json({
+      success: false,
+      error:
+        'CLOUDFLARE_ACCOUNT_ID belum tersedia di Vercel.',
+    });
   }
+
+  // ----------------------------------------------------------
+  // PROMPT
+  // ----------------------------------------------------------
 
   const prompt =
     String(
       req.body?.prompt ||
-        'Jelaskan konsep pecahan untuk siswa kelas 6 SD dalam 3 kalimat.'
+        'Jelaskan konsep pecahan senilai untuk siswa kelas 6 SD dalam 3 kalimat.'
     ).trim();
 
   if (!prompt) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        error:
-          'Prompt kosong.',
-      });
+    return res.status(400).json({
+      success: false,
+      error: 'Prompt kosong.',
+    });
   }
 
+  // ----------------------------------------------------------
+  // CLOUDFLARE REST API
+  // ----------------------------------------------------------
+  // PENTING:
+  // Jangan encodeURIComponent(MODEL), karena nama model
+  // mengandung / dan harus menjadi bagian dari route API.
+  // ----------------------------------------------------------
+
   const url =
-    `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${encodeURIComponent(
-      MODEL
-    )}`;
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${MODEL}`;
+
+  const body = {
+    messages: [
+      {
+        role: 'system',
+        content:
+          'Kamu adalah asisten akademik Bimbel Gemilang. Jawab dalam bahasa Indonesia dengan jelas dan akurat.',
+      },
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+  };
 
   try {
     const response =
@@ -109,17 +119,17 @@ export default async function handler(
           method: 'POST',
 
           headers: {
-            'Authorization':
+            Authorization:
               `Bearer ${token}`,
 
             'Content-Type':
               'application/json',
           },
 
-          body: JSON.stringify({
-            prompt,
-          }),
-        }
+          body:
+            JSON.stringify(body),
+        },
+        TIMEOUT_MS
       );
 
     const raw =
@@ -128,54 +138,59 @@ export default async function handler(
     let data = null;
 
     try {
-      data =
-        JSON.parse(raw);
+      data = JSON.parse(raw);
     } catch (_) {
       data = null;
     }
 
+    // --------------------------------------------------------
+    // CLOUDFLARE ERROR
+    // --------------------------------------------------------
+
     if (!response.ok) {
-      return res
-        .status(
-          response.status
-        )
-        .json({
-          success: false,
-
-          error:
-            data?.errors?.[0]
-              ?.message ||
-            data?.message ||
-            `Cloudflare HTTP ${response.status}`,
-
-          debug:
-            data || raw,
-        });
-    }
-
-    return res
-      .status(200)
-      .json({
-        success: true,
-
-        model: MODEL,
-
-        result:
-          data?.result ||
-          null,
-      });
-  } catch (error) {
-    return res
-      .status(502)
-      .json({
+      return res.status(response.status).json({
         success: false,
 
         error:
-          'Gagal menghubungi Cloudflare Workers AI.',
+          data?.errors?.[0]?.message ||
+          data?.message ||
+          `Cloudflare HTTP ${response.status}`,
 
-        debug:
-          error?.message ||
-          String(error),
+        debug: data || raw,
       });
+    }
+
+    // --------------------------------------------------------
+    // SUCCESS
+    // --------------------------------------------------------
+
+    return res.status(200).json({
+      success: true,
+
+      model: MODEL,
+
+      result:
+        data?.result ?? null,
+
+      cloudflare:
+        data?.success ?? true,
+
+      messages:
+        data?.messages || [],
+
+      errors:
+        data?.errors || [],
+    });
+  } catch (error) {
+    return res.status(502).json({
+      success: false,
+
+      error:
+        'Gagal menghubungi Cloudflare Workers AI.',
+
+      debug:
+        error?.message ||
+        String(error),
+    });
   }
 }
