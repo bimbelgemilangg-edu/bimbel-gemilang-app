@@ -6,8 +6,8 @@ export const MODEL =
   process.env.CLOUDFLARE_MODEL ||
   '@cf/zai-org/glm-4.7-flash';
 
-const SEARCH_TIMEOUT = 2200;
-const AI_TIMEOUT = 18000;
+const SEARCH_TIMEOUT = 1400;
+const AI_TIMEOUT = 50000;
 const MAX_RESULTS = 6;
 
 const SEARX_INSTANCES = [
@@ -274,6 +274,8 @@ export async function callCloudflareAI(systemPrompt, userPrompt) {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
+        max_tokens: 3200,
+        temperature: 0.2,
       }),
     },
     AI_TIMEOUT
