@@ -1,91 +1,67 @@
 // api/generateQuizFromTopic.js
 // ============================================================
-// BIMBEL GEMILANG — PROFESSIONAL QUIZ ENGINE
-// FREE WEB RESEARCH + GEMINI 3.5 FLASH
+// BIMBEL GEMILANG — QUESTION RESEARCH ENGINE
 // ============================================================
-// Arsitektur:
-// WEB SEARCH GRATIS
-//      ↓
-// contoh/sumber soal nyata
-//      ↓
-// GEMINI 3.5 FLASH
-//      ↓
-// soal latihan baru berbasis riset
-//      ↓
-// QUALITY GATE
-//      ↓
-// MANAGE QUIZ
+// SEMUA MODE WAJIB INTERNET.
 //
-// PENTING:
-// - Tidak memakai Antigravity.
-// - Tidak memakai gemini-2.5.
-// - Tidak memakai Google Search grounding Gemini 3.x
-//   karena tidak tersedia pada Free Tier API.
-// - Tidak fallback diam-diam dari riset ke AI offline.
-// - Maksimal 10 soal per request.
-// - Untuk 40 soal: frontend nanti memanggil 10 + 10 + 10 + 10.
-// - Visual clock/graph/shape/pattern dibuat lokal.
-// - Foto nyata memakai needsImage + imageHint agar frontend
-//   dapat mengambil dari sumber gambar berlisensi terbuka.
+// sourceMode:
+//   "source"     = ambil soal yang benar-benar dipublikasikan
+//                  dari sumber web yang ditemukan.
+//   "prediction" = riset banyak sumber -> analisis pola ->
+//                  susun soal latihan baru.
+//
+// Tidak ada mode offline ketika endpoint ini dipakai.
 // ============================================================
 
-// 🔥 FIX BUG AKAR "selalu gagal bikin soal (mode riset MAUPUN mode
-// topik/soal asli biasa)": sebelumnya nilai di sini adalah
-// 'gemini-3.6-flash' -- model dengan nama itu TIDAK PERNAH ada di Gemini
-// API. Per rilis resmi Google, seri Gemini 3.x cuma sampai "3.5 Flash"
-// (dan "3.1 Pro" / "3.1 Flash-Lite") -- gak ada versi "3.6". Akibatnya
-// SETIAP panggilan ke callGemini() -- baik dari mode riset internet
-// maupun mode topik biasa (keduanya sama-sama lewat fungsi yang sama) --
-// selalu dibalas 404 "model not found" oleh Google, lalu ditangkap di
-// blok catch handler (lihat pesan "Gemini 3.6 Flash tidak tersedia...")
-// dan gagal total. Ini BUKAN soal konten/topik soalnya sama sekali --
-// request-nya bahkan gak pernah nyampe sukses ke Gemini. Sekarang
-// dibetulkan ke nama model yang beneran ada.
-const GEMINI_MODEL = 'gemini-3.5-flash';
+const GEMINI_MODEL =
+  process.env.GEMINI_MODEL ||
+  'gemini-3.5-flash';
 
-const MAX_BATCH_QUESTIONS = 10;
-const MAX_OUTPUT_TOKENS = 14000;
-
-const GEMINI_TIMEOUT_MS = 70000;
-const SEARCH_TIMEOUT_MS = 30000;
-
-// Search Jina tanpa API key memiliki rate limit rendah.
-// Kita sengaja memberi jarak antarpencarian agar tidak melakukan
-// request paralel yang mudah terkena rate limit.
-const SEARCH_INTERVAL_MS = 22000;
-
-let lastSearchAt = 0;
-
-// ============================================================
-// HELPERS
-// ============================================================
+const MAX_BATCH = 10;
+const GEMINI_TIMEOUT = 70000;
+const SEARCH_TIMEOUT = 20000;
+const PAGE_TIMEOUT = 15000;
 
 const sleep = (ms) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
+  new Promise((resolve) =>
+    setTimeout(resolve, ms)
+  );
 
-const sanitizeText = (value = '') =>
+// ============================================================
+// BASIC
+// ============================================================
+
+const clean = (value = '') =>
   String(value ?? '')
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(
+      /<script[\s\S]*?<\/script>/gi,
+      ' '
+    )
+    .replace(
+      /<style[\s\S]*?<\/style>/gi,
+      ' '
+    )
+    .replace(
+      /\s+/g,
+      ' '
+    )
     .trim();
 
-const sanitizeLatexEscapes = (text = '') =>
-  String(text)
-    .replace(/\\(?!["\\/bfnrtu])/g, '\\\\')
-    .replace(/\\([bfnrtu])(?=[a-zA-Z])/g, '\\\\$1');
+const normalize = (value = '') =>
+  clean(value)
+    .toLowerCase()
+    .replace(
+      /[^\p{L}\p{N}\s]/gu,
+      ' '
+    )
+    .replace(/\s+/g, ' ')
+    .trim();
 
-const escapeXml = (value = '') =>
-  String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+const isNum = (v) =>
+  typeof v === 'number' &&
+  Number.isFinite(v);
 
-const isFiniteNumber = (value) =>
-  typeof value === 'number' &&
-  Number.isFinite(value);
-
-const isIntegerInRange = (
+const validIndex = (
   value,
   min,
   max
@@ -94,1488 +70,937 @@ const isIntegerInRange = (
   value >= min &&
   value <= max;
 
-const fetchWithTimeout = async (
+const fetchTimeout = async (
   url,
   options = {},
-  timeoutMs = 30000
+  timeout = 20000
 ) => {
   const controller =
     new AbortController();
 
-  const timer = setTimeout(
-    () => controller.abort(),
-    timeoutMs
-  );
+  const timer =
+    setTimeout(
+      () => controller.abort(),
+      timeout
+    );
 
   try {
-    return await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    });
+    return await fetch(
+      url,
+      {
+        ...options,
+        signal:
+          controller.signal,
+      }
+    );
   } finally {
     clearTimeout(timer);
   }
 };
 
 // ============================================================
-// FREE WEB SEARCH
+// FREE SEARCH
 // ============================================================
 
-async function searchWebFree(query) {
-  const now = Date.now();
+const decodeHtml = (value = '') =>
+  String(value)
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/gi, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
 
-  const wait = Math.max(
-    0,
-    SEARCH_INTERVAL_MS -
-      (now - lastSearchAt)
+const parseSearchResults = (
+  html = ''
+) => {
+  const results = [];
+  const seen = new Set();
+
+  // DuckDuckGo HTML
+  const regex =
+    /<a[^>]+class=["'][^"']*result__a[^"']*["'][^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+
+  let match;
+
+  while (
+    (match =
+      regex.exec(html)) &&
+    results.length < 10
+  ) {
+    let url =
+      decodeHtml(
+        match[1] || ''
+      );
+
+    const title =
+      clean(match[2] || '');
+
+    if (!url || !title)
+      continue;
+
+    try {
+      const parsed =
+        new URL(
+          url.startsWith('//')
+            ? `https:${url}`
+            : url
+        );
+
+      const original =
+        parsed.searchParams.get(
+          'uddg'
+        );
+
+      if (original)
+        url = original;
+    } catch (_) {}
+
+    if (seen.has(url))
+      continue;
+
+    seen.add(url);
+
+    results.push({
+      title,
+      url,
+      snippet: '',
+    });
+  }
+
+  const snippets = [];
+
+  const snippetRegex =
+    /<(?:a|div)[^>]+class=["'][^"']*result__snippet[^"']*["'][^>]*>([\s\S]*?)<\/(?:a|div)>/gi;
+
+  let snippet;
+
+  while (
+    (snippet =
+      snippetRegex.exec(html)) &&
+    snippets.length < 10
+  ) {
+    snippets.push(
+      clean(
+        snippet[1] || ''
+      )
+    );
+  }
+
+  results.forEach(
+    (item, index) => {
+      item.snippet =
+        snippets[index] ||
+        '';
+    }
   );
 
-  if (wait > 0) {
-    await sleep(wait);
-  }
+  return results;
+};
 
-  lastSearchAt = Date.now();
+const searchWeb =
+  async (query) => {
+    const body =
+      new URLSearchParams({
+        q: query,
+      }).toString();
 
-  const url =
-    `https://s.jina.ai/?q=${encodeURIComponent(
-      query
-    )}`;
+    const endpoints = [
+      'https://html.duckduckgo.com/html/',
+      'https://lite.duckduckgo.com/lite/',
+    ];
 
-  // 🔥 FIX TAMBAHAN: s.jina.ai sekarang mensyaratkan API key buat
-  // endpoint search-nya (dulu bisa dipakai gratis tanpa header apa pun,
-  // tapi kebijakan Jina berubah) -- tanpa header ini, request bisa
-  // ditolak (401/422) SEBELUM sempat kena rate limit sama sekali, dan
-  // error-nya gampang disalahartikan sebagai "topik gak ditemukan"
-  // padahal sebenarnya cuma soal autentikasi. Kalau JINA_API_KEY ada di
-  // environment, disertakan; kalau tidak ada, tetap dicoba tanpa key
-  // (perilaku lama) supaya gak makin membatasi yang masih kepakai.
-  const headers = {
-    Accept: 'application/json',
-    'User-Agent':
-      'BimbelGemilangQuiz/1.0',
+    let lastError =
+      null;
+
+    for (
+      const endpoint of endpoints
+    ) {
+      try {
+        const response =
+          await fetchTimeout(
+            endpoint,
+            {
+              method: 'POST',
+
+              headers: {
+                'User-Agent':
+                  'Mozilla/5.0',
+                Accept:
+                  'text/html',
+                'Content-Type':
+                  'application/x-www-form-urlencoded',
+              },
+
+              body,
+            },
+            SEARCH_TIMEOUT
+          );
+
+        const html =
+          await response.text();
+
+        if (!response.ok)
+          throw new Error(
+            `SEARCH_HTTP_${response.status}`
+          );
+
+        const results =
+          parseSearchResults(
+            html
+          );
+
+        if (
+          results.length
+        ) {
+          return results;
+        }
+
+        throw new Error(
+          'SEARCH_NO_RESULTS'
+        );
+      } catch (error) {
+        lastError =
+          error;
+      }
+    }
+
+    throw (
+      lastError ||
+      new Error(
+        'SEARCH_FAILED'
+      )
+    );
   };
 
-  if (process.env.JINA_API_KEY) {
-    headers.Authorization =
-      `Bearer ${process.env.JINA_API_KEY}`;
-  }
+// ============================================================
+// PAGE READER
+// ============================================================
 
-  const response =
-    await fetchWithTimeout(
-      url,
-      {
-        method: 'GET',
-        headers,
-      },
-      SEARCH_TIMEOUT_MS
-    );
-
-  const raw =
-    await response.text();
-
-  if (!response.ok) {
-    // 🔥 FIX BUG AKAR "1 query kosong = seluruh batch riset dibatalkan":
-    // status 422 dari Jina ("No search results available for query...")
-    // itu JAWABAN SAH -- artinya query itu spesifik BENERAN gak nemu
-    // hasil di web (wajar terjadi, apalagi buat query panjang/spesifik).
-    // Ini BUKAN kegagalan search service kayak 401 (auth) atau 5xx
-    // (server down) -- sebelumnya semua status non-2xx digebyah sama
-    // rata jadi "error" yang dilempar ke atas dan MEMBATALKAN SELURUH
-    // proses riset (4 query lainnya ikut gak kepakai walau mungkin
-    // berhasil). Sekarang 422 khusus ditangani sebagai "kosong tapi sah"
-    // -- return array kosong, bukan throw -- supaya query lain di daftar
-    // tetap sempat dicoba.
-    if (response.status === 422) {
-      return [];
-    }
-
-    // 🔥 FIX: pesan error sekarang membedakan kasus "butuh API key" dari
-    // kegagalan lain, supaya gampang didiagnosis lain kali kalau mode
-    // riset internet yang gagal (bukan mode topik biasa).
-    const authHint =
-      (response.status === 401 ||
-        response.status === 403) &&
-      !process.env.JINA_API_KEY
-        ? ' (kemungkinan s.jina.ai sekarang butuh JINA_API_KEY -- tambahkan di environment Vercel.)'
-        : '';
-
-    throw new Error(
-      `WEB_SEARCH_HTTP_${response.status}${authHint}: ${raw.slice(
-        0,
-        500
-      )}`
-    );
-  }
-
-  // Jina dapat mengembalikan JSON
-  // ataupun teks tergantung gateway.
+const absoluteUrl = (
+  src,
+  base
+) => {
+  if (!src)
+    return '';
 
   try {
-    const parsed =
-      JSON.parse(raw);
-
-    const items =
-      Array.isArray(parsed)
-        ? parsed
-        : Array.isArray(
-            parsed?.data
-          )
-        ? parsed.data
-        : Array.isArray(
-            parsed?.results
-          )
-        ? parsed.results
-        : [];
-
-    if (items.length > 0) {
-      return items
-        .slice(0, 8)
-        .map((item) => ({
-          title: sanitizeText(
-            item.title ||
-              item.name ||
-              ''
-          ),
-
-          url: sanitizeText(
-            item.url ||
-              item.link ||
-              ''
-          ),
-
-          content:
-            sanitizeText(
-              item.content ||
-                item.description ||
-                item.snippet ||
-                ''
-            ).slice(0, 8000),
-        }))
-        .filter(
-          (item) =>
-            item.title ||
-            item.url ||
-            item.content
-        );
-    }
+    return new URL(
+      src,
+      base
+    ).href;
   } catch (_) {
-    // lanjut ke mode plain text
+    return '';
   }
+};
 
-  if (!raw.trim()) {
-    return [];
-  }
+const readPage = async (
+  result
+) => {
+  try {
+    const response =
+      await fetchTimeout(
+        result.url,
+        {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0',
+            Accept:
+              'text/html,application/xhtml+xml',
+          },
+        },
+        PAGE_TIMEOUT
+      );
 
-  return [
-    {
-      title:
-        'Web Search Result',
+    if (!response.ok)
+      return {
+        ...result,
+        content: '',
+        images: [],
+      };
 
-      url: '',
+    const html =
+      await response.text();
 
+    const titleMatch =
+      html.match(
+        /<title[^>]*>([\s\S]*?)<\/title>/i
+      );
+
+    const title =
+      titleMatch
+        ? clean(titleMatch[1])
+        : result.title;
+
+    // OG image
+    const images = [];
+
+    const ogRegex =
+      /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/gi;
+
+    let og;
+
+    while (
+      (og =
+        ogRegex.exec(html)) &&
+      images.length < 20
+    ) {
+      const url =
+        absoluteUrl(
+          decodeHtml(og[1]),
+          result.url
+        );
+
+      if (url)
+        images.push({
+          url,
+          alt:
+            'OpenGraph image',
+        });
+    }
+
+    // HTML images
+    const imgRegex =
+      /<img\b[^>]*>/gi;
+
+    let img;
+
+    while (
+      (img =
+        imgRegex.exec(html)) &&
+      images.length < 30
+    ) {
+      const tag =
+        img[0];
+
+      const srcMatch =
+        tag.match(
+          /(?:src|data-src)=["']([^"']+)["']/i
+        );
+
+      if (!srcMatch)
+        continue;
+
+      const url =
+        absoluteUrl(
+          decodeHtml(
+            srcMatch[1]
+          ),
+          result.url
+        );
+
+      if (!url)
+        continue;
+
+      const altMatch =
+        tag.match(
+          /alt=["']([^"']*)["']/i
+        );
+
+      images.push({
+        url,
+        alt:
+          clean(
+            altMatch
+              ? altMatch[1]
+              : ''
+          ),
+      });
+    }
+
+    const text =
+      clean(
+        html
+          .replace(
+            /<noscript[\s\S]*?<\/noscript>/gi,
+            ' '
+          )
+          .replace(
+            /<svg[\s\S]*?<\/svg>/gi,
+            ' '
+          )
+          .replace(
+            /<[^>]+>/g,
+            ' '
+          )
+      );
+
+    return {
+      title,
+      url: result.url,
       content:
-        raw.slice(0, 12000),
-    },
-  ];
-}
+        text.slice(
+          0,
+          18000
+        ),
+      images:
+        images.filter(
+          (item, index, arr) =>
+            index ===
+            arr.findIndex(
+              (x) =>
+                x.url ===
+                item.url
+            )
+        ),
+    };
+  } catch (_) {
+    return {
+      ...result,
+      content: '',
+      images: [],
+    };
+  }
+};
+
+// ============================================================
+// VISUAL HELPERS
+// ============================================================
+
+const hasVisualCue =
+  (text = '') => {
+    const t =
+      normalize(text);
+
+    return [
+      'lihat gambar',
+      'perhatikan gambar',
+      'gambar berikut',
+      'berdasarkan gambar',
+      'lihat grafik',
+      'perhatikan grafik',
+      'grafik berikut',
+      'lihat diagram',
+      'perhatikan diagram',
+      'diagram berikut',
+      'lihat tabel',
+      'perhatikan tabel',
+      'tabel berikut',
+      'look at the picture',
+      'look at the image',
+      'look at the graph',
+      'look at the diagram',
+      'look at the table',
+    ].some(
+      (x) =>
+        t.includes(
+          normalize(x)
+        )
+    );
+  };
+
+const makeClock =
+  (clock) => {
+    if (
+      !clock ||
+      !isNum(clock.hour) ||
+      !isNum(clock.minute)
+    )
+      return '';
+
+    const hour =
+      ((Number(clock.hour) %
+        12) +
+        12) %
+      12;
+
+    const minute =
+      Math.max(
+        0,
+        Math.min(
+          59,
+          Number(clock.minute)
+        )
+      );
+
+    const size = 280;
+    const cx = 140;
+    const cy = 140;
+    const radius = 112;
+
+    const point =
+      (
+        angle,
+        length
+      ) => {
+        const rad =
+          ((angle - 90) *
+            Math.PI) /
+          180;
+
+        return {
+          x:
+            cx +
+            length *
+              Math.cos(rad),
+          y:
+            cy +
+            length *
+              Math.sin(rad),
+        };
+      };
+
+    const hourTip =
+      point(
+        hour * 30 +
+          minute * 0.5,
+        radius * 0.52
+      );
+
+    const minuteTip =
+      point(
+        minute * 6,
+        radius * 0.78
+      );
+
+    const ticks =
+      Array.from(
+        { length: 60 },
+        (_, i) => {
+          const major =
+            i % 5 === 0;
+
+          const outer =
+            point(
+              i * 6,
+              radius
+            );
+
+          const inner =
+            point(
+              i * 6,
+              major
+                ? radius - 13
+                : radius - 7
+            );
+
+          return `
+<line
+x1="${outer.x}"
+y1="${outer.y}"
+x2="${inner.x}"
+y2="${inner.y}"
+stroke="#334155"
+stroke-width="${
+  major ? 2 : 1
+}"/>`;
+        }
+      ).join('');
+
+    const numbers =
+      Array.from(
+        { length: 12 },
+        (_, i) => {
+          const n =
+            i === 0
+              ? 12
+              : i;
+
+          const p =
+            point(
+              i * 30,
+              radius - 25
+            );
+
+          return `
+<text
+x="${p.x}"
+y="${p.y + 6}"
+text-anchor="middle"
+font-family="Arial"
+font-size="18"
+font-weight="700"
+fill="#1e293b">${n}</text>`;
+        }
+      ).join('');
+
+    const svg = `
+<svg xmlns="http://www.w3.org/2000/svg"
+viewBox="0 0 280 280"
+width="280"
+height="280">
+<rect width="280" height="280" fill="white"/>
+<circle cx="140" cy="140" r="${radius}"
+fill="white"
+stroke="#1e293b"
+stroke-width="3"/>
+${ticks}
+${numbers}
+<line
+x1="140"
+y1="140"
+x2="${hourTip.x}"
+y2="${hourTip.y}"
+stroke="#1e293b"
+stroke-width="6"
+stroke-linecap="round"/>
+<line
+x1="140"
+y1="140"
+x2="${minuteTip.x}"
+y2="${minuteTip.y}"
+stroke="#334155"
+stroke-width="4"
+stroke-linecap="round"/>
+<circle
+cx="140"
+cy="140"
+r="5"
+fill="#1e293b"/>
+</svg>`;
+
+    return (
+      'data:image/svg+xml;base64,' +
+      Buffer.from(
+        svg
+      ).toString(
+        'base64'
+      )
+    );
+  };
+
+// ============================================================
+// JSON EXTRACTION
+// ============================================================
+
+const extractJson =
+  (text = '') => {
+    const out = [];
+    let depth = 0;
+    let start = -1;
+    let inString =
+      false;
+    let escaped =
+      false;
+
+    for (
+      let i = 0;
+      i < text.length;
+      i++
+    ) {
+      const ch =
+        text[i];
+
+      if (escaped) {
+        escaped =
+          false;
+        continue;
+      }
+
+      if (ch === '\\') {
+        escaped =
+          true;
+        continue;
+      }
+
+      if (ch === '"') {
+        inString =
+          !inString;
+        continue;
+      }
+
+      if (inString)
+        continue;
+
+      if (ch === '{') {
+        if (depth === 0)
+          start = i;
+
+        depth++;
+      }
+
+      if (ch === '}') {
+        depth--;
+
+        if (
+          depth === 0 &&
+          start !== -1
+        ) {
+          try {
+            out.push(
+              JSON.parse(
+                text.slice(
+                  start,
+                  i + 1
+                )
+              )
+            );
+          } catch (_) {}
+
+          start = -1;
+        }
+      }
+    }
+
+    return out;
+  };
+
+// ============================================================
+// GEMINI
+// ============================================================
+
+const callGemini =
+  async (
+    systemPrompt,
+    userPrompt
+  ) => {
+    if (
+      !process.env
+        .GEMINI_API_KEY
+    ) {
+      throw new Error(
+        'GEMINI_API_KEY belum tersedia.'
+      );
+    }
+
+    const url =
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+    const body = {
+      system_instruction: {
+        parts: [
+          {
+            text:
+              systemPrompt,
+          },
+        ],
+      },
+
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            {
+              text:
+                userPrompt,
+            },
+          ],
+        },
+      ],
+
+      generationConfig: {
+        temperature: 0.15,
+        topP: 0.9,
+        maxOutputTokens:
+          14000,
+      },
+    };
+
+    const response =
+      await fetchTimeout(
+        url,
+        {
+          method: 'POST',
+
+          headers: {
+            'Content-Type':
+              'application/json',
+
+            'x-goog-api-key':
+              process.env
+                .GEMINI_API_KEY,
+          },
+
+          body:
+            JSON.stringify(
+              body
+            ),
+        },
+        GEMINI_TIMEOUT
+      );
+
+    const raw =
+      await response.text();
+
+    if (!response.ok) {
+      let detail =
+        raw;
+
+      try {
+        const parsed =
+          JSON.parse(raw);
+
+        detail =
+          parsed?.error
+            ?.message ||
+          raw;
+      } catch (_) {}
+
+      throw new Error(
+        `GEMINI_HTTP_${response.status}: ${detail}`
+      );
+    }
+
+    return JSON.parse(
+      raw
+    );
+  };
 
 // ============================================================
 // RESEARCH QUERY
 // ============================================================
 
-function buildResearchQueries({
+const buildQueries = ({
   topic,
   mapel,
   kelas,
   targetYear,
-}) {
-  const year =
-    targetYear ||
-    String(
-      new Date().getFullYear() + 1
-    );
+  sourceMode,
+}) => {
+  const base =
+    `${topic} ${mapel || ''} ${kelas || ''}`;
 
-  // 🔥 FIX BUG AKAR "query sering balik 0 hasil (422)": sebelumnya
-  // SELURUH topik selalu dibungkus tanda kutip ("${topic}"), yang artinya
-  // mesin pencari WAJIB nyari FRASA PERSIS kata demi kata sesuai urutan
-  // itu. Ini gampang banget balik nol hasil kalau topiknya panjang
-  // (banyak kata sekaligus HARUS cocok persis), ada typo dari guru
-  // (misal "KEMAMPUAN" ketik "KEMAMOUAN"), atau frasanya jarang muncul
-  // utuh di web manapun -- padahal kata-kata di dalamnya sendiri
-  // (terpisah, tanpa kutip) mungkin banyak sumbernya. Sekarang tanda
-  // kutip cuma dipakai kalau topiknya pendek (maks 3 kata) yang aman
-  // buat exact-match; topik lebih panjang dibiarkan tanpa kutip supaya
-  // mesin pencari bebas mencocokkan kata-kata individualnya, bukan
-  // menuntut frasa utuh yang identik.
-  const topicTrimmed =
-    String(topic || '').trim();
-
-  const topicWordCount =
-    topicTrimmed
-      .split(/\s+/)
-      .filter(Boolean).length;
-
-  const topicTerm =
-    topicWordCount > 0 &&
-    topicWordCount <= 3
-      ? `"${topicTrimmed}"`
-      : topicTrimmed;
-
-  // Gabungkan potongan kalimat lalu rapikan spasi ganda yang muncul
-  // kalau mapel/kelas kosong -- query jadi lebih bersih buat mesin
-  // pencari (spasi ganda/berantakan juga bisa memperkecil peluang match).
-  const clean = (str) =>
-    String(str)
-      .replace(/\s+/g, ' ')
-      .trim();
+  if (
+    sourceMode ===
+    'prediction'
+  ) {
+    return [
+      `${base} TKA soal`,
+      `${base} contoh soal HOTS`,
+      `${base} soal tahun sebelumnya`,
+      `${base} latihan ujian`,
+    ];
+  }
 
   return [
-    clean(
-      `${topicTerm} ${mapel || ''} ${
-        kelas || ''
-      } TKA contoh soal`
-    ),
-
-    clean(
-      `${topicTerm} ${mapel || ''} ${
-        kelas || ''
-      } latihan soal tahun sebelumnya`
-    ),
-
-    clean(
-      `${mapel || ''} ${
-        kelas || ''
-      } TKA soal ${year}`
-    ),
-
-    clean(
-      `${topicTrimmed} soal HOTS ${mapel || ''}`
-    ),
+    `${base} soal asli`,
+    `${base} contoh soal`,
+    `${base} bank soal`,
+    `${base} TKA latihan`,
   ];
+};
+
+// ============================================================
+// SYSTEM PROMPT
+// ============================================================
+
+const buildPrompt = ({
+  sourceMode,
+  targetYear,
+  types,
+}) => `
+Kamu adalah Question Research Engine Bimbel Gemilang.
+
+SEMUA SOAL HARUS BERBASIS SUMBER INTERNET YANG DIKIRIM
+DALAM DATA RISET.
+
+MODE:
+${
+  sourceMode === 'source'
+    ? `
+AMBIL SOAL DARI INTERNET.
+
+ATURAN:
+- Pilih soal yang BENAR-BENAR terdapat pada isi sumber.
+- Jangan mengarang soal sumber.
+- Pertahankan pertanyaan dan pilihan sebagaimana sumber.
+- Pertahankan struktur visual jika tersedia.
+- Tandai sourceIndex.
+- Jawaban dan pembahasan harus dianalisis/ditambahkan.
+- Bila jawaban tidak dapat diverifikasi, JANGAN masukkan soal.
+- Soal yang sama dari banyak sumber boleh muncul.
+`
+    : `
+PREDIKSI BERBASIS TREN INTERNET.
+
+ATURAN:
+- Analisis banyak sumber.
+- Identifikasi topik/kompetensi yang sering muncul.
+- Identifikasi pola HOTS dan stimulus.
+- Identifikasi jenis visual yang sering digunakan.
+- Susun soal latihan BARU berdasarkan pola tersebut.
+- Jangan mengklaim sebagai bocoran.
+- Jangan mengklaim mengetahui soal ujian sebenarnya.
+`
 }
 
-// ============================================================
-// GEMINI 3.5 FLASH
-// ============================================================
+TARGET:
+${targetYear}
 
-async function callGemini(
-  systemPrompt,
-  userPrompt
-) {
-  if (
-    !process.env.GEMINI_API_KEY
-  ) {
-    throw new Error(
-      'GEMINI_API_KEY belum tersedia.'
-    );
-  }
+TIPE:
+${types.join(', ')}
 
-  const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+ATURAN VERIFIKASI:
 
-  const body = {
-    system_instruction: {
-      parts: [
-        {
-          text: systemPrompt,
-        },
-      ],
-    },
+1. Tentukan jawaban benar sebelum soal dikembalikan.
+2. Periksa ulang hitungan.
+3. Buat pembahasan detail.
+4. Jelaskan mengapa jawaban benar.
+5. Jelaskan mengapa distraktor penting/keliru bila relevan.
+6. Bila soal bergambar, pastikan gambar benar-benar dibutuhkan.
+7. Jangan menggunakan gambar acak.
+8. Bila pilihan jawaban berupa gambar, keluarkan optionImageUrls.
+9. Gunakan sourceImageUrls hanya dari sumber yang tersedia.
+10. Jangan mengarang URL gambar.
 
-    contents: [
-      {
-        role: 'user',
+SKEMA JSON:
 
-        parts: [
-          {
-            text: userPrompt,
-          },
-        ],
-      },
-    ],
-
-    generationConfig: {
-      temperature: 0.2,
-      topP: 0.9,
-      maxOutputTokens:
-        MAX_OUTPUT_TOKENS,
-      // 🔥 FIX BUG AKAR "Tidak ada soal yang lolos quality gate": model
-      // Gemini generasi 3.x (termasuk 3.5 Flash) MELAKUKAN "thinking"
-      // internal secara default, dan token buat proses mikir itu DIAMBIL
-      // DARI JATAH maxOutputTokens YANG SAMA dengan jatah buat nulis
-      // jawaban JSON-nya -- bukan budget terpisah. Tanpa thinkingBudget
-      // di-nolkan, model bisa menghabiskan sebagian besar (bahkan semua)
-      // dari 14.000 token itu buat "mikir" dulu sebelum sempat nulis
-      // satu pun baris JSONL soal -- apalagi di mode riset internet yang
-      // konteksnya jauh lebih besar (isi banyak sumber web sekaligus),
-      // yang mendorong model buat mikir lebih panjang. Hasilnya: teks
-      // yang balik ke extractJsonObjects() kosong/terpotong, JADI TIDAK
-      // ADA SATU SOAL PUN yang berhasil di-parse, apalagi lolos quality
-      // gate -- persis gejala yang dilaporkan. Thinking dimatikan total
-      // di sini karena tugas ini (susun JSON soal terstruktur ketat)
-      // gak butuh reasoning tersembunyi; seluruh token output harus
-      // dipakai buat hasil akhirnya langsung.
-      thinkingConfig: {
-        thinkingBudget: 0,
-      },
-    },
-  };
-
-  const response =
-    await fetchWithTimeout(
-      url,
-      {
-        method: 'POST',
-
-        headers: {
-          'Content-Type':
-            'application/json',
-
-          'x-goog-api-key':
-            process.env
-              .GEMINI_API_KEY,
-        },
-
-        body: JSON.stringify(
-          body
-        ),
-      },
-      GEMINI_TIMEOUT_MS
-    );
-
-  const raw =
-    await response.text();
-
-  if (!response.ok) {
-    let detail = raw;
-
-    try {
-      const parsed =
-        JSON.parse(raw);
-
-      detail =
-        parsed?.error
-          ?.message || raw;
-    } catch (_) {}
-
-    const error =
-      new Error(
-        `GEMINI_HTTP_${response.status}: ${detail}`
-      );
-
-    error.status =
-      response.status;
-
-    throw error;
-  }
-
-  return JSON.parse(raw);
+{
+  "type":"multiple",
+  "question":"...",
+  "options":["A","B","C","D"],
+  "correct":0,
+  "explanation":"...",
+  "answerVerification":"...",
+  "analysisSummary":"...",
+  "sourceIndex":0,
+  "sourceQuestionVerbatim":true,
+  "questionImageUrl":"https://...",
+  "optionImageUrls":[
+    "https://...",
+    "https://...",
+    "https://..."
+  ],
+  "optionsAreImages":false
 }
 
-// ============================================================
-// VISUAL — CLOCK
-// ============================================================
+Untuk soal sumber internet:
+- question harus berasal dari sumber.
+- sourceQuestionVerbatim = true.
+- sourceIndex wajib.
 
-const buildClockImageSvg = (
-  clock
-) => {
-  if (
-    !clock ||
-    !isFiniteNumber(
-      clock.hour
-    ) ||
-    !isFiniteNumber(
-      clock.minute
-    )
-  ) {
-    return '';
-  }
+Untuk prediksi:
+- sourceQuestionVerbatim = false.
+- sourceIndex dapat menunjuk sumber/pola utama.
 
-  const hour =
-    ((Number(clock.hour) %
-      12) +
-      12) %
-    12;
+Untuk jam:
+"clock":{"hour":8,"minute":30}
 
-  const minute =
-    Math.max(
-      0,
-      Math.min(
-        59,
-        Number(clock.minute)
-      )
-    );
+Jika soal membutuhkan foto/diagram yang tidak tersedia:
+"needsImage":true,
+"imageHint":"kata kunci gambar"
 
-  const size = 280;
-
-  const cx =
-    size / 2;
-
-  const cy =
-    size / 2;
-
-  const radius =
-    112;
-
-  const toXY = (
-    angle,
-    length
-  ) => {
-    const rad =
-      ((angle - 90) *
-        Math.PI) /
-      180;
-
-    return {
-      x:
-        cx +
-        length *
-          Math.cos(rad),
-
-      y:
-        cy +
-        length *
-          Math.sin(rad),
-    };
-  };
-
-  const hourTip =
-    toXY(
-      hour * 30 +
-        minute * 0.5,
-      radius * 0.52
-    );
-
-  const minuteTip =
-    toXY(
-      minute * 6,
-      radius * 0.78
-    );
-
-  const ticks =
-    Array.from(
-      { length: 60 },
-      (_, i) => {
-        const major =
-          i % 5 === 0;
-
-        const outer =
-          toXY(
-            i * 6,
-            radius
-          );
-
-        const inner =
-          toXY(
-            i * 6,
-            major
-              ? radius - 13
-              : radius - 7
-          );
-
-        return `
-<line
-  x1="${outer.x.toFixed(2)}"
-  y1="${outer.y.toFixed(2)}"
-  x2="${inner.x.toFixed(2)}"
-  y2="${inner.y.toFixed(2)}"
-  stroke="#334155"
-  stroke-width="${
-    major ? 2 : 1
-  }"
-/>`;
-      }
-    ).join('');
-
-  const numbers =
-    Array.from(
-      { length: 12 },
-      (_, i) => {
-        const number =
-          i === 0
-            ? 12
-            : i;
-
-        const pos =
-          toXY(
-            i * 30,
-            radius - 25
-          );
-
-        return `
-<text
-  x="${pos.x.toFixed(1)}"
-  y="${(
-    pos.y + 6
-  ).toFixed(1)}"
-  text-anchor="middle"
-  font-family="Arial"
-  font-size="18"
-  font-weight="700"
-  fill="#1e293b"
->${number}</text>`;
-      }
-    ).join('');
-
-  const svg = `
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 ${size} ${size}"
-  width="${size}"
-  height="${size}"
->
-  <rect
-    width="${size}"
-    height="${size}"
-    fill="white"
-  />
-
-  <circle
-    cx="${cx}"
-    cy="${cy}"
-    r="${radius}"
-    fill="white"
-    stroke="#1e293b"
-    stroke-width="3"
-  />
-
-  ${ticks}
-
-  ${numbers}
-
-  <line
-    x1="${cx}"
-    y1="${cy}"
-    x2="${hourTip.x.toFixed(2)}"
-    y2="${hourTip.y.toFixed(2)}"
-    stroke="#1e293b"
-    stroke-width="6"
-    stroke-linecap="round"
-  />
-
-  <line
-    x1="${cx}"
-    y1="${cy}"
-    x2="${minuteTip.x.toFixed(2)}"
-    y2="${minuteTip.y.toFixed(2)}"
-    stroke="#334155"
-    stroke-width="4"
-    stroke-linecap="round"
-  />
-
-  <circle
-    cx="${cx}"
-    cy="${cy}"
-    r="5"
-    fill="#1e293b"
-  />
-</svg>
+Jangan output markdown.
+Jangan output code fence.
+Satu soal = satu JSON object.
 `;
 
-  return (
-    `data:image/svg+xml;base64,` +
-    Buffer.from(svg).toString(
-      'base64'
-    )
-  );
-};
-
 // ============================================================
-// VISUAL — GRAPH
+// VALIDATION
 // ============================================================
 
-const buildGraphImageSvg = (
-  graph
-) => {
-  if (
-    !graph ||
-    !Array.isArray(
-      graph.points
-    )
-  ) {
-    return '';
-  }
-
-  const points =
-    graph.points
-      .filter(
-        (point) =>
-          isFiniteNumber(
-            point?.x
-          ) &&
-          isFiniteNumber(
-            point?.y
-          )
-      )
-      .slice(0, 100);
-
-  if (
-    points.length < 2
-  ) {
-    return '';
-  }
-
-  const xs =
-    points.map(
-      (p) => p.x
-    );
-
-  const ys =
-    points.map(
-      (p) => p.y
-    );
-
-  const minX =
-    Math.min(...xs);
-
-  const maxX =
-    Math.max(...xs);
-
-  const minY =
-    Math.min(...ys);
-
-  const maxY =
-    Math.max(...ys);
-
-  const W = 640;
-
-  const H = 420;
-
-  const pad = 55;
-
-  const mapX = (
-    x
-  ) =>
-    pad +
-    ((x - minX) /
-      Math.max(
-        maxX - minX,
-        1
-      )) *
-      (W - pad * 2);
-
-  const mapY = (
-    y
-  ) =>
-    H -
-    pad -
-    ((y - minY) /
-      Math.max(
-        maxY - minY,
-        1
-      )) *
-      (H - pad * 2);
-
-  const path =
-    points
-      .map(
-        (point, i) =>
-          `${
-            i === 0
-              ? 'M'
-              : 'L'
-          } ${mapX(
-            point.x
-          ).toFixed(1)} ${mapY(
-            point.y
-          ).toFixed(1)}`
-      )
-      .join(' ');
-
-  const highlights =
-    Array.isArray(
-      graph.highlight
-    )
-      ? graph.highlight
-          .filter(
-            (point) =>
-              isFiniteNumber(
-                point?.x
-              ) &&
-              isFiniteNumber(
-                point?.y
-              )
-          )
-          .map(
-            (point) =>
-              `<circle
-                cx="${mapX(
-                  point.x
-                ).toFixed(1)}"
-                cy="${mapY(
-                  point.y
-                ).toFixed(1)}"
-                r="6"
-                fill="#dc2626"
-              />`
-          )
-          .join('')
-      : '';
-
-  const svg = `
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 ${W} ${H}"
-  width="${W}"
-  height="${H}"
->
-  <rect
-    width="${W}"
-    height="${H}"
-    fill="white"
-  />
-
-  <line
-    x1="${pad}"
-    y1="${H - pad}"
-    x2="${W - pad}"
-    y2="${H - pad}"
-    stroke="#64748b"
-    stroke-width="1.5"
-  />
-
-  <line
-    x1="${pad}"
-    y1="${pad}"
-    x2="${pad}"
-    y2="${H - pad}"
-    stroke="#64748b"
-    stroke-width="1.5"
-  />
-
-  <path
-    d="${path}"
-    fill="none"
-    stroke="#1e293b"
-    stroke-width="3"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-
-  ${highlights}
-
-  <text
-    x="${W - pad}"
-    y="${H - 15}"
-    text-anchor="end"
-    font-family="Arial"
-    font-size="16"
-    fill="#334155"
-  >
-    ${escapeXml(
-      graph.xLabel || 'x'
-    )}
-  </text>
-
-  <text
-    x="18"
-    y="${pad}"
-    font-family="Arial"
-    font-size="16"
-    fill="#334155"
-  >
-    ${escapeXml(
-      graph.yLabel || 'y'
-    )}
-  </text>
-</svg>
-`;
-
-  return (
-    `data:image/svg+xml;base64,` +
-    Buffer.from(svg).toString(
-      'base64'
-    )
-  );
-};
-
-// ============================================================
-// VISUAL — SHAPE
-// ============================================================
-
-const buildShapeImageSvg = (
-  shape
-) => {
-  if (
-    !shape ||
-    !Array.isArray(
-      shape.vertices
-    )
-  ) {
-    return '';
-  }
-
-  const vertices =
-    shape.vertices
-      .filter(
-        (vertex) =>
-          isFiniteNumber(
-            vertex?.x
-          ) &&
-          isFiniteNumber(
-            vertex?.y
-          )
-      )
-      .slice(0, 30);
-
-  if (
-    vertices.length < 3
-  ) {
-    return '';
-  }
-
-  const labels =
-    Array.isArray(
-      shape.labels
-    )
-      ? shape.labels.filter(
-          (label) =>
-            isFiniteNumber(
-              label?.x
-            ) &&
-            isFiniteNumber(
-              label?.y
-            )
-        )
-      : [];
-
-  const allX = [
-    ...vertices.map(
-      (v) => v.x
-    ),
-
-    ...labels.map(
-      (l) => l.x
-    ),
-  ];
-
-  const allY = [
-    ...vertices.map(
-      (v) => v.y
-    ),
-
-    ...labels.map(
-      (l) => l.y
-    ),
-  ];
-
-  const minX =
-    Math.min(...allX);
-
-  const maxX =
-    Math.max(...allX);
-
-  const minY =
-    Math.min(...allY);
-
-  const maxY =
-    Math.max(...allY);
-
-  const span =
-    Math.max(
-      maxX - minX,
-      maxY - minY,
-      1
-    );
-
-  const pad =
-    span * 0.2 + 10;
-
-  const W =
-    Math.max(
-      maxX - minX +
-        pad * 2,
-      180
-    );
-
-  const H =
-    Math.max(
-      maxY - minY +
-        pad * 2,
-      180
-    );
-
-  const sx = (
-    x
-  ) =>
-    x - minX + pad;
-
-  const sy = (
-    y
-  ) =>
-    maxY - y + pad;
-
-  const polygon =
-    vertices
-      .map(
-        (vertex) =>
-          `${sx(
-            vertex.x
-          ).toFixed(1)},${sy(
-            vertex.y
-          ).toFixed(1)}`
-      )
-      .join(' ');
-
-  const labelSvg =
-    labels
-      .map(
-        (label) =>
-          `<text
-            x="${sx(
-              label.x
-            ).toFixed(1)}"
-            y="${sy(
-              label.y
-            ).toFixed(1)}"
-            text-anchor="middle"
-            font-family="Arial"
-            font-size="16"
-            fill="#334155"
-          >${escapeXml(
-            label.text || ''
-          )}</text>`
-      )
-      .join('');
-
-  const svg = `
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 ${W} ${H}"
-  width="500"
-  height="360"
->
-  <rect
-    width="${W}"
-    height="${H}"
-    fill="white"
-  />
-
-  <polygon
-    points="${polygon}"
-    fill="#dbeafe"
-    stroke="#1e293b"
-    stroke-width="3"
-  />
-
-  ${labelSvg}
-</svg>
-`;
-
-  return (
-    `data:image/svg+xml;base64,` +
-    Buffer.from(svg).toString(
-      'base64'
-    )
-  );
-};
-
-// ============================================================
-// VISUAL — PATTERN
-// ============================================================
-
-const PRIMITIVES = {
-  circle:
-    (
-      cx,
-      cy,
-      r,
-      filled
-    ) =>
-      `<circle
-        cx="${cx}"
-        cy="${cy}"
-        r="${r}"
-        fill="${
-          filled
-            ? '#1e293b'
-            : 'white'
-        }"
-        stroke="#1e293b"
-        stroke-width="2"
-      />`,
-
-  square:
-    (
-      cx,
-      cy,
-      r,
-      filled
-    ) =>
-      `<rect
-        x="${cx - r}"
-        y="${cy - r}"
-        width="${r * 2}"
-        height="${r * 2}"
-        fill="${
-          filled
-            ? '#1e293b'
-            : 'white'
-        }"
-        stroke="#1e293b"
-        stroke-width="2"
-      />`,
-
-  triangle:
-    (
-      cx,
-      cy,
-      r,
-      filled
-    ) =>
-      `<polygon
-        points="${cx},${
-          cy - r
-        } ${
-          cx - r
-        },${cy + r} ${
-          cx + r
-        },${cy + r}"
-        fill="${
-          filled
-            ? '#1e293b'
-            : 'white'
-        }"
-        stroke="#1e293b"
-        stroke-width="2"
-      />`,
-
-  pentagon: (
-    cx,
-    cy,
-    r,
-    filled
-  ) => {
-    const points =
-      Array.from(
-        { length: 5 },
-        (_, i) => {
-          const angle =
-            -Math.PI / 2 +
-            (i *
-              2 *
-              Math.PI) /
-              5;
-
-          return `${(
-            cx +
-            r *
-              Math.cos(
-                angle
-              )
-          ).toFixed(1)},${(
-            cy +
-            r *
-              Math.sin(
-                angle
-              )
-          ).toFixed(1)}`;
-        }
-      ).join(' ');
-
-    return `
-<polygon
-  points="${points}"
-  fill="${
-    filled
-      ? '#1e293b'
-      : 'white'
-  }"
-  stroke="#1e293b"
-  stroke-width="2"
-/>`;
-  },
-
-  star: (
-    cx,
-    cy,
-    r,
-    filled
-  ) => {
-    const points =
-      Array.from(
-        { length: 10 },
-        (_, i) => {
-          const rr =
-            i % 2 === 0
-              ? r
-              : r * 0.45;
-
-          const angle =
-            -Math.PI / 2 +
-            (i * Math.PI) /
-              5;
-
-          return `${(
-            cx +
-            rr *
-              Math.cos(
-                angle
-              )
-          ).toFixed(1)},${(
-            cy +
-            rr *
-              Math.sin(
-                angle
-              )
-          ).toFixed(1)}`;
-        }
-      ).join(' ');
-
-    return `
-<polygon
-  points="${points}"
-  fill="${
-    filled
-      ? '#1e293b'
-      : 'white'
-  }"
-  stroke="#1e293b"
-  stroke-width="2"
-/>`;
-  },
-};
-
-const buildPatternImageSvg = (
-  pattern
-) => {
-  if (
-    !pattern ||
-    !Array.isArray(
-      pattern.sequence
-    )
-  ) {
-    return '';
-  }
-
-  const sequence =
-    pattern.sequence
-      .filter(
-        (item) =>
-          item &&
-          PRIMITIVES[
-            item.shape
-          ]
-      )
-      .slice(0, 12);
-
-  if (
-    sequence.length ===
-    0
-  ) {
-    return '';
-  }
-
-  const cell = 90;
-
-  const W =
-    sequence.length *
-    cell;
-
-  const H = cell;
-
-  const cells =
-    sequence
-      .map(
-        (item, index) => {
-          const cx =
-            index *
-              cell +
-            cell /
-              2;
-
-          const cy =
-            cell / 2;
-
-          const rotation =
-            isFiniteNumber(
-              item.rotation
-            )
-              ? item.rotation
-              : 0;
-
-          return `
-<rect
-  x="${
-    index * cell +
-    2
-  }"
-  y="2"
-  width="${
-    cell - 4
-  }"
-  height="${
-    cell - 4
-  }"
-  fill="none"
-  stroke="#e2e8f0"
-/>
-
-<g transform="rotate(${rotation} ${cx} ${cy})">
-  ${
-    PRIMITIVES[
-      item.shape
-    ](
-      cx,
-      cy,
-      26,
-      Boolean(
-        item.filled
-      )
-    )
-  }
-</g>`;
-        }
-      )
-      .join('');
-
-  const svg = `
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 ${W} ${H}"
-  width="${W}"
-  height="${H}"
->
-  <rect
-    width="${W}"
-    height="${H}"
-    fill="white"
-  />
-  ${cells}
-</svg>
-`;
-
-  return (
-    `data:image/svg+xml;base64,` +
-    Buffer.from(svg).toString(
-      'base64'
-    )
-  );
-};
-
-// ============================================================
-// VISUAL CUE
-// ============================================================
-
-const hasVisualCue = (
-  text = ''
-) => {
-  const value =
-    String(text)
-      .toLowerCase();
-
-  const cues = [
-    'lihat gambar',
-    'perhatikan gambar',
-    'gambar berikut',
-    'berdasarkan gambar',
-    'pada gambar',
-
-    'lihat grafik',
-    'perhatikan grafik',
-    'grafik berikut',
-    'berdasarkan grafik',
-
-    'lihat diagram',
-    'perhatikan diagram',
-    'diagram berikut',
-    'berdasarkan diagram',
-
-    'lihat tabel',
-    'perhatikan tabel',
-    'tabel berikut',
-    'berdasarkan tabel',
-
-    'look at the picture',
-    'look at the image',
-    'look at the graph',
-    'look at the diagram',
-    'look at the table',
-
-    'based on the picture',
-    'based on the image',
-    'based on the graph',
-    'based on the diagram',
-    'based on the table',
-  ];
-
-  return cues.some(
-    (cue) =>
-      value.includes(cue)
-  );
-};
-
-// ============================================================
-// JSON PARSER
-// ============================================================
-
-const extractJsonObjects = (
-  text = ''
-) => {
-  const objects = [];
-
-  let depth = 0;
-
-  let start = -1;
-
-  let inString =
-    false;
-
-  let escaped =
-    false;
-
-  for (
-    let i = 0;
-    i < text.length;
-    i++
-  ) {
-    const ch =
-      text[i];
-
-    if (escaped) {
-      escaped =
-        false;
-
-      continue;
-    }
-
-    if (ch === '\\') {
-      escaped =
-        true;
-
-      continue;
-    }
-
-    if (ch === '"') {
-      inString =
-        !inString;
-
-      continue;
-    }
-
-    if (inString) continue;
-
-    if (ch === '{') {
-      if (
-        depth ===
-        0
-      ) {
-        start = i;
-      }
-
-      depth += 1;
-    }
-
-    if (ch === '}') {
-      depth -= 1;
-
-      if (
-        depth ===
-          0 &&
-        start !== -1
-      ) {
-        try {
-          const item =
-            JSON.parse(
-              text.slice(
-                start,
-                i + 1
-              )
-            );
-
-          objects.push(
-            item
-          );
-        } catch (_) {}
-
-        start = -1;
-      }
-    }
-  }
-
-  return objects;
-};
-
-// ============================================================
-// QUESTION VALIDATOR
-// ============================================================
-
-function validateQuestion(
+const validateQuestion = (
   raw,
-  allowedTypes
-) {
+  allowedTypes,
+  sources,
+  sourceMode
+) => {
   if (
     !raw ||
-    raw.meta === true
-  ) {
-    return null;
-  }
-
-  // 🔥 JARING PENGAMAN TAMBAHAN (di luar perbaikan system prompt di
-  // atas): walau skema JSON sekarang sudah dijelaskan eksplisit ke
-  // Gemini, model AI kadang masih meleset dan pakai field "answer"
-  // (berisi TEKS jawaban, misal "0,90") padahal yang divalidasi adalah
-  // "correct"/"correctAnswers" (ANGKA INDEKS ke "options"). Daripada
-  // langsung menolak soal yang isinya sebenarnya benar cuma gara-gara
-  // nama field meleset, di sini dicoba dulu MENERJEMAHKAN "answer" jadi
-  // indeks yang tepat dengan mencocokkan teksnya ke salah satu isi
-  // "options" -- baru soal itu lanjut ke validasi normal di bawah.
-  if (
-    Array.isArray(raw?.options) &&
-    raw?.answer !== undefined &&
-    raw.answer !== null
-  ) {
-    const normalize = (v) =>
-      String(v).trim().toLowerCase();
-    const answerText = normalize(raw.answer);
-
-    if (
-      raw.type === 'multiple' &&
-      !isIntegerInRange(raw.correct, 0, raw.options.length - 1)
-    ) {
-      const idx = raw.options.findIndex(
-        (opt) => normalize(opt) === answerText
-      );
-      if (idx !== -1) {
-        raw = { ...raw, correct: idx };
-      }
-    }
-
-    if (
-      raw.type === 'multiselect' &&
-      (!Array.isArray(raw.correctAnswers) || !raw.correctAnswers.length)
-    ) {
-      const answerList = Array.isArray(raw.answer)
-        ? raw.answer.map(normalize)
-        : [answerText];
-      const idxList = raw.options
-        .map((opt, i) => (answerList.includes(normalize(opt)) ? i : -1))
-        .filter((i) => i !== -1);
-      if (idxList.length > 0) {
-        raw = { ...raw, correctAnswers: idxList };
-      }
-    }
-  }
-
-  if (
     !allowedTypes.includes(
       raw.type
     )
-  ) {
+  )
     return null;
-  }
 
   const question =
-    sanitizeText(
+    clean(
       raw.question ||
         ''
     );
 
-  if (!question) {
+  if (!question)
     return null;
-  }
-
-  // Multiple
 
   if (
     raw.type ===
@@ -1587,22 +1012,18 @@ function validateQuestion(
       ) ||
       raw.options.length !==
         4
-    ) {
+    )
       return null;
-    }
 
     if (
-      !isIntegerInRange(
+      !validIndex(
         raw.correct,
         0,
         3
       )
-    ) {
+    )
       return null;
-    }
   }
-
-  // Multi select
 
   if (
     raw.type ===
@@ -1614,246 +1035,188 @@ function validateQuestion(
       ) ||
       raw.options.length <
         2
-    ) {
+    )
       return null;
-    }
 
     if (
       !Array.isArray(
         raw.correctAnswers
       ) ||
-      !raw.correctAnswers
-        .length
-    ) {
+      !raw.correctAnswers.length
+    )
       return null;
-    }
-
-    if (
-      !raw.correctAnswers.every(
-        (answer) =>
-          isIntegerInRange(
-            answer,
-            0,
-            raw.options
-              .length - 1
-          )
-      )
-    ) {
-      return null;
-    }
   }
-
-  // True false
 
   if (
     raw.type ===
-    'truefalse'
-  ) {
-    if (
+    'truefalse' &&
+    (
       !Array.isArray(
         raw.statements
       ) ||
       raw.statements.length <
         2
-    ) {
-      return null;
-    }
-
-    if (
-      !raw.statements.every(
-        (statement) =>
-          statement &&
-          typeof statement.text ===
-            'string'
-      )
-    ) {
-      return null;
-    }
-  }
-
-  // Short answer
+    )
+  )
+    return null;
 
   if (
     raw.type ===
-    'shortanswer'
-  ) {
-    if (
-      !sanitizeText(
-        raw.shortAnswer
-      )
-    ) {
-      return null;
-    }
-  }
-
-  // Cause effect
+    'shortanswer' &&
+    !clean(
+      raw.shortAnswer
+    )
+  )
+    return null;
 
   if (
     raw.type ===
-    'causeeffect'
-  ) {
-    if (
-      !sanitizeText(
-        raw.cause
-      ) ||
-      !sanitizeText(
-        raw.effect
-      )
-    ) {
-      return null;
-    }
-
-    if (
+      'causeeffect' &&
+    (
+      !clean(raw.cause) ||
+      !clean(raw.effect) ||
       typeof raw.isCauseTrue !==
         'boolean' ||
       typeof raw.isEffectTrue !==
         'boolean'
-    ) {
-      return null;
-    }
-  }
-
-  // Matching
+    )
+  )
+    return null;
 
   if (
     raw.type ===
-    'matching'
-  ) {
-    if (
+      'matching' &&
+    (
       !Array.isArray(
         raw.matchingPairs
       ) ||
       raw.matchingPairs.length <
         3
-    ) {
-      return null;
-    }
-  }
-
-  // Reading
+    )
+  )
+    return null;
 
   if (
     raw.type ===
-    'reading'
-  ) {
-    if (
-      !sanitizeText(
+      'reading' &&
+    (
+      !clean(
         raw.readingText
-      )
-    ) {
-      return null;
-    }
-
-    if (
+      ) ||
       !Array.isArray(
         raw.subQuestions
       ) ||
       raw.subQuestions.length <
         3
+    )
+  )
+    return null;
+
+  // DIRECT SOURCE MODE:
+  // wajib benar-benar berasal dari isi halaman.
+  let source = null;
+
+  if (
+    sourceMode ===
+    'source'
+  ) {
+    if (
+      !Number.isInteger(
+        raw.sourceIndex
+      )
+    )
+      return null;
+
+    source =
+      sources[
+        raw.sourceIndex
+      ];
+
+    if (!source)
+      return null;
+
+    const pageText =
+      normalize(
+        source.content
+      );
+
+    const questionText =
+      normalize(
+        question
+      );
+
+    // Guard terhadap hallucination:
+    // pertanyaan harus dapat ditemukan
+    // di teks halaman sumber.
+    if (
+      questionText.length >=
+        25 &&
+      !pageText.includes(
+        questionText
+      )
     ) {
       return null;
     }
   }
 
-  // ==========================================================
-  // VISUAL
-  // ==========================================================
-
   let qImage =
-    '';
-
-  let visualRequired =
-    false;
+    clean(
+      raw.questionImageUrl ||
+        ''
+    );
 
   let visualKind =
-    'none';
-
-  let needsImage =
-    false;
-
-  let imageHint =
-    '';
+    qImage
+      ? 'source-photo'
+      : 'none';
 
   if (
     raw.clock
   ) {
     qImage =
-      buildClockImageSvg(
+      makeClock(
         raw.clock
       );
 
-    visualRequired =
-      true;
-
     visualKind =
       'clock';
-  } else if (
-    raw.graph
-  ) {
-    qImage =
-      buildGraphImageSvg(
-        raw.graph
-      );
-
-    visualRequired =
-      true;
-
-    visualKind =
-      'graph';
-  } else if (
-    raw.shape
-  ) {
-    qImage =
-      buildShapeImageSvg(
-        raw.shape
-      );
-
-    visualRequired =
-      true;
-
-    visualKind =
-      'shape';
-  } else if (
-    raw.pattern
-  ) {
-    qImage =
-      buildPatternImageSvg(
-        raw.pattern
-      );
-
-    visualRequired =
-      true;
-
-    visualKind =
-      'pattern';
-  } else if (
-    raw.needs_image
-  ) {
-    needsImage =
-      true;
-
-    imageHint =
-      sanitizeText(
-        raw.image_keyword ||
-          ''
-      );
-
-    visualRequired =
-      true;
-
-    visualKind =
-      'photo';
   }
 
-  // Jika soal mengharuskan
-  // gambar tapi tidak ada visual,
-  // TOLAK.
+  const optionImages =
+    Array.isArray(
+      raw.optionImageUrls
+    )
+      ? raw.optionImageUrls.map(
+          (url) =>
+            clean(url)
+        )
+      : [];
+
+  const optionsAreImages =
+    optionImages.length >= 2 &&
+    optionImages.some(
+      Boolean
+    );
+
+  const needsImage =
+    Boolean(
+      raw.needsImage
+    );
+
+  const visualRequired =
+    Boolean(
+      qImage ||
+        optionsAreImages ||
+        needsImage ||
+        hasVisualCue(
+          question
+        )
+    );
 
   if (
-    hasVisualCue(
-      question
-    ) &&
+    visualRequired &&
     !qImage &&
+    !optionsAreImages &&
     !needsImage
   ) {
     return null;
@@ -1870,335 +1233,163 @@ function validateQuestion(
         raw.options
       )
         ? raw.options.map(
-            sanitizeText
+            clean
           )
-        : undefined,
+        : [],
+
+    optionImages,
+
+    optionsAreImages,
 
     correct:
       Number.isInteger(
         raw.correct
       )
         ? raw.correct
-        : undefined,
+        : 0,
 
     correctAnswers:
       Array.isArray(
         raw.correctAnswers
       )
         ? raw.correctAnswers
-        : undefined,
+        : [],
 
     statements:
       Array.isArray(
         raw.statements
       )
-        ? raw.statements.map(
-            (statement) => ({
-              text:
-                sanitizeText(
-                  statement?.text ||
-                    ''
-                ),
-
-              isTrue:
-                Boolean(
-                  statement?.isTrue
-                ),
-            })
-          )
-        : undefined,
-
-    shortAnswer:
-      sanitizeText(
-        raw.shortAnswer ||
-          ''
-      ) ||
-      undefined,
-
-    cause:
-      sanitizeText(
-        raw.cause ||
-          ''
-      ) ||
-      undefined,
-
-    effect:
-      sanitizeText(
-        raw.effect ||
-          ''
-      ) ||
-      undefined,
-
-    isCauseTrue:
-      typeof raw.isCauseTrue ===
-      'boolean'
-        ? raw.isCauseTrue
-        : undefined,
-
-    isEffectTrue:
-      typeof raw.isEffectTrue ===
-      'boolean'
-        ? raw.isEffectTrue
-        : undefined,
-
-    matchingPairs:
-      Array.isArray(
-        raw.matchingPairs
-      )
-        ? raw.matchingPairs.map(
-            (pair) => ({
-              left:
-                sanitizeText(
-                  pair?.left ||
-                    ''
-                ),
-
-              right:
-                sanitizeText(
-                  pair?.right ||
-                    ''
-                ),
-            })
-          )
-        : undefined,
+        ? raw.statements
+        : [],
 
     readingText:
-      sanitizeText(
+      clean(
         raw.readingText ||
           ''
-      ) ||
-      undefined,
+      ),
 
     subQuestions:
       Array.isArray(
         raw.subQuestions
       )
-        ? raw.subQuestions.map(
-            (subQuestion) => ({
-              q:
-                sanitizeText(
-                  subQuestion?.q ||
-                    ''
-                ),
+        ? raw.subQuestions
+        : [],
 
-              options:
-                Array.isArray(
-                  subQuestion?.options
-                )
-                  ? subQuestion.options.map(
-                      sanitizeText
-                    )
-                  : [],
+    shortAnswer:
+      clean(
+        raw.shortAnswer ||
+          ''
+      ),
 
-              correct:
-                subQuestion?.correct,
-            })
-          )
-        : undefined,
+    cause:
+      clean(
+        raw.cause ||
+          ''
+      ),
+
+    effect:
+      clean(
+        raw.effect ||
+          ''
+      ),
+
+    isCauseTrue:
+      typeof raw.isCauseTrue ===
+      'boolean'
+        ? raw.isCauseTrue
+        : true,
+
+    isEffectTrue:
+      typeof raw.isEffectTrue ===
+      'boolean'
+        ? raw.isEffectTrue
+        : true,
+
+    matchingPairs:
+      Array.isArray(
+        raw.matchingPairs
+      )
+        ? raw.matchingPairs
+        : [],
 
     explanation:
-      sanitizeText(
+      clean(
         raw.explanation ||
           ''
       ),
 
-    qImage:
-      qImage ||
-      undefined,
+    answerVerification:
+      clean(
+        raw.answerVerification ||
+          ''
+      ),
+
+    analysisSummary:
+      clean(
+        raw.analysisSummary ||
+          ''
+      ),
+
+    qImage,
 
     needsImage,
 
-    imageHint,
+    imageHint:
+      clean(
+        raw.imageHint ||
+          ''
+      ),
 
-    imageSource:
-      null,
+    researchBacked:
+      true,
+
+    researchSources:
+      sourceMode ===
+      'source'
+        ? [
+            {
+              title:
+                source.title,
+              url:
+                source.url,
+            },
+          ]
+        : sources.map(
+            (item) => ({
+              title:
+                item.title,
+              url:
+                item.url,
+            })
+          ),
+
+    sourceMode,
+
+    sourceIndex:
+      Number.isInteger(
+        raw.sourceIndex
+      )
+        ? raw.sourceIndex
+        : null,
+
+    sourceQuestionVerbatim:
+      Boolean(
+        raw.sourceQuestionVerbatim
+      ),
+
+    sourceTitle:
+      source?.title ||
+      '',
+
+    sourceUrl:
+      source?.url ||
+      '',
 
     visualRequired,
 
     visualKind,
-
-    researchBacked:
-      false,
-
-    researchSources:
-      [],
   };
-}
-
-// ============================================================
-// PROMPT
-// ============================================================
-
-const buildSystemPrompt = ({
-  allowedTypes,
-  researchMode,
-  targetYear,
-  hotsLevel,
-}) => `
-Kamu adalah penyusun soal profesional untuk Bimbel Gemilang.
-
-MODE:
-${
-  researchMode
-    ? `
-Sistem sudah memberikan bahan riset dari internet.
-
-Gunakan bahan tersebut untuk:
-- menemukan topik yang sering muncul,
-- memahami bentuk soal,
-- memahami model stimulus,
-- memahami kompetensi,
-- memahami tingkat kesulitan,
-- memahami pola visual.
-
-JANGAN mengklaim soal sebagai bocoran.
-JANGAN mengklaim mengetahui soal ujian masa depan.
-JANGAN menyalin satu soal sumber kata demi kata.
-
-Buat SOAL LATIHAN BARU berdasarkan pola dan kompetensi
-yang didukung oleh bahan riset.
-`
-    : `
-Buat soal original berdasarkan topik.
-`
-}
-
-TARGET LATIHAN:
-${targetYear}
-
-ATURAN WAJIB:
-
-1. Mapel harus sesuai.
-
-2. Topik harus sesuai.
-
-3. Jenjang harus sesuai.
-
-4. Jangan memasukkan konteks tidak relevan.
-
-5. Semua jawaban harus diverifikasi.
-
-6. Untuk matematika/fisika/kimia:
-   hitung ulang sebelum menentukan kunci.
-
-7. Distraktor harus masuk akal.
-
-8. Pembahasan harus menjelaskan jawaban.
-
-9. Jangan membuat soal duplikat.
-
-10. Jangan menggunakan markdown.
-
-11. Jangan membuat kalimat "lihat gambar"
-    jika gambar tidak tersedia.
-
-12. Gunakan visual hanya jika benar-benar
-    diperlukan oleh soal.
-
-VISUAL:
-
-CLOCK:
-"clock":{"hour":8,"minute":30}
-
-GRAPH:
-"graph":{"points":[...],"highlight":[...]}
-
-SHAPE:
-"shape":{"vertices":[...],"labels":[...]}
-
-PATTERN:
-"pattern":{"sequence":[...]}
-
-FOTO NYATA:
-"needs_image":true,
-"image_keyword":"english keyword"
-
-TIPE SOAL YANG DIIZINKAN & SKEMA JSON WAJIB PER TIPE:
-
-// 🔥 FIX BUG AKAR "0 soal lolos quality gate padahal isinya benar":
-// sebelumnya prompt ini SAMA SEKALI TIDAK MENYEBUTKAN nama field JSON
-// yang wajib dipakai per tipe soal -- cuma daftar nama tipe ("multiple",
-// "truefalse", dst) tanpa skemanya. Tanpa arahan itu, Gemini menebak
-// sendiri nama field yang "masuk akal" secara bahasa natural -- misalnya
-// "answer":"0,90" (TEKS jawabannya) -- padahal validator di backend
-// (lihat validateQuestion()) menunggu field "correct" berisi ANGKA
-// INDEKS (0-3) ke array "options", BUKAN teks jawaban. Soalnya sendiri
-// benar secara matematis/isi, tapi karena nama field & tipe datanya gak
-// cocok satu-satu dengan yang divalidasi, SEMUA soal ditolak quality
-// gate walau isinya bagus. Sekarang skema PERSIS per tipe (nama field +
-// tipe data + jumlah minimum array) ditulis eksplisit supaya Gemini
-// gak perlu nebak.
-
-WAJIB PATUHI SKEMA INI PERSIS (nama field, huruf besar/kecil, dan tipe
-datanya harus SAMA PERSIS -- JANGAN pakai nama field lain walau
-maknanya sama, misal JANGAN pakai "answer" untuk kunci jawaban):
-
-multiple:
-{"type":"multiple","question":"...","options":["A","B","C","D"],"correct":0,"explanation":"..."}
-- "options" HARUS tepat 4 string.
-- "correct" HARUS ANGKA INDEKS 0/1/2/3 (posisi jawaban benar di
-  "options"), BUKAN teks jawabannya, BUKAN huruf (A/B/C/D).
-
-multiselect:
-{"type":"multiselect","question":"...","options":["A","B","C",...],"correctAnswers":[0,2],"explanation":"..."}
-- "options" minimal 2 string.
-- "correctAnswers" HARUS array ANGKA INDEKS (bisa lebih dari satu),
-  BUKAN array teks jawaban.
-
-truefalse:
-{"type":"truefalse","question":"...","statements":[{"text":"...","isTrue":true},{"text":"...","isTrue":false}],"explanation":"..."}
-- "statements" minimal 2 object, tiap object wajib punya "text" (string)
-  dan "isTrue" (boolean true/false).
-
-shortanswer:
-{"type":"shortanswer","question":"...","shortAnswer":"jawaban singkatnya","explanation":"..."}
-
-causeeffect:
-{"type":"causeeffect","question":"...","cause":"pernyataan sebab","effect":"pernyataan akibat","isCauseTrue":true,"isEffectTrue":true,"explanation":"..."}
-- "isCauseTrue" dan "isEffectTrue" WAJIB boolean true/false.
-
-matching:
-{"type":"matching","question":"...","matchingPairs":[{"left":"...","right":"..."},{"left":"...","right":"..."},{"left":"...","right":"..."}],"explanation":"..."}
-- "matchingPairs" minimal 3 pasang.
-
-reading:
-{"type":"reading","question":"...","readingText":"teks bacaan lengkap","subQuestions":[{"q":"...","options":["A","B","C","D"],"correct":0},{"q":"...","options":[...],"correct":0},{"q":"...","options":[...],"correct":0}],"explanation":"..."}
-- "readingText" wajib diisi teks bacaannya.
-- "subQuestions" minimal 3 object, tiap object skemanya sama seperti
-  tipe "multiple" ("correct" = indeks angka, bukan teks jawaban).
-
-Field "explanation" WAJIB diisi di SEMUA tipe (pembahasan kenapa
-jawaban itu benar).
-
-TIPE SOAL YANG DIIZINKAN UNTUK REQUEST INI:
-
-${allowedTypes
-  .map(
-    (type) =>
-      `- ${type}`
-  )
-  .join('\n')}
-
-FORMAT OUTPUT:
-
-Baris pertama:
-{"meta":true}
-
-Setiap soal:
-SATU OBJECT JSON DALAM SATU BARIS, MENGIKUTI SKEMA DI ATAS PERSIS.
-
-Tanpa:
-- markdown,
-- code fence,
-- komentar,
-- teks di luar JSONL.
-
-${
-  hotsLevel
-    ? `\nLEVEL HOTS: ${hotsLevel}`
-    : ''
-}
-`;
+};
 
 // ============================================================
 // HANDLER
@@ -2212,24 +1403,24 @@ export default async function handler(
     req.method !==
     'POST'
   ) {
-    return res.status(
-      405
-    ).json({
-      error:
-        'Method not allowed',
-    });
+    return res
+      .status(405)
+      .json({
+        error:
+          'Method not allowed',
+      });
   }
 
   if (
     !process.env
       .GEMINI_API_KEY
   ) {
-    return res.status(
-      500
-    ).json({
-      error:
-        'GEMINI_API_KEY belum tersedia di environment Vercel.',
-    });
+    return res
+      .status(500)
+      .json({
+        error:
+          'GEMINI_API_KEY belum tersedia.',
+      });
   }
 
   const {
@@ -2239,42 +1430,39 @@ export default async function handler(
     jumlahSoal,
     types,
     arahan,
-    useTrendSearch,
-    hotsLevel,
     targetYear,
+    hotsLevel,
+    sourceMode,
   } =
     req.body || {};
 
   if (
-    !String(
-      topic || ''
-    ).trim()
+    !clean(topic)
   ) {
-    return res.status(
-      400
-    ).json({
-      error:
-        'Topik wajib diisi.',
-    });
+    return res
+      .status(400)
+      .json({
+        error:
+          'Topik wajib diisi.',
+      });
   }
 
-  const requested =
-    parseInt(
-      jumlahSoal,
-      10
-    );
+  const mode =
+    sourceMode ===
+    'prediction'
+      ? 'prediction'
+      : 'source';
 
-  const jumlah =
+  const count =
     Math.min(
       Math.max(
-        Number.isFinite(
-          requested
-        )
-          ? requested
-          : 5,
+        parseInt(
+          jumlahSoal,
+          10
+        ) || 5,
         1
       ),
-      MAX_BATCH_QUESTIONS
+      MAX_BATCH
     );
 
   const allowedTypes =
@@ -2285,255 +1473,274 @@ export default async function handler(
       ? types
       : ['multiple'];
 
-  const researchMode =
-    Boolean(
-      useTrendSearch
-    );
-
-  const finalTargetYear =
+  const year =
     targetYear ||
-    String(
-      new Date().getFullYear() +
-        1
+    new Date().getFullYear() +
+      1;
+
+  // ----------------------------------------------------------
+  // SEARCH
+  // ----------------------------------------------------------
+
+  const queries =
+    buildQueries({
+      topic,
+      mapel,
+      kelas,
+      targetYear:
+        year,
+      sourceMode:
+        mode,
+    });
+
+  const searchResults =
+    [];
+
+  const searchErrors =
+    [];
+
+  for (
+    const query of
+      queries
+  ) {
+    try {
+      const result =
+        await searchWeb(
+          query
+        );
+
+      searchResults.push(
+        ...result
+      );
+    } catch (
+      error
+    ) {
+      searchErrors.push({
+        query,
+        error:
+          error.message,
+      });
+    }
+
+    await sleep(
+      500
     );
+  }
 
-  // ==========================================================
-  // 1. SEARCH INTERNET
-  // ==========================================================
+  // Deduplicate
+  const seen =
+    new Set();
 
-  let sources = [];
+  const uniqueSearch =
+    searchResults.filter(
+      (item) => {
+        if (
+          !item.url
+        )
+          return false;
+
+        if (
+          seen.has(
+            item.url
+          )
+        )
+          return false;
+
+        seen.add(
+          item.url
+        );
+
+        return true;
+      }
+    );
 
   if (
-    researchMode
+    uniqueSearch.length ===
+    0
   ) {
-    const queries =
-      buildResearchQueries({
-        topic,
-        mapel,
-        kelas,
-        targetYear:
-          finalTargetYear,
-      });
-
-    const allSources =
-      [];
-
-    // 🔥 FIX BUG AKAR "1 query gagal = seluruh riset dibatalkan":
-    // sebelumnya `for` loop di sini dibungkus SATU try/catch besar --
-    // begitu SATU SAJA dari 4 query melempar error (misal kena rate
-    // limit sesaat, koneksi putus sebentar, atau -- sebelum fix di
-    // searchWebFree() di atas -- "422 no results"), exception itu
-    // langsung LOMPAT KELUAR loop dan MEMBATALKAN SISA QUERY yang belum
-    // sempat dicoba, walau mereka mungkin bakal berhasil. Sekarang tiap
-    // query dicoba dalam try/catch SENDIRI-SENDIRI di dalam loop -- kalau
-    // satu gagal, dicatat lalu lanjut ke query berikutnya. Baru kalau
-    // BENERAN SEMUA query gagal/kosong, laporkan error ke user (dengan
-    // detail masing-masing query biar gampang didiagnosis).
-    const queryErrors = [];
-
-    for (
-      const query of
-        queries
-    ) {
-      try {
-        const results =
-          await searchWebFree(
-            query
-          );
-
-        allSources.push(
-          ...results
-        );
-      } catch (
-        error
-      ) {
-        console.error(
-          '[Gemilang Web Search]',
-          query,
-          error.message
-        );
-
-        queryErrors.push({
-          query,
-          message: error.message,
-        });
-      }
-    }
-
-    if (
-      allSources.length ===
-        0 &&
-      queryErrors.length ===
-        queries.length
-    ) {
-      // Semua query gagal total (bukan cuma "kebetulan kosong") --
-      // baru di titik ini proses riset benar-benar dihentikan.
-      return res.status(
-        502
-      ).json({
+    return res
+      .status(502)
+      .json({
         error:
-          'Pencarian internet gratis gagal. Batch dihentikan agar sistem tidak berpura-pura berbasis internet.',
+          'Sistem tidak menemukan sumber internet yang dapat dibaca.',
         debug:
-          queryErrors,
+          searchErrors,
       });
-    }
+  }
 
-    // Deduplicate berdasarkan URL
-    const seenUrls =
-      new Set();
+  // ----------------------------------------------------------
+  // READ ACTUAL PAGES
+  // ----------------------------------------------------------
 
-    sources =
-      allSources
-        .filter(
-          (source) => {
-            if (
-              !source.url
-            ) {
-              return true;
-            }
+  const pageResults =
+    [];
 
-            if (
-              seenUrls.has(
-                source.url
-              )
-            ) {
-              return false;
-            }
-
-            seenUrls.add(
-              source.url
-            );
-
-            return true;
-          }
-        )
-        .slice(
-          0,
-          12
-        );
+  for (
+    const result of
+      uniqueSearch.slice(
+        0,
+        8
+      )
+  ) {
+    const page =
+      await readPage(
+        result
+      );
 
     if (
-      sources.length ===
-      0
+      page.content &&
+      page.content.length >
+        100
     ) {
-      return res.status(
-        502
-      ).json({
-        error:
-          'Tidak ditemukan sumber web yang cukup relevan.',
-      });
+      pageResults.push(
+        page
+      );
     }
   }
 
-  // ==========================================================
-  // 2. PROMPT
-  // ==========================================================
+  if (
+    pageResults.length ===
+    0
+  ) {
+    return res
+      .status(502)
+      .json({
+        error:
+          'Sumber ditemukan, tetapi halaman sumber tidak dapat dibaca.',
+      });
+  }
 
-  const systemPrompt =
-    buildSystemPrompt({
-      allowedTypes,
-      researchMode,
-      targetYear:
-        finalTargetYear,
-      hotsLevel:
-        hotsLevel || '',
-    });
+  // ----------------------------------------------------------
+  // RESEARCH PACK
+  // ----------------------------------------------------------
 
   const sourcePack =
-    researchMode
-      ? sources
-          .map(
-            (
-              source,
-              index
-            ) => `
-SUMBER ${index + 1}
-Judul:
-${
-  source.title ||
-  '(tanpa judul)'
-}
+    pageResults
+      .map(
+        (
+          page,
+          index
+        ) => `
+SOURCE_INDEX: ${index}
+
+TITLE:
+${page.title}
 
 URL:
-${
-  source.url ||
-  '(tanpa URL)'
-}
+${page.url}
 
-Isi:
-${
-  source.content ||
-  '(tidak ada isi)'
-}
+PAGE_TEXT:
+${page.content.slice(
+  0,
+  15000
+)}
+
+IMAGE_ASSETS:
+${page.images
+  .slice(0, 20)
+  .map(
+    (img, imgIndex) =>
+      `[${imgIndex}] ${img.url} | ALT: ${img.alt}`
+  )
+  .join('\n')}
 `
-          )
-          .join(
-            '\n'
-          )
-      : '';
+      )
+      .join(
+        '\n-----------------\n'
+      );
+
+  const systemPrompt =
+    buildPrompt({
+      sourceMode:
+        mode,
+      targetYear:
+        year,
+      types:
+        allowedTypes,
+    });
 
   const userPrompt = `
-MATA PELAJARAN:
+BIMBEL GEMILANG
+
+MAPEL:
 ${mapel || 'Umum'}
 
-TOPIK:
-${String(topic).trim()}
-
-JENJANG/KELAS:
+KELAS:
 ${kelas || 'SMP'}
 
-TARGET TAHUN LATIHAN:
-${finalTargetYear}
+TOPIK:
+${clean(topic)}
 
-JUMLAH SOAL:
-${jumlah}
+TARGET:
+${year}
+
+JUMLAH:
+${count}
 
 TIPE:
 ${allowedTypes.join(
   ', '
 )}
 
-${
-  arahan?.trim()
-    ? `
+HOTS:
+${hotsLevel || 'standar'}
+
 ARAHAN GURU:
-${arahan.trim()}
-`
-    : ''
-}
+${clean(
+  arahan || ''
+)}
 
-${
-  researchMode
-    ? `
-BAHAN RISET INTERNET:
-
+DATA SUMBER INTERNET:
 ${sourcePack}
 
-Gunakan bahan ini untuk menentukan:
-- kompetensi,
-- pola,
-- tipe stimulus,
-- tingkat kesulitan,
-- variasi soal.
+${
+  mode ===
+  'source'
+    ? `
+TUGAS:
+Ambil ${count} soal yang benar-benar terdapat pada sumber.
+JANGAN membuat soal baru.
 
-Buat soal latihan baru.
-Jangan menyalin teks soal sumber.
+Untuk setiap soal:
+- sourceIndex wajib
+- pertanyaan berasal dari sumber
+- pilihan berasal dari sumber
+- jika ada gambar soal, pilih URL yang memang terdapat pada halaman
+- jika pilihan merupakan gambar, gunakan optionImageUrls
+- tentukan kunci
+- berikan verifikasi
+- berikan pembahasan detail
 `
-    : ''
+    : `
+TUGAS PREDIKSI:
+Kumpulkan pola dari semua sumber.
+Identifikasi kompetensi yang sering muncul.
+Identifikasi HOTS.
+Identifikasi stimulus visual.
+Kemudian susun ${count} soal latihan baru.
+
+Soal tidak boleh diklaim sebagai bocoran.
+`
 }
 
-Buat ${jumlah} soal valid.
-Prioritaskan akurasi daripada memaksakan jumlah.
+OUTPUT:
+Baris pertama:
+{"meta":true}
+
+Setiap baris berikutnya:
+satu object JSON.
+
+Jangan output penjelasan di luar JSON.
 `;
 
-  // ==========================================================
-  // 3. GEMINI
-  // ==========================================================
+  // ----------------------------------------------------------
+  // GEMINI
+  // ----------------------------------------------------------
 
-  let geminiData;
+  let gemini;
 
   try {
-    geminiData =
+    gemini =
       await callGemini(
         systemPrompt,
         userPrompt
@@ -2541,124 +1748,43 @@ Prioritaskan akurasi daripada memaksakan jumlah.
   } catch (
     error
   ) {
-    console.error(
-      '[Gemilang Gemini]',
-      error.message
-    );
-
-    const message =
-      String(
-        error.message ||
-          ''
-      );
-
-    if (
-      message.includes(
-        '404'
+    return res
+      .status(
+        String(
+          error.message
+        ).includes(
+          '429'
+        )
+          ? 429
+          : 502
       )
-    ) {
-      return res.status(
-        502
-      ).json({
+      .json({
         error:
-          `Model Gemini ("${GEMINI_MODEL}") tidak tersedia untuk API key/project ini. Pastikan API key Vercel adalah API key Gemini terbaru, dan cek daftar model yang benar-benar tersedia di Google AI Studio.`,
+          'Gemini gagal menganalisis hasil riset.',
         debug:
-          message,
+          error.message,
       });
-    }
-
-    if (
-      message.includes(
-        '401'
-      ) ||
-      message.includes(
-        '403'
-      )
-    ) {
-      return res.status(
-        502
-      ).json({
-        error:
-          'GEMINI_API_KEY ditolak. Periksa API key pada Vercel.',
-        debug:
-          message,
-      });
-    }
-
-    if (
-      message.includes(
-        '429'
-      )
-    ) {
-      return res.status(
-        429
-      ).json({
-        error:
-          'Kuota gratis Gemini sedang mencapai batas. Tidak ada fallback berbayar.',
-        debug:
-          message,
-      });
-    }
-
-    return res.status(
-      502
-    ).json({
-      error:
-        'Gemini gagal membuat soal.',
-      debug:
-        message,
-    });
   }
 
-  // ==========================================================
-  // 4. EXTRACT TEXT
-  // ==========================================================
-
   const candidate =
-    geminiData
+    gemini
       ?.candidates?.[0];
 
   const rawText =
     candidate
       ?.content
       ?.parts
-      ?.filter(
-        (part) =>
-          typeof part?.text ===
-          'string'
-      )
       ?.map(
         (part) =>
-          part.text
+          part?.text || ''
       )
-      ?.join(
-        '\n'
-      ) || '';
-
-  if (
-    !rawText.trim()
-  ) {
-    return res.status(
-      502
-    ).json({
-      error:
-        'Gemini tidak mengembalikan soal.',
-    });
-  }
-
-  const fixedText =
-    sanitizeLatexEscapes(
-      rawText
-    );
+      .join('\n') ||
+    '';
 
   const objects =
-    extractJsonObjects(
-      fixedText
+    extractJson(
+      rawText
     );
-
-  // ==========================================================
-  // 5. QUALITY GATE
-  // ==========================================================
 
   const questions =
     [];
@@ -2667,58 +1793,37 @@ Prioritaskan akurasi daripada memaksakan jumlah.
     new Set();
 
   for (
-    const rawQuestion of
+    const raw of
       objects
   ) {
     const question =
       validateQuestion(
-        rawQuestion,
-        allowedTypes
+        raw,
+        allowedTypes,
+        pageResults,
+        mode
       );
 
     if (
       !question
-    ) {
+    )
       continue;
-    }
 
     const fingerprint =
-      `${question.type}|${question.question
-        .toLowerCase()
-        .replace(/\s+/g, ' ')
-        .trim()}`;
+      normalize(
+        question.question
+      );
 
     if (
       fingerprints.has(
         fingerprint
       )
-    ) {
+    )
       continue;
-    }
 
     fingerprints.add(
       fingerprint
     );
-
-    if (
-      researchMode
-    ) {
-      question.researchBacked =
-        true;
-
-      question.researchSources =
-        sources.map(
-          (source) => ({
-            title:
-              source.title ||
-              '',
-
-            url:
-              source.url ||
-              '',
-          })
-        );
-    }
 
     questions.push(
       question
@@ -2726,108 +1831,76 @@ Prioritaskan akurasi daripada memaksakan jumlah.
 
     if (
       questions.length >=
-      jumlah
-    ) {
+      count
+    )
       break;
-    }
   }
-
-  // ==========================================================
-  // NO VALID RESULT
-  // ==========================================================
 
   if (
     questions.length ===
     0
   ) {
-    // 🔥 BARU: sebelumnya kegagalan di titik ini cuma dikasih pesan
-    // generik tanpa info lanjutan -- padahal "0 soal lolos" bisa
-    // disebabkan macam-macam hal berbeda yang butuh diagnosis berbeda
-    // juga (respons Gemini kepotong kehabisan token, format JSON-nya
-    // rusak duluan sebelum sempat di-parse, atau JSON-nya valid tapi
-    // semua ditolak validasi tipe/isi). Sekarang debug info-nya
-    // disertakan supaya kelihatan jelas persis di titik mana macetnya.
-    return res.status(
-      502
-    ).json({
-      error:
-        researchMode
-          ? 'Tidak ada soal yang lolos quality gate setelah riset internet.'
-          : 'Tidak ada soal valid yang berhasil dibuat.',
+    return res
+      .status(502)
+      .json({
+        error:
+          mode ===
+          'source'
+            ? 'Tidak ada soal internet yang lolos verifikasi sumber.'
+            : 'Tidak ada soal prediksi yang lolos quality gate.',
+        debug: {
+          parsed:
+            objects.length,
+          rawText:
+            rawText.slice(
+              0,
+              1000
+            ),
+        },
 
-      debug: {
-        finishReason:
-          candidate?.finishReason || null,
-        parsedObjectCount:
-          objects.length,
-        rawTextLength:
-          rawText.length,
-        rawTextSample:
-          rawText.slice(0, 400),
-      },
-
-      researchSources:
-        sources.map(
-          (source) => ({
-            title:
-              source.title ||
-              '',
-            url:
-              source.url ||
-              '',
-          })
-        ),
-    });
+        researchSources:
+          pageResults.map(
+            (page) => ({
+              title:
+                page.title,
+              url:
+                page.url,
+            })
+          ),
+      });
   }
 
-  // ==========================================================
-  // RESPONSE
-  // ==========================================================
+  return res
+    .status(200)
+    .json({
+      success:
+        true,
 
-  return res.status(
-    200
-  ).json({
-    success:
-      true,
+      sourceMode:
+        mode,
 
-    questions,
+      questions,
 
-    requestedCount:
-      jumlah,
+      requestedCount:
+        count,
 
-    returnedCount:
-      questions.length,
+      returnedCount:
+        questions.length,
 
-    maxBatchSize:
-      MAX_BATCH_QUESTIONS,
+      maxBatchSize:
+        MAX_BATCH,
 
-    possiblyTruncated:
-      questions.length <
-        jumlah ||
-      candidate?.finishReason ===
-        'MAX_TOKENS',
+      researchSources:
+        pageResults.map(
+          (page) => ({
+            title:
+              page.title,
+            url:
+              page.url,
+          })
+        ),
 
-    usedTrendSearch:
-      researchMode,
-
-    researchProvider:
-      researchMode
-        ? 'Jina Search'
-        : null,
-
-    researchSources:
-      sources.map(
-        (source) => ({
-          title:
-            source.title ||
-            '',
-          url:
-            source.url ||
-            '',
-        })
-      ),
-
-    model:
-      GEMINI_MODEL,
-  });
+      model:
+        GEMINI_MODEL,
+    });
 }

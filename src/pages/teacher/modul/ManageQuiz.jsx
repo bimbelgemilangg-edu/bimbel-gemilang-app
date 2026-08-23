@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { collection, addDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, where, orderBy } from "firebase/firestore";
+import { collection, addDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy } from "firebase/firestore";
 import { 
   Plus, Trash2, CheckCircle, ArrowLeft, Save, FileText, X, 
   Calculator, Target, BookOpen, Users, Send, Settings, 
@@ -127,79 +127,6 @@ const emptyQuestion = (idx = 0) => ({
   optionsAreImages: false,
   matchingPairs: [{ left: '', right: '' }, { left: '', right: '' }]
 });
-
-// ============================================================
-// 🔥 PROFESSIONAL AI BATCH SAFETY
-// ============================================================
-// Backend/AI boleh mengirim metadata tambahan saat generate bertahap.
-// Helper ini menjaga agar hasil batch selalu kompatibel dengan struktur
-// ManageQuiz lama, ID tidak bentrok, dan soal visual yang diwajibkan tidak
-// masuk tanpa gambar.
-// Tidak mengubah soal manual/Smart Import yang sudah ada.
-const normalizeAIQuestionBatch = (incoming, existingQuestions = []) => {
-  if (!Array.isArray(incoming)) return [];
-
-  const existingIds = new Set(existingQuestions.map(q => String(q?.id ?? '')));
-  const existingQuestionKeys = new Set(
-    existingQuestions
-      .map(q => String(q?.q || '').trim().toLowerCase().replace(/\s+/g, ' '))
-      .filter(Boolean)
-  );
-
-  const nowBase = Date.now();
-
-  return incoming
-    .map((raw, index) => {
-      if (!raw || typeof raw !== 'object') return null;
-
-      let id = raw.id;
-      if (id === undefined || id === null || existingIds.has(String(id))) {
-        id = nowBase + index + Math.floor(Math.random() * 1000);
-        while (existingIds.has(String(id))) id += 1;
-      }
-      existingIds.add(String(id));
-
-      const normalized = {
-        ...emptyQuestion(index),
-        ...raw,
-        id,
-        q: String(raw.q ?? raw.question ?? '').trim(),
-        qImage: String(raw.qImage ?? raw.questionImage ?? ''),
-        options: Array.isArray(raw.options) ? raw.options : ['', '', '', ''],
-        optionImages: Array.isArray(raw.optionImages) ? raw.optionImages : ['', '', '', ''],
-        correct: Number.isInteger(raw.correct) ? raw.correct : (Number.isInteger(raw.correctAnswer) ? raw.correctAnswer : 0),
-        correctAnswers: Array.isArray(raw.correctAnswers) ? raw.correctAnswers : [],
-        statements: Array.isArray(raw.statements) ? raw.statements : [{ text: '', isTrue: true }],
-        subQuestions: Array.isArray(raw.subQuestions) ? raw.subQuestions : [{ q: '', options: ['', '', '', ''], correct: 0 }],
-        matchingPairs: Array.isArray(raw.matchingPairs) ? raw.matchingPairs : [{ left: '', right: '' }, { left: '', right: '' }],
-        explanation: String(raw.explanation ?? ''),
-        needsImage: !!raw.needsImage,
-        imageHint: String(raw.imageHint ?? ''),
-        imageSource: raw.imageSource || null,
-        researchBacked: !!raw.researchBacked,
-        researchSources: Array.isArray(raw.researchSources) ? raw.researchSources : [],
-        visualRequired: !!raw.visualRequired,
-        visualKind: raw.visualKind || 'none',
-      };
-
-      // Jangan biarkan soal duplikat identik masuk ketika beberapa batch
-      // mengembalikan soal yang sama.
-      const key = normalized.q.toLowerCase().replace(/\s+/g, ' ');
-      if (key && existingQuestionKeys.has(key)) return null;
-      if (key) existingQuestionKeys.add(key);
-
-      // Soal yang secara eksplisit membutuhkan visual WAJIB membawa gambar.
-      // Ini menutup celah kasus "lihat gambar" tetapi gambar kosong.
-      if (normalized.visualRequired && !normalized.qImage) return null;
-
-      // Soal yang ditandai research-backed wajib punya minimal satu sumber.
-      if (normalized.researchBacked && normalized.researchSources.length === 0) return null;
-
-      return normalized;
-    })
-    .filter(Boolean);
-};
-
 
 // ============================================================
 // 🔥 BARU: DOWNLOAD SOAL & JAWABAN LENGKAP (PDF)
@@ -1013,6 +940,19 @@ const ManageQuiz = () => {
         qImage: q.questionImage || '',
         options: q.options || ['', '', '', ''],
         optionImages: q.optionImages || ['', '', '', ''],
+        // 🔥 PELENGKAP PERUBAHAN B: field-field baru ini harus ikut DIBACA
+        // BALIK juga waktu kuis dibuka lagi buat diedit. Kalau cuma
+        // disimpan tapi gak dibaca, nilainya balik ke default tiap kali
+        // guru buka kuisnya -- lalu ketimpa nilai default itu pas
+        // disimpan ulang, alias HILANG PERMANEN walau tadinya sudah benar
+        // tersimpan di database.
+        optionsAreImages: !!q.optionsAreImages,
+        answerVerification: q.answerVerification || '',
+        analysisSummary: q.analysisSummary || '',
+        sourceMode: q.sourceMode || 'source',
+        sourceQuestionVerbatim: !!q.sourceQuestionVerbatim,
+        sourceTitle: q.sourceTitle || '',
+        sourceUrl: q.sourceUrl || '',
         correct: q.correctAnswer || 0,
         correctAnswers: q.correctAnswers || [],
         explanation: q.explanation || '',
@@ -1329,38 +1269,17 @@ const ManageQuiz = () => {
   // ============================================================
   // 🔥 AI GENERATE DARI TOPIK - HASIL GENERATE
   // ============================================================
-  const handleAIQuizGenerated = (generatedPayload) => {
-    const generatedQuestions = Array.isArray(generatedPayload)
-      ? generatedPayload
-      : (generatedPayload?.questions || []);
-
+  const handleAIQuizGenerated = (generatedQuestions) => {
     if (!generatedQuestions || generatedQuestions.length === 0) {
-      showToast("⚠️ Tidak ada soal valid yang bisa dimasukkan ke editor.", 'error');
+      showToast("⚠️ AI tidak menghasilkan soal.", 'error');
       return;
     }
-
-    const previewNormalized = normalizeAIQuestionBatch(generatedQuestions, questions);
-    if (previewNormalized.length === 0) {
-      showToast(
-        "⚠️ Semua hasil batch ditolak karena duplikat, sumber riset tidak lengkap, atau visual wajib belum tersedia.",
-        'error'
-      );
-      return;
-    }
-
     setQuestions(prev => {
-      const normalized = normalizeAIQuestionBatch(generatedQuestions, prev);
-      if (normalized.length === 0) return prev;
-
       const isPrevEmpty = prev.length === 1 && !prev[0].q.trim() && !prev[0].qImage;
-      return isPrevEmpty ? normalized : [...prev, ...normalized];
+      return isPrevEmpty ? generatedQuestions : [...prev, ...generatedQuestions];
     });
-
     setIsAIGenerated(true);
-    showToast(
-      `✨ Batch AI berhasil diproses (${previewNormalized.length} soal diterima). Periksa soal sebelum diterbitkan.`,
-      'success'
-    );
+    showToast(`✨ ${generatedQuestions.length} soal berhasil dibuat AI! Cek dulu sebelum diterbitkan.`);
   };
 
   // ============================================================
@@ -2366,24 +2285,6 @@ const ManageQuiz = () => {
   const handleSaveQuiz = async () => {
     const valid = questions.filter(q => q.q.trim() || q.qImage);
     if (valid.length === 0) return alert("❌ Minimal 1 soal!");
-
-    const invalidVisual = valid.filter(q => q.visualRequired && !q.qImage);
-    if (invalidVisual.length > 0) {
-      return alert(
-        `❌ ${invalidVisual.length} soal membutuhkan gambar/diagram tetapi gambarnya belum tersedia. ` +
-        `Lengkapi atau hapus soal tersebut sebelum menyimpan.`
-      );
-    }
-
-    const invalidResearch = valid.filter(
-      q => q.researchBacked && (!Array.isArray(q.researchSources) || q.researchSources.length === 0)
-    );
-    if (invalidResearch.length > 0) {
-      return alert(
-        `❌ ${invalidResearch.length} soal ditandai berbasis riset tetapi tidak memiliki sumber. ` +
-        `Jangan simpan sampai sumber riset tersedia.`
-      );
-    }
     if (!quizTitle) return alert("❌ Judul kuis wajib diisi!");
     // 🔥 BARU: FIX BUG AKAR MASALAH "Mapel Umum" -- validasi ini yang
     // mastiin kuis TIDAK PERNAH bisa tersimpan lagi tanpa mapel & kodeMapel
@@ -2484,9 +2385,33 @@ const ManageQuiz = () => {
           questionImage: q.qImage || '',
           options: q.options || ['', '', '', ''],
           optionImages: q.optionImages || ['', '', '', ''],
+          // 🔥 PERUBAHAN B: penanda kalau PILIHAN JAWABAN soal ini berupa
+          // gambar (bukan teks). StudentQuizView sebenarnya SUDAH punya
+          // dukungan menampilkan opsi bergambar, tapi flag-nya gak pernah
+          // ikut tersimpan ke Firestore -- jadi di sisi siswa opsi
+          // gambarnya gak pernah aktif. Sekarang ikut disimpan.
+          optionsAreImages: !!q.optionsAreImages,
           correctAnswer: q.type === 'multiselect' ? null : (q.correct ?? 0),
           correctAnswers: q.type === 'multiselect' ? (q.correctAnswers || []) : [],
-          explanation: quizMode === 'advanced' ? (q.explanation || '') : '',
+          // 🔥 PERUBAHAN A: sebelumnya pembahasan CUMA disimpan kalau kuis
+          // dalam Mode Ujian (advanced) -- di mode biasa, `explanation`
+          // dipaksa jadi string kosong walau AI/guru sudah mengisinya,
+          // jadi pembahasannya HILANG PERMANEN begitu kuis disimpan.
+          // Padahal soal hasil riset internet selalu membawa pembahasan
+          // dan itu justru nilai utamanya. Sekarang selalu disimpan apa
+          // adanya, terlepas dari mode kuisnya.
+          explanation: q.explanation || '',
+          // 🔥 PERUBAHAN B: metadata hasil riset internet -- verifikasi
+          // kunci jawaban, ringkasan analisis, asal sumber (judul + URL),
+          // dan penanda mode (ambil-dari-sumber vs prediksi). Tanpa ini,
+          // jejak "soal ini datang dari mana dan kenapa kuncinya begitu"
+          // hilang begitu kuis disimpan.
+          answerVerification: q.answerVerification || '',
+          analysisSummary: q.analysisSummary || '',
+          sourceMode: q.sourceMode || 'source',
+          sourceQuestionVerbatim: !!q.sourceQuestionVerbatim,
+          sourceTitle: q.sourceTitle || '',
+          sourceUrl: q.sourceUrl || '',
           statements: q.type === 'truefalse' ? (q.statements || []) : [],
           readingText: q.type === 'reading' ? (q.readingText || '') : '',
           subQuestions: q.type === 'reading' ? (q.subQuestions || []) : [],
@@ -2521,13 +2446,22 @@ const ManageQuiz = () => {
         // langsung lihat nilai angka setelah submit, atau disembunyikan dulu
         // (misal guru mau cek/bahas manual sebelum siswa tau nilainya).
         showScoreToStudent: showScoreToStudent,
+        // 🔥 PERUBAHAN C: pengaturan "Tampilkan pembahasan" sebelumnya
+        // CUMA ikut tersimpan kalau kuis dalam Mode Ujian (advanced) --
+        // di mode biasa field ini gak pernah ada di dokumen sama sekali.
+        // Sisi siswa (StudentQuizView) membacanya dengan
+        // `data.showExplanation !== false`, jadi field yang hilang itu
+        // kebetulan masih jatuh ke "true"; tapi artinya pilihan guru buat
+        // MENYEMBUNYIKAN pembahasan di kuis biasa TIDAK PERNAH BERLAKU.
+        // Sekarang selalu disimpan supaya pengaturannya benar-benar
+        // dihormati di semua mode.
+        showExplanation: showExplanation !== false,
       };
 
       if (quizMode === 'advanced') {
         quizPayload.timeLimit = timeLimit;
         quizPayload.randomOrder = randomOrder;
         quizPayload.maxAttempts = maxAttempts;
-        quizPayload.showExplanation = showExplanation;
         quizPayload.difficulty = difficulty;
         quizPayload.antiCheatEnabled = antiCheatEnabled;
       }

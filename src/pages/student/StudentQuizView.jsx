@@ -548,6 +548,16 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           questionImage: q.questionImage || q.qImage || '',
           options: q.options || ['', '', '', ''],
           optionImages: q.optionImages || ['', '', '', ''],
+          // 🔥 FIX BUG: `optionsAreImages` gak pernah ikut dibaca dari
+          // Firestore ke sini, padahal tampilan di bawah (sekitar baris
+          // 1073) MEMANG sudah punya dukungan penuh menampilkan pilihan
+          // jawaban berupa gambar dan mengeceknya lewat field ini.
+          // Karena field-nya gak pernah ada di objek soal, nilainya
+          // selalu undefined alias "false" -- jadi soal yang pilihannya
+          // gambar tetap dirender sebagai teks kosong ke siswa, walau
+          // guru sudah mencentang opsinya dan gambarnya sudah tersimpan.
+          // Sekarang ikut dibaca (senada dengan matchingPairs di bawah).
+          optionsAreImages: Boolean(q.optionsAreImages),
           correctAnswer: q.correctAnswer || q.correct || 0,
           correctAnswers: q.correctAnswers || [],
           explanation: q.explanation || '',

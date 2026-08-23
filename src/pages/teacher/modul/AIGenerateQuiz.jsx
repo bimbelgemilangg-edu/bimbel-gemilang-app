@@ -1,23 +1,22 @@
 // src/pages/teacher/modul/AIGenerateQuiz.jsx
-// ============================================================
-// BIMBEL GEMILANG - AI QUIZ GENERATOR
-// SAFE REACT CLIENT COMPONENT
-// ============================================================
 
-import React, { useState } from 'react';
+import React, {
+  useState,
+} from 'react';
+
 import {
   Sparkles,
   X,
   Loader2,
   AlertCircle,
   Wand2,
-  FileQuestion,
   Globe,
   Brain,
+  CheckCircle,
 } from 'lucide-react';
 
 // ============================================================
-// TYPE OPTIONS
+// TYPES
 // ============================================================
 
 const TYPE_OPTIONS = [
@@ -66,189 +65,22 @@ const HOTS_OPTIONS = [
   },
 ];
 
-// ============================================================
-// NORMALIZER
-// ============================================================
-
-const normalizeQuestion = (
-  q,
-  index
-) => ({
-  id:
-    Date.now() +
-    index +
-    Math.floor(
-      Math.random() * 1000
-    ),
-
-  type:
-    q?.type ||
-    'multiple',
-
-  q:
-    q?.question ||
-    q?.q ||
-    '',
-
-  qImage:
-    q?.qImage ||
-    q?.questionImage ||
-    '',
-
-  options:
-    Array.isArray(
-      q?.options
-    ) &&
-    q.options.length
-      ? q.options
-      : ['', '', '', ''],
-
-  optionImages:
-    Array.isArray(
-      q?.optionImages
-    )
-      ? q.optionImages
-      : ['', '', '', ''],
-
-  correct:
-    typeof q?.correct ===
-    'number'
-      ? q.correct
-      : typeof q?.correctAnswer ===
-        'number'
-      ? q.correctAnswer
-      : 0,
-
-  correctAnswers:
-    Array.isArray(
-      q?.correctAnswers
-    )
-      ? q.correctAnswers
-      : [],
-
-  explanation:
-    q?.explanation ||
-    '',
-
-  statements:
-    Array.isArray(
-      q?.statements
-    ) &&
-    q.statements.length
-      ? q.statements
-      : [
-          {
-            text: '',
-            isTrue: true,
-          },
-        ],
-
-  readingText:
-    q?.readingText ||
-    '',
-
-  subQuestions:
-    Array.isArray(
-      q?.subQuestions
-    ) &&
-    q.subQuestions.length
-      ? q.subQuestions
-      : [
-          {
-            q: '',
-            options: [
-              '',
-              '',
-              '',
-              '',
-            ],
-            correct: 0,
-          },
-        ],
-
-  shortAnswer:
-    q?.shortAnswer ||
-    '',
-
-  cause:
-    q?.cause ||
-    '',
-
-  effect:
-    q?.effect ||
-    '',
-
-  isCauseTrue:
-    typeof q?.isCauseTrue ===
-    'boolean'
-      ? q.isCauseTrue
-      : true,
-
-  isEffectTrue:
-    typeof q?.isEffectTrue ===
-    'boolean'
-      ? q.isEffectTrue
-      : true,
-
-  matchingPairs:
-    Array.isArray(
-      q?.matchingPairs
-    ) &&
-    q.matchingPairs.length
-      ? q.matchingPairs
-      : [
-          {
-            left: '',
-            right: '',
-          },
-          {
-            left: '',
-            right: '',
-          },
-        ],
-
-  needsManualAnswer:
-    false,
-
-  optionsAreImages:
-    Boolean(
-      q?.optionsAreImages
-    ),
-
-  needsImage:
-    Boolean(
-      q?.needsImage
-    ),
-
-  imageHint:
-    q?.imageHint ||
-    '',
-
-  imageSource:
-    q?.imageSource ||
-    null,
-
-  researchBacked:
-    Boolean(
-      q?.researchBacked
-    ),
-
-  researchSources:
-    Array.isArray(
-      q?.researchSources
-    )
-      ? q.researchSources
-      : [],
-
-  visualRequired:
-    Boolean(
-      q?.visualRequired
-    ),
-
-  visualKind:
-    q?.visualKind ||
-    'none',
-});
+const SOURCE_MODES = [
+  {
+    id: 'source',
+    title:
+      '📚 Ambil Soal dari Internet',
+    description:
+      'Cari soal yang benar-benar sudah dipublikasikan. Soal boleh berulang.',
+  },
+  {
+    id: 'prediction',
+    title:
+      '🔮 Prediksi Berbasis Tren Internet',
+    description:
+      'Cari banyak sumber → analisis pola → susun latihan baru.',
+  },
+];
 
 // ============================================================
 // COMPONENT
@@ -265,305 +97,502 @@ const AIGenerateQuiz = ({
   const [kelas, setKelas] =
     useState('');
 
-  const [jumlahSoal, setJumlahSoal] =
-    useState(5);
+  const [targetCount, setTargetCount] =
+    useState(40);
 
   const [selectedTypes, setSelectedTypes] =
     useState(['multiple']);
 
-  const [arahan, setArahan] =
-    useState('');
-
-  const [useTrendSearch, setUseTrendSearch] =
-    useState(true);
+  const [sourceMode, setSourceMode] =
+    useState('source');
 
   const [targetYear, setTargetYear] =
     useState(
-      new Date().getFullYear() + 1
+      new Date().getFullYear() +
+        1
     );
 
   const [hotsLevel, setHotsLevel] =
     useState('');
 
+  const [arahan, setArahan] =
+    useState('');
+
   const [generating, setGenerating] =
     useState(false);
 
-  const [statusLabel, setStatusLabel] =
+  const [progress, setProgress] =
+    useState({
+      done: 0,
+      total: 40,
+    });
+
+  const [status, setStatus] =
     useState('');
 
   const [error, setError] =
     useState('');
 
-  const [
-    lastResearchSources,
-    setLastResearchSources,
-  ] = useState([]);
-
-  // ============================================================
-  // TYPE TOGGLE
-  // ============================================================
+  // ==========================================================
+  // TYPE
+  // ==========================================================
 
   const toggleType = (
-    typeId
+    id
   ) => {
     setSelectedTypes(
       (previous) =>
-        previous.includes(typeId)
+        previous.includes(id)
           ? previous.filter(
-              (item) =>
-                item !== typeId
+              (x) =>
+                x !== id
             )
           : [
               ...previous,
-              typeId,
+              id,
             ]
     );
   };
 
-  // ============================================================
-  // SAFE GENERATE
-  // ============================================================
-  // Sengaja bukan `async function` dan bukan async component.
-  // Request dijalankan melalui Promise chain.
-  // ============================================================
+  // ==========================================================
+  // CONVERSION
+  // ==========================================================
 
-  const handleGenerate = () => {
-    setError('');
-    setLastResearchSources([]);
+  const convertQuestion = (
+    q,
+    index
+  ) => ({
+    id:
+      Date.now() +
+      index +
+      Math.floor(
+        Math.random() *
+          100000
+      ),
 
-    const cleanTopic =
-      topic.trim();
+    type:
+      q.type ||
+      'multiple',
 
-    if (!cleanTopic) {
-      setError(
-        '❌ Topik/materi kuis wajib diisi!'
+    q:
+      q.question ||
+      '',
+
+    qImage:
+      q.qImage ||
+      '',
+
+    options:
+      Array.isArray(
+        q.options
+      )
+        ? q.options
+        : [
+            '',
+            '',
+            '',
+            '',
+          ],
+
+    optionImages:
+      Array.isArray(
+        q.optionImages
+      )
+        ? q.optionImages
+        : [],
+
+    optionsAreImages:
+      Boolean(
+        q.optionsAreImages
+      ),
+
+    correct:
+      typeof q.correct ===
+      'number'
+        ? q.correct
+        : 0,
+
+    correctAnswers:
+      Array.isArray(
+        q.correctAnswers
+      )
+        ? q.correctAnswers
+        : [],
+
+    explanation:
+      q.explanation ||
+      '',
+
+    answerVerification:
+      q.answerVerification ||
+      '',
+
+    analysisSummary:
+      q.analysisSummary ||
+      '',
+
+    statements:
+      Array.isArray(
+        q.statements
+      )
+        ? q.statements
+        : [],
+
+    readingText:
+      q.readingText ||
+      '',
+
+    subQuestions:
+      Array.isArray(
+        q.subQuestions
+      )
+        ? q.subQuestions
+        : [],
+
+    shortAnswer:
+      q.shortAnswer ||
+      '',
+
+    cause:
+      q.cause ||
+      '',
+
+    effect:
+      q.effect ||
+      '',
+
+    isCauseTrue:
+      typeof q.isCauseTrue ===
+      'boolean'
+        ? q.isCauseTrue
+        : true,
+
+    isEffectTrue:
+      typeof q.isEffectTrue ===
+      'boolean'
+        ? q.isEffectTrue
+        : true,
+
+    matchingPairs:
+      Array.isArray(
+        q.matchingPairs
+      )
+        ? q.matchingPairs
+        : [],
+
+    needsManualAnswer:
+      false,
+
+    needsImage:
+      Boolean(
+        q.needsImage
+      ),
+
+    imageHint:
+      q.imageHint ||
+      '',
+
+    imageSource:
+      q.imageSource ||
+      null,
+
+    researchBacked:
+      true,
+
+    researchSources:
+      Array.isArray(
+        q.researchSources
+      )
+        ? q.researchSources
+        : [],
+
+    sourceMode:
+      q.sourceMode ||
+      sourceMode,
+
+    sourceQuestionVerbatim:
+      Boolean(
+        q.sourceQuestionVerbatim
+      ),
+
+    sourceTitle:
+      q.sourceTitle ||
+      '',
+
+    sourceUrl:
+      q.sourceUrl ||
+      '',
+
+    visualRequired:
+      Boolean(
+        q.visualRequired
+      ),
+
+    visualKind:
+      q.visualKind ||
+      'none',
+  });
+
+  // ==========================================================
+  // GENERATE BATCH
+  // ==========================================================
+
+  const generateBatch =
+    (
+      batchSize,
+      doneBefore
+    ) => {
+      setStatus(
+        sourceMode ===
+          'source'
+          ? `🔎 Mencari soal publik ${doneBefore + 1}–${doneBefore + batchSize}...`
+          : `🧠 Menganalisis tren dan menyusun prediksi ${doneBefore + 1}–${doneBefore + batchSize}...`
       );
-      return;
-    }
 
-    if (
-      selectedTypes.length === 0
-    ) {
-      setError(
-        '❌ Pilih minimal 1 tipe soal!'
-      );
-      return;
-    }
+      return fetch(
+        '/api/generateQuizFromTopic',
+        {
+          method: 'POST',
 
-    const requestedCount =
-      Number(jumlahSoal);
+          headers: {
+            'Content-Type':
+              'application/json',
+          },
 
-    if (
-      !Number.isFinite(
-        requestedCount
-      ) ||
-      requestedCount < 1 ||
-      requestedCount > 10
-    ) {
-      setError(
-        '❌ Untuk sementara jumlah per batch maksimal 10 soal.'
-      );
-      return;
-    }
+          body:
+            JSON.stringify({
+              topic:
+                topic.trim(),
 
-    setGenerating(true);
+              mapel:
+                subject ||
+                'Umum',
 
-    setStatusLabel(
-      useTrendSearch
-        ? '🌐 Mencari dan menganalisis sumber soal di internet...'
-        : '🤖 Gemini sedang menyusun soal...'
-    );
+              kelas:
+                kelas.trim(),
 
-    const payload = {
-      topic:
-        cleanTopic,
+              jumlahSoal:
+                batchSize,
 
-      mapel:
-        subject || 'Umum',
+              types:
+                selectedTypes,
 
-      kelas:
-        kelas.trim(),
+              arahan:
+                arahan.trim(),
 
-      jumlahSoal:
-        requestedCount,
+              targetYear:
+                Number(
+                  targetYear
+                ),
 
-      types:
-        selectedTypes,
+              hotsLevel,
 
-      arahan:
-        arahan.trim(),
-
-      useTrendSearch:
-        Boolean(
-          useTrendSearch
-        ),
-
-      targetYear:
-        Number(targetYear) ||
-        new Date().getFullYear() +
-          1,
-
-      hotsLevel:
-        hotsLevel || '',
-    };
-
-    fetch(
-      '/api/generateQuizFromTopic',
-      {
-        method: 'POST',
-
-        headers: {
-          'Content-Type':
-            'application/json',
-        },
-
-        body:
-          JSON.stringify(
-            payload
-          ),
-      }
-    )
-      .then(
+              sourceMode,
+            }),
+        }
+      ).then(
         async (response) => {
-          let data = null;
+          let data =
+            null;
 
           try {
             data =
               await response.json();
-          } catch (_) {
-            data = null;
-          }
+          } catch (_) {}
 
           if (
             !response.ok ||
             !data?.success
           ) {
-            let message =
-              data?.error ||
-              `Server gagal (${response.status})`;
+            const debug =
+              typeof data?.debug ===
+              'object'
+                ? JSON.stringify(
+                    data.debug,
+                    null,
+                    2
+                  )
+                : data?.debug;
 
-            if (
-              data?.debug
-            ) {
-              const debug =
-                typeof data.debug ===
-                'object'
-                  ? JSON.stringify(
-                      data.debug,
-                      null,
-                      2
-                    )
-                  : String(
-                      data.debug
-                    );
-
-              message +=
-                ` [debug: ${debug}]`;
-            }
-
-            const errorObject =
-              new Error(
-                message
-              );
-
-            errorObject.status =
-              response.status;
-
-            throw errorObject;
+            throw new Error(
+              `${data?.error || `Server ${response.status}`}${
+                debug
+                  ? `\n${debug}`
+                  : ''
+              }`
+            );
           }
 
           return data;
         }
-      )
-
-      .then(
-        (data) => {
-          const rawQuestions =
-            Array.isArray(
-              data.questions
-            )
-              ? data.questions
-              : [];
-
-          if (
-            rawQuestions.length ===
-            0
-          ) {
-            throw new Error(
-              '❌ Server berhasil merespons, tetapi tidak ada soal yang dikembalikan.'
-            );
-          }
-
-          const converted =
-            rawQuestions.map(
-              normalizeQuestion
-            );
-
-          if (
-            Array.isArray(
-              data.researchSources
-            )
-          ) {
-            setLastResearchSources(
-              data.researchSources
-            );
-          }
-
-          if (
-            typeof onGenerated ===
-              'function'
-          ) {
-            onGenerated(
-              converted
-            );
-          }
-
-          if (
-            data.possiblyTruncated
-          ) {
-            window.alert(
-              `✅ ${converted.length} soal berhasil dibuat.\n\n` +
-              `Catatan: server mengembalikan lebih sedikit dari jumlah yang diminta.`
-            );
-          }
-
-          if (
-            typeof onClose ===
-            'function'
-          ) {
-            onClose();
-          }
-        }
-      )
-
-      .catch(
-        (requestError) => {
-          console.error(
-            '[AIGenerateQuiz]',
-            requestError
-          );
-
-          const message =
-            requestError?.message ||
-            'Gagal membuat soal.';
-
-          setError(
-            `❌ ${message}`
-          );
-        }
-      )
-
-      .finally(
-        () => {
-          setGenerating(false);
-          setStatusLabel('');
-        }
       );
+    };
+
+  // ==========================================================
+  // MAIN
+  // ==========================================================
+
+  const handleGenerate = () => {
+    setError('');
+
+    if (
+      !topic.trim()
+    ) {
+      setError(
+        '❌ Topik wajib diisi.'
+      );
+      return;
+    }
+
+    if (
+      selectedTypes.length ===
+      0
+    ) {
+      setError(
+        '❌ Pilih minimal satu tipe soal.'
+      );
+      return;
+    }
+
+    const total =
+      Math.min(
+        100,
+        Math.max(
+          1,
+          Number(
+            targetCount
+          ) || 40
+        )
+      );
+
+    setGenerating(
+      true
+    );
+
+    setProgress({
+      done: 0,
+      total,
+    });
+
+    let done = 0;
+
+    const runNext =
+      () => {
+        if (
+          done >=
+          total
+        ) {
+          setStatus(
+            '✅ Semua batch selesai.'
+          );
+
+          setTimeout(
+            () => {
+              setGenerating(
+                false
+              );
+
+              if (
+                typeof onClose ===
+                'function'
+              ) {
+                onClose();
+              }
+            },
+            500
+          );
+
+          return;
+        }
+
+        const size =
+          Math.min(
+            10,
+            total -
+              done
+          );
+
+        generateBatch(
+          size,
+          done
+        )
+          .then(
+            (data) => {
+              const questions =
+                Array.isArray(
+                  data.questions
+                )
+                  ? data.questions
+                  : [];
+
+              if (
+                questions.length ===
+                0
+              ) {
+                throw new Error(
+                  'Batch berhasil diproses tetapi tidak menghasilkan soal.'
+                );
+              }
+
+              const converted =
+                questions.map(
+                  (
+                    question,
+                    index
+                  ) =>
+                    convertQuestion(
+                      question,
+                      done +
+                        index
+                    )
+                );
+
+              // LANGSUNG masukkan
+              // ke ManageQuiz.
+              if (
+                typeof onGenerated ===
+                'function'
+              ) {
+                onGenerated(
+                  converted
+                );
+              }
+
+              done +=
+                converted.length;
+
+              setProgress({
+                done,
+                total,
+              });
+
+              runNext();
+            }
+          )
+          .catch(
+            (error) => {
+              console.error(
+                '[Gemilang Generate]',
+                error
+              );
+
+              setError(
+                `❌ Batch berhenti pada ${done}/${total}.\n\n${error.message}`
+              );
+
+              setGenerating(
+                false
+              );
+            }
+          );
+      };
+
+    runNext();
   };
 
-  // ============================================================
+  // ==========================================================
   // RENDER
-  // ============================================================
+  // ==========================================================
 
   return (
     <div
@@ -580,12 +609,10 @@ const AIGenerateQuiz = ({
         style={
           styles.modal
         }
-        onClick={(event) =>
-          event.stopPropagation()
+        onClick={(e) =>
+          e.stopPropagation()
         }
       >
-        {/* HEADER */}
-
         <div
           style={
             styles.header
@@ -593,16 +620,14 @@ const AIGenerateQuiz = ({
         >
           <div
             style={
-              styles.headerTitle
+              styles.title
             }
           >
             <Sparkles
               size={18}
               color="#f59e0b"
             />
-
-            Generate Soal
-            — Astro Gemilang
+            Gemilang Question Research
           </div>
 
           {!generating && (
@@ -612,7 +637,7 @@ const AIGenerateQuiz = ({
                 onClose
               }
               style={
-                styles.closeBtn
+                styles.close
               }
             >
               <X size={18} />
@@ -622,46 +647,26 @@ const AIGenerateQuiz = ({
 
         {!generating ? (
           <>
-            {/* TOPIK */}
-
-            <div
+            <label
               style={
-                styles.field
+                styles.label
               }
             >
-              <label
-                style={
-                  styles.label
-                }
-              >
-                📖 Topik/Materi
-                Kuis{' '}
-                <span
-                  style={{
-                    color:
-                      '#ef4444',
-                  }}
-                >
-                  *wajib
-                </span>
-              </label>
+              📖 Topik
+            </label>
 
-              <input
-                value={topic}
-                onChange={(event) =>
-                  setTopic(
-                    event.target
-                      .value
-                  )
-                }
-                placeholder="Contoh: Persamaan Linear"
-                style={
-                  styles.input
-                }
-              />
-            </div>
-
-            {/* KELAS + JUMLAH */}
+            <input
+              value={topic}
+              onChange={(e) =>
+                setTopic(
+                  e.target.value
+                )
+              }
+              placeholder="Contoh: TKA Bahasa Indonesia — teks eksplanasi"
+              style={
+                styles.input
+              }
+            />
 
             <div
               style={
@@ -670,7 +675,6 @@ const AIGenerateQuiz = ({
             >
               <div
                 style={{
-                  ...styles.field,
                   flex: 1,
                 }}
               >
@@ -679,20 +683,18 @@ const AIGenerateQuiz = ({
                     styles.label
                   }
                 >
-                  🎓 Kelas/Jenjang
+                  🎓 Kelas
                 </label>
 
                 <input
                   value={kelas}
-                  onChange={(
-                    event
-                  ) =>
+                  onChange={(e) =>
                     setKelas(
-                      event.target
+                      e.target
                         .value
                     )
                   }
-                  placeholder="Contoh: 9 SMP"
+                  placeholder="Kelas 9 SMP"
                   style={
                     styles.input
                   }
@@ -701,8 +703,7 @@ const AIGenerateQuiz = ({
 
               <div
                 style={{
-                  ...styles.field,
-                  width: 100,
+                  width: 110,
                 }}
               >
                 <label
@@ -710,39 +711,24 @@ const AIGenerateQuiz = ({
                     styles.label
                   }
                 >
-                  🔢 Batch
+                  🔢 Total
                 </label>
 
                 <input
                   type="number"
-                  min={1}
-                  max={10}
+                  min="1"
+                  max="100"
                   value={
-                    jumlahSoal
+                    targetCount
                   }
-                  onChange={(
-                    event
-                  ) => {
-                    const value =
+                  onChange={(e) =>
+                    setTargetCount(
                       Number(
-                        event.target
+                        e.target
                           .value
-                      );
-
-                    setJumlahSoal(
-                      Math.min(
-                        10,
-                        Math.max(
-                          1,
-                          Number.isFinite(
-                            value
-                          )
-                            ? value
-                            : 1
-                        )
-                      )
-                    );
-                  }}
+                      ) || 1
+                    )
+                  }
                   style={
                     styles.input
                   }
@@ -750,344 +736,235 @@ const AIGenerateQuiz = ({
               </div>
             </div>
 
-            {/* TIPE */}
+            <label
+              style={
+                styles.label
+              }
+            >
+              🌐 Sumber soal
+            </label>
 
             <div
               style={
-                styles.field
+                styles.modeGrid
               }
             >
-              <label
-                style={
-                  styles.label
-                }
-              >
-                📋 Tipe Soal
-              </label>
+              {SOURCE_MODES.map(
+                (mode) => {
+                  const active =
+                    sourceMode ===
+                    mode.id;
 
-              <div
-                style={
-                  styles.typeGrid
-                }
-              >
-                {TYPE_OPTIONS.map(
-                  (type) => {
-                    const active =
-                      selectedTypes.includes(
-                        type.id
-                      );
-
-                    return (
-                      <button
-                        key={
-                          type.id
-                        }
-                        type="button"
-                        onClick={() =>
-                          toggleType(
-                            type.id
-                          )
-                        }
-                        style={{
-                          ...styles.typeBtn,
-
-                          background:
-                            active
-                              ? '#fef3c7'
-                              : 'white',
-
-                          border:
-                            active
-                              ? '2px solid #f59e0b'
-                              : '1px solid #e2e8f0',
-
-                          color:
-                            active
-                              ? '#b45309'
-                              : '#64748b',
-                        }}
-                      >
-                        {active
-                          ? '✅ '
-                          : ''}
-                        {type.label}
-                      </button>
-                    );
-                  }
-                )}
-              </div>
-            </div>
-
-            {/* HOTS */}
-
-            <div
-              style={
-                styles.field
-              }
-            >
-              <label
-                style={
-                  styles.label
-                }
-              >
-                <Brain
-                  size={12}
-                  style={{
-                    display:
-                      'inline',
-                    marginRight: 4,
-                    verticalAlign:
-                      -2,
-                  }}
-                />
-                Level Berpikir
-                Kritis
-              </label>
-
-              <div
-                style={{
-                  display:
-                    'flex',
-                  gap: 6,
-                  flexWrap:
-                    'wrap',
-                }}
-              >
-                {HOTS_OPTIONS.map(
-                  (option) => {
-                    const active =
-                      hotsLevel ===
-                      option.id;
-
-                    return (
-                      <button
-                        key={
-                          option.id
-                        }
-                        type="button"
-                        onClick={() =>
-                          setHotsLevel(
-                            option.id
-                          )
-                        }
-                        style={{
-                          ...styles.hotsBtn,
-
-                          background:
-                            active
-                              ? '#ede9fe'
-                              : 'white',
-
-                          border:
-                            active
-                              ? '2px solid #8b5cf6'
-                              : '1px solid #e2e8f0',
-
-                          color:
-                            active
-                              ? '#6d28d9'
-                              : '#64748b',
-                        }}
-                      >
-                        {
-                          option.label
-                        }
-                      </button>
-                    );
-                  }
-                )}
-              </div>
-            </div>
-
-            {/* INTERNET RESEARCH */}
-
-            <div
-              style={
-                styles.trendBox
-              }
-            >
-              <label
-                style={{
-                  display:
-                    'flex',
-                  alignItems:
-                    'flex-start',
-                  gap: 8,
-                  cursor:
-                    'pointer',
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={
-                    useTrendSearch
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                    setUseTrendSearch(
-                      event.target
-                        .checked
-                    )
-                  }
-                  style={{
-                    marginTop: 2,
-                  }}
-                />
-
-                <span
-                  style={{
-                    flex: 1,
-                  }}
-                >
-                  <span
-                    style={{
-                      display:
-                        'flex',
-                      alignItems:
-                        'center',
-                      gap: 5,
-                      fontSize:
-                        12,
-                      fontWeight: 800,
-                      color:
-                        '#1e293b',
-                    }}
-                  >
-                    <Globe
-                      size={
-                        13
+                  return (
+                    <button
+                      key={
+                        mode.id
                       }
-                      color="#2563eb"
-                    />
+                      type="button"
+                      onClick={() =>
+                        setSourceMode(
+                          mode.id
+                        )
+                      }
+                      style={{
+                        ...styles.modeButton,
+                        border:
+                          active
+                            ? '2px solid #2563eb'
+                            : '1px solid #e2e8f0',
+                        background:
+                          active
+                            ? '#eff6ff'
+                            : 'white',
+                      }}
+                    >
+                      <b>
+                        {mode.title}
+                      </b>
 
-                    Riset Internet
-                  </span>
-
-                  <span
-                    style={{
-                      fontSize:
-                        10,
-                      color:
-                        '#475569',
-                      lineHeight:
-                        1.6,
-                      display:
-                        'block',
-                      marginTop: 3,
-                    }}
-                  >
-                    Sistem mencari
-                    sumber soal
-                    publik,
-                    menganalisis
-                    pola, lalu
-                    membuat
-                    latihan baru.
-                    Bukan bocoran.
-                  </span>
-                </span>
-              </label>
-
-              <div
-                style={{
-                  marginTop: 10,
-                  display:
-                    'flex',
-                  alignItems:
-                    'center',
-                  gap: 8,
-                }}
-              >
-                <label
-                  style={{
-                    ...styles.label,
-                    margin: 0,
-                  }}
-                >
-                  🎯 Tahun target
-                </label>
-
-                <input
-                  type="number"
-                  min={
-                    new Date().getFullYear()
-                  }
-                  max={
-                    new Date().getFullYear() +
-                    5
-                  }
-                  value={
-                    targetYear
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                    setTargetYear(
-                      Number(
-                        event.target
-                          .value
-                      ) ||
-                        new Date().getFullYear() +
-                          1
-                    )
-                  }
-                  style={{
-                    ...styles.input,
-                    width: 90,
-                    padding: 8,
-                  }}
-                />
-              </div>
+                      <span>
+                        {
+                          mode.description
+                        }
+                      </span>
+                    </button>
+                  );
+                }
+              )}
             </div>
 
-            {/* ARAHAN */}
+            <label
+              style={
+                styles.label
+              }
+            >
+              🎯 Target latihan
+            </label>
+
+            <input
+              type="number"
+              value={
+                targetYear
+              }
+              onChange={(e) =>
+                setTargetYear(
+                  Number(
+                    e.target
+                      .value
+                  ) || 2027
+                )
+              }
+              style={
+                styles.input
+              }
+            />
+
+            <label
+              style={
+                styles.label
+              }
+            >
+              📋 Tipe Soal
+            </label>
 
             <div
               style={
-                styles.field
+                styles.typeGrid
               }
             >
-              <label
-                style={
-                  styles.label
-                }
-              >
-                📝 Arahan khusus
-              </label>
+              {TYPE_OPTIONS.map(
+                (type) => {
+                  const active =
+                    selectedTypes.includes(
+                      type.id
+                    );
 
-              <textarea
-                value={arahan}
-                onChange={(event) =>
-                  setArahan(
-                    event.target
-                      .value
-                  )
+                  return (
+                    <button
+                      key={
+                        type.id
+                      }
+                      type="button"
+                      onClick={() =>
+                        toggleType(
+                          type.id
+                        )
+                      }
+                      style={{
+                        ...styles.typeButton,
+                        background:
+                          active
+                            ? '#fef3c7'
+                            : 'white',
+                        border:
+                          active
+                            ? '2px solid #f59e0b'
+                            : '1px solid #e2e8f0',
+                      }}
+                    >
+                      {active
+                        ? '✅ '
+                        : ''}
+                      {type.label}
+                    </button>
+                  );
                 }
-                placeholder="Contoh: fokus pada soal cerita dan analisis data"
-                style={
-                  styles.textarea
-                }
-              />
+              )}
             </div>
 
-            {/* ERROR */}
+            <label
+              style={
+                styles.label
+              }
+            >
+              <Brain
+                size={13}
+                style={{
+                  verticalAlign:
+                    -2,
+                }}
+              />{' '}
+              Level HOTS
+            </label>
+
+            <div
+              style={
+                styles.hots
+              }
+            >
+              {HOTS_OPTIONS.map(
+                (item) => (
+                  <button
+                    key={
+                      item.id
+                    }
+                    type="button"
+                    onClick={() =>
+                      setHotsLevel(
+                        item.id
+                      )
+                    }
+                    style={{
+                      ...styles.hotButton,
+                      background:
+                        hotsLevel ===
+                        item.id
+                          ? '#ede9fe'
+                          : 'white',
+                      border:
+                        hotsLevel ===
+                        item.id
+                          ? '2px solid #8b5cf6'
+                          : '1px solid #e2e8f0',
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                )
+              )}
+            </div>
+
+            <label
+              style={
+                styles.label
+              }
+            >
+              📝 Deskripsi / permintaan guru
+            </label>
+
+            <textarea
+              value={arahan}
+              onChange={(e) =>
+                setArahan(
+                  e.target
+                    .value
+                )
+              }
+              placeholder={
+                sourceMode ===
+                'prediction'
+                  ? 'Contoh: carikan soal prediksi TKA 2027 yang HOTS, banyak stimulus gambar dan mirip pola yang sering muncul.'
+                  : 'Contoh: cari soal yang paling sering muncul pada topik ini, termasuk soal bergambar.'
+              }
+              style={
+                styles.textarea
+              }
+            />
 
             {error && (
               <div
                 style={
-                  styles.errorBox
+                  styles.error
                 }
               >
                 <AlertCircle
-                  size={14}
+                  size={16}
                 />
 
                 <span
                   style={{
                     whiteSpace:
                       'pre-wrap',
-                    flex: 1,
                   }}
                 >
                   {error}
@@ -1095,204 +972,139 @@ const AIGenerateQuiz = ({
               </div>
             )}
 
-            {/* SOURCES */}
-
-            {lastResearchSources.length >
-              0 && (
-              <div
-                style={
-                  styles.sourcesBox
-                }
-              >
-                <b>
-                  🌐 Sumber riset:
-                </b>
-
-                <ul
-                  style={{
-                    margin:
-                      '5px 0 0',
-                    paddingLeft:
-                      18,
-                  }}
-                >
-                  {lastResearchSources.map(
-                    (
-                      source,
-                      index
-                    ) => (
-                      <li
-                        key={
-                          index
-                        }
-                      >
-                        {source?.url ? (
-                          <a
-                            href={
-                              source.url
-                            }
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              color:
-                                '#0369a1',
-                            }}
-                          >
-                            {source.title ||
-                              source.url}
-                          </a>
-                        ) : (
-                          source?.title ||
-                          'Sumber web'
-                        )}
-                      </li>
-                    )
-                  )}
-                </ul>
-              </div>
-            )}
-
-            {/* GENERATE */}
-
             <button
               type="button"
               onClick={
                 handleGenerate
               }
-              disabled={
-                generating
+              style={
+                styles.generate
               }
-              style={{
-                ...styles.generateBtn,
-
-                opacity:
-                  generating
-                    ? 0.6
-                    : 1,
-              }}
             >
-              <Wand2
-                size={16}
-              />
+              <Wand2 size={17} />
 
-              Generate Soal
+              {sourceMode ===
+              'source'
+                ? 'Cari & Masukkan Soal'
+                : 'Riset & Susun Prediksi'}
             </button>
 
             <div
               style={
-                styles.hintBox
+                styles.note
               }
             >
-              <FileQuestion
-                size={13}
-                color="#f59e0b"
-              />
-
+              <Globe size={13} />
               <span>
-                Generate dilakukan
-                dalam batch kecil
-                agar lebih stabil.
-                Hasil tetap perlu
-                diperiksa guru
-                sebelum diterbitkan.
+                Internet selalu aktif.
+                Soal masuk ke Gemilang
+                bersama sumber, kunci,
+                verifikasi jawaban,
+                pembahasan, dan data
+                visual bila tersedia.
               </span>
             </div>
           </>
         ) : (
           <div
             style={
-              styles.progressBox
+              styles.progress
             }
           >
             <Loader2
-              size={34}
-              color="#f59e0b"
+              size={38}
+              color="#2563eb"
               className="gemilang-spin"
             />
 
-            <p
-              style={
-                styles.progressLabel
-              }
-            >
-              {statusLabel}
-            </p>
+            <h3>
+              {status}
+            </h3>
 
             <div
               style={
-                styles.progressBarBg
+                styles.progressText
+              }
+            >
+              {progress.done} /{' '}
+              {progress.total}{' '}
+              soal
+            </div>
+
+            <div
+              style={
+                styles.progressBg
               }
             >
               <div
-                style={
-                  styles.progressBar
-                }
+                style={{
+                  ...styles.progressFill,
+                  width: `${
+                    Math.min(
+                      100,
+                      (progress.done /
+                        progress.total) *
+                        100
+                    )
+                  }%`,
+                }}
               />
             </div>
 
-            <button
-              type="button"
-              disabled
-              style={{
-                ...styles.generateBtn,
-                opacity: 0.5,
-              }}
+            <p
+              style={
+                styles.small
+              }
             >
-              Sedang memproses...
-            </button>
+              Batch maksimal 10 soal.
+              Soal yang sudah berhasil
+              langsung masuk ke editor.
+            </p>
           </div>
         )}
       </div>
 
       <style>{`
         @keyframes gemilangSpin {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
+          to { transform: rotate(360deg); }
         }
 
         .gemilang-spin {
           animation:
             gemilangSpin
-            1s
-            linear
-            infinite;
+            1s linear infinite;
         }
       `}</style>
     </div>
   );
 };
 
-// ============================================================
-// STYLES
-// ============================================================
-
 const styles = {
   overlay: {
     position: 'fixed',
     inset: 0,
     background:
-      'rgba(15,23,42,0.6)',
+      'rgba(15,23,42,.65)',
     zIndex: 9999,
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent:
+      'center',
     padding: 16,
   },
 
   modal: {
-    background: 'white',
-    borderRadius: 16,
-    padding: 20,
     width: '100%',
-    maxWidth: 500,
-    maxHeight: '90vh',
-    overflowY: 'auto',
+    maxWidth: 560,
+    maxHeight: '92vh',
+    overflowY:
+      'auto',
+    background:
+      'white',
+    borderRadius: 18,
+    padding: 20,
     boxShadow:
-      '0 20px 50px rgba(0,0,0,0.3)',
+      '0 25px 70px rgba(0,0,0,.3)',
   },
 
   header: {
@@ -1303,7 +1115,7 @@ const styles = {
     marginBottom: 16,
   },
 
-  headerTitle: {
+  title: {
     fontSize: 15,
     fontWeight: 800,
     color: '#1e293b',
@@ -1312,58 +1124,54 @@ const styles = {
     gap: 8,
   },
 
-  closeBtn: {
+  close: {
+    border: 'none',
     background:
       '#f1f5f9',
-    border: 'none',
     borderRadius: 8,
-    padding: 6,
+    padding: 7,
     cursor: 'pointer',
-  },
-
-  field: {
-    marginBottom: 14,
   },
 
   row: {
     display: 'flex',
     gap: 10,
+    marginBottom: 12,
   },
 
   label: {
+    display: 'block',
     fontSize: 11,
     fontWeight: 700,
     color: '#64748b',
-    display: 'block',
-    marginBottom: 6,
+    margin:
+      '12px 0 6px',
   },
 
   input: {
     width: '100%',
-    padding: 10,
-    borderRadius: 8,
-    border:
-      '1px solid #e2e8f0',
-    fontSize: 13,
-    outline: 'none',
     boxSizing:
       'border-box',
+    padding: 10,
+    border:
+      '1px solid #e2e8f0',
+    borderRadius: 9,
+    outline: 'none',
+    fontSize: 12,
   },
 
-  textarea: {
-    width: '100%',
-    minHeight: 70,
-    padding: 10,
-    borderRadius: 8,
-    border:
-      '1px solid #e2e8f0',
-    fontSize: 13,
-    outline: 'none',
-    boxSizing:
-      'border-box',
-    resize: 'vertical',
-    fontFamily:
-      'inherit',
+  modeGrid: {
+    display: 'grid',
+    gridTemplateColumns:
+      '1fr 1fr',
+    gap: 8,
+  },
+
+  modeButton: {
+    textAlign: 'left',
+    padding: 11,
+    borderRadius: 10,
+    cursor: 'pointer',
   },
 
   typeGrid: {
@@ -1373,7 +1181,7 @@ const styles = {
     gap: 6,
   },
 
-  typeBtn: {
+  typeButton: {
     padding:
       '8px 10px',
     borderRadius: 8,
@@ -1383,121 +1191,119 @@ const styles = {
     textAlign: 'left',
   },
 
-  hotsBtn: {
+  hots: {
+    display: 'flex',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+
+  hotButton: {
     padding:
       '8px 12px',
     borderRadius: 8,
     cursor: 'pointer',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 700,
   },
 
-  trendBox: {
-    background:
-      '#eff6ff',
+  textarea: {
+    width: '100%',
+    minHeight: 80,
+    boxSizing:
+      'border-box',
+    padding: 10,
     border:
-      '1px solid #bfdbfe',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 14,
+      '1px solid #e2e8f0',
+    borderRadius: 9,
+    resize: 'vertical',
+    fontFamily:
+      'inherit',
+    fontSize: 12,
   },
 
-  errorBox: {
+  error: {
+    display: 'flex',
+    gap: 7,
+    marginTop: 12,
+    padding: 10,
     background:
       '#fee2e2',
     color: '#b91c1c',
-    padding: 10,
-    borderRadius: 8,
-    fontSize: 12,
-    display: 'flex',
-    alignItems:
-      'flex-start',
-    gap: 6,
-    marginBottom: 12,
+    borderRadius: 9,
+    fontSize: 11,
     lineHeight: 1.5,
   },
 
-  sourcesBox: {
-    background:
-      '#f0fdf4',
-    border:
-      '1px solid #bbf7d0',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 10,
-    color: '#166534',
-    marginBottom: 12,
-    lineHeight: 1.6,
-  },
-
-  generateBtn: {
+  generate: {
     width: '100%',
-    padding: 12,
-    background:
-      'linear-gradient(135deg,#f59e0b,#d97706)',
-    color: 'white',
+    marginTop: 14,
     border: 'none',
     borderRadius: 10,
-    fontWeight: 700,
-    fontSize: 13,
+    padding: 13,
+    background:
+      'linear-gradient(135deg,#2563eb,#4f46e5)',
+    color: 'white',
+    fontWeight: 800,
     cursor: 'pointer',
     display: 'flex',
-    alignItems: 'center',
     justifyContent:
       'center',
+    alignItems: 'center',
     gap: 8,
   },
 
-  hintBox: {
+  note: {
     display: 'flex',
     gap: 6,
-    fontSize: 10,
-    color: '#64748b',
-    marginTop: 12,
-    lineHeight: 1.6,
+    marginTop: 10,
+    padding: 9,
     background:
-      '#fffbeb',
-    padding: 10,
-    borderRadius: 8,
-    border:
-      '1px solid #fde68a',
-  },
-
-  progressBox: {
-    display: 'flex',
-    flexDirection:
-      'column',
-    alignItems: 'center',
-    gap: 12,
-    padding:
-      '30px 0',
-  },
-
-  progressLabel: {
-    fontSize: 13,
+      '#eff6ff',
     color: '#475569',
-    textAlign: 'center',
-    fontWeight: 600,
+    borderRadius: 8,
+    fontSize: 10,
     lineHeight: 1.5,
   },
 
-  progressBarBg: {
+  progress: {
+    minHeight: 300,
+    display: 'flex',
+    flexDirection:
+      'column',
+    alignItems:
+      'center',
+    justifyContent:
+      'center',
+    gap: 12,
+    textAlign: 'center',
+  },
+
+  progressText: {
+    fontSize: 22,
+    fontWeight: 900,
+    color: '#2563eb',
+  },
+
+  progressBg: {
     width: '100%',
-    height: 6,
+    height: 8,
     background:
-      '#f1f5f9',
-    borderRadius: 4,
+      '#e2e8f0',
+    borderRadius: 9,
     overflow: 'hidden',
   },
 
-  progressBar: {
-    width: '40%',
+  progressFill: {
     height: '100%',
     background:
-      'linear-gradient(90deg,#f59e0b,#d97706)',
-    borderRadius: 4,
-    animation:
-      'gemilangSlide 1.4s ease-in-out infinite',
+      'linear-gradient(90deg,#2563eb,#8b5cf6)',
+    transition:
+      'width .3s ease',
+  },
+
+  small: {
+    fontSize: 10,
+    color: '#94a3b8',
   },
 };
 
