@@ -40,9 +40,9 @@ const CLOUDFLARE_MODEL =
 
 const MAX_BATCH_QUESTIONS = 10;
 
-const JINA_TIMEOUT_MS = 30000;
+const JINA_TIMEOUT_MS = 10000;
 const PAGE_TIMEOUT_MS = 18000;
-const CLOUDFLARE_TIMEOUT_MS = 45000;
+const CLOUDFLARE_TIMEOUT_MS = 35000;
 
 const MAX_RESULTS_PER_QUERY = 10;
 const MAX_UNIQUE_SOURCES = 8;
@@ -2893,41 +2893,48 @@ export default async function handler(
   const queryErrors =
     [];
 
-  for (
-    const query of
-      queries
-  ) {
-    try {
-      const results =
-        await jinaSearch(
-          query
+  const searchOutcomes =
+    await Promise.allSettled(
+      queries.map(
+        (query) =>
+          jinaSearch(
+            query
+          )
+      )
+    );
+
+  searchOutcomes.forEach(
+    (outcome, index) => {
+      const query =
+        queries[index];
+
+      if (
+        outcome.status ===
+        'fulfilled'
+      ) {
+        rawSources.push(
+          ...outcome.value
+        );
+      } else {
+        console.error(
+          '[Gemilang][Search]',
+          query,
+          outcome.reason?.message
         );
 
-      rawSources.push(
-        ...results
-      );
-    } catch (
-      error
-    ) {
-      console.error(
-        '[Gemilang][Search]',
-        query,
-        error.message
-      );
+        queryErrors.push({
+          query,
 
-      queryErrors.push({
-        query,
-
-        error:
-          error.message,
-      });
+          error:
+            outcome.reason
+              ?.message ||
+            String(
+              outcome.reason
+            ),
+        });
+      }
     }
-
-    // Jangan mengirim query bersamaan.
-    await sleep(
-      250
-    );
-  }
+  );
 
   // ----------------------------------------------------------
   // RANK SOURCE TANPA AI
