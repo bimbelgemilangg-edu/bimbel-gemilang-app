@@ -38,17 +38,17 @@ const CLOUDFLARE_MODEL =
   process.env.CLOUDFLARE_MODEL ||
   '@cf/zai-org/glm-4.7-flash';
 
-const MAX_BATCH_QUESTIONS = 20;
+const MAX_BATCH_QUESTIONS = 10;
 
 const JINA_TIMEOUT_MS = 30000;
 const PAGE_TIMEOUT_MS = 18000;
-const CLOUDFLARE_TIMEOUT_MS = 70000;
+const CLOUDFLARE_TIMEOUT_MS = 45000;
 
 const MAX_RESULTS_PER_QUERY = 10;
-const MAX_UNIQUE_SOURCES = 16;
+const MAX_UNIQUE_SOURCES = 8;
 
-const MAX_SOURCE_CHARS = 9000;
-const MAX_RESEARCH_PACK_CHARS = 60000;
+const MAX_SOURCE_CHARS = 7000;
+const MAX_RESEARCH_PACK_CHARS = 28000;
 
 const MIN_SOURCE_TEXT = 120;
 
@@ -1090,6 +1090,41 @@ async function readSourcePage(
     return source;
   }
 
+  // ==========================================================
+  // PRIORITASKAN CONTENT DARI JINA
+  // ==========================================================
+  // Jina Search sudah memberikan content/snippet.
+  // Jangan membuka URL lagi kalau content cukup.
+  // Ini menghemat waktu dan request HTTP.
+  // ==========================================================
+
+  if (
+    typeof source.content === 'string' &&
+    source.content.trim().length >= 500
+  ) {
+    return {
+      ...source,
+
+      content: cleanText(
+        source.content
+      ).slice(
+        0,
+        MAX_SOURCE_CHARS
+      ),
+
+      images: Array.isArray(
+        source.images
+      )
+        ? source.images
+        : [],
+    };
+  }
+
+  // ==========================================================
+  // FALLBACK: BACA HALAMAN SUMBER
+  // HANYA KALAU CONTENT JINA TERLALU PENDEK
+  // ==========================================================
+
   try {
     const response =
       await fetchWithTimeout(
@@ -1105,7 +1140,7 @@ async function readSourcePage(
               'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/151 Safari/537.36',
           },
         },
-        PAGE_TIMEOUT_MS
+        8000
       );
 
     if (
@@ -1162,7 +1197,7 @@ async function readSourcePage(
           )
       ).slice(
         0,
-        18000
+        MAX_SOURCE_CHARS
       );
 
     const images =
@@ -2939,58 +2974,54 @@ export default async function handler(
   }
 
   // ==========================================================
-  // 2. READ SOURCES
+  // 2. READ SOURCES (PARALLEL)
   // ==========================================================
 
-  const pages =
-    [];
-
-  for (
-    const source of
-      rankedSources
-  ) {
-    const page =
-      await readSourcePage(
-        source
-      );
-
-    const readable =
-      Boolean(
-        page?.content &&
-          page.content
-            .length >=
-            MIN_SOURCE_TEXT
-      );
-
-    const visualOnly =
-      Boolean(
-        Array.isArray(
-          page?.images
-        ) &&
-          page.images
-            .length > 0
-      );
-
-    if (
-      readable ||
-      visualOnly
-    ) {
-      pages.push(
-        page
-      );
-    }
-
-    // Jangan membaca terlalu banyak halaman.
-    if (
-      pages.length >=
+  const selectedSources =
+    rankedSources.slice(
+      0,
       MAX_UNIQUE_SOURCES
-    ) {
-      break;
-    }
-  }
+    );
+
+  const fetchedPages =
+    await Promise.all(
+      selectedSources.map(
+        (source) =>
+          readSourcePage(
+            source
+          )
+      )
+    );
+
+  const readablePages =
+    fetchedPages.filter(
+      (page) => {
+        const readable =
+          Boolean(
+            page?.content &&
+              page.content
+                .length >=
+                MIN_SOURCE_TEXT
+          );
+
+        const visualOnly =
+          Boolean(
+            Array.isArray(
+              page?.images
+            ) &&
+              page.images
+                .length > 0
+          );
+
+        return (
+          readable ||
+          visualOnly
+        );
+      }
+    );
 
   if (
-    pages.length ===
+    readablePages.length ===
     0
   ) {
     return res.status(
@@ -3022,7 +3053,7 @@ export default async function handler(
 
   const researchPack =
     buildResearchPack(
-      pages
+      readablePages
     );
 
   if (
@@ -3358,7 +3389,7 @@ jangan mengarang demi memenuhi jumlah.
 
         allowedTypes,
 
-        pages,
+        readablePages,
 
         mode
       );
@@ -3393,7 +3424,7 @@ jangan mengarang demi memenuhi jumlah.
       true;
 
     question.researchSources =
-      pages.map(
+      readablePages.map(
         (page) => ({
           title:
             page.title ||
@@ -3442,7 +3473,7 @@ jangan mengarang demi memenuhi jumlah.
             CLOUDFLARE_MODEL,
 
           sourceCount:
-            pages.length,
+            readablePages.length,
 
           parsedObjectCount:
             objects.length,
@@ -3460,7 +3491,7 @@ jangan mengarang demi memenuhi jumlah.
         },
 
         researchSources:
-          pages.map(
+          readablePages.map(
             (page) => ({
               title:
                 page.title ||
@@ -3527,7 +3558,7 @@ jangan mengarang demi memenuhi jumlah.
           rankedSources.length,
 
         readablePageCount:
-          pages.length,
+          readablePages.length,
 
         parsedObjectCount:
           objects.length,
@@ -3539,7 +3570,7 @@ jangan mengarang demi memenuhi jumlah.
       },
 
       researchSources:
-        pages.map(
+        readablePages.map(
           (page) => ({
             title:
               page.title ||
