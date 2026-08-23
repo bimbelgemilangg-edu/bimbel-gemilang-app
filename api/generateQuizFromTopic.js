@@ -1,42 +1,65 @@
 // api/generateQuizFromTopic.js
 // ============================================================
-// BIMBEL GEMILANG — STABLE RESEARCH QUESTION ENGINE
-// Cloudflare Workers AI + Jina Search
+// BIMBEL GEMILANG — PROFESSIONAL QUESTION RESEARCH ENGINE v3
 // ============================================================
 //
-// Prinsip:
-// 1. Internet tetap menjadi sumber riset.
-// 2. Jina hanya mencari kandidat.
-// 3. Jangan fetch ulang halaman jika Jina sudah memberi content.
-// 4. Maksimal 6 sumber terbaik per batch.
-// 5. Research pack dibatasi agar inference cepat.
-// 6. Maksimal 5 soal per request untuk stabilitas.
-// 7. Frontend dapat memanggil beberapa batch.
-// 8. Dedup dilakukan sebelum hasil dikembalikan.
-// 9. Jawaban + verifikasi + pembahasan wajib.
-// 10. Visual clock/graph tetap didukung.
+// TUJUAN:
+// - Internet selalu menjadi sumber riset.
+// - Jina Search mencari sumber publik.
+// - Sumber diranking TANPA AI terlebih dahulu.
+// - Duplikat sumber dibuang TANPA AI.
+// - Halaman sumber dibaca untuk memperoleh isi + gambar.
+// - Cloudflare Workers AI menjadi AI utama.
+// - Maksimal SATU panggilan AI untuk SATU batch.
+// - SOURCE MODE:
+//      mengambil soal yang benar-benar ditemukan di internet.
+// - PREDICTION MODE:
+//      menganalisis pola sumber lalu membuat latihan baru.
+// - Jawaban, verifikasi, analisis, dan pembahasan wajib.
+// - Visual soal dan opsi gambar didukung.
+// - Soal yang kembar dalam hasil AI tidak dimasukkan.
+// - Struktur respons dibuat kompatibel dengan ManageQuiz.
+//
+// CATATAN ARSITEKTUR:
+// Tahap ini BELUM menjadi Research Planner / Blueprint Engine penuh.
+// Tahap ini adalah "research-backed question collector".
+//
+// ENV YANG DIBUTUHKAN:
+// JINA_API_KEY
+// CLOUDFLARE_API_TOKEN
+// CLOUDFLARE_ACCOUNT_ID
+//
+// MODEL:
+// @cf/zai-org/glm-4.7-flash
+//
 // ============================================================
 
 const CLOUDFLARE_MODEL =
   process.env.CLOUDFLARE_MODEL ||
   '@cf/zai-org/glm-4.7-flash';
 
-const MAX_BATCH_QUESTIONS = 5;
+const MAX_BATCH_QUESTIONS = 10;
 
-const JINA_TIMEOUT_MS = 25000;
+const JINA_TIMEOUT_MS = 30000;
+const PAGE_TIMEOUT_MS = 18000;
 const CLOUDFLARE_TIMEOUT_MS = 45000;
 
-const MAX_RESULTS_PER_QUERY = 8;
-const MAX_SELECTED_SOURCES = 6;
+const MAX_RESULTS_PER_QUERY = 10;
+const MAX_UNIQUE_SOURCES = 8;
 
-const MAX_SOURCE_CHARS = 6500;
-const MAX_RESEARCH_PACK_CHARS = 24000;
+const MAX_SOURCE_CHARS = 7000;
+const MAX_RESEARCH_PACK_CHARS = 28000;
 
-const MIN_SOURCE_TEXT = 100;
+const MIN_SOURCE_TEXT = 120;
 
 // ============================================================
-// HELPERS
+// BASIC HELPERS
 // ============================================================
+
+const sleep = (ms) =>
+  new Promise((resolve) =>
+    setTimeout(resolve, ms)
+  );
 
 const cleanText = (value = '') =>
   String(value ?? '')
@@ -67,25 +90,31 @@ const normalizeText = (value = '') =>
     )
     .trim();
 
-const tokenize = (value = '') =>
-  normalizeText(value)
-    .split(' ')
-    .filter(
-      (x) =>
-        x.length >= 2
-    );
+const tokenSet = (value = '') => {
+  const tokens =
+    normalizeText(value)
+      .split(' ')
+      .filter(
+        (token) =>
+          token.length >= 2
+      );
 
-const jaccard = (
+  return new Set(tokens);
+};
+
+const jaccardSimilarity = (
   a,
   b
 ) => {
-  const setA = new Set(
-    tokenize(a)
-  );
+  const setA =
+    typeof a === 'string'
+      ? tokenSet(a)
+      : a;
 
-  const setB = new Set(
-    tokenize(b)
-  );
+  const setB =
+    typeof b === 'string'
+      ? tokenSet(b)
+      : b;
 
   if (
     !setA.size ||
@@ -97,10 +126,10 @@ const jaccard = (
   let intersection = 0;
 
   for (
-    const token of setA
+    const item of setA
   ) {
     if (
-      setB.has(token)
+      setB.has(item)
     ) {
       intersection += 1;
     }
@@ -116,16 +145,16 @@ const jaccard = (
     : 0;
 };
 
-const questionFingerprint = (
+const fingerprintText = (
   value = ''
 ) =>
   normalizeText(value)
     .replace(
-      /\bsoal\s+\d+\b/g,
+      /\bsoal\s+\d+\b/gi,
       ' '
     )
     .replace(
-      /\bnomor\s+\d+\b/g,
+      /\bnomor\s+\d+\b/gi,
       ' '
     )
     .replace(
@@ -137,7 +166,8 @@ const questionFingerprint = (
 const isFiniteNumber = (
   value
 ) =>
-  typeof value === 'number' &&
+  typeof value ===
+    'number' &&
   Number.isFinite(value);
 
 const isIntegerInRange = (
@@ -145,7 +175,9 @@ const isIntegerInRange = (
   min,
   max
 ) =>
-  Number.isInteger(value) &&
+  Number.isInteger(
+    value
+  ) &&
   value >= min &&
   value <= max;
 
@@ -157,12 +189,11 @@ const fetchWithTimeout = async (
   const controller =
     new AbortController();
 
-  const timer =
-    setTimeout(
-      () =>
-        controller.abort(),
-      timeoutMs
-    );
+  const timer = setTimeout(
+    () =>
+      controller.abort(),
+    timeoutMs
+  );
 
   try {
     return await fetch(
@@ -177,6 +208,80 @@ const fetchWithTimeout = async (
     clearTimeout(timer);
   }
 };
+
+const escapeXml = (
+  value = ''
+) =>
+  String(value)
+    .replace(
+      /&/g,
+      '&amp;'
+    )
+    .replace(
+      /</g,
+      '&lt;'
+    )
+    .replace(
+      />/g,
+      '&gt;'
+    )
+    .replace(
+      /"/g,
+      '&quot;'
+    )
+    .replace(
+      /'/g,
+      '&apos;'
+    );
+
+// ============================================================
+// QUESTION DUPLICATE CHECK
+// ============================================================
+
+function isQuestionDuplicate(
+  questionText,
+  existingQuestions
+) {
+  const fingerprint =
+    fingerprintText(
+      questionText
+    );
+
+  for (
+    const existing of
+      existingQuestions
+  ) {
+    const existingFingerprint =
+      fingerprintText(
+        existing.question
+      );
+
+    // Exact / normalized duplicate.
+    if (
+      fingerprint &&
+      existingFingerprint ===
+        fingerprint
+    ) {
+      return true;
+    }
+
+    // Semantic-ish local similarity.
+    // Tidak memakai AI sehingga tidak memakan kuota.
+    const similarity =
+      jaccardSimilarity(
+        fingerprint,
+        existingFingerprint
+      );
+
+    if (
+      similarity >= 0.88
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 // ============================================================
 // VISUAL CUE
@@ -194,18 +299,33 @@ const hasVisualCue = (
     'gambar berikut',
     'berdasarkan gambar',
     'pada gambar',
+
     'lihat grafik',
     'perhatikan grafik',
     'grafik berikut',
     'berdasarkan grafik',
+
     'lihat diagram',
     'perhatikan diagram',
     'diagram berikut',
     'berdasarkan diagram',
+
     'lihat tabel',
     'perhatikan tabel',
     'tabel berikut',
     'berdasarkan tabel',
+
+    'look at the picture',
+    'look at the image',
+    'look at the graph',
+    'look at the diagram',
+    'look at the table',
+
+    'based on the picture',
+    'based on the image',
+    'based on the graph',
+    'based on the diagram',
+    'based on the table',
   ];
 
   return cues.some(
@@ -217,7 +337,7 @@ const hasVisualCue = (
 };
 
 // ============================================================
-// LOCAL CLOCK
+// LOCAL CLOCK SVG
 // ============================================================
 
 function buildClockImageSvg(
@@ -241,19 +361,23 @@ function buildClockImageSvg(
       12) %
     12;
 
-  const minute = Math.max(
-    0,
-    Math.min(
-      59,
-      Number(clock.minute)
-    )
-  );
+  const minute =
+    Math.max(
+      0,
+      Math.min(
+        59,
+        Number(
+          clock.minute
+        )
+      )
+    );
 
+  const size = 280;
   const cx = 140;
   const cy = 140;
   const radius = 112;
 
-  const point = (
+  const toXY = (
     angle,
     length
   ) => {
@@ -267,6 +391,7 @@ function buildClockImageSvg(
         cx +
         length *
           Math.cos(rad),
+
       y:
         cy +
         length *
@@ -275,34 +400,36 @@ function buildClockImageSvg(
   };
 
   const hourTip =
-    point(
+    toXY(
       hour * 30 +
         minute * 0.5,
       radius * 0.52
     );
 
   const minuteTip =
-    point(
+    toXY(
       minute * 6,
       radius * 0.78
     );
 
   const ticks =
     Array.from(
-      { length: 60 },
-      (_, i) => {
+      {
+        length: 60,
+      },
+      (_, index) => {
         const major =
-          i % 5 === 0;
+          index % 5 === 0;
 
         const outer =
-          point(
-            i * 6,
+          toXY(
+            index * 6,
             radius
           );
 
         const inner =
-          point(
-            i * 6,
+          toXY(
+            index * 6,
             major
               ? radius - 13
               : radius - 7
@@ -317,20 +444,25 @@ y2="${inner.y.toFixed(2)}"
 stroke="#334155"
 stroke-width="${
   major ? 2 : 1
-}"/>`;
+}"
+/>`;
       }
     ).join('');
 
   const numbers =
     Array.from(
-      { length: 12 },
-      (_, i) => {
+      {
+        length: 12,
+      },
+      (_, index) => {
         const number =
-          i === 0 ? 12 : i;
+          index === 0
+            ? 12
+            : index;
 
         const pos =
-          point(
-            i * 30,
+          toXY(
+            index * 30,
             radius - 25
           );
 
@@ -350,18 +482,31 @@ fill="#1e293b"
     ).join('');
 
   const svg = `
-<svg xmlns="http://www.w3.org/2000/svg"
-viewBox="0 0 280 280">
-<rect width="280" height="280" fill="white"/>
+<svg
+xmlns="http://www.w3.org/2000/svg"
+viewBox="0 0 280 280"
+width="280"
+height="280"
+>
+<rect
+width="280"
+height="280"
+fill="white"
+/>
+
 <circle
 cx="140"
 cy="140"
 r="${radius}"
 fill="white"
 stroke="#1e293b"
-stroke-width="3"/>
+stroke-width="3"
+/>
+
 ${ticks}
+
 ${numbers}
+
 <line
 x1="140"
 y1="140"
@@ -369,7 +514,9 @@ x2="${hourTip.x.toFixed(2)}"
 y2="${hourTip.y.toFixed(2)}"
 stroke="#1e293b"
 stroke-width="6"
-stroke-linecap="round"/>
+stroke-linecap="round"
+/>
+
 <line
 x1="140"
 y1="140"
@@ -377,13 +524,17 @@ x2="${minuteTip.x.toFixed(2)}"
 y2="${minuteTip.y.toFixed(2)}"
 stroke="#334155"
 stroke-width="4"
-stroke-linecap="round"/>
+stroke-linecap="round"
+/>
+
 <circle
 cx="140"
 cy="140"
 r="5"
-fill="#1e293b"/>
-</svg>`;
+fill="#1e293b"
+/>
+</svg>
+`;
 
   return (
     'data:image/svg+xml;base64,' +
@@ -394,7 +545,7 @@ fill="#1e293b"/>
 }
 
 // ============================================================
-// LOCAL GRAPH
+// LOCAL GRAPH SVG
 // ============================================================
 
 function buildGraphImageSvg(
@@ -412,15 +563,18 @@ function buildGraphImageSvg(
   const points =
     graph.points
       .filter(
-        (p) =>
+        (point) =>
           isFiniteNumber(
-            p?.x
+            point?.x
           ) &&
           isFiniteNumber(
-            p?.y
+            point?.y
           )
       )
-      .slice(0, 80);
+      .slice(
+        0,
+        100
+      );
 
   if (
     points.length < 2
@@ -434,12 +588,14 @@ function buildGraphImageSvg(
 
   const xs =
     points.map(
-      (p) => p.x
+      (point) =>
+        point.x
     );
 
   const ys =
     points.map(
-      (p) => p.y
+      (point) =>
+        point.y
     );
 
   const minX =
@@ -454,90 +610,146 @@ function buildGraphImageSvg(
   const maxY =
     Math.max(...ys);
 
-  const mapX = (
-    x
-  ) =>
-    pad +
-    ((x - minX) /
-      Math.max(
-        maxX - minX,
-        1
-      )) *
-      (W - pad * 2);
+  const mapX =
+    (value) =>
+      pad +
+      ((value - minX) /
+        Math.max(
+          maxX - minX,
+          1
+        )) *
+        (W - pad * 2);
 
-  const mapY = (
-    y
-  ) =>
-    H -
-    pad -
-    ((y - minY) /
-      Math.max(
-        maxY - minY,
-        1
-      )) *
-      (H - pad * 2);
+  const mapY =
+    (value) =>
+      H -
+      pad -
+      ((value - minY) /
+        Math.max(
+          maxY - minY,
+          1
+        )) *
+        (H - pad * 2);
 
   const path =
     points
       .map(
-        (p, i) =>
+        (
+          point,
+          index
+        ) =>
           `${
-            i === 0
+            index === 0
               ? 'M'
               : 'L'
           } ${mapX(
-            p.x
+            point.x
           ).toFixed(1)} ${mapY(
-            p.y
+            point.y
           ).toFixed(1)}`
       )
       .join(' ');
 
+  const highlights =
+    Array.isArray(
+      graph.highlight
+    )
+      ? graph.highlight
+          .filter(
+            (point) =>
+              isFiniteNumber(
+                point?.x
+              ) &&
+              isFiniteNumber(
+                point?.y
+              )
+          )
+          .map(
+            (point) =>
+              `<circle
+cx="${mapX(
+                point.x
+              ).toFixed(1)}"
+cy="${mapY(
+                point.y
+              ).toFixed(1)}"
+r="6"
+fill="#dc2626"
+/>`
+          )
+          .join('')
+      : '';
+
   const svg = `
-<svg xmlns="http://www.w3.org/2000/svg"
-viewBox="0 0 ${W} ${H}">
+<svg
+xmlns="http://www.w3.org/2000/svg"
+viewBox="0 0 ${W} ${H}"
+width="${W}"
+height="${H}"
+>
 <rect
 width="${W}"
 height="${H}"
-fill="white"/>
+fill="white"
+/>
+
 <line
 x1="${pad}"
 y1="${H - pad}"
 x2="${W - pad}"
 y2="${H - pad}"
-stroke="#64748b"/>
+stroke="#64748b"
+stroke-width="1.5"
+/>
+
 <line
 x1="${pad}"
 y1="${pad}"
 x2="${pad}"
 y2="${H - pad}"
-stroke="#64748b"/>
+stroke="#64748b"
+stroke-width="1.5"
+/>
+
 <path
 d="${path}"
 fill="none"
 stroke="#1e293b"
 stroke-width="3"
-stroke-linecap="round"/>
+stroke-linecap="round"
+stroke-linejoin="round"
+/>
+
+${highlights}
+
 <text
 x="${W - pad}"
 y="${H - 15}"
 text-anchor="end"
 font-family="Arial"
-font-size="16">
-${cleanText(
-  graph.xLabel || 'x'
+font-size="16"
+fill="#334155"
+>
+${escapeXml(
+  graph.xLabel ||
+    'x'
 )}
 </text>
+
 <text
 x="18"
 y="${pad}"
 font-family="Arial"
-font-size="16">
-${cleanText(
-  graph.yLabel || 'y'
+font-size="16"
+fill="#334155"
+>
+${escapeXml(
+  graph.yLabel ||
+    'y'
 )}
 </text>
-</svg>`;
+</svg>
+`;
 
   return (
     'data:image/svg+xml;base64,' +
@@ -582,7 +794,7 @@ async function jinaSearch(
             `Bearer ${apiKey}`,
 
           'User-Agent':
-            'BimbelGemilangResearch/Stable',
+            'BimbelGemilangResearch/3.0',
         },
       },
       JINA_TIMEOUT_MS
@@ -655,40 +867,45 @@ async function jinaSearch(
                 item?.description ||
                 item?.snippet ||
                 ''
-            ).slice(
-              0,
-              MAX_SOURCE_CHARS
             ),
         })
       )
       .filter(
         (item) =>
+          item.title ||
           item.url ||
           item.content
       );
   } catch (_) {
-    return raw.trim()
-      ? [
-          {
-            title:
-              'Jina Search Result',
-            url: '',
-            content:
-              raw.slice(
-                0,
-                MAX_SOURCE_CHARS
-              ),
-          },
-        ]
-      : [];
+    // Kalau gateway memberi teks biasa.
+    if (
+      raw.trim()
+    ) {
+      return [
+        {
+          title:
+            'Jina Search Result',
+
+          url: '',
+
+          content:
+            raw.slice(
+              0,
+              MAX_SOURCE_CHARS
+            ),
+        },
+      ];
+    }
+
+    return [];
   }
 }
 
 // ============================================================
-// QUERIES
+// QUERY BUILDER
 // ============================================================
 
-function buildQueries({
+function buildResearchQueries({
   topic,
   mapel,
   kelas,
@@ -696,116 +913,159 @@ function buildQueries({
   sourceMode,
   arahan,
 }) {
+  const clean =
+    (value) =>
+      String(
+        value || ''
+      )
+        .replace(
+          /\s+/g,
+          ' '
+        )
+        .trim();
+
   const t =
-    cleanText(
-      topic
-    );
+    clean(topic);
 
   const m =
-    cleanText(
-      mapel
-    );
+    clean(mapel);
 
   const k =
-    cleanText(
-      kelas
-    );
+    clean(kelas);
 
   const y =
-    cleanText(
-      targetYear
-    );
+    clean(targetYear);
 
   const a =
-    cleanText(
-      arahan
-    );
+    clean(arahan);
 
   if (
     sourceMode ===
     'prediction'
   ) {
     return [
-      `${t} ${m} ${k} TKA contoh soal`,
-      `${t} ${m} ${k} soal HOTS`,
-      `${t} ${m} ${k} latihan soal`,
-      `${t} ${m} ${k} ${y} prediksi ${a}`,
+      clean(
+        `${t} ${m} ${k} TKA contoh soal`
+      ),
+
+      clean(
+        `${t} ${m} ${k} soal HOTS`
+      ),
+
+      clean(
+        `${t} ${m} ${k} latihan soal tahun sebelumnya`
+      ),
+
+      clean(
+        `${t} ${m} ${k} ${y} soal prediksi ${a}`
+      ),
     ];
   }
 
   return [
-    `${t} ${m} ${k} soal`,
-    `${t} ${m} ${k} contoh soal`,
-    `${t} ${m} ${k} TKA`,
-    `${t} ${m} ${k} latihan`,
+    clean(
+      `${t} ${m} ${k} soal`
+    ),
+
+    clean(
+      `${t} ${m} ${k} contoh soal`
+    ),
+
+    clean(
+      `${t} ${m} ${k} latihan TKA`
+    ),
+
+    clean(
+      `${t} ${m} ${k} bank soal`
+    ),
   ];
 }
 
 // ============================================================
-// SOURCE RANKING
+// SOURCE DEDUP + RANKING
 // ============================================================
 
-function rankSources(
+function dedupeAndRankSources(
   sources,
   searchContext
 ) {
-  const seen =
+  const seenUrls =
     new Set();
 
-  const ranked =
+  const unique =
     [];
 
   for (
     const source of
       sources
   ) {
-    const key =
-      source?.url ||
-      normalizeText(
+    const url =
+      cleanText(
+        source?.url ||
+          ''
+      );
+
+    const title =
+      cleanText(
         source?.title ||
           ''
       );
 
-    if (!key) {
-      continue;
-    }
-
     if (
-      seen.has(key)
+      !url &&
+      !title
     ) {
       continue;
     }
 
-    seen.add(key);
+    const key =
+      url ||
+      normalizeText(
+        title
+      );
+
+    if (
+      seenUrls.has(
+        key
+      )
+    ) {
+      continue;
+    }
+
+    seenUrls.add(
+      key
+    );
 
     const titleScore =
-      jaccard(
+      jaccardSimilarity(
         searchContext,
-        source.title ||
-          ''
+        title
       );
 
     const contentScore =
-      jaccard(
+      jaccardSimilarity(
         searchContext,
         source.content ||
           ''
       );
 
-    const score =
-      titleScore * 0.6 +
-      contentScore * 0.4;
+    const sourceScore =
+      titleScore * 0.55 +
+      contentScore * 0.45;
 
-    ranked.push({
+    unique.push({
       ...source,
+
       relevanceScore:
         Number(
-          score.toFixed(4)
+          sourceScore.toFixed(
+            4
+          )
         ),
     });
   }
 
-  return ranked
+  return unique
     .sort(
       (a, b) =>
         b.relevanceScore -
@@ -813,94 +1073,303 @@ function rankSources(
     )
     .slice(
       0,
-      MAX_SELECTED_SOURCES
+      MAX_UNIQUE_SOURCES
     );
 }
 
 // ============================================================
-// IMPORTANT:
-// JINA SUDAH MEMBERIKAN CONTENT.
-// TIDAK FETCH HALAMAN LAGI DI STAGE INI.
+// READ SOURCE PAGE
 // ============================================================
 
-function prepareSources(
-  rankedSources
+async function readSourcePage(
+  source
 ) {
-  return rankedSources
-    .map(
-      (source) => ({
-        ...source,
+  if (
+    !source?.url
+  ) {
+    return source;
+  }
 
-        title:
-          source.title ||
-          '',
+  // ==========================================================
+  // PRIORITASKAN CONTENT DARI JINA
+  // ==========================================================
+  // Jina Search sudah memberikan content/snippet.
+  // Jangan membuka URL lagi kalau content cukup.
+  // Ini menghemat waktu dan request HTTP.
+  // ==========================================================
 
-        url:
-          source.url ||
-          '',
+  if (
+    typeof source.content === 'string' &&
+    source.content.trim().length >= 500
+  ) {
+    return {
+      ...source,
 
-        content:
-          cleanText(
-            source.content ||
-              ''
-          ).slice(
-            0,
-            MAX_SOURCE_CHARS
-          ),
+      content: cleanText(
+        source.content
+      ).slice(
+        0,
+        MAX_SOURCE_CHARS
+      ),
 
-        images:
-          Array.isArray(
-            source.images
+      images: Array.isArray(
+        source.images
+      )
+        ? source.images
+        : [],
+    };
+  }
+
+  // ==========================================================
+  // FALLBACK: BACA HALAMAN SUMBER
+  // HANYA KALAU CONTENT JINA TERLALU PENDEK
+  // ==========================================================
+
+  try {
+    const response =
+      await fetchWithTimeout(
+        source.url,
+        {
+          method: 'GET',
+
+          headers: {
+            Accept:
+              'text/html,application/xhtml+xml',
+
+            'User-Agent':
+              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/151 Safari/537.36',
+          },
+        },
+        8000
+      );
+
+    if (
+      !response.ok
+    ) {
+      return source;
+    }
+
+    const html =
+      await response.text();
+
+    if (
+      !html ||
+      html.length <
+        200
+    ) {
+      return source;
+    }
+
+    const titleMatch =
+      html.match(
+        /<title[^>]*>([\s\S]*?)<\/title>/i
+      );
+
+    const pageTitle =
+      titleMatch
+        ? cleanText(
+            titleMatch[1]
           )
-            ? source.images
-            : [],
-      })
-    )
-    .filter(
-      (source) =>
-        source.content.length >=
-        MIN_SOURCE_TEXT
-    );
+        : source.title;
+
+    const content =
+      cleanText(
+        html
+          .replace(
+            /<noscript[\s\S]*?<\/noscript>/gi,
+            ' '
+          )
+          .replace(
+            /<script[\s\S]*?<\/script>/gi,
+            ' '
+          )
+          .replace(
+            /<style[\s\S]*?<\/style>/gi,
+            ' '
+          )
+          .replace(
+            /<svg[\s\S]*?<\/svg>/gi,
+            ' '
+          )
+          .replace(
+            /<[^>]+>/g,
+            ' '
+          )
+      ).slice(
+        0,
+        MAX_SOURCE_CHARS
+      );
+
+    const images =
+      [];
+
+    const imageRegex =
+      /<img\b[^>]*>/gi;
+
+    let match;
+
+    while (
+      (match =
+        imageRegex.exec(
+          html
+        )) &&
+      images.length <
+        25
+    ) {
+      const tag =
+        match[0];
+
+      const srcMatch =
+        tag.match(
+          /(?:src|data-src|data-lazy-src|data-original)=["']([^"']+)["']/i
+        );
+
+      if (!srcMatch) {
+        continue;
+      }
+
+      let imageUrl =
+        '';
+
+      try {
+        imageUrl =
+          new URL(
+            srcMatch[1],
+            source.url
+          ).href;
+      } catch (_) {}
+
+      if (
+        !imageUrl
+      ) {
+        continue;
+      }
+
+      const altMatch =
+        tag.match(
+          /alt=["']([^"']*)["']/i
+        );
+
+      images.push({
+        url:
+          imageUrl,
+
+        alt:
+          cleanText(
+            altMatch?.[1] ||
+              ''
+          ),
+      });
+    }
+
+    return {
+      ...source,
+
+      title:
+        pageTitle ||
+        source.title,
+
+      content,
+
+      images:
+        images.filter(
+          (
+            item,
+            index,
+            array
+          ) =>
+            index ===
+            array.findIndex(
+              (x) =>
+                x.url ===
+                item.url
+            )
+        ),
+    };
+  } catch (_) {
+    return source;
+  }
 }
 
 // ============================================================
-// RESEARCH PACK
+// BUILD RESEARCH PACK
 // ============================================================
 
 function buildResearchPack(
-  sources
+  pages
 ) {
-  let output =
+  let pack =
     '';
 
   for (
-    let i = 0;
-    i < sources.length;
-    i += 1
+    let index = 0;
+    index <
+    pages.length;
+    index +=
+      1
   ) {
-    const source =
-      sources[i];
+    const page =
+      pages[index];
+
+    const images =
+      Array.isArray(
+        page.images
+      )
+        ? page.images
+        : [];
+
+    const imageList =
+      images
+        .slice(
+          0,
+          12
+        )
+        .map(
+          (
+            image,
+            imageIndex
+          ) =>
+            `[IMAGE ${imageIndex}] ${image.url} | ALT: ${
+              image.alt ||
+              ''
+            }`
+        )
+        .join(
+          '\n'
+        );
 
     const block = `
-SOURCE_INDEX: ${i}
+SOURCE_INDEX: ${index}
 
 TITLE:
-${source.title}
+${page.title || ''}
 
 URL:
-${source.url}
+${page.url || ''}
 
-RELEVANCE:
-${source.relevanceScore || 0}
+RELEVANCE_SCORE:
+${page.relevanceScore || 0}
 
 CONTENT:
-${source.content}
+${
+  (
+    page.content ||
+    ''
+  ).slice(
+    0,
+    MAX_SOURCE_CHARS
+  )
+}
 
+IMAGE_ASSETS:
+${imageList}
+
+--------------------------------------------------
 `;
 
     if (
       (
-        output +
+        pack +
         block
       ).length >
       MAX_RESEARCH_PACK_CHARS
@@ -908,21 +1377,21 @@ ${source.content}
       break;
     }
 
-    output +=
-      `${block}\n----------------\n`;
+    pack +=
+      block;
   }
 
-  return output;
+  return pack;
 }
 
 // ============================================================
 // CLOUDFLARE AI
 // ============================================================
 
-async function callCloudflare(
+async function callCloudflareAI({
   systemPrompt,
-  userPrompt
-) {
+  userPrompt,
+}) {
   const token =
     process.env
       .CLOUDFLARE_API_TOKEN;
@@ -933,13 +1402,13 @@ async function callCloudflare(
 
   if (!token) {
     throw new Error(
-      'CLOUDFLARE_API_TOKEN belum tersedia.'
+      'CLOUDFLARE_API_TOKEN belum tersedia di Vercel.'
     );
   }
 
   if (!accountId) {
     throw new Error(
-      'CLOUDFLARE_ACCOUNT_ID belum tersedia.'
+      'CLOUDFLARE_ACCOUNT_ID belum tersedia di Vercel.'
     );
   }
 
@@ -953,16 +1422,13 @@ async function callCloudflare(
         content:
           systemPrompt,
       },
+
       {
         role: 'user',
         content:
           userPrompt,
       },
     ],
-
-    // Batasi output supaya
-    // tidak terlalu panjang.
-    max_tokens: 8000,
   };
 
   const response =
@@ -990,12 +1456,18 @@ async function callCloudflare(
   const raw =
     await response.text();
 
-  let data = null;
+  let data =
+    null;
 
   try {
     data =
-      JSON.parse(raw);
-  } catch (_) {}
+      JSON.parse(
+        raw
+      );
+  } catch (_) {
+    data =
+      null;
+  }
 
   if (
     !response.ok
@@ -1015,6 +1487,9 @@ async function callCloudflare(
     error.status =
       response.status;
 
+    error.raw =
+      data || raw;
+
     throw error;
   }
 
@@ -1022,7 +1497,7 @@ async function callCloudflare(
 }
 
 // ============================================================
-// EXTRACT TEXT
+// EXTRACT CLOUDFLARE TEXT
 // ============================================================
 
 function extractCloudflareText(
@@ -1031,6 +1506,13 @@ function extractCloudflareText(
   const result =
     data?.result ||
     {};
+
+  if (
+    typeof result ===
+    'string'
+  ) {
+    return result;
+  }
 
   if (
     typeof result.response ===
@@ -1046,13 +1528,6 @@ function extractCloudflareText(
     return result.text;
   }
 
-  if (
-    typeof result.output_text ===
-    'string'
-  ) {
-    return result.output_text;
-  }
-
   const choices =
     Array.isArray(
       result.choices
@@ -1060,101 +1535,145 @@ function extractCloudflareText(
       ? result.choices
       : [];
 
-  return choices
-    .map(
-      (choice) => {
-        const content =
-          choice
-            ?.message
-            ?.content;
+  const text =
+    choices
+      .map(
+        (choice) => {
+          const content =
+            choice?.message
+              ?.content;
 
-        if (
-          typeof content ===
-          'string'
-        ) {
-          return content;
-        }
+          if (
+            typeof content ===
+            'string'
+          ) {
+            return content;
+          }
 
-        if (
-          Array.isArray(
-            content
-          )
-        ) {
-          return content
-            .map(
-              (part) =>
-                part?.text ||
-                ''
+          if (
+            Array.isArray(
+              content
             )
-            .join('');
-        }
+          ) {
+            return content
+              .map(
+                (part) =>
+                  part?.text ||
+                  ''
+              )
+              .join('');
+          }
 
-        if (
-          typeof choice?.text ===
-          'string'
-        ) {
-          return choice.text;
-        }
+          if (
+            typeof choice?.text ===
+            'string'
+          ) {
+            return choice.text;
+          }
 
-        return '';
-      }
-    )
-    .join('\n');
+          return '';
+        }
+      )
+      .join(
+        '\n'
+      );
+
+  if (
+    text.trim()
+  ) {
+    return text;
+  }
+
+  // Fallback beberapa bentuk hasil model.
+  if (
+    typeof result.output_text ===
+    'string'
+  ) {
+    return result.output_text;
+  }
+
+  return '';
 }
 
 // ============================================================
-// JSON PARSER
+// JSON EXTRACTOR
 // ============================================================
 
 function extractJsonObjects(
   text = ''
 ) {
-  const result = [];
+  const objects =
+    [];
 
-  let depth = 0;
-  let start = -1;
-  let inString = false;
-  let escaped = false;
+  let depth =
+    0;
+
+  let start =
+    -1;
+
+  let inString =
+    false;
+
+  let escaped =
+    false;
 
   for (
-    let i = 0;
-    i < text.length;
-    i += 1
+    let index = 0;
+    index <
+    text.length;
+    index +=
+      1
   ) {
     const ch =
-      text[i];
+      text[index];
 
-    if (escaped) {
-      escaped = false;
+    if (
+      escaped
+    ) {
+      escaped =
+        false;
       continue;
     }
 
-    if (ch === '\\') {
-      escaped = true;
+    if (
+      ch === '\\'
+    ) {
+      escaped =
+        true;
       continue;
     }
 
-    if (ch === '"') {
+    if (
+      ch === '"'
+    ) {
       inString =
         !inString;
       continue;
     }
 
-    if (inString) {
+    if (
+      inString
+    ) {
       continue;
     }
 
-    if (ch === '{') {
+    if (
+      ch === '{'
+    ) {
       if (
-        depth === 0
+        depth ===
+        0
       ) {
-        start = i;
+        start =
+          index;
       }
 
       depth += 1;
     }
 
-    if (ch === '}') {
+    if (
+      ch === '}'
+    ) {
       depth -= 1;
 
       if (
@@ -1162,33 +1681,138 @@ function extractJsonObjects(
         start !== -1
       ) {
         try {
-          result.push(
+          objects.push(
             JSON.parse(
               text.slice(
                 start,
-                i + 1
+                index + 1
               )
             )
           );
         } catch (_) {}
 
-        start = -1;
+        start =
+          -1;
       }
     }
   }
 
-  return result;
+  return objects;
 }
 
 // ============================================================
-// VALIDATE QUESTION
+// SOURCE TEXT EVIDENCE CHECK
+// ============================================================
+
+function sourceEvidenceScore(
+  question,
+  options,
+  source
+) {
+  if (
+    !source
+  ) {
+    return 0;
+  }
+
+  const sourceText =
+    normalizeText(
+      [
+        source.title,
+        source.content,
+      ].join(' ')
+    );
+
+  if (
+    !sourceText
+  ) {
+    return 0;
+  }
+
+  const questionTokens =
+    tokenSet(
+      question
+    );
+
+  const optionTokens =
+    tokenSet(
+      Array.isArray(
+        options
+      )
+        ? options.join(
+            ' '
+          )
+        : ''
+    );
+
+  const sourceTokens =
+    tokenSet(
+      sourceText
+    );
+
+  let qOverlap =
+    0;
+
+  for (
+    const token of
+      questionTokens
+  ) {
+    if (
+      sourceTokens.has(
+        token
+      )
+    ) {
+      qOverlap +=
+        1;
+    }
+  }
+
+  let optionOverlap =
+    0;
+
+  for (
+    const token of
+      optionTokens
+  ) {
+    if (
+      sourceTokens.has(
+        token
+      )
+    ) {
+      optionOverlap +=
+        1;
+    }
+  }
+
+  const questionCoverage =
+    questionTokens.size
+      ? qOverlap /
+        questionTokens.size
+      : 0;
+
+  const optionCoverage =
+    optionTokens.size
+      ? optionOverlap /
+        optionTokens.size
+      : 0;
+
+  return (
+    questionCoverage *
+      0.75 +
+    optionCoverage *
+      0.25
+  );
+}
+
+// ============================================================
+// QUESTION VALIDATOR
 // ============================================================
 
 function validateQuestion(
   raw,
   allowedTypes,
-  sourceMode,
-  sources
+  pages,
+  sourceMode
 ) {
   if (
     !raw ||
@@ -1215,7 +1839,12 @@ function validateQuestion(
     return null;
   }
 
-  let source = null;
+  // ----------------------------------------------------------
+  // SOURCE
+  // ----------------------------------------------------------
+
+  let source =
+    null;
 
   if (
     sourceMode ===
@@ -1230,16 +1859,21 @@ function validateQuestion(
     }
 
     source =
-      sources[
+      pages[
         raw.sourceIndex
       ];
 
-    if (!source) {
+    if (
+      !source
+    ) {
       return null;
     }
   }
 
+  // ----------------------------------------------------------
   // MULTIPLE
+  // ----------------------------------------------------------
+
   if (
     raw.type ===
     'multiple'
@@ -1265,7 +1899,10 @@ function validateQuestion(
     }
   }
 
+  // ----------------------------------------------------------
   // MULTISELECT
+  // ----------------------------------------------------------
+
   if (
     raw.type ===
     'multiselect'
@@ -1289,9 +1926,26 @@ function validateQuestion(
     ) {
       return null;
     }
+
+    if (
+      !raw.correctAnswers.every(
+        (answer) =>
+          isIntegerInRange(
+            answer,
+            0,
+            raw.options.length -
+              1
+          )
+      )
+    ) {
+      return null;
+    }
   }
 
+  // ----------------------------------------------------------
   // TRUE FALSE
+  // ----------------------------------------------------------
+
   if (
     raw.type ===
     'truefalse'
@@ -1308,10 +1962,10 @@ function validateQuestion(
 
     if (
       !raw.statements.every(
-        (s) =>
-          typeof s?.text ===
+        (statement) =>
+          typeof statement?.text ===
             'string' &&
-          typeof s?.isTrue ===
+          typeof statement?.isTrue ===
             'boolean'
       )
     ) {
@@ -1319,10 +1973,13 @@ function validateQuestion(
     }
   }
 
+  // ----------------------------------------------------------
   // SHORT ANSWER
+  // ----------------------------------------------------------
+
   if (
     raw.type ===
-      'shortanswer' &&
+    'shortanswer' &&
     !cleanText(
       raw.shortAnswer
     )
@@ -1330,7 +1987,10 @@ function validateQuestion(
     return null;
   }
 
+  // ----------------------------------------------------------
   // CAUSE EFFECT
+  // ----------------------------------------------------------
+
   if (
     raw.type ===
     'causeeffect'
@@ -1356,7 +2016,10 @@ function validateQuestion(
     }
   }
 
+  // ----------------------------------------------------------
   // MATCHING
+  // ----------------------------------------------------------
+
   if (
     raw.type ===
     'matching'
@@ -1372,7 +2035,10 @@ function validateQuestion(
     }
   }
 
+  // ----------------------------------------------------------
   // READING
+  // ----------------------------------------------------------
+
   if (
     raw.type ===
     'reading'
@@ -1394,9 +2060,30 @@ function validateQuestion(
     ) {
       return null;
     }
+
+    if (
+      !raw.subQuestions.every(
+        (subQuestion) =>
+          Array.isArray(
+            subQuestion?.options
+          ) &&
+          subQuestion.options.length ===
+            4 &&
+          isIntegerInRange(
+            subQuestion?.correct,
+            0,
+            3
+          )
+      )
+    ) {
+      return null;
+    }
   }
 
+  // ----------------------------------------------------------
   // VISUAL
+  // ----------------------------------------------------------
+
   let qImage =
     cleanText(
       raw.questionImageUrl ||
@@ -1404,15 +2091,15 @@ function validateQuestion(
         ''
     );
 
-  let visualRequired =
-    Boolean(
-      qImage
-    );
-
   let visualKind =
     qImage
       ? 'source-image'
       : 'none';
+
+  let visualRequired =
+    Boolean(
+      qImage
+    );
 
   let needsImage =
     Boolean(
@@ -1426,6 +2113,7 @@ function validateQuestion(
         ''
     );
 
+  // Clock.
   if (
     raw.clock
   ) {
@@ -1441,6 +2129,7 @@ function validateQuestion(
       'clock';
   }
 
+  // Graph.
   if (
     raw.graph
   ) {
@@ -1501,6 +2190,8 @@ function validateQuestion(
     }
   }
 
+  // Jangan izinkan kalimat visual tanpa
+  // stimulus visual.
   if (
     hasVisualCue(
       question
@@ -1511,36 +2202,38 @@ function validateQuestion(
     return null;
   }
 
-  // SOURCE EVIDENCE
-  let evidenceScore = 1;
+  // ----------------------------------------------------------
+  // SOURCE MODE EVIDENCE
+  // ----------------------------------------------------------
+
+  let evidenceScore =
+    1;
 
   if (
     sourceMode ===
     'source'
   ) {
-    const sourceText =
-      [
-        source?.title,
-        source?.content,
-      ]
-        .filter(Boolean)
-        .join(' ');
-
     evidenceScore =
-      jaccard(
+      sourceEvidenceScore(
         question,
-        sourceText
+        raw.options,
+        source
       );
 
-    // Sedikit longgar karena
-    // hasil search bisa berbeda format.
+    // Kita TOLAK jika bukti terlalu lemah.
+    // Ambang ini sengaja tidak terlalu tinggi karena
+    // source content dapat mengandung OCR/formatting berbeda.
     if (
       evidenceScore <
-      0.15
+      0.28
     ) {
       return null;
     }
   }
+
+  // ----------------------------------------------------------
+  // RETURN NORMALIZED QUESTION
+  // ----------------------------------------------------------
 
   return {
     type:
@@ -1658,13 +2351,18 @@ function validateQuestion(
 
     imageHint,
 
+    imageSource:
+      raw.imageSource ||
+      null,
+
     researchBacked:
       true,
 
     researchSources:
       [],
 
-    sourceMode,
+    sourceMode:
+      sourceMode,
 
     sourceIndex:
       Number.isInteger(
@@ -1709,7 +2407,7 @@ function validateQuestion(
 }
 
 // ============================================================
-// PROMPT
+// SYSTEM PROMPT
 // ============================================================
 
 function buildSystemPrompt({
@@ -1718,165 +2416,278 @@ function buildSystemPrompt({
   allowedTypes,
   hotsLevel,
 }) {
-  return `
-Kamu adalah Asisten Soal Gemilang.
+  const sourceModeText =
+    sourceMode ===
+    'source'
+      ? `
+MODE = SOURCE
 
-MODE:
-${
-  sourceMode ===
-  'source'
-    ? `
-AMBIL SOAL DARI INTERNET.
-
-Gunakan hanya soal yang benar-benar dapat ditelusuri
+Kamu harus mengambil soal yang benar-benar tersedia
 pada sumber yang diberikan.
 
-Jangan menciptakan soal baru.
-Jangan mengarang URL.
-Jangan mengarang gambar.
+JANGAN:
+- membuat soal baru,
+- mengganti konteks utama,
+- mengarang pilihan,
+- mengarang URL,
+- mengarang gambar.
 
-Kamu boleh:
-- membersihkan format,
-- menentukan jawaban,
-- memverifikasi jawaban,
+BOLEH:
+- memperbaiki format,
+- membersihkan HTML,
+- memperjelas OCR yang rusak jika maksudnya tetap sama,
+- menentukan jawaban benar,
+- melakukan verifikasi,
 - membuat pembahasan.
-`
-    : `
-PREDIKSI BERBASIS TREN INTERNET.
 
-Gunakan sumber sebagai evidence untuk:
-- topik berulang,
+Jika soal pada sumber tidak cukup jelas untuk diverifikasi,
+JANGAN keluarkan soal tersebut.
+`
+      : `
+MODE = PREDICTION
+
+Sumber web adalah evidence untuk menemukan:
+- pola topik,
 - kompetensi,
+- frekuensi,
 - HOTS,
 - stimulus,
-- tren terbaru.
+- visual,
+- bentuk soal,
+- tren waktu.
 
-Buat latihan baru berdasarkan evidence.
+Kemudian buat soal LATIHAN BARU berdasarkan evidence tersebut.
 
-Jangan menyebutnya bocoran.
-Jangan menyatakan pasti keluar.
-`
-}
+JANGAN menyebut hasil sebagai bocoran.
+JANGAN mengklaim soal pasti keluar.
+`;
 
-TARGET:
+  return `
+Kamu adalah AI akademik profesional untuk Bimbel Gemilang.
+
+${sourceModeText}
+
+TARGET TAHUN:
 ${targetYear}
 
-LEVEL:
+LEVEL HOTS:
 ${hotsLevel || 'standar'}
 
-WAJIB:
-- akurat
-- relevan
-- jawaban benar
-- pembahasan detail
-- answerVerification jelas
-- analysisSummary jelas
-- visual tidak boleh palsu
-- JSONL saja
+ATURAN UTAMA:
 
-MULTIPLE:
+1. Mapel harus sesuai.
+2. Kelas harus sesuai.
+3. Topik harus sesuai.
+4. Kunci jawaban harus benar.
+5. Pembahasan harus detail tetapi mudah dipahami.
+6. answerVerification wajib menjelaskan alasan kunci.
+7. analysisSummary wajib menjelaskan konsep/kompetensi.
+8. Untuk matematika, fisika, dan kimia, hitung ulang.
+9. Jika sumber dan kunci bertentangan dengan logika,
+   prioritaskan kebenaran akademik dan tandai pada verification.
+10. Jangan membuat URL sumber palsu.
+11. Jangan membuat gambar palsu yang diklaim sebagai gambar sumber.
+12. Jika soal menyebut gambar/grafik/tabel, stimulus wajib tersedia.
+13. Jika opsi berupa gambar, gunakan asset yang tersedia.
+14. Jangan output markdown.
+15. Jangan output code fence.
+16. Output JSONL saja.
+
+OUTPUT BARIS PERTAMA:
+{"meta":true}
+
+============================================================
+MULTIPLE
+============================================================
+
 {
-"type":"multiple",
-"question":"...",
-"options":["A","B","C","D"],
-"correct":0,
-"explanation":"...",
-"answerVerification":"...",
-"analysisSummary":"...",
-"sourceIndex":0,
-"sourceTitle":"...",
-"sourceUrl":"...",
-"sourceQuestionVerbatim":true,
-"questionImageUrl":"",
-"optionImages":[],
-"optionsAreImages":false
+  "type":"multiple",
+  "question":"...",
+  "options":["A","B","C","D"],
+  "correct":0,
+  "explanation":"...",
+  "answerVerification":"...",
+  "analysisSummary":"...",
+  "sourceIndex":0,
+  "sourceTitle":"...",
+  "sourceUrl":"...",
+  "sourceQuestionVerbatim":true,
+  "questionImageUrl":"",
+  "optionImages":[],
+  "optionsAreImages":false
 }
 
-correct harus INDEX 0-3.
+correct:
+0 = opsi pertama
+1 = opsi kedua
+2 = opsi ketiga
+3 = opsi keempat
 
-MULTISELECT:
+JANGAN menggunakan:
+"A"
+"B"
+"C"
+"D"
+
+sebagai nilai correct.
+
+============================================================
+MULTISELECT
+============================================================
+
 {
-"type":"multiselect",
-"question":"...",
-"options":["A","B","C","D"],
-"correctAnswers":[0,2],
-"explanation":"..."
+  "type":"multiselect",
+  "question":"...",
+  "options":["A","B","C","D"],
+  "correctAnswers":[0,2],
+  "explanation":"..."
 }
 
-TRUEFALSE:
+============================================================
+TRUE FALSE
+============================================================
+
 {
-"type":"truefalse",
-"question":"...",
-"statements":[
-{"text":"...","isTrue":true},
-{"text":"...","isTrue":false}
-],
-"explanation":"..."
+  "type":"truefalse",
+  "question":"...",
+  "statements":[
+    {
+      "text":"...",
+      "isTrue":true
+    },
+    {
+      "text":"...",
+      "isTrue":false
+    }
+  ],
+  "explanation":"..."
 }
 
-SHORTANSWER:
+============================================================
+SHORT ANSWER
+============================================================
+
 {
-"type":"shortanswer",
-"question":"...",
-"shortAnswer":"...",
-"explanation":"..."
+  "type":"shortanswer",
+  "question":"...",
+  "shortAnswer":"...",
+  "explanation":"..."
 }
 
-CAUSEEFFECT:
+============================================================
+CAUSE EFFECT
+============================================================
+
 {
-"type":"causeeffect",
-"question":"...",
-"cause":"...",
-"effect":"...",
-"isCauseTrue":true,
-"isEffectTrue":false,
-"explanation":"..."
+  "type":"causeeffect",
+  "question":"...",
+  "cause":"...",
+  "effect":"...",
+  "isCauseTrue":true,
+  "isEffectTrue":false,
+  "explanation":"..."
 }
 
-MATCHING:
+============================================================
+MATCHING
+============================================================
+
 {
-"type":"matching",
-"question":"...",
-"matchingPairs":[
-{"left":"...","right":"..."},
-{"left":"...","right":"..."},
-{"left":"...","right":"..."}
-],
-"explanation":"..."
+  "type":"matching",
+  "question":"...",
+  "matchingPairs":[
+    {
+      "left":"...",
+      "right":"..."
+    },
+    {
+      "left":"...",
+      "right":"..."
+    },
+    {
+      "left":"...",
+      "right":"..."
+    }
+  ],
+  "explanation":"..."
 }
 
-READING:
+============================================================
+READING
+============================================================
+
 {
-"type":"reading",
-"question":"...",
-"readingText":"...",
-"subQuestions":[
-{"q":"...","options":["A","B","C","D"],"correct":0},
-{"q":"...","options":["A","B","C","D"],"correct":1},
-{"q":"...","options":["A","B","C","D"],"correct":2}
-],
-"explanation":"..."
+  "type":"reading",
+  "question":"...",
+  "readingText":"...",
+  "subQuestions":[
+    {
+      "q":"...",
+      "options":["A","B","C","D"],
+      "correct":0
+    },
+    {
+      "q":"...",
+      "options":["A","B","C","D"],
+      "correct":1
+    },
+    {
+      "q":"...",
+      "options":["A","B","C","D"],
+      "correct":2
+    }
+  ],
+  "explanation":"..."
 }
+
+============================================================
+VISUAL
+============================================================
 
 CLOCK:
-"clock":{"hour":8,"minute":30}
+
+"clock":{
+  "hour":8,
+  "minute":30
+}
 
 GRAPH:
+
 "graph":{
   "points":[
     {"x":0,"y":0},
+    {"x":1,"y":2}
+  ],
+  "highlight":[
     {"x":1,"y":2}
   ],
   "xLabel":"x",
   "yLabel":"y"
 }
 
-OUTPUT:
-baris pertama {"meta":true}
-lalu satu JSON object per baris.
+PHOTO:
 
-ALLOWED TYPES:
-${allowedTypes.join(', ')}
+"needsImage":true,
+"imageHint":"english search phrase"
+
+OPTION IMAGES:
+
+"optionImages":[
+  "https://...",
+  "https://...",
+  "https://...",
+  "https://..."
+],
+"optionsAreImages":true
+
+ALLOWED QUESTION TYPES:
+
+${allowedTypes
+  .map(
+    (type) =>
+      `- ${type}`
+  )
+  .join('\n')}
 `;
 }
 
@@ -1892,13 +2703,13 @@ export default async function handler(
     req.method !==
     'POST'
   ) {
-    return res
-      .status(405)
-      .json({
-        success: false,
-        error:
-          'Method not allowed',
-      });
+    return res.status(
+      405
+    ).json({
+      success: false,
+      error:
+        'Method not allowed',
+    });
   }
 
   const {
@@ -1908,65 +2719,84 @@ export default async function handler(
     jumlahSoal,
     types,
     arahan,
+
     sourceMode,
+
+    // Compatibility with old frontend.
     useTrendSearch,
+
     targetYear,
+
     hotsLevel,
   } =
     req.body || {};
+
+  // ----------------------------------------------------------
+  // BASIC INPUT
+  // ----------------------------------------------------------
 
   const cleanTopic =
     cleanText(
       topic
     );
 
-  if (!cleanTopic) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        error:
-          'Topik wajib diisi.',
-      });
+  if (
+    !cleanTopic
+  ) {
+    return res.status(
+      400
+    ).json({
+      success: false,
+      error:
+        'Topik wajib diisi.',
+    });
   }
+
+  // ----------------------------------------------------------
+  // ENV
+  // ----------------------------------------------------------
 
   if (
     !process.env.JINA_API_KEY
   ) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        error:
-          'JINA_API_KEY belum tersedia.',
-      });
+    return res.status(
+      500
+    ).json({
+      success: false,
+      error:
+        'JINA_API_KEY belum tersedia di Vercel.',
+    });
   }
 
   if (
     !process.env
       .CLOUDFLARE_API_TOKEN
   ) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        error:
-          'CLOUDFLARE_API_TOKEN belum tersedia.',
-      });
+    return res.status(
+      500
+    ).json({
+      success: false,
+      error:
+        'CLOUDFLARE_API_TOKEN belum tersedia di Vercel.',
+    });
   }
 
   if (
     !process.env
       .CLOUDFLARE_ACCOUNT_ID
   ) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        error:
-          'CLOUDFLARE_ACCOUNT_ID belum tersedia.',
-      });
+    return res.status(
+      500
+    ).json({
+      success: false,
+      error:
+        'CLOUDFLARE_ACCOUNT_ID belum tersedia di Vercel.',
+    });
   }
+
+  // ----------------------------------------------------------
+  // COUNT
+  // ----------------------------------------------------------
 
   const requested =
     parseInt(
@@ -1981,7 +2811,7 @@ export default async function handler(
           requested
         )
           ? requested
-          : 3,
+          : 5,
         1
       ),
       MAX_BATCH_QUESTIONS
@@ -1993,7 +2823,13 @@ export default async function handler(
     ) &&
     types.length
       ? types
-      : ['multiple'];
+      : [
+          'multiple',
+        ];
+
+  // ----------------------------------------------------------
+  // MODE
+  // ----------------------------------------------------------
 
   const mode =
     sourceMode ===
@@ -2003,34 +2839,60 @@ export default async function handler(
 
   const year =
     targetYear ||
-    new Date().getFullYear() +
-      1;
+    String(
+      new Date().getFullYear() +
+        1
+    );
+
+  // useTrendSearch hanya untuk kompatibilitas
+  // frontend lama. Sistem ini tetap melakukan research.
+  const researchEnabled =
+    mode === 'source' ||
+    mode === 'prediction' ||
+    Boolean(
+      useTrendSearch
+    );
+
+  if (
+    !researchEnabled
+  ) {
+    return res.status(
+      400
+    ).json({
+      success: false,
+      error:
+        'Research internet wajib aktif pada Question Research Engine Gemilang.',
+    });
+  }
 
   // ==========================================================
-  // 1. SEARCH
+  // 1. SEARCH INTERNET
   // ==========================================================
 
   const queries =
-    buildQueries({
+    buildResearchQueries({
       topic:
         cleanTopic,
+
       mapel,
+
       kelas,
+
       targetYear:
         year,
+
       sourceMode:
         mode,
+
       arahan,
     });
 
-  const allSources =
+  const rawSources =
     [];
 
   const queryErrors =
     [];
 
-  // Empat query tetap dilakukan,
-  // tetapi tiap query independen.
   for (
     const query of
       queries
@@ -2041,29 +2903,35 @@ export default async function handler(
           query
         );
 
-      allSources.push(
+      rawSources.push(
         ...results
       );
     } catch (
       error
     ) {
-      console.warn(
-        '[Gemilang Search]',
+      console.error(
+        '[Gemilang][Search]',
         query,
         error.message
       );
 
       queryErrors.push({
         query,
+
         error:
           error.message,
       });
     }
+
+    // Jangan mengirim query bersamaan.
+    await sleep(
+      250
+    );
   }
 
-  // ==========================================================
-  // 2. RANK
-  // ==========================================================
+  // ----------------------------------------------------------
+  // RANK SOURCE TANPA AI
+  // ----------------------------------------------------------
 
   const searchContext =
     [
@@ -2075,94 +2943,162 @@ export default async function handler(
       .filter(Boolean)
       .join(' ');
 
-  const ranked =
-    rankSources(
-      allSources,
+  const rankedSources =
+    dedupeAndRankSources(
+      rawSources,
       searchContext
     );
 
   if (
-    ranked.length ===
+    rankedSources.length ===
     0
   ) {
-    return res
-      .status(502)
-      .json({
-        success: false,
+    return res.status(
+      502
+    ).json({
+      success: false,
 
-        error:
-          'Sistem tidak menemukan sumber internet yang relevan.',
+      error:
+        'Sistem tidak mendapatkan sumber internet yang relevan.',
 
-        debug:
-          queryErrors,
-      });
+      debug: {
+        queryCount:
+          queries.length,
+
+        queryErrors,
+      },
+
+      provider:
+        'Jina Search',
+    });
   }
 
   // ==========================================================
-  // 3. NO SECOND HTTP PAGE FETCH
+  // 2. READ SOURCES (PARALLEL)
   // ==========================================================
 
-  const sources =
-    prepareSources(
-      ranked
+  const selectedSources =
+    rankedSources.slice(
+      0,
+      MAX_UNIQUE_SOURCES
+    );
+
+  const fetchedPages =
+    await Promise.all(
+      selectedSources.map(
+        (source) =>
+          readSourcePage(
+            source
+          )
+      )
+    );
+
+  const readablePages =
+    fetchedPages.filter(
+      (page) => {
+        const readable =
+          Boolean(
+            page?.content &&
+              page.content
+                .length >=
+                MIN_SOURCE_TEXT
+          );
+
+        const visualOnly =
+          Boolean(
+            Array.isArray(
+              page?.images
+            ) &&
+              page.images
+                .length > 0
+          );
+
+        return (
+          readable ||
+          visualOnly
+        );
+      }
     );
 
   if (
-    sources.length ===
+    readablePages.length ===
     0
   ) {
-    return res
-      .status(502)
-      .json({
-        success: false,
+    return res.status(
+      502
+    ).json({
+      success: false,
 
-        error:
-          'Sumber pencarian ditemukan tetapi tidak memiliki content yang cukup untuk dianalisis.',
+      error:
+        'Sumber internet ditemukan, tetapi tidak ada halaman yang dapat dibaca.',
 
-        debug:
-          queryErrors,
+      researchSources:
+        rankedSources.map(
+          (source) => ({
+            title:
+              source.title ||
+              '',
 
-        researchSources:
-          ranked.map(
-            (source) => ({
-              title:
-                source.title ||
-                '',
-              url:
-                source.url ||
-                '',
-            })
-          ),
-      });
+            url:
+              source.url ||
+              '',
+          })
+        ),
+    });
   }
 
   // ==========================================================
-  // 4. SMALL RESEARCH PACK
+  // 3. RESEARCH PACK
   // ==========================================================
 
   const researchPack =
     buildResearchPack(
-      sources
+      readablePages
     );
 
+  if (
+    !researchPack.trim()
+  ) {
+    return res.status(
+      502
+    ).json({
+      success: false,
+
+      error:
+        'Research pack kosong setelah membaca sumber.',
+    });
+  }
+
   // ==========================================================
-  // 5. PROMPT
+  // 4. SYSTEM PROMPT
   // ==========================================================
 
   const systemPrompt =
     buildSystemPrompt({
       sourceMode:
         mode,
+
       targetYear:
         year,
+
       allowedTypes,
+
       hotsLevel:
         hotsLevel ||
         '',
     });
 
+  // ==========================================================
+  // 5. USER PROMPT
+  // ==========================================================
+
   const userPrompt = `
 BIMBEL GEMILANG
+PROFESSIONAL QUESTION RESEARCH TASK
+
+============================================================
+INPUT
+============================================================
 
 MAPEL:
 ${mapel || 'Umum'}
@@ -2179,69 +3115,119 @@ ${year}
 MODE:
 ${mode}
 
-JUMLAH:
+JUMLAH YANG DIMINTA:
 ${jumlah}
 
 TIPE:
-${allowedTypes.join(', ')}
+${allowedTypes.join(
+  ', '
+)}
 
-ARAHAN:
+ARAHAN GURU:
 ${cleanText(
   arahan || ''
 )}
 
-================================================
-RESEARCH SOURCES
-================================================
+============================================================
+RESEARCH PACK
+============================================================
 
 ${researchPack}
 
-================================================
-TASK
-================================================
+============================================================
+INSTRUKSI MODE SOURCE
+============================================================
 
 ${
   mode ===
   'source'
     ? `
-Ambil hingga ${jumlah} soal yang benar-benar ada
-di sumber.
+Pilih hingga ${jumlah} soal yang benar-benar dapat
+ditelusuri pada sumber.
 
-Pertahankan isi soal dan opsi.
-Tentukan kunci.
-Verifikasi.
-Berikan pembahasan.
+Jangan mengarang soal.
 
-Jangan membuat soal baru.
+Untuk setiap soal:
+- sourceIndex harus menunjuk SOURCE_INDEX yang benar.
+- sourceTitle harus sesuai sumber.
+- sourceUrl harus sesuai sumber.
+- sourceQuestionVerbatim = true.
+- jawaban harus diverifikasi.
+- pembahasan harus diberikan.
+- gambar hanya digunakan kalau sumber memang memiliki
+  stimulus gambar.
+- pilihan gambar hanya digunakan jika asset gambar sumber
+  tersedia.
+
+Jika sumber hanya menyebut topik tetapi tidak memuat soal,
+JANGAN perlakukan sebagai source question.
 `
     : `
-Analisis sumber dan buat hingga ${jumlah} latihan baru
-berdasarkan pola yang ditemukan.
+============================================================
+INSTRUKSI MODE PREDICTION
+============================================================
 
-Jangan sebut sebagai bocoran.
+Analisis seluruh sumber.
+
+Cari:
+- topik yang berulang,
+- kompetensi,
+- bentuk soal,
+- level HOTS,
+- jenis stimulus,
+- visual,
+- pola pilihan jawaban,
+- tren waktu.
+
+Setelah itu buat latihan baru.
+
+Soal prediksi harus:
+- punya hubungan jelas dengan evidence,
+- relevan dengan target tahun,
+- tidak diklaim sebagai bocoran,
+- tidak diklaim pasti keluar.
+
+sourceQuestionVerbatim harus false.
+sourceIndex/sourceUrl dipakai untuk menunjukkan evidence utama.
 `
 }
 
-Jangan memaksakan jumlah.
-Lebih baik ${jumlah - 1} soal valid daripada
-soal palsu/tidak relevan.
+============================================================
+QUALITY PRIORITY
+============================================================
+
+Prioritas:
+1. kebenaran akademik
+2. relevansi topik
+3. relevansi jenjang
+4. evidence sumber
+5. kualitas visual
+6. pembahasan
+7. baru jumlah soal
+
+Jika tidak cukup soal yang valid,
+jangan mengarang demi memenuhi jumlah.
 `;
 
   // ==========================================================
-  // 6. CLOUDFLARE
+  // 6. CLOUDFLARE AI
   // ==========================================================
 
   let aiData;
 
   try {
     aiData =
-      await callCloudflare(
+      await callCloudflareAI({
         systemPrompt,
-        userPrompt
-      );
+
+        userPrompt,
+      });
   } catch (
     error
   ) {
+    const status =
+      error?.status;
+
     const message =
       String(
         error?.message ||
@@ -2249,21 +3235,21 @@ soal palsu/tidak relevan.
       );
 
     console.error(
-      '[Gemilang Cloudflare]',
+      '[Gemilang][Cloudflare]',
       message
     );
 
     if (
-      error.status ===
-      408
+      status === 401 ||
+      status === 403
     ) {
       return res
-        .status(504)
+        .status(502)
         .json({
           success: false,
 
           error:
-            'Cloudflare AI timeout. Batch diperkecil dan research pack sudah diminimalkan.',
+            'Cloudflare API Token ditolak atau model tidak dapat diakses akun ini.',
 
           debug:
             message,
@@ -2271,8 +3257,7 @@ soal palsu/tidak relevan.
     }
 
     if (
-      error.status ===
-      429
+      status === 429
     ) {
       return res
         .status(429)
@@ -2280,7 +3265,23 @@ soal palsu/tidak relevan.
           success: false,
 
           error:
-            'Kuota harian Cloudflare Workers AI sudah mencapai batas.',
+            'Kuota harian Cloudflare Workers AI sedang mencapai batas.',
+
+          debug:
+            message,
+        });
+    }
+
+    if (
+      status === 408
+    ) {
+      return res
+        .status(504)
+        .json({
+          success: false,
+
+          error:
+            'Cloudflare AI timeout.',
 
           debug:
             message,
@@ -2301,7 +3302,7 @@ soal palsu/tidak relevan.
   }
 
   // ==========================================================
-  // 7. EXTRACT
+  // 7. EXTRACT AI TEXT
   // ==========================================================
 
   const rawText =
@@ -2312,52 +3313,85 @@ soal palsu/tidak relevan.
   if (
     !rawText.trim()
   ) {
-    return res
-      .status(502)
-      .json({
-        success: false,
+    return res.status(
+      502
+    ).json({
+      success: false,
 
-        error:
-          'Cloudflare AI tidak mengembalikan data soal.',
+      error:
+        'Cloudflare AI tidak mengembalikan teks soal.',
 
-        debug: {
-          model:
-            CLOUDFLARE_MODEL,
-        },
-      });
+      debug: {
+        model:
+          CLOUDFLARE_MODEL,
+
+        result:
+          aiData?.result ||
+          null,
+      },
+    });
   }
+
+  // ==========================================================
+  // 8. PARSE JSONL
+  // ==========================================================
 
   const objects =
     extractJsonObjects(
       rawText
     );
 
+  if (
+    objects.length ===
+    0
+  ) {
+    return res.status(
+      502
+    ).json({
+      success: false,
+
+      error:
+        'Output Cloudflare AI tidak mengandung JSON soal yang valid.',
+
+      debug: {
+        rawTextSample:
+          rawText.slice(
+            0,
+            2000
+          ),
+
+        rawTextLength:
+          rawText.length,
+      },
+    });
+  }
+
   // ==========================================================
-  // 8. QUALITY + DUPLICATE
+  // 9. QUALITY GATE + DUPLICATE GATE
   // ==========================================================
 
   const questions =
     [];
 
-  const seen =
-    new Set();
-
   let rejected =
     0;
 
-  let duplicated =
+  let duplicateCount =
     0;
 
   for (
-    const raw of
+    const rawQuestion of
       objects
   ) {
     const question =
       validateQuestion(
-        raw,
+        rawQuestion,
+
         allowedTypes,
-        mode,
-        sources
+
+        readablePages,
+
+        mode
       );
 
     if (
@@ -2369,73 +3403,42 @@ soal palsu/tidak relevan.
       continue;
     }
 
-    const fingerprint =
-      questionFingerprint(
-        question.question
-      );
-
-    let duplicate =
-      false;
-
     if (
-      seen.has(
-        fingerprint
+      isQuestionDuplicate(
+        question.question,
+
+        questions
       )
     ) {
-      duplicate = true;
-    }
-
-    if (!duplicate) {
-      for (
-        const existing of
-          questions
-      ) {
-        const similarity =
-          jaccard(
-            fingerprint,
-            questionFingerprint(
-              existing.question
-            )
-          );
-
-        if (
-          similarity >=
-          0.88
-        ) {
-          duplicate =
-            true;
-          break;
-        }
-      }
-    }
-
-    if (
-      duplicate
-    ) {
-      duplicated +=
+      duplicateCount +=
         1;
 
       continue;
     }
 
-    seen.add(
-      fingerprint
-    );
+    // --------------------------------------------------------
+    // SOURCE METADATA
+    // --------------------------------------------------------
 
     question.researchBacked =
       true;
 
     question.researchSources =
-      sources.map(
-        (source) => ({
+      readablePages.map(
+        (page) => ({
           title:
-            source.title ||
+            page.title ||
             '',
+
           url:
-            source.url ||
+            page.url ||
             '',
         })
       );
+
+    // --------------------------------------------------------
+    // ADD
+    // --------------------------------------------------------
 
     questions.push(
       question
@@ -2449,6 +3452,10 @@ soal palsu/tidak relevan.
     }
   }
 
+  // ==========================================================
+  // 10. FAILED QUALITY GATE
+  // ==========================================================
+
   if (
     questions.length ===
     0
@@ -2459,34 +3466,39 @@ soal palsu/tidak relevan.
         success: false,
 
         error:
-          'Tidak ada soal yang lolos quality gate.',
+          'Sumber internet berhasil ditemukan, tetapi tidak ada soal yang lolos quality gate.',
 
         debug: {
           model:
             CLOUDFLARE_MODEL,
 
-          parsedObjects:
+          sourceCount:
+            readablePages.length,
+
+          parsedObjectCount:
             objects.length,
 
-          rejected,
+          rejectedCount:
+            rejected,
 
-          duplicated,
+          duplicateCount,
 
           rawTextSample:
             rawText.slice(
               0,
-              1200
+              2000
             ),
         },
 
         researchSources:
-          sources.map(
-            (source) => ({
+          readablePages.map(
+            (page) => ({
               title:
-                source.title ||
+                page.title ||
                 '',
+
               url:
-                source.url ||
+                page.url ||
                 '',
             })
           ),
@@ -2494,7 +3506,7 @@ soal palsu/tidak relevan.
   }
 
   // ==========================================================
-  // 9. RESPONSE
+  // 11. RESPONSE
   // ==========================================================
 
   return res
@@ -2514,6 +3526,10 @@ soal palsu/tidak relevan.
       maxBatchSize:
         MAX_BATCH_QUESTIONS,
 
+      possiblyTruncated:
+        questions.length <
+        jumlah,
+
       sourceMode:
         mode,
 
@@ -2530,38 +3546,42 @@ soal palsu/tidak relevan.
         CLOUDFLARE_MODEL,
 
       diagnostics: {
-        searchedQueries:
+        queryCount:
           queries.length,
 
         queryErrors,
 
-        searchResults:
-          allSources.length,
+        rawSearchResultCount:
+          rawSources.length,
 
-        selectedSources:
-          sources.length,
+        rankedSourceCount:
+          rankedSources.length,
 
-        parsedObjects:
+        readablePageCount:
+          readablePages.length,
+
+        parsedObjectCount:
           objects.length,
 
-        rejected,
+        rejectedCount:
+          rejected,
 
-        duplicated,
+        duplicateCount,
       },
 
       researchSources:
-        sources.map(
-          (source) => ({
+        readablePages.map(
+          (page) => ({
             title:
-              source.title ||
+              page.title ||
               '',
 
             url:
-              source.url ||
+              page.url ||
               '',
 
             relevanceScore:
-              source.relevanceScore ||
+              page.relevanceScore ||
               0,
           })
         ),
