@@ -1429,6 +1429,23 @@ async function callCloudflareAI({
           userPrompt,
       },
     ],
+
+    // ==========================================================
+    // BATASI REASONING & PANJANG OUTPUT
+    // ==========================================================
+    // glm-4.7-flash adalah model Reasoning: tanpa batas eksplisit,
+    // ia bisa "berpikir" lama sekali sebelum menjawab, dan itu bisa
+    // melebihi timeout kita walau research pack sudah dikecilkan.
+    // reasoning_effort 'low' + max_completion_tokens membatasi durasi
+    // inference secara langsung.
+    // ==========================================================
+
+    reasoning_effort:
+      'low',
+
+    max_completion_tokens: 6000,
+
+    temperature: 0.3,
   };
 
   const response =
