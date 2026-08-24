@@ -1,227 +1,148 @@
 // api/generateQuizFromTopic.js
 // ============================================================
 // BIMBEL GEMILANG
-// QUESTION RESEARCH ENGINE
+// FAST QUESTION RESEARCH ENGINE
 // ============================================================
-//
-// VERSI STABIL
 //
 // FLOW:
 //
-// TOPIC / KISI-KISI
-//       ↓
-// INTERNET RESEARCH
-//       ↓
+// TOPIC
+//   ↓
 // DUCKDUCKGO SEARCH
-//       ↓
-// PILIH SUMBER
-//       ↓
-// BACA SUMBER
-//       ↓
-// RESEARCH PACK
-//       ↓
+//   ↓
+// MAX 2 SOURCES
+//   ↓
+// READ SOURCES
+//   ↓
+// SMALL RESEARCH PACK
+//   ↓
 // CLOUDFLARE GLM-4.7-FLASH
-//       ↓
+//   ↓
 // QUALITY GATE
-//       ↓
+//   ↓
 // MANAGE QUIZ
-//
-// JINA SUDAH DIHAPUS.
-//
-// ENV YANG DIBUTUHKAN:
-//
-// CLOUDFLARE_API_TOKEN
-// CLOUDFLARE_ACCOUNT_ID
-//
-// OPTIONAL:
-//
-// CLOUDFLARE_MODEL
 //
 // ============================================================
 
 export const maxDuration = 60;
 
-const CLOUDFLARE_MODEL =
+const MODEL =
   process.env.CLOUDFLARE_MODEL ||
   '@cf/zai-org/glm-4.7-flash';
 
-const MAX_BATCH_QUESTIONS = 10;
+const MAX_BATCH = 10;
 
-// ------------------------------------------------------------
+// ============================================================
 // TIME BUDGET
-// ------------------------------------------------------------
+// ============================================================
+//
+// Sengaja dibuat jauh di bawah 60 detik.
+// Tujuannya memberi ruang untuk cold start + Vercel.
+//
 
-const SEARCH_TIMEOUT_MS = 6500;
-const PAGE_TIMEOUT_MS = 5000;
-const AI_TIMEOUT_MS = 32000;
+const SEARCH_TIMEOUT = 4000;
+const PAGE_TIMEOUT = 3000;
+const AI_TIMEOUT = 26000;
 
-// ------------------------------------------------------------
+// ============================================================
 // RESEARCH LIMIT
-// ------------------------------------------------------------
-
-const MAX_SEARCH_QUERIES = 2;
-const MAX_RESULTS_PER_QUERY = 6;
-const MAX_SOURCES = 4;
-
-const MAX_SOURCE_CHARS = 5500;
-const MAX_RESEARCH_PACK_CHARS = 18000;
-
-const MIN_SOURCE_TEXT = 120;
-
-// ============================================================
-// BASIC
 // ============================================================
 
-const cleanText = (value = '') =>
-  String(value ?? '')
-    .replace(
-      /<script[\s\S]*?<\/script>/gi,
-      ' '
-    )
-    .replace(
-      /<style[\s\S]*?<\/style>/gi,
-      ' '
-    )
-    .replace(
-      /<noscript[\s\S]*?<\/noscript>/gi,
-      ' '
-    )
-    .replace(
-      /\s+/g,
-      ' '
-    )
+const MAX_QUERIES = 2;
+const MAX_SEARCH_RESULTS = 4;
+const MAX_SOURCES = 2;
+
+const MAX_SOURCE_CHARS = 4000;
+const MAX_PACK_CHARS = 8500;
+
+const MIN_SOURCE_TEXT = 80;
+
+// ============================================================
+// BASIC HELPERS
+// ============================================================
+
+function cleanText(value = '') {
+  return String(value ?? '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
+}
 
-const normalizeText = (value = '') =>
-  cleanText(value)
+function normalizeText(value = '') {
+  return cleanText(value)
     .toLowerCase()
-    .replace(
-      /[^\p{L}\p{N}\s]/gu,
-      ' '
-    )
-    .replace(
-      /\s+/g,
-      ' '
-    )
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
+}
 
-const tokenSet = (value = '') =>
-  new Set(
+function tokenSet(value = '') {
+  return new Set(
     normalizeText(value)
       .split(' ')
-      .filter(
-        (x) =>
-          x.length >= 2
-      )
+      .filter((x) => x.length >= 2)
   );
+}
 
-const jaccardSimilarity = (
-  a,
-  b
-) => {
-  const A =
-    typeof a === 'string'
-      ? tokenSet(a)
-      : a;
+function similarity(a = '', b = '') {
+  const A = tokenSet(a);
+  const B = tokenSet(b);
 
-  const B =
-    typeof b === 'string'
-      ? tokenSet(b)
-      : b;
-
-  if (
-    !A.size ||
-    !B.size
-  ) {
-    return 0;
-  }
+  if (!A.size || !B.size) return 0;
 
   let intersection = 0;
 
-  for (
-    const token of A
-  ) {
-    if (
-      B.has(token)
-    ) {
-      intersection++;
-    }
+  for (const token of A) {
+    if (B.has(token)) intersection++;
   }
 
   const union =
-    A.size +
-    B.size -
-    intersection;
+    A.size + B.size - intersection;
 
   return union
     ? intersection / union
     : 0;
-};
+}
 
-const fingerprintText = (
-  value = ''
-) =>
-  normalizeText(value)
-    .replace(
-      /\bsoal\s+\d+\b/gi,
-      ' '
-    )
-    .replace(
-      /\bnomor\s+\d+\b/gi,
-      ' '
-    )
-    .replace(
-      /\s+/g,
-      ' '
-    )
-    .trim();
+function isInteger(value, min, max) {
+  return (
+    Number.isInteger(value) &&
+    value >= min &&
+    value <= max
+  );
+}
 
-const isFiniteNumber = (
-  value
-) =>
-  typeof value ===
-    'number' &&
-  Number.isFinite(value);
-
-const isIntegerInRange = (
-  value,
-  min,
-  max
-) =>
-  Number.isInteger(
-    value
-  ) &&
-  value >= min &&
-  value <= max;
+function finiteNumber(value) {
+  return (
+    typeof value === 'number' &&
+    Number.isFinite(value)
+  );
+}
 
 // ============================================================
-// FETCH TIMEOUT
+// FETCH WITH TIMEOUT
 // ============================================================
 
-async function fetchWithTimeout(
+async function fetchTimeout(
   url,
   options = {},
-  timeoutMs = 5000
+  timeout = 5000
 ) {
   const controller =
     new AbortController();
 
-  const timer =
-    setTimeout(
-      () =>
-        controller.abort(),
-      timeoutMs
-    );
+  const timer = setTimeout(
+    () => controller.abort(),
+    timeout
+  );
 
   try {
-    return await fetch(
-      url,
-      {
-        ...options,
-        signal:
-          controller.signal,
-      }
-    );
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
   } finally {
     clearTimeout(timer);
   }
@@ -231,20 +152,21 @@ async function fetchWithTimeout(
 // QUESTION DUPLICATE
 // ============================================================
 
-function isQuestionDuplicate(
-  question,
-  existing
-) {
-  const current =
-    fingerprintText(
-      question
-    );
+function questionFingerprint(value = '') {
+  return normalizeText(value)
+    .replace(/\bsoal\s+\d+\b/gi, ' ')
+    .replace(/\bnomor\s+\d+\b/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
-  for (
-    const item of existing
-  ) {
+function isDuplicate(question, existing) {
+  const current =
+    questionFingerprint(question);
+
+  for (const item of existing) {
     const old =
-      fingerprintText(
+      questionFingerprint(
         item.question
       );
 
@@ -256,10 +178,7 @@ function isQuestionDuplicate(
     }
 
     if (
-      jaccardSimilarity(
-        current,
-        old
-      ) >= 0.86
+      similarity(current, old) >= 0.84
     ) {
       return true;
     }
@@ -269,28 +188,22 @@ function isQuestionDuplicate(
 }
 
 // ============================================================
-// VISUAL CUE
+// VISUAL
 // ============================================================
 
-function hasVisualCue(
-  text = ''
-) {
+function hasVisualCue(text = '') {
   const value =
-    normalizeText(
-      text
-    );
+    normalizeText(text);
 
   const cues = [
     'lihat gambar',
     'perhatikan gambar',
     'gambar berikut',
     'berdasarkan gambar',
-    'pada gambar',
 
     'lihat grafik',
     'perhatikan grafik',
     'grafik berikut',
-    'berdasarkan grafik',
 
     'lihat diagram',
     'perhatikan diagram',
@@ -307,62 +220,44 @@ function hasVisualCue(
     'look at the table',
   ];
 
-  return cues.some(
-    (cue) =>
-      value.includes(
-        normalizeText(cue)
-      )
+  return cues.some((cue) =>
+    value.includes(
+      normalizeText(cue)
+    )
   );
 }
 
 // ============================================================
-// CLOCK SVG
+// CLOCK
 // ============================================================
 
-function buildClockImageSvg(
-  clock
-) {
+function buildClockSvg(clock) {
   if (
     !clock ||
-    !isFiniteNumber(
-      clock.hour
-    ) ||
-    !isFiniteNumber(
-      clock.minute
-    )
+    !finiteNumber(clock.hour) ||
+    !finiteNumber(clock.minute)
   ) {
     return '';
   }
 
   const hour =
-    ((Number(clock.hour) %
-      12) +
-      12) %
-    12;
+    ((Number(clock.hour) % 12) + 12) % 12;
 
-  const minute =
-    Math.max(
-      0,
-      Math.min(
-        59,
-        Number(
-          clock.minute
-        )
-      )
-    );
+  const minute = Math.max(
+    0,
+    Math.min(
+      59,
+      Number(clock.minute)
+    )
+  );
 
   const cx = 140;
   const cy = 140;
-  const radius = 110;
+  const radius = 108;
 
-  const toXY = (
-    angle,
-    length
-  ) => {
+  function xy(angle, length) {
     const rad =
-      ((angle - 90) *
-        Math.PI) /
-      180;
+      ((angle - 90) * Math.PI) / 180;
 
     return {
       x:
@@ -375,76 +270,58 @@ function buildClockImageSvg(
         length *
           Math.sin(rad),
     };
-  };
+  }
 
-  const hourTip =
-    toXY(
-      hour * 30 +
-        minute * 0.5,
-      55
-    );
+  const hourTip = xy(
+    hour * 30 + minute * 0.5,
+    55
+  );
 
-  const minuteTip =
-    toXY(
-      minute * 6,
-      82
-    );
+  const minuteTip = xy(
+    minute * 6,
+    82
+  );
 
-  const ticks =
-    Array.from(
-      {
-        length: 60,
-      },
-      (_, i) => {
-        const major =
-          i % 5 === 0;
+  const ticks = Array.from(
+    { length: 60 },
+    (_, i) => {
+      const major = i % 5 === 0;
 
-        const outer =
-          toXY(
-            i * 6,
-            radius
-          );
+      const outer = xy(
+        i * 6,
+        radius
+      );
 
-        const inner =
-          toXY(
-            i * 6,
-            major
-              ? radius - 13
-              : radius - 7
-          );
+      const inner = xy(
+        i * 6,
+        major
+          ? radius - 12
+          : radius - 6
+      );
 
-        return `
+      return `
 <line
-x1="${outer.x.toFixed(2)}"
-y1="${outer.y.toFixed(2)}"
-x2="${inner.x.toFixed(2)}"
-y2="${inner.y.toFixed(2)}"
+x1="${outer.x.toFixed(1)}"
+y1="${outer.y.toFixed(1)}"
+x2="${inner.x.toFixed(1)}"
+y2="${inner.y.toFixed(1)}"
 stroke="#334155"
-stroke-width="${
-  major ? 2 : 1
-}"
+stroke-width="${major ? 2 : 1}"
 />`;
-      }
-    ).join('');
+    }
+  ).join('');
 
-  const numbers =
-    Array.from(
-      {
-        length: 12,
-      },
-      (_, i) => {
-        const number =
-          i === 0
-            ? 12
-            : i;
+  const numbers = Array.from(
+    { length: 12 },
+    (_, i) => {
+      const number = i === 0 ? 12 : i;
 
-        const p =
-          toXY(
-            i * 30,
-            84
-          );
+      const p = xy(
+        i * 30,
+        83
+      );
 
-        return `
+      return `
 <text
 x="${p.x}"
 y="${p.y + 6}"
@@ -454,22 +331,20 @@ font-size="18"
 font-weight="700"
 fill="#1e293b"
 >${number}</text>`;
-      }
-    ).join('');
+    }
+  ).join('');
 
   const svg = `
 <svg
 xmlns="http://www.w3.org/2000/svg"
 viewBox="0 0 280 280"
 width="280"
-height="280"
->
+height="280">
 
 <rect
 width="280"
 height="280"
-fill="white"
-/>
+fill="white"/>
 
 <circle
 cx="140"
@@ -477,8 +352,7 @@ cy="140"
 r="${radius}"
 fill="white"
 stroke="#1e293b"
-stroke-width="3"
-/>
+stroke-width="3"/>
 
 ${ticks}
 
@@ -491,8 +365,7 @@ x2="${hourTip.x}"
 y2="${hourTip.y}"
 stroke="#1e293b"
 stroke-width="6"
-stroke-linecap="round"
-/>
+stroke-linecap="round"/>
 
 <line
 x1="140"
@@ -501,41 +374,32 @@ x2="${minuteTip.x}"
 y2="${minuteTip.y}"
 stroke="#475569"
 stroke-width="4"
-stroke-linecap="round"
-/>
+stroke-linecap="round"/>
 
 <circle
 cx="140"
 cy="140"
 r="5"
-fill="#1e293b"
-/>
+fill="#1e293b"/>
 
-</svg>
-`;
+</svg>`;
 
   return (
     'data:image/svg+xml;base64,' +
-    Buffer.from(
-      svg
-    ).toString(
+    Buffer.from(svg).toString(
       'base64'
     )
   );
 }
 
 // ============================================================
-// GRAPH SVG
+// GRAPH
 // ============================================================
 
-function buildGraphImageSvg(
-  graph
-) {
+function buildGraphSvg(graph) {
   if (
     !graph ||
-    !Array.isArray(
-      graph.points
-    )
+    !Array.isArray(graph.points)
   ) {
     return '';
   }
@@ -544,21 +408,12 @@ function buildGraphImageSvg(
     graph.points
       .filter(
         (p) =>
-          isFiniteNumber(
-            p?.x
-          ) &&
-          isFiniteNumber(
-            p?.y
-          )
+          finiteNumber(p?.x) &&
+          finiteNumber(p?.y)
       )
-      .slice(
-        0,
-        80
-      );
+      .slice(0, 60);
 
-  if (
-    points.length < 2
-  ) {
+  if (points.length < 2) {
     return '';
   }
 
@@ -566,77 +421,56 @@ function buildGraphImageSvg(
   const H = 400;
   const pad = 55;
 
-  const xs =
-    points.map(
-      (p) => p.x
-    );
+  const xs = points.map(
+    (p) => p.x
+  );
 
-  const ys =
-    points.map(
-      (p) => p.y
-    );
+  const ys = points.map(
+    (p) => p.y
+  );
 
-  const minX =
-    Math.min(...xs);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
 
-  const maxX =
-    Math.max(...xs);
-
-  const minY =
-    Math.min(...ys);
-
-  const maxY =
-    Math.max(...ys);
-
-  const mapX =
-    (x) =>
+  function mapX(x) {
+    return (
       pad +
       ((x - minX) /
-        Math.max(
-          maxX - minX,
-          1
-        )) *
-        (W - pad * 2);
+        Math.max(maxX - minX, 1)) *
+        (W - pad * 2)
+    );
+  }
 
-  const mapY =
-    (y) =>
+  function mapY(y) {
+    return (
       H -
       pad -
       ((y - minY) /
-        Math.max(
-          maxY - minY,
-          1
-        )) *
-        (H - pad * 2);
+        Math.max(maxY - minY, 1)) *
+        (H - pad * 2)
+    );
+  }
 
-  const path =
-    points
-      .map(
-        (
-          p,
-          i
-        ) =>
-          `${i === 0 ? 'M' : 'L'} ${mapX(
-            p.x
-          ).toFixed(1)} ${mapY(
-            p.y
-          ).toFixed(1)}`
-      )
-      .join(' ');
+  const path = points
+    .map(
+      (p, i) =>
+        `${i === 0 ? 'M' : 'L'} ${mapX(
+          p.x
+        ).toFixed(1)} ${mapY(
+          p.y
+        ).toFixed(1)}`
+    )
+    .join(' ');
 
   const highlights =
-    Array.isArray(
-      graph.highlight
-    )
+    Array.isArray(graph.highlight)
       ? graph.highlight
           .filter(
             (p) =>
-              isFiniteNumber(
-                p?.x
-              ) &&
-              isFiniteNumber(
-                p?.y
-              )
+              finiteNumber(p?.x) &&
+              finiteNumber(p?.y)
           )
           .map(
             (p) =>
@@ -644,8 +478,7 @@ function buildGraphImageSvg(
 cx="${mapX(p.x)}"
 cy="${mapY(p.y)}"
 r="7"
-fill="#dc2626"
-/>`
+fill="#dc2626"/>`
           )
           .join('')
       : '';
@@ -655,14 +488,12 @@ fill="#dc2626"
 xmlns="http://www.w3.org/2000/svg"
 viewBox="0 0 ${W} ${H}"
 width="${W}"
-height="${H}"
->
+height="${H}">
 
 <rect
 width="${W}"
 height="${H}"
-fill="white"
-/>
+fill="white"/>
 
 <line
 x1="${pad}"
@@ -670,8 +501,7 @@ y1="${H - pad}"
 x2="${W - pad}"
 y2="${H - pad}"
 stroke="#64748b"
-stroke-width="2"
-/>
+stroke-width="2"/>
 
 <line
 x1="${pad}"
@@ -679,15 +509,13 @@ y1="${pad}"
 x2="${pad}"
 y2="${H - pad}"
 stroke="#64748b"
-stroke-width="2"
-/>
+stroke-width="2"/>
 
 <path
 d="${path}"
 fill="none"
 stroke="#1e293b"
-stroke-width="3"
-/>
+stroke-width="3"/>
 
 ${highlights}
 
@@ -695,49 +523,38 @@ ${highlights}
 x="${W - pad}"
 y="${H - 15}"
 font-family="Arial"
-font-size="16"
->
-${cleanText(
-  graph.xLabel ||
-    'x'
-)}
+font-size="16">
+${cleanText(graph.xLabel || 'x')}
 </text>
 
 <text
 x="15"
 y="${pad}"
 font-family="Arial"
-font-size="16"
->
-${cleanText(
-  graph.yLabel ||
-    'y'
-)}
+font-size="16">
+${cleanText(graph.yLabel || 'y')}
 </text>
 
-</svg>
-`;
+</svg>`;
 
   return (
     'data:image/svg+xml;base64,' +
-    Buffer.from(
-      svg
-    ).toString(
+    Buffer.from(svg).toString(
       'base64'
     )
   );
 }
 
 // ============================================================
-// BUILD SEARCH QUERIES
+// SEARCH QUERY
 // ============================================================
 
-function buildResearchQueries({
+function buildQueries({
   topic,
   mapel,
   kelas,
-  targetYear,
-  sourceMode,
+  year,
+  mode,
   arahan,
 }) {
   const base = [
@@ -748,306 +565,192 @@ function buildResearchQueries({
     .filter(Boolean)
     .join(' ');
 
-  const instruction =
-    cleanText(
-      arahan || ''
-    );
+  const extra =
+    cleanText(arahan || '');
 
-  if (
-    sourceMode ===
-    'prediction'
-  ) {
+  if (mode === 'prediction') {
     return [
-      `${base} contoh soal TKA HOTS ${instruction}`,
-
-      `${base} latihan soal ujian kisi kisi ${targetYear}`,
-    ].slice(
-      0,
-      MAX_SEARCH_QUERIES
-    );
+      `${base} contoh soal TKA HOTS ${extra}`,
+      `${base} latihan soal kisi kisi ${year}`,
+    ].slice(0, MAX_QUERIES);
   }
 
   return [
     `${base} contoh soal`,
-
     `${base} latihan soal ujian`,
-  ].slice(
-    0,
-    MAX_SEARCH_QUERIES
-  );
+  ].slice(0, MAX_QUERIES);
 }
 
 // ============================================================
-// DUCKDUCKGO SEARCH
-// ============================================================
-//
-// Jina DIHAPUS.
-// Tidak membutuhkan API key.
+// DUCKDUCKGO
 // ============================================================
 
-async function duckDuckGoSearch(
-  query
-) {
+async function searchDuckDuckGo(query) {
   const url =
     `https://html.duckduckgo.com/html/?q=${encodeURIComponent(
       query
     )}`;
 
   const response =
-    await fetchWithTimeout(
+    await fetchTimeout(
       url,
       {
         method: 'GET',
 
         headers: {
-          Accept:
-            'text/html',
+          Accept: 'text/html',
 
           'User-Agent':
             'Mozilla/5.0 BimbelGemilangResearch',
         },
       },
-      SEARCH_TIMEOUT_MS
+      SEARCH_TIMEOUT
     );
 
-  if (
-    !response.ok
-  ) {
+  if (!response.ok) {
     throw new Error(
-      `Search HTTP ${response.status}`
+      `DuckDuckGo HTTP ${response.status}`
     );
   }
 
   const html =
     await response.text();
 
-  const results =
-    [];
+  const results = [];
 
-  const blocks =
+  const resultBlocks =
     html.match(
       /<div[^>]+class="result[^"]*"[\s\S]*?<\/div>\s*<\/div>/gi
     ) || [];
 
   for (
-    const block of blocks
+    const block of resultBlocks
   ) {
     if (
       results.length >=
-      MAX_RESULTS_PER_QUERY
+      MAX_SEARCH_RESULTS
     ) {
       break;
     }
 
-    const linkMatch =
+    const link =
       block.match(
         /<a[^>]+class="result__a"[^>]+href="([^"]+)"/i
       );
 
-    const titleMatch =
+    const title =
       block.match(
         /<a[^>]+class="result__a"[^>]*>([\s\S]*?)<\/a>/i
       );
 
-    const snippetMatch =
+    const snippet =
       block.match(
-        /<a[^>]+class="result__snippet"[^>]*>([\s\S]*?)<\/a>/i
+        /class="result__snippet"[^>]*>([\s\S]*?)<\/a>/i
       );
 
-    if (
-      !linkMatch
-    ) {
-      continue;
-    }
+    if (!link) continue;
 
-    let urlValue =
-      linkMatch[1];
+    let target = link[1];
 
     try {
-      urlValue =
+      target =
         decodeURIComponent(
-          urlValue
+          target
         );
     } catch (_) {}
 
-    const redirectMatch =
-      urlValue.match(
+    const redirect =
+      target.match(
         /uddg=([^&]+)/i
       );
 
-    if (
-      redirectMatch
-    ) {
+    if (redirect) {
       try {
-        urlValue =
+        target =
           decodeURIComponent(
-            redirectMatch[1]
+            redirect[1]
           );
       } catch (_) {}
+    }
+
+    if (
+      !target.startsWith('http')
+    ) {
+      continue;
     }
 
     results.push({
       title:
         cleanText(
-          titleMatch?.[1] ||
-            ''
+          title?.[1] || ''
         ),
 
-      url:
-        urlValue,
+      url: target,
 
       content:
         cleanText(
-          snippetMatch?.[1] ||
-            ''
+          snippet?.[1] || ''
         ),
     });
-  }
-
-  // ----------------------------------------------------------
-  // FALLBACK PARSER
-  // ----------------------------------------------------------
-
-  if (
-    results.length === 0
-  ) {
-    const anchors =
-      [
-        ...html.matchAll(
-          /<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi
-        ),
-      ];
-
-    for (
-      const match of anchors
-    ) {
-      if (
-        results.length >=
-        MAX_RESULTS_PER_QUERY
-      ) {
-        break;
-      }
-
-      let urlValue =
-        match[1];
-
-      if (
-        !urlValue.includes(
-          'http'
-        )
-      ) {
-        continue;
-      }
-
-      if (
-        urlValue.includes(
-          'duckduckgo.com'
-        )
-      ) {
-        continue;
-      }
-
-      results.push({
-        title:
-          cleanText(
-            match[2]
-          ),
-
-        url:
-          urlValue,
-
-        content: '',
-      });
-    }
   }
 
   return results;
 }
 
 // ============================================================
-// RANK SOURCES
+// RANK
 // ============================================================
 
 function rankSources(
   sources,
   context
 ) {
-  const seen =
-    new Set();
+  const seen = new Set();
 
   return sources
     .filter(
-      (source) =>
-        source?.url
+      (x) =>
+        x?.url &&
+        x.url.startsWith('http')
     )
-    .filter(
-      (source) => {
-        const key =
-          source.url
-            .split('#')[0]
-            .trim();
+    .filter((source) => {
+      const key =
+        source.url.split('#')[0];
 
-        if (
-          seen.has(key)
-        ) {
-          return false;
-        }
-
-        seen.add(key);
-
-        return true;
+      if (seen.has(key)) {
+        return false;
       }
-    )
-    .map(
-      (source) => {
-        const titleScore =
-          jaccardSimilarity(
-            context,
-            source.title
-          );
 
-        const contentScore =
-          jaccardSimilarity(
-            context,
+      seen.add(key);
+      return true;
+    })
+    .map((source) => ({
+      ...source,
+
+      relevanceScore:
+        similarity(
+          context,
+          source.title +
+            ' ' +
             source.content
-          );
-
-        return {
-          ...source,
-
-          relevanceScore:
-            Number(
-              (
-                titleScore *
-                  0.7 +
-                contentScore *
-                  0.3
-              ).toFixed(3)
-            ),
-        };
-      }
-    )
+        ),
+    }))
     .sort(
       (a, b) =>
         b.relevanceScore -
         a.relevanceScore
     )
-    .slice(
-      0,
-      MAX_SOURCES
-    );
+    .slice(0, MAX_SOURCES);
 }
 
 // ============================================================
 // READ PAGE
 // ============================================================
 
-async function readPage(
-  source
-) {
+async function readPage(source) {
   try {
     const response =
-      await fetchWithTimeout(
+      await fetchTimeout(
         source.url,
         {
           method: 'GET',
@@ -1057,26 +760,24 @@ async function readPage(
               'text/html,application/xhtml+xml',
 
             'User-Agent':
-              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/151 Safari/537.36',
+              'Mozilla/5.0 BimbelGemilangResearch',
           },
         },
-        PAGE_TIMEOUT_MS
+        PAGE_TIMEOUT
       );
 
-    if (
-      !response.ok
-    ) {
-      return source;
+    if (!response.ok) {
+      return {
+        ...source,
+        content:
+          source.content || '',
+      };
     }
 
     const html =
       await response.text();
 
-    if (
-      !html ||
-      html.length <
-        200
-    ) {
+    if (!html) {
       return source;
     }
 
@@ -1091,10 +792,6 @@ async function readPage(
           source.title ||
           ''
       );
-
-    // --------------------------------------------------------
-    // TEXT
-    // --------------------------------------------------------
 
     const content =
       cleanText(
@@ -1125,13 +822,12 @@ async function readPage(
       );
 
     // --------------------------------------------------------
-    // IMAGE ASSETS
+    // IMAGE
     // --------------------------------------------------------
 
-    const images =
-      [];
+    const images = [];
 
-    const imageRegex =
+    const regex =
       /<img\b[^>]*>/gi;
 
     let match;
@@ -1139,56 +835,42 @@ async function readPage(
     while (
       (
         match =
-          imageRegex.exec(
-            html
-          )
+          regex.exec(html)
       ) &&
-      images.length < 10
+      images.length < 5
     ) {
-      const tag =
-        match[0];
+      const tag = match[0];
 
-      const srcMatch =
+      const src =
         tag.match(
-          /(?:src|data-src|data-lazy-src|data-original)=["']([^"']+)["']/i
+          /(?:src|data-src|data-lazy-src)=["']([^"']+)["']/i
         );
 
-      if (
-        !srcMatch
-      ) {
-        continue;
-      }
+      if (!src) continue;
 
-      let imageUrl =
-        '';
+      let imageUrl = '';
 
       try {
         imageUrl =
           new URL(
-            srcMatch[1],
+            src[1],
             source.url
           ).href;
       } catch (_) {}
 
-      if (
-        !imageUrl
-      ) {
-        continue;
-      }
+      if (!imageUrl) continue;
 
-      const altMatch =
+      const alt =
         tag.match(
           /alt=["']([^"']*)["']/i
         );
 
       images.push({
-        url:
-          imageUrl,
+        url: imageUrl,
 
         alt:
           cleanText(
-            altMatch?.[1] ||
-              ''
+            alt?.[1] || ''
           ),
       });
     }
@@ -1198,19 +880,23 @@ async function readPage(
 
       title,
 
-      content,
+      content:
+        content.length >=
+        MIN_SOURCE_TEXT
+          ? content
+          : source.content || '',
 
       images,
     };
-  } catch (
-    error
-  ) {
+  } catch (error) {
     return {
       ...source,
 
       readError:
-        error?.message ||
-        'read failed',
+        error?.message || 'read failed',
+
+      content:
+        source.content || '',
     };
   }
 }
@@ -1219,86 +905,57 @@ async function readPage(
 // RESEARCH PACK
 // ============================================================
 
-function buildResearchPack(
-  pages
-) {
-  let pack =
-    '';
+function buildResearchPack(pages) {
+  let pack = '';
 
-  pages.forEach(
-    (
-      page,
-      index
-    ) => {
-      const imageList =
-        Array.isArray(
-          page.images
-        )
-          ? page.images
-              .slice(
-                0,
-                8
-              )
-              .map(
-                (
-                  image,
-                  imageIndex
-                ) =>
-                  `[IMAGE ${imageIndex}] ${image.url} | ALT: ${image.alt || ''}`
-              )
-              .join(
-                '\n'
-              )
-          : '';
+  for (
+    let i = 0;
+    i < pages.length;
+    i++
+  ) {
+    const page = pages[i];
 
-      const block = `
-SOURCE_INDEX: ${index}
+    const images =
+      Array.isArray(page.images)
+        ? page.images
+            .slice(0, 5)
+            .map(
+              (image, index) =>
+                `[IMAGE ${index}] ${image.url} | ${image.alt || ''}`
+            )
+            .join('\n')
+        : '';
 
-TITLE:
-${page.title || ''}
-
-URL:
-${page.url || ''}
-
-RELEVANCE:
-${page.relevanceScore || 0}
-
-CONTENT:
+    const block = `
+[SOURCE ${i}]
+TITLE: ${page.title || ''}
+URL: ${page.url || ''}
+TEXT:
 ${(
-  page.content ||
-  ''
-).slice(
-  0,
-  MAX_SOURCE_CHARS
-)}
+  page.content || ''
+).slice(0, MAX_SOURCE_CHARS)}
 
-IMAGE_ASSETS:
-${imageList}
-
-==================================================
+IMAGES:
+${images}
 `;
 
-      if (
-        (
-          pack +
-          block
-        ).length <=
-        MAX_RESEARCH_PACK_CHARS
-      ) {
-        pack +=
-          block;
-      }
+    if (
+      pack.length +
+        block.length <=
+      MAX_PACK_CHARS
+    ) {
+      pack += block;
     }
-  );
+  }
 
-  return pack;
+  return pack.trim();
 }
 
 // ============================================================
-// CLOUDFLARE AI
+// CLOUDFLARE
 // ============================================================
 
-async function callCloudflareAI({
+async function callCloudflare({
   systemPrompt,
   userPrompt,
 }) {
@@ -1311,19 +968,29 @@ async function callCloudflareAI({
       .CLOUDFLARE_ACCOUNT_ID;
 
   if (!token) {
-    throw new Error(
-      'CLOUDFLARE_API_TOKEN belum tersedia.'
-    );
+    const error =
+      new Error(
+        'CLOUDFLARE_API_TOKEN belum tersedia.'
+      );
+
+    error.status = 500;
+
+    throw error;
   }
 
   if (!accountId) {
-    throw new Error(
-      'CLOUDFLARE_ACCOUNT_ID belum tersedia.'
-    );
+    const error =
+      new Error(
+        'CLOUDFLARE_ACCOUNT_ID belum tersedia.'
+      );
+
+    error.status = 500;
+
+    throw error;
   }
 
   const url =
-    `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${CLOUDFLARE_MODEL}`;
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${MODEL}`;
 
   const body = {
     messages: [
@@ -1332,6 +999,7 @@ async function callCloudflareAI({
         content:
           systemPrompt,
       },
+
       {
         role: 'user',
         content:
@@ -1339,16 +1007,15 @@ async function callCloudflareAI({
       },
     ],
 
-    temperature: 0.2,
+    temperature: 0.15,
 
-    max_completion_tokens:
-      7000,
+    max_completion_tokens: 4000,
 
     stream: false,
   };
 
   const response =
-    await fetchWithTimeout(
+    await fetchTimeout(
       url,
       {
         method: 'POST',
@@ -1365,33 +1032,25 @@ async function callCloudflareAI({
         },
 
         body:
-          JSON.stringify(
-            body
-          ),
+          JSON.stringify(body),
       },
-      AI_TIMEOUT_MS
+      AI_TIMEOUT
     );
 
   const raw =
     await response.text();
 
-  let data =
-    null;
+  let data = null;
 
   try {
     data =
-      JSON.parse(
-        raw
-      );
+      JSON.parse(raw);
   } catch (_) {}
 
-  if (
-    !response.ok
-  ) {
+  if (!response.ok) {
     const error =
       new Error(
-        data?.errors?.[0]
-          ?.message ||
+        data?.errors?.[0]?.message ||
           data?.message ||
           raw ||
           `Cloudflare HTTP ${response.status}`
@@ -1410,15 +1069,12 @@ async function callCloudflareAI({
 // EXTRACT AI TEXT
 // ============================================================
 
-function extractCloudflareText(
-  data
-) {
+function extractAIText(data) {
   const result =
     data?.result;
 
   if (
-    typeof result ===
-    'string'
+    typeof result === 'string'
   ) {
     return result;
   }
@@ -1443,44 +1099,32 @@ function extractCloudflareText(
     )
   ) {
     return result.choices
-      .map(
-        (choice) => {
-          const content =
-            choice
-              ?.message
-              ?.content;
+      .map((choice) => {
+        const content =
+          choice?.message?.content;
 
-          if (
-            typeof content ===
-            'string'
-          ) {
-            return content;
-          }
-
-          if (
-            Array.isArray(
-              content
-            )
-          ) {
-            return content
-              .map(
-                (part) =>
-                  part?.text ||
-                  ''
-              )
-              .join('');
-          }
-
-          if (
-            typeof choice?.text ===
-            'string'
-          ) {
-            return choice.text;
-          }
-
-          return '';
+        if (
+          typeof content ===
+          'string'
+        ) {
+          return content;
         }
-      )
+
+        if (
+          Array.isArray(content)
+        ) {
+          return content
+            .map(
+              (x) =>
+                x?.text || ''
+            )
+            .join('');
+        }
+
+        return (
+          choice?.text || ''
+        );
+      })
       .join('\n');
   }
 
@@ -1488,83 +1132,52 @@ function extractCloudflareText(
 }
 
 // ============================================================
-// JSON OBJECT EXTRACTOR
+// JSON OBJECT PARSER
 // ============================================================
 
 function extractJsonObjects(
   text = ''
 ) {
-  const objects =
-    [];
+  const objects = [];
 
-  let depth =
-    0;
-
-  let start =
-    -1;
-
-  let inString =
-    false;
-
-  let escaped =
-    false;
+  let depth = 0;
+  let start = -1;
+  let string = false;
+  let escaped = false;
 
   for (
     let i = 0;
-    i <
-    text.length;
+    i < text.length;
     i++
   ) {
-    const ch =
-      text[i];
+    const char = text[i];
 
-    if (
-      escaped
-    ) {
-      escaped =
-        false;
+    if (escaped) {
+      escaped = false;
       continue;
     }
 
-    if (
-      ch === '\\'
-    ) {
-      escaped =
-        true;
+    if (char === '\\') {
+      escaped = true;
       continue;
     }
 
-    if (
-      ch === '"'
-    ) {
-      inString =
-        !inString;
-
+    if (char === '"') {
+      string = !string;
       continue;
     }
 
-    if (
-      inString
-    ) {
-      continue;
-    }
+    if (string) continue;
 
-    if (
-      ch === '{'
-    ) {
-      if (
-        depth === 0
-      ) {
-        start =
-          i;
+    if (char === '{') {
+      if (depth === 0) {
+        start = i;
       }
 
       depth++;
     }
 
-    if (
-      ch === '}'
-    ) {
+    if (char === '}') {
       depth--;
 
       if (
@@ -1579,14 +1192,11 @@ function extractJsonObjects(
 
         try {
           objects.push(
-            JSON.parse(
-              piece
-            )
+            JSON.parse(piece)
           );
         } catch (_) {}
 
-        start =
-          -1;
+        start = -1;
       }
     }
   }
@@ -1598,68 +1208,42 @@ function extractJsonObjects(
 // SOURCE EVIDENCE
 // ============================================================
 
-function sourceEvidenceScore(
+function evidenceScore(
   question,
   options,
   source
 ) {
-  const sourceText =
-    normalizeText(
-      [
-        source?.title,
-        source?.content,
-      ].join(' ')
-    );
+  if (!source) return 0;
 
-  if (
-    !sourceText
-  ) {
-    return 0;
-  }
+  const sourceText =
+    source.title +
+    ' ' +
+    source.content;
 
   const q =
-    tokenSet(
-      question
-    );
+    tokenSet(question);
 
   const o =
     tokenSet(
-      Array.isArray(
-        options
-      )
-        ? options.join(
-            ' '
-          )
+      Array.isArray(options)
+        ? options.join(' ')
         : ''
     );
 
   const s =
-    tokenSet(
-      sourceText
-    );
+    tokenSet(sourceText);
 
-  let qHits =
-    0;
+  let qHits = 0;
+  let oHits = 0;
 
-  let oHits =
-    0;
-
-  for (
-    const token of q
-  ) {
-    if (
-      s.has(token)
-    ) {
+  for (const token of q) {
+    if (s.has(token)) {
       qHits++;
     }
   }
 
-  for (
-    const token of o
-  ) {
-    if (
-      s.has(token)
-    ) {
+  for (const token of o) {
+    if (s.has(token)) {
       oHits++;
     }
   }
@@ -1681,14 +1265,14 @@ function sourceEvidenceScore(
 }
 
 // ============================================================
-// VALIDATE QUESTION
+// VALIDATE
 // ============================================================
 
 function validateQuestion(
   raw,
   allowedTypes,
   pages,
-  sourceMode
+  mode
 ) {
   if (
     !raw ||
@@ -1707,8 +1291,7 @@ function validateQuestion(
 
   const question =
     cleanText(
-      raw.question ||
-        ''
+      raw.question || ''
     );
 
   if (
@@ -1717,13 +1300,9 @@ function validateQuestion(
     return null;
   }
 
-  let source =
-    null;
+  let source = null;
 
-  if (
-    sourceMode ===
-    'source'
-  ) {
+  if (mode === 'source') {
     if (
       !Number.isInteger(
         raw.sourceIndex
@@ -1737,9 +1316,7 @@ function validateQuestion(
         raw.sourceIndex
       ];
 
-    if (
-      !source
-    ) {
+    if (!source) {
       return null;
     }
   }
@@ -1749,21 +1326,19 @@ function validateQuestion(
   // ----------------------------------------------------------
 
   if (
-    raw.type ===
-    'multiple'
+    raw.type === 'multiple'
   ) {
     if (
       !Array.isArray(
         raw.options
       ) ||
-      raw.options.length !==
-        4
+      raw.options.length !== 4
     ) {
       return null;
     }
 
     if (
-      !isIntegerInRange(
+      !isInteger(
         raw.correct,
         0,
         3
@@ -1785,8 +1360,7 @@ function validateQuestion(
       !Array.isArray(
         raw.options
       ) ||
-      raw.options.length <
-        2
+      raw.options.length < 2
     ) {
       return null;
     }
@@ -1795,8 +1369,7 @@ function validateQuestion(
       !Array.isArray(
         raw.correctAnswers
       ) ||
-      raw.correctAnswers.length ===
-        0
+      !raw.correctAnswers.length
     ) {
       return null;
     }
@@ -1804,11 +1377,10 @@ function validateQuestion(
     if (
       !raw.correctAnswers.every(
         (x) =>
-          isIntegerInRange(
+          isInteger(
             x,
             0,
-            raw.options.length -
-              1
+            raw.options.length - 1
           )
       )
     ) {
@@ -1828,18 +1400,17 @@ function validateQuestion(
       !Array.isArray(
         raw.statements
       ) ||
-      raw.statements.length <
-        2
+      raw.statements.length < 2
     ) {
       return null;
     }
 
     if (
       !raw.statements.every(
-        (item) =>
-          typeof item?.text ===
+        (x) =>
+          typeof x?.text ===
             'string' &&
-          typeof item?.isTrue ===
+          typeof x?.isTrue ===
             'boolean'
       )
     ) {
@@ -1873,12 +1444,8 @@ function validateQuestion(
     'causeeffect'
   ) {
     if (
-      !cleanText(
-        raw.cause
-      ) ||
-      !cleanText(
-        raw.effect
-      )
+      !cleanText(raw.cause) ||
+      !cleanText(raw.effect)
     ) {
       return null;
     }
@@ -1905,8 +1472,7 @@ function validateQuestion(
       !Array.isArray(
         raw.matchingPairs
       ) ||
-      raw.matchingPairs.length <
-        3
+      raw.matchingPairs.length < 3
     ) {
       return null;
     }
@@ -1932,22 +1498,20 @@ function validateQuestion(
       !Array.isArray(
         raw.subQuestions
       ) ||
-      raw.subQuestions.length <
-        3
+      raw.subQuestions.length < 3
     ) {
       return null;
     }
 
     if (
       !raw.subQuestions.every(
-        (item) =>
+        (x) =>
           Array.isArray(
-            item?.options
+            x?.options
           ) &&
-          item.options.length ===
-            4 &&
-          isIntegerInRange(
-            item?.correct,
+          x.options.length === 4 &&
+          isInteger(
+            x.correct,
             0,
             3
           )
@@ -1974,14 +1538,10 @@ function validateQuestion(
       : 'none';
 
   let visualRequired =
-    Boolean(
-      qImage
-    );
+    Boolean(qImage);
 
   const needsImage =
-    Boolean(
-      raw.needsImage
-    );
+    Boolean(raw.needsImage);
 
   const imageHint =
     cleanText(
@@ -1990,34 +1550,24 @@ function validateQuestion(
         ''
     );
 
-  if (
-    raw.clock
-  ) {
+  if (raw.clock) {
     qImage =
-      buildClockImageSvg(
+      buildClockSvg(
         raw.clock
       );
 
-    visualRequired =
-      true;
-
-    visualKind =
-      'clock';
+    visualRequired = true;
+    visualKind = 'clock';
   }
 
-  if (
-    raw.graph
-  ) {
+  if (raw.graph) {
     qImage =
-      buildGraphImageSvg(
+      buildGraphSvg(
         raw.graph
       );
 
-    visualRequired =
-      true;
-
-    visualKind =
-      'graph';
+    visualRequired = true;
+    visualKind = 'graph';
   }
 
   const optionImages =
@@ -2025,9 +1575,7 @@ function validateQuestion(
       raw.optionImages
     )
       ? raw.optionImages
-          .map(
-            cleanText
-          )
+          .map(cleanText)
           .filter(Boolean)
       : [];
 
@@ -2035,65 +1583,45 @@ function validateQuestion(
     Boolean(
       raw.optionsAreImages
     ) ||
-    optionImages.length >=
-      2;
+    optionImages.length >= 2;
 
-  if (
-    optionsAreImages
-  ) {
-    visualRequired =
-      true;
-
-    visualKind =
-      'image-options';
+  if (optionsAreImages) {
+    visualRequired = true;
+    visualKind = 'image-options';
   }
 
-  if (
-    needsImage
-  ) {
-    visualRequired =
-      true;
+  if (needsImage) {
+    visualRequired = true;
 
     if (
-      visualKind ===
-      'none'
+      visualKind === 'none'
     ) {
-      visualKind =
-        'photo';
+      visualKind = 'photo';
     }
   }
 
   if (
-    hasVisualCue(
-      question
-    ) &&
+    hasVisualCue(question) &&
     !visualRequired
   ) {
     return null;
   }
 
   // ----------------------------------------------------------
-  // SOURCE MODE
+  // SOURCE EVIDENCE
   // ----------------------------------------------------------
 
-  let evidenceScore =
-    1;
+  let score = 1;
 
-  if (
-    sourceMode ===
-    'source'
-  ) {
-    evidenceScore =
-      sourceEvidenceScore(
+  if (mode === 'source') {
+    score =
+      evidenceScore(
         question,
         raw.options,
         source
       );
 
-    if (
-      evidenceScore <
-      0.20
-    ) {
+    if (score < 0.18) {
       return null;
     }
   }
@@ -2144,8 +1672,7 @@ function validateQuestion(
 
     readingText:
       cleanText(
-        raw.readingText ||
-          ''
+        raw.readingText || ''
       ),
 
     subQuestions:
@@ -2157,20 +1684,17 @@ function validateQuestion(
 
     shortAnswer:
       cleanText(
-        raw.shortAnswer ||
-          ''
+        raw.shortAnswer || ''
       ),
 
     cause:
       cleanText(
-        raw.cause ||
-          ''
+        raw.cause || ''
       ),
 
     effect:
       cleanText(
-        raw.effect ||
-          ''
+        raw.effect || ''
       ),
 
     isCauseTrue:
@@ -2194,41 +1718,34 @@ function validateQuestion(
 
     explanation:
       cleanText(
-        raw.explanation ||
-          ''
+        raw.explanation || ''
       ),
 
     answerVerification:
       cleanText(
-        raw.answerVerification ||
-          ''
+        raw.answerVerification || ''
       ),
 
     analysisSummary:
       cleanText(
-        raw.analysisSummary ||
-          ''
+        raw.analysisSummary || ''
       ),
 
     qImage:
-      qImage ||
-      undefined,
+      qImage || undefined,
 
     needsImage,
 
     imageHint,
 
     imageSource:
-      raw.imageSource ||
-      null,
+      raw.imageSource || null,
 
-    researchBacked:
-      true,
+    researchBacked: true,
 
-    researchSources:
-      [],
+    researchSources: [],
 
-    sourceMode,
+    sourceMode: mode,
 
     sourceIndex:
       Number.isInteger(
@@ -2252,8 +1769,7 @@ function validateQuestion(
       ),
 
     sourceQuestionVerbatim:
-      sourceMode ===
-      'source'
+      mode === 'source'
         ? true
         : Boolean(
             raw.sourceQuestionVerbatim
@@ -2261,9 +1777,7 @@ function validateQuestion(
 
     sourceEvidenceScore:
       Number(
-        evidenceScore.toFixed(
-          3
-        )
+        score.toFixed(3)
       ),
 
     visualRequired,
@@ -2277,305 +1791,65 @@ function validateQuestion(
 // ============================================================
 
 function buildSystemPrompt({
-  sourceMode,
-  targetYear,
-  allowedTypes,
+  mode,
+  year,
+  types,
   hotsLevel,
 }) {
   return `
-Kamu adalah AI pembuat soal profesional untuk Bimbel Gemilang.
+Kamu adalah Question Engine Bimbel Gemilang.
 
-TARGET TAHUN:
-${targetYear}
+TARGET:
+${year}
+
+MODE:
+${mode}
 
 LEVEL:
 ${hotsLevel || 'standar sampai HOTS'}
 
-MODE:
-${sourceMode}
+Buat soal akademik yang akurat.
 
-============================================================
-PRINSIP AKADEMIK
-============================================================
+ATURAN:
 
-- Akurat secara akademik.
-- Sesuai mapel.
-- Sesuai kelas.
-- Sesuai topik.
-- Sesuai kisi-kisi/arahan guru.
-- Jangan membuat fakta akademik palsu.
-- Jangan mengklaim soal pasti keluar.
-- Jangan menyebut soal prediksi sebagai bocoran.
-- Hitung ulang soal matematika/fisika/kimia.
-- Pastikan hanya ada satu jawaban benar untuk multiple choice.
+1. Jangan mengarang fakta.
+2. Untuk matematika/fisika/kimia hitung ulang.
+3. Multiple harus memiliki tepat 1 jawaban benar.
+4. Pembahasan harus singkat tetapi jelas.
+5. answerVerification harus menjelaskan mengapa kunci benar.
+6. analysisSummary berisi konsep yang diuji.
+7. Jangan menyebut soal sebagai bocoran.
+8. Jangan mengatakan pasti keluar ujian.
 
-============================================================
-MODE SOURCE
-============================================================
+MODE SOURCE:
+- Hanya ambil soal yang benar-benar ada pada sumber.
+- Jangan membuat soal baru.
+- sourceQuestionVerbatim = true.
+- Jika sumber tidak menyediakan soal yang jelas, jangan gunakan.
 
-Jika MODE = source:
+MODE PREDICTION:
+- Gunakan sumber sebagai evidence.
+- Buat soal BARU.
+- sourceQuestionVerbatim = false.
+- Analisis kompetensi, pola, HOTS dan stimulus.
 
-Hanya ambil soal yang benar-benar terlihat dalam sumber.
+VISUAL:
+- Jangan menulis "perhatikan gambar" tanpa gambar.
+- Untuk visual prediction gunakan clock atau graph bila sesuai.
+- Jangan mengarang URL gambar.
 
-Jangan membuat soal baru.
-
-Boleh:
-- membersihkan HTML,
-- memperbaiki OCR yang jelas rusak,
-- menentukan jawaban,
-- memberikan pembahasan,
-- memverifikasi jawaban.
-
-sourceQuestionVerbatim harus true.
-
-Jika sumber hanya membahas materi tetapi tidak memberikan
-soal yang jelas, jangan keluarkan sebagai soal source.
-
-============================================================
-MODE PREDICTION
-============================================================
-
-Jika MODE = prediction:
-
-Gunakan sumber internet sebagai evidence.
-
-Analisis:
-- pola materi,
-- kompetensi,
-- bentuk soal,
-- HOTS,
-- stimulus,
-- grafik,
-- tabel,
-- diagram,
-- gambar,
-- kecenderungan soal.
-
-Kemudian buat latihan BARU.
-
-sourceQuestionVerbatim harus false.
-
-============================================================
-VISUAL
-============================================================
-
-Jika soal membutuhkan gambar, jangan menulis:
-
-"perhatikan gambar"
-
-tanpa memberikan stimulus.
-
-Untuk visual gunakan salah satu:
-
-1. clock
-2. graph
-3. needsImage
-4. questionImageUrl dari asset sumber
-5. optionImages dari asset sumber
-
-Jangan mengarang URL gambar.
-
-Jika tidak ada gambar sumber,
-untuk soal prediction boleh menggunakan:
-
-clock
-atau
-graph
-
-yang dapat dibuat secara programatis.
-
-============================================================
-OUTPUT
-============================================================
-
-Output JSONL saja.
-
+OUTPUT:
+JSONL saja.
 Tidak boleh markdown.
-
 Baris pertama:
-
 {"meta":true}
 
-Kemudian setiap soal satu object JSON.
+TIPE YANG BOLEH:
+${types.join(', ')}
 
-============================================================
-MULTIPLE
-============================================================
-
-{
-  "type":"multiple",
-  "question":"...",
-  "options":["...","...","...","..."],
-  "correct":0,
-  "explanation":"...",
-  "answerVerification":"...",
-  "analysisSummary":"...",
-  "sourceIndex":0,
-  "sourceTitle":"...",
-  "sourceUrl":"...",
-  "sourceQuestionVerbatim":false,
-  "questionImageUrl":"",
-  "optionImages":[],
-  "optionsAreImages":false
-}
-
-correct:
-0 = opsi pertama
-1 = opsi kedua
-2 = opsi ketiga
-3 = opsi keempat
-
-============================================================
-MULTISELECT
-============================================================
-
-{
-  "type":"multiselect",
-  "question":"...",
-  "options":["...","...","...","..."],
-  "correctAnswers":[0,2],
-  "explanation":"...",
-  "answerVerification":"...",
-  "analysisSummary":"..."
-}
-
-============================================================
-TRUE FALSE
-============================================================
-
-{
-  "type":"truefalse",
-  "question":"...",
-  "statements":[
-    {
-      "text":"...",
-      "isTrue":true
-    },
-    {
-      "text":"...",
-      "isTrue":false
-    }
-  ],
-  "explanation":"..."
-}
-
-============================================================
-SHORT ANSWER
-============================================================
-
-{
-  "type":"shortanswer",
-  "question":"...",
-  "shortAnswer":"...",
-  "explanation":"..."
-}
-
-============================================================
-CAUSE EFFECT
-============================================================
-
-{
-  "type":"causeeffect",
-  "question":"...",
-  "cause":"...",
-  "effect":"...",
-  "isCauseTrue":true,
-  "isEffectTrue":false,
-  "explanation":"..."
-}
-
-============================================================
-MATCHING
-============================================================
-
-{
-  "type":"matching",
-  "question":"...",
-  "matchingPairs":[
-    {
-      "left":"...",
-      "right":"..."
-    },
-    {
-      "left":"...",
-      "right":"..."
-    },
-    {
-      "left":"...",
-      "right":"..."
-    }
-  ],
-  "explanation":"..."
-}
-
-============================================================
-READING
-============================================================
-
-{
-  "type":"reading",
-  "question":"...",
-  "readingText":"...",
-  "subQuestions":[
-    {
-      "q":"...",
-      "options":["...","...","...","..."],
-      "correct":0
-    },
-    {
-      "q":"...",
-      "options":["...","...","...","..."],
-      "correct":1
-    },
-    {
-      "q":"...",
-      "options":["...","...","...","..."],
-      "correct":2
-    }
-  ],
-  "explanation":"..."
-}
-
-============================================================
-CLOCK
-============================================================
-
-{
-  "clock":{
-    "hour":8,
-    "minute":30
-  }
-}
-
-============================================================
-GRAPH
-============================================================
-
-{
-  "graph":{
-    "points":[
-      {"x":0,"y":0},
-      {"x":1,"y":2},
-      {"x":2,"y":4}
-    ],
-    "highlight":[
-      {"x":1,"y":2}
-    ],
-    "xLabel":"x",
-    "yLabel":"y"
-  }
-}
-
-============================================================
-ALLOWED TYPES
-============================================================
-
-${allowedTypes
-  .map(
-    (x) =>
-      `- ${x}`
-  )
-  .join('\n')}
+PENTING:
+Maksimal ${MAX_BATCH} soal.
+Utamakan validitas daripada jumlah.
 `;
 }
 
@@ -2587,70 +1861,65 @@ export default async function handler(
   req,
   res
 ) {
-  // ----------------------------------------------------------
+  const started =
+    Date.now();
+
+  // ==========================================================
   // METHOD
-  // ----------------------------------------------------------
+  // ==========================================================
 
   if (
     req.method !==
     'POST'
   ) {
-    return res.status(
-      405
-    ).json({
+    return res.status(405).json({
       success: false,
       error:
         'Method not allowed.',
     });
   }
 
-  // ----------------------------------------------------------
-  // INPUT
-  // ----------------------------------------------------------
+  // ==========================================================
+  // BODY
+  // ==========================================================
 
   const body =
     req.body || {};
 
-  const {
-    topic,
-    mapel,
-    kelas,
-    jumlahSoal,
-    types,
-    arahan,
-    sourceMode,
-    targetYear,
-    hotsLevel,
-  } = body;
+  const topic =
+    cleanText(body.topic);
 
-  const cleanTopic =
+  const mapel =
+    cleanText(body.mapel);
+
+  const kelas =
+    cleanText(body.kelas);
+
+  const arahan =
+    cleanText(body.arahan);
+
+  const hotsLevel =
     cleanText(
-      topic
+      body.hotsLevel
     );
 
-  if (
-    !cleanTopic
-  ) {
-    return res.status(
-      400
-    ).json({
+  if (!topic) {
+    return res.status(400).json({
       success: false,
       error:
         'Topik wajib diisi.',
     });
   }
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // ENV
-  // ----------------------------------------------------------
+  // ==========================================================
 
   if (
     !process.env
       .CLOUDFLARE_API_TOKEN
   ) {
-    return res.status(
-      500
-    ).json({
+    return res.status(500).json({
       success: false,
       error:
         'CLOUDFLARE_API_TOKEN belum tersedia di Vercel.',
@@ -2661,129 +1930,87 @@ export default async function handler(
     !process.env
       .CLOUDFLARE_ACCOUNT_ID
   ) {
-    return res.status(
-      500
-    ).json({
+    return res.status(500).json({
       success: false,
       error:
         'CLOUDFLARE_ACCOUNT_ID belum tersedia di Vercel.',
     });
   }
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // COUNT
-  // ----------------------------------------------------------
+  // ==========================================================
 
-  const parsedCount =
+  const parsed =
     Number(
-      jumlahSoal
+      body.jumlahSoal
     );
 
-  const jumlah =
-    Math.min(
-      Math.max(
-        Number.isFinite(
-          parsedCount
-        )
-          ? Math.floor(
-              parsedCount
-            )
-          : 5,
-        1
-      ),
-      MAX_BATCH_QUESTIONS
-    );
+  const jumlah = Math.min(
+    Math.max(
+      Number.isFinite(parsed)
+        ? Math.floor(parsed)
+        : 5,
+      1
+    ),
+    MAX_BATCH
+  );
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // TYPES
-  // ----------------------------------------------------------
+  // ==========================================================
 
   const allowedTypes =
-    Array.isArray(
-      types
-    ) &&
-    types.length
-      ? types
-      : [
-          'multiple',
-        ];
+    Array.isArray(body.types) &&
+    body.types.length
+      ? body.types
+      : ['multiple'];
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // MODE
-  // ----------------------------------------------------------
+  // ==========================================================
 
   const mode =
-    sourceMode ===
+    body.sourceMode ===
     'prediction'
       ? 'prediction'
       : 'source';
 
   const year =
     cleanText(
-      targetYear
+      body.targetYear
     ) ||
     String(
-      new Date()
-        .getFullYear() +
+      new Date().getFullYear() +
         1
     );
 
   // ==========================================================
-  // 1. BUILD QUERIES
+  // 1. SEARCH
   // ==========================================================
 
   const queries =
-    buildResearchQueries({
-      topic:
-        cleanTopic,
-
-      mapel:
-        cleanText(
-          mapel
-        ),
-
-      kelas:
-        cleanText(
-          kelas
-        ),
-
-      targetYear:
-        year,
-
-      sourceMode:
-        mode,
-
-      arahan:
-        cleanText(
-          arahan
-        ),
+    buildQueries({
+      topic,
+      mapel,
+      kelas,
+      year,
+      mode,
+      arahan,
     });
 
-  // ==========================================================
-  // 2. SEARCH PARALLEL
-  // ==========================================================
-
-  const searchResults =
+  const searchSettled =
     await Promise.allSettled(
       queries.map(
-        (query) =>
-          duckDuckGoSearch(
-            query
-          )
+        searchDuckDuckGo
       )
     );
 
-  const rawSources =
-    [];
+  const rawSources = [];
+  const queryErrors = [];
 
-  const queryErrors =
-    [];
-
-  searchResults.forEach(
-    (
-      result,
-      index
-    ) => {
+  searchSettled.forEach(
+    (result, index) => {
       if (
         result.status ===
         'fulfilled'
@@ -2797,8 +2024,7 @@ export default async function handler(
             queries[index],
 
           error:
-            result.reason
-              ?.message ||
+            result.reason?.message ||
             'Search failed',
         });
       }
@@ -2806,11 +2032,11 @@ export default async function handler(
   );
 
   // ==========================================================
-  // 3. RANK
+  // 2. RANK
   // ==========================================================
 
   const context = [
-    cleanTopic,
+    topic,
     mapel,
     kelas,
     arahan,
@@ -2818,51 +2044,37 @@ export default async function handler(
     .filter(Boolean)
     .join(' ');
 
-  const rankedSources =
+  const ranked =
     rankSources(
       rawSources,
       context
     );
 
   // ==========================================================
-  // 4. READ SOURCES PARALLEL
+  // 3. READ MAX 2 SOURCES
   // ==========================================================
 
-  let readablePages =
-    [];
-
-  if (
-    rankedSources.length
-  ) {
-    const pages =
-      await Promise.all(
-        rankedSources
-          .slice(
-            0,
-            MAX_SOURCES
+  const readablePages =
+    ranked.length
+      ? (
+          await Promise.all(
+            ranked
+              .slice(
+                0,
+                MAX_SOURCES
+              )
+              .map(readPage)
           )
-          .map(
-            readPage
-          )
-      );
-
-    readablePages =
-      pages.filter(
-        (page) =>
-          Boolean(
-            page?.content &&
-              page.content
-                .length >=
-                MIN_SOURCE_TEXT
-          ) ||
-          Boolean(
-            page?.images?.length
-          )
-      );
-  }
+        ).filter(
+          (page) =>
+            Boolean(
+              page?.content
+            )
+        )
+      : [];
 
   // ==========================================================
-  // 5. RESEARCH PACK
+  // 4. RESEARCH PACK
   // ==========================================================
 
   const researchPack =
@@ -2871,128 +2083,84 @@ export default async function handler(
     );
 
   // ==========================================================
-  // 6. PROMPTS
+  // 5. PROMPTS
   // ==========================================================
 
   const systemPrompt =
     buildSystemPrompt({
-      sourceMode:
-        mode,
-
-      targetYear:
-        year,
-
-      allowedTypes,
-
-      hotsLevel:
-        cleanText(
-          hotsLevel
-        ),
+      mode,
+      year,
+      types:
+        allowedTypes,
+      hotsLevel,
     });
 
   const userPrompt = `
-BIMBEL GEMILANG QUESTION ENGINE
+BIMBEL GEMILANG
 
 MAPEL:
-${cleanText(
-  mapel || 'Umum'
-)}
+${mapel || 'Umum'}
 
 KELAS:
-${cleanText(
-  kelas || 'Sesuai input'
-)}
+${kelas || 'Sesuai input'}
 
 TOPIK:
-${cleanTopic}
+${topic}
 
-TARGET TAHUN:
+TAHUN:
 ${year}
-
-MODE:
-${mode}
 
 JUMLAH:
 ${jumlah}
 
+MODE:
+${mode}
+
 TIPE:
-${allowedTypes.join(
-  ', '
-)}
+${allowedTypes.join(', ')}
 
-ARAHAN GURU:
-${cleanText(
-  arahan || ''
-)}
+ARAHAN:
+${arahan || '-'}
 
-============================================================
-RESEARCH INTERNET
-============================================================
-
-${researchPack || 'Tidak ada sumber yang berhasil dibaca.'}
-
-============================================================
-TUGAS
-============================================================
+==================================================
+RESEARCH
+==================================================
 
 ${
-  mode ===
-  'source'
+  researchPack ||
+  'Tidak ada sumber yang berhasil dibaca.'
+}
+
+==================================================
+TASK
+==================================================
+
+${
+  mode === 'source'
     ? `
-Ambil soal yang benar-benar ditemukan pada sumber.
-
-JANGAN membuat soal baru.
-
-Jika tidak cukup soal yang valid,
-keluarkan hanya soal yang benar-benar dapat diverifikasi.
+Ambil soal yang benar-benar terdapat dalam sumber.
+Jangan membuat soal baru.
+Jika tidak cukup, keluarkan hanya yang benar-benar valid.
 `
     : `
-Gunakan sumber sebagai evidence.
-
-Buat latihan baru yang lebih baik dan relevan
-dengan kisi-kisi/topik.
-
-Perhatikan:
-- pola soal,
-- kompetensi,
-- HOTS,
-- stimulus,
-- grafik,
-- tabel,
-- diagram,
-- visual,
-- tingkat kesulitan.
-
-Jangan mengklaim soal pasti keluar.
+Gunakan research sebagai evidence.
+Buat soal latihan BARU.
+Sesuaikan dengan topik, kompetensi dan tingkat kesulitan.
 `
 }
 
-============================================================
-QUALITY
-============================================================
+Untuk setiap soal berikan:
+- jawaban
+- pembahasan singkat
+- answerVerification
+- analysisSummary
 
-Kebenaran akademik lebih penting daripada jumlah.
-
-Setiap soal harus mempunyai:
-- jawaban benar,
-- pembahasan,
-- verifikasi,
-- analisis konsep.
-
-Untuk matematika/fisika/kimia:
-hitung ulang sebelum memberikan kunci.
-
-Jika soal visual digunakan:
-stimulus harus benar-benar tersedia.
-
-Output maksimal:
-${jumlah} soal.
-
-Output hanya JSONL.
+Output maksimal ${jumlah} soal.
+Output JSONL saja.
 `;
 
   // ==========================================================
-  // 7. CALL CLOUDFLARE
+  // 6. CLOUDFLARE
   // ==========================================================
 
   let aiData;
@@ -3002,15 +2170,13 @@ Output hanya JSONL.
 
   try {
     aiData =
-      await callCloudflareAI({
+      await callCloudflare({
         systemPrompt,
         userPrompt,
       });
-  } catch (
-    error
-  ) {
+  } catch (error) {
     console.error(
-      '[Gemilang][Cloudflare]',
+      '[Gemilang][AI]',
       error?.message
     );
 
@@ -3018,28 +2184,34 @@ Output hanya JSONL.
       error?.name ===
       'AbortError'
     ) {
-      return res.status(
-        504
-      ).json({
+      return res.status(504).json({
         success: false,
 
         error:
-          'Cloudflare AI timeout. Research berhasil tetapi AI tidak selesai dalam batas waktu.',
+          'Cloudflare AI timeout sebelum 60 detik. Research berhasil, tetapi model belum selesai.',
 
-        model:
-          CLOUDFLARE_MODEL,
+        model: MODEL,
+
+        diagnostics: {
+          totalDurationMs:
+            Date.now() -
+            started,
+
+          aiDurationMs:
+            Date.now() -
+            aiStarted,
+
+          researchSourceCount:
+            readablePages.length,
+        },
       });
     }
 
     if (
-      error?.status ===
-        401 ||
-      error?.status ===
-        403
+      error?.status === 401 ||
+      error?.status === 403
     ) {
-      return res.status(
-        502
-      ).json({
+      return res.status(502).json({
         success: false,
 
         error:
@@ -3048,31 +2220,35 @@ Output hanya JSONL.
         debug:
           error.message,
 
-        model:
-          CLOUDFLARE_MODEL,
+        model: MODEL,
       });
     }
 
     if (
-      error?.status ===
-      429
+      error?.status === 429
     ) {
-      return res.status(
-        429
-      ).json({
+      return res.status(429).json({
         success: false,
 
         error:
-          'Cloudflare AI sedang terkena rate limit atau kuota.',
+          'Cloudflare AI terkena rate limit atau kuota.',
 
         debug:
           error.message,
       });
     }
 
-    return res.status(
-      502
-    ).json({
+    if (
+      error?.status === 500
+    ) {
+      return res.status(500).json({
+        success: false,
+        error:
+          error.message,
+      });
+    }
+
+    return res.status(502).json({
       success: false,
 
       error:
@@ -3089,36 +2265,40 @@ Output hanya JSONL.
     aiStarted;
 
   // ==========================================================
-  // 8. EXTRACT
+  // 7. TEXT
   // ==========================================================
 
   const rawText =
-    extractCloudflareText(
+    extractAIText(
       aiData
     );
 
-  if (
-    !rawText.trim()
-  ) {
-    return res.status(
-      502
-    ).json({
+  if (!rawText.trim()) {
+    return res.status(502).json({
       success: false,
 
       error:
         'Cloudflare tidak mengembalikan teks soal.',
 
-      model:
-        CLOUDFLARE_MODEL,
+      model: MODEL,
 
       debug:
         aiData?.result ||
         null,
+
+      diagnostics: {
+        totalDurationMs:
+          Date.now() -
+          started,
+
+        aiDurationMs:
+          aiDuration,
+      },
     });
   }
 
   // ==========================================================
-  // 9. PARSE
+  // 8. PARSE
   // ==========================================================
 
   const objects =
@@ -3126,13 +2306,8 @@ Output hanya JSONL.
       rawText
     );
 
-  if (
-    objects.length ===
-    0
-  ) {
-    return res.status(
-      502
-    ).json({
+  if (!objects.length) {
+    return res.status(502).json({
       success: false,
 
       error:
@@ -3142,57 +2317,56 @@ Output hanya JSONL.
         rawText:
           rawText.slice(
             0,
-            2500
+            3000
           ),
 
         length:
           rawText.length,
       },
+
+      diagnostics: {
+        totalDurationMs:
+          Date.now() -
+          started,
+
+        aiDurationMs:
+          aiDuration,
+      },
     });
   }
 
   // ==========================================================
-  // 10. QUALITY GATE
+  // 9. QUALITY GATE
   // ==========================================================
 
-  const questions =
-    [];
+  const questions = [];
 
-  let rejected =
-    0;
-
-  let duplicateCount =
-    0;
+  let rejected = 0;
+  let duplicates = 0;
 
   for (
-    const rawQuestion of
-      objects
+    const rawQuestion of objects
   ) {
     const question =
       validateQuestion(
         rawQuestion,
-
         allowedTypes,
-
         readablePages,
-
         mode
       );
 
-    if (
-      !question
-    ) {
+    if (!question) {
       rejected++;
       continue;
     }
 
     if (
-      isQuestionDuplicate(
+      isDuplicate(
         question.question,
         questions
       )
     ) {
-      duplicateCount++;
+      duplicates++;
       continue;
     }
 
@@ -3200,12 +2374,10 @@ Output hanya JSONL.
       readablePages.map(
         (page) => ({
           title:
-            page.title ||
-            '',
+            page.title || '',
 
           url:
-            page.url ||
-            '',
+            page.url || '',
         })
       );
 
@@ -3222,35 +2394,27 @@ Output hanya JSONL.
   }
 
   // ==========================================================
-  // 11. NO VALID QUESTION
+  // 10. NO QUESTIONS
   // ==========================================================
 
-  if (
-    questions.length ===
-    0
-  ) {
-    return res.status(
-      502
-    ).json({
+  if (!questions.length) {
+    return res.status(502).json({
       success: false,
 
       error:
-        mode ===
-        'source'
-          ? 'Internet berhasil ditelusuri, tetapi tidak ada soal sumber yang lolos verifikasi.'
-          : 'AI berhasil dipanggil, tetapi tidak ada soal yang lolos quality gate.',
+        mode === 'source'
+          ? 'Sumber ditemukan, tetapi tidak ada soal yang lolos verifikasi.'
+          : 'AI selesai, tetapi tidak ada soal yang lolos quality gate.',
 
       diagnostics: {
-        queryCount:
-          queries.length,
-
+        queries,
         queryErrors,
 
-        searchResultCount:
+        rawSearchResultCount:
           rawSources.length,
 
         rankedSourceCount:
-          rankedSources.length,
+          ranked.length,
 
         readablePageCount:
           readablePages.length,
@@ -3261,22 +2425,25 @@ Output hanya JSONL.
         rejectedCount:
           rejected,
 
-        duplicateCount,
+        duplicateCount:
+          duplicates,
 
         aiDurationMs:
           aiDuration,
+
+        totalDurationMs:
+          Date.now() -
+          started,
       },
 
       researchSources:
         readablePages.map(
           (page) => ({
             title:
-              page.title ||
-              '',
+              page.title || '',
 
             url:
-              page.url ||
-              '',
+              page.url || '',
 
             relevanceScore:
               page.relevanceScore ||
@@ -3287,14 +2454,11 @@ Output hanya JSONL.
   }
 
   // ==========================================================
-  // 12. SUCCESS
+  // 11. SUCCESS
   // ==========================================================
 
-  return res.status(
-    200
-  ).json({
-    success:
-      true,
+  return res.status(200).json({
+    success: true,
 
     questions,
 
@@ -3305,7 +2469,7 @@ Output hanya JSONL.
       questions.length,
 
     maxBatchSize:
-      MAX_BATCH_QUESTIONS,
+      MAX_BATCH,
 
     possiblyTruncated:
       questions.length <
@@ -3320,12 +2484,10 @@ Output hanya JSONL.
     aiProvider:
       'Cloudflare Workers AI',
 
-    model:
-      CLOUDFLARE_MODEL,
+    model: MODEL,
 
     diagnostics: {
-      queryCount:
-        queries.length,
+      queries,
 
       queryErrors,
 
@@ -3333,7 +2495,7 @@ Output hanya JSONL.
         rawSources.length,
 
       rankedSourceCount:
-        rankedSources.length,
+        ranked.length,
 
       readablePageCount:
         readablePages.length,
@@ -3344,26 +2506,33 @@ Output hanya JSONL.
       rejectedCount:
         rejected,
 
-      duplicateCount,
+      duplicateCount:
+        duplicates,
 
       aiDurationMs:
         aiDuration,
+
+      totalDurationMs:
+        Date.now() -
+        started,
     },
 
     researchSources:
       readablePages.map(
         (page) => ({
           title:
-            page.title ||
-            '',
+            page.title || '',
 
           url:
-            page.url ||
-            '',
+            page.url || '',
 
           relevanceScore:
-            page.relevanceScore ||
-            0,
+            Number(
+              (
+                page.relevanceScore ||
+                0
+              ).toFixed(3)
+            ),
         })
       ),
   });
