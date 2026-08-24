@@ -1,34 +1,43 @@
 // api/generateQuizFromTopic.js
 // ============================================================
-// BIMBEL GEMILANG — STABLE QUESTION RESEARCH ENGINE
-// Jina Search + Cloudflare Workers AI
-// ============================================================
+// BIMBEL GEMILANG — ASISTEN SOAL GEMILANG
+// PROFESSIONAL RESEARCH QUESTION ENGINE
 //
-// DESAIN:
-// 1. Search internet secara berurutan.
-// 2. Tidak membatalkan Jina terlalu cepat.
-// 3. Maksimal 2 query untuk satu batch.
-// 4. Gunakan content yang dikembalikan Jina langsung.
-// 5. Tidak membuka ulang URL pada tahap ini.
-// 6. Maksimal 3 soal per inference untuk stabilitas.
-// 7. Dedup lokal sebelum response.
-// 8. Cloudflare hanya dipakai untuk pekerjaan bernilai tinggi.
+// SEARCH : Tavily Free
+// AI     : Cloudflare Workers AI
+//
+// JINA TIDAK DIPAKAI LAGI
+//
+// FLOW:
+// 1. Search web
+// 2. Kumpulkan sumber
+// 3. Ranking sederhana
+// 4. Dedup sumber
+// 5. Research pack kecil
+// 6. Cloudflare AI
+// 7. Quality Gate
+// 8. Dedup pertanyaan
+// 9. Return ke ManageQuiz
+//
+// CATATAN:
+// Sistem sengaja membatasi batch agar stabil.
+// Orchestrator 40 soal akan dibuat di layer berikutnya.
 // ============================================================
 
 const CLOUDFLARE_MODEL =
   process.env.CLOUDFLARE_MODEL ||
   '@cf/zai-org/glm-4.7-flash';
 
-const MAX_BATCH_QUESTIONS = 3;
+const MAX_BATCH_QUESTIONS = 5;
 
-const JINA_TIMEOUT_MS = 20000;
-const CLOUDFLARE_TIMEOUT_MS = 30000;
+const TAVILY_TIMEOUT_MS = 18000;
+const CLOUDFLARE_TIMEOUT_MS = 40000;
 
-const MAX_RESULTS_PER_QUERY = 5;
-const MAX_SOURCES = 6;
+const MAX_SEARCH_RESULTS = 8;
+const MAX_SOURCES = 8;
 
-const MAX_SOURCE_CHARS = 5000;
-const MAX_RESEARCH_PACK_CHARS = 16000;
+const MAX_SOURCE_CHARS = 7000;
+const MAX_RESEARCH_PACK_CHARS = 24000;
 
 // ============================================================
 // HELPERS
@@ -63,9 +72,7 @@ const normalizeText = (value = '') =>
     )
     .trim();
 
-const fingerprint = (
-  value = ''
-) =>
+const fingerprint = (value = '') =>
   normalizeText(value)
     .replace(
       /\bsoal\s+\d+\b/g,
@@ -81,176 +88,236 @@ const fingerprint = (
     )
     .trim();
 
-const fetchWithTimeout = async (
-  url,
-  options = {},
-  timeoutMs = 20000
+const tokenSet = (value = '') =>
+  new Set(
+    normalizeText(value)
+      .split(' ')
+      .filter(
+        (token) =>
+          token.length >= 2
+      )
+  );
+
+const similarity = (
+  a,
+  b
 ) => {
-  const controller =
-    new AbortController();
+  const A =
+    tokenSet(a);
 
-  const timer =
-    setTimeout(
-      () => controller.abort(),
-      timeoutMs
-    );
+  const B =
+    tokenSet(b);
 
-  try {
-    return await fetch(
-      url,
-      {
-        ...options,
-        signal:
-          controller.signal,
-      }
-    );
-  } finally {
-    clearTimeout(timer);
+  if (
+    !A.size ||
+    !B.size
+  ) {
+    return 0;
   }
+
+  let intersection = 0;
+
+  for (
+    const item of A
+  ) {
+    if (
+      B.has(item)
+    ) {
+      intersection += 1;
+    }
+  }
+
+  const union =
+    A.size +
+    B.size -
+    intersection;
+
+  return union
+    ? intersection / union
+    : 0;
 };
 
+const fetchWithTimeout =
+  async (
+    url,
+    options = {},
+    timeoutMs = 20000
+  ) => {
+    const controller =
+      new AbortController();
+
+    const timer =
+      setTimeout(
+        () =>
+          controller.abort(),
+        timeoutMs
+      );
+
+    try {
+      return await fetch(
+        url,
+        {
+          ...options,
+          signal:
+            controller.signal,
+        }
+      );
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
 // ============================================================
-// JINA SEARCH
+// TAVILY SEARCH
 // ============================================================
 
-async function searchJina(
+async function searchTavily(
   query
 ) {
   const apiKey =
-    process.env.JINA_API_KEY;
+    process.env.TAVILY_API_KEY;
 
   if (!apiKey) {
     throw new Error(
-      'JINA_API_KEY belum tersedia di Vercel.'
+      'TAVILY_API_KEY belum tersedia di Vercel.'
     );
   }
 
-  const url =
-    `https://s.jina.ai/?q=${encodeURIComponent(
-      query
-    )}`;
-
   const response =
     await fetchWithTimeout(
-      url,
+      'https://api.tavily.com/search',
       {
-        method: 'GET',
+        method: 'POST',
 
         headers: {
-          Authorization:
-            `Bearer ${apiKey}`,
-
-          Accept:
+          'Content-Type':
             'application/json',
-
-          'User-Agent':
-            'BimbelGemilang/3.1',
         },
+
+        body: JSON.stringify({
+          api_key:
+            apiKey,
+
+          query,
+
+          search_depth:
+            'basic',
+
+          topic:
+            'general',
+
+          max_results:
+            MAX_SEARCH_RESULTS,
+
+          include_answer:
+            false,
+
+          include_raw_content:
+            false,
+
+          include_images:
+            true,
+        }),
       },
-      JINA_TIMEOUT_MS
+      TAVILY_TIMEOUT_MS
     );
 
   const raw =
     await response.text();
 
-  if (!response.ok) {
-    let detail =
-      raw;
-
-    try {
-      const parsed =
-        JSON.parse(raw);
-
-      detail =
-        parsed?.message ||
-        parsed?.readableMessage ||
-        parsed?.error?.message ||
-        raw;
-    } catch (_) {}
-
-    throw new Error(
-      `JINA_HTTP_${response.status}: ${detail.slice(
-        0,
-        400
-      )}`
-    );
-  }
-
-  let parsed;
+  let data =
+    null;
 
   try {
-    parsed =
+    data =
       JSON.parse(raw);
-  } catch (_) {
-    throw new Error(
-      'JINA_INVALID_JSON'
-    );
+  } catch (_) {}
+
+  if (
+    !response.ok
+  ) {
+    const message =
+      data?.detail ||
+      data?.message ||
+      raw;
+
+    const error =
+      new Error(
+        `TAVILY_HTTP_${response.status}: ${message}`
+      );
+
+    error.status =
+      response.status;
+
+    throw error;
   }
 
-  const items =
-    Array.isArray(parsed)
-      ? parsed
-      : Array.isArray(
-          parsed?.data
-        )
-      ? parsed.data
-      : Array.isArray(
-          parsed?.results
-        )
-      ? parsed.results
+  const results =
+    Array.isArray(
+      data?.results
+    )
+      ? data.results
       : [];
 
-  return items
-    .slice(
-      0,
-      MAX_RESULTS_PER_QUERY
-    )
+  return results
     .map(
       (item) => ({
         title:
           cleanText(
             item?.title ||
-              item?.name ||
               ''
           ),
 
         url:
           cleanText(
             item?.url ||
-              item?.link ||
               ''
           ),
 
         content:
           cleanText(
             item?.content ||
-              item?.description ||
-              item?.snippet ||
               ''
           ).slice(
             0,
             MAX_SOURCE_CHARS
           ),
+
+        score:
+          typeof item?.score ===
+          'number'
+            ? item.score
+            : 0,
+
+        images:
+          Array.isArray(
+            item?.images
+          )
+            ? item.images
+            : [],
       })
     )
     .filter(
       (item) =>
-        item.title ||
-        item.url ||
-        item.content
+        item.url &&
+        (
+          item.title ||
+          item.content
+        )
     );
 }
 
 // ============================================================
-// QUERY BUILDER
+// SEARCH QUERY BUILDER
 // ============================================================
 
 function buildQueries({
   topic,
   mapel,
   kelas,
-  sourceMode,
   targetYear,
+  sourceMode,
+  arahan,
 }) {
   const base =
     [
@@ -261,19 +328,22 @@ function buildQueries({
       .filter(Boolean)
       .join(' ');
 
+  const instruction =
+    cleanText(arahan);
+
   if (
     sourceMode ===
     'prediction'
   ) {
     return [
-      `${base} TKA contoh soal HOTS`,
-      `${base} latihan soal ${targetYear}`,
+      `${base} TKA kisi kisi kerangka asesmen contoh soal HOTS`,
+      `${base} soal tahun sebelumnya latihan prediksi ${targetYear} ${instruction}`,
     ];
   }
 
   return [
-    `${base} contoh soal`,
-    `${base} latihan soal`,
+    `${base} contoh soal latihan`,
+    `${base} soal TKA HOTS bank soal`,
   ];
 }
 
@@ -284,10 +354,10 @@ function buildQueries({
 function dedupeSources(
   sources
 ) {
-  const seen =
+  const seenUrls =
     new Set();
 
-  const unique =
+  const result =
     [];
 
   for (
@@ -305,30 +375,36 @@ function dedupeSources(
     }
 
     if (
-      seen.has(key)
+      seenUrls.has(key)
     ) {
       continue;
     }
 
-    seen.add(key);
+    seenUrls.add(key);
 
-    unique.push(
+    result.push(
       source
     );
-
-    if (
-      unique.length >=
-      MAX_SOURCES
-    ) {
-      break;
-    }
   }
 
-  return unique;
+  return result
+    .sort(
+      (a, b) =>
+        Number(
+          b.score || 0
+        ) -
+        Number(
+          a.score || 0
+        )
+    )
+    .slice(
+      0,
+      MAX_SOURCES
+    );
 }
 
 // ============================================================
-// RESEARCH PACK
+// SOURCE PACK
 // ============================================================
 
 function buildResearchPack(
@@ -338,22 +414,50 @@ function buildResearchPack(
     '';
 
   for (
-    let i = 0;
-    i < sources.length;
-    i += 1
+    let index = 0;
+    index <
+      sources.length;
+    index += 1
   ) {
     const source =
-      sources[i];
+      sources[index];
+
+    const imageText =
+      Array.isArray(
+        source.images
+      )
+        ? source.images
+            .slice(
+              0,
+              6
+            )
+            .map(
+              (
+                image
+              ) =>
+                `IMAGE: ${image}`
+            )
+            .join('\n')
+        : '';
 
     const block = `
-SOURCE_INDEX: ${i}
-TITLE: ${source.title}
-URL: ${source.url}
+SOURCE_INDEX: ${index}
+
+TITLE:
+${source.title}
+
+URL:
+${source.url}
+
+SEARCH_SCORE:
+${source.score}
 
 CONTENT:
 ${source.content}
 
-------------------------------
+${imageText}
+
+----------------------------------------
 `;
 
     if (
@@ -374,13 +478,13 @@ ${source.content}
 }
 
 // ============================================================
-// CLOUDFLARE
+// CLOUDFLARE AI
 // ============================================================
 
-async function callCloudflare(
+async function callCloudflare({
   systemPrompt,
-  userPrompt
-) {
+  userPrompt,
+}) {
   const token =
     process.env
       .CLOUDFLARE_API_TOKEN;
@@ -401,30 +505,12 @@ async function callCloudflare(
     );
   }
 
-  const url =
+  const endpoint =
     `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${CLOUDFLARE_MODEL}`;
-
-  const body = {
-    messages: [
-      {
-        role: 'system',
-        content:
-          systemPrompt,
-      },
-      {
-        role: 'user',
-        content:
-          userPrompt,
-      },
-    ],
-
-    max_completion_tokens:
-      4500,
-  };
 
   const response =
     await fetchWithTimeout(
-      url,
+      endpoint,
       {
         method: 'POST',
 
@@ -437,7 +523,28 @@ async function callCloudflare(
         },
 
         body:
-          JSON.stringify(body),
+          JSON.stringify({
+            messages: [
+              {
+                role:
+                  'system',
+
+                content:
+                  systemPrompt,
+              },
+
+              {
+                role:
+                  'user',
+
+                content:
+                  userPrompt,
+              },
+            ],
+
+            max_completion_tokens:
+              5000,
+          }),
       },
       CLOUDFLARE_TIMEOUT_MS
     );
@@ -453,7 +560,9 @@ async function callCloudflare(
       JSON.parse(raw);
   } catch (_) {}
 
-  if (!response.ok) {
+  if (
+    !response.ok
+  ) {
     const message =
       data?.errors?.[0]
         ?.message ||
@@ -475,7 +584,7 @@ async function callCloudflare(
 }
 
 // ============================================================
-// AI OUTPUT
+// AI TEXT
 // ============================================================
 
 function extractAIText(
@@ -485,27 +594,34 @@ function extractAIText(
     data?.result?.choices;
 
   if (
-    !Array.isArray(choices)
+    !Array.isArray(
+      choices
+    )
   ) {
     return '';
   }
 
   return choices
     .map(
-      (choice) =>
+      (
+        choice
+      ) =>
         typeof choice
           ?.message
           ?.content ===
         'string'
-          ? choice.message
+          ? choice
+              .message
               .content
           : ''
     )
-    .join('\n');
+    .join(
+      '\n'
+    );
 }
 
 // ============================================================
-// JSON OBJECT EXTRACTION
+// JSON EXTRACTOR
 // ============================================================
 
 function extractJsonObjects(
@@ -524,30 +640,40 @@ function extractJsonObjects(
     i < text.length;
     i += 1
   ) {
-    const ch =
+    const char =
       text[i];
 
-    if (escaped) {
+    if (
+      escaped
+    ) {
       escaped = false;
       continue;
     }
 
-    if (ch === '\\') {
+    if (
+      char === '\\'
+    ) {
       escaped = true;
       continue;
     }
 
-    if (ch === '"') {
+    if (
+      char === '"'
+    ) {
       inString =
         !inString;
       continue;
     }
 
-    if (inString) {
+    if (
+      inString
+    ) {
       continue;
     }
 
-    if (ch === '{') {
+    if (
+      char === '{'
+    ) {
       if (
         depth === 0
       ) {
@@ -557,7 +683,9 @@ function extractJsonObjects(
       depth += 1;
     }
 
-    if (ch === '}') {
+    if (
+      char === '}'
+    ) {
       depth -= 1;
 
       if (
@@ -608,14 +736,14 @@ function validateQuestion(
 
   const question =
     cleanText(
-      raw.question
+      raw.question ||
+        ''
     );
 
   if (!question) {
     return null;
   }
 
-  // Multiple choice
   if (
     raw.type ===
     'multiple'
@@ -636,6 +764,46 @@ function validateQuestion(
       ) ||
       raw.correct < 0 ||
       raw.correct > 3
+    ) {
+      return null;
+    }
+  }
+
+  if (
+    raw.type ===
+    'multiselect'
+  ) {
+    if (
+      !Array.isArray(
+        raw.options
+      ) ||
+      raw.options.length <
+        2
+    ) {
+      return null;
+    }
+
+    if (
+      !Array.isArray(
+        raw.correctAnswers
+      ) ||
+      raw.correctAnswers.length ===
+        0
+    ) {
+      return null;
+    }
+  }
+
+  if (
+    raw.type ===
+    'truefalse'
+  ) {
+    if (
+      !Array.isArray(
+        raw.statements
+      ) ||
+      raw.statements.length <
+        2
     ) {
       return null;
     }
@@ -772,7 +940,6 @@ function validateQuestion(
     imageHint:
       cleanText(
         raw.imageHint ||
-          raw.image_keyword ||
           ''
       ),
 
@@ -809,7 +976,125 @@ function validateQuestion(
       Boolean(
         raw.sourceQuestionVerbatim
       ),
+
+    sourceEvidenceScore:
+      typeof raw.sourceEvidenceScore ===
+      'number'
+        ? raw.sourceEvidenceScore
+        : null,
+
+    visualRequired:
+      Boolean(
+        raw.visualRequired
+      ),
+
+    visualKind:
+      raw.visualKind ||
+      'none',
   };
+}
+
+// ============================================================
+// SYSTEM PROMPT
+// ============================================================
+
+function buildSystemPrompt({
+  sourceMode,
+  targetYear,
+  allowedTypes,
+  hotsLevel,
+}) {
+  return `
+Kamu adalah Asisten Soal Gemilang.
+
+TARGET:
+${targetYear}
+
+LEVEL:
+${hotsLevel || 'standar'}
+
+MODE:
+${
+  sourceMode ===
+  'source'
+    ? `
+SOURCE MODE.
+
+Gunakan hanya soal yang benar-benar ditemukan
+dalam bahan internet.
+
+Jangan mengarang soal seolah berasal
+dari sumber.
+
+Jangan mengarang URL.
+
+Jika sumber memuat soal:
+- pertahankan struktur,
+- tentukan kunci,
+- verifikasi,
+- berikan pembahasan.
+
+Jika sumber hanya berisi materi atau contoh pola,
+jangan mengklaim itu soal sumber.
+`
+    : `
+PREDICTION MODE.
+
+Gunakan sumber sebagai evidence untuk:
+- kompetensi,
+- topik,
+- pola soal,
+- HOTS,
+- stimulus,
+- tren.
+
+Kemudian buat soal latihan baru.
+
+Jangan menyebutnya bocoran.
+Jangan menjamin akan muncul.
+`
+}
+
+ATURAN:
+- relevan dengan mapel
+- relevan dengan kelas
+- relevan dengan topik
+- jawaban harus benar
+- pembahasan harus jelas
+- answerVerification wajib
+- analysisSummary wajib
+- jangan markdown
+- JSONL saja
+
+SKEMA MULTIPLE:
+
+{
+  "type":"multiple",
+  "question":"...",
+  "options":["A","B","C","D"],
+  "correct":0,
+  "explanation":"...",
+  "answerVerification":"...",
+  "analysisSummary":"...",
+  "sourceIndex":0,
+  "sourceTitle":"...",
+  "sourceUrl":"...",
+  "sourceQuestionVerbatim":true,
+  "optionImages":[],
+  "optionsAreImages":false
+}
+
+correct harus angka indeks 0-3.
+
+OUTPUT:
+{"meta":true}
+lalu satu object JSON per soal.
+
+TIPE YANG DIIZINKAN:
+${allowedTypes.join(
+  ', '
+)}
+`;
 }
 
 // ============================================================
@@ -833,6 +1118,9 @@ export default async function handler(
     });
   }
 
+  const body =
+    req.body || {};
+
   const {
     topic,
     mapel,
@@ -843,34 +1131,22 @@ export default async function handler(
     sourceMode,
     targetYear,
     hotsLevel,
-  } =
-    req.body || {};
+  } = body;
 
   // ----------------------------------------------------------
   // ENV
   // ----------------------------------------------------------
 
   if (
-    !cleanText(topic)
-  ) {
-    return res.status(
-      400
-    ).json({
-      success: false,
-      error:
-        'Topik wajib diisi.',
-    });
-  }
-
-  if (
-    !process.env.JINA_API_KEY
+    !process.env
+      .TAVILY_API_KEY
   ) {
     return res.status(
       500
     ).json({
       success: false,
       error:
-        'JINA_API_KEY belum tersedia.',
+        'TAVILY_API_KEY belum tersedia di Vercel.',
     });
   }
 
@@ -883,7 +1159,7 @@ export default async function handler(
     ).json({
       success: false,
       error:
-        'CLOUDFLARE_API_TOKEN belum tersedia.',
+        'CLOUDFLARE_API_TOKEN belum tersedia di Vercel.',
     });
   }
 
@@ -896,7 +1172,26 @@ export default async function handler(
     ).json({
       success: false,
       error:
-        'CLOUDFLARE_ACCOUNT_ID belum tersedia.',
+        'CLOUDFLARE_ACCOUNT_ID belum tersedia di Vercel.',
+    });
+  }
+
+  // ----------------------------------------------------------
+  // INPUT
+  // ----------------------------------------------------------
+
+  const cleanTopic =
+    cleanText(topic);
+
+  if (
+    !cleanTopic
+  ) {
+    return res.status(
+      400
+    ).json({
+      success: false,
+      error:
+        'Topik wajib diisi.',
     });
   }
 
@@ -935,36 +1230,39 @@ export default async function handler(
 
   const year =
     targetYear ||
-    new Date()
-      .getFullYear() +
+    new Date().getFullYear() +
       1;
 
   // ----------------------------------------------------------
-  // SEARCH QUERIES
+  // SEARCH
   // ----------------------------------------------------------
 
   const queries =
     buildQueries({
-      topic,
+      topic:
+        cleanTopic,
+
       mapel,
+
       kelas,
-      sourceMode:
-        mode,
+
       targetYear:
         year,
+
+      sourceMode:
+        mode,
+
+      arahan,
     });
 
-  const sources = [];
+  const allResults =
+    [];
 
-  const queryErrors = [];
+  const queryErrors =
+    [];
 
-  // ==========================================================
-  // SEARCH BERURUTAN
-  // ==========================================================
-  // Sengaja tidak parallel.
-  // Kalau query pertama berhasil, kita sudah punya kandidat.
-  // Kalau query kedua gagal, batch tidak langsung batal.
-  // ==========================================================
+  // Search sequential agar mudah dikontrol
+  // dan mudah berhenti saat kandidat cukup.
 
   for (
     const query of
@@ -972,22 +1270,17 @@ export default async function handler(
   ) {
     try {
       const results =
-        await searchJina(
+        await searchTavily(
           query
         );
 
-      if (
-        results.length
-      ) {
-        sources.push(
-          ...results
-        );
-      }
+      allResults.push(
+        ...results
+      );
 
-      // Sudah cukup untuk batch kecil.
       if (
-        sources.length >=
-        MAX_SOURCES
+        allResults.length >=
+        10
       ) {
         break;
       }
@@ -995,7 +1288,7 @@ export default async function handler(
       error
     ) {
       console.warn(
-        '[Gemilang][Jina]',
+        '[Gemilang][Tavily]',
         query,
         error.message
       );
@@ -1008,112 +1301,62 @@ export default async function handler(
     }
   }
 
-  const uniqueSources =
+  const sources =
     dedupeSources(
-      sources
+      allResults
     );
 
   if (
-    uniqueSources.length ===
+    sources.length ===
     0
   ) {
-    return res
-      .status(502)
-      .json({
-        success: false,
+    return res.status(
+      502
+    ).json({
+      success: false,
 
-        error:
-          'Pencarian internet gagal mendapatkan sumber yang dapat dibaca.',
+      error:
+        'Riset internet gagal. Sistem tidak membuat fallback seolah-olah berasal dari internet.',
 
-        debug:
-          queryErrors,
+      debug:
+        queryErrors,
 
-        researchProvider:
-          'Jina Search',
-      });
+      researchProvider:
+        'Tavily',
+    });
   }
 
-  // ==========================================================
+  // ----------------------------------------------------------
   // RESEARCH PACK
-  // ==========================================================
+  // ----------------------------------------------------------
 
   const researchPack =
     buildResearchPack(
-      uniqueSources
+      sources
     );
 
-  // ==========================================================
-  // SYSTEM PROMPT
-  // ==========================================================
+  // ----------------------------------------------------------
+  // PROMPTS
+  // ----------------------------------------------------------
 
-  const systemPrompt = `
-Kamu adalah Asisten Soal Gemilang.
+  const systemPrompt =
+    buildSystemPrompt({
+      sourceMode:
+        mode,
 
-MODE:
-${
-  mode ===
-  'source'
-    ? `
-AMBIL SOAL DARI INTERNET.
+      targetYear:
+        year,
 
-Hanya gunakan soal yang benar-benar terdapat
-dalam sumber yang diberikan.
+      allowedTypes,
 
-Jangan mengarang sumber.
-Jangan mengarang URL.
-Jangan mengarang soal.
-
-Kamu boleh:
-- membersihkan format,
-- menentukan jawaban,
-- memverifikasi,
-- memberikan pembahasan.
-`
-    : `
-PREDIKSI BERBASIS TREN.
-
-Gunakan sumber sebagai evidence.
-Analisis pola, kompetensi, HOTS,
-dan bentuk stimulus.
-
-Buat latihan baru berdasarkan evidence.
-
-Jangan menyebutnya bocoran.
-`
-}
-
-TARGET:
-${year}
-
-HOTS:
-${hotsLevel || 'standar'}
-
-OUTPUT:
-JSONL saja.
-
-MULTIPLE:
-{
-"type":"multiple",
-"question":"...",
-"options":["A","B","C","D"],
-"correct":0,
-"explanation":"...",
-"answerVerification":"...",
-"analysisSummary":"...",
-"sourceIndex":0,
-"sourceTitle":"...",
-"sourceUrl":"...",
-"sourceQuestionVerbatim":true
-}
-
-correct harus berupa angka 0-3.
-`;
-
-  // ==========================================================
-  // USER PROMPT
-  // ==========================================================
+      hotsLevel:
+        hotsLevel ||
+        '',
+    });
 
   const userPrompt = `
+ASISTEN SOAL GEMILANG
+
 MAPEL:
 ${mapel || 'Umum'}
 
@@ -1121,104 +1364,118 @@ KELAS:
 ${kelas || 'SMP'}
 
 TOPIK:
-${cleanText(topic)}
+${cleanTopic}
 
 JUMLAH:
 ${jumlah}
-
-TIPE:
-${allowedTypes.join(
-    ', '
-  )}
 
 ARAHAN:
 ${cleanText(
     arahan || ''
   )}
 
-SUMBER INTERNET:
+RESEARCH:
 ${researchPack}
 
-TASK:
-Buat maksimal ${jumlah} soal valid.
+TUGAS:
+${
+  mode ===
+  'source'
+    ? `
+Pilih soal yang benar-benar terdapat
+dalam sumber.
+`
+    : `
+Analisis evidence kemudian buat
+soal latihan baru.
+`
+}
 
-Jika mode SOURCE:
-ambil soal yang benar-benar ada pada sumber.
-
-Jika mode PREDICTION:
-analisis sumber lalu susun latihan baru.
-
+Buat maksimal ${jumlah} soal.
 Jangan memaksakan jumlah.
 `;
 
-  // ==========================================================
-  // CLOUDFLARE
-  // ==========================================================
+  // ----------------------------------------------------------
+  // AI
+  // ----------------------------------------------------------
 
   let aiData;
 
   try {
     aiData =
-      await callCloudflare(
+      await callCloudflare({
         systemPrompt,
-        userPrompt
-      );
+        userPrompt,
+      });
   } catch (
     error
   ) {
     const message =
-      String(
-        error?.message ||
-          ''
-      );
+      error?.message ||
+      String(error);
 
     console.error(
       '[Gemilang][Cloudflare]',
       message
     );
 
-    if (
+    return res.status(
       error?.status ===
-      429
-    ) {
-      return res
-        .status(429)
-        .json({
-          success: false,
-          error:
-            'Kuota harian Cloudflare Workers AI mencapai batas.',
-          debug:
-            message,
-        });
-    }
+        429
+        ? 429
+        : 502
+    ).json({
+      success: false,
 
-    return res
-      .status(502)
-      .json({
-        success: false,
-        error:
-          'Cloudflare Workers AI gagal memproses soal.',
-        debug:
-          message,
-      });
+      error:
+        error?.status ===
+        429
+          ? 'Kuota harian Cloudflare Workers AI sedang mencapai batas.'
+          : 'Cloudflare Workers AI gagal memproses soal.',
+
+      debug:
+        message,
+    });
   }
 
-  // ==========================================================
+  // ----------------------------------------------------------
   // PARSE
-  // ==========================================================
+  // ----------------------------------------------------------
 
   const rawText =
     extractAIText(
       aiData
     );
 
+  if (
+    !rawText.trim()
+  ) {
+    return res.status(
+      502
+    ).json({
+      success: false,
+
+      error:
+        'Cloudflare AI tidak mengembalikan data soal.',
+    });
+  }
+
   const objects =
     extractJsonObjects(
       rawText
     );
 
-  const questions = [];
-  const seen = new Set();
+  const questions =
+    [];
+
+  const fingerprints =
+    new Set();
+
+  let duplicateCount =
+    0;
+
+  let rejectedCount =
+    0;
 
   for (
     const raw of
@@ -1233,6 +1490,9 @@ Jangan memaksakan jumlah.
     if (
       !question
     ) {
+      rejectedCount +=
+        1;
+
       continue;
     }
 
@@ -1242,20 +1502,58 @@ Jangan memaksakan jumlah.
       );
 
     if (
-      seen.has(fp)
+      fingerprints.has(
+        fp
+      )
     ) {
+      duplicateCount +=
+        1;
+
       continue;
     }
 
-    seen.add(fp);
+    let nearDuplicate =
+      false;
+
+    for (
+      const existing of
+        questions
+    ) {
+      if (
+        similarity(
+          question.question,
+          existing.question
+        ) >=
+        0.88
+      ) {
+        nearDuplicate =
+          true;
+
+        break;
+      }
+    }
+
+    if (
+      nearDuplicate
+    ) {
+      duplicateCount +=
+        1;
+
+      continue;
+    }
+
+    fingerprints.add(
+      fp
+    );
 
     question
       .researchSources =
-      uniqueSources.map(
+      sources.map(
         (source) => ({
           title:
             source.title ||
             '',
+
           url:
             source.url ||
             '',
@@ -1278,95 +1576,106 @@ Jangan memaksakan jumlah.
     questions.length ===
     0
   ) {
-    return res
-      .status(502)
-      .json({
-        success: false,
+    return res.status(
+      502
+    ).json({
+      success: false,
 
-        error:
-          'AI tidak menghasilkan soal valid.',
+      error:
+        'Tidak ada soal yang lolos quality gate.',
 
-        debug: {
-          parsed:
-            objects.length,
+      debug: {
+        parsedObjects:
+          objects.length,
 
-          rawText:
-            rawText.slice(
-              0,
-              1500
-            ),
-        },
+        rejectedCount,
 
-        researchSources:
-          uniqueSources.map(
-            (source) => ({
-              title:
-                source.title ||
-                '',
-              url:
-                source.url ||
-                '',
-            })
+        duplicateCount,
+
+        rawTextSample:
+          rawText.slice(
+            0,
+            1200
           ),
-      });
+      },
+    });
   }
 
-  // ==========================================================
+  // ----------------------------------------------------------
   // SUCCESS
-  // ==========================================================
+  // ----------------------------------------------------------
 
-  return res
-    .status(200)
-    .json({
-      success:
-        true,
+  return res.status(
+    200
+  ).json({
+    success:
+      true,
 
-      questions,
+    questions,
 
-      requestedCount:
-        jumlah,
+    requestedCount:
+      jumlah,
 
-      returnedCount:
-        questions.length,
+    returnedCount:
+      questions.length,
 
-      maxBatchSize:
-        MAX_BATCH_QUESTIONS,
+    maxBatchSize:
+      MAX_BATCH_QUESTIONS,
 
-      sourceMode:
-        mode,
+    sourceMode:
+      mode,
 
-      researchProvider:
-        'Jina Search',
+    researchProvider:
+      'Tavily',
 
-      aiProvider:
-        'Cloudflare Workers AI',
+    aiProvider:
+      'Cloudflare Workers AI',
 
-      model:
-        CLOUDFLARE_MODEL,
+    model:
+      CLOUDFLARE_MODEL,
 
-      diagnostics: {
-        queriesTried:
-          queries.length,
+    diagnostics: {
+      queriesTried:
+        queries.length,
 
-        searchResults:
-          sources.length,
+      searchResults:
+        allResults.length,
 
-        selectedSources:
-          uniqueSources.length,
+      selectedSources:
+        sources.length,
 
-        queryErrors,
-      },
+      parsedObjects:
+        objects.length,
 
-      researchSources:
-        uniqueSources.map(
-          (source) => ({
-            title:
-              source.title ||
-              '',
-            url:
-              source.url ||
-              '',
-          })
-        ),
-    });
+      rejectedCount,
+
+      duplicateCount,
+
+      queryErrors,
+    },
+
+    researchSources:
+      sources.map(
+        (source) => ({
+          title:
+            source.title ||
+            '',
+
+          url:
+            source.url ||
+            '',
+
+          score:
+            source.score ||
+            0,
+
+          images:
+            Array.isArray(
+              source.images
+            )
+              ? source.images
+              : [],
+        })
+      ),
+  });
 }
