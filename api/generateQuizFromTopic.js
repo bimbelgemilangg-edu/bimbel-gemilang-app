@@ -5,34 +5,33 @@
 //
 // ARSITEKTUR:
 //
-//   FRONTEND
-//      ↓
-//   /api/generateQuizFromTopic
-//      ↓
-//   LOCAL BLUEPRINT ENGINE
-//      ↓
-//   1x SILICONFLOW CHAT COMPLETION
-//      ↓
-//   LOCAL JSONL PARSER
-//      ↓
-//   LOCAL QUALITY GATE
-//      ↓
-//   MANAGE QUIZ
+// FRONTEND
+//    ↓
+// /api/generateQuizFromTopic
+//    ↓
+// LOCAL BLUEPRINT ENGINE
+//    ↓
+// SILICONFLOW CHAT COMPLETIONS
+//    ↓
+// JSONL PARSER
+//    ↓
+// LOCAL QUALITY GATE
+//    ↓
+// MANAGE QUIZ
 //
-// TIDAK MENGGUNAKAN:
+// TANPA:
 // - Jina
 // - Tavily
 // - Google Search API
 // - Gemini
 // - Cloudflare AI
-// - Scraping internet
+// - Scraping
 //
 // ENV:
-//   SILICONFLOW_API_KEY=...
+// SILICONFLOW_API_KEY=...
 //
 // OPTIONAL:
-//   SILICONFLOW_MODEL=deepseek-ai/DeepSeek-V3
-//   SILICONFLOW_API_URL=https://api.siliconflow.cn/v1/chat/completions
+// SILICONFLOW_MODEL=deepseek-ai/DeepSeek-V3
 //
 // ============================================================
 
@@ -43,23 +42,25 @@ export const maxDuration = 60;
 // ============================================================
 
 const SILICONFLOW_API_URL =
-  process.env.SILICONFLOW_API_URL ||
   'https://api.siliconflow.cn/v1/chat/completions';
 
 const SILICONFLOW_MODEL =
   process.env.SILICONFLOW_MODEL ||
   'deepseek-ai/DeepSeek-V3';
 
-const DEFAULT_MAX_BATCH_QUESTIONS = 10;
-const ABSOLUTE_MAX_BATCH_QUESTIONS = 20;
+const DEFAULT_QUESTION_COUNT = 10;
+const MAX_QUESTION_COUNT = 20;
 
 const AI_TIMEOUT_MS = 45_000;
 
-const MAX_PROMPT_FIELD = 4_000;
+const MAX_FIELD_LENGTH = 4_000;
+const MAX_QUESTION_LENGTH = 5_000;
+const MAX_EXPLANATION_LENGTH = 8_000;
+
 const MAX_ACCEPTED_QUESTIONS = 20;
 
 // ============================================================
-// SUPPORTED QUESTION TYPES
+// SUPPORTED TYPES
 // ============================================================
 
 const SUPPORTED_TYPES = new Set([
@@ -72,12 +73,15 @@ const SUPPORTED_TYPES = new Set([
 ]);
 
 // ============================================================
-// BASIC HELPERS
+// BASIC TEXT HELPERS
 // ============================================================
 
 function cleanText(value = '') {
   return String(value ?? '')
-    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ')
+    .replace(
+      /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,
+      ' ',
+    )
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -90,80 +94,56 @@ function normalizeText(value = '') {
     .trim();
 }
 
-function tokenSet(value = '') {
-  return new Set(
-    normalizeText(value)
-      .split(' ')
-      .filter((token) => token.length >= 2),
+function safeField(value, fallback = '') {
+  const result = cleanText(
+    value || fallback,
+  );
+
+  return result.slice(
+    0,
+    MAX_FIELD_LENGTH,
   );
 }
 
-function jaccardSimilarity(a, b) {
-  const A = typeof a === 'string' ? tokenSet(a) : a;
-  const B = typeof b === 'string' ? tokenSet(b) : b;
-
-  if (!A.size || !B.size) return 0;
-
-  let intersection = 0;
-
-  for (const token of A) {
-    if (B.has(token)) {
-      intersection += 1;
-    }
-  }
-
-  const union = A.size + B.size - intersection;
-
-  return union > 0
-    ? intersection / union
-    : 0;
-}
-
 // ============================================================
-// DUPLICATE DETECTION
+// ARRAY HELPERS
 // ============================================================
 
-function fingerprintQuestion(value = '') {
-  return normalizeText(value)
-    .replace(/\bsoal\s+\d+\b/gi, ' ')
-    .replace(/\bnomor\s+\d+\b/gi, ' ')
-    .replace(/\b(?:a|b|c|d)[.)]\s+/gi, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function isDuplicateQuestion(question, existing) {
-  const current = fingerprintQuestion(question);
-
-  if (!current) {
-    return true;
+function cleanStringArray(
+  value,
+  maxItems = 8,
+  maxLength = 2_000,
+) {
+  if (!Array.isArray(value)) {
+    return [];
   }
 
-  for (const item of existing) {
-    const old = fingerprintQuestion(item.question);
-
-    if (!old) {
-      continue;
-    }
-
-    if (current === old) {
-      return true;
-    }
-
-    if (jaccardSimilarity(current, old) >= 0.86) {
-      return true;
-    }
-  }
-
-  return false;
+  return value
+    .map((item) =>
+      cleanText(item).slice(
+        0,
+        maxLength,
+      ),
+    )
+    .filter(Boolean)
+    .slice(0, maxItems);
 }
 
 // ============================================================
 // NUMBER HELPERS
 // ============================================================
 
-function clampInt(value, min, max, fallback) {
-  const parsed = Number.parseInt(value, 10);
+function clampInt(
+  value,
+  min,
+  max,
+  fallback,
+) {
+  const parsed =
+    Number.parseInt(
+      value,
+      10,
+    );
 
   if (!Number.isFinite(parsed)) {
     return fallback;
@@ -176,20 +156,114 @@ function clampInt(value, min, max, fallback) {
 }
 
 // ============================================================
-// SAFE PROMPT FIELD
+// DUPLICATE DETECTION
 // ============================================================
 
-function asSafePromptField(value, fallback = '') {
-  const text = cleanText(value || fallback);
-
-  return text.slice(
-    0,
-    MAX_PROMPT_FIELD,
+function tokenSet(value = '') {
+  return new Set(
+    normalizeText(value)
+      .split(' ')
+      .filter(
+        (token) =>
+          token.length >= 2,
+      ),
   );
 }
 
+function jaccardSimilarity(
+  a,
+  b,
+) {
+  const A =
+    typeof a === 'string'
+      ? tokenSet(a)
+      : a;
+
+  const B =
+    typeof b === 'string'
+      ? tokenSet(b)
+      : b;
+
+  if (!A.size || !B.size) {
+    return 0;
+  }
+
+  let intersection = 0;
+
+  for (const token of A) {
+    if (B.has(token)) {
+      intersection += 1;
+    }
+  }
+
+  const union =
+    A.size +
+    B.size -
+    intersection;
+
+  return union
+    ? intersection / union
+    : 0;
+}
+
+function fingerprintQuestion(
+  value = '',
+) {
+  return normalizeText(value)
+    .replace(
+      /\bsoal\s+\d+\b/gi,
+      ' ',
+    )
+    .replace(
+      /\bnomor\s+\d+\b/gi,
+      ' ',
+    )
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isDuplicateQuestion(
+  question,
+  existing,
+) {
+  const current =
+    fingerprintQuestion(
+      question,
+    );
+
+  if (!current) {
+    return true;
+  }
+
+  for (const item of existing) {
+    const previous =
+      fingerprintQuestion(
+        item.question,
+      );
+
+    if (!previous) {
+      continue;
+    }
+
+    if (current === previous) {
+      return true;
+    }
+
+    if (
+      jaccardSimilarity(
+        current,
+        previous,
+      ) >= 0.86
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 // ============================================================
-// XML / SVG ESCAPE
+// XML ESCAPE
 // ============================================================
 
 function escapeXml(value = '') {
@@ -202,17 +276,20 @@ function escapeXml(value = '') {
 }
 
 // ============================================================
-// CURRICULUM COMPETENCY TEMPLATES
+// COMPETENCY ENGINE
 // ============================================================
 
-function getCompetencyTemplates(mapel, topic) {
-  const m = normalizeText(mapel);
-  const t = normalizeText(topic);
+function getCompetencyTemplates(
+  mapel,
+  topic,
+) {
+  const m =
+    normalizeText(mapel);
 
-  // ----------------------------------------------------------
+  const t =
+    normalizeText(topic);
+
   // MATEMATIKA
-  // ----------------------------------------------------------
-
   if (
     m.includes('matematika') ||
     t.includes('pecahan') ||
@@ -228,10 +305,7 @@ function getCompetencyTemplates(mapel, topic) {
     ];
   }
 
-  // ----------------------------------------------------------
-  // IPA
-  // ----------------------------------------------------------
-
+  // IPA / SAINS
   if (
     m.includes('ipa') ||
     m.includes('fisika') ||
@@ -245,11 +319,12 @@ function getCompetencyTemplates(mapel, topic) {
     ];
   }
 
-  // ----------------------------------------------------------
   // BAHASA INDONESIA
-  // ----------------------------------------------------------
-
-  if (m.includes('bahasa indonesia')) {
+  if (
+    m.includes(
+      'bahasa indonesia',
+    )
+  ) {
     return [
       'Memahami informasi eksplisit dan implisit',
       'Menganalisis struktur, makna, dan hubungan informasi dalam teks',
@@ -257,11 +332,12 @@ function getCompetencyTemplates(mapel, topic) {
     ];
   }
 
-  // ----------------------------------------------------------
   // BAHASA INGGRIS
-  // ----------------------------------------------------------
-
-  if (m.includes('bahasa inggris')) {
+  if (
+    m.includes(
+      'bahasa inggris',
+    )
+  ) {
     return [
       'Memahami informasi dan tujuan komunikasi dalam teks',
       'Menerapkan kosakata, tata bahasa, atau fungsi bahasa dalam konteks',
@@ -269,10 +345,7 @@ function getCompetencyTemplates(mapel, topic) {
     ];
   }
 
-  // ----------------------------------------------------------
   // IPS
-  // ----------------------------------------------------------
-
   if (
     m.includes('ips') ||
     m.includes('sejarah') ||
@@ -287,10 +360,7 @@ function getCompetencyTemplates(mapel, topic) {
     ];
   }
 
-  // ----------------------------------------------------------
   // DEFAULT
-  // ----------------------------------------------------------
-
   return [
     'Memahami konsep atau informasi dasar',
     'Menerapkan konsep pada situasi yang relevan',
@@ -302,82 +372,93 @@ function getCompetencyTemplates(mapel, topic) {
 // DIFFICULTY DISTRIBUTION
 // ============================================================
 
-function getDifficultyDistribution(jumlah, hotsLevel) {
+function getDifficultyDistribution(
+  jumlah,
+  hotsLevel,
+) {
   const isHots =
-    normalizeText(hotsLevel).includes('hots');
+    normalizeText(
+      hotsLevel,
+    ).includes('hots');
 
-  const ratios = isHots
+  const levels = isHots
     ? [
         {
           level: 'Easy',
           ratio: 0.10,
-          cognitive: 'Understanding',
+          cognitive:
+            'Understanding',
         },
         {
           level: 'Medium',
           ratio: 0.40,
-          cognitive: 'Applying/Analyzing',
+          cognitive:
+            'Applying/Analyzing',
         },
         {
           level: 'Hard',
           ratio: 0.50,
-          cognitive: 'Analyzing/Evaluating',
+          cognitive:
+            'Analyzing/Evaluating',
         },
       ]
     : [
         {
           level: 'Easy',
           ratio: 0.30,
-          cognitive: 'Understanding',
+          cognitive:
+            'Understanding',
         },
         {
           level: 'Medium',
           ratio: 0.40,
-          cognitive: 'Applying',
+          cognitive:
+            'Applying',
         },
         {
           level: 'Hard',
           ratio: 0.30,
-          cognitive: 'Analyzing/Problem Solving',
+          cognitive:
+            'Analyzing/Problem Solving',
         },
       ];
 
-  const counts = ratios.map((item) => ({
-    ...item,
-    count: Math.round(
-      jumlah * item.ratio,
-    ),
-  }));
-
-  let total = counts.reduce(
-    (sum, item) => sum + item.count,
-    0,
-  );
-
-  // Tambahkan jika kurang
-  while (total < jumlah) {
-    const index =
-      total % counts.length;
-
-    counts[index].count += 1;
-    total += 1;
-  }
-
-  // Kurangi jika lebih
-  while (total > jumlah) {
-    const index = counts.findIndex(
-      (item) => item.count > 0,
+  const result =
+    levels.map(
+      (item) => ({
+        ...item,
+        count:
+          Math.floor(
+            jumlah *
+              item.ratio,
+          ),
+      }),
     );
 
-    if (index === -1) {
-      break;
-    }
+  let assigned =
+    result.reduce(
+      (sum, item) =>
+        sum + item.count,
+      0,
+    );
 
-    counts[index].count -= 1;
-    total -= 1;
+  // Distribusi sisa butir
+  let index = 0;
+
+  while (
+    assigned <
+    jumlah
+  ) {
+    result[index].count += 1;
+
+    assigned += 1;
+
+    index =
+      (index + 1) %
+      result.length;
   }
 
-  return counts;
+  return result;
 }
 
 // ============================================================
@@ -393,22 +474,22 @@ function buildCurriculumBlueprint({
   arahan,
 }) {
   const safeTopic =
-    asSafePromptField(topic);
+    safeField(topic);
 
   const safeMapel =
-    asSafePromptField(
+    safeField(
       mapel,
       'Umum',
     );
 
   const safeKelas =
-    asSafePromptField(
+    safeField(
       kelas,
       'Umum',
     );
 
   const safeArahan =
-    asSafePromptField(
+    safeField(
       arahan,
       'Tidak ada',
     );
@@ -419,7 +500,7 @@ function buildCurriculumBlueprint({
       safeTopic,
     );
 
-  const distribution =
+  const difficulties =
     getDifficultyDistribution(
       jumlah,
       hotsLevel,
@@ -427,28 +508,40 @@ function buildCurriculumBlueprint({
 
   const blueprint = [];
 
-  let number = 1;
+  let no = 1;
 
-  for (const bucket of distribution) {
-    for (let i = 0; i < bucket.count; i += 1) {
-
+  for (
+    const difficulty
+    of difficulties
+  ) {
+    for (
+      let i = 0;
+      i < difficulty.count;
+      i += 1
+    ) {
       const competency =
         competencies[
-          (number - 1) %
-          competencies.length
+          (no - 1) %
+            competencies.length
         ];
 
       blueprint.push({
-        no: number,
-        topic: safeTopic,
-        mapel: safeMapel,
-        kelas: safeKelas,
+        no,
+
+        topic:
+          safeTopic,
+
+        mapel:
+          safeMapel,
+
+        kelas:
+          safeKelas,
 
         difficulty:
-          bucket.level,
+          difficulty.level,
 
         cognitiveLevel:
-          bucket.cognitive,
+          difficulty.cognitive,
 
         competency,
 
@@ -456,7 +549,7 @@ function buildCurriculumBlueprint({
           safeArahan,
       });
 
-      number += 1;
+      no += 1;
     }
   }
 
@@ -467,66 +560,89 @@ function buildCurriculumBlueprint({
 // CLOCK SVG
 // ============================================================
 
-function buildClockSvg(clock) {
+function buildClockSvg(
+  clock,
+) {
   if (
     !clock ||
-    typeof clock !== 'object'
+    typeof clock !==
+      'object'
   ) {
     return '';
   }
 
+  const hourValue =
+    Number(clock.hour);
+
+  const minuteValue =
+    Number(clock.minute);
+
   if (
-    !Number.isFinite(clock.hour) ||
-    !Number.isFinite(clock.minute)
+    !Number.isFinite(
+      hourValue,
+    ) ||
+    !Number.isFinite(
+      minuteValue,
+    )
   ) {
     return '';
   }
 
   const hour =
-    ((Number(clock.hour) % 12) + 12) % 12;
+    ((hourValue % 12) +
+      12) %
+    12;
 
   const minute =
     Math.min(
       Math.max(
-        Number(clock.minute),
+        minuteValue,
         0,
       ),
       59,
     );
 
-  const r = 110;
+  const radius = 110;
   const cx = 130;
   const cy = 130;
 
-  function toXY(angle, length) {
+  const toXY = (
+    angle,
+    length,
+  ) => {
     const radians =
-      ((angle - 90) * Math.PI) /
+      ((angle - 90) *
+        Math.PI) /
       180;
 
     return {
       x:
         cx +
         length *
-          Math.cos(radians),
+          Math.cos(
+            radians,
+          ),
 
       y:
         cy +
         length *
-          Math.sin(radians),
+          Math.sin(
+            radians,
+          ),
     };
-  }
+  };
 
   const hourTip =
     toXY(
       hour * 30 +
         minute * 0.5,
-      r * 0.5,
+      radius * 0.5,
     );
 
   const minuteTip =
     toXY(
       minute * 6,
-      r * 0.75,
+      radius * 0.75,
     );
 
   const ticks =
@@ -534,12 +650,15 @@ function buildClockSvg(clock) {
       { length: 12 },
       (_, i) => {
         const p1 =
-          toXY(i * 30, r);
+          toXY(
+            i * 30,
+            radius,
+          );
 
         const p2 =
           toXY(
             i * 30,
-            r - 10,
+            radius - 10,
           );
 
         return `
@@ -565,7 +684,7 @@ function buildClockSvg(clock) {
       <circle
         cx="130"
         cy="130"
-        r="${r}"
+        r="${radius}"
         fill="#ffffff"
         stroke="#1e293b"
         stroke-width="3"
@@ -604,7 +723,9 @@ function buildClockSvg(clock) {
 
   return (
     'data:image/svg+xml;base64,' +
-    Buffer.from(svg).toString('base64')
+    Buffer.from(
+      svg,
+    ).toString('base64')
   );
 }
 
@@ -612,10 +733,14 @@ function buildClockSvg(clock) {
 // GRAPH SVG
 // ============================================================
 
-function buildGraphSvg(graph) {
+function buildGraphSvg(
+  graph,
+) {
   if (
     !graph ||
-    !Array.isArray(graph.points)
+    !Array.isArray(
+      graph.points,
+    )
   ) {
     return '';
   }
@@ -623,26 +748,52 @@ function buildGraphSvg(graph) {
   const points =
     graph.points
       .filter(
-        (p) =>
-          p &&
-          Number.isFinite(p.x) &&
-          Number.isFinite(p.y),
+        (point) =>
+          point &&
+          Number.isFinite(
+            Number(
+              point.x,
+            ),
+          ) &&
+          Number.isFinite(
+            Number(
+              point.y,
+            ),
+          ),
       )
-      .slice(0, 50);
+      .slice(0, 50)
+      .map(
+        (point) => ({
+          x: Number(
+            point.x,
+          ),
+          y: Number(
+            point.y,
+          ),
+        }),
+      );
 
-  if (points.length < 2) {
+  if (
+    points.length < 2
+  ) {
     return '';
   }
 
-  const W = 500;
-  const H = 300;
-  const pad = 40;
+  const width = 500;
+  const height = 300;
+  const padding = 40;
 
   const xs =
-    points.map((p) => p.x);
+    points.map(
+      (point) =>
+        point.x,
+    );
 
   const ys =
-    points.map((p) => p.y);
+    points.map(
+      (point) =>
+        point.y,
+    );
 
   const minX =
     Math.min(...xs);
@@ -656,36 +807,49 @@ function buildGraphSvg(graph) {
   const maxY =
     Math.max(...ys);
 
-  const mapX = (value) =>
-    pad +
+  const mapX = (
+    value,
+  ) =>
+    padding +
     ((value - minX) /
       Math.max(
         maxX - minX,
         1,
       )) *
-      (W - pad * 2);
+      (width -
+        padding * 2);
 
-  const mapY = (value) =>
-    H -
-    pad -
+  const mapY = (
+    value,
+  ) =>
+    height -
+    padding -
     ((value - minY) /
       Math.max(
         maxY - minY,
         1,
       )) *
-      (H - pad * 2);
+      (height -
+        padding * 2);
 
   const path =
     points
       .map(
-        (point, index) =>
+        (
+          point,
+          index,
+        ) =>
           `${
             index === 0
               ? 'M'
               : 'L'
-          } ${mapX(point.x).toFixed(
+          } ${mapX(
+            point.x,
+          ).toFixed(
             1,
-          )} ${mapY(point.y).toFixed(
+          )} ${mapY(
+            point.y,
+          ).toFixed(
             1,
           )}`,
       )
@@ -693,42 +857,48 @@ function buildGraphSvg(graph) {
 
   const xLabel =
     escapeXml(
-      graph.xLabel || 'X',
+      cleanText(
+        graph.xLabel ||
+          'X',
+      ),
     );
 
   const yLabel =
     escapeXml(
-      graph.yLabel || 'Y',
+      cleanText(
+        graph.yLabel ||
+          'Y',
+      ),
     );
 
   const svg = `
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 ${W} ${H}"
-      width="${W}"
-      height="${H}"
+      viewBox="0 0 ${width} ${height}"
+      width="${width}"
+      height="${height}"
     >
 
       <rect
-        width="${W}"
-        height="${H}"
+        width="${width}"
+        height="${height}"
         fill="#ffffff"
       />
 
       <line
-        x1="${pad}"
-        y1="${H - pad}"
-        x2="${W - pad}"
-        y2="${H - pad}"
+        x1="${padding}"
+        y1="${height - padding}"
+        x2="${width - padding}"
+        y2="${height - padding}"
         stroke="#94a3b8"
         stroke-width="1.5"
       />
 
       <line
-        x1="${pad}"
-        y1="${pad}"
-        x2="${pad}"
-        y2="${H - pad}"
+        x1="${padding}"
+        y1="${padding}"
+        x2="${padding}"
+        y2="${height - padding}"
         stroke="#94a3b8"
         stroke-width="1.5"
       />
@@ -741,8 +911,8 @@ function buildGraphSvg(graph) {
       />
 
       <text
-        x="${W - 15}"
-        y="${H - pad + 5}"
+        x="${width - 15}"
+        y="${height - padding + 5}"
         font-family="Arial"
         font-size="12"
         fill="#475569"
@@ -751,7 +921,7 @@ function buildGraphSvg(graph) {
       </text>
 
       <text
-        x="${pad - 10}"
+        x="${padding - 10}"
         y="20"
         font-family="Arial"
         font-size="12"
@@ -765,7 +935,9 @@ function buildGraphSvg(graph) {
 
   return (
     'data:image/svg+xml;base64,' +
-    Buffer.from(svg).toString('base64')
+    Buffer.from(
+      svg,
+    ).toString('base64')
   );
 }
 
@@ -773,7 +945,9 @@ function buildGraphSvg(graph) {
 // JSONL CLEANUP
 // ============================================================
 
-function stripCodeFences(text) {
+function stripCodeFences(
+  text,
+) {
   return String(text || '')
     .replace(
       /^\s*```(?:json|jsonl)?\s*/i,
@@ -790,48 +964,52 @@ function stripCodeFences(text) {
 // JSONL PARSER
 // ============================================================
 
-function parseJsonLines(text = '') {
-  const clean =
+function parseJsonLines(
+  text = '',
+) {
+  const cleaned =
     stripCodeFences(text);
 
-  const result = [];
+  const objects = [];
 
   // ----------------------------------------------------------
   // PASS 1
-  // Standard JSONL
   // ----------------------------------------------------------
 
-  for (
-    const line of clean.split(
+  const lines =
+    cleaned.split(
       /\r?\n/,
-    )
+    );
+
+  for (
+    const line of lines
   ) {
-    const trimmed =
+    const value =
       line.trim();
 
     if (
-      !trimmed.startsWith('{') ||
-      !trimmed.endsWith('}')
+      !value.startsWith('{') ||
+      !value.endsWith('}')
     ) {
       continue;
     }
 
     try {
-      result.push(
-        JSON.parse(trimmed),
+      objects.push(
+        JSON.parse(value),
       );
     } catch (_) {
-      // fallback parser
+      // PASS 2
     }
   }
 
-  if (result.length > 0) {
-    return result;
+  if (objects.length > 0) {
+    return objects;
   }
 
   // ----------------------------------------------------------
   // PASS 2
-  // Balanced JSON object recovery
+  // Balanced object recovery
   // ----------------------------------------------------------
 
   let depth = 0;
@@ -842,11 +1020,11 @@ function parseJsonLines(text = '') {
 
   for (
     let i = 0;
-    i < clean.length;
+    i < cleaned.length;
     i += 1
   ) {
     const char =
-      clean[i];
+      cleaned[i];
 
     if (escaped) {
       escaped = false;
@@ -862,7 +1040,8 @@ function parseJsonLines(text = '') {
     }
 
     if (char === '"') {
-      inString = !inString;
+      inString =
+        !inString;
       continue;
     }
 
@@ -887,17 +1066,19 @@ function parseJsonLines(text = '') {
         start !== -1
       ) {
         const candidate =
-          clean.slice(
+          cleaned.slice(
             start,
             i + 1,
           );
 
         try {
-          result.push(
-            JSON.parse(candidate),
+          objects.push(
+            JSON.parse(
+              candidate,
+            ),
           );
         } catch (_) {
-          // ignore malformed object
+          // invalid JSON object
         }
 
         start = -1;
@@ -905,220 +1086,347 @@ function parseJsonLines(text = '') {
     }
   }
 
-  return result;
+  return objects;
 }
 
 // ============================================================
-// QUALITY GATE
+// QUESTION TYPE VALIDATORS
 // ============================================================
 
-function isMultipleChoiceValid(question) {
+function validMultiple(
+  question,
+) {
   return (
     Array.isArray(
       question.options,
     ) &&
-    question.options.length === 4 &&
+    question.options.length ===
+      4 &&
     question.options.every(
-      (option) =>
-        cleanText(option)
+      (item) =>
+        cleanText(item)
           .length > 0,
     ) &&
     Number.isInteger(
       question.correct,
     ) &&
-    question.correct >= 0 &&
-    question.correct < 4
+    question.correct >=
+      0 &&
+    question.correct <=
+      3
   );
 }
 
+function validTrueFalse(
+  question,
+) {
+  return (
+    Number.isInteger(
+      question.correct,
+    ) &&
+    (
+      question.correct === 0 ||
+      question.correct === 1
+    )
+  );
+}
+
+function validMultipleSelect(
+  question,
+) {
+  if (
+    !Array.isArray(
+      question.options,
+    ) ||
+    question.options.length <
+      2
+  ) {
+    return false;
+  }
+
+  if (
+    !Array.isArray(
+      question.correctAnswers,
+    ) ||
+    question.correctAnswers
+      .length < 1
+  ) {
+    return false;
+  }
+
+  return question.correctAnswers.every(
+    (index) =>
+      Number.isInteger(
+        index,
+      ) &&
+      index >= 0 &&
+      index <
+        question.options
+          .length,
+  );
+}
+
+function validShortAnswer(
+  question,
+) {
+  return (
+    cleanText(
+      question.shortAnswer,
+    ).length > 0
+  );
+}
+
+// ============================================================
+// NORMALIZE QUESTION
+// ============================================================
+
 function normalizeQuestion(
-  rawQuestion,
+  raw,
   allowedTypes,
   currentMode,
 ) {
   if (
-    !rawQuestion ||
-    typeof rawQuestion !==
+    !raw ||
+    typeof raw !==
       'object'
   ) {
     return null;
   }
 
   if (
-    rawQuestion.meta === true
+    raw.meta === true
   ) {
     return null;
   }
 
   const type =
     cleanText(
-      rawQuestion.type,
+      raw.type,
     ).toLowerCase();
 
   if (
-    !allowedTypes.includes(type)
+    !allowedTypes.includes(
+      type,
+    )
   ) {
     return null;
   }
 
   const question =
     cleanText(
-      rawQuestion.question,
+      raw.question,
     );
 
   if (
     question.length < 8 ||
-    question.length > 5_000
+    question.length >
+      MAX_QUESTION_LENGTH
   ) {
     return null;
   }
 
-  const options =
-    Array.isArray(
-      rawQuestion.options,
-    )
-      ? rawQuestion.options
-          .map(cleanText)
-          .filter(Boolean)
-          .slice(0, 8)
-      : [];
-
   const normalized = {
     type,
 
+    blueprintNo:
+      Number.isInteger(
+        raw.blueprintNo,
+      )
+        ? raw.blueprintNo
+        : null,
+
+    difficulty:
+      cleanText(
+        raw.difficulty,
+      ).slice(
+        0,
+        50,
+      ),
+
+    competency:
+      cleanText(
+        raw.competency,
+      ).slice(
+        0,
+        500,
+      ),
+
     question,
 
-    options,
+    options:
+      cleanStringArray(
+        raw.options,
+        8,
+        2_000,
+      ),
 
     optionImages:
-      Array.isArray(
-        rawQuestion.optionImages,
-      )
-        ? rawQuestion.optionImages
-            .map(cleanText)
-            .filter(Boolean)
-            .slice(0, 8)
-        : [],
+      cleanStringArray(
+        raw.optionImages,
+        8,
+        2_000,
+      ),
 
     optionsAreImages:
       Boolean(
-        rawQuestion.optionsAreImages,
+        raw.optionsAreImages,
       ),
 
     correct:
       Number.isInteger(
-        rawQuestion.correct,
+        raw.correct,
       )
-        ? rawQuestion.correct
+        ? raw.correct
         : 0,
 
     correctAnswers:
       Array.isArray(
-        rawQuestion.correctAnswers,
+        raw.correctAnswers,
       )
-        ? rawQuestion.correctAnswers.slice(
-            0,
-            8,
-          )
+        ? raw.correctAnswers
+            .filter(
+              Number.isInteger,
+            )
+            .slice(0, 8)
         : [],
 
     statements:
       Array.isArray(
-        rawQuestion.statements,
+        raw.statements,
       )
-        ? rawQuestion.statements.slice(
-            0,
-            8,
-          )
+        ? raw.statements
+            .slice(0, 8)
         : [],
 
     shortAnswer:
       cleanText(
-        rawQuestion.shortAnswer,
-      ).slice(0, 500),
+        raw.shortAnswer,
+      ).slice(
+        0,
+        500,
+      ),
 
     readingText:
       cleanText(
-        rawQuestion.readingText,
-      ).slice(0, 8_000),
+        raw.readingText,
+      ).slice(
+        0,
+        8_000,
+      ),
 
     cause:
       cleanText(
-        rawQuestion.cause,
-      ).slice(0, 1_000),
+        raw.cause,
+      ).slice(
+        0,
+        1_000,
+      ),
 
     effect:
       cleanText(
-        rawQuestion.effect,
-      ).slice(0, 1_000),
+        raw.effect,
+      ).slice(
+        0,
+        1_000,
+      ),
 
     explanation:
       cleanText(
-        rawQuestion.explanation ||
+        raw.explanation ||
           'Pembahasan belum tersedia.',
-      ).slice(0, 8_000),
+      ).slice(
+        0,
+        MAX_EXPLANATION_LENGTH,
+      ),
 
     answerVerification:
       cleanText(
-        rawQuestion.answerVerification ||
-          'Kunci divalidasi pada level struktur oleh Quality Gate.',
-      ).slice(0, 2_000),
+        raw.answerVerification ||
+          'Kunci diperiksa pada level struktur oleh Quality Gate.',
+      ).slice(
+        0,
+        2_000,
+      ),
 
     analysisSummary:
       cleanText(
-        rawQuestion.analysisSummary ||
-          'Capaian kompetensi sesuai blueprint.',
-      ).slice(0, 2_000),
+        raw.analysisSummary ||
+          'Sesuai dengan blueprint yang ditetapkan.',
+      ).slice(
+        0,
+        2_000,
+      ),
 
-    difficulty:
+    readingSource:
       cleanText(
-        rawQuestion.difficulty,
-      ).slice(0, 50),
-
-    competency:
-      cleanText(
-        rawQuestion.competency,
-      ).slice(0, 500),
-
-    blueprintNo:
-      Number.isInteger(
-        rawQuestion.blueprintNo,
-      )
-        ? rawQuestion.blueprintNo
-        : null,
+        raw.readingSource,
+      ).slice(
+        0,
+        1_000,
+      ),
 
     clock:
-      rawQuestion.clock &&
-      typeof rawQuestion.clock ===
+      raw.clock &&
+      typeof raw.clock ===
         'object'
-        ? rawQuestion.clock
+        ? raw.clock
         : null,
 
     graph:
-      rawQuestion.graph &&
-      typeof rawQuestion.graph ===
+      raw.graph &&
+      typeof raw.graph ===
         'object'
-        ? rawQuestion.graph
+        ? raw.graph
         : null,
 
     needsImage:
       Boolean(
-        rawQuestion.needsImage,
+        raw.needsImage,
       ),
 
     imageHint:
       cleanText(
-        rawQuestion.imageHint,
-      ).slice(0, 500),
+        raw.imageHint,
+      ).slice(
+        0,
+        500,
+      ),
   };
 
   // ----------------------------------------------------------
-  // MULTIPLE CHOICE
+  // TYPE VALIDATION
   // ----------------------------------------------------------
 
   if (
     type === 'multiple' &&
-    !isMultipleChoiceValid(
+    !validMultiple(
+      normalized,
+    )
+  ) {
+    return null;
+  }
+
+  if (
+    type === 'truefalse' &&
+    !validTrueFalse(
+      normalized,
+    )
+  ) {
+    return null;
+  }
+
+  if (
+    type === 'multiple_select' &&
+    !validMultipleSelect(
+      normalized,
+    )
+  ) {
+    return null;
+  }
+
+  if (
+    type === 'short_answer' &&
+    !validShortAnswer(
       normalized,
     )
   ) {
@@ -1126,40 +1434,48 @@ function normalizeQuestion(
   }
 
   // ----------------------------------------------------------
-  // TRUE / FALSE
-  // ----------------------------------------------------------
-
-  if (
-    type === 'truefalse'
-  ) {
-    if (
-      !(
-        normalized.correct === 0 ||
-        normalized.correct === 1
-      )
-    ) {
-      return null;
-    }
-  }
-
-  // ----------------------------------------------------------
   // LOCAL VISUAL
   // ----------------------------------------------------------
 
-  const qImage =
+  let qImage;
+
+  let visualKind =
+    'none';
+
+  if (
     normalized.clock
-      ? buildClockSvg(
-          normalized.clock,
-        )
-      : normalized.graph
-        ? buildGraphSvg(
-            normalized.graph,
-          )
-        : undefined;
+  ) {
+    qImage =
+      buildClockSvg(
+        normalized.clock,
+      );
+
+    visualKind =
+      'clock';
+  } else if (
+    normalized.graph
+  ) {
+    qImage =
+      buildGraphSvg(
+        normalized.graph,
+      );
+
+    visualKind =
+      'graph';
+  }
 
   return {
     type:
       normalized.type,
+
+    blueprintNo:
+      normalized.blueprintNo,
+
+    difficulty:
+      normalized.difficulty,
+
+    competency:
+      normalized.competency,
 
     question:
       normalized.question,
@@ -1203,14 +1519,8 @@ function normalizeQuestion(
     analysisSummary:
       normalized.analysisSummary,
 
-    difficulty:
-      normalized.difficulty,
-
-    competency:
-      normalized.competency,
-
-    blueprintNo:
-      normalized.blueprintNo,
+    readingSource:
+      normalized.readingSource,
 
     qImage,
 
@@ -1227,12 +1537,7 @@ function normalizeQuestion(
     visualRequired:
       Boolean(qImage),
 
-    visualKind:
-      normalized.clock
-        ? 'clock'
-        : normalized.graph
-          ? 'graph'
-          : 'none',
+    visualKind,
 
     sourceTitle:
       'Blueprint Gemilang',
@@ -1240,8 +1545,6 @@ function normalizeQuestion(
     sourceUrl:
       '',
 
-    // PENTING:
-    // Tidak ada riset internet.
     researchBacked:
       false,
 
@@ -1251,25 +1554,66 @@ function normalizeQuestion(
 }
 
 // ============================================================
-// COUNT DIAGNOSTICS
+// BLUEPRINT VALIDATION
 // ============================================================
 
-function countBy(
-  items,
-  key,
+function validateAgainstBlueprint(
+  question,
+  blueprint,
 ) {
-  return items.reduce(
-    (result, item) => {
-      const value =
-        item[key] || 'unknown';
+  if (
+    !Number.isInteger(
+      question.blueprintNo,
+    )
+  ) {
+    return {
+      valid: false,
+      reason:
+        'missingBlueprintNo',
+    };
+  }
 
-      result[value] =
-        (result[value] || 0) + 1;
+  const target =
+    blueprint.find(
+      (item) =>
+        item.no ===
+        question.blueprintNo,
+    );
 
-      return result;
-    },
-    {},
-  );
+  if (!target) {
+    return {
+      valid: false,
+      reason:
+        'invalidBlueprintNo',
+    };
+  }
+
+  const targetDifficulty =
+    normalizeText(
+      target.difficulty,
+    );
+
+  const actualDifficulty =
+    normalizeText(
+      question.difficulty,
+    );
+
+  if (
+    actualDifficulty &&
+    actualDifficulty !==
+      targetDifficulty
+  ) {
+    return {
+      valid: false,
+      reason:
+        'difficultyMismatch',
+    };
+  }
+
+  return {
+    valid: true,
+    target,
+  };
 }
 
 // ============================================================
@@ -1282,73 +1626,73 @@ function buildSystemPrompt({
   return [
     'Kamu adalah Otak Akademik Bimbel Gemilang.',
 
-    'Tugasmu membuat soal latihan akademik berdasarkan BLUEPRINT yang diberikan.',
+    'Buat soal latihan akademik berdasarkan BLUEPRINT PER BUTIR yang diberikan.',
 
     '',
 
     'ATURAN MUTLAK:',
 
-    '1. Jangan mengaku melakukan browsing atau penelitian internet.',
+    '1. Jangan browsing.',
 
-    '2. Jangan mengaku menggunakan sumber eksternal.',
+    '2. Jangan mengaku melakukan browsing.',
 
-    '3. Setiap soal WAJIB mengikuti nomor blueprint.',
+    '3. Jangan mengaku memakai sumber eksternal.',
 
-    '4. Setiap soal WAJIB mengikuti difficulty blueprint.',
+    '4. Jangan menyalin soal dari sumber tertentu.',
 
-    '5. Setiap soal WAJIB mengikuti competency blueprint.',
+    '5. Setiap soal harus mempunyai blueprintNo.',
 
-    '6. Untuk tipe multiple, hanya boleh ada SATU jawaban benar.',
+    '6. Setiap blueprintNo hanya boleh digunakan satu kali.',
 
-    '7. Hitung ulang seluruh operasi matematika dan angka sebelum menentukan kunci.',
+    '7. Ikuti difficulty dari blueprint.',
 
-    '8. Jangan membuat pilihan yang ambigu.',
+    '8. Ikuti competency dari blueprint.',
 
-    '9. Pembahasan harus menjelaskan proses dan alasan jawaban benar.',
+    '9. Untuk multiple hanya satu jawaban benar.',
 
-    '10. Jangan menyalin teks sumber tertentu.',
+    '10. Periksa kembali semua perhitungan angka.',
 
-    '11. Jangan menambahkan markdown.',
+    '11. Jangan membuat pilihan jawaban yang ambigu.',
 
-    '12. Jangan memberikan kalimat pengantar atau penutup.',
+    '12. Pembahasan harus menjelaskan alasan jawaban.',
+
+    '13. Jangan menggunakan Markdown dalam output.',
+
+    '14. Jangan memberikan percakapan tambahan.',
 
     '',
 
-    'FORMAT OUTPUT:',
+    'FORMAT:',
 
-    'Baris pertama:',
     '{"meta":true}',
 
-    'Setelah itu setiap baris harus satu objek JSON valid.',
+    '{"type":"multiple","blueprintNo":1,"difficulty":"Easy","competency":"...","question":"...","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
 
     '',
 
-    'SCHEMA MINIMUM:',
-
-    '{"type":"multiple","blueprintNo":1,"difficulty":"Medium","competency":"...","question":"...","options":["A","B","C","D"],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+    `Tipe yang diperbolehkan: ${allowedTypes.join(', ')}`,
 
     '',
 
-    `Tipe yang diperbolehkan: ${allowedTypes.join(', ')}.`,
+    'VISUAL CLOCK:',
+
+    '"clock":{"hour":8,"minute":30}',
 
     '',
 
-    'VISUAL:',
+    'VISUAL GRAPH:',
 
-    'Jika soal menggunakan jam:',
-    'clock:{"hour":8,"minute":30}',
-
-    'Jika soal menggunakan grafik:',
-    'graph:{"points":[{"x":0,"y":0},{"x":1,"y":2}],"xLabel":"x","yLabel":"y"}',
-
-    'Jika membutuhkan ilustrasi eksternal:',
-    'needsImage:true,imageHint:"English search phrase"',
+    '"graph":{"points":[{"x":0,"y":0},{"x":1,"y":2}],"xLabel":"x","yLabel":"y"}',
 
     '',
 
-    'Jangan membuat soal di luar jumlah blueprint.',
+    'IMAGE:',
 
-    'Jangan mengubah urutan nomor blueprint.',
+    '"needsImage":true,"imageHint":"English image description"',
+
+    '',
+
+    'Output harus JSONL murni.',
   ].join('\n');
 }
 
@@ -1370,7 +1714,7 @@ function buildUserPrompt({
 
     `TOPIK: ${topic}`,
 
-    `MATA PELAJARAN: ${mapel}`,
+    `MAPEL: ${mapel}`,
 
     `KELAS: ${kelas}`,
 
@@ -1378,13 +1722,11 @@ function buildUserPrompt({
 
     `MODE: ${currentMode}`,
 
-    `ARAHAN GURU: ${
-      arahan || 'Tidak ada.'
-    }`,
+    `ARAHAN GURU: ${arahan}`,
 
     '',
 
-    'BLUEPRINT PER BUTIR:',
+    'BLUEPRINT:',
 
     JSON.stringify(
       blueprint,
@@ -1392,14 +1734,24 @@ function buildUserPrompt({
 
     '',
 
-    'Buat semua soal sesuai blueprint.',
+    `Jumlah blueprint: ${blueprint.length}`,
 
-    'Output HANYA JSONL.',
+    '',
+
+    'WAJIB menghasilkan satu soal untuk setiap blueprint.',
+
+    'Jangan melewati nomor blueprint.',
+
+    'Jangan menggabungkan dua blueprint.',
+
+    'Jangan membuat blueprint tambahan.',
+
+    'Output hanya JSONL.',
   ].join('\n');
 }
 
 // ============================================================
-// SILICONFLOW API
+// SILICONFLOW
 // ============================================================
 
 async function callSiliconFlow({
@@ -1410,7 +1762,7 @@ async function callSiliconFlow({
   const controller =
     new AbortController();
 
-  const timer =
+  const timeoutId =
     setTimeout(
       () =>
         controller.abort(),
@@ -1430,90 +1782,129 @@ async function callSiliconFlow({
 
             'Content-Type':
               'application/json',
+
+            Accept:
+              'application/json',
           },
 
-          body:
-            JSON.stringify({
-              model:
-                SILICONFLOW_MODEL,
+          body: JSON.stringify({
+            model:
+              SILICONFLOW_MODEL,
 
-              messages: [
-                {
-                  role: 'system',
-                  content:
-                    systemPrompt,
-                },
-                {
-                  role: 'user',
-                  content:
-                    userPrompt,
-                },
-              ],
+            messages: [
+              {
+                role: 'system',
+                content:
+                  systemPrompt,
+              },
 
-              temperature:
-                0.25,
+              {
+                role: 'user',
+                content:
+                  userPrompt,
+              },
+            ],
 
-              top_p:
-                0.7,
+            temperature:
+              0.2,
 
-              max_tokens:
-                9_000,
+            top_p:
+              0.7,
 
-              stream:
-                false,
-            }),
+            max_tokens:
+              9000,
+
+            stream:
+              false,
+          }),
 
           signal:
             controller.signal,
         },
       );
 
-    const text =
+    const responseText =
       await response.text();
 
     let data = null;
 
     try {
       data =
-        text
-          ? JSON.parse(text)
+        responseText
+          ? JSON.parse(
+              responseText,
+            )
           : null;
     } catch (_) {
       data = null;
     }
 
+    // --------------------------------------------------------
+    // PROVIDER ERROR
+    // --------------------------------------------------------
+
     if (!response.ok) {
       const providerMessage =
         data?.message ||
         data?.error?.message ||
-        (
-          text
-            ? text.slice(
-                0,
-                500,
-              )
-            : 'Unknown provider error'
+        data?.error ||
+        responseText ||
+        'Unknown provider error';
+
+      const error =
+        new Error(
+          `SiliconFlow HTTP ${response.status}`,
         );
 
-      throw new Error(
-        `SiliconFlow HTTP ${response.status}: ${providerMessage}`,
-      );
+      error.providerStatus =
+        response.status;
+
+      error.providerMessage =
+        String(
+          providerMessage,
+        ).slice(
+          0,
+          1000,
+        );
+
+      error.traceId =
+        response.headers.get(
+          'x-siliconcloud-trace-id',
+        ) ||
+        response.headers.get(
+          'x-request-id',
+        ) ||
+        null;
+
+      throw error;
     }
+
+    // --------------------------------------------------------
+    // RESPONSE CONTENT
+    // --------------------------------------------------------
 
     const content =
       data
         ?.choices?.[0]
-        ?.message
-        ?.content;
+        ?.message?.content;
 
     if (
       typeof content !==
         'string' ||
       !content.trim()
     ) {
-      throw new Error(
-        'SiliconFlow mengembalikan content kosong.',
-      );
+      const error =
+        new Error(
+          'SiliconFlow response content kosong.',
+        );
+
+      error.providerStatus =
+        response.status;
+
+      error.providerMessage =
+        'choices[0].message.content tidak tersedia.';
+
+      throw error;
     }
 
     return {
@@ -1526,11 +1917,175 @@ async function callSiliconFlow({
       model:
         data?.model ||
         SILICONFLOW_MODEL,
+
+      finishReason:
+        data
+          ?.choices?.[0]
+          ?.finish_reason ||
+        null,
+
+      traceId:
+        response.headers.get(
+          'x-siliconcloud-trace-id',
+        ) ||
+        response.headers.get(
+          'x-request-id',
+        ) ||
+        null,
     };
 
+  } catch (error) {
+
+    if (
+      error?.name ===
+      'AbortError'
+    ) {
+      const timeoutError =
+        new Error(
+          `SiliconFlow timeout setelah ${AI_TIMEOUT_MS}ms.`,
+        );
+
+      timeoutError.code =
+        'SILICONFLOW_TIMEOUT';
+
+      throw timeoutError;
+    }
+
+    throw error;
+
   } finally {
-    clearTimeout(timer);
+    clearTimeout(
+      timeoutId,
+    );
   }
+}
+
+// ============================================================
+// SAFE ERROR RESPONSE
+// ============================================================
+
+function sendSiliconFlowError(
+  res,
+  error,
+) {
+  // ----------------------------------------------------------
+  // TIMEOUT
+  // ----------------------------------------------------------
+
+  if (
+    error?.code ===
+    'SILICONFLOW_TIMEOUT'
+  ) {
+    return res
+      .status(504)
+      .json({
+        success: false,
+
+        error:
+          'SiliconFlow terlalu lama merespons.',
+
+        diagnostics: {
+          type:
+            'timeout',
+
+          timeoutMs:
+            AI_TIMEOUT_MS,
+
+          model:
+            SILICONFLOW_MODEL,
+        },
+      });
+  }
+
+  // ----------------------------------------------------------
+  // PROVIDER HTTP ERROR
+  // ----------------------------------------------------------
+
+  if (
+    Number.isInteger(
+      error?.providerStatus,
+    )
+  ) {
+    return res
+      .status(502)
+      .json({
+        success: false,
+
+        error:
+          'SiliconFlow menolak atau gagal memproses permintaan.',
+
+        diagnostics: {
+          type:
+            'provider_error',
+
+          providerStatus:
+            error.providerStatus,
+
+          providerMessage:
+            error.providerMessage ||
+            null,
+
+          traceId:
+            error.traceId ||
+            null,
+
+          model:
+            SILICONFLOW_MODEL,
+        },
+      });
+  }
+
+  // ----------------------------------------------------------
+  // NETWORK / RUNTIME
+  // ----------------------------------------------------------
+
+  return res
+    .status(502)
+    .json({
+      success: false,
+
+      error:
+        'Server gagal terhubung ke SiliconFlow.',
+
+      diagnostics: {
+        type:
+          'network_or_runtime_error',
+
+        message:
+          error?.message ||
+          'Unknown error',
+
+        model:
+          SILICONFLOW_MODEL,
+      },
+    });
+}
+
+// ============================================================
+// COUNT DIAGNOSTICS
+// ============================================================
+
+function countBy(
+  items,
+  key,
+) {
+  return items.reduce(
+    (
+      result,
+      item,
+    ) => {
+      const value =
+        item[key] ||
+        'unknown';
+
+      result[value] =
+        (result[value] || 0) +
+        1;
+
+      return result;
+    },
+    {},
+  );
 }
 
 // ============================================================
@@ -1541,10 +2096,9 @@ export default async function handler(
   req,
   res,
 ) {
-
-  // ----------------------------------------------------------
+  // ==========================================================
   // METHOD
-  // ----------------------------------------------------------
+  // ==========================================================
 
   if (
     req.method !==
@@ -1559,14 +2113,15 @@ export default async function handler(
       .status(405)
       .json({
         success: false,
+
         error:
           'Method not allowed.',
       });
   }
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // BODY
-  // ----------------------------------------------------------
+  // ==========================================================
 
   const body =
     req.body &&
@@ -1575,46 +2130,37 @@ export default async function handler(
       ? req.body
       : {};
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // INPUT
-  // ----------------------------------------------------------
+  // ==========================================================
 
   const topic =
-    asSafePromptField(
+    safeField(
       body.topic,
     );
 
   const mapel =
-    asSafePromptField(
+    safeField(
       body.mapel,
       'Umum',
     );
 
   const kelas =
-    asSafePromptField(
+    safeField(
       body.kelas,
       'Umum',
     );
 
   const arahan =
-    asSafePromptField(
+    safeField(
       body.arahan,
       'Tidak ada.',
     );
 
   const hotsLevel =
-    asSafePromptField(
+    safeField(
       body.hotsLevel,
       'Standard',
-    );
-
-  const targetYear =
-    String(
-      body.targetYear ||
-        new Date().getFullYear() + 1,
-    ).slice(
-      0,
-      9,
     );
 
   const currentMode =
@@ -1623,23 +2169,37 @@ export default async function handler(
       ? 'prediction'
       : 'source';
 
-  // ----------------------------------------------------------
-  // REQUIRED TOPIC
-  // ----------------------------------------------------------
+  const currentYear =
+    new Date()
+      .getFullYear();
+
+  const targetYear =
+    String(
+      body.targetYear ||
+        currentYear + 1,
+    ).slice(
+      0,
+      9,
+    );
+
+  // ==========================================================
+  // TOPIC VALIDATION
+  // ==========================================================
 
   if (!topic) {
     return res
       .status(400)
       .json({
         success: false,
+
         error:
           'Topik wajib diisi.',
       });
   }
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // API KEY
-  // ----------------------------------------------------------
+  // ==========================================================
 
   const apiKey =
     process.env.SILICONFLOW_API_KEY;
@@ -1649,35 +2209,35 @@ export default async function handler(
       .status(500)
       .json({
         success: false,
+
         error:
-          'SILICONFLOW_API_KEY belum dikonfigurasi di environment server.',
+          'SILICONFLOW_API_KEY belum dikonfigurasi di Vercel.',
       });
   }
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // QUESTION COUNT
-  // ----------------------------------------------------------
-
-  const requested =
-    clampInt(
-      body.jumlahSoal,
-      1,
-      ABSOLUTE_MAX_BATCH_QUESTIONS,
-      DEFAULT_MAX_BATCH_QUESTIONS,
-    );
+  // ==========================================================
 
   const jumlah =
-    Math.min(
-      requested,
-      ABSOLUTE_MAX_BATCH_QUESTIONS,
+    clampInt(
+      body.jumlahSoal,
+
+      1,
+
+      MAX_QUESTION_COUNT,
+
+      DEFAULT_QUESTION_COUNT,
     );
 
-  // ----------------------------------------------------------
-  // QUESTION TYPES
-  // ----------------------------------------------------------
+  // ==========================================================
+  // TYPES
+  // ==========================================================
 
   const requestedTypes =
-    Array.isArray(body.types)
+    Array.isArray(
+      body.types,
+    )
       ? body.types
       : ['multiple'];
 
@@ -1686,15 +2246,15 @@ export default async function handler(
       ...new Set(
         requestedTypes
           .map(
-            (value) =>
+            (item) =>
               cleanText(
-                value,
+                item,
               ).toLowerCase(),
           )
           .filter(
-            (value) =>
+            (item) =>
               SUPPORTED_TYPES.has(
-                value,
+                item,
               ),
           ),
       ),
@@ -1710,7 +2270,7 @@ export default async function handler(
         success: false,
 
         error:
-          'Tidak ada tipe soal yang didukung.',
+          'Tipe soal tidak didukung.',
 
         supportedTypes:
           [...SUPPORTED_TYPES],
@@ -1718,7 +2278,7 @@ export default async function handler(
   }
 
   // ==========================================================
-  // 1. LOCAL BLUEPRINT
+  // 1. BUILD BLUEPRINT
   // ==========================================================
 
   const blueprint =
@@ -1732,7 +2292,7 @@ export default async function handler(
     });
 
   // ==========================================================
-  // 2. PROMPTS
+  // 2. PROMPT
   // ==========================================================
 
   const systemPrompt =
@@ -1745,20 +2305,20 @@ export default async function handler(
       topic,
       mapel,
       kelas,
-      year: targetYear,
+      year:
+        targetYear,
       currentMode,
       arahan,
       blueprint,
     });
 
   // ==========================================================
-  // 3. ONE SILICONFLOW CALL
+  // 3. CALL SILICONFLOW
   // ==========================================================
 
   let aiResult;
 
   try {
-
     aiResult =
       await callSiliconFlow({
         apiKey,
@@ -1767,88 +2327,151 @@ export default async function handler(
       });
 
   } catch (error) {
-
     console.error(
-      '[generateQuizFromTopic] SiliconFlow error:',
-      error,
+      '[Gemilang AI] SiliconFlow error',
+      {
+        message:
+          error?.message,
+
+        providerStatus:
+          error?.providerStatus,
+
+        providerMessage:
+          error?.providerMessage,
+
+        traceId:
+          error?.traceId,
+
+        code:
+          error?.code,
+
+        model:
+          SILICONFLOW_MODEL,
+      },
     );
 
-    return res
-      .status(502)
-      .json({
-        success: false,
-
-        error:
-          'Mesin AI SiliconFlow gagal melayani pembuatan kuis.',
-      });
+    return sendSiliconFlowError(
+      res,
+      error,
+    );
   }
 
   // ==========================================================
   // 4. PARSE JSONL
   // ==========================================================
 
-  const objects =
+  const parsed =
     parseJsonLines(
       aiResult.content,
     );
 
   const questions = [];
 
-  const rejectedReasons = {};
+  const rejectedReasons =
+    {};
+
+  const usedBlueprints =
+    new Set();
 
   // ==========================================================
   // 5. QUALITY GATE
   // ==========================================================
 
   for (
-    const rawQuestion of objects
+    const raw of parsed
   ) {
-
     // META
     if (
-      rawQuestion?.meta === true
+      raw?.meta === true
     ) {
       continue;
     }
 
-    // STRUCTURE
+    // NORMALIZE
     const normalized =
       normalizeQuestion(
-        rawQuestion,
+        raw,
         allowedTypes,
         currentMode,
       );
 
     if (!normalized) {
-
-      rejectedReasons.invalidStructure =
+      rejectedReasons
+        .invalidStructure =
         (
-          rejectedReasons.invalidStructure ||
+          rejectedReasons
+            .invalidStructure ||
           0
         ) + 1;
 
       continue;
     }
 
-    // DUPLICATE
+    // BLUEPRINT CHECK
+    const blueprintCheck =
+      validateAgainstBlueprint(
+        normalized,
+        blueprint,
+      );
+
+    if (
+      !blueprintCheck.valid
+    ) {
+      rejectedReasons[
+        blueprintCheck.reason
+      ] =
+        (
+          rejectedReasons[
+            blueprintCheck.reason
+          ] ||
+          0
+        ) + 1;
+
+      continue;
+    }
+
+    // BLUEPRINT DUPLICATE
+    if (
+      usedBlueprints.has(
+        normalized.blueprintNo,
+      )
+    ) {
+      rejectedReasons
+        .duplicateBlueprint =
+        (
+          rejectedReasons
+            .duplicateBlueprint ||
+          0
+        ) + 1;
+
+      continue;
+    }
+
+    // QUESTION DUPLICATE
     if (
       isDuplicateQuestion(
         normalized.question,
         questions,
       )
     ) {
-
-      rejectedReasons.duplicate =
+      rejectedReasons
+        .duplicateQuestion =
         (
-          rejectedReasons.duplicate ||
+          rejectedReasons
+            .duplicateQuestion ||
           0
         ) + 1;
 
       continue;
     }
 
+    // ACCEPT
     questions.push(
       normalized,
+    );
+
+    usedBlueprints.add(
+      normalized.blueprintNo,
     );
 
     if (
@@ -1867,45 +2490,67 @@ export default async function handler(
   }
 
   // ==========================================================
-  // 6. EMPTY RESULT
+  // 6. CHECK EMPTY
   // ==========================================================
 
   if (
     questions.length ===
     0
   ) {
-
     return res
       .status(502)
       .json({
         success: false,
 
         error:
-          'Quality Gate tidak menemukan butir soal valid dari respons AI.',
+          'Quality Gate tidak menemukan soal valid dari respons SiliconFlow.',
 
         diagnostics: {
           parsedObjectCount:
-            objects.length,
+            parsed.length,
 
           requestedCount:
             jumlah,
+
+          acceptedCount:
+            0,
 
           rejectedReasons,
 
           modelUsed:
             aiResult.model,
+
+          finishReason:
+            aiResult.finishReason,
+
+          traceId:
+            aiResult.traceId ||
+            null,
         },
       });
   }
 
   // ==========================================================
-  // 7. RESPONSE
+  // 7. SORT BY BLUEPRINT
+  // ==========================================================
+
+  questions.sort(
+    (a, b) =>
+      (
+        a.blueprintNo || 999
+      ) -
+      (
+        b.blueprintNo || 999
+      ),
+  );
+
+  // ==========================================================
+  // 8. FINAL RESPONSE
   // ==========================================================
 
   return res
     .status(200)
     .json({
-
       success: true,
 
       questions,
@@ -1920,22 +2565,38 @@ export default async function handler(
         currentMode,
 
       diagnostics: {
-
         parsedObjectCount:
-          objects.length,
+          parsed.length,
 
         acceptedCount:
           questions.length,
+
+        missingCount:
+          Math.max(
+            jumlah -
+              questions.length,
+            0,
+          ),
 
         rejectedReasons,
 
         modelUsed:
           aiResult.model,
 
+        finishReason:
+          aiResult.finishReason,
+
         usage:
           aiResult.usage,
 
+        traceId:
+          aiResult.traceId ||
+          null,
+
         blueprintCount:
+          blueprint.length,
+
+        blueprintGenerated:
           blueprint.length,
 
         difficultyDistribution:
@@ -1951,6 +2612,9 @@ export default async function handler(
           ),
 
         researchPerformed:
+          false,
+
+        researchBacked:
           false,
       },
     });
