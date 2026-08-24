@@ -224,9 +224,16 @@ const ModulSiswaWrapper = () => {
 // APP
 // ============================================================
 function App() {
+  // 🔥 FIX: sebelumnya begitu app dibuka sebagai PWA (dari ikon di HP),
+  // siswa SELALU dilempar ke /login-siswa dulu -- gak peduli dia udah
+  // pernah login sebelumnya atau belum. Sekarang dicek dulu status
+  // login yang sudah tersimpan (`isSiswaLoggedIn`, sama seperti yang
+  // dipakai SiswaRoute di bawah) -- kalau sudah login, langsung lempar
+  // ke dashboard-nya, gak perlu mampir ke form login sama sekali.
   useEffect(() => {
     if (window.matchMedia('(display-mode: standalone)').matches && window.location.pathname === '/') {
-      window.location.href = '/login-siswa';
+      const sudahLoginSiswa = localStorage.getItem('isSiswaLoggedIn') === 'true';
+      window.location.href = sudahLoginSiswa ? '/siswa/dashboard' : '/login-siswa';
     }
   }, []);
 

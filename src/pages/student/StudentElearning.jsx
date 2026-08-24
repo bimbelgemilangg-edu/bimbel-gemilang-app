@@ -233,6 +233,25 @@ const StudentElearning = () => {
     const loadStudentDoc = async () => {
       if (!id) return;
       try {
+        // 🔥 BARU: Percobaan 0 -- kalau `studentDocId` (ID dokumen
+        // Firestore yang BENAR, disimpan LoginSiswa.jsx persis saat
+        // login) sudah ada di localStorage, pakai itu LANGSUNG. Ini
+        // paling akurat -- gak perlu nebak-nebak lewat ID/kode sama
+        // sekali, jadi otomatis kebal dari kasus dokumen hantu yang
+        // dijelaskan di bawah (dokumen hantu itu ID-nya beda dari
+        // `studentDocId` asli, jadi gak akan pernah ketemu lewat jalur
+        // ini). Login lama (sebelum field ini ditambahkan) belum punya
+        // `studentDocId` di localStorage-nya -- otomatis lanjut ke
+        // Percobaan 1/2/3 seperti biasa.
+        const docIdFromLogin = localStorage.getItem('studentDocId') || '';
+        if (docIdFromLogin) {
+          const snap0 = await getDoc(doc(db, "students", docIdFromLogin));
+          if (snap0.exists()) {
+            applyStudentDoc(snap0.id, snap0.data());
+            return;
+          }
+        }
+
         // Percobaan 1: anggap `id` adalah ID DOKUMEN Firestore
         const snap = await getDoc(doc(db, "students", id));
         if (snap.exists() && looksLikeRealStudentDoc(snap.data())) {

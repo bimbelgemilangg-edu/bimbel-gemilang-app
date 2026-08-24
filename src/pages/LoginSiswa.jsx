@@ -22,7 +22,22 @@ const LoginSiswa = () => {
   const [selectedPoster, setSelectedPoster] = useState(null);
   const [theme] = useState('dark');
   const [currentPosterIndex, setCurrentPosterIndex] = useState(0);
-  
+  // 🔥 BARU: "tetap login" -- kalau siswa buka halaman ini padahal
+  // sesinya masih aktif (mis. lewat bookmark lama, tombol back browser,
+  // atau link yang dibagikan), jangan tampilkan form login lagi sama
+  // sekali. `checkingSession` dipakai supaya sesaat sebelum redirect
+  // selesai, layar nggak sempat kelihatan "kedip" nampilin form login
+  // dulu baru pindah -- selama masih true, cuma tampilkan layar kosong.
+  const [checkingSession, setCheckingSession] = useState(true);
+
+  useEffect(() => {
+    if (localStorage.getItem('isSiswaLoggedIn') === 'true') {
+      navigate('/siswa/dashboard', { replace: true });
+      return; // jangan set checkingSession(false) -- biar tetap kosong sampai redirect kelar
+    }
+    setCheckingSession(false);
+  }, [navigate]);
+
   // ===== PWA INSTALL =====
   const [installPrompt, setInstallPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -305,6 +320,13 @@ const LoginSiswa = () => {
   // ============================================================
   // RENDER
   // ============================================================
+  // 🔥 Selama masih ngecek status login, tampilkan layar kosong dulu --
+  // biar siswa yang sesinya masih aktif gak sempat lihat form login
+  // "kedip" sebelum keburu di-redirect ke dashboard.
+  if (checkingSession) {
+    return <div style={{ minHeight: '100vh', background: '#0f172a' }} />;
+  }
+
   return (
     <div style={styles.container}>
       
