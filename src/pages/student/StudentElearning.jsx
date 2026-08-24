@@ -209,14 +209,38 @@ const StudentElearning = () => {
       } catch (e) { /* localStorage penuh/gak tersedia -- gak fatal */ }
     };
 
+    // 🔥 FIX BUG NYATA (lanjutan dari fix ID-vs-kode di atas): asumsi
+    // "kalau getDoc(doc(db,'students', id)) nemu dokumen, berarti itu
+    // pasti dokumen siswa yang benar" TERNYATA SALAH kalau ada dokumen
+    // LAIN yang gak sengaja tersimpan dengan ID PERSIS SAMA dengan kode
+    // siswa ini (mis. fitur ganti-foto-sendiri di sisi siswa yang salah
+    // pakai `setDoc(doc(db,"students", studentId), {...}, {merge:true})`
+    // -- `setDoc` otomatis BIKIN dokumen baru kalau ID itu belum ada,
+    // dan kalau `studentId` yang dipakai di situ adalah KODE siswa,
+    // bukan ID dokumen asli, jadinya ada "dokumen hantu" nyangkut di ID
+    // itu isinya cuma field foto doang, gak ada `nama`/`enrolledSubjects`
+    // apa pun). Begitu Percobaan 1 nemu dokumen hantu ini, dia langsung
+    // `return` dan GAK PERNAH lanjut ke Percobaan 2 yang harusnya nemu
+    // dokumen ASLI siswa (ID acak, data lengkap) -- persis kasus nyata
+    // yang dilaporkan: enrolledSubjects siswa selalu kosong walau admin
+    // sudah mengisinya di dokumen yang benar.
+    // Fix: dokumen dari Percobaan 1 cuma dipercaya kalau ADA field
+    // `nama` yang berisi -- penanda minimal bahwa ini dokumen siswa
+    // sungguhan, bukan dokumen hantu/parsial. Kalau tidak, lanjut ke
+    // Percobaan 2/3 seperti biasa.
+    const looksLikeRealStudentDoc = (data) => !!(data && typeof data.nama === 'string' && data.nama.trim());
+
     const loadStudentDoc = async () => {
       if (!id) return;
       try {
         // Percobaan 1: anggap `id` adalah ID DOKUMEN Firestore
         const snap = await getDoc(doc(db, "students", id));
-        if (snap.exists()) {
+        if (snap.exists() && looksLikeRealStudentDoc(snap.data())) {
           applyStudentDoc(snap.id, snap.data());
           return;
+        }
+        if (snap.exists()) {
+          console.warn('[Data Siswa] Dokumen ditemukan di ID', id, 'tapi keliatan seperti dokumen hantu/parsial (gak ada field nama) -- dilewati, lanjut cari dokumen asli lewat field studentId.', snap.data());
         }
 
         // Percobaan 2 (INI YANG MEMPERBAIKI BUG): `id` ternyata KODE UNIK
