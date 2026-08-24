@@ -1,36 +1,33 @@
 // api/gemilangAI.js
 // ============================================================
-// BIMBEL GEMILANG — FREE AI ROUTER
-// ============================================================
-//
-// PRIORITAS:
-// 1. SiliconFlow free model
-// 2. SiliconFlow free model kedua
-// 3. SiliconFlow free model ketiga
-//
-// ZERO-BILLING:
-// Tidak pernah memilih model berbayar.
+// BIMBEL GEMILANG — CLOUDFLARE AI ENGINE
+// STABLE VERSION
 // ============================================================
 
-const FREE_MODELS = [
-  'Qwen/Qwen3-8B',
-  'deepseek-ai/DeepSeek-R1-0528-Qwen3-8B',
-  'THUDM/GLM-Z1-9B-0414',
-];
+const MODEL =
+  '@cf/zai-org/glm-4.7-flash';
 
-const TIMEOUT_MS = 30000;
+const TIMEOUT_MS = 25000;
 
-const fetchWithTimeout = async (
+function sleep(ms) {
+  return new Promise(
+    (resolve) =>
+      setTimeout(resolve, ms)
+  );
+}
+
+async function fetchWithTimeout(
   url,
   options = {},
   timeoutMs = TIMEOUT_MS
-) => {
+) {
   const controller =
     new AbortController();
 
   const timer =
     setTimeout(
-      () => controller.abort(),
+      () =>
+        controller.abort(),
       timeoutMs
     );
 
@@ -46,23 +43,25 @@ const fetchWithTimeout = async (
   } finally {
     clearTimeout(timer);
   }
-};
+}
 
-async function callModel({
-  apiKey,
-  model,
+async function callCloudflare({
+  token,
+  accountId,
   messages,
-  maxTokens,
 }) {
+  const url =
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${MODEL}`;
+
   const response =
     await fetchWithTimeout(
-      'https://api.siliconflow.cn/v1/chat/completions',
+      url,
       {
         method: 'POST',
 
         headers: {
           Authorization:
-            `Bearer ${apiKey}`,
+            `Bearer ${token}`,
 
           'Content-Type':
             'application/json',
@@ -70,16 +69,19 @@ async function callModel({
 
         body:
           JSON.stringify({
-            model,
             messages,
+
             max_tokens:
-              maxTokens,
+              3000,
+
             temperature:
               0.2,
+
             stream:
               false,
           }),
-      }
+      },
+      TIMEOUT_MS
     );
 
   const raw =
@@ -93,11 +95,16 @@ async function callModel({
   } catch (_) {}
 
   if (!response.ok) {
+    const message =
+      data?.errors?.[0]
+        ?.message ||
+      data?.message ||
+      raw ||
+      `HTTP ${response.status}`;
+
     const error =
       new Error(
-        data?.message ||
-          data?.error?.message ||
-          `SiliconFlow HTTP ${response.status}`
+        `CLOUDFLARE_HTTP_${response.status}: ${message}`
       );
 
     error.status =
@@ -109,6 +116,67 @@ async function callModel({
   return data;
 }
 
+function extractText(data) {
+  const choices =
+    data?.result?.choices;
+
+  if (
+    Array.isArray(choices)
+  ) {
+    return choices
+      .map(
+        (choice) => {
+          const content =
+            choice
+              ?.message
+              ?.content;
+
+          if (
+            typeof content ===
+            'string'
+          ) {
+            return content;
+          }
+
+          if (
+            Array.isArray(
+              content
+            )
+          ) {
+            return content
+              .map(
+                (part) =>
+                  part?.text ||
+                  ''
+              )
+              .join('');
+          }
+
+          return '';
+        }
+      )
+      .join('\n');
+  }
+
+  if (
+    typeof data?.result
+      ?.response ===
+    'string'
+  ) {
+    return data.result.response;
+  }
+
+  if (
+    typeof data?.result
+      ?.text ===
+    'string'
+  ) {
+    return data.result.text;
+  }
+
+  return '';
+}
+
 export default async function handler(
   req,
   res
@@ -116,28 +184,47 @@ export default async function handler(
   if (
     req.method !== 'POST'
   ) {
-    return res.status(405).json({
-      success: false,
-      error:
-        'Method not allowed',
-    });
+    return res
+      .status(405)
+      .json({
+        success: false,
+        error:
+          'Method not allowed',
+      });
   }
 
-  const apiKey =
+  const token =
     process.env
-      .SILICONFLOW_API_KEY;
+      .CLOUDFLARE_API_TOKEN;
 
-  if (!apiKey) {
-    return res.status(500).json({
-      success: false,
-      error:
-        'SILICONFLOW_API_KEY belum tersedia di Vercel.',
-    });
+  const accountId =
+    process.env
+      .CLOUDFLARE_ACCOUNT_ID;
+
+  if (!token) {
+    return res
+      .status(500)
+      .json({
+        success: false,
+        error:
+          'CLOUDFLARE_API_TOKEN belum tersedia di Vercel.',
+      });
+  }
+
+  if (!accountId) {
+    return res
+      .status(500)
+      .json({
+        success: false,
+        error:
+          'CLOUDFLARE_ACCOUNT_ID belum tersedia di Vercel.',
+      });
   }
 
   const {
     prompt,
     systemPrompt,
+    messages,
     maxTokens,
   } =
     req.body || {};
@@ -147,123 +234,139 @@ export default async function handler(
       prompt || ''
     ).trim();
 
-  if (!userPrompt) {
-    return res.status(400).json({
-      success: false,
-      error:
-        'Prompt wajib diisi.',
-    });
+  let finalMessages;
+
+  if (
+    Array.isArray(
+      messages
+    ) &&
+    messages.length
+  ) {
+    finalMessages =
+      messages;
+  } else {
+    finalMessages = [
+      {
+        role:
+          'system',
+
+        content:
+          String(
+            systemPrompt ||
+              'Kamu adalah Asisten Soal Gemilang. Gunakan bahasa Indonesia dan utamakan akurasi akademik.'
+          ),
+      },
+
+      {
+        role:
+          'user',
+
+        content:
+          userPrompt,
+      },
+    ];
   }
 
-  const messages = [
-    {
-      role:
-        'system',
-
-      content:
-        String(
-          systemPrompt ||
-            'Kamu adalah Asisten Soal Gemilang. Gunakan bahasa Indonesia. Utamakan akurasi akademik.'
-        ),
-    },
-
-    {
-      role:
-        'user',
-
-      content:
-        userPrompt,
-    },
-  ];
-
-  const errors = [];
-
-  for (
-    const model of
-      FREE_MODELS
+  if (
+    !finalMessages.length
   ) {
-    try {
-      const data =
-        await callModel({
-          apiKey,
-          model,
-          messages,
-          maxTokens:
-            Number.isInteger(
-              maxTokens
-            )
-              ? maxTokens
-              : 5000,
-        });
+    return res
+      .status(400)
+      .json({
+        success: false,
+        error:
+          'Prompt wajib diisi.',
+      });
+  }
 
-      const text =
-        data?.choices?.[0]
-          ?.message
-          ?.content || '';
+  try {
+    const data =
+      await callCloudflare({
+        token,
+        accountId,
+        messages:
+          finalMessages,
+      });
 
-      if (!text.trim()) {
-        throw new Error(
-          'Model tidak mengembalikan teks.'
-        );
-      }
+    const text =
+      extractText(
+        data
+      );
 
-      return res.status(200).json({
+    return res
+      .status(200)
+      .json({
         success: true,
 
-        provider:
-          'SiliconFlow',
+        cloudflare:
+          true,
 
-        model,
+        provider:
+          'Cloudflare Workers AI',
+
+        model:
+          MODEL,
 
         text,
 
         result:
-          data,
+          data?.result ||
+          null,
+
+        errors:
+          data?.errors ||
+          [],
+
+        messages:
+          data?.messages ||
+          [],
 
         zeroBillingMode:
           true,
 
-        attemptedModels:
-          errors.map(
-            (item) =>
-              item.model
-          ),
+        maxTokens:
+          Number.isInteger(
+            maxTokens
+          )
+            ? maxTokens
+            : 3000,
       });
-    } catch (
+  } catch (
+    error
+  ) {
+    console.error(
+      '[Gemilang Cloudflare]',
       error
-    ) {
-      console.error(
-        '[Gemilang AI Router]',
-        model,
-        error?.message
-      );
+    );
 
-      errors.push({
-        model,
+    return res
+      .status(
+        error?.status ===
+          429
+          ? 429
+          : 502
+      )
+      .json({
+        success: false,
 
-        status:
-          error?.status ||
-          null,
+        cloudflare:
+          true,
 
-        message:
+        provider:
+          'Cloudflare Workers AI',
+
+        model:
+          MODEL,
+
+        error:
+          error?.status ===
+          429
+            ? 'Kuota harian Cloudflare Workers AI sedang mencapai batas.'
+            : 'Cloudflare Workers AI gagal memproses permintaan.',
+
+        debug:
           error?.message ||
           String(error),
       });
-    }
   }
-
-  return res.status(503).json({
-    success: false,
-
-    error:
-      'Semua model AI GRATIS sedang tidak tersedia atau terkena rate limit. Sistem tidak menggunakan model berbayar.',
-
-    zeroBillingMode:
-      true,
-
-    attemptedModels:
-      FREE_MODELS,
-
-    errors,
-  });
 }
