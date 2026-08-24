@@ -1,6 +1,18 @@
 // api/generateQuizFromTopic.js
 // ============================================================
-// GEMILANG — STABLE FAST QUESTION ENGINE
+// BIMBEL GEMILANG — STABLE QUESTION RESEARCH ENGINE
+// Jina Search + Cloudflare Workers AI
+// ============================================================
+//
+// DESAIN:
+// 1. Search internet secara berurutan.
+// 2. Tidak membatalkan Jina terlalu cepat.
+// 3. Maksimal 2 query untuk satu batch.
+// 4. Gunakan content yang dikembalikan Jina langsung.
+// 5. Tidak membuka ulang URL pada tahap ini.
+// 6. Maksimal 3 soal per inference untuk stabilitas.
+// 7. Dedup lokal sebelum response.
+// 8. Cloudflare hanya dipakai untuk pekerjaan bernilai tinggi.
 // ============================================================
 
 const CLOUDFLARE_MODEL =
@@ -9,13 +21,13 @@ const CLOUDFLARE_MODEL =
 
 const MAX_BATCH_QUESTIONS = 3;
 
-const JINA_TIMEOUT_MS = 7000;
+const JINA_TIMEOUT_MS = 20000;
 const CLOUDFLARE_TIMEOUT_MS = 30000;
 
 const MAX_RESULTS_PER_QUERY = 5;
-const MAX_SELECTED_SOURCES = 6;
+const MAX_SOURCES = 6;
 
-const MAX_SOURCE_CHARS = 4500;
+const MAX_SOURCE_CHARS = 5000;
 const MAX_RESEARCH_PACK_CHARS = 16000;
 
 // ============================================================
@@ -32,7 +44,10 @@ const cleanText = (value = '') =>
       /<style[\s\S]*?<\/style>/gi,
       ' '
     )
-    .replace(/\s+/g, ' ')
+    .replace(
+      /\s+/g,
+      ' '
+    )
     .trim();
 
 const normalizeText = (value = '') =>
@@ -42,10 +57,15 @@ const normalizeText = (value = '') =>
       /[^\p{L}\p{N}\s]/gu,
       ' '
     )
-    .replace(/\s+/g, ' ')
+    .replace(
+      /\s+/g,
+      ' '
+    )
     .trim();
 
-const fingerprint = (value = '') =>
+const fingerprint = (
+  value = ''
+) =>
   normalizeText(value)
     .replace(
       /\bsoal\s+\d+\b/g,
@@ -55,13 +75,16 @@ const fingerprint = (value = '') =>
       /\bnomor\s+\d+\b/g,
       ' '
     )
-    .replace(/\s+/g, ' ')
+    .replace(
+      /\s+/g,
+      ' '
+    )
     .trim();
 
 const fetchWithTimeout = async (
   url,
   options = {},
-  timeoutMs = 10000
+  timeoutMs = 20000
 ) => {
   const controller =
     new AbortController();
@@ -73,26 +96,32 @@ const fetchWithTimeout = async (
     );
 
   try {
-    return await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    });
+    return await fetch(
+      url,
+      {
+        ...options,
+        signal:
+          controller.signal,
+      }
+    );
   } finally {
     clearTimeout(timer);
   }
 };
 
 // ============================================================
-// SEARCH
+// JINA SEARCH
 // ============================================================
 
-async function jinaSearch(query) {
-  const key =
+async function searchJina(
+  query
+) {
+  const apiKey =
     process.env.JINA_API_KEY;
 
-  if (!key) {
+  if (!apiKey) {
     throw new Error(
-      'JINA_API_KEY belum tersedia.'
+      'JINA_API_KEY belum tersedia di Vercel.'
     );
   }
 
@@ -106,13 +135,16 @@ async function jinaSearch(query) {
       url,
       {
         method: 'GET',
+
         headers: {
           Authorization:
-            `Bearer ${key}`,
+            `Bearer ${apiKey}`,
+
           Accept:
             'application/json',
+
           'User-Agent':
-            'BimbelGemilang/Stable',
+            'BimbelGemilang/3.1',
         },
       },
       JINA_TIMEOUT_MS
@@ -122,10 +154,24 @@ async function jinaSearch(query) {
     await response.text();
 
   if (!response.ok) {
+    let detail =
+      raw;
+
+    try {
+      const parsed =
+        JSON.parse(raw);
+
+      detail =
+        parsed?.message ||
+        parsed?.readableMessage ||
+        parsed?.error?.message ||
+        raw;
+    } catch (_) {}
+
     throw new Error(
-      `JINA_HTTP_${response.status}: ${raw.slice(
+      `JINA_HTTP_${response.status}: ${detail.slice(
         0,
-        300
+        400
       )}`
     );
   }
@@ -136,15 +182,21 @@ async function jinaSearch(query) {
     parsed =
       JSON.parse(raw);
   } catch (_) {
-    return [];
+    throw new Error(
+      'JINA_INVALID_JSON'
+    );
   }
 
   const items =
     Array.isArray(parsed)
       ? parsed
-      : Array.isArray(parsed?.data)
+      : Array.isArray(
+          parsed?.data
+        )
       ? parsed.data
-      : Array.isArray(parsed?.results)
+      : Array.isArray(
+          parsed?.results
+        )
       ? parsed.results
       : [];
 
@@ -153,32 +205,34 @@ async function jinaSearch(query) {
       0,
       MAX_RESULTS_PER_QUERY
     )
-    .map((item) => ({
-      title:
-        cleanText(
-          item?.title ||
-          item?.name ||
-          ''
-        ),
+    .map(
+      (item) => ({
+        title:
+          cleanText(
+            item?.title ||
+              item?.name ||
+              ''
+          ),
 
-      url:
-        cleanText(
-          item?.url ||
-          item?.link ||
-          ''
-        ),
+        url:
+          cleanText(
+            item?.url ||
+              item?.link ||
+              ''
+          ),
 
-      content:
-        cleanText(
-          item?.content ||
-          item?.description ||
-          item?.snippet ||
-          ''
-        ).slice(
-          0,
-          MAX_SOURCE_CHARS
-        ),
-    }))
+        content:
+          cleanText(
+            item?.content ||
+              item?.description ||
+              item?.snippet ||
+              ''
+          ).slice(
+            0,
+            MAX_SOURCE_CHARS
+          ),
+      })
+    )
     .filter(
       (item) =>
         item.title ||
@@ -188,7 +242,7 @@ async function jinaSearch(query) {
 }
 
 // ============================================================
-// RESEARCH QUERIES
+// QUERY BUILDER
 // ============================================================
 
 function buildQueries({
@@ -199,9 +253,13 @@ function buildQueries({
   targetYear,
 }) {
   const base =
-    `${cleanText(topic)} ${cleanText(
-      mapel
-    )} ${cleanText(kelas)}`.trim();
+    [
+      cleanText(topic),
+      cleanText(mapel),
+      cleanText(kelas),
+    ]
+      .filter(Boolean)
+      .join(' ');
 
   if (
     sourceMode ===
@@ -209,7 +267,7 @@ function buildQueries({
   ) {
     return [
       `${base} TKA contoh soal HOTS`,
-      `${base} soal tahun sebelumnya ${targetYear}`,
+      `${base} latihan soal ${targetYear}`,
     ];
   }
 
@@ -229,7 +287,8 @@ function dedupeSources(
   const seen =
     new Set();
 
-  const result = [];
+  const unique =
+    [];
 
   for (
     const source of
@@ -253,19 +312,19 @@ function dedupeSources(
 
     seen.add(key);
 
-    result.push(
+    unique.push(
       source
     );
 
     if (
-      result.length >=
-      MAX_SELECTED_SOURCES
+      unique.length >=
+      MAX_SOURCES
     ) {
       break;
     }
   }
 
-  return result;
+  return unique;
 }
 
 // ============================================================
@@ -275,7 +334,7 @@ function dedupeSources(
 function buildResearchPack(
   sources
 ) {
-  let output =
+  let pack =
     '';
 
   for (
@@ -287,21 +346,19 @@ function buildResearchPack(
       sources[i];
 
     const block = `
-SOURCE ${i}
-
-TITLE:
-${source.title}
-
-URL:
-${source.url}
+SOURCE_INDEX: ${i}
+TITLE: ${source.title}
+URL: ${source.url}
 
 CONTENT:
 ${source.content}
+
+------------------------------
 `;
 
     if (
       (
-        output +
+        pack +
         block
       ).length >
       MAX_RESEARCH_PACK_CHARS
@@ -309,12 +366,11 @@ ${source.content}
       break;
     }
 
-    output +=
-      block +
-      '\n----------------\n';
+    pack +=
+      block;
   }
 
-  return output;
+  return pack;
 }
 
 // ============================================================
@@ -348,6 +404,24 @@ async function callCloudflare(
   const url =
     `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${CLOUDFLARE_MODEL}`;
 
+  const body = {
+    messages: [
+      {
+        role: 'system',
+        content:
+          systemPrompt,
+      },
+      {
+        role: 'user',
+        content:
+          userPrompt,
+      },
+    ],
+
+    max_completion_tokens:
+      4500,
+  };
+
   const response =
     await fetchWithTimeout(
       url,
@@ -362,23 +436,8 @@ async function callCloudflare(
             'application/json',
         },
 
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'system',
-              content:
-                systemPrompt,
-            },
-            {
-              role: 'user',
-              content:
-                userPrompt,
-            },
-          ],
-
-          max_completion_tokens:
-            4500,
-        }),
+        body:
+          JSON.stringify(body),
       },
       CLOUDFLARE_TIMEOUT_MS
     );
@@ -386,7 +445,8 @@ async function callCloudflare(
   const raw =
     await response.text();
 
-  let data = null;
+  let data =
+    null;
 
   try {
     data =
@@ -394,23 +454,28 @@ async function callCloudflare(
   } catch (_) {}
 
   if (!response.ok) {
-    throw new Error(
-      `CLOUDFLARE_HTTP_${response.status}: ${
-        data?.errors?.[0]
-          ?.message ||
-        raw.slice(
-          0,
-          500
-        )
-      }`
-    );
+    const message =
+      data?.errors?.[0]
+        ?.message ||
+      data?.message ||
+      raw;
+
+    const error =
+      new Error(
+        `CLOUDFLARE_HTTP_${response.status}: ${message}`
+      );
+
+    error.status =
+      response.status;
+
+    throw error;
   }
 
   return data;
 }
 
 // ============================================================
-// EXTRACT AI TEXT
+// AI OUTPUT
 // ============================================================
 
 function extractAIText(
@@ -428,7 +493,8 @@ function extractAIText(
   return choices
     .map(
       (choice) =>
-        typeof choice?.message
+        typeof choice
+          ?.message
           ?.content ===
         'string'
           ? choice.message
@@ -439,13 +505,14 @@ function extractAIText(
 }
 
 // ============================================================
-// JSON OBJECT EXTRACTOR
+// JSON OBJECT EXTRACTION
 // ============================================================
 
 function extractJsonObjects(
   text = ''
 ) {
-  const result = [];
+  const objects =
+    [];
 
   let depth = 0;
   let start = -1;
@@ -457,7 +524,8 @@ function extractJsonObjects(
     i < text.length;
     i += 1
   ) {
-    const ch = text[i];
+    const ch =
+      text[i];
 
     if (escaped) {
       escaped = false;
@@ -497,7 +565,7 @@ function extractJsonObjects(
         start !== -1
       ) {
         try {
-          result.push(
+          objects.push(
             JSON.parse(
               text.slice(
                 start,
@@ -512,7 +580,7 @@ function extractJsonObjects(
     }
   }
 
-  return result;
+  return objects;
 }
 
 // ============================================================
@@ -547,6 +615,7 @@ function validateQuestion(
     return null;
   }
 
+  // Multiple choice
   if (
     raw.type ===
     'multiple'
@@ -623,7 +692,7 @@ function validateQuestion(
     readingText:
       cleanText(
         raw.readingText ||
-        ''
+          ''
       ),
 
     subQuestions:
@@ -636,19 +705,19 @@ function validateQuestion(
     shortAnswer:
       cleanText(
         raw.shortAnswer ||
-        ''
+          ''
       ),
 
     cause:
       cleanText(
         raw.cause ||
-        ''
+          ''
       ),
 
     effect:
       cleanText(
         raw.effect ||
-        ''
+          ''
       ),
 
     isCauseTrue:
@@ -673,26 +742,26 @@ function validateQuestion(
     explanation:
       cleanText(
         raw.explanation ||
-        ''
+          ''
       ),
 
     answerVerification:
       cleanText(
         raw.answerVerification ||
-        ''
+          ''
       ),
 
     analysisSummary:
       cleanText(
         raw.analysisSummary ||
-        ''
+          ''
       ),
 
     qImage:
       cleanText(
         raw.questionImageUrl ||
-        raw.qImage ||
-        ''
+          raw.qImage ||
+          ''
       ),
 
     needsImage:
@@ -703,8 +772,8 @@ function validateQuestion(
     imageHint:
       cleanText(
         raw.imageHint ||
-        raw.image_keyword ||
-        ''
+          raw.image_keyword ||
+          ''
       ),
 
     researchBacked:
@@ -727,26 +796,19 @@ function validateQuestion(
     sourceTitle:
       cleanText(
         raw.sourceTitle ||
-        ''
+          ''
       ),
 
     sourceUrl:
       cleanText(
         raw.sourceUrl ||
-        ''
+          ''
       ),
 
     sourceQuestionVerbatim:
       Boolean(
         raw.sourceQuestionVerbatim
       ),
-
-    sourceEvidenceScore:
-      typeof raw
-        .sourceEvidenceScore ===
-      'number'
-        ? raw.sourceEvidenceScore
-        : null,
   };
 }
 
@@ -762,13 +824,13 @@ export default async function handler(
     req.method !==
     'POST'
   ) {
-    return res
-      .status(405)
-      .json({
-        success: false,
-        error:
-          'Method not allowed',
-      });
+    return res.status(
+      405
+    ).json({
+      success: false,
+      error:
+        'Method not allowed',
+    });
   }
 
   const {
@@ -784,54 +846,58 @@ export default async function handler(
   } =
     req.body || {};
 
+  // ----------------------------------------------------------
+  // ENV
+  // ----------------------------------------------------------
+
   if (
     !cleanText(topic)
   ) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        error:
-          'Topik wajib diisi.',
-      });
+    return res.status(
+      400
+    ).json({
+      success: false,
+      error:
+        'Topik wajib diisi.',
+    });
   }
 
   if (
     !process.env.JINA_API_KEY
   ) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        error:
-          'JINA_API_KEY belum tersedia.',
-      });
+    return res.status(
+      500
+    ).json({
+      success: false,
+      error:
+        'JINA_API_KEY belum tersedia.',
+    });
   }
 
   if (
     !process.env
       .CLOUDFLARE_API_TOKEN
   ) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        error:
-          'CLOUDFLARE_API_TOKEN belum tersedia.',
-      });
+    return res.status(
+      500
+    ).json({
+      success: false,
+      error:
+        'CLOUDFLARE_API_TOKEN belum tersedia.',
+    });
   }
 
   if (
     !process.env
       .CLOUDFLARE_ACCOUNT_ID
   ) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        error:
-          'CLOUDFLARE_ACCOUNT_ID belum tersedia.',
-      });
+    return res.status(
+      500
+    ).json({
+      success: false,
+      error:
+        'CLOUDFLARE_ACCOUNT_ID belum tersedia.',
+    });
   }
 
   const requested =
@@ -854,7 +920,9 @@ export default async function handler(
     );
 
   const allowedTypes =
-    Array.isArray(types) &&
+    Array.isArray(
+      types
+    ) &&
     types.length
       ? types
       : ['multiple'];
@@ -867,12 +935,13 @@ export default async function handler(
 
   const year =
     targetYear ||
-    new Date().getFullYear() +
+    new Date()
+      .getFullYear() +
       1;
 
-  // ==========================================================
-  // SEARCH ONLY 2 QUERIES
-  // ==========================================================
+  // ----------------------------------------------------------
+  // SEARCH QUERIES
+  // ----------------------------------------------------------
 
   const queries =
     buildQueries({
@@ -885,53 +954,67 @@ export default async function handler(
         year,
     });
 
-  const allResults = [];
+  const sources = [];
 
   const queryErrors = [];
 
-  // Jalankan 2 query paralel.
-  const results =
-    await Promise.allSettled(
-      queries.map(
-        (query) =>
-          jinaSearch(
-            query
-          )
-      )
-    );
+  // ==========================================================
+  // SEARCH BERURUTAN
+  // ==========================================================
+  // Sengaja tidak parallel.
+  // Kalau query pertama berhasil, kita sudah punya kandidat.
+  // Kalau query kedua gagal, batch tidak langsung batal.
+  // ==========================================================
 
-  results.forEach(
-    (
-      result,
-      index
-    ) => {
-      if (
-        result.status ===
-        'fulfilled'
-      ) {
-        allResults.push(
-          ...result.value
+  for (
+    const query of
+      queries
+  ) {
+    try {
+      const results =
+        await searchJina(
+          query
         );
-      } else {
-        queryErrors.push({
-          query:
-            queries[index],
-          error:
-            result.reason
-              ?.message ||
-            'SEARCH_FAILED',
-        });
-      }
-    }
-  );
 
-  const sources =
+      if (
+        results.length
+      ) {
+        sources.push(
+          ...results
+        );
+      }
+
+      // Sudah cukup untuk batch kecil.
+      if (
+        sources.length >=
+        MAX_SOURCES
+      ) {
+        break;
+      }
+    } catch (
+      error
+    ) {
+      console.warn(
+        '[Gemilang][Jina]',
+        query,
+        error.message
+      );
+
+      queryErrors.push({
+        query,
+        error:
+          error.message,
+      });
+    }
+  }
+
+  const uniqueSources =
     dedupeSources(
-      allResults
+      sources
     );
 
   if (
-    sources.length ===
+    uniqueSources.length ===
     0
   ) {
     return res
@@ -940,7 +1023,7 @@ export default async function handler(
         success: false,
 
         error:
-          'Pencarian internet tidak mengembalikan sumber.',
+          'Pencarian internet gagal mendapatkan sumber yang dapat dibaca.',
 
         debug:
           queryErrors,
@@ -950,26 +1033,17 @@ export default async function handler(
       });
   }
 
+  // ==========================================================
+  // RESEARCH PACK
+  // ==========================================================
+
   const researchPack =
     buildResearchPack(
-      sources
+      uniqueSources
     );
 
-  if (
-    !researchPack.trim()
-  ) {
-    return res
-      .status(502)
-      .json({
-        success: false,
-
-        error:
-          'Sumber internet kosong setelah diproses.',
-      });
-  }
-
   // ==========================================================
-  // PROMPT
+  // SYSTEM PROMPT
   // ==========================================================
 
   const systemPrompt = `
@@ -982,22 +1056,29 @@ ${
     ? `
 AMBIL SOAL DARI INTERNET.
 
-Gunakan soal yang benar-benar ditemukan
-pada sumber yang diberikan.
+Hanya gunakan soal yang benar-benar terdapat
+dalam sumber yang diberikan.
 
-Jangan mengarang URL.
 Jangan mengarang sumber.
+Jangan mengarang URL.
+Jangan mengarang soal.
 
-Jika kunci sumber tidak jelas,
-verifikasi secara akademik.
+Kamu boleh:
+- membersihkan format,
+- menentukan jawaban,
+- memverifikasi,
+- memberikan pembahasan.
 `
     : `
 PREDIKSI BERBASIS TREN.
 
-Analisis sumber lalu buat latihan baru
-berdasarkan pola kompetensi.
+Gunakan sumber sebagai evidence.
+Analisis pola, kompetensi, HOTS,
+dan bentuk stimulus.
 
-Jangan menyebut sebagai bocoran.
+Buat latihan baru berdasarkan evidence.
+
+Jangan menyebutnya bocoran.
 `
 }
 
@@ -1007,34 +1088,30 @@ ${year}
 HOTS:
 ${hotsLevel || 'standar'}
 
-WAJIB:
-- benar
-- relevan
-- pembahasan
-- verifikasi jawaban
-- JSON valid
-- maksimal ${jumlah} soal
-
-OUTPUT JSONL:
-{"meta":true}
+OUTPUT:
+JSONL saja.
 
 MULTIPLE:
 {
-  "type":"multiple",
-  "question":"...",
-  "options":["A","B","C","D"],
-  "correct":0,
-  "explanation":"...",
-  "answerVerification":"...",
-  "analysisSummary":"...",
-  "sourceIndex":0,
-  "sourceTitle":"...",
-  "sourceUrl":"...",
-  "sourceQuestionVerbatim":true
+"type":"multiple",
+"question":"...",
+"options":["A","B","C","D"],
+"correct":0,
+"explanation":"...",
+"answerVerification":"...",
+"analysisSummary":"...",
+"sourceIndex":0,
+"sourceTitle":"...",
+"sourceUrl":"...",
+"sourceQuestionVerbatim":true
 }
 
-correct = indeks 0-3.
+correct harus berupa angka 0-3.
 `;
+
+  // ==========================================================
+  // USER PROMPT
+  // ==========================================================
 
   const userPrompt = `
 MAPEL:
@@ -1044,9 +1121,7 @@ KELAS:
 ${kelas || 'SMP'}
 
 TOPIK:
-${cleanText(
-    topic
-  )}
+${cleanText(topic)}
 
 JUMLAH:
 ${jumlah}
@@ -1062,13 +1137,18 @@ ${cleanText(
   )}
 
 SUMBER INTERNET:
-
 ${researchPack}
 
-TUGAS:
+TASK:
 Buat maksimal ${jumlah} soal valid.
 
-Jangan mengarang jika source mode.
+Jika mode SOURCE:
+ambil soal yang benar-benar ada pada sumber.
+
+Jika mode PREDICTION:
+analisis sumber lalu susun latihan baru.
+
+Jangan memaksakan jumlah.
 `;
 
   // ==========================================================
@@ -1097,22 +1177,27 @@ Jangan mengarang jika source mode.
       message
     );
 
+    if (
+      error?.status ===
+      429
+    ) {
+      return res
+        .status(429)
+        .json({
+          success: false,
+          error:
+            'Kuota harian Cloudflare Workers AI mencapai batas.',
+          debug:
+            message,
+        });
+    }
+
     return res
-      .status(
-        error?.status ===
-          429
-          ? 429
-          : 502
-      )
+      .status(502)
       .json({
         success: false,
-
         error:
-          error?.status ===
-          429
-            ? 'Kuota harian Cloudflare Workers AI sedang mencapai batas.'
-            : 'Cloudflare Workers AI gagal memproses batch.',
-
+          'Cloudflare Workers AI gagal memproses soal.',
         debug:
           message,
       });
@@ -1133,9 +1218,7 @@ Jangan mengarang jika source mode.
     );
 
   const questions = [];
-
-  const seen =
-    new Set();
+  const seen = new Set();
 
   for (
     const raw of
@@ -1164,37 +1247,11 @@ Jangan mengarang jika source mode.
       continue;
     }
 
-    // cek kemiripan ringan
-    let duplicate =
-      false;
-
-    for (
-      const current of
-        questions
-    ) {
-      if (
-        fingerprint(
-          current.question
-        ) ===
-        fp
-      ) {
-        duplicate =
-          true;
-        break;
-      }
-    }
-
-    if (
-      duplicate
-    ) {
-      continue;
-    }
-
     seen.add(fp);
 
     question
       .researchSources =
-      sources.map(
+      uniqueSources.map(
         (source) => ({
           title:
             source.title ||
@@ -1227,20 +1284,36 @@ Jangan mengarang jika source mode.
         success: false,
 
         error:
-          'Tidak ada soal valid yang dikembalikan AI.',
+          'AI tidak menghasilkan soal valid.',
 
         debug: {
+          parsed:
+            objects.length,
+
           rawText:
             rawText.slice(
               0,
               1500
             ),
-
-          parsed:
-            objects.length,
         },
+
+        researchSources:
+          uniqueSources.map(
+            (source) => ({
+              title:
+                source.title ||
+                '',
+              url:
+                source.url ||
+                '',
+            })
+          ),
       });
   }
+
+  // ==========================================================
+  // SUCCESS
+  // ==========================================================
 
   return res
     .status(200)
@@ -1272,23 +1345,20 @@ Jangan mengarang jika source mode.
         CLOUDFLARE_MODEL,
 
       diagnostics: {
-        searchQueries:
+        queriesTried:
           queries.length,
 
         searchResults:
-          allResults.length,
-
-        selectedSources:
           sources.length,
 
-        parsedObjects:
-          objects.length,
+        selectedSources:
+          uniqueSources.length,
 
         queryErrors,
       },
 
       researchSources:
-        sources.map(
+        uniqueSources.map(
           (source) => ({
             title:
               source.title ||
