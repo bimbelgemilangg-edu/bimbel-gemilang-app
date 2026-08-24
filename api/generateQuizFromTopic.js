@@ -11,7 +11,7 @@
 //    ↓
 // LOCAL BLUEPRINT ENGINE
 //    ↓
-// GITHUB MODELS API (CHAT COMPLETIONS)
+// GROQ API (CHAT COMPLETIONS)
 //    ↓
 // JSONL PARSER
 //    ↓
@@ -25,31 +25,35 @@
 // - Google Search API
 // - Gemini
 // - Cloudflare AI
-// - SiliconFlow (dihapus -- berbayar, melanggar prinsip gratis murni)
+// - SiliconFlow (dihapus -- berbayar)
+// - GitHub Models (dihapus -- LAYANAN INI SUDAH RESMI TUTUP TOTAL
+//   per 30 Juli 2026, dikonfirmasi langsung dari GitHub Changelog.
+//   Kalau kamu lihat saran di mana pun yang masih nyebut GitHub
+//   Models/models.github.ai/models.inference.ai.azure.com sebagai
+//   opsi gratis, itu sudah basi -- jangan dipasang lagi.)
 // - Scraping
 //
+// KENAPA GROQ: terverifikasi AKTIF per Agustus 2026, free tier
+// PERMANEN (bukan trial/kredit habis), TANPA kartu kredit, endpoint
+// kompatibel format OpenAI (gampang dipelihara). Limit gratisnya:
+// 30 request/menit, 6.000 token/menit, 14.400 request/hari -- per
+// ORGANISASI (bukan per API key, jadi bikin banyak key gak nambah
+// jatah). Ini masih JAUH lebih longgar & lebih jelas aturannya
+// dibanding GitHub Models yang sudah tutup atau SiliconFlow yang
+// berbayar.
+//
 // ENV:
-// GITHUB_TOKEN=... (Personal Access Token dengan izin "models: read" --
-//   dibuat manual di https://github.com/settings/tokens, BUKAN token
-//   otomatis dari GitHub Actions. Function ini jalan di Vercel, bukan
-//   di dalam GitHub Actions, jadi token Actions bawaan gak berlaku di
-//   sini -- harus PAT yang dibuat & disimpan manual sebagai env var.)
+// GROQ_API_KEY=... (buat gratis di console.groq.com/keys, tinggal
+//   daftar pakai email/Google, langsung dapat key, TANPA kartu kredit)
 //
 // OPTIONAL:
-// GITHUB_MODEL=meta/Llama-3.1-70B-Instruct
-//   (⚠️ CEK DULU ID PERSIS-nya di https://github.com/marketplace/models
-//   sebelum deploy -- katalog GitHub Models bisa berubah/rename model.
-//   Salah ID = request langsung ditolak provider, gejalanya SAMA PERSIS
-//   kayak error 502 SiliconFlow kemarin, cuma provider-nya beda.)
-//
-// ⚠️ CATATAN JUJUR SOAL "GRATIS": GitHub Models API secara resmi
-// ditujukan untuk PROTOTYPING/eksperimen, BUKAN trafik produksi skala
-// bisnis (lihat dokumentasi resmi GitHub). Limit hariannya per-model
-// per-user bisa serendah puluhan request/hari. Ini TETAP dipasang
-// sesuai keputusan bisnis (gratis > berbayar), tapi kalau limit
-// harian habis, fitur ini akan berhenti total sampai reset besok --
-// bukan bug, itu batas layanan gratisnya. Pesan error di bawah
-// dibuat eksplisit menjelaskan ini ke guru, bukan pesan generik.
+// GROQ_MODEL=openai/gpt-oss-120b
+//   (⚠️ Groq MENDEPRECATE model secara rutin -- cek daftar model aktif
+//   di console.groq.com/docs/models sebelum deploy kalau ragu. Model
+//   default di bawah ini ("openai/gpt-oss-120b") adalah PENGGANTI
+//   RESMI yang direkomendasikan Groq sendiri untuk kelas Llama-70B
+//   setelah mereka deprecate llama-3.3-70b-versatile per 16 Agustus
+//   2026 -- JANGAN pakai nama model itu lagi, sudah gak aktif.)
 //
 // ============================================================
 
@@ -59,12 +63,12 @@ export const maxDuration = 60;
 // CONFIG
 // ============================================================
 
-const GITHUB_MODELS_API_URL =
-  'https://models.github.ai/inference/chat/completions';
+const GROQ_API_URL =
+  'https://api.groq.com/openai/v1/chat/completions';
 
-const GITHUB_MODEL =
-  process.env.GITHUB_MODEL ||
-  'meta/Llama-3.1-70B-Instruct';
+const GROQ_MODEL =
+  process.env.GROQ_MODEL ||
+  'openai/gpt-oss-120b';
 
 const DEFAULT_QUESTION_COUNT = 10;
 const MAX_QUESTION_COUNT = 20;
@@ -1769,10 +1773,10 @@ function buildUserPrompt({
 }
 
 // ============================================================
-// GITHUB MODELS API
+// GROQ API
 // ============================================================
 
-async function callGitHubModels({
+async function callGroq({
   apiKey,
   systemPrompt,
   userPrompt,
@@ -1790,7 +1794,7 @@ async function callGitHubModels({
   try {
     const response =
       await fetch(
-        GITHUB_MODELS_API_URL,
+        GROQ_API_URL,
         {
           method: 'POST',
 
@@ -1801,19 +1805,13 @@ async function callGitHubModels({
             'Content-Type':
               'application/json',
 
-            // 🔥 GitHub Models API adalah REST API resmi GitHub (bukan
-            // endpoint generik seperti SiliconFlow) -- dua header ini
-            // WAJIB sesuai dokumentasi resmi, beda dari provider lama.
             Accept:
-              'application/vnd.github+json',
-
-            'X-GitHub-Api-Version':
-              '2022-11-28',
+              'application/json',
           },
 
           body: JSON.stringify({
             model:
-              GITHUB_MODEL,
+              GROQ_MODEL,
 
             messages: [
               {
@@ -1877,7 +1875,7 @@ async function callGitHubModels({
 
       const error =
         new Error(
-          `GitHub Models HTTP ${response.status}`,
+          `Groq HTTP ${response.status}`,
         );
 
       error.providerStatus =
@@ -1891,28 +1889,44 @@ async function callGitHubModels({
           1000,
         );
 
-      // 🔥 BARU: GitHub Models API kasih header `x-ratelimit-type`
-      // (mis. "UserByModelByDay") begitu limit HARIAN habis -- beda
-      // dari rate-limit biasa yang cuma nunggu beberapa detik. Ini
-      // ditandai khusus supaya sendGitHubModelsError() bisa kasih
-      // pesan jujur "limit harian habis, coba lagi besok" ke guru,
-      // BUKAN pesan generik yang bikin guru kira sistemnya rusak.
-      error.rateLimitType =
-        response.headers.get(
-          'x-ratelimit-type',
-        ) ||
-        null;
-
-      error.retryAfter =
+      // 🔥 BARU: header rate-limit ASLI Groq (bukan tebakan -- ini
+      // nama header yang benar-benar dipakai Groq, terverifikasi).
+      // `retry-after` cuma muncul kalau status-nya 429. Dua pasang
+      // header lain SELALU ada di tiap respons (sukses maupun gagal)
+      // dan kasih tau sisa jatah -- disimpan di sini juga supaya bisa
+      // dipakai sendGroqError() buat kasih pesan yang jujur & spesifik
+      // (RPM habis vs RPD habis vs TPM habis, tiga hal beda).
+      error.retryAfterSeconds =
         response.headers.get(
           'retry-after',
         ) ||
         null;
 
-      error.traceId =
+      error.remainingRequests =
         response.headers.get(
-          'x-github-request-id',
+          'x-ratelimit-remaining-requests',
         ) ||
+        null;
+
+      error.resetRequests =
+        response.headers.get(
+          'x-ratelimit-reset-requests',
+        ) ||
+        null;
+
+      error.remainingTokens =
+        response.headers.get(
+          'x-ratelimit-remaining-tokens',
+        ) ||
+        null;
+
+      error.resetTokens =
+        response.headers.get(
+          'x-ratelimit-reset-tokens',
+        ) ||
+        null;
+
+      error.traceId =
         response.headers.get(
           'x-request-id',
         ) ||
@@ -1937,7 +1951,7 @@ async function callGitHubModels({
     ) {
       const error =
         new Error(
-          'GitHub Models response content kosong.',
+          'Groq response content kosong.',
         );
 
       error.providerStatus =
@@ -1958,7 +1972,7 @@ async function callGitHubModels({
 
       model:
         data?.model ||
-        GITHUB_MODEL,
+        GROQ_MODEL,
 
       finishReason:
         data
@@ -1967,9 +1981,6 @@ async function callGitHubModels({
         null,
 
       traceId:
-        response.headers.get(
-          'x-github-request-id',
-        ) ||
         response.headers.get(
           'x-request-id',
         ) ||
@@ -1984,11 +1995,11 @@ async function callGitHubModels({
     ) {
       const timeoutError =
         new Error(
-          `GitHub Models timeout setelah ${AI_TIMEOUT_MS}ms.`,
+          `Groq timeout setelah ${AI_TIMEOUT_MS}ms.`,
         );
 
       timeoutError.code =
-        'GITHUB_MODELS_TIMEOUT';
+        'GROQ_TIMEOUT';
 
       throw timeoutError;
     }
@@ -2006,7 +2017,7 @@ async function callGitHubModels({
 // SAFE ERROR RESPONSE
 // ============================================================
 
-function sendGitHubModelsError(
+function sendGroqError(
   res,
   error,
 ) {
@@ -2016,7 +2027,7 @@ function sendGitHubModelsError(
 
   if (
     error?.code ===
-    'GITHUB_MODELS_TIMEOUT'
+    'GROQ_TIMEOUT'
   ) {
     return res
       .status(504)
@@ -2024,7 +2035,7 @@ function sendGitHubModelsError(
         success: false,
 
         error:
-          'GitHub Models terlalu lama merespons.',
+          'Groq terlalu lama merespons.',
 
         diagnostics: {
           type:
@@ -2034,41 +2045,66 @@ function sendGitHubModelsError(
             AI_TIMEOUT_MS,
 
           model:
-            GITHUB_MODEL,
+            GROQ_MODEL,
         },
       });
   }
 
   // ----------------------------------------------------------
-  // RATE LIMIT HARIAN HABIS (bukan sekadar terlalu cepat -- ini
-  // jatah gratis hari ini sudah habis total, baru reset besok)
+  // RATE LIMIT (429) -- dibedain: kalau `resetRequests`/`resetTokens`
+  // nunjukin durasi PENDEK (detik/menit), itu cuma limit RPM/TPM
+  // sesaat, tunggu bentar aja. Kalau providerMessage/reset menunjukkan
+  // ini limit HARIAN (RPD), guru perlu tau harus nunggu sampai besok,
+  // bukan nyoba generate ulang berkali-kali dalam beberapa menit.
   // ----------------------------------------------------------
 
   if (
-    error?.providerStatus === 429 &&
-    error?.rateLimitType
+    error?.providerStatus === 429
   ) {
+    const isDailyLimit =
+      error.remainingRequests === '0' &&
+      /[hd]/i.test(
+        String(error.resetRequests || ''),
+      );
+
     return res
       .status(429)
       .json({
         success: false,
 
         error:
-          `Jatah gratis GitHub Models untuk model ini sudah habis hari ini (${error.rateLimitType}). Coba lagi besok, atau gunakan model lain lewat env var GITHUB_MODEL sementara waktu.`,
+          isDailyLimit
+            ? 'Jatah gratis harian Groq untuk model ini sudah habis. Coba lagi besok, atau ganti model sementara lewat env var GROQ_MODEL.'
+            : `Groq lagi dibatasi sesaat (terlalu banyak request dalam waktu singkat). Coba lagi dalam ${error.retryAfterSeconds || 'beberapa'} detik.`,
 
         diagnostics: {
           type:
-            'daily_quota_exhausted',
-
-          rateLimitType:
-            error.rateLimitType,
+            isDailyLimit
+              ? 'daily_quota_exhausted'
+              : 'rate_limited_temporary',
 
           retryAfterSeconds:
-            error.retryAfter ||
+            error.retryAfterSeconds ||
+            null,
+
+          remainingRequests:
+            error.remainingRequests ||
+            null,
+
+          resetRequests:
+            error.resetRequests ||
+            null,
+
+          remainingTokens:
+            error.remainingTokens ||
+            null,
+
+          resetTokens:
+            error.resetTokens ||
             null,
 
           model:
-            GITHUB_MODEL,
+            GROQ_MODEL,
         },
       });
   }
@@ -2088,7 +2124,7 @@ function sendGitHubModelsError(
         success: false,
 
         error:
-          'GitHub Models menolak atau gagal memproses permintaan.',
+          'Groq menolak atau gagal memproses permintaan.',
 
         diagnostics: {
           type:
@@ -2106,7 +2142,7 @@ function sendGitHubModelsError(
             null,
 
           model:
-            GITHUB_MODEL,
+            GROQ_MODEL,
         },
       });
   }
@@ -2121,7 +2157,7 @@ function sendGitHubModelsError(
       success: false,
 
       error:
-        'Server gagal terhubung ke GitHub Models.',
+        'Server gagal terhubung ke Groq.',
 
       diagnostics: {
         type:
@@ -2132,7 +2168,7 @@ function sendGitHubModelsError(
           'Unknown error',
 
         model:
-          GITHUB_MODEL,
+          GROQ_MODEL,
       },
     });
 }
@@ -2278,7 +2314,7 @@ export default async function handler(
   // ==========================================================
 
   const apiKey =
-    process.env.GITHUB_TOKEN;
+    process.env.GROQ_API_KEY;
 
   if (!apiKey) {
     return res
@@ -2287,7 +2323,7 @@ export default async function handler(
         success: false,
 
         error:
-          'GITHUB_TOKEN belum dikonfigurasi di Vercel. Buat Personal Access Token dengan izin "models: read" di github.com/settings/tokens, lalu simpan sebagai environment variable GITHUB_TOKEN.',
+          'GROQ_API_KEY belum dikonfigurasi di Vercel. Daftar gratis di console.groq.com/keys (tanpa kartu kredit), lalu simpan sebagai environment variable GROQ_API_KEY.',
       });
   }
 
@@ -2389,14 +2425,14 @@ export default async function handler(
     });
 
   // ==========================================================
-  // 3. CALL GITHUB MODELS
+  // 3. CALL GROQ
   // ==========================================================
 
   let aiResult;
 
   try {
     aiResult =
-      await callGitHubModels({
+      await callGroq({
         apiKey,
         systemPrompt,
         userPrompt,
@@ -2404,7 +2440,7 @@ export default async function handler(
 
   } catch (error) {
     console.error(
-      '[Gemilang AI] GitHub Models error',
+      '[Gemilang AI] Groq error',
       {
         message:
           error?.message,
@@ -2415,8 +2451,11 @@ export default async function handler(
         providerMessage:
           error?.providerMessage,
 
-        rateLimitType:
-          error?.rateLimitType,
+        retryAfterSeconds:
+          error?.retryAfterSeconds,
+
+        remainingRequests:
+          error?.remainingRequests,
 
         traceId:
           error?.traceId,
@@ -2425,11 +2464,11 @@ export default async function handler(
           error?.code,
 
         model:
-          GITHUB_MODEL,
+          GROQ_MODEL,
       },
     );
 
-    return sendGitHubModelsError(
+    return sendGroqError(
       res,
       error,
     );
@@ -2582,7 +2621,7 @@ export default async function handler(
         success: false,
 
         error:
-          'Quality Gate tidak menemukan soal valid dari respons GitHub Models.',
+          'Quality Gate tidak menemukan soal valid dari respons Groq.',
 
         diagnostics: {
           parsedObjectCount:
