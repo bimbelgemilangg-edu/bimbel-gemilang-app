@@ -607,16 +607,34 @@ const AIGenerateQuiz = ({
           !response.ok ||
           !data?.success
         ) {
+          // 🔥 FIX BUG NYATA: sebelumnya baris ini baca `data?.debug` --
+          // field yang TIDAK PERNAH ADA di respons backend. Backend
+          // (generateQuizFromTopic.js, lihat sendSiliconFlowError())
+          // sebenarnya SUDAH menghitung & mengirim detail penyebab asli
+          // error lewat field `diagnostics` (providerStatus dari
+          // SiliconFlow -- mis. 401/429/400, providerMessage pesan asli
+          // dari mereka, traceId). Karena nama field-nya gak cocok,
+          // detail paling penting buat diagnosis (KENAPA SiliconFlow
+          // menolak) selalu terbuang diam-diam, dan yang keliatan cuma
+          // pesan generik "SiliconFlow menolak atau gagal memproses
+          // permintaan." tanpa konteks apa pun -- persis kasus nyata
+          // yang dilaporkan. Sekarang baca `data?.diagnostics` (nama
+          // field yang BENAR), plus `data?.debug` tetap dicek juga
+          // sebagai fallback kalau suatu saat backend berubah lagi.
+          const debugSource =
+            data?.diagnostics ||
+            data?.debug;
+
           const debugText =
-            data?.debug &&
-            typeof data.debug ===
+            debugSource &&
+            typeof debugSource ===
               'object'
               ? JSON.stringify(
-                  data.debug,
+                  debugSource,
                   null,
                   2
                 )
-              : data?.debug;
+              : debugSource;
 
           throw new Error(
             `${data?.error || `Server error (${response.status})`}${
