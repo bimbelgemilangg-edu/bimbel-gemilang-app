@@ -1,65 +1,26 @@
 // api/generateQuizFromTopic.js
 // ============================================================
-// BIMBEL GEMILANG — PROFESSIONAL QUESTION RESEARCH ENGINE v3
-// ============================================================
-//
-// TUJUAN:
-// - Internet selalu menjadi sumber riset.
-// - Jina Search mencari sumber publik.
-// - Sumber diranking TANPA AI terlebih dahulu.
-// - Duplikat sumber dibuang TANPA AI.
-// - Halaman sumber dibaca untuk memperoleh isi + gambar.
-// - Cloudflare Workers AI menjadi AI utama.
-// - Maksimal SATU panggilan AI untuk SATU batch.
-// - SOURCE MODE:
-//      mengambil soal yang benar-benar ditemukan di internet.
-// - PREDICTION MODE:
-//      menganalisis pola sumber lalu membuat latihan baru.
-// - Jawaban, verifikasi, analisis, dan pembahasan wajib.
-// - Visual soal dan opsi gambar didukung.
-// - Soal yang kembar dalam hasil AI tidak dimasukkan.
-// - Struktur respons dibuat kompatibel dengan ManageQuiz.
-//
-// CATATAN ARSITEKTUR:
-// Tahap ini BELUM menjadi Research Planner / Blueprint Engine penuh.
-// Tahap ini adalah "research-backed question collector".
-//
-// ENV YANG DIBUTUHKAN:
-// JINA_API_KEY
-// CLOUDFLARE_API_TOKEN
-// CLOUDFLARE_ACCOUNT_ID
-//
-// MODEL:
-// @cf/zai-org/glm-4.7-flash
-//
+// GEMILANG — STABLE FAST QUESTION ENGINE
 // ============================================================
 
 const CLOUDFLARE_MODEL =
   process.env.CLOUDFLARE_MODEL ||
   '@cf/zai-org/glm-4.7-flash';
 
-const MAX_BATCH_QUESTIONS = 5;
+const MAX_BATCH_QUESTIONS = 3;
 
-const JINA_TIMEOUT_MS = 8000;
-const PAGE_TIMEOUT_MS = 18000;
-const CLOUDFLARE_TIMEOUT_MS = 38000;
+const JINA_TIMEOUT_MS = 7000;
+const CLOUDFLARE_TIMEOUT_MS = 30000;
 
-const MAX_RESULTS_PER_QUERY = 10;
-const MAX_UNIQUE_SOURCES = 6;
+const MAX_RESULTS_PER_QUERY = 5;
+const MAX_SELECTED_SOURCES = 6;
 
-const MAX_SOURCE_CHARS = 6000;
+const MAX_SOURCE_CHARS = 4500;
 const MAX_RESEARCH_PACK_CHARS = 16000;
 
-const MIN_SOURCE_TEXT = 120;
-
 // ============================================================
-// BASIC HELPERS
+// HELPERS
 // ============================================================
-
-const sleep = (ms) =>
-  new Promise((resolve) =>
-    setTimeout(resolve, ms)
-  );
 
 const cleanText = (value = '') =>
   String(value ?? '')
@@ -71,10 +32,7 @@ const cleanText = (value = '') =>
       /<style[\s\S]*?<\/style>/gi,
       ' '
     )
-    .replace(
-      /\s+/g,
-      ' '
-    )
+    .replace(/\s+/g, ' ')
     .trim();
 
 const normalizeText = (value = '') =>
@@ -84,694 +42,57 @@ const normalizeText = (value = '') =>
       /[^\p{L}\p{N}\s]/gu,
       ' '
     )
-    .replace(
-      /\s+/g,
-      ' '
-    )
+    .replace(/\s+/g, ' ')
     .trim();
 
-const tokenSet = (value = '') => {
-  const tokens =
-    normalizeText(value)
-      .split(' ')
-      .filter(
-        (token) =>
-          token.length >= 2
-      );
-
-  return new Set(tokens);
-};
-
-const jaccardSimilarity = (
-  a,
-  b
-) => {
-  const setA =
-    typeof a === 'string'
-      ? tokenSet(a)
-      : a;
-
-  const setB =
-    typeof b === 'string'
-      ? tokenSet(b)
-      : b;
-
-  if (
-    !setA.size ||
-    !setB.size
-  ) {
-    return 0;
-  }
-
-  let intersection = 0;
-
-  for (
-    const item of setA
-  ) {
-    if (
-      setB.has(item)
-    ) {
-      intersection += 1;
-    }
-  }
-
-  const union =
-    setA.size +
-    setB.size -
-    intersection;
-
-  return union
-    ? intersection / union
-    : 0;
-};
-
-const fingerprintText = (
-  value = ''
-) =>
+const fingerprint = (value = '') =>
   normalizeText(value)
     .replace(
-      /\bsoal\s+\d+\b/gi,
+      /\bsoal\s+\d+\b/g,
       ' '
     )
     .replace(
-      /\bnomor\s+\d+\b/gi,
+      /\bnomor\s+\d+\b/g,
       ' '
     )
-    .replace(
-      /\s+/g,
-      ' '
-    )
+    .replace(/\s+/g, ' ')
     .trim();
-
-const isFiniteNumber = (
-  value
-) =>
-  typeof value ===
-    'number' &&
-  Number.isFinite(value);
-
-const isIntegerInRange = (
-  value,
-  min,
-  max
-) =>
-  Number.isInteger(
-    value
-  ) &&
-  value >= min &&
-  value <= max;
 
 const fetchWithTimeout = async (
   url,
   options = {},
-  timeoutMs = 30000
+  timeoutMs = 10000
 ) => {
   const controller =
     new AbortController();
 
-  const timer = setTimeout(
-    () =>
-      controller.abort(),
-    timeoutMs
-  );
+  const timer =
+    setTimeout(
+      () => controller.abort(),
+      timeoutMs
+    );
 
   try {
-    return await fetch(
-      url,
-      {
-        ...options,
-        signal:
-          controller.signal,
-      }
-    );
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
   } finally {
     clearTimeout(timer);
   }
 };
 
-const escapeXml = (
-  value = ''
-) =>
-  String(value)
-    .replace(
-      /&/g,
-      '&amp;'
-    )
-    .replace(
-      /</g,
-      '&lt;'
-    )
-    .replace(
-      />/g,
-      '&gt;'
-    )
-    .replace(
-      /"/g,
-      '&quot;'
-    )
-    .replace(
-      /'/g,
-      '&apos;'
-    );
-
 // ============================================================
-// QUESTION DUPLICATE CHECK
+// SEARCH
 // ============================================================
 
-function isQuestionDuplicate(
-  questionText,
-  existingQuestions
-) {
-  const fingerprint =
-    fingerprintText(
-      questionText
-    );
-
-  for (
-    const existing of
-      existingQuestions
-  ) {
-    const existingFingerprint =
-      fingerprintText(
-        existing.question
-      );
-
-    // Exact / normalized duplicate.
-    if (
-      fingerprint &&
-      existingFingerprint ===
-        fingerprint
-    ) {
-      return true;
-    }
-
-    // Semantic-ish local similarity.
-    // Tidak memakai AI sehingga tidak memakan kuota.
-    const similarity =
-      jaccardSimilarity(
-        fingerprint,
-        existingFingerprint
-      );
-
-    if (
-      similarity >= 0.88
-    ) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-// ============================================================
-// VISUAL CUE
-// ============================================================
-
-const hasVisualCue = (
-  text = ''
-) => {
-  const value =
-    normalizeText(text);
-
-  const cues = [
-    'lihat gambar',
-    'perhatikan gambar',
-    'gambar berikut',
-    'berdasarkan gambar',
-    'pada gambar',
-
-    'lihat grafik',
-    'perhatikan grafik',
-    'grafik berikut',
-    'berdasarkan grafik',
-
-    'lihat diagram',
-    'perhatikan diagram',
-    'diagram berikut',
-    'berdasarkan diagram',
-
-    'lihat tabel',
-    'perhatikan tabel',
-    'tabel berikut',
-    'berdasarkan tabel',
-
-    'look at the picture',
-    'look at the image',
-    'look at the graph',
-    'look at the diagram',
-    'look at the table',
-
-    'based on the picture',
-    'based on the image',
-    'based on the graph',
-    'based on the diagram',
-    'based on the table',
-  ];
-
-  return cues.some(
-    (cue) =>
-      value.includes(
-        normalizeText(cue)
-      )
-  );
-};
-
-// ============================================================
-// LOCAL CLOCK SVG
-// ============================================================
-
-function buildClockImageSvg(
-  clock
-) {
-  if (
-    !clock ||
-    !isFiniteNumber(
-      clock.hour
-    ) ||
-    !isFiniteNumber(
-      clock.minute
-    )
-  ) {
-    return '';
-  }
-
-  const hour =
-    ((Number(clock.hour) %
-      12) +
-      12) %
-    12;
-
-  const minute =
-    Math.max(
-      0,
-      Math.min(
-        59,
-        Number(
-          clock.minute
-        )
-      )
-    );
-
-  const size = 280;
-  const cx = 140;
-  const cy = 140;
-  const radius = 112;
-
-  const toXY = (
-    angle,
-    length
-  ) => {
-    const rad =
-      ((angle - 90) *
-        Math.PI) /
-      180;
-
-    return {
-      x:
-        cx +
-        length *
-          Math.cos(rad),
-
-      y:
-        cy +
-        length *
-          Math.sin(rad),
-    };
-  };
-
-  const hourTip =
-    toXY(
-      hour * 30 +
-        minute * 0.5,
-      radius * 0.52
-    );
-
-  const minuteTip =
-    toXY(
-      minute * 6,
-      radius * 0.78
-    );
-
-  const ticks =
-    Array.from(
-      {
-        length: 60,
-      },
-      (_, index) => {
-        const major =
-          index % 5 === 0;
-
-        const outer =
-          toXY(
-            index * 6,
-            radius
-          );
-
-        const inner =
-          toXY(
-            index * 6,
-            major
-              ? radius - 13
-              : radius - 7
-          );
-
-        return `
-<line
-x1="${outer.x.toFixed(2)}"
-y1="${outer.y.toFixed(2)}"
-x2="${inner.x.toFixed(2)}"
-y2="${inner.y.toFixed(2)}"
-stroke="#334155"
-stroke-width="${
-  major ? 2 : 1
-}"
-/>`;
-      }
-    ).join('');
-
-  const numbers =
-    Array.from(
-      {
-        length: 12,
-      },
-      (_, index) => {
-        const number =
-          index === 0
-            ? 12
-            : index;
-
-        const pos =
-          toXY(
-            index * 30,
-            radius - 25
-          );
-
-        return `
-<text
-x="${pos.x.toFixed(1)}"
-y="${(
-          pos.y + 6
-        ).toFixed(1)}"
-text-anchor="middle"
-font-family="Arial"
-font-size="18"
-font-weight="700"
-fill="#1e293b"
->${number}</text>`;
-      }
-    ).join('');
-
-  const svg = `
-<svg
-xmlns="http://www.w3.org/2000/svg"
-viewBox="0 0 280 280"
-width="280"
-height="280"
->
-<rect
-width="280"
-height="280"
-fill="white"
-/>
-
-<circle
-cx="140"
-cy="140"
-r="${radius}"
-fill="white"
-stroke="#1e293b"
-stroke-width="3"
-/>
-
-${ticks}
-
-${numbers}
-
-<line
-x1="140"
-y1="140"
-x2="${hourTip.x.toFixed(2)}"
-y2="${hourTip.y.toFixed(2)}"
-stroke="#1e293b"
-stroke-width="6"
-stroke-linecap="round"
-/>
-
-<line
-x1="140"
-y1="140"
-x2="${minuteTip.x.toFixed(2)}"
-y2="${minuteTip.y.toFixed(2)}"
-stroke="#334155"
-stroke-width="4"
-stroke-linecap="round"
-/>
-
-<circle
-cx="140"
-cy="140"
-r="5"
-fill="#1e293b"
-/>
-</svg>
-`;
-
-  return (
-    'data:image/svg+xml;base64,' +
-    Buffer.from(svg).toString(
-      'base64'
-    )
-  );
-}
-
-// ============================================================
-// LOCAL GRAPH SVG
-// ============================================================
-
-function buildGraphImageSvg(
-  graph
-) {
-  if (
-    !graph ||
-    !Array.isArray(
-      graph.points
-    )
-  ) {
-    return '';
-  }
-
-  const points =
-    graph.points
-      .filter(
-        (point) =>
-          isFiniteNumber(
-            point?.x
-          ) &&
-          isFiniteNumber(
-            point?.y
-          )
-      )
-      .slice(
-        0,
-        100
-      );
-
-  if (
-    points.length < 2
-  ) {
-    return '';
-  }
-
-  const W = 640;
-  const H = 420;
-  const pad = 55;
-
-  const xs =
-    points.map(
-      (point) =>
-        point.x
-    );
-
-  const ys =
-    points.map(
-      (point) =>
-        point.y
-    );
-
-  const minX =
-    Math.min(...xs);
-
-  const maxX =
-    Math.max(...xs);
-
-  const minY =
-    Math.min(...ys);
-
-  const maxY =
-    Math.max(...ys);
-
-  const mapX =
-    (value) =>
-      pad +
-      ((value - minX) /
-        Math.max(
-          maxX - minX,
-          1
-        )) *
-        (W - pad * 2);
-
-  const mapY =
-    (value) =>
-      H -
-      pad -
-      ((value - minY) /
-        Math.max(
-          maxY - minY,
-          1
-        )) *
-        (H - pad * 2);
-
-  const path =
-    points
-      .map(
-        (
-          point,
-          index
-        ) =>
-          `${
-            index === 0
-              ? 'M'
-              : 'L'
-          } ${mapX(
-            point.x
-          ).toFixed(1)} ${mapY(
-            point.y
-          ).toFixed(1)}`
-      )
-      .join(' ');
-
-  const highlights =
-    Array.isArray(
-      graph.highlight
-    )
-      ? graph.highlight
-          .filter(
-            (point) =>
-              isFiniteNumber(
-                point?.x
-              ) &&
-              isFiniteNumber(
-                point?.y
-              )
-          )
-          .map(
-            (point) =>
-              `<circle
-cx="${mapX(
-                point.x
-              ).toFixed(1)}"
-cy="${mapY(
-                point.y
-              ).toFixed(1)}"
-r="6"
-fill="#dc2626"
-/>`
-          )
-          .join('')
-      : '';
-
-  const svg = `
-<svg
-xmlns="http://www.w3.org/2000/svg"
-viewBox="0 0 ${W} ${H}"
-width="${W}"
-height="${H}"
->
-<rect
-width="${W}"
-height="${H}"
-fill="white"
-/>
-
-<line
-x1="${pad}"
-y1="${H - pad}"
-x2="${W - pad}"
-y2="${H - pad}"
-stroke="#64748b"
-stroke-width="1.5"
-/>
-
-<line
-x1="${pad}"
-y1="${pad}"
-x2="${pad}"
-y2="${H - pad}"
-stroke="#64748b"
-stroke-width="1.5"
-/>
-
-<path
-d="${path}"
-fill="none"
-stroke="#1e293b"
-stroke-width="3"
-stroke-linecap="round"
-stroke-linejoin="round"
-/>
-
-${highlights}
-
-<text
-x="${W - pad}"
-y="${H - 15}"
-text-anchor="end"
-font-family="Arial"
-font-size="16"
-fill="#334155"
->
-${escapeXml(
-  graph.xLabel ||
-    'x'
-)}
-</text>
-
-<text
-x="18"
-y="${pad}"
-font-family="Arial"
-font-size="16"
-fill="#334155"
->
-${escapeXml(
-  graph.yLabel ||
-    'y'
-)}
-</text>
-</svg>
-`;
-
-  return (
-    'data:image/svg+xml;base64,' +
-    Buffer.from(svg).toString(
-      'base64'
-    )
-  );
-}
-
-// ============================================================
-// JINA SEARCH
-// ============================================================
-
-async function jinaSearch(
-  query
-) {
-  const apiKey =
+async function jinaSearch(query) {
+  const key =
     process.env.JINA_API_KEY;
 
-  if (!apiKey) {
+  if (!key) {
     throw new Error(
-      'JINA_API_KEY belum tersedia di Vercel.'
+      'JINA_API_KEY belum tersedia.'
     );
   }
 
@@ -785,16 +106,13 @@ async function jinaSearch(
       url,
       {
         method: 'GET',
-
         headers: {
+          Authorization:
+            `Bearer ${key}`,
           Accept:
             'application/json',
-
-          Authorization:
-            `Bearer ${apiKey}`,
-
           'User-Agent':
-            'BimbelGemilangResearch/3.0',
+            'BimbelGemilang/Stable',
         },
       },
       JINA_TIMEOUT_MS
@@ -804,572 +122,186 @@ async function jinaSearch(
     await response.text();
 
   if (!response.ok) {
-    let detail =
-      raw;
-
-    try {
-      const parsed =
-        JSON.parse(raw);
-
-      detail =
-        parsed?.message ||
-        parsed?.readableMessage ||
-        parsed?.error?.message ||
-        raw;
-    } catch (_) {}
-
     throw new Error(
-      `JINA_HTTP_${response.status}: ${detail}`
+      `JINA_HTTP_${response.status}: ${raw.slice(
+        0,
+        300
+      )}`
     );
   }
 
+  let parsed;
+
   try {
-    const parsed =
+    parsed =
       JSON.parse(raw);
-
-    const items =
-      Array.isArray(parsed)
-        ? parsed
-        : Array.isArray(
-            parsed?.data
-          )
-        ? parsed.data
-        : Array.isArray(
-            parsed?.results
-          )
-        ? parsed.results
-        : [];
-
-    return items
-      .slice(
-        0,
-        MAX_RESULTS_PER_QUERY
-      )
-      .map(
-        (item) => ({
-          title:
-            cleanText(
-              item?.title ||
-                item?.name ||
-                ''
-            ),
-
-          url:
-            cleanText(
-              item?.url ||
-                item?.link ||
-                ''
-            ),
-
-          content:
-            cleanText(
-              item?.content ||
-                item?.description ||
-                item?.snippet ||
-                ''
-            ),
-        })
-      )
-      .filter(
-        (item) =>
-          item.title ||
-          item.url ||
-          item.content
-      );
   } catch (_) {
-    // Kalau gateway memberi teks biasa.
-    if (
-      raw.trim()
-    ) {
-      return [
-        {
-          title:
-            'Jina Search Result',
-
-          url: '',
-
-          content:
-            raw.slice(
-              0,
-              MAX_SOURCE_CHARS
-            ),
-        },
-      ];
-    }
-
     return [];
   }
+
+  const items =
+    Array.isArray(parsed)
+      ? parsed
+      : Array.isArray(parsed?.data)
+      ? parsed.data
+      : Array.isArray(parsed?.results)
+      ? parsed.results
+      : [];
+
+  return items
+    .slice(
+      0,
+      MAX_RESULTS_PER_QUERY
+    )
+    .map((item) => ({
+      title:
+        cleanText(
+          item?.title ||
+          item?.name ||
+          ''
+        ),
+
+      url:
+        cleanText(
+          item?.url ||
+          item?.link ||
+          ''
+        ),
+
+      content:
+        cleanText(
+          item?.content ||
+          item?.description ||
+          item?.snippet ||
+          ''
+        ).slice(
+          0,
+          MAX_SOURCE_CHARS
+        ),
+    }))
+    .filter(
+      (item) =>
+        item.title ||
+        item.url ||
+        item.content
+    );
 }
 
 // ============================================================
-// QUERY BUILDER
+// RESEARCH QUERIES
 // ============================================================
 
-function buildResearchQueries({
+function buildQueries({
   topic,
   mapel,
   kelas,
-  targetYear,
   sourceMode,
-  arahan,
+  targetYear,
 }) {
-  const clean =
-    (value) =>
-      String(
-        value || ''
-      )
-        .replace(
-          /\s+/g,
-          ' '
-        )
-        .trim();
-
-  const t =
-    clean(topic);
-
-  const m =
-    clean(mapel);
-
-  const k =
-    clean(kelas);
-
-  const y =
-    clean(targetYear);
-
-  const a =
-    clean(arahan);
+  const base =
+    `${cleanText(topic)} ${cleanText(
+      mapel
+    )} ${cleanText(kelas)}`.trim();
 
   if (
     sourceMode ===
     'prediction'
   ) {
     return [
-      clean(
-        `${t} ${m} ${k} TKA contoh soal`
-      ),
-
-      clean(
-        `${t} ${m} ${k} soal HOTS`
-      ),
-
-      clean(
-        `${t} ${m} ${k} latihan soal tahun sebelumnya`
-      ),
-
-      clean(
-        `${t} ${m} ${k} ${y} soal prediksi ${a}`
-      ),
+      `${base} TKA contoh soal HOTS`,
+      `${base} soal tahun sebelumnya ${targetYear}`,
     ];
   }
 
   return [
-    clean(
-      `${t} ${m} ${k} soal`
-    ),
-
-    clean(
-      `${t} ${m} ${k} contoh soal`
-    ),
-
-    clean(
-      `${t} ${m} ${k} latihan TKA`
-    ),
-
-    clean(
-      `${t} ${m} ${k} bank soal`
-    ),
+    `${base} contoh soal`,
+    `${base} latihan soal`,
   ];
 }
 
 // ============================================================
-// SOURCE DEDUP + RANKING
+// SOURCE DEDUP
 // ============================================================
 
-function dedupeAndRankSources(
-  sources,
-  searchContext
+function dedupeSources(
+  sources
 ) {
-  const seenUrls =
+  const seen =
     new Set();
 
-  const unique =
-    [];
+  const result = [];
 
   for (
     const source of
       sources
   ) {
-    const url =
-      cleanText(
-        source?.url ||
-          ''
-      );
-
-    const title =
-      cleanText(
-        source?.title ||
-          ''
-      );
-
-    if (
-      !url &&
-      !title
-    ) {
-      continue;
-    }
-
     const key =
-      url ||
+      source.url ||
       normalizeText(
-        title
+        source.title
       );
 
+    if (!key) {
+      continue;
+    }
+
     if (
-      seenUrls.has(
-        key
-      )
+      seen.has(key)
     ) {
       continue;
     }
 
-    seenUrls.add(
-      key
+    seen.add(key);
+
+    result.push(
+      source
     );
 
-    const titleScore =
-      jaccardSimilarity(
-        searchContext,
-        title
-      );
-
-    const contentScore =
-      jaccardSimilarity(
-        searchContext,
-        source.content ||
-          ''
-      );
-
-    const sourceScore =
-      titleScore * 0.55 +
-      contentScore * 0.45;
-
-    unique.push({
-      ...source,
-
-      relevanceScore:
-        Number(
-          sourceScore.toFixed(
-            4
-          )
-        ),
-    });
+    if (
+      result.length >=
+      MAX_SELECTED_SOURCES
+    ) {
+      break;
+    }
   }
 
-  return unique
-    .sort(
-      (a, b) =>
-        b.relevanceScore -
-        a.relevanceScore
-    )
-    .slice(
-      0,
-      MAX_UNIQUE_SOURCES
-    );
+  return result;
 }
 
 // ============================================================
-// READ SOURCE PAGE
-// ============================================================
-
-async function readSourcePage(
-  source
-) {
-  if (
-    !source?.url
-  ) {
-    return source;
-  }
-
-  // ==========================================================
-  // PRIORITASKAN CONTENT DARI JINA
-  // ==========================================================
-  // Jina Search sudah memberikan content/snippet.
-  // Jangan membuka URL lagi kalau content cukup.
-  // Ini menghemat waktu dan request HTTP.
-  // ==========================================================
-
-  if (
-    typeof source.content === 'string' &&
-    source.content.trim().length >= 500
-  ) {
-    return {
-      ...source,
-
-      content: cleanText(
-        source.content
-      ).slice(
-        0,
-        MAX_SOURCE_CHARS
-      ),
-
-      images: Array.isArray(
-        source.images
-      )
-        ? source.images
-        : [],
-    };
-  }
-
-  // ==========================================================
-  // FALLBACK: BACA HALAMAN SUMBER
-  // HANYA KALAU CONTENT JINA TERLALU PENDEK
-  // ==========================================================
-
-  try {
-    const response =
-      await fetchWithTimeout(
-        source.url,
-        {
-          method: 'GET',
-
-          headers: {
-            Accept:
-              'text/html,application/xhtml+xml',
-
-            'User-Agent':
-              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/151 Safari/537.36',
-          },
-        },
-        6000
-      );
-
-    if (
-      !response.ok
-    ) {
-      return source;
-    }
-
-    const html =
-      await response.text();
-
-    if (
-      !html ||
-      html.length <
-        200
-    ) {
-      return source;
-    }
-
-    const titleMatch =
-      html.match(
-        /<title[^>]*>([\s\S]*?)<\/title>/i
-      );
-
-    const pageTitle =
-      titleMatch
-        ? cleanText(
-            titleMatch[1]
-          )
-        : source.title;
-
-    const content =
-      cleanText(
-        html
-          .replace(
-            /<noscript[\s\S]*?<\/noscript>/gi,
-            ' '
-          )
-          .replace(
-            /<script[\s\S]*?<\/script>/gi,
-            ' '
-          )
-          .replace(
-            /<style[\s\S]*?<\/style>/gi,
-            ' '
-          )
-          .replace(
-            /<svg[\s\S]*?<\/svg>/gi,
-            ' '
-          )
-          .replace(
-            /<[^>]+>/g,
-            ' '
-          )
-      ).slice(
-        0,
-        MAX_SOURCE_CHARS
-      );
-
-    const images =
-      [];
-
-    const imageRegex =
-      /<img\b[^>]*>/gi;
-
-    let match;
-
-    while (
-      (match =
-        imageRegex.exec(
-          html
-        )) &&
-      images.length <
-        25
-    ) {
-      const tag =
-        match[0];
-
-      const srcMatch =
-        tag.match(
-          /(?:src|data-src|data-lazy-src|data-original)=["']([^"']+)["']/i
-        );
-
-      if (!srcMatch) {
-        continue;
-      }
-
-      let imageUrl =
-        '';
-
-      try {
-        imageUrl =
-          new URL(
-            srcMatch[1],
-            source.url
-          ).href;
-      } catch (_) {}
-
-      if (
-        !imageUrl
-      ) {
-        continue;
-      }
-
-      const altMatch =
-        tag.match(
-          /alt=["']([^"']*)["']/i
-        );
-
-      images.push({
-        url:
-          imageUrl,
-
-        alt:
-          cleanText(
-            altMatch?.[1] ||
-              ''
-          ),
-      });
-    }
-
-    return {
-      ...source,
-
-      title:
-        pageTitle ||
-        source.title,
-
-      content,
-
-      images:
-        images.filter(
-          (
-            item,
-            index,
-            array
-          ) =>
-            index ===
-            array.findIndex(
-              (x) =>
-                x.url ===
-                item.url
-            )
-        ),
-    };
-  } catch (_) {
-    return source;
-  }
-}
-
-// ============================================================
-// BUILD RESEARCH PACK
+// RESEARCH PACK
 // ============================================================
 
 function buildResearchPack(
-  pages
+  sources
 ) {
-  let pack =
+  let output =
     '';
 
   for (
-    let index = 0;
-    index <
-    pages.length;
-    index +=
-      1
+    let i = 0;
+    i < sources.length;
+    i += 1
   ) {
-    const page =
-      pages[index];
-
-    const images =
-      Array.isArray(
-        page.images
-      )
-        ? page.images
-        : [];
-
-    const imageList =
-      images
-        .slice(
-          0,
-          12
-        )
-        .map(
-          (
-            image,
-            imageIndex
-          ) =>
-            `[IMAGE ${imageIndex}] ${image.url} | ALT: ${
-              image.alt ||
-              ''
-            }`
-        )
-        .join(
-          '\n'
-        );
+    const source =
+      sources[i];
 
     const block = `
-SOURCE_INDEX: ${index}
+SOURCE ${i}
 
 TITLE:
-${page.title || ''}
+${source.title}
 
 URL:
-${page.url || ''}
-
-RELEVANCE_SCORE:
-${page.relevanceScore || 0}
+${source.url}
 
 CONTENT:
-${
-  (
-    page.content ||
-    ''
-  ).slice(
-    0,
-    MAX_SOURCE_CHARS
-  )
-}
-
-IMAGE_ASSETS:
-${imageList}
-
---------------------------------------------------
+${source.content}
 `;
 
     if (
       (
-        pack +
+        output +
         block
       ).length >
       MAX_RESEARCH_PACK_CHARS
@@ -1377,21 +309,22 @@ ${imageList}
       break;
     }
 
-    pack +=
-      block;
+    output +=
+      block +
+      '\n----------------\n';
   }
 
-  return pack;
+  return output;
 }
 
 // ============================================================
-// CLOUDFLARE AI
+// CLOUDFLARE
 // ============================================================
 
-async function callCloudflareAI({
+async function callCloudflare(
   systemPrompt,
-  userPrompt,
-}) {
+  userPrompt
+) {
   const token =
     process.env
       .CLOUDFLARE_API_TOKEN;
@@ -1402,51 +335,18 @@ async function callCloudflareAI({
 
   if (!token) {
     throw new Error(
-      'CLOUDFLARE_API_TOKEN belum tersedia di Vercel.'
+      'CLOUDFLARE_API_TOKEN belum tersedia.'
     );
   }
 
   if (!accountId) {
     throw new Error(
-      'CLOUDFLARE_ACCOUNT_ID belum tersedia di Vercel.'
+      'CLOUDFLARE_ACCOUNT_ID belum tersedia.'
     );
   }
 
   const url =
     `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${CLOUDFLARE_MODEL}`;
-
-  const body = {
-    messages: [
-      {
-        role: 'system',
-        content:
-          systemPrompt,
-      },
-
-      {
-        role: 'user',
-        content:
-          userPrompt,
-      },
-    ],
-
-    // ==========================================================
-    // BATASI REASONING & PANJANG OUTPUT
-    // ==========================================================
-    // glm-4.7-flash adalah model Reasoning: tanpa batas eksplisit,
-    // ia bisa "berpikir" lama sekali sebelum menjawab, dan itu bisa
-    // melebihi timeout kita walau research pack sudah dikecilkan.
-    // reasoning_effort 'low' + max_completion_tokens membatasi durasi
-    // inference secara langsung.
-    // ==========================================================
-
-    reasoning_effort:
-      'low',
-
-    max_completion_tokens: 6000,
-
-    temperature: 0.3,
-  };
 
   const response =
     await fetchWithTimeout(
@@ -1462,10 +362,23 @@ async function callCloudflareAI({
             'application/json',
         },
 
-        body:
-          JSON.stringify(
-            body
-          ),
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'system',
+              content:
+                systemPrompt,
+            },
+            {
+              role: 'user',
+              content:
+                userPrompt,
+            },
+          ],
+
+          max_completion_tokens:
+            4500,
+        }),
       },
       CLOUDFLARE_TIMEOUT_MS
     );
@@ -1473,224 +386,110 @@ async function callCloudflareAI({
   const raw =
     await response.text();
 
-  let data =
-    null;
+  let data = null;
 
   try {
     data =
-      JSON.parse(
-        raw
-      );
-  } catch (_) {
-    data =
-      null;
-  }
+      JSON.parse(raw);
+  } catch (_) {}
 
-  if (
-    !response.ok
-  ) {
-    const message =
-      data?.errors?.[0]
-        ?.message ||
-      data?.message ||
-      raw ||
-      `Cloudflare HTTP ${response.status}`;
-
-    const error =
-      new Error(
-        `CLOUDFLARE_HTTP_${response.status}: ${message}`
-      );
-
-    error.status =
-      response.status;
-
-    error.raw =
-      data || raw;
-
-    throw error;
+  if (!response.ok) {
+    throw new Error(
+      `CLOUDFLARE_HTTP_${response.status}: ${
+        data?.errors?.[0]
+          ?.message ||
+        raw.slice(
+          0,
+          500
+        )
+      }`
+    );
   }
 
   return data;
 }
 
 // ============================================================
-// EXTRACT CLOUDFLARE TEXT
+// EXTRACT AI TEXT
 // ============================================================
 
-function extractCloudflareText(
+function extractAIText(
   data
 ) {
-  const result =
-    data?.result ||
-    {};
-
-  if (
-    typeof result ===
-    'string'
-  ) {
-    return result;
-  }
-
-  if (
-    typeof result.response ===
-    'string'
-  ) {
-    return result.response;
-  }
-
-  if (
-    typeof result.text ===
-    'string'
-  ) {
-    return result.text;
-  }
-
   const choices =
-    Array.isArray(
-      result.choices
+    data?.result?.choices;
+
+  if (
+    !Array.isArray(choices)
+  ) {
+    return '';
+  }
+
+  return choices
+    .map(
+      (choice) =>
+        typeof choice?.message
+          ?.content ===
+        'string'
+          ? choice.message
+              .content
+          : ''
     )
-      ? result.choices
-      : [];
-
-  const text =
-    choices
-      .map(
-        (choice) => {
-          const content =
-            choice?.message
-              ?.content;
-
-          if (
-            typeof content ===
-            'string'
-          ) {
-            return content;
-          }
-
-          if (
-            Array.isArray(
-              content
-            )
-          ) {
-            return content
-              .map(
-                (part) =>
-                  part?.text ||
-                  ''
-              )
-              .join('');
-          }
-
-          if (
-            typeof choice?.text ===
-            'string'
-          ) {
-            return choice.text;
-          }
-
-          return '';
-        }
-      )
-      .join(
-        '\n'
-      );
-
-  if (
-    text.trim()
-  ) {
-    return text;
-  }
-
-  // Fallback beberapa bentuk hasil model.
-  if (
-    typeof result.output_text ===
-    'string'
-  ) {
-    return result.output_text;
-  }
-
-  return '';
+    .join('\n');
 }
 
 // ============================================================
-// JSON EXTRACTOR
+// JSON OBJECT EXTRACTOR
 // ============================================================
 
 function extractJsonObjects(
   text = ''
 ) {
-  const objects =
-    [];
+  const result = [];
 
-  let depth =
-    0;
-
-  let start =
-    -1;
-
-  let inString =
-    false;
-
-  let escaped =
-    false;
+  let depth = 0;
+  let start = -1;
+  let inString = false;
+  let escaped = false;
 
   for (
-    let index = 0;
-    index <
-    text.length;
-    index +=
-      1
+    let i = 0;
+    i < text.length;
+    i += 1
   ) {
-    const ch =
-      text[index];
+    const ch = text[i];
 
-    if (
-      escaped
-    ) {
-      escaped =
-        false;
+    if (escaped) {
+      escaped = false;
       continue;
     }
 
-    if (
-      ch === '\\'
-    ) {
-      escaped =
-        true;
+    if (ch === '\\') {
+      escaped = true;
       continue;
     }
 
-    if (
-      ch === '"'
-    ) {
+    if (ch === '"') {
       inString =
         !inString;
       continue;
     }
 
-    if (
-      inString
-    ) {
+    if (inString) {
       continue;
     }
 
-    if (
-      ch === '{'
-    ) {
+    if (ch === '{') {
       if (
-        depth ===
-        0
+        depth === 0
       ) {
-        start =
-          index;
+        start = i;
       }
 
       depth += 1;
     }
 
-    if (
-      ch === '}'
-    ) {
+    if (ch === '}') {
       depth -= 1;
 
       if (
@@ -1698,138 +497,31 @@ function extractJsonObjects(
         start !== -1
       ) {
         try {
-          objects.push(
+          result.push(
             JSON.parse(
               text.slice(
                 start,
-                index + 1
+                i + 1
               )
             )
           );
         } catch (_) {}
 
-        start =
-          -1;
+        start = -1;
       }
     }
   }
 
-  return objects;
+  return result;
 }
 
 // ============================================================
-// SOURCE TEXT EVIDENCE CHECK
-// ============================================================
-
-function sourceEvidenceScore(
-  question,
-  options,
-  source
-) {
-  if (
-    !source
-  ) {
-    return 0;
-  }
-
-  const sourceText =
-    normalizeText(
-      [
-        source.title,
-        source.content,
-      ].join(' ')
-    );
-
-  if (
-    !sourceText
-  ) {
-    return 0;
-  }
-
-  const questionTokens =
-    tokenSet(
-      question
-    );
-
-  const optionTokens =
-    tokenSet(
-      Array.isArray(
-        options
-      )
-        ? options.join(
-            ' '
-          )
-        : ''
-    );
-
-  const sourceTokens =
-    tokenSet(
-      sourceText
-    );
-
-  let qOverlap =
-    0;
-
-  for (
-    const token of
-      questionTokens
-  ) {
-    if (
-      sourceTokens.has(
-        token
-      )
-    ) {
-      qOverlap +=
-        1;
-    }
-  }
-
-  let optionOverlap =
-    0;
-
-  for (
-    const token of
-      optionTokens
-  ) {
-    if (
-      sourceTokens.has(
-        token
-      )
-    ) {
-      optionOverlap +=
-        1;
-    }
-  }
-
-  const questionCoverage =
-    questionTokens.size
-      ? qOverlap /
-        questionTokens.size
-      : 0;
-
-  const optionCoverage =
-    optionTokens.size
-      ? optionOverlap /
-        optionTokens.size
-      : 0;
-
-  return (
-    questionCoverage *
-      0.75 +
-    optionCoverage *
-      0.25
-  );
-}
-
-// ============================================================
-// QUESTION VALIDATOR
+// VALIDATION
 // ============================================================
 
 function validateQuestion(
   raw,
-  allowedTypes,
-  pages,
-  sourceMode
+  allowedTypes
 ) {
   if (
     !raw ||
@@ -1848,48 +540,12 @@ function validateQuestion(
 
   const question =
     cleanText(
-      raw.question ||
-        ''
+      raw.question
     );
 
   if (!question) {
     return null;
   }
-
-  // ----------------------------------------------------------
-  // SOURCE
-  // ----------------------------------------------------------
-
-  let source =
-    null;
-
-  if (
-    sourceMode ===
-    'source'
-  ) {
-    if (
-      !Number.isInteger(
-        raw.sourceIndex
-      )
-    ) {
-      return null;
-    }
-
-    source =
-      pages[
-        raw.sourceIndex
-      ];
-
-    if (
-      !source
-    ) {
-      return null;
-    }
-  }
-
-  // ----------------------------------------------------------
-  // MULTIPLE
-  // ----------------------------------------------------------
 
   if (
     raw.type ===
@@ -1906,351 +562,15 @@ function validateQuestion(
     }
 
     if (
-      !isIntegerInRange(
-        raw.correct,
-        0,
-        3
-      )
-    ) {
-      return null;
-    }
-  }
-
-  // ----------------------------------------------------------
-  // MULTISELECT
-  // ----------------------------------------------------------
-
-  if (
-    raw.type ===
-    'multiselect'
-  ) {
-    if (
-      !Array.isArray(
-        raw.options
+      !Number.isInteger(
+        raw.correct
       ) ||
-      raw.options.length <
-        2
-    ) {
-      return null;
-    }
-
-    if (
-      !Array.isArray(
-        raw.correctAnswers
-      ) ||
-      raw.correctAnswers.length ===
-        0
-    ) {
-      return null;
-    }
-
-    if (
-      !raw.correctAnswers.every(
-        (answer) =>
-          isIntegerInRange(
-            answer,
-            0,
-            raw.options.length -
-              1
-          )
-      )
+      raw.correct < 0 ||
+      raw.correct > 3
     ) {
       return null;
     }
   }
-
-  // ----------------------------------------------------------
-  // TRUE FALSE
-  // ----------------------------------------------------------
-
-  if (
-    raw.type ===
-    'truefalse'
-  ) {
-    if (
-      !Array.isArray(
-        raw.statements
-      ) ||
-      raw.statements.length <
-        2
-    ) {
-      return null;
-    }
-
-    if (
-      !raw.statements.every(
-        (statement) =>
-          typeof statement?.text ===
-            'string' &&
-          typeof statement?.isTrue ===
-            'boolean'
-      )
-    ) {
-      return null;
-    }
-  }
-
-  // ----------------------------------------------------------
-  // SHORT ANSWER
-  // ----------------------------------------------------------
-
-  if (
-    raw.type ===
-    'shortanswer' &&
-    !cleanText(
-      raw.shortAnswer
-    )
-  ) {
-    return null;
-  }
-
-  // ----------------------------------------------------------
-  // CAUSE EFFECT
-  // ----------------------------------------------------------
-
-  if (
-    raw.type ===
-    'causeeffect'
-  ) {
-    if (
-      !cleanText(
-        raw.cause
-      ) ||
-      !cleanText(
-        raw.effect
-      )
-    ) {
-      return null;
-    }
-
-    if (
-      typeof raw.isCauseTrue !==
-        'boolean' ||
-      typeof raw.isEffectTrue !==
-        'boolean'
-    ) {
-      return null;
-    }
-  }
-
-  // ----------------------------------------------------------
-  // MATCHING
-  // ----------------------------------------------------------
-
-  if (
-    raw.type ===
-    'matching'
-  ) {
-    if (
-      !Array.isArray(
-        raw.matchingPairs
-      ) ||
-      raw.matchingPairs.length <
-        3
-    ) {
-      return null;
-    }
-  }
-
-  // ----------------------------------------------------------
-  // READING
-  // ----------------------------------------------------------
-
-  if (
-    raw.type ===
-    'reading'
-  ) {
-    if (
-      !cleanText(
-        raw.readingText
-      )
-    ) {
-      return null;
-    }
-
-    if (
-      !Array.isArray(
-        raw.subQuestions
-      ) ||
-      raw.subQuestions.length <
-        3
-    ) {
-      return null;
-    }
-
-    if (
-      !raw.subQuestions.every(
-        (subQuestion) =>
-          Array.isArray(
-            subQuestion?.options
-          ) &&
-          subQuestion.options.length ===
-            4 &&
-          isIntegerInRange(
-            subQuestion?.correct,
-            0,
-            3
-          )
-      )
-    ) {
-      return null;
-    }
-  }
-
-  // ----------------------------------------------------------
-  // VISUAL
-  // ----------------------------------------------------------
-
-  let qImage =
-    cleanText(
-      raw.questionImageUrl ||
-        raw.qImage ||
-        ''
-    );
-
-  let visualKind =
-    qImage
-      ? 'source-image'
-      : 'none';
-
-  let visualRequired =
-    Boolean(
-      qImage
-    );
-
-  let needsImage =
-    Boolean(
-      raw.needsImage
-    );
-
-  const imageHint =
-    cleanText(
-      raw.imageHint ||
-        raw.image_keyword ||
-        ''
-    );
-
-  // Clock.
-  if (
-    raw.clock
-  ) {
-    qImage =
-      buildClockImageSvg(
-        raw.clock
-      );
-
-    visualRequired =
-      true;
-
-    visualKind =
-      'clock';
-  }
-
-  // Graph.
-  if (
-    raw.graph
-  ) {
-    qImage =
-      buildGraphImageSvg(
-        raw.graph
-      );
-
-    visualRequired =
-      true;
-
-    visualKind =
-      'graph';
-  }
-
-  const optionImages =
-    Array.isArray(
-      raw.optionImages
-    )
-      ? raw.optionImages
-          .map(
-            cleanText
-          )
-          .filter(
-            Boolean
-          )
-      : [];
-
-  const optionsAreImages =
-    Boolean(
-      raw.optionsAreImages
-    ) ||
-    optionImages.length >=
-      2;
-
-  if (
-    optionsAreImages
-  ) {
-    visualRequired =
-      true;
-
-    visualKind =
-      'image-options';
-  }
-
-  if (
-    needsImage
-  ) {
-    visualRequired =
-      true;
-
-    if (
-      visualKind ===
-      'none'
-    ) {
-      visualKind =
-        'photo';
-    }
-  }
-
-  // Jangan izinkan kalimat visual tanpa
-  // stimulus visual.
-  if (
-    hasVisualCue(
-      question
-    ) &&
-    !visualRequired &&
-    !needsImage
-  ) {
-    return null;
-  }
-
-  // ----------------------------------------------------------
-  // SOURCE MODE EVIDENCE
-  // ----------------------------------------------------------
-
-  let evidenceScore =
-    1;
-
-  if (
-    sourceMode ===
-    'source'
-  ) {
-    evidenceScore =
-      sourceEvidenceScore(
-        question,
-        raw.options,
-        source
-      );
-
-    // Kita TOLAK jika bukti terlalu lemah.
-    // Ambang ini sengaja tidak terlalu tinggi karena
-    // source content dapat mengandung OCR/formatting berbeda.
-    if (
-      evidenceScore <
-      0.28
-    ) {
-      return null;
-    }
-  }
-
-  // ----------------------------------------------------------
-  // RETURN NORMALIZED QUESTION
-  // ----------------------------------------------------------
 
   return {
     type:
@@ -2267,9 +587,17 @@ function validateQuestion(
           )
         : [],
 
-    optionImages,
+    optionImages:
+      Array.isArray(
+        raw.optionImages
+      )
+        ? raw.optionImages
+        : [],
 
-    optionsAreImages,
+    optionsAreImages:
+      Boolean(
+        raw.optionsAreImages
+      ),
 
     correct:
       Number.isInteger(
@@ -2295,7 +623,7 @@ function validateQuestion(
     readingText:
       cleanText(
         raw.readingText ||
-          ''
+        ''
       ),
 
     subQuestions:
@@ -2308,19 +636,19 @@ function validateQuestion(
     shortAnswer:
       cleanText(
         raw.shortAnswer ||
-          ''
+        ''
       ),
 
     cause:
       cleanText(
         raw.cause ||
-          ''
+        ''
       ),
 
     effect:
       cleanText(
         raw.effect ||
-          ''
+        ''
       ),
 
     isCauseTrue:
@@ -2345,32 +673,39 @@ function validateQuestion(
     explanation:
       cleanText(
         raw.explanation ||
-          ''
+        ''
       ),
 
     answerVerification:
       cleanText(
         raw.answerVerification ||
-          ''
+        ''
       ),
 
     analysisSummary:
       cleanText(
         raw.analysisSummary ||
-          ''
+        ''
       ),
 
     qImage:
-      qImage ||
-      undefined,
+      cleanText(
+        raw.questionImageUrl ||
+        raw.qImage ||
+        ''
+      ),
 
-    needsImage,
+    needsImage:
+      Boolean(
+        raw.needsImage
+      ),
 
-    imageHint,
-
-    imageSource:
-      raw.imageSource ||
-      null,
+    imageHint:
+      cleanText(
+        raw.imageHint ||
+        raw.image_keyword ||
+        ''
+      ),
 
     researchBacked:
       true,
@@ -2379,7 +714,8 @@ function validateQuestion(
       [],
 
     sourceMode:
-      sourceMode,
+      raw.sourceMode ||
+      'source',
 
     sourceIndex:
       Number.isInteger(
@@ -2391,321 +727,27 @@ function validateQuestion(
     sourceTitle:
       cleanText(
         raw.sourceTitle ||
-          source?.title ||
-          ''
+        ''
       ),
 
     sourceUrl:
       cleanText(
         raw.sourceUrl ||
-          source?.url ||
-          ''
+        ''
       ),
 
     sourceQuestionVerbatim:
-      sourceMode ===
-      'source'
-        ? true
-        : Boolean(
-            raw.sourceQuestionVerbatim
-          ),
-
-    sourceEvidenceScore:
-      Number(
-        evidenceScore.toFixed(
-          3
-        )
+      Boolean(
+        raw.sourceQuestionVerbatim
       ),
 
-    visualRequired,
-
-    visualKind,
+    sourceEvidenceScore:
+      typeof raw
+        .sourceEvidenceScore ===
+      'number'
+        ? raw.sourceEvidenceScore
+        : null,
   };
-}
-
-// ============================================================
-// SYSTEM PROMPT
-// ============================================================
-
-function buildSystemPrompt({
-  sourceMode,
-  targetYear,
-  allowedTypes,
-  hotsLevel,
-}) {
-  const sourceModeText =
-    sourceMode ===
-    'source'
-      ? `
-MODE = SOURCE
-
-Kamu harus mengambil soal yang benar-benar tersedia
-pada sumber yang diberikan.
-
-JANGAN:
-- membuat soal baru,
-- mengganti konteks utama,
-- mengarang pilihan,
-- mengarang URL,
-- mengarang gambar.
-
-BOLEH:
-- memperbaiki format,
-- membersihkan HTML,
-- memperjelas OCR yang rusak jika maksudnya tetap sama,
-- menentukan jawaban benar,
-- melakukan verifikasi,
-- membuat pembahasan.
-
-Jika soal pada sumber tidak cukup jelas untuk diverifikasi,
-JANGAN keluarkan soal tersebut.
-`
-      : `
-MODE = PREDICTION
-
-Sumber web adalah evidence untuk menemukan:
-- pola topik,
-- kompetensi,
-- frekuensi,
-- HOTS,
-- stimulus,
-- visual,
-- bentuk soal,
-- tren waktu.
-
-Kemudian buat soal LATIHAN BARU berdasarkan evidence tersebut.
-
-JANGAN menyebut hasil sebagai bocoran.
-JANGAN mengklaim soal pasti keluar.
-`;
-
-  return `
-Kamu adalah AI akademik profesional untuk Bimbel Gemilang.
-
-${sourceModeText}
-
-TARGET TAHUN:
-${targetYear}
-
-LEVEL HOTS:
-${hotsLevel || 'standar'}
-
-ATURAN UTAMA:
-
-1. Mapel harus sesuai.
-2. Kelas harus sesuai.
-3. Topik harus sesuai.
-4. Kunci jawaban harus benar.
-5. Pembahasan harus detail tetapi mudah dipahami.
-6. answerVerification wajib menjelaskan alasan kunci.
-7. analysisSummary wajib menjelaskan konsep/kompetensi.
-8. Untuk matematika, fisika, dan kimia, hitung ulang.
-9. Jika sumber dan kunci bertentangan dengan logika,
-   prioritaskan kebenaran akademik dan tandai pada verification.
-10. Jangan membuat URL sumber palsu.
-11. Jangan membuat gambar palsu yang diklaim sebagai gambar sumber.
-12. Jika soal menyebut gambar/grafik/tabel, stimulus wajib tersedia.
-13. Jika opsi berupa gambar, gunakan asset yang tersedia.
-14. Jangan output markdown.
-15. Jangan output code fence.
-16. Output JSONL saja.
-
-OUTPUT BARIS PERTAMA:
-{"meta":true}
-
-============================================================
-MULTIPLE
-============================================================
-
-{
-  "type":"multiple",
-  "question":"...",
-  "options":["A","B","C","D"],
-  "correct":0,
-  "explanation":"...",
-  "answerVerification":"...",
-  "analysisSummary":"...",
-  "sourceIndex":0,
-  "sourceTitle":"...",
-  "sourceUrl":"...",
-  "sourceQuestionVerbatim":true,
-  "questionImageUrl":"",
-  "optionImages":[],
-  "optionsAreImages":false
-}
-
-correct:
-0 = opsi pertama
-1 = opsi kedua
-2 = opsi ketiga
-3 = opsi keempat
-
-JANGAN menggunakan:
-"A"
-"B"
-"C"
-"D"
-
-sebagai nilai correct.
-
-============================================================
-MULTISELECT
-============================================================
-
-{
-  "type":"multiselect",
-  "question":"...",
-  "options":["A","B","C","D"],
-  "correctAnswers":[0,2],
-  "explanation":"..."
-}
-
-============================================================
-TRUE FALSE
-============================================================
-
-{
-  "type":"truefalse",
-  "question":"...",
-  "statements":[
-    {
-      "text":"...",
-      "isTrue":true
-    },
-    {
-      "text":"...",
-      "isTrue":false
-    }
-  ],
-  "explanation":"..."
-}
-
-============================================================
-SHORT ANSWER
-============================================================
-
-{
-  "type":"shortanswer",
-  "question":"...",
-  "shortAnswer":"...",
-  "explanation":"..."
-}
-
-============================================================
-CAUSE EFFECT
-============================================================
-
-{
-  "type":"causeeffect",
-  "question":"...",
-  "cause":"...",
-  "effect":"...",
-  "isCauseTrue":true,
-  "isEffectTrue":false,
-  "explanation":"..."
-}
-
-============================================================
-MATCHING
-============================================================
-
-{
-  "type":"matching",
-  "question":"...",
-  "matchingPairs":[
-    {
-      "left":"...",
-      "right":"..."
-    },
-    {
-      "left":"...",
-      "right":"..."
-    },
-    {
-      "left":"...",
-      "right":"..."
-    }
-  ],
-  "explanation":"..."
-}
-
-============================================================
-READING
-============================================================
-
-{
-  "type":"reading",
-  "question":"...",
-  "readingText":"...",
-  "subQuestions":[
-    {
-      "q":"...",
-      "options":["A","B","C","D"],
-      "correct":0
-    },
-    {
-      "q":"...",
-      "options":["A","B","C","D"],
-      "correct":1
-    },
-    {
-      "q":"...",
-      "options":["A","B","C","D"],
-      "correct":2
-    }
-  ],
-  "explanation":"..."
-}
-
-============================================================
-VISUAL
-============================================================
-
-CLOCK:
-
-"clock":{
-  "hour":8,
-  "minute":30
-}
-
-GRAPH:
-
-"graph":{
-  "points":[
-    {"x":0,"y":0},
-    {"x":1,"y":2}
-  ],
-  "highlight":[
-    {"x":1,"y":2}
-  ],
-  "xLabel":"x",
-  "yLabel":"y"
-}
-
-PHOTO:
-
-"needsImage":true,
-"imageHint":"english search phrase"
-
-OPTION IMAGES:
-
-"optionImages":[
-  "https://...",
-  "https://...",
-  "https://...",
-  "https://..."
-],
-"optionsAreImages":true
-
-ALLOWED QUESTION TYPES:
-
-${allowedTypes
-  .map(
-    (type) =>
-      `- ${type}`
-  )
-  .join('\n')}
-`;
 }
 
 // ============================================================
@@ -2720,13 +762,13 @@ export default async function handler(
     req.method !==
     'POST'
   ) {
-    return res.status(
-      405
-    ).json({
-      success: false,
-      error:
-        'Method not allowed',
-    });
+    return res
+      .status(405)
+      .json({
+        success: false,
+        error:
+          'Method not allowed',
+      });
   }
 
   const {
@@ -2736,84 +778,61 @@ export default async function handler(
     jumlahSoal,
     types,
     arahan,
-
     sourceMode,
-
-    // Compatibility with old frontend.
-    useTrendSearch,
-
     targetYear,
-
     hotsLevel,
   } =
     req.body || {};
 
-  // ----------------------------------------------------------
-  // BASIC INPUT
-  // ----------------------------------------------------------
-
-  const cleanTopic =
-    cleanText(
-      topic
-    );
-
   if (
-    !cleanTopic
+    !cleanText(topic)
   ) {
-    return res.status(
-      400
-    ).json({
-      success: false,
-      error:
-        'Topik wajib diisi.',
-    });
+    return res
+      .status(400)
+      .json({
+        success: false,
+        error:
+          'Topik wajib diisi.',
+      });
   }
-
-  // ----------------------------------------------------------
-  // ENV
-  // ----------------------------------------------------------
 
   if (
     !process.env.JINA_API_KEY
   ) {
-    return res.status(
-      500
-    ).json({
-      success: false,
-      error:
-        'JINA_API_KEY belum tersedia di Vercel.',
-    });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        error:
+          'JINA_API_KEY belum tersedia.',
+      });
   }
 
   if (
     !process.env
       .CLOUDFLARE_API_TOKEN
   ) {
-    return res.status(
-      500
-    ).json({
-      success: false,
-      error:
-        'CLOUDFLARE_API_TOKEN belum tersedia di Vercel.',
-    });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        error:
+          'CLOUDFLARE_API_TOKEN belum tersedia.',
+      });
   }
 
   if (
     !process.env
       .CLOUDFLARE_ACCOUNT_ID
   ) {
-    return res.status(
-      500
-    ).json({
-      success: false,
-      error:
-        'CLOUDFLARE_ACCOUNT_ID belum tersedia di Vercel.',
-    });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        error:
+          'CLOUDFLARE_ACCOUNT_ID belum tersedia.',
+      });
   }
-
-  // ----------------------------------------------------------
-  // COUNT
-  // ----------------------------------------------------------
 
   const requested =
     parseInt(
@@ -2828,25 +847,17 @@ export default async function handler(
           requested
         )
           ? requested
-          : 5,
+          : 3,
         1
       ),
       MAX_BATCH_QUESTIONS
     );
 
   const allowedTypes =
-    Array.isArray(
-      types
-    ) &&
+    Array.isArray(types) &&
     types.length
       ? types
-      : [
-          'multiple',
-        ];
-
-  // ----------------------------------------------------------
-  // MODE
-  // ----------------------------------------------------------
+      : ['multiple'];
 
   const mode =
     sourceMode ===
@@ -2856,61 +867,30 @@ export default async function handler(
 
   const year =
     targetYear ||
-    String(
-      new Date().getFullYear() +
-        1
-    );
-
-  // useTrendSearch hanya untuk kompatibilitas
-  // frontend lama. Sistem ini tetap melakukan research.
-  const researchEnabled =
-    mode === 'source' ||
-    mode === 'prediction' ||
-    Boolean(
-      useTrendSearch
-    );
-
-  if (
-    !researchEnabled
-  ) {
-    return res.status(
-      400
-    ).json({
-      success: false,
-      error:
-        'Research internet wajib aktif pada Question Research Engine Gemilang.',
-    });
-  }
+    new Date().getFullYear() +
+      1;
 
   // ==========================================================
-  // 1. SEARCH INTERNET
+  // SEARCH ONLY 2 QUERIES
   // ==========================================================
 
   const queries =
-    buildResearchQueries({
-      topic:
-        cleanTopic,
-
+    buildQueries({
+      topic,
       mapel,
-
       kelas,
-
-      targetYear:
-        year,
-
       sourceMode:
         mode,
-
-      arahan,
+      targetYear:
+        year,
     });
 
-  const rawSources =
-    [];
+  const allResults = [];
 
-  const queryErrors =
-    [];
+  const queryErrors = [];
 
-  const searchOutcomes =
+  // Jalankan 2 query paralel.
+  const results =
     await Promise.allSettled(
       queries.map(
         (query) =>
@@ -2920,210 +900,143 @@ export default async function handler(
       )
     );
 
-  searchOutcomes.forEach(
-    (outcome, index) => {
-      const query =
-        queries[index];
-
+  results.forEach(
+    (
+      result,
+      index
+    ) => {
       if (
-        outcome.status ===
+        result.status ===
         'fulfilled'
       ) {
-        rawSources.push(
-          ...outcome.value
+        allResults.push(
+          ...result.value
         );
       } else {
-        console.error(
-          '[Gemilang][Search]',
-          query,
-          outcome.reason?.message
-        );
-
         queryErrors.push({
-          query,
-
+          query:
+            queries[index],
           error:
-            outcome.reason
+            result.reason
               ?.message ||
-            String(
-              outcome.reason
-            ),
+            'SEARCH_FAILED',
         });
       }
     }
   );
 
-  // ----------------------------------------------------------
-  // RANK SOURCE TANPA AI
-  // ----------------------------------------------------------
-
-  const searchContext =
-    [
-      cleanTopic,
-      mapel,
-      kelas,
-      arahan,
-    ]
-      .filter(Boolean)
-      .join(' ');
-
-  const rankedSources =
-    dedupeAndRankSources(
-      rawSources,
-      searchContext
+  const sources =
+    dedupeSources(
+      allResults
     );
 
   if (
-    rankedSources.length ===
+    sources.length ===
     0
   ) {
-    return res.status(
-      502
-    ).json({
-      success: false,
+    return res
+      .status(502)
+      .json({
+        success: false,
 
-      error:
-        'Sistem tidak mendapatkan sumber internet yang relevan.',
+        error:
+          'Pencarian internet tidak mengembalikan sumber.',
 
-      debug: {
-        queryCount:
-          queries.length,
+        debug:
+          queryErrors,
 
-        queryErrors,
-      },
-
-      provider:
-        'Jina Search',
-    });
+        researchProvider:
+          'Jina Search',
+      });
   }
-
-  // ==========================================================
-  // 2. READ SOURCES (PARALLEL)
-  // ==========================================================
-
-  const selectedSources =
-    rankedSources.slice(
-      0,
-      MAX_UNIQUE_SOURCES
-    );
-
-  const fetchedPages =
-    await Promise.all(
-      selectedSources.map(
-        (source) =>
-          readSourcePage(
-            source
-          )
-      )
-    );
-
-  const readablePages =
-    fetchedPages.filter(
-      (page) => {
-        const readable =
-          Boolean(
-            page?.content &&
-              page.content
-                .length >=
-                MIN_SOURCE_TEXT
-          );
-
-        const visualOnly =
-          Boolean(
-            Array.isArray(
-              page?.images
-            ) &&
-              page.images
-                .length > 0
-          );
-
-        return (
-          readable ||
-          visualOnly
-        );
-      }
-    );
-
-  if (
-    readablePages.length ===
-    0
-  ) {
-    return res.status(
-      502
-    ).json({
-      success: false,
-
-      error:
-        'Sumber internet ditemukan, tetapi tidak ada halaman yang dapat dibaca.',
-
-      researchSources:
-        rankedSources.map(
-          (source) => ({
-            title:
-              source.title ||
-              '',
-
-            url:
-              source.url ||
-              '',
-          })
-        ),
-    });
-  }
-
-  // ==========================================================
-  // 3. RESEARCH PACK
-  // ==========================================================
 
   const researchPack =
     buildResearchPack(
-      readablePages
+      sources
     );
 
   if (
     !researchPack.trim()
   ) {
-    return res.status(
-      502
-    ).json({
-      success: false,
+    return res
+      .status(502)
+      .json({
+        success: false,
 
-      error:
-        'Research pack kosong setelah membaca sumber.',
-    });
+        error:
+          'Sumber internet kosong setelah diproses.',
+      });
   }
 
   // ==========================================================
-  // 4. SYSTEM PROMPT
+  // PROMPT
   // ==========================================================
 
-  const systemPrompt =
-    buildSystemPrompt({
-      sourceMode:
-        mode,
+  const systemPrompt = `
+Kamu adalah Asisten Soal Gemilang.
 
-      targetYear:
-        year,
+MODE:
+${
+  mode ===
+  'source'
+    ? `
+AMBIL SOAL DARI INTERNET.
 
-      allowedTypes,
+Gunakan soal yang benar-benar ditemukan
+pada sumber yang diberikan.
 
-      hotsLevel:
-        hotsLevel ||
-        '',
-    });
+Jangan mengarang URL.
+Jangan mengarang sumber.
 
-  // ==========================================================
-  // 5. USER PROMPT
-  // ==========================================================
+Jika kunci sumber tidak jelas,
+verifikasi secara akademik.
+`
+    : `
+PREDIKSI BERBASIS TREN.
+
+Analisis sumber lalu buat latihan baru
+berdasarkan pola kompetensi.
+
+Jangan menyebut sebagai bocoran.
+`
+}
+
+TARGET:
+${year}
+
+HOTS:
+${hotsLevel || 'standar'}
+
+WAJIB:
+- benar
+- relevan
+- pembahasan
+- verifikasi jawaban
+- JSON valid
+- maksimal ${jumlah} soal
+
+OUTPUT JSONL:
+{"meta":true}
+
+MULTIPLE:
+{
+  "type":"multiple",
+  "question":"...",
+  "options":["A","B","C","D"],
+  "correct":0,
+  "explanation":"...",
+  "answerVerification":"...",
+  "analysisSummary":"...",
+  "sourceIndex":0,
+  "sourceTitle":"...",
+  "sourceUrl":"...",
+  "sourceQuestionVerbatim":true
+}
+
+correct = indeks 0-3.
+`;
 
   const userPrompt = `
-BIMBEL GEMILANG
-PROFESSIONAL QUESTION RESEARCH TASK
-
-============================================================
-INPUT
-============================================================
-
 MAPEL:
 ${mapel || 'Umum'}
 
@@ -3131,127 +1044,48 @@ KELAS:
 ${kelas || 'SMP'}
 
 TOPIK:
-${cleanTopic}
+${cleanText(
+    topic
+  )}
 
-TARGET:
-${year}
-
-MODE:
-${mode}
-
-JUMLAH YANG DIMINTA:
+JUMLAH:
 ${jumlah}
 
 TIPE:
 ${allowedTypes.join(
-  ', '
-)}
+    ', '
+  )}
 
-ARAHAN GURU:
+ARAHAN:
 ${cleanText(
-  arahan || ''
-)}
+    arahan || ''
+  )}
 
-============================================================
-RESEARCH PACK
-============================================================
+SUMBER INTERNET:
 
 ${researchPack}
 
-============================================================
-INSTRUKSI MODE SOURCE
-============================================================
+TUGAS:
+Buat maksimal ${jumlah} soal valid.
 
-${
-  mode ===
-  'source'
-    ? `
-Pilih hingga ${jumlah} soal yang benar-benar dapat
-ditelusuri pada sumber.
-
-Jangan mengarang soal.
-
-Untuk setiap soal:
-- sourceIndex harus menunjuk SOURCE_INDEX yang benar.
-- sourceTitle harus sesuai sumber.
-- sourceUrl harus sesuai sumber.
-- sourceQuestionVerbatim = true.
-- jawaban harus diverifikasi.
-- pembahasan harus diberikan.
-- gambar hanya digunakan kalau sumber memang memiliki
-  stimulus gambar.
-- pilihan gambar hanya digunakan jika asset gambar sumber
-  tersedia.
-
-Jika sumber hanya menyebut topik tetapi tidak memuat soal,
-JANGAN perlakukan sebagai source question.
-`
-    : `
-============================================================
-INSTRUKSI MODE PREDICTION
-============================================================
-
-Analisis seluruh sumber.
-
-Cari:
-- topik yang berulang,
-- kompetensi,
-- bentuk soal,
-- level HOTS,
-- jenis stimulus,
-- visual,
-- pola pilihan jawaban,
-- tren waktu.
-
-Setelah itu buat latihan baru.
-
-Soal prediksi harus:
-- punya hubungan jelas dengan evidence,
-- relevan dengan target tahun,
-- tidak diklaim sebagai bocoran,
-- tidak diklaim pasti keluar.
-
-sourceQuestionVerbatim harus false.
-sourceIndex/sourceUrl dipakai untuk menunjukkan evidence utama.
-`
-}
-
-============================================================
-QUALITY PRIORITY
-============================================================
-
-Prioritas:
-1. kebenaran akademik
-2. relevansi topik
-3. relevansi jenjang
-4. evidence sumber
-5. kualitas visual
-6. pembahasan
-7. baru jumlah soal
-
-Jika tidak cukup soal yang valid,
-jangan mengarang demi memenuhi jumlah.
+Jangan mengarang jika source mode.
 `;
 
   // ==========================================================
-  // 6. CLOUDFLARE AI
+  // CLOUDFLARE
   // ==========================================================
 
   let aiData;
 
   try {
     aiData =
-      await callCloudflareAI({
+      await callCloudflare(
         systemPrompt,
-
-        userPrompt,
-      });
+        userPrompt
+      );
   } catch (
     error
   ) {
-    const status =
-      error?.status;
-
     const message =
       String(
         error?.message ||
@@ -3263,62 +1097,21 @@ jangan mengarang demi memenuhi jumlah.
       message
     );
 
-    if (
-      status === 401 ||
-      status === 403
-    ) {
-      return res
-        .status(502)
-        .json({
-          success: false,
-
-          error:
-            'Cloudflare API Token ditolak atau model tidak dapat diakses akun ini.',
-
-          debug:
-            message,
-        });
-    }
-
-    if (
-      status === 429
-    ) {
-      return res
-        .status(429)
-        .json({
-          success: false,
-
-          error:
-            'Kuota harian Cloudflare Workers AI sedang mencapai batas.',
-
-          debug:
-            message,
-        });
-    }
-
-    if (
-      status === 408
-    ) {
-      return res
-        .status(504)
-        .json({
-          success: false,
-
-          error:
-            'Cloudflare AI timeout.',
-
-          debug:
-            message,
-        });
-    }
-
     return res
-      .status(502)
+      .status(
+        error?.status ===
+          429
+          ? 429
+          : 502
+      )
       .json({
         success: false,
 
         error:
-          'Cloudflare Workers AI gagal memproses riset.',
+          error?.status ===
+          429
+            ? 'Kuota harian Cloudflare Workers AI sedang mencapai batas.'
+            : 'Cloudflare Workers AI gagal memproses batch.',
 
         debug:
           message,
@@ -3326,143 +1119,91 @@ jangan mengarang demi memenuhi jumlah.
   }
 
   // ==========================================================
-  // 7. EXTRACT AI TEXT
+  // PARSE
   // ==========================================================
 
   const rawText =
-    extractCloudflareText(
+    extractAIText(
       aiData
     );
-
-  if (
-    !rawText.trim()
-  ) {
-    return res.status(
-      502
-    ).json({
-      success: false,
-
-      error:
-        'Cloudflare AI tidak mengembalikan teks soal.',
-
-      debug: {
-        model:
-          CLOUDFLARE_MODEL,
-
-        result:
-          aiData?.result ||
-          null,
-      },
-    });
-  }
-
-  // ==========================================================
-  // 8. PARSE JSONL
-  // ==========================================================
 
   const objects =
     extractJsonObjects(
       rawText
     );
 
-  if (
-    objects.length ===
-    0
-  ) {
-    return res.status(
-      502
-    ).json({
-      success: false,
+  const questions = [];
 
-      error:
-        'Output Cloudflare AI tidak mengandung JSON soal yang valid.',
-
-      debug: {
-        rawTextSample:
-          rawText.slice(
-            0,
-            2000
-          ),
-
-        rawTextLength:
-          rawText.length,
-      },
-    });
-  }
-
-  // ==========================================================
-  // 9. QUALITY GATE + DUPLICATE GATE
-  // ==========================================================
-
-  const questions =
-    [];
-
-  let rejected =
-    0;
-
-  let duplicateCount =
-    0;
+  const seen =
+    new Set();
 
   for (
-    const rawQuestion of
+    const raw of
       objects
   ) {
     const question =
       validateQuestion(
-        rawQuestion,
-
-        allowedTypes,
-
-        readablePages,
-
-        mode
+        raw,
+        allowedTypes
       );
 
     if (
       !question
     ) {
-      rejected +=
-        1;
-
       continue;
+    }
+
+    const fp =
+      fingerprint(
+        question.question
+      );
+
+    if (
+      seen.has(fp)
+    ) {
+      continue;
+    }
+
+    // cek kemiripan ringan
+    let duplicate =
+      false;
+
+    for (
+      const current of
+        questions
+    ) {
+      if (
+        fingerprint(
+          current.question
+        ) ===
+        fp
+      ) {
+        duplicate =
+          true;
+        break;
+      }
     }
 
     if (
-      isQuestionDuplicate(
-        question.question,
-
-        questions
-      )
+      duplicate
     ) {
-      duplicateCount +=
-        1;
-
       continue;
     }
 
-    // --------------------------------------------------------
-    // SOURCE METADATA
-    // --------------------------------------------------------
+    seen.add(fp);
 
-    question.researchBacked =
-      true;
-
-    question.researchSources =
-      readablePages.map(
-        (page) => ({
+    question
+      .researchSources =
+      sources.map(
+        (source) => ({
           title:
-            page.title ||
+            source.title ||
             '',
-
           url:
-            page.url ||
+            source.url ||
             '',
         })
       );
-
-    // --------------------------------------------------------
-    // ADD
-    // --------------------------------------------------------
 
     questions.push(
       question
@@ -3476,10 +1217,6 @@ jangan mengarang demi memenuhi jumlah.
     }
   }
 
-  // ==========================================================
-  // 10. FAILED QUALITY GATE
-  // ==========================================================
-
   if (
     questions.length ===
     0
@@ -3490,48 +1227,20 @@ jangan mengarang demi memenuhi jumlah.
         success: false,
 
         error:
-          'Sumber internet berhasil ditemukan, tetapi tidak ada soal yang lolos quality gate.',
+          'Tidak ada soal valid yang dikembalikan AI.',
 
         debug: {
-          model:
-            CLOUDFLARE_MODEL,
-
-          sourceCount:
-            readablePages.length,
-
-          parsedObjectCount:
-            objects.length,
-
-          rejectedCount:
-            rejected,
-
-          duplicateCount,
-
-          rawTextSample:
+          rawText:
             rawText.slice(
               0,
-              2000
+              1500
             ),
+
+          parsed:
+            objects.length,
         },
-
-        researchSources:
-          readablePages.map(
-            (page) => ({
-              title:
-                page.title ||
-                '',
-
-              url:
-                page.url ||
-                '',
-            })
-          ),
       });
   }
-
-  // ==========================================================
-  // 11. RESPONSE
-  // ==========================================================
 
   return res
     .status(200)
@@ -3550,15 +1259,8 @@ jangan mengarang demi memenuhi jumlah.
       maxBatchSize:
         MAX_BATCH_QUESTIONS,
 
-      possiblyTruncated:
-        questions.length <
-        jumlah,
-
       sourceMode:
         mode,
-
-      usedTrendSearch:
-        true,
 
       researchProvider:
         'Jina Search',
@@ -3570,43 +1272,30 @@ jangan mengarang demi memenuhi jumlah.
         CLOUDFLARE_MODEL,
 
       diagnostics: {
-        queryCount:
+        searchQueries:
           queries.length,
 
-        queryErrors,
+        searchResults:
+          allResults.length,
 
-        rawSearchResultCount:
-          rawSources.length,
+        selectedSources:
+          sources.length,
 
-        rankedSourceCount:
-          rankedSources.length,
-
-        readablePageCount:
-          readablePages.length,
-
-        parsedObjectCount:
+        parsedObjects:
           objects.length,
 
-        rejectedCount:
-          rejected,
-
-        duplicateCount,
+        queryErrors,
       },
 
       researchSources:
-        readablePages.map(
-          (page) => ({
+        sources.map(
+          (source) => ({
             title:
-              page.title ||
+              source.title ||
               '',
-
             url:
-              page.url ||
+              source.url ||
               '',
-
-            relevanceScore:
-              page.relevanceScore ||
-              0,
           })
         ),
     });
