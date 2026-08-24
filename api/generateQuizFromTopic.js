@@ -4,19 +4,18 @@
 // ============================================================
 //
 // SEARCH : Tavily
-// AI     : SiliconFlow Free Models
+// AI     : Google Gemini (Free Tier, tanpa kartu)
 //
 // TIDAK:
-// - Gemini
+// - SiliconFlow
 // - Jina
 // - Cloudflare direct call
 //
 // ============================================================
 
 const FREE_AI_MODELS = [
-  'Qwen/Qwen3-8B',
-  'deepseek-ai/DeepSeek-R1-0528-Qwen3-8B',
-  'THUDM/GLM-Z1-9B-0414',
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
 ];
 
 const MAX_BATCH = 5;
@@ -250,31 +249,13 @@ async function callAI({
 }) {
   const apiKey =
     process.env
-      .SILICONFLOW_API_KEY;
+      .GEMINI_API_KEY;
 
   if (!apiKey) {
     throw new Error(
-      'SILICONFLOW_API_KEY belum tersedia di Vercel.'
+      'GEMINI_API_KEY belum tersedia di Vercel.'
     );
   }
-
-  const messages = [
-    {
-      role:
-        'system',
-
-      content:
-        systemPrompt,
-    },
-
-    {
-      role:
-        'user',
-
-      content:
-        userPrompt,
-    },
-  ];
 
   const errors = [];
 
@@ -285,32 +266,39 @@ async function callAI({
     try {
       const response =
         await fetchWithTimeout(
-          'https://api.siliconflow.cn/v1/chat/completions',
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
           {
             method: 'POST',
 
             headers: {
-              Authorization:
-                `Bearer ${apiKey}`,
-
               'Content-Type':
                 'application/json',
             },
 
             body:
               JSON.stringify({
-                model,
+                systemInstruction: {
+                  parts: [
+                    { text: systemPrompt },
+                  ],
+                },
 
-                messages,
+                contents: [
+                  {
+                    role: 'user',
+                    parts: [
+                      { text: userPrompt },
+                    ],
+                  },
+                ],
 
-                max_tokens:
-                  5000,
-
-                temperature:
-                  0.2,
-
-                stream:
-                  false,
+                generationConfig: {
+                  temperature: 0.2,
+                  maxOutputTokens: 5000,
+                  thinkingConfig: {
+                    thinkingBudget: 0,
+                  },
+                },
               }),
           },
           AI_TIMEOUT
@@ -330,16 +318,16 @@ async function callAI({
         !response.ok
       ) {
         throw new Error(
-          data?.message ||
-            data?.error?.message ||
-            `SiliconFlow HTTP ${response.status}`
+          data?.error?.message ||
+            `Gemini HTTP ${response.status}`
         );
       }
 
       const text =
-        data?.choices?.[0]
-          ?.message
-          ?.content || '';
+        data?.candidates?.[0]
+          ?.content
+          ?.parts?.[0]
+          ?.text || '';
 
       if (!text.trim()) {
         throw new Error(
@@ -365,7 +353,7 @@ async function callAI({
 
   const error =
     new Error(
-      'Semua model AI gratis SiliconFlow gagal.'
+      'Semua model AI gratis Gemini gagal.'
     );
 
   error.details =
@@ -956,7 +944,7 @@ Buat maksimal ${jumlah} soal valid.
     error
   ) {
     console.error(
-      '[Gemilang][SiliconFlow]',
+      '[Gemilang][Gemini]',
       error
     );
 
@@ -966,7 +954,7 @@ Buat maksimal ${jumlah} soal valid.
       success: false,
 
       error:
-        'Semua model AI gratis SiliconFlow tidak tersedia saat ini. Sistem tidak menggunakan model berbayar.',
+        'Semua model AI gratis Gemini tidak tersedia saat ini. Sistem tidak menggunakan model berbayar.',
 
       debug:
         error?.details ||
@@ -1148,7 +1136,7 @@ Buat maksimal ${jumlah} soal valid.
       'Tavily',
 
     aiProvider:
-      'SiliconFlow',
+      'Gemini',
 
     model:
       ai.model,
