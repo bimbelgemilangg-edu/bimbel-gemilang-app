@@ -1,5 +1,5 @@
 // src/pages/student/StudentElearning.jsx
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { 
@@ -115,6 +115,26 @@ const StudentElearning = () => {
   const [stats, setStats] = useState({
     total: 0, modul: 0, tugas: 0, kuis: 0, submitted: 0
   });
+
+  // 🔥 FIX BUG NYATA (race condition): `fetchModules()` di bawah dipicu
+  // ULANG setiap kali `studentData` berubah -- dan `studentData` berubah
+  // BEBERAPA KALI berturut-turut (pertama diisi fallback kosong/sebagian
+  // dari localStorage, lalu ditimpa data lengkap dari Firestore begitu
+  // `loadStudentDoc()` selesai). Tiap pemicuan itu jalanin serangkaian
+  // query Firestore yang makan waktu -- dan SEBELUMNYA gak ada penanda
+  // "ini sudah basi" sama sekali, beda dari StudentModuleView.jsx/
+  // StudentQuizView.jsx yang sudah punya pengaman serupa. Akibatnya
+  // panggilan LAMA (data siswa belum lengkap, enrolledSubjects kosong/
+  // sebagian) dan panggilan BARU (data lengkap) jalan BARENGAN, dan
+  // siapa pun yang SELESAI PALING AKHIR yang menimpa `setModules()` --
+  // bukan yang datanya paling benar. Ini kebukti langsung dari console
+  // log yang naik-turun (0, 1, 21, 1, 0, ...) di laporan bug real-nya.
+  // Fix: `fetchRequestIdRef` menandai request TERBARU yang dimulai --
+  // begitu sebuah pemanggilan fetchModules() selesai, dia cek dulu
+  // apakah dirinya masih request TERBARU sebelum menyentuh state apa pun;
+  // kalau bukan (ada request lain yang dimulai belakangan), hasilnya
+  // dibuang, gak pernah menimpa state.
+  const fetchRequestIdRef = useRef(0);
 
   // ============================================================
   // EFFECTS
@@ -253,6 +273,7 @@ const StudentElearning = () => {
 
   // ===== FETCH MODULES =====
   const fetchModules = useCallback(async () => {
+    const requestId = ++fetchRequestIdRef.current; // 🔥 tandai: ini request paling baru SEJAUH INI
     setLoading(true);
     try {
       // 🔥 FIX BUG: sebelumnya query di sini CUMA ambil modul berstatus
@@ -358,7 +379,14 @@ const StudentElearning = () => {
         console.log('[Cek Daftar Modul Siswa] Modul yang DITOLAK & alasannya:', rejectedLog);
       }
       console.log('[Cek Daftar Modul Siswa] Total modul LOLOS filter:', allModules.length);
-      
+
+      // 🔥 Kalau sudah ada pemanggilan fetchModules() LAIN yang dimulai
+      // SETELAH request ini (studentData berubah lagi di tengah proses),
+      // hasil request ini sudah BASI -- buang, jangan sampai menimpa
+      // hasil dari request yang lebih baru (lihat penjelasan lengkap di
+      // fetchRequestIdRef di atas).
+      if (requestId !== fetchRequestIdRef.current) { setLoading(false); return; }
+
       setModules(allModules);
       setFilteredModules(allModules);
       
@@ -393,7 +421,12 @@ const StudentElearning = () => {
       const tugasCount = allModules.filter(m => m.blocks?.some(b => b.type === 'assignment')).length;
       const kuisCount = allModules.filter(m => m.type === 'kuis_mandiri' || m.quizData?.length > 0).length;
       const submittedCount = allModules.filter(m => submissionsMapForStats[m.id]).length;
-      
+
+      // 🔥 Cek lagi di sini -- ada `await` lain (fetch submissions) sejak
+      // pengecekan terakhir, jadi request ini BISA JADI baru jadi basi
+      // justru di titik ini.
+      if (requestId !== fetchRequestIdRef.current) return;
+
       setStats({
         total: allModules.length,
         modul: modulCount,
@@ -405,7 +438,7 @@ const StudentElearning = () => {
     } catch (error) {
       console.error("Error fetch modules:", error);
     }
-    setLoading(false);
+    if (requestId === fetchRequestIdRef.current) setLoading(false); // 🔥 jangan matiin loading kalau ini bukan request terbaru -- biar spinner tetap nunggu hasil yang benar
   }, [studentData]);
 
   // Fetch saat data siswa berubah
