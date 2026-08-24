@@ -294,7 +294,7 @@ async function callAI({
 
                 generationConfig: {
                   temperature: 0.2,
-                  maxOutputTokens: 5000,
+                  maxOutputTokens: 8000,
                   thinkingConfig: {
                     thinkingBudget: 0,
                   },
@@ -314,30 +314,86 @@ async function callAI({
           JSON.parse(raw);
       } catch (_) {}
 
-      if (
-        !response.ok
-      ) {
+      // --- HTTP error (auth, quota, billing, model tidak ada, dll) ---
+      if (!response.ok) {
         throw new Error(
-          data?.error?.message ||
-            `Gemini HTTP ${response.status}`
+          `HTTP ${response.status}: ${
+            data?.error?.message ||
+            raw.slice(0, 500) ||
+            'tidak ada pesan error'
+          }`
         );
       }
 
-      const text =
-        data?.candidates?.[0]
-          ?.content
-          ?.parts?.[0]
-          ?.text || '';
+      // --- Prompt diblokir sebelum sampai model ---
+      const blockReason =
+        data?.promptFeedback
+          ?.blockReason;
+
+      if (blockReason) {
+        throw new Error(
+          `Prompt diblokir Gemini (blockReason: ${blockReason})`
+        );
+      }
+
+      const candidate =
+        data?.candidates?.[0];
+
+      const finishReason =
+        candidate?.finishReason;
+
+      // --- Jawaban diblokir/dipotong oleh model ---
+      if (
+        finishReason &&
+        finishReason !== 'STOP' &&
+        finishReason !== 'MAX_TOKENS'
+      ) {
+        throw new Error(
+          `Respons Gemini dihentikan (finishReason: ${finishReason})`
+        );
+      }
+
+      // --- Gabungkan SEMUA parts, bukan cuma parts[0] ---
+      const parts =
+        Array.isArray(
+          candidate?.content
+            ?.parts
+        )
+          ? candidate.content.parts
+          : [];
+
+      const text = parts
+        .map(
+          (part) =>
+            part?.text || ''
+        )
+        .join('');
 
       if (!text.trim()) {
         throw new Error(
-          'AI tidak mengembalikan teks.'
+          `AI tidak mengembalikan teks (finishReason: ${
+            finishReason || 'tidak diketahui'
+          })`
+        );
+      }
+
+      if (
+        finishReason ===
+        'MAX_TOKENS'
+      ) {
+        // Tetap dipakai (parseObjects akan buang objek JSON yang belum lengkap),
+        // tapi dicatat sebagai warning supaya kelihatan di debug kalau soal yang
+        // dihasilkan lebih sedikit dari yang diminta.
+        console.warn(
+          '[Gemilang][Gemini] MAX_TOKENS tercapai, output mungkin terpotong.',
+          { model }
         );
       }
 
       return {
         model,
         text,
+        finishReason,
       };
     } catch (
       error
@@ -945,7 +1001,11 @@ Buat maksimal ${jumlah} soal valid.
   ) {
     console.error(
       '[Gemilang][Gemini]',
-      error
+      JSON.stringify(
+        error?.details || error?.message,
+        null,
+        2
+      )
     );
 
     return res.status(
