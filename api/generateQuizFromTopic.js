@@ -11,7 +11,7 @@
 //    ↓
 // LOCAL BLUEPRINT ENGINE
 //    ↓
-// SILICONFLOW CHAT COMPLETIONS
+// GITHUB MODELS API (CHAT COMPLETIONS)
 //    ↓
 // JSONL PARSER
 //    ↓
@@ -25,13 +25,31 @@
 // - Google Search API
 // - Gemini
 // - Cloudflare AI
+// - SiliconFlow (dihapus -- berbayar, melanggar prinsip gratis murni)
 // - Scraping
 //
 // ENV:
-// SILICONFLOW_API_KEY=...
+// GITHUB_TOKEN=... (Personal Access Token dengan izin "models: read" --
+//   dibuat manual di https://github.com/settings/tokens, BUKAN token
+//   otomatis dari GitHub Actions. Function ini jalan di Vercel, bukan
+//   di dalam GitHub Actions, jadi token Actions bawaan gak berlaku di
+//   sini -- harus PAT yang dibuat & disimpan manual sebagai env var.)
 //
 // OPTIONAL:
-// SILICONFLOW_MODEL=deepseek-ai/DeepSeek-V3
+// GITHUB_MODEL=meta/Llama-3.1-70B-Instruct
+//   (⚠️ CEK DULU ID PERSIS-nya di https://github.com/marketplace/models
+//   sebelum deploy -- katalog GitHub Models bisa berubah/rename model.
+//   Salah ID = request langsung ditolak provider, gejalanya SAMA PERSIS
+//   kayak error 502 SiliconFlow kemarin, cuma provider-nya beda.)
+//
+// ⚠️ CATATAN JUJUR SOAL "GRATIS": GitHub Models API secara resmi
+// ditujukan untuk PROTOTYPING/eksperimen, BUKAN trafik produksi skala
+// bisnis (lihat dokumentasi resmi GitHub). Limit hariannya per-model
+// per-user bisa serendah puluhan request/hari. Ini TETAP dipasang
+// sesuai keputusan bisnis (gratis > berbayar), tapi kalau limit
+// harian habis, fitur ini akan berhenti total sampai reset besok --
+// bukan bug, itu batas layanan gratisnya. Pesan error di bawah
+// dibuat eksplisit menjelaskan ini ke guru, bukan pesan generik.
 //
 // ============================================================
 
@@ -41,12 +59,12 @@ export const maxDuration = 60;
 // CONFIG
 // ============================================================
 
-const SILICONFLOW_API_URL =
-  'https://api.siliconflow.cn/v1/chat/completions';
+const GITHUB_MODELS_API_URL =
+  'https://models.github.ai/inference/chat/completions';
 
-const SILICONFLOW_MODEL =
-  process.env.SILICONFLOW_MODEL ||
-  'deepseek-ai/DeepSeek-V3';
+const GITHUB_MODEL =
+  process.env.GITHUB_MODEL ||
+  'meta/Llama-3.1-70B-Instruct';
 
 const DEFAULT_QUESTION_COUNT = 10;
 const MAX_QUESTION_COUNT = 20;
@@ -1751,10 +1769,10 @@ function buildUserPrompt({
 }
 
 // ============================================================
-// SILICONFLOW
+// GITHUB MODELS API
 // ============================================================
 
-async function callSiliconFlow({
+async function callGitHubModels({
   apiKey,
   systemPrompt,
   userPrompt,
@@ -1772,7 +1790,7 @@ async function callSiliconFlow({
   try {
     const response =
       await fetch(
-        SILICONFLOW_API_URL,
+        GITHUB_MODELS_API_URL,
         {
           method: 'POST',
 
@@ -1783,13 +1801,19 @@ async function callSiliconFlow({
             'Content-Type':
               'application/json',
 
+            // 🔥 GitHub Models API adalah REST API resmi GitHub (bukan
+            // endpoint generik seperti SiliconFlow) -- dua header ini
+            // WAJIB sesuai dokumentasi resmi, beda dari provider lama.
             Accept:
-              'application/json',
+              'application/vnd.github+json',
+
+            'X-GitHub-Api-Version':
+              '2022-11-28',
           },
 
           body: JSON.stringify({
             model:
-              SILICONFLOW_MODEL,
+              GITHUB_MODEL,
 
             messages: [
               {
@@ -1853,7 +1877,7 @@ async function callSiliconFlow({
 
       const error =
         new Error(
-          `SiliconFlow HTTP ${response.status}`,
+          `GitHub Models HTTP ${response.status}`,
         );
 
       error.providerStatus =
@@ -1867,9 +1891,27 @@ async function callSiliconFlow({
           1000,
         );
 
+      // 🔥 BARU: GitHub Models API kasih header `x-ratelimit-type`
+      // (mis. "UserByModelByDay") begitu limit HARIAN habis -- beda
+      // dari rate-limit biasa yang cuma nunggu beberapa detik. Ini
+      // ditandai khusus supaya sendGitHubModelsError() bisa kasih
+      // pesan jujur "limit harian habis, coba lagi besok" ke guru,
+      // BUKAN pesan generik yang bikin guru kira sistemnya rusak.
+      error.rateLimitType =
+        response.headers.get(
+          'x-ratelimit-type',
+        ) ||
+        null;
+
+      error.retryAfter =
+        response.headers.get(
+          'retry-after',
+        ) ||
+        null;
+
       error.traceId =
         response.headers.get(
-          'x-siliconcloud-trace-id',
+          'x-github-request-id',
         ) ||
         response.headers.get(
           'x-request-id',
@@ -1895,7 +1937,7 @@ async function callSiliconFlow({
     ) {
       const error =
         new Error(
-          'SiliconFlow response content kosong.',
+          'GitHub Models response content kosong.',
         );
 
       error.providerStatus =
@@ -1916,7 +1958,7 @@ async function callSiliconFlow({
 
       model:
         data?.model ||
-        SILICONFLOW_MODEL,
+        GITHUB_MODEL,
 
       finishReason:
         data
@@ -1926,7 +1968,7 @@ async function callSiliconFlow({
 
       traceId:
         response.headers.get(
-          'x-siliconcloud-trace-id',
+          'x-github-request-id',
         ) ||
         response.headers.get(
           'x-request-id',
@@ -1942,11 +1984,11 @@ async function callSiliconFlow({
     ) {
       const timeoutError =
         new Error(
-          `SiliconFlow timeout setelah ${AI_TIMEOUT_MS}ms.`,
+          `GitHub Models timeout setelah ${AI_TIMEOUT_MS}ms.`,
         );
 
       timeoutError.code =
-        'SILICONFLOW_TIMEOUT';
+        'GITHUB_MODELS_TIMEOUT';
 
       throw timeoutError;
     }
@@ -1964,7 +2006,7 @@ async function callSiliconFlow({
 // SAFE ERROR RESPONSE
 // ============================================================
 
-function sendSiliconFlowError(
+function sendGitHubModelsError(
   res,
   error,
 ) {
@@ -1974,7 +2016,7 @@ function sendSiliconFlowError(
 
   if (
     error?.code ===
-    'SILICONFLOW_TIMEOUT'
+    'GITHUB_MODELS_TIMEOUT'
   ) {
     return res
       .status(504)
@@ -1982,7 +2024,7 @@ function sendSiliconFlowError(
         success: false,
 
         error:
-          'SiliconFlow terlalu lama merespons.',
+          'GitHub Models terlalu lama merespons.',
 
         diagnostics: {
           type:
@@ -1992,7 +2034,41 @@ function sendSiliconFlowError(
             AI_TIMEOUT_MS,
 
           model:
-            SILICONFLOW_MODEL,
+            GITHUB_MODEL,
+        },
+      });
+  }
+
+  // ----------------------------------------------------------
+  // RATE LIMIT HARIAN HABIS (bukan sekadar terlalu cepat -- ini
+  // jatah gratis hari ini sudah habis total, baru reset besok)
+  // ----------------------------------------------------------
+
+  if (
+    error?.providerStatus === 429 &&
+    error?.rateLimitType
+  ) {
+    return res
+      .status(429)
+      .json({
+        success: false,
+
+        error:
+          `Jatah gratis GitHub Models untuk model ini sudah habis hari ini (${error.rateLimitType}). Coba lagi besok, atau gunakan model lain lewat env var GITHUB_MODEL sementara waktu.`,
+
+        diagnostics: {
+          type:
+            'daily_quota_exhausted',
+
+          rateLimitType:
+            error.rateLimitType,
+
+          retryAfterSeconds:
+            error.retryAfter ||
+            null,
+
+          model:
+            GITHUB_MODEL,
         },
       });
   }
@@ -2012,7 +2088,7 @@ function sendSiliconFlowError(
         success: false,
 
         error:
-          'SiliconFlow menolak atau gagal memproses permintaan.',
+          'GitHub Models menolak atau gagal memproses permintaan.',
 
         diagnostics: {
           type:
@@ -2030,7 +2106,7 @@ function sendSiliconFlowError(
             null,
 
           model:
-            SILICONFLOW_MODEL,
+            GITHUB_MODEL,
         },
       });
   }
@@ -2045,7 +2121,7 @@ function sendSiliconFlowError(
       success: false,
 
       error:
-        'Server gagal terhubung ke SiliconFlow.',
+        'Server gagal terhubung ke GitHub Models.',
 
       diagnostics: {
         type:
@@ -2056,7 +2132,7 @@ function sendSiliconFlowError(
           'Unknown error',
 
         model:
-          SILICONFLOW_MODEL,
+          GITHUB_MODEL,
       },
     });
 }
@@ -2202,7 +2278,7 @@ export default async function handler(
   // ==========================================================
 
   const apiKey =
-    process.env.SILICONFLOW_API_KEY;
+    process.env.GITHUB_TOKEN;
 
   if (!apiKey) {
     return res
@@ -2211,7 +2287,7 @@ export default async function handler(
         success: false,
 
         error:
-          'SILICONFLOW_API_KEY belum dikonfigurasi di Vercel.',
+          'GITHUB_TOKEN belum dikonfigurasi di Vercel. Buat Personal Access Token dengan izin "models: read" di github.com/settings/tokens, lalu simpan sebagai environment variable GITHUB_TOKEN.',
       });
   }
 
@@ -2313,14 +2389,14 @@ export default async function handler(
     });
 
   // ==========================================================
-  // 3. CALL SILICONFLOW
+  // 3. CALL GITHUB MODELS
   // ==========================================================
 
   let aiResult;
 
   try {
     aiResult =
-      await callSiliconFlow({
+      await callGitHubModels({
         apiKey,
         systemPrompt,
         userPrompt,
@@ -2328,7 +2404,7 @@ export default async function handler(
 
   } catch (error) {
     console.error(
-      '[Gemilang AI] SiliconFlow error',
+      '[Gemilang AI] GitHub Models error',
       {
         message:
           error?.message,
@@ -2339,6 +2415,9 @@ export default async function handler(
         providerMessage:
           error?.providerMessage,
 
+        rateLimitType:
+          error?.rateLimitType,
+
         traceId:
           error?.traceId,
 
@@ -2346,11 +2425,11 @@ export default async function handler(
           error?.code,
 
         model:
-          SILICONFLOW_MODEL,
+          GITHUB_MODEL,
       },
     );
 
-    return sendSiliconFlowError(
+    return sendGitHubModelsError(
       res,
       error,
     );
@@ -2503,7 +2582,7 @@ export default async function handler(
         success: false,
 
         error:
-          'Quality Gate tidak menemukan soal valid dari respons SiliconFlow.',
+          'Quality Gate tidak menemukan soal valid dari respons GitHub Models.',
 
         diagnostics: {
           parsedObjectCount:
