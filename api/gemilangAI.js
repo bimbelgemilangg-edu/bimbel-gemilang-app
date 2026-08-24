@@ -1,13 +1,24 @@
 // api/gemilangAI.js
 // ============================================================
-// GEMILANG AI GATEWAY — CLOUDFLARE WORKERS AI
-// TEST CONNECTION VERSION
+// BIMBEL GEMILANG — FREE AI ROUTER
+// ============================================================
+//
+// PRIORITAS:
+// 1. SiliconFlow free model
+// 2. SiliconFlow free model kedua
+// 3. SiliconFlow free model ketiga
+//
+// ZERO-BILLING:
+// Tidak pernah memilih model berbayar.
 // ============================================================
 
-const MODEL =
-  '@cf/zai-org/glm-4.7-flash';
+const FREE_MODELS = [
+  'Qwen/Qwen3-8B',
+  'deepseek-ai/DeepSeek-R1-0528-Qwen3-8B',
+  'THUDM/GLM-Z1-9B-0414',
+];
 
-const TIMEOUT_MS = 60000;
+const TIMEOUT_MS = 30000;
 
 const fetchWithTimeout = async (
   url,
@@ -17,180 +28,242 @@ const fetchWithTimeout = async (
   const controller =
     new AbortController();
 
-  const timer = setTimeout(
-    () => controller.abort(),
-    timeoutMs
-  );
+  const timer =
+    setTimeout(
+      () => controller.abort(),
+      timeoutMs
+    );
 
   try {
-    return await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    });
+    return await fetch(
+      url,
+      {
+        ...options,
+        signal:
+          controller.signal,
+      }
+    );
   } finally {
     clearTimeout(timer);
   }
 };
 
+async function callModel({
+  apiKey,
+  model,
+  messages,
+  maxTokens,
+}) {
+  const response =
+    await fetchWithTimeout(
+      'https://api.siliconflow.cn/v1/chat/completions',
+      {
+        method: 'POST',
+
+        headers: {
+          Authorization:
+            `Bearer ${apiKey}`,
+
+          'Content-Type':
+            'application/json',
+        },
+
+        body:
+          JSON.stringify({
+            model,
+            messages,
+            max_tokens:
+              maxTokens,
+            temperature:
+              0.2,
+            stream:
+              false,
+          }),
+      }
+    );
+
+  const raw =
+    await response.text();
+
+  let data = null;
+
+  try {
+    data =
+      JSON.parse(raw);
+  } catch (_) {}
+
+  if (!response.ok) {
+    const error =
+      new Error(
+        data?.message ||
+          data?.error?.message ||
+          `SiliconFlow HTTP ${response.status}`
+      );
+
+    error.status =
+      response.status;
+
+    throw error;
+  }
+
+  return data;
+}
+
 export default async function handler(
   req,
   res
 ) {
-  if (req.method !== 'POST') {
+  if (
+    req.method !== 'POST'
+  ) {
     return res.status(405).json({
       success: false,
-      error: 'Method not allowed',
+      error:
+        'Method not allowed',
     });
   }
 
-  const token =
-    process.env.CLOUDFLARE_API_TOKEN;
+  const apiKey =
+    process.env
+      .SILICONFLOW_API_KEY;
 
-  const accountId =
-    process.env.CLOUDFLARE_ACCOUNT_ID;
-
-  // ----------------------------------------------------------
-  // ENV CHECK
-  // ----------------------------------------------------------
-
-  if (!token) {
+  if (!apiKey) {
     return res.status(500).json({
       success: false,
       error:
-        'CLOUDFLARE_API_TOKEN belum tersedia di Vercel.',
+        'SILICONFLOW_API_KEY belum tersedia di Vercel.',
     });
   }
 
-  if (!accountId) {
-    return res.status(500).json({
-      success: false,
-      error:
-        'CLOUDFLARE_ACCOUNT_ID belum tersedia di Vercel.',
-    });
-  }
+  const {
+    prompt,
+    systemPrompt,
+    maxTokens,
+  } =
+    req.body || {};
 
-  // ----------------------------------------------------------
-  // PROMPT
-  // ----------------------------------------------------------
-
-  const prompt =
+  const userPrompt =
     String(
-      req.body?.prompt ||
-        'Jelaskan konsep pecahan senilai untuk siswa kelas 6 SD dalam 3 kalimat.'
+      prompt || ''
     ).trim();
 
-  if (!prompt) {
+  if (!userPrompt) {
     return res.status(400).json({
       success: false,
-      error: 'Prompt kosong.',
+      error:
+        'Prompt wajib diisi.',
     });
   }
 
-  // ----------------------------------------------------------
-  // CLOUDFLARE REST API
-  // ----------------------------------------------------------
-  // PENTING:
-  // Jangan encodeURIComponent(MODEL), karena nama model
-  // mengandung / dan harus menjadi bagian dari route API.
-  // ----------------------------------------------------------
+  const messages = [
+    {
+      role:
+        'system',
 
-  const url =
-    `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${MODEL}`;
+      content:
+        String(
+          systemPrompt ||
+            'Kamu adalah Asisten Soal Gemilang. Gunakan bahasa Indonesia. Utamakan akurasi akademik.'
+        ),
+    },
 
-  const body = {
-    messages: [
-      {
-        role: 'system',
-        content:
-          'Kamu adalah asisten akademik Bimbel Gemilang. Jawab dalam bahasa Indonesia dengan jelas dan akurat.',
-      },
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  };
+    {
+      role:
+        'user',
 
-  try {
-    const response =
-      await fetchWithTimeout(
-        url,
-        {
-          method: 'POST',
+      content:
+        userPrompt,
+    },
+  ];
 
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
+  const errors = [];
 
-            'Content-Type':
-              'application/json',
-          },
+  for (
+    const model of
+      FREE_MODELS
+  ) {
+    try {
+      const data =
+        await callModel({
+          apiKey,
+          model,
+          messages,
+          maxTokens:
+            Number.isInteger(
+              maxTokens
+            )
+              ? maxTokens
+              : 5000,
+        });
 
-          body:
-            JSON.stringify(body),
-        },
-        TIMEOUT_MS
+      const text =
+        data?.choices?.[0]
+          ?.message
+          ?.content || '';
+
+      if (!text.trim()) {
+        throw new Error(
+          'Model tidak mengembalikan teks.'
+        );
+      }
+
+      return res.status(200).json({
+        success: true,
+
+        provider:
+          'SiliconFlow',
+
+        model,
+
+        text,
+
+        result:
+          data,
+
+        zeroBillingMode:
+          true,
+
+        attemptedModels:
+          errors.map(
+            (item) =>
+              item.model
+          ),
+      });
+    } catch (
+      error
+    ) {
+      console.error(
+        '[Gemilang AI Router]',
+        model,
+        error?.message
       );
 
-    const raw =
-      await response.text();
+      errors.push({
+        model,
 
-    let data = null;
+        status:
+          error?.status ||
+          null,
 
-    try {
-      data = JSON.parse(raw);
-    } catch (_) {
-      data = null;
-    }
-
-    // --------------------------------------------------------
-    // CLOUDFLARE ERROR
-    // --------------------------------------------------------
-
-    if (!response.ok) {
-      return res.status(response.status).json({
-        success: false,
-
-        error:
-          data?.errors?.[0]?.message ||
-          data?.message ||
-          `Cloudflare HTTP ${response.status}`,
-
-        debug: data || raw,
+        message:
+          error?.message ||
+          String(error),
       });
     }
-
-    // --------------------------------------------------------
-    // SUCCESS
-    // --------------------------------------------------------
-
-    return res.status(200).json({
-      success: true,
-
-      model: MODEL,
-
-      result:
-        data?.result ?? null,
-
-      cloudflare:
-        data?.success ?? true,
-
-      messages:
-        data?.messages || [],
-
-      errors:
-        data?.errors || [],
-    });
-  } catch (error) {
-    return res.status(502).json({
-      success: false,
-
-      error:
-        'Gagal menghubungi Cloudflare Workers AI.',
-
-      debug:
-        error?.message ||
-        String(error),
-    });
   }
+
+  return res.status(503).json({
+    success: false,
+
+    error:
+      'Semua model AI GRATIS sedang tidak tersedia atau terkena rate limit. Sistem tidak menggunakan model berbayar.',
+
+    zeroBillingMode:
+      true,
+
+    attemptedModels:
+      FREE_MODELS,
+
+    errors,
+  });
 }
