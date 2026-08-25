@@ -110,7 +110,7 @@ const AI_TIMEOUT_MS = 45_000;
 // dijaga di bawah maxDuration (60s) Vercel supaya function-nya sendiri
 // gak keburu dimatikan platform sebelum sempat kirim respons error
 // yang rapi.
-const AI_TIMEOUT_WITH_SEARCH_MS = 45_000;
+const AI_TIMEOUT_WITH_SEARCH_MS = 55_000;
 
 // 🔥 BARU: Groq TPM (Tokens Per Minute) untuk model `openai/gpt-oss-120b`
 // di tier gratis ternyata cuma 8000 -- ini ANGKA ASLI dari pesan error
@@ -149,24 +149,9 @@ const TAVILY_SEARCH_URL =
 // Batas keras jumlah panggilan Tavily PER REQUEST generate-quiz --
 // jaga-jaga supaya satu permintaan guru (banyak soal, semua butuh
 // gambar) gak ujug-ujug ngabisin jatah bulanan cuma dalam 1 klik.
-const MAX_TAVILY_CALLS_PER_REQUEST = 4;
+const MAX_TAVILY_CALLS_PER_REQUEST = 8;
 
-const TAVILY_TIMEOUT_MS = 7_000;
-
-// ============================================================
-// STEP 1: TAVILY WEB RESEARCH (SOURCE MODE)
-// ============================================================
-// Search internet secara nyata sebelum AI menyusun soal. Ini hanya
-// memakai beberapa query ringkas dan hasil dipadatkan sebelum masuk
-// ke Groq supaya tidak membakar TPM secara berlebihan.
-const MAX_TAVILY_RESEARCH_CALLS_PER_REQUEST = 3;
-const TAVILY_RESEARCH_RESULTS_PER_QUERY = 4;
-// Keep research context compact so Groq's 8k TPM free-tier request budget
-// is not consumed by source text before question generation.
-const MAX_RESEARCH_SOURCES_FOR_AI = 4;
-const MAX_RESEARCH_IMAGES_FOR_AI = 6;
-const MAX_RESEARCH_CONTENT_CHARS_FOR_AI = 600;
-const MAX_RESEARCH_DESCRIPTION_CHARS_FOR_AI = 180;
+const TAVILY_TIMEOUT_MS = 12_000;
 
 // 🔥 Sama persis dengan filter di ManageQuiz.jsx (searchImagesForQuestion)
 // -- beberapa domain proxy internal platform (Facebook lookaside, CDN
@@ -183,267 +168,6 @@ const UNRELIABLE_IMAGE_HOST_PATTERNS =
     /scontent\..*\.cdninstagram\.com/i,
   ];
 
-function buildResearchQueries({
-  topic,
-  mapel,
-  kelas,
-  targetYear,
-  sourceMode,
-  hotsLevel,
-  arahan,
-}) {
-  const base = [
-    cleanText(topic),
-    cleanText(mapel),
-    cleanText(kelas),
-  ]
-    .filter(Boolean)
-    .join(' ');
-
-  const previousYear = Number(targetYear) - 1;
-  const yearText = Number.isFinite(previousYear)
-    ? String(previousYear)
-    : '';
-
-  const visualQuery = [
-    base,
-    'soal bergambar grafik diagram tabel visual pembahasan',
-  ]
-    .filter(Boolean)
-    .join(' ');
-
-  const queries = [
-    `${base} soal latihan pembahasan ${yearText}`,
-    `${base} tryout ujian soal ${yearText} pembahasan`,
-    visualQuery,
-  ];
-
-  if (sourceMode === 'prediction' || hotsLevel || arahan) {
-    queries.push(
-      `${base} HOTS pola soal kisi kisi ${yearText} ${cleanText(arahan)}`,
-    );
-  }
-
-  return [...new Set(
-    queries
-      .map(cleanText)
-      .filter(Boolean),
-  )].slice(0, MAX_TAVILY_RESEARCH_CALLS_PER_REQUEST);
-}
-
-async function callTavilyResearchSearch(
-  apiKey,
-  query,
-) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(
-    () => controller.abort(),
-    TAVILY_TIMEOUT_MS,
-  );
-
-  try {
-    const response = await fetch(
-      TAVILY_SEARCH_URL,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          query,
-          search_depth: 'basic',
-          max_results: TAVILY_RESEARCH_RESULTS_PER_QUERY,
-          include_answer: false,
-          include_raw_content: true,
-          include_images: true,
-          include_image_descriptions: true,
-        }),
-        signal: controller.signal,
-      },
-    );
-
-    const text = await response.text();
-    let data = null;
-
-    try {
-      data = text ? JSON.parse(text) : null;
-    } catch (_) {
-      data = null;
-    }
-
-    if (!response.ok) {
-      const error = new Error(
-        `Tavily HTTP ${response.status}`,
-      );
-      error.providerStatus = response.status;
-      error.providerMessage = String(
-        data?.message ||
-        data?.error ||
-        text ||
-        'Unknown Tavily error',
-      ).slice(0, 1000);
-      throw error;
-    }
-
-    return {
-      query,
-      results: Array.isArray(data?.results)
-        ? data.results
-        : [],
-      images: Array.isArray(data?.images)
-        ? data.images
-        : [],
-    };
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
-
-async function collectTavilyResearch({
-  apiKey,
-  topic,
-  mapel,
-  kelas,
-  targetYear,
-  sourceMode,
-  hotsLevel,
-  arahan,
-}) {
-  if (!apiKey) {
-    return {
-      enabled: false,
-      queries: [],
-      sources: [],
-      images: [],
-    };
-  }
-
-  const queries = buildResearchQueries({
-    topic,
-    mapel,
-    kelas,
-    targetYear,
-    sourceMode,
-    hotsLevel,
-    arahan,
-  });
-
-  // Jalankan seluruh query secara paralel agar 3 pencarian tidak menumpuk
-  // timeout secara serial dan melewati batas waktu Vercel.
-  const settled = await Promise.allSettled(
-    queries.map((query) =>
-      callTavilyResearchSearch(
-        apiKey,
-        query,
-      ),
-    ),
-  );
-
-  const packets = [];
-
-  for (let i = 0; i < settled.length; i += 1) {
-    const result = settled[i];
-
-    if (result.status === 'fulfilled') {
-      packets.push(result.value);
-    } else {
-      console.error(
-        '[Gemilang Research] Tavily query failed',
-        {
-          query: queries[i],
-          message:
-            result.reason?.message ||
-            'Unknown Tavily error',
-        },
-      );
-    }
-  }
-
-  const sources = [];
-  const images = [];
-
-  for (const packet of packets) {
-    for (const result of packet.results || []) {
-      const url = cleanText(result?.url);
-      if (!/^https?:\/\//i.test(url)) continue;
-
-      sources.push({
-        title: cleanText(result?.title).slice(0, 220),
-        url,
-        content: cleanText(
-          result?.raw_content ||
-          result?.content ||
-          '',
-        ).slice(0, MAX_RESEARCH_CONTENT_CHARS_FOR_AI),
-        query: packet.query,
-      });
-    }
-
-    for (const item of packet.images || []) {
-      const url =
-        typeof item === 'string'
-          ? item
-          : item?.url;
-
-      if (!/^https?:\/\//i.test(String(url || ''))) {
-        continue;
-      }
-
-      images.push({
-        url,
-        description: cleanText(
-          typeof item === 'string'
-            ? ''
-            : item?.description ||
-                '',
-        ).slice(0, MAX_RESEARCH_DESCRIPTION_CHARS_FOR_AI),
-        query: packet.query,
-      });
-    }
-  }
-
-  const uniqueSources = [];
-  const seenUrls = new Set();
-
-  for (const source of sources) {
-    if (seenUrls.has(source.url)) continue;
-    seenUrls.add(source.url);
-    uniqueSources.push(source);
-
-    if (
-      uniqueSources.length >=
-      MAX_RESEARCH_SOURCES_FOR_AI
-    ) {
-      break;
-    }
-  }
-
-  const uniqueImages = [];
-  const seenImages = new Set();
-
-  for (const image of images) {
-    if (seenImages.has(image.url)) continue;
-    seenImages.add(image.url);
-    uniqueImages.push(image);
-
-    if (
-      uniqueImages.length >=
-      MAX_RESEARCH_IMAGES_FOR_AI
-    ) {
-      break;
-    }
-  }
-
-  return {
-    enabled: true,
-    queries,
-    sources: uniqueSources,
-    images: uniqueImages,
-  };
-}
-
 function isReliableImageUrl(
   url,
 ) {
@@ -457,95 +181,104 @@ async function callTavilyImageSearch(
   apiKey,
   query,
 ) {
-  const controller = new AbortController();
+  const controller =
+    new AbortController();
 
-  const timeoutId = setTimeout(
-    () => controller.abort(),
-    TAVILY_TIMEOUT_MS,
-  );
-
-  try {
-    const response = await fetch(
-      TAVILY_SEARCH_URL,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query,
-          search_depth: 'basic',
-          max_results: 5,
-          include_images: true,
-          include_image_descriptions: true,
-          include_answer: false,
-          include_raw_content: false,
-        }),
-        signal: controller.signal,
-      },
+  const timeoutId =
+    setTimeout(
+      () =>
+        controller.abort(),
+      TAVILY_TIMEOUT_MS,
     );
 
-    if (!response.ok) return null;
+  try {
+    const response =
+      await fetch(
+        TAVILY_SEARCH_URL,
+        {
+          method: 'POST',
 
-    const data = await response.json();
-    const images = Array.isArray(data?.images)
-      ? data.images
-      : [];
+          headers: {
+            Authorization:
+              `Bearer ${apiKey}`,
 
-    const qTokens = tokenSet(query);
-    let best = null;
-    let bestScore = 0;
+            'Content-Type':
+              'application/json',
+          },
 
-    for (const item of images) {
-      const url = typeof item === 'string'
-        ? item
-        : item?.url;
+          body: JSON.stringify({
+            query,
 
-      if (
-        typeof url !== 'string' ||
-        !/^https?:\/\//i.test(url) ||
-        !isReliableImageUrl(url)
-      ) {
-        continue;
-      }
+            search_depth:
+              'basic', // 1 credit (bukan 'advanced' yang makan 2 credit)
 
-      const description = typeof item === 'string'
-        ? ''
-        : cleanText(item?.description || '');
+            max_results: 3,
 
-      const haystack = tokenSet(
-        `${description} ${query}`,
+            include_images:
+              true,
+
+            include_image_descriptions:
+              false,
+
+            include_answer:
+              false,
+
+            include_raw_content:
+              false,
+          }),
+
+          signal:
+            controller.signal,
+        },
       );
 
-      let hits = 0;
-      for (const token of qTokens) {
-        if (haystack.has(token)) hits += 1;
-      }
+    if (!response.ok) {
+      return null; // 🔥 gagal (kredit habis, dll) -- gak fatal, cuma gak dapat gambar buat butir ini
+    }
 
-      const score = qTokens.size
-        ? hits / qTokens.size
-        : 0;
+    const data =
+      await response.json();
 
-      if (score > bestScore) {
-        bestScore = score;
-        best = {
+    const images =
+      Array.isArray(
+        data?.images,
+      )
+        ? data.images
+        : [];
+
+    // 🔥 `images` bisa berisi string URL langsung, ATAU object
+    // {url, description} tergantung parameter -- ditangani dua-duanya
+    // supaya gak gampang patah kalau Tavily ubah format.
+    for (
+      const item of images
+    ) {
+      const url =
+        typeof item ===
+        'string'
+          ? item
+          : item?.url;
+
+      if (
+        typeof url ===
+          'string' &&
+        /^https?:\/\//i.test(
           url,
-          description,
-          relevance: score,
-        };
+        ) &&
+        isReliableImageUrl(
+          url,
+        )
+      ) {
+        return url;
       }
     }
 
-    // JANGAN ambil gambar pertama secara membabi buta.
-    // Kalau tidak ada kecocokan bermakna, lebih baik tidak ada gambar.
-    return best && bestScore >= 0.20
-      ? best
-      : null;
-  } catch (_) {
     return null;
+  } catch (_) {
+    return null; // timeout/network error -- gak fatal, lanjut tanpa gambar buat butir ini
   } finally {
-    clearTimeout(timeoutId);
+    clearTimeout(
+      timeoutId,
+    );
   }
 }
 
@@ -557,9 +290,9 @@ async function enrichQuestionsWithRealImages(
   questions,
   tavilyApiKey,
   topic,
-  researchImages = [],
 ) {
   if (!tavilyApiKey) {
+    // Fitur belum di-setup -- lewati total, gak ada perubahan perilaku.
     return {
       imagesFetched: 0,
       tavilyCallsUsed: 0,
@@ -567,176 +300,153 @@ async function enrichQuestionsWithRealImages(
     };
   }
 
-  const usedResearchImages = new Set();
+  let callsUsed = 0;
+  let imagesFetched = 0;
+  let cappedByBudget = false;
 
-  const findResearchImage = (hint) => {
-    const hintTokens = tokenSet(
-      `${hint} ${topic}`,
-    );
-
-    let best = null;
-    let bestScore = 0;
-
-    for (const image of researchImages || []) {
-      if (
-        !image?.url ||
-        usedResearchImages.has(image.url) ||
-        !isReliableImageUrl(image.url)
-      ) {
-        continue;
-      }
-
-      const haystack = tokenSet(
-        `${image.description || ''} ${image.query || ''}`,
-      );
-
-      let hits = 0;
-      for (const token of hintTokens) {
-        if (haystack.has(token)) hits += 1;
-      }
-
-      const score = hintTokens.size
-        ? hits / hintTokens.size
-        : 0;
-
-      if (score > bestScore) {
-        bestScore = score;
-        best = image;
-      }
+  for (
+    const question of questions
+  ) {
+    if (
+      callsUsed >=
+      MAX_TAVILY_CALLS_PER_REQUEST
+    ) {
+      cappedByBudget = true;
+      break;
     }
 
-    return best && bestScore >= 0.20
-      ? best
-      : null;
-  };
-
-  // ----------------------------------------------------------
-  // PHASE 1: pakai kandidat gambar yang sudah ditemukan pada
-  // riset utama. Ini tidak memakai credit tambahan.
-  // ----------------------------------------------------------
-  const tasks = [];
-
-  for (const question of questions) {
+    // KASUS 1: soal butuh gambar stimulus (mis. "candi apa ini?")
+    // dan belum punya qImage (bukan clock/graph lokal).
     if (
       question.needsImage &&
       !question.qImage &&
       question.imageHint
     ) {
-      const researchImage =
-        findResearchImage(
+      const url =
+        await callTavilyImageSearch(
+          tavilyApiKey,
           question.imageHint,
         );
 
-      if (researchImage?.url) {
-        question.qImage = researchImage.url;
+      callsUsed += 1;
+
+      if (url) {
+        question.qImage = url;
         question.imageSource = {
-          url: researchImage.url,
-          fetchedVia: 'tavily-research',
-          relevance: 1,
+          url,
+          fetchedVia: 'tavily',
         };
-        usedResearchImages.add(researchImage.url);
-      } else {
-        tasks.push({
-          kind: 'question',
-          question,
-          query: `${question.imageHint} ${topic}`.trim(),
-        });
+        imagesFetched += 1;
+      }
+
+      if (
+        callsUsed >=
+        MAX_TAVILY_CALLS_PER_REQUEST
+      ) {
+        cappedByBudget = true;
+        break;
       }
     }
 
+    // KASUS 2: pilihan jawaban berbentuk gambar -- cari 1 gambar per
+    // opsi. AI sekarang bisa isi "optionImages" dengan HINT deskriptif
+    // (Bahasa Inggris, bukan URL -- lihat instruksi di system prompt),
+    // dipakai sebagai kata kunci pencarian yang lebih akurat daripada
+    // cuma label opsi polos (mis. "Opsi A").
     if (
       question.optionsAreImages &&
-      Array.isArray(question.options) &&
-      question.options.length > 0
+      Array.isArray(
+        question.options,
+      ) &&
+      question.options.length >
+        0
     ) {
+      const rawOptionImages = [
+        ...(question.optionImages ||
+          []),
+      ];
+
+      const isUrl = (
+        value,
+      ) =>
+        typeof value ===
+          'string' &&
+        /^https?:\/\//i.test(
+          value,
+        );
+
       const fetchedImages = [
-        ...(question.optionImages || []),
+        ...rawOptionImages,
       ];
 
       for (
         let i = 0;
-        i < question.options.length;
+        i <
+        question.options
+          .length;
         i += 1
       ) {
-        if (fetchedImages[i]) continue;
+        if (
+          callsUsed >=
+          MAX_TAVILY_CALLS_PER_REQUEST
+        ) {
+          cappedByBudget = true;
+          break;
+        }
 
-        const query = topic
-          ? `${question.options[i]} ${topic}`
-          : question.options[i];
+        // Kalau opsi ini SUDAH punya URL gambar asli (bukan cuma hint
+        // teks), jangan cari ulang -- hemat kredit.
+        if (
+          isUrl(
+            fetchedImages[i],
+          )
+        ) {
+          continue;
+        }
 
-        const researchImage =
-          findResearchImage(query);
+        // 🔥 FIX: prioritaskan HINT deskriptif dari AI (mis. "right
+        // triangle diagram") kalau ada dan bukan URL -- itu jauh lebih
+        // akurat buat pencarian daripada label opsi polos ("Opsi A").
+        // Fallback ke label opsi kalau AI gak ngisi hint.
+        const hint =
+          !isUrl(
+            rawOptionImages[i],
+          ) &&
+          rawOptionImages[i]
+            ? rawOptionImages[i]
+            : question.options[
+                i
+              ];
 
-        if (researchImage?.url) {
-          fetchedImages[i] =
-            researchImage.url;
-          usedResearchImages.add(
-            researchImage.url,
-          );
-        } else {
-          tasks.push({
-            kind: 'option',
-            question,
-            optionIndex: i,
+        const query =
+          topic
+            ? `${hint} ${topic}`
+            : hint;
+
+        const url =
+          await callTavilyImageSearch(
+            tavilyApiKey,
             query,
-            fetchedImages,
-          });
+          );
+
+        callsUsed += 1;
+
+        if (url) {
+          fetchedImages[i] =
+            url;
+          imagesFetched += 1;
         }
       }
 
-      question.optionImages = fetchedImages;
+      question.optionImages =
+        fetchedImages;
     }
-  }
-
-  // ----------------------------------------------------------
-  // PHASE 2: batasi hard call Tavily tambahan, lalu jalankan
-  // semuanya paralel. Jadi max tambahan = 4 call, max ~7 detik.
-  // ----------------------------------------------------------
-  const selectedTasks = tasks.slice(
-    0,
-    MAX_TAVILY_CALLS_PER_REQUEST,
-  );
-
-  const cappedByBudget =
-    tasks.length > selectedTasks.length;
-
-  const results = await Promise.all(
-    selectedTasks.map(async (task) => ({
-      task,
-      image: await callTavilyImageSearch(
-        tavilyApiKey,
-        task.query,
-      ),
-    })),
-  );
-
-  let imagesFetched = 0;
-
-  for (const { task, image } of results) {
-    if (!image?.url) continue;
-
-    if (task.kind === 'question') {
-      task.question.qImage = image.url;
-      task.question.imageSource = {
-        url: image.url,
-        fetchedVia: 'tavily-image-search',
-        relevance: image.relevance || null,
-      };
-    } else {
-      task.fetchedImages[
-        task.optionIndex
-      ] = image.url;
-      task.question.optionImages =
-        task.fetchedImages;
-    }
-
-    imagesFetched += 1;
-    usedResearchImages.add(image.url);
   }
 
   return {
     imagesFetched,
-    tavilyCallsUsed: selectedTasks.length,
+    tavilyCallsUsed:
+      callsUsed,
     cappedByBudget,
   };
 }
@@ -745,29 +455,40 @@ function computeMaxTokens(
   jumlah,
   enableBrowserSearch,
 ) {
-  // Groq's free-tier TPM counts prompt + output together.
-  // The old 5,000-token ceiling could push a normal research request
-  // above the 8,000 TPM limit and cause HTTP 413.
-  let outputTokens =
-    900 +
-    Math.min(jumlah, 20) * 120;
+  // Perkiraan: tiap soal butuh ~400 token buat output (pertanyaan +
+  // opsi + pembahasan + verifikasi), plus overhead ~300 token buat
+  // instruksi umum. Dibatasi maksimal supaya nyisain ruang buat token
+  // PROMPT (system+user+blueprint) di bawah limit TPM -- prompt untuk
+  // permintaan besar (banyak soal) juga lebih panjang, jadi makin
+  // banyak soal, makin sedikit "sisa" jatah yang aman dipakai buat
+  // max_tokens output.
+  const estimated =
+    300 +
+    jumlah * 400;
 
-  if (enableBrowserSearch) {
-    outputTokens -= 200;
-  }
+  // 🔥 BARU: kalau browser_search aktif, hasil pencarian (snippet
+  // beberapa halaman web) ikut masuk ke context -- itu makan jatah
+  // TPM juga, di LUAR kendali kita (gak tau pasti berapa token
+  // sebelum request jalan). Sisakan buffer JAUH lebih besar supaya
+  // gak gampang nabrak limit 8.000 TPM kalau browser_search narik
+  // banyak konten.
+  const buffer =
+    enableBrowserSearch
+      ? 3500
+      : 1500;
 
-  outputTokens = Math.max(
-    1400,
-    outputTokens,
-  );
+  const ceiling =
+    GROQ_TPM_LIMIT -
+    buffer;
 
-  // Conservative ceiling. Research context is also compacted below.
   return Math.min(
-    outputTokens,
-    3000,
+    Math.max(
+      estimated,
+      1200,
+    ),
+    ceiling,
   );
 }
-
 
 const MAX_FIELD_LENGTH = 4_000;
 const MAX_QUESTION_LENGTH = 5_000;
@@ -779,13 +500,27 @@ const MAX_ACCEPTED_QUESTIONS = 20;
 // SUPPORTED TYPES
 // ============================================================
 
+// 🔥 FIX BUG NYATA: sebelumnya daftar ini pakai ejaan yang BEDA dari
+// yang beneran dikirim AIGenerateQuiz.jsx (TYPE_OPTIONS) --
+// 'multiple_select'/'short_answer' (underscore) vs yang dikirim
+// frontend 'multiselect'/'shortanswer' (tanpa underscore), plus
+// 'causeeffect' dan 'reading' SAMA SEKALI GAK ADA di daftar ini padahal
+// keduanya opsi valid di UI ("Sebab Akibat", "Membaca Teks"). Field
+// 'ordering' di daftar lama juga gak pernah dikirim frontend sama
+// sekali (mati/gak kepakai). Akibatnya: 4 dari 7 tipe soal yang bisa
+// dipilih guru DIAM-DIAM DIBUANG di sini sebelum sempat sampai ke AI --
+// persis akar masalah "gak variatif" yang dilaporkan (guru centang
+// "Pilih Lebih dari Satu"+"Sebab Akibat", tapi keduanya kebuang tanpa
+// pesan error apa pun). Sekarang disamakan PERSIS dengan string yang
+// dikirim frontend.
 const SUPPORTED_TYPES = new Set([
   'multiple',
   'truefalse',
-  'multiple_select',
-  'short_answer',
+  'multiselect',
+  'shortanswer',
+  'causeeffect',
   'matching',
-  'ordering',
+  'reading',
 ]);
 
 // ============================================================
@@ -1214,6 +949,7 @@ function buildCurriculumBlueprint({
   jumlah,
   hotsLevel,
   arahan,
+  allowedTypes,
 }) {
   const safeTopic =
     safeField(topic);
@@ -1252,21 +988,55 @@ function buildCurriculumBlueprint({
 
   let no = 1;
 
+  // 🔥 FIX BUG NYATA: sebelumnya blueprint SAMA SEKALI GAK menugaskan
+  // tipe soal per butir -- AI cuma dikasih daftar "tipe yang
+  // diperbolehkan" secara umum, TANPA dipaksa. Model gratis (yang
+  // cenderung ambil jalan termudah) akibatnya SELALU pilih "multiple"
+  // (pilihan ganda) buat semua butir, walau guru sudah mencentang
+  // banyak tipe lain -- persis kasus nyata yang dilaporkan: puluhan
+  // soal dihasilkan, semuanya "Pilihan Ganda Biasa". Sekarang tipe
+  // soal DIDISTRIBUSIKAN MERATA (round-robin) ke tiap nomor butir
+  // sejak awal -- AI dapat instruksi SPESIFIK per nomor ("butir #5
+  // WAJIB tipe truefalse"), bukan sekadar "boleh pakai tipe ini".
+  // Divalidasi juga di validateAgainstBlueprint() supaya AI beneran
+  // patuh, bukan cuma disarankan.
+  const typesForDistribution =
+    Array.isArray(
+      allowedTypes,
+    ) &&
+    allowedTypes.length > 0
+      ? allowedTypes
+      : ['multiple'];
+
+  const difficultyTierIndex =
+    (level) =>
+      difficulties.findIndex(
+        (d) => d.level === level,
+      );
+
   for (
     const difficulty
     of difficulties
   ) {
+    const tierIndex =
+      difficultyTierIndex(
+        difficulty.level,
+      );
+
+    const competency =
+      competencies[
+        Math.min(
+          tierIndex,
+          competencies.length -
+            1,
+        )
+      ];
+
     for (
       let i = 0;
       i < difficulty.count;
       i += 1
     ) {
-      const competency =
-        competencies[
-          (no - 1) %
-            competencies.length
-        ];
-
       blueprint.push({
         no,
 
@@ -1286,6 +1056,17 @@ function buildCurriculumBlueprint({
           difficulty.cognitive,
 
         competency,
+
+        // 🔥 BARU: tipe soal spesifik buat butir ini -- round-robin
+        // dari daftar tipe yang guru pilih. Kalau guru cuma pilih 1
+        // tipe (mis. cuma "multiple"), semua butir tetap tipe itu
+        // (sesuai maksud guru) -- variasi cuma muncul kalau guru
+        // memang mencentang lebih dari 1 tipe.
+        type:
+          typesForDistribution[
+            (no - 1) %
+              typesForDistribution.length
+          ],
 
         teacherDirection:
           safeArahan,
@@ -1463,11 +1244,12 @@ function buildClockSvg(
     </svg>
   `;
 
-  const base64Svg = typeof Buffer !== 'undefined'
-    ? Buffer.from(svg).toString('base64')
-    : btoa(unescape(encodeURIComponent(svg)));
-
-  return 'data:image/svg+xml;base64,' + base64Svg;
+  return (
+    'data:image/svg+xml;base64,' +
+    Buffer.from(
+      svg,
+    ).toString('base64')
+  );
 }
 
 // ============================================================
@@ -1573,28 +1355,122 @@ function buildGraphSvg(
       (height -
         padding * 2);
 
-  const path =
-    points
+  const mappedPoints =
+    points.map(
+      (point) => ({
+        sx: mapX(
+          point.x,
+        ),
+        sy: mapY(
+          point.y,
+        ),
+      }),
+    );
+
+  // 🔥 FIX BUG NYATA: sebelumnya SEMUA titik disambung garis lurus
+  // (path "L" doang) -- buat fungsi LINEAR (garis lurus) itu benar,
+  // tapi buat PARABOLA/kurva non-linear hasilnya jadi bentuk "V" atau
+  // zig-zag yang salah total secara matematis (bukan kurva mulus).
+  // Sekarang kalau `graph.curved` diset true, dipakai kurva Catmull-Rom
+  // (diubah ke Bezier kubik) yang melewati SEMUA titik data dengan
+  // mulus -- representasi visual parabola/kurva jadi akurat.
+  const isCurved =
+    Boolean(graph.curved);
+
+  let path;
+
+  if (
+    isCurved &&
+    mappedPoints.length >=
+      3
+  ) {
+    path = `M ${mappedPoints[0].sx.toFixed(1)} ${mappedPoints[0].sy.toFixed(1)}`;
+
+    for (
+      let i = 0;
+      i <
+      mappedPoints.length -
+        1;
+      i += 1
+    ) {
+      const p0 =
+        mappedPoints[
+          Math.max(
+            i - 1,
+            0,
+          )
+        ];
+
+      const p1 =
+        mappedPoints[i];
+
+      const p2 =
+        mappedPoints[
+          i + 1
+        ];
+
+      const p3 =
+        mappedPoints[
+          Math.min(
+            i + 2,
+            mappedPoints.length -
+              1,
+          )
+        ];
+
+      // Catmull-Rom -> kontrol Bezier kubik (faktor 1/6 standar)
+      const cp1x =
+        p1.sx +
+        (p2.sx - p0.sx) /
+          6;
+
+      const cp1y =
+        p1.sy +
+        (p2.sy - p0.sy) /
+          6;
+
+      const cp2x =
+        p2.sx -
+        (p3.sx - p1.sx) /
+          6;
+
+      const cp2y =
+        p2.sy -
+        (p3.sy - p1.sy) /
+          6;
+
+      path += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.sx.toFixed(1)} ${p2.sy.toFixed(1)}`;
+    }
+  } else {
+    path =
+      mappedPoints
+        .map(
+          (
+            point,
+            index,
+          ) =>
+            `${
+              index === 0
+                ? 'M'
+                : 'L'
+            } ${point.sx.toFixed(
+              1,
+            )} ${point.sy.toFixed(
+              1,
+            )}`,
+        )
+        .join(' ');
+  }
+
+  // Titik-titik data digambar eksplisit -- guru/siswa bisa lihat pasti
+  // di mana titik asli soal berada, gak cuma nebak dari kurvanya.
+  const dataDots =
+    mappedPoints
       .map(
-        (
-          point,
-          index,
-        ) =>
-          `${
-            index === 0
-              ? 'M'
-              : 'L'
-          } ${mapX(
-            point.x,
-          ).toFixed(
-            1,
-          )} ${mapY(
-            point.y,
-          ).toFixed(
-            1,
-          )}`,
+        (point) =>
+          `<circle cx="${point.sx.toFixed(1)}" cy="${point.sy.toFixed(1)}" r="3.5" fill="#2563eb" />`,
       )
-      .join(' ');
+      .join('');
 
   const xLabel =
     escapeXml(
@@ -1651,6 +1527,8 @@ function buildGraphSvg(
         stroke-width="2.5"
       />
 
+      ${dataDots}
+
       <text
         x="${width - 15}"
         y="${height - padding + 5}"
@@ -1674,18 +1552,301 @@ function buildGraphSvg(
     </svg>
   `;
 
-  const base64Svg = typeof Buffer !== 'undefined'
-    ? Buffer.from(svg).toString('base64')
-    : btoa(unescape(encodeURIComponent(svg)));
-
-  return 'data:image/svg+xml;base64,' + base64Svg;
+  return (
+    'data:image/svg+xml;base64,' +
+    Buffer.from(
+      svg,
+    ).toString('base64')
+  );
 }
 
 // ============================================================
-// JSONL CLEANUP
+// 🔥 BARU: CIRCLE SVG (lingkaran)
 // ============================================================
+// Sebelumnya AI sering "maksa" gambar lingkaran ke field "graph" (yang
+// cuma bisa nyambung titik pakai garis/kurva) -- hasilnya BLANK/kosong
+// karena lingkaran gak bisa direpresentasikan sebagai deretan titik
+// x-y yang disambung. Field khusus ini menerima pusat & jari-jari,
+// digambar sebagai lingkaran SVG asli.
+function buildCircleSvg(
+  circle,
+) {
+  if (
+    !circle ||
+    typeof circle !==
+      'object'
+  ) {
+    return '';
+  }
 
-function stripCodeFences(
+  const centerX =
+    Number(
+      circle.centerX,
+    );
+
+  const centerY =
+    Number(
+      circle.centerY,
+    );
+
+  const radius =
+    Number(
+      circle.radius,
+    );
+
+  if (
+    !Number.isFinite(
+      centerX,
+    ) ||
+    !Number.isFinite(
+      centerY,
+    ) ||
+    !Number.isFinite(
+      radius,
+    ) ||
+    radius <= 0
+  ) {
+    return '';
+  }
+
+  const width = 320;
+  const height = 320;
+  const cx = width / 2;
+  const cy = height / 2;
+
+  // Skala biar lingkaran + margin selalu pas di kanvas, berapa pun
+  // radius aslinya (unit soal, bukan pixel).
+  const scale =
+    (Math.min(
+      width,
+      height,
+    ) /
+      2 -
+      40) /
+    radius;
+
+  const r =
+    radius * scale;
+
+  const xLabel =
+    escapeXml(
+      cleanText(
+        circle.xLabel ||
+          'x',
+      ),
+    );
+
+  const yLabel =
+    escapeXml(
+      cleanText(
+        circle.yLabel ||
+          'y',
+      ),
+    );
+
+  const svg = `
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 ${width} ${height}"
+      width="${width}"
+      height="${height}"
+    >
+      <rect width="${width}" height="${height}" fill="#ffffff" />
+
+      <line x1="20" y1="${cy}" x2="${width - 20}" y2="${cy}" stroke="#94a3b8" stroke-width="1.5" />
+      <line x1="${cx}" y1="20" x2="${cx}" y2="${height - 20}" stroke="#94a3b8" stroke-width="1.5" />
+
+      <circle
+        cx="${cx.toFixed(1)}"
+        cy="${cy.toFixed(1)}"
+        r="${r.toFixed(1)}"
+        fill="none"
+        stroke="#0f172a"
+        stroke-width="2.5"
+      />
+
+      <circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3.5" fill="#2563eb" />
+
+      <text x="${cx + 6}" y="${cy - 8}" font-family="Arial" font-size="11" fill="#2563eb">
+        (${centerX}, ${centerY})
+      </text>
+
+      <text x="${width - 15}" y="${cy - 6}" font-family="Arial" font-size="12" fill="#475569">${xLabel}</text>
+      <text x="${cx + 6}" y="20" font-family="Arial" font-size="12" fill="#475569">${yLabel}</text>
+    </svg>
+  `;
+
+  return (
+    'data:image/svg+xml;base64,' +
+    Buffer.from(
+      svg,
+    ).toString('base64')
+  );
+}
+
+// ============================================================
+// 🔥 BARU: SHAPE SVG (bangun datar / polygon -- persegi panjang,
+// segitiga, dll dengan koordinat titik sudut)
+// ============================================================
+// Sama seperti circle di atas -- sebelumnya AI maksa gambar persegi
+// panjang/segitiga ke field "graph" (cuma garis terbuka, gak ketutup
+// jadi bangun), hasilnya BLANK atau bentuk aneh. Field ini menerima
+// titik-titik sudut, digambar sebagai bangun TERTUTUP (polygon).
+function buildShapeSvg(
+  shape,
+) {
+  if (
+    !shape ||
+    !Array.isArray(
+      shape.vertices,
+    )
+  ) {
+    return '';
+  }
+
+  const vertices =
+    shape.vertices
+      .filter(
+        (v) =>
+          v &&
+          Number.isFinite(
+            Number(v.x),
+          ) &&
+          Number.isFinite(
+            Number(v.y),
+          ),
+      )
+      .slice(0, 12)
+      .map((v) => ({
+        x: Number(v.x),
+        y: Number(v.y),
+        label:
+          cleanText(
+            v.label,
+          ),
+      }));
+
+  if (
+    vertices.length < 3
+  ) {
+    return '';
+  }
+
+  const width = 400;
+  const height = 320;
+  const padding = 50;
+
+  const xs =
+    vertices.map(
+      (v) => v.x,
+    );
+
+  const ys =
+    vertices.map(
+      (v) => v.y,
+    );
+
+  const minX =
+    Math.min(...xs);
+
+  const maxX =
+    Math.max(...xs);
+
+  const minY =
+    Math.min(...ys);
+
+  const maxY =
+    Math.max(...ys);
+
+  const mapX = (
+    value,
+  ) =>
+    padding +
+    ((value - minX) /
+      Math.max(
+        maxX - minX,
+        1,
+      )) *
+      (width -
+        padding * 2);
+
+  const mapY = (
+    value,
+  ) =>
+    height -
+    padding -
+    ((value - minY) /
+      Math.max(
+        maxY - minY,
+        1,
+      )) *
+      (height -
+        padding * 2);
+
+  const mapped =
+    vertices.map(
+      (v) => ({
+        sx: mapX(v.x),
+        sy: mapY(v.y),
+        label: v.label,
+        origX: v.x,
+        origY: v.y,
+      }),
+    );
+
+  const pointsAttr =
+    mapped
+      .map(
+        (p) =>
+          `${p.sx.toFixed(1)},${p.sy.toFixed(1)}`,
+      )
+      .join(' ');
+
+  const vertexLabels =
+    mapped
+      .map((p) => {
+        const labelText =
+          p.label ||
+          `(${p.origX},${p.origY})`;
+
+        return `<circle cx="${p.sx.toFixed(1)}" cy="${p.sy.toFixed(1)}" r="3.5" fill="#2563eb" /><text x="${(p.sx + 6).toFixed(1)}" y="${(p.sy - 6).toFixed(1)}" font-family="Arial" font-size="11" fill="#334155">${escapeXml(labelText)}</text>`;
+      })
+      .join('');
+
+  const svg = `
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 ${width} ${height}"
+      width="${width}"
+      height="${height}"
+    >
+      <rect width="${width}" height="${height}" fill="#ffffff" />
+
+      <polygon
+        points="${pointsAttr}"
+        fill="${
+          shape.closed !==
+          false
+            ? '#eff6ff'
+            : 'none'
+        }"
+        stroke="#0f172a"
+        stroke-width="2.5"
+      />
+
+      ${vertexLabels}
+    </svg>
+  `;
+
+  return (
+    'data:image/svg+xml;base64,' +
+    Buffer.from(
+      svg,
+    ).toString('base64')
+  );
+}
+
+
   text,
 ) {
   return String(text || '')
@@ -1857,16 +2018,27 @@ function validMultiple(
   );
 }
 
+// 🔥 FIX BUG NYATA: sebelumnya validTrueFalse cek `question.correct`
+// (0/1) -- itu skema buat "true/false tunggal" yang SAMA SEKALI BEDA
+// dari skema yang beneran dipakai/dirender di StudentQuizView.jsx
+// (multi-pernyataan: `statements: [{text, isTrue}]`, TANPA field
+// "correct" sama sekali). Divalidasi cocok skema asli sekarang.
 function validTrueFalse(
   question,
 ) {
   return (
-    Number.isInteger(
-      question.correct,
+    Array.isArray(
+      question.statements,
     ) &&
-    (
-      question.correct === 0 ||
-      question.correct === 1
+    question.statements
+      .length >= 2 &&
+    question.statements.every(
+      (s) =>
+        s &&
+        cleanText(s.text)
+          .length > 0 &&
+        typeof s.isTrue ===
+          'boolean',
     )
   );
 }
@@ -1913,6 +2085,80 @@ function validShortAnswer(
     cleanText(
       question.shortAnswer,
     ).length > 0
+  );
+}
+
+// 🔥 BARU: validator buat 3 tipe yang sebelumnya "diizinkan" di daftar
+// tipe tapi field pendukungnya gak pernah dinormalisasi/divalidasi sama
+// sekali di file ini -- causeeffect, matching, reading. Skemanya
+// disamakan PERSIS dengan yang direnderin StudentQuizView.jsx supaya
+// soal yang lolos dari sini beneran bisa ditampilkan & dinilai dengan
+// benar di sisi siswa, bukan cuma "lolos validasi tapi kosong".
+function validCauseEffect(
+  question,
+) {
+  return (
+    cleanText(
+      question.cause,
+    ).length > 0 &&
+    cleanText(
+      question.effect,
+    ).length > 0 &&
+    typeof question.isCauseTrue ===
+      'boolean' &&
+    typeof question.isEffectTrue ===
+      'boolean'
+  );
+}
+
+function validMatching(
+  question,
+) {
+  return (
+    Array.isArray(
+      question.matchingPairs,
+    ) &&
+    question.matchingPairs
+      .length >= 2 &&
+    question.matchingPairs.every(
+      (p) =>
+        p &&
+        cleanText(p.left)
+          .length > 0 &&
+        cleanText(p.right)
+          .length > 0,
+    )
+  );
+}
+
+function validReading(
+  question,
+) {
+  return (
+    cleanText(
+      question.readingText,
+    ).length > 0 &&
+    Array.isArray(
+      question.subQuestions,
+    ) &&
+    question.subQuestions
+      .length >= 1 &&
+    question.subQuestions.every(
+      (sq) =>
+        sq &&
+        cleanText(sq.q)
+          .length > 0 &&
+        Array.isArray(
+          sq.options,
+        ) &&
+        sq.options.length ===
+          4 &&
+        Number.isInteger(
+          sq.correct,
+        ) &&
+        sq.correct >= 0 &&
+        sq.correct <= 3,
+    )
   );
 }
 
@@ -2042,12 +2288,29 @@ function normalizeQuestion(
             .slice(0, 8)
         : [],
 
+    // 🔥 FIX: sebelumnya cuma di-slice() mentah tanpa membersihkan tiap
+    // item -- sekarang tiap pernyataan dibersihkan & dipastikan
+    // "isTrue" benar-benar boolean (bukan string "true"/1/dll yang bisa
+    // bikin perbandingan `typeof s.isTrue === 'boolean'` di validator
+    // gagal padahal maksudnya benar).
     statements:
       Array.isArray(
         raw.statements,
       )
         ? raw.statements
             .slice(0, 8)
+            .map((s) => ({
+              text: cleanText(
+                s?.text,
+              ).slice(
+                0,
+                500,
+              ),
+              isTrue:
+                Boolean(
+                  s?.isTrue,
+                ),
+            }))
         : [],
 
     shortAnswer:
@@ -2066,6 +2329,37 @@ function normalizeQuestion(
         8_000,
       ),
 
+    // 🔥 BARU: subQuestions buat tipe "reading" -- sebelumnya gak
+    // dinormalisasi sama sekali, jadi soal Membaca Teks selalu jadi
+    // kosong/rusak.
+    subQuestions:
+      Array.isArray(
+        raw.subQuestions,
+      )
+        ? raw.subQuestions
+            .slice(0, 6)
+            .map((sq) => ({
+              q: cleanText(
+                sq?.q,
+              ).slice(
+                0,
+                1_000,
+              ),
+              options:
+                cleanStringArray(
+                  sq?.options,
+                  4,
+                  500,
+                ),
+              correct:
+                Number.isInteger(
+                  sq?.correct,
+                )
+                  ? sq.correct
+                  : 0,
+            }))
+        : [],
+
     cause:
       cleanText(
         raw.cause,
@@ -2081,6 +2375,45 @@ function normalizeQuestion(
         0,
         1_000,
       ),
+
+    // 🔥 BARU: sebelumnya cause/effect (teksnya) ada, tapi status
+    // benar/salahnya (isCauseTrue/isEffectTrue) gak pernah diambil --
+    // padahal itu KUNCI JAWABAN buat tipe soal ini. Tanpa ini, soal
+    // Sebab Akibat gak pernah bisa dinilai benar.
+    isCauseTrue:
+      Boolean(
+        raw.isCauseTrue,
+      ),
+
+    isEffectTrue:
+      Boolean(
+        raw.isEffectTrue,
+      ),
+
+    // 🔥 BARU: matchingPairs buat tipe "matching" -- sebelumnya gak
+    // dinormalisasi sama sekali, jadi soal Menjodohkan selalu kosong.
+    matchingPairs:
+      Array.isArray(
+        raw.matchingPairs,
+      )
+        ? raw.matchingPairs
+            .slice(0, 8)
+            .map((p) => ({
+              left: cleanText(
+                p?.left,
+              ).slice(
+                0,
+                300,
+              ),
+              right:
+                cleanText(
+                  p?.right,
+                ).slice(
+                  0,
+                  300,
+                ),
+            }))
+        : [],
 
     explanation:
       cleanText(
@@ -2129,6 +2462,23 @@ function normalizeQuestion(
       typeof raw.graph ===
         'object'
         ? raw.graph
+        : null,
+
+    // 🔥 BARU: circle & shape -- lihat buildCircleSvg()/buildShapeSvg()
+    // buat penjelasan lengkap kenapa dua field ini perlu, terpisah
+    // dari "graph".
+    circle:
+      raw.circle &&
+      typeof raw.circle ===
+        'object'
+        ? raw.circle
+        : null,
+
+    shape:
+      raw.shape &&
+      typeof raw.shape ===
+        'object'
+        ? raw.shape
         : null,
 
     needsImage:
@@ -2199,8 +2549,17 @@ function normalizeQuestion(
     return null;
   }
 
+  // 🔥 FIX BUG NYATA: sebelumnya dicek pakai 'multiple_select'/
+  // 'short_answer' (pakai underscore) -- padahal frontend (AIGenerateQuiz.jsx
+  // TYPE_OPTIONS) selalu ngirim 'multiselect'/'shortanswer' (TANPA
+  // underscore). Karena string-nya gak pernah cocok, cabang validasi ini
+  // SELAMA INI gak pernah kena sama sekali -- bukan cuma soal ini,
+  // dampaknya lebih luas: SUPPORTED_TYPES (lihat definisinya di atas)
+  // juga masih pakai ejaan lama ini, jadi tipe "Pilih Lebih dari Satu"
+  // dan "Isian Singkat" yang guru centang DIAM-DIAM DIBUANG di tahap
+  // filter allowedTypes, sebelum sempat sampai ke titik ini sama sekali.
   if (
-    type === 'multiple_select' &&
+    type === 'multiselect' &&
     !validMultipleSelect(
       normalized,
     )
@@ -2209,8 +2568,40 @@ function normalizeQuestion(
   }
 
   if (
-    type === 'short_answer' &&
+    type === 'shortanswer' &&
     !validShortAnswer(
+      normalized,
+    )
+  ) {
+    return null;
+  }
+
+  // 🔥 BARU: 3 tipe ini sebelumnya masuk daftar "diizinkan" tapi gak
+  // pernah divalidasi strukturnya sama sekali -- soal apa pun dengan
+  // tipe ini otomatis LOLOS walau field pendukungnya (matchingPairs,
+  // subQuestions, isCauseTrue/isEffectTrue) kosong/gak ada. Sekarang
+  // divalidasi juga, konsisten dengan tipe lain.
+  if (
+    type === 'causeeffect' &&
+    !validCauseEffect(
+      normalized,
+    )
+  ) {
+    return null;
+  }
+
+  if (
+    type === 'matching' &&
+    !validMatching(
+      normalized,
+    )
+  ) {
+    return null;
+  }
+
+  if (
+    type === 'reading' &&
+    !validReading(
       normalized,
     )
   ) {
@@ -2246,6 +2637,26 @@ function normalizeQuestion(
 
     visualKind =
       'graph';
+  } else if (
+    normalized.circle
+  ) {
+    qImage =
+      buildCircleSvg(
+        normalized.circle,
+      );
+
+    visualKind =
+      'circle';
+  } else if (
+    normalized.shape
+  ) {
+    qImage =
+      buildShapeSvg(
+        normalized.shape,
+      );
+
+    visualKind =
+      'shape';
   }
 
   return {
@@ -2288,6 +2699,21 @@ function normalizeQuestion(
     readingText:
       normalized.readingText,
 
+    // 🔥 BARU: field-field yang sebelumnya gak pernah diteruskan ke
+    // output final -- tanpa ini, walau normalizeQuestion sudah
+    // mengekstraknya, ManageQuiz.jsx tetap gak akan pernah menerimanya.
+    subQuestions:
+      normalized.subQuestions,
+
+    matchingPairs:
+      normalized.matchingPairs,
+
+    isCauseTrue:
+      normalized.isCauseTrue,
+
+    isEffectTrue:
+      normalized.isEffectTrue,
+
     cause:
       normalized.cause,
 
@@ -2312,7 +2738,9 @@ function normalizeQuestion(
       Boolean(
         normalized.needsImage ||
           normalized.clock ||
-          normalized.graph,
+          normalized.graph ||
+          normalized.circle ||
+          normalized.shape,
       ),
 
     imageHint:
@@ -2413,6 +2841,35 @@ function validateAgainstBlueprint(
     };
   }
 
+  // 🔥 BARU: FIX BUG NYATA (soal gak variatif) -- validasi tipe soal
+  // terhadap yang ditugaskan blueprint. Sebelumnya gak ada pengecekan
+  // ini sama sekali, jadi AI bebas nulis tipe apa pun (selalu "multiple"
+  // dalam praktiknya) walau blueprint sudah menugaskan tipe lain buat
+  // butir itu. Sekarang DITOLAK kalau gak sesuai -- ini yang memaksa
+  // distribusi tipe soal beneran terwujud, bukan cuma anjuran di prompt.
+  const targetType =
+    normalizeText(
+      target.type,
+    );
+
+  const actualType =
+    normalizeText(
+      question.type,
+    );
+
+  if (
+    targetType &&
+    actualType &&
+    actualType !==
+      targetType
+  ) {
+    return {
+      valid: false,
+      reason:
+        'typeMismatch',
+    };
+  }
+
   return {
     valid: true,
     target,
@@ -2426,7 +2883,6 @@ function validateAgainstBlueprint(
 function buildSystemPrompt({
   allowedTypes,
   enableBrowserSearch,
-  researchAvailable,
 }) {
   return [
     'Kamu adalah Otak Akademik Bimbel Gemilang.',
@@ -2436,18 +2892,6 @@ function buildSystemPrompt({
     '',
 
     'ATURAN MUTLAK:',
-
-    'ATURAN RISET SUMBER:',
-
-    ...(researchAvailable
-      ? [
-          '1. Riset web sudah dilakukan oleh backend. Gunakan HANYA URL yang ada di daftar sumber riset.',
-          '2. sourceUrl WAJIB sama persis dengan salah satu URL pada daftar sumber riset.',
-          '3. Jika tidak ada sumber yang relevan untuk suatu butir, jangan mengarang sourceUrl; kosongkan dan backend akan menolak butir itu.',
-          '4. Jangan menyebut sebuah soal sebagai soal asli/soal ujian tertentu kecuali sumber benar-benar mendukung klaim tersebut.',
-          '5. Kandidat gambar riset diberikan secara terpisah. Jangan mengarang URL gambar.',
-        ]
-      : []),
 
     // 🔥 BARU: aturan #1-3 sekarang KONDISIONAL. Sebelumnya SELALU
     // melarang browsing & klaim sumber eksternal -- itu benar untuk
@@ -2503,6 +2947,52 @@ function buildSystemPrompt({
 
     '',
 
+    // 🔥 BARU: sebelumnya CUMA ada contoh format buat tipe "multiple" --
+    // tipe lain (truefalse, multiselect, shortanswer, causeeffect,
+    // matching, reading) gak pernah dikasih contoh formatnya sama
+    // sekali, padahal field pendukungnya beda-beda total per tipe.
+    // Tanpa contoh ini AI menebak-nebak (atau ujung-ujungnya balik lagi
+    // ke "multiple" karena itu yang paling jelas contohnya).
+    'CONTOH FORMAT TIAP TIPE SOAL LAIN (WAJIB ikuti struktur field persis ini kalau blueprint minta tipe tersebut):',
+
+    '',
+
+    'truefalse (beberapa pernyataan benar/salah, field "statements", BUKAN "options"/"correct"):',
+
+    '{"type":"truefalse","blueprintNo":2,"difficulty":"Medium","competency":"...","question":"Tentukan benar atau salah tiap pernyataan berikut.","statements":[{"text":"...","isTrue":true},{"text":"...","isTrue":false},{"text":"...","isTrue":true}],"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'multiselect (jawaban benar lebih dari satu, field "correctAnswers" berupa ARRAY indeks, BUKAN "correct" tunggal):',
+
+    '{"type":"multiselect","blueprintNo":3,"difficulty":"Medium","competency":"...","question":"...","options":["...","...","...","..."],"correctAnswers":[0,2],"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'shortanswer (isian singkat, field "shortAnswer" berisi kunci jawaban teks, TANPA "options"):',
+
+    '{"type":"shortanswer","blueprintNo":4,"difficulty":"Easy","competency":"...","question":"...","shortAnswer":"...","explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'causeeffect (sebab-akibat, WAJIB isi "isCauseTrue" dan "isEffectTrue" sebagai boolean -- ini KUNCI JAWABANNYA, jangan sampai lupa):',
+
+    '{"type":"causeeffect","blueprintNo":5,"difficulty":"Hard","competency":"...","question":"Tentukan apakah sebab dan akibat berikut benar, dan apakah ada hubungan sebab-akibat.","cause":"...","effect":"...","isCauseTrue":true,"isEffectTrue":false,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'matching (menjodohkan, field "matchingPairs" array {left,right}, MINIMAL 3 pasang):',
+
+    '{"type":"matching","blueprintNo":6,"difficulty":"Medium","competency":"...","question":"Jodohkan istilah di kiri dengan definisi yang tepat di kanan.","matchingPairs":[{"left":"...","right":"..."},{"left":"...","right":"..."},{"left":"...","right":"..."}],"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'reading (membaca teks, field "readingText" berisi bacaan, "subQuestions" array pertanyaan turunan dengan 4 opsi tiap satu, MINIMAL 1):',
+
+    '{"type":"reading","blueprintNo":7,"difficulty":"Hard","competency":"...","question":"Bacalah teks berikut, lalu jawab pertanyaan di bawahnya.","readingText":"...(teks bacaan lengkap)...","subQuestions":[{"q":"...","options":["...","...","...","..."],"correct":0}],"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
     `Tipe yang diperbolehkan: ${allowedTypes.join(', ')}`,
 
     '',
@@ -2522,42 +3012,74 @@ function buildSystemPrompt({
 
     '',
 
-    '1. GRAFIK FUNGSI / KURVA / PARABOLA / GARIS LURUS -> WAJIB pakai "graph" (lihat contoh di bawah). JANGAN PERNAH pakai "needsImage" buat ini -- gak ada foto asli buat grafik yang kamu karang sendiri.',
+    '1. GRAFIK GARIS LURUS -> pakai "graph" TANPA "curved" (lihat contoh di bawah).',
 
-    '2. JAM ANALOG -> WAJIB pakai "clock". JANGAN pakai "needsImage".',
+    '2. GRAFIK KURVA / PARABOLA / FUNGSI NON-LINEAR -> pakai "graph" DENGAN "curved":true, dan sertakan MINIMAL 5 titik supaya kurvanya akurat (bukan cuma 2-3 titik). JANGAN PERNAH pakai "needsImage" buat ini.',
 
-    '3. DIAGRAM ABSTRAK LAIN (pohon peluang, diagram Venn, bagan alur, tabel data, garis bilangan, dll) -> JELASKAN LENGKAP di teks "question" itu sendiri (semua angka/label yang relevan disebutkan di kalimat soal). JANGAN pakai "needsImage" buat ini juga -- diagram abstrak yang kamu karang sendiri TIDAK PERNAH punya padanan foto asli di internet.',
+    '3. LINGKARAN -> WAJIB pakai "circle" (BUKAN "graph" -- lingkaran gak bisa digambar dari deretan titik x-y biasa). Lihat contoh di bawah.',
 
-    '4. "needsImage"+"imageHint" HANYA untuk FOTO OBJEK/TEMPAT/MAKHLUK NYATA yang BENERAN ada fotonya di dunia (mis. "Candi Prambanan", "ayam jantan", "Menara Eiffel", "gunung berapi"). Kalau ragu apakah sesuatu itu "benda nyata yang bisa difoto" atau "diagram/konsep yang kamu karang" -> PILIH ATURAN 1-3, JANGAN needsImage.',
+    '4. BANGUN DATAR bersudut (persegi, persegi panjang, segitiga, trapesium, dll) -> WAJIB pakai "shape" dengan titik-titik sudutnya (BUKAN "graph"). Lihat contoh di bawah.',
+
+    '5. JAM ANALOG -> WAJIB pakai "clock". JANGAN pakai "needsImage".',
+
+    '6. DIAGRAM ABSTRAK LAIN yang BUKAN grafik/lingkaran/bangun datar/jam (pohon peluang, diagram Venn, bagan alur, garis bilangan, dll) -> JELASKAN LENGKAP di teks "question" itu sendiri (semua angka/label relevan disebutkan di kalimat soal). JANGAN pakai "needsImage" buat ini.',
+
+    '7. "needsImage"+"imageHint" HANYA untuk FOTO OBJEK/TEMPAT/MAKHLUK NYATA yang BENERAN ada fotonya di dunia (mis. "Candi Prambanan", "ayam jantan", "Menara Eiffel"). Kalau ragu -> PILIH ATURAN 1-6, JANGAN needsImage.',
+
+    '8. PILIHAN JAWABAN BERUPA GAMBAR: kalau soal cocok punya 4 pilihan jawaban berbentuk GAMBAR (bukan teks) -- misalnya "manakah gambar yang menunjukkan segitiga siku-siku?" dengan 4 pilihan gambar bangun berbeda -- set "optionsAreImages":true dan isi "optionImages" dengan 4 deskripsi singkat (Bahasa Inggris) buat tiap opsi, SEJAJAR urutannya dengan "options". Pakai ini SESEKALI kalau memang relevan dengan topik & tipe soal "multiple" -- jangan dipaksakan di semua soal.',
 
     '',
 
-    'VISUAL CLOCK -- CONTOH OBJEK UTUH (perhatikan "clock" adalah KEY SEJAJAR dengan "question", BUKAN teks di dalam "question"):',
+    'VISUAL CLOCK -- CONTOH OBJEK UTUH:',
 
     '{"type":"multiple","blueprintNo":2,"difficulty":"Easy","competency":"...","question":"Perhatikan jam di bawah ini. Pukul berapakah yang ditunjukkan?","clock":{"hour":8,"minute":30},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
 
     '',
 
-    'VISUAL GRAPH -- CONTOH OBJEK UTUH (perhatikan "graph" adalah KEY SEJAJAR dengan "question", BUKAN teks di dalam "question". JANGAN PERNAH menulis kata "graph" atau kurung kurawal data grafik DI DALAM string "question" -- itu SALAH FATAL):',
+    'VISUAL GRAPH (garis lurus) -- CONTOH OBJEK UTUH:',
 
     '{"type":"multiple","blueprintNo":3,"difficulty":"Medium","competency":"...","question":"Grafik berikut menunjukkan sebuah garis lurus. Berapa nilai kemiringan (slope) garis tersebut?","graph":{"points":[{"x":0,"y":0},{"x":1,"y":2}],"xLabel":"x","yLabel":"y"},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
 
     '',
 
-    'IMAGE -- CONTOH OBJEK UTUH (HANYA untuk foto objek/tempat/makhluk NYATA, baca ATURAN VISUAL #4 di atas; "needsImage" & "imageHint" adalah KEY SEJAJAR, BUKAN teks di dalam "question"):',
+    'VISUAL GRAPH (kurva/parabola, WAJIB "curved":true + minimal 5 titik) -- CONTOH OBJEK UTUH:',
 
-    '{"type":"multiple","blueprintNo":4,"difficulty":"Easy","competency":"...","question":"Perhatikan gambar di atas. Bangunan bersejarah apakah ini?","needsImage":true,"imageHint":"Prambanan Temple Indonesia","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+    '{"type":"multiple","blueprintNo":4,"difficulty":"Hard","competency":"...","question":"Grafik berikut menunjukkan fungsi kuadrat. Berapakah titik puncak (vertex) fungsi tersebut?","graph":{"points":[{"x":-2,"y":5},{"x":-1,"y":0},{"x":0,"y":-3},{"x":1,"y":0},{"x":2,"y":5}],"xLabel":"x","yLabel":"y","curved":true},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
 
     '',
 
-    '⚠️ PERINGATAN KERAS: field "question" HANYA boleh berisi KALIMAT SOAL dalam bahasa manusia biasa. DILARANG MUTLAK menulis potongan JSON, tanda kurung kurawal {}, atau kata kunci seperti "graph"/"clock"/"points"/"xLabel" DI DALAM teks "question" -- semua data visual itu WAJIB jadi key JSON terpisah yang sejajar dengan "question", persis seperti 3 contoh objek utuh di atas.',
+    'VISUAL CIRCLE (lingkaran) -- CONTOH OBJEK UTUH:',
+
+    '{"type":"multiple","blueprintNo":5,"difficulty":"Medium","competency":"...","question":"Grafik berikut adalah lingkaran dengan pusat di (-3,2) dan melalui titik (-3,-2). Berapakah jari-jari lingkaran tersebut?","circle":{"centerX":-3,"centerY":2,"radius":4,"xLabel":"x","yLabel":"y"},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'VISUAL SHAPE (bangun datar) -- CONTOH OBJEK UTUH:',
+
+    '{"type":"multiple","blueprintNo":6,"difficulty":"Easy","competency":"...","question":"Perhatikan persegi panjang berikut. Hitung luasnya.","shape":{"vertices":[{"x":0,"y":0,"label":"A(0,0)"},{"x":5,"y":0,"label":"B(5,0)"},{"x":5,"y":3,"label":"C(5,3)"},{"x":0,"y":3,"label":"D(0,3)"}],"closed":true},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'PILIHAN JAWABAN BERUPA GAMBAR -- CONTOH OBJEK UTUH:',
+
+    '{"type":"multiple","blueprintNo":7,"difficulty":"Easy","competency":"...","question":"Manakah gambar yang menunjukkan segitiga siku-siku?","options":["Opsi A","Opsi B","Opsi C","Opsi D"],"optionsAreImages":true,"optionImages":["right triangle diagram","equilateral triangle diagram","isosceles triangle diagram","obtuse triangle diagram"],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'IMAGE (foto objek nyata) -- CONTOH OBJEK UTUH:',
+
+    '{"type":"multiple","blueprintNo":8,"difficulty":"Easy","competency":"...","question":"Perhatikan gambar di atas. Bangunan bersejarah apakah ini?","needsImage":true,"imageHint":"Prambanan Temple Indonesia","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    '⚠️ PERINGATAN KERAS: field "question" HANYA boleh berisi KALIMAT SOAL dalam bahasa manusia biasa. DILARANG MUTLAK menulis potongan JSON, tanda kurung kurawal {}, atau kata kunci seperti "graph"/"clock"/"circle"/"shape"/"points"/"xLabel" DI DALAM teks "question" -- semua data visual itu WAJIB jadi key JSON terpisah yang sejajar dengan "question", persis seperti contoh objek utuh di atas.',
 
     // 🔥 Diingatkan eksplisit ke AI juga -- biar dia gak nyoba nulis
     // URL gambar asli dari hasil browser_search ke field ini (dia
     // cuma bisa akses teks/snippet halaman, bukan file gambarnya).
-    ...(researchAvailable
+    ...(enableBrowserSearch
       ? [
-          '(Catatan: kandidat gambar berasal dari hasil riset Tavily. Gunakan needsImage+imageHint hanya jika ada visual yang memang relevan; jangan mengarang URL gambar.)',
+          '(Catatan: browser_search cuma kasih kamu TEKS halaman, BUKAN file gambar. Kalau butuh visual, tetap pakai clock/graph/circle/shape di atas atau needsImage+imageHint -- jangan mengarang URL gambar dari hasil pencarian.)',
         ]
       : []),
 
@@ -2579,7 +3101,6 @@ function buildUserPrompt({
   currentMode,
   arahan,
   blueprint,
-  research,
 }) {
   return [
     'BIMBEL GEMILANG — GENERATE QUIZ',
@@ -2618,36 +3139,11 @@ function buildUserPrompt({
 
     'Jangan membuat blueprint tambahan.',
 
-    '',
-
-    'HASIL RISET WEB TERVERIFIKASI:',
-    JSON.stringify(
-      (research?.sources || []).map((source) => ({
-        title: source.title,
-        url: source.url,
-        content: source.content,
-      })),
-    ),
-
-    '',
-
-    'KANDIDAT VISUAL DARI RISET:',
-    JSON.stringify(
-      (research?.images || []).map((image) => ({
-        url: image.url,
-        description: image.description,
-        query: image.query,
-      })),
-    ),
-
-    '',
-
-    'ATURAN SOURCE:',
-    research?.enabled
-      ? 'Setiap soal WAJIB memilih sourceUrl dari URL pada HASIL RISET WEB TERVERIFIKASI.'
-      : 'Riset web tidak tersedia pada request ini.',
-
-    'Untuk soal visual: gunakan visual hanya bila didukung kandidat visual atau visual lokal clock/graph.',
+    // 🔥 BARU: penekanan eksplisit soal field "type" di tiap butir
+    // blueprint -- field ini BUKAN saran, itu PENUGASAN WAJIB. Sebelum
+    // ini gak ditekankan sama sekali, jadi AI abai dan selalu pakai
+    // "multiple" buat semua butir.
+    'Field "type" di SETIAP butir blueprint adalah tipe soal yang WAJIB kamu pakai untuk butir itu -- BUKAN sekadar saran. Kalau blueprint #5 punya "type":"truefalse", soal nomor 5 WAJIB berupa soal Benar/Salah, BUKAN pilihan ganda. Variasikan sesuai field "type" masing-masing butir, JANGAN membuat semua soal jadi tipe "multiple" begitu saja.',
 
     'Output hanya JSONL.',
   ].join('\n');
@@ -2926,7 +3422,6 @@ async function callGroq({
 function sendGroqError(
   res,
   error,
-  enableBrowserSearch = false,
 ) {
   // ----------------------------------------------------------
   // TIMEOUT
@@ -2949,7 +3444,7 @@ function sendGroqError(
             'timeout',
 
           timeoutMs:
-            enableBrowserSearch ? AI_TIMEOUT_WITH_SEARCH_MS : AI_TIMEOUT_MS,
+            AI_TIMEOUT_MS,
 
           model:
             GROQ_MODEL,
@@ -3032,7 +3527,7 @@ function sendGroqError(
         success: false,
 
         error:
-          'Permintaan ke Groq melebihi batas token per menit (prompt + output). Sistem sudah membatasi output, tetapi jika request masih terlalu besar coba kurangi jumlah soal atau persingkat arahan guru.',
+          'Permintaan terlalu besar untuk diproses Groq sekali jalan. Coba kurangi jumlah soal yang diminta, atau persingkat arahan guru.',
 
         diagnostics: {
           type:
@@ -3152,7 +3647,6 @@ export default async function handler(
   req,
   res,
 ) {
-  try {
   // ==========================================================
   // METHOD
   // ==========================================================
@@ -3263,19 +3757,12 @@ export default async function handler(
 
   if (!apiKey) {
     return res
-      .status(503)
+      .status(500)
       .json({
         success: false,
 
         error:
-          'GROQ_API_KEY belum dikonfigurasi di Vercel.',
-
-        diagnostics: {
-          type: 'missing_groq_api_key',
-          message:
-            'Tambahkan GROQ_API_KEY di Vercel Project Settings > Environment Variables lalu redeploy.',
-          model: GROQ_MODEL,
-        },
+          'GROQ_API_KEY belum dikonfigurasi di Vercel. Daftar gratis di console.groq.com/keys (tanpa kartu kredit), lalu simpan sebagai environment variable GROQ_API_KEY.',
       });
   }
 
@@ -3353,6 +3840,7 @@ export default async function handler(
       jumlah,
       hotsLevel,
       arahan,
+      allowedTypes,
     });
 
   // 🔥 BARU: browser_search CUMA aktif di mode "prediction" (guru
@@ -3363,25 +3851,6 @@ export default async function handler(
     currentMode === 'prediction';
 
   // ==========================================================
-  // 1.5. TAVILY WEB RESEARCH
-  // ==========================================================
-  // Source mode sekarang benar-benar mencari sumber internet.
-  // Prediction juga boleh memakai hasil riset, sementara browser_search
-  // tetap dipertahankan sebagai lapisan tambahan yang sudah berjalan.
-  const research =
-    await collectTavilyResearch({
-      apiKey:
-        process.env.TAVILY_API_KEY,
-      topic,
-      mapel,
-      kelas,
-      targetYear,
-      sourceMode: currentMode,
-      hotsLevel,
-      arahan,
-    });
-
-  // ==========================================================
   // 2. PROMPT
   // ==========================================================
 
@@ -3389,9 +3858,6 @@ export default async function handler(
     buildSystemPrompt({
       allowedTypes,
       enableBrowserSearch,
-      researchAvailable:
-        research.enabled &&
-        research.sources.length > 0,
     });
 
   const userPrompt =
@@ -3404,7 +3870,6 @@ export default async function handler(
       currentMode,
       arahan,
       blueprint,
-      research,
     });
 
   // ==========================================================
@@ -3462,7 +3927,6 @@ export default async function handler(
     return sendGroqError(
       res,
       error,
-      enableBrowserSearch,
     );
   }
 
@@ -3482,13 +3946,6 @@ export default async function handler(
 
   const usedBlueprints =
     new Set();
-
-  const verifiedResearchUrls =
-    new Set(
-      (research.sources || []).map(
-        (source) => source.url,
-      ),
-    );
 
   // ==========================================================
   // 5. QUALITY GATE
@@ -3522,25 +3979,6 @@ export default async function handler(
         ) + 1;
 
       continue;
-    }
-
-    // SOURCE GATE: kalau riset web tersedia, sourceUrl wajib
-    // menunjuk ke URL yang benar-benar dikembalikan Tavily.
-    if (
-      research.enabled &&
-      research.sources.length > 0
-    ) {
-      const sourceUrl =
-        cleanText(normalized.sourceUrl);
-
-      if (
-        !sourceUrl ||
-        !verifiedResearchUrls.has(sourceUrl)
-      ) {
-        rejectedReasons.invalidSourceUrl =
-          (rejectedReasons.invalidSourceUrl || 0) + 1;
-        continue;
-      }
     }
 
     // BLUEPRINT CHECK
@@ -3676,7 +4114,6 @@ export default async function handler(
       process.env
         .TAVILY_API_KEY,
       topic,
-      research.images,
     );
 
   // ==========================================================
@@ -3703,22 +4140,6 @@ export default async function handler(
       success: true,
 
       questions,
-
-      researchPerformed:
-        research.enabled &&
-        research.sources.length > 0,
-
-      researchSources:
-        research.sources.map((source) => ({
-          title: source.title,
-          url: source.url,
-        })),
-
-      researchImages:
-        research.images.map((image) => ({
-          url: image.url,
-          description: image.description,
-        })),
 
       requestedCount:
         jumlah,
@@ -3777,17 +4198,7 @@ export default async function handler(
           ),
 
         researchPerformed:
-          research.enabled &&
-          research.sources.length > 0,
-
-        researchQueryCount:
-          research.queries.length,
-
-        researchSourceCount:
-          research.sources.length,
-
-        researchImageCandidateCount:
-          research.images.length,
+          enableBrowserSearch,
 
         // 🔥 BARU: sebelumnya hardcode false apa pun kondisinya --
         // sekarang hitung beneran berapa dari soal yang lolos punya
@@ -3811,17 +4222,4 @@ export default async function handler(
           imageEnrichResult.cappedByBudget,
       },
     });
-  } catch (error) {
-    console.error('[Gemilang API] Unhandled error', error);
-    if (res.headersSent) return;
-    return res.status(500).json({
-      success: false,
-      error: 'Terjadi kesalahan internal pada server pembuat soal.',
-      diagnostics: {
-        type: 'unhandled_runtime_error',
-        message: error?.message || 'Unknown error',
-        model: GROQ_MODEL,
-      },
-    });
-  }
 }
