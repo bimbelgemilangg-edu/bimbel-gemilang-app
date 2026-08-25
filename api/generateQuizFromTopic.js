@@ -494,6 +494,32 @@ function cleanText(value = '') {
     .trim();
 }
 
+// ============================================================
+// 🔥 BARU: DETEKSI KEBOCORAN JSON -- GENERAL, BUKAN SPESIFIK 1 KASUS
+// ============================================================
+// Kasus nyata yang memicu ini: field "graph" bocor jadi TEKS di dalam
+// "question" (mis. soal grafik ketinggian benda) -- tapi kesalahan yang
+// SAMA JENISNYA bisa kejadian di field APA PUN (bukan cuma graph/clock)
+// dan di MAPEL/TOPIK APA PUN (bukan cuma matematika) -- terutama makin
+// riskan begitu Bimbel Gemilang menambah cakupan ke UTBK yang jauh lebih
+// beragam jenis soalnya. Makanya deteksinya dibuat GENERAL: cari pola
+// `"namaField":` diikuti awal nilai JSON (kutip/kurung/angka/true/false)
+// DI MANA PUN dalam teks -- bukan mendaftar nama field satu-satu yang
+// kita tahu. Kalau besok ada field baru "table"/"chart"/"diagram" dkk
+// yang ditambahkan ke skema, ini TETAP mendeteksinya tanpa perlu update
+// daftar nama field manapun.
+const JSON_LEAK_PATTERN =
+  /"[a-zA-Z_][a-zA-Z0-9_]*"\s*:\s*(\{|\[|"|-?\d|true\b|false\b|null\b)/;
+
+function hasLeakedJsonArtifact(
+  text,
+) {
+  if (!text) return false;
+  return JSON_LEAK_PATTERN.test(
+    text,
+  );
+}
+
 function normalizeText(value = '') {
   return cleanText(value)
     .toLowerCase()
@@ -1633,6 +1659,18 @@ function normalizeQuestion(
     return null;
   }
 
+  // 🔥 Jaring pengaman GENERAL (lihat hasLeakedJsonArtifact di atas) --
+  // cek field "question" dulu di titik ini karena ini yang paling awal
+  // divalidasi; field teks bebas LAINNYA dicek di bawah, setelah semua
+  // field itu diekstrak.
+  if (
+    hasLeakedJsonArtifact(
+      question,
+    )
+  ) {
+    return null;
+  }
+
   const normalized = {
     type,
 
@@ -1800,6 +1838,38 @@ function normalizeQuestion(
         500,
       ),
   };
+
+  // ----------------------------------------------------------
+  // 🔥 JARING PENGAMAN MENYELURUH: cek SEMUA field teks bebas lainnya
+  // (bukan cuma "question" yang sudah dicek di atas) -- competency,
+  // explanation, answerVerification, analysisSummary, shortAnswer,
+  // readingText, cause, effect. Field-field ini SEMUA ditulis bebas
+  // oleh AI (bukan angka/enum terbatas), jadi SEMUA berisiko kena
+  // kebocoran JSON yang sama, di mapel/topik apa pun.
+  // ----------------------------------------------------------
+
+  const freeTextFieldsToCheck =
+    [
+      normalized.competency,
+      normalized.explanation,
+      normalized.answerVerification,
+      normalized.analysisSummary,
+      normalized.shortAnswer,
+      normalized.readingText,
+      normalized.cause,
+      normalized.effect,
+    ];
+
+  if (
+    freeTextFieldsToCheck.some(
+      (text) =>
+        hasLeakedJsonArtifact(
+          text,
+        ),
+    )
+  ) {
+    return null;
+  }
 
   // ----------------------------------------------------------
   // TYPE VALIDATION
@@ -2143,21 +2213,25 @@ function buildSystemPrompt({
 
     '',
 
-    'VISUAL CLOCK:',
+    'VISUAL CLOCK -- CONTOH OBJEK UTUH (perhatikan "clock" adalah KEY SEJAJAR dengan "question", BUKAN teks di dalam "question"):',
 
-    '"clock":{"hour":8,"minute":30}',
-
-    '',
-
-    'VISUAL GRAPH:',
-
-    '"graph":{"points":[{"x":0,"y":0},{"x":1,"y":2}],"xLabel":"x","yLabel":"y"}',
+    '{"type":"multiple","blueprintNo":2,"difficulty":"Easy","competency":"...","question":"Perhatikan jam di bawah ini. Pukul berapakah yang ditunjukkan?","clock":{"hour":8,"minute":30},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
 
     '',
 
-    'IMAGE (HANYA untuk foto objek/tempat/makhluk NYATA, baca ATURAN VISUAL #4 di atas):',
+    'VISUAL GRAPH -- CONTOH OBJEK UTUH (perhatikan "graph" adalah KEY SEJAJAR dengan "question", BUKAN teks di dalam "question". JANGAN PERNAH menulis kata "graph" atau kurung kurawal data grafik DI DALAM string "question" -- itu SALAH FATAL):',
 
-    '"needsImage":true,"imageHint":"English image description of a REAL photographable subject"',
+    '{"type":"multiple","blueprintNo":3,"difficulty":"Medium","competency":"...","question":"Grafik berikut menunjukkan sebuah garis lurus. Berapa nilai kemiringan (slope) garis tersebut?","graph":{"points":[{"x":0,"y":0},{"x":1,"y":2}],"xLabel":"x","yLabel":"y"},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'IMAGE -- CONTOH OBJEK UTUH (HANYA untuk foto objek/tempat/makhluk NYATA, baca ATURAN VISUAL #4 di atas; "needsImage" & "imageHint" adalah KEY SEJAJAR, BUKAN teks di dalam "question"):',
+
+    '{"type":"multiple","blueprintNo":4,"difficulty":"Easy","competency":"...","question":"Perhatikan gambar di atas. Bangunan bersejarah apakah ini?","needsImage":true,"imageHint":"Prambanan Temple Indonesia","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    '⚠️ PERINGATAN KERAS: field "question" HANYA boleh berisi KALIMAT SOAL dalam bahasa manusia biasa. DILARANG MUTLAK menulis potongan JSON, tanda kurung kurawal {}, atau kata kunci seperti "graph"/"clock"/"points"/"xLabel" DI DALAM teks "question" -- semua data visual itu WAJIB jadi key JSON terpisah yang sejajar dengan "question", persis seperti 3 contoh objek utuh di atas.',
 
     // 🔥 Diingatkan eksplisit ke AI juga -- biar dia gak nyoba nulis
     // URL gambar asli dari hasil browser_search ke field ini (dia
