@@ -488,14 +488,6 @@ const ManageQuiz = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadTarget, setUploadTarget] = useState(null);
-  // 🔥 BARU: hasil pencarian gambar otomatis (Openverse -> Wikimedia fallback)
-  // buat soal yang AI tandai "needsImage". Disimpan per-questionId biar
-  // beberapa soal bisa nampilin hasil pencarian sendiri-sendiri tanpa
-  // tabrakan. searchingImageFor nyimpen id soal yang lagi dicariin (buat
-  // munculin loading spinner cuma di soal itu).
-  const [imageSearchResults, setImageSearchResults] = useState({}); // { [questionId]: [{url, thumb, title, source}] }
-  const [searchingImageFor, setSearchingImageFor] = useState(null);
-  const [imageSearchError, setImageSearchError] = useState({});
   
   // 🔥 MODE KUIS
   const [quizMode, setQuizMode] = useState('simple');
@@ -1101,119 +1093,28 @@ const ManageQuiz = () => {
   };
 
   // ============================================================
-  // 🔥 BARU: PENCARIAN GAMBAR OTOMATIS (Openverse -> Wikimedia fallback)
+  // 🔥 DIHAPUS: pencarian gambar manual Openverse/Wikimedia
   // ============================================================
-  // Cuma dipakai buat soal yang AI tandai "needsImage" -- yaitu objek/
-  // fenomena NYATA yang emang perlu FOTO ASLI (bukan diagram teknis yang
-  // sudah dihandle graph/shape/pattern). Openverse jadi sumber utama karena
-  // dia agregat dari banyak sumber (Flickr, museum, dll) yang lebih
-  // beragam & lebih baru dibanding Wikimedia doang; Wikimedia jadi
-  // cadangan kalau Openverse gak nemu apa-apa. DUA-DUANYA gratis, gak
-  // perlu API key, dan HANYA nampilin gambar yang beneran berlisensi bebas
-  // pakai ulang -- bukan comot sembarangan dari web yang berisiko hak
-  // cipta. Guru TETAP yang milih dari beberapa kandidat (bukan auto-pasang
-  // tanpa cek), karena AI gak selalu bisa mastiin akurasi gambar buat
-  // konten sains/anatomi presisi.
-  // 🔥 BARU: FIX BUG NYATA -- Openverse kadang ikut mengagregasi hasil
-  // yang URL aslinya (`url`/`thumb`) menunjuk ke domain proxy internal
-  // platform tertentu (paling sering `lookaside.fbsx.com` / domain
-  // `lookaside.facebook.com`, kadang juga CDN Instagram `scontent.*`).
-  // URL proxy ini SECARA DESAIN cuma bisa dibuka di dalam ekosistem
-  // platform asalnya (butuh sesi/cookie/referrer khusus) -- begitu
-  // ditaruh sebagai <img src=...> di aplikasi lain, PASTI gagal load
-  // (ikon rusak/X merah), gak peduli linknya masih "valid" atau enggak.
-  // Disaring DI SINI, sebelum ditampilkan ke guru sebagai kandidat --
-  // supaya guru gak pernah disodori pilihan yang emang dijamin rusak.
-  const UNRELIABLE_IMAGE_HOST_PATTERNS = [
-    /lookaside\.fbsx\.com/i,
-    /lookaside\.facebook\.com/i,
-    /scontent[.-].*\.fbcdn\.net/i,
-    /scontent\..*\.cdninstagram\.com/i,
-  ];
-
-  const isReliableImageUrl = (url) => {
-    if (!url || typeof url !== 'string') return false;
-    return !UNRELIABLE_IMAGE_HOST_PATTERNS.some(pattern => pattern.test(url));
-  };
-
-  const searchImagesForQuestion = async (questionId, keyword) => {
-    if (!keyword || !keyword.trim()) return;
-    setSearchingImageFor(questionId);
-    setImageSearchError(prev => ({ ...prev, [questionId]: '' }));
-    setImageSearchResults(prev => ({ ...prev, [questionId]: [] }));
-
-    const results = [];
-
-    // Sumber 1: Openverse (api.openverse.org) -- agregat CC-licensed image
-    // dari banyak sumber, cakupan lebih luas & lebih baru dari Wikimedia.
-    try {
-      const ovRes = await fetch(
-        `https://api.openverse.org/v1/images/?q=${encodeURIComponent(keyword)}&license_type=all-cc&page_size=6`
-      );
-      if (ovRes.ok) {
-        const ovData = await ovRes.json();
-        (ovData.results || []).forEach(r => {
-          if (r.url && isReliableImageUrl(r.url) && isReliableImageUrl(r.thumbnail || r.url)) {
-            results.push({
-              url: r.url,
-              thumb: r.thumbnail || r.url,
-              title: r.title || keyword,
-              source: `Openverse (${r.source || r.license || 'CC'})`,
-            });
-          }
-        });
-      }
-    } catch (e) {
-      console.warn('Openverse search gagal, lanjut ke Wikimedia:', e.message);
-    }
-
-    // Sumber 2: Wikimedia Commons -- fallback kalau Openverse kosong/gagal.
-    // Endpoint publik, CORS-enabled lewat origin=*, gak perlu API key.
-    if (results.length < 4) {
-      try {
-        const wmRes = await fetch(
-          `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(keyword)}&gsrnamespace=6&gsrlimit=6&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=400&format=json&origin=*`
-        );
-        if (wmRes.ok) {
-          const wmData = await wmRes.json();
-          const pages = wmData?.query?.pages || {};
-          Object.values(pages).forEach(p => {
-            const info = p.imageinfo && p.imageinfo[0];
-            if (info && info.url && isReliableImageUrl(info.url) && isReliableImageUrl(info.thumburl || info.url)) {
-              results.push({
-                url: info.url,
-                thumb: info.thumburl || info.url,
-                title: p.title ? p.title.replace('File:', '') : keyword,
-                source: 'Wikimedia Commons',
-              });
-            }
-          });
-        }
-      } catch (e) {
-        console.warn('Wikimedia search gagal:', e.message);
-      }
-    }
-
-    setImageSearchResults(prev => ({ ...prev, [questionId]: results }));
-    if (results.length === 0) {
-      setImageSearchError(prev => ({
-        ...prev,
-        [questionId]: 'Gak nemu gambar yang cocok. Coba upload manual dari sumber terpercaya.',
-      }));
-    }
-    setSearchingImageFor(null);
-  };
-
-  // Guru klik salah satu hasil pencarian -> langsung dipasang jadi qImage,
-  // sama seperti hasil upload manual.
-  const selectSearchedImage = (questionId, result) => {
-    setQuestions(prev => prev.map(q => q.id === questionId ? {
-      ...q,
-      qImage: result?.url || '',
-      imageSource: result ? { title: result.title || '', url: result.url || '', source: result.source || '' } : null
-    } : q));
-    setImageSearchResults(prev => ({ ...prev, [questionId]: [] }));
-  };
+  // Fitur ini SENGAJA DIHAPUS TOTAL (bukan disembunyikan) atas keputusan
+  // eksplisit: hasilnya sering ngawur (istilah abstrak seperti "printed
+  // table of function values" atau "wooden cube" gak akan pernah ketemu
+  // padanan foto yang relevan di Openverse/Wikimedia -- kedua sumber itu
+  // isinya arsip foto lama/seni/dokumen, bukan foto objek harian umum),
+  // dan rawan mengembalikan URL yang gagal dibuka di luar platform
+  // asalnya (lookaside Facebook, dll -- sudah pernah dicoba ditambal
+  // dengan filter, tapi akar masalahnya adalah SUMBER DATANYA sendiri
+  // yang gak cocok buat kebutuhan ini).
+  //
+  // Satu-satunya jalur pencarian gambar OTOMATIS sekarang adalah Tavily
+  // (lihat enrichQuestionsWithRealImages() di api/generateQuizFromTopic.js)
+  // -- berjalan sendiri di backend begitu soal digenerate, hasilnya
+  // (kalau ketemu) sudah langsung terisi di field qImage/optionImages
+  // SAAT soal ini pertama kali muncul di sini, guru gak perlu klik apa
+  // pun. Kalau Tavily gak nemu (jarang, tapi bisa terjadi -- kredit
+  // bulanan habis, atau memang gak ada gambar yang cocok), satu-satunya
+  // fallback adalah tombol "Upload Gambar" manual di bawah -- guru
+  // upload sendiri dari sumber yang dia percaya, bukan tebak-tebakan
+  // dari pencarian otomatis yang gak akurat.
 
 
   const handleRemoveImage = (questionId, targetType, optionIndex = null) => {
@@ -1484,16 +1385,12 @@ const ManageQuiz = () => {
               </div>
             </div>
 
-            {/* 🔥 BARU: kalau soal ini dihasilkan AI ("Generate dari Topik") dan
-                AI menandai soal ini idealnya pakai gambar/diagram (mis. soal
-                pola bangun ruang, diagram sel, grafik), tampilkan sinyal jelas
-                di sini -- supaya guru gampang lihat soal mana yang perlu
-                dilengkapi gambar akurat SENDIRI. AI sengaja TIDAK disuruh
-                menggambar diagramnya sendiri -- untuk konten sains/matematika
-                yang butuh presisi (posisi organel sel, struktur nefron, dll),
-                AI gambar bisa salah tanpa guru sadar, dan itu bahaya buat
-                akurasi materi ajar. Jadi AI cuma "kasih tau", guru yang
-                lengkapi gambarnya (dari bank soal resmi/sumber terpercaya).*/}
+            {/* 🔥 Hint ini muncul kalau Astro Gemilang (backend, via Tavily)
+                SUDAH mencoba mencari gambar otomatis duluan tapi gak
+                nemu yang cocok (lihat enrichQuestionsWithRealImages() di
+                api/generateQuizFromTopic.js) -- jadi kalau guru lihat
+                hint ini, itu artinya pencarian otomatis udah dicoba dan
+                gagal, satu-satunya jalan tersisa adalah upload manual. */}
             {item.needsImage && !item.qImage && (
               <div style={{
                 marginBottom: 10, padding: '10px 12px', background: '#fffbeb',
@@ -1503,63 +1400,8 @@ const ManageQuiz = () => {
                 <span style={{ flexShrink: 0 }}>💡</span>
                 <span>
                   <b>Astro Gemilang menyarankan soal ini pakai gambar/diagram</b>
-                  {item.imageHint ? `: ${item.imageHint}` : '.'} Klik "Cari Gambar" buat cari otomatis dari sumber berlisensi bebas, atau upload sendiri dari bank soal/sumber terpercaya kalau hasil pencarian kurang pas.
+                  {item.imageHint ? `: ${item.imageHint}` : '.'} Pencarian otomatis belum menemukan gambar yang cocok -- silakan upload manual dari bank soal/sumber terpercaya.
                 </span>
-              </div>
-            )}
-
-            {/* 🔥 BARU: Cari Gambar Otomatis (Openverse/Wikimedia, gratis & legal
-                buat dipakai ulang) -- guru tetap yang milih dari kandidat,
-                bukan auto-pasang, supaya akurasi konten sains/anatomi tetap
-                terjaga. */}
-            {item.needsImage && !item.qImage && (
-              <div style={{ marginBottom: 10 }}>
-                <button
-                  onClick={() => searchImagesForQuestion(item.id, item.imageHint || item.q)}
-                  disabled={searchingImageFor === item.id}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px',
-                    background: '#eff6ff', border: '1px solid #3b82f6', borderRadius: 6,
-                    cursor: searchingImageFor === item.id ? 'not-allowed' : 'pointer',
-                    fontSize: 10, fontWeight: 600, color: '#3b82f6',
-                    opacity: searchingImageFor === item.id ? 0.6 : 1,
-                  }}
-                >
-                  {searchingImageFor === item.id ? <Loader2 size={14} className="spin" /> : <Search size={14} />}
-                  {searchingImageFor === item.id ? 'Nyari gambar...' : '🔍 Cari Gambar (Openverse/Wikimedia)'}
-                </button>
-
-                {imageSearchError[item.id] && (
-                  <div style={{ marginTop: 6, fontSize: 10, color: '#ef4444' }}>{imageSearchError[item.id]}</div>
-                )}
-
-                {imageSearchResults[item.id] && imageSearchResults[item.id].length > 0 && (
-                  <div style={{ marginTop: 8 }}>
-                    <div style={{ fontSize: 10, color: '#64748b', marginBottom: 6 }}>
-                      Pilih gambar yang paling akurat buat soal ini:
-                    </div>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      {imageSearchResults[item.id].map((r, ri) => (
-                        <div
-                          key={ri}
-                          onClick={() => selectSearchedImage(item.id, r)}
-                          title={`${r.title} — ${r.source} (klik untuk pakai)`}
-                          style={{
-                            width: 90, cursor: 'pointer', border: '2px solid #e2e8f0', borderRadius: 8,
-                            overflow: 'hidden', transition: '0.15s',
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.borderColor = '#3b82f6'}
-                          onMouseLeave={e => e.currentTarget.style.borderColor = '#e2e8f0'}
-                        >
-                          <img src={r.thumb} alt={r.title} style={{ width: '100%', height: 70, objectFit: 'cover', display: 'block' }} />
-                          <div style={{ fontSize: 8, color: '#94a3b8', padding: '2px 4px', background: '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {r.source}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
