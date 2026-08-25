@@ -958,6 +958,9 @@ const ManageQuiz = () => {
         researchSources: q.researchSources || [],
         visualRequired: q.visualRequired || false,
         visualKind: q.visualKind || 'none',
+        // 🔥 BARU: bobot & capaian per butir soal (dari Blueprint Engine)
+        difficulty: q.difficulty || '',
+        competency: q.competency || '',
         needsManualAnswer: false
       })));
     }
@@ -1280,7 +1283,7 @@ const ManageQuiz = () => {
   // ============================================================
   const handleAIQuizGenerated = (generatedQuestions) => {
     if (!generatedQuestions || generatedQuestions.length === 0) {
-      showToast("⚠️ AI tidak menghasilkan soal.", 'error');
+      showToast("⚠️ Astro Gemilang tidak menghasilkan soal.", 'error');
       return;
     }
     setQuestions(prev => {
@@ -1288,7 +1291,7 @@ const ManageQuiz = () => {
       return isPrevEmpty ? generatedQuestions : [...prev, ...generatedQuestions];
     });
     setIsAIGenerated(true);
-    showToast(`✨ ${generatedQuestions.length} soal berhasil dibuat AI! Cek dulu sebelum diterbitkan.`);
+    showToast(`✨ ${generatedQuestions.length} soal berhasil dibuat Astro Gemilang! Cek dulu sebelum diterbitkan.`);
   };
 
   // ============================================================
@@ -1393,9 +1396,29 @@ const ManageQuiz = () => {
                 ⚠️ Perlu tandai jawaban
               </span>
             )}
+            {/* 🔥 BARU: badge BOBOT (difficulty) & CAPAIAN (competency) --
+                sebelumnya dua info ini SUDAH dihasilkan Blueprint Engine
+                (lihat generateQuizFromTopic.js) tapi HILANG di tengah
+                jalan, gak pernah sampai ke tampilan guru sama sekali.
+                Sekarang ditampilkan sebagai badge kecil di tiap soal. */}
+            {item.difficulty && (
+              <span style={{
+                fontSize: 9, fontWeight: 700,
+                color: item.difficulty === 'Hard' ? '#b91c1c' : item.difficulty === 'Medium' ? '#b45309' : '#166534',
+                background: item.difficulty === 'Hard' ? '#fee2e2' : item.difficulty === 'Medium' ? '#fef3c7' : '#dcfce7',
+                padding: '2px 8px', borderRadius: 10
+              }}>
+                ⚖️ {item.difficulty}
+              </span>
+            )}
+            {item.competency && (
+              <span style={{ fontSize: 9, fontWeight: 700, color: '#5b21b6', background: '#f5f3ff', padding: '2px 8px', borderRadius: 10, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.competency}>
+                🎯 {item.competency}
+              </span>
+            )}
             {item.needsImage && !item.qImage && (
               <span style={{ fontSize: 9, fontWeight: 700, color: '#92400e', background: '#fef3c7', border: '1px solid #f59e0b', padding: '2px 8px', borderRadius: 10 }}>
-                💡 AI: sebaiknya pakai gambar
+                💡 Astro: sebaiknya pakai gambar
               </span>
             )}
             {isEditing && (
@@ -1479,7 +1502,7 @@ const ManageQuiz = () => {
               }}>
                 <span style={{ flexShrink: 0 }}>💡</span>
                 <span>
-                  <b>AI menyarankan soal ini pakai gambar/diagram</b>
+                  <b>Astro Gemilang menyarankan soal ini pakai gambar/diagram</b>
                   {item.imageHint ? `: ${item.imageHint}` : '.'} Klik "Cari Gambar" buat cari otomatis dari sumber berlisensi bebas, atau upload sendiri dari bank soal/sumber terpercaya kalau hasil pencarian kurang pas.
                 </span>
               </div>
@@ -2418,6 +2441,12 @@ const ManageQuiz = () => {
           researchSources: q.researchSources || [],
           visualRequired: q.visualRequired || false,
           visualKind: q.visualKind || 'none',
+          // 🔥 BARU: sebelumnya bobot (difficulty) & capaian (competency)
+          // per butir soal -- yang sudah dihitung Blueprint Engine sejak
+          // awal -- gak pernah ikut disimpan ke Firestore, jadi hilang
+          // begitu kuis ditutup/dibuka lagi. Sekarang disertakan.
+          difficulty: q.difficulty || '',
+          competency: q.competency || '',
         })),
         totalQuestions: valid.length,
         deadlineQuiz: null, // field lama, sudah tidak dipakai (lihat catatan di Identitas Kuis)

@@ -96,7 +96,7 @@ const RESEARCH_MODES = [
       'Gaya Soal Baku/Umum',
 
     short:
-      'AI meniru gaya & pola soal yang lazim dipakai untuk topik ini -- bukan menyalin/menjamin soal asli dari sumber tertentu.',
+      'Astro Gemilang meniru gaya & pola soal yang lazim dipakai untuk topik ini -- bukan menyalin/menjamin soal asli dari sumber tertentu.',
 
     icon:
       BookOpen,
@@ -117,7 +117,7 @@ const RESEARCH_MODES = [
       // gak ada. Diganti biar sesuai kenyataan: AI menyusun soal baru
       // berdasar pola & tren umum yang dia "tahu" dari pelatihannya,
       // bukan hasil analisis sumber real-time.
-      'AI menyusun soal baru berdasar pola & tren umum yang ia ketahui -- bukan hasil analisis sumber real-time.',
+      'Astro Gemilang menyusun soal baru berdasar pola & tren umum yang ia ketahui -- bukan hasil analisis sumber real-time.',
 
     icon:
       TrendingUp,
@@ -314,6 +314,17 @@ const normalizeQuestion = (
   needsManualAnswer:
     false,
 
+  // 🔥 BARU: bobot (difficulty) & capaian (competency) per butir --
+  // sudah dihasilkan Blueprint Engine di backend, sebelumnya field ini
+  // gak pernah dibaca di sini jadi gak pernah sampai ke ManageQuiz.
+  difficulty:
+    q?.difficulty ||
+    '',
+
+  competency:
+    q?.competency ||
+    '',
+
   needsImage:
     Boolean(
       q?.needsImage
@@ -463,6 +474,20 @@ const AIGenerateQuiz = ({
     setDiagnostics,
   ] = useState(null);
 
+  // 🔥 BARU: Mode Simpel vs Profesional -- guru sering cuma butuh
+  // generate cepat (topik + kelas + jumlah + tipe soal, langsung jadi),
+  // tapi kebutuhan kompleks (UTBK, riset tren, HOTS tinggi, arahan
+  // detail) tetap perlu diakomodir. Default SIMPEL (permintaan
+  // eksplisit -- guru "hanya butuh simple generate soal"). Field yang
+  // disembunyikan di mode Simpel TETAP dikirim ke backend pakai nilai
+  // default yang sudah masuk akal (lihat handleGenerate), jadi guru
+  // gak pernah kehilangan fungsi, cuma gak diminta mikirin detailnya
+  // kalau memang gak perlu.
+  const [
+    uiMode,
+    setUiMode,
+  ] = useState('simpel');
+
   // ==========================================================
   // TOGGLE TYPE
   // ==========================================================
@@ -531,7 +556,7 @@ const AIGenerateQuiz = ({
       setProgressStage(1);
 
       setStatusLabel(
-        'Membaca permintaan guru dan menyiapkan riset...'
+        'Membaca permintaan guru dan menyusun kisi-kisi soal...'
       );
 
       try {
@@ -546,7 +571,10 @@ const AIGenerateQuiz = ({
         setProgressStage(2);
 
         setStatusLabel(
-          '🔎 Mencari sumber soal publik di internet...'
+          researchMode ===
+            'prediction'
+            ? '🔎 Astro Gemilang mencari referensi tren soal terkini...'
+            : 'Astro Gemilang menyusun soal sesuai kisi-kisi...'
         );
 
         const response =
@@ -605,7 +633,7 @@ const AIGenerateQuiz = ({
         setProgressStage(3);
 
         setStatusLabel(
-          '🧠 Menganalisis sumber, memverifikasi soal, dan menyiapkan pembahasan...'
+          '🧠 Menyusun soal, memverifikasi jawaban, dan menyiapkan pembahasan...'
         );
 
         let data =
@@ -741,7 +769,7 @@ const AIGenerateQuiz = ({
 
         setError(
           requestError?.message ||
-            'Gagal melakukan riset dan generate soal.'
+            'Gagal menyusun soal.'
         );
 
         setStatusLabel(
@@ -809,7 +837,7 @@ const AIGenerateQuiz = ({
                     styles.title
                   }
                 >
-                  Asisten Soal Gemilang
+                  Astro Gemilang
                 </div>
 
                 <div
@@ -817,7 +845,7 @@ const AIGenerateQuiz = ({
                     styles.subtitle
                   }
                 >
-                  Research & Question Assistant
+                  Asisten Soal Gemilang
                 </div>
               </div>
             </div>
@@ -895,9 +923,9 @@ const AIGenerateQuiz = ({
                   butir (kompetensi &
                   tingkat kesulitan)
                   lebih dulu secara
-                  lokal, baru AI menyusun
-                  soal sesuai kisi-kisi
-                  itu.
+                  lokal, baru Astro Gemilang
+                  menyusun soal sesuai
+                  kisi-kisi itu.
                 </div>
               </div>
 
@@ -906,6 +934,113 @@ const AIGenerateQuiz = ({
                 color="#16a34a"
               />
             </div>
+
+            {/* ==================================================
+                🔥 BARU: MODE SIMPEL / PROFESIONAL
+                Guru yang cuma butuh generate cepat (kasus paling
+                sering) gak perlu disodori semua opsi sekaligus --
+                tapi kebutuhan kompleks (UTBK, riset tren, HOTS
+                tinggi, arahan detail) tetap harus bisa diakses tanpa
+                fitur apa pun yang hilang. Field yang disembunyikan di
+                Mode Simpel tetap dikirim ke backend pakai nilai
+                default masuk akal (lihat handleGenerate).
+            ================================================== */}
+
+            <div
+              style={{
+                display: 'flex',
+                gap: 6,
+                marginBottom: 16,
+                background: '#f1f5f9',
+                padding: 4,
+                borderRadius: 10,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() =>
+                  setUiMode(
+                    'simpel',
+                  )
+                }
+                style={{
+                  flex: 1,
+                  padding: '9px 12px',
+                  borderRadius: 8,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  background:
+                    uiMode ===
+                    'simpel'
+                      ? 'white'
+                      : 'transparent',
+                  color:
+                    uiMode ===
+                    'simpel'
+                      ? '#1e293b'
+                      : '#64748b',
+                  boxShadow:
+                    uiMode ===
+                    'simpel'
+                      ? '0 1px 4px rgba(0,0,0,0.08)'
+                      : 'none',
+                }}
+              >
+                ⚡ Mode Simpel
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setUiMode(
+                    'profesional',
+                  )
+                }
+                style={{
+                  flex: 1,
+                  padding: '9px 12px',
+                  borderRadius: 8,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  background:
+                    uiMode ===
+                    'profesional'
+                      ? 'white'
+                      : 'transparent',
+                  color:
+                    uiMode ===
+                    'profesional'
+                      ? '#1e293b'
+                      : '#64748b',
+                  boxShadow:
+                    uiMode ===
+                    'profesional'
+                      ? '0 1px 4px rgba(0,0,0,0.08)'
+                      : 'none',
+                }}
+              >
+                🎓 Mode Profesional
+              </button>
+            </div>
+
+            {uiMode ===
+              'simpel' && (
+              <div
+                style={{
+                  fontSize: 11,
+                  color: '#64748b',
+                  marginBottom: 14,
+                  marginTop: -8,
+                  lineHeight: 1.6,
+                }}
+              >
+                Cukup isi topik, kelas, dan jumlah soal -- Astro Gemilang atur sisanya. Butuh riset tren, level HOTS, atau arahan khusus (mis. UTBK)? Pindah ke <b>Mode Profesional</b>.
+              </div>
+            )}
 
             {/* ==================================================
                 TOPIC
@@ -1028,9 +1163,13 @@ const AIGenerateQuiz = ({
             </div>
 
             {/* ==================================================
-                RESEARCH MODE
+                RESEARCH MODE (Mode Profesional saja -- guru Mode
+                Simpel gak perlu mikirin ini, default 'source' dipakai
+                otomatis, lihat handleGenerate)
             ================================================== */}
 
+            {uiMode ===
+              'profesional' && (
             <div
               style={
                 styles.field
@@ -1153,11 +1292,15 @@ const AIGenerateQuiz = ({
                 )}
               </div>
             </div>
+            )}
 
             {/* ==================================================
-                TARGET YEAR
+                TARGET YEAR (Mode Profesional saja -- Mode Simpel
+                pakai default tahun depan otomatis)
             ================================================== */}
 
+            {uiMode ===
+              'profesional' && (
             <div
               style={
                 styles.field
@@ -1222,6 +1365,7 @@ const AIGenerateQuiz = ({
                 />
               </div>
             </div>
+            )}
 
             {/* ==================================================
                 TYPES
@@ -1309,9 +1453,12 @@ const AIGenerateQuiz = ({
             </div>
 
             {/* ==================================================
-                HOTS
+                HOTS (Mode Profesional saja -- Mode Simpel pakai
+                default Standard, biar hasil gak berat sebelah)
             ================================================== */}
 
+            {uiMode ===
+              'profesional' && (
             <div
               style={
                 styles.field
@@ -1372,11 +1519,15 @@ const AIGenerateQuiz = ({
                 )}
               </div>
             </div>
+            )}
 
             {/* ==================================================
-                TEACHER DIRECTION
+                TEACHER DIRECTION (Mode Profesional saja -- Mode
+                Simpel pakai default kosong/tanpa arahan khusus)
             ================================================== */}
 
+            {uiMode ===
+              'profesional' && (
             <div
               style={
                 styles.field
@@ -1416,6 +1567,7 @@ const AIGenerateQuiz = ({
                 }
               />
             </div>
+            )}
 
             {/* ==================================================
                 ERROR
