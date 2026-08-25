@@ -151,7 +151,7 @@ const TAVILY_SEARCH_URL =
 // gambar) gak ujug-ujug ngabisin jatah bulanan cuma dalam 1 klik.
 const MAX_TAVILY_CALLS_PER_REQUEST = 8;
 
-const TAVILY_TIMEOUT_MS = 12_000;
+const TAVILY_TIMEOUT_MS = 7_000;
 
 // ============================================================
 // STEP 1: TAVILY WEB RESEARCH (SOURCE MODE)
@@ -316,32 +316,43 @@ async function collectTavilyResearch({
     };
   }
 
-  const queries = buildResearchQueries({
-    topic,
-    mapel,
-    kelas,
-    targetYear,
-    sourceMode,
-    hotsLevel,
-    arahan,
-  });
+  const queries =
+    buildResearchQueries({
+      topic,
+      mapel,
+      kelas,
+      targetYear,
+      sourceMode,
+      hotsLevel,
+      arahan,
+    });
+
+  // Jalankan semua query paralel agar tidak menunggu 3x timeout serial.
+  const settled =
+    await Promise.allSettled(
+      queries.map((query) =>
+        callTavilyResearchSearch(
+          apiKey,
+          query,
+        ),
+      ),
+    );
 
   const packets = [];
 
-  for (const query of queries) {
-    try {
-      const packet = await callTavilyResearchSearch(
-        apiKey,
-        query,
-      );
-      packets.push(packet);
-    } catch (error) {
+  for (let i = 0; i < settled.length; i += 1) {
+    const result = settled[i];
+
+    if (result.status === 'fulfilled') {
+      packets.push(result.value);
+    } else {
       console.error(
         '[Gemilang Research] Tavily query failed',
         {
-          query,
-          status: error?.providerStatus || null,
-          message: error?.providerMessage || error?.message || null,
+          query: queries[i],
+          message:
+            result.reason?.message ||
+            'Unknown Tavily error',
         },
       );
     }
@@ -356,29 +367,24 @@ async function collectTavilyResearch({
       if (!/^https?:\/\//i.test(url)) continue;
 
       sources.push({
-        title: cleanText(result?.title).slice(0, 300),
+        title: cleanText(result?.title).slice(0, 220),
         url,
         content: cleanText(
           result?.raw_content || result?.content || '',
-        ).slice(0, 2500),
+        ).slice(0, 1200),
         query: packet.query,
       });
     }
 
     for (const item of packet.images || []) {
-      const url = typeof item === 'string'
-        ? item
-        : item?.url;
-
+      const url = typeof item === 'string' ? item : item?.url;
       if (!/^https?:\/\//i.test(String(url || ''))) continue;
 
       images.push({
         url,
         description: cleanText(
-          typeof item === 'string'
-            ? ''
-            : item?.description || '',
-        ).slice(0, 400),
+          typeof item === 'string' ? '' : item?.description || '',
+        ).slice(0, 250),
         query: packet.query,
       });
     }
@@ -391,7 +397,7 @@ async function collectTavilyResearch({
     if (seenUrls.has(source.url)) continue;
     seenUrls.add(source.url);
     uniqueSources.push(source);
-    if (uniqueSources.length >= MAX_RESEARCH_SOURCES_FOR_AI) break;
+    if (uniqueSources.length >= 4) break;
   }
 
   const uniqueImages = [];
@@ -401,7 +407,7 @@ async function collectTavilyResearch({
     if (seenImages.has(image.url)) continue;
     seenImages.add(image.url);
     uniqueImages.push(image);
-    if (uniqueImages.length >= MAX_RESEARCH_IMAGES_FOR_AI) break;
+    if (uniqueImages.length >= 8) break;
   }
 
   return {
@@ -718,39 +724,18 @@ function computeMaxTokens(
   jumlah,
   enableBrowserSearch,
 ) {
-  // Perkiraan: tiap soal butuh ~400 token buat output (pertanyaan +
-  // opsi + pembahasan + verifikasi), plus overhead ~300 token buat
-  // instruksi umum. Dibatasi maksimal supaya nyisain ruang buat token
-  // PROMPT (system+user+blueprint) di bawah limit TPM -- prompt untuk
-  // permintaan besar (banyak soal) juga lebih panjang, jadi makin
-  // banyak soal, makin sedikit "sisa" jatah yang aman dipakai buat
-  // max_tokens output.
-  const estimated =
-    300 +
-    jumlah * 400;
+  let outputTokens =
+    900 +
+    jumlah * 260;
 
-  // 🔥 BARU: kalau browser_search aktif, hasil pencarian (snippet
-  // beberapa halaman web) ikut masuk ke context -- itu makan jatah
-  // TPM juga, di LUAR kendali kita (gak tau pasti berapa token
-  // sebelum request jalan). Sisakan buffer JAUH lebih besar supaya
-  // gak gampang nabrak limit 8.000 TPM kalau browser_search narik
-  // banyak konten.
-  const buffer =
-    enableBrowserSearch
-      ? 3500
-      : 1500;
+  if (enableBrowserSearch) {
+    outputTokens -= 300;
+  }
 
-  const ceiling =
-    GROQ_TPM_LIMIT -
-    buffer;
+  outputTokens = Math.max(1200, outputTokens);
+  outputTokens = Math.min(outputTokens, 5000);
 
-  return Math.min(
-    Math.max(
-      estimated,
-      1200,
-    ),
-    ceiling,
-  );
+  return outputTokens;
 }
 
 const MAX_FIELD_LENGTH = 4_000;
