@@ -110,7 +110,7 @@ const AI_TIMEOUT_MS = 45_000;
 // dijaga di bawah maxDuration (60s) Vercel supaya function-nya sendiri
 // gak keburu dimatikan platform sebelum sempat kirim respons error
 // yang rapi.
-const AI_TIMEOUT_WITH_SEARCH_MS = 55_000;
+const AI_TIMEOUT_WITH_SEARCH_MS = 45_000;
 
 // 🔥 BARU: Groq TPM (Tokens Per Minute) untuk model `openai/gpt-oss-120b`
 // di tier gratis ternyata cuma 8000 -- ini ANGKA ASLI dari pesan error
@@ -149,7 +149,7 @@ const TAVILY_SEARCH_URL =
 // Batas keras jumlah panggilan Tavily PER REQUEST generate-quiz --
 // jaga-jaga supaya satu permintaan guru (banyak soal, semua butuh
 // gambar) gak ujug-ujug ngabisin jatah bulanan cuma dalam 1 klik.
-const MAX_TAVILY_CALLS_PER_REQUEST = 8;
+const MAX_TAVILY_CALLS_PER_REQUEST = 4;
 
 const TAVILY_TIMEOUT_MS = 7_000;
 
@@ -316,27 +316,26 @@ async function collectTavilyResearch({
     };
   }
 
-  const queries =
-    buildResearchQueries({
-      topic,
-      mapel,
-      kelas,
-      targetYear,
-      sourceMode,
-      hotsLevel,
-      arahan,
-    });
+  const queries = buildResearchQueries({
+    topic,
+    mapel,
+    kelas,
+    targetYear,
+    sourceMode,
+    hotsLevel,
+    arahan,
+  });
 
-  // Jalankan semua query paralel agar tidak menunggu 3x timeout serial.
-  const settled =
-    await Promise.allSettled(
-      queries.map((query) =>
-        callTavilyResearchSearch(
-          apiKey,
-          query,
-        ),
+  // Jalankan seluruh query secara paralel agar 3 pencarian tidak menumpuk
+  // timeout secara serial dan melewati batas waktu Vercel.
+  const settled = await Promise.allSettled(
+    queries.map((query) =>
+      callTavilyResearchSearch(
+        apiKey,
+        query,
       ),
-    );
+    ),
+  );
 
   const packets = [];
 
@@ -370,20 +369,31 @@ async function collectTavilyResearch({
         title: cleanText(result?.title).slice(0, 220),
         url,
         content: cleanText(
-          result?.raw_content || result?.content || '',
+          result?.raw_content ||
+          result?.content ||
+          '',
         ).slice(0, 1200),
         query: packet.query,
       });
     }
 
     for (const item of packet.images || []) {
-      const url = typeof item === 'string' ? item : item?.url;
-      if (!/^https?:\/\//i.test(String(url || ''))) continue;
+      const url =
+        typeof item === 'string'
+          ? item
+          : item?.url;
+
+      if (!/^https?:\/\//i.test(String(url || ''))) {
+        continue;
+      }
 
       images.push({
         url,
         description: cleanText(
-          typeof item === 'string' ? '' : item?.description || '',
+          typeof item === 'string'
+            ? ''
+            : item?.description ||
+                '',
         ).slice(0, 250),
         query: packet.query,
       });
@@ -397,7 +407,13 @@ async function collectTavilyResearch({
     if (seenUrls.has(source.url)) continue;
     seenUrls.add(source.url);
     uniqueSources.push(source);
-    if (uniqueSources.length >= 4) break;
+
+    if (
+      uniqueSources.length >=
+      MAX_RESEARCH_SOURCES_FOR_AI
+    ) {
+      break;
+    }
   }
 
   const uniqueImages = [];
@@ -407,7 +423,13 @@ async function collectTavilyResearch({
     if (seenImages.has(image.url)) continue;
     seenImages.add(image.url);
     uniqueImages.push(image);
-    if (uniqueImages.length >= 8) break;
+
+    if (
+      uniqueImages.length >=
+      MAX_RESEARCH_IMAGES_FOR_AI
+    ) {
+      break;
+    }
   }
 
   return {
@@ -534,7 +556,6 @@ async function enrichQuestionsWithRealImages(
   researchImages = [],
 ) {
   if (!tavilyApiKey) {
-    // Fitur belum di-setup -- lewati total, gak ada perubahan perilaku.
     return {
       imagesFetched: 0,
       tavilyCallsUsed: 0,
@@ -542,18 +563,24 @@ async function enrichQuestionsWithRealImages(
     };
   }
 
-  let callsUsed = 0;
-  let imagesFetched = 0;
-  let cappedByBudget = false;
   const usedResearchImages = new Set();
 
   const findResearchImage = (hint) => {
-    const hintTokens = tokenSet(`${hint} ${topic}`);
+    const hintTokens = tokenSet(
+      `${hint} ${topic}`,
+    );
+
     let best = null;
     let bestScore = 0;
 
     for (const image of researchImages || []) {
-      if (!image?.url || usedResearchImages.has(image.url)) continue;
+      if (
+        !image?.url ||
+        usedResearchImages.has(image.url) ||
+        !isReliableImageUrl(image.url)
+      ) {
+        continue;
+      }
 
       const haystack = tokenSet(
         `${image.description || ''} ${image.query || ''}`,
@@ -579,19 +606,13 @@ async function enrichQuestionsWithRealImages(
       : null;
   };
 
-  for (
-    const question of questions
-  ) {
-    if (
-      callsUsed >=
-      MAX_TAVILY_CALLS_PER_REQUEST
-    ) {
-      cappedByBudget = true;
-      break;
-    }
+  // ----------------------------------------------------------
+  // PHASE 1: pakai kandidat gambar yang sudah ditemukan pada
+  // riset utama. Ini tidak memakai credit tambahan.
+  // ----------------------------------------------------------
+  const tasks = [];
 
-    // KASUS 1: soal butuh gambar stimulus (mis. "candi apa ini?")
-    // dan belum punya qImage (bukan clock/graph lokal).
+  for (const question of questions) {
     if (
       question.needsImage &&
       !question.qImage &&
@@ -602,120 +623,116 @@ async function enrichQuestionsWithRealImages(
           question.imageHint,
         );
 
-      let imageResult = researchImage;
-
-      if (!imageResult) {
-        imageResult =
-          await callTavilyImageSearch(
-            tavilyApiKey,
-            `${question.imageHint} ${topic}`,
-          );
-        callsUsed += 1;
-      }
-
-      if (imageResult?.url) {
-        question.qImage = imageResult.url;
+      if (researchImage?.url) {
+        question.qImage = researchImage.url;
         question.imageSource = {
-          url: imageResult.url,
-          fetchedVia: researchImage
-            ? 'tavily-research'
-            : 'tavily-image-search',
-          relevance: imageResult.relevance || null,
+          url: researchImage.url,
+          fetchedVia: 'tavily-research',
+          relevance: 1,
         };
-        usedResearchImages.add(imageResult.url);
-        imagesFetched += 1;
-      }
-
-      if (
-        callsUsed >=
-        MAX_TAVILY_CALLS_PER_REQUEST
-      ) {
-        cappedByBudget = true;
-        break;
+        usedResearchImages.add(researchImage.url);
+      } else {
+        tasks.push({
+          kind: 'question',
+          question,
+          query: `${question.imageHint} ${topic}`.trim(),
+        });
       }
     }
 
-    // KASUS 2: pilihan jawaban berbentuk gambar -- cari 1 gambar per
-    // opsi (mis. "Candi Prambanan", "Candi Borobudur", dst).
     if (
       question.optionsAreImages &&
-      Array.isArray(
-        question.options,
-      ) &&
-      question.options.length >
-        0
+      Array.isArray(question.options) &&
+      question.options.length > 0
     ) {
       const fetchedImages = [
-        ...(question.optionImages ||
-          []),
+        ...(question.optionImages || []),
       ];
 
       for (
         let i = 0;
-        i <
-        question.options
-          .length;
+        i < question.options.length;
         i += 1
       ) {
-        if (
-          callsUsed >=
-          MAX_TAVILY_CALLS_PER_REQUEST
-        ) {
-          cappedByBudget = true;
-          break;
-        }
+        if (fetchedImages[i]) continue;
 
-        // Kalau opsi ini SUDAH punya gambar (mis. dari fallback lama),
-        // jangan cari ulang -- hemat kredit.
-        if (
-          fetchedImages[i]
-        ) {
-          continue;
-        }
-
-        // Query digabung dengan topik supaya lebih spesifik (mis.
-        // "Candi Prambanan" + topik "Sejarah Kerajaan Mataram Kuno"),
-        // bukan cuma nama opsi polos yang bisa ambigu.
-        const query =
-          topic
-            ? `${question.options[i]} ${topic}`
-            : question.options[i];
+        const query = topic
+          ? `${question.options[i]} ${topic}`
+          : question.options[i];
 
         const researchImage =
-          findResearchImage(
-            query,
-          );
+          findResearchImage(query);
 
-        let imageResult = researchImage;
-
-        if (!imageResult) {
-          imageResult =
-            await callTavilyImageSearch(
-              tavilyApiKey,
-              query,
-            );
-          callsUsed += 1;
-        }
-
-        if (imageResult?.url) {
+        if (researchImage?.url) {
           fetchedImages[i] =
-            imageResult.url;
+            researchImage.url;
           usedResearchImages.add(
-            imageResult.url,
+            researchImage.url,
           );
-          imagesFetched += 1;
+        } else {
+          tasks.push({
+            kind: 'option',
+            question,
+            optionIndex: i,
+            query,
+            fetchedImages,
+          });
         }
       }
 
-      question.optionImages =
-        fetchedImages;
+      question.optionImages = fetchedImages;
     }
+  }
+
+  // ----------------------------------------------------------
+  // PHASE 2: batasi hard call Tavily tambahan, lalu jalankan
+  // semuanya paralel. Jadi max tambahan = 4 call, max ~7 detik.
+  // ----------------------------------------------------------
+  const selectedTasks = tasks.slice(
+    0,
+    MAX_TAVILY_CALLS_PER_REQUEST,
+  );
+
+  const cappedByBudget =
+    tasks.length > selectedTasks.length;
+
+  const results = await Promise.all(
+    selectedTasks.map(async (task) => ({
+      task,
+      image: await callTavilyImageSearch(
+        tavilyApiKey,
+        task.query,
+      ),
+    })),
+  );
+
+  let imagesFetched = 0;
+
+  for (const { task, image } of results) {
+    if (!image?.url) continue;
+
+    if (task.kind === 'question') {
+      task.question.qImage = image.url;
+      task.question.imageSource = {
+        url: image.url,
+        fetchedVia: 'tavily-image-search',
+        relevance: image.relevance || null,
+      };
+    } else {
+      task.fetchedImages[
+        task.optionIndex
+      ] = image.url;
+      task.question.optionImages =
+        task.fetchedImages;
+    }
+
+    imagesFetched += 1;
+    usedResearchImages.add(image.url);
   }
 
   return {
     imagesFetched,
-    tavilyCallsUsed:
-      callsUsed,
+    tavilyCallsUsed: selectedTasks.length,
     cappedByBudget,
   };
 }
@@ -732,10 +749,16 @@ function computeMaxTokens(
     outputTokens -= 300;
   }
 
-  outputTokens = Math.max(1200, outputTokens);
-  outputTokens = Math.min(outputTokens, 5000);
+  outputTokens = Math.max(
+    1200,
+    outputTokens,
+  );
 
-  return outputTokens;
+  // Hard ceiling supaya prompt + output masih punya ruang di TPM.
+  return Math.min(
+    outputTokens,
+    5000,
+  );
 }
 
 const MAX_FIELD_LENGTH = 4_000;
@@ -2919,7 +2942,7 @@ function sendGroqError(
             'timeout',
 
           timeoutMs:
-            AI_TIMEOUT_MS,
+            enableBrowserSearch ? AI_TIMEOUT_WITH_SEARCH_MS : AI_TIMEOUT_MS,
 
           model:
             GROQ_MODEL,
