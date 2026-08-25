@@ -741,7 +741,32 @@ async function enrichQuestionsWithRealImages(
   };
 }
 
-function computeMaxTokens(
+function function computeMaxTokens(
+  jumlah,
+  enableBrowserSearch,
+) {
+  // Naikkan alokasi dasar dan token per soal menjadi 500
+  // agar cukup menampung format JSON gambar/grafik yang memakan banyak ruang
+  let outputTokens =
+    1200 +
+    jumlah * 500;
+
+  if (enableBrowserSearch) {
+    outputTokens -= 400;
+  }
+
+  outputTokens = Math.max(
+    1500,
+    outputTokens,
+  );
+
+  // Naikkan plafon batas atas dari 5000 menjadi 6500.
+  // (Limit TPM Groq adalah 8000. 6500 output + ~1500 prompt = Pas dan aman)
+  return Math.min(
+    outputTokens,
+    6500,
+  );
+}(
   jumlah,
   enableBrowserSearch,
 ) {
@@ -3018,7 +3043,32 @@ function sendGroqError(
 
   // ----------------------------------------------------------
   // REQUEST TOO LARGE (413) -- seharusnya sudah dicegah oleh
-  // computeMaxTokens(), tapi tetap ditangani jaga-jaga kalau blueprint
+  // function computeMaxTokens(
+  jumlah,
+  enableBrowserSearch,
+) {
+  // Naikkan alokasi dasar dan token per soal menjadi 500
+  // agar cukup menampung format JSON gambar/grafik yang memakan banyak ruang
+  let outputTokens =
+    1200 +
+    jumlah * 500;
+
+  if (enableBrowserSearch) {
+    outputTokens -= 400;
+  }
+
+  outputTokens = Math.max(
+    1500,
+    outputTokens,
+  );
+
+  // Naikkan plafon batas atas dari 5000 menjadi 6500.
+  // (Limit TPM Groq adalah 8000. 6500 output + ~1500 prompt = Pas dan aman)
+  return Math.min(
+    outputTokens,
+    6500,
+  );
+}(), tapi tetap ditangani jaga-jaga kalau blueprint
   // atau arahan guru sangat panjang sampai token prompt sendiri (bukan
   // cuma max_tokens) yang bikin total nabrak limit TPM.
   // ----------------------------------------------------------
@@ -3414,7 +3464,32 @@ export default async function handler(
   let aiResult;
 
   const maxTokens =
-    computeMaxTokens(
+    function computeMaxTokens(
+  jumlah,
+  enableBrowserSearch,
+) {
+  // Naikkan alokasi dasar dan token per soal menjadi 500
+  // agar cukup menampung format JSON gambar/grafik yang memakan banyak ruang
+  let outputTokens =
+    1200 +
+    jumlah * 500;
+
+  if (enableBrowserSearch) {
+    outputTokens -= 400;
+  }
+
+  outputTokens = Math.max(
+    1500,
+    outputTokens,
+  );
+
+  // Naikkan plafon batas atas dari 5000 menjadi 6500.
+  // (Limit TPM Groq adalah 8000. 6500 output + ~1500 prompt = Pas dan aman)
+  return Math.min(
+    outputTokens,
+    6500,
+  );
+}(
       jumlah,
       enableBrowserSearch,
     );
