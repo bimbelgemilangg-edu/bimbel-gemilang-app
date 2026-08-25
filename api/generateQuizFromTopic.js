@@ -35,12 +35,17 @@
 //
 // KENAPA GROQ: terverifikasi AKTIF per Agustus 2026, free tier
 // PERMANEN (bukan trial/kredit habis), TANPA kartu kredit, endpoint
-// kompatibel format OpenAI (gampang dipelihara). Limit gratisnya:
-// 30 request/menit, 6.000 token/menit, 14.400 request/hari -- per
-// ORGANISASI (bukan per API key, jadi bikin banyak key gak nambah
-// jatah). Ini masih JAUH lebih longgar & lebih jelas aturannya
-// dibanding GitHub Models yang sudah tutup atau SiliconFlow yang
-// berbayar.
+// kompatibel format OpenAI (gampang dipelihara).
+//
+// 🔥 KOREKSI (sebelumnya salah ketik di sini): limit gratis untuk
+// `openai/gpt-oss-120b` adalah 30 request/menit, 1.000 request/HARI
+// (bukan 14.400 -- itu angka model LAIN, llama-3.1-8b-instant, yang
+// sempat salah kecantol ke sini), 8.000 token/menit, 200.000 token/
+// hari -- per ORGANISASI (bukan per API key). Terverifikasi silang
+// dari beberapa sumber independen Agustus 2026. 1.000 request/hari
+// tetap lebih dari cukup untuk skala bimbel biasa, tapi kalau nanti
+// dipakai bareng fitur browser_search di bawah (yang lebih boros
+// token), TPD (200.000/hari) bisa jadi batas yang lebih dulu kena.
 //
 // ENV:
 // GROQ_API_KEY=... (buat gratis di console.groq.com/keys, tinggal
@@ -54,6 +59,30 @@
 //   RESMI yang direkomendasikan Groq sendiri untuk kelas Llama-70B
 //   setelah mereka deprecate llama-3.3-70b-versatile per 16 Agustus
 //   2026 -- JANGAN pakai nama model itu lagi, sudah gak aktif.)
+//
+// 🔥 BARU: BROWSER SEARCH (mode "prediction" SAJA)
+// ============================================================
+// `openai/gpt-oss-120b` & `openai/gpt-oss-20b` punya tool bawaan
+// `browser_search` -- dijalankan DI SERVER GROQ SENDIRI (bukan kita
+// yang scraping/hosting apa pun), pakai mesin pencari Exa. Ini BEDA
+// dari SearXNG (yang kita putuskan TIDAK dipakai -- lihat diskusi:
+// self-hosted SearXNG rawan diblokir Google & butuh VPS berbayar).
+// browser_search TIDAK butuh infrastruktur tambahan sama sekali --
+// tinggal tambah field `tools` di request yang SAMA yang sudah kita
+// pakai.
+//
+// KETERBATASAN JUJUR (jangan lupa ini pas baca kode di bawah):
+// 1. "Currently Free: Available at no additional charge during BETA"
+//    -- ini status BETA Groq sendiri, bisa berubah kapan saja jadi
+//    berbayar. Bukan janji gratis selamanya.
+// 2. Cuma teks/snippet halaman -- TIDAK bisa mengambil FILE GAMBAR
+//    asli dari halaman sumber. Visual (jam, grafik) tetap dibikin
+//    lokal lewat buildClockSvg()/buildGraphSvg() seperti sebelumnya.
+// 3. Makan token & waktu lebih banyak (hasil pencarian masuk ke
+//    context) -- makanya SENGAJA cuma diaktifkan di mode "prediction"
+//    (guru pilih "Prediksi Berbasis Tren" di UI), BUKAN di mode
+//    default "source" yang harus tetap cepat & hemat token buat
+//    pemakaian sehari-hari.
 //
 // ============================================================
 
@@ -75,6 +104,14 @@ const MAX_QUESTION_COUNT = 20;
 
 const AI_TIMEOUT_MS = 45_000;
 
+// 🔥 BARU: timeout lebih longgar khusus untuk request yang mengaktifkan
+// browser_search -- AI beneran browsing beberapa halaman web dulu
+// sebelum jawab, jadi butuh waktu lebih dari request biasa. Tetap
+// dijaga di bawah maxDuration (60s) Vercel supaya function-nya sendiri
+// gak keburu dimatikan platform sebelum sempat kirim respons error
+// yang rapi.
+const AI_TIMEOUT_WITH_SEARCH_MS = 55_000;
+
 // 🔥 BARU: Groq TPM (Tokens Per Minute) untuk model `openai/gpt-oss-120b`
 // di tier gratis ternyata cuma 8000 -- ini ANGKA ASLI dari pesan error
 // yang benar-benar dialami ("Limit 8000, Requested 9689"), bukan
@@ -89,6 +126,7 @@ const GROQ_TPM_LIMIT = 8000;
 
 function computeMaxTokens(
   jumlah,
+  enableBrowserSearch,
 ) {
   // Perkiraan: tiap soal butuh ~400 token buat output (pertanyaan +
   // opsi + pembahasan + verifikasi), plus overhead ~300 token buat
@@ -101,9 +139,20 @@ function computeMaxTokens(
     300 +
     jumlah * 400;
 
+  // 🔥 BARU: kalau browser_search aktif, hasil pencarian (snippet
+  // beberapa halaman web) ikut masuk ke context -- itu makan jatah
+  // TPM juga, di LUAR kendali kita (gak tau pasti berapa token
+  // sebelum request jalan). Sisakan buffer JAUH lebih besar supaya
+  // gak gampang nabrak limit 8.000 TPM kalau browser_search narik
+  // banyak konten.
+  const buffer =
+    enableBrowserSearch
+      ? 3500
+      : 1500;
+
   const ceiling =
     GROQ_TPM_LIMIT -
-    1500; // sisakan buffer buat token prompt
+    buffer;
 
   return Math.min(
     Math.max(
@@ -1601,13 +1650,32 @@ function normalizeQuestion(
     visualKind,
 
     sourceTitle:
+      // 🔥 BARU: sebelumnya SELALU hardcode "Blueprint Gemilang" apa
+      // pun isinya -- padahal kalau browser_search aktif, AI mungkin
+      // beneran nemu sumber asli & ngisi field ini. Sekarang dipakai
+      // kalau valid (bukan string kosong), fallback ke default lama
+      // kalau AI gak ngisi apa-apa (mis. mode tanpa browser_search).
+      cleanText(
+        raw.sourceTitle,
+      ).slice(0, 300) ||
       'Blueprint Gemilang',
 
     sourceUrl:
-      '',
+      // Validasi sederhana: cuma terima yang beneran kelihatan kayak
+      // URL http/https -- kalau AI ngarang teks bukan URL (atau
+      // kosong), dibuang jadi string kosong daripada nyimpen sampah.
+      /^https?:\/\/\S+$/i.test(
+        cleanText(raw.sourceUrl),
+      )
+        ? cleanText(
+            raw.sourceUrl,
+          ).slice(0, 500)
+        : '',
 
     researchBacked:
-      false,
+      /^https?:\/\/\S+$/i.test(
+        cleanText(raw.sourceUrl),
+      ),
 
     sourceMode:
       currentMode,
@@ -1683,6 +1751,7 @@ function validateAgainstBlueprint(
 
 function buildSystemPrompt({
   allowedTypes,
+  enableBrowserSearch,
 }) {
   return [
     'Kamu adalah Otak Akademik Bimbel Gemilang.',
@@ -1693,13 +1762,27 @@ function buildSystemPrompt({
 
     'ATURAN MUTLAK:',
 
-    '1. Jangan browsing.',
+    // 🔥 BARU: aturan #1-3 sekarang KONDISIONAL. Sebelumnya SELALU
+    // melarang browsing & klaim sumber eksternal -- itu benar untuk
+    // mode default (jujur, karena memang gak ada browsing terjadi).
+    // Tapi begitu `browser_search` diaktifkan (mode "prediction"),
+    // larangan itu JUSTRU KONTRADIKTIF dengan tool yang baru dipasang
+    // -- AI perlu diberi tau dia BOLEH dan SEHARUSNYA browsing, dan
+    // WAJIB jujur soal sumber yang dia temukan (bukan lagi dilarang
+    // ngaku pakai sumber eksternal).
+    ...(enableBrowserSearch
+      ? [
+          '1. Kamu PUNYA akses browser_search -- WAJIB dipakai untuk cari referensi tren/pola soal ujian terkini (mis. kisi-kisi UTBK/TKA terbaru) sebelum menyusun soal, terutama untuk butir blueprint dengan tingkat kesulitan Hard/HOTS.',
+          '2. Kalau soal terinspirasi dari sumber yang kamu temukan lewat browser_search, isi field "sourceTitle" dan "sourceUrl" dengan judul & URL ASLI dari sumber itu. Jangan mengarang URL yang gak pernah kamu buka.',
+          '3. Kalau kamu TIDAK menemukan sumber relevan untuk suatu butir, kosongkan "sourceTitle"/"sourceUrl" -- jangan mengarang supaya kelihatan "berbasis riset".',
+        ]
+      : [
+          '1. Jangan browsing.',
+          '2. Jangan mengaku melakukan browsing.',
+          '3. Jangan mengaku memakai sumber eksternal.',
+        ]),
 
-    '2. Jangan mengaku melakukan browsing.',
-
-    '3. Jangan mengaku memakai sumber eksternal.',
-
-    '4. Jangan menyalin soal dari sumber tertentu.',
+    '4. Jangan menyalin soal dari sumber tertentu secara verbatim/kata-per-kata -- soal harus tetap hasil susunan sendiri berdasarkan pola/kompetensi yang dipelajari.',
 
     '5. Setiap soal harus mempunyai blueprintNo.',
 
@@ -1727,7 +1810,9 @@ function buildSystemPrompt({
 
     '{"meta":true}',
 
-    '{"type":"multiple","blueprintNo":1,"difficulty":"Easy","competency":"...","question":"...","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+    enableBrowserSearch
+      ? '{"type":"multiple","blueprintNo":1,"difficulty":"Easy","competency":"...","question":"...","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"...","sourceTitle":"...","sourceUrl":"..."}'
+      : '{"type":"multiple","blueprintNo":1,"difficulty":"Easy","competency":"...","question":"...","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
 
     '',
 
@@ -1750,6 +1835,15 @@ function buildSystemPrompt({
     'IMAGE:',
 
     '"needsImage":true,"imageHint":"English image description"',
+
+    // 🔥 Diingatkan eksplisit ke AI juga -- biar dia gak nyoba nulis
+    // URL gambar asli dari hasil browser_search ke field ini (dia
+    // cuma bisa akses teks/snippet halaman, bukan file gambarnya).
+    ...(enableBrowserSearch
+      ? [
+          '(Catatan: browser_search cuma kasih kamu TEKS halaman, BUKAN file gambar. Kalau butuh visual, tetap pakai clock/graph di atas atau needsImage+imageHint -- jangan mengarang URL gambar dari hasil pencarian.)',
+        ]
+      : []),
 
     '',
 
@@ -1820,6 +1914,7 @@ async function callGroq({
   systemPrompt,
   userPrompt,
   maxTokens,
+  enableBrowserSearch,
 }) {
   const controller =
     new AbortController();
@@ -1828,7 +1923,9 @@ async function callGroq({
     setTimeout(
       () =>
         controller.abort(),
-      AI_TIMEOUT_MS,
+      enableBrowserSearch
+        ? AI_TIMEOUT_WITH_SEARCH_MS
+        : AI_TIMEOUT_MS,
     );
 
   try {
@@ -1878,6 +1975,22 @@ async function callGroq({
 
             stream:
               false,
+
+            // 🔥 BARU: browser_search -- tool bawaan Groq (server-side,
+            // pakai Exa), CUMA disisipkan kalau diminta (mode
+            // "prediction"). Dibiarkan gak ada sama sekali di request
+            // mode "source" biasa supaya perilaku default TETAP SAMA
+            // PERSIS seperti sebelumnya -- gak ada risiko baru buat
+            // pemakaian sehari-hari yang udah jalan baik.
+            ...(enableBrowserSearch
+              ? {
+                  tools: [
+                    {
+                      type: 'browser_search',
+                    },
+                  ],
+                }
+              : {}),
           }),
 
           signal:
@@ -2033,9 +2146,14 @@ async function callGroq({
       error?.name ===
       'AbortError'
     ) {
+      const usedTimeout =
+        enableBrowserSearch
+          ? AI_TIMEOUT_WITH_SEARCH_MS
+          : AI_TIMEOUT_MS;
+
       const timeoutError =
         new Error(
-          `Groq timeout setelah ${AI_TIMEOUT_MS}ms.`,
+          `Groq timeout setelah ${usedTimeout}ms.`,
         );
 
       timeoutError.code =
@@ -2480,6 +2598,13 @@ export default async function handler(
       arahan,
     });
 
+  // 🔥 BARU: browser_search CUMA aktif di mode "prediction" (guru
+  // pilih "Prediksi Berbasis Tren" di UI) -- mode "source" (default)
+  // TETAP seperti sebelumnya, gak ada browsing, cepat & hemat token.
+  // Lihat penjelasan lengkap di header file soal kenapa ini dipisah.
+  const enableBrowserSearch =
+    currentMode === 'prediction';
+
   // ==========================================================
   // 2. PROMPT
   // ==========================================================
@@ -2487,6 +2612,7 @@ export default async function handler(
   const systemPrompt =
     buildSystemPrompt({
       allowedTypes,
+      enableBrowserSearch,
     });
 
   const userPrompt =
@@ -2510,6 +2636,7 @@ export default async function handler(
   const maxTokens =
     computeMaxTokens(
       jumlah,
+      enableBrowserSearch,
     );
 
   try {
@@ -2519,6 +2646,7 @@ export default async function handler(
         systemPrompt,
         userPrompt,
         maxTokens,
+        enableBrowserSearch,
       });
 
   } catch (error) {
@@ -2813,10 +2941,16 @@ export default async function handler(
           ),
 
         researchPerformed:
-          false,
+          enableBrowserSearch,
 
-        researchBacked:
-          false,
+        // 🔥 BARU: sebelumnya hardcode false apa pun kondisinya --
+        // sekarang hitung beneran berapa dari soal yang lolos punya
+        // sumber valid (URL asli, bukan mengarang) hasil browser_search.
+        researchBackedCount:
+          questions.filter(
+            (q) =>
+              q.researchBacked,
+          ).length,
       },
     });
 }
