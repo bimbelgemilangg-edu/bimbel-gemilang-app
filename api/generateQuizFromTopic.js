@@ -349,10 +349,7 @@ async function enrichQuestionsWithRealImages(
     }
 
     // KASUS 2: pilihan jawaban berbentuk gambar -- cari 1 gambar per
-    // opsi. AI sekarang bisa isi "optionImages" dengan HINT deskriptif
-    // (Bahasa Inggris, bukan URL -- lihat instruksi di system prompt),
-    // dipakai sebagai kata kunci pencarian yang lebih akurat daripada
-    // cuma label opsi polos (mis. "Opsi A").
+    // opsi (mis. "Candi Prambanan", "Candi Borobudur", dst).
     if (
       question.optionsAreImages &&
       Array.isArray(
@@ -361,22 +358,9 @@ async function enrichQuestionsWithRealImages(
       question.options.length >
         0
     ) {
-      const rawOptionImages = [
+      const fetchedImages = [
         ...(question.optionImages ||
           []),
-      ];
-
-      const isUrl = (
-        value,
-      ) =>
-        typeof value ===
-          'string' &&
-        /^https?:\/\//i.test(
-          value,
-        );
-
-      const fetchedImages = [
-        ...rawOptionImages,
       ];
 
       for (
@@ -394,34 +378,21 @@ async function enrichQuestionsWithRealImages(
           break;
         }
 
-        // Kalau opsi ini SUDAH punya URL gambar asli (bukan cuma hint
-        // teks), jangan cari ulang -- hemat kredit.
+        // Kalau opsi ini SUDAH punya gambar (mis. dari fallback lama),
+        // jangan cari ulang -- hemat kredit.
         if (
-          isUrl(
-            fetchedImages[i],
-          )
+          fetchedImages[i]
         ) {
           continue;
         }
 
-        // 🔥 FIX: prioritaskan HINT deskriptif dari AI (mis. "right
-        // triangle diagram") kalau ada dan bukan URL -- itu jauh lebih
-        // akurat buat pencarian daripada label opsi polos ("Opsi A").
-        // Fallback ke label opsi kalau AI gak ngisi hint.
-        const hint =
-          !isUrl(
-            rawOptionImages[i],
-          ) &&
-          rawOptionImages[i]
-            ? rawOptionImages[i]
-            : question.options[
-                i
-              ];
-
+        // Query digabung dengan topik supaya lebih spesifik (mis.
+        // "Candi Prambanan" + topik "Sejarah Kerajaan Mataram Kuno"),
+        // bukan cuma nama opsi polos yang bisa ambigu.
         const query =
           topic
-            ? `${hint} ${topic}`
-            : hint;
+            ? `${question.options[i]} ${topic}`
+            : question.options[i];
 
         const url =
           await callTavilyImageSearch(
@@ -935,7 +906,6 @@ function buildCurriculumBlueprint({
   jumlah,
   hotsLevel,
   arahan,
-  allowedTypes,
 }) {
   const safeTopic =
     safeField(topic);
@@ -974,55 +944,21 @@ function buildCurriculumBlueprint({
 
   let no = 1;
 
-  // 🔥 FIX BUG NYATA: sebelumnya blueprint SAMA SEKALI GAK menugaskan
-  // tipe soal per butir -- AI cuma dikasih daftar "tipe yang
-  // diperbolehkan" secara umum, TANPA dipaksa. Model gratis (yang
-  // cenderung ambil jalan termudah) akibatnya SELALU pilih "multiple"
-  // (pilihan ganda) buat semua butir, walau guru sudah mencentang
-  // banyak tipe lain -- persis kasus nyata yang dilaporkan: puluhan
-  // soal dihasilkan, semuanya "Pilihan Ganda Biasa". Sekarang tipe
-  // soal DIDISTRIBUSIKAN MERATA (round-robin) ke tiap nomor butir
-  // sejak awal -- AI dapat instruksi SPESIFIK per nomor ("butir #5
-  // WAJIB tipe truefalse"), bukan sekadar "boleh pakai tipe ini".
-  // Divalidasi juga di validateAgainstBlueprint() supaya AI beneran
-  // patuh, bukan cuma disarankan.
-  const typesForDistribution =
-    Array.isArray(
-      allowedTypes,
-    ) &&
-    allowedTypes.length > 0
-      ? allowedTypes
-      : ['multiple'];
-
-  const difficultyTierIndex =
-    (level) =>
-      difficulties.findIndex(
-        (d) => d.level === level,
-      );
-
   for (
     const difficulty
     of difficulties
   ) {
-    const tierIndex =
-      difficultyTierIndex(
-        difficulty.level,
-      );
-
-    const competency =
-      competencies[
-        Math.min(
-          tierIndex,
-          competencies.length -
-            1,
-        )
-      ];
-
     for (
       let i = 0;
       i < difficulty.count;
       i += 1
     ) {
+      const competency =
+        competencies[
+          (no - 1) %
+            competencies.length
+        ];
+
       blueprint.push({
         no,
 
@@ -1042,17 +978,6 @@ function buildCurriculumBlueprint({
           difficulty.cognitive,
 
         competency,
-
-        // 🔥 BARU: tipe soal spesifik buat butir ini -- round-robin
-        // dari daftar tipe yang guru pilih. Kalau guru cuma pilih 1
-        // tipe (mis. cuma "multiple"), semua butir tetap tipe itu
-        // (sesuai maksud guru) -- variasi cuma muncul kalau guru
-        // memang mencentang lebih dari 1 tipe.
-        type:
-          typesForDistribution[
-            (no - 1) %
-              typesForDistribution.length
-          ],
 
         teacherDirection:
           safeArahan,
@@ -1341,122 +1266,28 @@ function buildGraphSvg(
       (height -
         padding * 2);
 
-  const mappedPoints =
-    points.map(
-      (point) => ({
-        sx: mapX(
-          point.x,
-        ),
-        sy: mapY(
-          point.y,
-        ),
-      }),
-    );
-
-  // 🔥 FIX BUG NYATA: sebelumnya SEMUA titik disambung garis lurus
-  // (path "L" doang) -- buat fungsi LINEAR (garis lurus) itu benar,
-  // tapi buat PARABOLA/kurva non-linear hasilnya jadi bentuk "V" atau
-  // zig-zag yang salah total secara matematis (bukan kurva mulus).
-  // Sekarang kalau `graph.curved` diset true, dipakai kurva Catmull-Rom
-  // (diubah ke Bezier kubik) yang melewati SEMUA titik data dengan
-  // mulus -- representasi visual parabola/kurva jadi akurat.
-  const isCurved =
-    Boolean(graph.curved);
-
-  let path;
-
-  if (
-    isCurved &&
-    mappedPoints.length >=
-      3
-  ) {
-    path = `M ${mappedPoints[0].sx.toFixed(1)} ${mappedPoints[0].sy.toFixed(1)}`;
-
-    for (
-      let i = 0;
-      i <
-      mappedPoints.length -
-        1;
-      i += 1
-    ) {
-      const p0 =
-        mappedPoints[
-          Math.max(
-            i - 1,
-            0,
-          )
-        ];
-
-      const p1 =
-        mappedPoints[i];
-
-      const p2 =
-        mappedPoints[
-          i + 1
-        ];
-
-      const p3 =
-        mappedPoints[
-          Math.min(
-            i + 2,
-            mappedPoints.length -
-              1,
-          )
-        ];
-
-      // Catmull-Rom -> kontrol Bezier kubik (faktor 1/6 standar)
-      const cp1x =
-        p1.sx +
-        (p2.sx - p0.sx) /
-          6;
-
-      const cp1y =
-        p1.sy +
-        (p2.sy - p0.sy) /
-          6;
-
-      const cp2x =
-        p2.sx -
-        (p3.sx - p1.sx) /
-          6;
-
-      const cp2y =
-        p2.sy -
-        (p3.sy - p1.sy) /
-          6;
-
-      path += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.sx.toFixed(1)} ${p2.sy.toFixed(1)}`;
-    }
-  } else {
-    path =
-      mappedPoints
-        .map(
-          (
-            point,
-            index,
-          ) =>
-            `${
-              index === 0
-                ? 'M'
-                : 'L'
-            } ${point.sx.toFixed(
-              1,
-            )} ${point.sy.toFixed(
-              1,
-            )}`,
-        )
-        .join(' ');
-  }
-
-  // Titik-titik data digambar eksplisit -- guru/siswa bisa lihat pasti
-  // di mana titik asli soal berada, gak cuma nebak dari kurvanya.
-  const dataDots =
-    mappedPoints
+  const path =
+    points
       .map(
-        (point) =>
-          `<circle cx="${point.sx.toFixed(1)}" cy="${point.sy.toFixed(1)}" r="3.5" fill="#2563eb" />`,
+        (
+          point,
+          index,
+        ) =>
+          `${
+            index === 0
+              ? 'M'
+              : 'L'
+          } ${mapX(
+            point.x,
+          ).toFixed(
+            1,
+          )} ${mapY(
+            point.y,
+          ).toFixed(
+            1,
+          )}`,
       )
-      .join('');
+      .join(' ');
 
   const xLabel =
     escapeXml(
@@ -1513,8 +1344,6 @@ function buildGraphSvg(
         stroke-width="2.5"
       />
 
-      ${dataDots}
-
       <text
         x="${width - 15}"
         y="${height - padding + 5}"
@@ -1547,292 +1376,10 @@ function buildGraphSvg(
 }
 
 // ============================================================
-// 🔥 BARU: CIRCLE SVG (lingkaran)
+// JSONL CLEANUP
 // ============================================================
-// Sebelumnya AI sering "maksa" gambar lingkaran ke field "graph" (yang
-// cuma bisa nyambung titik pakai garis/kurva) -- hasilnya BLANK/kosong
-// karena lingkaran gak bisa direpresentasikan sebagai deretan titik
-// x-y yang disambung. Field khusus ini menerima pusat & jari-jari,
-// digambar sebagai lingkaran SVG asli.
-function buildCircleSvg(
-  circle,
-) {
-  if (
-    !circle ||
-    typeof circle !==
-      'object'
-  ) {
-    return '';
-  }
 
-  const centerX =
-    Number(
-      circle.centerX,
-    );
-
-  const centerY =
-    Number(
-      circle.centerY,
-    );
-
-  const radius =
-    Number(
-      circle.radius,
-    );
-
-  if (
-    !Number.isFinite(
-      centerX,
-    ) ||
-    !Number.isFinite(
-      centerY,
-    ) ||
-    !Number.isFinite(
-      radius,
-    ) ||
-    radius <= 0
-  ) {
-    return '';
-  }
-
-  const width = 320;
-  const height = 320;
-  const cx = width / 2;
-  const cy = height / 2;
-
-  // Skala biar lingkaran + margin selalu pas di kanvas, berapa pun
-  // radius aslinya (unit soal, bukan pixel).
-  const scale =
-    (Math.min(
-      width,
-      height,
-    ) /
-      2 -
-      40) /
-    radius;
-
-  const r =
-    radius * scale;
-
-  const xLabel =
-    escapeXml(
-      cleanText(
-        circle.xLabel ||
-          'x',
-      ),
-    );
-
-  const yLabel =
-    escapeXml(
-      cleanText(
-        circle.yLabel ||
-          'y',
-      ),
-    );
-
-  const svg = `
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 ${width} ${height}"
-      width="${width}"
-      height="${height}"
-    >
-      <rect width="${width}" height="${height}" fill="#ffffff" />
-
-      <line x1="20" y1="${cy}" x2="${width - 20}" y2="${cy}" stroke="#94a3b8" stroke-width="1.5" />
-      <line x1="${cx}" y1="20" x2="${cx}" y2="${height - 20}" stroke="#94a3b8" stroke-width="1.5" />
-
-      <circle
-        cx="${cx.toFixed(1)}"
-        cy="${cy.toFixed(1)}"
-        r="${r.toFixed(1)}"
-        fill="none"
-        stroke="#0f172a"
-        stroke-width="2.5"
-      />
-
-      <circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3.5" fill="#2563eb" />
-
-      <text x="${cx + 6}" y="${cy - 8}" font-family="Arial" font-size="11" fill="#2563eb">
-        (${centerX}, ${centerY})
-      </text>
-
-      <text x="${width - 15}" y="${cy - 6}" font-family="Arial" font-size="12" fill="#475569">${xLabel}</text>
-      <text x="${cx + 6}" y="20" font-family="Arial" font-size="12" fill="#475569">${yLabel}</text>
-    </svg>
-  `;
-
-  return (
-    'data:image/svg+xml;base64,' +
-    Buffer.from(
-      svg,
-    ).toString('base64')
-  );
-}
-
-// ============================================================
-// 🔥 BARU: SHAPE SVG (bangun datar / polygon -- persegi panjang,
-// segitiga, dll dengan koordinat titik sudut)
-// ============================================================
-// Sama seperti circle di atas -- sebelumnya AI maksa gambar persegi
-// panjang/segitiga ke field "graph" (cuma garis terbuka, gak ketutup
-// jadi bangun), hasilnya BLANK atau bentuk aneh. Field ini menerima
-// titik-titik sudut, digambar sebagai bangun TERTUTUP (polygon).
-function buildShapeSvg(
-  shape,
-) {
-  if (
-    !shape ||
-    !Array.isArray(
-      shape.vertices,
-    )
-  ) {
-    return '';
-  }
-
-  const vertices =
-    shape.vertices
-      .filter(
-        (v) =>
-          v &&
-          Number.isFinite(
-            Number(v.x),
-          ) &&
-          Number.isFinite(
-            Number(v.y),
-          ),
-      )
-      .slice(0, 12)
-      .map((v) => ({
-        x: Number(v.x),
-        y: Number(v.y),
-        label:
-          cleanText(
-            v.label,
-          ),
-      }));
-
-  if (
-    vertices.length < 3
-  ) {
-    return '';
-  }
-
-  const width = 400;
-  const height = 320;
-  const padding = 50;
-
-  const xs =
-    vertices.map(
-      (v) => v.x,
-    );
-
-  const ys =
-    vertices.map(
-      (v) => v.y,
-    );
-
-  const minX =
-    Math.min(...xs);
-
-  const maxX =
-    Math.max(...xs);
-
-  const minY =
-    Math.min(...ys);
-
-  const maxY =
-    Math.max(...ys);
-
-  const mapX = (
-    value,
-  ) =>
-    padding +
-    ((value - minX) /
-      Math.max(
-        maxX - minX,
-        1,
-      )) *
-      (width -
-        padding * 2);
-
-  const mapY = (
-    value,
-  ) =>
-    height -
-    padding -
-    ((value - minY) /
-      Math.max(
-        maxY - minY,
-        1,
-      )) *
-      (height -
-        padding * 2);
-
-  const mapped =
-    vertices.map(
-      (v) => ({
-        sx: mapX(v.x),
-        sy: mapY(v.y),
-        label: v.label,
-        origX: v.x,
-        origY: v.y,
-      }),
-    );
-
-  const pointsAttr =
-    mapped
-      .map(
-        (p) =>
-          `${p.sx.toFixed(1)},${p.sy.toFixed(1)}`,
-      )
-      .join(' ');
-
-  const vertexLabels =
-    mapped
-      .map((p) => {
-        const labelText =
-          p.label ||
-          `(${p.origX},${p.origY})`;
-
-        return `<circle cx="${p.sx.toFixed(1)}" cy="${p.sy.toFixed(1)}" r="3.5" fill="#2563eb" /><text x="${(p.sx + 6).toFixed(1)}" y="${(p.sy - 6).toFixed(1)}" font-family="Arial" font-size="11" fill="#334155">${escapeXml(labelText)}</text>`;
-      })
-      .join('');
-
-  const svg = `
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 ${width} ${height}"
-      width="${width}"
-      height="${height}"
-    >
-      <rect width="${width}" height="${height}" fill="#ffffff" />
-
-      <polygon
-        points="${pointsAttr}"
-        fill="${
-          shape.closed !==
-          false
-            ? '#eff6ff'
-            : 'none'
-        }"
-        stroke="#0f172a"
-        stroke-width="2.5"
-      />
-
-      ${vertexLabels}
-    </svg>
-  `;
-
-  return (
-    'data:image/svg+xml;base64,' +
-    Buffer.from(
-      svg,
-    ).toString('base64')
-  );
-}
-
-
+function stripCodeFences(
   text,
 ) {
   return String(text || '')
@@ -2278,23 +1825,6 @@ function normalizeQuestion(
         ? raw.graph
         : null,
 
-    // 🔥 BARU: circle & shape -- lihat buildCircleSvg()/buildShapeSvg()
-    // buat penjelasan lengkap kenapa dua field ini perlu, terpisah
-    // dari "graph".
-    circle:
-      raw.circle &&
-      typeof raw.circle ===
-        'object'
-        ? raw.circle
-        : null,
-
-    shape:
-      raw.shape &&
-      typeof raw.shape ===
-        'object'
-        ? raw.shape
-        : null,
-
     needsImage:
       Boolean(
         raw.needsImage,
@@ -2410,26 +1940,6 @@ function normalizeQuestion(
 
     visualKind =
       'graph';
-  } else if (
-    normalized.circle
-  ) {
-    qImage =
-      buildCircleSvg(
-        normalized.circle,
-      );
-
-    visualKind =
-      'circle';
-  } else if (
-    normalized.shape
-  ) {
-    qImage =
-      buildShapeSvg(
-        normalized.shape,
-      );
-
-    visualKind =
-      'shape';
   }
 
   return {
@@ -2496,9 +2006,7 @@ function normalizeQuestion(
       Boolean(
         normalized.needsImage ||
           normalized.clock ||
-          normalized.graph ||
-          normalized.circle ||
-          normalized.shape,
+          normalized.graph,
       ),
 
     imageHint:
@@ -2599,35 +2107,6 @@ function validateAgainstBlueprint(
     };
   }
 
-  // 🔥 BARU: FIX BUG NYATA (soal gak variatif) -- validasi tipe soal
-  // terhadap yang ditugaskan blueprint. Sebelumnya gak ada pengecekan
-  // ini sama sekali, jadi AI bebas nulis tipe apa pun (selalu "multiple"
-  // dalam praktiknya) walau blueprint sudah menugaskan tipe lain buat
-  // butir itu. Sekarang DITOLAK kalau gak sesuai -- ini yang memaksa
-  // distribusi tipe soal beneran terwujud, bukan cuma anjuran di prompt.
-  const targetType =
-    normalizeText(
-      target.type,
-    );
-
-  const actualType =
-    normalizeText(
-      question.type,
-    );
-
-  if (
-    targetType &&
-    actualType &&
-    actualType !==
-      targetType
-  ) {
-    return {
-      valid: false,
-      reason:
-        'typeMismatch',
-    };
-  }
-
   return {
     valid: true,
     target,
@@ -2724,74 +2203,42 @@ function buildSystemPrompt({
 
     '',
 
-    '1. GRAFIK GARIS LURUS -> pakai "graph" TANPA "curved" (lihat contoh di bawah).',
+    '1. GRAFIK FUNGSI / KURVA / PARABOLA / GARIS LURUS -> WAJIB pakai "graph" (lihat contoh di bawah). JANGAN PERNAH pakai "needsImage" buat ini -- gak ada foto asli buat grafik yang kamu karang sendiri.',
 
-    '2. GRAFIK KURVA / PARABOLA / FUNGSI NON-LINEAR -> pakai "graph" DENGAN "curved":true, dan sertakan MINIMAL 5 titik supaya kurvanya akurat (bukan cuma 2-3 titik). JANGAN PERNAH pakai "needsImage" buat ini.',
+    '2. JAM ANALOG -> WAJIB pakai "clock". JANGAN pakai "needsImage".',
 
-    '3. LINGKARAN -> WAJIB pakai "circle" (BUKAN "graph" -- lingkaran gak bisa digambar dari deretan titik x-y biasa). Lihat contoh di bawah.',
+    '3. DIAGRAM ABSTRAK LAIN (pohon peluang, diagram Venn, bagan alur, tabel data, garis bilangan, dll) -> JELASKAN LENGKAP di teks "question" itu sendiri (semua angka/label yang relevan disebutkan di kalimat soal). JANGAN pakai "needsImage" buat ini juga -- diagram abstrak yang kamu karang sendiri TIDAK PERNAH punya padanan foto asli di internet.',
 
-    '4. BANGUN DATAR bersudut (persegi, persegi panjang, segitiga, trapesium, dll) -> WAJIB pakai "shape" dengan titik-titik sudutnya (BUKAN "graph"). Lihat contoh di bawah.',
-
-    '5. JAM ANALOG -> WAJIB pakai "clock". JANGAN pakai "needsImage".',
-
-    '6. DIAGRAM ABSTRAK LAIN yang BUKAN grafik/lingkaran/bangun datar/jam (pohon peluang, diagram Venn, bagan alur, garis bilangan, dll) -> JELASKAN LENGKAP di teks "question" itu sendiri (semua angka/label relevan disebutkan di kalimat soal). JANGAN pakai "needsImage" buat ini.',
-
-    '7. "needsImage"+"imageHint" HANYA untuk FOTO OBJEK/TEMPAT/MAKHLUK NYATA yang BENERAN ada fotonya di dunia (mis. "Candi Prambanan", "ayam jantan", "Menara Eiffel"). Kalau ragu -> PILIH ATURAN 1-6, JANGAN needsImage.',
-
-    '8. PILIHAN JAWABAN BERUPA GAMBAR: kalau soal cocok punya 4 pilihan jawaban berbentuk GAMBAR (bukan teks) -- misalnya "manakah gambar yang menunjukkan segitiga siku-siku?" dengan 4 pilihan gambar bangun berbeda -- set "optionsAreImages":true dan isi "optionImages" dengan 4 deskripsi singkat (Bahasa Inggris) buat tiap opsi, SEJAJAR urutannya dengan "options". Pakai ini SESEKALI kalau memang relevan dengan topik & tipe soal "multiple" -- jangan dipaksakan di semua soal.',
+    '4. "needsImage"+"imageHint" HANYA untuk FOTO OBJEK/TEMPAT/MAKHLUK NYATA yang BENERAN ada fotonya di dunia (mis. "Candi Prambanan", "ayam jantan", "Menara Eiffel", "gunung berapi"). Kalau ragu apakah sesuatu itu "benda nyata yang bisa difoto" atau "diagram/konsep yang kamu karang" -> PILIH ATURAN 1-3, JANGAN needsImage.',
 
     '',
 
-    'VISUAL CLOCK -- CONTOH OBJEK UTUH:',
+    'VISUAL CLOCK -- CONTOH OBJEK UTUH (perhatikan "clock" adalah KEY SEJAJAR dengan "question", BUKAN teks di dalam "question"):',
 
     '{"type":"multiple","blueprintNo":2,"difficulty":"Easy","competency":"...","question":"Perhatikan jam di bawah ini. Pukul berapakah yang ditunjukkan?","clock":{"hour":8,"minute":30},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
 
     '',
 
-    'VISUAL GRAPH (garis lurus) -- CONTOH OBJEK UTUH:',
+    'VISUAL GRAPH -- CONTOH OBJEK UTUH (perhatikan "graph" adalah KEY SEJAJAR dengan "question", BUKAN teks di dalam "question". JANGAN PERNAH menulis kata "graph" atau kurung kurawal data grafik DI DALAM string "question" -- itu SALAH FATAL):',
 
     '{"type":"multiple","blueprintNo":3,"difficulty":"Medium","competency":"...","question":"Grafik berikut menunjukkan sebuah garis lurus. Berapa nilai kemiringan (slope) garis tersebut?","graph":{"points":[{"x":0,"y":0},{"x":1,"y":2}],"xLabel":"x","yLabel":"y"},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
 
     '',
 
-    'VISUAL GRAPH (kurva/parabola, WAJIB "curved":true + minimal 5 titik) -- CONTOH OBJEK UTUH:',
+    'IMAGE -- CONTOH OBJEK UTUH (HANYA untuk foto objek/tempat/makhluk NYATA, baca ATURAN VISUAL #4 di atas; "needsImage" & "imageHint" adalah KEY SEJAJAR, BUKAN teks di dalam "question"):',
 
-    '{"type":"multiple","blueprintNo":4,"difficulty":"Hard","competency":"...","question":"Grafik berikut menunjukkan fungsi kuadrat. Berapakah titik puncak (vertex) fungsi tersebut?","graph":{"points":[{"x":-2,"y":5},{"x":-1,"y":0},{"x":0,"y":-3},{"x":1,"y":0},{"x":2,"y":5}],"xLabel":"x","yLabel":"y","curved":true},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
-
-    '',
-
-    'VISUAL CIRCLE (lingkaran) -- CONTOH OBJEK UTUH:',
-
-    '{"type":"multiple","blueprintNo":5,"difficulty":"Medium","competency":"...","question":"Grafik berikut adalah lingkaran dengan pusat di (-3,2) dan melalui titik (-3,-2). Berapakah jari-jari lingkaran tersebut?","circle":{"centerX":-3,"centerY":2,"radius":4,"xLabel":"x","yLabel":"y"},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+    '{"type":"multiple","blueprintNo":4,"difficulty":"Easy","competency":"...","question":"Perhatikan gambar di atas. Bangunan bersejarah apakah ini?","needsImage":true,"imageHint":"Prambanan Temple Indonesia","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
 
     '',
 
-    'VISUAL SHAPE (bangun datar) -- CONTOH OBJEK UTUH:',
-
-    '{"type":"multiple","blueprintNo":6,"difficulty":"Easy","competency":"...","question":"Perhatikan persegi panjang berikut. Hitung luasnya.","shape":{"vertices":[{"x":0,"y":0,"label":"A(0,0)"},{"x":5,"y":0,"label":"B(5,0)"},{"x":5,"y":3,"label":"C(5,3)"},{"x":0,"y":3,"label":"D(0,3)"}],"closed":true},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
-
-    '',
-
-    'PILIHAN JAWABAN BERUPA GAMBAR -- CONTOH OBJEK UTUH:',
-
-    '{"type":"multiple","blueprintNo":7,"difficulty":"Easy","competency":"...","question":"Manakah gambar yang menunjukkan segitiga siku-siku?","options":["Opsi A","Opsi B","Opsi C","Opsi D"],"optionsAreImages":true,"optionImages":["right triangle diagram","equilateral triangle diagram","isosceles triangle diagram","obtuse triangle diagram"],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
-
-    '',
-
-    'IMAGE (foto objek nyata) -- CONTOH OBJEK UTUH:',
-
-    '{"type":"multiple","blueprintNo":8,"difficulty":"Easy","competency":"...","question":"Perhatikan gambar di atas. Bangunan bersejarah apakah ini?","needsImage":true,"imageHint":"Prambanan Temple Indonesia","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
-
-    '',
-
-    '⚠️ PERINGATAN KERAS: field "question" HANYA boleh berisi KALIMAT SOAL dalam bahasa manusia biasa. DILARANG MUTLAK menulis potongan JSON, tanda kurung kurawal {}, atau kata kunci seperti "graph"/"clock"/"circle"/"shape"/"points"/"xLabel" DI DALAM teks "question" -- semua data visual itu WAJIB jadi key JSON terpisah yang sejajar dengan "question", persis seperti contoh objek utuh di atas.',
+    '⚠️ PERINGATAN KERAS: field "question" HANYA boleh berisi KALIMAT SOAL dalam bahasa manusia biasa. DILARANG MUTLAK menulis potongan JSON, tanda kurung kurawal {}, atau kata kunci seperti "graph"/"clock"/"points"/"xLabel" DI DALAM teks "question" -- semua data visual itu WAJIB jadi key JSON terpisah yang sejajar dengan "question", persis seperti 3 contoh objek utuh di atas.',
 
     // 🔥 Diingatkan eksplisit ke AI juga -- biar dia gak nyoba nulis
     // URL gambar asli dari hasil browser_search ke field ini (dia
     // cuma bisa akses teks/snippet halaman, bukan file gambarnya).
     ...(enableBrowserSearch
       ? [
-          '(Catatan: browser_search cuma kasih kamu TEKS halaman, BUKAN file gambar. Kalau butuh visual, tetap pakai clock/graph/circle/shape di atas atau needsImage+imageHint -- jangan mengarang URL gambar dari hasil pencarian.)',
+          '(Catatan: browser_search cuma kasih kamu TEKS halaman, BUKAN file gambar. Kalau butuh visual, tetap pakai clock/graph di atas atau needsImage+imageHint -- jangan mengarang URL gambar dari hasil pencarian.)',
         ]
       : []),
 
@@ -2850,12 +2297,6 @@ function buildUserPrompt({
     'Jangan menggabungkan dua blueprint.',
 
     'Jangan membuat blueprint tambahan.',
-
-    // 🔥 BARU: penekanan eksplisit soal field "type" di tiap butir
-    // blueprint -- field ini BUKAN saran, itu PENUGASAN WAJIB. Sebelum
-    // ini gak ditekankan sama sekali, jadi AI abai dan selalu pakai
-    // "multiple" buat semua butir.
-    'Field "type" di SETIAP butir blueprint adalah tipe soal yang WAJIB kamu pakai untuk butir itu -- BUKAN sekadar saran. Kalau blueprint #5 punya "type":"truefalse", soal nomor 5 WAJIB berupa soal Benar/Salah, BUKAN pilihan ganda. Variasikan sesuai field "type" masing-masing butir, JANGAN membuat semua soal jadi tipe "multiple" begitu saja.',
 
     'Output hanya JSONL.',
   ].join('\n');
@@ -3552,7 +2993,6 @@ export default async function handler(
       jumlah,
       hotsLevel,
       arahan,
-      allowedTypes,
     });
 
   // 🔥 BARU: browser_search CUMA aktif di mode "prediction" (guru
