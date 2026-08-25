@@ -153,6 +153,11 @@ const MAX_TAVILY_CALLS_PER_REQUEST = 4;
 
 const TAVILY_TIMEOUT_MS = 7_000;
 
+// Default TRUE agar generator tidak diam-diam berjalan tanpa riset web.
+// Set REQUIRE_WEB_RESEARCH=false hanya bila sengaja ingin mode offline.
+const REQUIRE_WEB_RESEARCH =
+  process.env.REQUIRE_WEB_RESEARCH !== 'false';
+
 // ============================================================
 // STEP 1: TAVILY WEB RESEARCH (SOURCE MODE)
 // ============================================================
@@ -362,11 +367,12 @@ async function collectTavilyResearch({
 
   for (const packet of packets) {
     for (const result of packet.results || []) {
+      const sourceTitle = cleanText(result?.title).slice(0, 220);
       const url = cleanText(result?.url);
       if (!/^https?:\/\//i.test(url)) continue;
 
       sources.push({
-        title: cleanText(result?.title).slice(0, 220),
+        title: sourceTitle,
         url,
         content: cleanText(
           result?.raw_content ||
@@ -375,6 +381,33 @@ async function collectTavilyResearch({
         ).slice(0, 1200),
         query: packet.query,
       });
+
+      // Tavily juga dapat mengembalikan gambar yang diekstrak dari
+      // masing-masing sumber. Gabungkan dengan top-level images agar
+      // pencarian gambar lebih kuat dan tidak bergantung satu format.
+      for (const item of result?.images || []) {
+        const imageUrl =
+          typeof item === 'string'
+            ? item
+            : item?.url;
+
+        if (!/^https?:\/\//i.test(String(imageUrl || ''))) {
+          continue;
+        }
+
+        images.push({
+          url: imageUrl,
+          description: cleanText(
+            typeof item === 'string'
+              ? ''
+              : item?.description ||
+                '',
+          ).slice(0, 250),
+          query: packet.query,
+          sourceTitle,
+          sourceUrl: url,
+        });
+      }
     }
 
     for (const item of packet.images || []) {
@@ -583,7 +616,7 @@ async function enrichQuestionsWithRealImages(
       }
 
       const haystack = tokenSet(
-        `${image.description || ''} ${image.query || ''}`,
+        `${image.description || ''} ${image.query || ''} ${image.sourceTitle || ''}`,
       );
 
       let hits = 0;
@@ -2920,6 +2953,7 @@ async function callGroq({
 function sendGroqError(
   res,
   error,
+  enableBrowserSearch = false,
 ) {
   // ----------------------------------------------------------
   // TIMEOUT
@@ -3145,6 +3179,7 @@ export default async function handler(
   req,
   res,
 ) {
+  try {
   // ==========================================================
   // METHOD
   // ==========================================================
@@ -3255,12 +3290,38 @@ export default async function handler(
 
   if (!apiKey) {
     return res
-      .status(500)
+      .status(503)
       .json({
         success: false,
 
         error:
-          'GROQ_API_KEY belum dikonfigurasi di Vercel. Daftar gratis di console.groq.com/keys (tanpa kartu kredit), lalu simpan sebagai environment variable GROQ_API_KEY.',
+          'GROQ_API_KEY belum dikonfigurasi di Vercel.',
+
+        diagnostics: {
+          type: 'missing_groq_api_key',
+          message:
+            'Tambahkan GROQ_API_KEY di Vercel Project Settings > Environment Variables lalu redeploy.',
+          model: GROQ_MODEL,
+        },
+      });
+  }
+
+  const tavilyApiKey =
+    process.env.TAVILY_API_KEY;
+
+  if (REQUIRE_WEB_RESEARCH && !tavilyApiKey) {
+    return res
+      .status(503)
+      .json({
+        success: false,
+
+        error:
+          'TAVILY_API_KEY belum dikonfigurasi. Generator soal ini memerlukan Tavily agar sumber soal dari internet dan pencarian gambar benar-benar aktif.',
+
+        diagnostics: {
+          type: 'missing_tavily_api_key',
+          requireWebResearch: true,
+        },
       });
   }
 
@@ -3356,7 +3417,7 @@ export default async function handler(
   const research =
     await collectTavilyResearch({
       apiKey:
-        process.env.TAVILY_API_KEY,
+        tavilyApiKey,
       topic,
       mapel,
       kelas,
@@ -3447,6 +3508,7 @@ export default async function handler(
     return sendGroqError(
       res,
       error,
+      enableBrowserSearch,
     );
   }
 
@@ -3657,8 +3719,7 @@ export default async function handler(
   const imageEnrichResult =
     await enrichQuestionsWithRealImages(
       questions,
-      process.env
-        .TAVILY_API_KEY,
+      tavilyApiKey,
       topic,
       research.images,
     );
@@ -3795,4 +3856,17 @@ export default async function handler(
           imageEnrichResult.cappedByBudget,
       },
     });
+  } catch (error) {
+    console.error('[Gemilang API] Unhandled error', error);
+    if (res.headersSent) return;
+    return res.status(500).json({
+      success: false,
+      error: 'Terjadi kesalahan internal pada server pembuat soal.',
+      diagnostics: {
+        type: 'unhandled_runtime_error',
+        message: error?.message || 'Unknown error',
+        model: GROQ_MODEL,
+      },
+    });
+  }
 }
