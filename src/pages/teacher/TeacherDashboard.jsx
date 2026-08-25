@@ -9,7 +9,7 @@ import {
 import { 
   Clock, Users, BookOpen, Star, ArrowRight, 
   Calendar, Layout, MapPin, X, ChevronRight, 
-  TrendingUp, Award, UserCheck, Megaphone, 
+  TrendingUp, Award, Megaphone, 
   Home, LogOut, Settings, Bell, Sparkles, 
   ChevronDown, Menu, Sun, Moon, Gift, Crown,
   Zap, Flame, Target, Layers, FileText, Send,
@@ -763,14 +763,16 @@ const TeacherDashboard = () => {
           <div style={styles.quickActionsCard}>
             <h4 style={styles.quickActionsTitle}>⚡ Akses Cepat</h4>
             <div style={styles.quickActionsGrid}>
-              <button onClick={() => navigate('/guru/attendance')} style={styles.quickAction}>
-                <div style={{...styles.quickIcon, background: '#e0e7ff', color: '#4338ca'}}>
-                  <UserCheck size={18} />
-                </div>
-                <span style={styles.quickLabel}>Klaim Absen</span>
-                <span style={styles.quickDesc}>Catat kehadiran</span>
-              </button>
-              
+              {/* 🔥 DIHAPUS: tombol "Klaim Absen" yang sebelumnya di sini
+                  navigate ke '/guru/attendance' -- halaman itu ternyata
+                  cuma nampilin "Kode Absensi" yang gak pernah divalidasi
+                  di mana pun (sisa desain lama), DAN tombol ini duplikat
+                  dengan tombol "Mulai Kelas"/"Lanjutkan Kelas" di kartu
+                  jadwal "Hari Ini" di atas -- yang justru punya konteks
+                  jelas kelas mana yang mau diabsen (tombol generik ini
+                  gak tau harus absen kelas yang mana). Absensi sekarang
+                  SATU JALUR SAJA: lewat kartu jadwal -> ClassSession.jsx. */}
+
               <button onClick={() => navigate('/guru/history')} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#fef3c7', color: '#b45309'}}>
                   <Clock4 size={18} />

@@ -4,7 +4,7 @@ import {
   LayoutDashboard, User, BookOpen, Edit, 
   History, Calendar, ClipboardCheck, LogOut, Menu, X,
   Database, FileText, Upload, Award, CheckSquare,
-  Clock, Users, Settings, FileSpreadsheet, GraduationCap
+  Clock, Settings, FileSpreadsheet, GraduationCap
 } from 'lucide-react';
 
 const SidebarGuru = () => {
@@ -55,11 +55,13 @@ const SidebarGuru = () => {
       path: '/guru/cek-tugas', 
       icon: <ClipboardCheck size={20}/> 
     },
-    { 
-      name: 'Absensi Siswa', 
-      path: '/guru/attendance', 
-      icon: <Users size={20}/> 
-    },
+    // 🔥 DIHAPUS: menu "Absensi Siswa" (/guru/attendance) -- halaman itu
+    // ternyata cuma nampilin "Kode Absensi" yang gak pernah dipakai/
+    // divalidasi di mana pun (sisa desain lama yang ditinggalkan), dan
+    // duplikat/membingungkan karena absensi yang BENERAN tercatat itu
+    // lewat tombol "Mulai Kelas"/"Lanjutkan Kelas" di Dashboard yang
+    // masuk ke ClassSession.jsx. Sengaja dihapus dari sidebar supaya
+    // guru cuma punya SATU jalur absensi yang jelas & fungsional.
     { 
       name: 'Input Nilai / Rapor', 
       path: '/guru/grades/input', 
