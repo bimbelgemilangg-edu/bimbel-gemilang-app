@@ -153,6 +153,17 @@ const MAX_TAVILY_CALLS_PER_REQUEST = 8;
 
 const TAVILY_TIMEOUT_MS = 12_000;
 
+// ============================================================
+// STEP 1: TAVILY WEB RESEARCH (SOURCE MODE)
+// ============================================================
+// Search internet secara nyata sebelum AI menyusun soal. Ini hanya
+// memakai beberapa query ringkas dan hasil dipadatkan sebelum masuk
+// ke Groq supaya tidak membakar TPM secara berlebihan.
+const MAX_TAVILY_RESEARCH_CALLS_PER_REQUEST = 3;
+const TAVILY_RESEARCH_RESULTS_PER_QUERY = 4;
+const MAX_RESEARCH_SOURCES_FOR_AI = 6;
+const MAX_RESEARCH_IMAGES_FOR_AI = 10;
+
 // 🔥 Sama persis dengan filter di ManageQuiz.jsx (searchImagesForQuestion)
 // -- beberapa domain proxy internal platform (Facebook lookaside, CDN
 // Instagram) SECARA DESAIN gak bisa dibuka di luar ekosistem platform
@@ -168,6 +179,239 @@ const UNRELIABLE_IMAGE_HOST_PATTERNS =
     /scontent\..*\.cdninstagram\.com/i,
   ];
 
+function buildResearchQueries({
+  topic,
+  mapel,
+  kelas,
+  targetYear,
+  sourceMode,
+  hotsLevel,
+  arahan,
+}) {
+  const base = [
+    cleanText(topic),
+    cleanText(mapel),
+    cleanText(kelas),
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const previousYear = Number(targetYear) - 1;
+  const yearText = Number.isFinite(previousYear)
+    ? String(previousYear)
+    : '';
+
+  const visualQuery = [
+    base,
+    'soal bergambar grafik diagram tabel visual pembahasan',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const queries = [
+    `${base} soal latihan pembahasan ${yearText}`,
+    `${base} tryout ujian soal ${yearText} pembahasan`,
+    visualQuery,
+  ];
+
+  if (sourceMode === 'prediction' || hotsLevel || arahan) {
+    queries.push(
+      `${base} HOTS pola soal kisi kisi ${yearText} ${cleanText(arahan)}`,
+    );
+  }
+
+  return [...new Set(
+    queries
+      .map(cleanText)
+      .filter(Boolean),
+  )].slice(0, MAX_TAVILY_RESEARCH_CALLS_PER_REQUEST);
+}
+
+async function callTavilyResearchSearch(
+  apiKey,
+  query,
+) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    TAVILY_TIMEOUT_MS,
+  );
+
+  try {
+    const response = await fetch(
+      TAVILY_SEARCH_URL,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          query,
+          search_depth: 'basic',
+          max_results: TAVILY_RESEARCH_RESULTS_PER_QUERY,
+          include_answer: false,
+          include_raw_content: true,
+          include_images: true,
+          include_image_descriptions: true,
+        }),
+        signal: controller.signal,
+      },
+    );
+
+    const text = await response.text();
+    let data = null;
+
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch (_) {
+      data = null;
+    }
+
+    if (!response.ok) {
+      const error = new Error(
+        `Tavily HTTP ${response.status}`,
+      );
+      error.providerStatus = response.status;
+      error.providerMessage = String(
+        data?.message ||
+        data?.error ||
+        text ||
+        'Unknown Tavily error',
+      ).slice(0, 1000);
+      throw error;
+    }
+
+    return {
+      query,
+      results: Array.isArray(data?.results)
+        ? data.results
+        : [],
+      images: Array.isArray(data?.images)
+        ? data.images
+        : [],
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function collectTavilyResearch({
+  apiKey,
+  topic,
+  mapel,
+  kelas,
+  targetYear,
+  sourceMode,
+  hotsLevel,
+  arahan,
+}) {
+  if (!apiKey) {
+    return {
+      enabled: false,
+      queries: [],
+      sources: [],
+      images: [],
+    };
+  }
+
+  const queries = buildResearchQueries({
+    topic,
+    mapel,
+    kelas,
+    targetYear,
+    sourceMode,
+    hotsLevel,
+    arahan,
+  });
+
+  const packets = [];
+
+  for (const query of queries) {
+    try {
+      const packet = await callTavilyResearchSearch(
+        apiKey,
+        query,
+      );
+      packets.push(packet);
+    } catch (error) {
+      console.error(
+        '[Gemilang Research] Tavily query failed',
+        {
+          query,
+          status: error?.providerStatus || null,
+          message: error?.providerMessage || error?.message || null,
+        },
+      );
+    }
+  }
+
+  const sources = [];
+  const images = [];
+
+  for (const packet of packets) {
+    for (const result of packet.results || []) {
+      const url = cleanText(result?.url);
+      if (!/^https?:\/\//i.test(url)) continue;
+
+      sources.push({
+        title: cleanText(result?.title).slice(0, 300),
+        url,
+        content: cleanText(
+          result?.raw_content || result?.content || '',
+        ).slice(0, 2500),
+        query: packet.query,
+      });
+    }
+
+    for (const item of packet.images || []) {
+      const url = typeof item === 'string'
+        ? item
+        : item?.url;
+
+      if (!/^https?:\/\//i.test(String(url || ''))) continue;
+
+      images.push({
+        url,
+        description: cleanText(
+          typeof item === 'string'
+            ? ''
+            : item?.description || '',
+        ).slice(0, 400),
+        query: packet.query,
+      });
+    }
+  }
+
+  const uniqueSources = [];
+  const seenUrls = new Set();
+
+  for (const source of sources) {
+    if (seenUrls.has(source.url)) continue;
+    seenUrls.add(source.url);
+    uniqueSources.push(source);
+    if (uniqueSources.length >= MAX_RESEARCH_SOURCES_FOR_AI) break;
+  }
+
+  const uniqueImages = [];
+  const seenImages = new Set();
+
+  for (const image of images) {
+    if (seenImages.has(image.url)) continue;
+    seenImages.add(image.url);
+    uniqueImages.push(image);
+    if (uniqueImages.length >= MAX_RESEARCH_IMAGES_FOR_AI) break;
+  }
+
+  return {
+    enabled: true,
+    queries,
+    sources: uniqueSources,
+    images: uniqueImages,
+  };
+}
+
 function isReliableImageUrl(
   url,
 ) {
@@ -181,104 +425,95 @@ async function callTavilyImageSearch(
   apiKey,
   query,
 ) {
-  const controller =
-    new AbortController();
+  const controller = new AbortController();
 
-  const timeoutId =
-    setTimeout(
-      () =>
-        controller.abort(),
-      TAVILY_TIMEOUT_MS,
-    );
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    TAVILY_TIMEOUT_MS,
+  );
 
   try {
-    const response =
-      await fetch(
-        TAVILY_SEARCH_URL,
-        {
-          method: 'POST',
-
-          headers: {
-            Authorization:
-              `Bearer ${apiKey}`,
-
-            'Content-Type':
-              'application/json',
-          },
-
-          body: JSON.stringify({
-            query,
-
-            search_depth:
-              'basic', // 1 credit (bukan 'advanced' yang makan 2 credit)
-
-            max_results: 3,
-
-            include_images:
-              true,
-
-            include_image_descriptions:
-              false,
-
-            include_answer:
-              false,
-
-            include_raw_content:
-              false,
-          }),
-
-          signal:
-            controller.signal,
+    const response = await fetch(
+      TAVILY_SEARCH_URL,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          query,
+          search_depth: 'basic',
+          max_results: 5,
+          include_images: true,
+          include_image_descriptions: true,
+          include_answer: false,
+          include_raw_content: false,
+        }),
+        signal: controller.signal,
+      },
+    );
 
-    if (!response.ok) {
-      return null; // 🔥 gagal (kredit habis, dll) -- gak fatal, cuma gak dapat gambar buat butir ini
-    }
+    if (!response.ok) return null;
 
-    const data =
-      await response.json();
+    const data = await response.json();
+    const images = Array.isArray(data?.images)
+      ? data.images
+      : [];
 
-    const images =
-      Array.isArray(
-        data?.images,
-      )
-        ? data.images
-        : [];
+    const qTokens = tokenSet(query);
+    let best = null;
+    let bestScore = 0;
 
-    // 🔥 `images` bisa berisi string URL langsung, ATAU object
-    // {url, description} tergantung parameter -- ditangani dua-duanya
-    // supaya gak gampang patah kalau Tavily ubah format.
-    for (
-      const item of images
-    ) {
-      const url =
-        typeof item ===
-        'string'
-          ? item
-          : item?.url;
+    for (const item of images) {
+      const url = typeof item === 'string'
+        ? item
+        : item?.url;
 
       if (
-        typeof url ===
-          'string' &&
-        /^https?:\/\//i.test(
-          url,
-        ) &&
-        isReliableImageUrl(
-          url,
-        )
+        typeof url !== 'string' ||
+        !/^https?:\/\//i.test(url) ||
+        !isReliableImageUrl(url)
       ) {
-        return url;
+        continue;
+      }
+
+      const description = typeof item === 'string'
+        ? ''
+        : cleanText(item?.description || '');
+
+      const haystack = tokenSet(
+        `${description} ${query}`,
+      );
+
+      let hits = 0;
+      for (const token of qTokens) {
+        if (haystack.has(token)) hits += 1;
+      }
+
+      const score = qTokens.size
+        ? hits / qTokens.size
+        : 0;
+
+      if (score > bestScore) {
+        bestScore = score;
+        best = {
+          url,
+          description,
+          relevance: score,
+        };
       }
     }
 
-    return null;
+    // JANGAN ambil gambar pertama secara membabi buta.
+    // Kalau tidak ada kecocokan bermakna, lebih baik tidak ada gambar.
+    return best && bestScore >= 0.20
+      ? best
+      : null;
   } catch (_) {
-    return null; // timeout/network error -- gak fatal, lanjut tanpa gambar buat butir ini
+    return null;
   } finally {
-    clearTimeout(
-      timeoutId,
-    );
+    clearTimeout(timeoutId);
   }
 }
 
@@ -290,6 +525,7 @@ async function enrichQuestionsWithRealImages(
   questions,
   tavilyApiKey,
   topic,
+  researchImages = [],
 ) {
   if (!tavilyApiKey) {
     // Fitur belum di-setup -- lewati total, gak ada perubahan perilaku.
@@ -303,6 +539,39 @@ async function enrichQuestionsWithRealImages(
   let callsUsed = 0;
   let imagesFetched = 0;
   let cappedByBudget = false;
+  const usedResearchImages = new Set();
+
+  const findResearchImage = (hint) => {
+    const hintTokens = tokenSet(`${hint} ${topic}`);
+    let best = null;
+    let bestScore = 0;
+
+    for (const image of researchImages || []) {
+      if (!image?.url || usedResearchImages.has(image.url)) continue;
+
+      const haystack = tokenSet(
+        `${image.description || ''} ${image.query || ''}`,
+      );
+
+      let hits = 0;
+      for (const token of hintTokens) {
+        if (haystack.has(token)) hits += 1;
+      }
+
+      const score = hintTokens.size
+        ? hits / hintTokens.size
+        : 0;
+
+      if (score > bestScore) {
+        bestScore = score;
+        best = image;
+      }
+    }
+
+    return best && bestScore >= 0.20
+      ? best
+      : null;
+  };
 
   for (
     const question of questions
@@ -322,20 +591,32 @@ async function enrichQuestionsWithRealImages(
       !question.qImage &&
       question.imageHint
     ) {
-      const url =
-        await callTavilyImageSearch(
-          tavilyApiKey,
+      const researchImage =
+        findResearchImage(
           question.imageHint,
         );
 
-      callsUsed += 1;
+      let imageResult = researchImage;
 
-      if (url) {
-        question.qImage = url;
+      if (!imageResult) {
+        imageResult =
+          await callTavilyImageSearch(
+            tavilyApiKey,
+            `${question.imageHint} ${topic}`,
+          );
+        callsUsed += 1;
+      }
+
+      if (imageResult?.url) {
+        question.qImage = imageResult.url;
         question.imageSource = {
-          url,
-          fetchedVia: 'tavily',
+          url: imageResult.url,
+          fetchedVia: researchImage
+            ? 'tavily-research'
+            : 'tavily-image-search',
+          relevance: imageResult.relevance || null,
         };
+        usedResearchImages.add(imageResult.url);
         imagesFetched += 1;
       }
 
@@ -394,17 +675,28 @@ async function enrichQuestionsWithRealImages(
             ? `${question.options[i]} ${topic}`
             : question.options[i];
 
-        const url =
-          await callTavilyImageSearch(
-            tavilyApiKey,
+        const researchImage =
+          findResearchImage(
             query,
           );
 
-        callsUsed += 1;
+        let imageResult = researchImage;
 
-        if (url) {
+        if (!imageResult) {
+          imageResult =
+            await callTavilyImageSearch(
+              tavilyApiKey,
+              query,
+            );
+          callsUsed += 1;
+        }
+
+        if (imageResult?.url) {
           fetchedImages[i] =
-            url;
+            imageResult.url;
+          usedResearchImages.add(
+            imageResult.url,
+          );
           imagesFetched += 1;
         }
       }
@@ -2120,6 +2412,7 @@ function validateAgainstBlueprint(
 function buildSystemPrompt({
   allowedTypes,
   enableBrowserSearch,
+  researchAvailable,
 }) {
   return [
     'Kamu adalah Otak Akademik Bimbel Gemilang.',
@@ -2129,6 +2422,18 @@ function buildSystemPrompt({
     '',
 
     'ATURAN MUTLAK:',
+
+    'ATURAN RISET SUMBER:',
+
+    ...(researchAvailable
+      ? [
+          '1. Riset web sudah dilakukan oleh backend. Gunakan HANYA URL yang ada di daftar sumber riset.',
+          '2. sourceUrl WAJIB sama persis dengan salah satu URL pada daftar sumber riset.',
+          '3. Jika tidak ada sumber yang relevan untuk suatu butir, jangan mengarang sourceUrl; kosongkan dan backend akan menolak butir itu.',
+          '4. Jangan menyebut sebuah soal sebagai soal asli/soal ujian tertentu kecuali sumber benar-benar mendukung klaim tersebut.',
+          '5. Kandidat gambar riset diberikan secara terpisah. Jangan mengarang URL gambar.',
+        ]
+      : []),
 
     // 🔥 BARU: aturan #1-3 sekarang KONDISIONAL. Sebelumnya SELALU
     // melarang browsing & klaim sumber eksternal -- itu benar untuk
@@ -2236,9 +2541,9 @@ function buildSystemPrompt({
     // 🔥 Diingatkan eksplisit ke AI juga -- biar dia gak nyoba nulis
     // URL gambar asli dari hasil browser_search ke field ini (dia
     // cuma bisa akses teks/snippet halaman, bukan file gambarnya).
-    ...(enableBrowserSearch
+    ...(researchAvailable
       ? [
-          '(Catatan: browser_search cuma kasih kamu TEKS halaman, BUKAN file gambar. Kalau butuh visual, tetap pakai clock/graph di atas atau needsImage+imageHint -- jangan mengarang URL gambar dari hasil pencarian.)',
+          '(Catatan: kandidat gambar berasal dari hasil riset Tavily. Gunakan needsImage+imageHint hanya jika ada visual yang memang relevan; jangan mengarang URL gambar.)',
         ]
       : []),
 
@@ -2260,6 +2565,7 @@ function buildUserPrompt({
   currentMode,
   arahan,
   blueprint,
+  research,
 }) {
   return [
     'BIMBEL GEMILANG — GENERATE QUIZ',
@@ -2297,6 +2603,37 @@ function buildUserPrompt({
     'Jangan menggabungkan dua blueprint.',
 
     'Jangan membuat blueprint tambahan.',
+
+    '',
+
+    'HASIL RISET WEB TERVERIFIKASI:',
+    JSON.stringify(
+      (research?.sources || []).map((source) => ({
+        title: source.title,
+        url: source.url,
+        content: source.content,
+      })),
+    ),
+
+    '',
+
+    'KANDIDAT VISUAL DARI RISET:',
+    JSON.stringify(
+      (research?.images || []).map((image) => ({
+        url: image.url,
+        description: image.description,
+        query: image.query,
+      })),
+    ),
+
+    '',
+
+    'ATURAN SOURCE:',
+    research?.enabled
+      ? 'Setiap soal WAJIB memilih sourceUrl dari URL pada HASIL RISET WEB TERVERIFIKASI.'
+      : 'Riset web tidak tersedia pada request ini.',
+
+    'Untuk soal visual: gunakan visual hanya bila didukung kandidat visual atau visual lokal clock/graph.',
 
     'Output hanya JSONL.',
   ].join('\n');
@@ -3003,6 +3340,25 @@ export default async function handler(
     currentMode === 'prediction';
 
   // ==========================================================
+  // 1.5. TAVILY WEB RESEARCH
+  // ==========================================================
+  // Source mode sekarang benar-benar mencari sumber internet.
+  // Prediction juga boleh memakai hasil riset, sementara browser_search
+  // tetap dipertahankan sebagai lapisan tambahan yang sudah berjalan.
+  const research =
+    await collectTavilyResearch({
+      apiKey:
+        process.env.TAVILY_API_KEY,
+      topic,
+      mapel,
+      kelas,
+      targetYear,
+      sourceMode: currentMode,
+      hotsLevel,
+      arahan,
+    });
+
+  // ==========================================================
   // 2. PROMPT
   // ==========================================================
 
@@ -3010,6 +3366,9 @@ export default async function handler(
     buildSystemPrompt({
       allowedTypes,
       enableBrowserSearch,
+      researchAvailable:
+        research.enabled &&
+        research.sources.length > 0,
     });
 
   const userPrompt =
@@ -3022,6 +3381,7 @@ export default async function handler(
       currentMode,
       arahan,
       blueprint,
+      research,
     });
 
   // ==========================================================
@@ -3099,6 +3459,13 @@ export default async function handler(
   const usedBlueprints =
     new Set();
 
+  const verifiedResearchUrls =
+    new Set(
+      (research.sources || []).map(
+        (source) => source.url,
+      ),
+    );
+
   // ==========================================================
   // 5. QUALITY GATE
   // ==========================================================
@@ -3131,6 +3498,25 @@ export default async function handler(
         ) + 1;
 
       continue;
+    }
+
+    // SOURCE GATE: kalau riset web tersedia, sourceUrl wajib
+    // menunjuk ke URL yang benar-benar dikembalikan Tavily.
+    if (
+      research.enabled &&
+      research.sources.length > 0
+    ) {
+      const sourceUrl =
+        cleanText(normalized.sourceUrl);
+
+      if (
+        !sourceUrl ||
+        !verifiedResearchUrls.has(sourceUrl)
+      ) {
+        rejectedReasons.invalidSourceUrl =
+          (rejectedReasons.invalidSourceUrl || 0) + 1;
+        continue;
+      }
     }
 
     // BLUEPRINT CHECK
@@ -3266,6 +3652,7 @@ export default async function handler(
       process.env
         .TAVILY_API_KEY,
       topic,
+      research.images,
     );
 
   // ==========================================================
@@ -3292,6 +3679,22 @@ export default async function handler(
       success: true,
 
       questions,
+
+      researchPerformed:
+        research.enabled &&
+        research.sources.length > 0,
+
+      researchSources:
+        research.sources.map((source) => ({
+          title: source.title,
+          url: source.url,
+        })),
+
+      researchImages:
+        research.images.map((image) => ({
+          url: image.url,
+          description: image.description,
+        })),
 
       requestedCount:
         jumlah,
@@ -3350,7 +3753,17 @@ export default async function handler(
           ),
 
         researchPerformed:
-          enableBrowserSearch,
+          research.enabled &&
+          research.sources.length > 0,
+
+        researchQueryCount:
+          research.queries.length,
+
+        researchSourceCount:
+          research.sources.length,
+
+        researchImageCandidateCount:
+          research.images.length,
 
         // 🔥 BARU: sebelumnya hardcode false apa pun kondisinya --
         // sekarang hitung beneran berapa dari soal yang lolos punya
