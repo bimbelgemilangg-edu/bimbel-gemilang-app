@@ -1846,7 +1846,11 @@ function buildShapeSvg(
   );
 }
 
+// ============================================================
+// JSONL CLEANUP
+// ============================================================
 
+function stripCodeFences(
   text,
 ) {
   return String(text || '')
