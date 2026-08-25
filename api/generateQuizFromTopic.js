@@ -153,11 +153,6 @@ const MAX_TAVILY_CALLS_PER_REQUEST = 4;
 
 const TAVILY_TIMEOUT_MS = 7_000;
 
-// Default TRUE agar generator tidak diam-diam berjalan tanpa riset web.
-// Set REQUIRE_WEB_RESEARCH=false hanya bila sengaja ingin mode offline.
-const REQUIRE_WEB_RESEARCH =
-  process.env.REQUIRE_WEB_RESEARCH !== 'false';
-
 // ============================================================
 // STEP 1: TAVILY WEB RESEARCH (SOURCE MODE)
 // ============================================================
@@ -166,8 +161,12 @@ const REQUIRE_WEB_RESEARCH =
 // ke Groq supaya tidak membakar TPM secara berlebihan.
 const MAX_TAVILY_RESEARCH_CALLS_PER_REQUEST = 3;
 const TAVILY_RESEARCH_RESULTS_PER_QUERY = 4;
-const MAX_RESEARCH_SOURCES_FOR_AI = 6;
-const MAX_RESEARCH_IMAGES_FOR_AI = 10;
+// Keep research context compact so Groq's 8k TPM free-tier request budget
+// is not consumed by source text before question generation.
+const MAX_RESEARCH_SOURCES_FOR_AI = 4;
+const MAX_RESEARCH_IMAGES_FOR_AI = 6;
+const MAX_RESEARCH_CONTENT_CHARS_FOR_AI = 600;
+const MAX_RESEARCH_DESCRIPTION_CHARS_FOR_AI = 180;
 
 // 🔥 Sama persis dengan filter di ManageQuiz.jsx (searchImagesForQuestion)
 // -- beberapa domain proxy internal platform (Facebook lookaside, CDN
@@ -367,47 +366,19 @@ async function collectTavilyResearch({
 
   for (const packet of packets) {
     for (const result of packet.results || []) {
-      const sourceTitle = cleanText(result?.title).slice(0, 220);
       const url = cleanText(result?.url);
       if (!/^https?:\/\//i.test(url)) continue;
 
       sources.push({
-        title: sourceTitle,
+        title: cleanText(result?.title).slice(0, 220),
         url,
         content: cleanText(
           result?.raw_content ||
           result?.content ||
           '',
-        ).slice(0, 1200),
+        ).slice(0, MAX_RESEARCH_CONTENT_CHARS_FOR_AI),
         query: packet.query,
       });
-
-      // Tavily juga dapat mengembalikan gambar yang diekstrak dari
-      // masing-masing sumber. Gabungkan dengan top-level images agar
-      // pencarian gambar lebih kuat dan tidak bergantung satu format.
-      for (const item of result?.images || []) {
-        const imageUrl =
-          typeof item === 'string'
-            ? item
-            : item?.url;
-
-        if (!/^https?:\/\//i.test(String(imageUrl || ''))) {
-          continue;
-        }
-
-        images.push({
-          url: imageUrl,
-          description: cleanText(
-            typeof item === 'string'
-              ? ''
-              : item?.description ||
-                '',
-          ).slice(0, 250),
-          query: packet.query,
-          sourceTitle,
-          sourceUrl: url,
-        });
-      }
     }
 
     for (const item of packet.images || []) {
@@ -427,7 +398,7 @@ async function collectTavilyResearch({
             ? ''
             : item?.description ||
                 '',
-        ).slice(0, 250),
+        ).slice(0, MAX_RESEARCH_DESCRIPTION_CHARS_FOR_AI),
         query: packet.query,
       });
     }
@@ -616,7 +587,7 @@ async function enrichQuestionsWithRealImages(
       }
 
       const haystack = tokenSet(
-        `${image.description || ''} ${image.query || ''} ${image.sourceTitle || ''}`,
+        `${image.description || ''} ${image.query || ''}`,
       );
 
       let hits = 0;
@@ -774,25 +745,29 @@ function computeMaxTokens(
   jumlah,
   enableBrowserSearch,
 ) {
+  // Groq's free-tier TPM counts prompt + output together.
+  // The old 5,000-token ceiling could push a normal research request
+  // above the 8,000 TPM limit and cause HTTP 413.
   let outputTokens =
     900 +
-    jumlah * 260;
+    Math.min(jumlah, 20) * 120;
 
   if (enableBrowserSearch) {
-    outputTokens -= 300;
+    outputTokens -= 200;
   }
 
   outputTokens = Math.max(
-    1200,
+    1400,
     outputTokens,
   );
 
-  // Hard ceiling supaya prompt + output masih punya ruang di TPM.
+  // Conservative ceiling. Research context is also compacted below.
   return Math.min(
     outputTokens,
-    5000,
+    3000,
   );
 }
+
 
 const MAX_FIELD_LENGTH = 4_000;
 const MAX_QUESTION_LENGTH = 5_000;
@@ -3059,7 +3034,7 @@ function sendGroqError(
         success: false,
 
         error:
-          'Permintaan terlalu besar untuk diproses Groq sekali jalan. Coba kurangi jumlah soal yang diminta, atau persingkat arahan guru.',
+          'Permintaan ke Groq melebihi batas token per menit (prompt + output). Sistem sudah membatasi output, tetapi jika request masih terlalu besar coba kurangi jumlah soal atau persingkat arahan guru.',
 
         diagnostics: {
           type:
@@ -3306,25 +3281,6 @@ export default async function handler(
       });
   }
 
-  const tavilyApiKey =
-    process.env.TAVILY_API_KEY;
-
-  if (REQUIRE_WEB_RESEARCH && !tavilyApiKey) {
-    return res
-      .status(503)
-      .json({
-        success: false,
-
-        error:
-          'TAVILY_API_KEY belum dikonfigurasi. Generator soal ini memerlukan Tavily agar sumber soal dari internet dan pencarian gambar benar-benar aktif.',
-
-        diagnostics: {
-          type: 'missing_tavily_api_key',
-          requireWebResearch: true,
-        },
-      });
-  }
-
   // ==========================================================
   // QUESTION COUNT
   // ==========================================================
@@ -3417,7 +3373,7 @@ export default async function handler(
   const research =
     await collectTavilyResearch({
       apiKey:
-        tavilyApiKey,
+        process.env.TAVILY_API_KEY,
       topic,
       mapel,
       kelas,
@@ -3719,7 +3675,8 @@ export default async function handler(
   const imageEnrichResult =
     await enrichQuestionsWithRealImages(
       questions,
-      tavilyApiKey,
+      process.env
+        .TAVILY_API_KEY,
       topic,
       research.images,
     );
