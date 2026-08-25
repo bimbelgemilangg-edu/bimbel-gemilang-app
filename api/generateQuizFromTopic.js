@@ -153,6 +153,30 @@ const MAX_TAVILY_CALLS_PER_REQUEST = 8;
 
 const TAVILY_TIMEOUT_MS = 12_000;
 
+// 🔥 Sama persis dengan filter di ManageQuiz.jsx (searchImagesForQuestion)
+// -- beberapa domain proxy internal platform (Facebook lookaside, CDN
+// Instagram) SECARA DESAIN gak bisa dibuka di luar ekosistem platform
+// asalnya, PASTI gagal load kalau ditaruh sebagai <img src=...> di
+// aplikasi lain. Diterapkan di sini juga (bukan cuma di Openverse/
+// Wikimedia) buat jaga-jaga kalau Tavily suatu saat ikut mengagregasi
+// dari sumber serupa.
+const UNRELIABLE_IMAGE_HOST_PATTERNS =
+  [
+    /lookaside\.fbsx\.com/i,
+    /lookaside\.facebook\.com/i,
+    /scontent[.-].*\.fbcdn\.net/i,
+    /scontent\..*\.cdninstagram\.com/i,
+  ];
+
+function isReliableImageUrl(
+  url,
+) {
+  return !UNRELIABLE_IMAGE_HOST_PATTERNS.some(
+    (pattern) =>
+      pattern.test(url),
+  );
+}
+
 async function callTavilyImageSearch(
   apiKey,
   query,
@@ -238,6 +262,9 @@ async function callTavilyImageSearch(
         typeof url ===
           'string' &&
         /^https?:\/\//i.test(
+          url,
+        ) &&
+        isReliableImageUrl(
           url,
         )
       ) {
@@ -2091,6 +2118,31 @@ function buildSystemPrompt({
 
     '',
 
+    // 🔥 FIX BUG NYATA: sebelumnya 3 opsi visual ini (clock/graph/
+    // needsImage) dijelaskan SEJAJAR tanpa aturan kapan pakai yang
+    // mana -- akibatnya AI salah pilih `needsImage` buat DIAGRAM
+    // MATEMATIS (mis. "parabola dengan titik puncak (2,-3)", "pohon
+    // peluang 13/52 dan 39/52"). Itu FATAL: `needsImage` memicu
+    // PENCARIAN FOTO STOK ASLI (Openverse/Wikimedia) -- padahal gak
+    // ada dan gak akan PERNAH ada foto asli buat diagram matematis
+    // yang dikarang sendiri kayak gitu. Hasilnya foto ngasal yang gak
+    // nyambung sama sekali (kotak gelap, tekstur random) karena mesin
+    // pencari maksa nyari padanan kata dari deskripsi yang sebenarnya
+    // gak mewakili benda nyata apa pun.
+    'ATURAN VISUAL -- WAJIB DIIKUTI, JANGAN TERTUKAR:',
+
+    '',
+
+    '1. GRAFIK FUNGSI / KURVA / PARABOLA / GARIS LURUS -> WAJIB pakai "graph" (lihat contoh di bawah). JANGAN PERNAH pakai "needsImage" buat ini -- gak ada foto asli buat grafik yang kamu karang sendiri.',
+
+    '2. JAM ANALOG -> WAJIB pakai "clock". JANGAN pakai "needsImage".',
+
+    '3. DIAGRAM ABSTRAK LAIN (pohon peluang, diagram Venn, bagan alur, tabel data, garis bilangan, dll) -> JELASKAN LENGKAP di teks "question" itu sendiri (semua angka/label yang relevan disebutkan di kalimat soal). JANGAN pakai "needsImage" buat ini juga -- diagram abstrak yang kamu karang sendiri TIDAK PERNAH punya padanan foto asli di internet.',
+
+    '4. "needsImage"+"imageHint" HANYA untuk FOTO OBJEK/TEMPAT/MAKHLUK NYATA yang BENERAN ada fotonya di dunia (mis. "Candi Prambanan", "ayam jantan", "Menara Eiffel", "gunung berapi"). Kalau ragu apakah sesuatu itu "benda nyata yang bisa difoto" atau "diagram/konsep yang kamu karang" -> PILIH ATURAN 1-3, JANGAN needsImage.',
+
+    '',
+
     'VISUAL CLOCK:',
 
     '"clock":{"hour":8,"minute":30}',
@@ -2103,9 +2155,9 @@ function buildSystemPrompt({
 
     '',
 
-    'IMAGE:',
+    'IMAGE (HANYA untuk foto objek/tempat/makhluk NYATA, baca ATURAN VISUAL #4 di atas):',
 
-    '"needsImage":true,"imageHint":"English image description"',
+    '"needsImage":true,"imageHint":"English image description of a REAL photographable subject"',
 
     // 🔥 Diingatkan eksplisit ke AI juga -- biar dia gak nyoba nulis
     // URL gambar asli dari hasil browser_search ke field ini (dia

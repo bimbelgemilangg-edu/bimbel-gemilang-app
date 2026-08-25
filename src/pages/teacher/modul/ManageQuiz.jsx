@@ -1111,6 +1111,28 @@ const ManageQuiz = () => {
   // cipta. Guru TETAP yang milih dari beberapa kandidat (bukan auto-pasang
   // tanpa cek), karena AI gak selalu bisa mastiin akurasi gambar buat
   // konten sains/anatomi presisi.
+  // 🔥 BARU: FIX BUG NYATA -- Openverse kadang ikut mengagregasi hasil
+  // yang URL aslinya (`url`/`thumb`) menunjuk ke domain proxy internal
+  // platform tertentu (paling sering `lookaside.fbsx.com` / domain
+  // `lookaside.facebook.com`, kadang juga CDN Instagram `scontent.*`).
+  // URL proxy ini SECARA DESAIN cuma bisa dibuka di dalam ekosistem
+  // platform asalnya (butuh sesi/cookie/referrer khusus) -- begitu
+  // ditaruh sebagai <img src=...> di aplikasi lain, PASTI gagal load
+  // (ikon rusak/X merah), gak peduli linknya masih "valid" atau enggak.
+  // Disaring DI SINI, sebelum ditampilkan ke guru sebagai kandidat --
+  // supaya guru gak pernah disodori pilihan yang emang dijamin rusak.
+  const UNRELIABLE_IMAGE_HOST_PATTERNS = [
+    /lookaside\.fbsx\.com/i,
+    /lookaside\.facebook\.com/i,
+    /scontent[.-].*\.fbcdn\.net/i,
+    /scontent\..*\.cdninstagram\.com/i,
+  ];
+
+  const isReliableImageUrl = (url) => {
+    if (!url || typeof url !== 'string') return false;
+    return !UNRELIABLE_IMAGE_HOST_PATTERNS.some(pattern => pattern.test(url));
+  };
+
   const searchImagesForQuestion = async (questionId, keyword) => {
     if (!keyword || !keyword.trim()) return;
     setSearchingImageFor(questionId);
@@ -1128,7 +1150,7 @@ const ManageQuiz = () => {
       if (ovRes.ok) {
         const ovData = await ovRes.json();
         (ovData.results || []).forEach(r => {
-          if (r.url) {
+          if (r.url && isReliableImageUrl(r.url) && isReliableImageUrl(r.thumbnail || r.url)) {
             results.push({
               url: r.url,
               thumb: r.thumbnail || r.url,
@@ -1154,7 +1176,7 @@ const ManageQuiz = () => {
           const pages = wmData?.query?.pages || {};
           Object.values(pages).forEach(p => {
             const info = p.imageinfo && p.imageinfo[0];
-            if (info && info.url) {
+            if (info && info.url && isReliableImageUrl(info.url) && isReliableImageUrl(info.thumburl || info.url)) {
               results.push({
                 url: info.url,
                 thumb: info.thumburl || info.url,
