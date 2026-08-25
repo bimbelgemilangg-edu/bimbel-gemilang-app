@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { collection, addDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy } from "firebase/firestore";
+import { collection, addDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy, where } from "firebase/firestore";
 import { 
   Plus, Trash2, CheckCircle, ArrowLeft, Save, FileText, X, 
   Calculator, Target, BookOpen, Users, Send, Settings, 

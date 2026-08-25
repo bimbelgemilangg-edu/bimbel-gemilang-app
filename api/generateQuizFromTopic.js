@@ -75,6 +75,45 @@ const MAX_QUESTION_COUNT = 20;
 
 const AI_TIMEOUT_MS = 45_000;
 
+// 🔥 BARU: Groq TPM (Tokens Per Minute) untuk model `openai/gpt-oss-120b`
+// di tier gratis ternyata cuma 8000 -- ini ANGKA ASLI dari pesan error
+// yang benar-benar dialami ("Limit 8000, Requested 9689"), bukan
+// perkiraan. Request SEBELUMNYA selalu minta `max_tokens: 9000` tetap,
+// gak peduli berapa jumlah soal yang diminta guru -- untuk permintaan
+// 3 soal pun tetap minta jatah 9000 token buat OUTPUT SENDIRI, ditambah
+// token prompt (blueprint + instruksi), jadi gampang banget nabrak
+// limit 8000 bahkan buat permintaan kecil. Sekarang max_tokens dihitung
+// PROPORSIONAL ke jumlah soal yang diminta -- permintaan kecil (3 soal)
+// minta token jauh lebih sedikit, gak lagi selalu minta jatah maksimal.
+const GROQ_TPM_LIMIT = 8000;
+
+function computeMaxTokens(
+  jumlah,
+) {
+  // Perkiraan: tiap soal butuh ~400 token buat output (pertanyaan +
+  // opsi + pembahasan + verifikasi), plus overhead ~300 token buat
+  // instruksi umum. Dibatasi maksimal supaya nyisain ruang buat token
+  // PROMPT (system+user+blueprint) di bawah limit TPM -- prompt untuk
+  // permintaan besar (banyak soal) juga lebih panjang, jadi makin
+  // banyak soal, makin sedikit "sisa" jatah yang aman dipakai buat
+  // max_tokens output.
+  const estimated =
+    300 +
+    jumlah * 400;
+
+  const ceiling =
+    GROQ_TPM_LIMIT -
+    1500; // sisakan buffer buat token prompt
+
+  return Math.min(
+    Math.max(
+      estimated,
+      1200,
+    ),
+    ceiling,
+  );
+}
+
 const MAX_FIELD_LENGTH = 4_000;
 const MAX_QUESTION_LENGTH = 5_000;
 const MAX_EXPLANATION_LENGTH = 8_000;
@@ -1780,6 +1819,7 @@ async function callGroq({
   apiKey,
   systemPrompt,
   userPrompt,
+  maxTokens,
 }) {
   const controller =
     new AbortController();
@@ -1834,7 +1874,7 @@ async function callGroq({
               0.7,
 
             max_tokens:
-              9000,
+              maxTokens,
 
             stream:
               false,
@@ -2110,6 +2150,42 @@ function sendGroqError(
   }
 
   // ----------------------------------------------------------
+  // REQUEST TOO LARGE (413) -- seharusnya sudah dicegah oleh
+  // computeMaxTokens(), tapi tetap ditangani jaga-jaga kalau blueprint
+  // atau arahan guru sangat panjang sampai token prompt sendiri (bukan
+  // cuma max_tokens) yang bikin total nabrak limit TPM.
+  // ----------------------------------------------------------
+
+  if (
+    error?.providerStatus === 413
+  ) {
+    return res
+      .status(413)
+      .json({
+        success: false,
+
+        error:
+          'Permintaan terlalu besar untuk diproses Groq sekali jalan. Coba kurangi jumlah soal yang diminta, atau persingkat arahan guru.',
+
+        diagnostics: {
+          type:
+            'request_too_large',
+
+          providerMessage:
+            error.providerMessage ||
+            null,
+
+          traceId:
+            error.traceId ||
+            null,
+
+          model:
+            GROQ_MODEL,
+        },
+      });
+  }
+
+  // ----------------------------------------------------------
   // PROVIDER HTTP ERROR
   // ----------------------------------------------------------
 
@@ -2143,6 +2219,7 @@ function sendGroqError(
 
           model:
             GROQ_MODEL,
+
         },
       });
   }
@@ -2430,12 +2507,18 @@ export default async function handler(
 
   let aiResult;
 
+  const maxTokens =
+    computeMaxTokens(
+      jumlah,
+    );
+
   try {
     aiResult =
       await callGroq({
         apiKey,
         systemPrompt,
         userPrompt,
+        maxTokens,
       });
 
   } catch (error) {

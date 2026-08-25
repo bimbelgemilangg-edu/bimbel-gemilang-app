@@ -83,10 +83,20 @@ const RESEARCH_MODES = [
     id: 'source',
 
     title:
-      'Ambil Soal dari Internet',
+      // 🔥 FIX BUG NYATA: label lama "Ambil Soal dari Internet" +
+      // "Soal yang memang sudah dipublikasikan" menyiratkan sistem
+      // BENERAN mengecek/menarik soal asli dari internet dan bisa
+      // MEMASTIKAN soal itu memang pernah dipublikasikan -- itu KLAIM
+      // FAKTUAL yang gak bisa dijamin sistem ini. Backend cuma ngirim
+      // label teks "MODE: source" ke AI sebagai instruksi gaya jawab;
+      // AI tetap menyusun soal dari memori internalnya sendiri, TANPA
+      // verifikasi nyata ke sumber mana pun. Untuk konteks pendidikan,
+      // klaim "sudah dipublikasikan" yang gak bisa dibuktikan itu
+      // masalah integritas, bukan cuma soal kata-kata.
+      'Gaya Soal Baku/Umum',
 
     short:
-      'Soal yang memang sudah dipublikasikan.',
+      'AI meniru gaya & pola soal yang lazim dipakai untuk topik ini -- bukan menyalin/menjamin soal asli dari sumber tertentu.',
 
     icon:
       BookOpen,
@@ -102,7 +112,12 @@ const RESEARCH_MODES = [
       'Prediksi Berbasis Tren',
 
     short:
-      'Analisis banyak sumber lalu susun latihan baru.',
+      // 🔥 FIX BUG NYATA (sama): "Analisis banyak sumber" menyiratkan
+      // ada proses analisis sumber eksternal beneran terjadi -- padahal
+      // gak ada. Diganti biar sesuai kenyataan: AI menyusun soal baru
+      // berdasar pola & tren umum yang dia "tahu" dari pelatihannya,
+      // bukan hasil analisis sumber real-time.
+      'AI menyusun soal baru berdasar pola & tren umum yang ia ketahui -- bukan hasil analisis sumber real-time.',
 
     icon:
       TrendingUp,
@@ -856,7 +871,17 @@ const AIGenerateQuiz = ({
                     styles.bannerTitle
                   }
                 >
-                  Riset internet selalu aktif
+                {/* 🔥 FIX BUG NYATA: teks ini sebelumnya klaim "Gemilang
+                    terlebih dahulu MENCARI dan MEMBACA SUMBER SOAL PUBLIK
+                    di internet" -- ini TIDAK BENAR sejak arsitektur diganti
+                    ke Local Blueprint Engine + 1x panggilan AI (lihat
+                    generateQuizFromTopic.js). Backend SAMA SEKALI TIDAK
+                    browsing/scraping internet dengan cara apa pun --
+                    soal disusun dari kisi-kisi kurikulum lokal lalu AI
+                    menyusun soal dari "ingatan" internalnya sendiri.
+                    Klaim lama ini menyesatkan guru soal apa yang
+                    sebenarnya terjadi. */}
+                  Kisi-kisi kurikulum, bukan asal tebak
                 </div>
 
                 <div
@@ -866,12 +891,13 @@ const AIGenerateQuiz = ({
                 >
                   Soal tidak dibuat
                   secara acak. Gemilang
-                  terlebih dahulu mencari
-                  dan membaca sumber
-                  soal publik, kemudian
-                  menganalisis kunci,
-                  pembahasan, dan
-                  stimulusnya.
+                  menyusun kisi-kisi per
+                  butir (kompetensi &
+                  tingkat kesulitan)
+                  lebih dulu secara
+                  lokal, baru AI menyusun
+                  soal sesuai kisi-kisi
+                  itu.
                 </div>
               </div>
 
