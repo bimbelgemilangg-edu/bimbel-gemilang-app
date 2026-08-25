@@ -1463,12 +1463,11 @@ function buildClockSvg(
     </svg>
   `;
 
-  return (
-    'data:image/svg+xml;base64,' +
-    Buffer.from(
-      svg,
-    ).toString('base64')
-  );
+  const base64Svg = typeof Buffer !== 'undefined'
+    ? Buffer.from(svg).toString('base64')
+    : btoa(unescape(encodeURIComponent(svg)));
+
+  return 'data:image/svg+xml;base64,' + base64Svg;
 }
 
 // ============================================================
@@ -1675,12 +1674,11 @@ function buildGraphSvg(
     </svg>
   `;
 
-  return (
-    'data:image/svg+xml;base64,' +
-    Buffer.from(
-      svg,
-    ).toString('base64')
-  );
+  const base64Svg = typeof Buffer !== 'undefined'
+    ? Buffer.from(svg).toString('base64')
+    : btoa(unescape(encodeURIComponent(svg)));
+
+  return 'data:image/svg+xml;base64,' + base64Svg;
 }
 
 // ============================================================
