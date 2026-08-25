@@ -3,94 +3,40 @@
 // api/generateQuizFromTopic.js
 // ============================================================
 //
-// ARSITEKTUR:
+// FINAL RESEARCH + QUESTION ENGINE
 //
 // FRONTEND
-//    ↓
+//   ↓
 // /api/generateQuizFromTopic
-//    ↓
-// LOCAL BLUEPRINT ENGINE
-//    ↓
-// GROQ API (CHAT COMPLETIONS)
-//    ↓
-// JSONL PARSER
-//    ↓
-// LOCAL QUALITY GATE
-//    ↓
+//   ↓
+// LOCAL BLUEPRINT
+//   ↓
+// TAVILY WEB SEARCH + PAGE EXTRACTION
+//   ↓
+// SOURCE / VISUAL RESEARCH PACK
+//   ↓
+// GROQ GPT-OSS
+//   ↓
+// TYPE + BLUEPRINT + VISUAL QUALITY GATE
+//   ↓
 // MANAGE QUIZ
 //
-// TANPA:
-// - Jina
-// - Tavily
-// - Google Search API
-// - Gemini
-// - Cloudflare AI
-// - SiliconFlow (dihapus -- berbayar)
-// - GitHub Models (dihapus -- LAYANAN INI SUDAH RESMI TUTUP TOTAL
-//   per 30 Juli 2026, dikonfirmasi langsung dari GitHub Changelog.
-//   Kalau kamu lihat saran di mana pun yang masih nyebut GitHub
-//   Models/models.github.ai/models.inference.ai.azure.com sebagai
-//   opsi gratis, itu sudah basi -- jangan dipasang lagi.)
-// - Scraping
-//
-// KENAPA GROQ: terverifikasi AKTIF per Agustus 2026, free tier
-// PERMANEN (bukan trial/kredit habis), TANPA kartu kredit, endpoint
-// kompatibel format OpenAI (gampang dipelihara).
-//
-// 🔥 KOREKSI (sebelumnya salah ketik di sini): limit gratis untuk
-// `openai/gpt-oss-120b` adalah 30 request/menit, 1.000 request/HARI
-// (bukan 14.400 -- itu angka model LAIN, llama-3.1-8b-instant, yang
-// sempat salah kecantol ke sini), 8.000 token/menit, 200.000 token/
-// hari -- per ORGANISASI (bukan per API key). Terverifikasi silang
-// dari beberapa sumber independen Agustus 2026. 1.000 request/hari
-// tetap lebih dari cukup untuk skala bimbel biasa, tapi kalau nanti
-// dipakai bareng fitur browser_search di bawah (yang lebih boros
-// token), TPD (200.000/hari) bisa jadi batas yang lebih dulu kena.
-//
 // ENV:
-// GROQ_API_KEY=... (buat gratis di console.groq.com/keys, tinggal
-//   daftar pakai email/Google, langsung dapat key, TANPA kartu kredit)
+//   GROQ_API_KEY=...
+//   TAVILY_API_KEY=...
 //
 // OPTIONAL:
-// GROQ_MODEL=openai/gpt-oss-120b
-//   (⚠️ Groq MENDEPRECATE model secara rutin -- cek daftar model aktif
-//   di console.groq.com/docs/models sebelum deploy kalau ragu. Model
-//   default di bawah ini ("openai/gpt-oss-120b") adalah PENGGANTI
-//   RESMI yang direkomendasikan Groq sendiri untuk kelas Llama-70B
-//   setelah mereka deprecate llama-3.3-70b-versatile per 16 Agustus
-//   2026 -- JANGAN pakai nama model itu lagi, sudah gak aktif.)
+//   GROQ_MODEL=openai/gpt-oss-120b
 //
-// 🔥 BARU: BROWSER SEARCH (mode "prediction" SAJA)
-// ============================================================
-// `openai/gpt-oss-120b` & `openai/gpt-oss-20b` punya tool bawaan
-// `browser_search` -- dijalankan DI SERVER GROQ SENDIRI (bukan kita
-// yang scraping/hosting apa pun), pakai mesin pencari Exa. Ini BEDA
-// dari SearXNG (yang kita putuskan TIDAK dipakai -- lihat diskusi:
-// self-hosted SearXNG rawan diblokir Google & butuh VPS berbayar).
-// browser_search TIDAK butuh infrastruktur tambahan sama sekali --
-// tinggal tambah field `tools` di request yang SAMA yang sudah kita
-// pakai.
-//
-// KETERBATASAN JUJUR (jangan lupa ini pas baca kode di bawah):
-// 1. "Currently Free: Available at no additional charge during BETA"
-//    -- ini status BETA Groq sendiri, bisa berubah kapan saja jadi
-//    berbayar. Bukan janji gratis selamanya.
-// 2. Cuma teks/snippet halaman -- TIDAK bisa mengambil FILE GAMBAR
-//    asli dari halaman sumber. Visual (jam, grafik) tetap dibikin
-//    lokal lewat buildClockSvg()/buildGraphSvg() seperti sebelumnya.
-// 3. Makan token & waktu lebih banyak (hasil pencarian masuk ke
-//    context) -- makanya SENGAJA cuma diaktifkan di mode "prediction"
-//    (guru pilih "Prediksi Berbasis Tren" di UI), BUKAN di mode
-//    default "source" yang harus tetap cepat & hemat token buat
-//    pemakaian sehari-hari.
-//
+// CATATAN HAK CIPTA:
+// Mesin ini boleh menemukan, menilai, dan menyimpan metadata sumber.
+// Soal yang dilindungi hak cipta tidak disalin verbatim ke output.
+// Model diminta membuat soal baru berbasis sumber.
+// Materi/image hanya dipasang otomatis bila sumbernya jelas dapat
+// digunakan kembali atau guru akan meninjaunya terlebih dahulu.
 // ============================================================
 
 export const maxDuration = 60;
-
-// ============================================================
-// CONFIG
-// ============================================================
 
 const GROQ_API_URL =
   'https://api.groq.com/openai/v1/chat/completions';
@@ -99,425 +45,71 @@ const GROQ_MODEL =
   process.env.GROQ_MODEL ||
   'openai/gpt-oss-120b';
 
-const DEFAULT_QUESTION_COUNT = 10;
-const MAX_QUESTION_COUNT = 20;
-
-const AI_TIMEOUT_MS = 45_000;
-
-// 🔥 BARU: timeout lebih longgar khusus untuk request yang mengaktifkan
-// browser_search -- AI beneran browsing beberapa halaman web dulu
-// sebelum jawab, jadi butuh waktu lebih dari request biasa. Tetap
-// dijaga di bawah maxDuration (60s) Vercel supaya function-nya sendiri
-// gak keburu dimatikan platform sebelum sempat kirim respons error
-// yang rapi.
-const AI_TIMEOUT_WITH_SEARCH_MS = 55_000;
-
-// 🔥 BARU: Groq TPM (Tokens Per Minute) untuk model `openai/gpt-oss-120b`
-// di tier gratis ternyata cuma 8000 -- ini ANGKA ASLI dari pesan error
-// yang benar-benar dialami ("Limit 8000, Requested 9689"), bukan
-// perkiraan. Request SEBELUMNYA selalu minta `max_tokens: 9000` tetap,
-// gak peduli berapa jumlah soal yang diminta guru -- untuk permintaan
-// 3 soal pun tetap minta jatah 9000 token buat OUTPUT SENDIRI, ditambah
-// token prompt (blueprint + instruksi), jadi gampang banget nabrak
-// limit 8000 bahkan buat permintaan kecil. Sekarang max_tokens dihitung
-// PROPORSIONAL ke jumlah soal yang diminta -- permintaan kecil (3 soal)
-// minta token jauh lebih sedikit, gak lagi selalu minta jatah maksimal.
-const GROQ_TPM_LIMIT = 8000;
-
-// ============================================================
-// 🔥 BARU: TAVILY (pencari gambar asli -- opsional)
-// ============================================================
-// Dipakai KHUSUS untuk mencari gambar ASLI dari internet buat:
-// (1) stimulus visual soal (mis. "gambar di bawah ini candi apa?"),
-// (2) pilihan jawaban berbentuk gambar (optionsAreImages).
-// Groq browser_search TIDAK bisa ini -- dia cuma kasih teks/snippet,
-// bukan file gambar (lihat penjelasan lengkap di header file & di
-// dokumentasi resmi Groq). Tavily terverifikasi (Agustus 2026) py
-// free tier 1.000 credit/bulan, reset tiap tanggal 1, TANPA kartu
-// kredit -- kalau kredit habis, request BERHENTI (bukan auto-tagih
-// kayak Brave yang sudah kita coret dari opsi).
-//
-// FITUR INI SEPENUHNYA OPSIONAL: kalau `TAVILY_API_KEY` gak di-set,
-// seluruh langkah pencarian gambar di bawah DILEWATI TOTAL -- sistem
-// tetap jalan normal persis seperti sebelum fitur ini ada (fallback
-// ke needsImage+imageHint sebagai penanda "butuh gambar" doang, tanpa
-// gambar asli). Jadi nggak ada resiko baru buat siapa pun yang belum
-// mau/sempat setup Tavily.
 const TAVILY_SEARCH_URL =
   'https://api.tavily.com/search';
 
-// Batas keras jumlah panggilan Tavily PER REQUEST generate-quiz --
-// jaga-jaga supaya satu permintaan guru (banyak soal, semua butuh
-// gambar) gak ujug-ujug ngabisin jatah bulanan cuma dalam 1 klik.
-const MAX_TAVILY_CALLS_PER_REQUEST = 8;
+const TAVILY_EXTRACT_URL =
+  'https://api.tavily.com/extract';
 
-const TAVILY_TIMEOUT_MS = 12_000;
+const DEFAULT_QUESTION_COUNT = 10;
+const MAX_QUESTION_COUNT = 20;
 
-// 🔥 Sama persis dengan filter di ManageQuiz.jsx (searchImagesForQuestion)
-// -- beberapa domain proxy internal platform (Facebook lookaside, CDN
-// Instagram) SECARA DESAIN gak bisa dibuka di luar ekosistem platform
-// asalnya, PASTI gagal load kalau ditaruh sebagai <img src=...> di
-// aplikasi lain. Diterapkan di sini juga (bukan cuma di Openverse/
-// Wikimedia) buat jaga-jaga kalau Tavily suatu saat ikut mengagregasi
-// dari sumber serupa.
-const UNRELIABLE_IMAGE_HOST_PATTERNS =
-  [
-    /lookaside\.fbsx\.com/i,
-    /lookaside\.facebook\.com/i,
-    /scontent[.-].*\.fbcdn\.net/i,
-    /scontent\..*\.cdninstagram\.com/i,
-  ];
+const GROQ_TIMEOUT_MS = 50_000;
+const TAVILY_TIMEOUT_MS = 15_000;
 
-function isReliableImageUrl(
-  url,
-) {
-  return !UNRELIABLE_IMAGE_HOST_PATTERNS.some(
-    (pattern) =>
-      pattern.test(url),
-  );
-}
-
-async function callTavilyImageSearch(
-  apiKey,
-  query,
-) {
-  const controller =
-    new AbortController();
-
-  const timeoutId =
-    setTimeout(
-      () =>
-        controller.abort(),
-      TAVILY_TIMEOUT_MS,
-    );
-
-  try {
-    const response =
-      await fetch(
-        TAVILY_SEARCH_URL,
-        {
-          method: 'POST',
-
-          headers: {
-            Authorization:
-              `Bearer ${apiKey}`,
-
-            'Content-Type':
-              'application/json',
-          },
-
-          body: JSON.stringify({
-            query,
-
-            search_depth:
-              'basic', // 1 credit (bukan 'advanced' yang makan 2 credit)
-
-            max_results: 3,
-
-            include_images:
-              true,
-
-            include_image_descriptions:
-              false,
-
-            include_answer:
-              false,
-
-            include_raw_content:
-              false,
-          }),
-
-          signal:
-            controller.signal,
-        },
-      );
-
-    if (!response.ok) {
-      return null; // 🔥 gagal (kredit habis, dll) -- gak fatal, cuma gak dapat gambar buat butir ini
-    }
-
-    const data =
-      await response.json();
-
-    const images =
-      Array.isArray(
-        data?.images,
-      )
-        ? data.images
-        : [];
-
-    // 🔥 `images` bisa berisi string URL langsung, ATAU object
-    // {url, description} tergantung parameter -- ditangani dua-duanya
-    // supaya gak gampang patah kalau Tavily ubah format.
-    for (
-      const item of images
-    ) {
-      const url =
-        typeof item ===
-        'string'
-          ? item
-          : item?.url;
-
-      if (
-        typeof url ===
-          'string' &&
-        /^https?:\/\//i.test(
-          url,
-        ) &&
-        isReliableImageUrl(
-          url,
-        )
-      ) {
-        return url;
-      }
-    }
-
-    return null;
-  } catch (_) {
-    return null; // timeout/network error -- gak fatal, lanjut tanpa gambar buat butir ini
-  } finally {
-    clearTimeout(
-      timeoutId,
-    );
-  }
-}
-
-// 🔥 Perkaya soal-soal yang lolos Quality Gate dengan gambar ASLI dari
-// Tavily -- dijalankan SETELAH quality gate (baris soal sudah final),
-// SEBELUM dikirim ke ManageQuiz. Dibatasi MAX_TAVILY_CALLS_PER_REQUEST
-// biar kredit bulanan gak jebol dalam 1 request.
-async function enrichQuestionsWithRealImages(
-  questions,
-  tavilyApiKey,
-  topic,
-) {
-  if (!tavilyApiKey) {
-    // Fitur belum di-setup -- lewati total, gak ada perubahan perilaku.
-    return {
-      imagesFetched: 0,
-      tavilyCallsUsed: 0,
-      cappedByBudget: false,
-    };
-  }
-
-  let callsUsed = 0;
-  let imagesFetched = 0;
-  let cappedByBudget = false;
-
-  for (
-    const question of questions
-  ) {
-    if (
-      callsUsed >=
-      MAX_TAVILY_CALLS_PER_REQUEST
-    ) {
-      cappedByBudget = true;
-      break;
-    }
-
-    // KASUS 1: soal butuh gambar stimulus (mis. "candi apa ini?")
-    // dan belum punya qImage (bukan clock/graph lokal).
-    if (
-      question.needsImage &&
-      !question.qImage &&
-      question.imageHint
-    ) {
-      const url =
-        await callTavilyImageSearch(
-          tavilyApiKey,
-          question.imageHint,
-        );
-
-      callsUsed += 1;
-
-      if (url) {
-        question.qImage = url;
-        question.imageSource = {
-          url,
-          fetchedVia: 'tavily',
-        };
-        imagesFetched += 1;
-      }
-
-      if (
-        callsUsed >=
-        MAX_TAVILY_CALLS_PER_REQUEST
-      ) {
-        cappedByBudget = true;
-        break;
-      }
-    }
-
-    // KASUS 2: pilihan jawaban berbentuk gambar -- cari 1 gambar per
-    // opsi (mis. "Candi Prambanan", "Candi Borobudur", dst).
-    if (
-      question.optionsAreImages &&
-      Array.isArray(
-        question.options,
-      ) &&
-      question.options.length >
-        0
-    ) {
-      const fetchedImages = [
-        ...(question.optionImages ||
-          []),
-      ];
-
-      for (
-        let i = 0;
-        i <
-        question.options
-          .length;
-        i += 1
-      ) {
-        if (
-          callsUsed >=
-          MAX_TAVILY_CALLS_PER_REQUEST
-        ) {
-          cappedByBudget = true;
-          break;
-        }
-
-        // Kalau opsi ini SUDAH punya gambar (mis. dari fallback lama),
-        // jangan cari ulang -- hemat kredit.
-        if (
-          fetchedImages[i]
-        ) {
-          continue;
-        }
-
-        // Query digabung dengan topik supaya lebih spesifik (mis.
-        // "Candi Prambanan" + topik "Sejarah Kerajaan Mataram Kuno"),
-        // bukan cuma nama opsi polos yang bisa ambigu.
-        const query =
-          topic
-            ? `${question.options[i]} ${topic}`
-            : question.options[i];
-
-        const url =
-          await callTavilyImageSearch(
-            tavilyApiKey,
-            query,
-          );
-
-        callsUsed += 1;
-
-        if (url) {
-          fetchedImages[i] =
-            url;
-          imagesFetched += 1;
-        }
-      }
-
-      question.optionImages =
-        fetchedImages;
-    }
-  }
-
-  return {
-    imagesFetched,
-    tavilyCallsUsed:
-      callsUsed,
-    cappedByBudget,
-  };
-}
-
-function computeMaxTokens(
-  jumlah,
-  enableBrowserSearch,
-) {
-  // Perkiraan: tiap soal butuh ~400 token buat output (pertanyaan +
-  // opsi + pembahasan + verifikasi), plus overhead ~300 token buat
-  // instruksi umum. Dibatasi maksimal supaya nyisain ruang buat token
-  // PROMPT (system+user+blueprint) di bawah limit TPM -- prompt untuk
-  // permintaan besar (banyak soal) juga lebih panjang, jadi makin
-  // banyak soal, makin sedikit "sisa" jatah yang aman dipakai buat
-  // max_tokens output.
-  const estimated =
-    300 +
-    jumlah * 400;
-
-  // 🔥 BARU: kalau browser_search aktif, hasil pencarian (snippet
-  // beberapa halaman web) ikut masuk ke context -- itu makan jatah
-  // TPM juga, di LUAR kendali kita (gak tau pasti berapa token
-  // sebelum request jalan). Sisakan buffer JAUH lebih besar supaya
-  // gak gampang nabrak limit 8.000 TPM kalau browser_search narik
-  // banyak konten.
-  const buffer =
-    enableBrowserSearch
-      ? 3500
-      : 1500;
-
-  const ceiling =
-    GROQ_TPM_LIMIT -
-    buffer;
-
-  return Math.min(
-    Math.max(
-      estimated,
-      1200,
-    ),
-    ceiling,
-  );
-}
+const MAX_RESEARCH_QUERIES = 4;
+const MAX_SEARCH_RESULTS_PER_QUERY = 5;
+const MAX_EXTRACT_URLS = 5;
+const MAX_SOURCE_RESULTS = 12;
+const MAX_IMAGE_RESULTS = 20;
 
 const MAX_FIELD_LENGTH = 4_000;
 const MAX_QUESTION_LENGTH = 5_000;
 const MAX_EXPLANATION_LENGTH = 8_000;
-
-const MAX_ACCEPTED_QUESTIONS = 20;
-
-// ============================================================
-// SUPPORTED TYPES
-// ============================================================
 
 const SUPPORTED_TYPES = new Set([
   'multiple',
   'truefalse',
   'multiple_select',
   'short_answer',
+  'causeeffect',
   'matching',
-  'ordering',
+  'reading',
 ]);
 
-// ============================================================
-// BASIC TEXT HELPERS
-// ============================================================
+const TYPE_ALIASES = {
+  multiselect: 'multiple_select',
+  multiple_select: 'multiple_select',
+  shortanswer: 'short_answer',
+  short_answer: 'short_answer',
+  true_false: 'truefalse',
+  truefalse: 'truefalse',
+  cause_effect: 'causeeffect',
+  causeeffect: 'causeeffect',
+  match: 'matching',
+  matching: 'matching',
+  reading: 'reading',
+  multiple: 'multiple',
+};
+
+// ------------------------------------------------------------
+// BASIC HELPERS
+// ------------------------------------------------------------
 
 function cleanText(value = '') {
   return String(value ?? '')
-    .replace(
-      /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,
-      ' ',
-    )
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-// ============================================================
-// 🔥 BARU: DETEKSI KEBOCORAN JSON -- GENERAL, BUKAN SPESIFIK 1 KASUS
-// ============================================================
-// Kasus nyata yang memicu ini: field "graph" bocor jadi TEKS di dalam
-// "question" (mis. soal grafik ketinggian benda) -- tapi kesalahan yang
-// SAMA JENISNYA bisa kejadian di field APA PUN (bukan cuma graph/clock)
-// dan di MAPEL/TOPIK APA PUN (bukan cuma matematika) -- terutama makin
-// riskan begitu Bimbel Gemilang menambah cakupan ke UTBK yang jauh lebih
-// beragam jenis soalnya. Makanya deteksinya dibuat GENERAL: cari pola
-// `"namaField":` diikuti awal nilai JSON (kutip/kurung/angka/true/false)
-// DI MANA PUN dalam teks -- bukan mendaftar nama field satu-satu yang
-// kita tahu. Kalau besok ada field baru "table"/"chart"/"diagram" dkk
-// yang ditambahkan ke skema, ini TETAP mendeteksinya tanpa perlu update
-// daftar nama field manapun.
-const JSON_LEAK_PATTERN =
-  /"[a-zA-Z_][a-zA-Z0-9_]*"\s*:\s*(\{|\[|"|-?\d|true\b|false\b|null\b)/;
+function safeField(value, fallback = '') {
+  return cleanText(value || fallback).slice(0, MAX_FIELD_LENGTH);
+}
 
-function hasLeakedJsonArtifact(
-  text,
-) {
-  if (!text) return false;
-  return JSON_LEAK_PATTERN.test(
-    text,
-  );
+function normalizeType(value) {
+  const key = cleanText(value).toLowerCase();
+  return TYPE_ALIASES[key] || key;
 }
 
 function normalizeText(value = '') {
@@ -528,167 +120,90 @@ function normalizeText(value = '') {
     .trim();
 }
 
-function safeField(value, fallback = '') {
-  const result = cleanText(
-    value || fallback,
-  );
-
-  return result.slice(
-    0,
-    MAX_FIELD_LENGTH,
-  );
+function clampInt(value, min, max, fallback) {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(Math.max(parsed, min), max);
 }
 
-// ============================================================
-// ARRAY HELPERS
-// ============================================================
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-function cleanStringArray(
-  value,
-  maxItems = 8,
-  maxLength = 2_000,
-) {
-  if (!Array.isArray(value)) {
-    return [];
+function uniqueBy(items, keyFn) {
+  const seen = new Set();
+  const out = [];
+
+  for (const item of items || []) {
+    const key = keyFn(item);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
   }
 
-  return value
-    .map((item) =>
-      cleanText(item).slice(
-        0,
-        maxLength,
-      ),
-    )
-    .filter(Boolean)
-    .slice(0, maxItems);
+  return out;
 }
 
-// ============================================================
-// NUMBER HELPERS
-// ============================================================
+function isHttpUrl(value) {
+  return /^https?:\/\/\S+$/i.test(String(value || ''));
+}
 
-function clampInt(
-  value,
-  min,
-  max,
-  fallback,
-) {
-  const parsed =
-    Number.parseInt(
-      value,
-      10,
-    );
-
-  if (!Number.isFinite(parsed)) {
-    return fallback;
+function hostOf(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./i, '').toLowerCase();
+  } catch {
+    return '';
   }
-
-  return Math.min(
-    Math.max(parsed, min),
-    max,
-  );
 }
 
-// ============================================================
+// ------------------------------------------------------------
 // DUPLICATE DETECTION
-// ============================================================
+// ------------------------------------------------------------
 
 function tokenSet(value = '') {
   return new Set(
     normalizeText(value)
       .split(' ')
-      .filter(
-        (token) =>
-          token.length >= 2,
-      ),
+      .filter((token) => token.length >= 2),
   );
 }
 
-function jaccardSimilarity(
-  a,
-  b,
-) {
-  const A =
-    typeof a === 'string'
-      ? tokenSet(a)
-      : a;
+function jaccardSimilarity(a, b) {
+  const A = typeof a === 'string' ? tokenSet(a) : a;
+  const B = typeof b === 'string' ? tokenSet(b) : b;
 
-  const B =
-    typeof b === 'string'
-      ? tokenSet(b)
-      : b;
-
-  if (!A.size || !B.size) {
-    return 0;
-  }
+  if (!A.size || !B.size) return 0;
 
   let intersection = 0;
 
   for (const token of A) {
-    if (B.has(token)) {
-      intersection += 1;
-    }
+    if (B.has(token)) intersection += 1;
   }
 
-  const union =
-    A.size +
-    B.size -
-    intersection;
+  const union = A.size + B.size - intersection;
 
-  return union
-    ? intersection / union
-    : 0;
+  return union ? intersection / union : 0;
 }
 
-function fingerprintQuestion(
-  value = '',
-) {
+function fingerprintQuestion(value = '') {
   return normalizeText(value)
-    .replace(
-      /\bsoal\s+\d+\b/gi,
-      ' ',
-    )
-    .replace(
-      /\bnomor\s+\d+\b/gi,
-      ' ',
-    )
+    .replace(/\bsoal\s+\d+\b/gi, ' ')
+    .replace(/\bnomor\s+\d+\b/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-function isDuplicateQuestion(
-  question,
-  existing,
-) {
-  const current =
-    fingerprintQuestion(
-      question,
-    );
-
-  if (!current) {
-    return true;
-  }
+function isDuplicateQuestion(question, existing) {
+  const current = fingerprintQuestion(question);
+  if (!current) return true;
 
   for (const item of existing) {
-    const previous =
-      fingerprintQuestion(
-        item.question,
-      );
+    const previous = fingerprintQuestion(item.question);
 
-    if (!previous) {
-      continue;
-    }
+    if (!previous) continue;
+    if (current === previous) return true;
 
-    if (current === previous) {
-      return true;
-    }
-
-    if (
-      jaccardSimilarity(
-        current,
-        previous,
-      ) >= 0.86
-    ) {
+    if (jaccardSimilarity(current, previous) >= 0.86) {
       return true;
     }
   }
@@ -696,9 +211,9 @@ function isDuplicateQuestion(
   return false;
 }
 
-// ============================================================
-// XML ESCAPE
-// ============================================================
+// ------------------------------------------------------------
+// XML / SVG
+// ------------------------------------------------------------
 
 function escapeXml(value = '') {
   return String(value)
@@ -709,28 +224,111 @@ function escapeXml(value = '') {
     .replace(/'/g, '&apos;');
 }
 
-// ============================================================
-// COMPETENCY ENGINE
-// ============================================================
+function buildClockSvg(clock) {
+  if (!clock || typeof clock !== 'object') return '';
 
-function getCompetencyTemplates(
-  mapel,
-  topic,
-) {
-  const m =
-    normalizeText(mapel);
+  const hour = Number(clock.hour);
+  const minute = Number(clock.minute);
 
-  const t =
-    normalizeText(topic);
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return '';
 
-  // MATEMATIKA
+  const h = ((hour % 12) + 12) % 12;
+  const m = Math.min(Math.max(minute, 0), 59);
+
+  const r = 110;
+  const cx = 130;
+  const cy = 130;
+
+  const toXY = (angle, length) => {
+    const rad = ((angle - 90) * Math.PI) / 180;
+    return {
+      x: cx + length * Math.cos(rad),
+      y: cy + length * Math.sin(rad),
+    };
+  };
+
+  const hourTip = toXY(h * 30 + m * 0.5, r * 0.5);
+  const minuteTip = toXY(m * 6, r * 0.75);
+
+  const ticks = Array.from({ length: 12 }, (_, i) => {
+    const p1 = toXY(i * 30, r);
+    const p2 = toXY(i * 30, r - 10);
+
+    return `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}"
+      x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}"
+      stroke="#1e293b" stroke-width="2"/>`;
+  }).join('');
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 260 260" width="260" height="260">
+    <circle cx="130" cy="130" r="${r}" fill="#fff" stroke="#1e293b" stroke-width="3"/>
+    ${ticks}
+    <line x1="130" y1="130" x2="${hourTip.x.toFixed(1)}" y2="${hourTip.y.toFixed(1)}"
+      stroke="#1e293b" stroke-width="5" stroke-linecap="round"/>
+    <line x1="130" y1="130" x2="${minuteTip.x.toFixed(1)}" y2="${minuteTip.y.toFixed(1)}"
+      stroke="#475569" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="130" cy="130" r="4" fill="#1e293b"/>
+  </svg>`;
+
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+}
+
+function buildGraphSvg(graph) {
+  if (!graph || !Array.isArray(graph.points)) return '';
+
+  const points = graph.points
+    .filter((p) => p && Number.isFinite(Number(p.x)) && Number.isFinite(Number(p.y)))
+    .slice(0, 50)
+    .map((p) => ({ x: Number(p.x), y: Number(p.y) }));
+
+  if (points.length < 2) return '';
+
+  const W = 520;
+  const H = 320;
+  const P = 50;
+
+  const xs = points.map((p) => p.x);
+  const ys = points.map((p) => p.y);
+
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  const mapX = (v) => P + ((v - minX) / Math.max(maxX - minX, 1)) * (W - P * 2);
+  const mapY = (v) => H - P - ((v - minY) / Math.max(maxY - minY, 1)) * (H - P * 2);
+
+  const path = points.map((p, i) =>
+    `${i === 0 ? 'M' : 'L'} ${mapX(p.x).toFixed(1)} ${mapY(p.y).toFixed(1)}`
+  ).join(' ');
+
+  const xLabel = escapeXml(cleanText(graph.xLabel || 'X'));
+  const yLabel = escapeXml(cleanText(graph.yLabel || 'Y'));
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">
+    <rect width="${W}" height="${H}" fill="#fff"/>
+    <line x1="${P}" y1="${H-P}" x2="${W-P}" y2="${H-P}" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="${P}" y1="${P}" x2="${P}" y2="${H-P}" stroke="#94a3b8" stroke-width="1.5"/>
+    <path d="${path}" fill="none" stroke="#0f172a" stroke-width="2.5"/>
+    <text x="${W-20}" y="${H-P+18}" font-family="Arial" font-size="12">${xLabel}</text>
+    <text x="${P-25}" y="20" font-family="Arial" font-size="12">${yLabel}</text>
+  </svg>`;
+
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+}
+
+// ------------------------------------------------------------
+// BLUEPRINT
+// ------------------------------------------------------------
+
+function competencyTemplates(mapel, topic) {
+  const m = normalizeText(mapel);
+  const t = normalizeText(topic);
+
   if (
     m.includes('matematika') ||
-    t.includes('pecahan') ||
-    t.includes('aljabar') ||
-    t.includes('geometri') ||
-    t.includes('bilangan') ||
-    t.includes('fungsi')
+    /(pecahan|aljabar|geometri|bilangan|fungsi|statistika)/.test(t)
   ) {
     return [
       'Memahami konsep dan representasi matematis',
@@ -739,12 +337,8 @@ function getCompetencyTemplates(
     ];
   }
 
-  // IPA / SAINS
   if (
-    m.includes('ipa') ||
-    m.includes('fisika') ||
-    m.includes('kimia') ||
-    m.includes('biologi')
+    /(ipa|fisika|kimia|biologi)/.test(m)
   ) {
     return [
       'Memahami konsep dan fenomena ilmiah',
@@ -753,12 +347,7 @@ function getCompetencyTemplates(
     ];
   }
 
-  // BAHASA INDONESIA
-  if (
-    m.includes(
-      'bahasa indonesia',
-    )
-  ) {
+  if (m.includes('bahasa indonesia')) {
     return [
       'Memahami informasi eksplisit dan implisit',
       'Menganalisis struktur, makna, dan hubungan informasi dalam teks',
@@ -766,12 +355,7 @@ function getCompetencyTemplates(
     ];
   }
 
-  // BAHASA INGGRIS
-  if (
-    m.includes(
-      'bahasa inggris',
-    )
-  ) {
+  if (m.includes('bahasa inggris')) {
     return [
       'Memahami informasi dan tujuan komunikasi dalam teks',
       'Menerapkan kosakata, tata bahasa, atau fungsi bahasa dalam konteks',
@@ -779,2312 +363,1415 @@ function getCompetencyTemplates(
     ];
   }
 
-  // IPS
-  if (
-    m.includes('ips') ||
-    m.includes('sejarah') ||
-    m.includes('geografi') ||
-    m.includes('ekonomi') ||
-    m.includes('sosiologi')
-  ) {
+  if (/(ips|sejarah|geografi|ekonomi|sosiologi)/.test(m)) {
     return [
       'Memahami konsep dan informasi faktual penting',
-      'Menerapkan konsep dalam konteks kehidupan atau fenomena sosial',
+      'Menerapkan konsep dalam konteks',
       'Menganalisis hubungan sebab-akibat, data, dan implikasi',
     ];
   }
 
-  // DEFAULT
   return [
     'Memahami konsep atau informasi dasar',
-    'Menerapkan konsep pada situasi yang relevan',
+    'Menerapkan konsep pada situasi relevan',
     'Menganalisis informasi dan menyelesaikan masalah',
   ];
 }
 
-// ============================================================
-// DIFFICULTY DISTRIBUTION
-// ============================================================
+function difficultyDistribution(jumlah, hotsLevel) {
+  const hots = normalizeText(hotsLevel).includes('hots');
 
-function getDifficultyDistribution(
-  jumlah,
-  hotsLevel,
-) {
-  const isHots =
-    normalizeText(
-      hotsLevel,
-    ).includes('hots');
-
-  const levels = isHots
+  const levels = hots
     ? [
-        {
-          level: 'Easy',
-          ratio: 0.10,
-          cognitive:
-            'Understanding',
-        },
-        {
-          level: 'Medium',
-          ratio: 0.40,
-          cognitive:
-            'Applying/Analyzing',
-        },
-        {
-          level: 'Hard',
-          ratio: 0.50,
-          cognitive:
-            'Analyzing/Evaluating',
-        },
+        { level: 'Easy', ratio: 0.10, cognitive: 'Understanding' },
+        { level: 'Medium', ratio: 0.40, cognitive: 'Applying/Analyzing' },
+        { level: 'Hard', ratio: 0.50, cognitive: 'Analyzing/Evaluating' },
       ]
     : [
-        {
-          level: 'Easy',
-          ratio: 0.30,
-          cognitive:
-            'Understanding',
-        },
-        {
-          level: 'Medium',
-          ratio: 0.40,
-          cognitive:
-            'Applying',
-        },
-        {
-          level: 'Hard',
-          ratio: 0.30,
-          cognitive:
-            'Analyzing/Problem Solving',
-        },
+        { level: 'Easy', ratio: 0.30, cognitive: 'Understanding' },
+        { level: 'Medium', ratio: 0.40, cognitive: 'Applying' },
+        { level: 'Hard', ratio: 0.30, cognitive: 'Analyzing/Problem Solving' },
       ];
 
-  const result =
-    levels.map(
-      (item) => ({
-        ...item,
-        count:
-          Math.floor(
-            jumlah *
-              item.ratio,
-          ),
-      }),
-    );
+  const out = levels.map((item) => ({
+    ...item,
+    count: Math.floor(jumlah * item.ratio),
+  }));
 
-  let assigned =
-    result.reduce(
-      (sum, item) =>
-        sum + item.count,
-      0,
-    );
+  let total = out.reduce((sum, x) => sum + x.count, 0);
+  let i = 0;
 
-  // Distribusi sisa butir
-  let index = 0;
-
-  while (
-    assigned <
-    jumlah
-  ) {
-    result[index].count += 1;
-
-    assigned += 1;
-
-    index =
-      (index + 1) %
-      result.length;
+  while (total < jumlah) {
+    out[i % out.length].count += 1;
+    total += 1;
+    i += 1;
   }
 
-  return result;
+  return out;
 }
 
-// ============================================================
-// LOCAL BLUEPRINT ENGINE
-// ============================================================
+function requestedTypeMix(types, jumlah) {
+  const canonical = [...new Set(
+    (types || [])
+      .map(normalizeType)
+      .filter((type) => SUPPORTED_TYPES.has(type)),
+  )];
 
-function buildCurriculumBlueprint({
-  topic,
-  mapel,
-  kelas,
-  jumlah,
-  hotsLevel,
-  arahan,
-}) {
-  const safeTopic =
-    safeField(topic);
-
-  const safeMapel =
-    safeField(
-      mapel,
-      'Umum',
-    );
-
-  const safeKelas =
-    safeField(
-      kelas,
-      'Umum',
-    );
-
-  const safeArahan =
-    safeField(
-      arahan,
-      'Tidak ada',
-    );
-
-  const competencies =
-    getCompetencyTemplates(
-      safeMapel,
-      safeTopic,
-    );
-
-  const difficulties =
-    getDifficultyDistribution(
-      jumlah,
-      hotsLevel,
-    );
-
+  const allowed = canonical.length ? canonical : ['multiple'];
   const blueprint = [];
 
-  let no = 1;
-
-  for (
-    const difficulty
-    of difficulties
-  ) {
-    for (
-      let i = 0;
-      i < difficulty.count;
-      i += 1
-    ) {
-      const competency =
-        competencies[
-          (no - 1) %
-            competencies.length
-        ];
-
-      blueprint.push({
-        no,
-
-        topic:
-          safeTopic,
-
-        mapel:
-          safeMapel,
-
-        kelas:
-          safeKelas,
-
-        difficulty:
-          difficulty.level,
-
-        cognitiveLevel:
-          difficulty.cognitive,
-
-        competency,
-
-        teacherDirection:
-          safeArahan,
-      });
-
-      no += 1;
-    }
+  for (let i = 0; i < jumlah; i += 1) {
+    blueprint.push(allowed[i % allowed.length]);
   }
 
   return blueprint;
 }
 
-// ============================================================
-// CLOCK SVG
-// ============================================================
-
-function buildClockSvg(
-  clock,
-) {
-  if (
-    !clock ||
-    typeof clock !==
-      'object'
-  ) {
-    return '';
-  }
-
-  const hourValue =
-    Number(clock.hour);
-
-  const minuteValue =
-    Number(clock.minute);
-
-  if (
-    !Number.isFinite(
-      hourValue,
-    ) ||
-    !Number.isFinite(
-      minuteValue,
-    )
-  ) {
-    return '';
-  }
-
-  const hour =
-    ((hourValue % 12) +
-      12) %
-    12;
-
-  const minute =
-    Math.min(
-      Math.max(
-        minuteValue,
-        0,
-      ),
-      59,
-    );
-
-  const radius = 110;
-  const cx = 130;
-  const cy = 130;
-
-  const toXY = (
-    angle,
-    length,
-  ) => {
-    const radians =
-      ((angle - 90) *
-        Math.PI) /
-      180;
-
-    return {
-      x:
-        cx +
-        length *
-          Math.cos(
-            radians,
-          ),
-
-      y:
-        cy +
-        length *
-          Math.sin(
-            radians,
-          ),
-    };
-  };
-
-  const hourTip =
-    toXY(
-      hour * 30 +
-        minute * 0.5,
-      radius * 0.5,
-    );
-
-  const minuteTip =
-    toXY(
-      minute * 6,
-      radius * 0.75,
-    );
-
-  const ticks =
-    Array.from(
-      { length: 12 },
-      (_, i) => {
-        const p1 =
-          toXY(
-            i * 30,
-            radius,
-          );
-
-        const p2 =
-          toXY(
-            i * 30,
-            radius - 10,
-          );
-
-        return `
-          <line
-            x1="${p1.x.toFixed(1)}"
-            y1="${p1.y.toFixed(1)}"
-            x2="${p2.x.toFixed(1)}"
-            y2="${p2.y.toFixed(1)}"
-            stroke="#1e293b"
-            stroke-width="2"
-          />
-        `;
-      },
-    ).join('');
-
-  const svg = `
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 260 260"
-      width="260"
-      height="260"
-    >
-      <circle
-        cx="130"
-        cy="130"
-        r="${radius}"
-        fill="#ffffff"
-        stroke="#1e293b"
-        stroke-width="3"
-      />
-
-      ${ticks}
-
-      <line
-        x1="130"
-        y1="130"
-        x2="${hourTip.x.toFixed(1)}"
-        y2="${hourTip.y.toFixed(1)}"
-        stroke="#1e293b"
-        stroke-width="5"
-        stroke-linecap="round"
-      />
-
-      <line
-        x1="130"
-        y1="130"
-        x2="${minuteTip.x.toFixed(1)}"
-        y2="${minuteTip.y.toFixed(1)}"
-        stroke="#475569"
-        stroke-width="3"
-        stroke-linecap="round"
-      />
-
-      <circle
-        cx="130"
-        cy="130"
-        r="4"
-        fill="#1e293b"
-      />
-    </svg>
-  `;
-
-  return (
-    'data:image/svg+xml;base64,' +
-    Buffer.from(
-      svg,
-    ).toString('base64')
-  );
-}
-
-// ============================================================
-// GRAPH SVG
-// ============================================================
-
-function buildGraphSvg(
-  graph,
-) {
-  if (
-    !graph ||
-    !Array.isArray(
-      graph.points,
-    )
-  ) {
-    return '';
-  }
-
-  const points =
-    graph.points
-      .filter(
-        (point) =>
-          point &&
-          Number.isFinite(
-            Number(
-              point.x,
-            ),
-          ) &&
-          Number.isFinite(
-            Number(
-              point.y,
-            ),
-          ),
-      )
-      .slice(0, 50)
-      .map(
-        (point) => ({
-          x: Number(
-            point.x,
-          ),
-          y: Number(
-            point.y,
-          ),
-        }),
-      );
-
-  if (
-    points.length < 2
-  ) {
-    return '';
-  }
-
-  const width = 500;
-  const height = 300;
-  const padding = 40;
-
-  const xs =
-    points.map(
-      (point) =>
-        point.x,
-    );
-
-  const ys =
-    points.map(
-      (point) =>
-        point.y,
-    );
-
-  const minX =
-    Math.min(...xs);
-
-  const maxX =
-    Math.max(...xs);
-
-  const minY =
-    Math.min(...ys);
-
-  const maxY =
-    Math.max(...ys);
-
-  const mapX = (
-    value,
-  ) =>
-    padding +
-    ((value - minX) /
-      Math.max(
-        maxX - minX,
-        1,
-      )) *
-      (width -
-        padding * 2);
-
-  const mapY = (
-    value,
-  ) =>
-    height -
-    padding -
-    ((value - minY) /
-      Math.max(
-        maxY - minY,
-        1,
-      )) *
-      (height -
-        padding * 2);
-
-  const path =
-    points
-      .map(
-        (
-          point,
-          index,
-        ) =>
-          `${
-            index === 0
-              ? 'M'
-              : 'L'
-          } ${mapX(
-            point.x,
-          ).toFixed(
-            1,
-          )} ${mapY(
-            point.y,
-          ).toFixed(
-            1,
-          )}`,
-      )
-      .join(' ');
-
-  const xLabel =
-    escapeXml(
-      cleanText(
-        graph.xLabel ||
-          'X',
-      ),
-    );
-
-  const yLabel =
-    escapeXml(
-      cleanText(
-        graph.yLabel ||
-          'Y',
-      ),
-    );
-
-  const svg = `
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 ${width} ${height}"
-      width="${width}"
-      height="${height}"
-    >
-
-      <rect
-        width="${width}"
-        height="${height}"
-        fill="#ffffff"
-      />
-
-      <line
-        x1="${padding}"
-        y1="${height - padding}"
-        x2="${width - padding}"
-        y2="${height - padding}"
-        stroke="#94a3b8"
-        stroke-width="1.5"
-      />
-
-      <line
-        x1="${padding}"
-        y1="${padding}"
-        x2="${padding}"
-        y2="${height - padding}"
-        stroke="#94a3b8"
-        stroke-width="1.5"
-      />
-
-      <path
-        d="${path}"
-        fill="none"
-        stroke="#0f172a"
-        stroke-width="2.5"
-      />
-
-      <text
-        x="${width - 15}"
-        y="${height - padding + 5}"
-        font-family="Arial"
-        font-size="12"
-        fill="#475569"
-      >
-        ${xLabel}
-      </text>
-
-      <text
-        x="${padding - 10}"
-        y="20"
-        font-family="Arial"
-        font-size="12"
-        fill="#475569"
-      >
-        ${yLabel}
-      </text>
-
-    </svg>
-  `;
-
-  return (
-    'data:image/svg+xml;base64,' +
-    Buffer.from(
-      svg,
-    ).toString('base64')
-  );
-}
-
-// ============================================================
-// JSONL CLEANUP
-// ============================================================
-
-function stripCodeFences(
-  text,
-) {
-  return String(text || '')
-    .replace(
-      /^\s*```(?:json|jsonl)?\s*/i,
-      '',
-    )
-    .replace(
-      /\s*```\s*$/i,
-      '',
-    )
-    .trim();
-}
-
-// ============================================================
-// JSONL PARSER
-// ============================================================
-
-function parseJsonLines(
-  text = '',
-) {
-  const cleaned =
-    stripCodeFences(text);
-
-  const objects = [];
-
-  // ----------------------------------------------------------
-  // PASS 1
-  // ----------------------------------------------------------
-
-  const lines =
-    cleaned.split(
-      /\r?\n/,
-    );
-
-  for (
-    const line of lines
-  ) {
-    const value =
-      line.trim();
-
-    if (
-      !value.startsWith('{') ||
-      !value.endsWith('}')
-    ) {
-      continue;
-    }
-
-    try {
-      objects.push(
-        JSON.parse(value),
-      );
-    } catch (_) {
-      // PASS 2
-    }
-  }
-
-  if (objects.length > 0) {
-    return objects;
-  }
-
-  // ----------------------------------------------------------
-  // PASS 2
-  // Balanced object recovery
-  // ----------------------------------------------------------
-
-  let depth = 0;
-  let start = -1;
-
-  let inString = false;
-  let escaped = false;
-
-  for (
-    let i = 0;
-    i < cleaned.length;
-    i += 1
-  ) {
-    const char =
-      cleaned[i];
-
-    if (escaped) {
-      escaped = false;
-      continue;
-    }
-
-    if (
-      char === '\\' &&
-      inString
-    ) {
-      escaped = true;
-      continue;
-    }
-
-    if (char === '"') {
-      inString =
-        !inString;
-      continue;
-    }
-
-    if (inString) {
-      continue;
-    }
-
-    if (char === '{') {
-      if (depth === 0) {
-        start = i;
-      }
-
-      depth += 1;
-      continue;
-    }
-
-    if (char === '}') {
-      depth -= 1;
-
-      if (
-        depth === 0 &&
-        start !== -1
-      ) {
-        const candidate =
-          cleaned.slice(
-            start,
-            i + 1,
-          );
-
-        try {
-          objects.push(
-            JSON.parse(
-              candidate,
-            ),
-          );
-        } catch (_) {
-          // invalid JSON object
-        }
-
-        start = -1;
-      }
-    }
-  }
-
-  return objects;
-}
-
-// ============================================================
-// QUESTION TYPE VALIDATORS
-// ============================================================
-
-function validMultiple(
-  question,
-) {
-  return (
-    Array.isArray(
-      question.options,
-    ) &&
-    question.options.length ===
-      4 &&
-    question.options.every(
-      (item) =>
-        cleanText(item)
-          .length > 0,
-    ) &&
-    Number.isInteger(
-      question.correct,
-    ) &&
-    question.correct >=
-      0 &&
-    question.correct <=
-      3
-  );
-}
-
-function validTrueFalse(
-  question,
-) {
-  return (
-    Number.isInteger(
-      question.correct,
-    ) &&
-    (
-      question.correct === 0 ||
-      question.correct === 1
-    )
-  );
-}
-
-function validMultipleSelect(
-  question,
-) {
-  if (
-    !Array.isArray(
-      question.options,
-    ) ||
-    question.options.length <
-      2
-  ) {
-    return false;
-  }
-
-  if (
-    !Array.isArray(
-      question.correctAnswers,
-    ) ||
-    question.correctAnswers
-      .length < 1
-  ) {
-    return false;
-  }
-
-  return question.correctAnswers.every(
-    (index) =>
-      Number.isInteger(
-        index,
-      ) &&
-      index >= 0 &&
-      index <
-        question.options
-          .length,
-  );
-}
-
-function validShortAnswer(
-  question,
-) {
-  return (
-    cleanText(
-      question.shortAnswer,
-    ).length > 0
-  );
-}
-
-// ============================================================
-// NORMALIZE QUESTION
-// ============================================================
-
-function normalizeQuestion(
-  raw,
-  allowedTypes,
-  currentMode,
-) {
-  if (
-    !raw ||
-    typeof raw !==
-      'object'
-  ) {
-    return null;
-  }
-
-  if (
-    raw.meta === true
-  ) {
-    return null;
-  }
-
-  const type =
-    cleanText(
-      raw.type,
-    ).toLowerCase();
-
-  if (
-    !allowedTypes.includes(
-      type,
-    )
-  ) {
-    return null;
-  }
-
-  const question =
-    cleanText(
-      raw.question,
-    );
-
-  if (
-    question.length < 8 ||
-    question.length >
-      MAX_QUESTION_LENGTH
-  ) {
-    return null;
-  }
-
-  // 🔥 Jaring pengaman GENERAL (lihat hasLeakedJsonArtifact di atas) --
-  // cek field "question" dulu di titik ini karena ini yang paling awal
-  // divalidasi; field teks bebas LAINNYA dicek di bawah, setelah semua
-  // field itu diekstrak.
-  if (
-    hasLeakedJsonArtifact(
-      question,
-    )
-  ) {
-    return null;
-  }
-
-  const normalized = {
-    type,
-
-    blueprintNo:
-      Number.isInteger(
-        raw.blueprintNo,
-      )
-        ? raw.blueprintNo
-        : null,
-
-    difficulty:
-      cleanText(
-        raw.difficulty,
-      ).slice(
-        0,
-        50,
-      ),
-
-    competency:
-      cleanText(
-        raw.competency,
-      ).slice(
-        0,
-        500,
-      ),
-
-    question,
-
-    options:
-      cleanStringArray(
-        raw.options,
-        8,
-        2_000,
-      ),
-
-    optionImages:
-      cleanStringArray(
-        raw.optionImages,
-        8,
-        2_000,
-      ),
-
-    optionsAreImages:
-      Boolean(
-        raw.optionsAreImages,
-      ),
-
-    correct:
-      Number.isInteger(
-        raw.correct,
-      )
-        ? raw.correct
-        : 0,
-
-    correctAnswers:
-      Array.isArray(
-        raw.correctAnswers,
-      )
-        ? raw.correctAnswers
-            .filter(
-              Number.isInteger,
-            )
-            .slice(0, 8)
-        : [],
-
-    statements:
-      Array.isArray(
-        raw.statements,
-      )
-        ? raw.statements
-            .slice(0, 8)
-        : [],
-
-    shortAnswer:
-      cleanText(
-        raw.shortAnswer,
-      ).slice(
-        0,
-        500,
-      ),
-
-    readingText:
-      cleanText(
-        raw.readingText,
-      ).slice(
-        0,
-        8_000,
-      ),
-
-    cause:
-      cleanText(
-        raw.cause,
-      ).slice(
-        0,
-        1_000,
-      ),
-
-    effect:
-      cleanText(
-        raw.effect,
-      ).slice(
-        0,
-        1_000,
-      ),
-
-    explanation:
-      cleanText(
-        raw.explanation ||
-          'Pembahasan belum tersedia.',
-      ).slice(
-        0,
-        MAX_EXPLANATION_LENGTH,
-      ),
-
-    answerVerification:
-      cleanText(
-        raw.answerVerification ||
-          'Kunci diperiksa pada level struktur oleh Quality Gate.',
-      ).slice(
-        0,
-        2_000,
-      ),
-
-    analysisSummary:
-      cleanText(
-        raw.analysisSummary ||
-          'Sesuai dengan blueprint yang ditetapkan.',
-      ).slice(
-        0,
-        2_000,
-      ),
-
-    readingSource:
-      cleanText(
-        raw.readingSource,
-      ).slice(
-        0,
-        1_000,
-      ),
-
-    clock:
-      raw.clock &&
-      typeof raw.clock ===
-        'object'
-        ? raw.clock
-        : null,
-
-    graph:
-      raw.graph &&
-      typeof raw.graph ===
-        'object'
-        ? raw.graph
-        : null,
-
-    needsImage:
-      Boolean(
-        raw.needsImage,
-      ),
-
-    imageHint:
-      cleanText(
-        raw.imageHint,
-      ).slice(
-        0,
-        500,
-      ),
-  };
-
-  // ----------------------------------------------------------
-  // 🔥 JARING PENGAMAN MENYELURUH: cek SEMUA field teks bebas lainnya
-  // (bukan cuma "question" yang sudah dicek di atas) -- competency,
-  // explanation, answerVerification, analysisSummary, shortAnswer,
-  // readingText, cause, effect. Field-field ini SEMUA ditulis bebas
-  // oleh AI (bukan angka/enum terbatas), jadi SEMUA berisiko kena
-  // kebocoran JSON yang sama, di mapel/topik apa pun.
-  // ----------------------------------------------------------
-
-  const freeTextFieldsToCheck =
-    [
-      normalized.competency,
-      normalized.explanation,
-      normalized.answerVerification,
-      normalized.analysisSummary,
-      normalized.shortAnswer,
-      normalized.readingText,
-      normalized.cause,
-      normalized.effect,
-    ];
-
-  if (
-    freeTextFieldsToCheck.some(
-      (text) =>
-        hasLeakedJsonArtifact(
-          text,
-        ),
-    )
-  ) {
-    return null;
-  }
-
-  // ----------------------------------------------------------
-  // TYPE VALIDATION
-  // ----------------------------------------------------------
-
-  if (
-    type === 'multiple' &&
-    !validMultiple(
-      normalized,
-    )
-  ) {
-    return null;
-  }
-
-  if (
-    type === 'truefalse' &&
-    !validTrueFalse(
-      normalized,
-    )
-  ) {
-    return null;
-  }
-
-  if (
-    type === 'multiple_select' &&
-    !validMultipleSelect(
-      normalized,
-    )
-  ) {
-    return null;
-  }
-
-  if (
-    type === 'short_answer' &&
-    !validShortAnswer(
-      normalized,
-    )
-  ) {
-    return null;
-  }
-
-  // ----------------------------------------------------------
-  // LOCAL VISUAL
-  // ----------------------------------------------------------
-
-  let qImage;
-
-  let visualKind =
-    'none';
-
-  if (
-    normalized.clock
-  ) {
-    qImage =
-      buildClockSvg(
-        normalized.clock,
-      );
-
-    visualKind =
-      'clock';
-  } else if (
-    normalized.graph
-  ) {
-    qImage =
-      buildGraphSvg(
-        normalized.graph,
-      );
-
-    visualKind =
-      'graph';
-  }
-
-  return {
-    type:
-      normalized.type,
-
-    blueprintNo:
-      normalized.blueprintNo,
-
-    difficulty:
-      normalized.difficulty,
-
-    competency:
-      normalized.competency,
-
-    question:
-      normalized.question,
-
-    options:
-      normalized.options,
-
-    optionImages:
-      normalized.optionImages,
-
-    optionsAreImages:
-      normalized.optionsAreImages,
-
-    correct:
-      normalized.correct,
-
-    correctAnswers:
-      normalized.correctAnswers,
-
-    statements:
-      normalized.statements,
-
-    shortAnswer:
-      normalized.shortAnswer,
-
-    readingText:
-      normalized.readingText,
-
-    cause:
-      normalized.cause,
-
-    effect:
-      normalized.effect,
-
-    explanation:
-      normalized.explanation,
-
-    answerVerification:
-      normalized.answerVerification,
-
-    analysisSummary:
-      normalized.analysisSummary,
-
-    readingSource:
-      normalized.readingSource,
-
-    qImage,
-
-    needsImage:
-      Boolean(
-        normalized.needsImage ||
-          normalized.clock ||
-          normalized.graph,
-      ),
-
-    imageHint:
-      normalized.imageHint,
-
-    visualRequired:
-      Boolean(qImage),
-
-    visualKind,
-
-    sourceTitle:
-      // 🔥 BARU: sebelumnya SELALU hardcode "Blueprint Gemilang" apa
-      // pun isinya -- padahal kalau browser_search aktif, AI mungkin
-      // beneran nemu sumber asli & ngisi field ini. Sekarang dipakai
-      // kalau valid (bukan string kosong), fallback ke default lama
-      // kalau AI gak ngisi apa-apa (mis. mode tanpa browser_search).
-      cleanText(
-        raw.sourceTitle,
-      ).slice(0, 300) ||
-      'Blueprint Gemilang',
-
-    sourceUrl:
-      // Validasi sederhana: cuma terima yang beneran kelihatan kayak
-      // URL http/https -- kalau AI ngarang teks bukan URL (atau
-      // kosong), dibuang jadi string kosong daripada nyimpen sampah.
-      /^https?:\/\/\S+$/i.test(
-        cleanText(raw.sourceUrl),
-      )
-        ? cleanText(
-            raw.sourceUrl,
-          ).slice(0, 500)
-        : '',
-
-    researchBacked:
-      /^https?:\/\/\S+$/i.test(
-        cleanText(raw.sourceUrl),
-      ),
-
-    sourceMode:
-      currentMode,
-  };
-}
-
-// ============================================================
-// BLUEPRINT VALIDATION
-// ============================================================
-
-function validateAgainstBlueprint(
-  question,
-  blueprint,
-) {
-  if (
-    !Number.isInteger(
-      question.blueprintNo,
-    )
-  ) {
-    return {
-      valid: false,
-      reason:
-        'missingBlueprintNo',
-    };
-  }
-
-  const target =
-    blueprint.find(
-      (item) =>
-        item.no ===
-        question.blueprintNo,
-    );
-
-  if (!target) {
-    return {
-      valid: false,
-      reason:
-        'invalidBlueprintNo',
-    };
-  }
-
-  const targetDifficulty =
-    normalizeText(
-      target.difficulty,
-    );
-
-  const actualDifficulty =
-    normalizeText(
-      question.difficulty,
-    );
-
-  if (
-    actualDifficulty &&
-    actualDifficulty !==
-      targetDifficulty
-  ) {
-    return {
-      valid: false,
-      reason:
-        'difficultyMismatch',
-    };
-  }
-
-  return {
-    valid: true,
-    target,
-  };
-}
-
-// ============================================================
-// SYSTEM PROMPT
-// ============================================================
-
-function buildSystemPrompt({
-  allowedTypes,
-  enableBrowserSearch,
-}) {
-  return [
-    'Kamu adalah Otak Akademik Bimbel Gemilang.',
-
-    'Buat soal latihan akademik berdasarkan BLUEPRINT PER BUTIR yang diberikan.',
-
-    '',
-
-    'ATURAN MUTLAK:',
-
-    // 🔥 BARU: aturan #1-3 sekarang KONDISIONAL. Sebelumnya SELALU
-    // melarang browsing & klaim sumber eksternal -- itu benar untuk
-    // mode default (jujur, karena memang gak ada browsing terjadi).
-    // Tapi begitu `browser_search` diaktifkan (mode "prediction"),
-    // larangan itu JUSTRU KONTRADIKTIF dengan tool yang baru dipasang
-    // -- AI perlu diberi tau dia BOLEH dan SEHARUSNYA browsing, dan
-    // WAJIB jujur soal sumber yang dia temukan (bukan lagi dilarang
-    // ngaku pakai sumber eksternal).
-    ...(enableBrowserSearch
-      ? [
-          '1. Kamu PUNYA akses browser_search -- WAJIB dipakai untuk cari referensi tren/pola soal ujian terkini (mis. kisi-kisi UTBK/TKA terbaru) sebelum menyusun soal, terutama untuk butir blueprint dengan tingkat kesulitan Hard/HOTS.',
-          '2. Kalau soal terinspirasi dari sumber yang kamu temukan lewat browser_search, isi field "sourceTitle" dan "sourceUrl" dengan judul & URL ASLI dari sumber itu. Jangan mengarang URL yang gak pernah kamu buka.',
-          '3. Kalau kamu TIDAK menemukan sumber relevan untuk suatu butir, kosongkan "sourceTitle"/"sourceUrl" -- jangan mengarang supaya kelihatan "berbasis riset".',
-        ]
-      : [
-          '1. Jangan browsing.',
-          '2. Jangan mengaku melakukan browsing.',
-          '3. Jangan mengaku memakai sumber eksternal.',
-        ]),
-
-    '4. Jangan menyalin soal dari sumber tertentu secara verbatim/kata-per-kata -- soal harus tetap hasil susunan sendiri berdasarkan pola/kompetensi yang dipelajari.',
-
-    '5. Setiap soal harus mempunyai blueprintNo.',
-
-    '6. Setiap blueprintNo hanya boleh digunakan satu kali.',
-
-    '7. Ikuti difficulty dari blueprint.',
-
-    '8. Ikuti competency dari blueprint.',
-
-    '9. Untuk multiple hanya satu jawaban benar.',
-
-    '10. Periksa kembali semua perhitungan angka.',
-
-    '11. Jangan membuat pilihan jawaban yang ambigu.',
-
-    '12. Pembahasan harus menjelaskan alasan jawaban.',
-
-    '13. Jangan menggunakan Markdown dalam output.',
-
-    '14. Jangan memberikan percakapan tambahan.',
-
-    '',
-
-    'FORMAT:',
-
-    '{"meta":true}',
-
-    enableBrowserSearch
-      ? '{"type":"multiple","blueprintNo":1,"difficulty":"Easy","competency":"...","question":"...","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"...","sourceTitle":"...","sourceUrl":"..."}'
-      : '{"type":"multiple","blueprintNo":1,"difficulty":"Easy","competency":"...","question":"...","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
-
-    '',
-
-    `Tipe yang diperbolehkan: ${allowedTypes.join(', ')}`,
-
-    '',
-
-    // 🔥 FIX BUG NYATA: sebelumnya 3 opsi visual ini (clock/graph/
-    // needsImage) dijelaskan SEJAJAR tanpa aturan kapan pakai yang
-    // mana -- akibatnya AI salah pilih `needsImage` buat DIAGRAM
-    // MATEMATIS (mis. "parabola dengan titik puncak (2,-3)", "pohon
-    // peluang 13/52 dan 39/52"). Itu FATAL: `needsImage` memicu
-    // PENCARIAN FOTO STOK ASLI (Openverse/Wikimedia) -- padahal gak
-    // ada dan gak akan PERNAH ada foto asli buat diagram matematis
-    // yang dikarang sendiri kayak gitu. Hasilnya foto ngasal yang gak
-    // nyambung sama sekali (kotak gelap, tekstur random) karena mesin
-    // pencari maksa nyari padanan kata dari deskripsi yang sebenarnya
-    // gak mewakili benda nyata apa pun.
-    'ATURAN VISUAL -- WAJIB DIIKUTI, JANGAN TERTUKAR:',
-
-    '',
-
-    '1. GRAFIK FUNGSI / KURVA / PARABOLA / GARIS LURUS -> WAJIB pakai "graph" (lihat contoh di bawah). JANGAN PERNAH pakai "needsImage" buat ini -- gak ada foto asli buat grafik yang kamu karang sendiri.',
-
-    '2. JAM ANALOG -> WAJIB pakai "clock". JANGAN pakai "needsImage".',
-
-    '3. DIAGRAM ABSTRAK LAIN (pohon peluang, diagram Venn, bagan alur, tabel data, garis bilangan, dll) -> JELASKAN LENGKAP di teks "question" itu sendiri (semua angka/label yang relevan disebutkan di kalimat soal). JANGAN pakai "needsImage" buat ini juga -- diagram abstrak yang kamu karang sendiri TIDAK PERNAH punya padanan foto asli di internet.',
-
-    '4. "needsImage"+"imageHint" HANYA untuk FOTO OBJEK/TEMPAT/MAKHLUK NYATA yang BENERAN ada fotonya di dunia (mis. "Candi Prambanan", "ayam jantan", "Menara Eiffel", "gunung berapi"). Kalau ragu apakah sesuatu itu "benda nyata yang bisa difoto" atau "diagram/konsep yang kamu karang" -> PILIH ATURAN 1-3, JANGAN needsImage.',
-
-    '',
-
-    'VISUAL CLOCK -- CONTOH OBJEK UTUH (perhatikan "clock" adalah KEY SEJAJAR dengan "question", BUKAN teks di dalam "question"):',
-
-    '{"type":"multiple","blueprintNo":2,"difficulty":"Easy","competency":"...","question":"Perhatikan jam di bawah ini. Pukul berapakah yang ditunjukkan?","clock":{"hour":8,"minute":30},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
-
-    '',
-
-    'VISUAL GRAPH -- CONTOH OBJEK UTUH (perhatikan "graph" adalah KEY SEJAJAR dengan "question", BUKAN teks di dalam "question". JANGAN PERNAH menulis kata "graph" atau kurung kurawal data grafik DI DALAM string "question" -- itu SALAH FATAL):',
-
-    '{"type":"multiple","blueprintNo":3,"difficulty":"Medium","competency":"...","question":"Grafik berikut menunjukkan sebuah garis lurus. Berapa nilai kemiringan (slope) garis tersebut?","graph":{"points":[{"x":0,"y":0},{"x":1,"y":2}],"xLabel":"x","yLabel":"y"},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
-
-    '',
-
-    'IMAGE -- CONTOH OBJEK UTUH (HANYA untuk foto objek/tempat/makhluk NYATA, baca ATURAN VISUAL #4 di atas; "needsImage" & "imageHint" adalah KEY SEJAJAR, BUKAN teks di dalam "question"):',
-
-    '{"type":"multiple","blueprintNo":4,"difficulty":"Easy","competency":"...","question":"Perhatikan gambar di atas. Bangunan bersejarah apakah ini?","needsImage":true,"imageHint":"Prambanan Temple Indonesia","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
-
-    '',
-
-    '⚠️ PERINGATAN KERAS: field "question" HANYA boleh berisi KALIMAT SOAL dalam bahasa manusia biasa. DILARANG MUTLAK menulis potongan JSON, tanda kurung kurawal {}, atau kata kunci seperti "graph"/"clock"/"points"/"xLabel" DI DALAM teks "question" -- semua data visual itu WAJIB jadi key JSON terpisah yang sejajar dengan "question", persis seperti 3 contoh objek utuh di atas.',
-
-    // 🔥 Diingatkan eksplisit ke AI juga -- biar dia gak nyoba nulis
-    // URL gambar asli dari hasil browser_search ke field ini (dia
-    // cuma bisa akses teks/snippet halaman, bukan file gambarnya).
-    ...(enableBrowserSearch
-      ? [
-          '(Catatan: browser_search cuma kasih kamu TEKS halaman, BUKAN file gambar. Kalau butuh visual, tetap pakai clock/graph di atas atau needsImage+imageHint -- jangan mengarang URL gambar dari hasil pencarian.)',
-        ]
-      : []),
-
-    '',
-
-    'Output harus JSONL murni.',
-  ].join('\n');
-}
-
-// ============================================================
-// USER PROMPT
-// ============================================================
-
-function buildUserPrompt({
+function buildBlueprint({
   topic,
   mapel,
   kelas,
-  year,
-  currentMode,
+  jumlah,
+  hotsLevel,
   arahan,
-  blueprint,
+  types,
 }) {
-  return [
-    'BIMBEL GEMILANG — GENERATE QUIZ',
+  const safeTopic = safeField(topic);
+  const safeMapel = safeField(mapel, 'Umum');
+  const safeKelas = safeField(kelas, 'Umum');
+  const safeArahan = safeField(arahan, 'Tidak ada');
 
-    `TOPIK: ${topic}`,
+  const competencies = competencyTemplates(safeMapel, safeTopic);
+  const difficulties = difficultyDistribution(jumlah, hotsLevel);
+  const typeMix = requestedTypeMix(types, jumlah);
 
-    `MAPEL: ${mapel}`,
+  const rows = [];
+  let no = 1;
 
-    `KELAS: ${kelas}`,
+  for (const bucket of difficulties) {
+    for (let i = 0; i < bucket.count; i += 1) {
+      rows.push({
+        no,
+        topic: safeTopic,
+        mapel: safeMapel,
+        kelas: safeKelas,
+        type: typeMix[no - 1],
+        difficulty: bucket.level,
+        cognitiveLevel: bucket.cognitive,
+        competency: competencies[(no - 1) % competencies.length],
+        teacherDirection: safeArahan,
+        visualExpectation: no % 4 === 0 ? 'consider_visual' : 'either',
+      });
+      no += 1;
+    }
+  }
 
-    `TARGET TAHUN: ${year}`,
-
-    `MODE: ${currentMode}`,
-
-    `ARAHAN GURU: ${arahan}`,
-
-    '',
-
-    'BLUEPRINT:',
-
-    JSON.stringify(
-      blueprint,
-    ),
-
-    '',
-
-    `Jumlah blueprint: ${blueprint.length}`,
-
-    '',
-
-    'WAJIB menghasilkan satu soal untuk setiap blueprint.',
-
-    'Jangan melewati nomor blueprint.',
-
-    'Jangan menggabungkan dua blueprint.',
-
-    'Jangan membuat blueprint tambahan.',
-
-    'Output hanya JSONL.',
-  ].join('\n');
+  return rows;
 }
 
-// ============================================================
-// GROQ API
-// ============================================================
+// ------------------------------------------------------------
+// RESEARCH QUERY PLANNER
+// ------------------------------------------------------------
+
+function buildResearchQueries({
+  topic,
+  mapel,
+  kelas,
+  targetYear,
+  hotsLevel,
+  types,
+  sourceMode,
+}) {
+  const base = [
+    cleanText(topic),
+    cleanText(mapel || 'umum'),
+    cleanText(kelas || 'umum'),
+  ].filter(Boolean).join(' ');
+
+  const years = [
+    Number(targetYear) - 1,
+    Number(targetYear) - 2,
+    Number(targetYear),
+  ].filter((y, i, arr) => Number.isFinite(y) && arr.indexOf(y) === i);
+
+  const yearText = years.slice(0, 2).join(' ');
+  const typeWords = [...new Set((types || []).map(normalizeType))].join(' ');
+
+  const queries = [
+    `${base} soal latihan pembahasan ${yearText}`,
+    `${base} soal ujian tryout ${yearText} pembahasan`,
+    `${base} ${typeWords} contoh soal stimulus gambar diagram`,
+  ];
+
+  if (sourceMode === 'prediction' || hotsLevel) {
+    queries.push(
+      `${base} HOTS pola soal tren ${yearText} ${hotsLevel || ''}`,
+    );
+  } else {
+    queries.push(
+      `${base} kisi kisi kompetensi soal pembahasan`,
+    );
+  }
+
+  return uniqueBy(
+    queries.map((q) => cleanText(q)).filter(Boolean).slice(0, MAX_RESEARCH_QUERIES),
+    (q) => normalizeText(q),
+  );
+}
+
+// ------------------------------------------------------------
+// TAVILY SEARCH
+// ------------------------------------------------------------
+
+async function callTavilySearch(apiKey, query, includeImages) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TAVILY_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(TAVILY_SEARCH_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        query,
+        search_depth: 'basic',
+        max_results: MAX_SEARCH_RESULTS_PER_QUERY,
+        include_answer: false,
+        include_raw_content: true,
+        include_images: Boolean(includeImages),
+        include_image_descriptions: Boolean(includeImages),
+        topic: 'general',
+        country: 'indonesia',
+      }),
+      signal: controller.signal,
+    });
+
+    const text = await response.text();
+
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      const err = new Error(`Tavily HTTP ${response.status}`);
+      err.status = response.status;
+      err.providerMessage = String(
+        data?.message || data?.error || text || 'Unknown Tavily error',
+      ).slice(0, 1000);
+      throw err;
+    }
+
+    return data || {};
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ------------------------------------------------------------
+// OPTIONAL PAGE EXTRACTION
+// ------------------------------------------------------------
+
+async function extractPages(apiKey, urls, query) {
+  const cleanUrls = uniqueBy(
+    (urls || []).filter(isHttpUrl).slice(0, MAX_EXTRACT_URLS),
+    (url) => url,
+  );
+
+  if (!cleanUrls.length) return [];
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TAVILY_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(TAVILY_EXTRACT_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        urls: cleanUrls,
+        query: cleanText(query).slice(0, 1000),
+        chunks_per_source: 3,
+        extract_depth: 'basic',
+        include_images: true,
+        format: 'markdown',
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) return [];
+
+    const data = await response.json();
+
+    return Array.isArray(data?.results)
+      ? data.results
+      : [];
+  } catch {
+    return [];
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ------------------------------------------------------------
+// SOURCE PACK
+// ------------------------------------------------------------
+
+function buildResearchPack(searchPackets, extractedPages) {
+  const sources = [];
+  const images = [];
+
+  for (const packet of searchPackets || []) {
+    for (const result of packet?.results || []) {
+      if (!result?.url || !isHttpUrl(result.url)) continue;
+
+      sources.push({
+        title: cleanText(result.title).slice(0, 300),
+        url: result.url,
+        domain: hostOf(result.url),
+        score: Number.isFinite(result.score) ? result.score : 0,
+        content: cleanText(result.content).slice(0, 6000),
+        rawContent: cleanText(result.raw_content).slice(0, 12000),
+        query: packet.query,
+      });
+    }
+
+    for (const image of packet?.images || []) {
+      const url = typeof image === 'string'
+        ? image
+        : image?.url;
+
+      if (!isHttpUrl(url)) continue;
+
+      images.push({
+        url,
+        description: cleanText(
+          typeof image === 'string'
+            ? ''
+            : image?.description || '',
+        ).slice(0, 500),
+        query: packet.query,
+      });
+    }
+  }
+
+  for (const page of extractedPages || []) {
+    if (!page?.url || !isHttpUrl(page.url)) continue;
+
+    const existing = sources.find(
+      (s) => s.url === page.url,
+    );
+
+    if (existing) {
+      existing.extracted = cleanText(
+        page.raw_content || page.content || '',
+      ).slice(0, 15000);
+
+      for (const image of page.images || []) {
+        const url = typeof image === 'string'
+          ? image
+          : image?.url;
+
+        if (isHttpUrl(url)) {
+          images.push({
+            url,
+            description: cleanText(
+              typeof image === 'string'
+                ? ''
+                : image?.description || '',
+            ).slice(0, 500),
+            query: 'extracted-page',
+          });
+        }
+      }
+    }
+  }
+
+  return {
+    sources: uniqueBy(
+      sources
+        .sort((a, b) => b.score - a.score)
+        .slice(0, MAX_SOURCE_RESULTS),
+      (x) => x.url,
+    ),
+    images: uniqueBy(
+      images.slice(0, MAX_IMAGE_RESULTS),
+      (x) => x.url,
+    ),
+  };
+}
+
+// ------------------------------------------------------------
+// PROMPT
+// ------------------------------------------------------------
+
+function buildSystemPrompt({ allowedTypes }) {
+  return `
+Kamu adalah mesin akademik Bimbel Gemilang.
+
+TUJUAN:
+Riset sumber publik yang diberikan oleh sistem, lalu buat soal latihan BARU
+yang sangat dekat dengan kompetensi, bentuk, konteks, dan pola sumber yang
+ditemukan.
+
+ATURAN RISET:
+1. Gunakan research pack yang diberikan.
+2. Jangan mengarang bahwa sebuah sumber membahas sesuatu jika teks sumber
+   tidak mendukungnya.
+3. Prioritaskan sumber yang paling relevan dan memiliki konteks tahun/jenjang.
+4. Sebutkan sourceRef dari sumber yang benar-benar mendukung soal.
+5. Jangan menyalin pertanyaan/pilihan/pembahasan sumber secara verbatim.
+6. Jangan mengklaim soal sebagai bocoran atau soal masa depan.
+7. Buat soal baru berdasarkan pola dan kompetensi sumber.
+
+ATURAN BLUEPRINT:
+1. Satu output untuk setiap blueprintNo.
+2. Jangan mengganti tipe yang sudah ditetapkan blueprint.
+3. Jangan mengganti difficulty.
+4. Jangan menghilangkan competency.
+5. Jika blueprint meminta visual, buat visual yang benar-benar berguna.
+6. Jika visual tidak dapat dipenuhi, jangan membuat soal yang bergantung pada visual.
+
+TIPE YANG DIIZINKAN:
+${allowedTypes.join(', ')}
+
+SKEMA:
+multiple:
+{
+  "type":"multiple",
+  "blueprintNo":1,
+  "difficulty":"Medium",
+  "competency":"...",
+  "question":"...",
+  "options":["A","B","C","D"],
+  "correct":0,
+  "explanation":"...",
+  "answerVerification":"...",
+  "analysisSummary":"...",
+  "sourceRef":"https://..."
+}
+
+truefalse:
+{
+  "type":"truefalse",
+  "blueprintNo":1,
+  "question":"...",
+  "statements":[
+    {"text":"...","isTrue":true},
+    {"text":"...","isTrue":false}
+  ],
+  "explanation":"...",
+  "sourceRef":"https://..."
+}
+
+multiple_select:
+{
+  "type":"multiple_select",
+  "blueprintNo":1,
+  "question":"...",
+  "options":["A","B","C","D"],
+  "correctAnswers":[0,2],
+  "explanation":"...",
+  "sourceRef":"https://..."
+}
+
+short_answer:
+{
+  "type":"short_answer",
+  "blueprintNo":1,
+  "question":"...",
+  "shortAnswer":"...",
+  "explanation":"...",
+  "sourceRef":"https://..."
+}
+
+causeeffect:
+{
+  "type":"causeeffect",
+  "blueprintNo":1,
+  "question":"...",
+  "cause":"...",
+  "effect":"...",
+  "isCauseTrue":true,
+  "isEffectTrue":true,
+  "explanation":"...",
+  "sourceRef":"https://..."
+}
+
+matching:
+{
+  "type":"matching",
+  "blueprintNo":1,
+  "question":"...",
+  "matchingPairs":[
+    {"left":"...","right":"..."},
+    {"left":"...","right":"..."},
+    {"left":"...","right":"..."}
+  ],
+  "explanation":"...",
+  "sourceRef":"https://..."
+}
+
+reading:
+{
+  "type":"reading",
+  "blueprintNo":1,
+  "question":"...",
+  "readingText":"...",
+  "subQuestions":[
+    {
+      "q":"...",
+      "options":["A","B","C","D"],
+      "correct":0
+    }
+  ],
+  "explanation":"...",
+  "sourceRef":"https://..."
+}
+
+VISUAL:
+- visualRequired: true/false
+- visualKind: none|clock|graph|shape|pattern|real_photo|table|diagram|option_images
+- For clock use clock:{hour,minute}
+- For graph use graph:{points,xLabel,yLabel}
+- For shape use shape:{vertices,labels}
+- For pattern use pattern:{sequence}
+- For real_photo use needsImage:true and imageHint
+- For table/diagram use needsImage:true and imageHint
+- For option_images set optionsAreImages:true and optionImageHints:[...]
+- NEVER write "lihat gambar" unless a usable visual is actually requested.
+
+OUTPUT:
+First line {"meta":true}
+Then exactly one JSON object per line.
+No Markdown.
+No commentary.
+`;
+}
+
+function buildUserPrompt({
+  blueprint,
+  researchPack,
+  topic,
+  mapel,
+  kelas,
+  targetYear,
+  sourceMode,
+  arahan,
+}) {
+  const compactSources = researchPack.sources.map((source) => ({
+    title: source.title,
+    url: source.url,
+    domain: source.domain,
+    score: source.score,
+    content: source.content,
+    extracted: source.extracted || source.rawContent || '',
+    query: source.query,
+  }));
+
+  return `
+GEMILANG RESEARCH TASK
+
+TOPIK: ${topic}
+MAPEL: ${mapel}
+KELAS: ${kelas || 'Umum'}
+TARGET TAHUN: ${targetYear}
+MODE: ${sourceMode}
+ARAHAN GURU: ${arahan || 'Tidak ada'}
+
+BLUEPRINT:
+${JSON.stringify(blueprint)}
+
+SUMBER HASIL RISET:
+${JSON.stringify(compactSources)}
+
+KANDIDAT GAMBAR HASIL RISET:
+${JSON.stringify(researchPack.images)}
+
+TUGAS:
+1. Cocokkan setiap blueprint dengan sumber yang paling relevan.
+2. Gunakan sourceRef hanya jika URL benar-benar ada di sumber.
+3. Buat satu soal untuk setiap blueprint.
+4. Untuk soal visual, pilih visualKind yang tepat dan jangan membuat gambar acak.
+5. Untuk pilihan jawaban berbentuk gambar, isi optionsAreImages=true dan optionImageHints
+   dengan SATU kata/frasa spesifik untuk setiap opsi.
+6. Untuk soal biasa, jangan memaksakan gambar.
+7. Pertahankan tipe pengerjaan sesuai blueprint.
+8. Pastikan kunci jawaban dapat diverifikasi dari konsep/data sumber.
+`;
+}
+
+// ------------------------------------------------------------
+// GROQ
+// ------------------------------------------------------------
+
+function computeMaxTokens(jumlah) {
+  const estimated = 700 + jumlah * 500;
+  return Math.min(Math.max(2200, estimated), 6200);
+}
 
 async function callGroq({
   apiKey,
   systemPrompt,
   userPrompt,
   maxTokens,
-  enableBrowserSearch,
 }) {
-  const controller =
-    new AbortController();
-
-  const timeoutId =
-    setTimeout(
-      () =>
-        controller.abort(),
-      enableBrowserSearch
-        ? AI_TIMEOUT_WITH_SEARCH_MS
-        : AI_TIMEOUT_MS,
-    );
+  const controller = new AbortController();
+  const timer = setTimeout(
+    () => controller.abort(),
+    GROQ_TIMEOUT_MS,
+  );
 
   try {
-    const response =
-      await fetch(
-        GROQ_API_URL,
-        {
-          method: 'POST',
-
-          headers: {
-            Authorization:
-              `Bearer ${apiKey}`,
-
-            'Content-Type':
-              'application/json',
-
-            Accept:
-              'application/json',
-          },
-
-          body: JSON.stringify({
-            model:
-              GROQ_MODEL,
-
-            messages: [
-              {
-                role: 'system',
-                content:
-                  systemPrompt,
-              },
-
-              {
-                role: 'user',
-                content:
-                  userPrompt,
-              },
-            ],
-
-            temperature:
-              0.2,
-
-            top_p:
-              0.7,
-
-            max_tokens:
-              maxTokens,
-
-            stream:
-              false,
-
-            // 🔥 BARU: browser_search -- tool bawaan Groq (server-side,
-            // pakai Exa), CUMA disisipkan kalau diminta (mode
-            // "prediction"). Dibiarkan gak ada sama sekali di request
-            // mode "source" biasa supaya perilaku default TETAP SAMA
-            // PERSIS seperti sebelumnya -- gak ada risiko baru buat
-            // pemakaian sehari-hari yang udah jalan baik.
-            ...(enableBrowserSearch
-              ? {
-                  tools: [
-                    {
-                      type: 'browser_search',
-                    },
-                  ],
-                }
-              : {}),
-          }),
-
-          signal:
-            controller.signal,
+    const response = await fetch(
+      GROQ_API_URL,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
         },
-      );
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature: 0.15,
+          top_p: 0.7,
+          max_tokens: maxTokens,
+          stream: false,
+        }),
+        signal: controller.signal,
+      },
+    );
 
-    const responseText =
-      await response.text();
+    const text = await response.text();
 
     let data = null;
-
     try {
-      data =
-        responseText
-          ? JSON.parse(
-              responseText,
-            )
-          : null;
-    } catch (_) {
+      data = text ? JSON.parse(text) : null;
+    } catch {
       data = null;
     }
 
-    // --------------------------------------------------------
-    // PROVIDER ERROR
-    // --------------------------------------------------------
-
     if (!response.ok) {
-      const providerMessage =
-        data?.message ||
+      const error = new Error(
+        `Groq HTTP ${response.status}`,
+      );
+      error.providerStatus = response.status;
+      error.providerMessage = String(
         data?.error?.message ||
-        data?.error ||
-        responseText ||
-        'Unknown provider error';
-
-      const error =
-        new Error(
-          `Groq HTTP ${response.status}`,
-        );
-
-      error.providerStatus =
-        response.status;
-
-      error.providerMessage =
-        String(
-          providerMessage,
-        ).slice(
-          0,
-          1000,
-        );
-
-      // 🔥 BARU: header rate-limit ASLI Groq (bukan tebakan -- ini
-      // nama header yang benar-benar dipakai Groq, terverifikasi).
-      // `retry-after` cuma muncul kalau status-nya 429. Dua pasang
-      // header lain SELALU ada di tiap respons (sukses maupun gagal)
-      // dan kasih tau sisa jatah -- disimpan di sini juga supaya bisa
-      // dipakai sendGroqError() buat kasih pesan yang jujur & spesifik
-      // (RPM habis vs RPD habis vs TPM habis, tiga hal beda).
-      error.retryAfterSeconds =
-        response.headers.get(
-          'retry-after',
-        ) ||
-        null;
-
-      error.remainingRequests =
-        response.headers.get(
-          'x-ratelimit-remaining-requests',
-        ) ||
-        null;
-
-      error.resetRequests =
-        response.headers.get(
-          'x-ratelimit-reset-requests',
-        ) ||
-        null;
-
-      error.remainingTokens =
-        response.headers.get(
-          'x-ratelimit-remaining-tokens',
-        ) ||
-        null;
-
-      error.resetTokens =
-        response.headers.get(
-          'x-ratelimit-reset-tokens',
-        ) ||
-        null;
-
-      error.traceId =
-        response.headers.get(
-          'x-request-id',
-        ) ||
-        null;
-
+        data?.message ||
+        text ||
+        'Unknown Groq error',
+      ).slice(0, 1500);
+      error.retryAfter = response.headers.get('retry-after');
       throw error;
     }
 
-    // --------------------------------------------------------
-    // RESPONSE CONTENT
-    // --------------------------------------------------------
-
     const content =
-      data
-        ?.choices?.[0]
-        ?.message?.content;
+      data?.choices?.[0]?.message?.content;
 
     if (
-      typeof content !==
-        'string' ||
+      typeof content !== 'string' ||
       !content.trim()
     ) {
-      const error =
-        new Error(
-          'Groq response content kosong.',
-        );
-
-      error.providerStatus =
-        response.status;
-
-      error.providerMessage =
-        'choices[0].message.content tidak tersedia.';
-
-      throw error;
+      throw new Error(
+        'Groq mengembalikan content kosong.',
+      );
     }
 
     return {
       content,
-
-      usage:
-        data?.usage ||
-        null,
-
-      model:
-        data?.model ||
-        GROQ_MODEL,
-
+      usage: data?.usage || null,
+      model: data?.model || GROQ_MODEL,
       finishReason:
-        data
-          ?.choices?.[0]
-          ?.finish_reason ||
-        null,
-
-      traceId:
-        response.headers.get(
-          'x-request-id',
-        ) ||
-        null,
+        data?.choices?.[0]?.finish_reason || null,
     };
-
   } catch (error) {
-
-    if (
-      error?.name ===
-      'AbortError'
-    ) {
-      const usedTimeout =
-        enableBrowserSearch
-          ? AI_TIMEOUT_WITH_SEARCH_MS
-          : AI_TIMEOUT_MS;
-
-      const timeoutError =
-        new Error(
-          `Groq timeout setelah ${usedTimeout}ms.`,
-        );
-
-      timeoutError.code =
-        'GROQ_TIMEOUT';
-
+    if (error?.name === 'AbortError') {
+      const timeoutError = new Error(
+        `Groq timeout setelah ${GROQ_TIMEOUT_MS}ms.`,
+      );
+      timeoutError.code = 'GROQ_TIMEOUT';
       throw timeoutError;
     }
 
     throw error;
-
   } finally {
-    clearTimeout(
-      timeoutId,
-    );
+    clearTimeout(timer);
   }
 }
 
-// ============================================================
-// SAFE ERROR RESPONSE
-// ============================================================
+// ------------------------------------------------------------
+// JSONL
+// ------------------------------------------------------------
 
-function sendGroqError(
-  res,
-  error,
-) {
-  // ----------------------------------------------------------
-  // TIMEOUT
-  // ----------------------------------------------------------
+function parseJsonLines(text = '') {
+  const cleaned = String(text || '')
+    .replace(/```(?:json|jsonl)?/gi, '')
+    .replace(/```/g, '')
+    .trim();
 
-  if (
-    error?.code ===
-    'GROQ_TIMEOUT'
-  ) {
-    return res
-      .status(504)
-      .json({
-        success: false,
+  const result = [];
 
-        error:
-          'Groq terlalu lama merespons.',
+  for (const line of cleaned.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) continue;
 
-        diagnostics: {
-          type:
-            'timeout',
-
-          timeoutMs:
-            AI_TIMEOUT_MS,
-
-          model:
-            GROQ_MODEL,
-        },
-      });
+    try {
+      result.push(JSON.parse(trimmed));
+    } catch {}
   }
 
-  // ----------------------------------------------------------
-  // RATE LIMIT (429) -- dibedain: kalau `resetRequests`/`resetTokens`
-  // nunjukin durasi PENDEK (detik/menit), itu cuma limit RPM/TPM
-  // sesaat, tunggu bentar aja. Kalau providerMessage/reset menunjukkan
-  // ini limit HARIAN (RPD), guru perlu tau harus nunggu sampai besok,
-  // bukan nyoba generate ulang berkali-kali dalam beberapa menit.
-  // ----------------------------------------------------------
+  if (result.length) return result;
 
-  if (
-    error?.providerStatus === 429
-  ) {
-    const isDailyLimit =
-      error.remainingRequests === '0' &&
-      /[hd]/i.test(
-        String(error.resetRequests || ''),
-      );
+  let depth = 0;
+  let start = -1;
+  let inString = false;
+  let escaped = false;
 
-    return res
-      .status(429)
-      .json({
-        success: false,
+  for (let i = 0; i < cleaned.length; i += 1) {
+    const char = cleaned[i];
 
-        error:
-          isDailyLimit
-            ? 'Jatah gratis harian Groq untuk model ini sudah habis. Coba lagi besok, atau ganti model sementara lewat env var GROQ_MODEL.'
-            : `Groq lagi dibatasi sesaat (terlalu banyak request dalam waktu singkat). Coba lagi dalam ${error.retryAfterSeconds || 'beberapa'} detik.`,
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
 
-        diagnostics: {
-          type:
-            isDailyLimit
-              ? 'daily_quota_exhausted'
-              : 'rate_limited_temporary',
+    if (char === '\\' && inString) {
+      escaped = true;
+      continue;
+    }
 
-          retryAfterSeconds:
-            error.retryAfterSeconds ||
-            null,
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
 
-          remainingRequests:
-            error.remainingRequests ||
-            null,
+    if (inString) continue;
 
-          resetRequests:
-            error.resetRequests ||
-            null,
+    if (char === '{') {
+      if (depth === 0) start = i;
+      depth += 1;
+    } else if (char === '}') {
+      depth -= 1;
 
-          remainingTokens:
-            error.remainingTokens ||
-            null,
-
-          resetTokens:
-            error.resetTokens ||
-            null,
-
-          model:
-            GROQ_MODEL,
-        },
-      });
+      if (depth === 0 && start !== -1) {
+        try {
+          result.push(
+            JSON.parse(cleaned.slice(start, i + 1)),
+          );
+        } catch {}
+        start = -1;
+      }
+    }
   }
 
-  // ----------------------------------------------------------
-  // REQUEST TOO LARGE (413) -- seharusnya sudah dicegah oleh
-  // computeMaxTokens(), tapi tetap ditangani jaga-jaga kalau blueprint
-  // atau arahan guru sangat panjang sampai token prompt sendiri (bukan
-  // cuma max_tokens) yang bikin total nabrak limit TPM.
-  // ----------------------------------------------------------
-
-  if (
-    error?.providerStatus === 413
-  ) {
-    return res
-      .status(413)
-      .json({
-        success: false,
-
-        error:
-          'Permintaan terlalu besar untuk diproses Groq sekali jalan. Coba kurangi jumlah soal yang diminta, atau persingkat arahan guru.',
-
-        diagnostics: {
-          type:
-            'request_too_large',
-
-          providerMessage:
-            error.providerMessage ||
-            null,
-
-          traceId:
-            error.traceId ||
-            null,
-
-          model:
-            GROQ_MODEL,
-        },
-      });
-  }
-
-  // ----------------------------------------------------------
-  // PROVIDER HTTP ERROR
-  // ----------------------------------------------------------
-
-  if (
-    Number.isInteger(
-      error?.providerStatus,
-    )
-  ) {
-    return res
-      .status(502)
-      .json({
-        success: false,
-
-        error:
-          'Groq menolak atau gagal memproses permintaan.',
-
-        diagnostics: {
-          type:
-            'provider_error',
-
-          providerStatus:
-            error.providerStatus,
-
-          providerMessage:
-            error.providerMessage ||
-            null,
-
-          traceId:
-            error.traceId ||
-            null,
-
-          model:
-            GROQ_MODEL,
-
-        },
-      });
-  }
-
-  // ----------------------------------------------------------
-  // NETWORK / RUNTIME
-  // ----------------------------------------------------------
-
-  return res
-    .status(502)
-    .json({
-      success: false,
-
-      error:
-        'Server gagal terhubung ke Groq.',
-
-      diagnostics: {
-        type:
-          'network_or_runtime_error',
-
-        message:
-          error?.message ||
-          'Unknown error',
-
-        model:
-          GROQ_MODEL,
-      },
-    });
+  return result;
 }
 
-// ============================================================
-// COUNT DIAGNOSTICS
-// ============================================================
+// ------------------------------------------------------------
+// VISUAL CUES
+// ------------------------------------------------------------
 
-function countBy(
-  items,
-  key,
-) {
-  return items.reduce(
-    (
-      result,
-      item,
-    ) => {
-      const value =
-        item[key] ||
-        'unknown';
+function hasVisualCue(text = '') {
+  return /\b(lihat\s+gambar|perhatikan\s+gambar|berdasarkan\s+gambar|lihat\s+grafik|perhatikan\s+grafik|berdasarkan\s+grafik|lihat\s+diagram|perhatikan\s+diagram|berdasarkan\s+diagram|perhatikan\s+tabel|berdasarkan\s+tabel)\b/i.test(String(text));
+}
 
-      result[value] =
-        (result[value] || 0) +
-        1;
+// ------------------------------------------------------------
+// TYPE VALIDATION
+// ------------------------------------------------------------
 
-      return result;
-    },
-    {},
+function validMultiple(q) {
+  return (
+    Array.isArray(q.options) &&
+    q.options.length === 4 &&
+    q.options.every((x) => cleanText(x)) &&
+    Number.isInteger(q.correct) &&
+    q.correct >= 0 &&
+    q.correct < 4
   );
 }
 
-// ============================================================
-// MAIN HANDLER
-// ============================================================
+function validTrueFalse(q) {
+  return (
+    Array.isArray(q.statements) &&
+    q.statements.length >= 2 &&
+    q.statements.length <= 8 &&
+    q.statements.every(
+      (s) => s && cleanText(s.text) && typeof s.isTrue === 'boolean',
+    )
+  );
+}
 
-export default async function handler(
-  req,
-  res,
-) {
-  // ==========================================================
-  // METHOD
-  // ==========================================================
+function validMultipleSelect(q) {
+  return (
+    Array.isArray(q.options) &&
+    q.options.length >= 2 &&
+    q.options.length <= 8 &&
+    Array.isArray(q.correctAnswers) &&
+    q.correctAnswers.length >= 1 &&
+    q.correctAnswers.every(
+      (i) =>
+        Number.isInteger(i) &&
+        i >= 0 &&
+        i < q.options.length,
+    )
+  );
+}
+
+function validShortAnswer(q) {
+  return Boolean(cleanText(q.shortAnswer));
+}
+
+function validCauseEffect(q) {
+  return (
+    Boolean(cleanText(q.cause)) &&
+    Boolean(cleanText(q.effect)) &&
+    typeof q.isCauseTrue === 'boolean' &&
+    typeof q.isEffectTrue === 'boolean'
+  );
+}
+
+function validMatching(q) {
+  return (
+    Array.isArray(q.matchingPairs) &&
+    q.matchingPairs.length >= 3 &&
+    q.matchingPairs.length <= 8 &&
+    q.matchingPairs.every(
+      (p) => cleanText(p?.left) && cleanText(p?.right),
+    )
+  );
+}
+
+function validReading(q) {
+  return (
+    Boolean(cleanText(q.readingText)) &&
+    Array.isArray(q.subQuestions) &&
+    q.subQuestions.length >= 2 &&
+    q.subQuestions.every(
+      (sq) =>
+        cleanText(sq?.q) &&
+        Array.isArray(sq?.options) &&
+        sq.options.length === 4 &&
+        Number.isInteger(sq.correct) &&
+        sq.correct >= 0 &&
+        sq.correct < 4,
+    )
+  );
+}
+
+// ------------------------------------------------------------
+// NORMALIZE RAW QUESTION
+// ------------------------------------------------------------
+
+function normalizeQuestion(raw, blueprint, researchPack) {
+  if (!raw || typeof raw !== 'object') return null;
+
+  const type = normalizeType(raw.type);
+
+  if (!SUPPORTED_TYPES.has(type)) return null;
+
+  const target = blueprint.find(
+    (item) => item.no === Number(raw.blueprintNo),
+  );
+
+  if (!target) return null;
 
   if (
-    req.method !==
-    'POST'
+    normalizeType(target.type) !== type
   ) {
-    res.setHeader(
-      'Allow',
-      'POST',
-    );
-
-    return res
-      .status(405)
-      .json({
-        success: false,
-
-        error:
-          'Method not allowed.',
-      });
+    return null;
   }
 
-  // ==========================================================
-  // BODY
-  // ==========================================================
+  if (
+    raw.difficulty &&
+    normalizeText(raw.difficulty) !==
+      normalizeText(target.difficulty)
+  ) {
+    return null;
+  }
+
+  const question = cleanText(raw.question);
+
+  if (
+    question.length < 8 ||
+    question.length > MAX_QUESTION_LENGTH
+  ) {
+    return null;
+  }
+
+  const result = {
+    type,
+    blueprintNo: target.no,
+    difficulty: target.difficulty,
+    competency:
+      cleanText(raw.competency) ||
+      target.competency,
+
+    question,
+
+    options: Array.isArray(raw.options)
+      ? raw.options.map((x) => cleanText(x)).slice(0, 8)
+      : [],
+
+    optionImages: Array.isArray(raw.optionImages)
+      ? raw.optionImages.map((x) => cleanText(x)).slice(0, 8)
+      : [],
+
+    optionImageHints: Array.isArray(raw.optionImageHints)
+      ? raw.optionImageHints.map((x) => cleanText(x)).slice(0, 8)
+      : [],
+
+    optionsAreImages:
+      Boolean(raw.optionsAreImages),
+
+    correct: Number.isInteger(raw.correct)
+      ? raw.correct
+      : 0,
+
+    correctAnswers: Array.isArray(raw.correctAnswers)
+      ? raw.correctAnswers.filter(Number.isInteger).slice(0, 8)
+      : [],
+
+    statements: Array.isArray(raw.statements)
+      ? raw.statements
+          .slice(0, 8)
+          .map((s) => ({
+            text: cleanText(s?.text),
+            isTrue: Boolean(s?.isTrue),
+          }))
+      : [],
+
+    shortAnswer:
+      cleanText(raw.shortAnswer).slice(0, 500),
+
+    cause:
+      cleanText(raw.cause).slice(0, 1500),
+
+    effect:
+      cleanText(raw.effect).slice(0, 1500),
+
+    isCauseTrue:
+      typeof raw.isCauseTrue === 'boolean'
+        ? raw.isCauseTrue
+        : true,
+
+    isEffectTrue:
+      typeof raw.isEffectTrue === 'boolean'
+        ? raw.isEffectTrue
+        : true,
+
+    matchingPairs: Array.isArray(raw.matchingPairs)
+      ? raw.matchingPairs
+          .slice(0, 8)
+          .map((p) => ({
+            left: cleanText(p?.left),
+            right: cleanText(p?.right),
+          }))
+      : [],
+
+    readingText:
+      cleanText(raw.readingText).slice(0, 10_000),
+
+    subQuestions: Array.isArray(raw.subQuestions)
+      ? raw.subQuestions.slice(0, 6).map((sq) => ({
+          q: cleanText(sq?.q),
+          options: Array.isArray(sq?.options)
+            ? sq.options.map((x) => cleanText(x)).slice(0, 4)
+            : [],
+          correct: Number.isInteger(sq?.correct)
+            ? sq.correct
+            : 0,
+        }))
+      : [],
+
+    explanation:
+      cleanText(raw.explanation).slice(
+        0,
+        MAX_EXPLANATION_LENGTH,
+      ),
+
+    answerVerification:
+      cleanText(raw.answerVerification).slice(0, 2500),
+
+    analysisSummary:
+      cleanText(raw.analysisSummary).slice(0, 2500),
+
+    visualRequired:
+      Boolean(raw.visualRequired),
+
+    visualKind:
+      cleanText(raw.visualKind || 'none'),
+
+    needsImage:
+      Boolean(raw.needsImage),
+
+    imageHint:
+      cleanText(raw.imageHint).slice(0, 500),
+
+    clock:
+      raw.clock || null,
+
+    graph:
+      raw.graph || null,
+
+    shape:
+      raw.shape || null,
+
+    pattern:
+      raw.pattern || null,
+
+    sourceRef:
+      isHttpUrl(raw.sourceRef)
+        ? raw.sourceRef
+        : '',
+
+    researchBacked: false,
+    researchSources: [],
+    imageSource: null,
+    qImage: '',
+    sourceMode: 'research',
+  };
+
+  if (type === 'multiple' && !validMultiple(result)) return null;
+  if (type === 'truefalse' && !validTrueFalse(result)) return null;
+  if (type === 'multiple_select' && !validMultipleSelect(result)) return null;
+  if (type === 'short_answer' && !validShortAnswer(result)) return null;
+  if (type === 'causeeffect' && !validCauseEffect(result)) return null;
+  if (type === 'matching' && !validMatching(result)) return null;
+  if (type === 'reading' && !validReading(result)) return null;
+
+  if (hasVisualCue(result.question) && !result.visualRequired) {
+    return null;
+  }
+
+  if (result.visualRequired && result.visualKind === 'clock' && !result.clock) {
+    return null;
+  }
+
+  if (result.visualRequired && result.visualKind === 'graph' && !result.graph) {
+    return null;
+  }
+
+  if (
+    result.visualRequired &&
+    ['real_photo', 'table', 'diagram', 'option_images'].includes(
+      result.visualKind,
+    ) &&
+    !result.needsImage &&
+    !result.optionsAreImages
+  ) {
+    return null;
+  }
+
+  if (
+    result.optionsAreImages &&
+    (!Array.isArray(result.optionImageHints) ||
+      result.optionImageHints.length !== result.options.length)
+  ) {
+    return null;
+  }
+
+  return result;
+}
+
+// ------------------------------------------------------------
+// IMAGE MATCHING
+// ------------------------------------------------------------
+
+function imageMatchesHint(image, hint, topic) {
+  const text = normalizeText(
+    `${image.description || ''} ${image.query || ''}`,
+  );
+
+  const hintTokens = [...tokenSet(`${hint} ${topic}`)];
+  if (!hintTokens.length) return false;
+
+  let hits = 0;
+
+  for (const token of hintTokens) {
+    if (text.includes(token)) hits += 1;
+  }
+
+  return hits >= Math.max(1, Math.floor(hintTokens.length * 0.15));
+}
+
+function pickImage(images, hint, topic, usedUrls = new Set()) {
+  const candidates = images.filter(
+    (image) =>
+      image &&
+      isHttpUrl(image.url) &&
+      !usedUrls.has(image.url),
+  );
+
+  if (!candidates.length) return null;
+
+  const matched = candidates.find(
+    (image) => imageMatchesHint(image, hint, topic),
+  );
+
+  return matched || candidates[0];
+}
+
+function enrichVisuals(questions, researchPack, topic) {
+  const used = new Set();
+  let attached = 0;
+  let optionAttached = 0;
+
+  for (const question of questions) {
+    if (
+      question.needsImage &&
+      question.visualKind !== 'clock' &&
+      question.visualKind !== 'graph'
+    ) {
+      const picked = pickImage(
+        researchPack.images,
+        question.imageHint,
+        topic,
+        used,
+      );
+
+      if (picked) {
+        question.qImage = picked.url;
+        question.imageSource = {
+          url: picked.url,
+          source: 'tavily-search',
+          description: picked.description || '',
+        };
+        question.visualRequired = true;
+        used.add(picked.url);
+        attached += 1;
+      } else {
+        return {
+          ok: false,
+          attached,
+          optionAttached,
+          reason: 'visual-not-found',
+          question: question.question,
+        };
+      }
+    }
+
+    if (question.optionsAreImages) {
+      const images = [];
+
+      for (const hint of question.optionImageHints) {
+        const picked = pickImage(
+          researchPack.images,
+          hint,
+          topic,
+          used,
+        );
+
+        if (!picked) {
+          return {
+            ok: false,
+            attached,
+            optionAttached,
+            reason: 'option-image-not-found',
+            question: question.question,
+          };
+        }
+
+        images.push(picked.url);
+        used.add(picked.url);
+        optionAttached += 1;
+      }
+
+      question.optionImages = images;
+    }
+
+    if (question.visualKind === 'clock') {
+      question.qImage = buildClockSvg(question.clock);
+    } else if (question.visualKind === 'graph') {
+      question.qImage = buildGraphSvg(question.graph);
+    }
+  }
+
+  return {
+    ok: true,
+    attached,
+    optionAttached,
+    reason: null,
+  };
+}
+
+// ------------------------------------------------------------
+// MAIN
+// ------------------------------------------------------------
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    return res.status(405).json({
+      success: false,
+      error: 'Method not allowed.',
+    });
+  }
 
   const body =
-    req.body &&
-    typeof req.body ===
-      'object'
+    req.body && typeof req.body === 'object'
       ? req.body
       : {};
 
-  // ==========================================================
-  // INPUT
-  // ==========================================================
-
-  const topic =
-    safeField(
-      body.topic,
-    );
-
-  const mapel =
-    safeField(
-      body.mapel,
-      'Umum',
-    );
-
-  const kelas =
-    safeField(
-      body.kelas,
-      'Umum',
-    );
-
-  const arahan =
-    safeField(
-      body.arahan,
-      'Tidak ada.',
-    );
-
-  const hotsLevel =
-    safeField(
-      body.hotsLevel,
-      'Standard',
-    );
-
-  const currentMode =
-    body.sourceMode ===
-    'prediction'
+  const topic = safeField(body.topic);
+  const mapel = safeField(body.mapel, 'Umum');
+  const kelas = safeField(body.kelas, 'Umum');
+  const arahan = safeField(body.arahan, 'Tidak ada');
+  const sourceMode =
+    body.sourceMode === 'prediction'
       ? 'prediction'
       : 'source';
 
-  const currentYear =
-    new Date()
-      .getFullYear();
+  const targetYear = String(
+    body.targetYear ||
+      new Date().getFullYear() + 1,
+  ).slice(0, 9);
 
-  const targetYear =
-    String(
-      body.targetYear ||
-        currentYear + 1,
-    ).slice(
-      0,
-      9,
-    );
+  const jumlah = clampInt(
+    body.jumlahSoal,
+    1,
+    MAX_QUESTION_COUNT,
+    DEFAULT_QUESTION_COUNT,
+  );
 
-  // ==========================================================
-  // TOPIC VALIDATION
-  // ==========================================================
+  const apiKey = process.env.GROQ_API_KEY;
+  const tavilyKey = process.env.TAVILY_API_KEY;
 
   if (!topic) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-
-        error:
-          'Topik wajib diisi.',
-      });
+    return res.status(400).json({
+      success: false,
+      error: 'Topik wajib diisi.',
+    });
   }
-
-  // ==========================================================
-  // API KEY
-  // ==========================================================
-
-  const apiKey =
-    process.env.GROQ_API_KEY;
 
   if (!apiKey) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-
-        error:
-          'GROQ_API_KEY belum dikonfigurasi di Vercel. Daftar gratis di console.groq.com/keys (tanpa kartu kredit), lalu simpan sebagai environment variable GROQ_API_KEY.',
-      });
+    return res.status(500).json({
+      success: false,
+      error:
+        'GROQ_API_KEY belum dikonfigurasi.',
+    });
   }
 
-  // ==========================================================
-  // QUESTION COUNT
-  // ==========================================================
+  if (!tavilyKey) {
+    return res.status(500).json({
+      success: false,
+      error:
+        'TAVILY_API_KEY belum dikonfigurasi. Mode riset internet membutuhkan Tavily.',
+    });
+  }
 
-  const jumlah =
-    clampInt(
-      body.jumlahSoal,
+  const requestedTypes = Array.isArray(body.types)
+    ? body.types
+    : ['multiple'];
 
-      1,
+  const allowedTypes = [
+    ...new Set(
+      requestedTypes
+        .map(normalizeType)
+        .filter((type) => SUPPORTED_TYPES.has(type)),
+    ),
+  ];
 
-      MAX_QUESTION_COUNT,
+  if (!allowedTypes.length) {
+    return res.status(400).json({
+      success: false,
+      error: 'Tidak ada tipe soal yang valid.',
+      supportedTypes: [...SUPPORTED_TYPES],
+    });
+  }
 
-      DEFAULT_QUESTION_COUNT,
+  const hotsLevel = safeField(
+    body.hotsLevel,
+    '',
+  );
+
+  const blueprint = buildBlueprint({
+    topic,
+    mapel,
+    kelas,
+    jumlah,
+    hotsLevel,
+    arahan,
+    types: allowedTypes,
+  });
+
+  const researchQueries = buildResearchQueries({
+    topic,
+    mapel,
+    kelas,
+    targetYear,
+    hotsLevel,
+    types: allowedTypes,
+    sourceMode,
+  });
+
+  // ----------------------------------------------------------
+  // WEB RESEARCH
+  // ----------------------------------------------------------
+
+  const searchPackets = [];
+
+  try {
+    for (const query of researchQueries) {
+      const wantsImages =
+        allowedTypes.some(
+          (type) =>
+            type === 'reading' ||
+            type === 'matching' ||
+            type === 'multiple' ||
+            type === 'multiple_select',
+        ) ||
+        /gambar|diagram|grafik|visual|peta|tabel/i.test(
+          `${query} ${arahan}`,
+        );
+
+      const packet =
+        await callTavilySearch(
+          tavilyKey,
+          query,
+          wantsImages,
+        );
+
+      searchPackets.push({
+        query,
+        ...packet,
+      });
+
+      await sleep(120);
+    }
+  } catch (error) {
+    console.error('[Gemilang Research] Tavily error', error);
+
+    return res.status(502).json({
+      success: false,
+      error:
+        'Riset internet gagal. Soal tidak dibuat dari tebakan offline.',
+      diagnostics: {
+        provider: 'tavily',
+        status: error?.status || null,
+        message:
+          error?.providerMessage ||
+          error?.message ||
+          'Unknown error',
+      },
+    });
+  }
+
+  const rawUrls = searchPackets
+    .flatMap((packet) =>
+      (packet.results || []).map(
+        (result) => result?.url,
+      ),
+    )
+    .filter(isHttpUrl);
+
+  const topUrls = uniqueBy(
+    rawUrls,
+    (url) => url,
+  ).slice(0, MAX_EXTRACT_URLS);
+
+  const extractedPages =
+    await extractPages(
+      tavilyKey,
+      topUrls,
+      `${topic} ${mapel} ${kelas}`,
     );
 
-  // ==========================================================
-  // TYPES
-  // ==========================================================
+  const researchPack =
+    buildResearchPack(
+      searchPackets,
+      extractedPages,
+    );
 
-  const requestedTypes =
-    Array.isArray(
-      body.types,
-    )
-      ? body.types
-      : ['multiple'];
-
-  const allowedTypes =
-    [
-      ...new Set(
-        requestedTypes
-          .map(
-            (item) =>
-              cleanText(
-                item,
-              ).toLowerCase(),
-          )
-          .filter(
-            (item) =>
-              SUPPORTED_TYPES.has(
-                item,
-              ),
-          ),
-      ),
-    ];
-
-  if (
-    allowedTypes.length ===
-    0
-  ) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-
-        error:
-          'Tipe soal tidak didukung.',
-
-        supportedTypes:
-          [...SUPPORTED_TYPES],
-      });
+  if (!researchPack.sources.length) {
+    return res.status(502).json({
+      success: false,
+      error:
+        'Tidak ditemukan sumber internet yang cukup relevan. Soal tidak dibuat dari asumsi offline.',
+      diagnostics: {
+        researchQueries,
+        sourceCount: 0,
+      },
+    });
   }
 
-  // ==========================================================
-  // 1. BUILD BLUEPRINT
-  // ==========================================================
-
-  const blueprint =
-    buildCurriculumBlueprint({
-      topic,
-      mapel,
-      kelas,
-      jumlah,
-      hotsLevel,
-      arahan,
-    });
-
-  // 🔥 BARU: browser_search CUMA aktif di mode "prediction" (guru
-  // pilih "Prediksi Berbasis Tren" di UI) -- mode "source" (default)
-  // TETAP seperti sebelumnya, gak ada browsing, cepat & hemat token.
-  // Lihat penjelasan lengkap di header file soal kenapa ini dipisah.
-  const enableBrowserSearch =
-    currentMode === 'prediction';
-
-  // ==========================================================
-  // 2. PROMPT
-  // ==========================================================
+  // ----------------------------------------------------------
+  // AI CURATION
+  // ----------------------------------------------------------
 
   const systemPrompt =
     buildSystemPrompt({
       allowedTypes,
-      enableBrowserSearch,
     });
 
   const userPrompt =
     buildUserPrompt({
+      blueprint,
+      researchPack,
       topic,
       mapel,
       kelas,
-      year:
-        targetYear,
-      currentMode,
+      targetYear,
+      sourceMode,
       arahan,
-      blueprint,
     });
-
-  // ==========================================================
-  // 3. CALL GROQ
-  // ==========================================================
 
   let aiResult;
 
-  const maxTokens =
-    computeMaxTokens(
-      jumlah,
-      enableBrowserSearch,
-    );
-
   try {
-    aiResult =
-      await callGroq({
-        apiKey,
-        systemPrompt,
-        userPrompt,
-        maxTokens,
-        enableBrowserSearch,
-      });
-
+    aiResult = await callGroq({
+      apiKey,
+      systemPrompt,
+      userPrompt,
+      maxTokens: computeMaxTokens(jumlah),
+    });
   } catch (error) {
-    console.error(
-      '[Gemilang AI] Groq error',
-      {
-        message:
-          error?.message,
+    console.error('[Gemilang AI] Groq error', error);
 
+    if (error?.code === 'GROQ_TIMEOUT') {
+      return res.status(504).json({
+        success: false,
+        error: 'Groq terlalu lama merespons.',
+      });
+    }
+
+    if (error?.providerStatus === 429) {
+      return res.status(429).json({
+        success: false,
+        error:
+          'Batas Groq sedang tercapai. Coba lagi beberapa saat.',
+        diagnostics: {
+          retryAfter:
+            error?.retryAfter || null,
+        },
+      });
+    }
+
+    return res.status(502).json({
+      success: false,
+      error:
+        'Groq gagal mengkurasi hasil riset internet.',
+      diagnostics: {
         providerStatus:
-          error?.providerStatus,
-
+          error?.providerStatus || null,
         providerMessage:
-          error?.providerMessage,
-
-        retryAfterSeconds:
-          error?.retryAfterSeconds,
-
-        remainingRequests:
-          error?.remainingRequests,
-
-        traceId:
-          error?.traceId,
-
-        code:
-          error?.code,
-
-        model:
-          GROQ_MODEL,
+          error?.providerMessage || null,
       },
-    );
-
-    return sendGroqError(
-      res,
-      error,
-    );
+    });
   }
-
-  // ==========================================================
-  // 4. PARSE JSONL
-  // ==========================================================
 
   const parsed =
     parseJsonLines(
@@ -3092,286 +1779,182 @@ export default async function handler(
     );
 
   const questions = [];
+  const rejectedReasons = {};
+  const usedBlueprints = new Set();
 
-  const rejectedReasons =
-    {};
+  for (const raw of parsed) {
+    if (raw?.meta === true) continue;
 
-  const usedBlueprints =
-    new Set();
-
-  // ==========================================================
-  // 5. QUALITY GATE
-  // ==========================================================
-
-  for (
-    const raw of parsed
-  ) {
-    // META
-    if (
-      raw?.meta === true
-    ) {
-      continue;
-    }
-
-    // NORMALIZE
-    const normalized =
+    const question =
       normalizeQuestion(
         raw,
-        allowedTypes,
-        currentMode,
-      );
-
-    if (!normalized) {
-      rejectedReasons
-        .invalidStructure =
-        (
-          rejectedReasons
-            .invalidStructure ||
-          0
-        ) + 1;
-
-      continue;
-    }
-
-    // BLUEPRINT CHECK
-    const blueprintCheck =
-      validateAgainstBlueprint(
-        normalized,
         blueprint,
+        researchPack,
       );
 
-    if (
-      !blueprintCheck.valid
-    ) {
-      rejectedReasons[
-        blueprintCheck.reason
-      ] =
-        (
-          rejectedReasons[
-            blueprintCheck.reason
-          ] ||
-          0
-        ) + 1;
-
+    if (!question) {
+      rejectedReasons.invalidStructure =
+        (rejectedReasons.invalidStructure || 0) + 1;
       continue;
     }
 
-    // BLUEPRINT DUPLICATE
     if (
       usedBlueprints.has(
-        normalized.blueprintNo,
+        question.blueprintNo,
       )
     ) {
-      rejectedReasons
-        .duplicateBlueprint =
-        (
-          rejectedReasons
-            .duplicateBlueprint ||
-          0
-        ) + 1;
-
+      rejectedReasons.duplicateBlueprint =
+        (rejectedReasons.duplicateBlueprint || 0) + 1;
       continue;
     }
 
-    // QUESTION DUPLICATE
     if (
       isDuplicateQuestion(
-        normalized.question,
+        question.question,
         questions,
       )
     ) {
-      rejectedReasons
-        .duplicateQuestion =
-        (
-          rejectedReasons
-            .duplicateQuestion ||
-          0
-        ) + 1;
-
+      rejectedReasons.duplicateQuestion =
+        (rejectedReasons.duplicateQuestion || 0) + 1;
       continue;
     }
 
-    // ACCEPT
-    questions.push(
-      normalized,
-    );
+    const source =
+      researchPack.sources.find(
+        (item) =>
+          item.url === question.sourceRef,
+      );
 
-    usedBlueprints.add(
-      normalized.blueprintNo,
-    );
-
-    if (
-      questions.length >=
-      jumlah
-    ) {
-      break;
+    if (!source) {
+      rejectedReasons.invalidSourceRef =
+        (rejectedReasons.invalidSourceRef || 0) + 1;
+      continue;
     }
 
-    if (
-      questions.length >=
-      MAX_ACCEPTED_QUESTIONS
-    ) {
-      break;
-    }
+    question.researchBacked = true;
+    question.researchSources = [
+      {
+        title: source.title,
+        url: source.url,
+        domain: source.domain,
+        score: source.score,
+      },
+    ];
+
+    questions.push(question);
+    usedBlueprints.add(question.blueprintNo);
+
+    if (questions.length >= jumlah) break;
   }
 
-  // ==========================================================
-  // 6. CHECK EMPTY
-  // ==========================================================
-
-  if (
-    questions.length ===
-    0
-  ) {
-    return res
-      .status(502)
-      .json({
-        success: false,
-
-        error:
-          'Quality Gate tidak menemukan soal valid dari respons Groq.',
-
-        diagnostics: {
-          parsedObjectCount:
-            parsed.length,
-
-          requestedCount:
-            jumlah,
-
-          acceptedCount:
-            0,
-
-          rejectedReasons,
-
-          modelUsed:
-            aiResult.model,
-
-          finishReason:
-            aiResult.finishReason,
-
-          traceId:
-            aiResult.traceId ||
-            null,
-        },
-      });
+  if (!questions.length) {
+    return res.status(502).json({
+      success: false,
+      error:
+        'Tidak ada soal yang lolos validasi sumber, blueprint, dan tipe.',
+      diagnostics: {
+        parsedObjectCount: parsed.length,
+        requestedCount: jumlah,
+        rejectedReasons,
+      },
+    });
   }
 
-  // ==========================================================
-  // 6.5. ENRICH DENGAN GAMBAR ASLI (Tavily -- opsional)
-  // ==========================================================
+  // ----------------------------------------------------------
+  // VISUAL ENRICHMENT
+  // ----------------------------------------------------------
 
-  const imageEnrichResult =
-    await enrichQuestionsWithRealImages(
+  const visualResult =
+    enrichVisuals(
       questions,
-      process.env
-        .TAVILY_API_KEY,
+      researchPack,
       topic,
     );
 
-  // ==========================================================
-  // 7. SORT BY BLUEPRINT
-  // ==========================================================
+  if (!visualResult.ok) {
+    return res.status(502).json({
+      success: false,
+      error:
+        'Ada soal yang membutuhkan visual tetapi visual yang relevan tidak ditemukan. Soal visual tidak dipaksakan masuk.',
+      diagnostics: {
+        visualFailure:
+          visualResult.reason,
+        question:
+          visualResult.question,
+        imagesFound:
+          researchPack.images.length,
+      },
+    });
+  }
 
   questions.sort(
     (a, b) =>
-      (
-        a.blueprintNo || 999
-      ) -
-      (
-        b.blueprintNo || 999
-      ),
+      a.blueprintNo -
+      b.blueprintNo,
   );
 
-  // ==========================================================
-  // 8. FINAL RESPONSE
-  // ==========================================================
+  return res.status(200).json({
+    success: true,
 
-  return res
-    .status(200)
-    .json({
-      success: true,
+    questions,
 
-      questions,
+    researchPerformed: true,
 
-      requestedCount:
-        jumlah,
+    researchSources:
+      researchPack.sources.map(
+        (source) => ({
+          title: source.title,
+          url: source.url,
+          domain: source.domain,
+          score: source.score,
+        }),
+      ),
 
-      returnedCount:
-        questions.length,
+    researchSourceCount:
+      researchPack.sources.length,
 
-      sourceMode:
-        currentMode,
+    researchImageCount:
+      researchPack.images.length,
 
-      diagnostics: {
-        parsedObjectCount:
-          parsed.length,
+    requestedCount:
+      jumlah,
 
-        acceptedCount:
-          questions.length,
+    returnedCount:
+      questions.length,
 
-        missingCount:
-          Math.max(
-            jumlah -
-              questions.length,
-            0,
-          ),
+    diagnostics: {
+      modelUsed:
+        aiResult.model,
 
-        rejectedReasons,
+      finishReason:
+        aiResult.finishReason,
 
-        modelUsed:
-          aiResult.model,
+      usage:
+        aiResult.usage,
 
-        finishReason:
-          aiResult.finishReason,
+      researchQueries,
 
-        usage:
-          aiResult.usage,
+      extractedPages:
+        extractedPages.length,
 
-        traceId:
-          aiResult.traceId ||
-          null,
+      parsedObjectCount:
+        parsed.length,
 
-        blueprintCount:
-          blueprint.length,
+      rejectedReasons,
 
-        blueprintGenerated:
-          blueprint.length,
+      imageAttached:
+        visualResult.attached,
 
-        difficultyDistribution:
-          countBy(
-            questions,
-            'difficulty',
-          ),
+      optionImagesAttached:
+        visualResult.optionAttached,
 
-        competencyDistribution:
-          countBy(
-            questions,
-            'competency',
-          ),
+      blueprintCount:
+        blueprint.length,
 
-        researchPerformed:
-          enableBrowserSearch,
-
-        // 🔥 BARU: sebelumnya hardcode false apa pun kondisinya --
-        // sekarang hitung beneran berapa dari soal yang lolos punya
-        // sumber valid (URL asli, bukan mengarang) hasil browser_search.
-        researchBackedCount:
-          questions.filter(
-            (q) =>
-              q.researchBacked,
-          ).length,
-
-        // 🔥 BARU: laporan hasil pencarian gambar Tavily -- kalau
-        // TAVILY_API_KEY belum di-set, ketiganya bernilai 0/false
-        // (fitur dilewati total, bukan error).
-        imagesFetched:
-          imageEnrichResult.imagesFetched,
-
-        tavilyCallsUsed:
-          imageEnrichResult.tavilyCallsUsed,
-
-        tavilyCappedByBudget:
-          imageEnrichResult.cappedByBudget,
-      },
-    });
+      researchBackedCount:
+        questions.filter(
+          (q) => q.researchBacked,
+        ).length,
+    },
+  });
 }
