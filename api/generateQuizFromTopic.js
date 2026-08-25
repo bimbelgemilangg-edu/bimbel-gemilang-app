@@ -7,6 +7,10 @@
 
 export const maxDuration = 60;
 
+// Keep a hard internal deadline below Vercel's 60s runtime ceiling.
+const REQUEST_BUDGET_MS = 52_000;
+
+
 const HASDATA_SERP_URL = 'https://api.hasdata.com/scrape/google/serp';
 const HASDATA_IMAGES_URL = 'https://api.hasdata.com/scrape/google/images';
 const HASDATA_WEB_URL = 'https://api.hasdata.com/scrape/web';
@@ -18,16 +22,16 @@ const NVIDIA_MODEL =
 
 // Hard guards. These keep ordinary usage in the free lane.
 const MAX_RESULTS_PER_SEARCH = 8;
-const MAX_SOURCE_PAGES_PER_REQUEST = 4;
+const MAX_SOURCE_PAGES_PER_REQUEST = 1;
 const MAX_IMAGES_PER_SEARCH = 8;
-const MAX_AI_CALLS_PER_REQUEST = 4;
-const MAX_HASDATA_SERP_CALLS_PER_REQUEST = 2;
-const MAX_HASDATA_IMAGE_CALLS_PER_REQUEST = 1;
-const MAX_HASDATA_SCRAPES_PER_REQUEST = 4;
-const MAX_PAGE_CHARS = 24_000;
-const MAX_IMAGE_CANDIDATES_FOR_AI = 6;
-const NVIDIA_TIMEOUT_MS = 35_000;
-const FETCH_TIMEOUT_MS = 9_000;
+const MAX_AI_CALLS_PER_REQUEST = 1;
+const MAX_HASDATA_SERP_CALLS_PER_REQUEST = 1;
+const MAX_HASDATA_IMAGE_CALLS_PER_REQUEST = 0;
+const MAX_HASDATA_SCRAPES_PER_REQUEST = 1;
+const MAX_PAGE_CHARS = 12_000;
+const MAX_IMAGE_CANDIDATES_FOR_AI = 2;
+const NVIDIA_TIMEOUT_MS = 18_000;
+const FETCH_TIMEOUT_MS = 8_000;
 
 const ALLOWED_TYPES = new Set([
   'multiple',
@@ -149,7 +153,7 @@ function buildQueries({ topic, mapel, kelas, arahan }) {
     .slice(0, MAX_HASDATA_SERP_CALLS_PER_REQUEST);
 }
 
-async function hasDataRequest(url, params, apiKey) {
+async function hasDataRequest(url, params, apiKey, timeoutMs = FETCH_TIMEOUT_MS) {
   const endpoint = new URL(url);
   for (const [key, value] of Object.entries(params || {})) {
     if (value !== undefined && value !== null && value !== '') {
@@ -157,25 +161,40 @@ async function hasDataRequest(url, params, apiKey) {
     }
   }
 
-  const response = await fetch(endpoint, {
-    headers: {
-      Accept: 'application/json',
-      'x-api-key': apiKey,
-      'Content-Type': 'application/json',
-    },
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  const text = await response.text();
-  let data = null;
-  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+  try {
+    const response = await fetch(endpoint, {
+      headers: {
+        Accept: 'application/json',
+        'x-api-key': apiKey,
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+    });
 
-  if (!response.ok) {
-    const error = new Error(`HasData HTTP ${response.status}`);
-    error.providerStatus = response.status;
-    error.providerMessage = String(data?.message || data?.error || data?.detail || text || 'Unknown HasData error').slice(0, 1500);
+    const text = await response.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+
+    if (!response.ok) {
+      const error = new Error(`HasData HTTP ${response.status}`);
+      error.providerStatus = response.status;
+      error.providerMessage = String(data?.message || data?.error || data?.detail || text || 'Unknown HasData error').slice(0, 1500);
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      const timeoutError = new Error(`HasData timeout setelah ${timeoutMs}ms.`);
+      timeoutError.code = 'HASDATA_TIMEOUT';
+      throw timeoutError;
+    }
     throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
-  return data;
 }
 
 async function searchWeb(apiKey, query) {
@@ -189,7 +208,6 @@ async function searchWeb(apiKey, query) {
       num: 20,
       safe: 'active',
       filter: 1,
-      tbs: 'img:1',
       deviceType: 'desktop',
     },
     apiKey,
@@ -235,55 +253,77 @@ async function searchImages(apiKey, query) {
     : [];
 }
 
-async function fetchPage(apiKey, url) {
-  const response = await fetch(HASDATA_WEB_URL, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-    },
-    body: JSON.stringify({
-      url,
-      proxyType: 'datacenter',
-      blockAds: true,
-      blockResources: false,
-      jsRendering: true,
-      outputFormat: ['html', 'text'],
-      extractLinks: true,
-      removeBase64Images: true,
-    }),
-  });
+async function fetchPage(apiKey, url, timeoutMs = 12_000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  const text = await response.text();
-  let data = null;
-  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+  try {
+    const response = await fetch(HASDATA_WEB_URL, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+      },
+      body: JSON.stringify({
+        url,
+        proxyType: 'datacenter',
+        blockAds: true,
+        blockResources: false,
+        jsRendering: true,
+        outputFormat: ['html', 'text'],
+        extractLinks: true,
+        removeBase64Images: true,
+      }),
+      signal: controller.signal,
+    });
 
-  if (!response.ok) {
+    const text = await response.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        status: response.status,
+        title: '',
+        text: '',
+        images: [],
+        links: [],
+        error: String(data?.message || data?.error || text || 'HasData scrape failed').slice(0, 1000),
+      };
+    }
+
+    const html = String(data?.html || data?.content || '');
+    const visibleText = cleanText(data?.text || stripHtml(html)).slice(0, MAX_PAGE_CHARS);
+    const meta = extractMeta(html, url);
+    const links = Array.isArray(data?.links)
+      ? data.links.map((item) => safeUrl(item)).filter(Boolean).slice(0, 50)
+      : [];
+
+    return {
+      ok: true,
+      status: response.status,
+      title: meta.title,
+      text: visibleText,
+      images: meta.images,
+      links,
+    };
+  } catch (error) {
     return {
       ok: false,
-      status: response.status,
+      status: error?.name === 'AbortError' ? 504 : 502,
       title: '',
       text: '',
       images: [],
       links: [],
-      error: String(data?.message || data?.error || text || 'HasData scrape failed').slice(0, 1000),
+      error: error?.name === 'AbortError'
+        ? `HasData scrape timeout setelah ${timeoutMs}ms.`
+        : (error?.message || 'HasData scrape failed'),
     };
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const html = String(data?.html || data?.content || '');
-  const visibleText = cleanText(data?.text || stripHtml(html)).slice(0, MAX_PAGE_CHARS);
-  const meta = extractMeta(html, url);
-  const links = Array.isArray(data?.links) ? data.links.map((item) => safeUrl(item)).filter(Boolean).slice(0, 100) : [];
-
-  return {
-    ok: true,
-    status: response.status,
-    title: meta.title,
-    text: visibleText,
-    images: meta.images,
-    links,
-  };
 }
 
 function normalizeQuestion(raw, source) {
@@ -292,7 +332,7 @@ function normalizeQuestion(raw, source) {
   if (!ALLOWED_TYPES.has(type)) return null;
 
   const question = cleanText(raw.question);
-  if (question.length < 8 || question.length > 6000) return null;
+  if (question.length < 8 || question.length > 4500) return null;
 
   const options = Array.isArray(raw.options)
     ? raw.options.map(cleanText).filter(Boolean).slice(0, 8)
@@ -400,7 +440,7 @@ async function callNvidia({ apiKey, source, imageCandidates, requestedCount, map
     'Prioritaskan soal yang paling jelas dan lengkap, bukan ringkasan materi.',
     `Konteks guru: mapel=${mapel}; kelas=${kelas}; topik=${topic}; arahan=${arahan || 'tidak ada'}; target jumlah global=${requestedCount}.`,
     `SUMBER: ${JSON.stringify({ title: source.title, url: source.url, publisher: source.publisher })}`,
-    `TEKS HALAMAN:\n${source.text}`,
+    `TEKS HALAMAN:\n${source.text.slice(0, 10_000)}`,
     imagePrompt,
   ].join('\n\n');
 
@@ -423,14 +463,14 @@ async function callNvidia({ apiKey, source, imageCandidates, requestedCount, map
             role: 'user',
             content: [
               { type: 'text', text: prompt },
-              ...imageCandidates.slice(0, 3).map((image) => ({
+              ...imageCandidates.slice(0, 1).map((image) => ({
                 type: 'image_url',
                 image_url: { url: image.url },
               })),
             ],
           },
         ],
-        max_tokens: 5000,
+        max_tokens: 2200,
         temperature: 0.1,
         top_p: 0.7,
         stream: false,
@@ -487,11 +527,21 @@ function sendError(res, status, error, diagnostics = {}) {
   });
 }
 
+function getDeadline() {
+  return Date.now() + REQUEST_BUDGET_MS;
+}
+
+function timeLeft(deadline) {
+  return Math.max(deadline - Date.now(), 0);
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return sendError(res, 405, 'Method not allowed.');
   }
+
+  const deadline = getDeadline();
 
   const body = req.body && typeof req.body === 'object' ? req.body : {};
   const hasDataKey = process.env.HASDATA_API_KEY;
@@ -519,9 +569,8 @@ export default async function handler(req, res) {
   const usedSources = new Map();
   const searchErrors = [];
 
-  for (const query of queries) {
-    if (usedSources.size >= MAX_SOURCE_PAGES_PER_REQUEST) break;
-    if (usedSources.size >= MAX_SOURCE_PAGES_PER_REQUEST) break;
+  for (const query of queries.slice(0, 1)) {
+    if (timeLeft(deadline) < 15_000) break;
     try {
       const results = await searchWeb(hasDataKey, query);
       for (const result of results) {
@@ -531,10 +580,10 @@ export default async function handler(req, res) {
           url: result.url,
           title: result.title,
           description: result.description,
-          extraSnippets: result.extraSnippets,
+          extraSnippets: result.extraSnippets || [],
           publisher: result.source,
           searchQuery: query,
-          thumbnail: result.thumbnail,
+          thumbnail: result.thumbnail || '',
         });
         if (usedSources.size >= MAX_SOURCE_PAGES_PER_REQUEST) break;
       }
@@ -557,23 +606,20 @@ export default async function handler(req, res) {
 
   // One image search for the main topic. Search result images are supplemental;
   // page images are preferred because they are more likely to be the actual stimulus.
-  let globalImages = [];
-  try {
-    globalImages = await searchImages(hasDataKey, `${topic} ${mapel} ${kelas} soal`);
-  } catch (error) {
-    searchErrors.push({
-      query: 'image-search',
-      status: error?.providerStatus || null,
-      message: error?.providerMessage || error?.message || 'Image search failed',
-    });
-  }
+  // Image search is intentionally skipped in the first pass.
+  // The source-page scraper already extracts real image URLs from the actual
+  // question page, which is both faster and safer under Vercel's 60s ceiling.
+  // This keeps the free lane conservative and avoids a second HasData request.
+  const globalImages = [];
 
   const sources = [];
   let scrapeCalls = 0;
   for (const source of usedSources.values()) {
     if (scrapeCalls >= MAX_HASDATA_SCRAPES_PER_REQUEST) break;
+    if (timeLeft(deadline) < 25_000) break;
     scrapeCalls += 1;
-    const page = await fetchPage(hasDataKey, source.url);
+    const pageTimeout = Math.min(12_000, Math.max(7_000, timeLeft(deadline) - 20_000));
+    const page = await fetchPage(hasDataKey, source.url, pageTimeout);
     const pageImages = page.images.map((url) => ({
       url,
       title: page.title || source.title,
@@ -595,7 +641,7 @@ export default async function handler(req, res) {
       title: page.title || source.title,
       text: page.ok
         ? page.text
-        : `${source.description}\n${source.extraSnippets.join('\n')}`.slice(0, MAX_PAGE_CHARS),
+        : `${source.description || ''}\n${(source.extraSnippets || []).join('\n')}`.slice(0, MAX_PAGE_CHARS),
       images: [...pageImages, ...searchImagesForSource]
         .filter((image, index, arr) => image.url && arr.findIndex((x) => x.url === image.url) === index)
         .slice(0, MAX_IMAGE_CANDIDATES_FOR_AI),
@@ -612,6 +658,7 @@ export default async function handler(req, res) {
   for (const source of sources) {
     if (harvested.length >= jumlah) break;
     if (aiCalls >= MAX_AI_CALLS_PER_REQUEST) break;
+    if (timeLeft(deadline) < 22_000) break;
     aiCalls += 1;
 
     try {
@@ -679,7 +726,7 @@ export default async function handler(req, res) {
       sourceCount: sources.length,
       aiCalls,
       hasDataSerpCalls: Math.min(queries.length, MAX_HASDATA_SERP_CALLS_PER_REQUEST),
-      hasDataImageSearchCalls: globalImages.length > 0 ? 1 : 0,
+      hasDataImageSearchCalls: 0,
       hasDataScrapeCalls: scrapeCalls,
       imageSearchUsed: globalImages.length > 0,
       searchErrors,
