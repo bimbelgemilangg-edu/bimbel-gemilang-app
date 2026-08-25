@@ -181,6 +181,41 @@ const summarizeByType = (details) => {
   return byType;
 };
 
+// 🔥 BARU: ringkas berdasarkan BOBOT KESULITAN (Easy/Medium/Hard) dan
+// CAPAIAN KOMPETENSI -- data ini datang dari Blueprint Engine
+// (generateQuizFromTopic.js), disimpan di tiap butir soal (q.difficulty
+// / q.competency) sejak fix sebelumnya. Kuis LAMA (dibuat sebelum fix
+// itu) gak akan punya field ini -- fungsi ini otomatis return objek
+// kosong buat kasus itu, dan pemanggilnya (generateAstroGemilangReport)
+// SENGAJA melewati tabel ini kalau kosong, bukan nampilin tabel kosong.
+const summarizeByDifficulty = (details) => {
+  const map = {};
+  (details || []).forEach(q => {
+    const label = q.difficulty;
+    if (!label) return; // soal tanpa data bobot (kuis lama) -- dilewati, bukan dianggap "Unknown"
+    if (!map[label]) map[label] = { count: 0, points: 0 };
+    map[label].count += 1;
+    map[label].points += (q.partialFraction !== undefined && q.partialFraction !== null)
+      ? q.partialFraction
+      : (q.isCorrect ? 1 : 0);
+  });
+  return map;
+};
+
+const summarizeByCompetency = (details) => {
+  const map = {};
+  (details || []).forEach(q => {
+    const label = q.competency;
+    if (!label) return;
+    if (!map[label]) map[label] = { count: 0, points: 0 };
+    map[label].count += 1;
+    map[label].points += (q.partialFraction !== undefined && q.partialFraction !== null)
+      ? q.partialFraction
+      : (q.isCorrect ? 1 : 0);
+  });
+  return map;
+};
+
 const buildNarrative = (item, byType) => {
   const lines = [];
   const score = item.score ?? 0;
@@ -216,7 +251,62 @@ const buildNarrative = (item, byType) => {
   return lines;
 };
 
-const generateAstroGemilangReport = (item) => {
+// ============================================================
+// 🔥 BARU: NARASI DIPOLES ASTRO GEMILANG (opsional, dengan fallback)
+// ============================================================
+// Memanggil api/generateStudentNarrative.js -- AI cuma memoles kalimat
+// dari statistik yang SUDAH dihitung 100% dari data asli (lihat
+// penjelasan lengkap di file backend itu, termasuk kenapa ini aman
+// dari halusinasi). Timeout pendek (12 detik) + fallback WAJIB ke
+// buildNarrative() rule-based kalau gagal/timeout/limit Groq habis --
+// laporan PDF harus tetap bisa dibuat walau fitur pemolesan ini down,
+// karena ini dokumen resmi yang guru butuh kapan saja, bukan cuma pas
+// koneksi lagi bagus.
+const fetchPolishedNarrative = async (item, byType, byDifficulty, byCompetency) => {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12_000);
+
+    const firstName = String(item.studentName || '').trim().split(/\s+/)[0] || 'siswa';
+
+    const toAccuracyArray = (map) =>
+      Object.entries(map).map(([label, s]) => ({
+        label,
+        accuracyPercent: s.count ? Math.round((s.points / s.count) * 100) : 0,
+      }));
+
+    const unansweredCount = (item.totalQuestions || 0) - (item.details || []).filter(
+      d => d.userAnswer !== undefined && d.userAnswer !== null && d.userAnswer !== ''
+    ).length;
+
+    const response = await fetch('/api/generateStudentNarrative', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        studentFirstName: firstName,
+        modulTitle: item.modulTitle || 'kuis ini',
+        score: item.score ?? 0,
+        correctAnswers: item.correctAnswers ?? 0,
+        totalQuestions: item.totalQuestions ?? 0,
+        isAutoSubmit: !!item.isAutoSubmit,
+        unansweredCount,
+        byDifficulty: toAccuracyArray(byDifficulty),
+        byCompetency: toAccuracyArray(byCompetency),
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data?.success && data?.narrative ? data.narrative : null;
+  } catch (_) {
+    return null; // gagal/timeout -- gak fatal, pemanggil fallback ke rule-based
+  }
+};
+
+const generateAstroGemilangReport = async (item) => {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 34;
@@ -304,8 +394,69 @@ const generateAstroGemilangReport = (item) => {
     y = doc.lastAutoTable.finalY + 8;
   }
 
-  // Narasi (berbasis data, lihat penjelasan di buildNarrative)
-  const narrativeLines = buildNarrative(item, byType);
+  // 🔥 BARU: Analisis per BOBOT KESULITAN (Easy/Medium/Hard) -- cuma
+  // muncul kalau kuisnya punya data ini (dibuat setelah Blueprint
+  // Engine terhubung penuh). Kuis lama otomatis melewati bagian ini.
+  const byDifficulty = summarizeByDifficulty(item.details);
+  const difficultyRows = Object.entries(byDifficulty).map(([label, s]) => [
+    label,
+    String(s.count),
+    s.points.toFixed(1),
+    Math.round((s.points / s.count) * 100) + '%',
+  ]);
+
+  if (difficultyRows.length > 0) {
+    if (y > 250) { doc.addPage(); y = 18; }
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.text('Analisis per Bobot Kesulitan', 14, y);
+    y += 4;
+    autoTable(doc, {
+      startY: y,
+      head: [['Bobot', 'Jumlah Soal', 'Skor Diperoleh', 'Akurasi']],
+      body: difficultyRows,
+      theme: 'striped',
+      headStyles: { fillColor: [217, 119, 6] },
+      styles: { fontSize: 9 },
+    });
+    y = doc.lastAutoTable.finalY + 8;
+  }
+
+  // 🔥 BARU: Analisis per CAPAIAN KOMPETENSI -- sama seperti di atas,
+  // cuma muncul kalau datanya ada.
+  const byCompetency = summarizeByCompetency(item.details);
+  const competencyRows = Object.entries(byCompetency).map(([label, s]) => [
+    label,
+    String(s.count),
+    Math.round((s.points / s.count) * 100) + '%',
+  ]);
+
+  if (competencyRows.length > 0) {
+    if (y > 245) { doc.addPage(); y = 18; }
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.text('Analisis per Capaian Kompetensi', 14, y);
+    y += 4;
+    autoTable(doc, {
+      startY: y,
+      head: [['Capaian Kompetensi', 'Jumlah Soal', 'Akurasi']],
+      body: competencyRows,
+      theme: 'striped',
+      headStyles: { fillColor: [91, 33, 182] },
+      styles: { fontSize: 8.5 },
+      columnStyles: { 0: { cellWidth: 110 } },
+    });
+    y = doc.lastAutoTable.finalY + 8;
+  }
+
+  // Narasi -- coba AI dulu (dipoles, tetap terikat data asli di atas),
+  // fallback ke rule-based kalau gagal/timeout. LIHAT fetchPolishedNarrative()
+  // & backend generateStudentNarrative.js buat penjelasan lengkap kenapa
+  // ini aman dari halusinasi (AI cuma boleh pakai angka yang dikirim).
+  const ruleBasedLines = buildNarrative(item, byType);
+  const polished = await fetchPolishedNarrative(item, byType, byDifficulty, byCompetency);
+  const narrativeLines = polished ? [polished] : ruleBasedLines;
+
   doc.setFontSize(11);
   doc.setFont(undefined, 'bold');
   doc.text('Ringkasan Analisis', 14, y);
@@ -313,7 +464,7 @@ const generateAstroGemilangReport = (item) => {
   doc.setFont(undefined, 'normal');
   doc.setFontSize(9.5);
   narrativeLines.forEach(line => {
-    const split = doc.splitTextToSize('- ' + line, pageWidth - 28);
+    const split = doc.splitTextToSize(polished ? line : '- ' + line, pageWidth - 28);
     doc.text(split, 14, y);
     y += split.length * 5 + 2;
   });
@@ -383,7 +534,7 @@ const generateAstroGemilangReport = (item) => {
     doc.setFontSize(7);
     doc.setTextColor(148, 163, 184);
     doc.text(
-      'Laporan dihasilkan otomatis dari data hasil pengerjaan kuis (Astro Gemilang). Untuk diskusi lebih lanjut, silakan hubungi guru mata pelajaran terkait.',
+      'Laporan dihasilkan dari data hasil pengerjaan kuis yang sebenarnya; narasi ringkasan dapat dipoles oleh Astro Gemilang agar mudah dibaca, namun seluruh angka & fakta tetap berasal dari data asli. Untuk diskusi lebih lanjut, silakan hubungi guru mata pelajaran terkait.',
       14, 290
     );
     doc.text(`Halaman ${p} dari ${pageCount}`, pageWidth - 14, 290, { align: 'right' });
@@ -416,6 +567,10 @@ const CekTugasSiswa = () => {
 
   const [stats, setStats] = useState({ totalTugas: 0, pendingTugas: 0, gradedTugas: 0, totalKuis: 0, avgScore: 0 });
   const [viewingDetail, setViewingDetail] = useState(null);
+  // 🔥 BARU: generateAstroGemilangReport sekarang async (nunggu narasi AI
+  // sebelum PDF jadi) -- state ini nyimpen ID item yang lagi diproses,
+  // buat kasih indikator loading & cegah klik dobel.
+  const [generatingReportFor, setGeneratingReportFor] = useState(null);
   // 🔥 BARU: urutan soal KANONIK (urutan asli sesuai dokumen kuisnya, BUKAN
   // urutan yang tersimpan di submission siswa -- yang bisa beda-beda per
   // siswa kalau kuisnya pakai "Acak Soal"). Lihat penjelasan lengkap di
@@ -606,6 +761,20 @@ const CekTugasSiswa = () => {
 
   const handleRefresh = () => { setRefreshing(true); fetchData(); };
 
+  // 🔥 BARU: wrapper buat generateAstroGemilangReport (sekarang async) --
+  // kelola state loading & cegah klik dobel selagi narasi AI diproses.
+  const handleDownloadReport = async (item) => {
+    if (generatingReportFor) return; // sudah ada proses berjalan, cegah klik dobel
+    setGeneratingReportFor(item.id);
+    try {
+      await generateAstroGemilangReport(item);
+    } catch (e) {
+      alert('❌ Gagal membuat laporan: ' + e.message);
+    } finally {
+      setGeneratingReportFor(null);
+    }
+  };
+
   // ===== UPDATE SCORE =====
   const handleUpdateScore = async (id, collectionName) => {
     if (newScore === "" || isNaN(newScore) || newScore < 0 || newScore > 100) {
@@ -725,6 +894,74 @@ const CekTugasSiswa = () => {
 
   const openGroup = groups.find(g => g.key === openGroupKey) || null;
 
+  // ============================================================
+  // 🔥 BARU: DASHBOARD PROFICIENCY SISWA (referensi tampilan dari guru)
+  // ============================================================
+  // Dikelompokkan per SISWA (bukan per tugas/kuis kayak `groups` di atas)
+  // -- ini yang bikin guru bisa lihat "siapa yang butuh perhatian" dalam
+  // sekali pandang, lintas semua tugas/kuis di tab yang aktif. Bucket
+  // "Perlu Perhatian / Sedang Berkembang / Menguasai" dihitung dari SKOR
+  // TIAP SUBMISSION siswa itu (skor <60 / 60-84 / >=85) -- bukan cuma
+  // rata-rata akhir, supaya guru lihat POLA-nya (mis. siswa yang skornya
+  // naik-turun ekstrem, bukan cuma "rata-rata sedang").
+  const studentProficiency = useMemo(() => {
+    const map = new Map();
+    currentData.forEach(item => {
+      const key = item.studentNim || item.studentName || 'unknown';
+      if (!map.has(key)) {
+        map.set(key, {
+          key,
+          name: item.studentName || 'Siswa',
+          nim: item.studentNim || '-',
+          kelas: item.studentClass || '-',
+          submissions: [],
+        });
+      }
+      map.get(key).submissions.push(item);
+    });
+
+    return Array.from(map.values()).map(st => {
+      const scored = st.submissions.filter(i => i.score !== undefined && i.score !== null);
+      const needingAttention = scored.filter(i => i.score < 60).length;
+      const workingTowards = scored.filter(i => i.score >= 60 && i.score < 85).length;
+      const mastered = scored.filter(i => i.score >= 85).length;
+      const avgScore = scored.length ? Math.round(scored.reduce((a, i) => a + i.score, 0) / scored.length) : null;
+      return {
+        ...st,
+        completedCount: st.submissions.length,
+        avgScore,
+        needingAttention,
+        workingTowards,
+        mastered,
+      };
+    }).sort((a, b) => (b.avgScore ?? -1) - (a.avgScore ?? -1));
+  }, [currentData]);
+
+  // Ringkasan kelas keseluruhan -- 3 kartu besar ala referensi (Overall
+  // Class Score, Total Dikerjakan, dan distribusi 3 bucket lintas SEMUA
+  // submission, bukan per siswa).
+  const classSummary = useMemo(() => {
+    const scored = currentData.filter(i => i.score !== undefined && i.score !== null);
+    const overallScore = scored.length ? Math.round(scored.reduce((a, i) => a + i.score, 0) / scored.length) : 0;
+    const needingAttention = scored.filter(i => i.score < 60).length;
+    const workingTowards = scored.filter(i => i.score >= 60 && i.score < 85).length;
+    const mastered = scored.filter(i => i.score >= 85).length;
+    const total = scored.length || 1; // hindari bagi nol
+    return {
+      overallScore,
+      totalGraded: scored.length,
+      needingAttention,
+      workingTowards,
+      mastered,
+      needingAttentionPct: Math.round((needingAttention / total) * 100),
+      workingTowardsPct: Math.round((workingTowards / total) * 100),
+      masteredPct: Math.round((mastered / total) * 100),
+    };
+  }, [currentData]);
+
+  const [showProficiencyDashboard, setShowProficiencyDashboard] = useState(true);
+
+
   const filteredGroupItems = useMemo(() => {
     if (!openGroup) return [];
     let data = openGroup.items;
@@ -786,6 +1023,101 @@ const CekTugasSiswa = () => {
             <span style={s.statL}>{st.c} {st.l}</span>
           </div>
         ))}
+      </div>
+
+      {/* ============================================================ */}
+      {/* 🔥 BARU: DASHBOARD PROFICIENCY SISWA (ala referensi tampilan) */}
+      {/* ============================================================ */}
+      <div style={s.profDashboard}>
+        <button
+          onClick={() => setShowProficiencyDashboard(v => !v)}
+          style={s.profToggle}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <BarChart3 size={15} /> Ringkasan Kemampuan Siswa
+          </span>
+          {showProficiencyDashboard ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+
+        {showProficiencyDashboard && (
+          <div style={{ padding: '4px 16px 16px' }}>
+            {/* KARTU RINGKASAN */}
+            <div style={{ ...s.profCardsRow, gridTemplateColumns: isMobile ? '1fr' : '1.3fr 1fr 1fr 1fr' }}>
+              <div style={s.profScoreCard}>
+                <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Skor Rata-rata Kelas</div>
+                <div style={{ fontSize: 32, fontWeight: 800, color: '#1e293b', marginTop: 4 }}>{classSummary.overallScore}%</div>
+                <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>dari {classSummary.totalGraded} submission dinilai</div>
+              </div>
+
+              <div style={{ ...s.profBucketCard, background: '#fee2e2' }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: '#b91c1c' }}>{classSummary.needingAttention}</div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: '#b91c1c' }}>{classSummary.needingAttentionPct}% • Perlu Perhatian</div>
+                <div style={{ fontSize: 9, color: '#991b1b' }}>skor di bawah 60</div>
+              </div>
+
+              <div style={{ ...s.profBucketCard, background: '#fef3c7' }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: '#b45309' }}>{classSummary.workingTowards}</div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: '#b45309' }}>{classSummary.workingTowardsPct}% • Sedang Berkembang</div>
+                <div style={{ fontSize: 9, color: '#92400e' }}>skor 60-84</div>
+              </div>
+
+              <div style={{ ...s.profBucketCard, background: '#dcfce7' }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: '#166534' }}>{classSummary.mastered}</div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: '#166534' }}>{classSummary.masteredPct}% • Menguasai</div>
+                <div style={{ fontSize: 9, color: '#15803d' }}>skor 85 ke atas</div>
+              </div>
+            </div>
+
+            {/* TABEL PER SISWA */}
+            {studentProficiency.length > 0 && (
+              <div style={{ marginTop: 14, overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 560 }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #f1f5f9' }}>
+                      <th style={s.profTh}>Nama Siswa</th>
+                      <th style={s.profTh}>Dikerjakan</th>
+                      <th style={s.profTh}>Skor Rata-rata</th>
+                      <th style={{ ...s.profTh, color: '#b91c1c' }}>Perlu Perhatian</th>
+                      <th style={{ ...s.profTh, color: '#b45309' }}>Berkembang</th>
+                      <th style={{ ...s.profTh, color: '#166534' }}>Menguasai</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {studentProficiency.map(st => (
+                      <tr key={st.key} style={{ borderBottom: '1px solid #f8fafc' }}>
+                        <td style={s.profTd}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ ...s.av, width: 26, height: 26, fontSize: 11 }}>{st.name.charAt(0)}</div>
+                            <div>
+                              <div style={{ fontWeight: 700, fontSize: 12 }}>{st.name}</div>
+                              <div style={{ fontSize: 9, color: '#94a3b8' }}>{st.kelas} • #{st.nim}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td style={s.profTd}>{st.completedCount}</td>
+                        <td style={s.profTd}>
+                          <span style={{
+                            fontWeight: 800, fontSize: 12,
+                            color: st.avgScore === null ? '#94a3b8' : st.avgScore >= 85 ? '#166534' : st.avgScore >= 60 ? '#b45309' : '#b91c1c',
+                          }}>
+                            {st.avgScore === null ? '-' : `${st.avgScore}%`}
+                          </span>
+                        </td>
+                        <td style={s.profTd}><span style={s.profPill('#fee2e2', '#b91c1c')}>{st.needingAttention}</span></td>
+                        <td style={s.profTd}><span style={s.profPill('#fef3c7', '#b45309')}>{st.workingTowards}</span></td>
+                        <td style={s.profTd}><span style={s.profPill('#dcfce7', '#166534')}>{st.mastered}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {studentProficiency.length === 0 && (
+              <p style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', marginTop: 10 }}>Belum ada submission untuk ditampilkan.</p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* TABS */}
@@ -950,11 +1282,12 @@ const CekTugasSiswa = () => {
                               )}
                               {item.type === 'kuis' && item.details?.length > 0 && (
                                 <button
-                                  onClick={() => generateAstroGemilangReport(item)}
-                                  style={s.btnPdf}
-                                  title="Unduh Laporan PDF (Astro Gemilang) — bisa dikirim ke orang tua"
+                                  onClick={() => handleDownloadReport(item)}
+                                  disabled={generatingReportFor === item.id}
+                                  style={{ ...s.btnPdf, opacity: generatingReportFor === item.id ? 0.5 : 1, cursor: generatingReportFor === item.id ? 'wait' : 'pointer' }}
+                                  title={generatingReportFor === item.id ? 'Menyiapkan laporan...' : 'Unduh Laporan PDF (Astro Gemilang) — bisa dikirim ke orang tua'}
                                 >
-                                  <Download size={12}/>
+                                  {generatingReportFor === item.id ? <RefreshCw size={12} className="spin" /> : <Download size={12}/>}
                                 </button>
                               )}
                               <button onClick={()=>handleDelete(item.id,coll)} style={s.btnDel}><Trash2 size={12}/></button>
@@ -1016,11 +1349,14 @@ const CekTugasSiswa = () => {
               </div>
               <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                 <button
-                  onClick={() => generateAstroGemilangReport(viewingDetail)}
-                  style={s.btnPdfModal}
-                  title="Unduh Laporan PDF (Astro Gemilang) — bisa dikirim ke orang tua"
+                  onClick={() => handleDownloadReport(viewingDetail)}
+                  disabled={generatingReportFor === viewingDetail.id}
+                  style={{ ...s.btnPdfModal, opacity: generatingReportFor === viewingDetail.id ? 0.5 : 1, cursor: generatingReportFor === viewingDetail.id ? 'wait' : 'pointer' }}
+                  title={generatingReportFor === viewingDetail.id ? 'Menyiapkan laporan...' : 'Unduh Laporan PDF (Astro Gemilang) — bisa dikirim ke orang tua'}
                 >
-                  <Sparkles size={13}/> <Download size={13}/> PDF
+                  {generatingReportFor === viewingDetail.id
+                    ? <><RefreshCw size={13} className="spin" /> Menyiapkan...</>
+                    : <><Sparkles size={13}/> <Download size={13}/> PDF</>}
                 </button>
                 <button onClick={() => setViewingDetail(null)} style={s.modalCloseBtn}><X size={18}/></button>
               </div>
@@ -1079,6 +1415,16 @@ const s = {
   wrap: { width:'100%', maxWidth:1300, margin:'0 auto', padding:'16px 20px 40px', minHeight:'100vh', background:'#f8fafc' },
   center: { display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', minHeight:'60vh' },
   spinner: { width:32, height:32, border:'3px solid #e2e8f0', borderTop:'3px solid #6366f1', borderRadius:'50%', animation:'spin 1s linear infinite' },
+
+  // 🔥 BARU: dashboard proficiency siswa
+  profDashboard: { background:'white', borderRadius:14, border:'1px solid #f1f5f9', marginBottom:16, overflow:'hidden' },
+  profToggle: { width:'100%', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', background:'none', border:'none', cursor:'pointer', fontSize:13, fontWeight:700, color:'#1e293b' },
+  profCardsRow: { display:'grid', gridTemplateColumns:'1.3fr 1fr 1fr 1fr', gap:10 },
+  profScoreCard: { background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:12, padding:14 },
+  profBucketCard: { borderRadius:12, padding:14, display:'flex', flexDirection:'column', gap:2 },
+  profTh: { textAlign:'left', padding:'8px 10px', fontSize:10, fontWeight:700, color:'#64748b', textTransform:'uppercase' },
+  profTd: { padding:'8px 10px', fontSize:12, color:'#1e293b' },
+  profPill: (bg, color) => ({ display:'inline-block', minWidth:22, textAlign:'center', padding:'2px 8px', borderRadius:10, background:bg, color, fontWeight:700, fontSize:11 }),
   
   header: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16, flexWrap:'wrap', gap:12 },
   hLeft: { display:'flex', alignItems:'center', gap:12 },
