@@ -124,6 +124,277 @@ const AI_TIMEOUT_WITH_SEARCH_MS = 55_000;
 // minta token jauh lebih sedikit, gak lagi selalu minta jatah maksimal.
 const GROQ_TPM_LIMIT = 8000;
 
+// ============================================================
+// 🔥 BARU: TAVILY (pencari gambar asli -- opsional)
+// ============================================================
+// Dipakai KHUSUS untuk mencari gambar ASLI dari internet buat:
+// (1) stimulus visual soal (mis. "gambar di bawah ini candi apa?"),
+// (2) pilihan jawaban berbentuk gambar (optionsAreImages).
+// Groq browser_search TIDAK bisa ini -- dia cuma kasih teks/snippet,
+// bukan file gambar (lihat penjelasan lengkap di header file & di
+// dokumentasi resmi Groq). Tavily terverifikasi (Agustus 2026) py
+// free tier 1.000 credit/bulan, reset tiap tanggal 1, TANPA kartu
+// kredit -- kalau kredit habis, request BERHENTI (bukan auto-tagih
+// kayak Brave yang sudah kita coret dari opsi).
+//
+// FITUR INI SEPENUHNYA OPSIONAL: kalau `TAVILY_API_KEY` gak di-set,
+// seluruh langkah pencarian gambar di bawah DILEWATI TOTAL -- sistem
+// tetap jalan normal persis seperti sebelum fitur ini ada (fallback
+// ke needsImage+imageHint sebagai penanda "butuh gambar" doang, tanpa
+// gambar asli). Jadi nggak ada resiko baru buat siapa pun yang belum
+// mau/sempat setup Tavily.
+const TAVILY_SEARCH_URL =
+  'https://api.tavily.com/search';
+
+// Batas keras jumlah panggilan Tavily PER REQUEST generate-quiz --
+// jaga-jaga supaya satu permintaan guru (banyak soal, semua butuh
+// gambar) gak ujug-ujug ngabisin jatah bulanan cuma dalam 1 klik.
+const MAX_TAVILY_CALLS_PER_REQUEST = 8;
+
+const TAVILY_TIMEOUT_MS = 12_000;
+
+async function callTavilyImageSearch(
+  apiKey,
+  query,
+) {
+  const controller =
+    new AbortController();
+
+  const timeoutId =
+    setTimeout(
+      () =>
+        controller.abort(),
+      TAVILY_TIMEOUT_MS,
+    );
+
+  try {
+    const response =
+      await fetch(
+        TAVILY_SEARCH_URL,
+        {
+          method: 'POST',
+
+          headers: {
+            Authorization:
+              `Bearer ${apiKey}`,
+
+            'Content-Type':
+              'application/json',
+          },
+
+          body: JSON.stringify({
+            query,
+
+            search_depth:
+              'basic', // 1 credit (bukan 'advanced' yang makan 2 credit)
+
+            max_results: 3,
+
+            include_images:
+              true,
+
+            include_image_descriptions:
+              false,
+
+            include_answer:
+              false,
+
+            include_raw_content:
+              false,
+          }),
+
+          signal:
+            controller.signal,
+        },
+      );
+
+    if (!response.ok) {
+      return null; // 🔥 gagal (kredit habis, dll) -- gak fatal, cuma gak dapat gambar buat butir ini
+    }
+
+    const data =
+      await response.json();
+
+    const images =
+      Array.isArray(
+        data?.images,
+      )
+        ? data.images
+        : [];
+
+    // 🔥 `images` bisa berisi string URL langsung, ATAU object
+    // {url, description} tergantung parameter -- ditangani dua-duanya
+    // supaya gak gampang patah kalau Tavily ubah format.
+    for (
+      const item of images
+    ) {
+      const url =
+        typeof item ===
+        'string'
+          ? item
+          : item?.url;
+
+      if (
+        typeof url ===
+          'string' &&
+        /^https?:\/\//i.test(
+          url,
+        )
+      ) {
+        return url;
+      }
+    }
+
+    return null;
+  } catch (_) {
+    return null; // timeout/network error -- gak fatal, lanjut tanpa gambar buat butir ini
+  } finally {
+    clearTimeout(
+      timeoutId,
+    );
+  }
+}
+
+// 🔥 Perkaya soal-soal yang lolos Quality Gate dengan gambar ASLI dari
+// Tavily -- dijalankan SETELAH quality gate (baris soal sudah final),
+// SEBELUM dikirim ke ManageQuiz. Dibatasi MAX_TAVILY_CALLS_PER_REQUEST
+// biar kredit bulanan gak jebol dalam 1 request.
+async function enrichQuestionsWithRealImages(
+  questions,
+  tavilyApiKey,
+  topic,
+) {
+  if (!tavilyApiKey) {
+    // Fitur belum di-setup -- lewati total, gak ada perubahan perilaku.
+    return {
+      imagesFetched: 0,
+      tavilyCallsUsed: 0,
+      cappedByBudget: false,
+    };
+  }
+
+  let callsUsed = 0;
+  let imagesFetched = 0;
+  let cappedByBudget = false;
+
+  for (
+    const question of questions
+  ) {
+    if (
+      callsUsed >=
+      MAX_TAVILY_CALLS_PER_REQUEST
+    ) {
+      cappedByBudget = true;
+      break;
+    }
+
+    // KASUS 1: soal butuh gambar stimulus (mis. "candi apa ini?")
+    // dan belum punya qImage (bukan clock/graph lokal).
+    if (
+      question.needsImage &&
+      !question.qImage &&
+      question.imageHint
+    ) {
+      const url =
+        await callTavilyImageSearch(
+          tavilyApiKey,
+          question.imageHint,
+        );
+
+      callsUsed += 1;
+
+      if (url) {
+        question.qImage = url;
+        question.imageSource = {
+          url,
+          fetchedVia: 'tavily',
+        };
+        imagesFetched += 1;
+      }
+
+      if (
+        callsUsed >=
+        MAX_TAVILY_CALLS_PER_REQUEST
+      ) {
+        cappedByBudget = true;
+        break;
+      }
+    }
+
+    // KASUS 2: pilihan jawaban berbentuk gambar -- cari 1 gambar per
+    // opsi (mis. "Candi Prambanan", "Candi Borobudur", dst).
+    if (
+      question.optionsAreImages &&
+      Array.isArray(
+        question.options,
+      ) &&
+      question.options.length >
+        0
+    ) {
+      const fetchedImages = [
+        ...(question.optionImages ||
+          []),
+      ];
+
+      for (
+        let i = 0;
+        i <
+        question.options
+          .length;
+        i += 1
+      ) {
+        if (
+          callsUsed >=
+          MAX_TAVILY_CALLS_PER_REQUEST
+        ) {
+          cappedByBudget = true;
+          break;
+        }
+
+        // Kalau opsi ini SUDAH punya gambar (mis. dari fallback lama),
+        // jangan cari ulang -- hemat kredit.
+        if (
+          fetchedImages[i]
+        ) {
+          continue;
+        }
+
+        // Query digabung dengan topik supaya lebih spesifik (mis.
+        // "Candi Prambanan" + topik "Sejarah Kerajaan Mataram Kuno"),
+        // bukan cuma nama opsi polos yang bisa ambigu.
+        const query =
+          topic
+            ? `${question.options[i]} ${topic}`
+            : question.options[i];
+
+        const url =
+          await callTavilyImageSearch(
+            tavilyApiKey,
+            query,
+          );
+
+        callsUsed += 1;
+
+        if (url) {
+          fetchedImages[i] =
+            url;
+          imagesFetched += 1;
+        }
+      }
+
+      question.optionImages =
+        fetchedImages;
+    }
+  }
+
+  return {
+    imagesFetched,
+    tavilyCallsUsed:
+      callsUsed,
+    cappedByBudget,
+  };
+}
+
 function computeMaxTokens(
   jumlah,
   enableBrowserSearch,
@@ -2860,6 +3131,18 @@ export default async function handler(
   }
 
   // ==========================================================
+  // 6.5. ENRICH DENGAN GAMBAR ASLI (Tavily -- opsional)
+  // ==========================================================
+
+  const imageEnrichResult =
+    await enrichQuestionsWithRealImages(
+      questions,
+      process.env
+        .TAVILY_API_KEY,
+      topic,
+    );
+
+  // ==========================================================
   // 7. SORT BY BLUEPRINT
   // ==========================================================
 
@@ -2951,6 +3234,18 @@ export default async function handler(
             (q) =>
               q.researchBacked,
           ).length,
+
+        // 🔥 BARU: laporan hasil pencarian gambar Tavily -- kalau
+        // TAVILY_API_KEY belum di-set, ketiganya bernilai 0/false
+        // (fitur dilewati total, bukan error).
+        imagesFetched:
+          imageEnrichResult.imagesFetched,
+
+        tavilyCallsUsed:
+          imageEnrichResult.tavilyCallsUsed,
+
+        tavilyCappedByBudget:
+          imageEnrichResult.cappedByBudget,
       },
     });
 }
