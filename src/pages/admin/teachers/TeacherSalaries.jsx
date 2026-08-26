@@ -22,6 +22,45 @@ const TeacherSalaries = () => {
   const [activeBonusId, setActiveBonusId] = useState(null);
   const [bonusData, setBonusData] = useState({ keterangan: '', nominal: '' });
 
+  // 🔥 BARU: cross-check semua guru terdaftar (bukan cuma yang punya log)
+  // -- FIX BUG NYATA yang dilaporkan: guru yang belum divalidasi/belum
+  // punya sesi tercatat sebelumnya SAMA SEKALI GAK MUNCUL di halaman
+  // ini, karena tabel dulu cuma dibangun dari log yang ADA. Sekarang
+  // di-cross-reference sama koleksi "teachers" -- guru yang gak punya
+  // log pun tetap kelihatan (dengan 0 sesi), gak lagi hilang tanpa jejak.
+  // ⚠️ ASUMSI SKEMA: koleksi "teachers", field "nama" dan "status".
+  // Kalau skema aslimu beda nama field/koleksinya, kasih tau supaya
+  // saya sesuaikan -- ini ditulis defensif (fallback aman) tapi tetap
+  // perlu dicocokkan ke skema sebenarnya biar akurat 100%.
+  const [teachersMaster, setTeachersMaster] = useState([]);
+
+  // 🔥 BARU: total & per-guru jumlah log yang MASIH menunggu validasi --
+  // FIX "posisi sekarang kira-kira dan lupa": sekarang ada ringkasan
+  // jelas di banner atas + badge per baris guru, gak perlu buka rincian
+  // satu-satu buat tau ada yang ketinggalan.
+  const [pendingSummary, setPendingSummary] = useState({ totalPending: 0, teacherCount: 0 });
+
+  // 🔥 BARU: pengaturan komisi terpusat -- dikunci akses OWNER saja.
+  // ⚠️ ASUMSI: status owner dibaca dari localStorage key "userRole"
+  // (nilai "owner"). Kalau sistem login/role kamu pakai mekanisme lain
+  // (mis. field role di Firestore per akun admin), kasih tau supaya
+  // saya sambungkan ke situ -- sengaja fail-closed (default TERKUNCI)
+  // kalau key ini gak ada, bukan fail-open, demi keamanan.
+  const isOwner = (() => {
+    try {
+      return localStorage.getItem('userRole') === 'owner';
+    } catch (_) {
+      return false;
+    }
+  })();
+
+  const [showKomisiSettings, setShowKomisiSettings] = useState(false);
+  const [komisiRates, setKomisiRates] = useState({
+    sd: '', smp: '', sma: '', english: '', default: ''
+  });
+  const [savingKomisi, setSavingKomisi] = useState(false);
+  const [komisiSaved, setKomisiSaved] = useState(false);
+
   // 🔥 STATE UNTUK GOOGLE FORM
   const [showFormSettings, setShowFormSettings] = useState(false);
   const [googleForms, setGoogleForms] = useState({
@@ -33,6 +72,52 @@ const TeacherSalaries = () => {
   });
   const [savingForm, setSavingForm] = useState(false);
   const [formSaved, setFormSaved] = useState(false);
+
+  // 🔥 FETCH KOMISI RATES (settings/komisi_rates)
+  useEffect(() => {
+    const fetchKomisiRates = async () => {
+      try {
+        const docRef = doc(db, "settings", "komisi_rates");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setKomisiRates(prev => ({ ...prev, ...docSnap.data() }));
+        }
+      } catch (error) {
+        console.error("Error fetching komisi rates:", error);
+      }
+    };
+    fetchKomisiRates();
+  }, []);
+
+  // 🔥 FETCH TEACHERS MASTER (buat cross-check guru yang belum punya log)
+  useEffect(() => {
+    const fetchTeachersMaster = async () => {
+      try {
+        const snap = await getDocs(collection(db, "teachers"));
+        setTeachersMaster(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch (error) {
+        console.error("Error fetching teachers master:", error);
+      }
+    };
+    fetchTeachersMaster();
+  }, []);
+
+  const handleSaveKomisiRates = async () => {
+    if (!isOwner) return showAlert("🔒 Cuma owner yang bisa ubah pengaturan komisi.");
+    setSavingKomisi(true);
+    try {
+      await setDoc(doc(db, "settings", "komisi_rates"), {
+        ...komisiRates,
+        updatedAt: new Date().toISOString()
+      });
+      setKomisiSaved(true);
+      showAlert("✅ Pengaturan komisi berhasil disimpan!");
+      setTimeout(() => setKomisiSaved(false), 3000);
+    } catch (error) {
+      showAlert("❌ Gagal menyimpan komisi: " + error.message);
+    }
+    setSavingKomisi(false);
+  };
 
   // 🔥 FETCH GOOGLE FORM SETTINGS
   useEffect(() => {
@@ -98,18 +183,47 @@ const TeacherSalaries = () => {
         const nominal = parseInt(log.nominal || 0);
         grandTotal += nominal;
         if (!guruMap[log.teacherId]) {
-          guruMap[log.teacherId] = { id: log.teacherId, nama: log.namaGuru || "Tanpa Nama", totalGaji: 0, totalSesi: 0, rincian: [] };
+          guruMap[log.teacherId] = { id: log.teacherId, nama: log.namaGuru || "Tanpa Nama", totalGaji: 0, totalSesi: 0, rincian: [], pendingCount: 0, punyaLog: true };
         }
         guruMap[log.teacherId].totalGaji += nominal;
         if (log.program !== "BONUS/TAMBAHAN") guruMap[log.teacherId].totalSesi += 1;
+        if (log.status !== "Valid / Sudah Terekap") guruMap[log.teacherId].pendingCount += 1;
         guruMap[log.teacherId].rincian.push(log);
       });
 
+      // 🔥 BARU: cross-reference ke master guru -- guru yang GAK ADA di
+      // guruMap (belum punya log sama sekali di periode ini) tetap
+      // dimasukkan, supaya gak hilang dari pandangan admin. Ditandai
+      // `punyaLog: false` biar tampilannya beda (guru baru/belum ada
+      // aktivitas, bukan "0 sesi" yang bisa disalahartikan error).
+      teachersMaster.forEach(t => {
+        if (!guruMap[t.id]) {
+          guruMap[t.id] = {
+            id: t.id,
+            nama: t.nama || t.namaLengkap || "Tanpa Nama",
+            totalGaji: 0,
+            totalSesi: 0,
+            rincian: [],
+            pendingCount: 0,
+            punyaLog: false,
+            // ⚠️ ASUMSI field status akun guru -- sesuaikan kalau beda
+            akunStatus: t.status || t.statusApproval || null,
+          };
+        } else {
+          guruMap[t.id].akunStatus = t.status || t.statusApproval || null;
+        }
+      });
+
+      const rekapList = Object.values(guruMap);
+      const totalPendingAll = rekapList.reduce((sum, g) => sum + g.pendingCount, 0);
+      const teacherWithPendingCount = rekapList.filter(g => g.pendingCount > 0).length;
+
       setTotalPengeluaran(grandTotal);
-      setRekap(Object.values(guruMap));
+      setRekap(rekapList);
+      setPendingSummary({ totalPending: totalPendingAll, teacherCount: teacherWithPendingCount });
       
       if (viewDetail) {
-        const updated = Object.values(guruMap).find(g => g.id === viewDetail.id);
+        const updated = rekapList.find(g => g.id === viewDetail.id);
         if (updated) setViewDetail(updated);
         else setViewDetail(null);
       }
@@ -117,7 +231,7 @@ const TeacherSalaries = () => {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchData(); }, [startDate, endDate]);
+  useEffect(() => { fetchData(); }, [startDate, endDate, teachersMaster]);
 
   // ============================================================
   // 🔥 HANDLE: TAMBAH BONUS
@@ -293,6 +407,18 @@ const TeacherSalaries = () => {
             <p style={styles.subtitle(isMobile)}>Kelola honor berdasarkan jenjang dan durasi mengajar.</p>
           </div>
           <div style={{display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap'}}>
+            {/* 🔥 BARU: tombol Pengaturan Komisi -- HANYA muncul kalau
+                isOwner true. Admin biasa (bukan owner) gak akan lihat
+                tombol ini sama sekali, bukan cuma disembunyikan tapi
+                tetap ada di DOM -- benar-benar gak dirender. */}
+            {isOwner && (
+              <button 
+                onClick={() => setShowKomisiSettings(!showKomisiSettings)} 
+                style={styles.btnKomisiSettings(isMobile)}
+              >
+                <DollarSign size={14} /> {isMobile ? 'Komisi' : 'Pengaturan Komisi'}
+              </button>
+            )}
             <button 
               onClick={() => setShowFormSettings(!showFormSettings)} 
               style={styles.btnGoogleForm(isMobile)}
@@ -392,6 +518,111 @@ const TeacherSalaries = () => {
           </div>
         )}
 
+        {/* 🔥 BARU: PANEL PENGATURAN KOMISI -- terkunci owner. Dicek
+            DUA KALI (isOwner di kondisi render DAN di handleSaveKomisiRates
+            itu sendiri) -- kalau kamu punya cara verifikasi role yang
+            lebih kuat (mis. Firestore security rules), pastikan itu
+            JUGA menolak tulisan ke settings/komisi_rates dari akun
+            non-owner, karena pengecekan di frontend ini gampang
+            dilewati orang yang paham DevTools. Ini lapis pertama
+            (UX), bukan lapis keamanan satu-satunya. */}
+        {isOwner && showKomisiSettings && (
+          <div style={styles.formSettingsCard}>
+            <div style={styles.formSettingsHeader}>
+              <h4 style={styles.formSettingsTitle}><DollarSign size={18} /> Pengaturan Komisi/Tarif Guru</h4>
+              <button 
+                onClick={() => setShowKomisiSettings(false)} 
+                style={styles.formSettingsClose}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <p style={styles.formSettingsDesc}>
+              Atur tarif komisi per sesi berdasarkan jenjang. Nominal per sesi tetap bisa diedit manual di rincian
+              (untuk kasus khusus), tapi angka di sini jadi acuan/default. Hanya owner yang bisa mengubah ini.
+            </p>
+            
+            <div style={styles.formGrid}>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>📚 SD (per sesi)</label>
+                <input 
+                  type="number" 
+                  placeholder="Rp 0" 
+                  value={komisiRates.sd || ''}
+                  onChange={(e) => setKomisiRates(prev => ({...prev, sd: e.target.value}))}
+                  style={styles.formInput}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>📚 SMP (per sesi)</label>
+                <input 
+                  type="number" 
+                  placeholder="Rp 0" 
+                  value={komisiRates.smp || ''}
+                  onChange={(e) => setKomisiRates(prev => ({...prev, smp: e.target.value}))}
+                  style={styles.formInput}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>📚 SMA (per sesi)</label>
+                <input 
+                  type="number" 
+                  placeholder="Rp 0" 
+                  value={komisiRates.sma || ''}
+                  onChange={(e) => setKomisiRates(prev => ({...prev, sma: e.target.value}))}
+                  style={styles.formInput}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>🇬🇧 English (per sesi)</label>
+                <input 
+                  type="number" 
+                  placeholder="Rp 0" 
+                  value={komisiRates.english || ''}
+                  onChange={(e) => setKomisiRates(prev => ({...prev, english: e.target.value}))}
+                  style={styles.formInput}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>🔗 Default (Semua Jenjang Lain)</label>
+                <input 
+                  type="number" 
+                  placeholder="Rp 0" 
+                  value={komisiRates.default || ''}
+                  onChange={(e) => setKomisiRates(prev => ({...prev, default: e.target.value}))}
+                  style={styles.formInput}
+                />
+              </div>
+            </div>
+            
+            <div style={styles.formActions}>
+              <button 
+                onClick={handleSaveKomisiRates} 
+                disabled={savingKomisi}
+                style={{
+                  ...styles.btnSaveForm,
+                  opacity: savingKomisi ? 0.6 : 1,
+                  background: komisiSaved ? '#10b981' : '#3b82f6'
+                }}
+              >
+                {savingKomisi ? '⏳ Menyimpan...' : komisiSaved ? '✅ Tersimpan' : <><Save size={16} /> Simpan Tarif</>}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 🔥 BARU: BANNER PERINGATAN PENDING -- FIX "posisi sekarang
+            kira-kira dan lupa". Muncul cuma kalau ada yang pending. */}
+        {pendingSummary.totalPending > 0 && (
+          <div style={styles.pendingBanner}>
+            <span style={{fontSize: 18}}>⚠️</span>
+            <span>
+              <b>{pendingSummary.totalPending} log</b> dari <b>{pendingSummary.teacherCount} guru</b> masih menunggu validasi pada periode ini.
+              Klik "Rincian" pada baris guru yang bertanda 🔶 di bawah untuk memeriksa.
+            </span>
+          </div>
+        )}
+
         {/* Filter */}
         <div style={styles.filterRow(isMobile)}>
           <div style={styles.filterGroup}>
@@ -427,7 +658,20 @@ const TeacherSalaries = () => {
                 <tbody>
                   {rekap.map(g => (
                     <tr key={g.id} style={styles.tr}>
-                      <td style={styles.td}><b>{g.nama}</b></td>
+                      <td style={styles.td}>
+                        <b>{g.nama}</b>
+                        {/* 🔥 BARU: badge pending -- muncul kalau guru ini
+                            punya log yang belum divalidasi. */}
+                        {g.pendingCount > 0 && (
+                          <span style={styles.badgePending}> 🔶 {g.pendingCount} pending</span>
+                        )}
+                        {/* 🔥 BARU: tanda guru yang belum punya log sama
+                            sekali di periode ini -- FIX BUG "guru belum
+                            divalidasi gak muncul". */}
+                        {!g.punyaLog && (
+                          <div style={styles.noLogNote}>Belum ada sesi tercatat pada periode ini{g.akunStatus ? ` · status akun: ${g.akunStatus}` : ''}</div>
+                        )}
+                      </td>
                       <td style={styles.td}>{g.totalSesi} Sesi</td>
                       <td style={styles.td}><b style={{color: '#10b981'}}>Rp {g.totalGaji.toLocaleString()}</b></td>
                       <td style={styles.td}>
@@ -455,7 +699,22 @@ const TeacherSalaries = () => {
               <div style={{maxHeight: isMobile ? '50vh' : '500px', overflowY: 'auto'}}>
                 <table style={{width:'100%', borderCollapse:'collapse', fontSize: isMobile ? 11 : 13}}>
                   <thead style={{background:'#f8fafc', position:'sticky', top:0, zIndex:1}}>
-                    <tr><th style={styles.thSmall}>Tanggal</th><th style={styles.thSmall}>Program</th><th style={styles.thSmall}>Detail</th><th style={styles.thSmall}>Nominal</th><th style={styles.thSmall}>Status</th></tr>
+                    <tr>
+                      <th style={styles.thSmall}>Tanggal</th>
+                      <th style={styles.thSmall}>Program</th>
+                      <th style={styles.thSmall}>Detail</th>
+                      {/* 🔥 BARU: kolom cross-check -- kelas, siswa hadir,
+                          foto absensi. Ditampilkan DEFENSIF: kalau field
+                          ini belum ada di dokumen log (karena penulisannya
+                          di ClassSession.jsx belum diupdate), tampil "-"
+                          bukan error/kosong membingungkan. */}
+                      <th style={styles.thSmall}>Kelas</th>
+                      <th style={styles.thSmall}>Tipe</th>
+                      <th style={styles.thSmall}>Siswa Hadir</th>
+                      <th style={styles.thSmall}>Foto Absensi</th>
+                      <th style={styles.thSmall}>Nominal</th>
+                      <th style={styles.thSmall}>Status</th>
+                    </tr>
                   </thead>
                   <tbody>
                     {viewDetail.rincian.sort((a,b) => (b.tanggal || '').localeCompare(a.tanggal || '')).map((log) => {
@@ -466,6 +725,22 @@ const TeacherSalaries = () => {
                           <td style={styles.tdSmall}><b>{log.tanggal}</b><br/><span style={{fontSize: 10, color: '#94a3b8'}}>{log.waktu || '-'}</span></td>
                           <td style={styles.tdSmall}><span style={{color: log.program === 'BONUS/TAMBAHAN' ? '#f59e0b' : '#3b82f6', fontWeight:'bold', fontSize: isMobile ? 10 : 12}}>{log.program || 'Kegiatan'}</span></td>
                           <td style={styles.tdSmall}><small style={{color: '#64748b'}}>{log.detail}</small></td>
+                          <td style={styles.tdSmall}>{log.kelasNama || <span style={{color:'#cbd5e1'}}>-</span>}</td>
+                          <td style={styles.tdSmall}>
+                            {log.tipeKelas === 'online' ? (
+                              <span style={{fontSize:10, fontWeight:700, color:'#7c3aed', background:'#f5f3ff', padding:'2px 8px', borderRadius:10}}>💻 Online</span>
+                            ) : log.tipeKelas === 'reguler' ? (
+                              <span style={{fontSize:10, fontWeight:700, color:'#0369a1', background:'#eff6ff', padding:'2px 8px', borderRadius:10}}>🏫 Reguler</span>
+                            ) : <span style={{color:'#cbd5e1'}}>-</span>}
+                          </td>
+                          <td style={styles.tdSmall}>{log.siswaHadir != null ? `${log.siswaHadir} siswa` : <span style={{color:'#cbd5e1'}}>-</span>}</td>
+                          <td style={styles.tdSmall}>
+                            {log.fotoAbsensiUrl ? (
+                              <a href={log.fotoAbsensiUrl} target="_blank" rel="noopener noreferrer">
+                                <img src={log.fotoAbsensiUrl} alt="Foto absensi" style={styles.thumbFoto} />
+                              </a>
+                            ) : <span style={{color:'#cbd5e1'}}>-</span>}
+                          </td>
                           <td style={styles.tdSmall}>
                             <input 
                               type="number" 
@@ -492,7 +767,7 @@ const TeacherSalaries = () => {
                         </tr>
                         {activeBonusId === log.id && (
                           <tr style={{background:'#fffbeb'}}>
-                            <td colSpan="5" style={{padding:10}}>
+                            <td colSpan="9" style={{padding:10}}>
                               <div style={{display:'flex', gap:8, alignItems:'center', flexWrap:'wrap'}}>
                                 <b style={{fontSize:11}}>TAMBAH BONUS:</b>
                                 <input 
@@ -560,6 +835,60 @@ const styles = {
     alignItems: 'center', 
     gap: 4 
   }),
+
+  // 🔥 BARU
+  btnKomisiSettings: (m) => ({
+    background: '#0f172a',
+    color: 'white',
+    border: 'none',
+    padding: m ? '8px 12px' : '10px 16px',
+    borderRadius: 8,
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: m ? 11 : 12,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4
+  }),
+
+  pendingBanner: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: 10,
+    background: '#fffbeb',
+    border: '1px solid #fde68a',
+    color: '#92400e',
+    padding: '12px 16px',
+    borderRadius: 12,
+    marginBottom: 16,
+    fontSize: 13,
+  },
+
+  badgePending: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: '#b45309',
+    background: '#fffbeb',
+    padding: '2px 8px',
+    borderRadius: 10,
+    marginLeft: 6,
+  },
+
+  noLogNote: {
+    fontSize: 11,
+    color: '#94a3b8',
+    marginTop: 2,
+    fontStyle: 'italic',
+  },
+
+  thumbFoto: {
+    width: 40,
+    height: 40,
+    objectFit: 'cover',
+    borderRadius: 6,
+    border: '1px solid #e2e8f0',
+    cursor: 'pointer',
+  },
   
   formSettingsCard: {
     background: 'white',

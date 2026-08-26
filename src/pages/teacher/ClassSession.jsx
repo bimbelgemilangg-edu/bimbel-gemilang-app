@@ -7,7 +7,10 @@ import {
   onSnapshot, query, where, updateDoc 
 } from "firebase/firestore";
 import { QRCodeSVG } from 'qrcode.react';
-import { QrCode, ArrowLeft, ExternalLink } from 'lucide-react';
+import { QrCode, ArrowLeft, ExternalLink, Camera, Upload, CheckCircle, Paperclip } from 'lucide-react';
+// 🔥 BARU: dipakai buat upload foto/screenshot bukti kehadiran & lampiran
+// materi ke Supabase Storage (bucket yang sama dengan materi e-learning).
+import { uploadElearningFile } from '../../services/uploadService';
 
 const ClassSession = () => {
   const { id } = useParams();
@@ -22,6 +25,33 @@ const ClassSession = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [salaryRules, setSalaryRules] = useState(null);
   const [timeStatus, setTimeStatus] = useState({ isPastEnd: false, remaining: '' });
+
+  // ============================================================
+  // 🔥 BARU: TIPE KELAS & BUKTI KEHADIRAN
+  // ============================================================
+  // `tipeKelas` dipilih guru SENDIRI di awal sesi (bukan properti tetap
+  // jadwal) -- karena kelas yang biasanya tatap muka bisa berubah jadi
+  // online sewaktu-waktu (mis. pas tanggal merah). Berdasarkan pilihan
+  // ini, bukti kehadiran yang diminta berbeda:
+  // - "reguler" -> WAJIB foto kamera langsung (pakai capture="environment",
+  //   buka kamera HP langsung, bukan pilih dari galeri -- supaya beneran
+  //   foto real-time, bukan foto lama yang di-upload ulang)
+  // - "online"  -> WAJIB screenshot sesi video call (boleh dari galeri,
+  //   karena screenshot itu sendiri sudah bukti waktu real dari aplikasi
+  //   meeting-nya)
+  // Foto/screenshot ini WAJIB (menggerbangi tombol lanjut ke Step 2) --
+  // gak bisa diskip, sesuai keputusan eksplisit soal ini.
+  const [tipeKelas, setTipeKelas] = useState('reguler');
+  const [absensiPreviewUrl, setAbsensiPreviewUrl] = useState('');
+  const [absensiUploadedUrl, setAbsensiUploadedUrl] = useState('');
+  const [uploadingAbsensi, setUploadingAbsensi] = useState(false);
+  const [absensiError, setAbsensiError] = useState('');
+
+  // 🔥 BARU: lampiran materi (opsional) -- buat tracking "tentor sudah
+  // upload materi hari ini atau belum" yang bisa dipantau admin dari
+  // TeacherSalaries.jsx (field materiFileUrl per log).
+  const [materiFileUploadedUrl, setMateriFileUploadedUrl] = useState('');
+  const [uploadingMateriFile, setUploadingMateriFile] = useState(false);
   
   // 🔥 STATE UNTUK GOOGLE FORM
   const [googleForms, setGoogleForms] = useState({
@@ -182,6 +212,55 @@ const ClassSession = () => {
     return () => unsubscribe();
   }, [schedule]);
 
+  // ============================================================
+  // 🔥 BARU: HANDLE UPLOAD FOTO/SCREENSHOT ABSENSI (WAJIB)
+  // ============================================================
+  const handleAbsensiFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAbsensiError('');
+    setUploadingAbsensi(true);
+
+    // Preview lokal dulu (biar guru langsung lihat apa yang dia pilih,
+    // gak perlu nunggu upload selesai buat lihat previewnya).
+    const localPreview = URL.createObjectURL(file);
+    setAbsensiPreviewUrl(localPreview);
+
+    try {
+      const result = await uploadElearningFile(file, 'absensi-guru');
+      if (result.success) {
+        setAbsensiUploadedUrl(result.downloadURL);
+      } else {
+        setAbsensiError('Gagal upload: ' + (result.error || 'Terjadi kesalahan.'));
+        setAbsensiUploadedUrl('');
+      }
+    } catch (err) {
+      setAbsensiError('Gagal upload: ' + err.message);
+      setAbsensiUploadedUrl('');
+    }
+    setUploadingAbsensi(false);
+  };
+
+  // 🔥 BARU: HANDLE UPLOAD LAMPIRAN MATERI (OPSIONAL)
+  const handleMateriFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingMateriFile(true);
+    try {
+      const result = await uploadElearningFile(file, 'lampiran-materi-harian');
+      if (result.success) {
+        setMateriFileUploadedUrl(result.downloadURL);
+      } else {
+        alert('Gagal upload lampiran: ' + (result.error || 'Terjadi kesalahan.'));
+      }
+    } catch (err) {
+      alert('Gagal upload lampiran: ' + err.message);
+    }
+    setUploadingMateriFile(false);
+  };
+
   // 🔥 TOGGLE SISWA
   const toggleStudent = async (student) => {
     if (!schedule || !teacher) return;
@@ -289,6 +368,20 @@ const ClassSession = () => {
   // 🔥 FINALIZE CLASS + REDIRECT GOOGLE FORM
   const handleFinalizeClass = async () => {
     if (!materiAktual) return alert("Mohon isi materi yang diajarkan!");
+
+    // 🔥 BARU: GERBANG WAJIB -- gak bisa finalize tanpa bukti kehadiran
+    // ter-upload. Ini pengecekan CADANGAN (tombol lanjut ke Step 2 di
+    // Step 1 sudah di-disable duluan kalau belum ada foto), tapi tetap
+    // dicek lagi di sini jaga-jaga ada state yang gak sinkron.
+    if (!absensiUploadedUrl) {
+      alert(
+        tipeKelas === 'online'
+          ? '⚠️ Screenshot sesi online wajib diunggah dulu sebelum kelas bisa diakhiri.'
+          : '⚠️ Foto kehadiran wajib diunggah dulu sebelum kelas bisa diakhiri.'
+      );
+      setStep(1);
+      return;
+    }
     
     // 🔥 CEK APAKAH SUDAH MELEWATI JAM SELESAI
     const now = new Date();
@@ -376,7 +469,15 @@ const ClassSession = () => {
         durasiJam: diffHours, 
         nominal: honorData.nominal,
         status: honorData.statusGaji, 
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        // 🔥 BARU: field cross-check buat admin (TeacherSalaries.jsx) --
+        // nama field disamakan PERSIS dengan yang sudah dibaca di sana,
+        // supaya begitu ini di-deploy, data langsung kelihatan di
+        // halaman gaji tanpa perlu sentuh kode itu lagi.
+        tipeKelas: tipeKelas, // 'reguler' atau 'online'
+        kelasNama: schedule.title || "Umum",
+        fotoAbsensiUrl: absensiUploadedUrl,
+        materiFileUrl: materiFileUploadedUrl || null,
       });
 
       // 🔥 3. UPDATE STATUS JADWAL
@@ -479,7 +580,82 @@ const ClassSession = () => {
       </div>
 
       {step === 1 && (
-        <div style={styles.gridContainer(isMobile)}>
+        <div>
+          {/* ============================================================
+              🔥 BARU: TIPE KELAS + BUKTI KEHADIRAN WAJIB
+              ============================================================
+              Ditaruh PALING ATAS Step 1 -- ini gerbang pertama sebelum
+              guru bisa lanjut ke pencatatan siswa & laporan materi.
+          ============================================================ */}
+          <div style={styles.card(isMobile)}>
+            <h4 style={styles.cardTitle}><Camera size={18} /> Bukti Kehadiran Mengajar</h4>
+
+            <div style={styles.tipeKelasRow(isMobile)}>
+              <button
+                type="button"
+                onClick={() => { setTipeKelas('reguler'); setAbsensiUploadedUrl(''); setAbsensiPreviewUrl(''); }}
+                style={styles.tipeKelasBtn(tipeKelas === 'reguler')}
+              >
+                🏫 Reguler (Tatap Muka)
+              </button>
+              <button
+                type="button"
+                onClick={() => { setTipeKelas('online'); setAbsensiUploadedUrl(''); setAbsensiPreviewUrl(''); }}
+                style={styles.tipeKelasBtn(tipeKelas === 'online')}
+              >
+                💻 Online
+              </button>
+            </div>
+
+            <p style={styles.absensiHint(isMobile)}>
+              {tipeKelas === 'online'
+                ? 'Kelas online tetap WAJIB ada bukti -- unggah screenshot sesi video call (Zoom/Meet/WA Video) yang menunjukkan wajah Anda dan waktu sesi. Ini juga berlaku untuk kelas online di hari libur/tanggal merah.'
+                : 'Ambil foto langsung dari kamera sebagai bukti Anda hadir di lokasi mengajar hari ini.'}
+            </p>
+
+            {!absensiUploadedUrl ? (
+              <label style={styles.uploadBox(isMobile, uploadingAbsensi)}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  {...(tipeKelas === 'reguler' ? { capture: 'environment' } : {})}
+                  onChange={handleAbsensiFileChange}
+                  disabled={uploadingAbsensi}
+                  style={{ display: 'none' }}
+                />
+                {uploadingAbsensi ? (
+                  <>⏳ Mengunggah...</>
+                ) : (
+                  <>
+                    {tipeKelas === 'reguler' ? <Camera size={18} /> : <Upload size={18} />}
+                    {tipeKelas === 'reguler' ? ' Ambil Foto Kehadiran' : ' Unggah Screenshot Sesi Online'}
+                  </>
+                )}
+              </label>
+            ) : (
+              <div style={styles.absensiSuccessBox(isMobile)}>
+                {absensiPreviewUrl && (
+                  <img src={absensiPreviewUrl} alt="Bukti kehadiran" style={styles.absensiThumb} />
+                )}
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#10b981', fontWeight: 'bold', fontSize: isMobile ? 12 : 13 }}>
+                    <CheckCircle size={16} /> Bukti kehadiran tersimpan
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setAbsensiUploadedUrl(''); setAbsensiPreviewUrl(''); }}
+                    style={styles.btnGantiFoto}
+                  >
+                    Ganti foto
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {absensiError && <p style={styles.absensiErrorText}>{absensiError}</p>}
+          </div>
+
+          <div style={styles.gridContainer(isMobile)}>
           <div style={styles.card(isMobile)}>
             <h4 style={styles.cardTitle}><QrCode size={18} /> Scan Absensi</h4>
             <div style={styles.qrWrapper}>
@@ -523,9 +699,18 @@ const ClassSession = () => {
                 );
               })}
             </div>
-            <button onClick={() => setStep(2)} style={styles.btnMain(isMobile)}>
-              Selesai & Buat Laporan ⮕
+            <button
+              onClick={() => setStep(2)}
+              disabled={!absensiUploadedUrl}
+              style={{
+                ...styles.btnMain(isMobile),
+                ...(absensiUploadedUrl ? {} : styles.btnDisabled),
+              }}
+              title={!absensiUploadedUrl ? 'Unggah bukti kehadiran dulu di atas' : undefined}
+            >
+              {absensiUploadedUrl ? 'Selesai & Buat Laporan ⮕' : '🔒 Unggah bukti kehadiran dulu'}
             </button>
+          </div>
           </div>
         </div>
       )}
@@ -540,6 +725,30 @@ const ClassSession = () => {
             placeholder="Tuliskan materi yang diajarkan hari ini..." 
             style={styles.textarea(isMobile)} 
           />
+
+          {/* 🔥 BARU: lampiran materi (opsional) -- foto whiteboard,
+              worksheet, dll. Dipakai admin buat tracking "tentor sudah
+              upload materi hari ini". */}
+          <div style={styles.lampiranBox(isMobile)}>
+            {!materiFileUploadedUrl ? (
+              <label style={styles.uploadBoxSecondary(isMobile, uploadingMateriFile)}>
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={handleMateriFileChange}
+                  disabled={uploadingMateriFile}
+                  style={{ display: 'none' }}
+                />
+                {uploadingMateriFile ? '⏳ Mengunggah lampiran...' : <><Paperclip size={16} /> Lampirkan foto materi/worksheet (opsional)</>}
+              </label>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#10b981', fontWeight: 'bold', fontSize: isMobile ? 11 : 12 }}>
+                <CheckCircle size={14} /> Lampiran materi tersimpan
+                <button type="button" onClick={() => setMateriFileUploadedUrl('')} style={styles.btnGantiFoto}>Ganti</button>
+              </div>
+            )}
+          </div>
+
           <div style={styles.footerBtns(isMobile)}>
             <button onClick={() => setStep(1)} style={styles.btnSecondary(isMobile)}>
               ⬅ Kembali
@@ -756,7 +965,111 @@ const styles = {
     fontWeight: 'bold', 
     cursor: loading ? 'not-allowed' : 'pointer', 
     fontSize: m ? '12px' : '14px' 
-  })
+  }),
+
+  // 🔥 BARU: styles buat tipe kelas + upload bukti kehadiran
+  tipeKelasRow: (m) => ({
+    display: 'flex',
+    gap: 8,
+    marginBottom: 12,
+    flexDirection: m ? 'column' : 'row',
+  }),
+
+  tipeKelasBtn: (active) => ({
+    flex: 1,
+    padding: '10px 14px',
+    borderRadius: 10,
+    border: active ? '2px solid #3498db' : '1px solid #e2e8f0',
+    background: active ? '#ebf5fb' : 'white',
+    color: active ? '#3498db' : '#64748b',
+    fontWeight: 'bold',
+    fontSize: 13,
+    cursor: 'pointer',
+  }),
+
+  absensiHint: (m) => ({
+    fontSize: m ? 11 : 12,
+    color: '#64748b',
+    marginBottom: 12,
+    lineHeight: 1.5,
+  }),
+
+  uploadBox: (m, loading) => ({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: m ? '14px' : '16px',
+    borderRadius: 10,
+    border: '2px dashed #3498db',
+    color: '#3498db',
+    fontWeight: 'bold',
+    fontSize: m ? 12 : 13,
+    cursor: loading ? 'not-allowed' : 'pointer',
+    opacity: loading ? 0.6 : 1,
+    background: '#f8fbff',
+  }),
+
+  uploadBoxSecondary: (m, loading) => ({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    padding: '10px',
+    borderRadius: 8,
+    border: '1px dashed #cbd5e1',
+    color: '#64748b',
+    fontWeight: 600,
+    fontSize: m ? 11 : 12,
+    cursor: loading ? 'not-allowed' : 'pointer',
+    opacity: loading ? 0.6 : 1,
+  }),
+
+  absensiSuccessBox: (m) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    padding: 10,
+    borderRadius: 10,
+    border: '1px solid #bbf7d0',
+    background: '#f0fdf4',
+  }),
+
+  absensiThumb: {
+    width: 56,
+    height: 56,
+    objectFit: 'cover',
+    borderRadius: 8,
+    border: '1px solid #e2e8f0',
+  },
+
+  btnGantiFoto: {
+    marginTop: 4,
+    background: 'none',
+    border: 'none',
+    color: '#3498db',
+    fontSize: 11,
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    textDecoration: 'underline',
+    padding: 0,
+  },
+
+  absensiErrorText: {
+    color: '#ef4444',
+    fontSize: 12,
+    marginTop: 8,
+  },
+
+  btnDisabled: {
+    background: '#cbd5e1',
+    color: '#64748b',
+    cursor: 'not-allowed',
+  },
+
+  lampiranBox: (m) => ({
+    marginBottom: 16,
+  }),
 };
 
 export default ClassSession;
