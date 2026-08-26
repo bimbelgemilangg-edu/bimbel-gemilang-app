@@ -63,22 +63,31 @@
 //   email, TANPA kartu kredit -- sudah kamu siapkan)
 //
 // OPTIONAL:
-// NVIDIA_MODEL=meta/llama-4-maverick-17b-128e-instruct
-//   (⚠️ FIX Agustus 2026: model lama `qwen/qwen2.5-72b-instruct` SUDAH
-//   DIHAPUS TOTAL dari katalog NVIDIA Build (dikonfirmasi langsung di
-//   build.nvidia.com -- bukan cuma di-deprecate, sudah tidak listed
-//   sama sekali), makanya semua request gagal dengan providerStatus
-//   404 "404 page not found". Diganti ke Llama 4 Maverick 17B-128E-
-//   Instruct: terverifikasi masih berstatus "Free Endpoint" aktif per
-//   Agustus 2026, model MoE general purpose & multilingual, model
-//   INSTRUCT biasa (BUKAN reasoning -- jadi tetap aman dari jebakan
-//   `chat_template_kwargs` yang dibutuhkan DeepSeek-R1/V4 dkk).
-//   Alternatif Free Endpoint lain yang masih aktif tapi jauh lebih
-//   kecil: qwen/qwen2-7b-instruct (Qwen2 lama, 7B). Kalau suatu saat
-//   model ini juga hilang dari katalog, cek ulang status "Free
-//   Endpoint" vs "Downloadable" di build.nvidia.com sebelum ganti --
-//   "Downloadable" berarti TIDAK bisa dipanggil gratis lewat endpoint
-//   hosted ini lagi.)
+// NVIDIA_MODEL=mistralai/mistral-medium-3-instruct
+//   (⚠️ FIX Agustus 2026 (revisi ke-2): katalog NVIDIA Build ternyata
+//   berubah SANGAT SERING -- dua model default sebelumnya sudah mati:
+//   `qwen/qwen2.5-72b-instruct` dihapus total dari katalog (404), lalu
+//   penggantinya `meta/llama-4-maverick-17b-128e-instruct` ternyata
+//   SUDAH REACHED END-OF-LIFE per 2026-07-27 (410 Gone). Supaya file
+//   ini gak perlu direvisi manual tiap kali NVIDIA pensiunin model
+//   lagi, sekarang dipasang MEKANISME FALLBACK OTOMATIS (lihat
+//   `NVIDIA_MODEL_FALLBACKS` & `callNvidiaWithFallback` di bawah):
+//   kalau model utama merespons 404/410 (artinya model itu sendiri
+//   yang sudah hilang/dimatikan, BUKAN error lain seperti rate limit
+//   atau server error), kode otomatis coba model berikutnya di daftar
+//   cadangan, TANPA butuh deploy ulang.
+//
+//   Model utama sekarang: mistralai/mistral-medium-3-instruct --
+//   terverifikasi "Free Endpoint" aktif per Agustus 2026, model
+//   INSTRUCT biasa (BUKAN mode reasoning tersembunyi), multibahasa,
+//   kuat matematika & coding.
+//
+//   Cadangan (urutan dicoba kalau yang di atas mati): lihat
+//   NVIDIA_MODEL_FALLBACKS. Kalau SEMUA model di daftar ini juga
+//   sudah mati suatu saat, cek ulang status "Free Endpoint" (bisa
+//   dipanggil gratis) vs "Downloadable" (HARUS deploy sendiri, TIDAK
+//   gratis lewat endpoint hosted ini) di build.nvidia.com, lalu
+//   perbarui daftarnya.)
 //
 // ============================================================
 
@@ -93,7 +102,21 @@ const NVIDIA_API_URL =
 
 const NVIDIA_MODEL =
   process.env.NVIDIA_MODEL ||
-  'meta/llama-4-maverick-17b-128e-instruct';
+  'mistralai/mistral-medium-3-instruct';
+
+// 🔥 BARU: daftar model cadangan, dicoba SATU PER SATU secara berurutan
+// hanya kalau model sebelumnya gagal karena SUDAH TIDAK ADA lagi di
+// katalog (404) atau SUDAH PENSIUN (410) -- bukan karena rate limit,
+// timeout, atau error lain (itu jenis error yang gak akan hilang cuma
+// dengan ganti model). Semua entri di sini terverifikasi berstatus
+// "Free Endpoint" di build.nvidia.com per Agustus 2026, dan semuanya
+// model INSTRUCT biasa (bukan reasoning tersembunyi seperti DeepSeek-
+// R1/V4 yang butuh parameter chat_template_kwargs khusus).
+const NVIDIA_MODEL_FALLBACKS = [
+  'mistralai/mistral-small-3.1-24b-instruct-2503',
+  'mistralai/mistral-nemotron',
+  'qwen/qwen2-7b-instruct',
+];
 
 const DEFAULT_QUESTION_COUNT = 10;
 const MAX_QUESTION_COUNT = 20;
@@ -3156,7 +3179,17 @@ async function callNvidia({
   userPrompt,
   maxTokens,
   enableBrowserSearch,
+  model,
 }) {
+  // 🔥 BARU: `model` sekarang parameter (bukan cuma baca konstanta
+  // NVIDIA_MODEL langsung) supaya callNvidiaWithFallback() bisa
+  // memanggil fungsi ini berkali-kali dengan model berbeda-beda.
+  // Default ke NVIDIA_MODEL kalau caller lama gak mengirim `model`
+  // (jaga kompatibilitas).
+  const modelToUse =
+    model ||
+    NVIDIA_MODEL;
+
   const controller =
     new AbortController();
 
@@ -3189,7 +3222,7 @@ async function callNvidia({
 
           body: JSON.stringify({
             model:
-              NVIDIA_MODEL,
+              modelToUse,
 
             messages: [
               {
@@ -3299,6 +3332,9 @@ async function callNvidia({
         ) ||
         null;
 
+      error.attemptedModel =
+        modelToUse;
+
       throw error;
     }
 
@@ -3327,6 +3363,9 @@ async function callNvidia({
       error.providerMessage =
         'choices[0].message.content tidak tersedia.';
 
+      error.attemptedModel =
+        modelToUse;
+
       throw error;
     }
 
@@ -3339,7 +3378,7 @@ async function callNvidia({
 
       model:
         data?.model ||
-        NVIDIA_MODEL,
+        modelToUse,
 
       finishReason:
         data
@@ -3373,7 +3412,18 @@ async function callNvidia({
       timeoutError.code =
         'NVIDIA_TIMEOUT';
 
+      timeoutError.attemptedModel =
+        modelToUse;
+
       throw timeoutError;
+    }
+
+    if (
+      error &&
+      !error.attemptedModel
+    ) {
+      error.attemptedModel =
+        modelToUse;
     }
 
     throw error;
@@ -3383,6 +3433,128 @@ async function callNvidia({
       timeoutId,
     );
   }
+}
+
+// 🔥 BARU: apakah error ini berarti MODEL-nya sendiri yang sudah tidak
+// tersedia (dihapus dari katalog / pensiun), BUKAN jenis error lain
+// (rate limit, timeout, server error, dll) yang gak akan hilang cuma
+// dengan ganti model. Kalau true, callNvidiaWithFallback lanjut coba
+// model berikutnya di daftar; kalau false, error langsung dilempar ke
+// pemanggil (gak ada gunanya coba model lain).
+function isModelUnavailableError(
+  error,
+) {
+  const status =
+    error?.providerStatus;
+
+  if (
+    status === 404 ||
+    status === 410
+  ) {
+    return true;
+  }
+
+  if (status === 400) {
+    const msg =
+      String(
+        error?.providerMessage ||
+          '',
+      ).toLowerCase();
+
+    if (
+      msg.includes('model') &&
+      (msg.includes(
+        'not found',
+      ) ||
+        msg.includes(
+          'does not exist',
+        ) ||
+        msg.includes(
+          'unknown',
+        ) ||
+        msg.includes(
+          'invalid',
+        ))
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// 🔥 BARU: wrapper di atas callNvidia() yang otomatis mencoba daftar
+// model cadangan (NVIDIA_MODEL_FALLBACKS) secara berurutan kalau model
+// yang sedang dicoba ternyata sudah tidak tersedia lagi (404/410).
+// Tujuannya: kalau NVIDIA pensiunin satu model lagi di masa depan
+// (sudah kejadian 2x dalam sebulan terakhir -- Qwen 72B lalu Llama 4
+// Maverick), sistem TETAP JALAN tanpa perlu edit kode/env var manual
+// dulu, sampai semua model di daftar juga mati.
+async function callNvidiaWithFallback(
+  args,
+) {
+  const modelsToTry =
+    [
+      NVIDIA_MODEL,
+      ...NVIDIA_MODEL_FALLBACKS,
+    ].filter(
+      (m, i, arr) =>
+        m &&
+        arr.indexOf(m) === i,
+    );
+
+  let lastError = null;
+
+  for (
+    let i = 0;
+    i < modelsToTry.length;
+    i++
+  ) {
+    const model =
+      modelsToTry[i];
+
+    try {
+      const result =
+        await callNvidia({
+          ...args,
+          model,
+        });
+
+      if (i > 0) {
+        // 🔥 Beri tahu caller kalau ini hasil dari model fallback,
+        // BUKAN model utama -- supaya bisa dicatat di diagnostics
+        // response (transparan ke guru yang pakai fitur ini).
+        result.fallbackUsed = true;
+
+        result.fallbackFromModel =
+          modelsToTry[0];
+      }
+
+      return result;
+
+    } catch (error) {
+      lastError = error;
+
+      const isLastModel =
+        i ===
+        modelsToTry.length - 1;
+
+      if (
+        !isModelUnavailableError(
+          error,
+        ) ||
+        isLastModel
+      ) {
+        throw error;
+      }
+
+      console.warn(
+        `[Gemilang AI] Model '${model}' tidak tersedia (status ${error?.providerStatus}) -- mencoba model cadangan berikutnya: '${modelsToTry[i + 1]}'`,
+      );
+    }
+  }
+
+  throw lastError;
 }
 
 // ============================================================
@@ -3417,6 +3589,7 @@ function sendNvidiaError(
             AI_TIMEOUT_MS,
 
           model:
+            error?.attemptedModel ||
             NVIDIA_MODEL,
         },
       });
@@ -3451,6 +3624,7 @@ function sendNvidiaError(
             null,
 
           model:
+            error?.attemptedModel ||
             NVIDIA_MODEL,
         },
       });
@@ -3486,6 +3660,7 @@ function sendNvidiaError(
             null,
 
           model:
+            error?.attemptedModel ||
             NVIDIA_MODEL,
         },
       });
@@ -3524,6 +3699,7 @@ function sendNvidiaError(
             null,
 
           model:
+            error?.attemptedModel ||
             NVIDIA_MODEL,
 
         },
@@ -3551,6 +3727,7 @@ function sendNvidiaError(
           'Unknown error',
 
         model:
+          error?.attemptedModel ||
           NVIDIA_MODEL,
       },
     });
@@ -3830,7 +4007,7 @@ export default async function handler(
 
   try {
     aiResult =
-      await callNvidia({
+      await callNvidiaWithFallback({
         apiKey,
         systemPrompt,
         userPrompt,
@@ -3864,6 +4041,7 @@ export default async function handler(
           error?.code,
 
         model:
+          error?.attemptedModel ||
           NVIDIA_MODEL,
       },
     );
@@ -4112,6 +4290,17 @@ export default async function handler(
 
         modelUsed:
           aiResult.model,
+
+        // 🔥 BARU: transparan ke guru kalau model UTAMA (NVIDIA_MODEL)
+        // ternyata sudah tidak tersedia saat itu, dan sistem otomatis
+        // pindah ke model cadangan tanpa gagal total.
+        fallbackUsed:
+          aiResult.fallbackUsed ||
+          false,
+
+        fallbackFromModel:
+          aiResult.fallbackFromModel ||
+          null,
 
         finishReason:
           aiResult.finishReason,
