@@ -11,7 +11,7 @@
 //    ↓
 // LOCAL BLUEPRINT ENGINE
 //    ↓
-// NVIDIA BUILD API (CHAT COMPLETIONS)
+// GOOGLE GEMINI API (endpoint kompatibel-OpenAI)
 //    ↓
 // JSONL PARSER
 //    ↓
@@ -19,75 +19,72 @@
 //    ↓
 // MANAGE QUIZ
 //
-// TANPA:
-// - Jina, Tavily (search), Google Search API, Gemini, Cloudflare AI
-// - SiliconFlow (dihapus -- berbayar)
-// - GitHub Models (dihapus -- LAYANAN INI SUDAH RESMI TUTUP TOTAL
-//   per 30 Juli 2026, dikonfirmasi langsung dari GitHub Changelog.)
-// - Groq (dipindah -- terverifikasi masih AKTIF & gratis, TAPI model
-//   gratisnya (openai/gpt-oss-120b) terbukti kurang akurat buat konten
-//   Bahasa Indonesia + matematika presisi + gaya soal ujian formal --
-//   lihat laporan nyata: soal keluar Bahasa Inggris, level SD buat
-//   kelas 9 SMP, dll. NVIDIA Build nge-host model JAUH lebih besar
-//   (DeepSeek, Qwen 72B, Llama 405B, dll) gratis juga, jadi dipindah
-//   ke sini demi kualitas, BUKAN karena Groq rusak/tutup.)
-// - Scraping
+// TANPA: Jina, Google Search API, Cloudflare AI, scraping.
+// Tavily dipakai HANYA untuk mencari gambar (opsional, boleh kosong).
 //
-// KENAPA NVIDIA BUILD: terverifikasi AKTIF & gratis per Agustus 2026
-// dari banyak sumber independen (build.nvidia.com) -- TANPA kartu
-// kredit, endpoint kompatibel OpenAI, katalog 100+ model termasuk yang
-// JAUH lebih besar dari model gratis provider lain (Llama 3.1 405B,
-// Qwen 72B, DeepSeek, dst). Limitnya beda dari Groq: BUKAN batas
-// harian, tapi rate per MENIT (~40 RPM, bisa naik ke 200 RPM kalau
-// diajukan) -- lebih cocok buat pemakaian sehari-hari bimbel yang
-// gak nge-generate ratusan kali per hari, tapi bisa beruntun pas lagi
-// dipakai.
+// ⚠️ KETERBATASAN YANG PERLU DIKETAHUI GURU:
+// Mode "Prediksi Berbasis Tren" di UI BUKAN riset internet real-time.
+// AI menyusun soal dari pengetahuan umum yang sudah ia miliki, bukan
+// dari menelusuri sumber terbaru saat itu juga. Ini disebut apa
+// adanya supaya tidak ada klaim berlebihan ke guru maupun siswa.
 //
-// ⚠️ CATATAN JUJUR: limit pastinya "tidak dipublikasikan resmi" oleh
-// NVIDIA sendiri (staff bilang tergantung model & traffic keseluruhan
-// saat itu) -- ~40 RPM adalah patokan yang diakui komunitas developer,
-// BUKAN SLA resmi terjamin. Ini tetap dipasang sesuai keputusan bisnis
-// (gratis, sudah kamu siapkan sendiri API key-nya), tapi kalau
-// limitnya berubah suatu saat, itu bukan bug kode ini.
+// ENV (WAJIB):
+// GEMINI_API_KEY=... (buat GRATIS di https://aistudio.google.com/apikey
+//   -- login pakai akun Google biasa, TANPA kartu kredit, key langsung
+//   jadi dalam hitungan detik)
 //
-// ⚠️ KETERBATASAN: model-model di NVIDIA Build TIDAK punya tool
-// browser_search bawaan kayak Groq punya (openai/gpt-oss-120b khusus
-// di Groq). Jadi mode "Prediksi Berbasis Tren" di UI sekarang KEMBALI
-// jadi label instruksi ke AI doang (AI pakai pengetahuan umum yang dia
-// tahu, BUKAN riset internet real-time) -- persis seperti sebelum
-// browser_search dipasang. Ini trade-off sadar demi kualitas bahasa &
-// matematika yang jauh lebih baik untuk PEMAKAIAN UTAMA (mode default).
+// ============================================================
+// ⚠️ PENTING -- KENAPA PINDAH DARI NVIDIA KE GEMINI (Agustus 2026)
+// ============================================================
 //
-// ENV:
-// NVIDIA_API_KEY=... (buat gratis di build.nvidia.com, daftar pakai
-//   email, TANPA kartu kredit -- sudah kamu siapkan)
+// Fitur ini sempat MATI TOTAL berhari-hari di NVIDIA Build. Riwayat
+// singkatnya, supaya keputusan ini tidak diulang mundur nanti:
+//   - qwen/qwen2.5-72b-instruct         -> 404 (hilang dari katalog)
+//   - meta/llama-4-maverick-17b-128e    -> 410 (EOL 27 Juli 2026)
+//   - mistralai/mistral-medium-3-*      -> 404
+//   - mistralai/mistral-small-3.x-*     -> 404
+//   - mistralai/mistral-nemotron        -> timeout, lalu 404
+//   - qwen/qwen2-7b-instruct            -> 404
+//
+// Ketika SEMUA model dari vendor yang berbeda-beda balas 404 dengan
+// satu API key yang sama, itu bukan soal "salah pilih model" lagi.
+// Itu pola khas akun NVIDIA yang belum diaktifkan izin "Public API
+// Endpoints"-nya -- keluhan yang banyak muncul di forum developer
+// NVIDIA, dan penyelesaiannya harus lewat tiket support mereka
+// (bisa berhari-hari, tanpa kepastian). Bimbel tidak bisa menunggu
+// selama itu untuk fitur yang dipakai guru sehari-hari.
+//
+// KENAPA GEMINI YANG DIPILIH (bukan sekadar "yang penting gratis"):
+//   1. GRATIS tanpa kartu kredit, kuota ~1.500 request/hari -- jauh
+//      di atas kebutuhan bimbel (belasan generate per hari).
+//   2. KUALITAS BAHASA INDONESIA jauh lebih baik daripada model
+//      open-weight kecil. Ini akar keluhan awal: soal keluar dalam
+//      Bahasa Inggris, atau bahasanya kaku/ngawur.
+//   3. MATEMATIKA PRESISI lebih kuat -- penting untuk TKA/UTBK, di
+//      mana satu salah hitung membuat seluruh butir soal tidak
+//      terpakai.
+//   4. STABIL. Model Gemini tidak dipensiunkan mendadak seperti
+//      katalog NVIDIA yang berubah 3x dalam sebulan.
+//
+// KENAPA PERUBAHAN KODENYA KECIL:
+// Google menyediakan endpoint yang KOMPATIBEL DENGAN FORMAT OpenAI.
+// Jadi seluruh otak sistem ini -- blueprint engine, parser JSONL,
+// quality gate, deteksi duplikat, enrich gambar Tavily -- TIDAK
+// diubah sama sekali. Yang diganti hanya alamat & nama model.
 //
 // OPTIONAL:
-// NVIDIA_MODEL=mistralai/mistral-nemotron
-//   (⚠️ FIX Agustus 2026 (revisi ke-4) -- PELAJARAN PENTING:
-//   katalog build.nvidia.com TIDAK BISA dipercaya 100% buat nentuin
-//   model mana yang beneran hidup. Ada model yang di katalog tertulis
-//   "Free Endpoint" tapi tetap balas 404 kalau dipanggil (ini masalah
-//   yang terdokumentasi: katalog memuat model yang sudah tidak
-//   di-host). Sudah 3x revisi kepeleset gara-gara percaya katalog:
-//     - qwen/qwen2.5-72b-instruct        -> 404 (hilang dari katalog)
-//     - meta/llama-4-maverick-...        -> 410 (EOL 2026-07-27)
-//     - mistralai/mistral-medium-3-instruct
-//       & mistral-small-3.1-24b-...-2503 -> 404 (walau terlisting)
+// AI_MODEL=gemini-2.5-flash
+//   (Model default sengaja "Flash": cepat, kuota besar, dan sudah
+//   lebih dari cukup untuk membuat soal. Kalau suatu saat mau coba
+//   model lain, cukup ubah environment variable ini -- TIDAK perlu
+//   mengubah kode.)
 //
-//   Yang dipakai sekarang justru berdasarkan BUKTI NYATA dari log
-//   deployment Bimbel Gemilang sendiri: `mistralai/mistral-nemotron`
-//   TIDAK balas 404 -- dia balas lambat sampai timeout, yang artinya
-//   model ini BENERAN HIDUP & bisa diakses API key kita (kemungkinan
-//   besar itu cold start pemanggilan pertama). Itu bukti yang jauh
-//   lebih kuat daripada label katalog mana pun.
-//
-//   ⚠️ JANGAN tebak-tebak ID model dari blog/hasil pencarian lagi.
-//   Kalau semua model di daftar ini suatu saat mati, pakai endpoint
-//   diagnostik `/api/checkNvidiaModels` (file terpisah, dibuat
-//   bareng revisi ini) -- dia menanyakan LANGSUNG ke NVIDIA pakai API
-//   key kamu: model apa saja yang tersedia, DAN mana yang beneran
-//   merespons chat. Hasilnya fakta, bukan asumsi.
+// AI_API_URL=...
+//   (Hanya diisi kalau suatu saat mau pindah provider lagi. Selama
+//   provider barunya menyediakan endpoint format OpenAI -- Groq,
+//   OpenRouter, Cerebras, dll -- cukup ganti URL + AI_MODEL +
+//   AI_API_KEY, kode ini tetap jalan tanpa diubah. Pelajaran mahal
+//   dari kejadian NVIDIA: JANGAN mengunci sistem ke satu provider.)
 //
 // ============================================================
 
@@ -97,22 +94,32 @@ export const maxDuration = 60;
 // CONFIG
 // ============================================================
 
-const NVIDIA_API_URL =
-  'https://integrate.api.nvidia.com/v1/chat/completions';
+// Endpoint Gemini yang kompatibel format OpenAI (chat completions).
+const AI_API_URL =
+  process.env.AI_API_URL ||
+  'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
 
-const NVIDIA_MODEL =
-  process.env.NVIDIA_MODEL ||
-  'mistralai/mistral-nemotron';
+const AI_MODEL =
+  process.env.AI_MODEL ||
+  'gemini-2.5-flash';
 
-// 🔥 Daftar model cadangan, dicoba SATU PER SATU secara berurutan kalau
-// model sebelumnya gagal karena (a) sudah tidak ada/pensiun (404/410),
-// atau (b) timeout. Error jenis lain (rate limit, request kegedean,
-// dll) TIDAK memicu pindah model -- itu bukan salah modelnya.
-const NVIDIA_MODEL_FALLBACKS = [
-  'mistralai/mistral-small-3.2-24b-instruct-2506',
-  'mistralai/mistral-small-3.1-24b-instruct-2503',
-  'qwen/qwen2-7b-instruct',
+// Model cadangan, dicoba berurutan HANYA kalau model sebelumnya gagal
+// karena (a) tidak tersedia/pensiun (404/410), atau (b) timeout. Error
+// lain (rate limit, request kegedean) TIDAK memicu pindah model --
+// itu bukan salah modelnya, dan ganti model tidak akan menolong.
+const AI_MODEL_FALLBACKS = [
+  'gemini-2.5-flash-lite',
 ];
+
+// Lihat penjelasan lengkap di dalam body request callAI().
+// 'none'  = thinking dimatikan (default -- paling andal & cepat)
+// 'low'/'medium' = thinking aktif (lebih teliti, lebih lambat, lebih
+//                  boros token)
+// 'off'   = jangan kirim parameter ini sama sekali
+const AI_REASONING_EFFORT =
+  process.env
+    .AI_REASONING_EFFORT ||
+  'none';
 
 const DEFAULT_QUESTION_COUNT = 10;
 const MAX_QUESTION_COUNT = 20;
@@ -128,7 +135,7 @@ const AI_TIMEOUT_MS = 45_000;
 const AI_TIMEOUT_WITH_SEARCH_MS = 55_000;
 
 // 🔥 BARU: batas TOTAL waktu (gabungan semua percobaan model, utama +
-// cadangan) yang boleh dipakai callNvidiaWithFallback sebelum nyerah.
+// cadangan) yang boleh dipakai callAIWithFallback sebelum nyerah.
 // Ini BEDA dari AI_TIMEOUT_MS (yang itu per-satu-kali-percobaan) --
 // tanpa batas total ini, 3 model x 45 detik = 135 detik, jauh melebihi
 // maxDuration 60 detik Vercel dan bikin function mati paksa oleh
@@ -144,7 +151,7 @@ const TOTAL_AI_BUDGET_WITH_SEARCH_MS = 50_000;
 // berikutnya kalau yang pertama ternyata gagal juga.
 //
 // 🔥 Model UTAMA dikasih jatah lebih besar dari cadangan, dengan alasan
-// spesifik: pemanggilan pertama ke NVIDIA sering kena "cold start"
+// spesifik: pemanggilan pertama kadang kena "cold start"
 // (model perlu dimuat dulu ke GPU) yang bisa makan puluhan detik --
 // persis yang bikin timeout 45 detik kemarin. Pemanggilan berikutnya
 // biasanya jauh lebih cepat karena model sudah "hangat".
@@ -158,10 +165,10 @@ const MAX_SINGLE_ATTEMPT_MS = 18_000;
 // waktu.
 const MIN_REMAINING_BUDGET_MS = 8_000;
 
-// 🔥 CATATAN: NVIDIA Build TIDAK punya batas TPM (token/menit) yang
+// 🔥 CATATAN: batas TPM (token/menit) provider tidak selalu
 // ketat & terpublikasi kayak Groq (yang 8.000 TPM). Batasnya lebih ke
 // arah RPM (~40/menit) dan variabel tergantung model+traffic. Angka di
-// bawah ini BUKAN batas resmi NVIDIA -- ini cuma batas wajar milik kita
+// bawah ini BUKAN batas resmi provider -- ini cuma batas wajar milik kita
 // sendiri, biar 1 permintaan gak minta token gila-gilaan tanpa alasan
 // (hemat waktu respons & tetap proporsional ke jumlah soal yang
 // diminta guru, konsisten dengan logika computeMaxTokens() di bawah).
@@ -2983,7 +2990,7 @@ function buildSystemPrompt({
     // ada instruksi kondisional yang bilang "kamu PUNYA akses
     // browser_search" begitu mode "prediction" aktif -- itu BENAR waktu
     // itu karena Groq beneran nyediain tool browser_search bawaan. Tapi
-    // NVIDIA Build TIDAK punya tool itu sama sekali, di model apa pun di
+    // Provider AI saat ini TIDAK menyediakan tool itu, jadi di
     // katalognya. Kalau instruksi lama ini dibiarkan, AI bisa
     // "berpura-pura" browsing (halusinasi seolah-olah nemu sumber),
     // padahal gak pernah beneran akses internet -- BAHAYA lebih besar
@@ -3239,7 +3246,7 @@ function buildUserPrompt({
 // GROQ API
 // ============================================================
 
-async function callNvidia({
+async function callAI({
   apiKey,
   systemPrompt,
   userPrompt,
@@ -3247,18 +3254,19 @@ async function callNvidia({
   enableBrowserSearch,
   model,
   timeoutMs,
+  reasoningEffort,
 }) {
   // 🔥 BARU: `model` sekarang parameter (bukan cuma baca konstanta
-  // NVIDIA_MODEL langsung) supaya callNvidiaWithFallback() bisa
+  // AI_MODEL langsung) supaya callAIWithFallback() bisa
   // memanggil fungsi ini berkali-kali dengan model berbeda-beda.
-  // Default ke NVIDIA_MODEL kalau caller lama gak mengirim `model`
+  // Default ke AI_MODEL kalau caller lama gak mengirim `model`
   // (jaga kompatibilitas).
   const modelToUse =
     model ||
-    NVIDIA_MODEL;
+    AI_MODEL;
 
   // 🔥 BARU: `timeoutMs` juga sekarang parameter opsional -- dipakai
-  // callNvidiaWithFallback() buat bagi-bagi sisa budget waktu antar
+  // callAIWithFallback() buat bagi-bagi sisa budget waktu antar
   // percobaan model. Kalau gak dikirim (mis. dipanggil langsung tanpa
   // fallback), tetap pakai logika lama (AI_TIMEOUT_MS /
   // AI_TIMEOUT_WITH_SEARCH_MS) biar kompatibel.
@@ -3284,7 +3292,7 @@ async function callNvidia({
   try {
     const response =
       await fetch(
-        NVIDIA_API_URL,
+        AI_API_URL,
         {
           method: 'POST',
 
@@ -3329,7 +3337,34 @@ async function callNvidia({
             stream:
               false,
 
-            // 🔥 CATATAN: NVIDIA Build TIDAK punya tool browser_search
+            // 🔥 PENTING (khusus Gemini 2.5): model ini punya mode
+            // "thinking" yang AKTIF secara default. Token untuk
+            // berpikir itu diambil dari jatah max_tokens yang sama --
+            // artinya kalau dibiarkan, model bisa habis jatah di
+            // tengah "berpikir" dan mengembalikan content KOSONG,
+            // yang di sistem kita terbaca sebagai kegagalan total
+            // walau sebenarnya API-nya sehat.
+            //
+            // Karena tugas di sini adalah menghasilkan soal terstruktur
+            // (bukan memecahkan teka-teki logika berat), thinking
+            // dimatikan demi keandalan & kecepatan.
+            //
+            // Bisa diubah lewat env AI_REASONING_EFFORT kalau suatu
+            // saat mau menukar kecepatan dengan ketelitian matematika:
+            // isi 'low' atau 'medium' (dan naikkan SOFT_MAX_TOKENS_
+            // CEILING kalau perlu). Isi 'off' untuk tidak mengirim
+            // parameter ini sama sekali (mis. kalau pindah provider
+            // yang tidak mengenalinya).
+            ...(reasoningEffort &&
+            reasoningEffort !==
+              'off'
+              ? {
+                  reasoning_effort:
+                    reasoningEffort,
+                }
+              : {}),
+
+            // 🔥 CATATAN: provider AI saat ini TIDAK punya tool browser_search
             // bawaan (itu fitur khusus Groq openai/gpt-oss-120b). Jadi
             // di sini `enableBrowserSearch` cuma dipakai buat pilih
             // timeout yang lebih longgar & label "MODE: prediction" di
@@ -3373,7 +3408,7 @@ async function callNvidia({
 
       const error =
         new Error(
-          `NVIDIA HTTP ${response.status}`,
+          `AI provider HTTP ${response.status}`,
         );
 
       error.providerStatus =
@@ -3388,9 +3423,9 @@ async function callNvidia({
         );
 
       // 🔥 CATATAN JUJUR: beda dari Groq (yang header rate-limit-nya
-      // terdokumentasi jelas & sudah kita verifikasi), NVIDIA Build
+      // terdokumentasi jelas & sudah kita verifikasi), provider ini
       // TIDAK mempublikasikan resmi nama header rate-limit-nya --
-      // staff NVIDIA sendiri bilang batasnya "tergantung model &
+      // batasnya bisa "tergantung model &
       // traffic keseluruhan saat itu", gak ada angka pasti yang bisa
       // dijadikan acuan header spesifik. Makanya di sini CUMA
       // `retry-after` (header HTTP standar, aman diasumsikan ada di
@@ -3433,7 +3468,7 @@ async function callNvidia({
     ) {
       const error =
         new Error(
-          'NVIDIA response content kosong.',
+          'Respons AI kosong.',
         );
 
       error.providerStatus =
@@ -3480,11 +3515,11 @@ async function callNvidia({
     ) {
       const timeoutError =
         new Error(
-          `NVIDIA timeout setelah ${effectiveTimeoutMs}ms.`,
+          `Layanan AI timeout setelah ${effectiveTimeoutMs}ms.`,
         );
 
       timeoutError.code =
-        'NVIDIA_TIMEOUT';
+        'AI_TIMEOUT';
 
       timeoutError.attemptedModel =
         modelToUse;
@@ -3515,7 +3550,7 @@ async function callNvidia({
 // 🔥 BARU: apakah error ini berarti MODEL-nya sendiri yang sudah tidak
 // tersedia (dihapus dari katalog / pensiun), BUKAN jenis error lain
 // (rate limit, timeout, server error, dll) yang gak akan hilang cuma
-// dengan ganti model. Kalau true, callNvidiaWithFallback lanjut coba
+// dengan ganti model. Kalau true, callAIWithFallback lanjut coba
 // model berikutnya di daftar; kalau false, error langsung dilempar ke
 // pemanggil (gak ada gunanya coba model lain).
 function isModelUnavailableError(
@@ -3560,20 +3595,20 @@ function isModelUnavailableError(
   return false;
 }
 
-// 🔥 BARU: wrapper di atas callNvidia() yang otomatis mencoba daftar
-// model cadangan (NVIDIA_MODEL_FALLBACKS) secara berurutan kalau model
+// 🔥 BARU: wrapper di atas callAI() yang otomatis mencoba daftar
+// model cadangan (AI_MODEL_FALLBACKS) secara berurutan kalau model
 // yang sedang dicoba ternyata sudah tidak tersedia lagi (404/410).
-// Tujuannya: kalau NVIDIA pensiunin satu model lagi di masa depan
+// Tujuannya: kalau provider pensiunin satu model lagi di masa depan
 // (sudah kejadian 2x dalam sebulan terakhir -- Qwen 72B lalu Llama 4
 // Maverick), sistem TETAP JALAN tanpa perlu edit kode/env var manual
 // dulu, sampai semua model di daftar juga mati.
-async function callNvidiaWithFallback(
+async function callAIWithFallback(
   args,
 ) {
   const modelsToTry =
     [
-      NVIDIA_MODEL,
-      ...NVIDIA_MODEL_FALLBACKS,
+      AI_MODEL,
+      ...AI_MODEL_FALLBACKS,
     ].filter(
       (m, i, arr) =>
         m &&
@@ -3632,11 +3667,13 @@ async function callNvidiaWithFallback(
 
     try {
       const result =
-        await callNvidia({
+        await callAI({
           ...args,
           model,
           timeoutMs:
             perAttemptTimeoutMs,
+          reasoningEffort:
+            AI_REASONING_EFFORT,
         });
 
       if (i > 0) {
@@ -3653,6 +3690,67 @@ async function callNvidiaWithFallback(
 
     } catch (error) {
       lastError = error;
+
+      // 🔥 PENGAMAN: kalau provider menolak parameter reasoning_effort
+      // (mis. model/provider yang tidak mengenalinya membalas 400),
+      // JANGAN gagal total -- ulangi sekali untuk model yang sama
+      // tanpa parameter itu. Tanpa pengaman ini, satu parameter opsional
+      // bisa mematikan seluruh fitur, persis pelajaran dari kejadian
+      // NVIDIA: jangan biarkan detail kecil satu provider menjatuhkan
+      // sistemnya.
+      if (
+        error?.providerStatus ===
+          400 &&
+        /reasoning|thinking/i.test(
+          String(
+            error?.providerMessage ||
+              '',
+          ),
+        )
+      ) {
+        console.warn(
+          `[Gemilang AI] Parameter reasoning_effort ditolak model '${model}' -- mengulang tanpa parameter itu.`,
+        );
+
+        try {
+          const retryTimeoutMs =
+            Math.min(
+              Math.max(
+                totalBudgetMs -
+                  (Date.now() -
+                    startedAt),
+                0,
+              ),
+              MAX_SINGLE_ATTEMPT_MS,
+            );
+
+          if (
+            retryTimeoutMs >=
+            MIN_REMAINING_BUDGET_MS
+          ) {
+            const retryResult =
+              await callAI({
+                ...args,
+                model,
+                timeoutMs:
+                  retryTimeoutMs,
+                reasoningEffort:
+                  'off',
+              });
+
+            if (i > 0) {
+              retryResult.fallbackUsed = true;
+
+              retryResult.fallbackFromModel =
+                modelsToTry[0];
+            }
+
+            return retryResult;
+          }
+        } catch (retryError) {
+          lastError = retryError;
+        }
+      }
 
       const isLastModel =
         i ===
@@ -3672,7 +3770,7 @@ async function callNvidiaWithFallback(
           error,
         ) ||
           error?.code ===
-            'NVIDIA_TIMEOUT');
+            'AI_TIMEOUT');
 
       if (!shouldTryNext) {
         throw error;
@@ -3707,23 +3805,24 @@ async function callNvidiaWithFallback(
 //     -> UJI model mana yang beneran hidup (ini yang paling berguna)
 //   /api/generateQuizFromTopic?probe=1&models=ID_1,ID_2
 //     -> uji daftar model pilihan sendiri
-//   /api/generateQuizFromTopic?filter=instruct
+//   /api/generateQuizFromTopic?filter=gemini
 //     -> saring katalog berdasarkan kata kunci
 //
-// KENAPA PERLU: katalog build.nvidia.com TIDAK bisa dipercaya penuh --
+// KENAPA PERLU: katalog provider TIDAK selalu bisa dipercaya penuh --
 // ada model bertuliskan "Free Endpoint" yang tetap balas 404 kalau
-// dipanggil. Endpoint ini bertanya LANGSUNG ke NVIDIA pakai API key
+// dipanggil. Endpoint ini bertanya LANGSUNG ke provider pakai API key
 // kita, jadi hasilnya fakta hari ini, bukan tebakan dari katalog.
 
-const NVIDIA_MODELS_URL =
-  'https://integrate.api.nvidia.com/v1/models';
+const AI_MODELS_URL =
+  process.env.AI_MODELS_URL ||
+  'https://generativelanguage.googleapis.com/v1beta/openai/models';
 
 // Probe harus CEPAT -- tujuannya cuma memastikan model hidup, bukan
 // menghasilkan jawaban bagus.
 const PROBE_TIMEOUT_MS = 9_000;
 
 // Batas jumlah model yang boleh diuji dalam 1 request -- supaya tidak
-// memicu rate limit NVIDIA (~40 request/menit) yang justru bikin hasil
+// memicu rate limit provider yang justru bikin hasil
 // pengujian menyesatkan (model sehat terlihat seperti gagal).
 const MAX_PROBE_MODELS = 8;
 
@@ -3743,7 +3842,7 @@ async function fetchModelCatalog(
   try {
     const response =
       await fetch(
-        NVIDIA_MODELS_URL,
+        AI_MODELS_URL,
         {
           method: 'GET',
 
@@ -3856,7 +3955,7 @@ async function probeModel(
   try {
     const response =
       await fetch(
-        NVIDIA_API_URL,
+        AI_API_URL,
         {
           method: 'POST',
 
@@ -3953,7 +4052,7 @@ async function probeModel(
       response.status === 403
     ) {
       note =
-        'API key ditolak / tidak punya akses ke model ini. Cek NVIDIA_API_KEY.';
+        'API key ditolak / tidak punya akses ke model ini. Cek GEMINI_API_KEY.';
     } else if (
       response.status === 429
     ) {
@@ -4012,7 +4111,7 @@ async function probeModel(
         'Unknown error',
 
       note:
-        'Error jaringan/runtime saat menghubungi NVIDIA.',
+        'Error jaringan/runtime saat menghubungi layanan AI.',
     };
 
   } finally {
@@ -4025,7 +4124,7 @@ async function handleModelDiagnostics(
   res,
 ) {
   const apiKey =
-    process.env.NVIDIA_API_KEY;
+    process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     return res
@@ -4034,7 +4133,7 @@ async function handleModelDiagnostics(
         success: false,
 
         error:
-          'NVIDIA_API_KEY belum di-set di Environment Variables.',
+          'GEMINI_API_KEY belum di-set di Environment Variables.',
       });
   }
 
@@ -4056,7 +4155,7 @@ async function handleModelDiagnostics(
         success: false,
 
         error:
-          'Gagal mengambil katalog model dari NVIDIA.',
+          'Gagal mengambil katalog model dari layanan AI.',
 
         diagnostics: {
           httpStatus:
@@ -4068,8 +4167,8 @@ async function handleModelDiagnostics(
           hint:
             catalog.status === 401 ||
             catalog.status === 403
-              ? 'API key ditolak. Pastikan NVIDIA_API_KEY benar dan diawali "nvapi-".'
-              : 'Cek koneksi atau status layanan NVIDIA.',
+              ? 'API key ditolak. Ambil key baru gratis di https://aistudio.google.com/apikey lalu simpan sebagai GEMINI_API_KEY.'
+              : 'Cek koneksi atau status layanan AI.',
         },
       });
   }
@@ -4118,7 +4217,7 @@ async function handleModelDiagnostics(
             '/api/generateQuizFromTopic?probe=1&models=ID_MODEL_1,ID_MODEL_2',
 
           saringKatalog:
-            '/api/generateQuizFromTopic?filter=instruct',
+            '/api/generateQuizFromTopic?filter=gemini',
         },
       });
   }
@@ -4130,8 +4229,8 @@ async function handleModelDiagnostics(
           .map((m) => m.trim())
           .filter(Boolean)
       : [
-          NVIDIA_MODEL,
-          ...NVIDIA_MODEL_FALLBACKS,
+          AI_MODEL,
+          ...AI_MODEL_FALLBACKS,
         ];
 
   modelsToProbe =
@@ -4184,7 +4283,7 @@ async function handleModelDiagnostics(
       mode: 'probe',
 
       modelUtamaSaatIni:
-        NVIDIA_MODEL,
+        AI_MODEL,
 
       diujiSebanyak:
         results.length,
@@ -4206,8 +4305,8 @@ async function handleModelDiagnostics(
 
         langkahSelanjutnya:
           recommended
-            ? `Set NVIDIA_MODEL = "${recommended}" di Vercel -> Settings -> Environment Variables, lalu Redeploy. Tidak perlu ubah kode.`
-            : 'Tidak ada model yang lolos uji. Kalau semuanya "timeout", jalankan ulang sekali lagi (kemungkinan cold start). Kalau semuanya 404/410, buka /api/generateQuizFromTopic?filter=instruct untuk melihat kandidat lain, lalu uji dengan &models=',
+            ? `Set AI_MODEL = "${recommended}" di Vercel -> Settings -> Environment Variables, lalu Redeploy. Tidak perlu ubah kode.`
+            : 'Tidak ada model yang lolos uji. Kalau semuanya "timeout", jalankan ulang sekali lagi (kemungkinan cold start). Kalau semuanya 404/410, buka /api/generateQuizFromTopic?filter=gemini untuk melihat kandidat lain, lalu uji dengan &models=',
       },
 
       totalDiKatalog:
@@ -4219,7 +4318,7 @@ async function handleModelDiagnostics(
 // SAFE ERROR RESPONSE
 // ============================================================
 
-function sendNvidiaError(
+function sendAIError(
   res,
   error,
 ) {
@@ -4229,7 +4328,7 @@ function sendNvidiaError(
 
   if (
     error?.code ===
-    'NVIDIA_TIMEOUT'
+    'AI_TIMEOUT'
   ) {
     return res
       .status(504)
@@ -4237,7 +4336,7 @@ function sendNvidiaError(
         success: false,
 
         error:
-          'NVIDIA terlalu lama merespons.',
+          'Layanan AI terlalu lama merespons.',
 
         diagnostics: {
           type:
@@ -4249,7 +4348,7 @@ function sendNvidiaError(
 
           model:
             error?.attemptedModel ||
-            NVIDIA_MODEL,
+            AI_MODEL,
         },
       });
   }
@@ -4272,7 +4371,7 @@ function sendNvidiaError(
         success: false,
 
         error:
-          `NVIDIA lagi membatasi request (rate limit ~40/menit pada tier gratis). Coba lagi dalam ${error.retryAfterSeconds || 'beberapa puluh'} detik.`,
+          `Kuota gratis layanan AI sedang penuh (rate limit). Coba lagi dalam ${error.retryAfterSeconds || 'beberapa puluh'} detik.`,
 
         diagnostics: {
           type:
@@ -4284,7 +4383,7 @@ function sendNvidiaError(
 
           model:
             error?.attemptedModel ||
-            NVIDIA_MODEL,
+            AI_MODEL,
         },
       });
   }
@@ -4304,7 +4403,7 @@ function sendNvidiaError(
         success: false,
 
         error:
-          'Permintaan terlalu besar untuk diproses NVIDIA sekali jalan. Coba kurangi jumlah soal yang diminta, atau persingkat arahan guru.',
+          'Permintaan terlalu besar untuk diproses sekali jalan. Coba kurangi jumlah soal yang diminta, atau persingkat arahan guru.',
 
         diagnostics: {
           type:
@@ -4320,7 +4419,7 @@ function sendNvidiaError(
 
           model:
             error?.attemptedModel ||
-            NVIDIA_MODEL,
+            AI_MODEL,
         },
       });
   }
@@ -4340,7 +4439,7 @@ function sendNvidiaError(
         success: false,
 
         error:
-          'NVIDIA menolak atau gagal memproses permintaan.',
+          'Layanan AI menolak atau gagal memproses permintaan.',
 
         diagnostics: {
           type:
@@ -4359,7 +4458,7 @@ function sendNvidiaError(
 
           model:
             error?.attemptedModel ||
-            NVIDIA_MODEL,
+            AI_MODEL,
 
         },
       });
@@ -4375,7 +4474,7 @@ function sendNvidiaError(
       success: false,
 
       error:
-        'Server gagal terhubung ke NVIDIA.',
+        'Server gagal terhubung ke layanan AI.',
 
       diagnostics: {
         type:
@@ -4387,7 +4486,7 @@ function sendNvidiaError(
 
         model:
           error?.attemptedModel ||
-          NVIDIA_MODEL,
+          AI_MODEL,
       },
     });
 }
@@ -4555,7 +4654,7 @@ export default async function handler(
   // ==========================================================
 
   const apiKey =
-    process.env.NVIDIA_API_KEY;
+    process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     return res
@@ -4564,7 +4663,7 @@ export default async function handler(
         success: false,
 
         error:
-          'NVIDIA_API_KEY belum dikonfigurasi di Vercel. Daftar gratis di build.nvidia.com (tanpa kartu kredit), lalu simpan sebagai environment variable NVIDIA_API_KEY.',
+          'GEMINI_API_KEY belum dikonfigurasi di Vercel. Ambil key GRATIS di https://aistudio.google.com/apikey (login akun Google, tanpa kartu kredit), lalu simpan sebagai environment variable GEMINI_API_KEY di Vercel -> Settings -> Environment Variables.',
       });
   }
 
@@ -4688,7 +4787,7 @@ export default async function handler(
 
   try {
     aiResult =
-      await callNvidiaWithFallback({
+      await callAIWithFallback({
         apiKey,
         systemPrompt,
         userPrompt,
@@ -4698,7 +4797,7 @@ export default async function handler(
 
   } catch (error) {
     console.error(
-      '[Gemilang AI] NVIDIA error',
+      '[Gemilang AI] AI provider error',
       {
         message:
           error?.message,
@@ -4723,11 +4822,11 @@ export default async function handler(
 
         model:
           error?.attemptedModel ||
-          NVIDIA_MODEL,
+          AI_MODEL,
       },
     );
 
-    return sendNvidiaError(
+    return sendAIError(
       res,
       error,
     );
@@ -4880,7 +4979,7 @@ export default async function handler(
         success: false,
 
         error:
-          'Quality Gate tidak menemukan soal valid dari respons NVIDIA.',
+          'Quality Gate tidak menemukan soal valid dari respons AI.',
 
         diagnostics: {
           parsedObjectCount:
@@ -4983,7 +5082,7 @@ export default async function handler(
         modelUsed:
           aiResult.model,
 
-        // 🔥 BARU: transparan ke guru kalau model UTAMA (NVIDIA_MODEL)
+        // 🔥 BARU: transparan ke guru kalau model UTAMA (AI_MODEL)
         // ternyata sudah tidak tersedia saat itu, dan sistem otomatis
         // pindah ke model cadangan tanpa gagal total.
         fallbackUsed:
@@ -5024,12 +5123,12 @@ export default async function handler(
 
         // 🔥 FIX: sebelumnya `researchPerformed: enableBrowserSearch`
         // -- itu benar waktu Groq browser_search beneran jalan. Sekarang
-        // (NVIDIA, gak ada tool browsing sama sekali) SELALU false,
+        // (tidak ada tool browsing sama sekali) SELALU false,
         // apa pun mode-nya -- jangan mengklaim riset internet terjadi
         // padahal enggak.
         researchPerformed: false,
 
-        // 🔥 CATATAN: kolom ini akan SELALU 0 sekarang (NVIDIA gak ada
+        // 🔥 CATATAN: kolom ini akan SELALU 0 sekarang (gak ada
         // browser_search), dipertahankan di diagnostik biar konsisten
         // strukturnya kalau provider lain dengan tool serupa dipasang
         // lagi nanti.
