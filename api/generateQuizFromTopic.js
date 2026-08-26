@@ -63,13 +63,22 @@
 //   email, TANPA kartu kredit -- sudah kamu siapkan)
 //
 // OPTIONAL:
-// NVIDIA_MODEL=qwen/qwen2.5-72b-instruct
-//   (⚠️ Model default dipilih KHUSUS karena dia model INSTRUCT biasa,
-//   BUKAN model reasoning (DeepSeek-R1/V4 dkk BUTUH parameter khusus
-//   `chat_template_kwargs` dan kadang HANG tanpa itu -- dikonfirmasi
-//   dari laporan bug developer lain. Qwen 72B kuat di matematika &
-//   multibahasa termasuk Indonesia, tanpa jebakan itu. Cek katalog
-//   model aktif di build.nvidia.com sebelum ganti kalau ragu.)
+// NVIDIA_MODEL=meta/llama-4-maverick-17b-128e-instruct
+//   (⚠️ FIX Agustus 2026: model lama `qwen/qwen2.5-72b-instruct` SUDAH
+//   DIHAPUS TOTAL dari katalog NVIDIA Build (dikonfirmasi langsung di
+//   build.nvidia.com -- bukan cuma di-deprecate, sudah tidak listed
+//   sama sekali), makanya semua request gagal dengan providerStatus
+//   404 "404 page not found". Diganti ke Llama 4 Maverick 17B-128E-
+//   Instruct: terverifikasi masih berstatus "Free Endpoint" aktif per
+//   Agustus 2026, model MoE general purpose & multilingual, model
+//   INSTRUCT biasa (BUKAN reasoning -- jadi tetap aman dari jebakan
+//   `chat_template_kwargs` yang dibutuhkan DeepSeek-R1/V4 dkk).
+//   Alternatif Free Endpoint lain yang masih aktif tapi jauh lebih
+//   kecil: qwen/qwen2-7b-instruct (Qwen2 lama, 7B). Kalau suatu saat
+//   model ini juga hilang dari katalog, cek ulang status "Free
+//   Endpoint" vs "Downloadable" di build.nvidia.com sebelum ganti --
+//   "Downloadable" berarti TIDAK bisa dipanggil gratis lewat endpoint
+//   hosted ini lagi.)
 //
 // ============================================================
 
@@ -84,7 +93,7 @@ const NVIDIA_API_URL =
 
 const NVIDIA_MODEL =
   process.env.NVIDIA_MODEL ||
-  'qwen/qwen2.5-72b-instruct';
+  'meta/llama-4-maverick-17b-128e-instruct';
 
 const DEFAULT_QUESTION_COUNT = 10;
 const MAX_QUESTION_COUNT = 20;
