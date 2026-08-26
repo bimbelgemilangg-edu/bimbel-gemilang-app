@@ -21,6 +21,15 @@ const ClassSession = () => {
   const [loading, setLoading] = useState(true);
   const [attendanceMap, setAttendanceMap] = useState({});
   const [step, setStep] = useState(1);
+
+  // 🔥 BARU: sub-tab di dalam Step 1 -- "Bukti Kehadiran Guru" (foto
+  // pribadi guru) dipisah TOTAL dari "Absensi Siswa" (QR + toggle
+  // kehadiran, yang layarnya ditunjukkan ke siswa). Sebelumnya dua-duanya
+  // nempel di 1 layar -- kalau guru buka di laptop buat nunjukin QR ke
+  // kelas, foto pribadi bukti kehadiran ikut kelihatan, gak profesional.
+  // Default ke 'kehadiranGuru' (privat dulu, sebelum layar ditunjukkan
+  // ke siapa pun).
+  const [step1Tab, setStep1Tab] = useState('kehadiranGuru');
   const [materiAktual, setMateriAktual] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [salaryRules, setSalaryRules] = useState(null);
@@ -593,11 +602,39 @@ const ClassSession = () => {
       {step === 1 && (
         <div>
           {/* ============================================================
-              🔥 BARU: TIPE KELAS + BUKTI KEHADIRAN WAJIB
-              ============================================================
-              Ditaruh PALING ATAS Step 1 -- ini gerbang pertama sebelum
-              guru bisa lanjut ke pencatatan siswa & laporan materi.
+              🔥 BARU: TAB SWITCHER -- pisah total "Bukti Kehadiran Guru"
+              (foto pribadi) dari "Absensi Siswa" (QR + toggle, layar yang
+              ditunjukkan ke kelas). Sebelumnya nempel di 1 layar -- kalau
+              guru buka di laptop buat nunjukin QR ke siswa, foto pribadi
+              ikut kelihatan, gak profesional. Default ke tab kehadiran
+              guru (selesaikan dulu secara privat, baru pindah tab kalau
+              mau nunjukin QR ke kelas).
           ============================================================ */}
+          <div style={styles.step1TabRow(isMobile)}>
+            <button
+              type="button"
+              onClick={() => setStep1Tab('kehadiranGuru')}
+              style={styles.step1TabBtn(step1Tab === 'kehadiranGuru')}
+            >
+              🔒 Bukti Kehadiran Guru
+              {!absensiUploadedUrl && <span style={styles.tabDot} />}
+            </button>
+            <button
+              type="button"
+              onClick={() => setStep1Tab('absensiSiswa')}
+              style={styles.step1TabBtn(step1Tab === 'absensiSiswa')}
+            >
+              📋 Absensi Siswa
+            </button>
+          </div>
+
+          {step1Tab === 'absensiSiswa' && (
+            <p style={styles.tabSafeNote(isMobile)}>
+              💡 Tab ini aman ditunjukkan ke layar kelas (proyektor/laptop) -- gak ada foto pribadi yang tampil di sini.
+            </p>
+          )}
+
+          {step1Tab === 'kehadiranGuru' && (
           <div style={styles.card(isMobile)}>
             <h4 style={styles.cardTitle}><Camera size={18} /> Bukti Kehadiran Mengajar</h4>
 
@@ -687,7 +724,9 @@ const ClassSession = () => {
 
             {absensiError && <p style={styles.absensiErrorText}>{absensiError}</p>}
           </div>
+          )}
 
+          {step1Tab === 'absensiSiswa' && (
           <div style={styles.gridContainer(isMobile)}>
           <div style={styles.card(isMobile)}>
             <h4 style={styles.cardTitle}><QrCode size={18} /> Scan Absensi</h4>
@@ -732,19 +771,26 @@ const ClassSession = () => {
                 );
               })}
             </div>
-            <button
-              onClick={() => setStep(2)}
-              disabled={!absensiUploadedUrl}
-              style={{
-                ...styles.btnMain(isMobile),
-                ...(absensiUploadedUrl ? {} : styles.btnDisabled),
-              }}
-              title={!absensiUploadedUrl ? 'Unggah bukti kehadiran dulu di atas' : undefined}
-            >
-              {absensiUploadedUrl ? 'Selesai & Buat Laporan ⮕' : '🔒 Unggah bukti kehadiran dulu'}
-            </button>
           </div>
           </div>
+          )}
+
+          {/* 🔥 BARU: tombol lanjut dipindah keluar dari kedua tab --
+              SELALU kelihatan gak peduli tab mana yang lagi aktif, biar
+              guru bisa lanjut kapan pun syaratnya (foto) udah terpenuhi,
+              tanpa harus balik ke tab tertentu dulu. */}
+          <button
+            onClick={() => setStep(2)}
+            disabled={!absensiUploadedUrl}
+            style={{
+              ...styles.btnMain(isMobile),
+              ...(absensiUploadedUrl ? {} : styles.btnDisabled),
+              marginTop: 12,
+            }}
+            title={!absensiUploadedUrl ? 'Unggah bukti kehadiran dulu di atas' : undefined}
+          >
+            {absensiUploadedUrl ? 'Selesai & Buat Laporan ⮕' : '🔒 Unggah bukti kehadiran dulu'}
+          </button>
         </div>
       )}
 
@@ -1023,6 +1069,47 @@ const styles = {
     opacity: loading ? 0.6 : 1,
     background: '#f8fafc',
     flex: 1,
+  }),
+
+  // 🔥 BARU: tab switcher Step 1
+  step1TabRow: (m) => ({
+    display: 'flex',
+    gap: 8,
+    marginBottom: 12,
+  }),
+
+  step1TabBtn: (active) => ({
+    flex: 1,
+    padding: '10px 14px',
+    borderRadius: 10,
+    border: active ? '2px solid #2c3e50' : '1px solid #e2e8f0',
+    background: active ? '#2c3e50' : 'white',
+    color: active ? 'white' : '#64748b',
+    fontWeight: 'bold',
+    fontSize: 13,
+    cursor: 'pointer',
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  }),
+
+  tabDot: {
+    width: 7,
+    height: 7,
+    borderRadius: '50%',
+    background: '#ef4444',
+  },
+
+  tabSafeNote: (m) => ({
+    fontSize: m ? 10 : 11,
+    color: '#10b981',
+    background: '#f0fdf4',
+    border: '1px solid #bbf7d0',
+    borderRadius: 8,
+    padding: '6px 10px',
+    marginBottom: 12,
   }),
 
   tipeKelasRow: (m) => ({
