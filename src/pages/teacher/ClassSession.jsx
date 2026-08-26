@@ -439,6 +439,32 @@ const ClassSession = () => {
       const endTimeCalc = new Date(0, 0, 0, endParts[0], endParts[1]);
       const diffHours = (endTimeCalc - startTime) / 36e5;
 
+      // 🔥 BARU: "kelas" sekarang diambil dari data KELAS SISWA yang
+      // beneran hadir (bukan nama mapel/schedule.title lagi) -- sesuai
+      // permintaan eksplisit: admin harus tahu KELAS BERAPA yang diajar,
+      // diambil dari data siswa yang terdaftar (field kelas/kelasSekolah
+      // per siswa), bukan nama pelajaran.
+      const daftarKelasSiswa = [
+        ...new Set(
+          siswaHadirList
+            .map(s => s.kelas || s.kelasSekolah)
+            .filter(Boolean)
+        )
+      ];
+      const kelasNamaGabungan = daftarKelasSiswa.length > 0
+        ? daftarKelasSiswa.join(', ')
+        : (schedule.title || "Umum");
+
+      // 🔥 BARU: daftar lengkap siswa yang hadir (nama + kelas per siswa)
+      // -- disimpan LANGSUNG di log ini, supaya admin bisa lihat SIAPA
+      // AJA yang masuk pas approval, tanpa perlu query terpisah ke
+      // collection attendance.
+      const daftarSiswaHadir = siswaHadirList.map(s => ({
+        id: s.id,
+        nama: s.nama,
+        kelas: s.kelas || s.kelasSekolah || "-",
+      }));
+
       await addDoc(collection(db, "teacher_logs"), {
         teacherId: teacher.id, 
         namaGuru: teacher.nama,
@@ -459,7 +485,8 @@ const ClassSession = () => {
         // supaya begitu ini di-deploy, data langsung kelihatan di
         // halaman gaji tanpa perlu sentuh kode itu lagi.
         tipeKelas: tipeKelas, // 'reguler' atau 'online'
-        kelasNama: schedule.title || "Umum",
+        kelasNama: kelasNamaGabungan,
+        daftarSiswaHadir: daftarSiswaHadir,
         fotoAbsensiUrl: absensiUploadedUrl,
         materiFileUrl: materiFileUploadedUrl || null,
       });
@@ -593,29 +620,51 @@ const ClassSession = () => {
 
             <p style={styles.absensiHint(isMobile)}>
               {tipeKelas === 'online'
-                ? 'Kelas online tetap WAJIB ada bukti -- unggah screenshot sesi video call (Zoom/Meet/WA Video) yang menunjukkan wajah Anda dan waktu sesi. Ini juga berlaku untuk kelas online di hari libur/tanggal merah.'
-                : 'Ambil foto langsung dari kamera sebagai bukti Anda hadir di lokasi mengajar hari ini.'}
+                ? 'Kelas online tetap WAJIB ada bukti -- ambil/unggah screenshot sesi video call (Zoom/Meet/WA Video) yang menunjukkan wajah Anda dan waktu sesi. Ini juga berlaku untuk kelas online di hari libur/tanggal merah.'
+                : 'Ambil foto sebagai bukti Anda hadir di lokasi mengajar hari ini.'}
             </p>
 
             {!absensiUploadedUrl ? (
-              <label style={styles.uploadBox(isMobile, uploadingAbsensi)}>
-                <input
-                  type="file"
-                  accept="image/*"
-                  {...(tipeKelas === 'reguler' ? { capture: 'environment' } : {})}
-                  onChange={handleAbsensiFileChange}
-                  disabled={uploadingAbsensi}
-                  style={{ display: 'none' }}
-                />
-                {uploadingAbsensi ? (
-                  <>⏳ Mengunggah...</>
-                ) : (
-                  <>
-                    {tipeKelas === 'reguler' ? <Camera size={18} /> : <Upload size={18} />}
-                    {tipeKelas === 'reguler' ? ' Ambil Foto Kehadiran' : ' Unggah Screenshot Sesi Online'}
-                  </>
-                )}
-              </label>
+              // 🔥 BARU: 3 opsi terpisah -- kamera belakang, kamera depan,
+              // atau import dari galeri. Tersedia buat KEDUA tipe kelas
+              // (sebelumnya terkunci 1 metode berdasar tipeKelas, sekarang
+              // guru bebas pilih caranya sendiri).
+              <div style={styles.uploadOptionsRow(isMobile)}>
+                <label style={styles.uploadBox(isMobile, uploadingAbsensi)}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleAbsensiFileChange}
+                    disabled={uploadingAbsensi}
+                    style={{ display: 'none' }}
+                  />
+                  <Camera size={18} /> Kamera Belakang
+                </label>
+
+                <label style={styles.uploadBox(isMobile, uploadingAbsensi)}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="user"
+                    onChange={handleAbsensiFileChange}
+                    disabled={uploadingAbsensi}
+                    style={{ display: 'none' }}
+                  />
+                  <Camera size={18} /> Kamera Depan
+                </label>
+
+                <label style={styles.uploadBoxImport(isMobile, uploadingAbsensi)}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAbsensiFileChange}
+                    disabled={uploadingAbsensi}
+                    style={{ display: 'none' }}
+                  />
+                  <Upload size={18} /> {uploadingAbsensi ? 'Mengunggah...' : 'Import dari Galeri'}
+                </label>
+              </div>
             ) : (
               <div style={styles.absensiSuccessBox(isMobile)}>
                 {absensiPreviewUrl && (
@@ -952,6 +1001,30 @@ const styles = {
   }),
 
   // 🔥 BARU: styles buat tipe kelas + upload bukti kehadiran
+  // 🔥 BARU: baris 3 opsi upload (kamera belakang/depan/import)
+  uploadOptionsRow: (m) => ({
+    display: 'flex',
+    gap: 8,
+    flexDirection: m ? 'column' : 'row',
+  }),
+
+  uploadBoxImport: (m, loading) => ({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: m ? '14px' : '16px',
+    borderRadius: 10,
+    border: '2px dashed #94a3b8',
+    color: '#64748b',
+    fontWeight: 'bold',
+    fontSize: m ? 12 : 13,
+    cursor: loading ? 'not-allowed' : 'pointer',
+    opacity: loading ? 0.6 : 1,
+    background: '#f8fafc',
+    flex: 1,
+  }),
+
   tipeKelasRow: (m) => ({
     display: 'flex',
     gap: 8,
@@ -992,6 +1065,7 @@ const styles = {
     cursor: loading ? 'not-allowed' : 'pointer',
     opacity: loading ? 0.6 : 1,
     background: '#f8fbff',
+    flex: 1,
   }),
 
   uploadBoxSecondary: (m, loading) => ({

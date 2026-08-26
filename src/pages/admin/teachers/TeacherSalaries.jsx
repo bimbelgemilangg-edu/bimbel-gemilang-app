@@ -20,6 +20,10 @@ const TeacherSalaries = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [alertMsg, setAlertMsg] = useState(null);
   const [activeBonusId, setActiveBonusId] = useState(null);
+  // 🔥 BARU: log yang lagi dibuka detail approval-nya (foto besar +
+  // daftar siswa hadir) -- FIX permintaan "saat aproval siswa yang
+  // masuk bisa dilihat, lihat foto dan approval [sekaligus]".
+  const [expandedLogId, setExpandedLogId] = useState(null);
   const [bonusData, setBonusData] = useState({ keterangan: '', nominal: '' });
 
   // 🔥 BARU: cross-check semua guru terdaftar (bukan cuma yang punya log)
@@ -826,9 +830,12 @@ const TeacherSalaries = () => {
                           <td style={styles.tdSmall}>{log.siswaHadir != null ? `${log.siswaHadir} siswa` : <span style={{color:'#cbd5e1'}}>-</span>}</td>
                           <td style={styles.tdSmall}>
                             {log.fotoAbsensiUrl ? (
-                              <a href={log.fotoAbsensiUrl} target="_blank" rel="noopener noreferrer">
+                              <button
+                                onClick={() => setExpandedLogId(expandedLogId === log.id ? null : log.id)}
+                                style={styles.btnLihatDetail}
+                              >
                                 <img src={log.fotoAbsensiUrl} alt="Foto absensi" style={styles.thumbFoto} />
-                              </a>
+                              </button>
                             ) : <span style={{color:'#cbd5e1'}}>-</span>}
                           </td>
                           <td style={styles.tdSmall}>
@@ -855,6 +862,46 @@ const TeacherSalaries = () => {
                             )}
                           </td>
                         </tr>
+                        {/* 🔥 BARU: BARIS EXPAND DETAIL APPROVAL -- foto
+                            besar + daftar siswa hadir (nama & kelas),
+                            ditaruh berdampingan supaya admin bisa cek
+                            semuanya SEBELUM klik approve, gak perlu buka
+                            tab baru/tempat lain. */}
+                        {expandedLogId === log.id && (
+                          <tr style={{background:'#f8fafc'}}>
+                            <td colSpan="9" style={{padding:14}}>
+                              <div style={styles.expandDetailBox(isMobile)}>
+                                <div style={styles.expandPhotoCol}>
+                                  <p style={styles.expandLabel}>📷 Bukti Kehadiran ({log.tipeKelas === 'online' ? 'Screenshot Online' : 'Foto Reguler'})</p>
+                                  {log.fotoAbsensiUrl ? (
+                                    <a href={log.fotoAbsensiUrl} target="_blank" rel="noopener noreferrer">
+                                      <img src={log.fotoAbsensiUrl} alt="Foto absensi (besar)" style={styles.expandPhotoBig} />
+                                    </a>
+                                  ) : <p style={{color:'#94a3b8', fontSize:12}}>Tidak ada foto.</p>}
+                                </div>
+                                <div style={styles.expandStudentCol}>
+                                  <p style={styles.expandLabel}>
+                                    👥 Siswa Hadir ({Array.isArray(log.daftarSiswaHadir) ? log.daftarSiswaHadir.length : log.siswaHadir ?? 0})
+                                  </p>
+                                  {Array.isArray(log.daftarSiswaHadir) && log.daftarSiswaHadir.length > 0 ? (
+                                    <ul style={styles.expandStudentList}>
+                                      {log.daftarSiswaHadir.map((s, i) => (
+                                        <li key={s.id || i} style={styles.expandStudentItem}>
+                                          <span>{s.nama}</span>
+                                          <span style={styles.expandStudentKelas}>Kelas {s.kelas || '-'}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  ) : (
+                                    <p style={{color:'#94a3b8', fontSize:12}}>
+                                      Daftar nama siswa belum tersedia untuk log ini (kemungkinan tercatat sebelum fitur ini aktif).
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
                         {activeBonusId === log.id && (
                           <tr style={{background:'#fffbeb'}}>
                             <td colSpan="9" style={{padding:10}}>
@@ -979,7 +1026,69 @@ const styles = {
     border: '1px solid #e2e8f0',
     cursor: 'pointer',
   },
-  
+
+  // 🔥 BARU: tombol pemicu detail approval + panel expand
+  btnLihatDetail: {
+    background: 'none',
+    border: '2px solid #3b82f6',
+    borderRadius: 8,
+    padding: 2,
+    cursor: 'pointer',
+  },
+
+  expandDetailBox: (m) => ({
+    display: 'flex',
+    gap: 20,
+    flexDirection: m ? 'column' : 'row',
+  }),
+
+  expandPhotoCol: {
+    flex: '0 0 auto',
+  },
+
+  expandStudentCol: {
+    flex: 1,
+    minWidth: 200,
+  },
+
+  expandLabel: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: '#334155',
+    marginBottom: 8,
+  },
+
+  expandPhotoBig: {
+    width: 220,
+    maxWidth: '100%',
+    borderRadius: 10,
+    border: '1px solid #e2e8f0',
+    display: 'block',
+    cursor: 'pointer',
+  },
+
+  expandStudentList: {
+    listStyle: 'none',
+    margin: 0,
+    padding: 0,
+    maxHeight: 220,
+    overflowY: 'auto',
+  },
+
+  expandStudentItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '6px 10px',
+    borderBottom: '1px solid #f1f5f9',
+    fontSize: 12,
+  },
+
+  expandStudentKelas: {
+    color: '#64748b',
+    fontWeight: 600,
+    fontSize: 11,
+  },
+
   formSettingsCard: {
     background: 'white',
     padding: '20px',
