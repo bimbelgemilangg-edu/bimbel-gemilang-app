@@ -52,26 +52,14 @@ const Settings = () => {
   };
 
   const [prices, setPrices] = useState(defaultPrices);
-  // 🔥 STRUKTUR BARU: honor sekarang berupa DAFTAR (array) yang bisa
-  // ditambah/dikurangi bebas -- persis kayak paket belajar -- bukan field
-  // yang dikunci namanya di kode (honorSD/honorSMP/honorSMA/bonusInggris).
-  // `rates` = tarif per-jam berdasarkan jenjang/kategori (bisa nambah
-  // kategori baru sebebas-bebasnya, gak cuma SD/SMP/SMA).
-  // `bonusRules` = bonus tambahan per-jam yang dipicu kalau program jadwal
-  // cocok (misal "English"), juga bisa ditambah bebas.
-  const defaultSalaryRules = {
-    rates: [
-      { id: 'sd', label: 'SD', pricePerHour: 35000 },
-      { id: 'smp', label: 'SMP', pricePerHour: 40000 },
-      { id: 'sma', label: 'SMA', pricePerHour: 50000 },
-    ],
-    bonusRules: [
-      { id: 'english', label: 'Bonus English', matchProgram: 'English', bonusPerHour: 10000 },
-    ],
-    kompensasiPersen: 50,
-    honorMinimal: 20000,
-  };
-  const [salaryRules, setSalaryRules] = useState(defaultSalaryRules);
+  // 🔥 DIPINDAH: pengaturan honor guru (rates/bonus/kompensasi) sudah
+  // gak diedit dari sini lagi -- pindah total ke TeacherSalaries.jsx
+  // (halaman Gaji Guru), dikunci pakai verifikasi PIN Owner yang sama.
+  // Field `salaryRules` di Firestore (settings/global_config) TETAP
+  // ada, cuma gak lagi disentuh/ditulis dari halaman ini -- karena
+  // setDoc pakai {merge:true}, gak menyertakan field ini di payload
+  // simpan halaman ini AMAN, gak akan menghapus/menimpa data yang
+  // sudah diatur dari TeacherSalaries.jsx.
 
   const [ownerPin, setOwnerPin] = useState(""); // 🔥 sengaja kosong (bukan "2003"), cuma keisi dari database
   const [saving, setSaving] = useState(false);
@@ -119,36 +107,9 @@ const Settings = () => {
             }));
           }
           
-          if (data.salaryRules) {
-            // 🔥 MIGRASI OTOMATIS: kalau data yang tersimpan masih format
-            // LAMA (honorSD/honorSMP/honorSMA/bonusInggris sebagai field
-            // tunggal, bukan array `rates`), ubah dulu ke format BARU di
-            // sini -- biar honor yang udah pernah diatur admin sebelumnya
-            // GAK HILANG begitu fitur ini di-update. Kalau sudah format
-            // baru (ada `rates`), langsung dipakai apa adanya.
-            const old = data.salaryRules;
-            if (Array.isArray(old.rates)) {
-              setSalaryRules({
-                rates: old.rates,
-                bonusRules: Array.isArray(old.bonusRules) ? old.bonusRules : defaultSalaryRules.bonusRules,
-                kompensasiPersen: old.kompensasiPersen ?? defaultSalaryRules.kompensasiPersen,
-                honorMinimal: old.honorMinimal ?? defaultSalaryRules.honorMinimal,
-              });
-            } else {
-              setSalaryRules({
-                rates: [
-                  { id: 'sd', label: 'SD', pricePerHour: old.honorSD ?? 35000 },
-                  { id: 'smp', label: 'SMP', pricePerHour: old.honorSMP ?? 40000 },
-                  { id: 'sma', label: 'SMA', pricePerHour: old.honorSMA ?? 50000 },
-                ],
-                bonusRules: [
-                  { id: 'english', label: 'Bonus English', matchProgram: 'English', bonusPerHour: old.bonusInggris ?? 10000 },
-                ],
-                kompensasiPersen: old.kompensasiPersen ?? 50,
-                honorMinimal: old.honorMinimal ?? 20000,
-              });
-            }
-          }
+          // 🔥 DIPINDAH: salaryRules gak lagi dibaca/diproses di halaman
+          // ini -- diatur & ditampilkan langsung dari TeacherSalaries.jsx.
+
           if (data.ownerPin) setOwnerPin(data.ownerPin);
           if (data.biayaPendaftaran) setBiayaPendaftaran(data.biayaPendaftaran);
           if (data.adminPassword) setAdminPassword(data.adminPassword);
@@ -198,7 +159,7 @@ const Settings = () => {
     setSaving(true);
     try {
       await setDoc(doc(db, "settings", "global_config"), {
-        prices, salaryRules, ownerPin, biayaPendaftaran, adminPassword, fixedCosts, assets
+        prices, ownerPin, biayaPendaftaran, adminPassword, fixedCosts, assets
       }, { merge: true });
       alert("✅ Pengaturan Berhasil Disimpan!");
     } catch (error) {
@@ -297,59 +258,9 @@ const Settings = () => {
     });
   };
 
-  // === FUNGSI MANAJEMEN TARIF HONOR (BARU -- bisa tambah/kurang bebas) ===
-  const addRate = () => {
-    const current = salaryRules.rates || [];
-    const newId = `rate${Date.now().toString().slice(-5)}`;
-    setSalaryRules({
-      ...salaryRules,
-      rates: [...current, { id: newId, label: `Kategori Baru`, pricePerHour: 0 }]
-    });
-  };
-
-  const removeRate = (index) => {
-    const current = salaryRules.rates || [];
-    if (current.length <= 1) {
-      alert("Minimal 1 kategori tarif harus ada!");
-      return;
-    }
-    setSalaryRules({
-      ...salaryRules,
-      rates: current.filter((_, i) => i !== index)
-    });
-  };
-
-  const updateRate = (index, field, value) => {
-    const current = salaryRules.rates || [];
-    const updated = [...current];
-    updated[index] = { ...updated[index], [field]: value };
-    setSalaryRules({ ...salaryRules, rates: updated });
-  };
-
-  // === FUNGSI MANAJEMEN BONUS HONOR (BARU -- bisa tambah/kurang bebas) ===
-  const addBonus = () => {
-    const current = salaryRules.bonusRules || [];
-    const newId = `bonus${Date.now().toString().slice(-5)}`;
-    setSalaryRules({
-      ...salaryRules,
-      bonusRules: [...current, { id: newId, label: 'Bonus Baru', matchProgram: '', bonusPerHour: 0 }]
-    });
-  };
-
-  const removeBonus = (index) => {
-    const current = salaryRules.bonusRules || [];
-    setSalaryRules({
-      ...salaryRules,
-      bonusRules: current.filter((_, i) => i !== index)
-    });
-  };
-
-  const updateBonus = (index, field, value) => {
-    const current = salaryRules.bonusRules || [];
-    const updated = [...current];
-    updated[index] = { ...updated[index], [field]: value };
-    setSalaryRules({ ...salaryRules, bonusRules: updated });
-  };
+  // 🔥 DIPINDAH: fungsi manajemen tarif honor & bonus (addRate, removeRate,
+  // updateRate, addBonus, removeBonus, updateBonus) sudah dihapus dari sini
+  // -- semua diedit dari TeacherSalaries.jsx sekarang.
 
   // === FUNGSI MANAJEMEN BIAYA TETAP (BARU) ===
   const addFixedCost = () => {
@@ -419,103 +330,10 @@ const Settings = () => {
 
         <div style={styles.grid(isMobile)}>
 
-          {/* === HONOR GURU === */}
-          <div style={styles.card}>
-            <h3 style={styles.cardTitle}>💰 Aturan Honor Guru</h3>
-            <p style={styles.cardDesc}>Berlaku otomatis saat guru menyelesaikan kelas. Nominal TIDAK ditampilkan ke guru.</p>
-
-            {/* 🔥 TARIF PER KATEGORI -- sekarang bebas ditambah/dikurangi,
-                gak cuma SD/SMP/SMA yang dikunci di kode. Label di sini
-                yang dicocokkan ke jenjang jadwal saat guru menutup kelas. */}
-            <div style={styles.jenjangHeader}>
-              <h4 style={styles.subTitle}>Tarif per Kategori/Jenjang (per jam)</h4>
-              <button onClick={addRate} style={styles.btnAdd}>
-                <Plus size={14} /> Tambah Kategori
-              </button>
-            </div>
-            {(salaryRules.rates || []).map((r, idx) => (
-              <div key={r.id || idx} style={styles.packageRow}>
-                <input
-                  type="text"
-                  value={r.label || ''}
-                  onChange={e => updateRate(idx, 'label', e.target.value)}
-                  style={styles.packageNameInput}
-                  placeholder="Nama kategori (misal: SD, Privat, dll)"
-                />
-                <input
-                  type="number"
-                  value={r.pricePerHour || 0}
-                  onChange={e => updateRate(idx, 'pricePerHour', parseInt(e.target.value) || 0)}
-                  style={styles.packagePriceInput}
-                  placeholder="Rp/jam"
-                />
-                <button onClick={() => removeRate(idx)} style={styles.btnRemove}>
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            ))}
-            <p style={{fontSize: 10, color: '#94a3b8', marginTop: 4}}>
-              💡 "Nama kategori" ini harus sama dengan "Jenjang" yang dipilih admin pas bikin jadwal (contoh: SD, SMP, SMA), biar tarifnya otomatis ketemu.
-            </p>
-
-            <div style={styles.divider} />
-
-            {/* 🔥 BONUS TAMBAHAN -- juga bebas ditambah/dikurangi. Dipicu
-                kalau nama Program di jadwal cocok sama "Berlaku untuk
-                Program" di bawah (misal "English"). */}
-            <div style={styles.jenjangHeader}>
-              <h4 style={styles.subTitle}>Bonus Tambahan (per jam)</h4>
-              <button onClick={addBonus} style={styles.btnAdd}>
-                <Plus size={14} /> Tambah Bonus
-              </button>
-            </div>
-            {(salaryRules.bonusRules || []).map((b, idx) => (
-              <div key={b.id || idx} style={styles.packageRow}>
-                <input
-                  type="text"
-                  value={b.label || ''}
-                  onChange={e => updateBonus(idx, 'label', e.target.value)}
-                  style={{...styles.packageNameInput, flex: 1.3}}
-                  placeholder="Nama bonus"
-                />
-                <input
-                  type="text"
-                  value={b.matchProgram || ''}
-                  onChange={e => updateBonus(idx, 'matchProgram', e.target.value)}
-                  style={{...styles.packageNameInput, flex: 1}}
-                  placeholder="Berlaku utk Program (misal: English)"
-                />
-                <input
-                  type="number"
-                  value={b.bonusPerHour || 0}
-                  onChange={e => updateBonus(idx, 'bonusPerHour', parseInt(e.target.value) || 0)}
-                  style={styles.packagePriceInput}
-                  placeholder="Rp/jam"
-                />
-                <button onClick={() => removeBonus(idx)} style={styles.btnRemove}>
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            ))}
-
-            <div style={styles.divider} />
-            <div style={styles.fieldRow}>
-              <span>Kompensasi 0 Hadir (%)</span>
-              <div style={{display: 'flex', alignItems: 'center', gap: 6}}>
-                <input type="number" value={salaryRules.kompensasiPersen} onChange={e => setSalaryRules({...salaryRules, kompensasiPersen: parseInt(e.target.value) || 0})} style={{...styles.input, width: 70}} />
-                <span style={{fontSize: 11, color: '#64748b'}}>%</span>
-              </div>
-            </div>
-            <div style={styles.fieldRow}>
-              <span>Honor Minimal/Sesi</span>
-              <input type="number" value={salaryRules.honorMinimal} onChange={e => setSalaryRules({...salaryRules, honorMinimal: parseInt(e.target.value) || 0})} style={styles.input} />
-            </div>
-
-            <div style={styles.infoBox}>
-              <Info size={14} /> <strong>Cara Hitung:</strong><br/>
-              <span style={{fontSize: 11}}>Tarif dicari dari kategori yang cocok dengan Jenjang jadwal. Kalau Program jadwal cocok sama salah satu Bonus, ditambahkan ke tarif dasar. Kalau 0 siswa hadir: {salaryRules.kompensasiPersen}% dari tarif dasar × jam.</span>
-            </div>
-          </div>
+          {/* 🔥 DIPINDAH: kartu "Aturan Honor Guru" (tarif per jenjang,
+              bonus, kompensasi 0 hadir) sudah dipindah TOTAL ke halaman
+              Gaji Guru (TeacherSalaries.jsx) -- dikunci verifikasi PIN
+              Owner yang sama dengan yang dipakai di halaman ini. */}
 
           {/* === HARGA PAKET === */}
           <div style={styles.card}>

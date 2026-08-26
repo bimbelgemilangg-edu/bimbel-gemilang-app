@@ -40,26 +40,44 @@ const TeacherSalaries = () => {
   // satu-satu buat tau ada yang ketinggalan.
   const [pendingSummary, setPendingSummary] = useState({ totalPending: 0, teacherCount: 0 });
 
-  // 🔥 BARU: pengaturan komisi terpusat -- dikunci akses OWNER saja.
-  // ⚠️ ASUMSI: status owner dibaca dari localStorage key "userRole"
-  // (nilai "owner"). Kalau sistem login/role kamu pakai mekanisme lain
-  // (mis. field role di Firestore per akun admin), kasih tau supaya
-  // saya sambungkan ke situ -- sengaja fail-closed (default TERKUNCI)
-  // kalau key ini gak ada, bukan fail-open, demi keamanan.
-  const isOwner = (() => {
-    try {
-      return localStorage.getItem('userRole') === 'owner';
-    } catch (_) {
-      return false;
-    }
-  })();
+  // ============================================================
+  // 🔥 PENGATURAN KOMISI GURU -- dipindah dari Settings.jsx ke sini,
+  // disambungkan ke field yang BENERAN dipakai ClassSession.jsx buat
+  // hitung honor (settings/global_config, field "salaryRules") --
+  // BUKAN ke doc terpisah "komisi_rates" yang sebelumnya salah sasaran
+  // (gak nyambung ke perhitungan gaji asli sama sekali).
+  //
+  // Disederhanakan sesuai arahan eksplisit:
+  // - Bonus tambahan (mis. "Bonus English"/EC) DIHAPUS total.
+  // - Kompensasi 0 hadir (yang tadinya 50%) DIHAPUS total.
+  // - Fokus HANYA komisi reguler per jenjang: SD, SMP, SMA + Honor
+  //   Minimal/Sesi sebagai jaring pengaman.
+  //
+  // ⚠️ DAMPAK PERHITUNGAN yang perlu kamu tau: karena kompensasi 0 hadir
+  // dihapus, sekarang kelas dengan 0 siswa hadir dihitung SAMA PERSIS
+  // kayak kelas normal (tarif penuh × jam), bukan dipotong ke 50% lagi
+  // -- cuma tetap dibatasi bawah oleh Honor Minimal/Sesi seperti biasa.
+  // Kalau ternyata kamu masih mau ada pengurangan buat kasus 0 hadir,
+  // kasih tau, saya tambahkan lagi (tinggal bilang berapa %-nya).
+  // ============================================================
 
   const [showKomisiSettings, setShowKomisiSettings] = useState(false);
   const [komisiRates, setKomisiRates] = useState({
-    sd: '', smp: '', sma: '', english: '', default: ''
+    sd: '', smp: '', sma: '', honorMinimal: ''
   });
   const [savingKomisi, setSavingKomisi] = useState(false);
   const [komisiSaved, setKomisiSaved] = useState(false);
+
+  // 🔥 BARU: verifikasi PIN Owner -- pakai mekanisme yang SAMA dengan
+  // yang sudah ada (settings/global_config.ownerPin), yang juga dipakai
+  // buat login Portal Owner & otorisasi hapus/edit transaksi keuangan
+  // di Admin. BUKAN asumsi localStorage yang saya pasang sebelumnya
+  // (itu salah, gak ada mekanisme role kayak gitu di sistem ini).
+  const [ownerPin, setOwnerPin] = useState('');
+  const [isOwnerVerified, setIsOwnerVerified] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [showPinPrompt, setShowPinPrompt] = useState(false);
+  const [pinError, setPinError] = useState('');
 
   // 🔥 STATE UNTUK GOOGLE FORM
   const [showFormSettings, setShowFormSettings] = useState(false);
@@ -73,20 +91,45 @@ const TeacherSalaries = () => {
   const [savingForm, setSavingForm] = useState(false);
   const [formSaved, setFormSaved] = useState(false);
 
-  // 🔥 FETCH KOMISI RATES (settings/komisi_rates)
+  // 🔥 FETCH salaryRules (dari settings/global_config, field yang SAMA
+  // yang dibaca ClassSession.jsx) + ownerPin (buat verifikasi).
   useEffect(() => {
-    const fetchKomisiRates = async () => {
+    const fetchGlobalConfig = async () => {
       try {
-        const docRef = doc(db, "settings", "komisi_rates");
+        const docRef = doc(db, "settings", "global_config");
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setKomisiRates(prev => ({ ...prev, ...docSnap.data() }));
+          const data = docSnap.data();
+          if (data.ownerPin) setOwnerPin(data.ownerPin);
+
+          const sr = data.salaryRules;
+          if (sr) {
+            // Terima format lama (rates array) maupun super-lama
+            // (honorSD/honorSMP/honorSMA field tunggal) -- biar honor
+            // yang sudah pernah diatur sebelumnya gak hilang.
+            if (Array.isArray(sr.rates)) {
+              const findRate = (id) => sr.rates.find(r => (r.id || '').toLowerCase() === id)?.pricePerHour ?? '';
+              setKomisiRates({
+                sd: findRate('sd'),
+                smp: findRate('smp'),
+                sma: findRate('sma'),
+                honorMinimal: sr.honorMinimal ?? '',
+              });
+            } else {
+              setKomisiRates({
+                sd: sr.honorSD ?? '',
+                smp: sr.honorSMP ?? '',
+                sma: sr.honorSMA ?? '',
+                honorMinimal: sr.honorMinimal ?? '',
+              });
+            }
+          }
         }
       } catch (error) {
-        console.error("Error fetching komisi rates:", error);
+        console.error("Error fetching global config:", error);
       }
     };
-    fetchKomisiRates();
+    fetchGlobalConfig();
   }, []);
 
   // 🔥 FETCH TEACHERS MASTER (buat cross-check guru yang belum punya log)
@@ -102,16 +145,50 @@ const TeacherSalaries = () => {
     fetchTeachersMaster();
   }, []);
 
+  // 🔥 BARU: klik tombol "Pengaturan Komisi" -- kalau belum diverifikasi
+  // PIN di sesi ini, munculkan prompt PIN dulu, BUKAN langsung buka
+  // panelnya. Ini yang jadi kunci akses beneran (bukan cuma pengecekan
+  // role yang gampang dilewati).
+  const handleOpenKomisiSettings = () => {
+    if (isOwnerVerified) {
+      setShowKomisiSettings(v => !v);
+    } else {
+      setPinInput('');
+      setPinError('');
+      setShowPinPrompt(true);
+    }
+  };
+
+  const handleVerifyPin = () => {
+    if (!ownerPin) {
+      setPinError('PIN Owner belum diatur di sistem. Atur dulu lewat Portal Owner.');
+      return;
+    }
+    if (pinInput === ownerPin) {
+      setIsOwnerVerified(true);
+      setShowPinPrompt(false);
+      setShowKomisiSettings(true);
+    } else {
+      setPinError('PIN salah. Coba lagi.');
+    }
+  };
+
   const handleSaveKomisiRates = async () => {
-    if (!isOwner) return showAlert("🔒 Cuma owner yang bisa ubah pengaturan komisi.");
+    if (!isOwnerVerified) return showAlert("🔒 Verifikasi PIN Owner dulu.");
     setSavingKomisi(true);
     try {
-      await setDoc(doc(db, "settings", "komisi_rates"), {
-        ...komisiRates,
-        updatedAt: new Date().toISOString()
-      });
+      await setDoc(doc(db, "settings", "global_config"), {
+        salaryRules: {
+          rates: [
+            { id: 'sd', label: 'SD', pricePerHour: parseInt(komisiRates.sd) || 0 },
+            { id: 'smp', label: 'SMP', pricePerHour: parseInt(komisiRates.smp) || 0 },
+            { id: 'sma', label: 'SMA', pricePerHour: parseInt(komisiRates.sma) || 0 },
+          ],
+          honorMinimal: parseInt(komisiRates.honorMinimal) || 0,
+        },
+      }, { merge: true });
       setKomisiSaved(true);
-      showAlert("✅ Pengaturan komisi berhasil disimpan!");
+      showAlert("✅ Komisi guru berhasil disimpan!");
       setTimeout(() => setKomisiSaved(false), 3000);
     } catch (error) {
       showAlert("❌ Gagal menyimpan komisi: " + error.message);
@@ -407,18 +484,17 @@ const TeacherSalaries = () => {
             <p style={styles.subtitle(isMobile)}>Kelola honor berdasarkan jenjang dan durasi mengajar.</p>
           </div>
           <div style={{display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap'}}>
-            {/* 🔥 BARU: tombol Pengaturan Komisi -- HANYA muncul kalau
-                isOwner true. Admin biasa (bukan owner) gak akan lihat
-                tombol ini sama sekali, bukan cuma disembunyikan tapi
-                tetap ada di DOM -- benar-benar gak dirender. */}
-            {isOwner && (
-              <button 
-                onClick={() => setShowKomisiSettings(!showKomisiSettings)} 
-                style={styles.btnKomisiSettings(isMobile)}
-              >
-                <DollarSign size={14} /> {isMobile ? 'Komisi' : 'Pengaturan Komisi'}
-              </button>
-            )}
+            {/* 🔥 BARU: tombol ini SELALU tampil (siapa pun boleh coba),
+                tapi klik akan memicu verifikasi PIN Owner dulu sebelum
+                panelnya kebuka -- konsisten sama pola PIN Owner yang
+                sudah dipakai di tempat lain (bukan disembunyikan
+                berdasar role, tapi dikunci pakai PIN). */}
+            <button 
+              onClick={handleOpenKomisiSettings} 
+              style={styles.btnKomisiSettings(isMobile)}
+            >
+              <DollarSign size={14} /> {isMobile ? 'Komisi' : 'Pengaturan Komisi'}
+            </button>
             <button 
               onClick={() => setShowFormSettings(!showFormSettings)} 
               style={styles.btnGoogleForm(isMobile)}
@@ -519,17 +595,14 @@ const TeacherSalaries = () => {
         )}
 
         {/* 🔥 BARU: PANEL PENGATURAN KOMISI -- terkunci owner. Dicek
-            DUA KALI (isOwner di kondisi render DAN di handleSaveKomisiRates
-            itu sendiri) -- kalau kamu punya cara verifikasi role yang
-            lebih kuat (mis. Firestore security rules), pastikan itu
-            JUGA menolak tulisan ke settings/komisi_rates dari akun
-            non-owner, karena pengecekan di frontend ini gampang
-            dilewati orang yang paham DevTools. Ini lapis pertama
-            (UX), bukan lapis keamanan satu-satunya. */}
-        {isOwner && showKomisiSettings && (
+            DUA KALI (isOwnerVerified di kondisi render DAN di
+            handleSaveKomisiRates itu sendiri). Verifikasinya pakai PIN
+            Owner yang sama dengan yang dipakai Portal Owner & otorisasi
+            transaksi keuangan -- BUKAN sekadar cek role di frontend. */}
+        {isOwnerVerified && showKomisiSettings && (
           <div style={styles.formSettingsCard}>
             <div style={styles.formSettingsHeader}>
-              <h4 style={styles.formSettingsTitle}><DollarSign size={18} /> Pengaturan Komisi/Tarif Guru</h4>
+              <h4 style={styles.formSettingsTitle}><DollarSign size={18} /> Komisi Guru (Kelas Reguler)</h4>
               <button 
                 onClick={() => setShowKomisiSettings(false)} 
                 style={styles.formSettingsClose}
@@ -538,58 +611,48 @@ const TeacherSalaries = () => {
               </button>
             </div>
             <p style={styles.formSettingsDesc}>
-              Atur tarif komisi per sesi berdasarkan jenjang. Nominal per sesi tetap bisa diedit manual di rincian
-              (untuk kasus khusus), tapi angka di sini jadi acuan/default. Hanya owner yang bisa mengubah ini.
+              Tarif per jam berdasarkan jenjang, berlaku otomatis saat guru menyelesaikan kelas reguler.
+              Nominal per sesi tetap bisa diedit manual di rincian untuk kasus khusus.
             </p>
             
             <div style={styles.formGrid}>
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>📚 SD (per sesi)</label>
+                <label style={styles.formLabel}>📚 SD (per jam)</label>
                 <input 
                   type="number" 
                   placeholder="Rp 0" 
-                  value={komisiRates.sd || ''}
+                  value={komisiRates.sd}
                   onChange={(e) => setKomisiRates(prev => ({...prev, sd: e.target.value}))}
                   style={styles.formInput}
                 />
               </div>
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>📚 SMP (per sesi)</label>
+                <label style={styles.formLabel}>📚 SMP (per jam)</label>
                 <input 
                   type="number" 
                   placeholder="Rp 0" 
-                  value={komisiRates.smp || ''}
+                  value={komisiRates.smp}
                   onChange={(e) => setKomisiRates(prev => ({...prev, smp: e.target.value}))}
                   style={styles.formInput}
                 />
               </div>
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>📚 SMA (per sesi)</label>
+                <label style={styles.formLabel}>📚 SMA (per jam)</label>
                 <input 
                   type="number" 
                   placeholder="Rp 0" 
-                  value={komisiRates.sma || ''}
+                  value={komisiRates.sma}
                   onChange={(e) => setKomisiRates(prev => ({...prev, sma: e.target.value}))}
                   style={styles.formInput}
                 />
               </div>
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>🇬🇧 English (per sesi)</label>
+                <label style={styles.formLabel}>🛡️ Honor Minimal/Sesi</label>
                 <input 
                   type="number" 
                   placeholder="Rp 0" 
-                  value={komisiRates.english || ''}
-                  onChange={(e) => setKomisiRates(prev => ({...prev, english: e.target.value}))}
-                  style={styles.formInput}
-                />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>🔗 Default (Semua Jenjang Lain)</label>
-                <input 
-                  type="number" 
-                  placeholder="Rp 0" 
-                  value={komisiRates.default || ''}
-                  onChange={(e) => setKomisiRates(prev => ({...prev, default: e.target.value}))}
+                  value={komisiRates.honorMinimal}
+                  onChange={(e) => setKomisiRates(prev => ({...prev, honorMinimal: e.target.value}))}
                   style={styles.formInput}
                 />
               </div>
@@ -607,6 +670,33 @@ const TeacherSalaries = () => {
               >
                 {savingKomisi ? '⏳ Menyimpan...' : komisiSaved ? '✅ Tersimpan' : <><Save size={16} /> Simpan Tarif</>}
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* 🔥 BARU: MODAL PROMPT PIN OWNER -- muncul waktu klik tombol
+            "Pengaturan Komisi" tapi belum verifikasi PIN di sesi ini. */}
+        {showPinPrompt && (
+          <div style={styles.overlay} onClick={() => setShowPinPrompt(false)}>
+            <div style={styles.pinModal} onClick={e => e.stopPropagation()}>
+              <h4 style={{margin: '0 0 6px', fontSize: 16}}>🔒 Verifikasi PIN Owner</h4>
+              <p style={{margin: '0 0 14px', fontSize: 12, color: '#64748b'}}>
+                Masukkan PIN Owner untuk mengubah pengaturan komisi guru.
+              </p>
+              <input
+                type="password"
+                value={pinInput}
+                onChange={(e) => { setPinInput(e.target.value); setPinError(''); }}
+                onKeyDown={(e) => e.key === 'Enter' && handleVerifyPin()}
+                placeholder="Masukkan PIN"
+                style={styles.pinModalInput}
+                autoFocus
+              />
+              {pinError && <p style={{color: '#ef4444', fontSize: 12, margin: '6px 0 0'}}>{pinError}</p>}
+              <div style={{display: 'flex', gap: 8, marginTop: 14}}>
+                <button onClick={() => setShowPinPrompt(false)} style={styles.btnSecondaryPin}>Batal</button>
+                <button onClick={handleVerifyPin} style={styles.btnPrimaryPin}>Verifikasi</button>
+              </div>
             </div>
           </div>
         )}
@@ -1012,6 +1102,45 @@ const styles = {
   btnRevise: { background:'#f1f5f9', color:'#ef4444', border:'1px solid #e2e8f0', padding:'3px 8px', borderRadius:6, cursor:'pointer', fontSize:10, fontWeight:'bold' },
   miniInput: { padding:6, borderRadius:6, border:'1px solid #e2e8f0', fontSize:11, width:'120px' },
   btnSaveBonus: { background:'#1e293b', color:'white', border:'none', padding:'6px 12px', borderRadius:6, cursor:'pointer', fontSize:11, fontWeight:'bold' },
+
+  // 🔥 BARU: modal prompt PIN Owner
+  pinModal: {
+    background: 'white',
+    borderRadius: 16,
+    padding: 24,
+    width: '90%',
+    maxWidth: 340,
+  },
+  pinModalInput: {
+    width: '100%',
+    padding: '10px 12px',
+    borderRadius: 8,
+    border: '1px solid #e2e8f0',
+    fontSize: 16,
+    textAlign: 'center',
+    letterSpacing: 4,
+    boxSizing: 'border-box',
+  },
+  btnSecondaryPin: {
+    flex: 1,
+    padding: '10px',
+    borderRadius: 8,
+    border: '1px solid #e2e8f0',
+    background: 'white',
+    color: '#64748b',
+    fontWeight: 700,
+    cursor: 'pointer',
+  },
+  btnPrimaryPin: {
+    flex: 1,
+    padding: '10px',
+    borderRadius: 8,
+    border: 'none',
+    background: '#1e293b',
+    color: 'white',
+    fontWeight: 700,
+    cursor: 'pointer',
+  },
 };
 
 export default TeacherSalaries;
