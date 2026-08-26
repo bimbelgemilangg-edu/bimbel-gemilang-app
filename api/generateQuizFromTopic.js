@@ -11,7 +11,7 @@
 //    ↓
 // LOCAL BLUEPRINT ENGINE
 //    ↓
-// GROQ API (CHAT COMPLETIONS)
+// NVIDIA BUILD API (CHAT COMPLETIONS)
 //    ↓
 // JSONL PARSER
 //    ↓
@@ -20,69 +20,56 @@
 // MANAGE QUIZ
 //
 // TANPA:
-// - Jina
-// - Tavily
-// - Google Search API
-// - Gemini
-// - Cloudflare AI
+// - Jina, Tavily (search), Google Search API, Gemini, Cloudflare AI
 // - SiliconFlow (dihapus -- berbayar)
 // - GitHub Models (dihapus -- LAYANAN INI SUDAH RESMI TUTUP TOTAL
-//   per 30 Juli 2026, dikonfirmasi langsung dari GitHub Changelog.
-//   Kalau kamu lihat saran di mana pun yang masih nyebut GitHub
-//   Models/models.github.ai/models.inference.ai.azure.com sebagai
-//   opsi gratis, itu sudah basi -- jangan dipasang lagi.)
+//   per 30 Juli 2026, dikonfirmasi langsung dari GitHub Changelog.)
+// - Groq (dipindah -- terverifikasi masih AKTIF & gratis, TAPI model
+//   gratisnya (openai/gpt-oss-120b) terbukti kurang akurat buat konten
+//   Bahasa Indonesia + matematika presisi + gaya soal ujian formal --
+//   lihat laporan nyata: soal keluar Bahasa Inggris, level SD buat
+//   kelas 9 SMP, dll. NVIDIA Build nge-host model JAUH lebih besar
+//   (DeepSeek, Qwen 72B, Llama 405B, dll) gratis juga, jadi dipindah
+//   ke sini demi kualitas, BUKAN karena Groq rusak/tutup.)
 // - Scraping
 //
-// KENAPA GROQ: terverifikasi AKTIF per Agustus 2026, free tier
-// PERMANEN (bukan trial/kredit habis), TANPA kartu kredit, endpoint
-// kompatibel format OpenAI (gampang dipelihara).
+// KENAPA NVIDIA BUILD: terverifikasi AKTIF & gratis per Agustus 2026
+// dari banyak sumber independen (build.nvidia.com) -- TANPA kartu
+// kredit, endpoint kompatibel OpenAI, katalog 100+ model termasuk yang
+// JAUH lebih besar dari model gratis provider lain (Llama 3.1 405B,
+// Qwen 72B, DeepSeek, dst). Limitnya beda dari Groq: BUKAN batas
+// harian, tapi rate per MENIT (~40 RPM, bisa naik ke 200 RPM kalau
+// diajukan) -- lebih cocok buat pemakaian sehari-hari bimbel yang
+// gak nge-generate ratusan kali per hari, tapi bisa beruntun pas lagi
+// dipakai.
 //
-// 🔥 KOREKSI (sebelumnya salah ketik di sini): limit gratis untuk
-// `openai/gpt-oss-120b` adalah 30 request/menit, 1.000 request/HARI
-// (bukan 14.400 -- itu angka model LAIN, llama-3.1-8b-instant, yang
-// sempat salah kecantol ke sini), 8.000 token/menit, 200.000 token/
-// hari -- per ORGANISASI (bukan per API key). Terverifikasi silang
-// dari beberapa sumber independen Agustus 2026. 1.000 request/hari
-// tetap lebih dari cukup untuk skala bimbel biasa, tapi kalau nanti
-// dipakai bareng fitur browser_search di bawah (yang lebih boros
-// token), TPD (200.000/hari) bisa jadi batas yang lebih dulu kena.
+// ⚠️ CATATAN JUJUR: limit pastinya "tidak dipublikasikan resmi" oleh
+// NVIDIA sendiri (staff bilang tergantung model & traffic keseluruhan
+// saat itu) -- ~40 RPM adalah patokan yang diakui komunitas developer,
+// BUKAN SLA resmi terjamin. Ini tetap dipasang sesuai keputusan bisnis
+// (gratis, sudah kamu siapkan sendiri API key-nya), tapi kalau
+// limitnya berubah suatu saat, itu bukan bug kode ini.
+//
+// ⚠️ KETERBATASAN: model-model di NVIDIA Build TIDAK punya tool
+// browser_search bawaan kayak Groq punya (openai/gpt-oss-120b khusus
+// di Groq). Jadi mode "Prediksi Berbasis Tren" di UI sekarang KEMBALI
+// jadi label instruksi ke AI doang (AI pakai pengetahuan umum yang dia
+// tahu, BUKAN riset internet real-time) -- persis seperti sebelum
+// browser_search dipasang. Ini trade-off sadar demi kualitas bahasa &
+// matematika yang jauh lebih baik untuk PEMAKAIAN UTAMA (mode default).
 //
 // ENV:
-// GROQ_API_KEY=... (buat gratis di console.groq.com/keys, tinggal
-//   daftar pakai email/Google, langsung dapat key, TANPA kartu kredit)
+// NVIDIA_API_KEY=... (buat gratis di build.nvidia.com, daftar pakai
+//   email, TANPA kartu kredit -- sudah kamu siapkan)
 //
 // OPTIONAL:
-// GROQ_MODEL=openai/gpt-oss-120b
-//   (⚠️ Groq MENDEPRECATE model secara rutin -- cek daftar model aktif
-//   di console.groq.com/docs/models sebelum deploy kalau ragu. Model
-//   default di bawah ini ("openai/gpt-oss-120b") adalah PENGGANTI
-//   RESMI yang direkomendasikan Groq sendiri untuk kelas Llama-70B
-//   setelah mereka deprecate llama-3.3-70b-versatile per 16 Agustus
-//   2026 -- JANGAN pakai nama model itu lagi, sudah gak aktif.)
-//
-// 🔥 BARU: BROWSER SEARCH (mode "prediction" SAJA)
-// ============================================================
-// `openai/gpt-oss-120b` & `openai/gpt-oss-20b` punya tool bawaan
-// `browser_search` -- dijalankan DI SERVER GROQ SENDIRI (bukan kita
-// yang scraping/hosting apa pun), pakai mesin pencari Exa. Ini BEDA
-// dari SearXNG (yang kita putuskan TIDAK dipakai -- lihat diskusi:
-// self-hosted SearXNG rawan diblokir Google & butuh VPS berbayar).
-// browser_search TIDAK butuh infrastruktur tambahan sama sekali --
-// tinggal tambah field `tools` di request yang SAMA yang sudah kita
-// pakai.
-//
-// KETERBATASAN JUJUR (jangan lupa ini pas baca kode di bawah):
-// 1. "Currently Free: Available at no additional charge during BETA"
-//    -- ini status BETA Groq sendiri, bisa berubah kapan saja jadi
-//    berbayar. Bukan janji gratis selamanya.
-// 2. Cuma teks/snippet halaman -- TIDAK bisa mengambil FILE GAMBAR
-//    asli dari halaman sumber. Visual (jam, grafik) tetap dibikin
-//    lokal lewat buildClockSvg()/buildGraphSvg() seperti sebelumnya.
-// 3. Makan token & waktu lebih banyak (hasil pencarian masuk ke
-//    context) -- makanya SENGAJA cuma diaktifkan di mode "prediction"
-//    (guru pilih "Prediksi Berbasis Tren" di UI), BUKAN di mode
-//    default "source" yang harus tetap cepat & hemat token buat
-//    pemakaian sehari-hari.
+// NVIDIA_MODEL=qwen/qwen2.5-72b-instruct
+//   (⚠️ Model default dipilih KHUSUS karena dia model INSTRUCT biasa,
+//   BUKAN model reasoning (DeepSeek-R1/V4 dkk BUTUH parameter khusus
+//   `chat_template_kwargs` dan kadang HANG tanpa itu -- dikonfirmasi
+//   dari laporan bug developer lain. Qwen 72B kuat di matematika &
+//   multibahasa termasuk Indonesia, tanpa jebakan itu. Cek katalog
+//   model aktif di build.nvidia.com sebelum ganti kalau ragu.)
 //
 // ============================================================
 
@@ -92,12 +79,12 @@ export const maxDuration = 60;
 // CONFIG
 // ============================================================
 
-const GROQ_API_URL =
-  'https://api.groq.com/openai/v1/chat/completions';
+const NVIDIA_API_URL =
+  'https://integrate.api.nvidia.com/v1/chat/completions';
 
-const GROQ_MODEL =
-  process.env.GROQ_MODEL ||
-  'openai/gpt-oss-120b';
+const NVIDIA_MODEL =
+  process.env.NVIDIA_MODEL ||
+  'qwen/qwen2.5-72b-instruct';
 
 const DEFAULT_QUESTION_COUNT = 10;
 const MAX_QUESTION_COUNT = 20;
@@ -112,17 +99,14 @@ const AI_TIMEOUT_MS = 45_000;
 // yang rapi.
 const AI_TIMEOUT_WITH_SEARCH_MS = 55_000;
 
-// 🔥 BARU: Groq TPM (Tokens Per Minute) untuk model `openai/gpt-oss-120b`
-// di tier gratis ternyata cuma 8000 -- ini ANGKA ASLI dari pesan error
-// yang benar-benar dialami ("Limit 8000, Requested 9689"), bukan
-// perkiraan. Request SEBELUMNYA selalu minta `max_tokens: 9000` tetap,
-// gak peduli berapa jumlah soal yang diminta guru -- untuk permintaan
-// 3 soal pun tetap minta jatah 9000 token buat OUTPUT SENDIRI, ditambah
-// token prompt (blueprint + instruksi), jadi gampang banget nabrak
-// limit 8000 bahkan buat permintaan kecil. Sekarang max_tokens dihitung
-// PROPORSIONAL ke jumlah soal yang diminta -- permintaan kecil (3 soal)
-// minta token jauh lebih sedikit, gak lagi selalu minta jatah maksimal.
-const GROQ_TPM_LIMIT = 8000;
+// 🔥 CATATAN: NVIDIA Build TIDAK punya batas TPM (token/menit) yang
+// ketat & terpublikasi kayak Groq (yang 8.000 TPM). Batasnya lebih ke
+// arah RPM (~40/menit) dan variabel tergantung model+traffic. Angka di
+// bawah ini BUKAN batas resmi NVIDIA -- ini cuma batas wajar milik kita
+// sendiri, biar 1 permintaan gak minta token gila-gilaan tanpa alasan
+// (hemat waktu respons & tetap proporsional ke jumlah soal yang
+// diminta guru, konsisten dengan logika computeMaxTokens() di bawah).
+const SOFT_MAX_TOKENS_CEILING = 8000;
 
 // ============================================================
 // 🔥 BARU: TAVILY (pencari gambar asli -- opsional)
@@ -478,7 +462,7 @@ function computeMaxTokens(
       : 1500;
 
   const ceiling =
-    GROQ_TPM_LIMIT -
+    SOFT_MAX_TOKENS_CEILING -
     buffer;
 
   return Math.min(
@@ -2897,25 +2881,21 @@ function buildSystemPrompt({
 
     'ATURAN MUTLAK:',
 
-    // 🔥 BARU: aturan #1-3 sekarang KONDISIONAL. Sebelumnya SELALU
-    // melarang browsing & klaim sumber eksternal -- itu benar untuk
-    // mode default (jujur, karena memang gak ada browsing terjadi).
-    // Tapi begitu `browser_search` diaktifkan (mode "prediction"),
-    // larangan itu JUSTRU KONTRADIKTIF dengan tool yang baru dipasang
-    // -- AI perlu diberi tau dia BOLEH dan SEHARUSNYA browsing, dan
-    // WAJIB jujur soal sumber yang dia temukan (bukan lagi dilarang
-    // ngaku pakai sumber eksternal).
-    ...(enableBrowserSearch
-      ? [
-          '1. Kamu PUNYA akses browser_search -- WAJIB dipakai untuk cari referensi tren/pola soal ujian terkini (mis. kisi-kisi UTBK/TKA terbaru) sebelum menyusun soal, terutama untuk butir blueprint dengan tingkat kesulitan Hard/HOTS.',
-          '2. Kalau soal terinspirasi dari sumber yang kamu temukan lewat browser_search, isi field "sourceTitle" dan "sourceUrl" dengan judul & URL ASLI dari sumber itu. Jangan mengarang URL yang gak pernah kamu buka.',
-          '3. Kalau kamu TIDAK menemukan sumber relevan untuk suatu butir, kosongkan "sourceTitle"/"sourceUrl" -- jangan mengarang supaya kelihatan "berbasis riset".',
-        ]
-      : [
-          '1. Jangan browsing.',
-          '2. Jangan mengaku melakukan browsing.',
-          '3. Jangan mengaku memakai sumber eksternal.',
-        ]),
+    // 🔥 FIX PENTING: sebelumnya (waktu masih pakai Groq openai/gpt-oss-120b)
+    // ada instruksi kondisional yang bilang "kamu PUNYA akses
+    // browser_search" begitu mode "prediction" aktif -- itu BENAR waktu
+    // itu karena Groq beneran nyediain tool browser_search bawaan. Tapi
+    // NVIDIA Build TIDAK punya tool itu sama sekali, di model apa pun di
+    // katalognya. Kalau instruksi lama ini dibiarkan, AI bisa
+    // "berpura-pura" browsing (halusinasi seolah-olah nemu sumber),
+    // padahal gak pernah beneran akses internet -- BAHAYA lebih besar
+    // dari sekadar gak variatif. Makanya SEKARANG SELALU jujur "jangan
+    // browsing", gak peduli mode apa pun.
+    '1. Jangan browsing internet -- kamu gak punya akses itu.',
+
+    '2. Jangan mengaku melakukan browsing.',
+
+    '3. Jangan mengaku memakai sumber eksternal atau URL yang gak pernah kamu buka.',
 
     '4. Jangan menyalin soal dari sumber tertentu secara verbatim/kata-per-kata -- soal harus tetap hasil susunan sendiri berdasarkan pola/kompetensi yang dipelajari.',
 
@@ -2939,15 +2919,28 @@ function buildSystemPrompt({
 
     '14. Jangan memberikan percakapan tambahan.',
 
+    // 🔥 BARU: penekanan Bahasa Indonesia MUTLAK -- ditambah setelah
+    // laporan nyata AI keluar Bahasa Inggris di tengah kuis Bahasa
+    // Indonesia (mis. "What is the sum of 7 and 5?" muncul di kuis
+    // Matematika TKA kelas 9 SMP). Ditaruh sebagai ATURAN MUTLAK
+    // bernomor, bukan cuma disebut sekilas, biar bobotnya jelas setara
+    // sama aturan lain yang harus dipatuhi.
+    '15. SELURUH teks (question, options, explanation, statements, cause, effect, readingText, subQuestions, dll) WAJIB 100% Bahasa Indonesia baku -- KECUALI notasi matematika standar (mis. "7³", "x²", angka, simbol operasi) dan istilah teknis yang memang lazim dipakai apa adanya (mis. "HOTS"). DILARANG MUTLAK bikin soal atau pilihan jawaban dalam Bahasa Inggris.',
+
+    // 🔥 BARU: penekanan level kesulitan sesuai jenjang -- ditambah
+    // setelah laporan nyata soal level SD ("berapa hasil 7+5?") muncul
+    // untuk kuis kelas 9 SMP HOTS.
+    '16. Soal WAJIB sesuai jenjang kelas yang diminta -- soal kelas 9 SMP harus setara materi kurikulum kelas 9 SMP, BUKAN materi kelas yang jauh lebih rendah (mis. penjumlahan dasar, perkalian 1 digit) walau ditandai "Easy". "Easy" berarti bagian TERMUDAH dari materi kelas tersebut, BUKAN materi jenjang yang berbeda.',
+
+    '17. Untuk mapel Matematika, gunakan operasi/rumus yang PRESIS dan bisa dihitung manual -- verifikasi ulang hasil perhitungan sebelum menuliskannya di "correct"/"explanation", jangan asal tebak angka.',
+
     '',
 
     'FORMAT:',
 
     '{"meta":true}',
 
-    enableBrowserSearch
-      ? '{"type":"multiple","blueprintNo":1,"difficulty":"Easy","competency":"...","question":"...","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"...","sourceTitle":"...","sourceUrl":"..."}'
-      : '{"type":"multiple","blueprintNo":1,"difficulty":"Easy","competency":"...","question":"...","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+    '{"type":"multiple","blueprintNo":1,"difficulty":"Easy","competency":"...","question":"...","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
 
     '',
 
@@ -3078,15 +3071,6 @@ function buildSystemPrompt({
 
     '⚠️ PERINGATAN KERAS: field "question" HANYA boleh berisi KALIMAT SOAL dalam bahasa manusia biasa. DILARANG MUTLAK menulis potongan JSON, tanda kurung kurawal {}, atau kata kunci seperti "graph"/"clock"/"circle"/"shape"/"points"/"xLabel" DI DALAM teks "question" -- semua data visual itu WAJIB jadi key JSON terpisah yang sejajar dengan "question", persis seperti contoh objek utuh di atas.',
 
-    // 🔥 Diingatkan eksplisit ke AI juga -- biar dia gak nyoba nulis
-    // URL gambar asli dari hasil browser_search ke field ini (dia
-    // cuma bisa akses teks/snippet halaman, bukan file gambarnya).
-    ...(enableBrowserSearch
-      ? [
-          '(Catatan: browser_search cuma kasih kamu TEKS halaman, BUKAN file gambar. Kalau butuh visual, tetap pakai clock/graph/circle/shape di atas atau needsImage+imageHint -- jangan mengarang URL gambar dari hasil pencarian.)',
-        ]
-      : []),
-
     '',
 
     'Output harus JSONL murni.',
@@ -3157,7 +3141,7 @@ function buildUserPrompt({
 // GROQ API
 // ============================================================
 
-async function callGroq({
+async function callNvidia({
   apiKey,
   systemPrompt,
   userPrompt,
@@ -3179,7 +3163,7 @@ async function callGroq({
   try {
     const response =
       await fetch(
-        GROQ_API_URL,
+        NVIDIA_API_URL,
         {
           method: 'POST',
 
@@ -3196,7 +3180,7 @@ async function callGroq({
 
           body: JSON.stringify({
             model:
-              GROQ_MODEL,
+              NVIDIA_MODEL,
 
             messages: [
               {
@@ -3224,21 +3208,12 @@ async function callGroq({
             stream:
               false,
 
-            // 🔥 BARU: browser_search -- tool bawaan Groq (server-side,
-            // pakai Exa), CUMA disisipkan kalau diminta (mode
-            // "prediction"). Dibiarkan gak ada sama sekali di request
-            // mode "source" biasa supaya perilaku default TETAP SAMA
-            // PERSIS seperti sebelumnya -- gak ada risiko baru buat
-            // pemakaian sehari-hari yang udah jalan baik.
-            ...(enableBrowserSearch
-              ? {
-                  tools: [
-                    {
-                      type: 'browser_search',
-                    },
-                  ],
-                }
-              : {}),
+            // 🔥 CATATAN: NVIDIA Build TIDAK punya tool browser_search
+            // bawaan (itu fitur khusus Groq openai/gpt-oss-120b). Jadi
+            // di sini `enableBrowserSearch` cuma dipakai buat pilih
+            // timeout yang lebih longgar & label "MODE: prediction" di
+            // prompt -- BUKAN riset internet beneran. Lihat catatan
+            // jujur soal ini di header file.
           }),
 
           signal:
@@ -3274,9 +3249,10 @@ async function callGroq({
         responseText ||
         'Unknown provider error';
 
+
       const error =
         new Error(
-          `Groq HTTP ${response.status}`,
+          `NVIDIA HTTP ${response.status}`,
         );
 
       error.providerStatus =
@@ -3290,40 +3266,21 @@ async function callGroq({
           1000,
         );
 
-      // 🔥 BARU: header rate-limit ASLI Groq (bukan tebakan -- ini
-      // nama header yang benar-benar dipakai Groq, terverifikasi).
-      // `retry-after` cuma muncul kalau status-nya 429. Dua pasang
-      // header lain SELALU ada di tiap respons (sukses maupun gagal)
-      // dan kasih tau sisa jatah -- disimpan di sini juga supaya bisa
-      // dipakai sendGroqError() buat kasih pesan yang jujur & spesifik
-      // (RPM habis vs RPD habis vs TPM habis, tiga hal beda).
+      // 🔥 CATATAN JUJUR: beda dari Groq (yang header rate-limit-nya
+      // terdokumentasi jelas & sudah kita verifikasi), NVIDIA Build
+      // TIDAK mempublikasikan resmi nama header rate-limit-nya --
+      // staff NVIDIA sendiri bilang batasnya "tergantung model &
+      // traffic keseluruhan saat itu", gak ada angka pasti yang bisa
+      // dijadikan acuan header spesifik. Makanya di sini CUMA
+      // `retry-after` (header HTTP standar, aman diasumsikan ada di
+      // provider mana pun yang mengimplementasikan 429 dengan benar)
+      // yang dipakai -- gak ada header nama lain yang diasumsikan
+      // (daripada ngarang nama yang belum tentu benar, kayak
+      // pengalaman kemarin pas asumsi header GitHub Models ternyata
+      // beda dari kenyataan).
       error.retryAfterSeconds =
         response.headers.get(
           'retry-after',
-        ) ||
-        null;
-
-      error.remainingRequests =
-        response.headers.get(
-          'x-ratelimit-remaining-requests',
-        ) ||
-        null;
-
-      error.resetRequests =
-        response.headers.get(
-          'x-ratelimit-reset-requests',
-        ) ||
-        null;
-
-      error.remainingTokens =
-        response.headers.get(
-          'x-ratelimit-remaining-tokens',
-        ) ||
-        null;
-
-      error.resetTokens =
-        response.headers.get(
-          'x-ratelimit-reset-tokens',
         ) ||
         null;
 
@@ -3352,7 +3309,7 @@ async function callGroq({
     ) {
       const error =
         new Error(
-          'Groq response content kosong.',
+          'NVIDIA response content kosong.',
         );
 
       error.providerStatus =
@@ -3373,7 +3330,7 @@ async function callGroq({
 
       model:
         data?.model ||
-        GROQ_MODEL,
+        NVIDIA_MODEL,
 
       finishReason:
         data
@@ -3401,11 +3358,11 @@ async function callGroq({
 
       const timeoutError =
         new Error(
-          `Groq timeout setelah ${usedTimeout}ms.`,
+          `NVIDIA timeout setelah ${usedTimeout}ms.`,
         );
 
       timeoutError.code =
-        'GROQ_TIMEOUT';
+        'NVIDIA_TIMEOUT';
 
       throw timeoutError;
     }
@@ -3423,7 +3380,7 @@ async function callGroq({
 // SAFE ERROR RESPONSE
 // ============================================================
 
-function sendGroqError(
+function sendNvidiaError(
   res,
   error,
 ) {
@@ -3433,7 +3390,7 @@ function sendGroqError(
 
   if (
     error?.code ===
-    'GROQ_TIMEOUT'
+    'NVIDIA_TIMEOUT'
   ) {
     return res
       .status(504)
@@ -3441,7 +3398,7 @@ function sendGroqError(
         success: false,
 
         error:
-          'Groq terlalu lama merespons.',
+          'NVIDIA terlalu lama merespons.',
 
         diagnostics: {
           type:
@@ -3451,66 +3408,41 @@ function sendGroqError(
             AI_TIMEOUT_MS,
 
           model:
-            GROQ_MODEL,
+            NVIDIA_MODEL,
         },
       });
   }
 
   // ----------------------------------------------------------
-  // RATE LIMIT (429) -- dibedain: kalau `resetRequests`/`resetTokens`
-  // nunjukin durasi PENDEK (detik/menit), itu cuma limit RPM/TPM
-  // sesaat, tunggu bentar aja. Kalau providerMessage/reset menunjukkan
-  // ini limit HARIAN (RPD), guru perlu tau harus nunggu sampai besok,
-  // bukan nyoba generate ulang berkali-kali dalam beberapa menit.
+  // RATE LIMIT (429) -- 🔥 CATATAN JUJUR: beda dari Groq (yang
+  // pembedaan RPD vs RPM/TPM bisa dipastikan dari header resmi),
+  // NVIDIA gak punya header rate-limit yang terpublikasi/terverifikasi
+  // buat bedain "batas harian habis" vs "kebanyakan request sesaat".
+  // Jadi pesannya digeneralisir jujur -- gak ngarang pembedaan yang
+  // gak bisa dipastikan benar dari NVIDIA.
   // ----------------------------------------------------------
 
   if (
     error?.providerStatus === 429
   ) {
-    const isDailyLimit =
-      error.remainingRequests === '0' &&
-      /[hd]/i.test(
-        String(error.resetRequests || ''),
-      );
-
     return res
       .status(429)
       .json({
         success: false,
 
         error:
-          isDailyLimit
-            ? 'Jatah gratis harian Groq untuk model ini sudah habis. Coba lagi besok, atau ganti model sementara lewat env var GROQ_MODEL.'
-            : `Groq lagi dibatasi sesaat (terlalu banyak request dalam waktu singkat). Coba lagi dalam ${error.retryAfterSeconds || 'beberapa'} detik.`,
+          `NVIDIA lagi membatasi request (rate limit ~40/menit pada tier gratis). Coba lagi dalam ${error.retryAfterSeconds || 'beberapa puluh'} detik.`,
 
         diagnostics: {
           type:
-            isDailyLimit
-              ? 'daily_quota_exhausted'
-              : 'rate_limited_temporary',
+            'rate_limited',
 
           retryAfterSeconds:
             error.retryAfterSeconds ||
             null,
 
-          remainingRequests:
-            error.remainingRequests ||
-            null,
-
-          resetRequests:
-            error.resetRequests ||
-            null,
-
-          remainingTokens:
-            error.remainingTokens ||
-            null,
-
-          resetTokens:
-            error.resetTokens ||
-            null,
-
           model:
-            GROQ_MODEL,
+            NVIDIA_MODEL,
         },
       });
   }
@@ -3518,8 +3450,7 @@ function sendGroqError(
   // ----------------------------------------------------------
   // REQUEST TOO LARGE (413) -- seharusnya sudah dicegah oleh
   // computeMaxTokens(), tapi tetap ditangani jaga-jaga kalau blueprint
-  // atau arahan guru sangat panjang sampai token prompt sendiri (bukan
-  // cuma max_tokens) yang bikin total nabrak limit TPM.
+  // atau arahan guru sangat panjang.
   // ----------------------------------------------------------
 
   if (
@@ -3531,7 +3462,7 @@ function sendGroqError(
         success: false,
 
         error:
-          'Permintaan terlalu besar untuk diproses Groq sekali jalan. Coba kurangi jumlah soal yang diminta, atau persingkat arahan guru.',
+          'Permintaan terlalu besar untuk diproses NVIDIA sekali jalan. Coba kurangi jumlah soal yang diminta, atau persingkat arahan guru.',
 
         diagnostics: {
           type:
@@ -3546,7 +3477,7 @@ function sendGroqError(
             null,
 
           model:
-            GROQ_MODEL,
+            NVIDIA_MODEL,
         },
       });
   }
@@ -3566,7 +3497,7 @@ function sendGroqError(
         success: false,
 
         error:
-          'Groq menolak atau gagal memproses permintaan.',
+          'NVIDIA menolak atau gagal memproses permintaan.',
 
         diagnostics: {
           type:
@@ -3584,7 +3515,7 @@ function sendGroqError(
             null,
 
           model:
-            GROQ_MODEL,
+            NVIDIA_MODEL,
 
         },
       });
@@ -3600,7 +3531,7 @@ function sendGroqError(
       success: false,
 
       error:
-        'Server gagal terhubung ke Groq.',
+        'Server gagal terhubung ke NVIDIA.',
 
       diagnostics: {
         type:
@@ -3611,7 +3542,7 @@ function sendGroqError(
           'Unknown error',
 
         model:
-          GROQ_MODEL,
+          NVIDIA_MODEL,
       },
     });
 }
@@ -3757,7 +3688,7 @@ export default async function handler(
   // ==========================================================
 
   const apiKey =
-    process.env.GROQ_API_KEY;
+    process.env.NVIDIA_API_KEY;
 
   if (!apiKey) {
     return res
@@ -3766,7 +3697,7 @@ export default async function handler(
         success: false,
 
         error:
-          'GROQ_API_KEY belum dikonfigurasi di Vercel. Daftar gratis di console.groq.com/keys (tanpa kartu kredit), lalu simpan sebagai environment variable GROQ_API_KEY.',
+          'NVIDIA_API_KEY belum dikonfigurasi di Vercel. Daftar gratis di build.nvidia.com (tanpa kartu kredit), lalu simpan sebagai environment variable NVIDIA_API_KEY.',
       });
   }
 
@@ -3890,7 +3821,7 @@ export default async function handler(
 
   try {
     aiResult =
-      await callGroq({
+      await callNvidia({
         apiKey,
         systemPrompt,
         userPrompt,
@@ -3900,7 +3831,7 @@ export default async function handler(
 
   } catch (error) {
     console.error(
-      '[Gemilang AI] Groq error',
+      '[Gemilang AI] NVIDIA error',
       {
         message:
           error?.message,
@@ -3924,11 +3855,11 @@ export default async function handler(
           error?.code,
 
         model:
-          GROQ_MODEL,
+          NVIDIA_MODEL,
       },
     );
 
-    return sendGroqError(
+    return sendNvidiaError(
       res,
       error,
     );
@@ -4081,7 +4012,7 @@ export default async function handler(
         success: false,
 
         error:
-          'Quality Gate tidak menemukan soal valid dari respons Groq.',
+          'Quality Gate tidak menemukan soal valid dari respons NVIDIA.',
 
         diagnostics: {
           parsedObjectCount:
@@ -4201,12 +4132,17 @@ export default async function handler(
             'competency',
           ),
 
-        researchPerformed:
-          enableBrowserSearch,
+        // 🔥 FIX: sebelumnya `researchPerformed: enableBrowserSearch`
+        // -- itu benar waktu Groq browser_search beneran jalan. Sekarang
+        // (NVIDIA, gak ada tool browsing sama sekali) SELALU false,
+        // apa pun mode-nya -- jangan mengklaim riset internet terjadi
+        // padahal enggak.
+        researchPerformed: false,
 
-        // 🔥 BARU: sebelumnya hardcode false apa pun kondisinya --
-        // sekarang hitung beneran berapa dari soal yang lolos punya
-        // sumber valid (URL asli, bukan mengarang) hasil browser_search.
+        // 🔥 CATATAN: kolom ini akan SELALU 0 sekarang (NVIDIA gak ada
+        // browser_search), dipertahankan di diagnostik biar konsisten
+        // strukturnya kalau provider lain dengan tool serupa dipasang
+        // lagi nanti.
         researchBackedCount:
           questions.filter(
             (q) =>
