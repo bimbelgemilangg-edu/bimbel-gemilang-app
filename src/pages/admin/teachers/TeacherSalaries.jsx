@@ -57,20 +57,55 @@ const TeacherSalaries = () => {
   // - Fokus HANYA komisi reguler per jenjang: SD, SMP, SMA + Honor
   //   Minimal/Sesi sebagai jaring pengaman.
   //
-  // ⚠️ DAMPAK PERHITUNGAN yang perlu kamu tau: karena kompensasi 0 hadir
-  // dihapus, sekarang kelas dengan 0 siswa hadir dihitung SAMA PERSIS
-  // kayak kelas normal (tarif penuh × jam), bukan dipotong ke 50% lagi
-  // -- cuma tetap dibatasi bawah oleh Honor Minimal/Sesi seperti biasa.
-  // Kalau ternyata kamu masih mau ada pengurangan buat kasus 0 hadir,
-  // kasih tau, saya tambahkan lagi (tinggal bilang berapa %-nya).
+  // ⚠️ Kompensasi 0 hadir sudah dihapus sebelumnya -- kelas dengan 0
+  // siswa hadir dihitung tarif penuh × jam, gak ada pengurangan.
   // ============================================================
 
   const [showKomisiSettings, setShowKomisiSettings] = useState(false);
-  const [komisiRates, setKomisiRates] = useState({
-    sd: '', smp: '', sma: '', honorMinimal: ''
-  });
+  // 🔥 BARU: dari object tetap {sd,smp,sma,honorMinimal} JADI ARRAY
+  // dinamis -- supaya kamu bisa tambah kategori sespesifik apa pun
+  // (mis. "Kelas 6 SD" beda tarif dari "SD" umum), gak lagi terkunci 3
+  // kotak tetap. "Honor Minimal/Sesi" DIHAPUS TOTAL sesuai permintaan.
+  const [komisiRates, setKomisiRates] = useState([
+    { id: 'sd', label: 'SD', pricePerHour: '' },
+    { id: 'smp', label: 'SMP', pricePerHour: '' },
+    { id: 'sma', label: 'SMA', pricePerHour: '' },
+  ]);
   const [savingKomisi, setSavingKomisi] = useState(false);
   const [komisiSaved, setKomisiSaved] = useState(false);
+
+  // 🔥 BARU: format ribuan otomatis (titik) biar gak bingung baca angka
+  // -- "27000" tampil "27.000". Disimpan sebagai angka murni di state,
+  // cuma TAMPILANNYA yang diformat.
+  const formatRibuan = (value) => {
+    const numOnly = String(value ?? '').replace(/\D/g, '');
+    if (!numOnly) return '';
+    return numOnly.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  };
+  const parseRibuan = (formatted) => String(formatted ?? '').replace(/\D/g, '');
+
+  // 🔥 BARU: fungsi tambah/hapus/ubah kategori tarif -- dikembalikan
+  // (mirip yang dulu ada di Settings.jsx) karena sekarang kamu perlu
+  // nambah kategori sespesifik "Kelas 6 SD", bukan cuma SD/SMP/SMA.
+  const addKomisiRate = () => {
+    setKomisiRates(prev => [...prev, { id: `rate${Date.now().toString().slice(-5)}`, label: '', pricePerHour: '' }]);
+  };
+  const removeKomisiRate = (index) => {
+    setKomisiRates(prev => {
+      if (prev.length <= 1) {
+        showAlert("⚠️ Minimal 1 kategori tarif harus ada!");
+        return prev;
+      }
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+  const updateKomisiRate = (index, field, value) => {
+    setKomisiRates(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
 
   // 🔥 BARU: verifikasi PIN Owner -- pakai mekanisme yang SAMA dengan
   // yang sudah ada (settings/global_config.ownerPin), yang juga dipakai
@@ -111,21 +146,20 @@ const TeacherSalaries = () => {
             // Terima format lama (rates array) maupun super-lama
             // (honorSD/honorSMP/honorSMA field tunggal) -- biar honor
             // yang sudah pernah diatur sebelumnya gak hilang.
-            if (Array.isArray(sr.rates)) {
-              const findRate = (id) => sr.rates.find(r => (r.id || '').toLowerCase() === id)?.pricePerHour ?? '';
-              setKomisiRates({
-                sd: findRate('sd'),
-                smp: findRate('smp'),
-                sma: findRate('sma'),
-                honorMinimal: sr.honorMinimal ?? '',
-              });
-            } else {
-              setKomisiRates({
-                sd: sr.honorSD ?? '',
-                smp: sr.honorSMP ?? '',
-                sma: sr.honorSMA ?? '',
-                honorMinimal: sr.honorMinimal ?? '',
-              });
+            // 🔥 honorMinimal SENGAJA gak dibaca lagi -- field ini
+            // dihapus total, walau masih ada di data lama, diabaikan.
+            if (Array.isArray(sr.rates) && sr.rates.length > 0) {
+              setKomisiRates(sr.rates.map(r => ({
+                id: r.id || `rate${Math.random().toString(36).slice(2, 7)}`,
+                label: r.label || '',
+                pricePerHour: r.pricePerHour ?? '',
+              })));
+            } else if (sr.honorSD !== undefined) {
+              setKomisiRates([
+                { id: 'sd', label: 'SD', pricePerHour: sr.honorSD ?? '' },
+                { id: 'smp', label: 'SMP', pricePerHour: sr.honorSMP ?? '' },
+                { id: 'sma', label: 'SMA', pricePerHour: sr.honorSMA ?? '' },
+              ]);
             }
           }
         }
@@ -179,16 +213,27 @@ const TeacherSalaries = () => {
 
   const handleSaveKomisiRates = async () => {
     if (!isOwnerVerified) return showAlert("🔒 Verifikasi PIN Owner dulu.");
+
+    // Validasi ringan: label gak boleh kosong (biar gak ada kategori
+    // "tanpa nama" yang bikin bingung waktu dicocokkan di ClassSession.jsx)
+    const hasEmptyLabel = komisiRates.some(r => !r.label || !r.label.trim());
+    if (hasEmptyLabel) {
+      return showAlert("⚠️ Semua kategori tarif harus punya nama (label).");
+    }
+
     setSavingKomisi(true);
     try {
       await setDoc(doc(db, "settings", "global_config"), {
         salaryRules: {
-          rates: [
-            { id: 'sd', label: 'SD', pricePerHour: parseInt(komisiRates.sd) || 0 },
-            { id: 'smp', label: 'SMP', pricePerHour: parseInt(komisiRates.smp) || 0 },
-            { id: 'sma', label: 'SMA', pricePerHour: parseInt(komisiRates.sma) || 0 },
-          ],
-          honorMinimal: parseInt(komisiRates.honorMinimal) || 0,
+          rates: komisiRates.map(r => ({
+            id: r.id,
+            label: r.label.trim(),
+            pricePerHour: parseInt(parseRibuan(r.pricePerHour)) || 0,
+          })),
+          // 🔥 honorMinimal DIHAPUS TOTAL -- gak ditulis lagi ke database.
+          // Field lama di dokumen (kalau masih ada dari sebelumnya) gak
+          // otomatis kehapus (merge:true), tapi udah gak dipakai/dibaca
+          // ClassSession.jsx lagi -- aman diabaikan.
         },
       }, { merge: true });
       setKomisiSaved(true);
@@ -615,52 +660,43 @@ const TeacherSalaries = () => {
               </button>
             </div>
             <p style={styles.formSettingsDesc}>
-              Tarif per jam berdasarkan jenjang, berlaku otomatis saat guru menyelesaikan kelas reguler.
-              Nominal per sesi tetap bisa diedit manual di rincian untuk kasus khusus.
+              Tarif per jam per kategori, berlaku otomatis saat guru menyelesaikan kelas. Bisa tambah kategori
+              sespesifik apa pun (mis. "Kelas 6 SD" beda dari "SD" umum) -- nama kategori ini yang dicocokkan
+              ke kelas siswa yang hadir waktu guru menutup kelas. Nominal per sesi tetap bisa diedit manual
+              di rincian untuk kasus khusus.
             </p>
-            
-            <div style={styles.formGrid}>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>📚 SD (per jam)</label>
-                <input 
-                  type="number" 
-                  placeholder="Rp 0" 
-                  value={komisiRates.sd}
-                  onChange={(e) => setKomisiRates(prev => ({...prev, sd: e.target.value}))}
-                  style={styles.formInput}
+
+            {/* 🔥 BARU: daftar dinamis, bisa tambah/hapus kategori bebas */}
+            {komisiRates.map((r, idx) => (
+              <div key={r.id || idx} style={styles.komisiRow(isMobile)}>
+                <input
+                  type="text"
+                  value={r.label}
+                  onChange={(e) => updateKomisiRate(idx, 'label', e.target.value)}
+                  placeholder='Nama kategori (mis. "SD", "Kelas 6 SD")'
+                  style={styles.komisiLabelInput}
                 />
+                <div style={styles.komisiPriceWrap}>
+                  <span style={styles.komisiPricePrefix}>Rp</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={formatRibuan(r.pricePerHour)}
+                    onChange={(e) => updateKomisiRate(idx, 'pricePerHour', parseRibuan(e.target.value))}
+                    placeholder="0"
+                    style={styles.komisiPriceInput}
+                  />
+                  <span style={styles.komisiPriceSuffix}>/jam</span>
+                </div>
+                <button onClick={() => removeKomisiRate(idx)} style={styles.btnRemove}>
+                  <X size={14} />
+                </button>
               </div>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>📚 SMP (per jam)</label>
-                <input 
-                  type="number" 
-                  placeholder="Rp 0" 
-                  value={komisiRates.smp}
-                  onChange={(e) => setKomisiRates(prev => ({...prev, smp: e.target.value}))}
-                  style={styles.formInput}
-                />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>📚 SMA (per jam)</label>
-                <input 
-                  type="number" 
-                  placeholder="Rp 0" 
-                  value={komisiRates.sma}
-                  onChange={(e) => setKomisiRates(prev => ({...prev, sma: e.target.value}))}
-                  style={styles.formInput}
-                />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>🛡️ Honor Minimal/Sesi</label>
-                <input 
-                  type="number" 
-                  placeholder="Rp 0" 
-                  value={komisiRates.honorMinimal}
-                  onChange={(e) => setKomisiRates(prev => ({...prev, honorMinimal: e.target.value}))}
-                  style={styles.formInput}
-                />
-              </div>
-            </div>
+            ))}
+
+            <button onClick={addKomisiRate} style={styles.btnAddKomisi}>
+              + Tambah Kategori
+            </button>
             
             <div style={styles.formActions}>
               <button 
@@ -1134,6 +1170,75 @@ const styles = {
     color: '#64748b'
   },
   
+  // 🔥 BARU: daftar dinamis kategori komisi
+  komisiRow: (m) => ({
+    display: 'flex',
+    gap: 8,
+    alignItems: 'center',
+    marginBottom: 8,
+    flexDirection: m ? 'column' : 'row',
+  }),
+  komisiLabelInput: {
+    flex: 1.2,
+    padding: '9px 12px',
+    borderRadius: 8,
+    border: '1px solid #e2e8f0',
+    fontSize: 12,
+    outline: 'none',
+  },
+  komisiPriceWrap: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    border: '1px solid #e2e8f0',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  komisiPricePrefix: {
+    padding: '9px 8px',
+    background: '#f8fafc',
+    fontSize: 12,
+    color: '#64748b',
+    fontWeight: 700,
+  },
+  komisiPriceInput: {
+    flex: 1,
+    padding: '9px 6px',
+    border: 'none',
+    fontSize: 12,
+    outline: 'none',
+    minWidth: 0,
+  },
+  komisiPriceSuffix: {
+    padding: '9px 8px',
+    background: '#f8fafc',
+    fontSize: 11,
+    color: '#94a3b8',
+  },
+  btnAddKomisi: {
+    background: '#eff6ff',
+    color: '#3b82f6',
+    border: '1px dashed #3b82f6',
+    borderRadius: 8,
+    padding: '8px 14px',
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: 'pointer',
+    marginBottom: 16,
+    marginTop: 4,
+  },
+  btnRemove: {
+    background: '#fee2e2',
+    color: '#ef4444',
+    border: 'none',
+    borderRadius: 8,
+    padding: '9px 10px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   formGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',

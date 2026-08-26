@@ -143,18 +143,14 @@ const ClassSession = () => {
         const salarySnap = await getDoc(salaryRef);
         if (salarySnap.exists() && salarySnap.data().salaryRules) {
           const sr = salarySnap.data().salaryRules;
-          // 🔥 SEDERHANAKAN: bonus (mis. Bonus English/EC) & kompensasi 0
-          // hadir DIHAPUS sesuai keputusan eksplisit -- fokus cuma tarif
-          // per jenjang (rates) + honor minimal. Format lama (honorSD/
-          // honorSMP/dst sebagai field tunggal) tetap diterima biar data
-          // lama gak hilang, tapi bonusRules/kompensasiPersen-nya kalau
-          // ada di data lama TETAP DIABAIKAN (gak dipakai lagi di
-          // hitungHonor()).
+          // 🔥 SEDERHANAKAN (keputusan eksplisit): bonus (Bonus English/EC),
+          // kompensasi 0 hadir, DAN "Honor Minimal/Sesi" semuanya DIHAPUS
+          // TOTAL -- gak dipakai lagi di hitungHonor(). Fokus cuma tarif
+          // per kategori (rates), yang sekarang bisa sespesifik "Kelas 6
+          // SD" (bukan cuma SD/SMP/SMA umum). Format lama (honorSD/dst)
+          // tetap diterima biar data lama gak hilang.
           if (Array.isArray(sr.rates)) {
-            setSalaryRules({
-              rates: sr.rates,
-              honorMinimal: sr.honorMinimal ?? 20000,
-            });
+            setSalaryRules({ rates: sr.rates });
           } else {
             setSalaryRules({
               rates: [
@@ -162,7 +158,6 @@ const ClassSession = () => {
                 { id: 'smp', label: 'SMP', pricePerHour: sr.honorSMP ?? 40000 },
                 { id: 'sma', label: 'SMA', pricePerHour: sr.honorSMA ?? 50000 },
               ],
-              honorMinimal: sr.honorMinimal ?? 20000,
             });
           }
         } else {
@@ -172,7 +167,6 @@ const ClassSession = () => {
               { id: 'smp', label: 'SMP', pricePerHour: 40000 },
               { id: 'sma', label: 'SMA', pricePerHour: 50000 },
             ],
-            honorMinimal: 20000,
           });
         }
 
@@ -314,6 +308,17 @@ const ClassSession = () => {
   // English"/EC) dan kompensasi 0-hadir (yang tadinya 50%) DIHAPUS total.
   // Sekarang honor SELALU dihitung tarif penuh × jam, gak peduli berapa
   // siswa yang hadir -- cuma dibatasi BAWAH oleh Honor Minimal/Sesi.
+  // 🔥 DISEDERHANAKAN (keputusan eksplisit): "Honor Minimal/Sesi" DIHAPUS
+  // TOTAL -- bikin bingung & gak dipakai lagi. Honor SELALU tarif × jam,
+  // tanpa batas bawah apa pun.
+  //
+  // 🔥 BARU: pencocokan tarif sekarang 2 TAHAP -- coba dulu kategori
+  // SPESIFIK berdasar kelas siswa yang beneran hadir (mis. siswa kelas
+  // "6" + jenjang "SD" -> cari kategori berlabel "Kelas 6 SD"), baru
+  // kalau gak ketemu, fallback ke jenjang umum (SD/SMP/SMA) seperti
+  // sebelumnya. Ini yang bikin kategori "Kelas 6 SD" (tarif beda dari
+  // "SD" umum) beneran kepakai, bukan cuma tersimpan tapi gak pernah
+  // kesentuh logika perhitungan.
   const hitungHonor = () => {
     if (!salaryRules) return { nominal: 0, detailTxt: "", statusGaji: "Menunggu Validasi" };
 
@@ -328,25 +333,39 @@ const ClassSession = () => {
 
     const level = schedule.level || "SD";
     const program = schedule.program || "Reguler";
-
-    // Cari tarif yang cocok sama Jenjang jadwal (dibandingkan tanpa peduli besar-kecil huruf)
     const rates = salaryRules.rates || [];
-    const matchedRate = rates.find(r =>
-      (r.id || '').toLowerCase() === level.toLowerCase() ||
-      (r.label || '').toLowerCase() === level.toLowerCase()
-    );
-    // Kalau gak ada yang cocok persis, pakai tarif pertama di daftar sebagai jaring pengaman
+
+    // TAHAP 1: coba kategori SPESIFIK per kelas siswa yang hadir --
+    // mis. "Kelas 6 SD". Kalau siswa yang hadir dari beberapa kelas
+    // berbeda, dicoba satu-satu, dipakai yang PERTAMA ketemu.
+    const kelasSiswaUnik = [
+      ...new Set(
+        siswaHadirList.map(s => s.kelas || s.kelasSekolah).filter(Boolean)
+      )
+    ];
+
+    let matchedRate = null;
+    for (const kelasValue of kelasSiswaUnik) {
+      const candidateLabel = `kelas ${kelasValue} ${level}`.toLowerCase().trim();
+      const found = rates.find(r => (r.label || '').toLowerCase().trim() === candidateLabel);
+      if (found) { matchedRate = found; break; }
+    }
+
+    // TAHAP 2: fallback ke jenjang umum (SD/SMP/SMA) kalau TAHAP 1
+    // gak ketemu kategori spesifik.
+    if (!matchedRate) {
+      matchedRate = rates.find(r =>
+        (r.id || '').toLowerCase() === level.toLowerCase() ||
+        (r.label || '').toLowerCase() === level.toLowerCase()
+      );
+    }
+
+    // Kalau gak ada yang cocok sama sekali, pakai tarif pertama di daftar sebagai jaring pengaman
     let ratePerJam = matchedRate ? (matchedRate.pricePerHour || 0) : (rates[0]?.pricePerHour || 35000);
-    let detailTxt = program + ' - ' + level + ' - ' + materiAktual;
+    let detailTxt = program + ' - ' + (matchedRate?.label || level) + ' - ' + materiAktual;
     let statusGaji = "Menunggu Validasi";
 
-    let nominal = ratePerJam * diffHours;
-
-    const minimal = salaryRules.honorMinimal ?? 20000;
-    if (nominal < minimal) {
-      nominal = minimal;
-      detailTxt += " [Honor Minimal]";
-    }
+    const nominal = ratePerJam * diffHours;
 
     return { nominal: Math.round(nominal), detailTxt, statusGaji };
   };
