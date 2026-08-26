@@ -3688,6 +3688,534 @@ async function callNvidiaWithFallback(
 }
 
 // ============================================================
+// DIAGNOSTIK MODEL (mode GET)
+// ============================================================
+//
+// 🔥 SENGAJA DIGABUNG DI FILE INI, BUKAN FILE api/ TERPISAH:
+// project ini pakai paket Vercel Hobby yang dibatasi maksimal 12
+// Serverless Function per deployment. Menambah file baru di folder
+// api/ berisiko menembus batas itu dan MENGGAGALKAN SELURUH DEPLOY
+// (termasuk fitur-fitur yang tadinya sehat). Karena diagnostik ini
+// cuma dipakai sesekali oleh admin, jauh lebih aman menumpang di
+// endpoint yang sudah ada lewat method GET -- generate soal sendiri
+// pakai POST, jadi keduanya tidak saling ganggu sama sekali.
+//
+// CARA PAKAI (buka langsung di browser):
+//   /api/generateQuizFromTopic
+//     -> daftar SEMUA model yang terlihat oleh API key kamu
+//   /api/generateQuizFromTopic?probe=1
+//     -> UJI model mana yang beneran hidup (ini yang paling berguna)
+//   /api/generateQuizFromTopic?probe=1&models=ID_1,ID_2
+//     -> uji daftar model pilihan sendiri
+//   /api/generateQuizFromTopic?filter=instruct
+//     -> saring katalog berdasarkan kata kunci
+//
+// KENAPA PERLU: katalog build.nvidia.com TIDAK bisa dipercaya penuh --
+// ada model bertuliskan "Free Endpoint" yang tetap balas 404 kalau
+// dipanggil. Endpoint ini bertanya LANGSUNG ke NVIDIA pakai API key
+// kita, jadi hasilnya fakta hari ini, bukan tebakan dari katalog.
+
+const NVIDIA_MODELS_URL =
+  'https://integrate.api.nvidia.com/v1/models';
+
+// Probe harus CEPAT -- tujuannya cuma memastikan model hidup, bukan
+// menghasilkan jawaban bagus.
+const PROBE_TIMEOUT_MS = 9_000;
+
+// Batas jumlah model yang boleh diuji dalam 1 request -- supaya tidak
+// memicu rate limit NVIDIA (~40 request/menit) yang justru bikin hasil
+// pengujian menyesatkan (model sehat terlihat seperti gagal).
+const MAX_PROBE_MODELS = 8;
+
+async function fetchModelCatalog(
+  apiKey,
+) {
+  const controller =
+    new AbortController();
+
+  const timeoutId =
+    setTimeout(
+      () =>
+        controller.abort(),
+      15_000,
+    );
+
+  try {
+    const response =
+      await fetch(
+        NVIDIA_MODELS_URL,
+        {
+          method: 'GET',
+
+          headers: {
+            Authorization:
+              `Bearer ${apiKey}`,
+
+            Accept:
+              'application/json',
+          },
+
+          signal:
+            controller.signal,
+        },
+      );
+
+    const text =
+      await response.text();
+
+    if (!response.ok) {
+      return {
+        ok: false,
+
+        status:
+          response.status,
+
+        message:
+          text.slice(0, 500),
+
+        models: [],
+      };
+    }
+
+    let data = null;
+
+    try {
+      data = JSON.parse(text);
+    } catch (_) {
+      return {
+        ok: false,
+
+        status:
+          response.status,
+
+        message:
+          'Respons katalog bukan JSON yang valid.',
+
+        models: [],
+      };
+    }
+
+    const models =
+      Array.isArray(data?.data)
+        ? data.data
+            .map((m) => m?.id)
+            .filter(
+              (id) =>
+                typeof id ===
+                'string',
+            )
+            .sort()
+        : [];
+
+    return {
+      ok: true,
+
+      status:
+        response.status,
+
+      models,
+    };
+
+  } catch (error) {
+    return {
+      ok: false,
+
+      status: null,
+
+      message:
+        error?.name ===
+        'AbortError'
+          ? 'Timeout saat mengambil katalog model.'
+          : error?.message ||
+            'Gagal mengambil katalog model.',
+
+      models: [],
+    };
+
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function probeModel(
+  apiKey,
+  model,
+) {
+  const controller =
+    new AbortController();
+
+  const timeoutId =
+    setTimeout(
+      () =>
+        controller.abort(),
+      PROBE_TIMEOUT_MS,
+    );
+
+  const startedAt = Date.now();
+
+  try {
+    const response =
+      await fetch(
+        NVIDIA_API_URL,
+        {
+          method: 'POST',
+
+          headers: {
+            Authorization:
+              `Bearer ${apiKey}`,
+
+            'Content-Type':
+              'application/json',
+
+            Accept:
+              'application/json',
+          },
+
+          body: JSON.stringify({
+            model,
+
+            messages: [
+              {
+                role: 'user',
+                content:
+                  'Balas satu kata: OK',
+              },
+            ],
+
+            max_tokens: 5,
+
+            temperature: 0,
+
+            stream: false,
+          }),
+
+          signal:
+            controller.signal,
+        },
+      );
+
+    const elapsedMs =
+      Date.now() - startedAt;
+
+    const text =
+      await response.text();
+
+    if (response.ok) {
+      let sample = null;
+
+      try {
+        const data =
+          JSON.parse(text);
+
+        sample =
+          data?.choices?.[0]
+            ?.message?.content ||
+          null;
+      } catch (_) {
+        sample = null;
+      }
+
+      return {
+        model,
+
+        status: 'ok',
+
+        httpStatus:
+          response.status,
+
+        elapsedMs,
+
+        sample:
+          sample
+            ? String(sample)
+                .trim()
+                .slice(0, 60)
+            : null,
+
+        note:
+          'Model hidup dan merespons. Aman dipakai.',
+      };
+    }
+
+    let note =
+      'Gagal dengan alasan lain -- lihat message.';
+
+    if (response.status === 404) {
+      note =
+        'MATI: model tidak di-host lagi (walau mungkin masih terlisting di katalog). Jangan dipakai.';
+    } else if (
+      response.status === 410
+    ) {
+      note =
+        'PENSIUN (end-of-life): model sudah resmi dimatikan. Jangan dipakai.';
+    } else if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
+      note =
+        'API key ditolak / tidak punya akses ke model ini. Cek NVIDIA_API_KEY.';
+    } else if (
+      response.status === 429
+    ) {
+      note =
+        'Kena rate limit saat pengujian -- BUKAN berarti model mati. Tunggu sebentar lalu ulangi.';
+    }
+
+    return {
+      model,
+
+      status:
+        response.status === 429
+          ? 'rate_limited'
+          : 'failed',
+
+      httpStatus:
+        response.status,
+
+      elapsedMs,
+
+      message:
+        text.slice(0, 300),
+
+      note,
+    };
+
+  } catch (error) {
+    const elapsedMs =
+      Date.now() - startedAt;
+
+    if (
+      error?.name ===
+      'AbortError'
+    ) {
+      return {
+        model,
+
+        status: 'timeout',
+
+        elapsedMs,
+
+        note:
+          `Tidak selesai dalam ${PROBE_TIMEOUT_MS}ms. PENTING: timeout BUKAN berarti model mati -- model yang balas 404 gagalnya instan. Ini biasanya "cold start" (model perlu dimuat dulu ke GPU). Coba ulangi sekali lagi; kalau kedua kalinya cepat, model ini sebenarnya sehat.`,
+      };
+    }
+
+    return {
+      model,
+
+      status: 'error',
+
+      elapsedMs,
+
+      message:
+        error?.message ||
+        'Unknown error',
+
+      note:
+        'Error jaringan/runtime saat menghubungi NVIDIA.',
+    };
+
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function handleModelDiagnostics(
+  req,
+  res,
+) {
+  const apiKey =
+    process.env.NVIDIA_API_KEY;
+
+  if (!apiKey) {
+    return res
+      .status(500)
+      .json({
+        success: false,
+
+        error:
+          'NVIDIA_API_KEY belum di-set di Environment Variables.',
+      });
+  }
+
+  const {
+    probe,
+    models: modelsParam,
+    filter,
+  } = req.query || {};
+
+  const catalog =
+    await fetchModelCatalog(
+      apiKey,
+    );
+
+  if (!catalog.ok) {
+    return res
+      .status(502)
+      .json({
+        success: false,
+
+        error:
+          'Gagal mengambil katalog model dari NVIDIA.',
+
+        diagnostics: {
+          httpStatus:
+            catalog.status,
+
+          message:
+            catalog.message,
+
+          hint:
+            catalog.status === 401 ||
+            catalog.status === 403
+              ? 'API key ditolak. Pastikan NVIDIA_API_KEY benar dan diawali "nvapi-".'
+              : 'Cek koneksi atau status layanan NVIDIA.',
+        },
+      });
+  }
+
+  const filterText =
+    typeof filter === 'string'
+      ? filter
+          .trim()
+          .toLowerCase()
+      : '';
+
+  const filteredCatalog =
+    filterText
+      ? catalog.models.filter(
+          (id) =>
+            id
+              .toLowerCase()
+              .includes(filterText),
+        )
+      : catalog.models;
+
+  if (!probe) {
+    return res
+      .status(200)
+      .json({
+        success: true,
+
+        mode: 'catalog_only',
+
+        totalInCatalog:
+          catalog.models.length,
+
+        shown:
+          filteredCatalog.length,
+
+        models: filteredCatalog,
+
+        peringatan:
+          'PENTING: daftar ini adalah katalog, BUKAN jaminan model bisa dipakai. Sebagian model di sini tetap balas 404 kalau dipanggil. Untuk memastikan, jalankan dengan ?probe=1',
+
+        caraPakai: {
+          ujiModelDefault:
+            '/api/generateQuizFromTopic?probe=1',
+
+          ujiModelPilihanSendiri:
+            '/api/generateQuizFromTopic?probe=1&models=ID_MODEL_1,ID_MODEL_2',
+
+          saringKatalog:
+            '/api/generateQuizFromTopic?filter=instruct',
+        },
+      });
+  }
+
+  let modelsToProbe =
+    typeof modelsParam === 'string'
+      ? modelsParam
+          .split(',')
+          .map((m) => m.trim())
+          .filter(Boolean)
+      : [
+          NVIDIA_MODEL,
+          ...NVIDIA_MODEL_FALLBACKS,
+        ];
+
+  modelsToProbe =
+    modelsToProbe
+      .filter(
+        (m, i, arr) =>
+          m &&
+          arr.indexOf(m) === i,
+      )
+      .slice(0, MAX_PROBE_MODELS);
+
+  const results = [];
+
+  // Sengaja BERURUTAN (bukan paralel) supaya tidak memicu rate limit.
+  for (const model of modelsToProbe) {
+    results.push(
+      await probeModel(
+        apiKey,
+        model,
+      ),
+    );
+  }
+
+  const working =
+    results.filter(
+      (r) => r.status === 'ok',
+    );
+
+  const dead =
+    results.filter(
+      (r) =>
+        r.httpStatus === 404 ||
+        r.httpStatus === 410,
+    );
+
+  const recommended =
+    working.length > 0
+      ? [...working].sort(
+          (a, b) =>
+            a.elapsedMs -
+            b.elapsedMs,
+        )[0].model
+      : null;
+
+  return res
+    .status(200)
+    .json({
+      success: true,
+
+      mode: 'probe',
+
+      modelUtamaSaatIni:
+        NVIDIA_MODEL,
+
+      diujiSebanyak:
+        results.length,
+
+      hasil: results,
+
+      ringkasan: {
+        hidup:
+          working.map(
+            (r) => r.model,
+          ),
+
+        mati:
+          dead.map(
+            (r) => r.model,
+          ),
+
+        rekomendasi: recommended,
+
+        langkahSelanjutnya:
+          recommended
+            ? `Set NVIDIA_MODEL = "${recommended}" di Vercel -> Settings -> Environment Variables, lalu Redeploy. Tidak perlu ubah kode.`
+            : 'Tidak ada model yang lolos uji. Kalau semuanya "timeout", jalankan ulang sekali lagi (kemungkinan cold start). Kalau semuanya 404/410, buka /api/generateQuizFromTopic?filter=instruct untuk melihat kandidat lain, lalu uji dengan &models=',
+      },
+
+      totalDiKatalog:
+        catalog.models.length,
+    });
+}
+
+// ============================================================
 // SAFE ERROR RESPONSE
 // ============================================================
 
@@ -3911,13 +4439,27 @@ export default async function handler(
   // METHOD
   // ==========================================================
 
+  // 🔥 GET = mode diagnostik model (dipakai admin lewat browser),
+  // POST = generate soal (dipakai aplikasi). Digabung di satu file
+  // supaya tidak menambah jumlah Serverless Function -- paket Vercel
+  // Hobby dibatasi 12 function per deployment, dan menembusnya bikin
+  // SELURUH deploy gagal.
+  if (
+    req.method === 'GET'
+  ) {
+    return handleModelDiagnostics(
+      req,
+      res,
+    );
+  }
+
   if (
     req.method !==
     'POST'
   ) {
     res.setHeader(
       'Allow',
-      'POST',
+      'GET, POST',
     );
 
     return res
