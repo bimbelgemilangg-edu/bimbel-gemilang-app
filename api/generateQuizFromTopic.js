@@ -63,31 +63,31 @@
 //   email, TANPA kartu kredit -- sudah kamu siapkan)
 //
 // OPTIONAL:
-// NVIDIA_MODEL=mistralai/mistral-medium-3-instruct
-//   (⚠️ FIX Agustus 2026 (revisi ke-2): katalog NVIDIA Build ternyata
-//   berubah SANGAT SERING -- dua model default sebelumnya sudah mati:
-//   `qwen/qwen2.5-72b-instruct` dihapus total dari katalog (404), lalu
-//   penggantinya `meta/llama-4-maverick-17b-128e-instruct` ternyata
-//   SUDAH REACHED END-OF-LIFE per 2026-07-27 (410 Gone). Supaya file
-//   ini gak perlu direvisi manual tiap kali NVIDIA pensiunin model
-//   lagi, sekarang dipasang MEKANISME FALLBACK OTOMATIS (lihat
-//   `NVIDIA_MODEL_FALLBACKS` & `callNvidiaWithFallback` di bawah):
-//   kalau model utama merespons 404/410 (artinya model itu sendiri
-//   yang sudah hilang/dimatikan, BUKAN error lain seperti rate limit
-//   atau server error), kode otomatis coba model berikutnya di daftar
-//   cadangan, TANPA butuh deploy ulang.
+// NVIDIA_MODEL=mistralai/mistral-nemotron
+//   (⚠️ FIX Agustus 2026 (revisi ke-4) -- PELAJARAN PENTING:
+//   katalog build.nvidia.com TIDAK BISA dipercaya 100% buat nentuin
+//   model mana yang beneran hidup. Ada model yang di katalog tertulis
+//   "Free Endpoint" tapi tetap balas 404 kalau dipanggil (ini masalah
+//   yang terdokumentasi: katalog memuat model yang sudah tidak
+//   di-host). Sudah 3x revisi kepeleset gara-gara percaya katalog:
+//     - qwen/qwen2.5-72b-instruct        -> 404 (hilang dari katalog)
+//     - meta/llama-4-maverick-...        -> 410 (EOL 2026-07-27)
+//     - mistralai/mistral-medium-3-instruct
+//       & mistral-small-3.1-24b-...-2503 -> 404 (walau terlisting)
 //
-//   Model utama sekarang: mistralai/mistral-medium-3-instruct --
-//   terverifikasi "Free Endpoint" aktif per Agustus 2026, model
-//   INSTRUCT biasa (BUKAN mode reasoning tersembunyi), multibahasa,
-//   kuat matematika & coding.
+//   Yang dipakai sekarang justru berdasarkan BUKTI NYATA dari log
+//   deployment Bimbel Gemilang sendiri: `mistralai/mistral-nemotron`
+//   TIDAK balas 404 -- dia balas lambat sampai timeout, yang artinya
+//   model ini BENERAN HIDUP & bisa diakses API key kita (kemungkinan
+//   besar itu cold start pemanggilan pertama). Itu bukti yang jauh
+//   lebih kuat daripada label katalog mana pun.
 //
-//   Cadangan (urutan dicoba kalau yang di atas mati): lihat
-//   NVIDIA_MODEL_FALLBACKS. Kalau SEMUA model di daftar ini juga
-//   sudah mati suatu saat, cek ulang status "Free Endpoint" (bisa
-//   dipanggil gratis) vs "Downloadable" (HARUS deploy sendiri, TIDAK
-//   gratis lewat endpoint hosted ini) di build.nvidia.com, lalu
-//   perbarui daftarnya.)
+//   ⚠️ JANGAN tebak-tebak ID model dari blog/hasil pencarian lagi.
+//   Kalau semua model di daftar ini suatu saat mati, pakai endpoint
+//   diagnostik `/api/checkNvidiaModels` (file terpisah, dibuat
+//   bareng revisi ini) -- dia menanyakan LANGSUNG ke NVIDIA pakai API
+//   key kamu: model apa saja yang tersedia, DAN mana yang beneran
+//   merespons chat. Hasilnya fakta, bukan asumsi.
 //
 // ============================================================
 
@@ -102,19 +102,15 @@ const NVIDIA_API_URL =
 
 const NVIDIA_MODEL =
   process.env.NVIDIA_MODEL ||
-  'mistralai/mistral-medium-3-instruct';
+  'mistralai/mistral-nemotron';
 
-// 🔥 BARU: daftar model cadangan, dicoba SATU PER SATU secara berurutan
-// hanya kalau model sebelumnya gagal karena SUDAH TIDAK ADA lagi di
-// katalog (404) atau SUDAH PENSIUN (410) -- bukan karena rate limit,
-// timeout, atau error lain (itu jenis error yang gak akan hilang cuma
-// dengan ganti model). Semua entri di sini terverifikasi berstatus
-// "Free Endpoint" di build.nvidia.com per Agustus 2026, dan semuanya
-// model INSTRUCT biasa (bukan reasoning tersembunyi seperti DeepSeek-
-// R1/V4 yang butuh parameter chat_template_kwargs khusus).
+// 🔥 Daftar model cadangan, dicoba SATU PER SATU secara berurutan kalau
+// model sebelumnya gagal karena (a) sudah tidak ada/pensiun (404/410),
+// atau (b) timeout. Error jenis lain (rate limit, request kegedean,
+// dll) TIDAK memicu pindah model -- itu bukan salah modelnya.
 const NVIDIA_MODEL_FALLBACKS = [
+  'mistralai/mistral-small-3.2-24b-instruct-2506',
   'mistralai/mistral-small-3.1-24b-instruct-2503',
-  'mistralai/mistral-nemotron',
   'qwen/qwen2-7b-instruct',
 ];
 
@@ -130,6 +126,37 @@ const AI_TIMEOUT_MS = 45_000;
 // gak keburu dimatikan platform sebelum sempat kirim respons error
 // yang rapi.
 const AI_TIMEOUT_WITH_SEARCH_MS = 55_000;
+
+// 🔥 BARU: batas TOTAL waktu (gabungan semua percobaan model, utama +
+// cadangan) yang boleh dipakai callNvidiaWithFallback sebelum nyerah.
+// Ini BEDA dari AI_TIMEOUT_MS (yang itu per-satu-kali-percobaan) --
+// tanpa batas total ini, 3 model x 45 detik = 135 detik, jauh melebihi
+// maxDuration 60 detik Vercel dan bikin function mati paksa oleh
+// platform (bukan error rapi dari kode kita). Sisa waktu di luar
+// budget ini (~10-15 detik) disisakan buat build prompt, quality gate,
+// & enrich gambar Tavily yang jalan SEBELUM/SESUDAH pemanggilan AI.
+const TOTAL_AI_BUDGET_MS = 45_000;
+const TOTAL_AI_BUDGET_WITH_SEARCH_MS = 50_000;
+
+// Batas atas untuk SATU KALI percobaan model, walau sisa budget total
+// masih banyak -- supaya satu model yang hidup tapi lambat gak
+// ngabisin seluruh budget dan gak nyisain kesempatan buat cadangan
+// berikutnya kalau yang pertama ternyata gagal juga.
+//
+// 🔥 Model UTAMA dikasih jatah lebih besar dari cadangan, dengan alasan
+// spesifik: pemanggilan pertama ke NVIDIA sering kena "cold start"
+// (model perlu dimuat dulu ke GPU) yang bisa makan puluhan detik --
+// persis yang bikin timeout 45 detik kemarin. Pemanggilan berikutnya
+// biasanya jauh lebih cepat karena model sudah "hangat".
+const PRIMARY_ATTEMPT_MS = 30_000;
+const MAX_SINGLE_ATTEMPT_MS = 18_000;
+
+// Kalau sisa budget total sudah di bawah ini, gak ada gunanya coba
+// model cadangan lagi (kemungkinan besar keburu timeout juga) --
+// langsung nyerah dengan error yang rapi daripada bikin function
+// dibunuh paksa oleh Vercel di tengah percobaan yang gak akan cukup
+// waktu.
+const MIN_REMAINING_BUDGET_MS = 8_000;
 
 // 🔥 CATATAN: NVIDIA Build TIDAK punya batas TPM (token/menit) yang
 // ketat & terpublikasi kayak Groq (yang 8.000 TPM). Batasnya lebih ke
@@ -306,6 +333,7 @@ async function enrichQuestionsWithRealImages(
   questions,
   tavilyApiKey,
   topic,
+  deadlineAt,
 ) {
   if (!tavilyApiKey) {
     // Fitur belum di-setup -- lewati total, gak ada perubahan perilaku.
@@ -313,16 +341,44 @@ async function enrichQuestionsWithRealImages(
       imagesFetched: 0,
       tavilyCallsUsed: 0,
       cappedByBudget: false,
+      cappedByTime: false,
     };
   }
 
   let callsUsed = 0;
   let imagesFetched = 0;
   let cappedByBudget = false;
+  let cappedByTime = false;
+
+  // 🔥 BARU (FIX BUG LATEN): sebelumnya langkah ini cuma dibatasi
+  // JUMLAH panggilan (MAX_TAVILY_CALLS_PER_REQUEST = 8), TANPA batas
+  // WAKTU sama sekali. Karena tiap panggilan Tavily punya timeout
+  // 12 detik dan dijalankan BERURUTAN, skenario terburuknya
+  // 8 x 12 = 96 detik -- itu SENDIRIAN sudah jauh melewati
+  // maxDuration 60 detik Vercel, apalagi ditambah waktu pemanggilan
+  // AI sebelumnya. Akibatnya function dibunuh paksa platform di
+  // tengah jalan: guru lihat error 504 mentah, DAN soal-soal yang
+  // sebenarnya SUDAH BERHASIL dibuat ikut hilang percuma.
+  //
+  // Sekarang: begitu deadline lewat, pencarian gambar berhenti dan
+  // soal tetap dikirim (tanpa gambar untuk sisanya). Lebih baik soal
+  // sampai ke guru tanpa sebagian gambar, daripada semuanya hilang.
+  const hasDeadline =
+    typeof deadlineAt ===
+    'number';
 
   for (
     const question of questions
   ) {
+    if (
+      hasDeadline &&
+      Date.now() >=
+        deadlineAt
+    ) {
+      cappedByTime = true;
+      break;
+    }
+
     if (
       callsUsed >=
       MAX_TAVILY_CALLS_PER_REQUEST
@@ -403,6 +459,15 @@ async function enrichQuestionsWithRealImages(
         i += 1
       ) {
         if (
+          hasDeadline &&
+          Date.now() >=
+            deadlineAt
+        ) {
+          cappedByTime = true;
+          break;
+        }
+
+        if (
           callsUsed >=
           MAX_TAVILY_CALLS_PER_REQUEST
         ) {
@@ -464,6 +529,7 @@ async function enrichQuestionsWithRealImages(
     tavilyCallsUsed:
       callsUsed,
     cappedByBudget,
+    cappedByTime,
   };
 }
 
@@ -3180,6 +3246,7 @@ async function callNvidia({
   maxTokens,
   enableBrowserSearch,
   model,
+  timeoutMs,
 }) {
   // 🔥 BARU: `model` sekarang parameter (bukan cuma baca konstanta
   // NVIDIA_MODEL langsung) supaya callNvidiaWithFallback() bisa
@@ -3190,6 +3257,20 @@ async function callNvidia({
     model ||
     NVIDIA_MODEL;
 
+  // 🔥 BARU: `timeoutMs` juga sekarang parameter opsional -- dipakai
+  // callNvidiaWithFallback() buat bagi-bagi sisa budget waktu antar
+  // percobaan model. Kalau gak dikirim (mis. dipanggil langsung tanpa
+  // fallback), tetap pakai logika lama (AI_TIMEOUT_MS /
+  // AI_TIMEOUT_WITH_SEARCH_MS) biar kompatibel.
+  const effectiveTimeoutMs =
+    typeof timeoutMs ===
+      'number' &&
+    timeoutMs > 0
+      ? timeoutMs
+      : enableBrowserSearch
+        ? AI_TIMEOUT_WITH_SEARCH_MS
+        : AI_TIMEOUT_MS;
+
   const controller =
     new AbortController();
 
@@ -3197,9 +3278,7 @@ async function callNvidia({
     setTimeout(
       () =>
         controller.abort(),
-      enableBrowserSearch
-        ? AI_TIMEOUT_WITH_SEARCH_MS
-        : AI_TIMEOUT_MS,
+      effectiveTimeoutMs,
     );
 
   try {
@@ -3399,14 +3478,9 @@ async function callNvidia({
       error?.name ===
       'AbortError'
     ) {
-      const usedTimeout =
-        enableBrowserSearch
-          ? AI_TIMEOUT_WITH_SEARCH_MS
-          : AI_TIMEOUT_MS;
-
       const timeoutError =
         new Error(
-          `NVIDIA timeout setelah ${usedTimeout}ms.`,
+          `NVIDIA timeout setelah ${effectiveTimeoutMs}ms.`,
         );
 
       timeoutError.code =
@@ -3414,6 +3488,9 @@ async function callNvidia({
 
       timeoutError.attemptedModel =
         modelToUse;
+
+      timeoutError.timeoutMsUsed =
+        effectiveTimeoutMs;
 
       throw timeoutError;
     }
@@ -3503,6 +3580,18 @@ async function callNvidiaWithFallback(
         arr.indexOf(m) === i,
     );
 
+  // 🔥 BARU: budget waktu TOTAL buat semua percobaan gabungan (bukan
+  // per-percobaan) -- supaya gak ada skenario 3 model x 45 detik yang
+  // bisa melebihi maxDuration Vercel. Setiap percobaan dapat jatah dari
+  // SISA budget ini, bukan jatah penuh AI_TIMEOUT_MS lagi.
+  const totalBudgetMs =
+    args.enableBrowserSearch
+      ? TOTAL_AI_BUDGET_WITH_SEARCH_MS
+      : TOTAL_AI_BUDGET_MS;
+
+  const startedAt =
+    Date.now();
+
   let lastError = null;
 
   for (
@@ -3513,11 +3602,41 @@ async function callNvidiaWithFallback(
     const model =
       modelsToTry[i];
 
+    const elapsedMs =
+      Date.now() -
+      startedAt;
+
+    const remainingBudgetMs =
+      totalBudgetMs -
+      elapsedMs;
+
+    // 🔥 Sisa waktu udah terlalu tipis buat berharap model lain
+    // sempat merespons -- nyerah sekarang dengan error yang rapi,
+    // daripada mulai percobaan yang nyaris pasti bakal keburu
+    // dipotong duluan oleh maxDuration Vercel (yang hasilnya JUSTRU
+    // error mentah dari platform, bukan JSON error kita yang jelas).
+    if (
+      remainingBudgetMs <
+      MIN_REMAINING_BUDGET_MS
+    ) {
+      break;
+    }
+
+    const perAttemptTimeoutMs =
+      Math.min(
+        remainingBudgetMs,
+        i === 0
+          ? PRIMARY_ATTEMPT_MS
+          : MAX_SINGLE_ATTEMPT_MS,
+      );
+
     try {
       const result =
         await callNvidia({
           ...args,
           model,
+          timeoutMs:
+            perAttemptTimeoutMs,
         });
 
       if (i > 0) {
@@ -3539,17 +3658,28 @@ async function callNvidiaWithFallback(
         i ===
         modelsToTry.length - 1;
 
-      if (
-        !isModelUnavailableError(
+      // 🔥 Lanjut coba model berikutnya kalau: (a) model ini memang
+      // sudah gak ada/pensiun (404/410, gagal cepat), ATAU (b) model
+      // ini timeout (hidup tapi lambat) -- DUA-duanya sekarang aman
+      // dicoba lanjut karena kita sudah bagi budget waktu per
+      // percobaan, jadi gak akan kebablasan lewat maxDuration.
+      // Error jenis lain (rate limit 429, request too large 413,
+      // network error, dll) TIDAK dicoba ulang dengan model lain --
+      // jenis error itu biasanya bukan soal "model ini yang salah".
+      const shouldTryNext =
+        !isLastModel &&
+        (isModelUnavailableError(
           error,
         ) ||
-        isLastModel
-      ) {
+          error?.code ===
+            'NVIDIA_TIMEOUT');
+
+      if (!shouldTryNext) {
         throw error;
       }
 
       console.warn(
-        `[Gemilang AI] Model '${model}' tidak tersedia (status ${error?.providerStatus}) -- mencoba model cadangan berikutnya: '${modelsToTry[i + 1]}'`,
+        `[Gemilang AI] Model '${model}' gagal (status ${error?.providerStatus || error?.code}) -- mencoba model cadangan berikutnya: '${modelsToTry[i + 1]}'`,
       );
     }
   }
@@ -3586,6 +3716,7 @@ function sendNvidiaError(
             'timeout',
 
           timeoutMs:
+            error?.timeoutMsUsed ||
             AI_TIMEOUT_MS,
 
           model:
@@ -3768,6 +3899,14 @@ export default async function handler(
   req,
   res,
 ) {
+  // 🔥 BARU: catat kapan request ini mulai, dipakai buat menghitung
+  // sisa waktu yang aman untuk langkah pencarian gambar Tavily di
+  // akhir -- supaya total kerja (AI + gambar) gak pernah melewati
+  // maxDuration 60 detik Vercel dan bikin hasil yang sudah jadi
+  // hilang percuma.
+  const requestStartedAt =
+    Date.now();
+
   // ==========================================================
   // METHOD
   // ==========================================================
@@ -4230,12 +4369,23 @@ export default async function handler(
   // 6.5. ENRICH DENGAN GAMBAR ASLI (Tavily -- opsional)
   // ==========================================================
 
+  // 🔥 Sisakan ~6 detik di akhir buat sorting, menyusun JSON respons,
+  // dan pengiriman -- sisanya baru boleh dipakai cari gambar. Kalau
+  // pemanggilan AI tadi sudah makan banyak waktu, langkah ini otomatis
+  // dapat jatah kecil (atau dilewati), BUKAN bikin seluruh request
+  // mati kena batas platform.
+  const imageDeadlineAt =
+    requestStartedAt +
+    (maxDuration * 1000 -
+      6_000);
+
   const imageEnrichResult =
     await enrichQuestionsWithRealImages(
       questions,
       process.env
         .TAVILY_API_KEY,
       topic,
+      imageDeadlineAt,
     );
 
   // ==========================================================
@@ -4358,6 +4508,12 @@ export default async function handler(
 
         tavilyCappedByBudget:
           imageEnrichResult.cappedByBudget,
+
+        // 🔥 BARU: true kalau pencarian gambar dihentikan karena waktu
+        // request hampir habis (bukan karena jatah panggilan habis).
+        // Soal tetap terkirim lengkap -- cuma sebagian tanpa gambar.
+        tavilyCappedByTime:
+          imageEnrichResult.cappedByTime,
       },
     });
 }
