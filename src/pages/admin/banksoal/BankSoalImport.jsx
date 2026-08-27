@@ -1,43 +1,55 @@
 // src/pages/admin/banksoal/BankSoalImport.jsx
 // ============================================================
 // Halaman admin: unggah PDF berisi soal -> soal dipotong PER BUTIR
-// (tanpa AI) -> AI cuma menjawab + membahas tiap butir -> admin
-// meninjau & mengoreksi -> simpan ke Bank Soal.
+// (tanpa AI) -> teks soal & opsinya ditranskripsi AI (satu soal per
+// panggilan) -> admin meninjau & mengoreksi -> simpan ke Bank Soal.
 //
 // ------------------------------------------------------------
-// ⚠️ PERUBAHAN ARSITEKTUR (Agustus 2026)
+// ⚠️ RIWAYAT ARSITEKTUR (Agustus 2026, revisi ke-3)
 // ------------------------------------------------------------
-// Versi sebelumnya meminta AI membaca SATU HALAMAN PENUH dan
-// mentranskripsi ulang SEMUA soal jadi teks sekaligus. Itu ternyata
-// jadi sumber dua masalah nyata: (a) AI kadang salah membaca notasi
-// matematika yang rumit, dan (b) respons AI kepotong di tengah pada
-// halaman padat (banyak soal + LaTeX + pembahasan sekaligus).
+// Revisi 1: AI membaca SATU HALAMAN PENUH sekaligus (transkripsi +
+//   jawaban + pembahasan semua soal di halaman itu dalam satu
+//   respons). GAGAL: respons kepotong di tengah pada halaman padat,
+//   dan satu soal yang kepotong bisa bikin SEMUA soal di halaman itu
+//   hilang (lihat riwayat commit lain di repo ini).
 //
-// Sekarang PEMOTONGAN SOAL DILAKUKAN TANPA AI SAMA SEKALI --
-// deteksi nomor soal dari POSISI TEKS ASLI di file PDF (bukan
-// tebakan visual dari gambar), lalu soal dipotong sebagai CROP
-// PIKSEL PERSIS dari halaman asli. Logika ini DIPORTING PERSIS dari
-// SmartImportPanel.jsx (fitur impor PDF lain yang sudah lama
-// terbukti jalan di project ini) -- bukan ditulis ulang dari nol,
-// supaya perilakunya sudah teruji.
+// Revisi 2: pemotongan soal jadi TANPA AI (deteksi posisi teks asli
+//   di PDF), tapi AI-nya SAMA SEKALI TIDAK dipanggil -- yang tersimpan
+//   cuma crop gambar mentah seluruh blok soal, tanpa teks yang bisa
+//   diedit sama sekali. Ternyata ini kurang -- soal jadi tidak bisa
+//   dicari/difilter isinya, dan "gambar doang" tidak jelas dibaca.
 //
-// AI HANYA dipanggil untuk satu tugas kecil per butir: melihat crop
-// itu dan menentukan JAWABAN YANG BENAR + pembahasan singkat. AI
-// TIDAK PERNAH diminta menyalin ulang teks soal -- soal yang
-// tersimpan adalah gambar aslinya sendiri, jadi mustahil salah
-// transkripsi. Karena keluaran yang diminta dari AI kini kecil (satu
-// objek pendek per SATU soal, bukan banyak soal dibungkus jadi satu
-// respons besar), risiko kepotong di tengah jalan jadi jauh lebih
-// kecil dibanding versi sebelumnya.
+// Revisi 3 (SEKARANG): kombinasi keduanya --
+//   1. DETEKSI BATAS SOAL: tetap tanpa AI (posisi teks asli di PDF,
+//      bukan tebakan visual) -- logika ini DIPORTING PERSIS dari
+//      SmartImportPanel.jsx yang sudah lama terbukti jalan di project
+//      ini, bukan ditulis ulang dari nol.
+//   2. TRANSKRIPSI TEKS: DENGAN AI, tapi SATU SOAL per panggilan
+//      (bukan satu halaman berisi banyak soal) -- soal & opsi jadi
+//      TEKS YANG BISA DIEDIT admin. Karena keluaran per panggilan
+//      kecil, risiko kepotong di tengah jalan (masalah Revisi 1)
+//      jauh lebih kecil.
+//   3. GAMBAR/DIAGRAM: AI menandai KALAU soal itu memuat diagram/
+//      grafik/foto yang jadi bagian soal (hasFigure), lalu HANYA
+//      area itu yang dipotong jadi qImage -- bukan seluruh blok
+//      soal. Soal murni teks tidak punya qImage sama sekali.
+//   4. JAWABAN & PEMBAHASAN: TETAP DITUNDA ke tahap lain (bukan
+//      dibuat sekarang) -- keputusan eksplisit pemilik bimbel supaya
+//      tidak boros memanggil AI untuk menjawab SEMUA soal di Bank
+//      Soal padahal belum tentu semuanya dipakai guru. Baru dibuat
+//      NANTI saat soal ini benar-benar dipilih guru untuk sebuah
+//      kuis (langkah terpisah, belum dibangun, menumpang di endpoint
+//      /api/smartParseQuiz mode "questionImage" yang sudah disiapkan).
 //
 // ------------------------------------------------------------
 // SYARAT PENTING: PDF HARUS PUNYA LAPISAN TEKS ASLI
 // ------------------------------------------------------------
-// Deteksi nomor soal bergantung pada posisi teks SUNGGUHAN di dalam
-// file PDF (bukan menebak dari gambar). Kalau PDF-nya hasil SCAN
-// MURNI tanpa lapisan teks (foto halaman yang ditempel jadi PDF),
-// deteksi ini tidak akan menemukan apa pun. Untuk PDF hasil scan
-// murni, perlu jalur lain (OCR) yang belum dibangun di sini.
+// Deteksi BATAS soal (bukan transkripsi isinya) bergantung pada
+// posisi teks SUNGGUHAN di dalam file PDF, bukan menebak dari
+// gambar. Kalau PDF-nya hasil SCAN MURNI tanpa lapisan teks (foto
+// halaman yang ditempel jadi PDF), deteksi batas ini tidak akan
+// menemukan apa pun. Untuk PDF hasil scan murni, perlu jalur lain
+// (OCR penuh per halaman) yang belum dibangun di sini.
 //
 // ------------------------------------------------------------
 // KENAPA PDF.JS DIMUAT DARI CDN, BUKAN NPM
@@ -50,14 +62,13 @@
 // versi CDN-nya, supaya dua fitur berbagi cache browser yang sama.
 //
 // ------------------------------------------------------------
-// KENAPA TINJAUAN ADMIN TETAP ADA DI TAHAP INI
+// KENAPA TINJAUAN ADMIN TETAP WAJIB
 // ------------------------------------------------------------
-// Di tahap IMPOR ini tidak ada jawaban yang perlu "diverifikasi" --
-// belum ada AI yang menjawab apa pun. Tinjauan admin di sini gunanya
-// memastikan BATAS POTONGAN (crop) tiap soal sudah pas (tidak
-// terpotong atau mengambil sedikit bagian soal berikutnya), dan
-// opsional menandai jawaban benar sekarang kalau admin kebetulan
-// tahu -- tapi ini TIDAK WAJIB untuk menyetujui soal.
+// AI tetap bisa salah membaca notasi matematika yang rumit. Layar
+// tinjau menampilkan crop asli berdampingan dengan teks hasil
+// transkripsi supaya admin bisa mencocokkan & mengoreksi langsung
+// sebelum soal disetujui -- bukan sekadar tempat menyetujui gambar
+// mentah tanpa isi yang jelas.
 //
 // ------------------------------------------------------------
 // INTEGRASI YANG DIBUTUHKAN
@@ -67,11 +78,12 @@
 //   onSaveQuestions(soal[]) : dipanggil saat admin menekan "Simpan".
 //   onCancel() : opsional, menutup halaman.
 //
-// 🔥 FILE INI TIDAK MEMANGGIL API/AI SAMA SEKALI. Semua pemrosesan
-// (render halaman, deteksi nomor soal, potong gambar) berjalan di
-// browser. Endpoint /api/smartParseQuiz mode "questionImage" sudah
-// disiapkan (lihat smartParseQuiz.js) untuk langkah GENERATE JAWABAN
-// yang akan dipanggil dari ManageQuiz nanti -- BUKAN dari file ini.
+// Endpoint yang dipakai: POST /api/smartParseQuiz
+// dengan body { questionCropImage } -- MENUMPANG di endpoint yang
+// sudah ada (lihat catatan batas 12 Serverless Function di file
+// smartParseQuiz.js). Endpoint mode "questionImage" (untuk generate
+// jawaban+pembahasan nanti di ManageQuiz) TIDAK dipanggil dari file
+// ini.
 // ============================================================
 
 import {
@@ -245,9 +257,59 @@ import {
     return out.toDataURL('image/jpeg', quality);
   }
   
+  // 🔥 BARU: potong SUB-AREA dari sebuah crop soal (bukan dari halaman
+  // penuh) berdasarkan figureBBox yang dikembalikan AI transkripsi --
+  // koordinatnya ternormalisasi 0..1 RELATIF TERHADAP crop soal itu
+  // sendiri (lihat prompt di smartParseQuiz.js). Dipakai supaya yang
+  // tersimpan sebagai qImage HANYA area diagram/grafik/fotonya saja,
+  // bukan seluruh blok soal (yang teksnya sudah dipisah jadi field
+  // "question"/"options" sendiri).
+  function cropFigureFromQuestionImage(questionImageDataUrl, bbox) {
+    return new Promise((resolve) => {
+      if (!bbox) {
+        resolve(null);
+        return;
+      }
+  
+      const img = new Image();
+      img.onload = () => {
+        const x = Math.max(0, Math.min(1, Number(bbox.x) || 0));
+        const y = Math.max(0, Math.min(1, Number(bbox.y) || 0));
+        const w = Math.max(0, Math.min(1 - x, Number(bbox.width) || 0));
+        const h = Math.max(0, Math.min(1 - y, Number(bbox.height) || 0));
+  
+        if (!(w > 0.02) || !(h > 0.02)) {
+          resolve(null);
+          return;
+        }
+  
+        const sx = Math.round(x * img.width);
+        const sy = Math.round(y * img.height);
+        const sw = Math.round(w * img.width);
+        const sh = Math.round(h * img.height);
+  
+        const out = document.createElement('canvas');
+        out.width = sw;
+        out.height = sh;
+        const ctx = out.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, sw, sh);
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+        resolve(out.toDataURL('image/jpeg', 0.9));
+      };
+      img.onerror = () => resolve(null);
+      img.src = questionImageDataUrl;
+    });
+  }
+  
   // ============================================================
   // KONSTANTA LAIN
   // ============================================================
+  
+  // Jeda antar panggilan AI transkripsi -- jaga rate limit tier gratis
+  // Gemini (sekarang ADA panggilan jaringan per soal lagi, beda dari
+  // revisi sebelumnya yang murni tanpa AI sama sekali).
+  const DELAY_BETWEEN_QUESTIONS_MS = 500;
   
   const STATUS = {
     IDLE: 'idle',
@@ -276,20 +338,54 @@ import {
       .slice(2, 8)}`;
   }
   
-  // 🔥 PERUBAHAN ARSITEKTUR: TIDAK ADA PEMANGGILAN AI DI FILE INI SAMA
-  // SEKALI. Sebelumnya di sini ada langkah "tanya AI jawaban+pembahasan
-  // tiap butir" yang berjalan otomatis untuk SETIAP soal yang terdeteksi
-  // -- itu boros (memanggil AI untuk semua soal padahal belum tentu
-  // semuanya akan dipakai guru) dan lambat (satu per satu, dengan jeda
-  // antar panggilan supaya tidak kena rate limit).
-  //
-  // Sekarang tugas file ini MURNI: deteksi & potong soal per butir dari
-  // PDF (tanpa AI, lihat bagian di atas), lalu simpan gambarnya ke Bank
-  // Soal apa adanya. Jawaban dan pembahasan BELUM DIISI di tahap ini --
-  // itu dibuat NANTI, saat guru benar-benar memilih soal ini untuk
-  // dipakai di sebuah kuis (langkah terpisah, belum dibangun, akan
-  // menumpang di endpoint /api/smartParseQuiz yang mode "questionImage"
-  // -nya sudah disiapkan tapi sengaja TIDAK dipanggil dari sini).
+  // ============================================================
+  // PANGGIL AI -- HANYA UNTUK TRANSKRIPSI (bukan jawaban)
+  // ============================================================
+  
+  async function transcribeQuestionWithAI(questionImageDataUrl) {
+    const response = await fetch('/api/smartParseQuiz', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        questionCropImage: questionImageDataUrl,
+      }),
+    });
+  
+    const data = await response.json();
+  
+    if (!response.ok || !data.success) {
+      throw new Error(data?.error || `HTTP ${response.status}`);
+    }
+  
+    return {
+      question: typeof data.question === 'string' ? data.question : '',
+      options: Array.isArray(data.options) ? data.options : [],
+      hasFigure: Boolean(data.hasFigure),
+      figureBBox: data.figureBBox || null,
+      readingConfidence: data.readingConfidence === 'low' ? 'low' : 'high',
+    };
+  }
+  
+  // 🔥 ARSITEKTUR SAAT INI (revisi ke-2):
+  // - DETEKSI BATAS SOAL: tanpa AI (lihat bagian di atas -- posisi teks
+  //   asli di PDF, bukan tebakan visual).
+  // - TRANSKRIPSI TEKS SOAL & OPSI: DENGAN AI, tapi SATU SOAL per
+  //   panggilan (bukan satu halaman berisi banyak soal sekaligus) --
+  //   supaya soal & opsi jawaban jadi TEKS YANG BISA DIEDIT admin,
+  //   bukan cuma gambar mentah yang tidak jelas. Karena keluaran per
+  //   panggilan kecil (satu soal saja), risiko respons kepotong di
+  //   tengah jalan (masalah yang pernah terjadi di desain PERTAMA, saat
+  //   satu halaman penuh dibaca sekaligus) jadi jauh lebih kecil.
+  // - GAMBAR/DIAGRAM DI DALAM SOAL: AI menandai KALAU ADA (hasFigure),
+  //   lalu HANYA area diagram/grafik/foto itu yang dipotong jadi qImage
+  //   -- bukan seluruh blok soal. Soal yang murni teks tidak punya
+  //   qImage sama sekali.
+  // - JAWABAN & PEMBAHASAN: SENGAJA BELUM DIISI di tahap impor ini --
+  //   itu dibuat NANTI, saat guru benar-benar memilih soal ini untuk
+  //   dipakai di sebuah kuis (langkah terpisah, belum dibangun, akan
+  //   menumpang di endpoint /api/smartParseQuiz mode "questionImage").
+  //   Alasannya: sayang memanggil AI untuk menjawab SEMUA soal di Bank
+  //   Soal padahal belum tentu semuanya akan dipakai guru.
   
   // ============================================================
   // KOMPONEN UTAMA
@@ -456,30 +552,78 @@ import {
       async (pageNumber) => {
         const { pageImage, crops } = await detectQuestionsOnPage(pageNumber);
   
-        // 🔥 Murni pemetaan hasil crop -> objek soal. TIDAK ADA
-        // pemanggilan AI, TIDAK ADA jeda jaringan -- makanya satu
-        // halaman sekarang selesai dalam hitungan milidetik (dibatasi
-        // cuma oleh kecepatan render kanvas di browser), bukan lagi
-        // dibatasi kecepatan API seperti sebelumnya.
-        const questions = crops.map((crop) => ({
-          id: newId(),
-          pageNumber,
-          printedNumber: crop.printedNumber,
-          qImage: crop.qImage,
-          optionsAreImages: crop.optionsAreImages,
-          optionImages: crop.optionImages,
-          // optionCount belum diketahui di tahap ini (tidak ada AI yang
-          // membacanya) -- default aman 5 (A-E) supaya pemilih jawaban
-          // manual di bawah tetap bisa dipakai admin kalau mau menandai
-          // sambil meninjau; kalau tidak, biarkan kosong (null), nanti
-          // diisi di langkah "generate jawaban" saat soal ini dipakai
-          // di kuis.
-          optionCount: 5,
-          correct: null,
-          explanation: '',
-          needsManualAnswer: true,
-          approved: false,
-        }));
+        const questions = [];
+  
+        for (const crop of crops) {
+          if (abortRef.current) break;
+  
+          while (pauseRef.current && !abortRef.current) {
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise((r) => setTimeout(r, 300));
+          }
+          if (abortRef.current) break;
+  
+          let transcript = {
+            question: '',
+            options: [],
+            hasFigure: false,
+            figureBBox: null,
+            readingConfidence: 'low',
+          };
+          let transcribeError = null;
+  
+          try {
+            // eslint-disable-next-line no-await-in-loop
+            transcript = await transcribeQuestionWithAI(crop.qImage);
+          } catch (error) {
+            // AI gagal membaca BUKAN alasan membuang soalnya -- crop
+            // asli tetap ada untuk ditinjau & diketik manual oleh admin.
+            transcribeError = error?.message || 'Gagal membaca soal ini.';
+          }
+  
+          // Kalau opsi jawabannya sudah terdeteksi berupa GAMBAR (dari
+          // langkah deteksi tanpa-AI di atas), field "options" teks
+          // dari AI tidak relevan -- yang dipakai adalah optionImages.
+          // Kalau bukan, tapi AI juga tidak berhasil membaca opsi
+          // apa pun, sediakan 4 kolom kosong supaya admin bisa
+          // mengetik manual daripada tidak ada tempat sama sekali.
+          const options = crop.optionsAreImages
+            ? []
+            : transcript.options.length > 0
+              ? transcript.options
+              : ['', '', '', ''];
+  
+          // Potong HANYA area diagram/grafik/foto dari crop soal (bukan
+          // seluruh bloknya) -- kosong kalau soal ini murni teks.
+          // eslint-disable-next-line no-await-in-loop
+          const figureImage = transcript.hasFigure
+            ? (await cropFigureFromQuestionImage(crop.qImage, transcript.figureBBox)) || ''
+            : '';
+  
+          questions.push({
+            id: newId(),
+            pageNumber,
+            printedNumber: crop.printedNumber,
+            // Crop UTUH blok soal -- disimpan HANYA untuk pembanding
+            // visual di layar tinjau (kolom kiri kartu), TIDAK ikut
+            // disimpan ke Bank Soal. Yang disimpan adalah teks di
+            // "question"/"options", plus qImage kalau ada figure.
+            rawCropImage: crop.qImage,
+            question: transcript.question,
+            options,
+            optionsAreImages: crop.optionsAreImages,
+            optionImages: crop.optionImages,
+            qImage: figureImage,
+            readingConfidence: transcript.readingConfidence,
+            transcribeError,
+            correct: null,
+            explanation: '',
+            approved: false,
+          });
+  
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise((r) => setTimeout(r, DELAY_BETWEEN_QUESTIONS_MS));
+        }
   
         return { pageImage, questions };
       },
@@ -624,16 +768,15 @@ import {
       try {
         const payload = approvedQuestions.map((q) => ({
           type: 'multiple',
-          // Teks soal SENGAJA cuma placeholder pendek -- badan soal
-          // yang sesungguhnya adalah qImage (crop asli, bukan hasil
-          // baca ulang AI). Konvensi ini SAMA PERSIS dengan
-          // SmartImportPanel.jsx supaya kompatibel dengan cara
-          // ManageQuiz/StudentQuizView menampilkan soal berbasis gambar.
-          question: q.printedNumber
-            ? `Soal ${q.printedNumber}`
-            : 'Soal (lihat gambar)',
-          qImage: q.qImage,
-          options: Array.from({ length: q.optionCount || 5 }, () => ''),
+          // 🔥 Sekarang teks SUNGGUHAN (hasil transkripsi AI, sudah
+          // ditinjau/diedit admin) -- bukan lagi placeholder "Soal 20".
+          question:
+            q.question?.trim() ||
+            (q.printedNumber ? `Soal ${q.printedNumber}` : 'Soal (lihat gambar)'),
+          // qImage sekarang HANYA diagram/grafik/foto di dalam soal
+          // (kalau ada) -- kosong untuk soal murni teks.
+          qImage: q.qImage || '',
+          options: q.optionsAreImages ? [] : q.options.filter((o) => o.trim().length > 0),
           optionImages: q.optionsAreImages ? q.optionImages : [],
           optionsAreImages: Boolean(q.optionsAreImages),
           // 🔥 null (bukan 0) kalau belum ditandai -- 0 berarti "opsi A
@@ -688,10 +831,11 @@ import {
             <p className="bsi-eyebrow">{folderName}</p>
             <h1 className="bsi-title">Tambah soal dari PDF</h1>
             <p className="bsi-sub">
-              Soal dipotong per butir langsung dari halaman asli, tanpa
-              AI sama sekali. Jawaban & pembahasan dibuat belakangan,
-              saat soal ini dipakai di sebuah kuis -- periksa dulu
-              batas potongan gambarnya di sini sebelum disetujui.
+              Batas soal dideteksi dari halaman asli (tanpa AI), lalu
+              teks soal & opsinya ditranskripsi AI supaya bisa diedit.
+              Jawaban & pembahasan dibuat belakangan, saat soal ini
+              dipakai di sebuah kuis -- periksa dulu hasil transkripsinya
+              di sini sebelum disetujui.
             </p>
           </div>
   
@@ -890,7 +1034,7 @@ import {
   
                 <div className="bsi-parsed">
                   <div className="bsi-panel-label">
-                    Soal terdeteksi — periksa batas potongan gambar sebelum disetujui
+                    Soal terdeteksi — periksa hasil transkripsi sebelum disetujui
                   </div>
   
                   {selectedPage.error && (
@@ -965,24 +1109,66 @@ import {
                         </div>
                       </div>
   
-                      {/* Gambar soal -- CROP ASLI, badan soal & opsi teks
-                          sudah baked-in di gambar ini, tidak ditranskrip
-                          ulang oleh AI. */}
-                      <img src={q.qImage} alt="Soal" className="bsi-qimg" />
+                      {/* Perbandingan visual: crop asli di kiri (kecil,
+                          untuk memastikan AI membaca dengan benar),
+                          teks hasil transkripsi yang BISA DIEDIT di
+                          kanan. */}
+                      <div className="bsi-transcript-row">
+                        <img
+                          src={q.rawCropImage}
+                          alt="Crop asli"
+                          className="bsi-rawcrop"
+                        />
   
-                      <p className="bsi-flag">
-                        Jawaban & pembahasan belum diisi -- akan
-                        dibuatkan otomatis nanti saat soal ini dipakai
-                        di sebuah kuis. Boleh ditandai sekarang kalau
-                        admin sudah tahu jawabannya (opsional).
-                      </p>
+                        <div className="bsi-transcript-fields">
+                          <textarea
+                            className="bsi-input bsi-question-input"
+                            rows={3}
+                            placeholder="Teks soal..."
+                            value={q.question || ''}
+                            onChange={(e) =>
+                              updateQuestion(selectedPage.pageNumber, q.id, {
+                                question: e.target.value,
+                              })
+                            }
+                          />
   
-                      {/* Pemilih jawaban -- OPSIONAL, murni penanda
-                          manual admin (tanpa AI). Kalau opsinya berupa
-                          gambar, tampilkan crop tiap opsi sebagai
-                          tombol; kalau tidak, tampilkan huruf A-E biasa
-                          (labelnya sendiri sudah ada di dalam gambar
-                          qImage). */}
+                          {q.qImage && (
+                            <div className="bsi-figure-wrap">
+                              <span className="bsi-figure-label">
+                                Diagram/gambar terdeteksi dalam soal ini:
+                              </span>
+                              <img
+                                src={q.qImage}
+                                alt="Diagram soal"
+                                className="bsi-figure-img"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+  
+                      {q.transcribeError && (
+                        <p className="bsi-flag">
+                          AI gagal membaca soal ini secara otomatis --
+                          ketik teksnya secara manual dari crop di
+                          sebelah kiri. ({q.transcribeError})
+                        </p>
+                      )}
+  
+                      {!q.transcribeError && q.readingConfidence === 'low' && (
+                        <p className="bsi-flag">
+                          AI kurang yakin membaca sebagian teks ini --
+                          cocokkan dengan crop asli di sebelah kiri.
+                        </p>
+                      )}
+  
+                      {/* Opsi jawaban -- TEKS yang bisa diedit (kalau
+                          bukan opsi bergambar), atau crop gambar tiap
+                          opsi (kalau terdeteksi opsi bergambar dari
+                          langkah deteksi tanpa-AI). Jawaban benar
+                          OPSIONAL ditandai sekarang -- lihat catatan
+                          di bawah. */}
                       {q.optionsAreImages ? (
                         <div className="bsi-optimg-row">
                           {q.optionImages.map((url, oi) => (
@@ -995,7 +1181,6 @@ import {
                               onClick={() =>
                                 updateQuestion(selectedPage.pageNumber, q.id, {
                                   correct: oi,
-                                  needsManualAnswer: false,
                                 })
                               }
                             >
@@ -1005,29 +1190,58 @@ import {
                           ))}
                         </div>
                       ) : (
-                        <div className="bsi-letter-row">
-                          {Array.from(
-                            { length: Math.max(2, Math.min(5, q.optionCount || 5)) },
-                            (_, oi) => oi,
-                          ).map((oi) => (
+                        <ul className="bsi-option-list">
+                          {q.options.map((opt, oi) => (
+                            <li key={oi}>
+                              <button
+                                type="button"
+                                className={`bsi-letter-btn${
+                                  q.correct === oi ? ' selected' : ''
+                                }`}
+                                onClick={() =>
+                                  updateQuestion(selectedPage.pageNumber, q.id, {
+                                    correct: oi,
+                                  })
+                                }
+                                title="Tandai sebagai jawaban benar (opsional)"
+                              >
+                                {String.fromCharCode(65 + oi)}
+                              </button>
+                              <input
+                                className="bsi-input"
+                                value={opt}
+                                onChange={(e) => {
+                                  const options = [...q.options];
+                                  options[oi] = e.target.value;
+                                  updateQuestion(selectedPage.pageNumber, q.id, {
+                                    options,
+                                  });
+                                }}
+                              />
+                            </li>
+                          ))}
+                          <li>
                             <button
-                              key={oi}
                               type="button"
-                              className={`bsi-letter-btn${
-                                q.correct === oi ? ' selected' : ''
-                              }`}
+                              className="bsi-btn ghost sm"
                               onClick={() =>
                                 updateQuestion(selectedPage.pageNumber, q.id, {
-                                  correct: oi,
-                                  needsManualAnswer: false,
+                                  options: [...q.options, ''],
                                 })
                               }
                             >
-                              {String.fromCharCode(65 + oi)}
+                              + opsi
                             </button>
-                          ))}
-                        </div>
+                          </li>
+                        </ul>
                       )}
+  
+                      <p className="bsi-flag muted">
+                        Jawaban benar & pembahasan opsional diisi
+                        sekarang -- kalau dikosongkan, akan dibuatkan
+                        otomatis nanti saat soal ini dipakai di sebuah
+                        kuis.
+                      </p>
   
                       <details className="bsi-details">
                         <summary>Pembahasan (opsional)</summary>
@@ -1142,7 +1356,16 @@ import {
   .bsi-check{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;font-weight:550}
   .bsi-select{padding:6px 8px;border:1px solid var(--line);border-radius:7px;font-size:13px;
     font-family:inherit;color:var(--ink);background:#fff}
-  .bsi-qimg{max-width:100%;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .bsi-transcript-row{display:flex;gap:12px;align-items:flex-start}
+  .bsi-rawcrop{width:150px;flex:0 0 150px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .bsi-transcript-fields{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0}
+  .bsi-question-input{font-size:14.5px}
+  .bsi-figure-wrap{display:flex;flex-direction:column;gap:4px}
+  .bsi-figure-label{font-size:11.5px;color:var(--muted);font-weight:600}
+  .bsi-figure-img{max-width:220px;border:1px solid var(--line);border-radius:7px;background:#fff}
+  .bsi-option-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+  .bsi-option-list li{display:flex;align-items:center;gap:9px}
+  .bsi-flag.muted{color:var(--muted)}
   .bsi-input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;
     font-size:14px;font-family:inherit;color:var(--ink);line-height:1.5;resize:vertical;background:#fff}
   .bsi-input:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:var(--brand)}

@@ -439,6 +439,200 @@ async function handleAnswerQuestionMode(req, res) {
   }
 }
 
+// ============================================================
+// 🔥 BARU: PEMANGGIL GEMINI -- TRANSKRIP SATU SOAL (mode impor Bank
+// Soal)
+// ============================================================
+// BEDA dari handleAnswerQuestionMode di atas (yang tugasnya cuma
+// menjawab+membahas SATU soal buat dipakai NANTI saat guru menyusun
+// kuis) -- mode ini tugasnya MENULIS ULANG soal jadi teks yang bisa
+// diedit (bukan cuma gambar mentah), dipanggil SAAT ADMIN MENGIMPOR
+// PDF ke Bank Soal.
+//
+// Kenapa dua mode terpisah dan bukan digabung jadi satu:
+// - Transkripsi (di sini) perlu dipanggil SEKALI per soal saat impor.
+// - Menjawab+membahas (di atas) baru perlu dipanggil BELAKANGAN,
+//   hanya untuk soal yang benar-benar dipakai guru di sebuah kuis --
+//   supaya tidak boros memanggil AI untuk semua soal di Bank Soal
+//   yang belum tentu semuanya terpakai.
+//
+// SENGAJA HANYA SATU SOAL PER PANGGILAN (bukan satu halaman berisi
+// banyak soal seperti desain pertama yang gagal) -- ini yang
+// menghindarkan masalah respons kepotong di tengah jalan yang pernah
+// terjadi sebelumnya.
+async function callGeminiTranscribeQuestion(imageDataUrl, modelName) {
+  const match = /^data:([^;]+);base64,(.+)$/.exec(imageDataUrl || '');
+
+  if (!match) {
+    throw new Error('Format gambar soal tidak valid (bukan data URL base64).');
+  }
+
+  const [, mimeType, base64Data] = match;
+
+  const systemPrompt = `Kamu adalah pembaca soal ujian untuk Bank Soal Bimbel Gemilang.
+
+TUGAS:
+Lihat gambar SATU SOAL (potongan/crop dari halaman buku cetak), lalu tulis ulang jadi teks terstruktur yang bisa diedit.
+
+⚠️ WAJIB SETIA APA ADANYA:
+Salin persis teks soal dan pilihan jawabannya seperti tertulis di gambar. JANGAN mengubah angka, JANGAN mengganti konteks, JANGAN "memperbaiki" kalimat. Ini untuk arsip Bank Soal -- yang dibutuhkan SALINAN SETIA, bukan versi kreatif.
+
+Kalau ada bagian yang benar-benar tidak terbaca (buram/terpotong), tulis bagian yang terbaca apa adanya dan tandai readingConfidence:"low" -- JANGAN MENGARANG isi yang tidak terbaca.
+
+RUMUS MATEMATIKA:
+Tulis dengan LaTeX dibungkus \\\\( \\\\), contoh: \\\\(x^2 + 3x - 4 = 0\\\\), \\\\(\\\\frac{a}{b}\\\\), \\\\(\\\\sqrt{x+1}\\\\).
+
+GAMBAR/DIAGRAM/GRAFIK/TABEL DI DALAM SOAL:
+Kalau gambar crop ini MEMUAT diagram, grafik, foto, atau tabel yang jadi BAGIAN dari soal (bukan cuma nomor/hiasan), tandai hasFigure:true dan berikan figureBBox: kotak area gambar itu SAJA dalam koordinat ternormalisasi 0 sampai 1 RELATIF TERHADAP GAMBAR CROP INI (bukan halaman penuh): {"x":..,"y":..,"width":..,"height":..}, (x,y) pojok kiri-atas. Kalau soal ini MURNI TEKS tanpa gambar/diagram, set hasFigure:false dan JANGAN sertakan figureBBox.
+
+⚠️ JANGAN TENTUKAN JAWABAN BENAR, JANGAN TULIS PEMBAHASAN -- itu BUKAN tugasmu di sini. Cukup transkripsi soal & opsinya saja.
+
+FORMAT OUTPUT -- HANYA JSON, TANPA MARKDOWN, TANPA PENJELASAN LAIN:
+{"question":"...","options":["...","...","...","...","..."],"hasFigure":false,"figureBBox":null,"readingConfidence":"high"}
+
+"options" isi SEBANYAK pilihan jawaban yang benar-benar terlihat di gambar (biasanya 4 atau 5) -- JANGAN dipaksakan selalu 4 kalau yang tertulis 5.`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': process.env.GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              { inline_data: { mime_type: mimeType, data: base64Data } },
+              {
+                text: 'Transkripsikan soal ini sesuai instruksi. Hanya JSON.',
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.1,
+          // 🔥 SATU soal saja per panggilan (bukan satu halaman berisi
+          // banyak soal) -- keluaran yang diminta kecil (satu soal +
+          // opsi-opsinya, tanpa jawaban/pembahasan), jadi jatah ini
+          // sudah lebih dari cukup dan risiko kepotong di tengah
+          // sangat kecil.
+          maxOutputTokens: 2048,
+        },
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`GEMINI_HTTP_${response.status}: ${errText}`);
+    }
+    return response.json();
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new Error(`GEMINI_TIMEOUT setelah ${GEMINI_TIMEOUT_MS}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function transcribeQuestionImage(imageDataUrl) {
+  let lastErr;
+  for (const modelName of GEMINI_MODELS) {
+    try {
+      const data = await callGeminiTranscribeQuestion(imageDataUrl, modelName);
+
+      const rawText =
+        data.choices?.[0]?.message?.content ||
+        data.candidates?.[0]?.content?.parts?.[0]?.text ||
+        '{}';
+
+      const cleaned = rawText.replace(/```json|```/g, '').trim();
+
+      try {
+        const parsed = JSON.parse(cleaned);
+        return {
+          question: typeof parsed.question === 'string' ? parsed.question.trim() : '',
+          options: Array.isArray(parsed.options)
+            ? parsed.options.map((o) => String(o ?? '').trim()).filter(Boolean)
+            : [],
+          hasFigure: Boolean(parsed.hasFigure),
+          figureBBox:
+            parsed.hasFigure && parsed.figureBBox && typeof parsed.figureBBox === 'object'
+              ? parsed.figureBBox
+              : null,
+          readingConfidence: parsed.readingConfidence === 'low' ? 'low' : 'high',
+        };
+      } catch (e) {
+        // Keluaran di sini kecil (satu soal saja), jadi kegagalan
+        // parse kemungkinan besar bukan soal kehabisan token --
+        // coba tarik JSON pertama yang valid sebagai upaya terakhir.
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        if (match) {
+          try {
+            const parsed = JSON.parse(match[0]);
+            return {
+              question: typeof parsed.question === 'string' ? parsed.question.trim() : '',
+              options: Array.isArray(parsed.options)
+                ? parsed.options.map((o) => String(o ?? '').trim()).filter(Boolean)
+                : [],
+              hasFigure: Boolean(parsed.hasFigure),
+              figureBBox:
+                parsed.hasFigure && parsed.figureBBox && typeof parsed.figureBBox === 'object'
+                  ? parsed.figureBBox
+                  : null,
+              readingConfidence: 'low',
+            };
+          } catch (e2) {
+            // lanjut ke model berikutnya
+          }
+        }
+      }
+    } catch (e) {
+      lastErr = e;
+      console.error(`smartParseQuiz (transcribe) gagal pakai model ${modelName}:`, e.message);
+    }
+  }
+
+  console.error('Semua model gagal mentranskripsi soal ini:', lastErr?.message);
+  throw lastErr || new Error('Semua model Gemini gagal membaca soal ini.');
+}
+
+async function handleTranscribeQuestionMode(req, res) {
+  const { questionCropImage } = req.body;
+
+  if (!questionCropImage || typeof questionCropImage !== 'string') {
+    return res.status(400).json({ success: false, error: 'questionCropImage kosong atau tidak valid.' });
+  }
+
+  try {
+    const result = await transcribeQuestionImage(questionCropImage);
+
+    if (!result.question) {
+      return res.status(502).json({
+        success: false,
+        error: 'AI tidak berhasil membaca teks soal dari gambar ini.',
+      });
+    }
+
+    return res.status(200).json({ success: true, ...result });
+  } catch (err) {
+    console.error('smartParseQuiz (transcribe) error:', err);
+    return res.status(502).json({
+      success: false,
+      error: err.message || 'Gagal mentranskripsi soal ini.',
+    });
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -451,6 +645,14 @@ export default async function handler(req, res) {
 
   if (!process.env.GEMINI_API_KEY) {
     return res.status(500).json({ success: false, error: 'GEMINI_API_KEY belum di-setting di Vercel' });
+  }
+
+  // 🔥 cabang mode transkripsi -- dipakai BankSoalImport.jsx saat
+  // mengimpor PDF (menulis ulang soal jadi teks, TANPA menjawab).
+  // Dipilih lewat field `questionCropImage` (beda nama dari
+  // `questionImage` di bawah supaya kedua mode tidak pernah tertukar).
+  if (req.body && req.body.questionCropImage) {
+    return handleTranscribeQuestionMode(req, res);
   }
 
   // 🔥 cabang mode jawab-soal -- dipilih HANYA lewat keberadaan field
