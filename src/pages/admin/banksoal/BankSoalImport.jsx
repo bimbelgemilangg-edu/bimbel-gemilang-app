@@ -130,6 +130,42 @@ import {
     });
   }
   
+  // 🔥 BARU: mammoth.js -- pembaca .docx standar, dimuat dari CDN
+  // dengan pola SAMA PERSIS seperti pdf.js di atas (bukan npm import,
+  // supaya tidak mengulang masalah build "Rollup failed to resolve
+  // import" yang pernah terjadi pada pdfjs-dist).
+  //
+  // KENAPA WORD SEKARANG JADI JALUR IMPOR TERPISAH: soal dengan notasi
+  // matematika yang ditumpuk visual (vektor kolom, matriks) terbukti
+  // sulit diurai otomatis dari tata letak PDF cetak -- bukan salah PDF
+  // atau Word sebagai FORMAT, tapi soal seberapa "linear" isi soal itu
+  // ditulis. Dokumen Word yang diketik ulang (atau dirapikan manual
+  // dari hasil convert PDF->Word bawaan Word) memberi admin kesempatan
+  // menuliskan notasi itu jadi satu baris teks biasa (mis. "a=(p,2,-1)")
+  // SEBELUM diimpor -- menghilangkan ambiguitas tata letak 2D sama
+  // sekali, bukan cuma memindahkan masalahnya ke format lain.
+  const MAMMOTH_SCRIPT =
+    'https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js';
+  
+  function ensureMammothLoaded() {
+    return new Promise((resolve, reject) => {
+      if (window.mammoth) {
+        resolve(window.mammoth);
+        return;
+      }
+  
+      const script = document.createElement('script');
+      script.src = MAMMOTH_SCRIPT;
+  
+      script.onload = () => resolve(window.mammoth);
+  
+      script.onerror = () =>
+        reject(new Error('Gagal memuat pembaca Word.'));
+  
+      document.body.appendChild(script);
+    });
+  }
+  
   // ============================================================
   // DETEKSI & POTONG SOAL -- DIPORTING PERSIS DARI SmartImportPanel.jsx
   // ============================================================
@@ -528,6 +564,121 @@ import {
     return 'pilihan_ganda';
   }
   
+  // ============================================================
+  // 🔥 BARU: PROSES FILE .DOCX -- JALUR IMPOR KEDUA
+  // ============================================================
+  // Dipakai untuk soal yang notasi matematikanya rumit di tata letak
+  // PDF (vektor kolom, matriks) -- admin mengonversi/mengetik ulang
+  // soal itu ke Word dulu (bisa ditulis linear, mis. "a=(p,2,-1)",
+  // menghindari ambiguitas tata letak 2D), lalu diimpor lewat sini.
+  //
+  // mammoth.js MENGUBAH .docx MENJADI HTML, dan (INI YANG PALING
+  // BERHARGA) gambar yang ditempel di dalam Word OTOMATIS ikut
+  // dikonversi jadi <img src="data:..."> base64 -- TIDAK PERLU
+  // dipotong/crop sama sekali, beda dari jalur PDF yang harus menebak
+  // posisi gambar. Tabel Word juga tetap jadi <table> HTML asli,
+  // bukan gambar -- strukturnya (baris & kolom) tetap utuh.
+  //
+  // Fungsi murni ini TIDAK menyentuh AI/API sama sekali -- semua
+  // deterministik dari struktur dokumen, sama seperti filosofi jalur
+  // PDF.
+  async function parseDocxIntoQuestions(arrayBuffer) {
+    const mammoth = await ensureMammothLoaded();
+  
+    const result = await mammoth.convertToHtml({ arrayBuffer });
+    const html = result.value;
+  
+    const parser = new DOMParser();
+    const dom = parser.parseFromString(html, 'text/html');
+    const topLevelNodes = [...dom.body.children];
+  
+    // Kelompokkan node top-level (paragraf, tabel) jadi blok per soal --
+    // blok baru dimulai tiap kali ketemu paragraf yang diawali nomor
+    // ("1.", "23)", dst), sama seperti deteksi nomor soal di jalur PDF,
+    // tapi jauh lebih sederhana karena dokumen Word TIDAK punya tata
+    // letak 2 kolom yang perlu dipisah -- urutan paragraf SUDAH urutan
+    // baca yang benar.
+    const blocks = [];
+    let current = null;
+  
+    for (const node of topLevelNodes) {
+      const text = node.textContent.trim();
+      const isQuestionStart =
+        node.tagName === 'P' && /^\d{1,3}[.)]\s*/.test(text);
+  
+      if (isQuestionStart) {
+        if (current) blocks.push(current);
+        current = {
+          printedNumber: parseInt(text.match(/^\d{1,3}/)[0], 10),
+          nodes: [node],
+        };
+      } else if (current) {
+        current.nodes.push(node);
+      }
+      // Node SEBELUM soal pertama (judul dokumen, instruksi umum) --
+      // dibuang, bukan bagian dari soal mana pun.
+    }
+    if (current) blocks.push(current);
+  
+    const questions = blocks.map((block) => {
+      // Gabungkan teks semua paragraf dalam blok ini (tabel dikecualikan
+      // dari teks -- tabel ditangani terpisah sebagai tableHtml).
+      const textNodes = block.nodes.filter((n) => n.tagName !== 'TABLE');
+  
+      const fullText = textNodes
+        .map((n) => n.textContent)
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+  
+      const withoutNumber = fullText.replace(/^\s*\d{1,3}[.)]\s*/, '');
+  
+      // Gambar yang ditempel Word -- AMBIL LANGSUNG, tidak perlu
+      // dipotong/crop sama sekali (beda dari jalur PDF).
+      const firstImg = block.nodes
+        .flatMap((n) => [...n.querySelectorAll?.('img') ?? []])
+        .find(Boolean);
+  
+      // Tabel Word -- disimpan sebagai HTML tabel ASLI (struktur baris
+      // & kolom asli, bukan gambar/tebakan).
+      const tableNode = block.nodes.find((n) => n.tagName === 'TABLE');
+  
+      const optionImagesFromDoc = block.nodes
+        .flatMap((n) => [...n.querySelectorAll?.('img') ?? []])
+        .slice(firstImg ? 1 : 0) // gambar pertama dianggap figure soal, sisanya (jika ada) opsi bergambar
+        .map((img) => img.getAttribute('src'))
+        .filter(Boolean);
+  
+      const { question, options } = splitOptionsFromText(withoutNumber);
+      const tipeSoal = classifyTipeSoal(
+        withoutNumber,
+        optionImagesFromDoc.length >= 2,
+      );
+  
+      return {
+        printedNumber: block.printedNumber,
+        question,
+        options:
+          optionImagesFromDoc.length >= 2
+            ? []
+            : options.length > 0
+              ? options
+              : ['', '', '', ''],
+        tipeSoal,
+        qImage: firstImg ? firstImg.getAttribute('src') || '' : '',
+        optionsAreImages: optionImagesFromDoc.length >= 2,
+        optionImages: optionImagesFromDoc,
+        tableHtml: tableNode ? tableNode.outerHTML : '',
+        // Word tidak punya "gambar halaman" untuk pembanding visual
+        // seperti PDF -- rawCropImage dikosongkan, panel kiri di layar
+        // tinjau akan menampilkan teks HTML asli sebagai gantinya.
+        rawCropImage: '',
+      };
+    });
+  
+    return questions;
+  }
+  
   // 🔥 BARU: potong SUB-AREA dari sebuah crop soal (bukan dari halaman
   // penuh) berdasarkan figureBBox yang dikembalikan AI transkripsi --
   // koordinatnya ternormalisasi 0..1 RELATIF TERHADAP crop soal itu
@@ -739,6 +890,12 @@ import {
     onSaveQuestions,
     onCancel,
   }) {
+    // 🔥 BARU: dua jalur impor -- 'pdf' (deteksi geometris, cocok untuk
+    // soal teks/prosa biasa) dan 'word' (baca struktur .docx langsung,
+    // cocok untuk soal bernotasi matematika rumit -- vektor, matriks --
+    // yang diketik ulang linear supaya tidak ambigu).
+    const [importMode, setImportMode] = useState('pdf');
+  
     const [file, setFile] = useState(null);
     const [status, setStatus] = useState(STATUS.IDLE);
     const [errorMessage, setErrorMessage] = useState('');
@@ -756,6 +913,7 @@ import {
     const [savedCount, setSavedCount] = useState(0);
   
     const pdfDocRef = useRef(null);
+    const docxBufferRef = useRef(null); // 🔥 BARU: menyimpan arrayBuffer .docx untuk mode Word
     const abortRef = useRef(false);
     const pauseRef = useRef(false);
   
@@ -767,10 +925,17 @@ import {
       const picked = event.target.files?.[0];
       if (!picked) return;
   
-      if (picked.type !== 'application/pdf') {
-        setErrorMessage(
-          'Berkas harus PDF. Word tidak didukung karena tata letak dan rumusnya bisa bergeser antar versi Office.',
-        );
+      if (importMode === 'pdf' && picked.type !== 'application/pdf') {
+        setErrorMessage('Berkas harus PDF untuk mode ini.');
+        setStatus(STATUS.ERROR);
+        return;
+      }
+  
+      if (
+        importMode === 'word' &&
+        !picked.name.toLowerCase().endsWith('.docx')
+      ) {
+        setErrorMessage('Berkas harus .docx untuk mode ini.');
         setStatus(STATUS.ERROR);
         return;
       }
@@ -782,6 +947,21 @@ import {
       setStatus(STATUS.LOADING_PDF);
   
       try {
+        if (importMode === 'word') {
+          // 🔥 BARU: mode Word -- tidak ada konsep "halaman" seperti
+          // PDF, seluruh dokumen diproses jadi satu kesatuan. Rentang
+          // halaman disetel 1..1 supaya kontrol UI yang sama (dibagi
+          // per-halaman) tetap kompatibel tanpa perlu menulis ulang
+          // seluruh alur proses/tinjau/simpan.
+          const buffer = await picked.arrayBuffer();
+          docxBufferRef.current = buffer;
+          setTotalPages(1);
+          setStartPage(1);
+          setEndPage(1);
+          setStatus(STATUS.IDLE);
+          return;
+        }
+  
         const pdfjsLib = await ensurePdfJsLoaded();
         const buffer = await picked.arrayBuffer();
         const doc = await pdfjsLib.getDocument({ data: buffer }).promise;
@@ -793,11 +973,11 @@ import {
         setStatus(STATUS.IDLE);
       } catch (error) {
         setErrorMessage(
-          `PDF tidak bisa dibuka: ${error?.message || 'berkas mungkin rusak atau terkunci sandi'}.`,
+          `Berkas tidak bisa dibuka: ${error?.message || 'berkas mungkin rusak.'}`,
         );
         setStatus(STATUS.ERROR);
       }
-    }, []);
+    }, [importMode]);
   
     // ----------------------------------------------------------
     // DETEKSI & POTONG SOAL DI SATU HALAMAN (TANPA AI)
@@ -968,6 +1148,39 @@ import {
   
     const processOnePage = useCallback(
       async (pageNumber) => {
+        // 🔥 BARU: mode Word -- jalur PARSING SAMA SEKALI BEDA (baca
+        // struktur .docx, bukan geometri PDF), tapi hasil akhirnya
+        // dipetakan ke BENTUK OBJEK SOAL YANG SAMA supaya seluruh layar
+        // tinjau & fungsi simpan di bawah bisa dipakai ulang tanpa
+        // perlu ditulis dua kali.
+        if (importMode === 'word') {
+          const docxQuestions = await parseDocxIntoQuestions(
+            docxBufferRef.current,
+          );
+  
+          const questions = docxQuestions.map((q) => ({
+            id: newId(),
+            pageNumber,
+            printedNumber: q.printedNumber,
+            rawCropImage: '', // Word tidak punya gambar halaman pembanding
+            question: q.question,
+            options: q.options,
+            tipeSoal: q.tipeSoal,
+            kuantitasP: '',
+            kuantitasQ: '',
+            optionsAreImages: q.optionsAreImages,
+            optionImages: q.optionImages,
+            qImage: q.qImage,
+            tableHtml: q.tableHtml || '',
+            correct: null,
+            explanation: '',
+            shortAnswerValue: '',
+            approved: false,
+          }));
+  
+          return { pageImage: '', questions };
+        }
+  
         const { pageImage, crops } = await detectQuestionsOnPage(pageNumber);
   
         // 🔥 Murni pemetaan hasil crop -> objek soal, SEPENUHNYA
@@ -992,6 +1205,7 @@ import {
           optionsAreImages: crop.optionsAreImages,
           optionImages: crop.optionImages,
           qImage: crop.qImage,
+          tableHtml: '',
           correct: null,
           explanation: '',
           shortAnswerValue: '',
@@ -1000,7 +1214,7 @@ import {
   
         return { pageImage, questions };
       },
-      [detectQuestionsOnPage],
+      [detectQuestionsOnPage, importMode],
     );
   
     // ----------------------------------------------------------
@@ -1261,6 +1475,7 @@ import {
           sourceName: file?.name || '',
           sourcePage: q.pageNumber,
           sourcePrintedNumber: q.printedNumber || null,
+          tableHtml: q.tableHtml || '',
           createdAt: new Date().toISOString(),
         }));
   
@@ -1296,13 +1511,27 @@ import {
         <header className="bsi-head">
           <div>
             <p className="bsi-eyebrow">{folderName}</p>
-            <h1 className="bsi-title">Tambah soal dari PDF</h1>
+            <h1 className="bsi-title">
+              Tambah soal dari {importMode === 'word' ? 'Word' : 'PDF'}
+            </h1>
             <p className="bsi-sub">
-              Soal, opsi jawaban, dan diagram diambil LANGSUNG dari teks
-              & grafik asli PDF -- tanpa AI sama sekali (AI cuma
-              tersedia sebagai alat bantu opsional per soal, kalau ada
-              yang meleset). Jawaban & pembahasan dibuat belakangan,
-              saat soal ini dipakai di sebuah kuis.
+              {importMode === 'word' ? (
+                <>
+                  Cocok untuk soal bernotasi matematika rumit (vektor,
+                  matriks) yang sudah diketik ulang linear di Word --
+                  teks, gambar, dan tabel diambil LANGSUNG dari struktur
+                  dokumen, bukan tebakan. Jawaban & pembahasan dibuat
+                  belakangan, saat soal ini dipakai di sebuah kuis.
+                </>
+              ) : (
+                <>
+                  Soal, opsi jawaban, dan diagram diambil LANGSUNG dari
+                  teks & grafik asli PDF -- tanpa AI sama sekali (AI cuma
+                  tersedia sebagai alat bantu opsional per soal, kalau
+                  ada yang meleset). Jawaban & pembahasan dibuat
+                  belakangan, saat soal ini dipakai di sebuah kuis.
+                </>
+              )}
             </p>
           </div>
   
@@ -1313,20 +1542,58 @@ import {
           )}
         </header>
   
+        {/* 🔥 BARU: pilih jalur impor -- hanya tampil sebelum berkas
+            dipilih (mengganti mode sesudahnya akan membingungkan,
+            karena rentang halaman & data yang sudah dimuat jadi tidak
+            relevan). */}
+        {!file && (
+          <div className="bsi-mode-toggle">
+            <button
+              type="button"
+              className={`bsi-mode-btn${importMode === 'pdf' ? ' active' : ''}`}
+              onClick={() => setImportMode('pdf')}
+            >
+              Dari PDF
+            </button>
+            <button
+              type="button"
+              className={`bsi-mode-btn${importMode === 'word' ? ' active' : ''}`}
+              onClick={() => setImportMode('word')}
+            >
+              Dari Word (.docx)
+            </button>
+          </div>
+        )}
+  
         {/* ---------------- UNGGAH ---------------- */}
         {!file && (
           <label className="bsi-drop">
             <input
               type="file"
-              accept="application/pdf"
+              accept={importMode === 'word' ? '.docx' : 'application/pdf'}
               onChange={handleFileChange}
               hidden
             />
-            <span className="bsi-drop-title">Pilih berkas PDF</span>
+            <span className="bsi-drop-title">
+              {importMode === 'word'
+                ? 'Pilih berkas Word (.docx)'
+                : 'Pilih berkas PDF'}
+            </span>
             <span className="bsi-drop-hint">
-              Gunakan PDF yang punya lapisan teks asli (bukan hasil scan
-              murni) -- deteksi nomor soal bergantung pada posisi teks
-              sungguhan di dalam file, bukan tebakan visual.
+              {importMode === 'word' ? (
+                <>
+                  Tulis notasi matematika (vektor, matriks) sebagai TEKS
+                  BIASA satu baris, mis. "a = (p, 2, -1)" -- bukan lewat
+                  Equation Editor Word, supaya bisa diambil sebagai teks.
+                </>
+              ) : (
+                <>
+                  Gunakan PDF yang punya lapisan teks asli (bukan hasil
+                  scan murni) -- deteksi nomor soal bergantung pada
+                  posisi teks sungguhan di dalam file, bukan tebakan
+                  visual.
+                </>
+              )}
             </span>
           </label>
         )}
@@ -1344,26 +1611,33 @@ import {
   
             {totalPages > 0 && status !== STATUS.PROCESSING && (
               <div className="bsi-range">
-                <label>
-                  Dari halaman
-                  <input
-                    type="number"
-                    min={1}
-                    max={totalPages}
-                    value={startPage}
-                    onChange={(e) => setStartPage(Number(e.target.value))}
-                  />
-                </label>
-                <label>
-                  sampai
-                  <input
-                    type="number"
-                    min={1}
-                    max={totalPages}
-                    value={endPage}
-                    onChange={(e) => setEndPage(Number(e.target.value))}
-                  />
-                </label>
+                {/* 🔥 Rentang halaman tidak relevan untuk mode Word
+                    (dokumen diproses utuh sekaligus) -- disembunyikan,
+                    hanya tombol mulai yang tampil. */}
+                {importMode !== 'word' && (
+                  <>
+                    <label>
+                      Dari halaman
+                      <input
+                        type="number"
+                        min={1}
+                        max={totalPages}
+                        value={startPage}
+                        onChange={(e) => setStartPage(Number(e.target.value))}
+                      />
+                    </label>
+                    <label>
+                      sampai
+                      <input
+                        type="number"
+                        min={1}
+                        max={totalPages}
+                        value={endPage}
+                        onChange={(e) => setEndPage(Number(e.target.value))}
+                      />
+                    </label>
+                  </>
+                )}
   
                 <button
                   type="button"
@@ -1475,29 +1749,39 @@ import {
             </nav>
   
             {selectedPage && (
-              <div className="bsi-compare">
-                <div className="bsi-original">
-                  <div className="bsi-panel-label">
-                    Halaman asli {selectedPage.pageNumber}
-                  </div>
-                  {selectedPage.pageImage ? (
-                    <img
-                      src={selectedPage.pageImage}
-                      alt={`Halaman ${selectedPage.pageNumber}`}
-                    />
-                  ) : (
-                    <div className="bsi-empty">
-                      Halaman ini gagal dirender.
-                      <button
-                        type="button"
-                        className="bsi-btn ghost sm"
-                        onClick={() => retryPage(selectedPage.pageNumber)}
-                      >
-                        Ulangi
-                      </button>
+              <div
+                className={`bsi-compare${
+                  importMode === 'word' ? ' bsi-compare-single' : ''
+                }`}
+              >
+                {/* 🔥 Mode Word tidak punya "gambar halaman" pembanding
+                    (dokumen bukan berlembar seperti PDF) -- panel kiri
+                    disembunyikan total, daftar soal memakai lebar
+                    penuh. */}
+                {importMode !== 'word' && (
+                  <div className="bsi-original">
+                    <div className="bsi-panel-label">
+                      Halaman asli {selectedPage.pageNumber}
                     </div>
-                  )}
-                </div>
+                    {selectedPage.pageImage ? (
+                      <img
+                        src={selectedPage.pageImage}
+                        alt={`Halaman ${selectedPage.pageNumber}`}
+                      />
+                    ) : (
+                      <div className="bsi-empty">
+                        Halaman ini gagal dirender.
+                        <button
+                          type="button"
+                          className="bsi-btn ghost sm"
+                          onClick={() => retryPage(selectedPage.pageNumber)}
+                        >
+                          Ulangi
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
   
                 <div className="bsi-parsed">
                   <div className="bsi-panel-label">
@@ -1602,11 +1886,13 @@ import {
                           teks hasil transkripsi yang BISA DIEDIT di
                           kanan. */}
                       <div className="bsi-transcript-row">
-                        <img
-                          src={q.rawCropImage}
-                          alt="Crop asli"
-                          className="bsi-rawcrop"
-                        />
+                        {q.rawCropImage && (
+                          <img
+                            src={q.rawCropImage}
+                            alt="Crop asli"
+                            className="bsi-rawcrop"
+                          />
+                        )}
   
                         <div className="bsi-transcript-fields">
                           <textarea
@@ -1646,6 +1932,25 @@ import {
                                 src={q.qImage}
                                 alt="Diagram soal"
                                 className="bsi-figure-img"
+                              />
+                            </div>
+                          )}
+  
+                          {/* 🔥 BARU: tabel Word ASLI (struktur baris &
+                              kolom dari .docx, bukan gambar/tebakan) --
+                              cuma muncul untuk soal hasil impor Word
+                              yang memang punya tabel. */}
+                          {q.tableHtml && (
+                            <div className="bsi-figure-wrap">
+                              <span className="bsi-figure-label">
+                                Tabel terdeteksi dalam soal ini:
+                              </span>
+                              <div
+                                className="bsi-table-preview"
+                                // eslint-disable-next-line react/no-danger
+                                dangerouslySetInnerHTML={{
+                                  __html: q.tableHtml,
+                                }}
                               />
                             </div>
                           )}
@@ -1883,6 +2188,14 @@ import {
   .bsi-eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
   .bsi-title{font-size:24px;font-weight:650;margin:0 0 6px;letter-spacing:-.01em}
   .bsi-sub{margin:0;color:var(--muted);font-size:14px;max-width:64ch;line-height:1.5}
+  .bsi-mode-toggle{display:flex;gap:8px;margin-bottom:14px}
+  .bsi-mode-btn{flex:1;padding:11px;border:1px solid var(--line);border-radius:9px;background:#fff;
+    font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit}
+  .bsi-mode-btn.active{border-color:var(--brand);background:#eff4ff;color:var(--brand)}
+  .bsi-table-preview{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+  .bsi-table-preview table{border-collapse:collapse;width:100%;font-size:13px}
+  .bsi-table-preview td,.bsi-table-preview th{border:1px solid var(--line);padding:6px 9px;text-align:left}
+  .bsi-compare-single{grid-template-columns:1fr}
   .bsi-drop{display:flex;flex-direction:column;align-items:center;gap:8px;padding:48px 24px;
     border:2px dashed var(--line);border-radius:12px;background:var(--bg);cursor:pointer;text-align:center}
   .bsi-drop:hover{border-color:var(--brand);background:#f1f5ff}
