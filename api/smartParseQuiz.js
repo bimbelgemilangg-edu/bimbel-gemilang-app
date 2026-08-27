@@ -469,10 +469,23 @@ async function callGeminiTranscribeQuestion(imageDataUrl, modelName) {
 
   const [, mimeType, base64Data] = match;
 
+  // 🔥 BARU: dukungan 4 TIPE SOAL, diadopsi dari prototipe HTML mandiri
+  // yang sudah diuji pemilik bimbel dan berhasil (dibangun di Google AI
+  // Studio, memakai skema klasifikasi soal SNBT/UTBK yang lebih kaya
+  // daripada yang kita punya sebelumnya, yang cuma tahu "pilihan
+  // ganda"). Empat tipe:
+  //   - pilihan_ganda: soal standar dengan opsi A-E.
+  //   - pernyataan_kompleks: berisi pernyataan bernomor (1)(2)(3)(4)
+  //     di badan soal, opsi jawabannya berupa KOMBINASI pernyataan
+  //     mana yang benar (mis. "(1), (2), dan (3) SAJA").
+  //   - hubungan_kuantitas: soal membandingkan Kuantitas P vs Kuantitas
+  //     Q (format baku SNBT), opsi jawabannya standar (P>Q, P<Q, dst).
+  //   - isian_singkat: tanpa pilihan ganda, jawabannya berupa nilai
+  //     yang diminta langsung.
   const systemPrompt = `Kamu adalah pembaca soal ujian untuk Bank Soal Bimbel Gemilang.
 
 TUGAS:
-Lihat gambar SATU SOAL (potongan/crop dari halaman buku cetak), lalu tulis ulang jadi teks terstruktur yang bisa diedit.
+Lihat gambar SATU SOAL (potongan/crop dari halaman buku cetak), lalu tulis ulang jadi teks terstruktur yang bisa diedit, DAN klasifikasikan tipe soalnya.
 
 ⚠️ WAJIB SETIA APA ADANYA:
 Salin persis teks soal dan pilihan jawabannya seperti tertulis di gambar. JANGAN mengubah angka, JANGAN mengganti konteks, JANGAN "memperbaiki" kalimat. Ini untuk arsip Bank Soal -- yang dibutuhkan SALINAN SETIA, bukan versi kreatif.
@@ -480,17 +493,20 @@ Salin persis teks soal dan pilihan jawabannya seperti tertulis di gambar. JANGAN
 Kalau ada bagian yang benar-benar tidak terbaca (buram/terpotong), tulis bagian yang terbaca apa adanya dan tandai readingConfidence:"low" -- JANGAN MENGARANG isi yang tidak terbaca.
 
 RUMUS MATEMATIKA:
-Tulis dengan LaTeX dibungkus \\\\( \\\\), contoh: \\\\(x^2 + 3x - 4 = 0\\\\), \\\\(\\\\frac{a}{b}\\\\), \\\\(\\\\sqrt{x+1}\\\\).
+Tulis dengan LaTeX dibungkus \\( \\), contoh: \\(x^2 + 3x - 4 = 0\\), \\(\\frac{a}{b}\\), \\(\\sqrt{x+1}\\).
+
+KLASIFIKASI TIPE SOAL (field "tipeSoal") -- pilih SATU yang paling sesuai:
+- "pilihan_ganda": soal standar dengan pilihan (A) (B) (C) (D) (E) yang masing-masing berdiri sendiri.
+- "pernyataan_kompleks": badan soal berisi PERNYATAAN BERNOMOR (1) (2) (3) (4), dan pilihan jawabannya adalah KOMBINASI pernyataan mana yang benar (mis. opsi berbunyi "(1), (2), dan (3) SAJA yang benar"). Tulis SELURUH pernyataan bernomor itu apa adanya di dalam "question".
+- "hubungan_kuantitas": soal membandingkan Kuantitas P dengan Kuantitas Q (format baku SNBT). Isi field "kuantitasP" dan "kuantitasQ" dengan nilai/rumus masing-masing SEPERSIS yang tertulis. Opsi jawabannya tetap diisi di "options" seperti biasa (mis. "P lebih besar dari Q", dst -- SALIN PERSIS teks opsinya, jangan diringkas jadi simbol >/<).
+- "isian_singkat": soal TANPA pilihan ganda sama sekali, menanyakan sebuah nilai langsung. "options" dikosongkan (array kosong).
 
 GAMBAR/DIAGRAM/GRAFIK/TABEL DI DALAM SOAL:
-Kalau gambar crop ini MEMUAT diagram, grafik, foto, atau tabel yang jadi BAGIAN dari soal (bukan cuma nomor/hiasan), tandai hasFigure:true dan berikan figureBBox: kotak area gambar itu SAJA dalam koordinat ternormalisasi 0 sampai 1 RELATIF TERHADAP GAMBAR CROP INI (bukan halaman penuh): {"x":..,"y":..,"width":..,"height":..}, (x,y) pojok kiri-atas. Kalau soal ini MURNI TEKS tanpa gambar/diagram, set hasFigure:false dan JANGAN sertakan figureBBox.
+Kalau gambar crop ini MEMUAT diagram, grafik, foto, atau tabel yang jadi BAGIAN dari soal (bukan cuma nomor/hiasan), tandai hasFigure:true dan berikan figureBBox: kotak area gambar itu SAJA dalam koordinat ternormalisasi 0 sampai 1 RELATIF TERHADAP GAMBAR CROP INI (bukan halaman penuh), (x,y) pojok kiri-atas. Kalau soal ini MURNI TEKS tanpa gambar/diagram, set hasFigure:false.
 
-⚠️ JANGAN TENTUKAN JAWABAN BENAR, JANGAN TULIS PEMBAHASAN -- itu BUKAN tugasmu di sini. Cukup transkripsi soal & opsinya saja.
+⚠️ JANGAN TENTUKAN JAWABAN BENAR, JANGAN TULIS PEMBAHASAN -- itu BUKAN tugasmu di sini. Cukup transkripsi & klasifikasi saja.
 
-FORMAT OUTPUT -- HANYA JSON, TANPA MARKDOWN, TANPA PENJELASAN LAIN:
-{"question":"...","options":["...","...","...","...","..."],"hasFigure":false,"figureBBox":null,"readingConfidence":"high"}
-
-"options" isi SEBANYAK pilihan jawaban yang benar-benar terlihat di gambar (biasanya 4 atau 5) -- JANGAN dipaksakan selalu 4 kalau yang tertulis 5.`;
+"options" isi SEBANYAK pilihan jawaban yang benar-benar terlihat di gambar (biasanya 4 atau 5) -- JANGAN dipaksakan selalu 4 kalau yang tertulis 5. Kosongkan array ini untuk tipe "isian_singkat".`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
@@ -511,18 +527,62 @@ FORMAT OUTPUT -- HANYA JSON, TANPA MARKDOWN, TANPA PENJELASAN LAIN:
             parts: [
               { inline_data: { mime_type: mimeType, data: base64Data } },
               {
-                text: 'Transkripsikan soal ini sesuai instruksi. Hanya JSON.',
+                text: 'Transkripsikan & klasifikasikan soal ini sesuai instruksi.',
               },
             ],
           },
         ],
         generationConfig: {
           temperature: 0.1,
+          // 🔥 BARU: diadopsi dari prototipe HTML mandiri yang terbukti
+          // berhasil -- responseMimeType + responseSchema memaksa
+          // Gemini mengembalikan JSON yang SUDAH DIJAMIN sesuai bentuk
+          // skema ini secara native, bukan berharap model menulis JSON
+          // bersih lalu kita ekstrak pakai regex/pencocokan kurung
+          // kurawal sebagai jaring pengaman. Jauh lebih andal, terutama
+          // untuk field bertipe (figureBBox, enum tipeSoal) yang
+          // sebelumnya rawan salah bentuk.
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              question: { type: 'STRING' },
+              options: {
+                type: 'ARRAY',
+                items: { type: 'STRING' },
+              },
+              tipeSoal: {
+                type: 'STRING',
+                enum: [
+                  'pilihan_ganda',
+                  'pernyataan_kompleks',
+                  'hubungan_kuantitas',
+                  'isian_singkat',
+                ],
+              },
+              kuantitasP: { type: 'STRING' },
+              kuantitasQ: { type: 'STRING' },
+              hasFigure: { type: 'BOOLEAN' },
+              figureBBox: {
+                type: 'OBJECT',
+                properties: {
+                  x: { type: 'NUMBER' },
+                  y: { type: 'NUMBER' },
+                  width: { type: 'NUMBER' },
+                  height: { type: 'NUMBER' },
+                },
+              },
+              readingConfidence: {
+                type: 'STRING',
+                enum: ['high', 'low'],
+              },
+            },
+            required: ['question', 'tipeSoal', 'hasFigure', 'readingConfidence'],
+          },
           // 🔥 SATU soal saja per panggilan (bukan satu halaman berisi
-          // banyak soal) -- keluaran yang diminta kecil (satu soal +
-          // opsi-opsinya, tanpa jawaban/pembahasan), jadi jatah ini
-          // sudah lebih dari cukup dan risiko kepotong di tengah
-          // sangat kecil.
+          // banyak soal) -- keluaran yang diminta kecil, jadi jatah ini
+          // sudah lebih dari cukup dan risiko kepotong di tengah sangat
+          // kecil (beda dari desain awal yang gagal di halaman padat).
           maxOutputTokens: 2048,
         },
       }),
@@ -544,6 +604,36 @@ FORMAT OUTPUT -- HANYA JSON, TANPA MARKDOWN, TANPA PENJELASAN LAIN:
   }
 }
 
+// 🔥 Bentuk hasil parse dipakai bersama oleh jalur sukses & jalur
+// pemulihan darurat di bawah -- satu tempat, tidak diduplikasi.
+function normalizeTranscribeResult(parsed, fallbackConfidence) {
+  const tipeSoal = [
+    'pilihan_ganda',
+    'pernyataan_kompleks',
+    'hubungan_kuantitas',
+    'isian_singkat',
+  ].includes(parsed.tipeSoal)
+    ? parsed.tipeSoal
+    : 'pilihan_ganda';
+
+  return {
+    question: typeof parsed.question === 'string' ? parsed.question.trim() : '',
+    options: Array.isArray(parsed.options)
+      ? parsed.options.map((o) => String(o ?? '').trim()).filter(Boolean)
+      : [],
+    tipeSoal,
+    kuantitasP: typeof parsed.kuantitasP === 'string' ? parsed.kuantitasP.trim() : '',
+    kuantitasQ: typeof parsed.kuantitasQ === 'string' ? parsed.kuantitasQ.trim() : '',
+    hasFigure: Boolean(parsed.hasFigure),
+    figureBBox:
+      parsed.hasFigure && parsed.figureBBox && typeof parsed.figureBBox === 'object'
+        ? parsed.figureBBox
+        : null,
+    readingConfidence:
+      fallbackConfidence || (parsed.readingConfidence === 'low' ? 'low' : 'high'),
+  };
+}
+
 async function transcribeQuestionImage(imageDataUrl) {
   let lastErr;
   for (const modelName of GEMINI_MODELS) {
@@ -555,42 +645,21 @@ async function transcribeQuestionImage(imageDataUrl) {
         data.candidates?.[0]?.content?.parts?.[0]?.text ||
         '{}';
 
-      const cleaned = rawText.replace(/```json|```/g, '').trim();
-
+      // 🔥 Dengan responseSchema aktif, Gemini SEHARUSNYA selalu
+      // membalas JSON valid sesuai bentuk yang diminta -- parsing di
+      // sini jauh lebih sederhana dari sebelumnya. Fallback pencarian
+      // JSON manual tetap dijaga sebagai jaring pengaman terakhir
+      // untuk kasus tak terduga (mis. proxy/model yang tidak sepenuhnya
+      // menghormati responseSchema).
       try {
-        const parsed = JSON.parse(cleaned);
-        return {
-          question: typeof parsed.question === 'string' ? parsed.question.trim() : '',
-          options: Array.isArray(parsed.options)
-            ? parsed.options.map((o) => String(o ?? '').trim()).filter(Boolean)
-            : [],
-          hasFigure: Boolean(parsed.hasFigure),
-          figureBBox:
-            parsed.hasFigure && parsed.figureBBox && typeof parsed.figureBBox === 'object'
-              ? parsed.figureBBox
-              : null,
-          readingConfidence: parsed.readingConfidence === 'low' ? 'low' : 'high',
-        };
+        const parsed = JSON.parse(rawText.trim());
+        return normalizeTranscribeResult(parsed);
       } catch (e) {
-        // Keluaran di sini kecil (satu soal saja), jadi kegagalan
-        // parse kemungkinan besar bukan soal kehabisan token --
-        // coba tarik JSON pertama yang valid sebagai upaya terakhir.
-        const match = cleaned.match(/\{[\s\S]*\}/);
+        const match = rawText.match(/\{[\s\S]*\}/);
         if (match) {
           try {
             const parsed = JSON.parse(match[0]);
-            return {
-              question: typeof parsed.question === 'string' ? parsed.question.trim() : '',
-              options: Array.isArray(parsed.options)
-                ? parsed.options.map((o) => String(o ?? '').trim()).filter(Boolean)
-                : [],
-              hasFigure: Boolean(parsed.hasFigure),
-              figureBBox:
-                parsed.hasFigure && parsed.figureBBox && typeof parsed.figureBBox === 'object'
-                  ? parsed.figureBBox
-                  : null,
-              readingConfidence: 'low',
-            };
+            return normalizeTranscribeResult(parsed, 'low');
           } catch (e2) {
             // lanjut ke model berikutnya
           }
@@ -632,6 +701,7 @@ async function handleTranscribeQuestionMode(req, res) {
     });
   }
 }
+
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');

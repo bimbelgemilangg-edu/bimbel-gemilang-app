@@ -94,6 +94,12 @@ import {
     useState,
   } from 'react';
   
+  // Sama persis dengan yang sudah dipakai ManageQuiz.jsx untuk
+  // merender rumus LaTeX -- bukan library baru, jadi tidak menambah
+  // beban bundle sama sekali.
+  import 'katex/dist/katex.min.css';
+  import { InlineMath } from 'react-katex';
+  
   // Sama persis dengan pola SmartImportPanel.jsx -- lihat penjelasan
   // panjang di header file ini.
   const PDFJS_SCRIPT =
@@ -136,24 +142,68 @@ import {
   const RENDER_SCALE = 2.2;
   const LEFT_MARGIN_TOLERANCE = 40; // px toleransi posisi X nomor soal asli vs sub-list menjorok
   
-  function detectLeftMargin(items) {
+  // 🔥 FIX BUG NYATA: versi sebelumnya cuma mendeteksi SATU margin kiri
+  // (X paling sering muncul di seluruh halaman). Untuk dokumen SATU
+  // KOLOM itu cukup -- tapi buku tryout SNBT/UTBK hampir selalu DUA
+  // KOLOM, dan margin kiri kolom kanan itu X YANG BEDA SAMA SEKALI dari
+  // margin kolom kiri. Akibatnya nomor soal di kolom yang "kalah suara"
+  // gagal lolos cek `isNearMargin`, dan lebih parah lagi: batas bawah
+  // crop soal (`bottom = starts[i+1].y`) bisa salah ambil nomor dari
+  // KOLOM LAIN yang kebetulan sejajar tingginya -- inilah penyebab
+  // gambar/tabel "kepotong tidak akurat" & crop soal yang bocor
+  // menyerempet awal soal tetangga.
+  //
+  // Sekarang: deteksi SEMUA klaster margin kiri yang signifikan (bukan
+  // cuma yang paling sering), bukan satu angka tunggal.
+  function detectLeftMargins(items) {
     const xCounts = new Map();
     items.forEach((it) => {
       const xKey = Math.round(it.transform[4] / 5) * 5;
       xCounts.set(xKey, (xCounts.get(xKey) || 0) + 1);
     });
-    let bestX = 0;
-    let bestCount = 0;
-    xCounts.forEach((count, x) => {
-      if (count > bestCount) {
-        bestCount = count;
-        bestX = x;
+  
+    // Urutkan X dari yang paling sering muncul, lalu gabungkan X yang
+    // berdekatan (dalam toleransi margin) jadi satu klaster -- supaya
+    // variasi kecil posisi glyph tidak dianggap kolom terpisah.
+    const sortedX = [...xCounts.entries()].sort((a, b) => b[1] - a[1]);
+  
+    const clusters = [];
+    for (const [x, count] of sortedX) {
+      const existing = clusters.find(
+        (c) => Math.abs(c.x - x) <= LEFT_MARGIN_TOLERANCE,
+      );
+      if (existing) {
+        existing.count += count;
+      } else {
+        clusters.push({ x, count });
       }
-    });
-    return bestX;
+    }
+  
+    // Ambang batas: klaster harus punya cukup baris teks supaya bukan
+    // sekadar kebetulan (mis. satu dua baris judul yang X-nya beda).
+    // Maksimal 2 klaster diambil (kolom kiri & kanan) -- dokumen dengan
+    // lebih dari 2 kolom di luar cakupan saat ini.
+    const MIN_LINES_FOR_COLUMN = 5;
+  
+    return clusters
+      .filter((c) => c.count >= MIN_LINES_FOR_COLUMN)
+      .sort((a, b) => a.x - b.x) // urut kiri ke kanan
+      .slice(0, 2)
+      .map((c) => c.x);
   }
   
-  function detectQuestionStarts(items, leftMargin) {
+  // Kembalikan SEMUA soal yang terdeteksi, DIKELOMPOKKAN per kolom, dan
+  // DIURUTKAN sesuai urutan baca yang benar: kolom kiri dulu (atas ke
+  // bawah), baru kolom kanan (atas ke bawah) -- bukan diurutkan mentah
+  // berdasar posisi Y lintas kolom (itu yang bikin batas antar-soal
+  // salah ambil nomor dari kolom sebelah).
+  // Jarak X minimum untuk menganggap dua potongan teks pada Y yang sama
+  // sebagai BLOK TERPISAH (kolom berbeda), bukan cuma spasi antar kata
+  // biasa. Spasi antar kata normal cuma beberapa poin; jarak antar
+  // kolom biasanya jauh lebih lebar dari itu.
+  const COLUMN_SEGMENT_GAP = 60;
+  
+  function detectQuestionStarts(items, leftMargins) {
     const lineMap = new Map();
     items.forEach((item) => {
       const yKey = Math.round(item.transform[5] / 2) * 2;
@@ -161,20 +211,91 @@ import {
       lineMap.get(yKey).push(item);
     });
   
-    const starts = [];
+    // starts per kolom -- index array sejajar dengan leftMargins.
+    const startsByColumn = leftMargins.map(() => []);
+  
     lineMap.forEach((lineItems, y) => {
       const sorted = lineItems.sort((a, b) => a.transform[4] - b.transform[4]);
-      const first = sorted[0];
-      const text = sorted.map((i) => i.str).join(' ').trim();
-      const isNearMargin =
-        Math.abs(first.transform[4] - leftMargin) <= LEFT_MARGIN_TOLERANCE;
-      const matchesNumber = /^\d{1,3}[.)]\s*/.test(text);
-      if (isNearMargin && matchesNumber) {
-        starts.push({ y, number: parseInt(text.match(/^\d{1,3}/)[0], 10) });
+  
+      // 🔥 FIX BUG NYATA: dua kolom yang KEBETULAN sejajar tepat di Y
+      // yang sama (lazim terjadi karena kedua kolom biasanya mengikuti
+      // grid baris yang sama) sebelumnya tergabung jadi SATU "baris",
+      // sehingga nomor soal kolom kanan ikut ketutup teks kolom kiri di
+      // depannya dan gagal terdeteksi sebagai awal soal baru. Sekarang
+      // baris yang sama dipecah jadi beberapa SEGMEN kalau ada jarak X
+      // yang lebar (indikasi kolom berbeda, bukan spasi antar kata).
+      const segments = [];
+      let current = [sorted[0]];
+      for (let i = 1; i < sorted.length; i++) {
+        const prevItem = sorted[i - 1];
+        const prevRight =
+          prevItem.transform[4] + (prevItem.width || 0);
+        const gap = sorted[i].transform[4] - prevRight;
+  
+        if (gap > COLUMN_SEGMENT_GAP) {
+          segments.push(current);
+          current = [sorted[i]];
+        } else {
+          current.push(sorted[i]);
+        }
+      }
+      segments.push(current);
+  
+      for (const segment of segments) {
+        const first = segment[0];
+        const text = segment.map((i) => i.str).join(' ').trim();
+        const matchesNumber = /^\d{1,3}[.)]\s*/.test(text);
+        if (!matchesNumber) continue;
+  
+        // Cocokkan ke kolom margin TERDEKAT (bukan cuma satu margin
+        // tunggal seperti versi lama) -- ini yang membuat nomor soal di
+        // KEDUA kolom sama-sama terdeteksi.
+        let bestColumn = -1;
+        let bestDistance = Infinity;
+        leftMargins.forEach((marginX, ci) => {
+          const distance = Math.abs(first.transform[4] - marginX);
+          if (distance <= LEFT_MARGIN_TOLERANCE && distance < bestDistance) {
+            bestDistance = distance;
+            bestColumn = ci;
+          }
+        });
+  
+        if (bestColumn === -1) continue;
+  
+        startsByColumn[bestColumn].push({
+          y,
+          number: parseInt(text.match(/^\d{1,3}/)[0], 10),
+        });
       }
     });
   
-    return starts.sort((a, b) => b.y - a.y); // urut atas ke bawah (PDF: y besar = atas)
+    // Urutkan tiap kolom atas ke bawah (PDF: y besar = atas), lalu
+    // tandai kolom & indeks-berikutnya-dalam-kolom-yang-sama supaya
+    // pemanggil bisa menghitung batas bawah crop dengan benar (next
+    // start HARUS dari kolom yang sama, bukan kolom lain yang sejajar
+    // tingginya).
+    const result = [];
+    startsByColumn.forEach((columnStarts, columnIndex) => {
+      const sorted = columnStarts.sort((a, b) => b.y - a.y);
+      sorted.forEach((s, i) => {
+        result.push({
+          y: s.y,
+          number: s.number,
+          columnIndex,
+          // y dari nomor BERIKUTNYA di kolom YANG SAMA (bukan lintas
+          // kolom) -- null kalau ini soal terakhir di kolom itu,
+          // artinya batas bawahnya adalah dasar halaman.
+          nextYInSameColumn: i + 1 < sorted.length ? sorted[i + 1].y : null,
+        });
+      });
+    });
+  
+    // Urutan BACA akhir: kolom kiri penuh dulu (atas->bawah), baru
+    // kolom kanan (atas->bawah) -- bukan urut Y mentah lintas kolom.
+    return result.sort((a, b) => {
+      if (a.columnIndex !== b.columnIndex) return a.columnIndex - b.columnIndex;
+      return b.y - a.y;
+    });
   }
   
   async function findImageRegions(page, pdfjsLib) {
@@ -339,6 +460,46 @@ import {
   }
   
   // ============================================================
+  // 🔥 BARU: RENDER PRATINJAU RUMUS -- INI YANG MEMPERBAIKI KELUHAN
+  // "hasil transkripsi kelihatan ngaco/ngarang"
+  // ============================================================
+  // AI menulis rumus matematika dibungkus \( ... \) (LaTeX) di dalam
+  // teks soal & opsi -- itu format yang SAH dan SUDAH BENAR, tapi kalau
+  // ditampilkan mentah sebagai teks biasa (mis. di kotak <textarea>),
+  // buat mata orang yang tidak familiar sintaks LaTeX itu kelihatan
+  // seperti kode rusak penuh garis miring & kurung kurawal, bukan
+  // rumus yang bisa dipahami.
+  //
+  // Fungsi ini memecah teks jadi potongan teks-biasa dan potongan-
+  // rumus, lalu potongan rumusnya dirender BENERAN jadi tampilan
+  // matematika (pangkat, subscript, pecahan, dll) pakai react-katex --
+  // library yang SAMA yang sudah dipakai ManageQuiz.jsx untuk
+  // menampilkan soal ke guru/siswa, supaya pratinjau di sini benar-
+  // benar mencerminkan tampilan akhirnya nanti, bukan cuma dekorasi.
+  function renderWithLatexPreview(text) {
+    if (!text) return null;
+  
+    const parts = String(text).split(/(\\\(.*?\\\))/g);
+  
+    return parts.map((part, i) => {
+      const match = /^\\\((.*)\\\)$/.exec(part);
+  
+      if (!match) {
+        return part ? <span key={i}>{part}</span> : null;
+      }
+  
+      try {
+        return <InlineMath key={i} math={match[1]} />;
+      } catch (e) {
+        // Kalau LaTeX-nya sendiri tidak valid (jarang, tapi bisa
+        // terjadi kalau AI menulis sintaks yang salah) -- tampilkan
+        // teks mentahnya saja daripada bikin seluruh kartu error.
+        return <span key={i}>{part}</span>;
+      }
+    });
+  }
+  
+  // ============================================================
   // PANGGIL AI -- HANYA UNTUK TRANSKRIPSI (bukan jawaban)
   // ============================================================
   
@@ -360,11 +521,47 @@ import {
     return {
       question: typeof data.question === 'string' ? data.question : '',
       options: Array.isArray(data.options) ? data.options : [],
+      // 🔥 BARU: 4 tipe soal SNBT/UTBK (diadopsi dari prototipe HTML
+      // mandiri yang terbukti berhasil), bukan cuma "pilihan ganda".
+      tipeSoal:
+        [
+          'pilihan_ganda',
+          'pernyataan_kompleks',
+          'hubungan_kuantitas',
+          'isian_singkat',
+        ].includes(data.tipeSoal)
+          ? data.tipeSoal
+          : 'pilihan_ganda',
+      kuantitasP: typeof data.kuantitasP === 'string' ? data.kuantitasP : '',
+      kuantitasQ: typeof data.kuantitasQ === 'string' ? data.kuantitasQ : '',
       hasFigure: Boolean(data.hasFigure),
       figureBBox: data.figureBBox || null,
       readingConfidence: data.readingConfidence === 'low' ? 'low' : 'high',
     };
   }
+  
+  // 🔥 BARU: label & warna badge tipe soal -- warnanya SENGAJA disamakan
+  // dengan prototipe HTML mandiri (biru/ungu/hijau/kuning) supaya kalau
+  // guru pernah lihat prototipenya, tampilannya konsisten & langsung
+  // familiar.
+  const TIPE_SOAL_META = {
+    pilihan_ganda: { label: 'Pilihan Ganda', color: '#1d4ed8', bg: '#eff6ff' },
+    pernyataan_kompleks: {
+      label: 'Pernyataan Kompleks (1,2,3,4)',
+      color: '#7e22ce',
+      bg: '#faf5ff',
+    },
+    hubungan_kuantitas: {
+      label: 'Hubungan Kuantitas (P & Q)',
+      color: '#047857',
+      bg: '#ecfdf5',
+    },
+    isian_singkat: {
+      label: 'Isian Singkat / Nilai',
+      color: '#b45309',
+      bg: '#fffbeb',
+    },
+  };
   
   // 🔥 ARSITEKTUR SAAT INI (revisi ke-2):
   // - DETEKSI BATAS SOAL: tanpa AI (lihat bagian di atas -- posisi teks
@@ -490,29 +687,59 @@ import {
         return { pageImage, crops: [] };
       }
   
-      const leftMargin = detectLeftMargin(items);
-      const starts = detectQuestionStarts(items, leftMargin);
+      const leftMargins = detectLeftMargins(items);
+      const starts = detectQuestionStarts(items, leftMargins);
       const imageRegions = await findImageRegions(page, pdfjsLib);
+  
+      // 🔥 FIX BUG NYATA: sebelumnya SETIAP crop memakai LEBAR HALAMAN
+      // PENUH (page.view[0] s/d page.view[2]) apa pun jumlah kolomnya --
+      // artinya pada dokumen DUA KOLOM, crop soal di kolom kiri ikut
+      // menyeret isi kolom kanan yang sejajar tingginya (atau
+      // sebaliknya). Sekarang lebar crop dibatasi PER KOLOM.
+      const pageLeft = page.view[0];
+      const pageRight = page.view[2];
+  
+      const columnXRanges =
+        leftMargins.length >= 2
+          ? [
+              { left: pageLeft, right: (leftMargins[0] + leftMargins[1]) / 2 },
+              { left: (leftMargins[0] + leftMargins[1]) / 2, right: pageRight },
+            ]
+          : [{ left: pageLeft, right: pageRight }];
   
       const crops = [];
   
-      for (let i = 0; i < starts.length; i++) {
-        const top = starts[i].y;
-        const bottom = i + 1 < starts.length ? starts[i + 1].y : page.view[1];
+      for (const start of starts) {
+        const top = start.y;
+        const bottom =
+          start.nextYInSameColumn !== null
+            ? start.nextYInSameColumn
+            : page.view[1]; // dasar halaman kalau ini soal terakhir di kolomnya
+  
+        const colRange =
+          columnXRanges[start.columnIndex] || columnXRanges[0];
   
         const rect = pdfRectToCanvasRect(
           viewport,
-          page.view[0],
+          colRange.left,
           top + 14,
           bottom + 4,
-          page.view[2] - page.view[0],
+          colRange.right - colRange.left,
         );
   
         const mainCrop = cropCanvasToDataUrl(pageCanvas, rect);
         if (!mainCrop) continue;
   
+        // 🔥 Filter region gambar JUGA berdasar X (kolom), bukan cuma Y
+        // -- sebelumnya sebuah diagram/tabel di kolom LAIN yang
+        // kebetulan sejajar tingginya bisa salah terasosiasi ke soal
+        // ini.
         const regionsInThisQuestion = imageRegions.filter(
-          (r) => r.y <= top + 20 && r.y >= bottom - 20,
+          (r) =>
+            r.y <= top + 20 &&
+            r.y >= bottom - 20 &&
+            r.x >= colRange.left - 20 &&
+            r.x <= colRange.right + 20,
         );
         const optionImageCluster = clusterOptionImages(regionsInThisQuestion);
   
@@ -533,7 +760,7 @@ import {
         }
   
         crops.push({
-          printedNumber: starts[i].number,
+          printedNumber: start.number,
           qImage: mainCrop,
           optionsAreImages: optionCrops.length >= 2,
           optionImages: optionCrops,
@@ -566,6 +793,9 @@ import {
           let transcript = {
             question: '',
             options: [],
+            tipeSoal: 'pilihan_ganda',
+            kuantitasP: '',
+            kuantitasQ: '',
             hasFigure: false,
             figureBBox: null,
             readingConfidence: 'low',
@@ -581,17 +811,21 @@ import {
             transcribeError = error?.message || 'Gagal membaca soal ini.';
           }
   
-          // Kalau opsi jawabannya sudah terdeteksi berupa GAMBAR (dari
-          // langkah deteksi tanpa-AI di atas), field "options" teks
-          // dari AI tidak relevan -- yang dipakai adalah optionImages.
-          // Kalau bukan, tapi AI juga tidak berhasil membaca opsi
-          // apa pun, sediakan 4 kolom kosong supaya admin bisa
-          // mengetik manual daripada tidak ada tempat sama sekali.
-          const options = crop.optionsAreImages
-            ? []
-            : transcript.options.length > 0
-              ? transcript.options
-              : ['', '', '', ''];
+          // Kalau tipe soalnya "isian_singkat", opsi jawaban memang
+          // tidak ada -- jangan sediakan kolom opsi sama sekali. Kalau
+          // opsi jawabannya terdeteksi berupa GAMBAR (dari langkah
+          // deteksi tanpa-AI), field "options" teks tidak relevan --
+          // yang dipakai adalah optionImages. Selain itu, kalau AI juga
+          // tidak berhasil membaca opsi apa pun, sediakan 4 kolom
+          // kosong supaya admin bisa mengetik manual.
+          const options =
+            transcript.tipeSoal === 'isian_singkat'
+              ? []
+              : crop.optionsAreImages
+                ? []
+                : transcript.options.length > 0
+                  ? transcript.options
+                  : ['', '', '', ''];
   
           // Potong HANYA area diagram/grafik/foto dari crop soal (bukan
           // seluruh bloknya) -- kosong kalau soal ini murni teks.
@@ -611,6 +845,9 @@ import {
             rawCropImage: crop.qImage,
             question: transcript.question,
             options,
+            tipeSoal: transcript.tipeSoal,
+            kuantitasP: transcript.kuantitasP,
+            kuantitasQ: transcript.kuantitasQ,
             optionsAreImages: crop.optionsAreImages,
             optionImages: crop.optionImages,
             qImage: figureImage,
@@ -618,6 +855,7 @@ import {
             transcribeError,
             correct: null,
             explanation: '',
+            shortAnswerValue: '',
             approved: false,
           });
   
@@ -767,7 +1005,18 @@ import {
   
       try {
         const payload = approvedQuestions.map((q) => ({
-          type: 'multiple',
+          // 🔥 BARU: petakan tipeSoal SNBT ke `type` yang sudah dikenal
+          // sistem (ManageQuiz/StudentQuizView) -- pilihan_ganda,
+          // pernyataan_kompleks, & hubungan_kuantitas semuanya tetap
+          // dijawab lewat pilihan A-E standar, jadi ketiganya dipetakan
+          // ke 'multiple'. isian_singkat dipetakan ke 'shortanswer'
+          // yang sudah ada skemanya sendiri.
+          type: q.tipeSoal === 'isian_singkat' ? 'shortanswer' : 'multiple',
+          // tipeSoal ASLI tetap disimpan sebagai metadata terpisah --
+          // dipakai nanti buat menampilkan badge yang sama di
+          // ManageQuiz, dan buat kuantitasP/kuantitasQ tahu kapan harus
+          // dirender.
+          tipeSoal: q.tipeSoal,
           // 🔥 Sekarang teks SUNGGUHAN (hasil transkripsi AI, sudah
           // ditinjau/diedit admin) -- bukan lagi placeholder "Soal 20".
           question:
@@ -779,6 +1028,13 @@ import {
           options: q.optionsAreImages ? [] : q.options.filter((o) => o.trim().length > 0),
           optionImages: q.optionsAreImages ? q.optionImages : [],
           optionsAreImages: Boolean(q.optionsAreImages),
+          // Kuantitas P & Q -- cuma terisi untuk tipe hubungan_kuantitas,
+          // string kosong untuk tipe lain (tidak relevan).
+          kuantitasP: q.tipeSoal === 'hubungan_kuantitas' ? q.kuantitasP || '' : '',
+          kuantitasQ: q.tipeSoal === 'hubungan_kuantitas' ? q.kuantitasQ || '' : '',
+          // shortAnswer -- cuma terisi untuk tipe isian_singkat.
+          shortAnswer:
+            q.tipeSoal === 'isian_singkat' ? q.shortAnswerValue || '' : '',
           // 🔥 null (bukan 0) kalau belum ditandai -- 0 berarti "opsi A
           // benar", jadi TIDAK BOLEH dipakai sebagai nilai default
           // "belum dijawab". needsAnswerGeneration menandai soal yang
@@ -786,7 +1042,10 @@ import {
           // AI saat dipakai di kuis, maupun oleh guru secara manual).
           correct: Number.isInteger(q.correct) ? q.correct : null,
           explanation: q.explanation || '',
-          needsAnswerGeneration: !Number.isInteger(q.correct),
+          needsAnswerGeneration:
+            q.tipeSoal === 'isian_singkat'
+              ? !(q.shortAnswerValue || '').trim()
+              : !Number.isInteger(q.correct),
           difficulty: q.difficulty || '',
           topik: q.topik || '',
           folderId,
@@ -1070,6 +1329,16 @@ import {
                           Soal {qi + 1}
                           {q.printedNumber ? ` (tercetak no. ${q.printedNumber})` : ''}
                         </span>
+                        {/* 🔥 BARU: badge tipe soal SNBT/UTBK */}
+                        <span
+                          className="bsi-tipe-badge"
+                          style={{
+                            color: TIPE_SOAL_META[q.tipeSoal]?.color,
+                            background: TIPE_SOAL_META[q.tipeSoal]?.bg,
+                          }}
+                        >
+                          {TIPE_SOAL_META[q.tipeSoal]?.label || 'Pilihan Ganda'}
+                        </span>
                         <div className="bsi-card-actions">
                           <select
                             className="bsi-select"
@@ -1133,6 +1402,22 @@ import {
                             }
                           />
   
+                          {/* 🔥 BARU: pratinjau rumus BENERAN dirender
+                              (bukan kode LaTeX mentah) -- ini yang
+                              membuktikan ke admin bahwa AI sudah
+                              menuliskan ulang soalnya dengan benar,
+                              bukan cuma menyalin gambar mentah. */}
+                          {q.question && (
+                            <div className="bsi-latex-preview">
+                              <span className="bsi-latex-preview-label">
+                                Pratinjau (begini nanti tampilnya ke siswa):
+                              </span>
+                              <div className="bsi-latex-preview-body">
+                                {renderWithLatexPreview(q.question)}
+                              </div>
+                            </div>
+                          )}
+  
                           {q.qImage && (
                             <div className="bsi-figure-wrap">
                               <span className="bsi-figure-label">
@@ -1143,6 +1428,49 @@ import {
                                 alt="Diagram soal"
                                 className="bsi-figure-img"
                               />
+                            </div>
+                          )}
+  
+                          {/* 🔥 BARU: tampilan khusus tipe "hubungan
+                              kuantitas" -- Kuantitas P & Q ditampilkan
+                              terpisah, bisa diedit, supaya guru gampang
+                              memverifikasi keduanya sebelum menyetujui. */}
+                          {q.tipeSoal === 'hubungan_kuantitas' && (
+                            <div className="bsi-pq-row">
+                              <div className="bsi-pq-box">
+                                <span className="bsi-pq-label">Kuantitas P</span>
+                                <input
+                                  className="bsi-input"
+                                  value={q.kuantitasP || ''}
+                                  onChange={(e) =>
+                                    updateQuestion(selectedPage.pageNumber, q.id, {
+                                      kuantitasP: e.target.value,
+                                    })
+                                  }
+                                />
+                                {q.kuantitasP && (
+                                  <div className="bsi-pq-preview">
+                                    {renderWithLatexPreview(q.kuantitasP)}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="bsi-pq-box">
+                                <span className="bsi-pq-label">Kuantitas Q</span>
+                                <input
+                                  className="bsi-input"
+                                  value={q.kuantitasQ || ''}
+                                  onChange={(e) =>
+                                    updateQuestion(selectedPage.pageNumber, q.id, {
+                                      kuantitasQ: e.target.value,
+                                    })
+                                  }
+                                />
+                                {q.kuantitasQ && (
+                                  <div className="bsi-pq-preview">
+                                    {renderWithLatexPreview(q.kuantitasQ)}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -1168,8 +1496,29 @@ import {
                           opsi (kalau terdeteksi opsi bergambar dari
                           langkah deteksi tanpa-AI). Jawaban benar
                           OPSIONAL ditandai sekarang -- lihat catatan
-                          di bawah. */}
-                      {q.optionsAreImages ? (
+                          di bawah.
+  
+                          🔥 BARU: tipe "isian_singkat" TIDAK PUNYA opsi
+                          sama sekali -- daftar opsi & pemilih huruf
+                          disembunyikan total, diganti kolom jawaban
+                          singkat (opsional, bisa dikosongkan). */}
+                      {q.tipeSoal === 'isian_singkat' ? (
+                        <div className="bsi-shortanswer-wrap">
+                          <span className="bsi-figure-label">
+                            Jawaban singkat (opsional, boleh dikosongkan):
+                          </span>
+                          <input
+                            className="bsi-input"
+                            placeholder="Nilai/jawaban yang diminta..."
+                            value={q.shortAnswerValue || ''}
+                            onChange={(e) =>
+                              updateQuestion(selectedPage.pageNumber, q.id, {
+                                shortAnswerValue: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      ) : q.optionsAreImages ? (
                         <div className="bsi-optimg-row">
                           {q.optionImages.map((url, oi) => (
                             <button
@@ -1218,6 +1567,17 @@ import {
                                   });
                                 }}
                               />
+                              {/* Pratinjau rumus untuk opsi ini, kalau
+                                  opsinya mengandung LaTeX (mis. hasil
+                                  integral/pecahan) -- opsi angka biasa
+                                  seperti "0,861 MeV" tidak akan
+                                  menampilkan apa-apa tambahan di sini
+                                  karena tidak ada \(...\) di dalamnya. */}
+                              {/\\\(.*\\\)/.test(opt) && (
+                                <span className="bsi-option-preview">
+                                  {renderWithLatexPreview(opt)}
+                                </span>
+                              )}
                             </li>
                           ))}
                           <li>
@@ -1351,6 +1711,14 @@ import {
     display:flex;flex-direction:column;gap:10px}
   .bsi-card.approved{border-color:#a7f3d0;background:#f7fffc}
   .bsi-card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .bsi-tipe-badge{font-size:11.5px;font-weight:650;padding:4px 10px;border-radius:99px;white-space:nowrap}
+  .bsi-pq-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .bsi-pq-box{display:flex;flex-direction:column;gap:5px;padding:9px;border:1px solid #a7f3d0;
+    background:#ecfdf5;border-radius:8px}
+  .bsi-pq-label{font-size:11px;font-weight:700;color:#047857}
+  .bsi-pq-preview{font-size:14px;color:var(--ink)}
+  .bsi-shortanswer-wrap{display:flex;flex-direction:column;gap:5px;padding:9px;border:1px solid #fde68a;
+    background:#fffbeb;border-radius:8px}
   .bsi-card-no{font-size:12.5px;font-weight:650;color:var(--muted);letter-spacing:.03em}
   .bsi-card-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .bsi-check{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;font-weight:550}
@@ -1364,7 +1732,13 @@ import {
   .bsi-figure-label{font-size:11.5px;color:var(--muted);font-weight:600}
   .bsi-figure-img{max-width:220px;border:1px solid var(--line);border-radius:7px;background:#fff}
   .bsi-option-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
-  .bsi-option-list li{display:flex;align-items:center;gap:9px}
+  .bsi-option-list li{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .bsi-latex-preview{border:1px solid #dbeafe;background:#f0f7ff;border-radius:8px;padding:9px 11px;
+    display:flex;flex-direction:column;gap:5px}
+  .bsi-latex-preview-label{font-size:11px;font-weight:650;color:#1d4ed8;letter-spacing:.02em}
+  .bsi-latex-preview-body{font-size:14.5px;line-height:1.6;color:var(--ink)}
+  .bsi-option-preview{font-size:13.5px;color:var(--ink);padding:3px 8px;background:#f0f7ff;
+    border-radius:6px;border:1px solid #dbeafe}
   .bsi-flag.muted{color:var(--muted)}
   .bsi-input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;
     font-size:14px;font-family:inherit;color:var(--ink);line-height:1.5;resize:vertical;background:#fff}
