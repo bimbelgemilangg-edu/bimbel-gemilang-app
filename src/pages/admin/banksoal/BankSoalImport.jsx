@@ -378,6 +378,156 @@ import {
     return out.toDataURL('image/jpeg', quality);
   }
   
+  // ============================================================
+  // 🔥 BARU (revisi ke-4): EKSTRAKSI TEKS LANGSUNG DARI PDF -- TANPA AI
+  // ============================================================
+  // ⚠️ KENAPA INI PERUBAHAN PALING PENTING DI SELURUH FITUR BANK SOAL:
+  // Tiga revisi sebelumnya semuanya minta AI "MELIHAT GAMBAR crop soal
+  // dan MENULISKAN ULANG isinya" -- itu pada dasarnya OCR/vision, dan
+  // terbukti tidak cukup andal (contoh nyata: soal berisi grafik P-V
+  // panjang keluar jadi "19. Suatu gas ... (Gambar grafik P terhadap
+  // ...)" -- AI menyerah menyalin lengkap, cuma menebak ringkasan).
+  //
+  // Padahal PDF (kalau punya lapisan teks asli -- yang SUDAH kita
+  // manfaatkan sejak revisi pertama untuk mendeteksi nomor soal) berisi
+  // TEKS SUNGGUHAN yang bisa diambil PERSIS, TANPA PERLU DIBACA ULANG
+  // SAMA SEKALI -- sama seperti keunggulan yang diminta dari Word.
+  // Bedanya: ini bisa dilakukan LANGSUNG dari PDF yang sudah ada,
+  // TANPA perlu mengonversi ke Word dulu (yang justru berisiko
+  // merusak tata letak 2 kolom + rumus matematika -- konversi PDF ke
+  // Word BUKAN proses lossless, sama seperti OCR).
+  //
+  // Jadi sekarang: teks soal & opsi diambil LANGSUNG dari objek teks
+  // PDF (persis mekanisme yang sama dipakai mendeteksi nomor soal),
+  // tipe soal diklasifikasi lewat pola teks (bukan AI), dan area
+  // diagram/grafik dideteksi lewat CELAH KOSONG antar baris teks
+  // (bukan AI menebak kotak pembatas). AI TIDAK DIPANGGIL SAMA SEKALI
+  // di jalur utama sekarang.
+  
+  // Ambang jarak antar baris yang dianggap "celah wajar" (bukan area
+  // diagram) -- baris teks normal biasanya berjarak sekitar 12-16pt;
+  // celah di atas ini kemungkinan besar area gambar/grafik/tabel.
+  const NORMAL_LINE_GAP_MAX = 22;
+  const MIN_FIGURE_GAP = 40;
+  
+  // Kumpulkan semua item teks dalam rentang Y & X tertentu (satu soal,
+  // satu kolom), lalu kelompokkan jadi baris (atas ke bawah, kiri ke
+  // kanan per baris) -- fondasi yang sama dipakai deteksi nomor soal.
+  function extractLinesInRange(items, top, bottom, colLeft, colRight) {
+    const relevant = items.filter((it) => {
+      const x = it.transform[4];
+      const y = it.transform[5];
+      return (
+        y <= top + 14 &&
+        y >= bottom + 4 &&
+        x >= colLeft - 5 &&
+        x <= colRight + 5
+      );
+    });
+  
+    const lineMap = new Map();
+    relevant.forEach((item) => {
+      const yKey = Math.round(item.transform[5] / 2) * 2;
+      if (!lineMap.has(yKey)) lineMap.set(yKey, []);
+      lineMap.get(yKey).push(item);
+    });
+  
+    return [...lineMap.entries()]
+      .sort((a, b) => b[0] - a[0]) // atas ke bawah
+      .map(([y, lineItems]) => ({
+        y,
+        text: lineItems
+          .sort((a, b) => a.transform[4] - b.transform[4]) // kiri ke kanan
+          .map((i) => i.str)
+          .join(' ')
+          .trim(),
+      }))
+      .filter((l) => l.text.length > 0);
+  }
+  
+  // Cari celah vertikal TERBESAR antar baris yang berurutan -- kalau
+  // jauh lebih lebar dari jarak baris normal, itu kemungkinan besar
+  // area diagram/grafik/tabel-bergambar yang tidak punya teks sama
+  // sekali (makanya jadi "celah kosong" bagi lapisan teks PDF).
+  function findFigureGap(lines) {
+    let maxGap = 0;
+    let gapTop = null;
+    let gapBottom = null;
+  
+    for (let i = 0; i < lines.length - 1; i++) {
+      const gap = lines[i].y - lines[i + 1].y;
+      if (gap > maxGap) {
+        maxGap = gap;
+        gapTop = lines[i].y;
+        gapBottom = lines[i + 1].y;
+      }
+    }
+  
+    if (maxGap < MIN_FIGURE_GAP) return null;
+  
+    return { top: gapTop, bottom: gapBottom, gap: maxGap };
+  }
+  
+  // Pisahkan badan soal dari daftar opsi jawaban -- opsi ditandai
+  // penanda huruf (A. / A) dst) di awal kata. Menangani tata letak
+  // opsi 2-KOLOM (mis. "A. ... D. ..." satu baris, "B. ... E. ..." baris
+  // berikutnya, "C. ..." sendirian) yang lazim dipakai buku SNBT/UTBK
+  // untuk menghemat ruang -- opsi diurutkan ULANG berdasar HURUFNYA,
+  // bukan urutan kemunculan mentah di teks (yang bisa A,D,B,E,C kalau
+  // dibaca apa adanya per baris).
+  function splitOptionsFromText(fullText) {
+    const matches = [...fullText.matchAll(/(?:^|\s)([A-E])[.)]\s+/g)];
+  
+    if (matches.length < 2) {
+      return { question: fullText.trim(), options: [] };
+    }
+  
+    const question = fullText.slice(0, matches[0].index).trim();
+  
+    const rawOptions = [];
+    for (let i = 0; i < matches.length; i++) {
+      const letter = matches[i][1];
+      const start = matches[i].index + matches[i][0].length;
+      const end = i + 1 < matches.length ? matches[i + 1].index : fullText.length;
+      rawOptions.push({ letter, text: fullText.slice(start, end).trim() });
+    }
+  
+    rawOptions.sort((a, b) => a.letter.localeCompare(b.letter));
+  
+    return { question, options: rawOptions.map((o) => o.text) };
+  }
+  
+  // Klasifikasi tipe soal SNBT/UTBK lewat POLA TEKS -- tanpa AI. Ini
+  // pengganti langkah yang sebelumnya minta AI mengklasifikasikan;
+  // polanya cukup khas untuk dideteksi regex sederhana.
+  //
+  // `hasImageOptions` WAJIB dikirim: soal dengan opsi berupa GAMBAR
+  // tidak punya penanda huruf tekstual (A. B. C.) sama sekali di
+  // lapisan teks PDF -- tanpa parameter ini, soal seperti itu salah
+  // terklasifikasi sebagai "isian_singkat" padahal sebenarnya pilihan
+  // ganda biasa (cuma opsinya berupa gambar).
+  function classifyTipeSoal(fullText, hasImageOptions) {
+    const hasNumberedStatements =
+      /\(1\)[\s\S]*\(2\)[\s\S]*\(3\)/.test(fullText);
+  
+    if (hasNumberedStatements) return 'pernyataan_kompleks';
+  
+    const hasQuantityPQ =
+      /kuantitas\s*p/i.test(fullText) && /kuantitas\s*q/i.test(fullText);
+  
+    if (hasQuantityPQ) return 'hubungan_kuantitas';
+  
+    if (hasImageOptions) return 'pilihan_ganda';
+  
+    const optionLetterCount = (
+      fullText.match(/(?:^|\s)[A-E][.)]\s+/g) || []
+    ).length;
+  
+    if (optionLetterCount < 2) return 'isian_singkat';
+  
+    return 'pilihan_ganda';
+  }
+  
   // 🔥 BARU: potong SUB-AREA dari sebuah crop soal (bukan dari halaman
   // penuh) berdasarkan figureBBox yang dikembalikan AI transkripsi --
   // koordinatnya ternormalisasi 0..1 RELATIF TERHADAP crop soal itu
@@ -426,11 +576,6 @@ import {
   // ============================================================
   // KONSTANTA LAIN
   // ============================================================
-  
-  // Jeda antar panggilan AI transkripsi -- jaga rate limit tier gratis
-  // Gemini (sekarang ADA panggilan jaringan per soal lagi, beda dari
-  // revisi sebelumnya yang murni tanpa AI sama sekali).
-  const DELAY_BETWEEN_QUESTIONS_MS = 500;
   
   const STATUS = {
     IDLE: 'idle',
@@ -759,9 +904,55 @@ import {
             .filter(Boolean);
         }
   
+        // 🔥 BARU: ekstraksi teks LANGSUNG dari PDF (bukan AI membaca
+        // gambar) -- lihat penjelasan lengkap di atas fungsi
+        // extractLinesInRange(). Ini yang menggantikan langkah
+        // transkripsi AI yang terbukti tidak cukup andal.
+        const textLines = extractLinesInRange(
+          items,
+          top,
+          bottom,
+          colRange.left,
+          colRange.right,
+        );
+  
+        const fullText = textLines.map((l) => l.text).join(' ');
+        const withoutNumber = fullText.replace(/^\s*\d{1,3}[.)]\s*/, '');
+  
+        const { question, options } = splitOptionsFromText(withoutNumber);
+        const tipeSoal = classifyTipeSoal(
+          withoutNumber,
+          optionCrops.length >= 2,
+        );
+  
+        // 🔥 BARU: deteksi area diagram/grafik lewat CELAH KOSONG antar
+        // baris teks (bukan AI menebak kotak pembatas) -- kalau ada
+        // celah jauh lebih lebar dari jarak baris normal, itu
+        // kemungkinan besar diagram/grafik vektor yang tidak punya teks
+        // sama sekali (grafik seperti kurva P-V TIDAK terdeteksi lewat
+        // findImageRegions() karena itu digambar pakai garis/kurva
+        // vektor, BUKAN gambar raster tertanam).
+        const figureGap = findFigureGap(textLines);
+  
+        let figureImage = '';
+        if (optionCrops.length === 0 && figureGap) {
+          const figRect = pdfRectToCanvasRect(
+            viewport,
+            colRange.left,
+            figureGap.top,
+            figureGap.bottom,
+            colRange.right - colRange.left,
+          );
+          figureImage = cropCanvasToDataUrl(pageCanvas, figRect, 6) || '';
+        }
+  
         crops.push({
           printedNumber: start.number,
-          qImage: mainCrop,
+          rawCropImage: mainCrop,
+          question,
+          options: options.length > 0 ? options : ['', '', '', ''],
+          tipeSoal,
+          qImage: figureImage,
           optionsAreImages: optionCrops.length >= 2,
           optionImages: optionCrops,
         });
@@ -771,97 +962,41 @@ import {
     }, []);
   
     // ----------------------------------------------------------
-    // PROSES SATU HALAMAN LENGKAP: deteksi (tanpa AI) + jawab tiap
-    // soal (dengan AI, satu per satu)
+    // PROSES SATU HALAMAN LENGKAP: deteksi soal, teks, opsi, & figur
+    // SEPENUHNYA DETERMINISTIK -- TANPA AI SAMA SEKALI.
     // ----------------------------------------------------------
   
     const processOnePage = useCallback(
       async (pageNumber) => {
         const { pageImage, crops } = await detectQuestionsOnPage(pageNumber);
   
-        const questions = [];
-  
-        for (const crop of crops) {
-          if (abortRef.current) break;
-  
-          while (pauseRef.current && !abortRef.current) {
-            // eslint-disable-next-line no-await-in-loop
-            await new Promise((r) => setTimeout(r, 300));
-          }
-          if (abortRef.current) break;
-  
-          let transcript = {
-            question: '',
-            options: [],
-            tipeSoal: 'pilihan_ganda',
-            kuantitasP: '',
-            kuantitasQ: '',
-            hasFigure: false,
-            figureBBox: null,
-            readingConfidence: 'low',
-          };
-          let transcribeError = null;
-  
-          try {
-            // eslint-disable-next-line no-await-in-loop
-            transcript = await transcribeQuestionWithAI(crop.qImage);
-          } catch (error) {
-            // AI gagal membaca BUKAN alasan membuang soalnya -- crop
-            // asli tetap ada untuk ditinjau & diketik manual oleh admin.
-            transcribeError = error?.message || 'Gagal membaca soal ini.';
-          }
-  
-          // Kalau tipe soalnya "isian_singkat", opsi jawaban memang
-          // tidak ada -- jangan sediakan kolom opsi sama sekali. Kalau
-          // opsi jawabannya terdeteksi berupa GAMBAR (dari langkah
-          // deteksi tanpa-AI), field "options" teks tidak relevan --
-          // yang dipakai adalah optionImages. Selain itu, kalau AI juga
-          // tidak berhasil membaca opsi apa pun, sediakan 4 kolom
-          // kosong supaya admin bisa mengetik manual.
-          const options =
-            transcript.tipeSoal === 'isian_singkat'
-              ? []
-              : crop.optionsAreImages
-                ? []
-                : transcript.options.length > 0
-                  ? transcript.options
-                  : ['', '', '', ''];
-  
-          // Potong HANYA area diagram/grafik/foto dari crop soal (bukan
-          // seluruh bloknya) -- kosong kalau soal ini murni teks.
-          // eslint-disable-next-line no-await-in-loop
-          const figureImage = transcript.hasFigure
-            ? (await cropFigureFromQuestionImage(crop.qImage, transcript.figureBBox)) || ''
-            : '';
-  
-          questions.push({
-            id: newId(),
-            pageNumber,
-            printedNumber: crop.printedNumber,
-            // Crop UTUH blok soal -- disimpan HANYA untuk pembanding
-            // visual di layar tinjau (kolom kiri kartu), TIDAK ikut
-            // disimpan ke Bank Soal. Yang disimpan adalah teks di
-            // "question"/"options", plus qImage kalau ada figure.
-            rawCropImage: crop.qImage,
-            question: transcript.question,
-            options,
-            tipeSoal: transcript.tipeSoal,
-            kuantitasP: transcript.kuantitasP,
-            kuantitasQ: transcript.kuantitasQ,
-            optionsAreImages: crop.optionsAreImages,
-            optionImages: crop.optionImages,
-            qImage: figureImage,
-            readingConfidence: transcript.readingConfidence,
-            transcribeError,
-            correct: null,
-            explanation: '',
-            shortAnswerValue: '',
-            approved: false,
-          });
-  
-          // eslint-disable-next-line no-await-in-loop
-          await new Promise((r) => setTimeout(r, DELAY_BETWEEN_QUESTIONS_MS));
-        }
+        // 🔥 Murni pemetaan hasil crop -> objek soal, SEPENUHNYA
+        // SINKRON -- semua data (teks, opsi, tipe soal, figure) sudah
+        // diekstrak deterministik di detectQuestionsOnPage() di atas.
+        // TIDAK ADA panggilan AI, TIDAK ADA jeda jaringan sama sekali
+        // di jalur ini -- satu halaman selesai secepat browser bisa
+        // merender & membaca teks PDF-nya.
+        const questions = crops.map((crop) => ({
+          id: newId(),
+          pageNumber,
+          printedNumber: crop.printedNumber,
+          // Crop UTUH blok soal -- disimpan HANYA untuk pembanding
+          // visual di layar tinjau (kolom kiri kartu), TIDAK ikut
+          // disimpan ke Bank Soal.
+          rawCropImage: crop.rawCropImage,
+          question: crop.question,
+          options: crop.optionsAreImages ? [] : crop.options,
+          tipeSoal: crop.tipeSoal,
+          kuantitasP: '',
+          kuantitasQ: '',
+          optionsAreImages: crop.optionsAreImages,
+          optionImages: crop.optionImages,
+          qImage: crop.qImage,
+          correct: null,
+          explanation: '',
+          shortAnswerValue: '',
+          approved: false,
+        }));
   
         return { pageImage, questions };
       },
@@ -882,6 +1017,17 @@ import {
       const to = Math.max(from, Math.min(endPage || totalPages, totalPages));
   
       for (let pageNumber = from; pageNumber <= to; pageNumber += 1) {
+        if (abortRef.current) break;
+  
+        // 🔥 FIX: pengecekan jeda sebelumnya ada di loop PER-SOAL (yang
+        // sudah dihapus sekarang karena tidak ada lagi panggilan AI
+        // otomatis per soal). Dipindah ke sini (loop per-HALAMAN) supaya
+        // tombol "Jeda" tetap berfungsi -- tanpa ini, klik "Jeda" cuma
+        // mengubah label status tanpa benar-benar menghentikan proses.
+        while (pauseRef.current && !abortRef.current) {
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise((r) => setTimeout(r, 300));
+        }
         if (abortRef.current) break;
   
         setCurrentPage(pageNumber);
@@ -941,6 +1087,15 @@ import {
     );
   
     // ----------------------------------------------------------
+    // 🔥 BARU: ALAT BANTU MANUAL -- baca ulang SATU soal pakai AI
+    // ----------------------------------------------------------
+    // Ekstraksi deterministik (di atas) menangani mayoritas kasus
+    // dengan andal, tapi tata letak yang sangat tidak lazim (mis. tabel
+    // rumit, kolom miring, dll) masih mungkin meleset. Untuk kasus
+    // langka semacam itu, admin bisa klik tombol ini per soal -- BUKAN
+    // otomatis untuk semua soal seperti desain sebelumnya yang
+    // terbukti tidak andal & lambat.
+    // ----------------------------------------------------------
     // SUNTING SOAL (jawaban, pembahasan, tingkat kesulitan, dsb.)
     // ----------------------------------------------------------
   
@@ -958,6 +1113,59 @@ import {
         ),
       );
     }, []);
+  
+    // 🔥 BARU: ALAT BANTU MANUAL -- baca ulang SATU soal pakai AI.
+    // Ekstraksi deterministik (di atas) menangani mayoritas kasus
+    // dengan andal, tapi tata letak yang sangat tidak lazim (mis. tabel
+    // rumit, kolom miring, dll) masih mungkin meleset. Untuk kasus
+    // langka semacam itu, admin bisa klik tombol ini per soal -- BUKAN
+    // otomatis untuk semua soal seperti desain sebelumnya yang
+    // terbukti tidak andal & lambat.
+    const retryQuestionWithAI = useCallback(
+      async (pageNumber, questionId) => {
+        const page = pages.find((p) => p.pageNumber === pageNumber);
+        const question = page?.questions.find((q) => q.id === questionId);
+        if (!question?.rawCropImage) return;
+  
+        updateQuestion(pageNumber, questionId, {
+          aiRetryInProgress: true,
+          transcribeError: null,
+        });
+  
+        try {
+          const transcript = await transcribeQuestionWithAI(
+            question.rawCropImage,
+          );
+  
+          const figureImage = transcript.hasFigure
+            ? (await cropFigureFromQuestionImage(
+                question.rawCropImage,
+                transcript.figureBBox,
+              )) || ''
+            : question.qImage;
+  
+          updateQuestion(pageNumber, questionId, {
+            question: transcript.question || question.question,
+            options:
+              transcript.options.length > 0
+                ? transcript.options
+                : question.options,
+            tipeSoal: transcript.tipeSoal,
+            kuantitasP: transcript.kuantitasP,
+            kuantitasQ: transcript.kuantitasQ,
+            qImage: figureImage,
+            readingConfidence: transcript.readingConfidence,
+            aiRetryInProgress: false,
+          });
+        } catch (error) {
+          updateQuestion(pageNumber, questionId, {
+            transcribeError: error?.message || 'AI gagal membaca soal ini.',
+            aiRetryInProgress: false,
+          });
+        }
+      },
+      [pages, updateQuestion],
+    );
   
     const removeQuestion = useCallback((pageNumber, questionId) => {
       setPages((prev) =>
@@ -1090,11 +1298,11 @@ import {
             <p className="bsi-eyebrow">{folderName}</p>
             <h1 className="bsi-title">Tambah soal dari PDF</h1>
             <p className="bsi-sub">
-              Batas soal dideteksi dari halaman asli (tanpa AI), lalu
-              teks soal & opsinya ditranskripsi AI supaya bisa diedit.
-              Jawaban & pembahasan dibuat belakangan, saat soal ini
-              dipakai di sebuah kuis -- periksa dulu hasil transkripsinya
-              di sini sebelum disetujui.
+              Soal, opsi jawaban, dan diagram diambil LANGSUNG dari teks
+              & grafik asli PDF -- tanpa AI sama sekali (AI cuma
+              tersedia sebagai alat bantu opsional per soal, kalau ada
+              yang meleset). Jawaban & pembahasan dibuat belakangan,
+              saat soal ini dipakai di sebuah kuis.
             </p>
           </div>
   
@@ -1370,6 +1578,17 @@ import {
                             type="button"
                             className="bsi-btn ghost sm"
                             onClick={() =>
+                              retryQuestionWithAI(selectedPage.pageNumber, q.id)
+                            }
+                            disabled={q.aiRetryInProgress}
+                            title="Kalau ekstraksi otomatis meleset untuk soal ini -- minta AI membaca ulang crop-nya"
+                          >
+                            {q.aiRetryInProgress ? 'Membaca…' : 'Baca ulang (AI)'}
+                          </button>
+                          <button
+                            type="button"
+                            className="bsi-btn ghost sm"
+                            onClick={() =>
                               removeQuestion(selectedPage.pageNumber, q.id)
                             }
                           >
@@ -1478,16 +1697,18 @@ import {
   
                       {q.transcribeError && (
                         <p className="bsi-flag">
-                          AI gagal membaca soal ini secara otomatis --
-                          ketik teksnya secara manual dari crop di
-                          sebelah kiri. ({q.transcribeError})
+                          Percobaan "Baca ulang (AI)" gagal --
+                          ({q.transcribeError}). Ekstraksi otomatis
+                          (tanpa AI) di atas tetap berlaku, edit manual
+                          kalau perlu.
                         </p>
                       )}
   
                       {!q.transcribeError && q.readingConfidence === 'low' && (
                         <p className="bsi-flag">
-                          AI kurang yakin membaca sebagian teks ini --
-                          cocokkan dengan crop asli di sebelah kiri.
+                          AI (lewat "Baca ulang") kurang yakin membaca
+                          sebagian teks ini -- cocokkan dengan crop asli
+                          di sebelah kiri.
                         </p>
                       )}
   
