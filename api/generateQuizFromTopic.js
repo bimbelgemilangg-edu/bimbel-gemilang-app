@@ -124,15 +124,15 @@ const AI_REASONING_EFFORT =
 const DEFAULT_QUESTION_COUNT = 10;
 const MAX_QUESTION_COUNT = 20;
 
-const AI_TIMEOUT_MS = 45_000;
+const AI_TIMEOUT_MS = 36_000;
 
-// 🔥 BARU: timeout lebih longgar khusus untuk request yang mengaktifkan
-// browser_search -- AI beneran browsing beberapa halaman web dulu
-// sebelum jawab, jadi butuh waktu lebih dari request biasa. Tetap
-// dijaga di bawah maxDuration (60s) Vercel supaya function-nya sendiri
-// gak keburu dimatikan platform sebelum sempat kirim respons error
-// yang rapi.
-const AI_TIMEOUT_WITH_SEARCH_MS = 55_000;
+// Timeout cadangan yang HANYA terpakai kalau callAI() dipanggil
+// langsung tanpa lewat callAIWithFallback() (yang selalu mengirim
+// timeoutMs hasil pembagian budget). Nilainya sengaja TIDAK melebihi
+// TOTAL_AI_BUDGET_WITH_SEARCH_MS di bawah -- kalau lebih besar, angka
+// ini akan saling bertentangan dengan budget total dan menyesatkan
+// siapa pun yang membacanya nanti.
+const AI_TIMEOUT_WITH_SEARCH_MS = 40_000;
 
 // 🔥 BARU: batas TOTAL waktu (gabungan semua percobaan model, utama +
 // cadangan) yang boleh dipakai callAIWithFallback sebelum nyerah.
@@ -142,8 +142,8 @@ const AI_TIMEOUT_WITH_SEARCH_MS = 55_000;
 // platform (bukan error rapi dari kode kita). Sisa waktu di luar
 // budget ini (~10-15 detik) disisakan buat build prompt, quality gate,
 // & enrich gambar Tavily yang jalan SEBELUM/SESUDAH pemanggilan AI.
-const TOTAL_AI_BUDGET_MS = 45_000;
-const TOTAL_AI_BUDGET_WITH_SEARCH_MS = 50_000;
+const TOTAL_AI_BUDGET_MS = 36_000;
+const TOTAL_AI_BUDGET_WITH_SEARCH_MS = 40_000;
 
 // Batas atas untuk SATU KALI percobaan model, walau sisa budget total
 // masih banyak -- supaya satu model yang hidup tapi lambat gak
@@ -165,14 +165,24 @@ const MAX_SINGLE_ATTEMPT_MS = 18_000;
 // waktu.
 const MIN_REMAINING_BUDGET_MS = 8_000;
 
-// 🔥 CATATAN: batas TPM (token/menit) provider tidak selalu
-// ketat & terpublikasi kayak Groq (yang 8.000 TPM). Batasnya lebih ke
-// arah RPM (~40/menit) dan variabel tergantung model+traffic. Angka di
-// bawah ini BUKAN batas resmi provider -- ini cuma batas wajar milik kita
-// sendiri, biar 1 permintaan gak minta token gila-gilaan tanpa alasan
-// (hemat waktu respons & tetap proporsional ke jumlah soal yang
-// diminta guru, konsisten dengan logika computeMaxTokens() di bawah).
-const SOFT_MAX_TOKENS_CEILING = 8000;
+// 🔥 DINAIKKAN saat pindah ke Gemini -- ini CACAT NYATA yang terbawa
+// dari era Groq, bukan sekadar angka kosmetik.
+//
+// Nilai lamanya 8.000 dipilih karena Groq membatasi 8.000 token/menit.
+// Gemini tidak punya batas sesempit itu (Flash sanggup puluhan ribu
+// token keluaran). Efek nyata dari plafon lama: permintaan 20 soal
+// butuh sekitar 8.300 token, tetapi dipangkas ke 6.500 -- jawaban AI
+// terpotong di tengah, beberapa soal terakhir hilang, dan guru melihat
+// "diminta 20, dapat 13" tanpa tahu sebabnya.
+//
+// Nilai baru memberi ruang penuh sampai 20 soal (batas maksimum yang
+// boleh diminta guru) tanpa pemotongan.
+//
+// Ini tetap batas milik KITA sendiri, bukan batas resmi Google --
+// Google tidak mempublikasikan limit tier gratis secara rinci di
+// halaman publik (hanya terlihat di dasbor AI Studio). Gunanya supaya
+// satu permintaan tidak meminta token berlebihan tanpa alasan.
+const SOFT_MAX_TOKENS_CEILING = 16000;
 
 // ============================================================
 // 🔥 BARU: TAVILY (pencari gambar asli -- opsional)
@@ -180,9 +190,9 @@ const SOFT_MAX_TOKENS_CEILING = 8000;
 // Dipakai KHUSUS untuk mencari gambar ASLI dari internet buat:
 // (1) stimulus visual soal (mis. "gambar di bawah ini candi apa?"),
 // (2) pilihan jawaban berbentuk gambar (optionsAreImages).
-// Groq browser_search TIDAK bisa ini -- dia cuma kasih teks/snippet,
-// bukan file gambar (lihat penjelasan lengkap di header file & di
-// dokumentasi resmi Groq). Tavily terverifikasi (Agustus 2026) py
+// Tool pencarian teks bawaan provider AI TIDAK bisa ini -- yang
+// dikembalikan cuma teks/snippet, bukan berkas gambar.
+// Tavily terverifikasi (Agustus 2026) punya
 // free tier 1.000 credit/bulan, reset tiap tanggal 1, TANPA kartu
 // kredit -- kalau kredit habis, request BERHENTI (bukan auto-tagih
 // kayak Brave yang sudah kita coret dari opsi).
@@ -201,7 +211,14 @@ const TAVILY_SEARCH_URL =
 // gambar) gak ujug-ujug ngabisin jatah bulanan cuma dalam 1 klik.
 const MAX_TAVILY_CALLS_PER_REQUEST = 8;
 
-const TAVILY_TIMEOUT_MS = 12_000;
+// 🔥 DITURUNKAN dari 12 detik saat pindah ke Gemini. Alasannya
+// terukur, bukan perasaan: dengan budget AI yang lama, kasus terburuk
+// hanya menyisakan 4 detik untuk gambar -- lebih pendek dari satu
+// panggilan Tavily itu sendiri, sehingga fitur gambar praktis TIDAK
+// PERNAH jalan saat AI sedang lambat, diam-diam, tanpa error apa pun.
+// Sekarang budget AI dipangkas dan timeout ini diperpendek, sehingga
+// selalu tersisa ruang untuk beberapa panggilan gambar.
+const TAVILY_TIMEOUT_MS = 6_000;
 
 // 🔥 Sama persis dengan filter di ManageQuiz.jsx (searchImagesForQuestion)
 // -- beberapa domain proxy internal platform (Facebook lookaside, CDN
@@ -2986,16 +3003,16 @@ function buildSystemPrompt({
 
     'ATURAN MUTLAK:',
 
-    // 🔥 FIX PENTING: sebelumnya (waktu masih pakai Groq openai/gpt-oss-120b)
-    // ada instruksi kondisional yang bilang "kamu PUNYA akses
-    // browser_search" begitu mode "prediction" aktif -- itu BENAR waktu
-    // itu karena Groq beneran nyediain tool browser_search bawaan. Tapi
-    // Provider AI saat ini TIDAK menyediakan tool itu, jadi di
-    // katalognya. Kalau instruksi lama ini dibiarkan, AI bisa
-    // "berpura-pura" browsing (halusinasi seolah-olah nemu sumber),
-    // padahal gak pernah beneran akses internet -- BAHAYA lebih besar
-    // dari sekadar gak variatif. Makanya SEKARANG SELALU jujur "jangan
-    // browsing", gak peduli mode apa pun.
+    // 🔥 PENTING -- JANGAN DIUBAH JADI KONDISIONAL LAGI:
+    // Dulu ada instruksi yang bilang ke AI "kamu PUNYA akses browsing"
+    // saat mode "prediction" aktif. Itu benar ketika provider-nya masih
+    // Groq (yang memang menyediakan tool browser_search bawaan).
+    // Provider sekarang TIDAK menyediakan tool itu sama sekali.
+    // Kalau instruksi lama dibiarkan, AI akan "berpura-pura" browsing
+    // dan mengarang sumber yang tidak pernah ia buka -- itu jauh lebih
+    // berbahaya daripada sekadar soal kurang variatif, karena guru bisa
+    // percaya soal itu berbasis riset padahal tidak. Maka instruksinya
+    // SELALU jujur "jangan browsing", apa pun mode yang dipilih guru.
     '1. Jangan browsing internet -- kamu gak punya akses itu.',
 
     '2. Jangan mengaku melakukan browsing.',
@@ -3243,7 +3260,7 @@ function buildUserPrompt({
 }
 
 // ============================================================
-// GROQ API
+// PEMANGGILAN AI PROVIDER
 // ============================================================
 
 async function callAI({
@@ -3364,12 +3381,11 @@ async function callAI({
                 }
               : {}),
 
-            // 🔥 CATATAN: provider AI saat ini TIDAK punya tool browser_search
-            // bawaan (itu fitur khusus Groq openai/gpt-oss-120b). Jadi
-            // di sini `enableBrowserSearch` cuma dipakai buat pilih
-            // timeout yang lebih longgar & label "MODE: prediction" di
-            // prompt -- BUKAN riset internet beneran. Lihat catatan
-            // jujur soal ini di header file.
+            // 🔥 CATATAN: provider AI saat ini TIDAK punya tool
+            // pencarian web bawaan. Jadi `enableBrowserSearch` di sini
+            // HANYA dipakai untuk memilih timeout yang lebih longgar
+            // dan menandai "MODE: prediction" di prompt -- BUKAN riset
+            // internet sungguhan. Lihat catatan di header file.
           }),
 
           signal:
@@ -3422,12 +3438,8 @@ async function callAI({
           1000,
         );
 
-      // 🔥 CATATAN JUJUR: beda dari Groq (yang header rate-limit-nya
-      // terdokumentasi jelas & sudah kita verifikasi), provider ini
-      // TIDAK mempublikasikan resmi nama header rate-limit-nya --
-      // batasnya bisa "tergantung model &
-      // traffic keseluruhan saat itu", gak ada angka pasti yang bisa
-      // dijadikan acuan header spesifik. Makanya di sini CUMA
+      // 🔥 CATATAN JUJUR: provider ini TIDAK mempublikasikan nama
+      // header rate-limit khususnya. Makanya di sini CUMA
       // `retry-after` (header HTTP standar, aman diasumsikan ada di
       // provider mana pun yang mengimplementasikan 429 dengan benar)
       // yang dipakai -- gak ada header nama lain yang diasumsikan
@@ -4354,12 +4366,10 @@ function sendAIError(
   }
 
   // ----------------------------------------------------------
-  // RATE LIMIT (429) -- 🔥 CATATAN JUJUR: beda dari Groq (yang
-  // pembedaan RPD vs RPM/TPM bisa dipastikan dari header resmi),
-  // NVIDIA gak punya header rate-limit yang terpublikasi/terverifikasi
-  // buat bedain "batas harian habis" vs "kebanyakan request sesaat".
-  // Jadi pesannya digeneralisir jujur -- gak ngarang pembedaan yang
-  // gak bisa dipastikan benar dari NVIDIA.
+  // RATE LIMIT (429) -- 🔥 CATATAN JUJUR: kita TIDAK bisa memastikan
+  // dari respons apakah ini "kuota harian habis" atau cuma
+  // "kebanyakan request dalam semenit". Maka pesan ke guru sengaja
+  // digeneralisir, bukan mengarang pembedaan yang belum tentu benar.
   // ----------------------------------------------------------
 
   if (
@@ -4774,7 +4784,7 @@ export default async function handler(
     });
 
   // ==========================================================
-  // 3. CALL GROQ
+  // 3. CALL AI PROVIDER
   // ==========================================================
 
   let aiResult;
@@ -5121,17 +5131,14 @@ export default async function handler(
             'competency',
           ),
 
-        // 🔥 FIX: sebelumnya `researchPerformed: enableBrowserSearch`
-        // -- itu benar waktu Groq browser_search beneran jalan. Sekarang
-        // (tidak ada tool browsing sama sekali) SELALU false,
-        // apa pun mode-nya -- jangan mengklaim riset internet terjadi
-        // padahal enggak.
+        // 🔥 SELALU false: tidak ada tool browsing sama sekali di
+        // provider sekarang. Jangan pernah mengklaim ke guru bahwa
+        // riset internet terjadi padahal tidak.
         researchPerformed: false,
 
-        // 🔥 CATATAN: kolom ini akan SELALU 0 sekarang (gak ada
-        // browser_search), dipertahankan di diagnostik biar konsisten
-        // strukturnya kalau provider lain dengan tool serupa dipasang
-        // lagi nanti.
+        // 🔥 CATATAN: kolom ini SELALU 0 sekarang. Dipertahankan agar
+        // struktur diagnostik tetap konsisten kalau nanti dipasang
+        // provider yang punya tool pencarian sungguhan.
         researchBackedCount:
           questions.filter(
             (q) =>
