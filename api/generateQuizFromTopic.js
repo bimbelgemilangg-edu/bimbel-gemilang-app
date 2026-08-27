@@ -11,7 +11,7 @@
 //    ↓
 // LOCAL BLUEPRINT ENGINE
 //    ↓
-// TAVILY WEB RESEARCH (maks. 1 pencarian teks / request, opsional)
+// TAVILY WEB RESEARCH (maks. 1 pencarian teks / request)
 //    ↓
 // GOOGLE GEMINI API (endpoint kompatibel-OpenAI)
 //    ↓
@@ -24,7 +24,7 @@
 // TAVILY dipakai untuk 2 hal yang terkendali:
 //   1) mencari contoh soal/referensi di internet untuk ditulis ulang;
 //   2) mencari foto objek nyata bila soal memang membutuhkan foto.
-// Semua pencarian dibatasi keras supaya tidak menghabiskan kuota atau waktu.
+// Riset wajib bila generator berjalan: tanpa referensi yang lolos, generator berhenti aman.
 //
 // ⚠️ CATATAN:
 // Pencarian referensi internet dilakukan oleh server lewat Tavily SEBELUM
@@ -205,11 +205,11 @@ const MIN_REMAINING_BUDGET_MS = 8_000;
 const SOFT_MAX_TOKENS_CEILING = 16000;
 
 // ============================================================
-// 🔥 TAVILY (referensi soal + gambar sumber)
+// 🔥 BARU: TAVILY (pencari gambar asli -- opsional)
 // ============================================================
-// Dipakai untuk mencari soal rujukan dari internet. Bila halaman hasil
-// memiliki gambar yang relevan, URL gambar halaman tersebut dibawa ke soal
-// sebagai visual sumber. Pencarian gambar tambahan hanya fallback terbatas.
+// Dipakai KHUSUS untuk mencari gambar ASLI dari internet buat:
+// (1) stimulus visual soal (mis. "gambar di bawah ini candi apa?"),
+// (2) pilihan jawaban berbentuk gambar (optionsAreImages).
 // Tool pencarian teks bawaan provider AI TIDAK bisa ini -- yang
 // dikembalikan cuma teks/snippet, bukan berkas gambar.
 // Tavily terverifikasi (Agustus 2026) punya
@@ -229,17 +229,15 @@ const TAVILY_SEARCH_URL =
 // 🔥 RISET SOAL INTERNET -- 1 call teks / request maksimum.
 // Sengaja cuma satu call: hasilnya dipakai sebagai kumpulan referensi,
 // sehingga 20 soal tidak berubah menjadi 20+ pencarian dan kuota tetap aman.
-const TAVILY_RESEARCH_TIMEOUT_MS = 7_000;
+const TAVILY_RESEARCH_TIMEOUT_MS = 5_000;
 const MAX_RESEARCH_RESULTS = 5;
-const MAX_RESEARCH_CHARS_PER_RESULT = 1_800;
-const MAX_RESEARCH_RAW_CHARS_PER_RESULT = 3_500;
+const MAX_RESEARCH_CHARS_PER_RESULT = 2_400;
+const MAX_RESEARCH_CONTEXT_CHARS = 10_000;
 const MAX_RESEARCH_IMAGES_PER_RESULT = 4;
-const MAX_RESEARCH_CONTEXT_CHARS = 12_000;
 
-// Pencarian gambar tambahan hanya untuk soal yang benar-benar belum
-// mendapatkan visual dari sumber. Soal yang memakai gambar dari sumber
-// tidak dicari ulang agar gambar tidak berubah menjadi foto yang tidak relevan.
-const MAX_TAVILY_IMAGE_CALLS_PER_REQUEST = 2;
+// Pencarian gambar tetap dibatasi terpisah dan rendah.
+// Jadi total maksimum Tavily per request = 1 riset + 3 gambar = 4 call.
+const MAX_TAVILY_IMAGE_CALLS_PER_REQUEST = 3;
 
 // Batas keras jumlah panggilan Tavily PER REQUEST generate-quiz --
 // jaga-jaga supaya satu permintaan guru (banyak soal, semua butuh
@@ -285,120 +283,44 @@ function buildResearchQuery({
   kelas,
   year,
   hotsLevel,
+  blueprint,
 }) {
-  const safeTopic = cleanText(topic);
-  const safeMapel = cleanText(mapel);
-  const safeKelas = cleanText(kelas);
-
-  const visualTopic = normalizeText(
-    `${safeTopic} ${safeMapel}`,
-  );
-
-  const wantsVisualReference = [
-    'gambar',
-    'diagram',
-    'grafik',
-    'bangun',
-    'denah',
-    'tabel',
-    'peta',
-    'ilustrasi',
-    'luas',
-    'volume',
-    'keliling',
-  ].some((keyword) =>
-    visualTopic.includes(keyword),
-  );
+  const competencyHints = Array.isArray(blueprint)
+    ? blueprint
+        .map((item) => `${item.competency || ''} ${item.topic || ''}`)
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .slice(0, 900)
+    : '';
 
   const parts = [
-    'soal ujian contoh soal latihan',
-    safeMapel,
-    safeTopic,
-    `kelas ${safeKelas}`,
-    'pembahasan',
-    'Indonesia',
+    'TKA',
+    'contoh soal',
+    'soal ujian',
+    mapel,
+    topic,
+    `kelas ${kelas}`,
+    competencyHints,
+    'kerangka asesmen',
   ];
 
-  if (wantsVisualReference) {
-    parts.push('soal bergambar diagram ilustrasi');
-  }
-
   if (normalizeText(hotsLevel).includes('hots')) {
-    parts.push('HOTS penalaran');
+    parts.push('penalaran HOTS');
   }
 
   if (year) {
     parts.push(String(year));
   }
 
+  // Arahkan mesin pencari ke sumber asesmen resmi terlebih dahulu.
+  // Query tetap terbuka agar bisa menemukan sumber pendidikan lain jika ada.
+  parts.push('site:pusmendik.kemendikdasmen.go.id OR site:tka.kemendikdasmen.go.id');
+
   return parts
     .map((part) => cleanText(part))
     .filter(Boolean)
     .join(' ')
-    .slice(0, 700);
-}
-
-function normalizeResearchImages(rawImages, rawContent = '') {
-  const collected = [];
-
-  const pushImage = (item, fallbackDescription = '') => {
-    const url =
-      typeof item === 'string'
-        ? item
-        : item?.url;
-
-    if (
-      typeof url !== 'string' ||
-      !/^https?:\/\/\S+$/i.test(url) ||
-      !isReliableImageUrl(url)
-    ) {
-      return;
-    }
-
-    const description = cleanText(
-      typeof item === 'object'
-        ? item?.description
-        : fallbackDescription,
-    ).slice(0, 300);
-
-    if (
-      !collected.some((image) => image.url === url)
-    ) {
-      collected.push({
-        url: url.slice(0, 1200),
-        description,
-      });
-    }
-  };
-
-  if (Array.isArray(rawImages)) {
-    for (const item of rawImages) {
-      pushImage(item);
-      if (collected.length >= MAX_RESEARCH_IMAGES_PER_RESULT) {
-        break;
-      }
-    }
-  }
-
-  // Fallback: beberapa halaman menaruh gambar langsung di markdown hasil
-  // ekstraksi. Ambil URL gambar dari markdown tanpa melakukan request kedua.
-  if (
-    collected.length < MAX_RESEARCH_IMAGES_PER_RESULT &&
-    typeof rawContent === 'string'
-  ) {
-    const markdownPattern =
-      /!\[([^\]]*)\]\((https?:\/\/[^)\s]+)[^)]*\)/gi;
-
-    let match;
-    while (
-      (match = markdownPattern.exec(rawContent)) &&
-      collected.length < MAX_RESEARCH_IMAGES_PER_RESULT
-    ) {
-      pushImage(match[2], match[1]);
-    }
-  }
-
-  return collected;
+    .slice(0, 1200);
 }
 
 async function callTavilyResearchSearch(
@@ -415,7 +337,6 @@ async function callTavilyResearchSearch(
   }
 
   const controller = new AbortController();
-
   const timeoutId = setTimeout(
     () => controller.abort(),
     TAVILY_RESEARCH_TIMEOUT_MS,
@@ -433,17 +354,11 @@ async function callTavilyResearchSearch(
         body: JSON.stringify({
           query,
           search_depth: 'basic',
-          chunks_per_source: 3,
           max_results: MAX_RESEARCH_RESULTS,
-          topic: 'general',
           include_answer: false,
-          include_raw_content: 'markdown',
           include_images: true,
           include_image_descriptions: true,
-          include_favicon: false,
-          language: 'id',
-          filter_by_language: false,
-          safe_search: true,
+          include_raw_content: false,
         }),
         signal: controller.signal,
       },
@@ -457,49 +372,61 @@ async function callTavilyResearchSearch(
         reason:
           response.status === 429
             ? 'rateLimited'
-            : response.status === 432
-              ? 'usageLimit'
-              : response.status === 403
-                ? 'forbidden'
-                : `http${response.status}`,
+            : response.status === 403
+              ? 'forbidden'
+              : `http${response.status}`,
       };
     }
 
     const data = await response.json();
-
     const rawResults = Array.isArray(data?.results)
       ? data.results
       : [];
 
     const results = rawResults
       .map((item) => {
-        const rawContent = String(item?.raw_content || '');
+        const rawImages = Array.isArray(item?.images)
+          ? item.images
+          : [];
+
+        const images = rawImages
+          .map((image) => {
+            const url =
+              typeof image === 'string'
+                ? image
+                : image?.url;
+            const description =
+              typeof image === 'object'
+                ? cleanText(image?.description)
+                : '';
+
+            return {
+              url: cleanText(url).slice(0, 800),
+              description: description.slice(0, 400),
+            };
+          })
+          .filter(
+            (image) =>
+              /^https?:\/\/\S+$/i.test(image.url) &&
+              isReliableImageUrl(image.url),
+          )
+          .slice(0, MAX_RESEARCH_IMAGES_PER_RESULT);
+
         return {
           title: cleanText(item?.title).slice(0, 300),
           url: cleanText(item?.url).slice(0, 500),
           content: cleanText(
             item?.content || item?.snippet,
           ).slice(0, MAX_RESEARCH_CHARS_PER_RESULT),
-          rawContent: rawContent.slice(
-            0,
-            MAX_RESEARCH_RAW_CHARS_PER_RESULT,
-          ),
-          images: normalizeResearchImages(
-            item?.images,
-            rawContent,
-          ),
-          score: Number.isFinite(Number(item?.score))
-            ? Number(item.score)
-            : 0,
+          images,
         };
       })
       .filter(
         (item) =>
           item.title &&
           /^https?:\/\/\S+$/i.test(item.url) &&
-          (item.content || item.rawContent),
+          item.content,
       )
-      .sort((a, b) => b.score - a.score)
       .slice(0, MAX_RESEARCH_RESULTS);
 
     return {
@@ -511,15 +438,12 @@ async function callTavilyResearchSearch(
           ? null
           : 'noUsableResults',
     };
-  } catch (error) {
+  } catch (_) {
     return {
       results: [],
       callUsed: 1,
       skipped: true,
-      reason:
-        error?.name === 'AbortError'
-          ? 'timeout'
-          : 'networkError',
+      reason: 'timeoutOrNetwork',
     };
   } finally {
     clearTimeout(timeoutId);
@@ -536,27 +460,19 @@ function buildResearchContext(results) {
 
   for (let i = 0; i < results.length; i += 1) {
     const item = results[i];
-    const imageLines = item.images.length
-      ? item.images
-          .map(
-            (image, imageIndex) =>
-              `Gambar ${imageIndex + 1}: ${image.description || 'gambar dari sumber'} | ${image.url}`,
-          )
-          .join('\n')
-      : 'Tidak ada gambar yang terdeteksi dari sumber ini.';
+    const imageLines = (item.images || [])
+      .map((image, index) =>
+        `Gambar ${index + 1}: ${image.url}${image.description ? ` | ${image.description}` : ''}`,
+      )
+      .join('\n');
 
     const block = [
       `REFERENSI ${i + 1}`,
       `Judul: ${item.title}`,
       `URL: ${item.url}`,
-      `Ringkasan/isi hasil pencarian: ${item.content}`,
-      item.rawContent
-        ? `Potongan halaman sumber: ${item.rawContent}`
-        : '',
-      imageLines,
-    ]
-      .filter(Boolean)
-      .join('\n');
+      `Isi hasil pencarian: ${item.content}`,
+      imageLines ? `GAMBAR SUMBER:\n${imageLines}` : 'GAMBAR SUMBER: tidak ditemukan',
+    ].join('\n');
 
     if (total + block.length > MAX_RESEARCH_CONTEXT_CHARS) {
       break;
@@ -736,10 +652,9 @@ async function enrichQuestionsWithRealImages(
       break;
     }
 
-    // KASUS 1: soal belum memiliki visual sumber dan memang meminta foto objek nyata.
-    // Soal yang sudah memakai gambar dari referensi internet TIDAK dicari ulang.
+    // KASUS 1: soal butuh gambar stimulus (mis. "candi apa ini?")
+    // dan belum punya qImage (bukan clock/graph lokal).
     if (
-      !question.researchBacked &&
       question.needsImage &&
       !question.qImage &&
       question.imageHint
@@ -776,7 +691,6 @@ async function enrichQuestionsWithRealImages(
     // dipakai sebagai kata kunci pencarian yang lebih akurat daripada
     // cuma label opsi polos (mis. "Opsi A").
     if (
-      !question.researchBacked &&
       question.optionsAreImages &&
       Array.isArray(
         question.options,
@@ -2616,6 +2530,8 @@ function normalizeQuestion(
   raw,
   allowedTypes,
   currentMode,
+  researchResults = [],
+  researchRequired = false,
 ) {
   if (
     !raw ||
@@ -2677,6 +2593,19 @@ function normalizeQuestion(
         raw.blueprintNo,
       )
         ? raw.blueprintNo
+        : null,
+
+    sourceRef:
+      Number.isInteger(raw.sourceRef)
+        ? raw.sourceRef
+        : null,
+
+    useSourceImage:
+      Boolean(raw.useSourceImage),
+
+    sourceImageIndex:
+      Number.isInteger(raw.sourceImageIndex)
+        ? raw.sourceImageIndex
         : null,
 
     difficulty:
@@ -2939,209 +2868,340 @@ function normalizeQuestion(
         0,
         500,
       ),
+  };
 
-    sourceRef:
-      Number.isInteger(raw.sourceRef)
-        ? raw.sourceRef
-        : 0,
+  // ----------------------------------------------------------
+  // 🔥 JARING PENGAMAN MENYELURUH: cek SEMUA field teks bebas lainnya
+  // (bukan cuma "question" yang sudah dicek di atas) -- competency,
+  // explanation, answerVerification, analysisSummary, shortAnswer,
+  // readingText, cause, effect. Field-field ini SEMUA ditulis bebas
+  // oleh AI (bukan angka/enum terbatas), jadi SEMUA berisiko kena
+  // kebocoran JSON yang sama, di mapel/topik apa pun.
+  // ----------------------------------------------------------
 
-    sourceImageIndex:
-      Number.isInteger(raw.sourceImageIndex)
-        ? raw.sourceImageIndex
-        : -1,
+  const freeTextFieldsToCheck =
+    [
+      normalized.competency,
+      normalized.explanation,
+      normalized.answerVerification,
+      normalized.analysisSummary,
+      normalized.shortAnswer,
+      normalized.readingText,
+      normalized.cause,
+      normalized.effect,
+    ];
+
+  if (
+    freeTextFieldsToCheck.some(
+      (text) =>
+        hasLeakedJsonArtifact(
+          text,
+        ),
+    )
+  ) {
+    return null;
+  }
+
+  // ----------------------------------------------------------
+  // TYPE VALIDATION
+  // ----------------------------------------------------------
+
+  if (
+    type === 'multiple' &&
+    !validMultiple(
+      normalized,
+    )
+  ) {
+    return null;
+  }
+
+  if (
+    type === 'truefalse' &&
+    !validTrueFalse(
+      normalized,
+    )
+  ) {
+    return null;
+  }
+
+  // 🔥 FIX BUG NYATA: sebelumnya dicek pakai 'multiple_select'/
+  // 'short_answer' (pakai underscore) -- padahal frontend (AIGenerateQuiz.jsx
+  // TYPE_OPTIONS) selalu ngirim 'multiselect'/'shortanswer' (TANPA
+  // underscore). Karena string-nya gak pernah cocok, cabang validasi ini
+  // SELAMA INI gak pernah kena sama sekali -- bukan cuma soal ini,
+  // dampaknya lebih luas: SUPPORTED_TYPES (lihat definisinya di atas)
+  // juga masih pakai ejaan lama ini, jadi tipe "Pilih Lebih dari Satu"
+  // dan "Isian Singkat" yang guru centang DIAM-DIAM DIBUANG di tahap
+  // filter allowedTypes, sebelum sempat sampai ke titik ini sama sekali.
+  if (
+    type === 'multiselect' &&
+    !validMultipleSelect(
+      normalized,
+    )
+  ) {
+    return null;
+  }
+
+  if (
+    type === 'shortanswer' &&
+    !validShortAnswer(
+      normalized,
+    )
+  ) {
+    return null;
+  }
+
+  // 🔥 BARU: 3 tipe ini sebelumnya masuk daftar "diizinkan" tapi gak
+  // pernah divalidasi strukturnya sama sekali -- soal apa pun dengan
+  // tipe ini otomatis LOLOS walau field pendukungnya (matchingPairs,
+  // subQuestions, isCauseTrue/isEffectTrue) kosong/gak ada. Sekarang
+  // divalidasi juga, konsisten dengan tipe lain.
+  if (
+    type === 'causeeffect' &&
+    !validCauseEffect(
+      normalized,
+    )
+  ) {
+    return null;
+  }
+
+  if (
+    type === 'matching' &&
+    !validMatching(
+      normalized,
+    )
+  ) {
+    return null;
+  }
+
+  if (
+    type === 'reading' &&
+    !validReading(
+      normalized,
+    )
+  ) {
+    return null;
+  }
+
+  // ----------------------------------------------------------
+  // RESEARCH SOURCE VALIDATION
+  // ----------------------------------------------------------
+
+  let selectedSource = null;
+  let selectedSourceImage = null;
+
+  if (researchRequired) {
+    if (
+      !Number.isInteger(normalized.sourceRef) ||
+      normalized.sourceRef < 1 ||
+      normalized.sourceRef > researchResults.length
+    ) {
+      return null;
+    }
+
+    selectedSource = researchResults[normalized.sourceRef - 1];
+    if (!selectedSource) {
+      return null;
+    }
+
+    if (
+      normalized.useSourceImage
+    ) {
+      const index = Number.isInteger(normalized.sourceImageIndex)
+        ? normalized.sourceImageIndex
+        : 0;
+      selectedSourceImage =
+        Array.isArray(selectedSource.images)
+          ? selectedSource.images[index] || null
+          : null;
+
+      // Soal bergambar dalam mode riset TIDAK BOLEH memakai gambar acak.
+      // Kalau sumber tidak menyediakan gambar yang bisa dipakai, butir ditolak.
+      if (!selectedSourceImage?.url) {
+        return null;
+      }
+    }
+  }
+
+  // ----------------------------------------------------------
+  // LOCAL VISUAL
+  // ----------------------------------------------------------
+
+  let qImage;
+
+  let visualKind =
+    'none';
+
+  if (
+    !selectedSourceImage &&
+    normalized.clock
+  ) {
+    qImage =
+      buildClockSvg(
+        normalized.clock,
+      );
+
+    visualKind =
+      'clock';
+  } else if (
+    !selectedSourceImage &&
+    normalized.graph
+  ) {
+    qImage =
+      buildGraphSvg(
+        normalized.graph,
+      );
+
+    visualKind =
+      'graph';
+  } else if (
+    !selectedSourceImage &&
+    normalized.circle
+  ) {
+    qImage =
+      buildCircleSvg(
+        normalized.circle,
+      );
+
+    visualKind =
+      'circle';
+  } else if (
+    !selectedSourceImage &&
+    normalized.shape
+  ) {
+    qImage =
+      buildShapeSvg(
+        normalized.shape,
+      );
+
+    visualKind =
+      'shape';
+  }
+
+  if (
+    !qImage &&
+    selectedSourceImage?.url
+  ) {
+    qImage = selectedSourceImage.url;
+    visualKind = 'source';
+  }
+
+  return {
+    type:
+      normalized.type,
+
+    blueprintNo:
+      normalized.blueprintNo,
+
+    difficulty:
+      normalized.difficulty,
+
+    competency:
+      normalized.competency,
+
+    question:
+      normalized.question,
+
+    options:
+      normalized.options,
+
+    optionImages:
+      normalized.optionImages,
+
+    optionsAreImages:
+      normalized.optionsAreImages,
+
+    correct:
+      normalized.correct,
+
+    correctAnswers:
+      normalized.correctAnswers,
+
+    statements:
+      normalized.statements,
+
+    shortAnswer:
+      normalized.shortAnswer,
+
+    readingText:
+      normalized.readingText,
+
+    // 🔥 BARU: field-field yang sebelumnya gak pernah diteruskan ke
+    // output final -- tanpa ini, walau normalizeQuestion sudah
+    // mengekstraknya, ManageQuiz.jsx tetap gak akan pernah menerimanya.
+    subQuestions:
+      normalized.subQuestions,
+
+    matchingPairs:
+      normalized.matchingPairs,
+
+    isCauseTrue:
+      normalized.isCauseTrue,
+
+    isEffectTrue:
+      normalized.isEffectTrue,
+
+    cause:
+      normalized.cause,
+
+    effect:
+      normalized.effect,
+
+    explanation:
+      normalized.explanation,
+
+    answerVerification:
+      normalized.answerVerification,
+
+    analysisSummary:
+      normalized.analysisSummary,
+
+    readingSource:
+      normalized.readingSource,
+
+    qImage,
+
+    needsImage:
+      Boolean(
+        normalized.needsImage ||
+          normalized.clock ||
+          normalized.graph ||
+          normalized.circle ||
+          normalized.shape,
+      ),
+
+    imageHint:
+      normalized.imageHint,
+
+    visualRequired:
+      Boolean(qImage),
+
+    visualKind,
 
     sourceTitle:
-      cleanText(raw.sourceTitle).slice(0, 300),
+      selectedSource?.title ||
+      'Blueprint Gemilang',
 
     sourceUrl:
-      /^https?:\/\/\S+$/i.test(cleanText(raw.sourceUrl))
-        ? cleanText(raw.sourceUrl).slice(0, 500)
-        : '',
-
-    researchBacked:
-      /^https?:\/\/\S+$/i.test(cleanText(raw.sourceUrl)),
-
-    sourceQImage:
+      selectedSource?.url ||
       '',
 
-    visualKind: '',
+    researchBacked:
+      Boolean(selectedSource),
 
-    imageSource: null,
+    sourceRef:
+      normalized.sourceRef,
+
+    sourceImageIndex:
+      normalized.sourceImageIndex,
+
+    sourceImageUrl:
+      selectedSourceImage?.url ||
+      '',
 
     sourceMode:
       currentMode,
   };
-}
-
-function chooseBestResearchRef(questionText, results, requestedRef = 0) {
-  if (!Array.isArray(results) || !results.length) {
-    return 0;
-  }
-
-  if (
-    Number.isInteger(requestedRef) &&
-    requestedRef >= 1 &&
-    requestedRef <= results.length
-  ) {
-    return requestedRef;
-  }
-
-  const questionTokens = tokenSet(questionText);
-  if (!questionTokens.size) {
-    return 1;
-  }
-
-  let bestIndex = 0;
-  let bestScore = -1;
-
-  for (let i = 0; i < results.length; i += 1) {
-    const resultTokens = tokenSet(
-      `${results[i].title} ${results[i].content} ${results[i].rawContent || ''}`,
-    );
-    let overlap = 0;
-    for (const token of questionTokens) {
-      if (resultTokens.has(token)) {
-        overlap += 1;
-      }
-    }
-
-    const score =
-      overlap /
-      Math.max(questionTokens.size, 1) +
-      (Number(results[i].score) || 0) * 0.15;
-
-    if (score > bestScore) {
-      bestScore = score;
-      bestIndex = i;
-    }
-  }
-
-  return bestIndex + 1;
-}
-
-function chooseBestSourceImageIndex(
-  questionText,
-  images,
-  requestedIndex = -1,
-) {
-  if (!Array.isArray(images) || !images.length) {
-    return -1;
-  }
-
-  if (
-    Number.isInteger(requestedIndex) &&
-    requestedIndex >= 0 &&
-    requestedIndex < images.length
-  ) {
-    return requestedIndex;
-  }
-
-  if (images.length === 1) {
-    return 0;
-  }
-
-  const questionTokens = tokenSet(questionText);
-  if (!questionTokens.size) {
-    return -1;
-  }
-
-  let bestIndex = -1;
-  let bestScore = 0;
-
-  for (let i = 0; i < images.length; i += 1) {
-    const imageTokens = tokenSet(
-      images[i]?.description || '',
-    );
-
-    if (!imageTokens.size) {
-      continue;
-    }
-
-    let overlap = 0;
-    for (const token of questionTokens) {
-      if (imageTokens.has(token)) {
-        overlap += 1;
-      }
-    }
-
-    const score = overlap / Math.max(questionTokens.size, 1);
-    if (score > bestScore) {
-      bestScore = score;
-      bestIndex = i;
-    }
-  }
-
-  return bestIndex;
-}
-
-function attachResearchSource(
-  normalized,
-  raw,
-  researchResults,
-) {
-  const sourceRef = chooseBestResearchRef(
-    normalized.question,
-    researchResults,
-    Number.isInteger(raw?.sourceRef)
-      ? raw.sourceRef
-      : 0,
-  );
-
-  if (!sourceRef) {
-    return normalized;
-  }
-
-  const source = researchResults[sourceRef - 1];
-  if (!source) {
-    return normalized;
-  }
-
-  normalized.sourceRef = sourceRef;
-  normalized.sourceTitle = source.title;
-  normalized.sourceUrl = source.url;
-  normalized.researchBacked = true;
-
-  const wantsSourceImage =
-    Boolean(
-      normalized.needsImage ||
-      normalized.clock ||
-      normalized.graph ||
-      normalized.circle ||
-      normalized.shape,
-    );
-
-  const requestedImageIndex = Number.isInteger(
-    raw?.sourceImageIndex,
-  )
-    ? raw.sourceImageIndex
-    : -1;
-
-  const imageIndex = chooseBestSourceImageIndex(
-    normalized.question,
-    source.images,
-    requestedImageIndex,
-  );
-
-  if (
-    wantsSourceImage &&
-    imageIndex >= 0 &&
-    source.images[imageIndex]
-  ) {
-    normalized.sourceQImage = source.images[imageIndex].url;
-    normalized.visualRequired = true;
-    normalized.visualKind = 'source';
-    normalized.imageSource = {
-      url: source.images[imageIndex].url,
-      fetchedVia: 'tavily-research-source',
-      sourceRef,
-      sourceImageIndex: imageIndex,
-    };
-    normalized.sourceImageIndex = imageIndex;
-  } else {
-    normalized.sourceImageIndex = -1;
-  }
-
-  return normalized;
 }
 
 // ============================================================
@@ -3253,37 +3313,35 @@ function buildSystemPrompt({
 
     'ATURAN MUTLAK:',
 
-    '1. REFERENSI INTERNET di prompt adalah sumber UTAMA untuk membuat soal. Setiap soal WAJIB berasal dari satu referensi yang paling relevan, lalu DITULIS ULANG/DIADAPTASI menjadi soal baru.',
+    '1. REFERENSI INTERNET adalah SUMBER UTAMA. Setiap soal WAJIB ditulis ulang/adaptasi dari salah satu REFERENSI yang diberikan, bukan dibuat dari pengetahuan umum model.',
 
-    '2. Jangan mengaku melakukan browsing sendiri. Kamu menerima hasil pencarian yang sudah dikumpulkan server.',
+    '2. Jangan mengaku browsing sendiri. Server sudah memberikan hasil riset beserta nomor REFERENSI 1..N.',
 
-    '3. Jangan mengarang URL, judul sumber, atau gambar sumber. Untuk setiap soal, isi sourceRef dengan nomor REFERENSI yang benar-benar menjadi dasar soal tersebut. sourceRef WAJIB berupa bilangan 1 sampai jumlah referensi.',
+    '3. Setiap soal WAJIB mencantumkan sourceRef yang menunjuk ke REFERENSI yang benar-benar menjadi dasar soal. Jangan mengarang sourceRef, URL, judul, atau isi sumber.',
 
-    '4. Soal sumber TIDAK BOLEH disalin kata-per-kata. Tulis ulang dengan perubahan konteks, angka, nama, susunan kalimat, dan pilihan jawaban, tetapi pertahankan kompetensi, pola penalaran, bentuk stimulus, dan tingkat kesulitan yang setara.',
+    '4. Adaptasi berarti mempertahankan kompetensi, struktur penalaran, konteks asesmen, bentuk stimulus, dan tingkat kesulitan sumber. Jangan membuat soal yang hanya kebetulan satu topik.',
 
-    '5. Jika REFERENSI memiliki gambar yang relevan dengan soal sumber, WAJIB pertahankan gambar tersebut. Isi sourceImageIndex dengan indeks gambar (mulai 0) dari REFERENSI itu. Jangan memilih gambar yang hanya berupa logo, ikon, atau dekorasi. Jika sumber memiliki beberapa gambar dan kamu tidak yakin mana yang menjadi stimulus soal, isi sourceImageIndex dengan -1 dan gunakan visual lokal hanya bila benar-benar diperlukan.',
+    '5. JANGAN mengubah data visual pada gambar sumber bila memakai useSourceImage=true. Angka, label, posisi, bentuk, dan informasi pada gambar harus tetap cocok dengan pertanyaan.',
 
-    '6. Jika gambar sumber tidak relevan/tersedia, gunakan visual JSON lokal (graph/circle/shape/clock) hanya jika memang diperlukan secara matematis. Jangan mencari foto acak untuk menggantikan diagram sumber.',
+    '6. Setiap soal harus mempunyai blueprintNo.',
 
-    '7. Setiap soal harus mempunyai blueprintNo.',
+    '7. Setiap blueprintNo hanya boleh digunakan satu kali.',
 
-    '8. Setiap blueprintNo hanya boleh digunakan satu kali.',
+    '8. Ikuti difficulty dari blueprint.',
 
-    '9. Ikuti difficulty dari blueprint.',
+    '9. Ikuti competency dari blueprint.',
 
-    '10. Ikuti competency dari blueprint.',
+    '10. Untuk multiple hanya satu jawaban benar.',
 
-    '11. Untuk multiple hanya satu jawaban benar.',
+    '11. Periksa kembali semua perhitungan angka.',
 
-    '12. Periksa kembali semua perhitungan angka.',
+    '12. Jangan membuat pilihan jawaban yang ambigu.',
 
-    '13. Jangan membuat pilihan jawaban yang ambigu.',
+    '13. Pembahasan harus menjelaskan alasan jawaban.',
 
-    '14. Pembahasan harus menjelaskan alasan jawaban.',
+    '14. Jangan menggunakan Markdown dalam output.',
 
-    '15. Jangan menggunakan Markdown dalam output.',
-
-    '16. Jangan memberikan percakapan tambahan.',
+    '15. Jangan memberikan percakapan tambahan.',
 
     // 🔥 BARU: penekanan Bahasa Indonesia MUTLAK -- ditambah setelah
     // laporan nyata AI keluar Bahasa Inggris di tengah kuis Bahasa
@@ -3291,14 +3349,14 @@ function buildSystemPrompt({
     // Matematika TKA kelas 9 SMP). Ditaruh sebagai ATURAN MUTLAK
     // bernomor, bukan cuma disebut sekilas, biar bobotnya jelas setara
     // sama aturan lain yang harus dipatuhi.
-    '17. SELURUH teks (question, options, explanation, statements, cause, effect, readingText, subQuestions, dll) WAJIB 100% Bahasa Indonesia baku -- KECUALI notasi matematika standar (mis. "7³", "x²", angka, simbol operasi) dan istilah teknis yang memang lazim dipakai apa adanya (mis. "HOTS"). DILARANG MUTLAK bikin soal atau pilihan jawaban dalam Bahasa Inggris.',
+    '16. SELURUH teks (question, options, explanation, statements, cause, effect, readingText, subQuestions, dll) WAJIB 100% Bahasa Indonesia baku -- KECUALI notasi matematika standar (mis. "7³", "x²", angka, simbol operasi) dan istilah teknis yang memang lazim dipakai apa adanya (mis. "HOTS"). DILARANG MUTLAK bikin soal atau pilihan jawaban dalam Bahasa Inggris.',
 
     // 🔥 BARU: penekanan level kesulitan sesuai jenjang -- ditambah
     // setelah laporan nyata soal level SD ("berapa hasil 7+5?") muncul
     // untuk kuis kelas 9 SMP HOTS.
-    '18. Soal WAJIB sesuai jenjang kelas yang diminta -- soal kelas 9 SMP harus setara materi kurikulum kelas 9 SMP, BUKAN materi kelas yang jauh lebih rendah (mis. penjumlahan dasar, perkalian 1 digit) walau ditandai "Easy". "Easy" berarti bagian TERMUDAH dari materi kelas tersebut, BUKAN materi jenjang yang berbeda.',
+    '17. Soal WAJIB sesuai jenjang kelas yang diminta -- soal kelas 9 SMP harus setara materi kurikulum kelas 9 SMP, BUKAN materi kelas yang jauh lebih rendah (mis. penjumlahan dasar, perkalian 1 digit) walau ditandai "Easy". "Easy" berarti bagian TERMUDAH dari materi kelas tersebut, BUKAN materi jenjang yang berbeda.',
 
-    '19. Untuk mapel Matematika, gunakan operasi/rumus yang PRESIS dan bisa dihitung manual -- verifikasi ulang hasil perhitungan sebelum menuliskannya di "correct"/"explanation", jangan asal tebak angka.',
+    '18. Untuk mapel Matematika, gunakan operasi/rumus yang PRESIS dan bisa dihitung manual -- verifikasi ulang hasil perhitungan sebelum menuliskannya di "correct"/"explanation", jangan asal tebak angka.',
 
     '',
 
@@ -3306,7 +3364,10 @@ function buildSystemPrompt({
 
     '{"meta":true}',
 
-    '{"type":"multiple","blueprintNo":1,"difficulty":"Easy","competency":"...","question":"...","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"...","sourceRef":1,"sourceImageIndex":0}',
+    'Wajib untuk mode riset: sourceRef adalah nomor REFERENSI 1..N. useSourceImage=true HANYA jika soal memang memakai gambar dari sumber tersebut. Jika true, sourceImageIndex adalah indeks gambar 0-based dari daftar GAMBAR SUMBER.',
+
+
+    '{"type":"multiple","blueprintNo":1,"difficulty":"Easy","competency":"...","question":"...","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
 
     '',
 
@@ -3387,7 +3448,7 @@ function buildSystemPrompt({
 
     '6. DIAGRAM ABSTRAK LAIN yang BUKAN grafik/lingkaran/bangun datar/jam (pohon peluang, diagram Venn, bagan alur, garis bilangan, dll) -> JELASKAN LENGKAP di teks "question" itu sendiri (semua angka/label relevan disebutkan di kalimat soal). JANGAN pakai "needsImage" buat ini.',
 
-    '7. Jika sourceRef memiliki Gambar sumber yang relevan, gunakan gambar sumber tersebut lewat sourceImageIndex. Jangan mencari gambar baru untuk menggantikannya.',
+    '7. "needsImage"+"imageHint" HANYA untuk FOTO OBJEK/TEMPAT/MAKHLUK NYATA yang BENERAN ada fotonya di dunia (mis. "Candi Prambanan", "ayam jantan", "Menara Eiffel"). Kalau ragu -> PILIH ATURAN 1-6, JANGAN needsImage.',
 
     '8. PILIHAN JAWABAN BERUPA GAMBAR: kalau soal cocok punya 4 pilihan jawaban berbentuk GAMBAR (bukan teks) -- misalnya "manakah gambar yang menunjukkan segitiga siku-siku?" dengan 4 pilihan gambar bangun berbeda -- set "optionsAreImages":true dan isi "optionImages" dengan 4 deskripsi singkat (Bahasa Inggris) buat tiap opsi, SEJAJAR urutannya dengan "options". Pakai ini SESEKALI kalau memang relevan dengan topik & tipe soal "multiple" -- jangan dipaksakan di semua soal.',
 
@@ -3477,21 +3538,21 @@ function buildUserPrompt({
     'REFERENSI INTERNET YANG SUDAH DICARI SERVER:',
 
     researchContext ||
-      'Tidak ada referensi internet yang tersedia. Jika referensi kosong karena pencarian gagal, tetap buat soal dengan aturan umum tanpa mengaku berbasis sumber internet.',
+      'Tidak ada referensi internet yang tersedia. Jangan mengarang adanya sumber.',
 
     '',
 
     'ATURAN PENGGUNAAN REFERENSI:',
 
-    'Setiap blueprint harus memilih SATU REFERENSI yang paling relevan. Nomornya wajib ditulis pada field sourceRef.',
+    'REFERENSI DI ATAS BUKAN SEKADAR INSPIRASI. Setiap butir WAJIB memiliki dasar yang jelas pada salah satu referensi tersebut.',
 
-    'Tulis ulang/ADAPTASI soal sumber. DILARANG copy-paste kalimat sumber secara utuh.',
+    'JANGAN membuat soal baru dari pengetahuan umum jika tidak ada referensi yang cocok. Bila tidak ada referensi yang benar-benar relevan, jangan mengisi butir tersebut.',
 
-    'Pertahankan kompetensi, struktur penalaran, jenis stimulus, hubungan data, dan karakter kesulitan dari soal sumber. Ubah konteks, angka, nama, dan redaksi agar menjadi soal baru.',
+    'Tulis ulang/adaptasi, jangan copy-paste. Pertahankan kompetensi, struktur penalaran, konteks asesmen, dan tingkat kesulitan sumber.',
 
-    'Jika referensi memiliki gambar yang relevan, gunakan sourceImageIndex yang menunjuk ke gambar pada REFERENSI yang dipilih. Gambar harus menjadi bagian dari soal, bukan dekorasi.',
+    'Untuk soal bergambar: pilih sourceRef dan, bila gambar sumber dipakai, set useSourceImage=true serta sourceImageIndex yang sesuai. JANGAN memakai gambar hasil pencarian gambar terpisah yang tidak berasal dari referensi soal.',
 
-    'Jangan menulis sourceTitle/sourceUrl sembarangan. Server akan menggantinya berdasarkan sourceRef yang dipilih.',
+    'Bila gambar sumber mengandung angka/label penting, jangan mengubah angka/label pada soal hasil adaptasi kecuali kamu membuat visual terstruktur yang benar-benar sama dengan data baru dan field visual memang mendukungnya.',
 
     '',
 
@@ -5023,10 +5084,7 @@ export default async function handler(
   // TETAP seperti sebelumnya, gak ada browsing, cepat & hemat token.
   // Lihat penjelasan lengkap di header file soal kenapa ini dipisah.
   const enableBrowserSearch =
-    false;
-
-  // Riset web sekarang dilakukan server-side melalui Tavily pada SEMUA mode.
-  // Flag lama tetap dipertahankan hanya agar jalur prompt/provider tidak berubah. 
+    currentMode === 'prediction';
 
   // ==========================================================
   // 1.5. RISET REFERENSI SOAL INTERNET (AMAN & TERBATAS)
@@ -5052,6 +5110,7 @@ export default async function handler(
           kelas,
           year: targetYear,
           hotsLevel,
+          blueprint,
         }),
       );
 
@@ -5072,6 +5131,25 @@ export default async function handler(
     buildResearchContext(
       researchResults,
     );
+
+  // Untuk mode riset ujian, TIDAK ADA FALLBACK ke soal karangan bebas.
+  // Kalau sumber relevan tidak ditemukan, hentikan dengan error yang aman.
+  if (
+    !researchResults.length
+  ) {
+    return res
+      .status(424)
+      .json({
+        success: false,
+        error:
+          'Riset soal ujian tidak menemukan referensi yang dapat digunakan. Soal tidak dibuat agar tidak menghasilkan soal yang tidak ter-grounded.',
+        diagnostics: {
+          researchPerformed: false,
+          researchCallUsed,
+          researchSkippedReason,
+        },
+      });
+  }
 
   // ==========================================================
   // 2. PROMPT
@@ -5105,7 +5183,7 @@ export default async function handler(
   const maxTokens =
     computeMaxTokens(
       jumlah,
-      true,
+      enableBrowserSearch,
     );
 
   try {
@@ -5192,6 +5270,8 @@ export default async function handler(
         raw,
         allowedTypes,
         currentMode,
+        researchResults,
+        true,
       );
 
     if (!normalized) {
@@ -5204,16 +5284,6 @@ export default async function handler(
         ) + 1;
 
       continue;
-    }
-
-    // Ikatkan soal ke sumber internet nyata. Bila AI lupa sourceRef,
-    // server memilih referensi paling mirip berdasarkan teks yang tersedia.
-    if (researchResults.length > 0) {
-      attachResearchSource(
-        normalized,
-        raw,
-        researchResults,
-      );
     }
 
     // BLUEPRINT CHECK
@@ -5340,27 +5410,17 @@ export default async function handler(
   }
 
   // ==========================================================
-  // 6.5. ENRICH DENGAN GAMBAR ASLI (Tavily -- opsional)
+  // 6.5. SUMBER GAMBAR
   // ==========================================================
-
-  // 🔥 Sisakan ~10 detik di akhir buat sorting, menyusun JSON respons,
-  // dan pengiriman -- sisanya baru boleh dipakai cari gambar. Kalau
-  // pemanggilan AI tadi sudah makan banyak waktu, langkah ini otomatis
-  // dapat jatah kecil (atau dilewati), BUKAN bikin seluruh request
-  // mati kena batas platform.
-  const imageDeadlineAt =
-    requestStartedAt +
-    (maxDuration * 1000 -
-      10_000);
-
-  const imageEnrichResult =
-    await enrichQuestionsWithRealImages(
-      questions,
-      process.env
-        .TAVILY_API_KEY,
-      topic,
-      imageDeadlineAt,
-    );
+  // Dalam mode riset, gambar harus berasal dari referensi soal yang sama.
+  // TIDAK dilakukan pencarian gambar kedua karena itu dapat menghasilkan
+  // gambar yang tidak sesuai dengan stimulus soal.
+  const imageEnrichResult = {
+    imagesFetched: questions.filter((q) => q.visualKind === 'source').length,
+    tavilyCallsUsed: 0,
+    cappedByBudget: false,
+    cappedByTime: false,
+  };
 
   // ==========================================================
   // 7. SORT BY BLUEPRINT
