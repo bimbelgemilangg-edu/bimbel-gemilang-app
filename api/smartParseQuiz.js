@@ -8,20 +8,21 @@
 //   dari teks **bold**, dan menandai needsManualAnswer kalau tidak
 //   ketemu. Dipakai oleh WordImportQuiz.jsx.
 //
-// MODE 2 -- GAMBAR HALAMAN (BARU):
-//   Admin unggah PDF ke Bank Soal (lihat BankSoalImport.jsx). Tiap
-//   halaman DIRENDER JADI GAMBAR di browser admin, lalu gambar itu
-//   dikirim ke sini. AI "melihat" halaman lewat kemampuan visual
-//   Gemini, membaca soal APA ADANYA (verbatim -- BUKAN dimodifikasi),
-//   menghitung ulang jawaban yang benar, dan menandai area gambar
-//   (figureBBox) supaya bisa dipotong persis dari halaman asli.
+// MODE 2 -- JAWAB SOAL DARI CROP GAMBAR (BARU):
+//   Admin unggah PDF ke Bank Soal (lihat BankSoalImport.jsx). Soal
+//   DIPOTONG PER BUTIR di BROWSER, TANPA AI SAMA SEKALI -- deteksi
+//   posisi nomor soal dari teks asli PDF (bukan tebakan visual),
+//   persis logika yang sudah dipakai SmartImportPanel.jsx. Hasil
+//   potongan itu adalah CROP PIKSEL PERSIS dari halaman asli.
 //
-//   ⚠️ BEDA TUJUAN dengan generateQuizFromTopic.js yang metode ATM-nya
-//   SENGAJA memodifikasi angka/konteks. Di sini TUJUANNYA SEBALIKNYA:
-//   admin memilih menyimpan soal ASLI ke Bank Soal (keputusan eksplisit
-//   pemilik bimbel), jadi transkripsinya harus SETIA ke halaman aslinya.
-//   ATM baru dipakai NANTI kalau soal dari Bank Soal ini dipakai sebagai
-//   inspirasi membuat kuis baru -- itu fitur terpisah, belum dibangun.
+//   AI HANYA dipanggil untuk satu tugas kecil per butir: melihat crop
+//   itu dan menentukan JAWABAN YANG BENAR + pembahasan singkat --
+//   AI TIDAK PERNAH diminta menyalin ulang teks soal. Ini menghindari
+//   dua masalah sekaligus dari desain sebelumnya: (a) risiko salah
+//   transkripsi soal oleh AI, dan (b) respons kepotong di tengah pada
+//   halaman padat (karena sekarang setiap panggilan AI cuma menjawab
+//   SATU soal dengan keluaran pendek, bukan menyalin banyak soal
+//   sekaligus dalam satu respons besar).
 //
 // ⚠️ KENAPA DITAMBAHKAN DI FILE INI, BUKAN FILE BARU:
 // Project ini pakai paket Vercel Hobby yang dibatasi 12 Serverless
@@ -31,11 +32,19 @@
 // Menambah endpoint baru untuk kebutuhan yang MIRIP (sama-sama
 // "ubah dokumen sumber jadi soal terstruktur") jelas boros. Jadi mode
 // baru ini MENUMPANG di file yang sudah ada, dipilih lewat ada-
-// tidaknya field `pageImage` di body request -- bukan lewat file
+// tidaknya field `questionImage` di body request -- bukan lewat file
 // terpisah.
 // ============================================================
 
 export const config = { maxDuration: 60 };
+
+// 🔥 BARU: batas waktu untuk SATU KALI pemanggilan Gemini. Sebelumnya
+// file ini tidak punya timeout sama sekali -- kalau Gemini macet,
+// Vercel akan mematikan function ini paksa di detik ke-60 (maxDuration
+// di atas), dan admin dapat error mentah dari platform (bukan JSON
+// yang rapi) yang membingungkan. Disisakan headroom 10 detik dari
+// maxDuration untuk proses parsing/response sesudahnya.
+const GEMINI_TIMEOUT_MS = 50_000;
 
 const QUESTION_TYPES = ["multiple", "truefalse", "multiselect", "reading", "shortanswer", "causeeffect", "matching"];
 const QUESTIONS_PER_CHUNK = 5; // jaga jawaban AI tetap pendek biar tidak terpotong
@@ -83,11 +92,51 @@ function splitIntoChunks(text) {
 // ============================================================
 // Ekstrak objek JSON yang lengkap saja, buang yang terpotong di akhir
 // ============================================================
+// ============================================================
+// Ekstrak objek soal yang lengkap dari respons AI, WALAU respons itu
+// terpotong di tengah (kehabisan jatah token).
+// ============================================================
+//
+// 🔥 FIX BUG NYATA: versi sebelumnya cuma menyelamatkan objek paling
+// LUAR yang menutup sempurna. Karena tiap soal dibungkus di dalam
+// {"questions":[...]}, begitu respons terpotong sebelum pembungkus
+// luar itu sempat ditutup, SEMUA soal ikut hilang -- termasuk soal-
+// soal yang sebenarnya sudah lengkap & valid di bagian AWAL respons.
+// Terbukti nyata pada halaman padat (mis. 8 soal trigonometri/limit
+// sekaligus): AI kehabisan token di tengah, dan halaman yang sebenarnya
+// penuh soal keluar sebagai "0 soal terbaca".
+//
+// Sekarang: coba parse SETIAP `{...}` yang menutup sempurna DI MANA
+// PUN posisinya (bukan cuma yang paling luar), lalu simpan yang
+// benar-benar berhasil di-parse DAN punya field "question" berupa
+// teks. Soal-soal yang sudah lengkap sebelum titik potong tetap
+// terselamatkan, walau soal terakhir yang kepotong tetap hilang (itu
+// memang tidak bisa diselamatkan -- datanya sendiri tidak lengkap).
 function extractCompleteObjects(rawText) {
   const cleaned = rawText.replace(/```json|```/g, '').trim();
   const objects = [];
-  let depth = 0;
-  let objStart = -1;
+
+  // 🔥 PENTING: dedup berdasar ISI teks soal, BUKAN referensi objek --
+  // objek yang sama bisa "ditemukan" dua kali (sekali sebagai objek
+  // individual saat `}` penutupnya sendiri terlewati, sekali lagi
+  // dari dalam array "questions" milik pembungkus luar kalau
+  // pembungkus itu KEBETULAN juga sempat menutup sempurna). Dua-duanya
+  // adalah JSON.parse() TERPISAH, jadi walau isinya identik, objeknya
+  // adalah instance yang berbeda -- perbandingan referensi (misal
+  // array.includes(objek)) TIDAK PERNAH menganggapnya sama, dan tanpa
+  // dedup berbasis isi ini soal akan tampil dobel di kasus normal
+  // (respons yang TIDAK terpotong).
+  const seenQuestionTexts = new Set();
+
+  const pushIfNew = (parsed) => {
+    if (!parsed || typeof parsed.question !== 'string') return;
+    const key = parsed.question.trim();
+    if (!key || seenQuestionTexts.has(key)) return;
+    seenQuestionTexts.add(key);
+    objects.push(parsed);
+  };
+
+  const openStack = [];
   let inString = false;
   let escapeNext = false;
 
@@ -99,27 +148,31 @@ function extractCompleteObjects(rawText) {
     if (inString) continue;
 
     if (ch === '{') {
-      if (depth === 0) objStart = i;
-      depth++;
+      openStack.push(i);
     } else if (ch === '}') {
-      depth--;
-      if (depth === 0 && objStart !== -1) {
-        const candidate = cleaned.slice(objStart, i + 1);
-        try {
-          const parsed = JSON.parse(candidate);
-          // Objek "questions wrapper" {"questions":[...]} ATAU objek soal langsung
-          if (Array.isArray(parsed.questions)) {
-            objects.push(...parsed.questions);
-          } else if (parsed.question) {
-            objects.push(parsed);
-          }
-        } catch (e) {
-          // objek ini rusak, lewati saja, jangan gagalkan semua
+      const start = openStack.pop();
+      if (start === undefined) continue;
+
+      const candidate = cleaned.slice(start, i + 1);
+      try {
+        const parsed = JSON.parse(candidate);
+        if (parsed && typeof parsed.question === 'string') {
+          // Objek soal individual -- lolos walau pembungkus luarnya
+          // tidak pernah menutup.
+          pushIfNew(parsed);
+        } else if (parsed && Array.isArray(parsed.questions)) {
+          // Pembungkus yang KEBETULAN sempat menutup sempurna (kasus
+          // tidak terpotong) -- ambil isinya; pushIfNew menjamin tidak
+          // dobel dengan yang sudah ditemukan lewat jalur individual.
+          for (const q of parsed.questions) pushIfNew(q);
         }
-        objStart = -1;
+      } catch (e) {
+        // Substring ini bukan JSON valid berdiri sendiri (mis. baru
+        // separuh soal) -- lewati, bukan berarti gagal total.
       }
     }
   }
+
   return objects;
 }
 
@@ -127,270 +180,261 @@ function extractCompleteObjects(rawText) {
 // PEMANGGIL GEMINI -- TEKS (mode lama, tidak diubah)
 // ============================================================
 async function callGemini(systemPrompt, userText, modelName) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': process.env.GEMINI_API_KEY,
-    },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: systemPrompt }] },
-      contents: [{ role: 'user', parts: [{ text: userText.slice(0, 4000) }] }],
-      generationConfig: {
-        temperature: 0.1, // ini tugas parsing/ekstraksi, bukan kreatif — presisi maksimal
-        maxOutputTokens: 4096,
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': process.env.GEMINI_API_KEY,
       },
-    }),
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`GEMINI_HTTP_${response.status}: ${errText}`);
-  }
-  return response.json();
-}
-
-// ============================================================
-// 🔥 BARU: PEMANGGIL GEMINI -- GAMBAR (mode baca halaman PDF)
-// ============================================================
-// Berbeda dari callGemini() di atas: mengirim GAMBAR (inline_data)
-// sebagai bagian dari `contents`, bukan cuma teks. Gemini Flash sejak
-// generasi 2.x sudah multimodal secara native, jadi tidak perlu model
-// terpisah untuk ini -- daftar GEMINI_MODELS yang sama tetap dipakai.
-async function callGeminiVision(systemPrompt, imageDataUrl, modelName) {
-  // imageDataUrl formatnya "data:image/jpeg;base64,AAAA..." -- pisahkan
-  // mime type dari payload base64-nya.
-  const match = /^data:([^;]+);base64,(.+)$/.exec(imageDataUrl || '');
-
-  if (!match) {
-    throw new Error('Format gambar halaman tidak valid (bukan data URL base64).');
-  }
-
-  const [, mimeType, base64Data] = match;
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': process.env.GEMINI_API_KEY,
-    },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: systemPrompt }] },
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            { inline_data: { mime_type: mimeType, data: base64Data } },
-            {
-              text:
-                'Baca halaman ini dan hasilkan JSON sesuai instruksi di system prompt. Hanya JSON, tanpa penjelasan lain.',
-            },
-          ],
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ role: 'user', parts: [{ text: userText.slice(0, 4000) }] }],
+        generationConfig: {
+          temperature: 0.1, // ini tugas parsing/ekstraksi, bukan kreatif — presisi maksimal
+          maxOutputTokens: 4096,
         },
-      ],
-      generationConfig: {
-        temperature: 0.1,
-        // 🔥 Lebih besar dari mode teks (4096) karena: (a) satu halaman
-        // bisa berisi beberapa soal panjang dengan pembahasan, dan
-        // (b) model Gemini generasi 3 TIDAK BISA mematikan mode
-        // "berpikir" sepenuhnya -- token berpikir itu diambil dari
-        // jatah yang sama, jadi harus disediakan ruang ekstra supaya
-        // tidak terpotong di tengah jalan (pelajaran yang sama persis
-        // dengan yang sudah diperbaiki di generateQuizFromTopic.js).
-        maxOutputTokens: 8192,
-      },
-    }),
-  });
+      }),
+      signal: controller.signal,
+    });
 
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`GEMINI_HTTP_${response.status}: ${errText}`);
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`GEMINI_HTTP_${response.status}: ${errText}`);
+    }
+    return response.json();
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new Error(`GEMINI_TIMEOUT setelah ${GEMINI_TIMEOUT_MS}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
-  return response.json();
 }
 
 // ============================================================
-// 🔥 BARU: SYSTEM PROMPT UNTUK BACA HALAMAN (mode gambar)
 // ============================================================
-// SENGAJA BERBEDA dari prompt di parseChunk() di bawah: prompt itu
-// untuk teks yang SUDAH rapi (hasil ketik ulang guru di Word), di
-// sini AI membaca LANGSUNG dari gambar halaman cetakan/scan asli --
-// perlu instruksi tata letak kolom, transkripsi presisi, dan
-// perhitungan ulang jawaban (karena buku soal cetak jarang menandai
-// kunci jawaban langsung di halaman soalnya).
-function buildVisionPagePrompt() {
-  return `Kamu adalah pembaca dokumen soal ujian untuk Bank Soal Bimbel Gemilang.
+// 🔥 BARU: PEMANGGIL GEMINI -- GAMBAR (mode jawab soal per butir)
+// ============================================================
+// ⚠️ PERUBAHAN ARSITEKTUR PENTING (Agustus 2026): versi sebelumnya
+// meminta AI membaca SATU HALAMAN PENUH dan mentranskripsi ulang
+// SEMUA soal di halaman itu sekaligus jadi teks. Itu ternyata jadi
+// sumber DUA masalah sekaligus:
+//   1. Respons AI kepotong di tengah pada halaman padat (banyak soal
+//      + LaTeX + pembahasan) karena keluaran yang diminta terlalu
+//      besar untuk satu kali panggilan.
+//   2. AI kadang salah membaca notasi matematika yang rumit --
+//      padahal untuk Bank Soal, soal yang tersimpan harus SETIA
+//      pada aslinya.
+//
+// Sekarang: PEMOTONGAN SOAL PER BUTIR dilakukan di BROWSER TANPA AI
+// SAMA SEKALI -- deteksi nomor soal dari posisi teks PDF asli (lihat
+// detectQuestionStarts di BankSoalImport.jsx, logikanya diporting
+// PERSIS dari SmartImportPanel.jsx yang sudah lama terbukti jalan di
+// project ini). Yang tersimpan sebagai qImage adalah CROP PIKSEL
+// PERSIS dari halaman asli -- tidak pernah "dibaca ulang" jadi teks,
+// jadi tidak mungkin salah transkripsi.
+//
+// AI HANYA dipanggil untuk SATU tugas kecil per butir: melihat crop
+// gambar itu dan menjawab "yang mana jawaban benar, dan kenapa" --
+// bukan menyalin ulang soalnya. Karena keluarannya kecil (satu objek
+// JSON pendek per panggilan, bukan banyak soal dibungkus jadi satu),
+// risiko kepotong di tengah jadi sangat kecil.
+async function callGeminiAnswerQuestion(imageDataUrls, modelName) {
+  // imageDataUrls: array data URL -- elemen pertama SELALU crop soal
+  // utama (berisi teks soal + label opsi A/B/C/D/E kalau opsinya
+  // teks). Elemen berikutnya (kalau ada) adalah crop opsi BERGAMBAR,
+  // diurutkan A, B, C, ... -- dipakai kalau soal jenis "pilih gambar
+  // yang benar" (opsi berupa gambar, bukan teks).
+  const imageParts = imageDataUrls
+    .map((dataUrl) => {
+      const match = /^data:([^;]+);base64,(.+)$/.exec(dataUrl || '');
+      if (!match) return null;
+      const [, mimeType, base64Data] = match;
+      return { inline_data: { mime_type: mimeType, data: base64Data } };
+    })
+    .filter(Boolean);
+
+  if (imageParts.length === 0) {
+    throw new Error('Tidak ada gambar soal yang valid untuk dianalisis.');
+  }
+
+  const hasImageOptions = imageDataUrls.length > 1;
+
+  const systemPrompt = `Kamu adalah pemeriksa jawaban soal ujian untuk Bank Soal Bimbel Gemilang.
 
 TUGAS:
-Baca SATU halaman dokumen soal (diberikan sebagai gambar), lalu ubah setiap butir soal pada halaman itu menjadi objek JSON terstruktur.
+Lihat gambar soal yang diberikan (crop asli dari buku cetak), lalu tentukan JAWABAN YANG BENAR dan tulis pembahasan singkat.
 
-PALING PENTING -- TRANSKRIPSI APA ADANYA:
-Tulis ulang teks soal dan pilihan jawaban PERSIS seperti yang tertulis di halaman. JANGAN mengubah angka, JANGAN mengganti konteks, JANGAN memperbaiki kalimat supaya "lebih bagus". Ini untuk arsip Bank Soal, bukan soal latihan baru -- yang dibutuhkan adalah SALINAN SETIA dari sumbernya, bukan versi kreatif.
+⚠️ PENTING -- INI BUKAN TUGAS MENYALIN SOAL:
+Kamu TIDAK PERLU dan TIDAK BOLEH menuliskan ulang teks soal atau pilihan jawabannya. Soal itu SUDAH tersimpan persis sebagai gambar. Tugasmu HANYA: hitung/nalar jawaban yang benar, lalu jelaskan singkat.
 
-Pengecualian SATU-SATUNYA: kalau ada bagian yang benar-benar tidak terbaca (buram, terpotong, tinta pudar), JANGAN MENGARANG -- tandai readingConfidence:"low" pada butir itu dan tetap tulis bagian yang terbaca apa adanya.
+${
+  hasImageOptions
+    ? 'Gambar PERTAMA adalah soal utama. Gambar-gambar SETELAHNYA adalah pilihan jawaban A, B, C, ... secara berurutan (masing-masing satu gambar terpisah) -- tentukan pilihan gambar MANA yang benar.'
+    : 'Gambar yang diberikan berisi soal DAN seluruh pilihan jawabannya (A, B, C, D, mungkin E) dalam satu gambar yang sama -- baca label hurufnya dari gambar itu untuk tahu ada berapa opsi.'
+}
 
-TATA LETAK:
-Halaman bisa berisi DUA KOLOM. Baca kolom KIRI dari atas ke bawah dulu, baru kolom KANAN -- JANGAN membaca menyilang antar kolom seperti membaca baris biasa.
+MENENTUKAN JAWABAN:
+Buku cetak biasanya tidak menandai kunci di halaman soal. Hitung/nalar sendiri berdasarkan pengetahuan akademik, seperti mengerjakan soal itu sendiri. Kalau ragu atau tidak yakin, tetap isi jawaban paling mungkin dan tandai readingConfidence:"low" -- JANGAN dikosongkan.
 
-NOMOR SOAL:
-Gunakan nomor soal PERSIS seperti yang tercetak di halaman (field "printedNumber"). Ini beda dari indeks array -- kalau halaman dimulai dari soal nomor 37, printedNumber butir pertama adalah 37, bukan 1.
+PEMBAHASAN:
+2-4 kalimat saja, langsung ke inti langkah pengerjaan. Jangan menjelaskan konsep dasar dari nol.
 
-MENENTUKAN JAWABAN BENAR:
-Buku soal cetak biasanya TIDAK menandai kunci jawaban di halaman soalnya. Kamu HARUS menghitung/menalar sendiri jawaban yang benar berdasarkan pengetahuan akademik, seperti mengerjakan soal itu sendiri. Kalau ragu antara dua opsi atau perhitungannya tidak bisa dipastikan dari informasi di halaman, tandai readingConfidence:"low" dan tetap isi correct dengan jawaban paling mungkin -- JANGAN dikosongkan.
+FORMAT OUTPUT -- HANYA JSON, TANPA MARKDOWN, TANPA PENJELASAN LAIN:
+{"optionCount": 4, "correct": 0, "explanation": "...", "readingConfidence": "high"}
 
-RUMUS MATEMATIKA:
-Tulis dengan LaTeX dibungkus \\\\( \\\\), contoh: \\\\(x^2 + 3x - 4 = 0\\\\), \\\\(\\\\frac{a}{b}\\\\), \\\\(\\\\sqrt{x+1}\\\\).
+"correct" wajib angka indeks (0 untuk opsi A), BUKAN huruf.
+"optionCount" wajib angka -- berapa banyak pilihan jawaban yang terlihat (biasanya 4 atau 5).
+"readingConfidence" wajib "high" atau "low".`;
 
-GAMBAR/DIAGRAM/TABEL DI DALAM SOAL:
-Kalau sebuah soal memuat gambar, diagram, grafik, atau tabel yang PENTING untuk menjawabnya, isi "figureBBox" dengan kotak area gambar itu dalam KOORDINAT TERNORMALISASI 0 sampai 1 relatif terhadap SELURUH halaman (bukan piksel): {"x":..,"y":..,"width":..,"height":..} di mana (x,y) adalah pojok kiri-atas kotak. Kalau soal tidak memuat gambar/tabel, jangan sertakan field ini sama sekali.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
 
-CAKUPAN TIPE SOAL (versi ini):
-Fokus pada soal PILIHAN GANDA (4-5 opsi, satu jawaban benar) -- itu bentuk paling umum di buku tryout. Kalau ada bentuk lain (esai, isian, dll) di halaman itu, tetap coba baca sebaik mungkin dengan field yang paling mendekati, tapi PRIORITASKAN akurasi soal pilihan ganda.
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': process.env.GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              ...imageParts,
+              {
+                text: 'Tentukan jawaban yang benar dan tulis pembahasan singkat sesuai instruksi. Hanya JSON.',
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.1,
+          // 🔥 Kecil dengan sengaja: keluaran yang diminta cuma satu
+          // objek pendek (optionCount, correct, explanation singkat,
+          // readingConfidence) -- BUKAN transkripsi soal penuh. Jatah
+          // sebesar ini sudah lebih dari cukup, dan justru membantu
+          // membatasi AI supaya tidak melebar menjelaskan panjang-
+          // panjang.
+          maxOutputTokens: 1024,
+        },
+      }),
+      signal: controller.signal,
+    });
 
-HALAMAN BUKAN SOAL:
-Kalau halaman ini sampul, daftar isi, kunci jawaban, atau kosong -- kembalikan array questions KOSONG. Jangan memaksakan membuat soal dari halaman semacam itu.
-
-FORMAT OUTPUT -- HANYA JSON, TANPA MARKDOWN, TANPA PENJELASAN:
-{"questions":[
-  {
-    "printedNumber": 37,
-    "question": "...",
-    "options": ["...","...","...","...","..."],
-    "correct": 0,
-    "explanation": "penjelasan langkah demi langkah sampai ke jawaban",
-    "figureBBox": {"x":0.05,"y":0.4,"width":0.4,"height":0.25},
-    "readingConfidence": "high"
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`GEMINI_HTTP_${response.status}: ${errText}`);
+    }
+    return response.json();
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new Error(`GEMINI_TIMEOUT setelah ${GEMINI_TIMEOUT_MS}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
-]}
-
-"correct" wajib angka indeks (0 untuk opsi pertama), BUKAN huruf "A"/"B"/dst.
-"readingConfidence" wajib "high" atau "low".
-Kalau soal tidak punya gambar, JANGAN sertakan field "figureBBox".`;
 }
 
 // ============================================================
-// 🔥 BARU: BACA SATU HALAMAN (mode gambar) DENGAN FALLBACK MODEL
+// 🔥 BARU: JAWAB SATU SOAL (crop gambar) DENGAN FALLBACK MODEL
 // ============================================================
-async function parsePageImage(imageDataUrl) {
-  const systemPrompt = buildVisionPagePrompt();
-
+async function answerQuestionFromImages(imageDataUrls) {
   let lastErr;
   for (const modelName of GEMINI_MODELS) {
     try {
-      const data = await callGeminiVision(systemPrompt, imageDataUrl, modelName);
+      const data = await callGeminiAnswerQuestion(imageDataUrls, modelName);
 
       const rawText =
         data.choices?.[0]?.message?.content ||
         data.candidates?.[0]?.content?.parts?.[0]?.text ||
         '{}';
 
+      const cleaned = rawText.replace(/```json|```/g, '').trim();
+
       try {
-        const cleaned = rawText.replace(/```json|```/g, '').trim();
         const parsed = JSON.parse(cleaned);
-        return Array.isArray(parsed.questions) ? parsed.questions : [];
+        return {
+          optionCount: Number.isInteger(parsed.optionCount) ? parsed.optionCount : 4,
+          correct: Number.isInteger(parsed.correct) ? parsed.correct : 0,
+          explanation: typeof parsed.explanation === 'string' ? parsed.explanation.trim() : '',
+          readingConfidence: parsed.readingConfidence === 'low' ? 'low' : 'high',
+        };
       } catch (e) {
-        // Kemungkinan terpotong -- selamatkan objek yang lengkap saja,
-        // sama seperti mode teks.
-        return extractCompleteObjects(rawText);
+        // Keluaran yang diminta di sini sengaja KECIL (lihat komentar
+        // di atas maxOutputTokens), jadi kegagalan parse di sini
+        // BUKAN soal kehabisan token seperti mode lama -- kemungkinan
+        // besar AI menambahkan teks di luar JSON. Coba tarik JSON
+        // pertama yang valid di dalam teksnya sebagai upaya terakhir.
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        if (match) {
+          try {
+            const parsed = JSON.parse(match[0]);
+            return {
+              optionCount: Number.isInteger(parsed.optionCount) ? parsed.optionCount : 4,
+              correct: Number.isInteger(parsed.correct) ? parsed.correct : 0,
+              explanation: typeof parsed.explanation === 'string' ? parsed.explanation.trim() : '',
+              readingConfidence: 'low',
+            };
+          } catch (e2) {
+            // lanjut ke model berikutnya
+          }
+        }
       }
     } catch (e) {
       lastErr = e;
-      console.error(`smartParseQuiz (vision) gagal pakai model ${modelName}:`, e.message);
-      // Lanjut ke model berikutnya di daftar (mis. kalau satu model
-      // ternyata 404/dipensiunkan) -- sama seperti mode teks.
+      console.error(`smartParseQuiz (answer) gagal pakai model ${modelName}:`, e.message);
     }
   }
 
-  console.error('Semua model gagal membaca halaman ini:', lastErr?.message);
-  throw lastErr || new Error('Semua model Gemini gagal membaca halaman ini.');
-}
-
-async function parseChunk(chunkText) {
-  const systemPrompt = `Kamu adalah parser soal ujian. Input berupa TEKS POLOS potongan dari PDF/Word (bisa berisi 1-5 soal saja), dengan aturan:
-- Teks yang dibungkus **seperti ini** artinya BOLD di dokumen asli.
-- Penanda "[[IMG:n]]" (n = angka) artinya ADA GAMBAR persis di posisi itu. Kamu TIDAK PERLU dan TIDAK BISA melihat isi gambarnya — cukup salin penanda itu APA ADANYA (utuh, termasuk tanda kurung sikunya) ke field questionImage kalau gambar itu bagian dari soal tersebut. JANGAN mengarang deskripsi gambar, JANGAN mengubah angka n di dalamnya.
-
-TUGAS:
-1. Pisahkan soal dari teks bukan-soal (judul, instruksi umum). Buang yang bukan soal.
-2. Tentukan type dari: ${QUESTION_TYPES.join(", ")}.
-3. Jika ada opsi bold, itu jawaban benar (needsManualAnswer:false, hapus tanda ** dari teks final). Jika tidak ada bold sama sekali di soal itu, correct:0, needsManualAnswer:true — JANGAN MENEBAK jawaban benar kalau tidak ada tanda bold, karena bisa salah dan menyesatkan siswa.
-4. Jika ada "[[IMG:n]]" tepat sebelum/di dalam soal, salin PERSIS penanda itu ke questionImage (contoh: "[[IMG:3]]"), lalu hapus penandanya dari teks soal akhir.
-5. JAWAB HANYA JSON valid, tanpa penjelasan, tanpa markdown fence.
-
-Format:
-{"questions":[{"type":"multiple","question":"...","questionImage":"","options":["...","...","...","..."],"correct":0,"correctAnswers":[],"needsManualAnswer":true,"statements":[],"readingText":"","subQuestions":[],"shortAnswer":"","cause":"","effect":"","isCauseTrue":true,"isEffectTrue":true,"matchingPairs":[]}]}`;
-
-  let lastErr;
-  for (const modelName of GEMINI_MODELS) {
-    try {
-      const data = await callGemini(systemPrompt, chunkText, modelName);
-      const rawText = data.choices?.[0]?.message?.content
-        || data.candidates?.[0]?.content?.parts?.[0]?.text
-        || "{}";
-
-      try {
-        const cleaned = rawText.replace(/```json|```/g, "").trim();
-        const parsed = JSON.parse(cleaned);
-        return parsed.questions || [];
-      } catch (e) {
-        // Kemungkinan terpotong — selamatkan objek yang lengkap saja
-        return extractCompleteObjects(rawText);
-      }
-    } catch (e) {
-      lastErr = e;
-      console.error(`smartParseQuiz gagal pakai model ${modelName}:`, e.message);
-      // Kalau kuota habis/model tidak ada, lanjut ke model berikutnya di daftar.
-      // Kalau error lain, tetap lanjut coba model berikutnya juga (chunk kecil, gak worth retry di model sama).
-    }
-  }
-  console.error("Semua model gagal untuk 1 chunk:", lastErr?.message);
-  return []; // chunk ini gagal total, dilewati saja, chunk lain tetap lanjut
+  // 🔥 PENTING: kalau AI benar-benar gagal total, JANGAN membuang
+  // soalnya (beda dari mode lama) -- soal tetap dikirim ke admin
+  // dengan jawaban placeholder yang WAJIB diisi manual. Kehilangan
+  // gambar soal yang sudah berhasil di-crop hanya karena AI-nya
+  // gagal itu pemborosan -- crop soalnya sendiri valid dan berharga.
+  console.error('Semua model gagal menjawab soal ini:', lastErr?.message);
+  return {
+    optionCount: 4,
+    correct: 0,
+    explanation: '',
+    readingConfidence: 'low',
+    needsManualAnswer: true,
+  };
 }
 
 // ============================================================
-// 🔥 BARU: HANDLER MODE GAMBAR
+// 🔥 BARU: HANDLER MODE JAWAB SOAL
 // ============================================================
-async function handlePageImageMode(req, res) {
-  const { pageImage, pageNumber } = req.body;
+async function handleAnswerQuestionMode(req, res) {
+  const { questionImage, optionImages } = req.body;
 
-  if (!pageImage || typeof pageImage !== 'string') {
-    return res.status(400).json({ success: false, error: 'pageImage kosong atau tidak valid.' });
+  if (!questionImage || typeof questionImage !== 'string') {
+    return res.status(400).json({ success: false, error: 'questionImage kosong atau tidak valid.' });
   }
+
+  const imageList = [
+    questionImage,
+    ...(Array.isArray(optionImages) ? optionImages.filter((s) => typeof s === 'string') : []),
+  ];
 
   try {
-    const rawQuestions = await parsePageImage(pageImage);
-
-    // Bentuk output SENGAJA berbeda dari mode teks (yang pakai field
-    // singkat `q`, `qImage` demi kompatibilitas dengan alur lama
-    // WordImportQuiz/SmartImportPanel -> ManageQuiz). Mode gambar ini
-    // konsumennya BankSoalImport.jsx, jadi bentuknya disesuaikan ke
-    // situ: `question` (bukan `q`), tanpa `qImage` (itu dipotong di
-    // BROWSER dari kanvas halaman, pakai `figureBBox` yang dikirim
-    // di sini -- lihat cropFromCanvas() di BankSoalImport.jsx).
-    const questions = rawQuestions
-      .filter((q) => q && typeof q.question === 'string' && q.question.trim().length > 3)
-      .map((q) => ({
-        type: 'multiple',
-        question: q.question.trim(),
-        options: Array.isArray(q.options) && q.options.length >= 2
-          ? q.options.map((o) => String(o ?? '').trim())
-          : ['', '', '', ''],
-        correct: Number.isInteger(q.correct) ? q.correct : 0,
-        explanation: typeof q.explanation === 'string' ? q.explanation.trim() : '',
-        figureBBox: q.figureBBox && typeof q.figureBBox === 'object' ? q.figureBBox : null,
-        readingConfidence: q.readingConfidence === 'low' ? 'low' : 'high',
-        printedNumber: Number.isInteger(q.printedNumber) ? q.printedNumber : null,
-        pageNumber: Number.isInteger(pageNumber) ? pageNumber : null,
-      }));
-
-    return res.status(200).json({ success: true, questions });
+    const result = await answerQuestionFromImages(imageList);
+    return res.status(200).json({ success: true, ...result });
   } catch (err) {
-    console.error('smartParseQuiz (vision) error:', err);
+    console.error('smartParseQuiz (answer) error:', err);
     return res.status(502).json({
       success: false,
-      error: err.message || 'Gagal membaca halaman ini.',
+      error: err.message || 'Gagal menganalisis soal ini.',
     });
   }
 }
@@ -409,11 +453,11 @@ export default async function handler(req, res) {
     return res.status(500).json({ success: false, error: 'GEMINI_API_KEY belum di-setting di Vercel' });
   }
 
-  // 🔥 BARU: cabang mode gambar -- dipilih HANYA lewat keberadaan
-  // field `pageImage`, supaya pemanggil lama (yang selalu mengirim
+  // 🔥 cabang mode jawab-soal -- dipilih HANYA lewat keberadaan field
+  // `questionImage`, supaya pemanggil lama (yang selalu mengirim
   // `text`) tidak sedikit pun terpengaruh oleh penambahan ini.
-  if (req.body && req.body.pageImage) {
-    return handlePageImageMode(req, res);
+  if (req.body && req.body.questionImage) {
+    return handleAnswerQuestionMode(req, res);
   }
 
   const { text } = req.body;

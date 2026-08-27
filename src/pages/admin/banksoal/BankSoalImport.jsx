@@ -1,47 +1,62 @@
+// src/pages/admin/banksoal/BankSoalImport.jsx
 // ============================================================
-// BIMBEL GEMILANG
-// src/pages/admin/BankSoalImport.jsx
-// ============================================================
-//
-// Halaman admin: unggah PDF berisi soal -> sistem membaca tiap
-// halaman -> admin meninjau & mengoreksi -> simpan ke Bank Soal.
+// Halaman admin: unggah PDF berisi soal -> soal dipotong PER BUTIR
+// (tanpa AI) -> AI cuma menjawab + membahas tiap butir -> admin
+// meninjau & mengoreksi -> simpan ke Bank Soal.
 //
 // ------------------------------------------------------------
-// KENAPA HALAMAN DIRENDER DI BROWSER, BUKAN DI SERVER
+// ⚠️ PERUBAHAN ARSITEKTUR (Agustus 2026)
 // ------------------------------------------------------------
-// Mengubah halaman PDF menjadi gambar butuh mesin render. Di Vercel
-// serverless, binary seperti poppler/pdftoppm tidak tersedia, dan
-// memasangnya merepotkan sekaligus memakan waktu eksekusi yang kita
-// justru sedang irit-irit (batas 60 detik).
+// Versi sebelumnya meminta AI membaca SATU HALAMAN PENUH dan
+// mentranskripsi ulang SEMUA soal jadi teks sekaligus. Itu ternyata
+// jadi sumber dua masalah nyata: (a) AI kadang salah membaca notasi
+// matematika yang rumit, dan (b) respons AI kepotong di tengah pada
+// halaman padat (banyak soal + LaTeX + pembahasan sekaligus).
 //
-// Untungnya aplikasi ini SUDAH memuat pdfjs-dist di bundle (terlihat
-// pada hasil build: dist/assets/pdf.worker.min-*.js). Jadi render
-// dilakukan di browser admin -- gratis, tidak menyentuh kuota server,
-// dan tidak menambah Serverless Function (paket Hobby dibatasi 12,
-// dan kita sudah mentok di angka itu).
+// Sekarang PEMOTONGAN SOAL DILAKUKAN TANPA AI SAMA SEKALI --
+// deteksi nomor soal dari POSISI TEKS ASLI di file PDF (bukan
+// tebakan visual dari gambar), lalu soal dipotong sebagai CROP
+// PIKSEL PERSIS dari halaman asli. Logika ini DIPORTING PERSIS dari
+// SmartImportPanel.jsx (fitur impor PDF lain yang sudah lama
+// terbukti jalan di project ini) -- bukan ditulis ulang dari nol,
+// supaya perilakunya sudah teruji.
 //
-// ------------------------------------------------------------
-// KENAPA GAMBAR DIPOTONG DARI HALAMAN, BUKAN DIEKSTRAK
-// ------------------------------------------------------------
-// PDF menyimpan foto sebagai gambar tertanam, TAPI garis tabel,
-// diagram, grafik, dan bangun geometri disimpan sebagai VEKTOR --
-// bukan gambar. Kalau kita ekstrak gambar tertanamnya saja, yang
-// didapat hanya potongan foto lepas tanpa tabel/diagram yang
-// membungkusnya.
-//
-// Contoh nyata dari berkas tryout TKA: satu halaman berisi 19 gambar
-// tertanam, tetapi semuanya foto kecil di DALAM sebuah tabel. Ekstrak
-// mentah menghasilkan 19 foto tanpa konteks; yang benar adalah
-// memotong area tabelnya utuh dari halaman yang sudah dirender.
+// AI HANYA dipanggil untuk satu tugas kecil per butir: melihat crop
+// itu dan menentukan JAWABAN YANG BENAR + pembahasan singkat. AI
+// TIDAK PERNAH diminta menyalin ulang teks soal -- soal yang
+// tersimpan adalah gambar aslinya sendiri, jadi mustahil salah
+// transkripsi. Karena keluaran yang diminta dari AI kini kecil (satu
+// objek pendek per SATU soal, bukan banyak soal dibungkus jadi satu
+// respons besar), risiko kepotong di tengah jalan jadi jauh lebih
+// kecil dibanding versi sebelumnya.
 //
 // ------------------------------------------------------------
-// KENAPA TINJAUAN ADMIN WAJIB
+// SYARAT PENTING: PDF HARUS PUNYA LAPISAN TEKS ASLI
 // ------------------------------------------------------------
-// AI membaca halaman lewat penglihatan, dan pembacaan itu bisa
-// keliru -- terutama pangkat, akar, indeks, dan pecahan bertingkat.
-// Satu salah baca berarti KUNCI JAWABAN yang salah, dan itu baru
-// ketahuan setelah siswa mengerjakan. Maka hasil baca TIDAK PERNAH
-// langsung masuk Bank Soal: selalu lewat layar tinjau ini dulu.
+// Deteksi nomor soal bergantung pada posisi teks SUNGGUHAN di dalam
+// file PDF (bukan menebak dari gambar). Kalau PDF-nya hasil SCAN
+// MURNI tanpa lapisan teks (foto halaman yang ditempel jadi PDF),
+// deteksi ini tidak akan menemukan apa pun. Untuk PDF hasil scan
+// murni, perlu jalur lain (OCR) yang belum dibangun di sini.
+//
+// ------------------------------------------------------------
+// KENAPA PDF.JS DIMUAT DARI CDN, BUKAN NPM
+// ------------------------------------------------------------
+// Sempat dicoba lewat `import * as pdfjsLib from 'pdfjs-dist'` +
+// Vite `?url` untuk workernya -- GAGAL BUILD di Vercel ("Rollup
+// failed to resolve import"). SmartImportPanel.jsx (sudah lama jalan
+// di project ini) memuat pdf.js lewat tag <script> dari CDN, bukan
+// npm import -- pola yang SAMA PERSIS dipakai di sini, termasuk
+// versi CDN-nya, supaya dua fitur berbagi cache browser yang sama.
+//
+// ------------------------------------------------------------
+// KENAPA TINJAUAN ADMIN TETAP WAJIB
+// ------------------------------------------------------------
+// Walau soal sudah dijamin akurat (gambar asli, bukan hasil baca AI),
+// JAWABAN yang ditentukan AI tetap bisa keliru -- terutama untuk
+// perhitungan matematis yang rumit. Maka jawaban dari AI HANYA
+// prefill/saran, dan admin tetap bisa mengklik huruf lain sebagai
+// koreksi sebelum soal disetujui.
 //
 // ------------------------------------------------------------
 // INTEGRASI YANG DIBUTUHKAN
@@ -49,18 +64,12 @@
 // props:
 //   folderId, folderName : folder tujuan penyimpanan
 //   onSaveQuestions(soal[]) : dipanggil saat admin menekan "Simpan".
-//     Fungsi ini yang menulis ke Firestore (koleksi bank_soal).
-//     Dibuat sebagai prop supaya komponen ini tidak perlu tahu
-//     struktur database -- lebih mudah diuji dan dipindah.
 //   onCancel() : opsional, menutup halaman.
 //
 // Endpoint yang dipakai: POST /api/smartParseQuiz
-// dengan body { pageImage, pageNumber, sourceName }
-// (MENUMPANG di endpoint smartParseQuiz.js yang sudah ada -- file itu
-// sebelumnya cuma menerima teks tempel, sekarang punya cabang kedua
-// khusus gambar halaman, dipilih otomatis lewat keberadaan field
-// `pageImage`. Lihat catatan batas 12 Serverless Function di atas --
-// TIDAK ada file endpoint baru yang ditambahkan untuk fitur ini.)
+// dengan body { questionImage, optionImages? }
+// (MENUMPANG di endpoint yang sudah ada -- lihat catatan batas 12
+// Serverless Function di file smartParseQuiz.js.)
 // ============================================================
 
 import {
@@ -71,19 +80,8 @@ import {
     useState,
   } from 'react';
   
-  // 🔥 FIX: sebelumnya file ini mengimpor pdfjs-dist lewat npm
-  // (`import * as pdfjsLib from 'pdfjs-dist'` + Vite `?url` untuk
-  // worker-nya). Itu GAGAL BUILD di Vercel: "Rollup failed to resolve
-  // import pdfjs-dist/build/pdf.worker.min.mjs?url" -- ternyata setup
-  // project ini TIDAK memuat pdfjs-dist lewat npm sama sekali.
-  //
-  // SmartImportPanel.jsx (fitur impor PDF lain yang sudah lama jalan di
-  // project ini) memuat pdf.js lewat tag <script> dari CDN, bukan npm
-  // import. Supaya konsisten DAN supaya tidak menambah dependency baru
-  // yang bisa gagal lagi dengan cara berbeda, pola yang sama persis
-  // dipakai di sini -- termasuk versi CDN-nya (3.11.174), biar dua
-  // fitur ini berbagi cache browser yang sama kalau admin membuka
-  // keduanya.
+  // Sama persis dengan pola SmartImportPanel.jsx -- lihat penjelasan
+  // panjang di header file ini.
   const PDFJS_SCRIPT =
     'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js';
   
@@ -113,26 +111,143 @@ import {
   }
   
   // ============================================================
-  // KONSTANTA
+  // DETEKSI & POTONG SOAL -- DIPORTING PERSIS DARI SmartImportPanel.jsx
+  // ============================================================
+  // Tidak ditulis ulang dari nol -- logika di bawah ini (deteksi
+  // margin kiri, deteksi awal soal, deteksi klaster gambar opsi) SUDAH
+  // TERBUKTI JALAN di fitur lain project ini. Diporting apa adanya
+  // supaya perilakunya konsisten dan tidak menghadirkan bug baru yang
+  // sebenarnya sudah pernah dipecahkan di file lain.
+  
+  const RENDER_SCALE = 2.2;
+  const LEFT_MARGIN_TOLERANCE = 40; // px toleransi posisi X nomor soal asli vs sub-list menjorok
+  
+  function detectLeftMargin(items) {
+    const xCounts = new Map();
+    items.forEach((it) => {
+      const xKey = Math.round(it.transform[4] / 5) * 5;
+      xCounts.set(xKey, (xCounts.get(xKey) || 0) + 1);
+    });
+    let bestX = 0;
+    let bestCount = 0;
+    xCounts.forEach((count, x) => {
+      if (count > bestCount) {
+        bestCount = count;
+        bestX = x;
+      }
+    });
+    return bestX;
+  }
+  
+  function detectQuestionStarts(items, leftMargin) {
+    const lineMap = new Map();
+    items.forEach((item) => {
+      const yKey = Math.round(item.transform[5] / 2) * 2;
+      if (!lineMap.has(yKey)) lineMap.set(yKey, []);
+      lineMap.get(yKey).push(item);
+    });
+  
+    const starts = [];
+    lineMap.forEach((lineItems, y) => {
+      const sorted = lineItems.sort((a, b) => a.transform[4] - b.transform[4]);
+      const first = sorted[0];
+      const text = sorted.map((i) => i.str).join(' ').trim();
+      const isNearMargin =
+        Math.abs(first.transform[4] - leftMargin) <= LEFT_MARGIN_TOLERANCE;
+      const matchesNumber = /^\d{1,3}[.)]\s*/.test(text);
+      if (isNearMargin && matchesNumber) {
+        starts.push({ y, number: parseInt(text.match(/^\d{1,3}/)[0], 10) });
+      }
+    });
+  
+    return starts.sort((a, b) => b.y - a.y); // urut atas ke bawah (PDF: y besar = atas)
+  }
+  
+  async function findImageRegions(page, pdfjsLib) {
+    const opList = await page.getOperatorList();
+    const regions = [];
+    let currentTransform = null;
+  
+    for (let i = 0; i < opList.fnArray.length; i++) {
+      const fn = opList.fnArray[i];
+      if (fn === pdfjsLib.OPS.transform) {
+        currentTransform = opList.argsArray[i];
+      }
+      if (
+        fn === pdfjsLib.OPS.paintImageXObject ||
+        fn === pdfjsLib.OPS.paintJpegXObject
+      ) {
+        if (currentTransform) {
+          const [a, b, c, d, e, f] = currentTransform;
+          const width = Math.hypot(a, b);
+          const height = Math.hypot(c, d);
+          regions.push({ x: e, y: f, width, height });
+        }
+      }
+    }
+    return regions;
+  }
+  
+  function clusterOptionImages(regions) {
+    if (regions.length < 2) return null;
+    const sorted = [...regions].sort((a, b) => b.y - a.y);
+    const groups = [];
+    let current = [sorted[0]];
+  
+    for (let i = 1; i < sorted.length; i++) {
+      const prev = current[current.length - 1];
+      if (Math.abs(sorted[i].y - prev.y) < 30) {
+        current.push(sorted[i]);
+      } else {
+        groups.push(current);
+        current = [sorted[i]];
+      }
+    }
+    groups.push(current);
+  
+    const candidate = groups.find((g) => {
+      if (g.length < 2 || g.length > 5) return false;
+      const avgW = g.reduce((s, r) => s + r.width, 0) / g.length;
+      return g.every((r) => Math.abs(r.width - avgW) / avgW < 0.4);
+    });
+  
+    if (!candidate) return null;
+    return candidate.sort((a, b) => a.x - b.x); // kiri ke kanan (A, B, C, D)
+  }
+  
+  function pdfRectToCanvasRect(viewport, xPdf, yTopPdf, yBottomPdf, widthPdf) {
+    const [x1, y1] = viewport.convertToViewportPoint(xPdf, yTopPdf);
+    const [x2, y2] = viewport.convertToViewportPoint(xPdf + widthPdf, yBottomPdf);
+    return {
+      x: Math.min(x1, x2),
+      y: Math.min(y1, y2),
+      width: Math.abs(x2 - x1),
+      height: Math.abs(y2 - y1),
+    };
+  }
+  
+  function cropCanvasToDataUrl(sourceCanvas, rect, paddingPx = 8, quality = 0.9) {
+    const x = Math.max(0, rect.x - paddingPx);
+    const y = Math.max(0, rect.y - paddingPx);
+    const w = Math.min(sourceCanvas.width - x, rect.width + paddingPx * 2);
+    const h = Math.min(sourceCanvas.height - y, rect.height + paddingPx * 2);
+    if (w <= 0 || h <= 0) return null;
+  
+    const out = document.createElement('canvas');
+    out.width = w;
+    out.height = h;
+    const ctx = out.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(sourceCanvas, x, y, w, h, 0, 0, w, h);
+    return out.toDataURL('image/jpeg', quality);
+  }
+  
+  // ============================================================
+  // KONSTANTA LAIN
   // ============================================================
   
-  // Lebar render halaman dalam piksel. 1400 px cukup agar pangkat,
-  // indeks, dan pecahan kecil tetap terbaca AI, tanpa membuat berkas
-  // gambar membengkak dan lambat dikirim.
-  const RENDER_WIDTH_PX = 1400;
-  
-  // Mutu JPEG saat mengirim halaman ke AI. 0.85 adalah titik seimbang:
-  // teks matematika masih tajam, ukuran kiriman tetap wajar.
-  const PAGE_JPEG_QUALITY = 0.85;
-  
-  // Potongan gambar soal dipakai langsung di kuis siswa, jadi mutunya
-  // dinaikkan sedikit.
-  const CROP_JPEG_QUALITY = 0.92;
-  
-  // Jeda antar halaman. Tier gratis Gemini membatasi jumlah permintaan
-  // per menit; jeda ini mencegah pemrosesan panjang terhenti di tengah
-  // karena kena batas.
-  const DELAY_BETWEEN_PAGES_MS = 1200;
+  const DELAY_BETWEEN_QUESTIONS_MS = 600; // jaga rate limit Gemini tier gratis
   
   const STATUS = {
     IDLE: 'idle',
@@ -142,10 +257,6 @@ import {
     DONE: 'done',
     ERROR: 'error',
   };
-  
-  // ============================================================
-  // UTIL
-  // ============================================================
   
   function formatBytes(bytes) {
     if (!bytes) return '0 B';
@@ -165,36 +276,36 @@ import {
       .slice(2, 8)}`;
   }
   
-  // Memotong area gambar dari kanvas halaman.
-  // bbox datang dari AI dalam koordinat ternormalisasi 0..1 supaya
-  // tidak bergantung pada resolusi render.
-  function cropFromCanvas(canvas, bbox) {
-    if (!canvas || !bbox) return '';
+  // ============================================================
+  // PANGGIL AI -- HANYA UNTUK JAWABAN + PEMBAHASAN
+  // ============================================================
   
-    const x = Math.max(0, Math.min(1, Number(bbox.x)));
-    const y = Math.max(0, Math.min(1, Number(bbox.y)));
-    const w = Math.max(0, Math.min(1 - x, Number(bbox.width)));
-    const h = Math.max(0, Math.min(1 - y, Number(bbox.height)));
+  async function answerQuestionWithAI(questionImageDataUrl, optionImageDataUrls) {
+    const response = await fetch('/api/smartParseQuiz', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        questionImage: questionImageDataUrl,
+        optionImages:
+          Array.isArray(optionImageDataUrls) && optionImageDataUrls.length > 0
+            ? optionImageDataUrls
+            : undefined,
+      }),
+    });
   
-    if (!(w > 0.01) || !(h > 0.01)) return '';
+    const data = await response.json();
   
-    const sx = Math.round(x * canvas.width);
-    const sy = Math.round(y * canvas.height);
-    const sw = Math.round(w * canvas.width);
-    const sh = Math.round(h * canvas.height);
+    if (!response.ok || !data.success) {
+      throw new Error(data?.error || `HTTP ${response.status}`);
+    }
   
-    const out = document.createElement('canvas');
-    out.width = sw;
-    out.height = sh;
-  
-    const ctx = out.getContext('2d');
-    // Latar putih: sebagian PDF punya latar transparan yang akan
-    // menjadi hitam kalau diekspor ke JPEG.
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, sw, sh);
-    ctx.drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
-  
-    return out.toDataURL('image/jpeg', CROP_JPEG_QUALITY);
+    return {
+      optionCount: Number.isInteger(data.optionCount) ? data.optionCount : 4,
+      correct: Number.isInteger(data.correct) ? data.correct : 0,
+      explanation: typeof data.explanation === 'string' ? data.explanation : '',
+      readingConfidence: data.readingConfidence === 'low' ? 'low' : 'high',
+      needsManualAnswer: Boolean(data.needsManualAnswer),
+    };
   }
   
   // ============================================================
@@ -216,7 +327,7 @@ import {
     const [startPage, setStartPage] = useState(1);
     const [endPage, setEndPage] = useState(0);
   
-    // Hasil baca per halaman: { pageNumber, pageImage, questions[] }
+    // Hasil deteksi per halaman: { pageNumber, pageImage, questions[], error }
     const [pages, setPages] = useState([]);
     const [selectedPageIndex, setSelectedPageIndex] = useState(0);
   
@@ -250,14 +361,11 @@ import {
       setStatus(STATUS.LOADING_PDF);
   
       try {
-        // Muat library dari CDN dulu (lihat ensurePdfJsLoaded di atas)
-        // sebelum bisa memanggil getDocument().
         const pdfjsLib = await ensurePdfJsLoaded();
-  
         const buffer = await picked.arrayBuffer();
         const doc = await pdfjsLib.getDocument({ data: buffer }).promise;
   
-        pdfDocRef.current = doc;
+        pdfDocRef.current = { doc, pdfjsLib };
         setTotalPages(doc.numPages);
         setStartPage(1);
         setEndPage(doc.numPages);
@@ -271,62 +379,158 @@ import {
     }, []);
   
     // ----------------------------------------------------------
-    // RENDER SATU HALAMAN KE KANVAS
+    // DETEKSI & POTONG SOAL DI SATU HALAMAN (TANPA AI)
     // ----------------------------------------------------------
   
-    const renderPageToCanvas = useCallback(async (pageNumber) => {
-      const doc = pdfDocRef.current;
-      if (!doc) return null;
+    const detectQuestionsOnPage = useCallback(async (pageNumber) => {
+      const ref = pdfDocRef.current;
+      if (!ref) return { pageImage: '', crops: [] };
   
+      const { doc, pdfjsLib } = ref;
       const page = await doc.getPage(pageNumber);
+      const viewport = page.getViewport({ scale: RENDER_SCALE });
   
-      const baseViewport = page.getViewport({ scale: 1 });
-      const scale = RENDER_WIDTH_PX / baseViewport.width;
-      const viewport = page.getViewport({ scale });
-  
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(viewport.width);
-      canvas.height = Math.round(viewport.height);
-  
-      const ctx = canvas.getContext('2d');
+      const pageCanvas = document.createElement('canvas');
+      pageCanvas.width = viewport.width;
+      pageCanvas.height = viewport.height;
+      const ctx = pageCanvas.getContext('2d');
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
+      ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
       await page.render({ canvasContext: ctx, viewport }).promise;
   
-      return canvas;
+      const pageImage = pageCanvas.toDataURL('image/jpeg', 0.82);
+  
+      const textContent = await page.getTextContent();
+      const items = textContent.items;
+  
+      if (items.length === 0) {
+        // Tidak ada lapisan teks sama sekali -- kemungkinan besar hasil
+        // scan murni. Kembalikan halaman kosong dengan gambar halaman
+        // tetap ada, supaya admin bisa lihat kenapa (bukan error, tapi
+        // memang tidak bisa dideteksi otomatis).
+        return { pageImage, crops: [] };
+      }
+  
+      const leftMargin = detectLeftMargin(items);
+      const starts = detectQuestionStarts(items, leftMargin);
+      const imageRegions = await findImageRegions(page, pdfjsLib);
+  
+      const crops = [];
+  
+      for (let i = 0; i < starts.length; i++) {
+        const top = starts[i].y;
+        const bottom = i + 1 < starts.length ? starts[i + 1].y : page.view[1];
+  
+        const rect = pdfRectToCanvasRect(
+          viewport,
+          page.view[0],
+          top + 14,
+          bottom + 4,
+          page.view[2] - page.view[0],
+        );
+  
+        const mainCrop = cropCanvasToDataUrl(pageCanvas, rect);
+        if (!mainCrop) continue;
+  
+        const regionsInThisQuestion = imageRegions.filter(
+          (r) => r.y <= top + 20 && r.y >= bottom - 20,
+        );
+        const optionImageCluster = clusterOptionImages(regionsInThisQuestion);
+  
+        let optionCrops = [];
+        if (optionImageCluster) {
+          optionCrops = optionImageCluster
+            .map((region) => {
+              const oRect = pdfRectToCanvasRect(
+                viewport,
+                region.x,
+                region.y + region.height,
+                region.y,
+                region.width,
+              );
+              return cropCanvasToDataUrl(pageCanvas, oRect, 4);
+            })
+            .filter(Boolean);
+        }
+  
+        crops.push({
+          printedNumber: starts[i].number,
+          qImage: mainCrop,
+          optionsAreImages: optionCrops.length >= 2,
+          optionImages: optionCrops,
+        });
+      }
+  
+      return { pageImage, crops };
     }, []);
   
     // ----------------------------------------------------------
-    // KIRIM SATU HALAMAN KE AI
+    // PROSES SATU HALAMAN LENGKAP: deteksi (tanpa AI) + jawab tiap
+    // soal (dengan AI, satu per satu)
     // ----------------------------------------------------------
   
-    const readPageWithAI = useCallback(
-      async (pageImageBase64, pageNumber) => {
-        const response = await fetch('/api/smartParseQuiz', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            pageImage: pageImageBase64,
+    const processOnePage = useCallback(
+      async (pageNumber) => {
+        const { pageImage, crops } = await detectQuestionsOnPage(pageNumber);
+  
+        const questions = [];
+  
+        for (const crop of crops) {
+          if (abortRef.current) break;
+  
+          while (pauseRef.current && !abortRef.current) {
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise((r) => setTimeout(r, 300));
+          }
+          if (abortRef.current) break;
+  
+          let answer = {
+            optionCount: 4,
+            correct: 0,
+            explanation: '',
+            readingConfidence: 'low',
+            needsManualAnswer: true,
+          };
+  
+          try {
+            // eslint-disable-next-line no-await-in-loop
+            answer = await answerQuestionWithAI(
+              crop.qImage,
+              crop.optionsAreImages ? crop.optionImages : undefined,
+            );
+          } catch (error) {
+            // AI gagal menjawab BUKAN alasan membuang soalnya -- crop
+            // gambarnya sendiri tetap valid dan berharga. Soal tetap
+            // masuk dengan tanda "butuh jawaban manual".
+            answer.explanation = `(AI gagal menjawab: ${error?.message || 'coba lagi'})`;
+          }
+  
+          questions.push({
+            id: newId(),
             pageNumber,
-            sourceName: file?.name || '',
-          }),
-        });
+            printedNumber: crop.printedNumber,
+            qImage: crop.qImage,
+            optionsAreImages: crop.optionsAreImages,
+            optionImages: crop.optionImages,
+            optionCount: answer.optionCount,
+            correct: answer.correct,
+            explanation: answer.explanation,
+            readingConfidence: answer.readingConfidence,
+            needsManualAnswer: answer.needsManualAnswer,
+            approved: false,
+          });
   
-        const data = await response.json();
-  
-        if (!response.ok || !data.success) {
-          const detail = data?.error || `HTTP ${response.status}`;
-          throw new Error(detail);
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise((r) => setTimeout(r, DELAY_BETWEEN_QUESTIONS_MS));
         }
   
-        return Array.isArray(data.questions) ? data.questions : [];
+        return { pageImage, questions };
       },
-      [file],
+      [detectQuestionsOnPage],
     );
   
     // ----------------------------------------------------------
-    // PROSES BERURUTAN
+    // PROSES BERURUTAN SEMUA HALAMAN DALAM RENTANG
     // ----------------------------------------------------------
   
     const processPages = useCallback(async () => {
@@ -341,61 +545,31 @@ import {
       for (let pageNumber = from; pageNumber <= to; pageNumber += 1) {
         if (abortRef.current) break;
   
-        while (pauseRef.current && !abortRef.current) {
-          // Menunggu admin menekan "Lanjutkan".
-          // eslint-disable-next-line no-await-in-loop
-          await new Promise((r) => setTimeout(r, 300));
-        }
-        if (abortRef.current) break;
-  
         setCurrentPage(pageNumber);
   
         try {
           // eslint-disable-next-line no-await-in-loop
-          const canvas = await renderPageToCanvas(pageNumber);
-          if (!canvas) continue;
-  
-          const pageImage = canvas.toDataURL('image/jpeg', PAGE_JPEG_QUALITY);
-  
-          // eslint-disable-next-line no-await-in-loop
-          const rawQuestions = await readPageWithAI(pageImage, pageNumber);
-  
-          const questions = rawQuestions.map((q) => ({
-            ...q,
-            id: newId(),
-            pageNumber,
-            // Potong gambar dari kanvas halaman ini, selagi kanvasnya
-            // masih ada di memori.
-            qImage: q.figureBBox ? cropFromCanvas(canvas, q.figureBBox) : '',
-            approved: false,
-          }));
+          const { pageImage, questions } = await processOnePage(pageNumber);
   
           setPages((prev) => [
             ...prev,
             { pageNumber, pageImage, questions, error: null },
           ]);
         } catch (error) {
-          // Satu halaman gagal tidak boleh menghentikan seluruh
-          // pekerjaan -- halaman itu ditandai dan bisa diulang sendiri.
           setPages((prev) => [
             ...prev,
             {
               pageNumber,
               pageImage: '',
               questions: [],
-              error: error?.message || 'Gagal membaca halaman ini.',
+              error: error?.message || 'Gagal memproses halaman ini.',
             },
           ]);
-        }
-  
-        if (pageNumber < to) {
-          // eslint-disable-next-line no-await-in-loop
-          await new Promise((r) => setTimeout(r, DELAY_BETWEEN_PAGES_MS));
         }
       }
   
       setStatus(abortRef.current ? STATUS.IDLE : STATUS.DONE);
-    }, [startPage, endPage, totalPages, renderPageToCanvas, readPageWithAI]);
+    }, [startPage, endPage, totalPages, processOnePage]);
   
     // ----------------------------------------------------------
     // ULANG SATU HALAMAN
@@ -405,19 +579,7 @@ import {
       async (pageNumber) => {
         setErrorMessage('');
         try {
-          const canvas = await renderPageToCanvas(pageNumber);
-          if (!canvas) return;
-  
-          const pageImage = canvas.toDataURL('image/jpeg', PAGE_JPEG_QUALITY);
-          const rawQuestions = await readPageWithAI(pageImage, pageNumber);
-  
-          const questions = rawQuestions.map((q) => ({
-            ...q,
-            id: newId(),
-            pageNumber,
-            qImage: q.figureBBox ? cropFromCanvas(canvas, q.figureBBox) : '',
-            approved: false,
-          }));
+          const { pageImage, questions } = await processOnePage(pageNumber);
   
           setPages((prev) =>
             prev.map((p) =>
@@ -436,11 +598,57 @@ import {
           );
         }
       },
-      [renderPageToCanvas, readPageWithAI],
+      [processOnePage],
     );
   
     // ----------------------------------------------------------
-    // SUNTING SOAL
+    // ULANG SATU SOAL SAJA (kalau cuma jawaban AI-nya yang mau diulang)
+    // ----------------------------------------------------------
+  
+    const retryQuestionAnswer = useCallback(
+      async (pageNumber, questionId) => {
+        const page = pages.find((p) => p.pageNumber === pageNumber);
+        const question = page?.questions.find((q) => q.id === questionId);
+        if (!question) return;
+  
+        try {
+          const answer = await answerQuestionWithAI(
+            question.qImage,
+            question.optionsAreImages ? question.optionImages : undefined,
+          );
+  
+          setPages((prev) =>
+            prev.map((p) =>
+              p.pageNumber !== pageNumber
+                ? p
+                : {
+                    ...p,
+                    questions: p.questions.map((q) =>
+                      q.id === questionId
+                        ? {
+                            ...q,
+                            optionCount: answer.optionCount,
+                            correct: answer.correct,
+                            explanation: answer.explanation,
+                            readingConfidence: answer.readingConfidence,
+                            needsManualAnswer: answer.needsManualAnswer,
+                          }
+                        : q,
+                    ),
+                  },
+            ),
+          );
+        } catch (error) {
+          setErrorMessage(
+            `Gagal mengulang jawaban soal ini: ${error?.message || 'coba lagi.'}`,
+          );
+        }
+      },
+      [pages],
+    );
+  
+    // ----------------------------------------------------------
+    // SUNTING SOAL (jawaban, pembahasan, tingkat kesulitan, dsb.)
     // ----------------------------------------------------------
   
     const updateQuestion = useCallback((pageNumber, questionId, patch) => {
@@ -457,27 +665,6 @@ import {
         ),
       );
     }, []);
-  
-    const updateOption = useCallback(
-      (pageNumber, questionId, index, value) => {
-        setPages((prev) =>
-          prev.map((p) =>
-            p.pageNumber !== pageNumber
-              ? p
-              : {
-                  ...p,
-                  questions: p.questions.map((q) => {
-                    if (q.id !== questionId) return q;
-                    const options = [...(q.options || [])];
-                    options[index] = value;
-                    return { ...q, options };
-                  }),
-                },
-          ),
-        );
-      },
-      [],
-    );
   
     const removeQuestion = useCallback((pageNumber, questionId) => {
       setPages((prev) =>
@@ -503,15 +690,10 @@ import {
       [allQuestions],
     );
   
-    const failedPages = useMemo(
-      () => pages.filter((p) => p.error),
-      [pages],
-    );
+    const failedPages = useMemo(() => pages.filter((p) => p.error), [pages]);
   
     const selectedPage = pages[selectedPageIndex] || null;
   
-    // Ikuti halaman terbaru selama pemrosesan berjalan, supaya admin
-    // bisa langsung melihat hasilnya masuk satu per satu.
     useEffect(() => {
       if (status === STATUS.PROCESSING && pages.length > 0) {
         setSelectedPageIndex(pages.length - 1);
@@ -530,13 +712,22 @@ import {
   
       try {
         const payload = approvedQuestions.map((q) => ({
-          type: q.type || 'multiple',
-          question: q.question,
-          options: q.options || [],
+          type: 'multiple',
+          // Teks soal SENGAJA cuma placeholder pendek -- badan soal
+          // yang sesungguhnya adalah qImage (crop asli, bukan hasil
+          // baca ulang AI). Konvensi ini SAMA PERSIS dengan
+          // SmartImportPanel.jsx supaya kompatibel dengan cara
+          // ManageQuiz/StudentQuizView menampilkan soal berbasis gambar.
+          question: q.printedNumber
+            ? `Soal ${q.printedNumber}`
+            : 'Soal (lihat gambar)',
+          qImage: q.qImage,
+          options: Array.from({ length: q.optionCount || 4 }, () => ''),
+          optionImages: q.optionsAreImages ? q.optionImages : [],
+          optionsAreImages: Boolean(q.optionsAreImages),
           correct: Number.isInteger(q.correct) ? q.correct : 0,
           explanation: q.explanation || '',
-          qImage: q.qImage || '',
-          needsImage: Boolean(q.qImage),
+          needsManualAnswer: Boolean(q.needsManualAnswer),
           difficulty: q.difficulty || '',
           topik: q.topik || '',
           folderId,
@@ -551,8 +742,6 @@ import {
   
         setSavedCount(payload.length);
   
-        // Soal yang sudah tersimpan dikeluarkan dari daftar agar tidak
-        // tersimpan dua kali kalau admin menekan Simpan lagi.
         setPages((prev) =>
           prev.map((p) => ({
             ...p,
@@ -568,8 +757,7 @@ import {
       }
     }, [approvedQuestions, folderId, folderName, file, onSaveQuestions]);
   
-    const isBusy =
-      status === STATUS.PROCESSING || status === STATUS.LOADING_PDF;
+    const isBusy = status === STATUS.PROCESSING || status === STATUS.LOADING_PDF;
   
     // ----------------------------------------------------------
     // TAMPILAN
@@ -584,8 +772,9 @@ import {
             <p className="bsi-eyebrow">{folderName}</p>
             <h1 className="bsi-title">Tambah soal dari PDF</h1>
             <p className="bsi-sub">
-              Sistem membaca tiap halaman, lalu memecahnya menjadi soal
-              per butir. Periksa hasilnya sebelum disimpan.
+              Soal dipotong per butir langsung dari halaman asli (tanpa
+              AI) -- AI hanya membantu menentukan jawaban dan
+              pembahasan. Periksa jawabannya sebelum disetujui.
             </p>
           </div>
   
@@ -607,8 +796,9 @@ import {
             />
             <span className="bsi-drop-title">Pilih berkas PDF</span>
             <span className="bsi-drop-hint">
-              Gunakan PDF, bukan Word. Tata letak PDF terkunci sehingga
-              rumus, tabel, dan gambar terbaca persis seperti aslinya.
+              Gunakan PDF yang punya lapisan teks asli (bukan hasil scan
+              murni) -- deteksi nomor soal bergantung pada posisi teks
+              sungguhan di dalam file, bukan tebakan visual.
             </span>
           </label>
         )}
@@ -660,9 +850,8 @@ import {
   
             {totalPages > 60 && status !== STATUS.PROCESSING && (
               <p className="bsi-note">
-                Berkas ini panjang. Membaca sekaligus bisa memakan waktu
-                lama dan menghabiskan kuota harian. Sebaiknya kerjakan
-                per 20–30 halaman.
+                Berkas ini panjang. Sebaiknya kerjakan per 20–30 halaman
+                dulu.
               </p>
             )}
   
@@ -682,7 +871,7 @@ import {
                 </div>
                 <div className="bsi-progress-row">
                   <span>
-                    Membaca halaman {currentPage} dari {endPage}
+                    Memproses halaman {currentPage} dari {endPage}
                   </span>
                   <div className="bsi-progress-actions">
                     <button
@@ -713,8 +902,8 @@ import {
   
             {status === STATUS.PAUSED && (
               <p className="bsi-note">
-                Dijeda di halaman {currentPage}. Hasil yang sudah terbaca
-                tetap tersimpan di layar ini.
+                Dijeda di halaman {currentPage}. Hasil yang sudah
+                diproses tetap tersimpan di layar ini.
               </p>
             )}
           </section>
@@ -730,7 +919,7 @@ import {
   
         {failedPages.length > 0 && (
           <div className="bsi-alert warn">
-            {failedPages.length} halaman gagal dibaca:{' '}
+            {failedPages.length} halaman gagal diproses:{' '}
             {failedPages.map((p) => p.pageNumber).join(', ')}. Buka
             halamannya lalu tekan Ulangi.
           </div>
@@ -739,7 +928,6 @@ import {
         {/* ---------------- TINJAU ---------------- */}
         {pages.length > 0 && (
           <section className="bsi-review">
-            {/* Daftar halaman */}
             <nav className="bsi-pagelist" aria-label="Daftar halaman">
               {pages.map((p, i) => (
                 <button
@@ -760,7 +948,6 @@ import {
   
             {selectedPage && (
               <div className="bsi-compare">
-                {/* Kiri: halaman asli */}
                 <div className="bsi-original">
                   <div className="bsi-panel-label">
                     Halaman asli {selectedPage.pageNumber}
@@ -784,10 +971,9 @@ import {
                   )}
                 </div>
   
-                {/* Kanan: hasil baca */}
                 <div className="bsi-parsed">
                   <div className="bsi-panel-label">
-                    Hasil baca — periksa sebelum disetujui
+                    Soal terdeteksi — periksa jawaban sebelum disetujui
                   </div>
   
                   {selectedPage.error && (
@@ -803,14 +989,15 @@ import {
                     </div>
                   )}
   
-                  {!selectedPage.error &&
-                    selectedPage.questions.length === 0 && (
-                      <div className="bsi-empty">
-                        Tidak ada soal terbaca di halaman ini. Biasanya
-                        terjadi pada halaman sampul, daftar isi, atau
-                        kunci jawaban.
-                      </div>
-                    )}
+                  {!selectedPage.error && selectedPage.questions.length === 0 && (
+                    <div className="bsi-empty">
+                      Tidak ada soal terdeteksi di halaman ini. Biasanya
+                      karena: (a) halaman ini memang sampul/daftar
+                      isi/kunci jawaban, atau (b) PDF ini hasil scan
+                      murni tanpa lapisan teks asli, sehingga nomor soal
+                      tidak bisa dideteksi otomatis.
+                    </div>
+                  )}
   
                   {selectedPage.questions.map((q, qi) => (
                     <article
@@ -861,73 +1048,83 @@ import {
                         </div>
                       </div>
   
-                      <textarea
-                        className="bsi-input"
-                        rows={3}
-                        value={q.question || ''}
-                        onChange={(e) =>
-                          updateQuestion(selectedPage.pageNumber, q.id, {
-                            question: e.target.value,
-                          })
-                        }
-                      />
+                      {/* Gambar soal -- CROP ASLI, badan soal & opsi teks
+                          sudah baked-in di gambar ini, tidak ditranskrip
+                          ulang oleh AI. */}
+                      <img src={q.qImage} alt="Soal" className="bsi-qimg" />
   
-                      {q.qImage && (
-                        <div className="bsi-cropwrap">
-                          <img
-                            src={q.qImage}
-                            alt="Gambar soal"
-                            className="bsi-crop"
-                          />
+                      {q.needsManualAnswer && (
+                        <p className="bsi-flag">
+                          AI gagal menjawab soal ini secara otomatis --
+                          pilih jawaban benar secara manual.
+                          {q.explanation ? ` (${q.explanation})` : ''}
+                        </p>
+                      )}
+  
+                      {!q.needsManualAnswer && q.readingConfidence === 'low' && (
+                        <p className="bsi-flag">
+                          AI kurang yakin dengan jawaban ini -- cocokkan
+                          dengan gambar soal di atas.
+                        </p>
+                      )}
+  
+                      {/* Pemilih jawaban -- kalau opsinya berupa gambar,
+                          tampilkan crop tiap opsi sebagai tombol; kalau
+                          tidak, tampilkan huruf A-E biasa (labelnya
+                          sendiri sudah ada di dalam gambar qImage). */}
+                      {q.optionsAreImages ? (
+                        <div className="bsi-optimg-row">
+                          {q.optionImages.map((url, oi) => (
+                            <button
+                              key={oi}
+                              type="button"
+                              className={`bsi-optimg-btn${
+                                q.correct === oi ? ' selected' : ''
+                              }`}
+                              onClick={() =>
+                                updateQuestion(selectedPage.pageNumber, q.id, {
+                                  correct: oi,
+                                })
+                              }
+                            >
+                              <img src={url} alt={`Opsi ${String.fromCharCode(65 + oi)}`} />
+                              <span>{String.fromCharCode(65 + oi)}</span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="bsi-letter-row">
+                          {Array.from(
+                            { length: Math.max(2, Math.min(5, q.optionCount || 4)) },
+                            (_, oi) => oi,
+                          ).map((oi) => (
+                            <button
+                              key={oi}
+                              type="button"
+                              className={`bsi-letter-btn${
+                                q.correct === oi ? ' selected' : ''
+                              }`}
+                              onClick={() =>
+                                updateQuestion(selectedPage.pageNumber, q.id, {
+                                  correct: oi,
+                                })
+                              }
+                            >
+                              {String.fromCharCode(65 + oi)}
+                            </button>
+                          ))}
                           <button
                             type="button"
                             className="bsi-btn ghost sm"
                             onClick={() =>
-                              updateQuestion(selectedPage.pageNumber, q.id, {
-                                qImage: '',
-                              })
+                              retryQuestionAnswer(selectedPage.pageNumber, q.id)
                             }
+                            title="Minta AI menjawab ulang soal ini"
                           >
-                            Hapus gambar
+                            Ulang jawaban AI
                           </button>
                         </div>
                       )}
-  
-                      <ul className="bsi-options">
-                        {(q.options || []).map((opt, oi) => (
-                          <li key={oi}>
-                            <label className="bsi-radio">
-                              <input
-                                type="radio"
-                                name={`correct-${q.id}`}
-                                checked={q.correct === oi}
-                                onChange={() =>
-                                  updateQuestion(
-                                    selectedPage.pageNumber,
-                                    q.id,
-                                    { correct: oi },
-                                  )
-                                }
-                              />
-                              <span className="bsi-optletter">
-                                {String.fromCharCode(65 + oi)}
-                              </span>
-                            </label>
-                            <input
-                              className="bsi-input"
-                              value={opt}
-                              onChange={(e) =>
-                                updateOption(
-                                  selectedPage.pageNumber,
-                                  q.id,
-                                  oi,
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </li>
-                        ))}
-                      </ul>
   
                       <details className="bsi-details">
                         <summary>Pembahasan</summary>
@@ -943,13 +1140,6 @@ import {
                           }
                         />
                       </details>
-  
-                      {q.readingConfidence === 'low' && (
-                        <p className="bsi-flag">
-                          Sistem kurang yakin membaca butir ini. Cocokkan
-                          dengan halaman aslinya di sebelah kiri.
-                        </p>
-                      )}
                     </article>
                   ))}
                 </div>
@@ -984,9 +1174,6 @@ import {
   // ============================================================
   // GAYA
   // ============================================================
-  // Ditulis sebagai CSS ber-prefix `bsi-` dan disisipkan lewat <style>
-  // agar komponen ini bisa dipasang di aplikasi tanpa bergantung pada
-  // framework CSS tertentu, dan tanpa mengubah gaya halaman lain.
   
   const styles = `
   .bsi { --ink:#16202b; --muted:#64748b; --line:#e2e8f0; --bg:#f8fafc;
@@ -997,7 +1184,7 @@ import {
   .bsi-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:24px}
   .bsi-eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
   .bsi-title{font-size:24px;font-weight:650;margin:0 0 6px;letter-spacing:-.01em}
-  .bsi-sub{margin:0;color:var(--muted);font-size:14px;max-width:60ch;line-height:1.5}
+  .bsi-sub{margin:0;color:var(--muted);font-size:14px;max-width:64ch;line-height:1.5}
   .bsi-drop{display:flex;flex-direction:column;align-items:center;gap:8px;padding:48px 24px;
     border:2px dashed var(--line);border-radius:12px;background:var(--bg);cursor:pointer;text-align:center}
   .bsi-drop:hover{border-color:var(--brand);background:#f1f5ff}
@@ -1048,19 +1235,24 @@ import {
   .bsi-card.approved{border-color:#a7f3d0;background:#f7fffc}
   .bsi-card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
   .bsi-card-no{font-size:12.5px;font-weight:650;color:var(--muted);letter-spacing:.03em}
-  .bsi-card-actions{display:flex;align-items:center;gap:10px}
+  .bsi-card-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .bsi-check{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;font-weight:550}
   .bsi-select{padding:6px 8px;border:1px solid var(--line);border-radius:7px;font-size:13px;
     font-family:inherit;color:var(--ink);background:#fff}
+  .bsi-qimg{max-width:100%;border:1px solid var(--line);border-radius:8px;background:#fff}
   .bsi-input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;
     font-size:14px;font-family:inherit;color:var(--ink);line-height:1.5;resize:vertical;background:#fff}
   .bsi-input:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:var(--brand)}
-  .bsi-cropwrap{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
-  .bsi-crop{max-width:100%;max-height:220px;border:1px solid var(--line);border-radius:8px;background:#fff}
-  .bsi-options{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
-  .bsi-options li{display:flex;align-items:center;gap:9px}
-  .bsi-radio{display:flex;align-items:center;gap:6px;cursor:pointer}
-  .bsi-optletter{font-size:13px;font-weight:650;color:var(--muted);width:14px}
+  .bsi-letter-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .bsi-letter-btn{width:34px;height:34px;border-radius:7px;border:1px solid var(--line);background:#fff;
+    font-weight:700;font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit}
+  .bsi-letter-btn.selected{border-color:var(--ok);background:#ecfdf5;color:var(--ok)}
+  .bsi-optimg-row{display:flex;gap:8px;flex-wrap:wrap}
+  .bsi-optimg-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px;
+    border:2px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;font-family:inherit}
+  .bsi-optimg-btn.selected{border-color:var(--ok);background:#ecfdf5}
+  .bsi-optimg-btn img{height:64px;width:auto;border-radius:5px}
+  .bsi-optimg-btn span{font-size:12px;font-weight:700;color:var(--muted)}
   .bsi-details summary{font-size:13px;color:var(--muted);cursor:pointer;padding:2px 0}
   .bsi-details[open] summary{margin-bottom:7px}
   .bsi-flag{margin:0;font-size:12.5px;color:var(--warn);line-height:1.5}
