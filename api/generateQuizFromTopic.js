@@ -22,7 +22,7 @@
 // MANAGE QUIZ
 //
 // TAVILY dipakai untuk 2 hal yang terkendali:
-//   1) mencari contoh soal/referensi di internet untuk ditulis ulang;
+//   1) mencari soal asli/referensi di internet untuk ditulis ulang;
 //   2) mengambil gambar yang memang terkait dengan sumber soal bila tersedia.
 // Jenis ujian tidak dikunci: bisa latihan dasar, ujian sekolah, asesmen, TKA, UTBK,
 // atau ujian lain, selama blueprint/kompetensinya jelas.
