@@ -495,6 +495,11 @@ Kalau ada bagian yang benar-benar tidak terbaca (buram/terpotong), tulis bagian 
 RUMUS MATEMATIKA:
 Tulis dengan LaTeX dibungkus \\( \\), contoh: \\(x^2 + 3x - 4 = 0\\), \\(\\frac{a}{b}\\), \\(\\sqrt{x+1}\\).
 
+VEKTOR & MATRIKS (PENTING -- sering muncul di soal cetak sebagai angka yang DITUMPUK VERTIKAL dalam tanda kurung):
+Tulis TETAP sebagai LaTeX matriks kolom, JANGAN diringkas jadi baris horizontal biasa (itu mengubah makna matematisnya). Gunakan \\(\\begin{pmatrix} ... \\end{pmatrix}\\) dengan \\\\ untuk pemisah antar baris.
+Contoh: vektor yang tercetak sebagai tiga angka p, 2, -1 bertumpuk ke bawah dalam satu kurung ditulis: \\(\\begin{pmatrix} p \\\\ 2 \\\\ -1 \\end{pmatrix}\\).
+Ini KHUSUS berlaku untuk vektor/matriks -- JANGAN dipakai untuk hal lain.
+
 KLASIFIKASI TIPE SOAL (field "tipeSoal") -- pilih SATU yang paling sesuai:
 - "pilihan_ganda": soal standar dengan pilihan (A) (B) (C) (D) (E) yang masing-masing berdiri sendiri.
 - "pernyataan_kompleks": badan soal berisi PERNYATAAN BERNOMOR (1) (2) (3) (4), dan pilihan jawabannya adalah KOMBINASI pernyataan mana yang benar (mis. opsi berbunyi "(1), (2), dan (3) SAJA yang benar"). Tulis SELURUH pernyataan bernomor itu apa adanya di dalam "question".
