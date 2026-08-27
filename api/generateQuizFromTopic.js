@@ -11,6 +11,8 @@
 //    ↓
 // LOCAL BLUEPRINT ENGINE
 //    ↓
+// TAVILY WEB RESEARCH (maks. 1 pencarian teks / request, opsional)
+//    ↓
 // GOOGLE GEMINI API (endpoint kompatibel-OpenAI)
 //    ↓
 // JSONL PARSER
@@ -19,14 +21,17 @@
 //    ↓
 // MANAGE QUIZ
 //
-// TANPA: Jina, Google Search API, Cloudflare AI, scraping.
-// Tavily dipakai HANYA untuk mencari gambar (opsional, boleh kosong).
+// TAVILY dipakai untuk 2 hal yang terkendali:
+//   1) mencari contoh soal/referensi di internet untuk ditulis ulang;
+//   2) mencari foto objek nyata bila soal memang membutuhkan foto.
+// Semua pencarian dibatasi keras supaya tidak menghabiskan kuota atau waktu.
 //
-// ⚠️ KETERBATASAN YANG PERLU DIKETAHUI GURU:
-// Mode "Prediksi Berbasis Tren" di UI BUKAN riset internet real-time.
-// AI menyusun soal dari pengetahuan umum yang sudah ia miliki, bukan
-// dari menelusuri sumber terbaru saat itu juga. Ini disebut apa
-// adanya supaya tidak ada klaim berlebihan ke guru maupun siswa.
+// ⚠️ CATATAN:
+// Pencarian referensi internet dilakukan oleh server lewat Tavily SEBELUM
+// prompt dikirim ke Gemini. Gemini menerima hasil pencarian tersebut
+// sebagai bahan referensi dan WAJIB menulis ulang soalnya, bukan menyalin.
+// Kalau Tavily tidak tersedia/gagal/rate limit, generator TIDAK ERROR:
+// sistem otomatis lanjut membuat soal tanpa riset web.
 //
 // ENV (WAJIB):
 // GEMINI_API_KEY=... (buat GRATIS di https://aistudio.google.com/apikey
@@ -158,7 +163,7 @@ const AI_TIMEOUT_WITH_SEARCH_MS = 40_000;
 // budget ini (~10-15 detik) disisakan buat build prompt, quality gate,
 // & enrich gambar Tavily yang jalan SEBELUM/SESUDAH pemanggilan AI.
 const TOTAL_AI_BUDGET_MS = 36_000;
-const TOTAL_AI_BUDGET_WITH_SEARCH_MS = 40_000;
+const TOTAL_AI_BUDGET_WITH_SEARCH_MS = 36_000;
 
 // Batas atas untuk SATU KALI percobaan model, walau sisa budget total
 // masih banyak -- supaya satu model yang hidup tapi lambat gak
@@ -221,10 +226,22 @@ const SOFT_MAX_TOKENS_CEILING = 16000;
 const TAVILY_SEARCH_URL =
   'https://api.tavily.com/search';
 
+// 🔥 RISET SOAL INTERNET -- 1 call teks / request maksimum.
+// Sengaja cuma satu call: hasilnya dipakai sebagai kumpulan referensi,
+// sehingga 20 soal tidak berubah menjadi 20+ pencarian dan kuota tetap aman.
+const TAVILY_RESEARCH_TIMEOUT_MS = 5_000;
+const MAX_RESEARCH_RESULTS = 5;
+const MAX_RESEARCH_CHARS_PER_RESULT = 2_000;
+const MAX_RESEARCH_CONTEXT_CHARS = 8_000;
+
+// Pencarian gambar tetap dibatasi terpisah dan rendah.
+// Jadi total maksimum Tavily per request = 1 riset + 3 gambar = 4 call.
+const MAX_TAVILY_IMAGE_CALLS_PER_REQUEST = 3;
+
 // Batas keras jumlah panggilan Tavily PER REQUEST generate-quiz --
 // jaga-jaga supaya satu permintaan guru (banyak soal, semua butuh
 // gambar) gak ujug-ujug ngabisin jatah bulanan cuma dalam 1 klik.
-const MAX_TAVILY_CALLS_PER_REQUEST = 8;
+const MAX_TAVILY_CALLS_PER_REQUEST = MAX_TAVILY_IMAGE_CALLS_PER_REQUEST;
 
 // 🔥 DITURUNKAN dari 12 detik saat pindah ke Gemini. Alasannya
 // terukur, bukan perasaan: dengan budget AI yang lama, kasus terburuk
@@ -257,6 +274,180 @@ function isReliableImageUrl(
     (pattern) =>
       pattern.test(url),
   );
+}
+
+function buildResearchQuery({
+  topic,
+  mapel,
+  kelas,
+  year,
+  hotsLevel,
+}) {
+  const parts = [
+    'contoh soal',
+    mapel,
+    topic,
+    `kelas ${kelas}`,
+    'pembahasan',
+  ];
+
+  if (
+    normalizeText(hotsLevel).includes('hots')
+  ) {
+    parts.push('HOTS');
+  }
+
+  if (year) {
+    parts.push(String(year));
+  }
+
+  return parts
+    .map((part) => cleanText(part))
+    .filter(Boolean)
+    .join(' ')
+    .slice(0, 500);
+}
+
+async function callTavilyResearchSearch(
+  apiKey,
+  query,
+) {
+  if (!apiKey || !query) {
+    return {
+      results: [],
+      callUsed: 0,
+      skipped: true,
+      reason: 'missingKeyOrQuery',
+    };
+  }
+
+  const controller =
+    new AbortController();
+
+  const timeoutId =
+    setTimeout(
+      () => controller.abort(),
+      TAVILY_RESEARCH_TIMEOUT_MS,
+    );
+
+  try {
+    const response =
+      await fetch(
+        TAVILY_SEARCH_URL,
+        {
+          method: 'POST',
+          headers: {
+            Authorization:
+              `Bearer ${apiKey}`,
+            'Content-Type':
+              'application/json',
+          },
+          body: JSON.stringify({
+            query,
+            search_depth: 'basic',
+            max_results: MAX_RESEARCH_RESULTS,
+            include_answer: false,
+            include_images: false,
+            include_image_descriptions: false,
+            include_raw_content: false,
+          }),
+          signal: controller.signal,
+        },
+      );
+
+    if (!response.ok) {
+      return {
+        results: [],
+        callUsed: 1,
+        skipped: true,
+        reason:
+          response.status === 429
+            ? 'rateLimited'
+            : response.status === 403
+              ? 'forbidden'
+              : `http${response.status}`,
+      };
+    }
+
+    const data =
+      await response.json();
+
+    const rawResults =
+      Array.isArray(data?.results)
+        ? data.results
+        : [];
+
+    const results = rawResults
+      .map((item) => ({
+        title: cleanText(item?.title).slice(0, 300),
+        url: cleanText(item?.url).slice(0, 500),
+        content: cleanText(
+          item?.content || item?.snippet,
+        ).slice(
+          0,
+          MAX_RESEARCH_CHARS_PER_RESULT,
+        ),
+      }))
+      .filter(
+        (item) =>
+          item.title &&
+          /^https?:\/\/\S+$/i.test(item.url) &&
+          item.content,
+      )
+      .slice(0, MAX_RESEARCH_RESULTS);
+
+    return {
+      results,
+      callUsed: 1,
+      skipped: false,
+      reason:
+        results.length > 0
+          ? null
+          : 'noUsableResults',
+    };
+  } catch (_) {
+    return {
+      results: [],
+      callUsed: 1,
+      skipped: true,
+      reason: 'timeoutOrNetwork',
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+function buildResearchContext(
+  results,
+) {
+  if (!Array.isArray(results) || !results.length) {
+    return '';
+  }
+
+  const blocks = [];
+  let total = 0;
+
+  for (let i = 0; i < results.length; i += 1) {
+    const item = results[i];
+    const block = [
+      `REFERENSI ${i + 1}`,
+      `Judul: ${item.title}`,
+      `URL: ${item.url}`,
+      `Isi hasil pencarian: ${item.content}`,
+    ].join('\n');
+
+    if (
+      total + block.length >
+      MAX_RESEARCH_CONTEXT_CHARS
+    ) {
+      break;
+    }
+
+    blocks.push(block);
+    total += block.length;
+  }
+
+  return blocks.join('\n\n');
 }
 
 async function callTavilyImageSearch(
@@ -596,7 +787,7 @@ function computeMaxTokens(
   // banyak konten.
   const buffer =
     enableBrowserSearch
-      ? 3500
+      ? 2500
       : 1500;
 
   const ceiling =
@@ -3027,43 +3218,35 @@ function buildSystemPrompt({
 
     'ATURAN MUTLAK:',
 
-    // 🔥 PENTING -- JANGAN DIUBAH JADI KONDISIONAL LAGI:
-    // Dulu ada instruksi yang bilang ke AI "kamu PUNYA akses browsing"
-    // saat mode "prediction" aktif. Itu benar ketika provider-nya masih
-    // Groq (yang memang menyediakan tool browser_search bawaan).
-    // Provider sekarang TIDAK menyediakan tool itu sama sekali.
-    // Kalau instruksi lama dibiarkan, AI akan "berpura-pura" browsing
-    // dan mengarang sumber yang tidak pernah ia buka -- itu jauh lebih
-    // berbahaya daripada sekadar soal kurang variatif, karena guru bisa
-    // percaya soal itu berbasis riset padahal tidak. Maka instruksinya
-    // SELALU jujur "jangan browsing", apa pun mode yang dipilih guru.
-    '1. Jangan browsing internet -- kamu gak punya akses itu.',
+    '1. Gunakan bahan REFERENSI INTERNET yang diberikan di prompt sebagai sumber pola/kompetensi/contoh soal.',
 
-    '2. Jangan mengaku melakukan browsing.',
+    '2. Jangan mengaku melakukan browsing sendiri. Kamu menerima hasil pencarian yang sudah dikumpulkan server.',
 
-    '3. Jangan mengaku memakai sumber eksternal atau URL yang gak pernah kamu buka.',
+    '3. Jangan mengarang URL, judul sumber, atau isi sumber. Untuk sourceUrl/sourceTitle, gunakan HANYA referensi yang benar-benar diberikan.',
 
-    '4. Jangan menyalin soal dari sumber tertentu secara verbatim/kata-per-kata -- soal harus tetap hasil susunan sendiri berdasarkan pola/kompetensi yang dipelajari.',
+    '4. Soal sumber TIDAK BOLEH disalin kata-per-kata. Tulis ulang menjadi soal baru dengan kompetensi dan tingkat kesulitan yang setara, tetapi ubah konteks, angka, nama, susunan kalimat, dan pilihan jawaban seperlunya.',
 
-    '5. Setiap soal harus mempunyai blueprintNo.',
+    '5. Bila referensi mengandung stimulus bergambar, pertahankan JENIS STIMULUS-nya agar soal tetap relevan. Untuk diagram matematika/bangun/grafik, rekonstruksi dengan field visual yang tersedia, bukan mencari foto acak.',
 
-    '6. Setiap blueprintNo hanya boleh digunakan satu kali.',
+    '6. Setiap soal harus mempunyai blueprintNo.',
 
-    '7. Ikuti difficulty dari blueprint.',
+    '7. Setiap blueprintNo hanya boleh digunakan satu kali.',
 
-    '8. Ikuti competency dari blueprint.',
+    '8. Ikuti difficulty dari blueprint.',
 
-    '9. Untuk multiple hanya satu jawaban benar.',
+    '9. Ikuti competency dari blueprint.',
 
-    '10. Periksa kembali semua perhitungan angka.',
+    '10. Untuk multiple hanya satu jawaban benar.',
 
-    '11. Jangan membuat pilihan jawaban yang ambigu.',
+    '11. Periksa kembali semua perhitungan angka.',
 
-    '12. Pembahasan harus menjelaskan alasan jawaban.',
+    '12. Jangan membuat pilihan jawaban yang ambigu.',
 
-    '13. Jangan menggunakan Markdown dalam output.',
+    '13. Pembahasan harus menjelaskan alasan jawaban.',
 
-    '14. Jangan memberikan percakapan tambahan.',
+    '14. Jangan menggunakan Markdown dalam output.',
+
+    '15. Jangan memberikan percakapan tambahan.',
 
     // 🔥 BARU: penekanan Bahasa Indonesia MUTLAK -- ditambah setelah
     // laporan nyata AI keluar Bahasa Inggris di tengah kuis Bahasa
@@ -3071,14 +3254,14 @@ function buildSystemPrompt({
     // Matematika TKA kelas 9 SMP). Ditaruh sebagai ATURAN MUTLAK
     // bernomor, bukan cuma disebut sekilas, biar bobotnya jelas setara
     // sama aturan lain yang harus dipatuhi.
-    '15. SELURUH teks (question, options, explanation, statements, cause, effect, readingText, subQuestions, dll) WAJIB 100% Bahasa Indonesia baku -- KECUALI notasi matematika standar (mis. "7³", "x²", angka, simbol operasi) dan istilah teknis yang memang lazim dipakai apa adanya (mis. "HOTS"). DILARANG MUTLAK bikin soal atau pilihan jawaban dalam Bahasa Inggris.',
+    '16. SELURUH teks (question, options, explanation, statements, cause, effect, readingText, subQuestions, dll) WAJIB 100% Bahasa Indonesia baku -- KECUALI notasi matematika standar (mis. "7³", "x²", angka, simbol operasi) dan istilah teknis yang memang lazim dipakai apa adanya (mis. "HOTS"). DILARANG MUTLAK bikin soal atau pilihan jawaban dalam Bahasa Inggris.',
 
     // 🔥 BARU: penekanan level kesulitan sesuai jenjang -- ditambah
     // setelah laporan nyata soal level SD ("berapa hasil 7+5?") muncul
     // untuk kuis kelas 9 SMP HOTS.
-    '16. Soal WAJIB sesuai jenjang kelas yang diminta -- soal kelas 9 SMP harus setara materi kurikulum kelas 9 SMP, BUKAN materi kelas yang jauh lebih rendah (mis. penjumlahan dasar, perkalian 1 digit) walau ditandai "Easy". "Easy" berarti bagian TERMUDAH dari materi kelas tersebut, BUKAN materi jenjang yang berbeda.',
+    '17. Soal WAJIB sesuai jenjang kelas yang diminta -- soal kelas 9 SMP harus setara materi kurikulum kelas 9 SMP, BUKAN materi kelas yang jauh lebih rendah (mis. penjumlahan dasar, perkalian 1 digit) walau ditandai "Easy". "Easy" berarti bagian TERMUDAH dari materi kelas tersebut, BUKAN materi jenjang yang berbeda.',
 
-    '17. Untuk mapel Matematika, gunakan operasi/rumus yang PRESIS dan bisa dihitung manual -- verifikasi ulang hasil perhitungan sebelum menuliskannya di "correct"/"explanation", jangan asal tebak angka.',
+    '18. Untuk mapel Matematika, gunakan operasi/rumus yang PRESIS dan bisa dihitung manual -- verifikasi ulang hasil perhitungan sebelum menuliskannya di "correct"/"explanation", jangan asal tebak angka.',
 
     '',
 
@@ -3235,6 +3418,7 @@ function buildUserPrompt({
   currentMode,
   arahan,
   blueprint,
+  researchContext,
 }) {
   return [
     'BIMBEL GEMILANG — GENERATE QUIZ',
@@ -3250,6 +3434,25 @@ function buildUserPrompt({
     `MODE: ${currentMode}`,
 
     `ARAHAN GURU: ${arahan}`,
+
+    '',
+
+    'REFERENSI INTERNET YANG SUDAH DICARI SERVER:',
+
+    researchContext ||
+      'Tidak ada referensi internet yang tersedia. Jangan mengarang adanya sumber.',
+
+    '',
+
+    'ATURAN PENGGUNAAN REFERENSI:',
+
+    'Gunakan referensi di atas untuk menemukan pola soal nyata yang relevan dengan topik, mapel, dan kelas.',
+
+    'Tulis ulang menjadi soal baru. JANGAN copy-paste.',
+
+    'Kalau referensi berisi soal bergambar/diagram, pertahankan konsep stimulus dan bangun ulang visual yang relevan dengan field visual JSON yang tersedia.',
+
+    'sourceTitle/sourceUrl hanya boleh berasal dari referensi di atas. Bila satu soal diadaptasi dari salah satu referensi, gunakan judul dan URL referensi tersebut.',
 
     '',
 
@@ -3405,11 +3608,9 @@ async function callAI({
                 }
               : {}),
 
-            // 🔥 CATATAN: provider AI saat ini TIDAK punya tool
-            // pencarian web bawaan. Jadi `enableBrowserSearch` di sini
-            // HANYA dipakai untuk memilih timeout yang lebih longgar
-            // dan menandai "MODE: prediction" di prompt -- BUKAN riset
-            // internet sungguhan. Lihat catatan di header file.
+            // Web research sudah dilakukan server SEBELUM callAI dan hasilnya
+            // dimasukkan ke userPrompt. `enableBrowserSearch` di sini hanya
+            // menjaga kompatibilitas timeout/pemetaan mode lama.
           }),
 
           signal:
@@ -4786,6 +4987,51 @@ export default async function handler(
     currentMode === 'prediction';
 
   // ==========================================================
+  // 1.5. RISET REFERENSI SOAL INTERNET (AMAN & TERBATAS)
+  // ==========================================================
+
+  // Tepat 1 pencarian teks per request maksimum. Kalau gagal/rate limit,
+  // generator tetap lanjut tanpa riset, jadi Tavily tidak pernah membuat
+  // proses generate gagal total.
+  let researchResults = [];
+  let researchPerformed = false;
+  let researchCallUsed = 0;
+  let researchSkippedReason = null;
+  const tavilyApiKey =
+    process.env.TAVILY_API_KEY;
+
+  if (tavilyApiKey) {
+    const research =
+      await callTavilyResearchSearch(
+        tavilyApiKey,
+        buildResearchQuery({
+          topic,
+          mapel,
+          kelas,
+          year: targetYear,
+          hotsLevel,
+        }),
+      );
+
+    researchResults =
+      research.results;
+    researchPerformed =
+      research.results.length > 0;
+    researchCallUsed =
+      research.callUsed;
+    researchSkippedReason =
+      research.reason;
+  } else {
+    researchSkippedReason =
+      'missingTavilyApiKey';
+  }
+
+  const researchContext =
+    buildResearchContext(
+      researchResults,
+    );
+
+  // ==========================================================
   // 2. PROMPT
   // ==========================================================
 
@@ -4805,6 +5051,7 @@ export default async function handler(
       currentMode,
       arahan,
       blueprint,
+      researchContext,
     });
 
   // ==========================================================
@@ -5044,7 +5291,7 @@ export default async function handler(
   // 6.5. ENRICH DENGAN GAMBAR ASLI (Tavily -- opsional)
   // ==========================================================
 
-  // 🔥 Sisakan ~6 detik di akhir buat sorting, menyusun JSON respons,
+  // 🔥 Sisakan ~10 detik di akhir buat sorting, menyusun JSON respons,
   // dan pengiriman -- sisanya baru boleh dipakai cari gambar. Kalau
   // pemanggilan AI tadi sudah makan banyak waktu, langkah ini otomatis
   // dapat jatah kecil (atau dilewati), BUKAN bikin seluruh request
@@ -5052,7 +5299,7 @@ export default async function handler(
   const imageDeadlineAt =
     requestStartedAt +
     (maxDuration * 1000 -
-      6_000);
+      10_000);
 
   const imageEnrichResult =
     await enrichQuestionsWithRealImages(
@@ -5155,14 +5402,19 @@ export default async function handler(
             'competency',
           ),
 
-        // 🔥 SELALU false: tidak ada tool browsing sama sekali di
-        // provider sekarang. Jangan pernah mengklaim ke guru bahwa
-        // riset internet terjadi padahal tidak.
-        researchPerformed: false,
+        // 🔥 Riset web dilakukan server via Tavily SEBELUM Gemini.
+        // Kalau key tidak ada, timeout, error, atau rate limit, nilainya
+        // false dan generator tetap berhasil.
+        researchPerformed,
 
-        // 🔥 CATATAN: kolom ini SELALU 0 sekarang. Dipertahankan agar
-        // struktur diagnostik tetap konsisten kalau nanti dipasang
-        // provider yang punya tool pencarian sungguhan.
+        researchCallUsed,
+
+        researchResultCount:
+          researchResults.length,
+
+        researchSkippedReason,
+
+        // Kolom ini dihitung dari sourceUrl yang benar-benar dikembalikan AI.
         researchBackedCount:
           questions.filter(
             (q) =>
