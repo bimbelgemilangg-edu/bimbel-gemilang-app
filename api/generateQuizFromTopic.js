@@ -73,11 +73,20 @@
 // diubah sama sekali. Yang diganti hanya alamat & nama model.
 //
 // OPTIONAL:
-// AI_MODEL=gemini-2.5-flash
+// AI_MODEL=gemini-3.6-flash
 //   (Model default sengaja "Flash": cepat, kuota besar, dan sudah
 //   lebih dari cukup untuk membuat soal. Kalau suatu saat mau coba
 //   model lain, cukup ubah environment variable ini -- TIDAK perlu
 //   mengubah kode.)
+//
+//   ⚠️ CATATAN (Agustus 2026): default sempat 'gemini-2.5-flash',
+//   tetapi Google menutup model 2.5 untuk PENGGUNA BARU -- akun yang
+//   baru dibuat mendapat 404 dengan pesan agar memakai generasi 3.
+//   Ini beda dari model yang benar-benar pensiun: bagi akun lama, 2.5
+//   masih hidup. Artinya "model ada di katalog" TETAP tidak menjamin
+//   akunmu boleh memakainya. Kalau 404 serupa muncul lagi nanti,
+//   jalankan /api/generateQuizFromTopic?probe=1 -- pesan dari Google
+//   biasanya langsung menyebut model penggantinya.
 //
 // AI_API_URL=...
 //   (Hanya diisi kalau suatu saat mau pindah provider lagi. Selama
@@ -101,25 +110,31 @@ const AI_API_URL =
 
 const AI_MODEL =
   process.env.AI_MODEL ||
-  'gemini-2.5-flash';
+  'gemini-3.6-flash';
 
 // Model cadangan, dicoba berurutan HANYA kalau model sebelumnya gagal
 // karena (a) tidak tersedia/pensiun (404/410), atau (b) timeout. Error
 // lain (rate limit, request kegedean) TIDAK memicu pindah model --
 // itu bukan salah modelnya, dan ganti model tidak akan menolong.
 const AI_MODEL_FALLBACKS = [
-  'gemini-2.5-flash-lite',
+  'gemini-3.5-flash-lite',
 ];
 
-// Lihat penjelasan lengkap di dalam body request callAI().
-// 'none'  = thinking dimatikan (default -- paling andal & cepat)
-// 'low'/'medium' = thinking aktif (lebih teliti, lebih lambat, lebih
-//                  boros token)
-// 'off'   = jangan kirim parameter ini sama sekali
+// 🔥 DIUBAH dari 'none' ke 'low' saat pindah ke Gemini 3.x.
+// Alasannya bukan preferensi, tapi keterbatasan model: pada model
+// Gemini generasi 3, thinking TIDAK BISA dimatikan sepenuhnya
+// (berbeda dari generasi 2.5). Mengirim 'none' berisiko ditolak atau
+// diabaikan diam-diam. 'low' adalah tingkat paling hemat yang
+// didukung -- cukup untuk ketelitian hitungan matematika, tanpa
+// memboroskan token & waktu.
+//
+// Pilihan nilai: 'low' | 'medium' | 'high' | 'off'
+// ('off' = parameter tidak dikirim sama sekali, mis. kalau nanti
+// pindah ke provider yang tidak mengenalinya.)
 const AI_REASONING_EFFORT =
   process.env
     .AI_REASONING_EFFORT ||
-  'none';
+  'low';
 
 const DEFAULT_QUESTION_COUNT = 10;
 const MAX_QUESTION_COUNT = 20;
@@ -570,7 +585,8 @@ function computeMaxTokens(
   // max_tokens output.
   const estimated =
     300 +
-    jumlah * 400;
+    jumlah * 400 +
+    THINKING_TOKEN_ALLOWANCE;
 
   // 🔥 BARU: kalau browser_search aktif, hasil pencarian (snippet
   // beberapa halaman web) ikut masuk ke context -- itu makan jatah
@@ -595,6 +611,14 @@ function computeMaxTokens(
     ceiling,
   );
 }
+
+// 🔥 PENTING untuk Gemini 3.x: token yang dipakai model untuk
+// "berpikir" diambil dari jatah max_tokens YANG SAMA dengan jawaban.
+// Karena thinking tidak bisa dimatikan penuh di generasi 3, jatah ini
+// HARUS ditambahkan -- kalau tidak, model bisa kehabisan token di
+// tengah berpikir dan mengembalikan jawaban kosong/terpotong, yang di
+// sistem kita terbaca sebagai kegagalan total padahal API-nya sehat.
+const THINKING_TOKEN_ALLOWANCE = 2_000;
 
 const MAX_FIELD_LENGTH = 4_000;
 const MAX_QUESTION_LENGTH = 5_000;
