@@ -23,15 +23,17 @@
 //
 // TAVILY dipakai untuk 2 hal yang terkendali:
 //   1) mencari contoh soal/referensi di internet untuk ditulis ulang;
-//   2) mencari foto objek nyata bila soal memang membutuhkan foto.
+//   2) mengambil gambar yang memang terkait dengan sumber soal bila tersedia.
+// Jenis ujian tidak dikunci: bisa latihan dasar, ujian sekolah, asesmen, TKA, UTBK,
+// atau ujian lain, selama blueprint/kompetensinya jelas.
 // Riset wajib bila generator berjalan: tanpa referensi yang lolos, generator berhenti aman.
 //
 // ⚠️ CATATAN:
 // Pencarian referensi internet dilakukan oleh server lewat Tavily SEBELUM
 // prompt dikirim ke Gemini. Gemini menerima hasil pencarian tersebut
 // sebagai bahan referensi dan WAJIB menulis ulang soalnya, bukan menyalin.
-// Kalau Tavily tidak tersedia/gagal/rate limit, generator TIDAK ERROR:
-// sistem otomatis lanjut membuat soal tanpa riset web.
+// Kalau Tavily tidak tersedia/gagal/rate limit, generator berhenti aman
+// tanpa membuat soal karangan bebas. Ini mencegah soal yang tidak ter-grounded.
 //
 // ENV (WAJIB):
 // GEMINI_API_KEY=... (buat GRATIS di https://aistudio.google.com/apikey
@@ -284,6 +286,8 @@ function buildResearchQuery({
   year,
   hotsLevel,
   blueprint,
+  examContext,
+  arahan,
 }) {
   const competencyHints = Array.isArray(blueprint)
     ? blueprint
@@ -293,34 +297,41 @@ function buildResearchQuery({
         .slice(0, 900)
     : '';
 
+  // UNIVERSAL: jangan mengunci pencarian ke TKA/UTBK/ujian tertentu.
+  // Jenis ujian hanya menjadi konteks tambahan bila frontend memang mengirimkannya.
+  // Inti pencarian selalu blueprint: mapel + topik + kelas + kompetensi.
   const parts = [
-    'TKA',
     'contoh soal',
+    'bank soal',
     'soal ujian',
+    'latihan soal',
     mapel,
     topic,
     `kelas ${kelas}`,
     competencyHints,
-    'kerangka asesmen',
   ];
 
+  if (examContext) {
+    parts.push(String(examContext));
+  }
+
   if (normalizeText(hotsLevel).includes('hots')) {
-    parts.push('penalaran HOTS');
+    parts.push('HOTS penalaran analisis');
+  }
+
+  if (arahan && normalizeText(arahan) !== 'tidak ada') {
+    parts.push(arahan);
   }
 
   if (year) {
     parts.push(String(year));
   }
 
-  // Arahkan mesin pencari ke sumber asesmen resmi terlebih dahulu.
-  // Query tetap terbuka agar bisa menemukan sumber pendidikan lain jika ada.
-  parts.push('site:pusmendik.kemendikdasmen.go.id OR site:tka.kemendikdasmen.go.id');
-
   return parts
     .map((part) => cleanText(part))
     .filter(Boolean)
     .join(' ')
-    .slice(0, 1200);
+    .slice(0, 1600);
 }
 
 async function callTavilyResearchSearch(
@@ -3313,13 +3324,13 @@ function buildSystemPrompt({
 
     'ATURAN MUTLAK:',
 
-    '1. REFERENSI INTERNET adalah SUMBER UTAMA. Setiap soal WAJIB ditulis ulang/adaptasi dari salah satu REFERENSI yang diberikan, bukan dibuat dari pengetahuan umum model.',
+    '1. REFERENSI INTERNET adalah SUMBER UTAMA. Untuk setiap blueprint, pilih REFERENSI yang paling cocok dengan kompetensi, topik, kelas, dan jenis ujian yang diminta (bila ada). Soal WAJIB ditulis ulang/adaptasi dari referensi yang cocok, bukan dibuat bebas dari pengetahuan umum model.',
 
     '2. Jangan mengaku browsing sendiri. Server sudah memberikan hasil riset beserta nomor REFERENSI 1..N.',
 
     '3. Setiap soal WAJIB mencantumkan sourceRef yang menunjuk ke REFERENSI yang benar-benar menjadi dasar soal. Jangan mengarang sourceRef, URL, judul, atau isi sumber.',
 
-    '4. Adaptasi berarti mempertahankan kompetensi, struktur penalaran, konteks asesmen, bentuk stimulus, dan tingkat kesulitan sumber. Jangan membuat soal yang hanya kebetulan satu topik.',
+    '4. Adaptasi berarti mempertahankan kompetensi, indikator, struktur penalaran, konteks asesmen, bentuk stimulus, dan tingkat kesulitan sumber. Jangan memilih referensi hanya karena memiliki kata kunci/gambar yang sama.',
 
     '5. JANGAN mengubah data visual pada gambar sumber bila memakai useSourceImage=true. Angka, label, posisi, bentuk, dan informasi pada gambar harus tetap cocok dengan pertanyaan.',
 
@@ -3517,6 +3528,7 @@ function buildUserPrompt({
   arahan,
   blueprint,
   researchContext,
+  examContext,
 }) {
   return [
     'BIMBEL GEMILANG — GENERATE QUIZ',
@@ -3530,6 +3542,8 @@ function buildUserPrompt({
     `TARGET TAHUN: ${year}`,
 
     `MODE: ${currentMode}`,
+
+    `JENIS UJIAN (jika diberikan): ${examContext || 'Umum / tidak ditentukan'}`,
 
     `ARAHAN GURU: ${arahan}`,
 
@@ -4956,6 +4970,15 @@ export default async function handler(
       ? 'prediction'
       : 'source';
 
+  const examContext =
+    safeField(
+      body.examType ||
+        body.jenisUjian ||
+        body.ujian ||
+        body.targetExam ||
+        '',
+    );
+
   const currentYear =
     new Date()
       .getFullYear();
@@ -5111,6 +5134,8 @@ export default async function handler(
           year: targetYear,
           hotsLevel,
           blueprint,
+          examContext,
+          arahan,
         }),
       );
 
@@ -5172,6 +5197,7 @@ export default async function handler(
       arahan,
       blueprint,
       researchContext,
+      examContext,
     });
 
   // ==========================================================
