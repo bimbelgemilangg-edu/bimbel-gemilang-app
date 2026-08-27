@@ -50,13 +50,14 @@
 // versi CDN-nya, supaya dua fitur berbagi cache browser yang sama.
 //
 // ------------------------------------------------------------
-// KENAPA TINJAUAN ADMIN TETAP WAJIB
+// KENAPA TINJAUAN ADMIN TETAP ADA DI TAHAP INI
 // ------------------------------------------------------------
-// Walau soal sudah dijamin akurat (gambar asli, bukan hasil baca AI),
-// JAWABAN yang ditentukan AI tetap bisa keliru -- terutama untuk
-// perhitungan matematis yang rumit. Maka jawaban dari AI HANYA
-// prefill/saran, dan admin tetap bisa mengklik huruf lain sebagai
-// koreksi sebelum soal disetujui.
+// Di tahap IMPOR ini tidak ada jawaban yang perlu "diverifikasi" --
+// belum ada AI yang menjawab apa pun. Tinjauan admin di sini gunanya
+// memastikan BATAS POTONGAN (crop) tiap soal sudah pas (tidak
+// terpotong atau mengambil sedikit bagian soal berikutnya), dan
+// opsional menandai jawaban benar sekarang kalau admin kebetulan
+// tahu -- tapi ini TIDAK WAJIB untuk menyetujui soal.
 //
 // ------------------------------------------------------------
 // INTEGRASI YANG DIBUTUHKAN
@@ -66,10 +67,11 @@
 //   onSaveQuestions(soal[]) : dipanggil saat admin menekan "Simpan".
 //   onCancel() : opsional, menutup halaman.
 //
-// Endpoint yang dipakai: POST /api/smartParseQuiz
-// dengan body { questionImage, optionImages? }
-// (MENUMPANG di endpoint yang sudah ada -- lihat catatan batas 12
-// Serverless Function di file smartParseQuiz.js.)
+// 🔥 FILE INI TIDAK MEMANGGIL API/AI SAMA SEKALI. Semua pemrosesan
+// (render halaman, deteksi nomor soal, potong gambar) berjalan di
+// browser. Endpoint /api/smartParseQuiz mode "questionImage" sudah
+// disiapkan (lihat smartParseQuiz.js) untuk langkah GENERATE JAWABAN
+// yang akan dipanggil dari ManageQuiz nanti -- BUKAN dari file ini.
 // ============================================================
 
 import {
@@ -247,8 +249,6 @@ import {
   // KONSTANTA LAIN
   // ============================================================
   
-  const DELAY_BETWEEN_QUESTIONS_MS = 600; // jaga rate limit Gemini tier gratis
-  
   const STATUS = {
     IDLE: 'idle',
     LOADING_PDF: 'loading_pdf',
@@ -276,37 +276,20 @@ import {
       .slice(2, 8)}`;
   }
   
-  // ============================================================
-  // PANGGIL AI -- HANYA UNTUK JAWABAN + PEMBAHASAN
-  // ============================================================
-  
-  async function answerQuestionWithAI(questionImageDataUrl, optionImageDataUrls) {
-    const response = await fetch('/api/smartParseQuiz', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        questionImage: questionImageDataUrl,
-        optionImages:
-          Array.isArray(optionImageDataUrls) && optionImageDataUrls.length > 0
-            ? optionImageDataUrls
-            : undefined,
-      }),
-    });
-  
-    const data = await response.json();
-  
-    if (!response.ok || !data.success) {
-      throw new Error(data?.error || `HTTP ${response.status}`);
-    }
-  
-    return {
-      optionCount: Number.isInteger(data.optionCount) ? data.optionCount : 4,
-      correct: Number.isInteger(data.correct) ? data.correct : 0,
-      explanation: typeof data.explanation === 'string' ? data.explanation : '',
-      readingConfidence: data.readingConfidence === 'low' ? 'low' : 'high',
-      needsManualAnswer: Boolean(data.needsManualAnswer),
-    };
-  }
+  // 🔥 PERUBAHAN ARSITEKTUR: TIDAK ADA PEMANGGILAN AI DI FILE INI SAMA
+  // SEKALI. Sebelumnya di sini ada langkah "tanya AI jawaban+pembahasan
+  // tiap butir" yang berjalan otomatis untuk SETIAP soal yang terdeteksi
+  // -- itu boros (memanggil AI untuk semua soal padahal belum tentu
+  // semuanya akan dipakai guru) dan lambat (satu per satu, dengan jeda
+  // antar panggilan supaya tidak kena rate limit).
+  //
+  // Sekarang tugas file ini MURNI: deteksi & potong soal per butir dari
+  // PDF (tanpa AI, lihat bagian di atas), lalu simpan gambarnya ke Bank
+  // Soal apa adanya. Jawaban dan pembahasan BELUM DIISI di tahap ini --
+  // itu dibuat NANTI, saat guru benar-benar memilih soal ini untuk
+  // dipakai di sebuah kuis (langkah terpisah, belum dibangun, akan
+  // menumpang di endpoint /api/smartParseQuiz yang mode "questionImage"
+  // -nya sudah disiapkan tapi sengaja TIDAK dipanggil dari sini).
   
   // ============================================================
   // KOMPONEN UTAMA
@@ -473,56 +456,30 @@ import {
       async (pageNumber) => {
         const { pageImage, crops } = await detectQuestionsOnPage(pageNumber);
   
-        const questions = [];
-  
-        for (const crop of crops) {
-          if (abortRef.current) break;
-  
-          while (pauseRef.current && !abortRef.current) {
-            // eslint-disable-next-line no-await-in-loop
-            await new Promise((r) => setTimeout(r, 300));
-          }
-          if (abortRef.current) break;
-  
-          let answer = {
-            optionCount: 4,
-            correct: 0,
-            explanation: '',
-            readingConfidence: 'low',
-            needsManualAnswer: true,
-          };
-  
-          try {
-            // eslint-disable-next-line no-await-in-loop
-            answer = await answerQuestionWithAI(
-              crop.qImage,
-              crop.optionsAreImages ? crop.optionImages : undefined,
-            );
-          } catch (error) {
-            // AI gagal menjawab BUKAN alasan membuang soalnya -- crop
-            // gambarnya sendiri tetap valid dan berharga. Soal tetap
-            // masuk dengan tanda "butuh jawaban manual".
-            answer.explanation = `(AI gagal menjawab: ${error?.message || 'coba lagi'})`;
-          }
-  
-          questions.push({
-            id: newId(),
-            pageNumber,
-            printedNumber: crop.printedNumber,
-            qImage: crop.qImage,
-            optionsAreImages: crop.optionsAreImages,
-            optionImages: crop.optionImages,
-            optionCount: answer.optionCount,
-            correct: answer.correct,
-            explanation: answer.explanation,
-            readingConfidence: answer.readingConfidence,
-            needsManualAnswer: answer.needsManualAnswer,
-            approved: false,
-          });
-  
-          // eslint-disable-next-line no-await-in-loop
-          await new Promise((r) => setTimeout(r, DELAY_BETWEEN_QUESTIONS_MS));
-        }
+        // 🔥 Murni pemetaan hasil crop -> objek soal. TIDAK ADA
+        // pemanggilan AI, TIDAK ADA jeda jaringan -- makanya satu
+        // halaman sekarang selesai dalam hitungan milidetik (dibatasi
+        // cuma oleh kecepatan render kanvas di browser), bukan lagi
+        // dibatasi kecepatan API seperti sebelumnya.
+        const questions = crops.map((crop) => ({
+          id: newId(),
+          pageNumber,
+          printedNumber: crop.printedNumber,
+          qImage: crop.qImage,
+          optionsAreImages: crop.optionsAreImages,
+          optionImages: crop.optionImages,
+          // optionCount belum diketahui di tahap ini (tidak ada AI yang
+          // membacanya) -- default aman 5 (A-E) supaya pemilih jawaban
+          // manual di bawah tetap bisa dipakai admin kalau mau menandai
+          // sambil meninjau; kalau tidak, biarkan kosong (null), nanti
+          // diisi di langkah "generate jawaban" saat soal ini dipakai
+          // di kuis.
+          optionCount: 5,
+          correct: null,
+          explanation: '',
+          needsManualAnswer: true,
+          approved: false,
+        }));
   
         return { pageImage, questions };
       },
@@ -602,52 +559,6 @@ import {
     );
   
     // ----------------------------------------------------------
-    // ULANG SATU SOAL SAJA (kalau cuma jawaban AI-nya yang mau diulang)
-    // ----------------------------------------------------------
-  
-    const retryQuestionAnswer = useCallback(
-      async (pageNumber, questionId) => {
-        const page = pages.find((p) => p.pageNumber === pageNumber);
-        const question = page?.questions.find((q) => q.id === questionId);
-        if (!question) return;
-  
-        try {
-          const answer = await answerQuestionWithAI(
-            question.qImage,
-            question.optionsAreImages ? question.optionImages : undefined,
-          );
-  
-          setPages((prev) =>
-            prev.map((p) =>
-              p.pageNumber !== pageNumber
-                ? p
-                : {
-                    ...p,
-                    questions: p.questions.map((q) =>
-                      q.id === questionId
-                        ? {
-                            ...q,
-                            optionCount: answer.optionCount,
-                            correct: answer.correct,
-                            explanation: answer.explanation,
-                            readingConfidence: answer.readingConfidence,
-                            needsManualAnswer: answer.needsManualAnswer,
-                          }
-                        : q,
-                    ),
-                  },
-            ),
-          );
-        } catch (error) {
-          setErrorMessage(
-            `Gagal mengulang jawaban soal ini: ${error?.message || 'coba lagi.'}`,
-          );
-        }
-      },
-      [pages],
-    );
-  
-    // ----------------------------------------------------------
     // SUNTING SOAL (jawaban, pembahasan, tingkat kesulitan, dsb.)
     // ----------------------------------------------------------
   
@@ -722,12 +633,17 @@ import {
             ? `Soal ${q.printedNumber}`
             : 'Soal (lihat gambar)',
           qImage: q.qImage,
-          options: Array.from({ length: q.optionCount || 4 }, () => ''),
+          options: Array.from({ length: q.optionCount || 5 }, () => ''),
           optionImages: q.optionsAreImages ? q.optionImages : [],
           optionsAreImages: Boolean(q.optionsAreImages),
-          correct: Number.isInteger(q.correct) ? q.correct : 0,
+          // 🔥 null (bukan 0) kalau belum ditandai -- 0 berarti "opsi A
+          // benar", jadi TIDAK BOLEH dipakai sebagai nilai default
+          // "belum dijawab". needsAnswerGeneration menandai soal yang
+          // jawaban+pembahasannya masih harus dibuat nanti (baik oleh
+          // AI saat dipakai di kuis, maupun oleh guru secara manual).
+          correct: Number.isInteger(q.correct) ? q.correct : null,
           explanation: q.explanation || '',
-          needsManualAnswer: Boolean(q.needsManualAnswer),
+          needsAnswerGeneration: !Number.isInteger(q.correct),
           difficulty: q.difficulty || '',
           topik: q.topik || '',
           folderId,
@@ -772,9 +688,10 @@ import {
             <p className="bsi-eyebrow">{folderName}</p>
             <h1 className="bsi-title">Tambah soal dari PDF</h1>
             <p className="bsi-sub">
-              Soal dipotong per butir langsung dari halaman asli (tanpa
-              AI) -- AI hanya membantu menentukan jawaban dan
-              pembahasan. Periksa jawabannya sebelum disetujui.
+              Soal dipotong per butir langsung dari halaman asli, tanpa
+              AI sama sekali. Jawaban & pembahasan dibuat belakangan,
+              saat soal ini dipakai di sebuah kuis -- periksa dulu
+              batas potongan gambarnya di sini sebelum disetujui.
             </p>
           </div>
   
@@ -973,7 +890,7 @@ import {
   
                 <div className="bsi-parsed">
                   <div className="bsi-panel-label">
-                    Soal terdeteksi — periksa jawaban sebelum disetujui
+                    Soal terdeteksi — periksa batas potongan gambar sebelum disetujui
                   </div>
   
                   {selectedPage.error && (
@@ -1053,25 +970,19 @@ import {
                           ulang oleh AI. */}
                       <img src={q.qImage} alt="Soal" className="bsi-qimg" />
   
-                      {q.needsManualAnswer && (
-                        <p className="bsi-flag">
-                          AI gagal menjawab soal ini secara otomatis --
-                          pilih jawaban benar secara manual.
-                          {q.explanation ? ` (${q.explanation})` : ''}
-                        </p>
-                      )}
+                      <p className="bsi-flag">
+                        Jawaban & pembahasan belum diisi -- akan
+                        dibuatkan otomatis nanti saat soal ini dipakai
+                        di sebuah kuis. Boleh ditandai sekarang kalau
+                        admin sudah tahu jawabannya (opsional).
+                      </p>
   
-                      {!q.needsManualAnswer && q.readingConfidence === 'low' && (
-                        <p className="bsi-flag">
-                          AI kurang yakin dengan jawaban ini -- cocokkan
-                          dengan gambar soal di atas.
-                        </p>
-                      )}
-  
-                      {/* Pemilih jawaban -- kalau opsinya berupa gambar,
-                          tampilkan crop tiap opsi sebagai tombol; kalau
-                          tidak, tampilkan huruf A-E biasa (labelnya
-                          sendiri sudah ada di dalam gambar qImage). */}
+                      {/* Pemilih jawaban -- OPSIONAL, murni penanda
+                          manual admin (tanpa AI). Kalau opsinya berupa
+                          gambar, tampilkan crop tiap opsi sebagai
+                          tombol; kalau tidak, tampilkan huruf A-E biasa
+                          (labelnya sendiri sudah ada di dalam gambar
+                          qImage). */}
                       {q.optionsAreImages ? (
                         <div className="bsi-optimg-row">
                           {q.optionImages.map((url, oi) => (
@@ -1084,6 +995,7 @@ import {
                               onClick={() =>
                                 updateQuestion(selectedPage.pageNumber, q.id, {
                                   correct: oi,
+                                  needsManualAnswer: false,
                                 })
                               }
                             >
@@ -1095,7 +1007,7 @@ import {
                       ) : (
                         <div className="bsi-letter-row">
                           {Array.from(
-                            { length: Math.max(2, Math.min(5, q.optionCount || 4)) },
+                            { length: Math.max(2, Math.min(5, q.optionCount || 5)) },
                             (_, oi) => oi,
                           ).map((oi) => (
                             <button
@@ -1107,27 +1019,18 @@ import {
                               onClick={() =>
                                 updateQuestion(selectedPage.pageNumber, q.id, {
                                   correct: oi,
+                                  needsManualAnswer: false,
                                 })
                               }
                             >
                               {String.fromCharCode(65 + oi)}
                             </button>
                           ))}
-                          <button
-                            type="button"
-                            className="bsi-btn ghost sm"
-                            onClick={() =>
-                              retryQuestionAnswer(selectedPage.pageNumber, q.id)
-                            }
-                            title="Minta AI menjawab ulang soal ini"
-                          >
-                            Ulang jawaban AI
-                          </button>
                         </div>
                       )}
   
                       <details className="bsi-details">
-                        <summary>Pembahasan</summary>
+                        <summary>Pembahasan (opsional)</summary>
                         <textarea
                           className="bsi-input"
                           rows={3}
