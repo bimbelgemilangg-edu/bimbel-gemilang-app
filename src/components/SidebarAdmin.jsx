@@ -4,7 +4,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Menu, X, LayoutDashboard, Users, GraduationCap, Calendar,
   CreditCard, FileText, Settings, LogOut, Bell, BookOpen,
-  ClipboardList, Globe, TrendingUp, UserPlus, DollarSign
+  ClipboardList, Globe, TrendingUp, UserPlus, DollarSign,
+  FileUp
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where, getCountFromServer } from 'firebase/firestore';
@@ -49,11 +50,6 @@ const SidebarAdmin = () => {
         setBadgePiutang(piutang);
         setBadgeSiswaBaru(baru);
 
-        // 🔥 FIX PERFORMA: sebelumnya narik SEMUA dokumen pendaftaran online
-        // cuma buat hitung berapa yang statusnya "pending" — padahal Firestore
-        // punya cara hitung jumlah LANGSUNG DI SERVER (getCountFromServer)
-        // tanpa perlu download isi tiap dokumennya. Jauh lebih ringan,
-        // apalagi ini jalan di SEMUA halaman admin.
         const pendingQuery = query(collection(db, "online_registrations"), where("paymentStatus", "==", "pending"));
         const countSnap = await getCountFromServer(pendingQuery);
         setBadgePendaftaran(countSnap.data().count);
@@ -61,12 +57,6 @@ const SidebarAdmin = () => {
       } catch (e) { /* silent */ }
     };
     fetchBadges();
-    // 🔥 FIX PERFORMA: sebelumnya narik ulang SEMUA data siswa tiap 30 DETIK,
-    // padahal SidebarAdmin nempel di SETIAP halaman admin — jadi selama
-    // admin buka aplikasi, tarikan data ini numpuk terus-terusan. Badge
-    // notifikasi kayak gini gak butuh update se-real-time itu; 3 menit
-    // masih cukup responsif buat kebutuhan "ada piutang baru/pendaftaran
-    // baru", sambil beban ke server jadi 6x lebih ringan.
     const interval = setInterval(fetchBadges, 180000);
     return () => clearInterval(interval);
   }, []);
@@ -87,9 +77,6 @@ const SidebarAdmin = () => {
     return location.pathname.startsWith(path);
   };
 
-  // ============================================================
-  // MENU GROUPS
-  // ============================================================
   const menuGroups = [
     {
       label: 'UTAMA',
@@ -133,6 +120,14 @@ const SidebarAdmin = () => {
       ]
     },
     {
+      // 🔥 BARU: Bank Soal -- import soal dari PDF (mis. buku tryout)
+      // ke arsip yang bisa dipakai berulang oleh guru saat membuat kuis.
+      label: 'BANK SOAL',
+      items: [
+        { name: 'Import dari PDF', path: '/admin/bank-soal', icon: <FileUp size={18} /> },
+      ]
+    },
+    {
       label: 'LAINNYA',
       items: [
         { name: 'Blog & Galeri', path: '/admin/blog', icon: <BookOpen size={18} /> },
@@ -141,12 +136,8 @@ const SidebarAdmin = () => {
     }
   ];
 
-  // ============================================================
-  // RENDER
-  // ============================================================
   return (
     <>
-      {/* Hamburger Button - Mobile */}
       {isMobile && (
         <button 
           onClick={() => setIsOpen(!isOpen)} 
@@ -156,14 +147,11 @@ const SidebarAdmin = () => {
         </button>
       )}
 
-      {/* Overlay */}
       {isOpen && isMobile && (
         <div onClick={() => setIsOpen(false)} style={styles.overlay} />
       )}
 
-      {/* Sidebar */}
       <aside style={styles.sidebar(isOpen, isMobile)}>
-        {/* Logo */}
         <div style={styles.logoSection}>
           <img 
             src="/pwa-192x192.png" 
@@ -176,7 +164,6 @@ const SidebarAdmin = () => {
           </div>
         </div>
 
-        {/* Navigation */}
         <nav style={styles.nav}>
           {menuGroups.map((group, gIdx) => (
             <div key={gIdx} style={styles.menuGroup}>
@@ -203,7 +190,6 @@ const SidebarAdmin = () => {
           ))}
         </nav>
 
-        {/* Footer */}
         <div style={styles.footer}>
           <div style={styles.userInfo}>
             <div style={styles.userAvatar}>A</div>
@@ -221,9 +207,6 @@ const SidebarAdmin = () => {
   );
 };
 
-// ============================================================
-// STYLES
-// ============================================================
 const styles = {
   hamburger: (open) => ({
     position: 'fixed',
