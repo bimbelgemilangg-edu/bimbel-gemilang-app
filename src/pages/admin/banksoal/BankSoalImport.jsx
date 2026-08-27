@@ -71,15 +71,46 @@ import {
     useState,
   } from 'react';
   
-  import * as pdfjsLib from 'pdfjs-dist';
+  // 🔥 FIX: sebelumnya file ini mengimpor pdfjs-dist lewat npm
+  // (`import * as pdfjsLib from 'pdfjs-dist'` + Vite `?url` untuk
+  // worker-nya). Itu GAGAL BUILD di Vercel: "Rollup failed to resolve
+  // import pdfjs-dist/build/pdf.worker.min.mjs?url" -- ternyata setup
+  // project ini TIDAK memuat pdfjs-dist lewat npm sama sekali.
+  //
+  // SmartImportPanel.jsx (fitur impor PDF lain yang sudah lama jalan di
+  // project ini) memuat pdf.js lewat tag <script> dari CDN, bukan npm
+  // import. Supaya konsisten DAN supaya tidak menambah dependency baru
+  // yang bisa gagal lagi dengan cara berbeda, pola yang sama persis
+  // dipakai di sini -- termasuk versi CDN-nya (3.11.174), biar dua
+  // fitur ini berbagi cache browser yang sama kalau admin membuka
+  // keduanya.
+  const PDFJS_SCRIPT =
+    'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js';
   
-  // Pola standar Vite untuk memuat worker pdf.js. Aplikasi ini sudah
-  // memakai pola yang sama di tempat lain, jadi bundle-nya tidak
-  // bertambah.
-  import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+  const PDFJS_WORKER =
+    'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
   
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    pdfWorkerSrc;
+  function ensurePdfJsLoaded() {
+    return new Promise((resolve, reject) => {
+      if (window.pdfjsLib) {
+        resolve(window.pdfjsLib);
+        return;
+      }
+  
+      const script = document.createElement('script');
+      script.src = PDFJS_SCRIPT;
+  
+      script.onload = () => {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+        resolve(window.pdfjsLib);
+      };
+  
+      script.onerror = () =>
+        reject(new Error('Gagal memuat pembaca PDF.'));
+  
+      document.body.appendChild(script);
+    });
+  }
   
   // ============================================================
   // KONSTANTA
@@ -219,6 +250,10 @@ import {
       setStatus(STATUS.LOADING_PDF);
   
       try {
+        // Muat library dari CDN dulu (lihat ensurePdfJsLoaded di atas)
+        // sebelum bisa memanggil getDocument().
+        const pdfjsLib = await ensurePdfJsLoaded();
+  
         const buffer = await picked.arrayBuffer();
         const doc = await pdfjsLib.getDocument({ data: buffer }).promise;
   
