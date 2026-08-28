@@ -1,37 +1,25 @@
 // api/smartParseQuiz.js
-// ============================================================
-// 🔥 UPGRADE: OCR.space + Groq — FIXED
-// ============================================================
-
 export const config = { maxDuration: 60 };
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'mixtral-8x7b-32768';
 const OCR_API_URL = 'https://api.ocr.space/parse/image';
-
 const GROQ_TIMEOUT_MS = 50_000;
 
-// ============================================================
-// 🔥 PANGGIL OCR.SPACE — FIXED
-// ============================================================
 async function callOCR(imageDataUrl) {
-  // 🔥 FIX: Pastikan imageDataUrl valid
   if (!imageDataUrl || typeof imageDataUrl !== 'string') {
     throw new Error('Gambar tidak valid: data kosong.');
   }
 
-  // 🔥 FIX: Hapus prefix "data:image/jpeg;base64," atau sejenisnya
   let base64Image = imageDataUrl;
   if (imageDataUrl.includes('base64,')) {
     base64Image = imageDataUrl.split('base64,')[1];
   }
 
-  // 🔥 FIX: Cek apakah base64 valid
   if (!base64Image || base64Image.length < 100) {
     throw new Error('Gambar tidak valid: ukuran terlalu kecil atau format salah.');
   }
 
-  // 🔥 FIX: Gunakan FormData (bukan URLSearchParams)
   const formData = new FormData();
   formData.append('apikey', process.env.OCR_SPACE_API_KEY || 'helloworld');
   formData.append('base64Image', base64Image);
@@ -42,9 +30,6 @@ async function callOCR(imageDataUrl) {
 
   const response = await fetch(OCR_API_URL, {
     method: 'POST',
-    headers: {
-      // 🔥 PENTING: jangan set Content-Type, biarkan FormData yang set
-    },
     body: formData,
   });
 
@@ -66,9 +51,6 @@ async function callOCR(imageDataUrl) {
   throw new Error(data.ErrorMessage || 'OCR gagal memproses gambar.');
 }
 
-// ============================================================
-// 🔥 PANGGIL GROQ
-// ============================================================
 async function callGroqParse(systemPrompt, userText) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), GROQ_TIMEOUT_MS);
@@ -119,9 +101,6 @@ async function callGroqParse(systemPrompt, userText) {
   }
 }
 
-// ============================================================
-// 🔥 MODE: TRANSKRIPSI SATU SOAL
-// ============================================================
 async function transcribeQuestionImage(imageDataUrl) {
   const ocrResult = await callOCR(imageDataUrl);
 
@@ -181,9 +160,6 @@ async function handleTranscribeQuestionMode(req, res) {
   }
 }
 
-// ============================================================
-// 🔥 MODE: TRANSKRIPSI SATU HALAMAN
-// ============================================================
 async function transcribePage(pageImage) {
   const ocrResult = await callOCR(pageImage);
 
@@ -243,9 +219,6 @@ async function handleTranscribeRegionMode(req, res) {
   }
 }
 
-// ============================================================
-// 🔥 MODE: JAWAB SOAL
-// ============================================================
 async function answerQuestionFromImage(imageDataUrl) {
   const ocrResult = await callOCR(imageDataUrl);
 
@@ -286,9 +259,6 @@ async function handleAnswerQuestionMode(req, res) {
   }
 }
 
-// ============================================================
-// 🔥 MODE LAMA: PARSE TEKS MENTAH
-// ============================================================
 function splitIntoChunks(text) {
   const lines = text.split('\n');
   const blocks = [];
@@ -326,9 +296,6 @@ HANYA JSON:
   return Array.isArray(result) ? result : [];
 }
 
-// ============================================================
-// 🔥 HANDLER UTAMA
-// ============================================================
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -345,27 +312,22 @@ export default async function handler(req, res) {
 
   const { mode } = req.body;
 
-  // 🔥 MODE: transcribePage
   if (mode === 'transcribePage') {
     return handleTranscribePageMode(req, res);
   }
 
-  // 🔥 MODE: transcribeRegion
   if (mode === 'transcribeRegion') {
     return handleTranscribeRegionMode(req, res);
   }
 
-  // 🔥 MODE: transcribeQuestion (satu soal)
   if (req.body && req.body.questionCropImage) {
     return handleTranscribeQuestionMode(req, res);
   }
 
-  // 🔥 MODE: answerQuestion
   if (req.body && req.body.questionImage) {
     return handleAnswerQuestionMode(req, res);
   }
 
-  // 🔥 MODE LAMA: teks mentah
   const { text } = req.body;
   if (!text || text.trim().length < 5) {
     return res.status(400).json({ success: false, error: 'Teks soal kosong' });
