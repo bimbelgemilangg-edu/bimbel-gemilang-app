@@ -1969,16 +1969,6 @@ import {
               </div>
             )}
   
-                <button
-                  type="button"
-                  className="bsi-btn primary"
-                  onClick={processPages}
-                  disabled={isBusy}
-                >
-                  {pages.length > 0 ? 'Baca lagi' : 'Mulai baca'}
-                </button>
-              </div>
-            )}
   
             {totalPages > 60 && status !== STATUS.PROCESSING && (
               <p className="bsi-note">
