@@ -5,7 +5,7 @@ import {
   Menu, X, LayoutDashboard, Users, GraduationCap, Calendar,
   CreditCard, FileText, Settings, LogOut, Bell, BookOpen,
   ClipboardList, Globe, TrendingUp, UserPlus, DollarSign,
-  FileUp
+  FileUp, Briefcase
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where, getCountFromServer } from 'firebase/firestore';
@@ -18,6 +18,12 @@ const SidebarAdmin = () => {
   const [badgePiutang, setBadgePiutang] = useState(0);
   const [badgeSiswaBaru, setBadgeSiswaBaru] = useState(0);
   const [badgePendaftaran, setBadgePendaftaran] = useState(0);
+  // 🔥 BARU: badge jumlah lamaran tentor/staff yang statusnya masih
+  // "baru" (belum ditinjau admin sama sekali) -- pola sama persis
+  // dengan badgePendaftaran di atas (pendaftaran siswa pending), biar
+  // konsisten dan admin gak perlu buka halamannya cuma buat tau ada
+  // lamaran baru masuk atau enggak.
+  const [badgeLamaranTentor, setBadgeLamaranTentor] = useState(0);
 
   useEffect(() => {
     const handleResize = () => {
@@ -53,6 +59,11 @@ const SidebarAdmin = () => {
         const pendingQuery = query(collection(db, "online_registrations"), where("paymentStatus", "==", "pending"));
         const countSnap = await getCountFromServer(pendingQuery);
         setBadgePendaftaran(countSnap.data().count);
+
+        // 🔥 BARU: hitung lamaran tentor/staff berstatus "baru"
+        const lamaranBaruQuery = query(collection(db, "tutor_applications"), where("status", "==", "baru"));
+        const lamaranCountSnap = await getCountFromServer(lamaranBaruQuery);
+        setBadgeLamaranTentor(lamaranCountSnap.data().count);
 
       } catch (e) { /* silent */ }
     };
@@ -116,6 +127,16 @@ const SidebarAdmin = () => {
           name: 'Manajemen Harga', 
           path: '/admin/pendaftaran/harga', 
           icon: <DollarSign size={18} /> 
+        },
+        // 🔥 BARU: link ke halaman kelola lamaran tentor/staff --
+        // sebelumnya SAMA SEKALI GAK ADA di sidebar, cuma bisa diakses
+        // kalau tau/ketik URL-nya langsung.
+        {
+          name: 'Lamaran Tentor/Staff',
+          path: '/admin/pendaftaran/tentor',
+          icon: <Briefcase size={18} />,
+          badge: badgeLamaranTentor > 0 ? badgeLamaranTentor : null,
+          badgeColor: '#8b5cf6'
         },
       ]
     },
