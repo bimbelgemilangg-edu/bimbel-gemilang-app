@@ -923,14 +923,14 @@ import {
 
 
   // ============================================================
-  // AI-FIRST: DETEKSI BUTIR SOAL DARI GAMBAR SATU HALAMAN
+  // GROQ-FIRST: DETEKSI BUTIR SOAL DARI GAMBAR SATU HALAMAN
   // ============================================================
   // AI tidak lagi dipakai sebagai "baca ulang" opsional. AI menjadi
   // pengendali utama: dari satu gambar halaman, AI menentukan mana
   // blok soal, nomor cetaknya, dan bounding box masing-masing soal.
   //
   // Penting: endpoint /api/smartParseQuiz harus mendukung mode:
-  //   { mode: 'detectPage', pageImage }
+  //   { mode: 'transcribePage', pageImage }
   // dan mengembalikan:
   // {
   //   success: true,
@@ -942,10 +942,9 @@ import {
   //
   // bbox dinormalisasi 0..1 terhadap gambar halaman.
   // Setelah batas soal ditemukan, BARU masing-masing crop dikirim ke
-  // AI lagi satu per satu untuk transkripsi rinci. Ini menjaga keluaran
-  // kecil per panggilan sehingga teks panjang, matematika, tabel, dan
-  // diagram tidak mudah terpotong seperti desain "satu halaman =
-  // satu jawaban AI".
+  // Groq langsung mengembalikan transkripsi terstruktur seluruh halaman,
+  // sehingga impor normal hanya memakai SATU request per halaman. Fallback
+  // dua kolom baru dipakai kalau halaman penuh menghasilkan 0 soal.
   // ============================================================
 
   async function transcribePageWithAI(pageImageDataUrl) {
@@ -961,6 +960,27 @@ import {
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.success) {
       throw new Error(data?.error || `AI gagal membaca halaman (HTTP ${response.status})`);
+    }
+
+    return {
+      pageType: data.pageType || 'questions',
+      questions: Array.isArray(data.questions) ? data.questions : [],
+    };
+  }
+
+  async function transcribePageRegionWithAI(regionImageDataUrl) {
+    const response = await fetch('/api/smartParseQuiz', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'transcribeRegion',
+        pageImage: regionImageDataUrl,
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.success) {
+      throw new Error(data?.error || `AI gagal membaca kolom (HTTP ${response.status})`);
     }
 
     return {
@@ -1148,14 +1168,6 @@ import {
     const [currentPage, setCurrentPage] = useState(0);
     const [startPage, setStartPage] = useState(1);
     const [endPage, setEndPage] = useState(0);
-
-    // 🔥 V4: SELEKSI / PENGECUALIAN HALAMAN MANUAL
-    // Semua halaman awalnya dipilih. Admin dapat mengecualikan cover,
-    // daftar isi, kisi-kisi, pembahasan, iklan, atau halaman lain sebelum
-    // AI dipanggil. Halaman yang dikecualikan TIDAK AKAN dikirim ke AI.
-    const [excludedPages, setExcludedPages] = useState([]);
-    const [pagePreviews, setPagePreviews] = useState([]);
-    const [loadingPagePreviews, setLoadingPagePreviews] = useState(false);
   
     // Hasil deteksi per halaman: { pageNumber, pageImage, questions[], error }
     const [pages, setPages] = useState([]);
@@ -1196,9 +1208,6 @@ import {
       setErrorMessage('');
       setPages([]);
       setSavedCount(0);
-      setExcludedPages([]);
-      setPagePreviews([]);
-      setLoadingPagePreviews(false);
       setStatus(STATUS.LOADING_PDF);
   
       try {
@@ -1225,37 +1234,28 @@ import {
         setTotalPages(doc.numPages);
         setStartPage(1);
         setEndPage(doc.numPages);
-        setExcludedPages([]);
-
-        // 🔥 V4: render thumbnail SEMUA halaman untuk selector manual.
-        // Thumbnail kecil hanya untuk membantu admin memilih halaman;
-        // render resolusi tinggi tetap dilakukan nanti saat halaman diproses.
-        setLoadingPagePreviews(true);
-        const thumbnails = [];
-        for (let pageNumber = 1; pageNumber <= doc.numPages; pageNumber += 1) {
-          try {
-            // eslint-disable-next-line no-await-in-loop
-            const page = await doc.getPage(pageNumber);
-            const viewport = page.getViewport({ scale: 0.34 });
-            const canvas = document.createElement('canvas');
-            canvas.width = Math.max(1, Math.round(viewport.width));
-            canvas.height = Math.max(1, Math.round(viewport.height));
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            // eslint-disable-next-line no-await-in-loop
-            await page.render({ canvasContext: ctx, viewport }).promise;
-            thumbnails.push({
-              pageNumber,
-              image: canvas.toDataURL('image/jpeg', 0.62),
-            });
-          } catch (thumbError) {
-            thumbnails.push({ pageNumber, image: '' });
-          }
-          setPagePreviews([...thumbnails]);
-        }
-        setLoadingPagePreviews(false);
+        setSelectedPageNumbers(Array.from({ length: doc.numPages }, (_, i) => i + 1));
+        setPagePreviewImages([]);
+        setShowPagePicker(true);
         setStatus(STATUS.IDLE);
+
+        (async () => {
+          const previews = [];
+          for (let pageNumber = 1; pageNumber <= doc.numPages; pageNumber += 1) {
+            try {
+              const pg = await doc.getPage(pageNumber);
+              const vp = pg.getViewport({ scale: 0.24 });
+              const cv = document.createElement('canvas');
+              cv.width = Math.max(1, Math.round(vp.width));
+              cv.height = Math.max(1, Math.round(vp.height));
+              const cx = cv.getContext('2d', { alpha: false });
+              cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, cv.width, cv.height);
+              await pg.render({ canvasContext: cx, viewport: vp }).promise;
+              previews.push({ pageNumber, image: cv.toDataURL('image/jpeg', 0.58) });
+            } catch (_) { previews.push({ pageNumber, image: '' }); }
+            setPagePreviewImages([...previews]);
+          }
+        })();
       } catch (error) {
         setErrorMessage(
           `Berkas tidak bisa dibuka: ${error?.message || 'berkas mungkin rusak.'}`,
@@ -1263,6 +1263,25 @@ import {
         setStatus(STATUS.ERROR);
       }
     }, [importMode]);
+
+    const togglePageSelection = useCallback((pageNumber) => {
+      setSelectedPageNumbers((prev) => prev.includes(pageNumber)
+        ? prev.filter((n) => n !== pageNumber)
+        : [...prev, pageNumber].sort((a, b) => a - b));
+    }, []);
+
+    const selectAllPages = useCallback(() => {
+      setSelectedPageNumbers(Array.from({ length: totalPages }, (_, i) => i + 1));
+    }, [totalPages]);
+
+    const clearAllPages = useCallback(() => setSelectedPageNumbers([]), []);
+
+    const invertPages = useCallback(() => {
+      setSelectedPageNumbers((prev) => {
+        const set = new Set(prev);
+        return Array.from({ length: totalPages }, (_, i) => i + 1).filter((n) => !set.has(n));
+      });
+    }, [totalPages]);
   
     // ----------------------------------------------------------
     // DETEKSI & POTONG SOAL DI SATU HALAMAN (TANPA AI)
@@ -1473,143 +1492,91 @@ import {
     // ----------------------------------------------------------
   
     // ----------------------------------------------------------
-    // AI-FIRST: PROSES SATU HALAMAN
+    // GROQ-FIRST: SATU HALAMAN = SATU REQUEST
     // ----------------------------------------------------------
-    // 1) render halaman sebagai gambar
-    // 2) AI mendeteksi SEMUA blok soal + bbox
-    // 3) tiap bbox dicrop
-    // 4) tiap crop dikirim ke AI satu per satu untuk transkripsi
-    // 5) hasilnya langsung menjadi field yang bisa diedit admin
-    // ----------------------------------------------------------
-
     const processOnePage = useCallback(
       async (pageNumber) => {
-        if (importMode === 'word') {
-          throw new Error('Gunakan mode PDF untuk impor AI-first.');
-        }
-
         const ref = pdfDocRef.current;
         if (!ref) throw new Error('Dokumen PDF belum siap.');
-
         const { doc } = ref;
         const page = await doc.getPage(pageNumber);
         const viewport = page.getViewport({ scale: RENDER_SCALE });
-
-        const pageCanvas = document.createElement('canvas');
-        pageCanvas.width = viewport.width;
-        pageCanvas.height = viewport.height;
-        const ctx = pageCanvas.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(viewport.width);
+        canvas.height = Math.round(viewport.height);
+        const ctx = canvas.getContext('2d', { alpha: false });
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         await page.render({ canvasContext: ctx, viewport }).promise;
-        const pageImage = pageCanvas.toDataURL('image/jpeg', 0.82);
 
-        const textContent = await page.getTextContent();
-        const items = textContent.items || [];
+        const pageImage = canvas.toDataURL('image/jpeg', 0.84);
+        const analysis = await transcribePageWithAI(canvasToDataUrlScaled(canvas, 3200, 0.84));
+        let detected = Array.isArray(analysis.questions) ? analysis.questions : [];
 
-        // Halaman yang jelas merupakan pembahasan/kunci tidak perlu AI.
-        const pageText = items.map((it) => String(it.str || '')).join(' ');
-        if (/\bPEMBAHASAN\b/i.test(pageText) || /\bKUNCI\s+JAWABAN\b/i.test(pageText)) {
-          return { pageImage, questions: [], isPembahasanPage: true };
-        }
-
-        // Untuk PDF bertext-layer seperti buku TKA kamu, halaman non-soal
-        // dilewati TANPA request AI. Ini menghemat quota secara drastis.
-        if (items.length > 0 && !pageHasQuestionLikeContent(items)) {
-          return { pageImage, questions: [], isPembahasanPage: false };
-        }
-
-        // Satu request AI = satu halaman penuh dan SEMUA soal di halaman itu.
-        // Tidak ada lagi detectPage + transkripsi per soal.
-        const analysis = await transcribePageWithAI(
-          canvasToDataUrlScaled(pageCanvas, 2200, 0.82),
-        );
-
-        if (analysis.pageType === 'pembahasan') {
-          return { pageImage, questions: [], isPembahasanPage: true };
-        }
-
-        const questions = [];
-        for (const detected of analysis.questions || []) {
-          const rawCropImage = cropNormalizedFromCanvas(pageCanvas, detected.bbox);
-          if (!rawCropImage) continue;
-
-          const questionFigureBBox = relativeFigureBBox(detected.bbox, detected.figureBBox);
-          const figureImage = questionFigureBBox
-            ? (await cropFigureFromQuestionImage(rawCropImage, questionFigureBBox)) || ''
-            : '';
-
-          const optionImages = (detected.optionImageBBoxes || [])
-            .map((box) => cropNormalizedFromCanvas(pageCanvas, box, 4))
-            .filter(Boolean);
-
-          questions.push({
-            id: newId(),
-            pageNumber,
-            printedNumber: Number.isFinite(Number(detected.printedNumber))
-              ? Number(detected.printedNumber)
-              : questions.length + 1,
-            rawCropImage,
-            question: detected.question || '',
-            options: Array.isArray(detected.options) ? detected.options : [],
-            tipeSoal: detected.tipeSoal || 'pilihan_ganda',
-            kuantitasP: detected.kuantitasP || '',
-            kuantitasQ: detected.kuantitasQ || '',
-            optionsAreImages: Boolean(detected.optionsAreImages && optionImages.length >= 2),
-            optionImages,
-            qImage: figureImage,
-            tableHtml: '',
-            correct: null,
-            explanation: '',
-            shortAnswerValue: '',
-            approved: false,
-            possibleMathNotationIssue: false,
-            readingConfidence: detected.readingConfidence === 'low' ? 'low' : 'high',
-            aiSource: 'page-transcription-single-call',
-            aiDetectionBBox: detected.bbox,
-            transcribeError: null,
+        if (!detected.length && analysis.pageType !== 'pembahasan') {
+          const mid = Math.floor(canvas.width / 2);
+          const gap = Math.max(8, Math.round(canvas.width * 0.015));
+          const leftW = Math.max(1, mid - gap);
+          const rightX = Math.min(canvas.width - 1, mid + gap);
+          const rightW = Math.max(1, canvas.width - rightX);
+          const left = cropCanvasRegion(canvas, 0, 0, leftW, canvas.height);
+          const right = cropCanvasRegion(canvas, rightX, 0, rightW, canvas.height);
+          const [la, ra] = await Promise.all([
+            transcribePageRegionWithAI(left.toDataURL('image/jpeg', 0.84)),
+            transcribePageRegionWithAI(right.toDataURL('image/jpeg', 0.84)),
+          ]);
+          const mapRegion = (list, ox, rw) => (Array.isArray(list) ? list : []).map((q) => ({
+            ...q,
+            bbox: q.bbox ? {
+              x: (ox + (Number(q.bbox.x) || 0) * rw) / canvas.width,
+              y: Number(q.bbox.y) || 0,
+              width: ((Number(q.bbox.width) || 0) * rw) / canvas.width,
+              height: Number(q.bbox.height) || 0,
+            } : null,
+            figureBBox: q.figureBBox ? {
+              x: (ox + (Number(q.figureBBox.x) || 0) * rw) / canvas.width,
+              y: Number(q.figureBBox.y) || 0,
+              width: ((Number(q.figureBBox.width) || 0) * rw) / canvas.width,
+              height: Number(q.figureBBox.height) || 0,
+            } : null,
+          }));
+          detected = [...mapRegion(la.questions, 0, leftW), ...mapRegion(ra.questions, rightX, rightW)];
+          detected.sort((a, b) => {
+            const ax = Number(a?.bbox?.x) || 0, bx = Number(b?.bbox?.x) || 0;
+            return Math.abs(ax - bx) > 0.2 ? ax - bx : (Number(a?.bbox?.y) || 0) - (Number(b?.bbox?.y) || 0);
           });
         }
 
-        return {
-          pageImage,
-          questions,
-          isPembahasanPage: false,
-        };
-      },
-      [importMode],
-    );
+        if (analysis.pageType === 'pembahasan') return { pageImage, questions: [], isPembahasanPage: true };
 
-    // ----------------------------------------------------------
-    // SELEKSI HALAMAN MANUAL
-    // ----------------------------------------------------------
-
-    const toggleExcludedPage = useCallback((pageNumber) => {
-      setExcludedPages((prev) =>
-        prev.includes(pageNumber)
-          ? prev.filter((n) => n !== pageNumber)
-          : [...prev, pageNumber].sort((a, b) => a - b),
-      );
-    }, []);
-
-    const selectAllPages = useCallback(() => {
-      setExcludedPages([]);
-    }, []);
-
-    const excludeAllPages = useCallback(() => {
-      setExcludedPages(Array.from({ length: totalPages }, (_, i) => i + 1));
-    }, [totalPages]);
-
-    const invertPageSelection = useCallback(() => {
-      setExcludedPages((prev) => {
-        const current = new Set(prev);
-        const next = [];
-        for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
-          if (!current.has(pageNumber)) next.push(pageNumber);
+        const questions = [];
+        const seen = new Set();
+        for (const q of detected) {
+          if (!q?.bbox) continue;
+          const num = Number(q.printedNumber);
+          if (!Number.isFinite(num)) continue;
+          const key = `${num}-${Math.round((Number(q.bbox.x) || 0) * 1000)}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          const rawCropImage = cropNormalizedFromCanvas(canvas, q.bbox, 12);
+          if (!rawCropImage) continue;
+          const relFig = relativeFigureBBox(q.bbox, q.figureBBox);
+          const qImage = relFig ? (await cropFigureFromQuestionImage(rawCropImage, relFig)) || '' : '';
+          const optionImages = (Array.isArray(q.optionImageBBoxes) ? q.optionImageBBoxes : []).map((b) => cropNormalizedFromCanvas(canvas, b, 4)).filter(Boolean);
+          questions.push({
+            id: newId(), pageNumber, printedNumber: num, rawCropImage,
+            question: typeof q.question === 'string' ? q.question : '',
+            options: Array.isArray(q.options) ? q.options : [],
+            tipeSoal: ['pilihan_ganda','pernyataan_kompleks','hubungan_kuantitas','isian_singkat'].includes(q.tipeSoal) ? q.tipeSoal : 'pilihan_ganda',
+            kuantitasP: q.kuantitasP || '', kuantitasQ: q.kuantitasQ || '',
+            optionsAreImages: Boolean(q.optionsAreImages && optionImages.length >= 2), optionImages,
+            qImage, tableHtml: q.tableHtml || '', correct: null, explanation: '', shortAnswerValue: '', approved: false,
+            possibleMathNotationIssue: false, readingConfidence: q.readingConfidence === 'low' ? 'low' : 'high',
+            aiSource: 'groq-qwen3.6-27b-page-first', aiDetectionBBox: q.bbox, transcribeError: null,
+          });
         }
-        return next;
-      });
-    }, [totalPages]);
+        return { pageImage, questions, isPembahasanPage: false };
+      }, [importMode],
+    );
 
     // ----------------------------------------------------------
     // PROSES BERURUTAN SEMUA HALAMAN DALAM RENTANG
@@ -1621,22 +1588,10 @@ import {
       setStatus(STATUS.PROCESSING);
       setErrorMessage('');
   
-      const from = Math.max(1, Math.min(startPage, totalPages));
-      const to = Math.max(from, Math.min(endPage || totalPages, totalPages));
-      const excluded = new Set(excludedPages);
-      const pagesToProcess = [];
-      for (let pageNumber = from; pageNumber <= to; pageNumber += 1) {
-        if (!excluded.has(pageNumber)) pagesToProcess.push(pageNumber);
-      }
-
-      if (pagesToProcess.length === 0) {
-        setStatus(STATUS.IDLE);
-        setErrorMessage('Tidak ada halaman yang dipilih. Pilih minimal satu halaman yang ingin diproses.');
-        return;
-      }
+      const selected = selectedPageNumbers.slice().sort((a, b) => a - b);
+      if (!selected.length) { setStatus(STATUS.IDLE); setErrorMessage('Pilih minimal satu halaman.'); return; }
   
-      for (let index = 0; index < pagesToProcess.length; index += 1) {
-        const pageNumber = pagesToProcess[index];
+      for (const pageNumber of selected) {
         if (abortRef.current) break;
   
         // 🔥 FIX: pengecekan jeda sebelumnya ada di loop PER-SOAL (yang
@@ -1674,7 +1629,7 @@ import {
       }
   
       setStatus(abortRef.current ? STATUS.IDLE : STATUS.DONE);
-    }, [startPage, endPage, totalPages, excludedPages, processOnePage]);
+    }, [selectedPageNumbers, processOnePage]);
   
     // ----------------------------------------------------------
     // ULANG SATU HALAMAN
@@ -1986,10 +1941,7 @@ import {
                 </>
               ) : (
                 <>
-                  PDF dengan text layer akan dipilah otomatis agar halaman sampul
-                  dan pembahasan tidak menghabiskan quota AI. PDF scan murni
-                  tetap bisa dibaca AI, tetapi sebaiknya diproses dengan rentang
-                  halaman yang lebih kecil.
+                  PDF teks maupun scan dapat digunakan. Setelah upload, pilih manual halaman yang akan diproses agar cover/pembahasan tidak ikut memakan quota Groq.
                 </>
               )}
             </span>
@@ -2006,92 +1958,16 @@ import {
                 {totalPages > 0 && ` · ${totalPages} halaman`}
               </span>
             </div>
-
-            {importMode !== 'word' && totalPages > 0 && status !== STATUS.PROCESSING && (
-              <div className="bsi-page-picker">
-                <div className="bsi-page-picker-head">
-                  <div>
-                    <strong>Pilih halaman yang akan diproses</strong>
-                    <span> Tandai pengecualian untuk cover, daftar isi, kisi-kisi, pembahasan, atau halaman lain yang tidak diperlukan.</span>
-                  </div>
-                  <div className="bsi-page-picker-actions">
-                    <button type="button" className="bsi-btn ghost sm" onClick={selectAllPages}>Pilih semua</button>
-                    <button type="button" className="bsi-btn ghost sm" onClick={excludeAllPages}>Kecualikan semua</button>
-                    <button type="button" className="bsi-btn ghost sm" onClick={invertPageSelection}>Balik pilihan</button>
-                  </div>
-                </div>
-
-                <div className="bsi-page-picker-summary">
-                  <span><strong>{totalPages - excludedPages.length}</strong> halaman dipilih</span>
-                  <span>•</span>
-                  <span><strong>{excludedPages.length}</strong> halaman dikecualikan</span>
-                  {excludedPages.length > 0 && (
-                    <>
-                      <span>•</span>
-                      <span>Dikecualikan: {excludedPages.join(', ')}</span>
-                    </>
-                  )}
-                </div>
-
-                {loadingPagePreviews ? (
-                  <div className="bsi-page-picker-loading">Menyiapkan pratinjau halaman… {pagePreviews.length}/{totalPages}</div>
-                ) : (
-                  <div className="bsi-page-grid">
-                    {pagePreviews.map((thumb) => {
-                      const excluded = excludedPages.includes(thumb.pageNumber);
-                      return (
-                        <label key={thumb.pageNumber} className={`bsi-page-thumb${excluded ? ' excluded' : ''}`}>
-                          <input
-                            type="checkbox"
-                            checked={!excluded}
-                            onChange={() => toggleExcludedPage(thumb.pageNumber)}
-                          />
-                          <div className="bsi-page-thumb-image">
-                            {thumb.image ? (
-                              <img src={thumb.image} alt={`Pratinjau halaman ${thumb.pageNumber}`} />
-                            ) : (
-                              <span>Pratinjau gagal</span>
-                            )}
-                            {excluded && <span className="bsi-page-excluded-badge">Dikecualikan</span>}
-                          </div>
-                          <span className="bsi-page-thumb-label">Halaman {thumb.pageNumber}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                )}
+  
+            {totalPages > 0 && status !== STATUS.PROCESSING && importMode === 'pdf' && (
+              <div className="bsi-range">
+                <span className="bsi-selection-summary"><strong>{selectedPageNumbers.length}</strong> dipilih · <strong>{Math.max(0, totalPages - selectedPageNumbers.length)}</strong> dikecualikan</span>
+                <button type="button" className="bsi-btn" onClick={() => setShowPagePicker((v) => !v)}>{showPagePicker ? 'Tutup pilihan halaman' : 'Pilih / kecualikan halaman'}</button>
+                <button type="button" className="bsi-btn primary" onClick={processPages} disabled={isBusy || selectedPageNumbers.length === 0}>
+                  {pages.length > 0 ? 'Baca lagi halaman terpilih' : 'Mulai baca halaman terpilih'}
+                </button>
               </div>
             )}
-  
-            {totalPages > 0 && status !== STATUS.PROCESSING && (
-              <div className="bsi-range">
-                {/* 🔥 Rentang halaman tidak relevan untuk mode Word
-                    (dokumen diproses utuh sekaligus) -- disembunyikan,
-                    hanya tombol mulai yang tampil. */}
-                {importMode !== 'word' && (
-                  <>
-                    <label>
-                      Dari halaman
-                      <input
-                        type="number"
-                        min={1}
-                        max={totalPages}
-                        value={startPage}
-                        onChange={(e) => setStartPage(Number(e.target.value))}
-                      />
-                    </label>
-                    <label>
-                      sampai
-                      <input
-                        type="number"
-                        min={1}
-                        max={totalPages}
-                        value={endPage}
-                        onChange={(e) => setEndPage(Number(e.target.value))}
-                      />
-                    </label>
-                  </>
-                )}
   
                 <button
                   type="button"
@@ -2118,26 +1994,16 @@ import {
                     className="bsi-bar-fill"
                     style={{
                       width: `${
-                        (() => {
-                          const from = Math.max(1, Math.min(startPage, totalPages));
-                          const to = Math.max(from, Math.min(endPage || totalPages, totalPages));
-                          let doneIndex = 0;
-                          let selectedCount = 0;
-                          for (let p = from; p <= to; p += 1) {
-                            if (!excludedPages.includes(p)) {
-                              selectedCount += 1;
-                              if (p <= currentPage) doneIndex += 1;
-                            }
-                          }
-                          return (doneIndex / Math.max(1, selectedCount)) * 100;
-                        })()
+                        (Math.max(1, selectedPageNumbers.indexOf(currentPage) + 1) /
+                          Math.max(1, selectedPageNumbers.length)) *
+                        100
                       }%`,
                     }}
                   />
                 </div>
                 <div className="bsi-progress-row">
                   <span>
-                    Memproses halaman {currentPage} — halaman terpilih yang dikecualikan tidak diproses
+                    Memproses halaman {currentPage} · {selectedPageNumbers.length} halaman dipilih
                   </span>
                   <div className="bsi-progress-actions">
                     <button
@@ -2175,6 +2041,29 @@ import {
           </section>
         )}
   
+        {showPagePicker && importMode === 'pdf' && totalPages > 0 && (
+          <section className="bsi-page-picker-panel">
+            <div className="bsi-page-picker-head">
+              <div><h3 className="bsi-page-picker-title">Pilih halaman yang diproses AI</h3><p className="bsi-page-picker-sub">Centang halaman soal. Hilangkan centang untuk cover, kisi-kisi, pembahasan, iklan, atau halaman lain yang tidak dipakai. Halaman yang dikecualikan tidak dikirim ke Groq.</p></div>
+              <div className="bsi-page-picker-actions">
+                <button type="button" className="bsi-btn ghost sm" onClick={selectAllPages}>Pilih semua</button>
+                <button type="button" className="bsi-btn ghost sm" onClick={clearAllPages}>Hapus semua</button>
+                <button type="button" className="bsi-btn ghost sm" onClick={invertPages}>Balik pilihan</button>
+              </div>
+            </div>
+            <div className="bsi-page-picker-grid">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => {
+                const selected = selectedPageNumbers.includes(pageNumber);
+                const preview = pagePreviewImages.find((p) => p.pageNumber === pageNumber)?.image || '';
+                return <button type="button" key={pageNumber} className={`bsi-page-select-card${selected ? ' selected' : ' excluded'}`} onClick={() => togglePageSelection(pageNumber)} aria-pressed={selected}>
+                  <span className="bsi-page-select-thumb">{preview ? <img src={preview} alt={`Halaman ${pageNumber}`} /> : <span className="bsi-page-thumb-loading">Memuat…</span>}<span className="bsi-page-select-check">{selected ? '✓' : '×'}</span></span>
+                  <span className="bsi-page-select-label">Halaman {pageNumber}</span><span className="bsi-page-select-status">{selected ? 'Diproses AI' : 'Dikecualikan'}</span>
+                </button>;
+              })}
+            </div>
+          </section>
+        )}
+
         {errorMessage && <div className="bsi-alert">{errorMessage}</div>}
   
         {savedCount > 0 && (
@@ -2746,24 +2635,6 @@ import {
   .bsi-fileinfo{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
   .bsi-filename{font-weight:600;font-size:15px;word-break:break-all}
   .bsi-meta{color:var(--muted);font-size:13px;white-space:nowrap}
-  .bsi-page-picker{margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#f8fafc}
-  .bsi-page-picker-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}
-  .bsi-page-picker-head strong{display:block;font-size:14px;color:var(--ink);margin-bottom:3px}
-  .bsi-page-picker-head span{font-size:12.5px;color:var(--muted);line-height:1.45}
-  .bsi-page-picker-actions{display:flex;gap:7px;flex-wrap:wrap}
-  .bsi-page-picker-summary{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:10px 0 12px;font-size:12px;color:var(--muted)}
-  .bsi-page-picker-summary strong{color:var(--ink)}
-  .bsi-page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;max-height:420px;overflow:auto;padding:2px}
-  .bsi-page-thumb{position:relative;display:flex;flex-direction:column;gap:5px;padding:6px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}
-  .bsi-page-thumb:hover{border-color:var(--brand)}
-  .bsi-page-thumb.excluded{opacity:.6;background:#fff7ed;border-color:#fdba74}
-  .bsi-page-thumb input{position:absolute;top:8px;right:8px;width:17px;height:17px;z-index:2;accent-color:var(--brand)}
-  .bsi-page-thumb-image{position:relative;display:flex;align-items:center;justify-content:center;min-height:150px;background:#eef2f7;border-radius:6px;overflow:hidden}
-  .bsi-page-thumb-image img{display:block;width:100%;height:150px;object-fit:contain;background:#fff}
-  .bsi-page-thumb-label{font-size:11.5px;font-weight:650;color:var(--muted)}
-  .bsi-page-excluded-badge{position:absolute;left:5px;bottom:5px;padding:3px 6px;border-radius:5px;background:#b45309;color:#fff;font-size:10px;font-weight:700}
-  .bsi-page-picker-loading{padding:20px;text-align:center;color:var(--muted);font-size:13px}
-
   .bsi-range{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-top:14px}
   .bsi-range label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
   .bsi-range input{width:90px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;font-size:14px;color:var(--ink)}
@@ -2870,6 +2741,25 @@ import {
   @media (max-width:700px){
     .bsi-ai-compare-row{grid-template-columns:1fr}
   }
+
+  .bsi-selection-summary{font-size:13px;color:var(--muted);padding:5px 0}
+  .bsi-page-picker-panel{border:1px solid var(--line);border-radius:12px;padding:16px;margin:0 0 16px;background:#fff}
+  .bsi-page-picker-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}
+  .bsi-page-picker-title{margin:0 0 4px;font-size:16px;font-weight:650}
+  .bsi-page-picker-sub{margin:0;color:var(--muted);font-size:12.5px;line-height:1.5;max-width:80ch}
+  .bsi-page-picker-actions{display:flex;gap:7px;flex-wrap:wrap}
+  .bsi-page-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;max-height:58vh;overflow:auto;margin-top:12px;padding:2px}
+  .bsi-page-select-card{border:1px solid var(--line);border-radius:10px;padding:7px;background:#fff;text-align:left;cursor:pointer;font-family:inherit}
+  .bsi-page-select-card.selected{border-color:var(--brand);background:#eff6ff}
+  .bsi-page-select-card.excluded{opacity:.58;background:#f8fafc}
+  .bsi-page-select-card:hover{border-color:var(--brand);opacity:1}
+  .bsi-page-select-thumb{position:relative;display:block;aspect-ratio:.71;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:#fff}
+  .bsi-page-select-thumb img{width:100%;height:100%;display:block;object-fit:contain}
+  .bsi-page-thumb-loading{display:flex;height:100%;align-items:center;justify-content:center;font-size:10px;color:var(--muted)}
+  .bsi-page-select-check{position:absolute;right:5px;top:5px;width:21px;height:21px;border-radius:99px;border:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+  .bsi-page-select-card.selected .bsi-page-select-check{background:var(--brand);border-color:var(--brand);color:#fff}
+  .bsi-page-select-label{display:block;margin-top:6px;font-size:11.5px;font-weight:650}
+  .bsi-page-select-status{display:block;margin-top:2px;font-size:10px;color:var(--muted)}
 
   .bsi-foot{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
     padding:12px 20px;display:flex;justify-content:flex-end;align-items:center;gap:16px;z-index:20}
