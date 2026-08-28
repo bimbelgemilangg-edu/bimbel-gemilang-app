@@ -1,50 +1,51 @@
 // api/smartParseQuiz.js
 // ============================================================
-// 🔥 UPGRADE (Agustus 2026): kombinasi OCR.space + Groq
-//
-// OCR.space digunakan untuk EKSTRAKSI TEKS dari GAMBAR (PDF crop)
-// Groq digunakan untuk PARSING/PENGOLAHAN teks menjadi soal terstruktur
-//
-// KEUNTUNGAN:
-// - OCR.space gratis 25.000 request/bulan
-// - Tidak perlu model vision (Groq tidak support gambar)
-// - Hasil OCR lebih akurat untuk teks cetak + tabel
-// - Groq hanya dipakai untuk mengubah teks mentah jadi JSON terstruktur
+// 🔥 UPGRADE: OCR.space + Groq — FIXED
 // ============================================================
 
 export const config = { maxDuration: 60 };
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = 'mixtral-8x7b-32768'; // atau 'llama3-70b-8192'
-
+const GROQ_MODEL = 'mixtral-8x7b-32768';
 const OCR_API_URL = 'https://api.ocr.space/parse/image';
 
-// Timeout untuk Groq
 const GROQ_TIMEOUT_MS = 50_000;
 
 // ============================================================
-// 🔥 PANGGIL OCR.SPACE
+// 🔥 PANGGIL OCR.SPACE — FIXED
 // ============================================================
 async function callOCR(imageDataUrl) {
-  const match = /^data:([^;]+);base64,(.+)$/.exec(imageDataUrl || '');
-  if (!match) throw new Error('Format gambar tidak valid.');
+  // 🔥 FIX: Pastikan imageDataUrl valid
+  if (!imageDataUrl || typeof imageDataUrl !== 'string') {
+    throw new Error('Gambar tidak valid: data kosong.');
+  }
 
-  const base64Image = match[2];
+  // 🔥 FIX: Hapus prefix "data:image/jpeg;base64," atau sejenisnya
+  let base64Image = imageDataUrl;
+  if (imageDataUrl.includes('base64,')) {
+    base64Image = imageDataUrl.split('base64,')[1];
+  }
 
-  const formData = new URLSearchParams();
+  // 🔥 FIX: Cek apakah base64 valid
+  if (!base64Image || base64Image.length < 100) {
+    throw new Error('Gambar tidak valid: ukuran terlalu kecil atau format salah.');
+  }
+
+  // 🔥 FIX: Gunakan FormData (bukan URLSearchParams)
+  const formData = new FormData();
   formData.append('apikey', process.env.OCR_SPACE_API_KEY || 'helloworld');
   formData.append('base64Image', base64Image);
   formData.append('language', 'ind');
   formData.append('isOverlayRequired', 'false');
-  formData.append('OCREngine', '2'); // Mode lebih akurat
+  formData.append('OCREngine', '2');
   formData.append('scale', 'true');
 
   const response = await fetch(OCR_API_URL, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      // 🔥 PENTING: jangan set Content-Type, biarkan FormData yang set
     },
-    body: formData.toString(),
+    body: formData,
   });
 
   if (!response.ok) {
@@ -56,6 +57,9 @@ async function callOCR(imageDataUrl) {
 
   if (!data.IsErroredOnProcessing) {
     const text = data.ParsedResults?.[0]?.ParsedText || '';
+    if (!text || text.trim().length < 3) {
+      throw new Error('OCR tidak menemukan teks yang cukup di gambar ini.');
+    }
     return { text, confidence: data.OCRExitCode === 1 ? 'high' : 'low' };
   }
 
@@ -63,7 +67,7 @@ async function callOCR(imageDataUrl) {
 }
 
 // ============================================================
-// 🔥 PANGGIL GROQ UNTUK PARSE TEKS
+// 🔥 PANGGIL GROQ
 // ============================================================
 async function callGroqParse(systemPrompt, userText) {
   const controller = new AbortController();
@@ -116,16 +120,11 @@ async function callGroqParse(systemPrompt, userText) {
 }
 
 // ============================================================
-// 🔥 MODE: TRANSKRIPSI SATU SOAL (OCR.space + Groq)
+// 🔥 MODE: TRANSKRIPSI SATU SOAL
 // ============================================================
 async function transcribeQuestionImage(imageDataUrl) {
-  // Langkah 1: OCR.space membaca gambar
   const ocrResult = await callOCR(imageDataUrl);
-  if (!ocrResult.text || ocrResult.text.trim().length < 5) {
-    throw new Error('OCR tidak menemukan teks yang cukup di gambar ini.');
-  }
 
-  // Langkah 2: Groq mengubah teks mentah jadi JSON terstruktur
   const systemPrompt = `Kamu adalah pembaca soal ujian untuk Bank Soal Bimbel Gemilang.
 
 TUGAS:
@@ -143,9 +142,6 @@ KLASIFIKASI TIPE SOAL:
 - "pernyataan_kompleks": pernyataan bernomor (1)(2)(3)(4).
 - "hubungan_kuantitas": membandingkan P dan Q.
 - "isian_singkat": tanpa pilihan.
-
-GAMBAR/TABEL:
-Kalau ada diagram/grafik, tandai hasFigure:true. Kalau murni teks, hasFigure:false.
 
 HANYA JSON:
 {"question":"...", "options":["A. ...","B. ..."], "tipeSoal":"pilihan_ganda", "kuantitasP":"", "kuantitasQ":"", "hasFigure":false, "figureBBox":null, "readingConfidence":"high"}`;
@@ -186,13 +182,10 @@ async function handleTranscribeQuestionMode(req, res) {
 }
 
 // ============================================================
-// 🔥 MODE: TRANSKRIPSI SATU HALAMAN PENUH (OCR.space + Groq)
+// 🔥 MODE: TRANSKRIPSI SATU HALAMAN
 // ============================================================
 async function transcribePage(pageImage) {
   const ocrResult = await callOCR(pageImage);
-  if (!ocrResult.text || ocrResult.text.trim().length < 20) {
-    throw new Error('OCR tidak menemukan teks yang cukup di halaman ini.');
-  }
 
   const systemPrompt = `Kamu adalah pembaca soal ujian untuk Bank Soal Bimbel Gemilang.
 
@@ -209,7 +202,6 @@ HANYA JSON:
 {"pageType":"questions","questions":[{"printedNumber":1,"bbox":{"x":0.05,"y":0.05,"width":0.9,"height":0.15}}]}`;
 
   const result = await callGroqParse(systemPrompt, ocrResult.text);
-
   return result;
 }
 
@@ -232,24 +224,35 @@ async function handleTranscribePageMode(req, res) {
   }
 }
 
+async function handleTranscribeRegionMode(req, res) {
+  const { pageImage } = req.body;
+
+  if (!pageImage || typeof pageImage !== 'string') {
+    return res.status(400).json({ success: false, error: 'pageImage kosong atau tidak valid.' });
+  }
+
+  try {
+    const result = await transcribePage(pageImage);
+    return res.status(200).json({ success: true, ...result });
+  } catch (err) {
+    console.error('smartParseQuiz (transcribeRegion) error:', err);
+    return res.status(502).json({
+      success: false,
+      error: err.message || 'Gagal membaca kolom ini.',
+    });
+  }
+}
+
 // ============================================================
-// 🔥 MODE: JAWAB SOAL (OCR.space + Groq)
+// 🔥 MODE: JAWAB SOAL
 // ============================================================
 async function answerQuestionFromImage(imageDataUrl) {
   const ocrResult = await callOCR(imageDataUrl);
-  if (!ocrResult.text || ocrResult.text.trim().length < 5) {
-    throw new Error('OCR tidak menemukan teks yang cukup.');
-  }
 
   const systemPrompt = `Kamu adalah pemeriksa jawaban soal ujian untuk Bank Soal Bimbel Gemilang.
 
 TUGAS:
 Lihat teks hasil OCR dari SATU SOAL (termasuk pilihan jawaban), lalu tentukan JAWABAN YANG BENAR dan tulis pembahasan singkat.
-
-⚠️ PENTING:
-- Hitung/nalar jawaban yang benar berdasarkan teks soal.
-- Tentukan indeks jawaban (0 untuk A, 1 untuk B, dst).
-- Tulis pembahasan 2-4 kalimat langsung ke inti.
 
 HANYA JSON:
 {"optionCount":4, "correct":0, "explanation":"...", "readingConfidence":"high"}`;
@@ -284,7 +287,7 @@ async function handleAnswerQuestionMode(req, res) {
 }
 
 // ============================================================
-// 🔥 MODE LAMA: PARSE TEKS MENTAH (tanpa OCR)
+// 🔥 MODE LAMA: PARSE TEKS MENTAH
 // ============================================================
 function splitIntoChunks(text) {
   const lines = text.split('\n');
@@ -336,40 +339,33 @@ export default async function handler(req, res) {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  // Cek API Key Groq
   if (!process.env.GROQ_API_KEY) {
     return res.status(500).json({ success: false, error: 'GROQ_API_KEY belum di-setting di Vercel' });
   }
 
-  // Cek API Key OCR.space (opsional, bisa pakai default 'helloworld' untuk testing)
-  if (!process.env.OCR_SPACE_API_KEY) {
-    // Gunakan default key untuk testing
-    process.env.OCR_SPACE_API_KEY = 'helloworld';
-  }
-
   const { mode } = req.body;
 
-  // 🔥 MODE: transcribePage (deteksi soal dari satu halaman)
+  // 🔥 MODE: transcribePage
   if (mode === 'transcribePage') {
     return handleTranscribePageMode(req, res);
   }
 
-  // 🔥 MODE: transcribeRegion (deteksi soal dari satu kolom)
+  // 🔥 MODE: transcribeRegion
   if (mode === 'transcribeRegion') {
-    return handleTranscribePageMode(req, res); // Sama, karena OCR.space sudah baca seluruh teks
+    return handleTranscribeRegionMode(req, res);
   }
 
-  // 🔥 MODE: transcribeQuestion (satu soal -> teks terstruktur)
+  // 🔥 MODE: transcribeQuestion (satu soal)
   if (req.body && req.body.questionCropImage) {
     return handleTranscribeQuestionMode(req, res);
   }
 
-  // 🔥 MODE: answerQuestion (jawab soal -> correct + explanation)
+  // 🔥 MODE: answerQuestion
   if (req.body && req.body.questionImage) {
     return handleAnswerQuestionMode(req, res);
   }
 
-  // 🔥 MODE LAMA: teks mentah -> parse jadi soal
+  // 🔥 MODE LAMA: teks mentah
   const { text } = req.body;
   if (!text || text.trim().length < 5) {
     return res.status(400).json({ success: false, error: 'Teks soal kosong' });
