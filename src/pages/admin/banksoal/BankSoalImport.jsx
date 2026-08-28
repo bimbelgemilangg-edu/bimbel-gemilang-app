@@ -503,6 +503,52 @@ import {
   
     return { top: gapTop, bottom: gapBottom, gap: maxGap };
   }
+
+  // 🔥 BARU: DETEKSI DIAGRAM BERLABEL (fix bug nyata dilaporkan: diagram
+  // 3D balok dengan label vertex A-H + ukuran sisi "6 cm" dst SAMA
+  // SEKALI TIDAK TERDETEKSI oleh findFigureGap() di atas -- karena
+  // label-label itu ADALAH teks, jadi area diagramnya TIDAK muncul
+  // sebagai satu celah kosong murni, melainkan PECAH jadi beberapa
+  // celah KECIL di antara tiap label (gak ada yang lolos ambang
+  // MIN_FIGURE_GAP sendiri-sendiri).
+  //
+  // Fungsi ini mencari RUN baris-baris PENDEK yang berdekatan (ciri
+  // khas label vertex/ukuran: "A", "B", "6 cm", bukan kalimat biasa)
+  // dan menggabungkan RENTANG TINGGI totalnya jadi satu area diagram,
+  // meskipun tiap celah individual di antaranya kecil.
+  function isShortLabelLine(text) {
+    return text.length <= 14 && /^[A-Za-z0-9.,()°√\s=+-]+$/.test(text);
+  }
+
+  function findSparseLabelRegion(lines) {
+    let runStart = null;
+    let runEnd = null;
+    let bestRun = null;
+
+    for (let i = 0; i < lines.length; i++) {
+      if (isShortLabelLine(lines[i].text)) {
+        if (runStart === null) runStart = i;
+        runEnd = i;
+      } else if (runStart !== null) {
+        if (runEnd > runStart) {
+          const height = lines[runStart].y - lines[runEnd].y;
+          if (height > MIN_FIGURE_GAP * 0.6 && (!bestRun || height > bestRun.height)) {
+            bestRun = { top: lines[runStart].y, bottom: lines[runEnd].y, height };
+          }
+        }
+        runStart = null;
+        runEnd = null;
+      }
+    }
+    if (runStart !== null && runEnd > runStart) {
+      const height = lines[runStart].y - lines[runEnd].y;
+      if (height > MIN_FIGURE_GAP * 0.6 && (!bestRun || height > bestRun.height)) {
+        bestRun = { top: lines[runStart].y, bottom: lines[runEnd].y, height };
+      }
+    }
+
+    return bestRun ? { top: bestRun.top, bottom: bestRun.bottom, gap: bestRun.height } : null;
+  }
   
   // Pisahkan badan soal dari daftar opsi jawaban -- opsi ditandai
   // penanda huruf (A. / A) dst) di awal kata. Menangani tata letak
@@ -593,6 +639,29 @@ import {
     if (options.some((o) => fragmentPattern.test((o || '').trim()))) {
       return true;
     }
+
+    // 🔥 BARU -- Sinyal 4 (fix bug nyata dilaporkan): opsi berisi kata
+    // SATUAN (cm, kg, dst) DAN ada 2 angka murni yang BERSEBELAHAN
+    // LANGSUNG (cuma dipisah spasi, TANPA kata penghubung apa pun di
+    // antaranya) -- mis. "cm 3 15" (pola khas pecahan "40/3 cm" yang
+    // pembilang/penyebutnya kepotong lalu tercampur satuannya).
+    //
+    // Sengaja PERSEMPIT ke "bersebelahan langsung" (bukan cuma
+    // "ada 2 angka di mana pun dalam opsi"), supaya opsi WAJAR yang
+    // kebetulan punya 2 angka TAPI dipisah kata penghubung (mis.
+    // "3 cm x 4 cm" untuk soal luas) TIDAK ikut salah tertangkap --
+    // di situ setiap angka diikuti kata ("cm", "x"), bukan angka lain.
+    const unitWordPattern = /\b(cm|mm|km|kg|gram|detik|jam|menit|liter|derajat|satuan)\b/i;
+    const hasUnitWithAdjacentNumbers = options.some((o) => {
+      const text = (o || '').trim();
+      if (!unitWordPattern.test(text)) return false;
+      const tokens = text.split(/\s+/);
+      for (let i = 0; i < tokens.length - 1; i++) {
+        if (/^\d+$/.test(tokens[i]) && /^\d+$/.test(tokens[i + 1])) return true;
+      }
+      return false;
+    });
+    if (hasUnitWithAdjacentNumbers) return true;
 
     return false;
   }
@@ -1230,7 +1299,11 @@ import {
         // sama sekali (grafik seperti kurva P-V TIDAK terdeteksi lewat
         // findImageRegions() karena itu digambar pakai garis/kurva
         // vektor, BUKAN gambar raster tertanam).
-        const figureGap = findFigureGap(textLines);
+        // 🔥 BARU: coba celah kosong murni dulu (grafik tanpa label,
+        // mis. kurva P-V polos), kalau gak ketemu BARU coba deteksi
+        // diagram berlabel (fix bug nyata balok dengan label vertex
+        // A-H + ukuran sisi yang sebelumnya sama sekali gak terdeteksi).
+        const figureGap = findFigureGap(textLines) || findSparseLabelRegion(textLines);
   
         let figureImage = '';
         if (optionCrops.length === 0 && figureGap) {
