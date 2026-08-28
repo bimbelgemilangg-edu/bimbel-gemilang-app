@@ -1335,40 +1335,62 @@ import {
     // langka semacam itu, admin bisa klik tombol ini per soal -- BUKAN
     // otomatis untuk semua soal seperti desain sebelumnya yang
     // terbukti tidak andal & lambat.
+    //
+    // 🔥 FIX BUG NYATA (dilaporkan langsung dari pemakaian nyata):
+    // sebelumnya hasil AI ini LANGSUNG MENIMPA data yang sudah
+    // diekstrak deterministik (question/options/tipeSoal/kuantitasP/Q),
+    // TANPA perbandingan, TANPA konfirmasi, TANPA cara membatalkan.
+    // Karena ekstraksi deterministik TERBUKTI LEBIH ANDAL daripada AI
+    // (itu justru ALASAN revisi ke-4 dibangun -- lihat komentar
+    // panjang di atas fungsi extractLinesInRange), menimpa otomatis
+    // ini punya risiko NYATA bikin data yang SUDAH BENAR jadi RUSAK
+    // kalau AI menebak lebih buruk -- persis kejadian nyata yang
+    // dilaporkan: soal limit lengkap tertimpa jadi cuma "Hasil dari 1"
+    // plus field kuantitasP/Q ikut kesalahan terisi nilai yang gak
+    // nyambung sama sekali dengan soalnya.
+    //
+    // Sekarang: hasil AI DISIMPAN TERPISAH sebagai "usulan"
+    // (aiSuggestion), BUKAN langsung menimpa. Admin harus lihat
+    // perbandingan berdampingan dan EKSPLISIT klik "Pakai hasil AI ini"
+    // baru data asli diganti -- atau "Buang usulan ini" untuk tetap
+    // pakai hasil deterministik yang sudah ada.
     const retryQuestionWithAI = useCallback(
       async (pageNumber, questionId) => {
         const page = pages.find((p) => p.pageNumber === pageNumber);
         const question = page?.questions.find((q) => q.id === questionId);
         if (!question?.rawCropImage) return;
-  
+
         updateQuestion(pageNumber, questionId, {
           aiRetryInProgress: true,
           transcribeError: null,
         });
-  
+
         try {
           const transcript = await transcribeQuestionWithAI(
             question.rawCropImage,
           );
-  
+
           const figureImage = transcript.hasFigure
             ? (await cropFigureFromQuestionImage(
                 question.rawCropImage,
                 transcript.figureBBox,
               )) || ''
-            : question.qImage;
-  
+            : '';
+
+          // 🔥 TIDAK LAGI menimpa question/options/tipeSoal/dst secara
+          // langsung -- semua disimpan di bawah field `aiSuggestion`,
+          // menunggu keputusan eksplisit admin (lihat tombol "Pakai
+          // hasil AI ini" / "Buang usulan ini" di layar tinjau).
           updateQuestion(pageNumber, questionId, {
-            question: transcript.question || question.question,
-            options:
-              transcript.options.length > 0
-                ? transcript.options
-                : question.options,
-            tipeSoal: transcript.tipeSoal,
-            kuantitasP: transcript.kuantitasP,
-            kuantitasQ: transcript.kuantitasQ,
-            qImage: figureImage,
-            readingConfidence: transcript.readingConfidence,
+            aiSuggestion: {
+              question: transcript.question,
+              options: transcript.options,
+              tipeSoal: transcript.tipeSoal,
+              kuantitasP: transcript.kuantitasP,
+              kuantitasQ: transcript.kuantitasQ,
+              qImage: figureImage,
+              readingConfidence: transcript.readingConfidence,
+            },
             aiRetryInProgress: false,
           });
         } catch (error) {
@@ -1380,6 +1402,40 @@ import {
       },
       [pages, updateQuestion],
     );
+
+    // 🔥 BARU: admin EKSPLISIT menerima usulan AI -- baru di titik INI
+    // data asli (deterministik) benar-benar diganti.
+    const acceptAiSuggestion = useCallback(
+      (pageNumber, questionId) => {
+        const page = pages.find((p) => p.pageNumber === pageNumber);
+        const question = page?.questions.find((q) => q.id === questionId);
+        const suggestion = question?.aiSuggestion;
+        if (!suggestion) return;
+
+        updateQuestion(pageNumber, questionId, {
+          question: suggestion.question || question.question,
+          options:
+            suggestion.options.length > 0 ? suggestion.options : question.options,
+          tipeSoal: suggestion.tipeSoal,
+          kuantitasP: suggestion.kuantitasP,
+          kuantitasQ: suggestion.kuantitasQ,
+          qImage: suggestion.qImage || question.qImage,
+          readingConfidence: suggestion.readingConfidence,
+          aiSuggestion: null,
+        });
+      },
+      [pages, updateQuestion],
+    );
+
+    // 🔥 BARU: admin membuang usulan AI -- data asli (deterministik)
+    // TETAP UTUH, gak pernah tersentuh sama sekali.
+    const rejectAiSuggestion = useCallback(
+      (pageNumber, questionId) => {
+        updateQuestion(pageNumber, questionId, { aiSuggestion: null });
+      },
+      [updateQuestion],
+    );
+
   
     const removeQuestion = useCallback((pageNumber, questionId) => {
       setPages((prev) =>
@@ -1864,10 +1920,10 @@ import {
                             onClick={() =>
                               retryQuestionWithAI(selectedPage.pageNumber, q.id)
                             }
-                            disabled={q.aiRetryInProgress}
-                            title="Kalau ekstraksi otomatis meleset untuk soal ini -- minta AI membaca ulang crop-nya"
+                            disabled={q.aiRetryInProgress || !!q.aiSuggestion}
+                            title="Hasil otomatis di atas BIASANYA sudah lebih akurat daripada AI -- tombol ini cuma buat kasus langka (tata letak aneh) yang meleset. Hasil AI TIDAK langsung dipakai, kamu akan diminta membandingkan dulu."
                           >
-                            {q.aiRetryInProgress ? 'Membaca…' : 'Baca ulang (AI)'}
+                            {q.aiRetryInProgress ? 'Membaca…' : 'Coba baca ulang (AI)'}
                           </button>
                           <button
                             type="button"
@@ -1879,6 +1935,62 @@ import {
                             Buang
                           </button>
                         </div>
+
+                      {/* 🔥 BARU: PANEL PERBANDINGAN USULAN AI -- muncul
+                          HANYA kalau admin baru saja klik "Coba baca ulang
+                          (AI)" dan hasilnya belum diputuskan. Data asli
+                          (deterministik) TIDAK PERNAH berubah sampai
+                          admin eksplisit klik "Pakai hasil AI ini". */}
+                      {q.aiSuggestion && (
+                        <div className="bsi-ai-compare">
+                          <p className="bsi-ai-compare-title">
+                            🤖 AI mengusulkan hasil berbeda -- bandingkan dulu sebelum memutuskan (hasil di atas TIDAK berubah kalau kamu belum memilih):
+                          </p>
+                          <div className="bsi-ai-compare-row">
+                            <div className="bsi-ai-compare-col">
+                              <span className="bsi-ai-compare-label">Hasil deterministik (sekarang)</span>
+                              <div className="bsi-ai-compare-box">{q.question || '(kosong)'}</div>
+                              {q.options && q.options.length > 0 && (
+                                <ul className="bsi-ai-compare-options">
+                                  {q.options.map((opt, oi) => (
+                                    <li key={oi}>{String.fromCharCode(65 + oi)}. {opt}</li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                            <div className="bsi-ai-compare-col">
+                              <span className="bsi-ai-compare-label">Usulan AI</span>
+                              <div className="bsi-ai-compare-box highlight">{q.aiSuggestion.question || '(kosong)'}</div>
+                              {q.aiSuggestion.options && q.aiSuggestion.options.length > 0 && (
+                                <ul className="bsi-ai-compare-options">
+                                  {q.aiSuggestion.options.map((opt, oi) => (
+                                    <li key={oi}>{String.fromCharCode(65 + oi)}. {opt}</li>
+                                  ))}
+                                </ul>
+                              )}
+                              {q.aiSuggestion.readingConfidence === 'low' && (
+                                <p className="bsi-flag">AI sendiri kurang yakin membaca sebagian teks ini.</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="bsi-ai-compare-actions">
+                            <button
+                              type="button"
+                              className="bsi-btn ghost sm"
+                              onClick={() => rejectAiSuggestion(selectedPage.pageNumber, q.id)}
+                            >
+                              Tetap pakai hasil deterministik
+                            </button>
+                            <button
+                              type="button"
+                              className="bsi-btn primary sm"
+                              onClick={() => acceptAiSuggestion(selectedPage.pageNumber, q.id)}
+                            >
+                              Pakai hasil AI ini
+                            </button>
+                          </div>
+                        </div>
+                      )}
                       </div>
   
                       {/* Perbandingan visual: crop asli di kiri (kecil,
@@ -2290,6 +2402,25 @@ import {
   .bsi-details summary{font-size:13px;color:var(--muted);cursor:pointer;padding:2px 0}
   .bsi-details[open] summary{margin-bottom:7px}
   .bsi-flag{margin:0;font-size:12.5px;color:var(--warn);line-height:1.5}
+
+  /* 🔥 BARU: panel perbandingan usulan AI */
+  .bsi-ai-compare{margin-top:10px;padding:14px;border-radius:10px;background:#fffbeb;
+    border:1px solid #fde68a}
+  .bsi-ai-compare-title{margin:0 0 10px;font-size:12.5px;font-weight:650;color:#92400e}
+  .bsi-ai-compare-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .bsi-ai-compare-col{display:flex;flex-direction:column;gap:6px}
+  .bsi-ai-compare-label{font-size:11px;font-weight:700;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.04em}
+  .bsi-ai-compare-box{padding:10px 12px;border-radius:8px;background:#fff;
+    border:1px solid var(--line);font-size:13.5px;line-height:1.5;min-height:44px}
+  .bsi-ai-compare-box.highlight{border-color:#f59e0b;background:#fffdf5}
+  .bsi-ai-compare-options{margin:0;padding-left:18px;font-size:12.5px;color:#334155;
+    line-height:1.6}
+  .bsi-ai-compare-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+  @media (max-width:700px){
+    .bsi-ai-compare-row{grid-template-columns:1fr}
+  }
+
   .bsi-foot{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
     padding:12px 20px;display:flex;justify-content:flex-end;align-items:center;gap:16px;z-index:20}
   .bsi-footinfo{font-size:13.5px;color:var(--muted)}
