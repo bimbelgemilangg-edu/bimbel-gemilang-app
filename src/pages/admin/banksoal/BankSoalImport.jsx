@@ -1148,6 +1148,14 @@ import {
     const [currentPage, setCurrentPage] = useState(0);
     const [startPage, setStartPage] = useState(1);
     const [endPage, setEndPage] = useState(0);
+
+    // 🔥 V4: SELEKSI / PENGECUALIAN HALAMAN MANUAL
+    // Semua halaman awalnya dipilih. Admin dapat mengecualikan cover,
+    // daftar isi, kisi-kisi, pembahasan, iklan, atau halaman lain sebelum
+    // AI dipanggil. Halaman yang dikecualikan TIDAK AKAN dikirim ke AI.
+    const [excludedPages, setExcludedPages] = useState([]);
+    const [pagePreviews, setPagePreviews] = useState([]);
+    const [loadingPagePreviews, setLoadingPagePreviews] = useState(false);
   
     // Hasil deteksi per halaman: { pageNumber, pageImage, questions[], error }
     const [pages, setPages] = useState([]);
@@ -1188,6 +1196,9 @@ import {
       setErrorMessage('');
       setPages([]);
       setSavedCount(0);
+      setExcludedPages([]);
+      setPagePreviews([]);
+      setLoadingPagePreviews(false);
       setStatus(STATUS.LOADING_PDF);
   
       try {
@@ -1214,6 +1225,36 @@ import {
         setTotalPages(doc.numPages);
         setStartPage(1);
         setEndPage(doc.numPages);
+        setExcludedPages([]);
+
+        // 🔥 V4: render thumbnail SEMUA halaman untuk selector manual.
+        // Thumbnail kecil hanya untuk membantu admin memilih halaman;
+        // render resolusi tinggi tetap dilakukan nanti saat halaman diproses.
+        setLoadingPagePreviews(true);
+        const thumbnails = [];
+        for (let pageNumber = 1; pageNumber <= doc.numPages; pageNumber += 1) {
+          try {
+            // eslint-disable-next-line no-await-in-loop
+            const page = await doc.getPage(pageNumber);
+            const viewport = page.getViewport({ scale: 0.34 });
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(viewport.width));
+            canvas.height = Math.max(1, Math.round(viewport.height));
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // eslint-disable-next-line no-await-in-loop
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            thumbnails.push({
+              pageNumber,
+              image: canvas.toDataURL('image/jpeg', 0.62),
+            });
+          } catch (thumbError) {
+            thumbnails.push({ pageNumber, image: '' });
+          }
+          setPagePreviews([...thumbnails]);
+        }
+        setLoadingPagePreviews(false);
         setStatus(STATUS.IDLE);
       } catch (error) {
         setErrorMessage(
@@ -1540,6 +1581,37 @@ import {
     );
 
     // ----------------------------------------------------------
+    // SELEKSI HALAMAN MANUAL
+    // ----------------------------------------------------------
+
+    const toggleExcludedPage = useCallback((pageNumber) => {
+      setExcludedPages((prev) =>
+        prev.includes(pageNumber)
+          ? prev.filter((n) => n !== pageNumber)
+          : [...prev, pageNumber].sort((a, b) => a - b),
+      );
+    }, []);
+
+    const selectAllPages = useCallback(() => {
+      setExcludedPages([]);
+    }, []);
+
+    const excludeAllPages = useCallback(() => {
+      setExcludedPages(Array.from({ length: totalPages }, (_, i) => i + 1));
+    }, [totalPages]);
+
+    const invertPageSelection = useCallback(() => {
+      setExcludedPages((prev) => {
+        const current = new Set(prev);
+        const next = [];
+        for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
+          if (!current.has(pageNumber)) next.push(pageNumber);
+        }
+        return next;
+      });
+    }, [totalPages]);
+
+    // ----------------------------------------------------------
     // PROSES BERURUTAN SEMUA HALAMAN DALAM RENTANG
     // ----------------------------------------------------------
   
@@ -1551,8 +1623,20 @@ import {
   
       const from = Math.max(1, Math.min(startPage, totalPages));
       const to = Math.max(from, Math.min(endPage || totalPages, totalPages));
-  
+      const excluded = new Set(excludedPages);
+      const pagesToProcess = [];
       for (let pageNumber = from; pageNumber <= to; pageNumber += 1) {
+        if (!excluded.has(pageNumber)) pagesToProcess.push(pageNumber);
+      }
+
+      if (pagesToProcess.length === 0) {
+        setStatus(STATUS.IDLE);
+        setErrorMessage('Tidak ada halaman yang dipilih. Pilih minimal satu halaman yang ingin diproses.');
+        return;
+      }
+  
+      for (let index = 0; index < pagesToProcess.length; index += 1) {
+        const pageNumber = pagesToProcess[index];
         if (abortRef.current) break;
   
         // 🔥 FIX: pengecekan jeda sebelumnya ada di loop PER-SOAL (yang
@@ -1590,7 +1674,7 @@ import {
       }
   
       setStatus(abortRef.current ? STATUS.IDLE : STATUS.DONE);
-    }, [startPage, endPage, totalPages, processOnePage]);
+    }, [startPage, endPage, totalPages, excludedPages, processOnePage]);
   
     // ----------------------------------------------------------
     // ULANG SATU HALAMAN
@@ -1922,6 +2006,62 @@ import {
                 {totalPages > 0 && ` · ${totalPages} halaman`}
               </span>
             </div>
+
+            {importMode !== 'word' && totalPages > 0 && status !== STATUS.PROCESSING && (
+              <div className="bsi-page-picker">
+                <div className="bsi-page-picker-head">
+                  <div>
+                    <strong>Pilih halaman yang akan diproses</strong>
+                    <span> Tandai pengecualian untuk cover, daftar isi, kisi-kisi, pembahasan, atau halaman lain yang tidak diperlukan.</span>
+                  </div>
+                  <div className="bsi-page-picker-actions">
+                    <button type="button" className="bsi-btn ghost sm" onClick={selectAllPages}>Pilih semua</button>
+                    <button type="button" className="bsi-btn ghost sm" onClick={excludeAllPages}>Kecualikan semua</button>
+                    <button type="button" className="bsi-btn ghost sm" onClick={invertPageSelection}>Balik pilihan</button>
+                  </div>
+                </div>
+
+                <div className="bsi-page-picker-summary">
+                  <span><strong>{totalPages - excludedPages.length}</strong> halaman dipilih</span>
+                  <span>•</span>
+                  <span><strong>{excludedPages.length}</strong> halaman dikecualikan</span>
+                  {excludedPages.length > 0 && (
+                    <>
+                      <span>•</span>
+                      <span>Dikecualikan: {excludedPages.join(', ')}</span>
+                    </>
+                  )}
+                </div>
+
+                {loadingPagePreviews ? (
+                  <div className="bsi-page-picker-loading">Menyiapkan pratinjau halaman… {pagePreviews.length}/{totalPages}</div>
+                ) : (
+                  <div className="bsi-page-grid">
+                    {pagePreviews.map((thumb) => {
+                      const excluded = excludedPages.includes(thumb.pageNumber);
+                      return (
+                        <label key={thumb.pageNumber} className={`bsi-page-thumb${excluded ? ' excluded' : ''}`}>
+                          <input
+                            type="checkbox"
+                            checked={!excluded}
+                            onChange={() => toggleExcludedPage(thumb.pageNumber)}
+                          />
+                          <div className="bsi-page-thumb-image">
+                            {thumb.image ? (
+                              <img src={thumb.image} alt={`Pratinjau halaman ${thumb.pageNumber}`} />
+                            ) : (
+                              <span>Pratinjau gagal</span>
+                            )}
+                            {excluded && <span className="bsi-page-excluded-badge">Dikecualikan</span>}
+                          </div>
+                          <span className="bsi-page-thumb-label">Halaman {thumb.pageNumber}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
   
             {totalPages > 0 && status !== STATUS.PROCESSING && (
               <div className="bsi-range">
@@ -1978,16 +2118,26 @@ import {
                     className="bsi-bar-fill"
                     style={{
                       width: `${
-                        ((currentPage - startPage + 1) /
-                          Math.max(1, endPage - startPage + 1)) *
-                        100
+                        (() => {
+                          const from = Math.max(1, Math.min(startPage, totalPages));
+                          const to = Math.max(from, Math.min(endPage || totalPages, totalPages));
+                          let doneIndex = 0;
+                          let selectedCount = 0;
+                          for (let p = from; p <= to; p += 1) {
+                            if (!excludedPages.includes(p)) {
+                              selectedCount += 1;
+                              if (p <= currentPage) doneIndex += 1;
+                            }
+                          }
+                          return (doneIndex / Math.max(1, selectedCount)) * 100;
+                        })()
                       }%`,
                     }}
                   />
                 </div>
                 <div className="bsi-progress-row">
                   <span>
-                    Memproses halaman {currentPage} dari {endPage}
+                    Memproses halaman {currentPage} — halaman terpilih yang dikecualikan tidak diproses
                   </span>
                   <div className="bsi-progress-actions">
                     <button
@@ -2596,6 +2746,24 @@ import {
   .bsi-fileinfo{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
   .bsi-filename{font-weight:600;font-size:15px;word-break:break-all}
   .bsi-meta{color:var(--muted);font-size:13px;white-space:nowrap}
+  .bsi-page-picker{margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#f8fafc}
+  .bsi-page-picker-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}
+  .bsi-page-picker-head strong{display:block;font-size:14px;color:var(--ink);margin-bottom:3px}
+  .bsi-page-picker-head span{font-size:12.5px;color:var(--muted);line-height:1.45}
+  .bsi-page-picker-actions{display:flex;gap:7px;flex-wrap:wrap}
+  .bsi-page-picker-summary{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:10px 0 12px;font-size:12px;color:var(--muted)}
+  .bsi-page-picker-summary strong{color:var(--ink)}
+  .bsi-page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;max-height:420px;overflow:auto;padding:2px}
+  .bsi-page-thumb{position:relative;display:flex;flex-direction:column;gap:5px;padding:6px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}
+  .bsi-page-thumb:hover{border-color:var(--brand)}
+  .bsi-page-thumb.excluded{opacity:.6;background:#fff7ed;border-color:#fdba74}
+  .bsi-page-thumb input{position:absolute;top:8px;right:8px;width:17px;height:17px;z-index:2;accent-color:var(--brand)}
+  .bsi-page-thumb-image{position:relative;display:flex;align-items:center;justify-content:center;min-height:150px;background:#eef2f7;border-radius:6px;overflow:hidden}
+  .bsi-page-thumb-image img{display:block;width:100%;height:150px;object-fit:contain;background:#fff}
+  .bsi-page-thumb-label{font-size:11.5px;font-weight:650;color:var(--muted)}
+  .bsi-page-excluded-badge{position:absolute;left:5px;bottom:5px;padding:3px 6px;border-radius:5px;background:#b45309;color:#fff;font-size:10px;font-weight:700}
+  .bsi-page-picker-loading{padding:20px;text-align:center;color:var(--muted);font-size:13px}
+
   .bsi-range{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-top:14px}
   .bsi-range label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
   .bsi-range input{width:90px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;font-size:14px;color:var(--ink)}
