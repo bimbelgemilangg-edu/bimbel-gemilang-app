@@ -44,8 +44,9 @@ export const config = { maxDuration: 60 };
 // di atas), dan admin dapat error mentah dari platform (bukan JSON
 // yang rapi) yang membingungkan. Disisakan headroom 10 detik dari
 // maxDuration untuk proses parsing/response sesudahnya.
-const GROQ_TIMEOUT_MS = 50_000;
-const GROQ_MODEL = process.env.GROQ_MODEL || 'qwen/qwen3.6-27b';
+const GEMINI_TIMEOUT_MS = 50_000;
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL = 'qwen/qwen3.6-27b';
 
 const QUESTION_TYPES = ["multiple", "truefalse", "multiselect", "reading", "shortanswer", "causeeffect", "matching"];
 const QUESTIONS_PER_CHUNK = 5; // jaga jawaban AI tetap pendek biar tidak terpotong
@@ -58,7 +59,7 @@ const QUESTIONS_PER_CHUNK = 5; // jaga jawaban AI tetap pendek biar tidak terpot
 // diagnostik (?probe=1). Alias '-latest' TIDAK dijamin selalu
 // menunjuk ke versi yang boleh dipakai akun baru, jadi diganti ke ID
 // eksplisit yang sudah terbukti hidup di akun ini.
-
+const GEMINI_MODELS = [GROQ_MODEL];
 
 // ============================================================
 // Pecah teks jadi kelompok kecil berdasarkan nomor soal (1. 2. 3. dst)
@@ -177,56 +178,12 @@ function extractCompleteObjects(rawText) {
 // ============================================================
 // PEMANGGIL GEMINI -- TEKS (mode lama, tidak diubah)
 // ============================================================
-
-async function parseChunk(text) {
-  const systemPrompt = `Kamu adalah parser soal ujian untuk Bimbel Gemilang.
-
-TUGAS:
-Ubah teks soal menjadi JSON terstruktur. Jangan mengarang isi. Pertahankan angka, konteks, dan pilihan jawaban apa adanya.
-
-Keluaran HARUS berupa satu objek JSON dengan properti "questions" berupa array.
-
-Setiap item minimal punya:
-{
-  "question": "...",
-  "options": ["..."],
-  "type": "multiple",
-  "correct": 0,
-  "correctAnswers": [],
-  "questionImage": "",
-  "statements": [],
-  "readingText": "",
-  "subQuestions": [],
-  "shortAnswer": "",
-  "cause": "",
-  "effect": "",
-  "isCauseTrue": true,
-  "isEffectTrue": true,
-  "matchingPairs": [],
-  "needsManualAnswer": true
-}
-
-Gunakan type salah satu dari: multiple, truefalse, multiselect, reading, shortanswer, causeeffect, matching.
-Kalau kunci jawaban tidak terlihat/ditandai di teks, gunakan correct:0 dan needsManualAnswer:true.
-Jangan menambahkan pembahasan.
-Hanya JSON, tanpa markdown.`;
-
-  const data = await callGroqText(systemPrompt, text, GROQ_MODEL);
-  const rawText = data?.choices?.[0]?.message?.content || '{}';
-
-  try {
-    const parsed = JSON.parse(rawText.trim());
-    return Array.isArray(parsed?.questions) ? parsed.questions : [];
-  } catch (e) {
-    return extractCompleteObjects(rawText).map((q) => q?.questions || q).flat().filter(Boolean);
-  }
-}
-
-async function callGroqText(systemPrompt, userText, modelName = GROQ_MODEL) {
+async function callGemini(systemPrompt, userText, modelName) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), GROQ_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+
   try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const response = await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -236,14 +193,15 @@ async function callGroqText(systemPrompt, userText, modelName = GROQ_MODEL) {
         model: modelName,
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userText.slice(0, 12000) },
+          { role: 'user', content: userText.slice(0, 4000) },
         ],
         temperature: 0.1,
-        max_completion_tokens: 4096,
+        max_tokens: 4096,
         response_format: { type: 'json_object' },
       }),
       signal: controller.signal,
     });
+
     if (!response.ok) {
       const errText = await response.text();
       throw new Error(`GROQ_HTTP_${response.status}: ${errText}`);
@@ -251,7 +209,7 @@ async function callGroqText(systemPrompt, userText, modelName = GROQ_MODEL) {
     return response.json();
   } catch (error) {
     if (error?.name === 'AbortError') {
-      throw new Error(`GROQ_TIMEOUT setelah ${GROQ_TIMEOUT_MS}ms`);
+      throw new Error(`GROQ_TIMEOUT setelah ${GEMINI_TIMEOUT_MS}ms`);
     }
     throw error;
   } finally {
@@ -287,13 +245,24 @@ async function callGroqText(systemPrompt, userText, modelName = GROQ_MODEL) {
 // bukan menyalin ulang soalnya. Karena keluarannya kecil (satu objek
 // JSON pendek per panggilan, bukan banyak soal dibungkus jadi satu),
 // risiko kepotong di tengah jadi sangat kecil.
-async function callGroqAnswerQuestion(imageDataUrls, modelName = GROQ_MODEL) {
-  const imageContents = imageDataUrls.map((dataUrl) => ({
-    type: 'image_url',
-    image_url: { url: dataUrl },
-  })).filter((part) => part.image_url?.url);
+async function callGeminiAnswerQuestion(imageDataUrls, modelName) {
+  const content = [
+    {
+      type: 'text',
+      text: 'Tentukan jawaban yang benar dan tulis pembahasan singkat sesuai instruksi. Hanya JSON.',
+    },
+  ];
 
-  if (imageContents.length === 0) {
+  for (const dataUrl of imageDataUrls) {
+    const match = /^data:([^;]+);base64,(.+)$/.exec(dataUrl || '');
+    if (!match) continue;
+    content.push({
+      type: 'image_url',
+      image_url: { url: dataUrl },
+    });
+  }
+
+  if (content.length === 1) {
     throw new Error('Tidak ada gambar soal yang valid untuk dianalisis.');
   }
 
@@ -303,25 +272,31 @@ async function callGroqAnswerQuestion(imageDataUrls, modelName = GROQ_MODEL) {
 TUGAS:
 Lihat gambar soal yang diberikan (crop asli dari buku cetak), lalu tentukan JAWABAN YANG BENAR dan tulis pembahasan singkat.
 
-INI BUKAN TUGAS MENYALIN SOAL. Jangan menuliskan ulang soal atau opsi. Tugasmu hanya menentukan jawaban benar dan pembahasan.
+⚠️ PENTING -- INI BUKAN TUGAS MENYALIN SOAL:
+Kamu TIDAK PERLU dan TIDAK BOLEH menuliskan ulang teks soal atau pilihan jawabannya. Soal itu SUDAH tersimpan persis sebagai gambar. Tugasmu HANYA: hitung/nalar jawaban yang benar, lalu jelaskan singkat.
 
 ${hasImageOptions
-  ? 'Gambar pertama adalah soal utama. Gambar-gambar berikutnya adalah pilihan jawaban A, B, C, ... secara berurutan.'
-  : 'Gambar berisi soal dan seluruh pilihan jawabannya. Baca label A/B/C/D/E untuk menentukan jumlah opsi.'}
+  ? 'Gambar PERTAMA adalah soal utama. Gambar-gambar SETELAHNYA adalah pilihan jawaban A, B, C, ... secara berurutan (masing-masing satu gambar terpisah) -- tentukan pilihan gambar MANA yang benar.'
+  : 'Gambar yang diberikan berisi soal DAN seluruh pilihan jawabannya (A, B, C, D, mungkin E) dalam satu gambar yang sama -- baca label hurufnya dari gambar itu untuk tahu ada berapa opsi.'}
 
-Kalau ragu, pilih jawaban paling mungkin dan tandai readingConfidence sebagai low.
+MENENTUKAN JAWABAN:
+Buku cetak biasanya tidak menandai kunci di halaman soal. Hitung/nalar sendiri berdasarkan pengetahuan akademik, seperti mengerjakan soal itu sendiri. Kalau ragu atau tidak yakin, tetap isi jawaban paling mungkin dan tandai readingConfidence:"low" -- JANGAN dikosongkan.
 
-PEMBAHASAN: 2-4 kalimat, langsung ke inti langkah pengerjaan.
+PEMBAHASAN:
+2-4 kalimat saja, langsung ke inti langkah pengerjaan. Jangan menjelaskan konsep dasar dari nol.
 
-OUTPUT HARUS JSON SAJA dengan format:
-{"optionCount":4,"correct":0,"explanation":"...","readingConfidence":"high"}
+FORMAT OUTPUT -- HANYA JSON:
+{"optionCount": 4, "correct": 0, "explanation": "...", "readingConfidence": "high"}
 
-correct adalah indeks opsi: A=0, B=1, C=2, D=3, E=4.`;
+"correct" wajib angka indeks (0 untuk opsi A), BUKAN huruf.
+"optionCount" wajib angka -- berapa banyak pilihan jawaban yang terlihat (biasanya 4 atau 5).
+"readingConfidence" wajib "high" atau "low".`;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), GROQ_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+
   try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const response = await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -331,20 +306,15 @@ correct adalah indeks opsi: A=0, B=1, C=2, D=3, E=4.`;
         model: modelName,
         messages: [
           { role: 'system', content: systemPrompt },
-          {
-            role: 'user',
-            content: [
-              ...imageContents,
-              { type: 'text', text: 'Tentukan jawaban yang benar dan pembahasan. Hanya JSON.' },
-            ],
-          },
+          { role: 'user', content },
         ],
         temperature: 0.1,
-        max_completion_tokens: 1024,
+        max_tokens: 1024,
         response_format: { type: 'json_object' },
       }),
       signal: controller.signal,
     });
+
     if (!response.ok) {
       const errText = await response.text();
       throw new Error(`GROQ_HTTP_${response.status}: ${errText}`);
@@ -352,7 +322,7 @@ correct adalah indeks opsi: A=0, B=1, C=2, D=3, E=4.`;
     return response.json();
   } catch (error) {
     if (error?.name === 'AbortError') {
-      throw new Error(`GROQ_TIMEOUT setelah ${GROQ_TIMEOUT_MS}ms`);
+      throw new Error(`GROQ_TIMEOUT setelah ${GEMINI_TIMEOUT_MS}ms`);
     }
     throw error;
   } finally {
@@ -365,9 +335,9 @@ correct adalah indeks opsi: A=0, B=1, C=2, D=3, E=4.`;
 // ============================================================
 async function answerQuestionFromImages(imageDataUrls) {
   let lastErr;
-  for (const modelName of [GROQ_MODEL]) {
+  for (const modelName of GEMINI_MODELS) {
     try {
-      const data = await callGroqAnswerQuestion(imageDataUrls, modelName);
+      const data = await callGeminiAnswerQuestion(imageDataUrls, modelName);
 
       const rawText =
         data.choices?.[0]?.message?.content ||
@@ -407,7 +377,7 @@ async function answerQuestionFromImages(imageDataUrls) {
       }
     } catch (e) {
       lastErr = e;
-      console.error(`smartParseQuiz (answer) gagal memakai Groq model ${modelName}:`, e.message);
+      console.error(`smartParseQuiz (answer) gagal pakai model ${modelName}:`, e.message);
     }
   }
 
@@ -474,43 +444,45 @@ async function handleAnswerQuestionMode(req, res) {
 // banyak soal seperti desain pertama yang gagal) -- ini yang
 // menghindarkan masalah respons kepotong di tengah jalan yang pernah
 // terjadi sebelumnya.
-async function callGroqTranscribeQuestion(imageDataUrl, modelName = GROQ_MODEL) {
-  if (!/^data:[^;]+;base64,.+$/.test(imageDataUrl || '')) {
-    throw new Error('Format gambar soal tidak valid (bukan data URL base64).');
-  }
+async function callGeminiTranscribeQuestion(imageDataUrl, modelName) {
+  const match = /^data:([^;]+);base64,(.+)$/.exec(imageDataUrl || '');
+  if (!match) throw new Error('Format gambar soal tidak valid (bukan data URL base64).');
 
   const systemPrompt = `Kamu adalah pembaca soal ujian untuk Bank Soal Bimbel Gemilang.
 
 TUGAS:
-Lihat gambar SATU SOAL dan tulis ulang menjadi teks terstruktur yang bisa diedit, lalu klasifikasikan tipe soalnya.
+Lihat gambar SATU SOAL (potongan/crop dari halaman buku cetak), lalu tulis ulang jadi teks terstruktur yang bisa diedit, DAN klasifikasikan tipe soalnya.
 
 WAJIB SETIA APA ADANYA:
-Salin persis teks soal dan pilihan jawabannya. Jangan mengubah angka, konteks, atau isi. Jika ada bagian yang benar-benar tidak terbaca, jangan mengarang dan tandai readingConfidence=low.
+Salin persis teks soal dan pilihan jawabannya seperti tertulis di gambar. JANGAN mengubah angka, JANGAN mengganti konteks, JANGAN memperbaiki kalimat.
+
+Kalau ada bagian yang benar-benar tidak terbaca, tulis bagian yang terbaca apa adanya dan tandai readingConfidence:"low" -- JANGAN MENGARANG.
 
 RUMUS MATEMATIKA:
-Gunakan LaTeX dibungkus \( \), misalnya \(x^2+3x-4=0\), \frac{a}{b}, \sqrt{x+1}.
+Tulis dengan LaTeX dibungkus \\( \\), contoh: \\(x^2 + 3x - 4 = 0\\), \\frac{a}{b}, \\sqrt{x+1}.
 
-VEKTOR/MATRIKS:
-Pertahankan bentuk vertikal dengan LaTeX matrix/pmatrix, misalnya \(\begin{pmatrix}p\\2\\-1\end{pmatrix}\).
+VEKTOR & MATRIKS:
+Tulis tetap sebagai LaTeX matriks kolom dengan \\begin{pmatrix} ... \\end{pmatrix} bila memang tercetak vertikal.
 
-TIPE SOAL:
-- pilihan_ganda
-- pernyataan_kompleks
-- hubungan_kuantitas
-- isian_singkat
+KLASIFIKASI TIPE SOAL (field "tipeSoal"):
+- "pilihan_ganda": soal standar dengan pilihan A-E.
+- "pernyataan_kompleks": pernyataan bernomor (1)(2)(3)(4) dengan opsi kombinasi.
+- "hubungan_kuantitas": membandingkan Kuantitas P dan Kuantitas Q. Isi kuantitasP dan kuantitasQ.
+- "isian_singkat": tanpa pilihan ganda. options dikosongkan.
 
 GAMBAR/DIAGRAM/GRAFIK/TABEL:
-Kalau ada bagian visual yang menjadi bagian soal, hasFigure=true dan figureBBox berisi kotak area visual dalam koordinat 0..1 relatif terhadap gambar crop. Jika tidak ada, hasFigure=false dan figureBBox=null.
+Kalau ada diagram/grafik/foto/tabel yang menjadi bagian soal, tandai hasFigure:true dan berikan figureBBox ternormalisasi 0..1 terhadap crop ini. Kalau murni teks, hasFigure:false.
 
-JANGAN menentukan jawaban benar dan jangan membuat pembahasan.
+JANGAN TENTUKAN JAWABAN BENAR DAN JANGAN TULIS PEMBAHASAN.
 
-OUTPUT JSON SAJA:
-{"question":"...","options":["..."],"tipeSoal":"pilihan_ganda","kuantitasP":"","kuantitasQ":"","hasFigure":false,"figureBBox":null,"readingConfidence":"high"}`;
+Kembalikan HANYA JSON dengan field:
+question, options, tipeSoal, kuantitasP, kuantitasQ, hasFigure, figureBBox, readingConfidence.`;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), GROQ_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+
   try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const response = await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -523,17 +495,18 @@ OUTPUT JSON SAJA:
           {
             role: 'user',
             content: [
-              { type: 'image_url', image_url: { url: imageDataUrl } },
               { type: 'text', text: 'Transkripsikan dan klasifikasikan soal ini sesuai instruksi. Hanya JSON.' },
+              { type: 'image_url', image_url: { url: imageDataUrl } },
             ],
           },
         ],
         temperature: 0.1,
-        max_completion_tokens: 2048,
+        max_tokens: 2048,
         response_format: { type: 'json_object' },
       }),
       signal: controller.signal,
     });
+
     if (!response.ok) {
       const errText = await response.text();
       throw new Error(`GROQ_HTTP_${response.status}: ${errText}`);
@@ -541,7 +514,7 @@ OUTPUT JSON SAJA:
     return response.json();
   } catch (error) {
     if (error?.name === 'AbortError') {
-      throw new Error(`GROQ_TIMEOUT setelah ${GROQ_TIMEOUT_MS}ms`);
+      throw new Error(`GROQ_TIMEOUT setelah ${GEMINI_TIMEOUT_MS}ms`);
     }
     throw error;
   } finally {
@@ -581,9 +554,9 @@ function normalizeTranscribeResult(parsed, fallbackConfidence) {
 
 async function transcribeQuestionImage(imageDataUrl) {
   let lastErr;
-  for (const modelName of [GROQ_MODEL]) {
+  for (const modelName of GEMINI_MODELS) {
     try {
-      const data = await callGroqTranscribeQuestion(imageDataUrl, modelName);
+      const data = await callGeminiTranscribeQuestion(imageDataUrl, modelName);
 
       const rawText =
         data.choices?.[0]?.message?.content ||
@@ -612,12 +585,12 @@ async function transcribeQuestionImage(imageDataUrl) {
       }
     } catch (e) {
       lastErr = e;
-      console.error(`smartParseQuiz (transcribe) gagal memakai Groq model ${modelName}:`, e.message);
+      console.error(`smartParseQuiz (transcribe) gagal pakai model ${modelName}:`, e.message);
     }
   }
 
   console.error('Semua model gagal mentranskripsi soal ini:', lastErr?.message);
-  throw lastErr || new Error('Groq gagal membaca soal ini.');
+  throw lastErr || new Error('Semua model Gemini gagal membaca soal ini.');
 }
 
 async function handleTranscribeQuestionMode(req, res) {

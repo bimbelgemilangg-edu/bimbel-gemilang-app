@@ -1968,8 +1968,7 @@ import {
                 </button>
               </div>
             )}
-  
-  
+    
             {totalPages > 60 && status !== STATUS.PROCESSING && (
               <p className="bsi-note">
                 Berkas ini panjang. Sebaiknya kerjakan per 20–30 halaman
