@@ -860,6 +860,121 @@ import {
   }
   
   // ============================================================
+  // AI-FIRST: DETEKSI BUTIR SOAL DARI GAMBAR SATU HALAMAN
+  // ============================================================
+  // AI tidak lagi dipakai sebagai "baca ulang" opsional. AI menjadi
+  // pengendali utama: dari satu gambar halaman, AI menentukan mana
+  // blok soal, nomor cetaknya, dan bounding box masing-masing soal.
+  //
+  // Penting: endpoint /api/smartParseQuiz harus mendukung mode:
+  //   { mode: 'detectPage', pageImage }
+  // dan mengembalikan:
+  // {
+  //   success: true,
+  //   isPembahasanPage: false,
+  //   questions: [
+  //     { printedNumber: 1, bbox: {x,y,width,height} }
+  //   ]
+  // }
+  //
+  // bbox dinormalisasi 0..1 terhadap gambar halaman.
+  // Setelah batas soal ditemukan, BARU masing-masing crop dikirim ke
+  // AI lagi satu per satu untuk transkripsi rinci. Ini menjaga keluaran
+  // kecil per panggilan sehingga teks panjang, matematika, tabel, dan
+  // diagram tidak mudah terpotong seperti desain "satu halaman =
+  // satu jawaban AI".
+  // ============================================================
+
+  async function detectQuestionsFromPageWithAI(pageImageDataUrl) {
+    const response = await fetch('/api/smartParseQuiz', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'detectPage',
+        pageImage: pageImageDataUrl,
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data.success) {
+      throw new Error(data?.error || `AI deteksi halaman gagal (HTTP ${response.status})`);
+    }
+
+    const rawQuestions = Array.isArray(data.questions)
+      ? data.questions
+      : Array.isArray(data.items)
+        ? data.items
+        : [];
+
+    const questions = rawQuestions
+      .map((item, index) => {
+        const bbox = item?.bbox || item?.boundingBox || item?.crop || null;
+        if (!bbox) return null;
+
+        const x = Math.max(0, Math.min(1, Number(bbox.x) || 0));
+        const y = Math.max(0, Math.min(1, Number(bbox.y) || 0));
+        const width = Math.max(0, Math.min(1 - x, Number(bbox.width) || 0));
+        const height = Math.max(0, Math.min(1 - y, Number(bbox.height) || 0));
+
+        if (width < 0.02 || height < 0.02) return null;
+
+        return {
+          printedNumber:
+            Number.isFinite(Number(item?.printedNumber))
+              ? Number(item.printedNumber)
+              : Number.isFinite(Number(item?.number))
+                ? Number(item.number)
+                : index + 1,
+          bbox: { x, y, width, height },
+        };
+      })
+      .filter(Boolean);
+
+    return {
+      isPembahasanPage: Boolean(data.isPembahasanPage),
+      questions,
+    };
+  }
+
+  function cropNormalizedFromCanvas(sourceCanvas, bbox, paddingPx = 8) {
+    if (!bbox) return null;
+
+    const x = Math.max(0, Math.min(1, Number(bbox.x) || 0));
+    const y = Math.max(0, Math.min(1, Number(bbox.y) || 0));
+    const width = Math.max(0, Math.min(1 - x, Number(bbox.width) || 0));
+    const height = Math.max(0, Math.min(1 - y, Number(bbox.height) || 0));
+
+    if (width <= 0.01 || height <= 0.01) return null;
+
+    const px = Math.max(0, Math.floor(x * sourceCanvas.width) - paddingPx);
+    const py = Math.max(0, Math.floor(y * sourceCanvas.height) - paddingPx);
+    const right = Math.min(
+      sourceCanvas.width,
+      Math.ceil((x + width) * sourceCanvas.width) + paddingPx,
+    );
+    const bottom = Math.min(
+      sourceCanvas.height,
+      Math.ceil((y + height) * sourceCanvas.height) + paddingPx,
+    );
+
+    const w = right - px;
+    const h = bottom - py;
+    if (w <= 0 || h <= 0) return null;
+
+    const out = document.createElement('canvas');
+    out.width = w;
+    out.height = h;
+
+    const ctx = out.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(sourceCanvas, px, py, w, h, 0, 0, w, h);
+
+    return out.toDataURL('image/jpeg', 0.92);
+  }
+
+  // ============================================================
   // PANGGIL AI -- HANYA UNTUK TRANSKRIPSI (bukan jawaban)
   // ============================================================
   
@@ -1251,78 +1366,148 @@ import {
     // SEPENUHNYA DETERMINISTIK -- TANPA AI SAMA SEKALI.
     // ----------------------------------------------------------
   
+    // ----------------------------------------------------------
+    // AI-FIRST: PROSES SATU HALAMAN
+    // ----------------------------------------------------------
+    // 1) render halaman sebagai gambar
+    // 2) AI mendeteksi SEMUA blok soal + bbox
+    // 3) tiap bbox dicrop
+    // 4) tiap crop dikirim ke AI satu per satu untuk transkripsi
+    // 5) hasilnya langsung menjadi field yang bisa diedit admin
+    // ----------------------------------------------------------
+
     const processOnePage = useCallback(
       async (pageNumber) => {
-        // 🔥 BARU: mode Word -- jalur PARSING SAMA SEKALI BEDA (baca
-        // struktur .docx, bukan geometri PDF), tapi hasil akhirnya
-        // dipetakan ke BENTUK OBJEK SOAL YANG SAMA supaya seluruh layar
-        // tinjau & fungsi simpan di bawah bisa dipakai ulang tanpa
-        // perlu ditulis dua kali.
         if (importMode === 'word') {
-          const docxQuestions = await parseDocxIntoQuestions(
-            docxBufferRef.current,
+          throw new Error(
+            'Mode Word lama dinonaktifkan pada arsitektur AI-first. Gunakan PDF agar AI dapat membaca teks, scan, tabel, grafik, dan gambar.',
           );
-  
-          const questions = docxQuestions.map((q) => ({
-            id: newId(),
-            pageNumber,
-            printedNumber: q.printedNumber,
-            rawCropImage: '', // Word tidak punya gambar halaman pembanding
-            question: q.question,
-            options: q.options,
-            tipeSoal: q.tipeSoal,
-            kuantitasP: '',
-            kuantitasQ: '',
-            optionsAreImages: q.optionsAreImages,
-            optionImages: q.optionImages,
-            qImage: q.qImage,
-            tableHtml: q.tableHtml || '',
-            correct: null,
-            explanation: '',
-            shortAnswerValue: '',
-            approved: false,
-          }));
-  
-          return { pageImage: '', questions };
         }
-  
-        const { pageImage, crops, isPembahasanPage } = await detectQuestionsOnPage(pageNumber);
-  
-        // 🔥 Murni pemetaan hasil crop -> objek soal, SEPENUHNYA
-        // SINKRON -- semua data (teks, opsi, tipe soal, figure) sudah
-        // diekstrak deterministik di detectQuestionsOnPage() di atas.
-        // TIDAK ADA panggilan AI, TIDAK ADA jeda jaringan sama sekali
-        // di jalur ini -- satu halaman selesai secepat browser bisa
-        // merender & membaca teks PDF-nya.
-        const questions = crops.map((crop) => ({
-          id: newId(),
-          pageNumber,
-          printedNumber: crop.printedNumber,
-          // Crop UTUH blok soal -- disimpan HANYA untuk pembanding
-          // visual di layar tinjau (kolom kiri kartu), TIDAK ikut
-          // disimpan ke Bank Soal.
-          rawCropImage: crop.rawCropImage,
-          question: crop.question,
-          options: crop.optionsAreImages ? [] : crop.options,
-          tipeSoal: crop.tipeSoal,
-          kuantitasP: '',
-          kuantitasQ: '',
-          optionsAreImages: crop.optionsAreImages,
-          optionImages: crop.optionImages,
-          qImage: crop.qImage,
-          tableHtml: '',
-          correct: null,
-          explanation: '',
-          shortAnswerValue: '',
-          approved: false,
-          possibleMathNotationIssue: crop.possibleMathNotationIssue || false,
-        }));
-  
-        return { pageImage, questions, isPembahasanPage: isPembahasanPage || false };
+
+        const ref = pdfDocRef.current;
+        if (!ref) throw new Error('Dokumen PDF belum siap.');
+
+        const { doc } = ref;
+        const page = await doc.getPage(pageNumber);
+        const viewport = page.getViewport({ scale: RENDER_SCALE });
+
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = viewport.width;
+        pageCanvas.height = viewport.height;
+
+        const ctx = pageCanvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        const pageImage = pageCanvas.toDataURL('image/jpeg', 0.86);
+
+        // AI menentukan batas setiap butir. Tidak ada lagi ketergantungan
+        // pada text layer PDF sehingga PDF scan/image juga tetap bisa dibaca.
+        const pageAnalysis = await detectQuestionsFromPageWithAI(pageImage);
+
+        if (pageAnalysis.isPembahasanPage) {
+          return {
+            pageImage,
+            questions: [],
+            isPembahasanPage: true,
+          };
+        }
+
+        const questions = [];
+
+        for (const detected of pageAnalysis.questions) {
+          while (pauseRef.current && !abortRef.current) {
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise((resolve) => setTimeout(resolve, 300));
+          }
+
+          if (abortRef.current) break;
+
+          const rawCropImage = cropNormalizedFromCanvas(pageCanvas, detected.bbox);
+          if (!rawCropImage) continue;
+
+          try {
+            // AI kedua membaca SATU BUTIR saja. Karena gambar sudah diisolasi,
+            // AI tidak perlu menebak mana soal tetangga dan tidak terpengaruh
+            // dua kolom/urutan layout halaman.
+            // eslint-disable-next-line no-await-in-loop
+            const transcript = await transcribeQuestionWithAI(rawCropImage);
+
+            let figureImage = '';
+            if (transcript.hasFigure && transcript.figureBBox) {
+              // eslint-disable-next-line no-await-in-loop
+              figureImage =
+                (await cropFigureFromQuestionImage(
+                  rawCropImage,
+                  transcript.figureBBox,
+                )) || '';
+            }
+
+            questions.push({
+              id: newId(),
+              pageNumber,
+              printedNumber: detected.printedNumber,
+              rawCropImage,
+              question: transcript.question,
+              options: Array.isArray(transcript.options)
+                ? transcript.options
+                : [],
+              tipeSoal: transcript.tipeSoal,
+              kuantitasP: transcript.kuantitasP || '',
+              kuantitasQ: transcript.kuantitasQ || '',
+              optionsAreImages: false,
+              optionImages: [],
+              qImage: figureImage,
+              tableHtml: '',
+              correct: null,
+              explanation: '',
+              shortAnswerValue: '',
+              approved: false,
+              possibleMathNotationIssue: false,
+              readingConfidence: transcript.readingConfidence,
+              aiSource: 'page-detection+question-transcription',
+              aiDetectionBBox: detected.bbox,
+            });
+          } catch (error) {
+            // Satu soal gagal tidak boleh menghilangkan soal lain pada halaman.
+            questions.push({
+              id: newId(),
+              pageNumber,
+              printedNumber: detected.printedNumber,
+              rawCropImage,
+              question: '',
+              options: ['', '', '', ''],
+              tipeSoal: 'pilihan_ganda',
+              kuantitasP: '',
+              kuantitasQ: '',
+              optionsAreImages: false,
+              optionImages: [],
+              qImage: '',
+              tableHtml: '',
+              correct: null,
+              explanation: '',
+              shortAnswerValue: '',
+              approved: false,
+              possibleMathNotationIssue: false,
+              readingConfidence: 'low',
+              transcribeError: error?.message || 'AI gagal membaca butir ini.',
+              aiSource: 'page-detection+question-transcription',
+              aiDetectionBBox: detected.bbox,
+            });
+          }
+        }
+
+        return {
+          pageImage,
+          questions,
+          isPembahasanPage: false,
+        };
       },
-      [detectQuestionsOnPage, importMode],
+      [importMode],
     );
-  
+
     // ----------------------------------------------------------
     // PROSES BERURUTAN SEMUA HALAMAN DALAM RENTANG
     // ----------------------------------------------------------
@@ -1407,16 +1592,8 @@ import {
     );
   
     // ----------------------------------------------------------
-    // 🔥 BARU: ALAT BANTU MANUAL -- baca ulang SATU soal pakai AI
+    // SUNTING SOAL + AI RE-READ
     // ----------------------------------------------------------
-    // Ekstraksi deterministik (di atas) menangani mayoritas kasus
-    // dengan andal, tapi tata letak yang sangat tidak lazim (mis. tabel
-    // rumit, kolom miring, dll) masih mungkin meleset. Untuk kasus
-    // langka semacam itu, admin bisa klik tombol ini per soal -- BUKAN
-    // otomatis untuk semua soal seperti desain sebelumnya yang
-    // terbukti tidak andal & lambat.
-    // ----------------------------------------------------------
-    // SUNTING SOAL (jawaban, pembahasan, tingkat kesulitan, dsb.)
     // ----------------------------------------------------------
   
     const updateQuestion = useCallback((pageNumber, questionId, patch) => {
@@ -1434,32 +1611,9 @@ import {
       );
     }, []);
   
-    // 🔥 BARU: ALAT BANTU MANUAL -- baca ulang SATU soal pakai AI.
-    // Ekstraksi deterministik (di atas) menangani mayoritas kasus
-    // dengan andal, tapi tata letak yang sangat tidak lazim (mis. tabel
-    // rumit, kolom miring, dll) masih mungkin meleset. Untuk kasus
-    // langka semacam itu, admin bisa klik tombol ini per soal -- BUKAN
-    // otomatis untuk semua soal seperti desain sebelumnya yang
-    // terbukti tidak andal & lambat.
-    //
-    // 🔥 FIX BUG NYATA (dilaporkan langsung dari pemakaian nyata):
-    // sebelumnya hasil AI ini LANGSUNG MENIMPA data yang sudah
-    // diekstrak deterministik (question/options/tipeSoal/kuantitasP/Q),
-    // TANPA perbandingan, TANPA konfirmasi, TANPA cara membatalkan.
-    // Karena ekstraksi deterministik TERBUKTI LEBIH ANDAL daripada AI
-    // (itu justru ALASAN revisi ke-4 dibangun -- lihat komentar
-    // panjang di atas fungsi extractLinesInRange), menimpa otomatis
-    // ini punya risiko NYATA bikin data yang SUDAH BENAR jadi RUSAK
-    // kalau AI menebak lebih buruk -- persis kejadian nyata yang
-    // dilaporkan: soal limit lengkap tertimpa jadi cuma "Hasil dari 1"
-    // plus field kuantitasP/Q ikut kesalahan terisi nilai yang gak
-    // nyambung sama sekali dengan soalnya.
-    //
-    // Sekarang: hasil AI DISIMPAN TERPISAH sebagai "usulan"
-    // (aiSuggestion), BUKAN langsung menimpa. Admin harus lihat
-    // perbandingan berdampingan dan EKSPLISIT klik "Pakai hasil AI ini"
-    // baru data asli diganti -- atau "Buang usulan ini" untuk tetap
-    // pakai hasil deterministik yang sudah ada.
+    // AI re-read: jalur koreksi manual untuk satu butir.
+    // Karena arsitektur utama sekarang memang AI-first, hasil re-read
+    // boleh langsung mengganti hasil AI sebelumnya setelah berhasil.
     const retryQuestionWithAI = useCallback(
       async (pageNumber, questionId) => {
         const page = pages.find((p) => p.pageNumber === pageNumber);
@@ -1483,21 +1637,20 @@ import {
               )) || ''
             : '';
 
-          // 🔥 TIDAK LAGI menimpa question/options/tipeSoal/dst secara
-          // langsung -- semua disimpan di bawah field `aiSuggestion`,
-          // menunggu keputusan eksplisit admin (lihat tombol "Pakai
-          // hasil AI ini" / "Buang usulan ini" di layar tinjau).
           updateQuestion(pageNumber, questionId, {
-            aiSuggestion: {
-              question: transcript.question,
-              options: transcript.options,
-              tipeSoal: transcript.tipeSoal,
-              kuantitasP: transcript.kuantitasP,
-              kuantitasQ: transcript.kuantitasQ,
-              qImage: figureImage,
-              readingConfidence: transcript.readingConfidence,
-            },
+            question: transcript.question,
+            options:
+              Array.isArray(transcript.options) && transcript.options.length
+                ? transcript.options
+                : ['', '', '', ''],
+            tipeSoal: transcript.tipeSoal,
+            kuantitasP: transcript.kuantitasP || '',
+            kuantitasQ: transcript.kuantitasQ || '',
+            qImage: figureImage,
+            readingConfidence: transcript.readingConfidence,
+            possibleMathNotationIssue: false,
             aiRetryInProgress: false,
+            transcribeError: null,
           });
         } catch (error) {
           updateQuestion(pageNumber, questionId, {
@@ -1509,40 +1662,6 @@ import {
       [pages, updateQuestion],
     );
 
-    // 🔥 BARU: admin EKSPLISIT menerima usulan AI -- baru di titik INI
-    // data asli (deterministik) benar-benar diganti.
-    const acceptAiSuggestion = useCallback(
-      (pageNumber, questionId) => {
-        const page = pages.find((p) => p.pageNumber === pageNumber);
-        const question = page?.questions.find((q) => q.id === questionId);
-        const suggestion = question?.aiSuggestion;
-        if (!suggestion) return;
-
-        updateQuestion(pageNumber, questionId, {
-          question: suggestion.question || question.question,
-          options:
-            suggestion.options.length > 0 ? suggestion.options : question.options,
-          tipeSoal: suggestion.tipeSoal,
-          kuantitasP: suggestion.kuantitasP,
-          kuantitasQ: suggestion.kuantitasQ,
-          qImage: suggestion.qImage || question.qImage,
-          readingConfidence: suggestion.readingConfidence,
-          aiSuggestion: null,
-        });
-      },
-      [pages, updateQuestion],
-    );
-
-    // 🔥 BARU: admin membuang usulan AI -- data asli (deterministik)
-    // TETAP UTUH, gak pernah tersentuh sama sekali.
-    const rejectAiSuggestion = useCallback(
-      (pageNumber, questionId) => {
-        updateQuestion(pageNumber, questionId, { aiSuggestion: null });
-      },
-      [updateQuestion],
-    );
-
-  
     const removeQuestion = useCallback((pageNumber, questionId) => {
       setPages((prev) =>
         prev.map((p) =>
@@ -1687,11 +1806,10 @@ import {
                 </>
               ) : (
                 <>
-                  Soal, opsi jawaban, dan diagram diambil LANGSUNG dari
-                  teks & grafik asli PDF -- tanpa AI sama sekali (AI cuma
-                  tersedia sebagai alat bantu opsional per soal, kalau
-                  ada yang meleset). Jawaban & pembahasan dibuat
-                  belakangan, saat soal ini dipakai di sebuah kuis.
+                  AI membaca halaman, mendeteksi setiap butir, lalu membaca
+                  ulang tiap butir secara terpisah agar teks, matematika,
+                  tabel, grafik, dan gambar dapat dipertahankan. Hasilnya
+                  bisa diedit admin sebelum disetujui.
                 </>
               )}
             </p>
@@ -1950,7 +2068,7 @@ import {
   
                 <div className="bsi-parsed">
                   <div className="bsi-panel-label">
-                    Soal terdeteksi — periksa hasil transkripsi sebelum disetujui
+                    Soal hasil AI — periksa transkripsi sebelum disetujui
                   </div>
   
                   {selectedPage.error && (
@@ -2038,9 +2156,9 @@ import {
                               retryQuestionWithAI(selectedPage.pageNumber, q.id)
                             }
                             disabled={q.aiRetryInProgress || !!q.aiSuggestion}
-                            title="Hasil otomatis di atas BIASANYA sudah lebih akurat daripada AI -- tombol ini cuma buat kasus langka (tata letak aneh) yang meleset. Hasil AI TIDAK langsung dipakai, kamu akan diminta membandingkan dulu."
+                            title="Jalankan AI sekali lagi untuk butir ini jika hasil pertama kurang tepat."
                           >
-                            {q.aiRetryInProgress ? 'Membaca…' : 'Coba baca ulang (AI)'}
+                            {q.aiRetryInProgress ? 'Membaca…' : 'AI baca ulang'}
                           </button>
                           <button
                             type="button"
@@ -2057,7 +2175,7 @@ import {
                           HANYA kalau admin baru saja klik "Coba baca ulang
                           (AI)" dan hasilnya belum diputuskan. Data asli
                           (deterministik) TIDAK PERNAH berubah sampai
-                          admin eksplisit klik "Pakai hasil AI ini". */}
+                          admin eksplisit klik "Pakai hasil AI". */}
                       {q.aiSuggestion && (
                         <div className="bsi-ai-compare">
                           <p className="bsi-ai-compare-title">
@@ -2065,7 +2183,7 @@ import {
                           </p>
                           <div className="bsi-ai-compare-row">
                             <div className="bsi-ai-compare-col">
-                              <span className="bsi-ai-compare-label">Hasil deterministik (sekarang)</span>
+                              <span className="bsi-ai-compare-label">Hasil sebelumnya</span>
                               <div className="bsi-ai-compare-box">{q.question || '(kosong)'}</div>
                               {q.options && q.options.length > 0 && (
                                 <ul className="bsi-ai-compare-options">
@@ -2076,7 +2194,7 @@ import {
                               )}
                             </div>
                             <div className="bsi-ai-compare-col">
-                              <span className="bsi-ai-compare-label">Usulan AI</span>
+                              <span className="bsi-ai-compare-label">Hasil AI terbaru</span>
                               <div className="bsi-ai-compare-box highlight">{q.aiSuggestion.question || '(kosong)'}</div>
                               {q.aiSuggestion.options && q.aiSuggestion.options.length > 0 && (
                                 <ul className="bsi-ai-compare-options">
@@ -2096,14 +2214,14 @@ import {
                               className="bsi-btn ghost sm"
                               onClick={() => rejectAiSuggestion(selectedPage.pageNumber, q.id)}
                             >
-                              Tetap pakai hasil deterministik
+                              Tetap pakai hasil sebelumnya
                             </button>
                             <button
                               type="button"
                               className="bsi-btn primary sm"
                               onClick={() => acceptAiSuggestion(selectedPage.pageNumber, q.id)}
                             >
-                              Pakai hasil AI ini
+                              Pakai hasil AI
                             </button>
                           </div>
                         </div>
@@ -2237,14 +2355,9 @@ import {
                           disetujui apa adanya). */}
                       {q.possibleMathNotationIssue && (
                         <p className="bsi-flag strong">
-                          ⚠️ Kemungkinan notasi matematika (pecahan/matriks/akar
-                          bertingkat) pecah waktu diekstrak -- bandingkan
-                          dengan crop asli di kiri. Kalau memang rusak,
-                          JANGAN diperbaiki manual di sini (rawan salah
-                          ketik) -- lebih aman: "Buang" soal ini, lalu
-                          ketik ulang soalnya di Word (notasi jadi teks
-                          linear biasa, mis. "(x-1+y-1)/(x-1-y-1)") dan
-                          impor lewat mode "Dari Word (.docx)".
+                          ⚠️ AI menandai kemungkinan notasi matematika yang perlu dicek.
+                          Bandingkan langsung dengan crop asli dan lakukan
+                          AI baca ulang bila hasilnya kurang tepat.
                         </p>
                       )}
 
