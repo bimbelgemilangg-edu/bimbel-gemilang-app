@@ -3977,6 +3977,25 @@ function isModelUnavailableError(
   return false;
 }
 
+// 🔥 BARU (FIX BUG NYATA): apakah error ini rate-limit (429).
+//
+// KENAPA INI PERLU DIPISAH dari isModelUnavailableError(): asumsi
+// SEBELUMNYA di kode ini adalah "rate limit bukan salah modelnya,
+// ganti model gak akan menolong" -- itu BENAR untuk provider yang
+// membatasi kuota GABUNGAN 1 akun (mis. Groq, kuotanya per organisasi
+// bukan per model). TAPI Gemini TIDAK begitu -- kuota gratis Gemini
+// dialokasikan TERPISAH PER MODEL (mis. gemini-3.6-flash dan
+// gemini-3.5-flash-lite masing-masing punya jatah RPM/RPD SENDIRI,
+// terkonfirmasi lewat dokumentasi resmi Google). Artinya kalau model
+// utama kena 429, model cadangan SANGAT MUNGKIN masih longgar
+// kuotanya -- pindah model JUSTRU sering menolong untuk Gemini,
+// kebalikan dari asumsi lama yang terbawa dari era Groq.
+function isRateLimitedError(
+  error,
+) {
+  return error?.providerStatus === 429;
+}
+
 // 🔥 BARU: wrapper di atas callAI() yang otomatis mencoba daftar
 // model cadangan (AI_MODEL_FALLBACKS) secara berurutan kalau model
 // yang sedang dicoba ternyata sudah tidak tersedia lagi (404/410).
@@ -4138,19 +4157,23 @@ async function callAIWithFallback(
         i ===
         modelsToTry.length - 1;
 
-      // 🔥 Lanjut coba model berikutnya kalau: (a) model ini memang
-      // sudah gak ada/pensiun (404/410, gagal cepat), ATAU (b) model
-      // ini timeout (hidup tapi lambat) -- DUA-duanya sekarang aman
-      // dicoba lanjut karena kita sudah bagi budget waktu per
-      // percobaan, jadi gak akan kebablasan lewat maxDuration.
-      // Error jenis lain (rate limit 429, request too large 413,
-      // network error, dll) TIDAK dicoba ulang dengan model lain --
-      // jenis error itu biasanya bukan soal "model ini yang salah".
+      // 🔥 DIPERBAIKI (FIX BUG NYATA): sebelumnya rate-limit (429)
+      // SENGAJA TIDAK memicu pindah model, dengan alasan "ganti model
+      // gak akan menolong". Itu keliru KHUSUS untuk Gemini -- lihat
+      // penjelasan lengkap di isRateLimitedError() di atas: kuota
+      // Gemini terpisah PER MODEL, jadi kalau model utama kena 429,
+      // model cadangan (biasanya malah punya kuota harian LEBIH
+      // LONGGAR, mis. Flash-Lite vs Flash) sangat mungkin masih bisa
+      // dipakai. Sekarang rate-limit JUGA memicu coba model berikutnya,
+      // sama seperti model tidak tersedia (404/410) & timeout.
       const shouldTryNext =
         !isLastModel &&
         (isModelUnavailableError(
           error,
         ) ||
+          isRateLimitedError(
+            error,
+          ) ||
           error?.code ===
             'AI_TIMEOUT');
 
