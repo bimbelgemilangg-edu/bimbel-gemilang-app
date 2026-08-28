@@ -708,6 +708,275 @@ async function handleTranscribeQuestionMode(req, res) {
 }
 
 
+
+// ============================================================
+// AI-FIRST: DETEKSI SOAL DARI SATU GAMBAR HALAMAN
+// ============================================================
+// Menerima:
+//   { mode: "detectPage", pageImage: "data:image/...;base64,..." }
+//
+// Mengembalikan bbox ternormalisasi 0..1 untuk setiap butir soal.
+// Mode ini sengaja tetap berada di smartParseQuiz.js agar tidak menambah
+// jumlah Serverless Function di Vercel.
+// ============================================================
+
+function normalizePageDetection(raw) {
+  const source = raw && typeof raw === 'object' ? raw : {};
+  const rawItems = Array.isArray(source.questions)
+    ? source.questions
+    : Array.isArray(source.items)
+      ? source.items
+      : [];
+
+  const questions = rawItems
+    .map((item, index) => {
+      const bbox = item?.bbox || item?.boundingBox || item?.crop || null;
+      if (!bbox || typeof bbox !== 'object') return null;
+
+      const x = Math.max(0, Math.min(1, Number(bbox.x) || 0));
+      const y = Math.max(0, Math.min(1, Number(bbox.y) || 0));
+      const width = Math.max(
+        0,
+        Math.min(1 - x, Number(bbox.width) || 0),
+      );
+      const height = Math.max(
+        0,
+        Math.min(1 - y, Number(bbox.height) || 0),
+      );
+
+      if (width < 0.02 || height < 0.02) return null;
+
+      const numberValue = Number(
+        item?.printedNumber ?? item?.number ?? index + 1,
+      );
+
+      return {
+        printedNumber: Number.isFinite(numberValue)
+          ? Math.trunc(numberValue)
+          : index + 1,
+        bbox: { x, y, width, height },
+      };
+    })
+    .filter(Boolean);
+
+  // Deduplicate by printed number + approximate bbox.
+  const seen = new Set();
+  const deduped = [];
+
+  for (const q of questions) {
+    const key = [
+      q.printedNumber,
+      q.bbox.x.toFixed(3),
+      q.bbox.y.toFixed(3),
+      q.bbox.width.toFixed(3),
+      q.bbox.height.toFixed(3),
+    ].join(':');
+
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(q);
+  }
+
+  // Urutan baca: atas ke bawah, lalu kiri ke kanan.
+  deduped.sort((a, b) => {
+    const yDiff = a.bbox.y - b.bbox.y;
+    if (Math.abs(yDiff) > 0.025) return yDiff;
+    return a.bbox.x - b.bbox.x;
+  });
+
+  return {
+    isPembahasanPage: Boolean(source.isPembahasanPage),
+    questions: deduped,
+  };
+}
+
+async function callGeminiDetectPage(pageImageDataUrl, modelName) {
+  const match = /^data:([^;]+);base64,(.+)$/.exec(pageImageDataUrl || '');
+
+  if (!match) {
+    throw new Error('Format gambar halaman tidak valid (bukan data URL base64).');
+  }
+
+  const [, mimeType, base64Data] = match;
+
+  const systemPrompt = `Kamu adalah AI vision untuk memisahkan halaman buku ujian menjadi butir soal.
+
+TUGAS:
+1. Lihat SATU halaman penuh yang diberikan.
+2. Tentukan apakah halaman ini adalah halaman SOAL, halaman PEMBAHASAN/KUNCI, atau halaman lain seperti sampul/kisi-kisi.
+3. Kalau halaman berisi soal, temukan SETIAP BUTIR SOAL yang lengkap dan berurutan.
+4. Untuk setiap butir, berikan nomor yang TERLIHAT pada halaman dan bounding box yang mencakup SELURUH butir: nomor soal, teks soal, tabel/rumus, gambar/diagram/grafik, serta semua pilihan jawaban yang menjadi bagian butir tersebut.
+5. Jangan membuat butir baru dari judul, nomor halaman, header, footer, atau keterangan umum.
+6. Jangan memotong satu butir menjadi beberapa bagian.
+7. Kalau satu soal berlanjut ke halaman berikutnya, JANGAN menganggap potongan yang hanya berisi lanjutan sebagai soal baru.
+8. Halaman PEMBAHASAN/KUNCI harus diberi isPembahasanPage=true dan questions=[].
+9. Halaman sampul, kisi-kisi, petunjuk, atau halaman lain tanpa butir soal juga questions=[].
+10. Koordinat bbox NORMALIZED 0 sampai 1 terhadap gambar halaman, dengan (x,y) sebagai pojok kiri atas.
+
+ATURAN KHUSUS:
+- Pertahankan dua kolom. Jangan menggabungkan soal dari kolom kiri dan kanan menjadi satu.
+- Soal yang mempunyai grafik, tabel, diagram, foto, matriks, pecahan, atau simbol matematika tetap dianggap SATU butir.
+- Jangan mencoba menyalin isi soal. HANYA deteksi nomor + bbox.
+- Lebih baik mengembalikan lebih sedikit bbox yang benar-benar lengkap daripada bbox yang memotong soal atau mencampur dua soal.
+`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+
+  try {
+    const url =
+      `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': process.env.GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                inline_data: {
+                  mime_type: mimeType,
+                  data: base64Data,
+                },
+              },
+              {
+                text:
+                  'Deteksi semua butir soal pada halaman ini. Hanya kembalikan JSON sesuai schema.',
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.05,
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              isPembahasanPage: { type: 'BOOLEAN' },
+              questions: {
+                type: 'ARRAY',
+                items: {
+                  type: 'OBJECT',
+                  properties: {
+                    printedNumber: { type: 'INTEGER' },
+                    bbox: {
+                      type: 'OBJECT',
+                      properties: {
+                        x: { type: 'NUMBER' },
+                        y: { type: 'NUMBER' },
+                        width: { type: 'NUMBER' },
+                        height: { type: 'NUMBER' },
+                      },
+                      required: ['x', 'y', 'width', 'height'],
+                    },
+                  },
+                  required: ['printedNumber', 'bbox'],
+                },
+              },
+            },
+            required: ['isPembahasanPage', 'questions'],
+          },
+          maxOutputTokens: 2048,
+        },
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`GEMINI_HTTP_${response.status}: ${errText}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new Error(`GEMINI_TIMEOUT setelah ${GEMINI_TIMEOUT_MS}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function detectPageWithAI(pageImageDataUrl) {
+  let lastErr;
+
+  for (const modelName of GEMINI_MODELS) {
+    try {
+      const data = await callGeminiDetectPage(pageImageDataUrl, modelName);
+      const rawText =
+        data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+        data?.choices?.[0]?.message?.content ||
+        '';
+
+      const cleaned = String(rawText).replace(/```json|```/g, '').trim();
+
+      try {
+        return normalizePageDetection(JSON.parse(cleaned));
+      } catch {
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        if (match) {
+          return normalizePageDetection(JSON.parse(match[0]));
+        }
+      }
+
+      throw new Error('Respons AI deteksi halaman bukan JSON yang valid.');
+    } catch (e) {
+      lastErr = e;
+      console.error(
+        `smartParseQuiz (detectPage) gagal pakai model ${modelName}:`,
+        e.message,
+      );
+    }
+  }
+
+  throw lastErr || new Error('Semua model Gemini gagal mendeteksi halaman.');
+}
+
+async function handleDetectPageMode(req, res) {
+  const { pageImage } = req.body || {};
+
+  if (!pageImage || typeof pageImage !== 'string') {
+    return res.status(400).json({
+      success: false,
+      error: 'pageImage kosong atau tidak valid.',
+    });
+  }
+
+  // Batas praktis supaya request gambar halaman tidak membebani endpoint.
+  if (pageImage.length > 7_000_000) {
+    return res.status(413).json({
+      success: false,
+      error:
+        'Gambar halaman terlalu besar. Perkecil resolusi gambar sebelum dikirim ke AI.',
+    });
+  }
+
+  try {
+    const result = await detectPageWithAI(pageImage);
+
+    return res.status(200).json({
+      success: true,
+      isPembahasanPage: result.isPembahasanPage,
+      questions: result.questions,
+    });
+  } catch (err) {
+    console.error('smartParseQuiz (detectPage) error:', err);
+    return res.status(502).json({
+      success: false,
+      error: err.message || 'Gagal mendeteksi butir soal pada halaman.',
+    });
+  }
+}
+
+
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -720,6 +989,12 @@ export default async function handler(req, res) {
 
   if (!process.env.GEMINI_API_KEY) {
     return res.status(500).json({ success: false, error: 'GEMINI_API_KEY belum di-setting di Vercel' });
+  }
+
+  // 🔥 cabang AI-first: deteksi semua butir soal dari SATU GAMBAR HALAMAN.
+  // Diperlukan oleh BankSoalImport_AI_First.jsx.
+  if (req.body && req.body.mode === 'detectPage') {
+    return handleDetectPageMode(req, res);
   }
 
   // 🔥 cabang mode transkripsi -- dipakai BankSoalImport.jsx saat

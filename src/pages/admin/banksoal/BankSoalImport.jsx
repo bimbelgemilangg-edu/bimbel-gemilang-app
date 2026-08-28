@@ -859,6 +859,38 @@ import {
     });
   }
   
+
+  // Gambar khusus untuk AI deteksi halaman dibuat lebih kecil daripada
+  // canvas crop internal. Ini penting agar request Vercel/Gemini tidak
+  // membengkak, sementara crop soal tetap memakai render resolusi tinggi.
+  function createAIPageImage(sourceCanvas, maxWidth = 1500, quality = 0.78) {
+    const scale = Math.min(1, maxWidth / sourceCanvas.width);
+    const width = Math.max(1, Math.round(sourceCanvas.width * scale));
+    const height = Math.max(1, Math.round(sourceCanvas.height * scale));
+
+    const out = document.createElement('canvas');
+    out.width = width;
+    out.height = height;
+
+    const ctx = out.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(
+      sourceCanvas,
+      0,
+      0,
+      sourceCanvas.width,
+      sourceCanvas.height,
+      0,
+      0,
+      width,
+      height,
+    );
+
+    return out.toDataURL('image/jpeg', quality);
+  }
+
+
   // ============================================================
   // AI-FIRST: DETEKSI BUTIR SOAL DARI GAMBAR SATU HALAMAN
   // ============================================================
@@ -1401,11 +1433,13 @@ import {
 
         await page.render({ canvasContext: ctx, viewport }).promise;
 
-        const pageImage = pageCanvas.toDataURL('image/jpeg', 0.86);
+        const pageImage = pageCanvas.toDataURL('image/jpeg', 0.82);
+        const aiPageImage = createAIPageImage(pageCanvas);
 
         // AI menentukan batas setiap butir. Tidak ada lagi ketergantungan
         // pada text layer PDF sehingga PDF scan/image juga tetap bisa dibaca.
-        const pageAnalysis = await detectQuestionsFromPageWithAI(pageImage);
+        // Gambar AI sengaja diperkecil agar request body tetap aman.
+        const pageAnalysis = await detectQuestionsFromPageWithAI(aiPageImage);
 
         if (pageAnalysis.isPembahasanPage) {
           return {
@@ -2094,11 +2128,10 @@ import {
 
                   {!selectedPage.error && !selectedPage.isPembahasanPage && selectedPage.questions.length === 0 && (
                     <div className="bsi-empty">
-                      Tidak ada soal terdeteksi di halaman ini. Biasanya
-                      karena: (a) halaman ini memang sampul/daftar isi,
-                      atau (b) PDF ini hasil scan murni tanpa lapisan
-                      teks asli, sehingga nomor soal tidak bisa
-                      dideteksi otomatis.
+                      AI tidak menemukan butir soal pada halaman ini.
+                      Bisa jadi halaman ini memang sampul/kisi-kisi/pembahasan,
+                      atau AI belum berhasil menentukan batas soalnya.
+                      Tekan "Ulangi" untuk meminta AI membaca halaman ini lagi.
                     </div>
                   )}
   
