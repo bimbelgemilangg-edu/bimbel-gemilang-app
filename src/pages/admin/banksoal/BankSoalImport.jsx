@@ -863,7 +863,7 @@ import {
   // Gambar khusus untuk AI deteksi halaman dibuat lebih kecil daripada
   // canvas crop internal. Ini penting agar request Vercel/Gemini tidak
   // membengkak, sementara crop soal tetap memakai render resolusi tinggi.
-  function createAIPageImage(sourceCanvas, maxWidth = 1500, quality = 0.78) {
+  function canvasToDataUrlScaled(sourceCanvas, maxWidth = 1800, quality = 0.82) {
     const scale = Math.min(1, maxWidth / sourceCanvas.width);
     const width = Math.max(1, Math.round(sourceCanvas.width * scale));
     const height = Math.max(1, Math.round(sourceCanvas.height * scale));
@@ -875,19 +875,50 @@ import {
     const ctx = out.getContext('2d');
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
-    ctx.drawImage(
-      sourceCanvas,
-      0,
-      0,
-      sourceCanvas.width,
-      sourceCanvas.height,
-      0,
-      0,
-      width,
-      height,
-    );
+    ctx.drawImage(sourceCanvas, 0, 0, sourceCanvas.width, sourceCanvas.height, 0, 0, width, height);
 
     return out.toDataURL('image/jpeg', quality);
+  }
+
+  // Untuk halaman padat 2 kolom, seluruh halaman bisa terlalu kecil untuk
+  // vision model. Fallback ini memotong halaman menjadi panel-panel yang
+  // lebih besar, tetapi koordinat hasil AI tetap bisa dipetakan kembali ke
+  // koordinat halaman penuh. Dipakai HANYA jika deteksi halaman penuh kosong.
+  function cropCanvasRegion(sourceCanvas, x, y, width, height) {
+    const sx = Math.max(0, Math.floor(x));
+    const sy = Math.max(0, Math.floor(y));
+    const sw = Math.min(sourceCanvas.width - sx, Math.floor(width));
+    const sh = Math.min(sourceCanvas.height - sy, Math.floor(height));
+    if (sw <= 10 || sh <= 10) return null;
+
+    const out = document.createElement('canvas');
+    out.width = sw;
+    out.height = sh;
+    const ctx = out.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, sw, sh);
+    ctx.drawImage(sourceCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
+
+    return out;
+  }
+
+  function makeAIDetectionTiles(sourceCanvas) {
+    const w = sourceCanvas.width;
+    const h = sourceCanvas.height;
+    const gap = Math.max(8, Math.round(w * 0.012));
+    const mid = Math.floor(w / 2);
+
+    const regions = [
+      { x: 0, y: 0, width: mid - gap, height: h },
+      { x: mid + gap, y: 0, width: w - (mid + gap), height: h },
+    ];
+
+    return regions
+      .map((r) => {
+        const canvas = cropCanvasRegion(sourceCanvas, r.x, r.y, r.width, r.height);
+        return canvas ? { ...r, canvas } : null;
+      })
+      .filter(Boolean);
   }
 
 
@@ -1434,12 +1465,52 @@ import {
         await page.render({ canvasContext: ctx, viewport }).promise;
 
         const pageImage = pageCanvas.toDataURL('image/jpeg', 0.82);
-        const aiPageImage = createAIPageImage(pageCanvas);
 
-        // AI menentukan batas setiap butir. Tidak ada lagi ketergantungan
-        // pada text layer PDF sehingga PDF scan/image juga tetap bisa dibaca.
-        // Gambar AI sengaja diperkecil agar request body tetap aman.
-        const pageAnalysis = await detectQuestionsFromPageWithAI(aiPageImage);
+        // Pass 1: seluruh halaman.
+        let pageAnalysis = await detectQuestionsFromPageWithAI(
+          canvasToDataUrlScaled(pageCanvas, 1800, 0.82),
+        );
+
+        // Pass 2 (fallback penting): pada halaman 2 kolom yang sangat padat,
+        // satu halaman penuh membuat teks terlalu kecil untuk vision model.
+        // Pecah menjadi dua kolom dan jalankan deteksi lagi hanya bila pass 1
+        // kosong. Hasil bbox tile dipetakan kembali ke koordinat halaman penuh.
+        if (!pageAnalysis.isPembahasanPage && pageAnalysis.questions.length === 0) {
+          const tileResults = [];
+          const tiles = makeAIDetectionTiles(pageCanvas);
+
+          for (const tile of tiles) {
+            // eslint-disable-next-line no-await-in-loop
+            const tileAnalysis = await detectQuestionsFromPageWithAI(
+              canvasToDataUrlScaled(tile.canvas, 1600, 0.84),
+            );
+
+            for (const q of tileAnalysis.questions || []) {
+              tileResults.push({
+                printedNumber: q.printedNumber,
+                bbox: {
+                  x: (tile.x + q.bbox.x * tile.width) / pageCanvas.width,
+                  y: (tile.y + q.bbox.y * tile.height) / pageCanvas.height,
+                  width: (q.bbox.width * tile.width) / pageCanvas.width,
+                  height: (q.bbox.height * tile.height) / pageCanvas.height,
+                },
+              });
+            }
+          }
+
+          // Dedup sederhana karena nomor yang sama bisa muncul pada batas
+          // kolom/tile.
+          const seenNumbers = new Set();
+          pageAnalysis = {
+            isPembahasanPage: false,
+            questions: tileResults.filter((q) => {
+              const n = String(q.printedNumber);
+              if (seenNumbers.has(n)) return false;
+              seenNumbers.add(n);
+              return true;
+            }),
+          };
+        }
 
         if (pageAnalysis.isPembahasanPage) {
           return {
