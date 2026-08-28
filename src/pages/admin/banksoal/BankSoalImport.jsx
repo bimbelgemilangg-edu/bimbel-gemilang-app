@@ -1047,46 +1047,77 @@ import {
     // DETEKSI & POTONG SOAL DI SATU HALAMAN (TANPA AI)
     // ----------------------------------------------------------
   
-    const detectQuestionsOnPage = useCallback(async (pageNumber) => {
-      const ref = pdfDocRef.current;
-      if (!ref) return { pageImage: '', crops: [] };
-  
-      const { doc, pdfjsLib } = ref;
-      const page = await doc.getPage(pageNumber);
-      const viewport = page.getViewport({ scale: RENDER_SCALE });
-  
-      const pageCanvas = document.createElement('canvas');
-      pageCanvas.width = viewport.width;
-      pageCanvas.height = viewport.height;
-      const ctx = pageCanvas.getContext('2d');
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-      await page.render({ canvasContext: ctx, viewport }).promise;
-  
-      const pageImage = pageCanvas.toDataURL('image/jpeg', 0.82);
-  
-      const textContent = await page.getTextContent();
-      const items = textContent.items;
-  
-      if (items.length === 0) {
-        // Tidak ada lapisan teks sama sekali -- kemungkinan besar hasil
-        // scan murni. Kembalikan halaman kosong dengan gambar halaman
-        // tetap ada, supaya admin bisa lihat kenapa (bukan error, tapi
-        // memang tidak bisa dideteksi otomatis).
-        return { pageImage, crops: [] };
-      }
-  
-      const leftMargins = detectLeftMargins(items);
-      const starts = detectQuestionStarts(items, leftMargins);
-      const imageRegions = await findImageRegions(page, pdfjsLib);
-  
-      // 🔥 FIX BUG NYATA: sebelumnya SETIAP crop memakai LEBAR HALAMAN
-      // PENUH (page.view[0] s/d page.view[2]) apa pun jumlah kolomnya --
-      // artinya pada dokumen DUA KOLOM, crop soal di kolom kiri ikut
-      // menyeret isi kolom kanan yang sejajar tingginya (atau
-      // sebaliknya). Sekarang lebar crop dibatasi PER KOLOM.
-      const pageLeft = page.view[0];
-      const pageRight = page.view[2];
+  // 🔥 BARU: DETEKSI HALAMAN "PEMBAHASAN" (kunci jawaban) -- FIX BUG
+  // NYATA yang dilaporkan: sebelumnya sistem SAMA SEKALI GAK BISA
+  // BEDAIN halaman soal dengan halaman pembahasan/kunci jawaban di
+  // BAGIAN AKHIR dokumen. Akibatnya teks pembahasan (langkah
+  // penyelesaian, "Jawaban: A") ikut "dianggap" soal baru -- persis
+  // kasus nyata: "Soal 1 (tercetak no. 23)" ternyata isinya teks
+  // pembahasan soal nomor 23, BUKAN soal nomor 23 itu sendiri.
+  //
+  // Pola paling spesifik & andal buat halaman pembahasan (dari
+  // pengamatan dokumen tryout TKA yang nyata): tiap butir dibuka
+  // dengan "<nomor>. Pembahasan:" -- pola ini TIDAK PERNAH muncul di
+  // halaman soal (yang polanya "<nomor>. <pertanyaan> ... A. B. C. D.
+  // E."). Dicek MINIMAL 1 kemunculan pola ini di halaman -- kalau ada,
+  // seluruh halaman DILEWATI dari ekstraksi soal (bukan cuma
+  // butir yang match, karena kalau satu ketemu, seisi halaman itu
+  // hampir pasti bagian pembahasan).
+  function isPembahasanPage(fullPageText) {
+    return /\d+\s*[.)]\s*Pembahasan\s*:/i.test(fullPageText);
+  }
+
+  const detectQuestionsOnPage = useCallback(async (pageNumber) => {
+    const ref = pdfDocRef.current;
+    if (!ref) return { pageImage: '', crops: [] };
+
+    const { doc, pdfjsLib } = ref;
+    const page = await doc.getPage(pageNumber);
+    const viewport = page.getViewport({ scale: RENDER_SCALE });
+
+    const pageCanvas = document.createElement('canvas');
+    pageCanvas.width = viewport.width;
+    pageCanvas.height = viewport.height;
+    const ctx = pageCanvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+    await page.render({ canvasContext: ctx, viewport }).promise;
+
+    const pageImage = pageCanvas.toDataURL('image/jpeg', 0.82);
+
+    const textContent = await page.getTextContent();
+    const items = textContent.items;
+
+    if (items.length === 0) {
+      // Tidak ada lapisan teks sama sekali -- kemungkinan besar hasil
+      // scan murni. Kembalikan halaman kosong dengan gambar halaman
+      // tetap ada, supaya admin bisa lihat kenapa (bukan error, tapi
+      // memang tidak bisa dideteksi otomatis).
+      return { pageImage, crops: [] };
+    }
+
+    // 🔥 BARU: cek halaman Pembahasan SEBELUM masuk ke deteksi soal
+    // sama sekali -- kalau ketemu, lewati total halaman ini, tandai
+    // dengan flag `isPembahasanPage: true` supaya UI kasih tau admin
+    // KENAPA halaman ini kosong (bukan diam-diam terlihat kayak
+    // gagal/bug lain).
+    const fullPageTextForCheck = items.map((it) => it.str).join(' ');
+    if (isPembahasanPage(fullPageTextForCheck)) {
+      return { pageImage, crops: [], isPembahasanPage: true };
+    }
+
+    const leftMargins = detectLeftMargins(items);
+    const starts = detectQuestionStarts(items, leftMargins);
+    const imageRegions = await findImageRegions(page, pdfjsLib);
+
+    // 🔥 FIX BUG NYATA: sebelumnya SETIAP crop memakai LEBAR HALAMAN
+    // PENUH (page.view[0] s/d page.view[2]) apa pun jumlah kolomnya --
+    // artinya pada dokumen DUA KOLOM, crop soal di kolom kiri ikut
+    // menyeret isi kolom kanan yang sejajar tingginya (atau
+    // sebaliknya). Sekarang lebar crop dibatasi PER KOLOM.
+    const pageLeft = page.view[0];
+    const pageRight = page.view[2];
+
   
       const columnXRanges =
         leftMargins.length >= 2
@@ -1255,7 +1286,7 @@ import {
           return { pageImage: '', questions };
         }
   
-        const { pageImage, crops } = await detectQuestionsOnPage(pageNumber);
+        const { pageImage, crops, isPembahasanPage } = await detectQuestionsOnPage(pageNumber);
   
         // 🔥 Murni pemetaan hasil crop -> objek soal, SEPENUHNYA
         // SINKRON -- semua data (teks, opsi, tipe soal, figure) sudah
@@ -1287,7 +1318,7 @@ import {
           possibleMathNotationIssue: crop.possibleMathNotationIssue || false,
         }));
   
-        return { pageImage, questions };
+        return { pageImage, questions, isPembahasanPage: isPembahasanPage || false };
       },
       [detectQuestionsOnPage, importMode],
     );
@@ -1323,11 +1354,11 @@ import {
   
         try {
           // eslint-disable-next-line no-await-in-loop
-          const { pageImage, questions } = await processOnePage(pageNumber);
+          const { pageImage, questions, isPembahasanPage } = await processOnePage(pageNumber);
   
           setPages((prev) => [
             ...prev,
-            { pageNumber, pageImage, questions, error: null },
+            { pageNumber, pageImage, questions, error: null, isPembahasanPage },
           ]);
         } catch (error) {
           setPages((prev) => [
@@ -1353,12 +1384,12 @@ import {
       async (pageNumber) => {
         setErrorMessage('');
         try {
-          const { pageImage, questions } = await processOnePage(pageNumber);
+          const { pageImage, questions, isPembahasanPage } = await processOnePage(pageNumber);
   
           setPages((prev) =>
             prev.map((p) =>
               p.pageNumber === pageNumber
-                ? { pageNumber, pageImage, questions, error: null }
+                ? { pageNumber, pageImage, questions, error: null, isPembahasanPage }
                 : p,
             ),
           );
@@ -1935,13 +1966,21 @@ import {
                     </div>
                   )}
   
-                  {!selectedPage.error && selectedPage.questions.length === 0 && (
+                  {!selectedPage.error && selectedPage.isPembahasanPage && (
+                    <div className="bsi-empty pembahasan">
+                      ✅ Halaman ini terdeteksi sebagai bagian <strong>PEMBAHASAN</strong> (kunci
+                      jawaban) -- SENGAJA dilewati, bukan soal baru. Ini
+                      perilaku yang benar, bukan kegagalan.
+                    </div>
+                  )}
+
+                  {!selectedPage.error && !selectedPage.isPembahasanPage && selectedPage.questions.length === 0 && (
                     <div className="bsi-empty">
                       Tidak ada soal terdeteksi di halaman ini. Biasanya
-                      karena: (a) halaman ini memang sampul/daftar
-                      isi/kunci jawaban, atau (b) PDF ini hasil scan
-                      murni tanpa lapisan teks asli, sehingga nomor soal
-                      tidak bisa dideteksi otomatis.
+                      karena: (a) halaman ini memang sampul/daftar isi,
+                      atau (b) PDF ini hasil scan murni tanpa lapisan
+                      teks asli, sehingga nomor soal tidak bisa
+                      dideteksi otomatis.
                     </div>
                   )}
   
@@ -2450,6 +2489,7 @@ import {
   .bsi-parsed{display:flex;flex-direction:column;gap:14px}
   .bsi-empty{padding:24px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);
     font-size:13.5px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;line-height:1.5}
+  .bsi-empty.pembahasan{border-color:#a7f3d0;background:#f0fdf4;color:#166534;border-style:solid}
   .bsi-card{border:1px solid var(--line);border-radius:11px;padding:14px;background:#fff;
     display:flex;flex-direction:column;gap:10px}
   .bsi-card.approved{border-color:#a7f3d0;background:#f7fffc}
