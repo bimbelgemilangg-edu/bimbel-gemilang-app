@@ -303,15 +303,34 @@ function buildResearchQuery({
         .slice(0, 900)
     : '';
 
+  // 🔥 FIX BUG NYATA (dilaporkan langsung dari pemakaian nyata): kata
+  // "TKA" SEBAGAI KATA KUNCI BERDIRI SENDIRI dihapus dari sini.
+  //
+  // AKIBAT NYATA sebelum diperbaiki: karena TKA saat ini sedang jadi
+  // topik KEBIJAKAN yang ramai dibahas media (bukan sekadar nama
+  // format ujian), pencarian gabungan "TKA [mapel] [kelas]" nyaris
+  // pasti ikut menarik ARTIKEL BERITA/OPINI TENTANG KEBIJAKAN TKA itu
+  // sendiri (apa itu TKA, kenapa diadakan, dibanding sistem lama) --
+  // BUKAN materi/kisi-kisi mata pelajaran yang diminta. AI kemudian
+  // "digroundingkan" ke artikel kebijakan itu, sehingga menghasilkan
+  // soal ANALISIS KEBIJAKAN TKA (mis. "simpulkan urgensi pelaksanaan
+  // TKA...") -- bukan soal Bahasa Indonesia/Matematika/dst yang
+  // diminta guru sama sekali. Ini KONYOL untuk siswa SD tapi bug-nya
+  // NYATA dan bisa terjadi di jenjang/mapel mana pun.
+  //
+  // Diganti jadi "kisi-kisi TKA" (frasa gabungan, bukan kata mentah)
+  // -- jauh lebih spesifik mengarah ke DOKUMEN KISI-KISI/KURIKULUM
+  // resmi (yang memang punya nama "kisi-kisi" di judulnya), sangat
+  // kecil kemungkinan match ke artikel berita/opini kebijakan umum.
   const parts = [
-    'TKA',
+    'kisi-kisi TKA',
     'contoh soal',
     'soal ujian',
+    'materi pelajaran',
     mapel,
     topic,
     `kelas ${kelas}`,
     competencyHints,
-    'kerangka asesmen',
   ];
 
   if (normalizeText(hotsLevel).includes('hots')) {
