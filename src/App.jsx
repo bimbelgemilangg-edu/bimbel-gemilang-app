@@ -11,10 +11,18 @@ import PublicBlog from './pages/PublicBlog';
 
 // === PENDAFTARAN ONLINE (PUBLIK) ===
 import PendaftaranOnline from './pages/PendaftaranOnline';
+// 🔥 BARU: Pendaftaran Tentor & Staff -- file TERPISAH TOTAL dari
+// PendaftaranOnline di atas (yang untuk siswa). Sengaja dipisah supaya
+// pendaftaran siswa tidak tersentuh sama sekali.
+import PendaftaranTentor from './pages/PendaftaranTentor';
 
 // === ADMIN - PENDAFTARAN ===
 import ManageOnlineRegistration from './pages/admin/pendaftaran/ManageOnlineRegistration';
 import ManagePaketHarga from './pages/admin/pendaftaran/ManagePaketHarga';
+// 🔥 BARU: Kelola Lamaran Tentor & Staff -- terpisah total dari
+// ManageOnlineRegistration (siswa), koleksi Firestore beda
+// ("tutor_applications" vs "online_registrations").
+import ManageTentorRegistration from './pages/admin/pendaftaran/ManageTentorRegistration';
 
 // === ADMIN ===
 import Dashboard from './pages/admin/Dashboard';
@@ -228,12 +236,6 @@ const ModulSiswaWrapper = () => {
 // APP
 // ============================================================
 function App() {
-  // 🔥 FIX: sebelumnya begitu app dibuka sebagai PWA (dari ikon di HP),
-  // siswa SELALU dilempar ke /login-siswa dulu -- gak peduli dia udah
-  // pernah login sebelumnya atau belum. Sekarang dicek dulu status
-  // login yang sudah tersimpan (`isSiswaLoggedIn`, sama seperti yang
-  // dipakai SiswaRoute di bawah) -- kalau sudah login, langsung lempar
-  // ke dashboard-nya, gak perlu mampir ke form login sama sekali.
   useEffect(() => {
     if (window.matchMedia('(display-mode: standalone)').matches && window.location.pathname === '/') {
       const sudahLoginSiswa = localStorage.getItem('isSiswaLoggedIn') === 'true';
@@ -251,6 +253,9 @@ function App() {
         <Route path="/login-owner" element={<LoginOwner />} />
         <Route path="/aktivitas" element={<PublicBlog />} />
         <Route path="/pendaftaran" element={<PendaftaranOnline />} />
+        {/* 🔥 BARU: Pendaftaran Tentor & Staff -- publik, terpisah total
+            dari /pendaftaran (siswa) di atas. */}
+        <Route path="/pendaftaran-tentor" element={<PendaftaranTentor />} />
 
         {/* ADMIN */}
         <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
@@ -267,6 +272,8 @@ function App() {
         <Route path="/admin/portal/survey" element={<AdminRoute><ManageSurvey /></AdminRoute>} />
         <Route path="/admin/pendaftaran" element={<AdminRoute><ManageOnlineRegistration /></AdminRoute>} />
         <Route path="/admin/pendaftaran/harga" element={<AdminRoute><ManagePaketHarga /></AdminRoute>} />
+        {/* 🔥 BARU: Kelola Lamaran Tentor & Staff */}
+        <Route path="/admin/pendaftaran/tentor" element={<AdminRoute><ManageTentorRegistration /></AdminRoute>} />
         <Route path="/admin/finance" element={<AdminRoute><FinanceLayout /></AdminRoute>} />
         <Route path="/admin/schedule" element={<AdminRoute><SchedulePage /></AdminRoute>} />
         <Route path="/admin/grades" element={<AdminRoute><GradeReport /></AdminRoute>} />
