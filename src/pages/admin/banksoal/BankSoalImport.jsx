@@ -948,55 +948,57 @@ import {
   // satu jawaban AI".
   // ============================================================
 
-  async function detectQuestionsFromPageWithAI(pageImageDataUrl) {
+  async function transcribePageWithAI(pageImageDataUrl) {
     const response = await fetch('/api/smartParseQuiz', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        mode: 'detectPage',
+        mode: 'transcribePage',
         pageImage: pageImageDataUrl,
       }),
     });
 
     const data = await response.json().catch(() => ({}));
-
     if (!response.ok || !data.success) {
-      throw new Error(data?.error || `AI deteksi halaman gagal (HTTP ${response.status})`);
+      throw new Error(data?.error || `AI gagal membaca halaman (HTTP ${response.status})`);
     }
 
-    const rawQuestions = Array.isArray(data.questions)
-      ? data.questions
-      : Array.isArray(data.items)
-        ? data.items
-        : [];
-
-    const questions = rawQuestions
-      .map((item, index) => {
-        const bbox = item?.bbox || item?.boundingBox || item?.crop || null;
-        if (!bbox) return null;
-
-        const x = Math.max(0, Math.min(1, Number(bbox.x) || 0));
-        const y = Math.max(0, Math.min(1, Number(bbox.y) || 0));
-        const width = Math.max(0, Math.min(1 - x, Number(bbox.width) || 0));
-        const height = Math.max(0, Math.min(1 - y, Number(bbox.height) || 0));
-
-        if (width < 0.02 || height < 0.02) return null;
-
-        return {
-          printedNumber:
-            Number.isFinite(Number(item?.printedNumber))
-              ? Number(item.printedNumber)
-              : Number.isFinite(Number(item?.number))
-                ? Number(item.number)
-                : index + 1,
-          bbox: { x, y, width, height },
-        };
-      })
-      .filter(Boolean);
-
     return {
-      isPembahasanPage: Boolean(data.isPembahasanPage),
-      questions,
+      pageType: data.pageType || 'questions',
+      questions: Array.isArray(data.questions) ? data.questions : [],
+    };
+  }
+
+  function pageHasQuestionLikeContent(textItems) {
+    const text = textItems.map((it) => String(it.str || '')).join(' ').replace(/\s+/g, ' ').trim();
+    if (!text) return false;
+
+    if (/\bPEMBAHASAN\b/i.test(text) || /\bKUNCI\s+JAWABAN\b/i.test(text)) return false;
+
+    const numbered = text.match(/(?:^|\s)\d{1,3}[.)]\s+/g) || [];
+    const hasChoicePattern = /(?:^|\s)[A-E][.)]\s+/i.test(text);
+    const hasTrueFalse = /\bBenar\s+Salah\b/i.test(text);
+    const hasQuantity = /Kuantitas\s*P\b/i.test(text) || /Kuantitas\s*Q\b/i.test(text);
+
+    return numbered.length >= 1 && (hasChoicePattern || hasTrueFalse || hasQuantity || numbered.length >= 2);
+  }
+
+  function relativeFigureBBox(questionBBox, figureBBox) {
+    if (!questionBBox || !figureBBox) return null;
+    const fx = Number(figureBBox.x) || 0;
+    const fy = Number(figureBBox.y) || 0;
+    const fw = Number(figureBBox.width) || 0;
+    const fh = Number(figureBBox.height) || 0;
+    const qx = Number(questionBBox.x) || 0;
+    const qy = Number(questionBBox.y) || 0;
+    const qw = Number(questionBBox.width) || 0;
+    const qh = Number(questionBBox.height) || 0;
+    if (qw <= 0 || qh <= 0) return null;
+    return {
+      x: Math.max(0, Math.min(1, (fx - qx) / qw)),
+      y: Math.max(0, Math.min(1, (fy - qy) / qh)),
+      width: Math.max(0, Math.min(1, fw / qw)),
+      height: Math.max(0, Math.min(1, fh / qh)),
     };
   }
 
@@ -1442,9 +1444,7 @@ import {
     const processOnePage = useCallback(
       async (pageNumber) => {
         if (importMode === 'word') {
-          throw new Error(
-            'Mode Word lama dinonaktifkan pada arsitektur AI-first. Gunakan PDF agar AI dapat membaca teks, scan, tabel, grafik, dan gambar.',
-          );
+          throw new Error('Gunakan mode PDF untuk impor AI-first.');
         }
 
         const ref = pdfDocRef.current;
@@ -1457,151 +1457,77 @@ import {
         const pageCanvas = document.createElement('canvas');
         pageCanvas.width = viewport.width;
         pageCanvas.height = viewport.height;
-
         const ctx = pageCanvas.getContext('2d');
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-
         await page.render({ canvasContext: ctx, viewport }).promise;
-
         const pageImage = pageCanvas.toDataURL('image/jpeg', 0.82);
 
-        // Pass 1: seluruh halaman.
-        let pageAnalysis = await detectQuestionsFromPageWithAI(
-          canvasToDataUrlScaled(pageCanvas, 1800, 0.82),
-        );
+        const textContent = await page.getTextContent();
+        const items = textContent.items || [];
 
-        // Pass 2 (fallback penting): pada halaman 2 kolom yang sangat padat,
-        // satu halaman penuh membuat teks terlalu kecil untuk vision model.
-        // Pecah menjadi dua kolom dan jalankan deteksi lagi hanya bila pass 1
-        // kosong. Hasil bbox tile dipetakan kembali ke koordinat halaman penuh.
-        if (!pageAnalysis.isPembahasanPage && pageAnalysis.questions.length === 0) {
-          const tileResults = [];
-          const tiles = makeAIDetectionTiles(pageCanvas);
-
-          for (const tile of tiles) {
-            // eslint-disable-next-line no-await-in-loop
-            const tileAnalysis = await detectQuestionsFromPageWithAI(
-              canvasToDataUrlScaled(tile.canvas, 1600, 0.84),
-            );
-
-            for (const q of tileAnalysis.questions || []) {
-              tileResults.push({
-                printedNumber: q.printedNumber,
-                bbox: {
-                  x: (tile.x + q.bbox.x * tile.width) / pageCanvas.width,
-                  y: (tile.y + q.bbox.y * tile.height) / pageCanvas.height,
-                  width: (q.bbox.width * tile.width) / pageCanvas.width,
-                  height: (q.bbox.height * tile.height) / pageCanvas.height,
-                },
-              });
-            }
-          }
-
-          // Dedup sederhana karena nomor yang sama bisa muncul pada batas
-          // kolom/tile.
-          const seenNumbers = new Set();
-          pageAnalysis = {
-            isPembahasanPage: false,
-            questions: tileResults.filter((q) => {
-              const n = String(q.printedNumber);
-              if (seenNumbers.has(n)) return false;
-              seenNumbers.add(n);
-              return true;
-            }),
-          };
+        // Halaman yang jelas merupakan pembahasan/kunci tidak perlu AI.
+        const pageText = items.map((it) => String(it.str || '')).join(' ');
+        if (/\bPEMBAHASAN\b/i.test(pageText) || /\bKUNCI\s+JAWABAN\b/i.test(pageText)) {
+          return { pageImage, questions: [], isPembahasanPage: true };
         }
 
-        if (pageAnalysis.isPembahasanPage) {
-          return {
-            pageImage,
-            questions: [],
-            isPembahasanPage: true,
-          };
+        // Untuk PDF bertext-layer seperti buku TKA kamu, halaman non-soal
+        // dilewati TANPA request AI. Ini menghemat quota secara drastis.
+        if (items.length > 0 && !pageHasQuestionLikeContent(items)) {
+          return { pageImage, questions: [], isPembahasanPage: false };
+        }
+
+        // Satu request AI = satu halaman penuh dan SEMUA soal di halaman itu.
+        // Tidak ada lagi detectPage + transkripsi per soal.
+        const analysis = await transcribePageWithAI(
+          canvasToDataUrlScaled(pageCanvas, 2200, 0.82),
+        );
+
+        if (analysis.pageType === 'pembahasan') {
+          return { pageImage, questions: [], isPembahasanPage: true };
         }
 
         const questions = [];
-
-        for (const detected of pageAnalysis.questions) {
-          while (pauseRef.current && !abortRef.current) {
-            // eslint-disable-next-line no-await-in-loop
-            await new Promise((resolve) => setTimeout(resolve, 300));
-          }
-
-          if (abortRef.current) break;
-
+        for (const detected of analysis.questions || []) {
           const rawCropImage = cropNormalizedFromCanvas(pageCanvas, detected.bbox);
           if (!rawCropImage) continue;
 
-          try {
-            // AI kedua membaca SATU BUTIR saja. Karena gambar sudah diisolasi,
-            // AI tidak perlu menebak mana soal tetangga dan tidak terpengaruh
-            // dua kolom/urutan layout halaman.
-            // eslint-disable-next-line no-await-in-loop
-            const transcript = await transcribeQuestionWithAI(rawCropImage);
+          const questionFigureBBox = relativeFigureBBox(detected.bbox, detected.figureBBox);
+          const figureImage = questionFigureBBox
+            ? (await cropFigureFromQuestionImage(rawCropImage, questionFigureBBox)) || ''
+            : '';
 
-            let figureImage = '';
-            if (transcript.hasFigure && transcript.figureBBox) {
-              // eslint-disable-next-line no-await-in-loop
-              figureImage =
-                (await cropFigureFromQuestionImage(
-                  rawCropImage,
-                  transcript.figureBBox,
-                )) || '';
-            }
+          const optionImages = (detected.optionImageBBoxes || [])
+            .map((box) => cropNormalizedFromCanvas(pageCanvas, box, 4))
+            .filter(Boolean);
 
-            questions.push({
-              id: newId(),
-              pageNumber,
-              printedNumber: detected.printedNumber,
-              rawCropImage,
-              question: transcript.question,
-              options: Array.isArray(transcript.options)
-                ? transcript.options
-                : [],
-              tipeSoal: transcript.tipeSoal,
-              kuantitasP: transcript.kuantitasP || '',
-              kuantitasQ: transcript.kuantitasQ || '',
-              optionsAreImages: false,
-              optionImages: [],
-              qImage: figureImage,
-              tableHtml: '',
-              correct: null,
-              explanation: '',
-              shortAnswerValue: '',
-              approved: false,
-              possibleMathNotationIssue: false,
-              readingConfidence: transcript.readingConfidence,
-              aiSource: 'page-detection+question-transcription',
-              aiDetectionBBox: detected.bbox,
-            });
-          } catch (error) {
-            // Satu soal gagal tidak boleh menghilangkan soal lain pada halaman.
-            questions.push({
-              id: newId(),
-              pageNumber,
-              printedNumber: detected.printedNumber,
-              rawCropImage,
-              question: '',
-              options: ['', '', '', ''],
-              tipeSoal: 'pilihan_ganda',
-              kuantitasP: '',
-              kuantitasQ: '',
-              optionsAreImages: false,
-              optionImages: [],
-              qImage: '',
-              tableHtml: '',
-              correct: null,
-              explanation: '',
-              shortAnswerValue: '',
-              approved: false,
-              possibleMathNotationIssue: false,
-              readingConfidence: 'low',
-              transcribeError: error?.message || 'AI gagal membaca butir ini.',
-              aiSource: 'page-detection+question-transcription',
-              aiDetectionBBox: detected.bbox,
-            });
-          }
+          questions.push({
+            id: newId(),
+            pageNumber,
+            printedNumber: Number.isFinite(Number(detected.printedNumber))
+              ? Number(detected.printedNumber)
+              : questions.length + 1,
+            rawCropImage,
+            question: detected.question || '',
+            options: Array.isArray(detected.options) ? detected.options : [],
+            tipeSoal: detected.tipeSoal || 'pilihan_ganda',
+            kuantitasP: detected.kuantitasP || '',
+            kuantitasQ: detected.kuantitasQ || '',
+            optionsAreImages: Boolean(detected.optionsAreImages && optionImages.length >= 2),
+            optionImages,
+            qImage: figureImage,
+            tableHtml: '',
+            correct: null,
+            explanation: '',
+            shortAnswerValue: '',
+            approved: false,
+            possibleMathNotationIssue: false,
+            readingConfidence: detected.readingConfidence === 'low' ? 'low' : 'high',
+            aiSource: 'page-transcription-single-call',
+            aiDetectionBBox: detected.bbox,
+            transcribeError: null,
+          });
         }
 
         return {
@@ -1911,10 +1837,10 @@ import {
                 </>
               ) : (
                 <>
-                  AI membaca halaman, mendeteksi setiap butir, lalu membaca
-                  ulang tiap butir secara terpisah agar teks, matematika,
-                  tabel, grafik, dan gambar dapat dipertahankan. Hasilnya
-                  bisa diedit admin sebelum disetujui.
+                  AI membaca setiap halaman soal sekaligus dan mengekstrak semua
+                  butir pada halaman tersebut. Teks, matematika, tabel, grafik,
+                  dan gambar tetap dipertahankan, lalu hasilnya bisa diedit
+                  admin sebelum disetujui.
                 </>
               )}
             </p>
@@ -1976,10 +1902,10 @@ import {
                 </>
               ) : (
                 <>
-                  Gunakan PDF yang punya lapisan teks asli (bukan hasil
-                  scan murni) -- deteksi nomor soal bergantung pada
-                  posisi teks sungguhan di dalam file, bukan tebakan
-                  visual.
+                  PDF dengan text layer akan dipilah otomatis agar halaman sampul
+                  dan pembahasan tidak menghabiskan quota AI. PDF scan murni
+                  tetap bisa dibaca AI, tetapi sebaiknya diproses dengan rentang
+                  halaman yang lebih kecil.
                 </>
               )}
             </span>

@@ -58,8 +58,9 @@ const QUESTIONS_PER_CHUNK = 5; // jaga jawaban AI tetap pendek biar tidak terpot
 // menunjuk ke versi yang boleh dipakai akun baru, jadi diganti ke ID
 // eksplisit yang sudah terbukti hidup di akun ini.
 const GEMINI_MODELS = [
-  'gemini-3.6-flash',
+  'gemini-3.1-flash-lite',
   'gemini-3.5-flash-lite',
+  'gemini-3.6-flash',
 ];
 
 // ============================================================
@@ -904,6 +905,269 @@ ATURAN KHUSUS:
   }
 }
 
+
+// ============================================================
+// AI-FIRST v3: TRANSKRIP SATU HALAMAN SEKALIGUS
+// ============================================================
+// Ini menggantikan pola "deteksi halaman -> transkripsi per soal" yang
+// menghabiskan request terlalu banyak. Satu panggilan AI untuk satu halaman
+// langsung menghasilkan SEMUA soal lengkap pada halaman tersebut.
+// Frontend hanya mengirim halaman yang secara lokal terindikasi sebagai
+// halaman soal, sehingga halaman sampul/kisi-kisi/pembahasan tidak memakan
+// quota AI.
+// ============================================================
+
+function normalizeBBox(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const x = Math.max(0, Math.min(1, Number(raw.x) || 0));
+  const y = Math.max(0, Math.min(1, Number(raw.y) || 0));
+  const width = Math.max(0, Math.min(1 - x, Number(raw.width) || 0));
+  const height = Math.max(0, Math.min(1 - y, Number(raw.height) || 0));
+  if (width < 0.01 || height < 0.01) return null;
+  return { x, y, width, height };
+}
+
+function normalizePageTranscription(raw) {
+  const source = raw && typeof raw === 'object' ? raw : {};
+  const rawQuestions = Array.isArray(source.questions) ? source.questions : [];
+
+  const questions = rawQuestions.map((q, index) => {
+    const bbox = normalizeBBox(q?.bbox || q?.boundingBox || q?.crop);
+    if (!bbox) return null;
+
+    const figureBBox = q?.hasFigure ? normalizeBBox(q.figureBBox) : null;
+    const optionImageBBoxes = Array.isArray(q?.optionImageBBoxes)
+      ? q.optionImageBBoxes.map(normalizeBBox).filter(Boolean)
+      : [];
+
+    const numberValue = Number(q?.printedNumber ?? q?.number ?? index + 1);
+    const tipeSoal = [
+      'pilihan_ganda',
+      'pernyataan_kompleks',
+      'hubungan_kuantitas',
+      'isian_singkat',
+    ].includes(q?.tipeSoal)
+      ? q.tipeSoal
+      : 'pilihan_ganda';
+
+    return {
+      printedNumber: Number.isFinite(numberValue) ? Math.trunc(numberValue) : index + 1,
+      bbox,
+      question: typeof q?.question === 'string' ? q.question.trim() : '',
+      options: Array.isArray(q?.options)
+        ? q.options.map((x) => String(x ?? '').trim()).filter(Boolean)
+        : [],
+      tipeSoal,
+      kuantitasP: typeof q?.kuantitasP === 'string' ? q.kuantitasP.trim() : '',
+      kuantitasQ: typeof q?.kuantitasQ === 'string' ? q.kuantitasQ.trim() : '',
+      hasFigure: Boolean(q?.hasFigure && figureBBox),
+      figureBBox,
+      optionsAreImages: Boolean(q?.optionsAreImages || optionImageBBoxes.length >= 2),
+      optionImageBBoxes,
+      readingConfidence: q?.readingConfidence === 'low' ? 'low' : 'high',
+    };
+  }).filter(Boolean);
+
+  // Urutan baca natural: atas-ke-bawah; jika hampir sejajar, kiri-ke-kanan.
+  questions.sort((a, b) => {
+    const dy = a.bbox.y - b.bbox.y;
+    if (Math.abs(dy) > 0.03) return dy;
+    return a.bbox.x - b.bbox.x;
+  });
+
+  // Hindari nomor yang sama terdeteksi dua kali.
+  const seen = new Set();
+  const deduped = questions.filter((q) => {
+    const key = `${q.printedNumber}:${q.bbox.x.toFixed(3)}:${q.bbox.y.toFixed(3)}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  return {
+    pageType: source.pageType === 'pembahasan'
+      ? 'pembahasan'
+      : source.pageType === 'other'
+        ? 'other'
+        : 'questions',
+    questions: deduped,
+  };
+}
+
+async function callGeminiTranscribePage(pageImageDataUrl, modelName) {
+  const match = /^data:([^;]+);base64,(.+)$/.exec(pageImageDataUrl || '');
+  if (!match) throw new Error('Format gambar halaman tidak valid.');
+
+  const [, mimeType, base64Data] = match;
+
+  const systemPrompt = `Kamu adalah AI vision untuk mengimpor soal ujian ke Bank Soal Bimbel Gemilang.
+
+TUGAS UTAMA:
+Lihat SATU HALAMAN buku/lembar ujian. Bila halaman berisi soal, ekstrak SEMUA BUTIR SOAL yang lengkap pada halaman ini menjadi data terstruktur yang bisa diedit admin.
+
+ATURAN KERAS:
+1. Jangan membuat soal dari judul, nomor halaman, header, footer, kisi-kisi, atau pembahasan.
+2. Jangan menghilangkan soal hanya karena ada gambar, grafik, tabel, pecahan, matriks, atau tata letak dua kolom.
+3. Pertahankan urutan baca dua kolom: kolom kiri dari atas ke bawah, lalu kolom kanan dari atas ke bawah.
+4. Setiap bbox WAJIB mencakup SELURUH butir: nomor, pertanyaan, gambar/diagram/tabel, dan semua opsi.
+5. Koordinat bbox memakai nilai 0..1 relatif terhadap SELURUH gambar halaman, (x,y) dari kiri-atas.
+6. Salin teks SETIA pada sumber. Jangan memperbaiki isi, angka, satuan, atau konteks.
+7. Rumus/pecahan/akar/matriks ditulis sebagai LaTeX di dalam \\( ... \\). Untuk vektor/matriks vertikal, pertahankan sebagai pmatrix.
+8. Jika ada bagian yang benar-benar tidak terbaca, jangan mengarang. Tandai readingConfidence=low.
+9. Jika halaman merupakan PEMBAHASAN/KUNCI, pageType harus pembahasan dan questions harus kosong.
+10. Jika halaman bukan halaman soal, pageType other dan questions kosong.
+
+TIPE SOAL:
+- pilihan_ganda
+- pernyataan_kompleks
+- hubungan_kuantitas
+- isian_singkat
+
+GAMBAR:
+- hasFigure=true bila butir memiliki diagram/grafik/tabel/foto/gambar yang menjadi bagian soal.
+- figureBBox adalah kotak area gambar TERSEBUT relatif terhadap SELURUH halaman.
+- Bila opsi jawaban berupa gambar, set optionsAreImages=true dan berikan optionImageBBoxes untuk gambar opsi A, B, C, D, E berurutan.
+
+PENTING:
+JANGAN menentukan jawaban benar dan JANGAN menulis pembahasan. Ini hanya impor/transkripsi.
+`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': process.env.GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [{
+          role: 'user',
+          parts: [
+            { inline_data: { mime_type: mimeType, data: base64Data } },
+            { text: 'Ekstrak semua soal lengkap dari halaman ini. Hanya JSON sesuai schema.' },
+          ],
+        }],
+        generationConfig: {
+          temperature: 0.05,
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              pageType: { type: 'STRING', enum: ['questions', 'pembahasan', 'other'] },
+              questions: {
+                type: 'ARRAY',
+                items: {
+                  type: 'OBJECT',
+                  properties: {
+                    printedNumber: { type: 'INTEGER' },
+                    bbox: {
+                      type: 'OBJECT',
+                      properties: {
+                        x: { type: 'NUMBER' }, y: { type: 'NUMBER' },
+                        width: { type: 'NUMBER' }, height: { type: 'NUMBER' },
+                      },
+                      required: ['x', 'y', 'width', 'height'],
+                    },
+                    question: { type: 'STRING' },
+                    options: { type: 'ARRAY', items: { type: 'STRING' } },
+                    tipeSoal: { type: 'STRING', enum: ['pilihan_ganda', 'pernyataan_kompleks', 'hubungan_kuantitas', 'isian_singkat'] },
+                    kuantitasP: { type: 'STRING' },
+                    kuantitasQ: { type: 'STRING' },
+                    hasFigure: { type: 'BOOLEAN' },
+                    figureBBox: {
+                      type: 'OBJECT',
+                      properties: {
+                        x: { type: 'NUMBER' }, y: { type: 'NUMBER' },
+                        width: { type: 'NUMBER' }, height: { type: 'NUMBER' },
+                      },
+                    },
+                    optionsAreImages: { type: 'BOOLEAN' },
+                    optionImageBBoxes: {
+                      type: 'ARRAY',
+                      items: {
+                        type: 'OBJECT',
+                        properties: {
+                          x: { type: 'NUMBER' }, y: { type: 'NUMBER' },
+                          width: { type: 'NUMBER' }, height: { type: 'NUMBER' },
+                        },
+                        required: ['x', 'y', 'width', 'height'],
+                      },
+                    },
+                    readingConfidence: { type: 'STRING', enum: ['high', 'low'] },
+                  },
+                  required: ['printedNumber', 'bbox', 'question', 'options', 'tipeSoal', 'hasFigure', 'readingConfidence'],
+                },
+              },
+            },
+            required: ['pageType', 'questions'],
+          },
+          maxOutputTokens: 8192,
+        },
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`GEMINI_HTTP_${response.status}: ${errText}`);
+    }
+    return response.json();
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new Error(`GEMINI_TIMEOUT setelah ${GEMINI_TIMEOUT_MS}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function transcribePageWithAI(pageImageDataUrl) {
+  let lastErr;
+  for (const modelName of GEMINI_MODELS) {
+    try {
+      const data = await callGeminiTranscribePage(pageImageDataUrl, modelName);
+      const rawText =
+        data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+        data?.choices?.[0]?.message?.content || '';
+      const cleaned = String(rawText).replace(/```json|```/g, '').trim();
+      try {
+        return normalizePageTranscription(JSON.parse(cleaned));
+      } catch {
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        if (match) return normalizePageTranscription(JSON.parse(match[0]));
+      }
+      throw new Error('Respons AI transkripsi halaman bukan JSON yang valid.');
+    } catch (e) {
+      lastErr = e;
+      console.error(`smartParseQuiz (transcribePage) gagal pakai ${modelName}:`, e.message);
+    }
+  }
+  throw lastErr || new Error('Semua model Gemini gagal mentranskripsi halaman.');
+}
+
+async function handleTranscribePageMode(req, res) {
+  const { pageImage } = req.body || {};
+  if (!pageImage || typeof pageImage !== 'string') {
+    return res.status(400).json({ success: false, error: 'pageImage kosong atau tidak valid.' });
+  }
+  if (pageImage.length > 8_500_000) {
+    return res.status(413).json({ success: false, error: 'Gambar halaman terlalu besar.' });
+  }
+  try {
+    const result = await transcribePageWithAI(pageImage);
+    return res.status(200).json({ success: true, ...result });
+  } catch (err) {
+    console.error('smartParseQuiz (transcribePage) error:', err);
+    return res.status(502).json({ success: false, error: err.message || 'Gagal membaca halaman.' });
+  }
+}
+
 async function detectPageWithAI(pageImageDataUrl) {
   let lastErr;
 
@@ -991,8 +1255,11 @@ export default async function handler(req, res) {
     return res.status(500).json({ success: false, error: 'GEMINI_API_KEY belum di-setting di Vercel' });
   }
 
-  // 🔥 cabang AI-first: deteksi semua butir soal dari SATU GAMBAR HALAMAN.
-  // Diperlukan oleh BankSoalImport_AI_First.jsx.
+  if (req.body && req.body.mode === 'transcribePage') {
+    return handleTranscribePageMode(req, res);
+  }
+
+  // Mode lama detectPage tetap dipertahankan untuk kompatibilitas.
   if (req.body && req.body.mode === 'detectPage') {
     return handleDetectPageMode(req, res);
   }
