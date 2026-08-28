@@ -532,6 +532,70 @@ import {
   
     return { question, options: rawOptions.map((o) => o.text) };
   }
+
+  // 🔥 BARU: DETEKSI NOTASI MATEMATIKA KEMUNGKINAN RUSAK.
+  //
+  // KETERBATASAN NYATA yang perlu dipahami (bukan bug yang "bisa
+  // diperbaiki total" dengan kode lagi): PDF menyimpan teks sebagai
+  // karakter dengan posisi X,Y masing-masing -- TANPA tau kalau satu
+  // baris di atas & satu baris di bawahnya itu sebenarnya SATU pecahan
+  // (pembilang/garis-bagi/penyebut). Ekstraksi berbasis posisi baris
+  // (extractLinesInRange) hebat untuk prosa biasa, tapi untuk notasi
+  // matematika 2D (pecahan, matriks, akar bertingkat) hasilnya bisa
+  // pecah jadi fragmen yang gak nyambung -- CONTOH NYATA yang
+  // dilaporkan: opsi "A" jadi kosong, fragmen pecahan "x + y –" muncul
+  // terpisah tanpa label.
+  //
+  // Fungsi ini TIDAK mencoba "memperbaiki" notasi yang sudah pecah
+  // (itu gak realistis diperbaiki otomatis dengan andal -- itu juga
+  // alasan 3 revisi sebelumnya yang nyoba pakai AI vision GAGAL, lihat
+  // riwayat panjang di atas). Fungsi ini cuma MENDETEKSI gejalanya,
+  // supaya admin LANGSUNG DIKASIH TAU untuk pindah ke mode Word (ketik
+  // ulang notasinya jadi teks linear biasa) -- bukan menemukan sendiri
+  // lewat review manual yang membingungkan.
+  function looksLikeGarbledMathNotation(question, options) {
+    // Sinyal 1: ada opsi yang BENAR-BENAR KOSONG padahal opsi lain di
+    // soal yang sama berisi -- indikasi kuat label opsi (A/B/C) kepisah
+    // dari isinya karena tata letak pecahan.
+    //
+    // 🔥 FIX BUG NYATA (ketemu waktu tes sendiri): sebelumnya pakai
+    // ambang "length <= 1" -- itu SALAH TANGKAP jawaban angka 1 digit
+    // yang benar-benar wajar (mis. opsi "6", "7", "8", "9" pada soal
+    // aritmatika biasa, atau "-6"/"0"/"3" pada soal bernilai negatif).
+    // Sekarang cuma string BENAR-BENAR KOSONG (panjang 0 setelah
+    // trim) yang dianggap sinyal -- itu yang beneran cuma terjadi
+    // kalau label opsi kehilangan isinya sama sekali.
+    const nonEmptyCount = options.filter((o) => o && o.trim().length > 0).length;
+    const trulyEmptyCount = options.filter((o) => !o || o.trim().length === 0).length;
+    if (nonEmptyCount > 0 && trulyEmptyCount > 0) return true;
+
+    // Sinyal 2: teks (soal atau opsi) berakhir dengan operator
+    // matematika menggantung TANPA operand setelahnya -- indikasi
+    // pembilang/penyebut kepotong di tengah.
+    //
+    // 🔥 FIX BUG NYATA: sebelumnya cuma cek hyphen ASCII biasa (-,
+    // U+002D) -- padahal ekstraksi teks PDF SERING merender tanda
+    // minus sebagai en-dash "–" (U+2013) atau em-dash "—" (U+2014),
+    // PERSIS kasus nyata di screenshot ("Bentuk adalah ... x –").
+    // Tanpa ini, kasus paling umum malah gak kedeteksi sama sekali.
+    const danglingOperatorPattern = /[+\-–—×÷=]\s*$/;
+    if (danglingOperatorPattern.test(question.trim())) return true;
+    if (options.some((o) => danglingOperatorPattern.test((o || '').trim()))) {
+      return true;
+    }
+
+    // Sinyal 3: opsi berupa fragmen sangat pendek yang isinya cuma
+    // SATU HURUF diikuti operator (mis. "x -", "y +1") -- pola khas
+    // pecahan yang kepotong. Dibedakan jelas dari opsi ANGKA pendek
+    // yang wajar (mis. "17", "-6") dengan mewajibkan karakter pertama
+    // HARUS huruf, bukan angka/minus.
+    const fragmentPattern = /^[a-zA-Z]\s*[+\-–—]\s*\d*$/;
+    if (options.some((o) => fragmentPattern.test((o || '').trim()))) {
+      return true;
+    }
+
+    return false;
+  }
   
   // Klasifikasi tipe soal SNBT/UTBK lewat POLA TEKS -- tanpa AI. Ini
   // pengganti langkah yang sebelumnya minta AI mengklasifikasikan;
@@ -1104,6 +1168,15 @@ import {
           withoutNumber,
           optionCrops.length >= 2,
         );
+
+        // 🔥 BARU: tandai kalau ada gejala notasi matematika 2D
+        // (pecahan/matriks/akar bertingkat) yang kemungkinan pecah
+        // waktu diekstrak -- lihat penjelasan lengkap di
+        // looksLikeGarbledMathNotation().
+        const possibleMathNotationIssue = looksLikeGarbledMathNotation(
+          question,
+          options,
+        );
   
         // 🔥 BARU: deteksi area diagram/grafik lewat CELAH KOSONG antar
         // baris teks (bukan AI menebak kotak pembatas) -- kalau ada
@@ -1135,6 +1208,7 @@ import {
           qImage: figureImage,
           optionsAreImages: optionCrops.length >= 2,
           optionImages: optionCrops,
+          possibleMathNotationIssue,
         });
       }
   
@@ -1210,6 +1284,7 @@ import {
           explanation: '',
           shortAnswerValue: '',
           approved: false,
+          possibleMathNotationIssue: crop.possibleMathNotationIssue || false,
         }));
   
         return { pageImage, questions };
@@ -1638,9 +1713,12 @@ import {
             <span className="bsi-drop-hint">
               {importMode === 'word' ? (
                 <>
-                  Tulis notasi matematika (vektor, matriks) sebagai TEKS
-                  BIASA satu baris, mis. "a = (p, 2, -1)" -- bukan lewat
-                  Equation Editor Word, supaya bisa diambil sebagai teks.
+                  Tulis notasi matematika (pecahan, vektor, matriks, akar
+                  bertingkat) sebagai TEKS BIASA satu baris, mis. pecahan
+                  "(x-1+y-1)/(x-1-y-1)" atau vektor "a = (p, 2, -1)" --
+                  bukan lewat Equation Editor Word, supaya bisa diambil
+                  sebagai teks. Mode ini cocok untuk soal yang PDF-nya
+                  ditandai "kemungkinan notasi rusak" saat ditinjau.
                 </>
               ) : (
                 <>
@@ -2112,6 +2190,25 @@ import {
                         </div>
                       </div>
   
+                      {/* 🔥 BARU: peringatan notasi matematika kemungkinan
+                          rusak -- lihat looksLikeGarbledMathNotation().
+                          Ditaruh PALING ATAS (sebelum flag lain) karena
+                          ini bukan cuma "kurang yakin", tapi indikasi
+                          KUAT butir ini perlu ditangani beda (bukan
+                          disetujui apa adanya). */}
+                      {q.possibleMathNotationIssue && (
+                        <p className="bsi-flag strong">
+                          ⚠️ Kemungkinan notasi matematika (pecahan/matriks/akar
+                          bertingkat) pecah waktu diekstrak -- bandingkan
+                          dengan crop asli di kiri. Kalau memang rusak,
+                          JANGAN diperbaiki manual di sini (rawan salah
+                          ketik) -- lebih aman: "Buang" soal ini, lalu
+                          ketik ulang soalnya di Word (notasi jadi teks
+                          linear biasa, mis. "(x-1+y-1)/(x-1-y-1)") dan
+                          impor lewat mode "Dari Word (.docx)".
+                        </p>
+                      )}
+
                       {q.transcribeError && (
                         <p className="bsi-flag">
                           Percobaan "Baca ulang (AI)" gagal --
@@ -2402,6 +2499,8 @@ import {
   .bsi-details summary{font-size:13px;color:var(--muted);cursor:pointer;padding:2px 0}
   .bsi-details[open] summary{margin-bottom:7px}
   .bsi-flag{margin:0;font-size:12.5px;color:var(--warn);line-height:1.5}
+  .bsi-flag.strong{padding:10px 12px;border-radius:8px;background:#fffbeb;
+    border:1px solid #fde68a;color:#92400e;font-weight:550}
 
   /* 🔥 BARU: panel perbandingan usulan AI */
   .bsi-ai-compare{margin-top:10px;padding:14px;border-radius:10px;background:#fffbeb;
