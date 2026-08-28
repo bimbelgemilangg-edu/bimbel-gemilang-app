@@ -2587,6 +2587,37 @@ function validReading(
 }
 
 // ============================================================
+// 🔥 BARU: DETEKSI SOAL YANG KEMUNGKINAN BUTUH VISUAL TAPI GAK
+// KEBENTUK. Lihat penjelasan lengkap di titik pemakaiannya
+// (possibleMissingVisual di objek soal final).
+// ============================================================
+function looksLikeMissingRequiredVisual(questionText) {
+  const text = String(questionText || '');
+
+  // Sinyal 1: frasa eksplisit merujuk ke gambar/diagram/grafik yang
+  // SEHARUSNYA menyertai soal ini -- kalau soal bilang "perhatikan
+  // gambar berikut" tapi gak ada gambar, itu jelas rusak.
+  const explicitVisualRefPattern =
+    /\b(perhatikan (gambar|bangun|grafik|diagram)|berdasarkan gambar|(gambar|grafik|diagram|kurva)(\s+\w+)?\s+(berikut|di atas|di bawah|di samping)|sesuai gambar)\b/i;
+  if (explicitVisualRefPattern.test(text)) return true;
+
+  // Sinyal 2: nama bangun ruang/datar DISEBUTKAN BERSAMA notasi titik
+  // sudut berurutan (mis. "balok ABCDEFGH", "bidang BCHE") -- pola
+  // paling khas soal geometri yang butuh diagram utuh. Ambang 4+
+  // huruf kapital berurutan (bukan 3+) sengaja dipilih supaya
+  // singkatan pendidikan umum yang kebetulan 3 huruf (SMP, SMA, SD,
+  // IPA, IPS) TIDAK ikut salah tertangkap.
+  const solidNamePattern =
+    /\b(balok|kubus|limas|prisma|tabung|kerucut|bola|trapesium|jajar\s?genjang|segitiga|persegi\s?panjang|bidang)\b/i;
+  const vertexNotationPattern = /\b[A-Z]{4,8}\b/;
+  if (solidNamePattern.test(text) && vertexNotationPattern.test(text)) {
+    return true;
+  }
+
+  return false;
+}
+
+// ============================================================
 // NORMALIZE QUESTION
 // ============================================================
 
@@ -3239,6 +3270,28 @@ function normalizeQuestion(
 
     visualRequired:
       Boolean(qImage),
+
+    // 🔥 BARU: DETEKSI SOAL YANG KEMUNGKINAN BUTUH VISUAL TAPI GAK
+    // KEBENTUK -- fix keluhan nyata dilaporkan guru: banyak soal
+    // geometri/grafik (gaya soal TKA) yang teksnya jelas-jelas
+    // merujuk ke bangun/diagram (mis. "balok ABCDEFGH", "perhatikan
+    // gambar berikut"), TAPI AI gak mengisi field shape/graph/circle
+    // sama sekali walau instruksinya sudah jelas -- akibatnya qImage
+    // kosong, soal jadi gak bisa dikerjakan (siswa diminta lihat
+    // gambar yang gak ada).
+    //
+    // Ini KETERBATASAN NYATA model AI (kepatuhan ke instruksi yang
+    // rumit gak pernah 100%), bukan bug logika pembuat SVG-nya
+    // (buildShapeSvg/buildGraphSvg/buildCircleSvg sudah benar --
+    // masalahnya AI gak pernah memanggil/mengisi fieldnya). Makanya
+    // solusinya BUKAN "perbaiki kode SVG" (itu udah benar), tapi
+    // TANDAI jelas ke guru soal mana yang perlu ditinjau/dilengkapi
+    // manual, daripada diam-diam lolos tanpa gambar.
+    possibleMissingVisual:
+      !qImage &&
+      looksLikeMissingRequiredVisual(
+        normalized.question,
+      ),
 
     visualKind,
 
