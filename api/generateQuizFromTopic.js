@@ -11,7 +11,7 @@
 //    ↓
 // LOCAL BLUEPRINT ENGINE
 //    ↓
-// TAVILY WEB RESEARCH (3 pencarian terarah / request, berjalan paralel)
+// TAVILY WEB RESEARCH (maks. 1 pencarian teks / request)
 //    ↓
 // GOOGLE GEMINI API (endpoint kompatibel-OpenAI)
 //    ↓
@@ -21,15 +21,17 @@
 //    ↓
 // MANAGE QUIZ
 //
-// TAVILY dipakai khusus untuk mencari referensi akademik sebelum prompt dikirim
-// ke Gemini. Query dipisah menjadi kerangka asesmen, contoh butir resmi, dan
-// sumber pendidikan tambahan. Hasil diberi skor relevansi dan sumber yang
-// terlalu umum/kebijakan dibuang sebelum masuk ke prompt AI.
+// TAVILY dipakai untuk 2 hal yang terkendali:
+//   1) mencari contoh soal/referensi di internet untuk ditulis ulang;
+//   2) mencari foto objek nyata bila soal memang membutuhkan foto.
+// Riset wajib bila generator berjalan: tanpa referensi yang lolos, generator berhenti aman.
 //
 // ⚠️ CATATAN:
-// Untuk mode generator ujian, riset adalah syarat: jika tidak ada sumber yang
-// cukup relevan dengan mapel + kelas + topik, generator berhenti aman dan TIDAK
-// membuat soal karangan bebas. Ini sengaja supaya kualitas tidak turun diam-diam.
+// Pencarian referensi internet dilakukan oleh server lewat Tavily SEBELUM
+// prompt dikirim ke Gemini. Gemini menerima hasil pencarian tersebut
+// sebagai bahan referensi dan WAJIB menulis ulang soalnya, bukan menyalin.
+// Kalau Tavily tidak tersedia/gagal/rate limit, generator TIDAK ERROR:
+// sistem otomatis lanjut membuat soal tanpa riset web.
 //
 // ENV (WAJIB):
 // GEMINI_API_KEY=... (buat GRATIS di https://aistudio.google.com/apikey
@@ -71,9 +73,9 @@
 //
 // KENAPA PERUBAHAN KODENYA KECIL:
 // Google menyediakan endpoint yang KOMPATIBEL DENGAN FORMAT OpenAI.
-// Blueprint engine, parser JSONL, quality gate, deteksi duplikat, dan SVG
-// visual tetap dipertahankan. Perubahan utama ada di mesin riset, profil TKA,
-// dan quality gate substansi agar hasil benar-benar tetap berada di mapel ujian.
+// Jadi seluruh otak sistem ini -- blueprint engine, parser JSONL,
+// quality gate, deteksi duplikat, enrich gambar Tavily -- TIDAK
+// diubah sama sekali. Yang diganti hanya alamat & nama model.
 //
 // OPTIONAL:
 // AI_MODEL=gemini-3.6-flash
@@ -203,21 +205,63 @@ const MIN_REMAINING_BUDGET_MS = 8_000;
 const SOFT_MAX_TOKENS_CEILING = 16000;
 
 // ============================================================
-// TAVILY: RISET REFERENSI SOAL (TEXT ONLY)
+// 🔥 BARU: TAVILY (pencari gambar asli -- opsional)
 // ============================================================
-// Untuk menjaga kualitas akademik, riset sekarang dibagi menjadi
-// beberapa query yang berjalan paralel: kerangka asesmen, contoh butir,
-// dan sumber pendidikan. Jadi generator tidak lagi menggantungkan 10-20
-// soal pada satu hasil pencarian campur-aduk.
+// Dipakai KHUSUS untuk mencari gambar ASLI dari internet buat:
+// (1) stimulus visual soal (mis. "gambar di bawah ini candi apa?"),
+// (2) pilihan jawaban berbentuk gambar (optionsAreImages).
+// Tool pencarian teks bawaan provider AI TIDAK bisa ini -- yang
+// dikembalikan cuma teks/snippet, bukan berkas gambar.
+// Tavily terverifikasi (Agustus 2026) punya
+// free tier 1.000 credit/bulan, reset tiap tanggal 1, TANPA kartu
+// kredit -- kalau kredit habis, request BERHENTI (bukan auto-tagih
+// kayak Brave yang sudah kita coret dari opsi).
+//
+// FITUR INI SEPENUHNYA OPSIONAL: kalau `TAVILY_API_KEY` gak di-set,
+// seluruh langkah pencarian gambar di bawah DILEWATI TOTAL -- sistem
+// tetap jalan normal persis seperti sebelum fitur ini ada (fallback
+// ke needsImage+imageHint sebagai penanda "butuh gambar" doang, tanpa
+// gambar asli). Jadi nggak ada resiko baru buat siapa pun yang belum
+// mau/sempat setup Tavily.
 const TAVILY_SEARCH_URL =
   'https://api.tavily.com/search';
 
+// 🔥 RISET SOAL INTERNET -- 1 call teks / request maksimum.
+// Sengaja cuma satu call: hasilnya dipakai sebagai kumpulan referensi,
+// sehingga 20 soal tidak berubah menjadi 20+ pencarian dan kuota tetap aman.
+//
+// 🔥 FIX BUG NYATA (dilaporkan langsung dari pemakaian): 5 detik
+// TERLALU KETAT untuk panggilan web-search sungguhan -- Tavily kadang
+// butuh 5-8 detik dalam kondisi jaringan normal, bukan cuma pas
+// bermasalah. Timeout seketat ini bikin permintaan yang SEBENARNYA
+// baik-baik saja (bukan soal kuota habis) ikut gagal dan memicu
+// penghentian generate (lihat blok "TIDAK ADA FALLBACK" di bawah).
+// Dinaikkan ke 8 detik -- masih porsi kecil dari total 60 detik
+// anggaran Vercel (lihat maxDuration), tapi kasih ruang jauh lebih
+// realistis buat riset selesai normal.
 const TAVILY_RESEARCH_TIMEOUT_MS = 8_000;
-const MAX_RESEARCH_RESULTS = 15;
+const MAX_RESEARCH_RESULTS = 5;
 const MAX_RESEARCH_CHARS_PER_RESULT = 2_400;
 const MAX_RESEARCH_CONTEXT_CHARS = 10_000;
 const MAX_RESEARCH_IMAGES_PER_RESULT = 4;
-const MAX_RESEARCH_QUERIES_PER_REQUEST = 3;
+
+// Pencarian gambar tetap dibatasi terpisah dan rendah.
+// Jadi total maksimum Tavily per request = 1 riset + 3 gambar = 4 call.
+const MAX_TAVILY_IMAGE_CALLS_PER_REQUEST = 3;
+
+// Batas keras jumlah panggilan Tavily PER REQUEST generate-quiz --
+// jaga-jaga supaya satu permintaan guru (banyak soal, semua butuh
+// gambar) gak ujug-ujug ngabisin jatah bulanan cuma dalam 1 klik.
+const MAX_TAVILY_CALLS_PER_REQUEST = MAX_TAVILY_IMAGE_CALLS_PER_REQUEST;
+
+// 🔥 DITURUNKAN dari 12 detik saat pindah ke Gemini. Alasannya
+// terukur, bukan perasaan: dengan budget AI yang lama, kasus terburuk
+// hanya menyisakan 4 detik untuk gambar -- lebih pendek dari satu
+// panggilan Tavily itu sendiri, sehingga fitur gambar praktis TIDAK
+// PERNAH jalan saat AI sedang lambat, diam-diam, tanpa error apa pun.
+// Sekarang budget AI dipangkas dan timeout ini diperpendek, sehingga
+// selalu tersisa ruang untuk beberapa panggilan gambar.
+const TAVILY_TIMEOUT_MS = 6_000;
 
 // 🔥 Sama persis dengan filter di ManageQuiz.jsx (searchImagesForQuestion)
 // -- beberapa domain proxy internal platform (Facebook lookaside, CDN
@@ -243,343 +287,282 @@ function isReliableImageUrl(
   );
 }
 
-function isTkaRequest({ topic = '', mapel = '', arahan = '', examType = '', body = {} }) {
-  const haystack = [
-    topic,
-    mapel,
-    arahan,
-    examType,
-    body?.jenisUjian,
-    body?.ujian,
-    body?.exam,
-    body?.examType,
-    body?.assessmentType,
-  ]
-    .filter(Boolean)
-    .join(' ');
+function isTkaPolicyReference(
+  item,
+  {
+    mapel = '',
+    topic = '',
+  } = {},
+) {
+  const title = normalizeText(item?.title || '');
+  const content = normalizeText(item?.content || '');
+  const url = normalizeText(item?.url || '');
+  const haystack = `${title} ${content} ${url}`;
 
-  return /\btka\b/i.test(haystack);
+  const subject = normalizeText(mapel);
+  const topicNorm = normalizeText(topic);
+
+  if (!haystack.includes('tka')) {
+    return false;
+  }
+
+  // Sumber resmi kerangka/butir soal boleh tetap dipakai.
+  const hasAssessmentSignals =
+    /kerangka asesmen|contoh butir|contoh soal|butir soal|subkompetensi|kompetensi|indikator|bentuk soal|kunci jawaban/.test(
+      haystack,
+    );
+
+  // Artikel kebijakan umum TKA bukan sumber soal mapel.
+  const policySignals =
+    /apa itu tka|kepanjangan tka|singkatan tka|tujuan tka|manfaat tka|latar belakang tka|pelaksanaan tka|mekanisme tka|jadwal tka|pendaftaran tka|kebijakan tka|alasan tka|mengapa tka/.test(
+      haystack,
+    );
+
+  const hasSubject =
+    subject &&
+    subject !== 'umum' &&
+    haystack.includes(subject);
+
+  const topicTokens = topicNorm
+    .split(' ')
+    .filter(
+      (token) =>
+        token.length >= 4 &&
+        ![
+          'tka',
+          'tes',
+          'kemampuan',
+          'akademik',
+          'kelas',
+          'ujian',
+          'soal',
+        ].includes(token),
+    )
+    .slice(0, 10);
+
+  const hasTopic = topicTokens.some((token) =>
+    haystack.includes(token),
+  );
+
+  if (policySignals && !hasSubject && !hasTopic) {
+    return true;
+  }
+
+  if (policySignals && !hasAssessmentSignals) {
+    return true;
+  }
+
+  return false;
 }
 
-function isLikelySubjectRequest({ mapel = '', topic = '' }) {
+function isLikelySubjectRequest({
+  mapel = '',
+  topic = '',
+} = {}) {
   const m = normalizeText(mapel);
   const t = normalizeText(topic);
 
-  if (!m || m === 'umum' || m === 'tka') return false;
+  if (!m || m === 'umum' || m === 'tka') {
+    return false;
+  }
 
-  const policyOnlyTopic = /\b(apa itu|pengertian|tujuan|kebijakan|pelaksanaan|mekanisme|jadwal|pendaftaran|manfaat|latar belakang)\b/.test(t);
-  if (policyOnlyTopic && (t.includes('tka') || t.includes('tes kemampuan akademik'))) {
+  if (
+    t.includes('tka') &&
+    /apa itu|pengertian|tujuan|kebijakan|pelaksanaan|mekanisme|jadwal|pendaftaran|manfaat|latar belakang/.test(t)
+  ) {
     return false;
   }
 
   return true;
 }
 
-function getTkaAllowedTypes(requestedTypes = []) {
-  const officialTkaTypes = new Set([
-    'multiple',     // PG satu jawaban benar
-    'multiselect',  // PG kompleks, lebih dari satu jawaban benar
-    'truefalse',    // PG kompleks kategori, mis. Benar/Salah
-  ]);
+function isTkaPolicyQuestion(text = '') {
+  const normalized = normalizeText(text);
 
-  const filtered = [
-    ...new Set(
-      requestedTypes.filter((type) => officialTkaTypes.has(type)),
-    ),
-  ];
-
-  return filtered.length ? filtered : ['multiple'];
+  return [
+    'apa itu tka',
+    'apa kepanjangan tka',
+    'kepanjangan tka',
+    'apa singkatan tka',
+    'singkatan tka',
+    'tujuan tka',
+    'manfaat tka',
+    'latar belakang tka',
+    'pelaksanaan tka',
+    'mekanisme tka',
+    'kebijakan tka',
+    'jadwal tka',
+    'pendaftaran tka',
+    'mengapa tka',
+    'alasan tka',
+  ].some((phrase) => normalized.includes(phrase));
 }
 
-function buildResearchQueries({
+function looksLikeTkaOffSubjectQuestion(
+  question,
+  {
+    mapel = '',
+    topic = '',
+  } = {},
+) {
+  const text = normalizeText(
+    [
+      question?.question,
+      question?.explanation,
+      question?.readingText,
+      question?.cause,
+      question?.effect,
+      Array.isArray(question?.options)
+        ? question.options.join(' ')
+        : '',
+      Array.isArray(question?.statements)
+        ? question.statements.map((item) => item?.text || '').join(' ')
+        : '',
+    ]
+      .filter(Boolean)
+      .join(' '),
+  );
+
+  if (isTkaPolicyQuestion(text)) {
+    return true;
+  }
+
+  const subject = normalizeText(mapel);
+  const topicNorm = normalizeText(topic);
+
+  if (!text.includes('tka')) {
+    return false;
+  }
+
+  // Kalau TKA disebut hanya sebagai konteks sumber, jangan menolak
+  // selama isi pertanyaan tetap jelas berada pada materi mapel/topik.
+  const subjectTokens = subject
+    .split(' ')
+    .filter((token) => token.length >= 4);
+
+  const topicTokens = topicNorm
+    .split(' ')
+    .filter(
+      (token) =>
+        token.length >= 4 &&
+        ![
+          'tka',
+          'tes',
+          'kemampuan',
+          'akademik',
+          'kelas',
+          'ujian',
+          'soal',
+        ].includes(token),
+    );
+
+  const hasSubjectSignal = subjectTokens.some((token) =>
+    text.includes(token),
+  );
+
+  const hasTopicSignal = topicTokens.some((token) =>
+    text.includes(token),
+  );
+
+  return !hasSubjectSignal && !hasTopicSignal;
+}
+
+function buildResearchQuery({
   topic,
   mapel,
   kelas,
   year,
   hotsLevel,
   blueprint,
-  tkaRequest,
-  subjectRequest,
 }) {
   const competencyHints = Array.isArray(blueprint)
     ? blueprint
         .map((item) => `${item.competency || ''} ${item.topic || ''}`)
         .join(' ')
         .replace(/\s+/g, ' ')
-        .slice(0, 850)
+        .slice(0, 900)
     : '';
 
-  const normalizedSubject = cleanText(mapel || 'Umum');
-  const normalizedTopic = cleanText(topic || '');
-  const normalizedClass = cleanText(kelas || '');
-  const normalizedYear = cleanText(year || '');
-
-  // JANGAN mencari "TKA" sebagai topik kebijakan. Yang dicari adalah
-  // kerangka asesmen + mapel + materi + indikator/kompetensi + contoh butir.
-  // Tiga query ini sengaja dipisah berdasarkan fungsi sumber:
-  // 1) kerangka resmi, 2) contoh butir resmi, 3) sumber pendidikan/ujian.
-  const queries = [];
-
-  if (tkaRequest) {
-    queries.push({
-      role: 'official_framework',
-      query: [
-        'kerangka asesmen TKA',
-        normalizedSubject,
-        `kelas ${normalizedClass}`,
-        normalizedTopic,
-        competencyHints,
-        normalizedYear,
-        'site:pusmendik.kemendikdasmen.go.id',
-      ].filter(Boolean).join(' '),
-    });
-
-    queries.push({
-      role: 'official_examples',
-      query: [
-        'contoh soal TKA',
-        normalizedSubject,
-        `kelas ${normalizedClass}`,
-        normalizedTopic,
-        'kompetensi subkompetensi bentuk soal kunci',
-        normalizedYear,
-        'site:pusmendik.kemendikdasmen.go.id/tka/tka/view',
-      ].filter(Boolean).join(' '),
-    });
-
-    queries.push({
-      role: 'educational_examples',
-      query: [
-        'contoh soal',
-        normalizedSubject,
-        `kelas ${normalizedClass}`,
-        normalizedTopic,
-        'stimulus penalaran pemecahan masalah',
-        hotsLevel,
-        'bukan artikel berita kebijakan',
-      ].filter(Boolean).join(' '),
-    });
-  } else {
-    queries.push({
-      role: 'curriculum_reference',
-      query: [
-        'kisi-kisi',
-        'kerangka asesmen',
-        normalizedSubject,
-        `kelas ${normalizedClass}`,
-        normalizedTopic,
-        competencyHints,
-        normalizedYear,
-      ].filter(Boolean).join(' '),
-    });
-
-    queries.push({
-      role: 'official_or_quality_examples',
-      query: [
-        'contoh soal ujian',
-        normalizedSubject,
-        `kelas ${normalizedClass}`,
-        normalizedTopic,
-        hotsLevel,
-        'penalaran',
-      ].filter(Boolean).join(' '),
-    });
-
-    queries.push({
-      role: 'assessment_examples',
-      query: [
-        'bank soal',
-        'contoh soal',
-        normalizedSubject,
-        `kelas ${normalizedClass}`,
-        normalizedTopic,
-      ].filter(Boolean).join(' '),
-    });
-  }
-
-  // Untuk permintaan mapel, pastikan semua query benar-benar mengandung
-  // mapel/topik. Ini mencegah query "tentang ujian" berubah jadi artikel umum.
-  if (subjectRequest) {
-    return queries.filter((item) =>
-      normalizeText(item.query).includes(normalizeText(normalizedSubject)),
-    );
-  }
-
-  return queries;
-}
-
-function isClearlyTkaPolicyReference(item) {
-  const title = normalizeText(item?.title || '');
-  const content = normalizeText(item?.content || '');
-  const url = normalizeText(item?.url || '');
-  const haystack = `${title} ${content} ${url}`;
-
-  const policySignals = [
-    'apa itu tka',
-    'tujuan tka',
-    'manfaat tka',
-    'latar belakang tka',
-    'kebijakan tka',
-    'pelaksanaan tka',
-    'mekanisme tka',
-    'jadwal tka',
-    'pendaftaran tka',
-    'peserta tka',
-    'apa kepanjangan tka',
-    'kepanjangan tka',
-  ];
-
-  const academicSignals = [
+  // 🔥 FIX BUG NYATA (dilaporkan langsung dari pemakaian nyata): kata
+  // "TKA" SEBAGAI KATA KUNCI BERDIRI SENDIRI dihapus dari sini.
+  //
+  // AKIBAT NYATA sebelum diperbaiki: karena TKA saat ini sedang jadi
+  // topik KEBIJAKAN yang ramai dibahas media (bukan sekadar nama
+  // format ujian), pencarian gabungan "TKA [mapel] [kelas]" nyaris
+  // pasti ikut menarik ARTIKEL BERITA/OPINI TENTANG KEBIJAKAN TKA itu
+  // sendiri (apa itu TKA, kenapa diadakan, dibanding sistem lama) --
+  // BUKAN materi/kisi-kisi mata pelajaran yang diminta. AI kemudian
+  // "digroundingkan" ke artikel kebijakan itu, sehingga menghasilkan
+  // soal ANALISIS KEBIJAKAN TKA (mis. "simpulkan urgensi pelaksanaan
+  // TKA...") -- bukan soal Bahasa Indonesia/Matematika/dst yang
+  // diminta guru sama sekali. Ini KONYOL untuk siswa SD tapi bug-nya
+  // NYATA dan bisa terjadi di jenjang/mapel mana pun.
+  //
+  // Diganti jadi "kisi-kisi TKA" (frasa gabungan, bukan kata mentah)
+  // -- jauh lebih spesifik mengarah ke DOKUMEN KISI-KISI/KURIKULUM
+  // resmi (yang memang punya nama "kisi-kisi" di judulnya), sangat
+  // kecil kemungkinan match ke artikel berita/opini kebijakan umum.
+  const parts = [
+    'TKA',
+    'contoh butir soal',
+    'soal mata pelajaran',
     'kerangka asesmen',
-    'matriks asesmen',
-    'subkompetensi',
-    'kompetensi',
-    'contoh soal',
-    'contoh butir',
-    'butir soal',
-    'bentuk soal',
-    'kunci',
+    mapel,
+    topic,
+    `kelas ${kelas}`,
+    competencyHints,
   ];
 
-  const policyHit = policySignals.some((x) => haystack.includes(x));
-  const academicHit = academicSignals.some((x) => haystack.includes(x));
-
-  // Halaman pengantar TKA yang tidak mengandung jejak matriks/contoh butir
-  // bukan sumber yang layak untuk membuat soal mata pelajaran.
-  if (policyHit && !academicHit) return true;
-
-  return false;
-}
-
-function isAcademicTkaReference(item, {
-  mapel = '',
-  topic = '',
-} = {}) {
-  if (!item?.url || !item?.content) return false;
-  if (isClearlyTkaPolicyReference(item)) return false;
-
-  const title = normalizeText(item?.title || '');
-  const content = normalizeText(item?.content || '');
-  const url = normalizeText(item?.url || '');
-  const haystack = `${title} ${content} ${url}`;
-
-  const subject = normalizeText(mapel);
-  const topicTokens = normalizeText(topic)
-    .split(' ')
-    .filter((token) => token.length >= 4)
-    .filter((token) => ![
-      'tka',
-      'tes',
-      'kemampuan',
-      'akademik',
-      'kelas',
-      'ujian',
-      'soal',
-    ].includes(token))
-    .slice(0, 10);
-
-  const subjectHit =
-    !subject ||
-    subject === 'umum' ||
-    haystack.includes(subject);
-
-  const topicHit = topicTokens.length === 0 ||
-    topicTokens.some((token) => haystack.includes(token));
-
-  const academicHit =
-    /kerangka asesmen|matriks asesmen|subkompetensi|contoh soal|contoh butir|butir soal|bentuk soal|kompetensi/.test(haystack);
-
-  const officialHit =
-    /pusmendik\.kemendikdasmen\.go\.id|tka\.kemendikdasmen\.go\.id/.test(url);
-
-  // Untuk TKA mapel tertentu, sumber harus minimal punya jejak mapel +
-  // materi/kompetensi akademik. Halaman umum TKA tidak cukup.
-  return Boolean(
-    subjectHit &&
-    (topicHit || officialHit) &&
-    academicHit,
-  );
-}
-
-function scoreResearchResult(item, {
-  topic = '',
-  mapel = '',
-  kelas = '',
-  tkaRequest = false,
-  subjectRequest = false,
-  role = '',
-} = {}) {
-  const title = normalizeText(item?.title || '');
-  const content = normalizeText(item?.content || '');
-  const url = normalizeText(item?.url || '');
-  const haystack = `${title} ${content} ${url}`;
-  let score = 0;
-
-  const subject = normalizeText(mapel);
-  const topicTokens = normalizeText(topic)
-    .split(' ')
-    .filter((token) => token.length >= 4)
-    .filter((token) => ![
-      'tka',
-      'tes',
-      'kemampuan',
-      'akademik',
-      'kelas',
-      'ujian',
-      'soal',
-    ].includes(token))
-    .slice(0, 12);
-
-  if (subject && subject !== 'umum' && haystack.includes(subject)) score += 18;
-
-  for (const token of topicTokens) {
-    if (haystack.includes(token)) score += 3;
+  if (normalizeText(hotsLevel).includes('hots')) {
+    parts.push('penalaran HOTS');
   }
 
-  if (kelas && haystack.includes(normalizeText(`kelas ${kelas}`))) score += 8;
-
-  if (/contoh soal|contoh butir|butir soal|soal ujian|bank soal/.test(haystack)) score += 15;
-  if (/kerangka asesmen|matriks asesmen|subkompetensi|kompetensi|indikator|bentuk soal|kunci/.test(haystack)) score += 12;
-  if (/\.pdf\b|download|dokumen/.test(haystack)) score += 4;
-
-  if (tkaRequest) {
-    if (/pusmendik\.kemendikdasmen\.go\.id/.test(url)) score += 25;
-    if (/tka\.kemendikdasmen\.go\.id/.test(url)) score += 25;
-
-    if (role === 'official_framework') score += 18;
-    if (role === 'official_examples') score += 35;
-    if (role === 'educational_examples') score += 12;
-
-    if (isClearlyTkaPolicyReference(item)) {
-      score -= 80;
-    }
+  if (year) {
+    parts.push(String(year));
   }
 
-  if (subjectRequest && !subject) score -= 10;
+  // Untuk TKA, arahkan ke sumber asesmen resmi. Query tetap membawa
+  // mapel + topik agar mesin pencari tidak menjadikan TKA sebagai materi.
+  parts.push('site:pusmendik.kemendikdasmen.go.id OR site:tka.kemendikdasmen.go.id');
 
-  return score;
+  return parts
+    .map((part) => cleanText(part))
+    .filter(Boolean)
+    .join(' ')
+    .slice(0, 1200);
 }
 
 async function callTavilyResearchSearch(
   apiKey,
-  queries,
-  searchTimeoutMs = 8_000,
+  query,
 ) {
-  if (!apiKey || !Array.isArray(queries) || !queries.length) {
+  if (!apiKey || !query) {
     return {
       results: [],
       callUsed: 0,
       skipped: true,
       reason: 'missingKeyOrQuery',
-      queryLog: [],
     };
   }
 
-  const runOne = async ({ role, query }) => {
+  // 🔥 BARU: 1x percobaan ulang OTOMATIS khusus untuk kegagalan
+  // jaringan/timeout (BUKAN untuk rate-limit/forbidden -- kalau itu
+  // penyebabnya, mengulang cuma buang-buang waktu karena hasilnya
+  // pasti sama). Gangguan jaringan sekejap itu wajar terjadi; sebelum
+  // perbaikan ini, SEKALI gangguan langsung menghentikan seluruh
+  // proses generate (lihat blok "TIDAK ADA FALLBACK" di pemanggilnya).
+  const maxAttempts = 2;
+  let lastReason = 'timeoutOrNetwork';
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), searchTimeoutMs);
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      TAVILY_RESEARCH_TIMEOUT_MS,
+    );
 
     try {
+      // eslint-disable-next-line no-await-in-loop
       const response = await fetch(
         TAVILY_SEARCH_URL,
         {
@@ -591,7 +574,7 @@ async function callTavilyResearchSearch(
           body: JSON.stringify({
             query,
             search_depth: 'basic',
-            max_results: 5,
+            max_results: MAX_RESEARCH_RESULTS,
             include_answer: false,
             include_images: true,
             include_image_descriptions: true,
@@ -609,19 +592,39 @@ async function callTavilyResearchSearch(
               ? 'forbidden'
               : `http${response.status}`;
 
-        return { role, query, results: [], reason, callUsed: 1 };
+        // Rate-limit/forbidden TIDAK diulang -- percobaan lagi pasti
+        // gagal dengan alasan yang sama, cuma buang waktu dari
+        // anggaran 60 detik Vercel.
+        return {
+          results: [],
+          callUsed: 1,
+          skipped: true,
+          reason,
+        };
       }
 
       const data = await response.json();
-      const rawResults = Array.isArray(data?.results) ? data.results : [];
+      const rawResults = Array.isArray(data?.results)
+        ? data.results
+        : [];
 
       const results = rawResults
         .map((item) => {
-          const rawImages = Array.isArray(item?.images) ? item.images : [];
+          const rawImages = Array.isArray(item?.images)
+            ? item.images
+            : [];
+
           const images = rawImages
             .map((image) => {
-              const url = typeof image === 'string' ? image : image?.url;
-              const description = typeof image === 'object' ? cleanText(image?.description) : '';
+              const url =
+                typeof image === 'string'
+                  ? image
+                  : image?.url;
+              const description =
+                typeof image === 'object'
+                  ? cleanText(image?.description)
+                  : '';
+
               return {
                 url: cleanText(url).slice(0, 800),
                 description: description.slice(0, 400),
@@ -637,75 +640,64 @@ async function callTavilyResearchSearch(
           return {
             title: cleanText(item?.title).slice(0, 300),
             url: cleanText(item?.url).slice(0, 500),
-            content: cleanText(item?.content || item?.snippet).slice(
-              0,
-              MAX_RESEARCH_CHARS_PER_RESULT,
-            ),
+            content: cleanText(
+              item?.content || item?.snippet,
+            ).slice(0, MAX_RESEARCH_CHARS_PER_RESULT),
             images,
-            sourceRole: role,
           };
         })
         .filter(
           (item) =>
             item.title &&
-            /^https?:\/\//i.test(item.url) &&
+            /^https?:\/\/\S+$/i.test(item.url) &&
             item.content,
-        );
+        )
+        .slice(0, MAX_RESEARCH_RESULTS);
 
       return {
-        role,
-        query,
         results,
-        reason: results.length ? null : 'noUsableResults',
         callUsed: 1,
+        skipped: false,
+        reason:
+          results.length > 0
+            ? null
+            : 'noUsableResults',
       };
     } catch (error) {
+      // 🔥 FIX BUG NYATA: sebelumnya `catch (_)` -- detail error ASLI
+      // (pesan, jenis error) ketelan total, cuma keluar label generik
+      // "timeoutOrNetwork" tanpa ada cara melacak penyebab pastinya
+      // lewat log Vercel. Sekarang detail error DICATAT (console.error)
+      // walau yang dikembalikan ke pemanggil tetap label ringkas yang
+      // sama -- supaya kalau ini terjadi lagi, log Vercel benar-benar
+      // membantu, bukan cuma bilang "entah kenapa".
+      const isTimeout = error?.name === 'AbortError';
+      lastReason = 'timeoutOrNetwork';
       console.error(
-        `[generateQuizFromTopic] Tavily ${role} gagal: ${error?.message || error}`,
+        `[generateQuizFromTopic] Tavily research percobaan ${attempt}/${maxAttempts} gagal -- ${isTimeout ? 'timeout' : 'error jaringan'}: ${error?.message || error}`,
       );
-      return {
-        role,
-        query,
-        results: [],
-        reason: error?.name === 'AbortError' ? 'timeout' : 'timeoutOrNetwork',
-        callUsed: 1,
-      };
+
+      if (attempt < maxAttempts) {
+        continue; // coba sekali lagi
+      }
     } finally {
       clearTimeout(timeoutId);
     }
-  };
-
-  const batches = await Promise.all(queries.map(runOne));
-  const queryLog = batches.map(({ role, query, reason, results }) => ({
-    role,
-    query,
-    reason,
-    resultCount: results.length,
-  }));
-
-  const merged = [];
-  const seenUrls = new Set();
-
-  for (const batch of batches) {
-    for (const item of batch.results) {
-      const key = item.url.toLowerCase();
-      if (seenUrls.has(key)) continue;
-      seenUrls.add(key);
-      merged.push(item);
-    }
   }
 
+  // Semua percobaan gagal.
   return {
-    results: merged,
-    callUsed: batches.reduce((sum, item) => sum + item.callUsed, 0),
-    skipped: merged.length === 0,
-    reason: merged.length ? null : (batches.find((item) => item.reason)?.reason || 'noUsableResults'),
-    queryLog,
+    results: [],
+    callUsed: maxAttempts,
+    skipped: true,
+    reason: lastReason,
   };
 }
 
 function buildResearchContext(results) {
-  if (!Array.isArray(results) || !results.length) return '';
+  if (!Array.isArray(results) || !results.length) {
+    return '';
+  }
 
   const blocks = [];
   let total = 0;
@@ -720,21 +712,971 @@ function buildResearchContext(results) {
 
     const block = [
       `REFERENSI ${i + 1}`,
-      `PERAN SUMBER: ${item.sourceRole || 'unknown'}`,
-      `SKOR RELEVANSI: ${Number.isFinite(item.relevanceScore) ? item.relevanceScore : 0}`,
       `Judul: ${item.title}`,
       `URL: ${item.url}`,
       `Isi hasil pencarian: ${item.content}`,
       imageLines ? `GAMBAR SUMBER:\n${imageLines}` : 'GAMBAR SUMBER: tidak ditemukan',
     ].join('\n');
 
-    if (total + block.length > MAX_RESEARCH_CONTEXT_CHARS) break;
+    if (total + block.length > MAX_RESEARCH_CONTEXT_CHARS) {
+      break;
+    }
 
     blocks.push(block);
     total += block.length;
   }
 
   return blocks.join('\n\n');
+}
+
+async function callTavilyImageSearch(
+  apiKey,
+  query,
+) {
+  const controller =
+    new AbortController();
+
+  const timeoutId =
+    setTimeout(
+      () =>
+        controller.abort(),
+      TAVILY_TIMEOUT_MS,
+    );
+
+  try {
+    const response =
+      await fetch(
+        TAVILY_SEARCH_URL,
+        {
+          method: 'POST',
+
+          headers: {
+            Authorization:
+              `Bearer ${apiKey}`,
+
+            'Content-Type':
+              'application/json',
+          },
+
+          body: JSON.stringify({
+            query,
+
+            search_depth:
+              'basic', // 1 credit (bukan 'advanced' yang makan 2 credit)
+
+            max_results: 3,
+
+            include_images:
+              true,
+
+            include_image_descriptions:
+              false,
+
+            include_answer:
+              false,
+
+            include_raw_content:
+              false,
+          }),
+
+          signal:
+            controller.signal,
+        },
+      );
+
+    if (!response.ok) {
+      return null; // 🔥 gagal (kredit habis, dll) -- gak fatal, cuma gak dapat gambar buat butir ini
+    }
+
+    const data =
+      await response.json();
+
+    const images =
+      Array.isArray(
+        data?.images,
+      )
+        ? data.images
+        : [];
+
+    // 🔥 `images` bisa berisi string URL langsung, ATAU object
+    // {url, description} tergantung parameter -- ditangani dua-duanya
+    // supaya gak gampang patah kalau Tavily ubah format.
+    for (
+      const item of images
+    ) {
+      const url =
+        typeof item ===
+        'string'
+          ? item
+          : item?.url;
+
+      if (
+        typeof url ===
+          'string' &&
+        /^https?:\/\//i.test(
+          url,
+        ) &&
+        isReliableImageUrl(
+          url,
+        )
+      ) {
+        return url;
+      }
+    }
+
+    return null;
+  } catch (_) {
+    return null; // timeout/network error -- gak fatal, lanjut tanpa gambar buat butir ini
+  } finally {
+    clearTimeout(
+      timeoutId,
+    );
+  }
+}
+
+// 🔥 Perkaya soal-soal yang lolos Quality Gate dengan gambar ASLI dari
+// Tavily -- dijalankan SETELAH quality gate (baris soal sudah final),
+// SEBELUM dikirim ke ManageQuiz. Dibatasi MAX_TAVILY_CALLS_PER_REQUEST
+// biar kredit bulanan gak jebol dalam 1 request.
+async function enrichQuestionsWithRealImages(
+  questions,
+  tavilyApiKey,
+  topic,
+  deadlineAt,
+) {
+  if (!tavilyApiKey) {
+    // Fitur belum di-setup -- lewati total, gak ada perubahan perilaku.
+    return {
+      imagesFetched: 0,
+      tavilyCallsUsed: 0,
+      cappedByBudget: false,
+      cappedByTime: false,
+    };
+  }
+
+  let callsUsed = 0;
+  let imagesFetched = 0;
+  let cappedByBudget = false;
+  let cappedByTime = false;
+
+  // 🔥 BARU (FIX BUG LATEN): sebelumnya langkah ini cuma dibatasi
+  // JUMLAH panggilan (MAX_TAVILY_CALLS_PER_REQUEST = 8), TANPA batas
+  // WAKTU sama sekali. Karena tiap panggilan Tavily punya timeout
+  // 12 detik dan dijalankan BERURUTAN, skenario terburuknya
+  // 8 x 12 = 96 detik -- itu SENDIRIAN sudah jauh melewati
+  // maxDuration 60 detik Vercel, apalagi ditambah waktu pemanggilan
+  // AI sebelumnya. Akibatnya function dibunuh paksa platform di
+  // tengah jalan: guru lihat error 504 mentah, DAN soal-soal yang
+  // sebenarnya SUDAH BERHASIL dibuat ikut hilang percuma.
+  //
+  // Sekarang: begitu deadline lewat, pencarian gambar berhenti dan
+  // soal tetap dikirim (tanpa gambar untuk sisanya). Lebih baik soal
+  // sampai ke guru tanpa sebagian gambar, daripada semuanya hilang.
+  const hasDeadline =
+    typeof deadlineAt ===
+    'number';
+
+  for (
+    const question of questions
+  ) {
+    if (
+      hasDeadline &&
+      Date.now() >=
+        deadlineAt
+    ) {
+      cappedByTime = true;
+      break;
+    }
+
+    if (
+      callsUsed >=
+      MAX_TAVILY_CALLS_PER_REQUEST
+    ) {
+      cappedByBudget = true;
+      break;
+    }
+
+    // KASUS 1: soal butuh gambar stimulus (mis. "candi apa ini?")
+    // dan belum punya qImage (bukan clock/graph lokal).
+    if (
+      question.needsImage &&
+      !question.qImage &&
+      question.imageHint
+    ) {
+      const url =
+        await callTavilyImageSearch(
+          tavilyApiKey,
+          question.imageHint,
+        );
+
+      callsUsed += 1;
+
+      if (url) {
+        question.qImage = url;
+        question.imageSource = {
+          url,
+          fetchedVia: 'tavily',
+        };
+        imagesFetched += 1;
+      }
+
+      if (
+        callsUsed >=
+        MAX_TAVILY_CALLS_PER_REQUEST
+      ) {
+        cappedByBudget = true;
+        break;
+      }
+    }
+
+    // KASUS 2: pilihan jawaban berbentuk gambar -- cari 1 gambar per
+    // opsi. AI sekarang bisa isi "optionImages" dengan HINT deskriptif
+    // (Bahasa Inggris, bukan URL -- lihat instruksi di system prompt),
+    // dipakai sebagai kata kunci pencarian yang lebih akurat daripada
+    // cuma label opsi polos (mis. "Opsi A").
+    if (
+      question.optionsAreImages &&
+      Array.isArray(
+        question.options,
+      ) &&
+      question.options.length >
+        0
+    ) {
+      const rawOptionImages = [
+        ...(question.optionImages ||
+          []),
+      ];
+
+      const isUrl = (
+        value,
+      ) =>
+        typeof value ===
+          'string' &&
+        /^https?:\/\//i.test(
+          value,
+        );
+
+      const fetchedImages = [
+        ...rawOptionImages,
+      ];
+
+      for (
+        let i = 0;
+        i <
+        question.options
+          .length;
+        i += 1
+      ) {
+        if (
+          hasDeadline &&
+          Date.now() >=
+            deadlineAt
+        ) {
+          cappedByTime = true;
+          break;
+        }
+
+        if (
+          callsUsed >=
+          MAX_TAVILY_CALLS_PER_REQUEST
+        ) {
+          cappedByBudget = true;
+          break;
+        }
+
+        // Kalau opsi ini SUDAH punya URL gambar asli (bukan cuma hint
+        // teks), jangan cari ulang -- hemat kredit.
+        if (
+          isUrl(
+            fetchedImages[i],
+          )
+        ) {
+          continue;
+        }
+
+        // 🔥 FIX: prioritaskan HINT deskriptif dari AI (mis. "right
+        // triangle diagram") kalau ada dan bukan URL -- itu jauh lebih
+        // akurat buat pencarian daripada label opsi polos ("Opsi A").
+        // Fallback ke label opsi kalau AI gak ngisi hint.
+        const hint =
+          !isUrl(
+            rawOptionImages[i],
+          ) &&
+          rawOptionImages[i]
+            ? rawOptionImages[i]
+            : question.options[
+                i
+              ];
+
+        const query =
+          topic
+            ? `${hint} ${topic}`
+            : hint;
+
+        const url =
+          await callTavilyImageSearch(
+            tavilyApiKey,
+            query,
+          );
+
+        callsUsed += 1;
+
+        if (url) {
+          fetchedImages[i] =
+            url;
+          imagesFetched += 1;
+        }
+      }
+
+      question.optionImages =
+        fetchedImages;
+    }
+  }
+
+  return {
+    imagesFetched,
+    tavilyCallsUsed:
+      callsUsed,
+    cappedByBudget,
+    cappedByTime,
+  };
+}
+
+function computeMaxTokens(
+  jumlah,
+  enableBrowserSearch,
+) {
+  // Perkiraan: tiap soal butuh ~400 token buat output (pertanyaan +
+  // opsi + pembahasan + verifikasi), plus overhead ~300 token buat
+  // instruksi umum. Dibatasi maksimal supaya nyisain ruang buat token
+  // PROMPT (system+user+blueprint) di bawah limit TPM -- prompt untuk
+  // permintaan besar (banyak soal) juga lebih panjang, jadi makin
+  // banyak soal, makin sedikit "sisa" jatah yang aman dipakai buat
+  // max_tokens output.
+  const estimated =
+    300 +
+    jumlah * 400 +
+    THINKING_TOKEN_ALLOWANCE;
+
+  // 🔥 BARU: kalau browser_search aktif, hasil pencarian (snippet
+  // beberapa halaman web) ikut masuk ke context -- itu makan jatah
+  // TPM juga, di LUAR kendali kita (gak tau pasti berapa token
+  // sebelum request jalan). Sisakan buffer JAUH lebih besar supaya
+  // gak gampang nabrak limit 8.000 TPM kalau browser_search narik
+  // banyak konten.
+  const buffer =
+    enableBrowserSearch
+      ? 2500
+      : 1500;
+
+  const ceiling =
+    SOFT_MAX_TOKENS_CEILING -
+    buffer;
+
+  return Math.min(
+    Math.max(
+      estimated,
+      1200,
+    ),
+    ceiling,
+  );
+}
+
+// 🔥 PENTING untuk Gemini 3.x: token yang dipakai model untuk
+// "berpikir" diambil dari jatah max_tokens YANG SAMA dengan jawaban.
+// Karena thinking tidak bisa dimatikan penuh di generasi 3, jatah ini
+// HARUS ditambahkan -- kalau tidak, model bisa kehabisan token di
+// tengah berpikir dan mengembalikan jawaban kosong/terpotong, yang di
+// sistem kita terbaca sebagai kegagalan total padahal API-nya sehat.
+const THINKING_TOKEN_ALLOWANCE = 2_000;
+
+const MAX_FIELD_LENGTH = 4_000;
+const MAX_QUESTION_LENGTH = 5_000;
+const MAX_EXPLANATION_LENGTH = 8_000;
+
+const MAX_ACCEPTED_QUESTIONS = 20;
+
+// ============================================================
+// SUPPORTED TYPES
+// ============================================================
+
+// 🔥 FIX BUG NYATA: sebelumnya daftar ini pakai ejaan yang BEDA dari
+// yang beneran dikirim AIGenerateQuiz.jsx (TYPE_OPTIONS) --
+// 'multiple_select'/'short_answer' (underscore) vs yang dikirim
+// frontend 'multiselect'/'shortanswer' (tanpa underscore), plus
+// 'causeeffect' dan 'reading' SAMA SEKALI GAK ADA di daftar ini padahal
+// keduanya opsi valid di UI ("Sebab Akibat", "Membaca Teks"). Field
+// 'ordering' di daftar lama juga gak pernah dikirim frontend sama
+// sekali (mati/gak kepakai). Akibatnya: 4 dari 7 tipe soal yang bisa
+// dipilih guru DIAM-DIAM DIBUANG di sini sebelum sempat sampai ke AI --
+// persis akar masalah "gak variatif" yang dilaporkan (guru centang
+// "Pilih Lebih dari Satu"+"Sebab Akibat", tapi keduanya kebuang tanpa
+// pesan error apa pun). Sekarang disamakan PERSIS dengan string yang
+// dikirim frontend.
+const SUPPORTED_TYPES = new Set([
+  'multiple',
+  'truefalse',
+  'multiselect',
+  'shortanswer',
+  'causeeffect',
+  'matching',
+  'reading',
+]);
+
+// ============================================================
+// BASIC TEXT HELPERS
+// ============================================================
+
+function cleanText(value = '') {
+  return String(value ?? '')
+    .replace(
+      /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,
+      ' ',
+    )
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// ============================================================
+// 🔥 BARU: DETEKSI KEBOCORAN JSON -- GENERAL, BUKAN SPESIFIK 1 KASUS
+// ============================================================
+// Kasus nyata yang memicu ini: field "graph" bocor jadi TEKS di dalam
+// "question" (mis. soal grafik ketinggian benda) -- tapi kesalahan yang
+// SAMA JENISNYA bisa kejadian di field APA PUN (bukan cuma graph/clock)
+// dan di MAPEL/TOPIK APA PUN (bukan cuma matematika) -- terutama makin
+// riskan begitu Bimbel Gemilang menambah cakupan ke UTBK yang jauh lebih
+// beragam jenis soalnya. Makanya deteksinya dibuat GENERAL: cari pola
+// `"namaField":` diikuti awal nilai JSON (kutip/kurung/angka/true/false)
+// DI MANA PUN dalam teks -- bukan mendaftar nama field satu-satu yang
+// kita tahu. Kalau besok ada field baru "table"/"chart"/"diagram" dkk
+// yang ditambahkan ke skema, ini TETAP mendeteksinya tanpa perlu update
+// daftar nama field manapun.
+const JSON_LEAK_PATTERN =
+  /"[a-zA-Z_][a-zA-Z0-9_]*"\s*:\s*(\{|\[|"|-?\d|true\b|false\b|null\b)/;
+
+function hasLeakedJsonArtifact(
+  text,
+) {
+  if (!text) return false;
+  return JSON_LEAK_PATTERN.test(
+    text,
+  );
+}
+
+function normalizeText(value = '') {
+  return cleanText(value)
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function safeField(value, fallback = '') {
+  const result = cleanText(
+    value || fallback,
+  );
+
+  return result.slice(
+    0,
+    MAX_FIELD_LENGTH,
+  );
+}
+
+// ============================================================
+// ARRAY HELPERS
+// ============================================================
+
+function cleanStringArray(
+  value,
+  maxItems = 8,
+  maxLength = 2_000,
+) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) =>
+      cleanText(item).slice(
+        0,
+        maxLength,
+      ),
+    )
+    .filter(Boolean)
+    .slice(0, maxItems);
+}
+
+// ============================================================
+// NUMBER HELPERS
+// ============================================================
+
+function clampInt(
+  value,
+  min,
+  max,
+  fallback,
+) {
+  const parsed =
+    Number.parseInt(
+      value,
+      10,
+    );
+
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+
+  return Math.min(
+    Math.max(parsed, min),
+    max,
+  );
+}
+
+// ============================================================
+// DUPLICATE DETECTION
+// ============================================================
+
+function tokenSet(value = '') {
+  return new Set(
+    normalizeText(value)
+      .split(' ')
+      .filter(
+        (token) =>
+          token.length >= 2,
+      ),
+  );
+}
+
+function jaccardSimilarity(
+  a,
+  b,
+) {
+  const A =
+    typeof a === 'string'
+      ? tokenSet(a)
+      : a;
+
+  const B =
+    typeof b === 'string'
+      ? tokenSet(b)
+      : b;
+
+  if (!A.size || !B.size) {
+    return 0;
+  }
+
+  let intersection = 0;
+
+  for (const token of A) {
+    if (B.has(token)) {
+      intersection += 1;
+    }
+  }
+
+  const union =
+    A.size +
+    B.size -
+    intersection;
+
+  return union
+    ? intersection / union
+    : 0;
+}
+
+function fingerprintQuestion(
+  value = '',
+) {
+  return normalizeText(value)
+    .replace(
+      /\bsoal\s+\d+\b/gi,
+      ' ',
+    )
+    .replace(
+      /\bnomor\s+\d+\b/gi,
+      ' ',
+    )
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isDuplicateQuestion(
+  question,
+  existing,
+) {
+  const current =
+    fingerprintQuestion(
+      question,
+    );
+
+  if (!current) {
+    return true;
+  }
+
+  for (const item of existing) {
+    const previous =
+      fingerprintQuestion(
+        item.question,
+      );
+
+    if (!previous) {
+      continue;
+    }
+
+    if (current === previous) {
+      return true;
+    }
+
+    if (
+      jaccardSimilarity(
+        current,
+        previous,
+      ) >= 0.86
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// ============================================================
+// XML ESCAPE
+// ============================================================
+
+function escapeXml(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+// ============================================================
+// COMPETENCY ENGINE
+// ============================================================
+
+function getCompetencyTemplates(
+  mapel,
+  topic,
+) {
+  const m =
+    normalizeText(mapel);
+
+  const t =
+    normalizeText(topic);
+
+  // MATEMATIKA
+  if (
+    m.includes('matematika') ||
+    t.includes('pecahan') ||
+    t.includes('aljabar') ||
+    t.includes('geometri') ||
+    t.includes('bilangan') ||
+    t.includes('fungsi')
+  ) {
+    return [
+      'Memahami konsep dan representasi matematis',
+      'Menerapkan prosedur atau konsep matematika',
+      'Menganalisis informasi dan memecahkan masalah kontekstual',
+    ];
+  }
+
+  // IPA / SAINS
+  if (
+    m.includes('ipa') ||
+    m.includes('fisika') ||
+    m.includes('kimia') ||
+    m.includes('biologi')
+  ) {
+    return [
+      'Memahami konsep dan fenomena ilmiah',
+      'Menerapkan konsep pada situasi ilmiah',
+      'Menganalisis data, fenomena, atau permasalahan ilmiah',
+    ];
+  }
+
+  // BAHASA INDONESIA
+  if (
+    m.includes(
+      'bahasa indonesia',
+    )
+  ) {
+    return [
+      'Memahami informasi eksplisit dan implisit',
+      'Menganalisis struktur, makna, dan hubungan informasi dalam teks',
+      'Mengevaluasi informasi dan menarik kesimpulan berbasis bukti',
+    ];
+  }
+
+  // BAHASA INGGRIS
+  if (
+    m.includes(
+      'bahasa inggris',
+    )
+  ) {
+    return [
+      'Memahami informasi dan tujuan komunikasi dalam teks',
+      'Menerapkan kosakata, tata bahasa, atau fungsi bahasa dalam konteks',
+      'Menganalisis makna, inferensi, dan konteks komunikasi',
+    ];
+  }
+
+  // IPS
+  if (
+    m.includes('ips') ||
+    m.includes('sejarah') ||
+    m.includes('geografi') ||
+    m.includes('ekonomi') ||
+    m.includes('sosiologi')
+  ) {
+    return [
+      'Memahami konsep dan informasi faktual penting',
+      'Menerapkan konsep dalam konteks kehidupan atau fenomena sosial',
+      'Menganalisis hubungan sebab-akibat, data, dan implikasi',
+    ];
+  }
+
+  // DEFAULT
+  return [
+    'Memahami konsep atau informasi dasar',
+    'Menerapkan konsep pada situasi yang relevan',
+    'Menganalisis informasi dan menyelesaikan masalah',
+  ];
+}
+
+// ============================================================
+// DIFFICULTY DISTRIBUTION
+// ============================================================
+
+function getDifficultyDistribution(
+  jumlah,
+  hotsLevel,
+) {
+  const isHots =
+    normalizeText(
+      hotsLevel,
+    ).includes('hots');
+
+  const levels = isHots
+    ? [
+        {
+          level: 'Easy',
+          ratio: 0.10,
+          cognitive:
+            'Understanding',
+        },
+        {
+          level: 'Medium',
+          ratio: 0.40,
+          cognitive:
+            'Applying/Analyzing',
+        },
+        {
+          level: 'Hard',
+          ratio: 0.50,
+          cognitive:
+            'Analyzing/Evaluating',
+        },
+      ]
+    : [
+        {
+          level: 'Easy',
+          ratio: 0.30,
+          cognitive:
+            'Understanding',
+        },
+        {
+          level: 'Medium',
+          ratio: 0.40,
+          cognitive:
+            'Applying',
+        },
+        {
+          level: 'Hard',
+          ratio: 0.30,
+          cognitive:
+            'Analyzing/Problem Solving',
+        },
+      ];
+
+  const result =
+    levels.map(
+      (item) => ({
+        ...item,
+        count:
+          Math.floor(
+            jumlah *
+              item.ratio,
+          ),
+      }),
+    );
+
+  let assigned =
+    result.reduce(
+      (sum, item) =>
+        sum + item.count,
+      0,
+    );
+
+  // Distribusi sisa butir
+  let index = 0;
+
+  while (
+    assigned <
+    jumlah
+  ) {
+    result[index].count += 1;
+
+    assigned += 1;
+
+    index =
+      (index + 1) %
+      result.length;
+  }
+
+  return result;
+}
+
+// ============================================================
+// LOCAL BLUEPRINT ENGINE
+// ============================================================
+
+function buildCurriculumBlueprint({
+  topic,
+  mapel,
+  kelas,
+  jumlah,
+  hotsLevel,
+  arahan,
+  allowedTypes,
+}) {
+  const safeTopic =
+    safeField(topic);
+
+  const safeMapel =
+    safeField(
+      mapel,
+      'Umum',
+    );
+
+  const safeKelas =
+    safeField(
+      kelas,
+      'Umum',
+    );
+
+  const safeArahan =
+    safeField(
+      arahan,
+      'Tidak ada',
+    );
+
+  const competencies =
+    getCompetencyTemplates(
+      safeMapel,
+      safeTopic,
+    );
+
+  const difficulties =
+    getDifficultyDistribution(
+      jumlah,
+      hotsLevel,
+    );
+
+  const blueprint = [];
+
+  let no = 1;
+
+  // 🔥 FIX BUG NYATA: sebelumnya blueprint SAMA SEKALI GAK menugaskan
+  // tipe soal per butir -- AI cuma dikasih daftar "tipe yang
+  // diperbolehkan" secara umum, TANPA dipaksa. Model gratis (yang
+  // cenderung ambil jalan termudah) akibatnya SELALU pilih "multiple"
+  // (pilihan ganda) buat semua butir, walau guru sudah mencentang
+  // banyak tipe lain -- persis kasus nyata yang dilaporkan: puluhan
+  // soal dihasilkan, semuanya "Pilihan Ganda Biasa". Sekarang tipe
+  // soal DIDISTRIBUSIKAN MERATA (round-robin) ke tiap nomor butir
+  // sejak awal -- AI dapat instruksi SPESIFIK per nomor ("butir #5
+  // WAJIB tipe truefalse"), bukan sekadar "boleh pakai tipe ini".
+  // Divalidasi juga di validateAgainstBlueprint() supaya AI beneran
+  // patuh, bukan cuma disarankan.
+  const typesForDistribution =
+    Array.isArray(
+      allowedTypes,
+    ) &&
+    allowedTypes.length > 0
+      ? allowedTypes
+      : ['multiple'];
+
+  const difficultyTierIndex =
+    (level) =>
+      difficulties.findIndex(
+        (d) => d.level === level,
+      );
+
+  for (
+    const difficulty
+    of difficulties
+  ) {
+    const tierIndex =
+      difficultyTierIndex(
+        difficulty.level,
+      );
+
+    const competency =
+      competencies[
+        Math.min(
+          tierIndex,
+          competencies.length -
+            1,
+        )
+      ];
+
+    for (
+      let i = 0;
+      i < difficulty.count;
+      i += 1
+    ) {
+      blueprint.push({
+        no,
+
+        topic:
+          safeTopic,
+
+        mapel:
+          safeMapel,
+
+        kelas:
+          safeKelas,
+
+        difficulty:
+          difficulty.level,
+
+        cognitiveLevel:
+          difficulty.cognitive,
+
+        competency,
+
+        // 🔥 BARU: tipe soal spesifik buat butir ini -- round-robin
+        // dari daftar tipe yang guru pilih. Kalau guru cuma pilih 1
+        // tipe (mis. cuma "multiple"), semua butir tetap tipe itu
+        // (sesuai maksud guru) -- variasi cuma muncul kalau guru
+        // memang mencentang lebih dari 1 tipe.
+        type:
+          typesForDistribution[
+            (no - 1) %
+              typesForDistribution.length
+          ],
+
+        teacherDirection:
+          safeArahan,
+      });
+
+      no += 1;
+    }
+  }
+
+  return blueprint;
 }
 
 // ============================================================
@@ -2560,147 +3502,6 @@ function normalizeQuestion(
 }
 
 // ============================================================
-// EXAM-SPECIFIC QUALITY GATE
-// ============================================================
-
-function isLikelyTkaPolicyQuestion(text = '') {
-  const normalized = normalizeText(text);
-  return [
-    'apa itu tka',
-    'apa kepanjangan tka',
-    'singkatan tka',
-    'tujuan tka',
-    'manfaat tka',
-    'latar belakang tka',
-    'pelaksanaan tka',
-    'mekanisme tka',
-    'kebijakan tka',
-    'jadwal tka',
-    'pendaftaran tka',
-    'sistem tka',
-  ].some((phrase) => normalized.includes(phrase));
-}
-
-
-function tkaTopicLooksPolicyOnly(topic = '') {
-  const normalized = normalizeText(topic);
-  if (!normalized) return false;
-  return (
-    (normalized.includes('tka') || normalized.includes('tes kemampuan akademik')) &&
-    /apa itu|pengertian|tujuan|manfaat|kebijakan|pelaksanaan|mekanisme|jadwal|pendaftaran|latar belakang|sistem/.test(normalized)
-  );
-}
-function validateExamContent(question, examProfile) {
-  if (!examProfile?.isTka || !examProfile.subjectRequest) {
-    return { valid: true };
-  }
-
-  const questionText = cleanText(question?.question || '');
-  const explanation = cleanText(question?.explanation || '');
-  const competency = cleanText(question?.competency || '');
-  const options = Array.isArray(question?.options)
-    ? question.options.map(cleanText).join(' ')
-    : '';
-  const statements = Array.isArray(question?.statements)
-    ? question.statements.map((item) => cleanText(item?.text || '')).join(' ')
-    : '';
-  const readingText = cleanText(question?.readingText || '');
-  const shortAnswer = cleanText(question?.shortAnswer || '');
-  const cause = cleanText(question?.cause || '');
-  const effect = cleanText(question?.effect || '');
-
-  const allText = normalizeText([
-    questionText,
-    explanation,
-    competency,
-    options,
-    statements,
-    readingText,
-    shortAnswer,
-    cause,
-    effect,
-  ].join(' '));
-
-  // TKA hanya menjadi kerangka asesmen. Jika guru memilih mapel tertentu,
-  // pertanyaan tentang TKA sebagai kebijakan/program adalah salah domain.
-  if (isLikelyTkaPolicyQuestion(questionText)) {
-    return {
-      valid: false,
-      reason: 'tkaPolicyQuestion',
-    };
-  }
-
-  const policyPatterns = [
-    'apa itu tka',
-    'kepanjangan tka',
-    'singkatan tka',
-    'tujuan tka',
-    'manfaat tka',
-    'latar belakang tka',
-    'pelaksanaan tka',
-    'mekanisme tka',
-    'kebijakan tka',
-    'jadwal tka',
-    'pendaftaran tka',
-    'sistem tka',
-    'peserta tka',
-    'instrumen tka',
-  ];
-
-  if (
-    policyPatterns.some((phrase) => allText.includes(phrase)) &&
-    !allText.includes(normalizeText(examProfile.topic || ''))
-  ) {
-    return {
-      valid: false,
-      reason: 'tkaPolicyContent',
-    };
-  }
-
-  const topic = normalizeText(examProfile.topic || '');
-  const topicTokens = topic
-    .split(' ')
-    .filter(
-      (token) =>
-        token.length >= 4 &&
-        ![
-          'tka',
-          'tes',
-          'kemampuan',
-          'akademik',
-          'kelas',
-          'ujian',
-          'soal',
-        ].includes(token),
-    )
-    .slice(0, 10);
-
-  const topicMatch = topicTokens.some((token) =>
-    allText.includes(token),
-  );
-
-  // Bila topik guru konkret dan model menghasilkan soal yang sama sekali tidak
-  // menunjukkan sinyal topik, tolak. Untuk topik matematika/IPA yang sering
-  // memakai simbol/angka, topikMatch tetap hanya pagar ringan, bukan syarat mutlak.
-  const classNorm = normalizeText(`kelas ${examProfile.kelas || ''}`);
-  const classMentioned = classNorm && allText.includes(classNorm);
-
-  if (
-    tkaTopicLooksPolicyOnly(topic) ||
-    (!topicMatch &&
-      !classMentioned &&
-      /\btka\b/.test(normalizeText(questionText)))
-  ) {
-    return {
-      valid: false,
-      reason: 'tkaOffSubjectContent',
-    };
-  }
-
-  return { valid: true };
-}
-
-// ============================================================
 // BLUEPRINT VALIDATION
 // ============================================================
 
@@ -2799,75 +3600,214 @@ function validateAgainstBlueprint(
 function buildSystemPrompt({
   allowedTypes,
   enableBrowserSearch,
-  examProfile,
 }) {
-  const tkaRules = examProfile?.isTka
-    ? [
-        '',
-        'ATURAN KHUSUS TKA:',
-        'TKA adalah asesmen capaian akademik pada mata pelajaran tertentu, bukan mata pelajaran bernama TKA.',
-        'Jika MAPEL sudah dipilih, isi soal HARUS menguji pengetahuan/kompetensi mapel tersebut. JANGAN membuat soal tentang pengertian, singkatan, tujuan, manfaat, kebijakan, jadwal, pendaftaran, atau pelaksanaan TKA.',
-        'Untuk TKA, gunakan hanya bentuk yang sesuai dengan pola resmi: multiple = pilihan ganda satu jawaban benar; multiselect = PG kompleks MCMA, lebih dari satu jawaban benar; truefalse = PG kompleks kategori untuk beberapa pernyataan, misalnya Benar/Salah.',
-        'JANGAN gunakan shortanswer, matching, causeeffect, atau reading untuk TKA walaupun tipe tersebut tersedia pada UI umum.',
-        'Utamakan kerangka asesmen resmi dan contoh butir TKA resmi untuk menentukan materi, kompetensi, subkompetensi, stimulus, dan karakteristik tuntutan kognitif.',
-        'Soal harus terasa seperti butir asesmen akademik resmi: berbasis stimulus yang relevan, menuntut penerapan/penalaran bila blueprint menugaskannya, dan menguji kompetensi mapel, bukan hafalan tentang penyelenggaraan TKA.',
-        'Untuk TKA Matematika, utamakan permasalahan kontekstual, data, representasi, estimasi, pola, geometri, aljabar, peluang, atau topik lain yang benar-benar ada pada kerangka asesmen jenjang tersebut sesuai blueprint.',
-        'Untuk TKA Bahasa Indonesia, utamakan stimulus teks dan pengujian informasi tersurat/tersirat, reorganisasi, inferensi, evaluasi, atau kompetensi membaca yang ditugaskan blueprint.',
-        'Jangan meniru satu sumber berkali-kali hanya dengan mengganti angka. Variasikan konteks dan struktur masalah sambil mempertahankan kompetensi dan tuntutan kognitif.',
-      ]
-    : [];
-
   return [
-    'Kamu adalah Otak Akademik Bimbel Gemilang, generator soal akademik untuk siswa Indonesia.',
-    'Tugas utama: membuat butir soal yang benar secara substansi, sesuai jenjang, mapel, topik, kompetensi, bentuk soal, dan blueprint.',
+    'Kamu adalah Otak Akademik Bimbel Gemilang.',
+
+    'Buat soal latihan akademik berdasarkan BLUEPRINT PER BUTIR yang diberikan.',
+
     '',
-    'PRINSIP HIRARKI SUMBER:',
-    '1. Kerangka asesmen/dokumen resmi adalah acuan untuk materi, kompetensi, subkompetensi, indikator, dan karakteristik asesmen.',
-    '2. Contoh butir resmi adalah acuan utama untuk bentuk stimulus, pola penalaran, level tuntutan, dan gaya asesmen.',
-    '3. Sumber pendidikan berkualitas dapat dipakai sebagai referensi tambahan, tetapi tidak boleh mengalahkan acuan resmi jika bertentangan.',
-    '4. Jangan memakai artikel berita/opini tentang kebijakan ujian sebagai dasar isi soal mata pelajaran.',
-    '',
+
     'ATURAN MUTLAK:',
-    '1. Setiap soal WAJIB mempunyai sourceRef yang menunjuk pada referensi yang benar-benar mendasari soal.',
-    '2. sourceRef harus merujuk pada referensi yang relevan dengan MAPEL + KELAS + TOPIK + kompetensi, bukan sekadar relevan dengan kata "TKA" atau nama ujian.',
-    '3. Adaptasi berarti mempertahankan kompetensi, struktur penalaran, konteks/stimulus, dan tingkat kesulitan sumber. Jangan hanya mengganti angka lalu menyebutnya adaptasi.',
-    '4. Jangan membuat soal dari pengetahuan umum apabila referensi yang tersedia tidak relevan. Lebih baik butir ditolak daripada menghasilkan soal yang melenceng.',
-    '5. Ikuti blueprintNo, difficulty, competency, dan type secara persis.',
-    '6. Jangan membuat blueprint tambahan dan jangan melewati blueprint.',
-    '7. Untuk matematika dan sains, hitung ulang semua angka, rumus, satuan, dan kunci sebelum output.',
-    '8. Satu soal harus mempunyai satu fokus yang jelas. Jangan menguji hal yang tidak ditugaskan blueprint.',
-    '9. Pilihan jawaban harus homogen, masuk akal, tidak ambigu, dan hanya memiliki kunci sesuai tipe soal.',
-    '10. Seluruh teks wajib Bahasa Indonesia baku, kecuali notasi matematika/simbol/istilah teknis yang memang lazim.',
-    '11. "Easy" berarti tingkat termudah dalam materi/jenjang yang diminta, bukan turun ke materi kelas yang jauh lebih rendah.',
-    '12. Pembahasan wajib menjelaskan alasan kunci dan tidak boleh bertentangan dengan soal.',
-    '13. Jangan memasukkan kata-kata seperti "berdasarkan informasi mengenai TKA" ke dalam soal mapel. TKA hanya nama asesmen, bukan materi pelajaran.',
-    '14. Untuk setiap butir, pilih referensi berdasarkan kecocokan SUBSTANSI terlebih dahulu, bukan karena judulnya mengandung TKA.',
-    '15. Jangan memaksakan referensi yang hanya berisi berita, kebijakan, jadwal, pendaftaran, atau penjelasan umum TKA menjadi dasar soal akademik.',
-    ...tkaRules,
+
+    '1. REFERENSI INTERNET adalah SUMBER UTAMA. Setiap soal WAJIB ditulis ulang/adaptasi dari salah satu REFERENSI yang diberikan, bukan dibuat dari pengetahuan umum model.',
+
+    '2. Jangan mengaku browsing sendiri. Server sudah memberikan hasil riset beserta nomor REFERENSI 1..N.',
+
+    '3. Setiap soal WAJIB mencantumkan sourceRef yang menunjuk ke REFERENSI yang benar-benar menjadi dasar soal. Jangan mengarang sourceRef, URL, judul, atau isi sumber.',
+
+    '4. Adaptasi berarti mempertahankan kompetensi, struktur penalaran, konteks asesmen, bentuk stimulus, dan tingkat kesulitan sumber. Jangan membuat soal yang hanya kebetulan satu topik.',
+
+    '5. JANGAN mengubah data visual pada gambar sumber bila memakai useSourceImage=true. Angka, label, posisi, bentuk, dan informasi pada gambar harus tetap cocok dengan pertanyaan.',
+
+    '6. Setiap soal harus mempunyai blueprintNo.',
+
+    '7. Setiap blueprintNo hanya boleh digunakan satu kali.',
+
+    '8. Ikuti difficulty dari blueprint.',
+
+    '9. Ikuti competency dari blueprint.',
+
+    '10. Untuk multiple hanya satu jawaban benar.',
+
+    '11. Periksa kembali semua perhitungan angka.',
+
+    '12. Jangan membuat pilihan jawaban yang ambigu.',
+
+    '13. Pembahasan harus menjelaskan alasan jawaban.',
+
+    '14. Jangan menggunakan Markdown dalam output.',
+
+    '15. Jangan memberikan percakapan tambahan.',
+
+    // 🔥 BARU: penekanan Bahasa Indonesia MUTLAK -- ditambah setelah
+    // laporan nyata AI keluar Bahasa Inggris di tengah kuis Bahasa
+    // Indonesia (mis. "What is the sum of 7 and 5?" muncul di kuis
+    // Matematika TKA kelas 9 SMP). Ditaruh sebagai ATURAN MUTLAK
+    // bernomor, bukan cuma disebut sekilas, biar bobotnya jelas setara
+    // sama aturan lain yang harus dipatuhi.
+    '16. SELURUH teks (question, options, explanation, statements, cause, effect, readingText, subQuestions, dll) WAJIB 100% Bahasa Indonesia baku -- KECUALI notasi matematika standar (mis. "7³", "x²", angka, simbol operasi) dan istilah teknis yang memang lazim dipakai apa adanya (mis. "HOTS"). DILARANG MUTLAK bikin soal atau pilihan jawaban dalam Bahasa Inggris.',
+
+    // 🔥 BARU: penekanan level kesulitan sesuai jenjang -- ditambah
+    // setelah laporan nyata soal level SD ("berapa hasil 7+5?") muncul
+    // untuk kuis kelas 9 SMP HOTS.
+    '17. Soal WAJIB sesuai jenjang kelas yang diminta -- soal kelas 9 SMP harus setara materi kurikulum kelas 9 SMP, BUKAN materi kelas yang jauh lebih rendah (mis. penjumlahan dasar, perkalian 1 digit) walau ditandai "Easy". "Easy" berarti bagian TERMUDAH dari materi kelas tersebut, BUKAN materi jenjang yang berbeda.',
+
+    '18. Untuk mapel Matematika, gunakan operasi/rumus yang PRESIS dan bisa dihitung manual -- verifikasi ulang hasil perhitungan sebelum menuliskannya di "correct"/"explanation", jangan asal tebak angka.',
+
     '',
-    'FORMAT OUTPUT:',
+
+    'ATURAN KHUSUS TKA:',
+
+    'Jika input menunjukkan TKA dan MAPEL tertentu dipilih, TKA hanya berfungsi sebagai kerangka asesmen. Isi soal WAJIB menguji kompetensi pada MAPEL dan TOPIK yang diminta.',
+
+    'DILARANG membuat soal tentang kepanjangan, tujuan, manfaat, kebijakan, jadwal, pendaftaran, latar belakang, atau pelaksanaan TKA ketika guru meminta soal mata pelajaran.',
+
+    'Utamakan bentuk stimulus dan tuntutan penalaran dari contoh butir/kerangka asesmen, bukan artikel berita atau artikel pengantar TKA.',
+
+    '',
+
+    'FORMAT:',
+
     '{"meta":true}',
-    '{"type":"multiple","blueprintNo":1,"sourceRef":1,"difficulty":"Easy","competency":"...","question":"...","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
-    '{"type":"multiselect","blueprintNo":2,"sourceRef":2,"difficulty":"Medium","competency":"...","question":"...","options":["...","...","...","..."],"correctAnswers":[0,2],"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
-    '{"type":"truefalse","blueprintNo":3,"sourceRef":1,"difficulty":"Hard","competency":"...","question":"Tentukan benar atau salah setiap pernyataan berikut.","statements":[{"text":"...","isTrue":true},{"text":"...","isTrue":false},{"text":"...","isTrue":true}],"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    'Wajib untuk mode riset: sourceRef adalah nomor REFERENSI 1..N. useSourceImage=true HANYA jika soal memang memakai gambar dari sumber tersebut. Jika true, sourceImageIndex adalah indeks gambar 0-based dari daftar GAMBAR SUMBER.',
+
+
+    '{"type":"multiple","blueprintNo":1,"difficulty":"Easy","competency":"...","question":"...","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
     '',
-    `Tipe yang diperbolehkan untuk request ini: ${allowedTypes.join(', ')}`,
+
+    // 🔥 BARU: sebelumnya CUMA ada contoh format buat tipe "multiple" --
+    // tipe lain (truefalse, multiselect, shortanswer, causeeffect,
+    // matching, reading) gak pernah dikasih contoh formatnya sama
+    // sekali, padahal field pendukungnya beda-beda total per tipe.
+    // Tanpa contoh ini AI menebak-nebak (atau ujung-ujungnya balik lagi
+    // ke "multiple" karena itu yang paling jelas contohnya).
+    'CONTOH FORMAT TIAP TIPE SOAL LAIN (WAJIB ikuti struktur field persis ini kalau blueprint minta tipe tersebut):',
+
     '',
-    'ATURAN VISUAL:',
-    '1. Grafik garis lurus -> gunakan field graph tanpa curved.',
-    '2. Grafik kurva/parabola/fungsi non-linear -> gunakan graph dengan curved:true dan minimal 5 titik.',
-    '3. Lingkaran -> gunakan circle.',
-    '4. Bangun datar bersudut -> gunakan shape.',
-    '5. Jam analog -> gunakan clock.',
-    '6. Foto objek nyata hanya boleh digunakan jika sumber memang menyediakan gambar yang relevan. Jangan mencari foto untuk diagram matematika yang sebenarnya harus digambar sebagai graph/shape/circle.',
-    '7. Jika visual terstruktur diperlukan untuk mengerjakan soal, field visual WAJIB diisi dan data visual harus konsisten dengan teks, opsi, dan kunci.',
+
+    'truefalse (beberapa pernyataan benar/salah, field "statements", BUKAN "options"/"correct"):',
+
+    '{"type":"truefalse","blueprintNo":2,"difficulty":"Medium","competency":"...","question":"Tentukan benar atau salah tiap pernyataan berikut.","statements":[{"text":"...","isTrue":true},{"text":"...","isTrue":false},{"text":"...","isTrue":true}],"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
     '',
-    'PENTING UNTUK REFERENSI:',
-    'REFERENSI bukan sekadar inspirasi. Sebelum membuat setiap soal, tentukan referensi mana yang benar-benar mendukung kompetensi dan karakteristik butir tersebut.',
-    'Jika sebuah referensi hanya menjelaskan apa itu ujian/kebijakan ujian, jangan gunakan referensi itu untuk membuat soal mapel.',
-    'Jika sumber contoh soal memiliki stimulus/gambar, jangan mengubah angka, label, posisi, atau data visual bila memakai gambar sumber.',
+
+    'multiselect (jawaban benar lebih dari satu, field "correctAnswers" berupa ARRAY indeks, BUKAN "correct" tunggal):',
+
+    '{"type":"multiselect","blueprintNo":3,"difficulty":"Medium","competency":"...","question":"...","options":["...","...","...","..."],"correctAnswers":[0,2],"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
     '',
-    'Output harus JSONL murni tanpa Markdown dan tanpa percakapan tambahan.',
+
+    'shortanswer (isian singkat, field "shortAnswer" berisi kunci jawaban teks, TANPA "options"):',
+
+    '{"type":"shortanswer","blueprintNo":4,"difficulty":"Easy","competency":"...","question":"...","shortAnswer":"...","explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'causeeffect (sebab-akibat, WAJIB isi "isCauseTrue" dan "isEffectTrue" sebagai boolean -- ini KUNCI JAWABANNYA, jangan sampai lupa):',
+
+    '{"type":"causeeffect","blueprintNo":5,"difficulty":"Hard","competency":"...","question":"Tentukan apakah sebab dan akibat berikut benar, dan apakah ada hubungan sebab-akibat.","cause":"...","effect":"...","isCauseTrue":true,"isEffectTrue":false,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'matching (menjodohkan, field "matchingPairs" array {left,right}, MINIMAL 3 pasang):',
+
+    '{"type":"matching","blueprintNo":6,"difficulty":"Medium","competency":"...","question":"Jodohkan istilah di kiri dengan definisi yang tepat di kanan.","matchingPairs":[{"left":"...","right":"..."},{"left":"...","right":"..."},{"left":"...","right":"..."}],"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'reading (membaca teks, field "readingText" berisi bacaan, "subQuestions" array pertanyaan turunan dengan 4 opsi tiap satu, MINIMAL 1):',
+
+    '{"type":"reading","blueprintNo":7,"difficulty":"Hard","competency":"...","question":"Bacalah teks berikut, lalu jawab pertanyaan di bawahnya.","readingText":"...(teks bacaan lengkap)...","subQuestions":[{"q":"...","options":["...","...","...","..."],"correct":0}],"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    `Tipe yang diperbolehkan: ${allowedTypes.join(', ')}`,
+
+    '',
+
+    // 🔥 FIX BUG NYATA: sebelumnya 3 opsi visual ini (clock/graph/
+    // needsImage) dijelaskan SEJAJAR tanpa aturan kapan pakai yang
+    // mana -- akibatnya AI salah pilih `needsImage` buat DIAGRAM
+    // MATEMATIS (mis. "parabola dengan titik puncak (2,-3)", "pohon
+    // peluang 13/52 dan 39/52"). Itu FATAL: `needsImage` memicu
+    // PENCARIAN FOTO STOK ASLI (Openverse/Wikimedia) -- padahal gak
+    // ada dan gak akan PERNAH ada foto asli buat diagram matematis
+    // yang dikarang sendiri kayak gitu. Hasilnya foto ngasal yang gak
+    // nyambung sama sekali (kotak gelap, tekstur random) karena mesin
+    // pencari maksa nyari padanan kata dari deskripsi yang sebenarnya
+    // gak mewakili benda nyata apa pun.
+    'ATURAN VISUAL -- WAJIB DIIKUTI, JANGAN TERTUKAR:',
+
+    '',
+
+    '1. GRAFIK GARIS LURUS -> pakai "graph" TANPA "curved" (lihat contoh di bawah).',
+
+    '2. GRAFIK KURVA / PARABOLA / FUNGSI NON-LINEAR -> pakai "graph" DENGAN "curved":true, dan sertakan MINIMAL 5 titik supaya kurvanya akurat (bukan cuma 2-3 titik). JANGAN PERNAH pakai "needsImage" buat ini.',
+
+    '3. LINGKARAN -> WAJIB pakai "circle" (BUKAN "graph" -- lingkaran gak bisa digambar dari deretan titik x-y biasa). Lihat contoh di bawah.',
+
+    '4. BANGUN DATAR bersudut (persegi, persegi panjang, segitiga, trapesium, dll) -> WAJIB pakai "shape" dengan titik-titik sudutnya (BUKAN "graph"). Lihat contoh di bawah.',
+
+    '5. JAM ANALOG -> WAJIB pakai "clock". JANGAN pakai "needsImage".',
+
+    '6. DIAGRAM ABSTRAK LAIN yang BUKAN grafik/lingkaran/bangun datar/jam (pohon peluang, diagram Venn, bagan alur, garis bilangan, dll) -> JELASKAN LENGKAP di teks "question" itu sendiri (semua angka/label relevan disebutkan di kalimat soal). JANGAN pakai "needsImage" buat ini.',
+
+    '7. "needsImage"+"imageHint" HANYA untuk FOTO OBJEK/TEMPAT/MAKHLUK NYATA yang BENERAN ada fotonya di dunia (mis. "Candi Prambanan", "ayam jantan", "Menara Eiffel"). Kalau ragu -> PILIH ATURAN 1-6, JANGAN needsImage.',
+
+    '8. PILIHAN JAWABAN BERUPA GAMBAR: kalau soal cocok punya 4 pilihan jawaban berbentuk GAMBAR (bukan teks) -- misalnya "manakah gambar yang menunjukkan segitiga siku-siku?" dengan 4 pilihan gambar bangun berbeda -- set "optionsAreImages":true dan isi "optionImages" dengan 4 deskripsi singkat (Bahasa Inggris) buat tiap opsi, SEJAJAR urutannya dengan "options". Pakai ini SESEKALI kalau memang relevan dengan topik & tipe soal "multiple" -- jangan dipaksakan di semua soal.',
+
+    '',
+
+    'VISUAL CLOCK -- CONTOH OBJEK UTUH:',
+
+    '{"type":"multiple","blueprintNo":2,"difficulty":"Easy","competency":"...","question":"Perhatikan jam di bawah ini. Pukul berapakah yang ditunjukkan?","clock":{"hour":8,"minute":30},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'VISUAL GRAPH (garis lurus) -- CONTOH OBJEK UTUH:',
+
+    '{"type":"multiple","blueprintNo":3,"difficulty":"Medium","competency":"...","question":"Grafik berikut menunjukkan sebuah garis lurus. Berapa nilai kemiringan (slope) garis tersebut?","graph":{"points":[{"x":0,"y":0},{"x":1,"y":2}],"xLabel":"x","yLabel":"y"},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'VISUAL GRAPH (kurva/parabola, WAJIB "curved":true + minimal 5 titik) -- CONTOH OBJEK UTUH:',
+
+    '{"type":"multiple","blueprintNo":4,"difficulty":"Hard","competency":"...","question":"Grafik berikut menunjukkan fungsi kuadrat. Berapakah titik puncak (vertex) fungsi tersebut?","graph":{"points":[{"x":-2,"y":5},{"x":-1,"y":0},{"x":0,"y":-3},{"x":1,"y":0},{"x":2,"y":5}],"xLabel":"x","yLabel":"y","curved":true},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'VISUAL CIRCLE (lingkaran) -- CONTOH OBJEK UTUH:',
+
+    '{"type":"multiple","blueprintNo":5,"difficulty":"Medium","competency":"...","question":"Grafik berikut adalah lingkaran dengan pusat di (-3,2) dan melalui titik (-3,-2). Berapakah jari-jari lingkaran tersebut?","circle":{"centerX":-3,"centerY":2,"radius":4,"xLabel":"x","yLabel":"y"},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'VISUAL SHAPE (bangun datar) -- CONTOH OBJEK UTUH:',
+
+    '{"type":"multiple","blueprintNo":6,"difficulty":"Easy","competency":"...","question":"Perhatikan persegi panjang berikut. Hitung luasnya.","shape":{"vertices":[{"x":0,"y":0,"label":"A(0,0)"},{"x":5,"y":0,"label":"B(5,0)"},{"x":5,"y":3,"label":"C(5,3)"},{"x":0,"y":3,"label":"D(0,3)"}],"closed":true},"options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'PILIHAN JAWABAN BERUPA GAMBAR -- CONTOH OBJEK UTUH:',
+
+    '{"type":"multiple","blueprintNo":7,"difficulty":"Easy","competency":"...","question":"Manakah gambar yang menunjukkan segitiga siku-siku?","options":["Opsi A","Opsi B","Opsi C","Opsi D"],"optionsAreImages":true,"optionImages":["right triangle diagram","equilateral triangle diagram","isosceles triangle diagram","obtuse triangle diagram"],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    'IMAGE (foto objek nyata) -- CONTOH OBJEK UTUH:',
+
+    '{"type":"multiple","blueprintNo":8,"difficulty":"Easy","competency":"...","question":"Perhatikan gambar di atas. Bangunan bersejarah apakah ini?","needsImage":true,"imageHint":"Prambanan Temple Indonesia","options":["...","...","...","..."],"correct":0,"explanation":"...","answerVerification":"...","analysisSummary":"..."}',
+
+    '',
+
+    '⚠️ PERINGATAN KERAS: field "question" HANYA boleh berisi KALIMAT SOAL dalam bahasa manusia biasa. DILARANG MUTLAK menulis potongan JSON, tanda kurung kurawal {}, atau kata kunci seperti "graph"/"clock"/"circle"/"shape"/"points"/"xLabel" DI DALAM teks "question" -- semua data visual itu WAJIB jadi key JSON terpisah yang sejajar dengan "question", persis seperti contoh objek utuh di atas.',
+
+    '',
+
+    'Output harus JSONL murni.',
   ].join('\n');
 }
 
@@ -2884,58 +3824,81 @@ function buildUserPrompt({
   arahan,
   blueprint,
   researchContext,
-  examProfile,
 }) {
-  const examInstruction = examProfile?.isTka
-    ? [
-        '',
-        'KONTEKS TKA AKTIF:',
-        `MAPEL TKA: ${mapel}`,
-        `JENJANG: ${kelas}`,
-        'Kerjakan sebagai latihan soal mata pelajaran TKA. Jangan menjadikan TKA itu sendiri sebagai topik soal.',
-        'Utamakan isi dari kerangka asesmen dan contoh butir, bukan artikel pengantar kebijakan TKA.',
-      ]
-    : [];
-
   return [
     'BIMBEL GEMILANG — GENERATE QUIZ',
+
     `TOPIK: ${topic}`,
+
     `MAPEL: ${mapel}`,
+
     `KELAS: ${kelas}`,
+
     `TARGET TAHUN: ${year}`,
+
     `MODE: ${currentMode}`,
+
     `ARAHAN GURU: ${arahan}`,
-    ...examInstruction,
+
     '',
+
     'REFERENSI INTERNET YANG SUDAH DICARI SERVER:',
-    researchContext || 'Tidak ada referensi internet yang tersedia.',
+
+    researchContext ||
+      'Tidak ada referensi internet yang tersedia. Jangan mengarang adanya sumber.',
+
     '',
+
     'ATURAN PENGGUNAAN REFERENSI:',
-    'Setiap butir wajib mempunyai dasar yang jelas pada salah satu referensi.',
-    'Pilih referensi yang paling relevan terhadap mapel, kelas, topik, kompetensi, dan karakteristik asesmen.',
-    'Jangan memakai artikel kebijakan/berita tentang ujian sebagai pengganti contoh soal atau kerangka asesmen mapel.',
-    'Tulis ulang/adaptasi, jangan copy-paste. Pertahankan logika asesmen dan tuntutan kognitif sumber.',
-    'Untuk soal bergambar, hanya gunakan gambar sumber bila benar-benar merupakan bagian dari stimulus yang mendasari soal.',
+
+    'REFERENSI DI ATAS BUKAN SEKADAR INSPIRASI. Setiap butir WAJIB memiliki dasar yang jelas pada salah satu referensi tersebut.',
+
+    'JANGAN membuat soal baru dari pengetahuan umum jika tidak ada referensi yang cocok. Bila tidak ada referensi yang benar-benar relevan, jangan mengisi butir tersebut.',
+
+    'Tulis ulang/adaptasi, jangan copy-paste. Pertahankan kompetensi, struktur penalaran, konteks asesmen, dan tingkat kesulitan sumber.',
+
+    'Untuk soal bergambar: pilih sourceRef dan, bila gambar sumber dipakai, set useSourceImage=true serta sourceImageIndex yang sesuai. JANGAN memakai gambar hasil pencarian gambar terpisah yang tidak berasal dari referensi soal.',
+
+    'Bila gambar sumber mengandung angka/label penting, jangan mengubah angka/label pada soal hasil adaptasi kecuali kamu membuat visual terstruktur yang benar-benar sama dengan data baru dan field visual memang mendukungnya.',
+
     '',
-    'BLUEPRINT PER BUTIR:',
-    JSON.stringify(blueprint),
+
+    'ATURAN SUBSTANSI UTAMA:',
+
+    `MAPEL WAJIB: ${mapel}`,
+
+    `TOPIK WAJIB: ${topic}`,
+
+    'TKA bukan topik materi. Jangan mengubah soal menjadi pertanyaan tentang TKA.',
+
     '',
+
+    'BLUEPRINT:',
+
+    JSON.stringify(
+      blueprint,
+    ),
+
+    '',
+
     `Jumlah blueprint: ${blueprint.length}`,
-    'WAJIB menghasilkan tepat satu soal untuk setiap blueprint.',
-    'Field "type" pada blueprint adalah tugas WAJIB, bukan saran.',
-    'Setiap blueprintNo hanya boleh muncul sekali.',
-    'Pastikan sourceRef dan isi soal konsisten: sumber harus benar-benar menjelaskan atau mencontohkan kompetensi/struktur yang dipakai.',
-    'Jika tidak ada referensi yang mendukung topik mapel, JANGAN mengubah topik menjadi materi tentang TKA. Butir harus ditolak secara mental dan diganti dengan adaptasi dari referensi akademik yang benar-benar relevan.',
+
     '',
-    'CHECKLIST SEBELUM OUTPUT:',
-    '1. Apakah soal benar-benar menguji MAPEL yang diminta?',
-    '2. Apakah levelnya sesuai KELAS yang diminta?',
-    '3. Apakah topik dan kompetensi sesuai blueprint?',
-    '4. Apakah format soal sesuai type?',
-    '5. Apakah kunci benar secara logika/perhitungan?',
-    '6. Apakah sourceRef benar-benar relevan?',
-    examProfile?.isTka ? '7. Untuk TKA, apakah soal TIDAK membahas pengertian/tujuan/kebijakan/pelaksanaan TKA?' : '7. Apakah stimulus dan data soal cukup untuk dikerjakan siswa?',
-    '',
+
+    'WAJIB menghasilkan satu soal untuk setiap blueprint.',
+
+    'Jangan melewati nomor blueprint.',
+
+    'Jangan menggabungkan dua blueprint.',
+
+    'Jangan membuat blueprint tambahan.',
+
+    // 🔥 BARU: penekanan eksplisit soal field "type" di tiap butir
+    // blueprint -- field ini BUKAN saran, itu PENUGASAN WAJIB. Sebelum
+    // ini gak ditekankan sama sekali, jadi AI abai dan selalu pakai
+    // "multiple" buat semua butir.
+    'Field "type" di SETIAP butir blueprint adalah tipe soal yang WAJIB kamu pakai untuk butir itu -- BUKAN sekadar saran. Kalau blueprint #5 punya "type":"truefalse", soal nomor 5 WAJIB berupa soal Benar/Salah, BUKAN pilihan ganda. Variasikan sesuai field "type" masing-masing butir, JANGAN membuat semua soal jadi tipe "multiple" begitu saja.',
+
     'Output hanya JSONL.',
   ].join('\n');
 }
@@ -4395,182 +5358,155 @@ export default async function handler(
     );
 
   // ==========================================================
-  // TYPES + EXAM PROFILE
+  // TYPES
   // ==========================================================
 
   const requestedTypes =
-    Array.isArray(body.types) ? body.types : ['multiple'];
+    Array.isArray(
+      body.types,
+    )
+      ? body.types
+      : ['multiple'];
 
-  const requestedTypesNormalized = [
-    ...new Set(
-      requestedTypes
-        .map((item) => cleanText(item).toLowerCase())
-        .filter((item) => SUPPORTED_TYPES.has(item)),
-    ),
-  ];
+  const allowedTypes =
+    [
+      ...new Set(
+        requestedTypes
+          .map(
+            (item) =>
+              cleanText(
+                item,
+              ).toLowerCase(),
+          )
+          .filter(
+            (item) =>
+              SUPPORTED_TYPES.has(
+                item,
+              ),
+          ),
+      ),
+    ];
 
-  const explicitExamType = cleanText(
-    body.examType ||
-    body.jenisUjian ||
-    body.ujian ||
-    body.assessmentType ||
-    body.exam ||
-    '',
-  );
+  if (
+    allowedTypes.length ===
+    0
+  ) {
+    return res
+      .status(400)
+      .json({
+        success: false,
 
-  const tkaRequest = isTkaRequest({
-    topic,
-    mapel,
-    arahan,
-    examType: explicitExamType,
-    body,
-  });
+        error:
+          'Tipe soal tidak didukung.',
 
-  const subjectRequest = isLikelySubjectRequest({ mapel, topic });
-
-  const examProfile = {
-    isTka: tkaRequest,
-    subjectRequest,
-    mapel,
-    kelas,
-    topic,
-    examType: explicitExamType || (tkaRequest ? 'TKA' : 'Umum'),
-  };
-
-  let allowedTypes = requestedTypesNormalized.length
-    ? requestedTypesNormalized
-    : ['multiple'];
-
-  let tkaTypesAdjusted = false;
-  if (tkaRequest) {
-    const filteredTkaTypes = getTkaAllowedTypes(allowedTypes);
-    tkaTypesAdjusted =
-      filteredTkaTypes.length !== allowedTypes.length ||
-      filteredTkaTypes.some((item) => !allowedTypes.includes(item));
-    allowedTypes = filteredTkaTypes;
-  }
-
-  if (!allowedTypes.length) {
-    return res.status(400).json({
-      success: false,
-      error: 'Tipe soal tidak didukung.',
-      supportedTypes: [...SUPPORTED_TYPES],
-    });
+        supportedTypes:
+          [...SUPPORTED_TYPES],
+      });
   }
 
   // ==========================================================
   // 1. BUILD BLUEPRINT
   // ==========================================================
 
-  const blueprint = buildCurriculumBlueprint({
-    topic,
-    mapel,
-    kelas,
-    jumlah,
-    hotsLevel,
-    arahan,
-    allowedTypes,
-  });
+  const blueprint =
+    buildCurriculumBlueprint({
+      topic,
+      mapel,
+      kelas,
+      jumlah,
+      hotsLevel,
+      arahan,
+      allowedTypes,
+    });
 
-  const enableBrowserSearch = currentMode === 'prediction';
+  // 🔥 BARU: browser_search CUMA aktif di mode "prediction" (guru
+  // pilih "Prediksi Berbasis Tren" di UI) -- mode "source" (default)
+  // TETAP seperti sebelumnya, gak ada browsing, cepat & hemat token.
+  // Lihat penjelasan lengkap di header file soal kenapa ini dipisah.
+  const enableBrowserSearch =
+    currentMode === 'prediction';
 
   // ==========================================================
-  // 1.5. RISET REFERENSI TERARAH
+  // 1.5. RISET REFERENSI SOAL INTERNET (AMAN & TERBATAS)
   // ==========================================================
 
+  // Tepat 1 pencarian teks per request maksimum. Kalau gagal/rate limit,
+  // generator tetap lanjut tanpa riset, jadi Tavily tidak pernah membuat
+  // proses generate gagal total.
   let researchResults = [];
   let researchPerformed = false;
   let researchCallUsed = 0;
   let researchSkippedReason = null;
-  let researchQueryLog = [];
-  let researchFilteredOutCount = 0;
-  const tavilyApiKey = process.env.TAVILY_API_KEY;
+  const tavilyApiKey =
+    process.env.TAVILY_API_KEY;
 
-  if (tavilyApiKey) {
-    const queries = buildResearchQueries({
-      topic,
-      mapel,
-      kelas,
-      year: targetYear,
-      hotsLevel,
-      blueprint,
-      tkaRequest,
-      subjectRequest,
-    }).slice(0, MAX_RESEARCH_QUERIES_PER_REQUEST);
-
-    const research = await callTavilyResearchSearch(
-      tavilyApiKey,
-      queries,
-      TAVILY_RESEARCH_TIMEOUT_MS,
+  const tkaRequest =
+    /\btka\b/i.test(
+      `${topic} ${mapel} ${arahan} ${body.sourceMode || ''} ${body.examType || ''} ${body.jenisUjian || ''}`,
     );
 
-    researchCallUsed = research.callUsed;
-    researchQueryLog = research.queryLog || [];
-    researchSkippedReason = research.reason;
-
-    const scored = research.results
-      .map((item) => ({
-        ...item,
-        relevanceScore: scoreResearchResult(item, {
+  if (tavilyApiKey) {
+    const research =
+      await callTavilyResearchSearch(
+        tavilyApiKey,
+        buildResearchQuery({
           topic,
           mapel,
           kelas,
-          tkaRequest,
-          subjectRequest,
-          role: item.sourceRole,
-        }),
-      }))
-      .sort((a, b) => b.relevanceScore - a.relevanceScore);
-
-    const minimumScore = tkaRequest && subjectRequest ? 28 : subjectRequest ? 12 : 4;
-
-    let filtered = scored;
-
-    if (tkaRequest && subjectRequest) {
-      filtered = scored.filter((item) =>
-        item.relevanceScore >= minimumScore &&
-        isAcademicTkaReference(item, {
-          mapel,
-          topic,
+          year: targetYear,
+          hotsLevel,
+          blueprint,
         }),
       );
-    } else if (subjectRequest) {
-      filtered = scored.filter((item) => item.relevanceScore >= minimumScore);
-    }
 
-    researchFilteredOutCount = scored.length - filtered.length;
-    researchResults = filtered.slice(0, MAX_RESEARCH_RESULTS);
-    researchPerformed = researchResults.length > 0;
+    researchResults =
+      research.results;
+    researchPerformed =
+      research.results.length > 0;
+    researchCallUsed =
+      research.callUsed;
+    researchSkippedReason =
+      research.reason;
 
-    // Kalau ada sumber hasil pencarian tetapi tidak ada yang cukup relevan,
-    // jangan kirim sumber sampah ke model. Ini lebih aman daripada fallback
-    // diam-diam ke artikel kebijakan.
-    if (!researchResults.length) {
-      researchSkippedReason = 'noRelevantSubjectReferences';
+    // Jangan pernah memberikan artikel kebijakan TKA sebagai referensi
+    // soal MAPEL. Hanya dilakukan untuk request yang memang terlihat sebagai
+    // TKA; mode ujian umum tetap mengikuti perilaku lama.
+    if (tkaRequest) {
+      researchResults = researchResults.filter(
+        (item) =>
+          !isTkaPolicyReference(item, {
+            mapel,
+            topic,
+          }),
+      );
     }
   } else {
-    researchSkippedReason = 'missingTavilyApiKey';
+    researchSkippedReason =
+      'missingTavilyApiKey';
   }
 
-  const researchContext = buildResearchContext(researchResults);
+  const researchContext =
+    buildResearchContext(
+      researchResults,
+    );
 
-  if (!researchResults.length) {
-    return res.status(424).json({
-      success: false,
-      error:
-        'Riset soal ujian tidak menemukan referensi yang cukup relevan dengan mapel, kelas, dan topik. Soal tidak dibuat agar tidak menghasilkan butir yang melenceng.',
-      diagnostics: {
-        researchPerformed: false,
-        researchCallUsed,
-        researchResultCount: 0,
-        researchFilteredOutCount,
-        researchSkippedReason,
-        researchQueryLog,
-        tkaRequest,
-        subjectRequest,
-        tkaTypesAdjusted,
-      },
-    });
+  // Untuk mode riset ujian, TIDAK ADA FALLBACK ke soal karangan bebas.
+  // Kalau sumber relevan tidak ditemukan, hentikan dengan error yang aman.
+  if (
+    !researchResults.length
+  ) {
+    return res
+      .status(424)
+      .json({
+        success: false,
+        error:
+          'Riset soal ujian tidak menemukan referensi yang dapat digunakan. Soal tidak dibuat agar tidak menghasilkan soal yang tidak ter-grounded.',
+        diagnostics: {
+          researchPerformed: false,
+          researchCallUsed,
+          researchSkippedReason,
+        },
+      });
   }
 
   // ==========================================================
@@ -4581,7 +5517,6 @@ export default async function handler(
     buildSystemPrompt({
       allowedTypes,
       enableBrowserSearch,
-      examProfile,
     });
 
   const userPrompt =
@@ -4589,12 +5524,12 @@ export default async function handler(
       topic,
       mapel,
       kelas,
-      year: targetYear,
+      year:
+        targetYear,
       currentMode,
       arahan,
       blueprint,
       researchContext,
-      examProfile,
     });
 
   // ==========================================================
@@ -4709,6 +5644,25 @@ export default async function handler(
       continue;
     }
 
+    if (
+      tkaRequest &&
+      isLikelySubjectRequest({
+        mapel,
+        topic,
+      }) &&
+      looksLikeTkaOffSubjectQuestion(
+        normalized,
+        {
+          mapel,
+          topic,
+        },
+      )
+    ) {
+      rejectedReasons.tkaOffSubjectContent =
+        (rejectedReasons.tkaOffSubjectContent || 0) + 1;
+      continue;
+    }
+
     // BLUEPRINT CHECK
     const blueprintCheck =
       validateAgainstBlueprint(
@@ -4729,19 +5683,6 @@ export default async function handler(
           0
         ) + 1;
 
-      continue;
-    }
-
-    // EXAM-SPECIFIC CONTENT CHECK
-    const examContentCheck =
-      validateExamContent(
-        normalized,
-        examProfile,
-      );
-
-    if (!examContentCheck.valid) {
-      rejectedReasons[examContentCheck.reason] =
-        (rejectedReasons[examContentCheck.reason] || 0) + 1;
       continue;
     }
 
@@ -4962,16 +5903,6 @@ export default async function handler(
 
         researchSkippedReason,
 
-        researchFilteredOutCount,
-
-        researchQueryLog,
-
-        tkaRequest,
-
-        subjectRequest,
-
-        tkaTypesAdjusted,
-
         // Kolom ini dihitung dari sourceUrl yang benar-benar dikembalikan AI.
         researchBackedCount:
           questions.filter(
@@ -4980,13 +5911,22 @@ export default async function handler(
           ).length,
 
         // 🔥 BARU: laporan hasil pencarian gambar Tavily -- kalau
-        // Versi baru memakai Tavily untuk riset teks; pencarian gambar
-        // tidak lagi dilakukan terpisah sehingga stimulus matematika tidak
-        // pernah mendapatkan foto stok yang salah konteks.
-        imagesFetched: 0,
-        tavilyCallsUsed: researchCallUsed,
-        tavilyCappedByBudget: false,
-        tavilyCappedByTime: false,
+        // TAVILY_API_KEY belum di-set, ketiganya bernilai 0/false
+        // (fitur dilewati total, bukan error).
+        imagesFetched:
+          imageEnrichResult.imagesFetched,
+
+        tavilyCallsUsed:
+          imageEnrichResult.tavilyCallsUsed,
+
+        tavilyCappedByBudget:
+          imageEnrichResult.cappedByBudget,
+
+        // 🔥 BARU: true kalau pencarian gambar dihentikan karena waktu
+        // request hampir habis (bukan karena jatah panggilan habis).
+        // Soal tetap terkirim lengkap -- cuma sebagian tanpa gambar.
+        tavilyCappedByTime:
+          imageEnrichResult.cappedByTime,
       },
     });
 }
