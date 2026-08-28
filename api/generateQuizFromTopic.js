@@ -229,7 +229,17 @@ const TAVILY_SEARCH_URL =
 // 🔥 RISET SOAL INTERNET -- 1 call teks / request maksimum.
 // Sengaja cuma satu call: hasilnya dipakai sebagai kumpulan referensi,
 // sehingga 20 soal tidak berubah menjadi 20+ pencarian dan kuota tetap aman.
-const TAVILY_RESEARCH_TIMEOUT_MS = 5_000;
+//
+// 🔥 FIX BUG NYATA (dilaporkan langsung dari pemakaian): 5 detik
+// TERLALU KETAT untuk panggilan web-search sungguhan -- Tavily kadang
+// butuh 5-8 detik dalam kondisi jaringan normal, bukan cuma pas
+// bermasalah. Timeout seketat ini bikin permintaan yang SEBENARNYA
+// baik-baik saja (bukan soal kuota habis) ikut gagal dan memicu
+// penghentian generate (lihat blok "TIDAK ADA FALLBACK" di bawah).
+// Dinaikkan ke 8 detik -- masih porsi kecil dari total 60 detik
+// anggaran Vercel (lihat maxDuration), tapi kasih ruang jauh lebih
+// realistis buat riset selesai normal.
+const TAVILY_RESEARCH_TIMEOUT_MS = 8_000;
 const MAX_RESEARCH_RESULTS = 5;
 const MAX_RESEARCH_CHARS_PER_RESULT = 2_400;
 const MAX_RESEARCH_CONTEXT_CHARS = 10_000;
@@ -336,118 +346,153 @@ async function callTavilyResearchSearch(
     };
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(
-    () => controller.abort(),
-    TAVILY_RESEARCH_TIMEOUT_MS,
-  );
+  // 🔥 BARU: 1x percobaan ulang OTOMATIS khusus untuk kegagalan
+  // jaringan/timeout (BUKAN untuk rate-limit/forbidden -- kalau itu
+  // penyebabnya, mengulang cuma buang-buang waktu karena hasilnya
+  // pasti sama). Gangguan jaringan sekejap itu wajar terjadi; sebelum
+  // perbaikan ini, SEKALI gangguan langsung menghentikan seluruh
+  // proses generate (lihat blok "TIDAK ADA FALLBACK" di pemanggilnya).
+  const maxAttempts = 2;
+  let lastReason = 'timeoutOrNetwork';
 
-  try {
-    const response = await fetch(
-      TAVILY_SEARCH_URL,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query,
-          search_depth: 'basic',
-          max_results: MAX_RESEARCH_RESULTS,
-          include_answer: false,
-          include_images: true,
-          include_image_descriptions: true,
-          include_raw_content: false,
-        }),
-        signal: controller.signal,
-      },
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      TAVILY_RESEARCH_TIMEOUT_MS,
     );
 
-    if (!response.ok) {
-      return {
-        results: [],
-        callUsed: 1,
-        skipped: true,
-        reason:
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const response = await fetch(
+        TAVILY_SEARCH_URL,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query,
+            search_depth: 'basic',
+            max_results: MAX_RESEARCH_RESULTS,
+            include_answer: false,
+            include_images: true,
+            include_image_descriptions: true,
+            include_raw_content: false,
+          }),
+          signal: controller.signal,
+        },
+      );
+
+      if (!response.ok) {
+        const reason =
           response.status === 429
             ? 'rateLimited'
             : response.status === 403
               ? 'forbidden'
-              : `http${response.status}`,
-      };
-    }
+              : `http${response.status}`;
 
-    const data = await response.json();
-    const rawResults = Array.isArray(data?.results)
-      ? data.results
-      : [];
-
-    const results = rawResults
-      .map((item) => {
-        const rawImages = Array.isArray(item?.images)
-          ? item.images
-          : [];
-
-        const images = rawImages
-          .map((image) => {
-            const url =
-              typeof image === 'string'
-                ? image
-                : image?.url;
-            const description =
-              typeof image === 'object'
-                ? cleanText(image?.description)
-                : '';
-
-            return {
-              url: cleanText(url).slice(0, 800),
-              description: description.slice(0, 400),
-            };
-          })
-          .filter(
-            (image) =>
-              /^https?:\/\/\S+$/i.test(image.url) &&
-              isReliableImageUrl(image.url),
-          )
-          .slice(0, MAX_RESEARCH_IMAGES_PER_RESULT);
-
+        // Rate-limit/forbidden TIDAK diulang -- percobaan lagi pasti
+        // gagal dengan alasan yang sama, cuma buang waktu dari
+        // anggaran 60 detik Vercel.
         return {
-          title: cleanText(item?.title).slice(0, 300),
-          url: cleanText(item?.url).slice(0, 500),
-          content: cleanText(
-            item?.content || item?.snippet,
-          ).slice(0, MAX_RESEARCH_CHARS_PER_RESULT),
-          images,
+          results: [],
+          callUsed: 1,
+          skipped: true,
+          reason,
         };
-      })
-      .filter(
-        (item) =>
-          item.title &&
-          /^https?:\/\/\S+$/i.test(item.url) &&
-          item.content,
-      )
-      .slice(0, MAX_RESEARCH_RESULTS);
+      }
 
-    return {
-      results,
-      callUsed: 1,
-      skipped: false,
-      reason:
-        results.length > 0
-          ? null
-          : 'noUsableResults',
-    };
-  } catch (_) {
-    return {
-      results: [],
-      callUsed: 1,
-      skipped: true,
-      reason: 'timeoutOrNetwork',
-    };
-  } finally {
-    clearTimeout(timeoutId);
+      const data = await response.json();
+      const rawResults = Array.isArray(data?.results)
+        ? data.results
+        : [];
+
+      const results = rawResults
+        .map((item) => {
+          const rawImages = Array.isArray(item?.images)
+            ? item.images
+            : [];
+
+          const images = rawImages
+            .map((image) => {
+              const url =
+                typeof image === 'string'
+                  ? image
+                  : image?.url;
+              const description =
+                typeof image === 'object'
+                  ? cleanText(image?.description)
+                  : '';
+
+              return {
+                url: cleanText(url).slice(0, 800),
+                description: description.slice(0, 400),
+              };
+            })
+            .filter(
+              (image) =>
+                /^https?:\/\/\S+$/i.test(image.url) &&
+                isReliableImageUrl(image.url),
+            )
+            .slice(0, MAX_RESEARCH_IMAGES_PER_RESULT);
+
+          return {
+            title: cleanText(item?.title).slice(0, 300),
+            url: cleanText(item?.url).slice(0, 500),
+            content: cleanText(
+              item?.content || item?.snippet,
+            ).slice(0, MAX_RESEARCH_CHARS_PER_RESULT),
+            images,
+          };
+        })
+        .filter(
+          (item) =>
+            item.title &&
+            /^https?:\/\/\S+$/i.test(item.url) &&
+            item.content,
+        )
+        .slice(0, MAX_RESEARCH_RESULTS);
+
+      return {
+        results,
+        callUsed: 1,
+        skipped: false,
+        reason:
+          results.length > 0
+            ? null
+            : 'noUsableResults',
+      };
+    } catch (error) {
+      // 🔥 FIX BUG NYATA: sebelumnya `catch (_)` -- detail error ASLI
+      // (pesan, jenis error) ketelan total, cuma keluar label generik
+      // "timeoutOrNetwork" tanpa ada cara melacak penyebab pastinya
+      // lewat log Vercel. Sekarang detail error DICATAT (console.error)
+      // walau yang dikembalikan ke pemanggil tetap label ringkas yang
+      // sama -- supaya kalau ini terjadi lagi, log Vercel benar-benar
+      // membantu, bukan cuma bilang "entah kenapa".
+      const isTimeout = error?.name === 'AbortError';
+      lastReason = 'timeoutOrNetwork';
+      console.error(
+        `[generateQuizFromTopic] Tavily research percobaan ${attempt}/${maxAttempts} gagal -- ${isTimeout ? 'timeout' : 'error jaringan'}: ${error?.message || error}`,
+      );
+
+      if (attempt < maxAttempts) {
+        continue; // coba sekali lagi
+      }
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
+
+  // Semua percobaan gagal.
+  return {
+    results: [],
+    callUsed: maxAttempts,
+    skipped: true,
+    reason: lastReason,
+  };
 }
 
 function buildResearchContext(results) {
