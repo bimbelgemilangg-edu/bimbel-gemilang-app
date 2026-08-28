@@ -1,5 +1,34 @@
 // src/pages/teacher/modul/SmartImportPanel.jsx
 // Versi "Crop Visual" — soal di-crop sebagai gambar per blok, opsi gambar terdeteksi otomatis.
+//
+// ============================================================
+// 🔥 ROMBAKAN (lihat riwayat di bawah)
+// ============================================================
+// 1. BARU: CHECKLIST PILIH HALAMAN -- sebelumnya SELURUH halaman PDF
+//    langsung diproses begitu file dipilih, tanpa kesempatan guru
+//    menyingkirkan halaman cover/daftar isi/halaman tak relevan
+//    dulu. Sekarang alurnya 2 tahap: (1) PDF dimuat, thumbnail semua
+//    halaman ditampilkan dengan centang default SEMUA terpilih, guru
+//    bisa uncheck yang gak perlu -> (2) baru klik "Proses Halaman
+//    Terpilih" buat benar-benar mendeteksi & meng-crop soal, HANYA
+//    dari halaman yang masih tercentang.
+//
+// 2. FIX BUG NYATA: DUKUNGAN PDF DUA KOLOM. Sebelumnya
+//    detectLeftMargin() cuma mencari SATU posisi margin kiri --
+//    kalau dokumennya 2 kolom (umum di soal Fisika/Kimia/Matematika
+//    gaya tryout TKA), crop soal di kolom KIRI akan ikut menyeret isi
+//    kolom KANAN yang sejajar tingginya (dan sebaliknya), karena
+//    lebar crop dan batas-bawah crop dihitung LINTAS KOLOM. Sekarang
+//    mendeteksi 1 ATAU 2 margin kiri, lebar crop dibatasi PER KOLOM,
+//    dan batas bawah crop dicari dari soal BERIKUTNYA DI KOLOM YANG
+//    SAMA (bukan sekadar "soal berikutnya secara global").
+//
+// 3. BARU: DETEKSI HALAMAN "PEMBAHASAN" (kunci jawaban) -- tanpa ini,
+//    halaman kunci jawaban di bagian akhir dokumen ikut ke-crop
+//    sebagai "soal baru" yang sebenarnya cuma teks pembahasan. Kalau
+//    suatu halaman terdeteksi punya pola "<nomor>. Pembahasan:",
+//    HALAMAN ITU DILEWATI TOTAL dari deteksi soal.
+// ============================================================
 import React, { useRef, useState } from 'react';
 import { uploadElearningFile } from '../../../services/uploadService';
 import { Loader2, X, FileText, CheckCircle, Image as ImageIcon } from 'lucide-react';
@@ -7,7 +36,9 @@ import { Loader2, X, FileText, CheckCircle, Image as ImageIcon } from 'lucide-re
 const PDFJS_SCRIPT = "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js";
 const PDFJS_WORKER = "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
 const RENDER_SCALE = 2.2;
+const THUMBNAIL_SCALE = 0.32; // 🔥 BARU: skala kecil khusus thumbnail pemilihan halaman, biar cepat dimuat
 const LEFT_MARGIN_TOLERANCE = 40; // px toleransi posisi X untuk "nomor soal asli" vs sub-list menjorok
+const COLUMN_GAP_MIN_PX = 200; // 🔥 BARU: jarak minimal antar 2 kandidat margin kiri supaya dianggap dokumen 2 kolom (bukan cuma variasi indentasi kecil)
 
 function ensurePdfJsLoaded() {
   return new Promise((resolve, reject) => {
@@ -24,26 +55,46 @@ function ensurePdfJsLoaded() {
 }
 
 // ============================================================
-// Ambil garis kiri margin halaman (posisi X paling umum dipakai nomor soal)
+// 🔥 DIPERBAIKI: dulu detectLeftMargin() (tunggal) cuma cari SATU
+// posisi X margin kiri paling umum. Sekarang detectLeftMargins()
+// (jamak) mencari 1 ATAU 2 posisi -- kalau ada 2 posisi X yang
+// SAMA-SAMA sering dipakai DAN cukup jauh terpisah (> COLUMN_GAP_MIN_PX),
+// itu tandanya dokumen 2 kolom. Kalau cuma 1 yang dominan, tetap
+// dianggap 1 kolom seperti sebelumnya (tidak mengubah perilaku untuk
+// dokumen yang memang 1 kolom).
 // ============================================================
-function detectLeftMargin(items) {
+function detectLeftMargins(items) {
   const xCounts = new Map();
   items.forEach((it) => {
     const xKey = Math.round(it.transform[4] / 5) * 5;
     xCounts.set(xKey, (xCounts.get(xKey) || 0) + 1);
   });
-  let bestX = 0, bestCount = 0;
-  xCounts.forEach((count, x) => {
-    if (count > bestCount) { bestCount = count; bestX = x; }
-  });
-  return bestX;
+
+  const sorted = [...xCounts.entries()].sort((a, b) => b[1] - a[1]);
+  if (sorted.length === 0) return [0];
+
+  const primary = sorted[0];
+  const secondary = sorted.find(
+    ([x, count]) => Math.abs(x - primary[0]) > COLUMN_GAP_MIN_PX && count >= primary[1] * 0.3,
+  );
+
+  if (secondary) {
+    return [primary[0], secondary[0]].sort((a, b) => a - b);
+  }
+  return [primary[0]];
 }
 
 // ============================================================
-// Deteksi baris "N." yang ada TEPAT di margin kiri (soal asli),
-// bukan yang menjorok (sub-list di dalam soal, mis. "1. Lisosom" yang menjorok)
+// 🔥 DIPERBAIKI: sekarang menerima leftMargins (array, 1 atau 2
+// elemen) alih-alih 1 nilai tunggal. Setiap baris yang match pola
+// nomor soal ditandai TERMASUK KOLOM MANA (column: 0 atau 1) sesuai
+// margin kiri mana yang paling dekat dengannya. Juga menghitung
+// nextYInSameColumn -- posisi Y soal BERIKUTNYA DI KOLOM YANG SAMA
+// (bukan sekadar soal berikutnya secara global) -- ini yang dipakai
+// nanti sebagai batas BAWAH crop, supaya crop soal kolom kiri tidak
+// ikut kepotong oleh soal kolom kanan yang kebetulan sejajar.
 // ============================================================
-function detectQuestionStarts(items, leftMargin) {
+function detectQuestionStarts(items, leftMargins) {
   const lineMap = new Map();
   items.forEach((item) => {
     const yKey = Math.round(item.transform[5] / 2) * 2;
@@ -51,19 +102,52 @@ function detectQuestionStarts(items, leftMargin) {
     lineMap.get(yKey).push(item);
   });
 
-  const starts = [];
+  const rawStarts = [];
   lineMap.forEach((lineItems, y) => {
     const sorted = lineItems.sort((a, b) => a.transform[4] - b.transform[4]);
     const first = sorted[0];
     const text = sorted.map((i) => i.str).join(' ').trim();
-    const isNearMargin = Math.abs(first.transform[4] - leftMargin) <= LEFT_MARGIN_TOLERANCE;
     const matchesNumber = /^\d{1,3}[.)]\s*/.test(text);
-    if (isNearMargin && matchesNumber) {
-      starts.push({ y, number: parseInt(text.match(/^\d{1,3}/)[0], 10) });
-    }
+    if (!matchesNumber) return;
+
+    // Cari margin/kolom mana yang paling dekat dengan baris ini
+    let columnIndex = 0;
+    let bestDist = Infinity;
+    leftMargins.forEach((margin, idx) => {
+      const dist = Math.abs(first.transform[4] - margin);
+      if (dist < bestDist) {
+        bestDist = dist;
+        columnIndex = idx;
+      }
+    });
+
+    if (bestDist > LEFT_MARGIN_TOLERANCE) return; // bukan margin kolom mana pun -> sub-list menjorok, bukan soal asli
+
+    rawStarts.push({
+      y,
+      number: parseInt(text.match(/^\d{1,3}/)[0], 10),
+      column: columnIndex,
+    });
   });
 
-  return starts.sort((a, b) => b.y - a.y); // urut dari atas ke bawah (PDF: y besar = atas)
+  const sortedStarts = rawStarts.sort((a, b) => b.y - a.y); // urut atas ke bawah (PDF: y besar = atas)
+
+  return sortedStarts.map((s, idx) => {
+    const nextInSameColumn = sortedStarts.slice(idx + 1).find((o) => o.column === s.column);
+    return { ...s, nextYInSameColumn: nextInSameColumn ? nextInSameColumn.y : null };
+  });
+}
+
+// ============================================================
+// 🔥 BARU: DETEKSI HALAMAN "PEMBAHASAN" (kunci jawaban). Pola paling
+// spesifik & andal: "<nomor>. Pembahasan:" -- pola ini TIDAK PERNAH
+// muncul di halaman soal biasa. Kalau ketemu di suatu halaman,
+// SELURUH halaman itu dilewati dari deteksi soal (bukan cuma butir
+// yang match), karena kalau satu ketemu, seisi halaman itu hampir
+// pasti bagian pembahasan.
+// ============================================================
+function isPembahasanPage(fullPageText) {
+  return /\d+\s*[.)]\s*Pembahasan\s*:/i.test(fullPageText);
 }
 
 // ============================================================
@@ -158,10 +242,30 @@ function canvasToBlob(canvas) {
 // ============================================================
 const SmartImportPanel = ({ onParsed, onClose }) => {
   const fileInputRef = useRef(null);
-  const [status, setStatus] = useState('idle'); // idle | processing
+  // 🔥 BARU: simpan dokumen PDF & pdfjsLib yang sudah dimuat, supaya
+  // tahap "pilih halaman" dan tahap "proses" tidak perlu membaca
+  // ulang file dari awal.
+  const pdfDocRef = useRef(null);
+  const pdfjsLibRef = useRef(null);
+
+  // 🔥 BARU: status alur sekarang 3 tahap, bukan cuma idle/processing:
+  // 'idle' (belum upload) -> 'selecting' (thumbnail + checklist
+  // tampil, tunggu guru pilih halaman) -> 'processing' (sedang
+  // deteksi & crop) -> kembali 'idle' dengan `detected` terisi
+  // (layar tinjau soal, seperti sebelumnya).
+  const [phase, setPhase] = useState('idle');
   const [progressText, setProgressText] = useState('');
   const [detected, setDetected] = useState([]); // { id, image(blob url sementara), type, needsUpload }
 
+  // 🔥 BARU: daftar thumbnail halaman + status centangnya
+  const [pageThumbnails, setPageThumbnails] = useState([]); // { pageNumber, thumbnailUrl, checked }
+  const [skippedPembahasanPages, setSkippedPembahasanPages] = useState([]);
+
+  // ============================================================
+  // TAHAP 1: PDF dipilih -> muat & render THUMBNAIL semua halaman
+  // (resolusi kecil, cepat), TAMPILKAN CHECKLIST -- BELUM mendeteksi
+  // soal sama sekali di tahap ini.
+  // ============================================================
   const handlePdfChange = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = '';
@@ -172,107 +276,207 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
     }
 
     try {
-      setStatus('processing');
+      setPhase('processing');
       setProgressText('Memuat pembaca PDF...');
       const pdfjsLib = await ensurePdfJsLoaded();
+      pdfjsLibRef.current = pdfjsLib;
 
       setProgressText('Membuka file PDF...');
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      pdfDocRef.current = pdf;
 
-      const results = [];
-
+      const thumbnails = [];
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        setProgressText(`Menganalisis halaman ${pageNum} dari ${pdf.numPages}...`);
+        setProgressText(`Membuat pratinjau halaman ${pageNum} dari ${pdf.numPages}...`);
         const page = await pdf.getPage(pageNum);
-        const viewport = page.getViewport({ scale: RENDER_SCALE });
-
-        // Render seluruh halaman jadi canvas resolusi tinggi
-        const pageCanvas = document.createElement('canvas');
-        pageCanvas.width = viewport.width;
-        pageCanvas.height = viewport.height;
-        const ctx = pageCanvas.getContext('2d');
+        const viewport = page.getViewport({ scale: THUMBNAIL_SCALE });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        // eslint-disable-next-line no-await-in-loop
         await page.render({ canvasContext: ctx, viewport }).promise;
-
-        const textContent = await page.getTextContent();
-        const items = textContent.items;
-        if (items.length === 0) continue;
-
-        const leftMargin = detectLeftMargin(items);
-        const starts = detectQuestionStarts(items, leftMargin);
-        const imageRegions = await findImageRegions(page, pdfjsLib);
-
-        for (let i = 0; i < starts.length; i++) {
-          const top = starts[i].y;
-          const bottom = i + 1 < starts.length ? starts[i + 1].y : page.view[1]; // batas bawah halaman PDF
-
-          const rect = pdfRectToCanvasRect(
-            viewport,
-            page.view[0],
-            top + 14, // sedikit ruang di atas teks
-            bottom + 4,
-            page.view[2] - page.view[0]
-          );
-
-          const cropped = cropCanvas(pageCanvas, rect);
-          if (!cropped) continue;
-
-          // Cek apakah ada klaster gambar kecil sejajar DI DALAM rentang y soal ini → opsi bergambar
-          const regionsInThisQuestion = imageRegions.filter(
-            (r) => r.y <= top + 20 && r.y >= bottom - 20
-          );
-          const optionImageCluster = clusterOptionImages(regionsInThisQuestion, page.view[3]);
-
-          let optionCrops = [];
-          if (optionImageCluster) {
-            for (const region of optionImageCluster) {
-              const oRect = pdfRectToCanvasRect(
-                viewport,
-                region.x,
-                region.y + region.height,
-                region.y,
-                region.width
-              );
-              const oCropped = cropCanvas(pageCanvas, oRect, 4);
-              if (oCropped) {
-                const blob = await canvasToBlob(oCropped);
-                optionCrops.push(blob);
-              }
-            }
-          }
-
-          const mainBlob = await canvasToBlob(cropped);
-
-          results.push({
-            id: `q-${pageNum}-${starts[i].number}-${Date.now()}-${i}`,
-            number: starts[i].number,
-            page: pageNum,
-            imageBlob: mainBlob,
-            imagePreviewUrl: URL.createObjectURL(mainBlob),
-            optionsAreImages: optionCrops.length >= 2,
-            optionImageBlobs: optionCrops,
-            optionImagePreviewUrls: optionCrops.map((b) => URL.createObjectURL(b)),
-            type: 'multiple',
-            correct: 0,
-            needsManualAnswer: true,
-          });
-        }
+        // eslint-disable-next-line no-await-in-loop
+        const blob = await canvasToBlob(canvas);
+        thumbnails.push({
+          pageNumber: pageNum,
+          thumbnailUrl: URL.createObjectURL(blob),
+          checked: true, // 🔥 default semua tercentang -- guru tinggal UNCHECK yang mau di-skip
+        });
       }
 
-      if (results.length === 0) {
-        alert('⚠️ Tidak ada soal terdeteksi. Pastikan PDF berisi teks asli (bukan hasil scan gambar) dan penomoran soal (1. 2. 3. dst) ada di margin kiri halaman.');
-        setStatus('idle');
-        return;
-      }
-
-      setDetected(results);
+      setPageThumbnails(thumbnails);
       setProgressText('');
-      setStatus('idle');
+      setPhase('selecting');
     } catch (err) {
       console.error(err);
       alert('❌ Gagal membaca PDF: ' + err.message);
-      setStatus('idle');
+      setPhase('idle');
     }
+  };
+
+  const togglePageChecked = (pageNumber) => {
+    setPageThumbnails((prev) =>
+      prev.map((p) => (p.pageNumber === pageNumber ? { ...p, checked: !p.checked } : p)),
+    );
+  };
+
+  const checkAllPages = () => setPageThumbnails((prev) => prev.map((p) => ({ ...p, checked: true })));
+  const uncheckAllPages = () => setPageThumbnails((prev) => prev.map((p) => ({ ...p, checked: false })));
+
+  // ============================================================
+  // TAHAP 2: guru klik "Proses Halaman Terpilih" -> BARU di sini
+  // deteksi & crop soal dijalankan, HANYA untuk halaman yang masih
+  // tercentang. Pakai pdfDocRef yang sudah dimuat, tidak baca ulang file.
+  // ============================================================
+  const handleStartProcessing = async () => {
+    const pdf = pdfDocRef.current;
+    const pdfjsLib = pdfjsLibRef.current;
+    if (!pdf || !pdfjsLib) {
+      alert('❌ Dokumen PDF tidak ditemukan lagi, silakan upload ulang.');
+      setPhase('idle');
+      return;
+    }
+
+    const checkedPages = pageThumbnails.filter((p) => p.checked).map((p) => p.pageNumber);
+    if (checkedPages.length === 0) {
+      alert('⚠️ Pilih minimal 1 halaman untuk diproses.');
+      return;
+    }
+
+    setPhase('processing');
+    const results = [];
+    const pembahasanSkipped = [];
+
+    for (const pageNum of checkedPages) {
+      setProgressText(`Menganalisis halaman ${pageNum} (${checkedPages.indexOf(pageNum) + 1}/${checkedPages.length} halaman terpilih)...`);
+      // eslint-disable-next-line no-await-in-loop
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale: RENDER_SCALE });
+
+      const pageCanvas = document.createElement('canvas');
+      pageCanvas.width = viewport.width;
+      pageCanvas.height = viewport.height;
+      const ctx = pageCanvas.getContext('2d');
+      // eslint-disable-next-line no-await-in-loop
+      await page.render({ canvasContext: ctx, viewport }).promise;
+
+      // eslint-disable-next-line no-await-in-loop
+      const textContent = await page.getTextContent();
+      const items = textContent.items;
+      if (items.length === 0) continue;
+
+      // 🔥 BARU: cek halaman Pembahasan SEBELUM deteksi soal -- kalau
+      // ketemu, lewati TOTAL halaman ini.
+      const fullPageTextForCheck = items.map((it) => it.str).join(' ');
+      if (isPembahasanPage(fullPageTextForCheck)) {
+        pembahasanSkipped.push(pageNum);
+        continue;
+      }
+
+      const leftMargins = detectLeftMargins(items);
+      const starts = detectQuestionStarts(items, leftMargins);
+      // eslint-disable-next-line no-await-in-loop
+      const imageRegions = await findImageRegions(page, pdfjsLib);
+
+      const pageLeftPdf = page.view[0];
+      const pageRightPdf = page.view[2];
+      // 🔥 BARU: rentang X per kolom -- kalau 2 kolom terdeteksi,
+      // batas crop dipisah di titik tengah antar margin; kalau cuma 1
+      // kolom, tetap pakai lebar halaman penuh seperti sebelumnya.
+      const columnXRanges = leftMargins.length >= 2
+        ? [
+            { left: pageLeftPdf, right: (leftMargins[0] + leftMargins[1]) / 2 },
+            { left: (leftMargins[0] + leftMargins[1]) / 2, right: pageRightPdf },
+          ]
+        : [{ left: pageLeftPdf, right: pageRightPdf }];
+
+      for (let i = 0; i < starts.length; i++) {
+        const start = starts[i];
+        const top = start.y;
+        // 🔥 FIX: batas bawah crop sekarang dari soal BERIKUTNYA DI
+        // KOLOM YANG SAMA (start.nextYInSameColumn), bukan sekadar
+        // "soal berikutnya secara urutan y" -- itu yang menyebabkan
+        // crop kolom kiri kepotong salah oleh soal kolom kanan yang
+        // kebetulan sejajar tingginya.
+        const bottom = start.nextYInSameColumn !== null ? start.nextYInSameColumn : page.view[1];
+        const colRange = columnXRanges[start.column] || columnXRanges[0];
+
+        const rect = pdfRectToCanvasRect(
+          viewport,
+          colRange.left,
+          top + 14, // sedikit ruang di atas teks
+          bottom + 4,
+          colRange.right - colRange.left,
+        );
+
+        const cropped = cropCanvas(pageCanvas, rect);
+        if (!cropped) continue;
+
+        // Cek apakah ada klaster gambar kecil sejajar DI DALAM rentang y & X soal ini → opsi bergambar
+        const regionsInThisQuestion = imageRegions.filter(
+          (r) =>
+            r.y <= top + 20 &&
+            r.y >= bottom - 20 &&
+            r.x >= colRange.left - 20 &&
+            r.x <= colRange.right + 20,
+        );
+        const optionImageCluster = clusterOptionImages(regionsInThisQuestion, page.view[3]);
+
+        let optionCrops = [];
+        if (optionImageCluster) {
+          for (const region of optionImageCluster) {
+            const oRect = pdfRectToCanvasRect(
+              viewport,
+              region.x,
+              region.y + region.height,
+              region.y,
+              region.width,
+            );
+            // eslint-disable-next-line no-await-in-loop
+            const oCropped = cropCanvas(pageCanvas, oRect, 4);
+            if (oCropped) {
+              // eslint-disable-next-line no-await-in-loop
+              const blob = await canvasToBlob(oCropped);
+              optionCrops.push(blob);
+            }
+          }
+        }
+
+        // eslint-disable-next-line no-await-in-loop
+        const mainBlob = await canvasToBlob(cropped);
+
+        results.push({
+          id: `q-${pageNum}-${start.number}-${Date.now()}-${i}`,
+          number: start.number,
+          page: pageNum,
+          imageBlob: mainBlob,
+          imagePreviewUrl: URL.createObjectURL(mainBlob),
+          optionsAreImages: optionCrops.length >= 2,
+          optionImageBlobs: optionCrops,
+          optionImagePreviewUrls: optionCrops.map((b) => URL.createObjectURL(b)),
+          type: 'multiple',
+          correct: 0,
+          needsManualAnswer: true,
+        });
+      }
+    }
+
+    setSkippedPembahasanPages(pembahasanSkipped);
+
+    if (results.length === 0) {
+      const pembahasanNote = pembahasanSkipped.length > 0
+        ? ` (${pembahasanSkipped.length} halaman dilewati karena terdeteksi sebagai Pembahasan.)`
+        : '';
+      alert(`⚠️ Tidak ada soal terdeteksi dari halaman yang dipilih.${pembahasanNote} Pastikan PDF berisi teks asli (bukan hasil scan gambar) dan penomoran soal (1. 2. 3. dst) ada di margin kiri halaman/kolom.`);
+      setPhase('selecting');
+      return;
+    }
+
+    setDetected(results);
+    setProgressText('');
+    setPhase('idle');
   };
 
   const setAnswer = (id, correctIndex) => {
@@ -291,7 +495,7 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
   // Upload semua gambar ke Supabase & kirim ke ManageQuiz
   // ============================================================
   const handleConfirmAll = async () => {
-    setStatus('processing');
+    setPhase('processing');
     const finalQuestions = [];
 
     for (let i = 0; i < detected.length; i++) {
@@ -299,6 +503,7 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
       setProgressText(`Mengupload soal ${i + 1}/${detected.length}...`);
 
       const mainFile = new File([d.imageBlob], `soal-${d.id}.jpg`, { type: 'image/jpeg' });
+      // eslint-disable-next-line no-await-in-loop
       const mainUpload = await uploadElearningFile(mainFile, 'kuis-smart-import');
       const qImage = mainUpload.success ? mainUpload.downloadURL : '';
 
@@ -307,6 +512,7 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
         optionImages = [];
         for (let j = 0; j < d.optionImageBlobs.length; j++) {
           const oFile = new File([d.optionImageBlobs[j]], `opsi-${d.id}-${j}.jpg`, { type: 'image/jpeg' });
+          // eslint-disable-next-line no-await-in-loop
           const oUpload = await uploadElearningFile(oFile, 'kuis-smart-import');
           optionImages.push(oUpload.success ? oUpload.downloadURL : '');
         }
@@ -337,11 +543,12 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
     }
 
     onParsed(finalQuestions);
-    setStatus('idle');
+    setPhase('idle');
     onClose();
   };
 
-  const busy = status !== 'idle';
+  const busy = phase === 'processing';
+  const checkedCount = pageThumbnails.filter((p) => p.checked).length;
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
@@ -351,10 +558,11 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X /></button>
         </div>
 
-        {detected.length === 0 && (
+        {/* TAHAP 0: BELUM UPLOAD PDF */}
+        {phase !== 'selecting' && detected.length === 0 && pageThumbnails.length === 0 && (
           <>
             <p style={{ fontSize: 12, color: '#64748b', marginBottom: 12 }}>
-              Upload PDF soal — tiap soal akan otomatis di-crop sebagai gambar persis seperti aslinya (termasuk tabel, pecahan, diagram). Jika opsi jawaban berupa gambar, sistem akan mendeteksinya otomatis.
+              Upload PDF soal — setelah dimuat, Anda bisa memilih halaman mana saja yang mau diproses (misalnya melewati halaman sampul/daftar isi) sebelum sistem meng-crop tiap soal sebagai gambar persis seperti aslinya (termasuk tabel, pecahan, diagram). Jika opsi jawaban berupa gambar, sistem akan mendeteksinya otomatis.
             </p>
             <input ref={fileInputRef} type="file" accept="application/pdf" hidden onChange={handlePdfChange} />
             <button
@@ -377,10 +585,62 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
           </>
         )}
 
+        {/* 🔥 BARU -- TAHAP 1: CHECKLIST PILIH HALAMAN */}
+        {phase === 'selecting' && detected.length === 0 && (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+              <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>
+                {pageThumbnails.length} halaman dimuat. Uncheck halaman cover/daftar isi/tidak relevan sebelum diproses -- <strong>{checkedCount} halaman</strong> akan diproses.
+              </p>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={checkAllPages} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer' }}>Pilih Semua</button>
+                <button onClick={uncheckAllPages} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer' }}>Batal Semua</button>
+              </div>
+            </div>
+
+            <div style={{ overflowY: 'auto', flex: 1, marginBottom: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 10, padding: 4 }}>
+              {pageThumbnails.map((p) => (
+                <label
+                  key={p.pageNumber}
+                  style={{
+                    cursor: 'pointer',
+                    border: p.checked ? '2px solid #673ab7' : '2px solid #e2e8f0',
+                    borderRadius: 8,
+                    overflow: 'hidden',
+                    position: 'relative',
+                    opacity: p.checked ? 1 : 0.45,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={p.checked}
+                    onChange={() => togglePageChecked(p.pageNumber)}
+                    style={{ position: 'absolute', top: 4, left: 4, width: 16, height: 16, zIndex: 2 }}
+                  />
+                  <img src={p.thumbnailUrl} alt={`Halaman ${p.pageNumber}`} style={{ width: '100%', display: 'block' }} />
+                  <div style={{ fontSize: 10, textAlign: 'center', padding: '3px 0', background: p.checked ? '#f3e8ff' : '#f1f5f9', color: p.checked ? '#673ab7' : '#94a3b8', fontWeight: 700 }}>
+                    Hal. {p.pageNumber}
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            {busy && (
+              <div style={{ marginBottom: 12, fontSize: 12, color: '#673ab7', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Loader2 size={14} className="spin" /> {progressText}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* LAYAR TINJAU SOAL TERDETEKSI (setelah diproses) -- TIDAK DIUBAH */}
         {detected.length > 0 && (
           <>
             <div style={{ display: 'flex', gap: 8, padding: '8px 12px', background: '#eef2ff', borderRadius: 8, marginBottom: 12, fontSize: 11, color: '#4338ca' }}>
               {detected.length} soal terdeteksi. Klik jawaban benar untuk tiap soal (opsional, bisa dilewati dan ditandai nanti di editor).
+              {skippedPembahasanPages.length > 0 && (
+                <> {skippedPembahasanPages.length} halaman dilewati otomatis karena terdeteksi sebagai Pembahasan.</>
+              )}
             </div>
 
             <div style={{ overflowY: 'auto', flex: 1, marginBottom: 12 }}>
@@ -460,6 +720,18 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
 
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={onClose} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer' }}>Batal</button>
+
+          {/* 🔥 BARU: tombol proses muncul di tahap checklist, bukan di tahap tinjau */}
+          {phase === 'selecting' && detected.length === 0 && (
+            <button
+              onClick={handleStartProcessing}
+              disabled={busy || checkedCount === 0}
+              style={{ flex: 2, padding: 10, borderRadius: 8, border: 'none', background: '#673ab7', color: 'white', fontWeight: 700, cursor: (busy || checkedCount === 0) ? 'not-allowed' : 'pointer', opacity: (busy || checkedCount === 0) ? 0.6 : 1 }}
+            >
+              {busy ? <Loader2 size={14} className="spin" /> : `🔍 Proses ${checkedCount} Halaman Terpilih`}
+            </button>
+          )}
+
           {detected.length > 0 && (
             <button
               onClick={handleConfirmAll}
