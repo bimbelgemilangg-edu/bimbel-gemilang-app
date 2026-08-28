@@ -18,7 +18,7 @@
 // perlu layout pembungkus bersama).
 // ============================================================
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
 
@@ -53,6 +53,23 @@ export default function BankSoalImportPage() {
   const [folderName, setFolderName] = useState('');
   const [folderLocked, setFolderLocked] = useState(false);
   const [saveError, setSaveError] = useState('');
+
+  // 🔥 FIX BUG NYATA: sebelumnya lebar layar dicek SEKALI doang lewat
+  // `window.innerWidth >= 1024 ? 260 : 0` langsung di dalam style --
+  // gak ada listener resize sama sekali. Akibatnya kalau jendela
+  // di-resize (atau halaman dimuat di ukuran layar yang beda dari
+  // asumsi), margin buat SidebarAdmin gak pernah nyesuaiin ulang --
+  // konten jadi ketiban/ketutup sidebar atau nyisain celah kosong
+  // aneh. Sekarang pakai pola yang SAMA PERSIS dengan halaman admin
+  // lain di project ini (state + listener resize), bukan pengecekan
+  // sekali jalan.
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const folderId = slugifyFolderName(folderName);
 
@@ -105,7 +122,7 @@ export default function BankSoalImportPage() {
       <main
         style={{
           flex: 1,
-          marginLeft: window.innerWidth >= 1024 ? 260 : 0,
+          marginLeft: isMobile ? 0 : 260,
           transition: 'margin-left 0.3s ease',
           minHeight: '100vh',
         }}
