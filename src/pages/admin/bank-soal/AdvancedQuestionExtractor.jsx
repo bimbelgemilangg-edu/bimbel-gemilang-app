@@ -99,9 +99,14 @@ class QuestionErrorBoundary extends React.Component {
    GEMINI CONFIG
 ============================================================ */
 
-const GEMINI_MODELS = [
-  { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', role: 'utama' },
-  { id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite', role: 'fallback' },
+// Model default — bisa di-override via UI settings
+const GEMINI_MODEL_OPTIONS = [
+  { id: 'gemini-3.6-flash',      label: 'Gemini 3.6 Flash (Terbaru)' },
+  { id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite (Hemat)' },
+  { id: 'gemini-2.5-flash',      label: 'Gemini 2.5 Flash (Lama)' },
+  { id: 'gemini-2.0-flash',      label: 'Gemini 2.0 Flash' },
+  { id: 'gemini-1.5-flash',      label: 'Gemini 1.5 Flash' },
+  { id: 'custom',                label: '✏️ Model custom...' },
 ];
 
 /* ============================================================
@@ -183,6 +188,12 @@ export default function AdvancedQuestionExtractor() {
   const [manualCrop, setManualCrop] = useState(null);
   const [geminiApiKey, setGeminiApiKey] = useState(() => {
     try { return localStorage.getItem('aqe_gemini_api_key') || ''; } catch { return ''; }
+  });
+  const [geminiModel, setGeminiModel] = useState(() => {
+    try { return localStorage.getItem('aqe_gemini_model') || 'gemini-3.6-flash'; } catch { return 'gemini-3.6-flash'; }
+  });
+  const [geminiCustomModel, setGeminiCustomModel] = useState(() => {
+    try { return localStorage.getItem('aqe_gemini_custom_model') || ''; } catch { return ''; }
   });
   const [showApiSettings, setShowApiSettings] = useState(false);
   const [answerKeyPages, setAnswerKeyPages] = useState([]);
@@ -289,6 +300,25 @@ export default function AdvancedQuestionExtractor() {
       else localStorage.removeItem('aqe_gemini_api_key');
     } catch { /* ignore */ }
   };
+
+  const saveGeminiModel = (value) => {
+    setGeminiModel(value);
+    try { localStorage.setItem('aqe_gemini_model', value); } catch { /* ignore */ }
+  };
+
+  const saveGeminiCustomModel = (value) => {
+    setGeminiCustomModel(value);
+    try { localStorage.setItem('aqe_gemini_custom_model', value); } catch { /* ignore */ }
+  };
+
+  // Resolve model ID aktif: jika 'custom' gunakan input custom, else pakai pilihan dropdown
+  const activeModelId = geminiModel === 'custom'
+    ? (geminiCustomModel.trim() || 'gemini-3.6-flash')
+    : geminiModel;
+
+  const activeModelLabel = geminiModel === 'custom'
+    ? (geminiCustomModel.trim() || 'gemini-3.6-flash')
+    : (GEMINI_MODEL_OPTIONS.find(m => m.id === geminiModel)?.label || geminiModel);
 
   /* ============================================================
      LOAD PDF
@@ -640,17 +670,24 @@ CONTOH TOPIK YANG DIDUKUNG:
 
     const userText = `Ekstrak seluruh butir soal dari halaman ${pageNum}. Pastikan setiap soal lengkap, termasuk opsi A-E, pernyataan, tabel Benar/Salah, pasangan menjodohkan, isian angka, rumus LaTeX, simbol fisika/kimia, satuan, derajat, pecahan, dan referensi gambar/diagram.`;
 
+    // Build model chain: primary = activeModelId, fallback = gemini-2.5-flash-lite
+    const fallbackId = 'gemini-2.5-flash-lite';
+    const modelChain = [
+      { id: activeModelId, label: activeModelLabel },
+      ...(activeModelId !== fallbackId ? [{ id: fallbackId, label: 'Gemini 2.5 Flash-Lite (fallback)' }] : []),
+    ];
+
     let lastError = null;
-    for (const model of GEMINI_MODELS) {
+    for (const model of modelChain) {
       try {
-        addLog(`[Halaman ${pageNum}] ${model.label} memproses...`, 'info');
+        addLog(`[Halaman ${pageNum}] 🤖 ${model.label} memproses...`, 'info');
         const result = await callGemini({ modelId: model.id, imageBase64: base64Image, pageNum, systemPrompt, userText, responseSchema: GEMINI_RESPONSE_SCHEMA, maxOutputTokens: 8192 });
         const parsed = parseGeminiJson(result);
         return parsed;
       } catch (error) {
         lastError = error;
         const status = error?.status;
-        const fallbackAllowed = status === 408 || status === 429 || status >= 500;
+        const fallbackAllowed = status === 408 || status === 429 || (status >= 500) || error.message?.includes('no longer available');
         addLog(`[Halaman ${pageNum}] ${model.label} gagal: ${error.message}`, 'warning');
         if (!fallbackAllowed) break;
       }
@@ -693,7 +730,7 @@ Balas HANYA JSON array.`;
     const userText = `Periksa halaman ${pageNum}. Apakah ini halaman kunci jawaban? Jika YA: ekstrak semua pasangan nomor soal dan kunci. Jika TIDAK: kembalikan [].`;
 
     try {
-      const result = await callGemini({ modelId: GEMINI_MODELS[0].id, imageBase64: image, pageNum, systemPrompt, userText, responseSchema: ANSWER_KEY_SCHEMA, maxOutputTokens: 4096 });
+      const result = await callGemini({ modelId: activeModelId, imageBase64: image, pageNum, systemPrompt, userText, responseSchema: ANSWER_KEY_SCHEMA, maxOutputTokens: 4096 });
       const parsed = parseGeminiJson(result);
       return Array.isArray(parsed) ? parsed : parsed?.items || [];
     } catch (error) {
@@ -1032,28 +1069,71 @@ Balas HANYA JSON array.`;
               className={`text-xs px-3 py-2 rounded-lg border flex items-center gap-1.5 ${geminiApiKey ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' : 'bg-amber-500/10 border-amber-500/30 text-amber-300'}`}
             >
               <KeyRound className="w-3.5 h-3.5" />
-              {geminiApiKey ? 'AI Key tersimpan' : 'Set AI Key'}
+              {geminiApiKey ? `✓ ${activeModelId}` : 'Set AI Key'}
             </button>
             {showApiSettings && (
-              <div className="absolute right-0 top-11 w-[360px] bg-gray-900 border border-gray-700 rounded-2xl p-4 shadow-2xl z-[200]">
-                <div className="flex justify-between items-start gap-3 mb-3">
+              <div className="absolute right-0 top-11 w-[400px] bg-gray-900 border border-gray-700 rounded-2xl p-4 shadow-2xl z-[200]">
+                <div className="flex justify-between items-start gap-3 mb-4">
                   <div>
-                    <h3 className="font-bold text-sm text-white">Gemini API Key</h3>
-                    <p className="text-[11px] text-gray-400 mt-1">Key disimpan di browser ini. Gratis maupun paid.</p>
+                    <h3 className="font-bold text-sm text-white">Konfigurasi AI</h3>
+                    <p className="text-[11px] text-gray-400 mt-1">Disimpan di browser ini. API key tidak dikirim ke server.</p>
                   </div>
                   <button onClick={() => setShowApiSettings(false)} className="text-gray-500 hover:text-white">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <input
-                  type="password" value={geminiApiKey}
-                  onChange={(e) => saveGeminiApiKey(e.target.value)}
-                  placeholder="AIza..."
-                  className="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white font-mono outline-none focus:border-blue-500"
-                />
-                <div className="mt-3 flex justify-between items-center">
+
+                {/* API Key */}
+                <div className="mb-3">
+                  <label className="text-[11px] text-gray-400 font-semibold mb-1 block">Gemini API Key</label>
+                  <input
+                    type="password" value={geminiApiKey}
+                    onChange={(e) => saveGeminiApiKey(e.target.value)}
+                    placeholder="AIza..."
+                    className="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white font-mono outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                {/* Model Selector */}
+                <div className="mb-3">
+                  <label className="text-[11px] text-gray-400 font-semibold mb-1 block">Model AI</label>
+                  <select
+                    value={geminiModel}
+                    onChange={(e) => saveGeminiModel(e.target.value)}
+                    className="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-500"
+                  >
+                    {GEMINI_MODEL_OPTIONS.map((m) => (
+                      <option key={m.id} value={m.id}>{m.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Custom Model Input — muncul jika pilih "custom" */}
+                {geminiModel === 'custom' && (
+                  <div className="mb-3">
+                    <label className="text-[11px] text-gray-400 font-semibold mb-1 block">Model ID (custom)</label>
+                    <input
+                      type="text"
+                      value={geminiCustomModel}
+                      onChange={(e) => saveGeminiCustomModel(e.target.value)}
+                      placeholder="contoh: gemini-3.6-flash"
+                      className="w-full bg-gray-950 border border-blue-500/40 rounded-lg px-3 py-2 text-xs text-blue-200 font-mono outline-none focus:border-blue-500"
+                    />
+                    <p className="text-[10px] text-gray-500 mt-1">
+                      Cek nama model di <span className="text-blue-400">aistudio.google.com</span>
+                    </p>
+                  </div>
+                )}
+
+                {/* Model aktif preview */}
+                <div className="mb-3 bg-gray-950/60 border border-gray-800 rounded-lg px-3 py-2 flex items-center gap-2">
+                  <span className="text-[10px] text-gray-500">Model aktif:</span>
+                  <span className="text-[11px] text-emerald-300 font-mono font-semibold">{activeModelId}</span>
+                </div>
+
+                <div className="flex justify-between items-center">
                   <span className="text-[10px] text-amber-300">Jangan bagikan API key.</span>
-                  <button onClick={() => saveGeminiApiKey('')} className="text-[11px] bg-gray-800 px-2.5 py-1.5 rounded-lg text-gray-300">Hapus</button>
+                  <button onClick={() => saveGeminiApiKey('')} className="text-[11px] bg-gray-800 px-2.5 py-1.5 rounded-lg text-gray-300">Hapus Key</button>
                 </div>
               </div>
             )}
