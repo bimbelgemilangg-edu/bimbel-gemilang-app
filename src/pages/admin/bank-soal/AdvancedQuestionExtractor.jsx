@@ -176,7 +176,7 @@ export default function AdvancedQuestionExtractor() {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [typeFilter, setTypeFilter] = useState('semua');
-  const [settings] = useState({ resolution: 2.8, delayBetweenPages: 1800, answerKeyDelay: 1000 });
+  const [settings] = useState({ resolution: 2.5, delayBetweenPages: 2000, answerKeyDelay: 3000 });
   const [pdfDocument, setPdfDocument] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
   const [selectedPages, setSelectedPages] = useState([]);
@@ -765,19 +765,40 @@ Balas HANYA JSON array.`;
     const foundPages = [];
     // scan dari belakang (halaman kunci biasanya di akhir)
     const candidates = Array.from({ length: totalPages }, (_, i) => totalPages - i);
-    const maxPages = Math.min(candidates.length, 12);
+    // Batasi 6 halaman saja (hemat quota), bukan 12
+    const maxPages = Math.min(candidates.length, 6);
+    let consecutiveEmpty = 0; // stop lebih awal kalau sudah dapat kunci
     for (let i = 0; i < maxPages; i++) {
       const pageNum = candidates[i];
       addLog(`[KUNCI] Mengecek halaman ${pageNum}...`, 'info');
       const keys = await scanAnswerKeyPage(pageNum);
       if (Array.isArray(keys) && keys.length > 0) {
         foundPages.push(pageNum);
+        consecutiveEmpty = 0;
         keys.forEach((item) => {
           const nomor = parseInt(item.nomor, 10);
           const key = toStr(item.kunci_jawaban).trim();
           if (Number.isFinite(nomor) && key) foundMap[String(nomor)] = key;
         });
         addLog(`[KUNCI] Halaman ${pageNum}: ${keys.length} kunci terbaca.`, 'success');
+        // Jika sudah dapat kunci dari 2+ halaman berturut-turut, kemungkinan besar sudah selesai
+        if (foundPages.length >= 2) {
+          addLog('[KUNCI] Halaman kunci sudah ditemukan, berhenti scan.', 'info');
+          break;
+        }
+      } else {
+        consecutiveEmpty++;
+        // Jika sudah dapat beberapa kunci dan sekarang kosong, berarti sudah lewat halaman kunci
+        if (foundPages.length > 0 && consecutiveEmpty >= 2) {
+          addLog('[KUNCI] Melewati halaman kunci, berhenti scan.', 'info');
+          break;
+        }
+      }
+      // Delay antar halaman — PENTING untuk tidak kena rate limit
+      if (i < maxPages - 1) {
+        const delayMs = settings.answerKeyDelay;
+        addLog(`[KUNCI] Jeda ${delayMs / 1000}s sebelum halaman berikutnya...`, 'info');
+        await sleep(delayMs);
       }
     }
     setAnswerKeyMap(foundMap);
@@ -785,7 +806,7 @@ Balas HANYA JSON array.`;
     if (Object.keys(foundMap).length > 0) {
       addLog(`KUNCI SELESAI: ${Object.keys(foundMap).length} jawaban ditemukan.`, 'success');
     } else {
-      addLog('Tidak ditemukan halaman kunci otomatis pada 12 halaman terakhir.', 'warning');
+      addLog('Tidak ditemukan halaman kunci otomatis pada halaman terakhir.', 'warning');
     }
     setScanningAnswerKey(false);
     return foundMap;
