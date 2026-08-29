@@ -5516,6 +5516,33 @@ export default async function handler(
       continue;
     }
 
+    // 🔥 BARU: DIAGNOSTIK TERPISAH -- cek TERPISAH apakah sourceRef
+    // (rujukan wajib ke hasil riset internet) valid, SEBELUM
+    // normalizeQuestion dipanggil. Ini MURNI buat tau APA PENYEBAB
+    // dominan kalau soal ditolak -- TIDAK mengubah keputusan
+    // diterima/ditolaknya sama sekali (itu tetap sepenuhnya
+    // ditentukan normalizeQuestion seperti sebelumnya). Dibuat
+    // terpisah dari isi normalizeQuestion() supaya ZERO risiko
+    // mengubah perilaku yang sudah ada -- ini cuma "mengintip" nilai
+    // yang sama yang nanti dicek ulang di dalam normalizeQuestion.
+    //
+    // KENAPA INI PERLU: dilaporkan langsung dari pemakaian nyata --
+    // 20 dari 20 soal ditolak semua dengan label generik
+    // "invalidStructure" saat guru memakai blueprint capaian manual +
+    // model cadangan (gemini-3.5-flash-lite). Tanpa diagnostik ini,
+    // gak ada cara tau APAKAH penyebabnya sourceRef hilang (dugaan
+    // kuat: model kewalahan mengikuti blueprint manual yang rinci
+    // SEKALIGUS mencantumkan rujukan riset di tiap soal) ATAU gerbang
+    // validasi lain yang sama sekali berbeda -- sebelumnya cuma bisa
+    // NEBAK dari 6+ kemungkinan gerbang berbeda di normalizeQuestion.
+    const hasValidSourceRef =
+      Number.isInteger(
+        raw?.sourceRef,
+      ) &&
+      raw.sourceRef >= 1 &&
+      raw.sourceRef <=
+        researchResults.length;
+
     // NORMALIZE
     const normalized =
       normalizeQuestion(
@@ -5534,6 +5561,21 @@ export default async function handler(
             .invalidStructure ||
           0
         ) + 1;
+
+      // 🔥 BARU: kalau soal yang ditolak ini JUGA punya sourceRef
+      // tidak valid, catat SEBAGAI SUB-PENYEBAB terpisah -- kalau di
+      // akhir angka ini SAMA/MENDEKATI angka invalidStructure, itu
+      // KONFIRMASI KUAT sourceRef yang hilang adalah penyebab
+      // dominannya, bukan sekadar salah satu dari banyak kemungkinan.
+      if (!hasValidSourceRef) {
+        rejectedReasons
+          .likelyMissingSourceRef =
+          (
+            rejectedReasons
+              .likelyMissingSourceRef ||
+            0
+          ) + 1;
+      }
 
       continue;
     }
