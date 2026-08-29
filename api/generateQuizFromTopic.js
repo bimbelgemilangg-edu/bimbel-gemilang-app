@@ -287,186 +287,6 @@ function isReliableImageUrl(
   );
 }
 
-function isTkaPolicyReference(
-  item,
-  {
-    mapel = '',
-    topic = '',
-  } = {},
-) {
-  const title = normalizeText(item?.title || '');
-  const content = normalizeText(item?.content || '');
-  const url = normalizeText(item?.url || '');
-  const haystack = `${title} ${content} ${url}`;
-
-  const subject = normalizeText(mapel);
-  const topicNorm = normalizeText(topic);
-
-  if (!haystack.includes('tka')) {
-    return false;
-  }
-
-  // Sumber resmi kerangka/butir soal boleh tetap dipakai.
-  const hasAssessmentSignals =
-    /kerangka asesmen|contoh butir|contoh soal|butir soal|subkompetensi|kompetensi|indikator|bentuk soal|kunci jawaban/.test(
-      haystack,
-    );
-
-  // Artikel kebijakan umum TKA bukan sumber soal mapel.
-  const policySignals =
-    /apa itu tka|kepanjangan tka|singkatan tka|tujuan tka|manfaat tka|latar belakang tka|pelaksanaan tka|mekanisme tka|jadwal tka|pendaftaran tka|kebijakan tka|alasan tka|mengapa tka/.test(
-      haystack,
-    );
-
-  const hasSubject =
-    subject &&
-    subject !== 'umum' &&
-    haystack.includes(subject);
-
-  const topicTokens = topicNorm
-    .split(' ')
-    .filter(
-      (token) =>
-        token.length >= 4 &&
-        ![
-          'tka',
-          'tes',
-          'kemampuan',
-          'akademik',
-          'kelas',
-          'ujian',
-          'soal',
-        ].includes(token),
-    )
-    .slice(0, 10);
-
-  const hasTopic = topicTokens.some((token) =>
-    haystack.includes(token),
-  );
-
-  if (policySignals && !hasSubject && !hasTopic) {
-    return true;
-  }
-
-  if (policySignals && !hasAssessmentSignals) {
-    return true;
-  }
-
-  return false;
-}
-
-function isLikelySubjectRequest({
-  mapel = '',
-  topic = '',
-} = {}) {
-  const m = normalizeText(mapel);
-  const t = normalizeText(topic);
-
-  if (!m || m === 'umum' || m === 'tka') {
-    return false;
-  }
-
-  if (
-    t.includes('tka') &&
-    /apa itu|pengertian|tujuan|kebijakan|pelaksanaan|mekanisme|jadwal|pendaftaran|manfaat|latar belakang/.test(t)
-  ) {
-    return false;
-  }
-
-  return true;
-}
-
-function isTkaPolicyQuestion(text = '') {
-  const normalized = normalizeText(text);
-
-  return [
-    'apa itu tka',
-    'apa kepanjangan tka',
-    'kepanjangan tka',
-    'apa singkatan tka',
-    'singkatan tka',
-    'tujuan tka',
-    'manfaat tka',
-    'latar belakang tka',
-    'pelaksanaan tka',
-    'mekanisme tka',
-    'kebijakan tka',
-    'jadwal tka',
-    'pendaftaran tka',
-    'mengapa tka',
-    'alasan tka',
-  ].some((phrase) => normalized.includes(phrase));
-}
-
-function looksLikeTkaOffSubjectQuestion(
-  question,
-  {
-    mapel = '',
-    topic = '',
-  } = {},
-) {
-  const text = normalizeText(
-    [
-      question?.question,
-      question?.explanation,
-      question?.readingText,
-      question?.cause,
-      question?.effect,
-      Array.isArray(question?.options)
-        ? question.options.join(' ')
-        : '',
-      Array.isArray(question?.statements)
-        ? question.statements.map((item) => item?.text || '').join(' ')
-        : '',
-    ]
-      .filter(Boolean)
-      .join(' '),
-  );
-
-  if (isTkaPolicyQuestion(text)) {
-    return true;
-  }
-
-  const subject = normalizeText(mapel);
-  const topicNorm = normalizeText(topic);
-
-  if (!text.includes('tka')) {
-    return false;
-  }
-
-  // Kalau TKA disebut hanya sebagai konteks sumber, jangan menolak
-  // selama isi pertanyaan tetap jelas berada pada materi mapel/topik.
-  const subjectTokens = subject
-    .split(' ')
-    .filter((token) => token.length >= 4);
-
-  const topicTokens = topicNorm
-    .split(' ')
-    .filter(
-      (token) =>
-        token.length >= 4 &&
-        ![
-          'tka',
-          'tes',
-          'kemampuan',
-          'akademik',
-          'kelas',
-          'ujian',
-          'soal',
-        ].includes(token),
-    );
-
-  const hasSubjectSignal = subjectTokens.some((token) =>
-    text.includes(token),
-  );
-
-  const hasTopicSignal = topicTokens.some((token) =>
-    text.includes(token),
-  );
-
-  return !hasSubjectSignal && !hasTopicSignal;
-}
-
 function buildResearchQuery({
   topic,
   mapel,
@@ -503,10 +323,10 @@ function buildResearchQuery({
   // resmi (yang memang punya nama "kisi-kisi" di judulnya), sangat
   // kecil kemungkinan match ke artikel berita/opini kebijakan umum.
   const parts = [
-    'TKA',
-    'contoh butir soal',
-    'soal mata pelajaran',
-    'kerangka asesmen',
+    'kisi-kisi TKA',
+    'contoh soal',
+    'soal ujian',
+    'materi pelajaran',
     mapel,
     topic,
     `kelas ${kelas}`,
@@ -521,8 +341,8 @@ function buildResearchQuery({
     parts.push(String(year));
   }
 
-  // Untuk TKA, arahkan ke sumber asesmen resmi. Query tetap membawa
-  // mapel + topik agar mesin pencari tidak menjadikan TKA sebagai materi.
+  // Arahkan mesin pencari ke sumber asesmen resmi terlebih dahulu.
+  // Query tetap terbuka agar bisa menemukan sumber pendidikan lain jika ada.
   parts.push('site:pusmendik.kemendikdasmen.go.id OR site:tka.kemendikdasmen.go.id');
 
   return parts
@@ -3657,16 +3477,6 @@ function buildSystemPrompt({
 
     '',
 
-    'ATURAN KHUSUS TKA:',
-
-    'Jika input menunjukkan TKA dan MAPEL tertentu dipilih, TKA hanya berfungsi sebagai kerangka asesmen. Isi soal WAJIB menguji kompetensi pada MAPEL dan TOPIK yang diminta.',
-
-    'DILARANG membuat soal tentang kepanjangan, tujuan, manfaat, kebijakan, jadwal, pendaftaran, latar belakang, atau pelaksanaan TKA ketika guru meminta soal mata pelajaran.',
-
-    'Utamakan bentuk stimulus dan tuntutan penalaran dari contoh butir/kerangka asesmen, bukan artikel berita atau artikel pengantar TKA.',
-
-    '',
-
     'FORMAT:',
 
     '{"meta":true}',
@@ -3860,16 +3670,6 @@ function buildUserPrompt({
     'Untuk soal bergambar: pilih sourceRef dan, bila gambar sumber dipakai, set useSourceImage=true serta sourceImageIndex yang sesuai. JANGAN memakai gambar hasil pencarian gambar terpisah yang tidak berasal dari referensi soal.',
 
     'Bila gambar sumber mengandung angka/label penting, jangan mengubah angka/label pada soal hasil adaptasi kecuali kamu membuat visual terstruktur yang benar-benar sama dengan data baru dan field visual memang mendukungnya.',
-
-    '',
-
-    'ATURAN SUBSTANSI UTAMA:',
-
-    `MAPEL WAJIB: ${mapel}`,
-
-    `TOPIK WAJIB: ${topic}`,
-
-    'TKA bukan topik materi. Jangan mengubah soal menjadi pertanyaan tentang TKA.',
 
     '',
 
@@ -5194,6 +4994,71 @@ function countBy(
 }
 
 // ============================================================
+// 🔥 BARU (FIX BUG NYATA): PEMBERSIH NAMA FORMAT UJIAN DARI
+// TOPIK/MAPEL. Dilaporkan langsung dari pemakaian nyata: soal yang
+// harusnya tentang Bahasa Indonesia/IPA malah berisi pertanyaan
+// TENTANG TKA itu sendiri ("apakah singkatan dari TKA?", "istilah
+// dalam sistem TKA", "latar belakang pelaksanaan TKA").
+//
+// AKAR MASALAH ADA 2 SUMBER SEKALIGUS, bukan cuma 1:
+//   1. Guru mengetik "TKA [mapel]" di kolom Topik/Materi (mis. "TKA
+//      IPA") -- maksudnya "buatkan soal GAYA TKA untuk IPA", tapi
+//      teks ini dikirim APA ADANYA ke prompt sebagai `TOPIK: TKA IPA`
+//      -- AI membaca ini sebagai "topik yang harus dibahas adalah TKA
+//      dan IPA", bukan "gaya TKA, subjek IPA".
+//   2. Field MAPEL pada modul induknya sendiri kadang berisi nama
+//      kategori ujian (mis. "TES KOMPETENSI AKADEMIK SMP") alih-alih
+//      mata pelajaran sungguhan -- ini SAMA SEKALI BUKAN mata
+//      pelajaran, tapi ikut dikirim sebagai `MAPEL: ...` ke prompt.
+//
+// KEDUA sumber ini SAMA-SAMA dibersihkan di sini -- istilah format
+// ujian yang menempel di AWAL teks dihapus, menyisakan mata pelajaran
+// sungguhan di baliknya. "Gaya soal TKA" itu SUDAH ditangani terpisah
+// lewat field STRATEGI SOAL di UI ("Gaya Soal Baku/Umum") -- jadi
+// gak perlu (dan gak boleh) dobel disebut lagi di topik/mapel.
+function stripExamFormatMention(
+  rawText,
+) {
+  const original = String(rawText || '').trim();
+  if (!original) return original;
+
+  const prefixPatterns = [
+    /^tes\s+kompetensi\s+akademik\s*/i,
+    /^tes\s+kemampuan\s+akademik\s*/i,
+    /^\(?\s*tka\s*\)?\s*[-:]?\s*/i,
+    /^\(?\s*snbt\s*\)?\s*[-:]?\s*/i,
+    /^\(?\s*utbk\s*\)?\s*[-:]?\s*/i,
+    /^\(?\s*anbk\s*\)?\s*[-:]?\s*/i,
+  ];
+
+  let cleaned = original;
+  let changed = true;
+  // Ulangi sampai gak ada lagi prefix yang match -- jaga-jaga kalau
+  // ada gabungan (mis. "TKA - Tes Kemampuan Akademik IPA").
+  while (changed) {
+    changed = false;
+    for (const pattern of prefixPatterns) {
+      const next = cleaned.replace(pattern, '').trim();
+      if (next !== cleaned) {
+        cleaned = next;
+        changed = true;
+      }
+    }
+  }
+
+  // Kalau semuanya kehapus habis (teks aslinya CUMA nama ujian, tanpa
+  // mata pelajaran di belakangnya sama sekali, mis. mapel modul
+  // literally "TES KOMPETENSI AKADEMIK SMP" tanpa subjek), kembalikan
+  // teks ASLI apa adanya -- lebih baik AI lihat teks aslinya (walau
+  // membingungkan) daripada menerima STRING KOSONG yang bikin error
+  // lain. Ini kasus yang PERLU DIPERBAIKI GURU di data modulnya
+  // sendiri (kasih mata pelajaran sungguhan), bukan sesuatu yang bisa
+  // "disembuhkan" cuma dengan membersihkan teks.
+  return cleaned || original;
+}
+
+
+// ============================================================
 // MAIN HANDLER
 // ============================================================
 
@@ -5262,14 +5127,18 @@ export default async function handler(
   // ==========================================================
 
   const topic =
-    safeField(
-      body.topic,
+    stripExamFormatMention(
+      safeField(
+        body.topic,
+      ),
     );
 
   const mapel =
-    safeField(
-      body.mapel,
-      'Umum',
+    stripExamFormatMention(
+      safeField(
+        body.mapel,
+        'Umum',
+      ),
     );
 
   const kelas =
@@ -5321,6 +5190,31 @@ export default async function handler(
 
         error:
           'Topik wajib diisi.',
+      });
+  }
+
+  // 🔥 BARU (FIX BUG NYATA): kalau MAPEL setelah dibersihkan dari
+  // nama format ujian (TKA/SNBT/dst) cuma tersisa JENJANG SEKOLAH
+  // doang (SD/SMP/SMA/dst, tanpa mata pelajaran sungguhan di
+  // belakangnya) -- itu tandanya field Mapel pada MODUL INDUKNYA
+  // memang belum diisi mata pelajaran yang benar (mis. cuma "Tes
+  // Kompetensi Akademik SMP", bukan "Bahasa Indonesia"). Ini BUKAN
+  // sesuatu yang bisa "disembuhkan" dengan membersihkan teks --
+  // guru perlu memperbaiki mata pelajaran modulnya dulu. Ditolak di
+  // sini dengan pesan jelas, daripada lolos diam-diam dan
+  // menghasilkan soal yang gak jelas tentang apa (persis kejadian
+  // nyata yang dilaporkan: soal jadi tentang TKA itu sendiri).
+  const bareJenjangPattern =
+    /^(sd|smp|sma|smk|mi|mts|ma)(\s*\/?\s*(mi|mts|ma))?$/i;
+
+  if (bareJenjangPattern.test(mapel.trim())) {
+    return res
+      .status(400)
+      .json({
+        success: false,
+
+        error:
+          `Mata pelajaran modul ini belum jelas (terbaca "${mapel}", yang itu jenjang sekolah, bukan mata pelajaran). Perbaiki dulu mata pelajaran pada modul induknya (mis. "Bahasa Indonesia", "Matematika", "IPA") sebelum generate soal.`,
       });
   }
 
@@ -5440,11 +5334,6 @@ export default async function handler(
   const tavilyApiKey =
     process.env.TAVILY_API_KEY;
 
-  const tkaRequest =
-    /\btka\b/i.test(
-      `${topic} ${mapel} ${arahan} ${body.sourceMode || ''} ${body.examType || ''} ${body.jenisUjian || ''}`,
-    );
-
   if (tavilyApiKey) {
     const research =
       await callTavilyResearchSearch(
@@ -5467,19 +5356,6 @@ export default async function handler(
       research.callUsed;
     researchSkippedReason =
       research.reason;
-
-    // Jangan pernah memberikan artikel kebijakan TKA sebagai referensi
-    // soal MAPEL. Hanya dilakukan untuk request yang memang terlihat sebagai
-    // TKA; mode ujian umum tetap mengikuti perilaku lama.
-    if (tkaRequest) {
-      researchResults = researchResults.filter(
-        (item) =>
-          !isTkaPolicyReference(item, {
-            mapel,
-            topic,
-          }),
-      );
-    }
   } else {
     researchSkippedReason =
       'missingTavilyApiKey';
@@ -5641,25 +5517,6 @@ export default async function handler(
           0
         ) + 1;
 
-      continue;
-    }
-
-    if (
-      tkaRequest &&
-      isLikelySubjectRequest({
-        mapel,
-        topic,
-      }) &&
-      looksLikeTkaOffSubjectQuestion(
-        normalized,
-        {
-          mapel,
-          topic,
-        },
-      )
-    ) {
-      rejectedReasons.tkaOffSubjectContent =
-        (rejectedReasons.tkaOffSubjectContent || 0) + 1;
       continue;
     }
 
