@@ -48,14 +48,7 @@ import ManageSurvey from './pages/admin/portal-siswa/ManageSurvey';
 // 🔥 BARU: Bank Soal -- admin unggah PDF berisi soal (mis. buku tryout),
 // sistem membaca tiap halaman jadi soal per butir, admin meninjau &
 // menyetujui sebelum tersimpan. Lihat komentar lengkap di file-filenya.
-// 🔥 DIGANTI: sistem Bank Soal lama (BankSoalImportPage.jsx + BankSoalImport.jsx
-// + transcribeMathQuestion.js) digantikan total oleh AdvancedQuestionExtractor.jsx
-// -- ekstraksi PDF pakai Gemini langsung dari browser (dengan API key yang bisa
-// diganti guru/admin sendiri), deteksi diagram vektor asli, dan simpan ke Firestore
-// yang sama (koleksi "bank_soal"). File lama sudah bisa dihapus dari project.
-// BankSoalPage.jsx adalah PEMBUNGKUS TIPIS (render SidebarAdmin di sampingnya) --
-// AdvancedQuestionExtractor.jsx sendiri gak render sidebar sama sekali.
-import BankSoalPage from './pages/admin/banksoal/BankSoalPage';
+import BankSoalImportPage from './pages/admin/banksoal/BankSoalImportPage';
 
 // === GURU ===
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
@@ -287,7 +280,7 @@ function App() {
         <Route path="/admin/grades/bulk" element={<AdminRoute><AdminBulkRaport /></AdminRoute>} />
         <Route path="/admin/daily-log" element={<AdminRoute><AdminDailyLog /></AdminRoute>} />
         <Route path="/admin/blog" element={<AdminRoute><ManageBlog /></AdminRoute>} />
-        <Route path="/admin/bank-soal" element={<AdminRoute><BankSoalPage /></AdminRoute>} />
+        <Route path="/admin/bank-soal" element={<AdminRoute><BankSoalImportPage /></AdminRoute>} />
         {/* 🔥 FIX: Settings sekarang digerbangi OwnerRoute (bukan
             AdminRoute lagi) -- login sebagai Admin biasa TIDAK memberi
             akses ke sini. Dua alamat mengarah ke halaman yang sama,
