@@ -246,7 +246,8 @@ export default function AdvancedQuestionExtractor() {
   }, []);
 
   /* ============================================================
-     KATEX LOADER
+     KATEX LOADER — hanya core, tidak butuh auto-render
+     karena kita pakai katex.renderToString() langsung
   ============================================================ */
 
   useEffect(() => {
@@ -254,19 +255,23 @@ export default function AdvancedQuestionExtractor() {
     css.rel = 'stylesheet';
     css.href = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css';
     document.head.appendChild(css);
+
+    // Cek apakah katex sudah tersedia (misal dari app parent)
+    if (window.katex) {
+      setIsMathReady(true);
+      return;
+    }
+
     const coreScript = document.createElement('script');
     coreScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js';
     coreScript.async = true;
     coreScript.onload = () => {
-      const autoRender = document.createElement('script');
-      autoRender.src = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js';
-      autoRender.async = true;
-      autoRender.onload = () => { setIsMathReady(true); addLog('KaTeX (render rumus) siap.', 'success'); };
-      autoRender.onerror = () => addLog('Gagal memuat auto-render KaTeX.', 'error');
-      document.body.appendChild(autoRender);
+      setIsMathReady(true);
+      addLog('KaTeX siap. Rumus akan dirender otomatis.', 'success');
     };
     coreScript.onerror = () => addLog('Gagal memuat KaTeX.', 'error');
     document.body.appendChild(coreScript);
+
     return () => {
       if (css.parentNode) css.parentNode.removeChild(css);
       if (coreScript.parentNode) coreScript.parentNode.removeChild(coreScript);
@@ -1722,55 +1727,143 @@ function TypeBadge({ tipe }) {
    RICH TEXT + MATH + IMAGE RENDER
 ============================================================ */
 
-function RichQuestionText({ text, gambar, isMathReady }) {
-  const containerRef = useRef(null);
+/* ============================================================
+   RICH TEXT + MATH RENDERER
+   Menggunakan katex.renderToString() langsung di useMemo —
+   tidak ada masalah timing karena sinkron dengan render.
+============================================================ */
 
+/**
+ * Cari posisi penutup delimiter math (inline), tidak melewati baris baru.
+ */
+function findInlineEnd(text, start, closeDelim) {
+  for (let i = start; i < text.length; i++) {
+    if (text[i] === '\n') return -1;
+    if (text.startsWith(closeDelim, i)) return i;
+    if (text[i] === '\\') i++; // skip escaped char
+  }
+  return -1;
+}
+
+/**
+ * Proses satu segmen teks biasa (non-GAMBAR):
+ * escape HTML, render LaTeX, ubah \n → <br>.
+ */
+function processTextSegment(text, renderMath) {
+  let result = '';
+  let i = 0;
+  while (i < text.length) {
+    // Display math: $$...$$
+    if (text[i] === '$' && text[i + 1] === '$') {
+      const end = text.indexOf('$$', i + 2);
+      if (end !== -1) {
+        result += renderMath(text.slice(i + 2, end), true);
+        i = end + 2;
+        continue;
+      }
+    }
+    // Inline math: $...$
+    if (text[i] === '$') {
+      const end = findInlineEnd(text, i + 1, '$');
+      if (end !== -1) {
+        result += renderMath(text.slice(i + 1, end), false);
+        i = end + 1;
+        continue;
+      }
+    }
+    // Display math: \[...\]
+    if (text[i] === '\\' && text[i + 1] === '[') {
+      const end = text.indexOf('\\]', i + 2);
+      if (end !== -1) {
+        result += renderMath(text.slice(i + 2, end), true);
+        i = end + 2;
+        continue;
+      }
+    }
+    // Inline math: \(...\)
+    if (text[i] === '\\' && text[i + 1] === '(') {
+      const end = text.indexOf('\\)', i + 2);
+      if (end !== -1) {
+        result += renderMath(text.slice(i + 2, end), false);
+        i = end + 2;
+        continue;
+      }
+    }
+    // Regular char: escape HTML + newline
+    const ch = text[i];
+    if (ch === '&') result += '&amp;';
+    else if (ch === '<') result += '&lt;';
+    else if (ch === '>') result += '&gt;';
+    else if (ch === '\n') result += '<br>';
+    else result += ch;
+    i++;
+  }
+  return result;
+}
+
+function RichQuestionText({ text, gambar, isMathReady }) {
   const html = useMemo(() => {
     const safeText = typeof text === 'string' ? text : (text == null ? '' : String(text));
     if (!safeText) return '';
-    let escaped = safeText
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const imgs = (Array.isArray(gambar) ? gambar : []).filter(Boolean);
-    let idx = 0;
-    escaped = escaped.replace(/\{\{\s*GAMBAR(?:_\d+)?\s*\}\}/gi, () => {
-      const g = imgs[idx++];
-      if (g && g.dataUrl) {
-        const alt = (g.deskripsi || 'Gambar soal').replace(/"/g, '&quot;');
-        return `<figure style="margin:12px 0;"><img src="${g.dataUrl}" alt="${alt}" style="max-width:100%;max-height:420px;border-radius:10px;border:1px solid #374151;background:#fff;padding:5px;" /><figcaption style="font-size:11px;color:#9ca3af;margin-top:5px;">${alt}</figcaption></figure>`;
-      }
-      return `<span style="display:inline-block;color:#fbbf24;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);padding:4px 8px;border-radius:6px;font-size:11px;">[Gambar belum dicrop]</span>`;
-    });
-    if (idx === 0 && imgs.some((g) => g.dataUrl)) {
-      imgs.forEach((g) => {
-        if (g.dataUrl) {
-          const alt = (g.deskripsi || 'Gambar soal').replace(/"/g, '&quot;');
-          escaped += `<figure style="margin:12px 0;"><img src="${g.dataUrl}" alt="${alt}" style="max-width:100%;max-height:420px;border-radius:10px;border:1px solid #374151;background:#fff;padding:5px;" /><figcaption style="font-size:11px;color:#9ca3af;margin-top:5px;">${alt}</figcaption></figure>`;
-        }
-      });
-    }
-    return escaped;
-  }, [text, gambar]);
 
-  useEffect(() => {
-    if (containerRef.current && isMathReady && window.renderMathInElement) {
+    const imgs = (Array.isArray(gambar) ? gambar : []).filter(Boolean);
+    const katexLib = isMathReady && typeof window !== 'undefined' ? window.katex : null;
+
+    // Helper: render LaTeX menggunakan katex.renderToString (sinkron, tidak ada timing issue)
+    const renderMath = (math, display) => {
+      if (!katexLib) {
+        // KaTeX belum siap: tampilkan placeholder agar tidak hilang
+        const escaped = math.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return display
+          ? `<span class="katex-pending" data-display="true">$$${escaped}$$</span>`
+          : `<span class="katex-pending">$${escaped}$</span>`;
+      }
       try {
-        window.renderMathInElement(containerRef.current, {
-          delimiters: [
-            { left: '$$', right: '$$', display: true },
-            { left: '$', right: '$', display: false },
-            { left: '\\(', right: '\\)', display: false },
-            { left: '\\[', right: '\\]', display: true },
-          ],
+        return katexLib.renderToString(math, {
+          displayMode: display,
           throwOnError: false,
+          output: 'html',
+          trust: false,
         });
-      } catch { /* ignore */ }
+      } catch {
+        return display ? `$$${math}$$` : `$${math}$`;
+      }
+    };
+
+    // Gambar helper
+    const makeImgHtml = (g) => {
+      const alt = (g.deskripsi || 'Gambar soal').replace(/"/g, '&quot;');
+      return `<figure style="margin:12px 0;"><img src="${g.dataUrl}" alt="${alt}" style="max-width:100%;max-height:420px;border-radius:10px;border:1px solid #374151;background:#fff;padding:5px;" /><figcaption style="font-size:11px;color:#9ca3af;margin-top:5px;">${alt}</figcaption></figure>`;
+    };
+
+    // Split pada GAMBAR placeholder, proses tiap segmen
+    const GAMBAR_SPLIT = /(\{\{\s*GAMBAR(?:_\d+)?\s*\}\})/gi;
+    const parts = safeText.split(GAMBAR_SPLIT);
+    let gambarIdx = 0;
+    let result = '';
+
+    for (const part of parts) {
+      if (/^\{\{\s*GAMBAR/i.test(part)) {
+        const g = imgs[gambarIdx++];
+        result += g?.dataUrl
+          ? makeImgHtml(g)
+          : '<span style="display:inline-block;color:#fbbf24;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);padding:4px 8px;border-radius:6px;font-size:11px;">[Gambar belum dicrop]</span>';
+      } else {
+        result += processTextSegment(part, renderMath);
+      }
     }
-  }, [html, isMathReady]);
+
+    // Append gambar yang tidak ada placeholder-nya
+    if (gambarIdx === 0 && imgs.some((g) => g.dataUrl)) {
+      imgs.forEach((g) => { if (g.dataUrl) result += makeImgHtml(g); });
+    }
+
+    return result;
+  }, [text, gambar, isMathReady]); // isMathReady sebagai dependency — recompute saat KaTeX siap
 
   return (
     <div
-      ref={containerRef}
-      className="text-sm text-gray-200 leading-relaxed whitespace-pre-wrap break-words"
+      className="text-sm text-gray-200 leading-relaxed break-words"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
