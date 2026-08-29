@@ -101,10 +101,10 @@ class QuestionErrorBoundary extends React.Component {
 
 // Model default — bisa di-override via UI settings
 const GEMINI_MODEL_OPTIONS = [
-  { id: 'gemini-3.6-flash',      label: 'Gemini 3.6 Flash (Terbaru)' },
-  { id: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite (Hemat)' },
+  { id: 'gemini-1.5-flash',      label: 'Gemini 1.5 Flash (Stabil & Hemat Quota)' },
   { id: 'gemini-2.0-flash',      label: 'Gemini 2.0 Flash' },
-  { id: 'gemini-1.5-flash',      label: 'Gemini 1.5 Flash' },
+  { id: 'gemini-3.6-flash',      label: 'Gemini 3.6 Flash (Terbaru, quota ketat)' },
+  { id: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite (Hemat)' },
   { id: 'custom',                label: '✏️ Model custom...' },
 ];
 
@@ -189,7 +189,7 @@ export default function AdvancedQuestionExtractor() {
     try { return localStorage.getItem('aqe_gemini_api_key') || ''; } catch { return ''; }
   });
   const [geminiModel, setGeminiModel] = useState(() => {
-    try { return localStorage.getItem('aqe_gemini_model') || 'gemini-3.6-flash'; } catch { return 'gemini-3.6-flash'; }
+    try { return localStorage.getItem('aqe_gemini_model') || 'gemini-1.5-flash'; } catch { return 'gemini-1.5-flash'; }
   });
   const [geminiCustomModel, setGeminiCustomModel] = useState(() => {
     try { return localStorage.getItem('aqe_gemini_custom_model') || ''; } catch { return ''; }
@@ -680,11 +680,11 @@ CONTOH TOPIK YANG DIDUKUNG:
 
     const userText = `Ekstrak seluruh butir soal dari halaman ${pageNum}. Pastikan setiap soal lengkap, termasuk opsi A-E, pernyataan, tabel Benar/Salah, pasangan menjodohkan, isian angka, rumus LaTeX, simbol fisika/kimia, satuan, derajat, pecahan, dan referensi gambar/diagram.`;
 
-    // Build model chain: primary = activeModelId, fallback = gemini-3.5-flash-lite
-    const fallbackId = 'gemini-3.5-flash-lite';
+    // Build model chain: primary = activeModelId, fallback = gemini-1.5-flash-8b
+    const fallbackId = 'gemini-1.5-flash-8b';
     const modelChain = [
       { id: activeModelId, label: activeModelLabel },
-      ...(activeModelId !== fallbackId ? [{ id: fallbackId, label: 'Gemini 3.5 Flash-Lite (fallback)' }] : []),
+      ...(activeModelId !== fallbackId ? [{ id: fallbackId, label: 'Gemini 1.5 Flash-8B (fallback)' }] : []),
     ];
 
     let lastError = null;
