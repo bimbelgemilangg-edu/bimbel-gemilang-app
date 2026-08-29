@@ -5193,29 +5193,47 @@ export default async function handler(
       });
   }
 
-  // 🔥 BARU (FIX BUG NYATA): kalau MAPEL setelah dibersihkan dari
-  // nama format ujian (TKA/SNBT/dst) cuma tersisa JENJANG SEKOLAH
-  // doang (SD/SMP/SMA/dst, tanpa mata pelajaran sungguhan di
-  // belakangnya) -- itu tandanya field Mapel pada MODUL INDUKNYA
-  // memang belum diisi mata pelajaran yang benar (mis. cuma "Tes
-  // Kompetensi Akademik SMP", bukan "Bahasa Indonesia"). Ini BUKAN
-  // sesuatu yang bisa "disembuhkan" dengan membersihkan teks --
-  // guru perlu memperbaiki mata pelajaran modulnya dulu. Ditolak di
-  // sini dengan pesan jelas, daripada lolos diam-diam dan
-  // menghasilkan soal yang gak jelas tentang apa (persis kejadian
-  // nyata yang dilaporkan: soal jadi tentang TKA itu sendiri).
+  // 🔥 DIPERBAIKI (dari "tolak & suruh edit manual" jadi "otomatis
+  // pulihkan sendiri"): kalau MAPEL modul induknya cuma jenjang
+  // sekolah doang (SD/SMP/SMA/dst, mis. field aslinya "Tes Kompetensi
+  // Akademik SMP" -> dibersihkan jadi "SMP" doang) -- SEBELUMNYA
+  // sistem menolak & minta guru pergi edit data modul manual di
+  // tempat lain. Itu MERIBETKAN padahal gak perlu: TOPIK yang diketik
+  // guru sendiri SERING SUDAH mengandung mata pelajaran yang benar
+  // (mis. topic "TKA Bahasa Indonesia" -> setelah dibersihkan jadi
+  // "Bahasa Indonesia") -- jadi sekarang sistem OTOMATIS PAKAI itu
+  // sebagai mapel pengganti, TANPA guru perlu buka halaman lain sama
+  // sekali. Cuma benar-benar berhenti & minta bantuan kalau topic
+  // JUGA gak ada info mapel yang bisa dipakai (kasus yang sudah
+  // sangat jarang setelah fallback ini).
   const bareJenjangPattern =
     /^(sd|smp|sma|smk|mi|mts|ma)(\s*\/?\s*(mi|mts|ma))?$/i;
 
-  if (bareJenjangPattern.test(mapel.trim())) {
-    return res
-      .status(400)
-      .json({
-        success: false,
+  let effectiveMapel = mapel;
 
-        error:
-          `Mata pelajaran modul ini belum jelas (terbaca "${mapel}", yang itu jenjang sekolah, bukan mata pelajaran). Perbaiki dulu mata pelajaran pada modul induknya (mis. "Bahasa Indonesia", "Matematika", "IPA") sebelum generate soal.`,
-      });
+  if (bareJenjangPattern.test(mapel.trim())) {
+    if (
+      topic &&
+      !bareJenjangPattern.test(topic.trim())
+    ) {
+      // Topic sudah bersih (mis. "Bahasa Indonesia") dan bukan cuma
+      // jenjang -- pakai ini sebagai mapel efektif. Topic asli TETAP
+      // dipakai apa adanya untuk prompt (gak dihapus/diganti), supaya
+      // AI tetap lihat frasa lengkapnya untuk konteks.
+      effectiveMapel = topic;
+    } else {
+      // Topic JUGA gak membantu (kosong atau cuma jenjang juga) --
+      // baru di titik ini benar-benar gak ada info mapel yang bisa
+      // dipulihkan otomatis dari mana pun, jadi minta bantuan.
+      return res
+        .status(400)
+        .json({
+          success: false,
+
+          error:
+            `Mata pelajaran belum jelas (modul: "${mapel}", topik: "${topic}") -- keduanya cuma jenjang sekolah, gak ada nama mata pelajaran sama sekali. Tambahkan nama mata pelajaran (mis. "Bahasa Indonesia") di kolom Topik/Materi.`,
+        });
+    }
   }
 
   // ==========================================================
@@ -5305,7 +5323,7 @@ export default async function handler(
   const blueprint =
     buildCurriculumBlueprint({
       topic,
-      mapel,
+      mapel: effectiveMapel,
       kelas,
       jumlah,
       hotsLevel,
@@ -5340,7 +5358,7 @@ export default async function handler(
         tavilyApiKey,
         buildResearchQuery({
           topic,
-          mapel,
+          mapel: effectiveMapel,
           kelas,
           year: targetYear,
           hotsLevel,
@@ -5398,7 +5416,7 @@ export default async function handler(
   const userPrompt =
     buildUserPrompt({
       topic,
-      mapel,
+      mapel: effectiveMapel,
       kelas,
       year:
         targetYear,
