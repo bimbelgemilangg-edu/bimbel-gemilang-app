@@ -1,72 +1,116 @@
 // src/App.jsx
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useParams
+} from 'react-router-dom';
 
-// === LOGIN & PUBLIK ===
+// ============================================================
+// LOGIN & PUBLIK
+// ============================================================
 import Login from './pages/Login';
 import LoginOwner from './pages/LoginOwner';
 import LoginGuru from './pages/LoginGuru';
 import LoginSiswa from './pages/LoginSiswa';
 import PublicBlog from './pages/PublicBlog';
 
-// === PENDAFTARAN ONLINE (PUBLIK) ===
+// ============================================================
+// PENDAFTARAN ONLINE
+// ============================================================
 import PendaftaranOnline from './pages/PendaftaranOnline';
 import PendaftaranTentor from './pages/PendaftaranTentor';
 
-// === ADMIN - PENDAFTARAN ===
+// ============================================================
+// ADMIN - PENDAFTARAN
+// ============================================================
 import ManageOnlineRegistration from './pages/admin/pendaftaran/ManageOnlineRegistration';
 import ManagePaketHarga from './pages/admin/pendaftaran/ManagePaketHarga';
 import ManageTentorRegistration from './pages/admin/pendaftaran/ManageTentorRegistration';
 
-// === ADMIN ===
+// ============================================================
+// ADMIN
+// ============================================================
 import Dashboard from './pages/admin/Dashboard';
 import Settings from './pages/admin/Settings';
 import OwnerFinance from './pages/admin/OwnerFinance';
+
 import StudentList from './pages/admin/students/StudentList';
 import AddStudent from './pages/admin/students/AddStudent';
 import StudentAttendance from './pages/admin/students/StudentAttendance';
 import StudentFinance from './pages/admin/students/StudentFinance';
 import EditStudent from './pages/admin/students/EditStudent';
+
 import FinanceLayout from './pages/admin/finance/FinanceLayout';
+
 import TeacherList from './pages/admin/teachers/TeacherList';
 import TeacherSalaries from './pages/admin/teachers/TeacherSalaries';
+
 import SchedulePage from './pages/admin/schedule/SchedulePage';
+
 import GradeReport from './pages/admin/grades/GradeReport';
 import AdminBulkRaport from './pages/admin/grades/AdminBulkRaport';
+
 import AdminDailyLog from './pages/admin/AdminDailyLog';
+
 import ManageBlog from './pages/admin/blog/ManageBlog';
+
 import ManageMateriPortal from './pages/admin/portal-siswa/ManageMateri';
 import PortalSiswaHome from './pages/admin/portal-siswa/PortalSiswaHome';
 import ManagePoster from './pages/admin/portal-siswa/ManagePoster';
 import ManageSurvey from './pages/admin/portal-siswa/ManageSurvey';
 
-// === BANK SOAL ===
-// IMPORT INI MENGGUNAKAN BankSoalPage YANG SUDAH KAMU BANGUN
+// ============================================================
+// 🔥 BANK SOAL BARU
+// ============================================================
+// Wrapper halaman Bank Soal Admin.
+// File ini kemudian memanggil:
+//
+// BankSoalPage.jsx
+//      ↓
+// AdvancedQuestionExtractor.jsx
+//
+// AdvancedQuestionExtractor tetap merupakan mesin scan custom kamu.
 import BankSoalPage from './pages/admin/banksoal/BankSoalPage';
 
-// === GURU ===
+// ============================================================
+// GURU
+// ============================================================
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherHistory from './pages/teacher/TeacherHistory';
 import TeacherAttendance from './pages/teacher/TeacherAttendance';
+
 import TeacherInputGrade from './pages/teacher/grades/TeacherInputGrade';
 import TeacherGradeManager from './pages/teacher/grades/TeacherGradeManager';
+
 import TeacherProfile from './pages/teacher/TeacherProfile';
 import TeacherSchedule from './pages/teacher/TeacherSchedule';
+
 import ModulManager from './pages/teacher/modul/ModulManager';
 import CekTugasSiswa from './pages/teacher/modul/CekTugasSiswa';
 import ManageMateriGuru from './pages/teacher/modul/ManageMateri';
 import ManageQuiz from './pages/teacher/modul/ManageQuiz';
 import ManageTugas from './pages/teacher/modul/ManageTugas';
+
 import ClassSession from './pages/teacher/ClassSession';
+
 import TeacherLearningAid from './pages/teacher/TeacherLearningAid';
 
-// === SMART RAPORT ===
+// ============================================================
+// SMART RAPORT
+// ============================================================
 import GenerateRaport from './pages/teacher/grades/GenerateRaport';
+
 import StudentLeaderboard from './pages/student/raport/StudentLeaderboard';
 import StudentSmartReport from './pages/student/raport/StudentSmartReport';
 
-// === SISWA ===
+// ============================================================
+// SISWA
+// ============================================================
 import SidebarSiswa from './components/SidebarSiswa';
+
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentSchedule from './pages/student/StudentSchedule';
 import StudentFinanceSiswa from './pages/student/StudentFinance';
@@ -76,6 +120,11 @@ import StudentElearning from './pages/student/StudentElearning';
 import StudentModuleView from './pages/student/StudentModuleView';
 import StudentQuizView from './pages/student/StudentQuizView';
 import StudentSurveyView from './pages/student/StudentSurveyView';
+
+// ============================================================
+// TEACHER LAYOUT
+// ============================================================
+import TeacherLayout from './pages/teacher/TeacherLayout';
 
 // ============================================================
 // ROUTE GUARDS
@@ -99,7 +148,10 @@ const GuruRoute = ({ children }) => {
 
   const role = localStorage.getItem('role');
 
-  if (!isAuth || (role !== 'guru' && role !== 'teacher')) {
+  if (
+    !isAuth ||
+    (role !== 'guru' && role !== 'teacher')
+  ) {
     return <Navigate to="/login-guru" replace />;
   }
 
@@ -107,7 +159,8 @@ const GuruRoute = ({ children }) => {
 };
 
 const SiswaRoute = ({ children }) => {
-  const isAuth = localStorage.getItem('isSiswaLoggedIn') === 'true';
+  const isAuth =
+    localStorage.getItem('isSiswaLoggedIn') === 'true';
 
   if (!isAuth) {
     return <Navigate to="/login-siswa" replace />;
@@ -117,7 +170,8 @@ const SiswaRoute = ({ children }) => {
 };
 
 const OwnerRoute = ({ children }) => {
-  const isAuth = localStorage.getItem('isOwnerLoggedIn') === 'true';
+  const isAuth =
+    localStorage.getItem('isOwnerLoggedIn') === 'true';
 
   if (!isAuth) {
     return <Navigate to="/login-owner" replace />;
@@ -127,28 +181,35 @@ const OwnerRoute = ({ children }) => {
 };
 
 // ============================================================
-// TEACHER LAYOUT
-// ============================================================
-
-import TeacherLayout from './pages/teacher/TeacherLayout';
-
-// ============================================================
 // SISWA LAYOUT
 // ============================================================
 
 const SiswaLayout = ({ children }) => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
+  const [isMobile, setIsMobile] = useState(
+    window.innerWidth <= 1024
+  );
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState('dashboard');
+
+  const [activeMenu, setActiveMenu] =
+    useState('dashboard');
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 1024);
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener(
+      'resize',
+      handleResize
+    );
 
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener(
+        'resize',
+        handleResize
+      );
+    };
   }, []);
 
   return (
@@ -199,7 +260,9 @@ const SiswaLayout = ({ children }) => {
           >
             {isMobile && (
               <button
-                onClick={() => setSidebarOpen(true)}
+                onClick={() =>
+                  setSidebarOpen(true)
+                }
                 style={{
                   background: 'none',
                   border: 'none',
@@ -247,7 +310,9 @@ const SiswaLayout = ({ children }) => {
               fontSize: 12
             }}
           >
-            {localStorage.getItem('studentName')?.charAt(0) || 'S'}
+            {localStorage
+              .getItem('studentName')
+              ?.charAt(0) || 'S'}
           </div>
         </header>
 
@@ -277,8 +342,10 @@ const KuisSiswaWrapper = () => {
     uid: localStorage.getItem('studentId'),
     id: localStorage.getItem('studentId'),
     nama: localStorage.getItem('studentName'),
-    kelasSekolah: localStorage.getItem('studentGrade') || '',
-    studentId: localStorage.getItem('studentId'),
+    kelasSekolah:
+      localStorage.getItem('studentGrade') || '',
+    studentId:
+      localStorage.getItem('studentId'),
     nim:
       localStorage.getItem('studentNim') ||
       localStorage.getItem('studentId')
@@ -304,8 +371,10 @@ const ModulSiswaWrapper = () => {
     uid: localStorage.getItem('studentId'),
     id: localStorage.getItem('studentId'),
     nama: localStorage.getItem('studentName'),
-    kelasSekolah: localStorage.getItem('studentGrade') || '',
-    studentId: localStorage.getItem('studentId'),
+    kelasSekolah:
+      localStorage.getItem('studentGrade') || '',
+    studentId:
+      localStorage.getItem('studentId'),
     nim:
       localStorage.getItem('studentNim') ||
       localStorage.getItem('studentId')
@@ -327,15 +396,20 @@ const ModulSiswaWrapper = () => {
 function App() {
   useEffect(() => {
     if (
-      window.matchMedia('(display-mode: standalone)').matches &&
+      window.matchMedia(
+        '(display-mode: standalone)'
+      ).matches &&
       window.location.pathname === '/'
     ) {
       const sudahLoginSiswa =
-        localStorage.getItem('isSiswaLoggedIn') === 'true';
+        localStorage.getItem(
+          'isSiswaLoggedIn'
+        ) === 'true';
 
-      window.location.href = sudahLoginSiswa
-        ? '/siswa/dashboard'
-        : '/login-siswa';
+      window.location.href =
+        sudahLoginSiswa
+          ? '/siswa/dashboard'
+          : '/login-siswa';
     }
   }, []);
 
@@ -343,24 +417,48 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-        {/* ======================================================
+        {/* ====================================================
             PUBLIC
-            ====================================================== */}
+            ==================================================== */}
 
-        <Route path="/" element={<Login />} />
-        <Route path="/login-guru" element={<LoginGuru />} />
-        <Route path="/login-siswa" element={<LoginSiswa />} />
-        <Route path="/login-owner" element={<LoginOwner />} />
-        <Route path="/aktivitas" element={<PublicBlog />} />
-        <Route path="/pendaftaran" element={<PendaftaranOnline />} />
+        <Route
+          path="/"
+          element={<Login />}
+        />
+
+        <Route
+          path="/login-guru"
+          element={<LoginGuru />}
+        />
+
+        <Route
+          path="/login-siswa"
+          element={<LoginSiswa />}
+        />
+
+        <Route
+          path="/login-owner"
+          element={<LoginOwner />}
+        />
+
+        <Route
+          path="/aktivitas"
+          element={<PublicBlog />}
+        />
+
+        <Route
+          path="/pendaftaran"
+          element={<PendaftaranOnline />}
+        />
+
         <Route
           path="/pendaftaran-tentor"
           element={<PendaftaranTentor />}
         />
 
-        {/* ======================================================
+        {/* ====================================================
             ADMIN
-            ====================================================== */}
+            ==================================================== */}
 
         <Route
           path="/admin"
@@ -425,9 +523,19 @@ function App() {
           }
         />
 
-        {/* ======================================================
-            BANK SOAL
-            ====================================================== */}
+        {/* ====================================================
+            🔥 BANK SOAL
+            ====================================================
+            
+            SidebarAdmin:
+            Import dari PDF
+                    ↓
+            /admin/bank-soal
+                    ↓
+            BankSoalPage
+                    ↓
+            AdvancedQuestionExtractor
+            ==================================================== */}
 
         <Route
           path="/admin/bank-soal"
@@ -483,6 +591,10 @@ function App() {
           }
         />
 
+        {/* ====================================================
+            ADMIN PENDAFTARAN
+            ==================================================== */}
+
         <Route
           path="/admin/pendaftaran"
           element={
@@ -510,6 +622,10 @@ function App() {
           }
         />
 
+        {/* ====================================================
+            ADMIN KEUANGAN
+            ==================================================== */}
+
         <Route
           path="/admin/finance"
           element={
@@ -520,6 +636,40 @@ function App() {
         />
 
         <Route
+          path="/admin/finance/income"
+          element={
+            <Navigate
+              to="/admin/finance"
+              replace
+            />
+          }
+        />
+
+        <Route
+          path="/admin/finance/expense"
+          element={
+            <Navigate
+              to="/admin/finance"
+              replace
+            />
+          }
+        />
+
+        <Route
+          path="/admin/finance/debt"
+          element={
+            <Navigate
+              to="/admin/finance"
+              replace
+            />
+          }
+        />
+
+        {/* ====================================================
+            ADMIN JADWAL
+            ==================================================== */}
+
+        <Route
           path="/admin/schedule"
           element={
             <AdminRoute>
@@ -527,6 +677,20 @@ function App() {
             </AdminRoute>
           }
         />
+
+        <Route
+          path="/admin/teachers/schedule"
+          element={
+            <Navigate
+              to="/admin/schedule"
+              replace
+            />
+          }
+        />
+
+        {/* ====================================================
+            ADMIN RAPORT
+            ==================================================== */}
 
         <Route
           path="/admin/grades"
@@ -546,6 +710,10 @@ function App() {
           }
         />
 
+        {/* ====================================================
+            ADMIN DAILY LOG
+            ==================================================== */}
+
         <Route
           path="/admin/daily-log"
           element={
@@ -554,6 +722,10 @@ function App() {
             </AdminRoute>
           }
         />
+
+        {/* ====================================================
+            ADMIN BLOG
+            ==================================================== */}
 
         <Route
           path="/admin/blog"
@@ -564,7 +736,9 @@ function App() {
           }
         />
 
-        {/* SETTINGS / OWNER */}
+        {/* ====================================================
+            OWNER
+            ==================================================== */}
 
         <Route
           path="/admin/settings"
@@ -593,9 +767,9 @@ function App() {
           }
         />
 
-        {/* ======================================================
+        {/* ====================================================
             GURU
-            ====================================================== */}
+            ==================================================== */}
 
         <Route
           path="/guru/dashboard"
@@ -663,7 +837,9 @@ function App() {
           }
         />
 
-        {/* NILAI & RAPORT */}
+        {/* ====================================================
+            GURU NILAI & RAPORT
+            ==================================================== */}
 
         <Route
           path="/guru/grades/input"
@@ -698,7 +874,9 @@ function App() {
           }
         />
 
-        {/* E-LEARNING */}
+        {/* ====================================================
+            GURU E-LEARNING
+            ==================================================== */}
 
         <Route
           path="/guru/modul"
@@ -755,7 +933,9 @@ function App() {
           }
         />
 
-        {/* ALAT BANTU GURU */}
+        {/* ====================================================
+            GURU ALAT BANTU
+            ==================================================== */}
 
         <Route
           path="/guru/alat-bantu"
@@ -768,9 +948,9 @@ function App() {
           }
         />
 
-        {/* ======================================================
+        {/* ====================================================
             SISWA
-            ====================================================== */}
+            ==================================================== */}
 
         <Route
           path="/siswa/dashboard"
@@ -860,7 +1040,9 @@ function App() {
           }
         />
 
-        {/* MODUL SISWA */}
+        {/* ====================================================
+            SISWA MODUL
+            ==================================================== */}
 
         <Route
           path="/siswa/modul/:id"
@@ -873,7 +1055,9 @@ function App() {
           }
         />
 
-        {/* KUIS SISWA */}
+        {/* ====================================================
+            SISWA KUIS
+            ==================================================== */}
 
         <Route
           path="/siswa/kuis/:id"
@@ -886,7 +1070,9 @@ function App() {
           }
         />
 
-        {/* SURVEI SISWA */}
+        {/* ====================================================
+            SISWA SURVEI
+            ==================================================== */}
 
         <Route
           path="/siswa/survei/:id"
@@ -899,65 +1085,122 @@ function App() {
           }
         />
 
-        {/* ======================================================
+        {/* ====================================================
             REDIRECT
-            ====================================================== */}
+            ==================================================== */}
 
         <Route
           path="/admin/finance/income"
-          element={<Navigate to="/admin/finance" replace />}
+          element={
+            <Navigate
+              to="/admin/finance"
+              replace
+            />
+          }
         />
 
         <Route
           path="/admin/finance/expense"
-          element={<Navigate to="/admin/finance" replace />}
+          element={
+            <Navigate
+              to="/admin/finance"
+              replace
+            />
+          }
         />
 
         <Route
           path="/admin/finance/debt"
-          element={<Navigate to="/admin/finance" replace />}
+          element={
+            <Navigate
+              to="/admin/finance"
+              replace
+            />
+          }
         />
 
         <Route
           path="/admin/teachers/schedule"
-          element={<Navigate to="/admin/schedule" replace />}
+          element={
+            <Navigate
+              to="/admin/schedule"
+              replace
+            />
+          }
         />
 
         <Route
           path="/teacher/*"
-          element={<Navigate to="/guru/dashboard" replace />}
+          element={
+            <Navigate
+              to="/guru/dashboard"
+              replace
+            />
+          }
         />
 
         <Route
           path="/guru/manual-input"
-          element={<Navigate to="/guru/attendance" replace />}
+          element={
+            <Navigate
+              to="/guru/attendance"
+              replace
+            />
+          }
         />
 
         <Route
           path="/guru/manage-quiz"
-          element={<Navigate to="/guru/modul/quiz" replace />}
+          element={
+            <Navigate
+              to="/guru/modul/quiz"
+              replace
+            />
+          }
         />
 
         <Route
           path="/guru/generate-raport"
-          element={<Navigate to="/guru/grades/generate" replace />}
+          element={
+            <Navigate
+              to="/guru/grades/generate"
+              replace
+            />
+          }
         />
 
         <Route
           path="/guru/modul/cek-tugas"
-          element={<Navigate to="/guru/cek-tugas" replace />}
+          element={
+            <Navigate
+              to="/guru/cek-tugas"
+              replace
+            />
+          }
         />
 
         <Route
           path="/siswa/raport"
-          element={<Navigate to="/siswa/rapor" replace />}
+          element={
+            <Navigate
+              to="/siswa/rapor"
+              replace
+            />
+          }
         />
 
-        {/* FALLBACK */}
+        {/* ====================================================
+            FALLBACK
+            ==================================================== */}
 
         <Route
           path="*"
-          element={<Navigate to="/" replace />}
+          element={
+            <Navigate
+              to="/"
+              replace
+            />
+          }
         />
 
       </Routes>
