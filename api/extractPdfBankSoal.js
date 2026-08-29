@@ -1,167 +1,816 @@
 // api/extractPdfBankSoal.js
 // ============================================================
-// EKSTRAKSI SOAL DARI GAMBAR HALAMAN PDF (untuk Bank Soal)
+// BANK SOAL AI EXTRACTOR
 // ============================================================
-// Dipanggil dari src/pages/admin/bank-soal/AdvancedQuestionExtractor.jsx
-// Menerima 1 gambar halaman (base64), balikin array soal berbentuk JSON.
-// API key provider AI TIDAK BOLEH ada di frontend -- makanya lewat sini,
-// sama seperti pola api/uploadBankSoalImages.js (service key di backend).
+// Mendukung konfigurasi AI langsung dari halaman Admin.
 //
-// ENV VAR YANG DIPERLUKAN (set di Vercel > Settings > Environment Variables):
-//   - BANKSOAL_AI_PROVIDER   ("groq" | "openai" | "anthropic"), default "groq"
-//   - GROQ_API_KEY           (kalau pakai groq -- gratis, ambil di console.groq.com/keys)
-//   - OPENAI_API_KEY         (kalau pakai openai)
-//   - ANTHROPIC_API_KEY      (kalau pakai anthropic)
+// Frontend dapat mengirim:
+// {
+//   image,
+//   pageNum,
+//   provider,
+//   apiKey,
+//   baseUrl,
+//   model
+// }
+//
+// Kalau konfigurasi dari frontend tidak dikirim, endpoint tetap
+// bisa fallback ke Environment Variables Vercel.
+//
+// Provider yang bisa dipakai:
+// - openai
+// - anthropic
+// - openai-compatible
+// - gemini
+//
+// Untuk provider seperti OpenRouter, Groq, NVIDIA, Cerebras,
+// Mistral dan provider lain yang menyediakan endpoint
+// OpenAI-compatible, gunakan:
+// provider = "openai-compatible"
+// baseUrl = endpoint chat completions mereka
 // ============================================================
 
-export const config = { maxDuration: 60, api: { bodyParser: { sizeLimit: '15mb' } } };
+export const config = {
+  maxDuration: 60,
+  api: {
+    bodyParser: {
+      sizeLimit: '15mb'
+    }
+  }
+};
 
-const SYSTEM_PROMPT = `Kamu adalah mesin AI ekstraktor soal ujian tingkat lanjut yang sangat akurat untuk bidang Matematika, Fisika, dan Kimia.
-Tugasmu adalah menganalisis gambar halaman ujian dan mengekstrak setiap soal secara presisi ke dalam JSON.
+// ============================================================
+// SYSTEM PROMPT
+// ============================================================
+
+const SYSTEM_PROMPT = `
+Kamu adalah mesin AI ekstraktor soal ujian tingkat lanjut yang sangat akurat.
+
+Tugasmu:
+Menganalisis gambar halaman ujian dan mengekstrak setiap soal secara presisi.
+
+BIDANG:
+- Matematika
+- Fisika
+- Kimia
+- Biologi
+- Bahasa Indonesia
+- Bahasa Inggris
+- dan bidang akademik lain yang tampak pada halaman.
 
 ATURAN UMUM:
-1. Pertahankan seluruh persamaan matematika, variabel, sudut, dan simbol eksakta menggunakan format LaTeX standar yang bersih, dibungkus delimiter dolar: "$...$" untuk rumus sebaris dan "$$...$$" untuk rumus berdiri sendiri.
-2. DETEKSI GAMBAR/DIAGRAM/GRAFIK: Jika suatu soal memiliki ilustrasi visual, sisipkan token placeholder persis {{GAMBAR}} pada posisi yang tepat di dalam "teks_soal". Beri juga "deskripsi" singkat gambar di array "gambar". Jika soal tanpa gambar, "gambar": [].
 
-TIGA TIPE SOAL — tentukan "tipe" tiap soal dengan tepat:
-- "pg_sederhana": Pilihan Ganda biasa (opsi A-E tunggal).
-- "pg_kompleks": Pilihan Ganda Kompleks dengan pernyataan bernomor (1, 2, 3) dan opsi A-E.
-- "benar_salah": Pilihan Ganda Kompleks Model Kategori dengan tabel pernyataan Benar/Salah (tanpa opsi A-E).
+1. Pertahankan seluruh isi soal secara akurat.
+2. Jangan mengarang isi soal.
+3. Jangan mengubah angka.
+4. Jangan mengubah simbol.
+5. Jangan menghilangkan pilihan jawaban.
+6. Jangan menghilangkan tabel.
+7. Jangan menghilangkan informasi pada gambar.
+8. Gunakan LaTeX untuk persamaan matematika.
+9. Rumus sebaris gunakan:
+   $...$
 
-Balas HANYA dengan JSON murni: array of objects. JANGAN ada kalimat pembuka/penutup atau code fence. Mulai dengan "[" dan akhiri dengan "]". Struktur tiap objek:
-{
-  "nomor": 1,
-  "tipe": "pg_sederhana" | "pg_kompleks" | "benar_salah",
-  "teks_soal": "Teks soal lengkap dengan LaTeX dan token {{GAMBAR_1}} jika ada.",
-  "pernyataan": [],
-  "opsi_jawaban": [],
-  "tabel_benar_salah": [],
-  "kunci_jawaban": "",
-  "gambar": [ { "id": "GAMBAR_1", "deskripsi": "deskripsi singkat gambar" } ]
-}`;
+10. Rumus berdiri sendiri gunakan:
+   $$...$$
+
+DETEKSI GAMBAR / DIAGRAM / GRAFIK:
+
+Jika soal mempunyai:
+- grafik
+- diagram
+- tabel visual
+- ilustrasi
+- gambar
+- bangun geometri
+- rangkaian listrik
+- struktur kimia
+- peta
+- atau visual lain
+
+maka:
+
+1. Sisipkan token:
+{{GAMBAR}}
+
+pada posisi yang tepat di teks_soal.
+
+2. Masukkan informasi gambar ke array gambar.
+
+Jika tidak ada gambar:
+"gambar": []
+
+JENIS SOAL:
+
+1. pg_sederhana
+Pilihan ganda biasa dengan satu jawaban benar.
+
+2. pg_kompleks
+Pilihan ganda kompleks dengan beberapa pernyataan.
+
+3. benar_salah
+Soal dengan tabel kategori Benar/Salah.
+
+BALAS HANYA JSON MURNI.
+
+Jangan gunakan markdown.
+Jangan gunakan code fence.
+Jangan menambahkan penjelasan.
+
+Mulai dengan:
+[
+
+Akhiri dengan:
+]
+
+STRUKTUR:
+
+[
+  {
+    "nomor": 1,
+    "tipe": "pg_sederhana",
+    "teks_soal": "",
+    "pernyataan": [],
+    "opsi_jawaban": [],
+    "tabel_benar_salah": [],
+    "kunci_jawaban": "",
+    "gambar": []
+  }
+]
+
+Untuk gambar:
+
+"gambar": [
+  {
+    "id": "GAMBAR_1",
+    "deskripsi": "deskripsi singkat"
+  }
+]
+`;
+
+// ============================================================
+// JSON SALVAGE
+// ============================================================
 
 function salvagePartialJsonArray(text) {
   const start = text.indexOf('[');
-  if (start === -1) return [];
-  let depth = 0, inStr = false, esc = false, lastGoodEnd = -1;
+
+  if (start === -1) {
+    return [];
+  }
+
+  let depth = 0;
+  let inStr = false;
+  let esc = false;
+  let lastGoodEnd = -1;
+
   for (let i = start; i < text.length; i++) {
     const ch = text[i];
+
     if (inStr) {
-      if (esc) esc = false;
-      else if (ch === '\\') esc = true;
-      else if (ch === '"') inStr = false;
+      if (esc) {
+        esc = false;
+      } else if (ch === '\\') {
+        esc = true;
+      } else if (ch === '"') {
+        inStr = false;
+      }
       continue;
     }
-    if (ch === '"') inStr = true;
-    else if (ch === '{' || ch === '[') depth++;
-    else if (ch === '}' || ch === ']') {
+
+    if (ch === '"') {
+      inStr = true;
+    } else if (ch === '[' || ch === '{') {
+      depth++;
+    } else if (ch === ']' || ch === '}') {
       depth--;
-      if (depth === 1 && ch === '}') lastGoodEnd = i;
+
+      if (depth === 1 && ch === '}') {
+        lastGoodEnd = i;
+      }
     }
   }
-  if (lastGoodEnd === -1) return [];
+
+  if (lastGoodEnd === -1) {
+    return [];
+  }
+
   try {
-    const parsed = JSON.parse(text.slice(start, lastGoodEnd + 1) + ']');
-    return Array.isArray(parsed) ? parsed : [];
+    const parsed = JSON.parse(
+      text.slice(start, lastGoodEnd + 1) + ']'
+    );
+
+    return Array.isArray(parsed)
+      ? parsed
+      : [];
   } catch {
     return [];
   }
 }
 
-async function callAnthropic(apiKey, base64Image, pageNum) {
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 4096,
-      system: SYSTEM_PROMPT,
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'text', text: `Ekstrak seluruh butir soal dari halaman ${pageNum} ini ke dalam format JSON sesuai instruksi sistem. Balas HANYA dengan array JSON.` },
-          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64Image } },
-        ],
-      }],
-    }),
-  });
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}));
-    throw Object.assign(new Error(err.error?.message || `HTTP ${resp.status}`), { status: resp.status });
-  }
-  const data = await resp.json();
-  const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
-  return { text, stopReason: data.stop_reason };
+// ============================================================
+// HELPERS
+// ============================================================
+
+function normalizeBase64(image) {
+  return String(image || '')
+    .replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, '');
 }
 
-async function callOpenAICompatible(baseUrl, apiKey, model, base64Image, pageNum) {
+function normalizeBaseUrl(url) {
+  if (!url) {
+    return '';
+  }
+
+  return String(url).trim().replace(/\/+$/, '');
+}
+
+function normalizeProvider(value) {
+  return String(value || 'openai-compatible')
+    .trim()
+    .toLowerCase();
+}
+
+function getProviderConfig(body) {
+  const provider = normalizeProvider(
+    body.provider || process.env.BANKSOAL_AI_PROVIDER || 'openai-compatible'
+  );
+
+  const apiKey =
+    String(body.apiKey || '').trim() ||
+    String(
+      provider === 'groq'
+        ? process.env.GROQ_API_KEY || ''
+        : provider === 'openai'
+          ? process.env.OPENAI_API_KEY || ''
+          : provider === 'anthropic'
+            ? process.env.ANTHROPIC_API_KEY || ''
+            : process.env.BANKSOAL_AI_API_KEY || ''
+    ).trim();
+
+  let baseUrl =
+    normalizeBaseUrl(body.baseUrl) ||
+    normalizeBaseUrl(process.env.BANKSOAL_AI_BASE_URL);
+
+  let model =
+    String(body.model || '').trim() ||
+    String(process.env.BANKSOAL_AI_MODEL || '').trim();
+
+  if (provider === 'openai') {
+    baseUrl =
+      baseUrl ||
+      'https://api.openai.com/v1/chat/completions';
+
+    model =
+      model ||
+      'gpt-4o';
+  }
+
+  if (provider === 'groq') {
+    baseUrl =
+      baseUrl ||
+      'https://api.groq.com/openai/v1/chat/completions';
+
+    model =
+      model ||
+      'llama-3.2-90b-vision-preview';
+  }
+
+  if (provider === 'gemini') {
+    baseUrl =
+      baseUrl ||
+      'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+
+    model =
+      model ||
+      'gemini-2.0-flash';
+  }
+
+  if (provider === 'anthropic') {
+    model =
+      model ||
+      'claude-3-5-sonnet-20241022';
+  }
+
+  if (provider === 'openai-compatible') {
+    if (!baseUrl) {
+      throw Object.assign(
+        new Error(
+          'Base URL wajib diisi untuk provider OpenAI-compatible.'
+        ),
+        { status: 400 }
+      );
+    }
+
+    if (!model) {
+      throw Object.assign(
+        new Error(
+          'Model wajib diisi untuk provider OpenAI-compatible.'
+        ),
+        { status: 400 }
+      );
+    }
+  }
+
+  if (!apiKey) {
+    throw Object.assign(
+      new Error(
+        'API Key belum dimasukkan.'
+      ),
+      { status: 400 }
+    );
+  }
+
+  return {
+    provider,
+    apiKey,
+    baseUrl,
+    model
+  };
+}
+
+// ============================================================
+// OPENAI-COMPATIBLE
+// ============================================================
+
+async function callOpenAICompatible(
+  baseUrl,
+  apiKey,
+  model,
+  base64Image,
+  pageNum,
+  signal
+) {
   const resp = await fetch(baseUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+
     body: JSON.stringify({
       model,
-      max_tokens: 4096,
+
+      temperature: 0.1,
+
+      max_tokens: 8192,
+
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        {
+          role: 'system',
+          content: SYSTEM_PROMPT
+        },
+
         {
           role: 'user',
+
           content: [
-            { type: 'text', text: `Ekstrak seluruh butir soal dari halaman ${pageNum} ini ke dalam format JSON sesuai instruksi sistem. Balas HANYA dengan array JSON.` },
-            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64Image}` } },
-          ],
-        },
-      ],
+            {
+              type: 'text',
+              text:
+                `Ekstrak seluruh butir soal dari halaman ${pageNum}. ` +
+                `Gunakan format JSON sesuai system prompt. ` +
+                `Balas HANYA array JSON.`
+            },
+
+            {
+              type: 'image_url',
+
+              image_url: {
+                url:
+                  `data:image/jpeg;base64,${base64Image}`
+              }
+            }
+          ]
+        }
+      ]
     }),
+
+    signal
   });
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}));
-    throw Object.assign(new Error(err.error?.message || `HTTP ${resp.status}`), { status: resp.status });
-  }
-  const data = await resp.json();
-  const text = data.choices?.[0]?.message?.content || '';
-  return { text, stopReason: data.choices?.[0]?.finish_reason };
-}
 
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed' });
+  const rawText = await resp.text();
 
-  const { image, pageNum } = req.body || {};
-  if (!image) return res.status(400).json({ success: false, error: 'Gambar halaman (base64) tidak dikirim.' });
-
-  const provider = (process.env.BANKSOAL_AI_PROVIDER || 'groq').toLowerCase();
-  const cleanBase64 = String(image).replace(/^data:image\/(png|jpeg);base64,/, '');
+  let data = {};
 
   try {
-    let result;
-    if (provider === 'anthropic') {
-      if (!process.env.ANTHROPIC_API_KEY) throw Object.assign(new Error('ANTHROPIC_API_KEY belum diset di Vercel.'), { status: 503 });
-      result = await callAnthropic(process.env.ANTHROPIC_API_KEY, cleanBase64, pageNum);
-    } else if (provider === 'openai') {
-      if (!process.env.OPENAI_API_KEY) throw Object.assign(new Error('OPENAI_API_KEY belum diset di Vercel.'), { status: 503 });
-      result = await callOpenAICompatible('https://api.openai.com/v1/chat/completions', process.env.OPENAI_API_KEY, 'gpt-4o', cleanBase64, pageNum);
-    } else {
-      if (!process.env.GROQ_API_KEY) throw Object.assign(new Error('GROQ_API_KEY belum diset di Vercel.'), { status: 503 });
-      result = await callOpenAICompatible('https://api.groq.com/openai/v1/chat/completions', process.env.GROQ_API_KEY, 'llama-3.2-90b-vision-preview', cleanBase64, pageNum);
+    data = JSON.parse(rawText);
+  } catch {
+    data = {};
+  }
+
+  if (!resp.ok) {
+    const message =
+      data?.error?.message ||
+      data?.message ||
+      rawText.slice(0, 500) ||
+      `HTTP ${resp.status}`;
+
+    throw Object.assign(
+      new Error(message),
+      {
+        status: resp.status
+      }
+    );
+  }
+
+  const text =
+    data?.choices?.[0]?.message?.content ||
+    data?.choices?.[0]?.text ||
+    '';
+
+  return {
+    text,
+    stopReason:
+      data?.choices?.[0]?.finish_reason || null
+  };
+}
+
+// ============================================================
+// ANTHROPIC
+// ============================================================
+
+async function callAnthropic(
+  apiKey,
+  model,
+  base64Image,
+  pageNum,
+  signal
+) {
+  const resp = await fetch(
+    'https://api.anthropic.com/v1/messages',
+    {
+      method: 'POST',
+
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+
+      body: JSON.stringify({
+        model,
+
+        max_tokens: 8192,
+
+        temperature: 0.1,
+
+        system: SYSTEM_PROMPT,
+
+        messages: [
+          {
+            role: 'user',
+
+            content: [
+              {
+                type: 'text',
+                text:
+                  `Ekstrak seluruh butir soal dari halaman ${pageNum}. ` +
+                  `Balas HANYA array JSON.`
+              },
+
+              {
+                type: 'image',
+
+                source: {
+                  type: 'base64',
+                  media_type: 'image/jpeg',
+                  data: base64Image
+                }
+              }
+            ]
+          }
+        ]
+      }),
+
+      signal
+    }
+  );
+
+  const rawText = await resp.text();
+
+  let data = {};
+
+  try {
+    data = JSON.parse(rawText);
+  } catch {
+    data = {};
+  }
+
+  if (!resp.ok) {
+    const message =
+      data?.error?.message ||
+      rawText.slice(0, 500) ||
+      `HTTP ${resp.status}`;
+
+    throw Object.assign(
+      new Error(message),
+      {
+        status: resp.status
+      }
+    );
+  }
+
+  const text =
+    Array.isArray(data.content)
+      ? data.content
+          .filter(block => block?.type === 'text')
+          .map(block => block.text)
+          .join('\n')
+      : '';
+
+  return {
+    text,
+    stopReason:
+      data?.stop_reason || null
+  };
+}
+
+// ============================================================
+// TEST CONNECTION
+// ============================================================
+
+async function testProvider(
+  config,
+  signal
+) {
+  const {
+    provider,
+    apiKey,
+    baseUrl,
+    model
+  } = config;
+
+  if (provider === 'anthropic') {
+    return callAnthropic(
+      apiKey,
+      model,
+      '',
+      0,
+      signal
+    );
+  }
+
+  const testUrl =
+    baseUrl;
+
+  const resp = await fetch(
+    testUrl,
+    {
+      method: 'POST',
+
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+
+      body: JSON.stringify({
+        model,
+
+        max_tokens: 20,
+
+        messages: [
+          {
+            role: 'user',
+            content: 'Balas dengan kata OK.'
+          }
+        ]
+      }),
+
+      signal
+    }
+  );
+
+  const raw = await resp.text();
+
+  if (!resp.ok) {
+    let message = raw;
+
+    try {
+      const json = JSON.parse(raw);
+      message =
+        json?.error?.message ||
+        json?.message ||
+        raw;
+    } catch {}
+
+    throw Object.assign(
+      new Error(
+        message.slice(0, 500)
+      ),
+      {
+        status: resp.status
+      }
+    );
+  }
+
+  return {
+    text: raw
+  };
+}
+
+// ============================================================
+// HANDLER
+// ============================================================
+
+export default async function handler(req, res) {
+  res.setHeader(
+    'Access-Control-Allow-Origin',
+    '*'
+  );
+
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'POST, OPTIONS'
+  );
+
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Content-Type'
+  );
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({
+      success: false,
+      error: 'Method not allowed'
+    });
+  }
+
+  const body = req.body || {};
+
+  const {
+    image,
+    pageNum,
+    testOnly
+  } = body;
+
+  try {
+    const providerConfig =
+      getProviderConfig(body);
+
+    if (testOnly) {
+      const controller =
+        new AbortController();
+
+      const timeout =
+        setTimeout(
+          () => controller.abort(),
+          15000
+        );
+
+      try {
+        await testProvider(
+          providerConfig,
+          controller.signal
+        );
+
+        return res.status(200).json({
+          success: true,
+          message: 'API berhasil terhubung.',
+          provider:
+            providerConfig.provider,
+          model:
+            providerConfig.model
+        });
+      } finally {
+        clearTimeout(timeout);
+      }
     }
 
-    const cleaned = result.text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
-    try {
-      const parsed = JSON.parse(cleaned);
-      return res.status(200).json({ success: true, questions: Array.isArray(parsed) ? parsed : [] });
-    } catch {
-      const salvaged = salvagePartialJsonArray(cleaned);
-      if (salvaged.length > 0) return res.status(200).json({ success: true, questions: salvaged, truncated: true });
-      return res.status(502).json({ success: false, error: 'Respons AI tidak bisa dibaca sebagai JSON.' });
+    if (!image) {
+      return res.status(400).json({
+        success: false,
+        error:
+          'Gambar halaman (base64) tidak dikirim.'
+      });
     }
-  } catch (e) {
-    return res.status(e.status || 500).json({ success: false, error: e.message || 'Gagal memanggil AI.' });
+
+    const cleanBase64 =
+      normalizeBase64(image);
+
+    const controller =
+      new AbortController();
+
+    const timeout =
+      setTimeout(
+        () => controller.abort(),
+        55000
+      );
+
+    let result;
+
+    try {
+      if (
+        providerConfig.provider === 'anthropic'
+      ) {
+        result =
+          await callAnthropic(
+            providerConfig.apiKey,
+            providerConfig.model,
+            cleanBase64,
+            pageNum,
+            controller.signal
+          );
+      } else {
+        result =
+          await callOpenAICompatible(
+            providerConfig.baseUrl,
+            providerConfig.apiKey,
+            providerConfig.model,
+            cleanBase64,
+            pageNum,
+            controller.signal
+          );
+      }
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    if (!result?.text) {
+      return res.status(502).json({
+        success: false,
+        error:
+          'AI tidak mengembalikan teks.'
+      });
+    }
+
+    const cleaned =
+      String(result.text)
+        .replace(
+          /^```(?:json)?\s*/i,
+          ''
+        )
+        .replace(
+          /```\s*$/i,
+          ''
+        )
+        .trim();
+
+    try {
+      const parsed =
+        JSON.parse(cleaned);
+
+      return res.status(200).json({
+        success: true,
+        questions:
+          Array.isArray(parsed)
+            ? parsed
+            : [],
+        provider:
+          providerConfig.provider,
+        model:
+          providerConfig.model,
+        truncated: false
+      });
+    } catch {
+      const salvaged =
+        salvagePartialJsonArray(
+          cleaned
+        );
+
+      if (salvaged.length > 0) {
+        return res.status(200).json({
+          success: true,
+          questions: salvaged,
+          provider:
+            providerConfig.provider,
+          model:
+            providerConfig.model,
+          truncated: true
+        });
+      }
+
+      return res.status(502).json({
+        success: false,
+        error:
+          'Respons AI tidak bisa dibaca sebagai JSON.',
+        raw:
+          cleaned.slice(0, 1000)
+      });
+    }
+  } catch (error) {
+    if (
+      error?.name === 'AbortError'
+    ) {
+      return res.status(504).json({
+        success: false,
+        error:
+          'Request AI timeout.'
+      });
+    }
+
+    return res.status(
+      error?.status || 500
+    ).json({
+      success: false,
+      error:
+        error?.message ||
+        'Gagal memanggil AI.'
+    });
   }
 }
