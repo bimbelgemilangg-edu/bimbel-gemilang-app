@@ -191,6 +191,29 @@ export default function AdvancedQuestionExtractor() {
   const logsEndRef = useRef(null);
 
   /* ============================================================
+     TAILWIND CSS LOADER (auto-load jika belum ada)
+  ============================================================ */
+
+  useEffect(() => {
+    // Load Tailwind CDN hanya jika belum ada (portable mode)
+    const existing = document.querySelector(
+      'script[src*="cdn.tailwindcss.com"], link[href*="cdn.tailwindcss.com"]'
+    );
+    if (!existing) {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.tailwindcss.com';
+      script.async = true;
+      // Tailwind CDN butuh config untuk dark mode, extend colors, dsb.
+      document.head.insertBefore(script, document.head.firstChild);
+    }
+    // Juga set dark mode class pada html element bila belum ada
+    // sehingga bg-gray-950 dll bisa aktif
+    if (!document.documentElement.classList.contains('dark')) {
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  /* ============================================================
      PDF.JS LOADER
   ============================================================ */
 
@@ -981,7 +1004,7 @@ Balas HANYA JSON array.`;
   ============================================================ */
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col font-sans">
+    <div style={{ colorScheme: 'dark' }} className="min-h-screen bg-gray-950 text-gray-100 flex flex-col font-sans" data-aqe-root="true">
 
       {/* ===== HEADER ===== */}
       <header className="border-b border-gray-800 bg-gray-900/80 backdrop-blur sticky top-0 z-50 px-4 md:px-6 py-4">
