@@ -102,8 +102,7 @@ class QuestionErrorBoundary extends React.Component {
 // Model default — bisa di-override via UI settings
 const GEMINI_MODEL_OPTIONS = [
   { id: 'gemini-3.6-flash',      label: 'Gemini 3.6 Flash (Terbaru)' },
-  { id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite (Hemat)' },
-  { id: 'gemini-2.5-flash',      label: 'Gemini 2.5 Flash (Lama)' },
+  { id: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite (Hemat)' },
   { id: 'gemini-2.0-flash',      label: 'Gemini 2.0 Flash' },
   { id: 'gemini-1.5-flash',      label: 'Gemini 1.5 Flash' },
   { id: 'custom',                label: '✏️ Model custom...' },
@@ -588,7 +587,7 @@ export default function AdvancedQuestionExtractor() {
       generationConfig: { responseMimeType: 'application/json', responseSchema, temperature: 0.05, maxOutputTokens },
     };
     let lastError = null;
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 5; attempt++) {
       try {
         const response = await fetch(url, {
           method: 'POST',
@@ -599,9 +598,15 @@ export default function AdvancedQuestionExtractor() {
         const errData = await response.json().catch(() => ({}));
         const message = errData?.error?.message || `HTTP ${response.status}`;
         const retryable = [408, 429, 500, 502, 503, 504].includes(response.status);
-        if (retryable && attempt < 2) {
-          const waitMs = Math.min(2000 * Math.pow(2, attempt), 15000);
-          if (response.status === 429) addLog(`Gemini rate limit. Menunggu ${Math.ceil(waitMs / 1000)} detik...`, 'warning');
+        if (retryable && attempt < 4) {
+          // Parse "retry in X.XXs" dari pesan error Gemini
+          const retryMatch = message.match(/retry in ([\d.]+)s/i);
+          const suggestedMs = retryMatch ? Math.ceil(parseFloat(retryMatch[1]) * 1000) + 3000 : 0;
+          const defaultMs = Math.min(3000 * Math.pow(2, attempt), 60000);
+          const waitMs = suggestedMs > defaultMs ? suggestedMs : defaultMs;
+          if (response.status === 429) {
+            addLog(`⏳ Quota/rate limit. Menunggu ${Math.ceil(waitMs / 1000)} detik sebelum retry...`, 'warning');
+          }
           await sleep(waitMs);
           continue;
         }
@@ -675,11 +680,11 @@ CONTOH TOPIK YANG DIDUKUNG:
 
     const userText = `Ekstrak seluruh butir soal dari halaman ${pageNum}. Pastikan setiap soal lengkap, termasuk opsi A-E, pernyataan, tabel Benar/Salah, pasangan menjodohkan, isian angka, rumus LaTeX, simbol fisika/kimia, satuan, derajat, pecahan, dan referensi gambar/diagram.`;
 
-    // Build model chain: primary = activeModelId, fallback = gemini-2.5-flash-lite
-    const fallbackId = 'gemini-2.5-flash-lite';
+    // Build model chain: primary = activeModelId, fallback = gemini-3.5-flash-lite
+    const fallbackId = 'gemini-3.5-flash-lite';
     const modelChain = [
       { id: activeModelId, label: activeModelLabel },
-      ...(activeModelId !== fallbackId ? [{ id: fallbackId, label: 'Gemini 2.5 Flash-Lite (fallback)' }] : []),
+      ...(activeModelId !== fallbackId ? [{ id: fallbackId, label: 'Gemini 3.5 Flash-Lite (fallback)' }] : []),
     ];
 
     let lastError = null;
@@ -692,7 +697,10 @@ CONTOH TOPIK YANG DIDUKUNG:
       } catch (error) {
         lastError = error;
         const status = error?.status;
-        const fallbackAllowed = status === 408 || status === 429 || (status >= 500) || error.message?.includes('no longer available');
+        const fallbackAllowed = status === 408 || status === 429 || (status >= 500)
+          || error.message?.includes('no longer available')
+          || error.message?.includes('deprecated')
+          || error.message?.includes('quota');
         addLog(`[Halaman ${pageNum}] ${model.label} gagal: ${error.message}`, 'warning');
         if (!fallbackAllowed) break;
       }
