@@ -19,7 +19,7 @@
 
 import React, { useState, useEffect } from 'react';
 import SidebarAdmin from '../../../components/SidebarAdmin';
-import AdvancedQuestionExtractor from './AdvancedQuestionExtractor';
+import AdvancedQuestionExtractor from "../bank-soal/AdvancedQuestionExtractor";
 
 export default function BankSoalPage() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
