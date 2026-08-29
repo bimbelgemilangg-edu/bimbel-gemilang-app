@@ -1,33 +1,3 @@
-// src/pages/admin/bank-soal/AdvancedQuestionExtractor.jsx
-// ============================================================
-// ADVANCED QUESTION EXTRACTOR
-// ============================================================
-// Upload PDF soal ujian -> render halaman -> AI ekstrak JSON ->
-// deteksi/crop diagram -> review/edit -> upload gambar ->
-// Firestore bank_soal.
-//
-// FITUR BARU:
-// - Pengaturan AI langsung dari halaman Admin
-// - Provider
-// - API Key
-// - Base URL
-// - Model
-// - Test API
-// - Konfigurasi disimpan di sessionStorage
-//
-// API KEY TIDAK ditulis ke source code.
-// API key dikirim hanya ketika request extraction/test.
-//
-// Backend:
-//   /api/extractPdfBankSoal
-//
-// Storage gambar:
-//   /api/uploadBankSoalImages
-//
-// Database:
-//   Firestore -> bank_soal
-// ============================================================
-
 import React, {
   useState,
   useEffect,
@@ -39,8 +9,11 @@ import {
   UploadCloud,
   FileText,
   Play,
+  Download,
   CheckCircle,
   Loader2,
+  FileJson,
+  FileSpreadsheet,
   Trash2,
   Edit3,
   Save,
@@ -50,178 +23,414 @@ import {
   Square,
   RefreshCw,
   Sparkles,
+  Crop,
   X,
+  Check,
   Plus,
-  Database,
-  CloudUpload,
   Settings,
-  Eye,
-  EyeOff,
-  Wifi,
-  WifiOff,
-  AlertCircle,
-  ChevronDown,
-  ChevronUp,
+  Code,
+  AlertTriangle,
+  Filter,
+  ArrowRight,
+  Link2,
+  HelpCircle,
   KeyRound,
-  Cpu,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  ScanSearch,
+  Database,
+  Search,
 } from 'lucide-react';
 
-import {
-  collection,
-  doc,
-  writeBatch,
-  serverTimestamp,
-} from 'firebase/firestore';
+/* ============================================================
+   UTILITIES
+============================================================ */
 
-import { db, auth } from '../../../firebase';
+const toStr = (v) => {
+  if (v == null) return '';
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' || typeof v === 'boolean') {
+    return String(v);
+  }
 
-// ============================================================
-// CONSTANTS
-// ============================================================
+  try {
+    return JSON.stringify(v);
+  } catch {
+    return String(v);
+  }
+};
 
-const BANK_SOAL_COLLECTION = 'bank_soal';
+const toStrArray = (v) => {
+  if (Array.isArray(v)) {
+    return v
+      .map(toStr)
+      .filter((s) => s.length > 0);
+  }
 
-const AI_STORAGE_KEY = 'gemilang_banksoal_ai_config';
+  if (v == null || v === '') {
+    return [];
+  }
 
-const AI_PROVIDERS = [
+  return [toStr(v)];
+};
+
+const VALID_TYPES = [
+  'pg_sederhana',
+  'pg_kompleks',
+  'benar_salah',
+  'isian_singkat',
+  'menjodohkan',
+];
+
+/* ============================================================
+   NORMALIZER
+============================================================ */
+
+const normalizeQuestion = (raw, fallbackNomor) => {
+  const q =
+    raw &&
+    typeof raw === 'object' &&
+    !Array.isArray(raw)
+      ? raw
+      : {};
+
+  const nomorParsed =
+    typeof q.nomor === 'number' &&
+    Number.isFinite(q.nomor)
+      ? q.nomor
+      : parseInt(q.nomor, 10);
+
+  const pasanganRaw =
+    Array.isArray(q.pasangan)
+      ? q.pasangan
+      : [];
+
+  const pasanganClean =
+    pasanganRaw
+      .filter((p) => p && typeof p === 'object')
+      .map((p) => ({
+        kiri: toStr(p.kiri),
+        kanan: toStr(p.kanan),
+      }))
+      .filter(
+        (p) =>
+          p.kiri.length > 0 ||
+          p.kanan.length > 0
+      );
+
+  const gambarClean =
+    Array.isArray(q.gambar)
+      ? q.gambar
+          .filter(
+            (g) =>
+              g &&
+              typeof g === 'object'
+          )
+          .map((g, idx) => ({
+            id:
+              toStr(g.id) ||
+              `GAMBAR_${idx + 1}`,
+
+            deskripsi:
+              toStr(g.deskripsi),
+
+            dataUrl:
+              typeof g.dataUrl === 'string'
+                ? g.dataUrl
+                : null,
+
+            sourcePage:
+              g.sourcePage ?? null,
+
+            metode:
+              toStr(g.metode),
+
+            // koordinat jika tersedia
+            x0:
+              Number.isFinite(g.x0)
+                ? g.x0
+                : null,
+
+            y0:
+              Number.isFinite(g.y0)
+                ? g.y0
+                : null,
+
+            x1:
+              Number.isFinite(g.x1)
+                ? g.x1
+                : null,
+
+            y1:
+              Number.isFinite(g.y1)
+                ? g.y1
+                : null,
+          }))
+      : [];
+
+  return {
+    nomor:
+      Number.isFinite(nomorParsed)
+        ? nomorParsed
+        : fallbackNomor,
+
+    tipe:
+      VALID_TYPES.includes(q.tipe)
+        ? q.tipe
+        : 'pg_sederhana',
+
+    teks_soal:
+      toStr(q.teks_soal),
+
+    pernyataan:
+      toStrArray(q.pernyataan),
+
+    opsi_jawaban:
+      toStrArray(q.opsi_jawaban),
+
+    tabel_benar_salah:
+      toStrArray(q.tabel_benar_salah),
+
+    pasangan:
+      pasanganClean,
+
+    kunci_jawaban:
+      toStr(q.kunci_jawaban),
+
+    gambar:
+      gambarClean,
+
+    sumber_kunci:
+      toStr(q.sumber_kunci),
+
+    kunci_terverifikasi:
+      Boolean(q.kunci_terverifikasi),
+
+    halaman_kunci:
+      Array.isArray(q.halaman_kunci)
+        ? q.halaman_kunci
+        : [],
+  };
+};
+
+/* ============================================================
+   ERROR BOUNDARY
+============================================================ */
+
+class QuestionErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      hasError: false,
+    };
+  }
+
+  static getDerivedStateFromError() {
+    return {
+      hasError: true,
+    };
+  }
+
+  componentDidCatch(error) {
+    console.error(
+      'Gagal merender kartu soal:',
+      error
+    );
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 text-red-300 text-sm flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+
+          <div>
+            <p className="font-semibold mb-1">
+              Satu butir soal gagal ditampilkan.
+            </p>
+
+            <p className="text-red-300/80 text-xs">
+              Kemungkinan hasil AI tidak lengkap.
+              Soal lain tetap aman.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+/* ============================================================
+   GEMINI CONFIG
+============================================================ */
+
+const GEMINI_MODELS = [
   {
-    value: 'openai-compatible',
-    label: 'OpenAI Compatible',
-    description:
-      'OpenRouter, Groq, NVIDIA, Cerebras, Mistral, Together, dll.',
-    defaultBaseUrl: '',
-    defaultModel: '',
+    id: 'gemini-3.6-flash',
+    label: 'Gemini 3.6 Flash',
+    role: 'utama',
   },
 
   {
-    value: 'openai',
-    label: 'OpenAI',
-    description: 'OpenAI Chat Completions',
-    defaultBaseUrl:
-      'https://api.openai.com/v1/chat/completions',
-    defaultModel: 'gpt-4o',
-  },
-
-  {
-    value: 'gemini',
-    label: 'Google Gemini',
-    description:
-      'Endpoint OpenAI-compatible Gemini',
-    defaultBaseUrl:
-      'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
-    defaultModel: 'gemini-2.0-flash',
-  },
-
-  {
-    value: 'anthropic',
-    label: 'Anthropic',
-    description: 'Claude Messages API',
-    defaultBaseUrl:
-      'https://api.anthropic.com/v1/messages',
-    defaultModel:
-      'claude-3-5-sonnet-20241022',
+    id: 'gemini-2.5-flash-lite',
+    label: 'Gemini 2.5 Flash-Lite',
+    role: 'fallback',
   },
 ];
 
-const DEFAULT_AI_CONFIG = {
-  provider: 'openai-compatible',
-  apiKey: '',
-  baseUrl: '',
-  model: '',
+/* ============================================================
+   QUESTION SCHEMA
+============================================================ */
+
+const GEMINI_RESPONSE_SCHEMA = {
+  type: 'ARRAY',
+
+  items: {
+    type: 'OBJECT',
+
+    properties: {
+      nomor: {
+        type: 'INTEGER',
+      },
+
+      tipe: {
+        type: 'STRING',
+
+        enum: [
+          'pg_sederhana',
+          'pg_kompleks',
+          'benar_salah',
+          'isian_singkat',
+          'menjodohkan',
+        ],
+      },
+
+      teks_soal: {
+        type: 'STRING',
+      },
+
+      pernyataan: {
+        type: 'ARRAY',
+        items: {
+          type: 'STRING',
+        },
+      },
+
+      opsi_jawaban: {
+        type: 'ARRAY',
+        items: {
+          type: 'STRING',
+        },
+      },
+
+      tabel_benar_salah: {
+        type: 'ARRAY',
+        items: {
+          type: 'STRING',
+        },
+      },
+
+      pasangan: {
+        type: 'ARRAY',
+
+        items: {
+          type: 'OBJECT',
+
+          properties: {
+            kiri: {
+              type: 'STRING',
+            },
+
+            kanan: {
+              type: 'STRING',
+            },
+          },
+
+          required: [
+            'kiri',
+            'kanan',
+          ],
+        },
+      },
+
+      kunci_jawaban: {
+        type: 'STRING',
+      },
+
+      gambar: {
+        type: 'ARRAY',
+
+        items: {
+          type: 'OBJECT',
+
+          properties: {
+            id: {
+              type: 'STRING',
+            },
+
+            deskripsi: {
+              type: 'STRING',
+            },
+          },
+
+          required: [
+            'id',
+            'deskripsi',
+          ],
+        },
+      },
+    },
+
+    required: [
+      'nomor',
+      'tipe',
+      'teks_soal',
+      'pernyataan',
+      'opsi_jawaban',
+      'tabel_benar_salah',
+      'pasangan',
+      'kunci_jawaban',
+      'gambar',
+    ],
+  },
 };
 
-// ============================================================
-// FIRESTORE DOCUMENT BUILDER
-// ============================================================
+/* ============================================================
+   ANSWER KEY SCHEMA
+============================================================ */
 
-function buildBankSoalDoc(q, meta) {
-  return {
-    soal: q.teks_soal || '',
-    tipe: q.tipe || 'pg_sederhana',
+const ANSWER_KEY_SCHEMA = {
+  type: 'ARRAY',
 
-    pernyataan:
-      Array.isArray(q.pernyataan)
-        ? q.pernyataan
-        : [],
+  items: {
+    type: 'OBJECT',
 
-    opsiJawaban:
-      Array.isArray(q.opsi_jawaban)
-        ? q.opsi_jawaban
-        : [],
+    properties: {
+      nomor: {
+        type: 'INTEGER',
+      },
 
-    tabelBenarSalah:
-      Array.isArray(q.tabel_benar_salah)
-        ? q.tabel_benar_salah
-        : [],
+      kunci_jawaban: {
+        type: 'STRING',
+      },
+    },
 
-    kunciJawaban:
-      q.kunci_jawaban || '',
+    required: [
+      'nomor',
+      'kunci_jawaban',
+    ],
+  },
+};
 
-    gambarUrls:
-      Array.isArray(q.gambar)
-        ? q.gambar
-            .filter(
-              (g) =>
-                g &&
-                typeof g.url === 'string' &&
-                g.url
-            )
-            .map((g) => g.url)
-        : [],
-
-    mataPelajaran:
-      meta.mataPelajaran || '',
-
-    tingkatKelas:
-      meta.tingkatKelas || '',
-
-    sumberFile:
-      meta.fileName || '',
-
-    sumberHalaman:
-      q.__sourcePage || null,
-
-    createdAt:
-      serverTimestamp(),
-
-    createdBy:
-      auth.currentUser?.uid || null,
-
-    status:
-      'aktif',
-  };
-}
-
-// ============================================================
-// COMPONENT
-// ============================================================
+/* ============================================================
+   MAIN COMPONENT
+============================================================ */
 
 export default function AdvancedQuestionExtractor() {
-  // ----------------------------------------------------------
-  // AI CONFIG
-  // ----------------------------------------------------------
-
-  const [aiConfig, setAiConfig] = useState(
-    DEFAULT_AI_CONFIG
-  );
-
-  const [showApiSettings, setShowApiSettings] =
-    useState(true);
-
-  const [showApiKey, setShowApiKey] =
-    useState(false);
-
-  const [aiTestState, setAiTestState] =
-    useState('idle');
-  // idle | testing | success | error
-
-  const [aiTestMessage, setAiTestMessage] =
-    useState('');
-
-  // ----------------------------------------------------------
-  // PDF / APPLICATION
-  // ----------------------------------------------------------
-
   const [isPdfReady, setIsPdfReady] =
     useState(false);
 
@@ -233,13 +442,6 @@ export default function AdvancedQuestionExtractor() {
 
   const [appState, setAppState] =
     useState('idle');
-  // idle
-  // preview
-  // processing
-  // editing
-  // saving
-  // done
-  // error
 
   const [logs, setLogs] =
     useState([]);
@@ -259,6 +461,16 @@ export default function AdvancedQuestionExtractor() {
   const [editForm, setEditForm] =
     useState({});
 
+  const [typeFilter, setTypeFilter] =
+    useState('semua');
+
+  const [settings] =
+    useState({
+      resolution: 2.8,
+      delayBetweenPages: 1800,
+      answerKeyDelay: 1000,
+    });
+
   const [pdfDocument, setPdfDocument] =
     useState(null);
 
@@ -271,290 +483,61 @@ export default function AdvancedQuestionExtractor() {
   const [coverThumbnail, setCoverThumbnail] =
     useState(null);
 
+  const [pagePreviews, setPagePreviews] =
+    useState({});
+
+  const [previewPage, setPreviewPage] =
+    useState(null);
+
   const [activeTab, setActiveTab] =
     useState('questions');
 
-  const [mataPelajaran, setMataPelajaran] =
-    useState('Matematika');
+  const [manualCrop, setManualCrop] =
+    useState(null);
 
-  const [tingkatKelas, setTingkatKelas] =
-    useState('10');
+  const [geminiApiKey, setGeminiApiKey] =
+    useState(() => {
+      try {
+        return (
+          localStorage.getItem(
+            'aqe_gemini_api_key'
+          ) || ''
+        );
+      } catch {
+        return '';
+      }
+    });
 
-  const [isDragging, setIsDragging] =
-    useState(false);
+  const [
+    showApiSettings,
+    setShowApiSettings,
+  ] = useState(false);
+
+  const [
+    answerKeyPages,
+    setAnswerKeyPages,
+  ] = useState([]);
+
+  const [
+    answerKeyMap,
+    setAnswerKeyMap,
+  ] = useState({});
+
+  const [
+    scanningAnswerKey,
+    setScanningAnswerKey,
+  ] = useState(false);
 
   const logsEndRef =
     useRef(null);
 
-  const settings = {
-    resolution: 2.5,
-    delayBetweenPages: 3000,
-  };
-
-  // ==========================================================
-  // AI CONFIG HELPERS
-  // ==========================================================
-
-  const getSelectedProvider = () =>
-    AI_PROVIDERS.find(
-      (item) =>
-        item.value === aiConfig.provider
-    ) || AI_PROVIDERS[0];
-
-  const providerNeedsBaseUrl =
-    aiConfig.provider ===
-    'openai-compatible';
-
-  const updateAiConfig = (patch) => {
-    setAiConfig((prev) => ({
-      ...prev,
-      ...patch,
-    }));
-
-    setAiTestState('idle');
-    setAiTestMessage('');
-  };
-
-  const saveAiConfigToSession = (config) => {
-    try {
-      sessionStorage.setItem(
-        AI_STORAGE_KEY,
-        JSON.stringify({
-          provider:
-            config.provider || '',
-          apiKey:
-            config.apiKey || '',
-          baseUrl:
-            config.baseUrl || '',
-          model:
-            config.model || '',
-        })
-      );
-    } catch {}
-  };
-
-  const loadAiConfigFromSession = () => {
-    try {
-      const raw =
-        sessionStorage.getItem(
-          AI_STORAGE_KEY
-        );
-
-      if (!raw) {
-        return;
-      }
-
-      const parsed =
-        JSON.parse(raw);
-
-      setAiConfig({
-        provider:
-          parsed.provider ||
-          DEFAULT_AI_CONFIG.provider,
-
-        apiKey:
-          parsed.apiKey || '',
-
-        baseUrl:
-          parsed.baseUrl || '',
-
-        model:
-          parsed.model || '',
-      });
-    } catch {}
-  };
+  /* ============================================================
+     PDF.JS
+  ============================================================ */
 
   useEffect(() => {
-    loadAiConfigFromSession();
-  }, []);
-
-  const applyProviderDefaults = (
-    providerValue
-  ) => {
-    const provider =
-      AI_PROVIDERS.find(
-        (item) =>
-          item.value === providerValue
-      ) || AI_PROVIDERS[0];
-
-    setAiConfig((prev) => ({
-      ...prev,
-
-      provider:
-        provider.value,
-
-      baseUrl:
-        provider.defaultBaseUrl ||
-        (
-          providerValue ===
-          prev.provider
-            ? prev.baseUrl
-            : ''
-        ),
-
-      model:
-        provider.defaultModel ||
-        (
-          providerValue ===
-          prev.provider
-            ? prev.model
-            : ''
-        ),
-    }));
-
-    setAiTestState('idle');
-    setAiTestMessage('');
-  };
-
-  const validateAiConfig = () => {
-    if (
-      !aiConfig.apiKey ||
-      !aiConfig.apiKey.trim()
-    ) {
-      return 'API Key belum diisi.';
-    }
-
-    if (
-      aiConfig.provider ===
-        'openai-compatible' &&
-      !aiConfig.baseUrl.trim()
-    ) {
-      return 'Base URL wajib diisi untuk OpenAI Compatible.';
-    }
-
-    if (
-      !aiConfig.model ||
-      !aiConfig.model.trim()
-    ) {
-      return 'Model belum diisi.';
-    }
-
-    return '';
-  };
-
-  // ==========================================================
-  // TEST API
-  // ==========================================================
-
-  const testApiConnection = async () => {
-    const validation =
-      validateAiConfig();
-
-    if (validation) {
-      setAiTestState('error');
-      setAiTestMessage(validation);
-      return;
-    }
-
-    setAiTestState('testing');
-    setAiTestMessage(
-      'Menghubungkan ke provider AI...'
-    );
-
-    try {
-      const response =
-        await fetch(
-          '/api/extractPdfBankSoal',
-          {
-            method: 'POST',
-
-            headers: {
-              'Content-Type':
-                'application/json',
-            },
-
-            body: JSON.stringify({
-              testOnly: true,
-
-              provider:
-                aiConfig.provider,
-
-              apiKey:
-                aiConfig.apiKey,
-
-              baseUrl:
-                aiConfig.baseUrl,
-
-              model:
-                aiConfig.model,
-            }),
-          }
-        );
-
-      const result =
-        await response.json()
-          .catch(() => ({}));
-
-      if (
-        !response.ok ||
-        !result.success
-      ) {
-        throw new Error(
-          result.error ||
-            `HTTP ${response.status}`
-        );
-      }
-
-      saveAiConfigToSession(
-        aiConfig
-      );
-
-      setAiTestState('success');
-
-      setAiTestMessage(
-        `Terhubung: ${
-          result.model ||
-          aiConfig.model
-        }`
-      );
-
-      addLog(
-        `API berhasil dites. Provider: ${aiConfig.provider}, Model: ${aiConfig.model}`,
-        'success'
-      );
-    } catch (error) {
-      setAiTestState('error');
-
-      setAiTestMessage(
-        error?.message ||
-          'Gagal menghubungkan API.'
-      );
-
-      addLog(
-        `Test API gagal: ${
-          error?.message ||
-          'Unknown error'
-        }`,
-        'error'
-      );
-    }
-  };
-
-  // ==========================================================
-  // PDF.JS
-  // ==========================================================
-
-  useEffect(() => {
-    const existing =
-      document.querySelector(
-        'script[data-gemilang-pdfjs]'
-      );
-
-    if (existing) {
-      if (window.pdfjsLib) {
-        setIsPdfReady(true);
-      }
-
-      return;
-    }
-
     const script =
-      document.createElement(
-        'script'
-      );
-
-    script.dataset.gemilangPdfjs =
-      'true';
+      document.createElement('script');
 
     script.src =
       'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
@@ -562,22 +545,20 @@ export default function AdvancedQuestionExtractor() {
     script.async = true;
 
     script.onload = () => {
-      try {
+      if (
+        window.pdfjsLib &&
+        window.pdfjsLib.GlobalWorkerOptions
+      ) {
         window.pdfjsLib.GlobalWorkerOptions.workerSrc =
           'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-        setIsPdfReady(true);
-
-        addLog(
-          'Mesin PDF.js siap.',
-          'success'
-        );
-      } catch (error) {
-        addLog(
-          `PDF.js gagal diinisialisasi: ${error.message}`,
-          'error'
-        );
       }
+
+      setIsPdfReady(true);
+
+      addLog(
+        'Mesin PDF.js siap.',
+        'success'
+      );
     };
 
     script.onerror = () => {
@@ -587,66 +568,34 @@ export default function AdvancedQuestionExtractor() {
       );
     };
 
-    document.body.appendChild(
-      script
-    );
+    document.body.appendChild(script);
 
     return () => {
-      // sengaja tidak menghapus script,
-      // agar navigasi halaman tidak membuat
-      // PDF.js dimuat berulang kali.
+      if (script.parentNode) {
+        script.parentNode.removeChild(
+          script
+        );
+      }
     };
   }, []);
 
-  // ==========================================================
-  // KATEX
-  // ==========================================================
+  /* ============================================================
+     KATEX
+  ============================================================ */
 
   useEffect(() => {
-    const existingCss =
-      document.querySelector(
-        'link[data-gemilang-katex]'
-      );
-
-    const existingScript =
-      document.querySelector(
-        'script[data-gemilang-katex]'
-      );
-
-    if (existingCss && existingScript) {
-      if (
-        window.renderMathInElement
-      ) {
-        setIsMathReady(true);
-      }
-
-      return;
-    }
-
     const css =
-      document.createElement(
-        'link'
-      );
-
-    css.dataset.gemilangKatex =
-      'true';
+      document.createElement('link');
 
     css.rel = 'stylesheet';
 
     css.href =
       'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css';
 
-    document.head.appendChild(
-      css
-    );
+    document.head.appendChild(css);
 
     const coreScript =
-      document.createElement(
-        'script'
-      );
-
-    coreScript.dataset.gemilangKatex =
-      'true';
+      document.createElement('script');
 
     coreScript.src =
       'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js';
@@ -655,12 +604,7 @@ export default function AdvancedQuestionExtractor() {
 
     coreScript.onload = () => {
       const autoRender =
-        document.createElement(
-          'script'
-        );
-
-      autoRender.dataset.gemilangKatex =
-        'true';
+        document.createElement('script');
 
       autoRender.src =
         'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js';
@@ -669,10 +613,29 @@ export default function AdvancedQuestionExtractor() {
 
       autoRender.onload = () => {
         setIsMathReady(true);
+
+        addLog(
+          'KaTeX siap.',
+          'success'
+        );
+      };
+
+      autoRender.onerror = () => {
+        addLog(
+          'Gagal memuat auto-render KaTeX.',
+          'error'
+        );
       };
 
       document.body.appendChild(
         autoRender
+      );
+    };
+
+    coreScript.onerror = () => {
+      addLog(
+        'Gagal memuat KaTeX.',
+        'error'
       );
     };
 
@@ -681,20 +644,29 @@ export default function AdvancedQuestionExtractor() {
     );
 
     return () => {
-      // CSS/script sengaja dipertahankan
-      // untuk menghindari reload yang tidak perlu.
+      if (css.parentNode) {
+        css.parentNode.removeChild(css);
+      }
+
+      if (
+        coreScript.parentNode
+      ) {
+        coreScript.parentNode.removeChild(
+          coreScript
+        );
+      }
     };
   }, []);
-
-  // ==========================================================
-  // LOG
-  // ==========================================================
 
   useEffect(() => {
     logsEndRef.current?.scrollIntoView({
       behavior: 'smooth',
     });
   }, [logs]);
+
+  /* ============================================================
+     LOG
+  ============================================================ */
 
   const addLog = (
     message,
@@ -710,7 +682,6 @@ export default function AdvancedQuestionExtractor() {
 
     setLogs((prev) => [
       ...prev,
-
       {
         id:
           Date.now() +
@@ -730,185 +701,293 @@ export default function AdvancedQuestionExtractor() {
       setTimeout(resolve, ms)
     );
 
-  // ==========================================================
-  // PDF RENDER
-  // ==========================================================
+  /* ============================================================
+     API KEY
+  ============================================================ */
 
-  const renderPageToCanvas =
-    async (
-      page,
-      scale = 2
-    ) => {
-      const viewport =
-        page.getViewport({
-          scale,
-        });
+  const saveGeminiApiKey = (
+    value
+  ) => {
+    const clean =
+      String(value || '').trim();
 
-      const canvas =
-        document.createElement(
-          'canvas'
+    setGeminiApiKey(clean);
+
+    try {
+      if (clean) {
+        localStorage.setItem(
+          'aqe_gemini_api_key',
+          clean
         );
-
-      const context =
-        canvas.getContext('2d');
-
-      canvas.height =
-        viewport.height;
-
-      canvas.width =
-        viewport.width;
-
-      await page.render({
-        canvasContext:
-          context,
-
-        viewport,
-      }).promise;
-
-      return canvas;
-    };
-
-  // ==========================================================
-  // FILE UPLOAD
-  // ==========================================================
-
-  const handleFileUpload =
-    async (e) => {
-      const selectedFile =
-        e.target.files?.[0];
-
-      await loadPdfFile(
-        selectedFile
-      );
-    };
-
-  const loadPdfFile =
-    async (selectedFile) => {
-      if (
-        !selectedFile ||
-        selectedFile.type !==
-          'application/pdf'
-      ) {
-        addLog(
-          'Harap unggah file PDF yang valid.',
-          'error'
+      } else {
+        localStorage.removeItem(
+          'aqe_gemini_api_key'
         );
-
-        return;
       }
+    } catch {
+      // ignore
+    }
+  };
 
-      if (!isPdfReady) {
-        addLog(
-          'Pustaka PDF belum siap, tunggu sebentar...',
-          'warning'
-        );
+  /* ============================================================
+     LOAD PDF
+  ============================================================ */
 
-        return;
-      }
-
-      setFile(
-        selectedFile
+  const processUploadedFile = async (
+    selectedFile
+  ) => {
+    if (!isPdfReady) {
+      addLog(
+        'PDF.js belum siap.',
+        'warning'
       );
 
-      setExtractedData([]);
+      return;
+    }
 
-      setLogs([]);
+    if (
+      !selectedFile ||
+      selectedFile.type !==
+        'application/pdf'
+    ) {
+      addLog(
+        'File harus PDF.',
+        'error'
+      );
 
-      setAiTestState(
-        aiConfig.apiKey
-          ? aiTestState
-          : 'idle'
+      return;
+    }
+
+    setFile(selectedFile);
+
+    setExtractedData([]);
+
+    setAnswerKeyMap({});
+
+    setAnswerKeyPages([]);
+
+    setPagePreviews({});
+
+    setLogs([]);
+
+    addLog(
+      `File: ${selectedFile.name}`,
+      'success'
+    );
+
+    setAppState('preview');
+
+    try {
+      const arrayBuffer =
+        await selectedFile.arrayBuffer();
+
+      const pdf =
+        await window.pdfjsLib.getDocument({
+          data: arrayBuffer,
+        }).promise;
+
+      setPdfDocument(pdf);
+
+      const total =
+        pdf.numPages;
+
+      setTotalPages(total);
+
+      const pages =
+        Array.from(
+          {
+            length: total,
+          },
+          (_, i) => i + 1
+        );
+
+      setSelectedPages(pages);
+
+      // cover
+      const page1 =
+        await pdf.getPage(1);
+
+      const coverCanvas =
+        await renderPageToCanvas(
+          page1,
+          0.55
+        );
+
+      setCoverThumbnail(
+        coverCanvas.toDataURL(
+          'image/jpeg',
+          0.88
+        )
       );
 
       addLog(
-        `File terdeteksi: ${selectedFile.name}`,
+        `PDF dimuat. ${total} halaman.`,
         'success'
       );
 
-      setAppState(
-        'preview'
+      // Generate preview thumbnails
+      addLog(
+        'Menyiapkan preview halaman...',
+        'info'
       );
 
-      try {
-        const arrayBuffer =
-          await selectedFile.arrayBuffer();
+      const previewMap = {};
 
-        const pdf =
-          await window.pdfjsLib
-            .getDocument({
-              data: arrayBuffer,
-            })
-            .promise;
+      // batasi preview awal supaya browser tidak berat
+      const maxPreview =
+        Math.min(total, 60);
 
-        setPdfDocument(
-          pdf
-        );
+      for (
+        let pageNum = 1;
+        pageNum <= maxPreview;
+        pageNum++
+      ) {
+        try {
+          const p =
+            await pdf.getPage(pageNum);
 
-        setTotalPages(
-          pdf.numPages
-        );
+          const canvas =
+            await renderPageToCanvas(
+              p,
+              0.32
+            );
 
-        setSelectedPages(
-          Array.from(
-            {
-              length:
-                pdf.numPages,
-            },
-
-            (_, i) =>
-              i + 1
-          )
-        );
-
-        const page1 =
-          await pdf.getPage(1);
-
-        const cover =
-          await renderPageToCanvas(
-            page1,
-            0.6
-          );
-
-        setCoverThumbnail(
-          cover.toDataURL(
-            'image/jpeg',
-            0.9
-          )
-        );
-
-        addLog(
-          `PDF dimuat. ${pdf.numPages} halaman terdeteksi.`,
-          'success'
-        );
-      } catch (error) {
-        addLog(
-          `Gagal memuat PDF: ${error.message}`,
-          'error'
-        );
-
-        setAppState(
-          'error'
-        );
+          previewMap[pageNum] =
+            canvas.toDataURL(
+              'image/jpeg',
+              0.8
+            );
+        } catch {
+          // skip preview yang gagal
+        }
       }
-    };
 
-  const handleDrop =
-    async (event) => {
-      event.preventDefault();
-
-      setIsDragging(false);
-
-      const selectedFile =
-        event.dataTransfer.files?.[0];
-
-      await loadPdfFile(
-        selectedFile
+      setPagePreviews(
+        previewMap
       );
-    };
 
-  // ==========================================================
-  // DETECT DIAGRAM
-  // ==========================================================
+      addLog(
+        `Preview ${Object.keys(previewMap).length} halaman siap.`,
+        'success'
+      );
+    } catch (error) {
+      addLog(
+        `Gagal memuat PDF: ${error.message}`,
+        'error'
+      );
+
+      setAppState('error');
+    }
+  };
+
+  const handleFileUpload = (
+    e
+  ) => {
+    const selectedFile =
+      e.target.files?.[0];
+
+    processUploadedFile(
+      selectedFile
+    );
+  };
+
+  const handleDragOver = (
+    e
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (
+    e
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const droppedFile =
+      e.dataTransfer.files?.[0];
+
+    processUploadedFile(
+      droppedFile
+    );
+  };
+
+  /* ============================================================
+     RENDER PAGE
+  ============================================================ */
+
+  const renderPageToCanvas = async (
+    page,
+    scale = 2
+  ) => {
+    const viewport =
+      page.getViewport({
+        scale,
+      });
+
+    const canvas =
+      document.createElement(
+        'canvas'
+      );
+
+    const context =
+      canvas.getContext('2d');
+
+    canvas.width =
+      Math.ceil(
+        viewport.width
+      );
+
+    canvas.height =
+      Math.ceil(
+        viewport.height
+      );
+
+    context.fillStyle =
+      '#ffffff';
+
+    context.fillRect(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+    await page.render({
+      canvasContext: context,
+      viewport,
+    }).promise;
+
+    return canvas;
+  };
+
+  /* ============================================================
+     PAGE PREVIEW
+  ============================================================ */
+
+  const togglePage = (
+    pageNum
+  ) => {
+    setSelectedPages(
+      (prev) =>
+        prev.includes(pageNum)
+          ? prev.filter(
+              (p) =>
+                p !== pageNum
+            )
+          : [
+              ...prev,
+              pageNum,
+            ].sort(
+              (a, b) =>
+                a - b
+            )
+    );
+  };
+
+  /* ============================================================
+     DIAGRAM / VISUAL DETECTION
+  ============================================================ */
 
   const detectDiagramRegions =
     async (page) => {
@@ -917,7 +996,8 @@ export default function AdvancedQuestionExtractor() {
           await page.getOperatorList();
 
         const OPS =
-          window.pdfjsLib.OPS;
+          window.pdfjsLib
+            .OPS;
 
         const base =
           page.getViewport({
@@ -939,39 +1019,44 @@ export default function AdvancedQuestionExtractor() {
 
         let cur = null;
 
-        const mul =
-          (m, n) => [
-            m[0] * n[0] +
-              m[2] * n[1],
+        const mul = (
+          m,
+          n
+        ) => [
+          m[0] * n[0] +
+            m[2] * n[1],
 
-            m[1] * n[0] +
-              m[3] * n[1],
+          m[1] * n[0] +
+            m[3] * n[1],
 
-            m[0] * n[2] +
-              m[2] * n[3],
+          m[0] * n[2] +
+            m[2] * n[3],
 
-            m[1] * n[2] +
-              m[3] * n[3],
+          m[1] * n[2] +
+            m[3] * n[3],
 
-            m[0] * n[4] +
-              m[2] * n[5] +
-              m[4],
+          m[0] * n[4] +
+            m[2] * n[5] +
+            m[4],
 
-            m[1] * n[4] +
-              m[3] * n[5] +
-              m[5],
-          ];
+          m[1] * n[4] +
+            m[3] * n[5] +
+            m[5],
+        ];
 
-        const apply =
-          (m, x, y) => [
-            m[0] * x +
-              m[2] * y +
-              m[4],
+        const apply = (
+          m,
+          x,
+          y
+        ) => [
+          m[0] * x +
+            m[2] * y +
+            m[4],
 
-            m[1] * x +
-              m[3] * y +
-              m[5],
-          ];
+          m[1] * x +
+            m[3] * y +
+            m[5],
+        ];
 
         const startBox =
           () => {
@@ -984,43 +1069,49 @@ export default function AdvancedQuestionExtractor() {
             };
           };
 
-        const addPt =
-          (x, y) => {
-            const [
-              dx,
-              dy,
-            ] = apply(
-              ctm,
-              x,
-              y
+        const addPt = (
+          x,
+          y
+        ) => {
+          if (!cur) {
+            return;
+          }
+
+          const [
+            dx,
+            dy,
+          ] = apply(
+            ctm,
+            x,
+            y
+          );
+
+          cur.x0 =
+            Math.min(
+              cur.x0,
+              dx
             );
 
-            cur.x0 =
-              Math.min(
-                cur.x0,
-                dx
-              );
+          cur.y0 =
+            Math.min(
+              cur.y0,
+              dy
+            );
 
-            cur.y0 =
-              Math.min(
-                cur.y0,
-                dy
-              );
+          cur.x1 =
+            Math.max(
+              cur.x1,
+              dx
+            );
 
-            cur.x1 =
-              Math.max(
-                cur.x1,
-                dx
-              );
+          cur.y1 =
+            Math.max(
+              cur.y1,
+              dy
+            );
 
-            cur.y1 =
-              Math.max(
-                cur.y1,
-                dy
-              );
-
-            cur.pts++;
-          };
+          cur.pts++;
+        };
 
         const endBox =
           () => {
@@ -1032,13 +1123,10 @@ export default function AdvancedQuestionExtractor() {
               cur.y1 >
                 cur.y0
             ) {
-              boxes.push(
-                cur
-              );
+              boxes.push(cur);
             }
 
-            cur =
-              null;
+            cur = null;
           };
 
         const args =
@@ -1047,34 +1135,30 @@ export default function AdvancedQuestionExtractor() {
         for (
           let i = 0;
           i <
-          opList.fnArray.length;
+          opList.fnArray
+            .length;
           i++
         ) {
           const fn =
-            opList.fnArray[
-              i
-            ];
+            opList.fnArray[i];
 
           const a =
             args[i];
 
           if (
-            fn ===
-            OPS.save
+            fn === OPS.save
           ) {
             stack.push(
               ctm.slice()
             );
           } else if (
-            fn ===
-            OPS.restore
+            fn === OPS.restore
           ) {
             ctm =
               stack.pop() ||
               ctm;
           } else if (
-            fn ===
-            OPS.transform
+            fn === OPS.transform
           ) {
             ctm =
               mul(
@@ -1083,7 +1167,7 @@ export default function AdvancedQuestionExtractor() {
               );
           } else if (
             fn ===
-            OPS.constructPath
+              OPS.constructPath
           ) {
             startBox();
 
@@ -1093,12 +1177,12 @@ export default function AdvancedQuestionExtractor() {
             const coords =
               a[1];
 
-            let p =
-              0;
+            let p = 0;
 
             for (
               let k = 0;
-              k < ops.length;
+              k <
+              ops.length;
               k++
             ) {
               const op =
@@ -1112,9 +1196,7 @@ export default function AdvancedQuestionExtractor() {
               ) {
                 addPt(
                   coords[p],
-                  coords[
-                    p + 1
-                  ]
+                  coords[p + 1]
                 );
 
                 p += 2;
@@ -1124,27 +1206,17 @@ export default function AdvancedQuestionExtractor() {
               ) {
                 addPt(
                   coords[p],
-                  coords[
-                    p + 1
-                  ]
+                  coords[p + 1]
                 );
 
                 addPt(
-                  coords[
-                    p + 2
-                  ],
-                  coords[
-                    p + 3
-                  ]
+                  coords[p + 2],
+                  coords[p + 3]
                 );
 
                 addPt(
-                  coords[
-                    p + 4
-                  ],
-                  coords[
-                    p + 5
-                  ]
+                  coords[p + 4],
+                  coords[p + 5]
                 );
 
                 p += 6;
@@ -1156,44 +1228,30 @@ export default function AdvancedQuestionExtractor() {
               ) {
                 addPt(
                   coords[p],
-                  coords[
-                    p + 1
-                  ]
+                  coords[p + 1]
                 );
 
                 addPt(
-                  coords[
-                    p + 2
-                  ],
-                  coords[
-                    p + 3
-                  ]
+                  coords[p + 2],
+                  coords[p + 3]
                 );
 
                 p += 4;
               } else if (
                 op ===
-                OPS.rectangle
+                  OPS.rectangle
               ) {
                 addPt(
                   coords[p],
-                  coords[
-                    p + 1
-                  ]
+                  coords[p + 1]
                 );
 
                 addPt(
                   coords[p] +
-                    coords[
-                      p + 2
-                    ],
+                    coords[p + 2],
 
-                  coords[
-                    p + 1
-                  ] +
-                    coords[
-                      p + 3
-                    ]
+                  coords[p + 1] +
+                    coords[p + 3]
                 );
 
                 p += 4;
@@ -1204,7 +1262,7 @@ export default function AdvancedQuestionExtractor() {
           }
         }
 
-        const EXPAND = 3;
+        const EXPAND = 5;
 
         let rects =
           boxes
@@ -1220,27 +1278,30 @@ export default function AdvancedQuestionExtractor() {
 
                 if (
                   w >
-                    0.8 *
+                    0.92 *
                       W &&
-                  h < 3
+                  h < 4
                 ) {
                   return false;
                 }
 
                 if (
                   b.y1 <
-                    0.05 *
-                      H ||
+                  0.02 * H
+                ) {
+                  return false;
+                }
+
+                if (
                   b.y0 >
-                    0.95 *
-                      H
+                  0.98 * H
                 ) {
                   return false;
                 }
 
                 if (
                   w * h <
-                  4
+                  8
                 ) {
                   return false;
                 }
@@ -1248,31 +1309,45 @@ export default function AdvancedQuestionExtractor() {
                 return true;
               }
             )
-
             .map(
               (b) => [
-                b.x0 -
-                  EXPAND,
+                Math.max(
+                  0,
+                  b.x0 -
+                    EXPAND
+                ),
 
-                b.y0 -
-                  EXPAND,
+                Math.max(
+                  0,
+                  b.y0 -
+                    EXPAND
+                ),
 
-                b.x1 +
-                  EXPAND,
+                Math.min(
+                  W,
+                  b.x1 +
+                    EXPAND
+                ),
 
-                b.y1 +
-                  EXPAND,
+                Math.min(
+                  H,
+                  b.y1 +
+                    EXPAND
+                ),
               ]
             );
 
         let changed =
           true;
 
-        while (changed) {
+        while (
+          changed
+        ) {
           changed =
             false;
 
-          const out = [];
+          const out =
+            [];
 
           while (
             rects.length
@@ -1296,10 +1371,14 @@ export default function AdvancedQuestionExtractor() {
                 const b of rects
               ) {
                 const overlap =
-                  a[0] <= b[2] &&
-                  a[2] >= b[0] &&
-                  a[1] <= b[3] &&
-                  a[3] >= b[1];
+                  a[0] <=
+                    b[2] &&
+                  a[2] >=
+                    b[0] &&
+                  a[1] <=
+                    b[3] &&
+                  a[3] >=
+                    b[1];
 
                 if (
                   overlap
@@ -1351,238 +1430,477 @@ export default function AdvancedQuestionExtractor() {
             out;
         }
 
-        return rects
-          .filter(
-            (r) =>
-              r[2] - r[0] >
-                25 &&
-              r[3] - r[1] >
-                25
-          )
-
-          .filter(
-            (r) =>
-              !(
-                r[0] >
-                  0.8 *
-                    W &&
-                r[1] >
-                  0.85 *
-                    H
-              )
-          )
-
-          .map(
-            (r) => ({
-              x0:
-                Math.max(
+        const regions =
+          rects
+            .filter(
+              (r) =>
+                r[2] -
+                  r[0] >
+                  25 &&
+                r[3] -
+                  r[1] >
+                  25
+            )
+            .filter(
+              (r) =>
+                !(
+                  r[0] >
+                    0.85 *
+                      W &&
+                  r[1] >
+                    0.9 * H
+                )
+            )
+            .map(
+              (r) => ({
+                x0: Math.max(
                   0,
                   r[0]
                 ),
 
-              y0:
-                Math.max(
+                y0: Math.max(
                   0,
                   r[1]
                 ),
 
-              x1:
-                Math.min(
+                x1: Math.min(
                   W,
                   r[2]
                 ),
 
-              y1:
-                Math.min(
+                y1: Math.min(
                   H,
                   r[3]
                 ),
-            })
-          )
 
-          .sort(
-            (a, b) =>
-              a.y0 -
-              b.y0
-          );
-      } catch {
-        return [];
+                cx:
+                  (r[0] +
+                    r[2]) /
+                  2,
+
+                cy:
+                  (r[1] +
+                    r[3]) /
+                  2,
+              })
+            )
+            .sort(
+              (a, b) =>
+                a.y0 -
+                b.y0
+            );
+
+        return {
+          regions,
+          W,
+          H,
+        };
+      } catch (
+        error
+      ) {
+        return {
+          regions: [],
+          W: 0,
+          H: 0,
+        };
       }
     };
 
-  // ==========================================================
-  // SHARP PAGE
-  // ==========================================================
+  /* ============================================================
+     IMAGE CROP
+  ============================================================ */
+
+  const sliceRegionSharp = (
+    fullCanvas,
+    scale,
+    region
+  ) => {
+    const sx =
+      Math.round(
+        region.x0 *
+          scale
+      );
+
+    const sy =
+      Math.round(
+        region.y0 *
+          scale
+      );
+
+    const sw =
+      Math.round(
+        (
+          region.x1 -
+          region.x0
+        ) *
+          scale
+      );
+
+    const sh =
+      Math.round(
+        (
+          region.y1 -
+          region.y0
+        ) *
+          scale
+      );
+
+    if (
+      sw < 10 ||
+      sh < 10
+    ) {
+      return null;
+    }
+
+    const out =
+      document.createElement(
+        'canvas'
+      );
+
+    out.width = sw;
+
+    out.height = sh;
+
+    const ctx =
+      out.getContext(
+        '2d'
+      );
+
+    ctx.fillStyle =
+      '#ffffff';
+
+    ctx.fillRect(
+      0,
+      0,
+      sw,
+      sh
+    );
+
+    ctx.drawImage(
+      fullCanvas,
+
+      sx,
+      sy,
+      sw,
+      sh,
+
+      0,
+      0,
+      sw,
+      sh
+    );
+
+    return out.toDataURL(
+      'image/png'
+    );
+  };
 
   const renderFullPageSharp =
     async (
       page,
       dpiScale = 4
     ) => {
-      const vp =
-        page.getViewport({
-          scale: dpiScale,
-        });
-
-      const canvas =
-        document.createElement(
-          'canvas'
-        );
-
-      canvas.width =
-        Math.ceil(
-          vp.width
-        );
-
-      canvas.height =
-        Math.ceil(
-          vp.height
-        );
-
-      const ctx =
-        canvas.getContext(
-          '2d'
-        );
-
-      ctx.fillStyle =
-        '#ffffff';
-
-      ctx.fillRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
+      return renderPageToCanvas(
+        page,
+        dpiScale
       );
-
-      await page.render({
-        canvasContext:
-          ctx,
-
-        viewport:
-          vp,
-      }).promise;
-
-      return canvas;
     };
 
-  const sliceRegionSharp =
-    (
-      fullCanvas,
-      scale,
-      region
-    ) => {
-      const sx =
-        Math.round(
-          region.x0 *
-            scale
-        );
+  /* ============================================================
+     JSON SALVAGE
+  ============================================================ */
 
-      const sy =
-        Math.round(
-          region.y0 *
-            scale
-        );
-
-      const sw =
-        Math.round(
-          (region.x1 -
-            region.x0) *
-            scale
-        );
-
-      const sh =
-        Math.round(
-          (region.y1 -
-            region.y0) *
-            scale
+  const salvagePartialJsonArray =
+    (text) => {
+      const start =
+        text.indexOf(
+          '['
         );
 
       if (
-        sw < 8 ||
-        sh < 8
+        start === -1
       ) {
-        return null;
+        return [];
       }
 
-      const out =
-        document.createElement(
-          'canvas'
-        );
+      let depth = 0;
 
-      out.width = sw;
+      let inStr =
+        false;
 
-      out.height = sh;
+      let esc =
+        false;
 
-      const octx =
-        out.getContext(
-          '2d'
-        );
+      let lastGoodEnd =
+        -1;
 
-      octx.fillStyle =
-        '#ffffff';
+      for (
+        let i = start;
+        i < text.length;
+        i++
+      ) {
+        const ch =
+          text[i];
 
-      octx.fillRect(
-        0,
-        0,
-        sw,
-        sh
-      );
+        if (inStr) {
+          if (esc) {
+            esc =
+              false;
+          } else if (
+            ch ===
+            '\\'
+          ) {
+            esc =
+              true;
+          } else if (
+            ch ===
+            '"'
+          ) {
+            inStr =
+              false;
+          }
 
-      octx.drawImage(
-        fullCanvas,
-        sx,
-        sy,
-        sw,
-        sh,
-        0,
-        0,
-        sw,
-        sh
-      );
+          continue;
+        }
 
-      return out.toDataURL(
-        'image/png'
-      );
+        if (
+          ch ===
+          '"'
+        ) {
+          inStr =
+            true;
+        } else if (
+          ch ===
+            '{' ||
+          ch ===
+            '['
+        ) {
+          depth++;
+        } else if (
+          ch ===
+            '}' ||
+          ch ===
+            ']'
+        ) {
+          depth--;
+
+          if (
+            depth ===
+              1 &&
+            ch ===
+              '}'
+          ) {
+            lastGoodEnd =
+              i;
+          }
+        }
+      }
+
+      if (
+        lastGoodEnd ===
+        -1
+      ) {
+        return [];
+      }
+
+      const candidate =
+        text.slice(
+          start,
+          lastGoodEnd +
+            1
+        ) + ']';
+
+      try {
+        const parsed =
+          JSON.parse(
+            candidate
+          );
+
+        return Array.isArray(
+          parsed
+        )
+          ? parsed
+          : [];
+      } catch {
+        return [];
+      }
     };
 
-  // ==========================================================
-  // AI EXTRACTION
-  // ==========================================================
+  /* ============================================================
+     EXTRACT GEMINI TEXT
+  ============================================================ */
 
-  const extractFromImageWithAI =
-    async (
-      base64Image,
-      pageNum,
-      onRateLimit
-    ) => {
-      const validation =
-        validateAiConfig();
+  const getGeminiText =
+    (result) => {
+      return (
+        result?.candidates?.[0]
+          ?.content?.parts || []
+      )
+        .filter(
+          (part) =>
+            typeof part.text ===
+            'string'
+        )
+        .map(
+          (part) =>
+            part.text
+        )
+        .join('\n')
+        .trim();
+    };
 
-      if (validation) {
+  const parseGeminiJson = (
+    result
+  ) => {
+    const text =
+      getGeminiText(
+        result
+      );
+
+    if (!text) {
+      const block =
+        result?.promptFeedback
+          ?.blockReason;
+
+      if (block) {
         throw new Error(
-          validation
+          `Gemini memblokir permintaan: ${block}`
         );
       }
 
-      // Simpan konfigurasi sesi
-      saveAiConfigToSession(
-        aiConfig
+      throw new Error(
+        'Gemini tidak mengembalikan teks.'
       );
+    }
 
-      let retries = 5;
+    const cleaned =
+      text
+        .replace(
+          /^```(?:json)?\s*/i,
+          ''
+        )
+        .replace(
+          /```\s*$/i,
+          ''
+        )
+        .trim();
 
-      let delay = 2000;
+    try {
+      return JSON.parse(
+        cleaned
+      );
+    } catch {
+      const salvaged =
+        salvagePartialJsonArray(
+          cleaned
+        );
 
-      const MAX_DELAY =
-        30000;
+      if (
+        salvaged.length >
+        0
+      ) {
+        return {
+          items: salvaged,
+          truncated:
+            true,
+        };
+      }
 
-      while (
-        retries > 0
+      throw new Error(
+        'Respons Gemini bukan JSON yang valid.'
+      );
+    }
+  };
+
+  /* ============================================================
+     GEMINI CALL
+  ============================================================ */
+
+  const callGemini =
+    async ({
+      modelId,
+      imageBase64,
+      pageNum,
+      systemPrompt,
+      userText,
+      responseSchema,
+      maxOutputTokens = 8192,
+    }) => {
+      const apiKey =
+        geminiApiKey.trim();
+
+      if (!apiKey) {
+        throw new Error(
+          'API key Gemini belum diisi.'
+        );
+      }
+
+      const cleanBase64 =
+        imageBase64.replace(
+          /^data:image\/[^;]+;base64,/,
+          ''
+        );
+
+      const url =
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent`;
+
+      const body = {
+        system_instruction: {
+          parts: [
+            {
+              text:
+                systemPrompt,
+            },
+          ],
+        },
+
+        contents: [
+          {
+            role: 'user',
+
+            parts: [
+              {
+                text:
+                  userText,
+              },
+
+              {
+                inlineData: {
+                  mimeType:
+                    'image/jpeg',
+
+                  data:
+                    cleanBase64,
+                },
+              },
+            ],
+          },
+        ],
+
+        generationConfig: {
+          responseMimeType:
+            'application/json',
+
+          responseSchema,
+
+          temperature: 0.05,
+
+          maxOutputTokens,
+        },
+      };
+
+      let lastError =
+        null;
+
+      for (
+        let attempt = 0;
+        attempt < 3;
+        attempt++
       ) {
         try {
           const response =
             await fetch(
-              '/api/extractPdfBankSoal',
+              url,
               {
                 method:
                   'POST',
@@ -1590,160 +1908,646 @@ export default function AdvancedQuestionExtractor() {
                 headers: {
                   'Content-Type':
                     'application/json',
+
+                  'x-goog-api-key':
+                    apiKey,
                 },
 
-                body: JSON.stringify({
-                  image:
-                    base64Image,
-
-                  pageNum,
-
-                  provider:
-                    aiConfig.provider,
-
-                  apiKey:
-                    aiConfig.apiKey,
-
-                  baseUrl:
-                    aiConfig.baseUrl,
-
-                  model:
-                    aiConfig.model,
-                }),
+                body:
+                  JSON.stringify(
+                    body
+                  ),
               }
             );
 
           if (
-            response.status ===
-              429 ||
-            response.status >=
-              500
+            response.ok
           ) {
-            retries--;
-
-            if (
-              retries === 0
-            ) {
-              const result =
-                await response
-                  .json()
-                  .catch(
-                    () => ({})
-                  );
-
-              throw new Error(
-                result.error ||
-                  `Server AI sibuk (status ${response.status}).`
-              );
-            }
-
-            const waitMs =
-              Math.min(
-                delay,
-                MAX_DELAY
-              );
-
-            onRateLimit?.(
-              Math.round(
-                waitMs / 1000
-              ),
-
-              response.status
-            );
-
-            await sleep(
-              waitMs
-            );
-
-            delay =
-              Math.min(
-                delay * 2,
-                MAX_DELAY
-              );
-
-            continue;
+            return await response.json();
           }
 
-          const result =
+          const errData =
             await response
               .json()
               .catch(
                 () => ({})
               );
 
-          if (
-            !response.ok ||
-            !result.success
-          ) {
-            throw new Error(
-              result.error ||
-                `HTTP ${response.status}`
+          const message =
+            errData?.error
+              ?.message ||
+            `HTTP ${response.status}`;
+
+          const retryable =
+            [
+              408,
+              429,
+              500,
+              502,
+              503,
+              504,
+            ].includes(
+              response.status
             );
+
+          if (
+            retryable &&
+            attempt <
+              2
+          ) {
+            const waitMs =
+              Math.min(
+                2000 *
+                  Math.pow(
+                    2,
+                    attempt
+                  ),
+                15000
+              );
+
+            if (
+              response.status ===
+              429
+            ) {
+              addLog(
+                `Gemini rate limit. Menunggu ${Math.ceil(waitMs / 1000)} detik...`,
+                'warning'
+              );
+            }
+
+            await sleep(
+              waitMs
+            );
+
+            continue;
           }
 
-          return (
-            result.questions ||
-            []
-          );
+          const error =
+            new Error(
+              `Gemini ${modelId}: ${message}`
+            );
+
+          error.status =
+            response.status;
+
+          throw error;
         } catch (
-          err
+          error
         ) {
-          retries--;
+          lastError =
+            error;
 
           if (
-            retries === 0
-          ) {
-            throw err;
-          }
-
-          await sleep(
-            Math.min(
-              delay,
-              MAX_DELAY
+            error.status &&
+            ![
+              408,
+              429,
+              500,
+              502,
+              503,
+              504,
+            ].includes(
+              error.status
             )
-          );
-
-          delay =
-            Math.min(
-              delay * 2,
-              MAX_DELAY
-            );
+          ) {
+            break;
+          }
         }
       }
 
-      return [];
+      throw (
+        lastError ||
+        new Error(
+          'Gagal memanggil Gemini.'
+        )
+      );
     };
 
-  // ==========================================================
-  // START PROCESSING
-  // ==========================================================
+  /* ============================================================
+     EXTRACT QUESTIONS
+  ============================================================ */
 
-  const startProcessing =
+  const extractFromImageWithAI =
+    async (
+      base64Image,
+      pageNum
+    ) => {
+      const systemPrompt =
+        `
+Kamu adalah mesin ekstraksi soal ujian profesional untuk Bank Soal Bimbel Gemilang.
+
+Kamu HARUS membaca seluruh isi visual dari SATU halaman PDF yang diberikan.
+
+TUJUAN:
+Ekstrak setiap soal yang benar-benar terlihat pada halaman.
+
+DUKUNG:
+1. pg_sederhana
+2. pg_kompleks
+3. benar_salah
+4. isian_singkat
+5. menjodohkan
+
+ATURAN SANGAT PENTING:
+
+1. Jangan meringkas soal.
+2. Jangan mengarang isi.
+3. Jangan memperbaiki isi soal.
+4. Jangan mengubah angka.
+5. Jangan membuang satu pun opsi jawaban.
+6. Pertahankan rumus dengan LaTeX.
+7. Baca tabel.
+8. Baca grafik.
+9. Baca diagram.
+10. Baca ilustrasi.
+11. Baca simbol matematika.
+12. Baca indeks, akar, pecahan, integral, limit, matriks, satuan, dan notasi ilmiah.
+
+GAMBAR:
+Jika sebuah soal mempunyai gambar, diagram, grafik, ilustrasi atau tabel visual yang merupakan bagian dari soal:
+- harus dibuatkan placeholder {{GAMBAR_1}}, {{GAMBAR_2}}, dst.
+- id gambar harus sama dengan placeholder.
+- deskripsi harus menjelaskan gambar berdasarkan apa yang benar-benar terlihat.
+- jangan menciptakan gambar baru.
+- jangan menebak isi gambar.
+
+KUNCI:
+Jika kunci jawaban terlihat DI HALAMAN INI, masukkan.
+Jika tidak terlihat, isi kunci_jawaban dengan string kosong.
+
+PENTING:
+Jangan menganggap opsi jawaban sebagai kunci jawaban.
+
+Contoh:
+A. 10
+B. 20
+C. 30
+D. 40
+E. 50
+
+ini adalah OPSI, bukan kunci.
+
+Balas hanya JSON sesuai schema.
+`;
+
+      const userText =
+        `
+Halaman PDF nomor ${pageNum}.
+
+Baca seluruh halaman dari atas sampai bawah.
+
+Ambil SEMUA soal yang terlihat.
+
+Pastikan:
+- nomor soal
+- teks soal
+- opsi
+- pernyataan
+- tabel
+- pasangan
+- gambar
+- grafik
+- rumus
+- kunci jika memang terlihat
+
+Semua informasi visual penting wajib diekstrak.
+`;
+
+      let lastError =
+        null;
+
+      for (
+        const model
+          of GEMINI_MODELS
+      ) {
+        try {
+          addLog(
+            `[Halaman ${pageNum}] ${model.label} memproses halaman...`,
+            'info'
+          );
+
+          const result =
+            await callGemini({
+              modelId:
+                model.id,
+
+              imageBase64,
+
+              pageNum,
+
+              systemPrompt,
+
+              userText,
+
+              responseSchema:
+                GEMINI_RESPONSE_SCHEMA,
+
+              maxOutputTokens:
+                8192,
+            });
+
+          const parsed =
+            parseGeminiJson(
+              result
+            );
+
+          return parsed;
+        } catch (
+          error
+        ) {
+          lastError =
+            error;
+
+          const status =
+            error?.status;
+
+          const fallbackAllowed =
+            status ===
+              408 ||
+            status ===
+              429 ||
+            status >=
+              500;
+
+          addLog(
+            `[Halaman ${pageNum}] ${model.label} gagal: ${error.message}`,
+            'warning'
+          );
+
+          if (
+            !fallbackAllowed
+          ) {
+            break;
+          }
+        }
+      }
+
+      throw (
+        lastError ||
+        new Error(
+          'Semua model Gemini gagal.'
+        )
+      );
+    };
+
+  /* ============================================================
+     ANSWER KEY SCANNER
+  ============================================================ */
+
+  const scanAnswerKeyPage =
+    async (
+      pageNum
+    ) => {
+      if (
+        !pdfDocument
+      ) {
+        return [];
+      }
+
+      const page =
+        await pdfDocument.getPage(
+          pageNum
+        );
+
+      const canvas =
+        await renderPageToCanvas(
+          page,
+          settings.resolution
+        );
+
+      const image =
+        canvas.toDataURL(
+          'image/jpeg',
+          0.94
+        );
+
+      const systemPrompt =
+        `
+Kamu adalah pembaca KUNCI JAWABAN ujian.
+
+Tugas kamu hanya membaca halaman yang kemungkinan berisi KUNCI JAWABAN.
+
+Cari pasangan:
+NOMOR SOAL -> KUNCI JAWABAN
+
+Bisa berupa:
+
+1. C
+2. A
+3. D
+
+atau:
+
+01 C
+02 A
+03 D
+
+atau tabel:
+
+No | Jawaban
+1  | C
+2  | A
+
+atau:
+
+1. B
+2. S
+3. B
+
+atau bentuk lain.
+
+Untuk soal pilihan ganda:
+gunakan A/B/C/D/E.
+
+Untuk Benar/Salah:
+pertahankan B/S atau Benar/Salah.
+
+Untuk isian:
+pertahankan angka/kata.
+
+Untuk menjodohkan:
+pertahankan format pasangan.
+
+ATURAN:
+- Jangan mengarang.
+- Jangan menghitung jawaban sendiri.
+- Jangan menyimpulkan jawaban dari soal.
+- Ambil hanya kunci yang BENAR-BENAR terlihat di halaman.
+- Jika halaman bukan halaman kunci, hasilkan [].
+- Nomor harus sesuai nomor soal.
+
+Balas hanya JSON array.
+`;
+
+      const userText =
+        `
+Periksa halaman ${pageNum}.
+
+Apakah ini halaman kunci jawaban?
+
+Jika YA:
+ekstrak semua pasangan nomor soal dan kunci.
+
+Jika TIDAK:
+kembalikan [].
+`;
+
+      try {
+        const result =
+          await callGemini({
+            modelId:
+              GEMINI_MODELS[0].id,
+
+            imageBase64:
+              image,
+
+            pageNum,
+
+            systemPrompt,
+
+            userText,
+
+            responseSchema:
+              ANSWER_KEY_SCHEMA,
+
+            maxOutputTokens:
+              4096,
+          });
+
+        const parsed =
+          parseGeminiJson(
+            result
+          );
+
+        return Array.isArray(
+          parsed
+        )
+          ? parsed
+          : parsed?.items || [];
+      } catch (
+        error
+      ) {
+        addLog(
+          `[KUNCI Halaman ${pageNum}] ${error.message}`,
+          'warning'
+        );
+
+        return [];
+      }
+    };
+
+  /* ============================================================
+     AUTO DETECT ANSWER KEY
+  ============================================================ */
+
+  const runAnswerKeyScanner =
     async () => {
-      const validation =
-        validateAiConfig();
+      if (
+        !pdfDocument ||
+        totalPages <
+          1
+      ) {
+        return;
+      }
 
-      if (validation) {
+      if (
+        !geminiApiKey
+      ) {
         setShowApiSettings(
           true
         );
 
-        setAiTestState(
-          'error'
-        );
-
-        setAiTestMessage(
-          validation
-        );
-
         addLog(
-          validation,
-          'error'
+          'Isi API key Gemini terlebih dahulu.',
+          'warning'
         );
 
         return;
       }
 
+      setScanningAnswerKey(
+        true
+      );
+
+      addLog(
+        'Mulai pencarian halaman KUNCI JAWABAN...',
+        'info'
+      );
+
+      const foundMap =
+        {};
+
+      const foundPages =
+        [];
+
+      // scan dari belakang karena
+      // halaman kunci biasanya ada di bagian akhir
+      const candidates =
+        Array.from(
+          {
+            length:
+              totalPages,
+          },
+          (_, i) =>
+            totalPages -
+            i
+        );
+
+      // batasi scan otomatis
+      // supaya tidak memanggil AI untuk
+      // seluruh PDF jika dokumen sangat besar
+      const maxPages =
+        Math.min(
+          candidates.length,
+          12
+        );
+
+      for (
+        let i = 0;
+        i < maxPages;
+        i++
+      ) {
+        const pageNum =
+          candidates[i];
+
+        addLog(
+          `[KUNCI] Mengecek halaman ${pageNum}...`,
+          'info'
+        );
+
+        const keys =
+          await scanAnswerKeyPage(
+            pageNum
+          );
+
+        if (
+          Array.isArray(
+            keys
+          ) &&
+          keys.length >
+            0
+        ) {
+          foundPages.push(
+            pageNum
+          );
+
+          keys.forEach(
+            (item) => {
+              const nomor =
+                parseInt(
+                  item.nomor,
+                  10
+                );
+
+              const key =
+                toStr(
+                  item.kunci_jawaban
+                ).trim();
+
+              if (
+                Number.isFinite(
+                  nomor
+                ) &&
+                key
+              ) {
+                foundMap[
+                  String(
+                    nomor
+                  )
+                ] =
+                  key;
+              }
+            }
+          );
+
+          addLog(
+            `[KUNCI] Halaman ${pageNum}: ${keys.length} kunci terbaca.`,
+            'success'
+          );
+        }
+      }
+
+      setAnswerKeyMap(
+        foundMap
+      );
+
+      setAnswerKeyPages(
+        foundPages
+      );
+
+      if (
+        Object.keys(
+          foundMap
+        ).length >
+        0
+      ) {
+        addLog(
+          `KUNCI SELESAI: ${Object.keys(foundMap).length} jawaban ditemukan.`,
+          'success'
+        );
+      } else {
+        addLog(
+          'Tidak ditemukan halaman kunci otomatis pada 12 halaman terakhir.',
+          'warning'
+        );
+      }
+
+      setScanningAnswerKey(
+        false
+      );
+
+      return foundMap;
+    };
+
+  /* ============================================================
+     APPLY ANSWER KEY
+  ============================================================ */
+
+  const applyAnswerKeys =
+    (
+      data,
+      keyMap
+    ) => {
+      return data.map(
+        (q) => {
+          const key =
+            keyMap[
+              String(
+                q.nomor
+              )
+            ];
+
+          if (
+            key
+          ) {
+            return {
+              ...q,
+
+              kunci_jawaban:
+                key,
+
+              kunci_terverifikasi:
+                true,
+
+              sumber_kunci:
+                'hasil scan halaman kunci',
+
+              halaman_kunci:
+                answerKeyPages,
+            };
+          }
+
+          return q;
+        }
+      );
+    };
+
+  /* ============================================================
+     START PROCESSING
+  ============================================================ */
+
+  const startProcessing =
+    async () => {
       if (
         !file ||
         !pdfDocument ||
@@ -1753,15 +2557,28 @@ export default function AdvancedQuestionExtractor() {
         return;
       }
 
-      saveAiConfigToSession(
-        aiConfig
-      );
+      if (
+        !geminiApiKey
+      ) {
+        setShowApiSettings(
+          true
+        );
+
+        addLog(
+          'API key Gemini belum diisi.',
+          'warning'
+        );
+
+        return;
+      }
 
       setAppState(
         'processing'
       );
 
-      setExtractedData([]);
+      setExtractedData(
+        []
+      );
 
       setProgress({
         current: 0,
@@ -1774,18 +2591,8 @@ export default function AdvancedQuestionExtractor() {
       );
 
       addLog(
-        `Memulai ekstraksi AI untuk ${selectedPages.length} halaman...`,
-        'info'
-      );
-
-      addLog(
-        `Provider: ${aiConfig.provider}`,
-        'info'
-      );
-
-      addLog(
-        `Model: ${aiConfig.model}`,
-        'info'
+        `Memulai ekstraksi ${selectedPages.length} halaman...`,
+        'success'
       );
 
       let allQuestions =
@@ -1794,78 +2601,92 @@ export default function AdvancedQuestionExtractor() {
       const failedPages =
         [];
 
-      for (
-        let i = 0;
-        i <
-        selectedPages.length;
-        i++
-      ) {
-        const pageNum =
-          selectedPages[i];
+      try {
+        for (
+          let i = 0;
+          i <
+          selectedPages.length;
+          i++
+        ) {
+          const pageNum =
+            selectedPages[i];
 
-        addLog(
-          `[Hal ${pageNum}] Merender halaman...`,
-          'info'
-        );
-
-        try {
-          const page =
-            await pdfDocument.getPage(
-              pageNum
+          try {
+            addLog(
+              `[Halaman ${pageNum}] Render resolusi tinggi...`,
+              'info'
             );
 
-          const pageCanvas =
-            await renderPageToCanvas(
-              page,
-              settings.resolution
-            );
-
-          const base64Image =
-            pageCanvas.toDataURL(
-              'image/jpeg',
-              0.92
-            );
-
-          addLog(
-            `[Hal ${pageNum}] Mengirim ke AI...`,
-            'info'
-          );
-
-          const onRateLimit =
-            (
-              secs,
-              status
-            ) =>
-              addLog(
-                `[Hal ${pageNum}] Server sibuk (${status}). Tunggu ${secs}s...`,
-                'warning'
+            const page =
+              await pdfDocument.getPage(
+                pageNum
               );
 
-          const [
-            questions,
-            regions,
-          ] =
-            await Promise.all([
-              extractFromImageWithAI(
+            const pageCanvas =
+              await renderPageToCanvas(
+                page,
+                settings.resolution
+              );
+
+            const base64Image =
+              pageCanvas.toDataURL(
+                'image/jpeg',
+                0.94
+              );
+
+            addLog(
+              `[Halaman ${pageNum}] AI membaca teks + gambar + tabel + grafik...`,
+              'info'
+            );
+
+            const rawResult =
+              await extractFromImageWithAI(
                 base64Image,
-                pageNum,
-                onRateLimit
-              ),
+                pageNum
+              );
 
-              detectDiagramRegions(
+            const rawQuestions =
+              Array.isArray(
+                rawResult
+              )
+                ? rawResult
+                : rawResult?.items ||
+                  [];
+
+            const questions =
+              rawQuestions
+                .map(
+                  (
+                    raw,
+                    idx
+                  ) =>
+                    normalizeQuestion(
+                      raw,
+                      idx + 1
+                    )
+                )
+                .filter(
+                  (q) =>
+                    q.teks_soal.trim()
+                      .length >
+                    0
+                );
+
+            /* --------------------------------------------
+               VISUAL / IMAGE DETECTION
+            -------------------------------------------- */
+
+            const regionInfo =
+              await detectDiagramRegions(
                 page
-              ),
-            ]);
+              );
 
-          if (
-            questions.length >
-            0
-          ) {
             let renderedImages =
               [];
 
             if (
-              regions.length >
+              regionInfo.regions
+                .length >
               0
             ) {
               const sharpPage =
@@ -1875,33 +2696,50 @@ export default function AdvancedQuestionExtractor() {
                 );
 
               renderedImages =
-                regions
+                regionInfo.regions
                   .map(
-                    (r) =>
-                      sliceRegionSharp(
-                        sharpPage,
-                        4,
-                        r
-                      )
-                  )
+                    (
+                      region
+                    ) => {
+                      const url =
+                        sliceRegionSharp(
+                          sharpPage,
+                          4,
+                          region
+                        );
 
+                      if (!url) {
+                        return null;
+                      }
+
+                      return {
+                        url,
+                        region,
+                      };
+                    }
+                  )
                   .filter(
                     Boolean
-                  )
-
-                  .map(
-                    (url) => ({
-                      url,
-                    })
                   );
             }
+
+            addLog(
+              `[Halaman ${pageNum}] ${renderedImages.length} kandidat visual PDF ditemukan.`,
+              'info'
+            );
+
+            /* --------------------------------------------
+               MATCH VISUAL
+            -------------------------------------------- */
 
             let imgPtr =
               0;
 
-            const withImages =
+            const questionsWithImages =
               questions.map(
-                (q) => {
+                (
+                  q
+                ) => {
                   const gambarList =
                     Array.isArray(
                       q.gambar
@@ -1909,23 +2747,52 @@ export default function AdvancedQuestionExtractor() {
                       ? q.gambar
                       : [];
 
+                  if (
+                    gambarList.length ===
+                    0
+                  ) {
+                    return {
+                      ...q,
+                      gambar: [],
+                    };
+                  }
+
                   const gambar =
                     gambarList.map(
-                      (g) => {
+                      (
+                        g
+                      ) => {
+                        let matched =
+                          null;
+
+                        /*
+                         * Prioritas pertama:
+                         * ambil kandidat visual
+                         * berikutnya.
+                         */
                         if (
                           imgPtr <
                           renderedImages.length
                         ) {
-                          const img =
+                          matched =
                             renderedImages[
-                              imgPtr++
+                              imgPtr
                             ];
 
+                          imgPtr++;
+                        }
+
+                        if (
+                          matched
+                        ) {
                           return {
                             ...g,
 
                             dataUrl:
-                              img.url,
+                              matched.url,
+
+                            sourcePage:
+                              pageNum,
 
                             metode:
                               'render-pdf',
@@ -1937,97 +2804,165 @@ export default function AdvancedQuestionExtractor() {
 
                           dataUrl:
                             null,
+
+                          sourcePage:
+                            pageNum,
+
+                          metode:
+                            'ai-detect-tanpa-crop',
                         };
                       }
                     );
 
                   return {
                     ...q,
-
                     gambar,
-
-                    __sourcePage:
-                      pageNum,
                   };
                 }
               );
 
-            allQuestions =
+            allQuestions = [
+              ...allQuestions,
+              ...questionsWithImages,
+            ];
+
+            setExtractedData(
               [
                 ...allQuestions,
-                ...withImages,
-              ];
-
-            setExtractedData([
-              ...allQuestions,
-            ]);
+              ]
+            );
 
             addLog(
-              `[Hal ${pageNum}] Sukses, ${questions.length} soal ditemukan.`,
+              `[Halaman ${pageNum}] ${questionsWithImages.length} soal berhasil.`,
               'success'
             );
-          } else {
+
+            if (
+              renderedImages.length >
+              0
+            ) {
+              addLog(
+                `[Halaman ${pageNum}] ${renderedImages.length} visual berhasil diproses.`,
+                'success'
+              );
+            }
+          } catch (
+            error
+          ) {
+            failedPages.push(
+              pageNum
+            );
+
             addLog(
-              `[Hal ${pageNum}] Tidak ada soal ditemukan.`,
-              'warning'
+              `[Halaman ${pageNum}] GAGAL: ${error.message}`,
+              'error'
             );
           }
-        } catch (
-          err
-        ) {
-          failedPages.push(
-            pageNum
-          );
 
-          addLog(
-            `[Hal ${pageNum}] Gagal: ${err.message}`,
-            'error'
-          );
+          setProgress({
+            current:
+              i + 1,
+
+            total:
+              selectedPages.length,
+          });
+
+          if (
+            i <
+            selectedPages.length -
+              1
+          ) {
+            await sleep(
+              settings.delayBetweenPages
+            );
+          }
         }
 
-        setProgress({
-          current:
-            i + 1,
+        /* --------------------------------------------
+           ANSWER KEY
+        -------------------------------------------- */
 
-          total:
-            selectedPages.length,
-        });
+        let finalKeyMap =
+          answerKeyMap;
 
         if (
-          i <
-          selectedPages.length -
-            1
+          Object.keys(
+            finalKeyMap
+          ).length ===
+          0
         ) {
-          await sleep(
-            settings.delayBetweenPages
+          addLog(
+            'Mulai tahap 2: mencari halaman kunci jawaban...',
+            'success'
+          );
+
+          finalKeyMap =
+            await runAnswerKeyScanner();
+        }
+
+        const finalQuestions =
+          applyAnswerKeys(
+            allQuestions,
+            finalKeyMap
+          );
+
+        setExtractedData(
+          finalQuestions
+        );
+
+        addLog(
+          `SELESAI. ${finalQuestions.length} soal tersedia.`,
+          'success'
+        );
+
+        const keyCount =
+          finalQuestions.filter(
+            (q) =>
+              q.kunci_jawaban
+          ).length;
+
+        addLog(
+          `${keyCount} soal memiliki kunci jawaban.`,
+          keyCount >
+            0
+            ? 'success'
+            : 'warning'
+        );
+
+        if (
+          failedPages.length >
+          0
+        ) {
+          addLog(
+            `Halaman gagal: ${failedPages.join(', ')}`,
+            'warning'
           );
         }
+
+        setAppState(
+          'editing'
+        );
+
+        setActiveTab(
+          'questions'
+        );
+      } catch (
+        error
+      ) {
+        addLog(
+          `GAGAL TOTAL: ${error.message}`,
+          'error'
+        );
+
+        setAppState(
+          'error'
+        );
       }
-
-      addLog(
-        failedPages.length >
-          0
-          ? `Selesai dengan ${failedPages.length} halaman gagal. Total ${allQuestions.length} soal.`
-          : `Selesai. Total ${allQuestions.length} soal berhasil diekstrak.`,
-
-        failedPages.length >
-          0
-          ? 'warning'
-          : 'success'
-      );
-
-      setAppState(
-        'editing'
-      );
-
-      setActiveTab(
-        'questions'
-      );
     };
 
-  // ==========================================================
-  // EDIT
-  // ==========================================================
+  /* ============================================================
+     EDIT
+  ============================================================ */
 
   const handleEditClick =
     (
@@ -2040,18 +2975,58 @@ export default function AdvancedQuestionExtractor() {
 
       setEditForm({
         ...q,
+
+        opsi_jawaban:
+          [
+            ...(q.opsi_jawaban ||
+              []),
+          ],
+
+        pernyataan:
+          [
+            ...(q.pernyataan ||
+              []),
+          ],
+
+        tabel_benar_salah:
+          [
+            ...(q.tabel_benar_salah ||
+              []),
+          ],
+
+        pasangan:
+          [
+            ...(q.pasangan ||
+              []),
+          ].map(
+            (p) => ({
+              ...p,
+            })
+          ),
+
+        gambar:
+          [
+            ...(q.gambar ||
+              []),
+          ],
       });
     };
 
   const handleSaveEdit =
-    (index) => {
+    (
+      index
+    ) => {
       const updated =
         [
           ...extractedData,
         ];
 
       updated[index] =
-        editForm;
+        normalizeQuestion(
+          editForm,
+          editForm.nomor ??
+            index + 1
+        );
 
       setExtractedData(
         updated
@@ -2060,548 +3035,668 @@ export default function AdvancedQuestionExtractor() {
       setEditingId(
         null
       );
+
+      addLog(
+        `Soal nomor ${updated[index].nomor} diperbarui.`,
+        'success'
+      );
     };
 
   const handleDeleteQuestion =
-    (index) => {
-      setExtractedData(
+    (
+      index
+    ) => {
+      const updated =
         extractedData.filter(
-          (_, i) =>
-            i !== index
-        )
-      );
-    };
+          (
+            _,
+            i
+          ) =>
+            i !==
+            index
+        );
 
-  // ==========================================================
-  // SAVE TO BANK SOAL
-  // ==========================================================
-
-  const saveToBankSoal =
-    async () => {
-      if (
-        extractedData.length ===
-        0
-      ) {
-        return;
-      }
-
-      setAppState(
-        'saving'
+      setExtractedData(
+        updated
       );
 
       addLog(
-        'Mengunggah gambar diagram ke penyimpanan...',
-        'info'
+        'Soal dihapus.',
+        'warning'
+      );
+    };
+
+  /* ============================================================
+     MANUAL CROP
+  ============================================================ */
+
+  const openManualCrop =
+    (
+      qIndex,
+      gIndex
+    ) => {
+      const q =
+        extractedData[
+          qIndex
+        ];
+
+      const pageNum =
+        q?.gambar?.[
+          gIndex
+        ]?.sourcePage ||
+        q?.gambar?.[0]
+          ?.sourcePage ||
+        selectedPages[0] ||
+        1;
+
+      setManualCrop({
+        qIndex,
+        gIndex,
+        pageNum,
+      });
+    };
+
+  const applyManualCrop =
+    (
+      qIndex,
+      gIndex,
+      dataUrl,
+      pageNum
+    ) => {
+      setExtractedData(
+        (prev) => {
+          const next =
+            [...prev];
+
+          const q =
+            {
+              ...next[
+                qIndex
+              ],
+            };
+
+          const gambar =
+            [
+              ...(q.gambar ||
+                []),
+            ];
+
+          if (
+            gIndex !=
+              null &&
+            gambar[
+              gIndex
+            ]
+          ) {
+            gambar[
+              gIndex
+            ] = {
+              ...gambar[
+                gIndex
+              ],
+
+              dataUrl,
+
+              sourcePage:
+                pageNum,
+
+              metode:
+                'manual',
+            };
+          } else {
+            gambar.push({
+              id:
+                `GAMBAR_${gambar.length + 1}`,
+
+              deskripsi:
+                '',
+
+              dataUrl,
+
+              sourcePage:
+                pageNum,
+
+              metode:
+                'manual',
+            });
+
+            if (
+              !/\{\{\s*GAMBAR/i.test(
+                q.teks_soal ||
+                  ''
+              )
+            ) {
+              q.teks_soal =
+                `${
+                  q.teks_soal ||
+                  ''
+                } {{GAMBAR}}`;
+            }
+          }
+
+          q.gambar =
+            gambar;
+
+          next[
+            qIndex
+          ] = q;
+
+          return next;
+        }
       );
 
-      const imagesToUpload =
-        [];
+      addLog(
+        'Gambar manual berhasil ditambahkan.',
+        'success'
+      );
+    };
+
+  /* ============================================================
+     FILTER
+  ============================================================ */
+
+  const filteredQuestions =
+    useMemo(() => {
+      if (
+        typeFilter ===
+        'semua'
+      ) {
+        return extractedData;
+      }
+
+      return extractedData.filter(
+        (q) =>
+          q.tipe ===
+          typeFilter
+      );
+    }, [
+      extractedData,
+      typeFilter,
+    ]);
+
+  /* ============================================================
+     DOWNLOAD JSON
+  ============================================================ */
+
+  const downloadJSON =
+    () => {
+      const payload =
+        {
+          metadata: {
+            file:
+              file?.name ||
+              '',
+            extractedAt:
+              new Date().toISOString(),
+
+            totalQuestions:
+              extractedData.length,
+
+            totalAnswered:
+              extractedData.filter(
+                (q) =>
+                  q.kunci_jawaban
+              ).length,
+
+            answerKeyPages:
+              answerKeyPages,
+          },
+
+          questions:
+            extractedData,
+        };
+
+      const dataStr =
+        'data:application/json;charset=utf-8,' +
+        encodeURIComponent(
+          JSON.stringify(
+            payload,
+            null,
+            2
+          )
+        );
+
+      const a =
+        document.createElement(
+          'a'
+        );
+
+      a.href =
+        dataStr;
+
+      a.download =
+        `bank-soal-${file?.name || 'hasil'}.json`;
+
+      document.body.appendChild(
+        a
+      );
+
+      a.click();
+
+      a.remove();
+
+      addLog(
+        'JSON berhasil diunduh.',
+        'success'
+      );
+    };
+
+  /* ============================================================
+     DOWNLOAD CSV
+  ============================================================ */
+
+  const downloadCSV =
+    () => {
+      const esc =
+        (v) =>
+          `"${String(
+            v ?? ''
+          ).replace(
+            /"/g,
+            '""'
+          )}"`;
+
+      let csv =
+        [
+          'Nomor',
+          'Tipe',
+          'Soal',
+          'Pernyataan',
+          'Tabel Benar-Salah',
+          'Pasangan',
+          'Opsi A',
+          'Opsi B',
+          'Opsi C',
+          'Opsi D',
+          'Opsi E',
+          'Kunci',
+          'Jumlah Gambar',
+          'Halaman Sumber',
+        ].join(',') +
+        '\n';
 
       extractedData.forEach(
         (
-          q,
-          qi
+          q
         ) => {
-          (
-            q.gambar || []
-          ).forEach(
+          const opsi =
+            q.opsi_jawaban ||
+            [];
+
+          const pasangan =
             (
-              g,
-              gi
-            ) => {
-              if (
-                g.dataUrl &&
-                g.dataUrl.startsWith(
-                  'data:image'
-                )
-              ) {
-                imagesToUpload.push({
-                  key:
-                    `soal-${Date.now()}-${qi}-${gi}`,
+              q.pasangan ||
+              []
+            )
+              .map(
+                (
+                  p
+                ) =>
+                  `${p.kiri} -> ${p.kanan}`
+              )
+              .join(
+                ' | '
+              );
 
-                  dataUrl:
-                    g.dataUrl,
-
-                  qi,
-
-                  gi,
-                });
-              }
-            }
-          );
+          csv += [
+            q.nomor,
+            esc(q.tipe),
+            esc(
+              q.teks_soal
+            ),
+            esc(
+              (
+                q.pernyataan ||
+                []
+              ).join(
+                ' | '
+              )
+            ),
+            esc(
+              (
+                q.tabel_benar_salah ||
+                []
+              ).join(
+                ' | '
+              )
+            ),
+            esc(
+              pasangan
+            ),
+            esc(
+              opsi[0] ||
+                ''
+            ),
+            esc(
+              opsi[1] ||
+                ''
+            ),
+            esc(
+              opsi[2] ||
+                ''
+            ),
+            esc(
+              opsi[3] ||
+                ''
+            ),
+            esc(
+              opsi[4] ||
+                ''
+            ),
+            esc(
+              q.kunci_jawaban ||
+                ''
+            ),
+            (
+              q.gambar ||
+              []
+            ).filter(
+              (g) =>
+                g.dataUrl
+            ).length,
+            esc(
+              q.halaman_kunci?.join(
+                ', '
+              ) ||
+                q.gambar?.find(
+                  (g) =>
+                    g.sourcePage
+                )?.sourcePage ||
+                ''
+            ),
+          ].join(
+            ','
+          ) +
+          '\n';
         }
       );
 
-      let uploadedMap =
-        {};
-
-      if (
-        imagesToUpload.length >
-        0
-      ) {
-        try {
-          const resp =
-            await fetch(
-              '/api/uploadBankSoalImages',
-              {
-                method:
-                  'POST',
-
-                headers: {
-                  'Content-Type':
-                    'application/json',
-                },
-
-                body:
-                  JSON.stringify(
-                    {
-                      images:
-                        imagesToUpload.map(
-                          (i) => ({
-                            key:
-                              i.key,
-
-                            dataUrl:
-                              i.dataUrl,
-                          })
-                        ),
-                    }
-                  ),
-              }
-            );
-
-          const result =
-            await resp
-              .json()
-              .catch(
-                () => ({})
-              );
-
-          if (
-            !resp.ok ||
-            !result.success
-          ) {
-            throw new Error(
-              result.error ||
-                'Gagal upload gambar.'
-            );
-          }
-
-          (
-            result.uploaded ||
-            []
-          ).forEach(
-            (u) => {
-              uploadedMap[
-                u.key
-              ] =
-                u.url;
-            }
-          );
-
-          if (
-            (
-              result.errors ||
-              []
-            ).length > 0
-          ) {
-            addLog(
-              `${result.errors.length} gambar gagal diupload, soal tetap disimpan tanpa gambar itu.`,
-              'warning'
-            );
-          }
-
-          addLog(
-            `${(result.uploaded || []).length} gambar berhasil diunggah.`,
-            'success'
-          );
-        } catch (
-          err
-        ) {
-          addLog(
-            `Gagal upload gambar: ${err.message}. Melanjutkan simpan tanpa gambar.`,
-            'error'
-          );
-        }
-      }
-
-      const finalData =
-        extractedData.map(
-          (
-            q,
-            qi
-          ) => {
-            const gambar =
-              (
-                q.gambar ||
-                []
-              ).map(
-                (
-                  g,
-                  gi
-                ) => {
-                  const match =
-                    imagesToUpload.find(
-                      (i) =>
-                        i.qi ===
-                          qi &&
-                        i.gi ===
-                          gi
-                    );
-
-                  if (
-                    match &&
-                    uploadedMap[
-                      match.key
-                    ]
-                  ) {
-                    return {
-                      ...g,
-
-                      url:
-                        uploadedMap[
-                          match.key
-                        ],
-                    };
-                  }
-
-                  return g;
-                }
-              );
-
-            return {
-              ...q,
-              gambar,
-            };
+      const blob =
+        new Blob(
+          [csv],
+          {
+            type:
+              'text/csv;charset=utf-8',
           }
         );
+
+      const url =
+        URL.createObjectURL(
+          blob
+        );
+
+      const a =
+        document.createElement(
+          'a'
+        );
+
+      a.href =
+        url;
+
+      a.download =
+        `bank-soal-${file?.name || 'hasil'}.csv`;
+
+      document.body.appendChild(
+        a
+      );
+
+      a.click();
+
+      a.remove();
+
+      URL.revokeObjectURL(
+        url
+      );
 
       addLog(
-        `Menulis ${finalData.length} soal ke Firestore (koleksi "${BANK_SOAL_COLLECTION}")...`,
-        'info'
+        'CSV berhasil diunduh.',
+        'success'
+      );
+    };
+
+  /* ============================================================
+     DOWNLOAD MARKDOWN
+  ============================================================ */
+
+  const downloadMarkdown =
+    () => {
+      let md =
+        `# Bank Soal - ${
+          file?.name ||
+          'Dokumen'
+        }\n\n`;
+
+      extractedData.forEach(
+        (
+          q
+        ) => {
+          md +=
+            `## Soal ${q.nomor}\n\n`;
+
+          md +=
+            `${q.teks_soal}\n\n`;
+
+          if (
+            q.opsi_jawaban
+              ?.length
+          ) {
+            q.opsi_jawaban.forEach(
+              (
+                opt,
+                idx
+              ) => {
+                md += `${String.fromCharCode(
+                  65 + idx
+                )}. ${opt}\n`;
+              }
+            );
+
+            md +=
+              '\n';
+          }
+
+          if (
+            q.pernyataan
+              ?.length
+          ) {
+            md +=
+              '**Pernyataan:**\n';
+
+            q.pernyataan.forEach(
+              (
+                p
+              ) => {
+                md +=
+                  `- ${p}\n`;
+              }
+            );
+
+            md +=
+              '\n';
+          }
+
+          if (
+            q.tabel_benar_salah
+              ?.length
+          ) {
+            md +=
+              '**Benar/Salah:**\n';
+
+            q.tabel_benar_salah.forEach(
+              (
+                row
+              ) => {
+                md +=
+                  `- ${row}\n`;
+              }
+            );
+
+            md +=
+              '\n';
+          }
+
+          if (
+            q.pasangan
+              ?.length
+          ) {
+            md +=
+              '**Menjodohkan:**\n';
+
+            q.pasangan.forEach(
+              (
+                p
+              ) => {
+                md +=
+                  `- ${p.kiri} -> ${p.kanan}\n`;
+              }
+            );
+
+            md +=
+              '\n';
+          }
+
+          if (
+            q.kunci_jawaban
+          ) {
+            md +=
+              `**Kunci Jawaban:** ${q.kunci_jawaban}\n\n`;
+          }
+
+          md +=
+            '---\n\n';
+        }
       );
 
-      try {
-        const batch =
-          writeBatch(
-            db
-          );
-
-        finalData.forEach(
-          (q) => {
-            const ref =
-              doc(
-                collection(
-                  db,
-                  BANK_SOAL_COLLECTION
-                )
-              );
-
-            batch.set(
-              ref,
-
-              buildBankSoalDoc(
-                q,
-                {
-                  fileName:
-                    file?.name ||
-                    'dokumen.pdf',
-
-                  mataPelajaran,
-
-                  tingkatKelas,
-                }
-              )
-            );
+      const blob =
+        new Blob(
+          [md],
+          {
+            type:
+              'text/markdown;charset=utf-8',
           }
         );
 
-        await batch.commit();
-
-        addLog(
-          'Semua soal berhasil disimpan ke Bank Soal. Guru sudah bisa mengambilnya.',
-          'success'
+      const url =
+        URL.createObjectURL(
+          blob
         );
 
-        setAppState(
-          'done'
-        );
-      } catch (
-        err
-      ) {
-        addLog(
-          `Gagal menyimpan ke Firestore: ${err.message}`,
-          'error'
+      const a =
+        document.createElement(
+          'a'
         );
 
-        setAppState(
-          'editing'
-        );
-      }
+      a.href =
+        url;
+
+      a.download =
+        `bank-soal-${file?.name || 'hasil'}.md`;
+
+      document.body.appendChild(
+        a
+      );
+
+      a.click();
+
+      a.remove();
+
+      URL.revokeObjectURL(
+        url
+      );
+
+      addLog(
+        'Markdown berhasil diunduh.',
+        'success'
+      );
     };
 
-  // ==========================================================
-  // RESET
-  // ==========================================================
+  /* ============================================================
+     RESET
+  ============================================================ */
 
-  const resetAll =
+  const resetDocument =
     () => {
       setFile(null);
-
-      setAppState(
-        'idle'
-      );
-
-      setExtractedData(
-        []
-      );
-
-      setLogs([]);
-
-      setProgress({
-        current: 0,
-        total: 0,
-      });
 
       setPdfDocument(
         null
       );
 
-      setTotalPages(
-        0
+      setExtractedData(
+        []
       );
 
       setSelectedPages(
         []
       );
 
+      setTotalPages(
+        0
+      );
+
       setCoverThumbnail(
         null
       );
 
-      setEditingId(
-        null
-      );
-
-      setEditForm(
+      setPagePreviews(
         {}
       );
 
-      setActiveTab(
-        'questions'
+      setAnswerKeyMap(
+        {}
+      );
+
+      setAnswerKeyPages(
+        []
+      );
+
+      setLogs([]);
+
+      setAppState(
+        'idle'
       );
     };
 
-  // ==========================================================
-  // PROVIDER UI
-  // ==========================================================
-
-  const selectedProvider =
-    getSelectedProvider();
-
-  // ==========================================================
-  // RENDER
-  // ==========================================================
+  /* ============================================================
+     RENDER
+  ============================================================ */
 
   return (
-    <div
-      style={{
-        minHeight:
-          '100vh',
+    <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col font-sans">
 
-        background:
-          '#f8fafc',
+      {/* ======================================================
+          HEADER
+      ====================================================== */}
 
-        color:
-          '#0f172a',
+      <header className="border-b border-gray-800 bg-gray-900/80 backdrop-blur sticky top-0 z-50 px-4 md:px-6 py-4">
 
-        fontFamily:
-          'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
 
-        paddingBottom:
-          40,
-      }}
-    >
-      {/* ====================================================
-          TOP HEADER
-          ==================================================== */}
+          <div className="flex items-center gap-3">
 
-      <header
-        style={{
-          background:
-            'linear-gradient(135deg, #0f172a 0%, #172554 100%)',
-
-          color:
-            'white',
-
-          padding:
-            '22px 28px',
-
-          position:
-            'sticky',
-
-          top:
-            0,
-
-          zIndex:
-            50,
-
-          boxShadow:
-            '0 8px 30px rgba(15,23,42,0.14)',
-        }}
-      >
-        <div
-          style={{
-            maxWidth:
-              1250,
-
-            margin:
-              '0 auto',
-
-            display:
-              'flex',
-
-            justifyContent:
-              'space-between',
-
-            alignItems:
-              'center',
-
-            gap:
-              20,
-
-            flexWrap:
-              'wrap',
-          }}
-        >
-          <div
-            style={{
-              display:
-                'flex',
-
-              alignItems:
-                'center',
-
-              gap:
-                14,
-            }}
-          >
-            <div
-              style={{
-                width:
-                  50,
-
-                height:
-                  50,
-
-                borderRadius:
-                  15,
-
-                background:
-                  'rgba(59,130,246,0.18)',
-
-                border:
-                  '1px solid rgba(96,165,250,0.3)',
-
-                display:
-                  'flex',
-
-                alignItems:
-                  'center',
-
-                justifyContent:
-                  'center',
-              }}
-            >
-              <Sparkles
-                size={
-                  25
-                }
-              />
+            <div className="p-2.5 bg-blue-600/20 border border-blue-500/30 rounded-xl text-blue-400">
+              <Sparkles className="w-6 h-6" />
             </div>
 
             <div>
-              <div
-                style={{
-                  fontSize:
-                    21,
+              <h1 className="text-lg md:text-xl font-bold text-white flex items-center gap-2 flex-wrap">
+                Advanced AI Question Extractor
 
-                  fontWeight:
-                    800,
+                <span className="text-[10px] md:text-xs bg-indigo-600 px-2.5 py-0.5 rounded-full font-mono font-normal">
+                  v14.0 Bank Soal
+                </span>
+              </h1>
 
-                  letterSpacing:
-                    -0.4,
-                }}
-              >
-                Scan Soal PDF
-              </div>
-
-              <div
-                style={{
-                  fontSize:
-                    13,
-
-                  color:
-                    '#cbd5e1',
-
-                  marginTop:
-                    3,
-                }}
-              >
-                Advanced Question Extractor
-              </div>
+              <p className="text-[11px] md:text-xs text-gray-400">
+                Soal + Gambar + Grafik + Tabel + LaTeX + Kunci Jawaban
+              </p>
             </div>
+
           </div>
 
-          <div
-            style={{
-              display:
-                'flex',
+          <div className="flex flex-wrap items-center gap-2 relative">
 
-              alignItems:
-                'center',
-
-              gap:
-                10,
-
-              flexWrap:
-                'wrap',
-            }}
-          >
-            <div
-              style={{
-                display:
-                  'inline-flex',
-
-                alignItems:
-                  'center',
-
-                gap:
-                  8,
-
-                padding:
-                  '8px 12px',
-
-                borderRadius:
-                  10,
-
-                background:
-                  'rgba(255,255,255,0.08)',
-
-                border:
-                  '1px solid rgba(255,255,255,0.12)',
-
-                fontSize:
-                  12,
-              }}
-            >
-              <Cpu size={15} />
-
-              <span>
-                {aiConfig.model ||
-                  'Model belum dipilih'}
-              </span>
-            </div>
+            {/* API KEY */}
 
             <button
               onClick={() =>
@@ -2609,2847 +3704,1511 @@ export default function AdvancedQuestionExtractor() {
                   (v) => !v
                 )
               }
-              style={{
-                border:
-                  '1px solid rgba(255,255,255,0.18)',
-
-                background:
-                  'rgba(255,255,255,0.08)',
-
-                color:
-                  'white',
-
-                borderRadius:
-                  10,
-
-                padding:
-                  '9px 13px',
-
-                cursor:
-                  'pointer',
-
-                fontWeight:
-                  700,
-
-                display:
-                  'flex',
-
-                alignItems:
-                  'center',
-
-                gap:
-                  8,
-              }}
+              className={`text-xs px-3 py-2 rounded-lg border flex items-center gap-1.5 ${
+                geminiApiKey
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                  : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+              }`}
             >
-              <Settings size={16} />
+              <KeyRound className="w-3.5 h-3.5" />
 
-              AI Settings
-
-              {showApiSettings ? (
-                <ChevronUp
-                  size={
-                    15
-                  }
-                />
-              ) : (
-                <ChevronDown
-                  size={
-                    15
-                  }
-                />
-              )}
+              {geminiApiKey
+                ? 'AI Key tersimpan'
+                : 'Set AI Key'}
             </button>
-          </div>
-        </div>
-      </header>
 
-      {/* ====================================================
-          MAIN
-          ==================================================== */}
+            {showApiSettings && (
+              <div className="absolute right-0 top-11 w-[360px] bg-gray-900 border border-gray-700 rounded-2xl p-4 shadow-2xl z-[200]">
 
-      <main
-        style={{
-          maxWidth:
-            1250,
-
-          margin:
-            '0 auto',
-
-          padding:
-            '24px 20px',
-
-          display:
-            'flex',
-
-          flexDirection:
-            'column',
-
-          gap:
-            20,
-        }}
-      >
-        {/* ==================================================
-            AI SETTINGS
-            ================================================== */}
-
-        {showApiSettings && (
-          <section
-            style={{
-              background:
-                'white',
-
-              border:
-                '1px solid #e2e8f0',
-
-              borderRadius:
-                18,
-
-              boxShadow:
-                '0 8px 30px rgba(15,23,42,0.06)',
-
-              overflow:
-                'hidden',
-            }}
-          >
-            <div
-              style={{
-                padding:
-                  '18px 20px',
-
-                borderBottom:
-                  '1px solid #e2e8f0',
-
-                background:
-                  '#f8fafc',
-
-                display:
-                  'flex',
-
-                alignItems:
-                  'center',
-
-                justifyContent:
-                  'space-between',
-
-                gap:
-                  15,
-
-                flexWrap:
-                  'wrap',
-              }}
-            >
-              <div
-                style={{
-                  display:
-                    'flex',
-
-                  alignItems:
-                    'center',
-
-                  gap:
-                    10,
-                }}
-              >
-                <div
-                  style={{
-                    width:
-                      38,
-
-                    height:
-                      38,
-
-                    borderRadius:
-                      11,
-
-                    background:
-                      '#dbeafe',
-
-                    color:
-                      '#2563eb',
-
-                    display:
-                      'flex',
-
-                    alignItems:
-                      'center',
-
-                    justifyContent:
-                      'center',
-                  }}
-                >
-                  <KeyRound
-                    size={
-                      19
-                    }
-                  />
-                </div>
-
-                <div>
-                  <div
-                    style={{
-                      fontWeight:
-                        800,
-
-                      fontSize:
-                        15,
-                    }}
-                  >
-                    Pengaturan AI
-                  </div>
-
-                  <div
-                    style={{
-                      fontSize:
-                        12,
-
-                      color:
-                        '#64748b',
-
-                      marginTop:
-                        2,
-                    }}
-                  >
-                    Ganti provider, API key, dan model langsung dari aplikasi.
-                  </div>
-                </div>
-              </div>
-
-              {aiTestState ===
-                'success' && (
-                <div
-                  style={{
-                    display:
-                      'inline-flex',
-
-                    alignItems:
-                      'center',
-
-                    gap:
-                      7,
-
-                    padding:
-                      '7px 11px',
-
-                    borderRadius:
-                      999,
-
-                    background:
-                      '#dcfce7',
-
-                    color:
-                      '#166534',
-
-                    fontSize:
-                      12,
-
-                    fontWeight:
-                      700,
-                  }}
-                >
-                  <Wifi
-                    size={
-                      14
-                    }
-                  />
-
-                  API Terhubung
-                </div>
-              )}
-
-              {aiTestState ===
-                'error' && (
-                <div
-                  style={{
-                    display:
-                      'inline-flex',
-
-                    alignItems:
-                      'center',
-
-                    gap:
-                      7,
-
-                    padding:
-                      '7px 11px',
-
-                    borderRadius:
-                      999,
-
-                    background:
-                      '#fee2e2',
-
-                    color:
-                      '#991b1b',
-
-                    fontSize:
-                      12,
-
-                    fontWeight:
-                      700,
-                  }}
-                >
-                  <WifiOff
-                    size={
-                      14
-                    }
-                  />
-
-                  API Bermasalah
-                </div>
-              )}
-            </div>
-
-            <div
-              style={{
-                padding:
-                  20,
-              }}
-            >
-              <div
-                style={{
-                  display:
-                    'grid',
-
-                  gridTemplateColumns:
-                    'repeat(auto-fit, minmax(240px, 1fr))',
-
-                  gap:
-                    15,
-                }}
-              >
-                {/* PROVIDER */}
-
-                <div>
-                  <label
-                    style={
-                      labelStyle
-                    }
-                  >
-                    Provider AI
-                  </label>
-
-                  <select
-                    value={
-                      aiConfig.provider
-                    }
-                    onChange={(
-                      e
-                    ) =>
-                      applyProviderDefaults(
-                        e.target.value
-                      )
-                    }
-                    style={
-                      inputStyle
-                    }
-                  >
-                    {AI_PROVIDERS.map(
-                      (
-                        provider
-                      ) => (
-                        <option
-                          key={
-                            provider.value
-                          }
-                          value={
-                            provider.value
-                          }
-                        >
-                          {
-                            provider.label
-                          }
-                        </option>
-                      )
-                    )}
-                  </select>
-
-                  <div
-                    style={
-                      helpStyle
-                    }
-                  >
-                    {
-                      selectedProvider.description
-                    }
-                  </div>
-                </div>
-
-                {/* MODEL */}
-
-                <div>
-                  <label
-                    style={
-                      labelStyle
-                    }
-                  >
-                    Model
-                  </label>
-
-                  <input
-                    value={
-                      aiConfig.model
-                    }
-                    onChange={(
-                      e
-                    ) =>
-                      updateAiConfig({
-                        model:
-                          e
-                            .target
-                            .value,
-                      })
-                    }
-                    placeholder="contoh: google/gemini-2.5-flash"
-                    style={
-                      inputStyle
-                    }
-                  />
-
-                  <div
-                    style={
-                      helpStyle
-                    }
-                  >
-                    Isi ID model sesuai provider yang kamu gunakan.
-                  </div>
-                </div>
-
-                {/* API KEY */}
-
-                <div
-                  style={{
-                    gridColumn:
-                      '1 / -1',
-                  }}
-                >
-                  <label
-                    style={
-                      labelStyle
-                    }
-                  >
-                    API Key
-                  </label>
-
-                  <div
-                    style={{
-                      position:
-                        'relative',
-                    }}
-                  >
-                    <input
-                      type={
-                        showApiKey
-                          ? 'text'
-                          : 'password'
-                      }
-                      value={
-                        aiConfig.apiKey
-                      }
-                      onChange={(
-                        e
-                      ) =>
-                        updateAiConfig({
-                          apiKey:
-                            e
-                              .target
-                              .value,
-                        })
-                      }
-                      placeholder="Masukkan API key provider"
-                      style={{
-                        ...inputStyle,
-
-                        paddingRight:
-                          48,
-                      }}
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowApiKey(
-                          (v) =>
-                            !v
-                        )
-                      }
-                      style={{
-                        position:
-                          'absolute',
-
-                        right:
-                          10,
-
-                        top:
-                          '50%',
-
-                        transform:
-                          'translateY(-50%)',
-
-                        border:
-                          'none',
-
-                        background:
-                          'transparent',
-
-                        color:
-                          '#64748b',
-
-                        cursor:
-                          'pointer',
-
-                        padding:
-                          4,
-                      }}
-                    >
-                      {showApiKey ? (
-                        <EyeOff
-                          size={
-                            18
-                          }
-                        />
-                      ) : (
-                        <Eye
-                          size={
-                            18
-                          }
-                        />
-                      )}
-                    </button>
-                  </div>
-
-                  <div
-                    style={
-                      helpStyle
-                    }
-                  >
-                    API key hanya disimpan di sesi browser ini.
-                  </div>
-                </div>
-
-                {/* BASE URL */}
-
-                {(providerNeedsBaseUrl ||
-                  aiConfig.baseUrl) && (
-                  <div
-                    style={{
-                      gridColumn:
-                        '1 / -1',
-                    }}
-                  >
-                    <label
-                      style={
-                        labelStyle
-                      }
-                    >
-                      Base URL / Chat Completions Endpoint
-                    </label>
-
-                    <input
-                      value={
-                        aiConfig.baseUrl
-                      }
-                      onChange={(
-                        e
-                      ) =>
-                        updateAiConfig({
-                          baseUrl:
-                            e
-                              .target
-                              .value,
-                        })
-                      }
-                      placeholder="https://openrouter.ai/api/v1/chat/completions"
-                      style={
-                        inputStyle
-                      }
-                    />
-
-                    <div
-                      style={
-                        helpStyle
-                      }
-                    >
-                      Untuk OpenAI / Gemini / Anthropic sudah ada default. Untuk OpenAI Compatible isi endpoint provider.
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* BUTTONS */}
-
-              <div
-                style={{
-                  display:
-                    'flex',
-
-                  gap:
-                    10,
-
-                  marginTop:
-                    18,
-
-                  flexWrap:
-                    'wrap',
-                }}
-              >
-                <button
-                  onClick={() =>
-                    saveAiConfigToSession(
-                      aiConfig
-                    )
-                  }
-                  style={{
-                    border:
-                      '1px solid #bfdbfe',
-
-                    background:
-                      '#eff6ff',
-
-                    color:
-                      '#1d4ed8',
-
-                    borderRadius:
-                      10,
-
-                    padding:
-                      '10px 15px',
-
-                    cursor:
-                      'pointer',
-
-                    fontWeight:
-                      700,
-
-                    display:
-                      'inline-flex',
-
-                    alignItems:
-                      'center',
-
-                    gap:
-                      8,
-                  }}
-                >
-                  <Save
-                    size={
-                      16
-                    }
-                  />
-
-                  Simpan Sesi
-                </button>
-
-                <button
-                  onClick={
-                    testApiConnection
-                  }
-                  disabled={
-                    aiTestState ===
-                    'testing'
-                  }
-                  style={{
-                    border:
-                      'none',
-
-                    background:
-                      '#2563eb',
-
-                    color:
-                      'white',
-
-                    borderRadius:
-                      10,
-
-                    padding:
-                      '10px 16px',
-
-                    cursor:
-                      'pointer',
-
-                    fontWeight:
-                      800,
-
-                    display:
-                      'inline-flex',
-
-                    alignItems:
-                      'center',
-
-                    gap:
-                      8,
-
-                    opacity:
-                      aiTestState ===
-                      'testing'
-                        ? 0.65
-                        : 1,
-                  }}
-                >
-                  {aiTestState ===
-                  'testing' ? (
-                    <Loader2
-                      size={
-                        16
-                      }
-                      style={{
-                        animation:
-                          'spin 1s linear infinite',
-                      }}
-                    />
-                  ) : (
-                    <Wifi
-                      size={
-                        16
-                      }
-                    />
-                  )}
-
-                  Test API
-                </button>
-              </div>
-
-              {aiTestMessage && (
-                <div
-                  style={{
-                    marginTop:
-                      13,
-
-                    display:
-                      'flex',
-
-                    alignItems:
-                      'flex-start',
-
-                    gap:
-                      9,
-
-                    padding:
-                      '11px 13px',
-
-                    borderRadius:
-                      10,
-
-                    background:
-                      aiTestState ===
-                      'success'
-                        ? '#f0fdf4'
-                        : '#fef2f2',
-
-                    border:
-                      `1px solid ${
-                        aiTestState ===
-                        'success'
-                          ? '#bbf7d0'
-                          : '#fecaca'
-                      }`,
-
-                    color:
-                      aiTestState ===
-                      'success'
-                        ? '#166534'
-                        : '#991b1b',
-
-                    fontSize:
-                      12,
-
-                    fontWeight:
-                      600,
-                  }}
-                >
-                  {aiTestState ===
-                  'success' ? (
-                    <CheckCircle
-                      size={
-                        16
-                      }
-                    />
-                  ) : (
-                    <AlertCircle
-                      size={
-                        16
-                      }
-                    />
-                  )}
-
-                  <span>
-                    {
-                      aiTestMessage
-                    }
-                  </span>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* ==================================================
-            IDLE
-            ================================================== */}
-
-        {appState ===
-          'idle' && (
-          <section
-            onDragOver={(
-              e
-            ) => {
-              e.preventDefault();
-              setIsDragging(
-                true
-              );
-            }}
-            onDragLeave={() =>
-              setIsDragging(
-                false
-              )
-            }
-            onDrop={
-              handleDrop
-            }
-            style={{
-              background:
-                'white',
-
-              border:
-                `2px dashed ${
-                  isDragging
-                    ? '#2563eb'
-                    : '#cbd5e1'
-                }`,
-
-              borderRadius:
-                20,
-
-              minHeight:
-                430,
-
-              display:
-                'flex',
-
-              alignItems:
-                'center',
-
-              justifyContent:
-                'center',
-
-              transition:
-                '0.2s',
-
-              backgroundColor:
-                isDragging
-                  ? '#eff6ff'
-                  : 'white',
-
-              boxShadow:
-                '0 8px 30px rgba(15,23,42,0.06)',
-            }}
-          >
-            <div
-              style={{
-                width:
-                  '100%',
-
-                maxWidth:
-                  620,
-
-                textAlign:
-                  'center',
-
-                padding:
-                  45,
-              }}
-            >
-              <div
-                style={{
-                  width:
-                    78,
-
-                  height:
-                    78,
-
-                  margin:
-                    '0 auto 18px',
-
-                  borderRadius:
-                    22,
-
-                  background:
-                    '#eff6ff',
-
-                  color:
-                    '#2563eb',
-
-                  display:
-                    'flex',
-
-                  alignItems:
-                    'center',
-
-                  justifyContent:
-                    'center',
-                }}
-              >
-                <UploadCloud
-                  size={
-                    38
-                  }
-                />
-              </div>
-
-              <h2
-                style={{
-                  margin:
-                    '0 0 8px',
-
-                  fontSize:
-                    24,
-
-                  fontWeight:
-                    850,
-
-                  color:
-                    '#0f172a',
-                }}
-              >
-                Unggah PDF Soal Ujian
-              </h2>
-
-              <p
-                style={{
-                  margin:
-                    '0 auto 22px',
-
-                  maxWidth:
-                    500,
-
-                  color:
-                    '#64748b',
-
-                  fontSize:
-                    14,
-
-                  lineHeight:
-                    1.7,
-                }}
-              >
-                PDF akan dirender per halaman, dibaca AI, soal dan diagram dipisahkan, lalu hasilnya bisa direview sebelum masuk ke Bank Soal.
-              </p>
-
-              <input
-                type="file"
-                id="pdf-upload-advanced"
-                accept="application/pdf"
-                style={{
-                  display:
-                    'none',
-                }}
-                onChange={
-                  handleFileUpload
-                }
-              />
-
-              <label
-                htmlFor="pdf-upload-advanced"
-                style={{
-                  display:
-                    'inline-flex',
-
-                  alignItems:
-                    'center',
-
-                  gap:
-                    9,
-
-                  padding:
-                    '12px 20px',
-
-                  borderRadius:
-                    11,
-
-                  background:
-                    '#2563eb',
-
-                  color:
-                    'white',
-
-                  fontWeight:
-                    800,
-
-                  fontSize:
-                    14,
-
-                  cursor:
-                    'pointer',
-
-                  boxShadow:
-                    '0 8px 20px rgba(37,99,235,0.2)',
-                }}
-              >
-                <FileText
-                  size={
-                    18
-                  }
-                />
-
-                Pilih File PDF
-              </label>
-
-              <div
-                style={{
-                  marginTop:
-                    14,
-
-                  color:
-                    '#94a3b8',
-
-                  fontSize:
-                    12,
-                }}
-              >
-                atau drag & drop PDF di area ini
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* ==================================================
-            PREVIEW
-            ================================================== */}
-
-        {appState ===
-          'preview' && (
-          <section
-            style={
-              cardStyle
-            }
-          >
-            <div
-              style={{
-                display:
-                  'grid',
-
-                gridTemplateColumns:
-                  'minmax(260px, 0.8fr) minmax(0, 1.7fr)',
-
-                gap:
-                  22,
-              }}
-            >
-              <div
-                style={{
-                  background:
-                    '#f8fafc',
-
-                  border:
-                    '1px solid #e2e8f0',
-
-                  borderRadius:
-                    16,
-
-                  padding:
-                    18,
-
-                  textAlign:
-                    'center',
-                }}
-              >
-                {coverThumbnail ? (
-                  <img
-                    src={
-                      coverThumbnail
-                    }
-                    alt="cover"
-                    style={{
-                      width:
-                        '100%',
-
-                      maxWidth:
-                        260,
-
-                      maxHeight:
-                        330,
-
-                      objectFit:
-                        'contain',
-
-                      borderRadius:
-                        12,
-
-                      border:
-                        '1px solid #cbd5e1',
-
-                      background:
-                        'white',
-
-                      display:
-                        'block',
-
-                      margin:
-                        '0 auto 15px',
-                    }}
-                  />
-                ) : (
-                  <Loader2
-                    size={
-                      28
-                    }
-                    style={{
-                      margin:
-                        '50px auto',
-                      animation:
-                        'spin 1s linear infinite',
-                    }}
-                  />
-                )}
-
-                <div
-                  style={{
-                    fontWeight:
-                      800,
-
-                    fontSize:
-                      14,
-
-                    overflow:
-                      'hidden',
-
-                    textOverflow:
-                      'ellipsis',
-
-                    whiteSpace:
-                      'nowrap',
-                  }}
-                >
-                  {
-                    file?.name
-                  }
-                </div>
-
-                <div
-                  style={{
-                    color:
-                      '#64748b',
-
-                    fontSize:
-                      12,
-
-                    marginTop:
-                      5,
-                  }}
-                >
-                  {
-                    totalPages
-                  }{' '}
-                  halaman
-                </div>
-              </div>
-
-              <div>
-                <div
-                  style={{
-                    display:
-                      'grid',
-
-                    gridTemplateColumns:
-                      '1fr 1fr',
-
-                    gap:
-                      14,
-
-                    marginBottom:
-                      18,
-                  }}
-                >
-                  <div>
-                    <label
-                      style={
-                        labelStyle
-                      }
-                    >
-                      Mata Pelajaran
-                    </label>
-
-                    <select
-                      value={
-                        mataPelajaran
-                      }
-                      onChange={(
-                        e
-                      ) =>
-                        setMataPelajaran(
-                          e
-                            .target
-                            .value
-                        )
-                      }
-                      style={
-                        inputStyle
-                      }
-                    >
-                      {[
-                        'Matematika',
-                        'Fisika',
-                        'Kimia',
-                        'Biologi',
-                        'Bahasa Indonesia',
-                        'Bahasa Inggris',
-                      ].map(
-                        (
-                          m
-                        ) => (
-                          <option
-                            key={
-                              m
-                            }
-                            value={
-                              m
-                            }
-                          >
-                            {m}
-                          </option>
-                        )
-                      )}
-                    </select>
-                  </div>
+                <div className="flex justify-between items-start gap-3 mb-3">
 
                   <div>
-                    <label
-                      style={
-                        labelStyle
-                      }
-                    >
-                      Tingkat Kelas
-                    </label>
 
-                    <select
-                      value={
-                        tingkatKelas
-                      }
-                      onChange={(
-                        e
-                      ) =>
-                        setTingkatKelas(
-                          e
-                            .target
-                            .value
-                        )
-                      }
-                      style={
-                        inputStyle
-                      }
-                    >
-                      {[
-                        'SD',
-                        '7',
-                        '8',
-                        '9',
-                        '10',
-                        '11',
-                        '12',
-                      ].map(
-                        (
-                          k
-                        ) => (
-                          <option
-                            key={
-                              k
-                            }
-                            value={
-                              k
-                            }
-                          >
-                            Kelas {k}
-                          </option>
-                        )
-                      )}
-                    </select>
-                  </div>
-                </div>
+                    <h3 className="font-bold text-sm text-white">
+                      Gemini API Key
+                    </h3>
 
-                <div
-                  style={{
-                    display:
-                      'flex',
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      Key disimpan di browser ini.
+                    </p>
 
-                    alignItems:
-                      'center',
-
-                    justifyContent:
-                      'space-between',
-
-                    marginBottom:
-                      10,
-
-                    gap:
-                      12,
-
-                    flexWrap:
-                      'wrap',
-                  }}
-                >
-                  <div>
-                    <div
-                      style={{
-                        fontWeight:
-                          800,
-
-                        fontSize:
-                          17,
-                      }}
-                    >
-                      Pilih Halaman
-                    </div>
-
-                    <div
-                      style={{
-                        color:
-                          '#64748b',
-
-                        fontSize:
-                          12,
-
-                        marginTop:
-                          3,
-                      }}
-                    >
-                      {
-                        selectedPages.length
-                      }{' '}
-                      dari{' '}
-                      {
-                        totalPages
-                      }{' '}
-                      halaman dipilih
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      display:
-                        'flex',
-
-                      gap:
-                        8,
-                    }}
-                  >
-                    <button
-                      onClick={() =>
-                        setSelectedPages(
-                          Array.from(
-                            {
-                              length:
-                                totalPages,
-                            },
-
-                            (_, i) =>
-                              i + 1
-                          )
-                        )
-                      }
-                      style={
-                        secondaryButtonStyle
-                      }
-                    >
-                      Pilih Semua
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        setSelectedPages(
-                          []
-                        )
-                      }
-                      style={
-                        ghostButtonStyle
-                      }
-                    >
-                      Batal
-                    </button>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    display:
-                      'grid',
-
-                    gridTemplateColumns:
-                      'repeat(auto-fill, minmax(75px, 1fr))',
-
-                    gap:
-                      8,
-
-                    maxHeight:
-                      300,
-
-                    overflowY:
-                      'auto',
-
-                    padding:
-                      12,
-
-                    border:
-                      '1px solid #e2e8f0',
-
-                    borderRadius:
-                      14,
-
-                    background:
-                      '#f8fafc',
-
-                    marginBottom:
-                      16,
-                  }}
-                >
-                  {Array.from(
-                    {
-                      length:
-                        totalPages,
-                    },
-
-                    (_, i) =>
-                      i + 1
-                  ).map(
-                    (
-                      pageNum
-                    ) => {
-                      const isSelected =
-                        selectedPages.includes(
-                          pageNum
-                        );
-
-                      return (
-                        <button
-                          key={
-                            pageNum
-                          }
-                          onClick={() =>
-                            setSelectedPages(
-                              (
-                                prev
-                              ) =>
-                                isSelected
-                                  ? prev.filter(
-                                      (
-                                        p
-                                      ) =>
-                                        p !==
-                                        pageNum
-                                    )
-                                  : [
-                                      ...prev,
-                                      pageNum,
-                                    ].sort(
-                                      (
-                                        a,
-                                        b
-                                      ) =>
-                                        a -
-                                        b
-                                    )
-                            )
-                          }
-                          style={{
-                            border:
-                              `1px solid ${
-                                isSelected
-                                  ? '#93c5fd'
-                                  : '#e2e8f0'
-                              }`,
-
-                            background:
-                              isSelected
-                                ? '#eff6ff'
-                                : 'white',
-
-                            color:
-                              isSelected
-                                ? '#1d4ed8'
-                                : '#64748b',
-
-                            borderRadius:
-                              10,
-
-                            padding:
-                              '10px 6px',
-
-                            cursor:
-                              'pointer',
-
-                            fontSize:
-                              11,
-
-                            fontWeight:
-                              700,
-
-                            display:
-                              'flex',
-
-                            flexDirection:
-                              'column',
-
-                            alignItems:
-                              'center',
-
-                            gap:
-                              5,
-                          }}
-                        >
-                          {isSelected ? (
-                            <CheckSquare
-                              size={
-                                15
-                              }
-                            />
-                          ) : (
-                            <Square
-                              size={
-                                15
-                              }
-                            />
-                          )}
-
-                          Hal{' '}
-                          {
-                            pageNum
-                          }
-                        </button>
-                      );
-                    }
-                  )}
-                </div>
-
-                <button
-                  onClick={
-                    startProcessing
-                  }
-                  disabled={
-                    selectedPages.length ===
-                    0
-                  }
-                  style={{
-                    width:
-                      '100%',
-
-                    border:
-                      'none',
-
-                    background:
-                      selectedPages.length >
-                      0
-                        ? 'linear-gradient(135deg,#2563eb,#4f46e5)'
-                        : '#cbd5e1',
-
-                    color:
-                      'white',
-
-                    borderRadius:
-                      12,
-
-                    padding:
-                      '13px 16px',
-
-                    cursor:
-                      selectedPages.length >
-                      0
-                        ? 'pointer'
-                        : 'not-allowed',
-
-                    fontWeight:
-                      800,
-
-                    fontSize:
-                      14,
-
-                    display:
-                      'flex',
-
-                    alignItems:
-                      'center',
-
-                    justifyContent:
-                      'center',
-
-                    gap:
-                      9,
-                  }}
-                >
-                  <Play
-                    size={
-                      17
-                    }
-                    fill="currentColor"
-                  />
-
-                  Mulai Ekstraksi AI
-                </button>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* ==================================================
-            PROCESSING / EDITING / SAVING / DONE
-            ================================================== */}
-
-        {[
-          'processing',
-          'editing',
-          'saving',
-          'done',
-        ].includes(
-          appState
-        ) && (
-          <section
-            style={{
-              display:
-                'flex',
-
-              flexDirection:
-                'column',
-
-              gap:
-                18,
-            }}
-          >
-            {/* STATUS BAR */}
-
-            <div
-              style={
-                cardStyle
-              }
-            >
-              <div
-                style={{
-                  display:
-                    'flex',
-
-                  justifyContent:
-                    'space-between',
-
-                  alignItems:
-                    'center',
-
-                  gap:
-                    18,
-
-                  flexWrap:
-                    'wrap',
-                }}
-              >
-                <div
-                  style={{
-                    display:
-                      'flex',
-
-                    alignItems:
-                      'center',
-
-                    gap:
-                      11,
-                  }}
-                >
-                  {appState ===
-                    'processing' && (
-                    <Loader2
-                      size={
-                        21
-                      }
-                      style={{
-                        color:
-                          '#2563eb',
-                        animation:
-                          'spin 1s linear infinite',
-                      }}
-                    />
-                  )}
-
-                  {appState ===
-                    'saving' && (
-                    <Loader2
-                      size={
-                        21
-                      }
-                      style={{
-                        color:
-                          '#059669',
-                        animation:
-                          'spin 1s linear infinite',
-                      }}
-                    />
-                  )}
-
-                  {appState ===
-                    'editing' && (
-                    <CheckCircle
-                      size={
-                        21
-                      }
-                      style={{
-                        color:
-                          '#059669',
-                      }}
-                    />
-                  )}
-
-                  {appState ===
-                    'done' && (
-                    <Database
-                      size={
-                        21
-                      }
-                      style={{
-                        color:
-                          '#059669',
-                      }}
-                    />
-                  )}
-
-                  <div>
-                    <div
-                      style={{
-                        fontWeight:
-                          800,
-
-                        fontSize:
-                          14,
-                      }}
-                    >
-                      {appState ===
-                        'processing' &&
-                        'Mengekstrak soal...'}
-
-                      {appState ===
-                        'saving' &&
-                        'Menyimpan ke Bank Soal...'}
-
-                      {appState ===
-                        'editing' &&
-                        'Ekstraksi Selesai'}
-
-                      {appState ===
-                        'done' &&
-                        'Berhasil Tersimpan'}
-                    </div>
-
-                    <div
-                      style={{
-                        color:
-                          '#64748b',
-
-                        fontSize:
-                          12,
-
-                        marginTop:
-                          3,
-                      }}
-                    >
-                      {appState ===
-                        'processing' &&
-                        `Halaman ${progress.current}/${progress.total}`}
-
-                      {appState ===
-                        'editing' &&
-                        `${extractedData.length} soal siap direview`}
-
-                      {appState ===
-                        'saving' &&
-                        'Menulis data dan gambar...'}
-
-                      {appState ===
-                        'done' &&
-                        `${extractedData.length} soal sudah masuk ke bank soal`}
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    display:
-                      'flex',
-
-                    alignItems:
-                      'center',
-
-                    gap:
-                      8,
-
-                    flexWrap:
-                      'wrap',
-                  }}
-                >
-                  <span
-                    style={{
-                      padding:
-                        '8px 10px',
-
-                      borderRadius:
-                        9,
-
-                      background:
-                        '#f1f5f9',
-
-                      color:
-                        '#475569',
-
-                      fontSize:
-                        11,
-
-                      fontWeight:
-                        700,
-                    }}
-                  >
-                    {
-                      mataPelajaran
-                    }{' '}
-                    • Kelas{' '}
-                    {
-                      tingkatKelas
-                    }
-                  </span>
-
-                  <span
-                    style={{
-                      padding:
-                        '8px 10px',
-
-                      borderRadius:
-                        9,
-
-                      background:
-                        '#eff6ff',
-
-                      color:
-                        '#1d4ed8',
-
-                      fontSize:
-                        11,
-
-                      fontWeight:
-                        700,
-                    }}
-                  >
-                    {
-                      aiConfig.model ||
-                      'Model'
-                    }
-                  </span>
-                </div>
-              </div>
-
-              {appState ===
-                'processing' && (
-                <div
-                  style={{
-                    marginTop:
-                      15,
-
-                    height:
-                      8,
-
-                    background:
-                      '#e2e8f0',
-
-                    borderRadius:
-                      999,
-
-                    overflow:
-                      'hidden',
-                  }}
-                >
-                  <div
-                    style={{
-                      height:
-                        '100%',
-
-                      width:
-                        `${progress.total > 0 ? (progress.current / progress.total) * 100 : 0}%`,
-
-                      background:
-                        'linear-gradient(90deg,#2563eb,#6366f1)',
-
-                      transition:
-                        'width 0.25s ease',
-                    }}
-                  />
-                </div>
-              )}
-
-              {appState ===
-                'editing' && (
-                <div
-                  style={{
-                    marginTop:
-                      14,
-
-                    display:
-                      'flex',
-
-                    justifyContent:
-                      'space-between',
-
-                    alignItems:
-                      'center',
-
-                    gap:
-                      12,
-
-                    flexWrap:
-                      'wrap',
-                  }}
-                >
-                  <div
-                    style={{
-                      display:
-                        'flex',
-
-                      gap:
-                        8,
-                    }}
-                  >
-                    <button
-                      onClick={() =>
-                        setActiveTab(
-                          'questions'
-                        )
-                      }
-                      style={{
-                        ...secondaryButtonStyle,
-
-                        background:
-                          activeTab ===
-                          'questions'
-                            ? '#2563eb'
-                            : '#f8fafc',
-
-                        color:
-                          activeTab ===
-                          'questions'
-                            ? 'white'
-                            : '#475569',
-                      }}
-                    >
-                      Soal (
-                      {
-                        extractedData.length
-                      }
-                      )
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        setActiveTab(
-                          'terminal'
-                        )
-                      }
-                      style={{
-                        ...secondaryButtonStyle,
-
-                        background:
-                          activeTab ===
-                          'terminal'
-                            ? '#0f172a'
-                            : '#f8fafc',
-
-                        color:
-                          activeTab ===
-                          'terminal'
-                            ? 'white'
-                            : '#475569',
-                      }}
-                    >
-                      Log (
-                      {
-                        logs.length
-                      }
-                      )
-                    </button>
                   </div>
 
                   <button
-                    onClick={
-                      saveToBankSoal
+                    onClick={() =>
+                      setShowApiSettings(
+                        false
+                      )
                     }
-                    disabled={
-                      extractedData.length ===
-                      0
-                    }
-                    style={{
-                      border:
-                        'none',
-
-                      background:
-                        extractedData.length >
-                        0
-                          ? '#059669'
-                          : '#cbd5e1',
-
-                      color:
-                        'white',
-
-                      borderRadius:
-                        11,
-
-                      padding:
-                        '11px 15px',
-
-                      cursor:
-                        extractedData.length >
-                        0
-                          ? 'pointer'
-                          : 'not-allowed',
-
-                      fontWeight:
-                        800,
-
-                      display:
-                        'inline-flex',
-
-                      alignItems:
-                        'center',
-
-                      gap:
-                        8,
-                    }}
+                    className="text-gray-500 hover:text-white"
                   >
-                    <CloudUpload
-                      size={
-                        16
-                      }
-                    />
-
-                    Simpan ke Bank Soal
+                    <X className="w-4 h-4" />
                   </button>
-                </div>
-              )}
-            </div>
 
-            {/* LOG */}
+                </div>
+
+                <input
+                  type="password"
+                  value={
+                    geminiApiKey
+                  }
+                  onChange={(e) =>
+                    saveGeminiApiKey(
+                      e.target.value
+                    )
+                  }
+                  placeholder="AIza..."
+                  className="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white font-mono outline-none focus:border-blue-500"
+                />
+
+                <div className="mt-3 flex justify-between items-center">
+
+                  <span className="text-[10px] text-amber-300">
+                    Jangan bagikan API key.
+                  </span>
+
+                  <button
+                    onClick={() =>
+                      saveGeminiApiKey(
+                        ''
+                      )
+                    }
+                    className="text-[11px] bg-gray-800 px-2.5 py-1.5 rounded-lg text-gray-300"
+                  >
+                    Hapus
+                  </button>
+
+                </div>
+
+              </div>
+            )}
+
+            {file && (
+              <button
+                onClick={
+                  resetDocument
+                }
+                className="text-xs px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 flex items-center gap-1.5"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Reset
+              </button>
+            )}
+
+          </div>
+
+        </div>
+
+      </header>
+
+      {/* ======================================================
+          MAIN
+      ====================================================== */}
+
+      <main className="flex-1 max-w-[1500px] w-full mx-auto p-4 md:p-6">
+
+        {/* ====================================================
+            IDLE
+        ==================================================== */}
+
+        {appState ===
+          'idle' && (
+            <div className="min-h-[75vh] flex items-center justify-center">
+
+              <div className="w-full max-w-3xl">
+
+                <div
+                  className="border-2 border-dashed border-gray-700 hover:border-blue-500 rounded-3xl p-10 md:p-16 bg-gray-900/50 text-center transition-all cursor-pointer"
+                  onDragOver={
+                    handleDragOver
+                  }
+                  onDrop={
+                    handleDrop
+                  }
+                >
+
+                  <input
+                    type="file"
+                    id="pdf-upload"
+                    className="hidden"
+                    accept="application/pdf"
+                    onChange={
+                      handleFileUpload
+                    }
+                  />
+
+                  <label
+                    htmlFor="pdf-upload"
+                    className="cursor-pointer flex flex-col items-center"
+                  >
+
+                    <div className="bg-blue-600/10 p-6 rounded-full mb-6 border border-blue-500/20">
+                      <UploadCloud className="w-14 h-14 text-blue-400" />
+                    </div>
+
+                    <h2 className="text-xl md:text-2xl font-bold text-white mb-3">
+                      Scan PDF ke Bank Soal
+                    </h2>
+
+                    <p className="text-sm text-gray-400 max-w-xl mb-7">
+                      Baca soal, pilihan jawaban, gambar,
+                      grafik, tabel, rumus, berbagai tipe soal,
+                      serta kunci jawaban dari bagian lain PDF.
+                    </p>
+
+                    <span className="px-7 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm">
+                      Pilih File PDF
+                    </span>
+
+                  </label>
+
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-3 mt-5">
+
+                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                    <ScanSearch className="w-5 h-5 text-blue-400 mb-2" />
+                    <p className="font-semibold text-sm">
+                      Scan Visual
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Gambar, grafik, diagram, dan tabel.
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                    <KeyRound className="w-5 h-5 text-emerald-400 mb-2" />
+                    <p className="font-semibold text-sm">
+                      Scan Kunci
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Mencari halaman kunci jawaban.
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                    <Crop className="w-5 h-5 text-amber-400 mb-2" />
+                    <p className="font-semibold text-sm">
+                      Manual Crop
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Koreksi gambar bila deteksi kurang presisi.
+                    </p>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+        {/* ====================================================
+            PREVIEW
+        ==================================================== */}
+
+        {appState ===
+          'preview' && (
+            <div className="space-y-5">
+
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+
+                <div className="flex flex-col xl:flex-row gap-5">
+
+                  <div className="w-full xl:w-[230px]">
+
+                    {coverThumbnail ? (
+                      <img
+                        src={
+                          coverThumbnail
+                        }
+                        alt="cover"
+                        className="w-full rounded-xl border border-gray-700"
+                      />
+                    ) : (
+                      <div className="aspect-[3/4] bg-gray-950 rounded-xl flex items-center justify-center">
+                        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                      </div>
+                    )}
+
+                    <div className="mt-3">
+
+                      <p className="font-semibold text-sm truncate">
+                        {file?.name}
+                      </p>
+
+                      <p className="text-xs text-gray-500 mt-1">
+                        {totalPages} halaman
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                  <div className="flex-1">
+
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+
+                      <div>
+
+                        <h2 className="font-bold text-lg flex items-center gap-2">
+                          <Eye className="w-5 h-5 text-blue-400" />
+                          Pilih Halaman
+                        </h2>
+
+                        <p className="text-xs text-gray-500">
+                          Sekarang setiap halaman ditampilkan dalam preview asli.
+                        </p>
+
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+
+                        <button
+                          onClick={() =>
+                            setSelectedPages(
+                              Array.from(
+                                {
+                                  length:
+                                    totalPages,
+                                },
+                                (
+                                  _,
+                                  i
+                                ) =>
+                                  i + 1
+                              )
+                            )
+                          }
+                          className="px-3 py-2 bg-blue-500/10 border border-blue-500/20 rounded-lg text-xs text-blue-300"
+                        >
+                          Pilih Semua
+                        </button>
+
+                        <button
+                          onClick={() =>
+                            setSelectedPages(
+                              []
+                            )
+                          }
+                          className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-300"
+                        >
+                          Batalkan
+                        </button>
+
+                      </div>
+
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[650px] overflow-y-auto pr-1">
+
+                      {Array.from(
+                        {
+                          length:
+                            totalPages,
+                        },
+                        (
+                          _,
+                          i
+                        ) =>
+                          i + 1
+                      ).map(
+                        (
+                          pageNum
+                        ) => {
+                          const selected =
+                            selectedPages.includes(
+                              pageNum
+                            );
+
+                          return (
+                            <button
+                              key={
+                                pageNum
+                              }
+                              onClick={() =>
+                                togglePage(
+                                  pageNum
+                                )
+                              }
+                              onDoubleClick={() =>
+                                setPreviewPage(
+                                  pageNum
+                                )
+                              }
+                              className={`text-left rounded-xl overflow-hidden border transition-all ${
+                                selected
+                                  ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-500/5'
+                                  : 'border-gray-800 bg-gray-950'
+                              }`}
+                            >
+
+                              <div className="aspect-[3/4] bg-white relative">
+
+                                {pagePreviews[
+                                  pageNum
+                                ] ? (
+                                  <img
+                                    src={
+                                      pagePreviews[
+                                        pageNum
+                                      ]
+                                    }
+                                    alt={`Halaman ${pageNum}`}
+                                    className="w-full h-full object-contain"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="text-gray-500 text-xs">
+                                      Preview belum tersedia
+                                    </span>
+                                  </div>
+                                )}
+
+                                <div className="absolute top-2 right-2">
+
+                                  {selected ? (
+                                    <div className="bg-blue-600 rounded-full p-1">
+                                      <Check className="w-3 h-3" />
+                                    </div>
+                                  ) : (
+                                    <div className="bg-gray-900/80 rounded-full p-1">
+                                      <Square className="w-3 h-3" />
+                                    </div>
+                                  )}
+
+                                </div>
+
+                              </div>
+
+                              <div className="p-2">
+
+                                <div className="flex items-center justify-between">
+
+                                  <span className="text-xs font-bold">
+                                    Halaman{' '}
+                                    {
+                                      pageNum
+                                    }
+                                  </span>
+
+                                  <span className="text-[10px] text-gray-500">
+                                    Klik 2x = lihat
+                                  </span>
+
+                                </div>
+
+                              </div>
+
+                            </button>
+                          );
+                        }
+                      )}
+
+                    </div>
+
+                    {!geminiApiKey && (
+                      <div className="mt-4 bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-xs text-amber-200 flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                        <span>
+                          Isi Gemini API Key sebelum mulai scan.
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="mt-4 flex flex-col md:flex-row gap-3 md:items-center justify-between border-t border-gray-800 pt-4">
+
+                      <div className="flex flex-wrap gap-2">
+
+                        <span className="text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 rounded-lg px-3 py-2">
+                          {selectedPages.length} / {totalPages} dipilih
+                        </span>
+
+                        <button
+                          onClick={
+                            runAnswerKeyScanner
+                          }
+                          disabled={
+                            scanningAnswerKey ||
+                            !geminiApiKey
+                          }
+                          className="text-xs bg-purple-500/10 border border-purple-500/20 text-purple-300 rounded-lg px-3 py-2 flex items-center gap-1.5 disabled:opacity-40"
+                        >
+                          {scanningAnswerKey ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Search className="w-3.5 h-3.5" />
+                          )}
+
+                          Cari Kunci Jawaban
+                        </button>
+
+                      </div>
+
+                      <button
+                        onClick={
+                          startProcessing
+                        }
+                        disabled={
+                          selectedPages.length ===
+                            0 ||
+                          !geminiApiKey
+                        }
+                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-40"
+                      >
+                        <Play className="w-4 h-4 fill-current" />
+                        Mulai Scan AI
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+        {/* ====================================================
+            PROCESSING / EDITING
+        ==================================================== */}
+
+        {(
+          appState ===
+            'processing' ||
+          appState ===
+            'editing'
+        ) && (
+          <div className="space-y-5">
+
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+
+              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+
+                <div className="flex items-center gap-3">
+
+                  {appState ===
+                  'processing' ? (
+                    <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-6 h-6 text-emerald-400" />
+                  )}
+
+                  <div>
+
+                    <h2 className="font-bold">
+                      {appState ===
+                      'processing'
+                        ? 'Sedang Scan...'
+                        : 'Ekstraksi Selesai'}
+                    </h2>
+
+                    <p className="text-xs text-gray-500">
+                      {appState ===
+                      'processing'
+                        ? `Halaman ${progress.current} / ${progress.total}`
+                        : `${extractedData.length} soal ditemukan`}
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+
+                  <div className="bg-gray-950 border border-gray-800 rounded-xl p-1 flex">
+
+                    <button
+                      onClick={() =>
+                        setActiveTab(
+                          'questions'
+                        )
+                      }
+                      className={`px-4 py-2 rounded-lg text-xs font-semibold ${
+                        activeTab ===
+                        'questions'
+                          ? 'bg-blue-600 text-white'
+                          : 'text-gray-400'
+                      }`}
+                    >
+                      Soal ({extractedData.length})
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        setActiveTab(
+                          'terminal'
+                        )
+                      }
+                      className={`px-4 py-2 rounded-lg text-xs font-semibold ${
+                        activeTab ===
+                        'terminal'
+                          ? 'bg-blue-600 text-white'
+                          : 'text-gray-400'
+                      }`}
+                    >
+                      Log ({logs.length})
+                    </button>
+
+                  </div>
+
+                  {appState ===
+                    'editing' && (
+                    <>
+                      <button
+                        onClick={
+                          downloadJSON
+                        }
+                        className="px-3 py-2 bg-emerald-600 rounded-xl text-xs font-bold flex items-center gap-1.5"
+                      >
+                        <FileJson className="w-4 h-4" />
+                        JSON
+                      </button>
+
+                      <button
+                        onClick={
+                          downloadCSV
+                        }
+                        className="px-3 py-2 bg-indigo-600 rounded-xl text-xs font-bold flex items-center gap-1.5"
+                      >
+                        <FileSpreadsheet className="w-4 h-4" />
+                        CSV
+                      </button>
+
+                      <button
+                        onClick={
+                          downloadMarkdown
+                        }
+                        className="px-3 py-2 bg-purple-600 rounded-xl text-xs font-bold flex items-center gap-1.5"
+                      >
+                        <Code className="w-4 h-4" />
+                        Markdown
+                      </button>
+                    </>
+                  )}
+
+                </div>
+
+              </div>
+
+            </div>
 
             {activeTab ===
               'terminal' && (
-              <div
-                style={{
-                  background:
-                    '#0f172a',
+              <div className="bg-gray-950 border border-gray-800 rounded-2xl p-5 h-[550px] overflow-y-auto font-mono text-xs">
 
-                  color:
-                    '#d1fae5',
+                <div className="sticky top-0 bg-gray-950 pb-3 mb-3 border-b border-gray-900 flex justify-between text-gray-500">
 
-                  borderRadius:
-                    16,
+                  <span>
+                    BANK SOAL AI CORE
+                  </span>
 
-                  padding:
-                    18,
+                  <span>
+                    {appState.toUpperCase()}
+                  </span>
 
-                  minHeight:
-                    430,
+                </div>
 
-                  maxHeight:
-                    520,
+                <div className="space-y-1.5">
 
-                  overflowY:
-                    'auto',
-
-                  fontFamily:
-                    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-
-                  fontSize:
-                    12,
-
-                  border:
-                    '1px solid #1e293b',
-                }}
-              >
-                {logs.map(
-                  (
-                    log
-                  ) => (
-                    <div
-                      key={
-                        log.id
-                      }
-                      style={{
-                        marginBottom:
-                          7,
-
-                        color:
+                  {logs.map(
+                    (
+                      log
+                    ) => (
+                      <div
+                        key={
+                          log.id
+                        }
+                        className={
                           log.type ===
                           'error'
-                            ? '#fca5a5'
+                            ? 'text-red-400'
                             : log.type ===
                               'warning'
-                            ? '#fde68a'
+                            ? 'text-yellow-400'
                             : log.type ===
                               'success'
-                            ? '#93c5fd'
-                            : '#cbd5e1',
-                      }}
-                    >
-                      <span
-                        style={{
-                          color:
-                            '#64748b',
-                        }}
-                      >
-                        [
-                        {
-                          log.time
+                            ? 'text-blue-300'
+                            : 'text-gray-300'
                         }
-                        ]
-                      </span>{' '}
-                      {
-                        log.message
-                      }
-                    </div>
-                  )
-                )}
+                      >
+                        <span className="text-gray-600">
+                          [
+                          {
+                            log.time
+                          }
+                          ]
+                        </span>{' '}
+                        {
+                          log.message
+                        }
+                      </div>
+                    )
+                  )}
 
-                <div
-                  ref={
-                    logsEndRef
-                  }
-                />
+                  <div
+                    ref={
+                      logsEndRef
+                    }
+                  />
+
+                </div>
+
               </div>
             )}
-
-            {/* QUESTIONS */}
 
             {activeTab ===
               'questions' && (
-              <div
-                style={{
-                  display:
-                    'flex',
+              <div className="space-y-4">
 
-                  flexDirection:
-                    'column',
-
-                  gap:
-                    14,
-                }}
-              >
-                {extractedData.length ===
+                {extractedData.length >
                   0 && (
-                  <div
-                    style={
-                      cardStyle
-                    }
-                  >
-                    <div
-                      style={{
-                        textAlign:
-                          'center',
+                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-3 flex flex-wrap gap-2 items-center">
 
-                        color:
-                          '#64748b',
+                    <span className="text-xs text-gray-400 flex items-center gap-1.5 mr-2">
+                      <Filter className="w-3.5 h-3.5" />
+                      Filter
+                    </span>
 
-                        padding:
-                          40,
-                      }}
-                    >
-                      Belum ada soal hasil ekstraksi.
+                    {[
+                      [
+                        'semua',
+                        'Semua',
+                      ],
+                      [
+                        'pg_sederhana',
+                        'PG Sederhana',
+                      ],
+                      [
+                        'pg_kompleks',
+                        'PG Kompleks',
+                      ],
+                      [
+                        'benar_salah',
+                        'Benar / Salah',
+                      ],
+                      [
+                        'isian_singkat',
+                        'Isian Singkat',
+                      ],
+                      [
+                        'menjodohkan',
+                        'Menjodohkan',
+                      ],
+                    ].map(
+                      (
+                        [id, label]
+                      ) => (
+                        <button
+                          key={
+                            id
+                          }
+                          onClick={() =>
+                            setTypeFilter(
+                              id
+                            )
+                          }
+                          className={`px-3 py-1.5 rounded-lg text-xs ${
+                            typeFilter ===
+                            id
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-800 text-gray-400'
+                          }`}
+                        >
+                          {
+                            label
+                          }
+                        </button>
+                      )
+                    )}
+
+                    <div className="ml-auto flex gap-2 text-xs">
+
+                      <span className="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+                        Kunci:{' '}
+                        {
+                          extractedData.filter(
+                            (q) =>
+                              q.kunci_jawaban
+                          ).length
+                        }
+                      </span>
+
+                      <span className="px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-300">
+                        Gambar:{' '}
+                        {
+                          extractedData.reduce(
+                            (
+                              total,
+                              q
+                            ) =>
+                              total +
+                              (
+                                q.gambar ||
+                                []
+                              ).filter(
+                                (g) =>
+                                  g.dataUrl
+                              ).length,
+                            0
+                          )
+                        }
+                      </span>
+
                     </div>
+
                   </div>
                 )}
 
-                {extractedData.map(
-                  (
-                    q,
-                    index
-                  ) => (
-                    <div
-                      key={
-                        index
-                      }
-                      style={{
-                        background:
-                          'white',
-
-                        border:
-                          '1px solid #e2e8f0',
-
-                        borderRadius:
-                          16,
-
-                        padding:
-                          18,
-
-                        boxShadow:
-                          '0 4px 20px rgba(15,23,42,0.04)',
-                      }}
-                    >
-                      {editingId ===
-                      index ? (
-                        <div>
-                          <div
-                            style={{
-                              display:
-                                'flex',
-
-                              justifyContent:
-                                'space-between',
-
-                              alignItems:
-                                'center',
-
-                              marginBottom:
-                                10,
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontWeight:
-                                  800,
-                              }}
-                            >
-                              Edit Soal
-                            </div>
-
-                            <button
-                              onClick={() =>
-                                setEditingId(
-                                  null
-                                )
-                              }
-                              style={{
-                                border:
-                                  'none',
-
-                                background:
-                                  '#f1f5f9',
-
-                                color:
-                                  '#475569',
-
-                                borderRadius:
-                                  9,
-
-                                padding:
-                                  7,
-
-                                cursor:
-                                  'pointer',
-                              }}
-                            >
-                              <X
-                                size={
-                                  17
-                                }
-                              />
-                            </button>
-                          </div>
-
-                          <textarea
-                            rows={
-                              7
-                            }
-                            value={
-                              editForm.teks_soal ||
-                              ''
-                            }
-                            onChange={(
-                              e
-                            ) =>
-                              setEditForm({
-                                ...editForm,
-
-                                teks_soal:
-                                  e
-                                    .target
-                                    .value,
-                              })
-                            }
-                            style={{
-                              ...inputStyle,
-
-                              resize:
-                                'vertical',
-
-                              lineHeight:
-                                1.6,
-                            }}
-                          />
-
-                          <div
-                            style={{
-                              display:
-                                'flex',
-
-                              justifyContent:
-                                'flex-end',
-
-                              gap:
-                                8,
-
-                              marginTop:
-                                10,
-                            }}
-                          >
-                            <button
-                              onClick={() =>
-                                setEditingId(
-                                  null
-                                )
-                              }
-                              style={
-                                ghostButtonStyle
-                              }
-                            >
-                              Batal
-                            </button>
-
-                            <button
-                              onClick={() =>
-                                handleSaveEdit(
-                                  index
-                                )
-                              }
-                              style={{
-                                border:
-                                  'none',
-
-                                background:
-                                  '#2563eb',
-
-                                color:
-                                  'white',
-
-                                borderRadius:
-                                  9,
-
-                                padding:
-                                  '9px 13px',
-
-                                cursor:
-                                  'pointer',
-
-                                fontWeight:
-                                  700,
-
-                                display:
-                                  'inline-flex',
-
-                                alignItems:
-                                  'center',
-
-                                gap:
-                                  7,
-                              }}
-                            >
-                              <Save
-                                size={
-                                  15
-                                }
-                              />
-
-                              Simpan Perubahan
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div>
-                          <div
-                            style={{
-                              display:
-                                'flex',
-
-                              justifyContent:
-                                'space-between',
-
-                              alignItems:
-                                'flex-start',
-
-                              gap:
-                                12,
-
-                              marginBottom:
-                                13,
-                            }}
-                          >
-                            <div
-                              style={{
-                                display:
-                                  'flex',
-
-                                gap:
-                                  8,
-
-                                flexWrap:
-                                  'wrap',
-                              }}
-                            >
-                              <span
-                                style={{
-                                  background:
-                                    '#eff6ff',
-
-                                  border:
-                                    '1px solid #bfdbfe',
-
-                                  color:
-                                    '#1d4ed8',
-
-                                  borderRadius:
-                                    999,
-
-                                  padding:
-                                    '5px 9px',
-
-                                  fontSize:
-                                    11,
-
-                                  fontWeight:
-                                    800,
-                                }}
-                              >
-                                Soal No.{' '}
-                                {
-                                  q.nomor ||
-                                  index +
-                                    1
-                                }
-                              </span>
-
-                              <span
-                                style={{
-                                  background:
-                                    '#f8fafc',
-
-                                  border:
-                                    '1px solid #e2e8f0',
-
-                                  color:
-                                    '#475569',
-
-                                  borderRadius:
-                                    999,
-
-                                  padding:
-                                    '5px 9px',
-
-                                  fontSize:
-                                    11,
-
-                                  fontWeight:
-                                    700,
-                                }}
-                              >
-                                {
-                                  q.tipe ||
-                                  'pg_sederhana'
-                                }
-                              </span>
-
-                              <span
-                                style={{
-                                  background:
-                                    '#f0fdf4',
-
-                                  border:
-                                    '1px solid #bbf7d0',
-
-                                  color:
-                                    '#166534',
-
-                                  borderRadius:
-                                    999,
-
-                                  padding:
-                                    '5px 9px',
-
-                                  fontSize:
-                                    11,
-
-                                  fontWeight:
-                                    700,
-                                }}
-                              >
-                                Hal{' '}
-                                {
-                                  q.__sourcePage ||
-                                  '-'
-                                }
-                              </span>
-                            </div>
-
-                            <div
-                              style={{
-                                display:
-                                  'flex',
-
-                                gap:
-                                  7,
-                              }}
-                            >
-                              <button
-                                onClick={() =>
-                                  handleEditClick(
-                                    q,
-                                    index
-                                  )
-                                }
-                                title="Edit soal"
-                                style={{
-                                  border:
-                                    '1px solid #e2e8f0',
-
-                                  background:
-                                    '#f8fafc',
-
-                                  color:
-                                    '#475569',
-
-                                  borderRadius:
-                                    9,
-
-                                  padding:
-                                    8,
-
-                                  cursor:
-                                    'pointer',
-                                }}
-                              >
-                                <Edit3
-                                  size={
-                                    15
+                {filteredQuestions.length ===
+                0 ? (
+                  <div className="bg-gray-900 border border-gray-800 rounded-2xl p-14 text-center text-gray-500">
+                    Belum ada soal.
+                  </div>
+                ) : (
+                  filteredQuestions.map(
+                    (
+                      q,
+                      index
+                    ) => (
+                      <QuestionErrorBoundary
+                        key={
+                          `${q.nomor}-${index}`
+                        }
+                      >
+
+                        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 md:p-6">
+
+                          {editingId ===
+                          index ? (
+                            <div className="space-y-4">
+
+                              <div className="grid sm:grid-cols-2 gap-3">
+
+                                <div>
+
+                                  <label className="text-xs text-gray-400">
+                                    Nomor
+                                  </label>
+
+                                  <input
+                                    type="number"
+                                    value={
+                                      editForm.nomor
+                                    }
+                                    onChange={(
+                                      e
+                                    ) =>
+                                      setEditForm(
+                                        {
+                                          ...editForm,
+                                          nomor:
+                                            parseInt(
+                                              e
+                                                .target
+                                                .value,
+                                              10
+                                            ) ||
+                                            0,
+                                        }
+                                      )
+                                    }
+                                    className="mt-1 w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-sm"
+                                  />
+
+                                </div>
+
+                                <div>
+
+                                  <label className="text-xs text-gray-400">
+                                    Tipe
+                                  </label>
+
+                                  <select
+                                    value={
+                                      editForm.tipe
+                                    }
+                                    onChange={(
+                                      e
+                                    ) =>
+                                      setEditForm(
+                                        {
+                                          ...editForm,
+                                          tipe:
+                                            e
+                                              .target
+                                              .value,
+                                        }
+                                      )
+                                    }
+                                    className="mt-1 w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-sm"
+                                  >
+                                    <option value="pg_sederhana">
+                                      PG Sederhana
+                                    </option>
+
+                                    <option value="pg_kompleks">
+                                      PG Kompleks
+                                    </option>
+
+                                    <option value="benar_salah">
+                                      Benar/Salah
+                                    </option>
+
+                                    <option value="isian_singkat">
+                                      Isian Singkat
+                                    </option>
+
+                                    <option value="menjodohkan">
+                                      Menjodohkan
+                                    </option>
+                                  </select>
+
+                                </div>
+
+                              </div>
+
+                              <div>
+
+                                <label className="text-xs text-gray-400">
+                                  Soal
+                                </label>
+
+                                <textarea
+                                  rows={6}
+                                  value={
+                                    editForm.teks_soal
                                   }
-                                />
-                              </button>
-
-                              <button
-                                onClick={() =>
-                                  handleDeleteQuestion(
-                                    index
-                                  )
-                                }
-                                title="Hapus soal"
-                                style={{
-                                  border:
-                                    '1px solid #fecaca',
-
-                                  background:
-                                    '#fef2f2',
-
-                                  color:
-                                    '#dc2626',
-
-                                  borderRadius:
-                                    9,
-
-                                  padding:
-                                    8,
-
-                                  cursor:
-                                    'pointer',
-                                }}
-                              >
-                                <Trash2
-                                  size={
-                                    15
-                                  }
-                                />
-                              </button>
-                            </div>
-                          </div>
-
-                          <div
-                            style={{
-                              background:
-                                '#f8fafc',
-
-                              border:
-                                '1px solid #e2e8f0',
-
-                              borderRadius:
-                                12,
-
-                              padding:
-                                15,
-
-                              overflow:
-                                'hidden',
-                            }}
-                          >
-                            <RichQuestionText
-                              isMathReady={
-                                isMathReady
-                              }
-                              text={
-                                q.teks_soal
-                              }
-                              gambar={
-                                q.gambar
-                              }
-                            />
-                          </div>
-
-                          {q.gambar?.filter(
-                            (
-                              g
-                            ) =>
-                              g?.dataUrl
-                          ).length >
-                            0 && (
-                            <div
-                              style={{
-                                display:
-                                  'inline-flex',
-
-                                alignItems:
-                                  'center',
-
-                                gap:
-                                  7,
-
-                                marginTop:
-                                  10,
-
-                                padding:
-                                  '7px 10px',
-
-                                borderRadius:
-                                  9,
-
-                                background:
-                                  '#f0fdf4',
-
-                                color:
-                                  '#166534',
-
-                                border:
-                                  '1px solid #bbf7d0',
-
-                                fontSize:
-                                  11,
-
-                                fontWeight:
-                                  700,
-                              }}
-                            >
-                              <ImageIcon
-                                size={
-                                  15
-                                }
-                              />
-
-                              {
-                                q.gambar.filter(
-                                  (
-                                    g
+                                  onChange={(
+                                    e
                                   ) =>
-                                    g?.dataUrl
-                                ).length
-                              }{' '}
-                              gambar terdeteksi
+                                    setEditForm(
+                                      {
+                                        ...editForm,
+                                        teks_soal:
+                                          e
+                                            .target
+                                            .value,
+                                      }
+                                    )
+                                  }
+                                  className="mt-1 w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-3 text-sm font-mono"
+                                />
+
+                              </div>
+
+                              <div>
+
+                                <label className="text-xs text-gray-400">
+                                  Kunci Jawaban
+                                </label>
+
+                                <input
+                                  value={
+                                    editForm.kunci_jawaban ||
+                                    ''
+                                  }
+                                  onChange={(
+                                    e
+                                  ) =>
+                                    setEditForm(
+                                      {
+                                        ...editForm,
+                                        kunci_jawaban:
+                                          e
+                                            .target
+                                            .value,
+                                        kunci_terverifikasi:
+                                          false,
+                                      }
+                                    )
+                                  }
+                                  className="mt-1 w-full bg-gray-950 border border-emerald-500/30 rounded-lg px-3 py-2 text-sm text-emerald-300"
+                                  placeholder="Contoh C / 42 / B,S,B"
+                                />
+
+                              </div>
+
+                              <div className="flex justify-end gap-2">
+
+                                <button
+                                  onClick={() =>
+                                    setEditingId(
+                                      null
+                                    )
+                                  }
+                                  className="px-4 py-2 rounded-lg bg-gray-800 text-xs"
+                                >
+                                  Batal
+                                </button>
+
+                                <button
+                                  onClick={() =>
+                                    handleSaveEdit(
+                                      index
+                                    )
+                                  }
+                                  className="px-4 py-2 rounded-lg bg-blue-600 text-xs font-bold flex items-center gap-2"
+                                >
+                                  <Save className="w-4 h-4" />
+                                  Simpan
+                                </button>
+
+                              </div>
+
+                            </div>
+                          ) : (
+                            <div>
+
+                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+
+                                <div className="flex flex-wrap items-center gap-2">
+
+                                  <span className="px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-300 text-xs font-mono font-bold">
+                                    Soal{' '}
+                                    {
+                                      q.nomor
+                                    }
+                                  </span>
+
+                                  <TypeBadge
+                                    tipe={
+                                      q.tipe
+                                    }
+                                  />
+
+                                  {q.kunci_jawaban && (
+                                    <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-mono flex items-center gap-1.5">
+                                      <KeyRound className="w-3 h-3" />
+                                      Kunci:{' '}
+                                      {
+                                        q.kunci_jawaban
+                                      }
+                                    </span>
+                                  )}
+
+                                  {q.kunci_terverifikasi && (
+                                    <span className="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[10px]">
+                                      Terhubung halaman kunci
+                                    </span>
+                                  )}
+
+                                </div>
+
+                                <div className="flex gap-2">
+
+                                  <button
+                                    onClick={() =>
+                                      handleEditClick(
+                                        q,
+                                        index
+                                      )
+                                    }
+                                    className="p-2 rounded-lg bg-gray-800 text-gray-300"
+                                    title="Edit"
+                                  >
+                                    <Edit3 className="w-4 h-4" />
+                                  </button>
+
+                                  <button
+                                    onClick={() =>
+                                      handleDeleteQuestion(
+                                        index
+                                      )
+                                    }
+                                    className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400"
+                                    title="Hapus"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+
+                                </div>
+
+                              </div>
+
+                              {/* SOAL */}
+
+                              <div className="bg-gray-950 border border-gray-800 rounded-xl p-4">
+
+                                <RichQuestionText
+                                  text={
+                                    q.teks_soal
+                                  }
+                                  gambar={
+                                    q.gambar
+                                  }
+                                  isMathReady={
+                                    isMathReady
+                                  }
+                                />
+
+                              </div>
+
+                              {/* IMAGE CONTROL */}
+
+                              <div className="mt-4 flex flex-wrap gap-2">
+
+                                {(
+                                  q.gambar ||
+                                  []
+                                ).map(
+                                  (
+                                    g,
+                                    gi
+                                  ) => (
+                                    <button
+                                      key={
+                                        gi
+                                      }
+                                      onClick={() =>
+                                        openManualCrop(
+                                          index,
+                                          gi
+                                        )
+                                      }
+                                      className="px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs flex items-center gap-1.5"
+                                    >
+                                      <Crop className="w-3.5 h-3.5" />
+
+                                      {g.dataUrl
+                                        ? `Atur gambar ${gi + 1}`
+                                        : `Cari/crop gambar ${gi + 1}`}
+                                    </button>
+                                  )
+                                )}
+
+                                <button
+                                  onClick={() =>
+                                    openManualCrop(
+                                      index,
+                                      null
+                                    )
+                                  }
+                                  className="px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 text-xs flex items-center gap-1.5"
+                                >
+                                  <Plus className="w-3.5 h-3.5" />
+                                  Tambah gambar
+                                </button>
+
+                              </div>
+
+                              {/* IMAGE COUNT */}
+
+                              <div className="mt-3 flex flex-wrap gap-2">
+
+                                {(
+                                  q.gambar ||
+                                  []
+                                ).map(
+                                  (
+                                    g,
+                                    gi
+                                  ) => (
+                                    <span
+                                      key={
+                                        `img-${gi}`
+                                      }
+                                      className={`text-[10px] px-2.5 py-1 rounded-lg border ${
+                                        g.dataUrl
+                                          ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
+                                          : 'bg-amber-500/10 border-amber-500/20 text-amber-300'
+                                      }`}
+                                    >
+                                      {g.dataUrl
+                                        ? `Gambar ${gi + 1} siap`
+                                        : `Gambar ${gi + 1} belum dipotong`}
+                                    </span>
+                                  )
+                                )}
+
+                              </div>
+
+                              {/* OPTIONS */}
+
+                              {q.opsi_jawaban
+                                ?.length >
+                                0 && (
+                                <div className="mt-4 grid sm:grid-cols-2 gap-2">
+
+                                  {q.opsi_jawaban.map(
+                                    (
+                                      opt,
+                                      oi
+                                    ) => (
+                                      <div
+                                        key={
+                                          oi
+                                        }
+                                        className="bg-gray-950/60 border border-gray-800 rounded-xl px-4 py-3 text-sm"
+                                      >
+                                        <span className="text-blue-400 font-bold mr-2">
+                                          {String.fromCharCode(
+                                            65 +
+                                              oi
+                                          )}
+                                          .
+                                        </span>
+
+                                        <RichQuestionText
+                                          text={
+                                            opt
+                                          }
+                                          gambar={
+                                            []
+                                          }
+                                          isMathReady={
+                                            isMathReady
+                                          }
+                                        />
+                                      </div>
+                                    )
+                                  )}
+
+                                </div>
+                              )}
+
+                              {/* PERNYATAAN */}
+
+                              {q.pernyataan
+                                ?.length >
+                                0 && (
+                                <div className="mt-4 space-y-2">
+
+                                  <div className="text-xs font-bold text-violet-300">
+                                    Pernyataan
+                                  </div>
+
+                                  {q.pernyataan.map(
+                                    (
+                                      p,
+                                      pi
+                                    ) => (
+                                      <div
+                                        key={
+                                          pi
+                                        }
+                                        className="bg-gray-950/60 border border-gray-800 rounded-xl px-4 py-3 text-sm"
+                                      >
+                                        <RichQuestionText
+                                          text={
+                                            p
+                                          }
+                                          gambar={
+                                            []
+                                          }
+                                          isMathReady={
+                                            isMathReady
+                                          }
+                                        />
+                                      </div>
+                                    )
+                                  )}
+
+                                </div>
+                              )}
+
+                              {/* BENAR SALAH */}
+
+                              {q.tabel_benar_salah
+                                ?.length >
+                                0 && (
+                                <div className="mt-4 rounded-xl overflow-hidden border border-gray-800">
+
+                                  <table className="w-full text-xs">
+
+                                    <thead>
+
+                                      <tr className="bg-gray-950">
+
+                                        <th className="text-left px-4 py-3">
+                                          Pernyataan
+                                        </th>
+
+                                        <th className="text-center px-3 py-3 text-emerald-400">
+                                          Benar
+                                        </th>
+
+                                        <th className="text-center px-3 py-3 text-red-400">
+                                          Salah
+                                        </th>
+
+                                      </tr>
+
+                                    </thead>
+
+                                    <tbody>
+
+                                      {q.tabel_benar_salah.map(
+                                        (
+                                          row,
+                                          ri
+                                        ) => (
+                                          <tr
+                                            key={
+                                              ri
+                                            }
+                                            className="border-t border-gray-800"
+                                          >
+
+                                            <td className="px-4 py-3">
+                                              <RichQuestionText
+                                                text={
+                                                  row
+                                                }
+                                                gambar={
+                                                  []
+                                                }
+                                                isMathReady={
+                                                  isMathReady
+                                                }
+                                              />
+                                            </td>
+
+                                            <td className="text-center">
+                                              □
+                                            </td>
+
+                                            <td className="text-center">
+                                              □
+                                            </td>
+
+                                          </tr>
+                                        )
+                                      )}
+
+                                    </tbody>
+
+                                  </table>
+
+                                </div>
+                              )}
+
+                              {/* MATCHING */}
+
+                              {q.pasangan
+                                ?.length >
+                                0 && (
+                                <div className="mt-4 bg-rose-500/5 border border-rose-500/20 rounded-xl p-4">
+
+                                  <div className="text-xs font-bold text-rose-300 mb-3">
+                                    Menjodohkan
+                                  </div>
+
+                                  <div className="space-y-2">
+
+                                    {q.pasangan.map(
+                                      (
+                                        p,
+                                        pi
+                                      ) => (
+                                        <div
+                                          key={
+                                            pi
+                                          }
+                                          className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center"
+                                        >
+
+                                          <div className="bg-gray-950 border border-gray-800 rounded-lg p-3 text-xs">
+                                            <RichQuestionText
+                                              text={
+                                                p.kiri
+                                              }
+                                              gambar={
+                                                []
+                                              }
+                                              isMathReady={
+                                                isMathReady
+                                              }
+                                            />
+                                          </div>
+
+                                          <ArrowRight className="w-4 h-4 text-rose-400" />
+
+                                          <div className="bg-gray-950 border border-gray-800 rounded-lg p-3 text-xs">
+                                            <RichQuestionText
+                                              text={
+                                                p.kanan
+                                              }
+                                              gambar={
+                                                []
+                                              }
+                                              isMathReady={
+                                                isMathReady
+                                              }
+                                            />
+                                          </div>
+
+                                        </div>
+                                      )
+                                    )}
+
+                                  </div>
+
+                                </div>
+                              )}
+
                             </div>
                           )}
+
                         </div>
-                      )}
-                    </div>
+
+                      </QuestionErrorBoundary>
+                    )
                   )
                 )}
+
               </div>
             )}
-          </section>
+
+          </div>
         )}
 
-        {/* ==================================================
-            ERROR
-            ================================================== */}
-
-        {appState ===
-          'error' && (
-          <section
-            style={
-              cardStyle
-            }
-          >
-            <div
-              style={{
-                textAlign:
-                  'center',
-
-                padding:
-                  45,
-              }}
-            >
-              <AlertCircle
-                size={
-                  42
-                }
-                style={{
-                  color:
-                    '#dc2626',
-
-                  margin:
-                    '0 auto 12px',
-                }}
-              />
-
-              <h3
-                style={{
-                  margin:
-                    '0 0 7px',
-
-                  fontSize:
-                    18,
-
-                  fontWeight:
-                    800,
-                }}
-              >
-                Gagal memuat PDF
-              </h3>
-
-              <p
-                style={{
-                  margin:
-                    '0 0 18px',
-
-                  color:
-                    '#64748b',
-
-                  fontSize:
-                    13,
-                }}
-              >
-                Silakan reset dan coba file PDF lain.
-              </p>
-
-              <button
-                onClick={
-                  resetAll
-                }
-                style={{
-                  border:
-                    'none',
-
-                  background:
-                    '#2563eb',
-
-                  color:
-                    'white',
-
-                  borderRadius:
-                    10,
-
-                  padding:
-                    '10px 15px',
-
-                  cursor:
-                    'pointer',
-
-                  fontWeight:
-                    800,
-                }}
-              >
-                Kembali
-              </button>
-            </div>
-          </section>
-        )}
-
-        {/* RESET */}
-
-        {file &&
-          appState !==
-            'processing' &&
-          appState !==
-            'saving' && (
-            <div
-              style={{
-                display:
-                  'flex',
-
-                justifyContent:
-                  'flex-end',
-              }}
-            >
-              <button
-                onClick={
-                  resetAll
-                }
-                style={{
-                  border:
-                    '1px solid #e2e8f0',
-
-                  background:
-                    'white',
-
-                  color:
-                    '#475569',
-
-                  borderRadius:
-                    10,
-
-                  padding:
-                    '9px 12px',
-
-                  cursor:
-                    'pointer',
-
-                  fontWeight:
-                    700,
-
-                  display:
-                    'inline-flex',
-
-                  alignItems:
-                    'center',
-
-                  gap:
-                    7,
-                }}
-              >
-                <RefreshCw
-                  size={
-                    15
-                  }
-                />
-
-                Reset
-              </button>
-            </div>
-          )}
       </main>
 
-      <style>
-        {`
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
+      {/* ======================================================
+          PREVIEW SINGLE PAGE MODAL
+      ====================================================== */}
 
-          * {
-            box-sizing: border-box;
-          }
-
-          button,
-          input,
-          textarea,
-          select {
-            font-family: inherit;
-          }
-
-          button:hover {
-            filter: brightness(0.98);
-          }
-
-          @media (max-width: 800px) {
-            main {
-              padding-left: 12px !important;
-              padding-right: 12px !important;
+      {previewPage &&
+        pdfDocument && (
+          <PagePreviewModal
+            pdfDocument={
+              pdfDocument
             }
-          }
-        `}
-      </style>
+            pageNum={
+              previewPage
+            }
+            totalPages={
+              totalPages
+            }
+            selectedPages={
+              selectedPages
+            }
+            onTogglePage={togglePage}
+            onClose={() =>
+              setPreviewPage(
+                null
+              )
+            }
+          />
+        )}
+
+      {/* ======================================================
+          MANUAL CROP
+      ====================================================== */}
+
+      {manualCrop &&
+        pdfDocument && (
+          <ManualCropModal
+            pdfDocument={
+              pdfDocument
+            }
+            pageNum={
+              manualCrop.pageNum
+            }
+            totalPages={
+              totalPages
+            }
+            onClose={() =>
+              setManualCrop(
+                null
+              )
+            }
+            onApply={(
+              dataUrl,
+              pageNum
+            ) => {
+              applyManualCrop(
+                manualCrop.qIndex,
+                manualCrop.gIndex,
+                dataUrl,
+                pageNum
+              );
+
+              setManualCrop(
+                null
+              );
+            }}
+          />
+        )}
+
     </div>
   );
 }
 
-// ============================================================
-// RICH QUESTION TEXT
-// ============================================================
+/* ============================================================
+   TYPE BADGE
+============================================================ */
+
+function TypeBadge({
+  tipe,
+}) {
+  const map = {
+    pg_sederhana: {
+      label:
+        'PG Sederhana',
+
+      cls:
+        'bg-sky-500/10 border-sky-500/20 text-sky-300',
+    },
+
+    pg_kompleks: {
+      label:
+        'PG Kompleks',
+
+      cls:
+        'bg-violet-500/10 border-violet-500/20 text-violet-300',
+    },
+
+    benar_salah: {
+      label:
+        'Benar / Salah',
+
+      cls:
+        'bg-amber-500/10 border-amber-500/20 text-amber-300',
+    },
+
+    isian_singkat: {
+      label:
+        'Isian Singkat',
+
+      cls:
+        'bg-emerald-500/10 border-emerald-500/20 text-emerald-300',
+    },
+
+    menjodohkan: {
+      label:
+        'Menjodohkan',
+
+      cls:
+        'bg-rose-500/10 border-rose-500/20 text-rose-300',
+    },
+  };
+
+  const item =
+    map[tipe] || {
+      label:
+        tipe ||
+        'Soal',
+
+      cls:
+        'bg-gray-800 border-gray-700 text-gray-300',
+    };
+
+  return (
+    <span
+      className={`px-2.5 py-1 rounded-full border text-[10px] font-bold font-mono ${item.cls}`}
+    >
+      {item.label}
+    </span>
+  );
+}
+
+/* ============================================================
+   RICH TEXT
+============================================================ */
 
 function RichQuestionText({
   text,
@@ -5461,12 +5220,15 @@ function RichQuestionText({
 
   const html =
     useMemo(() => {
-      if (!text) {
+      const safeText =
+        toStr(text);
+
+      if (!safeText) {
         return '';
       }
 
       let escaped =
-        String(text)
+        safeText
           .replace(
             /&/g,
             '&amp;'
@@ -5481,57 +5243,98 @@ function RichQuestionText({
           );
 
       const imgs =
-        (
-          gambar || []
-        ).filter(
-          Boolean
-        );
+        Array.isArray(
+          gambar
+        )
+          ? gambar.filter(
+              Boolean
+            )
+          : [];
 
       let idx = 0;
 
       escaped =
         escaped.replace(
-          /\{\{\s*GAMBAR[^}]*\}\}/gi,
+          /\{\{\s*GAMBAR(?:_\d+)?\s*\}\}/gi,
           () => {
             const g =
               imgs[idx++];
 
-            const src =
-              g?.url ||
-              g?.dataUrl;
+            if (
+              g &&
+              g.dataUrl
+            ) {
+              const alt =
+                (
+                  g.deskripsi ||
+                  'Gambar soal'
+                ).replace(
+                  /"/g,
+                  '&quot;'
+                );
 
-            if (src) {
               return `
-                <img
-                  src="${src}"
-                  alt="gambar soal"
-                  style="
-                    max-width:100%;
-                    max-height:360px;
-                    display:block;
-                    border-radius:10px;
-                    border:1px solid #cbd5e1;
-                    background:#fff;
-                    padding:5px;
-                    margin:12px auto;
-                  "
-                />
+                <figure style="margin:12px 0;">
+                  <img
+                    src="${g.dataUrl}"
+                    alt="${alt}"
+                    style="max-width:100%;max-height:420px;border-radius:10px;border:1px solid #374151;background:#fff;padding:5px;"
+                  />
+                  <figcaption style="font-size:11px;color:#9ca3af;margin-top:5px;">
+                    ${alt}
+                  </figcaption>
+                </figure>
               `;
             }
 
             return `
-              <span
-                style="
-                  color:#b45309;
-                  font-size:12px;
-                  font-weight:600;
-                "
-              >
-                [Gambar tidak ditemukan]
+              <span style="display:inline-block;color:#fbbf24;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);padding:4px 8px;border-radius:6px;font-size:11px;">
+                [Gambar belum dicrop]
               </span>
             `;
           }
         );
+
+      if (
+        idx ===
+          0 &&
+        imgs.some(
+          (g) =>
+            g.dataUrl
+        )
+      ) {
+        imgs.forEach(
+          (
+            g
+          ) => {
+            if (
+              g.dataUrl
+            ) {
+              const alt =
+                (
+                  g.deskripsi ||
+                  'Gambar soal'
+                ).replace(
+                  /"/g,
+                  '&quot;'
+                );
+
+              escaped += `
+                <figure style="margin:12px 0;">
+                  <img
+                    src="${g.dataUrl}"
+                    alt="${alt}"
+                    style="max-width:100%;max-height:420px;border-radius:10px;border:1px solid #374151;background:#fff;padding:5px;"
+                  />
+                  <figcaption style="font-size:11px;color:#9ca3af;margin-top:5px;">
+                    ${alt}
+                  </figcaption>
+                </figure>
+              `;
+            }
+          }
+        );
+      }
 
       return escaped;
     }, [
@@ -5555,11 +5358,20 @@ function RichQuestionText({
                 right: '$$',
                 display: true,
               },
-
               {
                 left: '$',
                 right: '$',
                 display: false,
+              },
+              {
+                left: '\\(',
+                right: '\\)',
+                display: false,
+              },
+              {
+                left: '\\[',
+                right: '\\]',
+                display: true,
               },
             ],
 
@@ -5567,7 +5379,9 @@ function RichQuestionText({
               false,
           }
         );
-      } catch {}
+      } catch {
+        // ignore render errors
+      }
     }
   }, [
     html,
@@ -5579,156 +5393,1066 @@ function RichQuestionText({
       ref={
         containerRef
       }
-      style={{
-        fontSize:
-          14,
-
-        color:
-          '#334155',
-
-        lineHeight:
-          1.8,
-
-        whiteSpace:
-          'pre-wrap',
-
-        wordBreak:
-          'break-word',
-      }}
+      className="text-sm text-gray-200 leading-relaxed whitespace-pre-wrap break-words"
       dangerouslySetInnerHTML={{
-        __html:
-          html,
+        __html: html,
       }}
     />
   );
 }
 
-// ============================================================
-// SHARED STYLES
-// ============================================================
+/* ============================================================
+   PAGE PREVIEW MODAL
+============================================================ */
 
-const cardStyle = {
-  background:
-    'white',
+function PagePreviewModal({
+  pdfDocument,
+  pageNum,
+  totalPages,
+  selectedPages,
+  onTogglePage,
+  onClose,
+}) {
+  const canvasRef =
+    useRef(null);
 
-  border:
-    '1px solid #e2e8f0',
+  const [
+    rendering,
+    setRendering,
+  ] = useState(true);
 
-  borderRadius:
-    18,
+  const [
+    currentPage,
+    setCurrentPage,
+  ] = useState(pageNum);
 
-  padding:
-    20,
+  useEffect(() => {
+    let cancelled =
+      false;
 
-  boxShadow:
-    '0 8px 30px rgba(15,23,42,0.06)',
-};
+    (async () => {
+      try {
+        setRendering(
+          true
+        );
 
-const labelStyle = {
-  display:
-    'block',
+        const page =
+          await pdfDocument.getPage(
+            currentPage
+          );
 
-  marginBottom:
-    7,
+        const viewport =
+          page.getViewport({
+            scale: 1.6,
+          });
 
-  fontSize:
-    12,
+        const canvas =
+          canvasRef.current;
 
-  fontWeight:
-    800,
+        canvas.width =
+          Math.ceil(
+            viewport.width
+          );
 
-  color:
-    '#334155',
-};
+        canvas.height =
+          Math.ceil(
+            viewport.height
+          );
 
-const helpStyle = {
-  marginTop:
-    6,
+        const ctx =
+          canvas.getContext(
+            '2d'
+          );
 
-  color:
-    '#94a3b8',
+        ctx.fillStyle =
+          '#ffffff';
 
-  fontSize:
-    11,
+        ctx.fillRect(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
 
-  lineHeight:
-    1.5,
-};
+        await page.render({
+          canvasContext:
+            ctx,
 
-const inputStyle = {
-  width:
-    '100%',
+          viewport,
+        }).promise;
 
-  padding:
-    '10px 12px',
+        if (!cancelled) {
+          setRendering(
+            false
+          );
+        }
+      } catch {
+        if (!cancelled) {
+          setRendering(
+            false
+          );
+        }
+      }
+    })();
 
-  border:
-    '1px solid #cbd5e1',
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    pdfDocument,
+    currentPage,
+  ]);
 
-  borderRadius:
-    10,
+  const selected =
+    selectedPages.includes(
+      currentPage
+    );
 
-  background:
-    'white',
+  return (
+    <div
+      className="fixed inset-0 z-[300] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={
+        onClose
+      }
+    >
+      <div
+        className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-5xl max-h-[94vh] overflow-hidden flex flex-col"
+        onClick={(e) =>
+          e.stopPropagation()
+        }
+      >
 
-  color:
-    '#0f172a',
+        <div className="px-5 py-3 border-b border-gray-800 flex items-center justify-between">
 
-  fontSize:
-    13,
+          <div className="flex items-center gap-2">
+            <Eye className="w-4 h-4 text-blue-400" />
 
-  outline:
-    'none',
-};
+            <span className="font-bold text-sm">
+              Preview Halaman{' '}
+              {
+                currentPage
+              }
+              /{' '}
+              {
+                totalPages
+              }
+            </span>
+          </div>
 
-const secondaryButtonStyle = {
-  border:
-    '1px solid #cbd5e1',
+          <button
+            onClick={
+              onClose
+            }
+            className="p-2 rounded-lg bg-gray-800 text-gray-300"
+          >
+            <X className="w-4 h-4" />
+          </button>
 
-  background:
-    '#f8fafc',
+        </div>
 
-  color:
-    '#475569',
+        <div className="flex-1 overflow-auto bg-gray-950 p-4 flex justify-center relative">
 
-  borderRadius:
-    9,
+          {rendering && (
+            <div className="absolute inset-0 flex items-center justify-center z-10">
+              <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+            </div>
+          )}
 
-  padding:
-    '8px 11px',
+          <canvas
+            ref={
+              canvasRef
+            }
+            className="max-w-full h-auto rounded-xl shadow-2xl bg-white"
+          />
 
-  cursor:
-    'pointer',
+        </div>
 
-  fontSize:
-    11,
+        <div className="px-5 py-3 border-t border-gray-800 flex flex-wrap items-center justify-between gap-3">
 
-  fontWeight:
-    700,
-};
+          <div className="flex items-center gap-2">
 
-const ghostButtonStyle = {
-  border:
-    '1px solid #e2e8f0',
+            <button
+              disabled={
+                currentPage <=
+                1
+              }
+              onClick={() =>
+                setCurrentPage(
+                  (p) =>
+                    Math.max(
+                      1,
+                      p - 1
+                    )
+                )
+              }
+              className="p-2 rounded-lg bg-gray-800 disabled:opacity-30"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
 
-  background:
-    'white',
+            <button
+              disabled={
+                currentPage >=
+                totalPages
+              }
+              onClick={() =>
+                setCurrentPage(
+                  (p) =>
+                    Math.min(
+                      totalPages,
+                      p + 1
+                    )
+                )
+              }
+              className="p-2 rounded-lg bg-gray-800 disabled:opacity-30"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
 
-  color:
-    '#64748b',
+          </div>
 
-  borderRadius:
-    9,
+          <button
+            onClick={() =>
+              onTogglePage(
+                currentPage
+              )
+            }
+            className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 ${
+              selected
+                ? 'bg-blue-600'
+                : 'bg-gray-800'
+            }`}
+          >
+            {selected ? (
+              <>
+                <CheckSquare className="w-4 h-4" />
+                Halaman Dipilih
+              </>
+            ) : (
+              <>
+                <Square className="w-4 h-4" />
+                Pilih Halaman
+              </>
+            )}
+          </button>
 
-  padding:
-    '8px 11px',
+        </div>
 
-  cursor:
-    'pointer',
+      </div>
+    </div>
+  );
+}
 
-  fontSize:
-    11,
+/* ============================================================
+   MANUAL CROP MODAL
+============================================================ */
 
-  fontWeight:
-    700,
-};
+function ManualCropModal({
+  pdfDocument,
+  pageNum,
+  totalPages,
+  onClose,
+  onApply,
+}) {
+  const canvasRef =
+    useRef(null);
+
+  const wrapRef =
+    useRef(null);
+
+  const [
+    curPage,
+    setCurPage,
+  ] = useState(pageNum);
+
+  const [
+    rendering,
+    setRendering,
+  ] = useState(true);
+
+  const [
+    pageObj,
+    setPageObj,
+  ] = useState(null);
+
+  const [
+    viewScale,
+    setViewScale,
+  ] = useState(1);
+
+  const [
+    box,
+    setBox,
+  ] = useState({
+    x: 80,
+    y: 80,
+    w: 300,
+    h: 220,
+  });
+
+  const drag =
+    useRef(null);
+
+  useEffect(() => {
+    let cancelled =
+      false;
+
+    (async () => {
+      try {
+        setRendering(
+          true
+        );
+
+        const page =
+          await pdfDocument.getPage(
+            curPage
+          );
+
+        if (
+          cancelled
+        ) {
+          return;
+        }
+
+        setPageObj(
+          page
+        );
+
+        const base =
+          page.getViewport({
+            scale: 1,
+          });
+
+        const maxW =
+          Math.min(
+            900,
+            wrapRef.current
+              ?.clientWidth ||
+              900
+          );
+
+        const scale =
+          maxW /
+          base.width;
+
+        setViewScale(
+          scale
+        );
+
+        const vp =
+          page.getViewport({
+            scale,
+          });
+
+        const canvas =
+          canvasRef.current;
+
+        canvas.width =
+          Math.ceil(
+            vp.width
+          );
+
+        canvas.height =
+          Math.ceil(
+            vp.height
+          );
+
+        const ctx =
+          canvas.getContext(
+            '2d'
+          );
+
+        ctx.fillStyle =
+          '#ffffff';
+
+        ctx.fillRect(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+
+        await page.render({
+          canvasContext:
+            ctx,
+
+          viewport:
+            vp,
+        }).promise;
+
+        if (
+          cancelled
+        ) {
+          return;
+        }
+
+        setBox({
+          x:
+            canvas.width *
+            0.25,
+
+          y:
+            canvas.height *
+            0.25,
+
+          w:
+            canvas.width *
+            0.5,
+
+          h:
+            canvas.height *
+            0.25,
+        });
+
+        setRendering(
+          false
+        );
+      } catch {
+        if (
+          !cancelled
+        ) {
+          setRendering(
+            false
+          );
+        }
+      }
+    })();
+
+    return () => {
+      cancelled =
+        true;
+    };
+  }, [
+    pdfDocument,
+    curPage,
+  ]);
+
+  const onPointerDown =
+    (
+      e,
+      mode
+    ) => {
+      e.stopPropagation();
+
+      const rect =
+        canvasRef.current.getBoundingClientRect();
+
+      drag.current =
+        {
+          mode,
+
+          startX:
+            e.clientX,
+
+          startY:
+            e.clientY,
+
+          startBox:
+            {
+              ...box,
+            },
+
+          scaleX:
+            canvasRef.current
+              .width /
+            rect.width,
+
+          scaleY:
+            canvasRef.current
+              .height /
+            rect.height,
+        };
+
+      window.addEventListener(
+        'pointermove',
+        onPointerMove
+      );
+
+      window.addEventListener(
+        'pointerup',
+        onPointerUp
+      );
+    };
+
+  const onPointerMove =
+    (
+      e
+    ) => {
+      if (
+        !drag.current
+      ) {
+        return;
+      }
+
+      const d =
+        drag.current;
+
+      const dx =
+        (
+          e.clientX -
+          d.startX
+        ) *
+        d.scaleX;
+
+      const dy =
+        (
+          e.clientY -
+          d.startY
+        ) *
+        d.scaleY;
+
+      const cw =
+        canvasRef.current
+          .width;
+
+      const ch =
+        canvasRef.current
+          .height;
+
+      let {
+        x,
+        y,
+        w,
+        h,
+      } =
+        d.startBox;
+
+      if (
+        d.mode ===
+        'move'
+      ) {
+        x += dx;
+        y += dy;
+      } else {
+        if (
+          d.mode.includes(
+            'e'
+          )
+        ) {
+          w += dx;
+        }
+
+        if (
+          d.mode.includes(
+            's'
+          )
+        ) {
+          h += dy;
+        }
+
+        if (
+          d.mode.includes(
+            'w'
+          )
+        ) {
+          x += dx;
+          w -= dx;
+        }
+
+        if (
+          d.mode.includes(
+            'n'
+          )
+        ) {
+          y += dy;
+          h -= dy;
+        }
+      }
+
+      w =
+        Math.max(
+          30,
+          w
+        );
+
+      h =
+        Math.max(
+          30,
+          h
+        );
+
+      x =
+        Math.max(
+          0,
+          Math.min(
+            x,
+            cw - w
+          )
+        );
+
+      y =
+        Math.max(
+          0,
+          Math.min(
+            y,
+            ch - h
+          )
+        );
+
+      if (
+        x + w >
+        cw
+      ) {
+        w =
+          cw - x;
+      }
+
+      if (
+        y + h >
+        ch
+      ) {
+        h =
+          ch - y;
+      }
+
+      setBox({
+        x,
+        y,
+        w,
+        h,
+      });
+    };
+
+  const onPointerUp =
+    () => {
+      drag.current =
+        null;
+
+      window.removeEventListener(
+        'pointermove',
+        onPointerMove
+      );
+
+      window.removeEventListener(
+        'pointerup',
+        onPointerUp
+      );
+    };
+
+  const handleTake =
+    async () => {
+      if (
+        !pageObj
+      ) {
+        return;
+      }
+
+      const region =
+        {
+          x0:
+            box.x /
+            viewScale,
+
+          y0:
+            box.y /
+            viewScale,
+
+          x1:
+            (
+              box.x +
+              box.w
+            ) /
+            viewScale,
+
+          y1:
+            (
+              box.y +
+              box.h
+            ) /
+            viewScale,
+        };
+
+      const dpi = 4;
+
+      const vp =
+        pageObj.getViewport({
+          scale: dpi,
+        });
+
+      const full =
+        document.createElement(
+          'canvas'
+        );
+
+      full.width =
+        Math.ceil(
+          vp.width
+        );
+
+      full.height =
+        Math.ceil(
+          vp.height
+        );
+
+      const ctx =
+        full.getContext(
+          '2d'
+        );
+
+      ctx.fillStyle =
+        '#ffffff';
+
+      ctx.fillRect(
+        0,
+        0,
+        full.width,
+        full.height
+      );
+
+      await pageObj.render({
+        canvasContext:
+          ctx,
+
+        viewport:
+          vp,
+      }).promise;
+
+      const sx =
+        Math.round(
+          region.x0 *
+            dpi
+        );
+
+      const sy =
+        Math.round(
+          region.y0 *
+            dpi
+        );
+
+      const sw =
+        Math.round(
+          (
+            region.x1 -
+            region.x0
+          ) *
+            dpi
+        );
+
+      const sh =
+        Math.round(
+          (
+            region.y1 -
+            region.y0
+          ) *
+            dpi
+        );
+
+      const out =
+        document.createElement(
+          'canvas'
+        );
+
+      out.width =
+        sw;
+
+      out.height =
+        sh;
+
+      const octx =
+        out.getContext(
+          '2d'
+        );
+
+      octx.fillStyle =
+        '#ffffff';
+
+      octx.fillRect(
+        0,
+        0,
+        sw,
+        sh
+      );
+
+      octx.drawImage(
+        full,
+        sx,
+        sy,
+        sw,
+        sh,
+        0,
+        0,
+        sw,
+        sh
+      );
+
+      onApply(
+        out.toDataURL(
+          'image/png'
+        ),
+        curPage
+      );
+    };
+
+  const handles =
+    [
+      [
+        'nw',
+        '-top-1.5 -left-1.5 cursor-nwse-resize',
+      ],
+      [
+        'n',
+        '-top-1.5 left-1/2 -translate-x-1/2 cursor-ns-resize',
+      ],
+      [
+        'ne',
+        '-top-1.5 -right-1.5 cursor-nesw-resize',
+      ],
+      [
+        'w',
+        'top-1/2 -left-1.5 -translate-y-1/2 cursor-ew-resize',
+      ],
+      [
+        'e',
+        'top-1/2 -right-1.5 -translate-y-1/2 cursor-ew-resize',
+      ],
+      [
+        'sw',
+        '-bottom-1.5 -left-1.5 cursor-nesw-resize',
+      ],
+      [
+        's',
+        '-bottom-1.5 left-1/2 -translate-x-1/2 cursor-ns-resize',
+      ],
+      [
+        'se',
+        '-bottom-1.5 -right-1.5 cursor-nwse-resize',
+      ],
+    ];
+
+  return (
+    <div
+      className="fixed inset-0 z-[400] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={
+        onClose
+      }
+    >
+
+      <div
+        className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[94vh] overflow-hidden flex flex-col"
+        onClick={(e) =>
+          e.stopPropagation()
+        }
+      >
+
+        <div className="px-5 py-3 border-b border-gray-800 flex items-center justify-between">
+
+          <div className="flex items-center gap-2">
+
+            <Crop className="w-4 h-4 text-blue-400" />
+
+            <span className="font-bold text-sm">
+              Crop Gambar Manual
+            </span>
+
+          </div>
+
+          <div className="flex items-center gap-2">
+
+            <button
+              disabled={
+                curPage <=
+                1
+              }
+              onClick={() =>
+                setCurPage(
+                  (p) =>
+                    Math.max(
+                      1,
+                      p - 1
+                    )
+                )
+              }
+              className="p-1.5 rounded bg-gray-800 disabled:opacity-30"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <span className="text-xs text-gray-400 font-mono">
+              Hal{' '}
+              {
+                curPage
+              }
+              /
+              {
+                totalPages
+              }
+            </span>
+
+            <button
+              disabled={
+                curPage >=
+                totalPages
+              }
+              onClick={() =>
+                setCurPage(
+                  (p) =>
+                    Math.min(
+                      totalPages,
+                      p + 1
+                    )
+                )
+              }
+              className="p-1.5 rounded bg-gray-800 disabled:opacity-30"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={
+                onClose
+              }
+              className="p-1.5 rounded bg-gray-800"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+          </div>
+
+        </div>
+
+        <div className="px-5 py-2 text-xs text-gray-500 border-b border-gray-800">
+          Geser dan ubah ukuran kotak biru tepat di atas gambar/grafik yang ingin disimpan.
+        </div>
+
+        <div
+          ref={
+            wrapRef
+          }
+          className="flex-1 overflow-auto bg-gray-950 p-4 flex justify-center"
+        >
+
+          <div
+            className="relative"
+            style={{
+              lineHeight: 0,
+            }}
+          >
+
+            {rendering && (
+              <div className="absolute inset-0 flex items-center justify-center z-20 bg-gray-950/80">
+                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+              </div>
+            )}
+
+            <canvas
+              ref={
+                canvasRef
+              }
+              className="rounded-xl shadow-2xl select-none"
+              style={{
+                maxWidth:
+                  '100%',
+                height:
+                  'auto',
+              }}
+            />
+
+            {!rendering &&
+              canvasRef.current && (
+                <div
+                  className="absolute border-2 border-blue-500 bg-blue-500/10 cursor-move"
+                  style={{
+                    left:
+                      `${
+                        (box.x /
+                          canvasRef.current
+                            .width) *
+                        100
+                      }%`,
+
+                    top:
+                      `${
+                        (box.y /
+                          canvasRef.current
+                            .height) *
+                        100
+                      }%`,
+
+                    width:
+                      `${
+                        (box.w /
+                          canvasRef.current
+                            .width) *
+                        100
+                      }%`,
+
+                    height:
+                      `${
+                        (box.h /
+                          canvasRef.current
+                            .height) *
+                        100
+                      }%`,
+                  }}
+                  onPointerDown={(
+                    e
+                  ) =>
+                    onPointerDown(
+                      e,
+                      'move'
+                    )
+                  }
+                >
+
+                  {handles.map(
+                    (
+                      [
+                        mode,
+                        cls,
+                      ]
+                    ) => (
+                      <span
+                        key={
+                          mode
+                        }
+                        onPointerDown={(
+                          e
+                        ) =>
+                          onPointerDown(
+                            e,
+                            mode
+                          )
+                        }
+                        className={`absolute w-3 h-3 bg-white border-2 border-blue-500 rounded-sm ${cls}`}
+                      />
+                    )
+                  )}
+
+                </div>
+              )}
+
+          </div>
+
+        </div>
+
+        <div className="px-5 py-3 border-t border-gray-800 flex justify-end gap-2">
+
+          <button
+            onClick={
+              onClose
+            }
+            className="px-4 py-2 rounded-lg bg-gray-800 text-sm"
+          >
+            Batal
+          </button>
+
+          <button
+            onClick={
+              handleTake
+            }
+            disabled={
+              rendering
+            }
+            className="px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold flex items-center gap-2 disabled:opacity-40"
+          >
+            <Check className="w-4 h-4" />
+            Ambil Gambar
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
