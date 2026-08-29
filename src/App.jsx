@@ -45,11 +45,6 @@ import ManageMateriPortal from './pages/admin/portal-siswa/ManageMateri';
 import PortalSiswaHome from './pages/admin/portal-siswa/PortalSiswaHome';
 import ManagePoster from './pages/admin/portal-siswa/ManagePoster';
 import ManageSurvey from './pages/admin/portal-siswa/ManageSurvey';
-// 🔥 BARU: Bank Soal -- admin unggah PDF berisi soal (mis. buku tryout),
-// sistem membaca tiap halaman jadi soal per butir, admin meninjau &
-// menyetujui sebelum tersimpan. Lihat komentar lengkap di file-filenya.
-import BankSoalImportPage from './pages/admin/banksoal/BankSoalImportPage';
-
 // === GURU ===
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherHistory from './pages/teacher/TeacherHistory';
@@ -280,7 +275,6 @@ function App() {
         <Route path="/admin/grades/bulk" element={<AdminRoute><AdminBulkRaport /></AdminRoute>} />
         <Route path="/admin/daily-log" element={<AdminRoute><AdminDailyLog /></AdminRoute>} />
         <Route path="/admin/blog" element={<AdminRoute><ManageBlog /></AdminRoute>} />
-        <Route path="/admin/bank-soal" element={<AdminRoute><BankSoalImportPage /></AdminRoute>} />
         {/* 🔥 FIX: Settings sekarang digerbangi OwnerRoute (bukan
             AdminRoute lagi) -- login sebagai Admin biasa TIDAK memberi
             akses ke sini. Dua alamat mengarah ke halaman yang sama,
