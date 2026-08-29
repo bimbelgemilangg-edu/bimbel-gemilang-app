@@ -13,13 +13,6 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 // BankSoalImportPage.jsx versi lama.
 import { db } from '../../../firebase';
 import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
-// 🔥 DIPERBAIKI: sebelumnya saya bikin backend baru (api/uploadBankSoalImages.js)
-// yang minta SUPABASE_SERVICE_KEY -- ternyata GAK PERLU. uploadService.js yang
-// sudah ada di project ini upload LANGSUNG DARI BROWSER pakai kunci publik
-// (anon/publishable key, aman ditaruh di frontend) -- itu pola yang SUDAH
-// dipakai di SELURUH project ini. Backend yang saya bikin kemarin dihapus,
-// diganti pakai fungsi yang sudah ada ini.
-import { uploadElearningFile } from '../../../services/uploadService';
 import {
   UploadCloud, FileText, Play, Download,
   CheckCircle, Loader2, FileJson, FileSpreadsheet,
@@ -179,9 +172,7 @@ export default function AdvancedQuestionExtractor() {
   const [editForm, setEditForm] = useState({});
   const [typeFilter, setTypeFilter] = useState('semua');
   
-  // 🔥 DIHAPUS: state apiEndpoint gak diperlukan lagi -- upload gambar
-  // sekarang langsung dari frontend pakai uploadElearningFile(), gak
-  // ada backend endpoint yang perlu dikonfigurasi.
+  const [apiEndpoint, setApiEndpoint] = useState('/api/uploadBankSoalImages');
   const [isSendingToBackend, setIsSendingToBackend] = useState(false);
   const [sendSuccessMessage, setSendSuccessMessage] = useState('');
 
@@ -720,23 +711,6 @@ ATURAN WAJIB UNTUK TEKS PANJANG & SAINS:
   //      pakai writeBatch -- PERSIS pola yang sudah dipakai di seluruh
   //      project ini (BankSoalImportPage.jsx versi lama), bukan cara
   //      baru yang beda sendiri.
-  //
-  // 🔥 DIPERBAIKI (setelah lihat uploadService.js yang sebenarnya): upload
-  // gambar TIDAK PERLU lewat backend sama sekali -- uploadElearningFile()
-  // yang sudah ada di project ini upload LANGSUNG DARI BROWSER pakai kunci
-  // publik Supabase (aman, itu memang fungsinya anon/publishable key).
-  // api/uploadBankSoalImages.js yang saya buat sebelumnya TIDAK DIPERLUKAN,
-  // silakan dihapus dari project.
-  const dataUrlToFile = (dataUrl, fileName) => {
-    const match = String(dataUrl || '').match(/^data:image\/([a-zA-Z]+);base64,(.+)$/);
-    if (!match) return null;
-    const mime = `image/${match[1]}`;
-    const binary = atob(match[2]);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return new File([bytes], fileName, { type: mime });
-  };
-
   const sendToBackend = async () => {
     if (extractedData.length === 0) return;
     setIsSendingToBackend(true);
@@ -759,31 +733,28 @@ ATURAN WAJIB UNTUK TEKS PANJANG & SAINS:
       });
 
       let uploadedMap = {};
-      let uploadErrorCount = 0;
-
       if (imagesToUpload.length > 0) {
         addLog(`Mengupload ${imagesToUpload.length} gambar ke Supabase Storage...`, 'info');
 
-        for (const item of imagesToUpload) {
-          const fileObj = dataUrlToFile(item.dataUrl, `${item.key}.png`);
-          if (!fileObj) {
-            uploadErrorCount++;
-            continue;
-          }
-          // eslint-disable-next-line no-await-in-loop
-          const result = await uploadElearningFile(fileObj, 'bank-soal');
-          if (result.success) {
-            uploadedMap[item.key] = result.downloadURL;
-          } else {
-            uploadErrorCount++;
-            addLog(`Gagal upload gambar ${item.key}: ${result.error}`, 'warning');
-          }
+        const uploadResponse = await fetch(apiEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            images: imagesToUpload.map(({ key, dataUrl }) => ({ key, dataUrl })),
+          }),
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error(`Upload gambar gagal (HTTP ${uploadResponse.status})`);
         }
 
-        if (uploadErrorCount > 0) {
-          addLog(`${uploadErrorCount} gambar gagal diupload (soal terkait tetap disimpan tanpa gambar itu).`, 'warning');
+        const uploadResult = await uploadResponse.json();
+        (uploadResult.uploaded || []).forEach((u) => { uploadedMap[u.key] = u.url; });
+
+        if ((uploadResult.errors || []).length > 0) {
+          addLog(`${uploadResult.errors.length} gambar gagal diupload (soal terkait tetap disimpan tanpa gambar itu).`, 'warning');
         }
-        addLog(`${Object.keys(uploadedMap).length} gambar berhasil diupload.`, 'success');
+        addLog(`${(uploadResult.uploaded || []).length} gambar berhasil diupload.`, 'success');
       }
 
       // --- TAHAP 2: ganti dataUrl base64 jadi URL hasil upload ---
@@ -813,10 +784,6 @@ ATURAN WAJIB UNTUK TEKS PANJANG & SAINS:
         batch.set(docRef, {
           ...q,
           sourceFile: file?.name || 'dokumen.pdf',
-          // 🔥 status "draft" -- guru yang menarik soal ini ke kuis
-          // masih bisa/harus meninjau dulu, bukan langsung terpakai
-          // tanpa pemeriksaan.
-          status: 'draft',
           createdAt: serverTimestamp(),
         });
       });
@@ -1213,12 +1180,19 @@ ATURAN WAJIB UNTUK TEKS PANJANG & SAINS:
                       Simpan ke Bank Soal (Firestore + Supabase Storage)
                     </h4>
                     <p className="text-xs text-gray-300">
-                      Gambar diupload langsung ke Supabase Storage, lalu semua soal disimpan ke koleksi "bank_soal" -- siap ditinjau & ditarik guru ke kuis.
+                      Gambar diupload ke Supabase Storage, lalu semua soal disimpan ke koleksi "bank_soal". Endpoint di bawah cuma dipakai untuk upload gambar (bisa diganti kalau perlu).
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 w-full md:w-auto">
+                  <input
+                    type="text"
+                    value={apiEndpoint}
+                    onChange={(e) => setApiEndpoint(e.target.value)}
+                    placeholder="/api/uploadBankSoalImages"
+                    className="bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-200 font-mono flex-1 md:w-56"
+                  />
                   <button
                     onClick={sendToBackend}
                     disabled={isSendingToBackend || extractedData.length === 0}
