@@ -844,6 +844,273 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
   }
   
   // ============================================================
+  // LATEX (.tex) PARSER
+  // ------------------------------------------------------------
+  // Best-effort parser untuk file .tex hasil scan/convert soal ujian.
+  // TIDAK butuh kompiler LaTeX -- cukup teks .tex biasa. Rumus/matematika
+  // ($...$, \\(...\\), \\[...\\]) DIBIARKAN APA ADANYA di teks_soal karena
+  // sistem sudah bisa merender LaTeX inline lewat RichText/KaTeX.
+  //
+  // Format .tex yang didukung (pilih salah satu gaya, boleh campur):
+  //
+  // 1) Daftar soal pakai \\begin{enumerate} ... \\end{enumerate}, tiap
+  //    soal = satu \\item. Kalau ada pilihan ganda, taruh pilihan sebagai
+  //    \\begin{enumerate}[label=\\Alph*.] ... \\end{enumerate} (atau
+  //    \\begin{itemize}) BERSARANG di dalam \\item soal tsb -- tiap opsi
+  //    juga satu \\item.
+  //
+  // 2) Kalau tidak pakai environment enumerate sama sekali, boleh angka
+  //    biasa di awal baris untuk soal ("1.", "2)", dst) dan huruf di
+  //    awal baris untuk opsi ("A.", "B)", dst) -- parser fallback ke
+  //    mode ini otomatis kalau tidak ada \\begin{enumerate}/{itemize}.
+  //
+  // 3) Kunci jawaban & pembahasan bisa ditulis dengan salah satu cara:
+  //    - Command per-soal: \\kunci{B} atau \\jawaban{B} atau \\answer{B},
+  //      dan \\pembahasan{...} -- ditulis di dalam \\item soal tsb.
+  //    - Untuk paket exam class: \\correctchoice{...} otomatis dikenali
+  //      sebagai opsi yang benar (tidak perlu \\kunci lagi).
+  //    - ATAU satu blok "KUNCI JAWABAN" di akhir dokumen (BUKAN di
+  //      dalam komentar %, karena komentar dibuang sebelum diparse)
+  //      berisi daftar "1. B", "2. D", dst -- dipetakan balik ke nomor.
+  // ============================================================
+
+  function stripTexComments(text) {
+    return text
+      .split('\n')
+      .map(line => {
+        let result = '';
+        for (let i = 0; i < line.length; i++) {
+          if (line[i] === '%' && line[i - 1] !== '\\\\') break;
+          result += line[i];
+        }
+        return result;
+      })
+      .join('\n');
+  }
+
+  function splitTopLevelTexItems(content) {
+    const beginRe = /\\begin\{(enumerate|itemize)\}(\[[^\]\n]*\])?/;
+    const match = beginRe.exec(content);
+    if (!match) return null;
+
+    let i = match.index + match[0].length;
+    let depth = 1;
+    const items = [];
+    let current = '';
+
+    while (i < content.length && depth > 0) {
+      if (content.startsWith('\\begin{', i)) {
+        const close = content.indexOf('}', i);
+        if (close === -1) break;
+        depth++;
+        current += content.slice(i, close + 1);
+        i = close + 1;
+        continue;
+      }
+
+      if (content.startsWith('\\end{', i)) {
+        const close = content.indexOf('}', i);
+        if (close === -1) break;
+        depth--;
+        if (depth === 0) { i = close + 1; break; }
+        current += content.slice(i, close + 1);
+        i = close + 1;
+        continue;
+      }
+
+      if (depth === 1 && content.startsWith('\\item', i)) {
+        if (current.trim()) items.push(current.trim());
+        current = '';
+        i += 5;
+        if (content[i] === '[') {
+          const close = content.indexOf(']', i);
+          i = close === -1 ? i + 1 : close + 1;
+        }
+        continue;
+      }
+
+      current += content[i];
+      i++;
+    }
+
+    if (current.trim()) items.push(current.trim());
+    return items.length > 0 ? items : null;
+  }
+
+  function splitByPlainNumbering(content) {
+    const lines = content.split('\n');
+    const blocks = [];
+    let current = null;
+
+    const numberRe = /^\s*(?:soal\s*)?(\d{1,3})\s*[.)]\s*(.*)$/i;
+
+    lines.forEach(line => {
+      const m = numberRe.exec(line);
+      if (m) {
+        if (current) blocks.push(current);
+        current = { nomor: Number(m[1]), lines: [m[2]] };
+      } else if (current) {
+        current.lines.push(line);
+      }
+    });
+
+    if (current) blocks.push(current);
+    return blocks.map(block => ({ nomor: block.nomor, raw: block.lines.join('\n').trim() }));
+  }
+
+  function extractPlainOptions(content) {
+    const optionRe = /(?:^|\n)\s*([A-Fa-f])[.)]\s+/g;
+    const matches = [...content.matchAll(optionRe)];
+    if (matches.length < 2) return { teksSoal: content, opsi: [] };
+
+    const teksSoal = content.slice(0, matches[0].index).trim();
+    const opsi = [];
+
+    for (let k = 0; k < matches.length; k++) {
+      const start = matches[k].index + matches[k][0].length;
+      const end = k + 1 < matches.length ? matches[k + 1].index : content.length;
+      opsi.push(content.slice(start, end).trim());
+    }
+
+    return { teksSoal, opsi };
+  }
+
+  function extractTexCommandValue(content, ...commandNames) {
+    for (const name of commandNames) {
+      const re = new RegExp(`\\\\${name}\\{([\\s\\S]*?)\\}`, 'i');
+      const m = re.exec(content);
+      if (m) return { value: m[1].trim(), full: m[0] };
+    }
+    return null;
+  }
+
+  function extractTexEnvironmentValue(content, ...envNames) {
+    for (const name of envNames) {
+      const re = new RegExp(`\\\\begin\\{${name}\\}([\\s\\S]*?)\\\\end\\{${name}\\}`, 'i');
+      const m = re.exec(content);
+      if (m) return { value: m[1].trim(), full: m[0] };
+    }
+    return null;
+  }
+
+  function cleanTexText(text) {
+    return safeString(text)
+      .replace(/\\label\{[^}]*\}/g, '')
+      .replace(/\\noindent/g, '')
+      .replace(/\\vspace\*?\{[^}]*\}/g, '')
+      .replace(/\\newpage/g, '')
+      .replace(/\\bigskip|\\medskip|\\smallskip/g, '')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
+  function extractAnswerKeyBlock(content) {
+    const headingRe = /(kunci\s*jawaban|jawaban\s*benar|answer\s*key)/i;
+    const headingMatch = headingRe.exec(content);
+    if (!headingMatch) return {};
+
+    const blockText = content.slice(headingMatch.index);
+    const pairRe = /(\d{1,3})\s*[.\-:)]\s*([A-Fa-f])\b/g;
+    const map = {};
+    let m;
+    while ((m = pairRe.exec(blockText)) !== null) {
+      map[Number(m[1])] = m[2].toUpperCase();
+    }
+    return map;
+  }
+
+  function parseTeX(raw) {
+    const text = safeString(raw);
+    if (!text.trim()) throw new Error('File .tex kosong.');
+
+    const withoutComments = stripTexComments(text);
+    const answerKeyMap = extractAnswerKeyBlock(withoutComments);
+
+    const docMatch = /\\begin\{document\}([\s\S]*?)\\end\{document\}/i.exec(withoutComments);
+    const body = docMatch ? docMatch[1] : withoutComments;
+
+    let rawBlocks = [];
+
+    const topItems = splitTopLevelTexItems(body);
+    if (topItems) {
+      rawBlocks = topItems.map((raw, idx) => ({ nomor: idx + 1, raw }));
+    } else {
+      rawBlocks = splitByPlainNumbering(body);
+    }
+
+    if (rawBlocks.length === 0) {
+      throw new Error(
+        'Tidak ditemukan struktur soal di file .tex. Gunakan \\begin{enumerate}...\\item ' +
+        'per soal, atau penomoran biasa ("1.", "2." dst) di awal baris.',
+      );
+    }
+
+    return rawBlocks.map(block => {
+      let content = block.raw;
+
+      let pembahasan = '';
+      const pembahasanCmd = extractTexCommandValue(content, 'pembahasan', 'penjelasan', 'solusi');
+      const pembahasanEnv = extractTexEnvironmentValue(content, 'pembahasan', 'solution');
+      if (pembahasanCmd) { pembahasan = pembahasanCmd.value; content = content.replace(pembahasanCmd.full, ''); }
+      else if (pembahasanEnv) { pembahasan = pembahasanEnv.value; content = content.replace(pembahasanEnv.full, ''); }
+
+      let kunciJawaban = '';
+      const kunciCmd = extractTexCommandValue(content, 'kunci', 'jawaban', 'answer');
+      if (kunciCmd) { kunciJawaban = kunciCmd.value; content = content.replace(kunciCmd.full, ''); }
+
+      let teksSoal = content;
+      let opsiRaw = [];
+      let correctFromExam = -1;
+
+      const nestedBeginIdx = /\\begin\{(enumerate|itemize)\}/.exec(content);
+      if (nestedBeginIdx) {
+        teksSoal = content.slice(0, nestedBeginIdx.index);
+        const optionsBlock = content.slice(nestedBeginIdx.index);
+        const nestedItems = splitTopLevelTexItems(optionsBlock);
+        if (nestedItems) {
+          opsiRaw = nestedItems.map(item => {
+            const correctMatch = /\\correctchoice\{([\s\S]*?)\}/.exec(item);
+            if (correctMatch) return correctMatch[1];
+            return item.replace(/\\choice\{([\s\S]*?)\}/, '$1');
+          });
+          correctFromExam = nestedItems.findIndex(item => /\\correctchoice\{/.test(item));
+        }
+      }
+
+      if (opsiRaw.length === 0) {
+        const plain = extractPlainOptions(content);
+        if (plain.opsi.length >= 2) {
+          teksSoal = plain.teksSoal;
+          opsiRaw = plain.opsi;
+        }
+      }
+
+      teksSoal = cleanTexText(teksSoal);
+      const opsiJawaban = opsiRaw.map(opt => cleanTexText(opt)).filter(Boolean);
+
+      if (!kunciJawaban && correctFromExam >= 0) {
+        kunciJawaban = String.fromCharCode(65 + correctFromExam);
+      }
+      if (!kunciJawaban && answerKeyMap[block.nomor]) {
+        kunciJawaban = answerKeyMap[block.nomor];
+      }
+
+      return {
+        nomor: block.nomor,
+        tipe: opsiJawaban.length >= 2 ? 'pg_sederhana' : 'uraian',
+        teks_soal: teksSoal,
+        opsi_jawaban: opsiJawaban,
+        kunci_jawaban: kunciJawaban,
+        pembahasan: cleanTexText(pembahasan),
+        gambar: [],
+        tabel_benar_salah: [],
+        pasangan: [],
+      };
+    });
+  }
+
+  // ============================================================
   // IMAGE SRC
   // ============================================================
   
@@ -1515,12 +1782,15 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
       const activeFormat = formatOverride || format;
   
       if (!safeString(content).trim()) {
-        setParseError('Input kosong. Upload 1 file JSON (bisa berisi banyak paket sekaligus).');
+        setParseError('Input kosong. Upload 1 file JSON/CSV/.tex (bisa berisi banyak paket sekaligus).');
         return;
       }
   
       try {
-        const raw = activeFormat === 'json' ? parseJSON(content) : parseCSV(content);
+        const raw =
+          activeFormat === 'json' ? parseJSON(content)
+          : activeFormat === 'tex' ? parseTeX(content)
+          : parseCSV(content);
         const normalized = raw
           .map((question, index) => normalizeSoal(question, index))
           .map((q, index) => ({ ...q, _idx: index }));
@@ -1552,7 +1822,11 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
         if (!file) return;
   
         const lowerName = file.name.toLowerCase();
-        const detectedFormat = lowerName.endsWith('.csv') ? 'csv' : 'json';
+        const detectedFormat = lowerName.endsWith('.csv')
+          ? 'csv'
+          : lowerName.endsWith('.tex')
+          ? 'tex'
+          : 'json';
         setFormat(detectedFormat);
         setSumberFile(file.name);
   
@@ -1892,7 +2166,7 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
                 <span style={{ fontSize: '14px', fontWeight: '600', color: '#4b5563' }}>Format:</span>
   
-                {['json', 'csv'].map(currentFormat => (
+                {['json', 'csv', 'tex'].map(currentFormat => (
                   <button
                     key={currentFormat}
                     type="button"
@@ -1906,9 +2180,13 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
                       cursor: 'pointer',
                     }}
                   >
-                    {currentFormat.toUpperCase()}
+                    {currentFormat === 'tex' ? '.TEX' : currentFormat.toUpperCase()}
                     <span style={{ marginLeft: '4px', fontSize: '10px', opacity: 0.7 }}>
-                      {currentFormat === 'json' ? 'Gambar + tabel + pembahasan' : 'Teks'}
+                      {currentFormat === 'json'
+                        ? 'Gambar + tabel + pembahasan'
+                        : currentFormat === 'tex'
+                        ? 'LaTeX (enumerate/item)'
+                        : 'Teks'}
                     </span>
                   </button>
                 ))}
@@ -1917,7 +2195,7 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
                   📂 Upload File (1 file, semua paket)
                   <input
                     type="file"
-                    accept=".json,.csv,application/json,text/csv"
+                    accept=".json,.csv,.tex,application/json,text/csv,text/x-tex"
                     onChange={handleFile}
                     style={{ display: 'none' }}
                   />
@@ -1968,7 +2246,23 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
                   onChange={e => setRawInput(e.target.value)}
                   spellCheck="false"
                   placeholder={
-                    format === 'json'
+                    format === 'tex'
+                      ? `\\begin{enumerate}
+  \\item Akar-akar persamaan kuadrat $x^2 + ax - 4 = 0$ adalah p dan q. Jika $p^2 - 2pq + q^2 = 8a$ maka nilai a = ....
+  \\begin{enumerate}[label=\\Alph*.]
+    \\item $-8$
+    \\item $-4$
+    \\item $4$
+    \\item $6$
+    \\item $8$
+  \\end{enumerate}
+  \\kunci{E}
+  \\pembahasan{Langkah-langkah penyelesaian lengkap di sini.}
+\\end{enumerate}
+
+\\section*{Kunci Jawaban}
+1. E`
+                      : format === 'json'
                       ? `{
     "tryout": [
       {
@@ -2001,7 +2295,7 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
   
               {parseError && (
                 <div style={{ backgroundColor: '#fef2f2', border: '1px solid #e5e7eb', borderColor: '#fecaca', borderRadius: '12px', paddingLeft: '16px', paddingRight: '16px', paddingTop: '12px', paddingBottom: '12px', fontSize: '14px', color: '#b91c1c' }}>
-                  <div style={{ fontWeight: '700', marginBottom: '4px' }}>❌ JSON/CSV tidak dapat diproses</div>
+                  <div style={{ fontWeight: '700', marginBottom: '4px' }}>❌ JSON/CSV/.tex tidak dapat diproses</div>
                   <div>{parseError}</div>
                 </div>
               )}
