@@ -1,152 +1,78 @@
 // api/extractPdfBankSoal.js
 // ============================================================
-// BANK SOAL AI EXTRACTOR
-// ============================================================
-// Mendukung konfigurasi AI langsung dari halaman Admin.
-//
-// Frontend dapat mengirim:
-// {
-//   image,
-//   pageNum,
-//   provider,
-//   apiKey,
-//   baseUrl,
-//   model
-// }
-//
-// Kalau konfigurasi dari frontend tidak dikirim, endpoint tetap
-// bisa fallback ke Environment Variables Vercel.
-//
-// Provider yang bisa dipakai:
-// - openai
-// - anthropic
-// - openai-compatible
-// - gemini
-//
-// Untuk provider seperti OpenRouter, Groq, NVIDIA, Cerebras,
-// Mistral dan provider lain yang menyediakan endpoint
-// OpenAI-compatible, gunakan:
-// provider = "openai-compatible"
-// baseUrl = endpoint chat completions mereka
+// BANK SOAL AI EXTRACTOR — v2.0
+// Support semua tipe: PG, PG Kompleks, Benar/Salah,
+// Isian Singkat/Angka UTBK, Menjodohkan
+// LaTeX lengkap: Fisika, Kimia, Matematika, UTBK/TKA
 // ============================================================
 
 export const config = {
   maxDuration: 60,
-  api: {
-    bodyParser: {
-      sizeLimit: '15mb'
-    }
-  }
+  api: { bodyParser: { sizeLimit: '15mb' } },
 };
 
 // ============================================================
-// SYSTEM PROMPT
+// SYSTEM PROMPT — UPDATED: semua tipe + UTBK/TKA/Sains
 // ============================================================
 
-const SYSTEM_PROMPT = `
-Kamu adalah mesin AI ekstraktor soal ujian tingkat lanjut yang sangat akurat.
+const SYSTEM_PROMPT = `Kamu adalah mesin AI ekstraktor soal ujian tingkat lanjut (UTBK, SNBT, TKA Fisika/Kimia/Matematika/Sains, AKM, dan soal sekolah) yang sangat teliti untuk pembuatan bank soal.
 
-Tugasmu:
-Menganalisis gambar halaman ujian dan mengekstrak setiap soal secara presisi.
+Tugasmu membaca SATU halaman gambar ujian dan mengekstrak SEMUA butir soal yang benar-benar terlihat.
 
-BIDANG:
-- Matematika
-- Fisika
-- Kimia
-- Biologi
-- Bahasa Indonesia
-- Bahasa Inggris
-- dan bidang akademik lain yang tampak pada halaman.
+DUKUNGAN TIPE SOAL:
+1. pg_sederhana   : Pilihan ganda biasa, satu jawaban benar (A-E).
+2. pg_kompleks    : Pilihan ganda kompleks, lebih dari satu jawaban benar.
+3. benar_salah    : Pernyataan dengan pilihan Benar/Salah, Ya/Tidak (termasuk format tabel).
+4. isian_singkat  : Isian angka UTBK (0-999), isian singkat, atau isian kata/frasa.
+5. menjodohkan    : Memasangkan item Kolom Kiri dengan Kolom Kanan.
 
-ATURAN UMUM:
+ATURAN WAJIB:
+1. Pertahankan teks soal sedekat mungkin dengan sumber. Jangan meringkas, mengarang, atau mengubah angka.
+2. Pertahankan semua simbol sains dan matematika dengan LaTeX bersih:
+   - Inline: $...$ — contoh: $x^2$, $\\frac{a}{b}$, $\\sqrt{2}$
+   - Display: $$...$$ — contoh: $$\\int_0^\\infty f(x)dx$$
+   - Pecahan: \\frac{pembilang}{penyebut}
+   - Akar: \\sqrt{n}, \\sqrt[n]{x}
+   - Pangkat/indeks: x^{n}, x_{i}
+   - Satuan fisika: $10 \\text{ m/s}$, $9{,}8 \\text{ m/s}^2$
+   - Derajat sudut: $45^\\circ$
+   - Kimia: $\\text{H}_2\\text{O}$, $\\text{CO}_2$, $\\text{NaCl}$
+   - Notasi ilmiah: $6{,}02 \\times 10^{23}$
+3. Jika soal punya gambar/diagram/grafik/tabel visual, sisipkan {{GAMBAR_1}}, {{GAMBAR_2}} dst di teks_soal. Isi array gambar dengan id dan deskripsi visual.
+4. Jangan membuat gambar baru. Jangan menebak gambar yang tidak terlihat.
+5. Untuk menjodohkan: isi pasangan kiri-kanan di array "pasangan". Jika tidak ada, kosongkan [].
+6. Untuk isian_singkat: isi kunci_jawaban dengan angka/kata jika tertera. Jika tidak, kosongkan "".
+7. kunci_jawaban hanya diisi jika JELAS tertulis di halaman. Jika tidak ada, isi string kosong.
+8. JANGAN menganggap opsi jawaban A/B/C/D/E sebagai kunci jawaban.
+9. JANGAN menggabungkan dua soal berbeda menjadi satu.
+10. Nomor soal sesuai yang tercetak. Jika tidak terbaca, gunakan urutan relatif.
+11. Jika halaman tidak berisi soal, kembalikan array kosong [].
+12. Balas HANYA JSON. Tidak boleh ada markdown, code fence, atau penjelasan tambahan.
 
-1. Pertahankan seluruh isi soal secara akurat.
-2. Jangan mengarang isi soal.
-3. Jangan mengubah angka.
-4. Jangan mengubah simbol.
-5. Jangan menghilangkan pilihan jawaban.
-6. Jangan menghilangkan tabel.
-7. Jangan menghilangkan informasi pada gambar.
-8. Gunakan LaTeX untuk persamaan matematika.
-9. Rumus sebaris gunakan:
-   $...$
-
-10. Rumus berdiri sendiri gunakan:
-   $$...$$
-
-DETEKSI GAMBAR / DIAGRAM / GRAFIK:
-
-Jika soal mempunyai:
-- grafik
-- diagram
-- tabel visual
-- ilustrasi
-- gambar
-- bangun geometri
-- rangkaian listrik
-- struktur kimia
-- peta
-- atau visual lain
-
-maka:
-
-1. Sisipkan token:
-{{GAMBAR}}
-
-pada posisi yang tepat di teks_soal.
-
-2. Masukkan informasi gambar ke array gambar.
-
-Jika tidak ada gambar:
-"gambar": []
-
-JENIS SOAL:
-
-1. pg_sederhana
-Pilihan ganda biasa dengan satu jawaban benar.
-
-2. pg_kompleks
-Pilihan ganda kompleks dengan beberapa pernyataan.
-
-3. benar_salah
-Soal dengan tabel kategori Benar/Salah.
-
-BALAS HANYA JSON MURNI.
-
-Jangan gunakan markdown.
-Jangan gunakan code fence.
-Jangan menambahkan penjelasan.
-
-Mulai dengan:
-[
-
-Akhiri dengan:
-]
-
-STRUKTUR:
-
+FORMAT JSON (mulai dengan [ dan akhiri dengan ]):
 [
   {
     "nomor": 1,
     "tipe": "pg_sederhana",
-    "teks_soal": "",
+    "teks_soal": "isi soal dengan LaTeX jika perlu",
     "pernyataan": [],
-    "opsi_jawaban": [],
+    "opsi_jawaban": ["opsi A", "opsi B", "opsi C", "opsi D", "opsi E"],
     "tabel_benar_salah": [],
+    "pasangan": [],
     "kunci_jawaban": "",
     "gambar": []
   }
 ]
 
-Untuk gambar:
+PENJELASAN FIELD PER TIPE:
+- pg_sederhana : isi opsi_jawaban (A-E), pernyataan=[],  tabel_benar_salah=[], pasangan=[]
+- pg_kompleks  : isi pernyataan + opsi_jawaban (jawaban gabungan), tabel_benar_salah=[], pasangan=[]
+- benar_salah  : isi tabel_benar_salah (list pernyataan), opsi_jawaban=[], pasangan=[]
+- isian_singkat: opsi_jawaban=[], pernyataan=[], tabel_benar_salah=[], pasangan=[], kunci_jawaban=angka/kata
+- menjodohkan  : isi pasangan=[{"kiri":"...","kanan":"..."},...], opsi_jawaban=[], tabel_benar_salah=[]
 
-"gambar": [
-  {
-    "id": "GAMBAR_1",
-    "deskripsi": "deskripsi singkat"
-  }
-]
-`;
+UNTUK GAMBAR:
+"gambar": [{"id": "GAMBAR_1", "deskripsi": "deskripsi singkat visual"}]`;
 
 // ============================================================
 // JSON SALVAGE
@@ -154,58 +80,28 @@ Untuk gambar:
 
 function salvagePartialJsonArray(text) {
   const start = text.indexOf('[');
-
-  if (start === -1) {
-    return [];
-  }
-
-  let depth = 0;
-  let inStr = false;
-  let esc = false;
-  let lastGoodEnd = -1;
-
+  if (start === -1) return [];
+  let depth = 0, inStr = false, esc = false, lastGoodEnd = -1;
   for (let i = start; i < text.length; i++) {
     const ch = text[i];
-
     if (inStr) {
-      if (esc) {
-        esc = false;
-      } else if (ch === '\\') {
-        esc = true;
-      } else if (ch === '"') {
-        inStr = false;
-      }
+      if (esc) esc = false;
+      else if (ch === '\\') esc = true;
+      else if (ch === '"') inStr = false;
       continue;
     }
-
-    if (ch === '"') {
-      inStr = true;
-    } else if (ch === '[' || ch === '{') {
-      depth++;
-    } else if (ch === ']' || ch === '}') {
+    if (ch === '"') inStr = true;
+    else if (ch === '[' || ch === '{') depth++;
+    else if (ch === ']' || ch === '}') {
       depth--;
-
-      if (depth === 1 && ch === '}') {
-        lastGoodEnd = i;
-      }
+      if (depth === 1 && ch === '}') lastGoodEnd = i;
     }
   }
-
-  if (lastGoodEnd === -1) {
-    return [];
-  }
-
+  if (lastGoodEnd === -1) return [];
   try {
-    const parsed = JSON.parse(
-      text.slice(start, lastGoodEnd + 1) + ']'
-    );
-
-    return Array.isArray(parsed)
-      ? parsed
-      : [];
-  } catch {
-    return [];
-  }
+    const parsed = JSON.parse(text.slice(start, lastGoodEnd + 1) + ']');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { return []; }
 }
 
 // ============================================================
@@ -213,401 +109,170 @@ function salvagePartialJsonArray(text) {
 // ============================================================
 
 function normalizeBase64(image) {
-  return String(image || '')
-    .replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, '');
+  return String(image || '').replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, '');
 }
 
 function normalizeBaseUrl(url) {
-  if (!url) {
-    return '';
-  }
-
+  if (!url) return '';
   return String(url).trim().replace(/\/+$/, '');
 }
 
 function normalizeProvider(value) {
-  return String(value || 'openai-compatible')
-    .trim()
-    .toLowerCase();
+  return String(value || 'gemini').trim().toLowerCase();
 }
 
 function getProviderConfig(body) {
   const provider = normalizeProvider(
-    body.provider || process.env.BANKSOAL_AI_PROVIDER || 'openai-compatible'
+    body.provider || process.env.BANKSOAL_AI_PROVIDER || 'gemini'
   );
 
   const apiKey =
     String(body.apiKey || '').trim() ||
     String(
-      provider === 'groq'
-        ? process.env.GROQ_API_KEY || ''
-        : provider === 'openai'
-          ? process.env.OPENAI_API_KEY || ''
-          : provider === 'anthropic'
-            ? process.env.ANTHROPIC_API_KEY || ''
-            : process.env.BANKSOAL_AI_API_KEY || ''
+      provider === 'groq'      ? process.env.GROQ_API_KEY     || '' :
+      provider === 'openai'    ? process.env.OPENAI_API_KEY   || '' :
+      provider === 'anthropic' ? process.env.ANTHROPIC_API_KEY || '' :
+      provider === 'gemini'    ? process.env.GEMINI_API_KEY   || '' :
+                                 process.env.BANKSOAL_AI_API_KEY || ''
     ).trim();
 
-  let baseUrl =
-    normalizeBaseUrl(body.baseUrl) ||
-    normalizeBaseUrl(process.env.BANKSOAL_AI_BASE_URL);
+  let baseUrl = normalizeBaseUrl(body.baseUrl) || normalizeBaseUrl(process.env.BANKSOAL_AI_BASE_URL);
+  let model   = String(body.model || '').trim() || String(process.env.BANKSOAL_AI_MODEL || '').trim();
 
-  let model =
-    String(body.model || '').trim() ||
-    String(process.env.BANKSOAL_AI_MODEL || '').trim();
-
-  if (provider === 'openai') {
-    baseUrl =
-      baseUrl ||
-      'https://api.openai.com/v1/chat/completions';
-
-    model =
-      model ||
-      'gpt-4o';
-  }
-
-  if (provider === 'groq') {
-    baseUrl =
-      baseUrl ||
-      'https://api.groq.com/openai/v1/chat/completions';
-
-    model =
-      model ||
-      'llama-3.2-90b-vision-preview';
-  }
-
+  // Default config per provider
   if (provider === 'gemini') {
-    baseUrl =
-      baseUrl ||
-      'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
-
-    model =
-      model ||
-      'gemini-2.0-flash';
+    baseUrl = baseUrl || 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+    model   = model   || 'gemini-1.5-flash';   // quota paling lapang di free tier
   }
-
+  if (provider === 'openai') {
+    baseUrl = baseUrl || 'https://api.openai.com/v1/chat/completions';
+    model   = model   || 'gpt-4o';
+  }
+  if (provider === 'groq') {
+    baseUrl = baseUrl || 'https://api.groq.com/openai/v1/chat/completions';
+    model   = model   || 'llama-3.2-90b-vision-preview';
+  }
   if (provider === 'anthropic') {
-    model =
-      model ||
-      'claude-3-5-sonnet-20241022';
+    model = model || 'claude-3-5-sonnet-20241022';
   }
-
   if (provider === 'openai-compatible') {
-    if (!baseUrl) {
-      throw Object.assign(
-        new Error(
-          'Base URL wajib diisi untuk provider OpenAI-compatible.'
-        ),
-        { status: 400 }
-      );
-    }
-
-    if (!model) {
-      throw Object.assign(
-        new Error(
-          'Model wajib diisi untuk provider OpenAI-compatible.'
-        ),
-        { status: 400 }
-      );
-    }
+    if (!baseUrl) throw Object.assign(new Error('Base URL wajib diisi untuk openai-compatible.'), { status: 400 });
+    if (!model)   throw Object.assign(new Error('Model wajib diisi untuk openai-compatible.'),   { status: 400 });
   }
+  if (!apiKey) throw Object.assign(new Error('API Key belum dimasukkan.'), { status: 400 });
 
-  if (!apiKey) {
-    throw Object.assign(
-      new Error(
-        'API Key belum dimasukkan.'
-      ),
-      { status: 400 }
-    );
-  }
-
-  return {
-    provider,
-    apiKey,
-    baseUrl,
-    model
-  };
+  return { provider, apiKey, baseUrl, model };
 }
 
 // ============================================================
-// OPENAI-COMPATIBLE
+// OPENAI-COMPATIBLE (termasuk Gemini via OpenAI endpoint)
 // ============================================================
 
-async function callOpenAICompatible(
-  baseUrl,
-  apiKey,
-  model,
-  base64Image,
-  pageNum,
-  signal
-) {
+async function callOpenAICompatible(baseUrl, apiKey, model, base64Image, pageNum, signal) {
   const resp = await fetch(baseUrl, {
     method: 'POST',
-
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
+      'Authorization': `Bearer ${apiKey}`,
     },
-
     body: JSON.stringify({
       model,
-
-      temperature: 0.1,
-
+      temperature: 0.05,
       max_tokens: 8192,
-
       messages: [
-        {
-          role: 'system',
-          content: SYSTEM_PROMPT
-        },
-
+        { role: 'system', content: SYSTEM_PROMPT },
         {
           role: 'user',
-
           content: [
             {
               type: 'text',
-              text:
-                `Ekstrak seluruh butir soal dari halaman ${pageNum}. ` +
-                `Gunakan format JSON sesuai system prompt. ` +
-                `Balas HANYA array JSON.`
+              text: `Ekstrak seluruh butir soal dari halaman ${pageNum}. Pastikan setiap soal lengkap: opsi A-E, pernyataan, tabel Benar/Salah, pasangan menjodohkan, isian angka, rumus LaTeX, dan referensi gambar. Balas HANYA array JSON.`,
             },
-
-            {
-              type: 'image_url',
-
-              image_url: {
-                url:
-                  `data:image/jpeg;base64,${base64Image}`
-              }
-            }
-          ]
-        }
-      ]
+            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64Image}` } },
+          ],
+        },
+      ],
     }),
-
-    signal
+    signal,
   });
 
   const rawText = await resp.text();
-
   let data = {};
-
-  try {
-    data = JSON.parse(rawText);
-  } catch {
-    data = {};
-  }
+  try { data = JSON.parse(rawText); } catch { data = {}; }
 
   if (!resp.ok) {
-    const message =
-      data?.error?.message ||
-      data?.message ||
-      rawText.slice(0, 500) ||
-      `HTTP ${resp.status}`;
-
-    throw Object.assign(
-      new Error(message),
-      {
-        status: resp.status
-      }
-    );
+    const message = data?.error?.message || data?.message || rawText.slice(0, 500) || `HTTP ${resp.status}`;
+    throw Object.assign(new Error(message), { status: resp.status });
   }
 
-  const text =
-    data?.choices?.[0]?.message?.content ||
-    data?.choices?.[0]?.text ||
-    '';
-
-  return {
-    text,
-    stopReason:
-      data?.choices?.[0]?.finish_reason || null
-  };
+  const text = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || '';
+  return { text, stopReason: data?.choices?.[0]?.finish_reason || null };
 }
 
 // ============================================================
-// ANTHROPIC
+// ANTHROPIC (Native API)
 // ============================================================
 
-async function callAnthropic(
-  apiKey,
-  model,
-  base64Image,
-  pageNum,
-  signal
-) {
-  const resp = await fetch(
-    'https://api.anthropic.com/v1/messages',
-    {
-      method: 'POST',
-
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-
-      body: JSON.stringify({
-        model,
-
-        max_tokens: 8192,
-
-        temperature: 0.1,
-
-        system: SYSTEM_PROMPT,
-
-        messages: [
-          {
-            role: 'user',
-
-            content: [
-              {
-                type: 'text',
-                text:
-                  `Ekstrak seluruh butir soal dari halaman ${pageNum}. ` +
-                  `Balas HANYA array JSON.`
-              },
-
-              {
-                type: 'image',
-
-                source: {
-                  type: 'base64',
-                  media_type: 'image/jpeg',
-                  data: base64Image
-                }
-              }
-            ]
-          }
-        ]
-      }),
-
-      signal
-    }
-  );
+async function callAnthropic(apiKey, model, base64Image, pageNum, signal) {
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 8192,
+      temperature: 0.05,
+      system: SYSTEM_PROMPT,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'text', text: `Ekstrak seluruh butir soal dari halaman ${pageNum}. Balas HANYA array JSON.` },
+          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64Image } },
+        ],
+      }],
+    }),
+    signal,
+  });
 
   const rawText = await resp.text();
-
   let data = {};
-
-  try {
-    data = JSON.parse(rawText);
-  } catch {
-    data = {};
-  }
+  try { data = JSON.parse(rawText); } catch { data = {}; }
 
   if (!resp.ok) {
-    const message =
-      data?.error?.message ||
-      rawText.slice(0, 500) ||
-      `HTTP ${resp.status}`;
-
-    throw Object.assign(
-      new Error(message),
-      {
-        status: resp.status
-      }
-    );
+    const message = data?.error?.message || rawText.slice(0, 500) || `HTTP ${resp.status}`;
+    throw Object.assign(new Error(message), { status: resp.status });
   }
 
-  const text =
-    Array.isArray(data.content)
-      ? data.content
-          .filter(block => block?.type === 'text')
-          .map(block => block.text)
-          .join('\n')
-      : '';
-
-  return {
-    text,
-    stopReason:
-      data?.stop_reason || null
-  };
+  const text = Array.isArray(data.content)
+    ? data.content.filter(b => b?.type === 'text').map(b => b.text).join('\n')
+    : '';
+  return { text, stopReason: data?.stop_reason || null };
 }
 
 // ============================================================
 // TEST CONNECTION
 // ============================================================
 
-async function testProvider(
-  config,
-  signal
-) {
-  const {
-    provider,
-    apiKey,
-    baseUrl,
-    model
-  } = config;
-
-  if (provider === 'anthropic') {
-    return callAnthropic(
-      apiKey,
-      model,
-      '',
-      0,
-      signal
-    );
+async function testProvider(cfg, signal) {
+  if (cfg.provider === 'anthropic') {
+    return callAnthropic(cfg.apiKey, cfg.model, '', 0, signal);
   }
-
-  const testUrl =
-    baseUrl;
-
-  const resp = await fetch(
-    testUrl,
-    {
-      method: 'POST',
-
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-
-      body: JSON.stringify({
-        model,
-
-        max_tokens: 20,
-
-        messages: [
-          {
-            role: 'user',
-            content: 'Balas dengan kata OK.'
-          }
-        ]
-      }),
-
-      signal
-    }
-  );
-
+  const resp = await fetch(cfg.baseUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cfg.apiKey}` },
+    body: JSON.stringify({ model: cfg.model, max_tokens: 20, messages: [{ role: 'user', content: 'OK' }] }),
+    signal,
+  });
   const raw = await resp.text();
-
   if (!resp.ok) {
-    let message = raw;
-
-    try {
-      const json = JSON.parse(raw);
-      message =
-        json?.error?.message ||
-        json?.message ||
-        raw;
-    } catch {}
-
-    throw Object.assign(
-      new Error(
-        message.slice(0, 500)
-      ),
-      {
-        status: resp.status
-      }
-    );
+    let msg = raw;
+    try { msg = JSON.parse(raw)?.error?.message || raw; } catch {}
+    throw Object.assign(new Error(msg.slice(0, 500)), { status: resp.status });
   }
-
-  return {
-    text: raw
-  };
+  return { text: raw };
 }
 
 // ============================================================
@@ -615,202 +280,67 @@ async function testProvider(
 // ============================================================
 
 export default async function handler(req, res) {
-  res.setHeader(
-    'Access-Control-Allow-Origin',
-    '*'
-  );
-
-  res.setHeader(
-    'Access-Control-Allow-Methods',
-    'POST, OPTIONS'
-  );
-
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Content-Type'
-  );
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({
-      success: false,
-      error: 'Method not allowed'
-    });
-  }
+  res.setHeader('Access-Control-Allow-Origin',  '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed' });
 
   const body = req.body || {};
-
-  const {
-    image,
-    pageNum,
-    testOnly
-  } = body;
+  const { image, pageNum, testOnly } = body;
 
   try {
-    const providerConfig =
-      getProviderConfig(body);
+    const cfg = getProviderConfig(body);
 
+    // ── Mode test koneksi ──
     if (testOnly) {
-      const controller =
-        new AbortController();
-
-      const timeout =
-        setTimeout(
-          () => controller.abort(),
-          15000
-        );
-
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 15000);
       try {
-        await testProvider(
-          providerConfig,
-          controller.signal
-        );
-
-        return res.status(200).json({
-          success: true,
-          message: 'API berhasil terhubung.',
-          provider:
-            providerConfig.provider,
-          model:
-            providerConfig.model
-        });
-      } finally {
-        clearTimeout(timeout);
-      }
+        await testProvider(cfg, ctrl.signal);
+        return res.status(200).json({ success: true, message: 'API berhasil terhubung.', provider: cfg.provider, model: cfg.model });
+      } finally { clearTimeout(t); }
     }
 
-    if (!image) {
-      return res.status(400).json({
-        success: false,
-        error:
-          'Gambar halaman (base64) tidak dikirim.'
-      });
-    }
+    if (!image) return res.status(400).json({ success: false, error: 'Gambar halaman (base64) tidak dikirim.' });
 
-    const cleanBase64 =
-      normalizeBase64(image);
-
-    const controller =
-      new AbortController();
-
-    const timeout =
-      setTimeout(
-        () => controller.abort(),
-        55000
-      );
+    const cleanBase64 = normalizeBase64(image);
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 55000);
 
     let result;
+    try {
+      result = cfg.provider === 'anthropic'
+        ? await callAnthropic(cfg.apiKey, cfg.model, cleanBase64, pageNum, ctrl.signal)
+        : await callOpenAICompatible(cfg.baseUrl, cfg.apiKey, cfg.model, cleanBase64, pageNum, ctrl.signal);
+    } finally { clearTimeout(t); }
+
+    if (!result?.text) return res.status(502).json({ success: false, error: 'AI tidak mengembalikan teks.' });
+
+    const cleaned = String(result.text)
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/```\s*$/i, '')
+      .trim();
 
     try {
-      if (
-        providerConfig.provider === 'anthropic'
-      ) {
-        result =
-          await callAnthropic(
-            providerConfig.apiKey,
-            providerConfig.model,
-            cleanBase64,
-            pageNum,
-            controller.signal
-          );
-      } else {
-        result =
-          await callOpenAICompatible(
-            providerConfig.baseUrl,
-            providerConfig.apiKey,
-            providerConfig.model,
-            cleanBase64,
-            pageNum,
-            controller.signal
-          );
-      }
-    } finally {
-      clearTimeout(timeout);
-    }
-
-    if (!result?.text) {
-      return res.status(502).json({
-        success: false,
-        error:
-          'AI tidak mengembalikan teks.'
-      });
-    }
-
-    const cleaned =
-      String(result.text)
-        .replace(
-          /^```(?:json)?\s*/i,
-          ''
-        )
-        .replace(
-          /```\s*$/i,
-          ''
-        )
-        .trim();
-
-    try {
-      const parsed =
-        JSON.parse(cleaned);
-
+      const parsed = JSON.parse(cleaned);
       return res.status(200).json({
         success: true,
-        questions:
-          Array.isArray(parsed)
-            ? parsed
-            : [],
-        provider:
-          providerConfig.provider,
-        model:
-          providerConfig.model,
-        truncated: false
+        questions: Array.isArray(parsed) ? parsed : [],
+        provider: cfg.provider,
+        model: cfg.model,
+        truncated: false,
       });
     } catch {
-      const salvaged =
-        salvagePartialJsonArray(
-          cleaned
-        );
-
+      const salvaged = salvagePartialJsonArray(cleaned);
       if (salvaged.length > 0) {
-        return res.status(200).json({
-          success: true,
-          questions: salvaged,
-          provider:
-            providerConfig.provider,
-          model:
-            providerConfig.model,
-          truncated: true
-        });
+        return res.status(200).json({ success: true, questions: salvaged, provider: cfg.provider, model: cfg.model, truncated: true });
       }
-
-      return res.status(502).json({
-        success: false,
-        error:
-          'Respons AI tidak bisa dibaca sebagai JSON.',
-        raw:
-          cleaned.slice(0, 1000)
-      });
+      return res.status(502).json({ success: false, error: 'Respons AI tidak bisa dibaca sebagai JSON.', raw: cleaned.slice(0, 1000) });
     }
+
   } catch (error) {
-    if (
-      error?.name === 'AbortError'
-    ) {
-      return res.status(504).json({
-        success: false,
-        error:
-          'Request AI timeout.'
-      });
-    }
-
-    return res.status(
-      error?.status || 500
-    ).json({
-      success: false,
-      error:
-        error?.message ||
-        'Gagal memanggil AI.'
-    });
+    if (error?.name === 'AbortError') return res.status(504).json({ success: false, error: 'Request AI timeout.' });
+    return res.status(error?.status || 500).json({ success: false, error: error?.message || 'Gagal memanggil AI.' });
   }
 }

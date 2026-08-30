@@ -1,77 +1,45 @@
 // api/uploadBankSoalImages.js
 // ============================================================
-// UPLOAD GAMBAR BANK SOAL KE SUPABASE STORAGE
-// ============================================================
-// 🔥 BARU: dipanggil dari AdvancedQuestionExtractor.jsx (halaman
-// admin /admin/bank-soal versi baru) SEBELUM data disimpan ke
-// Firestore. Kenapa ini HARUS lewat backend (bukan langsung dari
-// browser kayak fitur upload gambar guru yang lain di project ini):
-// upload ke Supabase Storage butuh SERVICE KEY yang TIDAK BOLEH
-// ditaruh di kode frontend (browser) sama sekali -- siapa pun bisa
-// buka DevTools dan mencurinya kalau itu terjadi.
+// Upload gambar diagram (base64) dari AdvancedQuestionExtractor
+// ke Supabase Storage bucket "materi-bimbel/bank-soal/gambar/".
 //
-// TUGAS ENDPOINT INI CUMA SATU: terima daftar gambar base64, upload
-// ke Supabase Storage, kembalikan URL publiknya. TIDAK menyentuh
-// Firestore sama sekali -- penyimpanan ke Firestore (koleksi
-// "bank_soal") tetap dilakukan di FRONTEND lewat writeBatch(db),
-// PERSIS pola yang sudah dipakai di seluruh project ini (lihat
-// BankSoalImportPage.jsx versi lama sebagai contoh) -- supaya
-// konsisten, bukan bikin cara baru yang beda sendiri.
+// Dipanggil dari frontend saat "Simpan ke Bank Soal".
+// API key (secret) aman di server — tidak pernah ke browser.
 //
-// ENV VAR YANG DIPERLUKAN (Vercel):
-//   - SUPABASE_URL          (URL project Supabase, mis. https://xxxx.supabase.co)
-//   - SUPABASE_SERVICE_KEY  (service_role key -- BUKAN anon key --
-//                            dari Supabase Dashboard > Settings > API.
-//                            Ini WAJIB service_role karena perlu izin
-//                            tulis ke bucket; anon key biasanya
-//                            cuma baca)
+// ENV VARS yang dibutuhkan di Vercel:
+//   SUPABASE_SERVICE_ROLE_KEY  = sb_secret_xxxx...  ← wajib
+//   NEXT_PUBLIC_SUPABASE_URL   = https://xxx.supabase.co  (opsional, ada fallback)
+//
+// Body  : { images: [{ key: string, dataUrl: "data:image/..." }] }
+// Return: { success, uploaded: [{key, url}], errors: [{key, error}], uploadedCount }
 // ============================================================
 
-export const config = { maxDuration: 60 };
+import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_BUCKET = process.env.SUPABASE_BANKSOAL_BUCKET || 'materi-bimbel';
-const SUPABASE_FOLDER = 'bank-soal';
+export const config = {
+  maxDuration: 60,
+  api: { bodyParser: { sizeLimit: '50mb' } },
+};
 
-function base64ToBuffer(dataUrl) {
-  const match = String(dataUrl || '').match(/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/);
-  if (!match) return null;
-  return {
-    mimeType: `image/${match[1]}`,
-    buffer: Buffer.from(match[2], 'base64'),
-  };
-}
+/* ============================================================
+   SUPABASE CLIENT — pakai Service Role (secret) key
+   agar bisa upload tanpa tergantung RLS policy.
+   URL: ambil dari env var, fallback ke URL project hardcoded.
+============================================================ */
 
-async function uploadOneImage(supabaseUrl, serviceKey, dataUrl, fileName) {
-  const parsed = base64ToBuffer(dataUrl);
-  if (!parsed) {
-    throw new Error('Format gambar tidak valid (bukan data URL base64 gambar).');
-  }
+const SUPABASE_URL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  'https://hqoasblnrsijbflupoir.supabase.co';
 
-  const objectPath = `${SUPABASE_FOLDER}/${fileName}`;
-  const uploadUrl = `${supabaseUrl}/storage/v1/object/${SUPABASE_BUCKET}/${objectPath}`;
+const SUPABASE_SECRET =
+  process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-  const response = await fetch(uploadUrl, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${serviceKey}`,
-      'Content-Type': parsed.mimeType,
-      'x-upsert': 'true',
-    },
-    body: parsed.buffer,
-  });
+const BUCKET = 'materi-bimbel';
+const FOLDER = 'bank-soal/gambar';
 
-  if (!response.ok) {
-    const errText = await response.text().catch(() => '');
-    throw new Error(`Supabase upload gagal (${response.status}): ${errText.slice(0, 300)}`);
-  }
-
-  // URL publik -- asumsi bucket sudah di-set PUBLIC di Supabase
-  // Dashboard (sama seperti bucket yang sudah dipakai fitur upload
-  // guru lainnya di project ini). Kalau bucket ini PRIVATE, URL ini
-  // gak akan bisa diakses langsung -- perlu signed URL sebagai
-  // gantinya (kasih tau saya kalau ternyata begitu).
-  return `${supabaseUrl}/storage/v1/object/public/${SUPABASE_BUCKET}/${objectPath}`;
-}
+/* ============================================================
+   HANDLER
+============================================================ */
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -83,47 +51,76 @@ export default async function handler(req, res) {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_KEY;
-
-  if (!supabaseUrl || !serviceKey) {
+  // Cek service role key tersedia
+  if (!SUPABASE_SECRET) {
     return res.status(500).json({
       success: false,
-      error: 'SUPABASE_URL / SUPABASE_SERVICE_KEY belum di-setting di Vercel. Ambil dari Supabase Dashboard > Settings > API (pakai service_role key, BUKAN anon key).',
+      error: 'SUPABASE_SERVICE_ROLE_KEY belum diset di environment variables.',
     });
   }
+
+  // Buat client per-request agar fresh (aman di serverless)
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SECRET, {
+    auth: { persistSession: false },
+  });
 
   const { images } = req.body || {};
 
   if (!Array.isArray(images) || images.length === 0) {
-    return res.status(400).json({ success: false, error: 'Field "images" (array) wajib diisi, minimal 1 gambar.' });
+    return res.status(400).json({ success: false, error: 'Tidak ada gambar yang dikirim.' });
   }
 
-  const results = [];
-  const errors = [];
+  const uploaded = [];
+  const errors   = [];
 
-  for (let i = 0; i < images.length; i++) {
-    const item = images[i];
-    const dataUrl = item?.dataUrl;
-    const key = item?.key || `gambar-${Date.now()}-${i}`;
+  for (const img of images) {
+    const { key, dataUrl } = img || {};
 
-    if (!dataUrl) {
-      errors.push({ key, error: 'dataUrl kosong.' });
+    if (!key || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image')) {
+      errors.push({ key: key || '?', error: 'dataUrl tidak valid atau bukan gambar.' });
       continue;
     }
 
     try {
-      // eslint-disable-next-line no-await-in-loop
-      const url = await uploadOneImage(supabaseUrl, serviceKey, dataUrl, `${key}.png`);
-      results.push({ key, url });
-    } catch (err) {
-      errors.push({ key, error: err.message || 'Gagal upload.' });
+      // Parse "data:<mime>;base64,<data>"
+      const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/s);
+      if (!match) throw new Error('Format base64 tidak dikenali.');
+
+      const [, mimeType, b64Data] = match;
+      const buffer = Buffer.from(b64Data, 'base64');
+
+      // Cek ukuran maks 10 MB per gambar
+      if (buffer.byteLength > 10 * 1024 * 1024) {
+        throw new Error(`Ukuran gambar ${(buffer.byteLength / 1024 / 1024).toFixed(1)} MB melebihi batas 10 MB.`);
+      }
+
+      const ext      = mimeType.includes('png') ? 'png' : 'jpg';
+      const safeName = String(key).replace(/[^a-z0-9\-]/gi, '_').slice(0, 80);
+      const filePath = `${FOLDER}/${Date.now()}_${safeName}.${ext}`;
+
+      const { error: upErr } = await supabase.storage
+        .from(BUCKET)
+        .upload(filePath, buffer, {
+          contentType: mimeType,
+          upsert      : false,
+        });
+
+      if (upErr) throw new Error(upErr.message);
+
+      const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(filePath);
+      uploaded.push({ key, url: urlData.publicUrl, filePath });
+
+    } catch (e) {
+      console.error(`[uploadBankSoalImages] key=${key} error:`, e.message);
+      errors.push({ key, error: e.message });
     }
   }
 
   return res.status(200).json({
-    success: true,
-    uploaded: results,
+    success      : true,
+    uploaded,
     errors,
+    total        : images.length,
+    uploadedCount: uploaded.length,
   });
 }

@@ -1,827 +1,320 @@
+// src/pages/admin/bank-soal/AdvancedQuestionExtractor.jsx
+// ============================================================
+// Upload PDF soal -> /api/extractPdfBankSoal (AI, API key aman
+// di server) -> gambar upload via /api/uploadBankSoalImages ->
+// tulis ke Firestore "bank_soal" pakai writeBatch.
+//
+// Support semua tipe: pg_sederhana, pg_kompleks, benar_salah,
+// isian_singkat, menjodohkan — dengan render LaTeX via KaTeX.
+// ============================================================
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
-  UploadCloud, FileText, Play, Download,
-  CheckCircle, Loader2, FileJson, FileSpreadsheet,
+  UploadCloud, Play, CheckCircle, Loader2,
   Trash2, Edit3, Save, Image as ImageIcon,
   Layers, CheckSquare, Square, RefreshCw, Sparkles,
-  Crop, X, Check, Plus, Settings, Code, AlertTriangle,
-  Filter, ArrowRight, Link2, HelpCircle, KeyRound,
-  Eye, ChevronLeft, ChevronRight, ScanSearch, Database,
-  Search,
+  X, ArrowRight, Link2, HelpCircle, CloudUpload, Database,
 } from 'lucide-react';
+import {
+  collection, doc, writeBatch, serverTimestamp,
+} from 'firebase/firestore';
+import { db, auth } from '../../../firebase';
 
 /* ============================================================
-   UTILITIES
+   KONSTANTA
 ============================================================ */
 
-const toStr = (v) => {
-  if (v == null) return '';
-  if (typeof v === 'string') return v;
-  if (typeof v === 'number' || typeof v === 'boolean') return String(v);
-  try { return JSON.stringify(v); } catch { return String(v); }
-};
+const BANK_SOAL_COLLECTION = 'bank_soal';
 
-const toStrArray = (v) => {
-  if (Array.isArray(v)) return v.map(toStr).filter((s) => s.length > 0);
-  if (v == null || v === '') return [];
-  return [toStr(v)];
-};
+const DAFTAR_MAPEL = [
+  'Matematika','Fisika','Kimia','Biologi',
+  'Bahasa Indonesia','Bahasa Inggris',
+  'Ekonomi','Geografi','Sosiologi','Sejarah',
+  'PKN','TPS/Penalaran Umum','Lainnya',
+];
+const DAFTAR_JENJANG  = ['SD/MI','SMP/MTs','SMA/MA','SMK','UTBK/SNBT'];
+const DAFTAR_KELAS    = ['1','2','3','4','5','6','7','8','9','10','11','12','Semua'];
+const DAFTAR_KESULITAN= ['mudah','sedang','sulit'];
 
-const VALID_TYPES = ['pg_sederhana', 'pg_kompleks', 'benar_salah', 'isian_singkat', 'menjodohkan'];
+const TIPE_LABELS = {
+  pg_sederhana  : 'PG Sederhana',
+  pg_kompleks   : 'PG Kompleks',
+  benar_salah   : 'Benar / Salah',
+  isian_singkat : 'Isian Singkat',
+  menjodohkan   : 'Menjodohkan',
+};
 
 /* ============================================================
-   NORMALIZER
+   buildBankSoalDoc — SEMUA TIPE LENGKAP
+   Sesuaikan nama field Firestore di sini jika perlu.
 ============================================================ */
 
-const normalizeQuestion = (raw, fallbackNomor) => {
-  const q = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
-  const nomorParsed = typeof q.nomor === 'number' && Number.isFinite(q.nomor)
-    ? q.nomor : parseInt(q.nomor, 10);
-  const pasanganRaw = Array.isArray(q.pasangan) ? q.pasangan : [];
-  const pasanganClean = pasanganRaw
-    .filter((p) => p && typeof p === 'object')
-    .map((p) => ({ kiri: toStr(p.kiri), kanan: toStr(p.kanan) }))
-    .filter((p) => p.kiri.length > 0 || p.kanan.length > 0);
-  const gambarClean = Array.isArray(q.gambar)
-    ? q.gambar.filter((g) => g && typeof g === 'object').map((g, idx) => ({
-        id: toStr(g.id) || `GAMBAR_${idx + 1}`,
-        deskripsi: toStr(g.deskripsi),
-        dataUrl: typeof g.dataUrl === 'string' ? g.dataUrl : null,
-        sourcePage: g.sourcePage ?? null,
-        metode: toStr(g.metode),
-        x0: Number.isFinite(g.x0) ? g.x0 : null,
-        y0: Number.isFinite(g.y0) ? g.y0 : null,
-        x1: Number.isFinite(g.x1) ? g.x1 : null,
-        y1: Number.isFinite(g.y1) ? g.y1 : null,
-      }))
-    : [];
+function buildBankSoalDoc(q, meta) {
+  // Gambar: URL Supabase (g.url) atau URL https langsung.
+  // Base64 yang belum terupload di-skip — jangan simpan di Firestore.
+  const gambarUrls = (q.gambar || [])
+    .map(g => g.url || (g.dataUrl?.startsWith('https') ? g.dataUrl : null))
+    .filter(Boolean);
+
   return {
-    nomor: Number.isFinite(nomorParsed) ? nomorParsed : fallbackNomor,
-    tipe: VALID_TYPES.includes(q.tipe) ? q.tipe : 'pg_sederhana',
-    teks_soal: toStr(q.teks_soal),
-    pernyataan: toStrArray(q.pernyataan),
-    opsi_jawaban: toStrArray(q.opsi_jawaban),
-    tabel_benar_salah: toStrArray(q.tabel_benar_salah),
-    pasangan: pasanganClean,
-    kunci_jawaban: toStr(q.kunci_jawaban),
-    gambar: gambarClean,
-    sumber_kunci: toStr(q.sumber_kunci),
-    kunci_terverifikasi: Boolean(q.kunci_terverifikasi),
-    halaman_kunci: Array.isArray(q.halaman_kunci) ? q.halaman_kunci : [],
+    // ── isi soal ──
+    nomor : q.nomor ?? 0,
+    soal  : q.teks_soal || '',
+    tipe  : q.tipe || 'pg_sederhana',
+
+    // per-tipe (semua field disimpan, UI pilih sesuai tipe)
+    opsiJawaban      : q.opsi_jawaban      || [],  // pg_sederhana, pg_kompleks
+    pernyataan       : q.pernyataan        || [],  // pg_kompleks
+    tabelBenarSalah  : q.tabel_benar_salah || [],  // benar_salah
+    pasangan         : (q.pasangan || []).map(p => ({  // menjodohkan
+      kiri : String(p.kiri  || ''),
+      kanan: String(p.kanan || ''),
+    })),
+
+    // jawaban
+    kunciJawaban       : q.kunci_jawaban        || '',
+    kunciTerverifikasi : q.kunci_terverifikasi   || false,
+
+    // gambar (URL Supabase)
+    gambarUrls,
+
+    // metadata
+    mataPelajaran    : meta.mataPelajaran    || '',
+    tingkatKelas     : meta.tingkatKelas     || '',
+    jenjang          : meta.jenjang          || 'SMA/MA',
+    kategori         : meta.kategori         || '',
+    tags             : meta.tags             || [],
+    tingkatKesulitan : meta.tingkatKesulitan || 'sedang',
+    pembahasan       : '',
+
+    // sistem
+    sumberFile    : meta.fileName || '',
+    sumberHalaman : q.__sourcePage || null,
+    createdAt     : serverTimestamp(),
+    createdBy     : auth.currentUser?.uid || null,
+    status        : 'aktif',
   };
-};
-
-/* ============================================================
-   ERROR BOUNDARY
-============================================================ */
-
-class QuestionErrorBoundary extends React.Component {
-  constructor(props) { super(props); this.state = { hasError: false }; }
-  static getDerivedStateFromError() { return { hasError: true }; }
-  componentDidCatch(error) { console.error('Gagal merender kartu soal:', error); }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 text-red-300 text-sm flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="font-semibold mb-1">Satu butir soal gagal ditampilkan.</p>
-            <p className="text-red-300/80 text-xs">Kemungkinan hasil AI tidak lengkap. Soal lain tetap aman.</p>
-          </div>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
 }
 
 /* ============================================================
-   GEMINI CONFIG
+   KOMPONEN UTAMA
 ============================================================ */
 
-// Model default — bisa di-override via UI settings
-const GEMINI_MODEL_OPTIONS = [
-  { id: 'gemini-1.5-flash',      label: 'Gemini 1.5 Flash (Stabil & Hemat Quota)' },
-  { id: 'gemini-2.0-flash',      label: 'Gemini 2.0 Flash' },
-  { id: 'gemini-3.6-flash',      label: 'Gemini 3.6 Flash (Terbaru, quota ketat)' },
-  { id: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite (Hemat)' },
-  { id: 'custom',                label: '✏️ Model custom...' },
-];
+export default function BankSoalImportPage() {
+  const [isPdfReady,   setIsPdfReady]   = useState(false);
+  const [isMathReady,  setIsMathReady]  = useState(false);
+  const [file,         setFile]         = useState(null);
+  const [appState,     setAppState]     = useState('idle');
+  const [logs,         setLogs]         = useState([]);
+  const [progress,     setProgress]     = useState({ current: 0, total: 0 });
+  const [extractedData,setExtractedData]= useState([]);
+  const [editingId,    setEditingId]    = useState(null);
+  const [editForm,     setEditForm]     = useState({});
+  const [pdfDocument,  setPdfDocument]  = useState(null);
+  const [totalPages,   setTotalPages]   = useState(0);
+  const [selectedPages,setSelectedPages]= useState([]);
+  const [coverThumbnail,setCoverThumbnail]=useState(null);
+  const [activeTab,    setActiveTab]    = useState('questions');
 
-/* ============================================================
-   QUESTION SCHEMA
-============================================================ */
+  // Metadata soal
+  const [mataPelajaran,    setMataPelajaran]    = useState('Matematika');
+  const [tingkatKelas,     setTingkatKelas]     = useState('10');
+  const [jenjang,          setJenjang]          = useState('SMA/MA');
+  const [kategori,         setKategori]         = useState('');
+  const [tags,             setTags]             = useState('');
+  const [tingkatKesulitan, setTingkatKesulitan] = useState('sedang');
 
-const GEMINI_RESPONSE_SCHEMA = {
-  type: 'ARRAY',
-  items: {
-    type: 'OBJECT',
-    properties: {
-      nomor: { type: 'INTEGER' },
-      tipe: { type: 'STRING', enum: ['pg_sederhana', 'pg_kompleks', 'benar_salah', 'isian_singkat', 'menjodohkan'] },
-      teks_soal: { type: 'STRING' },
-      pernyataan: { type: 'ARRAY', items: { type: 'STRING' } },
-      opsi_jawaban: { type: 'ARRAY', items: { type: 'STRING' } },
-      tabel_benar_salah: { type: 'ARRAY', items: { type: 'STRING' } },
-      pasangan: {
-        type: 'ARRAY',
-        items: {
-          type: 'OBJECT',
-          properties: { kiri: { type: 'STRING' }, kanan: { type: 'STRING' } },
-          required: ['kiri', 'kanan'],
-        },
-      },
-      kunci_jawaban: { type: 'STRING' },
-      gambar: {
-        type: 'ARRAY',
-        items: {
-          type: 'OBJECT',
-          properties: { id: { type: 'STRING' }, deskripsi: { type: 'STRING' } },
-          required: ['id', 'deskripsi'],
-        },
-      },
-    },
-    required: ['nomor', 'tipe', 'teks_soal', 'pernyataan', 'opsi_jawaban', 'tabel_benar_salah', 'pasangan', 'kunci_jawaban', 'gambar'],
-  },
-};
-
-/* ============================================================
-   ANSWER KEY SCHEMA
-============================================================ */
-
-const ANSWER_KEY_SCHEMA = {
-  type: 'ARRAY',
-  items: {
-    type: 'OBJECT',
-    properties: {
-      nomor: { type: 'INTEGER' },
-      kunci_jawaban: { type: 'STRING' },
-    },
-    required: ['nomor', 'kunci_jawaban'],
-  },
-};
-
-/* ============================================================
-   MAIN COMPONENT
-============================================================ */
-
-export default function AdvancedQuestionExtractor() {
-  const [isPdfReady, setIsPdfReady] = useState(false);
-  const [isMathReady, setIsMathReady] = useState(false);
-  const [file, setFile] = useState(null);
-  const [appState, setAppState] = useState('idle');
-  const [logs, setLogs] = useState([]);
-  const [progress, setProgress] = useState({ current: 0, total: 0 });
-  const [extractedData, setExtractedData] = useState([]);
-  const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({});
-  const [typeFilter, setTypeFilter] = useState('semua');
-  const [settings] = useState({ resolution: 2.5, delayBetweenPages: 2000, answerKeyDelay: 3000 });
-  const [pdfDocument, setPdfDocument] = useState(null);
-  const [totalPages, setTotalPages] = useState(0);
-  const [selectedPages, setSelectedPages] = useState([]);
-  const [coverThumbnail, setCoverThumbnail] = useState(null);
-  const [pagePreviews, setPagePreviews] = useState({});
-  const [previewPage, setPreviewPage] = useState(null);
-  const [activeTab, setActiveTab] = useState('questions');
-  const [manualCrop, setManualCrop] = useState(null);
-  const [geminiApiKey, setGeminiApiKey] = useState(() => {
-    try { return localStorage.getItem('aqe_gemini_api_key') || ''; } catch { return ''; }
-  });
-  const [geminiModel, setGeminiModel] = useState(() => {
-    try { return localStorage.getItem('aqe_gemini_model') || 'gemini-1.5-flash'; } catch { return 'gemini-1.5-flash'; }
-  });
-  const [geminiCustomModel, setGeminiCustomModel] = useState(() => {
-    try { return localStorage.getItem('aqe_gemini_custom_model') || ''; } catch { return ''; }
-  });
-  const [showApiSettings, setShowApiSettings] = useState(false);
-  const [answerKeyPages, setAnswerKeyPages] = useState([]);
-  const [answerKeyMap, setAnswerKeyMap] = useState({});
-  const [scanningAnswerKey, setScanningAnswerKey] = useState(false);
   const logsEndRef = useRef(null);
+  const settings   = { resolution: 2.5, delayBetweenPages: 2500 };
 
-  /* ============================================================
-     TAILWIND CSS LOADER (auto-load jika belum ada)
-  ============================================================ */
-
-  useEffect(() => {
-    // Load Tailwind CDN hanya jika belum ada (portable mode)
-    const existing = document.querySelector(
-      'script[src*="cdn.tailwindcss.com"], link[href*="cdn.tailwindcss.com"]'
-    );
-    if (!existing) {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.tailwindcss.com';
-      script.async = true;
-      // Tailwind CDN butuh config untuk dark mode, extend colors, dsb.
-      document.head.insertBefore(script, document.head.firstChild);
-    }
-    // Juga set dark mode class pada html element bila belum ada
-    // sehingga bg-gray-950 dll bisa aktif
-    if (!document.documentElement.classList.contains('dark')) {
-      document.documentElement.classList.add('dark');
-    }
-  }, []);
-
-  /* ============================================================
-     PDF.JS LOADER
-  ============================================================ */
-
+  /* ── PDF.js ── */
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
     script.async = true;
     script.onload = () => {
-      if (window.pdfjsLib?.GlobalWorkerOptions) {
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-      }
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
       setIsPdfReady(true);
-      addLog('Mesin PDF.js siap.', 'success');
+      addLog('PDF.js siap.', 'success');
     };
     script.onerror = () => addLog('Gagal memuat PDF.js.', 'error');
     document.body.appendChild(script);
     return () => { if (script.parentNode) script.parentNode.removeChild(script); };
   }, []);
 
-  /* ============================================================
-     KATEX LOADER — hanya core, tidak butuh auto-render
-     karena kita pakai katex.renderToString() langsung
-  ============================================================ */
-
+  /* ── KaTeX (hanya core, pakai renderToString) ── */
   useEffect(() => {
     const css = document.createElement('link');
-    css.rel = 'stylesheet';
+    css.rel  = 'stylesheet';
     css.href = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css';
     document.head.appendChild(css);
 
-    // Cek apakah katex sudah tersedia (misal dari app parent)
-    if (window.katex) {
-      setIsMathReady(true);
-      return;
-    }
+    if (window.katex) { setIsMathReady(true); return; }
 
-    const coreScript = document.createElement('script');
-    coreScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js';
-    coreScript.async = true;
-    coreScript.onload = () => {
-      setIsMathReady(true);
-      addLog('KaTeX siap. Rumus akan dirender otomatis.', 'success');
-    };
-    coreScript.onerror = () => addLog('Gagal memuat KaTeX.', 'error');
-    document.body.appendChild(coreScript);
-
-    return () => {
-      if (css.parentNode) css.parentNode.removeChild(css);
-      if (coreScript.parentNode) coreScript.parentNode.removeChild(coreScript);
-    };
+    const script = document.createElement('script');
+    script.src   = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js';
+    script.async = true;
+    script.onload = () => { setIsMathReady(true); addLog('KaTeX siap.', 'success'); };
+    script.onerror= () => addLog('Gagal memuat KaTeX.', 'error');
+    document.body.appendChild(script);
+    return () => { if (css.parentNode) css.parentNode.removeChild(css); };
   }, []);
 
-  useEffect(() => {
-    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [logs]);
-
-  /* ============================================================
-     LOG
-  ============================================================ */
+  useEffect(() => { logsEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [logs]);
 
   const addLog = (message, type = 'info') => {
-    const timestamp = new Date().toLocaleTimeString('id-ID', { hour12: false });
-    setLogs((prev) => [...prev, { id: Date.now() + Math.random(), time: timestamp, message, type }]);
+    const t = new Date().toLocaleTimeString('id-ID', { hour12: false });
+    setLogs(prev => [...prev, { id: Date.now() + Math.random(), time: t, message, type }]);
   };
-
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-  /* ============================================================
-     API KEY
-  ============================================================ */
-
-  const saveGeminiApiKey = (value) => {
-    const clean = String(value || '').trim();
-    setGeminiApiKey(clean);
-    try {
-      if (clean) localStorage.setItem('aqe_gemini_api_key', clean);
-      else localStorage.removeItem('aqe_gemini_api_key');
-    } catch { /* ignore */ }
-  };
-
-  const saveGeminiModel = (value) => {
-    setGeminiModel(value);
-    try { localStorage.setItem('aqe_gemini_model', value); } catch { /* ignore */ }
-  };
-
-  const saveGeminiCustomModel = (value) => {
-    setGeminiCustomModel(value);
-    try { localStorage.setItem('aqe_gemini_custom_model', value); } catch { /* ignore */ }
-  };
-
-  // Resolve model ID aktif: jika 'custom' gunakan input custom, else pakai pilihan dropdown
-  const activeModelId = geminiModel === 'custom'
-    ? (geminiCustomModel.trim() || 'gemini-3.6-flash')
-    : geminiModel;
-
-  const activeModelLabel = geminiModel === 'custom'
-    ? (geminiCustomModel.trim() || 'gemini-3.6-flash')
-    : (GEMINI_MODEL_OPTIONS.find(m => m.id === geminiModel)?.label || geminiModel);
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   /* ============================================================
      LOAD PDF
   ============================================================ */
 
-  const processUploadedFile = async (selectedFile) => {
-    if (!isPdfReady) { addLog('PDF.js belum siap.', 'warning'); return; }
-    if (!selectedFile || selectedFile.type !== 'application/pdf') {
-      addLog('File harus PDF.', 'error'); return;
-    }
-    setFile(selectedFile);
-    setExtractedData([]);
-    setAnswerKeyMap({});
-    setAnswerKeyPages([]);
-    setPagePreviews({});
-    setLogs([]);
-    addLog(`File: ${selectedFile.name} (${(selectedFile.size / 1024 / 1024).toFixed(2)} MB)`, 'success');
+  const handleFileUpload = async e => {
+    const f = e.target.files?.[0];
+    if (!f || f.type !== 'application/pdf') { addLog('Harap unggah file PDF.', 'error'); return; }
+    if (!isPdfReady) { addLog('PDF.js belum siap, tunggu sebentar...', 'warning'); return; }
+
+    setFile(f); setExtractedData([]); setLogs([]);
+    addLog(`File: ${f.name} (${(f.size/1024/1024).toFixed(2)} MB)`, 'success');
     setAppState('preview');
+
     try {
-      const arrayBuffer = await selectedFile.arrayBuffer();
-      const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pdf = await window.pdfjsLib.getDocument({ data: await f.arrayBuffer() }).promise;
       setPdfDocument(pdf);
-      const total = pdf.numPages;
-      setTotalPages(total);
-      setSelectedPages(Array.from({ length: total }, (_, i) => i + 1));
-      const page1 = await pdf.getPage(1);
-      const coverCanvas = await renderPageToCanvas(page1, 0.55);
-      setCoverThumbnail(coverCanvas.toDataURL('image/jpeg', 0.88));
-      addLog(`PDF dimuat. ${total} halaman.`, 'success');
-      addLog('Menyiapkan preview halaman...', 'info');
-      const previewMap = {};
-      const maxPreview = Math.min(total, 60);
-      for (let pageNum = 1; pageNum <= maxPreview; pageNum++) {
-        try {
-          const p = await pdf.getPage(pageNum);
-          const canvas = await renderPageToCanvas(p, 0.32);
-          previewMap[pageNum] = canvas.toDataURL('image/jpeg', 0.8);
-        } catch { /* skip */ }
-      }
-      setPagePreviews(previewMap);
-      addLog(`Preview ${Object.keys(previewMap).length} halaman siap.`, 'success');
-    } catch (error) {
-      addLog(`Gagal memuat PDF: ${error.message}`, 'error');
+      setTotalPages(pdf.numPages);
+      setSelectedPages(Array.from({ length: pdf.numPages }, (_, i) => i + 1));
+      const cover = await renderPageToCanvas(await pdf.getPage(1), 0.6);
+      setCoverThumbnail(cover.toDataURL('image/jpeg', 0.9));
+      addLog(`PDF dimuat. ${pdf.numPages} halaman.`, 'success');
+    } catch (err) {
+      addLog(`Gagal memuat PDF: ${err.message}`, 'error');
       setAppState('error');
     }
   };
 
-  const handleFileUpload = (e) => processUploadedFile(e.target.files?.[0]);
-  const handleDragOver = (e) => { e.preventDefault(); e.stopPropagation(); };
-  const handleDrop = (e) => { e.preventDefault(); e.stopPropagation(); processUploadedFile(e.dataTransfer.files?.[0]); };
+  const handleDragOver = e => { e.preventDefault(); e.stopPropagation(); };
+  const handleDrop = e => {
+    e.preventDefault(); e.stopPropagation();
+    const f = e.dataTransfer.files?.[0];
+    if (f) handleFileUpload({ target: { files: [f] } });
+  };
 
   /* ============================================================
-     RENDER PAGE
+     RENDER PDF
   ============================================================ */
 
-  const renderPageToCanvas = async (page, scale = 2) => {
-    const viewport = page.getViewport({ scale });
+  const renderPageToCanvas = async (page, scale = 2.0) => {
+    const vp = page.getViewport({ scale });
     const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    canvas.width = Math.ceil(viewport.width);
-    canvas.height = Math.ceil(viewport.height);
-    context.fillStyle = '#ffffff';
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    await page.render({ canvasContext: context, viewport }).promise;
+    canvas.width = vp.width; canvas.height = vp.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
     return canvas;
   };
 
-  const togglePage = (pageNum) => {
-    setSelectedPages((prev) =>
-      prev.includes(pageNum)
-        ? prev.filter((p) => p !== pageNum)
-        : [...prev, pageNum].sort((a, b) => a - b)
-    );
-  };
-
   /* ============================================================
-     DIAGRAM / VISUAL DETECTION
+     DETEKSI DIAGRAM PDF
   ============================================================ */
 
-  const detectDiagramRegions = async (page) => {
+  const detectDiagramRegions = async page => {
     try {
       const opList = await page.getOperatorList();
       const OPS = window.pdfjsLib.OPS;
       const base = page.getViewport({ scale: 1 });
       const W = base.width, H = base.height;
       const boxes = [];
-      let ctm = base.transform.slice();
-      const stack = [];
-      let cur = null;
-      const mul = (m, n) => [
-        m[0]*n[0]+m[2]*n[1], m[1]*n[0]+m[3]*n[1],
-        m[0]*n[2]+m[2]*n[3], m[1]*n[2]+m[3]*n[3],
-        m[0]*n[4]+m[2]*n[5]+m[4], m[1]*n[4]+m[3]*n[5]+m[5],
-      ];
-      const apply = (m, x, y) => [m[0]*x+m[2]*y+m[4], m[1]*x+m[3]*y+m[5]];
-      const startBox = () => { cur = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity, pts: 0 }; };
-      const addPt = (x, y) => {
-        if (!cur) return;
-        const [dx, dy] = apply(ctm, x, y);
-        cur.x0 = Math.min(cur.x0, dx); cur.y0 = Math.min(cur.y0, dy);
-        cur.x1 = Math.max(cur.x1, dx); cur.y1 = Math.max(cur.y1, dy);
-        cur.pts++;
-      };
-      const endBox = () => {
-        if (cur && cur.pts > 0 && cur.x1 > cur.x0 && cur.y1 > cur.y0) boxes.push(cur);
-        cur = null;
-      };
+      let ctm = base.transform.slice(), stack = [], cur = null;
+      const mul = (m, n) => [m[0]*n[0]+m[2]*n[1],m[1]*n[0]+m[3]*n[1],m[0]*n[2]+m[2]*n[3],m[1]*n[2]+m[3]*n[3],m[0]*n[4]+m[2]*n[5]+m[4],m[1]*n[4]+m[3]*n[5]+m[5]];
+      const apply = (m,x,y) => [m[0]*x+m[2]*y+m[4], m[1]*x+m[3]*y+m[5]];
+      const startBox = () => { cur = {x0:Infinity,y0:Infinity,x1:-Infinity,y1:-Infinity,pts:0}; };
+      const addPt = (x,y) => { const [dx,dy]=apply(ctm,x,y); cur.x0=Math.min(cur.x0,dx); cur.y0=Math.min(cur.y0,dy); cur.x1=Math.max(cur.x1,dx); cur.y1=Math.max(cur.y1,dy); cur.pts++; };
+      const endBox = () => { if(cur&&cur.pts>0&&cur.x1>cur.x0&&cur.y1>cur.y0) boxes.push(cur); cur=null; };
       const args = opList.argsArray;
-      for (let i = 0; i < opList.fnArray.length; i++) {
-        const fn = opList.fnArray[i]; const a = args[i];
-        if (fn === OPS.save) stack.push(ctm.slice());
-        else if (fn === OPS.restore) ctm = stack.pop() || ctm;
-        else if (fn === OPS.transform) ctm = mul(ctm, a);
-        else if (fn === OPS.constructPath) {
+      for (let i=0;i<opList.fnArray.length;i++) {
+        const fn=opList.fnArray[i], a=args[i];
+        if(fn===OPS.save) stack.push(ctm.slice());
+        else if(fn===OPS.restore) ctm=stack.pop()||ctm;
+        else if(fn===OPS.transform) ctm=mul(ctm,a);
+        else if(fn===OPS.constructPath) {
           startBox();
-          const ops = a[0], coords = a[1]; let p = 0;
-          for (let k = 0; k < ops.length; k++) {
-            const op = ops[k];
-            if (op === OPS.moveTo || op === OPS.lineTo) { addPt(coords[p], coords[p+1]); p += 2; }
-            else if (op === OPS.curveTo) { addPt(coords[p],coords[p+1]); addPt(coords[p+2],coords[p+3]); addPt(coords[p+4],coords[p+5]); p += 6; }
-            else if (op === OPS.curveTo2 || op === OPS.curveTo3) { addPt(coords[p],coords[p+1]); addPt(coords[p+2],coords[p+3]); p += 4; }
-            else if (op === OPS.rectangle) { addPt(coords[p],coords[p+1]); addPt(coords[p]+coords[p+2],coords[p+1]+coords[p+3]); p += 4; }
+          const ops=a[0],coords=a[1]; let p=0;
+          for(let k=0;k<ops.length;k++){
+            const op=ops[k];
+            if(op===OPS.moveTo||op===OPS.lineTo){addPt(coords[p],coords[p+1]);p+=2;}
+            else if(op===OPS.curveTo){addPt(coords[p],coords[p+1]);addPt(coords[p+2],coords[p+3]);addPt(coords[p+4],coords[p+5]);p+=6;}
+            else if(op===OPS.curveTo2||op===OPS.curveTo3){addPt(coords[p],coords[p+1]);addPt(coords[p+2],coords[p+3]);p+=4;}
+            else if(op===OPS.rectangle){addPt(coords[p],coords[p+1]);addPt(coords[p]+coords[p+2],coords[p+1]+coords[p+3]);p+=4;}
           }
           endBox();
         }
       }
-      const EXPAND = 5;
-      let rects = boxes
-        .filter((b) => {
-          const w = b.x1 - b.x0, h = b.y1 - b.y0;
-          if (w > 0.92 * W && h < 4) return false;
-          if (b.y1 < 0.02 * H || b.y0 > 0.98 * H) return false;
-          if (w * h < 8) return false;
-          return true;
-        })
-        .map((b) => [Math.max(0, b.x0 - EXPAND), Math.max(0, b.y0 - EXPAND), Math.min(W, b.x1 + EXPAND), Math.min(H, b.y1 + EXPAND)]);
-      let changed = true;
-      while (changed) {
-        changed = false;
-        const out = [];
-        while (rects.length) {
-          let a = rects.pop();
-          let merged = true;
-          while (merged) {
-            merged = false;
-            const keep = [];
-            for (const b of rects) {
-              const overlap = a[0] <= b[2] && a[2] >= b[0] && a[1] <= b[3] && a[3] >= b[1];
-              if (overlap) {
-                a = [Math.min(a[0],b[0]), Math.min(a[1],b[1]), Math.max(a[2],b[2]), Math.max(a[3],b[3])];
-                merged = true; changed = true;
-              } else keep.push(b);
-            }
-            rects = keep;
-          }
-          out.push(a);
-        }
-        rects = out;
-      }
-      const regions = rects
-        .filter((r) => (r[2]-r[0]) > 25 && (r[3]-r[1]) > 25)
-        .filter((r) => !(r[0] > 0.85 * W && r[1] > 0.9 * H))
-        .map((r) => ({
-          x0: Math.max(0, r[0]), y0: Math.max(0, r[1]),
-          x1: Math.min(W, r[2]), y1: Math.min(H, r[3]),
-          cx: (r[0]+r[2])/2, cy: (r[1]+r[3])/2,
-        }))
-        .sort((a, b) => a.y0 - b.y0);
-      return { regions, W, H };
-    } catch { return { regions: [], W: 0, H: 0 }; }
+      const EXPAND=3;
+      let rects = boxes.filter(b=>{const w=b.x1-b.x0,h=b.y1-b.y0;return!(w>0.8*W&&h<3)&&b.y1>=0.05*H&&b.y0<=0.95*H&&w*h>=4;}).map(b=>[b.x0-EXPAND,b.y0-EXPAND,b.x1+EXPAND,b.y1+EXPAND]);
+      let changed=true;
+      while(changed){changed=false;const out=[];while(rects.length){let a=rects.pop(),merged=true;while(merged){merged=false;const keep=[];for(const b of rects){const ov=a[0]<=b[2]&&a[2]>=b[0]&&a[1]<=b[3]&&a[3]>=b[1];if(ov){a=[Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[2],b[2]),Math.max(a[3],b[3])];merged=true;changed=true;}else keep.push(b);}rects=keep;}out.push(a);}rects=out;}
+      return rects.filter(r=>(r[2]-r[0])>25&&(r[3]-r[1])>25&&!(r[0]>0.8*W&&r[1]>0.85*H)).map(r=>({x0:Math.max(0,r[0]),y0:Math.max(0,r[1]),x1:Math.min(W,r[2]),y1:Math.min(H,r[3])})).sort((a,b)=>a.y0-b.y0);
+    } catch { return []; }
   };
 
-  /* ============================================================
-     IMAGE CROP
-  ============================================================ */
+  const renderFullPageSharp = async (page, dpi=4) => {
+    const vp = page.getViewport({ scale: dpi });
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.ceil(vp.width); canvas.height = Math.ceil(vp.height);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+    return canvas;
+  };
 
-  const sliceRegionSharp = (fullCanvas, scale, region) => {
-    const sx = Math.round(region.x0 * scale);
-    const sy = Math.round(region.y0 * scale);
-    const sw = Math.round((region.x1 - region.x0) * scale);
-    const sh = Math.round((region.y1 - region.y0) * scale);
-    if (sw < 10 || sh < 10) return null;
+  const sliceRegionSharp = (full, scale, r) => {
+    const sx=Math.round(r.x0*scale),sy=Math.round(r.y0*scale);
+    const sw=Math.round((r.x1-r.x0)*scale),sh=Math.round((r.y1-r.y0)*scale);
+    if(sw<8||sh<8) return null;
     const out = document.createElement('canvas');
-    out.width = sw; out.height = sh;
+    out.width=sw; out.height=sh;
     const ctx = out.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, sw, sh);
-    ctx.drawImage(fullCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,sw,sh);
+    ctx.drawImage(full,sx,sy,sw,sh,0,0,sw,sh);
     return out.toDataURL('image/png');
   };
 
-  const renderFullPageSharp = async (page, dpiScale = 4) => renderPageToCanvas(page, dpiScale);
-
   /* ============================================================
-     JSON SALVAGE
+     AI EXTRACTION — panggil /api/extractPdfBankSoal (backend)
+     API key aman di server, tidak expose ke browser.
   ============================================================ */
 
-  const salvagePartialJsonArray = (text) => {
-    const start = text.indexOf('[');
-    if (start === -1) return [];
-    let depth = 0, inStr = false, esc = false, lastGoodEnd = -1;
-    for (let i = start; i < text.length; i++) {
-      const ch = text[i];
-      if (inStr) {
-        if (esc) esc = false;
-        else if (ch === '\\') esc = true;
-        else if (ch === '"') inStr = false;
-        continue;
-      }
-      if (ch === '"') inStr = true;
-      else if (ch === '{' || ch === '[') depth++;
-      else if (ch === '}' || ch === ']') {
-        depth--;
-        if (depth === 1 && ch === '}') lastGoodEnd = i;
-      }
-    }
-    if (lastGoodEnd === -1) return [];
-    const candidate = text.slice(start, lastGoodEnd + 1) + ']';
-    try { const parsed = JSON.parse(candidate); return Array.isArray(parsed) ? parsed : []; }
-    catch { return []; }
-  };
-
-  /* ============================================================
-     GEMINI UTILITIES
-  ============================================================ */
-
-  const getGeminiText = (result) =>
-    (result?.candidates?.[0]?.content?.parts || [])
-      .filter((part) => typeof part.text === 'string')
-      .map((part) => part.text)
-      .join('\n')
-      .trim();
-
-  const parseGeminiJson = (result) => {
-    const text = getGeminiText(result);
-    if (!text) {
-      const block = result?.promptFeedback?.blockReason;
-      if (block) throw new Error(`Gemini memblokir permintaan: ${block}`);
-      throw new Error('Gemini tidak mengembalikan teks.');
-    }
-    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
-    try { return JSON.parse(cleaned); }
-    catch {
-      const salvaged = salvagePartialJsonArray(cleaned);
-      if (salvaged.length > 0) return { items: salvaged, truncated: true };
-      throw new Error('Respons Gemini bukan JSON yang valid.');
-    }
-  };
-
-  /* ============================================================
-     GEMINI API CALL
-  ============================================================ */
-
-  const callGemini = async ({ modelId, imageBase64, pageNum, systemPrompt, userText, responseSchema, maxOutputTokens = 8192 }) => {
-    const apiKey = geminiApiKey.trim();
-    if (!apiKey) throw new Error('API key Gemini belum diisi.');
-    const cleanBase64 = imageBase64.replace(/^data:image\/[^;]+;base64,/, '');
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent`;
-    const body = {
-      system_instruction: { parts: [{ text: systemPrompt }] },
-      contents: [{ role: 'user', parts: [{ text: userText }, { inlineData: { mimeType: 'image/jpeg', data: cleanBase64 } }] }],
-      generationConfig: { responseMimeType: 'application/json', responseSchema, temperature: 0.05, maxOutputTokens },
-    };
-    let lastError = null;
-    for (let attempt = 0; attempt < 5; attempt++) {
+  const extractFromImageWithAI = async (base64Image, pageNum, onRateLimit) => {
+    let retries = 5, delay = 2000;
+    while (retries > 0) {
       try {
-        const response = await fetch(url, {
+        const resp = await fetch('/api/extractPdfBankSoal', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-          body: JSON.stringify(body),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Image, pageNum }),
         });
-        if (response.ok) return await response.json();
-        const errData = await response.json().catch(() => ({}));
-        const message = errData?.error?.message || `HTTP ${response.status}`;
-        const retryable = [408, 429, 500, 502, 503, 504].includes(response.status);
-        if (retryable && attempt < 4) {
-          // Parse "retry in X.XXs" dari pesan error Gemini
-          const retryMatch = message.match(/retry in ([\d.]+)s/i);
-          const suggestedMs = retryMatch ? Math.ceil(parseFloat(retryMatch[1]) * 1000) + 3000 : 0;
-          const defaultMs = Math.min(3000 * Math.pow(2, attempt), 60000);
-          const waitMs = suggestedMs > defaultMs ? suggestedMs : defaultMs;
-          if (response.status === 429) {
-            addLog(`⏳ Quota/rate limit. Menunggu ${Math.ceil(waitMs / 1000)} detik sebelum retry...`, 'warning');
-          }
+        if (resp.status === 429 || resp.status >= 500) {
+          retries--;
+          if (retries === 0) throw new Error(`Server AI sibuk (${resp.status}).`);
+          const waitMs = Math.min(delay, 30000);
+          onRateLimit?.(Math.round(waitMs/1000), resp.status);
           await sleep(waitMs);
+          delay = Math.min(delay * 2, 30000);
           continue;
         }
-        const error = new Error(`Gemini ${modelId}: ${message}`);
-        error.status = response.status;
-        throw error;
-      } catch (error) {
-        lastError = error;
-        if (error.status && ![408, 429, 500, 502, 503, 504].includes(error.status)) break;
+        const result = await resp.json();
+        if (!resp.ok || !result.success) throw new Error(result.error || `HTTP ${resp.status}`);
+        return result.questions || [];
+      } catch (err) {
+        retries--;
+        if (retries === 0) throw err;
+        await sleep(Math.min(delay, 30000));
+        delay = Math.min(delay * 2, 30000);
       }
     }
-    throw lastError || new Error('Gagal memanggil Gemini.');
   };
-
-  /* ============================================================
-     EXTRACT QUESTIONS — SYSTEM PROMPT KOMPREHENSIF
-     Mendukung: UTBK, SNBT, TKA Fisika/Kimia/Matematika/Sains,
-     AKM, soal derajat/satuan fisika, pecahan, integral, dll.
-  ============================================================ */
-
-  const extractFromImageWithAI = async (base64Image, pageNum) => {
-    const systemPrompt = `Kamu adalah mesin AI ekstraktor soal ujian tingkat lanjut (termasuk UTBK, SNBT, TKA Fisika/Kimia/Sains/Matematika, AKM, dan soal sekolah) yang sangat teliti untuk pembuatan bank soal guru.
-
-Tugasmu membaca SATU halaman gambar PDF dan mengekstrak SEMUA butir soal yang benar-benar terlihat pada halaman tersebut.
-
-DUKUNGAN TIPE SOAL:
-1. pg_sederhana   : Pilihan ganda biasa, satu jawaban benar (A-E).
-2. pg_kompleks    : Pilihan ganda kompleks, lebih dari satu jawaban benar / centang beberapa opsi.
-3. benar_salah    : Pernyataan dengan pilihan Benar/Salah, Ya/Tidak, atau Setuju/Tidak Setuju (termasuk format tabel).
-4. isian_singkat  : Isian angka UTBK (0–999), isian singkat, atau isian kata/frasa.
-5. menjodohkan    : Memasangkan item Kolom Kiri dengan Kolom Kanan.
-
-ATURAN WAJIB:
-1. Pertahankan teks soal sedekat mungkin dengan sumber. Jangan meringkas, mengarang, memperbaiki isi, atau mengubah angka.
-2. Pertahankan semua simbol sains dan matematika menggunakan LaTeX bersih:
-   - Inline: $...$ (contoh: $x^2$, $\\frac{a}{b}$, $\\sqrt{2}$)
-   - Display: $$...$$ (contoh: $$\\int_0^\\infty f(x)dx$$)
-   - Pecahan: \\frac{pembilang}{penyebut}
-   - Akar: \\sqrt{n}, \\sqrt[n]{x}
-   - Indeks/pangkat: x^{n}, x_{i}
-   - Limit: \\lim_{x \\to 0}
-   - Integral: \\int, \\oint, \\iint
-   - Matriks: \\begin{pmatrix}...\\end{pmatrix}
-   - Satuan fisika: gunakan \\text{} misalnya $10 \\text{ m/s}$, $9{,}8 \\text{ m/s}^2$
-   - Derajat sudut (fisika): $45^\\circ$ bukan 45°
-   - Notasi kimia: gunakan \\text{} misalnya $\\text{H}_2\\text{O}$, $\\text{NaCl}$, $\\text{CO}_2$
-   - Reaksi kimia: pertahankan persamaan reaksi lengkap dengan koefisien
-   - Satuan SI: mol, J, Pa, N, W, A, V, Ω, dll.
-   - Notasi ilmiah: $6{,}02 \\times 10^{23}$
-3. Jika soal memiliki gambar/diagram/grafik/tabel visual yang merupakan bagian soal:
-   - Sisipkan token {{GAMBAR_1}}, {{GAMBAR_2}}, dst. pada posisi yang sesuai di teks_soal.
-   - Isi array gambar dengan id token dan deskripsi visual yang tepat.
-   - Jangan membuat gambar baru. Jangan menebak gambar yang tidak terlihat.
-4. Untuk tipe menjodohkan: isi pasangan kiri-kanan. Jika tidak ada, kosongkan [].
-5. Untuk tipe isian_singkat: isi kunci_jawaban dengan angka/kata jika tertera, jika tidak kosongkan.
-6. kunci_jawaban hanya diisi jika JELAS tertulis di halaman. Jika tidak ada, isi string kosong "".
-7. JANGAN menganggap opsi jawaban (A/B/C/D/E) sebagai kunci jawaban.
-8. JANGAN menggabungkan dua soal berbeda menjadi satu.
-9. Nomor soal harus sesuai nomor yang tercetak. Jika tidak terbaca, gunakan urutan relatif.
-10. Baca seluruh halaman dari atas ke bawah: soal, opsi, tabel, diagram, grafik, persamaan.
-11. Jika halaman tidak berisi soal, kembalikan array kosong [].
-12. Balas HANYA JSON sesuai schema. Tidak boleh ada markdown atau penjelasan tambahan.
-
-CONTOH TOPIK YANG DIDUKUNG:
-- Fisika: gerak, gaya, energi, gelombang, optik, listrik, magnet, termodinamika, relativitas
-- Kimia: reaksi, stoikiometri, larutan, asam-basa, redoks, organik, mol
-- Matematika: aljabar, kalkulus, statistika, trigonometri, geometri, kombinatorika
-- Biologi: sel, genetika, ekologi, evolusi, fisiologi
-- UTBK/SNBT: Penalaran Matematika, Literasi, TPS, TKA
-- AKM: literasi, numerasi`;
-
-    const userText = `Ekstrak seluruh butir soal dari halaman ${pageNum}. Pastikan setiap soal lengkap, termasuk opsi A-E, pernyataan, tabel Benar/Salah, pasangan menjodohkan, isian angka, rumus LaTeX, simbol fisika/kimia, satuan, derajat, pecahan, dan referensi gambar/diagram.`;
-
-    // Build model chain: primary = activeModelId, fallback = gemini-1.5-flash-8b
-    const fallbackId = 'gemini-1.5-flash-8b';
-    const modelChain = [
-      { id: activeModelId, label: activeModelLabel },
-      ...(activeModelId !== fallbackId ? [{ id: fallbackId, label: 'Gemini 1.5 Flash-8B (fallback)' }] : []),
-    ];
-
-    let lastError = null;
-    for (const model of modelChain) {
-      try {
-        addLog(`[Halaman ${pageNum}] 🤖 ${model.label} memproses...`, 'info');
-        const result = await callGemini({ modelId: model.id, imageBase64: base64Image, pageNum, systemPrompt, userText, responseSchema: GEMINI_RESPONSE_SCHEMA, maxOutputTokens: 8192 });
-        const parsed = parseGeminiJson(result);
-        return parsed;
-      } catch (error) {
-        lastError = error;
-        const status = error?.status;
-        const fallbackAllowed = status === 408 || status === 429 || (status >= 500)
-          || error.message?.includes('no longer available')
-          || error.message?.includes('deprecated')
-          || error.message?.includes('quota');
-        addLog(`[Halaman ${pageNum}] ${model.label} gagal: ${error.message}`, 'warning');
-        if (!fallbackAllowed) break;
-      }
-    }
-    throw lastError || new Error('Semua model Gemini gagal.');
-  };
-
-  /* ============================================================
-     ANSWER KEY SCANNER
-  ============================================================ */
-
-  const scanAnswerKeyPage = async (pageNum) => {
-    if (!pdfDocument) return [];
-    const page = await pdfDocument.getPage(pageNum);
-    const canvas = await renderPageToCanvas(page, settings.resolution);
-    const image = canvas.toDataURL('image/jpeg', 0.94);
-    const systemPrompt = `Kamu adalah pembaca KUNCI JAWABAN ujian.
-Tugasmu hanya membaca halaman yang kemungkinan berisi KUNCI JAWABAN.
-Cari pasangan: NOMOR SOAL -> KUNCI JAWABAN
-
-Bentuk yang didukung:
-- 1. C  2. A  3. D
-- 01 C  02 A  03 D
-- Tabel: No | Jawaban
-- Benar/Salah: 1. B  2. S
-- Isian: 1. 42  2. 2,5
-
-Untuk PG: gunakan A/B/C/D/E.
-Untuk Benar/Salah: pertahankan B/S atau Benar/Salah.
-Untuk isian: pertahankan angka/kata/frasa asli.
-Untuk menjodohkan: pertahankan format pasangan.
-
-ATURAN:
-- Jangan mengarang. Jangan menghitung sendiri.
-- Ambil hanya kunci yang BENAR-BENAR terlihat.
-- Jika halaman bukan halaman kunci, kembalikan [].
-- Nomor harus sesuai nomor soal.
-Balas HANYA JSON array.`;
-
-    const userText = `Periksa halaman ${pageNum}. Apakah ini halaman kunci jawaban? Jika YA: ekstrak semua pasangan nomor soal dan kunci. Jika TIDAK: kembalikan [].`;
-
-    try {
-      const result = await callGemini({ modelId: activeModelId, imageBase64: image, pageNum, systemPrompt, userText, responseSchema: ANSWER_KEY_SCHEMA, maxOutputTokens: 4096 });
-      const parsed = parseGeminiJson(result);
-      return Array.isArray(parsed) ? parsed : parsed?.items || [];
-    } catch (error) {
-      addLog(`[KUNCI Halaman ${pageNum}] ${error.message}`, 'warning');
-      return [];
-    }
-  };
-
-  /* ============================================================
-     AUTO DETECT ANSWER KEY
-  ============================================================ */
-
-  const runAnswerKeyScanner = async () => {
-    if (!pdfDocument || totalPages < 1) return;
-    if (!geminiApiKey) { setShowApiSettings(true); addLog('Isi API key Gemini terlebih dahulu.', 'warning'); return; }
-    setScanningAnswerKey(true);
-    addLog('Mulai pencarian halaman KUNCI JAWABAN...', 'info');
-    const foundMap = {};
-    const foundPages = [];
-    // scan dari belakang (halaman kunci biasanya di akhir)
-    const candidates = Array.from({ length: totalPages }, (_, i) => totalPages - i);
-    // Batasi 6 halaman saja (hemat quota), bukan 12
-    const maxPages = Math.min(candidates.length, 6);
-    let consecutiveEmpty = 0; // stop lebih awal kalau sudah dapat kunci
-    for (let i = 0; i < maxPages; i++) {
-      const pageNum = candidates[i];
-      addLog(`[KUNCI] Mengecek halaman ${pageNum}...`, 'info');
-      const keys = await scanAnswerKeyPage(pageNum);
-      if (Array.isArray(keys) && keys.length > 0) {
-        foundPages.push(pageNum);
-        consecutiveEmpty = 0;
-        keys.forEach((item) => {
-          const nomor = parseInt(item.nomor, 10);
-          const key = toStr(item.kunci_jawaban).trim();
-          if (Number.isFinite(nomor) && key) foundMap[String(nomor)] = key;
-        });
-        addLog(`[KUNCI] Halaman ${pageNum}: ${keys.length} kunci terbaca.`, 'success');
-        // Jika sudah dapat kunci dari 2+ halaman berturut-turut, kemungkinan besar sudah selesai
-        if (foundPages.length >= 2) {
-          addLog('[KUNCI] Halaman kunci sudah ditemukan, berhenti scan.', 'info');
-          break;
-        }
-      } else {
-        consecutiveEmpty++;
-        // Jika sudah dapat beberapa kunci dan sekarang kosong, berarti sudah lewat halaman kunci
-        if (foundPages.length > 0 && consecutiveEmpty >= 2) {
-          addLog('[KUNCI] Melewati halaman kunci, berhenti scan.', 'info');
-          break;
-        }
-      }
-      // Delay antar halaman — PENTING untuk tidak kena rate limit
-      if (i < maxPages - 1) {
-        const delayMs = settings.answerKeyDelay;
-        addLog(`[KUNCI] Jeda ${delayMs / 1000}s sebelum halaman berikutnya...`, 'info');
-        await sleep(delayMs);
-      }
-    }
-    setAnswerKeyMap(foundMap);
-    setAnswerKeyPages(foundPages);
-    if (Object.keys(foundMap).length > 0) {
-      addLog(`KUNCI SELESAI: ${Object.keys(foundMap).length} jawaban ditemukan.`, 'success');
-    } else {
-      addLog('Tidak ditemukan halaman kunci otomatis pada halaman terakhir.', 'warning');
-    }
-    setScanningAnswerKey(false);
-    return foundMap;
-  };
-
-  /* ============================================================
-     APPLY ANSWER KEY
-  ============================================================ */
-
-  const applyAnswerKeys = (data, keyMap) =>
-    data.map((q) => {
-      const key = keyMap[String(q.nomor)];
-      if (key) return { ...q, kunci_jawaban: key, kunci_terverifikasi: true, sumber_kunci: 'hasil scan halaman kunci', halaman_kunci: answerKeyPages };
-      return q;
-    });
 
   /* ============================================================
      START PROCESSING
@@ -829,245 +322,163 @@ Balas HANYA JSON array.`;
 
   const startProcessing = async () => {
     if (!file || !pdfDocument || selectedPages.length === 0) return;
-    if (!geminiApiKey) { setShowApiSettings(true); addLog('API key Gemini belum diisi.', 'warning'); return; }
     setAppState('processing');
     setExtractedData([]);
     setProgress({ current: 0, total: selectedPages.length });
     setActiveTab('terminal');
-    addLog(`Memulai ekstraksi ${selectedPages.length} halaman...`, 'success');
+    addLog(`Memulai ekstraksi ${selectedPages.length} halaman...`, 'info');
+
     let allQuestions = [];
     const failedPages = [];
-    try {
-      for (let i = 0; i < selectedPages.length; i++) {
-        const pageNum = selectedPages[i];
-        try {
-          addLog(`[Halaman ${pageNum}] Render resolusi tinggi (${settings.resolution}x)...`, 'info');
-          const page = await pdfDocument.getPage(pageNum);
-          const pageCanvas = await renderPageToCanvas(page, settings.resolution);
-          const base64Image = pageCanvas.toDataURL('image/jpeg', 0.94);
-          addLog(`[Halaman ${pageNum}] AI membaca teks + gambar + rumus + tabel + grafik...`, 'info');
-          const rawResult = await extractFromImageWithAI(base64Image, pageNum);
-          const rawQuestions = Array.isArray(rawResult) ? rawResult : rawResult?.items || [];
-          if (!Array.isArray(rawResult) && rawResult?.truncated) {
-            addLog(`[Halaman ${pageNum}] Peringatan: respons terpotong; ${rawQuestions.length} soal diselamatkan.`, 'warning');
-          }
-          const questions = rawQuestions
-            .map((raw, idx) => normalizeQuestion(raw, idx + 1))
-            .filter((q) => q.teks_soal.trim().length > 0);
-          // detect visual regions
-          const regionInfo = await detectDiagramRegions(page).catch(() => ({ regions: [] }));
+
+    for (let i = 0; i < selectedPages.length; i++) {
+      const pageNum = selectedPages[i];
+      addLog(`[Hal ${pageNum}] Render resolusi tinggi (${settings.resolution}x)...`, 'info');
+      const page = await pdfDocument.getPage(pageNum);
+      const canvas = await renderPageToCanvas(page, settings.resolution);
+      const base64 = canvas.toDataURL('image/jpeg', 0.92);
+      addLog(`[Hal ${pageNum}] Mengirim ke AI...`, 'info');
+
+      try {
+        const onRL = (secs, status) => addLog(`[Hal ${pageNum}] Server sibuk (${status}). Tunggu ${secs}s...`, 'warning');
+        const [questions, regions] = await Promise.all([
+          extractFromImageWithAI(base64, pageNum, onRL),
+          detectDiagramRegions(page).catch(() => []),
+        ]);
+
+        if (questions.length > 0) {
           let renderedImages = [];
-          if (regionInfo.regions.length > 0) {
-            const sharpPage = await renderFullPageSharp(page, 4);
-            renderedImages = regionInfo.regions
-              .map((region) => { const url = sliceRegionSharp(sharpPage, 4, region); return url ? { url, region } : null; })
-              .filter(Boolean);
+          if (regions.length > 0) {
+            const sharp = await renderFullPageSharp(page, 4);
+            renderedImages = regions.map(r => sliceRegionSharp(sharp, 4, r)).filter(Boolean).map(url => ({ url: null, dataUrl: url }));
           }
-          addLog(`[Halaman ${pageNum}] ${renderedImages.length} kandidat visual ditemukan.`, 'info');
-          let imgPtr = 0;
-          const questionsWithImages = questions.map((q) => {
-            const gambarList = Array.isArray(q.gambar) ? q.gambar : [];
-            if (gambarList.length === 0) return { ...q, gambar: [] };
-            const gambar = gambarList.map((g) => {
-              if (imgPtr < renderedImages.length) {
-                const matched = renderedImages[imgPtr++];
-                return { ...g, dataUrl: matched.url, sourcePage: pageNum, metode: 'render-pdf' };
-              }
-              return { ...g, dataUrl: null, sourcePage: pageNum, metode: 'ai-detect-tanpa-crop' };
-            });
-            return { ...q, gambar };
-          });
-          allQuestions = [...allQuestions, ...questionsWithImages];
+          let ptr = 0;
+          const withImages = questions.map(q => ({
+            ...q,
+            gambar: (q.gambar || []).map(g => ptr < renderedImages.length
+              ? { ...g, dataUrl: renderedImages[ptr++].dataUrl, metode: 'render-pdf' }
+              : { ...g, dataUrl: null }
+            ),
+            __sourcePage: pageNum,
+          }));
+          allQuestions = [...allQuestions, ...withImages];
           setExtractedData([...allQuestions]);
-          addLog(`[Halaman ${pageNum}] ${questionsWithImages.length} soal berhasil.`, 'success');
-          if (renderedImages.length > 0) addLog(`[Halaman ${pageNum}] ${renderedImages.length} visual berhasil diproses.`, 'success');
-        } catch (error) {
-          failedPages.push(pageNum);
-          addLog(`[Halaman ${pageNum}] GAGAL: ${error.message}`, 'error');
+          addLog(`[Hal ${pageNum}] ✓ ${questions.length} soal, ${renderedImages.length} gambar.`, 'success');
+        } else {
+          addLog(`[Hal ${pageNum}] Tidak ada soal ditemukan.`, 'warning');
         }
-        setProgress({ current: i + 1, total: selectedPages.length });
-        if (i < selectedPages.length - 1) await sleep(settings.delayBetweenPages);
+      } catch (err) {
+        failedPages.push(pageNum);
+        addLog(`[Hal ${pageNum}] Gagal: ${err.message}`, 'error');
       }
-      // answer key scan
-      let finalKeyMap = answerKeyMap;
-      if (Object.keys(finalKeyMap).length === 0) {
-        addLog('Mulai tahap 2: mencari halaman kunci jawaban...', 'success');
-        finalKeyMap = await runAnswerKeyScanner();
-      }
-      const finalQuestions = applyAnswerKeys(allQuestions, finalKeyMap);
-      setExtractedData(finalQuestions);
-      addLog(`SELESAI. ${finalQuestions.length} soal tersedia.`, 'success');
-      const keyCount = finalQuestions.filter((q) => q.kunci_jawaban).length;
-      addLog(`${keyCount} soal memiliki kunci jawaban.`, keyCount > 0 ? 'success' : 'warning');
-      if (failedPages.length > 0) addLog(`Halaman gagal: ${failedPages.join(', ')}`, 'warning');
-      setAppState('editing');
-      setActiveTab('questions');
-    } catch (error) {
-      addLog(`GAGAL TOTAL: ${error.message}`, 'error');
-      setAppState('error');
+
+      setProgress({ current: i+1, total: selectedPages.length });
+      if (i < selectedPages.length-1) await sleep(settings.delayBetweenPages);
     }
+
+    addLog(failedPages.length > 0
+      ? `Selesai. ${failedPages.length} halaman gagal. Total ${allQuestions.length} soal.`
+      : `Selesai. Total ${allQuestions.length} soal berhasil diekstrak.`,
+      failedPages.length > 0 ? 'warning' : 'success');
+    setAppState('editing');
+    setActiveTab('questions');
   };
 
   /* ============================================================
      EDIT
   ============================================================ */
 
-  const handleEditClick = (q, index) => {
-    setEditingId(index);
-    setEditForm({
-      ...q,
-      opsi_jawaban: [...(q.opsi_jawaban || [])],
-      pernyataan: [...(q.pernyataan || [])],
-      tabel_benar_salah: [...(q.tabel_benar_salah || [])],
-      pasangan: [...(q.pasangan || []).map((p) => ({ ...p }))],
-      gambar: [...(q.gambar || [])],
-    });
-  };
-
-  const handleSaveEdit = (index) => {
+  const handleEditClick = (q, index) => { setEditingId(index); setEditForm({ ...q }); };
+  const handleSaveEdit  = index => {
     const updated = [...extractedData];
-    updated[index] = normalizeQuestion(editForm, editForm.nomor ?? index + 1);
+    updated[index] = editForm;
     setExtractedData(updated);
     setEditingId(null);
-    addLog(`Soal nomor ${updated[index].nomor} diperbarui.`, 'success');
+    addLog(`Soal No. ${editForm.nomor} diperbarui.`, 'success');
   };
-
-  const handleDeleteQuestion = (index) => {
+  const handleDeleteQuestion = index => {
     setExtractedData(extractedData.filter((_, i) => i !== index));
     addLog('Soal dihapus.', 'warning');
   };
 
   /* ============================================================
-     MANUAL CROP
+     SIMPAN KE BANK SOAL
+     1. Upload gambar base64 → Supabase via /api/uploadBankSoalImages
+     2. Tulis ke Firestore "bank_soal" dengan writeBatch
   ============================================================ */
 
-  const openManualCrop = (qIndex, gIndex) => {
-    const q = extractedData[qIndex];
-    const pageNum = q?.gambar?.[gIndex]?.sourcePage || q?.gambar?.[0]?.sourcePage || selectedPages[0] || 1;
-    setManualCrop({ qIndex, gIndex, pageNum });
-  };
+  const saveToBankSoal = async () => {
+    if (extractedData.length === 0) return;
+    setAppState('saving');
+    addLog('Mengunggah gambar ke Supabase...', 'info');
 
-  const applyManualCrop = (qIndex, gIndex, dataUrl, pageNum) => {
-    setExtractedData((prev) => {
-      const next = [...prev];
-      const q = { ...next[qIndex] };
-      const gambar = [...(q.gambar || [])];
-      if (gIndex != null && gambar[gIndex]) {
-        gambar[gIndex] = { ...gambar[gIndex], dataUrl, sourcePage: pageNum, metode: 'manual' };
-      } else {
-        gambar.push({ id: `GAMBAR_${gambar.length + 1}`, deskripsi: '', dataUrl, sourcePage: pageNum, metode: 'manual' });
-        if (!/\{\{\s*GAMBAR/i.test(q.teks_soal || '')) q.teks_soal = `${q.teks_soal || ''} {{GAMBAR}}`;
-      }
-      q.gambar = gambar;
-      next[qIndex] = q;
-      return next;
+    // Kumpulkan gambar yang masih base64
+    const toUpload = [];
+    extractedData.forEach((q, qi) => {
+      (q.gambar || []).forEach((g, gi) => {
+        if (g.dataUrl?.startsWith('data:image')) {
+          toUpload.push({ key: `q${qi}-g${gi}-${Date.now()}`, dataUrl: g.dataUrl, qi, gi });
+        }
+      });
     });
-    addLog('Gambar manual berhasil ditambahkan.', 'success');
-  };
 
-  /* ============================================================
-     FILTER
-  ============================================================ */
+    // Upload ke Supabase via backend
+    let uploadedMap = {};
+    if (toUpload.length > 0) {
+      try {
+        const resp = await fetch('/api/uploadBankSoalImages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ images: toUpload.map(i => ({ key: i.key, dataUrl: i.dataUrl })) }),
+        });
+        const result = await resp.json();
+        if (!resp.ok || !result.success) throw new Error(result.error || 'Gagal upload gambar.');
+        (result.uploaded || []).forEach(u => { uploadedMap[u.key] = u.url; });
+        addLog(`${result.uploadedCount || 0}/${toUpload.length} gambar berhasil diupload ke Supabase.`, 'success');
+        if ((result.errors || []).length > 0) {
+          addLog(`${result.errors.length} gambar gagal upload, soal tetap disimpan.`, 'warning');
+        }
+      } catch (err) {
+        addLog(`Upload gambar gagal: ${err.message}. Melanjutkan tanpa gambar.`, 'error');
+      }
+    }
 
-  const filteredQuestions = useMemo(() => {
-    if (typeFilter === 'semua') return extractedData;
-    return extractedData.filter((q) => q.tipe === typeFilter);
-  }, [extractedData, typeFilter]);
+    // Tempel URL ke masing-masing soal
+    const finalData = extractedData.map((q, qi) => ({
+      ...q,
+      gambar: (q.gambar || []).map((g, gi) => {
+        const match = toUpload.find(t => t.qi === qi && t.gi === gi);
+        return match && uploadedMap[match.key]
+          ? { ...g, url: uploadedMap[match.key], dataUrl: null }
+          : g;
+      }),
+    }));
 
-  /* ============================================================
-     DOWNLOADS
-  ============================================================ */
-
-  const downloadJSON = () => {
-    const payload = {
-      metadata: {
-        file: file?.name || '',
-        extractedAt: new Date().toISOString(),
-        totalQuestions: extractedData.length,
-        totalAnswered: extractedData.filter((q) => q.kunci_jawaban).length,
-        answerKeyPages,
-      },
-      questions: extractedData,
+    // Tulis ke Firestore
+    addLog(`Menyimpan ${finalData.length} soal ke Firestore...`, 'info');
+    const meta = {
+      fileName        : file?.name || '',
+      mataPelajaran,
+      tingkatKelas,
+      jenjang,
+      kategori,
+      tags            : tags.split(',').map(t => t.trim()).filter(Boolean),
+      tingkatKesulitan,
     };
-    const dataStr = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(payload, null, 2));
-    const a = document.createElement('a');
-    a.href = dataStr;
-    a.download = `bank-soal-${file?.name || 'hasil'}.json`;
-    document.body.appendChild(a); a.click(); a.remove();
-    addLog('JSON berhasil diunduh.', 'success');
-  };
 
-  const downloadCSV = () => {
-    const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-    let csv = 'Nomor,Tipe,Soal,Pernyataan,Tabel Benar-Salah,Pasangan,Opsi A,Opsi B,Opsi C,Opsi D,Opsi E,Kunci,Jumlah Gambar,Halaman Sumber\n';
-    extractedData.forEach((q) => {
-      const opsi = q.opsi_jawaban || [];
-      const pasangan = (q.pasangan || []).map((p) => `${p.kiri} -> ${p.kanan}`).join(' | ');
-      csv += [
-        q.nomor, esc(q.tipe), esc(q.teks_soal),
-        esc((q.pernyataan || []).join(' | ')),
-        esc((q.tabel_benar_salah || []).join(' | ')),
-        esc(pasangan),
-        esc(opsi[0] || ''), esc(opsi[1] || ''), esc(opsi[2] || ''), esc(opsi[3] || ''), esc(opsi[4] || ''),
-        esc(q.kunci_jawaban || ''),
-        (q.gambar || []).filter((g) => g.dataUrl).length,
-        esc(q.halaman_kunci?.join(', ') || q.gambar?.find((g) => g.sourcePage)?.sourcePage || ''),
-      ].join(',') + '\n';
-    });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `bank-soal-${file?.name || 'hasil'}.csv`;
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-    addLog('CSV berhasil diunduh.', 'success');
-  };
-
-  const downloadMarkdown = () => {
-    let md = `# Hasil Ekstrak Soal - ${file?.name || 'Dokumen'}\n\n`;
-    extractedData.forEach((q) => {
-      md += `### Soal No. ${q.nomor} [${(q.tipe || '').toUpperCase()}]\n\n${q.teks_soal}\n\n`;
-      if (q.pernyataan?.length) {
-        md += '**Pernyataan:**\n';
-        q.pernyataan.forEach((p) => (md += `- ${p}\n`));
-        md += '\n';
-      }
-      if (q.tabel_benar_salah?.length) {
-        md += '**Tabel Benar/Salah:**\n';
-        q.tabel_benar_salah.forEach((tb) => (md += `- [ ] ${tb}\n`));
-        md += '\n';
-      }
-      if (q.pasangan?.length) {
-        md += '**Pasangan (Menjodohkan):**\n';
-        q.pasangan.forEach((p) => (md += `- **${p.kiri}** ➔ ${p.kanan}\n`));
-        md += '\n';
-      }
-      if (q.opsi_jawaban?.length) {
-        md += '**Opsi Jawaban:**\n';
-        q.opsi_jawaban.forEach((opt, oi) => (md += `${String.fromCharCode(65 + oi)}. ${opt}\n`));
-        md += '\n';
-      }
-      if (q.kunci_jawaban) md += `**Kunci/Isian Jawaban:** \`${q.kunci_jawaban}\`\n\n`;
-      md += '---\n\n';
-    });
-    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `bank-soal-${file?.name || 'hasil'}.md`;
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-    addLog('Markdown berhasil diunduh.', 'success');
-  };
-
-  /* ============================================================
-     RESET
-  ============================================================ */
-
-  const resetDocument = () => {
-    setFile(null); setPdfDocument(null); setExtractedData([]);
-    setSelectedPages([]); setTotalPages(0); setCoverThumbnail(null);
-    setPagePreviews({}); setAnswerKeyMap({}); setAnswerKeyPages([]);
-    setLogs([]); setAppState('idle');
+    try {
+      const batch = writeBatch(db);
+      finalData.forEach(q => {
+        const ref = doc(collection(db, BANK_SOAL_COLLECTION));
+        batch.set(ref, buildBankSoalDoc(q, meta));
+      });
+      await batch.commit();
+      addLog(`✅ ${finalData.length} soal berhasil disimpan ke Bank Soal!`, 'success');
+      setAppState('done');
+    } catch (err) {
+      addLog(`Gagal simpan ke Firestore: ${err.message}`, 'error');
+      setAppState('editing');
+    }
   };
 
   /* ============================================================
@@ -1075,1082 +486,438 @@ Balas HANYA JSON array.`;
   ============================================================ */
 
   return (
-    <div style={{ colorScheme: 'dark' }} className="min-h-screen bg-gray-950 text-gray-100 flex flex-col font-sans" data-aqe-root="true">
+    <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col font-sans">
 
-      {/* ===== HEADER ===== */}
-      <header className="border-b border-gray-800 bg-gray-900/80 backdrop-blur sticky top-0 z-50 px-4 md:px-6 py-4">
-        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-blue-600/20 border border-blue-500/30 rounded-xl text-blue-400">
-              <Sparkles className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-lg md:text-xl font-bold text-white flex items-center gap-2 flex-wrap">
-                Advanced AI Question Extractor
-                <span className="text-[10px] md:text-xs bg-indigo-600 px-2.5 py-0.5 rounded-full font-mono font-normal">
-                  v15.0 UTBK/TKA Ready
-                </span>
-              </h1>
-              <p className="text-[11px] md:text-xs text-gray-400">
-                PG · PG Kompleks · Benar/Salah · Isian Singkat/Angka UTBK · Menjodohkan · Fisika/Kimia/Matematika · LaTeX
-              </p>
-            </div>
+      {/* HEADER */}
+      <header className="border-b border-gray-800 bg-gray-900/60 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-blue-600/20 border border-blue-500/30 rounded-xl text-blue-400">
+            <Sparkles className="w-6 h-6" />
           </div>
-          <div className="flex flex-wrap items-center gap-2 relative">
-            {/* API KEY */}
-            <button
-              onClick={() => setShowApiSettings((v) => !v)}
-              className={`text-xs px-3 py-2 rounded-lg border flex items-center gap-1.5 ${geminiApiKey ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' : 'bg-amber-500/10 border-amber-500/30 text-amber-300'}`}
-            >
-              <KeyRound className="w-3.5 h-3.5" />
-              {geminiApiKey ? `✓ ${activeModelId}` : 'Set AI Key'}
-            </button>
-            {showApiSettings && (
-              <div className="absolute right-0 top-11 w-[400px] bg-gray-900 border border-gray-700 rounded-2xl p-4 shadow-2xl z-[200]">
-                <div className="flex justify-between items-start gap-3 mb-4">
-                  <div>
-                    <h3 className="font-bold text-sm text-white">Konfigurasi AI</h3>
-                    <p className="text-[11px] text-gray-400 mt-1">Disimpan di browser ini. API key tidak dikirim ke server.</p>
-                  </div>
-                  <button onClick={() => setShowApiSettings(false)} className="text-gray-500 hover:text-white">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* API Key */}
-                <div className="mb-3">
-                  <label className="text-[11px] text-gray-400 font-semibold mb-1 block">Gemini API Key</label>
-                  <input
-                    type="password" value={geminiApiKey}
-                    onChange={(e) => saveGeminiApiKey(e.target.value)}
-                    placeholder="AIza..."
-                    className="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white font-mono outline-none focus:border-blue-500"
-                  />
-                </div>
-
-                {/* Model Selector */}
-                <div className="mb-3">
-                  <label className="text-[11px] text-gray-400 font-semibold mb-1 block">Model AI</label>
-                  <select
-                    value={geminiModel}
-                    onChange={(e) => saveGeminiModel(e.target.value)}
-                    className="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-500"
-                  >
-                    {GEMINI_MODEL_OPTIONS.map((m) => (
-                      <option key={m.id} value={m.id}>{m.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Custom Model Input — muncul jika pilih "custom" */}
-                {geminiModel === 'custom' && (
-                  <div className="mb-3">
-                    <label className="text-[11px] text-gray-400 font-semibold mb-1 block">Model ID (custom)</label>
-                    <input
-                      type="text"
-                      value={geminiCustomModel}
-                      onChange={(e) => saveGeminiCustomModel(e.target.value)}
-                      placeholder="contoh: gemini-3.6-flash"
-                      className="w-full bg-gray-950 border border-blue-500/40 rounded-lg px-3 py-2 text-xs text-blue-200 font-mono outline-none focus:border-blue-500"
-                    />
-                    <p className="text-[10px] text-gray-500 mt-1">
-                      Cek nama model di <span className="text-blue-400">aistudio.google.com</span>
-                    </p>
-                  </div>
-                )}
-
-                {/* Model aktif preview */}
-                <div className="mb-3 bg-gray-950/60 border border-gray-800 rounded-lg px-3 py-2 flex items-center gap-2">
-                  <span className="text-[10px] text-gray-500">Model aktif:</span>
-                  <span className="text-[11px] text-emerald-300 font-mono font-semibold">{activeModelId}</span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] text-amber-300">Jangan bagikan API key.</span>
-                  <button onClick={() => saveGeminiApiKey('')} className="text-[11px] bg-gray-800 px-2.5 py-1.5 rounded-lg text-gray-300">Hapus Key</button>
-                </div>
-              </div>
-            )}
-            {file && (
-              <button onClick={resetDocument} className="text-xs px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 flex items-center gap-1.5">
-                <RefreshCw className="w-3.5 h-3.5" /> Reset
-              </button>
-            )}
+          <div>
+            <h1 className="text-xl font-bold text-white">Scan Soal PDF → Bank Soal</h1>
+            <p className="text-xs text-gray-400">PG · PG Kompleks · Benar/Salah · Isian Singkat · Menjodohkan · LaTeX</p>
           </div>
         </div>
+        {file && (
+          <button
+            onClick={() => { setFile(null); setAppState('idle'); setExtractedData([]); setLogs([]); }}
+            className="text-xs px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 flex items-center gap-1.5"
+          >
+            <RefreshCw className="w-3.5 h-3.5" /> Reset
+          </button>
+        )}
       </header>
 
-      {/* ===== MAIN ===== */}
-      <main className="flex-1 max-w-[1500px] w-full mx-auto p-4 md:p-6">
+      <main className="flex-1 max-w-6xl w-full mx-auto p-6 flex flex-col gap-6">
 
-        {/* ===== IDLE ===== */}
+        {/* ── IDLE ── */}
         {appState === 'idle' && (
-          <div className="min-h-[75vh] flex items-center justify-center">
-            <div className="w-full max-w-3xl">
-              <div
-                className="border-2 border-dashed border-gray-700 hover:border-blue-500 rounded-3xl p-10 md:p-16 bg-gray-900/50 text-center transition-all cursor-pointer"
-                onDragOver={handleDragOver} onDrop={handleDrop}
-              >
-                <input type="file" id="pdf-upload" className="hidden" accept="application/pdf" onChange={handleFileUpload} />
-                <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center">
-                  <div className="bg-blue-600/10 p-6 rounded-full mb-6 border border-blue-500/20">
-                    <UploadCloud className="w-14 h-14 text-blue-400" />
-                  </div>
-                  <h2 className="text-xl md:text-2xl font-bold text-white mb-3">Scan PDF ke Bank Soal</h2>
-                  <p className="text-sm text-gray-400 max-w-xl mb-7">
-                    Mendukung seluruh variasi soal modern: PG, PG Kompleks, Benar/Salah, Isian Singkat/Angka UTBK, Menjodohkan.
-                    Dilengkapi ekstraksi gambar, grafik, rumus LaTeX, fisika, kimia, dan kunci jawaban otomatis.
-                  </p>
-                  <span className="px-7 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm">Pilih File PDF</span>
-                </label>
-              </div>
-              <div className="grid md:grid-cols-3 gap-3 mt-5">
-                {[
-                  { icon: <ScanSearch className="w-5 h-5 text-blue-400 mb-2" />, title: 'Scan Visual', desc: 'Gambar, grafik, diagram, tabel, simbol.' },
-                  { icon: <KeyRound className="w-5 h-5 text-emerald-400 mb-2" />, title: 'Scan Kunci', desc: 'Mencari halaman kunci jawaban otomatis.' },
-                  { icon: <Crop className="w-5 h-5 text-amber-400 mb-2" />, title: 'Manual Crop', desc: 'Koreksi gambar bila deteksi kurang presisi.' },
-                ].map((f, i) => (
-                  <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-                    {f.icon}
-                    <p className="font-semibold text-sm">{f.title}</p>
-                    <p className="text-xs text-gray-500 mt-1">{f.desc}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 bg-gray-900/60 border border-gray-800 rounded-xl p-4">
-                <h4 className="font-semibold text-blue-400 mb-2 text-xs flex items-center gap-1.5">
-                  <FileText className="w-4 h-4" /> Dukungan Tipe Soal Lengkap:
-                </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                  {[
-                    ['text-sky-300', '✓ PG Sederhana (A-E)'],
-                    ['text-violet-300', '✓ PG Kompleks (Multi)'],
-                    ['text-amber-300', '✓ Benar / Salah'],
-                    ['text-emerald-300', '✓ Isian Singkat / Angka UTBK'],
-                    ['text-rose-300', '✓ Menjodohkan (Pasangan)'],
-                    ['text-cyan-300', '✓ LaTeX · Fisika · Kimia · Pecahan'],
-                  ].map(([cls, label], i) => (
-                    <div key={i} className={`bg-gray-950 p-2.5 rounded border border-gray-800 font-medium ${cls}`}>{label}</div>
-                  ))}
+          <div className="flex flex-col items-center justify-center flex-1 my-12">
+            <div
+              className="w-full max-w-xl border-2 border-dashed border-gray-700 hover:border-blue-500 rounded-2xl p-12 text-center bg-gray-900/40 transition-all"
+              onDragOver={handleDragOver} onDrop={handleDrop}
+            >
+              <input type="file" id="pdf-upload" className="hidden" accept="application/pdf" onChange={handleFileUpload} />
+              <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center">
+                <div className="bg-blue-600/10 p-5 rounded-full mb-5 border border-blue-500/20 text-blue-400">
+                  <UploadCloud className="w-12 h-12" />
                 </div>
-              </div>
+                <h3 className="text-xl font-bold mb-2">Unggah PDF Soal Ujian</h3>
+                <p className="text-sm text-gray-400 mb-6">
+                  Drag &amp; drop atau klik untuk pilih. Hasil scan otomatis masuk ke Bank Soal.
+                </p>
+                <span className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 font-semibold text-sm">
+                  Pilih File PDF
+                </span>
+              </label>
+            </div>
+            <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-2 w-full max-w-xl text-xs">
+              {[['bg-sky-100 text-sky-700','✓ PG Sederhana (A-E)'],['bg-violet-100 text-violet-700','✓ PG Kompleks'],['bg-amber-100 text-amber-700','✓ Benar / Salah'],['bg-emerald-100 text-emerald-700','✓ Isian Singkat UTBK'],['bg-rose-100 text-rose-700','✓ Menjodohkan'],['bg-cyan-100 text-cyan-700','✓ LaTeX · Fisika · Kimia']].map(([cls, label], i) => (
+                <div key={i} className={`rounded-lg p-2.5 font-medium ${cls}`}>{label}</div>
+              ))}
             </div>
           </div>
         )}
 
-        {/* ===== PREVIEW ===== */}
+        {/* ── PREVIEW ── */}
         {appState === 'preview' && (
-          <div className="space-y-5">
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-              <div className="flex flex-col xl:flex-row gap-5">
-                {/* Cover */}
-                <div className="w-full xl:w-[230px]">
-                  {coverThumbnail ? (
-                    <img src={coverThumbnail} alt="cover" className="w-full rounded-xl border border-gray-700" />
-                  ) : (
-                    <div className="aspect-[3/4] bg-gray-950 rounded-xl flex items-center justify-center">
-                      <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+          <div className="bg-gray-900/80 border border-gray-800 rounded-2xl p-8">
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+
+              {/* Cover + Metadata */}
+              <div className="w-full md:w-1/3 flex flex-col gap-4 bg-gray-950/60 p-6 rounded-xl border border-gray-800">
+                {coverThumbnail
+                  ? <img src={coverThumbnail} alt="cover" className="w-full max-w-[200px] mx-auto rounded-lg border border-gray-700" />
+                  : <div className="w-full aspect-[3/4] bg-gray-900 rounded-lg flex items-center justify-center"><Loader2 className="w-8 h-8 text-blue-500 animate-spin" /></div>}
+                <div>
+                  <p className="font-bold text-center text-sm truncate">{file?.name}</p>
+                  <p className="text-xs text-gray-400 text-center mt-1">{totalPages} halaman</p>
+                </div>
+
+                {/* Metadata form */}
+                <div className="space-y-2.5">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] text-gray-400 mb-1 block">Mata Pelajaran</label>
+                      <select value={mataPelajaran} onChange={e => setMataPelajaran(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs">
+                        {DAFTAR_MAPEL.map(m => <option key={m}>{m}</option>)}
+                      </select>
                     </div>
-                  )}
-                  <div className="mt-3">
-                    <p className="font-semibold text-sm truncate">{file?.name}</p>
-                    <p className="text-xs text-gray-500 mt-1">{totalPages} halaman</p>
+                    <div>
+                      <label className="text-[10px] text-gray-400 mb-1 block">Jenjang</label>
+                      <select value={jenjang} onChange={e => setJenjang(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs">
+                        {DAFTAR_JENJANG.map(j => <option key={j}>{j}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] text-gray-400 mb-1 block">Kelas</label>
+                      <select value={tingkatKelas} onChange={e => setTingkatKelas(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs">
+                        {DAFTAR_KELAS.map(k => <option key={k} value={k}>Kelas {k}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-gray-400 mb-1 block">Kesulitan</label>
+                      <select value={tingkatKesulitan} onChange={e => setTingkatKesulitan(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs">
+                        {DAFTAR_KESULITAN.map(k => <option key={k} value={k}>{k.charAt(0).toUpperCase()+k.slice(1)}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-gray-400 mb-1 block">Kategori / Bab</label>
+                    <input type="text" placeholder="mis: Fungsi Kuadrat" value={kategori} onChange={e => setKategori(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-gray-400 mb-1 block">Tags (pisah koma)</label>
+                    <input type="text" placeholder="UTBK, TKA, Try Out" value={tags} onChange={e => setTags(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs" />
                   </div>
                 </div>
-                {/* Page selector */}
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
-                    <div>
-                      <h2 className="font-bold text-lg flex items-center gap-2">
-                        <Eye className="w-5 h-5 text-blue-400" /> Pilih Halaman
-                      </h2>
-                      <p className="text-xs text-gray-500">Klik untuk pilih/batalkan. Double-click untuk preview penuh.</p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() => setSelectedPages(Array.from({ length: totalPages }, (_, i) => i + 1))}
-                        className="px-3 py-2 bg-blue-500/10 border border-blue-500/20 rounded-lg text-xs text-blue-300"
-                      >Pilih Semua</button>
-                      <button onClick={() => setSelectedPages([])} className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-300">Batalkan</button>
-                    </div>
+              </div>
+
+              {/* Page selector */}
+              <div className="w-full md:w-2/3 flex flex-col flex-1">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-bold flex items-center gap-2">
+                    <Layers className="w-5 h-5 text-blue-400" /> Pilih Halaman
+                  </h2>
+                  <div className="flex gap-2 text-xs">
+                    <button onClick={() => setSelectedPages(Array.from({ length: totalPages }, (_, i) => i+1))} className="text-blue-400 bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20">Pilih Semua</button>
+                    <button onClick={() => setSelectedPages([])} className="text-gray-400 bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-700">Batal</button>
                   </div>
-                  {/* Page grid with previews */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[650px] overflow-y-auto pr-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-                      const selected = selectedPages.includes(pageNum);
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => togglePage(pageNum)}
-                          onDoubleClick={() => setPreviewPage(pageNum)}
-                          className={`text-left rounded-xl overflow-hidden border transition-all ${selected ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-500/5' : 'border-gray-800 bg-gray-950'}`}
-                        >
-                          <div className="aspect-[3/4] bg-white relative">
-                            {pagePreviews[pageNum] ? (
-                              <img src={pagePreviews[pageNum]} alt={`Halaman ${pageNum}`} className="w-full h-full object-contain" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <span className="text-gray-500 text-xs">Preview...</span>
-                              </div>
-                            )}
-                            <div className="absolute top-2 right-2">
-                              {selected ? (
-                                <div className="bg-blue-600 rounded-full p-1"><Check className="w-3 h-3" /></div>
-                              ) : (
-                                <div className="bg-gray-900/80 rounded-full p-1"><Square className="w-3 h-3" /></div>
-                              )}
-                            </div>
-                          </div>
-                          <div className="p-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-bold">Hal {pageNum}</span>
-                              <span className="text-[10px] text-gray-500">2x = lihat</span>
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {!geminiApiKey && (
-                    <div className="mt-4 bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-xs text-amber-200 flex items-start gap-2">
-                      <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                      <span>Isi Gemini API Key sebelum mulai scan.</span>
-                    </div>
-                  )}
-                  <div className="mt-4 flex flex-col md:flex-row gap-3 md:items-center justify-between border-t border-gray-800 pt-4">
-                    <div className="flex flex-wrap gap-2">
-                      <span className="text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 rounded-lg px-3 py-2">
-                        {selectedPages.length} / {totalPages} dipilih
-                      </span>
-                      <button
-                        onClick={runAnswerKeyScanner}
-                        disabled={scanningAnswerKey || !geminiApiKey}
-                        className="text-xs bg-purple-500/10 border border-purple-500/20 text-purple-300 rounded-lg px-3 py-2 flex items-center gap-1.5 disabled:opacity-40"
-                      >
-                        {scanningAnswerKey ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
-                        Cari Kunci Jawaban
+                </div>
+                <div className="grid grid-cols-5 sm:grid-cols-7 gap-2 max-h-80 overflow-y-auto p-4 border border-gray-800 rounded-xl bg-gray-950/60 mb-6">
+                  {Array.from({ length: totalPages }, (_, i) => i+1).map(n => {
+                    const sel = selectedPages.includes(n);
+                    return (
+                      <button key={n} onClick={() => setSelectedPages(prev => sel ? prev.filter(p=>p!==n) : [...prev,n].sort((a,b)=>a-b))}
+                        className={`flex flex-col items-center p-2 rounded-lg border transition-all ${sel ? 'bg-blue-600/20 border-blue-500 text-blue-300' : 'bg-gray-900 border-gray-800 text-gray-500'}`}>
+                        {sel ? <CheckSquare className="w-4 h-4 mb-0.5" /> : <Square className="w-4 h-4 mb-0.5" />}
+                        <span className="text-xs font-mono">{n}</span>
                       </button>
-                    </div>
-                    <button
-                      onClick={startProcessing}
-                      disabled={selectedPages.length === 0 || !geminiApiKey}
-                      className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-40"
-                    >
-                      <Play className="w-4 h-4 fill-current" /> Mulai Scan AI
-                    </button>
-                  </div>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center justify-between gap-3 pt-4 border-t border-gray-800">
+                  <span className="text-xs text-emerald-400 bg-emerald-500/10 px-3 py-2 rounded-lg border border-emerald-500/20">
+                    {selectedPages.length} / {totalPages} halaman dipilih
+                  </span>
+                  <button onClick={startProcessing} disabled={selectedPages.length === 0}
+                    className="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 font-bold text-sm flex items-center gap-2 disabled:opacity-50">
+                    <Play className="w-4 h-4 fill-current" /> Mulai Ekstraksi AI
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* ===== PROCESSING / EDITING ===== */}
-        {(appState === 'processing' || appState === 'editing') && (
-          <div className="space-y-5">
+        {/* ── PROCESSING / EDITING / SAVING / DONE ── */}
+        {['processing','editing','saving','done'].includes(appState) && (
+          <div className="flex flex-col flex-1 gap-6">
+
             {/* Status bar */}
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  {appState === 'processing' ? (
-                    <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
-                  ) : (
-                    <CheckCircle className="w-6 h-6 text-emerald-400" />
-                  )}
-                  <div>
-                    <h2 className="font-bold">{appState === 'processing' ? 'Sedang Scan...' : 'Ekstraksi Selesai'}</h2>
-                    <p className="text-xs text-gray-500">
-                      {appState === 'processing'
-                        ? `Halaman ${progress.current} / ${progress.total}`
-                        : `${extractedData.length} soal ditemukan`}
-                    </p>
-                  </div>
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-3">
+                {appState === 'processing' && <><Loader2 className="w-6 h-6 text-blue-500 animate-spin" /><div><p className="font-bold text-sm">Mengekstrak soal...</p><p className="text-xs text-gray-400">Halaman {progress.current}/{progress.total}</p></div></>}
+                {appState === 'saving'     && <><Loader2 className="w-6 h-6 text-emerald-500 animate-spin" /><div><p className="font-bold text-sm">Menyimpan ke Bank Soal...</p></div></>}
+                {appState === 'editing'    && <><CheckCircle className="w-5 h-5 text-emerald-400" /><div><p className="font-bold text-sm">Ekstraksi Selesai</p><p className="text-xs text-gray-400">{extractedData.length} soal siap disimpan</p></div></>}
+                {appState === 'done'       && <><Database className="w-5 h-5 text-emerald-400" /><div><p className="font-bold text-sm">Tersimpan di Bank Soal!</p><p className="text-xs text-gray-400">Guru sudah bisa mengambil {extractedData.length} soal.</p></div></>}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="bg-gray-950 p-1 rounded-xl border border-gray-800 flex">
+                  <button onClick={() => setActiveTab('questions')} className={`px-4 py-2 rounded-lg text-xs font-semibold ${activeTab==='questions'?'bg-blue-600 text-white':'text-gray-400'}`}>Daftar Soal ({extractedData.length})</button>
+                  <button onClick={() => setActiveTab('terminal')}  className={`px-4 py-2 rounded-lg text-xs font-semibold ${activeTab==='terminal' ?'bg-blue-600 text-white':'text-gray-400'}`}>Log ({logs.length})</button>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <div className="bg-gray-950 border border-gray-800 rounded-xl p-1 flex">
-                    <button
-                      onClick={() => setActiveTab('questions')}
-                      className={`px-4 py-2 rounded-lg text-xs font-semibold ${activeTab === 'questions' ? 'bg-blue-600 text-white' : 'text-gray-400'}`}
-                    >Soal ({extractedData.length})</button>
-                    <button
-                      onClick={() => setActiveTab('terminal')}
-                      className={`px-4 py-2 rounded-lg text-xs font-semibold ${activeTab === 'terminal' ? 'bg-blue-600 text-white' : 'text-gray-400'}`}
-                    >Log ({logs.length})</button>
-                  </div>
-                  {appState === 'editing' && (
-                    <>
-                      <button onClick={downloadJSON} className="px-3 py-2 bg-emerald-600 rounded-xl text-xs font-bold flex items-center gap-1.5">
-                        <FileJson className="w-4 h-4" /> JSON
-                      </button>
-                      <button onClick={downloadCSV} className="px-3 py-2 bg-indigo-600 rounded-xl text-xs font-bold flex items-center gap-1.5">
-                        <FileSpreadsheet className="w-4 h-4" /> CSV
-                      </button>
-                      <button onClick={downloadMarkdown} className="px-3 py-2 bg-purple-600 rounded-xl text-xs font-bold flex items-center gap-1.5">
-                        <Code className="w-4 h-4" /> Markdown
-                      </button>
-                    </>
-                  )}
-                </div>
+                {appState === 'editing' && (
+                  <button onClick={saveToBankSoal} className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-xs font-bold rounded-xl flex items-center gap-2">
+                    <CloudUpload className="w-4 h-4" /> Simpan ke Bank Soal ({extractedData.length})
+                  </button>
+                )}
               </div>
             </div>
 
             {/* Terminal */}
             {activeTab === 'terminal' && (
-              <div className="bg-gray-950 border border-gray-800 rounded-2xl p-5 h-[550px] overflow-y-auto font-mono text-xs">
-                <div className="sticky top-0 bg-gray-950 pb-3 mb-3 border-b border-gray-900 flex justify-between text-gray-500">
-                  <span>BANK SOAL AI CORE — UTBK/TKA/FISIKA/KIMIA</span>
-                  <span>{appState.toUpperCase()}</span>
+              <div className="bg-gray-950 font-mono text-xs p-6 rounded-2xl h-[450px] overflow-y-auto border border-gray-800">
+                <div className="text-gray-500 pb-3 mb-3 border-b border-gray-900 flex justify-between">
+                  <span>BANK SOAL AI CORE</span><span>{appState.toUpperCase()}</span>
                 </div>
-                <div className="space-y-1.5">
-                  {logs.map((log) => (
-                    <div key={log.id} className={log.type === 'error' ? 'text-red-400' : log.type === 'warning' ? 'text-yellow-400' : log.type === 'success' ? 'text-blue-300' : 'text-gray-300'}>
-                      <span className="text-gray-600">[{log.time}]</span> {log.message}
-                    </div>
-                  ))}
-                  <div ref={logsEndRef} />
-                </div>
+                {logs.map(log => (
+                  <div key={log.id} className={log.type==='error'?'text-red-400':log.type==='warning'?'text-yellow-400':log.type==='success'?'text-blue-300':'text-gray-300'}>
+                    <span className="text-gray-600">[{log.time}]</span> {log.message}
+                  </div>
+                ))}
+                <div ref={logsEndRef} />
               </div>
             )}
 
-            {/* Questions */}
+            {/* Daftar Soal */}
             {activeTab === 'questions' && (
               <div className="space-y-4">
-                {extractedData.length > 0 && (
-                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-3 flex flex-wrap gap-2 items-center">
-                    <span className="text-xs text-gray-400 flex items-center gap-1.5 mr-2">
-                      <Filter className="w-3.5 h-3.5" /> Filter
-                    </span>
-                    {[
-                      ['semua', 'Semua'], ['pg_sederhana', 'PG Sederhana'], ['pg_kompleks', 'PG Kompleks'],
-                      ['benar_salah', 'Benar / Salah'], ['isian_singkat', 'Isian Singkat'], ['menjodohkan', 'Menjodohkan'],
-                    ].map(([id, label]) => (
-                      <button key={id} onClick={() => setTypeFilter(id)}
-                        className={`px-3 py-1.5 rounded-lg text-xs ${typeFilter === id ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400'}`}
-                      >{label}</button>
-                    ))}
-                    <div className="ml-auto flex gap-2 text-xs">
-                      <span className="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
-                        Kunci: {extractedData.filter((q) => q.kunci_jawaban).length}
-                      </span>
-                      <span className="px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-300">
-                        Gambar: {extractedData.reduce((t, q) => t + (q.gambar || []).filter((g) => g.dataUrl).length, 0)}
-                      </span>
-                    </div>
+                {extractedData.length === 0 && (
+                  <div className="bg-gray-900 border border-gray-800 rounded-2xl p-12 text-center text-gray-500">
+                    Belum ada soal terekstrak.
                   </div>
                 )}
-
-                {filteredQuestions.length === 0 ? (
-                  <div className="bg-gray-900 border border-gray-800 rounded-2xl p-14 text-center text-gray-500">Belum ada soal.</div>
-                ) : (
-                  filteredQuestions.map((q, index) => (
-                    <QuestionErrorBoundary key={`${q.nomor}-${index}`}>
-                      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 md:p-6">
-
-                        {/* ===== EDIT MODE ===== */}
-                        {editingId === index ? (
-                          <div className="space-y-4">
-                            <div className="grid sm:grid-cols-2 gap-3">
-                              <div>
-                                <label className="text-xs text-gray-400">Nomor</label>
-                                <input type="number" value={editForm.nomor}
-                                  onChange={(e) => setEditForm({ ...editForm, nomor: parseInt(e.target.value, 10) || 0 })}
-                                  className="mt-1 w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-sm" />
-                              </div>
-                              <div>
-                                <label className="text-xs text-gray-400">Tipe Soal</label>
-                                <select value={editForm.tipe}
-                                  onChange={(e) => setEditForm({ ...editForm, tipe: e.target.value })}
-                                  className="mt-1 w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-sm">
-                                  <option value="pg_sederhana">PG Sederhana</option>
-                                  <option value="pg_kompleks">PG Kompleks</option>
-                                  <option value="benar_salah">Benar / Salah</option>
-                                  <option value="isian_singkat">Isian Singkat / Angka UTBK</option>
-                                  <option value="menjodohkan">Menjodohkan</option>
-                                </select>
-                              </div>
+                {extractedData.map((q, index) => (
+                  <div key={index} className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+                    {editingId === index ? (
+                      /* EDIT MODE */
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs text-gray-400">Nomor</label>
+                            <input type="number" value={editForm.nomor||0} onChange={e => setEditForm({...editForm, nomor: parseInt(e.target.value)||0})} className="mt-1 w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-1.5 text-sm" />
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-400">Tipe</label>
+                            <select value={editForm.tipe||'pg_sederhana'} onChange={e => setEditForm({...editForm, tipe: e.target.value})} className="mt-1 w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-1.5 text-sm">
+                              {Object.entries(TIPE_LABELS).map(([k,v]) => <option key={k} value={k}>{v}</option>)}
+                            </select>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-400">Teks Soal</label>
+                          <textarea rows={4} value={editForm.teks_soal||''} onChange={e => setEditForm({...editForm, teks_soal: e.target.value})} className="mt-1 w-full bg-gray-950 border border-gray-700 rounded-xl p-3 text-sm font-mono" />
+                        </div>
+                        {/* Kunci untuk isian_singkat */}
+                        {editForm.tipe === 'isian_singkat' && (
+                          <div className="bg-emerald-950/20 border border-emerald-500/30 p-3 rounded-xl">
+                            <label className="text-xs text-emerald-400 font-bold mb-1 block">Kunci / Isian Jawaban:</label>
+                            <input type="text" value={editForm.kunci_jawaban||''} onChange={e => setEditForm({...editForm, kunci_jawaban: e.target.value})} placeholder="mis: 42 atau 2,5 m/s" className="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white" />
+                          </div>
+                        )}
+                        {/* Pasangan untuk menjodohkan */}
+                        {editForm.tipe === 'menjodohkan' && (
+                          <div className="bg-rose-950/20 border border-rose-500/30 p-3 rounded-xl space-y-2">
+                            <div className="flex justify-between items-center">
+                              <label className="text-xs text-rose-300 font-bold">Pasangan Menjodohkan:</label>
+                              <button type="button" onClick={() => setEditForm({...editForm, pasangan: [...(editForm.pasangan||[]), {kiri:'',kanan:''}]})} className="text-xs px-2 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">+ Tambah</button>
                             </div>
-
-                            <div>
-                              <label className="text-xs text-gray-400">Teks Soal / Pertanyaan</label>
-                              <textarea rows={5} value={editForm.teks_soal}
-                                onChange={(e) => setEditForm({ ...editForm, teks_soal: e.target.value })}
-                                className="mt-1 w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-3 text-sm font-mono" />
-                            </div>
-
-                            {/* Isian Singkat: dedicated kunci input */}
-                            {editForm.tipe === 'isian_singkat' && (
-                              <div className="bg-emerald-950/20 border border-emerald-500/30 p-3 rounded-xl">
-                                <label className="text-xs text-emerald-400 mb-1 block font-bold">
-                                  Kunci / Isian Jawaban Singkat / Angka UTBK:
-                                </label>
-                                <input type="text"
-                                  value={editForm.kunci_jawaban || ''}
-                                  onChange={(e) => setEditForm({ ...editForm, kunci_jawaban: e.target.value, kunci_terverifikasi: false })}
-                                  placeholder="Contoh: 42 atau 2,5 m/s atau frasa singkat"
-                                  className="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white font-mono" />
+                            {(editForm.pasangan||[]).map((p, pi) => (
+                              <div key={pi} className="flex gap-2 items-center">
+                                <input type="text" placeholder="Kiri" value={p.kiri} onChange={e => { const ps=[...editForm.pasangan]; ps[pi]={...ps[pi],kiri:e.target.value}; setEditForm({...editForm,pasangan:ps}); }} className="flex-1 bg-gray-950 border border-gray-700 rounded px-2 py-1 text-xs text-white" />
+                                <ArrowRight className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
+                                <input type="text" placeholder="Kanan" value={p.kanan} onChange={e => { const ps=[...editForm.pasangan]; ps[pi]={...ps[pi],kanan:e.target.value}; setEditForm({...editForm,pasangan:ps}); }} className="flex-1 bg-gray-950 border border-gray-700 rounded px-2 py-1 text-xs text-white" />
+                                <button type="button" onClick={() => setEditForm({...editForm, pasangan: editForm.pasangan.filter((_,i)=>i!==pi)})} className="text-red-400 p-1 hover:bg-red-500/10 rounded"><X className="w-3.5 h-3.5" /></button>
                               </div>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => setEditingId(null)} className="px-4 py-1.5 rounded-lg bg-gray-800 text-xs">Batal</button>
+                          <button onClick={() => handleSaveEdit(index)} className="px-4 py-1.5 rounded-lg bg-blue-600 text-xs font-bold flex items-center gap-1.5"><Save className="w-3.5 h-3.5" /> Simpan</button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* VIEW MODE */
+                      <div>
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-400 font-mono text-xs font-bold">Soal {q.nomor}</span>
+                            <span className={`px-2.5 py-1 rounded-full border text-[10px] font-bold font-mono ${
+                              q.tipe==='pg_sederhana'  ?'bg-sky-500/10 border-sky-500/20 text-sky-300':
+                              q.tipe==='pg_kompleks'   ?'bg-violet-500/10 border-violet-500/20 text-violet-300':
+                              q.tipe==='benar_salah'   ?'bg-amber-500/10 border-amber-500/20 text-amber-300':
+                              q.tipe==='isian_singkat' ?'bg-emerald-500/10 border-emerald-500/20 text-emerald-300':
+                                                        'bg-rose-500/10 border-rose-500/20 text-rose-300'
+                            }`}>{TIPE_LABELS[q.tipe]||q.tipe}</span>
+                            {q.kunci_jawaban && q.tipe !== 'isian_singkat' && (
+                              <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[10px] font-mono">Kunci: {q.kunci_jawaban}</span>
                             )}
+                          </div>
+                          <div className="flex gap-1.5">
+                            <button onClick={() => handleEditClick(q, index)} className="p-1.5 bg-gray-800 rounded-lg"><Edit3 className="w-4 h-4" /></button>
+                            <button onClick={() => handleDeleteQuestion(index)} className="p-1.5 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400"><Trash2 className="w-4 h-4" /></button>
+                          </div>
+                        </div>
 
-                            {/* Menjodohkan: pasangan editor */}
-                            {editForm.tipe === 'menjodohkan' && (
-                              <div className="space-y-2 bg-rose-950/20 border border-rose-500/30 p-3 rounded-xl">
-                                <div className="flex justify-between items-center">
-                                  <label className="text-xs text-rose-300 font-bold">Pasangan Menjodohkan (Kiri ➔ Kanan):</label>
-                                  <button type="button"
-                                    onClick={() => setEditForm({ ...editForm, pasangan: [...(editForm.pasangan || []), { kiri: '', kanan: '' }] })}
-                                    className="text-xs px-2 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1">
-                                    <Plus className="w-3 h-3" /> Tambah Pasangan
-                                  </button>
-                                </div>
-                                {(editForm.pasangan || []).map((pas, pIdx) => (
-                                  <div key={pIdx} className="flex gap-2 items-center">
-                                    <input type="text" placeholder="Sisi Kiri" value={pas.kiri}
-                                      onChange={(e) => {
-                                        const newPas = [...editForm.pasangan];
-                                        newPas[pIdx] = { ...newPas[pIdx], kiri: e.target.value };
-                                        setEditForm({ ...editForm, pasangan: newPas });
-                                      }}
-                                      className="flex-1 bg-gray-950 border border-gray-700 rounded px-2.5 py-1 text-xs text-white" />
-                                    <ArrowRight className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
-                                    <input type="text" placeholder="Sisi Kanan" value={pas.kanan}
-                                      onChange={(e) => {
-                                        const newPas = [...editForm.pasangan];
-                                        newPas[pIdx] = { ...newPas[pIdx], kanan: e.target.value };
-                                        setEditForm({ ...editForm, pasangan: newPas });
-                                      }}
-                                      className="flex-1 bg-gray-950 border border-gray-700 rounded px-2.5 py-1 text-xs text-white" />
-                                    <button type="button"
-                                      onClick={() => setEditForm({ ...editForm, pasangan: editForm.pasangan.filter((_, i) => i !== pIdx) })}
-                                      className="text-red-400 p-1 hover:bg-red-500/10 rounded">
-                                      <X className="w-3.5 h-3.5" />
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
+                        {/* Teks soal + gambar */}
+                        <div className="mb-4 bg-gray-950/40 p-4 rounded-xl border border-gray-800/60">
+                          <RichText text={q.teks_soal} gambar={q.gambar} isMathReady={isMathReady} />
+                        </div>
 
-                            {/* Kunci jawaban untuk non-isian */}
-                            {editForm.tipe !== 'isian_singkat' && (
-                              <div>
-                                <label className="text-xs text-gray-400">Kunci Jawaban</label>
-                                <input value={editForm.kunci_jawaban || ''}
-                                  onChange={(e) => setEditForm({ ...editForm, kunci_jawaban: e.target.value, kunci_terverifikasi: false })}
-                                  className="mt-1 w-full bg-gray-950 border border-emerald-500/30 rounded-lg px-3 py-2 text-sm text-emerald-300"
-                                  placeholder="Contoh: C / A,C / B,S,B" />
-                              </div>
-                            )}
+                        {/* Gambar status */}
+                        {(q.gambar||[]).some(g => g.dataUrl) && (
+                          <div className="mb-3">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs">
+                              <ImageIcon className="w-3.5 h-3.5" /> {(q.gambar||[]).filter(g=>g.dataUrl).length} gambar terdeteksi
+                            </span>
+                          </div>
+                        )}
 
-                            <div className="flex justify-end gap-2">
-                              <button onClick={() => setEditingId(null)} className="px-4 py-2 rounded-lg bg-gray-800 text-xs">Batal</button>
-                              <button onClick={() => handleSaveEdit(index)} className="px-4 py-2 rounded-lg bg-blue-600 text-xs font-bold flex items-center gap-2">
-                                <Save className="w-4 h-4" /> Simpan
-                              </button>
+                        {/* Isian singkat: tampilkan kunci */}
+                        {q.tipe === 'isian_singkat' && (
+                          <div className="mb-4 bg-emerald-950/30 border border-emerald-500/30 p-3 rounded-xl">
+                            <div className="text-xs text-emerald-400 font-semibold mb-1 flex items-center gap-1.5"><HelpCircle className="w-4 h-4" /> Kunci / Isian Jawaban UTBK:</div>
+                            <div className="font-mono text-sm font-bold text-white bg-gray-950 px-3 py-1.5 rounded border border-gray-800 inline-block">
+                              {q.kunci_jawaban || '[Belum diisi]'}
                             </div>
                           </div>
+                        )}
 
-                        ) : (
-                          /* ===== VIEW MODE ===== */
-                          <div>
-                            {/* Header badges */}
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-300 text-xs font-mono font-bold">
-                                  Soal {q.nomor}
-                                </span>
-                                <TypeBadge tipe={q.tipe} />
-                                {q.kunci_jawaban && (
-                                  <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-mono flex items-center gap-1.5">
-                                    <KeyRound className="w-3 h-3" /> Kunci: {q.kunci_jawaban}
-                                  </span>
-                                )}
-                                {q.kunci_terverifikasi && (
-                                  <span className="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[10px]">
-                                    ✓ Halaman kunci
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex gap-2">
-                                <button onClick={() => handleEditClick(q, index)} className="p-2 rounded-lg bg-gray-800 text-gray-300" title="Edit">
-                                  <Edit3 className="w-4 h-4" />
-                                </button>
-                                <button onClick={() => handleDeleteQuestion(index)} className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400" title="Hapus">
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
+                        {/* Menjodohkan */}
+                        {q.tipe === 'menjodohkan' && (q.pasangan||[]).length > 0 && (
+                          <div className="mb-4 overflow-hidden rounded-xl border border-rose-500/30 bg-rose-950/10">
+                            <div className="px-4 py-2 bg-rose-950/40 border-b border-rose-500/30 text-xs font-bold text-rose-300 flex items-center gap-1.5">
+                              <Link2 className="w-4 h-4" /> Pasangan (Menjodohkan)
                             </div>
-
-                            {/* Soal text */}
-                            <div className="bg-gray-950 border border-gray-800 rounded-xl p-4">
-                              <RichQuestionText text={q.teks_soal} gambar={q.gambar} isMathReady={isMathReady} />
-                            </div>
-
-                            {/* Image controls */}
-                            <div className="mt-4 flex flex-wrap gap-2">
-                              {(q.gambar || []).map((g, gi) => (
-                                <button key={gi} onClick={() => openManualCrop(index, gi)}
-                                  className="px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs flex items-center gap-1.5">
-                                  <Crop className="w-3.5 h-3.5" />
-                                  {g.dataUrl ? `Atur gambar ${gi + 1}` : `Crop gambar ${gi + 1}`}
-                                </button>
-                              ))}
-                              <button onClick={() => openManualCrop(index, null)}
-                                className="px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 text-xs flex items-center gap-1.5">
-                                <Plus className="w-3.5 h-3.5" /> Tambah gambar
-                              </button>
-                            </div>
-
-                            {/* Image status badges */}
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {(q.gambar || []).map((g, gi) => (
-                                <span key={`img-${gi}`}
-                                  className={`text-[10px] px-2.5 py-1 rounded-lg border ${g.dataUrl ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' : 'bg-amber-500/10 border-amber-500/20 text-amber-300'}`}>
-                                  {g.dataUrl ? `Gambar ${gi + 1} siap` : `Gambar ${gi + 1} belum dicrop`}
-                                </span>
+                            <div className="p-3 space-y-2">
+                              {q.pasangan.map((p, pi) => (
+                                <div key={pi} className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center">
+                                  <div className="bg-gray-950 border border-gray-800 rounded-lg p-2 text-xs"><RichText text={p.kiri} gambar={[]} isMathReady={isMathReady} /></div>
+                                  <ArrowRight className="w-4 h-4 text-rose-400" />
+                                  <div className="bg-gray-950 border border-gray-800 rounded-lg p-2 text-xs"><RichText text={p.kanan} gambar={[]} isMathReady={isMathReady} /></div>
+                                </div>
                               ))}
                             </div>
+                          </div>
+                        )}
 
-                            {/* Isian singkat: dedicated kunci display */}
-                            {q.tipe === 'isian_singkat' && (
-                              <div className="mt-4 bg-emerald-950/30 border border-emerald-500/30 p-4 rounded-xl">
-                                <div className="text-xs text-emerald-400 font-semibold mb-2 flex items-center gap-2">
-                                  <HelpCircle className="w-4 h-4" /> Kunci / Isian Jawaban Singkat UTBK:
-                                </div>
-                                <div className="font-mono text-sm font-bold text-white bg-gray-950 px-3 py-2 rounded border border-gray-800 inline-block">
-                                  {q.kunci_jawaban || '[Belum diisi kunci]'}
-                                </div>
+                        {/* Pernyataan (pg_kompleks) */}
+                        {(q.pernyataan||[]).length > 0 && (
+                          <div className="mb-4 space-y-1.5">
+                            <p className="text-xs font-bold text-violet-300">Pernyataan:</p>
+                            {q.pernyataan.map((p, pi) => (
+                              <div key={pi} className="bg-gray-950/60 border border-gray-800 rounded-lg px-3 py-2 text-xs">
+                                <RichText text={p} gambar={[]} isMathReady={isMathReady} />
                               </div>
-                            )}
+                            ))}
+                          </div>
+                        )}
 
-                            {/* Menjodohkan */}
-                            {q.tipe === 'menjodohkan' && q.pasangan?.length > 0 && (
-                              <div className="mt-4 overflow-hidden rounded-xl border border-rose-500/30 bg-rose-950/10">
-                                <div className="px-4 py-2 bg-rose-950/40 border-b border-rose-500/30 text-xs font-bold text-rose-300 flex items-center gap-2">
-                                  <Link2 className="w-4 h-4" /> Pasangan Item (Menjodohkan):
-                                </div>
-                                <div className="p-3 space-y-2">
-                                  {q.pasangan.map((p, pi) => (
-                                    <div key={pi} className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
-                                      <div className="bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-xs">
-                                        <RichQuestionText text={p.kiri} gambar={[]} isMathReady={isMathReady} />
-                                      </div>
-                                      <ArrowRight className="w-4 h-4 text-rose-400" />
-                                      <div className="bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-xs">
-                                        <RichQuestionText text={p.kanan} gambar={[]} isMathReady={isMathReady} />
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Opsi jawaban */}
-                            {q.opsi_jawaban?.length > 0 && (
-                              <div className="mt-4 grid sm:grid-cols-2 gap-2">
-                                {q.opsi_jawaban.map((opt, oi) => (
-                                  <div key={oi} className="bg-gray-950/60 border border-gray-800 rounded-xl px-4 py-3 text-sm">
-                                    <span className="text-blue-400 font-bold mr-2">{String.fromCharCode(65 + oi)}.</span>
-                                    <RichQuestionText text={opt} gambar={[]} isMathReady={isMathReady} />
-                                  </div>
+                        {/* Tabel Benar/Salah */}
+                        {(q.tabel_benar_salah||[]).length > 0 && (
+                          <div className="mb-4 overflow-x-auto rounded-xl border border-gray-800">
+                            <table className="w-full text-xs">
+                              <thead>
+                                <tr className="bg-gray-950">
+                                  <th className="px-4 py-2 text-left border-b border-gray-800 text-gray-400">Pernyataan</th>
+                                  <th className="px-3 py-2 text-center border-b border-l border-gray-800 text-emerald-400 w-20">Benar</th>
+                                  <th className="px-3 py-2 text-center border-b border-l border-gray-800 text-red-400 w-20">Salah</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {q.tabel_benar_salah.map((row, ri) => (
+                                  <tr key={ri} className="border-t border-gray-800">
+                                    <td className="px-4 py-2.5"><RichText text={row} gambar={[]} isMathReady={isMathReady} /></td>
+                                    <td className="px-3 py-2.5 border-l border-gray-800 text-center"><span className="inline-block w-5 h-5 rounded border border-gray-600 bg-gray-950" /></td>
+                                    <td className="px-3 py-2.5 border-l border-gray-800 text-center"><span className="inline-block w-5 h-5 rounded border border-gray-600 bg-gray-950" /></td>
+                                  </tr>
                                 ))}
-                              </div>
-                            )}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
 
-                            {/* Pernyataan */}
-                            {q.pernyataan?.length > 0 && (
-                              <div className="mt-4 space-y-2">
-                                <div className="text-xs font-bold text-violet-300">Pernyataan</div>
-                                {q.pernyataan.map((p, pi) => (
-                                  <div key={pi} className="bg-gray-950/60 border border-gray-800 rounded-xl px-4 py-3 text-sm">
-                                    <RichQuestionText text={p} gambar={[]} isMathReady={isMathReady} />
-                                  </div>
-                                ))}
+                        {/* Opsi Jawaban (pg) */}
+                        {(q.opsi_jawaban||[]).length > 0 && (
+                          <div className="grid sm:grid-cols-2 gap-2">
+                            {q.opsi_jawaban.map((opt, oi) => (
+                              <div key={oi} className="bg-gray-950/60 border border-gray-800 rounded-xl px-4 py-2.5 text-xs">
+                                <span className="text-blue-400 font-bold mr-2">{String.fromCharCode(65+oi)}.</span>
+                                <RichText text={opt} gambar={[]} isMathReady={isMathReady} />
                               </div>
-                            )}
-
-                            {/* Tabel Benar/Salah */}
-                            {q.tabel_benar_salah?.length > 0 && (
-                              <div className="mt-4 overflow-x-auto rounded-xl border border-gray-800">
-                                <table className="w-full text-xs">
-                                  <thead>
-                                    <tr className="bg-gray-950 font-bold uppercase tracking-wide text-gray-400">
-                                      <th className="px-4 py-2.5 text-left border-b border-gray-800">Pernyataan</th>
-                                      <th className="px-3 py-2.5 text-center border-b border-l border-gray-800 text-emerald-400 w-20">Benar</th>
-                                      <th className="px-3 py-2.5 text-center border-b border-l border-gray-800 text-red-400 w-20">Salah</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {q.tabel_benar_salah.map((row, ri) => (
-                                      <tr key={ri} className="border-t border-gray-800/60">
-                                        <td className="px-4 py-3 text-gray-200">
-                                          <RichQuestionText text={row} gambar={[]} isMathReady={isMathReady} />
-                                        </td>
-                                        <td className="px-3 py-3 border-l border-gray-800/60 text-center">
-                                          <span className="inline-block w-5 h-5 rounded border border-gray-600 bg-gray-950" />
-                                        </td>
-                                        <td className="px-3 py-3 border-l border-gray-800/60 text-center">
-                                          <span className="inline-block w-5 h-5 rounded border border-gray-600 bg-gray-950" />
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            )}
+                            ))}
                           </div>
                         )}
                       </div>
-                    </QuestionErrorBoundary>
-                  ))
-                )}
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </div>
         )}
       </main>
-
-      {/* ===== PAGE PREVIEW MODAL ===== */}
-      {previewPage && pdfDocument && (
-        <PagePreviewModal
-          pdfDocument={pdfDocument} pageNum={previewPage}
-          totalPages={totalPages} selectedPages={selectedPages}
-          onTogglePage={togglePage} onClose={() => setPreviewPage(null)}
-        />
-      )}
-
-      {/* ===== MANUAL CROP MODAL ===== */}
-      {manualCrop && pdfDocument && (
-        <ManualCropModal
-          pdfDocument={pdfDocument} pageNum={manualCrop.pageNum}
-          totalPages={totalPages} onClose={() => setManualCrop(null)}
-          onApply={(dataUrl, pageNum) => {
-            applyManualCrop(manualCrop.qIndex, manualCrop.gIndex, dataUrl, pageNum);
-            setManualCrop(null);
-          }}
-        />
-      )}
     </div>
   );
 }
 
 /* ============================================================
-   TYPE BADGE
+   RichText — LaTeX via katex.renderToString (sinkron, no timing issue)
 ============================================================ */
 
-function TypeBadge({ tipe }) {
-  const map = {
-    pg_sederhana: { label: 'PG Sederhana', cls: 'bg-sky-500/10 border-sky-500/20 text-sky-300' },
-    pg_kompleks: { label: 'PG Kompleks', cls: 'bg-violet-500/10 border-violet-500/20 text-violet-300' },
-    benar_salah: { label: 'Benar / Salah', cls: 'bg-amber-500/10 border-amber-500/20 text-amber-300' },
-    isian_singkat: { label: 'Isian Singkat / Angka', cls: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' },
-    menjodohkan: { label: 'Menjodohkan', cls: 'bg-rose-500/10 border-rose-500/20 text-rose-300' },
-  };
-  const item = map[tipe] || { label: tipe || 'Soal', cls: 'bg-gray-800 border-gray-700 text-gray-300' };
-  return (
-    <span className={`px-2.5 py-1 rounded-full border text-[10px] font-bold font-mono ${item.cls}`}>
-      {item.label}
-    </span>
-  );
-}
-
-/* ============================================================
-   RICH TEXT + MATH + IMAGE RENDER
-============================================================ */
-
-/* ============================================================
-   RICH TEXT + MATH RENDERER
-   Menggunakan katex.renderToString() langsung di useMemo —
-   tidak ada masalah timing karena sinkron dengan render.
-============================================================ */
-
-/**
- * Cari posisi penutup delimiter math (inline), tidak melewati baris baru.
- */
-function findInlineEnd(text, start, closeDelim) {
+function findInlineEnd(text, start, close) {
   for (let i = start; i < text.length; i++) {
     if (text[i] === '\n') return -1;
-    if (text.startsWith(closeDelim, i)) return i;
-    if (text[i] === '\\') i++; // skip escaped char
+    if (text.startsWith(close, i)) return i;
+    if (text[i] === '\\') i++;
   }
   return -1;
 }
 
-/**
- * Proses satu segmen teks biasa (non-GAMBAR):
- * escape HTML, render LaTeX, ubah \n → <br>.
- */
-function processTextSegment(text, renderMath) {
-  let result = '';
-  let i = 0;
+function processSegment(text, renderMath) {
+  let result = '', i = 0;
   while (i < text.length) {
-    // Display math: $$...$$
-    if (text[i] === '$' && text[i + 1] === '$') {
-      const end = text.indexOf('$$', i + 2);
-      if (end !== -1) {
-        result += renderMath(text.slice(i + 2, end), true);
-        i = end + 2;
-        continue;
-      }
-    }
-    // Inline math: $...$
-    if (text[i] === '$') {
-      const end = findInlineEnd(text, i + 1, '$');
-      if (end !== -1) {
-        result += renderMath(text.slice(i + 1, end), false);
-        i = end + 1;
-        continue;
-      }
-    }
-    // Display math: \[...\]
-    if (text[i] === '\\' && text[i + 1] === '[') {
-      const end = text.indexOf('\\]', i + 2);
-      if (end !== -1) {
-        result += renderMath(text.slice(i + 2, end), true);
-        i = end + 2;
-        continue;
-      }
-    }
-    // Inline math: \(...\)
-    if (text[i] === '\\' && text[i + 1] === '(') {
-      const end = text.indexOf('\\)', i + 2);
-      if (end !== -1) {
-        result += renderMath(text.slice(i + 2, end), false);
-        i = end + 2;
-        continue;
-      }
-    }
-    // Regular char: escape HTML + newline
-    const ch = text[i];
-    if (ch === '&') result += '&amp;';
-    else if (ch === '<') result += '&lt;';
-    else if (ch === '>') result += '&gt;';
-    else if (ch === '\n') result += '<br>';
-    else result += ch;
+    if (text[i]==='$'&&text[i+1]==='$') { const e=text.indexOf('$$',i+2); if(e!==-1){result+=renderMath(text.slice(i+2,e),true);i=e+2;continue;} }
+    if (text[i]==='$') { const e=findInlineEnd(text,i+1,'$'); if(e!==-1){result+=renderMath(text.slice(i+1,e),false);i=e+1;continue;} }
+    if (text[i]==='\\' && text[i+1]==='[') { const e=text.indexOf('\\]',i+2); if(e!==-1){result+=renderMath(text.slice(i+2,e),true);i=e+2;continue;} }
+    if (text[i]==='\\' && text[i+1]==='(') { const e=text.indexOf('\\)',i+2); if(e!==-1){result+=renderMath(text.slice(i+2,e),false);i=e+2;continue;} }
+    const ch=text[i];
+    if(ch==='&') result+='&amp;';
+    else if(ch==='<') result+='&lt;';
+    else if(ch==='>') result+='&gt;';
+    else if(ch==='\n') result+='<br>';
+    else result+=ch;
     i++;
   }
   return result;
 }
 
-function RichQuestionText({ text, gambar, isMathReady }) {
+function RichText({ text, gambar, isMathReady }) {
   const html = useMemo(() => {
-    const safeText = typeof text === 'string' ? text : (text == null ? '' : String(text));
-    if (!safeText) return '';
-
+    const safe = typeof text === 'string' ? text : (text ?? '');
+    if (!safe) return '';
     const imgs = (Array.isArray(gambar) ? gambar : []).filter(Boolean);
     const katexLib = isMathReady && typeof window !== 'undefined' ? window.katex : null;
 
-    // Helper: render LaTeX menggunakan katex.renderToString (sinkron, tidak ada timing issue)
     const renderMath = (math, display) => {
-      if (!katexLib) {
-        // KaTeX belum siap: tampilkan placeholder agar tidak hilang
-        const escaped = math.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        return display
-          ? `<span class="katex-pending" data-display="true">$$${escaped}$$</span>`
-          : `<span class="katex-pending">$${escaped}$</span>`;
-      }
-      try {
-        return katexLib.renderToString(math, {
-          displayMode: display,
-          throwOnError: false,
-          output: 'html',
-          trust: false,
-        });
-      } catch {
-        return display ? `$$${math}$$` : `$${math}$`;
-      }
+      if (!katexLib) return display ? `<span>$$${math}$$</span>` : `<span>$${math}$</span>`;
+      try { return katexLib.renderToString(math, { displayMode: display, throwOnError: false, output: 'html' }); }
+      catch { return display ? `$$${math}$$` : `$${math}$`; }
     };
 
-    // Gambar helper
-    const makeImgHtml = (g) => {
-      const alt = (g.deskripsi || 'Gambar soal').replace(/"/g, '&quot;');
-      return `<figure style="margin:12px 0;"><img src="${g.dataUrl}" alt="${alt}" style="max-width:100%;max-height:420px;border-radius:10px;border:1px solid #374151;background:#fff;padding:5px;" /><figcaption style="font-size:11px;color:#9ca3af;margin-top:5px;">${alt}</figcaption></figure>`;
+    const makeImg = g => {
+      const src = g.url || (g.dataUrl && !g.dataUrl.startsWith('data:') ? g.dataUrl : null) || g.dataUrl;
+      const alt = (g.deskripsi||'Gambar soal').replace(/"/g,'&quot;');
+      if (src) return `<figure style="margin:10px 0;"><img src="${src}" alt="${alt}" style="max-width:100%;max-height:320px;border-radius:8px;border:1px solid #374151;background:#fff;padding:4px;"/><figcaption style="font-size:11px;color:#9ca3af;margin-top:4px;">${alt}</figcaption></figure>`;
+      return `<span style="color:#fbbf24;font-size:11px;">[Gambar belum dicrop]</span>`;
     };
 
-    // Split pada GAMBAR placeholder, proses tiap segmen
-    const GAMBAR_SPLIT = /(\{\{\s*GAMBAR(?:_\d+)?\s*\}\})/gi;
-    const parts = safeText.split(GAMBAR_SPLIT);
-    let gambarIdx = 0;
-    let result = '';
-
+    const parts = safe.split(/(\{\{\s*GAMBAR(?:_\d+)?\s*\}\})/gi);
+    let gIdx = 0, result = '';
     for (const part of parts) {
-      if (/^\{\{\s*GAMBAR/i.test(part)) {
-        const g = imgs[gambarIdx++];
-        result += g?.dataUrl
-          ? makeImgHtml(g)
-          : '<span style="display:inline-block;color:#fbbf24;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);padding:4px 8px;border-radius:6px;font-size:11px;">[Gambar belum dicrop]</span>';
-      } else {
-        result += processTextSegment(part, renderMath);
-      }
+      if (/^\{\{\s*GAMBAR/i.test(part)) result += makeImg(imgs[gIdx++] || {});
+      else result += processSegment(part, renderMath);
     }
-
-    // Append gambar yang tidak ada placeholder-nya
-    if (gambarIdx === 0 && imgs.some((g) => g.dataUrl)) {
-      imgs.forEach((g) => { if (g.dataUrl) result += makeImgHtml(g); });
-    }
-
+    if (gIdx === 0 && imgs.some(g => g.dataUrl || g.url)) imgs.forEach(g => { result += makeImg(g); });
     return result;
-  }, [text, gambar, isMathReady]); // isMathReady sebagai dependency — recompute saat KaTeX siap
+  }, [text, gambar, isMathReady]);
 
   return (
-    <div
-      className="text-sm text-gray-200 leading-relaxed break-words"
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
-  );
-}
-
-/* ============================================================
-   PAGE PREVIEW MODAL
-============================================================ */
-
-function PagePreviewModal({ pdfDocument, pageNum, totalPages, selectedPages, onTogglePage, onClose }) {
-  const canvasRef = useRef(null);
-  const [rendering, setRendering] = useState(true);
-  const [currentPage, setCurrentPage] = useState(pageNum);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        setRendering(true);
-        const page = await pdfDocument.getPage(currentPage);
-        const viewport = page.getViewport({ scale: 1.6 });
-        const canvas = canvasRef.current;
-        canvas.width = Math.ceil(viewport.width);
-        canvas.height = Math.ceil(viewport.height);
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        await page.render({ canvasContext: ctx, viewport }).promise;
-        if (!cancelled) setRendering(false);
-      } catch { if (!cancelled) setRendering(false); }
-    })();
-    return () => { cancelled = true; };
-  }, [pdfDocument, currentPage]);
-
-  const selected = selectedPages.includes(currentPage);
-
-  return (
-    <div className="fixed inset-0 z-[300] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-5xl max-h-[94vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-        <div className="px-5 py-3 border-b border-gray-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Eye className="w-4 h-4 text-blue-400" />
-            <span className="font-bold text-sm">Preview Halaman {currentPage} / {totalPages}</span>
-          </div>
-          <button onClick={onClose} className="p-2 rounded-lg bg-gray-800 text-gray-300"><X className="w-4 h-4" /></button>
-        </div>
-        <div className="flex-1 overflow-auto bg-gray-950 p-4 flex justify-center relative">
-          {rendering && (
-            <div className="absolute inset-0 flex items-center justify-center z-10">
-              <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-            </div>
-          )}
-          <canvas ref={canvasRef} className="max-w-full h-auto rounded-xl shadow-2xl bg-white" />
-        </div>
-        <div className="px-5 py-3 border-t border-gray-800 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <button disabled={currentPage <= 1} onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} className="p-2 rounded-lg bg-gray-800 disabled:opacity-30">
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} className="p-2 rounded-lg bg-gray-800 disabled:opacity-30">
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-          <button onClick={() => onTogglePage(currentPage)}
-            className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 ${selected ? 'bg-blue-600' : 'bg-gray-800'}`}>
-            {selected ? <><CheckSquare className="w-4 h-4" /> Dipilih</> : <><Square className="w-4 h-4" /> Pilih Halaman</>}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================
-   MANUAL CROP MODAL
-============================================================ */
-
-function ManualCropModal({ pdfDocument, pageNum, totalPages, onClose, onApply }) {
-  const canvasRef = useRef(null);
-  const wrapRef = useRef(null);
-  const [curPage, setCurPage] = useState(pageNum);
-  const [rendering, setRendering] = useState(true);
-  const [pageObj, setPageObj] = useState(null);
-  const [viewScale, setViewScale] = useState(1);
-  const [box, setBox] = useState({ x: 80, y: 80, w: 300, h: 220 });
-  const drag = useRef(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        setRendering(true);
-        const page = await pdfDocument.getPage(curPage);
-        if (cancelled) return;
-        setPageObj(page);
-        const base = page.getViewport({ scale: 1 });
-        const maxW = Math.min(900, wrapRef.current?.clientWidth || 900);
-        const scale = maxW / base.width;
-        setViewScale(scale);
-        const vp = page.getViewport({ scale });
-        const canvas = canvasRef.current;
-        canvas.width = Math.ceil(vp.width);
-        canvas.height = Math.ceil(vp.height);
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        await page.render({ canvasContext: ctx, viewport: vp }).promise;
-        if (cancelled) return;
-        setBox({ x: canvas.width * 0.25, y: canvas.height * 0.25, w: canvas.width * 0.5, h: canvas.height * 0.25 });
-        setRendering(false);
-      } catch { if (!cancelled) setRendering(false); }
-    })();
-    return () => { cancelled = true; };
-  }, [pdfDocument, curPage]);
-
-  const onPointerDown = (e, mode) => {
-    e.stopPropagation();
-    const rect = canvasRef.current.getBoundingClientRect();
-    drag.current = {
-      mode, startX: e.clientX, startY: e.clientY, startBox: { ...box },
-      scaleX: canvasRef.current.width / rect.width,
-      scaleY: canvasRef.current.height / rect.height,
-    };
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
-  };
-
-  const onPointerMove = (e) => {
-    if (!drag.current) return;
-    const d = drag.current;
-    const dx = (e.clientX - d.startX) * d.scaleX;
-    const dy = (e.clientY - d.startY) * d.scaleY;
-    const cw = canvasRef.current.width, ch = canvasRef.current.height;
-    let { x, y, w, h } = d.startBox;
-    if (d.mode === 'move') { x += dx; y += dy; }
-    else {
-      if (d.mode.includes('e')) w += dx;
-      if (d.mode.includes('s')) h += dy;
-      if (d.mode.includes('w')) { x += dx; w -= dx; }
-      if (d.mode.includes('n')) { y += dy; h -= dy; }
-    }
-    w = Math.max(30, w); h = Math.max(30, h);
-    x = Math.max(0, Math.min(x, cw - w));
-    y = Math.max(0, Math.min(y, ch - h));
-    if (x + w > cw) w = cw - x;
-    if (y + h > ch) h = ch - y;
-    setBox({ x, y, w, h });
-  };
-
-  const onPointerUp = () => {
-    drag.current = null;
-    window.removeEventListener('pointermove', onPointerMove);
-    window.removeEventListener('pointerup', onPointerUp);
-  };
-
-  const handleTake = async () => {
-    if (!pageObj) return;
-    const region = { x0: box.x / viewScale, y0: box.y / viewScale, x1: (box.x + box.w) / viewScale, y1: (box.y + box.h) / viewScale };
-    const dpi = 4;
-    const vp = pageObj.getViewport({ scale: dpi });
-    const full = document.createElement('canvas');
-    full.width = Math.ceil(vp.width); full.height = Math.ceil(vp.height);
-    const ctx = full.getContext('2d');
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, full.width, full.height);
-    await pageObj.render({ canvasContext: ctx, viewport: vp }).promise;
-    const sx = Math.round(region.x0 * dpi), sy = Math.round(region.y0 * dpi);
-    const sw = Math.round((region.x1 - region.x0) * dpi), sh = Math.round((region.y1 - region.y0) * dpi);
-    const out = document.createElement('canvas');
-    out.width = sw; out.height = sh;
-    const octx = out.getContext('2d');
-    octx.fillStyle = '#ffffff'; octx.fillRect(0, 0, sw, sh);
-    octx.drawImage(full, sx, sy, sw, sh, 0, 0, sw, sh);
-    onApply(out.toDataURL('image/png'), curPage);
-  };
-
-  const handles = [
-    ['nw', '-top-1.5 -left-1.5 cursor-nwse-resize'],
-    ['n', '-top-1.5 left-1/2 -translate-x-1/2 cursor-ns-resize'],
-    ['ne', '-top-1.5 -right-1.5 cursor-nesw-resize'],
-    ['w', 'top-1/2 -left-1.5 -translate-y-1/2 cursor-ew-resize'],
-    ['e', 'top-1/2 -right-1.5 -translate-y-1/2 cursor-ew-resize'],
-    ['sw', '-bottom-1.5 -left-1.5 cursor-nesw-resize'],
-    ['s', '-bottom-1.5 left-1/2 -translate-x-1/2 cursor-ns-resize'],
-    ['se', '-bottom-1.5 -right-1.5 cursor-nwse-resize'],
-  ];
-
-  return (
-    <div className="fixed inset-0 z-[400] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[94vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-        <div className="px-5 py-3 border-b border-gray-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Crop className="w-4 h-4 text-blue-400" />
-            <span className="font-bold text-sm">Crop Gambar Manual</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button disabled={curPage <= 1} onClick={() => setCurPage((p) => Math.max(1, p - 1))} className="p-1.5 rounded bg-gray-800 disabled:opacity-30">
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <span className="text-xs text-gray-400 font-mono">Hal {curPage}/{totalPages}</span>
-            <button disabled={curPage >= totalPages} onClick={() => setCurPage((p) => Math.min(totalPages, p + 1))} className="p-1.5 rounded bg-gray-800 disabled:opacity-30">
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            <button onClick={onClose} className="p-1.5 rounded bg-gray-800"><X className="w-4 h-4" /></button>
-          </div>
-        </div>
-        <div className="px-5 py-2 text-xs text-gray-500 border-b border-gray-800">
-          Geser dan ubah ukuran kotak biru tepat di atas gambar/grafik yang ingin disimpan.
-        </div>
-        <div ref={wrapRef} className="flex-1 overflow-auto bg-gray-950 p-4 flex justify-center">
-          <div className="relative" style={{ lineHeight: 0 }}>
-            {rendering && (
-              <div className="absolute inset-0 flex items-center justify-center z-20 bg-gray-950/80">
-                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-              </div>
-            )}
-            <canvas ref={canvasRef} className="rounded-xl shadow-2xl select-none" style={{ maxWidth: '100%', height: 'auto' }} />
-            {!rendering && canvasRef.current && (
-              <div
-                className="absolute border-2 border-blue-500 bg-blue-500/10 cursor-move"
-                style={{
-                  left: `${(box.x / canvasRef.current.width) * 100}%`,
-                  top: `${(box.y / canvasRef.current.height) * 100}%`,
-                  width: `${(box.w / canvasRef.current.width) * 100}%`,
-                  height: `${(box.h / canvasRef.current.height) * 100}%`,
-                }}
-                onPointerDown={(e) => onPointerDown(e, 'move')}
-              >
-                {handles.map(([mode, cls]) => (
-                  <span key={mode} onPointerDown={(e) => onPointerDown(e, mode)}
-                    className={`absolute w-3 h-3 bg-white border-2 border-blue-500 rounded-sm ${cls}`} />
-                ))}
-                {/* Floating inline action buttons */}
-                <div
-                  className="absolute z-20 flex items-center gap-1.5"
-                  style={{ bottom: '-36px', right: 0 }}
-                  onPointerDown={(e) => e.stopPropagation()}
-                >
-                  <button onClick={onClose}
-                    className="p-1.5 rounded-full bg-gray-900/90 border border-gray-600 text-gray-300 hover:bg-gray-800 shadow-lg" title="Batal">
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                  <button onClick={handleTake}
-                    className="p-1.5 rounded-full bg-blue-600 hover:bg-blue-500 border border-blue-400 text-white shadow-lg shadow-blue-600/40 flex items-center gap-1 px-2.5" title="Ambil Gambar">
-                    <Check className="w-3.5 h-3.5" />
-                    <span className="text-xs font-bold">Ambil</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="px-5 py-3 border-t border-gray-800 flex justify-end gap-2">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg bg-gray-800 text-sm">Batal</button>
-          <button onClick={handleTake} disabled={rendering} className="px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold flex items-center gap-2 disabled:opacity-40">
-            <Check className="w-4 h-4" /> Ambil Gambar
-          </button>
-        </div>
-      </div>
-    </div>
+    <div className="text-sm text-gray-200 leading-relaxed break-words" dangerouslySetInnerHTML={{ __html: html }} />
   );
 }
