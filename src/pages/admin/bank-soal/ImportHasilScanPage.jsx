@@ -173,6 +173,7 @@ Kunci pembungkus yang juga dikenali sistem: "tryout", "paket_list" (isi soal di 
 - \`materi\` — topik/bab spesifik soal ini, dipakai sistem untuk filter/rekap.
 - \`capaian_pembelajaran\` — 1 kalimat capaian pembelajaran relevan (kurikulum terbaru). Kalau tidak yakin, buat 1 kalimat wajar berdasarkan materinya, jangan dikosongkan.
 - \`kunci_terverifikasi\` — true kalau kamu sudah menghitung ulang dan yakin kuncinya benar; false kalau kunci diambil mentah tanpa verifikasi ulang.
+- \`catatan_admin\` — PENTING: kalau kamu ragu terhadap kunci jawaban, menemukan kejanggalan pada opsi jawaban di dokumen sumber, atau ada hal lain yang perlu diperiksa manual oleh admin/guru, tulis di field INI (bukan di \`pembahasan\`). \`pembahasan\` HANYA boleh berisi penjelasan matematis bersih yang akan dibaca SISWA — jangan pernah menaruh kalimat seperti "catatan", "kemungkinan salah cetak", atau keraguan apa pun di dalam \`pembahasan\`. Kalau tidak ada catatan khusus, kosongkan "" atau jangan sertakan field ini.
 - \`bacaan\`, \`gambar\` — lihat bagian 1, 7, 8.
 
 ## 4. TIPE SOAL YANG DIDUKUNG SISTEM (field \`tipe\`)
@@ -227,7 +228,11 @@ Bentuk kaya (kalau opsi punya gambar/grafik atau tabel, bukan cuma teks):
 
 ## 7. NOTASI MATEMATIKA
 
-Tulis semua rumus dalam LaTeX, dibungkus $...$ untuk inline atau $$...$$ untuk rumus terpisah baris. Sistem merender LaTeX ini otomatis (KaTeX) — jangan biarkan karakter rusak hasil OCR, tulis ulang jadi LaTeX bersih.
+Tulis semua rumus dalam LaTeX. Ada 2 mode, PILIH SESUAI BENTUK RUMUSNYA — ini penting untuk tampilan visual, bukan cuma soal benar/salah:
+- Inline \`$...$\` — HANYA untuk simbol/ekspresi PENDEK yang menyatu wajar di tengah kalimat (mis. $x^2+3x-4$, $f(x)$, $\\sin 30^\\circ$).
+- Display \`$$...$$\` — WAJIB dipakai untuk rumus LEBAR atau multi-baris: matriks (\\begin{pmatrix}, \\begin{bmatrix}), vektor kolom, pecahan besar bersusun, sistem persamaan, integral dengan batas, limit kompleks. JANGAN taruh matriks/vektor kolom di dalam inline \`$...$\` karena akan tampil terhimpit/rusak di tengah teks kalimat — pisahkan jadi baris sendiri pakai \`$$...$$\`.
+
+Sistem merender LaTeX ini otomatis (KaTeX) — jangan biarkan karakter rusak hasil OCR, tulis ulang jadi LaTeX bersih.
 
 ## 8. BACAAN/STIMULUS BERSAMA (soal berkelompok)
 
@@ -583,6 +588,7 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
         kunci_jawaban: '',
         kunci_terverifikasi: false,
         pembahasan: '',
+        catatan_admin: '',
         gambar: [],
         materi: '',
         capaian_pembelajaran: '',
@@ -742,6 +748,7 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
         q.kunci_terverifikasi ?? q.kunciTerverifikasi ?? q.verifiedAnswer ?? false,
       ),
       pembahasan: safeString(q.pembahasan || q.penjelasan || q.explanation || q.solusi || ''),
+      catatan_admin: safeString(q.catatan_admin || q.catatanAdmin || q.admin_note || ''),
       gambar,
       materi: safeString(q.materi || q.meta_materi || ''),
       capaian_pembelajaran: safeString(q.capaian_pembelajaran || q.meta_capaian_pembelajaran || ''),
@@ -1290,6 +1297,7 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
       kunciJawaban: q.kunci_jawaban,
       kunciTerverifikasi: q.kunci_terverifikasi,
       pembahasan: q.pembahasan,
+      catatanAdmin: q.catatan_admin || '',
       gambarUrls,
       materi: q.materi || '',
       capaianPembelajaran: q.capaian_pembelajaran || '',
@@ -2247,6 +2255,23 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
               overflow-y: hidden;
               padding: 4px 0;
             }
+            .katex {
+              max-width: 100%;
+            }
+            .rich-text-math-wrap {
+              overflow-x: auto;
+              max-width: 100%;
+            }
+            .admin-note {
+              display: block;
+              margin-top: 6px;
+              padding: 8px 10px;
+              border-radius: 8px;
+              background: #fffbeb;
+              border: 1px solid #fde68a;
+              color: #92400e;
+              font-size: 12px;
+            }
             @media (max-width: 640px) {
               .katex-display { max-width: 100%; }
             }
@@ -2480,6 +2505,20 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
   
         {q.kunci_terverifikasi && (
           <div style={{ marginTop: '12px', fontSize: '12px', color: '#15803d', fontWeight: '600' }}>✓ Kunci jawaban terverifikasi.</div>
+        )}
+
+        {!q.kunci_terverifikasi && (
+          <div style={{ marginTop: '12px', fontSize: '12px', color: '#b45309', fontWeight: '600' }}>⚠️ Kunci jawaban BELUM terverifikasi — cek ulang sebelum dipublikasi.</div>
+        )}
+
+        {/* CATATAN ADMIN — hanya tampil di panel review ini, TIDAK disimpan sebagai bagian pembahasan yang dibaca siswa */}
+        {q.catatan_admin && (
+          <div style={{ marginTop: '12px', borderRadius: '12px', border: '1px solid #fde68a', backgroundColor: '#fffbeb', padding: '12px 14px' }}>
+            <div style={{ fontSize: '11px', fontWeight: '700', color: '#92400e', marginBottom: '4px' }}>
+              📝 CATATAN UNTUK ADMIN (tidak tampil ke siswa)
+            </div>
+            <div style={{ fontSize: '13px', color: '#78350f', lineHeight: 1.5 }}>{q.catatan_admin}</div>
+          </div>
         )}
   
         {/* PANEL KELOLA & CROP GAMBAR */}
