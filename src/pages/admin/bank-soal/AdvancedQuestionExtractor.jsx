@@ -127,6 +127,19 @@ export default function BankSoalImportPage() {
   const logsEndRef = useRef(null);
   const settings   = { resolution: 2.5, delayBetweenPages: 2500 };
 
+  /* ── Tailwind CSS auto-load (portable, tidak perlu config tambahan) ── */
+  useEffect(() => {
+    if (!document.querySelector('script[src*="cdn.tailwindcss.com"]')) {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.tailwindcss.com';
+      s.async = true;
+      document.head.insertBefore(s, document.head.firstChild);
+    }
+    if (!document.documentElement.classList.contains('dark')) {
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
   /* ── PDF.js ── */
   useEffect(() => {
     const script = document.createElement('script');
@@ -486,7 +499,7 @@ export default function BankSoalImportPage() {
   ============================================================ */
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col font-sans">
+    <div style={{ colorScheme: 'dark' }} className="min-h-screen bg-gray-950 text-gray-100 flex flex-col font-sans">
 
       {/* HEADER */}
       <header className="border-b border-gray-800 bg-gray-900/60 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
