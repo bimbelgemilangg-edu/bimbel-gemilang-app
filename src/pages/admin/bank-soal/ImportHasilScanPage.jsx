@@ -73,6 +73,213 @@ import React, {
   
   // Kunci-kunci di dalam satu grup yang dianggap sebagai daftar soalnya.
   const GROUP_ITEM_KEYS = ['soal', 'soals', 'questions', 'items', 'data'];
+
+  // ============================================================
+  // PROMPT AI GENERATOR — SUMBER KEBENARAN TUNGGAL
+  // ------------------------------------------------------------
+  // Prompt di bawah ini SENGAJA dibangun langsung dari skema yang
+  // benar-benar dipakai oleh normalizeSoal / normalizeOptionRich /
+  // normalizeImage / normalizeTabel / normalizeAnswerKey di atas.
+  // Tujuannya: AI manapun (Claude, ChatGPT, Gemini, dll) yang diberi
+  // prompt ini akan menghasilkan JSON yang mengikuti STRUKTUR SISTEM,
+  // bukan mengikuti bentuk asli PDF/soal sumber. Kalau skema di
+  // normalizeSoal() dkk berubah di kemudian hari, prompt ini WAJIB
+  // diperbarui juga supaya tetap sinkron (satu sumber kebenaran).
+  // ============================================================
+
+  function buildMasterPrompt(meta = {}) {
+    const {
+      mataPelajaran = 'Matematika',
+      jenjang = 'SMA/MA',
+      tingkatKelas = '10',
+      tingkatKesulitan = 'sedang',
+      catatanTambahan = '',
+    } = meta;
+
+    return `Kamu adalah asisten yang mengubah dokumen soal ujian (PDF/gambar hasil scan) menjadi JSON terstruktur untuk sistem "Bank Soal Gemilang". Ikuti skema di bawah ini SECARA PERSIS — skema ini diambil langsung dari kode sistem (ImportHasilScanPage.jsx), bukan dari bentuk asli dokumen sumber. Tujuannya JSON yang kamu hasilkan bisa langsung di-upload dan sejalan dengan sistem, tanpa perlu diedit manual.
+
+KONTEKS SOAL INI:
+- Mata pelajaran: ${mataPelajaran}
+- Jenjang: ${jenjang}
+- Kelas: ${tingkatKelas}
+- Tingkat kesulitan default (kalau tidak bisa dinilai per soal): ${tingkatKesulitan}
+${catatanTambahan ? `- Catatan tambahan dari admin: ${catatanTambahan}` : ''}
+
+Baca SELURUH isi dokumen yang dilampirkan (semua paket/tryout, semua nomor, semua halaman pembahasan jika ada), lalu hasilkan SATU file JSON sesuai aturan berikut.
+
+## 1. PRINSIP UTAMA: SETIAP SOAL BERDIRI SENDIRI (MANDIRI)
+
+Sistem TIDAK memakai folder atau referensi silang antar soal — tiap soal disimpan sebagai satu dokumen mandiri, karena bisa ditarik satu-satu atau dicampur acak dengan soal dari paket/mapel lain.
+
+- Kalau ada BACAAN/TEKS PANJANG/DATA yang dipakai bersama beberapa nomor (mis. 1 bacaan untuk soal 5-8), JANGAN buat objek terpisah yang direferensikan. SALIN UTUH ke field \`bacaan\` di SETIAP soal yang memakainya.
+- Kalau ada GAMBAR yang menyertai sebuah soal, gambar itu MELEKAT langsung pada soal tersebut (field \`gambar\`), bukan disimpan terpisah lalu ditautkan.
+- Kalau kamu bisa membaca/mengekstrak gambar dari dokumen, embed sebagai base64 data URL di field \`dataUrl\` (format: "data:image/png;base64,...."). Ini paling ideal karena soal jadi mandiri tanpa file terpisah.
+- Kalau TIDAK bisa mengekstrak gambar aslinya, JANGAN mengarang URL. Kosongkan \`dataUrl\`/\`url\`, isi \`deskripsi\` dengan penjelasan detail gambar (apa yang digambarkan, angka-angka penting di dalamnya).
+
+## 2. FORMAT JSON KESELURUHAN (WAJIB — ini yang dibaca sistem)
+
+Sistem mendukung BEBERAPA bentuk pembungkus paket (pilih salah satu, paling disarankan yang pertama):
+
+\`\`\`json
+{
+  "tryout": [
+    {
+      "paket": 1,
+      "nama_paket": "Tryout 1",
+      "soal": [ /* array soal, lihat format nomor 3 di bawah */ ]
+    },
+    {
+      "paket": 2,
+      "soal": [ /* ... */ ]
+    }
+  ]
+}
+\`\`\`
+
+Kunci pembungkus yang juga dikenali sistem: "tryout", "paket_list" (isi soal di "questions"), "packages" (isi soal di "items"), "paketSoal", "paket_soal". Kalau dokumen cuma 1 paket / tidak berpaket, boleh langsung array datar: [ {...soal1}, {...soal2} ].
+
+## 3. FORMAT SATU OBJEK SOAL (ikuti nama field ini PERSIS)
+
+\`\`\`json
+{
+  "nomor": 1,
+  "tipe": "pg_sederhana",
+  "materi": "Persamaan Kuadrat",
+  "capaian_pembelajaran": "Menyelesaikan masalah terkait akar-akar persamaan kuadrat.",
+  "bacaan": null,
+  "teks_soal": "Akar-akar persamaan kuadrat $x^2 + ax - 4 = 0$ adalah p dan q. Jika $p^2 - 2pq + q^2 = 8a$ maka nilai a = ....",
+  "gambar": [],
+  "opsi_jawaban": [
+    "-8",
+    "-4",
+    "4",
+    "6",
+    "8"
+  ],
+  "kunci_jawaban": "E",
+  "kunci_terverifikasi": true,
+  "pembahasan": "Langkah-langkah penyelesaian lengkap, bukan cuma jawaban akhir."
+}
+\`\`\`
+
+### Field WAJIB di setiap soal
+- \`nomor\` — angka urut soal dalam paketnya.
+- \`tipe\` — salah satu dari: "pg_sederhana", "pg_kompleks", "benar_salah", "isian_singkat", "menjodohkan", "uraian" (lihat tabel di bagian 4). JANGAN paksakan semua jadi pg_sederhana kalau bentuk aslinya beda — sistem memproses tiap tipe secara berbeda.
+- \`teks_soal\` — teks pertanyaan (boleh mengandung LaTeX, lihat bagian 6).
+- \`kunci_jawaban\` — lihat aturan di bagian 5.
+- \`pembahasan\` — WAJIB diisi, langkah-langkah penyelesaian.
+
+### Field opsional tapi SANGAT dianjurkan
+- \`materi\` — topik/bab spesifik soal ini, dipakai sistem untuk filter/rekap.
+- \`capaian_pembelajaran\` — 1 kalimat capaian pembelajaran relevan (kurikulum terbaru). Kalau tidak yakin, buat 1 kalimat wajar berdasarkan materinya, jangan dikosongkan.
+- \`kunci_terverifikasi\` — true kalau kamu sudah menghitung ulang dan yakin kuncinya benar; false kalau kunci diambil mentah tanpa verifikasi ulang.
+- \`bacaan\`, \`gambar\` — lihat bagian 1, 7, 8.
+
+## 4. TIPE SOAL YANG DIDUKUNG SISTEM (field \`tipe\`)
+
+| tipe | kapan dipakai |
+|---|---|
+| pg_sederhana | Pilihan ganda biasa, 1 jawaban benar (A-E/A-D). |
+| pg_kompleks | Pilihan ganda, jawaban benar lebih dari satu. |
+| benar_salah | Beberapa PERNYATAAN, dinilai Benar/Salah masing-masing. Pakai field \`pernyataan\`. |
+| isian_singkat | Jawaban angka/kata singkat tanpa pilihan. \`opsi_jawaban\` dikosongkan []. |
+| menjodohkan | Mencocokkan 2 kolom. Pakai field \`pasangan\`. |
+| uraian | Esai/uraian. \`opsi_jawaban\` dikosongkan, \`kunci_jawaban\` diisi kriteria jawaban model. |
+
+Untuk "benar_salah" tambahkan:
+\`\`\`json
+"pernyataan": [
+  { "teks": "Diskriminan negatif berarti tidak ada akar real.", "jawaban": "Benar" },
+  { "teks": "Grafik fungsi kuadrat selalu terbuka ke atas.", "jawaban": "Salah" }
+]
+\`\`\`
+
+Untuk "menjodohkan" tambahkan:
+\`\`\`json
+"pasangan": [
+  { "kiri": "Median data", "kanan": "Nilai tengah data terurut" }
+]
+\`\`\`
+
+## 5. FORMAT OPSI JAWABAN (sistem menerima 2 bentuk, boleh dicampur dalam satu array)
+
+Bentuk sederhana — string biasa:
+\`\`\`json
+"opsi_jawaban": ["4", "5", "6", "7", "8"]
+\`\`\`
+
+Bentuk kaya (kalau opsi punya gambar/grafik atau tabel, bukan cuma teks):
+\`\`\`json
+"opsi_jawaban": [
+  { "teks": "" , "gambar": [{ "dataUrl": "data:image/png;base64,....", "deskripsi": "Grafik A: sinusoidal naik" }] },
+  { "teks": "Opsi tabel", "tabel": { "Rutherford": "Semua muatan positif dalam inti", "Bohr": "Elektron di orbit tetap" } }
+]
+\`\`\`
+(\`tabel\` boleh berupa object key-value seperti contoh di atas, atau array [{ "kolom": "...", "isi": "..." }] — dua-duanya dikenali sistem.)
+
+## 6. ATURAN KUNCI JAWABAN
+
+- pg_sederhana: \`kunci_jawaban\` = 1 huruf, contoh "C". Sistem otomatis menandai opsi sesuai urutan huruf (A=opsi ke-1, dst) — TIDAK PERLU menandai manual di teks opsi.
+- pg_kompleks: \`kunci_jawaban\` boleh array huruf, contoh ["A", "C", "D"].
+- isian_singkat / uraian: \`kunci_jawaban\` = teks jawaban/kriteria, bukan huruf.
+- Kalau dokumen sumber menyertakan kunci/pembahasan resmi, SELALU pakai kunci dari situ, jangan hitung ulang dari nol kecuali kunci sumber tampak salah/hilang (dalam kasus itu hitung ulang sendiri, isi kunci_terverifikasi: false, jelaskan keraguannya di pembahasan).
+- Kalau kunci benar-benar tidak ditemukan, isi \`kunci_jawaban\`: "" — JANGAN menebak asal-asalan.
+
+## 7. NOTASI MATEMATIKA
+
+Tulis semua rumus dalam LaTeX, dibungkus $...$ untuk inline atau $$...$$ untuk rumus terpisah baris. Sistem merender LaTeX ini otomatis (KaTeX) — jangan biarkan karakter rusak hasil OCR, tulis ulang jadi LaTeX bersih.
+
+## 8. BACAAN/STIMULUS BERSAMA (soal berkelompok)
+
+Kalau ada pola "Bacalah teks berikut untuk soal nomor 5-8", buat field \`bacaan\` di SETIAP soal 5,6,7,8, isinya salinan persis sama:
+\`\`\`json
+"bacaan": { "teks": "isi lengkap teks/data bacaan....", "gambar": [] }
+\`\`\`
+Kalau soal tidak punya bacaan bersama, isi "bacaan": null.
+
+## 9. FORMAT GAMBAR
+
+\`\`\`json
+"gambar": [
+  {
+    "url": "",
+    "dataUrl": "data:image/png;base64,iVBORw0KGgoAAAANS...",
+    "deskripsi": "Gambar mikrometer sekrup menunjukkan skala utama 2mm dan skala nonius 47"
+  }
+]
+\`\`\`
+Kalau tidak bisa embed gambar asli, kosongkan url/dataUrl dan isi deskripsi detail — admin akan crop & upload manual lewat fitur crop yang ada di sistem (sistem punya UI crop bawaan untuk kasus ini). Placeholder {{GAMBAR}}, {{GAMBAR_2}} dst boleh disisipkan di teks_soal untuk posisi gambar tertentu; kalau tidak ada placeholder, sistem otomatis taruh semua gambar di akhir teks soal.
+
+## 10. TABEL DATA DI DALAM BADAN SOAL (bukan sebagai pilihan jawaban)
+
+Tulis ulang isinya sebagai teks terstruktur langsung di teks_soal, contoh:
+"Perhatikan tabel berikut!\\n\\nInterval | Frekuensi\\n61-65 | 4\\n66-70 | 6\\n\\nKuartil bawah dari data tersebut adalah ...."
+
+## 11. HAL YANG HARUS DIHINDARI
+
+- JANGAN membuat bacaan_id/gambar_id yang dirujuk terpisah — selalu salin utuh ke tiap soal.
+- JANGAN mengarang URL gambar yang tidak benar-benar ada.
+- JANGAN mengosongkan pembahasan.
+- JANGAN mengubah tipe soal jadi pg_sederhana kalau aslinya bukan pilihan ganda biasa.
+- JANGAN memotong/meringkas opsi jawaban — salin persis seperti di dokumen.
+- JANGAN menyisakan jejak proses berpikir di pembahasan (mis. "tunggu, coba periksa lagi") — pembahasan harus final dan bersih.
+
+## 12. KEJUJURAN UNTUK SOAL YANG BUTUH GAMBAR
+
+Kalau soal TIDAK BISA dijawab tanpa melihat isi gambar asli (grafik dengan angka spesifik, rangkaian, diagram vektor, dsb) dan kamu tidak benar-benar bisa melihat gambar itu:
+- JANGAN menebak jawaban seolah yakin — sistem akan menandainya sebagai "jawaban benar" dan tampil ke siswa sebagai fakta.
+- Set "kunci_jawaban": "" dan "kunci_terverifikasi": false.
+- Isi pembahasan dengan kalimat jujur bahwa jawaban perlu diisi manual oleh guru/admin setelah gambar diperiksa.
+- Pengecualian: kalau semua angka yang dibutuhkan sudah ada di teks soal (gambar cuma ilustrasi pelengkap), boleh dihitung dan dijawab yakin seperti biasa.
+
+## 13. JANGAN BERHENTI DI TENGAH JALAN
+
+Proses SEMUA nomor dari SEMUA paket yang ada di dokumen, dari nomor pertama sampai terakhir. Jangan meringkas "beberapa contoh saja". Sebelum mengirim jawaban akhir, hitung ulang: apakah jumlah objek di array "soal" tiap paket SAMA PERSIS dengan jumlah soal di dokumen untuk paket itu? Kalau dokumen sangat panjang sehingga tidak sanggup sekaligus, BOLEH diproses per paket satu-satu (selesaikan 1 paket penuh dulu, baru berhenti dan bilang eksplisit paket berapa yang selesai + tawarkan lanjut ke paket berikutnya) — TAPI TIDAK BOLEH berhenti di TENGAH satu paket tanpa keterangan.
+
+## 14. OUTPUT
+
+Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar blok kode), mencakup SEMUA nomor soal dari SEMUA paket yang ada di dokumen yang dilampirkan. Field \`mata_pelajaran\`, \`jenjang\`, \`kelas\`, dan \`tingkat_kesulitan\` TIDAK perlu ditulis di tiap soal (sudah diisi manual di form sistem saat import) — cukup fokus ke field-field pada bagian 3.`;
+  }
   
   // ============================================================
   // SAFE HELPERS
@@ -1183,6 +1390,38 @@ import React, {
     const [saving, setSaving] = useState(false);
     const [saveResult, setSaveResult] = useState(null);
     const [saveLog, setSaveLog] = useState([]);
+
+    // -------- Prompt AI khusus (generate prompt sinkron dengan skema sistem) --------
+    const [showPromptPanel, setShowPromptPanel] = useState(false);
+    const [catatanPrompt, setCatatanPrompt] = useState('');
+    const [promptCopied, setPromptCopied] = useState(false);
+
+    const generatedPrompt = useMemo(() => buildMasterPrompt({
+      mataPelajaran,
+      jenjang,
+      tingkatKelas,
+      tingkatKesulitan,
+      catatanTambahan: catatanPrompt,
+    }), [mataPelajaran, jenjang, tingkatKelas, tingkatKesulitan, catatanPrompt]);
+
+    const handleCopyPrompt = useCallback(async () => {
+      try {
+        if (navigator?.clipboard?.writeText) {
+          await navigator.clipboard.writeText(generatedPrompt);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = generatedPrompt;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        setPromptCopied(true);
+        setTimeout(() => setPromptCopied(false), 2000);
+      } catch (error) {
+        console.error('Gagal menyalin prompt:', error);
+      }
+    }, [generatedPrompt]);
   
     // ----------------------------------------------------------
     // STATS
@@ -1551,7 +1790,95 @@ import React, {
                 kunci jawaban, dan pembahasan.
               </p>
             </div>
-  
+
+            {/* PROMPT AI KHUSUS */}
+            <div style={{ backgroundColor: '#0f172a', borderRadius: '16px', border: '1px solid #1e293b', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '18px' }}>🤖</span>
+                    <h2 style={{ fontSize: '15px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>
+                      Prompt AI Khusus untuk Scan Soal
+                    </h2>
+                    <span style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '2px', paddingBottom: '2px', borderRadius: '9999px', backgroundColor: '#1e40af', color: '#dbeafe', fontSize: '10px', fontWeight: '700' }}>
+                      SINKRON DENGAN SISTEM
+                    </span>
+                  </div>
+                  <p style={{ color: '#94a3b8', fontSize: '13px', marginTop: '4px', maxWidth: '620px' }}>
+                    Generate prompt siap-pakai yang mengikuti struktur field sistem ini persis (bukan mengikuti bentuk
+                    PDF sumber). Tempel ke AI apa pun (Claude, ChatGPT, Gemini, dll) bersama file PDF/gambar soal —
+                    hasil JSON-nya otomatis bisa langsung diupload ke bawah tanpa perlu diedit ulang.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPromptPanel(v => !v)}
+                  style={{
+                    flexShrink: 0, paddingLeft: '18px', paddingRight: '18px', paddingTop: '10px', paddingBottom: '10px',
+                    borderRadius: '8px', border: 'none', backgroundColor: '#3b82f6', color: '#ffffff',
+                    fontSize: '13px', fontWeight: '700', cursor: 'pointer',
+                  }}
+                >
+                  {showPromptPanel ? 'Sembunyikan Prompt ▲' : 'Buka & Generate Prompt ▼'}
+                </button>
+              </div>
+
+              {showPromptPanel && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '4px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
+                    <div style={{ backgroundColor: '#1e293b', borderRadius: '8px', padding: '10px 12px' }}>
+                      <div style={{ fontSize: '11px', color: '#64748b' }}>Mapel / Jenjang / Kelas dipakai otomatis dari form di bawah</div>
+                      <div style={{ fontSize: '13px', color: '#e2e8f0', marginTop: '2px', fontWeight: '600' }}>
+                        {mataPelajaran} · {jenjang} · Kelas {tingkatKelas} · Kesulitan default: {tingkatKesulitan}
+                      </div>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px', display: 'block' }}>
+                        Catatan tambahan untuk AI (opsional — mis. "fokus materi kalkulus" / "jangan proses halaman sampul")
+                      </label>
+                      <input
+                        type="text"
+                        value={catatanPrompt}
+                        onChange={e => setCatatanPrompt(e.target.value)}
+                        placeholder="Contoh: Proses per paket, tunggu konfirmasi sebelum lanjut paket berikutnya."
+                        style={{ width: '100%', border: '1px solid #334155', borderRadius: '8px', paddingLeft: '10px', paddingRight: '10px', paddingTop: '8px', paddingBottom: '8px', fontSize: '13px', backgroundColor: '#0f172a', color: '#e2e8f0' }}
+                      />
+                    </div>
+                  </div>
+
+                  <textarea
+                    readOnly
+                    rows={12}
+                    value={generatedPrompt}
+                    onClick={e => e.target.select()}
+                    style={{
+                      width: '100%', resize: 'vertical', fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+                      fontSize: '11.5px', lineHeight: 1.5, backgroundColor: '#0b1220', color: '#cbd5e1',
+                      border: '1px solid #334155', borderRadius: '8px', padding: '12px',
+                    }}
+                  />
+
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={handleCopyPrompt}
+                      style={{
+                        paddingLeft: '18px', paddingRight: '18px', paddingTop: '10px', paddingBottom: '10px',
+                        borderRadius: '8px', border: 'none', backgroundColor: promptCopied ? '#16a34a' : '#3b82f6',
+                        color: '#ffffff', fontSize: '13px', fontWeight: '700', cursor: 'pointer',
+                      }}
+                    >
+                      {promptCopied ? '✅ Tersalin ke Clipboard' : '📋 Copy Prompt'}
+                    </button>
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>
+                      Alur pemakaian: 1) Copy prompt ini → 2) Tempel ke AI + lampirkan PDF/gambar soal →
+                      3) Salin JSON hasilnya → 4) Upload / tempel di kotak "Format" di bawah.
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* FORMAT */}
             <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #e5e7eb', borderColor: '#e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
