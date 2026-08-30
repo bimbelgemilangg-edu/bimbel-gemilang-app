@@ -105,7 +105,6 @@ function processSegment(text, renderMath) {
 function RichText({ text, gambar, mathReady }) {
   const html = useMemo(() => {
     const safe = typeof text === 'string' ? text : (text ?? '');
-    if (!safe) return '';
     const imgs = (Array.isArray(gambar) ? gambar : []).filter(Boolean);
     const katexLib = mathReady && window.katex ? window.katex : null;
     const renderMath = (math, display) => {
@@ -113,20 +112,28 @@ function RichText({ text, gambar, mathReady }) {
       try { return katexLib.renderToString(math, { displayMode: display, throwOnError: false, output: 'html' }); }
       catch { return display ? `$$${math}$$` : `$${math}$`; }
     };
-    const makeImg = g => {
-      const src = g.url || g.dataUrl || null;
-      const alt = (g.deskripsi||'Gambar soal').replace(/"/g,'&quot;');
-      if (src) return `<figure style="margin:8px 0;"><img src="${src}" alt="${alt}" style="max-width:100%;max-height:280px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;padding:3px;"/></figure>`;
-      if (g.refPath) return `<span style="display:inline-block;margin:6px 0;padding:4px 10px;background:#fef3c7;border:1px dashed #d97706;border-radius:6px;font-size:11px;color:#92400e;">🖼️ Referensi gambar dari sumber: <code>${g.refPath}</code> — belum diupload, tambahkan manual nanti</span>`;
-      return `<span style="color:#d97706;font-size:11px;">[Gambar belum dicrop]</span>`;
+    const esc = v => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const makeImg = (g, index = 0) => {
+      const src = g?.url || g?.dataUrl || null;
+      const alt = esc(g?.deskripsi || `Gambar soal ${index + 1}`).replace(/"/g,'&quot;');
+      if (src) return `<figure style="margin:10px 0;text-align:center;"><img src="${src}" alt="${alt}" loading="lazy" style="max-width:100%;max-height:420px;object-fit:contain;border-radius:8px;border:1px solid #e5e7eb;background:#fff;padding:4px;"/></figure>`;
+      if (g?.refPath) return `<span style="display:inline-block;margin:6px 0;padding:4px 10px;background:#fef3c7;border:1px dashed #d97706;border-radius:6px;font-size:11px;color:#92400e;">🖼️ Referensi gambar: <code>${esc(g.refPath)}</code> — file asli belum tersedia</span>`;
+      return '';
     };
-    const parts = safe.split(/(\{\{\s*GAMBAR(?:_\d+)?\s*\}\})/gi);
+
+    const parts = safe.split(/(\{\{\s*GAMBAR(?:_\d+|_OPSI_\d+)?\s*\}\})/gi);
     let gIdx = 0, result = '';
     for (const part of parts) {
-      if (/^\{\{\s*GAMBAR/i.test(part)) result += makeImg(imgs[gIdx++] || {});
+      if (/^\{\{\s*GAMBAR/i.test(part)) result += makeImg(imgs[gIdx++] || {}, gIdx - 1);
       else result += processSegment(part, renderMath);
     }
-    if (gIdx === 0 && imgs.some(g => g.dataUrl || g.url || g.refPath)) imgs.forEach(g => { result += makeImg(g); });
+    // Jika marker tidak ada, tampilkan semua aset visual setelah teks. Ini mencegah
+    // gambar benar-benar hilang hanya karena generator JSON tidak menulis marker.
+    if (gIdx === 0 && imgs.length) {
+      result += imgs.map((g, i) => makeImg(g, i)).join('');
+    } else if (gIdx < imgs.length) {
+      result += imgs.slice(gIdx).map((g, i) => makeImg(g, gIdx + i)).join('');
+    }
     return result;
   }, [text, gambar, mathReady]);
 
@@ -239,29 +246,123 @@ function parseFlatJSON(parsed) {
    Setiap soal di setiap paket dipecah jadi 1 baris soal mandiri.
 ============================================================ */
 
+function isDataImage(value) {
+  return typeof value === 'string' && /^data:image\/(png|jpe?g|gif|webp|svg\+xml);base64,/i.test(value);
+}
+
+function isHttpImage(value) {
+  return typeof value === 'string' && /^https?:\/\//i.test(value);
+}
+
+function normalizeImageObject(g, fallbackDescription = 'Gambar soal') {
+  if (!g) return null;
+  if (typeof g === 'string') {
+    if (isDataImage(g) || isHttpImage(g)) return { deskripsi: fallbackDescription, dataUrl: g };
+    return { deskripsi: fallbackDescription, refPath: g };
+  }
+  if (typeof g !== 'object') return null;
+
+  const dataUrl = g.dataUrl || g.data_url || g.base64 || g.src || g.imageData || g.data || null;
+  const url = g.url || g.imageUrl || g.image_url || g.srcUrl || g.publicUrl || null;
+  const refPath = g.refPath || g.ref_path || g.path || g.file || g.filename || g.fileName || g.gambar || null;
+
+  // Jangan menganggap URL sebagai base64. Pertahankan tipe sumbernya.
+  return {
+    ...g,
+    deskripsi: String(g.deskripsi || g.description || fallbackDescription),
+    ...(isDataImage(dataUrl) ? { dataUrl } : {}),
+    ...(isHttpImage(url) ? { url } : {}),
+    ...(!isDataImage(dataUrl) && !isHttpImage(url) && refPath ? { refPath: String(refPath) } : {}),
+  };
+}
+
+function collectImages(value, fallbackDescription = 'Gambar soal') {
+  if (!value) return [];
+  const source = Array.isArray(value) ? value : [value];
+  return source.flatMap(item => {
+    if (!item) return [];
+    if (typeof item === 'object' && !Array.isArray(item)) {
+      // Beberapa generator JSON menyimpan beberapa gambar di field images/gambar_soal.
+      const nested = item.images || item.gambar || item.gambar_soal || item.image || item.image_url;
+      if (nested && nested !== item) {
+        const own = normalizeImageObject(item, fallbackDescription);
+        const nestedImages = collectImages(nested, fallbackDescription);
+        // Hindari duplikasi jika nested hanya alias dari object yang sama.
+        return own && (own.dataUrl || own.url || own.refPath) ? [own, ...nestedImages] : nestedImages;
+      }
+    }
+    const n = normalizeImageObject(item, fallbackDescription);
+    return n ? [n] : [];
+  });
+}
+
+function imageFromOption(o, label) {
+  if (!o) return null;
+  const candidate = o.gambar || o.image || o.image_url || o.imageUrl || o.dataUrl || o.data_url || o.src || o.url || o.refPath || null;
+  const images = collectImages(candidate, `Gambar opsi ${label}`);
+  return images[0] || null;
+}
+
 function buildOpsiDariSoal(s) {
-  const opsi = Array.isArray(s.opsi) ? s.opsi : [];
+  const opsi = Array.isArray(s.opsi) ? s.opsi : (Array.isArray(s.opsi_jawaban) ? s.opsi_jawaban : []);
   const tipeOpsi = s.tipe_opsi || 'teks';
 
   if (tipeOpsi === 'gambar') {
-    return opsi.map(o => `${o.label ? o.label + '. ' : ''}[Gambar opsi: ${o.gambar || '(tidak ada path)'}] — perlu upload manual`);
+    return opsi.map((o, i) => {
+      if (typeof o === 'string') return o;
+      const label = o?.label || String.fromCharCode(65 + i);
+      const img = imageFromOption(o, label);
+      return img ? `{{GAMBAR_OPSI_${i + 1}}}` : autoFormatMath(String(o?.teks ?? o?.text ?? ''));
+    });
   }
   if (tipeOpsi === 'tabel') {
     return opsi.map(o => {
+      if (typeof o === 'string') return autoFormatMath(o);
       const parts = Object.keys(o)
-        .filter(k => k !== 'label')
+        .filter(k => k !== 'label' && !['gambar','image','image_url','imageUrl','dataUrl','data_url','src','url','refPath'].includes(k))
         .map(k => `${k}: ${autoFormatMath(String(o[k] ?? ''))}`);
       return `${o.label ? o.label + '. ' : ''}${parts.join(' | ')}`;
     });
   }
-  // default: tipe_opsi 'teks'
-  return opsi.map(o => `${autoFormatMath(String(o.teks ?? ''))}`);
+  return opsi.map(o => autoFormatMath(String(typeof o === 'object' ? (o.teks ?? o.text ?? '') : o)));
 }
 
 function buildGambarDariSoal(s) {
+  const candidates = [
+    s.gambar,
+    s.gambar_soal,
+    s.gambarSoal,
+    s.images,
+    s.image,
+    s.image_url,
+    s.imageUrl,
+    s.ilustrasi,
+    s.diagram,
+    s.grafik,
+    s.figure,
+  ].filter(Boolean);
+
   const refs = [];
-  if (s.gambar_soal) refs.push({ deskripsi: 'Gambar soal (referensi dari sumber)', refPath: s.gambar_soal });
-  return refs;
+  for (const candidate of candidates) {
+    refs.push(...collectImages(candidate, 'Gambar/diagram soal'));
+  }
+
+  // Opsi gambar juga harus dipertahankan sebagai aset terpisah.
+  if (s.tipe_opsi === 'gambar' && Array.isArray(s.opsi)) {
+    s.opsi.forEach((o, i) => {
+      const img = imageFromOption(o, String.fromCharCode(65 + i));
+      if (img) refs.push({ ...img, jenis: 'opsi', opsiIndex: i });
+    });
+  }
+
+  // Deduplicate berdasarkan dataUrl/url/refPath.
+  const seen = new Set();
+  return refs.filter(g => {
+    const key = g.dataUrl || g.url || g.refPath || JSON.stringify(g);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function flattenTryoutFormat(parsed) {
@@ -389,7 +490,7 @@ function normalizeSoal(q, idx) {
     pasangan         : Array.isArray(q.pasangan)       ? q.pasangan.map(p => ({ kiri: String(p.kiri||''), kanan: String(p.kanan||'') })) : [],
     kunci_jawaban    : String(q.kunci_jawaban || q.kunciJawaban || ''),
     kunci_terverifikasi: Boolean(q.kunci_terverifikasi || q.kunciTerverifikasi),
-    gambar           : Array.isArray(q.gambar) ? q.gambar : [],
+    gambar           : buildGambarDariSoal(q),
     // Field tambahan (dipakai Panel Guru untuk mixing soal per topik):
     pembahasan       : String(q.pembahasan || ''),
     materi           : String(q.materi || ''),
@@ -489,13 +590,10 @@ export default function ImportHasilScanPage() {
   const [saveLog,    setSaveLog]    = useState([]);
 
   // Hitung soal dengan gambar base64
-  const soalDenganGambar = useMemo(() =>
-    soalList.filter(q => (q.gambar||[]).some(g => g.dataUrl?.startsWith('data:image'))).length,
-  [soalList]);
-
-  const soalDenganGambarReferensi = useMemo(() =>
-    soalList.filter(q => (q.gambar||[]).some(g => g.refPath)).length,
-  [soalList]);
+  const totalGambar = useMemo(() => soalList.reduce((n, q) => n + (q.gambar || []).length, 0), [soalList]);
+  const totalGambarBase64 = useMemo(() => soalList.reduce((n, q) => n + (q.gambar || []).filter(g => isDataImage(g.dataUrl)).length, 0), [soalList]);
+  const soalDenganGambar = useMemo(() => soalList.filter(q => (q.gambar||[]).length > 0).length, [soalList]);
+  const soalDenganGambarReferensi = useMemo(() => soalList.filter(q => (q.gambar||[]).some(g => g.refPath && !g.dataUrl && !g.url)).length, [soalList]);
 
   const daftarMateri = useMemo(() => {
     const s = new Set(soalList.map(q => q.materi).filter(Boolean));
@@ -584,15 +682,25 @@ export default function ImportHasilScanPage() {
     if (toUpload.length > 0) {
       addLog(`⏳ Upload ${toUpload.length} gambar ke Supabase...`);
       try {
-        const resp = await fetch('/api/uploadBankSoalImages', {
-          method : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body   : JSON.stringify({ images: toUpload.map(i => ({ key: i.key, dataUrl: i.dataUrl })) }),
-        });
-        const result = await resp.json();
         const urlMap = {};
-        (result.uploaded || []).forEach(u => { urlMap[u.key] = u.url; });
+        const BATCH_UPLOAD = 8;
+        for (let start = 0; start < toUpload.length; start += BATCH_UPLOAD) {
+          const batchImages = toUpload.slice(start, start + BATCH_UPLOAD);
+          const resp = await fetch('/api/uploadBankSoalImages', {
+            method : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body   : JSON.stringify({ images: batchImages.map(i => ({ key: i.key, dataUrl: i.dataUrl })) }),
+          });
+          const raw = await resp.text();
+          let result;
+          try { result = JSON.parse(raw); } catch { throw new Error(`Respons server bukan JSON (HTTP ${resp.status})`); }
+          if (!resp.ok) throw new Error(result?.error || result?.message || `HTTP ${resp.status}`);
+          (result.uploaded || []).forEach(u => { if (u?.key && u?.url) urlMap[u.key] = u.url; });
+          const failed = (result.errors || []).length;
+          addLog(`📤 Batch ${Math.min(start + BATCH_UPLOAD, toUpload.length)}/${toUpload.length}: ${batchImages.filter(i => urlMap[i.key]).length} berhasil${failed ? `, ${failed} gagal` : ''}.`);
+        }
 
+        const missing = toUpload.filter(i => !urlMap[i.key]);
         toUpload.forEach(({ key, qi, gi }) => {
           if (urlMap[key]) {
             const gambar = [...(soalProcessed[qi].gambar || [])];
@@ -600,13 +708,13 @@ export default function ImportHasilScanPage() {
             soalProcessed[qi] = { ...soalProcessed[qi], gambar };
           }
         });
-
-        addLog(`✅ ${result.uploadedCount || 0}/${toUpload.length} gambar berhasil diupload.`);
-        if ((result.errors || []).length > 0) {
-          addLog(`⚠️ ${result.errors.length} gambar gagal upload.`);
-        }
+        if (missing.length) throw new Error(`${missing.length} gambar tidak mendapatkan URL upload. Penyimpanan soal dibatalkan agar gambar tidak hilang.`);
+        addLog(`✅ Semua ${toUpload.length} gambar berhasil diupload.`);
       } catch (err) {
-        addLog(`❌ Upload gambar gagal: ${err.message}. Melanjutkan tanpa gambar.`);
+        addLog(`❌ Upload gambar gagal: ${err.message}`);
+        setSaveResult({ success: false, error: err.message });
+        setSaving(false);
+        return;
       }
     }
 
@@ -739,7 +847,7 @@ export default function ImportHasilScanPage() {
                   )}
                   {soalDenganGambar > 0 && (
                     <p className="text-xs text-blue-600 mt-0.5">
-                      🖼️ {soalDenganGambar} soal mengandung gambar base64 (akan diupload ke Supabase)
+                      🖼️ {soalDenganGambar} soal memiliki {totalGambar} aset gambar ({totalGambarBase64} base64 siap diupload ke Supabase)
                     </p>
                   )}
                   {soalDenganGambarReferensi > 0 && (
@@ -763,7 +871,7 @@ export default function ImportHasilScanPage() {
 
               {/* Soal list (max 50 preview) */}
               <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
-                {soalList.slice(0, 50).map((q, i) => (
+                {soalList.map((q, i) => (
                   <div key={i} className="border border-gray-100 rounded-xl p-3 bg-gray-50">
                     <div className="flex flex-wrap gap-1.5 mb-2">
                       <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
@@ -833,9 +941,7 @@ export default function ImportHasilScanPage() {
                     )}
                   </div>
                 ))}
-                {soalList.length > 50 && (
-                  <p className="text-center text-sm text-gray-400">...dan {soalList.length - 50} soal lainnya</p>
-                )}
+
               </div>
 
               {/* Metadata form */}
